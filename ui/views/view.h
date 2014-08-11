@@ -271,7 +271,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // as with Labels).
   virtual int GetHeightForWidth(int w) const;
 
-  // Set whether this view is visible. Painting is scheduled as needed.
+  // Sets whether this view is visible. Painting is scheduled as needed. Also,
+  // clears focus if the focused view or one of its ancestors is set to be
+  // hidden.
   virtual void SetVisible(bool visible);
 
   // Return whether a view is visible
@@ -282,7 +284,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Set whether this view is enabled. A disabled view does not receive keyboard
   // or mouse inputs. If |enabled| differs from the current value, SchedulePaint
-  // is invoked.
+  // is invoked. Also, clears focus if the focused view is disabled.
   void SetEnabled(bool enabled);
 
   // Returns whether the view is enabled.
@@ -768,20 +770,22 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // IMPORTANT NOTE: loops in the focus hierarchy are not supported.
   void SetNextFocusableView(View* view);
 
-  // Sets whether this view is capable of taking focus.
+  // Sets whether this view is capable of taking focus. It will clear focus if
+  // the focused view is set to be non-focusable.
   // Note that this is false by default so that a view used as a container does
   // not get the focus.
   void SetFocusable(bool focusable);
 
   // Returns true if this view is |focusable_|, |enabled_| and drawn.
-  virtual bool IsFocusable() const;
+  bool IsFocusable() const;
 
   // Return whether this view is focusable when the user requires full keyboard
   // access, even though it may not be normally focusable.
   bool IsAccessibilityFocusable() const;
 
   // Set whether this view can be made focusable if the user requires
-  // full keyboard access, even though it's not normally focusable.
+  // full keyboard access, even though it's not normally focusable. It will
+  // clear focus if the focused view is set to be non-focusable.
   // Note that this is false by default.
   void SetAccessibilityFocusable(bool accessibility_focusable);
 
@@ -1411,6 +1415,10 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Initialize the previous/next focusable views of the specified view relative
   // to the view at the specified index.
   void InitFocusSiblings(View* view, int index);
+
+  // Helper function to advance focus, in case the currently focused view has
+  // become unfocusable.
+  void AdvanceFocusIfNecessary();
 
   // System events -------------------------------------------------------------
 

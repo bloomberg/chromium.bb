@@ -2642,6 +2642,69 @@ TEST_F(ViewTest, AddExistingChild) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// FocusManager
+////////////////////////////////////////////////////////////////////////////////
+
+// A widget that always claims to be active, regardless of its real activation
+// status.
+class ActiveWidget : public Widget {
+ public:
+  ActiveWidget() {}
+  virtual ~ActiveWidget() {}
+
+  virtual bool IsActive() const OVERRIDE {
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ActiveWidget);
+};
+
+TEST_F(ViewTest, AdvanceFocusIfNecessaryForUnfocusableView) {
+  // Create a widget with two views and give the first one focus.
+  ActiveWidget widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget.Init(params);
+
+  View* view1 = new View();
+  view1->SetFocusable(true);
+  widget.GetRootView()->AddChildView(view1);
+  View* view2 = new View();
+  view2->SetFocusable(true);
+  widget.GetRootView()->AddChildView(view2);
+
+  FocusManager* focus_manager = widget.GetFocusManager();
+  ASSERT_TRUE(focus_manager);
+
+  focus_manager->SetFocusedView(view1);
+  EXPECT_EQ(view1, focus_manager->GetFocusedView());
+
+  // Disable the focused view and check if the next view gets focused.
+  view1->SetEnabled(false);
+  EXPECT_EQ(view2, focus_manager->GetFocusedView());
+
+  // Re-enable and re-focus.
+  view1->SetEnabled(true);
+  focus_manager->SetFocusedView(view1);
+  EXPECT_EQ(view1, focus_manager->GetFocusedView());
+
+  // Hide the focused view and check it the next view gets focused.
+  view1->SetVisible(false);
+  EXPECT_EQ(view2, focus_manager->GetFocusedView());
+
+  // Re-show and re-focus.
+  view1->SetVisible(true);
+  focus_manager->SetFocusedView(view1);
+  EXPECT_EQ(view1, focus_manager->GetFocusedView());
+
+  // Set the focused view as not focusable and check if the next view gets
+  // focused.
+  view1->SetFocusable(false);
+  EXPECT_EQ(view2, focus_manager->GetFocusedView());
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // Layers
 ////////////////////////////////////////////////////////////////////////////////
 

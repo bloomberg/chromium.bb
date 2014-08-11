@@ -802,6 +802,58 @@ TEST_F(WidgetTestInteractive, TouchSelectionQuickMenuIsNotActivated) {
       textfield_test_api.touch_selection_controller())));
 }
 
+TEST_F(WidgetTestInteractive, DisableViewDoesNotActivateWidget) {
+#if defined(OS_WIN)
+  views_delegate().set_use_desktop_native_widgets(true);
+#endif  // !defined(OS_WIN)
+
+  // Create first widget and view, activate the widget, and focus the view.
+  Widget widget1;
+  Widget::InitParams params1 = CreateParams(Widget::InitParams::TYPE_POPUP);
+  params1.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params1.activatable = Widget::InitParams::ACTIVATABLE_YES;
+  widget1.Init(params1);
+
+  View* view1 = new View();
+  view1->SetFocusable(true);
+  widget1.GetRootView()->AddChildView(view1);
+
+  widget1.Activate();
+  EXPECT_TRUE(widget1.IsActive());
+
+  FocusManager* focus_manager1 = widget1.GetFocusManager();
+  ASSERT_TRUE(focus_manager1);
+  focus_manager1->SetFocusedView(view1);
+  EXPECT_EQ(view1, focus_manager1->GetFocusedView());
+
+  // Create second widget and view, activate the widget, and focus the view.
+  Widget widget2;
+  Widget::InitParams params2 = CreateParams(Widget::InitParams::TYPE_POPUP);
+  params2.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params2.activatable = Widget::InitParams::ACTIVATABLE_YES;
+  widget2.Init(params2);
+
+  View* view2 = new View();
+  view2->SetFocusable(true);
+  widget2.GetRootView()->AddChildView(view2);
+
+  widget2.Activate();
+  EXPECT_TRUE(widget2.IsActive());
+  EXPECT_FALSE(widget1.IsActive());
+
+  FocusManager* focus_manager2 = widget2.GetFocusManager();
+  ASSERT_TRUE(focus_manager2);
+  focus_manager2->SetFocusedView(view2);
+  EXPECT_EQ(view2, focus_manager2->GetFocusedView());
+
+  // Disable the first view and make sure it loses focus, but its widget is not
+  // activated.
+  view1->SetEnabled(false);
+  EXPECT_NE(view1, focus_manager1->GetFocusedView());
+  EXPECT_FALSE(widget1.IsActive());
+  EXPECT_TRUE(widget2.IsActive());
+}
+
 namespace {
 
 // Used to veirfy OnMouseCaptureLost() has been invoked.

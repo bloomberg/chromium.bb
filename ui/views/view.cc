@@ -406,6 +406,7 @@ void View::SetVisible(bool visible) {
       SchedulePaint();
 
     visible_ = visible;
+    AdvanceFocusIfNecessary();
 
     // Notify the parent.
     if (parent_)
@@ -428,6 +429,7 @@ bool View::IsDrawn() const {
 void View::SetEnabled(bool enabled) {
   if (enabled != enabled_) {
     enabled_ = enabled;
+    AdvanceFocusIfNecessary();
     OnEnabledChanged();
   }
 }
@@ -1144,6 +1146,7 @@ void View::SetFocusable(bool focusable) {
     return;
 
   focusable_ = focusable;
+  AdvanceFocusIfNecessary();
 }
 
 bool View::IsFocusable() const {
@@ -1159,6 +1162,7 @@ void View::SetAccessibilityFocusable(bool accessibility_focusable) {
     return;
 
   accessibility_focusable_ = accessibility_focusable;
+  AdvanceFocusIfNecessary();
 }
 
 FocusManager* View::GetFocusManager() {
@@ -2369,6 +2373,19 @@ void View::InitFocusSiblings(View* v, int index) {
       children_[index]->previous_focusable_view_ = v;
     }
   }
+}
+
+void View::AdvanceFocusIfNecessary() {
+  // Focus should only be advanced if this is the focused view and has become
+  // unfocusable. If the view is still focusable or is not focused, we can
+  // return early avoiding furthur unnecessary checks. Focusability check is
+  // performed first as it tends to be faster.
+  if (IsAccessibilityFocusable() || !HasFocus())
+    return;
+
+  FocusManager* focus_manager = GetFocusManager();
+  if (focus_manager)
+    focus_manager->AdvanceFocusIfNecessary();
 }
 
 // System events ---------------------------------------------------------------

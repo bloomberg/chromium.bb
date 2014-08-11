@@ -357,6 +357,21 @@ void FocusManager::ClearFocus() {
   SetStoredFocusView(focused_view);
 }
 
+void FocusManager::AdvanceFocusIfNecessary() {
+  // If widget is inactive, there is no focused view to check. The stored view
+  // will also be checked for focusability when it is being restored.
+  if (!widget_->IsActive())
+    return;
+
+  // If widget is active and focused view is not focusable, advance focus or,
+  // if not possible, clear focus.
+  if (focused_view_ && !focused_view_->IsAccessibilityFocusable()) {
+    AdvanceFocus(false);
+    if (focused_view_ && !focused_view_->IsAccessibilityFocusable())
+      ClearFocus();
+  }
+}
+
 void FocusManager::StoreFocusedView(bool clear_native_focus) {
   View* focused_view = focused_view_;
   // Don't do anything if no focused view. Storing the view (which is NULL), in

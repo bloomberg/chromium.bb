@@ -58,6 +58,7 @@ void WebView::SetWebContents(content::WebContents* replacement) {
   DetachWebContents();
   WebContentsObserver::Observe(replacement);
   // web_contents() now returns |replacement| from here onwards.
+  SetFocusable(!!web_contents());
   if (wc_owner_ != replacement)
     wc_owner_.reset();
   if (embed_fullscreen_widget_mode_enabled_) {
@@ -196,12 +197,6 @@ bool WebView::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
   // not process them, they'll be returned to us and we'll treat them as
   // accelerators then.
   return web_contents() && !web_contents()->IsCrashed();
-}
-
-bool WebView::IsFocusable() const {
-  // We need to be focusable when our contents is not a view hierarchy, as
-  // clicking on the contents needs to focus us.
-  return !!web_contents();
 }
 
 void WebView::OnFocus() {
