@@ -273,7 +273,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorMarkLoadEvent::data(Lo
 {
     RefPtr<TracedValue> value = TracedValue::create();
     value->setString("frame", toHexString(frame));
-    bool isMainFrame = frame && frame->page()->mainFrame() == frame;
+    bool isMainFrame = frame && frame->isMainFrame();
     value->setBoolean("isMainFrame", isMainFrame);
     return value;
 }
