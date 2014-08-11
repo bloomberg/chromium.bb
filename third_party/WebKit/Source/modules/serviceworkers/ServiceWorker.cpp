@@ -80,8 +80,8 @@ void ServiceWorker::postMessage(ExecutionContext*, PassRefPtr<SerializedScriptVa
     if (exceptionState.hadException())
         return;
 
-    blink::WebString messageString = message->toWireString();
-    OwnPtr<blink::WebMessagePortChannelArray> webChannels = MessagePort::toWebMessagePortChannelArray(channels.release());
+    WebString messageString = message->toWireString();
+    OwnPtr<WebMessagePortChannelArray> webChannels = MessagePort::toWebMessagePortChannelArray(channels.release());
     m_outerWorker->postMessage(messageString, webChannels.leakPtr());
 }
 
@@ -139,19 +139,18 @@ PassRefPtrWillBeRawPtr<ServiceWorker> ServiceWorker::from(ExecutionContext* exec
     if (!worker)
         return nullptr;
 
-    blink::WebServiceWorkerProxy* proxy = worker->proxy();
-    ServiceWorker* existingServiceWorker = proxy ? proxy->unwrap() : 0;
-    if (existingServiceWorker) {
-        ASSERT(existingServiceWorker->executionContext() == executionContext);
-        return existingServiceWorker;
-    }
-
-    return create(executionContext, adoptPtr(worker));
+    RefPtrWillBeRawPtr<ServiceWorker> serviceWorker = getOrCreate(executionContext, worker);
+    if (serviceWorker->m_proxyState == Initial)
+        serviceWorker->setProxyState(Ready);
+    return serviceWorker.release();
 }
 
 PassRefPtrWillBeRawPtr<ServiceWorker> ServiceWorker::take(ScriptPromiseResolver* resolver, WebType* worker)
 {
-    RefPtrWillBeRawPtr<ServiceWorker> serviceWorker = ServiceWorker::from(resolver->scriptState()->executionContext(), worker);
+    if (!worker)
+        return nullptr;
+
+    RefPtrWillBeRawPtr<ServiceWorker> serviceWorker = getOrCreate(resolver->scriptState()->executionContext(), worker);
     ScriptState::Scope scope(resolver->scriptState());
     if (serviceWorker->m_proxyState == Initial)
         serviceWorker->waitOnPromise(resolver->promise());
@@ -170,7 +169,7 @@ void ServiceWorker::setProxyState(ProxyState state)
         return;
     switch (m_proxyState) {
     case Initial:
-        ASSERT(state == RegisterPromisePending || state == ContextStopped);
+        ASSERT(state == RegisterPromisePending || state == Ready || state == ContextStopped);
         break;
     case RegisterPromisePending:
         ASSERT(state == Ready || state == ContextStopped);
@@ -222,14 +221,24 @@ void ServiceWorker::stop()
     setProxyState(ContextStopped);
 }
 
-PassRefPtrWillBeRawPtr<ServiceWorker> ServiceWorker::create(ExecutionContext* executionContext, PassOwnPtr<blink::WebServiceWorker> outerWorker)
+PassRefPtrWillBeRawPtr<ServiceWorker> ServiceWorker::getOrCreate(ExecutionContext* executionContext, WebType* outerWorker)
 {
-    RefPtrWillBeRawPtr<ServiceWorker> worker = adoptRefWillBeRefCountedGarbageCollected(new ServiceWorker(executionContext, outerWorker));
+    if (!outerWorker)
+        return nullptr;
+
+    WebServiceWorkerProxy* proxy = outerWorker->proxy();
+    ServiceWorker* existingServiceWorker = proxy ? proxy->unwrap() : 0;
+    if (existingServiceWorker) {
+        ASSERT(existingServiceWorker->executionContext() == executionContext);
+        return existingServiceWorker;
+    }
+
+    RefPtrWillBeRawPtr<ServiceWorker> worker = adoptRefWillBeRefCountedGarbageCollected(new ServiceWorker(executionContext, adoptPtr(outerWorker)));
     worker->suspendIfNeeded();
     return worker.release();
 }
 
-ServiceWorker::ServiceWorker(ExecutionContext* executionContext, PassOwnPtr<blink::WebServiceWorker> worker)
+ServiceWorker::ServiceWorker(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorker> worker)
     : AbstractWorker(executionContext)
     , WebServiceWorkerProxy(this)
     , m_outerWorker(worker)

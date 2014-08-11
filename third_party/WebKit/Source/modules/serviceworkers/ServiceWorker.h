@@ -82,7 +82,7 @@ private:
         ContextStopped
     };
 
-    static PassRefPtrWillBeRawPtr<ServiceWorker> create(ExecutionContext*, PassOwnPtr<blink::WebServiceWorker>);
+    static PassRefPtrWillBeRawPtr<ServiceWorker> getOrCreate(ExecutionContext*, WebType*);
     ServiceWorker(ExecutionContext*, PassOwnPtr<blink::WebServiceWorker>);
     void setProxyState(ProxyState);
     void onPromiseResolved();

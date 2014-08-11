@@ -8,7 +8,12 @@
     RuntimeEnabled=ServiceWorker,
     WillBeGarbageCollected,
 ] interface ServiceWorkerRegistration : EventTarget {
+    [Unforgeable] readonly attribute ServiceWorker? installing;
+    [Unforgeable] readonly attribute ServiceWorker? waiting;
+    [Unforgeable] readonly attribute ServiceWorker? active;
     readonly attribute ScalarValueString scope;
 
     [CallWith=ScriptState] Promise unregister();
+
+    attribute EventHandler onupdatefound;
 };

@@ -197,6 +197,7 @@ unload
 unmute
 update
 updateend
+updatefound
 updateready
 updatestart
 upgradeneeded

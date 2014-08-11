@@ -12,6 +12,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/events/Event.h"
 #include "modules/EventTargetModules.h"
 #include "modules/serviceworkers/ServiceWorkerContainerClient.h"
 #include "modules/serviceworkers/ServiceWorkerError.h"
@@ -40,9 +41,47 @@ private:
     UndefinedValue();
 };
 
+static void deleteIfNoExistingOwner(WebServiceWorker* serviceWorker)
+{
+    if (serviceWorker && !serviceWorker->proxy())
+        delete serviceWorker;
+}
+
 const AtomicString& ServiceWorkerRegistration::interfaceName() const
 {
     return EventTargetNames::ServiceWorkerRegistration;
+}
+
+void ServiceWorkerRegistration::dispatchUpdateFoundEvent()
+{
+    dispatchEvent(Event::create(EventTypeNames::updatefound));
+}
+
+void ServiceWorkerRegistration::setInstalling(WebServiceWorker* serviceWorker)
+{
+    if (!executionContext()) {
+        deleteIfNoExistingOwner(serviceWorker);
+        return;
+    }
+    m_installing = ServiceWorker::from(executionContext(), serviceWorker);
+}
+
+void ServiceWorkerRegistration::setWaiting(WebServiceWorker* serviceWorker)
+{
+    if (!executionContext()) {
+        deleteIfNoExistingOwner(serviceWorker);
+        return;
+    }
+    m_waiting = ServiceWorker::from(executionContext(), serviceWorker);
+}
+
+void ServiceWorkerRegistration::setActive(WebServiceWorker* serviceWorker)
+{
+    if (!executionContext()) {
+        deleteIfNoExistingOwner(serviceWorker);
+        return;
+    }
+    m_active = ServiceWorker::from(executionContext(), serviceWorker);
 }
 
 PassRefPtrWillBeRawPtr<ServiceWorkerRegistration> ServiceWorkerRegistration::take(ScriptPromiseResolver* resolver, WebType* registration)
@@ -50,6 +89,11 @@ PassRefPtrWillBeRawPtr<ServiceWorkerRegistration> ServiceWorkerRegistration::tak
     if (!registration)
         return nullptr;
     return create(resolver->scriptState()->executionContext(), adoptPtr(registration));
+}
+
+void ServiceWorkerRegistration::dispose(WebType* registration)
+{
+    delete registration;
 }
 
 String ServiceWorkerRegistration::scope() const
@@ -98,6 +142,7 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(ExecutionContext* execution
         return;
     if (ServiceWorkerContainerClient* client = ServiceWorkerContainerClient::from(executionContext))
         m_provider = client->provider();
+    m_outerRegistration->setProxy(this);
 }
 
 } // namespace blink
