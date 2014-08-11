@@ -33,13 +33,23 @@ class ServiceDiscoveryClientMdns::Proxy {
     client_->proxies_.RemoveObserver(this);
   }
 
-  // Notify proxies that mDNS layer is going to be destroyed.
+  // Returns true if object is not yet shutdown.
+  virtual bool IsValid() = 0;
+
+  // Notifies proxies that mDNS layer is going to be destroyed.
   virtual void OnMdnsDestroy() = 0;
 
-  // Notify proxies that new mDNS instance is ready.
-  virtual void OnNewMdnsReady() {}
+  // Notifies proxies that new mDNS instance is ready.
+  virtual void OnNewMdnsReady() {
+    DCHECK(!client_->need_dalay_mdns_tasks_);
+    if (IsValid()) {
+      for (size_t i = 0; i < delayed_tasks_.size(); ++i)
+        client_->mdns_runner_->PostTask(FROM_HERE, delayed_tasks_[i]);
+    }
+    delayed_tasks_.clear();
+  }
 
-  // Run callback using this method to abort callback if instance of |Proxy|
+  // Runs callback using this method to abort callback if instance of |Proxy|
   // is deleted.
   void RunCallback(const base::Closure& callback) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -47,8 +57,17 @@ class ServiceDiscoveryClientMdns::Proxy {
   }
 
  protected:
-  bool PostToMdnsThread(const base::Closure& task) {
-    return client_->PostToMdnsThread(task);
+  void PostToMdnsThread(const base::Closure& task) {
+    DCHECK(IsValid());
+    // The first task on IO thread for each |mdns_| instance must be |InitMdns|.
+    // |OnInterfaceListReady| could be delayed by |GetMDnsInterfacesToBind|
+    // running on FILE thread, so |PostToMdnsThread| could be called to post
+    // task for |mdns_| that is not initialized yet.
+    if (!client_->need_dalay_mdns_tasks_) {
+      client_->mdns_runner_->PostTask(FROM_HERE, task);
+      return;
+    }
+    delayed_tasks_.push_back(task);
   }
 
   static bool PostToUIThread(const base::Closure& task) {
@@ -74,13 +93,13 @@ class ServiceDiscoveryClientMdns::Proxy {
  private:
   scoped_refptr<ServiceDiscoveryClientMdns> client_;
   base::WeakPtrFactory<Proxy> weak_ptr_factory_;
-
+  // Delayed |mdns_runner_| tasks.
+  std::vector<base::Closure> delayed_tasks_;
   DISALLOW_COPY_AND_ASSIGN(Proxy);
 };
 
 namespace {
 
-const size_t kMaxDelayedTasks = 10000;
 const int kMaxRestartAttempts = 10;
 const int kRestartDelayOnNetworkChangeSeconds = 3;
 
@@ -120,7 +139,6 @@ void InitMdns(const MdnsInitCallback& on_initialized,
 template<class T>
 class ProxyBase : public ServiceDiscoveryClientMdns::Proxy, public T {
  public:
-  typedef base::WeakPtr<Proxy> WeakPtr;
   typedef ProxyBase<T> Base;
 
   explicit ProxyBase(ServiceDiscoveryClientMdns* client)
@@ -129,6 +147,10 @@ class ProxyBase : public ServiceDiscoveryClientMdns::Proxy, public T {
 
   virtual ~ProxyBase() {
     DeleteOnMdnsThread(implementation_.release());
+  }
+
+  virtual bool IsValid() OVERRIDE {
+    return !!implementation();
   }
 
   virtual void OnMdnsDestroy() OVERRIDE {
@@ -166,24 +188,27 @@ class ServiceWatcherProxy : public ProxyBase<ServiceWatcher> {
 
   // ServiceWatcher methods.
   virtual void Start() OVERRIDE {
-    if (implementation())
+    if (implementation()) {
       PostToMdnsThread(base::Bind(&ServiceWatcher::Start,
                                   base::Unretained(implementation())));
+    }
   }
 
   virtual void DiscoverNewServices(bool force_update) OVERRIDE {
-    if (implementation())
+    if (implementation()) {
       PostToMdnsThread(base::Bind(&ServiceWatcher::DiscoverNewServices,
                                   base::Unretained(implementation()),
                                   force_update));
+    }
   }
 
   virtual void SetActivelyRefreshServices(
       bool actively_refresh_services) OVERRIDE {
-    if (implementation())
+    if (implementation()) {
       PostToMdnsThread(base::Bind(&ServiceWatcher::SetActivelyRefreshServices,
                                   base::Unretained(implementation()),
                                   actively_refresh_services));
+    }
   }
 
   virtual std::string GetServiceType() const OVERRIDE {
@@ -191,6 +216,7 @@ class ServiceWatcherProxy : public ProxyBase<ServiceWatcher> {
   }
 
   virtual void OnNewMdnsReady() OVERRIDE {
+    ProxyBase<ServiceWatcher>::OnNewMdnsReady();
     if (!implementation())
       callback_.Run(ServiceWatcher::UPDATE_INVALIDATED, "");
   }
@@ -225,9 +251,10 @@ class ServiceResolverProxy : public ProxyBase<ServiceResolver> {
 
   // ServiceResolver methods.
   virtual void StartResolving() OVERRIDE {
-    if (implementation())
+    if (implementation()) {
       PostToMdnsThread(base::Bind(&ServiceResolver::StartResolving,
                                   base::Unretained(implementation())));
+    }
   };
 
   virtual std::string GetName() const OVERRIDE {
@@ -268,9 +295,10 @@ class LocalDomainResolverProxy : public ProxyBase<LocalDomainResolver> {
 
   // LocalDomainResolver methods.
   virtual void Start() OVERRIDE {
-    if (implementation())
+    if (implementation()) {
       PostToMdnsThread(base::Bind(&LocalDomainResolver::Start,
                                   base::Unretained(implementation())));
+    }
   };
 
  private:
@@ -390,10 +418,6 @@ void ServiceDiscoveryClientMdns::OnMdnsInitialized(bool success) {
 
   // Initialization is done, no need to delay tasks.
   need_dalay_mdns_tasks_ = false;
-  for (size_t i = 0; i < delayed_tasks_.size(); ++i)
-    mdns_runner_->PostTask(FROM_HERE, delayed_tasks_[i]);
-  delayed_tasks_.clear();
-
   FOR_EACH_OBSERVER(Proxy, proxies_, OnNewMdnsReady());
 }
 
@@ -405,7 +429,6 @@ void ServiceDiscoveryClientMdns::ReportSuccess() {
 
 void ServiceDiscoveryClientMdns::OnBeforeMdnsDestroy() {
   need_dalay_mdns_tasks_ = true;
-  delayed_tasks_.clear();
   weak_ptr_factory_.InvalidateWeakPtrs();
   FOR_EACH_OBSERVER(Proxy, proxies_, OnMdnsDestroy());
 }
@@ -418,18 +441,6 @@ void ServiceDiscoveryClientMdns::DestroyMdns() {
     mdns_runner_->DeleteSoon(FROM_HERE, client_.release());
   if (mdns_)
     mdns_runner_->DeleteSoon(FROM_HERE, mdns_.release());
-}
-
-bool ServiceDiscoveryClientMdns::PostToMdnsThread(const base::Closure& task) {
-  // The first task on IO thread for each |mdns_| instance must be |InitMdns|.
-  // |OnInterfaceListReady| could be delayed by |GetMDnsInterfacesToBind|
-  // running on FILE thread, so |PostToMdnsThread| could be called to post
-  // task for |mdns_| that is not initialized yet.
-  if (!need_dalay_mdns_tasks_)
-    return mdns_runner_->PostTask(FROM_HERE, task);
-  if (kMaxDelayedTasks > delayed_tasks_.size())
-    delayed_tasks_.push_back(task);
-  return true;
 }
 
 }  // namespace local_discovery

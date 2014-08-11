@@ -54,8 +54,6 @@ class ServiceDiscoveryClientMdns
   void OnBeforeMdnsDestroy();
   void DestroyMdns();
 
-  bool PostToMdnsThread(const base::Closure& task);
-
   ObserverList<Proxy, true> proxies_;
 
   scoped_refptr<base::SequencedTaskRunner> mdns_runner_;
@@ -72,9 +70,6 @@ class ServiceDiscoveryClientMdns
   // If false delay tasks until initialization is posted to |mdns_runner_|
   // thread.
   bool need_dalay_mdns_tasks_;
-
-  // Delayed |mdns_runner_| tasks.
-  std::vector<base::Closure> delayed_tasks_;
 
   base::WeakPtrFactory<ServiceDiscoveryClientMdns> weak_ptr_factory_;
 
