@@ -732,7 +732,7 @@ InspectorTest.addNewRule = function(selector, callback)
     if (typeof selector === "string")
         section._selectorElement.textContent = selector;
     section._selectorElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-    InspectorTest.addSniffer(WebInspector.BlankStylePropertiesSection.prototype, "makeNormal", callback);
+    InspectorTest.runAfterPendingDispatches(callback.bind(null, section));
 }
 
 InspectorTest.dumpInspectorHighlight = function(node, callback)

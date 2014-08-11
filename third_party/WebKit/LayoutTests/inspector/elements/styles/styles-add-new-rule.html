@@ -22,11 +22,7 @@ function test()
     function step1()
     {
         // Click "Add new rule".
-        document.getElementById("add-style-button-test-id").click();
-        var section = WebInspector.panels.elements.sidebarPanes.styles.sections[0][2];
-        section._selectorElement.textContent = "foo, " + section._selectorElement.textContent + ", bar";
-        section._selectorElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-        InspectorTest.runAfterPendingDispatches(step2);
+        InspectorTest.addNewRule("foo, div#inspected, bar", step2);
     }
 
     function step2()
