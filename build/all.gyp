@@ -51,6 +51,7 @@
             '<@(android_app_targets)',
             'android_builder_tests',
             '../android_webview/android_webview.gyp:android_webview_apk',
+            '../android_webview/android_webview_telemetry_shell.gyp:android_webview_telemetry_shell_apk',
             '../chrome/chrome.gyp:chrome_shell_apk',
             '../remoting/remoting.gyp:remoting_apk',
             '../tools/telemetry/telemetry.gyp:*#host',
