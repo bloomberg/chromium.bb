@@ -448,6 +448,7 @@
       'test/desktop_test_views_delegate.h',
       'test/desktop_test_views_delegate_aura.cc',
       'test/desktop_test_views_delegate_mac.mm',
+      'test/event_generator_delegate_mac.h',
       'test/event_generator_delegate_mac.mm',
       'test/focus_manager_test.h',
       'test/focus_manager_test.cc',

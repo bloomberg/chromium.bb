@@ -149,6 +149,11 @@
         'linux/text_edit_key_bindings_delegate_auralinux.h',
       ],
       'conditions': [
+        ['use_x11==1', {
+          'dependencies': [
+            '../../build/linux/system.gyp:x11',
+          ],
+        }],
         ['use_aura==0', {
           'sources!': [
             'gestures/gesture_point.cc',
@@ -245,9 +250,12 @@
       'target_name': 'events_test_support',
       'type': 'static_library',
       'dependencies': [
+        '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/skia/skia.gyp:skia',
+        '../gfx/gfx.gyp:gfx_geometry',
         'events',
         'events_base',
+        'gesture_detection',
         'platform/events_platform.gyp:events_platform',
       ],
       'sources': [
@@ -272,22 +280,9 @@
         'test/test_event_target.h',
       ],
       'conditions': [
-        ['use_x11==1', {
-          'dependencies': [
-            '../../build/linux/system.gyp:x11',
-            '../gfx/x/gfx_x11.gyp:gfx_x11',
-          ],
-        }],
         ['OS=="ios"', {
           # The cocoa files don't apply to iOS.
           'sources/': [['exclude', 'cocoa']],
-        }],
-        ['OS == "android"', {
-          'sources!': [
-            # Event generator not yet ported to Android.
-            'test/event_generator.cc',
-            'test/event_generator.h',
-          ],
         }],
       ],
     },
@@ -335,6 +330,12 @@
         'x/events_x_unittest.cc',
       ],
       'conditions': [
+        ['use_x11==1', {
+          'dependencies': [
+            '../../build/linux/system.gyp:x11',
+            '../gfx/x/gfx_x11.gyp:gfx_x11',
+          ],
+        }],
         ['use_ozone==1', {
           'sources': [
             'ozone/evdev/key_event_converter_evdev_unittest.cc',

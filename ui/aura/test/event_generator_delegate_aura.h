@@ -17,6 +17,8 @@ class ScreenPositionClient;
 
 namespace test {
 
+void InitializeAuraEventGeneratorDelegate();
+
 // Implementation of ui::test::EventGeneratorDelegate for Aura.
 class EventGeneratorDelegateAura : public ui::test::EventGeneratorDelegate {
  public:

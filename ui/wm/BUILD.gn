@@ -80,6 +80,7 @@ component("wm") {
     "//ui/compositor",
     "//ui/events",
     "//ui/events:events_base",
+    "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/resources",
@@ -135,6 +136,7 @@ test("wm_unittests") {
     "//ui/compositor",
     "//ui/events",
     "//ui/events:events_base",
+    "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]

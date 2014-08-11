@@ -5,6 +5,7 @@
 #include "ui/views/test/views_test_helper_mac.h"
 
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/views/test/event_generator_delegate_mac.h"
 
 namespace views {
 
@@ -17,6 +18,7 @@ ViewsTestHelper* ViewsTestHelper::Create(base::MessageLoopForUI* message_loop,
 ViewsTestHelperMac::ViewsTestHelperMac()
     : zero_duration_mode_(new ui::ScopedAnimationDurationScaleMode(
           ui::ScopedAnimationDurationScaleMode::ZERO_DURATION)) {
+  test::InitializeMacEventGeneratorDelegate();
 }
 
 ViewsTestHelperMac::~ViewsTestHelperMac() {

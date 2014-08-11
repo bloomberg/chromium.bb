@@ -12,6 +12,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/input_state_lookup.h"
 #include "ui/aura/test/env_test_helper.h"
+#include "ui/aura/test/event_generator_delegate_aura.h"
 #include "ui/aura/test/test_focus_client.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_window_tree_client.h"
@@ -43,6 +44,7 @@ AuraTestHelper::AuraTestHelper(base::MessageLoopForUI* message_loop)
 #if defined(USE_X11)
   test::SetUseOverrideRedirectWindowByDefault(true);
 #endif
+  InitializeAuraEventGeneratorDelegate();
 }
 
 AuraTestHelper::~AuraTestHelper() {

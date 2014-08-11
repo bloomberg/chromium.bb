@@ -42,6 +42,7 @@
 
 #if defined(USE_AURA)
 #include "content/browser/compositor/image_transport_factory.h"
+#include "ui/aura/test/event_generator_delegate_aura.h"
 #if defined(USE_X11)
 #include "ui/aura/window_tree_host_x11.h"
 #endif
@@ -132,8 +133,11 @@ BrowserTestBase::BrowserTestBase()
   base::mac::SetOverrideAmIBundled(true);
 #endif
 
-#if defined(USE_AURA) && defined(USE_X11)
+#if defined(USE_AURA)
+#if defined(USE_X11)
   aura::test::SetUseOverrideRedirectWindowByDefault(true);
+#endif
+  aura::test::InitializeAuraEventGeneratorDelegate();
 #endif
 
 #if defined(OS_POSIX)

@@ -4,6 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/memory/singleton.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/event_target.h"
 #include "ui/events/event_target_iterator.h"
@@ -237,8 +238,9 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
                                   public ui::EventTargeter,
                                   public ui::test::EventGeneratorDelegate {
  public:
-  EventGeneratorDelegateMac(ui::test::EventGenerator* owner, NSWindow* window);
-  virtual ~EventGeneratorDelegateMac() {}
+  static EventGeneratorDelegateMac* GetInstance() {
+    return Singleton<EventGeneratorDelegateMac>::get();
+  }
 
   // Overridden from ui::EventTarget:
   virtual bool CanAcceptEvent(const ui::Event& event) OVERRIDE { return true; }
@@ -263,6 +265,9 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
   }
 
   // Overridden from ui::test::EventGeneratorDelegate:
+  virtual void SetContext(ui::test::EventGenerator* owner,
+                          gfx::NativeWindow root_window,
+                          gfx::NativeWindow window) OVERRIDE;
   virtual ui::EventTarget* GetTargetAt(const gfx::Point& location) OVERRIDE {
     return this;
   }
@@ -281,20 +286,28 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
                                     gfx::Point* point) const OVERRIDE {}
 
  private:
+  friend struct DefaultSingletonTraits<EventGeneratorDelegateMac>;
+
+  EventGeneratorDelegateMac();
+  virtual ~EventGeneratorDelegateMac();
+
   ui::test::EventGenerator* owner_;
   NSWindow* window_;
-  ScopedClassSwizzler swizzle_pressed_;
+  scoped_ptr<ScopedClassSwizzler> swizzle_pressed_;
 
   DISALLOW_COPY_AND_ASSIGN(EventGeneratorDelegateMac);
 };
 
-EventGeneratorDelegateMac::EventGeneratorDelegateMac(
-    ui::test::EventGenerator* owner, NSWindow* window)
-    : owner_(owner),
-      window_(window),
-      swizzle_pressed_([NSEvent class],
-                       [NSEventDonor class],
-                       @selector(pressedMouseButtons)) {
+EventGeneratorDelegateMac::EventGeneratorDelegateMac()
+    : owner_(NULL),
+      window_(NULL) {
+  DCHECK(!ui::test::EventGenerator::default_delegate);
+  ui::test::EventGenerator::default_delegate = this;
+}
+
+EventGeneratorDelegateMac::~EventGeneratorDelegateMac() {
+  DCHECK_EQ(this, ui::test::EventGenerator::default_delegate);
+  ui::test::EventGenerator::default_delegate = NULL;
 }
 
 scoped_ptr<ui::EventTargetIterator>
@@ -312,6 +325,20 @@ void EventGeneratorDelegateMac::OnMouseEvent(ui::MouseEvent* event) {
                              event->changed_button_flags());
 }
 
+void EventGeneratorDelegateMac::SetContext(ui::test::EventGenerator* owner,
+                                           gfx::NativeWindow root_window,
+                                           gfx::NativeWindow window) {
+  swizzle_pressed_.reset();
+  owner_ = owner;
+  window_ = window;
+  if (owner_) {
+    swizzle_pressed_.reset(new ScopedClassSwizzler(
+        [NSEvent class],
+        [NSEventDonor class],
+        @selector(pressedMouseButtons)));
+  }
+}
+
 gfx::Point EventGeneratorDelegateMac::CenterOfTarget(
     const ui::EventTarget* target) const {
   DCHECK_EQ(target, this);
@@ -326,16 +353,12 @@ gfx::Point EventGeneratorDelegateMac::CenterOfWindow(
 
 }  // namespace
 
-namespace ui {
+namespace views {
 namespace test {
 
-// static
-EventGeneratorDelegate* EventGenerator::CreateDefaultPlatformDelegate(
-    EventGenerator* owner,
-    gfx::NativeWindow root_window,
-    gfx::NativeWindow window) {
-  return new EventGeneratorDelegateMac(owner, window);
+void InitializeMacEventGeneratorDelegate() {
+  EventGeneratorDelegateMac::GetInstance();
 }
 
 }  // namespace test
-}  // namespace ui
+}  // namespace views

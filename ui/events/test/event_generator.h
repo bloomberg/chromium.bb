@@ -36,11 +36,19 @@ namespace test {
 typedef base::Callback<void(EventType, const gfx::Vector2dF&)>
         ScrollStepCallback;
 
+class EventGenerator;
+
 // A delegate interface for EventGenerator to abstract platform-specific event
 // targeting and coordinate conversion.
 class EventGeneratorDelegate {
  public:
   virtual ~EventGeneratorDelegate() {}
+
+  // Set the context of the delegate, whilst it is being used by an active
+  // EventGenerator.
+  virtual void SetContext(EventGenerator* owner,
+                          gfx::NativeWindow root_window,
+                          gfx::NativeWindow window) {}
 
   // The ui::EventTarget at the given |location|.
   virtual EventTarget* GetTargetAt(const gfx::Point& location) = 0;
@@ -335,12 +343,12 @@ class EventGenerator {
   // Get the current time from the tick clock.
   base::TimeDelta Now();
 
+  // Default delegate set by a platform-specific GeneratorDelegate singleton.
+  static EventGeneratorDelegate* default_delegate;
+
  private:
-  // Implemented per-platform to create the default EventGeneratorDelegate.
-  static EventGeneratorDelegate* CreateDefaultPlatformDelegate(
-      EventGenerator* owner,
-      gfx::NativeWindow root_window,
-      gfx::NativeWindow window);
+  // Set up the test context using the delegate.
+  void Init(gfx::NativeWindow root_window, gfx::NativeWindow window_context);
 
   // Dispatch a key event to the WindowEventDispatcher.
   void DispatchKeyEvent(bool is_press, KeyboardCode key_code, int flags);
@@ -354,6 +362,9 @@ class EventGenerator {
 
   void DispatchNextPendingEvent();
   void DoDispatchEvent(Event* event, bool async);
+
+  const EventGeneratorDelegate* delegate() const;
+  EventGeneratorDelegate* delegate();
 
   scoped_ptr<EventGeneratorDelegate> delegate_;
   gfx::Point current_location_;

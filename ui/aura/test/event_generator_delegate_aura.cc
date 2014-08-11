@@ -4,6 +4,7 @@
 
 #include "ui/aura/test/event_generator_delegate_aura.h"
 
+#include "base/memory/singleton.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
@@ -14,11 +15,18 @@ namespace {
 
 class DefaultEventGeneratorDelegate : public EventGeneratorDelegateAura {
  public:
-  explicit DefaultEventGeneratorDelegate(Window* root_window)
-      : root_window_(root_window) {}
-  virtual ~DefaultEventGeneratorDelegate() {}
+  static DefaultEventGeneratorDelegate* GetInstance() {
+    return Singleton<DefaultEventGeneratorDelegate>::get();
+  }
 
-  // EventGeneratorDelegateAura overrides:
+  // EventGeneratorDelegate:
+  virtual void SetContext(ui::test::EventGenerator* owner,
+                          gfx::NativeWindow root_window,
+                          gfx::NativeWindow window) OVERRIDE {
+    root_window_ = root_window;
+  }
+
+  // EventGeneratorDelegateAura:
   virtual WindowTreeHost* GetHostAt(const gfx::Point& point) const OVERRIDE {
     return root_window_->GetHost();
   }
@@ -29,6 +37,18 @@ class DefaultEventGeneratorDelegate : public EventGeneratorDelegateAura {
   }
 
  private:
+  friend struct DefaultSingletonTraits<DefaultEventGeneratorDelegate>;
+
+  DefaultEventGeneratorDelegate() : root_window_(NULL) {
+    DCHECK(!ui::test::EventGenerator::default_delegate);
+    ui::test::EventGenerator::default_delegate = this;
+  }
+
+  virtual ~DefaultEventGeneratorDelegate() {
+    DCHECK_EQ(this, ui::test::EventGenerator::default_delegate);
+    ui::test::EventGenerator::default_delegate = NULL;
+  }
+
   Window* root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultEventGeneratorDelegate);
@@ -39,6 +59,10 @@ const Window* WindowFromTarget(const ui::EventTarget* event_target) {
 }
 
 }  // namespace
+
+void InitializeAuraEventGeneratorDelegate() {
+  DefaultEventGeneratorDelegate::GetInstance();
+}
 
 EventGeneratorDelegateAura::EventGeneratorDelegateAura() {
 }
@@ -102,17 +126,3 @@ void EventGeneratorDelegateAura::ConvertPointFromHost(
 
 }  // namespace test
 }  // namespace aura
-
-namespace ui {
-namespace test {
-
-// static
-EventGeneratorDelegate* EventGenerator::CreateDefaultPlatformDelegate(
-    EventGenerator* owner,
-    gfx::NativeWindow root_window,
-    gfx::NativeWindow window) {
-  return new aura::test::DefaultEventGeneratorDelegate(root_window);
-}
-
-}  // namespace test
-}  // namespace ui

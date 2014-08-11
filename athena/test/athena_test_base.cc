@@ -5,6 +5,7 @@
 #include "athena/test/athena_test_base.h"
 
 #include "athena/test/athena_test_helper.h"
+#include "ui/aura/test/event_generator_delegate_aura.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 
 #if defined(USE_X11)
@@ -38,6 +39,7 @@ void AthenaTestBase::SetUp() {
 #if defined(USE_X11)
   aura::test::SetUseOverrideRedirectWindowByDefault(true);
 #endif
+  aura::test::InitializeAuraEventGeneratorDelegate();
   helper_->SetUp(context_factory);
 }
 

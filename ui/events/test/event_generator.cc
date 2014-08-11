@@ -58,44 +58,46 @@ const int kAllButtonMask = ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON;
 
 }  // namespace
 
+EventGeneratorDelegate* EventGenerator::default_delegate = NULL;
+
 EventGenerator::EventGenerator(gfx::NativeWindow root_window)
-    : delegate_(CreateDefaultPlatformDelegate(this, root_window, NULL)),
-      current_target_(delegate_->GetTargetAt(current_location_)),
+    : current_target_(NULL),
       flags_(0),
       grab_(false),
       async_(false),
       tick_clock_(new base::DefaultTickClock()) {
+  Init(root_window, NULL);
 }
 
 EventGenerator::EventGenerator(gfx::NativeWindow root_window,
                                const gfx::Point& point)
-    : delegate_(CreateDefaultPlatformDelegate(this, root_window, NULL)),
-      current_location_(point),
-      current_target_(delegate_->GetTargetAt(current_location_)),
+    : current_location_(point),
+      current_target_(NULL),
       flags_(0),
       grab_(false),
       async_(false),
       tick_clock_(new base::DefaultTickClock()) {
+  Init(root_window, NULL);
 }
 
 EventGenerator::EventGenerator(gfx::NativeWindow root_window,
                                gfx::NativeWindow window)
-    : delegate_(CreateDefaultPlatformDelegate(this, root_window, window)),
-      current_location_(delegate_->CenterOfWindow(window)),
-      current_target_(delegate_->GetTargetAt(current_location_)),
+    : current_target_(NULL),
       flags_(0),
       grab_(false),
       async_(false),
       tick_clock_(new base::DefaultTickClock()) {
+  Init(root_window, window);
 }
 
 EventGenerator::EventGenerator(EventGeneratorDelegate* delegate)
     : delegate_(delegate),
-      current_target_(delegate_->GetTargetAt(current_location_)),
+      current_target_(NULL),
       flags_(0),
       grab_(false),
       async_(false),
       tick_clock_(new base::DefaultTickClock()) {
+  Init(NULL, NULL);
 }
 
 EventGenerator::~EventGenerator() {
@@ -103,6 +105,7 @@ EventGenerator::~EventGenerator() {
       i != pending_events_.end(); ++i)
     delete *i;
   pending_events_.clear();
+  delegate()->SetContext(NULL, NULL, NULL);
 }
 
 void EventGenerator::PressLeftButton() {
@@ -142,7 +145,7 @@ void EventGenerator::MoveMouseWheel(int delta_x, int delta_y) {
 
 void EventGenerator::SendMouseExit() {
   gfx::Point exit_location(current_location_);
-  delegate_->ConvertPointToTarget(current_target_, &exit_location);
+  delegate()->ConvertPointToTarget(current_target_, &exit_location);
   ui::MouseEvent mouseev(ui::ET_MOUSE_EXITED, exit_location, exit_location,
                          flags_, 0);
   Dispatch(&mouseev);
@@ -155,7 +158,7 @@ void EventGenerator::MoveMouseToInHost(const gfx::Point& point_in_host) {
   Dispatch(&mouseev);
 
   current_location_ = point_in_host;
-  delegate_->ConvertPointFromHost(current_target_, &current_location_);
+  delegate()->ConvertPointFromHost(current_target_, &current_location_);
 }
 
 void EventGenerator::MoveMouseTo(const gfx::Point& point_in_screen,
@@ -171,7 +174,7 @@ void EventGenerator::MoveMouseTo(const gfx::Point& point_in_screen,
     gfx::Point move_point = current_location_ + gfx::ToRoundedVector2d(step);
     if (!grab_)
       UpdateCurrentDispatcher(move_point);
-    delegate_->ConvertPointToTarget(current_target_, &move_point);
+    delegate()->ConvertPointToTarget(current_target_, &move_point);
     ui::MouseEvent mouseev(event_type, move_point, move_point, flags_, 0);
     Dispatch(&mouseev);
   }
@@ -181,7 +184,7 @@ void EventGenerator::MoveMouseTo(const gfx::Point& point_in_screen,
 void EventGenerator::MoveMouseRelativeTo(const EventTarget* window,
                                          const gfx::Point& point_in_parent) {
   gfx::Point point(point_in_parent);
-  delegate_->ConvertPointFromTarget(window, &point);
+  delegate()->ConvertPointFromTarget(window, &point);
   MoveMouseTo(point);
 }
 
@@ -494,6 +497,14 @@ base::TimeDelta EventGenerator::Now() {
       tick_clock_->NowTicks().ToInternalValue());
 }
 
+void EventGenerator::Init(gfx::NativeWindow root_window,
+                          gfx::NativeWindow window_context) {
+  delegate()->SetContext(this, root_window, window_context);
+  if (window_context)
+    current_location_ = delegate()->CenterOfWindow(window_context);
+  current_target_ = delegate()->GetTargetAt(current_location_);
+}
+
 void EventGenerator::DispatchKeyEvent(bool is_press,
                                       ui::KeyboardCode key_code,
                                       int flags) {
@@ -526,7 +537,7 @@ void EventGenerator::DispatchKeyEvent(bool is_press,
 }
 
 void EventGenerator::UpdateCurrentDispatcher(const gfx::Point& point) {
-  current_target_ = delegate_->GetTargetAt(point);
+  current_target_ = delegate()->GetTargetAt(point);
 }
 
 void EventGenerator::PressButton(int flag) {
@@ -553,12 +564,12 @@ void EventGenerator::ReleaseButton(int flag) {
 
 gfx::Point EventGenerator::GetLocationInCurrentRoot() const {
   gfx::Point p(current_location_);
-  delegate_->ConvertPointToTarget(current_target_, &p);
+  delegate()->ConvertPointToTarget(current_target_, &p);
   return p;
 }
 
 gfx::Point EventGenerator::CenterOfWindow(const EventTarget* window) const {
-  return delegate_->CenterOfTarget(window);
+  return delegate()->CenterOfTarget(window);
 }
 
 void EventGenerator::DoDispatchEvent(ui::Event* event, bool async) {
@@ -585,7 +596,7 @@ void EventGenerator::DoDispatchEvent(ui::Event* event, bool async) {
     }
     pending_events_.push_back(pending_event);
   } else {
-    ui::EventSource* event_source = delegate_->GetEventSource(current_target_);
+    ui::EventSource* event_source = delegate()->GetEventSource(current_target_);
     ui::EventSourceTestApi event_source_test(event_source);
     ui::EventDispatchDetails details =
         event_source_test.SendEventToProcessor(event);
@@ -605,6 +616,19 @@ void EventGenerator::DispatchNextPendingEvent() {
         base::Bind(&EventGenerator::DispatchNextPendingEvent,
                    base::Unretained(this)));
   }
+}
+
+const EventGeneratorDelegate* EventGenerator::delegate() const {
+  if (delegate_)
+    return delegate_.get();
+
+  DCHECK(default_delegate);
+  return default_delegate;
+}
+
+EventGeneratorDelegate* EventGenerator::delegate() {
+  return const_cast<EventGeneratorDelegate*>(
+      const_cast<const EventGenerator*>(this)->delegate());
 }
 
 }  // namespace test
