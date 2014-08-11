@@ -8,6 +8,12 @@ from telemetry import benchmark
 
 
 class PolymerLoadPica(benchmark.Benchmark):
-  """Measures time to polymer-ready for PICA."""
+  """Measures time to polymer-ready for Pica (News Reader)."""
   test = polymer_load.PolymerLoadMeasurement
   page_set = page_sets.PicaPageSet
+
+
+class PolymerLoadTopeka(benchmark.Benchmark):
+  """Measures time to polymer-ready for Topeka (Quiz App)."""
+  test = polymer_load.PolymerLoadMeasurement
+  page_set = page_sets.TopekaPageSet

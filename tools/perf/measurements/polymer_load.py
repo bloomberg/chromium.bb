@@ -9,19 +9,19 @@ from telemetry.value import scalar
 
 class PageForPolymerLoad(page.Page):
 
-  def __init__(self, url, page_set):
+  def __init__(self, url, page_set, ready_event='polymer-ready'):
     super(PageForPolymerLoad, self).__init__(
       url=url,
       page_set=page_set)
     self.script_to_evaluate_on_commit = '''
-      document.addEventListener("polymer-ready", function() {
+      document.addEventListener("%s", function() {
         var unused = document.body.offsetHeight;
         window.__polymer_ready_time = performance.now();
         setTimeout(function() {
           window.__polymer_ready = true;
         }, 1000);
       })
-    '''
+    ''' % ready_event
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
