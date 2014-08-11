@@ -54,11 +54,12 @@ namespace blink {
 class RenderLayer;
 class RenderReplica;
 
-class RenderLayerReflectionInfo {
+class RenderLayerReflectionInfo : public NoBaseWillBeGarbageCollected<RenderLayerReflectionInfo> {
     WTF_MAKE_NONCOPYABLE(RenderLayerReflectionInfo);
 public:
     explicit RenderLayerReflectionInfo(RenderBox&);
-    ~RenderLayerReflectionInfo();
+    void destroy();
+    void trace(Visitor*);
 
     RenderReplica* reflection() const { return m_reflection; }
     RenderLayer* reflectionLayer() const;
@@ -72,8 +73,11 @@ public:
     String debugName() const;
 
 private:
-    RenderBox& m_box;
-    RenderReplica* m_reflection;
+    RenderBox& box() { return *m_box; }
+    const RenderBox& box() const { return *m_box; }
+
+    RawPtrWillBeMember<RenderBox> m_box;
+    RawPtrWillBeMember<RenderReplica> m_reflection;
 
     // A state bit tracking if we are painting inside a replica.
     unsigned m_isPaintingInsideReflection : 1;

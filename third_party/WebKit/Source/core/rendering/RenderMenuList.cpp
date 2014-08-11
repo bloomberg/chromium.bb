@@ -53,8 +53,8 @@ using namespace HTMLNames;
 
 RenderMenuList::RenderMenuList(Element* element)
     : RenderFlexibleBox(element)
-    , m_buttonText(0)
-    , m_innerBlock(0)
+    , m_buttonText(nullptr)
+    , m_innerBlock(nullptr)
     , m_optionsChanged(true)
     , m_optionsWidth(0)
     , m_lastActiveIndex(-1)
@@ -68,6 +68,13 @@ RenderMenuList::~RenderMenuList()
     if (m_popup)
         m_popup->disconnectClient();
     m_popup = nullptr;
+}
+
+void RenderMenuList::trace(Visitor* visitor)
+{
+    visitor->trace(m_buttonText);
+    visitor->trace(m_innerBlock);
+    RenderFlexibleBox::trace(visitor);
 }
 
 // FIXME: Instead of this hack we should add a ShadowRoot to <select> with no insertion point
@@ -139,7 +146,7 @@ void RenderMenuList::removeChild(RenderObject* oldChild)
 {
     if (oldChild == m_innerBlock || !m_innerBlock) {
         RenderFlexibleBox::removeChild(oldChild);
-        m_innerBlock = 0;
+        m_innerBlock = nullptr;
     } else
         m_innerBlock->removeChild(oldChild);
 }
@@ -536,7 +543,7 @@ void RenderMenuList::getItemBackgroundColor(unsigned listIndex, Color& itemBackg
 
 PopupMenuStyle RenderMenuList::menuStyle() const
 {
-    const RenderObject* o = m_innerBlock ? m_innerBlock : this;
+    const RenderObject* o = m_innerBlock ? m_innerBlock.get() : this;
     const RenderStyle* s = o->style();
     return PopupMenuStyle(o->resolveColor(CSSPropertyColor), o->resolveColor(CSSPropertyBackgroundColor), s->font(), s->visibility() == VISIBLE,
         s->display() == NONE, s->textIndent(), style()->direction(), isOverride(style()->unicodeBidi()));

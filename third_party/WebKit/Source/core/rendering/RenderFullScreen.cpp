@@ -52,7 +52,7 @@ void RenderFullScreenPlaceholder::willBeDestroyed()
 
 RenderFullScreen::RenderFullScreen()
     : RenderFlexibleBox(0)
-    , m_placeholder(0)
+    , m_placeholder(nullptr)
 {
     setReplaced(false);
 }
@@ -62,6 +62,12 @@ RenderFullScreen* RenderFullScreen::createAnonymous(Document* document)
     RenderFullScreen* renderer = new RenderFullScreen();
     renderer->setDocumentForAnonymous(document);
     return renderer;
+}
+
+void RenderFullScreen::trace(Visitor* visitor)
+{
+    visitor->trace(m_placeholder);
+    RenderFlexibleBox::trace(visitor);
 }
 
 void RenderFullScreen::willBeDestroyed()

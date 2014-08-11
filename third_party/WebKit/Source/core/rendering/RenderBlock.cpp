@@ -160,6 +160,12 @@ RenderBlock::RenderBlock(ContainerNode* node)
     // By default, subclasses do not have inline children.
 }
 
+void RenderBlock::trace(Visitor* visitor)
+{
+    visitor->trace(m_children);
+    RenderBox::trace(visitor);
+}
+
 static void removeBlockFromDescendantAndContainerMaps(RenderBlock* block, TrackedDescendantsMap*& descendantMap, TrackedContainerMap*& containerMap)
 {
     if (OwnPtr<TrackedRendererListHashSet> descendantSet = descendantMap->take(block)) {
@@ -1049,7 +1055,7 @@ void RenderBlock::removeLeftoverAnonymousBlock(RenderBlock* child)
     }
 
     child->children()->setFirstChild(0);
-    child->m_next = 0;
+    child->m_next = nullptr;
 
     // Remove all the information in the flow thread associated with the leftover anonymous block.
     child->removeFromRenderFlowThread();

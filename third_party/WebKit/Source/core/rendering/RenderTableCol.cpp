@@ -44,6 +44,12 @@ RenderTableCol::RenderTableCol(Element* element)
     updateFromElement();
 }
 
+void RenderTableCol::trace(Visitor* visitor)
+{
+    visitor->trace(m_children);
+    RenderBox::trace(visitor);
+}
+
 void RenderTableCol::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
     RenderBox::styleDidChange(diff, oldStyle);

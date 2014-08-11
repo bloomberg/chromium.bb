@@ -45,7 +45,7 @@ protected:
         m_cell->destroy();
     }
 
-    RenderTableCell* m_cell;
+    RawPtrWillBePersistent<RenderTableCell> m_cell;
 };
 
 TEST_F(RenderTableCellDeathTest, CanSetColumn)

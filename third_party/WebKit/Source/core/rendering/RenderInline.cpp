@@ -58,6 +58,12 @@ RenderInline::RenderInline(Element* element)
     setChildrenInline(true);
 }
 
+void RenderInline::trace(Visitor* visitor)
+{
+    visitor->trace(m_children);
+    RenderBoxModelObject::trace(visitor);
+}
+
 RenderInline* RenderInline::createAnonymous(Document* document)
 {
     RenderInline* renderer = new RenderInline(0);

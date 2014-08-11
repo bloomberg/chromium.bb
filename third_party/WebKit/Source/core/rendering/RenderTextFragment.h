@@ -36,6 +36,7 @@ public:
     RenderTextFragment(Node*, StringImpl*, int startOffset, int length);
     RenderTextFragment(Node*, StringImpl*);
     virtual ~RenderTextFragment();
+    virtual void trace(Visitor*) OVERRIDE;
 
     virtual bool isTextFragment() const OVERRIDE { return true; }
 
@@ -69,7 +70,7 @@ private:
     unsigned m_start;
     unsigned m_end;
     RefPtr<StringImpl> m_contentString;
-    RenderBoxModelObject* m_firstLetter;
+    RawPtrWillBeMember<RenderBoxModelObject> m_firstLetter;
 };
 
 DEFINE_TYPE_CASTS(RenderTextFragment, RenderObject, object, toRenderText(object)->isTextFragment(), toRenderText(object).isTextFragment());

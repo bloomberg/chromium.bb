@@ -33,7 +33,7 @@ RenderTextFragment::RenderTextFragment(Node* node, StringImpl* str, int startOff
     : RenderText(node, str ? str->substring(startOffset, length) : PassRefPtr<StringImpl>(nullptr))
     , m_start(startOffset)
     , m_end(length)
-    , m_firstLetter(0)
+    , m_firstLetter(nullptr)
 {
 }
 
@@ -42,12 +42,18 @@ RenderTextFragment::RenderTextFragment(Node* node, StringImpl* str)
     , m_start(0)
     , m_end(str ? str->length() : 0)
     , m_contentString(str)
-    , m_firstLetter(0)
+    , m_firstLetter(nullptr)
 {
 }
 
 RenderTextFragment::~RenderTextFragment()
 {
+}
+
+void RenderTextFragment::trace(Visitor* visitor)
+{
+    visitor->trace(m_firstLetter);
+    RenderText::trace(visitor);
 }
 
 RenderText* RenderTextFragment::firstRenderTextInFirstLetter() const
@@ -98,7 +104,7 @@ void RenderTextFragment::setText(PassRefPtr<StringImpl> text, bool force)
 
         ASSERT(!m_contentString);
         m_firstLetter->destroy();
-        m_firstLetter = 0;
+        m_firstLetter = nullptr;
         if (Node* t = node()) {
             ASSERT(!t->renderer());
             t->setRenderer(this);

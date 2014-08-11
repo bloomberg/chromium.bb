@@ -123,7 +123,7 @@ bool FullscreenElementStack::isFullScreen(Document& document)
 FullscreenElementStack::FullscreenElementStack(Document& document)
     : DocumentLifecycleObserver(&document)
     , m_areKeysEnabledInFullScreen(false)
-    , m_fullScreenRenderer(0)
+    , m_fullScreenRenderer(nullptr)
     , m_eventQueueTimer(this, &FullscreenElementStack::eventQueueTimerFired)
 {
     document.setHasFullscreenElementStack();
@@ -501,7 +501,7 @@ void FullscreenElementStack::setFullScreenRenderer(RenderFullScreen* renderer)
 
 void FullscreenElementStack::fullScreenRendererDestroyed()
 {
-    m_fullScreenRenderer = 0;
+    m_fullScreenRenderer = nullptr;
 }
 
 void FullscreenElementStack::enqueueChangeEvent(Document& document)
@@ -592,6 +592,7 @@ void FullscreenElementStack::trace(Visitor* visitor)
 {
     visitor->trace(m_fullScreenElement);
     visitor->trace(m_fullScreenElementStack);
+    visitor->trace(m_fullScreenRenderer);
     visitor->trace(m_eventQueue);
     DocumentSupplement::trace(visitor);
 }

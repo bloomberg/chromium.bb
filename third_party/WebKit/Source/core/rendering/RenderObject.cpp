@@ -122,6 +122,9 @@ struct SameSizeAsRenderObject {
     void* pointers[5];
 #if ENABLE(ASSERT)
     unsigned m_debugBitfields : 2;
+#if ENABLE(OILPAN)
+    unsigned m_oilpanBitfields : 1;
+#endif
 #endif
     unsigned m_bitfields;
     unsigned m_bitfields2;
@@ -133,6 +136,7 @@ COMPILE_ASSERT(sizeof(RenderObject) == sizeof(SameSizeAsRenderObject), RenderObj
 
 bool RenderObject::s_affectsParentBlock = false;
 
+#if !ENABLE(OILPAN)
 void* RenderObject::operator new(size_t sz)
 {
     ASSERT(isMainThread());
@@ -144,6 +148,7 @@ void RenderObject::operator delete(void* ptr)
     ASSERT(isMainThread());
     partitionFree(ptr);
 }
+#endif
 
 RenderObject* RenderObject::createObject(Element* element, RenderStyle* style)
 {
@@ -215,12 +220,15 @@ RenderObject::RenderObject(Node* node)
     : ImageResourceClient()
     , m_style(nullptr)
     , m_node(node)
-    , m_parent(0)
-    , m_previous(0)
-    , m_next(0)
+    , m_parent(nullptr)
+    , m_previous(nullptr)
+    , m_next(nullptr)
 #if ENABLE(ASSERT)
     , m_hasAXObject(false)
     , m_setNeedsLayoutForbidden(false)
+#if ENABLE(OILPAN)
+    , m_didCallDestroy(false)
+#endif
 #endif
     , m_bitfields(node)
 {
@@ -232,12 +240,22 @@ RenderObject::RenderObject(Node* node)
 
 RenderObject::~RenderObject()
 {
-    ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->removeRenderObject(this);
     ASSERT(!m_hasAXObject);
+#if ENABLE(OILPAN)
+    ASSERT(m_didCallDestroy);
+#endif
 #ifndef NDEBUG
     renderObjectCounter.decrement();
 #endif
     --s_instanceCount;
+}
+
+void RenderObject::trace(Visitor* visitor)
+{
+    visitor->trace(m_node);
+    visitor->trace(m_parent);
+    visitor->trace(m_previous);
+    visitor->trace(m_next);
 }
 
 String RenderObject::debugName() const
@@ -2804,6 +2822,10 @@ void RenderObject::destroyAndCleanupAnonymousWrappers()
 
 void RenderObject::destroy()
 {
+#if ENABLE(ASSERT) && ENABLE(OILPAN)
+    ASSERT(!m_didCallDestroy);
+    m_didCallDestroy = true;
+#endif
     willBeDestroyed();
     postDestroy();
 }
@@ -2838,8 +2860,10 @@ void RenderObject::postDestroy()
 
         removeShapeImageClient(m_style->shapeOutside());
     }
-
+    ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->removeRenderObject(this);
+#if !ENABLE(OILPAN)
     delete this;
+#endif
 }
 
 PositionWithAffinity RenderObject::positionForPoint(const LayoutPoint&)

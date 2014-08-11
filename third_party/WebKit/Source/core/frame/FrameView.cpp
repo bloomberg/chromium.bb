@@ -112,7 +112,7 @@ FrameView::FrameView(LocalFrame* frame)
     , m_inProgrammaticScroll(false)
     , m_safeToPropagateScrollToParent(true)
     , m_isTrackingPaintInvalidations(false)
-    , m_scrollCorner(0)
+    , m_scrollCorner(nullptr)
     , m_shouldAutoSize(false)
     , m_inAutoSize(false)
     , m_didRunAutosize(false)
@@ -274,7 +274,7 @@ void FrameView::detachCustomScrollbars()
 
     if (m_scrollCorner) {
         m_scrollCorner->destroy();
-        m_scrollCorner = 0;
+        m_scrollCorner = nullptr;
     }
 }
 
@@ -1059,7 +1059,7 @@ void FrameView::removeWidget(RenderWidget* object)
 
 void FrameView::updateWidgetPositions()
 {
-    Vector<RefPtr<RenderWidget> > widgets;
+    WillBeHeapVector<RefPtrWillBeMember<RenderWidget> > widgets;
     copyToVector(m_widgets, widgets);
 
     // Script or plugins could detach the frame so abort processing if that happens.
@@ -2422,7 +2422,7 @@ void FrameView::updateScrollCorner()
         invalidateScrollCorner(cornerRect);
     } else if (m_scrollCorner) {
         m_scrollCorner->destroy();
-        m_scrollCorner = 0;
+        m_scrollCorner = nullptr;
     }
 
     ScrollView::updateScrollCorner();

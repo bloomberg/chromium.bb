@@ -77,6 +77,18 @@ static inline void updateLogicalHeightForCell(RenderTableSection::RowStruct& row
     }
 }
 
+void RenderTableSection::CellStruct::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(cells);
+#endif
+}
+
+void RenderTableSection::RowStruct::trace(Visitor* visitor)
+{
+    visitor->trace(row);
+    visitor->trace(rowRenderer);
+}
 
 RenderTableSection::RenderTableSection(Element* element)
     : RenderBox(element)
@@ -95,6 +107,17 @@ RenderTableSection::RenderTableSection(Element* element)
 
 RenderTableSection::~RenderTableSection()
 {
+}
+
+void RenderTableSection::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_children);
+    visitor->trace(m_grid);
+    visitor->trace(m_overflowingCells);
+    visitor->trace(m_cellsCollapsedBorders);
+#endif
+    RenderBox::trace(visitor);
 }
 
 void RenderTableSection::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
@@ -1001,7 +1024,7 @@ void RenderTableSection::layoutRows()
             for (unsigned rowIndex = r + 1; rowIndex <= totalRows; rowIndex++)
                 m_rowPos[rowIndex] += rowHeightIncreaseForPagination;
             for (unsigned c = 0; c < nEffCols; ++c) {
-                Vector<RenderTableCell*, 1>& cells = cellAt(r, c).cells;
+                WillBeHeapVector<RawPtrWillBeMember<RenderTableCell>, 1>& cells = cellAt(r, c).cells;
                 for (size_t i = 0; i < cells.size(); ++i) {
                     LayoutUnit oldLogicalHeight = cells[i]->logicalHeight();
                     cells[i]->setLogicalHeight(oldLogicalHeight + rowHeightIncreaseForPagination);
@@ -1683,7 +1706,7 @@ void RenderTableSection::setCachedCollapsedBorder(const RenderTableCell* cell, C
 CollapsedBorderValue& RenderTableSection::cachedCollapsedBorder(const RenderTableCell* cell, CollapsedBorderSide side)
 {
     ASSERT(table()->collapseBorders());
-    HashMap<pair<const RenderTableCell*, int>, CollapsedBorderValue>::iterator it = m_cellsCollapsedBorders.find(std::make_pair(cell, side));
+    WillBeHeapHashMap<pair<RawPtrWillBeMember<const RenderTableCell>, int>, CollapsedBorderValue>::iterator it = m_cellsCollapsedBorders.find(std::make_pair(cell, side));
     ASSERT_WITH_SECURITY_IMPLICATION(it != m_cellsCollapsedBorders.end());
     return it->value;
 }

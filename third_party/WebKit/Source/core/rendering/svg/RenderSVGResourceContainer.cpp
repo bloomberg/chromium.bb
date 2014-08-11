@@ -49,8 +49,6 @@ RenderSVGResourceContainer::RenderSVGResourceContainer(SVGElement* node)
 
 RenderSVGResourceContainer::~RenderSVGResourceContainer()
 {
-    if (m_registered)
-        svgExtensionsFromElement(element()).removeResource(m_id);
 }
 
 void RenderSVGResourceContainer::layout()
@@ -72,6 +70,8 @@ void RenderSVGResourceContainer::willBeDestroyed()
 {
     SVGResourcesCache::resourceDestroyed(this);
     RenderSVGHiddenContainer::willBeDestroyed();
+    if (m_registered)
+        svgExtensionsFromElement(element()).removeResource(m_id);
 }
 
 void RenderSVGResourceContainer::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)

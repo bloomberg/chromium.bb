@@ -51,7 +51,7 @@ protected:
     }
 
     OwnPtr<DummyPageHolder> m_pageHolder;
-    RenderTableRow* m_row;
+    RawPtrWillBePersistent<RenderTableRow> m_row;
 };
 
 TEST_F(RenderTableRowDeathTest, CanSetRow)

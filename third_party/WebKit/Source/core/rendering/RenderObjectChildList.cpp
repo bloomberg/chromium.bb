@@ -35,6 +35,12 @@
 
 namespace blink {
 
+void RenderObjectChildList::trace(Visitor* visitor)
+{
+    visitor->trace(m_firstChild);
+    visitor->trace(m_lastChild);
+}
+
 void RenderObjectChildList::destroyLeftoverChildren()
 {
     while (firstChild()) {

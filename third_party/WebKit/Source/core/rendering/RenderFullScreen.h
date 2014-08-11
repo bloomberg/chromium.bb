@@ -33,6 +33,7 @@ namespace blink {
 class RenderFullScreen FINAL : public RenderFlexibleBox {
 public:
     static RenderFullScreen* createAnonymous(Document*);
+    virtual void trace(Visitor*) OVERRIDE;
 
     virtual bool isRenderFullScreen() const OVERRIDE { return true; }
     virtual const char* renderName() const OVERRIDE { return "RenderFullScreen"; }
@@ -50,7 +51,7 @@ private:
     virtual void willBeDestroyed() OVERRIDE;
 
 protected:
-    RenderBlock* m_placeholder;
+    RawPtrWillBeMember<RenderBlock> m_placeholder;
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderFullScreen, isRenderFullScreen());

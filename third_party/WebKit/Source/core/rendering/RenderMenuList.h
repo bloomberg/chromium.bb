@@ -39,6 +39,7 @@ class RenderMenuList FINAL : public RenderFlexibleBox, private PopupMenuClient {
 public:
     RenderMenuList(Element*);
     virtual ~RenderMenuList();
+    virtual void trace(Visitor*) OVERRIDE;
 
 public:
     bool popupIsVisible() const { return m_popupIsVisible; }
@@ -117,8 +118,8 @@ private:
 
     void didUpdateActiveOption(int optionIndex);
 
-    RenderText* m_buttonText;
-    RenderBlock* m_innerBlock;
+    RawPtrWillBeMember<RenderText> m_buttonText;
+    RawPtrWillBeMember<RenderBlock> m_innerBlock;
 
     bool m_optionsChanged;
     int m_optionsWidth;

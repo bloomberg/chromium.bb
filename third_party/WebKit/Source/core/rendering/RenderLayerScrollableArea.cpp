@@ -85,8 +85,8 @@ RenderLayerScrollableArea::RenderLayerScrollableArea(RenderLayer& layer)
     , m_nextTopmostScrollChild(0)
     , m_topmostScrollChild(0)
     , m_needsCompositedScrolling(false)
-    , m_scrollCorner(0)
-    , m_resizer(0)
+    , m_scrollCorner(nullptr)
+    , m_resizer(nullptr)
 {
     ScrollableArea::setConstrainsScrollingToContentEdge(false);
 
@@ -979,7 +979,7 @@ void RenderLayerScrollableArea::updateScrollCornerStyle()
         m_scrollCorner->setStyle(corner.release());
     } else if (m_scrollCorner) {
         m_scrollCorner->destroy();
-        m_scrollCorner = 0;
+        m_scrollCorner = nullptr;
     }
 }
 
@@ -1237,7 +1237,7 @@ void RenderLayerScrollableArea::updateResizerStyle()
         m_resizer->setStyle(resizer.release());
     } else if (m_resizer) {
         m_resizer->destroy();
-        m_resizer = 0;
+        m_resizer = nullptr;
     }
 }
 

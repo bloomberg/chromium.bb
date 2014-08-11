@@ -59,22 +59,27 @@ RenderLayerReflectionInfo::RenderLayerReflectionInfo(RenderBox& renderer)
     : m_box(renderer)
     , m_isPaintingInsideReflection(false)
 {
-    UseCounter::count(m_box.document(), UseCounter::Reflection);
+    UseCounter::count(box().document(), UseCounter::Reflection);
 
-    m_reflection = RenderReplica::createAnonymous(&(m_box.document()));
-    m_reflection->setParent(&m_box); // We create a 1-way connection.
+    m_reflection = RenderReplica::createAnonymous(&box().document());
+    m_reflection->setParent(m_box); // We create a 1-way connection.
 }
 
-RenderLayerReflectionInfo::~RenderLayerReflectionInfo()
+void RenderLayerReflectionInfo::destroy()
 {
     if (!m_reflection->documentBeingDestroyed())
-        m_reflection->removeLayers(m_box.layer());
+        m_reflection->removeLayers(box().layer());
 
     m_reflection->setParent(0);
     m_reflection->destroy();
-    m_reflection = 0;
+    m_reflection = nullptr;
 }
 
+void RenderLayerReflectionInfo::trace(Visitor* visitor)
+{
+    visitor->trace(m_box);
+    visitor->trace(m_reflection);
+}
 
 RenderLayer* RenderLayerReflectionInfo::reflectionLayer() const
 {
@@ -84,16 +89,16 @@ RenderLayer* RenderLayerReflectionInfo::reflectionLayer() const
 void RenderLayerReflectionInfo::updateAfterStyleChange(const RenderStyle* oldStyle)
 {
     RefPtr<RenderStyle> newStyle = RenderStyle::create();
-    newStyle->inheritFrom(m_box.style());
+    newStyle->inheritFrom(box().style());
 
     // Map in our transform.
     TransformOperations transform;
-    switch (m_box.style()->boxReflect()->direction()) {
+    switch (box().style()->boxReflect()->direction()) {
     case ReflectionBelow:
         transform.operations().append(TranslateTransformOperation::create(Length(0, Fixed),
             Length(100., Percent), TransformOperation::Translate));
         transform.operations().append(TranslateTransformOperation::create(Length(0, Fixed),
-            m_box.style()->boxReflect()->offset(), TransformOperation::Translate));
+            box().style()->boxReflect()->offset(), TransformOperation::Translate));
         transform.operations().append(ScaleTransformOperation::create(1.0, -1.0, ScaleTransformOperation::Scale));
         break;
 
@@ -102,14 +107,14 @@ void RenderLayerReflectionInfo::updateAfterStyleChange(const RenderStyle* oldSty
         transform.operations().append(TranslateTransformOperation::create(Length(0, Fixed),
             Length(100., Percent), TransformOperation::Translate));
         transform.operations().append(TranslateTransformOperation::create(Length(0, Fixed),
-            m_box.style()->boxReflect()->offset(), TransformOperation::Translate));
+            box().style()->boxReflect()->offset(), TransformOperation::Translate));
         break;
 
     case ReflectionRight:
         transform.operations().append(TranslateTransformOperation::create(Length(100., Percent),
             Length(0, Fixed), TransformOperation::Translate));
         transform.operations().append(TranslateTransformOperation::create(
-            m_box.style()->boxReflect()->offset(), Length(0, Fixed), TransformOperation::Translate));
+            box().style()->boxReflect()->offset(), Length(0, Fixed), TransformOperation::Translate));
         transform.operations().append(ScaleTransformOperation::create(-1.0, 1.0, ScaleTransformOperation::Scale));
         break;
 
@@ -118,13 +123,13 @@ void RenderLayerReflectionInfo::updateAfterStyleChange(const RenderStyle* oldSty
         transform.operations().append(TranslateTransformOperation::create(Length(100., Percent),
             Length(0, Fixed), TransformOperation::Translate));
         transform.operations().append(TranslateTransformOperation::create(
-            m_box.style()->boxReflect()->offset(), Length(0, Fixed), TransformOperation::Translate));
+            box().style()->boxReflect()->offset(), Length(0, Fixed), TransformOperation::Translate));
         break;
     }
     newStyle->setTransform(transform);
 
     // Map in our mask.
-    newStyle->setMaskBoxImage(m_box.style()->boxReflect()->mask());
+    newStyle->setMaskBoxImage(box().style()->boxReflect()->mask());
 
     m_reflection->setStyle(newStyle.release());
 }
@@ -142,7 +147,7 @@ void RenderLayerReflectionInfo::paint(GraphicsContext* context, const LayerPaint
 
 String RenderLayerReflectionInfo::debugName() const
 {
-    return m_box.debugName() + " (reflection)";
+    return box().debugName() + " (reflection)";
 }
 
 } // namespace blink

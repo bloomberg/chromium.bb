@@ -36,6 +36,7 @@
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderPart.h"
+#include "core/rendering/RenderQuote.h"
 #include "core/rendering/RenderSelectionInfo.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
@@ -51,14 +52,14 @@ namespace blink {
 RenderView::RenderView(Document* document)
     : RenderBlockFlow(document)
     , m_frameView(document->view())
-    , m_selectionStart(0)
-    , m_selectionEnd(0)
+    , m_selectionStart(nullptr)
+    , m_selectionEnd(nullptr)
     , m_selectionStartPos(-1)
     , m_selectionEndPos(-1)
     , m_pageLogicalHeight(0)
     , m_pageLogicalHeightChanged(false)
     , m_layoutState(0)
-    , m_renderQuoteHead(0)
+    , m_renderQuoteHead(nullptr)
     , m_renderCounterCount(0)
     , m_hitTestCount(0)
 {
@@ -75,6 +76,14 @@ RenderView::RenderView(Document* document)
 
 RenderView::~RenderView()
 {
+}
+
+void RenderView::trace(Visitor* visitor)
+{
+    visitor->trace(m_selectionStart);
+    visitor->trace(m_selectionEnd);
+    visitor->trace(m_renderQuoteHead);
+    RenderBlockFlow::trace(visitor);
 }
 
 bool RenderView::hitTest(const HitTestRequest& request, HitTestResult& result)

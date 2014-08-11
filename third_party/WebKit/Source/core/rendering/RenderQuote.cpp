@@ -35,8 +35,8 @@ RenderQuote::RenderQuote(Document* node, QuoteType quote)
     : RenderInline(0)
     , m_type(quote)
     , m_depth(0)
-    , m_next(0)
-    , m_previous(0)
+    , m_next(nullptr)
+    , m_previous(nullptr)
     , m_attached(false)
 {
     setDocumentForAnonymous(node);
@@ -46,6 +46,13 @@ RenderQuote::~RenderQuote()
 {
     ASSERT(!m_attached);
     ASSERT(!m_next && !m_previous);
+}
+
+void RenderQuote::trace(Visitor* visitor)
+{
+    visitor->trace(m_next);
+    visitor->trace(m_previous);
+    RenderInline::trace(visitor);
 }
 
 void RenderQuote::willBeDestroyed()
@@ -357,8 +364,8 @@ void RenderQuote::detachQuote()
             quote->updateDepth();
     }
     m_attached = false;
-    m_next = 0;
-    m_previous = 0;
+    m_next = nullptr;
+    m_previous = nullptr;
     m_depth = 0;
 }
 

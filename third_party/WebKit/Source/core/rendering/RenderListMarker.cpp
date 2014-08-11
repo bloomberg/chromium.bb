@@ -1067,6 +1067,12 @@ RenderListMarker::~RenderListMarker()
         m_image->removeClient(this);
 }
 
+void RenderListMarker::trace(Visitor* visitor)
+{
+    visitor->trace(m_listItem);
+    RenderBox::trace(visitor);
+}
+
 RenderListMarker* RenderListMarker::createAnonymous(RenderListItem* item)
 {
     Document& document = item->document();

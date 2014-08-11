@@ -40,10 +40,12 @@ namespace blink {
 
 RenderWidget::RenderWidget(Element* element)
     : RenderReplaced(element)
+#if !ENABLE(OILPAN)
     // Reference counting is used to prevent the widget from being
     // destroyed while inside the Widget code, which might not be
     // able to handle that.
     , m_refCount(1)
+#endif
 {
     ASSERT(element);
     frameView()->addWidget(this);
@@ -67,14 +69,26 @@ void RenderWidget::willBeDestroyed()
 
 void RenderWidget::destroy()
 {
+#if ENABLE(ASSERT) && ENABLE(OILPAN)
+    ASSERT(!m_didCallDestroy);
+    m_didCallDestroy = true;
+#endif
     willBeDestroyed();
     clearNode();
+#if ENABLE(OILPAN)
+    // In Oilpan, postDestroy doesn't delete |this|. So calling it here is safe
+    // though |this| will be referred in FrameView.
+    postDestroy();
+#else
     deref();
+#endif
 }
 
 RenderWidget::~RenderWidget()
 {
+#if !ENABLE(OILPAN)
     ASSERT(m_refCount <= 0);
+#endif
 }
 
 Widget* RenderWidget::widget() const
@@ -109,7 +123,7 @@ bool RenderWidget::setWidgetGeometry(const LayoutRect& frame)
     if (widget->frameRect() == newFrame)
         return false;
 
-    RefPtr<RenderWidget> protector(this);
+    RefPtrWillBeRawPtr<RenderWidget> protector(this);
     RefPtrWillBeRawPtr<Node> protectedNode(node());
     widget->setFrameRect(newFrame);
     return widget->frameRect().size() != newFrame.size();
@@ -231,11 +245,13 @@ void RenderWidget::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
         layer()->scrollableArea()->paintResizer(paintInfo.context, roundedIntPoint(adjustedPaintOffset), paintInfo.rect);
 }
 
+#if !ENABLE(OILPAN)
 void RenderWidget::deref()
 {
     if (--m_refCount <= 0)
         postDestroy();
 }
+#endif
 
 void RenderWidget::updateOnWidgetChange()
 {

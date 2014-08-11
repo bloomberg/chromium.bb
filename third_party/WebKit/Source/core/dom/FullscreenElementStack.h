@@ -115,7 +115,7 @@ private:
     bool m_areKeysEnabledInFullScreen;
     RefPtrWillBeMember<Element> m_fullScreenElement;
     WillBeHeapVector<RefPtrWillBeMember<Element> > m_fullScreenElementStack;
-    RenderFullScreen* m_fullScreenRenderer;
+    RawPtrWillBeMember<RenderFullScreen> m_fullScreenRenderer;
     Timer<FullscreenElementStack> m_eventQueueTimer;
     WillBeHeapDeque<RefPtrWillBeMember<Event> > m_eventQueue;
     LayoutRect m_savedPlaceholderFrameRect;

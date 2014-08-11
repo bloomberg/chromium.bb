@@ -44,6 +44,7 @@ class RenderView FINAL : public RenderBlockFlow {
 public:
     explicit RenderView(Document*);
     virtual ~RenderView();
+    virtual void trace(Visitor*) OVERRIDE;
 
     bool hitTest(const HitTestRequest&, HitTestResult&);
     bool hitTest(const HitTestRequest&, const HitTestLocation&, HitTestResult&);
@@ -184,8 +185,8 @@ private:
 
     FrameView* m_frameView;
 
-    RenderObject* m_selectionStart;
-    RenderObject* m_selectionEnd;
+    RawPtrWillBeMember<RenderObject> m_selectionStart;
+    RawPtrWillBeMember<RenderObject> m_selectionEnd;
 
     int m_selectionStartPos;
     int m_selectionEndPos;
@@ -197,7 +198,7 @@ private:
     OwnPtr<FlowThreadController> m_flowThreadController;
     RefPtr<IntervalArena> m_intervalArena;
 
-    RenderQuote* m_renderQuoteHead;
+    RawPtrWillBeMember<RenderQuote> m_renderQuoteHead;
     unsigned m_renderCounterCount;
 
     unsigned m_hitTestCount;

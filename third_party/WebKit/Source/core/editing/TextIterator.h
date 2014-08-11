@@ -175,7 +175,7 @@ private:
     // remaining text box.
     InlineTextBox* m_remainingTextBox;
     // Used to point to RenderText object for :first-letter.
-    RenderText *m_firstLetterText;
+    RawPtrWillBeMember<RenderText> m_firstLetterText;
 
     // Used to do the whitespace collapsing logic.
     RawPtrWillBeMember<Text> m_lastTextNode;

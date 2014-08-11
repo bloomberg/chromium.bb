@@ -36,6 +36,7 @@ class RenderMedia : public RenderImage {
 public:
     explicit RenderMedia(HTMLMediaElement*);
     virtual ~RenderMedia();
+    virtual void trace(Visitor*) OVERRIDE;
 
     RenderObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
     RenderObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }

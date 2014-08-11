@@ -37,9 +37,10 @@ public:
     void updateWidgetPosition();
     void widgetPositionsUpdated();
 
+#if !ENABLE(OILPAN)
     void ref() { ++m_refCount; }
     void deref();
-
+#endif
     virtual bool isWidget() const OVERRIDE FINAL { return true; }
     bool updateWidgetGeometry();
 
@@ -59,8 +60,9 @@ private:
     virtual void destroy() OVERRIDE FINAL;
 
     bool setWidgetGeometry(const LayoutRect&);
-
+#if !ENABLE(OILPAN)
     int m_refCount;
+#endif
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderWidget, isWidget());

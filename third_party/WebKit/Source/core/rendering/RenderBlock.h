@@ -55,6 +55,7 @@ enum ContainingBlockState { NewContainingBlock, SameContainingBlock };
 
 class RenderBlock : public RenderBox {
 public:
+    virtual void trace(Visitor*) OVERRIDE;
     friend class LineLayoutState;
 
 protected:

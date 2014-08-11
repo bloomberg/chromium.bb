@@ -39,12 +39,18 @@ using namespace HTMLNames;
 
 RenderListItem::RenderListItem(Element* element)
     : RenderBlockFlow(element)
-    , m_marker(0)
+    , m_marker(nullptr)
     , m_hasExplicitValue(false)
     , m_isValueUpToDate(false)
     , m_notInList(false)
 {
     setInline(false);
+}
+
+void RenderListItem::trace(Visitor* visitor)
+{
+    visitor->trace(m_marker);
+    RenderBlockFlow::trace(visitor);
 }
 
 void RenderListItem::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
@@ -62,7 +68,7 @@ void RenderListItem::styleDidChange(StyleDifference diff, const RenderStyle* old
         m_marker->setStyle(newStyle.release());
     } else if (m_marker) {
         m_marker->destroy();
-        m_marker = 0;
+        m_marker = nullptr;
     }
 }
 
@@ -70,7 +76,7 @@ void RenderListItem::willBeDestroyed()
 {
     if (m_marker) {
         m_marker->destroy();
-        m_marker = 0;
+        m_marker = nullptr;
     }
     RenderBlockFlow::willBeDestroyed();
 }
