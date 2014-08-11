@@ -371,7 +371,8 @@ IN_PROC_BROWSER_TEST_F(KeyboardAccessTest,
 }
 #endif
 
-#if !defined(OS_WIN) && defined(USE_AURA)
+#if !defined(OS_WIN) && defined(USE_AURA) && !defined(USE_OZONE)
+// ozone bringup - http://crbug.com/401304
 IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, TestMenuKeyboardOpenDismiss) {
   TestMenuKeyboardAccessAndDismiss();
 }
