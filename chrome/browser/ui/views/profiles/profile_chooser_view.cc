@@ -673,10 +673,13 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     sender->SetEnabled(false);
 
   if (sender == users_button_) {
-    profiles::ShowUserManagerMaybeWithTutorial(browser_->profile());
     // If this is a guest session, also close all the guest browser windows.
-    if (browser_->profile()->IsGuestSession())
+    if (browser_->profile()->IsGuestSession()) {
+      chrome::ShowUserManager(base::FilePath());
       profiles::CloseGuestProfileWindows();
+    } else {
+      chrome::ShowUserManager(browser_->profile()->GetPath());
+    }
   } else if (sender == go_incognito_button_) {
     DCHECK(ShouldShowGoIncognito());
     chrome::NewIncognitoWindow(browser_);
@@ -716,7 +719,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
   } else if (sender == signin_current_profile_link_) {
     ShowView(profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN, avatar_menu_.get());
   } else if (sender == add_person_button_) {
-    profiles::ShowUserManagerMaybeWithTutorial(browser_->profile());
+    chrome::ShowUserManager(browser_->profile()->GetPath());
   } else if (sender == disconnect_button_) {
     chrome::ShowSettings(browser_);
   } else if (sender == switch_user_cancel_button_) {
@@ -959,12 +962,16 @@ views::View* ProfileChooserView::CreateTutorialView(
   button_columns->AddColumn(views::GridLayout::TRAILING,
       views::GridLayout::CENTER, 0, views::GridLayout::USE_PREF, 0, 0);
 
-  *link = CreateLink(link_text, this);
-  (*link)->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  (*link)->SetAutoColorReadabilityEnabled(false);
-  (*link)->SetEnabledColor(SK_ColorWHITE);
   layout->StartRowWithPadding(1, 1, 0, views::kUnrelatedControlVerticalSpacing);
-  layout->AddView(*link);
+  if (!link_text.empty()) {
+    *link = CreateLink(link_text, this);
+    (*link)->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    (*link)->SetAutoColorReadabilityEnabled(false);
+    (*link)->SetEnabledColor(SK_ColorWHITE);
+    layout->AddView(*link);
+  } else {
+    layout->SkipColumns(1);
+  }
 
   *button = new views::LabelButton(this, button_text);
   (*button)->SetHorizontalAlignment(gfx::ALIGN_CENTER);
@@ -1394,11 +1401,6 @@ views::View* ProfileChooserView::CreateWelcomeUpgradeTutorialViewIfNeeded(
     return NULL;
 
   Profile* profile = browser_->profile();
-  if (!avatar_item.signed_in) {
-    profile->GetPrefs()->SetInteger(
-        prefs::kProfileAvatarTutorialShown, kUpgradeWelcomeTutorialShowMax + 1);
-    return NULL;
-  }
 
   const int show_count = profile->GetPrefs()->GetInteger(
       prefs::kProfileAvatarTutorialShown);
@@ -1413,14 +1415,18 @@ views::View* ProfileChooserView::CreateWelcomeUpgradeTutorialViewIfNeeded(
         prefs::kProfileAvatarTutorialShown, show_count + 1);
   }
 
+  // For local profiles, the "Not you" link doesn't make sense.
+  base::string16 link_message = avatar_item.signed_in ?
+      l10n_util::GetStringFUTF16(IDS_PROFILES_NOT_YOU, avatar_item.name) :
+      base::string16();
+
   return CreateTutorialView(
       profiles::TUTORIAL_MODE_WELCOME_UPGRADE,
       l10n_util::GetStringFUTF16(
           IDS_PROFILES_WELCOME_UPGRADE_TUTORIAL_TITLE, avatar_item.name),
       l10n_util::GetStringUTF16(
           IDS_PROFILES_WELCOME_UPGRADE_TUTORIAL_CONTENT_TEXT),
-      l10n_util::GetStringFUTF16(
-          IDS_PROFILES_NOT_YOU, avatar_item.name),
+      link_message,
       l10n_util::GetStringUTF16(IDS_PROFILES_TUTORIAL_WHATS_NEW_BUTTON),
       &tutorial_not_you_link_,
       &tutorial_see_whats_new_button_);
