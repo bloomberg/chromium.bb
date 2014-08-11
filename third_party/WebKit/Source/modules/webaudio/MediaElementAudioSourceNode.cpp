@@ -69,9 +69,7 @@ MediaElementAudioSourceNode::~MediaElementAudioSourceNode()
 
 void MediaElementAudioSourceNode::dispose()
 {
-#if !ENABLE(OILPAN)
     m_mediaElement->setAudioSourceNode(0);
-#endif
     uninitialize();
     AudioSourceNode::dispose();
 }

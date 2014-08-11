@@ -459,9 +459,11 @@ HTMLMediaElement::~HTMLMediaElement()
     m_isFinalizing = true;
 #endif
 
-    // The m_audioSourceNode is either dead already or it is dying together with
-    // this HTMLMediaElement which it strongly keeps alive.
-#if ENABLE(WEB_AUDIO) && !ENABLE(OILPAN)
+    // m_audioSourceNode is explicitly cleared by AudioNode::dispose().
+    // Since AudioNode::dispose() is guaranteed to be always called before
+    // the AudioNode is destructed, m_audioSourceNode is explicitly cleared
+    // even if the AudioNode and the HTMLMediaElement die together.
+#if ENABLE(WEB_AUDIO)
     ASSERT(!m_audioSourceNode);
 #endif
     clearMediaPlayerAndAudioSourceProviderClientWithoutLocking();
