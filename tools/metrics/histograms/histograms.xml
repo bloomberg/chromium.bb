@@ -11022,12 +11022,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Media.PepperVideoDecoderError" enum="PepperVideoDecodeError">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ihf@chromium.org</owner>
+  <owner>posciak@chromium.org</owner>
   <summary>Counts of video decode errors reported to plugin.</summary>
 </histogram>
 
 <histogram name="Media.PepperVideoDecoderPictureCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ihf@chromium.org</owner>
+  <owner>posciak@chromium.org</owner>
   <summary>
     Number of PictureBuffers/textures requested per hardware decoder creation.
     This value varies by platform and video. A user visible video may trigger
@@ -11037,7 +11039,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Media.PepperVideoDecoderPictureHeight">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ihf@chromium.org</owner>
+  <owner>posciak@chromium.org</owner>
   <summary>
     Vertical video resolution rounded to the nearest bucket. (Corresponds
     roughly to the number in 720p.)
