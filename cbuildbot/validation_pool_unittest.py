@@ -1241,6 +1241,22 @@ class TestFindSuspects(MoxBase):
     changes = [self.kernel_patch, self.power_manager_patch] + suspects
     self._AssertSuspects(changes, suspects, lab_fail=False, infra_fail=True)
 
+  def testManualBlame(self):
+    """If there are changes that were manually blamed, pick those changes."""
+    approvals1 = [{'type': 'VRIF', 'value': '-1', 'grantedOn': 1391733002},
+                  {'type': 'CRVW', 'value': '2', 'grantedOn': 1391733002},
+                  {'type': 'COMR', 'value': '1', 'grantedOn': 1391733002},]
+    approvals2 = [{'type': 'VRIF', 'value': '1', 'grantedOn': 1391733002},
+                  {'type': 'CRVW', 'value': '-2', 'grantedOn': 1391733002},
+                  {'type': 'COMR', 'value': '1', 'grantedOn': 1391733002},]
+    suspects = [self.MockPatch(approvals=approvals1),
+                self.MockPatch(approvals=approvals2)]
+    changes = [self.kernel_patch, self.chromite_patch] + suspects
+    self._AssertSuspects(changes, suspects, lab_fail=False, infra_fail=False)
+    self._AssertSuspects(changes, suspects, lab_fail=True, infra_fail=False)
+    self._AssertSuspects(changes, suspects, lab_fail=True, infra_fail=True)
+    self._AssertSuspects(changes, suspects, lab_fail=False, infra_fail=True)
+
   def _GetMessages(self, lab_fail=0, infra_fail=0, other_fail=0):
     """Returns a list of BuildFailureMessage objects."""
     messages = []

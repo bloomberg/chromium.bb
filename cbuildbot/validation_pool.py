@@ -1142,12 +1142,19 @@ class CalculateSuspects(object):
     Returns:
        A set of changes as suspects.
     """
-    if lab_fail:
+    bad_changes = ValidationPool.GetShouldRejectChanges(changes)
+    if bad_changes:
+      # If there are changes that have been set verified=-1 or
+      # code-review=-2, these changes are the ONLY suspects of the
+      # failed build.
+      logging.warning('Detected that some changes have been blamed for '
+                      'the build failure. Only these CLs will be rejected')
+      return set(bad_changes)
+    elif lab_fail:
       logging.warning('Detected that the build failed purely due to HW '
                       'Test Lab failure(s). Will not reject any changes')
       return set()
-
-    if not lab_fail and infra_fail:
+    elif not lab_fail and infra_fail:
       # The non-lab infrastructure errors might have been caused
       # by chromite changes.
       logging.warning(
@@ -1167,13 +1174,8 @@ class CalculateSuspects(object):
     candidates = cls.FilterInnocentOverlayChanges(
         build_root, candidates, messages)
 
-    bad_changes = ValidationPool.GetShouldRejectChanges(candidates)
-    if bad_changes:
-      # If there are changes that have been set verified=-1 or
-      # code-review=-2, these changes are suspects of the failed build.
-      suspects.update(bad_changes)
-    elif all(message and message.IsPackageBuildFailure()
-             for message in messages):
+    if all(message and message.IsPackageBuildFailure()
+           for message in messages):
       # If we are here, there are no None messages.
       suspects = cls._FindPackageBuildFailureSuspects(candidates, messages)
     else:
