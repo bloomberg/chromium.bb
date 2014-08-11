@@ -228,6 +228,10 @@ private:
     bool m_isMarkedForDeletion;
     bool m_isDisabled;
 
+#if ENABLE(ASSERT)
+    bool m_didCallDispose;
+#endif
+
 #if DEBUG_AUDIONODE_REFERENCES
     static bool s_isNodeCountInitialized;
     static int s_nodeCount[NodeTypeEnd];

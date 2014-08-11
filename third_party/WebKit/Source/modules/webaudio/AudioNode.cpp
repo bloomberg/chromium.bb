@@ -58,6 +58,9 @@ AudioNode::AudioNode(AudioContext* context, float sampleRate)
     , m_connectionRefCount(0)
     , m_isMarkedForDeletion(false)
     , m_isDisabled(false)
+#if ENABLE(ASSERT)
+    , m_didCallDispose(false)
+#endif
     , m_channelCount(2)
     , m_channelCountMode(Max)
     , m_channelInterpretation(AudioBus::Speakers)
@@ -77,6 +80,7 @@ AudioNode::AudioNode(AudioContext* context, float sampleRate)
 
 AudioNode::~AudioNode()
 {
+    ASSERT(m_didCallDispose);
     --s_instanceCount;
 #if DEBUG_AUDIONODE_REFERENCES
     --s_nodeCount[nodeType()];
@@ -109,6 +113,9 @@ void AudioNode::dispose()
     m_isMarkedForDeletion = true;
 #endif
     context()->unmarkDirtyNode(*this);
+#if ENABLE(ASSERT)
+    m_didCallDispose = true;
+#endif
 }
 
 String AudioNode::nodeTypeName() const
