@@ -31,6 +31,8 @@ using crypto::AppleKeychain;
 using password_manager::PasswordStoreChange;
 using password_manager::PasswordStoreChangeList;
 
+namespace {
+
 // Utility class to handle the details of constructing and running a keychain
 // search from a set of attributes.
 class KeychainSearch {
@@ -176,6 +178,18 @@ void KeychainSearch::FindMatchingItems(std::vector<SecKeychainItemRef>* items) {
   keychain_->Free(search_ref_);
   search_ref_ = NULL;
 }
+
+PasswordStoreChangeList FormsToRemoveChangeList(
+    const std::vector<PasswordForm*>& forms) {
+  PasswordStoreChangeList changes;
+  for (std::vector<PasswordForm*>::const_iterator i = forms.begin();
+       i != forms.end(); ++i) {
+    changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, **i));
+  }
+  return changes;
+}
+
+}  // namespace
 
 #pragma mark -
 
@@ -968,12 +982,7 @@ PasswordStoreChangeList PasswordStoreMac::RemoveLoginsCreatedBetweenImpl(
                                                        delete_end)) {
       RemoveKeychainForms(forms.get());
       CleanOrphanedForms(&forms.get());
-
-      for (std::vector<PasswordForm*>::const_iterator it = forms.begin();
-           it != forms.end(); ++it) {
-        changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE,
-                                              **it));
-      }
+      changes = FormsToRemoveChangeList(forms.get());
       LogStatsForBulkDeletion(changes.size());
     }
   }
@@ -991,13 +1000,7 @@ PasswordStoreChangeList PasswordStoreMac::RemoveLoginsSyncedBetweenImpl(
                                                       delete_end)) {
       RemoveKeychainForms(forms.get());
       CleanOrphanedForms(&forms.get());
-
-      for (std::vector<PasswordForm*>::const_iterator it = forms.begin();
-           it != forms.end();
-           ++it) {
-        changes.push_back(
-            PasswordStoreChange(PasswordStoreChange::REMOVE, **it));
-      }
+      changes = FormsToRemoveChangeList(forms.get());
     }
   }
   return changes;
@@ -1010,8 +1013,8 @@ void PasswordStoreMac::GetLoginsImpl(
   chrome::ScopedSecKeychainSetUserInteractionAllowed user_interaction_allowed(
       prompt_policy == ALLOW_PROMPT);
 
-  std::vector<PasswordForm*> database_forms;
-  login_metadata_db_->GetLogins(form, &database_forms);
+  ScopedVector<PasswordForm> database_forms;
+  login_metadata_db_->GetLogins(form, &database_forms.get());
 
   // Let's gather all signon realms we want to match with keychain entries.
   std::set<std::string> realm_set;
@@ -1042,23 +1045,23 @@ void PasswordStoreMac::GetLoginsImpl(
 
   std::vector<PasswordForm*> matched_forms;
   internal_keychain_helpers::MergePasswordForms(&keychain_forms,
-                                                &database_forms,
+                                                &database_forms.get(),
                                                 &matched_forms);
 
   // Strip any blacklist entries out of the unused Keychain array, then take
   // all the entries that are left (which we can use as imported passwords).
-  std::vector<PasswordForm*> keychain_blacklist_forms =
-      internal_keychain_helpers::ExtractBlacklistForms(&keychain_forms);
+  ScopedVector<PasswordForm> keychain_blacklist_forms;
+  internal_keychain_helpers::ExtractBlacklistForms(&keychain_forms).swap(
+      keychain_blacklist_forms.get());
   matched_forms.insert(matched_forms.end(),
                        keychain_forms.begin(),
                        keychain_forms.end());
   keychain_forms.clear();
-  STLDeleteElements(&keychain_blacklist_forms);
 
-  // Clean up any orphaned database entries.
-  // TODO(vasilii): fix somehow this cleanup so that Sync gets these updates.
-  RemoveDatabaseForms(database_forms);
-  STLDeleteElements(&database_forms);
+  if (!database_forms.empty()) {
+    RemoveDatabaseForms(database_forms.get());
+    NotifyLoginsChanged(FormsToRemoveChangeList(database_forms.get()));
+  }
 
   callback_runner.Run(matched_forms);
 }
@@ -1077,17 +1080,18 @@ bool PasswordStoreMac::FillAutofillableLogins(
          std::vector<PasswordForm*>* forms) {
   DCHECK(thread_->message_loop() == base::MessageLoop::current());
 
-  std::vector<PasswordForm*> database_forms;
-  login_metadata_db_->GetAutofillableLogins(&database_forms);
+  ScopedVector<PasswordForm> database_forms;
+  if (!login_metadata_db_->GetAutofillableLogins(&database_forms.get()))
+    return false;
 
   std::vector<PasswordForm*> merged_forms =
       internal_keychain_helpers::GetPasswordsForForms(*keychain_,
-                                                      &database_forms);
+                                                      &database_forms.get());
 
-  // Clean up any orphaned database entries.
-  // TODO(vasilii): fix somehow this cleanup so that Sync gets these updates.
-  RemoveDatabaseForms(database_forms);
-  STLDeleteElements(&database_forms);
+  if (!database_forms.empty()) {
+    RemoveDatabaseForms(database_forms.get());
+    NotifyLoginsChanged(FormsToRemoveChangeList(database_forms.get()));
+  }
 
   forms->insert(forms->end(), merged_forms.begin(), merged_forms.end());
   return true;
