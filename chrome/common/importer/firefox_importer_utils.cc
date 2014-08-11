@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/file_util.h"
-#include "base/ini_parser.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -17,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/common/ini_parser.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -61,7 +61,7 @@ base::FilePath GetFirefoxProfilePath() {
   base::FilePath ini_file = GetProfilesINI();
   std::string content;
   base::ReadFileToString(ini_file, &content);
-  base::DictionaryValueINIParser ini_parser;
+  DictionaryValueINIParser ini_parser;
   ini_parser.Parse(content);
   return GetFirefoxProfilePathFromDictionary(ini_parser.root());
 }

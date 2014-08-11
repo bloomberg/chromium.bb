@@ -1,17 +1,14 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_INI_PARSER_H_
-#define BASE_INI_PARSER_H_
+#ifndef CHROME_COMMON_INI_PARSER_H_
+#define CHROME_COMMON_INI_PARSER_H_
 
 #include <string>
 
-#include "base/base_export.h"
 #include "base/basictypes.h"
 #include "base/values.h"
-
-namespace base {
 
 // Parses INI files in a string. Users should in inherit from this class.
 // This is a very basic INI parser with these characteristics:
@@ -28,7 +25,7 @@ namespace base {
 //  - Key value pairs are indicated with an '=' character. Whitespace is not
 //    ignored. Quoting is not supported. Everything before the first '='
 //    is considered the |key|, and everything after is the |value|.
-class BASE_EXPORT INIParser {
+class INIParser {
  public:
   INIParser();
   virtual ~INIParser();
@@ -46,12 +43,12 @@ class BASE_EXPORT INIParser {
 
 // Parsed values are stored as strings at the "section.key" path. Triplets with
 // |section| or |key| parameters containing '.' are ignored.
-class BASE_EXPORT DictionaryValueINIParser : public INIParser {
+class DictionaryValueINIParser : public INIParser {
  public:
   DictionaryValueINIParser();
   virtual ~DictionaryValueINIParser();
 
-  const DictionaryValue& root() const { return root_; }
+  const base::DictionaryValue& root() const { return root_; }
 
  private:
   // INIParser implementation.
@@ -59,11 +56,9 @@ class BASE_EXPORT DictionaryValueINIParser : public INIParser {
                              const std::string& key,
                              const std::string& value) OVERRIDE;
 
-  DictionaryValue root_;
+  base::DictionaryValue root_;
 
   DISALLOW_COPY_AND_ASSIGN(DictionaryValueINIParser);
 };
 
-}  // namespace base
-
-#endif  // BASE_INI_PARSER_H_
+#endif  // CHROME_COMMON_INI_PARSER_H_

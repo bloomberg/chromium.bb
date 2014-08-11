@@ -8,10 +8,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/ini_parser.h"
 #include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/common/ini_parser.h"
 
 namespace picasa {
 
@@ -21,7 +21,7 @@ const char kAlbumSectionHeader[] = ".album:";
 const char kAlbumsKey[] = "albums";
 const int kMaxDedupeNumber = 1000;  // Chosen arbitrarily.
 
-class PicasaINIParser : public base::INIParser {
+class PicasaINIParser : public INIParser {
  public:
   PicasaINIParser(
       const base::FilePath& folder_path, AlbumImagesMap* albums_images)

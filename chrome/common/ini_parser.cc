@@ -1,13 +1,11 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/ini_parser.h"
+#include "chrome/common/ini_parser.h"
 
 #include "base/logging.h"
 #include "base/strings/string_tokenizer.h"
-
-namespace base {
 
 INIParser::INIParser() : used_(false) {}
 
@@ -62,5 +60,3 @@ void DictionaryValueINIParser::HandleTriplet(const std::string& section,
       key.find('.') == std::string::npos)
     root_.SetString(section + "." + key, value);
 }
-
-}  // namespace base

@@ -236,8 +236,6 @@
           'hash.cc',
           'hash.h',
           'id_map.h',
-          'ini_parser.cc',
-          'ini_parser.h',
           'ios/device_util.h',
           'ios/device_util.mm',
           'ios/ios_util.h',

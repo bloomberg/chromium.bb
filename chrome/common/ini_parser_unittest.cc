@@ -1,14 +1,12 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <string>
 #include <vector>
 
-#include "base/ini_parser.h"
+#include "chrome/common/ini_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace base {
 
 namespace {
 
@@ -115,7 +113,7 @@ TEST(INIParserTest, DictionaryValueINIParser) {
       "key.4=value4\n"
       "key5=value5\n");
 
-  const DictionaryValue& root = test_parser.root();
+  const base::DictionaryValue& root = test_parser.root();
   std::string value;
   EXPECT_TRUE(root.GetString("section1.key1", &value));
   EXPECT_EQ("value1", value);
@@ -127,5 +125,3 @@ TEST(INIParserTest, DictionaryValueINIParser) {
 }
 
 }  // namespace
-
-}  // namespace base

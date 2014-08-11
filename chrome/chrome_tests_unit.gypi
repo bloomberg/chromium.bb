@@ -1875,6 +1875,7 @@
         'common/extensions/api/extension_api_unittest.cc',
         'common/favicon/favicon_url_parser_unittest.cc',
         'common/importer/firefox_importer_utils_unittest.cc',
+        'common/ini_parser_unittest.cc',
         'common/instant_restricted_id_cache_unittest.cc',
         'common/mac/cfbundle_blocker_unittest.mm',
         'common/mac/mock_launchd.cc',
