@@ -6,9 +6,9 @@
 #define CONTENT_SHELL_RENDERER_TEST_RUNNER_WEB_FRAME_TEST_PROXY_H_
 
 #include "base/basictypes.h"
-#include "content/shell/renderer/test_runner/TestInterfaces.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "content/shell/renderer/test_runner/mock_screen_orientation_client.h"
+#include "content/shell/renderer/test_runner/test_interfaces.h"
 #include "content/shell/renderer/test_runner/test_runner.h"
 #include "content/shell/renderer/test_runner/web_test_proxy.h"
 #include "content/test/test_media_stream_renderer_factory.h"
@@ -169,7 +169,7 @@ class WebFrameTestProxy : public Base {
                                           const blink::WebString& message) {
     base_proxy_->delegate_->printMessage(std::string("CONFIRM NAVIGATION: ") +
                                          message.utf8().data() + "\n");
-    return !base_proxy_->test_interfaces_->testRunner()
+    return !base_proxy_->test_interfaces_->GetTestRunner()
                 ->shouldStayOnPageAfterHandlingBeforeUnload();
   }
 

@@ -8,11 +8,11 @@
 
 #include "base/logging.h"
 #include "content/shell/common/test_runner/test_preferences.h"
-#include "content/shell/renderer/test_runner/TestInterfaces.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "content/shell/renderer/test_runner/mock_web_push_client.h"
 #include "content/shell/renderer/test_runner/mock_web_speech_recognizer.h"
 #include "content/shell/renderer/test_runner/notification_presenter.h"
+#include "content/shell/renderer/test_runner/test_interfaces.h"
 #include "content/shell/renderer/test_runner/web_permissions.h"
 #include "content/shell/renderer/test_runner/web_test_proxy.h"
 #include "gin/arguments.h"
@@ -2076,7 +2076,7 @@ void TestRunner::WaitForPolicyDelegate() {
 }
 
 int TestRunner::WindowCount() {
-  return test_interfaces_->windowList().size();
+  return test_interfaces_->GetWindowList().size();
 }
 
 void TestRunner::SetCloseRemainingWindowsWhenComplete(
@@ -2085,7 +2085,7 @@ void TestRunner::SetCloseRemainingWindowsWhenComplete(
 }
 
 void TestRunner::ResetTestHelperControllers() {
-  test_interfaces_->resetTestHelperControllers();
+  test_interfaces_->ResetTestHelperControllers();
 }
 
 void TestRunner::SetTabKeyCyclesThroughElements(
@@ -2744,7 +2744,7 @@ void TestRunner::SetMIDIAccessorResult(bool result) {
 
 void TestRunner::SetMIDISysexPermission(bool value) {
   const std::vector<WebTestProxyBase*>& windowList =
-      test_interfaces_->windowList();
+      test_interfaces_->GetWindowList();
   for (unsigned i = 0; i < windowList.size(); ++i)
     windowList.at(i)->GetMIDIClientMock()->setSysexPermission(value);
 }

@@ -4,11 +4,11 @@
 
 #include "content/shell/renderer/test_runner/WebTestInterfaces.h"
 
-#include "content/shell/renderer/test_runner/TestInterfaces.h"
 #include "content/shell/renderer/test_runner/mock_web_audio_device.h"
 #include "content/shell/renderer/test_runner/mock_web_media_stream_center.h"
 #include "content/shell/renderer/test_runner/mock_web_midi_accessor.h"
 #include "content/shell/renderer/test_runner/mock_webrtc_peer_connection_handler.h"
+#include "content/shell/renderer/test_runner/test_interfaces.h"
 #include "content/shell/renderer/test_runner/test_runner.h"
 
 using namespace blink;
@@ -26,42 +26,42 @@ WebTestInterfaces::~WebTestInterfaces()
 
 void WebTestInterfaces::setWebView(WebView* webView, WebTestProxyBase* proxy)
 {
-    m_interfaces->setWebView(webView, proxy);
+  m_interfaces->SetWebView(webView, proxy);
 }
 
 void WebTestInterfaces::setDelegate(WebTestDelegate* delegate)
 {
-    m_interfaces->setDelegate(delegate);
+  m_interfaces->SetDelegate(delegate);
 }
 
 void WebTestInterfaces::bindTo(WebFrame* frame)
 {
-    m_interfaces->bindTo(frame);
+  m_interfaces->BindTo(frame);
 }
 
 void WebTestInterfaces::resetAll()
 {
-    m_interfaces->resetAll();
+  m_interfaces->ResetAll();
 }
 
 void WebTestInterfaces::setTestIsRunning(bool running)
 {
-    m_interfaces->setTestIsRunning(running);
+  m_interfaces->SetTestIsRunning(running);
 }
 
 void WebTestInterfaces::configureForTestWithURL(const WebURL& testURL, bool generatePixels)
 {
-    m_interfaces->configureForTestWithURL(testURL, generatePixels);
+  m_interfaces->ConfigureForTestWithURL(testURL, generatePixels);
 }
 
 WebTestRunner* WebTestInterfaces::testRunner()
 {
-    return m_interfaces->testRunner();
+  return m_interfaces->GetTestRunner();
 }
 
 WebThemeEngine* WebTestInterfaces::themeEngine()
 {
-    return m_interfaces->themeEngine();
+  return m_interfaces->GetThemeEngine();
 }
 
 TestInterfaces* WebTestInterfaces::testInterfaces()

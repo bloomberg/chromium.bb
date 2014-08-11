@@ -4,8 +4,8 @@
 
 #include "content/shell/renderer/test_runner/mock_web_midi_accessor.h"
 
-#include "content/shell/renderer/test_runner/TestInterfaces.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
+#include "content/shell/renderer/test_runner/test_interfaces.h"
 #include "content/shell/renderer/test_runner/test_runner.h"
 #include "content/shell/renderer/test_runner/web_test_runner.h"
 #include "third_party/WebKit/public/platform/WebMIDIAccessorClient.h"
@@ -54,8 +54,8 @@ void MockWebMIDIAccessor::startSession() {
                             "MockOutputManufacturer",
                             "MockOutputName",
                             "MockOutputVersion");
-  interfaces_->delegate()->postTask(new DidStartSessionTask(
-      this, client_, interfaces_->testRunner()->midiAccessorResult()));
+  interfaces_->GetDelegate()->postTask(new DidStartSessionTask(
+      this, client_, interfaces_->GetTestRunner()->midiAccessorResult()));
 }
 
 }  // namespace content

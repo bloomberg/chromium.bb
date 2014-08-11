@@ -5,8 +5,8 @@
 #include "content/shell/renderer/test_runner/mock_web_media_stream_center.h"
 
 #include "base/logging.h"
-#include "content/shell/renderer/test_runner/TestInterfaces.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
+#include "content/shell/renderer/test_runner/test_interfaces.h"
 #include "third_party/WebKit/public/platform/WebAudioDestinationConsumer.h"
 #include "third_party/WebKit/public/platform/WebAudioSourceProvider.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
@@ -140,7 +140,7 @@ void MockWebMediaStreamCenter::didCreateMediaStream(
       delete consumer;
     }
   }
-  interfaces_->delegate()->postTask(new NewTrackTask(this, stream));
+  interfaces_->GetDelegate()->postTask(new NewTrackTask(this, stream));
 }
 
 blink::WebAudioSourceProvider*

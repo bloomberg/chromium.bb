@@ -4,7 +4,6 @@
 
 #include "content/shell/renderer/test_runner/gamepad_controller.h"
 
-#include "content/shell/renderer/test_runner/TestInterfaces.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "gin/arguments.h"
 #include "gin/handle.h"
