@@ -33,6 +33,7 @@
 
   // [CallWith=ScriptState] Promise add((Request or ScalarValueString) request);
   [CallWith=ScriptState] Promise add(Request request);
+  [CallWith=ScriptState] Promise add(ScalarValueString request);
 
   // FIXME: The lack of union type support together with the sequence mean we can't use overrides here, instead
   // bind a generic type.
