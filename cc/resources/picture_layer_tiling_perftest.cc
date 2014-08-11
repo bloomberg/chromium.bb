@@ -73,7 +73,7 @@ class PictureLayerTilingPerfTest : public testing::Test {
 
     timer_.Reset();
     do {
-      picture_layer_tiling_->UpdateTilePriorities(ACTIVE_TREE,
+      picture_layer_tiling_->UpdateTilePriorities(PENDING_TREE,
                                                   viewport_rect,
                                                   1.f,
                                                   timer_.NumLaps() + 1,
@@ -103,7 +103,7 @@ class PictureLayerTilingPerfTest : public testing::Test {
 
     timer_.Reset();
     do {
-      picture_layer_tiling_->UpdateTilePriorities(ACTIVE_TREE,
+      picture_layer_tiling_->UpdateTilePriorities(PENDING_TREE,
                                                   viewport_rect,
                                                   1.f,
                                                   timer_.NumLaps() + 1,
