@@ -35,7 +35,7 @@ vars = {
   "skia_git": "https://skia.googlesource.com",
   "boringssl_git": "https://boringssl.googlesource.com",
   "swig_revision": "230490",
-  "nacl_revision": "13592",
+  "nacl_revision": "13599",
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
   # to update other nacl_*_revision's.
   "nacl_tools_revision": "13077",  # native_client/DEPS: tools_rev
