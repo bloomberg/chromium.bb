@@ -14,6 +14,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
+#include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension_messages.h"
 
 namespace apps {
@@ -44,6 +45,8 @@ void CustomLauncherPageContents::Initialize(content::BrowserContext* context,
   helper_.reset(new AppWebContentsHelper(
       context, extension_id_, web_contents_.get(), app_delegate_.get()));
   web_contents_->SetDelegate(this);
+
+  extensions::SetViewType(web_contents(), extensions::VIEW_TYPE_LAUNCHER_PAGE);
 
   // This observer will activate the extension when it is navigated to, which
   // allows Dispatcher to give it the proper context and makes it behave like an

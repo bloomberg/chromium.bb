@@ -13,6 +13,7 @@ const char kViewTypePanel[] = "PANEL";
 const char kViewTypeInfobar[] = "INFOBAR";
 const char kViewTypeExtensionDialog[] = "EXTENSION_DIALOG";
 const char kViewTypeAppWindow[] = "APP_WINDOW";
+const char kViewTypeLauncherPage[] = "LAUNCHER_PAGE";
 const char kViewTypeAll[] = "ALL";
 
 }  // namespace extensions
