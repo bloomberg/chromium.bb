@@ -37,9 +37,9 @@ option (which will only apply to following commands) should be one of:
   Component options:
     --shared Build components as shared libraries (default).
     --static Build components as static libraries.
-  Mojo in chromium/content (crbug.com/353602):
-    --use-mojo - Enabled (default).
-    --no-use-mojo - Disabled.
+  Use goma:
+    --use-goma - Use goma if \$GOMA_DIR is set or \$HOME/goma exists (default).
+    --no-use-goma - Do not use goma.
 
 Note: It will abort on the first failure (if any).
 EOF
@@ -47,7 +47,11 @@ EOF
 
 do_build() {
   echo "Building in out/$1 ..."
-  ninja -C "out/$1" mojo || exit 1
+  if [ "$GOMA" = "auto" -a -v GOMA_DIR ]; then
+    ninja -j 1000 -C "out/$1" mojo || exit 1
+  else
+    ninja -C "out/$1" mojo || exit 1
+  fi
 }
 
 do_unittests() {
@@ -95,6 +99,8 @@ should_do_Release() {
 COMPILER=clang
 # Valid values: shared or static.
 COMPONENT=shared
+# Valid values: auto or disabled.
+GOMA=auto
 make_gyp_defines() {
   local options=()
   # Always include these options.
@@ -115,7 +121,33 @@ make_gyp_defines() {
       options+=("component=static_library")
       ;;
   esac
-  echo ${options[*]}
+  case "$GOMA" in
+    auto)
+      if [ -v GOMA_DIR ]; then
+        options+=("use_goma=1" "gomadir=\"${GOMA_DIR}\"")
+      else
+        options+=("use_goma=0")
+      fi
+      ;;
+    disabled)
+      options+=("use_goma=0")
+      ;;
+  esac
+  echo "${options[*]}"
+}
+
+set_goma_dir_if_necessary() {
+  if [ "$GOMA" = "auto" -a ! -v GOMA_DIR ]; then
+    if [ -d "${HOME}/goma" ]; then
+      GOMA_DIR="${HOME}/goma"
+    fi
+  fi
+}
+
+start_goma_if_necessary() {
+  if [ "$GOMA" = "auto" -a -v GOMA_DIR ]; then
+    "${GOMA_DIR}/goma_ctl.py" ensure_start
+  fi
 }
 
 # We're in src/mojo/tools. We want to get to src.
@@ -134,6 +166,8 @@ for arg in "$@"; do
       exit 0
       ;;
     build)
+      set_goma_dir_if_necessary
+      start_goma_if_necessary
       should_do_Debug && do_build Debug
       should_do_Release && do_build Release
       ;;
@@ -149,9 +183,11 @@ for arg in "$@"; do
       do_pytests
       ;;
     gyp)
+      set_goma_dir_if_necessary
       do_gyp
       ;;
     gypall)
+      set_goma_dir_if_necessary
       do_gypall
       ;;
     sync)
@@ -187,6 +223,12 @@ for arg in "$@"; do
       ;;
     --static)
       COMPONENT=static
+      ;;
+    --use-goma)
+      GOMA=auto
+      ;;
+    --no-use-goma)
+      GOMA=disabled
       ;;
     *)
       echo "Unknown command \"${arg}\". Try \"$(basename "$0") help\"."
