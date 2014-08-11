@@ -35,7 +35,7 @@
 #include "public/platform/Platform.h"
 #include "public/web/WebKit.h"
 #include "web/tests/WebUnitTests.h"
-#include <content/test/webkit_support.h>
+#include <content/test/blink_test_environment.h>
 
 namespace {
 
@@ -43,12 +43,12 @@ namespace {
 // in a shared library build. See WebUnitTests.h for more details.
 void preTestHook()
 {
-    content::SetUpTestEnvironmentForUnitTests();
+    content::SetUpBlinkTestEnvironment();
 }
 
 void postTestHook()
 {
-    content::TearDownTestEnvironment();
+    content::TearDownBlinkTestEnvironment();
 }
 
 } // namespace
