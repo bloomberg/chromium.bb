@@ -215,6 +215,7 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
       input_tracker_(&mouse_input_filter_),
       key_mapper_(&input_tracker_),
       input_handler_(this),
+      text_input_controller_(this),
       use_async_pin_dialog_(false),
       use_media_source_rendering_(false),
       delegate_large_cursors_(false),
@@ -237,8 +238,12 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
   mount("", "/usr", "memfs", 0, "");
 #endif
 
+  // Register for mouse, wheel and keyboard events.
   RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE | PP_INPUTEVENT_CLASS_WHEEL);
   RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_KEYBOARD);
+
+  // Disable the client-side IME in Chrome.
+  text_input_controller_.SetTextInputType(PP_TEXTINPUT_TYPE_NONE);
 
   // Resister this instance to handle debug log messsages.
   RegisterLoggingInstance();

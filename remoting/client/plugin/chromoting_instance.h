@@ -15,6 +15,7 @@
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/text_input_controller.h"
 #include "ppapi/cpp/var.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/client_user_interface.h"
@@ -275,6 +276,9 @@ class ChromotingInstance :
   KeyEventMapper key_mapper_;
   scoped_ptr<protocol::InputFilter> normalizing_input_filter_;
   PepperInputHandler input_handler_;
+
+  // Used to control text input settings, such as whether to show the IME.
+  pp::TextInputController text_input_controller_;
 
   // PIN Fetcher.
   bool use_async_pin_dialog_;
