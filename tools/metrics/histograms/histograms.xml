@@ -2120,7 +2120,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Cast.Sender.CastButtonShown" enum="BooleanEnabled">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mfoltz@chromium.org</owner>
   <summary>
     Records the number of times the cast button was shown to the user. The value
     will be true if the button is enabled, and false if the button is disabled.
@@ -2131,7 +2131,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Cast.Sender.CastButtonShownInitialFullscreen"
     enum="BooleanEnabled">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mfoltz@chromium.org</owner>
   <summary>
     Records the number of times the cast button was shown to the user when the
     video is fullscreened. The value will only be recorded on entering
@@ -2170,7 +2170,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Cast.Sender.CastTimeRemainingPercentage"
     units="percent remaining">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mfoltz@chromium.org</owner>
   <summary>
     Records the percentage of the video left at the time the remote playback is
     stopped. This will be recorded when the playback is stopped by the user, or
@@ -10620,7 +10620,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Media.ChromeCast.DelayedAndDroppedFramesPer5Sec"
     units="frames/5s">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mfoltz@chromium.org</owner>
   <summary>
     The average number of delayed and dropped frames for the ChromeCast
     application.  Reported every 5 seconds.
@@ -10628,7 +10628,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Media.ChromeCast.DisplayedFramesPerSecond" units="frames/s">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mfoltz@chromium.org</owner>
   <summary>
     The average number of displayed frames for the ChromeCast application.
     Reported every 5 seconds.
@@ -10636,7 +10636,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Media.ChromeCast.TimeToBufferAv" units="ms">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mfoltz@chromium.org</owner>
   <summary>
     Time needed to pre-buffer A/V data before the actual playback for the
     ChromeCast application.
@@ -10644,7 +10644,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Media.ChromeCast.TimeToBufferAvAfterAbort" units="ms">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mfoltz@chromium.org</owner>
   <summary>
     Time needed to buffer A/V data after an abort for the ChromeCast
     application.
@@ -10652,7 +10652,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Media.ChromeCast.TimeToBufferAvAfterUnderrun" units="ms">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mfoltz@chromium.org</owner>
   <summary>
     Time needed to buffer A/V data after an underrun for the ChromeCast
     application.
