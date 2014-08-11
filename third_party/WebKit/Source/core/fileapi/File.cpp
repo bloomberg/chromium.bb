@@ -165,7 +165,7 @@ File::File(const KURL& fileSystemURL, const FileMetadata& metadata)
     ScriptWrappable::init(this);
 }
 
-double File::lastModifiedDate() const
+double File::lastModifiedMS() const
 {
     if (hasValidSnapshotMetadata() && isValidFileTime(m_snapshotModificationTime))
         return m_snapshotModificationTime * msPerSecond;
@@ -175,6 +175,32 @@ double File::lastModifiedDate() const
         return modificationTime * msPerSecond;
 
     return currentTime() * msPerSecond;
+}
+
+long long File::lastModified() const
+{
+    double modifiedDate = lastModifiedMS();
+
+    // The getter should return the current time when the last modification time isn't known.
+    if (!isValidFileTime(modifiedDate))
+        modifiedDate = currentTimeMS();
+
+    // lastModified returns a number, not a Date instance,
+    // http://dev.w3.org/2006/webapi/FileAPI/#file-attrs
+    return floor(modifiedDate);
+}
+
+double File::lastModifiedDate() const
+{
+    double modifiedDate = lastModifiedMS();
+
+    // The getter should return the current time when the last modification time isn't known.
+    if (!isValidFileTime(modifiedDate))
+        modifiedDate = currentTimeMS();
+
+    // lastModifiedDate returns a Date instance,
+    // http://www.w3.org/TR/FileAPI/#dfn-lastModifiedDate
+    return modifiedDate;
 }
 
 unsigned long long File::size() const

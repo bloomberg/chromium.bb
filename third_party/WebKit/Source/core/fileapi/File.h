@@ -115,7 +115,12 @@ public:
     const String& path() const { ASSERT(hasValidFilePath()); return m_path; }
     const String name() const { return m_name; }
 
-    // This returns the current date and time if the file's last modification date is not known (per spec: http://www.w3.org/TR/FileAPI/#dfn-lastModifiedDate).
+    // Getter for the lastModified IDL attribute,
+    // http://dev.w3.org/2006/webapi/FileAPI/#file-attrs
+    long long lastModified() const;
+
+    // Getter for the lastModifiedDate IDL attribute,
+    // http://www.w3.org/TR/FileAPI/#dfn-lastModifiedDate
     double lastModifiedDate() const;
 
     UserVisibility userVisibility() const { return m_userVisibility; }
@@ -138,6 +143,10 @@ private:
     File(const KURL& fileSystemURL, const FileMetadata&);
 
     void invalidateSnapshotMetadata() { m_snapshotSize = -1; }
+
+    // Returns File's last modified time (in MS since Epoch.)
+    // If the modification time isn't known, the current time is returned.
+    double lastModifiedMS() const;
 
 #if ENABLE(ASSERT)
     bool hasValidFileSystemURL() const { return hasBackingFile(); }
