@@ -124,6 +124,13 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
+                       CanSetupVideoCallAndDisableLocalVideo) {
+  const std::string javascript =
+      "callAndDisableLocalVideo({video: true});";
+  MakeTypicalPeerConnectionCall(javascript);
+}
+
+IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
                        CanSetupVideoCallWith16To9AspectRatio) {
   const std::string javascript =
       "callAndExpectResolution({video: {mandatory: {minWidth: 640,"
