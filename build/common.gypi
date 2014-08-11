@@ -3807,7 +3807,7 @@
                           '-B<(android_toolchain)',  # Else /usr/bin/as gets picked up.
                         ],
                         'ldflags': [
-                          # Let clang can find the ld.gold in the NDK.
+                          # Let clang find the ld.gold in the NDK.
                           '--gcc-toolchain=<(android_toolchain)/..',
                         ],
                       }],

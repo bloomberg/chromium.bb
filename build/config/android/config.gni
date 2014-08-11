@@ -87,14 +87,17 @@ if (is_android) {
   # only need to define the current one, rather than one for every platform
   # like the toolchain roots.
   if (cpu_arch == "x86") {
+    android_toolchain_root = "$x86_android_toolchain_root"
     android_libgcc_file =
-      "$x86_android_toolchain_root/lib/gcc/i686-linux-android/${_android_toolchain_version}/libgcc.a"
+      "$android_toolchain_root/lib/gcc/i686-linux-android/${_android_toolchain_version}/libgcc.a"
   } else if (cpu_arch == "arm") {
+    android_toolchain_root = "$arm_android_toolchain_root"
     android_libgcc_file =
-      "$arm_android_toolchain_root/lib/gcc/arm-linux-androideabi/${_android_toolchain_version}/libgcc.a"
+      "$android_toolchain_root/lib/gcc/arm-linux-androideabi/${_android_toolchain_version}/libgcc.a"
   } else if (cpu_arch == "mipsel") {
+    android_toolchain_root = "$mips_android_toolchain_root"
     android_libgcc_file =
-      "$mips_android_toolchain_root/lib/gcc/mipsel-linux-android/${_android_toolchain_version}/libgcc.a"
+      "$android_toolchain_root/lib/gcc/mipsel-linux-android/${_android_toolchain_version}/libgcc.a"
   } else {
     assert(false, "Need android libgcc support for your target arch.")
   }

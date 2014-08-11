@@ -275,15 +275,11 @@ config("compiler") {
 
     # Use gold for Android for most CPU architectures.
     if (cpu_arch == "x86" || cpu_arch == "x64" || cpu_arch == "arm") {
+      ldflags += [ "-fuse-ld=gold" ]
       if (is_clang) {
-        # Clang does not support -fuse-ld to invoke the built-in gold linker,
-        # so use the -B option which requires us to specify the path.
-        ldflags += [
-          "-B" + rebase_path("//build/android/arm-linux-androideabi-gold",
-                             root_build_dir)
-        ]
-      } else {
-        ldflags += [ "-fuse-ld=gold" ]
+        # Let clang find the ld.gold in the NDK.
+        ldflags += [ "--gcc-toolchain=" + rebase_path(android_toolchain_root,
+                                                      root_build_dir) ]
       }
     }
 
