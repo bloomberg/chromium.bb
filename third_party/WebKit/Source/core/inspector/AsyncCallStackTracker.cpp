@@ -89,14 +89,14 @@ private:
 public:
     AsyncCallStackTracker* m_tracker;
     HashSet<int> m_intervalTimerIds;
-    HashMap<int, RefPtr<AsyncCallChain> > m_timerCallChains;
-    HashMap<int, RefPtr<AsyncCallChain> > m_animationFrameCallChains;
-    HashMap<Event*, RefPtr<AsyncCallChain> > m_eventCallChains;
-    HashMap<EventTarget*, RefPtr<AsyncCallChain> > m_xhrCallChains;
-    HashMap<MutationObserver*, RefPtr<AsyncCallChain> > m_mutationObserverCallChains;
-    HashMap<ExecutionContextTask*, RefPtr<AsyncCallChain> > m_executionContextTaskCallChains;
-    HashMap<String, RefPtr<AsyncCallChain> > m_v8AsyncTaskCallChains;
-    HashMap<int, RefPtr<AsyncCallChain> > m_asyncOperationCallChains;
+    WillBePersistentHeapHashMap<int, RefPtrWillBeMember<AsyncCallChain> > m_timerCallChains;
+    WillBePersistentHeapHashMap<int, RefPtrWillBeMember<AsyncCallChain> > m_animationFrameCallChains;
+    WillBePersistentHeapHashMap<RawPtrWillBeMember<Event>, RefPtrWillBeMember<AsyncCallChain> > m_eventCallChains;
+    WillBePersistentHeapHashMap<RawPtrWillBeMember<EventTarget>, RefPtrWillBeMember<AsyncCallChain> > m_xhrCallChains;
+    WillBePersistentHeapHashMap<RawPtrWillBeMember<MutationObserver>, RefPtrWillBeMember<AsyncCallChain> > m_mutationObserverCallChains;
+    WillBePersistentHeapHashMap<ExecutionContextTask*, RefPtrWillBeMember<AsyncCallChain> > m_executionContextTaskCallChains;
+    WillBePersistentHeapHashMap<String, RefPtrWillBeMember<AsyncCallChain> > m_v8AsyncTaskCallChains;
+    WillBePersistentHeapHashMap<int, RefPtrWillBeMember<AsyncCallChain> > m_asyncOperationCallChains;
 };
 
 static XMLHttpRequest* toXmlHttpRequest(EventTarget* eventTarget)
@@ -107,6 +107,11 @@ static XMLHttpRequest* toXmlHttpRequest(EventTarget* eventTarget)
     if (interfaceName == EventTargetNames::XMLHttpRequestUpload)
         return static_cast<XMLHttpRequestUpload*>(eventTarget)->xmlHttpRequest();
     return 0;
+}
+
+void AsyncCallStackTracker::AsyncCallChain::trace(Visitor* visitor)
+{
+    visitor->trace(m_callStacks);
 }
 
 AsyncCallStackTracker::AsyncCallStack::AsyncCallStack(const String& description, const ScriptValue& callFrames)
@@ -411,19 +416,19 @@ void AsyncCallStackTracker::didFireAsyncCall()
     clearCurrentAsyncCallChain();
 }
 
-PassRefPtr<AsyncCallStackTracker::AsyncCallChain> AsyncCallStackTracker::createAsyncCallChain(const String& description, const ScriptValue& callFrames)
+PassRefPtrWillBeRawPtr<AsyncCallStackTracker::AsyncCallChain> AsyncCallStackTracker::createAsyncCallChain(const String& description, const ScriptValue& callFrames)
 {
     if (callFrames.isEmpty()) {
         ASSERT(m_currentAsyncCallChain);
         return m_currentAsyncCallChain; // Propogate async call stack chain.
     }
-    RefPtr<AsyncCallChain> chain = adoptRef(m_currentAsyncCallChain ? new AsyncCallStackTracker::AsyncCallChain(*m_currentAsyncCallChain) : new AsyncCallStackTracker::AsyncCallChain());
+    RefPtrWillBeRawPtr<AsyncCallChain> chain = adoptRefWillBeNoop(m_currentAsyncCallChain ? new AsyncCallStackTracker::AsyncCallChain(*m_currentAsyncCallChain) : new AsyncCallStackTracker::AsyncCallChain());
     ensureMaxAsyncCallChainDepth(chain.get(), m_maxAsyncCallStackDepth - 1);
-    chain->m_callStacks.prepend(adoptRef(new AsyncCallStackTracker::AsyncCallStack(description, callFrames)));
+    chain->m_callStacks.prepend(adoptRefWillBeNoop(new AsyncCallStackTracker::AsyncCallStack(description, callFrames)));
     return chain.release();
 }
 
-void AsyncCallStackTracker::setCurrentAsyncCallChain(ExecutionContext* context, PassRefPtr<AsyncCallChain> chain)
+void AsyncCallStackTracker::setCurrentAsyncCallChain(ExecutionContext* context, PassRefPtrWillBeRawPtr<AsyncCallChain> chain)
 {
     if (chain && !V8RecursionScope::recursionLevel(toIsolate(context))) {
         // Current AsyncCallChain corresponds to the bottommost JS call frame.
