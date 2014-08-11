@@ -31,8 +31,9 @@ class SystemUIResourceManagerImpl::Entry
   }
 
   void SetBitmap(const SkBitmap& bitmap) {
+    // TODO(jdduke): Verify validity of |bitmap| after resolving resource
+    // loading issues on Android L, crbug.com/389744.
     DCHECK(bitmap_.empty());
-    DCHECK(!bitmap.empty());
     DCHECK(!id_);
     bitmap_ = bitmap;
   }
