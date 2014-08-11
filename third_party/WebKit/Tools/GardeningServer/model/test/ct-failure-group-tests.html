@@ -1,0 +1,67 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../ct-failure-group.html">
+
+<script>
+(function () {
+
+var assert = chai.assert;
+
+describe('ct-failure-group', function() {
+
+  beforeEach(function() {
+    localStorage.removeItem('CTFailureGroupAnnotations');
+  });
+
+  describe('snooze', function() {
+    it('should set isSnoozed', function(done) {
+      var group = new CTFailureGroup('key', []);
+      group.snoozeUntil(Date.now() + 1000 * 1000).then(function() {
+        assert.isTrue(group.isSnoozed);
+        done();
+      });
+    });
+  });
+
+  describe('unsnooze', function() {
+    it('should clear isSnoozed', function(done) {
+      var group = new CTFailureGroup('key', []);
+      group.snoozeUntil(Date.now() + 1000 * 1000).then(function() {
+        group.unsnooze().then(function() {
+          assert.isFalse(group.isSnoozed);
+          done();
+        });
+      });
+    });
+  });
+
+  describe('annotations', function() {
+    it('should have sensible defaults', function() {
+      var group = new CTFailureGroup('key', []);
+      assert.deepEqual(group.annotation, {});
+      assert.isFalse(group.isSnoozed);
+    });
+
+    it('should compute properties', function() {
+      var group = new CTFailureGroup('key', [], {snoozeTime: Date.now() + 1000 * 1000});
+      assert.isTrue(group.isSnoozed);
+    });
+
+    it('should be persisted', function(done) {
+      var group = new CTFailureGroup('key', []);
+      group.snoozeUntil(123).then(function() {
+        CTFailureGroup.fetchAnnotations().then(function(annotations) {
+          assert.deepEqual(annotations['key'], {snoozeTime: 123});
+          done();
+        });
+      });
+    });
+  });
+});
+
+})()
+</script>

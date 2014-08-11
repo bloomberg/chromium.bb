@@ -6,6 +6,7 @@ found in the LICENSE file.
 <link href="../model/ct-builder-revisions.html" rel="import">
 
 <link rel="import" href="../model/ct-failure.html">
+<link rel="import" href="../model/ct-failure-group.html">
 
 <polymer-element name="ct-failure-analyzer" attributes="failures builderLatestRevisions">
   <script>
@@ -63,15 +64,18 @@ found in the LICENSE file.
       },
 
       update: function() {
+        var annotationPromise = CTFailureGroup.fetchAnnotations();
         net.json('http://auto-sheriff.appspot.com/data').then(function(data) {
-          // FIXME: Don't special-case the blink master.
-          this.builderLatestRevisions = new CTBuilderRevisions(data.latest_revisions['chromium.webkit']);
-          this.failures = {};
-          data.range_groups.forEach(function(group) {
-            this._processFailuresForGroup(group, data.alerts);
-          }.bind(this));
-          Object.keys(this.failures, function (tree, failuresByTree) {
-            this.failures[tree].sort(this._failureListComparator.bind(this, tree));
+          annotationPromise.then(function(annotations) {
+            // FIXME: Don't special-case the blink master.
+            this.builderLatestRevisions = new CTBuilderRevisions(data.latest_revisions['chromium.webkit']);
+            this.failures = {};
+            data.range_groups.forEach(function(group) {
+              this._processFailuresForGroup(group, data.alerts, annotations);
+            }.bind(this));
+            Object.keys(this.failures, function (tree, failuresByTree) {
+              this.failures[tree].sort(this._failureListComparator.bind(this, tree));
+            }.bind(this));
           }.bind(this));
         }.bind(this));
       },
@@ -88,7 +92,7 @@ found in the LICENSE file.
         return 0;
       },
 
-      _processFailuresForGroup: function(group, failures) {
+      _processFailuresForGroup: function(group, failures, annotations) {
         var failuresByReason = {};
 
         var masterToTree = {};
@@ -150,7 +154,9 @@ found in the LICENSE file.
 
           if (!this.failures[tree])
             this.failures[tree] = [];
-          this.failures[tree].push(failures);
+          // FIXME: Need a better identifier for a failure group;
+          var key = group.sort_key;
+          this.failures[tree].push(new CTFailureGroup(key, failures, annotations[key]));
         }.bind(this));
       },
     });

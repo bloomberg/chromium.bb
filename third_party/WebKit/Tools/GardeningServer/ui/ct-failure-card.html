@@ -8,7 +8,7 @@ found in the LICENSE file.
 <link rel="import" href="ct-commit-list.html">
 <link rel="import" href="ct-test-list.html">
 
-<polymer-element name="ct-failure-card" attributes="failures commits tree">
+<polymer-element name="ct-failure-card" attributes="group commits tree">
   <template>
     <style>
       :host {
@@ -52,27 +52,45 @@ found in the LICENSE file.
         flex: 1;
       }
 
-      #examine {
+      .snoozed {
+        opacity: 0.5;
+      }
+
+      #examine, #snooze {
         align-self: flex-start;
       }
     </style>
-    <ct-builder-grid failures="{{ failures }}"></ct-builder-grid>
-    <div class="failure">
-      <ct-test-list tests="{{ failures }}" tree="{{ tree }}"></ct-test-list>
-      <ct-commit-list first="{{ failures[0].lastPassingRevisions }}"
-          last="{{ failures[0].firstFailingRevisions }}"
+    <ct-builder-grid failures="{{ group.failures }}"></ct-builder-grid>
+    <div class="{{ { failure: true, snoozed: group.isSnoozed } | tokenList }}">
+      <ct-test-list tests="{{ group.failures }}" tree="{{ tree }}"></ct-test-list>
+      <ct-commit-list first="{{ group.failures[0].lastPassingRevisions }}"
+          last="{{ group.failures[0].firstFailingRevisions }}"
           commits="{{ commits }}"></ct-commit-list>
     </div>
     <paper-button id="examine" on-tap="{{ examine }}">Examine</paper-button>
+    <template if="{{ !group.isSnoozed }}">
+      <paper-button id="snooze" on-tap="{{ snooze }}">Snooze</paper-button>
+    </template>
+    <template if="{{ group.isSnoozed }}">
+      <paper-button id="snooze" on-tap="{{ unsnooze }}">Unsnooze</paper-button>
+    </template>
   </template>
   <script>
     Polymer({
-      failures: [],
+      group: null,
       commits: {},
       tree: '',
 
       examine: function() {
-        this.fire('ct-examine-failures', this.failures);
+        this.fire('ct-examine-failures', this.group);
+      },
+
+      snooze: function() {
+        this.group.snoozeUntil(Date.now() + 60 * 60 * 1000);
+      },
+
+      unsnooze: function() {
+        this.group.unsnooze();
       },
     });
   </script>

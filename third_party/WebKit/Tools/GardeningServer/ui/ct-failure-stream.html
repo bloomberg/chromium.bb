@@ -19,8 +19,8 @@ found in the LICENSE file.
         border-top: 1px solid lightgrey;
       }
     </style>
-    <template repeat="{{failures in groups}}">
-      <ct-failure-card failures="{{ failures }}" commits="{{ commits }}" tree="{{ tree }}"></ct-failure-card>
+    <template repeat="{{ group in groups }}">
+      <ct-failure-card group="{{ group }}" commits="{{ commits }}" tree="{{ tree }}"></ct-failure-card>
     </template>
   </template>
 </polymer-element>

@@ -1,0 +1,63 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<script>
+function CTFailureGroup(key, failures, annotation) {
+  this.key = key;
+  this.failures = failures;
+  this.annotation = annotation || {};
+  this._computeProperties();
+}
+
+CTFailureGroup.prototype.snoozeUntil = function(time) {
+  return this._annotate({
+    snoozeTime: time,
+  });
+};
+
+CTFailureGroup.prototype.unsnooze = function() {
+  return this._annotate({
+    snoozeTime: undefined,
+  });
+};
+
+CTFailureGroup.prototype._computeProperties = function() {
+  this.isSnoozed = Date.now() < this.annotation.snoozeTime;
+};
+
+CTFailureGroup.prototype._annotate = function(newAnnotation) {
+  // FIXME: Post the new annotation to frontend rather than storing locally.
+  return CTFailureGroup.fetchAnnotations().then(function(annotations) {
+    var annotation = annotations[this.key] || {};
+
+    Object.keys(newAnnotation, function(key, value) {
+      if (value === 'undefined') {
+        delete annotation[key];
+      } else {
+        annotation[key] = value;
+      }
+    });
+
+    if (Object.size(annotation) == 0) {
+      annotations[this.key] = annotation;
+    } else {
+      delete annotations[this.key];
+    }
+
+    localStorage.CTFailureGroupAnnotations = JSON.stringify(annotations);
+
+    this.annotation = annotation;
+    this._computeProperties();
+  }.bind(this));
+};
+
+CTFailureGroup.fetchAnnotations = function() {
+  // FIXME: Fetch annotations from frontend.
+  var stored = localStorage.CTFailureGroupAnnotations;
+  var annotations = stored ? JSON.parse(stored) : {};
+  return Promise.resolve(annotations);
+};
+</script>
