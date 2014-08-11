@@ -1256,6 +1256,9 @@ crbug.com/392046 [ Win ] fast/ruby/select-ruby.html [ Pass Failure ]
 crbug.com/392046 [ Win ] scrollbars/rtl/overflow-scroll-rtl.html [ Pass ImageOnlyFailure ]
 crbug.com/392046 [ Win ] fast/parser/fonts.html [ Pass Failure ]
 
+crbug.com/402493 css3/filters/effect-reference-hw.html [ NeedsRebaseline ]
+crbug.com/402493 css3/filters/effect-reference-subregion-hw.html [ NeedsRebaseline ]
+
 crbug.com/392095 webaudio/realtimeanalyser-fft-scaling.html [ Pass Failure ]
 
 crbug.com/392706 virtual/threaded/animations/play-state-initially-paused.html [ Failure ]

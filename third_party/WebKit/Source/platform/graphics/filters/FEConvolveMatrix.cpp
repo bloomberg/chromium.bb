@@ -527,7 +527,7 @@ PassRefPtr<SkImageFilter> FEConvolveMatrix::createImageFilter(SkiaImageFilterBui
     SkISize kernelSize(SkISize::Make(m_kernelSize.width(), m_kernelSize.height()));
     int numElements = kernelSize.width() * kernelSize.height();
     SkScalar gain = SkFloatToScalar(1.0f / m_divisor);
-    SkScalar bias = SkFloatToScalar(m_bias);
+    SkScalar bias = SkFloatToScalar(m_bias * 255);
     SkIPoint target = SkIPoint::Make(m_targetOffset.x(), m_targetOffset.y());
     SkMatrixConvolutionImageFilter::TileMode tileMode = toSkiaTileMode(m_edgeMode);
     bool convolveAlpha = !m_preserveAlpha;
