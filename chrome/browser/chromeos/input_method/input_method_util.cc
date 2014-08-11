@@ -172,6 +172,7 @@ const char* const kExtensionIdMigrationMap[][2] = {
 const char* const kEngineIdMigrationMap[][2] = {
   {"m17n:", "vkd_"},
   {"ime:zh-t:quick", "zh-hant-t-i0-cangjie-1987-x-m0-simplified"},
+  {"ime:zh-t:zhuyin", "zh-hant-t-i0-und"},
   {"ime:ko:hangul", "hangul_2set"},
   {"ime:ko:hangul_2set", "hangul_2set"},
 };
