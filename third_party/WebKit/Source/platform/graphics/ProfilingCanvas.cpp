@@ -242,7 +242,7 @@ void ProfilingCanvas::onClipRegion(const SkRegion& region, SkRegion::Op op)
 void ProfilingCanvas::onDrawPicture(const SkPicture* picture, const SkMatrix* matrix, const SkPaint* paint)
 {
     AutoStamper stamper(this);
-    this->SkCanvas::onDrawPicture(picture);
+    this->SkCanvas::onDrawPicture(picture, matrix, paint);
 }
 
 void ProfilingCanvas::didSetMatrix(const SkMatrix& matrix)
