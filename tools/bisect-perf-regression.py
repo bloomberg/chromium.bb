@@ -1652,8 +1652,6 @@ class BisectPerformanceMetrics(object):
 
     # Creates a try job description.
     job_args = {
-        'host': builder_host,
-        'port': builder_port,
         'revision': 'src@%s' % svn_revision,
         'bot': bot_name,
         'name': build_request_id,
@@ -1662,7 +1660,7 @@ class BisectPerformanceMetrics(object):
     if patch:
       job_args['patch'] = patch
     # Posts job to build the revision on the server.
-    if bisect_builder.PostTryJob(job_args):
+    if bisect_builder.PostTryJob(builder_host, builder_port, job_args):
       target_file, error_msg = _WaitUntilBuildIsReady(
           fetch_build, bot_name, builder_host, builder_port, build_request_id,
           build_timeout)

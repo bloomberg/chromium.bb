@@ -2,7 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Post a try job request via HTTP to the Tryserver to produce build."""
+"""This module contains functionality for starting build try jobs via HTTP.
+
+This includes both sending a request to start a job, and also related code
+for querying the status of the job.
+
+This module can be either run as a stand-alone script to send a request to a
+builder, or imported and used by calling the public functions below.
+"""
 
 import getpass
 import json
@@ -12,33 +19,31 @@ import sys
 import urllib
 import urllib2
 
-# Link to get JSON data of builds
+# URL template for fetching JSON data about builds.
 BUILDER_JSON_URL = ('%(server_url)s/json/builders/%(bot_name)s/builds/'
                     '%(build_num)s?as_text=1&filter=0')
 
-# Link to display build steps
+# URL template for displaying build steps.
 BUILDER_HTML_URL = ('%(server_url)s/builders/%(bot_name)s/builds/%(build_num)s')
 
-# Tryserver buildbots status page
-TRY_SERVER_URL = 'http://build.chromium.org/p/tryserver.chromium.perf'
+# Try server status page for the perf try server.
+PERF_TRY_SERVER_URL = 'http://build.chromium.org/p/tryserver.chromium.perf'
 
-# Hostname of the tryserver where perf bisect builders are hosted. This is used
-# for posting build request to tryserver.
-BISECT_BUILDER_HOST = 'master4.golo.chromium.org'
-# 'try_job_port' on tryserver to post build request.
-BISECT_BUILDER_PORT = 8341
+# Hostname of the tryserver where perf bisect builders are hosted.
+# This is used for posting build requests to the tryserver.
+PERF_BISECT_BUILDER_HOST = 'master4.golo.chromium.org'
 
+# The default 'try_job_port' on tryserver to post build request.
+PERF_BISECT_BUILDER_PORT = 8341
 
+# Status codes that can be returned by the GetBuildStatus method.
 # From buildbot.status.builder.
 # See: http://docs.buildbot.net/current/developer/results.html
 SUCCESS, WARNINGS, FAILURE, SKIPPED, EXCEPTION, RETRY, TRYPENDING = range(7)
 
-# Status codes that can be returned by the GetBuildStatus method.
-OK = (SUCCESS, WARNINGS)
-# Indicates build failure.
-FAILED = (FAILURE, EXCEPTION, SKIPPED)
-# Inidcates build in progress or in pending queue.
-PENDING = (RETRY, TRYPENDING)
+OK = (SUCCESS, WARNINGS)  # These indicate build is complete.
+FAILED = (FAILURE, EXCEPTION, SKIPPED)  # These indicate build failure.
+PENDING = (RETRY, TRYPENDING)  # These indicate in progress or in pending queue.
 
 
 class ServerAccessError(Exception):
@@ -47,52 +52,48 @@ class ServerAccessError(Exception):
     return '%s\nSorry, cannot connect to server.' % self.args[0]
 
 
-def PostTryJob(url_params):
+def PostTryJob(host, port, params):
   """Sends a build request to the server using the HTTP protocol.
 
+  The required parameters are:
+    'revision': "src@rev", where rev is an SVN Revision to build.
+    'bot': Name of builder bot to use, e.g. "win_perf_bisect_builder".
+
   Args:
-    url_params: A dictionary of query parameters to be sent in the request.
-                In order to post build request to try server, this dictionary
-                should contain information for following keys:
-                'host': Hostname of the try server.
-                'port': Port of the try server.
-                'revision': SVN Revision to build.
-                'bot': Name of builder bot which would be used.
+    host: Hostname of the try server.
+    port: Port of the try server.
+    params: A dictionary of parameters to be sent in the POST request.
+
   Returns:
-    True if the request is posted successfully. Otherwise throws an exception.
+    True if the request is posted successfully.
+
+  Raises:
+    ServerAccessError: Failed to make a request to the try server.
+    ValueError: Not all of the expected inputs were given.
   """
-  # Parse url parameters to be sent to Try server.
-  if not url_params.get('host'):
-    raise ValueError('Hostname of server to connect is missing.')
-  if not url_params.get('port'):
-    raise ValueError('Port of server to connect is missing.')
-  if not url_params.get('revision'):
-    raise ValueError('Missing revision details. Please specify revision'
-                     ' information.')
-  if not url_params.get('bot'):
-    raise ValueError('Missing bot details. Please specify bot information.')
+  if not params.get('revision'):
+    raise ValueError('Missing revision number.')
+  if not params.get('bot'):
+    raise ValueError('Missing bot name.')
 
-  # Pop 'host' and 'port' to avoid passing them as query params.
-  url = 'http://%s:%s/send_try_patch' % (url_params.pop('host'),
-                                         url_params.pop('port'))
-
-  print 'Sending by HTTP'
-  query_params = '&'.join('%s=%s' % (k, v) for k, v in url_params.iteritems())
-  print 'url: %s?%s' % (url, query_params)
+  base_url = 'http://%s:%s/send_try_patch' % (host, port)
+  print 'Posting build request by HTTP.'
+  print 'URL: %s, params: %s' % (base_url, params)
 
   connection = None
   try:
     print 'Opening connection...'
-    connection = urllib2.urlopen(url, urllib.urlencode(url_params))
+    connection = urllib2.urlopen(base_url, urllib.urlencode(params))
     print 'Done, request sent to server to produce build.'
-  except IOError, e:
-    raise ServerAccessError('%s is unaccessible. Reason: %s' % (url, e))
+  except IOError as e:
+    raise ServerAccessError('%s is unaccessible. Reason: %s' % (base_url, e))
   if not connection:
-    raise ServerAccessError('%s is unaccessible.' % url)
+    raise ServerAccessError('%s is unaccessible.' % base_url)
+
   response = connection.read()
-  print 'Received %s from server' % response
+  print 'Received response from server: %s' % response
   if response != 'OK':
-    raise ServerAccessError('%s is unaccessible. Got:\n%s' % (url, response))
+    raise ServerAccessError('Response was not "OK".')
   return True
 
 
@@ -173,14 +174,14 @@ def _FetchBuilderData(builder_url):
   data = None
   try:
     url = urllib2.urlopen(builder_url)
-  except urllib2.URLError, e:
+  except urllib2.URLError as e:
     print ('urllib2.urlopen error %s, waterfall status page down.[%s]' % (
         builder_url, str(e)))
     return None
   if url is not None:
     try:
       data = url.read()
-    except IOError, e:
+    except IOError as e:
       print 'urllib2 file object read error %s, [%s].' % (builder_url, str(e))
   return data
 
@@ -201,11 +202,11 @@ def _GetBuildData(buildbot_url):
 
 
 def _GetBuildBotUrl(builder_host, builder_port):
-  """Gets build bot URL based on the host and port of the builders.
+  """Gets build bot URL for fetching build info.
 
-  Note: All bisect builder bots are hosted on tryserver.chromium i.e.,
-  on master4:8328, since we cannot access tryserver using host and port
-  number directly, we use tryserver URL.
+  Bisect builder bots are hosted on tryserver.chromium.perf, though we cannot
+  access this tryserver using host and port number directly, so we use another
+  tryserver URL for the perf tryserver.
 
   Args:
     builder_host: Hostname of the server where the builder is hosted.
@@ -214,9 +215,9 @@ def _GetBuildBotUrl(builder_host, builder_port):
   Returns:
     URL of the buildbot as a string.
   """
-  if (builder_host == BISECT_BUILDER_HOST and
-      builder_port == BISECT_BUILDER_PORT):
-    return TRY_SERVER_URL
+  if (builder_host == PERF_BISECT_BUILDER_HOST and
+      builder_port == PERF_BISECT_BUILDER_PORT):
+    return PERF_TRY_SERVER_URL
   else:
     return 'http://%s:%s' % (builder_host, builder_port)
 
@@ -228,27 +229,29 @@ def GetBuildStatus(build_num, bot_name, builder_host, builder_port):
     build_num: A build number on tryserver to determine its status.
     bot_name: Name of the bot where the build information is scanned.
     builder_host: Hostname of the server where the builder is hosted.
-    builder_port: Port number of ther server where the builder is hosted.
+    builder_port: Port number of the server where the builder is hosted.
 
   Returns:
-    A tuple consists of build status (SUCCESS, FAILED or PENDING) and a link
-    to build status page on the waterfall.
+    A pair which consists of build status (SUCCESS, FAILED or PENDING) and a
+    link to build status page on the waterfall.
   """
   results_url = None
   if build_num:
-    # Gets the buildbot url for the given host and port.
+    # Get the URL for requesting JSON data with status information.
     server_url = _GetBuildBotUrl(builder_host, builder_port)
-    buildbot_url = BUILDER_JSON_URL % {'server_url': server_url,
-                                       'bot_name': bot_name,
-                                       'build_num': build_num
-                                      }
+    buildbot_url = BUILDER_JSON_URL % {
+        'server_url': server_url,
+        'bot_name': bot_name,
+        'build_num': build_num,
+    }
     build_data = _GetBuildData(buildbot_url)
     if build_data:
       # Link to build on the buildbot showing status of build steps.
-      results_url = BUILDER_HTML_URL % {'server_url': server_url,
-                                        'bot_name': bot_name,
-                                        'build_num': build_num
-                                       }
+      results_url = BUILDER_HTML_URL % {
+          'server_url': server_url,
+          'bot_name': bot_name,
+          'build_num': build_num,
+      }
       if _IsBuildFailed(build_data):
         return (FAILED, results_url)
 
@@ -258,12 +261,13 @@ def GetBuildStatus(build_num, bot_name, builder_host, builder_port):
 
 
 def GetBuildNumFromBuilder(build_reason, bot_name, builder_host, builder_port):
-  """Gets build number on build status page for a given build reason.
+  """Gets build number on build status page for a given 'build reason'.
 
-  It parses the JSON data from buildbot page and collect basic information
-  about the all the builds and then this uniquely identifies the build based
-  on the 'reason' attribute in builds's JSON data.
-  The 'reason' attribute set while a build request is posted, and same is used
+  This function parses the JSON data from buildbot page and collects basic
+  information about the all the builds, and then uniquely identifies the build
+  based on the 'reason' attribute in builds's JSON data.
+
+  The 'reason' attribute set is when a build request is posted, and it is used
   to identify the build on status page.
 
   Args:
@@ -277,10 +281,11 @@ def GetBuildNumFromBuilder(build_reason, bot_name, builder_host, builder_port):
   """
   # Gets the buildbot url for the given host and port.
   server_url = _GetBuildBotUrl(builder_host, builder_port)
-  buildbot_url = BUILDER_JSON_URL % {'server_url': server_url,
-                                     'bot_name': bot_name,
-                                     'build_num': '_all'
-                                    }
+  buildbot_url = BUILDER_JSON_URL % {
+      'server_url': server_url,
+      'bot_name': bot_name,
+      'build_num': '_all',
+  }
   builds_json = _FetchBuilderData(buildbot_url)
   if builds_json:
     builds_data = json.loads(builds_json)
@@ -290,42 +295,36 @@ def GetBuildNumFromBuilder(build_reason, bot_name, builder_host, builder_port):
   return None
 
 
-def _GetQueryParams(options):
-  """Parses common query parameters which will be passed to PostTryJob.
+def _GetRequestParams(options):
+  """Extracts request parameters which will be passed to PostTryJob.
 
   Args:
     options: The options object parsed from the command line.
 
   Returns:
-    A dictionary consists of query parameters.
+    A dictionary with parameters to pass to PostTryJob.
   """
-  values = {'host': options.host,
-            'port': options.port,
-            'user': options.user,
-            'name': options.name
-           }
-  if options.email:
-    values['email'] = options.email
-  if options.revision:
-    values['revision'] = options.revision
-  if options.root:
-    values['root'] = options.root
-  if options.bot:
-    values['bot'] = options.bot
-  if options.patch:
-    values['patch'] = options.patch
-  return values
+  params = {
+      'user': options.user,
+      'name': options.name,
+  }
+  # Add other parameters if they're available in the options object.
+  for key in ['email', 'revision', 'root', 'bot', 'patch']:
+    option = getattr(options, key)
+    if option:
+      params[key] = option
+  return params
 
 
 def _GenParser():
-  """Parses the command line for posting build request."""
+  """Returns a parser for getting command line arguments."""
   usage = ('%prog [options]\n'
-           'Post a build request to the try server for the given revision.\n')
+           'Post a build request to the try server for the given revision.')
   parser = optparse.OptionParser(usage=usage)
   parser.add_option('-H', '--host',
-                    help='Host address of the try server.')
+                    help='Host address of the try server (required).')
   parser.add_option('-P', '--port', type='int',
-                    help='HTTP port of the try server.')
+                    help='HTTP port of the try server (required).')
   parser.add_option('-u', '--user', default=getpass.getuser(),
                     dest='user',
                     help='Owner user name [default: %default]')
@@ -340,33 +339,31 @@ def _GenParser():
                     default='try_job_http',
                     help='Descriptive name of the try job')
   parser.add_option('-b', '--bot',
-                    help=('IMPORTANT: specify ONE builder per run is supported.'
-                          'Run script for each builders separately.'))
+                    help=('Only one builder per run may be specified; to post '
+                          'jobs on on multiple builders, run script for each '
+                          'builder separately.'))
   parser.add_option('-r', '--revision',
-                    help=('Revision to use for the try job; default: the '
-                          'revision will be determined by the try server; see '
-                          'its waterfall for more info'))
+                    help=('Revision to use for the try job. The revision may '
+                          'be determined by the try server; see its waterfall '
+                          'for more info.'))
   parser.add_option('--root',
                     help=('Root to use for the patch; base subdirectory for '
-                          'patch created in a subdirectory'))
+                          'patch created in a subdirectory.'))
   parser.add_option('--patch',
                     help='Patch information.')
   return parser
 
 
-def Main(argv):
+def Main(_):
+  """Posts a try job based on command line parameters."""
   parser = _GenParser()
   options, _ = parser.parse_args()
-  if not options.host:
-    raise ServerAccessError('Please use the --host option to specify the try '
-                            'server host to connect to.')
-  if not options.port:
-    raise ServerAccessError('Please use the --port option to specify the try '
-                            'server port to connect to.')
-  params = _GetQueryParams(options)
-  PostTryJob(params)
+  if not options.host or not options.port:
+    parser.print_help()
+    return 1
+  params = _GetRequestParams(options)
+  PostTryJob(options.host, options.port, params)
 
 
 if __name__ == '__main__':
   sys.exit(Main(sys.argv))
-
