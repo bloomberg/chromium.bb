@@ -18,12 +18,12 @@ class CC_EXPORT IOSurfaceLayer : public Layer {
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;
-  virtual bool DrawsContent() const OVERRIDE;
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
   virtual bool Update(ResourceUpdateQueue* queue,
                       const OcclusionTracker<Layer>* occlusion) OVERRIDE;
 
  protected:
+  virtual bool HasDrawableContent() const OVERRIDE;
   IOSurfaceLayer();
 
  private:

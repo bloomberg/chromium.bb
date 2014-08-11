@@ -32,6 +32,7 @@ class CC_EXPORT DelegatedRendererLayer : public Layer {
   // Called by the DelegatedFrameProvider when a new frame is available to be
   // picked up.
   void ProviderHasNewFrame();
+  virtual bool HasDelegatedContent() const OVERRIDE;
 
  protected:
   DelegatedRendererLayer(

@@ -64,6 +64,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       background_color_(0),
       opacity_(1.0),
       blend_mode_(SkXfermode::kSrcOver_Mode),
+      num_descendants_that_draw_content_(0),
       draw_depth_(0.f),
       needs_push_properties_(false),
       num_dependents_need_push_properties_(0),
@@ -173,6 +174,13 @@ void LayerImpl::SetScrollChildren(std::set<LayerImpl*>* children) {
   if (scroll_children_.get() == children)
     return;
   scroll_children_.reset(children);
+  SetNeedsPushProperties();
+}
+
+void LayerImpl::SetNumDescendantsThatDrawContent(int num_descendants) {
+  if (num_descendants_that_draw_content_ == num_descendants)
+    return;
+  num_descendants_that_draw_content_ = num_descendants;
   SetNeedsPushProperties();
 }
 
@@ -532,6 +540,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
       scroll_offset_, layer->ScrollDelta() - layer->sent_scroll_delta());
   layer->SetSentScrollDelta(gfx::Vector2d());
   layer->Set3dSortingContextId(sorting_context_id_);
+  layer->SetNumDescendantsThatDrawContent(num_descendants_that_draw_content_);
 
   LayerImpl* scroll_parent = NULL;
   if (scroll_parent_) {
@@ -1519,6 +1528,10 @@ size_t LayerImpl::GPUMemoryUsageInBytes() const { return 0; }
 
 void LayerImpl::RunMicroBenchmark(MicroBenchmarkImpl* benchmark) {
   benchmark->RunOnLayer(this);
+}
+
+int LayerImpl::NumDescendantsThatDrawContent() const {
+  return num_descendants_that_draw_content_;
 }
 
 void LayerImpl::NotifyAnimationFinished(

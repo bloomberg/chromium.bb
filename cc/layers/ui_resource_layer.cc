@@ -113,11 +113,11 @@ void UIResourceLayer::SetLayerTreeHost(LayerTreeHost* host) {
 
 void UIResourceLayer::RecreateUIResourceHolder() {
   ui_resource_holder_.reset();
-  if (!layer_tree_host() || bitmap_.empty())
-    return;
-
-  ui_resource_holder_ =
-    ScopedUIResourceHolder::Create(layer_tree_host(), bitmap_);
+  if (layer_tree_host() && !bitmap_.empty()) {
+    ui_resource_holder_ =
+        ScopedUIResourceHolder::Create(layer_tree_host(), bitmap_);
+  }
+  UpdateDrawsContent(HasDrawableContent());
 }
 
 void UIResourceLayer::SetBitmap(const SkBitmap& skbitmap) {
@@ -137,12 +137,13 @@ void UIResourceLayer::SetUIResourceId(UIResourceId resource_id) {
     ui_resource_holder_.reset();
   }
 
+  UpdateDrawsContent(HasDrawableContent());
   SetNeedsCommit();
 }
 
-bool UIResourceLayer::DrawsContent() const {
+bool UIResourceLayer::HasDrawableContent() const {
   return ui_resource_holder_ && ui_resource_holder_->id() &&
-         Layer::DrawsContent();
+         Layer::HasDrawableContent();
 }
 
 void UIResourceLayer::PushPropertiesTo(LayerImpl* layer) {

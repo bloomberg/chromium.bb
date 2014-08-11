@@ -30,6 +30,7 @@ void ExecuteCalculateDrawProperties(LayerImpl* root,
   ASSERT_TRUE(root->render_surface());
   ASSERT_FALSE(render_surface_layer_list->size());
 
+  FakeLayerTreeHostImpl::RecursiveUpdateNumChildren(root);
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
       root, root->bounds(), render_surface_layer_list);
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);

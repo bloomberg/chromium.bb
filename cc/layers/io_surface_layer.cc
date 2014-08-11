@@ -20,6 +20,7 @@ void IOSurfaceLayer::SetIOSurfaceProperties(uint32_t io_surface_id,
                                             const gfx::Size& size) {
   io_surface_id_ = io_surface_id;
   io_surface_size_ = size;
+  UpdateDrawsContent(HasDrawableContent());
   SetNeedsCommit();
 }
 
@@ -28,8 +29,8 @@ scoped_ptr<LayerImpl> IOSurfaceLayer::CreateLayerImpl(
   return IOSurfaceLayerImpl::Create(tree_impl, layer_id_).PassAs<LayerImpl>();
 }
 
-bool IOSurfaceLayer::DrawsContent() const {
-  return io_surface_id_ && Layer::DrawsContent();
+bool IOSurfaceLayer::HasDrawableContent() const {
+  return io_surface_id_ && Layer::HasDrawableContent();
 }
 
 void IOSurfaceLayer::PushPropertiesTo(LayerImpl* layer) {

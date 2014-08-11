@@ -19,7 +19,6 @@ class CC_EXPORT ImageLayer : public TiledLayer {
   static scoped_refptr<ImageLayer> Create();
 
   // Layer implementation.
-  virtual bool DrawsContent() const OVERRIDE;
   virtual void SetTexturePriorities(const PriorityCalculator& priority_calc)
       OVERRIDE;
   virtual bool Update(ResourceUpdateQueue* queue,
@@ -31,6 +30,9 @@ class CC_EXPORT ImageLayer : public TiledLayer {
   virtual void OnOutputSurfaceCreated() OVERRIDE;
 
   void SetBitmap(const SkBitmap& image);
+
+ protected:
+  virtual bool HasDrawableContent() const OVERRIDE;
 
  private:
   ImageLayer();

@@ -140,6 +140,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     return scroll_children_.get();
   }
 
+  void SetNumDescendantsThatDrawContent(int num_descendants);
   void SetClipParent(LayerImpl* ancestor);
 
   LayerImpl* clip_parent() {
@@ -211,6 +212,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void SetDrawsContent(bool draws_content);
   bool DrawsContent() const { return draws_content_; }
 
+  int NumDescendantsThatDrawContent() const;
   void SetHideLayerAndSubtree(bool hide);
   bool hide_layer_and_subtree() const { return hide_layer_and_subtree_; }
 
@@ -649,6 +651,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   gfx::Vector2dF scroll_delta_;
   gfx::Vector2d sent_scroll_delta_;
   gfx::Vector2dF last_scroll_offset_;
+
+  int num_descendants_that_draw_content_;
 
   // The global depth value of the center of the layer. This value is used
   // to sort layers from back to front.

@@ -98,4 +98,8 @@ bool DelegatedRendererLayer::Update(ResourceUpdateQueue* queue,
   return true;
 }
 
+bool DelegatedRendererLayer::HasDelegatedContent() const {
+  return true;
+}
+
 }  // namespace cc

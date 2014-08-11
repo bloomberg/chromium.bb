@@ -133,6 +133,8 @@ struct OcclusionTrackerTestMainThreadTypes {
   }
 
   static void DestroyLayer(LayerPtrType* layer) { *layer = NULL; }
+
+  static void RecursiveUpdateNumChildren(LayerType* layerType) {}
 };
 
 struct OcclusionTrackerTestImplThreadTypes {
@@ -162,6 +164,10 @@ struct OcclusionTrackerTestImplThreadTypes {
   }
 
   static void DestroyLayer(LayerPtrType* layer) { layer->reset(); }
+
+  static void RecursiveUpdateNumChildren(LayerType* layer) {
+    FakeLayerTreeHostImpl::RecursiveUpdateNumChildren(layer);
+  }
 };
 
 int OcclusionTrackerTestImplThreadTypes::next_layer_impl_id = 1;
@@ -304,6 +310,7 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
     DCHECK(root == root_.get());
     DCHECK(!root->render_surface());
 
+    Types::RecursiveUpdateNumChildren(root);
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
         root, root->bounds(), &render_surface_layer_list_impl_);
     inputs.can_adjust_raster_scales = true;

@@ -331,7 +331,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   virtual void SetLayerTreeHost(LayerTreeHost* host);
 
-  bool HasDelegatedContent() const { return false; }
+  virtual bool HasDelegatedContent() const;
   bool HasContributingDelegatedRenderPasses() const { return false; }
 
   void SetIsDrawable(bool is_drawable);
@@ -350,8 +350,13 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
            (mask_layer_.get() || replica_layer_->mask_layer_.get());
   }
 
-  // These methods typically need to be overwritten by derived classes.
+  int NumDescendantsThatDrawContent() const;
+
+  // This is only virtual for tests.
+  // TODO(awoloszyn): Remove this once we no longer need it for tests
   virtual bool DrawsContent() const;
+
+  // This methods typically need to be overwritten by derived classes.
   virtual void SavePaintProperties();
   // Returns true iff any resources were updated that need to be committed.
   virtual bool Update(ResourceUpdateQueue* queue,
@@ -482,6 +487,14 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // unused resources on the impl thread are returned before commit completes.
   void SetNextCommitWaitsForActivation();
 
+  // Will recalculate whether the layer draws content and set draws_content_
+  // appropriately.
+  void UpdateDrawsContent(bool has_drawable_content);
+  virtual bool HasDrawableContent() const;
+
+  // Called when the layer's number of drawable descendants changes.
+  void AddDrawableDescendants(int num);
+
   void AddDependentNeedsPushProperties();
   void RemoveDependentNeedsPushProperties();
   bool parent_should_know_need_push_properties() const {
@@ -575,6 +588,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // transformed relative to this layer, defines the maximum scroll offset for
   // this layer.
   int scroll_clip_layer_id_;
+  int num_descendants_that_draw_content_;
   bool should_scroll_on_main_thread_ : 1;
   bool have_wheel_event_handlers_ : 1;
   bool have_scroll_event_handlers_ : 1;
@@ -583,6 +597,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   bool is_root_for_isolated_group_ : 1;
   bool is_container_for_fixed_position_layers_ : 1;
   bool is_drawable_ : 1;
+  bool draws_content_ : 1;
   bool hide_layer_and_subtree_ : 1;
   bool masks_to_bounds_ : 1;
   bool contents_opaque_ : 1;

@@ -30,7 +30,12 @@ void ImageLayer::SetBitmap(const SkBitmap& bitmap) {
     return;
 
   bitmap_ = bitmap;
+  UpdateDrawsContent(HasDrawableContent());
   SetNeedsDisplay();
+}
+
+bool ImageLayer::HasDrawableContent() const {
+  return !bitmap_.isNull() && TiledLayer::HasDrawableContent();
 }
 
 void ImageLayer::SetTexturePriorities(const PriorityCalculator& priority_calc) {
@@ -71,10 +76,6 @@ void ImageLayer::CalculateContentsScale(float ideal_contents_scale,
   *contents_scale_x = ImageContentsScaleX();
   *contents_scale_y = ImageContentsScaleY();
   *content_bounds = gfx::Size(bitmap_.width(), bitmap_.height());
-}
-
-bool ImageLayer::DrawsContent() const {
-  return !bitmap_.isNull() && TiledLayer::DrawsContent();
 }
 
 void ImageLayer::OnOutputSurfaceCreated() {

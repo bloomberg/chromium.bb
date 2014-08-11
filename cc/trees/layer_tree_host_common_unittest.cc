@@ -6945,6 +6945,7 @@ TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
 
   {
     LayerImplList render_surface_layer_list;
+    FakeLayerTreeHostImpl::RecursiveUpdateNumChildren(root.get());
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
         root.get(), root->bounds(), &render_surface_layer_list);
     inputs.can_render_to_separate_surface = true;

@@ -19,6 +19,7 @@ SurfaceLayer::~SurfaceLayer() {}
 
 void SurfaceLayer::SetSurfaceId(SurfaceId surface_id) {
   surface_id_ = surface_id;
+  UpdateDrawsContent(HasDrawableContent());
   SetNeedsPushProperties();
 }
 
@@ -26,8 +27,8 @@ scoped_ptr<LayerImpl> SurfaceLayer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
   return SurfaceLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
 }
 
-bool SurfaceLayer::DrawsContent() const {
-  return !surface_id_.is_null() && Layer::DrawsContent();
+bool SurfaceLayer::HasDrawableContent() const {
+  return !surface_id_.is_null() && Layer::HasDrawableContent();
 }
 
 void SurfaceLayer::PushPropertiesTo(LayerImpl* layer) {

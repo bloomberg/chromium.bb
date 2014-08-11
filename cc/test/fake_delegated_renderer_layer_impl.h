@@ -28,7 +28,6 @@ class FakeDelegatedRendererLayerImpl : public DelegatedRendererLayerImpl {
 
   void SetFrameDataForRenderPasses(float device_scale_factor,
                                    RenderPassList* pass_list);
-
  protected:
   FakeDelegatedRendererLayerImpl(LayerTreeImpl* tree_impl, int id);
 };

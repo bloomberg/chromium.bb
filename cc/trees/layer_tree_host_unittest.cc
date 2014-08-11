@@ -2996,6 +2996,8 @@ class PushPropertiesCountingLayer : public Layer {
         PassAs<LayerImpl>();
   }
 
+  void SetDrawsContent(bool draws_content) { SetIsDrawable(draws_content); }
+
   size_t push_properties_count() const { return push_properties_count_; }
   void reset_push_properties_count() { push_properties_count_ = 0; }
 
@@ -3007,7 +3009,6 @@ class PushPropertiesCountingLayer : public Layer {
   PushPropertiesCountingLayer()
       : push_properties_count_(0), persist_needs_push_properties_(false) {
     SetBounds(gfx::Size(1, 1));
-    SetIsDrawable(true);
   }
   virtual ~PushPropertiesCountingLayer() {}
 
@@ -3463,6 +3464,59 @@ class LayerTreeHostTestPropertyChangesDuringUpdateArePushed
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestPropertyChangesDuringUpdateArePushed);
+
+class LayerTreeHostTestSetDrawableCausesCommit : public LayerTreeHostTest {
+ protected:
+  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+
+  virtual void SetupTree() OVERRIDE {
+    root_ = PushPropertiesCountingLayer::Create();
+    child_ = PushPropertiesCountingLayer::Create();
+    root_->AddChild(child_);
+
+    layer_tree_host()->SetRootLayer(root_);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  virtual void DidCommitAndDrawFrame() OVERRIDE {
+    switch (layer_tree_host()->source_frame_number()) {
+      case 0:
+        break;
+      case 1: {
+        // During update, the ignore_set_needs_commit_ bit is set to true to
+        // avoid causing a second commit to be scheduled. If a property change
+        // is made during this, however, it needs to be pushed in the upcoming
+        // commit.
+        EXPECT_FALSE(root_->needs_push_properties());
+        EXPECT_FALSE(child_->needs_push_properties());
+        EXPECT_EQ(0, root_->NumDescendantsThatDrawContent());
+        root_->reset_push_properties_count();
+        child_->reset_push_properties_count();
+        child_->SetDrawsContent(true);
+        EXPECT_EQ(1, root_->NumDescendantsThatDrawContent());
+        EXPECT_EQ(0u, root_->push_properties_count());
+        EXPECT_EQ(0u, child_->push_properties_count());
+        EXPECT_TRUE(root_->needs_push_properties());
+        EXPECT_TRUE(child_->needs_push_properties());
+        break;
+      }
+      case 2:
+        EXPECT_EQ(1u, root_->push_properties_count());
+        EXPECT_EQ(1u, child_->push_properties_count());
+        EXPECT_FALSE(root_->needs_push_properties());
+        EXPECT_FALSE(child_->needs_push_properties());
+        EndTest();
+        break;
+    }
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+  scoped_refptr<PushPropertiesCountingLayer> root_;
+  scoped_refptr<PushPropertiesCountingLayer> child_;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestSetDrawableCausesCommit);
 
 class LayerTreeHostTestCasePushPropertiesThreeGrandChildren
     : public LayerTreeHostTest {

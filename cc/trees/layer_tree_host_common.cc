@@ -583,7 +583,7 @@ static bool SubtreeShouldRenderToSeparateSurface(
   }
 
   int num_descendants_that_draw_content =
-      layer->draw_properties().num_descendants_that_draw_content;
+      layer->NumDescendantsThatDrawContent();
 
   // If the layer flattens its subtree, but it is treated as a 3D object by its
   // parent (i.e. parent participates in a 3D rendering context).
@@ -1207,8 +1207,6 @@ template <typename LayerType>
 static void PreCalculateMetaInformation(
     LayerType* layer,
     PreCalculateMetaInformationRecursiveData* recursive_data) {
-  bool has_delegated_content = layer->HasDelegatedContent();
-  int num_descendants_that_draw_content = 0;
 
   layer->draw_properties().sorted_for_recursion = false;
   layer->draw_properties().has_child_with_a_scroll_parent = false;
@@ -1217,14 +1215,6 @@ static void PreCalculateMetaInformation(
     // Layers with singular transforms should not be drawn, the whole subtree
     // can be skipped.
     return;
-  }
-
-  if (has_delegated_content) {
-    // Layers with delegated content need to be treated as if they have as
-    // many children as the number of layers they own delegated quads for.
-    // Since we don't know this number right now, we choose one that acts like
-    // infinity for our purposes.
-    num_descendants_that_draw_content = 1000;
   }
 
   if (layer->clip_parent())
@@ -1236,10 +1226,6 @@ static void PreCalculateMetaInformation(
 
     PreCalculateMetaInformationRecursiveData data_for_child;
     PreCalculateMetaInformation(child_layer, &data_for_child);
-
-    num_descendants_that_draw_content += child_layer->DrawsContent() ? 1 : 0;
-    num_descendants_that_draw_content +=
-        child_layer->draw_properties().num_descendants_that_draw_content;
 
     if (child_layer->scroll_parent())
       layer->draw_properties().has_child_with_a_scroll_parent = true;
@@ -1259,8 +1245,6 @@ static void PreCalculateMetaInformation(
       layer->have_wheel_event_handlers())
     recursive_data->layer_or_descendant_has_input_handler = true;
 
-  layer->draw_properties().num_descendants_that_draw_content =
-      num_descendants_that_draw_content;
   layer->draw_properties().num_unclipped_descendants =
       recursive_data->num_unclipped_descendants;
   layer->draw_properties().layer_or_descendant_has_copy_request =

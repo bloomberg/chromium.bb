@@ -28,10 +28,6 @@ PictureLayer::PictureLayer(ContentLayerClient* client)
 PictureLayer::~PictureLayer() {
 }
 
-bool PictureLayer::DrawsContent() const {
-  return Layer::DrawsContent() && client_;
-}
-
 scoped_ptr<LayerImpl> PictureLayer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
   return PictureLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
 }
@@ -198,6 +194,15 @@ skia::RefPtr<SkPicture> PictureLayer::GetPicture() const {
 
 bool PictureLayer::IsSuitableForGpuRasterization() const {
   return pile_->is_suitable_for_gpu_rasterization();
+}
+
+void PictureLayer::ClearClient() {
+  client_ = NULL;
+  UpdateDrawsContent(HasDrawableContent());
+}
+
+bool PictureLayer::HasDrawableContent() const {
+  return client_ && Layer::HasDrawableContent();
 }
 
 void PictureLayer::RunMicroBenchmark(MicroBenchmark* benchmark) {

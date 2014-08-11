@@ -20,8 +20,6 @@ class CC_EXPORT UIResourceLayer : public Layer {
  public:
   static scoped_refptr<UIResourceLayer> Create();
 
-  virtual bool DrawsContent() const OVERRIDE;
-
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
 
   virtual void SetLayerTreeHost(LayerTreeHost* host) OVERRIDE;
@@ -50,6 +48,8 @@ class CC_EXPORT UIResourceLayer : public Layer {
  protected:
   UIResourceLayer();
   virtual ~UIResourceLayer();
+
+  virtual bool HasDrawableContent() const OVERRIDE;
 
   scoped_ptr<UIResourceHolder> ui_resource_holder_;
   SkBitmap bitmap_;

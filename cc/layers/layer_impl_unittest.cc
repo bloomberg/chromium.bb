@@ -200,6 +200,8 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
       root->SetClipParent(clip_parent.get()));
   EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
       root->SetClipChildren(clip_children));
+  EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
+      root->SetNumDescendantsThatDrawContent(10));
 
   // After setting all these properties already, setting to the exact same
   // values again should not cause any change.

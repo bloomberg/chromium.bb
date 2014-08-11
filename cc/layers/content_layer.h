@@ -38,9 +38,8 @@ class CC_EXPORT ContentLayer : public TiledLayer {
  public:
   static scoped_refptr<ContentLayer> Create(ContentLayerClient* client);
 
-  void ClearClient() { client_ = NULL; }
+  void ClearClient();
 
-  virtual bool DrawsContent() const OVERRIDE;
   virtual void SetLayerTreeHost(LayerTreeHost* layer_tree_host) OVERRIDE;
   virtual void SetTexturePriorities(const PriorityCalculator& priority_calc)
       OVERRIDE;
@@ -59,6 +58,8 @@ class CC_EXPORT ContentLayer : public TiledLayer {
  protected:
   explicit ContentLayer(ContentLayerClient* client);
   virtual ~ContentLayer();
+
+  virtual bool HasDrawableContent() const OVERRIDE;
 
   // TiledLayer implementation.
   virtual LayerUpdater* Updater() const OVERRIDE;

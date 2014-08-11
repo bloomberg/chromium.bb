@@ -154,27 +154,26 @@ void TiledLayer::UpdateBounds() {
   for (Region::Iterator new_rects(new_region); new_rects.has_rect();
        new_rects.next())
     InvalidateContentRect(new_rects.rect());
+  UpdateDrawsContent(HasDrawableContent());
 }
 
 void TiledLayer::SetTileSize(const gfx::Size& size) {
   tiler_->SetTileSize(size);
+  UpdateDrawsContent(HasDrawableContent());
 }
 
 void TiledLayer::SetBorderTexelOption(
     LayerTilingData::BorderTexelOption border_texel_option) {
   tiler_->SetBorderTexelOption(border_texel_option);
+  UpdateDrawsContent(HasDrawableContent());
 }
 
-bool TiledLayer::DrawsContent() const {
-  if (!ContentsScalingLayer::DrawsContent())
-    return false;
-
+bool TiledLayer::HasDrawableContent() const {
   bool has_more_than_one_tile =
-      tiler_->num_tiles_x() > 1 || tiler_->num_tiles_y() > 1;
-  if (tiling_option_ == NEVER_TILE && has_more_than_one_tile)
-    return false;
+      (tiler_->num_tiles_x() > 1) || (tiler_->num_tiles_y() > 1);
 
-  return true;
+  return !(tiling_option_ == NEVER_TILE && has_more_than_one_tile) &&
+         ContentsScalingLayer::HasDrawableContent();
 }
 
 void TiledLayer::ReduceMemoryUsage() {

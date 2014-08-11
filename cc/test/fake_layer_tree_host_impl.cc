@@ -62,4 +62,26 @@ void FakeLayerTreeHostImpl::SetCurrentFrameTimeTicks(
   current_frame_time_ticks_ = current_frame_time_ticks;
 }
 
+int FakeLayerTreeHostImpl::RecursiveUpdateNumChildren(LayerImpl* layer) {
+  int num_children_that_draw_content = 0;
+  for (size_t i = 0; i < layer->children().size(); ++i) {
+    num_children_that_draw_content +=
+        RecursiveUpdateNumChildren(layer->children()[i]);
+  }
+  if (layer->DrawsContent() && layer->HasDelegatedContent())
+    num_children_that_draw_content += 1000;
+  layer->SetNumDescendantsThatDrawContent(num_children_that_draw_content);
+  return num_children_that_draw_content + (layer->DrawsContent() ? 1 : 0);
+}
+
+void FakeLayerTreeHostImpl::UpdateNumChildrenAndDrawPropertiesForActiveTree() {
+  UpdateNumChildrenAndDrawProperties(active_tree());
+}
+
+void FakeLayerTreeHostImpl::UpdateNumChildrenAndDrawProperties(
+    LayerTreeImpl* layerTree) {
+  RecursiveUpdateNumChildren(layerTree->root_layer());
+  layerTree->UpdateDrawProperties();
+}
+
 }  // namespace cc

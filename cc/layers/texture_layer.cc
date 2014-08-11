@@ -45,6 +45,7 @@ void TextureLayer::ClearClient() {
     layer_tree_host()->StopRateLimiter();
   client_ = NULL;
   ClearTexture();
+  UpdateDrawsContent(HasDrawableContent());
 }
 
 void TextureLayer::ClearTexture() {
@@ -136,6 +137,7 @@ void TextureLayer::SetTextureMailboxInternal(
   else
     SetNeedsPushProperties();
 
+  UpdateDrawsContent(HasDrawableContent());
   // The active frame needs to be replaced and the mailbox returned before the
   // commit is called complete.
   SetNextCommitWaitsForActivation();
@@ -198,8 +200,8 @@ void TextureLayer::SetLayerTreeHost(LayerTreeHost* host) {
   Layer::SetLayerTreeHost(host);
 }
 
-bool TextureLayer::DrawsContent() const {
-  return (client_ || holder_ref_) && Layer::DrawsContent();
+bool TextureLayer::HasDrawableContent() const {
+  return (client_ || holder_ref_) && Layer::HasDrawableContent();
 }
 
 bool TextureLayer::Update(ResourceUpdateQueue* queue,

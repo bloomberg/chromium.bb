@@ -45,8 +45,13 @@ ContentLayer::ContentLayer(ContentLayerClient* client)
 
 ContentLayer::~ContentLayer() {}
 
-bool ContentLayer::DrawsContent() const {
-  return TiledLayer::DrawsContent() && client_;
+void ContentLayer::ClearClient() {
+  client_ = NULL;
+  UpdateDrawsContent(HasDrawableContent());
+}
+
+bool ContentLayer::HasDrawableContent() const {
+  return client_ && TiledLayer::HasDrawableContent();
 }
 
 void ContentLayer::SetLayerTreeHost(LayerTreeHost* host) {

@@ -21,10 +21,9 @@ class CC_EXPORT PictureLayer : public Layer {
  public:
   static scoped_refptr<PictureLayer> Create(ContentLayerClient* client);
 
-  void ClearClient() { client_ = NULL; }
+  void ClearClient();
 
   // Layer interface.
-  virtual bool DrawsContent() const OVERRIDE;
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(
       LayerTreeImpl* tree_impl) OVERRIDE;
   virtual void SetLayerTreeHost(LayerTreeHost* host) OVERRIDE;
@@ -49,6 +48,7 @@ class CC_EXPORT PictureLayer : public Layer {
   explicit PictureLayer(ContentLayerClient* client);
   virtual ~PictureLayer();
 
+  virtual bool HasDrawableContent() const OVERRIDE;
   void UpdateCanUseLCDText();
 
  private:

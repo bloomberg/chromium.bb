@@ -62,7 +62,7 @@ TEST_F(LayerTreeImplTest, HitTestingForSingleLayer) {
 
   host_impl().SetViewportSize(root->bounds());
   host_impl().active_tree()->SetRootLayer(root.Pass());
-  host_impl().active_tree()->UpdateDrawProperties();
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, RenderSurfaceLayerList().size());
@@ -128,7 +128,7 @@ TEST_F(LayerTreeImplTest, HitTestingForSingleLayerAndHud) {
 
   host_impl().SetViewportSize(hud_bounds);
   host_impl().active_tree()->SetRootLayer(root.Pass());
-  host_impl().active_tree()->UpdateDrawProperties();
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, RenderSurfaceLayerList().size());
@@ -186,7 +186,7 @@ TEST_F(LayerTreeImplTest, HitTestingForUninvertibleTransform) {
 
   host_impl().SetViewportSize(root->bounds());
   host_impl().active_tree()->SetRootLayer(root.Pass());
-  host_impl().active_tree()->UpdateDrawProperties();
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, RenderSurfaceLayerList().size());
   ASSERT_EQ(1u, root_layer()->render_surface()->layer_list().size());
@@ -252,7 +252,7 @@ TEST_F(LayerTreeImplTest, HitTestingForSinglePositionedLayer) {
 
   host_impl().SetViewportSize(root->bounds());
   host_impl().active_tree()->SetRootLayer(root.Pass());
-  host_impl().active_tree()->UpdateDrawProperties();
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, RenderSurfaceLayerList().size());
@@ -308,7 +308,7 @@ TEST_F(LayerTreeImplTest, HitTestingForSingleRotatedLayer) {
 
   host_impl().SetViewportSize(root->bounds());
   host_impl().active_tree()->SetRootLayer(root.Pass());
-  host_impl().active_tree()->UpdateDrawProperties();
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, RenderSurfaceLayerList().size());
@@ -377,7 +377,7 @@ TEST_F(LayerTreeImplTest, HitTestingForSinglePerspectiveLayer) {
 
   host_impl().SetViewportSize(root->bounds());
   host_impl().active_tree()->SetRootLayer(root.Pass());
-  host_impl().active_tree()->UpdateDrawProperties();
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, RenderSurfaceLayerList().size());
@@ -457,7 +457,7 @@ TEST_F(LayerTreeImplTest, HitTestingForSingleLayerWithScaledContents) {
 
   host_impl().SetViewportSize(root->bounds());
   host_impl().active_tree()->SetRootLayer(root.Pass());
-  host_impl().active_tree()->UpdateDrawProperties();
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   // Sanity check the scenario we just created.
   // The visible content rect for test_layer is actually 100x100, even though
@@ -548,7 +548,7 @@ TEST_F(LayerTreeImplTest, HitTestingForSimpleClippedLayer) {
 
   host_impl().SetViewportSize(root->bounds());
   host_impl().active_tree()->SetRootLayer(root.Pass());
-  host_impl().active_tree()->UpdateDrawProperties();
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, RenderSurfaceLayerList().size());
@@ -673,7 +673,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultiClippedRotatedLayer) {
 
   host_impl().SetViewportSize(root->bounds());
   host_impl().active_tree()->SetRootLayer(root.Pass());
-  host_impl().active_tree()->UpdateDrawProperties();
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   // Sanity check the scenario we just created.
   // The grand_child is expected to create a render surface because it
@@ -796,7 +796,7 @@ TEST_F(LayerTreeImplTest, HitTestingForNonClippingIntermediateLayer) {
 
   host_impl().SetViewportSize(root->bounds());
   host_impl().active_tree()->SetRootLayer(root.Pass());
-  host_impl().active_tree()->UpdateDrawProperties();
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, RenderSurfaceLayerList().size());
@@ -904,7 +904,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayers) {
 
   host_impl().SetViewportSize(root->bounds());
   host_impl().active_tree()->SetRootLayer(root.Pass());
-  host_impl().active_tree()->UpdateDrawProperties();
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   // Sanity check the scenario we just created.
   ASSERT_TRUE(child1);
@@ -1052,7 +1052,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayersAtVaryingDepths) {
 
   host_impl().SetViewportSize(root->bounds());
   host_impl().active_tree()->SetRootLayer(root.Pass());
-  host_impl().active_tree()->UpdateDrawProperties();
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   // Sanity check the scenario we just created.
   ASSERT_TRUE(child1);
@@ -1170,7 +1170,7 @@ TEST_F(LayerTreeImplTest, HitTestingRespectsClipParents) {
 
   host_impl().SetViewportSize(root->bounds());
   host_impl().active_tree()->SetRootLayer(root.Pass());
-  host_impl().active_tree()->UpdateDrawProperties();
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   gfx::Point test_point = gfx::Point(12, 52);
   LayerImpl* result_layer =
@@ -1245,7 +1245,7 @@ TEST_F(LayerTreeImplTest, HitTestingRespectsScrollParents) {
 
   host_impl().SetViewportSize(root->bounds());
   host_impl().active_tree()->SetRootLayer(root.Pass());
-  host_impl().active_tree()->UpdateDrawProperties();
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   gfx::Point test_point = gfx::Point(12, 52);
   LayerImpl* result_layer =
@@ -1338,7 +1338,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayerLists) {
 
   host_impl().SetViewportSize(root->bounds());
   host_impl().active_tree()->SetRootLayer(root.Pass());
-  host_impl().active_tree()->UpdateDrawProperties();
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   // Sanity check the scenario we just created.
   ASSERT_TRUE(child1);
@@ -1428,7 +1428,7 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerRegionsForSingleLayer) {
 
   host_impl().SetViewportSize(root->bounds());
   host_impl().active_tree()->SetRootLayer(root.Pass());
-  host_impl().active_tree()->UpdateDrawProperties();
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, RenderSurfaceLayerList().size());
@@ -1517,7 +1517,7 @@ TEST_F(LayerTreeImplTest,
 
   host_impl().SetViewportSize(root->bounds());
   host_impl().active_tree()->SetRootLayer(root.Pass());
-  host_impl().active_tree()->UpdateDrawProperties();
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, RenderSurfaceLayerList().size());
@@ -1595,7 +1595,7 @@ TEST_F(LayerTreeImplTest,
 
   host_impl().SetViewportSize(root->bounds());
   host_impl().active_tree()->SetRootLayer(root.Pass());
-  host_impl().active_tree()->UpdateDrawProperties();
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, RenderSurfaceLayerList().size());
@@ -1691,7 +1691,7 @@ TEST_F(LayerTreeImplTest,
 
   host_impl().SetViewportSize(root->bounds());
   host_impl().active_tree()->SetRootLayer(root.Pass());
-  host_impl().active_tree()->UpdateDrawProperties();
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   // Sanity check the scenario we just created.
   // The visible content rect for test_layer is actually 100x100, even though
@@ -1800,7 +1800,7 @@ TEST_F(LayerTreeImplTest,
       page_scale_factor, page_scale_factor, page_scale_factor);
   host_impl().active_tree()->SetRootLayer(root.Pass());
   host_impl().active_tree()->SetViewportLayersFromIds(1, 1, Layer::INVALID_ID);
-  host_impl().active_tree()->UpdateDrawProperties();
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   // Sanity check the scenario we just created.
   // The visible content rect for test_layer is actually 100x100, even though
@@ -1930,7 +1930,7 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerRegionsForSimpleClippedLayer) {
 
   host_impl().SetViewportSize(root->bounds());
   host_impl().active_tree()->SetRootLayer(root.Pass());
-  host_impl().active_tree()->UpdateDrawProperties();
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, RenderSurfaceLayerList().size());
@@ -2028,7 +2028,7 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerOverlappingRegions) {
 
   host_impl().SetViewportSize(root->bounds());
   host_impl().active_tree()->SetRootLayer(root.Pass());
-  host_impl().active_tree()->UpdateDrawProperties();
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, RenderSurfaceLayerList().size());
@@ -2090,7 +2090,7 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForSingleLayer) {
 
   host_impl().SetViewportSize(root->bounds());
   host_impl().active_tree()->SetRootLayer(root.Pass());
-  host_impl().active_tree()->UpdateDrawProperties();
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, RenderSurfaceLayerList().size());
@@ -2191,7 +2191,7 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForPartialOccludedLayers) {
 
   host_impl().SetViewportSize(root->bounds());
   host_impl().active_tree()->SetRootLayer(root.Pass());
-  host_impl().active_tree()->UpdateDrawProperties();
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, RenderSurfaceLayerList().size());
@@ -2286,7 +2286,7 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForScaledLayers) {
       page_scale_factor, page_scale_factor, page_scale_factor);
   host_impl().active_tree()->SetRootLayer(root.Pass());
   host_impl().active_tree()->SetViewportLayersFromIds(1, 1, Layer::INVALID_ID);
-  host_impl().active_tree()->UpdateDrawProperties();
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, RenderSurfaceLayerList().size());

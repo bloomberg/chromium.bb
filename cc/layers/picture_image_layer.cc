@@ -24,8 +24,8 @@ scoped_ptr<LayerImpl> PictureImageLayer::CreateLayerImpl(
   return PictureImageLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
 }
 
-bool PictureImageLayer::DrawsContent() const {
-  return !bitmap_.isNull() && PictureLayer::DrawsContent();
+bool PictureImageLayer::HasDrawableContent() const {
+  return !bitmap_.isNull() && PictureLayer::HasDrawableContent();
 }
 
 void PictureImageLayer::SetBitmap(const SkBitmap& bitmap) {
@@ -37,6 +37,7 @@ void PictureImageLayer::SetBitmap(const SkBitmap& bitmap) {
     return;
 
   bitmap_ = bitmap;
+  UpdateDrawsContent(HasDrawableContent());
   SetNeedsDisplay();
 }
 
