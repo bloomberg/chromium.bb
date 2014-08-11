@@ -211,6 +211,37 @@ class FileSystemRestoreEntryFunction : public FileSystemEntryFunction {
   virtual bool RunAsync() OVERRIDE;
 };
 
+class FileSystemObserveDirectoryFunction : public ChromeSyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileSystem.observeDirectory",
+                             FILESYSTEM_OBSERVEDIRECTORY)
+
+ protected:
+  virtual ~FileSystemObserveDirectoryFunction() {}
+  virtual bool RunSync() OVERRIDE;
+};
+
+class FileSystemUnobserveEntryFunction : public ChromeSyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileSystem.unobserveEntry",
+                             FILESYSTEM_UNOBSERVEENTRY)
+
+ protected:
+  virtual ~FileSystemUnobserveEntryFunction() {}
+  virtual bool RunSync() OVERRIDE;
+};
+
+class FileSystemGetObservedEntriesFunction
+    : public ChromeSyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileSystem.getObservedEntries",
+                             FILESYSTEM_GETOBSERVEDENTRIES);
+
+ protected:
+  virtual ~FileSystemGetObservedEntriesFunction() {}
+  virtual bool RunSync() OVERRIDE;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_FILE_SYSTEM_FILE_SYSTEM_API_H_

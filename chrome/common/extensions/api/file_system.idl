@@ -52,6 +52,13 @@ namespace fileSystem {
     openDirectory
   };
 
+  // Type of a change happened to a child entry within a tracked directory.
+  enum ChildChangeType {
+    created,
+    removed,
+    changed
+  };
+
   dictionary ChooseEntryOptions {
     // Type of the prompt to show. The default is 'openFile'.
     ChooseEntryType? type;
@@ -75,6 +82,29 @@ namespace fileSystem {
     // single Entry.
     boolean? acceptsMultiple;
   };
+
+  // Change to an entry within a tracked directory.
+  dictionary ChildChange {
+    [instanceOf=Entry] object entry;
+    ChildChangeType type;
+  };
+
+  // Event notifying about a change in a file or a directory, including its
+  // contents.
+  dictionary EntryChangedEvent {
+    // Tracked entry.
+    [instanceOf=Entry] object target;
+
+    // List of changed entries within the tracked directory in order they
+    // happened. May not be available for some types of file systems.
+    ChildChange[]? childChanges;
+  };
+
+  // Event notifying about a tracked file or a directory being removed.
+  dictionary EntryRemovedEvent {
+    [instanceOf=Entry] object target;
+  };
+
   callback GetDisplayPathCallback = void (DOMString displayPath);
   callback EntryCallback = void ([instanceOf=Entry] object entry);
   callback EntriesCallback = void (
@@ -82,6 +112,8 @@ namespace fileSystem {
       [instanceOf=FileEntry] optional object[] fileEntries);
   callback IsWritableCallback = void (boolean isWritable);
   callback IsRestorableCallback = void (boolean isRestorable);
+  callback GetObservedEntriesCallback = void (
+      [instanceOf=Entry] object[] entries);
 
   interface Functions {
     // Get the display path of an Entry object. The display path is based on
@@ -121,5 +153,36 @@ namespace fileSystem {
     // indefinitely. Otherwise, entries are retained only while the app is
     // running and across restarts.
     static DOMString retainEntry([instanceOf=Entry] object entry);
+
+    // Observes a directory entry. Emits an event if the tracked directory is
+    // changed (including the list of files on it), or removed. If <code>
+    // recursive</code> is set to true, then also all accessible subdirectories
+    // will be tracked. Observers are automatically removed once the extension
+    // is closed or suspended, unless <code>entry</code> is retained using
+    // <code>chrome.fileSystem.retainEntry</code>.
+    //
+    // In such case of retained entries, the observer stays active across
+    // restarts until <code>unobserveEntry</code> is explicitly called. Note,
+    // that once the <code>entry</code> is not retained anymore, the observer
+    // will be removed automatically. Observed entries are also automatically
+    // restored when either <code>getObservers</code> is called, or an observing
+    // event for it is invoked.
+    [nodoc] static void observeDirectory(
+        [instanceOf=DirectoryEntry] object entry,
+        optional boolean recursive);
+
+    // Unobserves a previously observed either a file or a directory.
+    [nodoc] static void unobserveEntry([instanceOf=Entry] object entry);
+
+    // Lists all observed entries.
+    [nodoc] static void getObservedEntries(GetObservedEntriesCallback callback);
+  };
+
+  interface Events {
+    // Called when an observed entry is changed.
+    [nodoc] static void onEntryChanged(EntryChangedEvent event);
+
+    // Called when an observed entry is removed.
+    [nodoc] static void onEntryRemoved(EntryRemovedEvent event);
   };
 };

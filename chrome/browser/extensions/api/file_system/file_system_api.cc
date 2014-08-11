@@ -930,4 +930,22 @@ bool FileSystemRestoreEntryFunction::RunAsync() {
   return true;
 }
 
+bool FileSystemObserveDirectoryFunction::RunSync() {
+  NOTIMPLEMENTED();
+  error_ = kUnknownIdError;
+  return false;
+}
+
+bool FileSystemUnobserveEntryFunction::RunSync() {
+  NOTIMPLEMENTED();
+  error_ = kUnknownIdError;
+  return false;
+}
+
+bool FileSystemGetObservedEntriesFunction::RunSync() {
+  NOTIMPLEMENTED();
+  error_ = kUnknownIdError;
+  return false;
+}
+
 }  // namespace extensions
