@@ -503,30 +503,3 @@ class JsonResults(object):
         if status_code != 200:
             return new_results, status_code
         return TestFile.save_file(file, new_results)
-
-    @classmethod
-    def _delete_results_and_times(cls, tests):
-        for key in tests.keys():
-            if key in (RESULTS_KEY, TIMES_KEY):
-                del tests[key]
-            else:
-                cls._delete_results_and_times(tests[key])
-
-    @classmethod
-    def get_test_list(cls, builder, json_file_data):
-        logging.debug("Loading test results json...")
-        json = cls._load_json(json_file_data)
-        if not json:
-            return None
-
-        logging.debug("Checking test results json...")
-
-        check_json_error_string = cls._check_json(builder, json)
-        if check_json_error_string:
-            return None
-
-        test_list_json = {}
-        tests = json[builder][TESTS_KEY]
-        cls._delete_results_and_times(tests)
-        test_list_json[builder] = {TESTS_KEY: tests}
-        return cls._generate_file_data(test_list_json)
