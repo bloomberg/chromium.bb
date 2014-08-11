@@ -17,6 +17,8 @@ if (window.testRunner) {
   testRunner.waitUntilDone();
 }
 requestAnimationFrame(function() {
-  testRunner.notifyDone();
+    if (window.testRunner) {
+        testRunner.notifyDone();
+    }
 });
 </script>

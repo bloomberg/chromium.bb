@@ -50,7 +50,9 @@ function onFinishMiddle(event) {
 
 function onFinishBottom(event) {
     validateFinishEvent(playerBottom, event);
-    testRunner.notifyDone();
+    if (window.testRunner) {
+        testRunner.notifyDone();
+    }
 }
 
 function animate() {

@@ -91,7 +91,9 @@ function onFinishBottom(event) {
         firstBottom = false;
         playerBottom.reverse();
     } else {
-        testRunner.notifyDone();
+        if (window.testRunner) {
+            testRunner.notifyDone();
+        }
     }
 }
 

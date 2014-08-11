@@ -40,7 +40,9 @@ var playerTop, playerMiddle, playerBottom;
 
 function onFinishTop(event) {
     validateFinishEvent(playerTop, event);
-    testRunner.notifyDone();
+    if (window.testRunner) {
+        testRunner.notifyDone();
+    }
 }
 
 function onFinishMiddle(event) {
