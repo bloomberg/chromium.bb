@@ -688,7 +688,7 @@ source_set("test_support") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//crypto",
+    "//crypto:platform",
     "//net",
     "//net/tools/tld_cleanup",
     "//testing/gmock",
@@ -753,7 +753,6 @@ source_set("balsa") {
   deps = [
     ":net",
     "//base",
-    "//url",
   ]
 }
 
@@ -847,10 +846,7 @@ if (!is_ios && !is_android) {
       ]
 
       if (is_linux) {
-        configs += [
-          "//build/config/linux:gconf",
-          "//build/config/linux:glib",
-        ]
+        configs += [ "//build/config/linux:gconf" ]
         deps += [ "//build/config/linux:gio" ]
       }
     }

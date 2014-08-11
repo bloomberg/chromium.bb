@@ -371,12 +371,10 @@ source_set("test_support") {
   ]
 
   deps = [
-    ":gfx",
     "//base",
     "//base/test:test_support",
     "//skia",
     "//testing/gtest",
-    "//ui/gfx/geometry",
   ]
 
   if (is_ios) {

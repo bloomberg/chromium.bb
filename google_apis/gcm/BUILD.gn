@@ -95,7 +95,6 @@ executable("mcs_probe") {
 
   deps = [
     ":gcm",
-    ":proto",
     ":test_support",
     "//base",
     "//net",
@@ -121,7 +120,6 @@ test("gcm_unit_tests") {
   ]
 
   deps = [
-    ":proto",
     ":test_support",
     "//base",
     "//base/test:run_all_unittests",

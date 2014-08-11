@@ -303,7 +303,6 @@ test("events_unittests") {
   }
 
   deps = [
-    ":dom4_keycode_converter",
     ":events",
     ":events_base",
     ":gesture_detection",
@@ -312,22 +311,6 @@ test("events_unittests") {
     "//base/test:run_all_unittests",
     "//skia",
     "//testing/gtest",
-    "//ui/events/platform",
     "//ui/gfx:test_support",
   ]
-
-  if (use_x11) {
-    deps += [ "//ui/gfx/x" ]
-  } else {
-    sources -= [
-      "x/events_x_unittest.cc",
-    ]
-  }
-
-  if (use_ozone) {
-    sources += [
-      "ozone/evdev/key_event_converter_evdev_unittest.cc",
-      "ozone/evdev/touch_event_converter_evdev_unittest.cc",
-    ]
-  }
 }
