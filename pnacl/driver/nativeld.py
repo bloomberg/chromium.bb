@@ -55,15 +55,7 @@ EXTRA_ENV = {
 
   'SEARCH_DIRS'        : '${SEARCH_DIRS_USER} ${SEARCH_DIRS_BUILTIN}',
   'SEARCH_DIRS_USER'   : '',
-  'SEARCH_DIRS_BUILTIN': '${USE_STDLIB ? ${LIBS_ARCH}/}',
-
-  'LIBS_ARCH'        : '${LIBS_%ARCH%}',
-  'LIBS_ARM'         : '${BASE_LIB_NATIVE}arm',
-  'LIBS_ARM_NONSFI'  : '${BASE_LIB_NATIVE}arm-nonsfi',
-  'LIBS_X8632'       : '${BASE_LIB_NATIVE}x86-32',
-  'LIBS_X8632_NONSFI': '${BASE_LIB_NATIVE}x86-32-nonsfi',
-  'LIBS_X8664'       : '${BASE_LIB_NATIVE}x86-64',
-  'LIBS_MIPS32'      : '${BASE_LIB_NATIVE}mips32',
+  'SEARCH_DIRS_BUILTIN': '${USE_STDLIB ? ${LIBS_NATIVE_ARCH}/}',
 
   # Note: this is only used in the unsandboxed case
   'RUN_LD' : '${LD} ${LD_FLAGS} ${inputs} -o ${output}'
