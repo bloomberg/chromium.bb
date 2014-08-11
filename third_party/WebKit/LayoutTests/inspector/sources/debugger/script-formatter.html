@@ -9,7 +9,7 @@
 var test = function()
 {
     var panel = WebInspector.panels.sources;
-    var worker = Runtime.startWorker("script_formatter_worker");
+    var worker = new Worker("script_formatter_worker/ScriptFormatterWorker.js");
 
     InspectorTest.runDebuggerTestSuite([
         function testScriptFormatterWorker(next)

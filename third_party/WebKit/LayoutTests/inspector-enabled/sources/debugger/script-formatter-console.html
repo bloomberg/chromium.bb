@@ -23,6 +23,7 @@ function onload()
 var test = function()
 {
     var panel = WebInspector.inspectorView.showPanel("sources");
+    var worker = new Worker("ScriptFormatterWorker.js");
     var sourceFrame;
     var scriptFormatter = InspectorTest.scriptFormatter();
 
