@@ -44,8 +44,9 @@ TestCase screenTestCases[] = {
     {"tv and (scan: progressive)", 0},
     {"(pointer: coarse)", 0},
     {"(pointer: fine)", 1},
-    {"(hover: 1)", 1},
-    {"(hover: 0)", 0},
+    {"(hover: hover)", 1},
+    {"(hover: on-demand)", 0},
+    {"(hover: none)", 0},
     {0, 0} // Do not remove the terminator line.
 };
 

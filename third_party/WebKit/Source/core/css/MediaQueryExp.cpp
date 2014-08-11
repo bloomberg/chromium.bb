@@ -35,6 +35,7 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/Decimal.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -49,6 +50,7 @@ static inline bool featureWithCSSValueID(const String& mediaFeature, const CSSPa
 
     return mediaFeature == orientationMediaFeature
         || mediaFeature == pointerMediaFeature
+        || (mediaFeature == hoverMediaFeature && RuntimeEnabledFeatures::hoverMediaQueryKeywordsEnabled())
         || mediaFeature == scanMediaFeature;
 }
 
@@ -59,6 +61,9 @@ static inline bool featureWithValidIdent(const String& mediaFeature, CSSValueID 
 
     if (mediaFeature == pointerMediaFeature)
         return ident == CSSValueNone || ident == CSSValueCoarse || ident == CSSValueFine;
+
+    if (mediaFeature == hoverMediaFeature && RuntimeEnabledFeatures::hoverMediaQueryKeywordsEnabled())
+        return ident == CSSValueNone || ident == CSSValueOnDemand || ident == CSSValueHover;
 
     if (mediaFeature == scanMediaFeature)
         return ident == CSSValueInterlace || ident == CSSValueProgressive;
@@ -148,7 +153,7 @@ static inline bool featureWithZeroOrOne(const String& mediaFeature, const CSSPar
         return false;
 
     return mediaFeature == gridMediaFeature
-        || mediaFeature == hoverMediaFeature;
+        || (mediaFeature == hoverMediaFeature && !RuntimeEnabledFeatures::hoverMediaQueryKeywordsEnabled());
 }
 
 static inline bool featureWithAspectRatio(const String& mediaFeature)

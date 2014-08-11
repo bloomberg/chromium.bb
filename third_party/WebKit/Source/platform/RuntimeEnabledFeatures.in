@@ -141,6 +141,9 @@ TargetedStyleRecalc status=stable
 // touchscreen) in ApplyWebPreferences.
 Touch status=stable
 
+// Temporary setting to allow easy rollback of change to hover media feature.
+HoverMediaQueryKeywords status=stable
+
 TouchIconLoading
 ThreadedParserDataReceiver status=experimental
 UserSelectAll status=experimental

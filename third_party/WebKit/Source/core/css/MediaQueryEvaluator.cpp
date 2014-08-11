@@ -53,6 +53,7 @@
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "platform/PlatformScreen.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/FloatRect.h"
 #include "wtf/HashMap.h"
 
@@ -527,15 +528,28 @@ static bool hoverMediaFeatureEval(const MediaQueryExpValue& value, MediaFeatureP
     if (pointer == MediaValues::UnknownPointer)
         return false;
 
-    float number = 1;
-    if (value.isValid()) {
-        if (!numberValue(value, number))
-            return false;
-    }
+    // FIXME: Remove the old code once we're sure this doesn't break anything significant.
+    if (RuntimeEnabledFeatures::hoverMediaQueryKeywordsEnabled()) {
+        if (!value.isValid())
+            return pointer != MediaValues::NoPointer;
 
-    return (pointer == MediaValues::NoPointer && !number)
-        || (pointer == MediaValues::TouchPointer && !number)
-        || (pointer == MediaValues::MousePointer && number == 1);
+        if (!value.isID)
+            return false;
+
+        return (pointer == MediaValues::NoPointer && value.id == CSSValueNone)
+            || (pointer == MediaValues::TouchPointer && value.id == CSSValueOnDemand)
+            || (pointer == MediaValues::MousePointer && value.id == CSSValueHover);
+    } else {
+        float number = 1;
+        if (value.isValid()) {
+            if (!numberValue(value, number))
+                return false;
+        }
+
+        return (pointer == MediaValues::NoPointer && !number)
+            || (pointer == MediaValues::TouchPointer && !number)
+            || (pointer == MediaValues::MousePointer && number == 1);
+    }
 }
 
 static bool pointerMediaFeatureEval(const MediaQueryExpValue& value, MediaFeaturePrefix, const MediaValues& mediaValues)
