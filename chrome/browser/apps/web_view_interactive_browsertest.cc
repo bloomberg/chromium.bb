@@ -829,7 +829,7 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, PopupPositioningMoved) {
 // Drag and drop inside a webview is currently only enabled for linux and mac,
 // but the tests don't work on anything except chromeos for now. This is because
 // of simulating mouse drag code's dependency on platforms.
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && !defined(USE_OZONE)
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DragDropWithinWebView) {
   LoadAndLaunchPlatformApp("web_view/dnd_within_webview", "connected");
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(GetPlatformAppWindow()));
