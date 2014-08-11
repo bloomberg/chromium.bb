@@ -57,21 +57,6 @@ SVGGradientElement::SVGGradientElement(const QualifiedName& tagName, Document& d
     addToPropertyMap(m_gradientUnits);
 }
 
-bool SVGGradientElement::isPresentationAttribute(const QualifiedName& name) const
-{
-    if (name == SVGNames::gradientTransformAttr)
-        return true;
-    return SVGElement::isPresentationAttribute(name);
-}
-
-void SVGGradientElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
-{
-    if (name == SVGNames::gradientTransformAttr)
-        addPropertyToPresentationAttributeStyle(style, CSSPropertyTransform, value);
-    else
-        SVGElement::collectStyleForPresentationAttribute(name, value, style);
-}
-
 bool SVGGradientElement::isSupportedAttribute(const QualifiedName& attrName)
 {
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
@@ -94,11 +79,6 @@ void SVGGradientElement::svgAttributeChanged(const QualifiedName& attrName)
     if (!isSupportedAttribute(attrName)) {
         SVGElement::svgAttributeChanged(attrName);
         return;
-    }
-
-    if (attrName == SVGNames::gradientTransformAttr) {
-        invalidateSVGPresentationAttributeStyle();
-        setNeedsStyleRecalc(LocalStyleChange);
     }
 
     SVGElement::InvalidationGuard invalidationGuard(this);

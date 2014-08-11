@@ -57,21 +57,6 @@ inline SVGPatternElement::SVGPatternElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGPatternElement)
 
-bool SVGPatternElement::isPresentationAttribute(const QualifiedName& name) const
-{
-    if (name == SVGNames::patternTransformAttr)
-        return true;
-    return SVGElement::isPresentationAttribute(name);
-}
-
-void SVGPatternElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
-{
-    if (name == SVGNames::patternTransformAttr)
-        addPropertyToPresentationAttributeStyle(style, CSSPropertyTransform, value);
-    else
-        SVGElement::collectStyleForPresentationAttribute(name, value, style);
-}
-
 bool SVGPatternElement::isSupportedAttribute(const QualifiedName& attrName)
 {
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
@@ -125,11 +110,6 @@ void SVGPatternElement::svgAttributeChanged(const QualifiedName& attrName)
     if (!isSupportedAttribute(attrName)) {
         SVGElement::svgAttributeChanged(attrName);
         return;
-    }
-
-    if (attrName == SVGNames::patternTransformAttr) {
-        invalidateSVGPresentationAttributeStyle();
-        setNeedsStyleRecalc(LocalStyleChange);
     }
 
     SVGElement::InvalidationGuard invalidationGuard(this);
@@ -187,18 +167,10 @@ static void setPatternAttributes(const SVGPatternElement* element, PatternAttrib
     if (!attributes.hasPatternContentUnits() && element->patternContentUnits()->isSpecified())
         attributes.setPatternContentUnits(element->patternContentUnits()->currentValue()->enumValue());
 
-    if (!attributes.hasPatternTransform()) {
+    if (!attributes.hasPatternTransform() && element->patternTransform()->isSpecified()) {
         AffineTransform transform;
-        bool hasTransform = element->getStyleTransform(transform);
-
-        // If CSS property was set, use that, otherwise fallback to attribute (if set).
-        if (!hasTransform && element->patternTransform()->isSpecified()) {
-            element->patternTransform()->currentValue()->concatenate(transform);
-            hasTransform = true;
-        }
-
-        if (hasTransform)
-            attributes.setPatternTransform(transform);
+        element->patternTransform()->currentValue()->concatenate(transform);
+        attributes.setPatternTransform(transform);
     }
 
     if (!attributes.hasPatternContentElement() && ElementTraversal::firstWithin(*element))

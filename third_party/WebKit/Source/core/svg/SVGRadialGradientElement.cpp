@@ -127,8 +127,10 @@ static void setGradientAttributes(SVGGradientElement* element, RadialGradientAtt
     if (!attributes.hasGradientUnits() && element->gradientUnits()->isSpecified())
         attributes.setGradientUnits(element->gradientUnits()->currentValue()->enumValue());
 
-    if (!attributes.hasGradientTransform()) {
-        attributes.setGradientTransformFromStyle(element);
+    if (!attributes.hasGradientTransform() && element->gradientTransform()->isSpecified()) {
+        AffineTransform transform;
+        element->gradientTransform()->currentValue()->concatenate(transform);
+        attributes.setGradientTransform(transform);
     }
 
     if (!attributes.hasStops()) {

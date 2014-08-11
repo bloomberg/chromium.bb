@@ -191,8 +191,6 @@ public:
 
     static const AtomicString& eventParameterName();
 
-    bool getStyleTransform(AffineTransform& matrix) const;
-
 protected:
     SVGElement(const QualifiedName&, Document&, ConstructionType = CreateSVGElement);
 
