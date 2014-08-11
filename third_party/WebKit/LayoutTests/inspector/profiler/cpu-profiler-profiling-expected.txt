@@ -4,6 +4,7 @@ Profiler was enabled.
 
 Running: testProfiling
 found pageFunction
+found (anonymous function)
 
 Profiler was disabled.
 

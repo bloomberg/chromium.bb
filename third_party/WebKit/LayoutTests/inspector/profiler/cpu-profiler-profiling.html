@@ -5,12 +5,29 @@
 <script>
 
 function pageFunction() {
-    console.profile("profile");
-    console.profileEnd("profile");
+    (function () {
+        console.profile("profile");
+        console.profileEnd("profile");
+    })();
 }
 
 function test()
 {
+    function checkFunction(name, tree)
+    {
+        var node = tree.children[0];
+        if (!node)
+            InspectorTest.addResult("no node");
+        while (node) {
+            if (node.functionName === name) {
+                InspectorTest.addResult("found " + name);
+                return;
+            }
+            node = node.traverseNextNode(true, null, true);
+        }
+        InspectorTest.addResult(name + " not found");
+    }
+
     InspectorTest.runProfilerTestSuite([
         function testProfiling(next)
         {
@@ -19,16 +36,8 @@ function test()
                 var tree = view.profileDataGridTree;
                 if (!tree)
                     InspectorTest.addResult("no tree");
-                var node = tree.children[0];
-                if (!node)
-                    InspectorTest.addResult("no node");
-                while (node) {
-                    if (node.functionName.indexOf("pageFunction") !== -1) {
-                        InspectorTest.addResult("found pageFunction");
-                        break;
-                    }
-                    node = node.traverseNextNode(true, null, true);
-                }
+                checkFunction("pageFunction", tree);
+                checkFunction("(anonymous function)", tree);
                 next();
             }
             InspectorTest.showProfileWhenAdded("profile");
