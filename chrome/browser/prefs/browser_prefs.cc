@@ -530,11 +530,15 @@ void MigrateUserPrefs(Profile* profile) {
   // Cleanup now-removed sync promo error message preference.
   // TODO(fdoray): Remove this when it's safe to do so (crbug.com/268442).
   prefs->ClearPref(kSyncPromoErrorMessage);
+  // Migrate kNetworkPredictionEnabled to kNetworkPredictionOptions when not on
+  // Android.  On Android, platform-specific code performs preference migration.
+  // TODO(bnc): https://crbug.com/401970  Remove migration code one year after
+  // M38.
+  chrome_browser_net::MigrateNetworkPredictionUserPrefs(prefs);
 #endif
 
   PromoResourceService::MigrateUserPrefs(prefs);
   translate::TranslatePrefs::MigrateUserPrefs(prefs, prefs::kAcceptLanguages);
-  chrome_browser_net::MigrateNetworkPredictionUserPrefs(prefs);
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   autofill::AutofillManager::MigrateUserPrefs(prefs);
