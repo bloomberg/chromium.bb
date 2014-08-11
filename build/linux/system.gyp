@@ -1033,7 +1033,7 @@
       'type': 'none',
       'conditions': [
         # libudev is not available on *BSD
-        ['_toolset=="target" and os_bsd!=1', {
+        ['_toolset=="target" and os_bsd!=1 and use_udev==1', {
           'direct_dependent_settings': {
             'cflags': [
               '<!@(<(pkg-config) --cflags libudev)'
