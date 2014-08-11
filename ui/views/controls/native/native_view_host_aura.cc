@@ -160,6 +160,7 @@ void NativeViewHostAura::ShowWidget(int x, int y, int w, int h) {
   host_->native_view()->SetBounds(
       gfx::Rect(x - clip_offset.x(), y - clip_offset.y(), width, height));
   host_->native_view()->Show();
+  clipping_window_.Show();
 }
 
 void NativeViewHostAura::HideWidget() {
@@ -202,7 +203,6 @@ NativeViewHostWrapper* NativeViewHostWrapper::CreateWrapper(
 void NativeViewHostAura::AddClippingWindow() {
   RemoveClippingWindow();
 
-  gfx::Rect bounds = host_->native_view()->bounds();
   host_->native_view()->SetProperty(aura::client::kHostWindowKey,
                                     host_->GetWidget()->GetNativeView());
   Widget::ReparentNativeView(host_->native_view(),
@@ -211,10 +211,6 @@ void NativeViewHostAura::AddClippingWindow() {
     Widget::ReparentNativeView(&clipping_window_,
                                host_->GetWidget()->GetNativeView());
   }
-  clipping_window_.SetBounds(bounds);
-  bounds.set_origin(gfx::Point(0, 0));
-  host_->native_view()->SetBounds(bounds);
-  clipping_window_.Show();
 }
 
 void NativeViewHostAura::RemoveClippingWindow() {

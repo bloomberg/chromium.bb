@@ -46,18 +46,27 @@ class NativeViewHostWindowObserver : public aura::WindowObserver {
     EVENT_BOUNDS_CHANGED,
   };
 
+  struct EventDetails {
+    EventType type;
+    aura::Window* window;
+    gfx::Rect bounds;
+    bool operator!=(const EventDetails& rhs) {
+      return type != rhs.type || window != rhs.window || bounds != rhs.bounds;
+    }
+  };
+
   NativeViewHostWindowObserver() {}
   virtual ~NativeViewHostWindowObserver() {}
 
-  const std::vector<std::pair<EventType, aura::Window*> >& events() const {
-    return events_;
-  }
+  const std::vector<EventDetails>& events() const { return events_; }
 
   // aura::WindowObserver overrides
   virtual void OnWindowVisibilityChanged(aura::Window* window,
                                          bool visible) OVERRIDE {
-    std::pair<EventType, aura::Window*> event =
-        std::make_pair(visible ? EVENT_SHOWN : EVENT_HIDDEN, window);
+    EventDetails event;
+    event.type = visible ? EVENT_SHOWN : EVENT_HIDDEN;
+    event.window = window;
+    event.bounds = window->GetBoundsInRootWindow();
 
     // Dedupe events as a single Hide() call can result in several
     // notifications.
@@ -68,11 +77,16 @@ class NativeViewHostWindowObserver : public aura::WindowObserver {
   virtual void OnWindowBoundsChanged(aura::Window* window,
                                      const gfx::Rect& old_bounds,
                                      const gfx::Rect& new_bounds) OVERRIDE {
-    events_.push_back(std::make_pair(EVENT_BOUNDS_CHANGED, window));
+    EventDetails event;
+    event.type = EVENT_BOUNDS_CHANGED;
+    event.window = window;
+    event.bounds = window->GetBoundsInRootWindow();
+    events_.push_back(event);
   }
 
  private:
-  std::vector<std::pair<EventType, aura::Window*> > events_;
+  std::vector<EventDetails> events_;
+  gfx::Rect bounds_at_visibility_changed_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewHostWindowObserver);
 };
@@ -309,18 +323,54 @@ TEST_F(NativeViewHostAuraTest, RemoveClippingWindowOrder) {
 
   ASSERT_EQ(3u, test_observer.events().size());
   EXPECT_EQ(NativeViewHostWindowObserver::EVENT_HIDDEN,
-            test_observer.events()[0].first);
-  EXPECT_EQ(clipping_window(), test_observer.events()[0].second);
+            test_observer.events()[0].type);
+  EXPECT_EQ(clipping_window(), test_observer.events()[0].window);
   EXPECT_EQ(NativeViewHostWindowObserver::EVENT_BOUNDS_CHANGED,
-            test_observer.events()[1].first);
-  EXPECT_EQ(child()->GetNativeView(), test_observer.events()[1].second);
+            test_observer.events()[1].type);
+  EXPECT_EQ(child()->GetNativeView(), test_observer.events()[1].window);
   EXPECT_EQ(NativeViewHostWindowObserver::EVENT_HIDDEN,
-            test_observer.events()[2].first);
-  EXPECT_EQ(child()->GetNativeView(), test_observer.events()[2].second);
+            test_observer.events()[2].type);
+  EXPECT_EQ(child()->GetNativeView(), test_observer.events()[2].window);
 
   clipping_window()->RemoveObserver(&test_observer);
   child()->GetNativeView()->RemoveObserver(&test_observer);
 
+  DestroyHost();
+}
+
+// Ensure the native view receives the correct bounds notification when it is
+// attached. This is a regression test for https://crbug.com/399420.
+TEST_F(NativeViewHostAuraTest, Attach) {
+  CreateHost();
+  host()->Detach();
+
+  child()->GetNativeView()->SetBounds(gfx::Rect(0, 0, 0, 0));
+  toplevel()->SetBounds(gfx::Rect(0, 0, 100, 100));
+  host()->SetBounds(10, 10, 80, 80);
+
+  NativeViewHostWindowObserver test_observer;
+  child()->GetNativeView()->AddObserver(&test_observer);
+
+  host()->Attach(child()->GetNativeView());
+
+  ASSERT_EQ(3u, test_observer.events().size());
+  EXPECT_EQ(NativeViewHostWindowObserver::EVENT_BOUNDS_CHANGED,
+            test_observer.events()[0].type);
+  EXPECT_EQ(child()->GetNativeView(), test_observer.events()[0].window);
+  EXPECT_EQ(gfx::Rect(10, 10, 80, 80).ToString(),
+            test_observer.events()[0].bounds.ToString());
+  EXPECT_EQ(NativeViewHostWindowObserver::EVENT_SHOWN,
+            test_observer.events()[1].type);
+  EXPECT_EQ(child()->GetNativeView(), test_observer.events()[1].window);
+  EXPECT_EQ(gfx::Rect(10, 10, 80, 80).ToString(),
+            test_observer.events()[1].bounds.ToString());
+  EXPECT_EQ(NativeViewHostWindowObserver::EVENT_SHOWN,
+            test_observer.events()[2].type);
+  EXPECT_EQ(clipping_window(), test_observer.events()[2].window);
+  EXPECT_EQ(gfx::Rect(10, 10, 80, 80).ToString(),
+            test_observer.events()[2].bounds.ToString());
+
+  child()->GetNativeView()->RemoveObserver(&test_observer);
   DestroyHost();
 }
 
