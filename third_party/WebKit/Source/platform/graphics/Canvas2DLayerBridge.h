@@ -70,7 +70,7 @@ public:
 
     // ImageBufferSurface implementation
     void finalizeFrame();
-    void willReadback();
+    void willAccessPixels();
     SkCanvas* canvas() const { return m_canvas.get(); }
     bool checkSurfaceValid();
     bool restoreSurface();

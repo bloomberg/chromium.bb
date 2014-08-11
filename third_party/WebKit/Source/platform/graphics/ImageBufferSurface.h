@@ -60,7 +60,7 @@ public:
 
     virtual SkCanvas* canvas() const = 0;
     virtual const SkBitmap& bitmap();
-    virtual void willReadback() { }
+    virtual void willAccessPixels() { }
     virtual bool isValid() const = 0;
     virtual bool restore() { return false; };
     virtual blink::WebLayer* layer() const { return 0; };

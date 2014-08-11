@@ -350,7 +350,7 @@ PassRefPtr<Uint8ClampedArray> ImageBuffer::getImageData(Multiply multiplied, con
     SkAlphaType alphaType = (multiplied == Premultiplied) ? kPremul_SkAlphaType : kUnpremul_SkAlphaType;
     SkImageInfo info = SkImageInfo::Make(rect.width(), rect.height(), kRGBA_8888_SkColorType, alphaType);
 
-    m_surface->willReadback();
+    m_surface->willAccessPixels();
     context()->readPixels(info, result->data(), 4 * rect.width(), rect.x(), rect.y());
     return result.release();
 }
@@ -381,6 +381,8 @@ void ImageBuffer::putByteArray(Multiply multiplied, Uint8ClampedArray* source, c
     const void* srcAddr = source->data() + originY * srcBytesPerRow + originX * 4;
     SkAlphaType alphaType = (multiplied == Premultiplied) ? kPremul_SkAlphaType : kUnpremul_SkAlphaType;
     SkImageInfo info = SkImageInfo::Make(sourceRect.width(), sourceRect.height(), kRGBA_8888_SkColorType, alphaType);
+
+    m_surface->willAccessPixels();
 
     context()->writePixels(info, srcAddr, srcBytesPerRow, destX, destY);
 }

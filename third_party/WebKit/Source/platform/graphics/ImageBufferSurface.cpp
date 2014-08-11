@@ -68,7 +68,7 @@ void ImageBufferSurface::clear()
 const SkBitmap& ImageBufferSurface::bitmap()
 {
     ASSERT(canvas());
-    willReadback();
+    willAccessPixels();
     return canvas()->getTopDevice()->accessBitmap(false);
 }
 

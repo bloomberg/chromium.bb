@@ -166,7 +166,7 @@ void Canvas2DLayerBridge::setIsHidden(bool hidden)
     }
 }
 
-void Canvas2DLayerBridge::willReadback()
+void Canvas2DLayerBridge::willAccessPixels()
 {
     // A readback operation may alter the texture parameters, which may affect
     // the compositor's behavior. Therefore, we must trigger copy-on-write

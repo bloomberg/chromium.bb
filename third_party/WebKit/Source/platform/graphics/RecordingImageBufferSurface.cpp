@@ -49,7 +49,7 @@ void RecordingImageBufferSurface::setImageBuffer(ImageBuffer* imageBuffer)
     }
 }
 
-void RecordingImageBufferSurface::willReadback()
+void RecordingImageBufferSurface::willAccessPixels()
 {
     fallBackToRasterCanvas();
 }
