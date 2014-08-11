@@ -41,9 +41,6 @@ class NodePrivate {
   void LocalReorder(Node* relative, OrderDirection direction) {
     node_->LocalReorder(relative, direction);
   }
-  void LocalSetActiveView(View* view) {
-    node_->LocalSetActiveView(view);
-  }
   void LocalSetBounds(const gfx::Rect& old_bounds,
                       const gfx::Rect& new_bounds) {
     node_->LocalSetBounds(old_bounds, new_bounds);

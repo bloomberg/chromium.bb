@@ -13,7 +13,10 @@
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager_constants.mojom.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
+
+class SkBitmap;
 
 namespace mojo {
 
@@ -66,9 +69,9 @@ class Node {
 
   Node* GetChildById(Id id);
 
-  // View.
-  void SetActiveView(View* view);
-  View* active_view() { return active_view_; }
+  // TODO(beng): temporary only.
+  void SetContents(const SkBitmap& contents);
+  void SetColor(SkColor color);
 
   // Focus.
   void SetFocus();
@@ -95,7 +98,6 @@ class Node {
   void LocalRemoveChild(Node* child);
   // Returns true if the order actually changed.
   bool LocalReorder(Node* relative, OrderDirection direction);
-  void LocalSetActiveView(View* view);
   void LocalSetBounds(const gfx::Rect& old_bounds, const gfx::Rect& new_bounds);
 
   ViewManager* manager_;
@@ -106,7 +108,6 @@ class Node {
   ObserverList<NodeObserver> observers_;
 
   gfx::Rect bounds_;
-  View* active_view_;
 
   DISALLOW_COPY_AND_ASSIGN(Node);
 };

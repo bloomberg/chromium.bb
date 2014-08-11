@@ -12,7 +12,6 @@ module mojo {
 struct NodeData {
   uint32 parent_id;
   uint32 node_id;
-  uint32 view_id;
   mojo.Rect bounds;
   // TODO(sky): add visible.
 };
@@ -38,8 +37,8 @@ interface ViewManagerInitService {
   Embed(string url, ServiceProvider service_provider) => (bool success);
 };
 
-// Nodes and Views are identified by a uint32. The upper 16 bits are the
-// connection id, and the lower 16 the id assigned by the client.
+// Nodes are identified by a uint32. The upper 16 bits are the connection id,
+// and the lower 16 the id assigned by the client.
 //
 // The root node is identified with a connection id of 0, and value of 1.
 [Client=ViewManagerClient]
@@ -77,7 +76,7 @@ interface ViewManagerService {
   // RemoveNodeFromParent for details.
   AddNode(uint32 parent, uint32 child) => (bool success);
 
-  // Removes a view from its current parent. This fails if the node is not
+  // Removes a node from its current parent. This fails if the node is not
   // valid or the node already has no parent.
   //
   // Removing a node from a parent may result in OnNodeDeleted() being sent to
@@ -101,21 +100,8 @@ interface ViewManagerService {
   // search (pre-order).
   GetNodeTree(uint32 node_id) => (NodeData[] nodes);
 
-  // Creates a new view with the specified id. It is up to the client to ensure
-  // the id is unique to the connection (the id need not be globally unique).
-  // Additionally the connection id (embedded in |view_id|) must match that of
-  // the connection.
-  CreateView(uint32 view_id) => (bool success);
-
-  // Deletes the view with the specified id. Only the connection that created
-  // the view can delete it.
-  DeleteView(uint32 view_id) => (bool success);
-
-  // Sets the view a node is showing.
-  SetView(uint32 node_id, uint32 view_id) => (bool success);
-
-  // Shows the specified image (png encoded) in the specified view.
-  SetViewContents(uint32 view_id,
+  // Shows the specified image (png encoded) in the specified node.
+  SetNodeContents(uint32 node_id,
                   handle<shared_buffer> buffer,
                   uint32 buffer_size) => (bool success);
 
@@ -157,13 +143,13 @@ interface ViewManagerService {
 
   // TODO(sky): move these to a separate interface when FIFO works.
 
-  // Sends OnViewInputEvent() to the owner of the specified view.
-  DispatchOnViewInputEvent(uint32 view_id, mojo.Event event);
+  // Sends OnNodeInputEvent() to the owner of the specified node.
+  DispatchOnNodeInputEvent(uint32 node_id, mojo.Event event);
 };
 
-// Changes to nodes/views are not sent to the connection that originated the
-// change. For example, if connection 1 attaches a view to a node (SetView())
-// connection 1 does not receive OnNodeViewReplaced().
+// Changes to nodes are not sent to the connection that originated the
+// change. For example, if connection 1 changes the bounds of a node by calling
+// SetBounds(), connection 1 does not receive OnNodeBoundsChanged().
 [Client=ViewManagerService]
 interface ViewManagerClient {
   // Invoked when the client application has been embedded at |root|.
@@ -195,15 +181,8 @@ interface ViewManagerClient {
   // Invoked when a node is deleted.
   OnNodeDeleted(uint32 node);
 
-  // Invoked when the view associated with a node is replaced by another view.
-  // 0 is used to identify a null view.
-  OnNodeViewReplaced(uint32 node, uint32 new_view_id, uint32 old_view_id);
-
-  // Invoked when a view is deleted.
-  OnViewDeleted(uint32 view);
-
-  // Invoked when an event is targeted at the specified view.
-  OnViewInputEvent(uint32 view, mojo.Event event) => ();
+  // Invoked when an event is targeted at the specified node.
+  OnNodeInputEvent(uint32 node, mojo.Event event) => ();
 
   // Invoked when focus shifts from one Node to another. |gained_focus_id| is
   // the id of the node that gained focus, or 0 if the node that gained focus is
@@ -223,8 +202,8 @@ interface ViewManagerClient {
   // Requests the window manager create a "top level" node embedding |url|.
   Embed(string url, ServiceProvider& service_provider);
 
-  // Requests the view manager dispatch the event targeted at |view|.
-  DispatchOnViewInputEvent(uint32 view, mojo.Event event);
+  // Requests the view manager dispatch the event targeted at |node|.
+  DispatchOnNodeInputEvent(uint32 node, mojo.Event event);
 };
 
 }

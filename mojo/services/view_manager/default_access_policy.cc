@@ -6,7 +6,6 @@
 
 #include "mojo/services/view_manager/access_policy_delegate.h"
 #include "mojo/services/view_manager/node.h"
-#include "mojo/services/view_manager/view.h"
 
 namespace mojo {
 namespace service {
@@ -47,17 +46,6 @@ bool DefaultAccessPolicy::CanDeleteNode(const Node* node) const {
   return WasCreatedByThisConnection(node);
 }
 
-bool DefaultAccessPolicy::CanDeleteView(const View* view) const {
-  return WasCreatedByThisConnection(view);
-}
-
-bool DefaultAccessPolicy::CanSetView(const Node* node, const View* view) const {
-  if (view && !WasCreatedByThisConnection(view))
-    return false;
-
-  return WasCreatedByThisConnection(node) || IsNodeInRoots(node);
-}
-
 bool DefaultAccessPolicy::CanSetFocus(const Node* node) const {
   // TODO(beng): security.
   return true;
@@ -81,8 +69,12 @@ bool DefaultAccessPolicy::CanChangeNodeVisibility(const Node* node) const {
   return WasCreatedByThisConnection(node) || IsNodeInRoots(node);
 }
 
-bool DefaultAccessPolicy::CanSetViewContents(const View* view) const {
-  return WasCreatedByThisConnection(view);
+bool DefaultAccessPolicy::CanSetNodeContents(const Node* node) const {
+  // Once a node embeds another app, the embedder app is no longer able to
+  // call SetNodeContents() - this ability is transferred to the embedded app.
+  if (delegate_->IsNodeRootOfAnotherConnectionForAccessPolicy(node))
+    return false;
+  return WasCreatedByThisConnection(node) || IsNodeInRoots(node);
 }
 
 bool DefaultAccessPolicy::CanSetNodeBounds(const Node* node) const {
@@ -106,12 +98,6 @@ bool DefaultAccessPolicy::ShouldNotifyOnHierarchyChange(
     *old_parent = NULL;
   }
   return true;
-}
-
-Id DefaultAccessPolicy::GetViewIdToSend(const Node* node,
-                                        const View* view) const {
-  // TODO(sky): should we send null if view is not from this connection?
-  return ViewIdToTransportId(view->id());
 }
 
 bool DefaultAccessPolicy::ShouldSendViewDeleted(const ViewId& view_id) const {

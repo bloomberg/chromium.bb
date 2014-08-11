@@ -12,11 +12,9 @@
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/interface_factory_impl.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
-#include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
-#include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "mojo/services/public/interfaces/navigation/navigation.mojom.h"
 #include "mojo/views/native_widget_view_manager.h"
 #include "mojo/views/views_init.h"
@@ -97,7 +95,6 @@ class Keyboard : public ApplicationDelegate,
                        scoped_ptr<ServiceProvider> imported_services) OVERRIDE {
     // TODO: deal with OnEmbed() being invoked multiple times.
     view_manager_ = view_manager;
-    root->SetActiveView(View::Create(view_manager));
     CreateWidget(root);
   }
   virtual void OnViewManagerDisconnected(

@@ -12,11 +12,9 @@
 #include "mojo/public/cpp/application/interface_factory_impl.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/node_observer.h"
-#include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
-#include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "mojo/services/public/interfaces/navigation/navigation.mojom.h"
 #include "ui/events/event_constants.h"
 #include "url/gurl.h"
@@ -49,7 +47,6 @@ class NavigatorImpl : public InterfaceImpl<Navigator> {
 class NestingApp
     : public ApplicationDelegate,
       public ViewManagerDelegate,
-      public ViewObserver,
       public NodeObserver {
  public:
   NestingApp()
@@ -92,11 +89,7 @@ class NestingApp
                        ServiceProviderImpl* exported_services,
                        scoped_ptr<ServiceProvider> imported_services) OVERRIDE {
     root->AddObserver(this);
-
-    View* view = View::Create(view_manager);
-    root->SetActiveView(view);
-    view->SetColor(SK_ColorCYAN);
-    view->AddObserver(this);
+    root->SetColor(SK_ColorCYAN);
 
     nested_ = Node::Create(view_manager);
     root->AddChild(nested_);
@@ -109,16 +102,14 @@ class NestingApp
     base::MessageLoop::current()->Quit();
   }
 
-  // Overridden from ViewObserver:
-  virtual void OnViewInputEvent(View* view, const EventPtr& event) OVERRIDE {
-    if (event->action == EVENT_TYPE_MOUSE_RELEASED)
-      window_manager_->CloseWindow(view->node()->id());
-  }
-
   // Overridden from NodeObserver:
   virtual void OnNodeDestroyed(Node* node) OVERRIDE {
     // TODO(beng): reap views & child nodes.
     nested_ = NULL;
+  }
+  virtual void OnNodeInputEvent(Node* node, const EventPtr& event) OVERRIDE {
+    if (event->action == EVENT_TYPE_MOUSE_RELEASED)
+      window_manager_->CloseWindow(node->id());
   }
 
   InterfaceFactoryImplWithContext<NavigatorImpl, NestingApp> navigator_factory_;

@@ -6,7 +6,6 @@
 
 #include "mojo/aura/window_tree_host_mojo.h"
 #include "mojo/services/public/cpp/input_events/input_events_type_converters.h"
-#include "mojo/services/public/cpp/view_manager/view.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/window.h"
@@ -89,11 +88,8 @@ class MinimalInputEventFilter : public ui::internal::InputMethodDelegate,
 NativeWidgetViewManager::NativeWidgetViewManager(
     views::internal::NativeWidgetDelegate* delegate, Node* node)
     : NativeWidgetAura(delegate),
-      node_(node),
-      view_(node_->active_view()) {
+      node_(node) {
   node_->AddObserver(this);
-  if (view_)
-    view_->AddObserver(this);
   window_tree_host_.reset(new WindowTreeHostMojo(node_, this));
   window_tree_host_->InitHost();
 
@@ -114,8 +110,6 @@ NativeWidgetViewManager::NativeWidgetViewManager(
 }
 
 NativeWidgetViewManager::~NativeWidgetViewManager() {
-  if (view_)
-    view_->RemoveObserver(this);
   if (node_)
     node_->RemoveObserver(this);
 }
@@ -131,8 +125,8 @@ void NativeWidgetViewManager::InitNativeWidget(
 
 void NativeWidgetViewManager::CompositorContentsChanged(
     const SkBitmap& bitmap) {
-  if (view_)
-    view_->SetContents(bitmap);
+  if (node_)
+    node_->SetContents(bitmap);
 }
 
 void NativeWidgetViewManager::OnNodeDestroyed(Node* node) {
@@ -148,28 +142,11 @@ void NativeWidgetViewManager::OnNodeBoundsChanged(Node* node,
   GetWidget()->SetBounds(gfx::Rect(node->bounds().size()));
 }
 
-void NativeWidgetViewManager::OnNodeActiveViewChanged(
-    Node* node,
-    View* old_view,
-    View* new_view) {
-  if (old_view)
-    old_view->RemoveObserver(this);
-  if (new_view)
-    new_view->AddObserver(this);
-  view_ = new_view;
-}
-
-void NativeWidgetViewManager::OnViewInputEvent(View* view,
+void NativeWidgetViewManager::OnNodeInputEvent(Node* node,
                                                const EventPtr& event) {
   scoped_ptr<ui::Event> ui_event(event.To<scoped_ptr<ui::Event> >());
   if (ui_event)
     window_tree_host_->SendEventToProcessor(ui_event.get());
-}
-
-void NativeWidgetViewManager::OnViewDestroyed(View* view) {
-  DCHECK_EQ(view, view_);
-  view->RemoveObserver(this);
-  view_ = NULL;
 }
 
 }  // namespace mojo

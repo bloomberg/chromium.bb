@@ -54,8 +54,6 @@ component("view_manager") {
     "root_view_manager_delegate.h",
     "screen_impl.cc",
     "screen_impl.h",
-    "view.cc",
-    "view.h",
     "view_manager_export.h",
     "view_manager_init_service_context.cc",
     "view_manager_init_service_context.h",

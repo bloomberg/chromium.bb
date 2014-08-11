@@ -12,7 +12,6 @@
 #include "mojo/public/cpp/application/interface_factory_impl.h"
 #include "mojo/public/cpp/application/service_provider_impl.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
-#include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
@@ -61,10 +60,7 @@ class WMFlowEmbedded : public mojo::ApplicationDelegate,
       mojo::Node* root,
       mojo::ServiceProviderImpl* exported_services,
       scoped_ptr<mojo::ServiceProvider> imported_services) MOJO_OVERRIDE {
-    mojo::View* view =
-        mojo::View::Create(view_manager);
-    root->SetActiveView(view);
-    view->SetColor(SK_ColorMAGENTA);
+    root->SetColor(SK_ColorMAGENTA);
 
     exported_services->AddService(&embeddee_factory_);
     mojo::ConnectToService(imported_services.get(), &embedder_);

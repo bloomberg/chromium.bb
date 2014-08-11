@@ -28,7 +28,6 @@ class ApplicationConnection;
 namespace service {
 
 class RootViewManagerDelegate;
-class View;
 class ViewManagerServiceImpl;
 
 // RootNodeManager is responsible for managing the set of
@@ -99,9 +98,6 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
   // Returns the Node identified by |id|.
   Node* GetNode(const NodeId& id);
 
-  // Returns the View identified by |id|.
-  View* GetView(const ViewId& id);
-
   Node* root() { return root_.get(); }
 
   bool IsProcessingChange() const { return current_change_ != NULL; }
@@ -127,7 +123,7 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
   }
   const ViewManagerServiceImpl* GetConnectionWithRoot(const NodeId& id) const;
 
-  void DispatchViewInputEventToWindowManager(const View* view,
+  void DispatchNodeInputEventToWindowManager(const Node* node,
                                              const ui::Event* event);
 
   // These functions trivially delegate to all ViewManagerServiceImpls, which in
@@ -142,11 +138,7 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
   void ProcessNodeReorder(const Node* node,
                           const Node* relative_node,
                           const OrderDirection direction);
-  void ProcessNodeViewReplaced(const Node* node,
-                               const View* new_view_id,
-                               const View* old_view_id);
   void ProcessNodeDeleted(const NodeId& node);
-  void ProcessViewDeleted(const ViewId& view);
 
  private:
   // Used to setup any static state needed by RootNodeManager.
@@ -192,10 +184,7 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
   virtual void OnNodeBoundsChanged(const Node* node,
                                    const gfx::Rect& old_bounds,
                                    const gfx::Rect& new_bounds) OVERRIDE;
-  virtual void OnNodeViewReplaced(const Node* node,
-                                  const View* new_view,
-                                  const View* old_view) OVERRIDE;
-  virtual void OnViewInputEvent(const View* view,
+  virtual void OnNodeInputEvent(const Node* node,
                                 const ui::Event* event) OVERRIDE;
 
   Context context_;

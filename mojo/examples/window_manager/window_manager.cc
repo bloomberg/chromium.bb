@@ -15,7 +15,6 @@
 #include "mojo/services/public/cpp/input_events/input_events_type_converters.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/node_observer.h"
-#include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
@@ -119,11 +118,11 @@ class KeyboardManager : public KeyboardClient,
 
  private:
   // KeyboardClient:
-  virtual void OnKeyboardEvent(Id view_id,
+  virtual void OnKeyboardEvent(Id node_id,
                                int32_t code,
                                int32_t flags) OVERRIDE {
-    View* view = view_manager_->GetViewById(view_id);
-    if (!view)
+    Node* node = view_manager_->GetNodeById(node_id);
+    if (!node)
       return;
 #if defined(OS_WIN)
     const bool is_char = code != ui::VKEY_BACK && code != ui::VKEY_RETURN;
@@ -132,19 +131,19 @@ class KeyboardManager : public KeyboardClient,
 #endif
     if (is_char) {
       view_manager_->DispatchEvent(
-          view,
+          node,
           Event::From(ui::KeyEvent(ui::ET_KEY_PRESSED,
-                                  static_cast<ui::KeyboardCode>(code),
-                                  flags)));
+                                   static_cast<ui::KeyboardCode>(code),
+                                   flags)));
     } else {
       view_manager_->DispatchEvent(
-          view,
+          node,
           Event::From(ui::KeyEvent(static_cast<base::char16>(code),
-                                  static_cast<ui::KeyboardCode>(code),
-                                  flags)));
+                                   static_cast<ui::KeyboardCode>(code),
+                                   flags)));
     }
     view_manager_->DispatchEvent(
-        view,
+        node,
         Event::From(ui::KeyEvent(ui::ET_KEY_RELEASED,
                                  static_cast<ui::KeyboardCode>(code),
                                  flags)));
@@ -202,7 +201,7 @@ class RootLayoutManager : public NodeObserver {
     Node* content_node = view_manager_->GetNodeById(content_node_id_);
     content_node->SetBounds(new_bounds);
     // Force the view's bitmap to be recreated
-    content_node->active_view()->SetColor(SK_ColorBLUE);
+    content_node->SetColor(SK_ColorBLUE);
 
     int delta_width = new_bounds.width() - old_bounds.width();
     int delta_height = new_bounds.height() - old_bounds.height();
@@ -350,9 +349,7 @@ class WindowManager
     node->SetBounds(gfx::Rect(root->bounds().size()));
     content_node_id_ = node->id();
 
-    View* view = View::Create(view_manager_);
-    node->SetActiveView(view);
-    view->SetColor(SK_ColorBLUE);
+    root->SetColor(SK_ColorBLUE);
 
     Id launcher_ui_id = CreateLauncherUI();
     Id control_panel_id = CreateControlPanel(node);
@@ -378,11 +375,11 @@ class WindowManager
                  NavigationDetailsPtr().Pass(),
                  ResponseDetailsPtr().Pass());
   }
-  virtual void DispatchEvent(View* target, EventPtr event) OVERRIDE {
+  virtual void DispatchEvent(Node* target, EventPtr event) OVERRIDE {
     // TODO(beng): More sophisticated focus handling than this is required!
     if (event->action == EVENT_TYPE_MOUSE_PRESSED &&
         !IsDescendantOfKeyboard(target)) {
-      target->node()->SetFocus();
+      target->SetFocus();
     }
     view_manager_->DispatchEvent(target, event.Pass());
   }
@@ -484,16 +481,14 @@ class WindowManager
     }
   }
 
-  bool IsDescendantOfKeyboard(View* target) {
+  bool IsDescendantOfKeyboard(Node* target) {
     return keyboard_manager_.get() &&
-        keyboard_manager_->node()->Contains(target->node());
+        keyboard_manager_->node()->Contains(target);
   }
 
   Id CreateControlPanel(Node* root) {
     Node* node = Node::Create(view_manager_);
-    View* view = View::Create(view_manager_);
     root->AddChild(node);
-    node->SetActiveView(view);
 
     gfx::Rect bounds(root->bounds().width() - kControlPanelWidth -
                          kBorderInset,

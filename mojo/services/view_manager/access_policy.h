@@ -29,9 +29,6 @@ class AccessPolicy {
                               const Node* relative_node,
                               OrderDirection direction) const = 0;
   virtual bool CanDeleteNode(const Node* node) const = 0;
-  virtual bool CanDeleteView(const View* view) const = 0;
-  // Note |view| may be NULL here.
-  virtual bool CanSetView(const Node* node, const View* view) const = 0;
   virtual bool CanSetFocus(const Node* node) const = 0;
   virtual bool CanGetNodeTree(const Node* node) const = 0;
   // Used when building a node tree (GetNodeTree()) to decide if we should
@@ -39,7 +36,7 @@ class AccessPolicy {
   virtual bool CanDescendIntoNodeForNodeTree(const Node* node) const = 0;
   virtual bool CanEmbed(const Node* node) const = 0;
   virtual bool CanChangeNodeVisibility(const Node* node) const = 0;
-  virtual bool CanSetViewContents(const View* view) const = 0;
+  virtual bool CanSetNodeContents(const Node* node) const = 0;
   virtual bool CanSetNodeBounds(const Node* node) const = 0;
 
   // Returns whether the connection should notify on a hierarchy change.
@@ -49,10 +46,6 @@ class AccessPolicy {
       const Node* node,
       const Node** new_parent,
       const Node** old_parent) const = 0;
-
-  // Returns the Id of the view to send to the client. |view| is or was
-  // associated with |node|.
-  virtual Id GetViewIdToSend(const Node* node, const View* view) const = 0;
 
   virtual bool ShouldSendViewDeleted(const ViewId& view_id) const = 0;
 };

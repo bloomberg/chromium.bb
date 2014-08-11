@@ -14,8 +14,6 @@
 #include "mojo/services/html_viewer/webstoragenamespace_impl.h"
 #include "mojo/services/html_viewer/weburlloader_impl.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
-#include "mojo/services/public/cpp/view_manager/view.h"
-#include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "skia/ext/refptr.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
@@ -159,17 +157,14 @@ bool CanNavigateLocally(blink::WebFrame* frame,
 HTMLDocumentView::HTMLDocumentView(ServiceProvider* service_provider,
                                    ViewManager* view_manager)
     : view_manager_(view_manager),
-      view_(View::Create(view_manager_)),
       web_view_(NULL),
       root_(NULL),
       repaint_pending_(false),
       navigator_host_(service_provider),
       weak_factory_(this) {
-  view_->AddObserver(this);
 }
 
 HTMLDocumentView::~HTMLDocumentView() {
-  view_->RemoveObserver(this);
   if (web_view_)
     web_view_->close();
   if (root_)
@@ -178,8 +173,7 @@ HTMLDocumentView::~HTMLDocumentView() {
 
 void HTMLDocumentView::AttachToNode(Node* node) {
   root_ = node;
-  root_->SetActiveView(view_);
-  view_->SetColor(SK_ColorCYAN);  // Dummy background color.
+  root_->SetColor(SK_ColorCYAN);  // Dummy background color.
 
   web_view_ = blink::WebView::create(this);
   ConfigureSettings(web_view_->settings());
@@ -251,7 +245,7 @@ blink::WebNavigationPolicy HTMLDocumentView::decidePolicyForNavigation(
   AddRequestBody(nav_details.get(), request);
 
   navigator_host_->RequestNavigate(
-      view_->node()->id(),
+      root_->id(),
       WebNavigationPolicyToNavigationTarget(default_policy),
       nav_details.Pass());
 
@@ -268,17 +262,8 @@ void HTMLDocumentView::didAddMessageToConsole(
 void HTMLDocumentView::didNavigateWithinPage(
     blink::WebLocalFrame* frame, const blink::WebHistoryItem& history_item,
     blink::WebHistoryCommitType commit_type) {
-  navigator_host_->DidNavigateLocally(view_->node()->id(),
+  navigator_host_->DidNavigateLocally(root_->id(),
                                       history_item.urlString().utf8());
-}
-
-void HTMLDocumentView::OnViewInputEvent(View* view,
-                                        const EventPtr& event) {
-  scoped_ptr<blink::WebInputEvent> web_event =
-      TypeConverter<EventPtr, scoped_ptr<blink::WebInputEvent> >::ConvertTo(
-          event);
-  if (web_event)
-    web_view_->handleInputEvent(*web_event);
 }
 
 void HTMLDocumentView::OnNodeBoundsChanged(Node* node,
@@ -292,6 +277,14 @@ void HTMLDocumentView::OnNodeDestroyed(Node* node) {
   DCHECK_EQ(node, root_);
   node->RemoveObserver(this);
   root_ = NULL;
+}
+
+void HTMLDocumentView::OnNodeInputEvent(Node* node, const EventPtr& event) {
+  scoped_ptr<blink::WebInputEvent> web_event =
+      TypeConverter<EventPtr, scoped_ptr<blink::WebInputEvent> >::ConvertTo(
+          event);
+  if (web_event)
+    web_view_->handleInputEvent(*web_event);
 }
 
 void HTMLDocumentView::Repaint() {
@@ -308,7 +301,7 @@ void HTMLDocumentView::Repaint() {
 
   web_view_->paint(canvas.get(), gfx::Rect(0, 0, width, height));
 
-  view_->SetContents(canvas->getDevice()->accessBitmap(false));
+  root_->SetContents(canvas->getDevice()->accessBitmap(false));
 }
 
 }  // namespace mojo

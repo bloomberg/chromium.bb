@@ -5,7 +5,6 @@
 #include "mojo/services/view_manager/node.h"
 
 #include "mojo/services/view_manager/node_delegate.h"
-#include "mojo/services/view_manager/view.h"
 #include "ui/aura/window_property.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/hit_test.h"
@@ -23,7 +22,6 @@ DEFINE_WINDOW_PROPERTY_KEY(Node*, kNodeKey, NULL);
 Node::Node(NodeDelegate* delegate, const NodeId& id)
     : delegate_(delegate),
       id_(id),
-      view_(NULL),
       window_(this) {
   DCHECK(delegate);  // Must provide a delegate.
   window_.set_owned_by_parent(false);
@@ -40,11 +38,6 @@ Node::~Node() {
   // that we're in a known state.
   if (window_.parent())
     window_.parent()->RemoveChild(&window_);
-
-  // This must be done *after* updating the hierarchy since the hierarchy change
-  // will remove the node from the connections that know about it, preventing
-  // this notification from being sent after the destruction notification.
-  SetView(NULL);
 
   delegate_->OnNodeDestroyed(this);
 }
@@ -113,21 +106,9 @@ void Node::SetVisible(bool value) {
     window_.Hide();
 }
 
-void Node::SetView(View* view) {
-  if (view == view_)
-    return;
-
-  // Detach view from existing node. This way notifications are sent out.
-  if (view && view->node())
-    view->node()->SetView(NULL);
-
-  View* old_view = view_;
-  if (view_)
-    view_->set_node(NULL);
-  view_ = view;
-  if (view)
-    view->set_node(this);
-  delegate_->OnNodeViewReplaced(this, view, old_view);
+void Node::SetBitmap(const SkBitmap& bitmap) {
+  bitmap_ = bitmap;
+  window_.SchedulePaintInRect(gfx::Rect(window_.bounds().size()));
 }
 
 void Node::OnWindowHierarchyChanged(
@@ -181,10 +162,7 @@ void Node::OnCaptureLost() {
 }
 
 void Node::OnPaint(gfx::Canvas* canvas) {
-  if (view_) {
-    canvas->DrawImageInt(
-        gfx::ImageSkia::CreateFrom1xBitmap(view_->bitmap()), 0, 0);
-  }
+  canvas->DrawImageInt(gfx::ImageSkia::CreateFrom1xBitmap(bitmap_), 0, 0);
 }
 
 void Node::OnDeviceScaleFactorChanged(float device_scale_factor) {
@@ -207,8 +185,7 @@ void Node::GetHitTestMask(gfx::Path* mask) const {
 }
 
 void Node::OnEvent(ui::Event* event) {
-  if (view_)
-    delegate_->OnViewInputEvent(view_, event);
+  delegate_->OnNodeInputEvent(this, event);
 }
 
 }  // namespace service

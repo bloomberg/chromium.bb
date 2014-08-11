@@ -13,7 +13,6 @@
 #include "mojo/public/cpp/application/service_provider_impl.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
-#include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
@@ -56,11 +55,10 @@ class WMFlowApp : public mojo::ApplicationDelegate,
  private:
   // Overridden from Application:
   virtual void Initialize(mojo::ApplicationImpl* app) MOJO_OVERRIDE {
-    mojo::ViewManagerInitServicePtr init_svc;
     mojo::ServiceProviderPtr sp;
-    app->ConnectToService("mojo:mojo_view_manager", &init_svc);
-    init_svc->Embed("mojo:mojo_wm_flow_app", sp.Pass(),
-                    base::Bind(&ConnectCallback));
+    app->ConnectToService("mojo:mojo_view_manager", &init_svc_);
+    init_svc_->Embed("mojo:mojo_wm_flow_app", sp.Pass(),
+                     base::Bind(&ConnectCallback));
   }
   virtual bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) MOJO_OVERRIDE {
@@ -76,10 +74,7 @@ class WMFlowApp : public mojo::ApplicationDelegate,
       mojo::Node* root,
       mojo::ServiceProviderImpl* exported_services,
       scoped_ptr<mojo::ServiceProvider> imported_services) MOJO_OVERRIDE {
-    mojo::View* view =
-        mojo::View::Create(view_manager);
-    root->SetActiveView(view);
-    view->SetColor(kColors[embed_count_++ % arraysize(kColors)]);
+    root->SetColor(kColors[embed_count_++ % arraysize(kColors)]);
 
     mojo::Node* embed = mojo::Node::Create(view_manager);
     root->AddChild(embed);
@@ -108,6 +103,7 @@ class WMFlowApp : public mojo::ApplicationDelegate,
   mojo::ViewManagerClientFactory view_manager_client_factory_;
   mojo::InterfaceFactoryImpl<EmbedderImpl> embedder_factory_;
   EmbeddeePtr embeddee_;
+  mojo::ViewManagerInitServicePtr init_svc_;
 
   DISALLOW_COPY_AND_ASSIGN(WMFlowApp);
 };

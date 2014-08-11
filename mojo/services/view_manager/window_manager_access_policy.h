@@ -26,20 +26,17 @@ class WindowManagerAccessPolicy : public AccessPolicy {
                               const Node* relative_node,
                               OrderDirection direction) const OVERRIDE;
   virtual bool CanDeleteNode(const Node* node) const OVERRIDE;
-  virtual bool CanDeleteView(const View* view) const OVERRIDE;
-  virtual bool CanSetView(const Node* node, const View* view) const OVERRIDE;
   virtual bool CanSetFocus(const Node* node) const OVERRIDE;
   virtual bool CanGetNodeTree(const Node* node) const OVERRIDE;
   virtual bool CanDescendIntoNodeForNodeTree(const Node* node) const OVERRIDE;
   virtual bool CanEmbed(const Node* node) const OVERRIDE;
   virtual bool CanChangeNodeVisibility(const Node* node) const OVERRIDE;
-  virtual bool CanSetViewContents(const View* view) const OVERRIDE;
+  virtual bool CanSetNodeContents(const Node* node) const OVERRIDE;
   virtual bool CanSetNodeBounds(const Node* node) const OVERRIDE;
   virtual bool ShouldNotifyOnHierarchyChange(
       const Node* node,
       const Node** new_parent,
       const Node** old_parent) const OVERRIDE;
-  virtual Id GetViewIdToSend(const Node* node, const View* view) const OVERRIDE;
   virtual bool ShouldSendViewDeleted(const ViewId& view_id) const OVERRIDE;
 
  private:

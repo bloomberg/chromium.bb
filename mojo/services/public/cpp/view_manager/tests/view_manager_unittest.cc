@@ -17,10 +17,8 @@
 #include "mojo/services/public/cpp/view_manager/lib/view_manager_client_impl.h"
 #include "mojo/services/public/cpp/view_manager/node_observer.h"
 #include "mojo/services/public/cpp/view_manager/util.h"
-#include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
-#include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "mojo/shell/shell_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -90,34 +88,6 @@ class ConnectApplicationLoader : public ApplicationLoader,
 
   DISALLOW_COPY_AND_ASSIGN(ConnectApplicationLoader);
 };
-
-class ActiveViewChangedObserver : public NodeObserver {
- public:
-  explicit ActiveViewChangedObserver(Node* node)
-      : node_(node) {}
-  virtual ~ActiveViewChangedObserver() {}
-
- private:
-  // Overridden from NodeObserver:
-  virtual void OnNodeActiveViewChanged(Node* node,
-                                       View* old_view,
-                                       View* new_view) OVERRIDE {
-    DCHECK_EQ(node, node_);
-    QuitRunLoop();
-  }
-
-  Node* node_;
-
-  DISALLOW_COPY_AND_ASSIGN(ActiveViewChangedObserver);
-};
-
-// Waits until the active view id of the supplied node changes.
-void WaitForActiveViewToChange(Node* node) {
-  ActiveViewChangedObserver observer(node);
-  node->AddObserver(&observer);
-  DoRunLoop();
-  node->RemoveObserver(&observer);
-}
 
 class BoundsChangeObserver : public NodeObserver {
  public:
@@ -191,12 +161,10 @@ void WaitForTreeSizeToMatch(Node* node, size_t tree_size) {
 
 // Utility class that waits for the destruction of some number of nodes and
 // views.
-class DestructionObserver : public NodeObserver, public ViewObserver {
+class DestructionObserver : public NodeObserver {
  public:
   // |nodes| or |views| can be NULL.
-  DestructionObserver(std::set<Id>* nodes, std::set<Id>* views)
-      : nodes_(nodes),
-        views_(views) {}
+  explicit DestructionObserver(std::set<Id>* nodes) : nodes_(nodes) {}
 
  private:
   // Overridden from NodeObserver:
@@ -208,40 +176,22 @@ class DestructionObserver : public NodeObserver, public ViewObserver {
       QuitRunLoop();
   }
 
-  // Overridden from ViewObserver:
-  virtual void OnViewDestroyed(View* view) OVERRIDE {
-    std::set<Id>::iterator it = views_->find(view->id());
-    if (it != views_->end())
-      views_->erase(it);
-    if (CanQuit())
-      QuitRunLoop();
-  }
-
   bool CanQuit() {
-    return (!nodes_ || nodes_->empty()) && (!views_ || views_->empty());
+    return !nodes_ || nodes_->empty();
   }
 
   std::set<Id>* nodes_;
-  std::set<Id>* views_;
 
   DISALLOW_COPY_AND_ASSIGN(DestructionObserver);
 };
 
-void WaitForDestruction(ViewManager* view_manager,
-                        std::set<Id>* nodes,
-                        std::set<Id>* views) {
-  DestructionObserver observer(nodes, views);
-  DCHECK(nodes || views);
+void WaitForDestruction(ViewManager* view_manager, std::set<Id>* nodes) {
+  DestructionObserver observer(nodes);
+  DCHECK(nodes);
   if (nodes) {
     for (std::set<Id>::const_iterator it = nodes->begin();
           it != nodes->end(); ++it) {
       view_manager->GetNodeById(*it)->AddObserver(&observer);
-    }
-  }
-  if (views) {
-    for (std::set<Id>::const_iterator it = views->begin();
-          it != views->end(); ++it) {
-      view_manager->GetViewById(*it)->AddObserver(&observer);
     }
   }
   DoRunLoop();
@@ -448,76 +398,12 @@ TEST_F(ViewManagerTest, DISABLED_ViewManagerDestroyed_CleanupNode) {
 
   std::set<Id> nodes;
   nodes.insert(node_id);
-  WaitForDestruction(embedded, &nodes, NULL);
+  WaitForDestruction(embedded, &nodes);
 
   EXPECT_TRUE(embedded->GetRoots().empty());
 }
 
-TEST_F(ViewManagerTest, SetActiveView) {
-  Node* node = Node::Create(window_manager());
-  window_manager()->GetRoots().front()->AddChild(node);
-  ViewManager* embedded = Embed(window_manager(), node);
-
-  View* view = View::Create(window_manager());
-  node->SetActiveView(view);
-
-  Node* node_in_embedded = embedded->GetNodeById(node->id());
-  WaitForActiveViewToChange(node_in_embedded);
-
-  EXPECT_EQ(node_in_embedded->active_view()->id(), view->id());
-}
-
-// TODO(sky): rethink this and who should be notified when views are
-// detached/destroyed.
-TEST_F(ViewManagerTest, DISABLED_DestroyView) {
-  Node* node = Node::Create(window_manager());
-  window_manager()->GetRoots().front()->AddChild(node);
-  ViewManager* embedded = Embed(window_manager(), node);
-
-  View* view = View::Create(window_manager());
-  node->SetActiveView(view);
-
-  Node* node_in_embedded = embedded->GetNodeById(node->id());
-  WaitForActiveViewToChange(node_in_embedded);
-
-  EXPECT_EQ(node_in_embedded->active_view()->id(), view->id());
-
-  Id view_id = view->id();
-  view->Destroy();
-
-  std::set<Id> views;
-  views.insert(view_id);
-  WaitForDestruction(embedded, NULL, &views);
-  EXPECT_EQ(NULL, node_in_embedded->active_view());
-  EXPECT_EQ(NULL, embedded->GetViewById(view_id));
-}
-
-// Destroying the connection that created a node and view should result in that
-// node and view disappearing from all connections that see them.
-// http://crbug.com/396300
-TEST_F(ViewManagerTest, DISABLED_ViewManagerDestroyed_CleanupNodeAndView) {
-  Node* node = Node::Create(window_manager());
-  window_manager()->GetRoots().front()->AddChild(node);
-  View* view = View::Create(window_manager());
-  node->SetActiveView(view);
-  ViewManager* embedded = Embed(window_manager(), node);
-
-  Id node_id = node->id();
-  Id view_id = view->id();
-
-  UnloadApplication(GURL(kWindowManagerURL));
-
-  std::set<Id> observed_nodes;
-  observed_nodes.insert(node_id);
-  std::set<Id> observed_views;
-  observed_views.insert(view_id);
-  WaitForDestruction(embedded, &observed_nodes, &observed_views);
-
-  EXPECT_TRUE(embedded->GetRoots().empty());
-  EXPECT_EQ(NULL, embedded->GetNodeById(node_id));
-  EXPECT_EQ(NULL, embedded->GetViewById(view_id));
-}
-
+// TODO(beng): write a replacement test for the one that once existed here:
 // This test validates the following scenario:
 // -  a node originating from one connection
 // -  a view originating from a second connection
@@ -525,47 +411,9 @@ TEST_F(ViewManagerTest, DISABLED_ViewManagerDestroyed_CleanupNodeAndView) {
 // -> the view should still exist (since the second connection is live) but
 //    should be disconnected from any nodes.
 // http://crbug.com/396300
-TEST_F(
-    ViewManagerTest,
-    DISABLED_ViewManagerDestroyed_CleanupNodeAndViewFromDifferentConnections) {
-  Node* node = Node::Create(window_manager());
-  window_manager()->GetRoots().front()->AddChild(node);
-  ViewManager* embedded = Embed(window_manager(), node);
-  View* view_in_embedded = View::Create(embedded);
-  Node* node_in_embedded = embedded->GetNodeById(node->id());
-  node_in_embedded->SetActiveView(view_in_embedded);
-
-  WaitForActiveViewToChange(node);
-
-  Id node_id = node->id();
-  Id view_id = view_in_embedded->id();
-
-  UnloadApplication(GURL(kWindowManagerURL));
-  std::set<Id> nodes;
-  nodes.insert(node_id);
-  WaitForDestruction(embedded, &nodes, NULL);
-
-  EXPECT_TRUE(embedded->GetRoots().empty());
-  // node was owned by the window manager, so it should be gone.
-  EXPECT_EQ(NULL, embedded->GetNodeById(node_id));
-  // view_in_embedded was owned by the embedded app, so it should still exist,
-  // but disconnected from the node tree.
-  EXPECT_EQ(view_in_embedded, embedded->GetViewById(view_id));
-  EXPECT_EQ(NULL, view_in_embedded->node());
-}
-
-// This test verifies that it is not possible to set the active view to a view
-// defined in a different connection.
-// TODO(beng): write these tests for Node::AddChild(), RemoveChild() and
-//             Contains().
-TEST_F(ViewManagerTest, SetActiveViewAcrossConnection) {
-  Node* node = Node::Create(window_manager());
-  window_manager()->GetRoots().front()->AddChild(node);
-  ViewManager* embedded = Embed(window_manager(), node);
-
-  View* view_in_embedded = View::Create(embedded);
-  EXPECT_DEATH_IF_SUPPORTED(node->SetActiveView(view_in_embedded), "");
-}
+//
+// TODO(beng): The new test should validate the scenario as described above
+//             except that the second connection still has a valid tree.
 
 // Verifies that bounds changes applied to a node hierarchy in one connection
 // are reflected to another.

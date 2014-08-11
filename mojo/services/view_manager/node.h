@@ -11,6 +11,7 @@
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 #include "mojo/services/view_manager/ids.h"
 #include "mojo/services/view_manager/view_manager_export.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
@@ -19,7 +20,6 @@ namespace mojo {
 namespace service {
 
 class NodeDelegate;
-class View;
 
 // Represents a node in the graph. Delegate is informed of interesting events.
 class MOJO_VIEW_MANAGER_EXPORT Node
@@ -30,9 +30,6 @@ class MOJO_VIEW_MANAGER_EXPORT Node
   virtual ~Node();
 
   static Node* NodeForWindow(aura::Window* window);
-
-  void set_view_id(const ViewId& view_id) { view_id_ = view_id; }
-  const ViewId& view_id() const { return view_id_; }
 
   const NodeId& id() const { return id_; }
 
@@ -65,10 +62,8 @@ class MOJO_VIEW_MANAGER_EXPORT Node
   bool IsVisible() const;
   void SetVisible(bool value);
 
-  // Sets the view associated with this node. Node does not own its View.
-  void SetView(View* view);
-  View* view() { return view_; }
-  const View* view() const { return view_; }
+  void SetBitmap(const SkBitmap& contents);
+  const SkBitmap& bitmap() const { return bitmap_; }
 
  private:
   // WindowObserver overrides:
@@ -101,12 +96,8 @@ class MOJO_VIEW_MANAGER_EXPORT Node
   NodeDelegate* delegate_;
   const NodeId id_;
 
-  // Weak pointer to view associated with this node.
-  View* view_;
-
-  ViewId view_id_;
-
   aura::Window window_;
+  SkBitmap bitmap_;
 
   DISALLOW_COPY_AND_ASSIGN(Node);
 };

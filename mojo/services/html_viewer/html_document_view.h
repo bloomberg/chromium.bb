@@ -9,7 +9,6 @@
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/application/lazy_interface_ptr.h"
 #include "mojo/services/public/cpp/view_manager/node_observer.h"
-#include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "mojo/services/public/interfaces/navigation/navigation.mojom.h"
 #include "mojo/services/public/interfaces/network/url_loader.mojom.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
@@ -24,7 +23,6 @@ class View;
 // A view for a single HTML document.
 class HTMLDocumentView : public blink::WebViewClient,
                          public blink::WebFrameClient,
-                         public ViewObserver,
                          public NodeObserver {
  public:
   HTMLDocumentView(ServiceProvider* service_provider,
@@ -59,14 +57,12 @@ class HTMLDocumentView : public blink::WebViewClient,
       const blink::WebHistoryItem& history_item,
       blink::WebHistoryCommitType commit_type);
 
-  // ViewObserver methods:
-  virtual void OnViewInputEvent(View* view, const EventPtr& event) OVERRIDE;
-
   // NodeObserver methods:
   virtual void OnNodeBoundsChanged(Node* node,
                                    const gfx::Rect& old_bounds,
                                    const gfx::Rect& new_bounds) OVERRIDE;
   virtual void OnNodeDestroyed(Node* node) OVERRIDE;
+  virtual void OnNodeInputEvent(Node* node, const EventPtr& event) OVERRIDE;
 
   void Repaint();
 

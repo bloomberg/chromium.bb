@@ -6,7 +6,6 @@
 
 #include "mojo/services/view_manager/access_policy_delegate.h"
 #include "mojo/services/view_manager/node.h"
-#include "mojo/services/view_manager/view.h"
 
 namespace mojo {
 namespace service {
@@ -44,15 +43,6 @@ bool WindowManagerAccessPolicy::CanDeleteNode(const Node* node) const {
   return node->id().connection_id == connection_id_;
 }
 
-bool WindowManagerAccessPolicy::CanDeleteView(const View* view) const {
-  return view->id().connection_id == connection_id_;
-}
-
-bool WindowManagerAccessPolicy::CanSetView(const Node* node,
-                                           const View* view) const {
-  return !view || view->id().connection_id == connection_id_;
-}
-
 bool WindowManagerAccessPolicy::CanSetFocus(const Node* node) const {
   // TODO(beng): security.
   return true;
@@ -76,8 +66,12 @@ bool WindowManagerAccessPolicy::CanChangeNodeVisibility(
   return node->id().connection_id == connection_id_;
 }
 
-bool WindowManagerAccessPolicy::CanSetViewContents(const View* view) const {
-  return view->id().connection_id == connection_id_;
+bool WindowManagerAccessPolicy::CanSetNodeContents(const Node* node) const {
+  if (delegate_->IsNodeRootOfAnotherConnectionForAccessPolicy(node))
+    return false;
+  return node->id().connection_id == connection_id_ ||
+      (delegate_->GetRootsForAccessPolicy().count(
+          NodeIdToTransportId(node->id())) > 0);
 }
 
 bool WindowManagerAccessPolicy::CanSetNodeBounds(const Node* node) const {
@@ -101,11 +95,6 @@ bool WindowManagerAccessPolicy::ShouldSendViewDeleted(
 
 bool WindowManagerAccessPolicy::IsNodeKnown(const Node* node) const {
   return delegate_->IsNodeKnownForAccessPolicy(node);
-}
-
-Id WindowManagerAccessPolicy::GetViewIdToSend(const Node* node,
-                                              const View* view) const {
-  return ViewIdToTransportId(view->id());
 }
 
 }  // namespace service

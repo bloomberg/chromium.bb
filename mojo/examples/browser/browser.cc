@@ -12,11 +12,9 @@
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
-#include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
-#include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "mojo/services/public/interfaces/navigation/navigation.mojom.h"
 #include "mojo/views/native_widget_view_manager.h"
 #include "mojo/views/views_init.h"
@@ -74,7 +72,7 @@ class KeyboardManager
       : widget_(widget),
         window_manager_(window_manager),
         node_(node),
-        last_view_id_(0),
+        last_node_id_(0),
         focused_view_(NULL) {
     widget_->GetFocusManager()->AddFocusChangeListener(this);
     widget_->AddObserver(this);
@@ -96,8 +94,8 @@ class KeyboardManager
 
     const gfx::Rect bounds_in_widget =
         view->ConvertRectToWidget(gfx::Rect(view->bounds().size()));
-    last_view_id_ = node_->active_view()->id();
-    window_manager_->ShowKeyboard(last_view_id_,
+    last_node_id_ = node_->id();
+    window_manager_->ShowKeyboard(last_node_id_,
                                   Rect::From(bounds_in_widget));
     // TODO(sky): listen for view to be removed.
     focused_view_ = view;
@@ -107,8 +105,8 @@ class KeyboardManager
     if (!focused_view_)
       return;
 
-    window_manager_->HideKeyboard(last_view_id_);
-    last_view_id_ = 0;
+    window_manager_->HideKeyboard(last_node_id_);
+    last_node_id_ = 0;
     focused_view_ = NULL;
   }
 
@@ -140,7 +138,7 @@ class KeyboardManager
   views::Widget* widget_;
   IWindowManager* window_manager_;
   Node* node_;
-  Id last_view_id_;
+  Id last_node_id_;
   views::View* focused_view_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardManager);
@@ -211,7 +209,6 @@ class Browser : public ApplicationDelegate,
     view_manager_ = view_manager;
     root_ = root;
     root_->AddObserver(this);
-    root_->SetActiveView(View::Create(view_manager));
     root_->SetFocus();
     CreateWidget(root_);
   }

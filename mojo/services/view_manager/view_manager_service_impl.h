@@ -28,7 +28,6 @@ namespace service {
 class AccessPolicy;
 class Node;
 class RootNodeManager;
-class View;
 
 #if defined(OS_WIN)
 // Equivalent of NON_EXPORTED_BASE which does not work with the template snafu
@@ -65,13 +64,6 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   }
   const Node* GetNode(const NodeId& id) const;
 
-  // Returns the View with the specified id.
-  View* GetView(const ViewId& id) {
-    return const_cast<View*>(
-        const_cast<const ViewManagerServiceImpl*>(this)->GetView(id));
-  }
-  const View* GetView(const ViewId& id) const;
-
   // Returns true if this has |id| as a root.
   bool HasRoot(const NodeId& id) const;
 
@@ -93,12 +85,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
                           const Node* relative_node,
                           OrderDirection direction,
                           bool originated_change);
-  void ProcessNodeViewReplaced(const Node* node,
-                               const View* new_view,
-                               const View* old_view,
-                               bool originated_change);
   void ProcessNodeDeleted(const NodeId& node, bool originated_change);
-  void ProcessViewDeleted(const ViewId& view, bool originated_change);
   void ProcessFocusChanged(const Node* focused_node,
                            const Node* blurred_node,
                            bool originated_change);
@@ -110,7 +97,6 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
 
  private:
   typedef std::map<ConnectionSpecificId, Node*> NodeMap;
-  typedef std::map<ConnectionSpecificId, View*> ViewMap;
   typedef base::hash_set<Id> NodeIdSet;
 
   bool IsNodeKnown(const Node* node) const;
@@ -124,13 +110,6 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   // Deletes a node owned by this connection. Returns true on success. |source|
   // is the connection that originated the change.
   bool DeleteNodeImpl(ViewManagerServiceImpl* source, Node* node);
-
-  // Deletes a view owned by this connection. Returns true on success. |source|
-  // is the connection that originated the change.
-  bool DeleteViewImpl(ViewManagerServiceImpl* source, View* view);
-
-  // Sets the view associated with a node.
-  bool SetViewImpl(Node* node, View* view);
 
   // If |node| is known (in |known_nodes_|) does nothing. Otherwise adds |node|
   // to |nodes|, marks |node| as known and recurses.
@@ -179,14 +158,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   virtual void GetNodeTree(
       Id node_id,
       const Callback<void(Array<NodeDataPtr>)>& callback) OVERRIDE;
-  virtual void CreateView(Id transport_view_id,
-                          const Callback<void(bool)>& callback) OVERRIDE;
-  virtual void DeleteView(Id transport_view_id,
-                          const Callback<void(bool)>& callback) OVERRIDE;
-  virtual void SetView(Id transport_node_id,
-                       Id transport_view_id,
-                       const Callback<void(bool)>& callback) OVERRIDE;
-  virtual void SetViewContents(Id view_id,
+  virtual void SetNodeContents(Id node_id,
                                ScopedSharedBufferHandle buffer,
                                uint32_t buffer_size,
                                const Callback<void(bool)>& callback) OVERRIDE;
@@ -202,7 +174,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
                      Id transport_node_id,
                      ServiceProviderPtr service_provider,
                      const Callback<void(bool)>& callback) OVERRIDE;
-  virtual void DispatchOnViewInputEvent(Id transport_view_id,
+  virtual void DispatchOnNodeInputEvent(Id transport_node_id,
                                         EventPtr event) OVERRIDE;
 
   // InterfaceImpl:
@@ -234,7 +206,6 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   // The nodes and views created by this connection. This connection owns these
   // objects.
   NodeMap node_map_;
-  ViewMap view_map_;
 
   // The set of nodes that has been communicated to the client.
   NodeIdSet known_nodes_;

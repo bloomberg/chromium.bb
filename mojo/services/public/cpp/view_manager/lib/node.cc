@@ -7,9 +7,8 @@
 #include "mojo/public/cpp/application/service_provider_impl.h"
 #include "mojo/services/public/cpp/view_manager/lib/node_private.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_manager_client_impl.h"
-#include "mojo/services/public/cpp/view_manager/lib/view_private.h"
 #include "mojo/services/public/cpp/view_manager/node_observer.h"
-#include "mojo/services/public/cpp/view_manager/view.h"
+#include "ui/gfx/canvas.h"
 
 namespace mojo {
 
@@ -142,30 +141,6 @@ bool ReorderImpl(Node::Children* children,
 
   return true;
 }
-
-class ScopedSetActiveViewNotifier {
- public:
-  ScopedSetActiveViewNotifier(Node* node, View* old_view, View* new_view)
-      : node_(node),
-        old_view_(old_view),
-        new_view_(new_view) {
-    FOR_EACH_OBSERVER(NodeObserver,
-                      *NodePrivate(node).observers(),
-                      OnNodeActiveViewChanging(node_, old_view_, new_view_));
-  }
-  ~ScopedSetActiveViewNotifier() {
-    FOR_EACH_OBSERVER(NodeObserver,
-                      *NodePrivate(node_).observers(),
-                      OnNodeActiveViewChanged(node_, old_view_, new_view_));
-  }
-
- private:
-  Node* node_;
-  View* old_view_;
-  View* new_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedSetActiveViewNotifier);
-};
 
 class ScopedSetBoundsNotifier {
  public:
@@ -316,16 +291,17 @@ Node* Node::GetChildById(Id id) {
   return NULL;
 }
 
-void Node::SetActiveView(View* view) {
-  // TODO(beng): not necessarily valid to all connections, but possibly to the
-  //             embeddee in an embedder-embeddee relationship.
-  if (manager_)
-    CHECK_EQ(ViewPrivate(view).view_manager(), manager_);
-  LocalSetActiveView(view);
+void Node::SetContents(const SkBitmap& contents) {
   if (manager_) {
-    static_cast<ViewManagerClientImpl*>(manager_)->SetActiveView(
-        id_, active_view_->id());
+    static_cast<ViewManagerClientImpl*>(manager_)->SetNodeContents(id_,
+        contents);
   }
+}
+
+void Node::SetColor(SkColor color) {
+  gfx::Canvas canvas(bounds_.size(), 1.0f, true);
+  canvas.DrawColor(color);
+  SetContents(skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(true));
 }
 
 void Node::SetFocus() {
@@ -346,7 +322,7 @@ scoped_ptr<ServiceProvider>
   ServiceProviderPtr sp;
   if (registry) {
     BindToProxy(registry, &sp);
-    imported_services.reset(exported_services->CreateRemoteServiceProvider());
+    imported_services.reset(registry->CreateRemoteServiceProvider());
   }
   static_cast<ViewManagerClientImpl*>(manager_)->Embed(url, id_, sp.Pass());
   return imported_services.Pass();
@@ -358,8 +334,7 @@ scoped_ptr<ServiceProvider>
 Node::Node()
     : manager_(NULL),
       id_(static_cast<Id>(-1)),
-      parent_(NULL),
-      active_view_(NULL) {}
+      parent_(NULL) {}
 
 Node::~Node() {
   FOR_EACH_OBSERVER(NodeObserver, observers_, OnNodeDestroying(this));
@@ -378,8 +353,7 @@ Node::~Node() {
 Node::Node(ViewManager* manager)
     : manager_(manager),
       id_(static_cast<ViewManagerClientImpl*>(manager_)->CreateNode()),
-      parent_(NULL),
-      active_view_(NULL) {}
+      parent_(NULL) {}
 
 void Node::LocalDestroy() {
   delete this;
@@ -401,15 +375,6 @@ void Node::LocalRemoveChild(Node* child) {
 
 bool Node::LocalReorder(Node* relative, OrderDirection direction) {
   return ReorderImpl(&parent_->children_, this, relative, direction);
-}
-
-void Node::LocalSetActiveView(View* view) {
-  ScopedSetActiveViewNotifier notifier(this, active_view_, view);
-  if (active_view_)
-    ViewPrivate(active_view_).set_node(NULL);
-  active_view_ = view;
-  if (active_view_)
-    ViewPrivate(active_view_).set_node(this);
 }
 
 void Node::LocalSetBounds(const gfx::Rect& old_bounds,

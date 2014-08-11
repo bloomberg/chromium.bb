@@ -16,7 +16,6 @@
 #include "mojo/public/cpp/bindings/interface_impl.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/node_observer.h"
-#include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
@@ -304,7 +303,6 @@ class MediaViewer
     content_node_ = Node::Create(view_manager_);
     root_node_->AddChild(content_node_);
 
-    control_node_->SetActiveView(View::Create(view_manager_));
     control_panel_.Initialize(control_node_);
 
     LayoutNodes();

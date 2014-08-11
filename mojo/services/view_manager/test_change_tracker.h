@@ -22,8 +22,6 @@ enum ChangeType {
   CHANGE_TYPE_NODE_HIERARCHY_CHANGED,
   CHANGE_TYPE_NODE_REORDERED,
   CHANGE_TYPE_NODE_DELETED,
-  CHANGE_TYPE_VIEW_DELETED,
-  CHANGE_TYPE_VIEW_REPLACED,
   CHANGE_TYPE_INPUT_EVENT,
   CHANGE_TYPE_DELEGATE_EMBED,
 };
@@ -35,7 +33,6 @@ struct TestNode {
 
   Id parent_id;
   Id node_id;
-  Id view_id;
 };
 
 // Tracks a call to ViewManagerClient. See the individual functions for the
@@ -50,8 +47,6 @@ struct Change {
   Id node_id;
   Id node_id2;
   Id node_id3;
-  Id view_id;
-  Id view_id2;
   gfx::Rect bounds;
   gfx::Rect bounds2;
   int32 event_action;
@@ -89,7 +84,9 @@ class TestChangeTracker {
   TestChangeTracker();
   ~TestChangeTracker();
 
-  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
+  void set_delegate(Delegate* delegate) {
+    delegate_ = delegate;
+  }
 
   std::vector<Change>* changes() { return &changes_; }
 
@@ -107,9 +104,7 @@ class TestChangeTracker {
                        Id relative_node_id,
                        OrderDirection direction);
   void OnNodeDeleted(Id node_id);
-  void OnViewDeleted(Id view_id);
-  void OnNodeViewReplaced(Id node_id, Id new_view_id, Id old_view_id);
-  void OnViewInputEvent(Id view_id, EventPtr event);
+  void OnNodeInputEvent(Id node_id, EventPtr event);
   void DelegateEmbed(const String& url);
 
  private:

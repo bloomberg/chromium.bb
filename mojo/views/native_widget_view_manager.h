@@ -7,7 +7,6 @@
 
 #include "mojo/aura/window_tree_host_mojo_delegate.h"
 #include "mojo/services/public/cpp/view_manager/node_observer.h"
-#include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "ui/views/widget/native_widget_aura.h"
 
 namespace ui {
@@ -27,7 +26,6 @@ class WindowTreeHostMojo;
 
 class NativeWidgetViewManager : public views::NativeWidgetAura,
                                 public WindowTreeHostMojoDelegate,
-                                public ViewObserver,
                                 public NodeObserver {
  public:
   NativeWidgetViewManager(views::internal::NativeWidgetDelegate* delegate,
@@ -44,16 +42,10 @@ class NativeWidgetViewManager : public views::NativeWidgetAura,
 
   // NodeObserver:
   virtual void OnNodeDestroyed(Node* node) OVERRIDE;
-  virtual void OnNodeActiveViewChanged(Node* node,
-                                       View* old_view,
-                                       View* new_view) OVERRIDE;
   virtual void OnNodeBoundsChanged(Node* node,
                                    const gfx::Rect& old_bounds,
                                    const gfx::Rect& new_bounds) OVERRIDE;
-
-  // ViewObserver
-  virtual void OnViewInputEvent(View* view, const EventPtr& event) OVERRIDE;
-  virtual void OnViewDestroyed(View* view) OVERRIDE;
+  virtual void OnNodeInputEvent(Node* node, const EventPtr& event) OVERRIDE;
 
   scoped_ptr<WindowTreeHostMojo> window_tree_host_;
 
@@ -62,7 +54,6 @@ class NativeWidgetViewManager : public views::NativeWidgetAura,
   scoped_ptr<ui::internal::InputMethodDelegate> ime_filter_;
 
   Node* node_;
-  View* view_;
 
   scoped_ptr<wm::ScopedCaptureClient> capture_client_;
 

@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 
 #include "mojo/services/public/cpp/view_manager/node.h"
+#include "mojo/services/public/interfaces/input_events/input_events.mojom.h"
 
 namespace gfx {
 class Rect;
@@ -53,13 +54,6 @@ class NodeObserver {
   virtual void OnNodeDestroying(Node* node) {}
   virtual void OnNodeDestroyed(Node* node) {}
 
-  virtual void OnNodeActiveViewChanging(Node* node,
-                                        View* old_view,
-                                        View* new_view) {}
-  virtual void OnNodeActiveViewChanged(Node* node,
-                                       View* old_view,
-                                       View* new_view) {}
-
   virtual void OnNodeBoundsChanging(Node* node,
                                     const gfx::Rect& old_bounds,
                                     const gfx::Rect& new_bounds) {}
@@ -68,6 +62,8 @@ class NodeObserver {
                                    const gfx::Rect& new_bounds) {}
 
   virtual void OnNodeFocusChanged(Node* gained_focus, Node* lost_focus) {}
+
+  virtual void OnNodeInputEvent(Node* node, const EventPtr& event) {}
 
  protected:
   virtual ~NodeObserver() {}

@@ -73,7 +73,7 @@ class SimpleWM : public mojo::ApplicationDelegate,
         new mojo::ServiceProviderImpl).Pass());
     next_window_origin_.Offset(50, 50);
   }
-  virtual void DispatchEvent(mojo::View* target,
+  virtual void DispatchEvent(mojo::Node* target,
                              mojo::EventPtr event) MOJO_OVERRIDE {
     view_manager_->DispatchEvent(target, event.Pass());
   }

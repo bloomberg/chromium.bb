@@ -19,7 +19,6 @@ namespace mojo {
 namespace service {
 
 class Node;
-class View;
 
 class MOJO_VIEW_MANAGER_EXPORT NodeDelegate {
  public:
@@ -36,13 +35,8 @@ class MOJO_VIEW_MANAGER_EXPORT NodeDelegate {
                                    const gfx::Rect& old_bounds,
                                    const gfx::Rect& new_bounds) = 0;
 
-  // Invoked when the View associated with a node changes.
-  virtual void OnNodeViewReplaced(const Node* node,
-                                  const View* new_view,
-                                  const View* old_view) = 0;
-
-  // Invoked when an input event is received by the View at this node.
-  virtual void OnViewInputEvent(const View* view,
+  // Invoked when an input event is received by a node.
+  virtual void OnNodeInputEvent(const Node* node,
                                 const ui::Event* event) = 0;
 
  protected:

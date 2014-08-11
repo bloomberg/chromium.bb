@@ -10,7 +10,6 @@
 #include "mojo/services/view_manager/default_access_policy.h"
 #include "mojo/services/view_manager/node.h"
 #include "mojo/services/view_manager/root_node_manager.h"
-#include "mojo/services/view_manager/view.h"
 #include "mojo/services/view_manager/window_manager_access_policy.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/window.h"
@@ -42,13 +41,7 @@ ViewManagerServiceImpl::ViewManagerServiceImpl(
 }
 
 ViewManagerServiceImpl::~ViewManagerServiceImpl() {
-  // Delete any views we created.
-  while (!view_map_.empty()) {
-    bool result = DeleteViewImpl(this, view_map_.begin()->second);
-    DCHECK(result);
-  }
-
-  // Ditto the nodes.
+  // Delete any nodes we created.
   if (!node_map_.empty()) {
     RootNodeManager::ScopedChange change(this, root_node_manager_, true);
     while (!node_map_.empty())
@@ -64,14 +57,6 @@ const Node* ViewManagerServiceImpl::GetNode(const NodeId& id) const {
     return i == node_map_.end() ? NULL : i->second;
   }
   return root_node_manager_->GetNode(id);
-}
-
-const View* ViewManagerServiceImpl::GetView(const ViewId& id) const {
-  if (id_ == id.connection_id) {
-    ViewMap::const_iterator i = view_map_.find(id.view_id);
-    return i == view_map_.end() ? NULL : i->second;
-  }
-  return root_node_manager_->GetView(id);
 }
 
 bool ViewManagerServiceImpl::HasRoot(const NodeId& id) const {
@@ -141,23 +126,6 @@ void ViewManagerServiceImpl::ProcessNodeReorder(const Node* node,
                             direction);
 }
 
-void ViewManagerServiceImpl::ProcessNodeViewReplaced(
-    const Node* node,
-    const View* new_view,
-    const View* old_view,
-    bool originated_change) {
-  if (originated_change || !IsNodeKnown(node) ||
-      root_node_manager_->is_processing_delete_node()) {
-    return;
-  }
-  const Id new_view_id = new_view ?
-      access_policy_->GetViewIdToSend(node, new_view) : 0;
-  const Id old_view_id = old_view ?
-      access_policy_->GetViewIdToSend(node, old_view) : 0;
-  client()->OnNodeViewReplaced(NodeIdToTransportId(node->id()),
-                               new_view_id, old_view_id);
-}
-
 void ViewManagerServiceImpl::ProcessNodeDeleted(const NodeId& node,
                                                 bool originated_change) {
   node_map_.erase(node.node_id);
@@ -172,12 +140,6 @@ void ViewManagerServiceImpl::ProcessNodeDeleted(const NodeId& node,
     client()->OnNodeDeleted(NodeIdToTransportId(node));
     root_node_manager_->OnConnectionMessagedClient(id_);
   }
-}
-
-void ViewManagerServiceImpl::ProcessViewDeleted(const ViewId& view,
-                                                bool originated_change) {
-  if (!originated_change && access_policy_->ShouldSendViewDeleted(view))
-    client()->OnViewDeleted(ViewIdToTransportId(view));
 }
 
 void ViewManagerServiceImpl::ProcessFocusChanged(const Node* focused_node,
@@ -240,27 +202,6 @@ bool ViewManagerServiceImpl::DeleteNodeImpl(ViewManagerServiceImpl* source,
   DCHECK_EQ(node->id().connection_id, id_);
   RootNodeManager::ScopedChange change(source, root_node_manager_, true);
   delete node;
-  return true;
-}
-
-bool ViewManagerServiceImpl::DeleteViewImpl(ViewManagerServiceImpl* source,
-                                            View* view) {
-  DCHECK(view);
-  DCHECK_EQ(view->id().connection_id, id_);
-  RootNodeManager::ScopedChange change(source, root_node_manager_, false);
-  if (view->node())
-    view->node()->SetView(NULL);
-  view_map_.erase(view->id().view_id);
-  const ViewId view_id(view->id());
-  delete view;
-  root_node_manager_->ProcessViewDeleted(view_id);
-  return true;
-}
-
-bool ViewManagerServiceImpl::SetViewImpl(Node* node, View* view) {
-  DCHECK(node);  // CanSetView() should have verified node exists.
-  RootNodeManager::ScopedChange change(this, root_node_manager_, false);
-  node->SetView(view);
   return true;
 }
 
@@ -364,9 +305,6 @@ NodeDataPtr ViewManagerServiceImpl::NodeToNodeData(const Node* node) {
   NodeDataPtr node_data(NodeData::New());
   node_data->parent_id = NodeIdToTransportId(parent ? parent->id() : NodeId());
   node_data->node_id = NodeIdToTransportId(node->id());
-  // TODO(sky): should the id only be sent if known?
-  node_data->view_id =
-    ViewIdToTransportId(node->view() ? node->view()->id() : ViewId());
   node_data->bounds = Rect::From(node->bounds());
   return node_data.Pass();
 }
@@ -476,49 +414,14 @@ void ViewManagerServiceImpl::GetNodeTree(
   callback.Run(NodesToNodeDatas(nodes));
 }
 
-void ViewManagerServiceImpl::CreateView(
-    Id transport_view_id,
-    const Callback<void(bool)>& callback) {
-  const ViewId view_id(ViewIdFromTransportId(transport_view_id));
-  if (view_id.connection_id != id_ || view_map_.count(view_id.view_id)) {
-    callback.Run(false);
-    return;
-  }
-  view_map_[view_id.view_id] = new View(view_id);
-  callback.Run(true);
-}
-
-void ViewManagerServiceImpl::DeleteView(Id transport_view_id,
-                                        const Callback<void(bool)>& callback) {
-  View* view = GetView(ViewIdFromTransportId(transport_view_id));
-  bool did_delete = false;
-  if (view && access_policy_->CanDeleteView(view)) {
-    ViewManagerServiceImpl* connection = root_node_manager_->GetConnection(
-        view->id().connection_id);
-    did_delete = (connection && connection->DeleteViewImpl(this, view));
-  }
-  callback.Run(did_delete);
-}
-
-void ViewManagerServiceImpl::SetView(Id transport_node_id,
-                                     Id transport_view_id,
-                                     const Callback<void(bool)>& callback) {
-  Node* node = GetNode(NodeIdFromTransportId(transport_node_id));
-  View* view = GetView(ViewIdFromTransportId(transport_view_id));
-  const bool valid_view = view ||
-      ViewIdFromTransportId(transport_node_id) != ViewId();
-  callback.Run(valid_view && node && access_policy_->CanSetView(node, view) &&
-               SetViewImpl(node, view));
-}
-
-void ViewManagerServiceImpl::SetViewContents(
-    Id view_id,
+void ViewManagerServiceImpl::SetNodeContents(
+    Id node_id,
     ScopedSharedBufferHandle buffer,
     uint32_t buffer_size,
     const Callback<void(bool)>& callback) {
-  // TODO(sky): add coverage of not being able to set for random view.
-  View* view = GetView(ViewIdFromTransportId(view_id));
-  if (!view || !access_policy_->CanSetViewContents(view)) {
+  // TODO(sky): add coverage of not being able to set for random node.
+  Node* node = GetNode(NodeIdFromTransportId(node_id));
+  if (!node || !access_policy_->CanSetNodeContents(node)) {
     callback.Run(false);
     return;
   }
@@ -531,7 +434,7 @@ void ViewManagerServiceImpl::SetViewContents(
   SkBitmap bitmap;
   gfx::PNGCodec::Decode(static_cast<const unsigned char*>(handle_data),
                         buffer_size, &bitmap);
-  view->SetBitmap(bitmap);
+  node->SetBitmap(bitmap);
   UnmapBuffer(handle_data);
   callback.Run(true);
 }
@@ -620,19 +523,24 @@ void ViewManagerServiceImpl::Embed(
   callback.Run(success);
 }
 
-void ViewManagerServiceImpl::DispatchOnViewInputEvent(Id transport_view_id,
+void ViewManagerServiceImpl::DispatchOnNodeInputEvent(Id transport_node_id,
                                                       EventPtr event) {
   // We only allow the WM to dispatch events. At some point this function will
   // move to a separate interface and the check can go away.
   if (id_ != kWindowManagerConnection)
     return;
 
-  const ViewId view_id(ViewIdFromTransportId(transport_view_id));
-  ViewManagerServiceImpl* connection = root_node_manager_->GetConnection(
-      view_id.connection_id);
+  const NodeId node_id(NodeIdFromTransportId(transport_node_id));
+
+  // If another app is embedded at this node, we forward the input event to the
+  // embedded app, rather than the app that created the node.
+  ViewManagerServiceImpl* connection =
+      root_node_manager_->GetConnectionWithRoot(node_id);
+  if (!connection)
+      connection = root_node_manager_->GetConnection(node_id.connection_id);
   if (connection) {
-    connection->client()->OnViewInputEvent(
-        transport_view_id,
+    connection->client()->OnNodeInputEvent(
+        transport_node_id,
         event.Pass(),
         base::Bind(&base::DoNothing));
   }

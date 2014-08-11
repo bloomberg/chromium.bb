@@ -13,11 +13,9 @@
 #include "mojo/public/cpp/application/interface_factory_impl.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/node_observer.h"
-#include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
-#include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "mojo/services/public/interfaces/navigation/navigation.mojom.h"
 #include "ui/events/event_constants.h"
 #include "url/gurl.h"
@@ -44,7 +42,6 @@ class NavigatorImpl : public InterfaceImpl<Navigator> {
 class EmbeddedApp
     : public ApplicationDelegate,
       public ViewManagerDelegate,
-      public ViewObserver,
       public NodeObserver {
  public:
   EmbeddedApp()
@@ -82,11 +79,7 @@ class EmbeddedApp
                        Node* root,
                        ServiceProviderImpl* exported_services,
                        scoped_ptr<ServiceProvider> imported_services) OVERRIDE {
-    View* view = View::Create(view_manager);
-    view->AddObserver(this);
-    root->SetActiveView(view);
     root->AddObserver(this);
-
     roots_[root->id()] = root;
     ProcessPendingNodeColor(root->id());
   }
@@ -94,33 +87,21 @@ class EmbeddedApp
     base::MessageLoop::current()->Quit();
   }
 
-  // Overridden from ViewObserver:
-  virtual void OnViewInputEvent(View* view, const EventPtr& event) OVERRIDE {
+  // Overridden from NodeObserver:
+  virtual void OnNodeDestroyed(Node* node) OVERRIDE {
+    DCHECK(roots_.find(node->id()) != roots_.end());
+    roots_.erase(node->id());
+  }
+  virtual void OnNodeInputEvent(Node* node, const EventPtr& event) OVERRIDE {
     if (event->action == EVENT_TYPE_MOUSE_RELEASED) {
       if (event->flags & EVENT_FLAGS_LEFT_MOUSE_BUTTON) {
         NavigationDetailsPtr nav_details(NavigationDetails::New());
         nav_details->request->url =
             "http://www.aaronboodman.com/z_dropbox/test.html";
-        navigator_host_->RequestNavigate(view->node()->id(),
-                                         TARGET_SOURCE_NODE,
+        navigator_host_->RequestNavigate(node->id(), TARGET_SOURCE_NODE,
                                          nav_details.Pass());
       }
     }
-  }
-
-  // Overridden from NodeObserver:
-  virtual void OnNodeActiveViewChanged(Node* node,
-                                       View* old_view,
-                                       View* new_view) OVERRIDE {
-    if (new_view == 0)
-      views_to_reap_[node] = old_view;
-  }
-  virtual void OnNodeDestroyed(Node* node) OVERRIDE {
-    DCHECK(roots_.find(node->id()) != roots_.end());
-    roots_.erase(node->id());
-    std::map<Node*, View*>::const_iterator it = views_to_reap_.find(node);
-    if (it != views_to_reap_.end())
-      it->second->Destroy();
   }
 
   void ProcessPendingNodeColor(uint32 node_id) {
@@ -132,7 +113,7 @@ class EmbeddedApp
     if (color == pending_node_colors_.end())
       return;
 
-    root->second->active_view()->SetColor(color->second);
+    root->second->SetColor(color->second);
     pending_node_colors_.erase(color);
   }
 
@@ -141,7 +122,6 @@ class EmbeddedApp
 
   ViewManager* view_manager_;
   NavigatorHostPtr navigator_host_;
-  std::map<Node*, View*> views_to_reap_;
   ViewManagerClientFactory view_manager_client_factory_;
 
   typedef std::map<Id, Node*> RootMap;

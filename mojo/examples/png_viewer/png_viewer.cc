@@ -13,7 +13,6 @@
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/node_observer.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
-#include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
@@ -120,7 +119,6 @@ class PNGViewer
       : navigator_factory_(this),
         zoomable_media_factory_(this),
         view_manager_client_factory_(this),
-        content_view_(NULL),
         root_(NULL),
         zoom_percentage_(kDefaultZoomPercentage) {}
   virtual ~PNGViewer() {
@@ -177,9 +175,7 @@ class PNGViewer
                        scoped_ptr<ServiceProvider> imported_services) OVERRIDE {
     root_ = root;
     root_->AddObserver(this);
-    content_view_ = View::Create(view_manager);
-    root_->SetActiveView(content_view_);
-    content_view_->SetColor(SK_ColorGRAY);
+    root_->SetColor(SK_ColorGRAY);
     if (!bitmap_.isNull())
       DrawBitmap();
   }
@@ -189,12 +185,12 @@ class PNGViewer
   }
 
   void DrawBitmap() {
-    if (!content_view_)
+    if (!root_)
       return;
 
     skia::RefPtr<SkCanvas> canvas(skia::AdoptRef(skia::CreatePlatformCanvas(
-        content_view_->node()->bounds().width(),
-        content_view_->node()->bounds().height(),
+        root_->bounds().width(),
+        root_->bounds().height(),
         true)));
     canvas->drawColor(SK_ColorGRAY);
     SkPaint paint;
@@ -202,7 +198,7 @@ class PNGViewer
         SkFloatToScalar(zoom_percentage_ * 1.0f / kDefaultZoomPercentage);
     canvas->scale(scale, scale);
     canvas->drawBitmap(bitmap_, 0, 0, &paint);
-    content_view_->SetContents(skia::GetTopDevice(*canvas)->accessBitmap(true));
+    root_->SetContents(skia::GetTopDevice(*canvas)->accessBitmap(true));
   }
 
   // NodeObserver:
@@ -223,7 +219,6 @@ class PNGViewer
       zoomable_media_factory_;
   ViewManagerClientFactory view_manager_client_factory_;
 
-  View* content_view_;
   Node* root_;
   SkBitmap bitmap_;
   uint16_t zoom_percentage_;
