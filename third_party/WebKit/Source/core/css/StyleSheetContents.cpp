@@ -391,8 +391,8 @@ void StyleSheetContents::checkLoaded()
         return;
     }
 
-    StyleSheetContents* root = rootStyleSheet();
-    if (root->m_loadingClients.isEmpty())
+    ASSERT(this == rootStyleSheet());
+    if (m_loadingClients.isEmpty())
         return;
 
     // Avoid |CSSSStyleSheet| and |ownerNode| being deleted by scripts that run via
