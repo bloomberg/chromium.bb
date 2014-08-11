@@ -304,7 +304,7 @@ void ExtensionLoaderHandler::AddFailure(
   scoped_ptr<base::DictionaryValue> failure(new base::DictionaryValue());
   failure->Set("path",
                new base::StringValue(prettified_path.LossyDisplayName()));
-  failure->Set("reason", new base::StringValue(base::UTF8ToUTF16(error)));
+  failure->Set("error", new base::StringValue(base::UTF8ToUTF16(error)));
   failure->Set("manifest", manifest_value.release());
   failures_.Append(failure.release());
 
