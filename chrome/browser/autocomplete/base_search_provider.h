@@ -21,9 +21,7 @@
 #include "components/omnibox/autocomplete_match.h"
 #include "components/omnibox/autocomplete_provider.h"
 #include "components/omnibox/search_suggestion_parser.h"
-#include "net/url_request/url_fetcher_delegate.h"
 
-class AutocompleteProviderListener;
 class GURL;
 class Profile;
 class SearchTermsData;
@@ -40,8 +38,7 @@ class Value;
 // Base functionality for receiving suggestions from a search engine.
 // This class is abstract and should only be used as a base for other
 // autocomplete providers utilizing its functionality.
-class BaseSearchProvider : public AutocompleteProvider,
-                           public net::URLFetcherDelegate {
+class BaseSearchProvider : public AutocompleteProvider {
  public:
   // ID used in creating URLFetcher for default provider's suggest results.
   static const int kDefaultProviderURLFetcherID;
@@ -52,8 +49,7 @@ class BaseSearchProvider : public AutocompleteProvider,
   // ID used in creating URLFetcher for deleting suggestion results.
   static const int kDeletionURLFetcherID;
 
-  BaseSearchProvider(AutocompleteProviderListener* listener,
-                     TemplateURLService* template_url_service,
+  BaseSearchProvider(TemplateURLService* template_url_service,
                      Profile* profile,
                      AutocompleteProvider::Type type);
 
@@ -172,9 +168,6 @@ class BaseSearchProvider : public AutocompleteProvider,
       const SearchTermsData& search_terms_data,
       Profile* profile);
 
-  // net::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
-
   // If the |deletion_url| is valid, then set |match.deletable| to true and
   // save the |deletion_url| into the |match|'s additional info under
   // the key |kDeletionUrlKey|.
@@ -195,22 +188,15 @@ class BaseSearchProvider : public AutocompleteProvider,
                      MatchMap* map);
 
   // Parses results from the suggest server and updates the appropriate suggest
-  // and navigation result lists in |results|. |is_keyword_result| indicates
-  // whether the response was received from the keyword provider.
+  // and navigation result lists in |results|. |default_result_relevance| is
+  // the relevance to use if it was not explicitly set by the server.
+  // |is_keyword_result| indicates whether the response was received from the
+  // keyword provider.
   // Returns whether the appropriate result list members were updated.
   bool ParseSuggestResults(const base::Value& root_val,
+                           int default_result_relevance,
                            bool is_keyword_result,
                            SearchSuggestionParser::Results* results);
-
-  // Called at the end of ParseSuggestResults to rank the |results|.
-  virtual void SortResults(bool is_keyword,
-                           SearchSuggestionParser::Results* results);
-
-  // Optionally, cache the received |json_data| and return true if we want
-  // to stop processing results at this point. The |parsed_data| is the parsed
-  // version of |json_data| used to determine if we received an empty result.
-  virtual bool StoreSuggestionResponse(const std::string& json_data,
-                                       const base::Value& parsed_data);
 
   // Returns the TemplateURL corresponding to the keyword or default
   // provider based on the value of |is_keyword|.
@@ -219,10 +205,6 @@ class BaseSearchProvider : public AutocompleteProvider,
   // Returns the AutocompleteInput for keyword provider or default provider
   // based on the value of |is_keyword|.
   virtual const AutocompleteInput GetInput(bool is_keyword) const = 0;
-
-  // Returns a pointer to a Results object, which will hold suggest results.
-  virtual SearchSuggestionParser::Results* GetResultsToFill(
-      bool is_keyword) = 0;
 
   // Returns whether the destination URL corresponding to the given |result|
   // should contain command-line-specified query params.
@@ -236,27 +218,13 @@ class BaseSearchProvider : public AutocompleteProvider,
   // Clears the current results.
   virtual void ClearAllResults() = 0;
 
-  // Returns the relevance to use if it was not explicitly set by the server.
-  virtual int GetDefaultResultRelevance() const = 0;
-
   // Records in UMA whether the deletion request resulted in success.
   virtual void RecordDeletionResult(bool success) = 0;
-
-  // Records UMA statistics about a suggest server response.
-  virtual void LogFetchComplete(bool succeeded, bool is_keyword) = 0;
 
   // Modify provider-specific UMA statistics.
   virtual void ModifyProviderInfo(
       metrics::OmniboxEventProto_ProviderInfo* provider_info) const;
 
-  // Returns whether the |fetcher| is for the keyword provider.
-  virtual bool IsKeywordFetcher(const net::URLFetcher* fetcher) const = 0;
-
-  // Updates |matches_| from the latest results; applies calculated relevances
-  // if suggested relevances cause undesirable behavior. Updates |done_|.
-  virtual void UpdateMatches() = 0;
-
-  AutocompleteProviderListener* listener_;
   TemplateURLService* template_url_service_;
   Profile* profile_;
 
@@ -269,10 +237,6 @@ class BaseSearchProvider : public AutocompleteProvider,
   // Same as above except that it is maintained across the current Omnibox
   // session.
   bool field_trial_triggered_in_session_;
-
-  // The number of suggest results that haven't yet arrived. If it's greater
-  // than 0, it indicates that one of the URLFetchers is still running.
-  int suggest_results_pending_;
 
  private:
   friend class SearchProviderTest;

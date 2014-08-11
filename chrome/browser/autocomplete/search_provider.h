@@ -19,7 +19,9 @@
 #include "chrome/browser/autocomplete/base_search_provider.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/search_engines/template_url.h"
+#include "net/url_request/url_fetcher_delegate.h"
 
+class AutocompleteProviderListener;
 class AutocompleteResult;
 class Profile;
 class SearchProviderTest;
@@ -43,7 +45,8 @@ class URLFetcher;
 // text.  It also starts a task to query the Suggest servers.  When that data
 // comes back, the provider creates and returns matches for the best
 // suggestions.
-class SearchProvider : public BaseSearchProvider {
+class SearchProvider : public BaseSearchProvider,
+                       public net::URLFetcherDelegate {
  public:
   SearchProvider(AutocompleteProviderListener* listener,
                  TemplateURLService* template_url_service,
@@ -148,11 +151,6 @@ class SearchProvider : public BaseSearchProvider {
       SearchSuggestionParser::SuggestResults* suggest_results,
       SearchSuggestionParser::NavigationResults* navigation_results);
 
-  // Recalculates the match contents class of |results| to better display
-  // against the current input and user's language.
-  void UpdateMatchContentsClass(const base::string16& input_text,
-                                SearchSuggestionParser::Results* results);
-
   // Calculates the relevance score for the keyword verbatim result (if the
   // input matches one of the profile's keyword).
   static int CalculateRelevanceForKeywordVerbatim(
@@ -164,21 +162,31 @@ class SearchProvider : public BaseSearchProvider {
                      bool minimal_changes) OVERRIDE;
 
   // BaseSearchProvider:
-  virtual void SortResults(bool is_keyword,
-                           SearchSuggestionParser::Results* results) OVERRIDE;
   virtual const TemplateURL* GetTemplateURL(bool is_keyword) const OVERRIDE;
   virtual const AutocompleteInput GetInput(bool is_keyword) const OVERRIDE;
-  virtual SearchSuggestionParser::Results* GetResultsToFill(
-      bool is_keyword) OVERRIDE;
   virtual bool ShouldAppendExtraParams(
       const SearchSuggestionParser::SuggestResult& result) const OVERRIDE;
   virtual void StopSuggest() OVERRIDE;
   virtual void ClearAllResults() OVERRIDE;
-  virtual int GetDefaultResultRelevance() const OVERRIDE;
   virtual void RecordDeletionResult(bool success) OVERRIDE;
-  virtual void LogFetchComplete(bool success, bool is_keyword) OVERRIDE;
-  virtual bool IsKeywordFetcher(const net::URLFetcher* fetcher) const OVERRIDE;
-  virtual void UpdateMatches() OVERRIDE;
+
+  // net::URLFetcherDelegate:
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+
+  // Recalculates the match contents class of |results| to better display
+  // against the current input and user's language.
+  void UpdateMatchContentsClass(const base::string16& input_text,
+                                SearchSuggestionParser::Results* results);
+
+  // Called after ParseSuggestResults to rank the |results|.
+  void SortResults(bool is_keyword, SearchSuggestionParser::Results* results);
+
+  // Records UMA statistics about a suggest server response.
+  void LogFetchComplete(bool success, bool is_keyword);
+
+  // Updates |matches_| from the latest results; applies calculated relevances
+  // if suggested relevances cause undesirable behavior. Updates |done_|.
+  void UpdateMatches();
 
   // Called when timer_ expires.
   void Run();
@@ -306,6 +314,12 @@ class SearchProvider : public BaseSearchProvider {
   // The amount of time to wait before sending a new suggest request after the
   // previous one.  Non-const because some unittests modify this value.
   static int kMinimumTimeBetweenSuggestQueriesMs;
+
+  AutocompleteProviderListener* listener_;
+
+  // The number of suggest results that haven't yet arrived. If it's greater
+  // than 0, it indicates that one of the URLFetchers is still running.
+  int suggest_results_pending_;
 
   // Maintains the TemplateURLs used.
   Providers providers_;

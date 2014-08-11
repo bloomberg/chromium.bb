@@ -132,8 +132,10 @@ int SearchProvider::kMinimumTimeBetweenSuggestQueriesMs = 100;
 SearchProvider::SearchProvider(AutocompleteProviderListener* listener,
                                TemplateURLService* template_url_service,
                                Profile* profile)
-    : BaseSearchProvider(listener, template_url_service, profile,
+    : BaseSearchProvider(template_url_service, profile,
                          AutocompleteProvider::TYPE_SEARCH),
+      listener_(listener),
+      suggest_results_pending_(0),
       providers_(template_url_service) {
 }
 
@@ -147,23 +149,6 @@ void SearchProvider::ResetSession() {
 }
 
 SearchProvider::~SearchProvider() {
-}
-
-void SearchProvider::UpdateMatchContentsClass(
-    const base::string16& input_text,
-    SearchSuggestionParser::Results* results) {
-  for (SearchSuggestionParser::SuggestResults::iterator sug_it =
-           results->suggest_results.begin();
-       sug_it != results->suggest_results.end(); ++sug_it) {
-    sug_it->ClassifyMatchContents(false, input_text);
-  }
-  const std::string languages(
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
-  for (SearchSuggestionParser::NavigationResults::iterator nav_it =
-           results->navigation_results.begin();
-       nav_it != results->navigation_results.end(); ++nav_it) {
-    nav_it->CalculateAndClassifyMatchContents(false, input_text, languages);
-  }
 }
 
 // static
@@ -265,6 +250,97 @@ void SearchProvider::Start(const AutocompleteInput& input,
   UpdateMatches();
 }
 
+const TemplateURL* SearchProvider::GetTemplateURL(bool is_keyword) const {
+  return is_keyword ? providers_.GetKeywordProviderURL()
+                    : providers_.GetDefaultProviderURL();
+}
+
+const AutocompleteInput SearchProvider::GetInput(bool is_keyword) const {
+  return is_keyword ? keyword_input_ : input_;
+}
+
+bool SearchProvider::ShouldAppendExtraParams(
+    const SearchSuggestionParser::SuggestResult& result) const {
+  return !result.from_keyword_provider() ||
+      providers_.default_provider().empty();
+}
+
+void SearchProvider::StopSuggest() {
+  // Increment the appropriate field in the histogram by the number of
+  // pending requests that were invalidated.
+  for (int i = 0; i < suggest_results_pending_; ++i)
+    LogOmniboxSuggestRequest(REQUEST_INVALIDATED);
+  suggest_results_pending_ = 0;
+  timer_.Stop();
+  // Stop any in-progress URL fetches.
+  keyword_fetcher_.reset();
+  default_fetcher_.reset();
+}
+
+void SearchProvider::ClearAllResults() {
+  keyword_results_.Clear();
+  default_results_.Clear();
+}
+
+void SearchProvider::RecordDeletionResult(bool success) {
+  if (success) {
+    base::RecordAction(
+        base::UserMetricsAction("Omnibox.ServerSuggestDelete.Success"));
+  } else {
+    base::RecordAction(
+        base::UserMetricsAction("Omnibox.ServerSuggestDelete.Failure"));
+  }
+}
+
+void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
+  DCHECK(!done_);
+  --suggest_results_pending_;
+  DCHECK_GE(suggest_results_pending_, 0);  // Should never go negative.
+
+  const bool is_keyword = source == keyword_fetcher_.get();
+
+  // Ensure the request succeeded and that the provider used is still available.
+  // A verbatim match cannot be generated without this provider, causing errors.
+  const bool request_succeeded =
+      source->GetStatus().is_success() && (source->GetResponseCode() == 200) &&
+      GetTemplateURL(is_keyword);
+
+  LogFetchComplete(request_succeeded, is_keyword);
+
+  bool results_updated = false;
+  if (request_succeeded) {
+    scoped_ptr<base::Value> data(SearchSuggestionParser::DeserializeJsonData(
+        SearchSuggestionParser::ExtractJsonData(source)));
+    if (data) {
+      SearchSuggestionParser::Results* results =
+          is_keyword ? &keyword_results_ : &default_results_;
+      results_updated = ParseSuggestResults(*data, -1, is_keyword, results);
+      if (results_updated)
+        SortResults(is_keyword, results);
+    }
+  }
+  UpdateMatches();
+  if (done_ || results_updated)
+    listener_->OnProviderUpdate(results_updated);
+}
+
+void SearchProvider::UpdateMatchContentsClass(
+    const base::string16& input_text,
+    SearchSuggestionParser::Results* results) {
+  for (SearchSuggestionParser::SuggestResults::iterator sug_it =
+           results->suggest_results.begin();
+       sug_it != results->suggest_results.end(); ++sug_it) {
+    sug_it->ClassifyMatchContents(false, input_text);
+  }
+  const std::string languages(
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
+  for (SearchSuggestionParser::NavigationResults::iterator nav_it =
+           results->navigation_results.begin();
+       nav_it != results->navigation_results.end(); ++nav_it) {
+    nav_it->CalculateAndClassifyMatchContents(false, input_text, languages);
+  }
+}
+
 void SearchProvider::SortResults(bool is_keyword,
                                  SearchSuggestionParser::Results* results) {
   // Ignore suggested scores for non-keyword matches in keyword mode; if the
@@ -292,57 +368,6 @@ void SearchProvider::SortResults(bool is_keyword,
                    comparator);
 }
 
-const TemplateURL* SearchProvider::GetTemplateURL(bool is_keyword) const {
-  return is_keyword ? providers_.GetKeywordProviderURL()
-                    : providers_.GetDefaultProviderURL();
-}
-
-const AutocompleteInput SearchProvider::GetInput(bool is_keyword) const {
-  return is_keyword ? keyword_input_ : input_;
-}
-
-SearchSuggestionParser::Results* SearchProvider::GetResultsToFill(
-    bool is_keyword) {
-  return is_keyword ? &keyword_results_ : &default_results_;
-}
-
-bool SearchProvider::ShouldAppendExtraParams(
-    const SearchSuggestionParser::SuggestResult& result) const {
-  return !result.from_keyword_provider() ||
-      providers_.default_provider().empty();
-}
-
-void SearchProvider::StopSuggest() {
-  // Increment the appropriate field in the histogram by the number of
-  // pending requests that were invalidated.
-  for (int i = 0; i < suggest_results_pending_; ++i)
-    LogOmniboxSuggestRequest(REQUEST_INVALIDATED);
-  suggest_results_pending_ = 0;
-  timer_.Stop();
-  // Stop any in-progress URL fetches.
-  keyword_fetcher_.reset();
-  default_fetcher_.reset();
-}
-
-void SearchProvider::ClearAllResults() {
-  keyword_results_.Clear();
-  default_results_.Clear();
-}
-
-int SearchProvider::GetDefaultResultRelevance() const {
-  return -1;
-}
-
-void SearchProvider::RecordDeletionResult(bool success) {
-  if (success) {
-    base::RecordAction(
-        base::UserMetricsAction("Omnibox.ServerSuggestDelete.Success"));
-  } else {
-    base::RecordAction(
-        base::UserMetricsAction("Omnibox.ServerSuggestDelete.Failure"));
-  }
-}
-
 void SearchProvider::LogFetchComplete(bool success, bool is_keyword) {
   LogOmniboxSuggestRequest(REPLY_RECEIVED);
   // Record response time for suggest requests sent to Google.  We care
@@ -364,10 +389,6 @@ void SearchProvider::LogFetchComplete(bool success, bool is_keyword) {
                           elapsed_time);
     }
   }
-}
-
-bool SearchProvider::IsKeywordFetcher(const net::URLFetcher* fetcher) const {
-  return fetcher == keyword_fetcher_.get();
 }
 
 void SearchProvider::UpdateMatches() {

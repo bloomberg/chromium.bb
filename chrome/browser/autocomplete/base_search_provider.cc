@@ -94,17 +94,14 @@ const int BaseSearchProvider::kDefaultProviderURLFetcherID = 1;
 const int BaseSearchProvider::kKeywordProviderURLFetcherID = 2;
 const int BaseSearchProvider::kDeletionURLFetcherID = 3;
 
-BaseSearchProvider::BaseSearchProvider(AutocompleteProviderListener* listener,
-                                       TemplateURLService* template_url_service,
+BaseSearchProvider::BaseSearchProvider(TemplateURLService* template_url_service,
                                        Profile* profile,
                                        AutocompleteProvider::Type type)
     : AutocompleteProvider(type),
-      listener_(listener),
       template_url_service_(template_url_service),
       profile_(profile),
       field_trial_triggered_(false),
-      field_trial_triggered_in_session_(false),
-      suggest_results_pending_(0) {
+      field_trial_triggered_in_session_(false) {
 }
 
 // static
@@ -368,38 +365,6 @@ bool BaseSearchProvider::CanSendURL(
   return true;
 }
 
-void BaseSearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK(!done_);
-  suggest_results_pending_--;
-  DCHECK_GE(suggest_results_pending_, 0);  // Should never go negative.
-
-  const bool is_keyword = IsKeywordFetcher(source);
-
-  // Ensure the request succeeded and that the provider used is still available.
-  // A verbatim match cannot be generated without this provider, causing errors.
-  const bool request_succeeded =
-      source->GetStatus().is_success() && (source->GetResponseCode() == 200) &&
-      GetTemplateURL(is_keyword);
-
-  LogFetchComplete(request_succeeded, is_keyword);
-
-  bool results_updated = false;
-  if (request_succeeded) {
-    std::string json_data = SearchSuggestionParser::ExtractJsonData(source);
-    scoped_ptr<base::Value> data(
-        SearchSuggestionParser::DeserializeJsonData(json_data));
-    if (data && StoreSuggestionResponse(json_data, *data.get()))
-      return;
-
-    results_updated = data.get() && ParseSuggestResults(
-        *data.get(), is_keyword, GetResultsToFill(is_keyword));
-  }
-
-  UpdateMatches();
-  if (done_ || results_updated)
-    listener_->OnProviderUpdate(results_updated);
-}
-
 void BaseSearchProvider::AddMatchToMap(
     const SearchSuggestionParser::SuggestResult& result,
     const std::string& metadata,
@@ -479,12 +444,12 @@ void BaseSearchProvider::AddMatchToMap(
 
 bool BaseSearchProvider::ParseSuggestResults(
     const base::Value& root_val,
+    int default_result_relevance,
     bool is_keyword_result,
     SearchSuggestionParser::Results* results) {
   if (!SearchSuggestionParser::ParseSuggestResults(
       root_val, GetInput(is_keyword_result),
-      ChromeAutocompleteSchemeClassifier(profile_),
-      GetDefaultResultRelevance(),
+      ChromeAutocompleteSchemeClassifier(profile_), default_result_relevance,
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
       is_keyword_result, results))
     return false;
@@ -499,18 +464,7 @@ bool BaseSearchProvider::ParseSuggestResults(
 
   field_trial_triggered_ |= results->field_trial_triggered;
   field_trial_triggered_in_session_ |= results->field_trial_triggered;
-  SortResults(is_keyword_result, results);
   return true;
-}
-
-void BaseSearchProvider::SortResults(bool is_keyword,
-                                     SearchSuggestionParser::Results* results) {
-}
-
-bool BaseSearchProvider::StoreSuggestionResponse(
-    const std::string& json_data,
-    const base::Value& parsed_data) {
-  return false;
 }
 
 void BaseSearchProvider::ModifyProviderInfo(
