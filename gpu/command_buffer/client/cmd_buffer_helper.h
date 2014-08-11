@@ -135,13 +135,27 @@ class GPU_EXPORT CommandBufferHelper {
     return space;
   }
 
+  template <typename T>
+  void ForceNullCheck(T* data) {
+#if defined(OS_WIN) && defined(ARCH_CPU_64_BITS)
+    // 64-bit MSVC's alias analysis was determining that the command buffer
+    // entry couldn't be NULL, so it optimized out the NULL check.
+    // Dereferencing the same datatype through a volatile pointer seems to
+    // prevent that from happening. http://crbug.com/361936
+    if (data)
+      static_cast<volatile T*>(data)->header;
+#endif
+  }
+
   // Typed version of GetSpace. Gets enough room for the given type and returns
   // a reference to it.
   template <typename T>
   T* GetCmdSpace() {
     COMPILE_ASSERT(T::kArgFlags == cmd::kFixed, Cmd_kArgFlags_not_kFixed);
     int32 space_needed = ComputeNumEntries(sizeof(T));
-    return new (GetSpace(space_needed)) T;
+    T* data = static_cast<T*>(GetSpace(space_needed));
+    ForceNullCheck(data);
+    return data;
   }
 
   // Typed version of GetSpace for immediate commands.
@@ -149,7 +163,9 @@ class GPU_EXPORT CommandBufferHelper {
   T* GetImmediateCmdSpace(size_t data_space) {
     COMPILE_ASSERT(T::kArgFlags == cmd::kAtLeastN, Cmd_kArgFlags_not_kAtLeastN);
     int32 space_needed = ComputeNumEntries(sizeof(T) + data_space);
-    return new (GetSpace(space_needed)) T;
+    T* data = static_cast<T*>(GetSpace(space_needed));
+    ForceNullCheck(data);
+    return data;
   }
 
   // Typed version of GetSpace for immediate commands.
@@ -157,7 +173,9 @@ class GPU_EXPORT CommandBufferHelper {
   T* GetImmediateCmdSpaceTotalSize(size_t total_space) {
     COMPILE_ASSERT(T::kArgFlags == cmd::kAtLeastN, Cmd_kArgFlags_not_kAtLeastN);
     int32 space_needed = ComputeNumEntries(total_space);
-    return new (GetSpace(space_needed)) T;
+    T* data = static_cast<T*>(GetSpace(space_needed));
+    ForceNullCheck(data);
+    return data;
   }
 
   int32 last_token_read() const {
