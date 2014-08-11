@@ -1297,6 +1297,7 @@ void SimpleEntryImpl::DoomOperationComplete(
     State state_to_restore,
     int result) {
   state_ = state_to_restore;
+  net_log_.AddEvent(net::NetLog::TYPE_SIMPLE_CACHE_ENTRY_DOOM_END);
   if (!callback.is_null())
     callback.Run(result);
   RunNextOperationIfNeeded();
