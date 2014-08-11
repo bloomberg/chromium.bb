@@ -54,15 +54,18 @@ found in the LICENSE file.
           </a>
         </template>
       </div>
-      <!-- FIXME: Use a proper polymer component with data binding. -->
-      <select id="tree" on-change="{{ _updateTree }}">
-        <option value="blink">Blink</option>
-        <option value="chromium">Chromium</option>
-      </select>
+      <div>
+        <ct-last-updated date="{{ lastUpdateDate }}"></ct-last-updated>
+        <!-- FIXME: Use a proper polymer component with data binding. -->
+        <select id="tree" on-change="{{ _updateTree }}">
+          <option value="blink">Blink</option>
+          <option value="chromium">Chromium</option>
+        </select>
+      </div>
     </header>
 
     <core-animated-pages selected="{{ selected }}" transitions="slide-from-right">
-      <ct-unexpected-failures tree="{{ tree }}" on-ct-examine-failures="{{ onExamine }}"></ct-unexpected-failures>
+      <ct-unexpected-failures tree="{{ tree }}" lastUpdateDate="{{ lastUpdateDate }}" on-ct-examine-failures="{{ onExamine }}"></ct-unexpected-failures>
       <ct-results-panel failures="{{ currentFailures }}" tree="{{ tree }}"></ct-results-panel>
     </core-animated-pages>
   </template>

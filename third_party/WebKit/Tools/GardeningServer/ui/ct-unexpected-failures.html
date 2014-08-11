@@ -9,11 +9,12 @@ found in the LICENSE file.
 <link rel="import" href="../model/tree-status.html">
 <link rel="import" href="ct-failure-analyzer.html">
 <link rel="import" href="ct-failure-stream.html">
+<link rel="import" href="ct-last-updated.html">
 <link rel="import" href="ct-party-time.html">
 <link rel="import" href="ct-revision-details.html">
 <link rel="import" href="ct-tree-status.html">
 
-<polymer-element name="ct-unexpected-failures" attributes="tree">
+<polymer-element name="ct-unexpected-failures" attributes="tree lastUpdateDate">
   <template>
     <style>
       ct-tree-status {
@@ -29,7 +30,7 @@ found in the LICENSE file.
         padding: 0;
       }
     </style>
-    <ct-failure-analyzer id="analyzer" failures="{{ failures }}" builderLatestRevisions="{{ builderLatestRevisions }}"></ct-failure-analyzer>
+    <ct-failure-analyzer id="analyzer" failures="{{ failures }}" builderLatestRevisions="{{ builderLatestRevisions }}" lastUpdateDate="{{ lastUpdateDate }}"></ct-failure-analyzer>
     <ct-tree-status status="{{ treeStatuses['chromium'] }}" state="{{ treeStatuses['chromium'].status }}"></ct-tree-status>
     <ct-tree-status status="{{ treeStatuses['blink'] }}" state="{{ treeStatuses['blink'].status }}"></ct-tree-status>
     <ct-revision-details id="revisionDetails" builderLatestRevisions="{{ builderLatestRevisions }}" revisionLog="{{ revisionLog }}" tree="{{ tree }}"></ct-revision-details>

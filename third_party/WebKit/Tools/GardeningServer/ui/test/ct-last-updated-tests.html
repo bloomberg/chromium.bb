@@ -1,0 +1,35 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../ct-last-updated.html">
+
+<script>
+(function() {
+
+var expect = chai.expect;
+
+describe('ct-last-updated', function() {
+  var builder;
+
+  beforeEach(function(done) {
+    builder = document.createElement('ct-last-updated');
+    // Set the date to 5 minutes ago.
+    builder.date = new Date(Date.now() - (5 * 60 * 1000));
+    requestAnimationFrame(function() { done(); });
+  });
+
+  describe('default UI', function() {
+    it('should have correct text', function() {
+      var expected = 'Updated 5 min ago @ ' + builder.date.getHours() + ':' +
+                     builder.date.getMinutes();
+      expect(builder.shadowRoot.innerHTML.trim()).to.equal(expected);
+    });
+  });
+});
+
+})()
+
+</script>

@@ -1,0 +1,29 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<polymer-element name="ct-last-updated" attributes="date">
+  <template>
+    Updated {{ date | _deltaMinutes }} min ago @ {{ date | _hours }}:{{ date | _minutes }}
+  </template>
+  <script>
+  (function() {
+    Polymer({
+      date: new Date(0),
+
+      _deltaMinutes: function(date) {
+        return date.minutesAgo();
+      },
+      _hours: function(date) {
+        return date.getHours();
+      },
+      _minutes: function(date) {
+        return date.getMinutes();
+      },
+    });
+  })();
+
+  </script>
+</polymer-element>
