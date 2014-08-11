@@ -203,7 +203,7 @@ class SuggestionsServiceTest : public testing::Test {
   // SuggestionsStore in |mock_suggestions_store_|.
   SuggestionsService* CreateSuggestionsServiceWithMocks() {
     mock_suggestions_store_ = new StrictMock<MockSuggestionsStore>();
-    mock_thumbnail_manager_ = new NiceMock<MockImageManager>();
+    mock_thumbnail_manager_ = new StrictMock<MockImageManager>();
     mock_blacklist_store_ = new MockBlacklistStore();
     return new SuggestionsService(
         request_context_, scoped_ptr<SuggestionsStore>(mock_suggestions_store_),
@@ -234,6 +234,11 @@ class SuggestionsServiceTest : public testing::Test {
                 StoreSuggestions(EqualsProto(*suggestions_profile)))
         .Times(expected_count)
         .WillRepeatedly(Return(true));
+
+    // Since there are two requests below, Initialize() will be called twice.
+    EXPECT_CALL(*mock_thumbnail_manager_,
+                Initialize(EqualsProto(*suggestions_profile)))
+        .Times(expected_count);
 
     // Expect a call to the blacklist store. Return that there's nothing to
     // blacklist.
@@ -311,6 +316,7 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataRequestError) {
   // Set up expectations on the SuggestionsStore.
   EXPECT_CALL(*mock_suggestions_store_, LoadSuggestions(_))
       .WillOnce(Return(true));
+  EXPECT_CALL(*mock_thumbnail_manager_, Initialize(_));
 
   // Expect a call to the blacklist store. Return that there's nothing to
   // blacklist.
@@ -384,6 +390,8 @@ TEST_F(SuggestionsServiceTest, BlacklistURL) {
   EXPECT_CALL(*mock_suggestions_store_,
               StoreSuggestions(EqualsProto(*suggestions_profile)))
       .WillOnce(Return(true));
+  EXPECT_CALL(*mock_thumbnail_manager_,
+              Initialize(EqualsProto(*suggestions_profile)));
 
   // Expected calls to the blacklist store.
   EXPECT_CALL(*mock_blacklist_store_, BlacklistUrl(Eq(blacklist_url)))
@@ -443,6 +451,10 @@ TEST_F(SuggestionsServiceTest, BlacklistURLFails) {
       .WillOnce(Return(true))
       .WillOnce(DoAll(SetArgPointee<0>(blacklist_url), Return(true)))
       .WillOnce(Return(false));
+  // There will be two calls to Initialize() (one store, one load).
+  EXPECT_CALL(*mock_thumbnail_manager_,
+              Initialize(EqualsProto(*suggestions_profile)))
+      .Times(2);
 
   // Send the request. The data will be returned to the callback.
   suggestions_service->BlacklistURL(

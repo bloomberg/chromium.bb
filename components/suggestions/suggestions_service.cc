@@ -323,6 +323,7 @@ void SuggestionsService::OnURLFetchComplete(const net::URLFetcher* source) {
   } else {
     LogResponseState(RESPONSE_INVALID);
     suggestions_store_->LoadSuggestions(&suggestions);
+    thumbnail_manager_->Initialize(suggestions);
   }
 
   FilterAndServe(&suggestions);
@@ -352,6 +353,7 @@ void SuggestionsService::Shutdown() {
 void SuggestionsService::ServeFromCache() {
   SuggestionsProfile suggestions;
   suggestions_store_->LoadSuggestions(&suggestions);
+  thumbnail_manager_->Initialize(suggestions);
   FilterAndServe(&suggestions);
 }
 
