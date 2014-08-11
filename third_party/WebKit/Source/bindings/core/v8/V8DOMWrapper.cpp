@@ -41,7 +41,7 @@
 
 namespace blink {
 
-static v8::Local<v8::Object> wrapInShadowTemplate(v8::Local<v8::Object> wrapper, void* impl, v8::Isolate* isolate)
+static v8::Local<v8::Object> wrapInShadowTemplate(v8::Local<v8::Object> wrapper, ScriptWrappableBase* internalPointer, v8::Isolate* isolate)
 {
     static int shadowTemplateKey; // This address is used for a key to look up the dom template.
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
@@ -64,11 +64,11 @@ static v8::Local<v8::Object> wrapInShadowTemplate(v8::Local<v8::Object> wrapper,
     if (shadow.IsEmpty())
         return v8::Local<v8::Object>();
     shadow->SetPrototype(wrapper);
-    V8DOMWrapper::setNativeInfoForHiddenWrapper(wrapper, &V8HTMLDocument::wrapperTypeInfo, impl);
+    V8DOMWrapper::setNativeInfoForHiddenWrapper(wrapper, &V8HTMLDocument::wrapperTypeInfo, internalPointer);
     return shadow;
 }
 
-v8::Local<v8::Object> V8DOMWrapper::createWrapper(v8::Handle<v8::Object> creationContext, const WrapperTypeInfo* type, void* impl, v8::Isolate* isolate)
+v8::Local<v8::Object> V8DOMWrapper::createWrapper(v8::Handle<v8::Object> creationContext, const WrapperTypeInfo* type, ScriptWrappableBase* internalPointer, v8::Isolate* isolate)
 {
     V8WrapperInstantiationScope scope(creationContext, isolate);
 
@@ -76,7 +76,7 @@ v8::Local<v8::Object> V8DOMWrapper::createWrapper(v8::Handle<v8::Object> creatio
     v8::Local<v8::Object> wrapper = perContextData ? perContextData->createWrapperFromCache(type) : V8ObjectConstructor::newInstance(isolate, type->domTemplate(isolate)->GetFunction());
 
     if (type == &V8HTMLDocument::wrapperTypeInfo && !wrapper.IsEmpty())
-        wrapper = wrapInShadowTemplate(wrapper, impl, isolate);
+        wrapper = wrapInShadowTemplate(wrapper, internalPointer, isolate);
 
     return wrapper;
 }

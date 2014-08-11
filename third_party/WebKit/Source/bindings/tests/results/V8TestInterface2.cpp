@@ -426,16 +426,16 @@ static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::A
 
 } // namespace TestInterface2V8Internal
 
-void V8TestInterface2::visitDOMWrapper(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
+void V8TestInterface2::visitDOMWrapper(ScriptWrappableBase* internalPointer, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
 {
-    TestInterface2* impl = fromInternalPointer(object);
+    TestInterface2* impl = fromInternalPointer(internalPointer);
     // The ownerNode() method may return a reference or a pointer.
     if (Node* owner = WTF::getPtr(impl->ownerNode())) {
         Node* root = V8GCController::opaqueRootForGC(owner, isolate);
         isolate->SetReferenceFromGroup(v8::UniqueId(reinterpret_cast<intptr_t>(root)), wrapper);
         return;
     }
-    setObjectGroup(object, wrapper, isolate);
+    setObjectGroup(internalPointer, wrapper, isolate);
 }
 
 static const V8DOMConfiguration::MethodConfiguration V8TestInterface2Methods[] = {
@@ -503,7 +503,7 @@ v8::Handle<v8::Object> V8TestInterface2::findInstanceInPrototypeChain(v8::Handle
 
 TestInterface2* V8TestInterface2::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
+    return hasInstance(value, isolate) ? fromInternalPointer(blink::toInternalPointer(v8::Handle<v8::Object>::Cast(value))) : 0;
 }
 
 v8::Handle<v8::Object> wrap(TestInterface2* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -537,9 +537,9 @@ v8::Handle<v8::Object> V8TestInterface2::createWrapper(PassRefPtr<TestInterface2
     return wrapper;
 }
 
-void V8TestInterface2::derefObject(void* object)
+void V8TestInterface2::derefObject(ScriptWrappableBase* internalPointer)
 {
-    fromInternalPointer(object)->deref();
+    fromInternalPointer(internalPointer)->deref();
 }
 
 template<>

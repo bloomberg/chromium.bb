@@ -54,7 +54,7 @@ public:
 
     static TypedArray* toNative(v8::Handle<v8::Object>);
     static TypedArray* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
-    static void derefObject(void*);
+    static void derefObject(ScriptWrappableBase* internalPointer);
     static const WrapperTypeInfo wrapperTypeInfo;
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount;
 
@@ -115,9 +115,14 @@ public:
         info.GetReturnValue().Set(wrapper);
     }
 
-    static inline void* toInternalPointer(TypedArray* impl)
+    static inline ScriptWrappableBase* toInternalPointer(TypedArray* impl)
     {
-        return impl;
+        return reinterpret_cast<ScriptWrappableBase*>(static_cast<void*>(impl));
+    }
+
+    static inline TypedArray* fromInternalPointer(ScriptWrappableBase* internalPointer)
+    {
+        return reinterpret_cast<TypedArray*>(static_cast<void*>(internalPointer));
     }
 private:
     typedef TypedArrayTraits<TypedArray> Traits;
@@ -184,9 +189,9 @@ const WrapperTypeInfo V8TypedArray<TypedArray>::wrapperTypeInfo = {
 };
 
 template <typename TypedArray>
-void V8TypedArray<TypedArray>::derefObject(void* object)
+void V8TypedArray<TypedArray>::derefObject(ScriptWrappableBase* internalPointer)
 {
-    static_cast<TypedArray*>(object)->deref();
+    fromInternalPointer(internalPointer)->deref();
 }
 
 

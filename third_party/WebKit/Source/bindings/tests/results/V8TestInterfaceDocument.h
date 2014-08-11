@@ -7,6 +7,7 @@
 #ifndef V8TestInterfaceDocument_h
 #define V8TestInterfaceDocument_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
@@ -23,11 +24,11 @@ public:
     static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*);
     static TestInterfaceDocument* toNative(v8::Handle<v8::Object> object)
     {
-        return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
+        return fromInternalPointer(blink::toInternalPointer(object));
     }
     static TestInterfaceDocument* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
-    static void derefObject(void*);
+    static void derefObject(ScriptWrappableBase* internalPointer);
     static EventTarget* toEventTarget(v8::Handle<v8::Object>);
 #if ENABLE(OILPAN)
     static const int persistentHandleIndex = v8DefaultWrapperInternalFieldCount + 0;
@@ -35,14 +36,14 @@ public:
 #else
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
 #endif
-    static inline void* toInternalPointer(TestInterfaceDocument* impl)
+    static inline ScriptWrappableBase* toInternalPointer(TestInterfaceDocument* impl)
     {
         return V8Document::toInternalPointer(impl);
     }
 
-    static inline TestInterfaceDocument* fromInternalPointer(void* object)
+    static inline TestInterfaceDocument* fromInternalPointer(ScriptWrappableBase* internalPointer)
     {
-        return static_cast<TestInterfaceDocument*>(V8Document::fromInternalPointer(object));
+        return static_cast<TestInterfaceDocument*>(V8Document::fromInternalPointer(internalPointer));
     }
     static void installPerContextEnabledProperties(v8::Handle<v8::Object>, TestInterfaceDocument*, v8::Isolate*) { }
     static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }

@@ -118,7 +118,7 @@ v8::Handle<v8::Object> V8TestSpecialOperationsNotEnumerable::findInstanceInProto
 
 TestSpecialOperationsNotEnumerable* V8TestSpecialOperationsNotEnumerable::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
+    return hasInstance(value, isolate) ? fromInternalPointer(blink::toInternalPointer(v8::Handle<v8::Object>::Cast(value))) : 0;
 }
 
 v8::Handle<v8::Object> wrap(TestSpecialOperationsNotEnumerable* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -148,9 +148,9 @@ v8::Handle<v8::Object> V8TestSpecialOperationsNotEnumerable::createWrapper(PassR
     return wrapper;
 }
 
-void V8TestSpecialOperationsNotEnumerable::derefObject(void* object)
+void V8TestSpecialOperationsNotEnumerable::derefObject(ScriptWrappableBase* internalPointer)
 {
-    fromInternalPointer(object)->deref();
+    fromInternalPointer(internalPointer)->deref();
 }
 
 template<>

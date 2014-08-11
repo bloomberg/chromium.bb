@@ -1387,9 +1387,9 @@ static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::A
 
 } // namespace TestInterfaceImplementationV8Internal
 
-void V8TestInterface::visitDOMWrapper(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
+void V8TestInterface::visitDOMWrapper(ScriptWrappableBase* internalPointer, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
 {
-    TestInterfaceImplementation* impl = fromInternalPointer(object);
+    TestInterfaceImplementation* impl = fromInternalPointer(internalPointer);
     v8::Local<v8::Object> creationContext = v8::Local<v8::Object>::New(isolate, wrapper);
     V8WrapperInstantiationScope scope(creationContext, isolate);
     TestInterfaceImplementation* referencedName = impl->referencedName();
@@ -1398,7 +1398,7 @@ void V8TestInterface::visitDOMWrapper(void* object, const v8::Persistent<v8::Obj
             wrap(referencedName, creationContext, isolate);
         DOMDataStore::setWrapperReference<V8TestInterface>(wrapper, referencedName, isolate);
     }
-    setObjectGroup(object, wrapper, isolate);
+    setObjectGroup(internalPointer, wrapper, isolate);
 }
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceAttributes[] = {
@@ -1591,7 +1591,7 @@ v8::Handle<v8::Object> V8TestInterface::findInstanceInPrototypeChain(v8::Handle<
 
 TestInterfaceImplementation* V8TestInterface::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
+    return hasInstance(value, isolate) ? fromInternalPointer(blink::toInternalPointer(v8::Handle<v8::Object>::Cast(value))) : 0;
 }
 
 void V8TestInterface::installPerContextEnabledProperties(v8::Handle<v8::Object> instanceObject, TestInterfaceImplementation* impl, v8::Isolate* isolate)
@@ -1635,9 +1635,9 @@ ActiveDOMObject* V8TestInterface::toActiveDOMObject(v8::Handle<v8::Object> wrapp
     return toNative(wrapper);
 }
 
-void V8TestInterface::derefObject(void* object)
+void V8TestInterface::derefObject(ScriptWrappableBase* internalPointer)
 {
-    fromInternalPointer(object)->deref();
+    fromInternalPointer(internalPointer)->deref();
 }
 
 template<>

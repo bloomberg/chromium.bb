@@ -7,6 +7,7 @@
 #ifndef V8TestInterfaceWillBeGarbageCollected_h
 #define V8TestInterfaceWillBeGarbageCollected_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
@@ -29,11 +30,11 @@ public:
     static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*);
     static TestInterfaceWillBeGarbageCollected* toNative(v8::Handle<v8::Object> object)
     {
-        return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
+        return fromInternalPointer(blink::toInternalPointer(object));
     }
     static TestInterfaceWillBeGarbageCollected* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
-    static void derefObject(void*);
+    static void derefObject(ScriptWrappableBase* internalPointer);
     static EventTarget* toEventTarget(v8::Handle<v8::Object>);
     static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static const int eventListenerCacheIndex = v8DefaultWrapperInternalFieldCount + 0;
@@ -43,14 +44,14 @@ public:
 #else
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 1;
 #endif
-    static inline void* toInternalPointer(TestInterfaceWillBeGarbageCollected* impl)
+    static inline ScriptWrappableBase* toInternalPointer(TestInterfaceWillBeGarbageCollected* impl)
     {
         return V8EventTarget::toInternalPointer(impl);
     }
 
-    static inline TestInterfaceWillBeGarbageCollected* fromInternalPointer(void* object)
+    static inline TestInterfaceWillBeGarbageCollected* fromInternalPointer(ScriptWrappableBase* internalPointer)
     {
-        return static_cast<TestInterfaceWillBeGarbageCollected*>(V8EventTarget::fromInternalPointer(object));
+        return static_cast<TestInterfaceWillBeGarbageCollected*>(V8EventTarget::fromInternalPointer(internalPointer));
     }
     static void installPerContextEnabledProperties(v8::Handle<v8::Object>, TestInterfaceWillBeGarbageCollected*, v8::Isolate*) { }
     static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }

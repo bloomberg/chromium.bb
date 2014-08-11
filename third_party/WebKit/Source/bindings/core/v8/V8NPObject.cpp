@@ -468,7 +468,7 @@ v8::Local<v8::Object> createV8ObjectForNPObject(NPObject* object, NPObject* root
     if (value.IsEmpty())
         return value;
 
-    V8DOMWrapper::setNativeInfo(value, npObjectTypeInfo(), object);
+    V8DOMWrapper::setNativeInfo(value, npObjectTypeInfo(), npObjectToInternalPointer(object));
 
     // KJS retains the object as part of its wrapper (see Bindings::CInstance).
     _NPN_RetainObject(object);

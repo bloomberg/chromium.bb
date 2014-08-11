@@ -47,13 +47,13 @@ public:
     static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*);
     static {{cpp_class}}* toNative(v8::Handle<v8::Object> object)
     {
-        return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
+        return fromInternalPointer(blink::toInternalPointer(object));
     }
     static {{cpp_class}}* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
-    static void derefObject(void*);
+    static void derefObject(ScriptWrappableBase* internalPointer);
     {% if has_visit_dom_wrapper %}
-    static void visitDOMWrapper(void*, const v8::Persistent<v8::Object>&, v8::Isolate*);
+    static void visitDOMWrapper(ScriptWrappableBase* internalPointer, const v8::Persistent<v8::Object>&, v8::Isolate*);
     {% endif %}
     {% if is_active_dom_object %}
     static ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object>);
@@ -146,21 +146,21 @@ public:
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + {{custom_internal_field_counter}};
     {% endif %}
     {# End custom internal fields #}
-    static inline void* toInternalPointer({{cpp_class}}* impl)
+    static inline ScriptWrappableBase* toInternalPointer({{cpp_class}}* impl)
     {
         {% if parent_interface %}
         return V8{{parent_interface}}::toInternalPointer(impl);
         {% else %}
-        return impl;
+        return reinterpret_cast<ScriptWrappableBase*>(static_cast<void*>(impl));
         {% endif %}
     }
 
-    static inline {{cpp_class}}* fromInternalPointer(void* object)
+    static inline {{cpp_class}}* fromInternalPointer(ScriptWrappableBase* internalPointer)
     {
         {% if parent_interface %}
-        return static_cast<{{cpp_class}}*>(V8{{parent_interface}}::fromInternalPointer(object));
+        return static_cast<{{cpp_class}}*>(V8{{parent_interface}}::fromInternalPointer(internalPointer));
         {% else %}
-        return static_cast<{{cpp_class}}*>(object);
+        return reinterpret_cast<{{cpp_class}}*>(static_cast<void*>(internalPointer));
         {% endif %}
     }
     {% if interface_name == 'Window' %}

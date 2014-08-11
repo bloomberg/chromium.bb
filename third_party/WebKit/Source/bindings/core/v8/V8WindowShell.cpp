@@ -284,7 +284,7 @@ bool V8WindowShell::installDOMWindow()
     if (windowWrapper.IsEmpty())
         return false;
 
-    V8DOMWrapper::setNativeInfoForHiddenWrapper(v8::Handle<v8::Object>::Cast(windowWrapper->GetPrototype()), &V8Window::wrapperTypeInfo, window);
+    V8DOMWrapper::setNativeInfoForHiddenWrapper(v8::Handle<v8::Object>::Cast(windowWrapper->GetPrototype()), &V8Window::wrapperTypeInfo, V8Window::toInternalPointer(window));
 
     // Install the windowWrapper as the prototype of the innerGlobalObject.
     // The full structure of the global object is as follows:
@@ -307,7 +307,7 @@ bool V8WindowShell::installDOMWindow()
     //       views of the LocalDOMWindow will die together once that wrapper clears the persistent
     //       reference.
     v8::Handle<v8::Object> innerGlobalObject = toInnerGlobalObject(m_scriptState->context());
-    V8DOMWrapper::setNativeInfoForHiddenWrapper(innerGlobalObject, &V8Window::wrapperTypeInfo, window);
+    V8DOMWrapper::setNativeInfoForHiddenWrapper(innerGlobalObject, &V8Window::wrapperTypeInfo, V8Window::toInternalPointer(window));
     innerGlobalObject->SetPrototype(windowWrapper);
     V8DOMWrapper::associateObjectWithWrapper<V8Window>(PassRefPtrWillBeRawPtr<LocalDOMWindow>(window), &V8Window::wrapperTypeInfo, windowWrapper, m_isolate, WrapperConfiguration::Dependent);
     V8Window::installPerContextEnabledProperties(windowWrapper, window, m_isolate);

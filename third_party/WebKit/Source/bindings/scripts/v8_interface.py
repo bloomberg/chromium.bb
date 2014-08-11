@@ -50,6 +50,7 @@ from v8_utilities import capitalize, conditional_string, cpp_name, gc_type, has_
 
 
 INTERFACE_H_INCLUDES = frozenset([
+    'bindings/core/v8/ScriptWrappable.h',
     'bindings/core/v8/V8Binding.h',
     'bindings/core/v8/V8DOMWrapper.h',
     'bindings/core/v8/WrapperTypeInfo.h',

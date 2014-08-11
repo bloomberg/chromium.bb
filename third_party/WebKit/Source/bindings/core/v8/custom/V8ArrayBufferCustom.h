@@ -54,20 +54,20 @@ public:
     static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*);
     static ArrayBuffer* toNative(v8::Handle<v8::Object>);
     static ArrayBuffer* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
-    static void derefObject(void*);
+    static void derefObject(ScriptWrappableBase* internalPointer);
     static const WrapperTypeInfo wrapperTypeInfo;
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount;
     static void installPerContextEnabledProperties(v8::Handle<v8::Object>, ArrayBuffer*, v8::Isolate*) { }
     static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }
 
-    static inline void* toInternalPointer(ArrayBuffer* impl)
+    static inline ScriptWrappableBase* toInternalPointer(ArrayBuffer* impl)
     {
-        return impl;
+        return reinterpret_cast<ScriptWrappableBase*>(impl);
     }
 
-    static inline ArrayBuffer* fromInternalPointer(void* impl)
+    static inline ArrayBuffer* fromInternalPointer(ScriptWrappableBase* internalPointer)
     {
-        return static_cast<ArrayBuffer*>(impl);
+        return reinterpret_cast<ArrayBuffer*>(internalPointer);
     }
 
 private:

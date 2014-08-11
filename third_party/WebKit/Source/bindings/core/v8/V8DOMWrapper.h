@@ -39,11 +39,12 @@
 
 namespace blink {
 
+class ScriptWrappableBase;
 struct WrapperTypeInfo;
 
 class V8DOMWrapper {
 public:
-    static v8::Local<v8::Object> createWrapper(v8::Handle<v8::Object> creationContext, const WrapperTypeInfo*, void*, v8::Isolate*);
+    static v8::Local<v8::Object> createWrapper(v8::Handle<v8::Object> creationContext, const WrapperTypeInfo*, ScriptWrappableBase* internalPointer, v8::Isolate*);
 
     template<typename V8T, typename T>
     static inline v8::Handle<v8::Object> associateObjectWithWrapper(PassRefPtr<T>, const WrapperTypeInfo*, v8::Handle<v8::Object>, v8::Isolate*, WrapperConfiguration::Lifetime);
@@ -54,33 +55,33 @@ public:
     }
     template<typename V8T, typename T>
     static inline v8::Handle<v8::Object> associateObjectWithWrapper(T*, const WrapperTypeInfo*, v8::Handle<v8::Object>, v8::Isolate*, WrapperConfiguration::Lifetime);
-    static inline void setNativeInfo(v8::Handle<v8::Object>, const WrapperTypeInfo*, void*);
-    static inline void setNativeInfoForHiddenWrapper(v8::Handle<v8::Object>, const WrapperTypeInfo*, void*);
-    static inline void setNativeInfoWithPersistentHandle(v8::Handle<v8::Object>, const WrapperTypeInfo*, void*, PersistentNode*);
+    static inline void setNativeInfo(v8::Handle<v8::Object>, const WrapperTypeInfo*, ScriptWrappableBase* internalPointer);
+    static inline void setNativeInfoForHiddenWrapper(v8::Handle<v8::Object>, const WrapperTypeInfo*, ScriptWrappableBase* internalPointer);
+    static inline void setNativeInfoWithPersistentHandle(v8::Handle<v8::Object>, const WrapperTypeInfo*, ScriptWrappableBase* internalPointer, PersistentNode*);
     static inline void clearNativeInfo(v8::Handle<v8::Object>, const WrapperTypeInfo*);
 
     static bool isDOMWrapper(v8::Handle<v8::Value>);
 };
 
-inline void V8DOMWrapper::setNativeInfo(v8::Handle<v8::Object> wrapper, const WrapperTypeInfo* wrapperTypeInfo, void* object)
+inline void V8DOMWrapper::setNativeInfo(v8::Handle<v8::Object> wrapper, const WrapperTypeInfo* wrapperTypeInfo, ScriptWrappableBase* internalPointer)
 {
     ASSERT(wrapper->InternalFieldCount() >= 2);
-    ASSERT(object);
+    ASSERT(internalPointer);
     ASSERT(wrapperTypeInfo);
 #if ENABLE(OILPAN)
     ASSERT(wrapperTypeInfo->gcType == RefCountedObject);
 #else
     ASSERT(wrapperTypeInfo->gcType == RefCountedObject || wrapperTypeInfo->gcType == WillBeGarbageCollectedObject);
 #endif
-    wrapper->SetAlignedPointerInInternalField(v8DOMWrapperObjectIndex, object);
+    wrapper->SetAlignedPointerInInternalField(v8DOMWrapperObjectIndex, internalPointer);
     wrapper->SetAlignedPointerInInternalField(v8DOMWrapperTypeIndex, const_cast<WrapperTypeInfo*>(wrapperTypeInfo));
 }
 
-inline void V8DOMWrapper::setNativeInfoForHiddenWrapper(v8::Handle<v8::Object> wrapper, const WrapperTypeInfo* wrapperTypeInfo, void* object)
+inline void V8DOMWrapper::setNativeInfoForHiddenWrapper(v8::Handle<v8::Object> wrapper, const WrapperTypeInfo* wrapperTypeInfo, ScriptWrappableBase* internalPointer)
 {
     // see V8WindowShell::installDOMWindow() comment for why this version is needed and safe.
     ASSERT(wrapper->InternalFieldCount() >= 2);
-    ASSERT(object);
+    ASSERT(internalPointer);
     ASSERT(wrapperTypeInfo);
 #if ENABLE(OILPAN)
     ASSERT(wrapperTypeInfo->gcType != RefCountedObject);
@@ -96,17 +97,17 @@ inline void V8DOMWrapper::setNativeInfoForHiddenWrapper(v8::Handle<v8::Object> w
         wrapper->SetAlignedPointerInInternalField(wrapper->InternalFieldCount() - 1, 0);
 #endif
     }
-    wrapper->SetAlignedPointerInInternalField(v8DOMWrapperObjectIndex, object);
+    wrapper->SetAlignedPointerInInternalField(v8DOMWrapperObjectIndex, internalPointer);
     wrapper->SetAlignedPointerInInternalField(v8DOMWrapperTypeIndex, const_cast<WrapperTypeInfo*>(wrapperTypeInfo));
 }
 
-inline void V8DOMWrapper::setNativeInfoWithPersistentHandle(v8::Handle<v8::Object> wrapper, const WrapperTypeInfo* wrapperTypeInfo, void* object, PersistentNode* handle)
+inline void V8DOMWrapper::setNativeInfoWithPersistentHandle(v8::Handle<v8::Object> wrapper, const WrapperTypeInfo* wrapperTypeInfo, ScriptWrappableBase* internalPointer, PersistentNode* handle)
 {
     ASSERT(wrapper->InternalFieldCount() >= 3);
-    ASSERT(object);
+    ASSERT(internalPointer);
     ASSERT(wrapperTypeInfo);
     ASSERT(wrapperTypeInfo->gcType != RefCountedObject);
-    wrapper->SetAlignedPointerInInternalField(v8DOMWrapperObjectIndex, object);
+    wrapper->SetAlignedPointerInInternalField(v8DOMWrapperObjectIndex, internalPointer);
     wrapper->SetAlignedPointerInInternalField(v8DOMWrapperTypeIndex, const_cast<WrapperTypeInfo*>(wrapperTypeInfo));
     // Persistent handle is stored in the last internal field.
     wrapper->SetAlignedPointerInInternalField(wrapper->InternalFieldCount() - 1, handle);

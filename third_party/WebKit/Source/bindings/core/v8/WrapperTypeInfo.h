@@ -41,6 +41,7 @@ namespace blink {
 class ActiveDOMObject;
 class EventTarget;
 class Node;
+class ScriptWrappableBase;
 
 static const int v8DOMWrapperTypeIndex = static_cast<int>(gin::kWrapperInfoIndex);
 static const int v8DOMWrapperObjectIndex = static_cast<int>(gin::kEncodedValueIndex);
@@ -52,10 +53,10 @@ static const uint16_t v8DOMNodeClassId = 1;
 static const uint16_t v8DOMObjectClassId = 2;
 
 typedef v8::Handle<v8::FunctionTemplate> (*DomTemplateFunction)(v8::Isolate*);
-typedef void (*DerefObjectFunction)(void*);
+typedef void (*DerefObjectFunction)(ScriptWrappableBase* internalPointer);
 typedef ActiveDOMObject* (*ToActiveDOMObjectFunction)(v8::Handle<v8::Object>);
 typedef EventTarget* (*ToEventTargetFunction)(v8::Handle<v8::Object>);
-typedef void (*ResolveWrapperReachabilityFunction)(void*, const v8::Persistent<v8::Object>&, v8::Isolate*);
+typedef void (*ResolveWrapperReachabilityFunction)(ScriptWrappableBase* internalPointer, const v8::Persistent<v8::Object>&, v8::Isolate*);
 typedef void (*InstallPerContextEnabledPrototypePropertiesFunction)(v8::Handle<v8::Object>, v8::Isolate*);
 
 enum WrapperTypePrototype {
@@ -69,9 +70,9 @@ enum GCType {
     RefCountedObject,
 };
 
-inline void setObjectGroup(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
+inline void setObjectGroup(ScriptWrappableBase* internalPointer, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
 {
-    isolate->SetObjectGroupId(wrapper, v8::UniqueId(reinterpret_cast<intptr_t>(object)));
+    isolate->SetObjectGroupId(wrapper, v8::UniqueId(reinterpret_cast<intptr_t>(internalPointer)));
 }
 
 // This struct provides a way to store a bunch of information that is helpful when unwrapping
@@ -125,12 +126,12 @@ struct WrapperTypeInfo {
         return toEventTargetFunction(object);
     }
 
-    void visitDOMWrapper(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate) const
+    void visitDOMWrapper(ScriptWrappableBase* internalPointer, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate) const
     {
         if (!visitDOMWrapperFunction)
-            setObjectGroup(object, wrapper, isolate);
+            setObjectGroup(internalPointer, wrapper, isolate);
         else
-            visitDOMWrapperFunction(object, wrapper, isolate);
+            visitDOMWrapperFunction(internalPointer, wrapper, isolate);
     }
 
     // This field must be the first member of the struct WrapperTypeInfo. This is also checked by a COMPILE_ASSERT() below.
@@ -166,14 +167,9 @@ inline T* getInternalField(v8::Handle<v8::Object> wrapper)
     return static_cast<T*>(wrapper->GetAlignedPointerFromInternalField(offset));
 }
 
-inline void* toNative(const v8::Persistent<v8::Object>& wrapper)
+inline ScriptWrappableBase* toInternalPointer(v8::Handle<v8::Object> wrapper)
 {
-    return getInternalField<void, v8DOMWrapperObjectIndex>(wrapper);
-}
-
-inline void* toNative(v8::Handle<v8::Object> wrapper)
-{
-    return getInternalField<void, v8DOMWrapperObjectIndex>(wrapper);
+    return getInternalField<ScriptWrappableBase, v8DOMWrapperObjectIndex>(wrapper);
 }
 
 inline const WrapperTypeInfo* toWrapperTypeInfo(const v8::Persistent<v8::Object>& wrapper)
@@ -208,11 +204,11 @@ inline void releaseObject(v8::Handle<v8::Object> wrapper)
         delete handle;
 #else
         ASSERT(typeInfo->derefObjectFunction);
-        typeInfo->derefObjectFunction(toNative(wrapper));
+        typeInfo->derefObjectFunction(toInternalPointer(wrapper));
 #endif
     } else {
         ASSERT(typeInfo->derefObjectFunction);
-        typeInfo->derefObjectFunction(toNative(wrapper));
+        typeInfo->derefObjectFunction(toInternalPointer(wrapper));
     }
 }
 

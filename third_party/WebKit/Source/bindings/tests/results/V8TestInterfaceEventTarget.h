@@ -7,6 +7,7 @@
 #ifndef V8TestInterfaceEventTarget_h
 #define V8TestInterfaceEventTarget_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
@@ -29,11 +30,11 @@ public:
     static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*);
     static TestInterfaceEventTarget* toNative(v8::Handle<v8::Object> object)
     {
-        return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
+        return fromInternalPointer(blink::toInternalPointer(object));
     }
     static TestInterfaceEventTarget* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
-    static void derefObject(void*);
+    static void derefObject(ScriptWrappableBase* internalPointer);
     static EventTarget* toEventTarget(v8::Handle<v8::Object>);
     static const int eventListenerCacheIndex = v8DefaultWrapperInternalFieldCount + 0;
 #if ENABLE(OILPAN)
@@ -42,14 +43,14 @@ public:
 #else
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 1;
 #endif
-    static inline void* toInternalPointer(TestInterfaceEventTarget* impl)
+    static inline ScriptWrappableBase* toInternalPointer(TestInterfaceEventTarget* impl)
     {
         return V8EventTarget::toInternalPointer(impl);
     }
 
-    static inline TestInterfaceEventTarget* fromInternalPointer(void* object)
+    static inline TestInterfaceEventTarget* fromInternalPointer(ScriptWrappableBase* internalPointer)
     {
-        return static_cast<TestInterfaceEventTarget*>(V8EventTarget::fromInternalPointer(object));
+        return static_cast<TestInterfaceEventTarget*>(V8EventTarget::fromInternalPointer(internalPointer));
     }
     static void installPerContextEnabledProperties(v8::Handle<v8::Object>, TestInterfaceEventTarget*, v8::Isolate*) { }
     static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }

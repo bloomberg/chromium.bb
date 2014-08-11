@@ -81,7 +81,7 @@ v8::Handle<v8::Object> V8TestInterfaceDocument::findInstanceInPrototypeChain(v8:
 
 TestInterfaceDocument* V8TestInterfaceDocument::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
+    return hasInstance(value, isolate) ? fromInternalPointer(blink::toInternalPointer(v8::Handle<v8::Object>::Cast(value))) : 0;
 }
 
 EventTarget* V8TestInterfaceDocument::toEventTarget(v8::Handle<v8::Object> object)
@@ -131,10 +131,10 @@ v8::Handle<v8::Object> V8TestInterfaceDocument::createWrapper(PassRefPtrWillBeRa
     return wrapper;
 }
 
-void V8TestInterfaceDocument::derefObject(void* object)
+void V8TestInterfaceDocument::derefObject(ScriptWrappableBase* internalPointer)
 {
 #if !ENABLE(OILPAN)
-    fromInternalPointer(object)->deref();
+    fromInternalPointer(internalPointer)->deref();
 #endif // !ENABLE(OILPAN)
 }
 

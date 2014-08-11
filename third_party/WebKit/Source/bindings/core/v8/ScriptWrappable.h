@@ -57,16 +57,16 @@ namespace blink {
  */
 class ScriptWrappableBase {
 public:
-    template <class T> static T* fromInternalPointer(void* internalPointer)
+    template <class T> static T* fromInternalPointer(ScriptWrappableBase* internalPointer)
     {
         // Check if T* is castable to ScriptWrappableBase*, which means T
         // doesn't have two or more ScriptWrappableBase as superclasses.
         // If T has two ScriptWrappableBase as superclasses, conversions
         // from T* to ScriptWrappableBase* are ambiguous.
-        ASSERT(static_cast<ScriptWrappableBase*>(static_cast<T*>(static_cast<ScriptWrappableBase*>(internalPointer))));
-        return static_cast<T*>(static_cast<ScriptWrappableBase*>(internalPointer));
+        ASSERT(static_cast<ScriptWrappableBase*>(static_cast<T*>(internalPointer)));
+        return static_cast<T*>(internalPointer);
     }
-    void* toInternalPointer() { return this; }
+    ScriptWrappableBase* toInternalPointer() { return this; }
 };
 
 /**

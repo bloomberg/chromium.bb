@@ -381,7 +381,7 @@ v8::Handle<v8::Object> V8TestInterfaceEventConstructor::findInstanceInPrototypeC
 
 TestInterfaceEventConstructor* V8TestInterfaceEventConstructor::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
+    return hasInstance(value, isolate) ? fromInternalPointer(blink::toInternalPointer(v8::Handle<v8::Object>::Cast(value))) : 0;
 }
 
 v8::Handle<v8::Object> wrap(TestInterfaceEventConstructor* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -411,10 +411,10 @@ v8::Handle<v8::Object> V8TestInterfaceEventConstructor::createWrapper(PassRefPtr
     return wrapper;
 }
 
-void V8TestInterfaceEventConstructor::derefObject(void* object)
+void V8TestInterfaceEventConstructor::derefObject(ScriptWrappableBase* internalPointer)
 {
 #if !ENABLE(OILPAN)
-    fromInternalPointer(object)->deref();
+    fromInternalPointer(internalPointer)->deref();
 #endif // !ENABLE(OILPAN)
 }
 

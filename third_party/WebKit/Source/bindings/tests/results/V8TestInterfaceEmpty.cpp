@@ -78,7 +78,7 @@ v8::Handle<v8::Object> V8TestInterfaceEmpty::findInstanceInPrototypeChain(v8::Ha
 
 TestInterfaceEmpty* V8TestInterfaceEmpty::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
+    return hasInstance(value, isolate) ? fromInternalPointer(blink::toInternalPointer(v8::Handle<v8::Object>::Cast(value))) : 0;
 }
 
 v8::Handle<v8::Object> wrap(TestInterfaceEmpty* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -108,9 +108,9 @@ v8::Handle<v8::Object> V8TestInterfaceEmpty::createWrapper(PassRefPtr<TestInterf
     return wrapper;
 }
 
-void V8TestInterfaceEmpty::derefObject(void* object)
+void V8TestInterfaceEmpty::derefObject(ScriptWrappableBase* internalPointer)
 {
-    fromInternalPointer(object)->deref();
+    fromInternalPointer(internalPointer)->deref();
 }
 
 template<>

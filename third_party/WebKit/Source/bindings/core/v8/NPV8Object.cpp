@@ -112,7 +112,7 @@ static v8::Local<v8::String> npIdentifierToV8Identifier(NPIdentifier name, v8::I
 
 NPObject* v8ObjectToNPObject(v8::Handle<v8::Object> object)
 {
-    return reinterpret_cast<NPObject*>(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
+    return reinterpret_cast<NPObject*>(toInternalPointer(object));
 }
 
 bool isWrappedNPObject(v8::Handle<v8::Object> object)
@@ -175,6 +175,11 @@ V8NPObject* npObjectToV8NPObject(NPObject* npObject)
     if (v8NpObject->v8Object.IsEmpty())
         return 0;
     return v8NpObject;
+}
+
+ScriptWrappableBase* npObjectToInternalPointer(NPObject* npObject)
+{
+    return reinterpret_cast<ScriptWrappableBase*>(npObject);
 }
 
 void disposeUnderlyingV8Object(NPObject* npObject, v8::Isolate* isolate)

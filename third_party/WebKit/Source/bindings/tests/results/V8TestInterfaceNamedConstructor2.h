@@ -7,6 +7,7 @@
 #ifndef V8TestInterfaceNamedConstructor2_h
 #define V8TestInterfaceNamedConstructor2_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
@@ -28,20 +29,20 @@ public:
     static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*);
     static TestInterfaceNamedConstructor2* toNative(v8::Handle<v8::Object> object)
     {
-        return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
+        return fromInternalPointer(blink::toInternalPointer(object));
     }
     static TestInterfaceNamedConstructor2* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
-    static void derefObject(void*);
+    static void derefObject(ScriptWrappableBase* internalPointer);
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
-    static inline void* toInternalPointer(TestInterfaceNamedConstructor2* impl)
+    static inline ScriptWrappableBase* toInternalPointer(TestInterfaceNamedConstructor2* impl)
     {
-        return impl;
+        return reinterpret_cast<ScriptWrappableBase*>(static_cast<void*>(impl));
     }
 
-    static inline TestInterfaceNamedConstructor2* fromInternalPointer(void* object)
+    static inline TestInterfaceNamedConstructor2* fromInternalPointer(ScriptWrappableBase* internalPointer)
     {
-        return static_cast<TestInterfaceNamedConstructor2*>(object);
+        return reinterpret_cast<TestInterfaceNamedConstructor2*>(static_cast<void*>(internalPointer));
     }
     static void installPerContextEnabledProperties(v8::Handle<v8::Object>, TestInterfaceNamedConstructor2*, v8::Isolate*) { }
     static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }

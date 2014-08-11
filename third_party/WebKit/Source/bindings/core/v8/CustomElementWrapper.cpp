@@ -101,7 +101,7 @@ v8::Handle<v8::Object> CustomElementWrapper<ElementType, WrapperType>::wrap(Pass
         return v8::Handle<v8::Object>();
 
     CustomElementBinding* binding = perContextData->customElementBinding(element->customElementDefinition());
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, binding->wrapperType(), element.get(), isolate);
+    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, binding->wrapperType(), WrapperType::toInternalPointer(element.get()), isolate);
     if (wrapper.IsEmpty())
         return v8::Handle<v8::Object>();
 

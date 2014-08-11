@@ -7,6 +7,7 @@
 #ifndef V8TestInterfaceCheckSecurity_h
 #define V8TestInterfaceCheckSecurity_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
@@ -22,20 +23,20 @@ public:
     static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*);
     static TestInterfaceCheckSecurity* toNative(v8::Handle<v8::Object> object)
     {
-        return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
+        return fromInternalPointer(blink::toInternalPointer(object));
     }
     static TestInterfaceCheckSecurity* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
-    static void derefObject(void*);
+    static void derefObject(ScriptWrappableBase* internalPointer);
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
-    static inline void* toInternalPointer(TestInterfaceCheckSecurity* impl)
+    static inline ScriptWrappableBase* toInternalPointer(TestInterfaceCheckSecurity* impl)
     {
-        return impl;
+        return reinterpret_cast<ScriptWrappableBase*>(static_cast<void*>(impl));
     }
 
-    static inline TestInterfaceCheckSecurity* fromInternalPointer(void* object)
+    static inline TestInterfaceCheckSecurity* fromInternalPointer(ScriptWrappableBase* internalPointer)
     {
-        return static_cast<TestInterfaceCheckSecurity*>(object);
+        return reinterpret_cast<TestInterfaceCheckSecurity*>(static_cast<void*>(internalPointer));
     }
     static void installPerContextEnabledProperties(v8::Handle<v8::Object>, TestInterfaceCheckSecurity*, v8::Isolate*) { }
     static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }

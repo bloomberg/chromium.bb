@@ -174,7 +174,7 @@ v8::Handle<v8::Object> V8TestInterfaceGarbageCollected::findInstanceInPrototypeC
 
 TestInterfaceGarbageCollected* V8TestInterfaceGarbageCollected::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
+    return hasInstance(value, isolate) ? fromInternalPointer(blink::toInternalPointer(v8::Handle<v8::Object>::Cast(value))) : 0;
 }
 
 EventTarget* V8TestInterfaceGarbageCollected::toEventTarget(v8::Handle<v8::Object> object)
@@ -209,7 +209,7 @@ v8::Handle<v8::Object> V8TestInterfaceGarbageCollected::createWrapper(RawPtr<Tes
     return wrapper;
 }
 
-void V8TestInterfaceGarbageCollected::derefObject(void* object)
+void V8TestInterfaceGarbageCollected::derefObject(ScriptWrappableBase* internalPointer)
 {
 }
 

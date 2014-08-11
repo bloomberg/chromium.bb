@@ -696,9 +696,9 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {##############################################################################}
 {% block visit_dom_wrapper %}
 {% if reachable_node_function or set_wrapper_reference_to_list %}
-void {{v8_class}}::visitDOMWrapper(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
+void {{v8_class}}::visitDOMWrapper(ScriptWrappableBase* internalPointer, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
 {
-    {{cpp_class}}* impl = fromInternalPointer(object);
+    {{cpp_class}}* impl = fromInternalPointer(internalPointer);
     {% if set_wrapper_reference_to_list %}
     v8::Local<v8::Object> creationContext = v8::Local<v8::Object>::New(isolate, wrapper);
     V8WrapperInstantiationScope scope(creationContext, isolate);
@@ -719,7 +719,7 @@ void {{v8_class}}::visitDOMWrapper(void* object, const v8::Persistent<v8::Object
         return;
     }
     {% endif %}
-    setObjectGroup(object, wrapper, isolate);
+    setObjectGroup(internalPointer, wrapper, isolate);
 }
 
 {% endif %}
@@ -1148,7 +1148,7 @@ v8::Handle<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Handle<v8:
 {% block to_native_with_type_check %}
 {{cpp_class}}* {{v8_class}}::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
+    return hasInstance(value, isolate) ? fromInternalPointer(blink::toInternalPointer(v8::Handle<v8::Object>::Cast(value))) : 0;
 }
 
 {% endblock %}
@@ -1335,13 +1335,13 @@ v8::Handle<v8::Object> {{v8_class}}::createWrapper({{pass_cpp_type}} impl, v8::H
 
 {##############################################################################}
 {% block deref_object_and_to_v8_no_inline %}
-void {{v8_class}}::derefObject(void* object)
+void {{v8_class}}::derefObject(ScriptWrappableBase* internalPointer)
 {
 {% if gc_type == 'RefCountedObject' %}
-    fromInternalPointer(object)->deref();
+    fromInternalPointer(internalPointer)->deref();
 {% elif gc_type == 'WillBeGarbageCollectedObject' %}
 {% filter conditional('!ENABLE(OILPAN)') %}
-    fromInternalPointer(object)->deref();
+    fromInternalPointer(internalPointer)->deref();
 {% endfilter %}
 {% endif %}
 }
