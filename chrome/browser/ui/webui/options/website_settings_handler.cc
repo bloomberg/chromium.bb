@@ -14,6 +14,8 @@
 
 namespace {
 
+const int kHttpPort = 80;
+const int kHttpsPort = 443;
 const char kPreferencesSource[] = "preference";
 const char kStorage[] = "storage";
 const ContentSettingsType kValidTypes[] = {CONTENT_SETTINGS_TYPE_GEOLOCATION,
@@ -137,11 +139,21 @@ void WebsiteSettingsHandler::UpdateOrigins() {
       continue;
     }
 
-    std::string origin = it->primary_pattern.ToString();
+    GURL origin_url(it->primary_pattern.ToString());
+    std::string origin = origin_url.spec();
+
+    // Hide the port if it is using a standard URL scheme.
+    if ((origin_url.SchemeIs(url::kHttpScheme) &&
+         origin_url.IntPort() == kHttpPort) ||
+        (origin_url.SchemeIs(url::kHttpsScheme) &&
+         origin_url.IntPort() == kHttpsPort)) {
+      url::Replacements<char> replacements;
+      replacements.ClearPort();
+      origin = origin_url.ReplaceComponents(replacements).spec();
+    }
 
     // Mediastream isn't set unless both mic and camera are set to the same.
     if (last_setting == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) {
-      GURL origin_url(origin);
       ContentSetting cam_setting =
           settings->GetContentSetting(origin_url,
                                       origin_url,
