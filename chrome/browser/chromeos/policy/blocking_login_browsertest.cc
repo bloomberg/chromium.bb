@@ -47,7 +47,7 @@ const char kDomain[] = "domain.com";
 const char kUsername[] = "user@domain.com";
 const char kUsernameOtherDomain[] = "user@other.com";
 
-const char kOAuthTokenCookie[] = "oauth_token=1234";
+const char kOAuthCodeCookie[] = "oauth_code=1234; Secure; HttpOnly";
 
 const char kOAuth2TokenPairData[] =
     "{"
@@ -312,7 +312,7 @@ IN_PROC_BROWSER_TEST_P(BlockingLoginTest, LoginBlocksForUser) {
 
     case 1:
       PushResponse(net::HTTP_OK)
-          .AddCustomHeader("Set-Cookies", kOAuthTokenCookie);
+          .AddCustomHeader("Set-Cookie", kOAuthCodeCookie);
       break;
 
     case 0:

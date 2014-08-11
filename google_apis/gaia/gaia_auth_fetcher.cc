@@ -778,8 +778,14 @@ void GaiaAuthFetcher::OnClientLoginToOAuth2Fetched(
     int response_code) {
   if (status.is_success() && response_code == net::HTTP_OK) {
     std::string auth_code;
-    ParseClientLoginToOAuth2Response(cookies, &auth_code);
-    StartAuthCodeForOAuth2TokenExchange(auth_code);
+    if (ParseClientLoginToOAuth2Response(cookies, &auth_code)) {
+      StartAuthCodeForOAuth2TokenExchange(auth_code);
+    } else {
+      GoogleServiceAuthError auth_error(
+          GoogleServiceAuthError::FromUnexpectedServiceResponse(
+              "ClientLogin response cookies didn't contain an auth code"));
+      consumer_->OnClientOAuthFailure(auth_error);
+    }
   } else {
     GoogleServiceAuthError auth_error(GenerateAuthError(data, status));
     consumer_->OnClientOAuthFailure(auth_error);
