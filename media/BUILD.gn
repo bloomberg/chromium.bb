@@ -22,7 +22,7 @@ config("media_config") {
     }
   }
   if (use_cras) {
-    defines = [ "USE_CRAS" ]
+    defines += [ "USE_CRAS" ]
   }
   if (enable_mpeg2ts_stream_parser) {
     defines += [ "ENABLE_MPEG2TS_STREAM_PARSER" ]
@@ -66,150 +66,6 @@ if (use_ozone) {
 
 component("media") {
   sources = [
-    "base/audio_block_fifo.cc",
-    "base/audio_block_fifo.h",
-    "base/audio_buffer.cc",
-    "base/audio_buffer.h",
-    "base/audio_buffer_queue.cc",
-    "base/audio_buffer_queue.h",
-    "base/audio_capturer_source.h",
-    "base/audio_buffer_converter.cc",
-    "base/audio_buffer_converter.h",
-    "base/audio_converter.cc",
-    "base/audio_converter.h",
-    "base/audio_decoder.cc",
-    "base/audio_decoder.h",
-    "base/audio_decoder_config.cc",
-    "base/audio_decoder_config.h",
-    "base/audio_discard_helper.cc",
-    "base/audio_discard_helper.h",
-    "base/audio_fifo.cc",
-    "base/audio_fifo.h",
-    "base/audio_hardware_config.cc",
-    "base/audio_hardware_config.h",
-    "base/audio_hash.cc",
-    "base/audio_hash.h",
-    "base/audio_pull_fifo.cc",
-    "base/audio_pull_fifo.h",
-    "base/audio_renderer.cc",
-    "base/audio_renderer.h",
-    "base/audio_renderer_mixer.cc",
-    "base/audio_renderer_mixer.h",
-    "base/audio_renderer_mixer_input.cc",
-    "base/audio_renderer_mixer_input.h",
-    "base/audio_renderer_sink.h",
-    "base/audio_splicer.cc",
-    "base/audio_splicer.h",
-    "base/audio_timestamp_helper.cc",
-    "base/audio_timestamp_helper.h",
-    "base/bind_to_current_loop.h",
-    "base/bit_reader.cc",
-    "base/bit_reader.h",
-    "base/bit_reader_core.cc",
-    "base/bit_reader_core.h",
-    "base/bitstream_buffer.h",
-    "base/buffering_state.h",
-    "base/buffers.h",
-    "base/byte_queue.cc",
-    "base/byte_queue.h",
-    "base/cdm_promise.cc",
-    "base/cdm_promise.h",
-    "base/channel_mixer.cc",
-    "base/channel_mixer.h",
-    "base/clock.h",
-    "base/data_buffer.cc",
-    "base/data_buffer.h",
-    "base/data_source.cc",
-    "base/data_source.h",
-    "base/decoder_buffer.cc",
-    "base/decoder_buffer.h",
-    "base/decoder_buffer_queue.cc",
-    "base/decoder_buffer_queue.h",
-    "base/decrypt_config.cc",
-    "base/decrypt_config.h",
-    "base/decryptor.cc",
-    "base/decryptor.h",
-    "base/demuxer.cc",
-    "base/demuxer.h",
-    "base/demuxer_stream.cc",
-    "base/demuxer_stream.h",
-    "base/djb2.cc",
-    "base/djb2.h",
-    "base/filter_collection.cc",
-    "base/filter_collection.h",
-    "base/media.cc",
-    "base/media.h",
-    "base/media_keys.cc",
-    "base/media_keys.h",
-    "base/media_log.cc",
-    "base/media_log.h",
-    "base/media_log_event.h",
-    "base/media_switches.cc",
-    "base/media_switches.h",
-    "base/media_win.cc",
-    "base/multi_channel_resampler.cc",
-    "base/multi_channel_resampler.h",
-    "base/pipeline.cc",
-    "base/pipeline.h",
-    "base/pipeline_status.h",
-    "base/player_tracker.cc",
-    "base/player_tracker.h",
-    "base/ranges.cc",
-    "base/ranges.h",
-    "base/sample_format.cc",
-    "base/sample_format.h",
-    "base/scoped_histogram_timer.h",
-    "base/seekable_buffer.cc",
-    "base/seekable_buffer.h",
-    "base/serial_runner.cc",
-    "base/serial_runner.h",
-    "base/simd/convert_rgb_to_yuv.h",
-    "base/simd/convert_rgb_to_yuv_c.cc",
-    "base/simd/convert_yuv_to_rgb.h",
-    "base/simd/convert_yuv_to_rgb_c.cc",
-    "base/simd/filter_yuv.h",
-    "base/simd/filter_yuv_c.cc",
-    "base/simd/yuv_to_rgb_table.cc",
-    "base/simd/yuv_to_rgb_table.h",
-    "base/sinc_resampler.cc",
-    "base/sinc_resampler.h",
-    "base/stream_parser.cc",
-    "base/stream_parser.h",
-    "base/stream_parser_buffer.cc",
-    "base/stream_parser_buffer.h",
-    "base/text_cue.cc",
-    "base/text_cue.h",
-    "base/text_ranges.cc",
-    "base/text_ranges.h",
-    "base/text_renderer.cc",
-    "base/text_renderer.h",
-    "base/text_track.h",
-    "base/text_track_config.cc",
-    "base/text_track_config.h",
-    "base/time_delta_interpolator.cc",
-    "base/time_delta_interpolator.h",
-    "base/time_source.h",
-    "base/user_input_monitor.cc",
-    "base/user_input_monitor.h",
-    "base/user_input_monitor_mac.cc",
-    "base/user_input_monitor_win.cc",
-    "base/video_decoder.cc",
-    "base/video_decoder.h",
-    "base/video_decoder_config.cc",
-    "base/video_decoder_config.h",
-    "base/video_frame.cc",
-    "base/video_frame.h",
-    "base/video_frame_pool.cc",
-    "base/video_frame_pool.h",
-    "base/video_renderer.cc",
-    "base/video_renderer.h",
-    "base/video_rotation.h",
-    "base/video_util.cc",
-    "base/video_util.h",
-    "base/wall_clock_time_source.cc",
-    "base/wall_clock_time_source.h",
-    "base/yuv_convert.cc",
-    "base/yuv_convert.h",
     "cdm/aes_decryptor.cc",
     "cdm/aes_decryptor.h",
     "cdm/json_web_key.cc",
@@ -387,13 +243,6 @@ component("media") {
   if (media_use_ffmpeg) {
     deps += [ "//third_party/ffmpeg" ]
     sources += [
-      "base/audio_video_metadata_extractor.cc",
-      "base/audio_video_metadata_extractor.h",
-      "base/container_names.cc",
-      "base/container_names.h",
-      "base/media_file_checker.cc",
-      "base/media_file_checker.h",
-      "base/media_posix.cc",
       "ffmpeg/ffmpeg_common.cc",
       "ffmpeg/ffmpeg_common.h",
       "filters/audio_file_reader.cc",
@@ -431,14 +280,6 @@ component("media") {
      deps += [ "//third_party/libvpx" ]
   }
 
-  if (enable_browser_cdms) {
-    sources += [
-      "base/browser_cdm.cc",
-      "base/browser_cdm.h",
-      "base/browser_cdm_factory.h",
-    ]
-  }
-
   if (!is_android) {
     sources += [
       "filters/opus_audio_decoder.cc",
@@ -446,13 +287,6 @@ component("media") {
     ]
   } else {
     sources += [
-      "base/android/demuxer_android.h",
-      "base/android/demuxer_stream_player_params.cc",
-      "base/android/demuxer_stream_player_params.h",
-      "base/android/media_player_manager.h",
-      "base/android/media_resource_getter.cc",
-      "base/android/media_resource_getter.h",
-      "base/media_stub.cc",
       "midi/midi_manager_android.cc",
       "midi/usb_midi_device_android.cc",
       "midi/usb_midi_device_android.h",
@@ -463,11 +297,10 @@ component("media") {
       "video/capture/android/video_capture_device_factory_android.cc",
       "video/capture/android/video_capture_device_factory_android.h",
     ]
-    defines += [ "DISABLE_USER_INPUT_MONITOR" ]
     deps += [
-      ":media_android_jni_headers",
-      ":player_android",
-      ":video_capture_android_jni_headers",
+      "//media/base/android",
+      "//media/base/android:media_jni_headers",
+      "//media/base/android:video_capture_jni_headers",
     ]
     if (!is_android_webview_build) {
       deps += [ ":media_java" ]
@@ -488,23 +321,6 @@ component("media") {
   }
 
   # A simple WebM encoder for animated avatars on ChromeOS.
-  if (is_linux) {
-    if (use_x11) {
-      configs += [
-        "//build/config/linux:x11",
-        "//build/config/linux:xext",
-# TODO(ajwong): Why does xent get a separate thing in //build/config/linux:BUILD.gn
-#         "//build/config/linux:xdamage",
-#         "//build/config/linux:xfixes",
-#         "//build/config/linux:xtst",
-      ]
-      sources += [
-        "base/user_input_monitor_linux.cc"
-      ]
-    } else {
-      defines += [ "DISABLE_USER_INPUT_MONITOR" ]
-    }
-  }
 
   if (use_ozone) {
     # Used for the generated listing header (ui/ozone/platform_list.h)
@@ -595,22 +411,6 @@ component("media") {
     ]
   }
 
-  if (cpu_arch == "x86" || cpu_arch == "x64") {
-    sources += [ "base/simd/convert_yuv_to_rgb_x86.cc" ]
-    deps += [
-      ":media_yasm",
-      ":media_mmx",
-      ":media_sse2",
-    ]
-  }
-
-  if (is_linux || is_win) {
-    sources += [
-      "base/keyboard_event_counter.cc",
-      "base/keyboard_event_counter.h",
-    ]
-  }
-
   deps += [
     ":shared_memory_support",
     "//base",
@@ -620,6 +420,7 @@ component("media") {
     "//crypto:platform",  # TODO(ajwong): This used to be provided by crypto.gyp via export_dependent_settings
     "//gpu/command_buffer/common",
     "//media/audio",
+    "//media/base",
     "//skia",
     "//third_party/opus",
     "//ui/events:events_base",
@@ -631,53 +432,6 @@ component("media") {
 
 test("media_unittests") {
   sources = [
-    "base/android/media_codec_bridge_unittest.cc",
-    "base/android/media_drm_bridge_unittest.cc",
-    "base/android/media_source_player_unittest.cc",
-    "base/audio_block_fifo_unittest.cc",
-    "base/audio_buffer_converter_unittest.cc",
-    "base/audio_buffer_unittest.cc",
-    "base/audio_buffer_queue_unittest.cc",
-    "base/audio_bus_unittest.cc",
-    "base/audio_converter_unittest.cc",
-    "base/audio_discard_helper_unittest.cc",
-    "base/audio_fifo_unittest.cc",
-    "base/audio_hardware_config_unittest.cc",
-    "base/audio_hash_unittest.cc",
-    "base/audio_pull_fifo_unittest.cc",
-    "base/audio_renderer_mixer_input_unittest.cc",
-    "base/audio_renderer_mixer_unittest.cc",
-    "base/audio_splicer_unittest.cc",
-    "base/audio_timestamp_helper_unittest.cc",
-    "base/bind_to_current_loop_unittest.cc",
-    "base/bit_reader_unittest.cc",
-    "base/callback_holder.h",
-    "base/callback_holder_unittest.cc",
-    "base/channel_mixer_unittest.cc",
-    "base/data_buffer_unittest.cc",
-    "base/decoder_buffer_queue_unittest.cc",
-    "base/decoder_buffer_unittest.cc",
-    "base/djb2_unittest.cc",
-    "base/gmock_callback_support_unittest.cc",
-    "base/multi_channel_resampler_unittest.cc",
-    "base/pipeline_unittest.cc",
-    "base/ranges_unittest.cc",
-    "base/run_all_unittests.cc",
-    "base/scoped_histogram_timer_unittest.cc",
-    "base/serial_runner_unittest.cc",
-    "base/seekable_buffer_unittest.cc",
-    "base/sinc_resampler_unittest.cc",
-    "base/stream_parser_unittest.cc",
-    "base/text_ranges_unittest.cc",
-    "base/text_renderer_unittest.cc",
-    "base/user_input_monitor_unittest.cc",
-    "base/vector_math_testing.h",
-    "base/vector_math_unittest.cc",
-    "base/video_frame_unittest.cc",
-    "base/video_frame_pool_unittest.cc",
-    "base/video_util_unittest.cc",
-    "base/wall_clock_time_source_unittest.cc",
-    "base/yuv_convert_unittest.cc",
     "cdm/aes_decryptor_unittest.cc",
     "cdm/json_web_key_unittest.cc",
     "filters/audio_clock_unittest.cc",
@@ -726,17 +480,8 @@ test("media_unittests") {
     "formats/webm/webm_webvtt_parser_unittest.cc",
   ]
 
-  if (media_use_ffmpeg) {
-    sources += [
-      "base/audio_video_metadata_extractor_unittest.cc",
-      "base/media_file_checker_unittest.cc",
-    ]
-  }
-
   if (!is_android) {
     sources += [
-
-      "base/container_names_unittest.cc",
       "ffmpeg/ffmpeg_common_unittest.cc",
       "filters/audio_decoder_unittest.cc",
       "filters/audio_file_reader_unittest.cc",
@@ -758,10 +503,6 @@ test("media_unittests") {
 
   if (cpu_arch != "arm" && is_chromeos && use_x11) {
     sources += [ "filters/h264_bitstream_buffer_unittest.cc" ]
-  }
-
-  if (cpu_arch == "x86" || cpu_arch == "x64") {
-    sources += [ "base/simd/convert_rgb_to_yuv_unittest.cc" ]
   }
 
   if (proprietary_codecs) {
@@ -821,6 +562,8 @@ test("media_unittests") {
     "//base/test:test_support",
     "//media/audio:unittests",
     "//media/audio:test_support",
+    "//media/base:unittests",
+    "//media/base:test_support",
     "//skia",  # Direct dependency required to inherit config.
     "//testing/gmock",
     "//testing/gtest",
@@ -836,17 +579,9 @@ test("media_unittests") {
 }
 
 test("media_perftests") {
-  sources = [
-    "base/audio_bus_perftest.cc",
-    "base/audio_converter_perftest.cc",
-    "base/run_all_perftests.cc",
-    "base/sinc_resampler_perftest.cc",
-    "base/vector_math_perftest.cc",
-    "base/yuv_convert_perftest.cc",
-  ]
+  sources = []
   if (media_use_ffmpeg) {
     sources += [
-      "base/demuxer_perftest.cc",
       "filters/pipeline_integration_perftest.cc",
       "filters/pipeline_integration_test_base.cc",
     ]
@@ -858,6 +593,8 @@ test("media_perftests") {
     ":test_support",
     "//base/test:test_support",
     "//media/audio:test_support",
+    "//media/base:perftests",
+    "//media/base:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//testing/perf",
@@ -874,102 +611,8 @@ test("media_perftests") {
   }
 }
 
-if (cpu_arch == "x86" || cpu_arch == "x64") {
-  source_set("media_mmx") {
-    sources = [ "base/simd/filter_yuv_mmx.cc" ]
-    configs += [ ":media_config" ]
-    cflags = [ "-mmmx" ]
-  }
-
-  source_set("media_sse2") {
-    sources = [
-      "base/simd/convert_rgb_to_yuv_sse2.cc",
-      "base/simd/convert_rgb_to_yuv_ssse3.cc",
-      "base/simd/filter_yuv_sse2.cc",
-    ]
-    configs += [ ":media_config" ]
-    cflags = [ "-msse2" ]
-  }
-
-  import("//third_party/yasm/yasm_assemble.gni")
-  yasm_assemble("media_yasm") {
-    sources = [
-      "base/simd/convert_rgb_to_yuv_ssse3.asm",
-      "base/simd/convert_yuv_to_rgb_mmx.asm",
-      "base/simd/convert_yuv_to_rgb_sse.asm",
-      "base/simd/convert_yuva_to_argb_mmx.asm",
-      "base/simd/empty_register_state_mmx.asm",
-      "base/simd/linear_scale_yuv_to_rgb_mmx.asm",
-      "base/simd/linear_scale_yuv_to_rgb_sse.asm",
-      "base/simd/scale_yuv_to_rgb_mmx.asm",
-      "base/simd/scale_yuv_to_rgb_sse.asm",
-    ]
-
-    # TODO(ajwong): Only export if shared_library build...
-    yasm_flags = [
-      "-DCHROMIUM",
-      "-DEXPORT_SYMBOLS",
-      # In addition to the same path as source asm, let yasm %include
-      # search path be relative to src/ per Chromium policy.
-      "-I", rebase_path("..", root_build_dir),
-    ]
-
-    inputs = [
-      "//third_party/x86inc/x86inc.asm",
-      "base/simd/convert_rgb_to_yuv_ssse3.inc",
-      "base/simd/convert_yuv_to_rgb_mmx.inc",
-      "base/simd/convert_yuva_to_argb_mmx.inc",
-      "base/simd/linear_scale_yuv_to_rgb_mmx.inc",
-      "base/simd/media_export.asm",
-      "base/simd/scale_yuv_to_rgb_mmx.inc",
-    ]
-
-    if (cpu_arch == "x86") {
-      yasm_flags += [ "-DARCH_X86_32" ]
-    } else if (cpu_arch == "x64") {
-      yasm_flags += [ "-DARCH_X86_64" ]
-      sources += [
-        "base/simd/linear_scale_yuv_to_rgb_mmx_x64.asm",
-        "base/simd/scale_yuv_to_rgb_sse2_x64.asm",
-      ]
-    }
-
-    if (is_mac) {
-      yasm_flags += [
-        "-DPREFIX",
-        "-DMACHO",
-      ]
-    } else {
-      if (is_posix) {
-        yasm_flags += [ "-DELF" ]
-        if (cpu_arch == "x64") {
-        # TODO(ajwong): Why isn't this true in mac?
-          yasm_flags += [ "-DPIC" ]
-        }
-      }
-    }
-  }
-}
-
 source_set("test_support") {
   sources = [
-    "base/fake_audio_render_callback.cc",
-    "base/fake_audio_render_callback.h",
-    "base/fake_audio_renderer_sink.cc",
-    "base/fake_audio_renderer_sink.h",
-    "base/fake_text_track_stream.cc",
-    "base/fake_text_track_stream.h",
-    "base/gmock_callback_support.h",
-    "base/mock_audio_renderer_sink.cc",
-    "base/mock_audio_renderer_sink.h",
-    "base/mock_demuxer_host.cc",
-    "base/mock_demuxer_host.h",
-    "base/mock_filters.cc",
-    "base/mock_filters.h",
-    "base/test_data_util.cc",
-    "base/test_data_util.h",
-    "base/test_helpers.cc",
-    "base/test_helpers.h",
     "filters/clockless_video_frame_scheduler.cc",
     "filters/clockless_video_frame_scheduler.h",
     "filters/mock_gpu_video_accelerator_factories.cc",
@@ -1035,6 +678,7 @@ if (media_use_ffmpeg) {
       ":test_support",
       "//base/test:test_support",
       "//media/audio:test_support",
+      "//media/base:test_support",
       "//testing/gmock",
       "//testing/gtest",
       "//third_party/ffmpeg",
@@ -1085,67 +729,6 @@ if (use_x11) {
 
 if (is_android) {
   import("//build/config/android/rules.gni")
-  source_set("player_android") {
-    configs += [ ":media_config" ]
-    sources = [
-      "base/android/audio_decoder_job.cc",
-      "base/android/audio_decoder_job.h",
-      "base/android/browser_cdm_factory_android.cc",
-      "base/android/media_codec_bridge.cc",
-      "base/android/media_codec_bridge.h",
-      "base/android/media_decoder_job.cc",
-      "base/android/media_decoder_job.h",
-      "base/android/media_drm_bridge.cc",
-      "base/android/media_drm_bridge.h",
-      "base/android/media_jni_registrar.cc",
-      "base/android/media_jni_registrar.h",
-      "base/android/media_player_android.cc",
-      "base/android/media_player_android.h",
-      "base/android/media_player_bridge.cc",
-      "base/android/media_player_bridge.h",
-      "base/android/media_player_listener.cc",
-      "base/android/media_player_listener.h",
-      "base/android/media_source_player.cc",
-      "base/android/media_source_player.h",
-      "base/android/video_decoder_job.cc",
-      "base/android/video_decoder_job.h",
-      "base/android/webaudio_media_codec_bridge.cc",
-      "base/android/webaudio_media_codec_bridge.h",
-      "base/android/webaudio_media_codec_info.h",
-    ]
-
-    deps = [
-      ":media_android_jni_headers",
-      "//base",
-      "//third_party/widevine/cdm:version_h",
-      "//ui/gl",
-      "//url"
-    ]
-  }
-
-  generate_jni("media_android_jni_headers") {
-    sources = [
-      "base/android/java/src/org/chromium/media/AudioManagerAndroid.java",
-      "base/android/java/src/org/chromium/media/AudioRecordInput.java",
-      "base/android/java/src/org/chromium/media/MediaCodecBridge.java",
-      "base/android/java/src/org/chromium/media/MediaDrmBridge.java",
-      "base/android/java/src/org/chromium/media/MediaPlayerBridge.java",
-      "base/android/java/src/org/chromium/media/MediaPlayerListener.java",
-      "base/android/java/src/org/chromium/media/UsbMidiDeviceAndroid.java",
-      "base/android/java/src/org/chromium/media/UsbMidiDeviceFactoryAndroid.java",
-      "base/android/java/src/org/chromium/media/WebAudioMediaCodecBridge.java",
-    ]
-    jni_package = "media"
-  }
-
-  generate_jni("video_capture_android_jni_headers") {
-    sources = [
-      "base/android/java/src/org/chromium/media/VideoCapture.java",
-      "base/android/java/src/org/chromium/media/VideoCaptureFactory.java",
-    ]
-    jni_package = "media"
-  }
-
   android_library("media_java") {
     srcjar_deps = [
       ":media_android_imageformat_list",
@@ -1162,6 +745,4 @@ if (is_android) {
     ]
     package_name = "org/chromium/media"
   }
-
-  # TODO(dalecurtis): Finish media_unittests_apk and media_perftests_apk.
 }

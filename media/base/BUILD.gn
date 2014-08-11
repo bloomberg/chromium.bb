@@ -1,0 +1,426 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/android/config.gni")
+import("//build/config/arm.gni")
+import("//build/config/ui.gni")
+import("//build/config/linux/pkg_config.gni")
+import("//media/media_options.gni")
+
+source_set("base") {
+  sources = [
+    "audio_block_fifo.cc",
+    "audio_block_fifo.h",
+    "audio_buffer.cc",
+    "audio_buffer.h",
+    "audio_buffer_queue.cc",
+    "audio_buffer_queue.h",
+    "audio_capturer_source.h",
+    "audio_buffer_converter.cc",
+    "audio_buffer_converter.h",
+    "audio_converter.cc",
+    "audio_converter.h",
+    "audio_decoder.cc",
+    "audio_decoder.h",
+    "audio_decoder_config.cc",
+    "audio_decoder_config.h",
+    "audio_discard_helper.cc",
+    "audio_discard_helper.h",
+    "audio_fifo.cc",
+    "audio_fifo.h",
+    "audio_hardware_config.cc",
+    "audio_hardware_config.h",
+    "audio_hash.cc",
+    "audio_hash.h",
+    "audio_pull_fifo.cc",
+    "audio_pull_fifo.h",
+    "audio_renderer.cc",
+    "audio_renderer.h",
+    "audio_renderer_mixer.cc",
+    "audio_renderer_mixer.h",
+    "audio_renderer_mixer_input.cc",
+    "audio_renderer_mixer_input.h",
+    "audio_renderer_sink.h",
+    "audio_splicer.cc",
+    "audio_splicer.h",
+    "audio_timestamp_helper.cc",
+    "audio_timestamp_helper.h",
+    "bind_to_current_loop.h",
+    "bit_reader.cc",
+    "bit_reader.h",
+    "bit_reader_core.cc",
+    "bit_reader_core.h",
+    "bitstream_buffer.h",
+    "buffering_state.h",
+    "buffers.h",
+    "byte_queue.cc",
+    "byte_queue.h",
+    "cdm_promise.cc",
+    "cdm_promise.h",
+    "channel_mixer.cc",
+    "channel_mixer.h",
+    "clock.h",
+    "data_buffer.cc",
+    "data_buffer.h",
+    "data_source.cc",
+    "data_source.h",
+    "decoder_buffer.cc",
+    "decoder_buffer.h",
+    "decoder_buffer_queue.cc",
+    "decoder_buffer_queue.h",
+    "decrypt_config.cc",
+    "decrypt_config.h",
+    "decryptor.cc",
+    "decryptor.h",
+    "demuxer.cc",
+    "demuxer.h",
+    "demuxer_stream.cc",
+    "demuxer_stream.h",
+    "djb2.cc",
+    "djb2.h",
+    "filter_collection.cc",
+    "filter_collection.h",
+    "media.cc",
+    "media.h",
+    "media_keys.cc",
+    "media_keys.h",
+    "media_log.cc",
+    "media_log.h",
+    "media_log_event.h",
+    "media_switches.cc",
+    "media_switches.h",
+    "multi_channel_resampler.cc",
+    "multi_channel_resampler.h",
+    "pipeline.cc",
+    "pipeline.h",
+    "pipeline_status.h",
+    "player_tracker.cc",
+    "player_tracker.h",
+    "ranges.cc",
+    "ranges.h",
+    "sample_format.cc",
+    "sample_format.h",
+    "scoped_histogram_timer.h",
+    "seekable_buffer.cc",
+    "seekable_buffer.h",
+    "serial_runner.cc",
+    "serial_runner.h",
+    "simd/convert_rgb_to_yuv.h",
+    "simd/convert_rgb_to_yuv_c.cc",
+    "simd/convert_yuv_to_rgb.h",
+    "simd/convert_yuv_to_rgb_c.cc",
+    "simd/filter_yuv.h",
+    "simd/filter_yuv_c.cc",
+    "simd/yuv_to_rgb_table.cc",
+    "simd/yuv_to_rgb_table.h",
+    "sinc_resampler.cc",
+    "sinc_resampler.h",
+    "stream_parser.cc",
+    "stream_parser.h",
+    "stream_parser_buffer.cc",
+    "stream_parser_buffer.h",
+    "text_cue.cc",
+    "text_cue.h",
+    "text_ranges.cc",
+    "text_ranges.h",
+    "text_renderer.cc",
+    "text_renderer.h",
+    "text_track.h",
+    "text_track_config.cc",
+    "text_track_config.h",
+    "time_delta_interpolator.cc",
+    "time_delta_interpolator.h",
+    "time_source.h",
+    "user_input_monitor.cc",
+    "user_input_monitor.h",
+    "video_decoder.cc",
+    "video_decoder.h",
+    "video_decoder_config.cc",
+    "video_decoder_config.h",
+    "video_frame.cc",
+    "video_frame.h",
+    "video_frame_pool.cc",
+    "video_frame_pool.h",
+    "video_renderer.cc",
+    "video_renderer.h",
+    "video_rotation.h",
+    "video_util.cc",
+    "video_util.h",
+    "wall_clock_time_source.cc",
+    "wall_clock_time_source.h",
+    "yuv_convert.cc",
+    "yuv_convert.h",
+  ]
+  defines = []
+  deps = [ "//skia" ]
+  libs = []
+  configs += [ "//media:media_config" ]
+
+  if (media_use_ffmpeg) {
+    sources += [
+      "audio_video_metadata_extractor.cc",
+      "audio_video_metadata_extractor.h",
+      "container_names.cc",
+      "container_names.h",
+      "media_file_checker.cc",
+      "media_file_checker.h",
+    ]
+    deps += [ "//third_party/ffmpeg" ]
+  }
+
+  if (enable_browser_cdms) {
+    sources += [
+      "browser_cdm.cc",
+      "browser_cdm.h",
+      "browser_cdm_factory.h",
+    ]
+  }
+
+  if (is_android) {
+    sources += [ "media_stub.cc" ]
+  } else if (is_win) {
+    sources += [ "media_win.cc" ]
+  } else if (is_posix) {
+    sources += [ "media_posix.cc" ]
+  }
+
+  if (is_linux && use_x11) {
+    configs += [
+      "//build/config/linux:x11",
+      "//build/config/linux:xext",
+  # TODO(ajwong): Why does xent get a separate thing in //build/config/linux:BUILD.gn
+  #         "//build/config/linux:xdamage",
+  #         "//build/config/linux:xfixes",
+  #         "//build/config/linux:xtst",
+    ]
+    sources += [ "user_input_monitor_linux.cc" ]
+  } else if (is_mac) {
+    sources += [ "user_input_monitor_mac.cc" ]
+  } else if (is_win) {
+    sources += [ "user_input_monitor_win.cc" ]
+  } else {
+    defines += [ "DISABLE_USER_INPUT_MONITOR" ]
+  }
+
+  if (cpu_arch == "x86" || cpu_arch == "x64") {
+    sources += [ "simd/convert_yuv_to_rgb_x86.cc" ]
+    deps += [
+      ":media_yasm",
+      ":media_mmx",
+      ":media_sse2",
+    ]
+  }
+
+  if (is_linux || is_win) {
+    sources += [
+      "keyboard_event_counter.cc",
+      "keyboard_event_counter.h",
+    ]
+  }
+}
+
+source_set("test_support") {
+  sources = [
+    "fake_audio_render_callback.cc",
+    "fake_audio_render_callback.h",
+    "fake_audio_renderer_sink.cc",
+    "fake_audio_renderer_sink.h",
+    "fake_text_track_stream.cc",
+    "fake_text_track_stream.h",
+    "gmock_callback_support.h",
+    "mock_audio_renderer_sink.cc",
+    "mock_audio_renderer_sink.h",
+    "mock_demuxer_host.cc",
+    "mock_demuxer_host.h",
+    "mock_filters.cc",
+    "mock_filters.h",
+    "test_data_util.cc",
+    "test_data_util.h",
+    "test_helpers.cc",
+    "test_helpers.h",
+  ]
+  configs += [ "//media:media_config" ]
+  deps = [ "//testing/gmock" ]
+}
+
+source_set("unittests") {
+  sources = [
+    "audio_block_fifo_unittest.cc",
+    "audio_buffer_converter_unittest.cc",
+    "audio_buffer_unittest.cc",
+    "audio_buffer_queue_unittest.cc",
+    "audio_bus_unittest.cc",
+    "audio_converter_unittest.cc",
+    "audio_discard_helper_unittest.cc",
+    "audio_fifo_unittest.cc",
+    "audio_hardware_config_unittest.cc",
+    "audio_hash_unittest.cc",
+    "audio_pull_fifo_unittest.cc",
+    "audio_renderer_mixer_input_unittest.cc",
+    "audio_renderer_mixer_unittest.cc",
+    "audio_splicer_unittest.cc",
+    "audio_timestamp_helper_unittest.cc",
+    "bind_to_current_loop_unittest.cc",
+    "bit_reader_unittest.cc",
+    "callback_holder.h",
+    "callback_holder_unittest.cc",
+    "channel_mixer_unittest.cc",
+    "data_buffer_unittest.cc",
+    "decoder_buffer_queue_unittest.cc",
+    "decoder_buffer_unittest.cc",
+    "djb2_unittest.cc",
+    "gmock_callback_support_unittest.cc",
+    "multi_channel_resampler_unittest.cc",
+    "pipeline_unittest.cc",
+    "ranges_unittest.cc",
+    "run_all_unittests.cc",
+    "scoped_histogram_timer_unittest.cc",
+    "serial_runner_unittest.cc",
+    "seekable_buffer_unittest.cc",
+    "sinc_resampler_unittest.cc",
+    "stream_parser_unittest.cc",
+    "text_ranges_unittest.cc",
+    "text_renderer_unittest.cc",
+    "user_input_monitor_unittest.cc",
+    "vector_math_testing.h",
+    "vector_math_unittest.cc",
+    "video_frame_unittest.cc",
+    "video_frame_pool_unittest.cc",
+    "video_util_unittest.cc",
+    "wall_clock_time_source_unittest.cc",
+    "yuv_convert_unittest.cc",
+  ]
+  configs += [ "//media:media_config" ]
+  deps = [
+    ":base",
+    ":test_support",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+
+  if (media_use_ffmpeg) {
+    sources += [
+      "audio_video_metadata_extractor_unittest.cc",
+      "media_file_checker_unittest.cc",
+    ]
+  }
+
+  if (!is_android) {
+    sources += [
+      "container_names_unittest.cc",
+    ]
+  } else {
+    deps += [ "//ui/gl" ]
+  }
+
+  if (cpu_arch == "x86" || cpu_arch == "x64") {
+    sources += [ "simd/convert_rgb_to_yuv_unittest.cc" ]
+  }
+}
+
+source_set("perftests") {
+  sources = [
+    "audio_bus_perftest.cc",
+    "audio_converter_perftest.cc",
+    "run_all_perftests.cc",
+    "sinc_resampler_perftest.cc",
+    "vector_math_perftest.cc",
+    "yuv_convert_perftest.cc",
+  ]
+  configs += [ "//media:media_config" ]
+  deps = [
+    ":base",
+    ":test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+
+  if (media_use_ffmpeg) {
+    sources += [
+      "demuxer_perftest.cc",
+    ]
+  }
+
+  if (is_android) {
+    deps += [ "//ui/gl"]
+  }
+}
+
+if (cpu_arch == "x86" || cpu_arch == "x64") {
+  source_set("media_mmx") {
+    sources = [ "simd/filter_yuv_mmx.cc" ]
+    configs += [ "//media:media_config" ]
+    cflags = [ "-mmmx" ]
+  }
+
+  source_set("media_sse2") {
+    sources = [
+      "simd/convert_rgb_to_yuv_sse2.cc",
+      "simd/convert_rgb_to_yuv_ssse3.cc",
+      "simd/filter_yuv_sse2.cc",
+    ]
+    configs += [ "//media:media_config" ]
+    cflags = [ "-msse2" ]
+  }
+
+  import("//third_party/yasm/yasm_assemble.gni")
+  yasm_assemble("media_yasm") {
+    sources = [
+      "simd/convert_rgb_to_yuv_ssse3.asm",
+      "simd/convert_yuv_to_rgb_mmx.asm",
+      "simd/convert_yuv_to_rgb_sse.asm",
+      "simd/convert_yuva_to_argb_mmx.asm",
+      "simd/empty_register_state_mmx.asm",
+      "simd/linear_scale_yuv_to_rgb_mmx.asm",
+      "simd/linear_scale_yuv_to_rgb_sse.asm",
+      "simd/scale_yuv_to_rgb_mmx.asm",
+      "simd/scale_yuv_to_rgb_sse.asm",
+    ]
+
+    # TODO(ajwong): Only export if shared_library build...
+    yasm_flags = [
+      "-DCHROMIUM",
+      "-DEXPORT_SYMBOLS",
+      # In addition to the same path as source asm, let yasm %include
+      # search path be relative to src/ per Chromium policy.
+      "-I", rebase_path("..", root_build_dir),
+    ]
+
+    inputs = [
+      "//third_party/x86inc/x86inc.asm",
+      "simd/convert_rgb_to_yuv_ssse3.inc",
+      "simd/convert_yuv_to_rgb_mmx.inc",
+      "simd/convert_yuva_to_argb_mmx.inc",
+      "simd/linear_scale_yuv_to_rgb_mmx.inc",
+      "simd/media_export.asm",
+      "simd/scale_yuv_to_rgb_mmx.inc",
+    ]
+
+    if (cpu_arch == "x86") {
+      yasm_flags += [ "-DARCH_X86_32" ]
+    } else if (cpu_arch == "x64") {
+      yasm_flags += [ "-DARCH_X86_64" ]
+      sources += [
+        "simd/linear_scale_yuv_to_rgb_mmx_x64.asm",
+        "simd/scale_yuv_to_rgb_sse2_x64.asm",
+      ]
+    }
+
+    if (is_mac) {
+      yasm_flags += [
+        "-DPREFIX",
+        "-DMACHO",
+      ]
+    } else {
+      if (is_posix) {
+        yasm_flags += [ "-DELF" ]
+        if (cpu_arch == "x64") {
+        # TODO(ajwong): Why isn't this true in mac?
+          yasm_flags += [ "-DPIC" ]
+        }
+      }
+    }
+  }
+}
