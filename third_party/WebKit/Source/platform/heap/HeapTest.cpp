@@ -4975,12 +4975,13 @@ TEST(HeapTest, RecursiveMutex)
 }
 
 template<typename T>
-class TraceIfNeededTester : public GarbageCollected<TraceIfNeededTester<T> > {
+class TraceIfNeededTester : public GarbageCollectedFinalized<TraceIfNeededTester<T> > {
 public:
     static TraceIfNeededTester<T>* create() { return new TraceIfNeededTester<T>(); }
     static TraceIfNeededTester<T>* create(const T& obj) { return new TraceIfNeededTester<T>(obj); }
     void trace(Visitor* visitor) { TraceIfNeeded<T>::trace(visitor, &m_obj); }
     T& obj() { return m_obj; }
+    ~TraceIfNeededTester() { }
 private:
     TraceIfNeededTester() { }
     explicit TraceIfNeededTester(const T& obj) : m_obj(obj) { }

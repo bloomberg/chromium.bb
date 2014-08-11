@@ -58,6 +58,7 @@ int main(int argc, char** argv)
     blink::ThreadState::attachMainThread();
     blink::EventTracer::initialize();
     int result = base::RunUnitTestsUsingBaseTestSuite(argc, argv);
+    blink::Heap::collectAllGarbage();
     blink::ThreadState::detachMainThread();
     blink::Heap::shutdown();
     return result;
