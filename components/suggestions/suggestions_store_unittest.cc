@@ -41,15 +41,14 @@ SuggestionsProfile CreateTestSuggestionsProfileWithExpiry(int expired_count,
       .ToInternalValue();
   srand(7);  // Constant seed for rand() function.
   int64 offset_limit_usec = 30 * base::Time::kMicrosecondsPerDay;
+  int64 offset_usec = rand() % offset_limit_usec + kTimeGapUsec;
+
   SuggestionsProfile suggestions;
-  for (int i = 0; i < valid_count; i++){
-    int64 offset_usec = rand() % offset_limit_usec + kTimeGapUsec;
+  for (int i = 0; i < valid_count; i++)
     AddSuggestion(&suggestions, kTestTitle, kTestUrl, now_usec + offset_usec);
-  }
-  for (int i = 0; i < expired_count; i++){
-    int64 offset_usec = rand() % offset_limit_usec + kTimeGapUsec;
+  for (int i = 0; i < expired_count; i++)
     AddSuggestion(&suggestions, kTestTitle, kTestUrl, now_usec - offset_usec);
-  }
+
   return suggestions;
 }
 
