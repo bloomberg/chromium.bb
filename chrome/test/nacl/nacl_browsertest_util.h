@@ -151,6 +151,11 @@ class NaClBrowserTestNewlibExtension : public NaClBrowserTestNewlib {
   virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
 };
 
+class NaClBrowserTestGLibcExtension : public NaClBrowserTestGLibc {
+ public:
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
+};
+
 // PNaCl tests take a long time on windows debug builds
 // and sometimes time out.  Disable until it is made faster:
 // https://code.google.com/p/chromium/issues/detail?id=177555

@@ -95,10 +95,11 @@
       'variables': {
         'nexe_target': 'extension_validation_cache',
         # The test currently only has the test expectations for the
-        # newlib case (# validation queries/settings), and has also
-        # hardcoded the newlib variant's directory path for the unpacked ext.
+        # newlib and glibc cases (# validation queries/settings), and has also
+        # hardcoded the newlib and glibc variants' directory path for the
+        # unpacked ext.
         'build_newlib': 1,
-        'build_glibc': 0,
+        'build_glibc': 1,
         'build_pnacl_newlib': 0,
         # Need a new directory to not clash with with other extension
         # tests's files (e.g., manifest.json).

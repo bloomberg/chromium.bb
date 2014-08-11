@@ -78,7 +78,7 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, SuccessfulLoadUMA, {
   }
 })
 
-class NaClBrowserTestVcacheExtension:
+class NaClBrowserTestNewlibVcacheExtension:
       public NaClBrowserTestNewlibExtension {
  public:
   virtual base::FilePath::StringType Variant() OVERRIDE {
@@ -86,7 +86,7 @@ class NaClBrowserTestVcacheExtension:
   }
 };
 
-IN_PROC_BROWSER_TEST_F(NaClBrowserTestVcacheExtension,
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestNewlibVcacheExtension,
                        ValidationCacheOfMainNexe) {
   // Hardcoded extension AppID that corresponds to the hardcoded
   // public key in the manifest.json file. We need to load the extension
@@ -98,7 +98,7 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestVcacheExtension,
   RunNaClIntegrationTest(full_url, true);
 
   // Make sure histograms from child processes have been accumulated in the
-  // browser brocess.
+  // browser process.
   UMAHistogramHelper histograms;
   histograms.Fetch();
   // Should have received 2 validation queries (one for IRT and one for NEXE),
@@ -122,6 +122,57 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestVcacheExtension,
   histograms.ExpectTotalCount("NaCl.ValidationCache.Query", 4);
   // Still only 2 settings.
   histograms.ExpectTotalCount("NaCl.ValidationCache.Set", 2);
+}
+
+class NaClBrowserTestGLibcVcacheExtension:
+      public NaClBrowserTestGLibcExtension {
+ public:
+  virtual base::FilePath::StringType Variant() OVERRIDE {
+    return FILE_PATH_LITERAL("extension_vcache_test/glibc");
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestGLibcVcacheExtension,
+                       ValidationCacheOfMainNexe) {
+  // Hardcoded extension AppID that corresponds to the hardcoded
+  // public key in the manifest.json file. We need to load the extension
+  // nexe from the same origin, so we can't just try to load the extension
+  // nexe as a mime-type handler from a non-extension URL.
+  base::FilePath::StringType full_url =
+      FILE_PATH_LITERAL("chrome-extension://cbcdidchbppangcjoddlpdjlenngjldk/")
+      FILE_PATH_LITERAL("extension_validation_cache.html");
+  RunNaClIntegrationTest(full_url, true);
+
+  // Make sure histograms from child processes have been accumulated in the
+  // browser process.
+  UMAHistogramHelper histograms;
+  histograms.Fetch();
+  // Should have received 9 validation queries, which respond with misses:
+  //   - the IRT
+  //   - ld.so (the initial nexe)
+  //   - main.nexe
+  //   - libppapi_cpp.so
+  //   - libpthread.so.9b15f6a6
+  //   - libstdc++.so.6
+  //   - libgcc_s.so.1
+  //   - libc.so.9b15f6a6
+  //   - libm.so.9b15f6a6
+  histograms.ExpectBucketCount("NaCl.ValidationCache.Query",
+                               nacl::NaClBrowser::CACHE_MISS, 9);
+  // TOTAL should then be 9 queries so far.
+  histograms.ExpectTotalCount("NaCl.ValidationCache.Query", 9);
+  // Should have received a cache setting afterwards for IRT and nexe.
+  histograms.ExpectBucketCount("NaCl.ValidationCache.Set",
+                               nacl::NaClBrowser::CACHE_HIT, 9);
+
+  // Load it again to hit the cache.
+  RunNaClIntegrationTest(full_url, true);
+  histograms.Fetch();
+  // Should have received 9 more validation queries and responded with hits.
+  histograms.ExpectBucketCount("NaCl.ValidationCache.Query",
+                               nacl::NaClBrowser::CACHE_HIT, 9);
+  histograms.ExpectTotalCount("NaCl.ValidationCache.Query", 18);
+  histograms.ExpectTotalCount("NaCl.ValidationCache.Set", 9);
 }
 
 // Test that validation for the 2 PNaCl translator nexes can be cached.

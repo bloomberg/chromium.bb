@@ -330,3 +330,21 @@ void NaClBrowserTestNewlibExtension::SetUpCommandLine(
   command_line->AppendSwitchPath(switches::kLoadExtension,
                                  src_root.Append(document_root));
 }
+
+void NaClBrowserTestGLibcExtension::SetUpCommandLine(
+    CommandLine* command_line) {
+  NaClBrowserTestBase::SetUpCommandLine(command_line);
+  base::FilePath src_root;
+  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &src_root));
+
+  // Extension-based tests should specialize the GetDocumentRoot() / Variant()
+  // to point at the isolated the test extension directory.
+  // Otherwise, multiple NaCl extensions tests will end up sharing the
+  // same directory when loading the extension files.
+  base::FilePath document_root;
+  ASSERT_TRUE(GetDocumentRoot(&document_root));
+
+  // Document root is relative to source root, and source root may not be CWD.
+  command_line->AppendSwitchPath(switches::kLoadExtension,
+                                 src_root.Append(document_root));
+}
