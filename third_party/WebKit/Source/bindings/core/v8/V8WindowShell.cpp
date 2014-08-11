@@ -310,7 +310,7 @@ bool V8WindowShell::installDOMWindow()
     V8DOMWrapper::setNativeInfoForHiddenWrapper(innerGlobalObject, &V8Window::wrapperTypeInfo, V8Window::toInternalPointer(window));
     innerGlobalObject->SetPrototype(windowWrapper);
     V8DOMWrapper::associateObjectWithWrapper<V8Window>(PassRefPtrWillBeRawPtr<LocalDOMWindow>(window), &V8Window::wrapperTypeInfo, windowWrapper, m_isolate, WrapperConfiguration::Dependent);
-    V8Window::installPerContextEnabledProperties(windowWrapper, window, m_isolate);
+    V8Window::installConditionallyEnabledProperties(windowWrapper, m_isolate);
     return true;
 }
 

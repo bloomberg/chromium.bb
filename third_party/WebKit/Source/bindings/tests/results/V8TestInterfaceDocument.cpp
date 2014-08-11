@@ -39,7 +39,7 @@ void webCoreInitializeScriptWrappableForInterface(blink::TestInterfaceDocument* 
 }
 
 namespace blink {
-const WrapperTypeInfo V8TestInterfaceDocument::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceDocument::domTemplate, V8TestInterfaceDocument::derefObject, 0, V8TestInterfaceDocument::toEventTarget, 0, V8TestInterfaceDocument::installPerContextEnabledMethods, &V8Document::wrapperTypeInfo, WrapperTypeObjectPrototype, WillBeGarbageCollectedObject };
+const WrapperTypeInfo V8TestInterfaceDocument::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceDocument::domTemplate, V8TestInterfaceDocument::derefObject, 0, V8TestInterfaceDocument::toEventTarget, 0, V8TestInterfaceDocument::installConditionallyEnabledMethods, &V8Document::wrapperTypeInfo, WrapperTypeObjectPrototype, WillBeGarbageCollectedObject };
 
 namespace TestInterfaceDocumentV8Internal {
 
@@ -126,7 +126,7 @@ v8::Handle<v8::Object> V8TestInterfaceDocument::createWrapper(PassRefPtrWillBeRa
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
-    installPerContextEnabledProperties(wrapper, impl.get(), isolate);
+    installConditionallyEnabledProperties(wrapper, isolate);
     V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceDocument>(impl, &wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Dependent);
     return wrapper;
 }

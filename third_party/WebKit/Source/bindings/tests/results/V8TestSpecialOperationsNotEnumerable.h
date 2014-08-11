@@ -38,8 +38,8 @@ public:
     {
         return reinterpret_cast<TestSpecialOperationsNotEnumerable*>(static_cast<void*>(internalPointer));
     }
-    static void installPerContextEnabledProperties(v8::Handle<v8::Object>, TestSpecialOperationsNotEnumerable*, v8::Isolate*) { }
-    static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }
+    static void installConditionallyEnabledProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
+    static void installConditionallyEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }
 
 private:
     friend v8::Handle<v8::Object> wrap(TestSpecialOperationsNotEnumerable*, v8::Handle<v8::Object> creationContext, v8::Isolate*);

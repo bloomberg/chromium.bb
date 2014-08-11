@@ -167,10 +167,10 @@ public:
     static bool namedSecurityCheckCustom(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8::AccessType, v8::Local<v8::Value> data);
     static bool indexedSecurityCheckCustom(v8::Local<v8::Object> host, uint32_t index, v8::AccessType, v8::Local<v8::Value> data);
     {% endif %}
-    static void installPerContextEnabledProperties(v8::Handle<v8::Object>, {{cpp_class}}*, v8::Isolate*){% if has_per_context_enabled_attributes %};
+    static void installConditionallyEnabledProperties(v8::Handle<v8::Object>, v8::Isolate*){% if has_conditional_attributes %};
     {% else %} { }
     {% endif %}
-    static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*){% if per_context_enabled_methods %};
+    static void installConditionallyEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*){% if conditionally_enabled_methods %};
     {% else %} { }
     {% endif %}
     {# Element wrappers #}

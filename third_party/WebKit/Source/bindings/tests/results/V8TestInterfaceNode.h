@@ -45,8 +45,8 @@ public:
     {
         return static_cast<TestInterfaceNode*>(V8Node::fromInternalPointer(internalPointer));
     }
-    static void installPerContextEnabledProperties(v8::Handle<v8::Object>, TestInterfaceNode*, v8::Isolate*) { }
-    static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }
+    static void installConditionallyEnabledProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
+    static void installConditionallyEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }
 
 private:
     friend v8::Handle<v8::Object> wrap(TestInterfaceNode*, v8::Handle<v8::Object> creationContext, v8::Isolate*);

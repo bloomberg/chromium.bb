@@ -51,8 +51,8 @@ public:
     {
         return static_cast<TestInterfaceImplementation*>(V8TestInterfaceEmpty::fromInternalPointer(internalPointer));
     }
-    static void installPerContextEnabledProperties(v8::Handle<v8::Object>, TestInterfaceImplementation*, v8::Isolate*);
-    static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*);
+    static void installConditionallyEnabledProperties(v8::Handle<v8::Object>, v8::Isolate*);
+    static void installConditionallyEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*);
 
 private:
 };

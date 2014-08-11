@@ -65,12 +65,12 @@ namespace blink {
         virtual ~WorkerGlobalScope();
 
         virtual bool isWorkerGlobalScope() const OVERRIDE FINAL { return true; }
+        virtual bool isSharedWorkerGlobalScope() const OVERRIDE { return false; }
+        virtual bool isDedicatedWorkerGlobalScope() const OVERRIDE { return false; }
+        virtual bool isServiceWorkerGlobalScope() const OVERRIDE { return false; }
 
         virtual ExecutionContext* executionContext() const OVERRIDE FINAL;
 
-        virtual bool isSharedWorkerGlobalScope() const { return false; }
-        virtual bool isDedicatedWorkerGlobalScope() const { return false; }
-        virtual bool isServiceWorkerGlobalScope() const { return false; }
         virtual void countFeature(UseCounter::Feature) const;
         virtual void countDeprecation(UseCounter::Feature) const;
 

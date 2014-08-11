@@ -144,6 +144,7 @@ def method_context(interface, method):
             CUSTOM_REGISTRATION_EXTENDED_ATTRIBUTES.intersection(
                 extended_attributes.iterkeys()),
         'deprecate_as': v8_utilities.deprecate_as(method),  # [DeprecateAs]
+        'exposed_test': v8_utilities.exposed(method, interface),  # [Exposed]
         'function_template': function_template(),
         'has_custom_registration': is_static or
             v8_utilities.has_extended_attribute(

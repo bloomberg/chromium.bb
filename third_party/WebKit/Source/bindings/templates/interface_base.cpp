@@ -48,7 +48,7 @@ namespace blink {
                                   if parent_interface else '0' %}
 {% set wrapper_type_prototype = 'WrapperTypeExceptionPrototype' if is_exception else
                                 'WrapperTypeObjectPrototype' %}
-const WrapperTypeInfo {{v8_class}}::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class}}::domTemplate, {{v8_class}}::derefObject, {{to_active_dom_object}}, {{to_event_target}}, {{visit_dom_wrapper}}, {{v8_class}}::installPerContextEnabledMethods, {{parent_wrapper_type_info}}, {{wrapper_type_prototype}}, {{gc_type}} };
+const WrapperTypeInfo {{v8_class}}::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class}}::domTemplate, {{v8_class}}::derefObject, {{to_active_dom_object}}, {{to_event_target}}, {{visit_dom_wrapper}}, {{v8_class}}::installConditionallyEnabledMethods, {{parent_wrapper_type_info}}, {{wrapper_type_prototype}}, {{gc_type}} };
 
 namespace {{cpp_class}}V8Internal {
 
@@ -148,8 +148,8 @@ template <typename T> void V8_USE(T) { }
 {% block get_dom_template %}{% endblock %}
 {% block has_instance %}{% endblock %}
 {% block to_native_with_type_check %}{% endblock %}
-{% block install_per_context_attributes %}{% endblock %}
-{% block install_per_context_methods %}{% endblock %}
+{% block install_conditional_attributes %}{% endblock %}
+{% block install_conditional_methods %}{% endblock %}
 {% block to_active_dom_object %}{% endblock %}
 {% block to_event_target %}{% endblock %}
 {% block get_shadow_object_template %}{% endblock %}

@@ -241,8 +241,8 @@ def interface_context(interface):
                   attribute['per_context_enabled_function'])
              and attribute['should_be_exposed_to_script']
              for attribute in attributes),
+        'has_conditional_attributes': any(attribute['per_context_enabled_function'] or attribute['exposed_test'] for attribute in attributes),
         'has_constructor_attributes': any(attribute['constructor_type'] for attribute in attributes),
-        'has_per_context_enabled_attributes': any(attribute['per_context_enabled_function'] for attribute in attributes),
         'has_replaceable_attributes': any(attribute['is_replaceable'] for attribute in attributes),
     })
 
@@ -265,7 +265,7 @@ def interface_context(interface):
             method.extended_attributes['ImplementedAs'] = stringifier.operation.name
         methods.append(v8_methods.method_context(interface, method))
 
-    per_context_enabled_methods = []
+    conditionally_enabled_methods = []
     custom_registration_methods = []
     method_configuration_methods = []
 
@@ -277,15 +277,17 @@ def interface_context(interface):
         if 'overloads' in method:
             overloads = method['overloads']
             per_context_enabled_function = overloads['per_context_enabled_function_all']
+            conditionally_exposed_function = overloads['exposed_test_all']
             runtime_enabled_function = overloads['runtime_enabled_function_all']
             has_custom_registration = overloads['has_custom_registration_all']
         else:
             per_context_enabled_function = method['per_context_enabled_function']
+            conditionally_exposed_function = method['exposed_test']
             runtime_enabled_function = method['runtime_enabled_function']
             has_custom_registration = method['has_custom_registration']
 
-        if per_context_enabled_function:
-            per_context_enabled_methods.append(method)
+        if per_context_enabled_function or conditionally_exposed_function:
+            conditionally_enabled_methods.append(method)
             continue
         if runtime_enabled_function or has_custom_registration:
             custom_registration_methods.append(method)
@@ -309,6 +311,7 @@ def interface_context(interface):
                             method['number_of_required_arguments'])
 
     context.update({
+        'conditionally_enabled_methods': conditionally_enabled_methods,
         'custom_registration_methods': custom_registration_methods,
         'has_origin_safe_method_setter': any(
             method['is_check_security_for_frame'] and not method['is_read_only']
@@ -316,7 +319,6 @@ def interface_context(interface):
         'has_private_script': any(attribute['is_implemented_in_private_script'] for attribute in attributes) or
             any(method['is_implemented_in_private_script'] for method in methods),
         'method_configuration_methods': method_configuration_methods,
-        'per_context_enabled_methods': per_context_enabled_methods,
         'methods': methods,
     })
 
@@ -440,13 +442,14 @@ def overloads_context(overloads):
 
     return {
         'deprecate_all_as': common_value(overloads, 'deprecate_as'),  # [DeprecateAs]
+        'exposed_test_all': common_value(overloads, 'exposed_test'),  # [Exposed]
+        'has_custom_registration_all': common_value(overloads, 'has_custom_registration'),
         'length_tests_methods': length_tests_methods(effective_overloads_by_length),
-        'minarg': lengths[0],
         # 1. Let maxarg be the length of the longest type list of the
         # entries in S.
         'maxarg': lengths[-1],
         'measure_all_as': common_value(overloads, 'measure_as'),  # [MeasureAs]
-        'has_custom_registration_all': common_value(overloads, 'has_custom_registration'),
+        'minarg': lengths[0],
         'per_context_enabled_function_all': common_value(overloads, 'per_context_enabled_function'),  # [PerContextEnabled]
         'runtime_enabled_function_all': common_value(overloads, 'runtime_enabled_function'),  # [RuntimeEnabled]
         'valid_arities': lengths

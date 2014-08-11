@@ -84,7 +84,7 @@ void webCoreInitializeScriptWrappableForInterface(blink::TestObject* object)
 }
 
 namespace blink {
-const WrapperTypeInfo V8TestObject::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestObject::domTemplate, V8TestObject::derefObject, 0, 0, 0, V8TestObject::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype, RefCountedObject };
+const WrapperTypeInfo V8TestObject::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestObject::domTemplate, V8TestObject::derefObject, 0, 0, 0, V8TestObject::installConditionallyEnabledMethods, 0, WrapperTypeObjectPrototype, RefCountedObject };
 
 namespace TestObjectV8Internal {
 
@@ -10667,30 +10667,31 @@ TestObject* V8TestObject::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle
     return hasInstance(value, isolate) ? fromInternalPointer(blink::toInternalPointer(v8::Handle<v8::Object>::Cast(value))) : 0;
 }
 
-void V8TestObject::installPerContextEnabledProperties(v8::Handle<v8::Object> instanceObject, TestObject* impl, v8::Isolate* isolate)
+void V8TestObject::installConditionallyEnabledProperties(v8::Handle<v8::Object> instanceObject, v8::Isolate* isolate)
 {
     v8::Local<v8::Object> prototypeObject = v8::Local<v8::Object>::Cast(instanceObject->GetPrototype());
-    if (ContextFeatures::featureNameEnabled(impl->document())) {
+    ExecutionContext* context = toExecutionContext(prototypeObject->CreationContext());
+
+    if (context && context->isDocument() && ContextFeatures::featureNameEnabled(toDocument(context))) {
         static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
         {"perContextEnabledLongAttribute", TestObjectV8Internal::perContextEnabledLongAttributeAttributeGetterCallback, TestObjectV8Internal::perContextEnabledLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance};
         V8DOMConfiguration::installAttribute(instanceObject, prototypeObject, attributeConfiguration, isolate);
     }
-    if (ContextFeatures::featureNameEnabled(impl->document())) {
+    if (context && context->isDocument() && ContextFeatures::featureNameEnabled(toDocument(context))) {
         static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
         {"perContextEnabledRuntimeEnabledLongAttribute", TestObjectV8Internal::perContextEnabledRuntimeEnabledLongAttributeAttributeGetterCallback, TestObjectV8Internal::perContextEnabledRuntimeEnabledLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance};
         V8DOMConfiguration::installAttribute(instanceObject, prototypeObject, attributeConfiguration, isolate);
     }
 }
 
-void V8TestObject::installPerContextEnabledMethods(v8::Handle<v8::Object> prototypeObject, v8::Isolate* isolate)
+void V8TestObject::installConditionallyEnabledMethods(v8::Handle<v8::Object> prototypeObject, v8::Isolate* isolate)
 {
     v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, domTemplate(isolate));
-
     ExecutionContext* context = toExecutionContext(prototypeObject->CreationContext());
     ASSERT(context);
-    if (context->isDocument() && ContextFeatures::featureNameEnabled(toDocument(context))) {
-        static const V8DOMConfiguration::MethodConfiguration methodConfiguration = {"perContextEnabledVoidMethod", TestObjectV8Internal::perContextEnabledVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts};
-        V8DOMConfiguration::installMethod(prototypeObject, defaultSignature, v8::None, methodConfiguration, isolate);
+
+    if (context && context->isDocument() && ContextFeatures::featureNameEnabled(toDocument(context))) {
+        prototypeObject->Set(v8AtomicString(isolate, "perContextEnabledVoidMethod"), v8::FunctionTemplate::New(isolate, TestObjectV8Internal::perContextEnabledVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction());
     }
 }
 
@@ -10716,7 +10717,7 @@ v8::Handle<v8::Object> V8TestObject::createWrapper(PassRefPtr<TestObject> impl, 
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
-    installPerContextEnabledProperties(wrapper, impl.get(), isolate);
+    installConditionallyEnabledProperties(wrapper, isolate);
     V8DOMWrapper::associateObjectWithWrapper<V8TestObject>(impl, &wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
     return wrapper;
 }
