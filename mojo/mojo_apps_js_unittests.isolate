@@ -45,7 +45,6 @@
     ['OS=="mac"', {
       'variables': {
         'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/libmojo_gles2.dylib',
           '<(PRODUCT_DIR)/libmojo_test_support.dylib',
         ],
       },

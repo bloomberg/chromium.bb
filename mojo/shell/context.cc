@@ -15,7 +15,6 @@
 #include "mojo/application_manager/application_manager.h"
 #include "mojo/application_manager/background_shell_application_loader.h"
 #include "mojo/embedder/embedder.h"
-#include "mojo/gles2/gles2_support_impl.h"
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/services/native_viewport/native_viewport_service.h"
 #include "mojo/shell/dynamic_application_loader.h"
@@ -52,7 +51,6 @@ class Setup {
  public:
   Setup() {
     embedder::Init();
-    gles2::GLES2SupportImpl::Init();
   }
 
   ~Setup() {

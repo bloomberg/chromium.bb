@@ -29,8 +29,7 @@ component("gles2") {
     "command_buffer_client_impl.cc",
     "command_buffer_client_impl.h",
     "gles2_impl_export.h",
-    "gles2_support_impl.cc",
-    "gles2_support_impl.h",
+    "gles2_impl.cc",
     "gles2_context.cc",
     "gles2_context.h",
   ]

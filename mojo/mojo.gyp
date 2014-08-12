@@ -104,35 +104,6 @@
       ],
     },
     {
-      # GN version: //mojo/gles2
-      'target_name': 'mojo_gles2_impl',
-      'type': '<(component)',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        '../gpu/gpu.gyp:command_buffer_client',
-        '../gpu/gpu.gyp:command_buffer_common',
-        '../gpu/gpu.gyp:gles2_cmd_helper',
-        '../gpu/gpu.gyp:gles2_implementation',
-        'mojo_base.gyp:mojo_environment_chromium',
-        'mojo_gles2',
-        'mojo_gles2_bindings',
-        '<(mojo_system_for_component)',
-      ],
-      'defines': [
-        'MOJO_GLES2_IMPL_IMPLEMENTATION',
-      ],
-      'sources': [
-        'gles2/command_buffer_client_impl.cc',
-        'gles2/command_buffer_client_impl.h',
-        'gles2/gles2_impl_export.h',
-        'gles2/gles2_support_impl.cc',
-        'gles2/gles2_support_impl.h',
-        'gles2/gles2_context.cc',
-        'gles2/gles2_context.h',
-      ],
-    },
-    {
       'target_name': 'mojo_spy',
       'type': 'static_library',
       'dependencies': [
@@ -170,10 +141,10 @@
         'mojo_application_manager',
         'mojo_base.gyp:mojo_application_bindings',
         'mojo_base.gyp:mojo_common_lib',
+        'mojo_base.gyp:mojo_gles2_impl',
         'mojo_base.gyp:mojo_system_impl',
         'mojo_base.gyp:mojo_application_chromium',
         'mojo_external_service_bindings',
-        'mojo_gles2_impl',
         'mojo_native_viewport_service',
         'mojo_network_bindings',
         'mojo_spy',
@@ -239,7 +210,6 @@
           'dependencies': [
             # These are only necessary as long as we hard code use of ViewManager.
             '../skia/skia.gyp:skia',
-            'mojo_gles2',
             'mojo_view_manager',
             'mojo_view_manager_bindings',
           ],
@@ -393,7 +363,7 @@
         '../cc/cc.gyp:cc',
         '../skia/skia.gyp:skia',
         '../gpu/gpu.gyp:gles2_implementation',
-        'mojo_gles2',
+        '<(mojo_gles2_for_loadable_module)',
       ],
       'sources': [
         'cc/context_provider_mojo.cc',
@@ -490,8 +460,8 @@
             '../ui/gl/gl.gyp:gl',
             '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
             'mojo_cc_support',
-            'mojo_gles2',
             'mojo_native_viewport_bindings',
+            '<(mojo_gles2_for_loadable_module)',
           ],
           'sources': [
             'aura/aura_init.cc',
