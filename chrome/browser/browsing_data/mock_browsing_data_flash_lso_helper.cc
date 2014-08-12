@@ -13,6 +13,8 @@ MockBrowsingDataFlashLSOHelper::MockBrowsingDataFlashLSOHelper(
 }
 void MockBrowsingDataFlashLSOHelper::StartFetching(
     const GetSitesWithFlashDataCallback& callback) {
+  ASSERT_FALSE(callback.is_null());
+  ASSERT_TRUE(callback_.is_null());
   callback_ = callback;
 }
 

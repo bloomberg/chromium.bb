@@ -5,6 +5,7 @@
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/bind.h"

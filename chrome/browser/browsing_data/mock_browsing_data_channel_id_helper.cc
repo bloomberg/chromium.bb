@@ -5,6 +5,7 @@
 #include "chrome/browser/browsing_data/mock_browsing_data_channel_id_helper.h"
 
 #include "base/logging.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 MockBrowsingDataChannelIDHelper::MockBrowsingDataChannelIDHelper()
     : BrowsingDataChannelIDHelper() {}
@@ -14,18 +15,21 @@ MockBrowsingDataChannelIDHelper::
 
 void MockBrowsingDataChannelIDHelper::StartFetching(
     const FetchResultCallback& callback) {
+  ASSERT_FALSE(callback.is_null());
+  ASSERT_TRUE(callback_.is_null());
   callback_ = callback;
 }
 
 void MockBrowsingDataChannelIDHelper::DeleteChannelID(
     const std::string& server_id) {
-  CHECK(channel_ids_.find(server_id) != channel_ids_.end());
+  ASSERT_FALSE(callback_.is_null());
+  ASSERT_TRUE(channel_ids_.find(server_id) != channel_ids_.end());
   channel_ids_[server_id] = false;
 }
 
 void MockBrowsingDataChannelIDHelper::AddChannelIDSample(
     const std::string& server_id) {
-  DCHECK(channel_ids_.find(server_id) == channel_ids_.end());
+  ASSERT_TRUE(channel_ids_.find(server_id) == channel_ids_.end());
   channel_id_list_.push_back(
       net::ChannelIDStore::ChannelID(
           server_id, base::Time(), base::Time(), "key", "cert"));

@@ -5,6 +5,7 @@
 #include "chrome/browser/browsing_data/mock_browsing_data_appcache_helper.h"
 
 #include "base/callback.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 MockBrowsingDataAppCacheHelper::MockBrowsingDataAppCacheHelper(
   Profile* profile)
@@ -16,6 +17,8 @@ MockBrowsingDataAppCacheHelper::~MockBrowsingDataAppCacheHelper() {
 
 void MockBrowsingDataAppCacheHelper::StartFetching(
     const base::Closure& completion_callback) {
+  ASSERT_FALSE(completion_callback.is_null());
+  ASSERT_TRUE(completion_callback_.is_null());
   completion_callback_ = completion_callback;
 }
 

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
 
+#include <set>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -95,9 +97,9 @@ BrowsingDataFileSystemHelperImpl::~BrowsingDataFileSystemHelperImpl() {
 
 void BrowsingDataFileSystemHelperImpl::StartFetching(
     const base::Callback<void(const std::list<FileSystemInfo>&)>& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!is_fetching_);
-  DCHECK_EQ(false, callback.is_null());
+  DCHECK(!callback.is_null());
   is_fetching_ = true;
   completion_callback_ = callback;
   file_task_runner()->PostTask(
@@ -109,7 +111,7 @@ void BrowsingDataFileSystemHelperImpl::StartFetching(
 
 void BrowsingDataFileSystemHelperImpl::DeleteFileSystemOrigin(
     const GURL& origin) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   file_task_runner()->PostTask(
       FROM_HERE,
       base::Bind(
@@ -163,7 +165,7 @@ void BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread() {
 }
 
 void BrowsingDataFileSystemHelperImpl::NotifyOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(is_fetching_);
   completion_callback_.Run(file_system_info_);
   completion_callback_.Reset();
@@ -200,7 +202,7 @@ CannedBrowsingDataFileSystemHelper::~CannedBrowsingDataFileSystemHelper() {}
 
 CannedBrowsingDataFileSystemHelper*
     CannedBrowsingDataFileSystemHelper::Clone() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CannedBrowsingDataFileSystemHelper* clone =
       new CannedBrowsingDataFileSystemHelper();
   // This list only mutates on the UI thread, so it's safe to work with it here
@@ -211,7 +213,7 @@ CannedBrowsingDataFileSystemHelper*
 
 void CannedBrowsingDataFileSystemHelper::AddFileSystem(
     const GURL& origin, const fileapi::FileSystemType type, const int64 size) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // This canned implementation of AddFileSystem uses an O(n^2) algorithm; which
   // is fine, as it isn't meant for use in a high-volume context. If it turns
   // out that we want to start using this in a context with many, many origins,
@@ -247,13 +249,13 @@ bool CannedBrowsingDataFileSystemHelper::empty() const {
 }
 
 size_t CannedBrowsingDataFileSystemHelper::GetFileSystemCount() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return file_system_info_.size();
 }
 
 void CannedBrowsingDataFileSystemHelper::StartFetching(
     const base::Callback<void(const std::list<FileSystemInfo>&)>& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   BrowserThread::PostTask(

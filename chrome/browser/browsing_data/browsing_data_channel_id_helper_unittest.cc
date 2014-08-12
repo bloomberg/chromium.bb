@@ -48,7 +48,7 @@ class BrowsingDataChannelIDHelperTest
 
   void FetchCallback(
       const net::ChannelIDStore::ChannelIDList& channel_ids) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     channel_id_list_ = channel_ids;
   }
 

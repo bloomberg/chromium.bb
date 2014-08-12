@@ -5,6 +5,7 @@
 #include "chrome/browser/browsing_data/mock_browsing_data_database_helper.h"
 
 #include "base/callback.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 MockBrowsingDataDatabaseHelper::MockBrowsingDataDatabaseHelper(
     Profile* profile)
@@ -16,14 +17,17 @@ MockBrowsingDataDatabaseHelper::~MockBrowsingDataDatabaseHelper() {
 
 void MockBrowsingDataDatabaseHelper::StartFetching(
     const base::Callback<void(const std::list<DatabaseInfo>&)>& callback) {
+  ASSERT_FALSE(callback.is_null());
+  ASSERT_TRUE(callback_.is_null());
   callback_ = callback;
 }
 
 void MockBrowsingDataDatabaseHelper::DeleteDatabase(
     const std::string& origin,
     const std::string& name) {
+  ASSERT_FALSE(callback_.is_null());
   std::string key = origin + ":" + name;
-  CHECK(databases_.find(key) != databases_.end());
+  ASSERT_TRUE(databases_.find(key) != databases_.end());
   last_deleted_origin_ = origin;
   last_deleted_db_ = name;
   databases_[key] = false;
@@ -43,7 +47,6 @@ void MockBrowsingDataDatabaseHelper::AddDatabaseSamples() {
 }
 
 void MockBrowsingDataDatabaseHelper::Notify() {
-  CHECK_EQ(false, callback_.is_null());
   callback_.Run(response_);
 }
 

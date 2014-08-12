@@ -195,6 +195,7 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
   scoped_refptr<BrowsingDataFileSystemHelper> helper_;
   scoped_refptr<CannedBrowsingDataFileSystemHelper> canned_helper_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataFileSystemHelperTest);
 };
 

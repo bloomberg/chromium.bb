@@ -25,7 +25,7 @@ BrowsingDataAppCacheHelper::BrowsingDataAppCacheHelper(Profile* profile)
 void BrowsingDataAppCacheHelper::StartFetching(const base::Closure& callback) {
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     DCHECK(!is_fetching_);
-    DCHECK_EQ(false, callback.is_null());
+    DCHECK(!callback.is_null());
     is_fetching_ = true;
     info_collection_ = new content::AppCacheInfoCollection;
     completion_callback_ = callback;
@@ -35,7 +35,7 @@ void BrowsingDataAppCacheHelper::StartFetching(const base::Closure& callback) {
     return;
   }
 
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   appcache_info_callback_.Reset(
       base::Bind(&BrowsingDataAppCacheHelper::OnFetchComplete,
                  base::Unretained(this)));
@@ -79,7 +79,7 @@ void BrowsingDataAppCacheHelper::OnFetchComplete(int rv) {
     return;
   }
 
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(is_fetching_);
   is_fetching_ = false;
   completion_callback_.Run();
@@ -94,7 +94,7 @@ CannedBrowsingDataAppCacheHelper::CannedBrowsingDataAppCacheHelper(
 }
 
 CannedBrowsingDataAppCacheHelper* CannedBrowsingDataAppCacheHelper::Clone() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CannedBrowsingDataAppCacheHelper* clone =
       new CannedBrowsingDataAppCacheHelper(profile_);
 

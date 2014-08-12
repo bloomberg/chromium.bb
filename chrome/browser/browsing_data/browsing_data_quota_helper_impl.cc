@@ -30,7 +30,7 @@ BrowsingDataQuotaHelper* BrowsingDataQuotaHelper::Create(Profile* profile) {
 
 void BrowsingDataQuotaHelperImpl::StartFetching(
     const FetchResultCallback& callback) {
-  DCHECK_EQ(false, callback.is_null());
+  DCHECK(!callback.is_null());
   DCHECK(callback_.is_null());
   DCHECK(!is_fetching_);
   callback_ = callback;

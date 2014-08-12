@@ -30,7 +30,7 @@ BrowsingDataCookieHelper::BrowsingDataCookieHelper(
     net::URLRequestContextGetter* request_context_getter)
     : is_fetching_(false),
       request_context_getter_(request_context_getter) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 BrowsingDataCookieHelper::~BrowsingDataCookieHelper() {
@@ -38,7 +38,7 @@ BrowsingDataCookieHelper::~BrowsingDataCookieHelper() {
 
 void BrowsingDataCookieHelper::StartFetching(
     const base::Callback<void(const net::CookieList& cookies)>& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!is_fetching_);
   DCHECK(!callback.is_null());
   DCHECK(completion_callback_.is_null());
@@ -51,7 +51,7 @@ void BrowsingDataCookieHelper::StartFetching(
 
 void BrowsingDataCookieHelper::DeleteCookie(
     const net::CanonicalCookie& cookie) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&BrowsingDataCookieHelper::DeleteCookieOnIOThread,
@@ -59,7 +59,7 @@ void BrowsingDataCookieHelper::DeleteCookie(
 }
 
 void BrowsingDataCookieHelper::FetchCookiesOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   scoped_refptr<net::CookieMonster> cookie_monster =
       request_context_getter_->GetURLRequestContext()->
       cookie_store()->GetCookieMonster();
@@ -72,7 +72,7 @@ void BrowsingDataCookieHelper::FetchCookiesOnIOThread() {
 }
 
 void BrowsingDataCookieHelper::OnFetchComplete(const net::CookieList& cookies) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&BrowsingDataCookieHelper::NotifyInUIThread, this, cookies));
@@ -80,7 +80,7 @@ void BrowsingDataCookieHelper::OnFetchComplete(const net::CookieList& cookies) {
 
 void BrowsingDataCookieHelper::NotifyInUIThread(
     const net::CookieList& cookies) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(is_fetching_);
   is_fetching_ = false;
   completion_callback_.Run(cookies);
@@ -89,7 +89,7 @@ void BrowsingDataCookieHelper::NotifyInUIThread(
 
 void BrowsingDataCookieHelper::DeleteCookieOnIOThread(
     const net::CanonicalCookie& cookie) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   scoped_refptr<net::CookieMonster> cookie_monster =
       request_context_getter_->GetURLRequestContext()->
       cookie_store()->GetCookieMonster();
@@ -109,7 +109,7 @@ CannedBrowsingDataCookieHelper::~CannedBrowsingDataCookieHelper() {
 }
 
 CannedBrowsingDataCookieHelper* CannedBrowsingDataCookieHelper::Clone() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CannedBrowsingDataCookieHelper* clone =
       new CannedBrowsingDataCookieHelper(request_context_getter());
 
@@ -175,7 +175,7 @@ size_t CannedBrowsingDataCookieHelper::GetCookieCount() const {
 
 void CannedBrowsingDataCookieHelper::StartFetching(
     const net::CookieMonster::GetCookieListCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   net::CookieList cookie_list;
   for (OriginCookieListMap::iterator it = origin_cookie_list_map_.begin();
        it != origin_cookie_list_map_.end();
@@ -204,7 +204,7 @@ bool CannedBrowsingDataCookieHelper::DeleteMatchingCookie(
   for (cookie_iterator cookie = cookie_list->begin();
       cookie != cookie_list->end(); ++cookie) {
     if (cookie->Name() == add_cookie.Name() &&
-        cookie->Domain() == add_cookie.Domain()&&
+        cookie->Domain() == add_cookie.Domain() &&
         cookie->Path() == add_cookie.Path()) {
       cookie_list->erase(cookie);
       return true;

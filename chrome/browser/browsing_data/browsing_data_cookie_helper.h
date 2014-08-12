@@ -65,12 +65,12 @@ class BrowsingDataCookieHelper
   // Indicates whether or not we're currently fetching information:
   // it's true when StartFetching() is called in the UI thread, and it's reset
   // after we notify the callback in the UI thread.
-  // This only mutates on the UI thread.
+  // This member is only mutated on the UI thread.
   bool is_fetching_;
 
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
-  // This only mutates on the UI thread.
+  // This member is only mutated on the UI thread.
   base::Callback<void(const net::CookieList& cookies)> completion_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataCookieHelper);

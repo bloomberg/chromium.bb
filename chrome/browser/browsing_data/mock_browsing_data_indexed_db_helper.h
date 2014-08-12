@@ -47,6 +47,8 @@ class MockBrowsingDataIndexedDBHelper
   base::Callback<void(const std::list<content::IndexedDBInfo>&)> callback_;
   std::map<GURL, bool> origins_;
   std::list<content::IndexedDBInfo> response_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockBrowsingDataIndexedDBHelper);
 };
 
 #endif  // CHROME_BROWSER_BROWSING_DATA_MOCK_BROWSING_DATA_INDEXED_DB_HELPER_H_

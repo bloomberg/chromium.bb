@@ -80,4 +80,4 @@ TEST_F(CannedBrowsingDataIndexedDBHelperTest, IgnoreExtensionsAndDevTools) {
   ASSERT_TRUE(helper->empty());
 }
 
-} // namespace
+}  // namespace

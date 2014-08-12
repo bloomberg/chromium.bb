@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/parsed_cookie.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 MockBrowsingDataCookieHelper::MockBrowsingDataCookieHelper(
     net::URLRequestContextGetter* request_context_getter)
@@ -18,13 +19,16 @@ MockBrowsingDataCookieHelper::~MockBrowsingDataCookieHelper() {
 
 void MockBrowsingDataCookieHelper::StartFetching(
     const net::CookieMonster::GetCookieListCallback &callback) {
+  ASSERT_FALSE(callback.is_null());
+  ASSERT_TRUE(callback_.is_null());
   callback_ = callback;
 }
 
 void MockBrowsingDataCookieHelper::DeleteCookie(
     const net::CanonicalCookie& cookie) {
+  ASSERT_FALSE(callback_.is_null());
   std::string key = cookie.Name() + "=" + cookie.Value();
-  CHECK(cookies_.find(key) != cookies_.end());
+  ASSERT_TRUE(cookies_.find(key) != cookies_.end());
   cookies_[key] = false;
 }
 
@@ -38,7 +42,7 @@ void MockBrowsingDataCookieHelper::AddCookieSamples(
     for (cookie_iterator cookie = cookie_list_.begin();
         cookie != cookie_list_.end(); ++cookie) {
       if (cookie->Name() == cc->Name() &&
-          cookie->Domain() == cc->Domain()&&
+          cookie->Domain() == cc->Domain() &&
           cookie->Path() == cc->Path()) {
         return;
       }

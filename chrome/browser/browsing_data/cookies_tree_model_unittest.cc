@@ -232,8 +232,7 @@ class CookiesTreeModelTest : public testing::Test {
       case CookieTreeNode::DetailedInfo::TYPE_CHANNEL_ID:
         return node->GetDetailedInfo().channel_id->server_identifier() + ",";
       case CookieTreeNode::DetailedInfo::TYPE_SERVICE_WORKER:
-        return node->GetDetailedInfo(
-            ).service_worker_info->origin.spec() + ",";
+        return node->GetDetailedInfo().service_worker_info->origin.spec() + ",";
       case CookieTreeNode::DetailedInfo::TYPE_FLASH_LSO:
         return node->GetDetailedInfo().flash_lso_domain + ",";
       default:
@@ -1123,7 +1122,6 @@ TEST_F(CookiesTreeModelTest, RemoveSingleCookieNodeOf3) {
 }
 
 TEST_F(CookiesTreeModelTest, RemoveSecondOrigin) {
-
   LocalDataContainer* container =
       new LocalDataContainer(mock_browsing_data_cookie_helper_.get(),
                              mock_browsing_data_database_helper_.get(),

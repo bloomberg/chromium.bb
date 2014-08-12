@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_BROWSING_DATA_MOCK_BROWSING_DATA_FLASH_LSO_HELPER_H_
 #define CHROME_BROWSER_BROWSING_DATA_MOCK_BROWSING_DATA_FLASH_LSO_HELPER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -35,6 +36,8 @@ class MockBrowsingDataFlashLSOHelper : public BrowsingDataFlashLSOHelper {
   GetSitesWithFlashDataCallback callback_;
 
   std::vector<std::string> domains_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockBrowsingDataFlashLSOHelper);
 };
 
 #endif  // CHROME_BROWSER_BROWSING_DATA_MOCK_BROWSING_DATA_FLASH_LSO_HELPER_H_

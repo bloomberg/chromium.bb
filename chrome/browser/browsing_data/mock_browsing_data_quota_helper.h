@@ -30,6 +30,8 @@ class MockBrowsingDataQuotaHelper : public BrowsingDataQuotaHelper {
 
   FetchResultCallback callback_;
   std::list<QuotaInfo> response_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockBrowsingDataQuotaHelper);
 };
 
 #endif  // CHROME_BROWSER_BROWSING_DATA_MOCK_BROWSING_DATA_QUOTA_HELPER_H_

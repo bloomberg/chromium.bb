@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_APPCACHE_HELPER_H_
 #define CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_APPCACHE_HELPER_H_
 
+#include <map>
+
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/appcache_service.h"

@@ -7,6 +7,7 @@
 
 #include <list>
 #include <map>
+#include <string>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -54,6 +55,8 @@ class MockBrowsingDataFileSystemHelper : public BrowsingDataFileSystemHelper {
   std::map<const std::string, bool> file_systems_;
 
   std::list<FileSystemInfo> response_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockBrowsingDataFileSystemHelper);
 };
 
 #endif  // CHROME_BROWSER_BROWSING_DATA_MOCK_BROWSING_DATA_FILE_SYSTEM_HELPER_H_

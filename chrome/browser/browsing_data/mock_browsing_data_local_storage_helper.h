@@ -49,6 +49,8 @@ class MockBrowsingDataLocalStorageHelper
   std::map<const GURL, bool> origins_;
 
   std::list<LocalStorageInfo> response_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockBrowsingDataLocalStorageHelper);
 };
 
 #endif  // CHROME_BROWSER_BROWSING_DATA_MOCK_BROWSING_DATA_LOCAL_STORAGE_HELPER_H_

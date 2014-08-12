@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 MockBrowsingDataLocalStorageHelper::MockBrowsingDataLocalStorageHelper(
     Profile* profile)
@@ -17,12 +18,15 @@ MockBrowsingDataLocalStorageHelper::~MockBrowsingDataLocalStorageHelper() {
 
 void MockBrowsingDataLocalStorageHelper::StartFetching(
     const base::Callback<void(const std::list<LocalStorageInfo>&)>& callback) {
+  ASSERT_FALSE(callback.is_null());
+  ASSERT_TRUE(callback_.is_null());
   callback_ = callback;
 }
 
 void MockBrowsingDataLocalStorageHelper::DeleteOrigin(
     const GURL& origin) {
-  CHECK(origins_.find(origin) != origins_.end());
+  ASSERT_FALSE(callback_.is_null());
+  ASSERT_TRUE(origins_.find(origin) != origins_.end());
   last_deleted_origin_ = origin;
   origins_[origin] = false;
 }
@@ -41,7 +45,6 @@ void MockBrowsingDataLocalStorageHelper::AddLocalStorageSamples() {
 }
 
 void MockBrowsingDataLocalStorageHelper::Notify() {
-  CHECK_EQ(false, callback_.is_null());
   callback_.Run(response_);
 }
 

@@ -33,7 +33,7 @@ class BrowsingDataIndexedDBHelper
   explicit BrowsingDataIndexedDBHelper(content::IndexedDBContext* context);
 
   // Starts the fetching process, which will notify its completion via
-  // |callback|. This must be called only in the UI thread.
+  // |callback|. This must be called only on the UI thread.
   virtual void StartFetching(
       const base::Callback<void(const std::list<content::IndexedDBInfo>&)>&
           callback);
@@ -60,7 +60,7 @@ class BrowsingDataIndexedDBHelper
   // Indicates whether or not we're currently fetching information:
   // it's true when StartFetching() is called in the UI thread, and it's reset
   // after we notified the callback in the UI thread.
-  // This only mutates on the UI thread.
+  // This member is only mutated on the UI thread.
   bool is_fetching_;
 
  private:

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_util.h"
@@ -46,9 +48,9 @@ BrowsingDataDatabaseHelper::~BrowsingDataDatabaseHelper() {
 
 void BrowsingDataDatabaseHelper::StartFetching(
     const base::Callback<void(const std::list<DatabaseInfo>&)>& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!is_fetching_);
-  DCHECK_EQ(false, callback.is_null());
+  DCHECK(!callback.is_null());
 
   is_fetching_ = true;
   database_info_.clear();
@@ -61,7 +63,7 @@ void BrowsingDataDatabaseHelper::StartFetching(
 
 void BrowsingDataDatabaseHelper::DeleteDatabase(const std::string& origin,
                                                 const std::string& name) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&BrowsingDataDatabaseHelper::DeleteDatabaseOnFileThread, this,
@@ -69,7 +71,7 @@ void BrowsingDataDatabaseHelper::DeleteDatabase(const std::string& origin,
 }
 
 void BrowsingDataDatabaseHelper::FetchDatabaseInfoOnFileThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   std::vector<webkit_database::OriginInfo> origins_info;
   if (tracker_.get() && tracker_->GetAllOriginsInfo(&origins_info)) {
     for (std::vector<webkit_database::OriginInfo>::const_iterator ori =
@@ -105,7 +107,7 @@ void BrowsingDataDatabaseHelper::FetchDatabaseInfoOnFileThread() {
 }
 
 void BrowsingDataDatabaseHelper::NotifyInUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(is_fetching_);
   completion_callback_.Run(database_info_);
   completion_callback_.Reset();
@@ -116,7 +118,7 @@ void BrowsingDataDatabaseHelper::NotifyInUIThread() {
 void BrowsingDataDatabaseHelper::DeleteDatabaseOnFileThread(
     const std::string& origin,
     const std::string& name) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (!tracker_.get())
     return;
   tracker_->DeleteDatabase(origin, base::UTF8ToUTF16(name),
@@ -148,7 +150,7 @@ CannedBrowsingDataDatabaseHelper::CannedBrowsingDataDatabaseHelper(
 }
 
 CannedBrowsingDataDatabaseHelper* CannedBrowsingDataDatabaseHelper::Clone() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CannedBrowsingDataDatabaseHelper* clone =
       new CannedBrowsingDataDatabaseHelper(profile_);
 
@@ -160,7 +162,7 @@ void CannedBrowsingDataDatabaseHelper::AddDatabase(
     const GURL& origin,
     const std::string& name,
     const std::string& description) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (BrowsingDataHelper::HasWebScheme(origin)) {
     pending_database_info_.insert(PendingDatabaseInfo(
           origin, name, description));
@@ -168,17 +170,17 @@ void CannedBrowsingDataDatabaseHelper::AddDatabase(
 }
 
 void CannedBrowsingDataDatabaseHelper::Reset() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   pending_database_info_.clear();
 }
 
 bool CannedBrowsingDataDatabaseHelper::empty() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return pending_database_info_.empty();
 }
 
 size_t CannedBrowsingDataDatabaseHelper::GetDatabaseCount() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return pending_database_info_.size();
 }
 
@@ -189,7 +191,7 @@ CannedBrowsingDataDatabaseHelper::GetPendingDatabaseInfo() {
 
 void CannedBrowsingDataDatabaseHelper::StartFetching(
     const base::Callback<void(const std::list<DatabaseInfo>&)>& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   std::list<DatabaseInfo> result;

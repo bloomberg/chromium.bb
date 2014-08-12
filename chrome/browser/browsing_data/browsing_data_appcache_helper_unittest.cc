@@ -4,6 +4,8 @@
 
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
 
+#include <set>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/stl_util.h"

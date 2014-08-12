@@ -82,7 +82,7 @@ class StopTestOnCallback {
   void Callback(
       const std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>&
       local_storage_info) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     // There's no guarantee on the order, ensure these files are there.
     const char* const kTestHosts[] = {"www.chromium.org", "www.google.com"};
     bool test_hosts_found[arraysize(kTestHosts)] = {false, false};

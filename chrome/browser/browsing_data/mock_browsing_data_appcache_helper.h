@@ -18,6 +18,8 @@ class MockBrowsingDataAppCacheHelper
 
  private:
   virtual ~MockBrowsingDataAppCacheHelper();
+
+  DISALLOW_COPY_AND_ASSIGN(MockBrowsingDataAppCacheHelper);
 };
 
 #endif  // CHROME_BROWSER_BROWSING_DATA_MOCK_BROWSING_DATA_APPCACHE_HELPER_H_

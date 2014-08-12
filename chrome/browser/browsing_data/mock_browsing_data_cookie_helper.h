@@ -44,6 +44,8 @@ class MockBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
 
   // Stores which cookies exist.
   std::map<const std::string, bool> cookies_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockBrowsingDataCookieHelper);
 };
 
 #endif  // CHROME_BROWSER_BROWSING_DATA_MOCK_BROWSING_DATA_COOKIE_HELPER_H_

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/browsing_data/mock_browsing_data_service_worker_helper.h"
 
+#include <vector>
+
 #include "base/callback.h"
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"

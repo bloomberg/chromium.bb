@@ -14,7 +14,7 @@
 class MockBrowsingDataChannelIDHelper
     : public BrowsingDataChannelIDHelper {
  public:
-  explicit MockBrowsingDataChannelIDHelper();
+  MockBrowsingDataChannelIDHelper();
 
   // BrowsingDataChannelIDHelper methods.
   virtual void StartFetching(const FetchResultCallback& callback) OVERRIDE;
@@ -42,6 +42,8 @@ class MockBrowsingDataChannelIDHelper
 
   // Stores which channel_ids exist.
   std::map<const std::string, bool> channel_ids_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockBrowsingDataChannelIDHelper);
 };
 
 #endif  // CHROME_BROWSER_BROWSING_DATA_MOCK_BROWSING_DATA_CHANNEL_ID_HELPER_H_

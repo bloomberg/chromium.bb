@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <map>
 #include <vector>
 
 #include "base/bind.h"
@@ -303,7 +304,6 @@ CookieTreeCookieNode::~CookieTreeCookieNode() {}
 
 void CookieTreeCookieNode::DeleteStoredObjects() {
   LocalDataContainer* container = GetLocalDataContainerForNode(this);
-  CHECK(container);
   container->cookie_helper_->DeleteCookie(*cookie_);
   container->cookie_list_.erase(cookie_);
 }
@@ -898,8 +898,6 @@ void CookieTreeFlashLSONode::DeleteStoredObjects() {
   CHECK_EQ(host->GetDetailedInfo().node_type,
            CookieTreeNode::DetailedInfo::TYPE_HOST);
   LocalDataContainer* container = GetModel()->data_container();
-  CHECK(container);
-
   container->flash_lso_helper_->DeleteFlashLSOsForSite(domain_);
 }
 
@@ -1176,9 +1174,8 @@ void CookiesTreeModel::PopulateCookieInfoWithFilter(
     }
 
     GURL source(source_string);
-    if (!filter.size() ||
-        (CookieTreeHostNode::TitleForUrl(source).find(filter) !=
-        base::string16::npos)) {
+    if (filter.empty() || (CookieTreeHostNode::TitleForUrl(source)
+                               .find(filter) != base::string16::npos)) {
       CookieTreeHostNode* host_node = root->GetOrCreateHostNode(source);
       CookieTreeCookiesNode* cookies_node =
           host_node->GetOrCreateCookiesNode();
@@ -1204,9 +1201,8 @@ void CookiesTreeModel::PopulateDatabaseInfoWithFilter(
        ++database_info) {
     GURL origin(database_info->identifier.ToOrigin());
 
-    if (!filter.size() ||
-        (CookieTreeHostNode::TitleForUrl(origin).find(filter) !=
-        base::string16::npos)) {
+    if (filter.empty() || (CookieTreeHostNode::TitleForUrl(origin)
+                               .find(filter) != base::string16::npos)) {
       CookieTreeHostNode* host_node = root->GetOrCreateHostNode(origin);
       CookieTreeDatabasesNode* databases_node =
           host_node->GetOrCreateDatabasesNode();
@@ -1232,9 +1228,8 @@ void CookiesTreeModel::PopulateLocalStorageInfoWithFilter(
        ++local_storage_info) {
     const GURL& origin(local_storage_info->origin_url);
 
-    if (!filter.size() ||
-        (CookieTreeHostNode::TitleForUrl(origin).find(filter) !=
-        std::string::npos)) {
+    if (filter.empty() || (CookieTreeHostNode::TitleForUrl(origin)
+                               .find(filter) != std::string::npos)) {
       CookieTreeHostNode* host_node = root->GetOrCreateHostNode(origin);
       CookieTreeLocalStoragesNode* local_storages_node =
           host_node->GetOrCreateLocalStoragesNode();
@@ -1260,9 +1255,8 @@ void CookiesTreeModel::PopulateSessionStorageInfoWithFilter(
        ++session_storage_info) {
     const GURL& origin = session_storage_info->origin_url;
 
-    if (!filter.size() ||
-        (CookieTreeHostNode::TitleForUrl(origin).find(filter) !=
-        base::string16::npos)) {
+    if (filter.empty() || (CookieTreeHostNode::TitleForUrl(origin)
+                               .find(filter) != base::string16::npos)) {
       CookieTreeHostNode* host_node = root->GetOrCreateHostNode(origin);
       CookieTreeSessionStoragesNode* session_storages_node =
           host_node->GetOrCreateSessionStoragesNode();
@@ -1288,9 +1282,8 @@ void CookiesTreeModel::PopulateIndexedDBInfoWithFilter(
        ++indexed_db_info) {
     const GURL& origin = indexed_db_info->origin_;
 
-    if (!filter.size() ||
-        (CookieTreeHostNode::TitleForUrl(origin).find(filter) !=
-        base::string16::npos)) {
+    if (filter.empty() || (CookieTreeHostNode::TitleForUrl(origin)
+                               .find(filter) != base::string16::npos)) {
       CookieTreeHostNode* host_node = root->GetOrCreateHostNode(origin);
       CookieTreeIndexedDBsNode* indexed_dbs_node =
           host_node->GetOrCreateIndexedDBsNode();
@@ -1323,7 +1316,7 @@ void CookiesTreeModel::PopulateChannelIDInfoWithFilter(
           channel_id_info->server_identifier() + "/");
     }
     base::string16 title = CookieTreeHostNode::TitleForUrl(origin);
-    if (!filter.size() || title.find(filter) != base::string16::npos) {
+    if (filter.empty() || title.find(filter) != base::string16::npos) {
       CookieTreeHostNode* host_node = root->GetOrCreateHostNode(origin);
       CookieTreeChannelIDsNode* channel_ids_node =
           host_node->GetOrCreateChannelIDsNode();
@@ -1376,9 +1369,8 @@ void CookiesTreeModel::PopulateFileSystemInfoWithFilter(
        ++file_system_info) {
     GURL origin(file_system_info->origin);
 
-    if (!filter.size() ||
-        (CookieTreeHostNode::TitleForUrl(origin).find(filter) !=
-        base::string16::npos)) {
+    if (filter.empty() || (CookieTreeHostNode::TitleForUrl(origin)
+                               .find(filter) != base::string16::npos)) {
       CookieTreeHostNode* host_node = root->GetOrCreateHostNode(origin);
       CookieTreeFileSystemsNode* file_systems_node =
           host_node->GetOrCreateFileSystemsNode();
@@ -1401,9 +1393,8 @@ void CookiesTreeModel::PopulateQuotaInfoWithFilter(
   for (QuotaInfoList::iterator quota_info = container->quota_info_list_.begin();
        quota_info != container->quota_info_list_.end();
        ++quota_info) {
-    if (!filter.size() ||
-        (base::UTF8ToUTF16(quota_info->host).find(filter) !=
-            base::string16::npos)) {
+    if (filter.empty() || (base::UTF8ToUTF16(quota_info->host).find(filter) !=
+                           base::string16::npos)) {
       CookieTreeHostNode* host_node =
           root->GetOrCreateHostNode(GURL("http://" + quota_info->host));
       host_node->UpdateOrCreateQuotaNode(quota_info);
@@ -1425,7 +1416,7 @@ void CookiesTreeModel::PopulateFlashLSOInfoWithFilter(
   for (std::vector<std::string>::iterator it =
            container->flash_lso_domain_list_.begin();
        it != container->flash_lso_domain_list_.end(); ++it) {
-    if (!filter_utf8.size() || it->find(filter_utf8) != std::string::npos) {
+    if (filter_utf8.empty() || it->find(filter_utf8) != std::string::npos) {
       // Create a fake origin for GetOrCreateHostNode().
       GURL origin("http://" + *it);
       CookieTreeHostNode* host_node = root->GetOrCreateHostNode(origin);

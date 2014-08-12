@@ -5,6 +5,7 @@
 #include "chrome/browser/browsing_data/mock_browsing_data_quota_helper.h"
 
 #include "content/public/browser/browser_thread.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
 
@@ -16,6 +17,8 @@ MockBrowsingDataQuotaHelper::~MockBrowsingDataQuotaHelper() {}
 
 void MockBrowsingDataQuotaHelper::StartFetching(
     const FetchResultCallback& callback) {
+  ASSERT_FALSE(callback.is_null());
+  ASSERT_TRUE(callback_.is_null());
   callback_ = callback;
 }
 
@@ -40,7 +43,6 @@ void MockBrowsingDataQuotaHelper::AddQuotaSamples() {
 }
 
 void MockBrowsingDataQuotaHelper::Notify() {
-  CHECK_EQ(false, callback_.is_null());
   callback_.Run(response_);
   callback_.Reset();
   response_.clear();

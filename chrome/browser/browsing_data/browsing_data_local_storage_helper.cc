@@ -35,9 +35,9 @@ BrowsingDataLocalStorageHelper::~BrowsingDataLocalStorageHelper() {
 
 void BrowsingDataLocalStorageHelper::StartFetching(
     const base::Callback<void(const std::list<LocalStorageInfo>&)>& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!is_fetching_);
-  DCHECK_EQ(false, callback.is_null());
+  DCHECK(!callback.is_null());
 
   is_fetching_ = true;
   completion_callback_ = callback;
@@ -47,13 +47,13 @@ void BrowsingDataLocalStorageHelper::StartFetching(
 }
 
 void BrowsingDataLocalStorageHelper::DeleteOrigin(const GURL& origin) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   dom_storage_context_->DeleteLocalStorage(origin);
 }
 
 void BrowsingDataLocalStorageHelper::GetUsageInfoCallback(
     const std::vector<content::LocalStorageUsageInfo>& infos) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   for (size_t i = 0; i < infos.size(); ++i) {
     // Non-websafe state is not considered browsing data.
@@ -87,7 +87,7 @@ CannedBrowsingDataLocalStorageHelper::CannedBrowsingDataLocalStorageHelper(
 
 CannedBrowsingDataLocalStorageHelper*
 CannedBrowsingDataLocalStorageHelper::Clone() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CannedBrowsingDataLocalStorageHelper* clone =
       new CannedBrowsingDataLocalStorageHelper(profile_);
 
@@ -120,7 +120,7 @@ CannedBrowsingDataLocalStorageHelper::GetLocalStorageInfo() const {
 
 void CannedBrowsingDataLocalStorageHelper::StartFetching(
     const base::Callback<void(const std::list<LocalStorageInfo>&)>& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   std::list<LocalStorageInfo> result;

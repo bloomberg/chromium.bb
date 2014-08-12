@@ -4,6 +4,8 @@
 
 #include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
 
+#include <vector>
+
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/base/testing_profile.h"
@@ -77,4 +79,4 @@ TEST_F(CannedBrowsingDataServiceWorkerHelperTest, IgnoreExtensionsAndDevTools) {
   ASSERT_TRUE(helper->empty());
 }
 
-} // namespace
+}  // namespace

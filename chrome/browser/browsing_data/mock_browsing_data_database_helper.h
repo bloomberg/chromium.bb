@@ -7,6 +7,7 @@
 
 #include <list>
 #include <map>
+#include <string>
 
 #include "base/callback.h"
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
@@ -51,6 +52,8 @@ class MockBrowsingDataDatabaseHelper : public BrowsingDataDatabaseHelper {
   std::map<const std::string, bool> databases_;
 
   std::list<DatabaseInfo> response_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockBrowsingDataDatabaseHelper);
 };
 
 #endif  // CHROME_BROWSER_BROWSING_DATA_MOCK_BROWSING_DATA_DATABASE_HELPER_H_

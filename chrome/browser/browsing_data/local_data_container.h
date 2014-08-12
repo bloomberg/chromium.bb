@@ -51,7 +51,7 @@ typedef std::list<content::ServiceWorkerUsageInfo> ServiceWorkerUsageInfoList;
 typedef std::map<GURL, std::list<content::AppCacheInfo> > AppCacheInfoMap;
 typedef std::vector<std::string> FlashLSODomainList;
 
-} // namespace
+}  // namespace
 
 // LocalDataContainer ---------------------------------------------------------
 // This class is a wrapper around all the BrowsingData*Helper classes. Because

@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 MockBrowsingDataIndexedDBHelper::MockBrowsingDataIndexedDBHelper(
     Profile* profile)
@@ -23,12 +24,15 @@ MockBrowsingDataIndexedDBHelper::~MockBrowsingDataIndexedDBHelper() {
 void MockBrowsingDataIndexedDBHelper::StartFetching(
     const base::Callback<void(const std::list<content::IndexedDBInfo>&)>&
     callback) {
+  ASSERT_FALSE(callback.is_null());
+  ASSERT_TRUE(callback_.is_null());
   callback_ = callback;
 }
 
 void MockBrowsingDataIndexedDBHelper::DeleteIndexedDB(
     const GURL& origin) {
-  CHECK(origins_.find(origin) != origins_.end());
+  ASSERT_FALSE(callback_.is_null());
+  ASSERT_TRUE(origins_.find(origin) != origins_.end());
   origins_[origin] = false;
 }
 
@@ -44,7 +48,6 @@ void MockBrowsingDataIndexedDBHelper::AddIndexedDBSamples() {
 }
 
 void MockBrowsingDataIndexedDBHelper::Notify() {
-  CHECK_EQ(false, callback_.is_null());
   callback_.Run(response_);
 }
 

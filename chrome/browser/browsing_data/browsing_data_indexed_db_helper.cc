@@ -32,9 +32,9 @@ BrowsingDataIndexedDBHelper::~BrowsingDataIndexedDBHelper() {
 
 void BrowsingDataIndexedDBHelper::StartFetching(
     const base::Callback<void(const std::list<IndexedDBInfo>&)>& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!is_fetching_);
-  DCHECK_EQ(false, callback.is_null());
+  DCHECK(!callback.is_null());
 
   is_fetching_ = true;
   completion_callback_ = callback;
@@ -47,7 +47,7 @@ void BrowsingDataIndexedDBHelper::StartFetching(
 
 void BrowsingDataIndexedDBHelper::DeleteIndexedDB(
     const GURL& origin) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   indexed_db_context_->TaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(
@@ -74,7 +74,7 @@ void BrowsingDataIndexedDBHelper::FetchIndexedDBInfoInIndexedDBThread() {
 }
 
 void BrowsingDataIndexedDBHelper::NotifyInUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(is_fetching_);
   completion_callback_.Run(indexed_db_info_);
   completion_callback_.Reset();
@@ -113,7 +113,7 @@ CannedBrowsingDataIndexedDBHelper::CannedBrowsingDataIndexedDBHelper(
 CannedBrowsingDataIndexedDBHelper::~CannedBrowsingDataIndexedDBHelper() {}
 
 CannedBrowsingDataIndexedDBHelper* CannedBrowsingDataIndexedDBHelper::Clone() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CannedBrowsingDataIndexedDBHelper* clone =
       new CannedBrowsingDataIndexedDBHelper(indexed_db_context_);
 
@@ -150,7 +150,7 @@ CannedBrowsingDataIndexedDBHelper::GetIndexedDBInfo() const  {
 
 void CannedBrowsingDataIndexedDBHelper::StartFetching(
     const base::Callback<void(const std::list<IndexedDBInfo>&)>& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   std::list<IndexedDBInfo> result;

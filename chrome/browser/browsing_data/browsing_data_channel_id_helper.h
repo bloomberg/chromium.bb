@@ -21,7 +21,6 @@ class Profile;
 class BrowsingDataChannelIDHelper
     : public base::RefCountedThreadSafe<BrowsingDataChannelIDHelper> {
  public:
-
   // Create a BrowsingDataChannelIDHelper instance for the given
   // |profile|.
   static BrowsingDataChannelIDHelper* Create(Profile* profile);

@@ -6,6 +6,7 @@
 
 #include <map>
 #include <set>
+#include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -241,7 +242,7 @@ void BrowsingDataRemover::Remove(int remove_mask, int origin_set_mask) {
 void BrowsingDataRemover::RemoveImpl(int remove_mask,
                                      const GURL& origin,
                                      int origin_set_mask) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   set_removing(true);
   remove_mask_ = remove_mask;
   remove_origin_ = origin;
@@ -832,14 +833,14 @@ void BrowsingDataRemover::NotifyAndDeleteIfDone() {
 }
 
 void BrowsingDataRemover::OnClearedHostnameResolutionCache() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   waiting_for_clear_hostname_resolution_cache_ = false;
   NotifyAndDeleteIfDone();
 }
 
 void BrowsingDataRemover::ClearHostnameResolutionCacheOnIOThread(
     IOThread* io_thread) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   io_thread->ClearHostCache();
 
@@ -852,14 +853,14 @@ void BrowsingDataRemover::ClearHostnameResolutionCacheOnIOThread(
 }
 
 void BrowsingDataRemover::OnClearedLoggedInPredictor() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(waiting_for_clear_logged_in_predictor_);
   waiting_for_clear_logged_in_predictor_ = false;
   NotifyAndDeleteIfDone();
 }
 
 void BrowsingDataRemover::ClearLoggedInPredictor() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!waiting_for_clear_logged_in_predictor_);
 
   predictors::PredictorDatabase* predictor_db =
@@ -886,14 +887,14 @@ void BrowsingDataRemover::ClearLoggedInPredictor() {
 }
 
 void BrowsingDataRemover::OnClearedNetworkPredictor() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   waiting_for_clear_network_predictor_ = false;
   NotifyAndDeleteIfDone();
 }
 
 void BrowsingDataRemover::ClearNetworkPredictorOnIOThread(
     chrome_browser_net::Predictor* predictor) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(predictor);
 
   predictor->DiscardInitialNavigationHistory();
@@ -908,7 +909,7 @@ void BrowsingDataRemover::ClearNetworkPredictorOnIOThread(
 }
 
 void BrowsingDataRemover::OnClearedNetworkingHistory() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   waiting_for_clear_networking_history_ = false;
   NotifyAndDeleteIfDone();
 }
@@ -921,7 +922,7 @@ void BrowsingDataRemover::ClearedCache() {
 
 void BrowsingDataRemover::ClearCacheOnIOThread() {
   // This function should be called on the IO thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(STATE_NONE, next_cache_state_);
   DCHECK(main_context_getter_.get());
   DCHECK(media_context_getter_.get());
@@ -1014,7 +1015,7 @@ void BrowsingDataRemover::DoClearCache(int rv) {
 #if !defined(DISABLE_NACL)
 void BrowsingDataRemover::ClearedNaClCache() {
   // This function should be called on the UI thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   waiting_for_clear_nacl_cache_ = false;
 
@@ -1023,7 +1024,7 @@ void BrowsingDataRemover::ClearedNaClCache() {
 
 void BrowsingDataRemover::ClearedNaClCacheOnIOThread() {
   // This function should be called on the IO thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Notify the UI thread that we are done.
   BrowserThread::PostTask(
@@ -1033,7 +1034,7 @@ void BrowsingDataRemover::ClearedNaClCacheOnIOThread() {
 }
 
 void BrowsingDataRemover::ClearNaClCacheOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   nacl::NaClBrowser::GetInstance()->ClearValidationCache(
       base::Bind(&BrowsingDataRemover::ClearedNaClCacheOnIOThread,
@@ -1042,7 +1043,7 @@ void BrowsingDataRemover::ClearNaClCacheOnIOThread() {
 
 void BrowsingDataRemover::ClearedPnaclCache() {
   // This function should be called on the UI thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   waiting_for_clear_pnacl_cache_ = false;
 
@@ -1051,7 +1052,7 @@ void BrowsingDataRemover::ClearedPnaclCache() {
 
 void BrowsingDataRemover::ClearedPnaclCacheOnIOThread() {
   // This function should be called on the IO thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Notify the UI thread that we are done.
   BrowserThread::PostTask(
@@ -1062,7 +1063,7 @@ void BrowsingDataRemover::ClearedPnaclCacheOnIOThread() {
 
 void BrowsingDataRemover::ClearPnaclCacheOnIOThread(base::Time begin,
                                                     base::Time end) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   pnacl::PnaclHost::GetInstance()->ClearTranslationCacheEntriesBetween(
       begin, end,
@@ -1118,7 +1119,7 @@ void BrowsingDataRemover::OnClearedCookies(int num_deleted) {
 
 void BrowsingDataRemover::ClearCookiesOnIOThread(
     net::URLRequestContextGetter* rq_context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::CookieStore* cookie_store = rq_context->
       GetURLRequestContext()->cookie_store();
   cookie_store->DeleteAllCreatedBetweenAsync(
@@ -1129,7 +1130,7 @@ void BrowsingDataRemover::ClearCookiesOnIOThread(
 
 void BrowsingDataRemover::ClearChannelIDsOnIOThread(
     net::URLRequestContextGetter* rq_context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::ChannelIDService* channel_id_service =
       rq_context->GetURLRequestContext()->channel_id_service();
   channel_id_service->GetChannelIDStore()->DeleteAllCreatedBetween(
@@ -1153,39 +1154,39 @@ void BrowsingDataRemover::OnClearedChannelIDsOnIOThread(
 }
 
 void BrowsingDataRemover::OnClearedChannelIDs() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   waiting_for_clear_channel_ids_ = false;
   NotifyAndDeleteIfDone();
 }
 
 void BrowsingDataRemover::OnClearedFormData() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   waiting_for_clear_form_ = false;
   NotifyAndDeleteIfDone();
 }
 
 void BrowsingDataRemover::OnClearedAutofillOriginURLs() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   waiting_for_clear_autofill_origin_urls_ = false;
   NotifyAndDeleteIfDone();
 }
 
 void BrowsingDataRemover::OnClearedStoragePartitionData() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   waiting_for_clear_storage_partition_data_ = false;
   NotifyAndDeleteIfDone();
 }
 
 #if defined(ENABLE_WEBRTC)
 void BrowsingDataRemover::OnClearedWebRtcLogs() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   waiting_for_clear_webrtc_logs_ = false;
   NotifyAndDeleteIfDone();
 }
 #endif
 
 void BrowsingDataRemover::OnClearedDomainReliabilityMonitor() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   waiting_for_clear_domain_reliability_monitor_ = false;
   NotifyAndDeleteIfDone();
 }
