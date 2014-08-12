@@ -1297,6 +1297,12 @@ crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/f
 crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-same-in-same-url-block.html [ Failure Pass Timeout ]
 crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-star-allow-crossorigin.html [ Failure Pass Timeout ]
 
+crbug.com/401954 css1/font_properties/font_variant.html [ NeedsRebaseline ]
+crbug.com/401954 fast/text/chromium-linux-fontconfig-renderstyle.html [ NeedsRebaseline ]
+crbug.com/401954 svg/W3C-SVG-1.1-SE/coords-dom-02-f.svg [ NeedsRebaseline ]
+crbug.com/401954 svg/as-background-image/svg-width-100p-as-background.html  [ NeedsRebaseline ]
+crbug.com/401954 svg/overflow/overflow-on-outermost-svg-element-in-xhtml-defaults.xhtml [ NeedsRebaseline ]
+
 crbug.com/402753 virtual/gpu/fast/canvas/canvas-createImageBitmap-colorClamping.html [ Pass Failure ]
 
 crbug.com/401902  [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-lose-restore-googol-size.html [ Pass Failure ]
