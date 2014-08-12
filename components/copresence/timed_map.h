@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_COPRESENCE_TIMED_MAP_
-#define COMPONENTS_COPRESENCE_TIMED_MAP_
+#ifndef COMPONENTS_COPRESENCE_TIMED_MAP_H_
+#define COMPONENTS_COPRESENCE_TIMED_MAP_H_
 
 #include <map>
 #include <queue>
@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
@@ -51,7 +52,9 @@ class TimedMap {
     return elt == map_.end() ? kEmptyValue : elt->second;
   }
 
-  void set_clock_for_testing(base::TickClock* clock) { clock_ = clock; }
+  void set_clock_for_testing(scoped_ptr<base::TickClock> clock) {
+    clock_ = clock.Pass();
+  }
 
  private:
   void ClearExpiredTokens() {
@@ -80,7 +83,7 @@ class TimedMap {
 
   const ValueType kEmptyValue;
 
-  base::TickClock* clock_;
+  scoped_ptr<base::TickClock> clock_;
   base::RepeatingTimer<TimedMap> timer_;
   const base::TimeDelta lifetime_;
   const size_t max_elements_;
@@ -94,4 +97,4 @@ class TimedMap {
 
 }  // namespace copresence
 
-#endif  // COMPONENTS_COPRESENCE_TIMED_MAP_
+#endif  // COMPONENTS_COPRESENCE_TIMED_MAP_H_

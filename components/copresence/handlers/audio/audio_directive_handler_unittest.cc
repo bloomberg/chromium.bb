@@ -77,10 +77,8 @@ class AudioDirectiveHandlerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(AudioDirectiveHandlerTest);
 };
 
-// TODO(rkc): Find and fix the memory leak here.
-#define MAYBE_Basic DISABLED_Basic
-
-TEST_F(AudioDirectiveHandlerTest, MAYBE_Basic) {
+// TODO(rkc): This test is broken, possibly due to the changes for audible.
+TEST_F(AudioDirectiveHandlerTest, DISABLED_Basic) {
   const base::TimeDelta kSmallTtl = base::TimeDelta::FromMilliseconds(0x1337);
   const base::TimeDelta kLargeTtl = base::TimeDelta::FromSeconds(0x7331);
 

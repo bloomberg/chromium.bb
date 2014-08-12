@@ -36,8 +36,9 @@ class AudioDirectiveListTest : public testing::Test {
   scoped_ptr<AudioDirectiveList> directive_list_;
 };
 
-// TODO(rkc): Find and fix the memory leak here.
+// TODO(rkc): Fix errors in these tests. See crbug/402578.
 #define MAYBE_Basic DISABLED_Basic
+#define MAYBE_OutOfOrderAndMultiple DISABLED_OutOfOrderAndMultiple
 
 TEST_F(AudioDirectiveListTest, MAYBE_Basic) {
   const base::TimeDelta kZeroTtl = base::TimeDelta::FromMilliseconds(0);
@@ -56,9 +57,6 @@ TEST_F(AudioDirectiveListTest, MAYBE_Basic) {
 
   EXPECT_EQ("op_id3", directive_list_->GetNextReceive()->op_id);
 }
-
-// TODO(rkc): Find out why this is breaking on bots and fix it.
-#define MAYBE_OutOfOrderAndMultiple DISABLED_OutOfOrderAndMultiple
 
 TEST_F(AudioDirectiveListTest, MAYBE_OutOfOrderAndMultiple) {
   const base::TimeDelta kZeroTtl = base::TimeDelta::FromMilliseconds(0);

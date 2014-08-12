@@ -175,11 +175,7 @@ class RpcHandlerTest : public testing::Test, public CopresenceClientDelegate {
   std::map<std::string, std::vector<Message> > messages_by_subscription_;
 };
 
-// TODO(ckehoe): Renable these after https://codereview.chromium.org/453203002/
-// lands.
-#define MAYBE_Initialize DISABLED_Initialize
-
-TEST_F(RpcHandlerTest, MAYBE_Initialize) {
+TEST_F(RpcHandlerTest, Initialize) {
   SetDeviceId("");
   rpc_handler_.Initialize(RpcHandler::SuccessCallback());
   RegisterDeviceRequest* registration =
@@ -192,11 +188,7 @@ TEST_F(RpcHandlerTest, MAYBE_Initialize) {
 // TODO(ckehoe): Fix this on Windows. See rpc_handler.cc.
 #ifndef OS_WIN
 
-// TODO(ckehoe): Renable these after https://codereview.chromium.org/453203002/
-// lands.
-#define MAYBE_GetDeviceCapabilities DISABLED_GetDeviceCapabilities
-
-TEST_F(RpcHandlerTest, MAYBE_GetDeviceCapabilities) {
+TEST_F(RpcHandlerTest, GetDeviceCapabilities) {
   // Empty request.
   rpc_handler_.SendReportRequest(make_scoped_ptr(new ReportRequest));
   EXPECT_EQ(RpcHandler::kReportRequestRpcName, rpc_name_);
@@ -243,11 +235,7 @@ TEST_F(RpcHandlerTest, MAYBE_GetDeviceCapabilities) {
 }
 #endif
 
-// TODO(ckehoe): Renable these after https://codereview.chromium.org/453203002/
-// lands.
-#define MAYBE_CreateRequestHeader DISABLED_CreateRequestHeader
-
-TEST_F(RpcHandlerTest, MAYBE_CreateRequestHeader) {
+TEST_F(RpcHandlerTest, CreateRequestHeader) {
   SetDeviceId("CreateRequestHeader Device ID");
   rpc_handler_.SendReportRequest(make_scoped_ptr(new ReportRequest),
                                  "CreateRequestHeader App ID",
@@ -261,11 +249,7 @@ TEST_F(RpcHandlerTest, MAYBE_CreateRequestHeader) {
             report->header().registered_device_id());
 }
 
-// TODO(ckehoe): Renable these after https://codereview.chromium.org/453203002/
-// lands.
-#define MAYBE_ReportTokens DISABLED_ReportTokens
-
-TEST_F(RpcHandlerTest, MAYBE_ReportTokens) {
+TEST_F(RpcHandlerTest, ReportTokens) {
   std::vector<FullToken> test_tokens;
   test_tokens.push_back(FullToken("token 1", false));
   test_tokens.push_back(FullToken("token 2", true));
@@ -282,11 +266,7 @@ TEST_F(RpcHandlerTest, MAYBE_ReportTokens) {
   EXPECT_EQ("token 3", tokens_sent.Get(1).token_id());
 }
 
-// TODO(ckehoe): Renable these after https://codereview.chromium.org/453203002/
-// lands.
-#define MAYBE_ReportResponseHandler DISABLED_ReportResponseHandler
-
-TEST_F(RpcHandlerTest, MAYBE_ReportResponseHandler) {
+TEST_F(RpcHandlerTest, ReportResponseHandler) {
   // Fail on HTTP status != 200.
   ReportResponse empty_response;
   empty_response.mutable_header()->mutable_status()->set_code(OK);

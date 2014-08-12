@@ -22,6 +22,8 @@ struct Value {
 
 class TimedMapTest : public testing::Test {
  public:
+  typedef copresence::TimedMap<int, Value> Map;
+
   TimedMapTest() {}
 
  private:
@@ -31,11 +33,7 @@ class TimedMapTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(TimedMapTest);
 };
 
-// TODO(rkc): Find and fix the memory leak here.
-#define MAYBE_Basic DISABLED_Basic
-
-TEST_F(TimedMapTest, MAYBE_Basic) {
-  typedef copresence::TimedMap<int, Value> Map;
+TEST_F(TimedMapTest, Basic) {
   Map map(base::TimeDelta::FromSeconds(9999), 3);
 
   EXPECT_FALSE(map.HasKey(0));
@@ -60,11 +58,7 @@ TEST_F(TimedMapTest, MAYBE_Basic) {
   EXPECT_EQ(0x7331, map.GetValue(0x1337).value);
 }
 
-// TODO(rkc): Find and fix the memory leak here.
-#define MAYBE_ValueReplacement DISABLED_ValueReplacement
-
-TEST_F(TimedMapTest, MAYBE_ValueReplacement) {
-  typedef copresence::TimedMap<int, Value> Map;
+TEST_F(TimedMapTest, ValueReplacement) {
   Map map(base::TimeDelta::FromSeconds(9999), 10);
 
   map.Add(0x1337, Value(0x7331));
@@ -80,11 +74,7 @@ TEST_F(TimedMapTest, MAYBE_ValueReplacement) {
   EXPECT_EQ(0xd00d, map.GetValue(0x1337).value);
 }
 
-// TODO(rkc): Find and fix the memory leak here.
-#define MAYBE_SizeEvict DISABLED_SizeEvict
-
-TEST_F(TimedMapTest, MAYBE_SizeEvict) {
-  typedef copresence::TimedMap<int, Value> Map;
+TEST_F(TimedMapTest, SizeEvict) {
   Map two_element_map(base::TimeDelta::FromSeconds(9999), 2);
 
   two_element_map.Add(0x1337, Value(0x7331));
@@ -103,15 +93,13 @@ TEST_F(TimedMapTest, MAYBE_SizeEvict) {
   EXPECT_EQ(0, two_element_map.GetValue(0x1337).value);
 }
 
-// TODO(rkc): Find and fix the memory leak here.
-#define MAYBE_TimedEvict DISABLED_TimedEvict
-
-TEST_F(TimedMapTest, MAYBE_TimedEvict) {
+TEST_F(TimedMapTest, TimedEvict) {
   const int kLargeTimeValueSeconds = 9999;
-  base::SimpleTestTickClock clock;
-  typedef copresence::TimedMap<int, Value> Map;
   Map map(base::TimeDelta::FromSeconds(kLargeTimeValueSeconds), 2);
-  map.set_clock_for_testing(&clock);
+
+  // The map takes ownership of the clock, but we retain a pointer.
+  base::SimpleTestTickClock* clock = new base::SimpleTestTickClock;
+  map.set_clock_for_testing(make_scoped_ptr<base::TickClock>(clock));
 
   // Add value at T=0.
   map.Add(0x1337, Value(0x7331));
@@ -119,7 +107,7 @@ TEST_F(TimedMapTest, MAYBE_TimedEvict) {
   EXPECT_EQ(0x7331, map.GetValue(0x1337).value);
 
   // Add value at T=kLargeTimeValueSeconds-1.
-  clock.Advance(base::TimeDelta::FromSeconds(kLargeTimeValueSeconds - 1));
+  clock->Advance(base::TimeDelta::FromSeconds(kLargeTimeValueSeconds - 1));
   map.Add(0xbaad, Value(0xf00d));
 
   // Check values at T=kLargeTimeValueSeconds-1.
@@ -129,14 +117,14 @@ TEST_F(TimedMapTest, MAYBE_TimedEvict) {
   EXPECT_EQ(0x7331, map.GetValue(0x1337).value);
 
   // Check values at T=kLargeTimeValueSeconds.
-  clock.Advance(base::TimeDelta::FromSeconds(1));
+  clock->Advance(base::TimeDelta::FromSeconds(1));
   EXPECT_FALSE(map.HasKey(0x1337));
   EXPECT_EQ(0, map.GetValue(0x1337).value);
   EXPECT_TRUE(map.HasKey(0xbaad));
   EXPECT_EQ(0xf00d, map.GetValue(0xbaad).value);
 
   // Check values at T=2*kLargeTimeValueSeconds
-  clock.Advance(base::TimeDelta::FromSeconds(kLargeTimeValueSeconds));
+  clock->Advance(base::TimeDelta::FromSeconds(kLargeTimeValueSeconds));
   EXPECT_FALSE(map.HasKey(0xbaad));
   EXPECT_EQ(0, map.GetValue(0xbaad).value);
 }
