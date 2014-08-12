@@ -818,12 +818,12 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 
 - (IBAction)showUserManager:(id)sender {
-  profiles::ShowUserManagerMaybeWithTutorial(browser_->profile());
+  chrome::ShowUserManager(browser_->profile()->GetPath());
 }
 
 - (IBAction)exitGuest:(id)sender {
   DCHECK(browser_->profile()->IsGuestSession());
-  [self showUserManager:sender];
+  chrome::ShowUserManager(base::FilePath());
   profiles::CloseGuestProfileWindows();
 }
 
@@ -848,7 +848,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 - (IBAction)showInlineSigninPage:(id)sender {
   [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN];
 }
-
 
 - (IBAction)addAccount:(id)sender {
   [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT];
@@ -917,10 +916,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   LoginUIServiceFactory::GetForProfile(browser_->profile())->
       SyncConfirmationUIClosed(false);
   [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER];
-}
-
-- (IBAction)addPerson:(id)sender {
-  profiles::ShowUserManagerMaybeWithTutorial(browser_->profile());
 }
 
 - (IBAction)disconnectProfile:(id)sender {
@@ -1171,11 +1166,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   Profile* profile = browser_->profile();
   const AvatarMenu::Item& avatarItem =
       avatarMenu_->GetItemAt(avatarMenu_->GetActiveProfileIndex());
-  if (!avatarItem.signed_in) {
-    profile->GetPrefs()->SetInteger(
-        prefs::kProfileAvatarTutorialShown, kUpgradeWelcomeTutorialShowMax + 1);
-    return nil;
-  }
 
   const int showCount = profile->GetPrefs()->GetInteger(
       prefs::kProfileAvatarTutorialShown);
@@ -1194,8 +1184,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       IDS_PROFILES_WELCOME_UPGRADE_TUTORIAL_TITLE, avatarItem.name);
   NSString* contentMessage = l10n_util::GetNSString(
       IDS_PROFILES_WELCOME_UPGRADE_TUTORIAL_CONTENT_TEXT);
-  NSString* linkMessage = l10n_util::GetNSStringF(
-      IDS_PROFILES_NOT_YOU, avatarItem.name);
+  // For local profiles, the "Not you" link doesn't make sense.
+  NSString* linkMessage = avatarItem.signed_in ?
+      l10n_util::GetNSStringF(IDS_PROFILES_NOT_YOU, avatarItem.name) : nil;
   NSString* buttonMessage = l10n_util::GetNSString(
       IDS_PROFILES_TUTORIAL_WHATS_NEW_BUTTON);
   return [self tutorialViewWithMode:profiles::TUTORIAL_MODE_WELCOME_UPGRADE
@@ -1239,24 +1230,27 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   buttonSize.height += 2 * kTopBottomTextPadding;
   [tutorialOkButton setFrameSize:buttonSize];
   [tutorialOkButton setAlignment:NSCenterTextAlignment];
+
   [tutorialOkButton setFrameOrigin:NSMakePoint(
       kFixedMenuWidth - NSWidth([tutorialOkButton frame]) - kHorizontalSpacing,
       yOffset)];
   [container addSubview:tutorialOkButton];
 
-  NSButton* learnMoreLink =
-      [self linkButtonWithTitle:linkMessage
-                    frameOrigin:NSZeroPoint
-                         action:linkAction];
-  [[learnMoreLink cell] setTextColor:[NSColor whiteColor]];
-  CGFloat linkYOffset = yOffset + (NSHeight([tutorialOkButton frame]) -
-                                   NSHeight([learnMoreLink frame])) / 2;
-  [learnMoreLink setFrameOrigin:NSMakePoint(kHorizontalSpacing, linkYOffset)];
-  [container addSubview:learnMoreLink];
-
-  yOffset = std::max(NSMaxY([learnMoreLink frame]),
-                     NSMaxY([tutorialOkButton frame])) + kVerticalSpacing;
-
+  if (linkMessage) {
+    NSButton* learnMoreLink =
+        [self linkButtonWithTitle:linkMessage
+                      frameOrigin:NSZeroPoint
+                           action:linkAction];
+    [[learnMoreLink cell] setTextColor:[NSColor whiteColor]];
+    CGFloat linkYOffset = yOffset + (NSHeight([tutorialOkButton frame]) -
+                                     NSHeight([learnMoreLink frame])) / 2;
+    [learnMoreLink setFrameOrigin:NSMakePoint(kHorizontalSpacing, linkYOffset)];
+    [container addSubview:learnMoreLink];
+    yOffset = std::max(NSMaxY([learnMoreLink frame]),
+                       NSMaxY([tutorialOkButton frame])) + kVerticalSpacing;
+  } else {
+    yOffset = NSMaxY([tutorialOkButton frame]) + kVerticalSpacing;
+  }
   // Adds body content.
   NSTextField* contentLabel = BuildLabel(
       contentMessage,
@@ -1770,7 +1764,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   return container.autorelease();
 }
 
-
 - (NSView*)buildSwitchUserView {
   base::scoped_nsobject<NSView> container(
       [[NSView alloc] initWithFrame:NSZeroRect]);
@@ -1806,7 +1799,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                            text:l10n_util::GetNSString(
                                     IDS_PROFILES_ADD_PERSON_BUTTON)
                 imageResourceId:IDR_ICON_PROFILES_MENU_AVATAR
-                         action:@selector(addPerson:)];
+                         action:@selector(showUserManager:)];
   [container addSubview:addPersonButton];
   yOffset = NSMaxY([addPersonButton frame]);
 

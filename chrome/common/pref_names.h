@@ -363,7 +363,6 @@ extern const char kProfileGAIAInfoUpdateTime[];
 extern const char kProfileGAIAInfoPictureURL[];
 
 extern const char kProfileAvatarTutorialShown[];
-extern const char kProfileUserManagerTutorialShown[];
 
 extern const char kInvertNotificationShown[];
 
