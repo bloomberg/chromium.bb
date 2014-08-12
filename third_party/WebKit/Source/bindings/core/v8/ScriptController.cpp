@@ -421,6 +421,9 @@ void ScriptController::clearWindowShell()
     double start = currentTime();
     // V8 binding expects ScriptController::clearWindowShell only be called
     // when a frame is loading a new page. This creates a new context for the new page.
+
+    // The V8 context must be available for |clearScriptObjects()|.
+    // The below call must be before |clearForNavigation()| which disposes the V8 context.
     clearScriptObjects();
     m_windowShell->clearForNavigation();
     for (IsolatedWorldMap::iterator iter = m_isolatedWorlds.begin(); iter != m_isolatedWorlds.end(); ++iter)
