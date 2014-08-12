@@ -2,7 +2,7 @@
   'TOOLS': ['pnacl'],
   'TARGETS': [
     {
-      'NAME' : 'life',
+      'NAME' : 'life_simd',
       'TYPE' : 'main',
       'SOURCES' : [
         'life.cc',
@@ -16,6 +16,6 @@
   ],
   'DEST': 'examples/demo',
   'NAME': 'life_simd',
-  'TITLE': "Conway's Life",
+  'TITLE': "Conway's Life (SIMD version)",
   'GROUP': 'Demo'
 }
