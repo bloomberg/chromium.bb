@@ -24730,6 +24730,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Profile.UpgradeEnrollment" enum="ProfileUpgradeEnrollment">
+  <obsolete>
+    Deprecated 8/2014. Upgrade Promotional UI removed.
+  </obsolete>
   <owner>mlerman@chromium.org</owner>
   <summary>
     The process which leads a user to enroll in New Profile Management. Also

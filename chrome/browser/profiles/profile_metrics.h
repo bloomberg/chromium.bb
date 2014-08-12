@@ -92,24 +92,6 @@ class ProfileMetrics {
     NUM_PROFILE_AUTH_METRICS
   };
 
-  // Enum for tracking if new profile management is enabled and Promo views.
-  // This is used in a histogram; the items should not be removed or re-ordered.
-  enum ProfileUpgradeEnrollment {
-    // User viewed the Upgrade promo card in the user menu.
-    PROFILE_ENROLLMENT_SHOW_PREVIEW_PROMO,
-    // User selected to view the intro tutorial.
-    PROFILE_ENROLLMENT_LAUNCH_LEARN_MORE,
-    // User opted into New Profile Management via Promo card.
-    PROFILE_ENROLLMENT_ACCEPT_NEW_PROFILE_MGMT,
-    // User closed the Upgrade card.
-    PROFILE_ENROLLMENT_CLOSE_WELCOME_CARD,
-    // User disabled New Profile Management.
-    PROFILE_ENROLLMENT_DISABLE_NEW_PROFILE_MGMT,
-    // User elected to send feedback.
-    PROFILE_ENROLLMENT_SEND_FEEDBACK,
-    NUM_PROFILE_ENROLLMENT_METRICS,
-  };
-
   // Enum for tracking user interactions with the user menu and user manager.
   // Interactions initiated from the content area are logged into a different
   // histogram from those that were initiated from the avatar button.
@@ -170,7 +152,6 @@ class ProfileMetrics {
   static void LogProfileSwitchUser(ProfileOpen metric);
   static void LogProfileSyncInfo(ProfileSync metric);
   static void LogProfileAuthResult(ProfileAuth metric);
-  static void LogProfileUpgradeEnrollment(ProfileUpgradeEnrollment metric);
   static void LogProfileDesktopMenu(ProfileDesktopMenu metric,
                                     signin::GAIAServiceType gaia_service);
   static void LogProfileDelete(bool profile_was_signed_in);
