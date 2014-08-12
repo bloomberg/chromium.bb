@@ -186,6 +186,11 @@ digit pairs are in order transparency, red, green, and blue. Examples:
 .fi
 .RE
 .TP 7
+.BI "panel-location=" top
+sets the location of the panel (string). Can be
+.B top,
+.B none.
+.TP 7
 .BI "locking=" true
 enables screen locking (boolean).
 .TP 7

@@ -1130,7 +1130,8 @@ static void
 output_destroy(struct output *output)
 {
 	background_destroy(output->background);
-	panel_destroy(output->panel);
+	if (output->panel)
+		panel_destroy(output->panel);
 	wl_output_destroy(output->output);
 	wl_list_remove(&output->link);
 
@@ -1160,7 +1161,8 @@ output_handle_geometry(void *data,
 {
 	struct output *output = data;
 
-	window_set_buffer_transform(output->panel->window, transform);
+	if (output->panel)
+		window_set_buffer_transform(output->panel->window, transform);
 	window_set_buffer_transform(output->background->window, transform);
 }
 
@@ -1187,7 +1189,8 @@ output_handle_scale(void *data,
 {
 	struct output *output = data;
 
-	window_set_buffer_scale(output->panel->window, scale);
+	if (output->panel)
+		window_set_buffer_scale(output->panel->window, scale);
 	window_set_buffer_scale(output->background->window, scale);
 }
 
@@ -1198,15 +1201,36 @@ static const struct wl_output_listener output_listener = {
 	output_handle_scale
 };
 
+static int
+want_panel(struct desktop *desktop)
+{
+	struct weston_config_section *s;
+	char *location = NULL;
+	int ret = 1;
+
+	s = weston_config_get_section(desktop->config, "shell", NULL, NULL);
+	weston_config_section_get_string(s, "panel-location",
+					 &location, "top");
+
+	if (strcmp(location, "top") != 0)
+		ret = 0;
+
+	free(location);
+
+	return ret;
+}
+
 static void
 output_init(struct output *output, struct desktop *desktop)
 {
 	struct wl_surface *surface;
 
-	output->panel = panel_create(desktop);
-	surface = window_get_wl_surface(output->panel->window);
-	desktop_shell_set_panel(desktop->shell,
-				output->output, surface);
+	if (want_panel(desktop)) {
+		output->panel = panel_create(desktop);
+		surface = window_get_wl_surface(output->panel->window);
+		desktop_shell_set_panel(desktop->shell,
+					output->output, surface);
+	}
 
 	output->background = background_create(desktop);
 	surface = window_get_wl_surface(output->background->window);
