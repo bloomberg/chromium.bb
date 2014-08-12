@@ -777,11 +777,9 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
           cache.GetSupervisedUserIdOfProfileAtIndex(profile_cache_index);
     } else if (profile->GetPath() ==
                profiles::GetDefaultProfileDir(cache.GetUserDataDir())) {
-      // The --new-avatar-menu flag no longer uses the "First User" name,
-      // and should assign the default avatar icon to all new profiles.
+      // The --new-avatar-menu flag no longer uses the "First User" name.
       bool is_new_avatar_menu = switches::IsNewAvatarMenu();
-      avatar_index = is_new_avatar_menu ?
-          profiles::GetPlaceholderAvatarIndex() : 0;
+      avatar_index = profiles::GetPlaceholderAvatarIndex();
       profile_name = is_new_avatar_menu ?
           base::UTF16ToUTF8(cache.ChooseNameForNewProfile(avatar_index)) :
           l10n_util::GetStringUTF8(IDS_DEFAULT_PROFILE_NAME);
