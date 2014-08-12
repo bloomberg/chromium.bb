@@ -29,7 +29,7 @@
 
 
 #include "config.h"
-#include "core/page/DOMSelection.h"
+#include "core/editing/DOMSelection.h"
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
