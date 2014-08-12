@@ -798,6 +798,11 @@ void Tab::Layout() {
           kViewSpacing - title_left;
     }
     gfx::Rect rect(title_left, lb.y(), std::max(title_width, 0), lb.height());
+    const int title_height = title_->GetPreferredSize().height();
+    if (title_height > rect.height()) {
+      rect.set_y(lb.y() - (title_height - rect.height()) / 2);
+      rect.set_height(title_height);
+    }
     rect.set_x(GetMirroredXForRect(rect));
     title_->SetBoundsRect(rect);
   }
