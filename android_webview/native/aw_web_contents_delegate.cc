@@ -230,16 +230,19 @@ bool AwWebContentsDelegate::IsFullscreenForTabOrPending(
 static void FilesSelectedInChooser(
     JNIEnv* env, jclass clazz,
     jint process_id, jint render_id, jint mode_flags,
-    jobjectArray file_paths) {
+    jobjectArray file_paths, jobjectArray display_names) {
   content::RenderViewHost* rvh = content::RenderViewHost::FromID(process_id,
                                                                  render_id);
   if (!rvh)
     return;
 
   std::vector<std::string> file_path_str;
+  std::vector<std::string> display_name_str;
   // Note file_paths maybe NULL, but this will just yield a zero-length vector.
   base::android::AppendJavaStringArrayToStringVector(env, file_paths,
                                                      &file_path_str);
+  base::android::AppendJavaStringArrayToStringVector(env, display_names,
+                                                     &display_name_str);
   std::vector<ui::SelectedFileInfo> files;
   files.reserve(file_path_str.size());
   for (size_t i = 0; i < file_path_str.size(); ++i) {
@@ -247,7 +250,10 @@ static void FilesSelectedInChooser(
     if (!url.is_valid())
       continue;
     base::FilePath path(url.SchemeIsFile() ? url.path() : file_path_str[i]);
-    files.push_back(ui::SelectedFileInfo(path, base::FilePath()));
+    ui::SelectedFileInfo file_info(path, base::FilePath());
+    if (!display_name_str[i].empty())
+      file_info.display_name = display_name_str[i];
+    files.push_back(file_info);
   }
   FileChooserParams::Mode mode;
   if (mode_flags & kFileChooserModeOpenFolder) {

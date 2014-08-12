@@ -573,7 +573,8 @@ public class AwContents {
         mDIPScale = DeviceDisplayInfo.create(mContext).getDIPScale();
         mLayoutSizer.setDelegate(new AwLayoutSizerDelegate());
         mLayoutSizer.setDIPScale(mDIPScale);
-        mWebContentsDelegate = new AwWebContentsDelegateAdapter(contentsClient, mContainerView);
+        mWebContentsDelegate = new AwWebContentsDelegateAdapter(
+                contentsClient, mContainerView, mContext);
         mContentsClientBridge = new AwContentsClientBridge(contentsClient,
                 mBrowserContext.getKeyStore(), AwContentsStatics.getClientCertLookupTable());
         mZoomControls = new AwZoomControls(this);
