@@ -1002,7 +1002,7 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
         extensions::ExtensionSystem::Get(profile)->extension_service());
   }
 #endif
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_MANAGED_USERS) && !defined(OS_ANDROID)
   // Initialization needs to happen after extension system initialization (for
   // extension::ManagementPolicy) and InitProfileUserPrefs (for setting the
   // initializing the supervised flag if necessary).
