@@ -853,6 +853,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPageWithNoJavaScript) {
 
 #if defined(OS_MACOSX)
 #define MAYBE_InspectSharedWorker DISABLED_InspectSharedWorker
+#elif defined(OS_WIN)
+// Disabled on Windows due to flakiness. http://crbug.com/403007
+#define MAYBE_InspectSharedWorker DISABLED_InspectSharedWorker
 #else
 #define MAYBE_InspectSharedWorker InspectSharedWorker
 #endif
