@@ -634,6 +634,9 @@ def MainTestWrapper(options):
     # KillHostHeartbeat() has logic to check if heartbeat process is running,
     # and kills only if it finds the process is running on the host.
     provision_devices.KillHostHeartbeat()
+    if options.cleanup:
+      shutil.rmtree(os.path.join(CHROME_OUT_DIR, options.target),
+          ignore_errors=True)
 
 
 def GetDeviceStepsOptParser():
@@ -679,6 +682,8 @@ def GetDeviceStepsOptParser():
       help='Do not run stack tool.')
   parser.add_option('--asan-symbolize',  action='store_true',
       help='Run stack tool for ASAN')
+  parser.add_option('--cleanup', action='store_true',
+      help='Delete out/<target> directory at the end of the run.')
   return parser
 
 
