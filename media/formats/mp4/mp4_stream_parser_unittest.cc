@@ -32,7 +32,8 @@ class MP4StreamParserTest : public testing::Test {
  public:
   MP4StreamParserTest()
       : configs_received_(false),
-        lower_bound_(base::TimeDelta::Max()) {
+        lower_bound_(
+            DecodeTimestamp::FromPresentationTime(base::TimeDelta::Max())) {
     std::set<int> audio_object_types;
     audio_object_types.insert(kISO_14496_3);
     parser_.reset(new MP4StreamParser(audio_object_types, false));
@@ -41,7 +42,7 @@ class MP4StreamParserTest : public testing::Test {
  protected:
   scoped_ptr<MP4StreamParser> parser_;
   bool configs_received_;
-  base::TimeDelta lower_bound_;
+  DecodeTimestamp lower_bound_;
 
   bool AppendData(const uint8* data, size_t length) {
     return parser_->Parse(data, length);
@@ -99,17 +100,17 @@ class MP4StreamParserTest : public testing::Test {
 
     // Find the second highest timestamp so that we know what the
     // timestamps on the next set of buffers must be >= than.
-    base::TimeDelta audio = !audio_buffers.empty() ?
-        audio_buffers.back()->GetDecodeTimestamp() : kNoTimestamp();
-    base::TimeDelta video = !video_buffers.empty() ?
-        video_buffers.back()->GetDecodeTimestamp() : kNoTimestamp();
-    base::TimeDelta second_highest_timestamp =
-        (audio == kNoTimestamp() ||
-         (video != kNoTimestamp() && audio > video)) ? video : audio;
+    DecodeTimestamp audio = !audio_buffers.empty() ?
+        audio_buffers.back()->GetDecodeTimestamp() : kNoDecodeTimestamp();
+    DecodeTimestamp video = !video_buffers.empty() ?
+        video_buffers.back()->GetDecodeTimestamp() : kNoDecodeTimestamp();
+    DecodeTimestamp second_highest_timestamp =
+        (audio == kNoDecodeTimestamp() ||
+         (video != kNoDecodeTimestamp() && audio > video)) ? video : audio;
 
-    DCHECK(second_highest_timestamp != kNoTimestamp());
+    DCHECK(second_highest_timestamp != kNoDecodeTimestamp());
 
-    if (lower_bound_ != kNoTimestamp() &&
+    if (lower_bound_ != kNoDecodeTimestamp() &&
         second_highest_timestamp < lower_bound_) {
       return false;
     }
@@ -127,12 +128,13 @@ class MP4StreamParserTest : public testing::Test {
 
   void NewSegmentF() {
     DVLOG(1) << "NewSegmentF";
-    lower_bound_ = kNoTimestamp();
+    lower_bound_ = kNoDecodeTimestamp();
   }
 
   void EndOfSegmentF() {
     DVLOG(1) << "EndOfSegmentF()";
-    lower_bound_ = base::TimeDelta::Max();
+    lower_bound_ =
+        DecodeTimestamp::FromPresentationTime(base::TimeDelta::Max());
   }
 
   void InitializeParser() {

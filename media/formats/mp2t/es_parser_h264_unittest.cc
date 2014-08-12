@@ -206,7 +206,7 @@ void EsParserH264Test::ProcessPesPackets(
     size_t cur_pes_size = pes_packets[k].size;
 
     base::TimeDelta pts = kNoTimestamp();
-    base::TimeDelta dts = kNoTimestamp();
+    DecodeTimestamp dts = kNoDecodeTimestamp();
     if (pes_packets[k].pts >= base::TimeDelta() || force_timing)
       pts = pes_packets[k].pts;
 
@@ -297,4 +297,3 @@ TEST_F(EsParserH264Test, SeveralPesPerAccessUnit) {
 
 }  // namespace mp2t
 }  // namespace media
-

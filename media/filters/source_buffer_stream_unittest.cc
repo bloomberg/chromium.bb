@@ -157,11 +157,11 @@ class SourceBufferStreamTest : public testing::Test {
 
   int GetRemovalRangeInMs(int start, int end, int bytes_to_free,
                           int* removal_end) {
-    base::TimeDelta removal_end_timestamp =
-        base::TimeDelta::FromMilliseconds(*removal_end);
+    DecodeTimestamp removal_end_timestamp =
+        DecodeTimestamp::FromMilliseconds(*removal_end);
     int bytes_removed = stream_->GetRemovalRange(
-        base::TimeDelta::FromMilliseconds(start),
-        base::TimeDelta::FromMilliseconds(end), bytes_to_free,
+        DecodeTimestamp::FromMilliseconds(start),
+        DecodeTimestamp::FromMilliseconds(end), bytes_to_free,
         &removal_end_timestamp);
     *removal_end = removal_end_timestamp.InMilliseconds();
     return bytes_removed;
@@ -288,8 +288,10 @@ class SourceBufferStreamTest : public testing::Test {
 
       ss << buffer->timestamp().InMilliseconds();
 
-      if (buffer->GetDecodeTimestamp() != buffer->timestamp())
+      if (buffer->GetDecodeTimestamp() !=
+          DecodeTimestamp::FromPresentationTime(buffer->timestamp())) {
         ss << "|" << buffer->GetDecodeTimestamp().InMilliseconds();
+      }
 
       // Handle preroll buffers.
       if (EndsWith(timestamps[i], "P", true)) {
@@ -375,7 +377,8 @@ class SourceBufferStreamTest : public testing::Test {
                      const uint8* data,
                      int size) {
     if (begin_media_segment)
-      stream_->OnNewMediaSegment(starting_position * frame_duration_);
+      stream_->OnNewMediaSegment(DecodeTimestamp::FromPresentationTime(
+          starting_position * frame_duration_));
 
     int keyframe_interval = frames_per_second_ / keyframes_per_second_;
 
@@ -391,7 +394,8 @@ class SourceBufferStreamTest : public testing::Test {
 
       if (i == 0)
         timestamp += first_buffer_offset;
-      buffer->SetDecodeTimestamp(timestamp);
+      buffer->SetDecodeTimestamp(
+          DecodeTimestamp::FromPresentationTime(timestamp));
 
       // Simulate an IBB...BBP pattern in which all B-frames reference both
       // the I- and P-frames. For a GOP with playback order 12345, this would
@@ -415,12 +419,12 @@ class SourceBufferStreamTest : public testing::Test {
       EXPECT_EQ(expect_success, stream_->Append(queue));
   }
 
-  void UpdateLastBufferDuration(base::TimeDelta current_dts,
+  void UpdateLastBufferDuration(DecodeTimestamp current_dts,
                                 BufferQueue* buffers) {
     if (buffers->empty() || buffers->back()->duration() > base::TimeDelta())
       return;
 
-    base::TimeDelta last_dts = buffers->back()->GetDecodeTimestamp();
+    DecodeTimestamp last_dts = buffers->back()->GetDecodeTimestamp();
     DCHECK(current_dts >= last_dts);
     buffers->back()->set_duration(current_dts - last_dts);
   }
@@ -533,7 +537,7 @@ class SourceBufferStreamTest : public testing::Test {
 
       if (dts_in_ms != pts_in_ms) {
         buffer->SetDecodeTimestamp(
-            base::TimeDelta::FromMilliseconds(dts_in_ms));
+            DecodeTimestamp::FromMilliseconds(dts_in_ms));
       }
 
       if (duration_in_ms)
@@ -603,11 +607,12 @@ class SourceBufferStreamTest : public testing::Test {
     if (start_new_segment) {
       base::TimeDelta start_timestamp = segment_start_timestamp;
       if (start_timestamp == kNoTimestamp())
-        start_timestamp = buffers[0]->GetDecodeTimestamp();
+        start_timestamp = buffers[0]->timestamp();
 
-      ASSERT_TRUE(start_timestamp <= buffers[0]->GetDecodeTimestamp());
+      ASSERT_TRUE(start_timestamp <= buffers[0]->timestamp());
 
-      stream_->OnNewMediaSegment(start_timestamp);
+      stream_->OnNewMediaSegment(
+          DecodeTimestamp::FromPresentationTime(start_timestamp));
     }
 
     if (!one_by_one) {
@@ -1921,7 +1926,8 @@ TEST_F(SourceBufferStreamTest, Seek_StartOfSegment) {
 
   // GetNextBuffer() should return the next buffer at position (5 + |bump|).
   EXPECT_EQ(stream_->GetNextBuffer(&buffer), SourceBufferStream::kSuccess);
-  EXPECT_EQ(buffer->GetDecodeTimestamp(), 5 * frame_duration() + bump);
+  EXPECT_EQ(buffer->GetDecodeTimestamp(),
+            DecodeTimestamp::FromPresentationTime(5 * frame_duration() + bump));
 
   // Check rest of buffers.
   CheckExpectedBuffers(6, 9);
@@ -1935,7 +1941,8 @@ TEST_F(SourceBufferStreamTest, Seek_StartOfSegment) {
 
   // GetNextBuffer() should return the next buffer at position (15 + |bump|).
   EXPECT_EQ(stream_->GetNextBuffer(&buffer), SourceBufferStream::kSuccess);
-  EXPECT_EQ(buffer->GetDecodeTimestamp(), 15 * frame_duration() + bump);
+  EXPECT_EQ(buffer->GetDecodeTimestamp(), DecodeTimestamp::FromPresentationTime(
+      15 * frame_duration() + bump));
 
   // Check rest of buffers.
   CheckExpectedBuffers(16, 19);
@@ -2295,7 +2302,8 @@ TEST_F(SourceBufferStreamTest, PresentationTimestampIndependence) {
     ASSERT_EQ(stream_->GetNextBuffer(&buffer), SourceBufferStream::kSuccess);
 
     if (buffer->IsKeyframe()) {
-      EXPECT_EQ(buffer->timestamp(), buffer->GetDecodeTimestamp());
+      EXPECT_EQ(DecodeTimestamp::FromPresentationTime(buffer->timestamp()),
+                buffer->GetDecodeTimestamp());
       last_keyframe_idx = i;
       last_keyframe_presentation_timestamp = buffer->timestamp();
     } else if (i == last_keyframe_idx + 1) {
@@ -2306,7 +2314,8 @@ TEST_F(SourceBufferStreamTest, PresentationTimestampIndependence) {
     } else {
       EXPECT_GT(buffer->timestamp(), last_keyframe_presentation_timestamp);
       EXPECT_LT(buffer->timestamp(), last_p_frame_presentation_timestamp);
-      EXPECT_LT(buffer->timestamp(), buffer->GetDecodeTimestamp());
+      EXPECT_LT(DecodeTimestamp::FromPresentationTime(buffer->timestamp()),
+                buffer->GetDecodeTimestamp());
     }
   }
 }

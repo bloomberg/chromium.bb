@@ -127,7 +127,7 @@ EsParserAdts::~EsParserAdts() {
 
 bool EsParserAdts::Parse(const uint8* buf, int size,
                          base::TimeDelta pts,
-                         base::TimeDelta dts) {
+                         DecodeTimestamp dts) {
   // The incoming PTS applies to the access unit that comes just after
   // the beginning of |buf|.
   if (pts != kNoTimestamp())
@@ -166,7 +166,6 @@ bool EsParserAdts::Parse(const uint8* buf, int size,
             adts_frame.size,
             is_key_frame,
             DemuxerStream::AUDIO, 0);
-    stream_parser_buffer->SetDecodeTimestamp(current_pts);
     stream_parser_buffer->set_timestamp(current_pts);
     stream_parser_buffer->set_duration(frame_duration);
     emit_buffer_cb_.Run(stream_parser_buffer);
@@ -266,4 +265,3 @@ bool EsParserAdts::UpdateAudioConfiguration(const uint8* adts_header) {
 
 }  // namespace mp2t
 }  // namespace media
-

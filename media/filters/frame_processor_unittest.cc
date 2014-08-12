@@ -124,7 +124,6 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
       base::TimeDelta timestamp = base::TimeDelta::FromSecondsD(
           time_in_ms / base::Time::kMillisecondsPerSecond);
       buffer->set_timestamp(timestamp);
-      buffer->SetDecodeTimestamp(timestamp);
       buffer->set_duration(frame_duration_);
       buffers.push_back(buffer);
     }

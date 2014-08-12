@@ -44,7 +44,7 @@ WebMClusterParser::WebMClusterParser(
       cluster_ended_(false),
       audio_(audio_track_num, false, audio_default_duration, log_cb),
       video_(video_track_num, true, video_default_duration, log_cb),
-      ready_buffer_upper_bound_(kNoTimestamp()),
+      ready_buffer_upper_bound_(kNoDecodeTimestamp()),
       log_cb_(log_cb) {
   for (WebMTracksParser::TextTracks::const_iterator it = text_tracks.begin();
        it != text_tracks.end();
@@ -65,14 +65,14 @@ void WebMClusterParser::Reset() {
   audio_.Reset();
   video_.Reset();
   ResetTextTracks();
-  ready_buffer_upper_bound_ = kNoTimestamp();
+  ready_buffer_upper_bound_ = kNoDecodeTimestamp();
 }
 
 int WebMClusterParser::Parse(const uint8* buf, int size) {
   audio_.ClearReadyBuffers();
   video_.ClearReadyBuffers();
   ClearTextTrackReadyBuffers();
-  ready_buffer_upper_bound_ = kNoTimestamp();
+  ready_buffer_upper_bound_ = kNoDecodeTimestamp();
 
   int result = parser_.Parse(buf, size);
 
@@ -108,14 +108,14 @@ int WebMClusterParser::Parse(const uint8* buf, int size) {
 }
 
 const WebMClusterParser::BufferQueue& WebMClusterParser::GetAudioBuffers() {
-  if (ready_buffer_upper_bound_ == kNoTimestamp())
+  if (ready_buffer_upper_bound_ == kNoDecodeTimestamp())
     UpdateReadyBuffers();
 
   return audio_.ready_buffers();
 }
 
 const WebMClusterParser::BufferQueue& WebMClusterParser::GetVideoBuffers() {
-  if (ready_buffer_upper_bound_ == kNoTimestamp())
+  if (ready_buffer_upper_bound_ == kNoDecodeTimestamp())
     UpdateReadyBuffers();
 
   return video_.ready_buffers();
@@ -123,7 +123,7 @@ const WebMClusterParser::BufferQueue& WebMClusterParser::GetVideoBuffers() {
 
 const WebMClusterParser::TextBufferQueueMap&
 WebMClusterParser::GetTextBuffers() {
-  if (ready_buffer_upper_bound_ == kNoTimestamp())
+  if (ready_buffer_upper_bound_ == kNoDecodeTimestamp())
     UpdateReadyBuffers();
 
   // Translate our |text_track_map_| into |text_buffers_map_|, inserting rows in
@@ -439,19 +439,19 @@ WebMClusterParser::Track::Track(int track_num,
 
 WebMClusterParser::Track::~Track() {}
 
-base::TimeDelta WebMClusterParser::Track::GetReadyUpperBound() {
+DecodeTimestamp WebMClusterParser::Track::GetReadyUpperBound() {
   DCHECK(ready_buffers_.empty());
   if (last_added_buffer_missing_duration_)
     return last_added_buffer_missing_duration_->GetDecodeTimestamp();
 
-  return kInfiniteDuration();
+  return DecodeTimestamp::FromPresentationTime(base::TimeDelta::Max());
 }
 
 void WebMClusterParser::Track::ExtractReadyBuffers(
-    const base::TimeDelta before_timestamp) {
+    const DecodeTimestamp before_timestamp) {
   DCHECK(ready_buffers_.empty());
-  DCHECK(base::TimeDelta() <= before_timestamp);
-  DCHECK(kNoTimestamp() != before_timestamp);
+  DCHECK(DecodeTimestamp() <= before_timestamp);
+  DCHECK(kNoDecodeTimestamp() != before_timestamp);
 
   if (buffers_.empty())
     return;
@@ -579,8 +579,8 @@ bool WebMClusterParser::Track::QueueBuffer(
   // WebMClusterParser::OnBlock() gives MEDIA_LOG and parse error on decreasing
   // block timecode detection within a cluster. Therefore, we should not see
   // those here.
-  base::TimeDelta previous_buffers_timestamp = buffers_.empty() ?
-      base::TimeDelta() : buffers_.back()->GetDecodeTimestamp();
+  DecodeTimestamp previous_buffers_timestamp = buffers_.empty() ?
+      DecodeTimestamp() : buffers_.back()->GetDecodeTimestamp();
   CHECK(previous_buffers_timestamp <= buffer->GetDecodeTimestamp());
 
   base::TimeDelta duration = buffer->duration();
@@ -644,7 +644,7 @@ void WebMClusterParser::ResetTextTracks() {
 }
 
 void WebMClusterParser::UpdateReadyBuffers() {
-  DCHECK(ready_buffer_upper_bound_ == kNoTimestamp());
+  DCHECK(ready_buffer_upper_bound_ == kNoDecodeTimestamp());
   DCHECK(text_buffers_map_.empty());
 
   if (cluster_ended_) {
@@ -653,14 +653,15 @@ void WebMClusterParser::UpdateReadyBuffers() {
     // Per OnBlock(), all text buffers should already have valid durations, so
     // there is no need to call ApplyDurationEstimateIfNeeded() on text tracks
     // here.
-    ready_buffer_upper_bound_ = kInfiniteDuration();
+    ready_buffer_upper_bound_ =
+        DecodeTimestamp::FromPresentationTime(base::TimeDelta::Max());
     DCHECK(ready_buffer_upper_bound_ == audio_.GetReadyUpperBound());
     DCHECK(ready_buffer_upper_bound_ == video_.GetReadyUpperBound());
   } else {
     ready_buffer_upper_bound_ = std::min(audio_.GetReadyUpperBound(),
                                          video_.GetReadyUpperBound());
-    DCHECK(base::TimeDelta() <= ready_buffer_upper_bound_);
-    DCHECK(kNoTimestamp() != ready_buffer_upper_bound_);
+    DCHECK(DecodeTimestamp() <= ready_buffer_upper_bound_);
+    DCHECK(kNoDecodeTimestamp() != ready_buffer_upper_bound_);
   }
 
   // Prepare each track's ready buffers for retrieval.

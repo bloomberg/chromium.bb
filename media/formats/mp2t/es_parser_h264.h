@@ -43,13 +43,13 @@ class MEDIA_EXPORT EsParserH264 : NON_EXPORTED_BASE(public EsParser) {
   // EsParser implementation.
   virtual bool Parse(const uint8* buf, int size,
                      base::TimeDelta pts,
-                     base::TimeDelta dts) OVERRIDE;
+                     DecodeTimestamp dts) OVERRIDE;
   virtual void Flush() OVERRIDE;
   virtual void Reset() OVERRIDE;
 
  private:
   struct TimingDesc {
-    base::TimeDelta dts;
+    DecodeTimestamp dts;
     base::TimeDelta pts;
   };
 
@@ -96,4 +96,3 @@ class MEDIA_EXPORT EsParserH264 : NON_EXPORTED_BASE(public EsParser) {
 }  // namespace media
 
 #endif
-

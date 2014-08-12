@@ -66,7 +66,9 @@ class MEDIA_EXPORT SourceBufferStream {
 
   // Signals that the next buffers appended are part of a new media segment
   // starting at |media_segment_start_time|.
-  void OnNewMediaSegment(base::TimeDelta media_segment_start_time);
+  // TODO(acolwell/wolenetz): This should be changed to a presentation
+  // timestamp. See http://crbug.com/402502
+  void OnNewMediaSegment(DecodeTimestamp media_segment_start_time);
 
   // Add the |buffers| to the SourceBufferStream. Buffers within the queue are
   // expected to be in order, but multiple calls to Append() may add buffers out
@@ -167,9 +169,9 @@ class MEDIA_EXPORT SourceBufferStream {
   // Returns the size of buffers to secure if future
   // Remove(|start_timestamp|, |removal_end_timestamp|, duration) is called.
   // Will not update |removal_end_timestamp| if the returned size is 0.
-  int GetRemovalRange(base::TimeDelta start_timestamp,
-      base::TimeDelta end_timestamp, int byte_to_free,
-      base::TimeDelta* removal_end_timestamp);
+  int GetRemovalRange(DecodeTimestamp start_timestamp,
+      DecodeTimestamp end_timestamp, int byte_to_free,
+      DecodeTimestamp* removal_end_timestamp);
 
   // Prepares |range_for_next_append_| so |new_buffers| can be appended.
   // This involves removing buffers between the end of the previous append
@@ -181,7 +183,7 @@ class MEDIA_EXPORT SourceBufferStream {
                                   BufferQueue* deleted_buffers);
 
   // Removes buffers, from the |track_buffer_|, that come after |timestamp|.
-  void PruneTrackBuffer(const base::TimeDelta timestamp);
+  void PruneTrackBuffer(const DecodeTimestamp timestamp);
 
   // Checks to see if |range_with_new_buffers_itr| can be merged with the range
   // next to it, and merges them if so.
@@ -191,21 +193,17 @@ class MEDIA_EXPORT SourceBufferStream {
   // Returns true if |second_timestamp| is the timestamp of the next buffer in
   // sequence after |first_timestamp|, false otherwise.
   bool AreAdjacentInSequence(
-      base::TimeDelta first_timestamp, base::TimeDelta second_timestamp) const;
+      DecodeTimestamp first_timestamp, DecodeTimestamp second_timestamp) const;
 
   // Helper method that returns the timestamp for the next buffer that
   // |selected_range_| will return from GetNextBuffer() call, or kNoTimestamp()
   // if in between seeking (i.e. |selected_range_| is null).
-  base::TimeDelta GetNextBufferTimestamp();
-
-  // Returns the timestamp of the last buffer in the |selected_range_| or
-  // kNoTimestamp() if |selected_range_| is null.
-  base::TimeDelta GetEndBufferTimestamp();
+  DecodeTimestamp GetNextBufferTimestamp();
 
   // Finds the range that should contain a media segment that begins with
   // |start_timestamp| and returns the iterator pointing to it. Returns
   // |ranges_.end()| if there's no such existing range.
-  RangeList::iterator FindExistingRangeFor(base::TimeDelta start_timestamp);
+  RangeList::iterator FindExistingRangeFor(DecodeTimestamp start_timestamp);
 
   // Inserts |new_range| into |ranges_| preserving sorted order. Returns an
   // iterator in |ranges_| that points to |new_range|.
@@ -222,7 +220,7 @@ class MEDIA_EXPORT SourceBufferStream {
   // Seeks |range| to |seek_timestamp| and then calls SetSelectedRange() with
   // |range|.
   void SeekAndSetSelectedRange(SourceBufferRange* range,
-                               base::TimeDelta seek_timestamp);
+                               DecodeTimestamp seek_timestamp);
 
   // Resets this stream back to an unseeked state.
   void ResetSeekState();
@@ -237,7 +235,7 @@ class MEDIA_EXPORT SourceBufferStream {
 
   // Returns true if |next_timestamp| and |next_is_keyframe| are valid for
   // the first buffer after the previous append.
-  bool IsNextTimestampValid(base::TimeDelta next_timestamp,
+  bool IsNextTimestampValid(DecodeTimestamp next_timestamp,
                             bool next_is_keyframe) const;
 
   // Returns true if |selected_range_| is the only range in |ranges_| that
@@ -260,19 +258,19 @@ class MEDIA_EXPORT SourceBufferStream {
   // |timestamp| if necessary and possible. This method only attempts to
   // set |selected_range_| if |seleted_range_| is null and |track_buffer_|
   // is empty.
-  void SetSelectedRangeIfNeeded(const base::TimeDelta timestamp);
+  void SetSelectedRangeIfNeeded(const DecodeTimestamp timestamp);
 
   // Find a keyframe timestamp that is >= |start_timestamp| and can be used to
   // find a new selected range.
   // Returns kNoTimestamp() if an appropriate keyframe timestamp could not be
   // found.
-  base::TimeDelta FindNewSelectedRangeSeekTimestamp(
-      const base::TimeDelta start_timestamp);
+  DecodeTimestamp FindNewSelectedRangeSeekTimestamp(
+      const DecodeTimestamp start_timestamp);
 
   // Searches |ranges_| for the first keyframe timestamp that is >= |timestamp|.
   // If |ranges_| doesn't contain a GOP that covers |timestamp| or doesn't
   // have a keyframe after |timestamp| then kNoTimestamp() is returned.
-  base::TimeDelta FindKeyframeAfterTimestamp(const base::TimeDelta timestamp);
+  DecodeTimestamp FindKeyframeAfterTimestamp(const DecodeTimestamp timestamp);
 
   // Returns "VIDEO" for a video SourceBufferStream, "AUDIO" for an audio
   // stream, and "TEXT" for a text stream.
@@ -297,7 +295,7 @@ class MEDIA_EXPORT SourceBufferStream {
   // if the removal range included the current playback position. These buffers
   // can be used as candidates for placing in the |track_buffer_|.
   void RemoveInternal(
-      base::TimeDelta start, base::TimeDelta end, bool is_exclusive,
+      DecodeTimestamp start, DecodeTimestamp end, bool is_exclusive,
       BufferQueue* deleted_buffers);
 
   Type GetType() const;
@@ -373,7 +371,7 @@ class MEDIA_EXPORT SourceBufferStream {
   BufferQueue track_buffer_;
 
   // The start time of the current media segment being appended.
-  base::TimeDelta media_segment_start_time_;
+  DecodeTimestamp media_segment_start_time_;
 
   // Points to the range containing the current media segment being appended.
   RangeList::iterator range_for_next_append_;
@@ -382,14 +380,14 @@ class MEDIA_EXPORT SourceBufferStream {
   bool new_media_segment_;
 
   // The timestamp of the last buffer appended to the media segment, set to
-  // kNoTimestamp() if the beginning of the segment.
-  base::TimeDelta last_appended_buffer_timestamp_;
+  // kNoDecodeTimestamp() if the beginning of the segment.
+  DecodeTimestamp last_appended_buffer_timestamp_;
   bool last_appended_buffer_is_keyframe_;
 
   // The decode timestamp on the last buffer returned by the most recent
   // GetNextBuffer() call. Set to kNoTimestamp() if GetNextBuffer() hasn't been
   // called yet or a seek has happened since the last GetNextBuffer() call.
-  base::TimeDelta last_output_buffer_timestamp_;
+  DecodeTimestamp last_output_buffer_timestamp_;
 
   // Stores the largest distance between two adjacent buffers in this stream.
   base::TimeDelta max_interbuffer_distance_;

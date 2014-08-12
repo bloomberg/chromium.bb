@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "media/base/media_export.h"
 #include "media/base/media_log.h"
+#include "media/base/stream_parser_buffer.h"
 #include "media/formats/mp4/box_definitions.h"
 #include "media/formats/mp4/cenc.h"
 
@@ -20,8 +21,9 @@ class DecryptConfig;
 
 namespace mp4 {
 
-using base::TimeDelta;
 base::TimeDelta MEDIA_EXPORT TimeDeltaFromRational(int64 numer, int64 denom);
+DecodeTimestamp MEDIA_EXPORT DecodeTimestampFromRational(int64 numer,
+                                                         int64 denom);
 
 struct SampleInfo;
 struct TrackRunInfo;
@@ -74,9 +76,9 @@ class MEDIA_EXPORT TrackRunIterator {
   // Properties of the current sample. Only valid if IsSampleValid().
   int64 sample_offset() const;
   int sample_size() const;
-  TimeDelta dts() const;
-  TimeDelta cts() const;
-  TimeDelta duration() const;
+  DecodeTimestamp dts() const;
+  base::TimeDelta cts() const;
+  base::TimeDelta duration() const;
   bool is_keyframe() const;
   bool is_random_access_point() const;
 

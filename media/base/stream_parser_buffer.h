@@ -14,6 +14,91 @@
 
 namespace media {
 
+// Simple wrapper around base::TimeDelta that represents a decode timestamp.
+// Making DecodeTimestamp a different type makes it easier to determine whether
+// code is operating on presentation or decode timestamps and makes conversions
+// between the two types explicit and easy to spot.
+class DecodeTimestamp {
+ public:
+  DecodeTimestamp() {}
+  DecodeTimestamp(const DecodeTimestamp& rhs) : ts_(rhs.ts_) { }
+  DecodeTimestamp& operator=(const DecodeTimestamp& rhs) {
+    if (&rhs != this)
+      ts_ = rhs.ts_;
+    return *this;
+  }
+
+  // Only operators that are actually used by the code have been defined.
+  // Reviewers should pay close attention to the addition of new operators.
+  bool operator<(const DecodeTimestamp& rhs) const { return ts_ < rhs.ts_; }
+  bool operator>(const DecodeTimestamp& rhs) const  { return ts_ > rhs.ts_; }
+  bool operator==(const DecodeTimestamp& rhs) const  { return ts_ == rhs.ts_; }
+  bool operator!=(const DecodeTimestamp& rhs) const  { return ts_ != rhs.ts_; }
+  bool operator>=(const DecodeTimestamp& rhs) const  { return ts_ >= rhs.ts_; }
+  bool operator<=(const DecodeTimestamp& rhs) const  { return ts_ <= rhs.ts_; }
+
+  base::TimeDelta operator-(const DecodeTimestamp& rhs) const {
+    return ts_ - rhs.ts_;
+  }
+
+  DecodeTimestamp& operator+=(const base::TimeDelta& rhs) {
+    ts_ += rhs;
+    return *this;
+  }
+
+  DecodeTimestamp& operator-=(const base::TimeDelta& rhs)  {
+    ts_ -= rhs;
+    return *this;
+  }
+
+  DecodeTimestamp operator+(const base::TimeDelta& rhs) const {
+    return DecodeTimestamp(ts_ + rhs);
+  }
+
+  DecodeTimestamp operator-(const base::TimeDelta& rhs) const {
+    return DecodeTimestamp(ts_ - rhs);
+  }
+
+  int64 operator/(const base::TimeDelta& rhs) const {
+    return ts_ / rhs;
+  }
+
+  static DecodeTimestamp FromSecondsD(double seconds) {
+    return DecodeTimestamp(base::TimeDelta::FromSecondsD(seconds));
+  }
+
+  static DecodeTimestamp FromMilliseconds(int64 milliseconds) {
+    return DecodeTimestamp(base::TimeDelta::FromMilliseconds(milliseconds));
+  }
+
+  static DecodeTimestamp FromMicroseconds(int64 microseconds) {
+    return DecodeTimestamp(base::TimeDelta::FromMicroseconds(microseconds));
+  }
+
+  // This method is used to explicitly call out when presentation timestamps
+  // are being converted to a decode timestamp.
+  static DecodeTimestamp FromPresentationTime(base::TimeDelta timestamp) {
+    return DecodeTimestamp(timestamp);
+  }
+
+  double InSecondsF() const { return ts_.InSecondsF(); }
+  int64 InMilliseconds() const { return ts_.InMilliseconds(); }
+  int64 InMicroseconds() const { return ts_.InMicroseconds(); }
+
+  // TODO(acolwell): Remove once all the hacks are gone. This method is called
+  // by hacks where a decode time is being used as a presentation time.
+  base::TimeDelta ToPresentationTime() const { return ts_; }
+
+ private:
+  explicit DecodeTimestamp(base::TimeDelta timestamp) : ts_(timestamp) { }
+
+  base::TimeDelta ts_;
+};
+
+MEDIA_EXPORT extern inline DecodeTimestamp kNoDecodeTimestamp() {
+  return DecodeTimestamp::FromPresentationTime(kNoTimestamp());
+}
+
 class MEDIA_EXPORT StreamParserBuffer : public DecoderBuffer {
  public:
   // Value used to signal an invalid decoder config ID.
@@ -35,8 +120,8 @@ class MEDIA_EXPORT StreamParserBuffer : public DecoderBuffer {
 
   // Decode timestamp. If not explicitly set, or set to kNoTimestamp(), the
   // value will be taken from the normal timestamp.
-  base::TimeDelta GetDecodeTimestamp() const;
-  void SetDecodeTimestamp(base::TimeDelta timestamp);
+  DecodeTimestamp GetDecodeTimestamp() const;
+  void SetDecodeTimestamp(DecodeTimestamp timestamp);
 
   // Gets/sets the ID of the decoder config associated with this buffer.
   int GetConfigId() const;
@@ -89,7 +174,7 @@ class MEDIA_EXPORT StreamParserBuffer : public DecoderBuffer {
   virtual ~StreamParserBuffer();
 
   bool is_keyframe_;
-  base::TimeDelta decode_timestamp_;
+  DecodeTimestamp decode_timestamp_;
   int config_id_;
   Type type_;
   TrackId track_id_;

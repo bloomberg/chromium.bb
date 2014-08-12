@@ -67,7 +67,7 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
 
   // Signal to the stream that buffers handed in through subsequent calls to
   // Append() belong to a media segment that starts at |start_timestamp|.
-  void OnNewMediaSegment(base::TimeDelta start_timestamp);
+  void OnNewMediaSegment(DecodeTimestamp start_timestamp);
 
   // Called when midstream config updates occur.
   // Returns true if the new config is accepted.

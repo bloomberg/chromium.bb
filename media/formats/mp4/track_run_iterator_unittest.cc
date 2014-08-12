@@ -291,7 +291,7 @@ TEST_F(TrackRunIteratorTest, BasicOperationTest) {
   EXPECT_EQ(iter_->track_id(), 1u);
   EXPECT_EQ(iter_->sample_offset(), 100);
   EXPECT_EQ(iter_->sample_size(), 1);
-  EXPECT_EQ(iter_->dts(), TimeDeltaFromRational(0, kAudioScale));
+  EXPECT_EQ(iter_->dts(), DecodeTimestampFromRational(0, kAudioScale));
   EXPECT_EQ(iter_->cts(), TimeDeltaFromRational(0, kAudioScale));
   EXPECT_EQ(iter_->duration(), TimeDeltaFromRational(1024, kAudioScale));
   EXPECT_TRUE(iter_->is_keyframe());
@@ -301,7 +301,7 @@ TEST_F(TrackRunIteratorTest, BasicOperationTest) {
   EXPECT_EQ(iter_->track_id(), 1u);
   EXPECT_EQ(iter_->sample_offset(), 100 + kSumAscending1);
   EXPECT_EQ(iter_->sample_size(), 10);
-  EXPECT_EQ(iter_->dts(), TimeDeltaFromRational(1024 * 9, kAudioScale));
+  EXPECT_EQ(iter_->dts(), DecodeTimestampFromRational(1024 * 9, kAudioScale));
   EXPECT_EQ(iter_->duration(), TimeDeltaFromRational(1024, kAudioScale));
   EXPECT_TRUE(iter_->is_keyframe());
 
@@ -317,14 +317,14 @@ TEST_F(TrackRunIteratorTest, BasicOperationTest) {
   EXPECT_EQ(iter_->sample_offset(), 200 + kSumAscending1);
   EXPECT_EQ(iter_->sample_size(), 10);
   int64 base_dts = kSumAscending1 + moof.tracks[1].decode_time.decode_time;
-  EXPECT_EQ(iter_->dts(), TimeDeltaFromRational(base_dts, kVideoScale));
+  EXPECT_EQ(iter_->dts(), DecodeTimestampFromRational(base_dts, kVideoScale));
   EXPECT_EQ(iter_->duration(), TimeDeltaFromRational(10, kVideoScale));
   EXPECT_FALSE(iter_->is_keyframe());
 
   // Test final run
   iter_->AdvanceRun();
   EXPECT_EQ(iter_->track_id(), 1u);
-  EXPECT_EQ(iter_->dts(), TimeDeltaFromRational(1024 * 10, kAudioScale));
+  EXPECT_EQ(iter_->dts(), DecodeTimestampFromRational(1024 * 10, kAudioScale));
   iter_->AdvanceSample();
   EXPECT_EQ(moof.tracks[0].runs[1].data_offset +
             moof.tracks[0].header.default_sample_size,
@@ -349,7 +349,7 @@ TEST_F(TrackRunIteratorTest, TrackExtendsDefaultsTest) {
   EXPECT_EQ(iter_->sample_size(), 3);
   EXPECT_EQ(iter_->sample_offset(), moof.tracks[0].runs[0].data_offset + 3);
   EXPECT_EQ(iter_->duration(), TimeDeltaFromRational(50, kAudioScale));
-  EXPECT_EQ(iter_->dts(), TimeDeltaFromRational(50, kAudioScale));
+  EXPECT_EQ(iter_->dts(), DecodeTimestampFromRational(50, kAudioScale));
 }
 
 TEST_F(TrackRunIteratorTest, FirstSampleFlagTest) {
@@ -408,15 +408,15 @@ TEST_F(TrackRunIteratorTest, ReorderingTest) {
 
   ASSERT_TRUE(iter_->Init(moof));
   iter_->AdvanceRun();
-  EXPECT_EQ(iter_->dts(), TimeDeltaFromRational(0, kVideoScale));
+  EXPECT_EQ(iter_->dts(), DecodeTimestampFromRational(0, kVideoScale));
   EXPECT_EQ(iter_->cts(), TimeDeltaFromRational(0, kVideoScale));
   EXPECT_EQ(iter_->duration(), TimeDeltaFromRational(1, kVideoScale));
   iter_->AdvanceSample();
-  EXPECT_EQ(iter_->dts(), TimeDeltaFromRational(1, kVideoScale));
+  EXPECT_EQ(iter_->dts(), DecodeTimestampFromRational(1, kVideoScale));
   EXPECT_EQ(iter_->cts(), TimeDeltaFromRational(4, kVideoScale));
   EXPECT_EQ(iter_->duration(), TimeDeltaFromRational(2, kVideoScale));
   iter_->AdvanceSample();
-  EXPECT_EQ(iter_->dts(), TimeDeltaFromRational(3, kVideoScale));
+  EXPECT_EQ(iter_->dts(), DecodeTimestampFromRational(3, kVideoScale));
   EXPECT_EQ(iter_->cts(), TimeDeltaFromRational(1, kVideoScale));
   EXPECT_EQ(iter_->duration(), TimeDeltaFromRational(3, kVideoScale));
 }

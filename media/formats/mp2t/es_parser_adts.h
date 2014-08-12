@@ -37,7 +37,7 @@ class EsParserAdts : public EsParser {
   // EsParser implementation.
   virtual bool Parse(const uint8* buf, int size,
                      base::TimeDelta pts,
-                     base::TimeDelta dts) OVERRIDE;
+                     DecodeTimestamp dts) OVERRIDE;
   virtual void Flush() OVERRIDE;
   virtual void Reset() OVERRIDE;
 
@@ -92,4 +92,3 @@ class EsParserAdts : public EsParser {
 }  // namespace media
 
 #endif
-

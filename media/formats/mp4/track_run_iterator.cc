@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "media/base/buffers.h"
-#include "media/base/stream_parser_buffer.h"
 #include "media/formats/mp4/rcheck.h"
 #include "media/formats/mp4/sample_to_group_iterator.h"
 
@@ -57,7 +56,7 @@ TrackRunInfo::TrackRunInfo()
 }
 TrackRunInfo::~TrackRunInfo() {}
 
-TimeDelta TimeDeltaFromRational(int64 numer, int64 denom) {
+base::TimeDelta TimeDeltaFromRational(int64 numer, int64 denom) {
   // To avoid overflow, split the following calculation:
   // (numer * base::Time::kMicrosecondsPerSecond) / denom
   // into:
@@ -73,7 +72,12 @@ TimeDelta TimeDeltaFromRational(int64 numer, int64 denom) {
 
   DCHECK((timeb_in_us < 0) || (timea_in_us <= kint64max - timeb_in_us));
   DCHECK((timeb_in_us > 0) || (timea_in_us >= kint64min - timeb_in_us));
-  return TimeDelta::FromMicroseconds(timea_in_us + timeb_in_us);
+  return base::TimeDelta::FromMicroseconds(timea_in_us + timeb_in_us);
+}
+
+DecodeTimestamp DecodeTimestampFromRational(int64 numer, int64 denom) {
+  return DecodeTimestamp::FromPresentationTime(
+      TimeDeltaFromRational(numer, denom));
 }
 
 TrackRunIterator::TrackRunIterator(const Movie* moov,
@@ -469,18 +473,18 @@ int TrackRunIterator::sample_size() const {
   return sample_itr_->size;
 }
 
-TimeDelta TrackRunIterator::dts() const {
+DecodeTimestamp TrackRunIterator::dts() const {
   DCHECK(IsSampleValid());
-  return TimeDeltaFromRational(sample_dts_, run_itr_->timescale);
+  return DecodeTimestampFromRational(sample_dts_, run_itr_->timescale);
 }
 
-TimeDelta TrackRunIterator::cts() const {
+base::TimeDelta TrackRunIterator::cts() const {
   DCHECK(IsSampleValid());
   return TimeDeltaFromRational(sample_dts_ + sample_itr_->cts_offset,
                                run_itr_->timescale);
 }
 
-TimeDelta TrackRunIterator::duration() const {
+base::TimeDelta TrackRunIterator::duration() const {
   DCHECK(IsSampleValid());
   return TimeDeltaFromRational(sample_itr_->duration, run_itr_->timescale);
 }

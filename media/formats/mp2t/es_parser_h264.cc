@@ -39,7 +39,7 @@ EsParserH264::~EsParserH264() {
 
 bool EsParserH264::Parse(const uint8* buf, int size,
                          base::TimeDelta pts,
-                         base::TimeDelta dts) {
+                         DecodeTimestamp dts) {
   // Note: Parse is invoked each time a PES packet has been reassembled.
   // Unfortunately, a PES packet does not necessarily map
   // to an h264 access unit, although the HLS recommendation is to use one PES
@@ -53,7 +53,8 @@ bool EsParserH264::Parse(const uint8* buf, int size,
   if (pts != kNoTimestamp()) {
     TimingDesc timing_desc;
     timing_desc.pts = pts;
-    timing_desc.dts = (dts != kNoTimestamp()) ? dts : pts;
+    timing_desc.dts = (dts != kNoDecodeTimestamp()) ? dts :
+        DecodeTimestamp::FromPresentationTime(pts);
 
     // Link the end of the byte queue with the incoming timing descriptor.
     timing_desc_list_.push_back(
@@ -231,7 +232,7 @@ bool EsParserH264::ParseInternal() {
 bool EsParserH264::EmitFrame(int64 access_unit_pos, int access_unit_size,
                              bool is_key_frame, int pps_id) {
   // Get the access unit timing info.
-  TimingDesc current_timing_desc = {kNoTimestamp(), kNoTimestamp()};
+  TimingDesc current_timing_desc = {kNoDecodeTimestamp(), kNoTimestamp()};
   while (!timing_desc_list_.empty() &&
          timing_desc_list_.front().first <= access_unit_pos) {
     current_timing_desc = timing_desc_list_.front().second;
@@ -332,4 +333,3 @@ bool EsParserH264::UpdateVideoDecoderConfig(const H264SPS* sps) {
 
 }  // namespace mp2t
 }  // namespace media
-

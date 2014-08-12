@@ -23,10 +23,10 @@ class MseTrackBuffer {
   ~MseTrackBuffer();
 
   // Get/set |last_decode_timestamp_|.
-  base::TimeDelta last_decode_timestamp() const {
+  DecodeTimestamp last_decode_timestamp() const {
     return last_decode_timestamp_;
   }
-  void set_last_decode_timestamp(base::TimeDelta timestamp) {
+  void set_last_decode_timestamp(DecodeTimestamp timestamp) {
     last_decode_timestamp_ = timestamp;
   }
 
@@ -78,7 +78,7 @@ class MseTrackBuffer {
  private:
   // The decode timestamp of the last coded frame appended in the current coded
   // frame group. Initially kNoTimestamp(), meaning "unset".
-  base::TimeDelta last_decode_timestamp_;
+  DecodeTimestamp last_decode_timestamp_;
 
   // The coded frame duration of the last coded frame appended in the current
   // coded frame group. Initially kNoTimestamp(), meaning "unset".
@@ -108,7 +108,7 @@ class MseTrackBuffer {
 };
 
 MseTrackBuffer::MseTrackBuffer(ChunkDemuxerStream* stream)
-    : last_decode_timestamp_(kNoTimestamp()),
+    : last_decode_timestamp_(kNoDecodeTimestamp()),
       last_frame_duration_(kNoTimestamp()),
       highest_presentation_timestamp_(kNoTimestamp()),
       needs_random_access_point_(true),
@@ -123,7 +123,7 @@ MseTrackBuffer::~MseTrackBuffer() {
 void MseTrackBuffer::Reset() {
   DVLOG(2) << __FUNCTION__ << "()";
 
-  last_decode_timestamp_ = kNoTimestamp();
+  last_decode_timestamp_ = kNoDecodeTimestamp();
   last_frame_duration_ = kNoTimestamp();
   highest_presentation_timestamp_ = kNoTimestamp();
   needs_random_access_point_ = true;
@@ -302,7 +302,7 @@ MseTrackBuffer* FrameProcessor::FindTrack(StreamParser::TrackId id) {
 }
 
 void FrameProcessor::NotifyNewMediaSegmentStarting(
-    base::TimeDelta segment_timestamp) {
+    DecodeTimestamp segment_timestamp) {
   DVLOG(2) << __FUNCTION__ << "(" << segment_timestamp.InSecondsF() << ")";
 
   for (TrackBufferMap::iterator itr = track_buffers_.begin();
@@ -390,7 +390,8 @@ bool FrameProcessor::HandlePartialAppendWindowTrimming(
     // Adjust the timestamp of this buffer forward to |append_window_start| and
     // decrease the duration to compensate.
     buffer->set_timestamp(append_window_start);
-    buffer->SetDecodeTimestamp(append_window_start);
+    buffer->SetDecodeTimestamp(
+        DecodeTimestamp::FromPresentationTime(append_window_start));
     buffer->set_duration(frame_end_timestamp - append_window_start);
     processed_buffer = true;
   }
@@ -434,9 +435,9 @@ bool FrameProcessor::ProcessFrame(
     //    representation of the coded frame's decode timestamp in seconds.
     // 3. Let frame duration be a double precision floating point representation
     //    of the coded frame's duration in seconds.
-    // We use base::TimeDelta instead of double.
+    // We use base::TimeDelta and DecodeTimestamp instead of double.
     base::TimeDelta presentation_timestamp = frame->timestamp();
-    base::TimeDelta decode_timestamp = frame->GetDecodeTimestamp();
+    DecodeTimestamp decode_timestamp = frame->GetDecodeTimestamp();
     base::TimeDelta frame_duration = frame->duration();
 
     DVLOG(3) << __FUNCTION__ << ": Processing frame "
@@ -452,11 +453,11 @@ bool FrameProcessor::ProcessFrame(
       DVLOG(2) << __FUNCTION__ << ": Unknown frame PTS";
       return false;
     }
-    if (decode_timestamp == kNoTimestamp()) {
+    if (decode_timestamp == kNoDecodeTimestamp()) {
       DVLOG(2) << __FUNCTION__ << ": Unknown frame DTS";
       return false;
     }
-    if (decode_timestamp > presentation_timestamp) {
+    if (decode_timestamp.ToPresentationTime() > presentation_timestamp) {
       // TODO(wolenetz): Determine whether DTS>PTS should really be allowed. See
       // http://crbug.com/354518.
       DVLOG(2) << __FUNCTION__ << ": WARNING: Frame DTS("
@@ -544,9 +545,9 @@ bool FrameProcessor::ProcessFrame(
     //    If last decode timestamp for track buffer is set and the difference
     //    between decode timestamp and last decode timestamp is greater than 2
     //    times last frame duration:
-    base::TimeDelta last_decode_timestamp =
+    DecodeTimestamp last_decode_timestamp =
         track_buffer->last_decode_timestamp();
-    if (last_decode_timestamp != kNoTimestamp()) {
+    if (last_decode_timestamp != kNoDecodeTimestamp()) {
       base::TimeDelta dts_delta = decode_timestamp - last_decode_timestamp;
       if (dts_delta < base::TimeDelta() ||
           dts_delta > 2 * track_buffer->last_frame_duration()) {
@@ -626,7 +627,7 @@ bool FrameProcessor::ProcessFrame(
     // presentation start time, then run the end of stream algorithm with the
     // error parameter set to "decode", and abort these steps.
     DCHECK(presentation_timestamp >= base::TimeDelta());
-    if (decode_timestamp < base::TimeDelta()) {
+    if (decode_timestamp < DecodeTimestamp()) {
       // B-frames may still result in negative DTS here after being shifted by
       // |timestamp_offset_|.
       DVLOG(2) << __FUNCTION__
@@ -663,6 +664,9 @@ bool FrameProcessor::ProcessFrame(
         return false;
 
       *new_media_segment = false;
+
+      // TODO(acolwell/wolenetz): This should be changed to a presentation
+      // timestamp. See http://crbug.com/402502
       NotifyNewMediaSegmentStarting(decode_timestamp);
     }
 

@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "media/base/stream_parser_buffer.h"
 
 namespace media {
 
@@ -27,7 +28,7 @@ class EsParser {
   // Should use kNoTimestamp when a timestamp is not valid.
   virtual bool Parse(const uint8* buf, int size,
                      base::TimeDelta pts,
-                     base::TimeDelta dts) = 0;
+                     DecodeTimestamp dts) = 0;
 
   // Flush any pending buffer.
   virtual void Flush() = 0;

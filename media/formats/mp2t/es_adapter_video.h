@@ -13,9 +13,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
+#include "media/base/stream_parser_buffer.h"
 
 namespace media {
-class StreamParserBuffer;
+
 class VideoDecoderConfig;
 
 namespace mp2t {
@@ -87,7 +88,7 @@ class MEDIA_EXPORT EsAdapterVideo {
   // - Minimum PTS of discarded frames.
   // - DTS of discarded frames.
   base::TimeDelta discarded_frames_min_pts_;
-  std::list<base::TimeDelta> discarded_frames_dts_;
+  std::list<DecodeTimestamp> discarded_frames_dts_;
 
   DISALLOW_COPY_AND_ASSIGN(EsAdapterVideo);
 };

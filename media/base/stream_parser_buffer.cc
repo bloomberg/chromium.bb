@@ -61,13 +61,13 @@ scoped_refptr<StreamParserBuffer> StreamParserBuffer::CopyFrom(
                              is_keyframe, type, track_id));
 }
 
-base::TimeDelta StreamParserBuffer::GetDecodeTimestamp() const {
-  if (decode_timestamp_ == kNoTimestamp())
-    return timestamp();
+DecodeTimestamp StreamParserBuffer::GetDecodeTimestamp() const {
+  if (decode_timestamp_ == kNoDecodeTimestamp())
+    return DecodeTimestamp::FromPresentationTime(timestamp());
   return decode_timestamp_;
 }
 
-void StreamParserBuffer::SetDecodeTimestamp(base::TimeDelta timestamp) {
+void StreamParserBuffer::SetDecodeTimestamp(DecodeTimestamp timestamp) {
   decode_timestamp_ = timestamp;
   if (preroll_buffer_)
     preroll_buffer_->SetDecodeTimestamp(timestamp);
@@ -79,7 +79,7 @@ StreamParserBuffer::StreamParserBuffer(const uint8* data, int data_size,
                                        Type type, TrackId track_id)
     : DecoderBuffer(data, data_size, side_data, side_data_size),
       is_keyframe_(is_keyframe),
-      decode_timestamp_(kNoTimestamp()),
+      decode_timestamp_(kNoDecodeTimestamp()),
       config_id_(kInvalidConfigId),
       type_(type),
       track_id_(track_id) {

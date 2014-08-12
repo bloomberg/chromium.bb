@@ -98,8 +98,8 @@ class MEDIA_EXPORT FrameProcessor {
   MseTrackBuffer* FindTrack(StreamParser::TrackId id);
 
   // Signals all track buffers' streams that a new media segment is starting
-  // with timestamp |segment_timestamp|.
-  void NotifyNewMediaSegmentStarting(base::TimeDelta segment_timestamp);
+  // with decode timestamp |segment_timestamp|.
+  void NotifyNewMediaSegmentStarting(DecodeTimestamp segment_timestamp);
 
   // Helper that signals each track buffer to append any processed, but not yet
   // appended, frames to its stream. Returns true on success, or false if one or

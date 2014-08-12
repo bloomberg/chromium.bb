@@ -37,7 +37,7 @@ bool IsMonotonic(const StreamParser::BufferQueue& buffers) {
   return true;
 }
 
-bool IsAlmostEqual(base::TimeDelta t0, base::TimeDelta t1) {
+bool IsAlmostEqual(DecodeTimestamp t0, DecodeTimestamp t1) {
   base::TimeDelta kMaxDeviation = base::TimeDelta::FromMilliseconds(5);
   base::TimeDelta diff = t1 - t0;
   return (diff >= -kMaxDeviation && diff <= kMaxDeviation);
@@ -52,10 +52,10 @@ class Mp2tStreamParserTest : public testing::Test {
         config_count_(0),
         audio_frame_count_(0),
         video_frame_count_(0),
-        audio_min_dts_(kNoTimestamp()),
-        audio_max_dts_(kNoTimestamp()),
-        video_min_dts_(kNoTimestamp()),
-        video_max_dts_(kNoTimestamp()) {
+        audio_min_dts_(kNoDecodeTimestamp()),
+        audio_max_dts_(kNoDecodeTimestamp()),
+        video_min_dts_(kNoDecodeTimestamp()),
+        video_max_dts_(kNoDecodeTimestamp()) {
     bool has_sbr = false;
     parser_.reset(new Mp2tStreamParser(has_sbr));
   }
@@ -66,20 +66,20 @@ class Mp2tStreamParserTest : public testing::Test {
   int config_count_;
   int audio_frame_count_;
   int video_frame_count_;
-  base::TimeDelta audio_min_dts_;
-  base::TimeDelta audio_max_dts_;
-  base::TimeDelta video_min_dts_;
-  base::TimeDelta video_max_dts_;
+  DecodeTimestamp audio_min_dts_;
+  DecodeTimestamp audio_max_dts_;
+  DecodeTimestamp video_min_dts_;
+  DecodeTimestamp video_max_dts_;
 
   void ResetStats() {
     segment_count_ = 0;
     config_count_ = 0;
     audio_frame_count_ = 0;
     video_frame_count_ = 0;
-    audio_min_dts_ = kNoTimestamp();
-    audio_max_dts_ = kNoTimestamp();
-    video_min_dts_ = kNoTimestamp();
-    video_max_dts_ = kNoTimestamp();
+    audio_min_dts_ = kNoDecodeTimestamp();
+    audio_max_dts_ = kNoDecodeTimestamp();
+    video_min_dts_ = kNoDecodeTimestamp();
+    video_max_dts_ = kNoDecodeTimestamp();
   }
 
   bool AppendData(const uint8* data, size_t length) {
@@ -149,20 +149,20 @@ class Mp2tStreamParserTest : public testing::Test {
       return false;
 
     if (!video_buffers.empty()) {
-      base::TimeDelta first_dts = video_buffers.front()->GetDecodeTimestamp();
-      base::TimeDelta last_dts = video_buffers.back()->GetDecodeTimestamp();
-      if (video_max_dts_ != kNoTimestamp() && first_dts < video_max_dts_)
+      DecodeTimestamp first_dts = video_buffers.front()->GetDecodeTimestamp();
+      DecodeTimestamp last_dts = video_buffers.back()->GetDecodeTimestamp();
+      if (video_max_dts_ != kNoDecodeTimestamp() && first_dts < video_max_dts_)
         return false;
-      if (video_min_dts_ == kNoTimestamp())
+      if (video_min_dts_ == kNoDecodeTimestamp())
         video_min_dts_ = first_dts;
       video_max_dts_ = last_dts;
     }
     if (!audio_buffers.empty()) {
-      base::TimeDelta first_dts = audio_buffers.front()->GetDecodeTimestamp();
-      base::TimeDelta last_dts = audio_buffers.back()->GetDecodeTimestamp();
-      if (audio_max_dts_ != kNoTimestamp() && first_dts < audio_max_dts_)
+      DecodeTimestamp first_dts = audio_buffers.front()->GetDecodeTimestamp();
+      DecodeTimestamp last_dts = audio_buffers.back()->GetDecodeTimestamp();
+      if (audio_max_dts_ != kNoDecodeTimestamp() && first_dts < audio_max_dts_)
         return false;
-      if (audio_min_dts_ == kNoTimestamp())
+      if (audio_min_dts_ == kNoDecodeTimestamp())
         audio_min_dts_ = first_dts;
       audio_max_dts_ = last_dts;
     }
@@ -262,9 +262,9 @@ TEST_F(Mp2tStreamParserTest, TimestampWrapAround) {
   EXPECT_EQ(video_frame_count_, 82);
 
   EXPECT_TRUE(IsAlmostEqual(video_min_dts_,
-                            base::TimeDelta::FromSecondsD(95443.376)));
+                            DecodeTimestamp::FromSecondsD(95443.376)));
   EXPECT_TRUE(IsAlmostEqual(video_max_dts_,
-                            base::TimeDelta::FromSecondsD(95446.079)));
+                            DecodeTimestamp::FromSecondsD(95446.079)));
 
   // Note: for audio, AdtsStreamParser considers only the PTS (which is then
   // used as the DTS).
@@ -278,9 +278,9 @@ TEST_F(Mp2tStreamParserTest, TimestampWrapAround) {
   // So the PTS of the last AAC frame is:
   // 95445.931 + 8 * (1024 / 44100) = 95446.117
   EXPECT_TRUE(IsAlmostEqual(audio_min_dts_,
-                            base::TimeDelta::FromSecondsD(95443.400)));
+                            DecodeTimestamp::FromSecondsD(95443.400)));
   EXPECT_TRUE(IsAlmostEqual(audio_max_dts_,
-                            base::TimeDelta::FromSecondsD(95446.117)));
+                            DecodeTimestamp::FromSecondsD(95446.117)));
 }
 
 }  // namespace mp2t

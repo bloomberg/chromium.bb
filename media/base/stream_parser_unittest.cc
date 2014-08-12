@@ -53,7 +53,7 @@ static void GenerateBuffers(const int* decode_timestamps,
         StreamParserBuffer::CopyFrom(kFakeData, sizeof(kFakeData),
                                      true, type, track_id);
     buffer->SetDecodeTimestamp(
-        base::TimeDelta::FromMicroseconds(decode_timestamps[i]));
+        DecodeTimestamp::FromMicroseconds(decode_timestamps[i]));
     queue->push_back(buffer);
   }
 }
@@ -379,4 +379,3 @@ TEST_F(StreamParserTest, MergeBufferQueues_InvalidAppendToExistingMerge) {
 }
 
 }  // namespace media
-

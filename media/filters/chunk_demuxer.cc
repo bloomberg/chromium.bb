@@ -854,7 +854,7 @@ TimeDelta ChunkDemuxerStream::GetBufferedDuration() const {
   return stream_->GetBufferedDuration();
 }
 
-void ChunkDemuxerStream::OnNewMediaSegment(TimeDelta start_timestamp) {
+void ChunkDemuxerStream::OnNewMediaSegment(DecodeTimestamp start_timestamp) {
   DVLOG(2) << "ChunkDemuxerStream::OnNewMediaSegment("
            << start_timestamp.InSecondsF() << ")";
   base::AutoLock auto_lock(lock_);

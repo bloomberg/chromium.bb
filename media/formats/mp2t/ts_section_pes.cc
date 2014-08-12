@@ -267,7 +267,7 @@ bool TsSectionPes::ParseInternal(const uint8* raw_pes, int raw_pes_size) {
 
   // Convert and unroll the timestamps.
   base::TimeDelta media_pts(kNoTimestamp());
-  base::TimeDelta media_dts(kNoTimestamp());
+  DecodeTimestamp media_dts(kNoDecodeTimestamp());
   if (is_pts_valid) {
     int64 pts = ConvertTimestampSectionToTimestamp(pts_section);
     if (previous_pts_valid_)
@@ -282,7 +282,7 @@ bool TsSectionPes::ParseInternal(const uint8* raw_pes, int raw_pes_size) {
       dts = UnrollTimestamp(previous_dts_, dts);
     previous_dts_ = dts;
     previous_dts_valid_ = true;
-    media_dts = base::TimeDelta::FromMicroseconds((1000 * dts) / 90);
+    media_dts = DecodeTimestamp::FromMicroseconds((1000 * dts) / 90);
   }
 
   // Discard the rest of the PES packet header.
@@ -309,4 +309,3 @@ void TsSectionPes::ResetPesState() {
 
 }  // namespace mp2t
 }  // namespace media
-
