@@ -75,8 +75,8 @@ const char kWireless[] = "Wireless";
 }  // namespace network_type
 
 namespace cellular {
-const char kActivateOverNonCellularNetwork[] = "ActivateOverNonCellularNetwork";
 const char kActivationState[] = "ActivationState";
+const char kActivationType[] = "ActivationType";
 const char kAllowRoaming[] = "AllowRoaming";
 const char kAPN[] = "APN";
 const char kAPNList[] = "APNList";

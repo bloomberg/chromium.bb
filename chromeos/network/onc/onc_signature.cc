@@ -251,7 +251,7 @@ const OncFieldSignature cellular_fields[] = {
     {NULL}};
 
 const OncFieldSignature cellular_with_state_fields[] = {
-    { ::onc::cellular::kActivateOverNonCellularNetwork, &kBoolSignature},
+    { ::onc::cellular::kActivationType, &kStringSignature},
     { ::onc::cellular::kActivationState, &kStringSignature},
     { ::onc::cellular::kAllowRoaming, &kBoolSignature},
     { ::onc::cellular::kCarrier, &kStringSignature},

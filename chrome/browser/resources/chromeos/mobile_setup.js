@@ -147,6 +147,9 @@ cr.define('mobile', function() {
       }
 
       // Map handler state to UX.
+      var simpleActivationFlow =
+          (deviceInfo.activation_type == 'NonCellular' ||
+           deviceInfo.activation_type == 'OTA');
       switch (newState) {
         case MobileSetup.PLAN_ACTIVATION_PAGE_LOADING:
         case MobileSetup.PLAN_ACTIVATION_START:
@@ -154,9 +157,8 @@ cr.define('mobile', function() {
         case MobileSetup.PLAN_ACTIVATION_START_OTASP:
         case MobileSetup.PLAN_ACTIVATION_RECONNECTING:
         case MobileSetup.PLAN_ACTIVATION_RECONNECTING_PAYMENT:
-          // Activation page should not be shown for devices that are activated
-          // over non cellular network.
-          if (deviceInfo.activate_over_non_cellular_network)
+          // Activation page should not be shown for the simple activation flow.
+          if (simpleActivationFlow)
             break;
 
           $('statusHeader').textContent =
@@ -173,9 +175,8 @@ cr.define('mobile', function() {
         case MobileSetup.PLAN_ACTIVATION_TRYING_OTASP:
         case MobileSetup.PLAN_ACTIVATION_INITIATING_ACTIVATION:
         case MobileSetup.PLAN_ACTIVATION_OTASP:
-          // Activation page should not be shown for devices that are activated
-          // over non cellular network.
-          if (deviceInfo.activate_over_non_cellular_network)
+          // Activation page should not be shown for the simple activation flow.
+          if (simpleActivationFlow)
             break;
 
           $('statusHeader').textContent =
@@ -190,9 +191,8 @@ cr.define('mobile', function() {
           this.startSpinner_();
           break;
         case MobileSetup.PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING:
-          // Activation page should not be shown for devices that are activated
-          // over non cellular network.
-          if (!deviceInfo.activate_over_non_cellular_network) {
+          // Activation page should not be shown for the simple activation flow.
+          if (!simpleActivationFlow) {
             $('statusHeader').textContent =
                 MobileSetup.localStrings_.getString('connecting_header');
             $('auxHeader').textContent = '';
@@ -205,14 +205,24 @@ cr.define('mobile', function() {
           this.loadPaymentFrame_(deviceInfo);
           break;
         case MobileSetup.PLAN_ACTIVATION_WAITING_FOR_CONNECTION:
-          $('statusHeader').textContent =
-              MobileSetup.localStrings_.getString('portal_unreachable_header');
+          var statusHeaderText;
+          var carrierPage;
+          if (deviceInfo.activation_type == 'NonCellular') {
+            statusHeaderText = MobileSetup.localStrings_.getString(
+                'portal_unreachable_header');
+            carrierPage = MobileSetup.PORTAL_OFFLINE_PAGE_URL;
+          } else if (deviceInfo.activation_type == 'OTA') {
+            statusHeaderText =
+                MobileSetup.localStrings_.getString('connecting_header');
+            carrierPage = MobileSetup.ACTIVATION_PAGE_URL;
+          }
+          $('statusHeader').textContent = statusHeaderText;
           $('auxHeader').textContent = '';
           $('auxHeader').classList.add('hidden');
           $('paymentForm').classList.add('hidden');
           $('finalStatus').classList.add('hidden');
           $('systemStatus').classList.remove('hidden');
-          this.setCarrierPage_(MobileSetup.PORTAL_OFFLINE_PAGE_URL);
+          this.setCarrierPage_(carrierPage);
           $('canvas').classList.remove('hidden');
           this.startSpinner_();
           break;

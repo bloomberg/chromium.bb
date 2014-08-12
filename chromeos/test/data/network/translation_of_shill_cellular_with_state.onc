@@ -2,8 +2,8 @@
   "Type": "Cellular",
   "Name": "Test Network",
   "Cellular": {
-    "ActivateOverNonCellularNetwork": false,
     "ActivationState": "activated",
+    "ActivationType": "OTASP",
     "AllowRoaming": true,
     "HomeProvider": {
       "country": "us",

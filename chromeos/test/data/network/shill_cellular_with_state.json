@@ -1,8 +1,8 @@
 {
   "Type": "cellular",
   "Name": "Test Network",
-  "Cellular.ActivateOverNonCellularNetwork": false,
   "Cellular.ActivationState": "activated",
+  "Cellular.ActivationType": "OTASP",
   "Cellular.ServingOperator": {
     "code": "test-code",
     "country": "test-country",

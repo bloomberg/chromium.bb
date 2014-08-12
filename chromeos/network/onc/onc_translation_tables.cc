@@ -149,8 +149,7 @@ const FieldTranslationEntry sim_lock_status_fields[] = {
 // This must only contain Service properties and not Device properties.
 // For Device properties see kCellularDeviceTable.
 const FieldTranslationEntry cellular_fields[] = {
-    { ::onc::cellular::kActivateOverNonCellularNetwork,
-      shill::kActivateOverNonCellularNetworkProperty},
+    { ::onc::cellular::kActivationType, shill::kActivationTypeProperty},
     { ::onc::cellular::kActivationState, shill::kActivationStateProperty},
     { ::onc::cellular::kNetworkTechnology, shill::kNetworkTechnologyProperty},
     { ::onc::cellular::kRoamingState, shill::kRoamingStateProperty},

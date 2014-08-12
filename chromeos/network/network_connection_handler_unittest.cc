@@ -303,9 +303,6 @@ const char* kConfigConnecting =
 const char* kConfigRequiresPassphrase =
     "{ \"GUID\": \"wifi3\", \"Type\": \"wifi\", "
     "  \"PassphraseRequired\": true }";
-const char* kConfigRequiresActivation =
-    "{ \"GUID\": \"cellular1\", \"Type\": \"cellular\","
-    "  \"Cellular.ActivationState\": \"not-activated\" }";
 
 }  // namespace
 
@@ -334,11 +331,6 @@ TEST_F(NetworkConnectionHandlerTest, NetworkConnectionHandlerConnectFailure) {
   EXPECT_TRUE(Configure(kConfigRequiresPassphrase));
   Connect("wifi3");
   EXPECT_EQ(NetworkConnectionHandler::kErrorPassphraseRequired,
-            GetResultAndReset());
-
-  EXPECT_TRUE(Configure(kConfigRequiresActivation));
-  Connect("cellular1");
-  EXPECT_EQ(NetworkConnectionHandler::kErrorActivationRequired,
             GetResultAndReset());
 }
 

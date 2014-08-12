@@ -65,7 +65,6 @@ NetworkState::NetworkState(const std::string& path)
       connectable_(false),
       prefix_length_(0),
       signal_strength_(0),
-      activate_over_non_cellular_networks_(false),
       cellular_out_of_credits_(false),
       has_ca_cert_nss_(false) {
 }
@@ -94,6 +93,8 @@ bool NetworkState::PropertyChanged(const std::string& key,
     else
       error_.clear();
     return true;
+  } else if (key == shill::kActivationTypeProperty) {
+    return GetStringValue(key, value, &activation_type_);
   } else if (key == shill::kActivationStateProperty) {
     return GetStringValue(key, value, &activation_state_);
   } else if (key == shill::kRoamingStateProperty) {
@@ -110,8 +111,6 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return GetStringValue(key, value, &guid_);
   } else if (key == shill::kProfileProperty) {
     return GetStringValue(key, value, &profile_path_);
-  } else if (key == shill::kActivateOverNonCellularNetworkProperty) {
-    return GetBooleanValue(key, value, &activate_over_non_cellular_networks_);
   } else if (key == shill::kOutOfCreditsProperty) {
     return GetBooleanValue(key, value, &cellular_out_of_credits_);
   } else if (key == shill::kProxyConfigProperty) {

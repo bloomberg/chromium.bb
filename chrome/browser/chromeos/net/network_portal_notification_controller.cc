@@ -15,6 +15,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/mobile/mobile_activator.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
@@ -141,6 +142,10 @@ void NetworkPortalNotificationController::OnPortalDetectionCompleted(
     CloseNotification();
     return;
   }
+
+  // Don't do anything if we're currently activating the device.
+  if (MobileActivator::GetInstance()->RunningActivation())
+    return;
 
   // Don't do anything if notification for |network| already was
   // displayed.

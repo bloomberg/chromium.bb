@@ -90,10 +90,10 @@ void GetDeviceInfo(const base::DictionaryValue& properties,
                    base::DictionaryValue* value) {
   std::string name;
   properties.GetStringWithoutPathExpansion(shill::kNameProperty, &name);
-  bool activate_over_non_cellular_networks = false;
-  properties.GetBooleanWithoutPathExpansion(
-      shill::kActivateOverNonCellularNetworkProperty,
-      &activate_over_non_cellular_networks);
+  std::string activation_type;
+  properties.GetStringWithoutPathExpansion(
+      shill::kActivationTypeProperty,
+      &activation_type);
   const base::DictionaryValue* payment_dict;
   std::string payment_url, post_method, post_data;
   if (properties.GetDictionaryWithoutPathExpansion(
@@ -106,8 +106,7 @@ void GetDeviceInfo(const base::DictionaryValue& properties,
         shill::kPaymentPortalPostData, &post_data);
   }
 
-  value->SetBoolean("activate_over_non_cellular_network",
-                    activate_over_non_cellular_networks);
+  value->SetString("activation_type", activation_type);
   value->SetString("carrier", name);
   value->SetString("payment_url", payment_url);
   if (LowerCaseEqualsASCII(post_method, "post") && !post_data.empty())

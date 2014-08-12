@@ -92,8 +92,8 @@ ONC_EXPORT extern const char kWireless[];
 }  // namespace network_type
 
 namespace cellular {
-ONC_EXPORT extern const char kActivateOverNonCellularNetwork[];
 ONC_EXPORT extern const char kActivationState[];
+ONC_EXPORT extern const char kActivationType[];
 ONC_EXPORT extern const char kAllowRoaming[];
 ONC_EXPORT extern const char kAPN[];
 ONC_EXPORT extern const char kAPNList[];

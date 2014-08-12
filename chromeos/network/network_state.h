@@ -84,11 +84,9 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   const std::string& network_technology() const {
     return network_technology_;
   }
+  const std::string& activation_type() const { return activation_type_; }
   const std::string& activation_state() const { return activation_state_; }
   const std::string& roaming() const { return roaming_; }
-  bool activate_over_non_cellular_networks() const {
-    return activate_over_non_cellular_networks_;
-  }
   bool cellular_out_of_credits() const { return cellular_out_of_credits_; }
 
   // Whether this network has a CACertNSS nickname set.
@@ -168,9 +166,9 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
 
   // Cellular properties, used for icons, Connect, and Activation.
   std::string network_technology_;
+  std::string activation_type_;
   std::string activation_state_;
   std::string roaming_;
-  bool activate_over_non_cellular_networks_;
   bool cellular_out_of_credits_;
 
   // Whether a deprecated CaCertNSS property of this network is set. Required

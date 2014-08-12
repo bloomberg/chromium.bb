@@ -268,11 +268,6 @@ void NetworkConnectionHandler::ConnectToNetwork(
       InvokeErrorCallback(service_path, error_callback, kErrorConnecting);
       return;
     }
-    if (network->RequiresActivation()) {
-      InvokeErrorCallback(service_path, error_callback,
-                          kErrorActivationRequired);
-      return;
-    }
 
     if (check_error_state) {
       const std::string& error = network->last_error();

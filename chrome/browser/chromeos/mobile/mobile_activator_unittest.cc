@@ -7,8 +7,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,7 +22,9 @@ using content::BrowserThread;
 using testing::_;
 using testing::Eq;
 using testing::Invoke;
+using testing::Mock;
 using testing::Return;
+using testing::WithArgs;
 
 namespace {
 
@@ -42,10 +46,9 @@ class TestMobileActivator : public MobileActivator {
   explicit TestMobileActivator(NetworkState* cellular_network) :
         cellular_network_(cellular_network) {
     // Provide reasonable defaults for basic things we're usually not testing.
-    ON_CALL(*this, DCheckOnThread(_))
-        .WillByDefault(Return());
-    ON_CALL(*this, GetNetworkState(_))
-        .WillByDefault(Return(cellular_network_));
+    ON_CALL(*this, ChangeState(_, _, _))
+        .WillByDefault(WithArgs<1>(
+            Invoke(this, &TestMobileActivator::set_state_for_test)));
   }
   virtual ~TestMobileActivator() {}
 
@@ -56,11 +59,34 @@ class TestMobileActivator : public MobileActivator {
   MOCK_METHOD3(ChangeState, void(const NetworkState*,
                                  MobileActivator::PlanActivationState,
                                  std::string));
-  MOCK_METHOD1(GetNetworkState, const NetworkState*(const std::string&));
+  MOCK_METHOD0(GetDefaultNetwork, const NetworkState*());
   MOCK_METHOD1(EvaluateCellularNetwork, void(const NetworkState*));
   MOCK_METHOD0(SignalCellularPlanPayment, void(void));
   MOCK_METHOD0(StartOTASPTimer, void(void));
   MOCK_CONST_METHOD0(HasRecentCellularPlanPayment, bool(void));
+  MOCK_METHOD1(ConnectNetwork, void(const NetworkState*));
+
+  virtual const NetworkState* GetNetworkState(const std::string& service_path) {
+    return cellular_network_;
+  }
+
+  void InvokeStartActivation() {
+    StartActivation();
+  }
+
+  void InvokeHandlePortalLoaded(bool success) {
+    HandlePortalLoaded(success);
+  }
+
+  void InvokeHandleSetTransactionStatus(bool success) {
+    HandleSetTransactionStatus(success);
+  }
+
+  PlanActivationState InvokePickNextState(
+      const NetworkState* network,
+      std::string* error_description) const {
+    return PickNextState(network, error_description);
+  }
 
   void InvokeChangeState(const NetworkState* network,
                          MobileActivator::PlanActivationState new_state,
@@ -69,7 +95,7 @@ class TestMobileActivator : public MobileActivator {
   }
 
  private:
-  MOCK_CONST_METHOD1(DCheckOnThread, void(const BrowserThread::ID id));
+  void DCheckOnThread(const BrowserThread::ID id) const {}
 
   NetworkState* cellular_network_;
 
@@ -81,6 +107,8 @@ class MobileActivatorTest : public testing::Test {
   MobileActivatorTest()
       : cellular_network_(string(kTestServicePath)),
         mobile_activator_(&cellular_network_) {
+    cellular_network_.PropertyChanged(shill::kTypeProperty,
+                                      base::StringValue(shill::kTypeCellular));
   }
   virtual ~MobileActivatorTest() {}
 
@@ -95,7 +123,10 @@ class MobileActivatorTest : public testing::Test {
   }
 
   void set_activator_state(const MobileActivator::PlanActivationState state) {
-    mobile_activator_.state_ = state;
+    mobile_activator_.set_state_for_test(state);
+  }
+  void set_network_activation_type(const std::string& activation_type) {
+    cellular_network_.activation_type_ = activation_type;
   }
   void set_network_activation_state(const std::string& activation_state) {
     cellular_network_.activation_state_ = activation_state;
@@ -108,55 +139,108 @@ class MobileActivatorTest : public testing::Test {
   base::MessageLoop message_loop_;
   NetworkState cellular_network_;
   TestMobileActivator mobile_activator_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MobileActivatorTest);
 };
 
-TEST_F(MobileActivatorTest, BasicFlowForNewDevices) {
+TEST_F(MobileActivatorTest, OTAHasNetworkConnection) {
+  // Make sure if we have a network connection, the mobile activator does not
+  // connect to the network.
+  EXPECT_CALL(mobile_activator_, GetDefaultNetwork())
+      .WillRepeatedly(Return(&cellular_network_));
+  EXPECT_CALL(mobile_activator_, ConnectNetwork(_))
+      .Times(0);
+  set_connection_state(shill::kStatePortal);
+  set_network_activation_type(shill::kActivationTypeOTA);
+  set_network_activation_state(shill::kActivationStateNotActivated);
+  mobile_activator_.InvokeStartActivation();
+  EXPECT_EQ(mobile_activator_.state(),
+            MobileActivator::PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING);
+}
+
+TEST_F(MobileActivatorTest, OTANoNetworkConnection) {
+  // Make sure if we don't have a network connection, the mobile activator
+  // connects to the network.
+  EXPECT_CALL(mobile_activator_, GetDefaultNetwork())
+      .WillRepeatedly(Return(static_cast<NetworkState*>(NULL)));
+  EXPECT_CALL(mobile_activator_, ConnectNetwork(&cellular_network_));
+  set_connection_state(shill::kStateIdle);
+  set_network_activation_type(shill::kActivationTypeOTA);
+  set_network_activation_state(shill::kActivationStateNotActivated);
+  mobile_activator_.InvokeStartActivation();
+  EXPECT_EQ(mobile_activator_.state(),
+            MobileActivator::PLAN_ACTIVATION_WAITING_FOR_CONNECTION);
+}
+
+TEST_F(MobileActivatorTest, OTAActivationFlow) {
+  // Once a network connection is available, the OTA flow should look like the
+  // following:
+  //   - Loading payment portal
+  //   - Showing payment portal
+  //   - (User fills out payment portal and submits information)
+  //   - Activation complete
+  EXPECT_CALL(mobile_activator_, GetDefaultNetwork())
+      .WillRepeatedly(Return(&cellular_network_));
+  set_connection_state(shill::kStateOnline);
+  set_network_activation_type(shill::kActivationTypeOTA);
+  set_network_activation_state(shill::kActivationStateNotActivated);
+  mobile_activator_.InvokeStartActivation();
+  EXPECT_EQ(mobile_activator_.state(),
+            MobileActivator::PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING);
+  mobile_activator_.InvokeHandlePortalLoaded(true);
+  EXPECT_EQ(mobile_activator_.state(),
+            MobileActivator::PLAN_ACTIVATION_SHOWING_PAYMENT);
+  mobile_activator_.InvokeHandleSetTransactionStatus(true);
+  EXPECT_EQ(mobile_activator_.state(), MobileActivator::PLAN_ACTIVATION_DONE);
+}
+
+TEST_F(MobileActivatorTest, OTASPBasicFlowForNewDevices) {
   // In a new device, we aren't connected to Verizon, we start at START
   // because we haven't paid Verizon (ever), and the modem isn't even partially
   // activated.
   std::string error_description;
   set_activator_state(MobileActivator::PLAN_ACTIVATION_START);
   set_connection_state(shill::kStateIdle);
+  set_network_activation_type(shill::kActivationTypeOTASP);
   set_network_activation_state(shill::kActivationStateNotActivated);
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_INITIATING_ACTIVATION,
-            mobile_activator_.PickNextState(&cellular_network_,
-                                            &error_description));
+            mobile_activator_.InvokePickNextState(&cellular_network_,
+                                                  &error_description));
   // Now behave as if ChangeState() has initiated an activation.
   set_activator_state(MobileActivator::PLAN_ACTIVATION_INITIATING_ACTIVATION);
   set_network_activation_state(shill::kActivationStateActivating);
   // We'll sit in this state while we wait for the OTASP to finish.
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_INITIATING_ACTIVATION,
-            mobile_activator_.PickNextState(&cellular_network_,
-                                            &error_description));
+            mobile_activator_.InvokePickNextState(&cellular_network_,
+                                                  &error_description));
   set_network_activation_state(shill::kActivationStatePartiallyActivated);
   // We'll sit in this state until we go online as well.
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_INITIATING_ACTIVATION,
-            mobile_activator_.PickNextState(&cellular_network_,
-                                            &error_description));
+            mobile_activator_.InvokePickNextState(&cellular_network_,
+                                                  &error_description));
   set_connection_state(shill::kStatePortal);
   // After we go online, we go back to START, which acts as a jumping off
   // point for the two types of initial OTASP.
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_START,
-            mobile_activator_.PickNextState(&cellular_network_,
-                                            &error_description));
+            mobile_activator_.InvokePickNextState(&cellular_network_,
+                                                  &error_description));
   set_activator_state(MobileActivator::PLAN_ACTIVATION_START);
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_TRYING_OTASP,
-            mobile_activator_.PickNextState(&cellular_network_,
-                                            &error_description));
+            mobile_activator_.InvokePickNextState(&cellular_network_,
+                                                  &error_description));
   // Very similar things happen while we're trying OTASP.
   set_activator_state(MobileActivator::PLAN_ACTIVATION_TRYING_OTASP);
   set_network_activation_state(shill::kActivationStateActivating);
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_TRYING_OTASP,
-            mobile_activator_.PickNextState(&cellular_network_,
-                                            &error_description));
+            mobile_activator_.InvokePickNextState(&cellular_network_,
+                                                  &error_description));
   set_network_activation_state(shill::kActivationStatePartiallyActivated);
   set_connection_state(shill::kStatePortal);
   // And when we come back online again and aren't activating, load the portal.
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING,
-            mobile_activator_.PickNextState(&cellular_network_,
-                                            &error_description));
+            mobile_activator_.InvokePickNextState(&cellular_network_,
+                                                  &error_description));
   // The JS drives us through the payment portal.
   set_activator_state(MobileActivator::PLAN_ACTIVATION_SHOWING_PAYMENT);
   // The JS also calls us to signal that the portal is done.  This triggers us
@@ -168,24 +252,24 @@ TEST_F(MobileActivatorTest, BasicFlowForNewDevices) {
                           _));
   EXPECT_CALL(mobile_activator_,
               EvaluateCellularNetwork(Eq(&cellular_network_)));
-  mobile_activator_.HandleSetTransactionStatus(true);
+  mobile_activator_.InvokeHandleSetTransactionStatus(true);
   // Evaluate state will defer to PickNextState to select what to do now that
   // we're in START_ACTIVATION.  PickNextState should decide to start a final
   // OTASP.
   set_activator_state(MobileActivator::PLAN_ACTIVATION_START_OTASP);
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_OTASP,
-            mobile_activator_.PickNextState(&cellular_network_,
-                                            &error_description));
+            mobile_activator_.InvokePickNextState(&cellular_network_,
+                                                  &error_description));
   // Similarly to TRYING_OTASP and INITIATING_OTASP above...
   set_activator_state(MobileActivator::PLAN_ACTIVATION_OTASP);
   set_network_activation_state(shill::kActivationStateActivating);
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_OTASP,
-            mobile_activator_.PickNextState(&cellular_network_,
-                                            &error_description));
+            mobile_activator_.InvokePickNextState(&cellular_network_,
+                                                  &error_description));
   set_network_activation_state(shill::kActivationStateActivated);
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_DONE,
-            mobile_activator_.PickNextState(&cellular_network_,
-                                            &error_description));
+            mobile_activator_.InvokePickNextState(&cellular_network_,
+                                                  &error_description));
 }
 
 // A fake for MobileActivator::RequestCellularActivation that always succeeds.
@@ -242,6 +326,16 @@ TEST_F(MobileActivatorTest, OTASPScheduling) {
   }
 }
 
+TEST_F(MobileActivatorTest, OTASPStartAtStart) {
+  set_network_activation_type(shill::kActivationTypeOTASP);
+  EXPECT_CALL(mobile_activator_, HasRecentCellularPlanPayment())
+      .WillOnce(Return(false));
+  EXPECT_CALL(mobile_activator_,
+              EvaluateCellularNetwork(Eq(&cellular_network_)));
+  mobile_activator_.InvokeStartActivation();
+  EXPECT_EQ(mobile_activator_.state(), MobileActivator::PLAN_ACTIVATION_START);
+}
+
 TEST_F(MobileActivatorTest, ReconnectOnDisconnectFromPaymentPortal) {
   // Most states either don't care if we're offline or expect to be offline at
   // some point.  For instance the OTASP states expect to go offline during
@@ -255,21 +349,12 @@ TEST_F(MobileActivatorTest, ReconnectOnDisconnectFromPaymentPortal) {
   set_network_activation_state(shill::kActivationStatePartiallyActivated);
   set_activator_state(MobileActivator::PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING);
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_RECONNECTING,
-            mobile_activator_.PickNextState(&cellular_network_,
-                                            &error_description));
+            mobile_activator_.InvokePickNextState(&cellular_network_,
+                                                  &error_description));
   set_activator_state(MobileActivator::PLAN_ACTIVATION_SHOWING_PAYMENT);
   EXPECT_EQ(MobileActivator::PLAN_ACTIVATION_RECONNECTING,
-            mobile_activator_.PickNextState(&cellular_network_,
-                                            &error_description));
-}
-
-TEST_F(MobileActivatorTest, StartAtStart) {
-  EXPECT_CALL(mobile_activator_, HasRecentCellularPlanPayment())
-      .WillOnce(Return(false));
-  EXPECT_CALL(mobile_activator_,
-              EvaluateCellularNetwork(Eq(&cellular_network_)));
-  mobile_activator_.StartActivation();
-  EXPECT_EQ(mobile_activator_.state(), MobileActivator::PLAN_ACTIVATION_START);
+            mobile_activator_.InvokePickNextState(&cellular_network_,
+                                                  &error_description));
 }
 
 }  // namespace chromeos

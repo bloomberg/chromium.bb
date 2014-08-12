@@ -24,7 +24,9 @@ class DictionaryValue;
 
 namespace chromeos {
 
+class NetworkConnectionHandler;
 class NetworkState;
+class NetworkStateHandler;
 class TestMobileActivator;
 
 // Cellular plan config document.
@@ -55,6 +57,24 @@ class CellularConfigDocument
 };
 
 // This class performs mobile plan activation process.
+//
+// There are two types of activation flow:
+//
+//   1. Over-the-air Service Provision (OTASP) activation
+//      a. Call shill Activate() to partially activate modem so it can
+//         connect to the network.
+//      b. Enable auto-connect on the modem so it will connect to the network
+//         in the next step.
+//      c. Call shill Activate() again which resets the modem, when the modem
+//         comes back, it will auto-connect to the network.
+//      d. Navigate to the payment portal.
+//      e. Activate the modem using OTASP via shill Activate().
+//
+//   2. Simple activation - used by non-cellular activation and over-the-air
+//      (OTA) activation.
+//      a. Ensure there's a network connection.
+//      a. Navigate to payment portal.
+//      b. Activate the modem via shill CompletetActivation().
 class MobileActivator
     : public base::SupportsWeakPtr<MobileActivator>,
       public NetworkStateHandlerObserver {
@@ -126,15 +146,17 @@ class MobileActivator
   // Process payment transaction status.
   void OnSetTransactionStatus(bool success);
 
+ protected:
+  // For unit tests.
+  void set_state_for_test(PlanActivationState state) {
+    state_ = state;
+  }
+  virtual const NetworkState* GetNetworkState(const std::string& service_path);
+  virtual const NetworkState* GetDefaultNetwork();
+
  private:
   friend struct DefaultSingletonTraits<MobileActivator>;
   friend class TestMobileActivator;
-  FRIEND_TEST_ALL_PREFIXES(MobileActivatorTest, BasicFlowForNewDevices);
-  FRIEND_TEST_ALL_PREFIXES(MobileActivatorTest, OTASPScheduling);
-  FRIEND_TEST_ALL_PREFIXES(MobileActivatorTest,
-                           ReconnectOnDisconnectFromPaymentPortal);
-  FRIEND_TEST_ALL_PREFIXES(MobileActivatorTest, StartAtStart);
-  // We reach directly into the activator for testing purposes.
   friend class MobileActivatorTest;
 
   MobileActivator();
@@ -158,6 +180,12 @@ class MobileActivator
   void HandleSetTransactionStatus(bool success);
   // Starts activation.
   void StartActivation();
+  // Starts activation over non-cellular network.
+  void StartActivationOverNonCellularNetwork();
+  // Starts OTA activation.
+  void StartActivationOTA();
+  // Starts OTASP activation.
+  void StartActivationOTASP();
   // Called after we delay our OTASP (after payment).
   void RetryOTASP();
   // Continues activation process. This method is called after we disconnect
@@ -171,6 +199,8 @@ class MobileActivator
   void StartOTASP();
   // Called when an OTASP attempt times out.
   void HandleOTASPTimeout();
+  // Connect to network.
+  virtual void ConnectNetwork(const NetworkState* network);
   // Forces disconnect / reconnect when we detect portal connectivity issues.
   void ForceReconnect(const NetworkState* network,
                       PlanActivationState next_state);
@@ -180,10 +210,6 @@ class MobileActivator
   // Called on default network changes to update cellular network activation
   // state.
   void RefreshCellularNetworks();
-
-  // Helper to get network state corresponding to service path. Provided
-  // for easy mocking in unit tests.
-  virtual const NetworkState* GetNetworkState(const std::string& service_path);
 
   // Verify the state of cellular network and modify internal state.
   virtual void EvaluateCellularNetwork(const NetworkState* network);

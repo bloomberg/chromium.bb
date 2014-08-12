@@ -75,6 +75,12 @@ const char kErrorNoDevice[] = "no_device";
 const char kFailedPaymentError[] = "failed_payment";
 const char kFailedConnectivity[] = "connectivity";
 
+// Returns true if the device follows the simple activation flow.
+bool IsSimpleActivationFlow(const chromeos::NetworkState* network) {
+  return (network->activation_type() == shill::kActivationTypeNonCellular ||
+          network->activation_type() == shill::kActivationTypeOTA);
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -184,9 +190,10 @@ void MobileActivator::TerminateActivation() {
   continue_reconnect_timer_.Stop();
   reconnect_timeout_timer_.Stop();
 
-  if (NetworkHandler::IsInitialized())
-    NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
-                                                                   FROM_HERE);
+  if (NetworkHandler::IsInitialized()) {
+    NetworkHandler::Get()->network_state_handler()->
+        RemoveObserver(this, FROM_HERE);
+  }
   ReEnableCertRevocationChecking();
   meid_.clear();
   iccid_.clear();
@@ -245,10 +252,9 @@ void MobileActivator::InitiateActivation(const std::string& service_path) {
   DCHECK(content::BrowserThread::CurrentlyOn(BrowserThread::UI));
   const NetworkState* network =  GetNetworkState(service_path);
   if (!network) {
-    LOG(ERROR) << "Cellular service can't be found: " << service_path;
+    LOG(WARNING) << "Cellular service can't be found: " << service_path;
     return;
   }
-
   const DeviceState* device = NetworkHandler::Get()->network_state_handler()->
       GetDeviceState(network->device_path());
   if (!device) {
@@ -335,7 +341,7 @@ void MobileActivator::HandleSetTransactionStatus(bool success) {
     SignalCellularPlanPayment();
     UMA_HISTOGRAM_COUNTS("Cellular.PaymentReceived", 1);
     const NetworkState* network = GetNetworkState(service_path_);
-    if (network && network->activate_over_non_cellular_networks()) {
+    if (network && IsSimpleActivationFlow(network)) {
       state_ = PLAN_ACTIVATION_DONE;
       NetworkHandler::Get()->network_activation_handler()->
           CompleteActivation(network->path(),
@@ -370,7 +376,7 @@ void MobileActivator::HandlePortalLoaded(bool success) {
     } else {
       // There is no point in forcing reconnecting the cellular network if the
       // activation should not be done over it.
-      if (network->activate_over_non_cellular_networks())
+      if (network->activation_type() == shill::kActivationTypeNonCellular)
         return;
 
       payment_reconnect_count_++;
@@ -421,18 +427,57 @@ void MobileActivator::StartActivation() {
 
   // Start monitoring network property changes.
   NetworkHandler::Get()->network_state_handler()->AddObserver(this, FROM_HERE);
-  if (network->activate_over_non_cellular_networks()) {
-    // Fast forward to payment portal loading if the activation is performed
-    // over a non-cellular network.
-    ChangeState(
-        network,
-        (network->activation_state() == shill::kActivationStateActivated) ?
-        PLAN_ACTIVATION_DONE :
-        PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING,
-        "");
-    // Verify that there is no need to wait for the connection. This will also
-    // evaluate the network.
-    RefreshCellularNetworks();
+
+  if (network->activation_type() == shill::kActivationTypeNonCellular)
+      StartActivationOverNonCellularNetwork();
+  else if (network->activation_type() == shill::kActivationTypeOTA)
+      StartActivationOTA();
+  else if (network->activation_type() == shill::kActivationTypeOTASP)
+      StartActivationOTASP();
+}
+
+void MobileActivator::StartActivationOverNonCellularNetwork() {
+  // Fast forward to payment portal loading.
+  const NetworkState* network = GetNetworkState(service_path_);
+  if (!network) {
+    LOG(WARNING) << "Cellular service can't be found: " << service_path_;
+    return;
+  }
+
+  ChangeState(
+      network,
+      (network->activation_state() == shill::kActivationStateActivated) ?
+      PLAN_ACTIVATION_DONE :
+      PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING,
+      "" /* error_description */);
+
+  RefreshCellularNetworks();
+}
+
+void MobileActivator::StartActivationOTA() {
+  // Connect to the network if we don't currently have access.
+  const NetworkState* network = GetNetworkState(service_path_);
+  if (!network) {
+    LOG(WARNING) << "Cellular service can't be found: " << service_path_;
+    return;
+  }
+
+  const NetworkState* default_network = GetDefaultNetwork();
+  bool is_online_or_portal = default_network &&
+      (default_network->connection_state() == shill::kStateOnline ||
+       default_network->connection_state() == shill::kStatePortal);
+  if (!is_online_or_portal)
+    ConnectNetwork(network);
+
+  ChangeState(network, PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING,
+              "" /* error_description */);
+  RefreshCellularNetworks();
+}
+
+void MobileActivator::StartActivationOTASP() {
+  const NetworkState* network = GetNetworkState(service_path_);
+  if (!network) {
+    LOG(WARNING) << "Cellular service can't be found: " << service_path_;
     return;
   }
 
@@ -455,6 +500,11 @@ void MobileActivator::RetryOTASP() {
 
 void MobileActivator::StartOTASP() {
   const NetworkState* network = GetNetworkState(service_path_);
+  if (!network) {
+    LOG(WARNING) << "Cellular service can't be found: " << service_path_;
+    return;
+  }
+
   ChangeState(network, PLAN_ACTIVATION_START_OTASP, std::string());
   EvaluateCellularNetwork(network);
 }
@@ -462,6 +512,11 @@ void MobileActivator::StartOTASP() {
 void MobileActivator::HandleOTASPTimeout() {
   LOG(WARNING) << "OTASP seems to be taking too long.";
   const NetworkState* network = GetNetworkState(service_path_);
+  if (!network) {
+    LOG(WARNING) << "Cellular service can't be found: " << service_path_;
+    return;
+  }
+
   // We're here because one of OTASP steps is taking too long to complete.
   // Usually, this means something bad has happened below us.
   if (state_ == PLAN_ACTIVATION_INITIATING_ACTIVATION) {
@@ -498,6 +553,14 @@ void MobileActivator::HandleOTASPTimeout() {
               GetErrorMessage(kErrorDefault));
 }
 
+void MobileActivator::ConnectNetwork(const NetworkState* network) {
+  NetworkHandler::Get()->network_connection_handler()->ConnectToNetwork(
+      network->path(),
+      base::Bind(&base::DoNothing),
+      network_handler::ErrorCallback(),
+      false /* check_error_state */);
+}
+
 void MobileActivator::ForceReconnect(const NetworkState* network,
                                      PlanActivationState next_state) {
   DCHECK(network);
@@ -530,6 +593,11 @@ void MobileActivator::ForceReconnect(const NetworkState* network,
 void MobileActivator::ReconnectTimedOut() {
   LOG(ERROR) << "Ending activation attempt after failing to reconnect.";
   const NetworkState* network = GetNetworkState(service_path_);
+  if (!network) {
+    LOG(WARNING) << "Cellular service can't be found: " << service_path_;
+    return;
+  }
+
   ChangeState(network,
               PLAN_ACTIVATION_ERROR,
               GetErrorMessage(kFailedConnectivity));
@@ -569,15 +637,27 @@ void MobileActivator::RefreshCellularNetworks() {
     return;
   }
 
-  NetworkStateHandler* nsh = NetworkHandler::Get()->network_state_handler();
   const NetworkState* network = GetNetworkState(service_path_);
-  if (network && network->activate_over_non_cellular_networks()) {
+  if (!network) {
+    LOG(WARNING) << "Cellular service can't be found: " << service_path_;
+    return;
+  }
+
+  if (IsSimpleActivationFlow(network)) {
     bool waiting = (state_ == PLAN_ACTIVATION_WAITING_FOR_CONNECTION);
-    bool is_online = nsh->DefaultNetwork() &&
-        nsh->DefaultNetwork()->connection_state() == shill::kStateOnline;
-    if (waiting && is_online) {
+    // We're only interested in whether or not we have access to the payment
+    // portal (regardless of which network we use to access it), so check
+    // the default network connection state. The default network is the network
+    // used to route default traffic. Also, note that we can access the
+    // payment portal over a cellular network in the portalled state.
+    const NetworkState* default_network = GetDefaultNetwork();
+    bool is_online_or_portal = default_network &&
+        (default_network->connection_state() == shill::kStateOnline ||
+         (default_network->type() == shill::kTypeCellular &&
+          default_network->connection_state() == shill::kStatePortal));
+    if (waiting && is_online_or_portal) {
       ChangeState(network, post_reconnect_state_, "");
-    } else if (!waiting && !is_online) {
+    } else if (!waiting && !is_online_or_portal) {
       ChangeState(network, PLAN_ACTIVATION_WAITING_FOR_CONNECTION, "");
     }
   }
@@ -589,6 +669,10 @@ const NetworkState* MobileActivator::GetNetworkState(
     const std::string& service_path) {
   return NetworkHandler::Get()->network_state_handler()->GetNetworkState(
       service_path);
+}
+
+const NetworkState* MobileActivator::GetDefaultNetwork() {
+  return NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
 }
 
 void MobileActivator::EvaluateCellularNetwork(const NetworkState* network) {
@@ -610,9 +694,9 @@ void MobileActivator::EvaluateCellularNetwork(const NetworkState* network) {
                << "\n  setvice_path=" << network->path()
                << "\n  connected=" << network->IsConnectedState();
 
-  // If the network is activated over non cellular network, the activator state
-  // does not depend on the network's own state.
-  if (network->activate_over_non_cellular_networks())
+  // If the network is activated over non cellular network or OTA, the
+  // activator state does not depend on the network's own state.
+  if (IsSimpleActivationFlow(network))
     return;
 
   std::string error_description;
@@ -678,7 +762,7 @@ MobileActivator::PlanActivationState MobileActivator::PickNextOfflineState(
   switch (state_) {
     case PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING:
     case PLAN_ACTIVATION_SHOWING_PAYMENT:
-      if (!network->activate_over_non_cellular_networks())
+      if (!IsSimpleActivationFlow(network))
         new_state = PLAN_ACTIVATION_RECONNECTING;
       break;
     case PLAN_ACTIVATION_START:
@@ -707,10 +791,10 @@ MobileActivator::PlanActivationState MobileActivator::PickNextOnlineState(
   switch (state_) {
     case PLAN_ACTIVATION_START:
       if (activation == shill::kActivationStateActivated) {
-        if (network->connection_state() == shill::kStatePortal)
-          new_state = PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING;
-        else
+        if (network->connection_state() == shill::kStateOnline)
           new_state = PLAN_ACTIVATION_DONE;
+        else
+          new_state = PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING;
       } else if (activation == shill::kActivationStatePartiallyActivated) {
         new_state = PLAN_ACTIVATION_TRYING_OTASP;
       } else {
@@ -826,8 +910,8 @@ const char* MobileActivator::GetStateDescription(PlanActivationState state) {
 
 void MobileActivator::CompleteActivation() {
   // Remove observers, we are done with this page.
-  NetworkHandler::Get()->network_state_handler()->RemoveObserver(
-      this, FROM_HERE);
+  NetworkHandler::Get()->network_state_handler()->
+      RemoveObserver(this, FROM_HERE);
 
   // Reactivate other types of connections if we have
   // shut them down previously.
