@@ -38,6 +38,7 @@ public:
     static RenderListMarker* createAnonymous(RenderListItem*);
 
     virtual ~RenderListMarker();
+    virtual void destroy() OVERRIDE;
     virtual void trace(Visitor*) OVERRIDE;
 
     const String& text() const { return m_text; }

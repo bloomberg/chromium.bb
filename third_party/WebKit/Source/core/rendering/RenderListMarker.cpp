@@ -1063,8 +1063,13 @@ RenderListMarker::RenderListMarker(RenderListItem* item)
 
 RenderListMarker::~RenderListMarker()
 {
+}
+
+void RenderListMarker::destroy()
+{
     if (m_image)
         m_image->removeClient(this);
+    RenderBox::destroy();
 }
 
 void RenderListMarker::trace(Visitor* visitor)

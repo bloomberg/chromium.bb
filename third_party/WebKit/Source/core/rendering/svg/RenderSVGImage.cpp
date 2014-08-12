@@ -52,8 +52,13 @@ RenderSVGImage::RenderSVGImage(SVGImageElement* impl)
 
 RenderSVGImage::~RenderSVGImage()
 {
+}
+
+void RenderSVGImage::destroy()
+{
     ImageQualityController::remove(this);
     m_imageResource->shutdown();
+    RenderSVGModelObject::destroy();
 }
 
 bool RenderSVGImage::updateImageViewport()
