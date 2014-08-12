@@ -29,7 +29,8 @@ PICKLE_FORMAT_VERSION = 2
 class TestJar(object):
   _ANNOTATIONS = frozenset(
       ['Smoke', 'SmallTest', 'MediumTest', 'LargeTest', 'EnormousTest',
-       'FlakyTest', 'DisabledTest', 'Manual', 'PerfTest', 'HostDrivenTest'])
+       'FlakyTest', 'DisabledTest', 'Manual', 'PerfTest', 'HostDrivenTest',
+       'IntegrationTest'])
   _DEFAULT_ANNOTATION = 'SmallTest'
   _PROGUARD_CLASS_RE = re.compile(r'\s*?- Program class:\s*([\S]+)$')
   _PROGUARD_SUPERCLASS_RE = re.compile(r'\s*?  Superclass:\s*([\S]+)$')
