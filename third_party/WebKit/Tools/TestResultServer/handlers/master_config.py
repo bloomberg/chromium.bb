@@ -34,7 +34,7 @@ _masters = {
     },
     'chromium.webkit': {
         'name': 'ChromiumWebkit',
-        'groups': ['@ToT Chromium'],
+        'groups': ['@ToT Chromium', '@ToT Blink'],
     },
     'chromium.win': {
         'name': 'ChromiumWin',
