@@ -393,6 +393,7 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
       handling_event_type_(WebInputEvent::Undefined),
       ignore_ack_for_mouse_move_from_debugger_(false),
       closing_(false),
+      host_closing_(false),
       is_swapped_out_(swapped_out),
       input_method_is_active_(false),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
@@ -1201,6 +1202,8 @@ void RenderWidget::AutoResizeCompositor()  {
 }
 
 void RenderWidget::initializeLayerTreeView() {
+  DCHECK(!host_closing_);
+
   compositor_ =
       RenderWidgetCompositor::Create(this, IsThreadedCompositingEnabled());
   compositor_->setViewportSize(size_, physical_backing_size_);
@@ -1208,19 +1211,19 @@ void RenderWidget::initializeLayerTreeView() {
     StartCompositor();
 }
 
+void RenderWidget::DestroyLayerTreeView() {
+  // Always send this notification to prevent new layer tree views from
+  // being created, even if one hasn't been created yet.
+  webwidget_->willCloseLayerTreeView();
+  compositor_.reset();
+}
+
 blink::WebLayerTreeView* RenderWidget::layerTreeView() {
   return compositor_.get();
 }
 
-void RenderWidget::suppressCompositorScheduling(bool enable) {
-  if (compositor_)
-    compositor_->SetSuppressScheduleComposite(enable);
-}
-
 void RenderWidget::willBeginCompositorFrame() {
   TRACE_EVENT0("gpu", "RenderWidget::willBeginCompositorFrame");
-
-  DCHECK(RenderThreadImpl::current()->compositor_message_loop_proxy().get());
 
   // The following two can result in further layout and possibly
   // enable GPU acceleration so they need to be called before any painting
@@ -1378,6 +1381,12 @@ void RenderWidget::didBlur() {
 }
 
 void RenderWidget::DoDeferredClose() {
+  // No more compositing is possible.  This prevents shutdown races between
+  // previously posted CreateOutputSurface tasks and the host being unable to
+  // create them because the close message was handled.
+  DestroyLayerTreeView();
+  // Also prevent new compositors from being created.
+  host_closing_ = true;
   Send(new ViewHostMsg_Close(routing_id_));
 }
 
@@ -1418,8 +1427,7 @@ void RenderWidget::QueueSyntheticGesture(
 void RenderWidget::Close() {
   screen_metrics_emulator_.reset();
   if (webwidget_) {
-    webwidget_->willCloseLayerTreeView();
-    compositor_.reset();
+    DestroyLayerTreeView();
     webwidget_->close();
     webwidget_ = NULL;
   }

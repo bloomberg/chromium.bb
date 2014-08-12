@@ -115,7 +115,8 @@ class SnapshotAuraTest : public testing::Test {
 
   void WaitForDraw() {
     helper_->host()->compositor()->ScheduleDraw();
-    ui::DrawWaiterForTest::Wait(helper_->host()->compositor());
+    ui::DrawWaiterForTest::WaitForCompositingEnded(
+        helper_->host()->compositor());
   }
 
   void SetupTestWindow(const gfx::Rect& window_bounds) {

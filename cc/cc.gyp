@@ -480,6 +480,7 @@
         'trees/proxy.h',
         'trees/proxy_timing_history.cc',
         'trees/proxy_timing_history.h',
+        'trees/scoped_abort_remaining_swap_promises.h',
         'trees/single_thread_proxy.cc',
         'trees/single_thread_proxy.h',
         'trees/thread_proxy.cc',

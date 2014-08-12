@@ -7,9 +7,11 @@
 #include <cctype>
 
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "content/public/common/content_switches.h"
 #include "content/shell/renderer/test_runner/TestPlugin.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "content/shell/renderer/test_runner/WebTestInterfaces.h"
@@ -313,6 +315,10 @@ WebTestProxyBase::WebTestProxyBase()
       web_widget_(NULL),
       spellcheck_(new SpellCheckClient(this)),
       chooser_count_(0) {
+  // TODO(enne): using the scheduler introduces additional composite steps
+  // that create flakiness.  This should go away eventually.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisableSingleThreadProxyScheduler);
   Reset();
 }
 

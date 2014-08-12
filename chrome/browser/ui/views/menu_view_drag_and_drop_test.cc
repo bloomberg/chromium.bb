@@ -17,8 +17,9 @@ namespace {
 
 // Borrowed from chrome/browser/ui/views/bookmarks/bookmark_bar_view_test.cc,
 // since these are also disabled on Linux for drag and drop.
-// TODO(erg): Fix DND tests on linux_aura. crbug.com/163931
-#if defined(OS_LINUX) && defined(USE_AURA)
+// TODO(erg): Fix DND tests on linux_aura. http://crbug.com/163931
+// TODO(enne): Windows version has flaky timeouts.  http://crbug.com/401226
+#if defined(USE_AURA)
 #define MAYBE(x) DISABLED_##x
 #else
 #define MAYBE(x) x

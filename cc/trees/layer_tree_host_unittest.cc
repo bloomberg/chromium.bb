@@ -91,8 +91,8 @@ class LayerTreeHostTestSetNeedsCommit1 : public LayerTreeHostTest {
   }
 
   virtual void AfterTest() OVERRIDE {
-    EXPECT_GE(1, num_commits_);
-    EXPECT_GE(1, num_draws_);
+    EXPECT_LE(1, num_commits_);
+    EXPECT_LE(1, num_draws_);
   }
 
  private:
@@ -693,31 +693,6 @@ class LayerTreeHostTestUndrawnLayersPushContentBoundsLater
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostTestUndrawnLayersPushContentBoundsLater);
-
-class LayerTreeHostTestAbortFrameWhenInvisible : public LayerTreeHostTest {
- public:
-  LayerTreeHostTestAbortFrameWhenInvisible() {}
-
-  virtual void BeginTest() OVERRIDE {
-    // Request a commit (from the main thread), Which will trigger the commit
-    // flow from the impl side.
-    layer_tree_host()->SetNeedsCommit();
-    // Then mark ourselves as not visible before processing any more messages
-    // on the main thread.
-    layer_tree_host()->SetVisible(false);
-    // If we make it without kicking a frame, we pass!
-    EndTestAfterDelay(1);
-  }
-
-  virtual void Layout() OVERRIDE {
-    ASSERT_FALSE(true);
-    EndTest();
-  }
-
-  virtual void AfterTest() OVERRIDE {}
-};
-
-MULTI_THREAD_TEST_F(LayerTreeHostTestAbortFrameWhenInvisible);
 
 // This test verifies that properties on the layer tree host are commited
 // to the impl side.
@@ -1959,7 +1934,7 @@ class LayerTreeHostTestDeferCommits : public LayerTreeHostTest {
   int num_complete_commits_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestDeferCommits);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDeferCommits);
 
 class LayerTreeHostWithProxy : public LayerTreeHost {
  public:
@@ -2032,6 +2007,7 @@ TEST(LayerTreeHostTest, PartialUpdatesWithGLRenderer) {
 
   LayerTreeSettings settings;
   settings.max_partial_texture_updates = 4;
+  settings.single_thread_proxy_scheduler = false;
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
@@ -2051,6 +2027,7 @@ TEST(LayerTreeHostTest, PartialUpdatesWithSoftwareRenderer) {
 
   LayerTreeSettings settings;
   settings.max_partial_texture_updates = 4;
+  settings.single_thread_proxy_scheduler = false;
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
@@ -2070,6 +2047,7 @@ TEST(LayerTreeHostTest, PartialUpdatesWithDelegatingRendererAndGLContent) {
 
   LayerTreeSettings settings;
   settings.max_partial_texture_updates = 4;
+  settings.single_thread_proxy_scheduler = false;
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
@@ -2090,6 +2068,7 @@ TEST(LayerTreeHostTest,
 
   LayerTreeSettings settings;
   settings.max_partial_texture_updates = 4;
+  settings.single_thread_proxy_scheduler = false;
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
@@ -4586,10 +4565,11 @@ class LayerTreeHostTestBreakSwapPromise : public LayerTreeHostTest {
 // TODO(miletus): Flaky test: crbug.com/393995
 // MULTI_THREAD_TEST_F(LayerTreeHostTestBreakSwapPromise);
 
-class LayerTreeHostTestBreakSwapPromiseForAbortedCommit
+class LayerTreeHostTestBreakSwapPromiseForVisibilityAbortedCommit
     : public LayerTreeHostTest {
  protected:
-  LayerTreeHostTestBreakSwapPromiseForAbortedCommit() : commit_count_(0) {}
+  LayerTreeHostTestBreakSwapPromiseForVisibilityAbortedCommit()
+      : commit_count_(0) {}
 
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
 
@@ -4628,7 +4608,54 @@ class LayerTreeHostTestBreakSwapPromiseForAbortedCommit
   TestSwapPromiseResult swap_promise_result_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestBreakSwapPromiseForAbortedCommit);
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostTestBreakSwapPromiseForVisibilityAbortedCommit);
+
+class LayerTreeHostTestBreakSwapPromiseForContextAbortedCommit
+    : public LayerTreeHostTest {
+ protected:
+  LayerTreeHostTestBreakSwapPromiseForContextAbortedCommit()
+      : commit_count_(0) {}
+
+  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+
+  virtual void WillBeginMainFrame() OVERRIDE {
+    layer_tree_host()->SetDeferCommits(true);
+    layer_tree_host()->SetNeedsCommit();
+  }
+
+  virtual void DidDeferCommit() OVERRIDE {
+    layer_tree_host()->DidLoseOutputSurface();
+    layer_tree_host()->SetDeferCommits(false);
+
+    scoped_ptr<SwapPromise> swap_promise(
+        new TestSwapPromise(&swap_promise_result_));
+    layer_tree_host()->QueueSwapPromise(swap_promise.Pass());
+  }
+
+  virtual void DidCommit() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+
+  virtual void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
+                                             bool did_handle) OVERRIDE {
+    EndTest();
+  }
+
+  virtual void AfterTest() OVERRIDE {
+    {
+      base::AutoLock lock(swap_promise_result_.lock);
+      EXPECT_FALSE(swap_promise_result_.did_swap_called);
+      EXPECT_TRUE(swap_promise_result_.did_not_swap_called);
+      EXPECT_EQ(SwapPromise::COMMIT_FAILS, swap_promise_result_.reason);
+      EXPECT_TRUE(swap_promise_result_.dtor_called);
+    }
+  }
+
+  int commit_count_;
+  TestSwapPromiseResult swap_promise_result_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostTestBreakSwapPromiseForContextAbortedCommit);
 
 class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
  public:
@@ -4708,7 +4735,7 @@ class LayerTreeHostTestSimpleSwapPromiseMonitor : public LayerTreeHostTest {
   virtual void AfterTest() OVERRIDE {}
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestSimpleSwapPromiseMonitor);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSimpleSwapPromiseMonitor);
 
 class LayerTreeHostTestHighResRequiredAfterEvictingUIResources
     : public LayerTreeHostTest {
