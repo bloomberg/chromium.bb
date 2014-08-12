@@ -1,25 +1,62 @@
-sheriff-o-matic must be run from a server in order to handle polymer imports correctly.
+# INSTALLING NPM/BOWER
 
-1. cd Tools
-2. python -m SimpleHTTPServer
-3. Load http://localhost:8000/GardeningServer/sheriff-o-matic.html
-
-Run the tests via http://localhost:8000/GardeningServer/run-unittests.html.
-
-Polymer must be synced via bower in order for anything to work.
-
-INSTALLING NPM/BOWER
 The version of npm in apt-get is too old for bower. Instead
 install it from http://nodejs.org/download/.
 
 Install bower with:
-    sudo npm install -g bower
 
-SYNCING POLYMER
-1. cd Tools/GardeningServer
-2. bower update
+    $ npm install -g bower
 
-PUSHING
+# SYNCING DEPENDENCIES
+
+The makefile will update dependencies, including polymer components and testing libraries:
+
+    $ make update
+
+This just checks for npm and bower, and then runs:
+
+    $ bower update
+    $ npm install
+
+# RUNNING SHERIFF-O-MATIC
+
+sheriff-o-matic must be run from a server in order to handle polymer imports correctly.
+
+    $ cd Tools
+    $ python -m SimpleHTTPServer
+
+Then load: http://localhost:8000/GardeningServer/sheriff-o-matic.html
+
+# TESTING
+
+## Mocha (new-style) tests
+
+The tests can be run in the browser or from the command line.
+
+In the browser: http://localhost:8000/GardeningServer/test/run-unit-tests.html
+
+From the command line:
+
+    $ cd Tools/GardeningServer
+    $ make test
+
+This will launch karma, run the tests and watch the source files for changes. To run once and exit, use:
+
+    $ make single-test
+
+Or, you can start karma manually:
+
+    $ cd Tools/GardeningServer
+    $ ./node_modules/karma/bin/karma start
+
+You can shorten this command to 'karma start' if you run 'npm install -g karma-cli'.
+
+## QUnit (old-style) tests
+
+While we still have tests using QUnit, you can run these at: http://localhost:8000/GardeningServer/run-unittests.html.
+
+# PUSHING
+
 Fill in the revision you're pushing for XXXX.
 1. appcfg.py update . --version rXXXX
 2. Go to appengine.google.com and select the sheriff-o-matic app.
@@ -32,3 +69,16 @@ wrong with the push and so we can know what we've pushed.
 If you're unsure about whether you might have broken things, before
 step 4, you can click on the link for that version to see that
 version of the server before you make it the default.
+
+# LIBRARIES
+
+sugar: Provides generic syntactic sugar for JavaScript, mostly by extending native object prototypes.
+
+karma: test runner. Runs the unit tests in an instance of Chrome and pipes the results to the command
+       line. By default, it watches for changes to files and will automatically re-run the tests. To run
+       once and exit, use 'karma start --single-run' or 'make single-test'.
+
+mocha: testing framework. Provides good asynchronous and synchronous test support. Tests run serially,
+       so exceptions are reported for the right test case.
+
+chai:  assertion library.
