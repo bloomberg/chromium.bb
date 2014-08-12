@@ -513,7 +513,8 @@ INSTANTIATE_TEST_CASE_P(MSE_Widevine,
 #endif  // !defined(WIDEVINE_CDM_IS_COMPONENT)
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM) {
+// http://crbug.com/402766
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_Playback_AudioOnly_WebM) {
   TestSimplePlayback("bear-a_enc-a.webm", kWebMAudioOnly);
 }
 
