@@ -193,7 +193,6 @@ void PasswordGenerationPopupViewViews::Hide() {
 }
 
 void PasswordGenerationPopupViewViews::UpdateBoundsAndRedrawPopup() {
-
   DoUpdateBoundsAndRedrawPopup();
 }
 
@@ -249,7 +248,9 @@ void PasswordGenerationPopupViewViews::StyledLabelLinkClicked(
 
 bool PasswordGenerationPopupViewViews::IsPointInPasswordBounds(
     const gfx::Point& point) {
-  return password_view_->bounds().Contains(point);
+  if (password_view_)
+    return password_view_->bounds().Contains(point);
+  return false;
 }
 
 PasswordGenerationPopupView* PasswordGenerationPopupView::Create(
