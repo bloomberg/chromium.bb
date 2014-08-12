@@ -4,9 +4,10 @@
 
 #include "chrome/common/net/x509_certificate_model.h"
 
-#include <openssl/bio.h>
 #include <openssl/obj_mac.h>
 #include <openssl/sha.h>
+#include <openssl/stack.h>
+#include <openssl/x509.h>
 #include <openssl/x509v3.h>
 
 #include "base/i18n/number_formatting.h"
@@ -83,8 +84,8 @@ std::string GetKeyValuesFromNameEntry(X509_NAME_ENTRY* entry) {
 
 std::string GetKeyValuesFromNameEntries(STACK_OF(X509_NAME_ENTRY)* entries) {
   std::string ret;
-  int rdns = sk_X509_NAME_ENTRY_num(entries) - 1;
-  for (int i = rdns; i >= 0; --i) {
+  size_t rdns = sk_X509_NAME_ENTRY_num(entries);
+  for (size_t i = rdns - 1; i < rdns; --i) {
     X509_NAME_ENTRY* entry = sk_X509_NAME_ENTRY_value(entries, i);
     if (!entry)
       continue;
@@ -95,8 +96,8 @@ std::string GetKeyValuesFromNameEntries(STACK_OF(X509_NAME_ENTRY)* entries) {
 
 std::string GetKeyValuesFromName(X509_NAME* name) {
   std::string ret;
-  int rdns = X509_NAME_entry_count(name) - 1;
-  for (int i = rdns; i >= 0; --i) {
+  size_t rdns = X509_NAME_entry_count(name);
+  for (size_t i = rdns - 1; i < rdns; --i) {
     X509_NAME_ENTRY* entry = X509_NAME_get_entry(name, i);
     if (!entry)
       continue;
@@ -528,7 +529,7 @@ std::string ProcessExtKeyUsage(X509_EXTENSION* ex) {
       value(reinterpret_cast<EXTENDED_KEY_USAGE*>(X509V3_EXT_d2i(ex)));
   if (!value.get())
     return l10n_util::GetStringUTF8(IDS_CERT_EXTENSION_DUMP_ERROR);
-  for (int i = 0; i < sk_ASN1_OBJECT_num(value.get()); i++) {
+  for (size_t i = 0; i < sk_ASN1_OBJECT_num(value.get()); i++) {
     ASN1_OBJECT* obj = sk_ASN1_OBJECT_value(value.get(), i);
     std::string oid_dump = Asn1ObjectToOIDString(obj);
     std::string oid_text = Asn1ObjectToString(obj);
@@ -665,7 +666,7 @@ std::string ProcessGeneralName(GENERAL_NAME* name) {
 
 std::string ProcessGeneralNames(GENERAL_NAMES* names) {
   std::string rv;
-  for (int i = 0; i < sk_GENERAL_NAME_num(names); ++i) {
+  for (size_t i = 0; i < sk_GENERAL_NAME_num(names); ++i) {
     GENERAL_NAME* name = sk_GENERAL_NAME_value(names, i);
     rv += ProcessGeneralName(name);
   }
@@ -728,7 +729,7 @@ std::string ProcessUserNotice(USERNOTICE* notice) {
   if (notice->noticeref) {
     rv += Asn1StringToUTF8(notice->noticeref->organization);
     rv += " - ";
-    for (int i = 0; i < sk_ASN1_INTEGER_num(notice->noticeref->noticenos);
+    for (size_t i = 0; i < sk_ASN1_INTEGER_num(notice->noticeref->noticenos);
          ++i) {
       ASN1_INTEGER* info =
           sk_ASN1_INTEGER_value(notice->noticeref->noticenos, i);
@@ -756,7 +757,7 @@ std::string ProcessCertificatePolicies(X509_EXTENSION* ex) {
   if (!policies.get())
     return l10n_util::GetStringUTF8(IDS_CERT_EXTENSION_DUMP_ERROR);
 
-  for (int i = 0; i < sk_POLICYINFO_num(policies.get()); ++i) {
+  for (size_t i = 0; i < sk_POLICYINFO_num(policies.get()); ++i) {
     POLICYINFO* info = sk_POLICYINFO_value(policies.get(), i);
     std::string key = Asn1ObjectToString(info->policyid);
     // If we have policy qualifiers, display the oid text
@@ -771,7 +772,7 @@ std::string ProcessCertificatePolicies(X509_EXTENSION* ex) {
 
     if (info->qualifiers && sk_POLICYQUALINFO_num(info->qualifiers)) {
       // Add all qualifiers on separate lines, indented.
-      for (int i = 0; i < sk_POLICYQUALINFO_num(info->qualifiers); ++i) {
+      for (size_t i = 0; i < sk_POLICYQUALINFO_num(info->qualifiers); ++i) {
         POLICYQUALINFO* qualifier =
             sk_POLICYQUALINFO_value(info->qualifiers, i);
         rv += "  ";
@@ -827,7 +828,7 @@ std::string ProcessCrlDistPoints(X509_EXTENSION* ex) {
   if (!dist_points.get())
     return l10n_util::GetStringUTF8(IDS_CERT_EXTENSION_DUMP_ERROR);
 
-  for (int i = 0; i < sk_DIST_POINT_num(dist_points.get()); ++i) {
+  for (size_t i = 0; i < sk_DIST_POINT_num(dist_points.get()); ++i) {
     DIST_POINT* point = sk_DIST_POINT_value(dist_points.get(), i);
     if (point->distpoint) {
       switch (point->distpoint->type) {
@@ -868,7 +869,7 @@ std::string ProcessAuthInfoAccess(X509_EXTENSION* ex) {
   if (!aia.get())
     return l10n_util::GetStringUTF8(IDS_CERT_EXTENSION_DUMP_ERROR);
 
-  for (int i = 0; i < sk_ACCESS_DESCRIPTION_num(aia.get()); ++i) {
+  for (size_t i = 0; i < sk_ACCESS_DESCRIPTION_num(aia.get()); ++i) {
     ACCESS_DESCRIPTION* desc = sk_ACCESS_DESCRIPTION_value(aia.get(), i);
 
     base::string16 location_str =
@@ -1150,29 +1151,29 @@ void DestroyCertChain(net::X509Certificate::OSCertHandles* cert_handles) {
 
 std::string GetCMSString(const net::X509Certificate::OSCertHandles& cert_chain,
                          size_t start, size_t end) {
-  std::string rv;
-  crypto::ScopedOpenSSL<PKCS7, PKCS7_free>::Type p7(PKCS7_new());
-  if (!p7.get())
-    return rv;
-  if (!PKCS7_set_type(p7.get(), NID_pkcs7_signed))
-    return rv;
+  STACK_OF(X509)* certs = sk_X509_new_null();
 
   for (size_t i = start; i < end; ++i) {
-    if (!PKCS7_add_certificate(p7.get(), cert_chain[i]))
-      return rv;
+    sk_X509_push(certs, cert_chain[i]);
   }
 
-  crypto::ScopedOpenSSL<BIO, BIO_free_all>::Type bio(
-      crypto::BIO_new_string(&rv));
-  if (!bio.get())
-    return rv;
+  CBB pkcs7;
+  CBB_init(&pkcs7, 1024 * sk_X509_num(certs));
 
-  if (!i2d_PKCS7_bio(bio.get(), p7.get())) {
-    rv.clear();
-    return rv;
+  uint8_t *pkcs7_data;
+  size_t pkcs7_len;
+  if (!PKCS7_bundle_certificates(&pkcs7, certs) ||
+      !CBB_finish(&pkcs7, &pkcs7_data, &pkcs7_len)) {
+    CBB_cleanup(&pkcs7);
+    sk_X509_free(certs);
+    return "";
   }
 
-  return rv;
+  std::string ret(reinterpret_cast<char*>(pkcs7_data), pkcs7_len);
+  OPENSSL_free(pkcs7_data);
+  sk_X509_free(certs);
+
+  return ret;
 }
 
 std::string ProcessSecAlgorithmSignature(

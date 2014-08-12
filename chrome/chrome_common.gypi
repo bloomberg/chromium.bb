@@ -665,6 +665,9 @@
             'sources!': [
               'common/net/x509_certificate_model_nss.cc',
             ],
+            'dependencies': [
+              '<(DEPTH)/third_party/boringssl/boringssl.gyp:boringssl',
+            ],
           },
           {  # else !use_openssl: remove the unneeded files
             'sources!': [
