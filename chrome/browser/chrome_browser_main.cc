@@ -44,6 +44,7 @@
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/component_updater/cld_component_installer.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
+#include "chrome/browser/component_updater/ev_whitelist_component_installer.h"
 #include "chrome/browser/component_updater/flash_component_installer.h"
 #include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
 #include "chrome/browser/component_updater/recovery_component_installer.h"
@@ -412,6 +413,12 @@ void RegisterComponentsForUpdate() {
     g_browser_process->crl_set_fetcher()->StartInitialLoad(cus, path);
 #endif
   }
+
+#if !defined(OS_ANDROID)
+  // Android does not currently have the EV indicator. No need to get the
+  // EV certs whitelist on Android, then.
+  RegisterEVWhitelistComponent(cus);
+#endif
 
 #if defined(OS_WIN)
   ExecutePendingSwReporter(cus, g_browser_process->local_state());

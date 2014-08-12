@@ -41,6 +41,9 @@ bool PathProvider(int key, base::FilePath* result) {
     case DIR_SW_REPORTER:
       cur = cur.Append(FILE_PATH_LITERAL("SwReporter"));
       break;
+    case DIR_COMPONENT_EV_WHITELIST:
+      cur = cur.Append(FILE_PATH_LITERAL("EVWhitelist"));
+      break;
     default:
       return false;
   }

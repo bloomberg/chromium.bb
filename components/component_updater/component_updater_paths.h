@@ -17,6 +17,7 @@ enum {
                                     // component.
   DIR_SWIFT_SHADER,                 // Path to the SwiftShader component.
   DIR_SW_REPORTER,                  // Path to the SwReporter component.
+  DIR_COMPONENT_EV_WHITELIST,       // EV whitelist for CT files.
   PATH_END
 };
 
