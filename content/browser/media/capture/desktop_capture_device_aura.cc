@@ -245,8 +245,15 @@ void DesktopVideoCaptureMachine::UpdateCaptureSize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (oracle_proxy_ && desktop_window_) {
     ui::Layer* layer = desktop_window_->layer();
-    oracle_proxy_->UpdateCaptureSize(ui::ConvertSizeToPixel(
-        layer, layer->bounds().size()));
+    gfx::Size capture_size =
+        ui::ConvertSizeToPixel(layer, layer->bounds().size());
+#if defined(OS_CHROMEOS)
+    // Pad desktop capture size to multiples of 16 pixels to accommodate HW
+    // encoder. TODO(hshi): remove this hack. See http://crbug.com/402151
+    capture_size.SetSize((capture_size.width() + 15) & ~15,
+                         (capture_size.height() + 15) & ~15);
+#endif
+    oracle_proxy_->UpdateCaptureSize(capture_size);
   }
   ClearCursorState();
 }
