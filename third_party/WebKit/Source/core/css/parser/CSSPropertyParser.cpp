@@ -168,7 +168,7 @@ void CSSPropertyParser::addProperty(CSSPropertyID propId, PassRefPtrWillBeRawPtr
         Vector<StylePropertyShorthand, 4> shorthands;
         getMatchingShorthandsForLonghand(propId, &shorthands);
         // Viewport descriptors have width and height as shorthands, but it doesn't
-        // make sense for CSSShorthands.in to consider them as such. The shorthand
+        // make sense for CSSProperties.in to consider them as such. The shorthand
         // index is only used by the inspector and doesn't affect viewport
         // descriptors.
         if (shorthands.isEmpty())

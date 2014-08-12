@@ -318,11 +318,10 @@
         {
           'action_name': 'StylePropertyShorthand',
           'inputs': [
-            '<@(scripts_for_in_files)',
+            '<@(css_properties_files)',
             '../build/scripts/make_style_shorthands.py',
             '../build/scripts/templates/StylePropertyShorthand.cpp.tmpl',
             '../build/scripts/templates/StylePropertyShorthand.h.tmpl',
-            'css/CSSShorthands.in',
           ],
           'outputs': [
             '<(blink_core_output_dir)/StylePropertyShorthand.cpp',
@@ -331,7 +330,7 @@
           'action': [
             'python',
             '../build/scripts/make_style_shorthands.py',
-            'css/CSSShorthands.in',
+            'css/CSSProperties.in',
             '--output_dir',
             '<(blink_core_output_dir)',
           ],
@@ -339,12 +338,11 @@
         {
           'action_name': 'StyleBuilder',
           'inputs': [
-            '<@(scripts_for_in_files)',
+            '<@(css_properties_files)',
             '../build/scripts/make_style_builder.py',
             '../build/scripts/templates/StyleBuilder.cpp.tmpl',
             '../build/scripts/templates/StyleBuilderFunctions.cpp.tmpl',
             '../build/scripts/templates/StyleBuilderFunctions.h.tmpl',
-            'css/CSSProperties.in',
           ],
           'outputs': [
             '<(blink_core_output_dir)/StyleBuilder.cpp',

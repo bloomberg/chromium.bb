@@ -74,15 +74,6 @@ def _upper_first(name):
     return name[0].upper() + name[1:]
 
 
-def camelcase_property_name(property_name):
-    """Convert hyphen-separated-name to UpperCamelCase.
-
-    E.g., '-foo-bar' becomes 'FooBar'.
-    Used for CSS property names.
-    """
-    return ''.join(_upper_first(word) for word in property_name.split('-'))
-
-
 def to_macro_style(name):
     s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).upper()

@@ -71,8 +71,7 @@ class _W3CTestConverter(HTMLParser):
         self.resources_relpath = resources_relpath
 
         # These settings might vary between WebKit and Blink
-        self._css_property_file = self.path_from_webkit_root('Source', 'core', 'css', 'CSSPropertyNames.in')
-        self._css_property_split_string = 'alias_for='
+        self._css_property_file = self.path_from_webkit_root('Source', 'core', 'css', 'CSSProperties.in')
 
         self.prefixed_properties = self.read_webkit_prefixed_css_property_list()
 
@@ -92,17 +91,16 @@ class _W3CTestConverter(HTMLParser):
 
         contents = self._filesystem.read_text_file(self._css_property_file)
         for line in contents.splitlines():
-            if re.match('^(#|//)', line):
+            if re.match('^(#|//|$)', line):
                 # skip comments and preprocessor directives
                 continue
-            fields = line.split(self._css_property_split_string)
-            for prop in fields:
-                # Find properties starting with the -webkit- prefix.
-                match = re.match('-webkit-([\w|-]*)', prop)
-                if match:
-                    prefixed_properties.append(match.group(1))
-                else:
-                    unprefixed_properties.add(prop.strip())
+            prop = line.split()[0]
+            # Find properties starting with the -webkit- prefix.
+            match = re.match('-webkit-([\w|-]*)', prop)
+            if match:
+                prefixed_properties.append(match.group(1))
+            else:
+                unprefixed_properties.add(prop.strip())
 
         # Ignore any prefixed properties for which an unprefixed version is supported
         return [prop for prop in prefixed_properties if prop not in unprefixed_properties]

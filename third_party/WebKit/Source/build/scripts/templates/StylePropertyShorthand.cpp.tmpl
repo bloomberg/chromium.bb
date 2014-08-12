@@ -29,15 +29,15 @@
 namespace blink {
 {% for property_id, property in properties.items() %}
 
-const StylePropertyShorthand& {{property.camel_case_name}}Shorthand()
+const StylePropertyShorthand& {{property.lower_camel_name}}Shorthand()
 {
-    static const CSSPropertyID {{property.camel_case_name}}Properties[] = {
-        {% for longhand_id in property.camel_case_longhands %}
+    static const CSSPropertyID {{property.lower_camel_name}}Properties[] = {
+        {% for longhand_id in property.longhand_property_ids %}
         {{longhand_id}},
         {% endfor %}
     };
-    DEFINE_STATIC_LOCAL(StylePropertyShorthand, {{property.camel_case_name}}Longhands, ({{property_id}}, {{property.camel_case_name}}Properties, WTF_ARRAY_LENGTH({{property.camel_case_name}}Properties)));
-    return {{property.camel_case_name}}Longhands;
+    DEFINE_STATIC_LOCAL(StylePropertyShorthand, {{property.lower_camel_name}}Longhands, ({{property_id}}, {{property.lower_camel_name}}Properties, WTF_ARRAY_LENGTH({{property.lower_camel_name}}Properties)));
+    return {{property.lower_camel_name}}Longhands;
 }
 {% endfor %}
 
@@ -50,7 +50,7 @@ const StylePropertyShorthand& shorthandForProperty(CSSPropertyID propertyID)
     switch (propertyID) {
         {% for property_id, property in properties.items() if property.camel_case_name != "marker" %}
         case {{property_id}}:
-            return {{property.camel_case_name}}Shorthand();
+            return {{property.lower_camel_name}}Shorthand();
         {% endfor %}
     default: {
         return emptyShorthand;
@@ -65,7 +65,7 @@ void getMatchingShorthandsForLonghand(CSSPropertyID propertyID, Vector<StyleProp
     {% for longhand_id, shorthands in longhands_dictionary.items() %}
     case {{longhand_id}}: {
         {% for shorthand in shorthands %}
-        result->uncheckedAppend({{shorthand.camel_case_name}}Shorthand());
+        result->uncheckedAppend({{shorthand.lower_camel_name}}Shorthand());
         {% endfor %}
         break;
     }

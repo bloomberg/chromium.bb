@@ -23,6 +23,10 @@ scripts_for_in_files = [
   "$_scripts_dir/templates/macros.tmpl",
 ]
 
+css_properties_files = scripts_for_in_files + [
+  "$_scripts_dir/css_properties.py",
+]
+
 make_event_factory_files = scripts_for_in_files + [
   "$_scripts_dir/make_event_factory.py",
   "$_scripts_dir/templates/EventFactory.cpp.tmpl",
@@ -111,6 +115,21 @@ template("process_in_files") {
     }
 
     deps = make_core_generated_deps
+  }
+}
+
+# Template for scripts using css_properties.py. This is a special case of
+# process_in_files.
+#   outputs: expected results
+template("css_properties") {
+  process_in_files(target_name) {
+    script = invoker.script
+    in_files = ["css/CSSProperties.in"]
+    other_inputs = css_properties_files
+    if (defined(invoker.other_inputs)) {
+      other_inputs += invoker.other_inputs
+    }
+    outputs = invoker.outputs
   }
 }
 

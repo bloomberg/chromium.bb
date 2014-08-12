@@ -15,6 +15,11 @@
             'template_expander.py',
             'templates/macros.tmpl',
         ],
+        'css_properties_files': [
+            '<@(scripts_for_in_files)',
+            'css_properties.py',
+            '../../core/css/CSSProperties.in',
+        ],
         'make_event_factory_files': [
             '<@(scripts_for_in_files)',
             'make_event_factory.py',

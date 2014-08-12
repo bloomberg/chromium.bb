@@ -16,7 +16,7 @@ namespace blink {
 void StyleBuilder::applyProperty(CSSPropertyID property, StyleResolverState& state, CSSValue* value, bool isInitial, bool isInherit) {
     switch(property) {
     {% for property_id, property in properties.items()
-          if not property.direction_aware and not property.skip %}
+        if property.should_declare_functions or property.use_handlers_for %}
     {% set used_property = properties[property.use_handlers_for] or property %}
     {% set used_property_id = used_property.property_id %}
     case {{property_id}}:
@@ -38,12 +38,11 @@ void StyleBuilder::applyProperty(CSSPropertyID property, StyleResolverState& sta
         applyProperty(resolvedProperty, state, value);
         return;
     }
-    {% for property_id, property in properties.items() if property.skip %}
+    {% for property_id, property in properties.items() if property.builder_skip %}
     case {{property_id}}:
     {% endfor %}
         return;
     default:
-        // FIXME: We should explicitly handle all cases here once we merge the various .in files
         ASSERT_NOT_REACHED();
     }
 }

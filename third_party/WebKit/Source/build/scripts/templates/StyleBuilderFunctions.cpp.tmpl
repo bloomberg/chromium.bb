@@ -118,8 +118,8 @@ namespace blink {
 
 {% macro apply_auto(property_id, auto_getter=none, auto_setter=none, auto_identity='CSSValueAuto', compute_length=false) %}
 {% set property = properties[property_id] %}
-{% set auto_getter = auto_getter or 'hasAuto' + property.camel_case_name %}
-{% set auto_setter = auto_setter or 'setHasAuto' + property.camel_case_name %}
+{% set auto_getter = auto_getter or 'hasAuto' + property.name_for_methods %}
+{% set auto_setter = auto_setter or 'setHasAuto' + property.name_for_methods %}
 {{declare_initial_function(property_id)}}
 {
     state.style()->{{auto_setter}}();
@@ -281,7 +281,7 @@ static bool lengthTypeAndValueMatch(const BorderImageLengthBox& borderImageLengt
 
 {% macro apply_color(property_id, initial_color='StyleColor::currentColor') %}
 {% set property = properties[property_id] %}
-{% set visited_link_setter = 'setVisitedLink' + property.camel_case_name %}
+{% set visited_link_setter = 'setVisitedLink' + property.name_for_methods %}
 {{declare_initial_function(property_id)}}
 {
     StyleColor color = {{initial_color}}();

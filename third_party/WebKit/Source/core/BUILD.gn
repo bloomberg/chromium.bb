@@ -591,7 +591,7 @@ group("make_core_generated") {
 # "CSSPropertyNames" in make_core_generated from GYP.
 process_in_files("make_core_generated_css_property_names") {
   script = "../build/scripts/make_css_property_names.py"
-  in_files = [ 
+  in_files = [
     "css/CSSPropertyNames.in",
     "css/SVGCSSPropertyNames.in",
   ]
@@ -617,11 +617,8 @@ process_in_files("make_core_generated_media_features") {
 }
 
 # "StylePropertyShorthand" in make_core_generated from GYP.
-process_in_files("make_core_generated_style_property_shorthand") {
+css_properties("make_core_generated_style_property_shorthand") {
   script = "../build/scripts/make_style_shorthands.py"
-  in_files = [
-    "css/CSSShorthands.in",
-  ]
   other_inputs = [
     "../build/scripts/templates/StylePropertyShorthand.cpp.tmpl",
     "../build/scripts/templates/StylePropertyShorthand.h.tmpl",
@@ -633,12 +630,8 @@ process_in_files("make_core_generated_style_property_shorthand") {
 }
 
 # "StyleBuilder" in make_core_generated from GYP.
-process_in_files("make_core_generated_style_builder") {
+css_properties("make_core_generated_style_builder") {
   script = "../build/scripts/make_style_builder.py"
-
-  in_files = [
-    "css/CSSProperties.in",
-  ]
   other_inputs = [
     "../build/scripts/templates/StyleBuilder.cpp.tmpl",
     "../build/scripts/templates/StyleBuilderFunctions.cpp.tmpl",
