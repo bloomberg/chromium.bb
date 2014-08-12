@@ -42,15 +42,15 @@
           '../printing/printing.gyp:printing',
         ],
       }],
-      ['OS=="win"', {
-        'platform_locale_settings_grd':
-            'app/resources/locale_settings_win.grd',
-      },],
       ['enable_printing==1', {
         'chromium_browser_dependencies': [
           'service',
         ],
       }],
+      ['OS=="win"', {
+        'platform_locale_settings_grd':
+            'app/resources/locale_settings_win.grd',
+      },],
       ['OS=="linux"', {
         'conditions': [
           ['chromeos==1', {
@@ -100,7 +100,6 @@
     ['OS!="ios"', {
       'includes': [
         '../apps/apps.gypi',
-        'chrome_browser_extensions.gypi',
         'chrome_debugger.gypi',
         'chrome_dll.gypi',
         'chrome_exe.gypi',
@@ -682,6 +681,11 @@
     ],  # OS=="android"
     ['configuration_policy==1 and OS!="android" and OS!="ios"', {
       'includes': [ 'policy.gypi', ],
+    }],
+    ['enable_extensions==1', {
+      'includes': [
+        'chrome_browser_extensions.gypi',
+      ],
     }],
     ['enable_printing==1', {
       'targets': [

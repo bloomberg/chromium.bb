@@ -82,7 +82,6 @@ static_library("ui") {
     sources += rebase_path(gypi_values.chrome_browser_ui_non_ios_sources,
                            ".", "//chrome")
     deps += [
-      "//chrome/browser/extensions",
       "//chrome/browser/performance_monitor",
       "//chrome/browser/ui/webui/omnibox:mojo_bindings",
       "//chrome/common/extensions/api:api",
@@ -379,6 +378,11 @@ static_library("ui") {
         "//third_party/libaddressinput:strings",
       ]
     }
+  }
+  if (enable_extensions) {
+    deps += [ "//chrome/browser/extensions" ]
+    sources += rebase_path(gypi_values.chrome_browser_ui_extensions_sources,
+                           ".", "//chrome")
   }
   if (enable_google_now && !is_android) {
     sources += rebase_path(

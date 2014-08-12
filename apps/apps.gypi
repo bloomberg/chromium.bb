@@ -93,6 +93,9 @@
         ],
         ['enable_extensions==0',
           {
+            'dependencies!': [
+              'browser_extensions',
+            ],
             'sources/': [
               ['exclude', '.*'],
               ['include', 'ui/web_contents_sizer\.cc$'],

@@ -2942,7 +2942,6 @@
           'dependencies': [
             'apps',
             'browser/performance_monitor/performance_monitor.gyp:performance_monitor',
-            'browser_extensions',
             'common/extensions/api/api.gyp:chrome_api',
             'debugger',
             'installer_util',
@@ -3058,6 +3057,7 @@
         }],
         ['enable_extensions==1', {
           'dependencies': [
+            'browser_extensions',
             'sync_file_system_drive_proto',
             'sync_file_system_proto',
           ],

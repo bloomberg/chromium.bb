@@ -15,6 +15,10 @@ gypi_values = exec_script(
 # GYP version: chrome/chrome_browser_extensions.gypi:browser_extensions
 static_library("extensions") {
   sources = []
+  sources += rebase_path(
+      gypi_values.chrome_browser_extensions_enabled_sources,
+      ".", "//chrome")
+
   defines = []
 
   # TODO(GYP) remove this when webrtc is ported.
@@ -65,6 +69,8 @@ static_library("extensions") {
     #"debugger",  TODO(GYP)
     #"installer_util",  TODO(GYP)
     #"../components/components.gyp:omaha_query_params",  TODO(GYP)
+    #'../device/bluetooth/bluetooth.gyp:device_bluetooth',  TODO(GYP)
+    #"../device/hid/hid.gyp:device_hid",  TODO(GYP)
     #"../extensions/extensions.gyp:extensions_browser",  TODO(GYP)
     #"../third_party/webrtc/modules/modules.gyp:desktop_capture",  TODO(GYP)
   ]
@@ -81,6 +87,7 @@ static_library("extensions") {
     configs += [ "//build/config/linux:dbus" ]
     deps += [
       "//third_party/libevent",
+      "//third_party/protobuf:protobuf_lite",
       #'../chromeos/ime/input_method.gyp:gencode',  TODO(GYP)
     ]
   } else {
@@ -88,6 +95,9 @@ static_library("extensions") {
       "default_apps.cc",
       "default_apps.h'"
     ]
+    sources += rebase_path(
+        gypi_values.chrome_browser_extensions_non_chromeos_sources,
+        ".", "//chrome")
   }
 
   if (use_ash) {
@@ -97,123 +107,101 @@ static_library("extensions") {
     ]
   }
 
-  # TODO(thestig) This conditional should be removed when extensions are
-  # no longer enabled on mobile.
-  if (enable_extensions) {
-    sources += rebase_path(
-        gypi_values.chrome_browser_extensions_enabled_sources,
-        ".", "//chrome")
-    deps += [
-      #'../device/bluetooth/bluetooth.gyp:device_bluetooth',  TODO(GYP)
-      #"../device/hid/hid.gyp:device_hid",  TODO(GYP)
+  if (is_linux) {
+    configs += [ "//build/config/linux:fontconfig" ]
+    deps += [ "//dbus" ]
+    if (use_x11) {
+      configs += [
+        "//build/config/linux:x11",
+      ]
+      deps += [
+        "//ui/events/platform",
+        "//ui/events/platform/x11",
+      ]
+    }
+  } else {
+    sources += [
+      "api/audio/audio_service.cc",
     ]
+  }
 
-    if (is_chromeos) {
-      deps += [ "//third_party/protobuf:protobuf_lite" ]
-    } else {
-      sources += rebase_path(
-          gypi_values.chrome_browser_extensions_non_chromeos_sources,
-          ".", "//chrome")
-    }
-    if (!is_linux) {
-      sources += [
-        "api/audio/audio_service.cc",
-      ]
-    }
-    if (enable_configuration_policy) {
-      sources += rebase_path(
-          gypi_values.chrome_browser_extensions_policy_sources,
-          ".", "//chrome")
-    }
+  if (enable_configuration_policy) {
+    deps += [ "//components/policy" ]
+    sources += [
+      "policy_handlers.cc",
+      "policy_handlers.h",
+    ]
+    sources += rebase_path(
+        gypi_values.chrome_browser_extensions_policy_sources,
+        ".", "//chrome")
+  }
 
-    if (enable_webrtc) {
-      sources += [
-        "api/webrtc_logging_private/webrtc_logging_private_api.cc",
-      ]
-    } else {
-      sources += [
-        "api/webrtc_logging_private/webrtc_logging_private_api_stub.cc",
-      ]
-    }
+  if (enable_webrtc) {
+    sources += [
+      "api/webrtc_logging_private/webrtc_logging_private_api.cc",
+    ]
+  } else {
+    sources += [
+      "api/webrtc_logging_private/webrtc_logging_private_api_stub.cc",
+    ]
+  }
 
-    if (use_brlapi) {
-      deps += [ "//build/config/linux:libbrlapi" ]
-      sources += rebase_path(gypi_values.chrome_browser_extensions_brlapi_sources,
-                             ".", "//chrome")
-    } else {
-      sources += [
-        "api/braille_display_private/braille_controller_stub.cc",
-      ]
-    }
+  if (use_brlapi) {
+    deps += [ "//build/config/linux:libbrlapi" ]
+    sources += rebase_path(gypi_values.chrome_browser_extensions_brlapi_sources,
+                           ".", "//chrome")
+  } else {
+    sources += [
+      "api/braille_display_private/braille_controller_stub.cc",
+    ]
+  }
 
-    if (use_aura) {
-      deps += [
-        "//ui/keyboard",
-        "//ui/keyboard:resources",
-      ]
-    }
+  if (use_aura) {
+    deps += [
+      "//ui/keyboard",
+      "//ui/keyboard:resources",
+    ]
+  }
 
-    if (is_linux) {
-      configs += [ "//build/config/linux:fontconfig" ]
-      deps += [ "//dbus" ]
-      if (use_x11) {
-        configs += [
-          "//build/config/linux:x11",
-        ]
-        deps += [
-          "//ui/events/platform",
-          "//ui/events/platform/x11",
-        ]
-      }
-    }
-    if (!use_x11) {
-      sources -= [
-        "global_shortcut_listener_x11.cc",
-        "global_shortcut_listener_x11.h",
-      ]
-    }
+  if (!use_x11) {
+    sources -= [
+      "global_shortcut_listener_x11.cc",
+      "global_shortcut_listener_x11.h",
+    ]
+  }
 
-    if (safe_browsing_mode == 1) {
-      defines += [ "FULL_SAFE_BROWSING" ]
-    }
-    if (safe_browsing_mode == 2) {
-      defines += [ "MOBILE_SAFE_BROWSING" ]
-    }
+  if (safe_browsing_mode == 1) {
+    defines += [ "FULL_SAFE_BROWSING" ]
+  }
+  if (safe_browsing_mode == 2) {
+    defines += [ "MOBILE_SAFE_BROWSING" ]
+  }
 
-    if (enable_configuration_policy) {
-      deps += [ "//components/policy" ]
-      sources += [
-        "policy_handlers.cc",
-        "policy_handlers.h",
-      ]
-    }
+  if (is_win || is_mac) {
+    deps += [ "//components/wifi" ]
+    sources += rebase_path(
+        gypi_values.chrome_browser_extensions_networking_private_sources,
+        ".", "//chrome")
+  }
 
-    if (is_win || is_mac) {
-      deps += [ "//components/wifi" ]
-      sources += rebase_path(
-          gypi_values.chrome_browser_extensions_networking_private_sources,
-          ".", "//chrome")
-    }
+  if (is_win) {
+    deps += [
+      "//third_party/iaccessible2",
+      "//third_party/isimpledom",
+    ]
+  } else if (!is_chromeos) {
+    sources += [ "api/system_display/display_info_provider_aura.cc" ]
+  }
 
-    if (is_win) {
-      deps += [
-        "//third_party/iaccessible2",
-        "//third_party/isimpledom",
-      ]
-    } else if (!is_chromeos) {
-      sources += [ "api/system_display/display_info_provider_aura.cc" ]
-    }
+  if (enable_app_list) {
+    sources += rebase_path(
+        gypi_values.chrome_browser_extensions_app_list_sources,
+        ".", "//chrome")
+  }
 
-    if (enable_app_list) {
-      sources += rebase_path(
-          gypi_values.chrome_browser_extensions_app_list_sources,
-          ".", "//chrome")
-    }
-
-    if (!use_ozone) {
-      sources -= [
-        "global_shortcut_listener_ozone.cc",
-      ]
-    }
+  if (!use_ozone) {
+    sources -= [
+      "global_shortcut_listener_ozone.cc",
+    ]
   }
 }

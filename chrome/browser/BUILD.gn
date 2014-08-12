@@ -137,7 +137,6 @@ static_library("browser") {
 
     deps += [
       "//cc",
-      "//chrome/browser/extensions",
       "//chrome/browser/performance_monitor",
       "//chrome/browser/sync_file_system:sync_file_system_proto",
       "//chrome/browser/sync_file_system/drive_backend:sync_file_system_drive_proto",
@@ -233,6 +232,7 @@ static_library("browser") {
     ]
   }
   if (enable_extensions) {
+    deps += [ "//chrome/browser/extensions" ]
     sources += rebase_path(gypi_values.chrome_browser_extensions_sources,
                            ".", "//chrome")
   }

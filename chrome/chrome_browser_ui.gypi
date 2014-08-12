@@ -2598,7 +2598,6 @@
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/ui/webui/omnibox/omnibox.mojom.cc',
           ],
           'dependencies': [
-            'browser_extensions',
             'browser/performance_monitor/performance_monitor.gyp:performance_monitor',
             'chrome_web_ui_mojo_bindings.gyp:web_ui_mojo_bindings',
             'common/extensions/api/api.gyp:chrome_api',
@@ -2935,6 +2934,9 @@
           ],
         }],
         ['enable_extensions==1', {
+          'dependencies': [
+            'browser_extensions',
+          ],
           'sources': [ '<@(chrome_browser_ui_extensions_sources)' ],
         }],
         ['enable_google_now==1 and OS!="android"', {

@@ -976,7 +976,6 @@
         'installer_util',
         'safe_browsing_proto',
         'sync_file_system_proto',
-        '../third_party/re2/re2.gyp:re2',
         '../components/components.gyp:copresence',
         '../components/components.gyp:omaha_query_params',
         '../components/components.gyp:onc_component',
@@ -985,6 +984,8 @@
         '../content/content.gyp:content_browser',
         '../content/content.gyp:content_common',
         '../crypto/crypto.gyp:crypto',
+        '../device/bluetooth/bluetooth.gyp:device_bluetooth',
+        '../device/hid/hid.gyp:device_hid',
         '../extensions/common/api/api.gyp:extensions_api',
         '../extensions/extensions.gyp:extensions_browser',
         '../extensions/extensions_strings.gyp:extensions_strings',
@@ -995,6 +996,7 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
+        '../third_party/re2/re2.gyp:re2',
         '../third_party/webrtc/modules/modules.gyp:desktop_capture',
         '../ui/accessibility/accessibility.gyp:ax_gen',
         '../ui/base/ui_base.gyp:ui_base',
@@ -1016,6 +1018,7 @@
         '../content/content.gyp:content_browser',
       ],
       'sources': [
+        '<@(chrome_browser_extensions_enabled_sources)',
       ],
       'conditions': [
         ['chromeos==1', {
@@ -1031,6 +1034,7 @@
           'sources': [
             'browser/extensions/default_apps.cc',
             'browser/extensions/default_apps.h',
+            '<@(chrome_browser_extensions_non_chromeos_sources)',
           ],
         }],
         ['use_ash==1', {
@@ -1042,58 +1046,6 @@
         ['branding=="Chrome" and chromeos==1', {
           'dependencies': [
             'browser/extensions/api/ledger/ledger.gyp:ledger_api',
-          ],
-        }],
-        # TODO(thestig) This conditional should be removed when extensions are
-        # no longer enabled on mobile.
-        ['enable_extensions==1', {
-          'dependencies': [
-            '../device/bluetooth/bluetooth.gyp:device_bluetooth',
-            '../device/hid/hid.gyp:device_hid',
-          ],
-          'sources': [
-            '<@(chrome_browser_extensions_enabled_sources)',
-          ],
-          'conditions': [
-            ['chromeos==0', {
-              'sources': [
-                '<@(chrome_browser_extensions_non_chromeos_sources)',
-              ],
-            }],
-            ['OS!="linux"', {
-              'sources': [
-                'browser/extensions/api/audio/audio_service.cc',
-              ],
-            }],
-            ['configuration_policy==1', {
-              'sources': [
-                '<@(chrome_browser_extensions_policy_sources)',
-              ],
-            }],
-            ['enable_webrtc==1', {
-              'sources': [
-                'browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api.cc',
-              ],
-            }, {
-              'sources': [
-                'browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api_stub.cc',
-              ],
-            }],
-            ['use_brlapi==1', {
-              'dependencies' : [
-                '../build/linux/system.gyp:libbrlapi',
-              ],
-              'defines': [
-                'USE_BRLAPI',
-              ],
-              'sources': [
-                '<@(chrome_browser_extensions_brlapi_sources)',
-              ],
-            }, {  # use_brlapi==0
-              'sources': [
-                'browser/extensions/api/braille_display_private/braille_controller_stub.cc',
-              ],
-            }],
           ],
         }],
         ['use_aura==1', {
@@ -1120,6 +1072,10 @@
               ],
             }],
           ],
+        }, {
+          'sources': [
+            'browser/extensions/api/audio/audio_service.cc',
+          ],
         }],
         ['safe_browsing==1', {
           'defines': [
@@ -1138,6 +1094,7 @@
           'sources': [
             'browser/extensions/policy_handlers.cc',
             'browser/extensions/policy_handlers.h',
+            '<@(chrome_browser_extensions_policy_sources)',
           ],
         }],
         ['OS=="win" or OS=="mac"', {
@@ -1182,15 +1139,33 @@
             'browser/extensions/api/system_display/display_info_provider_aura.cc',
           ],
         }],
-        # TODO(thestig) Remove.
-        ['OS=="android"', {
-          'dependencies!': [
-            '../components/components.gyp:copresence',
-          ],
-        }],
         ['enable_app_list==1', {
           'sources': [
             '<@(chrome_browser_extensions_app_list_sources)',
+          ],
+        }],
+        ['enable_webrtc==1', {
+          'sources': [
+            'browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api.cc',
+          ],
+        }, {
+          'sources': [
+            'browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api_stub.cc',
+          ],
+        }],
+        ['use_brlapi==1', {
+          'dependencies' : [
+            '../build/linux/system.gyp:libbrlapi',
+          ],
+          'defines': [
+            'USE_BRLAPI',
+          ],
+          'sources': [
+            '<@(chrome_browser_extensions_brlapi_sources)',
+          ],
+        }, {  # use_brlapi==0
+          'sources': [
+            'browser/extensions/api/braille_display_private/braille_controller_stub.cc',
           ],
         }],
       ],
