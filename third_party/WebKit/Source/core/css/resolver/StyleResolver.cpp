@@ -1336,7 +1336,7 @@ void StyleResolver::applyAllProperty(StyleResolverState& state, CSSValue* allVal
         if (!isUnsetValue) {
             value = allValue;
         } else {
-            if (CSSProperty::isInheritedProperty(propertyId))
+            if (CSSPropertyMetadata::isInheritedProperty(propertyId))
                 value = cssValuePool().createInheritedValue().get();
             else
                 value = cssValuePool().createExplicitInitialValue().get();

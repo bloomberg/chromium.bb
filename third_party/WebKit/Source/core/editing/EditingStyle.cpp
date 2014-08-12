@@ -116,7 +116,7 @@ static const Vector<CSSPropertyID>& inheritableEditingProperties()
     if (properties.isEmpty()) {
         RuntimeCSSEnabled::filterEnabledCSSPropertiesIntoVector(staticEditingProperties, WTF_ARRAY_LENGTH(staticEditingProperties), properties);
         for (size_t index = 0; index < properties.size();) {
-            if (!CSSProperty::isInheritedProperty(properties[index])) {
+            if (!CSSPropertyMetadata::isInheritedProperty(properties[index])) {
                 properties.remove(index);
                 continue;
             }

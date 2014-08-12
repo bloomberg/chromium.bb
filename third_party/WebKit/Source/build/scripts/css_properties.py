@@ -12,6 +12,7 @@ class CSSProperties(in_generator.Writer):
         'alias_for': None,
         'longhands': '',
         'animatable': False,
+        'inherited': False,
         'font': False,
         'svg': False,
         'name_for_methods': None,
@@ -31,6 +32,7 @@ class CSSProperties(in_generator.Writer):
 
     valid_values = {
         'animatable': (True, False),
+        'inherited': (True, False),
         'font': (True, False),
         'svg': (True, False),
         'custom_all': (True, False),

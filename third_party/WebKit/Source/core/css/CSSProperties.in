@@ -19,6 +19,9 @@
 // animations and transitions. If this flag is set, the property should also be
 // added to the switch statements in AnimatedStyleBuilder, CSSPropertyEquality,
 // and CSSAnimatableValueFactory.
+// - inherited
+// The property will inherit by default if no value is specified, typically
+// mentioned in specifications as "Inherited: yes"
 
 
 // The remaining arguments are used for the StyleBuilder and allow us to
@@ -73,27 +76,27 @@
 
 // High Priority and all other font properties.
 // Other properties can depend upon high priority properties (e.g. font-size / ems)
-color animatable, custom_all
-direction custom_value
+color animatable, inherited, custom_all
+direction inherited, custom_value
 // FIXME: This is a mess due to crbug.com/353932. Shorthands shouldn't have
 // any StyleBuilder handling!
 font custom_all, longhands=font-family;font-size;font-style;font-variant;font-weight;font-stretch;line-height
-font-family custom_all
-font-kerning font, type_name=FontDescription::Kerning, name_for_methods=Kerning
-font-size animatable, custom_all
-font-stretch font, type_name=FontStretch, name_for_methods=Stretch
-font-style font, type_name=FontStyle, name_for_methods=Style
-font-variant font, type_name=FontVariant, name_for_methods=Variant
-font-variant-ligatures font, name_for_methods=VariantLigatures, converter=convertFontVariantLigatures
-font-weight animatable, font, type_name=FontWeight, name_for_methods=Weight, converter=convertFontWeight
--webkit-font-feature-settings font, name_for_methods=FeatureSettings, converter=convertFontFeatureSettings
--webkit-font-smoothing font, type_name=FontSmoothingMode
--webkit-locale custom_value
--webkit-text-orientation custom_value
--webkit-writing-mode custom_value
-text-rendering font, type_name=TextRenderingMode
+font-family inherited, custom_all
+font-kerning inherited, font, type_name=FontDescription::Kerning, name_for_methods=Kerning
+font-size animatable, inherited, custom_all
+font-stretch inherited, font, type_name=FontStretch, name_for_methods=Stretch
+font-style inherited, font, type_name=FontStyle, name_for_methods=Style
+font-variant inherited, font, type_name=FontVariant, name_for_methods=Variant
+font-variant-ligatures inherited, font, name_for_methods=VariantLigatures, converter=convertFontVariantLigatures
+font-weight animatable, inherited, font, type_name=FontWeight, name_for_methods=Weight, converter=convertFontWeight
+-webkit-font-feature-settings inherited, font, name_for_methods=FeatureSettings, converter=convertFontFeatureSettings
+-webkit-font-smoothing inherited, font, type_name=FontSmoothingMode
+-webkit-locale inherited, custom_value
+-webkit-text-orientation inherited, custom_value
+-webkit-writing-mode inherited, custom_value
+text-rendering inherited, font, type_name=TextRenderingMode
 zoom animatable, custom_all
-line-height animatable, getter=specifiedLineHeight, custom_value
+line-height animatable, inherited, getter=specifiedLineHeight, custom_value
 
 align-content
 align-items custom_all
@@ -117,7 +120,7 @@ border-bottom-left-radius animatable, initial=initialBorderRadius, converter=con
 border-bottom-right-radius animatable, initial=initialBorderRadius, converter=convertRadius
 border-bottom-style type_name=EBorderStyle, initial=initialBorderStyle
 border-bottom-width animatable, initial=initialBorderWidth, converter=convertLineWidth<unsigned>
-border-collapse
+border-collapse inherited
 border-image-outset animatable, custom_all
 border-image-repeat custom_all
 border-image-slice animatable, custom_all
@@ -138,25 +141,25 @@ bottom animatable, initial=initialOffset, converter=convertLengthOrAuto
 box-shadow animatable, converter=convertShadow
 box-sizing
 buffered-rendering svg
-caption-side
+caption-side inherited
 clear
 clip animatable, custom_all
 clip-path svg, name_for_methods=ClipperResource, converter=convertFragmentIdentifier
-clip-rule svg, type_name=WindRule
-color-interpolation svg
-color-interpolation-filters svg, type_name=EColorInterpolation
-color-rendering svg
+clip-rule inherited, svg, type_name=WindRule
+color-interpolation inherited, svg
+color-interpolation-filters inherited, svg, type_name=EColorInterpolation
+color-rendering inherited, svg
 column-fill type_name=ColumnFill
 content custom_all
 counter-increment custom_all
 counter-reset custom_all
-cursor custom_all
+cursor inherited, custom_all
 display
 dominant-baseline svg
-empty-cells type_name=EEmptyCell
-fill animatable, svg, setter=setFillPaint, custom_all
-fill-opacity animatable, svg, converter=convertNumberOrPercentage
-fill-rule svg, type_name=WindRule
+empty-cells inherited, type_name=EEmptyCell
+fill animatable, inherited, svg, setter=setFillPaint, custom_all
+fill-opacity animatable, inherited, svg, converter=convertNumberOrPercentage
+fill-rule inherited, svg, type_name=WindRule
 filter svg, name_for_methods=FilterResource, converter=convertFragmentIdentifier
 flex-basis animatable, converter=convertLengthOrAuto
 flex-direction
@@ -166,8 +169,8 @@ flex-wrap
 float type_name=EFloat, name_for_methods=Floating
 flood-color animatable, svg, converter=convertSVGColor
 flood-opacity animatable, svg, converter=convertNumberOrPercentage
-glyph-orientation-horizontal svg, converter=convertGlyphOrientation
-glyph-orientation-vertical svg, custom_value
+glyph-orientation-horizontal inherited, svg, converter=convertGlyphOrientation
+glyph-orientation-vertical inherited, svg, custom_value
 grid-auto-columns converter=convertGridTrackSize
 grid-auto-flow custom_value
 grid-auto-rows converter=convertGridTrackSize
@@ -179,24 +182,24 @@ grid-template-areas custom_all
 grid-template-columns custom_all
 grid-template-rows custom_all
 height animatable, initial=initialSize, converter=convertLengthSizing
-image-rendering
+image-rendering inherited
 isolation
 justify-content
 justify-items custom_all
 justify-self custom_all
 left animatable, initial=initialOffset, converter=convertLengthOrAuto
-letter-spacing animatable, initial=initialLetterWordSpacing, converter=convertSpacing
+letter-spacing animatable, inherited, initial=initialLetterWordSpacing, converter=convertSpacing
 lighting-color animatable, svg, converter=convertSVGColor
-list-style-image animatable, custom_value
-list-style-position
-list-style-type
+list-style-image animatable, inherited, custom_value
+list-style-position inherited
+list-style-type inherited
 margin-bottom animatable, initial=initialMargin, converter=convertLengthOrAuto
 margin-left animatable, initial=initialMargin, converter=convertLengthOrAuto
 margin-right animatable, initial=initialMargin, converter=convertLengthOrAuto
 margin-top animatable, initial=initialMargin, converter=convertLengthOrAuto
-marker-end svg, name_for_methods=MarkerEndResource, converter=convertFragmentIdentifier
-marker-mid svg, name_for_methods=MarkerMidResource, converter=convertFragmentIdentifier
-marker-start svg, name_for_methods=MarkerStartResource, converter=convertFragmentIdentifier
+marker-end inherited, svg, name_for_methods=MarkerEndResource, converter=convertFragmentIdentifier
+marker-mid inherited, svg, name_for_methods=MarkerMidResource, converter=convertFragmentIdentifier
+marker-start inherited, svg, name_for_methods=MarkerStartResource, converter=convertFragmentIdentifier
 mask svg, name_for_methods=MaskerResource, converter=convertFragmentIdentifier
 mask-source-type custom_all
 mask-type svg
@@ -209,12 +212,12 @@ object-fit type_name=ObjectFit
 object-position animatable, converter=convertLengthPoint
 opacity animatable, type_name=float
 order type_name=int
-orphans animatable, type_name=short, custom_all
+orphans animatable, inherited, type_name=short, custom_all
 outline-color animatable, custom_all
 outline-offset animatable, converter=convertComputedLength<int>
 outline-style custom_all
 outline-width animatable, converter=convertLineWidth<unsigned short>
-overflow-wrap
+overflow-wrap inherited
 overflow-x type_name=EOverflow
 overflow-y type_name=EOverflow
 padding-bottom animatable, initial=initialPadding, converter=convertLength
@@ -224,59 +227,58 @@ padding-top animatable, initial=initialPadding, converter=convertLength
 page-break-after type_name=EPageBreak, initial=initialPageBreak
 page-break-before type_name=EPageBreak, initial=initialPageBreak
 page-break-inside type_name=EPageBreak, initial=initialPageBreak
-paint-order svg, converter=convertPaintOrder
+paint-order inherited, svg, converter=convertPaintOrder
 perspective animatable, custom_value
 perspective-origin animatable, custom_all
-pointer-events
+pointer-events inherited
 position
-quotes converter=convertQuotes
-resize custom_value
+quotes inherited, converter=convertQuotes
+// FIXME: This shouldn't be inherited, as per css-ui
+resize inherited, custom_value
 right animatable, initial=initialOffset, converter=convertLengthOrAuto
 scroll-behavior type_name=ScrollBehavior
 shape-image-threshold animatable, type_name=float
 shape-margin animatable, converter=convertLength
 shape-outside animatable, custom_value
-shape-rendering svg
+shape-rendering inherited, svg
 size custom_all
-speak
+speak inherited
 stop-color animatable, svg, converter=convertSVGColor
 stop-opacity animatable, svg, converter=convertNumberOrPercentage
-stroke animatable, svg, setter=setStrokePaint, custom_all
-stroke-dasharray animatable, svg, name_for_methods=StrokeDashArray, converter=convertStrokeDasharray
-stroke-dashoffset animatable, svg, name_for_methods=StrokeDashOffset, converter=convertSVGLength
-stroke-linecap svg, type_name=LineCap, name_for_methods=CapStyle
-stroke-linejoin svg, type_name=LineJoin, name_for_methods=JoinStyle
-stroke-miterlimit animatable, svg, type_name=float, name_for_methods=StrokeMiterLimit
-stroke-opacity animatable, svg, converter=convertNumberOrPercentage
-stroke-width animatable, svg, converter=convertSVGLength
+stroke animatable, inherited, svg, setter=setStrokePaint, custom_all
+stroke-dasharray animatable, inherited, svg, name_for_methods=StrokeDashArray, converter=convertStrokeDasharray
+stroke-dashoffset animatable, inherited, svg, name_for_methods=StrokeDashOffset, converter=convertSVGLength
+stroke-linecap svg, inherited, type_name=LineCap, name_for_methods=CapStyle
+stroke-linejoin svg, inherited, type_name=LineJoin, name_for_methods=JoinStyle
+stroke-miterlimit animatable, inherited, svg, type_name=float, name_for_methods=StrokeMiterLimit
+stroke-opacity animatable, inherited, svg, converter=convertNumberOrPercentage
+stroke-width animatable, inherited, svg, converter=convertSVGLength
 table-layout
-tab-size type_name=unsigned
-text-align custom_value
-text-align-last type_name=TextAlignLast
-text-anchor svg
+tab-size inherited, type_name=unsigned
+text-align inherited, custom_value
+text-align-last inherited, type_name=TextAlignLast
+text-anchor inherited, svg
 // FIXME: We shouldn't switch between shorthand/not shorthand based on a runtime flag
 text-decoration use_handlers_for=CSSPropertyTextDecorationLine, longhands=text-decoration-line;text-decoration-style;text-decoration-color
 text-decoration-color animatable, custom_all
 text-decoration-line name_for_methods=TextDecoration, converter=convertFlags<TextDecoration>
 text-decoration-style type_name=TextDecorationStyle
-text-indent animatable, custom_all
-text-justify type_name=TextJustify
+text-indent animatable, inherited, custom_all
+text-justify inherited, type_name=TextJustify
 text-overflow type_name=TextOverflow
-text-shadow animatable, converter=convertShadow
-text-transform
-text-underline-position type_name=TextUnderlinePosition
+text-shadow animatable, inherited, converter=convertShadow
+text-transform inherited
+text-underline-position inherited, type_name=TextUnderlinePosition
 top animatable, initial=initialOffset, converter=convertLengthOrAuto
 touch-action converter=convertFlags<TouchAction>
-touch-action-delay type_name=TouchActionDelay
+touch-action-delay inherited, type_name=TouchActionDelay
 transform animatable, custom_value
 transform-origin animatable, custom_all
 transform-style name_for_methods=TransformStyle3D
 unicode-bidi
 vector-effect svg
 vertical-align animatable, custom_inherit, custom_value
-visibility animatable
-// UAs must treat 'word-wrap' as an alternate name for the 'overflow-wrap' property. So using the same handlers.
-word-wrap name_for_methods=OverflowWrap
+visibility animatable, inherited
 -webkit-animation-delay custom_all
 -webkit-animation-direction custom_all
 -webkit-animation-duration custom_all
@@ -287,19 +289,19 @@ word-wrap name_for_methods=OverflowWrap
 -webkit-animation-timing-function custom_all
 -webkit-appearance type_name=ControlPart
 -webkit-app-region custom_all
--webkit-aspect-ratio custom_all
+-webkit-aspect-ratio inherited, custom_all
 -webkit-backface-visibility use_handlers_for=CSSPropertyBackfaceVisibility
 -webkit-background-clip use_handlers_for=CSSPropertyBackgroundClip
 -webkit-background-composite custom_all
 -webkit-background-origin use_handlers_for=CSSPropertyBackgroundOrigin
 -webkit-background-size animatable, use_handlers_for=CSSPropertyBackgroundSize
 -webkit-border-fit
--webkit-border-horizontal-spacing animatable, name_for_methods=HorizontalBorderSpacing, converter=convertComputedLength<short>
+-webkit-border-horizontal-spacing animatable, inherited, name_for_methods=HorizontalBorderSpacing, converter=convertComputedLength<short>
 -webkit-border-image initial=initialNinePieceImage, custom_value
--webkit-border-vertical-spacing animatable, name_for_methods=VerticalBorderSpacing, converter=convertComputedLength<short>
+-webkit-border-vertical-spacing animatable, inherited, name_for_methods=VerticalBorderSpacing, converter=convertComputedLength<short>
 -webkit-box-align type_name=EBoxAlignment
 -webkit-box-decoration-break
--webkit-box-direction
+-webkit-box-direction inherited
 -webkit-box-flex type_name=float
 -webkit-box-flex-group type_name=unsigned int
 -webkit-box-lines
@@ -320,10 +322,10 @@ word-wrap name_for_methods=OverflowWrap
 -webkit-column-span type_name=ColumnSpan
 -webkit-column-width animatable, type_name=float, custom_all
 -webkit-filter animatable, custom_value
--webkit-highlight converter=convertString<CSSValueNone>
--webkit-hyphenate-character name_for_methods=HyphenationString, converter=convertString<CSSValueAuto>
--webkit-line-box-contain converter=convertLineBoxContain
--webkit-line-break type_name=LineBreak
+-webkit-highlight inherited, converter=convertString<CSSValueNone>
+-webkit-hyphenate-character inherited, name_for_methods=HyphenationString, converter=convertString<CSSValueAuto>
+-webkit-line-box-contain inherited, converter=convertLineBoxContain
+-webkit-line-break inherited, type_name=LineBreak
 -webkit-line-clamp type_name=LineClampValue
 -webkit-margin-after-collapse type_name=EMarginCollapse
 -webkit-margin-before-collapse type_name=EMarginCollapse
@@ -347,18 +349,18 @@ word-wrap name_for_methods=OverflowWrap
 -webkit-perspective-origin custom_all
 -webkit-perspective-origin-x converter=convertLength
 -webkit-perspective-origin-y converter=convertLength
--webkit-print-color-adjust type_name=PrintColorAdjust
--webkit-rtl-ordering type_name=Order, setter=setRTLOrdering, initial=initialRTLOrdering
--webkit-ruby-position type_name=RubyPosition
--webkit-tap-highlight-color converter=convertColor
--webkit-text-combine type_name=TextCombine
--webkit-text-emphasis-color custom_all
--webkit-text-emphasis-position type_name=TextEmphasisPosition
--webkit-text-emphasis-style custom_all
--webkit-text-fill-color custom_all
--webkit-text-security
--webkit-text-stroke-color animatable, custom_all
--webkit-text-stroke-width converter=convertTextStrokeWidth
+-webkit-print-color-adjust inherited, type_name=PrintColorAdjust
+-webkit-rtl-ordering inherited, type_name=Order, setter=setRTLOrdering, initial=initialRTLOrdering
+-webkit-ruby-position inherited, type_name=RubyPosition
+-webkit-tap-highlight-color inherited, converter=convertColor
+-webkit-text-combine inherited, type_name=TextCombine
+-webkit-text-emphasis-color inherited, custom_all
+-webkit-text-emphasis-position inherited, type_name=TextEmphasisPosition
+-webkit-text-emphasis-style inherited, custom_all
+-webkit-text-fill-color inherited, custom_all
+-webkit-text-security inherited
+-webkit-text-stroke-color animatable, inherited, custom_all
+-webkit-text-stroke-width inherited, converter=convertTextStrokeWidth
 -webkit-transform use_handlers_for=CSSPropertyTransform
 -webkit-transform-origin-x converter=convertLength
 -webkit-transform-origin-y converter=convertLength
@@ -369,15 +371,17 @@ word-wrap name_for_methods=OverflowWrap
 -webkit-transition-property custom_all
 -webkit-transition-timing-function custom_all
 -webkit-user-drag
--webkit-user-modify
--webkit-user-select
-white-space
-widows animatable, type_name=short, custom_all
+-webkit-user-modify inherited
+-webkit-user-select inherited
+white-space inherited
+widows animatable, inherited, type_name=short, custom_all
 width animatable, initial=initialSize, converter=convertLengthSizing
 will-change custom_all
-word-break
-word-spacing animatable, initial=initialLetterWordSpacing, converter=convertSpacing
-writing-mode svg, type_name=SVGWritingMode
+word-break inherited
+word-spacing animatable, inherited, initial=initialLetterWordSpacing, converter=convertSpacing
+// UAs must treat 'word-wrap' as an alternate name for the 'overflow-wrap' property. So using the same handlers.
+word-wrap inherited, name_for_methods=OverflowWrap
+writing-mode inherited, svg, type_name=SVGWritingMode
 z-index animatable, type_name=int, custom_all
 
 // Internal properties
@@ -444,7 +448,7 @@ transition-timing-function builder_skip
 unicode-range builder_skip
 user-zoom builder_skip
 -webkit-font-size-delta builder_skip
--webkit-text-decorations-in-effect builder_skip
+-webkit-text-decorations-in-effect inherited, builder_skip
 
 // Shorthands
 

@@ -5,14 +5,15 @@
 #include "core/css/CSSPropertyMetadata.h"
 
 namespace blink {
+{% for flag, function_name in switches %}
 
-bool CSSPropertyMetadata::isAnimatableProperty(CSSPropertyID property)
+bool CSSPropertyMetadata::{{function_name}}(CSSPropertyID property)
 {
     switch(property) {
     case CSSPropertyInvalid:
         ASSERT_NOT_REACHED();
         return false;
-    {% for property_id, property in properties.items() if property.animatable %}
+    {% for property_id, property in properties.items() if property[flag] %}
     case {{property_id}}:
     {% endfor %}
         return true;
@@ -20,5 +21,6 @@ bool CSSPropertyMetadata::isAnimatableProperty(CSSPropertyID property)
         return false;
     }
 }
+{% endfor %}
 
 } // namespace blink

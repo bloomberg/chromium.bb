@@ -12,6 +12,7 @@ namespace blink {
 class CSSPropertyMetadata {
 public:
     static bool isAnimatableProperty(CSSPropertyID);
+    static bool isInheritedProperty(CSSPropertyID);
 };
 
 } // namespace blink
