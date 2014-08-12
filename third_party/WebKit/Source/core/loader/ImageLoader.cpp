@@ -242,7 +242,7 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
         // Unlike raw <img>, we block mixed content inside of <picture> or <img srcset>.
         ResourceLoaderOptions resourceLoaderOptions = ResourceFetcher::defaultResourceOptions();
         ResourceRequest resourceRequest(url);
-        if (isHTMLPictureElement(element()->parentNode()) || !element()->fastGetAttribute(HTMLNames::srcsetAttr).isEmpty()) {
+        if (isHTMLPictureElement(element()->parentNode()) || !element()->fastGetAttribute(HTMLNames::srcsetAttr).isNull()) {
             resourceLoaderOptions.mixedContentBlockingTreatment = TreatAsActiveContent;
             resourceRequest.setRequestContext(WebURLRequest::RequestContextImageSet);
         }
