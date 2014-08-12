@@ -551,8 +551,12 @@ void RenderImage::updateAltText()
 
 void RenderImage::layout()
 {
+    LayoutRect oldContentRect = replacedContentRect();
     RenderReplaced::layout();
-    updateInnerContentRect();
+    if (replacedContentRect() != oldContentRect) {
+        setShouldDoFullPaintInvalidation(true);
+        updateInnerContentRect();
+    }
 }
 
 bool RenderImage::updateImageLoadingPriorities()
