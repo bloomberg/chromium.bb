@@ -344,6 +344,7 @@ TEST_F(ProfileInfoCacheTest, GAIAName) {
 TEST_F(ProfileInfoCacheTest, GAIAPicture) {
   const int kDefaultAvatarIndex = 0;
   const int kOtherAvatarIndex = 1;
+  const int kGaiaPictureSize = 256;  // Standard size of a Gaia account picture.
   GetCache()->AddProfileToCache(
       GetProfilePath("path_1"), ASCIIToUTF16("name_1"),
       base::string16(), kDefaultAvatarIndex, std::string());
@@ -368,7 +369,8 @@ TEST_F(ProfileInfoCacheTest, GAIAPicture) {
       default_avatar_image, GetCache()->GetAvatarIconOfProfileAtIndex(1)));
 
   // Set GAIA picture.
-  gfx::Image gaia_image(gfx::test::CreateImage());
+  gfx::Image gaia_image(gfx::test::CreateImage(
+      kGaiaPictureSize, kGaiaPictureSize));
   GetCache()->SetGAIAPictureOfProfileAtIndex(1, &gaia_image);
   EXPECT_EQ(NULL, GetCache()->GetGAIAPictureOfProfileAtIndex(0));
   EXPECT_TRUE(gfx::test::IsEqual(
