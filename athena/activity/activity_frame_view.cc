@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "athena/activity/public/activity_view_model.h"
+#include "ui/base/hit_test.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
@@ -53,6 +54,10 @@ gfx::Rect ActivityFrameView::GetWindowBoundsForClientBounds(
 }
 
 int ActivityFrameView::NonClientHitTest(const gfx::Point& point) {
+  if (frame_->IsFullscreen())
+    return 0;
+  if (title_->bounds().Contains(point))
+    return HTCAPTION;
   return 0;
 }
 

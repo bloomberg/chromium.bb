@@ -8,6 +8,7 @@
 #include <functional>
 #include <vector>
 
+#include "athena/common/closure_animation_observer.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "ui/aura/scoped_window_targeter.h"
@@ -39,29 +40,6 @@ struct WindowOverviewState {
   float progress;
 
   scoped_ptr<wm::Shadow> shadow;
-};
-
-// Runs a callback at the end of the animation. This observe also destroys
-// itself afterwards.
-class ClosureAnimationObserver : public ui::ImplicitAnimationObserver {
- public:
-  explicit ClosureAnimationObserver(const base::Closure& closure)
-      : closure_(closure) {
-    DCHECK(!closure_.is_null());
-  }
- private:
-  virtual ~ClosureAnimationObserver() {
-  }
-
-  // ui::ImplicitAnimationObserver:
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE {
-    closure_.Run();
-    delete this;
-  }
-
-  const base::Closure closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClosureAnimationObserver);
 };
 
 }  // namespace

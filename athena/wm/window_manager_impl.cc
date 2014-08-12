@@ -4,12 +4,15 @@
 
 #include "athena/wm/public/window_manager.h"
 
+#include <algorithm>
+
 #include "athena/common/container_priorities.h"
 #include "athena/input/public/accelerator_manager.h"
 #include "athena/screen/public/screen_manager.h"
 #include "athena/wm/bezel_controller.h"
 #include "athena/wm/public/window_manager_observer.h"
 #include "athena/wm/split_view_controller.h"
+#include "athena/wm/title_drag_controller.h"
 #include "athena/wm/window_overview_mode.h"
 #include "base/logging.h"
 #include "base/observer_list.h"
@@ -25,7 +28,8 @@ namespace {
 class WindowManagerImpl : public WindowManager,
                           public WindowOverviewModeDelegate,
                           public aura::WindowObserver,
-                          public AcceleratorHandler {
+                          public AcceleratorHandler,
+                          public TitleDragControllerDelegate {
  public:
   WindowManagerImpl();
   virtual ~WindowManagerImpl();
@@ -61,11 +65,18 @@ class WindowManagerImpl : public WindowManager,
   virtual bool OnAcceleratorFired(int command_id,
                                   const ui::Accelerator& accelerator) OVERRIDE;
 
+  // TitleDragControllerDelegate:
+  virtual aura::Window* GetWindowBehind(aura::Window* window) OVERRIDE;
+  virtual void OnTitleDragStarted(aura::Window* window) OVERRIDE;
+  virtual void OnTitleDragCompleted(aura::Window* window) OVERRIDE;
+  virtual void OnTitleDragCanceled(aura::Window* window) OVERRIDE;
+
   scoped_ptr<aura::Window> container_;
   scoped_ptr<WindowOverviewMode> overview_;
   scoped_ptr<BezelController> bezel_controller_;
   scoped_ptr<SplitViewController> split_view_controller_;
   scoped_ptr<wm::WMState> wm_state_;
+  scoped_ptr<TitleDragController> title_drag_controller_;
   ObserverList<WindowManagerObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerImpl);
@@ -102,6 +113,7 @@ WindowManagerImpl::WindowManagerImpl() {
   split_view_controller_.reset(new SplitViewController());
   bezel_controller_->set_left_right_delegate(split_view_controller_.get());
   container_->AddPreTargetHandler(bezel_controller_.get());
+  title_drag_controller_.reset(new TitleDragController(container_.get(), this));
   wm_state_.reset(new wm::WMState());
   instance = this;
   InstallAccelerators();
@@ -113,6 +125,8 @@ WindowManagerImpl::~WindowManagerImpl() {
     container_->RemoveObserver(this);
     container_->RemovePreTargetHandler(bezel_controller_.get());
   }
+  // |title_drag_controller_| needs to be reset before |container_|.
+  title_drag_controller_.reset();
   container_.reset();
   instance = NULL;
 }
@@ -196,6 +210,26 @@ bool WindowManagerImpl::OnAcceleratorFired(int command_id,
       break;
   }
   return true;
+}
+
+aura::Window* WindowManagerImpl::GetWindowBehind(aura::Window* window) {
+  const aura::Window::Windows& windows = container_->children();
+  aura::Window::Windows::const_iterator iter =
+      std::find(windows.begin(), windows.end(), window);
+  CHECK(iter != windows.end());
+  return (iter == windows.begin()) ? NULL : *(iter - 1);
+}
+
+void WindowManagerImpl::OnTitleDragStarted(aura::Window* window) {
+}
+
+void WindowManagerImpl::OnTitleDragCompleted(aura::Window* window) {
+  aura::Window* next_window = GetWindowBehind(window);
+  if (next_window)
+    OnSelectWindow(next_window);
+}
+
+void WindowManagerImpl::OnTitleDragCanceled(aura::Window* window) {
 }
 
 AthenaContainerLayoutManager::AthenaContainerLayoutManager() {
