@@ -22,10 +22,9 @@ namespace content {
 class CONTENT_EXPORT VideoCapturerDelegate
     : public base::RefCountedThreadSafe<VideoCapturerDelegate> {
  public:
-  typedef base::Callback<void(bool running)> RunningCallback;
+  typedef base::Callback<void(MediaStreamRequestResult result)> RunningCallback;
 
-  explicit VideoCapturerDelegate(
-      const StreamDeviceInfo& device_info);
+  explicit VideoCapturerDelegate(const StreamDeviceInfo& device_info);
 
   // Collects the formats that can currently be used.
   // |max_requested_height|, |max_requested_width|, and

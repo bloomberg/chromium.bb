@@ -220,7 +220,8 @@ void FilterFormatsByConstraint(
 // Returns the media::VideoCaptureFormats that matches |constraints|.
 media::VideoCaptureFormats FilterFormats(
     const blink::WebMediaConstraints& constraints,
-    const media::VideoCaptureFormats& supported_formats) {
+    const media::VideoCaptureFormats& supported_formats,
+    blink::WebString* unsatisfied_constraint) {
   if (constraints.isNull()) {
     return supported_formats;
   }
@@ -270,8 +271,13 @@ media::VideoCaptureFormats FilterFormats(
   constraints.getMandatoryConstraints(mandatory);
   constraints.getOptionalConstraints(optional);
   media::VideoCaptureFormats candidates = supported_formats;
-  for (size_t i = 0; i < mandatory.size(); ++i)
+  for (size_t i = 0; i < mandatory.size(); ++i) {
     FilterFormatsByConstraint(mandatory[i], true, &candidates);
+    if (candidates.empty()) {
+      *unsatisfied_constraint = mandatory[i].m_name;
+      return candidates;
+    }
+  }
 
   if (candidates.empty())
     return candidates;
@@ -507,8 +513,9 @@ bool MediaStreamVideoSource::FindBestFormatWithConstraints(
       *best_format = media::VideoCaptureFormat();
       return true;
     }
+    blink::WebString unsatisfied_constraint;
     media::VideoCaptureFormats filtered_formats =
-        FilterFormats(requested_constraints, formats);
+        FilterFormats(requested_constraints, formats, &unsatisfied_constraint);
     if (filtered_formats.size() > 0) {
       // A request with constraints that can be fulfilled.
       GetBestCaptureFormat(filtered_formats,
@@ -520,10 +527,10 @@ bool MediaStreamVideoSource::FindBestFormatWithConstraints(
   return false;
 }
 
-void MediaStreamVideoSource::OnStartDone(bool success) {
+void MediaStreamVideoSource::OnStartDone(MediaStreamRequestResult result) {
   DCHECK(CalledOnValidThread());
-  DVLOG(3) << "OnStartDone({success =" << success << "})";
-  if (success) {
+  DVLOG(3) << "OnStartDone({result =" << result << "})";
+  if (result == MEDIA_DEVICE_OK) {
     DCHECK_EQ(STARTING, state_);
     state_ = STARTED;
     SetReadyState(blink::WebMediaStreamSource::ReadyStateLive);
@@ -545,17 +552,18 @@ void MediaStreamVideoSource::FinalizeAddTrack() {
   callbacks.swap(requested_constraints_);
   for (std::vector<RequestedConstraints>::iterator it = callbacks.begin();
        it != callbacks.end(); ++it) {
-    // The track has been added successfully if the source has started and
-    // there are either no mandatory constraints and the source doesn't expose
-    // its format capabilities, or the constraints and the format match.
-    // For example, a remote source doesn't expose its format capabilities.
-    bool success =
-        state_ == STARTED &&
-        ((!current_format_.IsValid() && !HasMandatoryConstraints(
-            it->constraints)) ||
-         !FilterFormats(it->constraints, formats).empty());
+    MediaStreamRequestResult result = MEDIA_DEVICE_OK;
+    blink::WebString unsatisfied_constraint;
 
-    if (success) {
+    if (HasMandatoryConstraints(it->constraints) &&
+        FilterFormats(it->constraints, formats,
+                      &unsatisfied_constraint).empty())
+      result = MEDIA_DEVICE_CONSTRAINT_NOT_SATISFIED;
+
+    if (state_ != STARTED && result == MEDIA_DEVICE_OK)
+      result = MEDIA_DEVICE_TRACK_START_FAILURE;
+
+    if (result == MEDIA_DEVICE_OK) {
       int max_width;
       int max_height;
       GetDesiredMaxWidthAndHeight(it->constraints, &max_width, &max_height);
@@ -579,10 +587,11 @@ void MediaStreamVideoSource::FinalizeAddTrack() {
                                on_mute_callback);
     }
 
-    DVLOG(3) << "FinalizeAddTrack() success " << success;
+    DVLOG(3) << "FinalizeAddTrack() result " << result;
 
-    if (!it->callback.is_null())
-      it->callback.Run(this, success);
+    if (!it->callback.is_null()) {
+      it->callback.Run(this, result, unsatisfied_constraint);
+    }
   }
 }
 

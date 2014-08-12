@@ -100,7 +100,7 @@ void PpFrameWriter::StartSourceImpl(
   DCHECK(!delegate_);
   DVLOG(3) << "PpFrameWriter::StartSourceImpl()";
   delegate_ = new FrameWriterDelegate(io_message_loop(), frame_callback);
-  OnStartDone(true);
+  OnStartDone(MEDIA_DEVICE_OK);
 }
 
 void PpFrameWriter::StopSourceImpl() {

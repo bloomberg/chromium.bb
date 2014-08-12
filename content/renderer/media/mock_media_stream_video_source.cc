@@ -30,13 +30,13 @@ MockMediaStreamVideoSource::~MockMediaStreamVideoSource() {}
 void MockMediaStreamVideoSource::StartMockedSource() {
   DCHECK(attempted_to_start_);
   attempted_to_start_ = false;
-  OnStartDone(true);
+  OnStartDone(MEDIA_DEVICE_OK);
 }
 
 void MockMediaStreamVideoSource::FailToStartMockedSource() {
   DCHECK(attempted_to_start_);
   attempted_to_start_ = false;
-  OnStartDone(false);
+  OnStartDone(MEDIA_DEVICE_TRACK_START_FAILURE);
 }
 
 void MockMediaStreamVideoSource::CompleteGetSupportedFormats() {

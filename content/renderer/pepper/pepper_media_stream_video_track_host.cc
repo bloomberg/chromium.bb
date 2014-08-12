@@ -539,8 +539,10 @@ void PepperMediaStreamVideoTrackHost::InitBlinkTrack() {
 }
 
 void PepperMediaStreamVideoTrackHost::OnTrackStarted(
-    MediaStreamSource* source, bool success) {
-  DVLOG(3) << "OnTrackStarted result: " << success;
+    MediaStreamSource* source,
+    MediaStreamRequestResult result,
+    const blink::WebString& result_name) {
+  DVLOG(3) << "OnTrackStarted result: " << result;
 }
 
 }  // namespace content

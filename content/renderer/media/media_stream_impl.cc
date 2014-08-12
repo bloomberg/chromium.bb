@@ -342,7 +342,7 @@ void MediaStreamImpl::OnStreamGeneratedForCancelledRequest(
 // The requested stream failed to be generated.
 void MediaStreamImpl::OnStreamGenerationFailed(
     int request_id,
-    content::MediaStreamRequestResult result) {
+    MediaStreamRequestResult result) {
   DCHECK(CalledOnValidThread());
   DVLOG(1) << "MediaStreamImpl::OnStreamGenerationFailed("
            << request_id << ")";
@@ -500,14 +500,17 @@ void MediaStreamImpl::CreateAudioTracks(
 
 void MediaStreamImpl::OnCreateNativeTracksCompleted(
     UserMediaRequestInfo* request,
-    content::MediaStreamRequestResult result) {
+    MediaStreamRequestResult result,
+    const blink::WebString& result_name) {
   DVLOG(1) << "MediaStreamImpl::OnCreateNativeTracksComplete("
            << "{request_id = " << request->request_id << "} "
            << "{result = " << result << "})";
   if (result == content::MEDIA_DEVICE_OK)
     GetUserMediaRequestSucceeded(request->web_stream, &request->request);
   else
-    GetUserMediaRequestFailed(&request->request, result);
+    GetUserMediaRequestTrackStartedFailed(&request->request,
+                                          result,
+                                          result_name);
 
   DeleteUserMediaRequestInfo(request);
 }
@@ -613,7 +616,7 @@ void MediaStreamImpl::GetUserMediaRequestSucceeded(
 
 void MediaStreamImpl::GetUserMediaRequestFailed(
     blink::WebUserMediaRequest* request_info,
-    content::MediaStreamRequestResult result) {
+    MediaStreamRequestResult result) {
   LogUserMediaRequestResult(result);
   switch (result) {
     case MEDIA_DEVICE_OK:
@@ -643,10 +646,26 @@ void MediaStreamImpl::GetUserMediaRequestFailed(
     case MEDIA_DEVICE_CAPTURE_FAILURE:
       request_info->requestFailedUASpecific("DeviceCaptureError");
       break;
+    default:
+      NOTREACHED();
+      request_info->requestFailed();
+      break;
+  }
+}
+
+void MediaStreamImpl::GetUserMediaRequestTrackStartedFailed(
+    blink::WebUserMediaRequest* request_info,
+    MediaStreamRequestResult result,
+    const blink::WebString& result_name) {
+  switch (result) {
+    case MEDIA_DEVICE_CONSTRAINT_NOT_SATISFIED:
+      request_info->requestFailedConstraint(result_name);
+      break;
     case MEDIA_DEVICE_TRACK_START_FAILURE:
       request_info->requestFailedUASpecific("TrackStartError");
       break;
     default:
+      NOTREACHED();
       request_info->requestFailed();
       break;
   }
@@ -832,7 +851,8 @@ MediaStreamImpl::UserMediaRequestInfo::UserMediaRequestInfo(
       enable_automatic_output_device_selection(
           enable_automatic_output_device_selection),
       request(request),
-      request_failed_(false) {
+      request_result_(MEDIA_DEVICE_OK),
+      request_result_name_("") {
 }
 
 MediaStreamImpl::UserMediaRequestInfo::~UserMediaRequestInfo() {
@@ -880,8 +900,10 @@ void MediaStreamImpl::UserMediaRequestInfo::CallbackOnTracksStarted(
 }
 
 void MediaStreamImpl::UserMediaRequestInfo::OnTrackStarted(
-    MediaStreamSource* source, bool success) {
-  DVLOG(1) << "OnTrackStarted result " << success;
+    MediaStreamSource* source,
+    MediaStreamRequestResult result,
+    const blink::WebString& result_name) {
+  DVLOG(1) << "OnTrackStarted result " << result;
   std::vector<MediaStreamSource*>::iterator it =
       std::find(sources_waiting_for_callback_.begin(),
                 sources_waiting_for_callback_.end(),
@@ -890,16 +912,17 @@ void MediaStreamImpl::UserMediaRequestInfo::OnTrackStarted(
   sources_waiting_for_callback_.erase(it);
   // All tracks must be started successfully. Otherwise the request is a
   // failure.
-  if (!success)
-    request_failed_ = true;
+  if (result != MEDIA_DEVICE_OK) {
+    request_result_ = result;
+    request_result_name_ = result_name;
+  }
+
   CheckAllTracksStarted();
 }
 
 void MediaStreamImpl::UserMediaRequestInfo::CheckAllTracksStarted() {
   if (!ready_callback_.is_null() && sources_waiting_for_callback_.empty()) {
-    ready_callback_.Run(
-        this,
-        request_failed_ ? MEDIA_DEVICE_TRACK_START_FAILURE : MEDIA_DEVICE_OK);
+    ready_callback_.Run(this, request_result_, request_result_name_);
   }
 }
 

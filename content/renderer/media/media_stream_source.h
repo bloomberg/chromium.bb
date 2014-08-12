@@ -25,7 +25,9 @@ class CONTENT_EXPORT MediaStreamSource
       SourceStoppedCallback;
 
   typedef base::Callback<void(MediaStreamSource* source,
-                              bool success)> ConstraintsCallback;
+                              MediaStreamRequestResult result,
+                              const blink::WebString& result_name)>
+      ConstraintsCallback;
 
   // Source constraints key for
   // http://dev.w3.org/2011/webrtc/editor/getusermedia.html.

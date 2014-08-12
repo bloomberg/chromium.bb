@@ -84,9 +84,11 @@ class MediaStreamRemoteVideoSourceTest
   }
 
  private:
-  void OnConstraintsApplied(MediaStreamSource* source, bool success) {
+  void OnConstraintsApplied(MediaStreamSource* source,
+                            MediaStreamRequestResult result,
+                            const blink::WebString& result_name) {
     ASSERT_EQ(source, remote_source_);
-    if (success)
+    if (result == MEDIA_DEVICE_OK)
       ++number_of_successful_constraints_applied_;
     else
       ++number_of_failed_constraints_applied_;

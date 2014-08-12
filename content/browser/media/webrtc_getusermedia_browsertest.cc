@@ -503,8 +503,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                                               large_value);
   NavigateToURL(shell(), url);
 
-  // TODO(perkj): A proper error code should be returned by gUM.
-  EXPECT_EQ("TrackStartError", ExecuteJavascriptAndReturnResult(call));
+  EXPECT_EQ("ConstraintNotSatisfiedError",
+            ExecuteJavascriptAndReturnResult(call));
 }
 
 // This test will make a simple getUserMedia page, verify that video is playing

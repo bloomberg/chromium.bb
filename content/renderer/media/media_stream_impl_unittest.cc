@@ -50,6 +50,7 @@ class MediaStreamImplUnderTest : public MediaStreamImpl {
             NULL, dependency_factory, media_stream_dispatcher.Pass()),
         state_(REQUEST_NOT_STARTED),
         result_(NUM_MEDIA_REQUEST_RESULTS),
+        result_name_(""),
         factory_(dependency_factory),
         video_source_(NULL) {
   }
@@ -79,6 +80,16 @@ class MediaStreamImplUnderTest : public MediaStreamImpl {
     last_generated_stream_.reset();
     state_ = REQUEST_FAILED;
     result_ = result;
+  }
+
+  virtual void GetUserMediaRequestTrackStartedFailed(
+      blink::WebUserMediaRequest* request_info,
+      MediaStreamRequestResult result,
+      const blink::WebString& result_name) OVERRIDE {
+    last_generated_stream_.reset();
+    state_ = REQUEST_FAILED;
+    result_ = result;
+    result_name_ = result_name;
   }
 
   virtual void EnumerateDevicesSucceded(
@@ -115,11 +126,13 @@ class MediaStreamImplUnderTest : public MediaStreamImpl {
 
   RequestState request_state() const { return state_; }
   content::MediaStreamRequestResult error_reason() const { return result_; }
+  blink::WebString error_name() const { return result_name_; }
 
  private:
   blink::WebMediaStream last_generated_stream_;
   RequestState state_;
   content::MediaStreamRequestResult result_;
+  blink::WebString result_name_;
   blink::WebVector<blink::WebMediaDeviceInfo> last_devices_;
   PeerConnectionDependencyFactory* factory_;
   MockMediaStreamVideoCapturerSource* video_source_;

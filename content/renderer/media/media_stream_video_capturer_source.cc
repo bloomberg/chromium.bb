@@ -139,11 +139,12 @@ void VideoCapturerDelegate::OnStateUpdateOnRenderThread(
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(3) << "OnStateUpdateOnRenderThread state = " << state;
   if (state == VIDEO_CAPTURE_STATE_STARTED && !running_callback_.is_null()) {
-    running_callback_.Run(true);
+    running_callback_.Run(MEDIA_DEVICE_OK);
     return;
   }
   if (state > VIDEO_CAPTURE_STATE_STARTED && !running_callback_.is_null()) {
-    base::ResetAndReturn(&running_callback_).Run(false);
+    base::ResetAndReturn(&running_callback_).Run(
+        MEDIA_DEVICE_TRACK_START_FAILURE);
   }
 }
 

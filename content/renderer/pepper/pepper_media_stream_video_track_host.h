@@ -86,7 +86,9 @@ class PepperMediaStreamVideoTrackHost : public PepperMediaStreamTrackHostBase,
       const ppapi::MediaStreamVideoTrackShared::Attributes& attributes);
 
   void InitBlinkTrack();
-  void OnTrackStarted(MediaStreamSource* source, bool success);
+  void OnTrackStarted(MediaStreamSource* source,
+                      MediaStreamRequestResult result,
+                      const blink::WebString& result_name);
 
   blink::WebMediaStreamTrack track_;
 

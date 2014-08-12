@@ -36,6 +36,8 @@ class MediaStreamVideoSourceTest
       : child_process_(new ChildProcess()),
         number_of_successful_constraints_applied_(0),
         number_of_failed_constraints_applied_(0),
+        result_(MEDIA_DEVICE_OK),
+        result_name_(""),
         mock_source_(new MockMediaStreamVideoSource(true)) {
     media::VideoCaptureFormats formats;
     formats.push_back(media::VideoCaptureFormat(
@@ -95,6 +97,9 @@ class MediaStreamVideoSourceTest
   int NumberOfFailedConstraintsCallbacks() const {
     return number_of_failed_constraints_applied_;
   }
+
+  content::MediaStreamRequestResult error_type() const { return result_; }
+  blink::WebString error_name() const { return result_name_; }
 
   MockMediaStreamVideoSource* mock_source() { return mock_source_; }
 
@@ -199,13 +204,18 @@ class MediaStreamVideoSourceTest
   }
 
  private:
-  void OnConstraintsApplied(MediaStreamSource* source, bool success) {
+  void OnConstraintsApplied(MediaStreamSource* source,
+                            MediaStreamRequestResult result,
+                            const blink::WebString& result_name) {
     ASSERT_EQ(source, webkit_source_.extraData());
 
-    if (success)
+    if (result == MEDIA_DEVICE_OK) {
       ++number_of_successful_constraints_applied_;
-    else
+    } else {
+      result_ = result;
+      result_name_ = result_name;
       ++number_of_failed_constraints_applied_;
+    }
 
     if (!track_to_release_.isNull()) {
       mock_source_ = NULL;
@@ -218,6 +228,8 @@ class MediaStreamVideoSourceTest
   blink::WebMediaStreamTrack track_to_release_;
   int number_of_successful_constraints_applied_;
   int number_of_failed_constraints_applied_;
+  content::MediaStreamRequestResult result_;
+  blink::WebString result_name_;
   blink::WebMediaStreamSource webkit_source_;
   // |mock_source_| is owned by |webkit_source_|.
   MockMediaStreamVideoSource* mock_source_;
@@ -440,6 +452,8 @@ TEST_F(MediaStreamVideoSourceTest, InvalidMandatoryConstraint) {
   blink::WebMediaStreamTrack track = CreateTrack(
       "123", factory.CreateWebMediaConstraints());
   mock_source()->CompleteGetSupportedFormats();
+  EXPECT_EQ(MEDIA_DEVICE_CONSTRAINT_NOT_SATISFIED, error_type());
+  EXPECT_EQ("weird key", error_name());
   EXPECT_EQ(1, NumberOfFailedConstraintsCallbacks());
 }
 

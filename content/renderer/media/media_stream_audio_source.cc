@@ -57,14 +57,14 @@ void MediaStreamAudioSource::AddTrack(
       // last track is removed from the source. But in this case, the source is
       // is not even started. So we need to fail both adding the track and
       // trigger |stop_callback|.
-      callback.Run(this, false);
+      callback.Run(this, MEDIA_DEVICE_TRACK_START_FAILURE, "");
       StopSource();
       return;
     }
   }
 
   factory_->CreateLocalAudioTrack(track);
-  callback.Run(this, true);
+  callback.Run(this, MEDIA_DEVICE_OK, "");
 }
 
 }  // namespace content

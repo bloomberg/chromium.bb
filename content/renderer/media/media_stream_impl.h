@@ -73,7 +73,7 @@ class CONTENT_EXPORT MediaStreamImpl
       const StreamDeviceInfoArray& video_array) OVERRIDE;
   virtual void OnStreamGenerationFailed(
       int request_id,
-      content::MediaStreamRequestResult result) OVERRIDE;
+      MediaStreamRequestResult result) OVERRIDE;
   virtual void OnDeviceStopped(const std::string& label,
                                const StreamDeviceInfo& device_info) OVERRIDE;
   virtual void OnDevicesEnumerated(
@@ -100,7 +100,11 @@ class CONTENT_EXPORT MediaStreamImpl
        blink::WebUserMediaRequest* request_info);
   virtual void GetUserMediaRequestFailed(
       blink::WebUserMediaRequest* request_info,
-      content::MediaStreamRequestResult result);
+      MediaStreamRequestResult result);
+  virtual void GetUserMediaRequestTrackStartedFailed(
+      blink::WebUserMediaRequest* request_info,
+      MediaStreamRequestResult result,
+      const blink::WebString& result_name);
   virtual void EnumerateDevicesSucceded(
       blink::WebMediaDevicesRequest* request,
       blink::WebVector<blink::WebMediaDeviceInfo>& devices);
@@ -117,7 +121,8 @@ class CONTENT_EXPORT MediaStreamImpl
       : public base::SupportsWeakPtr<UserMediaRequestInfo> {
    public:
     typedef base::Callback<void(UserMediaRequestInfo* request_info,
-                                content::MediaStreamRequestResult result)>
+                                MediaStreamRequestResult result,
+                                const blink::WebString& result_name)>
       ResourcesReady;
 
     UserMediaRequestInfo(int request_id,
@@ -149,11 +154,15 @@ class CONTENT_EXPORT MediaStreamImpl
     bool HasPendingSources() const;
 
    private:
-    void OnTrackStarted(MediaStreamSource* source, bool success);
+    void OnTrackStarted(
+        MediaStreamSource* source,
+        MediaStreamRequestResult result,
+        const blink::WebString& result_name);
     void CheckAllTracksStarted();
 
     ResourcesReady ready_callback_;
-    bool request_failed_;
+    MediaStreamRequestResult request_result_;
+    blink::WebString request_result_name_;
     // Sources used in this request.
     std::vector<blink::WebMediaStreamSource> sources_;
     std::vector<MediaStreamSource*> sources_waiting_for_callback_;
@@ -189,7 +198,8 @@ class CONTENT_EXPORT MediaStreamImpl
   // underlying media sources and tracks have been created and started.
   void OnCreateNativeTracksCompleted(
       UserMediaRequestInfo* request,
-      content::MediaStreamRequestResult result);
+      MediaStreamRequestResult result,
+      const blink::WebString& result_name);
 
   void OnStreamGeneratedForCancelledRequest(
       const StreamDeviceInfoArray& audio_array,

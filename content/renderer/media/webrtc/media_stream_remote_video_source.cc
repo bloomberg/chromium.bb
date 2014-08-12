@@ -154,7 +154,7 @@ void MediaStreamRemoteVideoSource::StartSourceImpl(
   DCHECK(!delegate_);
   delegate_ = new RemoteVideoSourceDelegate(io_message_loop(), frame_callback);
   remote_track_->AddRenderer(delegate_);
-  OnStartDone(true);
+  OnStartDone(MEDIA_DEVICE_OK);
 }
 
 void MediaStreamRemoteVideoSource::StopSourceImpl() {

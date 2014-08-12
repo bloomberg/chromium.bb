@@ -77,7 +77,9 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
   }
 
  protected:
-  void OnConstraintsApplied(MediaStreamSource* source, bool success) {
+  void OnConstraintsApplied(MediaStreamSource* source,
+                            MediaStreamRequestResult result,
+                            const blink::WebString& result_name) {
   }
 
   base::MessageLoopForUI message_loop_;
@@ -184,7 +186,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest, CaptureTime) {
                                testing::SaveArg<2>(&running_cb)));
   EXPECT_CALL(mock_delegate(), StopCapture());
   blink::WebMediaStreamTrack track = StartSource();
-  running_cb.Run(true);
+  running_cb.Run(MEDIA_DEVICE_OK);
 
   base::RunLoop run_loop;
   base::TimeTicks reference_capture_time =
