@@ -211,7 +211,9 @@ private:
     void handleDidFailGeneric();
     // Handles didFail() call not caused by cancellation or timeout.
     void handleNetworkError();
-    // Handles didFail() call triggered by m_loader->cancel().
+    // Handles didFail() call for cancellations. For example, the
+    // ResourceLoader handling the load notifies m_loader of an error
+    // cancellation when the frame containing the XHR navigates away.
     void handleDidCancel();
     // Handles didFail() call for timeout.
     void handleDidTimeout();
