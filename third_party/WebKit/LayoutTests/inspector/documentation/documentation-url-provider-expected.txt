@@ -17,4 +17,8 @@ Property keys:
 http://docs.webplatform.org/w/api.php?action=query&titles=javascript/Object/keys&prop=revisions&rvprop=timestamp|content&format=json
 Property notExist:
 null
+Property indexOf:
+http://docs.webplatform.org/w/api.php?action=query&titles=javascript/Array/indexOf&prop=revisions&rvprop=timestamp|content&format=json
+Property setDate:
+http://docs.webplatform.org/w/api.php?action=query&titles=javascript/Date/setDate&prop=revisions&rvprop=timestamp|content&format=json
 
