@@ -74,3 +74,8 @@ ChromeBlacklistTrialTest.*
 
 # http://crbug.com/349778
 TranslateManagerRenderViewHostTest.*
+
+# http://crbug.com/403073
+SafeBrowsingModuleVerifierWinTest.VerifyModuleExportModified
+SafeBrowsingModuleVerifierWinTest.VerifyModuleModified
+SafeBrowsingModuleVerifierWinTest.VerifyModuleUnmodified
