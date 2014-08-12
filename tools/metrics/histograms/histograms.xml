@@ -33819,6 +33819,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="UMA.ProfileSignInStatus" enum="ProfileSigninStatus">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>yiyaoliu@chromium.org</owner>
+  <summary>
+    An enum representing the signin status of all opened profiles during one UMA
+    session.
+  </summary>
+</histogram>
+
 <histogram name="UMA.ProtoCompressionRatio" units="%">
   <owner>asvitkine@chromium.org</owner>
   <summary>
@@ -46742,6 +46751,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="6" label="Switch to profile via User Manager"/>
   <int value="7" label="Switch to locked profile via User Manager"/>
   <int value="8" label="Switch to Guest profile"/>
+</enum>
+
+<enum name="ProfileSigninStatus" type="int">
+  <int value="0" label="All profiles signed in"/>
+  <int value="1" label="All profiles not signed in"/>
+  <int value="2" label="Mixed signin status"/>
 </enum>
 
 <enum name="ProfileSync" type="int">

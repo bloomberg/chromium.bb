@@ -1080,6 +1080,7 @@
         'browser/metrics/gpu_metrics_provider_unittest.cc',
         'browser/metrics/plugin_metrics_provider_unittest.cc',
         'browser/metrics/profiler_metrics_provider_unittest.cc',
+        'browser/metrics/signin_status_metrics_provider_unittest.cc',
         'browser/metrics/rappor/sampling_unittest.cc',
         'browser/metrics/thread_watcher_unittest.cc',
         'browser/metrics/thread_watcher_android_unittest.cc',
@@ -2041,6 +2042,11 @@
           # Bundle all the necessary resources into the test bundle.
           'includes': ['chrome_ios_bundle_resources.gypi'],
           'xcode_settings': {'OTHER_LDFLAGS': ['-ObjC']},
+        }],
+        ['OS=="ios" or OS=="android" or chromeos==1', {
+          'sources!': [
+            'browser/metrics/signin_status_metrics_provider_unittest.cc',
+          ],
         }],
         ['enable_background==0', {
           'sources/': [
