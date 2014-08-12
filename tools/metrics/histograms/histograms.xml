@@ -9153,6 +9153,129 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Histogram.InconsistenciesBrowser" enum="Inconsistencies">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    The number of inconsistency events found when examining a single histogram's
+    data in a browser for transmission via UMA.  Inconsistent data is NOT
+    transmitted via UMA.  Each type of inconsistency is a bit, and all bits
+    found in one histogram examination are added together to summarize the
+    inconsistent event.  Note that the same inconsistency MAY appear time and
+    again as the same corrupt histogram is examined for each potenital UMA
+    upload.
+  </summary>
+</histogram>
+
+<histogram name="Histogram.InconsistenciesBrowserUnique" enum="Inconsistencies">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    The number of inconsistency events found when examining a single histogram's
+    data in a browser for transmission via UMA.  Inconsistent data is NOT
+    transmitted via UMA.  Each type of inconsistency is a bit, and all bits
+    found in one histogram examination are added together to summarize the
+    inconsistent event.  Note that the same inconsistency will only appear at
+    most one time for each histogram in a single process (i.e., duplicate
+    corruption in a single histogram is not noted in this chart.)
+  </summary>
+</histogram>
+
+<histogram name="Histogram.InconsistenciesChildProcess" enum="Inconsistencies">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    The number of inconsistency events found when examining a single histogram's
+    data in a child process for transmission via UMA.  Inconsistent data is NOT
+    transmitted via UMA.  Each type of inconsistency is a bit, and all bits
+    found in one histogram examination are added together to summarize the
+    inconsistent event.  Note that the same inconsistency MAY appear time and
+    again as the same corrupt histogram is examined for each potenital UMA
+    upload.
+  </summary>
+</histogram>
+
+<histogram name="Histogram.InconsistenciesChildProcessUnique"
+    enum="Inconsistencies">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    The number of inconsistency events found when examining a single histogram's
+    data in a child process for transmission via UMA.  Inconsistent data is NOT
+    transmitted via UMA.  Each type of inconsistency is a bit, and all bits
+    found in one histogram examination are added together to summarize the
+    inconsistent event.  Note that the same inconsistency will only appear at
+    most one time for each histogram in a single process (i.e., duplicate
+    corruption in a single histogram is not noted in this chart.)
+  </summary>
+</histogram>
+
+<histogram name="Histogram.InconsistenciesRenderer" enum="Inconsistencies">
+  <obsolete>
+    Deprecated 7/2012.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    The number of inconsistency events found when examining a single histogram's
+    data in a renderer for transmission to the browser.  Inconsistent data is
+    NOT transmitted to the browser.  Each type of inconsistency is a bit, and
+    all bits found in one histogram examination are added together to summarize
+    the inconsistent event.  Note that the same inconsistency MAY appear time
+    and again as the same corrupt histogram is examined for each potenital UMA
+    upload.
+  </summary>
+</histogram>
+
+<histogram name="Histogram.InconsistenciesRendererUnique"
+    enum="Inconsistencies">
+  <obsolete>
+    Deprecated 7/2012.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    The number of inconsistency events found when examining a single histogram's
+    data in a renderer for transmission to the browser.  Inconsistent data is
+    NOT transmitted to the browser.  Each type of inconsistency is a bit, and
+    all bits found in one histogram examination are added together to summarize
+    the inconsistent event.  Note that the same inconsistency will only appear
+    at most one time for each histogram in a single renderer process (i.e.,
+    duplicate corruption in a single histogram is not noted in this chart.)
+  </summary>
+</histogram>
+
+<histogram name="Histogram.InconsistentCountHigh">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    The number of extra samples counted in the redundant_count in a histogram
+    that were not found by summing the samples in the buckets.
+  </summary>
+</histogram>
+
+<histogram name="Histogram.InconsistentCountLow">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    The number of missing samples in the redundant_count in a histogram that
+    were found by summing the samples in the buckets.
+  </summary>
+</histogram>
+
+<histogram name="Histogram.InconsistentSnapshotChildProcess">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    The amount of discrepancy found when examining a single histogram's data in
+    a child process for transmission via UMA.  Inconsistent data is NOT
+    transmitted via UMA.
+  </summary>
+</histogram>
+
+<histogram name="Histogram.InconsistentSnapshotRenderer">
+  <obsolete>
+    Deprecated 7/2012.
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    The amount of discrepancy found when examining a single histogram's data in
+    a renderer process for transmission via UMA. Inconsistent data is NOT
+    transmitted via UMA.
+  </summary>
+</histogram>
+
 <histogram name="History.DeleteFTSIndexDatabases">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -42169,6 +42292,20 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <enum name="IncidentType" type="int">
   <int value="1" label="TrackedPreference"/>
+</enum>
+
+<enum name="Inconsistencies" type="int">
+  <int value="1" label="RangeChecksum"/>
+  <int value="2" label="BucketOrder"/>
+  <int value="3" label="RangeChecksum BucketOrder"/>
+  <int value="4" label="CountHigh"/>
+  <int value="5" label="CountHigh RangeChecksum"/>
+  <int value="6" label="CountHigh BucketOrder"/>
+  <int value="7" label="CountHigh RangeChecksum BucketOrder"/>
+  <int value="8" label="CountLow"/>
+  <int value="9" label="CountLow RangeChecksum"/>
+  <int value="10" label="CountLow BucketOrder"/>
+  <int value="11" label="CountLow RangeChecksum BucketOrder"/>
 </enum>
 
 <enum name="IndexedDatabaseMethods" type="int">
