@@ -358,6 +358,9 @@ class FakeBlockingStreamSocket : public WrappedStreamSocket {
   // Waits for the blocked Write() call to be scheduled.
   void WaitForWrite();
 
+  // Returns the wrapped stream socket.
+  StreamSocket* transport() { return transport_.get(); }
+
  private:
   // Handles completion from the underlying transport read.
   void OnReadCompleted(int result);
@@ -796,6 +799,11 @@ class SSLClientSocketCertRequestInfoTest : public SSLClientSocketTest {
 };
 
 class SSLClientSocketFalseStartTest : public SSLClientSocketTest {
+ public:
+  SSLClientSocketFalseStartTest()
+      : monitor_handshake_callback_(false),
+        fail_handshake_after_false_start_(false) {}
+
  protected:
   // Creates an SSLClientSocket with |client_config| attached to a
   // FakeBlockingStreamSocket, returning both in |*out_raw_transport| and
@@ -817,8 +825,11 @@ class SSLClientSocketFalseStartTest : public SSLClientSocketTest {
       scoped_ptr<SSLClientSocket>* out_sock) {
     CHECK(test_server());
 
-    scoped_ptr<StreamSocket> real_transport(
-        new TCPClientSocket(addr(), NULL, NetLog::Source()));
+    scoped_ptr<StreamSocket> real_transport(scoped_ptr<StreamSocket>(
+        new TCPClientSocket(addr(), NULL, NetLog::Source())));
+    real_transport.reset(
+        new SynchronousErrorStreamSocket(real_transport.Pass()));
+
     scoped_ptr<FakeBlockingStreamSocket> transport(
         new FakeBlockingStreamSocket(real_transport.Pass()));
     int rv = callback->GetResult(transport->Connect(callback->callback()));
@@ -829,6 +840,12 @@ class SSLClientSocketFalseStartTest : public SSLClientSocketTest {
         CreateSSLClientSocket(transport.PassAs<StreamSocket>(),
                               test_server()->host_port_pair(),
                               client_config);
+
+    if (monitor_handshake_callback_) {
+      sock->SetHandshakeCompletionCallback(
+          base::Bind(&SSLClientSocketTest::RecordCompletedHandshake,
+                     base::Unretained(this)));
+    }
 
     // Connect. Stop before the client processes the first server leg
     // (ServerHello, etc.)
@@ -845,6 +862,12 @@ class SSLClientSocketFalseStartTest : public SSLClientSocketTest {
     raw_transport->UnblockReadResult();
     raw_transport->WaitForWrite();
 
+    if (fail_handshake_after_false_start_) {
+      SynchronousErrorStreamSocket* error_socket =
+          static_cast<SynchronousErrorStreamSocket*>(
+              raw_transport->transport());
+      error_socket->SetNextReadError(ERR_CONNECTION_RESET);
+    }
     // And, finally, release that and block the next server leg
     // (ChangeCipherSpec, Finished).
     raw_transport->BlockReadResult();
@@ -862,6 +885,7 @@ class SSLClientSocketFalseStartTest : public SSLClientSocketTest {
     TestCompletionCallback callback;
     FakeBlockingStreamSocket* raw_transport = NULL;
     scoped_ptr<SSLClientSocket> sock;
+
     ASSERT_NO_FATAL_FAILURE(CreateAndConnectUntilServerFinishedReceived(
         client_config, &callback, &raw_transport, &sock));
 
@@ -896,7 +920,10 @@ class SSLClientSocketFalseStartTest : public SSLClientSocketTest {
       // After releasing reads, the connection proceeds.
       raw_transport->UnblockReadResult();
       rv = callback.GetResult(rv);
-      EXPECT_LT(0, rv);
+      if (fail_handshake_after_false_start_)
+        EXPECT_EQ(ERR_CONNECTION_RESET, rv);
+      else
+        EXPECT_LT(0, rv);
     } else {
       // False Start is not enabled, so the handshake will not complete because
       // the server second leg is blocked.
@@ -904,6 +931,13 @@ class SSLClientSocketFalseStartTest : public SSLClientSocketTest {
       EXPECT_FALSE(callback.have_result());
     }
   }
+
+  // Indicates that the socket's handshake completion callback should
+  // be monitored.
+  bool monitor_handshake_callback_;
+  // Indicates that this test's handshake should fail after the client
+  // "finished" message is sent.
+  bool fail_handshake_after_false_start_;
 };
 
 class SSLClientSocketChannelIDTest : public SSLClientSocketTest {
@@ -2762,6 +2796,35 @@ TEST_F(SSLClientSocketTest, HandshakeCallbackIsRun_WithDisabledSessionCache) {
   EXPECT_EQ(OK, rv);
   EXPECT_TRUE(sock->IsConnected());
   EXPECT_TRUE(ran_handshake_completion_callback_);
+}
+
+TEST_F(SSLClientSocketFalseStartTest,
+       HandshakeCallbackIsRun_WithFalseStartFailure) {
+  // False Start requires NPN and a forward-secret cipher suite.
+  SpawnedTestServer::SSLOptions server_options;
+  server_options.key_exchanges =
+      SpawnedTestServer::SSLOptions::KEY_EXCHANGE_DHE_RSA;
+  server_options.enable_npn = true;
+  SSLConfig client_config;
+  client_config.next_protos.push_back("http/1.1");
+  monitor_handshake_callback_ = true;
+  fail_handshake_after_false_start_ = true;
+  ASSERT_NO_FATAL_FAILURE(TestFalseStart(server_options, client_config, true));
+  ASSERT_TRUE(ran_handshake_completion_callback_);
+}
+
+TEST_F(SSLClientSocketFalseStartTest,
+       HandshakeCallbackIsRun_WithFalseStartSuccess) {
+  // False Start requires NPN and a forward-secret cipher suite.
+  SpawnedTestServer::SSLOptions server_options;
+  server_options.key_exchanges =
+      SpawnedTestServer::SSLOptions::KEY_EXCHANGE_DHE_RSA;
+  server_options.enable_npn = true;
+  SSLConfig client_config;
+  client_config.next_protos.push_back("http/1.1");
+  monitor_handshake_callback_ = true;
+  ASSERT_NO_FATAL_FAILURE(TestFalseStart(server_options, client_config, true));
+  ASSERT_TRUE(ran_handshake_completion_callback_);
 }
 #endif  // defined(USE_OPENSSL)
 
