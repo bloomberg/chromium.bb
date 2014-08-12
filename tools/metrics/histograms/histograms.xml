@@ -26717,7 +26717,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>feng@chromium.org</owner>
   <summary>
     The size of all the chunk URLs in an update response when Chrome is in the
-    foreground.
+    background.
   </summary>
 </histogram>
 
@@ -26725,7 +26725,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>feng@chromium.org</owner>
   <summary>
     The size of all the chunk URLs in an update response when Chrome is in the
-    background.
+    foreground.
   </summary>
 </histogram>
 
