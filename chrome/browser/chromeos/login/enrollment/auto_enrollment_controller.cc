@@ -207,6 +207,7 @@ void AutoEnrollmentController::StartClient(
 
 void AutoEnrollmentController::UpdateState(
     policy::AutoEnrollmentState new_state) {
+  VLOG(1) << "New state: " << new_state << ".";
   state_ = new_state;
   progress_callbacks_.Notify(state_);
 }
