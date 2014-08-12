@@ -2215,9 +2215,19 @@ _release.add_config('lumpy-release',
   afdo_use=True,
 )
 
+_release.add_config('quawks-release',
+  boards=['quawks'],
+  useflags=_release['useflags'] + ['highdpi'],
+)
+
 _release.add_config('samus-release',
   boards=['samus'],
   important=True,
+)
+
+_release.add_config('swanky-release',
+  boards=['swanky'],
+  useflags=_release['useflags'] + ['highdpi'],
 )
 
 # Add specific release configs for these sandybrige/ivybridge boards to

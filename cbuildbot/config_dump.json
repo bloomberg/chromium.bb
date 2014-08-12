@@ -61659,7 +61659,8 @@
         "useflags": [
             "chrome_internal",
             "-cros-debug",
-            "-highdpi"
+            "-highdpi",
+            "highdpi"
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
@@ -64413,7 +64414,8 @@
                 "useflags": [
                     "chrome_internal",
                     "-cros-debug",
-                    "-highdpi"
+                    "-highdpi",
+                    "highdpi"
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
@@ -65238,7 +65240,8 @@
                 "useflags": [
                     "chrome_internal",
                     "-cros-debug",
-                    "-highdpi"
+                    "-highdpi",
+                    "highdpi"
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_setup_board": false,
@@ -80240,7 +80243,8 @@
         "useflags": [
             "chrome_internal",
             "-cros-debug",
-            "-highdpi"
+            "-highdpi",
+            "highdpi"
         ],
         "usepkg_build_packages": false,
         "usepkg_setup_board": false,
