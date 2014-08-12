@@ -12,6 +12,7 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chromeos/login/login_state.h"

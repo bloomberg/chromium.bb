@@ -4,6 +4,7 @@
 
 #include "ui/base/l10n/l10n_util_plurals.h"
 
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/l10n/l10n_util.h"
 

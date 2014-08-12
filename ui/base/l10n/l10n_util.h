@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "base/strings/string_util.h"
 #include "ui/base/ui_base_export.h"
 
 #if defined(OS_MACOSX)

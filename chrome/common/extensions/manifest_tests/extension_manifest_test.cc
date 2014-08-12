@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
 #include "extensions/common/extension_l10n_util.h"

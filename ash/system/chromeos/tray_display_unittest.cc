@@ -12,6 +12,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_strings.h"
 #include "ui/accessibility/ax_view_state.h"
