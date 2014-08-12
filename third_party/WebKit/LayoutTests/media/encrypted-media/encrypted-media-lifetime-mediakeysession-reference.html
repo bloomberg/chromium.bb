@@ -35,34 +35,28 @@
                     mediaKeys = result;
                     assert_equals(mediaKeys.keySystem, 'org.w3.clearkey');
 
-                    // Verify MediaKeys are not an ActiveDOMObject. However, the
-                    // PromiseResolver objects used by MediaKeys/MediaKeySession
-                    // are ActiveDOMObjects, and they stay active until the end
-                    // of the associated then/catch function.
-                    assert_equals(numActiveDOMObjectsCreated(), 1, 'MediaKeys.create()');
+                    // Verify MediaKeys are not an ActiveDOMObject.
+                    assert_equals(numActiveDOMObjectsCreated(), 0, 'MediaKeys.create()');
 
                     // Create 3 sessions.
                     return mediaKeys.createSession(initDataType, initData);
                 }).then(function(result) {
                     mediaKeySession1 = result;
                     assert_true(mediaKeySession1.sessionId && mediaKeySession1.sessionId.length > 0);
-                    // Should be 1 MediaKeySession + 1 PromiseResolver from
-                    // createSession().
-                    assert_equals(numActiveDOMObjectsCreated(), 2, 'mediaKeys.createSession(1)');
+                    // Should be 1 MediaKeySession.
+                    assert_equals(numActiveDOMObjectsCreated(), 1, 'mediaKeys.createSession(1)');
                     return mediaKeys.createSession(initDataType, initData);
                 }).then(function(result) {
                     mediaKeySession2 = result;
                     assert_true(mediaKeySession2.sessionId && mediaKeySession2.sessionId.length > 0);
-                    // Should be 2 MediaKeySessions + 1 PromiseResolver from the
-                    // last createSession().
-                    assert_equals(numActiveDOMObjectsCreated(), 3, 'mediaKeys.createSession(2)');
+                    // Should be 2 MediaKeySessions.
+                    assert_equals(numActiveDOMObjectsCreated(), 2, 'mediaKeys.createSession(2)');
                     return mediaKeys.createSession(initDataType, initData);
                 }).then(function(result) {
                     mediaKeySession3 = result;
                     assert_true(mediaKeySession3.sessionId && mediaKeySession3.sessionId.length > 0);
-                    // Should be 3 MediaKeySessions + 1 PromiseResolver from the
-                    // last createSession().
-                    assert_equals(numActiveDOMObjectsCreated(), 4, 'mediaKeys.createSession(3)');
+                    // Should be 3 MediaKeySessions.
+                    assert_equals(numActiveDOMObjectsCreated(), 3, 'mediaKeys.createSession(3)');
 
                     // Run gc(). All sessions should remain as we have a
                     // reference to each one. However, running gc()
