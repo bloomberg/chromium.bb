@@ -884,7 +884,7 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
     switches::kEnableLogging,
     switches::kEnableShareGroupAsyncTextureUpload,
 #if defined(OS_CHROMEOS)
-    switches::kEnableVaapiAcceleratedVideoEncode,
+    switches::kDisableVaapiAcceleratedVideoEncode,
 #endif
     switches::kGpuStartupDialog,
     switches::kGpuSandboxAllowSysVShm,

@@ -29,8 +29,8 @@ chrome.test.runTests([
         var expectEmptyLogs = function(rawEvents) {
           chrome.test.assertEq(0, rawEvents.byteLength);
         }
-        chrome.test.assertEq(audioParams.payload.codecName, "OPUS");
-        chrome.test.assertEq(videoParams.payload.codecName, "VP8");
+        chrome.test.assertTrue(!!audioParams.payload.codecName);
+        chrome.test.assertTrue(!!videoParams.payload.codecName);
         udpTransport.setDestination(udpId,
                                     {address: "127.0.0.1", port: 2344});
         rtpStream.onStarted.addListener(
@@ -55,8 +55,8 @@ chrome.test.runTests([
           rtpStream.destroy(audioId);
           rtpStream.destroy(videoId);
           udpTransport.destroy(udpId);
-          chrome.test.assertEq(audioParams.payload.codecName, "OPUS");
-          chrome.test.assertEq(videoParams.payload.codecName, "VP8");
+          chrome.test.assertTrue(!!audioParams.payload.codecName);
+          chrome.test.assertTrue(!!videoParams.payload.codecName);
           chrome.test.succeed();
         }.bind(null, stream, audioId, videoId, udpId));
         rtpStream.start(audioId, audioParams);

@@ -263,7 +263,7 @@ CONTENT_EXPORT extern const char kDisableWebAudio[];
 
 #if defined(OS_CHROMEOS)
 CONTENT_EXPORT extern const char kDisablePanelFitting[];
-CONTENT_EXPORT extern const char kEnableVaapiAcceleratedVideoEncode[];
+CONTENT_EXPORT extern const char kDisableVaapiAcceleratedVideoEncode[];
 #endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)

@@ -78,7 +78,7 @@ bool IsAcceleratedVideoEnabled() {
   bool accelerated_encode_enabled = false;
 #if defined(OS_CHROMEOS)
   accelerated_encode_enabled =
-      command_line.HasSwitch(switches::kEnableVaapiAcceleratedVideoEncode);
+      !command_line.HasSwitch(switches::kDisableVaapiAcceleratedVideoEncode);
 #endif
   return !command_line.HasSwitch(switches::kDisableAcceleratedVideoDecode) ||
          accelerated_encode_enabled;

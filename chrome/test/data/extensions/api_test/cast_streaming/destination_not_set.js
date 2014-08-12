@@ -24,7 +24,7 @@ chrome.test.runTests([
                                                 videoId,
                                                 udpId);
         var audioParams = rtpStream.getSupportedParams(audioId)[0];
-        chrome.test.assertEq(audioParams.payload.codecName, "OPUS");
+        chrome.test.assertTrue(!!audioParams.payload.codecName);
         var expectError = function(id, message) {
           chrome.test.assertEq("Destination not set.", message);
           chrome.test.succeed();
