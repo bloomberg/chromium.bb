@@ -30,6 +30,7 @@ module.exports = function(config) {
       'polymer-load-warning.html',
       {pattern: 'model/*.html', included: false},
       {pattern: 'lib/*.html', included: false},
+      'lib/test/*.html',
       'model/test/*.html',
       'scripts/*.js',
       {pattern: 'ui/*.html', included: false},
