@@ -36,7 +36,8 @@ class ClassCollection;
 class ExceptionState;
 class FloatPoint;
 class HTMLCollection;
-class StaticNodeList;
+template <typename NodeType> class StaticNodeTypeList;
+typedef StaticNodeTypeList<Element> StaticElementList;
 class TagCollection;
 
 enum DynamicRestyleFlags {
@@ -77,7 +78,7 @@ public:
     unsigned countChildren() const;
 
     PassRefPtrWillBeRawPtr<Element> querySelector(const AtomicString& selectors, ExceptionState&);
-    PassRefPtrWillBeRawPtr<StaticNodeList> querySelectorAll(const AtomicString& selectors, ExceptionState&);
+    PassRefPtrWillBeRawPtr<StaticElementList> querySelectorAll(const AtomicString& selectors, ExceptionState&);
 
     PassRefPtrWillBeRawPtr<Node> insertBefore(PassRefPtrWillBeRawPtr<Node> newChild, Node* refChild, ExceptionState& = ASSERT_NO_EXCEPTION);
     PassRefPtrWillBeRawPtr<Node> replaceChild(PassRefPtrWillBeRawPtr<Node> newChild, PassRefPtrWillBeRawPtr<Node> oldChild, ExceptionState& = ASSERT_NO_EXCEPTION);

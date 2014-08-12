@@ -160,12 +160,12 @@ void TouchActionTest::runShadowDOMTest(std::string file)
 
     // Oilpan: see runTouchActionTest() comment why these are persistent references.
     RefPtrWillBePersistent<blink::Document> document = static_cast<PassRefPtrWillBeRawPtr<blink::Document> >(webView->mainFrame()->document());
-    RefPtrWillBePersistent<blink::StaticNodeList> hostNodes = document->querySelectorAll("[shadow-host]", es);
+    RefPtrWillBePersistent<blink::StaticElementList> hostNodes = document->querySelectorAll("[shadow-host]", es);
     ASSERT_FALSE(es.hadException());
     ASSERT_GE(hostNodes->length(), 1u);
 
     for (unsigned index = 0; index < hostNodes->length(); index++) {
-        blink::ShadowRoot* shadowRoot = blink::toElement(hostNodes->item(index))->shadowRoot();
+        blink::ShadowRoot* shadowRoot = hostNodes->item(index)->shadowRoot();
         runTestOnTree(shadowRoot, webView, client);
     }
 
@@ -201,13 +201,12 @@ void TouchActionTest::runTestOnTree(blink::ContainerNode* root, WebView* webView
     blink::TrackExceptionState es;
 
     // Oilpan: see runTouchActionTest() comment why these are persistent references.
-    RefPtrWillBePersistent<blink::StaticNodeList> nodes = root->querySelectorAll("[expected-action]", es);
+    RefPtrWillBePersistent<blink::StaticElementList> elements = root->querySelectorAll("[expected-action]", es);
     ASSERT_FALSE(es.hadException());
 
-    for (unsigned index = 0; index < nodes->length(); index++) {
-        blink::Element* element = toElement(nodes->item(index));
+    for (unsigned index = 0; index < elements->length(); index++) {
+        Element* element = elements->item(index);
         element->scrollIntoViewIfNeeded();
-        ASSERT_TRUE(nodes->item(index)->isElementNode());
 
         std::string failureContext("Test case: ");
         if (element->hasID()) {

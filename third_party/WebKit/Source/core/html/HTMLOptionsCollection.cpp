@@ -25,7 +25,7 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/NamedNodesCollection.h"
+#include "core/dom/StaticNodeList.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
 
@@ -134,7 +134,7 @@ void HTMLOptionsCollection::namedGetter(const AtomicString& name, bool& returnVa
 
     // FIXME: The spec and Firefox do not return a NodeList. They always return the first matching Element.
     returnValue0Enabled = true;
-    returnValue0 = NamedNodesCollection::create(namedItems);
+    returnValue0 = StaticElementList::adopt(namedItems);
 }
 
 bool HTMLOptionsCollection::anonymousIndexedSetter(unsigned index, PassRefPtrWillBeRawPtr<HTMLOptionElement> value, ExceptionState& exceptionState)

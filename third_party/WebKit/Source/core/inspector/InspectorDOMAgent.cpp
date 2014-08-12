@@ -657,7 +657,7 @@ void InspectorDOMAgent::querySelectorAll(ErrorString* errorString, int nodeId, c
         return;
 
     TrackExceptionState exceptionState;
-    RefPtrWillBeRawPtr<StaticNodeList> nodes = toContainerNode(node)->querySelectorAll(AtomicString(selectors), exceptionState);
+    RefPtrWillBeRawPtr<StaticElementList> elements = toContainerNode(node)->querySelectorAll(AtomicString(selectors), exceptionState);
     if (exceptionState.hadException()) {
         *errorString = "DOM Error while querying";
         return;
@@ -665,8 +665,8 @@ void InspectorDOMAgent::querySelectorAll(ErrorString* errorString, int nodeId, c
 
     result = TypeBuilder::Array<int>::create();
 
-    for (unsigned i = 0; i < nodes->length(); ++i)
-        result->addItem(pushNodePathToFrontend(nodes->item(i)));
+    for (unsigned i = 0; i < elements->length(); ++i)
+        result->addItem(pushNodePathToFrontend(elements->item(i)));
 }
 
 int InspectorDOMAgent::pushNodePathToFrontend(Node* nodeToPush)
@@ -1101,13 +1101,13 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
         for (WillBeHeapVector<RawPtrWillBeMember<Document> >::iterator it = docs.begin(); it != docs.end(); ++it) {
             Document* document = *it;
             TrackExceptionState exceptionState;
-            RefPtrWillBeRawPtr<StaticNodeList> nodeList = document->querySelectorAll(AtomicString(whitespaceTrimmedQuery), exceptionState);
-            if (exceptionState.hadException() || !nodeList)
+            RefPtrWillBeRawPtr<StaticElementList> elementList = document->querySelectorAll(AtomicString(whitespaceTrimmedQuery), exceptionState);
+            if (exceptionState.hadException() || !elementList)
                 continue;
 
-            unsigned size = nodeList->length();
+            unsigned size = elementList->length();
             for (unsigned i = 0; i < size; ++i)
-                resultCollector.add(nodeList->item(i));
+                resultCollector.add(elementList->item(i));
         }
     }
 

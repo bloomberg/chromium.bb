@@ -66,8 +66,9 @@ class PagePopupController;
 class PrivateScriptTest;
 class Range;
 class SerializedScriptValue;
-class StaticNodeList;
 class ShadowRoot;
+template <typename NodeType> class StaticNodeTypeList;
+typedef StaticNodeTypeList<Node> StaticNodeList;
 class TypeConversions;
 
 class Internals FINAL : public RefCountedWillBeGarbageCollectedFinalized<Internals>, public ScriptWrappable, public ContextLifecycleObserver {

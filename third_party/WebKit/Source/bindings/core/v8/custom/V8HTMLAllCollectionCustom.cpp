@@ -34,7 +34,7 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8Element.h"
 #include "bindings/core/v8/V8NodeList.h"
-#include "core/dom/NamedNodesCollection.h"
+#include "core/dom/StaticNodeList.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLAllCollection.h"
 
@@ -54,7 +54,7 @@ static v8::Handle<v8::Value> getNamedItems(HTMLAllCollection* collection, Atomic
 
     // FIXME: HTML5 specification says this should be a HTMLCollection.
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#htmlallcollection
-    return toV8(NamedNodesCollection::create(namedItems), info.Holder(), info.GetIsolate());
+    return toV8(StaticElementList::adopt(namedItems), info.Holder(), info.GetIsolate());
 }
 
 template<class CallbackInfo>

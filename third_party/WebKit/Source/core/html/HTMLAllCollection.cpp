@@ -27,7 +27,7 @@
 #include "core/html/HTMLAllCollection.h"
 
 #include "core/dom/Element.h"
-#include "core/dom/NamedNodesCollection.h"
+#include "core/dom/StaticNodeList.h"
 
 namespace blink {
 
@@ -83,7 +83,7 @@ void HTMLAllCollection::namedGetter(const AtomicString& name, bool& returnValue0
     // FIXME: HTML5 specification says this should be a HTMLCollection.
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#htmlallcollection
     returnValue0Enabled = true;
-    returnValue0 = NamedNodesCollection::create(namedItems);
+    returnValue0 = StaticElementList::adopt(namedItems);
 }
 
 } // namespace blink

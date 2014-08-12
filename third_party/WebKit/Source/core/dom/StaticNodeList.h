@@ -29,40 +29,81 @@
 #ifndef StaticNodeList_h
 #define StaticNodeList_h
 
-#include "core/dom/Node.h"
 #include "core/dom/NodeList.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
+#include <v8.h>
 
 namespace blink {
 
+class Element;
 class Node;
 
-class StaticNodeList FINAL : public NodeList {
+template <typename NodeType>
+class StaticNodeTypeList FINAL : public NodeList {
 public:
-    static PassRefPtrWillBeRawPtr<StaticNodeList> adopt(WillBeHeapVector<RefPtrWillBeMember<Node> >& nodes);
+    static PassRefPtrWillBeRawPtr<StaticNodeTypeList> adopt(WillBeHeapVector<RefPtrWillBeMember<NodeType> >& nodes);
 
-    static PassRefPtrWillBeRawPtr<StaticNodeList> createEmpty()
+    static PassRefPtrWillBeRawPtr<StaticNodeTypeList> createEmpty()
     {
-        return adoptRefWillBeNoop(new StaticNodeList);
+        return adoptRefWillBeNoop(new StaticNodeTypeList);
     }
 
-    virtual ~StaticNodeList();
+    virtual ~StaticNodeTypeList();
 
     virtual unsigned length() const OVERRIDE;
-    virtual Node* item(unsigned index) const OVERRIDE;
+    virtual NodeType* item(unsigned index) const OVERRIDE;
 
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
     ptrdiff_t AllocationSize()
     {
-        return m_nodes.capacity() * sizeof(RefPtrWillBeMember<Node>);
+        return m_nodes.capacity() * sizeof(RefPtrWillBeMember<NodeType>);
     }
 
-    WillBeHeapVector<RefPtrWillBeMember<Node> > m_nodes;
+    WillBeHeapVector<RefPtrWillBeMember<NodeType> > m_nodes;
 };
+
+typedef StaticNodeTypeList<Node> StaticNodeList;
+typedef StaticNodeTypeList<Element> StaticElementList;
+
+template <typename NodeType>
+PassRefPtrWillBeRawPtr<StaticNodeTypeList<NodeType> > StaticNodeTypeList<NodeType>::adopt(WillBeHeapVector<RefPtrWillBeMember<NodeType> >& nodes)
+{
+    RefPtrWillBeRawPtr<StaticNodeTypeList<NodeType> > nodeList = adoptRefWillBeNoop(new StaticNodeTypeList<NodeType>);
+    nodeList->m_nodes.swap(nodes);
+    v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(nodeList->AllocationSize());
+    return nodeList.release();
+}
+
+template <typename NodeType>
+StaticNodeTypeList<NodeType>::~StaticNodeTypeList()
+{
+    v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(-AllocationSize());
+}
+
+template <typename NodeType>
+unsigned StaticNodeTypeList<NodeType>::length() const
+{
+    return m_nodes.size();
+}
+
+template <typename NodeType>
+NodeType* StaticNodeTypeList<NodeType>::item(unsigned index) const
+{
+    if (index < m_nodes.size())
+        return m_nodes[index].get();
+    return 0;
+}
+
+template <typename NodeType>
+void StaticNodeTypeList<NodeType>::trace(Visitor* visitor)
+{
+    visitor->trace(m_nodes);
+    NodeList::trace(visitor);
+}
 
 } // namespace blink
 

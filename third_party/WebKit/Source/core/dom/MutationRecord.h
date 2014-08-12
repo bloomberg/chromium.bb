@@ -41,7 +41,8 @@ namespace blink {
 
 class Node;
 class QualifiedName;
-class StaticNodeList;
+template <typename NodeType> class StaticNodeTypeList;
+typedef StaticNodeTypeList<Node> StaticNodeList;
 
 class MutationRecord : public RefCountedWillBeGarbageCollectedFinalized<MutationRecord>, public ScriptWrappable {
 public:

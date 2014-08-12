@@ -5692,18 +5692,18 @@ void Document::getTransitionElementData(Vector<TransitionElementData>& elementDa
 
         TrackExceptionState exceptionState;
         AtomicString selector(metaElementContents.substring(0, firstSemicolon));
-        RefPtrWillBeRawPtr<StaticNodeList> nodeList = querySelectorAll(selector, exceptionState);
-        if (!nodeList || exceptionState.hadException())
+        RefPtrWillBeRawPtr<StaticElementList> elementList = querySelectorAll(selector, exceptionState);
+        if (!elementList || exceptionState.hadException())
             continue;
 
-        unsigned nodeListLength = nodeList->length();
+        unsigned nodeListLength = elementList->length();
         if (!nodeListLength)
             continue;
 
         StringBuilder markup;
         for (unsigned nodeIndex = 0; nodeIndex < nodeListLength; ++nodeIndex) {
-            Node* node = nodeList->item(nodeIndex);
-            markup.append(createStyledMarkupForNavigationTransition(node));
+            Element* element = elementList->item(nodeIndex);
+            markup.append(createStyledMarkupForNavigationTransition(element));
         }
 
         TransitionElementData newElements;
@@ -5717,13 +5717,13 @@ void Document::getTransitionElementData(Vector<TransitionElementData>& elementDa
 void Document::hideTransitionElements(const AtomicString& cssSelector)
 {
     TrackExceptionState exceptionState;
-    RefPtrWillBeRawPtr<StaticNodeList> nodeList = querySelectorAll(cssSelector, exceptionState);
-    if (nodeList && !exceptionState.hadException()) {
-        unsigned nodeListLength = nodeList->length();
+    RefPtrWillBeRawPtr<StaticElementList> elementList = querySelectorAll(cssSelector, exceptionState);
+    if (elementList && !exceptionState.hadException()) {
+        unsigned nodeListLength = elementList->length();
 
         for (unsigned nodeIndex = 0; nodeIndex < nodeListLength; ++nodeIndex) {
-            Node* node = nodeList->item(nodeIndex);
-            toElement(node)->setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+            Element* element = elementList->item(nodeIndex);
+            element->setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
         }
     }
 }

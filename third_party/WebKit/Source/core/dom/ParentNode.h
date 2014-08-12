@@ -67,7 +67,7 @@ public:
         return node.querySelector(selectors, exceptionState);
     }
 
-    static PassRefPtrWillBeRawPtr<StaticNodeList> querySelectorAll(ContainerNode& node, const AtomicString& selectors, ExceptionState& exceptionState)
+    static PassRefPtrWillBeRawPtr<StaticElementList> querySelectorAll(ContainerNode& node, const AtomicString& selectors, ExceptionState& exceptionState)
     {
         return node.querySelectorAll(selectors, exceptionState);
     }

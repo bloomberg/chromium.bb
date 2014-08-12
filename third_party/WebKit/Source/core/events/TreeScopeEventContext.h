@@ -39,7 +39,8 @@ namespace blink {
 class EventPath;
 class EventTarget;
 class Node;
-class StaticNodeList;
+template <typename NodeType> class StaticNodeTypeList;
+typedef StaticNodeTypeList<Node> StaticNodeList;
 class TouchEventContext;
 class TreeScope;
 

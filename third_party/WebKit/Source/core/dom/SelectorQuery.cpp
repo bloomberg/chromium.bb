@@ -51,9 +51,9 @@ struct SingleElementSelectorQueryTrait {
 };
 
 struct AllElementsSelectorQueryTrait {
-    typedef WillBeHeapVector<RefPtrWillBeMember<Node> > OutputType;
+    typedef WillBeHeapVector<RefPtrWillBeMember<Element> > OutputType;
     static const bool shouldOnlyMatchFirstElement = false;
-    ALWAYS_INLINE static void appendElement(OutputType& output, Node& element)
+    ALWAYS_INLINE static void appendElement(OutputType& output, Element& element)
     {
         output.append(&element);
     }
@@ -136,11 +136,11 @@ bool SelectorDataList::matches(Element& targetElement) const
     return false;
 }
 
-PassRefPtrWillBeRawPtr<StaticNodeList> SelectorDataList::queryAll(ContainerNode& rootNode) const
+PassRefPtrWillBeRawPtr<StaticElementList> SelectorDataList::queryAll(ContainerNode& rootNode) const
 {
-    WillBeHeapVector<RefPtrWillBeMember<Node> > result;
+    WillBeHeapVector<RefPtrWillBeMember<Element> > result;
     execute<AllElementsSelectorQueryTrait>(rootNode, result);
-    return StaticNodeList::adopt(result);
+    return StaticElementList::adopt(result);
 }
 
 PassRefPtrWillBeRawPtr<Element> SelectorDataList::queryFirst(ContainerNode& rootNode) const
@@ -482,7 +482,7 @@ bool SelectorQuery::matches(Element& element) const
     return m_selectors.matches(element);
 }
 
-PassRefPtrWillBeRawPtr<StaticNodeList> SelectorQuery::queryAll(ContainerNode& rootNode) const
+PassRefPtrWillBeRawPtr<StaticElementList> SelectorQuery::queryAll(ContainerNode& rootNode) const
 {
     return m_selectors.queryAll(rootNode);
 }

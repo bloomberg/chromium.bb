@@ -37,7 +37,6 @@
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8NodeList.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/NamedNodesCollection.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLOptionsCollection.h"
 #include "core/html/HTMLSelectElement.h"
