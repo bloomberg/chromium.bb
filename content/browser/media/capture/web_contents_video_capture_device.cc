@@ -80,6 +80,10 @@
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/display.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/screen.h"
 
 namespace content {
 
@@ -273,11 +277,14 @@ class WebContentsCaptureMachine
   virtual void WebContentsDestroyed() OVERRIDE;
 
  private:
+  // Computes the preferred size of the target RenderWidget for optimal capture.
+  gfx::Size ComputeOptimalTargetSize() const;
+
   // Starts observing the web contents, returning false if lookup fails.
   bool StartObservingWebContents();
 
   // Helper function to determine the view that we are currently tracking.
-  RenderWidgetHost* GetTarget();
+  RenderWidgetHost* GetTarget() const;
 
   // Response callback for RenderWidgetHost::CopyFromBackingStore().
   void DidCopyFromBackingStore(
@@ -675,7 +682,40 @@ void WebContentsCaptureMachine::Capture(
   }
 }
 
+gfx::Size WebContentsCaptureMachine::ComputeOptimalTargetSize() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  gfx::Size optimal_size = oracle_proxy_->GetCaptureSize();
+
+  // If the ratio between physical and logical pixels is greater than 1:1,
+  // shrink |optimal_size| by that amount.  Then, when external code resizes the
+  // render widget to the "preferred size," the widget will be physically
+  // rendered at the exact capture size, thereby eliminating unnecessary scaling
+  // operations in the graphics pipeline.
+  RenderWidgetHost* const rwh = GetTarget();
+  RenderWidgetHostView* const rwhv = rwh ? rwh->GetView() : NULL;
+  if (rwhv) {
+    const gfx::NativeView view = rwhv->GetNativeView();
+    gfx::Screen* const screen = gfx::Screen::GetScreenFor(view);
+    if (screen->IsDIPEnabled()) {
+      const gfx::Display display = screen->GetDisplayNearestWindow(view);
+      const float scale = display.device_scale_factor();
+      if (scale > 1.0f) {
+        const gfx::Size shrunk_size(
+            gfx::ToFlooredSize(gfx::ScaleSize(optimal_size, 1.0f / scale)));
+        if (shrunk_size.width() > 0 && shrunk_size.height() > 0)
+          optimal_size = shrunk_size;
+      }
+    }
+  }
+
+  VLOG(1) << "Computed optimal target size: " << optimal_size.ToString();
+  return optimal_size;
+}
+
 bool WebContentsCaptureMachine::StartObservingWebContents() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   // Look-up the RenderFrameHost and, from that, the WebContents that wraps it.
   // If successful, begin observing the WebContents instance.
   //
@@ -694,7 +734,7 @@ bool WebContentsCaptureMachine::StartObservingWebContents() {
 
   WebContentsImpl* contents = static_cast<WebContentsImpl*>(web_contents());
   if (contents) {
-    contents->IncrementCapturerCount(oracle_proxy_->GetCaptureSize());
+    contents->IncrementCapturerCount(ComputeOptimalTargetSize());
     fullscreen_widget_id_ = contents->GetFullscreenWidgetRoutingID();
     RenewFrameSubscription();
     return true;
@@ -710,7 +750,7 @@ void WebContentsCaptureMachine::WebContentsDestroyed() {
   oracle_proxy_->ReportError("WebContentsDestroyed()");
 }
 
-RenderWidgetHost* WebContentsCaptureMachine::GetTarget() {
+RenderWidgetHost* WebContentsCaptureMachine::GetTarget() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!web_contents())
     return NULL;
