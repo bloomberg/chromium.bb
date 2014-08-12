@@ -35600,6 +35600,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="WebCore.V8DOMWindowShell.createContext.IsolatedWorld"
     units="milliseconds">
+  <obsolete>
+    Deprecated 05/2013, we no longer have the code that uses this metric.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Duration of time taken to create a V8 Context for an isolated world.
@@ -35608,6 +35611,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="WebCore.V8DOMWindowShell.createContext.MainWorld"
     units="milliseconds">
+  <obsolete>
+    Deprecated 05/2013, we no longer have the code that uses this metric.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Duration of time taken to create a V8 Context for the main world.
