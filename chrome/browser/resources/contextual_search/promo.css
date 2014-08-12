@@ -46,3 +46,10 @@ a {
   top: calc(70% - 76px /* action bar */ - 69px /* height of content */);
   width: 100%;
 }
+
+#container.hide {
+  -webkit-transform: scale(0.95);
+  -webkit-transition-property: opacity, -webkit-transform;
+  -webkit-transition-duration: 218ms;
+  opacity: 0;
+}

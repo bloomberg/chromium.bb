@@ -4,18 +4,20 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 <head>
-  <script src="promo.js"></script>
   <script src="../../../../ui/webui/resources/js/util.js"></script>
   <script src="../../../../ui/webui/resources/js/load_time_data.js"></script>
+  <script src="promo.js"></script>
   <link rel="stylesheet" href="promo.css">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, user-scalable=no">
 </head>
 <body>
-  <p i18n-content="description"></p>
-  <div id="button-container">
-    <span class="label"><a href="#optout" i18n-content="optOut"></a></span>
-    <span class="label"><a class="colored" href="#optin" i18n-content="optIn"></a></span>
+  <div id="container">
+    <p i18n-content="description"></p>
+    <div id="button-container">
+      <span class="label"><a href="#optout" i18n-content="optOut"></a></span>
+      <span id="optin-label" class="label"><a class="colored" href="#optin" i18n-content="optIn"></a></span>
+    </div>
   </div>
 </body>
 </html>
