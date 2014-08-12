@@ -9,6 +9,14 @@
 /** @type {Object} */
 var chrome = {};
 
+/** @constructor */
+chrome.Event = function() {};
+
+/** @param {Function} callback */
+chrome.Event.prototype.addListener = function(callback) {};
+
+/** @param {Function} callback */
+chrome.Event.prototype.removeListener = function(callback) {};
 
 /** @type {Object} */
 chrome.app = {};
@@ -31,7 +39,12 @@ chrome.app.window = {
   /**
    * @return {AppWindow}
    */
-  current: function() {}
+  current: function() {},
+  /**
+   * @param {string} id
+   * @param {function()=} opt_callback
+   */
+  get: function(id, opt_callback) {}
 };
 
 
@@ -43,19 +56,29 @@ chrome.runtime = {
     message: ''
   },
   /** @return {{version: string, app: {background: Object}}} */
-  getManifest: function() {}
+  getManifest: function() {},
+  /** @type {chrome.Event} */
+  onSuspend: null,
+  /** @type {chrome.Event} */
+  onConnect: null,
+  /** @type {chrome.Event} */
+  onConnectExternal: null,
+  /** @type {chrome.Event} */
+  onMessage: null,
+  /** @type {chrome.Event} */
+  onMessageExternal: null
 };
 
 /**
- * @type {?function(string):chrome.extension.Port}
+ * @type {?function(string):chrome.runtime.Port}
  */
 chrome.runtime.connectNative = function(name) {};
 
 /**
- * @param {{name:string}} connectInfo
- * @return {chrome.extension.Port}
+ * @param {{ name: string}} config
+ * @return {chrome.runtime.Port}
  */
-chrome.runtime.connect = function(connectInfo) {};
+chrome.runtime.connect = function(config) {};
 
 /**
  * @param {string} extensionId
@@ -66,22 +89,40 @@ chrome.runtime.connect = function(connectInfo) {};
 chrome.runtime.sendMessage = function(
     extensionId, message, opt_options, opt_callback) {};
 
-/** @type {Object} */
-chrome.extension = {};
+/** @constructor */
+chrome.runtime.MessageSender = function(){
+  /** @type {chrome.Tab} */
+  this.tab = null;
+};
 
 /** @constructor */
-chrome.extension.Port = function() {};
+chrome.runtime.Port = function() {
+  this.onMessage = new chrome.Event();
+  this.onDisconnect = new chrome.Event();
+
+  /** @type {string} */
+  this.name = '';
+
+  /** @type {chrome.runtime.MessageSender} */
+  this.sender = null;
+};
 
 /** @type {chrome.Event} */
-chrome.extension.Port.prototype.onMessage;
+chrome.runtime.Port.prototype.onMessage = null;
 
 /** @type {chrome.Event} */
-chrome.extension.Port.prototype.onDisconnect;
+chrome.runtime.Port.prototype.onDisconnect = null;
+
+chrome.runtime.Port.prototype.disconnect = function() {};
 
 /**
  * @param {Object} message
  */
-chrome.extension.Port.prototype.postMessage = function(message) {};
+chrome.runtime.Port.prototype.postMessage = function(message) {};
+
+
+/** @type {Object} */
+chrome.extension = {};
 
 /**
  * @param {*} message
@@ -148,7 +189,7 @@ chrome.Storage.prototype.clear = function(opt_callback) {};
  * src/chrome/common/extensions/api/context_menus.json
  */
 chrome.contextMenus = {};
-/** @type {ChromeEvent} */
+/** @type {chrome.Event} */
 chrome.contextMenus.onClicked;
 /**
  * @param {!Object} createProperties
@@ -216,27 +257,6 @@ chrome.identity = {
   launchWebAuthFlow: function(parameters, callback) {}
 };
 
-// TODO(garykac): Combine chrome.Event and ChromeEvent
-/** @constructor */
-function ChromeEvent() {}
-/** @param {Function} callback */
-ChromeEvent.prototype.addListener = function(callback) {};
-/** @param {Function} callback */
-ChromeEvent.prototype.removeListener = function(callback) {};
-/** @param {Function} callback */
-ChromeEvent.prototype.hasListener = function(callback) {};
-/** @param {Function} callback */
-ChromeEvent.prototype.hasListeners = function(callback) {};
-
-/** @constructor */
-chrome.Event = function() {};
-
-/** @param {function():void} callback */
-chrome.Event.prototype.addListener = function(callback) {};
-
-/** @param {function():void} callback */
-chrome.Event.prototype.removeListener = function(callback) {};
-
 
 /** @type {Object} */
 chrome.permissions = {
@@ -259,12 +279,33 @@ chrome.tabs = {};
 /** @param {function(chrome.Tab):void} callback */
 chrome.tabs.getCurrent = function(callback) {};
 
+/**
+ * @param {Object?} options
+ * @param {function(chrome.Tab)=} opt_callback
+ */
+chrome.tabs.create = function(options, opt_callback) {};
+
+/**
+ * @param {string} id
+ * @param {function(chrome.Tab)} callback
+ */
+chrome.tabs.get = function(id, callback) {};
+
+/**
+ * @param {string} id
+ * @param {function()=} opt_callback
+ */
+chrome.tabs.remove = function(id, opt_callback) {};
+
+
 /** @constructor */
 chrome.Tab = function() {
   /** @type {boolean} */
   this.pinned = false;
   /** @type {number} */
   this.windowId = 0;
+  /** @type {string} */
+  this.id = '';
 };
 
 
@@ -294,6 +335,8 @@ var AppWindow = function() {
   this.onMaximized = null;
   /** @type {chrome.Event} */
   this.onFullscreened = null;
+  /** @type {string} */
+  this.id = '';
 };
 
 AppWindow.prototype.close = function() {};

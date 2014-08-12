@@ -56,6 +56,25 @@ test('dispose(obj) should not crash if |obj| is null',
     base.dispose(null);
 });
 
+test('urljoin(url, opt_param) should return url if |opt_param| is missing',
+  function() {
+    QUnit.equal(
+        base.urlJoin('http://www.chromium.org'), 'http://www.chromium.org');
+});
+
+test('urljoin(url, opt_param) should urlencode |opt_param|',
+  function() {
+    var result = base.urlJoin('http://www.chromium.org', {
+      a: 'a',
+      foo: 'foo',
+      escapist: ':/?#[]@$&+,;='
+    });
+    QUnit.equal(
+        result,
+        'http://www.chromium.org?a=a&foo=foo' +
+        '&escapist=%3A%2F%3F%23%5B%5D%40%24%26%2B%2C%3B%3D');
+});
+
 QUnit.asyncTest('Promise.sleep(delay) should fulfill the promise after |delay|',
   function() {
     var isCalled = false;

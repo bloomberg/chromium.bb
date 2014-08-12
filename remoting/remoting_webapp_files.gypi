@@ -131,6 +131,9 @@
     ],
     # These product files are excluded from our JavaScript unittest
     'remoting_webapp_unittest_exclude_files': [
+      # background.js is where the onLoad handler is defined, which
+      # makes it the entry point of the background page.
+      'webapp/background/background.js',
       # event_handlers.js is where the onLoad handler is defined, which
       # makes it the entry point of the webapp.
       'webapp/event_handlers.js',
@@ -165,7 +168,16 @@
       '<@(remoting_webapp_js_wcs_container_files)',
       # Uncomment this line to include browser test files in the web app
       # to expedite debugging or local development.
-       '<@(remoting_webapp_js_browser_test_files)'
+      # '<@(remoting_webapp_js_browser_test_files)'
+    ],
+
+    # The JavaScript files that are used as background pages.
+    'remoting_webapp_background_js_files': [
+      'webapp/base.js',
+      'webapp/client_session.js',
+      'webapp/typecheck.js',
+      'webapp/background/app_launcher.js',
+      'webapp/background/background.js'
     ],
 
     # The JavaScript files required by wcs_sandbox.html.
@@ -179,6 +191,7 @@
     'remoting_webapp_all_js_files': [
       # JS files for main.html.
       '<@(remoting_webapp_main_html_js_files)',
+      '<@(remoting_webapp_background_js_files)',
       # JS files for wcs_sandbox.html.
       # Use r_w_js_wcs_sandbox_files instead of r_w_wcs_sandbox_html_js_files
       # so that we don't double include error.js and plugin_settings.js.
@@ -230,6 +243,9 @@
 
     'remoting_webapp_template_wcs_sandbox':
       'webapp/html/template_wcs_sandbox.html',
+
+    'remoting_webapp_template_background':
+      'webapp/html/template_background.html',
 
     'remoting_webapp_template_files': [
       'webapp/html/butterbar.html',

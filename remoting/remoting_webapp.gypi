@@ -11,6 +11,7 @@
     'generated_html_files': [
       '<(SHARED_INTERMEDIATE_DIR)/main.html',
       '<(SHARED_INTERMEDIATE_DIR)/wcs_sandbox.html',
+      '<(SHARED_INTERMEDIATE_DIR)/background.html',
     ],
   },
   'dependencies': [

@@ -28,7 +28,7 @@ remoting.HostDaemonFacade = function() {
    */
   this.pendingReplies_ = {};
 
-  /** @type {?chrome.extension.Port} @private */
+  /** @type {?chrome.runtime.Port} @private */
   this.port_ = null;
 
   /** @type {string} @private */

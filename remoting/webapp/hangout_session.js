@@ -21,7 +21,7 @@ var remoting = remoting || {};
 remoting.HangoutSession = function() {
   /**
    * @private
-   * @type {chrome.extension.Port}
+   * @type {chrome.runtime.Port}
    */
   this.port_ = null;
 };
