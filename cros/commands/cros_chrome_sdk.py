@@ -472,12 +472,6 @@ class ChromeSDKCommand(cros.CrosCommand):
         help='Provides a path, whether a local directory or a gs:// path, to '
              'pull SDK components from.')
     parser.add_argument(
-        '--make', action='store_true', default=False,
-        help='If set, gyp_chromium will generate Make files instead of Ninja '
-             'files.  Note: Make files are spread out through the source tree, '
-             'and not concentrated in the out_<board> directory, so you can '
-             'only have one Make config running at a time.')
-    parser.add_argument(
         '--nogoma', action='store_false', default=True, dest='goma',
         help="Disables Goma in the shell by removing it from the PATH.")
     parser.add_argument(
@@ -655,7 +649,6 @@ class ChromeSDKCommand(cros.CrosCommand):
 
     out_dir = 'out_%s' % self.board
     env['builddir_name'] = out_dir
-    env['GYP_GENERATORS'] = 'make' if options.make else 'ninja'
     env['GYP_GENERATOR_FLAGS'] = 'output_dir=%s' % out_dir
     env['GYP_CROSSCOMPILE'] = '1'
     return env
