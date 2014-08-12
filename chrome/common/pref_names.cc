@@ -96,6 +96,11 @@ const char kSupervisedUserCustodianName[] = "profile.managed.custodian_name";
 const char kSupervisedUserCustodianProfileImageURL[] =
     "profile.managed.custodian_profile_image_url";
 
+// Stores the URL of the profile associated with the google account of the
+// custodian of the supervised user.
+const char kSupervisedUserCustodianProfileURL[] =
+    "profile.managed.custodian_profile_url";
+
 // Maps host names to whether the host is manually allowed or blocked.
 const char kSupervisedUserManualHosts[] = "profile.managed.manual_hosts";
 
@@ -117,6 +122,11 @@ const char kSupervisedUserSecondCustodianName[] =
 // secondary custodian of the supervised user.
 const char kSupervisedUserSecondCustodianProfileImageURL[] =
     "profile.managed.second_custodian_profile_image_url";
+
+// Stores the URL of the profile associated with the google account of the
+// secondary custodian of the supervised user.
+const char kSupervisedUserSecondCustodianProfileURL[] =
+    "profile.managed.second_custodian_profile_url";
 
 // Stores settings that can be modified both by a supervised user and their
 // manager. See SupervisedUserSharedSettingsService for a description of
