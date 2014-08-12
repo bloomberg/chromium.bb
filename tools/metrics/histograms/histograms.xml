@@ -2194,6 +2194,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Cast.Sender.VideoEncodeAcceleratorInitializeSuccess"
+    enum="BooleanSuccess">
+  <owner>posciak@chromium.org</owner>
+  <summary>
+    Indicates whether initialization of a video encode accelerator for Cast
+    sender was successful.
+  </summary>
+</histogram>
+
 <histogram name="Cellular.ActivationFailure">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>

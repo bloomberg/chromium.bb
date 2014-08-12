@@ -9,6 +9,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "media/cast/cast_defines.h"
@@ -103,12 +104,16 @@ class LocalVideoEncodeAcceleratorClient
     }
     max_frame_rate_ = video_config.max_frame_rate;
 
-    if (!video_encode_accelerator_->Initialize(
-            media::VideoFrame::I420,
-            gfx::Size(video_config.width, video_config.height),
-            output_profile,
-            video_config.start_bitrate,
-            this)) {
+    bool result = video_encode_accelerator_->Initialize(
+        media::VideoFrame::I420,
+        gfx::Size(video_config.width, video_config.height),
+        output_profile,
+        video_config.start_bitrate,
+        this);
+
+    UMA_HISTOGRAM_BOOLEAN("Cast.Sender.VideoEncodeAcceleratorInitializeSuccess",
+                          result);
+    if (!result) {
       NotifyError(VideoEncodeAccelerator::kInvalidArgumentError);
       return;
     }
