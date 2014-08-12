@@ -194,6 +194,7 @@ struct desktop_shell {
 	uint32_t binding_modifier;
 	uint32_t exposay_modifier;
 	enum animation_type win_animation_type;
+	enum animation_type win_close_animation_type;
 	enum animation_type startup_animation_type;
 	enum animation_type focus_animation_type;
 

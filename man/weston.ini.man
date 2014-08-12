@@ -201,6 +201,12 @@ sets the effect used for opening new windows (string). Can be
 .B none.
 By default, no animation is used.
 .TP 7
+.BI "close-animation=" fade
+sets the effect used when closing windows (string). Can be
+.B fade,
+.B none.
+By default, the fade animation is used.
+.TP 7
 .BI "startup-animation=" fade
 sets the effect used for opening new windows (string). Can be
 .B fade,

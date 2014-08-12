@@ -535,6 +535,9 @@ shell_configuration(struct desktop_shell *shell)
 	weston_config_section_get_string(section, "animation", &s, "none");
 	shell->win_animation_type = get_animation_type(s);
 	free(s);
+	weston_config_section_get_string(section, "close-animation", &s, "fade");
+	shell->win_close_animation_type = get_animation_type(s);
+	free(s);
 	weston_config_section_get_string(section,
 					 "startup-animation", &s, "fade");
 	shell->startup_animation_type = get_animation_type(s);
@@ -3220,8 +3223,12 @@ handle_resource_destroy(struct wl_listener *listener, void *data)
 	pixman_region32_init(&shsurf->surface->pending.input);
 	pixman_region32_fini(&shsurf->surface->input);
 	pixman_region32_init(&shsurf->surface->input);
-	weston_fade_run(shsurf->view, 1.0, 0.0, 300.0,
-			fade_out_done, shsurf);
+	if (shsurf->shell->win_close_animation_type == ANIMATION_FADE) {
+		weston_fade_run(shsurf->view, 1.0, 0.0, 300.0,
+				fade_out_done, shsurf);
+	} else {
+		weston_surface_destroy(shsurf->surface);
+	}
 }
 
 static void
