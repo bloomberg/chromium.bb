@@ -30,7 +30,7 @@ int GetMaxUnackedFrames(base::TimeDelta target_delay) {
   // receiver has the ability to drop any one of the packets.
   // We send up to three times of the target delay of audio frames.
   int frames =
-      1 + 3 * target_delay * kAudioFrameRate / base::TimeDelta::FromSeconds(1);
+      1 + 2 * target_delay * kAudioFrameRate / base::TimeDelta::FromSeconds(1);
   return std::min(kMaxUnackedFrames, frames);
 }
 }  // namespace
