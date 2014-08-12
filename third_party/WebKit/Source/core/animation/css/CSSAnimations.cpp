@@ -40,6 +40,7 @@
 #include "core/animation/css/CSSAnimatableValueFactory.h"
 #include "core/animation/css/CSSPropertyEquality.h"
 #include "core/css/CSSKeyframeRule.h"
+#include "core/css/CSSPropertyMetadata.h"
 #include "core/css/resolver/CSSToStyleMap.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Element.h"
@@ -118,7 +119,7 @@ static void resolveKeyframes(StyleResolver* resolver, Element* element, const El
                 else
                     timingFunction = CSSToStyleMap::mapAnimationTimingFunction(toCSSValueList(value)->item(0));
                 keyframe->setEasing(timingFunction.release());
-            } else if (CSSAnimations::isAnimatableProperty(property)) {
+            } else if (CSSPropertyMetadata::isAnimatableProperty(property)) {
                 keyframe->setPropertyValue(property, CSSAnimatableValueFactory::create(property, *keyframeStyle).get());
             }
         }
@@ -491,7 +492,7 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
 
                 if (!animateAll) {
                     id = propertyForAnimation(id);
-                    if (CSSAnimations::isAnimatableProperty(id))
+                    if (CSSPropertyMetadata::isAnimatableProperty(id))
                         listedProperties.set(id);
                     else
                         continue;
@@ -659,121 +660,6 @@ void CSSAnimations::TransitionEventDelegate::trace(Visitor* visitor)
     AnimationNode::EventDelegate::trace(visitor);
 }
 
-bool CSSAnimations::isAnimatableProperty(CSSPropertyID property)
-{
-    switch (property) {
-    case CSSPropertyBackgroundColor:
-    case CSSPropertyBackgroundImage:
-    case CSSPropertyBackgroundPositionX:
-    case CSSPropertyBackgroundPositionY:
-    case CSSPropertyBackgroundSize:
-    case CSSPropertyBaselineShift:
-    case CSSPropertyBorderBottomColor:
-    case CSSPropertyBorderBottomLeftRadius:
-    case CSSPropertyBorderBottomRightRadius:
-    case CSSPropertyBorderBottomWidth:
-    case CSSPropertyBorderImageOutset:
-    case CSSPropertyBorderImageSlice:
-    case CSSPropertyBorderImageSource:
-    case CSSPropertyBorderImageWidth:
-    case CSSPropertyBorderLeftColor:
-    case CSSPropertyBorderLeftWidth:
-    case CSSPropertyBorderRightColor:
-    case CSSPropertyBorderRightWidth:
-    case CSSPropertyBorderTopColor:
-    case CSSPropertyBorderTopLeftRadius:
-    case CSSPropertyBorderTopRightRadius:
-    case CSSPropertyBorderTopWidth:
-    case CSSPropertyBottom:
-    case CSSPropertyBoxShadow:
-    case CSSPropertyClip:
-    case CSSPropertyColor:
-    case CSSPropertyFill:
-    case CSSPropertyFillOpacity:
-    case CSSPropertyFlexBasis:
-    case CSSPropertyFlexGrow:
-    case CSSPropertyFlexShrink:
-    case CSSPropertyFloodColor:
-    case CSSPropertyFloodOpacity:
-    case CSSPropertyFontSize:
-    case CSSPropertyFontWeight:
-    case CSSPropertyHeight:
-    case CSSPropertyLeft:
-    case CSSPropertyLetterSpacing:
-    case CSSPropertyLightingColor:
-    case CSSPropertyLineHeight:
-    case CSSPropertyListStyleImage:
-    case CSSPropertyMarginBottom:
-    case CSSPropertyMarginLeft:
-    case CSSPropertyMarginRight:
-    case CSSPropertyMarginTop:
-    case CSSPropertyMaxHeight:
-    case CSSPropertyMaxWidth:
-    case CSSPropertyMinHeight:
-    case CSSPropertyMinWidth:
-    case CSSPropertyObjectPosition:
-    case CSSPropertyOpacity:
-    case CSSPropertyOrphans:
-    case CSSPropertyOutlineColor:
-    case CSSPropertyOutlineOffset:
-    case CSSPropertyOutlineWidth:
-    case CSSPropertyPaddingBottom:
-    case CSSPropertyPaddingLeft:
-    case CSSPropertyPaddingRight:
-    case CSSPropertyPaddingTop:
-    case CSSPropertyRight:
-    case CSSPropertyStopColor:
-    case CSSPropertyStopOpacity:
-    case CSSPropertyStroke:
-    case CSSPropertyStrokeDasharray:
-    case CSSPropertyStrokeDashoffset:
-    case CSSPropertyStrokeMiterlimit:
-    case CSSPropertyStrokeOpacity:
-    case CSSPropertyStrokeWidth:
-    case CSSPropertyTextDecorationColor:
-    case CSSPropertyTextIndent:
-    case CSSPropertyTextShadow:
-    case CSSPropertyTop:
-    case CSSPropertyVerticalAlign:
-    case CSSPropertyVisibility:
-    case CSSPropertyWebkitBackgroundSize:
-    case CSSPropertyWebkitBorderHorizontalSpacing:
-    case CSSPropertyWebkitBorderVerticalSpacing:
-    case CSSPropertyWebkitBoxShadow:
-    case CSSPropertyWebkitClipPath:
-    case CSSPropertyWebkitColumnCount:
-    case CSSPropertyWebkitColumnGap:
-    case CSSPropertyWebkitColumnRuleColor:
-    case CSSPropertyWebkitColumnRuleWidth:
-    case CSSPropertyWebkitColumnWidth:
-    case CSSPropertyWebkitFilter:
-    case CSSPropertyWebkitMaskBoxImageOutset:
-    case CSSPropertyWebkitMaskBoxImageSlice:
-    case CSSPropertyWebkitMaskBoxImageSource:
-    case CSSPropertyWebkitMaskBoxImageWidth:
-    case CSSPropertyWebkitMaskImage:
-    case CSSPropertyWebkitMaskPositionX:
-    case CSSPropertyWebkitMaskPositionY:
-    case CSSPropertyWebkitMaskSize:
-    case CSSPropertyPerspective:
-    case CSSPropertyPerspectiveOrigin:
-    case CSSPropertyShapeOutside:
-    case CSSPropertyShapeMargin:
-    case CSSPropertyShapeImageThreshold:
-    case CSSPropertyWebkitTextStrokeColor:
-    case CSSPropertyTransform:
-    case CSSPropertyTransformOrigin:
-    case CSSPropertyWidows:
-    case CSSPropertyWidth:
-    case CSSPropertyWordSpacing:
-    case CSSPropertyZIndex:
-    case CSSPropertyZoom:
-        return true;
-    default:
-        return false;
-    }
-}
-
 const StylePropertyShorthand& CSSAnimations::animatableProperties()
 {
     DEFINE_STATIC_LOCAL(Vector<CSSPropertyID>, properties, ());
@@ -781,7 +667,7 @@ const StylePropertyShorthand& CSSAnimations::animatableProperties()
     if (properties.isEmpty()) {
         for (int i = firstCSSProperty; i < lastCSSProperty; ++i) {
             CSSPropertyID id = convertToCSSPropertyID(i);
-            if (isAnimatableProperty(id))
+            if (CSSPropertyMetadata::isAnimatableProperty(id))
                 properties.append(id);
         }
         propertyShorthand = StylePropertyShorthand(CSSPropertyInvalid, properties.begin(), properties.size());

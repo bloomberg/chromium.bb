@@ -170,7 +170,6 @@ public:
     // engine is removed.
     static const StyleRuleKeyframes* matchScopedKeyframesRule(StyleResolver*, const Element*, const StringImpl*);
 
-    static bool isAnimatableProperty(CSSPropertyID);
     static const StylePropertyShorthand& animatableProperties();
     static bool isAllowedAnimation(CSSPropertyID);
     // FIXME: We should change the Element* to a const Element*

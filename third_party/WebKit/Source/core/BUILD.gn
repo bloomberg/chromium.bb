@@ -414,6 +414,9 @@ source_set("core_generated") {
     # Generated from make_style_builder.py
     "$blink_core_output_dir/StyleBuilder.cpp",
     "$blink_core_output_dir/StyleBuilderFunctions.cpp",
+
+    # Generated from make_css_property_metadata.py
+    "$blink_core_output_dir/CSSPropertyMetadata.cpp",
   ]
 
   configs -= core_config_remove
@@ -637,6 +640,17 @@ css_properties("make_core_generated_style_builder") {
     "$blink_core_output_dir/StyleBuilder.cpp",
     "$blink_core_output_dir/StyleBuilderFunctions.h",
     "$blink_core_output_dir/StyleBuilderFunctions.cpp",
+  ]
+}
+
+# "CSSPropertyMetadata" in make_core_generated from GYP.
+css_properties("make_core_generated_css_property_metadata") {
+  script = "../build/scripts/make_css_property_metadata.py"
+  other_inputs = [
+    "../build/scripts/templates/CSSPropertyMetadata.cpp.tmpl",
+  ]
+  outputs = [
+    "$blink_core_output_dir/CSSPropertyMetadata.cpp",
   ]
 }
 

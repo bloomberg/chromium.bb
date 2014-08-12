@@ -1,0 +1,24 @@
+{% from 'macros.tmpl' import license %}
+{{license()}}
+
+#include "config.h"
+#include "core/css/CSSPropertyMetadata.h"
+
+namespace blink {
+
+bool CSSPropertyMetadata::isAnimatableProperty(CSSPropertyID property)
+{
+    switch(property) {
+    case CSSPropertyInvalid:
+        ASSERT_NOT_REACHED();
+        return false;
+    {% for property_id, property in properties.items() if property.animatable %}
+    case {{property_id}}:
+    {% endfor %}
+        return true;
+    default:
+        return false;
+    }
+}
+
+} // namespace blink
