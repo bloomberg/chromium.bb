@@ -29,6 +29,7 @@
 #include "WebCommon.h"
 
 namespace blink {
+
 class WebString;
 
 class WebRTCDTMFSenderHandlerClient {

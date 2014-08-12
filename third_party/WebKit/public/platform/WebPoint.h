@@ -58,22 +58,22 @@ struct WebPoint {
     }
 
 #if INSIDE_BLINK
-    WebPoint(const blink::IntPoint& p)
+    WebPoint(const IntPoint& p)
         : x(p.x())
         , y(p.y())
     {
     }
 
-    WebPoint& operator=(const blink::IntPoint& p)
+    WebPoint& operator=(const IntPoint& p)
     {
         x = p.x();
         y = p.y();
         return *this;
     }
 
-    operator blink::IntPoint() const
+    operator IntPoint() const
     {
-        return blink::IntPoint(x, y);
+        return IntPoint(x, y);
     }
 #else
     WebPoint(const gfx::Point& p)

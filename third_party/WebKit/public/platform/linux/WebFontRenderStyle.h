@@ -33,9 +33,9 @@
 
 #include "../WebCommon.h"
 
-namespace blink { struct FontRenderStyle; }
-
 namespace blink {
+
+struct FontRenderStyle;
 
 struct BLINK_EXPORT WebFontRenderStyle {
     // Each of the use* members below can take one of three values:
@@ -52,7 +52,7 @@ struct BLINK_EXPORT WebFontRenderStyle {
 
 #if BLINK_IMPLEMENTATION || BLINK_PLATFORM_IMPLEMENTATION
     // Translates the members of this struct to a FontRenderStyle
-    void toFontRenderStyle(blink::FontRenderStyle*);
+    void toFontRenderStyle(FontRenderStyle*);
 #endif
 
     void setDefaults();

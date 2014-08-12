@@ -37,11 +37,9 @@
 #include "WebVector.h"
 
 namespace blink {
+
 class RTCIceServer;
 class RTCConfiguration;
-}
-
-namespace blink {
 class WebString;
 class WebURL;
 
@@ -67,11 +65,11 @@ public:
     BLINK_PLATFORM_EXPORT WebString credential() const;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebRTCICEServer(const WTF::PassRefPtr<blink::RTCIceServer>&);
+    BLINK_PLATFORM_EXPORT WebRTCICEServer(const WTF::PassRefPtr<RTCIceServer>&);
 #endif
 
 private:
-    WebPrivatePtr<blink::RTCIceServer> m_private;
+    WebPrivatePtr<RTCIceServer> m_private;
 };
 
 enum WebRTCIceTransports {
@@ -103,11 +101,11 @@ public:
     BLINK_PLATFORM_EXPORT WebRTCIceTransports iceTransports() const;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebRTCConfiguration(const WTF::PassRefPtr<blink::RTCConfiguration>&);
+    BLINK_PLATFORM_EXPORT WebRTCConfiguration(const WTF::PassRefPtr<RTCConfiguration>&);
 #endif
 
 private:
-    WebPrivatePtr<blink::RTCConfiguration> m_private;
+    WebPrivatePtr<RTCConfiguration> m_private;
 };
 
 } // namespace blink

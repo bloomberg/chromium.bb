@@ -34,9 +34,6 @@
 #include "WebCommon.h"
 
 #if INSIDE_BLINK
-
-namespace blink { template<typename T> class TreeShared; }
-
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/TypeTraits.h"
@@ -53,8 +50,8 @@ enum LifetimeManagementType {
 
 template<typename T>
 class LifetimeOf {
-    static const bool isGarbageCollected = WTF::IsSubclassOfTemplate<T, blink::GarbageCollected>::value;
-    static const bool isRefCountedGarbageCollected = WTF::IsSubclassOfTemplate<T, blink::RefCountedGarbageCollected>::value;
+    static const bool isGarbageCollected = WTF::IsSubclassOfTemplate<T, GarbageCollected>::value;
+    static const bool isRefCountedGarbageCollected = WTF::IsSubclassOfTemplate<T, RefCountedGarbageCollected>::value;
 public:
     static const LifetimeManagementType value =
         !isGarbageCollected ? RefCountedLifetime :
@@ -106,7 +103,7 @@ public:
         }
 
         if (!m_handle)
-            m_handle = new blink::Persistent<T>();
+            m_handle = new Persistent<T>();
 
         (*m_handle) = val;
     }
@@ -125,7 +122,7 @@ public:
     }
 
 private:
-    blink::Persistent<T>* m_handle;
+    Persistent<T>* m_handle;
 };
 
 template<typename T>
@@ -184,11 +181,11 @@ private:
 //        // Methods that are used only by other Blink classes should only be
 //        // declared when INSIDE_BLINK is set.
 //    #if INSIDE_BLINK
-//        WebFoo(const WTF::PassRefPtr<blink::Foo>&);
+//        WebFoo(const WTF::PassRefPtr<Foo>&);
 //    #endif
 //
 //    private:
-//        WebPrivatePtr<blink::Foo> m_private;
+//        WebPrivatePtr<Foo> m_private;
 //    };
 //
 //    // WebFoo.cpp

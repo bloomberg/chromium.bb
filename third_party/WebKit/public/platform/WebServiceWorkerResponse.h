@@ -15,14 +15,11 @@
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/StringHash.h"
-
-namespace blink {
-class BlobDataHandle;
-}
 #endif
 
 namespace blink {
 
+class BlobDataHandle;
 class WebServiceWorkerResponsePrivate;
 
 // Represents a response to a fetch operation. ServiceWorker uses this to
@@ -60,8 +57,8 @@ public:
     void setHeaders(const HashMap<String, String>&);
     const HashMap<String, String>& headers() const;
 
-    void setBlobDataHandle(PassRefPtr<blink::BlobDataHandle>);
-    PassRefPtr<blink::BlobDataHandle> blobDataHandle() const;
+    void setBlobDataHandle(PassRefPtr<BlobDataHandle>);
+    PassRefPtr<BlobDataHandle> blobDataHandle() const;
 #endif
 
 private:

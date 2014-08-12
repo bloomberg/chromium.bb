@@ -34,12 +34,9 @@
 #include "WebCommon.h"
 #include "WebPrivateOwnPtr.h"
 
-#if INSIDE_BLINK
-namespace blink { class ResourceResponse; }
-#endif
-
 namespace blink {
 
+class ResourceResponse;
 class WebCString;
 class WebHTTPHeaderVisitor;
 class WebHTTPLoadInfo;
@@ -139,8 +136,8 @@ public:
     BLINK_PLATFORM_EXPORT void setSecurityInfo(const WebCString&);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT blink::ResourceResponse& toMutableResourceResponse();
-    BLINK_PLATFORM_EXPORT const blink::ResourceResponse& toResourceResponse() const;
+    BLINK_PLATFORM_EXPORT ResourceResponse& toMutableResourceResponse();
+    BLINK_PLATFORM_EXPORT const ResourceResponse& toResourceResponse() const;
 #endif
 
     // Flag whether this request was served from the disk cache entry.

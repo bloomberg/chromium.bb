@@ -36,11 +36,8 @@
 #include "WebString.h"
 
 namespace blink {
+
 class RTCStatsRequest;
-}
-
-namespace blink {
-
 class WebMediaStreamTrack;
 class WebMediaStream;
 class WebRTCStatsResponse;
@@ -95,11 +92,11 @@ public:
     BLINK_PLATFORM_EXPORT WebRTCStatsResponse createResponse() const;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebRTCStatsRequest(const PassRefPtr<blink::RTCStatsRequest>&);
+    BLINK_PLATFORM_EXPORT WebRTCStatsRequest(const PassRefPtr<RTCStatsRequest>&);
 #endif
 
 private:
-    WebPrivatePtr<blink::RTCStatsRequest> m_private;
+    WebPrivatePtr<RTCStatsRequest> m_private;
 };
 
 } // namespace blink

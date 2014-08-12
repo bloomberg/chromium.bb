@@ -34,11 +34,9 @@
 #include "WebString.h"
 #include "WebURL.h"
 
-#if INSIDE_BLINK
-namespace blink { class ResourceError; }
-#endif
-
 namespace blink {
+
+class ResourceError;
 
 struct WebURLError {
     // A namespace for "reason" to support various layers generating
@@ -69,9 +67,9 @@ struct WebURLError {
     WebURLError() : reason(0), staleCopyInCache(false), isCancellation(false) { }
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebURLError(const blink::ResourceError&);
-    BLINK_PLATFORM_EXPORT WebURLError& operator=(const blink::ResourceError&);
-    BLINK_PLATFORM_EXPORT operator blink::ResourceError() const;
+    BLINK_PLATFORM_EXPORT WebURLError(const ResourceError&);
+    BLINK_PLATFORM_EXPORT WebURLError& operator=(const ResourceError&);
+    BLINK_PLATFORM_EXPORT operator ResourceError() const;
 #endif
 };
 

@@ -37,10 +37,8 @@
 #include "WebString.h"
 
 namespace blink {
-class RTCVoidRequest;
-}
 
-namespace blink {
+class RTCVoidRequest;
 
 class WebRTCVoidRequest {
 public:
@@ -75,11 +73,11 @@ public:
     BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebRTCVoidRequest(const WTF::PassRefPtr<blink::RTCVoidRequest>&);
+    BLINK_PLATFORM_EXPORT WebRTCVoidRequest(const WTF::PassRefPtr<RTCVoidRequest>&);
 #endif
 
 private:
-    WebPrivatePtr<blink::RTCVoidRequest> m_private;
+    WebPrivatePtr<RTCVoidRequest> m_private;
 };
 
 } // namespace blink

@@ -7,14 +7,11 @@
 
 #include "WebPrivatePtr.h"
 
-namespace blink {
-class PermissionCallbacks;
-}
-
 namespace WTF { template <typename T> class PassOwnPtr; }
 
 namespace blink {
 
+class PermissionCallbacks;
 class WebPermissionCallbacksPrivate;
 
 class WebPermissionCallbacks {
@@ -32,7 +29,7 @@ public:
     BLINK_PLATFORM_EXPORT void assign(const WebPermissionCallbacks&);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebPermissionCallbacks(const WTF::PassOwnPtr<blink::PermissionCallbacks>&);
+    BLINK_PLATFORM_EXPORT WebPermissionCallbacks(const WTF::PassOwnPtr<PermissionCallbacks>&);
 #endif
 
     BLINK_PLATFORM_EXPORT void doAllow();

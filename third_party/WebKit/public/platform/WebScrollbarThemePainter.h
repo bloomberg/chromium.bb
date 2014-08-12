@@ -29,12 +29,9 @@
 #include "WebCanvas.h"
 
 namespace blink {
+
 class ScrollbarTheme;
 class Scrollbar;
-};
-
-namespace blink {
-
 class WebScrollbar;
 struct WebRect;
 
@@ -63,7 +60,7 @@ public:
     BLINK_EXPORT void paintThumb(WebCanvas*, const WebRect&);
 
 #if BLINK_IMPLEMENTATION
-    WebScrollbarThemePainter(blink::ScrollbarTheme*, blink::Scrollbar*);
+    WebScrollbarThemePainter(ScrollbarTheme*, Scrollbar*);
 #endif
 
 private:
@@ -71,13 +68,13 @@ private:
     // static pointer and its lifetime is essentially infinite. The functions
     // called from the painter may not be thread-safe, so all calls must be made
     // from the same thread that it is created on.
-    blink::ScrollbarTheme* m_theme;
+    ScrollbarTheme* m_theme;
 
     // It is assumed that the constructor of this paint object is responsible
     // for the lifetime of this scrollbar. The painter has to use the real
     // scrollbar (and not a WebScrollbar wrapper) due to static_casts for
     // RenderScrollbar and pointer-based HashMap lookups for Lion scrollbars.
-    blink::Scrollbar* m_scrollbar;
+    Scrollbar* m_scrollbar;
 };
 
 } // namespace blink

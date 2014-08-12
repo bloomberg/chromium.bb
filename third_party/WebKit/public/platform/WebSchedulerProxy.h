@@ -8,11 +8,8 @@
 #include "WebThread.h"
 
 namespace blink {
+
 class Scheduler;
-}
-
-namespace blink {
-
 class WebTraceLocation;
 
 // This class is used to submit tasks to Blink's main thread scheduler.
@@ -33,7 +30,7 @@ public:
 private:
     WebSchedulerProxy();
 
-    blink::Scheduler* m_scheduler;
+    Scheduler* m_scheduler;
 };
 
 } // namespace blink

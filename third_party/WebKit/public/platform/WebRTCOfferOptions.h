@@ -10,10 +10,8 @@
 #include "WebPrivatePtr.h"
 
 namespace blink {
-class RTCOfferOptions;
-}
 
-namespace blink {
+class RTCOfferOptions;
 
 class WebRTCOfferOptions {
 public:
@@ -38,11 +36,11 @@ public:
     BLINK_PLATFORM_EXPORT bool iceRestart() const;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebRTCOfferOptions(const WTF::PassRefPtr<blink::RTCOfferOptions>&);
+    BLINK_PLATFORM_EXPORT WebRTCOfferOptions(const WTF::PassRefPtr<RTCOfferOptions>&);
 #endif
 
 private:
-    WebPrivatePtr<blink::RTCOfferOptions> m_private;
+    WebPrivatePtr<RTCOfferOptions> m_private;
 };
 
 } // namespace blink

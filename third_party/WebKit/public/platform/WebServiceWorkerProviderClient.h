@@ -34,6 +34,7 @@
 #include "public/platform/WebMessagePortChannel.h"
 
 namespace blink {
+
 class WebServiceWorker;
 class WebString;
 

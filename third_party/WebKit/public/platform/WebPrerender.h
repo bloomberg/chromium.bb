@@ -42,10 +42,8 @@
 #endif
 
 namespace blink {
-class Prerender;
-}
 
-namespace blink {
+class Prerender;
 
 // WebPrerenderRelType is a bitfield since multiple rel attributes can be set on the same prerender.
 enum WebPrerenderRelType {
@@ -70,9 +68,9 @@ public:
     }
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT explicit WebPrerender(PassRefPtr<blink::Prerender>);
+    BLINK_PLATFORM_EXPORT explicit WebPrerender(PassRefPtr<Prerender>);
 
-    BLINK_PLATFORM_EXPORT const blink::Prerender* toPrerender() const;
+    BLINK_PLATFORM_EXPORT const Prerender* toPrerender() const;
 #endif
 
     BLINK_PLATFORM_EXPORT void reset();
@@ -93,7 +91,7 @@ public:
     BLINK_PLATFORM_EXPORT void didSendDOMContentLoadedForPrerender();
 
 private:
-    WebPrivatePtr<blink::Prerender> m_private;
+    WebPrivatePtr<Prerender> m_private;
 };
 
 } // namespace blink

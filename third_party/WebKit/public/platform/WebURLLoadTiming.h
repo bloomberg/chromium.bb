@@ -34,9 +34,9 @@
 #include "WebCommon.h"
 #include "WebPrivatePtr.h"
 
-namespace blink { class ResourceLoadTiming; }
-
 namespace blink {
+
+class ResourceLoadTiming;
 class WebString;
 
 class WebURLLoadTiming {
@@ -94,13 +94,13 @@ public:
     BLINK_PLATFORM_EXPORT void setSSLEnd(double);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebURLLoadTiming(const WTF::PassRefPtr<blink::ResourceLoadTiming>&);
-    BLINK_PLATFORM_EXPORT WebURLLoadTiming& operator=(const WTF::PassRefPtr<blink::ResourceLoadTiming>&);
-    BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<blink::ResourceLoadTiming>() const;
+    BLINK_PLATFORM_EXPORT WebURLLoadTiming(const WTF::PassRefPtr<ResourceLoadTiming>&);
+    BLINK_PLATFORM_EXPORT WebURLLoadTiming& operator=(const WTF::PassRefPtr<ResourceLoadTiming>&);
+    BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<ResourceLoadTiming>() const;
 #endif
 
 private:
-    WebPrivatePtr<blink::ResourceLoadTiming> m_private;
+    WebPrivatePtr<ResourceLoadTiming> m_private;
 };
 
 } // namespace blink

@@ -31,10 +31,6 @@
 #include "WebScrollbarThemePainter.h"
 
 namespace blink {
-class Scrollbar;
-}
-
-namespace blink {
 
 class WebScrollbarLayer {
 public:

@@ -32,6 +32,7 @@
 #define WebRTCPeerConnectionHandler_h
 
 namespace blink {
+
 class WebMediaConstraints;
 class WebMediaStream;
 class WebMediaStreamTrack;

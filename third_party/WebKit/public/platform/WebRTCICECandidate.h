@@ -36,10 +36,6 @@
 #include "WebString.h"
 
 namespace blink {
-class RTCIceCandidateDescriptor;
-}
-
-namespace blink {
 
 class WebString;
 class WebRTCICECandidatePrivate;

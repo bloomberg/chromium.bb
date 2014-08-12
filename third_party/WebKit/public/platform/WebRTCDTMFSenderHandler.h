@@ -30,6 +30,7 @@
 #include "WebString.h"
 
 namespace blink {
+
 class WebRTCDTMFSenderHandlerClient;
 
 class WebRTCDTMFSenderHandler {

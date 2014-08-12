@@ -30,10 +30,8 @@
 #include "WebString.h"
 
 namespace blink {
-class RTCStatsResponseBase;
-}
 
-namespace blink {
+class RTCStatsResponseBase;
 
 class WebRTCStatsResponse {
 public:
@@ -55,12 +53,12 @@ public:
     BLINK_PLATFORM_EXPORT void addStatistic(size_t report, const WebString& name, const WebString& value);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebRTCStatsResponse(blink::RTCStatsResponseBase*);
-    BLINK_PLATFORM_EXPORT operator blink::RTCStatsResponseBase*() const;
+    BLINK_PLATFORM_EXPORT WebRTCStatsResponse(RTCStatsResponseBase*);
+    BLINK_PLATFORM_EXPORT operator RTCStatsResponseBase*() const;
 #endif
 
 private:
-    WebPrivatePtr<blink::RTCStatsResponseBase> m_private;
+    WebPrivatePtr<RTCStatsResponseBase> m_private;
 };
 
 } // namespace blink

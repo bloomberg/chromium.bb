@@ -35,12 +35,9 @@
 #include "WebHTTPBody.h"
 #include "WebReferrerPolicy.h"
 
-#if INSIDE_BLINK
-namespace blink { class ResourceRequest; }
-#endif
-
 namespace blink {
 
+class ResourceRequest;
 class WebCString;
 class WebHTTPBody;
 class WebHTTPHeaderVisitor;
@@ -227,8 +224,8 @@ public:
     BLINK_PLATFORM_EXPORT void setPriority(Priority);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT blink::ResourceRequest& toMutableResourceRequest();
-    BLINK_PLATFORM_EXPORT const blink::ResourceRequest& toResourceRequest() const;
+    BLINK_PLATFORM_EXPORT ResourceRequest& toMutableResourceRequest();
+    BLINK_PLATFORM_EXPORT const ResourceRequest& toResourceRequest() const;
 #endif
 
 protected:

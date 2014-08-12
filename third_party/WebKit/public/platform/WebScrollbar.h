@@ -34,10 +34,6 @@
 #endif
 
 namespace blink {
-class Scrollbar;
-}
-
-namespace blink {
 
 // A const accessor interface for a WebKit scrollbar
 class BLINK_PLATFORM_EXPORT WebScrollbar {

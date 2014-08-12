@@ -7,9 +7,9 @@
 
 #include "WebCommon.h"
 
-namespace blink { class ServiceWorker; }
-
 namespace blink {
+
+class ServiceWorker;
 
 // A proxy interface, passed via WebServiceWorker.setProxy() from blink to
 // the embedder, to talk to the ServiceWorker object from embedder.
@@ -29,12 +29,12 @@ public:
     virtual void dispatchStateChangeEvent() = 0;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebServiceWorkerProxy(blink::ServiceWorker*);
-    BLINK_PLATFORM_EXPORT blink::ServiceWorker* unwrap() const;
+    BLINK_PLATFORM_EXPORT WebServiceWorkerProxy(ServiceWorker*);
+    BLINK_PLATFORM_EXPORT ServiceWorker* unwrap() const;
 #endif
 
 protected:
-    blink::ServiceWorker* m_private;
+    ServiceWorker* m_private;
 };
 
 } // namespace blink

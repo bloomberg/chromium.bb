@@ -53,8 +53,8 @@ public:
     bool isReload() const;
 
 #if INSIDE_BLINK
-    const blink::HTTPHeaderMap& headers() const;
-    const blink::Referrer& referrer() const;
+    const HTTPHeaderMap& headers() const;
+    const Referrer& referrer() const;
 #endif
 
 private:
