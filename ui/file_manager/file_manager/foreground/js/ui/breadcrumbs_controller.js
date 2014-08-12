@@ -43,8 +43,6 @@ BreadcrumbsController.prototype.show = function(entry) {
     return;
 
   this.entry_ = entry;
-  this.bc_.hidden = false;
-  this.bc_.textContent = '';
   this.showSequence_++;
 
   var queue = new AsyncUtil.Queue();
@@ -117,8 +115,12 @@ BreadcrumbsController.prototype.show = function(entry) {
   // Update DOM element.
   queue.run(function(sequence, callback) {
     // Check the sequence number to skip requests that are out of date.
-    if (this.showSequence_ === sequence && !error)
-      this.updateInternal_(entries);
+    if (this.showSequence_ === sequence) {
+      this.bc_.hidden = false;
+      this.bc_.textContent = '';
+      if (!error)
+        this.updateInternal_(entries);
+    }
     callback();
   }.bind(this, this.showSequence_));
 };
