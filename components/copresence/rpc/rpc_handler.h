@@ -50,7 +50,7 @@ class RpcHandler {
                          const StatusCallback& callback);
 
   // Report a set of tokens to the server for a given medium.
-  void ReportTokens(TokenMedium medium, const std::vector<std::string>& tokens);
+  void ReportTokens(const std::vector<FullToken>& tokens);
 
   // Create the directive handler and connect it to
   // the whispernet client specified by the delegate.

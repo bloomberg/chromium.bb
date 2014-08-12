@@ -262,14 +262,12 @@ void RpcHandler::SendReportRequest(scoped_ptr<ReportRequest> request,
                                status_callback));
 }
 
-void RpcHandler::ReportTokens(TokenMedium medium,
-                              const std::vector<std::string>& tokens) {
-  DCHECK_EQ(medium, AUDIO_ULTRASOUND_PASSBAND);
+void RpcHandler::ReportTokens(const std::vector<FullToken>& tokens) {
   DCHECK(!tokens.empty());
 
   scoped_ptr<ReportRequest> request(new ReportRequest);
   for (size_t i = 0; i < tokens.size(); ++i) {
-    const std::string& token = ToUrlSafe(tokens[i]);
+    const std::string& token = ToUrlSafe(tokens[i].token);
     if (invalid_audio_token_cache_.HasKey(token))
       continue;
 
@@ -280,7 +278,8 @@ void RpcHandler::ReportTokens(TokenMedium medium,
     token_observation->set_token_id(token);
 
     TokenSignals* signals = token_observation->add_signals();
-    signals->set_medium(medium);
+    signals->set_medium(tokens[i].audible ? AUDIO_AUDIBLE_DTMF
+                                          : AUDIO_ULTRASOUND_PASSBAND);
     signals->set_observed_time_millis(base::Time::Now().ToJsTime());
   }
   SendReportRequest(request.Pass());
@@ -300,8 +299,7 @@ void RpcHandler::ConnectToWhispernet() {
   whispernet_client->RegisterTokensCallback(
       base::Bind(&RpcHandler::ReportTokens,
                  // On destruction, this callback will be disconnected.
-                 base::Unretained(this),
-                 AUDIO_ULTRASOUND_PASSBAND));
+                 base::Unretained(this)));
 }
 
 // Private methods

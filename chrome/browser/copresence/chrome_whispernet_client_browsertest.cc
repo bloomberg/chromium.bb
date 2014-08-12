@@ -71,6 +71,7 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest {
     client->RegisterSamplesCallback(base::Bind(
         &ChromeWhispernetClientTest::SamplesCallback, base::Unretained(this)));
     expected_token_ = kSixZeros;
+    expected_audible_ = audible;
 
     client->EncodeToken(kSixZeros, audible);
     run_loop_->Run();
@@ -78,7 +79,7 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest {
     EXPECT_GT(saved_samples_->frames(), 0);
   }
 
-  void DecodeSamplesAndVerifyToken() {
+  void DecodeSamplesAndVerifyToken(bool expect_audible) {
     copresence::WhispernetClient* client = GetWhispernetClient(context_);
     ASSERT_TRUE(client);
 
@@ -86,6 +87,7 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest {
     client->RegisterTokensCallback(base::Bind(
         &ChromeWhispernetClientTest::TokensCallback, base::Unretained(this)));
     expected_token_ = kSixZeros;
+    expected_audible_ = expect_audible;
 
     ASSERT_GT(saved_samples_->frames(), 0);
 
@@ -126,18 +128,21 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest {
 
   void SamplesCallback(
       const std::string& token,
+      bool audible,
       const scoped_refptr<media::AudioBusRefCounted>& samples) {
     EXPECT_EQ(expected_token_, token);
+    EXPECT_EQ(expected_audible_, audible);
     saved_samples_ = samples;
     ASSERT_TRUE(run_loop_);
     run_loop_->Quit();
   }
 
-  void TokensCallback(const std::vector<std::string>& tokens) {
+  void TokensCallback(const std::vector<copresence::FullToken>& tokens) {
     ASSERT_TRUE(run_loop_);
     run_loop_->Quit();
 
-    EXPECT_EQ(expected_token_, tokens[0]);
+    EXPECT_EQ(expected_token_, tokens[0].token);
+    EXPECT_EQ(expected_audible_, tokens[0].audible);
   }
 
   void DetectBroadcastCallback(bool success) {
@@ -151,6 +156,7 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest {
   content::BrowserContext* context_;
 
   std::string expected_token_;
+  bool expected_audible_;
   scoped_refptr<media::AudioBusRefCounted> saved_samples_;
 
   bool initialized_;
@@ -170,18 +176,18 @@ IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, EncodeToken) {
 IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, DecodeSamples) {
   InitializeWhispernet();
   EncodeTokenAndSaveSamples(false);
-  DecodeSamplesAndVerifyToken();
+  DecodeSamplesAndVerifyToken(false);
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, DetectBroadcast) {
   InitializeWhispernet();
   EncodeTokenAndSaveSamples(false);
-  DecodeSamplesAndVerifyToken();
+  DecodeSamplesAndVerifyToken(false);
   DetectBroadcast();
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, Audible) {
   InitializeWhispernet();
   EncodeTokenAndSaveSamples(true);
-  DecodeSamplesAndVerifyToken();
+  DecodeSamplesAndVerifyToken(true);
 }

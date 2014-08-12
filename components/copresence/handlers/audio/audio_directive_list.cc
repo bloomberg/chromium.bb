@@ -125,6 +125,7 @@ scoped_ptr<AudioDirective> AudioDirectiveList::GetNextFromList(
 
 void AudioDirectiveList::OnTokenEncoded(
     const std::string& token,
+    bool /* audible */,
     const scoped_refptr<media::AudioBusRefCounted>& samples) {
   // We shouldn't re-encode a token if it's already in the cache.
   DCHECK(!samples_cache_.HasKey(token));

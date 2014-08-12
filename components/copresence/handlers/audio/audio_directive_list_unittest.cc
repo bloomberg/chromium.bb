@@ -26,9 +26,10 @@ class AudioDirectiveListTest : public testing::Test {
 
  protected:
   void EncodeToken(const std::string& token,
-                   bool /* audible */,
+                   bool audible,
                    const AudioDirectiveList::SamplesCallback& callback) {
-    callback.Run(token, CreateRandomAudioRefCounted(0x1337, 1, 0x7331));
+    callback.Run(
+        token, audible, CreateRandomAudioRefCounted(0x1337, 1, 0x7331));
   }
 
   base::MessageLoop message_loop_;

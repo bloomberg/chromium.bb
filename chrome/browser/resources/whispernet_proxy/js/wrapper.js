@@ -92,7 +92,8 @@ WhisperEncoder.prototype.setAudioDataCallback = function(callback) {
 WhisperEncoder.prototype.onNaclMessage_ = function(e) {
   var msg = e.data;
   if (msg.type == 'encode_token_response') {
-    this.audioDataCallback_(bytesToBase64(msg.token), msg.samples);
+    this.audioDataCallback_(
+        { token: bytesToBase64(msg.token), audible: msg.audible }, msg.samples);
   }
 };
 
@@ -178,7 +179,7 @@ WhisperDecoder.prototype.onDetectBroadcast = function(callback) {
 WhisperDecoder.prototype.onNaclMessage_ = function(e) {
   var msg = e.data;
   if (msg.type == 'decode_tokens_response') {
-    this.handleCandidates_(JSON.parse(msg.tokens));
+    this.handleCandidates_(JSON.parse(msg.tokens), msg.audible);
   } else if (msg.type == 'detect_broadcast_response') {
     this.detectBroadcastCallback_(msg.detected);
   }
@@ -188,14 +189,19 @@ WhisperDecoder.prototype.onNaclMessage_ = function(e) {
  * Method to receive tokens from the decoder and process and forward them to the
  * token callback registered with us.
  * @param {!Array.string} candidates Array of token candidates.
+ * @param {boolean} audible Whether the received candidates are from the audible
+ *     decoder or not.
  * @private
  */
-WhisperDecoder.prototype.handleCandidates_ = function(candidates) {
+WhisperDecoder.prototype.handleCandidates_ = function(candidates, audible) {
   if (!this.tokenCallback_ || !candidates || candidates.length == 0)
     return;
 
   var returnCandidates = [];
-  for (var i = 0; i < candidates.length; ++i)
-    returnCandidates[i] = bytesToBase64(candidates[i]);
+  for (var i = 0; i < candidates.length; ++i) {
+    returnCandidates[i] = { token: bytesToBase64(candidates[i]),
+                            audible: audible };
+  }
   this.tokenCallback_(returnCandidates);
 };
+

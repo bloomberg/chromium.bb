@@ -266,13 +266,13 @@ TEST_F(RpcHandlerTest, MAYBE_CreateRequestHeader) {
 #define MAYBE_ReportTokens DISABLED_ReportTokens
 
 TEST_F(RpcHandlerTest, MAYBE_ReportTokens) {
-  std::vector<std::string> test_tokens;
-  test_tokens.push_back("token 1");
-  test_tokens.push_back("token 2");
-  test_tokens.push_back("token 3");
+  std::vector<FullToken> test_tokens;
+  test_tokens.push_back(FullToken("token 1", false));
+  test_tokens.push_back(FullToken("token 2", true));
+  test_tokens.push_back(FullToken("token 3", false));
   AddInvalidToken("token 2");
 
-  rpc_handler_.ReportTokens(AUDIO_ULTRASOUND_PASSBAND, test_tokens);
+  rpc_handler_.ReportTokens(test_tokens);
   EXPECT_EQ(RpcHandler::kReportRequestRpcName, rpc_name_);
   ReportRequest* report = static_cast<ReportRequest*>(request_proto_.get());
   google::protobuf::RepeatedPtrField<TokenObservation> tokens_sent =

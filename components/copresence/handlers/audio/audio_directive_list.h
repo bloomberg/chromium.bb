@@ -52,8 +52,9 @@ struct AudioDirective {
 // classes from it.
 class AudioDirectiveList {
  public:
-  typedef base::Callback<
-      void(const std::string&, const scoped_refptr<media::AudioBusRefCounted>&)>
+  typedef base::Callback<void(const std::string&,
+                              bool,
+                              const scoped_refptr<media::AudioBusRefCounted>&)>
       SamplesCallback;
   typedef base::Callback<void(const std::string&, bool, const SamplesCallback&)>
       EncodeTokenCallback;
@@ -78,6 +79,7 @@ class AudioDirectiveList {
   // This is the method that the whispernet client needs to call to return
   // samples to us.
   void OnTokenEncoded(const std::string& token,
+                      bool audible,
                       const scoped_refptr<media::AudioBusRefCounted>& samples);
 
  private:

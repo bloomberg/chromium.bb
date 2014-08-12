@@ -32,7 +32,12 @@ ExtensionFunction::ResponseAction CopresencePrivateSendFoundFunction::Run() {
   scoped_ptr<api::copresence_private::SendFound::Params> params(
       api::copresence_private::SendFound::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  GetWhispernetClient()->GetTokensCallback().Run(params->tokens);
+  std::vector<copresence::FullToken> tokens;
+  for (size_t i = 0; i < params->tokens.size(); ++i) {
+    tokens.push_back(copresence::FullToken(params->tokens[i]->token,
+                                           params->tokens[i]->audible));
+  }
+  GetWhispernetClient()->GetTokensCallback().Run(tokens);
   return RespondNow(NoArguments());
 }
 
@@ -55,7 +60,8 @@ ExtensionFunction::ResponseAction CopresencePrivateSendSamplesFunction::Run() {
          string_as_array(&params->samples),
          params->samples.size());
 
-  GetWhispernetClient()->GetSamplesCallback().Run(params->token, samples);
+  GetWhispernetClient()->GetSamplesCallback().Run(
+      params->token.token, params->token.audible, samples);
   return RespondNow(NoArguments());
 }
 
