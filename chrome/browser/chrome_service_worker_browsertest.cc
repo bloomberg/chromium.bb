@@ -49,6 +49,8 @@ static void ExpectResultAndRun(bool expected,
 IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
                        CanShutDownWithRegisteredServiceWorker) {
   WriteFile(FILE_PATH_LITERAL("service_worker.js"), "");
+  WriteFile(FILE_PATH_LITERAL("service_worker.js.mock-http-headers"),
+            "HTTP/1.1 200 OK\nContent-Type: text/javascript");
 
   embedded_test_server()->ServeFilesFromDirectory(service_worker_dir_.path());
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
