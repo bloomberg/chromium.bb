@@ -645,3 +645,11 @@ content.dll!content::WebThreadBase::TaskObserverAdapter::WillProcessTask
 base.dll!base::MessageLoop::RunTask
 base.dll!base::Thread::StopSoon
 base.dll!base::MessageLoop::DeferOrRunPendingTask
+
+
+UNADDRESSABLE ACCESS
+name=http://crbug.com/403013
+mojo_view_manager_lib_unittests.!mojo::internal::WeakServiceProvider::Clear
+mojo_view_manager_lib_unittests.!mojo::ServiceProviderImpl::OnConnectionError
+...
+mojo_view_manager_lib_unittests.!mojo::shell::ShellTestHelper::~ShellTestHelper
