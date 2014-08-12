@@ -27,7 +27,7 @@ const uint32 kStartFrameId = UINT32_C(0xffffffff);
 // This is an important system-wide constant.  This limits how much history the
 // implementation must retain in order to process the acknowledgements of past
 // frames.
-const int kMaxUnackedFrames = 255;
+const int kMaxUnackedFrames = 60;
 
 const int kStartRttMs = 20;
 const int64 kCastMessageUpdateIntervalMs = 33;
