@@ -298,6 +298,7 @@ main (int argc, char **argv)
 	return 1;
     }
     FcConfigSetCurrent (config);
+    FcConfigDestroy (config);
     
     args = FcStrSetCreate ();
     if (!args)
