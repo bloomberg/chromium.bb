@@ -35,14 +35,10 @@
 #include "public/platform/WebGamepads.h"
 
 namespace blink {
-class WebGamepad;
-class WebGamepads;
-}
-
-namespace blink {
 
 class Document;
 class Gamepad;
+class Gamepads;
 class GamepadList;
 class Navigator;
 class WebKitGamepadList;
@@ -62,7 +58,7 @@ public:
 
     virtual void trace(Visitor*);
 
-    void didConnectOrDisconnectGamepad(unsigned index, const blink::WebGamepad&, bool connected);
+    void didConnectOrDisconnectGamepad(unsigned index, const WebGamepad&, bool connected);
 
 private:
     explicit NavigatorGamepad(LocalFrame*);

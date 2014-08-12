@@ -35,12 +35,6 @@
 
 namespace blink {
 
-class WebBlobInfo;
-
-}
-
-namespace blink {
-
 class DOMStringList;
 class IDBCursor;
 class IDBCursorWithValue;
@@ -49,6 +43,7 @@ class IDBIndex;
 class IDBKeyPath;
 class IDBObjectStore;
 class IDBTransaction;
+class WebBlobInfo;
 
 class IDBAny : public GarbageCollectedFinalized<IDBAny> {
 public:
@@ -65,7 +60,7 @@ public:
     {
         return new IDBAny(idbObject);
     }
-    static IDBAny* create(PassRefPtr<SharedBuffer> value, const Vector<blink::WebBlobInfo>* blobInfo)
+    static IDBAny* create(PassRefPtr<SharedBuffer> value, const Vector<WebBlobInfo>* blobInfo)
     {
         return new IDBAny(value, blobInfo);
     }
@@ -78,7 +73,7 @@ public:
     {
         return new IDBAny(value);
     }
-    static IDBAny* create(PassRefPtr<SharedBuffer> value, const Vector<blink::WebBlobInfo>* blobInfo, IDBKey* key, const IDBKeyPath& keyPath)
+    static IDBAny* create(PassRefPtr<SharedBuffer> value, const Vector<WebBlobInfo>* blobInfo, IDBKey* key, const IDBKeyPath& keyPath)
     {
         return new IDBAny(value, blobInfo, key, keyPath);
     }
@@ -114,7 +109,7 @@ public:
     IDBObjectStore* idbObjectStore() const;
     IDBTransaction* idbTransaction() const;
     SharedBuffer* buffer() const;
-    const Vector<blink::WebBlobInfo>* blobInfo() const;
+    const Vector<WebBlobInfo>* blobInfo() const;
     int64_t integer() const;
     const String& string() const;
     const IDBKey* key() const;
@@ -131,8 +126,8 @@ private:
     explicit IDBAny(IDBKey*);
     explicit IDBAny(const IDBKeyPath&);
     explicit IDBAny(const String&);
-    IDBAny(PassRefPtr<SharedBuffer>, const Vector<blink::WebBlobInfo>*);
-    IDBAny(PassRefPtr<SharedBuffer>, const Vector<blink::WebBlobInfo>*, IDBKey*, const IDBKeyPath&);
+    IDBAny(PassRefPtr<SharedBuffer>, const Vector<WebBlobInfo>*);
+    IDBAny(PassRefPtr<SharedBuffer>, const Vector<WebBlobInfo>*, IDBKey*, const IDBKeyPath&);
     explicit IDBAny(int64_t);
 
     const Type m_type;
@@ -147,7 +142,7 @@ private:
     const Member<IDBKey> m_idbKey;
     const IDBKeyPath m_idbKeyPath;
     const RefPtr<SharedBuffer> m_buffer;
-    const Vector<blink::WebBlobInfo>* m_blobInfo;
+    const Vector<WebBlobInfo>* m_blobInfo;
     const String m_string;
     const int64_t m_integer;
 };

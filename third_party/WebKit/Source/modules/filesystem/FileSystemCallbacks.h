@@ -144,7 +144,7 @@ private:
 class FileWriterBaseCallbacks FINAL : public FileSystemCallbacksBase {
 public:
     static PassOwnPtr<AsyncFileSystemCallbacks> create(PassRefPtrWillBeRawPtr<FileWriterBase>, PassOwnPtr<FileWriterBaseCallback>, PassOwnPtr<ErrorCallback>, ExecutionContext*);
-    virtual void didCreateFileWriter(PassOwnPtr<blink::WebFileWriter>, long long length) OVERRIDE;
+    virtual void didCreateFileWriter(PassOwnPtr<WebFileWriter>, long long length) OVERRIDE;
 
 private:
     FileWriterBaseCallbacks(PassRefPtrWillBeRawPtr<FileWriterBase>, PassOwnPtr<FileWriterBaseCallback>, PassOwnPtr<ErrorCallback>, ExecutionContext*);
@@ -174,6 +174,6 @@ private:
     OwnPtr<VoidCallback> m_successCallback;
 };
 
-} // namespace
+} // namespace blink
 
 #endif // FileSystemCallbacks_h

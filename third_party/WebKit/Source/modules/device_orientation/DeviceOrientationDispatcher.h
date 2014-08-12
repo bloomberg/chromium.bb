@@ -37,16 +37,13 @@
 #include "wtf/RefPtr.h"
 
 namespace blink {
-class WebDeviceOrientationData;
-}
-
-namespace blink {
 
 class DeviceOrientationController;
 class DeviceOrientationData;
+class WebDeviceOrientationData;
 
 // This class listens to device orientation data and notifies all registered controllers.
-class DeviceOrientationDispatcher : public PlatformEventDispatcher, public blink::WebDeviceOrientationListener {
+class DeviceOrientationDispatcher : public PlatformEventDispatcher, public WebDeviceOrientationListener {
 public:
     static DeviceOrientationDispatcher& instance();
 
@@ -55,7 +52,7 @@ public:
     DeviceOrientationData* latestDeviceOrientationData();
 
     // Inherited from WebDeviceOrientationListener.
-    virtual void didChangeDeviceOrientation(const blink::WebDeviceOrientationData&) OVERRIDE;
+    virtual void didChangeDeviceOrientation(const WebDeviceOrientationData&) OVERRIDE;
 
 private:
     DeviceOrientationDispatcher();

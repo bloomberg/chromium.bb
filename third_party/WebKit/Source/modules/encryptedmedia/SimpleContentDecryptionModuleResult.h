@@ -10,16 +10,13 @@
 #include "wtf/Forward.h"
 
 namespace blink {
-class WebString;
-}
-
-namespace blink {
 
 class ScriptPromise;
 class ScriptPromiseResolver;
 class ScriptState;
+class WebString;
 
-ExceptionCode WebCdmExceptionToExceptionCode(blink::WebContentDecryptionModuleException);
+ExceptionCode WebCdmExceptionToExceptionCode(WebContentDecryptionModuleException);
 
 // This class wraps the promise resolver and is passed (indirectly) to Chromium
 // to fullfill the promise. This implementation of complete() will resolve the
@@ -33,8 +30,8 @@ public:
 
     // ContentDecryptionModuleResult implementation.
     virtual void complete() OVERRIDE;
-    virtual void completeWithSession(blink::WebContentDecryptionModuleResult::SessionStatus) OVERRIDE;
-    virtual void completeWithError(blink::WebContentDecryptionModuleException, unsigned long systemCode, const blink::WebString&) OVERRIDE;
+    virtual void completeWithSession(WebContentDecryptionModuleResult::SessionStatus) OVERRIDE;
+    virtual void completeWithError(WebContentDecryptionModuleException, unsigned long systemCode, const WebString&) OVERRIDE;
 
     // It is only valid to call this before completion.
     ScriptPromise promise();

@@ -52,7 +52,7 @@ public:
     {
         return adoptRefWillBeNoop(new IDBVersionChangeEvent());
     }
-    static PassRefPtrWillBeRawPtr<IDBVersionChangeEvent> create(const AtomicString& eventType, unsigned long long oldVersion, const Nullable<unsigned long long>& newVersion, blink::WebIDBDataLoss dataLoss = blink::WebIDBDataLossNone, const String& dataLossMessage = String())
+    static PassRefPtrWillBeRawPtr<IDBVersionChangeEvent> create(const AtomicString& eventType, unsigned long long oldVersion, const Nullable<unsigned long long>& newVersion, WebIDBDataLoss dataLoss = WebIDBDataLossNone, const String& dataLossMessage = String())
     {
         return adoptRefWillBeNoop(new IDBVersionChangeEvent(eventType, oldVersion, newVersion, dataLoss, dataLossMessage));
     }
@@ -73,12 +73,12 @@ public:
 
 private:
     IDBVersionChangeEvent();
-    IDBVersionChangeEvent(const AtomicString& eventType, unsigned long long oldVersion, const Nullable<unsigned long long>& newVersion, blink::WebIDBDataLoss, const String& dataLoss);
+    IDBVersionChangeEvent(const AtomicString& eventType, unsigned long long oldVersion, const Nullable<unsigned long long>& newVersion, WebIDBDataLoss, const String& dataLoss);
     IDBVersionChangeEvent(const AtomicString& eventType, const IDBVersionChangeEventInit&);
 
     unsigned long long m_oldVersion;
     Nullable<unsigned long long> m_newVersion;
-    blink::WebIDBDataLoss m_dataLoss;
+    WebIDBDataLoss m_dataLoss;
     String m_dataLossMessage;
 };
 

@@ -11,20 +11,18 @@
 #include "public/platform/WebBatteryStatusListener.h"
 
 namespace blink {
+
 class WebBatteryStatus;
-}
 
-namespace blink {
-
-class BatteryDispatcher FINAL : public PlatformEventDispatcher, public blink::WebBatteryStatusListener {
+class BatteryDispatcher FINAL : public PlatformEventDispatcher, public WebBatteryStatusListener {
 public:
     static BatteryDispatcher& instance();
     virtual ~BatteryDispatcher();
 
     BatteryStatus* latestData();
 
-    // Inherited from blink::WebBatteryStatusListener.
-    virtual void updateBatteryStatus(const blink::WebBatteryStatus&) OVERRIDE;
+    // Inherited from WebBatteryStatusListener.
+    virtual void updateBatteryStatus(const WebBatteryStatus&) OVERRIDE;
 
 private:
     BatteryDispatcher();
@@ -36,6 +34,6 @@ private:
     RefPtrWillBePersistent<BatteryStatus> m_batteryStatus;
 };
 
-}
+} // namespace blink
 
 #endif // BatteryDispatcher_h

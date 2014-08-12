@@ -31,10 +31,8 @@
 #include "wtf/RefPtr.h"
 
 namespace blink {
-class WebDeviceMotionData;
-}
 
-namespace blink {
+class WebDeviceMotionData;
 
 class DeviceMotionData : public RefCountedWillBeGarbageCollected<DeviceMotionData> {
 public:
@@ -96,7 +94,7 @@ public:
         PassRefPtrWillBeRawPtr<RotationRate>,
         bool canProvideInterval,
         double interval);
-    static PassRefPtrWillBeRawPtr<DeviceMotionData> create(const blink::WebDeviceMotionData&);
+    static PassRefPtrWillBeRawPtr<DeviceMotionData> create(const WebDeviceMotionData&);
     void trace(Visitor*);
 
     Acceleration* acceleration() const { return m_acceleration.get(); }

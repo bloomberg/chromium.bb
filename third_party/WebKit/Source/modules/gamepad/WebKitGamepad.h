@@ -23,7 +23,7 @@ public:
     typedef Vector<float> FloatVector;
 
     const FloatVector& buttons() const { return m_buttons; }
-    void setButtons(unsigned count, const blink::WebGamepadButton* data);
+    void setButtons(unsigned count, const WebGamepadButton* data);
 
     void trace(Visitor*) { }
 

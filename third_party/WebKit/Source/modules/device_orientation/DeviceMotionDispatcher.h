@@ -37,16 +37,13 @@
 #include "wtf/RefPtr.h"
 
 namespace blink {
-class WebDeviceMotionData;
-}
-
-namespace blink {
 
 class DeviceMotionController;
 class DeviceMotionData;
+class WebDeviceMotionData;
 
 // This class listens to device motion data and notifies all registered controllers.
-class DeviceMotionDispatcher FINAL : public PlatformEventDispatcher, public blink::WebDeviceMotionListener {
+class DeviceMotionDispatcher FINAL : public PlatformEventDispatcher, public WebDeviceMotionListener {
 public:
     static DeviceMotionDispatcher& instance();
 
@@ -55,7 +52,7 @@ public:
     DeviceMotionData* latestDeviceMotionData();
 
     // Inherited from WebDeviceMotionListener.
-    virtual void didChangeDeviceMotion(const blink::WebDeviceMotionData&) OVERRIDE;
+    virtual void didChangeDeviceMotion(const WebDeviceMotionData&) OVERRIDE;
 
 private:
     DeviceMotionDispatcher();

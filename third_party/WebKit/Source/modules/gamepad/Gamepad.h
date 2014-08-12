@@ -43,7 +43,7 @@ public:
     ~Gamepad();
 
     const GamepadButtonVector& buttons() const { return m_buttons; }
-    void setButtons(unsigned count, const blink::WebGamepadButton* data);
+    void setButtons(unsigned count, const WebGamepadButton* data);
 
     void trace(Visitor*);
 

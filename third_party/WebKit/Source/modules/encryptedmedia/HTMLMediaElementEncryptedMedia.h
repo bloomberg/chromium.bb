@@ -40,11 +40,11 @@ public:
     DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(needkey);
 
     static void keyAdded(HTMLMediaElement&, const String& keySystem, const String& sessionId);
-    static void keyError(HTMLMediaElement&, const String& keySystem, const String& sessionId, blink::WebMediaPlayerClient::MediaKeyErrorCode, unsigned short systemCode);
-    static void keyMessage(HTMLMediaElement&, const String& keySystem, const String& sessionId, const unsigned char* message, unsigned messageLength, const blink::WebURL& defaultURL);
+    static void keyError(HTMLMediaElement&, const String& keySystem, const String& sessionId, WebMediaPlayerClient::MediaKeyErrorCode, unsigned short systemCode);
+    static void keyMessage(HTMLMediaElement&, const String& keySystem, const String& sessionId, const unsigned char* message, unsigned messageLength, const WebURL& defaultURL);
     static void keyNeeded(HTMLMediaElement&, const String& contentType, const unsigned char* initData, unsigned initDataLength);
     static void playerDestroyed(HTMLMediaElement&);
-    static blink::WebContentDecryptionModule* contentDecryptionModule(HTMLMediaElement&);
+    static WebContentDecryptionModule* contentDecryptionModule(HTMLMediaElement&);
 
     static HTMLMediaElementEncryptedMedia& from(HTMLMediaElement&);
     static const char* supplementName();
@@ -53,9 +53,9 @@ public:
 
 private:
     HTMLMediaElementEncryptedMedia();
-    void generateKeyRequest(blink::WebMediaPlayer*, const String& keySystem, PassRefPtr<Uint8Array> initData, ExceptionState&);
-    void addKey(blink::WebMediaPlayer*, const String& keySystem, PassRefPtr<Uint8Array> key, PassRefPtr<Uint8Array> initData, const String& sessionId, ExceptionState&);
-    void cancelKeyRequest(blink::WebMediaPlayer*, const String& keySystem, const String& sessionId, ExceptionState&);
+    void generateKeyRequest(WebMediaPlayer*, const String& keySystem, PassRefPtr<Uint8Array> initData, ExceptionState&);
+    void addKey(WebMediaPlayer*, const String& keySystem, PassRefPtr<Uint8Array> key, PassRefPtr<Uint8Array> initData, const String& sessionId, ExceptionState&);
+    void cancelKeyRequest(WebMediaPlayer*, const String& keySystem, const String& sessionId, ExceptionState&);
 
     // EventTarget
     bool setAttributeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>);
@@ -71,7 +71,7 @@ private:
     // (v0.1b or WD). Returns whether the mode is allowed and successfully set.
     bool setEmeMode(EmeMode, ExceptionState&);
 
-    blink::WebContentDecryptionModule* contentDecryptionModule();
+    WebContentDecryptionModule* contentDecryptionModule();
     void setMediaKeysInternal(HTMLMediaElement&, MediaKeys*);
 
     EmeMode m_emeMode;
@@ -79,6 +79,6 @@ private:
     PersistentWillBeMember<MediaKeys> m_mediaKeys;
 };
 
-}
+} // namespace blink
 
 #endif

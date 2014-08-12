@@ -69,9 +69,9 @@ public:
     bool isDeleted() const;
 
     // Used internally and by InspectorIndexedDBAgent:
-    IDBRequest* openCursor(ScriptState*, IDBKeyRange*, blink::WebIDBCursorDirection);
+    IDBRequest* openCursor(ScriptState*, IDBKeyRange*, WebIDBCursorDirection);
 
-    blink::WebIDBDatabase* backendDB() const;
+    WebIDBDatabase* backendDB() const;
 
 private:
     IDBIndex(const IDBIndexMetadata&, IDBObjectStore*, IDBTransaction*);

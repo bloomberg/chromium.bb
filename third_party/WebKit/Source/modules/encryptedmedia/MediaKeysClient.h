@@ -9,17 +9,14 @@
 #include "wtf/text/WTFString.h"
 
 namespace blink {
-class WebContentDecryptionModule;
-}
-
-namespace blink {
 
 class ExecutionContext;
 class Page;
+class WebContentDecryptionModule;
 
 class MediaKeysClient {
 public:
-    virtual PassOwnPtr<blink::WebContentDecryptionModule> createContentDecryptionModule(ExecutionContext*, const String& keySystem) = 0;
+    virtual PassOwnPtr<WebContentDecryptionModule> createContentDecryptionModule(ExecutionContext*, const String& keySystem) = 0;
 
 protected:
     virtual ~MediaKeysClient() { }

@@ -11,21 +11,18 @@
 #include "public/platform/WebGamepadListener.h"
 
 namespace blink {
-class WebGamepads;
-}
-
-namespace blink {
 
 class NavigatorGamepad;
+class WebGamepads;
 
-class GamepadDispatcher : public PlatformEventDispatcher, public blink::WebGamepadListener {
+class GamepadDispatcher : public PlatformEventDispatcher, public WebGamepadListener {
 public:
     static GamepadDispatcher& instance();
 
-    void sampleGamepads(blink::WebGamepads&);
+    void sampleGamepads(WebGamepads&);
 
     struct ConnectionChange {
-        blink::WebGamepad pad;
+        WebGamepad pad;
         unsigned index;
     };
 
@@ -36,14 +33,14 @@ private:
     virtual ~GamepadDispatcher();
 
     // WebGamepadListener
-    virtual void didConnectGamepad(unsigned index, const blink::WebGamepad&) OVERRIDE;
-    virtual void didDisconnectGamepad(unsigned index, const blink::WebGamepad&) OVERRIDE;
+    virtual void didConnectGamepad(unsigned index, const WebGamepad&) OVERRIDE;
+    virtual void didDisconnectGamepad(unsigned index, const WebGamepad&) OVERRIDE;
 
     // PlatformEventDispatcher
     virtual void startListening() OVERRIDE;
     virtual void stopListening() OVERRIDE;
 
-    void dispatchDidConnectOrDisconnectGamepad(unsigned index, const blink::WebGamepad&, bool connected);
+    void dispatchDidConnectOrDisconnectGamepad(unsigned index, const WebGamepad&, bool connected);
 
     ConnectionChange m_latestChange;
 };

@@ -87,24 +87,24 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(success);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
 
-    void setCursorDetails(IndexedDB::CursorType, blink::WebIDBCursorDirection);
+    void setCursorDetails(IndexedDB::CursorType, WebIDBCursorDirection);
     void setPendingCursor(IDBCursor*);
     void abort();
 
     virtual void onError(PassRefPtrWillBeRawPtr<DOMError>);
     virtual void onSuccess(const Vector<String>&);
-    virtual void onSuccess(PassOwnPtr<blink::WebIDBCursor>, IDBKey*, IDBKey* primaryKey, PassRefPtr<SharedBuffer>, PassOwnPtr<Vector<blink::WebBlobInfo> >);
+    virtual void onSuccess(PassOwnPtr<WebIDBCursor>, IDBKey*, IDBKey* primaryKey, PassRefPtr<SharedBuffer>, PassOwnPtr<Vector<WebBlobInfo> >);
     virtual void onSuccess(IDBKey*);
-    virtual void onSuccess(PassRefPtr<SharedBuffer>, PassOwnPtr<Vector<blink::WebBlobInfo> >);
-    virtual void onSuccess(PassRefPtr<SharedBuffer>, PassOwnPtr<Vector<blink::WebBlobInfo> >, IDBKey*, const IDBKeyPath&);
+    virtual void onSuccess(PassRefPtr<SharedBuffer>, PassOwnPtr<Vector<WebBlobInfo> >);
+    virtual void onSuccess(PassRefPtr<SharedBuffer>, PassOwnPtr<Vector<WebBlobInfo> >, IDBKey*, const IDBKeyPath&);
     virtual void onSuccess(int64_t);
     virtual void onSuccess();
-    virtual void onSuccess(IDBKey*, IDBKey* primaryKey, PassRefPtr<SharedBuffer>, PassOwnPtr<Vector<blink::WebBlobInfo> >);
+    virtual void onSuccess(IDBKey*, IDBKey* primaryKey, PassRefPtr<SharedBuffer>, PassOwnPtr<Vector<WebBlobInfo> >);
 
     // Only IDBOpenDBRequest instances should receive these:
     virtual void onBlocked(int64_t oldVersion) { ASSERT_NOT_REACHED(); }
-    virtual void onUpgradeNeeded(int64_t oldVersion, PassOwnPtr<blink::WebIDBDatabase>, const IDBDatabaseMetadata&, blink::WebIDBDataLoss, String dataLossMessage) { ASSERT_NOT_REACHED(); }
-    virtual void onSuccess(PassOwnPtr<blink::WebIDBDatabase>, const IDBDatabaseMetadata&) { ASSERT_NOT_REACHED(); }
+    virtual void onUpgradeNeeded(int64_t oldVersion, PassOwnPtr<WebIDBDatabase>, const IDBDatabaseMetadata&, WebIDBDataLoss, String dataLossMessage) { ASSERT_NOT_REACHED(); }
+    virtual void onSuccess(PassOwnPtr<WebIDBDatabase>, const IDBDatabaseMetadata&) { ASSERT_NOT_REACHED(); }
 
     // ActiveDOMObject
     virtual bool hasPendingActivity() const OVERRIDE FINAL;
@@ -139,7 +139,7 @@ protected:
     bool m_requestAborted; // May be aborted by transaction then receive async onsuccess; ignore vs. assert.
 
 private:
-    void setResultCursor(IDBCursor*, IDBKey*, IDBKey* primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<blink::WebBlobInfo> >);
+    void setResultCursor(IDBCursor*, IDBKey*, IDBKey* primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<WebBlobInfo> >);
     void handleBlobAcks();
 
     RefPtr<ScriptState> m_scriptState;
@@ -152,14 +152,14 @@ private:
 
     // Only used if the result type will be a cursor.
     IndexedDB::CursorType m_cursorType;
-    blink::WebIDBCursorDirection m_cursorDirection;
+    WebIDBCursorDirection m_cursorDirection;
     // When a cursor is continued/advanced, m_result is cleared and m_pendingCursor holds it.
     Member<IDBCursor> m_pendingCursor;
     // New state is not applied to the cursor object until the event is dispatched.
     Member<IDBKey> m_cursorKey;
     Member<IDBKey> m_cursorPrimaryKey;
     RefPtr<SharedBuffer> m_cursorValue;
-    OwnPtr<Vector<blink::WebBlobInfo> > m_blobInfo;
+    OwnPtr<Vector<WebBlobInfo> > m_blobInfo;
 
     bool m_didFireUpgradeNeededEvent;
     bool m_preventPropagation;

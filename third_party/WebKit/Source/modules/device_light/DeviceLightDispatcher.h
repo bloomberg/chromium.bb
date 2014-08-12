@@ -14,7 +14,7 @@ namespace blink {
 class DeviceLightController;
 
 // This class listens to device light data and notifies all registered controllers.
-class DeviceLightDispatcher FINAL : public PlatformEventDispatcher, public blink::WebDeviceLightListener {
+class DeviceLightDispatcher FINAL : public PlatformEventDispatcher, public WebDeviceLightListener {
 public:
     static DeviceLightDispatcher& instance();
 

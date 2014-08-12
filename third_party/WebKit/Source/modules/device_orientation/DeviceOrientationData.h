@@ -30,16 +30,14 @@
 #include "wtf/RefCounted.h"
 
 namespace blink {
-class WebDeviceOrientationData;
-}
 
-namespace blink {
+class WebDeviceOrientationData;
 
 class DeviceOrientationData : public RefCountedWillBeGarbageCollected<DeviceOrientationData> {
 public:
     static PassRefPtrWillBeRawPtr<DeviceOrientationData> create();
     static PassRefPtrWillBeRawPtr<DeviceOrientationData> create(bool canProvideAlpha, double alpha, bool canProvideBeta, double beta, bool canProvideGamma, double gamma, bool canProvideAbsolute = false, bool absolute = false);
-    static PassRefPtrWillBeRawPtr<DeviceOrientationData> create(const blink::WebDeviceOrientationData&);
+    static PassRefPtrWillBeRawPtr<DeviceOrientationData> create(const WebDeviceOrientationData&);
     void trace(Visitor*) { }
 
     double alpha() const;

@@ -21,13 +21,13 @@ public:
 
     void set(unsigned index, WebKitGamepad*);
     WebKitGamepad* item(unsigned index);
-    unsigned length() const { return blink::WebGamepads::itemsLengthCap; }
+    unsigned length() const { return WebGamepads::itemsLengthCap; }
 
     void trace(Visitor*);
 
 private:
     WebKitGamepadList();
-    Member<WebKitGamepad> m_items[blink::WebGamepads::itemsLengthCap];
+    Member<WebKitGamepad> m_items[WebGamepads::itemsLengthCap];
 };
 
 } // namespace blink

@@ -46,7 +46,7 @@ class Blob;
 class ExceptionState;
 class ExecutionContext;
 
-class FileWriter FINAL : public FileWriterBase, public ActiveDOMObject, public EventTargetWithInlineData, public blink::WebFileWriterClient {
+class FileWriter FINAL : public FileWriterBase, public ActiveDOMObject, public EventTargetWithInlineData, public WebFileWriterClient {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<FileWriterBase>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FileWriter);
 public:
@@ -68,7 +68,7 @@ public:
     // WebFileWriterClient
     virtual void didWrite(long long bytes, bool complete) OVERRIDE;
     virtual void didTruncate() OVERRIDE;
-    virtual void didFail(blink::WebFileError) OVERRIDE;
+    virtual void didFail(WebFileError) OVERRIDE;
 
     // ActiveDOMObject
     virtual void stop() OVERRIDE;

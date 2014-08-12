@@ -36,17 +36,14 @@
 #include "wtf/Forward.h"
 
 namespace blink {
-class WebContentDecryptionModule;
-class WebString;
-}
-
-namespace blink {
 
 class ScriptPromise;
 class ScriptState;
 class GenericEventQueue;
 class MediaKeyError;
 class MediaKeys;
+class WebContentDecryptionModule;
+class WebString;
 
 // References are held by JS only. However, even if all JS references are
 // dropped, it won't be garbage collected until close event received or
@@ -63,7 +60,7 @@ class MediaKeys;
 // The WebContentDecryptionModuleSession has the same lifetime as this object.
 class MediaKeySession FINAL
     : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<MediaKeySession>, public ActiveDOMObject, public EventTargetWithInlineData
-    , private blink::WebContentDecryptionModuleSession::Client {
+    , private WebContentDecryptionModuleSession::Client {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<MediaKeySession>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaKeySession);
 public:
@@ -97,22 +94,22 @@ private:
     class PendingAction;
     friend class MediaKeySessionInitializer;
 
-    MediaKeySession(ExecutionContext*, MediaKeys*, PassOwnPtr<blink::WebContentDecryptionModuleSession>);
+    MediaKeySession(ExecutionContext*, MediaKeys*, PassOwnPtr<WebContentDecryptionModuleSession>);
     void actionTimerFired(Timer<MediaKeySession>*);
 
-    // blink::WebContentDecryptionModuleSession::Client
-    virtual void message(const unsigned char* message, size_t messageLength, const blink::WebURL& destinationURL) OVERRIDE;
+    // WebContentDecryptionModuleSession::Client
+    virtual void message(const unsigned char* message, size_t messageLength, const WebURL& destinationURL) OVERRIDE;
     virtual void ready() OVERRIDE;
     virtual void close() OVERRIDE;
     virtual void error(MediaKeyErrorCode, unsigned long systemCode) OVERRIDE;
-    virtual void error(blink::WebContentDecryptionModuleException, unsigned long systemCode, const blink::WebString& errorMessage) OVERRIDE;
+    virtual void error(WebContentDecryptionModuleException, unsigned long systemCode, const WebString& errorMessage) OVERRIDE;
 
     ScriptPromise updateInternal(ScriptState*, PassRefPtr<ArrayBuffer> response);
 
     String m_keySystem;
     RefPtrWillBeMember<MediaKeyError> m_error;
     OwnPtrWillBeMember<GenericEventQueue> m_asyncEventQueue;
-    OwnPtr<blink::WebContentDecryptionModuleSession> m_session;
+    OwnPtr<WebContentDecryptionModuleSession> m_session;
 
     // Used to determine if MediaKeys is still active.
     WeakMember<MediaKeys> m_keys;
@@ -128,6 +125,6 @@ private:
     Timer<MediaKeySession> m_actionTimer;
 };
 
-}
+} // namespace blink
 
 #endif // MediaKeySession_h
