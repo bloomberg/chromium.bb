@@ -29,6 +29,7 @@ class DragDropDelegate;
 }
 
 namespace gfx {
+class ImageSkia;
 class Point;
 }
 
@@ -42,6 +43,7 @@ class SelectionFormatMap;
 
 namespace views {
 class DesktopNativeCursorManager;
+class Widget;
 class X11MoveLoop;
 
 // Implements drag and drop on X11 for aura. On one side, this class takes raw
@@ -184,6 +186,13 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
                         unsigned long event_time);
   void SendXdndDrop(::Window dest_window);
 
+  // Creates a widget for the user to drag around.
+  void CreateDragWidget(const gfx::ImageSkia& image);
+
+  // Returns true if |image| has any visible regions (defined as having a pixel
+  // with alpha > 32).
+  bool IsValidDragImage(const gfx::ImageSkia& image);
+
   // A nested message loop that notifies this object of events through the
   // X11MoveLoopDelegate interface.
   scoped_ptr<X11MoveLoop> move_loop_;
@@ -253,6 +262,12 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   // Ends the move loop if the target is too slow to respond after the mouse is
   // released.
   base::OneShotTimer<DesktopDragDropClientAuraX11> end_move_loop_timer_;
+
+  // Widget that the user drags around. May be NULL.
+  scoped_ptr<Widget> drag_widget_;
+
+  // The offset of |drag_widget_| relative to the mouse position.
+  gfx::Vector2d drag_widget_offset_;
 
   // We use these cursors while dragging.
   gfx::NativeCursor grab_cursor_;

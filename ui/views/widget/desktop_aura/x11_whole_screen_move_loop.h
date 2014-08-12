@@ -46,8 +46,6 @@ class X11WholeScreenMoveLoop : public X11MoveLoop,
                            gfx::NativeCursor cursor) OVERRIDE;
   virtual void UpdateCursor(gfx::NativeCursor cursor) OVERRIDE;
   virtual void EndMoveLoop() OVERRIDE;
-  virtual void SetDragImage(const gfx::ImageSkia& image,
-                            const gfx::Vector2dF& offset) OVERRIDE;
 
  private:
   // Grabs the pointer and keyboard, setting the mouse cursor to |cursor|.
@@ -56,13 +54,6 @@ class X11WholeScreenMoveLoop : public X11MoveLoop,
 
   // Creates an input-only window to be used during the drag.
   Window CreateDragInputWindow(XDisplay* display);
-
-  // Creates a window to show the drag image during the drag.
-  void CreateDragImageWindow();
-
-  // Checks to see if |in_image| is an image that has any visible regions
-  // (defined as having a pixel with alpha > 32). If so, return true.
-  bool CheckIfIconValid();
 
   // Dispatch mouse movement event to |delegate_| in a posted task.
   void DispatchMouseMovement();
@@ -89,11 +80,6 @@ class X11WholeScreenMoveLoop : public X11MoveLoop,
   // Keeps track of whether we still have a pointer grab at the end of the loop.
   bool has_grab_;
 
-  // A Widget is created during the drag if there is an image available to be
-  // used during the drag.
-  scoped_ptr<Widget> drag_widget_;
-  gfx::ImageSkia drag_image_;
-  gfx::Vector2dF drag_offset_;
   XMotionEvent last_xmotion_;
   base::WeakPtrFactory<X11WholeScreenMoveLoop> weak_factory_;
 

@@ -27,10 +27,6 @@ class X11MoveLoop {
 
   // Ends the move loop that's currently in progress.
   virtual void EndMoveLoop() = 0;
-
-  // Sets an image to be used during the drag.
-  virtual void SetDragImage(const gfx::ImageSkia& image,
-                            const gfx::Vector2dF& offset) = 0;
 };
 
 }  // namespace views

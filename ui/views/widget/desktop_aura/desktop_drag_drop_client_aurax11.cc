@@ -9,6 +9,7 @@
 #include "base/event_types.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -20,9 +21,13 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/events/event.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/screen.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
 #include "ui/views/widget/desktop_aura/x11_topmost_window_finder.h"
 #include "ui/views/widget/desktop_aura/x11_whole_screen_move_loop.h"
+#include "ui/views/widget/widget.h"
 #include "ui/wm/public/drag_drop_client.h"
 #include "ui/wm/public/drag_drop_delegate.h"
 
@@ -77,6 +82,13 @@ const int kEndMoveLoopTimeoutMs = 1000;
 // reprocessing the most recent mouse move event in case that the window
 // stacking order has changed and |source_current_window_| needs to be updated.
 const int kRepeatMouseMoveTimeoutMs = 350;
+
+// The minimum alpha before we declare a pixel transparent when searching in
+// our source image.
+const uint32 kMinAlpha = 32;
+
+// |drag_widget_|'s opacity.
+const unsigned char kDragWidgetOpacity = 0xc0;
 
 static base::LazyInstance<
     std::map< ::Window, views::DesktopDragDropClientAuraX11*> >::Leaky
@@ -622,6 +634,12 @@ int DesktopDragDropClientAuraX11::StartDragAndDrop(
   }
   ui::SetAtomArrayProperty(xwindow_, "XdndActionList", "ATOM", actions);
 
+  gfx::ImageSkia drag_image = source_provider_->GetDragImage();
+  if (IsValidDragImage(drag_image)) {
+    CreateDragWidget(drag_image);
+    drag_widget_offset_ = source_provider_->GetDragImageOffset();
+  }
+
   // It is possible for the DesktopWindowTreeHostX11 to be destroyed during the
   // move loop, which would also destroy this drag-client. So keep track of
   // whether it is alive after the drag ends.
@@ -631,12 +649,10 @@ int DesktopDragDropClientAuraX11::StartDragAndDrop(
   // Windows has a specific method, DoDragDrop(), which performs the entire
   // drag. We have to emulate this, so we spin off a nested runloop which will
   // track all cursor movement and reroute events to a specific handler.
-  move_loop_->SetDragImage(source_provider_->GetDragImage(),
-                           source_provider_->GetDragImageOffset());
   move_loop_->RunMoveLoop(source_window, grab_cursor_);
 
   if (alive) {
-    move_loop_->SetDragImage(gfx::ImageSkia(), gfx::Vector2dF());
+    drag_widget_.reset();
 
     source_provider_ = NULL;
     g_current_drag_drop_client = NULL;
@@ -673,8 +689,16 @@ void DesktopDragDropClientAuraX11::OnWindowDestroyed(aura::Window* window) {
 }
 
 void DesktopDragDropClientAuraX11::OnMouseMovement(XMotionEvent* event) {
+  gfx::Point screen_point(event->x_root, event->y_root);
+  if (drag_widget_.get()) {
+    drag_widget_->SetBounds(
+        gfx::Rect(screen_point - drag_widget_offset_,
+                  drag_widget_->GetWindowBoundsInScreen().size()));
+    drag_widget_->StackAtTop();
+  }
+
   repeat_mouse_move_timer_.Stop();
-  ProcessMouseMove(gfx::Point(event->x_root, event->y_root), event->time);
+  ProcessMouseMove(screen_point, event->time);
 }
 
 void DesktopDragDropClientAuraX11::OnMouseReleased() {
@@ -1052,6 +1076,55 @@ void DesktopDragDropClientAuraX11::SendXdndDrop(::Window dest_window) {
   xev.xclient.data.l[3] = None;
   xev.xclient.data.l[4] = None;
   SendXClientEvent(dest_window, &xev);
+}
+
+void DesktopDragDropClientAuraX11::CreateDragWidget(
+    const gfx::ImageSkia& image) {
+  Widget* widget = new Widget;
+  Widget::InitParams params(Widget::InitParams::TYPE_DRAG);
+  params.opacity = Widget::InitParams::OPAQUE_WINDOW;
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.accept_events = false;
+
+  gfx::Point location = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint() -
+                        drag_widget_offset_;
+  params.bounds = gfx::Rect(location, image.size());
+  widget->set_focus_on_creation(false);
+  widget->set_frame_type(Widget::FRAME_TYPE_FORCE_NATIVE);
+  widget->Init(params);
+  widget->SetOpacity(kDragWidgetOpacity);
+  widget->GetNativeWindow()->SetName("DragWindow");
+
+  ImageView* image_view = new ImageView();
+  image_view->SetImage(image);
+  image_view->SetBounds(0, 0, image.width(), image.height());
+  widget->SetContentsView(image_view);
+  widget->Show();
+  widget->GetNativeWindow()->layer()->SetFillsBoundsOpaquely(false);
+
+  drag_widget_.reset(widget);
+}
+
+bool DesktopDragDropClientAuraX11::IsValidDragImage(
+    const gfx::ImageSkia& image) {
+  if (image.isNull())
+    return false;
+
+  // Because we need a GL context per window, we do a quick check so that we
+  // don't make another context if the window would just be displaying a mostly
+  // transparent image.
+  const SkBitmap* in_bitmap = image.bitmap();
+  SkAutoLockPixels in_lock(*in_bitmap);
+  for (int y = 0; y < in_bitmap->height(); ++y) {
+    uint32* in_row = in_bitmap->getAddr32(0, y);
+
+    for (int x = 0; x < in_bitmap->width(); ++x) {
+      if (SkColorGetA(in_row[x]) > kMinAlpha)
+        return true;
+    }
+  }
+
+  return false;
 }
 
 }  // namespace views

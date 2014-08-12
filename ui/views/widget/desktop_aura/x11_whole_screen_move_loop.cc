@@ -5,13 +5,10 @@
 #include "ui/views/widget/desktop_aura/x11_whole_screen_move_loop.h"
 
 #include <X11/Xlib.h>
-// Get rid of a macro from Xlib.h that conflicts with Aura's RootWindow class.
-#undef RootWindow
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -23,18 +20,10 @@
 #include "ui/events/platform/scoped_event_dispatcher.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/point_conversions.h"
-#include "ui/gfx/screen.h"
-#include "ui/views/controls/image_view.h"
-#include "ui/views/widget/widget.h"
 
 namespace views {
 
 namespace {
-
-// The minimum alpha before we declare a pixel transparent when searching in
-// our source image.
-const uint32 kMinAlpha = 32;
-const unsigned char kDragWidgetOpacity = 0xc0;
 
 class ScopedCapturer {
  public:
@@ -100,13 +89,6 @@ uint32_t X11WholeScreenMoveLoop::DispatchEvent(const ui::PlatformEvent& event) {
   // keyboard focus even though we took pointer grab.
   switch (xev->type) {
     case MotionNotify: {
-      if (drag_widget_.get()) {
-        gfx::Screen* screen = gfx::Screen::GetNativeScreen();
-        gfx::Point location = gfx::ToFlooredPoint(
-            screen->GetCursorScreenPoint() - drag_offset_);
-        drag_widget_->SetBounds(gfx::Rect(location, drag_image_.size()));
-        drag_widget_->StackAtTop();
-      }
       last_xmotion_ = xev->xmotion;
       if (!weak_factory_.HasWeakPtrs()) {
         // Post a task to dispatch mouse movement event when control returns to
@@ -206,8 +188,6 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
       nested_dispatcher_.Pass();
   nested_dispatcher_ =
          ui::PlatformEventSource::GetInstance()->OverrideDispatcher(this);
-  if (!drag_image_.isNull() && CheckIfIconValid())
-    CreateDragImageWindow();
 
   // We are handling a mouse drag outside of the aura::RootWindow system. We
   // must manually make aura think that the mouse button is pressed so that we
@@ -266,19 +246,12 @@ void X11WholeScreenMoveLoop::EndMoveLoop() {
 
   // Restore the previous dispatcher.
   nested_dispatcher_.reset();
-  drag_widget_.reset();
   delegate_->OnMoveLoopEnded();
   XDestroyWindow(display, grab_input_window_);
   grab_input_window_ = None;
 
   in_move_loop_ = false;
   quit_closure_.Run();
-}
-
-void X11WholeScreenMoveLoop::SetDragImage(const gfx::ImageSkia& image,
-                                          const gfx::Vector2dF& offset) {
-  drag_image_ = image;
-  drag_offset_ = offset;
 }
 
 bool X11WholeScreenMoveLoop::GrabPointerAndKeyboard(gfx::NativeCursor cursor) {
@@ -340,50 +313,6 @@ Window X11WholeScreenMoveLoop::CreateDragInputWindow(XDisplay* display) {
   XMapRaised(display, window);
   ui::X11EventSource::GetInstance()->BlockUntilWindowMapped(window);
   return window;
-}
-
-void X11WholeScreenMoveLoop::CreateDragImageWindow() {
-  Widget* widget = new Widget;
-  Widget::InitParams params(Widget::InitParams::TYPE_DRAG);
-  params.opacity = Widget::InitParams::OPAQUE_WINDOW;
-  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.accept_events = false;
-
-  gfx::Point location = gfx::ToFlooredPoint(
-      gfx::Screen::GetNativeScreen()->GetCursorScreenPoint() - drag_offset_);
-  params.bounds = gfx::Rect(location, drag_image_.size());
-  widget->set_focus_on_creation(false);
-  widget->set_frame_type(Widget::FRAME_TYPE_FORCE_NATIVE);
-  widget->Init(params);
-  widget->SetOpacity(kDragWidgetOpacity);
-  widget->GetNativeWindow()->SetName("DragWindow");
-
-  ImageView* image = new ImageView();
-  image->SetImage(drag_image_);
-  image->SetBounds(0, 0, drag_image_.width(), drag_image_.height());
-  widget->SetContentsView(image);
-  widget->Show();
-  widget->GetNativeWindow()->layer()->SetFillsBoundsOpaquely(false);
-
-  drag_widget_.reset(widget);
-}
-
-bool X11WholeScreenMoveLoop::CheckIfIconValid() {
-  // Because we need a GL context per window, we do a quick check so that we
-  // don't make another context if the window would just be displaying a mostly
-  // transparent image.
-  const SkBitmap* in_bitmap = drag_image_.bitmap();
-  SkAutoLockPixels in_lock(*in_bitmap);
-  for (int y = 0; y < in_bitmap->height(); ++y) {
-    uint32* in_row = in_bitmap->getAddr32(0, y);
-
-    for (int x = 0; x < in_bitmap->width(); ++x) {
-      if (SkColorGetA(in_row[x]) > kMinAlpha)
-        return true;
-    }
-  }
-
-  return false;
 }
 
 }  // namespace views

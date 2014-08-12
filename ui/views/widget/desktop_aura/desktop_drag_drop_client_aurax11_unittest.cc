@@ -90,8 +90,6 @@ class TestMoveLoop : public X11MoveLoop {
                            gfx::NativeCursor cursor) OVERRIDE;
   virtual void UpdateCursor(gfx::NativeCursor cursor) OVERRIDE;
   virtual void EndMoveLoop() OVERRIDE;
-  virtual void SetDragImage(const gfx::ImageSkia& image,
-                            const gfx::Vector2dF& offset) OVERRIDE;
 
  private:
   // Not owned.
@@ -238,10 +236,6 @@ void TestMoveLoop::EndMoveLoop() {
     is_running_ = false;
     quit_closure_.Run();
   }
-}
-
-void TestMoveLoop::SetDragImage(const gfx::ImageSkia& image,
-                                const gfx::Vector2dF& offset) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
