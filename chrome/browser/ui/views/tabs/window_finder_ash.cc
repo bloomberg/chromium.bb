@@ -22,7 +22,8 @@ aura::Window* GetLocalProcessWindowAtPointImpl(
     return NULL;
 
   if (window->id() == ash::kShellWindowId_PhantomWindow ||
-      window->id() == ash::kShellWindowId_OverlayContainer)
+      window->id() == ash::kShellWindowId_OverlayContainer ||
+      window->id() == ash::kShellWindowId_MouseCursorContainer)
     return NULL;
 
   if (window->layer()->type() == ui::LAYER_TEXTURED)
