@@ -27,6 +27,8 @@
         'pairing/host_pairing_controller.h',
         'pairing/message_buffer.cc',
         'pairing/message_buffer.h',
+        'pairing/proto_decoder.cc',
+        'pairing/proto_decoder.h',
       ],
     },
     {
