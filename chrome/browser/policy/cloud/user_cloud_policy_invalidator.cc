@@ -19,10 +19,10 @@ namespace policy {
 UserCloudPolicyInvalidator::UserCloudPolicyInvalidator(
     Profile* profile,
     CloudPolicyManager* policy_manager)
-    : CloudPolicyInvalidator(
-          policy_manager->core(),
-          base::MessageLoopProxy::current(),
-          scoped_ptr<base::Clock>(new base::DefaultClock())),
+    : CloudPolicyInvalidator(GetPolicyType(),
+                             policy_manager->core(),
+                             base::MessageLoopProxy::current(),
+                             scoped_ptr<base::Clock>(new base::DefaultClock())),
       profile_(profile) {
   DCHECK(profile);
 
@@ -36,6 +36,20 @@ UserCloudPolicyInvalidator::UserCloudPolicyInvalidator(
   registrar_.Add(this,
                  chrome::NOTIFICATION_PROFILE_ADDED,
                  content::Source<Profile>(profile));
+}
+
+// static
+enterprise_management::DeviceRegisterRequest::Type
+UserCloudPolicyInvalidator::GetPolicyType() {
+#if defined(OS_CHROMEOS)
+  return enterprise_management::DeviceRegisterRequest::USER;
+#elif defined(OS_ANDROID)
+  return enterprise_management::DeviceRegisterRequest::ANDROID_BROWSER;
+#elif defined(OS_IOS)
+  return enterprise_management::DeviceRegisterRequest::IOS_BROWSER;
+#else
+  return enterprise_management::DeviceRegisterRequest::BROWSER;
+#endif
 }
 
 void UserCloudPolicyInvalidator::Shutdown() {

@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -18,6 +19,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "google/cacheinvalidation/include/types.h"
+#include "policy/proto/device_management_backend.pb.h"
 
 namespace base {
 class Clock;
@@ -56,12 +58,14 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
   // invalidation timestamps when determining if an invalidation is expired.
   static const int kMaxInvalidationTimeDelta;
 
+  // |type| indicates the policy type that this invalidator is responsible for.
   // |core| is the cloud policy core which connects the various policy objects.
   // It must remain valid until Shutdown is called.
   // |task_runner| is used for scheduling delayed tasks. It must post tasks to
   // the main policy thread.
   // |clock| is used to get the current time.
   CloudPolicyInvalidator(
+      enterprise_management::DeviceRegisterRequest::Type type,
       CloudPolicyCore* core,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       scoped_ptr<base::Clock> clock);
@@ -155,6 +159,9 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
     SHUT_DOWN
   };
   State state_;
+
+  // The policy type this invalidator is responsible for.
+  const enterprise_management::DeviceRegisterRequest::Type type_;
 
   // The cloud policy core.
   CloudPolicyCore* core_;

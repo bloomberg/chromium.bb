@@ -5781,6 +5781,27 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>URL fetcher status for auto-enrollment requests.</summary>
 </histogram>
 
+<histogram name="Enterprise.DevicePolicyInvalidations"
+    enum="EnterprisePolicyInvalidations">
+  <owner>bartfab@chromium.org</owner>
+  <summary>
+    Events for counting device policy invalidations received with and without
+    payloads. Invalidations indicate that a policy has been updated and should
+    be refreshed. Payloads provide context about the policy update, but may be
+    absent if dropped by the invalidation service.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.DevicePolicyRefresh" enum="EnterprisePolicyRefresh">
+  <owner>bartfab@chromium.org</owner>
+  <summary>
+    Events measuring effectiveness of refreshing device policy when
+    invalidations are received from a service. For each refresh, indicates
+    whether the policy changed, and whether the policy was invalidated at the
+    time of the refresh.
+  </summary>
+</histogram>
+
 <histogram name="Enterprise.DMToken" enum="EnterpriseDMTokenType">
   <owner>joaodasilva@chromium.org</owner>
   <summary>
@@ -5880,9 +5901,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     enum="EnterprisePolicyInvalidations">
   <owner>joaodasilva@chromium.org</owner>
   <summary>
-    Events for counting policy invalidations received with and without payloads.
-    Invalidations indicate that a policy has been updated and should be
-    refreshed. Payloads provide context about the policy update, but may be
+    Events for counting user policy invalidations received with and without
+    payloads. Invalidations indicate that a policy has been updated and should
+    be refreshed. Payloads provide context about the policy update, but may be
     absent if dropped by the invalidation service.
   </summary>
 </histogram>
@@ -5907,8 +5928,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Enterprise.PolicyRefresh" enum="EnterprisePolicyRefresh">
   <owner>joaodasilva@chromium.org</owner>
   <summary>
-    Events measuring effectiveness of refreshing policy when invalidations are
-    received from a service. For each refresh, indicates whether the policy
+    Events measuring effectiveness of refreshing user policy when invalidations
+    are received from a service. For each refresh, indicates whether the policy
     changed, and whether the policy was invalidated at the time of the refresh.
   </summary>
 </histogram>

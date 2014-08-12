@@ -35,6 +35,7 @@
 #include "content/public/browser/notification_service.h"
 #include "google_apis/gaia/identity_provider.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "policy/proto/device_management_backend.pb.h"
 
 class Profile;
 
@@ -251,6 +252,7 @@ void DeviceCloudPolicyInvalidator::CreateInvalidator(
     invalidation::InvalidationService* invalidation_service) {
   invalidation_service_ = invalidation_service;
   invalidator_.reset(new CloudPolicyInvalidator(
+      enterprise_management::DeviceRegisterRequest::DEVICE,
       g_browser_process->platform_part()->browser_policy_connector_chromeos()->
           GetDeviceCloudPolicyManager()->core(),
       base::MessageLoopProxy::current(),

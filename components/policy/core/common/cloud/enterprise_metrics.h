@@ -239,8 +239,10 @@ POLICY_EXPORT extern const char kMetricToken[];
 POLICY_EXPORT extern const char kMetricPolicy[];
 POLICY_EXPORT extern const char kMetricEnrollment[];
 POLICY_EXPORT extern const char kMetricEnrollmentRecovery[];
-POLICY_EXPORT extern const char kMetricPolicyRefresh[];
-POLICY_EXPORT extern const char kMetricPolicyInvalidations[];
+POLICY_EXPORT extern const char kMetricUserPolicyRefresh[];
+POLICY_EXPORT extern const char kMetricUserPolicyInvalidations[];
+POLICY_EXPORT extern const char kMetricDevicePolicyRefresh[];
+POLICY_EXPORT extern const char kMetricDevicePolicyInvalidations[];
 
 }  // namespace policy
 

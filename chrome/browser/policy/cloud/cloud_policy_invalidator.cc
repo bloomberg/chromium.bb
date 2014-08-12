@@ -31,10 +31,12 @@ const int CloudPolicyInvalidator::kUnknownVersionIgnorePeriod = 30;
 const int CloudPolicyInvalidator::kMaxInvalidationTimeDelta = 300;
 
 CloudPolicyInvalidator::CloudPolicyInvalidator(
+    enterprise_management::DeviceRegisterRequest::Type type,
     CloudPolicyCore* core,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     scoped_ptr<base::Clock> clock)
     : state_(UNINITIALIZED),
+      type_(type),
       core_(core),
       task_runner_(task_runner),
       clock_(clock.Pass()),
@@ -141,11 +143,16 @@ void CloudPolicyInvalidator::OnStoreLoaded(CloudPolicyStore* store) {
   bool policy_changed = IsPolicyChanged(store->policy());
 
   if (is_registered_) {
-    // Update the kMetricPolicyRefresh histogram.
-    UMA_HISTOGRAM_ENUMERATION(
-        kMetricPolicyRefresh,
-        GetPolicyRefreshMetric(policy_changed),
-        METRIC_POLICY_REFRESH_SIZE);
+    // Update the kMetricDevicePolicyRefresh/kMetricUserPolicyRefresh histogram.
+    if (type_ == enterprise_management::DeviceRegisterRequest::DEVICE) {
+      UMA_HISTOGRAM_ENUMERATION(kMetricDevicePolicyRefresh,
+                                GetPolicyRefreshMetric(policy_changed),
+                                METRIC_POLICY_REFRESH_SIZE);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION(kMetricUserPolicyRefresh,
+                                GetPolicyRefreshMetric(policy_changed),
+                                METRIC_POLICY_REFRESH_SIZE);
+    }
 
     // If the policy was invalid and the version stored matches the latest
     // invalidation version, acknowledge the latest invalidation.
@@ -189,10 +196,18 @@ void CloudPolicyInvalidator::HandleInvalidation(
 
   // Ignore the invalidation if it is expired.
   bool is_expired = IsInvalidationExpired(version);
-  UMA_HISTOGRAM_ENUMERATION(
-      kMetricPolicyInvalidations,
-      GetInvalidationMetric(payload.empty(), is_expired),
-      POLICY_INVALIDATION_TYPE_SIZE);
+
+  if (type_ == enterprise_management::DeviceRegisterRequest::DEVICE) {
+    UMA_HISTOGRAM_ENUMERATION(
+        kMetricDevicePolicyInvalidations,
+        GetInvalidationMetric(payload.empty(), is_expired),
+        POLICY_INVALIDATION_TYPE_SIZE);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(
+        kMetricUserPolicyInvalidations,
+        GetInvalidationMetric(payload.empty(), is_expired),
+        POLICY_INVALIDATION_TYPE_SIZE);
+  }
   if (is_expired) {
     invalidation.Acknowledge();
     return;

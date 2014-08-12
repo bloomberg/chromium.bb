@@ -9,6 +9,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "policy/proto/device_management_backend.pb.h"
 
 class Profile;
 
@@ -30,6 +31,8 @@ class UserCloudPolicyInvalidator : public CloudPolicyInvalidator,
   UserCloudPolicyInvalidator(
       Profile* profile,
       CloudPolicyManager* policy_manager);
+
+  static enterprise_management::DeviceRegisterRequest::Type GetPolicyType();
 
   // KeyedService:
   virtual void Shutdown() OVERRIDE;
