@@ -1542,3 +1542,4 @@ Bug(gardener) [ Debug Lion ] webaudio/audiobuffersource-loop-points.html [ Crash
 crbug.com/392095 [ Debug Lion ] webaudio/realtimeanalyser-fft-scaling.html [ Failure Pass ]
 Bug(gardener) [ Debug Win7 ] webaudio/up-mixing-mono-51.html [ Pass Timeout ]
 Bug(gardener) [ Debug Win7 ] webaudio/up-mixing-stereo-51.html [ Pass Timeout ]
+crbug.com/402805 inspector-protocol/input/emulateTouchFromMouseEvent.html [ Pass Timeout ]
