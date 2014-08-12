@@ -4,6 +4,7 @@
 
 #include "ui/gfx/render_text_harfbuzz.h"
 
+#include <limits>
 #include <map>
 
 #include "base/i18n/bidi_line_iterator.h"
