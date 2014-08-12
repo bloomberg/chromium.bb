@@ -693,7 +693,7 @@ TEST_F(PrefsSyncableServiceTest, DynamicManagedDefaultPreferences) {
   // Switch kHomePage to managed and set a different value.
   base::StringValue managed_value("http://example.com/managed");
   GetTestingPrefService()->SetManagedPref(prefs::kHomePage,
-                                                    managed_value.DeepCopy());
+                                          managed_value.DeepCopy());
   // The pref value should be the one dictated by policy.
   EXPECT_TRUE(managed_value.Equals(&GetPreferenceValue(prefs::kHomePage)));
   EXPECT_FALSE(pref->IsDefaultValue());
@@ -705,4 +705,20 @@ TEST_F(PrefsSyncableServiceTest, DynamicManagedDefaultPreferences) {
   EXPECT_TRUE(pref->IsDefaultValue());
   // There should still be no synced value.
   EXPECT_FALSE(FindValue(prefs::kHomePage, out).get());
+}
+
+TEST_F(PrefsSyncableServiceTest, DeletePreference) {
+  prefs_.SetString(prefs::kHomePage, kExampleUrl0);
+  const PrefService::Preference* pref =
+      prefs_.FindPreference(prefs::kHomePage);
+  EXPECT_FALSE(pref->IsDefaultValue());
+
+  InitWithNoSyncData();
+
+  scoped_ptr<base::Value> null_value(base::Value::CreateNullValue());
+  syncer::SyncChangeList list;
+  list.push_back(MakeRemoteChange(
+      1, prefs::kHomePage, *null_value, SyncChange::ACTION_DELETE));
+  pref_sync_service_->ProcessSyncChanges(FROM_HERE, list);
+  EXPECT_TRUE(pref->IsDefaultValue());
 }

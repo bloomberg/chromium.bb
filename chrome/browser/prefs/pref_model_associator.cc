@@ -471,26 +471,10 @@ syncer::SyncError PrefModelAssociator::ProcessSyncChanges(
   for (iter = change_list.begin(); iter != change_list.end(); ++iter) {
     DCHECK_EQ(type_, iter->sync_data().GetDataType());
 
-    std::string name;
     const sync_pb::PreferenceSpecifics& pref_specifics =
         GetSpecifics(iter->sync_data());
 
-    scoped_ptr<base::Value> value(ReadPreferenceSpecifics(pref_specifics,
-                                                          &name));
-
-    if (iter->change_type() == syncer::SyncChange::ACTION_DELETE) {
-      // We never delete preferences.
-      NOTREACHED() << "Attempted to process sync delete change for " << name
-                   << ". Skipping.";
-      continue;
-    }
-
-    // Skip values we can't deserialize.
-    // TODO(zea): consider taking some further action such as erasing the bad
-    // data.
-    if (!value.get())
-      continue;
-
+    std::string name = pref_specifics.name();
     // It is possible that we may receive a change to a preference we do not
     // want to sync. For example if the user is syncing a Mac client and a
     // Windows client, the Windows client does not support
@@ -506,9 +490,18 @@ syncer::SyncError PrefModelAssociator::ProcessSyncChanges(
     if (!IsPrefRegistered(pref_name))
       continue;
 
-    const PrefService::Preference* pref =
-        pref_service_->FindPreference(pref_name);
-    DCHECK(pref);
+    if (iter->change_type() == syncer::SyncChange::ACTION_DELETE) {
+      pref_service_->ClearPref(pref_name);
+      continue;
+    }
+
+    scoped_ptr<base::Value> value(ReadPreferenceSpecifics(pref_specifics));
+    if (!value.get()) {
+      // Skip values we can't deserialize.
+      // TODO(zea): consider taking some further action such as erasing the bad
+      // data.
+      continue;
+    }
 
     // This will only modify the user controlled value store, which takes
     // priority over the default value but is ignored if the preference is
@@ -526,8 +519,7 @@ syncer::SyncError PrefModelAssociator::ProcessSyncChanges(
 }
 
 base::Value* PrefModelAssociator::ReadPreferenceSpecifics(
-    const sync_pb::PreferenceSpecifics& preference,
-    std::string* name) {
+    const sync_pb::PreferenceSpecifics& preference) {
   base::JSONReader reader;
   scoped_ptr<base::Value> value(reader.ReadToValue(preference.value()));
   if (!value.get()) {
@@ -536,7 +528,6 @@ base::Value* PrefModelAssociator::ReadPreferenceSpecifics(
     LOG(ERROR) << err;
     return NULL;
   }
-  *name = preference.name();
   return value.release();
 }
 

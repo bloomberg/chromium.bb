@@ -92,10 +92,9 @@ class PrefModelAssociator
                           const base::Value& value,
                           syncer::SyncData* sync_data) const;
 
-  // Extract preference value and name from sync specifics.
+  // Extract preference value from sync specifics.
   base::Value* ReadPreferenceSpecifics(
-      const sync_pb::PreferenceSpecifics& specifics,
-      std::string* name);
+      const sync_pb::PreferenceSpecifics& specifics);
 
   // Returns true if the pref under the given name is pulled down from sync.
   // Note this does not refer to SYNCABLE_PREF.
