@@ -301,18 +301,6 @@ void ServiceWorkerWriteToCacheJob::OnResponseStarted(
     // response to our consumer, just don't cache it?
     return;
   }
-  // To prevent most user-uploaded content from being used as a serviceworker.
-  if (version_->script_url() == url_) {
-    std::string mime_type;
-    request->GetMimeType(&mime_type);
-    if (mime_type != "application/x-javascript" &&
-        mime_type != "text/javascript" &&
-        mime_type != "application/javascript") {
-      AsyncNotifyDoneHelper(net::URLRequestStatus(
-          net::URLRequestStatus::FAILED, net::ERR_FAILED));
-      return;
-    }
-  }
   WriteHeadersToCache();
 }
 
