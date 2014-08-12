@@ -3354,7 +3354,7 @@ bool RenderObject::canUpdateSelectionOnRootLineBoxes()
         return false;
 
     RenderBlock* containingBlock = this->containingBlock();
-    return containingBlock ? !containingBlock->needsLayout() : true;
+    return containingBlock ? !containingBlock->needsLayout() : false;
 }
 
 // We only create "generated" child renderers like one for first-letter if:
