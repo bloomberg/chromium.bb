@@ -1721,8 +1721,11 @@ seat_get_keyboard(struct wl_client *client, struct wl_resource *resource,
 	wl_resource_set_implementation(cr, &keyboard_interface,
 				       seat, unbind_resource);
 
-	if (wl_resource_get_version(cr) >= WL_KEYBOARD_REPEAT_INFO_SINCE_VERSION)
-		wl_keyboard_send_repeat_info(cr, 30, 200);
+	if (wl_resource_get_version(cr) >= WL_KEYBOARD_REPEAT_INFO_SINCE_VERSION) {
+		wl_keyboard_send_repeat_info(cr,
+					     seat->compositor->kb_repeat_rate,
+					     seat->compositor->kb_repeat_delay);
+	}
 
 	if (seat->compositor->use_xkbcommon) {
 		wl_keyboard_send_keymap(cr, WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1,
@@ -1816,7 +1819,7 @@ bind_seat(struct wl_client *client, void *data, uint32_t version, uint32_t id)
 	enum wl_seat_capability caps = 0;
 
 	resource = wl_resource_create(client,
-				      &wl_seat_interface, MIN(version, 3), id);
+				      &wl_seat_interface, MIN(version, 4), id);
 	wl_list_insert(&seat->base_resource_list, wl_resource_get_link(resource));
 	wl_resource_set_implementation(resource, &seat_interface, data,
 				       unbind_resource);

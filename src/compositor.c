@@ -3792,6 +3792,11 @@ weston_compositor_init(struct weston_compositor *ec,
 	if (weston_compositor_xkb_init(ec, &xkb_names) < 0)
 		return -1;
 
+	weston_config_section_get_int(s, "repeat-rate",
+				      &ec->kb_repeat_rate, 40);
+	weston_config_section_get_int(s, "repeat-delay",
+				      &ec->kb_repeat_delay, 400);
+
 	text_backend_init(ec);
 
 	wl_data_device_manager_init(ec->wl_display);

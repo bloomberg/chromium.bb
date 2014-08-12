@@ -396,6 +396,17 @@ sets the keymap options (string). See the Options section in
 .B "xkeyboard-config(7)."
 .RE
 .RE
+.TP 7
+.BI "repeat-rate=" "40"
+sets the rate of repeating keys in characters per second (unsigned integer)
+.RE
+.RE
+.TP 7
+.BI "repeat-delay=" "400"
+sets the delay in milliseconds since key down until repeating starts (unsigned
+integer)
+.RE
+.RE
 .SH "TERMINAL SECTION"
 Contains settings for the weston terminal application (weston-terminal). It
 allows to customize the font and shell of the command line interface.
