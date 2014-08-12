@@ -22,6 +22,7 @@
     '<(DEPTH)/build/android/gyp/lint.py',
     '<(DEPTH)/build/android/lint/suppressions.xml',
     '<(DEPTH)/build/android/AndroidManifest.xml',
+    '<(lint_jar_path)',
   ],
   'action': [
     'python', '<(DEPTH)/build/android/gyp/lint.py',
@@ -32,7 +33,7 @@
     '--result-path=<(result_path)',
     '--product-dir=<(PRODUCT_DIR)',
     '--src-dirs=>(src_dirs)',
-    '--classes-dir=<(classes_dir)',
+    '--jar-path=<(lint_jar_path)',
     '--stamp=<(stamp_path)',
     '<(is_enabled)',
   ],

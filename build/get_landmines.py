@@ -30,8 +30,7 @@ def print_landmines(target):
       builder() == 'ninja'):
     print 'Need to clobber winja goma due to backend cwd cache fix.'
   if platform() == 'android':
-    print 'Clobber: To avoid unresolved link errors on Breakpad roll.'
-    print 'Clobber: To get rid of generated files in the wrong package.'
+    print 'Clobber: To delete generated class files (we just use jars now).'
   if platform() == 'win' and builder() == 'ninja':
     print 'Compile on cc_unittests fails due to symbols removed in r185063.'
   if platform() == 'linux' and builder() == 'ninja':

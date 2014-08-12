@@ -20,7 +20,7 @@ _SRC_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__),
 
 
 def _RunLint(lint_path, config_path, processed_config_path, manifest_path,
-             result_path, product_dir, src_dirs, classes_dir):
+             result_path, product_dir, src_dirs, jar_path):
 
   def _RelativizePath(path):
     """Returns relative path to top-level src dir.
@@ -76,7 +76,7 @@ def _RunLint(lint_path, config_path, processed_config_path, manifest_path,
   cmd = [
       lint_path, '-Werror', '--exitcode', '--showall',
       '--config', _RelativizePath(processed_config_path),
-      '--classpath', _RelativizePath(classes_dir),
+      '--classpath', _RelativizePath(jar_path),
       '--xml', _RelativizePath(result_path),
   ]
   for src in src_dirs:
@@ -135,7 +135,7 @@ def main():
   parser.add_option('--result-path', help='Path to XML lint result file.')
   parser.add_option('--product-dir', help='Path to product dir.')
   parser.add_option('--src-dirs', help='Directories containing java files.')
-  parser.add_option('--classes-dir', help='Directory containing class files.')
+  parser.add_option('--jar-path', help='Jar file containing class files.')
   parser.add_option('--stamp', help='Path to touch on success.')
   parser.add_option('--enable', action='store_true',
                     help='Run lint instead of just touching stamp.')
@@ -146,7 +146,7 @@ def main():
       options, parser, required=['lint_path', 'config_path',
                                  'processed_config_path', 'manifest_path',
                                  'result_path', 'product_dir', 'src_dirs',
-                                 'classes_dir'])
+                                 'jar_path'])
 
   src_dirs = build_utils.ParseGypList(options.src_dirs)
 
@@ -156,7 +156,7 @@ def main():
     rc = _RunLint(options.lint_path, options.config_path,
                   options.processed_config_path,
                   options.manifest_path, options.result_path,
-                  options.product_dir, src_dirs, options.classes_dir)
+                  options.product_dir, src_dirs, options.jar_path)
 
   if options.stamp and not rc:
     build_utils.Touch(options.stamp)

@@ -106,7 +106,6 @@
     'strip_stamp': '<(intermediate_dir)/strip.stamp',
     'stripped_libraries_dir': '<(intermediate_dir)/stripped_libraries',
     'strip_additional_stamp': '<(intermediate_dir)/strip_additional.stamp',
-    'classes_dir': '<(intermediate_dir)/classes/2',
     'javac_includes': [],
     'jar_excluded_classes': [],
     'javac_jar_path': '<(intermediate_dir)/<(_target_name).javac.jar',
@@ -646,7 +645,6 @@
       ],
       'action': [
         'python', '<(DEPTH)/build/android/gyp/javac.py',
-        '--classes-dir=<(classes_dir)',
         '--classpath=>(input_jars_paths) <(android_sdk_jar)',
         '--src-gendirs=>(gen_src_dirs)',
         '--javac-includes=<(javac_includes)',
@@ -656,24 +654,6 @@
         '--stamp=<(compile_stamp)',
         '>@(java_sources)',
       ],
-    },
-    {
-      'variables': {
-        'src_dirs': [
-          '<(java_in_dir)/src',
-          '>@(additional_src_dirs)',
-        ],
-        'stamp_path': '<(lint_stamp)',
-        'result_path': '<(lint_result)',
-        'config_path': '<(lint_config)',
-      },
-      'inputs': [
-        '<(compile_stamp)',
-      ],
-      'outputs': [
-        '<(lint_stamp)',
-      ],
-      'includes': [ 'android/lint_action.gypi' ],
     },
     {
       'action_name': 'instr_jar_<(_target_name)',
@@ -692,6 +672,22 @@
         '<(javac_jar_path)',
       ],
       'includes': [ 'android/instr_action.gypi' ],
+    },
+    {
+      'variables': {
+        'src_dirs': [
+          '<(java_in_dir)/src',
+          '>@(additional_src_dirs)',
+        ],
+        'lint_jar_path': '<(jar_path)',
+        'stamp_path': '<(lint_stamp)',
+        'result_path': '<(lint_result)',
+        'config_path': '<(lint_config)',
+      },
+      'outputs': [
+        '<(lint_stamp)',
+      ],
+      'includes': [ 'android/lint_action.gypi' ],
     },
     {
       'action_name': 'obfuscate_<(_target_name)',

@@ -30,6 +30,7 @@
     '<(DEPTH)/build/android/gyp/util/md5_check.py',
     '<(DEPTH)/build/android/gyp/push_libraries.py',
     '<(strip_stamp)',
+    '<(strip_additional_stamp)',
     '<(build_device_config_path)',
   ],
   'outputs': [

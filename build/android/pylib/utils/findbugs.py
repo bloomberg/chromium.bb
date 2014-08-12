@@ -66,16 +66,17 @@ def _Rebaseline(current_warnings_set, known_bugs_file):
   return 0
 
 
-def _GetChromeClasses(release_version):
+def _GetChromeJars(release_version):
   version = 'Debug'
   if release_version:
     version = 'Release'
-  path = os.path.join(constants.DIR_SOURCE_ROOT, 'out', version)
-  cmd = 'find %s -name "*.class"' % path
+  path = os.path.join(constants.DIR_SOURCE_ROOT, 'out', version, 'lib.java')
+  cmd = 'find %s -name "*.jar"' % path
   out = cmd_helper.GetCmdOutput(shlex.split(cmd))
+  out = [p for p in out.splitlines() if not p.endswith('.dex.jar')]
   if not out:
     print 'No classes found in %s' % path
-  return out
+  return ' '.join(out)
 
 
 def _Run(exclude, known_bugs, classes_to_analyze, auxiliary_classes,
@@ -135,7 +136,7 @@ def _Run(exclude, known_bugs, classes_to_analyze, auxiliary_classes,
   if findbug_args:
     cmd = '%s %s ' % (cmd, findbug_args)
 
-  chrome_classes = _GetChromeClasses(release_version)
+  chrome_classes = _GetChromeJars(release_version)
   if not chrome_classes:
     return 1
   cmd = '%s %s ' % (cmd, chrome_classes)
