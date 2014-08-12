@@ -182,9 +182,6 @@ void WebSharedWorkerImpl::stopWorkerThread()
     if (m_mainScriptLoader) {
         m_mainScriptLoader->cancel();
         m_mainScriptLoader.clear();
-        if (client())
-            client()->workerScriptLoadFailed();
-        delete this;
     }
     if (m_workerThread)
         m_workerThread->stop();
@@ -350,16 +347,17 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
 {
     ASSERT(m_loadingDocument);
     ASSERT(m_mainScriptLoader);
-    if (m_askedToTerminate)
-        return;
-    if (m_mainScriptLoader->failed()) {
+    if (m_mainScriptLoader->failed() || m_askedToTerminate) {
         m_mainScriptLoader->cancel();
         if (client())
             client()->workerScriptLoadFailed();
 
         // The SharedWorker was unable to load the initial script, so
-        // shut it down right here.
-        delete this;
+        // shut it down right here unless we're here handling a load
+        // cancellation failure triggered by an explicit shared worker
+        // termination call (via terminateWorkerContext().)
+        if (!m_askedToTerminate)
+            delete this;
         return;
     }
     WorkerThreadStartMode startMode = m_pauseWorkerContextOnStart ? PauseWorkerGlobalScopeOnStart : DontPauseWorkerGlobalScopeOnStart;
