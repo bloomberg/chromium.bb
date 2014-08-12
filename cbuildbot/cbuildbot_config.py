@@ -2242,6 +2242,18 @@ _arm_release.add_config('daisy-release',
   critical_for_chrome=True,
 )
 
+_arm_release.add_config('peach_pi-release',
+  boards=['peach_pi'],
+  useflags=_release['useflags'] + ['highdpi'],
+  important=True,
+)
+
+_arm_release.add_config('nyan_blaze-release',
+  boards=['nyan_blaze'],
+  useflags=_release['useflags'] + ['highdpi'],
+  important=True,
+)
+
 # Now generate generic release configs if we haven't created anything more
 # specific above already.
 def _AddReleaseConfigs():
