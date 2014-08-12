@@ -28,8 +28,8 @@ public class PastePopupMenu implements OnClickListener {
     private int mPositionX;
     private int mPositionY;
     private int mStatusBarHeight;
-    private final View[] mPasteViews;
-    private final int[] mPasteViewLayouts;
+    private View mPasteView;
+    private final int mPasteViewLayout;
     private final int mLineOffsetY;
     private final int mWidthOffsetX;
 
@@ -41,11 +41,6 @@ public class PastePopupMenu implements OnClickListener {
          * Called to initiate a paste after the popup has been tapped.
          */
         void paste();
-
-        /**
-         * @return true iff content can be pasted to a focused editable region.
-         */
-        boolean canPaste();
     }
 
     public PastePopupMenu(View parent, PastePopupMenuDelegate delegate) {
@@ -61,20 +56,12 @@ public class PastePopupMenu implements OnClickListener {
         mContainer.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
         mContainer.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
 
-        final int[] POPUP_LAYOUT_ATTRS = {
-            android.R.attr.textEditPasteWindowLayout,
-            android.R.attr.textEditNoPasteWindowLayout,
-            android.R.attr.textEditSidePasteWindowLayout,
-            android.R.attr.textEditSideNoPasteWindowLayout,
-        };
+        final int[] POPUP_LAYOUT_ATTRS = { android.R.attr.textEditPasteWindowLayout, };
 
-        mPasteViews = new View[POPUP_LAYOUT_ATTRS.length];
-        mPasteViewLayouts = new int[POPUP_LAYOUT_ATTRS.length];
-
+        mPasteView = null;
         TypedArray attrs = mContext.getTheme().obtainStyledAttributes(POPUP_LAYOUT_ATTRS);
-        for (int i = 0; i < attrs.length(); ++i) {
-            mPasteViewLayouts[i] = attrs.getResourceId(attrs.getIndex(i), 0);
-        }
+        mPasteViewLayout = attrs.getResourceId(attrs.getIndex(0), 0);
+
         attrs.recycle();
 
         // Convert line offset dips to pixels.
@@ -95,8 +82,7 @@ public class PastePopupMenu implements OnClickListener {
      * Shows the paste popup at an appropriate location relative to the specified position.
      */
     public void showAt(int x, int y) {
-        if (!canPaste()) return;
-        updateContent(true);
+        updateContent();
         positionAt(x, y);
     }
 
@@ -116,9 +102,7 @@ public class PastePopupMenu implements OnClickListener {
 
     @Override
     public void onClick(View v) {
-        if (canPaste()) {
-            paste();
-        }
+        paste();
         hide();
     }
 
@@ -146,7 +130,6 @@ public class PastePopupMenu implements OnClickListener {
 
         final int screenWidth = mContext.getResources().getDisplayMetrics().widthPixels;
         if (coords[1] < minOffsetY) {
-            updateContent(false);
             // Update dimensions from new view
             contentView = mContainer.getContentView();
             width = contentView.getMeasuredWidth();
@@ -178,41 +161,29 @@ public class PastePopupMenu implements OnClickListener {
         }
     }
 
-    private int viewIndex(boolean onTop) {
-        return (onTop ? 0 : 1 << 1) + (canPaste() ? 0 : 1 << 0);
-    }
-
-    private void updateContent(boolean onTop) {
-        final int viewIndex = viewIndex(onTop);
-        View view = mPasteViews[viewIndex];
-
-        if (view == null) {
-            final int layout = mPasteViewLayouts[viewIndex];
+    private void updateContent() {
+        if (mPasteView == null) {
+            final int layout = mPasteViewLayout;
             LayoutInflater inflater = (LayoutInflater) mContext.
                 getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             if (inflater != null) {
-                view = inflater.inflate(layout, null);
+                mPasteView = inflater.inflate(layout, null);
             }
 
-            if (view == null) {
+            if (mPasteView == null) {
                 throw new IllegalArgumentException("Unable to inflate TextEdit paste window");
             }
 
             final int size = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
-            view.setLayoutParams(new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT));
-            view.measure(size, size);
+            mPasteView.setLayoutParams(
+                    new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT));
+            mPasteView.measure(size, size);
 
-            view.setOnClickListener(this);
-
-            mPasteViews[viewIndex] = view;
+            mPasteView.setOnClickListener(this);
         }
 
-        mContainer.setContentView(view);
-    }
-
-    private boolean canPaste() {
-        return mDelegate.canPaste();
+        mContainer.setContentView(mPasteView);
     }
 
     private void paste() {

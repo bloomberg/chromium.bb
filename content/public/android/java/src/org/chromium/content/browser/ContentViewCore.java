@@ -2438,7 +2438,7 @@ public class ContentViewCore
     @SuppressWarnings("unused")
     @CalledByNative
     private void showPastePopup(int xDip, int yDip) {
-        if (!mHasInsertion) return;
+        if (!mHasInsertion || !canPaste()) return;
         final float contentOffsetYPix = mRenderCoordinates.getContentOffsetYPix();
         getPastePopup().showAt(
             (int) mRenderCoordinates.fromDipToPix(xDip),
@@ -2453,14 +2453,15 @@ public class ContentViewCore
                         mImeAdapter.paste();
                         hideTextHandles();
                     }
-                    public boolean canPaste() {
-                        if (!mFocusedNodeEditable) return false;
-                        return ((ClipboardManager) mContext.getSystemService(
-                                Context.CLIPBOARD_SERVICE)).hasPrimaryClip();
-                    }
                 });
         }
         return mPastePopupMenu;
+    }
+
+    private boolean canPaste() {
+        if (!mFocusedNodeEditable) return false;
+        return ((ClipboardManager) mContext.getSystemService(
+                Context.CLIPBOARD_SERVICE)).hasPrimaryClip();
     }
 
     @SuppressWarnings("unused")
