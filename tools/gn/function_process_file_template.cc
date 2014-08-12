@@ -37,14 +37,8 @@ const char kProcessFileTemplate_Help[] =
     "  The template can be a string or a list. If it is a list, multiple\n"
     "  output strings are generated for each input.\n"
     "\n"
-    "  The following template substrings are used in the template arguments\n"
-    "  and are replaced with the corresponding part of the input file name:\n"
-    "\n"
-    "    {{source}}\n"
-    "        The entire source name.\n"
-    "\n"
-    "    {{source_name_part}}\n"
-    "        The source name with no path or extension.\n"
+    "  The template should contain source expansions to which each name in\n"
+    "  the source list is applied. See \"gn help source_expansion\".\n"
     "\n"
     "Example:\n"
     "\n"
@@ -78,19 +72,34 @@ Value RunProcessFileTemplate(Scope* scope,
                                   scope->GetSourceDir(), &input_files, err))
     return Value();
 
-  // Template.
+  std::vector<std::string> result_files;
   SubstitutionList subst;
-  if (!subst.Parse(args[1], err))
-    return Value();
 
-  std::vector<SourceFile> result_files;
-  SubstitutionWriter::ApplyListToSources(
+  // Template.
+  const Value& template_arg = args[1];
+  if (template_arg.type() == Value::STRING) {
+    // Convert the string to a SubstitutionList with one pattern in it to
+    // simplify the code below.
+    std::vector<std::string> list;
+    list.push_back(template_arg.string_value());
+    if (!subst.Parse(list, template_arg.origin(), err))
+      return Value();
+  } else if (template_arg.type() == Value::LIST) {
+    if (!subst.Parse(template_arg, err))
+      return Value();
+  } else {
+    *err = Err(template_arg, "Not a string or a list.");
+    return Value();
+  }
+
+  SubstitutionWriter::ApplyListToSourcesAsString(
       scope->settings(), subst, input_files, &result_files);
 
+  // Convert the list of strings to the return Value.
   Value ret(function, Value::LIST);
   ret.list_value().reserve(result_files.size());
   for (size_t i = 0; i < result_files.size(); i++)
-    ret.list_value().push_back(Value(function, result_files[i].value()));
+    ret.list_value().push_back(Value(function, result_files[i]));
 
   return ret;
 }
