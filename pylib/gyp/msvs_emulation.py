@@ -760,10 +760,16 @@ class MsvsSettings(object):
         return True
     return False
 
-  def HasExplicitIdlRules(self, spec):
-    """Determine if there's an explicit rule for idl files. When there isn't we
-    need to generate implicit rules to build MIDL .idl files."""
-    return self._HasExplicitRuleForExtension(spec, 'idl')
+  def _HasExplicitIdlActions(self, spec):
+    """Determine if an action should not run midl for .idl files."""
+    return any([action.get('explicit_idl_action', 0)
+                for action in spec.get('actions', [])])
+
+  def HasExplicitIdlRulesOrActions(self, spec):
+    """Determine if there's an explicit rule or action for idl files. When
+    there isn't we need to generate implicit rules to build MIDL .idl files."""
+    return (self._HasExplicitRuleForExtension(spec, 'idl') or
+            self._HasExplicitIdlActions(spec))
 
   def HasExplicitAsmRules(self, spec):
     """Determine if there's an explicit rule for asm files. When there isn't we
