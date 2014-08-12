@@ -157,15 +157,16 @@ NonFrontendDataTypeController::AssociationResult::AssociationResult(
 NonFrontendDataTypeController::AssociationResult::~AssociationResult() {}
 
 // TODO(tim): Legacy controllers are being left behind in componentization
-// effort for now, hence  still having a dependency on ProfileSyncService.
-// That dep can probably be removed without too much work.
+// effort for now, hence passing null DisableTypeCallback and still having
+// a dependency on ProfileSyncService.  That dep can probably be removed
+// without too much work.
 NonFrontendDataTypeController::NonFrontendDataTypeController(
     scoped_refptr<base::MessageLoopProxy> ui_thread,
     const base::Closure& error_callback,
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* sync_service)
-    : DataTypeController(ui_thread, error_callback),
+    : DataTypeController(ui_thread, error_callback, DisableTypeCallback()),
       state_(NOT_RUNNING),
       profile_sync_factory_(profile_sync_factory),
       profile_(profile),
@@ -252,9 +253,7 @@ void DestroyComponentsInBackend(
 
 void NonFrontendDataTypeController::Stop() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (state_ == NOT_RUNNING)
-    return;
+  DCHECK_NE(state_, NOT_RUNNING);
 
   // Deactivate the date type on the UI thread first to stop processing
   // sync server changes. This needs to happen before posting task to destroy
@@ -298,19 +297,21 @@ sync_driver::DataTypeController::State NonFrontendDataTypeController::state()
   return state_;
 }
 
-void NonFrontendDataTypeController::OnSingleDataTypeUnrecoverableError(
-    const syncer::SyncError& error) {
+void NonFrontendDataTypeController::OnSingleDatatypeUnrecoverableError(
+    const tracked_objects::Location& from_here,
+    const std::string& message) {
   DCHECK(IsOnBackendThread());
-  DCHECK_EQ(type(), error.model_type());
-  RecordUnrecoverableError(error.location(), error.message());
-  BrowserThread::PostTask(BrowserThread::UI, error.location(),
+  RecordUnrecoverableError(from_here, message);
+  BrowserThread::PostTask(BrowserThread::UI, from_here,
       base::Bind(&NonFrontendDataTypeController::DisableImpl,
                  this,
-                 error));
+                 from_here,
+                 message));
 }
 
 NonFrontendDataTypeController::NonFrontendDataTypeController()
-    : DataTypeController(base::MessageLoopProxy::current(), base::Closure()),
+    : DataTypeController(base::MessageLoopProxy::current(), base::Closure(),
+                         DisableTypeCallback()),
       state_(NOT_RUNNING),
       profile_sync_factory_(NULL),
       profile_(NULL),
@@ -370,19 +371,22 @@ void NonFrontendDataTypeController::StartDoneImpl(
     RecordStartFailure(start_result);
   }
 
-  start_callback_.Run(start_result, local_merge_result, syncer_merge_result);
+  DCHECK(!start_callback_.is_null());
+  // We have to release the callback before we call it, since it's possible
+  // invoking the callback will trigger a call to STOP(), which will get
+  // confused by the non-NULL start_callback_.
+  StartCallback callback = start_callback_;
+  start_callback_.Reset();
+  callback.Run(start_result, local_merge_result, syncer_merge_result);
 }
 
 void NonFrontendDataTypeController::DisableImpl(
-    const syncer::SyncError& error) {
+    const tracked_objects::Location& from_here,
+    const std::string& message) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!start_callback_.is_null()) {
-    syncer::SyncMergeResult local_merge_result(type());
-    local_merge_result.set_error(error);
-    start_callback_.Run(RUNTIME_ERROR,
-                        local_merge_result,
-                        syncer::SyncMergeResult(type()));
-  }
+  syncer::SyncError error(
+      from_here, syncer::SyncError::DATATYPE_ERROR, message, type());
+  profile_sync_service_->DisableDatatype(error);
 }
 
 void NonFrontendDataTypeController::RecordAssociationTime(

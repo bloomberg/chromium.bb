@@ -149,7 +149,8 @@ class DataTypeController
   friend class base::DeleteHelper<DataTypeController>;
 
   DataTypeController(scoped_refptr<base::MessageLoopProxy> ui_thread,
-                     const base::Closure& error_callback);
+                     const base::Closure& error_callback,
+                     const DisableTypeCallback& disable_callback);
 
   // If the DTC is waiting for models to load, once the models are
   // loaded the datatype service will call this function on DTC to let
@@ -159,12 +160,16 @@ class DataTypeController
   virtual ~DataTypeController();
 
   syncer::UserShare* user_share() const;
+  DisableTypeCallback disable_callback();
 
   // The callback that will be invoked when an unrecoverable error occurs.
   // TODO(sync): protected for use by legacy controllers.
   base::Closure error_callback_;
 
  private:
+  // TODO(tim): Bug 383480. Do we need two callbacks?
+  DisableTypeCallback disable_callback_;
+
   syncer::UserShare* user_share_;
 };
 

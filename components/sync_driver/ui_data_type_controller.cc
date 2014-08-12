@@ -17,7 +17,8 @@ namespace sync_driver {
 
 UIDataTypeController::UIDataTypeController()
     : DataTypeController(base::MessageLoopProxy::current(),
-                         base::Closure()),
+                         base::Closure(),
+                         DisableTypeCallback()),
       sync_factory_(NULL),
       state_(NOT_RUNNING),
       type_(syncer::UNSPECIFIED) {
@@ -26,9 +27,10 @@ UIDataTypeController::UIDataTypeController()
 UIDataTypeController::UIDataTypeController(
     scoped_refptr<base::MessageLoopProxy> ui_thread,
     const base::Closure& error_callback,
+    const DisableTypeCallback& disable_callback,
     syncer::ModelType type,
     SyncApiComponentFactory* sync_factory)
-    : DataTypeController(ui_thread, error_callback),
+    : DataTypeController(ui_thread, error_callback, disable_callback),
       sync_factory_(sync_factory),
       state_(NOT_RUNNING),
       type_(type),
@@ -267,9 +269,6 @@ void UIDataTypeController::Stop() {
   DCHECK(ui_thread_->BelongsToCurrentThread());
   DCHECK(syncer::IsRealDataType(type_));
 
-  if (state_ == NOT_RUNNING)
-    return;
-
   State prev_state = state_;
   state_ = STOPPING;
 
@@ -319,9 +318,8 @@ DataTypeController::State UIDataTypeController::state() const {
   return state_;
 }
 
-void UIDataTypeController::OnSingleDataTypeUnrecoverableError(
-    const syncer::SyncError& error) {
-  DCHECK_EQ(type(), error.model_type());
+void UIDataTypeController::OnSingleDatatypeUnrecoverableError(
+    const tracked_objects::Location& from_here, const std::string& message) {
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures",
                             ModelTypeToHistogramInt(type()),
                             syncer::MODEL_TYPE_COUNT);
@@ -329,6 +327,8 @@ void UIDataTypeController::OnSingleDataTypeUnrecoverableError(
   if (!error_callback_.is_null())
     error_callback_.Run();
   if (!start_callback_.is_null()) {
+    syncer::SyncError error(
+        from_here, syncer::SyncError::DATATYPE_ERROR, message, type());
     syncer::SyncMergeResult local_merge_result(type());
     local_merge_result.set_error(error);
     start_callback_.Run(RUNTIME_ERROR,

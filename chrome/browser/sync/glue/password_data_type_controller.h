@@ -24,7 +24,8 @@ class PasswordDataTypeController : public sync_driver::NonUIDataTypeController {
  public:
   PasswordDataTypeController(
       ProfileSyncComponentsFactory* profile_sync_factory,
-      Profile* profile);
+      Profile* profile,
+      const DisableTypeCallback& disable_callback);
 
   // NonFrontendDataTypeController implementation
   virtual syncer::ModelType type() const OVERRIDE;

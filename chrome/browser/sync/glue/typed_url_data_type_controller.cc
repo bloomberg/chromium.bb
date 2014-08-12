@@ -126,7 +126,7 @@ void TypedUrlDataTypeController::OnSavingBrowserHistoryDisabledChanged() {
           syncer::SyncError::DATATYPE_POLICY_ERROR,
           "History saving is now disabled by policy.",
           syncer::TYPED_URLS);
-      OnSingleDataTypeUnrecoverableError(error);
+      profile_sync_service()->DisableDatatype(error);
     }
   }
 }

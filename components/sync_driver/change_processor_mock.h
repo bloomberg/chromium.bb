@@ -25,8 +25,9 @@ class ChangeProcessorMock
   MOCK_CONST_METHOD0(IsRunning, bool());
   MOCK_METHOD2(OnUnrecoverableError, void(const tracked_objects::Location&,
                                           const std::string&));
-  MOCK_METHOD1(OnSingleDataTypeUnrecoverableError,
-               void(const syncer::SyncError&));
+  MOCK_METHOD2(OnSingleDatatypeUnrecoverableError,
+                     void(const tracked_objects::Location&,
+                          const std::string&));
   MOCK_METHOD3(CreateAndUploadError,
                    syncer::SyncError(const tracked_objects::Location&,
                              const std::string&,

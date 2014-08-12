@@ -12,7 +12,8 @@ using syncer::ModelType;
 namespace sync_driver {
 
 FakeDataTypeController::FakeDataTypeController(ModelType type)
-      : DataTypeController(base::MessageLoopProxy::current(), base::Closure()),
+      : DataTypeController(base::MessageLoopProxy::current(), base::Closure(),
+                           DisableTypeCallback()),
         state_(NOT_RUNNING),
         model_load_delayed_(false),
         type_(type),
@@ -136,8 +137,11 @@ DataTypeController::State FakeDataTypeController::state() const {
   return state_;
 }
 
-void FakeDataTypeController::OnSingleDataTypeUnrecoverableError(
-    const syncer::SyncError& error) {
+void FakeDataTypeController::OnSingleDatatypeUnrecoverableError(
+    const tracked_objects::Location& from_here,
+    const std::string& message) {
+  syncer::SyncError error(
+      from_here, syncer::SyncError::DATATYPE_ERROR, message, type_);
   syncer::SyncMergeResult local_merge_result(type());
   local_merge_result.set_error(error);
   last_start_callback_.Run(

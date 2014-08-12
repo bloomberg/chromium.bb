@@ -113,11 +113,9 @@ bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
   syncer::ReadNode typed_url_root(trans);
   if (typed_url_root.InitTypeRoot(syncer::TYPED_URLS) !=
           syncer::BaseNode::INIT_OK) {
-    syncer::SyncError error(FROM_HERE,
-                            syncer::SyncError::DATATYPE_ERROR,
-                            "No top level folder",
-                            syncer::TYPED_URLS);
-    error_handler()->OnSingleDataTypeUnrecoverableError(error);
+    error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+        "Server did not create the top-level typed_url node. We "
+         "might be running against an out-of-date server.");
     return false;
   }
 
@@ -132,24 +130,47 @@ bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
   if (result == syncer::BaseNode::INIT_OK) {
     model_associator_->WriteToSyncNode(url, visit_vector, &update_node);
   } else if (result == syncer::BaseNode::INIT_FAILED_DECRYPT_IF_NECESSARY) {
-    syncer::SyncError error(FROM_HERE,
-                            syncer::SyncError::DATATYPE_ERROR,
-                            "Failed to decrypt.",
-                            syncer::TYPED_URLS);
-    error_handler()->OnSingleDataTypeUnrecoverableError(error);
-    return false;
+    // TODO(tim): Investigating bug 121587.
+    syncer::Cryptographer* crypto = trans->GetCryptographer();
+    syncer::ModelTypeSet encrypted_types(trans->GetEncryptedTypes());
+    const sync_pb::EntitySpecifics& specifics =
+        update_node.GetEntry()->GetSpecifics();
+    CHECK(specifics.has_encrypted());
+    const bool can_decrypt = crypto->CanDecrypt(specifics.encrypted());
+    const bool agreement = encrypted_types.Has(syncer::TYPED_URLS);
+    if (!agreement && !can_decrypt) {
+      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+          "Could not InitByIdLookup in CreateOrUpdateSyncNode, "
+          " Cryptographer thinks typed urls not encrypted, and CanDecrypt"
+          " failed.");
+      LOG(ERROR) << "Case 1.";
+    } else if (agreement && can_decrypt) {
+      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+          "Could not InitByIdLookup on CreateOrUpdateSyncNode, "
+          " Cryptographer thinks typed urls are encrypted, and CanDecrypt"
+          " succeeded (?!), but DecryptIfNecessary failed.");
+      LOG(ERROR) << "Case 2.";
+    } else if (agreement) {
+      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+          "Could not InitByIdLookup on CreateOrUpdateSyncNode, "
+          " Cryptographer thinks typed urls are encrypted, but CanDecrypt"
+          " failed.");
+      LOG(ERROR) << "Case 3.";
+    } else {
+      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+          "Could not InitByIdLookup on CreateOrUpdateSyncNode, "
+          " Cryptographer thinks typed urls not encrypted, but CanDecrypt"
+          " succeeded (super weird, btw)");
+      LOG(ERROR) << "Case 4.";
+    }
   } else {
     syncer::WriteNode create_node(trans);
     syncer::WriteNode::InitUniqueByCreationResult result =
         create_node.InitUniqueByCreation(syncer::TYPED_URLS,
                                          typed_url_root, tag);
     if (result != syncer::WriteNode::INIT_SUCCESS) {
-
-      syncer::SyncError error(FROM_HERE,
-                              syncer::SyncError::DATATYPE_ERROR,
-                              "Failed to create sync node",
-                              syncer::TYPED_URLS);
-      error_handler()->OnSingleDataTypeUnrecoverableError(error);
+      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+          "Failed to create typed_url sync node.");
       return false;
     }
 
@@ -173,11 +194,8 @@ void TypedUrlChangeProcessor::HandleURLsDeleted(
 
   if (details->all_history) {
     if (!model_associator_->DeleteAllNodes(&trans)) {
-      syncer::SyncError error(FROM_HERE,
-                              syncer::SyncError::DATATYPE_ERROR,
-                              "Failed to delete local nodes.",
-                              syncer::TYPED_URLS);
-      error_handler()->OnSingleDataTypeUnrecoverableError(error);
+      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+          std::string());
       return;
     }
   } else {
@@ -236,11 +254,8 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
   syncer::ReadNode typed_url_root(trans);
   if (typed_url_root.InitTypeRoot(syncer::TYPED_URLS) !=
           syncer::BaseNode::INIT_OK) {
-    syncer::SyncError error(FROM_HERE,
-                            syncer::SyncError::DATATYPE_ERROR,
-                            "Failed to init type root.",
-                            syncer::TYPED_URLS);
-    error_handler()->OnSingleDataTypeUnrecoverableError(error);
+    error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+        "TypedUrl root node lookup failed.");
     return;
   }
 
@@ -261,11 +276,8 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
 
     syncer::ReadNode sync_node(trans);
     if (sync_node.InitByIdLookup(it->id) != syncer::BaseNode::INIT_OK) {
-      syncer::SyncError error(FROM_HERE,
-                              syncer::SyncError::DATATYPE_ERROR,
-                              "Failed to init sync node.",
-                              syncer::TYPED_URLS);
-      error_handler()->OnSingleDataTypeUnrecoverableError(error);
+      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+          "TypedUrl node lookup failed.");
       return;
     }
 

@@ -9,7 +9,7 @@ namespace sync_driver {
 ProxyDataTypeController::ProxyDataTypeController(
     scoped_refptr<base::MessageLoopProxy> ui_thread,
     syncer::ModelType type)
-    : DataTypeController(ui_thread, base::Closure()),
+    : DataTypeController(ui_thread, base::Closure(), DisableTypeCallback()),
       state_(NOT_RUNNING),
       type_(type) {
   DCHECK(syncer::ProxyTypes().Has(type_));
@@ -61,8 +61,8 @@ DataTypeController::State ProxyDataTypeController::state() const {
   return state_;
 }
 
-void ProxyDataTypeController::OnSingleDataTypeUnrecoverableError(
-    const syncer::SyncError& error) {
+void ProxyDataTypeController::OnSingleDatatypeUnrecoverableError(
+    const tracked_objects::Location& from_here, const std::string& message) {
   NOTIMPLEMENTED();
 }
 

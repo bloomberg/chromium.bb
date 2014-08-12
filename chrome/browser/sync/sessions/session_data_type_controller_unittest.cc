@@ -103,7 +103,8 @@ class SessionDataTypeControllerTest
         &profile_sync_factory_,
         &profile_,
         synced_window_getter_.get(),
-        local_device_.get());
+        local_device_.get(),
+        sync_driver::DataTypeController::DisableTypeCallback());
 
     load_finished_ = false;
     last_type_ = syncer::UNSPECIFIED;

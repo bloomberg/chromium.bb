@@ -153,7 +153,8 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
 
     autofill_dtc_ =
         new AutofillDataTypeController(
-            &profile_sync_factory_, &profile_);
+            &profile_sync_factory_, &profile_,
+            sync_driver::DataTypeController::DisableTypeCallback());
   }
 
   // Passed to AutofillDTC::Start().

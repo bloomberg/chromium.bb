@@ -68,8 +68,9 @@ class NonFrontendDataTypeController : public sync_driver::DataTypeController {
 
   // DataTypeErrorHandler interface.
   // Note: this is performed on the datatype's thread.
-  virtual void OnSingleDataTypeUnrecoverableError(
-      const syncer::SyncError& error) OVERRIDE;
+  virtual void OnSingleDatatypeUnrecoverableError(
+      const tracked_objects::Location& from_here,
+      const std::string& message) OVERRIDE;
 
   // Callback to receive background association results.
   struct AssociationResult {
@@ -146,7 +147,8 @@ class NonFrontendDataTypeController : public sync_driver::DataTypeController {
 
   // The actual implementation of Disabling the datatype. This happens
   // on the UI thread.
-  virtual void DisableImpl(const syncer::SyncError& error);
+  virtual void DisableImpl(const tracked_objects::Location& from_here,
+                           const std::string& message);
 
   // Record association time. Called on Datatype's thread.
   virtual void RecordAssociationTime(base::TimeDelta time);

@@ -30,6 +30,7 @@ std::string IdToHash(const std::string extension_id) {
 }  // namespace
 
 ExtensionBackedDataTypeController::ExtensionBackedDataTypeController(
+    const DisableTypeCallback& disable_callback,
     syncer::ModelType type,
     const std::string& extension_hash,
     sync_driver::SyncApiComponentFactory* sync_factory,
@@ -37,6 +38,7 @@ ExtensionBackedDataTypeController::ExtensionBackedDataTypeController(
     : UIDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           base::Bind(&ChromeReportUnrecoverableError),
+          disable_callback,
           type,
           sync_factory),
       extension_hash_(extension_hash),
@@ -73,16 +75,20 @@ void ExtensionBackedDataTypeController::OnExtensionUnloaded(
     const extensions::Extension* extension,
     extensions::UnloadedExtensionInfo::Reason reason) {
   if (DoesExtensionMatch(*extension)) {
+    ProfileSyncService* sync_service =
+        ProfileSyncServiceFactory::GetForProfile(profile_);
+
     // This will trigger purging the datatype from the sync directory. This
     // may not always be the right choice, especially in the face of transient
     // unloads (e.g. for permission changes). If that becomes a large enough
     // issue, we should consider using the extension unload reason to just
     // trigger a reconfiguration without disabling (type will be unready).
-    syncer::SyncError error(FROM_HERE,
-                            syncer::SyncError::DATATYPE_POLICY_ERROR,
-                            "Extension unloaded",
-                            type());
-    OnSingleDataTypeUnrecoverableError(error);
+    syncer::SyncError error(
+        FROM_HERE,
+        syncer::SyncError::DATATYPE_ERROR,
+        "Extension unloaded",
+        type());
+    sync_service->DisableDatatype(error);
   }
 }
 

@@ -22,10 +22,12 @@ SessionDataTypeController::SessionDataTypeController(
     sync_driver::SyncApiComponentFactory* sync_factory,
     Profile* profile,
     SyncedWindowDelegatesGetter* synced_window_getter,
-    LocalDeviceInfoProvider* local_device)
+    LocalDeviceInfoProvider* local_device,
+    const DisableTypeCallback& disable_callback)
     : UIDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           base::Bind(&ChromeReportUnrecoverableError),
+          disable_callback,
           syncer::SESSIONS,
           sync_factory),
       profile_(profile),

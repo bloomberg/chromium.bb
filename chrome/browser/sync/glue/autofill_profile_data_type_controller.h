@@ -26,7 +26,8 @@ class AutofillProfileDataTypeController
  public:
   AutofillProfileDataTypeController(
       ProfileSyncComponentsFactory* profile_sync_factory,
-      Profile* profile);
+      Profile* profile,
+      const DisableTypeCallback& disable_callback);
 
   // NonUIDataTypeController implementation.
   virtual syncer::ModelType type() const OVERRIDE;

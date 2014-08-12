@@ -34,6 +34,7 @@ class UIDataTypeController : public DataTypeController {
   UIDataTypeController(
       scoped_refptr<base::MessageLoopProxy> ui_thread,
       const base::Closure& error_callback,
+      const DisableTypeCallback& disable_callback,
       syncer::ModelType type,
       SyncApiComponentFactory* sync_factory);
 
@@ -49,8 +50,9 @@ class UIDataTypeController : public DataTypeController {
   virtual State state() const OVERRIDE;
 
   // DataTypeErrorHandler interface.
-  virtual void OnSingleDataTypeUnrecoverableError(
-      const syncer::SyncError& error) OVERRIDE;
+  virtual void OnSingleDatatypeUnrecoverableError(
+      const tracked_objects::Location& from_here,
+      const std::string& message) OVERRIDE;
 
   // Used by tests to override the factory used to create
   // GenericChangeProcessors.

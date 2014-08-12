@@ -24,8 +24,9 @@ NonUIDataTypeController::CreateSharedChangeProcessor() {
 NonUIDataTypeController::NonUIDataTypeController(
     scoped_refptr<base::MessageLoopProxy> ui_thread,
     const base::Closure& error_callback,
+    const DisableTypeCallback& disable_callback,
     SyncApiComponentFactory* sync_factory)
-    : DataTypeController(ui_thread, error_callback),
+    : DataTypeController(ui_thread, error_callback, disable_callback),
       sync_factory_(sync_factory),
       state_(NOT_RUNNING),
       ui_thread_(ui_thread) {
@@ -110,7 +111,6 @@ void NonUIDataTypeController::StartAssociating(
 
 void NonUIDataTypeController::Stop() {
   DCHECK(ui_thread_->BelongsToCurrentThread());
-
   if (state() == NOT_RUNNING)
     return;
 
@@ -166,20 +166,22 @@ DataTypeController::State NonUIDataTypeController::state() const {
   return state_;
 }
 
-void NonUIDataTypeController::OnSingleDataTypeUnrecoverableError(
-    const syncer::SyncError& error) {
+void NonUIDataTypeController::OnSingleDatatypeUnrecoverableError(
+    const tracked_objects::Location& from_here, const std::string& message) {
   DCHECK(!ui_thread_->BelongsToCurrentThread());
   // TODO(tim): We double-upload some errors.  See bug 383480.
   if (!error_callback_.is_null())
     error_callback_.Run();
-  ui_thread_->PostTask(error.location(),
+  ui_thread_->PostTask(from_here,
       base::Bind(&NonUIDataTypeController::DisableImpl,
                  this,
-                 error));
+                 from_here,
+                 message));
 }
 
 NonUIDataTypeController::NonUIDataTypeController()
-    : DataTypeController(base::MessageLoopProxy::current(), base::Closure()),
+    : DataTypeController(base::MessageLoopProxy::current(), base::Closure(),
+                         DisableTypeCallback()),
       sync_factory_(NULL) {}
 
 NonUIDataTypeController::~NonUIDataTypeController() {}
@@ -270,12 +272,15 @@ void NonUIDataTypeController::AbortModelLoad() {
 }
 
 void NonUIDataTypeController::DisableImpl(
-    const syncer::SyncError& error) {
+    const tracked_objects::Location& from_here,
+    const std::string& message) {
   DCHECK(ui_thread_->BelongsToCurrentThread());
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures",
                             ModelTypeToHistogramInt(type()),
                             syncer::MODEL_TYPE_COUNT);
   if (!start_callback_.is_null()) {
+    syncer::SyncError error(
+        from_here, syncer::SyncError::DATATYPE_ERROR, message, type());
     syncer::SyncMergeResult local_merge_result(type());
     local_merge_result.set_error(error);
     start_callback_.Run(RUNTIME_ERROR,

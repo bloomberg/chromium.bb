@@ -14,10 +14,12 @@ namespace browser_sync {
 
 DeviceInfoDataTypeController::DeviceInfoDataTypeController(
     sync_driver::SyncApiComponentFactory* sync_factory,
-    LocalDeviceInfoProvider* local_device_info_provider)
+    LocalDeviceInfoProvider* local_device_info_provider,
+    const DisableTypeCallback& disable_callback)
     : UIDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           base::Bind(&ChromeReportUnrecoverableError),
+          disable_callback,
           syncer::DEVICE_INFO,
           sync_factory),
       local_device_info_provider_(local_device_info_provider) {

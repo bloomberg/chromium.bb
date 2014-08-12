@@ -38,7 +38,8 @@ class DeviceInfoDataTypeControllerTest : public testing::Test {
 
     controller_ = new DeviceInfoDataTypeController(
         &profile_sync_factory_,
-        local_device_.get());
+        local_device_.get(),
+        DataTypeController::DisableTypeCallback());
 
     load_finished_ = false;
     last_type_ = syncer::UNSPECIFIED;

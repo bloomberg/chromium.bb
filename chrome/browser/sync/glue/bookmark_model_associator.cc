@@ -730,12 +730,9 @@ void BookmarkModelAssociator::PersistAssociations() {
       int64 sync_id = *iter;
       syncer::WriteNode sync_node(&trans);
       if (sync_node.InitByIdLookup(sync_id) != syncer::BaseNode::INIT_OK) {
-        syncer::SyncError error(
+        unrecoverable_error_handler_->OnSingleDatatypeUnrecoverableError(
             FROM_HERE,
-            syncer::SyncError::DATATYPE_ERROR,
-            "Could not lookup bookmark node for ID persistence.",
-            syncer::BOOKMARKS);
-        unrecoverable_error_handler_->OnSingleDataTypeUnrecoverableError(error);
+            "Could not lookup bookmark node for ID persistence.");
         return;
       }
       const BookmarkNode* node = GetChromeNodeFromSyncId(sync_id);

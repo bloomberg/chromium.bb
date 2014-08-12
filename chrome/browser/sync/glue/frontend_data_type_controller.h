@@ -62,8 +62,9 @@ class FrontendDataTypeController : public sync_driver::DataTypeController {
   virtual State state() const OVERRIDE;
 
   // DataTypeErrorHandler interface.
-  virtual void OnSingleDataTypeUnrecoverableError(
-      const syncer::SyncError& error) OVERRIDE;
+  virtual void OnSingleDatatypeUnrecoverableError(
+      const tracked_objects::Location& from_here,
+      const std::string& message) OVERRIDE;
 
  protected:
   friend class FrontendDataTypeControllerMock;
