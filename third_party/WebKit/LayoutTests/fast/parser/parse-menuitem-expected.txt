@@ -1,0 +1,13 @@
+This test checks parsing of menuitem tag which is a self closing tag with no end tag.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS document.getElementById('div').innerHTML is "<menuitem>"
+PASS document.getElementById('menu').innerHTML is "<menuitem id=\"first_item\"><menuitem id=\"second_item\">"
+PASS document.getElementById('first_item').firstChild is null
+PASS document.getElementById('menu').firstChild.nextSibling is document.getElementById('second_item')
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

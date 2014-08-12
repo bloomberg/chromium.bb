@@ -18,6 +18,8 @@
  */
 
 interface HTMLMenuElement : HTMLElement {
+    [RuntimeEnabled=ContextMenu, Reflect] attribute DOMString type;
+    [RuntimeEnabled=ContextMenu, Reflect] attribute DOMString label;
     [Reflect] attribute boolean compact;
 };
 

@@ -71,6 +71,18 @@ PASS e = make('menu'); e.removeAttribute('compact'); e.compact is false
 PASS e = make('menu'); e.setAttribute('compact', ''); e.compact is true
 PASS e = make('menu'); e.setAttribute('compact', 'x'); e.compact = false; e.getAttribute('compact') is null
 PASS e = make('menu'); e.setAttribute('compact', 'x'); e.compact = true; e.getAttribute('compact') is ''
+PASS e = make('menuitem'); e.removeAttribute('checked'); e.checked is false
+PASS e = make('menuitem'); e.setAttribute('checked', ''); e.checked is true
+PASS e = make('menuitem'); e.setAttribute('checked', 'x'); e.checked = false; e.getAttribute('checked') is null
+PASS e = make('menuitem'); e.setAttribute('checked', 'x'); e.checked = true; e.getAttribute('checked') is ''
+PASS e = make('menuitem'); e.removeAttribute('default'); e.default is false
+PASS e = make('menuitem'); e.setAttribute('default', ''); e.default is true
+PASS e = make('menuitem'); e.setAttribute('default', 'x'); e.default = false; e.getAttribute('default') is null
+PASS e = make('menuitem'); e.setAttribute('default', 'x'); e.default = true; e.getAttribute('default') is ''
+PASS e = make('menuitem'); e.removeAttribute('disabled'); e.disabled is false
+PASS e = make('menuitem'); e.setAttribute('disabled', ''); e.disabled is true
+PASS e = make('menuitem'); e.setAttribute('disabled', 'x'); e.disabled = false; e.getAttribute('disabled') is null
+PASS e = make('menuitem'); e.setAttribute('disabled', 'x'); e.disabled = true; e.getAttribute('disabled') is ''
 PASS e = make('object'); e.removeAttribute('declare'); e.declare is false
 PASS e = make('object'); e.setAttribute('declare', ''); e.declare is true
 PASS e = make('object'); e.setAttribute('declare', 'x'); e.declare = false; e.getAttribute('declare') is null

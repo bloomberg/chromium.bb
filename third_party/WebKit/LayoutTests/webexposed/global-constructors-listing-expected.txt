@@ -166,6 +166,7 @@ HTMLMapElement
 HTMLMarqueeElement
 HTMLMediaElement
 HTMLMenuElement
+HTMLMenuItemElement
 HTMLMetaElement
 HTMLMeterElement
 HTMLModElement

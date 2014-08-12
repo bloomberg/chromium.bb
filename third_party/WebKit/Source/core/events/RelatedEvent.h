@@ -23,8 +23,6 @@ public:
     virtual ~RelatedEvent();
 
     EventTarget* relatedTarget() const { return m_relatedTarget.get(); }
-    void setRelatedTarget(EventTarget* relatedTarget) { m_relatedTarget = relatedTarget; }
-
 
     virtual const AtomicString& interfaceName() const OVERRIDE { return EventNames::RelatedEvent; }
     virtual bool isRelatedEvent() const OVERRIDE { return true; }

@@ -178,6 +178,126 @@ PASS element.setAttribute("name", 456); element.name is "456"
 PASS element.getAttribute("name") is "456"
 
 
+Reflected DOMString attribute test for menu/@type
+Initial value:
+PASS element.type is ""
+PASS element.getAttribute("type") is null
+Setting a value via the IDL attribute:
+PASS element.type = "foo"; element.type is "foo"
+PASS element.getAttribute("type") is "foo"
+Setting a value via the content attribute:
+PASS element.setAttribute("type", " bar\n"); element.type is " bar\n"
+PASS element.getAttribute("type") is " bar\n"
+Setting null via the IDL attribute:
+PASS element.type = null; element.type is "null"
+PASS element.getAttribute("type") is "null"
+Setting null via the content attribute:
+PASS element.setAttribute("type", null); element.type is "null"
+PASS element.getAttribute("type") is "null"
+Setting undefined via the IDL attribute:
+PASS element.type = undefined; element.type is "undefined"
+PASS element.getAttribute("type") is "undefined"
+Setting undefined via the content attribute:
+PASS element.setAttribute("type", undefined); element.type is "undefined"
+PASS element.getAttribute("type") is "undefined"
+Setting non-string via the IDL attribute:
+PASS element.type = 123; element.type is "123"
+PASS element.getAttribute("type") is "123"
+Setting non-string via the content attribute:
+PASS element.setAttribute("type", 456); element.type is "456"
+PASS element.getAttribute("type") is "456"
+
+
+Reflected DOMString attribute test for menu/@label
+Initial value:
+PASS element.label is ""
+PASS element.getAttribute("label") is null
+Setting a value via the IDL attribute:
+PASS element.label = "foo"; element.label is "foo"
+PASS element.getAttribute("label") is "foo"
+Setting a value via the content attribute:
+PASS element.setAttribute("label", " bar\n"); element.label is " bar\n"
+PASS element.getAttribute("label") is " bar\n"
+Setting null via the IDL attribute:
+PASS element.label = null; element.label is "null"
+PASS element.getAttribute("label") is "null"
+Setting null via the content attribute:
+PASS element.setAttribute("label", null); element.label is "null"
+PASS element.getAttribute("label") is "null"
+Setting undefined via the IDL attribute:
+PASS element.label = undefined; element.label is "undefined"
+PASS element.getAttribute("label") is "undefined"
+Setting undefined via the content attribute:
+PASS element.setAttribute("label", undefined); element.label is "undefined"
+PASS element.getAttribute("label") is "undefined"
+Setting non-string via the IDL attribute:
+PASS element.label = 123; element.label is "123"
+PASS element.getAttribute("label") is "123"
+Setting non-string via the content attribute:
+PASS element.setAttribute("label", 456); element.label is "456"
+PASS element.getAttribute("label") is "456"
+
+
+Reflected DOMString attribute test for menuitem/@type
+Initial value:
+PASS element.type is ""
+PASS element.getAttribute("type") is null
+Setting a value via the IDL attribute:
+PASS element.type = "foo"; element.type is "foo"
+PASS element.getAttribute("type") is "foo"
+Setting a value via the content attribute:
+PASS element.setAttribute("type", " bar\n"); element.type is " bar\n"
+PASS element.getAttribute("type") is " bar\n"
+Setting null via the IDL attribute:
+PASS element.type = null; element.type is "null"
+PASS element.getAttribute("type") is "null"
+Setting null via the content attribute:
+PASS element.setAttribute("type", null); element.type is "null"
+PASS element.getAttribute("type") is "null"
+Setting undefined via the IDL attribute:
+PASS element.type = undefined; element.type is "undefined"
+PASS element.getAttribute("type") is "undefined"
+Setting undefined via the content attribute:
+PASS element.setAttribute("type", undefined); element.type is "undefined"
+PASS element.getAttribute("type") is "undefined"
+Setting non-string via the IDL attribute:
+PASS element.type = 123; element.type is "123"
+PASS element.getAttribute("type") is "123"
+Setting non-string via the content attribute:
+PASS element.setAttribute("type", 456); element.type is "456"
+PASS element.getAttribute("type") is "456"
+
+
+Reflected DOMString attribute test for menuitem/@label
+Initial value:
+PASS element.label is ""
+PASS element.getAttribute("label") is null
+Setting a value via the IDL attribute:
+PASS element.label = "foo"; element.label is "foo"
+PASS element.getAttribute("label") is "foo"
+Setting a value via the content attribute:
+PASS element.setAttribute("label", " bar\n"); element.label is " bar\n"
+PASS element.getAttribute("label") is " bar\n"
+Setting null via the IDL attribute:
+PASS element.label = null; element.label is "null"
+PASS element.getAttribute("label") is "null"
+Setting null via the content attribute:
+PASS element.setAttribute("label", null); element.label is "null"
+PASS element.getAttribute("label") is "null"
+Setting undefined via the IDL attribute:
+PASS element.label = undefined; element.label is "undefined"
+PASS element.getAttribute("label") is "undefined"
+Setting undefined via the content attribute:
+PASS element.setAttribute("label", undefined); element.label is "undefined"
+PASS element.getAttribute("label") is "undefined"
+Setting non-string via the IDL attribute:
+PASS element.label = 123; element.label is "123"
+PASS element.getAttribute("label") is "123"
+Setting non-string via the content attribute:
+PASS element.setAttribute("label", 456); element.label is "456"
+PASS element.getAttribute("label") is "456"
+
+
 Reflected DOMString attribute test for object/@name
 Initial value:
 PASS element.name is ""

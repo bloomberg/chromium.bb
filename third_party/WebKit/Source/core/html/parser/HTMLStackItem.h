@@ -31,6 +31,7 @@
 #include "core/SVGNames.h"
 #include "core/dom/Element.h"
 #include "core/html/parser/AtomicHTMLToken.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/AtomicString.h"
@@ -178,6 +179,7 @@ public:
             || tagName == HTMLNames::mainTag
             || tagName == HTMLNames::marqueeTag
             || tagName == HTMLNames::menuTag
+            || (RuntimeEnabledFeatures::contextMenuEnabled() && tagName == HTMLNames::menuitemTag)
             || tagName == HTMLNames::metaTag
             || tagName == HTMLNames::navTag
             || tagName == HTMLNames::noembedTag

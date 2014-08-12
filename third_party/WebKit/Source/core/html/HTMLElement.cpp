@@ -102,6 +102,7 @@ bool HTMLElement::ieForbidsInsertHTML() const
         || hasTagName(imgTag)
         || hasTagName(inputTag)
         || hasTagName(linkTag)
+        || (RuntimeEnabledFeatures::contextMenuEnabled() && hasTagName(menuitemTag))
         || hasTagName(metaTag)
         || hasTagName(paramTag)
         || hasTagName(sourceTag)

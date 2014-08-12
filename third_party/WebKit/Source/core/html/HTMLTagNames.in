@@ -82,6 +82,7 @@ map
 mark interfaceName=HTMLElement
 marquee
 menu
+menuitem interfaceName=HTMLMenuItemElement, runtimeEnabled=contextMenu
 meta
 meter interfaceName=HTMLMeterElement
 nav interfaceName=HTMLElement
