@@ -45,7 +45,6 @@ namespace chrome {
 
 namespace {
 
-const char kHideVerbatimFlagName[] = "hide_verbatim";
 const char kPrefetchSearchResultsOnSRP[] = "prefetch_results_srp";
 const char kAllowPrefetchNonDefaultMatch[] = "allow_prefetch_non_default_match";
 const char kPrerenderInstantUrlOnOmniboxFocus[] =
@@ -578,12 +577,6 @@ bool ShouldReuseInstantSearchBasePage() {
 
 GURL GetLocalInstantURL(Profile* profile) {
   return GURL(chrome::kChromeSearchLocalNtpUrl);
-}
-
-bool ShouldHideTopVerbatimMatch() {
-  FieldTrialFlags flags;
-  return GetFieldTrialInfo(&flags) && GetBoolValueForFlagWithDefault(
-      kHideVerbatimFlagName, false, flags);
 }
 
 DisplaySearchButtonConditions GetDisplaySearchButtonConditions() {

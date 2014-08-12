@@ -54,6 +54,11 @@ bool GetBoolValueForFlagWithDefault(const std::string& flag,
                                     bool default_value,
                                     const FieldTrialFlags& flags);
 
+// Returns true if 'hide_verbatim' flag is enabled in field trials
+// to hide the top match in the native suggestions dropdown if it is a verbatim
+// match.  See comments on ShouldHideTopMatch in autocomplete_result.h.
+bool ShouldHideTopVerbatimMatch();
+
 }  // namespace chrome
 
 #endif  // COMPONENTS_SEARCH_SEARCH_H_

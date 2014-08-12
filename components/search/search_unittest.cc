@@ -130,4 +130,36 @@ TEST_F(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoControlFlags) {
   EXPECT_EQ(3ul, flags.size());
 }
 
+typedef EmbeddedSearchFieldTrialTest ShouldHideTopVerbatimTest;
+
+TEST_F(ShouldHideTopVerbatimTest, DoNotHideByDefault) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
+                                                     "Control"));
+  EXPECT_FALSE(ShouldHideTopVerbatimMatch());
+}
+
+TEST_F(ShouldHideTopVerbatimTest, DoNotHideInInstantExtended) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
+                                                     "Group1"));
+  EXPECT_FALSE(ShouldHideTopVerbatimMatch());
+}
+
+TEST_F(ShouldHideTopVerbatimTest, EnableByFlagInInstantExtended) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
+                                                     "Group1 hide_verbatim:1"));
+  EXPECT_TRUE(ShouldHideTopVerbatimMatch());
+}
+
+TEST_F(ShouldHideTopVerbatimTest, EnableByFlagOutsideInstantExtended) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Controll1 hide_verbatim:1"));
+  EXPECT_TRUE(ShouldHideTopVerbatimMatch());
+}
+
+TEST_F(ShouldHideTopVerbatimTest, DisableByFlag) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
+                                                     "Group1 hide_verbatim:0"));
+  EXPECT_FALSE(ShouldHideTopVerbatimMatch());
+}
+
 }  // namespace chrome

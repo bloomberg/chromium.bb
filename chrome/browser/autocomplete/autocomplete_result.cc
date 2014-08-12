@@ -10,13 +10,13 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/search/search.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/omnibox/autocomplete_input.h"
 #include "components/omnibox/autocomplete_match.h"
 #include "components/omnibox/autocomplete_provider.h"
 #include "components/omnibox/omnibox_field_trial.h"
+#include "components/search/search.h"
 #include "components/url_fixer/url_fixer.h"
 
 using metrics::OmniboxEventProto;

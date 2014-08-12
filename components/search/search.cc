@@ -35,6 +35,8 @@ const uint64 kEmbeddedSearchEnabledVersion = 2;
 const uint64 kEmbeddedPageVersionDefault = 2;
 #endif
 
+const char kHideVerbatimFlagName[] = "hide_verbatim";
+
 // Constants for the field trial name and group prefix.
 // Note in M30 and below this field trial was named "InstantExtended" and in
 // M31 was renamed to EmbeddedSearch for clarity and cleanliness.  Since we
@@ -141,6 +143,12 @@ bool GetBoolValueForFlagWithDefault(const std::string& flag,
                                     bool default_value,
                                     const FieldTrialFlags& flags) {
   return !!GetUInt64ValueForFlagWithDefault(flag, default_value ? 1 : 0, flags);
+}
+
+bool ShouldHideTopVerbatimMatch() {
+  FieldTrialFlags flags;
+  return GetFieldTrialInfo(&flags) && GetBoolValueForFlagWithDefault(
+      kHideVerbatimFlagName, false, flags);
 }
 
 }  // namespace chrome
