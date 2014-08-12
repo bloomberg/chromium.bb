@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/scoped_observer.h"
+#include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/extension_registry_observer.h"
 
@@ -40,6 +41,13 @@ class ExtensionActionManager : public KeyedService,
       const extensions::Extension& extension) const;
   ExtensionAction* GetSystemIndicator(
       const extensions::Extension& extension) const;
+
+  // Gets the best fit ExtensionAction for the given |extension|. This takes
+  // into account |extension|'s browser or page actions, if any, along with its
+  // name and any declared icons.
+  scoped_ptr<ExtensionAction> GetBestFitAction(
+      const extensions::Extension& extension,
+      extensions::ActionInfo::Type type) const;
 
  private:
   // Implement ExtensionRegistryObserver.

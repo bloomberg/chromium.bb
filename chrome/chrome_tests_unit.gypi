@@ -938,6 +938,7 @@
         'browser/extensions/extension_api_unittest.cc',
         'browser/extensions/extension_api_unittest.h',
         'browser/extensions/extension_action_icon_factory_unittest.cc',
+        'browser/extensions/extension_action_manager_unittest.cc',
         'browser/extensions/extension_action_unittest.cc',
         'browser/extensions/extension_context_menu_model_unittest.cc',
         'browser/extensions/extension_creator_filter_unittest.cc',

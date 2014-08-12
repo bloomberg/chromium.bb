@@ -11,9 +11,11 @@
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/extension_action.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "content/public/browser/navigation_controller.h"
@@ -110,19 +112,10 @@ ExtensionAction* ActiveScriptController::GetActionForExtension(
   if (existing != active_script_actions_.end())
     return existing->second.get();
 
-  linked_ptr<ExtensionAction> action(new ExtensionAction(
-      extension->id(), ActionInfo::TYPE_PAGE, ActionInfo()));
-  action->SetTitle(ExtensionAction::kDefaultTabId, extension->name());
+  linked_ptr<ExtensionAction> action(ExtensionActionManager::Get(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()))
+      ->GetBestFitAction(*extension, ActionInfo::TYPE_PAGE).release());
   action->SetIsVisible(ExtensionAction::kDefaultTabId, true);
-
-  const ActionInfo* action_info = ActionInfo::GetPageActionInfo(extension);
-  if (!action_info)
-    action_info = ActionInfo::GetBrowserActionInfo(extension);
-
-  if (action_info && !action_info->default_icon.empty()) {
-    action->set_default_icon(
-        make_scoped_ptr(new ExtensionIconSet(action_info->default_icon)));
-  }
 
   active_script_actions_[extension->id()] = action;
   return action.get();
