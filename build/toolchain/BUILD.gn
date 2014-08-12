@@ -315,16 +315,26 @@ template("prep_toolchain") {
 # Only default prep targets for the default toolchain
 #
 if (nacl_prep == "none") {
-  prep_toolchain("prep_nacl_arm_newlib") {
-    package_arch = "arm"
-    package_libc = "newlib"
+  if (use_nacl_arm) {
+    if (use_newlib) {
+      prep_toolchain("prep_nacl_arm_newlib") {
+        package_arch = "arm"
+        package_libc = "newlib"
+      }
+    }
   }
-  prep_toolchain("prep_nacl_x86_newlib") {
-    package_arch = "x86"
-    package_libc = "newlib"
-  }
-  prep_toolchain("prep_nacl_x86_glibc") {
-    package_arch = "x86"
-    package_libc = "glibc"
+  if (use_nacl_x86 || use_nacl_x64) {
+    if (use_newlib) {
+      prep_toolchain("prep_nacl_x86_newlib") {
+        package_arch = "x86"
+        package_libc = "newlib"
+      }
+    }
+    if (use_glibc) {
+      prep_toolchain("prep_nacl_x86_glibc") {
+        package_arch = "x86"
+        package_libc = "glibc"
+      }
+    }
   }
 }

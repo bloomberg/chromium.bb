@@ -20,13 +20,14 @@ declare_args() {
   # The current NaCl libc and preps stage, none for trusted toolchains.
   nacl_libc = "none"
   nacl_prep = "none"
-  use_newlib = true
-  use_glibc = false
-  use_pnacl = false
 
   use_newlib = true
   use_glibc = false
   use_pnacl = false
+
+  use_nacl_x86 = (cpu_arch == "x86")
+  use_nacl_x64 = ((cpu_arch == "x64") || (os == "win"))
+  use_nacl_arm = (cpu_arch == "arm")
 
   is_android_webview_build = false
 
