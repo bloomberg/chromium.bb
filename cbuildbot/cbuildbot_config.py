@@ -1093,7 +1093,6 @@ _cros_sdk = full_prebuilts.add_config('chromiumos-sdk',
 asan = _config(
   chroot_replace=True,
   profile='asan',
-  useflags=['asan'], # see profile for more
   disk_layout='2gb-rootfs',
   disk_vm_layout='2gb-rootfs-updatable',
   vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],

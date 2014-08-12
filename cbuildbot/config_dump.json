@@ -389,9 +389,7 @@
         "use_chrome_lkgm": false,
         "use_lkgm": false,
         "use_sdk": true,
-        "useflags": [
-            "asan"
-        ],
+        "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
         "vm_test_runs": 1,
@@ -489,9 +487,7 @@
         "use_chrome_lkgm": false,
         "use_lkgm": false,
         "use_sdk": true,
-        "useflags": [
-            "asan"
-        ],
+        "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
         "vm_test_runs": 1,
@@ -1276,9 +1272,7 @@
         "use_chrome_lkgm": false,
         "use_lkgm": true,
         "use_sdk": true,
-        "useflags": [
-            "asan"
-        ],
+        "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
         "vm_test_runs": 1,
@@ -87781,9 +87775,7 @@
         "use_chrome_lkgm": false,
         "use_lkgm": false,
         "use_sdk": true,
-        "useflags": [
-            "asan"
-        ],
+        "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
         "vm_test_runs": 1,
@@ -87881,9 +87873,7 @@
         "use_chrome_lkgm": false,
         "use_lkgm": false,
         "use_sdk": true,
-        "useflags": [
-            "asan"
-        ],
+        "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
         "vm_test_runs": 1,
@@ -88670,9 +88660,7 @@
         "use_chrome_lkgm": false,
         "use_lkgm": true,
         "use_sdk": true,
-        "useflags": [
-            "asan"
-        ],
+        "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_setup_board": true,
         "vm_test_runs": 1,
