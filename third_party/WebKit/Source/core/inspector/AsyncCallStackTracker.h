@@ -32,6 +32,7 @@
 #define AsyncCallStackTracker_h
 
 #include "bindings/core/v8/ScriptValue.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "wtf/Deque.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
@@ -49,13 +50,14 @@ class ExecutionContextTask;
 class MutationObserver;
 class XMLHttpRequest;
 
-class AsyncCallStackTracker {
+class AsyncCallStackTracker FINAL : public NoBaseWillBeGarbageCollectedFinalized<AsyncCallStackTracker> {
     WTF_MAKE_NONCOPYABLE(AsyncCallStackTracker);
 public:
-    class AsyncCallStack : public RefCounted<AsyncCallStack> {
+    class AsyncCallStack FINAL : public RefCountedWillBeGarbageCollectedFinalized<AsyncCallStack> {
     public:
         AsyncCallStack(const String&, const ScriptValue&);
         ~AsyncCallStack();
+        void trace(Visitor*) { }
         String description() const { return m_description; }
         ScriptValue callFrames() const { return m_callFrames; }
     private:
@@ -63,16 +65,49 @@ public:
         ScriptValue m_callFrames;
     };
 
-    typedef Deque<RefPtr<AsyncCallStack>, 4> AsyncCallStackVector;
+    typedef WillBeHeapDeque<RefPtrWillBeMember<AsyncCallStack>, 4> AsyncCallStackVector;
 
-    class AsyncCallChain : public RefCounted<AsyncCallChain> {
+    class AsyncCallChain FINAL : public RefCountedWillBeGarbageCollected<AsyncCallChain> {
     public:
         AsyncCallChain() { }
         AsyncCallChain(const AsyncCallChain& t) : m_callStacks(t.m_callStacks) { }
         AsyncCallStackVector callStacks() const { return m_callStacks; }
+        void trace(Visitor*);
     private:
         friend class AsyncCallStackTracker;
         AsyncCallStackVector m_callStacks;
+    };
+
+    class ExecutionContextData FINAL : public NoBaseWillBeGarbageCollectedFinalized<ExecutionContextData>, public ContextLifecycleObserver {
+        WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    public:
+        ExecutionContextData(AsyncCallStackTracker* tracker, ExecutionContext* executionContext)
+            : ContextLifecycleObserver(executionContext)
+            , m_circularSequentialID(0)
+            , m_tracker(tracker)
+        {
+        }
+
+        virtual void contextDestroyed() OVERRIDE;
+
+        int circularSequentialID();
+
+        void trace(Visitor*);
+
+    private:
+        int m_circularSequentialID;
+
+    public:
+        RawPtrWillBeMember<AsyncCallStackTracker> m_tracker;
+        HashSet<int> m_intervalTimerIds;
+        WillBeHeapHashMap<int, RefPtrWillBeMember<AsyncCallChain> > m_timerCallChains;
+        WillBeHeapHashMap<int, RefPtrWillBeMember<AsyncCallChain> > m_animationFrameCallChains;
+        WillBeHeapHashMap<RawPtrWillBeMember<Event>, RefPtrWillBeMember<AsyncCallChain> > m_eventCallChains;
+        WillBeHeapHashMap<RawPtrWillBeMember<EventTarget>, RefPtrWillBeMember<AsyncCallChain> > m_xhrCallChains;
+        WillBeHeapHashMap<RawPtrWillBeMember<MutationObserver>, RefPtrWillBeMember<AsyncCallChain> > m_mutationObserverCallChains;
+        WillBeHeapHashMap<ExecutionContextTask*, RefPtrWillBeMember<AsyncCallChain> > m_executionContextTaskCallChains;
+        WillBeHeapHashMap<String, RefPtrWillBeMember<AsyncCallChain> > m_v8AsyncTaskCallChains;
+        WillBeHeapHashMap<int, RefPtrWillBeMember<AsyncCallChain> > m_asyncOperationCallChains;
     };
 
     AsyncCallStackTracker();
@@ -115,22 +150,23 @@ public:
     void didFireAsyncCall();
     void clear();
 
+    void trace(Visitor*);
+
 private:
     void willHandleXHREvent(XMLHttpRequest*, Event*);
 
-    PassRefPtr<AsyncCallChain> createAsyncCallChain(const String& description, const ScriptValue& callFrames);
-    void setCurrentAsyncCallChain(ExecutionContext*, PassRefPtr<AsyncCallChain>);
+    PassRefPtrWillBeRawPtr<AsyncCallChain> createAsyncCallChain(const String& description, const ScriptValue& callFrames);
+    void setCurrentAsyncCallChain(ExecutionContext*, PassRefPtrWillBeRawPtr<AsyncCallChain>);
     void clearCurrentAsyncCallChain();
     static void ensureMaxAsyncCallChainDepth(AsyncCallChain*, unsigned);
     bool validateCallFrames(const ScriptValue& callFrames);
 
-    class ExecutionContextData;
     ExecutionContextData* createContextDataIfNeeded(ExecutionContext*);
 
     unsigned m_maxAsyncCallStackDepth;
-    RefPtr<AsyncCallChain> m_currentAsyncCallChain;
+    RefPtrWillBeMember<AsyncCallChain> m_currentAsyncCallChain;
     unsigned m_nestedAsyncCallCount;
-    typedef HashMap<ExecutionContext*, ExecutionContextData*> ExecutionContextDataMap;
+    typedef WillBeHeapHashMap<RawPtrWillBeMember<ExecutionContext>, OwnPtrWillBeMember<ExecutionContextData> > ExecutionContextDataMap;
     ExecutionContextDataMap m_executionContextDataMap;
 };
 

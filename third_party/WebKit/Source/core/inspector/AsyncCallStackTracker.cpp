@@ -33,7 +33,6 @@
 
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8RecursionScope.h"
-#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/events/Event.h"
@@ -56,48 +55,36 @@ static const char enqueueMutationRecordName[] = "Mutation";
 
 namespace blink {
 
-class AsyncCallStackTracker::ExecutionContextData FINAL : public ContextLifecycleObserver {
-    WTF_MAKE_FAST_ALLOCATED;
-public:
-    ExecutionContextData(AsyncCallStackTracker* tracker, ExecutionContext* executionContext)
-        : ContextLifecycleObserver(executionContext)
-        , m_circularSequentialID(0)
-        , m_tracker(tracker)
-    {
-    }
+void AsyncCallStackTracker::ExecutionContextData::contextDestroyed()
+{
+    ASSERT(executionContext());
+    OwnPtrWillBeRawPtr<ExecutionContextData> self = m_tracker->m_executionContextDataMap.take(executionContext());
+    ASSERT(self == this);
+    ContextLifecycleObserver::contextDestroyed();
+}
 
-    virtual void contextDestroyed() OVERRIDE
-    {
-        ASSERT(executionContext());
-        ExecutionContextData* self = m_tracker->m_executionContextDataMap.take(executionContext());
-        ASSERT(self == this);
-        ContextLifecycleObserver::contextDestroyed();
-        delete self;
-    }
+int AsyncCallStackTracker::ExecutionContextData::circularSequentialID()
+{
+    ++m_circularSequentialID;
+    if (m_circularSequentialID <= 0)
+        m_circularSequentialID = 1;
+    return m_circularSequentialID;
+}
 
-    int circularSequentialID()
-    {
-        ++m_circularSequentialID;
-        if (m_circularSequentialID <= 0)
-            m_circularSequentialID = 1;
-        return m_circularSequentialID;
-    }
-
-private:
-    int m_circularSequentialID;
-
-public:
-    AsyncCallStackTracker* m_tracker;
-    HashSet<int> m_intervalTimerIds;
-    HashMap<int, RefPtr<AsyncCallChain> > m_timerCallChains;
-    HashMap<int, RefPtr<AsyncCallChain> > m_animationFrameCallChains;
-    HashMap<Event*, RefPtr<AsyncCallChain> > m_eventCallChains;
-    HashMap<EventTarget*, RefPtr<AsyncCallChain> > m_xhrCallChains;
-    HashMap<MutationObserver*, RefPtr<AsyncCallChain> > m_mutationObserverCallChains;
-    HashMap<ExecutionContextTask*, RefPtr<AsyncCallChain> > m_executionContextTaskCallChains;
-    HashMap<String, RefPtr<AsyncCallChain> > m_v8AsyncTaskCallChains;
-    HashMap<int, RefPtr<AsyncCallChain> > m_asyncOperationCallChains;
-};
+void AsyncCallStackTracker::ExecutionContextData::trace(Visitor* visitor)
+{
+    visitor->trace(m_tracker);
+#if ENABLE(OILPAN)
+    visitor->trace(m_timerCallChains);
+    visitor->trace(m_animationFrameCallChains);
+    visitor->trace(m_eventCallChains);
+    visitor->trace(m_xhrCallChains);
+    visitor->trace(m_mutationObserverCallChains);
+    visitor->trace(m_executionContextTaskCallChains);
+    visitor->trace(m_v8AsyncTaskCallChains);
+    visitor->trace(m_asyncOperationCallChains);
+#endif
+}
 
 static XMLHttpRequest* toXmlHttpRequest(EventTarget* eventTarget)
 {
@@ -107,6 +94,11 @@ static XMLHttpRequest* toXmlHttpRequest(EventTarget* eventTarget)
     if (interfaceName == EventTargetNames::XMLHttpRequestUpload)
         return static_cast<XMLHttpRequestUpload*>(eventTarget)->xmlHttpRequest();
     return 0;
+}
+
+void AsyncCallStackTracker::AsyncCallChain::trace(Visitor* visitor)
+{
+    visitor->trace(m_callStacks);
 }
 
 AsyncCallStackTracker::AsyncCallStack::AsyncCallStack(const String& description, const ScriptValue& callFrames)
@@ -411,19 +403,19 @@ void AsyncCallStackTracker::didFireAsyncCall()
     clearCurrentAsyncCallChain();
 }
 
-PassRefPtr<AsyncCallStackTracker::AsyncCallChain> AsyncCallStackTracker::createAsyncCallChain(const String& description, const ScriptValue& callFrames)
+PassRefPtrWillBeRawPtr<AsyncCallStackTracker::AsyncCallChain> AsyncCallStackTracker::createAsyncCallChain(const String& description, const ScriptValue& callFrames)
 {
     if (callFrames.isEmpty()) {
         ASSERT(m_currentAsyncCallChain);
         return m_currentAsyncCallChain; // Propogate async call stack chain.
     }
-    RefPtr<AsyncCallChain> chain = adoptRef(m_currentAsyncCallChain ? new AsyncCallStackTracker::AsyncCallChain(*m_currentAsyncCallChain) : new AsyncCallStackTracker::AsyncCallChain());
+    RefPtrWillBeRawPtr<AsyncCallChain> chain = adoptRefWillBeNoop(m_currentAsyncCallChain ? new AsyncCallStackTracker::AsyncCallChain(*m_currentAsyncCallChain) : new AsyncCallStackTracker::AsyncCallChain());
     ensureMaxAsyncCallChainDepth(chain.get(), m_maxAsyncCallStackDepth - 1);
-    chain->m_callStacks.prepend(adoptRef(new AsyncCallStackTracker::AsyncCallStack(description, callFrames)));
+    chain->m_callStacks.prepend(adoptRefWillBeNoop(new AsyncCallStackTracker::AsyncCallStack(description, callFrames)));
     return chain.release();
 }
 
-void AsyncCallStackTracker::setCurrentAsyncCallChain(ExecutionContext* context, PassRefPtr<AsyncCallChain> chain)
+void AsyncCallStackTracker::setCurrentAsyncCallChain(ExecutionContext* context, PassRefPtrWillBeRawPtr<AsyncCallChain> chain)
 {
     if (chain && !V8RecursionScope::recursionLevel(toIsolate(context))) {
         // Current AsyncCallChain corresponds to the bottommost JS call frame.
@@ -459,8 +451,8 @@ AsyncCallStackTracker::ExecutionContextData* AsyncCallStackTracker::createContex
 {
     ExecutionContextData* data = m_executionContextDataMap.get(context);
     if (!data) {
-        data = new AsyncCallStackTracker::ExecutionContextData(this, context);
-        m_executionContextDataMap.set(context, data);
+        data = m_executionContextDataMap.set(context, adoptPtrWillBeNoop(new AsyncCallStackTracker::ExecutionContextData(this, context)))
+            .storedValue->value.get();
     }
     return data;
 }
@@ -469,10 +461,15 @@ void AsyncCallStackTracker::clear()
 {
     m_currentAsyncCallChain.clear();
     m_nestedAsyncCallCount = 0;
-    ExecutionContextDataMap copy;
-    m_executionContextDataMap.swap(copy);
-    for (ExecutionContextDataMap::const_iterator it = copy.begin(); it != copy.end(); ++it)
-        delete it->value;
+    m_executionContextDataMap.clear();
+}
+
+void AsyncCallStackTracker::trace(Visitor* visitor)
+{
+    visitor->trace(m_currentAsyncCallChain);
+#if ENABLE(OILPAN)
+    visitor->trace(m_executionContextDataMap);
+#endif
 }
 
 } // namespace blink

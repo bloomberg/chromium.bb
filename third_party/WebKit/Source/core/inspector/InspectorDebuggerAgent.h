@@ -238,6 +238,7 @@ private:
 
     PassRefPtrWillBeRawPtr<JavaScriptCallFrame> topCallFrameSkipUnknownSources();
     String scriptURL(JavaScriptCallFrame*);
+    AsyncCallStackTracker& asyncCallStackTracker() { return *m_asyncCallStackTracker; };
 
     typedef HashMap<String, Script> ScriptsMap;
     typedef HashMap<String, Vector<String> > BreakpointIdToDebugServerBreakpointIdsMap;
@@ -263,7 +264,7 @@ private:
     int m_minFrameCountForSkip;
     bool m_skipAllPauses;
     OwnPtr<ScriptRegexp> m_cachedSkipStackRegExp;
-    AsyncCallStackTracker m_asyncCallStackTracker;
+    OwnPtrWillBeMember<AsyncCallStackTracker> m_asyncCallStackTracker;
 };
 
 } // namespace blink

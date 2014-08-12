@@ -123,6 +123,7 @@ InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedSc
     , m_listener(nullptr)
     , m_skippedStepInCount(0)
     , m_skipAllPauses(false)
+    , m_asyncCallStackTracker(adoptPtrWillBeNoop(new AsyncCallStackTracker()))
 {
 }
 
@@ -221,7 +222,7 @@ void InspectorDebuggerAgent::restore()
             m_skipAllPauses = false;
             m_state->setBoolean(DebuggerAgentState::skipAllPauses, false);
         }
-        m_asyncCallStackTracker.setAsyncCallStackDepth(m_state->getLong(DebuggerAgentState::asyncCallStackDepth));
+        asyncCallStackTracker().setAsyncCallStackDepth(m_state->getLong(DebuggerAgentState::asyncCallStackDepth));
     }
 }
 
@@ -713,185 +714,185 @@ void InspectorDebuggerAgent::cancelPauseOnNextStatement()
 
 void InspectorDebuggerAgent::didInstallTimer(ExecutionContext* context, int timerId, int timeout, bool singleShot)
 {
-    if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.didInstallTimer(context, timerId, singleShot, scriptDebugServer().currentCallFramesForAsyncStack());
+    if (asyncCallStackTracker().isEnabled())
+        asyncCallStackTracker().didInstallTimer(context, timerId, singleShot, scriptDebugServer().currentCallFramesForAsyncStack());
 }
 
 void InspectorDebuggerAgent::didRemoveTimer(ExecutionContext* context, int timerId)
 {
-    if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.didRemoveTimer(context, timerId);
+    if (asyncCallStackTracker().isEnabled())
+        asyncCallStackTracker().didRemoveTimer(context, timerId);
 }
 
 bool InspectorDebuggerAgent::willFireTimer(ExecutionContext* context, int timerId)
 {
-    if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.willFireTimer(context, timerId);
+    if (asyncCallStackTracker().isEnabled())
+        asyncCallStackTracker().willFireTimer(context, timerId);
     return true;
 }
 
 void InspectorDebuggerAgent::didFireTimer()
 {
-    if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.didFireAsyncCall();
+    if (asyncCallStackTracker().isEnabled())
+        asyncCallStackTracker().didFireAsyncCall();
     cancelPauseOnNextStatement();
 }
 
 void InspectorDebuggerAgent::didRequestAnimationFrame(Document* document, int callbackId)
 {
-    if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.didRequestAnimationFrame(document, callbackId, scriptDebugServer().currentCallFramesForAsyncStack());
+    if (asyncCallStackTracker().isEnabled())
+        asyncCallStackTracker().didRequestAnimationFrame(document, callbackId, scriptDebugServer().currentCallFramesForAsyncStack());
 }
 
 void InspectorDebuggerAgent::didCancelAnimationFrame(Document* document, int callbackId)
 {
-    if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.didCancelAnimationFrame(document, callbackId);
+    if (asyncCallStackTracker().isEnabled())
+        asyncCallStackTracker().didCancelAnimationFrame(document, callbackId);
 }
 
 bool InspectorDebuggerAgent::willFireAnimationFrame(Document* document, int callbackId)
 {
-    if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.willFireAnimationFrame(document, callbackId);
+    if (asyncCallStackTracker().isEnabled())
+        asyncCallStackTracker().willFireAnimationFrame(document, callbackId);
     return true;
 }
 
 void InspectorDebuggerAgent::didFireAnimationFrame()
 {
-    if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.didFireAsyncCall();
+    if (asyncCallStackTracker().isEnabled())
+        asyncCallStackTracker().didFireAsyncCall();
 }
 
 void InspectorDebuggerAgent::didEnqueueEvent(EventTarget* eventTarget, Event* event)
 {
-    if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.didEnqueueEvent(eventTarget, event, scriptDebugServer().currentCallFramesForAsyncStack());
+    if (asyncCallStackTracker().isEnabled())
+        asyncCallStackTracker().didEnqueueEvent(eventTarget, event, scriptDebugServer().currentCallFramesForAsyncStack());
 }
 
 void InspectorDebuggerAgent::didRemoveEvent(EventTarget* eventTarget, Event* event)
 {
-    if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.didRemoveEvent(eventTarget, event);
+    if (asyncCallStackTracker().isEnabled())
+        asyncCallStackTracker().didRemoveEvent(eventTarget, event);
 }
 
 void InspectorDebuggerAgent::willHandleEvent(EventTarget* eventTarget, Event* event, EventListener* listener, bool useCapture)
 {
-    if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.willHandleEvent(eventTarget, event, listener, useCapture);
+    if (asyncCallStackTracker().isEnabled())
+        asyncCallStackTracker().willHandleEvent(eventTarget, event, listener, useCapture);
 }
 
 void InspectorDebuggerAgent::didHandleEvent()
 {
-    if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.didFireAsyncCall();
+    if (asyncCallStackTracker().isEnabled())
+        asyncCallStackTracker().didFireAsyncCall();
     cancelPauseOnNextStatement();
 }
 
 void InspectorDebuggerAgent::willLoadXHR(XMLHttpRequest* xhr, ThreadableLoaderClient*, const AtomicString&, const KURL&, bool async, FormData*, const HTTPHeaderMap&, bool)
 {
-    if (m_asyncCallStackTracker.isEnabled() && async)
-        m_asyncCallStackTracker.willLoadXHR(xhr, scriptDebugServer().currentCallFramesForAsyncStack());
+    if (asyncCallStackTracker().isEnabled() && async)
+        asyncCallStackTracker().willLoadXHR(xhr, scriptDebugServer().currentCallFramesForAsyncStack());
 }
 
 void InspectorDebuggerAgent::didDispatchXHRLoadendEvent(XMLHttpRequest* xhr)
 {
-    if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.didLoadXHR(xhr);
+    if (asyncCallStackTracker().isEnabled())
+        asyncCallStackTracker().didLoadXHR(xhr);
 }
 
 void InspectorDebuggerAgent::didEnqueueMutationRecord(ExecutionContext* context, MutationObserver* observer)
 {
-    if (m_asyncCallStackTracker.isEnabled() && !m_asyncCallStackTracker.hasEnqueuedMutationRecord(context, observer))
-        m_asyncCallStackTracker.didEnqueueMutationRecord(context, observer, scriptDebugServer().currentCallFramesForAsyncStack());
+    if (asyncCallStackTracker().isEnabled() && !asyncCallStackTracker().hasEnqueuedMutationRecord(context, observer))
+        asyncCallStackTracker().didEnqueueMutationRecord(context, observer, scriptDebugServer().currentCallFramesForAsyncStack());
 }
 
 void InspectorDebuggerAgent::didClearAllMutationRecords(ExecutionContext* context, MutationObserver* observer)
 {
-    if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.didClearAllMutationRecords(context, observer);
+    if (asyncCallStackTracker().isEnabled())
+        asyncCallStackTracker().didClearAllMutationRecords(context, observer);
 }
 
 void InspectorDebuggerAgent::willDeliverMutationRecords(ExecutionContext* context, MutationObserver* observer)
 {
-    if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.willDeliverMutationRecords(context, observer);
+    if (asyncCallStackTracker().isEnabled())
+        asyncCallStackTracker().willDeliverMutationRecords(context, observer);
 }
 
 void InspectorDebuggerAgent::didDeliverMutationRecords()
 {
-    if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.didFireAsyncCall();
+    if (asyncCallStackTracker().isEnabled())
+        asyncCallStackTracker().didFireAsyncCall();
 }
 
 void InspectorDebuggerAgent::didPostExecutionContextTask(ExecutionContext* context, ExecutionContextTask* task)
 {
-    if (m_asyncCallStackTracker.isEnabled() && !task->taskNameForInstrumentation().isEmpty())
-        m_asyncCallStackTracker.didPostExecutionContextTask(context, task, scriptDebugServer().currentCallFramesForAsyncStack());
+    if (asyncCallStackTracker().isEnabled() && !task->taskNameForInstrumentation().isEmpty())
+        asyncCallStackTracker().didPostExecutionContextTask(context, task, scriptDebugServer().currentCallFramesForAsyncStack());
 }
 
 void InspectorDebuggerAgent::didKillAllExecutionContextTasks(ExecutionContext* context)
 {
-    if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.didKillAllExecutionContextTasks(context);
+    if (asyncCallStackTracker().isEnabled())
+        asyncCallStackTracker().didKillAllExecutionContextTasks(context);
 }
 
 void InspectorDebuggerAgent::willPerformExecutionContextTask(ExecutionContext* context, ExecutionContextTask* task)
 {
-    if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.willPerformExecutionContextTask(context, task);
+    if (asyncCallStackTracker().isEnabled())
+        asyncCallStackTracker().willPerformExecutionContextTask(context, task);
 }
 
 void InspectorDebuggerAgent::didPerformExecutionContextTask()
 {
-    if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.didFireAsyncCall();
+    if (asyncCallStackTracker().isEnabled())
+        asyncCallStackTracker().didFireAsyncCall();
 }
 
 int InspectorDebuggerAgent::traceAsyncOperationStarting(ExecutionContext* context, const String& operationName, int prevOperationId)
 {
-    if (!m_asyncCallStackTracker.isEnabled())
+    if (!asyncCallStackTracker().isEnabled())
         return 0;
     if (prevOperationId)
-        m_asyncCallStackTracker.traceAsyncOperationCompleted(context, prevOperationId);
-    return m_asyncCallStackTracker.traceAsyncOperationStarting(context, operationName, scriptDebugServer().currentCallFramesForAsyncStack());
+        asyncCallStackTracker().traceAsyncOperationCompleted(context, prevOperationId);
+    return asyncCallStackTracker().traceAsyncOperationStarting(context, operationName, scriptDebugServer().currentCallFramesForAsyncStack());
 }
 
 void InspectorDebuggerAgent::traceAsyncOperationCompleted(ExecutionContext* context, int operationId)
 {
-    if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.traceAsyncOperationCompleted(context, operationId);
+    if (asyncCallStackTracker().isEnabled())
+        asyncCallStackTracker().traceAsyncOperationCompleted(context, operationId);
 }
 
 void InspectorDebuggerAgent::traceAsyncOperationCompletedCallbackStarting(ExecutionContext* context, int operationId)
 {
-    if (!m_asyncCallStackTracker.isEnabled())
+    if (!asyncCallStackTracker().isEnabled())
         return;
-    m_asyncCallStackTracker.traceAsyncCallbackStarting(context, operationId);
-    m_asyncCallStackTracker.traceAsyncOperationCompleted(context, operationId);
+    asyncCallStackTracker().traceAsyncCallbackStarting(context, operationId);
+    asyncCallStackTracker().traceAsyncOperationCompleted(context, operationId);
 }
 
 void InspectorDebuggerAgent::traceAsyncCallbackStarting(ExecutionContext* context, int operationId)
 {
-    if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.traceAsyncCallbackStarting(context, operationId);
+    if (asyncCallStackTracker().isEnabled())
+        asyncCallStackTracker().traceAsyncCallbackStarting(context, operationId);
 }
 
 void InspectorDebuggerAgent::traceAsyncCallbackCompleted()
 {
-    if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.didFireAsyncCall();
+    if (asyncCallStackTracker().isEnabled())
+        asyncCallStackTracker().didFireAsyncCall();
 }
 
 void InspectorDebuggerAgent::didReceiveV8AsyncTaskEvent(ExecutionContext* context, const String& eventType, const String& eventName, int id)
 {
-    if (!m_asyncCallStackTracker.isEnabled())
+    if (!asyncCallStackTracker().isEnabled())
         return;
     if (eventType == v8AsyncTaskEventEnqueue)
-        m_asyncCallStackTracker.didEnqueueV8AsyncTask(context, eventName, id, scriptDebugServer().currentCallFramesForAsyncStack());
+        asyncCallStackTracker().didEnqueueV8AsyncTask(context, eventName, id, scriptDebugServer().currentCallFramesForAsyncStack());
     else if (eventType == v8AsyncTaskEventWillHandle)
-        m_asyncCallStackTracker.willHandleV8AsyncTask(context, eventName, id);
+        asyncCallStackTracker().willHandleV8AsyncTask(context, eventName, id);
     else if (eventType == v8AsyncTaskEventDidHandle)
-        m_asyncCallStackTracker.didFireAsyncCall();
+        asyncCallStackTracker().didFireAsyncCall();
     else
         ASSERT_NOT_REACHED();
 }
@@ -992,7 +993,7 @@ void InspectorDebuggerAgent::evaluateOnCallFrame(ErrorString* errorString, const
     }
 
     Vector<ScriptValue> asyncCallStacks;
-    const AsyncCallStackTracker::AsyncCallChain* asyncChain = m_asyncCallStackTracker.isEnabled() ? m_asyncCallStackTracker.currentAsyncCallChain() : 0;
+    const AsyncCallStackTracker::AsyncCallChain* asyncChain = asyncCallStackTracker().isEnabled() ? asyncCallStackTracker().currentAsyncCallChain() : 0;
     if (asyncChain) {
         const AsyncCallStackTracker::AsyncCallStackVector& callStacks = asyncChain->callStacks();
         asyncCallStacks.resize(callStacks.size());
@@ -1134,7 +1135,7 @@ void InspectorDebuggerAgent::skipStackFrames(ErrorString* errorString, const Str
 void InspectorDebuggerAgent::setAsyncCallStackDepth(ErrorString*, int depth)
 {
     m_state->setLong(DebuggerAgentState::asyncCallStackDepth, depth);
-    m_asyncCallStackTracker.setAsyncCallStackDepth(depth);
+    asyncCallStackTracker().setAsyncCallStackDepth(depth);
 }
 
 void InspectorDebuggerAgent::scriptExecutionBlockedByCSP(const String& directiveText)
@@ -1160,9 +1161,9 @@ PassRefPtr<Array<CallFrame> > InspectorDebuggerAgent::currentCallFrames()
 
 PassRefPtr<StackTrace> InspectorDebuggerAgent::currentAsyncStackTrace()
 {
-    if (!m_pausedScriptState || !m_asyncCallStackTracker.isEnabled())
+    if (!m_pausedScriptState || !asyncCallStackTracker().isEnabled())
         return nullptr;
-    const AsyncCallStackTracker::AsyncCallChain* chain = m_asyncCallStackTracker.currentAsyncCallChain();
+    const AsyncCallStackTracker::AsyncCallChain* chain = asyncCallStackTracker().currentAsyncCallChain();
     if (!chain)
         return nullptr;
     const AsyncCallStackTracker::AsyncCallStackVector& callStacks = chain->callStacks();
@@ -1206,9 +1207,9 @@ static PassRefPtrWillBeRawPtr<ScriptCallStack> toScriptCallStack(JavaScriptCallF
 
 PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> InspectorDebuggerAgent::currentAsyncStackTraceForConsole()
 {
-    if (!m_asyncCallStackTracker.isEnabled())
+    if (!asyncCallStackTracker().isEnabled())
         return nullptr;
-    const AsyncCallStackTracker::AsyncCallChain* chain = m_asyncCallStackTracker.currentAsyncCallChain();
+    const AsyncCallStackTracker::AsyncCallChain* chain = asyncCallStackTracker().currentAsyncCallChain();
     if (!chain)
         return nullptr;
     const AsyncCallStackTracker::AsyncCallStackVector& callStacks = chain->callStacks();
@@ -1398,7 +1399,7 @@ void InspectorDebuggerAgent::clear()
     m_currentCallStack = ScriptValue();
     m_scripts.clear();
     m_breakpointIdToDebugServerBreakpointIds.clear();
-    m_asyncCallStackTracker.clear();
+    asyncCallStackTracker().clear();
     m_continueToLocationBreakpointId = String();
     clearBreakDetails();
     m_javaScriptPauseScheduled = false;
@@ -1440,7 +1441,7 @@ void InspectorDebuggerAgent::reset()
 {
     m_scripts.clear();
     m_breakpointIdToDebugServerBreakpointIds.clear();
-    m_asyncCallStackTracker.clear();
+    asyncCallStackTracker().clear();
     if (m_frontend)
         m_frontend->globalObjectCleared();
 }
@@ -1449,6 +1450,7 @@ void InspectorDebuggerAgent::trace(Visitor* visitor)
 {
     visitor->trace(m_injectedScriptManager);
     visitor->trace(m_listener);
+    visitor->trace(m_asyncCallStackTracker);
     InspectorBaseAgent::trace(visitor);
 }
 
