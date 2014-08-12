@@ -57,7 +57,9 @@ public:
     AudioNodeOutput* renderingOutput(unsigned i) { return m_renderingOutputs[i]; }
     bool isConnected() const { return numberOfRenderingConnections() > 0; }
 
+#if !ENABLE(OILPAN)
     virtual bool canUpdateState() = 0;
+#endif
     virtual void didUpdate() = 0;
 
 protected:

@@ -158,7 +158,9 @@ public:
     static void printNodeCounts();
 #endif
 
+#if !ENABLE(OILPAN)
     bool isMarkedForDeletion() const { return m_isMarkedForDeletion; }
+#endif
 
     // tailTime() is the length of time (not counting latency time) where non-zero output may occur after continuous silent input.
     virtual double tailTime() const = 0;
@@ -225,7 +227,9 @@ private:
 #endif
     volatile int m_connectionRefCount;
 
+#if !ENABLE(OILPAN)
     bool m_isMarkedForDeletion;
+#endif
     bool m_isDisabled;
 
 #if ENABLE(ASSERT)

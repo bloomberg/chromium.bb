@@ -56,7 +56,9 @@ AudioNode::AudioNode(AudioContext* context, float sampleRate)
     , m_normalRefCount(1) // start out with normal refCount == 1 (like WTF::RefCounted class)
 #endif
     , m_connectionRefCount(0)
+#if !ENABLE(OILPAN)
     , m_isMarkedForDeletion(false)
+#endif
     , m_isDisabled(false)
 #if ENABLE(ASSERT)
     , m_didCallDispose(false)
@@ -110,7 +112,6 @@ void AudioNode::dispose()
     context()->removeAutomaticPullNode(this);
     for (unsigned i = 0; i < m_outputs.size(); ++i)
         output(i)->disconnectAll();
-    m_isMarkedForDeletion = true;
 #endif
     context()->unmarkDirtyNode(*this);
 #if ENABLE(ASSERT)
