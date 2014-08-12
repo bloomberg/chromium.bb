@@ -2,6 +2,6 @@
   "name": "chromium",
   "private": true,
   "dependencies": {
-    "polymer": "Polymer/polymer#0.3.4"
+    "polymer": "Polymer/polymer#0.3.5"
   }
 }
