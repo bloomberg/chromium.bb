@@ -67,6 +67,20 @@ void LevelDBWrapper::Iterator::Next() {
   AdvanceIterators();
 }
 
+void LevelDBWrapper::Iterator::Delete() {
+  DCHECK(Valid());
+
+  const std::string key_str = key().ToString();
+  Transaction deletion(DELETE_OPERATION, std::string());
+  map_iterator_ = db_->pending_.insert(map_iterator_,
+                                       std::make_pair(key_str, deletion));
+  // In case that |db_->pending_| already had an entry for the key, we have to
+  // update the value.
+  map_iterator_->second = deletion;
+
+  AdvanceIterators();
+}
+
 leveldb::Slice LevelDBWrapper::Iterator::key() {
   DCHECK(Valid());
 

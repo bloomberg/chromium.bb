@@ -56,6 +56,7 @@ class LevelDBWrapper {
     void SeekToFirst();
     void SeekToLast();
     void Next();
+    void Delete();
     leveldb::Slice key();
     leveldb::Slice value();
 

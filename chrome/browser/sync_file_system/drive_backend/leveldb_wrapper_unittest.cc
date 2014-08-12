@@ -113,6 +113,21 @@ TEST_F(LevelDBWrapperTest, IteratorTest) {
 
   itr->Next();
   EXPECT_FALSE(itr->Valid());
+
+  itr->SeekToFirst();
+  EXPECT_TRUE(itr->Valid());
+  EXPECT_EQ("a", itr->key().ToString());
+  EXPECT_EQ("1", itr->value().ToString());
+
+  itr->Delete();
+  EXPECT_TRUE(itr->Valid());
+  EXPECT_EQ("ab", itr->key().ToString());
+  EXPECT_EQ("0", itr->value().ToString());
+
+  itr->SeekToFirst();
+  EXPECT_TRUE(itr->Valid());
+  EXPECT_EQ("ab", itr->key().ToString());
+  EXPECT_EQ("0", itr->value().ToString());
 }
 
 TEST_F(LevelDBWrapperTest, Iterator2Test) {
