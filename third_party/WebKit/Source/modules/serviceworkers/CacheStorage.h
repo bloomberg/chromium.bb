@@ -20,7 +20,7 @@ class WebServiceWorkerCacheStorage;
 class CacheStorage FINAL : public RefCountedWillBeGarbageCollected<CacheStorage>, public ScriptWrappable {
     WTF_MAKE_NONCOPYABLE(CacheStorage);
 public:
-    static PassRefPtrWillBeRawPtr<CacheStorage> create(blink::WebServiceWorkerCacheStorage*);
+    static PassRefPtrWillBeRawPtr<CacheStorage> create(WebServiceWorkerCacheStorage*);
 
     ScriptPromise get(ScriptState*, const String& cacheName);
     ScriptPromise has(ScriptState*, const String& cacheName);
@@ -31,9 +31,9 @@ public:
     void trace(Visitor*) { }
 
 private:
-    explicit CacheStorage(blink::WebServiceWorkerCacheStorage*);
+    explicit CacheStorage(WebServiceWorkerCacheStorage*);
 
-    blink::WebServiceWorkerCacheStorage* m_webCacheStorage;
+    WebServiceWorkerCacheStorage* m_webCacheStorage;
 };
 
 } // namespace blink

@@ -65,8 +65,8 @@ public:
 
     bool audio() const;
     bool video() const;
-    blink::WebMediaConstraints audioConstraints() const;
-    blink::WebMediaConstraints videoConstraints() const;
+    WebMediaConstraints audioConstraints() const;
+    WebMediaConstraints videoConstraints() const;
 
     // ContextLifecycleObserver
     virtual void contextDestroyed() OVERRIDE;
@@ -74,10 +74,10 @@ public:
     void trace(Visitor*) { }
 
 private:
-    UserMediaRequest(ExecutionContext*, UserMediaController*, blink::WebMediaConstraints audio, blink::WebMediaConstraints video, PassOwnPtr<NavigatorUserMediaSuccessCallback>, PassOwnPtr<NavigatorUserMediaErrorCallback>);
+    UserMediaRequest(ExecutionContext*, UserMediaController*, WebMediaConstraints audio, WebMediaConstraints video, PassOwnPtr<NavigatorUserMediaSuccessCallback>, PassOwnPtr<NavigatorUserMediaErrorCallback>);
 
-    blink::WebMediaConstraints m_audio;
-    blink::WebMediaConstraints m_video;
+    WebMediaConstraints m_audio;
+    WebMediaConstraints m_video;
 
     UserMediaController* m_controller;
 

@@ -28,7 +28,7 @@ public:
 
     String type() const;
 
-    virtual void connectionTypeChange(blink::WebConnectionType) OVERRIDE;
+    virtual void connectionTypeChange(WebConnectionType) OVERRIDE;
 
     // EventTarget overrides.
     virtual const AtomicString& interfaceName() const OVERRIDE;
@@ -49,7 +49,7 @@ private:
     void stopObserving();
 
     // Touched only on context thread.
-    blink::WebConnectionType m_type;
+    WebConnectionType m_type;
 
     // Whether this object is listening for events from NetworkStateNotifier.
     bool m_observing;

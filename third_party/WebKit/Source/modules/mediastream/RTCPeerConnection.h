@@ -57,7 +57,7 @@ class VoidCallback;
 
 class RTCPeerConnection FINAL
     : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<RTCPeerConnection>
-    , public blink::WebRTCPeerConnectionHandlerClient
+    , public WebRTCPeerConnectionHandlerClient
     , public EventTargetWithInlineData
     , public ActiveDOMObject {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<RTCPeerConnection>);
@@ -119,15 +119,15 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(iceconnectionstatechange);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(datachannel);
 
-    // blink::WebRTCPeerConnectionHandlerClient
+    // WebRTCPeerConnectionHandlerClient
     virtual void negotiationNeeded() OVERRIDE;
-    virtual void didGenerateICECandidate(const blink::WebRTCICECandidate&) OVERRIDE;
+    virtual void didGenerateICECandidate(const WebRTCICECandidate&) OVERRIDE;
     virtual void didChangeSignalingState(SignalingState) OVERRIDE;
     virtual void didChangeICEGatheringState(ICEGatheringState) OVERRIDE;
     virtual void didChangeICEConnectionState(ICEConnectionState) OVERRIDE;
-    virtual void didAddRemoteStream(const blink::WebMediaStream&) OVERRIDE;
-    virtual void didRemoveRemoteStream(const blink::WebMediaStream&) OVERRIDE;
-    virtual void didAddRemoteDataChannel(blink::WebRTCDataChannelHandler*) OVERRIDE;
+    virtual void didAddRemoteStream(const WebMediaStream&) OVERRIDE;
+    virtual void didRemoveRemoteStream(const WebMediaStream&) OVERRIDE;
+    virtual void didAddRemoteDataChannel(WebRTCDataChannelHandler*) OVERRIDE;
     virtual void releasePeerConnectionHandler() OVERRIDE;
 
     // EventTarget
@@ -147,7 +147,7 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    RTCPeerConnection(ExecutionContext*, PassRefPtr<RTCConfiguration>, blink::WebMediaConstraints, ExceptionState&);
+    RTCPeerConnection(ExecutionContext*, PassRefPtr<RTCConfiguration>, WebMediaConstraints, ExceptionState&);
 
     static PassRefPtr<RTCConfiguration> parseConfiguration(const Dictionary&, ExceptionState&);
     static PassRefPtr<RTCOfferOptions> parseOfferOptions(const Dictionary&, ExceptionState&);
@@ -156,9 +156,9 @@ private:
     void dispatchScheduledEvent();
     bool hasLocalStreamWithTrackId(const String& trackId);
 
-    void changeSignalingState(blink::WebRTCPeerConnectionHandlerClient::SignalingState);
-    void changeIceGatheringState(blink::WebRTCPeerConnectionHandlerClient::ICEGatheringState);
-    void changeIceConnectionState(blink::WebRTCPeerConnectionHandlerClient::ICEConnectionState);
+    void changeSignalingState(WebRTCPeerConnectionHandlerClient::SignalingState);
+    void changeIceGatheringState(WebRTCPeerConnectionHandlerClient::ICEGatheringState);
+    void changeIceConnectionState(WebRTCPeerConnectionHandlerClient::ICEConnectionState);
 
     SignalingState m_signalingState;
     ICEGatheringState m_iceGatheringState;
@@ -169,7 +169,7 @@ private:
 
     HeapVector<Member<RTCDataChannel> > m_dataChannels;
 
-    OwnPtr<blink::WebRTCPeerConnectionHandler> m_peerHandler;
+    OwnPtr<WebRTCPeerConnectionHandler> m_peerHandler;
 
     AsyncMethodRunner<RTCPeerConnection> m_dispatchScheduledEventRunner;
     WillBeHeapVector<RefPtrWillBeMember<Event> > m_scheduledEvents;

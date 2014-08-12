@@ -48,12 +48,12 @@ class ScriptPromiseResolver;
 
 class ServiceWorker
     : public AbstractWorker
-    , public blink::WebServiceWorkerProxy {
+    , public WebServiceWorkerProxy {
 public:
     virtual ~ServiceWorker() { }
 
     // For CallbackPromiseAdapter
-    typedef blink::WebServiceWorker WebType;
+    typedef WebServiceWorker WebType;
     static PassRefPtrWillBeRawPtr<ServiceWorker> take(ScriptPromiseResolver*, WebType* worker);
 
     static PassRefPtrWillBeRawPtr<ServiceWorker> from(ExecutionContext*, WebType*);
@@ -83,7 +83,7 @@ private:
     };
 
     static PassRefPtrWillBeRawPtr<ServiceWorker> getOrCreate(ExecutionContext*, WebType*);
-    ServiceWorker(ExecutionContext*, PassOwnPtr<blink::WebServiceWorker>);
+    ServiceWorker(ExecutionContext*, PassOwnPtr<WebServiceWorker>);
     void setProxyState(ProxyState);
     void onPromiseResolved();
     void waitOnPromise(ScriptPromise);
@@ -92,7 +92,7 @@ private:
     virtual bool hasPendingActivity() const OVERRIDE;
     virtual void stop() OVERRIDE;
 
-    OwnPtr<blink::WebServiceWorker> m_outerWorker;
+    OwnPtr<WebServiceWorker> m_outerWorker;
     ProxyState m_proxyState;
 };
 

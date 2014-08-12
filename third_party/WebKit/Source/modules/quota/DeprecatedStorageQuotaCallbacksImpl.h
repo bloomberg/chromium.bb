@@ -57,7 +57,7 @@ public:
 
     virtual void didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes) OVERRIDE;
     virtual void didGrantStorageQuota(unsigned long long usageInBytes, unsigned long long grantedQuotaInBytes) OVERRIDE;
-    virtual void didFail(blink::WebStorageQuotaError) OVERRIDE;
+    virtual void didFail(WebStorageQuotaError) OVERRIDE;
 
 private:
     DeprecatedStorageQuotaCallbacksImpl(PassOwnPtr<StorageUsageCallback>, PassOwnPtr<StorageErrorCallback>);
@@ -68,6 +68,6 @@ private:
     OwnPtr<StorageErrorCallback> m_errorCallback;
 };
 
-} // namespace
+} // namespace blink
 
 #endif // DeprecatedStorageQuotaCallbacksImpl_h

@@ -12,32 +12,30 @@
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
-class WebPushClient;
-} // namespace blink
 
-namespace blink {
+class WebPushClient;
 
 class PushController FINAL : public NoBaseWillBeGarbageCollected<PushController>, public WillBeHeapSupplement<Page> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PushController);
     WTF_MAKE_NONCOPYABLE(PushController);
 
 public:
-    static PassOwnPtrWillBeRawPtr<PushController> create(blink::WebPushClient*);
+    static PassOwnPtrWillBeRawPtr<PushController> create(WebPushClient*);
     static const char* supplementName();
     static PushController* from(Page* page) { return static_cast<PushController*>(WillBeHeapSupplement<Page>::from(page, supplementName())); }
-    static blink::WebPushClient* clientFrom(Page*);
+    static WebPushClient* clientFrom(Page*);
 
-    blink::WebPushClient* client() const { return m_client; }
+    WebPushClient* client() const { return m_client; }
 
     virtual void trace(Visitor* visitor) OVERRIDE { WillBeHeapSupplement<Page>::trace(visitor); }
 
 private:
-    explicit PushController(blink::WebPushClient*);
+    explicit PushController(WebPushClient*);
 
-    blink::WebPushClient* m_client;
+    WebPushClient* m_client;
 };
 
-void providePushControllerTo(Page&, blink::WebPushClient*);
+void providePushControllerTo(Page&, WebPushClient*);
 
 } // namespace blink
 

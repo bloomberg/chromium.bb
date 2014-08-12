@@ -17,7 +17,7 @@ class PushError {
     WTF_MAKE_NONCOPYABLE(PushError);
 public:
     // For CallbackPromiseAdapter.
-    typedef blink::WebPushError WebType;
+    typedef WebPushError WebType;
     static PassRefPtrWillBeRawPtr<DOMException> take(ScriptPromiseResolver*, WebType* webErrorRaw);
     static void dispose(WebType* webErrorRaw);
 

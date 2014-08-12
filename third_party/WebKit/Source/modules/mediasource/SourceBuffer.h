@@ -41,10 +41,6 @@
 #include "wtf/text/WTFString.h"
 
 namespace blink {
-class WebSourceBuffer;
-}
-
-namespace blink {
 
 class ExceptionState;
 class FileReaderLoader;
@@ -52,12 +48,13 @@ class GenericEventQueue;
 class MediaSource;
 class Stream;
 class TimeRanges;
+class WebSourceBuffer;
 
 class SourceBuffer FINAL : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<SourceBuffer>, public ActiveDOMObject, public EventTargetWithInlineData, public FileReaderLoaderClient {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<SourceBuffer>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SourceBuffer);
 public:
-    static SourceBuffer* create(PassOwnPtr<blink::WebSourceBuffer>, MediaSource*, GenericEventQueue*);
+    static SourceBuffer* create(PassOwnPtr<WebSourceBuffer>, MediaSource*, GenericEventQueue*);
     static const AtomicString& segmentsKeyword();
     static const AtomicString& sequenceKeyword();
 
@@ -97,7 +94,7 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    SourceBuffer(PassOwnPtr<blink::WebSourceBuffer>, MediaSource*, GenericEventQueue*);
+    SourceBuffer(PassOwnPtr<WebSourceBuffer>, MediaSource*, GenericEventQueue*);
 
     bool isRemoved() const;
     void scheduleEvent(const AtomicString& eventName);
@@ -118,7 +115,7 @@ private:
     virtual void didFinishLoading() OVERRIDE;
     virtual void didFail(FileError::ErrorCode) OVERRIDE;
 
-    OwnPtr<blink::WebSourceBuffer> m_webSourceBuffer;
+    OwnPtr<WebSourceBuffer> m_webSourceBuffer;
     Member<MediaSource> m_source;
     GenericEventQueue* m_asyncEventQueue;
 

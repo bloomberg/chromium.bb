@@ -30,14 +30,11 @@
 #include "platform/mediastream/MediaStreamTrackSourcesRequest.h"
 
 namespace blink {
-class WebSourceInfo;
-template<typename T> class WebVector;
-}
-
-namespace blink {
 
 class ExecutionContext;
 class MediaStreamTrackSourcesCallback;
+class WebSourceInfo;
+template<typename T> class WebVector;
 
 class MediaStreamTrackSourcesRequestImpl FINAL : public MediaStreamTrackSourcesRequest {
 public:
@@ -45,7 +42,7 @@ public:
     ~MediaStreamTrackSourcesRequestImpl();
 
     virtual String origin() OVERRIDE;
-    virtual void requestSucceeded(const blink::WebVector<blink::WebSourceInfo>&) OVERRIDE;
+    virtual void requestSucceeded(const WebVector<WebSourceInfo>&) OVERRIDE;
 
     virtual void trace(Visitor*) OVERRIDE;
 

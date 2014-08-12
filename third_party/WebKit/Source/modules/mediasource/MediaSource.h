@@ -42,13 +42,10 @@
 #include "wtf/Vector.h"
 
 namespace blink {
-class WebSourceBuffer;
-}
-
-namespace blink {
 
 class ExceptionState;
 class GenericEventQueue;
+class WebSourceBuffer;
 
 class MediaSource FINAL
     : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<MediaSource>
@@ -78,7 +75,7 @@ public:
 
     // HTMLMediaSource
     virtual bool attachToElement(HTMLMediaElement*) OVERRIDE;
-    virtual void setWebMediaSourceAndOpen(PassOwnPtr<blink::WebMediaSource>) OVERRIDE;
+    virtual void setWebMediaSourceAndOpen(PassOwnPtr<WebMediaSource>) OVERRIDE;
     virtual void close() OVERRIDE;
     virtual bool isClosed() const OVERRIDE;
     virtual double duration() const OVERRIDE;
@@ -118,15 +115,15 @@ private:
 
     bool isUpdating() const;
 
-    PassOwnPtr<blink::WebSourceBuffer> createWebSourceBuffer(const String& type, const Vector<String>& codecs, ExceptionState&);
+    PassOwnPtr<WebSourceBuffer> createWebSourceBuffer(const String& type, const Vector<String>& codecs, ExceptionState&);
     void scheduleEvent(const AtomicString& eventName);
-    void endOfStreamInternal(const blink::WebMediaSource::EndOfStreamStatus, ExceptionState&);
+    void endOfStreamInternal(const WebMediaSource::EndOfStreamStatus, ExceptionState&);
 
     // Implements the duration change algorithm.
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#duration-change-algorithm
     void durationChangeAlgorithm(double newDuration);
 
-    OwnPtr<blink::WebMediaSource> m_webMediaSource;
+    OwnPtr<WebMediaSource> m_webMediaSource;
     AtomicString m_readyState;
     OwnPtrWillBeMember<GenericEventQueue> m_asyncEventQueue;
     RawPtrWillBeWeakMember<HTMLMediaElement> m_attachedElement;

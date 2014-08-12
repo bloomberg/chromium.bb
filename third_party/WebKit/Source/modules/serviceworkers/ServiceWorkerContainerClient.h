@@ -10,12 +10,9 @@
 #include "wtf/Forward.h"
 
 namespace blink {
-class WebServiceWorkerProvider;
-}
-
-namespace blink {
 
 class ExecutionContext;
+class WebServiceWorkerProvider;
 
 // This mainly exists to provide access to WebServiceWorkerProvider.
 // Owned by Document (or WorkerClients).
@@ -26,10 +23,10 @@ class ServiceWorkerContainerClient FINAL
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerContainerClient);
     WTF_MAKE_NONCOPYABLE(ServiceWorkerContainerClient);
 public:
-    static PassOwnPtrWillBeRawPtr<ServiceWorkerContainerClient> create(PassOwnPtr<blink::WebServiceWorkerProvider>);
+    static PassOwnPtrWillBeRawPtr<ServiceWorkerContainerClient> create(PassOwnPtr<WebServiceWorkerProvider>);
     virtual ~ServiceWorkerContainerClient();
 
-    blink::WebServiceWorkerProvider* provider() { return m_provider.get(); }
+    WebServiceWorkerProvider* provider() { return m_provider.get(); }
 
     static const char* supplementName();
     static ServiceWorkerContainerClient* from(ExecutionContext*);
@@ -41,12 +38,12 @@ public:
     }
 
 protected:
-    explicit ServiceWorkerContainerClient(PassOwnPtr<blink::WebServiceWorkerProvider>);
+    explicit ServiceWorkerContainerClient(PassOwnPtr<WebServiceWorkerProvider>);
 
-    OwnPtr<blink::WebServiceWorkerProvider> m_provider;
+    OwnPtr<WebServiceWorkerProvider> m_provider;
 };
 
-void provideServiceWorkerContainerClientToWorker(WorkerClients*, PassOwnPtr<blink::WebServiceWorkerProvider>);
+void provideServiceWorkerContainerClientToWorker(WorkerClients*, PassOwnPtr<WebServiceWorkerProvider>);
 
 } // namespace blink
 

@@ -52,25 +52,20 @@
 
 namespace blink {
 
+class Document;
+class WebSocketHandshakeRequest;
 class WebSocketHandshakeRequestInfo;
 class WebSocketHandshakeResponseInfo;
 
-} // namespace blink
-
-namespace blink {
-
-class Document;
-class WebSocketHandshakeRequest;
-
 // This class may replace MainThreadWebSocketChannel.
-class NewWebSocketChannelImpl FINAL : public WebSocketChannel, public blink::WebSocketHandleClient, public ContextLifecycleObserver {
+class NewWebSocketChannelImpl FINAL : public WebSocketChannel, public WebSocketHandleClient, public ContextLifecycleObserver {
 public:
     // You can specify the source file and the line number information
     // explicitly by passing the last parameter.
     // In the usual case, they are set automatically and you don't have to
     // pass it.
     // Specify handle explicitly only in tests.
-    static NewWebSocketChannelImpl* create(ExecutionContext* context, WebSocketChannelClient* client, const String& sourceURL = String(), unsigned lineNumber = 0, blink::WebSocketHandle *handle = 0)
+    static NewWebSocketChannelImpl* create(ExecutionContext* context, WebSocketChannelClient* client, const String& sourceURL = String(), unsigned lineNumber = 0, WebSocketHandle *handle = 0)
     {
         return adoptRefCountedGarbageCollected(new NewWebSocketChannelImpl(context, client, sourceURL, lineNumber, handle));
     }
@@ -126,7 +121,7 @@ private:
 
     class BlobLoader;
 
-    NewWebSocketChannelImpl(ExecutionContext*, WebSocketChannelClient*, const String&, unsigned, blink::WebSocketHandle*);
+    NewWebSocketChannelImpl(ExecutionContext*, WebSocketChannelClient*, const String&, unsigned, WebSocketHandle*);
     void sendInternal();
     void flowControlIfNecessary();
     void failAsError(const String& reason) { fail(reason, ErrorMessageLevel, m_sourceURLAtConstruction, m_lineNumberAtConstruction); }
@@ -135,14 +130,14 @@ private:
     Document* document(); // can be called only when m_identifier > 0.
 
     // WebSocketHandleClient functions.
-    virtual void didConnect(blink::WebSocketHandle*, bool fail, const blink::WebString& selectedProtocol, const blink::WebString& extensions) OVERRIDE;
-    virtual void didStartOpeningHandshake(blink::WebSocketHandle*, const blink::WebSocketHandshakeRequestInfo&) OVERRIDE;
-    virtual void didFinishOpeningHandshake(blink::WebSocketHandle*, const blink::WebSocketHandshakeResponseInfo&) OVERRIDE;
-    virtual void didFail(blink::WebSocketHandle*, const blink::WebString& message) OVERRIDE;
-    virtual void didReceiveData(blink::WebSocketHandle*, bool fin, blink::WebSocketHandle::MessageType, const char* data, size_t /* size */) OVERRIDE;
-    virtual void didClose(blink::WebSocketHandle*, bool wasClean, unsigned short code, const blink::WebString& reason) OVERRIDE;
-    virtual void didReceiveFlowControl(blink::WebSocketHandle*, int64_t quota) OVERRIDE;
-    virtual void didStartClosingHandshake(blink::WebSocketHandle*) OVERRIDE;
+    virtual void didConnect(WebSocketHandle*, bool fail, const WebString& selectedProtocol, const WebString& extensions) OVERRIDE;
+    virtual void didStartOpeningHandshake(WebSocketHandle*, const WebSocketHandshakeRequestInfo&) OVERRIDE;
+    virtual void didFinishOpeningHandshake(WebSocketHandle*, const WebSocketHandshakeResponseInfo&) OVERRIDE;
+    virtual void didFail(WebSocketHandle*, const WebString& message) OVERRIDE;
+    virtual void didReceiveData(WebSocketHandle*, bool fin, WebSocketHandle::MessageType, const char* data, size_t /* size */) OVERRIDE;
+    virtual void didClose(WebSocketHandle*, bool wasClean, unsigned short code, const WebString& reason) OVERRIDE;
+    virtual void didReceiveFlowControl(WebSocketHandle*, int64_t quota) OVERRIDE;
+    virtual void didStartClosingHandshake(WebSocketHandle*) OVERRIDE;
 
     // Methods for BlobLoader.
     void didFinishLoadingBlob(PassRefPtr<ArrayBuffer>);
@@ -166,7 +161,7 @@ private:
 
     // m_handle is a handle of the connection.
     // m_handle == 0 means this channel is closed.
-    OwnPtr<blink::WebSocketHandle> m_handle;
+    OwnPtr<WebSocketHandle> m_handle;
 
     // m_client can be deleted while this channel is alive, but this class
     // expects that disconnect() is called before the deletion.

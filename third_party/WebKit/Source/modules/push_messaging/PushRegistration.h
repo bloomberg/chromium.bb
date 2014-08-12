@@ -17,7 +17,7 @@ class ScriptPromiseResolver;
 class PushRegistration FINAL : public GarbageCollectedFinalized<PushRegistration>, public ScriptWrappable {
 public:
     // For CallbackPromiseAdapter.
-    typedef blink::WebPushRegistration WebType;
+    typedef WebPushRegistration WebType;
     static PushRegistration* take(ScriptPromiseResolver*, WebType* registrationRaw);
     static void dispose(WebType* registrationRaw);
 

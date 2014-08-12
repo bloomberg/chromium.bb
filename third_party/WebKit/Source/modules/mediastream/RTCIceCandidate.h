@@ -43,7 +43,7 @@ class ExceptionState;
 class RTCIceCandidate FINAL : public GarbageCollectedFinalized<RTCIceCandidate>, public ScriptWrappable {
 public:
     static RTCIceCandidate* create(const Dictionary&, ExceptionState&);
-    static RTCIceCandidate* create(blink::WebRTCICECandidate);
+    static RTCIceCandidate* create(WebRTCICECandidate);
 
     String candidate() const;
     void setCandidate(String);
@@ -52,14 +52,14 @@ public:
     unsigned short sdpMLineIndex() const;
     void setSdpMLineIndex(unsigned short);
 
-    blink::WebRTCICECandidate webCandidate() const;
+    WebRTCICECandidate webCandidate() const;
 
     void trace(Visitor*) { }
 
 private:
-    explicit RTCIceCandidate(blink::WebRTCICECandidate);
+    explicit RTCIceCandidate(WebRTCICECandidate);
 
-    blink::WebRTCICECandidate m_webCandidate;
+    WebRTCICECandidate m_webCandidate;
 };
 
 } // namespace blink

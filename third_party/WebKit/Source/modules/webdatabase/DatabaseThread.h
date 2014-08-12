@@ -79,7 +79,7 @@ private:
     void cleanupDatabaseThread();
     void cleanupDatabaseThreadCompleted();
 
-    OwnPtr<blink::WebThread> m_thread;
+    OwnPtr<WebThread> m_thread;
 
     // This set keeps track of the open databases that have been used on this thread.
     // This must be updated in the database thread though it is constructed and

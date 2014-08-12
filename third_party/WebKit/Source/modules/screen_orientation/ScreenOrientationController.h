@@ -13,13 +13,10 @@
 #include "public/platform/WebScreenOrientationType.h"
 
 namespace blink {
-class WebScreenOrientationClient;
-}
-
-namespace blink {
 
 class FrameView;
 class ScreenOrientation;
+class WebScreenOrientationClient;
 
 class ScreenOrientationController FINAL
     : public NoBaseWillBeGarbageCollectedFinalized<ScreenOrientationController>
@@ -35,20 +32,20 @@ public:
     void setOrientation(ScreenOrientation*);
     void notifyOrientationChanged();
 
-    void lock(blink::WebScreenOrientationLockType, blink::WebLockOrientationCallback*);
+    void lock(WebScreenOrientationLockType, WebLockOrientationCallback*);
     void unlock();
 
     const LocalFrame& frame() const;
 
-    static void provideTo(LocalFrame&, blink::WebScreenOrientationClient*);
+    static void provideTo(LocalFrame&, WebScreenOrientationClient*);
     static ScreenOrientationController* from(LocalFrame&);
     static const char* supplementName();
 
     virtual void trace(Visitor*);
 
 private:
-    explicit ScreenOrientationController(LocalFrame&, blink::WebScreenOrientationClient*);
-    static blink::WebScreenOrientationType computeOrientation(FrameView*);
+    explicit ScreenOrientationController(LocalFrame&, WebScreenOrientationClient*);
+    static WebScreenOrientationType computeOrientation(FrameView*);
 
     // Inherited from PlatformEventController.
     virtual void didUpdateData() OVERRIDE;
@@ -64,7 +61,7 @@ private:
     void dispatchEventTimerFired(Timer<ScreenOrientationController>*);
 
     PersistentWillBeMember<ScreenOrientation> m_orientation;
-    blink::WebScreenOrientationClient* m_client;
+    WebScreenOrientationClient* m_client;
     LocalFrame& m_frame;
     Timer<ScreenOrientationController> m_dispatchEventTimer;
 };

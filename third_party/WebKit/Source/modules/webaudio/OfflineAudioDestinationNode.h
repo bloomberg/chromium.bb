@@ -66,7 +66,7 @@ private:
     RefPtr<AudioBus> m_renderBus;
 
     // Rendering thread.
-    OwnPtr<blink::WebThread> m_renderThread;
+    OwnPtr<WebThread> m_renderThread;
     bool m_startedRendering;
     void offlineRender();
 

@@ -16,13 +16,12 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace blink { class WebServiceWorkerResponse; }
-
 namespace blink {
 
 class Blob;
 class ExceptionState;
 class ResponseInit;
+class WebServiceWorkerResponse;
 
 class Response FINAL : public RefCountedWillBeGarbageCollected<Response>, public ScriptWrappable {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(Response);
@@ -41,7 +40,7 @@ public:
 
     PassRefPtrWillBeRawPtr<FetchBodyStream> body(ExecutionContext*);
 
-    void populateWebServiceWorkerResponse(blink::WebServiceWorkerResponse&);
+    void populateWebServiceWorkerResponse(WebServiceWorkerResponse&);
 
     void trace(Visitor*);
 

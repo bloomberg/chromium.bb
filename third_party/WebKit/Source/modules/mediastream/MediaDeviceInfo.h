@@ -34,7 +34,7 @@ namespace blink {
 
 class MediaDeviceInfo FINAL : public GarbageCollectedFinalized<MediaDeviceInfo>, public ScriptWrappable {
 public:
-    static MediaDeviceInfo* create(const blink::WebMediaDeviceInfo&);
+    static MediaDeviceInfo* create(const WebMediaDeviceInfo&);
 
     String deviceId() const;
     String kind() const;
@@ -44,9 +44,9 @@ public:
     void trace(Visitor*) { }
 
 private:
-    explicit MediaDeviceInfo(const blink::WebMediaDeviceInfo&);
+    explicit MediaDeviceInfo(const WebMediaDeviceInfo&);
 
-    blink::WebMediaDeviceInfo m_webMediaDeviceInfo;
+    WebMediaDeviceInfo m_webMediaDeviceInfo;
 };
 
 typedef HeapVector<Member<MediaDeviceInfo> > MediaDeviceInfoVector;

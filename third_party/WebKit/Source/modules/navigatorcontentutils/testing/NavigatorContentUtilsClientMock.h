@@ -27,8 +27,8 @@ public:
 private:
     typedef struct {
         String scheme;
-        blink::KURL baseURL;
-        blink::KURL url;
+        KURL baseURL;
+        KURL url;
         String title;
     } ProtocolInfo;
 
@@ -36,6 +36,6 @@ private:
     RegisteredProtocolMap m_protocolMap;
 };
 
-}
+} // namespace blink
 
 #endif // NavigatorContentUtilsClientMock_h

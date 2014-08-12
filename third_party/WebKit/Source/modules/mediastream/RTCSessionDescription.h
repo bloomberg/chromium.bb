@@ -43,7 +43,7 @@ class ExceptionState;
 class RTCSessionDescription FINAL : public GarbageCollectedFinalized<RTCSessionDescription>, public ScriptWrappable {
 public:
     static RTCSessionDescription* create(const Dictionary&, ExceptionState&);
-    static RTCSessionDescription* create(blink::WebRTCSessionDescription);
+    static RTCSessionDescription* create(WebRTCSessionDescription);
 
     String type();
     void setType(const String&, ExceptionState&);
@@ -51,14 +51,14 @@ public:
     String sdp();
     void setSdp(const String&);
 
-    blink::WebRTCSessionDescription webSessionDescription();
+    WebRTCSessionDescription webSessionDescription();
 
     void trace(Visitor*) { }
 
 private:
-    explicit RTCSessionDescription(blink::WebRTCSessionDescription);
+    explicit RTCSessionDescription(WebRTCSessionDescription);
 
-    blink::WebRTCSessionDescription m_webSessionDescription;
+    WebRTCSessionDescription m_webSessionDescription;
 };
 
 } // namespace blink

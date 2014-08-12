@@ -41,14 +41,11 @@
 #include "wtf/Noncopyable.h"
 
 namespace blink {
-class WebServiceWorkerCacheStorage;
-class WebURL;
-};
-
-namespace blink {
 
 class ExecutionContext;
 class Response;
+class WebServiceWorkerCacheStorage;
+class WebURL;
 class WorkerClients;
 
 class ServiceWorkerGlobalScopeClient : public WillBeHeapSupplement<WorkerClients> {
@@ -56,16 +53,16 @@ class ServiceWorkerGlobalScopeClient : public WillBeHeapSupplement<WorkerClients
 public:
     virtual ~ServiceWorkerGlobalScopeClient() { }
 
-    virtual void getClients(blink::WebServiceWorkerClientsCallbacks*) = 0;
-    virtual blink::WebURL scope() const = 0;
-    virtual blink::WebServiceWorkerCacheStorage* cacheStorage() const = 0;
+    virtual void getClients(WebServiceWorkerClientsCallbacks*) = 0;
+    virtual WebURL scope() const = 0;
+    virtual WebServiceWorkerCacheStorage* cacheStorage() const = 0;
 
-    virtual void didHandleActivateEvent(int eventID, blink::WebServiceWorkerEventResult) = 0;
-    virtual void didHandleInstallEvent(int installEventID, blink::WebServiceWorkerEventResult) = 0;
+    virtual void didHandleActivateEvent(int eventID, WebServiceWorkerEventResult) = 0;
+    virtual void didHandleInstallEvent(int installEventID, WebServiceWorkerEventResult) = 0;
     // A null response means no valid response was provided by the service worker, so fallback to native.
     virtual void didHandleFetchEvent(int fetchEventID, PassRefPtrWillBeRawPtr<Response> = nullptr) = 0;
     virtual void didHandleSyncEvent(int syncEventID) = 0;
-    virtual void postMessageToClient(int clientID, const blink::WebString& message, PassOwnPtr<blink::WebMessagePortChannelArray>) = 0;
+    virtual void postMessageToClient(int clientID, const WebString& message, PassOwnPtr<WebMessagePortChannelArray>) = 0;
 
     static const char* supplementName();
     static ServiceWorkerGlobalScopeClient* from(ExecutionContext*);

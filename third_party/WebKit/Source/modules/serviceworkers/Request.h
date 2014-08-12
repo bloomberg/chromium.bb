@@ -15,14 +15,13 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace blink { class WebServiceWorkerRequest; }
-
 namespace blink {
 
 class RequestInit;
 class ResourceRequest;
 struct ResourceLoaderOptions;
 struct ThreadableLoaderOptions;
+class WebServiceWorkerRequest;
 
 class Request FINAL : public RefCountedWillBeGarbageCollected<Request>, public ScriptWrappable {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(Request);
@@ -34,7 +33,7 @@ public:
 
     static PassRefPtrWillBeRawPtr<Request> create(PassRefPtrWillBeRawPtr<FetchRequestData>);
 
-    static PassRefPtrWillBeRawPtr<Request> create(const blink::WebServiceWorkerRequest&);
+    static PassRefPtrWillBeRawPtr<Request> create(const WebServiceWorkerRequest&);
 
     PassRefPtrWillBeRawPtr<FetchRequestData> request() { return m_request; }
 
@@ -50,7 +49,7 @@ public:
 
 private:
     explicit Request(PassRefPtrWillBeRawPtr<FetchRequestData>);
-    explicit Request(const blink::WebServiceWorkerRequest&);
+    explicit Request(const WebServiceWorkerRequest&);
 
     RefPtrWillBeMember<FetchRequestData> m_request;
     RefPtrWillBeMember<Headers> m_headers;

@@ -40,7 +40,7 @@ namespace blink {
 
 class MIDIAccessorClient;
 
-class MIDIAccessor FINAL : public blink::WebMIDIAccessorClient {
+class MIDIAccessor FINAL : public WebMIDIAccessorClient {
 public:
     static PassOwnPtr<MIDIAccessor> create(MIDIAccessorClient*);
 
@@ -53,17 +53,17 @@ public:
     // once the initialization successfully finishes.
     void setClient(MIDIAccessorClient* client) { m_client = client; }
 
-    // blink::WebMIDIAccessorClient
-    virtual void didAddInputPort(const blink::WebString& id, const blink::WebString& manufacturer, const blink::WebString& name, const blink::WebString& version) OVERRIDE;
-    virtual void didAddOutputPort(const blink::WebString& id, const blink::WebString& manufacturer, const blink::WebString& name, const blink::WebString& version) OVERRIDE;
-    virtual void didStartSession(bool success, const blink::WebString& error, const blink::WebString& message) OVERRIDE;
+    // WebMIDIAccessorClient
+    virtual void didAddInputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version) OVERRIDE;
+    virtual void didAddOutputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version) OVERRIDE;
+    virtual void didStartSession(bool success, const WebString& error, const WebString& message) OVERRIDE;
     virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) OVERRIDE;
 
 private:
     explicit MIDIAccessor(MIDIAccessorClient*);
 
     MIDIAccessorClient* m_client;
-    OwnPtr<blink::WebMIDIAccessor> m_accessor;
+    OwnPtr<WebMIDIAccessor> m_accessor;
 };
 
 } // namespace blink

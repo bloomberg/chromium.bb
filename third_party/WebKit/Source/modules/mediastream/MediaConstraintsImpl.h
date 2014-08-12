@@ -40,8 +40,8 @@ class ExceptionState;
 
 namespace MediaConstraintsImpl {
 
-blink::WebMediaConstraints create();
-blink::WebMediaConstraints create(const Dictionary&, ExceptionState&);
+WebMediaConstraints create();
+WebMediaConstraints create(const Dictionary&, ExceptionState&);
 
 }
 

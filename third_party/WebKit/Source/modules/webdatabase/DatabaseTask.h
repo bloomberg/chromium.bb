@@ -46,7 +46,7 @@
 
 namespace blink {
 
-class DatabaseTask : public blink::WebThread::Task {
+class DatabaseTask : public WebThread::Task {
     WTF_MAKE_NONCOPYABLE(DatabaseTask); WTF_MAKE_FAST_ALLOCATED;
 public:
     virtual ~DatabaseTask();

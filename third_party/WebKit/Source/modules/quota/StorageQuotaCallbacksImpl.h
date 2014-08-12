@@ -51,7 +51,7 @@ public:
 
     virtual void didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes) OVERRIDE;
     virtual void didGrantStorageQuota(unsigned long long usageInBytes, unsigned long long grantedQuotaInBytes) OVERRIDE;
-    virtual void didFail(blink::WebStorageQuotaError) OVERRIDE;
+    virtual void didFail(WebStorageQuotaError) OVERRIDE;
 
 private:
     StorageQuotaCallbacksImpl(PassRefPtr<ScriptPromiseResolver>);
@@ -59,6 +59,6 @@ private:
     RefPtr<ScriptPromiseResolver> m_resolver;
 };
 
-} // namespace
+} // namespace blink
 
 #endif // StorageQuotaCallbacksImpl_h

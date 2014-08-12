@@ -44,21 +44,18 @@
 #include "wtf/RefPtr.h"
 
 namespace blink {
-class WebServiceWorkerProvider;
-class WebServiceWorker;
-}
-
-namespace blink {
 
 class Dictionary;
 class ExecutionContext;
 class ServiceWorker;
+class WebServiceWorkerProvider;
+class WebServiceWorker;
 
 class ServiceWorkerContainer FINAL
     : public RefCountedWillBeGarbageCollectedFinalized<ServiceWorkerContainer>
     , public ScriptWrappable
     , public ContextLifecycleObserver
-    , public blink::WebServiceWorkerProviderClient {
+    , public WebServiceWorkerProviderClient {
 public:
     static PassRefPtrWillBeRawPtr<ServiceWorkerContainer> create(ExecutionContext*);
     ~ServiceWorkerContainer();
@@ -72,17 +69,17 @@ public:
     PassRefPtrWillBeRawPtr<ServiceWorker> installing() { return m_installing.get(); }
     PassRefPtrWillBeRawPtr<ServiceWorker> waiting() { return m_waiting.get(); }
     ScriptPromise ready(ScriptState*);
-    blink::WebServiceWorkerProvider* provider() { return m_provider; }
+    WebServiceWorkerProvider* provider() { return m_provider; }
 
     ScriptPromise registerServiceWorker(ScriptState*, const String& pattern, const Dictionary&);
     ScriptPromise unregisterServiceWorker(ScriptState*, const String& scope);
 
     // WebServiceWorkerProviderClient overrides.
-    virtual void setActive(blink::WebServiceWorker*) OVERRIDE;
-    virtual void setController(blink::WebServiceWorker*) OVERRIDE;
-    virtual void setInstalling(blink::WebServiceWorker*) OVERRIDE;
-    virtual void setWaiting(blink::WebServiceWorker*) OVERRIDE;
-    virtual void dispatchMessageEvent(const blink::WebString& message, const blink::WebMessagePortChannelArray&) OVERRIDE;
+    virtual void setActive(WebServiceWorker*) OVERRIDE;
+    virtual void setController(WebServiceWorker*) OVERRIDE;
+    virtual void setInstalling(WebServiceWorker*) OVERRIDE;
+    virtual void setWaiting(WebServiceWorker*) OVERRIDE;
+    virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray&) OVERRIDE;
 
 private:
     explicit ServiceWorkerContainer(ExecutionContext*);
@@ -91,7 +88,7 @@ private:
     ReadyProperty* createReadyProperty();
     void checkReadyChanged(PassRefPtrWillBeRawPtr<ServiceWorker> previousReadyWorker);
 
-    blink::WebServiceWorkerProvider* m_provider;
+    WebServiceWorkerProvider* m_provider;
     RefPtrWillBeMember<ServiceWorker> m_active;
     RefPtrWillBeMember<ServiceWorker> m_controller;
     RefPtrWillBeMember<ServiceWorker> m_installing;

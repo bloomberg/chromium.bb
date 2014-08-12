@@ -43,7 +43,7 @@ class ScriptPromiseResolver;
 class ServiceWorkerError {
 public:
     // For CallbackPromiseAdapter
-    typedef blink::WebServiceWorkerError WebType;
+    typedef WebServiceWorkerError WebType;
     static PassRefPtrWillBeRawPtr<DOMException> take(ScriptPromiseResolver*, WebType* webErrorRaw);
     static void dispose(WebType* webErrorRaw);
 

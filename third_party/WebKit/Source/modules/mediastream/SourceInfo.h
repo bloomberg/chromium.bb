@@ -34,7 +34,7 @@ namespace blink {
 
 class SourceInfo : public GarbageCollectedFinalized<SourceInfo>, public ScriptWrappable {
 public:
-    static SourceInfo* create(const blink::WebSourceInfo&);
+    static SourceInfo* create(const WebSourceInfo&);
 
     String id() const;
     String kind() const;
@@ -44,9 +44,9 @@ public:
     void trace(Visitor*) { }
 
 private:
-    explicit SourceInfo(const blink::WebSourceInfo&);
+    explicit SourceInfo(const WebSourceInfo&);
 
-    blink::WebSourceInfo m_webSourceInfo;
+    WebSourceInfo m_webSourceInfo;
 };
 
 typedef HeapVector<Member<SourceInfo> > SourceInfoVector;

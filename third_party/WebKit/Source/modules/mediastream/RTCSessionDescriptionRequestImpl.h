@@ -38,21 +38,18 @@
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
-class WebRTCSessionDescription;
-}
-
-namespace blink {
 
 class RTCErrorCallback;
 class RTCPeerConnection;
 class RTCSessionDescriptionCallback;
+class WebRTCSessionDescription;
 
 class RTCSessionDescriptionRequestImpl FINAL : public RTCSessionDescriptionRequest, public ActiveDOMObject {
 public:
     static PassRefPtr<RTCSessionDescriptionRequestImpl> create(ExecutionContext*, RTCPeerConnection*, PassOwnPtr<RTCSessionDescriptionCallback>, PassOwnPtr<RTCErrorCallback>);
     virtual ~RTCSessionDescriptionRequestImpl();
 
-    virtual void requestSucceeded(const blink::WebRTCSessionDescription&) OVERRIDE;
+    virtual void requestSucceeded(const WebRTCSessionDescription&) OVERRIDE;
     virtual void requestFailed(const String& error) OVERRIDE;
 
     // ActiveDOMObject

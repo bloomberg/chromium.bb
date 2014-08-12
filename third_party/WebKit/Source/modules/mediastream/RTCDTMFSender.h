@@ -32,24 +32,21 @@
 #include "public/platform/WebRTCDTMFSenderHandlerClient.h"
 
 namespace blink {
-class WebRTCDTMFSenderHandler;
-class WebRTCPeerConnectionHandler;
-}
-
-namespace blink {
 
 class ExceptionState;
 class MediaStreamTrack;
+class WebRTCDTMFSenderHandler;
+class WebRTCPeerConnectionHandler;
 
 class RTCDTMFSender FINAL
     : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<RTCDTMFSender>
     , public EventTargetWithInlineData
-    , public blink::WebRTCDTMFSenderHandlerClient
+    , public WebRTCDTMFSenderHandlerClient
     , public ActiveDOMObject {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<RTCDTMFSender>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RTCDTMFSender);
 public:
-    static RTCDTMFSender* create(ExecutionContext*, blink::WebRTCPeerConnectionHandler*, MediaStreamTrack*, ExceptionState&);
+    static RTCDTMFSender* create(ExecutionContext*, WebRTCPeerConnectionHandler*, MediaStreamTrack*, ExceptionState&);
     virtual ~RTCDTMFSender();
 
     bool canInsertDTMF() const;
@@ -74,19 +71,19 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    RTCDTMFSender(ExecutionContext*, MediaStreamTrack*, PassOwnPtr<blink::WebRTCDTMFSenderHandler>);
+    RTCDTMFSender(ExecutionContext*, MediaStreamTrack*, PassOwnPtr<WebRTCDTMFSenderHandler>);
 
     void scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event>);
     void scheduledEventTimerFired(Timer<RTCDTMFSender>*);
 
-    // blink::WebRTCDTMFSenderHandlerClient
-    virtual void didPlayTone(const blink::WebString&) OVERRIDE;
+    // WebRTCDTMFSenderHandlerClient
+    virtual void didPlayTone(const WebString&) OVERRIDE;
 
     Member<MediaStreamTrack> m_track;
     long m_duration;
     long m_interToneGap;
 
-    OwnPtr<blink::WebRTCDTMFSenderHandler> m_handler;
+    OwnPtr<WebRTCDTMFSenderHandler> m_handler;
 
     bool m_stopped;
 

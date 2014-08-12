@@ -39,7 +39,7 @@ public:
     String type() const;
     unsigned short angle() const;
 
-    void setType(blink::WebScreenOrientationType);
+    void setType(WebScreenOrientationType);
     void setAngle(unsigned short);
 
     ScriptPromise lock(ScriptState*, const AtomicString& orientation);
@@ -48,7 +48,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
 
     // Helper being used by this class and LockOrientationCallback.
-    static const AtomicString& orientationTypeToString(blink::WebScreenOrientationType);
+    static const AtomicString& orientationTypeToString(WebScreenOrientationType);
 
     virtual void trace(Visitor*) OVERRIDE;
 
@@ -57,7 +57,7 @@ private:
 
     ScreenOrientationController* controller();
 
-    blink::WebScreenOrientationType m_type;
+    WebScreenOrientationType m_type;
     unsigned short m_angle;
 };
 
