@@ -1,4 +1,3 @@
-CONSOLE MESSAGE: Invalid name for preference: WebKitAcceleratedCompositingEnabled
 layer at (0,0) size 785x1200
   RenderView at (0,0) size 785x600
 layer at (0,0) size 785x1200

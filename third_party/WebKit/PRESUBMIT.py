@@ -308,12 +308,26 @@ def _CheckFilePermissions(input_api, output_api):
     return []
 
 
+def _CheckForInvalidPreferenceError(input_api, output_api):
+    pattern = input_api.re.compile('Invalid name for preference: (.+)')
+    results = []
+
+    for f in input_api.AffectedFiles():
+        if not f.LocalPath().endswith('-expected.txt'):
+            continue
+        for line_num, line in f.ChangedContents():
+            error = pattern.search(line)
+            if error:
+                results.append(output_api.PresubmitError('Found an invalid preference %s in expected result %s:%s' % (error.group(1), f, line_num)))
+    return results
+
 def CheckChangeOnUpload(input_api, output_api):
     results = []
     results.extend(_CommonChecks(input_api, output_api))
     results.extend(_CheckStyle(input_api, output_api))
     results.extend(_CheckForPrintfDebugging(input_api, output_api))
     results.extend(_CheckForDangerousTestFunctions(input_api, output_api))
+    results.extend(_CheckForInvalidPreferenceError(input_api, output_api))
     return results
 
 
