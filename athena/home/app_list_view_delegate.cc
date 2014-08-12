@@ -5,6 +5,7 @@
 #include "athena/home/app_list_view_delegate.h"
 
 #include <string>
+#include <vector>
 
 #include "athena/home/public/app_model_builder.h"
 #include "base/basictypes.h"
@@ -184,9 +185,9 @@ views::View* AppListViewDelegate::CreateStartPageWebView(
   return new DummyLogoView(size);
 }
 
-views::View* AppListViewDelegate::CreateCustomPageWebView(
+std::vector<views::View*> AppListViewDelegate::CreateCustomPageWebViews(
     const gfx::Size& size) {
-  return NULL;
+  return std::vector<views::View*>();
 }
 
 bool AppListViewDelegate::IsSpeechRecognitionEnabled() {

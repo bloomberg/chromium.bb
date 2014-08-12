@@ -5,6 +5,7 @@
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -96,9 +97,9 @@ views::View* AppListTestViewDelegate::CreateStartPageWebView(
     const gfx::Size& size) {
   return NULL;
 }
-views::View* AppListTestViewDelegate::CreateCustomPageWebView(
+std::vector<views::View*> AppListTestViewDelegate::CreateCustomPageWebViews(
     const gfx::Size& size) {
-  return NULL;
+  return std::vector<views::View*>();
 }
 #endif
 

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <vector>
 
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
@@ -353,8 +354,9 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     return NULL;
   }
 
-  virtual views::View* CreateCustomPageWebView(const gfx::Size& size) OVERRIDE {
-    return NULL;
+  virtual std::vector<views::View*> CreateCustomPageWebViews(
+      const gfx::Size& size) OVERRIDE {
+    return std::vector<views::View*>();
   }
 
   virtual bool IsSpeechRecognitionEnabled() OVERRIDE {
