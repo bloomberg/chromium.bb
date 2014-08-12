@@ -136,7 +136,7 @@ private:
 
 enum ShouldStyleAttributeBeEmpty { AllowNonEmptyStyleAttribute, StyleAttributeShouldBeEmpty };
 bool isEmptyFontTag(const Element*, ShouldStyleAttributeBeEmpty = StyleAttributeShouldBeEmpty);
-bool isLegacyAppleStyleSpan(const Node*);
+bool isLegacyAppleHTMLSpanElement(const Node*);
 bool isStyleSpanOrSpanWithOnlyStyleAttribute(const Element*);
 PassRefPtrWillBeRawPtr<HTMLSpanElement> createStyleSpanElement(Document&);
 

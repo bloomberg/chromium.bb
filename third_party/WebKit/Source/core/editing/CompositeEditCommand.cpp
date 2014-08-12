@@ -582,7 +582,7 @@ void CompositeEditCommand::removeCSSProperty(PassRefPtrWillBeRawPtr<Element> ele
     applyCommandToComposite(RemoveCSSPropertyCommand::create(document(), element, property));
 }
 
-void CompositeEditCommand::removeNodeAttribute(PassRefPtrWillBeRawPtr<Element> element, const QualifiedName& attribute)
+void CompositeEditCommand::removeElementAttribute(PassRefPtrWillBeRawPtr<Element> element, const QualifiedName& attribute)
 {
     setNodeAttribute(element, attribute, AtomicString());
 }

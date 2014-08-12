@@ -120,7 +120,7 @@ protected:
     bool canRebalance(const Position&) const;
     bool shouldRebalanceLeadingWhitespaceFor(const String&) const;
     void removeCSSProperty(PassRefPtrWillBeRawPtr<Element>, CSSPropertyID);
-    void removeNodeAttribute(PassRefPtrWillBeRawPtr<Element>, const QualifiedName& attribute);
+    void removeElementAttribute(PassRefPtrWillBeRawPtr<Element>, const QualifiedName& attribute);
     void removeChildrenInRange(PassRefPtrWillBeRawPtr<Node>, unsigned from, unsigned to);
     virtual void removeNode(PassRefPtrWillBeRawPtr<Node>, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable);
     HTMLSpanElement* replaceElementWithSpanPreservingChildrenAndAttributes(PassRefPtrWillBeRawPtr<HTMLElement>);

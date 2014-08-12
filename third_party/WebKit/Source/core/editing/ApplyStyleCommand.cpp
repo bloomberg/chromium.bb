@@ -62,7 +62,7 @@ static String& styleSpanClassString()
     return styleSpanClassString;
 }
 
-bool isLegacyAppleStyleSpan(const Node* node)
+bool isLegacyAppleHTMLSpanElement(const Node* node)
 {
     if (!isHTMLSpanElement(node))
         return false;
@@ -420,7 +420,7 @@ void ApplyStyleCommand::applyRelativeFontStyleChange(EditingStyle* style)
             setNodeAttribute(element.get(), styleAttr, AtomicString(inlineStyle->asText()));
         }
         if (inlineStyle->isEmpty()) {
-            removeNodeAttribute(element.get(), styleAttr);
+            removeElementAttribute(element.get(), styleAttr);
             if (isSpanWithoutAttributesOrUnstyledStyleSpan(element.get()))
                 unstyledSpans.append(element.release());
         }
@@ -529,7 +529,7 @@ void ApplyStyleCommand::removeEmbeddingUpToEnclosingBlock(Node* node, HTMLElemen
         if (element->hasAttribute(dirAttr)) {
             // FIXME: If this is a BDO element, we should probably just remove it if it has no
             // other attributes, like we (should) do with B and I elements.
-            removeNodeAttribute(element, dirAttr);
+            removeElementAttribute(element, dirAttr);
         } else {
             RefPtrWillBeRawPtr<MutableStylePropertySet> inlineStyle = copyStyleOrCreateEmpty(element->inlineStyle());
             inlineStyle->setProperty(CSSPropertyUnicodeBidi, CSSValueNormal);
@@ -966,7 +966,7 @@ bool ApplyStyleCommand::removeImplicitlyStyledElement(EditingStyle* style, HTMLE
         return false;
 
     for (size_t i = 0; i < attributes.size(); i++)
-        removeNodeAttribute(element, attributes[i]);
+        removeElementAttribute(element, attributes[i]);
 
     if (isEmptyFontTag(element) || isSpanWithoutAttributesOrUnstyledStyleSpan(element))
         removeNodePreservingChildren(element);

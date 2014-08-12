@@ -77,10 +77,10 @@ private:
         RefPtrWillBeMember<Node> m_lastNodeInserted;
     };
 
-    Node* insertAsListItems(PassRefPtrWillBeRawPtr<HTMLElement> listElement, Node* insertionNode, const Position&, InsertedNodes&);
+    Node* insertAsListItems(PassRefPtrWillBeRawPtr<HTMLElement> listElement, Element* insertionBlock, const Position&, InsertedNodes&);
 
     void updateNodesInserted(Node*);
-    bool shouldRemoveEndBR(Node*, const VisiblePosition&);
+    bool shouldRemoveEndBR(HTMLBRElement*, const VisiblePosition&);
 
     bool shouldMergeStart(bool, bool, bool);
     bool shouldMergeEnd(bool selectionEndWasEndOfParagraph);
@@ -92,7 +92,7 @@ private:
 
     void removeRedundantStylesAndKeepStyleSpanInline(InsertedNodes&);
     void makeInsertedContentRoundTrippableWithHTMLTreeBuilder(const InsertedNodes&);
-    void moveNodeOutOfAncestor(PassRefPtrWillBeRawPtr<Node>, PassRefPtrWillBeRawPtr<ContainerNode> ancestor);
+    void moveElementOutOfAncestor(PassRefPtrWillBeRawPtr<Element>, PassRefPtrWillBeRawPtr<ContainerNode> ancestor);
     void handleStyleSpans(InsertedNodes&);
 
     VisiblePosition positionAtStartOfInsertedContent() const;
