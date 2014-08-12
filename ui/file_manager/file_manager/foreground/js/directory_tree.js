@@ -550,7 +550,8 @@ VolumeItem.prototype.selectByEntry = function(entry) {
     this.searchAndSelectByEntry(entry);
     return;
   }
-  if (util.isSameEntry(entry, this.entry))
+  if (util.isSameEntry(this.entry, entry) ||
+      util.isDescendantEntry(this.entry, entry))
     this.selected = true;
 };
 
@@ -938,12 +939,18 @@ DirectoryTree.prototype.searchAndSelectByEntry = function(entry) {
       continue;
 
     if (util.isSameEntry(item.entry, entry)) {
+      this.dontHandleChangeEvent_ = true;
       item.selectByEntry(entry);
+      this.dontHandleChangeEvent_ = false;
       return true;
     }
   }
   // Otherwise, search whole tree.
-  return DirectoryItemTreeBaseMethods.searchAndSelectByEntry.call(this, entry);
+  this.dontHandleChangeEvent_ = true;
+  var found = DirectoryItemTreeBaseMethods.searchAndSelectByEntry.call(
+      this, entry);
+  this.dontHandleChangeEvent_ = false;
+  return found;
 };
 
 /**
@@ -972,7 +979,7 @@ DirectoryTree.prototype.decorate = function(
 
   // Add a handler for directory change.
   this.addEventListener('change', function() {
-    if (this.selectedItem)
+    if (this.selectedItem && !this.dontHandleChangeEvent_)
       this.selectedItem.activate();
   }.bind(this));
 
