@@ -919,7 +919,8 @@ void SessionsSyncManager::SetSessionTabFromDelegate(
   session_tab->window_id.set_id(tab_delegate.GetWindowId());
   session_tab->tab_id.set_id(tab_delegate.GetSessionId());
   session_tab->tab_visual_index = 0;
-  session_tab->current_navigation_index = tab_delegate.GetCurrentEntryIndex();
+  // Use -1 to indicate that the index hasn't been set properly yet.
+  session_tab->current_navigation_index = -1;
   session_tab->pinned = tab_delegate.IsPinned();
   session_tab->extension_app_id = tab_delegate.GetExtensionAppId();
   session_tab->user_agent_override.clear();
@@ -939,12 +940,23 @@ void SessionsSyncManager::SetSessionTabFromDelegate(
     if (!entry->GetVirtualURL().is_valid())
       continue;
 
+    // Set current_navigation_index to the index in navigations.
+    if (i == current_index)
+      session_tab->current_navigation_index = session_tab->navigations.size();
+
     session_tab->navigations.push_back(
         SerializedNavigationEntry::FromNavigationEntry(i, *entry));
     if (is_supervised) {
       session_tab->navigations.back().set_blocked_state(
           SerializedNavigationEntry::STATE_ALLOWED);
     }
+  }
+
+  // If the current navigation is invalid, set the index to the end of the
+  // navigation array.
+  if (session_tab->current_navigation_index < 0) {
+    session_tab->current_navigation_index =
+        session_tab->navigations.size() - 1;
   }
 
   if (is_supervised) {

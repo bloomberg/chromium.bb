@@ -507,11 +507,16 @@ TEST_F(SessionsSyncManagerTest, GetCurrentVirtualURLNonPending) {
   EXPECT_EQ(entry->GetVirtualURL(), manager()->GetCurrentVirtualURL(tab));
 }
 
-static const base::Time kTime1 = base::Time::FromInternalValue(100);
-static const base::Time kTime2 = base::Time::FromInternalValue(105);
-static const base::Time kTime3 = base::Time::FromInternalValue(110);
-static const base::Time kTime4 = base::Time::FromInternalValue(120);
-static const base::Time kTime5 = base::Time::FromInternalValue(130);
+static const base::Time kTime0 = base::Time::FromInternalValue(100);
+static const base::Time kTime1 = base::Time::FromInternalValue(110);
+static const base::Time kTime2 = base::Time::FromInternalValue(120);
+static const base::Time kTime3 = base::Time::FromInternalValue(130);
+static const base::Time kTime4 = base::Time::FromInternalValue(140);
+static const base::Time kTime5 = base::Time::FromInternalValue(150);
+static const base::Time kTime6 = base::Time::FromInternalValue(160);
+static const base::Time kTime7 = base::Time::FromInternalValue(170);
+static const base::Time kTime8 = base::Time::FromInternalValue(180);
+static const base::Time kTime9 = base::Time::FromInternalValue(190);
 
 // Populate the mock tab delegate with some data and navigation
 // entries and make sure that setting a SessionTab from it preserves
@@ -580,6 +585,110 @@ TEST_F(SessionsSyncManagerTest, SetSessionTabFromDelegate) {
   EXPECT_EQ(SerializedNavigationEntry::STATE_INVALID,
             session_tab.navigations[2].blocked_state());
   EXPECT_TRUE(session_tab.session_storage_persistent_id.empty());
+}
+
+// Ensure the current_navigation_index gets set properly when the navigation
+// stack gets trucated to +/- 6 entries.
+TEST_F(SessionsSyncManagerTest, SetSessionTabFromDelegateNavigationIndex) {
+  SyncedTabDelegateFake tab;
+  content::NavigationEntry* entry0(content::NavigationEntry::Create());
+  entry0->SetVirtualURL(GURL("http://www.google.com"));
+  entry0->SetTimestamp(kTime0);
+  entry0->SetHttpStatusCode(200);
+  content::NavigationEntry* entry1(content::NavigationEntry::Create());
+  entry1->SetVirtualURL(GURL("http://www.zoogle.com"));
+  entry1->SetTimestamp(kTime1);
+  entry1->SetHttpStatusCode(200);
+  content::NavigationEntry* entry2(content::NavigationEntry::Create());
+  entry2->SetVirtualURL(GURL("http://www.noogle.com"));
+  entry2->SetTimestamp(kTime2);
+  entry2->SetHttpStatusCode(200);
+  content::NavigationEntry* entry3(content::NavigationEntry::Create());
+  entry3->SetVirtualURL(GURL("http://www.doogle.com"));
+  entry3->SetTimestamp(kTime3);
+  entry3->SetHttpStatusCode(200);
+  content::NavigationEntry* entry4(content::NavigationEntry::Create());
+  entry4->SetVirtualURL(GURL("http://www.yoogle.com"));
+  entry4->SetTimestamp(kTime4);
+  entry4->SetHttpStatusCode(200);
+  content::NavigationEntry* entry5(content::NavigationEntry::Create());
+  entry5->SetVirtualURL(GURL("http://www.foogle.com"));
+  entry5->SetTimestamp(kTime5);
+  entry5->SetHttpStatusCode(200);
+  content::NavigationEntry* entry6(content::NavigationEntry::Create());
+  entry6->SetVirtualURL(GURL("http://www.boogle.com"));
+  entry6->SetTimestamp(kTime6);
+  entry6->SetHttpStatusCode(200);
+  content::NavigationEntry* entry7(content::NavigationEntry::Create());
+  entry7->SetVirtualURL(GURL("http://www.moogle.com"));
+  entry7->SetTimestamp(kTime7);
+  entry7->SetHttpStatusCode(200);
+  content::NavigationEntry* entry8(content::NavigationEntry::Create());
+  entry8->SetVirtualURL(GURL("http://www.poogle.com"));
+  entry8->SetTimestamp(kTime8);
+  entry8->SetHttpStatusCode(200);
+  content::NavigationEntry* entry9(content::NavigationEntry::Create());
+  entry9->SetVirtualURL(GURL("http://www.roogle.com"));
+  entry9->SetTimestamp(kTime9);
+  entry9->SetHttpStatusCode(200);
+
+  tab.AppendEntry(entry0);
+  tab.AppendEntry(entry1);
+  tab.AppendEntry(entry2);
+  tab.AppendEntry(entry3);
+  tab.AppendEntry(entry4);
+  tab.AppendEntry(entry5);
+  tab.AppendEntry(entry6);
+  tab.AppendEntry(entry7);
+  tab.AppendEntry(entry8);
+  tab.AppendEntry(entry9);
+  tab.set_current_entry_index(8);
+
+  SessionTab session_tab;
+  manager()->SetSessionTabFromDelegate(tab, kTime9, &session_tab);
+
+  EXPECT_EQ(6, session_tab.current_navigation_index);
+  ASSERT_EQ(8u, session_tab.navigations.size());
+  EXPECT_EQ(entry2->GetVirtualURL(),
+            session_tab.navigations[0].virtual_url());
+  EXPECT_EQ(entry3->GetVirtualURL(),
+            session_tab.navigations[1].virtual_url());
+  EXPECT_EQ(entry4->GetVirtualURL(),
+            session_tab.navigations[2].virtual_url());
+}
+
+// Ensure the current_navigation_index gets set to the end of the navigation
+// stack if the current navigation is invalid.
+TEST_F(SessionsSyncManagerTest, SetSessionTabFromDelegateCurrentInvalid) {
+  SyncedTabDelegateFake tab;
+  content::NavigationEntry* entry0(content::NavigationEntry::Create());
+  entry0->SetVirtualURL(GURL("http://www.google.com"));
+  entry0->SetTimestamp(kTime0);
+  entry0->SetHttpStatusCode(200);
+  content::NavigationEntry* entry1(content::NavigationEntry::Create());
+  entry1->SetVirtualURL(GURL(""));
+  entry1->SetTimestamp(kTime1);
+  entry1->SetHttpStatusCode(200);
+  content::NavigationEntry* entry2(content::NavigationEntry::Create());
+  entry2->SetVirtualURL(GURL("http://www.noogle.com"));
+  entry2->SetTimestamp(kTime2);
+  entry2->SetHttpStatusCode(200);
+  content::NavigationEntry* entry3(content::NavigationEntry::Create());
+  entry3->SetVirtualURL(GURL("http://www.doogle.com"));
+  entry3->SetTimestamp(kTime3);
+  entry3->SetHttpStatusCode(200);
+
+  tab.AppendEntry(entry0);
+  tab.AppendEntry(entry1);
+  tab.AppendEntry(entry2);
+  tab.AppendEntry(entry3);
+  tab.set_current_entry_index(1);
+
+  SessionTab session_tab;
+  manager()->SetSessionTabFromDelegate(tab, kTime9, &session_tab);
+
+  EXPECT_EQ(2, session_tab.current_navigation_index);
+  ASSERT_EQ(3u, session_tab.navigations.size());
 }
 
 // Tests that for supervised users blocked navigations are recorded and marked

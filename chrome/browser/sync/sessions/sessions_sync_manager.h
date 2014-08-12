@@ -181,6 +181,10 @@ class SessionsSyncManager : public syncer::SyncableService,
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, PopulateSessionWindow);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, ValidTabs);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, SetSessionTabFromDelegate);
+  FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest,
+                           SetSessionTabFromDelegateNavigationIndex);
+  FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest,
+                           SetSessionTabFromDelegateCurrentInvalid);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, BlockedNavigations);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, DeleteForeignSession);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest,
