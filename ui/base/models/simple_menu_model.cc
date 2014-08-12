@@ -131,7 +131,7 @@ void SimpleMenuModel::AddSeparator(MenuSeparatorType separator_type) {
     return;
   }
 #if !defined(USE_AURA)
-  if (separator_type != NORMAL_SEPARATOR)
+  if (separator_type == SPACING_SEPARATOR)
     NOTIMPLEMENTED();
 #endif
   Item item = { kSeparatorId, base::string16(), base::string16(),
