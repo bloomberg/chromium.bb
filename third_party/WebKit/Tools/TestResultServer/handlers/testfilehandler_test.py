@@ -70,7 +70,7 @@ class TestFileHandlerTest(unittest.TestCase):
             'tests': {
                 'Test1.testproc1': {
                     'expected': 'PASS',
-                    'actual': 'PASS',
+                    'actual': 'FAIL',
                     'time': 1,
                 }
             },
@@ -96,17 +96,26 @@ class TestFileHandlerTest(unittest.TestCase):
         response = self.testapp.post('/testfile/upload', params=params, upload_files=upload_files)
         self.assertEqual(response.status_int, 200)
 
+        # test aggregated results.json got generated
         params = collections.OrderedDict([
             (testfilehandler.PARAM_BUILDER, builder),
             (testfilehandler.PARAM_MASTER, master['url_name']),
             (testfilehandler.PARAM_TEST_TYPE, test_type),
-            (testfilehandler.PARAM_BUILD_NUMBER, '123'),
-            (testfilehandler.PARAM_NAME, 'full_results.json')
+            (testfilehandler.PARAM_NAME, 'results.json')
         ])
         response = self.testapp.get('/testfile', params=params)
         self.assertEqual(response.status_int, 200)
         response_json = json.loads(response.normal_body)
-        self.assertEqual(response_json['chromium_revision'], '67890')
+        self.assertEqual(response_json[builder]['tests']['Test1.testproc1'],
+            {'results': [[1, 'Q']], 'times': [[1, 1]]})
+
+        # test testlistjson=1
+        params[testfilehandler.PARAM_TEST_LIST_JSON] = '1'
+
+        response = self.testapp.get('/testfile', params=params)
+        self.assertEqual(response.status_int, 200)
+        response_json = json.loads(response.normal_body)
+        self.assertEqual(response_json[builder]['tests']['Test1.testproc1'], {})
 
     def test_deprecated_master_name(self):
         """Verify that a file uploaded with a deprecated master name

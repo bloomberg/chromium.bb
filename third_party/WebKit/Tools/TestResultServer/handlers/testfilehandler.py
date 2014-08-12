@@ -155,21 +155,6 @@ class GetFile(webapp2.RequestHandler):
         file.load_data()
         return file.data, file.date
 
-    def _get_test_list_json(self, master, builder, test_type, build_number):
-        """Return json file with test name list only, do not include test
-           results and other non-test-data .
-
-        Args:
-            builder: builder name.
-            test_type: type of test results.
-        """
-
-        json, date = self._get_file_content(master, builder, test_type, build_number, "results.json")
-        if not json:
-            return None
-
-        return JsonResults.get_test_list(builder, json), date
-
     def _serve_json(self, json, modified_date):
         if json:
             if "If-Modified-Since" in self.request.headers:
@@ -205,8 +190,6 @@ class GetFile(webapp2.RequestHandler):
 
         if key:
             json, date = self._get_file_content_from_key(key)
-        elif test_list_json:
-            json, date = self._get_test_list_json(master, builder, test_type, build_number)
         elif num_files or not master or not builder or not test_type or (not build_number and not JsonResults.is_aggregate_file(name)) or not name:
             limit = int(num_files) if num_files else 100
             self._get_file_list(master, builder, test_type, build_number, name, before, limit, callback_name)
@@ -219,9 +202,13 @@ class GetFile(webapp2.RequestHandler):
             if not master_data:
                 self.error(404)
                 return
+
             json, date = self._get_file_content(master_data['url_name'], builder, test_type, build_number, name)
             if json is None:
                 json, date = self._get_file_content(master_data['name'], builder, test_type, build_number, name)
+
+            if test_list_json:
+                json = JsonResults.get_test_list(builder, json)
 
         if json:
             json = _replace_jsonp_callback(json, callback_name)

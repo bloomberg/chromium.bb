@@ -33,7 +33,7 @@ except ImportError:
     print "ERROR: Add the TestResultServer, google_appengine and yaml/lib directories to your PYTHONPATH"
     raise
 
-import master_config
+from handlers import master_config
 
 import json
 import logging
