@@ -13,29 +13,34 @@ var init = function() {
             if (callback)
                 callback(event)
         };
-        waitForEvent(document, 'webkitfullscreenchange', fullscreenChanged);
+        document.onwebkitfullscreenchange = fullscreenChanged;
 
         var one = document.getElementById('one');
         var two = document.getElementById('two');
         var three = document.getElementById('three');
 
         var threeEnteredFullScreen = function(event) {
-            callback = threeExitedFullScreen;
-            testExpected("document.webkitCurrentFullScreenElement", three);
-            one.removeChild(two);
+            if (document.webkitCurrentFullScreenElement == three) {
+                callback = threeExitedFullScreen;
+                one.removeChild(two);
+            }
         };
 
         var threeExitedFullScreen = function(event) {
-            callback = null;
-            testExpected("document.webkitCurrentFullScreenElement", null);
-            endTest();
+            if (document.webkitCurrentFullScreenElement == null) {
+                callback = null;
+                endTest();
+            }
         };
 
         callback = threeEnteredFullScreen;
-        runWithKeyDown(function(){three.webkitRequestFullScreen()});        
+
+        function goFullScreen() {
+            document.getElementById('three').webkitRequestFullScreen();
+        }
+        runWithKeyDown(goFullScreen);
     }
 };
-var startTest = function() { document.getElementById('three').webkitRequestFullScreen(); };
 </script>
 <script src="full-screen-test.js"></script>
 <style>
@@ -63,13 +68,12 @@ var startTest = function() { document.getElementById('three').webkitRequestFullS
 </style>
 </head>
 <body onload="init()">
-    
-This tests that, if the ancestor of the current full-screen element is removed, full screen mode will exit, and the document will render normally.  At the completion of the test, a green box should be visible. Click <button onclick="startTest()">go full screen</button> to run the test.
+
+This tests that, if the ancestor of the current full-screen element is removed, full screen mode will exit, and the document will render normally.  At the completion of the test, a green box should be visible. Click <button onclick="goFullScreen()">go full screen</button> to run the test.
 
 <div id="one">
     <div id="two">
         <div id="three"></div>
     </div>
 </div>
-
-</script>
+</body>

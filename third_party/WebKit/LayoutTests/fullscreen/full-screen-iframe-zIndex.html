@@ -45,10 +45,10 @@
         </style>
     </head>
     <body onload="init()">
-        <div>This tests that an element with a positive z-index appears behind the full screen element.  
-             After entering full screen mode, only a white box should be visible.
+        <div>This tests that an element with a positive z-index appears behind the full screen element.
+             After entering full screen mode, the whole screen should be white.
              Click <button onclick="goFullScreen()">go full screen</button> to run the test.</div>
         <div id="block2"></div>
-        <iframe allowfullscreen src="resources/inner.html" id="block1"></iframe>
+        <iframe allowfullscreen src="resources/empty.html" id="block1"></iframe>
     </body>
 </html>
