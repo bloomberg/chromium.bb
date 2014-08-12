@@ -9264,6 +9264,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Histogram.InconsistentSnapshotBrowser">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    The amount of discrepancy found when examining a single histogram's data in
+    the browser process for transmission via UMA.  Inconsistent data is NOT
+    transmitted via UMA.
+  </summary>
+</histogram>
+
 <histogram name="Histogram.InconsistentSnapshotChildProcess">
   <owner>asvitkine@chromium.org</owner>
   <summary>
