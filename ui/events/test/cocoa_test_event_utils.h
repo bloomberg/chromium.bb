@@ -11,20 +11,6 @@
 
 #include "base/basictypes.h"
 
-// Within a given scope, replace the selector |selector| on |target| with that
-// from |source|.
-class ScopedClassSwizzler {
- public:
-  ScopedClassSwizzler(Class target, Class source, SEL selector);
-  ~ScopedClassSwizzler();
-
- private:
-  Method old_selector_impl_;
-  Method new_selector_impl_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedClassSwizzler);
-};
-
 namespace cocoa_test_event_utils {
 
 // Create synthetic mouse events for testing. Currently these are very

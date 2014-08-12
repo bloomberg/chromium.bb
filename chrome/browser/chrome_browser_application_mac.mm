@@ -10,13 +10,13 @@
 #import "base/logging.h"
 #import "base/mac/scoped_nsexception_enabler.h"
 #import "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_objc_class_swizzler.h"
 #import "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/common/crash_keys.h"
-#import "chrome/common/mac/objc_method_swizzle.h"
 #import "chrome/common/mac/objc_zombie.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/render_view_host.h"
@@ -63,6 +63,7 @@ static IMP gOriginalInitIMP = NULL;
             userInfo:(NSDictionary*)someUserInfo {
   // Method only called when swizzled.
   DCHECK(_cmd == @selector(initWithName:reason:userInfo:));
+  DCHECK(gOriginalInitIMP);
 
   // Parts of Cocoa rely on creating and throwing exceptions. These are not
   // worth bugging-out over. It is very important that there be zero chance that
@@ -235,10 +236,12 @@ void SwizzleInit() {
   // Do-nothing wrapper so that we can arrange to only swizzle
   // -[NSException raise] when DCHECK() is turned on (as opposed to
   // replicating the preprocess logic which turns DCHECK() on).
-  gOriginalInitIMP = ObjcEvilDoers::SwizzleImplementedInstanceMethods(
-      [NSException class],
-      @selector(initWithName:reason:userInfo:),
-      @selector(crInitWithName:reason:userInfo:));
+  CR_DEFINE_STATIC_LOCAL(base::mac::ScopedObjCClassSwizzler,
+                         swizzle_exception,
+                         ([NSException class],
+                          @selector(initWithName:reason:userInfo:),
+                          @selector(crInitWithName:reason:userInfo:)));
+  gOriginalInitIMP = swizzle_exception.GetOriginalImplementation();
 }
 
 }  // namespace

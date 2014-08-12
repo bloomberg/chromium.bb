@@ -6,22 +6,6 @@
 
 #include "ui/events/test/cocoa_test_event_utils.h"
 
-ScopedClassSwizzler::ScopedClassSwizzler(Class target, Class source,
-                                         SEL selector) {
-  old_selector_impl_ = class_getInstanceMethod(target, selector);
-  new_selector_impl_ = class_getInstanceMethod(source, selector);
-  if (!old_selector_impl_ && !new_selector_impl_) {
-    // Try class methods.
-    old_selector_impl_ = class_getClassMethod(target, selector);
-    new_selector_impl_ = class_getClassMethod(source, selector);
-  }
-  method_exchangeImplementations(old_selector_impl_, new_selector_impl_);
-}
-
-ScopedClassSwizzler::~ScopedClassSwizzler() {
-  method_exchangeImplementations(old_selector_impl_, new_selector_impl_);
-}
-
 namespace cocoa_test_event_utils {
 
 NSEvent* MouseEventAtPoint(NSPoint point, NSEventType type,

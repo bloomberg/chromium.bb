@@ -6,6 +6,7 @@
 
 #import <objc/objc-class.h>
 
+#import "base/mac/scoped_objc_class_swizzler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "ui/events/event_constants.h"
@@ -39,8 +40,8 @@ TEST_F(CocoaBaseUtilsTest, WindowOpenDispositionFromNSEvent) {
 
   // Shift+Middle Click = new foreground tab.
   {
-    ScopedClassSwizzler swizzler([NSEvent class], [TestEvent class],
-                                 @selector(modifierFlags));
+    base::mac::ScopedObjCClassSwizzler swizzler(
+        [NSEvent class], [TestEvent class], @selector(modifierFlags));
     me = cocoa_test_event_utils::MouseEventWithType(NSOtherMouseUp,
                                                     NSShiftKeyMask);
     EXPECT_EQ(NEW_FOREGROUND_TAB, WindowOpenDispositionFromNSEvent(me));

@@ -136,8 +136,6 @@
       'common/mac/cfbundle_blocker.mm',
       'common/mac/launchd.h',
       'common/mac/launchd.mm',
-      'common/mac/objc_method_swizzle.h',
-      'common/mac/objc_method_swizzle.mm',
       'common/mac/objc_zombie.h',
       'common/mac/objc_zombie.mm',
       'common/media/webrtc_logging_messages.h',

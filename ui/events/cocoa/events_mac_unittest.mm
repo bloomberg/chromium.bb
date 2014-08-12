@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_cftyperef.h"
+#import "base/mac/scoped_objc_class_swizzler.h"
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_constants.h"
@@ -32,7 +33,7 @@ NSWindow* g_test_window = nil;
 @end
 
 @implementation MiddleMouseButtonNumberDonor
-- (NSUInteger)buttonNumber { return 2; }
+- (NSInteger)buttonNumber { return 2; }
 @end
 
 @implementation TestWindowDonor
@@ -57,7 +58,7 @@ class EventsMacTest : public CocoaTest {
 
   void SwizzleMiddleMouseButton() {
     DCHECK(!swizzler_);
-    swizzler_.reset(new ScopedClassSwizzler(
+    swizzler_.reset(new base::mac::ScopedObjCClassSwizzler(
         [NSEvent class],
         [MiddleMouseButtonNumberDonor class],
         @selector(buttonNumber)));
@@ -67,10 +68,8 @@ class EventsMacTest : public CocoaTest {
     DCHECK(!g_test_window);
     DCHECK(!swizzler_);
     g_test_window = test_window();
-    swizzler_.reset(new ScopedClassSwizzler(
-        [NSEvent class],
-        [TestWindowDonor class],
-        @selector(window)));
+    swizzler_.reset(new base::mac::ScopedObjCClassSwizzler(
+        [NSEvent class], [TestWindowDonor class], @selector(window)));
   }
 
   void ClearSwizzle() {
@@ -117,7 +116,7 @@ class EventsMacTest : public CocoaTest {
   }
 
  private:
-  scoped_ptr<ScopedClassSwizzler> swizzler_;
+  scoped_ptr<base::mac::ScopedObjCClassSwizzler> swizzler_;
 
   DISALLOW_COPY_AND_ASSIGN(EventsMacTest);
 };

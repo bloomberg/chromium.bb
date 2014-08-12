@@ -4,13 +4,13 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/mac/scoped_objc_class_swizzler.h"
 #include "base/memory/singleton.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/event_target.h"
 #include "ui/events/event_target_iterator.h"
 #include "ui/events/event_targeter.h"
 #include "ui/events/test/event_generator.h"
-#import "ui/events/test/cocoa_test_event_utils.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 
 namespace {
@@ -293,7 +293,7 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
 
   ui::test::EventGenerator* owner_;
   NSWindow* window_;
-  scoped_ptr<ScopedClassSwizzler> swizzle_pressed_;
+  scoped_ptr<base::mac::ScopedObjCClassSwizzler> swizzle_pressed_;
 
   DISALLOW_COPY_AND_ASSIGN(EventGeneratorDelegateMac);
 };
@@ -332,7 +332,7 @@ void EventGeneratorDelegateMac::SetContext(ui::test::EventGenerator* owner,
   owner_ = owner;
   window_ = window;
   if (owner_) {
-    swizzle_pressed_.reset(new ScopedClassSwizzler(
+    swizzle_pressed_.reset(new base::mac::ScopedObjCClassSwizzler(
         [NSEvent class],
         [NSEventDonor class],
         @selector(pressedMouseButtons)));

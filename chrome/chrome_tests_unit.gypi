@@ -1881,7 +1881,6 @@
         'common/mac/cfbundle_blocker_unittest.mm',
         'common/mac/mock_launchd.cc',
         'common/mac/mock_launchd.h',
-        'common/mac/objc_method_swizzle_unittest.mm',
         'common/mac/objc_zombie_unittest.mm',
         'common/multi_process_lock_unittest.cc',
         'common/net/x509_certificate_model_unittest.cc',

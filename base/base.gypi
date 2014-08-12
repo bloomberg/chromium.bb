@@ -304,6 +304,8 @@
           'mac/scoped_nsexception_enabler.h',
           'mac/scoped_nsexception_enabler.mm',
           'mac/scoped_nsobject.h',
+          'mac/scoped_objc_class_swizzler.h',
+          'mac/scoped_objc_class_swizzler.mm',
           'mac/scoped_sending_event.h',
           'mac/scoped_sending_event.mm',
           'mac/scoped_typeref.h',
