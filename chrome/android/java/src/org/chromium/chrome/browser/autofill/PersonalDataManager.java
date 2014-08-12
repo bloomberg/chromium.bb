@@ -47,7 +47,7 @@ public class PersonalDataManager {
         private String mDependentLocality;
         private String mPostalCode;
         private String mSortingCode;
-        private String mCountry;
+        private String mCountryCode;
         private String mPhoneNumber;
         private String mEmailAddress;
         private String mLabel;
@@ -70,7 +70,7 @@ public class PersonalDataManager {
                 String region,
                 String locality, String dependentLocality,
                 String postalCode, String sortingCode,
-                String country, String phoneNumber, String emailAddress, String languageCode) {
+                String countryCode, String phoneNumber, String emailAddress, String languageCode) {
             mGUID = guid;
             mOrigin = origin;
             mFullName = fullName;
@@ -81,7 +81,7 @@ public class PersonalDataManager {
             mDependentLocality = dependentLocality;
             mPostalCode = postalCode;
             mSortingCode = sortingCode;
-            mCountry = country;
+            mCountryCode = countryCode;
             mPhoneNumber = phoneNumber;
             mEmailAddress = emailAddress;
             mLanguageCode = languageCode;
@@ -142,12 +142,8 @@ public class PersonalDataManager {
         }
 
         @CalledByNative("AutofillProfile")
-        public String getCountry() {
-            return mCountry;
-        }
-
         public String getCountryCode() {
-            return nativeToCountryCode(mCountry);
+            return mCountryCode;
         }
 
         @CalledByNative("AutofillProfile")
@@ -209,8 +205,8 @@ public class PersonalDataManager {
             mSortingCode = sortingCode;
         }
 
-        public void setCountry(String country) {
-            mCountry = country;
+        public void setCountryCode(String countryCode) {
+            mCountryCode = countryCode;
         }
 
         public void setPhoneNumber(String phoneNumber) {

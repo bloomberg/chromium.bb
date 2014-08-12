@@ -53,7 +53,7 @@ public class PersonalDataManagerTest extends ChromeShellTestBase {
         assertEquals(2, mHelper.getNumberOfProfiles());
 
         profile.setGUID(profileOneGUID);
-        profile.setCountry("Canada");
+        profile.setCountryCode("CA");
         mHelper.setProfile(profile);
         assertEquals("Should still have only two profiles", 2, mHelper.getNumberOfProfiles());
 

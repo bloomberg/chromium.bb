@@ -39,8 +39,11 @@ void CountryComboboxModel::SetCountries(
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   if (filter.is_null() || filter.Run(default_country_code)) {
     countries_.push_back(new AutofillCountry(default_country_code, app_locale));
-    // The separator item.
+#if !defined(OS_ANDROID)
+    // The separator item. On Android, there are separators after all items, so
+    // this is unnecessary.
     countries_.push_back(NULL);
+#endif
   }
 
   // The sorted list of countries.

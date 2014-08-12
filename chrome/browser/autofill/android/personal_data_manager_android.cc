@@ -43,30 +43,20 @@ ScopedJavaLocalRef<jobject> CreateJavaProfileFromNative(
       ConvertUTF16ToJavaString(env, profile.GetRawInfo(NAME_FULL)).obj(),
       ConvertUTF16ToJavaString(env, profile.GetRawInfo(COMPANY_NAME)).obj(),
       ConvertUTF16ToJavaString(
-          env,
-          profile.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS)).obj(),
+          env, profile.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS)).obj(),
+      ConvertUTF16ToJavaString(env, profile.GetRawInfo(ADDRESS_HOME_STATE))
+          .obj(),
+      ConvertUTF16ToJavaString(env, profile.GetRawInfo(ADDRESS_HOME_CITY))
+          .obj(),
       ConvertUTF16ToJavaString(
-          env,
-          profile.GetRawInfo(ADDRESS_HOME_STATE)).obj(),
+          env, profile.GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY)).obj(),
+      ConvertUTF16ToJavaString(env, profile.GetRawInfo(ADDRESS_HOME_ZIP)).obj(),
       ConvertUTF16ToJavaString(
-          env,
-          profile.GetRawInfo(ADDRESS_HOME_CITY)).obj(),
-      ConvertUTF16ToJavaString(
-          env,
-          profile.GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY)).obj(),
-      ConvertUTF16ToJavaString(
-          env,
-          profile.GetRawInfo(ADDRESS_HOME_ZIP)).obj(),
-      ConvertUTF16ToJavaString(
-          env,
-          profile.GetRawInfo(ADDRESS_HOME_SORTING_CODE)).obj(),
-      ConvertUTF16ToJavaString(
-          env,
-          profile.GetInfo(AutofillType(ADDRESS_HOME_COUNTRY),
-                          g_browser_process->GetApplicationLocale())).obj(),
-      ConvertUTF16ToJavaString(
-          env,
-          profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER)).obj(),
+          env, profile.GetRawInfo(ADDRESS_HOME_SORTING_CODE)).obj(),
+      ConvertUTF16ToJavaString(env, profile.GetRawInfo(ADDRESS_HOME_COUNTRY))
+          .obj(),
+      ConvertUTF16ToJavaString(env, profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER))
+          .obj(),
       ConvertUTF16ToJavaString(env, profile.GetRawInfo(EMAIL_ADDRESS)).obj(),
       ConvertUTF8ToJavaString(env, profile.language_code()).obj());
 }
@@ -118,11 +108,10 @@ void PopulateNativeProfileFromJava(
       ConvertJavaStringToUTF16(
           Java_AutofillProfile_getSortingCode(env, jprofile)),
       g_browser_process->GetApplicationLocale());
-  profile->SetInfo(
-      AutofillType(ADDRESS_HOME_COUNTRY),
-      ConvertJavaStringToUTF16(
-          Java_AutofillProfile_getCountry(env, jprofile)),
-      g_browser_process->GetApplicationLocale());
+  profile->SetInfo(AutofillType(ADDRESS_HOME_COUNTRY),
+                   ConvertJavaStringToUTF16(
+                       Java_AutofillProfile_getCountryCode(env, jprofile)),
+                   g_browser_process->GetApplicationLocale());
   profile->SetInfo(
       AutofillType(PHONE_HOME_WHOLE_NUMBER),
       ConvertJavaStringToUTF16(
