@@ -561,8 +561,6 @@
       'browser/history/in_memory_url_index.h',
       'browser/history/in_memory_url_index_types.cc',
       'browser/history/in_memory_url_index_types.h',
-      'browser/history/page_usage_data.cc',
-      'browser/history/page_usage_data.h',
       'browser/history/scored_history_match.cc',
       'browser/history/scored_history_match.h',
       'browser/history/shortcuts_database.cc',

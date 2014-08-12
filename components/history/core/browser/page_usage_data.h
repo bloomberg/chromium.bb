@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_PAGE_USAGE_DATA_H__
-#define CHROME_BROWSER_HISTORY_PAGE_USAGE_DATA_H__
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_PAGE_USAGE_DATA_H__
+#define COMPONENTS_HISTORY_CORE_BROWSER_PAGE_USAGE_DATA_H__
 
 #include "base/strings/string16.h"
-#include "chrome/browser/history/history_types.h"
+#include "components/history/core/browser/history_types.h"
 #include "url/gurl.h"
 
 class SkBitmap;
@@ -67,4 +67,4 @@ class PageUsageData {
   double score_;
 };
 
-#endif  // CHROME_BROWSER_HISTORY_PAGE_USAGE_DATA_H__
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_PAGE_USAGE_DATA_H__
