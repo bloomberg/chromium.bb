@@ -125,9 +125,6 @@ STDMETHODIMP AudioDeviceListenerWin::OnDeviceRemoved(LPCWSTR device_id) {
 
 STDMETHODIMP AudioDeviceListenerWin::OnDeviceStateChanged(LPCWSTR device_id,
                                                           DWORD new_state) {
-  if (new_state != DEVICE_STATE_ACTIVE && new_state != DEVICE_STATE_NOTPRESENT)
-    return S_OK;
-
   base::SystemMonitor* monitor = base::SystemMonitor::Get();
   if (monitor)
     monitor->ProcessDevicesChanged(base::SystemMonitor::DEVTYPE_AUDIO_CAPTURE);
