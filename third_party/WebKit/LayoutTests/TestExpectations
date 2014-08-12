@@ -1107,8 +1107,6 @@ crbug.com/372917 http/tests/security/contentSecurityPolicy/connect-src-beacon-re
 crbug.com/381373 [ Mac Win ] virtual/implsidepainting/inspector/timeline/tracing/decode-resize.html [ Pass Timeout Failure ]
 crbug.com/381373 [ Linux ] virtual/implsidepainting/inspector/timeline/tracing/decode-resize.html [ Pass Timeout ]
 
-crbug.com/402016 [ Android ] fast/shapes/shape-outside-floats/shape-outside-floats-ellipse-margin-right.html [ Pass Failure ]
-
 crbug.com/361729 [ MountainLion ] printing/return-from-printing-mode.html [ ImageOnlyFailure ]
 
 crbug.com/373430 [ Win7 ] fast/dom/Geolocation/error-clear-watch.html [ Pass Timeout ]
