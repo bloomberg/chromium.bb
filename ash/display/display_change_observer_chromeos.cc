@@ -192,9 +192,11 @@ void DisplayChangeObserver::OnDisplayModeChanged(
 
     float device_scale_factor = 1.0f;
     if (state.display->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL) {
-      device_scale_factor =
-          FindDeviceScaleFactor((kInchInMm * mode_info->size().width() /
-                                 state.display->physical_size().width()));
+      if (!ui::IsDisplaySizeBlackListed(state.display->physical_size())) {
+        device_scale_factor =
+            FindDeviceScaleFactor((kInchInMm * mode_info->size().width() /
+                                   state.display->physical_size().width()));
+      }
     } else {
       DisplayMode mode;
       if (Shell::GetInstance()->display_manager()->GetSelectedModeForDisplayId(
