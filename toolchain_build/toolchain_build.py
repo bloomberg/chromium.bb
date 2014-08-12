@@ -658,12 +658,17 @@ def HostTools(host, target):
   def H(component_name):
     return ForHost(component_name, host)
 
+  def WindowsAlternate(if_windows, if_not_windows, if_mac=None):
+    if if_mac is not None and HostIsMac(host):
+      return if_mac
+    elif HostIsWindows(host):
+      return if_windows
+    else:
+      return if_not_windows
+
   # Return the file name with the appropriate suffix for an executable file.
   def Exe(file):
-    if HostIsWindows(host):
-      return file + '.exe'
-    else:
-      return file
+    return file + WindowsAlternate('.exe', '')
 
   tools = {
       H('binutils_' + target): {
@@ -676,9 +681,7 @@ def HostTools(host, target):
                   ConfigureTargetArgs(target) + [
                       '--enable-deterministic-archives',
                       '--enable-gold',
-                      ] + ([] if HostIsWindows(host) else [
-                          '--enable-plugins',
-                          ])),
+                      ] + WindowsAlternate([], ['--enable-plugins'])),
               command.Command(MakeCommand(host)),
               command.Command(MakeCheckCommand(host)),
               command.Command(MAKE_DESTDIR_CMD + ['install-strip']),
@@ -750,10 +753,16 @@ def HostTools(host, target):
                       '--target=x86_64-nacl',
                       '--enable-targets=arm-none-eabi-nacl',
                       '--with-expat',
+                      # Windows (MinGW) is missing ncurses; we need to
+                      # build one here and link it in statically for
+                      # --enable-tui.  See issue nativeclient:3911.
+                      '--%s-tui' % WindowsAlternate('disable', 'enable'),
                       'CPPFLAGS=-I%(abs_' + H('expat') + ')s/include',
                       'LDFLAGS=-L%(abs_' + H('expat') + ')s/lib',
                       ] +
-                  (['--without-python'] if HostIsWindows(host) else []) +
+                  # TODO(mcgrathr): Should use --with-python to ensure
+                  # we have it on Linux/Mac.
+                  WindowsAlternate(['--without-python'], []) +
                   # TODO(mcgrathr): The default -Werror only breaks because
                   # the OSX default compiler is an old front-end that does
                   # not understand all the GCC options.  Maybe switch to
