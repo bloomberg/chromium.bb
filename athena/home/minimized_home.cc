@@ -53,9 +53,8 @@ class SmallBarView : public views::View {
 // mouse and touch-gesture events.
 class MinimizedHomeView : public views::View {
  public:
-  explicit MinimizedHomeView(athena::MinimizedHomeDragDelegate* delegate)
-      : delegate_(delegate),
-        bar_(new SmallBarView) {
+  MinimizedHomeView()
+      : bar_(new SmallBarView) {
     set_background(views::Background::CreateSolidBackground(SK_ColorBLACK));
     views::BoxLayout* layout =
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 2, 0);
@@ -68,10 +67,10 @@ class MinimizedHomeView : public views::View {
   virtual ~MinimizedHomeView() {}
 
  private:
+  // TODO(mukai): unify mouse event handling to the HomeCardGestureManager.
   // views::View:
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
     if (event.IsLeftMouseButton() && event.GetClickCount() == 1) {
-      delegate_->OnDragUpCompleted();
       bar_->SetActive(false);
       return true;
     }
@@ -86,31 +85,6 @@ class MinimizedHomeView : public views::View {
     bar_->SetActive(false);
   }
 
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
-    if (event->type() == ui::ET_GESTURE_BEGIN &&
-        event->details().touch_points() == 1) {
-      bar_->SetActive(true);
-      event->SetHandled();
-      return;
-    } else if (event->type() == ui::ET_GESTURE_END &&
-               event->details().touch_points() == 1) {
-      bar_->SetActive(false);
-      event->SetHandled();
-      return;
-    }
-
-    if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN) {
-      event->SetHandled();
-    } else if (event->type() == ui::ET_SCROLL_FLING_START) {
-      const ui::GestureEventDetails& details = event->details();
-      const float kFlingCompletionVelocity = -100.f;
-      if (details.velocity_y() < kFlingCompletionVelocity)
-        delegate_->OnDragUpCompleted();
-      bar_->SetActive(false);
-    }
-  }
-
-  athena::MinimizedHomeDragDelegate* delegate_;
   SmallBarView* bar_;
 
   DISALLOW_COPY_AND_ASSIGN(MinimizedHomeView);
@@ -120,8 +94,8 @@ class MinimizedHomeView : public views::View {
 
 namespace athena {
 
-views::View* CreateMinimizedHome(MinimizedHomeDragDelegate* delegate) {
-  return new MinimizedHomeView(delegate);
+views::View* CreateMinimizedHome() {
+  return new MinimizedHomeView();
 }
 
 }  // namespace athena

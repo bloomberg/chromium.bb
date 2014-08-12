@@ -4,6 +4,7 @@
 
 #include "athena/home/public/home_card.h"
 
+#include <cmath>
 #include <limits>
 
 #include "athena/common/container_priorities.h"
@@ -36,6 +37,34 @@ namespace {
 
 HomeCard* instance = NULL;
 
+gfx::Rect GetBoundsForState(const gfx::Rect& screen_bounds,
+                            HomeCard::State state) {
+  const int kHomeCardHeight = 150;
+  const int kHomeCardMinimizedHeight = 8;
+
+  switch (state) {
+    case HomeCard::HIDDEN:
+      break;
+
+    case HomeCard::VISIBLE_CENTERED:
+      return screen_bounds;
+
+    case HomeCard::VISIBLE_BOTTOM:
+      return gfx::Rect(0,
+                       screen_bounds.bottom() - kHomeCardHeight,
+                       screen_bounds.width(),
+                       kHomeCardHeight);
+    case HomeCard::VISIBLE_MINIMIZED:
+      return gfx::Rect(0,
+                       screen_bounds.bottom() - kHomeCardMinimizedHeight,
+                       screen_bounds.width(),
+                       kHomeCardMinimizedHeight);
+  }
+
+  NOTREACHED();
+  return gfx::Rect();
+}
+
 // Makes sure the homecard is center-aligned horizontally and bottom-aligned
 // vertically.
 class HomeCardLayoutManager : public aura::LayoutManager {
@@ -44,10 +73,7 @@ class HomeCardLayoutManager : public aura::LayoutManager {
    public:
     virtual ~Delegate() {}
 
-    virtual int GetHomeCardHeight() const = 0;
-
-    virtual int GetHorizontalMargin() const = 0;
-
+    virtual HomeCard::State GetState() = 0;
     virtual aura::Window* GetNativeWindow() = 0;
   };
 
@@ -63,15 +89,8 @@ class HomeCardLayoutManager : public aura::LayoutManager {
     if (!home_card || !home_card->GetRootWindow())
       return;
 
-    int height = delegate_->GetHomeCardHeight();
-    int horiz_margin = delegate_->GetHorizontalMargin();
-    gfx::Rect screen_bounds = home_card->GetRootWindow()->bounds();
-    height = std::min(height, screen_bounds.height());
-    gfx::Rect card_bounds = screen_bounds;
-    card_bounds.Inset(horiz_margin, screen_bounds.height() - height,
-                      horiz_margin, 0);
-
-    SetChildBoundsDirect(home_card, card_bounds);
+    SetChildBoundsDirect(home_card, GetBoundsForState(
+        home_card->GetRootWindow()->bounds(), delegate_->GetState()));
   }
 
  private:
@@ -88,7 +107,7 @@ class HomeCardLayoutManager : public aura::LayoutManager {
   }
   virtual void SetChildBounds(aura::Window* child,
                               const gfx::Rect& requested_bounds) OVERRIDE {
-    SetChildBoundsDirect(child, gfx::Rect(requested_bounds.size()));
+    SetChildBoundsDirect(child, requested_bounds);
   }
 
   Delegate* delegate_;
@@ -96,12 +115,160 @@ class HomeCardLayoutManager : public aura::LayoutManager {
   DISALLOW_COPY_AND_ASSIGN(HomeCardLayoutManager);
 };
 
+class HomeCardGestureManager {
+ public:
+  class Delegate {
+   public:
+    // Called when the gesture has ended. The state of the home card will
+    // end up with |final_state|.
+    virtual void OnGestureEnded(HomeCard::State final_state) = 0;
+
+    // Called when the gesture position is updated so that |delegate| should
+    // update the visual. The arguments represent the state of the current
+    // gesture position is switching from |from_state| to |to_state|, and
+    // the level of the progress is at |progress|, which is 0 to 1.
+    // |from_state| and |to_state| could be same. For example, if the user moves
+    // the finger down to the bottom of the screen, both states are MINIMIZED.
+    // In that case |progress| is 0.
+    virtual void OnGestureProgressed(
+        HomeCard::State from_state,
+        HomeCard::State to_state,
+        float progress) = 0;
+  };
+
+  HomeCardGestureManager(Delegate* delegate,
+                         const gfx::Rect& screen_bounds)
+      : delegate_(delegate),
+        last_state_(HomeCard::Get()->GetState()),
+        y_offset_(0),
+        last_estimated_top_(0),
+        screen_bounds_(screen_bounds) {}
+
+  void ProcessGestureEvent(ui::GestureEvent* event) {
+    switch (event->type()) {
+      case ui::ET_GESTURE_SCROLL_BEGIN:
+        y_offset_ = event->location().y();
+        event->SetHandled();
+        break;
+      case ui::ET_GESTURE_SCROLL_END:
+        event->SetHandled();
+        delegate_->OnGestureEnded(GetClosestState());
+        break;
+      case ui::ET_GESTURE_SCROLL_UPDATE:
+        UpdateScrollState(*event);
+        break;
+      case ui::ET_SCROLL_FLING_START: {
+        const ui::GestureEventDetails& details = event->details();
+        const float kFlingCompletionVelocity = 100.0f;
+        if (::fabs(details.velocity_y()) > kFlingCompletionVelocity) {
+          int step = (details.velocity_y() > 0) ? 1 : -1;
+          int new_state = static_cast<int>(last_state_) + step;
+          if (new_state >= HomeCard::VISIBLE_CENTERED &&
+              new_state <= HomeCard::VISIBLE_MINIMIZED) {
+            last_state_ = static_cast<HomeCard::State>(new_state);
+          }
+          delegate_->OnGestureEnded(last_state_);
+        }
+        break;
+      }
+      default:
+        // do nothing.
+        break;
+    }
+  }
+
+ private:
+  HomeCard::State GetClosestState() {
+    // The top position of the bounds for one smaller state than the current
+    // one.
+    int smaller_top = -1;
+    for (int i = HomeCard::VISIBLE_MINIMIZED;
+         i >= HomeCard::VISIBLE_CENTERED; --i) {
+      HomeCard::State state = static_cast<HomeCard::State>(i);
+      int top = GetBoundsForState(screen_bounds_, state).y();
+      if (last_estimated_top_ == top) {
+        return state;
+      } else if (last_estimated_top_ > top) {
+        if (smaller_top < 0)
+          return state;
+
+        if (smaller_top - last_estimated_top_ > (smaller_top - top) / 5) {
+          return state;
+        } else {
+          return static_cast<HomeCard::State>(i + 1);
+        }
+      }
+      smaller_top = top;
+    }
+
+    NOTREACHED();
+    return last_state_;
+  }
+
+  void UpdateScrollState(const ui::GestureEvent& event) {
+    last_estimated_top_ = event.root_location().y() - y_offset_;
+
+    // The bounds which is at one smaller state than the current one.
+    gfx::Rect smaller_bounds;
+
+    for (int i = HomeCard::VISIBLE_MINIMIZED;
+         i >= HomeCard::VISIBLE_CENTERED; --i) {
+      HomeCard::State state = static_cast<HomeCard::State>(i);
+      const gfx::Rect bounds = GetBoundsForState(screen_bounds_, state);
+      if (last_estimated_top_ == bounds.y()) {
+        delegate_->OnGestureProgressed(last_state_, state, 1.0f);
+        last_state_ = state;
+        return;
+      } else if (last_estimated_top_ > bounds.y()) {
+        if (smaller_bounds.IsEmpty()) {
+          // Smaller than minimized -- returning the minimized bounds.
+          delegate_->OnGestureProgressed(last_state_, state, 1.0f);
+        } else {
+          // The finger is between two states.
+          float progress =
+              static_cast<float>((smaller_bounds.y() - last_estimated_top_)) /
+              (smaller_bounds.y() - bounds.y());
+          if (last_state_ == state) {
+            if (event.details().scroll_y() > 0) {
+              state = static_cast<HomeCard::State>(state + 1);
+              progress = 1.0f - progress;
+            } else {
+              last_state_ = static_cast<HomeCard::State>(last_state_ + 1);
+            }
+          }
+          delegate_->OnGestureProgressed(last_state_, state, progress);
+        }
+        last_state_ = state;
+        return;
+      }
+      smaller_bounds = bounds;
+    }
+    NOTREACHED();
+  }
+
+  Delegate* delegate_;
+  HomeCard::State last_state_;
+
+  // The offset from the top edge of the home card and the initial position of
+  // gesture.
+  int y_offset_;
+
+  // The estimated top edge of the home card after the last touch event.
+  int last_estimated_top_;
+
+  // The bounds of the screen to compute the home card bounds.
+  gfx::Rect screen_bounds_;
+
+  DISALLOW_COPY_AND_ASSIGN(HomeCardGestureManager);
+};
+
 // The container view of home card contents of each state.
 class HomeCardView : public views::WidgetDelegateView {
  public:
   HomeCardView(app_list::AppListViewDelegate* view_delegate,
                aura::Window* container,
-               MinimizedHomeDragDelegate* minimized_delegate) {
+               HomeCardGestureManager::Delegate* gesture_delegate)
+      : gesture_delegate_(gesture_delegate) {
     bottom_view_ = new BottomHomeView(view_delegate);
     AddChildView(bottom_view_);
 
@@ -111,7 +278,7 @@ class HomeCardView : public views::WidgetDelegateView {
     main_view_->set_background(
         views::Background::CreateSolidBackground(SK_ColorWHITE));
 
-    minimized_view_ = CreateMinimizedHome(minimized_delegate);
+    minimized_view_ = CreateMinimizedHome();
     AddChildView(minimized_view_);
   }
 
@@ -125,11 +292,15 @@ class HomeCardView : public views::WidgetDelegateView {
           app_list::ContentsView::NAMED_PAGE_START));
     }
 
-    if (state != HomeCard::VISIBLE_BOTTOM)
+    if (state == HomeCard::VISIBLE_MINIMIZED)
       shadow_.reset();
     // Do not create the shadow yet. Instead, create it in OnWidgetMove(), to
     // make sure that widget has been resized correctly (because the size of the
     // shadow depends on the size of the widget).
+  }
+
+  void ClearGesture() {
+    gesture_manager_.reset();
   }
 
   // views::View:
@@ -145,19 +316,34 @@ class HomeCardView : public views::WidgetDelegateView {
     // One of the child views has to be visible.
     NOTREACHED();
   }
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+    if (!gesture_manager_ &&
+        event->type() == ui::ET_GESTURE_SCROLL_BEGIN) {
+      gesture_manager_.reset(new HomeCardGestureManager(
+          gesture_delegate_,
+          GetWidget()->GetNativeWindow()->GetRootWindow()->bounds()));
+    }
+
+    if (gesture_manager_)
+      gesture_manager_->ProcessGestureEvent(event);
+  }
 
  private:
   // views::WidgetDelegate:
   virtual void OnWidgetMove() OVERRIDE {
-    if (bottom_view_->visible() && !shadow_) {
+    if (!minimized_view_->visible()) {
       aura::Window* window = GetWidget()->GetNativeWindow();
-      shadow_.reset(new wm::Shadow());
-      shadow_->Init(wm::Shadow::STYLE_ACTIVE);
-      shadow_->SetContentBounds(gfx::Rect(window->bounds().size()));
-      shadow_->layer()->SetVisible(true);
+      if (!shadow_) {
+        shadow_.reset(new wm::Shadow());
+        shadow_->Init(wm::Shadow::STYLE_ACTIVE);
+        shadow_->SetContentBounds(gfx::Rect(window->bounds().size()));
+        shadow_->layer()->SetVisible(true);
 
-      ui::Layer* layer = window->layer();
-      layer->Add(shadow_->layer());
+        ui::Layer* layer = window->layer();
+        layer->Add(shadow_->layer());
+      } else {
+        shadow_->SetContentBounds(gfx::Rect(window->bounds().size()));
+      }
     }
   }
 
@@ -169,6 +355,8 @@ class HomeCardView : public views::WidgetDelegateView {
   BottomHomeView* bottom_view_;
   views::View* minimized_view_;
   scoped_ptr<wm::Shadow> shadow_;
+  scoped_ptr<HomeCardGestureManager> gesture_manager_;
+  HomeCardGestureManager::Delegate* gesture_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(HomeCardView);
 };
@@ -176,7 +364,7 @@ class HomeCardView : public views::WidgetDelegateView {
 class HomeCardImpl : public HomeCard,
                      public AcceleratorHandler,
                      public HomeCardLayoutManager::Delegate,
-                     public MinimizedHomeDragDelegate,
+                     public HomeCardGestureManager::Delegate,
                      public WindowManagerObserver,
                      public aura::client::ActivationChangeObserver {
  public:
@@ -213,31 +401,6 @@ class HomeCardImpl : public HomeCard,
   }
 
   // HomeCardLayoutManager::Delegate:
-  virtual int GetHomeCardHeight() const OVERRIDE {
-    const int kHomeCardHeight = 150;
-    const int kHomeCardMinimizedHeight = 8;
-
-    switch (state_) {
-      case VISIBLE_CENTERED:
-        // Span the screen fully.
-        return std::numeric_limits<int>::max();
-      case VISIBLE_BOTTOM:
-        return kHomeCardHeight;
-      case VISIBLE_MINIMIZED:
-        return kHomeCardMinimizedHeight;
-      case HIDDEN:
-        break;
-    }
-    NOTREACHED();
-    return -1;
-  }
-
-  virtual int GetHorizontalMargin() const OVERRIDE {
-    CHECK_NE(HIDDEN, state_);
-    const int kHomeCardHorizontalMargin = 100;
-    return state_ == VISIBLE_BOTTOM ? kHomeCardHorizontalMargin : 0;
-  }
-
   virtual aura::Window* GetNativeWindow() OVERRIDE {
     if (state_ == HIDDEN)
       return NULL;
@@ -245,9 +408,34 @@ class HomeCardImpl : public HomeCard,
     return home_card_widget_ ? home_card_widget_->GetNativeWindow() : NULL;
   }
 
-  // MinimizedHomeDragDelegate:
-  virtual void OnDragUpCompleted() OVERRIDE {
-    WindowManager::GetInstance()->ToggleOverview();
+  // HomeCardGestureManager::Delegate:
+  virtual void OnGestureEnded(State final_state) OVERRIDE {
+    home_card_view_->ClearGesture();
+    if (state_ != final_state &&
+        (state_ == VISIBLE_MINIMIZED || final_state == VISIBLE_MINIMIZED)) {
+      WindowManager::GetInstance()->ToggleOverview();
+    } else {
+      state_ = final_state;
+      home_card_view_->SetState(final_state);
+      layout_manager_->Layout();
+    }
+  }
+
+  virtual void OnGestureProgressed(
+      State from_state, State to_state, float progress) OVERRIDE {
+    // Do not update |state_| but update the look of home_card_view.
+    // TODO(mukai): allow mixed visual of |from_state| and |to_state|.
+    home_card_view_->SetState(to_state);
+
+    gfx::Rect screen_bounds =
+        home_card_widget_->GetNativeWindow()->GetRootWindow()->bounds();
+    home_card_widget_->SetBounds(gfx::Tween::RectValueBetween(
+        progress,
+        GetBoundsForState(screen_bounds, from_state),
+        GetBoundsForState(screen_bounds, to_state)));
+
+    // TODO(mukai): signals the update to the window manager so that it shows
+    // the intermediate visual state of overview mode.
   }
 
   // WindowManagerObserver:

@@ -11,16 +11,7 @@ class View;
 
 namespace athena {
 
-class MinimizedHomeDragDelegate {
- public:
-  virtual ~MinimizedHomeDragDelegate() {}
-
-  virtual void OnDragUpCompleted() = 0;
-};
-
-// Note that |delegate| is guaranteed to be alive as long as the returned view
-// is alive.
-views::View* CreateMinimizedHome(MinimizedHomeDragDelegate* delegate);
+views::View* CreateMinimizedHome();
 
 }  // namespace athena
 
