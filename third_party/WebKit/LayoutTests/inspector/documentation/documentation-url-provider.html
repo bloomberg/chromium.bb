@@ -5,8 +5,7 @@
 
 function test()
 {
-    runtime.registerModule("documentation");
-    runtime.loadModule("documentation");
+    InspectorTest.registerModule("documentation", true);
     var testCases = [
         "max",
         "insertBefore",

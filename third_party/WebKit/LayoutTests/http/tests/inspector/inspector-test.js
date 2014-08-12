@@ -240,6 +240,13 @@ InspectorTest.assertGreaterOrEqual = function(a, b, message)
         InspectorTest.addResult("FAILED: " + (message ? message + ": " : "") + a + " < " + b);
 }
 
+InspectorTest.registerModule = function(moduleName, loadImmediately)
+{
+    runtime._registerModule(moduleName);
+    if (loadImmediately)
+        runtime.loadModule(moduleName);
+}
+
 InspectorTest.navigate = function(url, callback)
 {
     InspectorTest._pageLoadedCallback = InspectorTest.safeWrap(callback);

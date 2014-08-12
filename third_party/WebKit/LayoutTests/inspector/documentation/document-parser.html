@@ -5,8 +5,7 @@
 
 function test()
 {
-    runtime.registerModule("documentation");
-    runtime.loadModule("documentation");
+    InspectorTest.registerModule("documentation", true);
     var testCases = [
         "{{A|B={{C|D=blablabla}}}}",
         "{{CS|Init=black|Values={{CSS Property Value\n|Data Type=color\n|Description=[[css/color|CSS color value]]}}\n}}",
