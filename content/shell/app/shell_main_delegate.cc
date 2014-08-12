@@ -268,7 +268,7 @@ void ShellMainDelegate::InitializeResourceBundle() {
   if (pak_fd >= 0) {
     // This is clearly wrong. See crbug.com/330930
     ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(
-        base::File(pak_fd), base::MemoryMappedFile::Region::kWholeFile, false);
+        base::File(pak_fd), base::MemoryMappedFile::Region::kWholeFile);
     ResourceBundle::GetSharedInstance().AddDataPackFromFile(
         base::File(pak_fd), ui::SCALE_FACTOR_100P);
     return;

@@ -64,9 +64,7 @@ int AwBrowserMainParts::PreCreateThreads() {
             << " len=" << pak_len;
     ui::ResourceBundle::CleanupSharedInstance();
     ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(
-        base::File(pak_fd),
-        base::MemoryMappedFile::Region(pak_off, pak_len),
-        /*should_load_common_resources=*/false);
+        base::File(pak_fd), base::MemoryMappedFile::Region(pak_off, pak_len));
   } else {
     LOG(WARNING) << "Failed to load " << locale << ".pak from the apk too. "
                     "Bringing up WebView without any locale";

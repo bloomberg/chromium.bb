@@ -134,14 +134,11 @@ class UI_BASE_EXPORT ResourceBundle {
 
   // Initialize the ResourceBundle using the given file region. If |region| is
   // MemoryMappedFile::Region::kWholeFile, the entire |pak_file| is used.
-  // |should_load_common_resources| controls whether or not LoadCommonResources
-  // is called.
   // This allows the use of this function in a sandbox without local file
   // access (as on Android).
   static void InitSharedInstanceWithPakFileRegion(
       base::File pak_file,
-      const base::MemoryMappedFile::Region& region,
-      bool should_load_common_resources);
+      const base::MemoryMappedFile::Region& region);
 
   // Initialize the ResourceBundle using given data pack path for testing.
   static void InitSharedInstanceWithPakPath(const base::FilePath& path);
