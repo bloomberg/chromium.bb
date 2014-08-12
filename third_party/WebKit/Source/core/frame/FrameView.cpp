@@ -2554,9 +2554,7 @@ void FrameView::paintContents(GraphicsContext* p, const IntRect& rect)
         return;
     }
 
-    ASSERT(!needsLayout());
-    if (needsLayout())
-        return;
+    RELEASE_ASSERT(!needsLayout());
 
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Paint", "data", InspectorPaintEvent::data(renderView, rect, 0));
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"), "CallStack", "stack", InspectorCallStackEvent::currentCallStack());
