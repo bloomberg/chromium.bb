@@ -140,8 +140,7 @@ bool IsFastUserSwitching() {
 }
 
 bool IsGoogleProfileInfo() {
-  return IsNewAvatarMenu() ||
-      CheckFlag(switches::kGoogleProfileInfo, STATE_OLD_AVATAR_MENU);
+  return CheckFlag(switches::kGoogleProfileInfo, STATE_NEW_AVATAR_MENU);
 }
 
 bool IsNewAvatarMenu() {
