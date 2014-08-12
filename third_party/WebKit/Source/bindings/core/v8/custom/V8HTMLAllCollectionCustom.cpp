@@ -54,7 +54,14 @@ static v8::Handle<v8::Value> getNamedItems(HTMLAllCollection* collection, Atomic
 
     // FIXME: HTML5 specification says this should be a HTMLCollection.
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#htmlallcollection
-    return toV8(StaticElementList::adopt(namedItems), info.Holder(), info.GetIsolate());
+    //
+    // FIXME: Oilpan: explicit conversion needed as there is currently
+    // no implicit RawPtr<T>(RawPtr<U>) constructor (for type
+    // convertible pairs T and U) that would implicitly convert a
+    // RawPtr<StaticElementList> to a RawPtr<NodeList> (the former is
+    // a subclass of the latter.) Such a conversion is needed to
+    // resolve the toV8() call.
+    return toV8(PassRefPtrWillBeRawPtr<NodeList>(StaticElementList::adopt(namedItems)), info.Holder(), info.GetIsolate());
 }
 
 template<class CallbackInfo>
