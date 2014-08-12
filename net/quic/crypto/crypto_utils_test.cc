@@ -93,7 +93,7 @@ TEST(CryptoUtilsTest, TestExportKeyingMaterial) {
     },
   };
 
-  for (size_t i = 0; i < arraysize(test_vector); i++) {
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_vector); i++) {
     // Decode the test vector.
     string subkey_secret;
     string label;
