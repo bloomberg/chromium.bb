@@ -629,7 +629,7 @@ name=http://crbug.com/387394
 system call NtCreateTimer
 KERNELBASE.dll!CreateWaitableTimerExW
 KERNEL32.dll!CreateWaitableTimerW
-*!talk_base::Timing::Timing
+*!rtc::Timing::Timing
 ...
 *!content::RenderProcessHostImpl::CreateMessageFilters
 *!content::RenderProcessHostImpl::Init
