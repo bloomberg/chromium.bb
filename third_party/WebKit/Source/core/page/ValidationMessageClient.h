@@ -27,6 +27,7 @@
 #define ValidationMessageClient_h
 
 #include "platform/heap/Handle.h"
+#include "platform/text/TextDirection.h"
 #include "wtf/Forward.h"
 
 namespace blink {
@@ -41,7 +42,7 @@ public:
     // Show validation message for the specified anchor element. An
     // implementation of this function may hide the message automatically after
     // some period.
-    virtual void showValidationMessage(const Element& anchor, const String& message) = 0;
+    virtual void showValidationMessage(const Element& anchor, const String& mainMessage, TextDirection, const String& subMessage, TextDirection) = 0;
 
     // Hide validation message for the specified anchor if the message for the
     // anchor is already visible.

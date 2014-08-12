@@ -38,6 +38,7 @@
 #include "core/page/ValidationMessageClient.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderTheme.h"
+#include "platform/text/BidiTextRun.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -406,6 +407,15 @@ void HTMLFormControlElement::setNeedsWillValidateCheck()
         hideVisibleValidationMessage();
 }
 
+void HTMLFormControlElement::findCustomValidationMessageTextDirection(const String& message, TextDirection &messageDir, String& subMessage, TextDirection &subMessageDir)
+{
+    bool hasStrongDirection;
+    subMessage = fastGetAttribute(titleAttr);
+    messageDir = determineDirectionality(message, hasStrongDirection);
+    if (!subMessage.isEmpty())
+        subMessageDir = renderer()->style()->direction();
+}
+
 void HTMLFormControlElement::updateVisibleValidationMessage()
 {
     Page* page = document().page();
@@ -417,10 +427,14 @@ void HTMLFormControlElement::updateVisibleValidationMessage()
 
     m_hasValidationMessage = true;
     ValidationMessageClient* client = &page->validationMessageClient();
+    TextDirection messageDir = LTR;
+    TextDirection subMessageDir = LTR;
+    String subMessage = String();
     if (message.isEmpty())
         client->hideValidationMessage(*this);
     else
-        client->showValidationMessage(*this, message);
+        findCustomValidationMessageTextDirection(message, messageDir, subMessage, subMessageDir);
+    client->showValidationMessage(*this, message, messageDir, subMessage, subMessageDir);
 }
 
 void HTMLFormControlElement::hideVisibleValidationMessage()

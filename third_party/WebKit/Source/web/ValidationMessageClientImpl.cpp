@@ -64,7 +64,7 @@ FrameView* ValidationMessageClientImpl::currentView()
     return m_currentAnchor->document().view();
 }
 
-void ValidationMessageClientImpl::showValidationMessage(const Element& anchor, const String& message)
+void ValidationMessageClientImpl::showValidationMessage(const Element& anchor, const String& message, TextDirection messageDir, const String& subMessage, TextDirection subMessageDir)
 {
     if (message.isEmpty()) {
         hideValidationMessage(anchor);
@@ -79,15 +79,15 @@ void ValidationMessageClientImpl::showValidationMessage(const Element& anchor, c
     m_lastAnchorRectInScreen = currentView()->hostWindow()->rootViewToScreen(anchorInRootView);
     m_lastPageScaleFactor = m_webView.pageScaleFactor();
     m_message = message;
-
-    WebTextDirection dir = m_currentAnchor->renderer()->style()->direction() == RTL ? WebTextDirectionRightToLeft : WebTextDirectionLeftToRight;
-    AtomicString title = m_currentAnchor->fastGetAttribute(HTMLNames::titleAttr);
-    m_webView.client()->showValidationMessage(anchorInRootView, m_message, title, dir);
-
     const double minimumSecondToShowValidationMessage = 5.0;
     const double secondPerCharacter = 0.05;
     const double statusCheckInterval = 0.1;
-    m_finishTime = monotonicallyIncreasingTime() + std::max(minimumSecondToShowValidationMessage, (message.length() + title.length()) * secondPerCharacter);
+
+    m_webView.client()->showValidationMessage(anchorInRootView, m_message, messageDir == LTR ? WebTextDirectionLeftToRight: WebTextDirectionRightToLeft,
+        subMessage, subMessageDir == LTR ? WebTextDirectionLeftToRight: WebTextDirectionRightToLeft);
+    m_webView.client()->showValidationMessage(anchorInRootView, m_message, subMessage, messageDir == LTR ? WebTextDirectionLeftToRight: WebTextDirectionRightToLeft);
+
+    m_finishTime = monotonicallyIncreasingTime() + std::max(minimumSecondToShowValidationMessage, (message.length() + subMessage.length()) * secondPerCharacter);
     // FIXME: We should invoke checkAnchorStatus actively when layout, scroll,
     // or page scale change happen.
     m_timer.startRepeating(statusCheckInterval, FROM_HERE);

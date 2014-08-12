@@ -163,6 +163,8 @@ public:
     // Show a notification popup for the specified form vaidation messages
     // besides the anchor rectangle. An implementation of this function should
     // not hide the popup until hideValidationMessage call.
+    virtual void showValidationMessage(const WebRect& anchorInRootView, const WebString& mainText, WebTextDirection mainTextDir, const WebString& supplementalText, WebTextDirection supplementalTextDir) { }
+    // FIXME: BUG91638, when landed on chrome side, this will be removed.
     virtual void showValidationMessage(const WebRect& anchorInRootView, const WebString& mainText, const WebString& supplementalText, WebTextDirection hint) { }
 
     // Hide notifation popup for form validation messages.

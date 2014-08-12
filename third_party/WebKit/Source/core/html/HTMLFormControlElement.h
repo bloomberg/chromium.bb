@@ -94,6 +94,7 @@ public:
     // This must be called when a validation constraint or control value is changed.
     void setNeedsValidityCheck();
     virtual void setCustomValidity(const String&) OVERRIDE FINAL;
+    void findCustomValidationMessageTextDirection(const String& message, TextDirection &messageDir, String& subMessage, TextDirection& subMessageDir);
 
     bool isReadOnly() const { return m_isReadOnly; }
     bool isDisabledOrReadOnly() const { return isDisabledFormControl() || m_isReadOnly; }

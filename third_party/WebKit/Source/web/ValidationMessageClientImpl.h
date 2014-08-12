@@ -53,7 +53,7 @@ private:
     void checkAnchorStatus(blink::Timer<ValidationMessageClientImpl>*);
     blink::FrameView* currentView();
 
-    virtual void showValidationMessage(const blink::Element& anchor, const String& message) OVERRIDE;
+    virtual void showValidationMessage(const blink::Element& anchor, const String& message, TextDirection messageDir, const String& subMessage, TextDirection subMessageDir) OVERRIDE;
     virtual void hideValidationMessage(const blink::Element& anchor) OVERRIDE;
     virtual bool isValidationMessageVisible(const blink::Element& anchor) OVERRIDE;
     virtual void documentDetached(const blink::Document&) OVERRIDE;
