@@ -81,7 +81,7 @@ namespace {
 
 void CheckSnapped(float snapped_position) {
   const float kEplison = 0.0001f;
-  float diff = std::abs(snapped_position - static_cast<int>(snapped_position));
+  float diff = std::abs(snapped_position - gfx::ToRoundedInt(snapped_position));
   DCHECK_LT(diff, kEplison);
 }
 
