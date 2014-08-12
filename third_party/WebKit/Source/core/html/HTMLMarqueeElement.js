@@ -4,7 +4,7 @@
 
 'use strict';
 
-installClass('HTMLMarqueeElement', function(global, HTMLMarqueeElementPrototype) {
+installClass('HTMLMarqueeElement', function(HTMLMarqueeElementPrototype) {
 
     var kDefaultScrollAmount = 6;
     var kDefaultScrollDelayMS = 85;
@@ -122,15 +122,15 @@ installClass('HTMLMarqueeElement', function(global, HTMLMarqueeElementPrototype)
 
     HTMLMarqueeElementPrototype.createdCallback = function() {
         var shadow = this.createShadowRoot();
-        var style = global.document.createElement('style');
+        var style = document.createElement('style');
     style.textContent = ':host { display: inline-block; width: -webkit-fill-available; overflow: hidden; text-align: initial; }' +
             ':host([direction="up"]), :host([direction="down"]) { height: 200px; }';
         shadow.appendChild(style);
 
-        var mover = global.document.createElement('div');
+        var mover = document.createElement('div');
         shadow.appendChild(mover);
 
-        mover.appendChild(global.document.createElement('content'));
+        mover.appendChild(document.createElement('content'));
 
         this.loopCount_ = 0;
         this.mover_ = mover;
@@ -234,8 +234,8 @@ installClass('HTMLMarqueeElement', function(global, HTMLMarqueeElementPrototype)
     HTMLMarqueeElementPrototype.getGetMetrics_ = function() {
         this.mover_.style.width = '-webkit-max-content';
 
-        var moverStyle = global.getComputedStyle(this.mover_);
-        var marqueeStyle = global.getComputedStyle(this);
+        var moverStyle = getComputedStyle(this.mover_);
+        var marqueeStyle = getComputedStyle(this);
 
         var metrics = {};
         metrics.contentWidth = parseInt(moverStyle.width);
@@ -391,7 +391,7 @@ installClass('HTMLMarqueeElement', function(global, HTMLMarqueeElementPrototype)
     HTMLMarqueeElementPrototype.start = function() {
         if (this.continueCallback_ || this.player_)
             return;
-        this.continueCallback_ = global.requestAnimationFrame(function() {
+        this.continueCallback_ = requestAnimationFrame(function() {
             this.continueCallback_ = null;
             this.continue_();
         }.bind(this));
@@ -403,7 +403,7 @@ installClass('HTMLMarqueeElement', function(global, HTMLMarqueeElementPrototype)
             return;
 
         if (this.continueCallback_) {
-            global.cancelAnimationFrame(this.continueCallback_);
+            cancelAnimationFrame(this.continueCallback_);
             this.continueCallback_ = null;
             return;
         }
@@ -420,7 +420,7 @@ installClass('HTMLMarqueeElement', function(global, HTMLMarqueeElementPrototype)
 
     // FIXME: We have to inject this HTMLMarqueeElement as a custom element in order to make
     // createdCallback, attachedCallback, detachedCallback and attributeChangedCallback workable.
-    // global.document.registerElement('i-marquee', {
+    // document.registerElement('i-marquee', {
     //    prototype: HTMLMarqueeElementPrototype,
     // });
 });

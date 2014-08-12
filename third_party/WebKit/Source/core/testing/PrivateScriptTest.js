@@ -4,7 +4,7 @@
 
 "use strict";
 
-installClass("PrivateScriptTest", function(global, PrivateScriptTestPrototype) {
+installClass("PrivateScriptTest", function(PrivateScriptTestPrototype) {
 
     PrivateScriptTestPrototype.initialize = function() {
         this.m_shortAttribute = -1;
@@ -91,7 +91,7 @@ installClass("PrivateScriptTest", function(global, PrivateScriptTestPrototype) {
     }
 
     PrivateScriptTestPrototype.clickNode = function(document, node) {
-        var event = new MouseEvent("click", { bubbles: true, cancelable: true, view: global });
+        var event = new MouseEvent("click", { bubbles: true, cancelable: true, view: window });
         node.dispatchEvent(event);
     }
 

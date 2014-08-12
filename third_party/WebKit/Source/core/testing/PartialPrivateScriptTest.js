@@ -4,7 +4,7 @@
 
 "use strict";
 
-installClass("PrivateScriptTest", function(global, PrivateScriptTestPrototype) {
+installClass("PrivateScriptTest", function(PrivateScriptTestPrototype) {
 
     PrivateScriptTestPrototype.addIntegerInPartial = function(value1, value2) {
         return value1 + value2;
