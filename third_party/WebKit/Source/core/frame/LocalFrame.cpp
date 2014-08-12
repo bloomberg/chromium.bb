@@ -616,7 +616,7 @@ PassOwnPtr<DragImage> LocalFrame::dragImageForSelection()
 
     const ScopedFramePaintingState state(this, 0);
     m_view->setPaintBehavior(PaintBehaviorSelectionOnly | PaintBehaviorFlattenCompositingLayers);
-    document()->updateLayout();
+    m_view->updateLayoutAndStyleForPainting();
 
     IntRect paintingRect = enclosingIntRect(selection().bounds());
 

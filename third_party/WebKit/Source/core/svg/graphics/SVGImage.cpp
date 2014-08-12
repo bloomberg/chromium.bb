@@ -287,9 +287,7 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
     if (!m_url.isEmpty())
         view->scrollToFragment(m_url);
 
-    if (view->needsLayout())
-        view->layout();
-
+    view->updateLayoutAndStyleForPainting();
     view->paint(context, enclosingIntRect(srcRect));
     ASSERT(!view->needsLayout());
 

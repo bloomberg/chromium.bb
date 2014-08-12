@@ -336,7 +336,7 @@ public:
         if (!frame()->document() || !frame()->view() || !frame()->document()->renderView())
             return;
 
-        frame()->document()->updateLayout();
+        frame()->view()->updateLayoutAndStyleForPainting();
 
         float pageHeight;
         computePageRects(FloatRect(FloatPoint(0, 0), pageSizeInPixels), 0, 0, 1, pageHeight);
