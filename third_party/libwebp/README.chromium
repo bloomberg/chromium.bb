@@ -25,3 +25,4 @@ Local changes:
 Cherry-picks:
   Revert patch f7fc4bc: dec/webp.c: don't wait for data before reporting w/h
   0524d9e dsp: detect mips64 & disable mips32 code
+  b7e5a5c MIPS: detect mips32r6 and disable mips32r1 code
