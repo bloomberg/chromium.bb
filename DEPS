@@ -587,6 +587,17 @@ skip_child_includes = [
 
 hooks = [
   {
+    # This clobbers when necessary (based on get_landmines.py). It must be the
+    # first hook so that other things that get/generate into the output
+    # directory will not subsequently be clobbered.
+    "name": "landmines",
+    "pattern": ".",
+    "action": [
+        "python",
+        "src/build/landmines.py",
+    ],
+  },
+  {
     # This downloads binaries for Native Client's newlib toolchain.
     # Done in lieu of building the toolchain from scratch as it can take
     # anywhere from 30 minutes to 4 hours depending on platform to build.
