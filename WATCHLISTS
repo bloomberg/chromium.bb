@@ -358,6 +358,7 @@
     'hotword': {
       'filepath': 'chrome/browser/extensions/api/hotword_private/'\
                   '|chrome/browser/resources/hotword_helper/'\
+                  '|chrome/browser/resources/hotword/'\
                   '|chrome/browser/search/hotword*'\
                   '|chrome/test/data/extensions/api_test/hotword_private/',
     },

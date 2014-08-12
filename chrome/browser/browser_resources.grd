@@ -155,6 +155,7 @@
         <include name="IDR_HANGOUT_SERVICES_MANIFEST" file="resources\hangout_services\manifest.json" type="BINDATA" />
       </if>
       <include name="IDR_HOTWORD_HELPER_MANIFEST" file="resources\hotword_helper\manifest.json" type="BINDATA" />
+      <include name="IDR_HOTWORD_MANIFEST" file="resources\hotword\manifest.json" type="BINDATA" />
       <if expr="not is_android">
         <include name="IDR_HELP_JS" file="resources\help\help.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_HELP_PAGE_JS" file="resources\help\help_page.js" flattenhtml="true" type="BINDATA" />

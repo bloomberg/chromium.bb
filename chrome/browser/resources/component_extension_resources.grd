@@ -58,10 +58,13 @@
         <include name="IDR_HANGOUT_SERVICES_BACKGROUND_HTML" file="hangout_services/background.html" type="BINDATA" />
         <include name="IDR_HANGOUT_SERVICES_THUNK_JS" file="hangout_services/thunk.js" type="BINDATA" />
       </if>
-      <!-- Hotword Helper extension -->
       <if expr="enable_extensions">
+        <!-- Hotword Helper extension -->
         <include name="IDR_HOTWORD_HELPER_AUDIO_CLIENT_JS" file="hotword_helper/audio_client.js" type="BINDATA" />
         <include name="IDR_HOTWORD_HELPER_MANAGER_JS" file="hotword_helper/manager.js" type="BINDATA" />
+
+        <!-- (Experimental) hotword triggering extension -->
+        <include name="IDR_HOTWORD_MANAGER_JS" file="hotword/manager.js" type="BINDATA" />
       </if>
       <if expr="not is_android">
         <include name="IDR_FEEDBACK_DEFAULT_HTML" file="feedback/html/default.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />

@@ -1,0 +1,38 @@
+{
+  // Extension ID: nbpagnldghgfoolbancepceaanlmhfmd
+  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDbHXRPiq2De9EJ+4pvNN6uE/D2avxrqyLSpA/Hq3II+btkPl1gboY3oUPTfevpVOFa90Y1c1b3/W682dXqybT0klIvFLKhdQx0LiVqSUQyIaDrwOCSo/ZcukbEwDRojegWymCjHvX6WZk4kKZzTJYzY1vrp0TWKLhttEMN9KFmowIDAQAB",
+
+  "name": "Hotword triggering",
+  "version": "0.0.1.0",
+  "manifest_version": 2,
+
+  "background": {
+    "scripts": ["manager.js"],
+    "persistent": false
+  },
+
+  "permissions": [
+    "*://*.google.com/*",
+    "chrome://newtab/",
+    "hotwordPrivate",
+    "tabs"
+  ],
+
+  "externally_connectable": {
+    "matches": [
+      "*://*.google.com/*",
+      "chrome://newtab/"
+    ]
+  },
+
+  "import": [
+    {
+      // TODO(amistry): For now, use a locally modified version of the external
+      // hotword extension. Replace with the ID of the new shared module
+      // containing the hotword detector.
+      "id": "bepbmhgboaologfdajaanbcjmnhjmhfn"
+    }
+  ],
+
+  "minimum_chrome_version": "38"
+}

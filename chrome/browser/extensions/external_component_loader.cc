@@ -4,12 +4,18 @@
 
 #include "chrome/browser/extensions/external_component_loader.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/bookmarks/enhanced_bookmarks_features.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/signin/core/browser/signin_manager.h"
+
+// TODO(thestig): Remove after extensions are disabled on mobile.
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/search/hotword_service_factory.h"
+#endif
 
 namespace {
 
@@ -34,11 +40,18 @@ void ExternalComponentLoader::StartLoading() {
   prefs_->SetString(appId + ".external_update_url",
                     extension_urls::GetWebstoreUpdateUrl().spec());
 
+#if defined(ENABLE_EXTENSIONS)
   if (HotwordServiceFactory::IsHotwordAllowed(profile_)) {
     std::string hotwordId = extension_misc::kHotwordExtensionId;
-    prefs_->SetString(hotwordId + ".external_update_url",
-                      extension_urls::GetWebstoreUpdateUrl().spec());
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    // TODO(amistry): Load the hotword shared module when enabling built-in
+    // hotword detection.
+    if (!command_line->HasSwitch(switches::kEnableExperimentalHotwording)) {
+      prefs_->SetString(hotwordId + ".external_update_url",
+                        extension_urls::GetWebstoreUpdateUrl().spec());
+    }
   }
+#endif
 
   UpdateBookmarksExperimentState(
       profile_->GetPrefs(),

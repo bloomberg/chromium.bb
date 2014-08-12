@@ -304,8 +304,14 @@ void ComponentLoader::AddHangoutServicesExtension() {
 
 void ComponentLoader::AddHotwordHelperExtension() {
   if (HotwordServiceFactory::IsHotwordAllowed(browser_context_)) {
-    Add(IDR_HOTWORD_HELPER_MANIFEST,
-        base::FilePath(FILE_PATH_LITERAL("hotword_helper")));
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    if (command_line->HasSwitch(switches::kEnableExperimentalHotwording)) {
+      Add(IDR_HOTWORD_MANIFEST,
+          base::FilePath(FILE_PATH_LITERAL("hotword")));
+    } else {
+      Add(IDR_HOTWORD_HELPER_MANIFEST,
+          base::FilePath(FILE_PATH_LITERAL("hotword_helper")));
+    }
   }
 }
 
