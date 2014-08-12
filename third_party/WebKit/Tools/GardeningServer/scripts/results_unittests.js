@@ -80,7 +80,7 @@ test("resultType", 12, function() {
 });
 
 asyncTest("fetchResultsURLs", 5, function() {
-    var simulator = new NetworkSimulator();
+    var simulator = new NetworkSimulator(ok, start);
 
     var probedURLs = [];
     simulator.probe = function(url)

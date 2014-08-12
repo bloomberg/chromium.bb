@@ -1,0 +1,89 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../ct-results-comparison.html">
+
+<script>
+(function () {
+
+var assert = chai.assert;
+
+describe('ct-results-comparison', function() {
+  describe('results comparison UI', function() {
+    var comparison;
+    var expected, actual, diff;
+
+    before(function(done) {
+      comparison = document.createElement('ct-results-comparison');
+      comparison.type = results.kImageType;
+
+      expected = "http://domain.com/dummy-expected";
+      actual = "http://domain.com/dummy-actual";
+      diff = "http://domain.com/dummy-diff";
+
+      comparison.expectedUrl = expected;
+      comparison.actualUrl = actual;
+      comparison.diffUrl = diff;
+
+      setTimeout(done);
+    });
+
+    it('should show expected, actual and diff', function() {
+      var outputs = comparison.shadowRoot.querySelectorAll('ct-test-output');
+      assert.lengthOf(outputs, 3);
+
+      // Verify we didn't typo any of the bindings.
+      assert.equal(outputs[0].type, results.kImageType);
+      assert.equal(outputs[0].url, expected);
+      assert.equal(outputs[1].type, results.kImageType);
+      assert.equal(outputs[1].url, actual);
+      assert.equal(outputs[2].type, results.kImageType);
+      assert.equal(outputs[2].url, diff);
+
+      assert.lengthOf(comparison.shadowRoot.querySelectorAll('ct-results-comparison-zoomer'), 0);
+    });
+  });
+
+  describe('zoomer', function() {
+    // FIXME: Create a MouseEventMock class to use here.
+    var mockMouseEvent = {
+      clientX: 0,
+      clientY: 0,
+      target: document.createElement('div'),
+    };
+
+    var imageComparison;
+    var nonImageComparison;
+
+    before(function(done) {
+      imageComparison = document.createElement('ct-results-comparison');
+      imageComparison.type = results.kImageType;
+      nonImageComparison = document.createElement('ct-results-comparison');
+      setTimeout(done);
+    });
+
+    before(function(done) {
+      imageComparison._handleMouseMove(mockMouseEvent);
+      nonImageComparison._handleMouseMove(mockMouseEvent);
+      setTimeout(done);
+    });
+
+    it('should exist on images', function(done) {
+      assert.lengthOf(imageComparison.shadowRoot.querySelectorAll('ct-results-comparison-zoomer'), 1);
+      assert.lengthOf(nonImageComparison.shadowRoot.querySelectorAll('ct-results-comparison-zoomer'), 0);
+
+      imageComparison.type = 'foo';
+      setTimeout(done);
+    });
+
+    it('should not exist on other result types', function() {
+      assert.lengthOf(imageComparison.shadowRoot.querySelectorAll('ct-results-comparison-zoomer'), 0);
+    });
+  });
+});
+
+})()
+</script>

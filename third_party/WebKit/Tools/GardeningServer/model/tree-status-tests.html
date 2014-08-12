@@ -36,7 +36,7 @@ var closedTreeJson = {
 };
 
 asyncTest("basic", 6, function() {
-  var simulator = new NetworkSimulator();
+  var simulator = new NetworkSimulator(ok, start);
   simulator.json = function(url) {
     if (url.indexOf('closed') != -1)
       return Promise.resolve(closedTreeJson);

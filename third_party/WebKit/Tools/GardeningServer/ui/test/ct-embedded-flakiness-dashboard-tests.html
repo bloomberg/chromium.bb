@@ -12,57 +12,32 @@ found in the LICENSE file.
 var assert = chai.assert;
 
 describe('ct-embedded-flakiness-dashboard', function() {
-  var embeddedFlakinessDashboard;
+  it('should point the iframe to the dashboard', function(done) {
+    var failure = new CTFailure('foo_tests', 'foo/bar.html');
+    var tree = "blink";
+    var embeddedFlakinessDashboard = document.createElement('ct-embedded-flakiness-dashboard');
+    embeddedFlakinessDashboard.test = failure;
+    embeddedFlakinessDashboard.tree = tree;
 
-  describe('embedded flakiness dashboard UI', function() {
-    var oldUrlForEmbeddedFlakinessDashboard = ui.urlForEmbeddedFlakinessDashboard;
-    var testName;
-    var step;
-    var tree;
-
-    beforeEach(function(done) {
-      ui.urlForEmbeddedFlakinessDashboard = function(test, step, tree) { return "about:blank#" + test + step + tree; }
-      embeddedFlakinessDashboard = document.createElement('ct-embedded-flakiness-dashboard');
-      testName = "foo/bar.html";
-      step = "foo_tests";
-      tree = "blink";
-      embeddedFlakinessDashboard.test = {
-        testName: testName,
-        step: step,
-      };
-      embeddedFlakinessDashboard.tree = tree;
-
-      setTimeout(done);
-    });
-
-    afterEach(function() {
-      ui.urlForEmbeddedFlakinessDashboard = oldUrlForEmbeddedFlakinessDashboard;
-    });
-
-    it('should point the iframe to the dashboard', function() {
+    setTimeout(function() {
       var iframe = embeddedFlakinessDashboard.shadowRoot.querySelector('#iframe');
-      assert.equal(iframe.src, ui.urlForEmbeddedFlakinessDashboard(testName, step, tree));
+      assert.equal(iframe.src, failure.embeddedFlakinessDashboardURL(tree));
+      done();
     });
   });
 
-  describe('heightChanged', function() {
-    beforeEach(function(done) {
-      embeddedFlakinessDashboard = document.createElement('ct-embedded-flakiness-dashboard');
+  it('should respond to heightChanged', function(done) {
+    var embeddedFlakinessDashboard = document.createElement('ct-embedded-flakiness-dashboard');
 
-      setTimeout(done);
-    });
+    var finishTest = function() {
+      window.removeEventListener('message', finishTest);
+      var iframe = embeddedFlakinessDashboard.shadowRoot.querySelector('#iframe');
+      assert.equal(iframe.style.height, '100px');
+      done();
+    };
 
-    it('should resize the iframe', function(done) {
-      var finishTest = function() {
-        window.removeEventListener('message', finishTest);
-        var iframe = embeddedFlakinessDashboard.shadowRoot.querySelector('#iframe');
-        assert.equal(iframe.style.height, '100px');
-        done();
-      };
-
-      window.addEventListener('message', finishTest);
-      window.postMessage({command: 'heightChanged', height: "100"}, '*');
-    });
+    window.addEventListener('message', finishTest);
+    window.postMessage({command: 'heightChanged', height: "100"}, '*');
   });
 });
 

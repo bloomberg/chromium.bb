@@ -1,0 +1,150 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../ct-results-detail.html">
+
+<link rel="import" href="../../lib/network-simulator.html">
+<link rel="import" href="../../model/ct-failure.html">
+
+<script>
+(function () {
+
+var assert = chai.assert;
+
+describe('ct-results-detail', function() {
+  describe('webkit failures', function() {
+    var resultsDetail;
+    var probedUrls;
+
+    // Set to test different types.
+    var resultType = '';
+    var extensions = [];
+
+    beforeEach(function(done) {
+      var simulator = new NetworkSimulator(assert, done);
+      probedUrls = [];
+
+      simulator.probe = function(url) {
+        probedUrls.push(url);
+        for (var i = 0; i < extensions.length; i++) {
+          if (url.endsWith(extensions[i]))
+            return Promise.resolve();
+        }
+        return Promise.reject();
+      };
+
+      // FIXME: Use a proper mock model object.
+      var failure = new CTFailure(
+        "testName", "dummy/test.html",
+        {
+          "dummy builder": {
+            "actual": resultType,
+          },
+        }, 177164, 177165
+      );
+
+      simulator.runTest(function() {
+        resultsDetail = document.createElement('ct-results-detail');
+        resultsDetail.builder = 'dummy builder';
+        resultsDetail.failure = failure;
+      });
+
+      setTimeout(done);
+    });
+
+    describe('image+text', function() {
+      before(function() {
+        resultType = "IMAGE+TEXT";
+        extensions = ['.txt', '.png'];
+      });
+
+      it('should fetch the correct URLs', function() {
+        assert.deepEqual(probedUrls, [
+          'https://storage.googleapis.com/chromium-layout-test-archives/dummy_builder/results/layout-test-results/dummy/test-expected.png',
+          'https://storage.googleapis.com/chromium-layout-test-archives/dummy_builder/results/layout-test-results/dummy/test-actual.png',
+          'https://storage.googleapis.com/chromium-layout-test-archives/dummy_builder/results/layout-test-results/dummy/test-diff.png',
+          'https://storage.googleapis.com/chromium-layout-test-archives/dummy_builder/results/layout-test-results/dummy/test-actual.txt',
+          'https://storage.googleapis.com/chromium-layout-test-archives/dummy_builder/results/layout-test-results/dummy/test-expected.txt',
+          'https://storage.googleapis.com/chromium-layout-test-archives/dummy_builder/results/layout-test-results/dummy/test-diff.txt',
+        ]);
+
+        assert.lengthOf(resultsDetail.shadowRoot.querySelectorAll('ct-results-comparison'), 2);
+        assert.lengthOf(resultsDetail.shadowRoot.querySelectorAll('ct-test-output'), 0);
+      });
+    });
+
+    describe('crash', function() {
+      before(function() {
+        resultType = "CRASH";
+        extensions = ['.txt'];
+      });
+
+      it('should fetch the correct URLs', function() {
+        assert.deepEqual(probedUrls, [
+          'https://storage.googleapis.com/chromium-layout-test-archives/dummy_builder/results/layout-test-results/dummy/test-crash-log.txt',
+        ]);
+
+        assert.lengthOf(resultsDetail.shadowRoot.querySelectorAll('ct-test-output'), 1);
+        assert.lengthOf(resultsDetail.shadowRoot.querySelectorAll('ct-results-comparison'), 0);
+      }); 
+    });
+  });
+
+  describe('failures', function() {
+    var result;
+    var expectedUrl;
+
+    afterEach(function() {
+      var outputs = result.shadowRoot.querySelectorAll('ct-test-output');
+      assert.lengthOf(outputs, 1);
+      assert.equal(outputs[0].url, expectedUrl);
+      assert.lengthOf(result.shadowRoot.querySelectorAll('ct-results-comparison'), 0);
+    });
+
+    describe('unknown failures', function() {
+      it('should show the failure output', function(done) {
+        result = document.createElement('ct-results-detail');
+
+        result.builder = 'dummy builder';
+
+        var resultsByBuilder = {
+          "dummy builder": {
+            actual: "UNKNOWN",
+            lastFailingBuild: 124,
+            masterUrl: 'http://masterurl/'
+          },
+        };
+        result.failure = new CTFailure('foo_step', 'test.html', resultsByBuilder, 123, 124);
+        expectedUrl = 'http://masterurl//builders/dummy%20builder/builds/124/steps/foo_step/logs/stdio';
+
+        setTimeout(done);
+      });
+    });
+
+    describe('failures', function() {
+      it('should show the failure output', function(done) {
+        result = document.createElement('ct-results-detail');
+
+        result.builder = 'dummy builder';
+
+        var resultsByBuilder = {
+          "dummy builder": {
+            actual: "FAIL",
+            lastFailingBuild: 124,
+            masterUrl: 'http://masterurl/'
+          },
+        };
+        result.failure = new CTFailure('foo_step', 'TestSuite.TestName', resultsByBuilder, 123, 124);
+        expectedUrl = 'http://masterurl//builders/dummy%20builder/builds/124/steps/foo_step/logs/TestName';
+
+        setTimeout(done);
+      });
+    });
+  });
+});
+
+})()
+</script>

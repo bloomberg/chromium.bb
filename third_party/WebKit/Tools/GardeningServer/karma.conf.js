@@ -14,20 +14,22 @@ module.exports = function(config) {
     // mocha setup
     client: {
       mocha: {
-        ui: 'bdd'
+        ui: 'bdd',
+        globals: ['net']
       }
     },
 
     // list of files / patterns to load in the browser
     files: [
       'bower_components/platform/platform.js',
-      'test/karma_loader.html',
+      'test/karma-loader.html',
       'bower_components/chai/chai.js',
       'bower_components/sugar/release/sugar-full.development.js',
       {pattern: 'bower_components/**/*.{js,html,css,map}', included: false},
       'node_modules/mocha/mocha.js',
       'polymer-load-warning.html',
       {pattern: 'model/*.html', included: false},
+      {pattern: 'lib/*.html', included: false},
       'model/test/*.html',
       'scripts/*.js',
       {pattern: 'ui/*.html', included: false},

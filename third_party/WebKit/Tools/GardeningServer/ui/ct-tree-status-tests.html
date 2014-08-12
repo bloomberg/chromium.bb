@@ -29,7 +29,7 @@ asyncTest('basic', 5, function() {
   closedTreeStatus.message = 'Tree is closed';
   closedTree.status = closedTreeStatus;
 
-  var simulator = new NetworkSimulator();
+  var simulator = new NetworkSimulator(ok, start);
   simulator.runTest(function() {
     requestAnimationFrame(function() {
       ok(!openTree.shadowRoot.textContent.has("open-tree-project"));

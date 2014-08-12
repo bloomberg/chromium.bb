@@ -1,0 +1,74 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../ct-results-by-builder.html">
+
+<script>
+(function () {
+
+var assert = chai.assert;
+
+var kExampleFailure = {
+  "testName": "inspector/console/console-viewport-selection.html",
+  "resultNodesByBuilder": {
+    "WebKit Mac10.6 (dbg)": {
+      "actual": "IMAGE",
+    },
+    "WebKit Linux (dbg)": {
+      "actual": "TEXT",
+    },
+  },
+  "oldestFailingRevision": 177164,
+  "newestPassingRevision": 177165,
+};
+
+describe('ct-results-by-builder', function() {
+  var resultsByBuilder;
+  var oldFetchResultsURLs;
+
+  beforeEach(function(done) {
+    // FIXME: Remove this override when ct-results-detail is fixed to not use
+    // results.fetchResultsURLs.
+    oldFetchResultsURLs = results.fetchResultsURLs;
+    results.fetchResultsURLs = function() { return Promise.resolve([]); };
+
+    resultsByBuilder = document.createElement('ct-results-by-builder');
+    resultsByBuilder.failure = kExampleFailure;
+
+    setTimeout(done);
+  });
+
+  afterEach(function() {
+    results.fetchResultsURLs = oldFetchResultsURLs;
+  });
+
+  describe('results UI', function() {
+    it('should show details in each tab', function(done) {
+      var tabs = resultsByBuilder.shadowRoot.querySelectorAll('paper-tab');
+      assert.lengthOf(tabs, 2);
+      assert.equal(tabs[0].textContent, 'WebKit Linux (dbg)');
+      assert.equal(tabs[1].textContent, 'WebKit Mac10.6 (dbg)');
+
+      var detail = resultsByBuilder.shadowRoot.querySelectorAll('ct-results-detail');
+      assert.lengthOf(detail, 1);
+      assert.equal(detail[0].failure.testName, 'inspector/console/console-viewport-selection.html');
+      assert.equal(detail[0].builder, 'WebKit Linux (dbg)');
+
+      resultsByBuilder.shadowRoot.querySelector('paper-tabs').selected = 1;
+
+      setTimeout(function() {
+        var detail = resultsByBuilder.shadowRoot.querySelectorAll('ct-results-detail');
+        assert.lengthOf(detail, 1);
+        assert.equal(detail[0].failure.testName, 'inspector/console/console-viewport-selection.html');
+        assert.equal(detail[0].builder, 'WebKit Mac10.6 (dbg)');
+        done();
+      });
+    });
+  });
+});
+
+})()
+</script>
