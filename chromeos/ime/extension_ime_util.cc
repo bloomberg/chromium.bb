@@ -39,15 +39,11 @@ std::string GetComponentInputMethodID(const std::string& extension_id,
 
 std::string GetExtensionIDFromInputMethodID(
     const std::string& input_method_id) {
-  if (IsExtensionIME(input_method_id) &&
-      input_method_id.size() >= kExtensionIMEPrefixLength +
-                                kExtensionIdLength) {
+  if (IsExtensionIME(input_method_id)) {
     return input_method_id.substr(kExtensionIMEPrefixLength,
                                   kExtensionIdLength);
   }
-  if (IsComponentExtensionIME(input_method_id) &&
-      input_method_id.size() >= kComponentExtensionIMEPrefixLength +
-                                kExtensionIdLength) {
+  if (IsComponentExtensionIME(input_method_id)) {
     return input_method_id.substr(kComponentExtensionIMEPrefixLength,
                                   kExtensionIdLength);
   }
@@ -99,20 +95,24 @@ std::string GetInputMethodIDByEngineID(const std::string& engine_id) {
 bool IsExtensionIME(const std::string& input_method_id) {
   return StartsWithASCII(input_method_id,
                          kExtensionIMEPrefix,
-                         true);  // Case sensitive.
+                         true /* Case sensitive */) &&
+      input_method_id.size() > kExtensionIMEPrefixLength +
+          kExtensionIdLength;
 }
 
 bool IsComponentExtensionIME(const std::string& input_method_id) {
   return StartsWithASCII(input_method_id,
                          kComponentExtensionIMEPrefix,
-                         true);  // Case sensitive.
+                         true /* Case sensitive */) &&
+      input_method_id.size() > kComponentExtensionIMEPrefixLength +
+          kExtensionIdLength;
 }
 
 bool IsMemberOfExtension(const std::string& input_method_id,
                          const std::string& extension_id) {
   return StartsWithASCII(input_method_id,
                          kExtensionIMEPrefix + extension_id,
-                         true);  // Case sensitive.
+                         true /* Case sensitive */);
 }
 
 bool IsKeyboardLayoutExtension(const std::string& input_method_id) {

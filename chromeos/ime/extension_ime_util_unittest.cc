@@ -37,18 +37,22 @@ TEST(ExtensionIMEUtilTest, GetExtensionIDFromInputMethodIDTest) {
 
 TEST(ExtensionIMEUtilTest, IsExtensionIMETest) {
   EXPECT_TRUE(extension_ime_util::IsExtensionIME(
-      extension_ime_util::GetInputMethodID("abcde", "12345")));
+      extension_ime_util::GetInputMethodID(
+          "abcde_xxxxxxxxxxxxxxxxxxxxxxxxxx", "12345")));
   EXPECT_FALSE(extension_ime_util::IsExtensionIME(
-      extension_ime_util::GetComponentInputMethodID("abcde", "12345")));
+      extension_ime_util::GetComponentInputMethodID(
+          "abcde_xxxxxxxxxxxxxxxxxxxxxxxxxx", "12345")));
   EXPECT_FALSE(extension_ime_util::IsExtensionIME(""));
   EXPECT_FALSE(extension_ime_util::IsExtensionIME("mozc"));
 }
 
 TEST(ExtensionIMEUtilTest, IsComponentExtensionIMETest) {
   EXPECT_TRUE(extension_ime_util::IsComponentExtensionIME(
-      extension_ime_util::GetComponentInputMethodID("abcde", "12345")));
+      extension_ime_util::GetComponentInputMethodID(
+          "abcde_xxxxxxxxxxxxxxxxxxxxxxxxxx", "12345")));
   EXPECT_FALSE(extension_ime_util::IsComponentExtensionIME(
-      extension_ime_util::GetInputMethodID("abcde", "12345")));
+      extension_ime_util::GetInputMethodID(
+          "abcde_xxxxxxxxxxxxxxxxxxxxxxxxxx", "12345")));
   EXPECT_FALSE(extension_ime_util::IsComponentExtensionIME(""));
   EXPECT_FALSE(extension_ime_util::IsComponentExtensionIME("mozc"));
 }

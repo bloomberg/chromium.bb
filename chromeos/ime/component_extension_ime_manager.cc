@@ -87,13 +87,27 @@ ComponentExtensionIMEManager::~ComponentExtensionIMEManager() {
 void ComponentExtensionIMEManager::Initialize(
     scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate) {
   delegate_ = delegate.Pass();
-  component_extension_imes_ = delegate_->ListIME();
+  std::vector<ComponentExtensionIME> ext_list = delegate_->ListIME();
+  for (size_t i = 0; i < ext_list.size(); ++i) {
+    ComponentExtensionIME& ext = ext_list[i];
+    bool extension_exists = IsWhitelistedExtension(ext.id);
+    if (!extension_exists)
+      component_extension_imes_[ext.id] = ext;
+    for (size_t j = 0; j < ext.engines.size(); ++j) {
+      ComponentExtensionEngine& ime = ext.engines[j];
+      const std::string input_method_id =
+          extension_ime_util::GetComponentInputMethodID(ext.id, ime.engine_id);
+      if (extension_exists && !IsWhitelisted(input_method_id))
+        component_extension_imes_[ext.id].engines.push_back(ime);
+      input_method_id_set_.insert(input_method_id);
+    }
+  }
 }
 
 bool ComponentExtensionIMEManager::LoadComponentExtensionIME(
     const std::string& input_method_id) {
   ComponentExtensionIME ime;
-  if (FindEngineEntry(input_method_id, &ime, NULL))
+  if (FindEngineEntry(input_method_id, &ime))
     return delegate_->Load(ime.id, ime.manifest, ime.path);
   else
     return false;
@@ -102,7 +116,7 @@ bool ComponentExtensionIMEManager::LoadComponentExtensionIME(
 bool ComponentExtensionIMEManager::UnloadComponentExtensionIME(
     const std::string& input_method_id) {
   ComponentExtensionIME ime;
-  if (!FindEngineEntry(input_method_id, &ime, NULL))
+  if (!FindEngineEntry(input_method_id, &ime))
     return false;
   delegate_->Unload(ime.id, ime.path);
   return true;
@@ -110,87 +124,41 @@ bool ComponentExtensionIMEManager::UnloadComponentExtensionIME(
 
 bool ComponentExtensionIMEManager::IsWhitelisted(
     const std::string& input_method_id) {
-  return extension_ime_util::IsComponentExtensionIME(input_method_id) &&
-      FindEngineEntry(input_method_id, NULL, NULL);
+  return input_method_id_set_.find(input_method_id) !=
+         input_method_id_set_.end();
 }
 
 bool ComponentExtensionIMEManager::IsWhitelistedExtension(
     const std::string& extension_id) {
-  for (size_t i = 0; i < component_extension_imes_.size(); ++i) {
-    if (component_extension_imes_[i].id == extension_id)
-      return true;
-  }
-  return false;
-}
-
-std::string ComponentExtensionIMEManager::GetId(
-    const std::string& extension_id,
-    const std::string& engine_id) {
-  ComponentExtensionEngine engine;
-  const std::string& input_method_id =
-      extension_ime_util::GetComponentInputMethodID(extension_id, engine_id);
-  if (!FindEngineEntry(input_method_id, NULL, &engine))
-    return "";
-  return input_method_id;
-}
-
-std::string ComponentExtensionIMEManager::GetName(
-    const std::string& input_method_id) {
-  ComponentExtensionEngine engine;
-  if (!FindEngineEntry(input_method_id, NULL, &engine))
-    return "";
-  return engine.display_name;
-}
-
-std::string ComponentExtensionIMEManager::GetDescription(
-    const std::string& input_method_id) {
-  ComponentExtensionEngine engine;
-  if (!FindEngineEntry(input_method_id, NULL, &engine))
-    return "";
-  return engine.description;
-}
-
-std::vector<std::string> ComponentExtensionIMEManager::ListIMEByLanguage(
-    const std::string& language) {
-  std::vector<std::string> result;
-  for (size_t i = 0; i < component_extension_imes_.size(); ++i) {
-    for (size_t j = 0; j < component_extension_imes_[i].engines.size(); ++j) {
-      const ComponentExtensionIME& ime = component_extension_imes_[i];
-      if (std::find(ime.engines[j].language_codes.begin(),
-                    ime.engines[j].language_codes.end(),
-                    language) != ime.engines[j].language_codes.end()) {
-        result.push_back(extension_ime_util::GetComponentInputMethodID(
-            ime.id,
-            ime.engines[j].engine_id));
-      }
-    }
-  }
-  return result;
+  return component_extension_imes_.find(extension_id) !=
+         component_extension_imes_.end();
 }
 
 input_method::InputMethodDescriptors
     ComponentExtensionIMEManager::GetAllIMEAsInputMethodDescriptor() {
   input_method::InputMethodDescriptors result;
-  for (size_t i = 0; i < component_extension_imes_.size(); ++i) {
-    for (size_t j = 0; j < component_extension_imes_[i].engines.size(); ++j) {
+  for (std::map<std::string, ComponentExtensionIME>::const_iterator it =
+          component_extension_imes_.begin();
+       it != component_extension_imes_.end(); ++it) {
+    const ComponentExtensionIME& ext = it->second;
+    for (size_t j = 0; j < ext.engines.size(); ++j) {
+      const ComponentExtensionEngine& ime = ext.engines[j];
       const std::string input_method_id =
           extension_ime_util::GetComponentInputMethodID(
-              component_extension_imes_[i].id,
-              component_extension_imes_[i].engines[j].engine_id);
-      const std::vector<std::string>& layouts =
-          component_extension_imes_[i].engines[j].layouts;
+              ext.id, ime.engine_id);
+      const std::vector<std::string>& layouts = ime.layouts;
       result.push_back(
           input_method::InputMethodDescriptor(
               input_method_id,
-              component_extension_imes_[i].engines[j].display_name,
+              ime.display_name,
               std::string(), // TODO(uekawa): Set short name.
               layouts,
-              component_extension_imes_[i].engines[j].language_codes,
+              ime.language_codes,
               // Enables extension based xkb keyboards on login screen.
               extension_ime_util::IsKeyboardLayoutExtension(
                   input_method_id) && IsInLoginLayoutWhitelist(layouts),
-              component_extension_imes_[i].engines[j].options_page_url,
-              component_extension_imes_[i].engines[j].input_view_url));
+              ime.options_page_url,
+              ime.input_view_url));
     }
   }
   return result;
@@ -210,30 +178,20 @@ ComponentExtensionIMEManager::GetXkbIMEAsInputMethodDescriptor() {
 
 bool ComponentExtensionIMEManager::FindEngineEntry(
     const std::string& input_method_id,
-    ComponentExtensionIME* out_extension,
-    ComponentExtensionEngine* out_engine) {
-  if (!extension_ime_util::IsComponentExtensionIME(input_method_id))
+    ComponentExtensionIME* out_extension) {
+  if (!IsWhitelisted(input_method_id))
     return false;
-  for (size_t i = 0; i < component_extension_imes_.size(); ++i) {
-    const std::string extension_id = component_extension_imes_[i].id;
-    const std::vector<ComponentExtensionEngine>& engines =
-        component_extension_imes_[i].engines;
 
-    for (size_t j = 0; j < engines.size(); ++j) {
-      const std::string trial_ime_id =
-          extension_ime_util::GetComponentInputMethodID(
-              extension_id, engines[j].engine_id);
-      if (trial_ime_id != input_method_id)
-        continue;
+  std::string extension_id =
+      extension_ime_util::GetExtensionIDFromInputMethodID(input_method_id);
+  std::map<std::string, ComponentExtensionIME>::iterator it =
+      component_extension_imes_.find(extension_id);
+  if (it == component_extension_imes_.end())
+    return false;
 
-      if (out_extension)
-        *out_extension = component_extension_imes_[i];
-      if (out_engine)
-        *out_engine = component_extension_imes_[i].engines[j];
-      return true;
-    }
-  }
-  return false;
+  if (out_extension)
+    *out_extension = it->second;
+  return true;
 }
 
 bool ComponentExtensionIMEManager::IsInLoginLayoutWhitelist(

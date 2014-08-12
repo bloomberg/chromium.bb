@@ -21,7 +21,7 @@ class ComponentExtensionIMEManagerTest : public testing::Test {
     ime_list_.clear();
 
     ComponentExtensionIME ext1;
-    ext1.id = "ext1_id";
+    ext1.id = "ext1_id_xxxxxxxxxxxxxxxxxxxxxxxx";
     ext1.description = "ext1_description";
     ext1.options_page_url =
         GURL("chrome-extension://" + ext1.id + "/options.html");
@@ -51,7 +51,7 @@ class ComponentExtensionIMEManagerTest : public testing::Test {
     ime_list_.push_back(ext1);
 
     ComponentExtensionIME ext2;
-    ext2.id = "ext2_id";
+    ext2.id = "ext2_id_xxxxxxxxxxxxxxxxxxxxxxxx";
     ext2.description = "ext2_description";
     ext2.path = base::FilePath("ext2_file_path");
 
@@ -79,7 +79,7 @@ class ComponentExtensionIMEManagerTest : public testing::Test {
     ime_list_.push_back(ext2);
 
     ComponentExtensionIME ext3;
-    ext3.id = "ext3_id";
+    ext3.id = "ext3_id_xxxxxxxxxxxxxxxxxxxxxxxx";
     ext3.description = "ext3_description";
     ext3.options_page_url =
     GURL("chrome-extension://" + ext3.id + "/options.html");
@@ -179,48 +179,6 @@ TEST_F(ComponentExtensionIMEManagerTest, IsWhitelistedExtensionTest) {
   EXPECT_TRUE(component_ext_mgr_->IsWhitelistedExtension(ime_list_[1].id));
   EXPECT_FALSE(component_ext_mgr_->IsWhitelistedExtension("dummy"));
   EXPECT_FALSE(component_ext_mgr_->IsWhitelistedExtension(""));
-}
-
-TEST_F(ComponentExtensionIMEManagerTest, GetNameDescriptionTest) {
-  for (size_t i = 0; i < ime_list_.size(); ++i) {
-    for (size_t j = 0; j < ime_list_[i].engines.size(); ++j) {
-      const ComponentExtensionEngine& engine
-          = ime_list_[i].engines[j];
-
-      const std::string input_method_id =
-          extension_ime_util::GetComponentInputMethodID(
-              ime_list_[i].id,
-              engine.engine_id);
-
-      EXPECT_EQ(input_method_id,
-                component_ext_mgr_->GetId(ime_list_[i].id, engine.engine_id));
-      EXPECT_EQ(engine.display_name,
-                component_ext_mgr_->GetName(input_method_id));
-      EXPECT_EQ(engine.description,
-                component_ext_mgr_->GetDescription(input_method_id));
-    }
-  }
-}
-
-TEST_F(ComponentExtensionIMEManagerTest, ListIMEByLanguageTest) {
-  const std::string hindi_layout1 =
-      extension_ime_util::GetComponentInputMethodID(
-          ime_list_[1].id, ime_list_[1].engines[1].engine_id);
-  const std::string hindi_layout2 =
-      extension_ime_util::GetComponentInputMethodID(
-          ime_list_[2].id, ime_list_[2].engines[0].engine_id);
-
-  std::vector<std::string> hindi_list
-      = component_ext_mgr_->ListIMEByLanguage("hi");
-  ASSERT_EQ(2UL, hindi_list.size());
-  EXPECT_TRUE(hindi_list[0] == hindi_layout1 || hindi_list[0] == hindi_layout2);
-  EXPECT_TRUE(hindi_list[1] == hindi_layout1 || hindi_list[1] == hindi_layout2);
-
-  EXPECT_EQ(0UL, component_ext_mgr_->ListIMEByLanguage("ru").size());
-  EXPECT_EQ(0UL, component_ext_mgr_->ListIMEByLanguage("").size());
-  EXPECT_EQ(0UL, component_ext_mgr_->ListIMEByLanguage("invalid").size());
-  EXPECT_EQ(5UL, component_ext_mgr_->ListIMEByLanguage("en").size());
-  EXPECT_EQ(2UL, component_ext_mgr_->ListIMEByLanguage("ja").size());
 }
 
 TEST_F(ComponentExtensionIMEManagerTest, GetAllIMEAsInputMethodDescriptor) {
