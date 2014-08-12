@@ -24,7 +24,10 @@ def RunCheckstyle(input_api, output_api, style_file):
   checkstyle_env = os.environ.copy()
   checkstyle_env['JAVA_CMD'] = 'java'
   try:
-    check = subprocess.Popen(['checkstyle', '-c', style_file] + java_files,
+    check = subprocess.Popen(['java', '-cp',
+                              'third_party/checkstyle/checkstyle-5.7-all.jar',
+                              'com.puppycrawl.tools.checkstyle.Main', '-c',
+                              style_file] + java_files,
                              stdout=subprocess.PIPE, env=checkstyle_env)
     stdout, _ = check.communicate()
     if check.returncode == 0:

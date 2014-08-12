@@ -1,0 +1,26 @@
+Name: Checkstyle is a development tool to help programmers write Java code that
+      adheres to a coding standard.
+Short Name: checkstyle
+URL: http://checkstyle.sourceforge.net/
+Version: 5.7
+License: LGPL 2.1
+License File: LICENSE
+Security Critical: no
+
+Description:
+Checkstyle is used to validate Java code style on Chromium PRESUBMIT step.
+
+Local Modifications:
+- Removed contrib/ and site/ directories that contained examples of how to write
+  new checkstyle modules.
+- Removed xml files used for Eclipse setup when building new checkstyle modules.
+  - checkstyle_checks.xml
+  - import-control.xml
+  - supressions.xml
+- Removed jars already included in checkstyle-5.7-all.jar
+  - antlr-2.7.7.jar
+  - checkstyle-5.7.jar
+  - commons-beanutils-core-1.8.3.jar
+  - commons-cli-1.2.jar
+  - commons-logging-1.1.1.jar
+  - guava-jdk5-14.0.1.jar
