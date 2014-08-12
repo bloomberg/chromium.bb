@@ -36,7 +36,9 @@ class VideoCaptureDeviceMac;
 - (BOOL)setCaptureDevice:(NSString*)deviceId;
 
 // Configures the capture properties.
-- (BOOL)setCaptureHeight:(int)height width:(int)width frameRate:(int)frameRate;
+- (BOOL)setCaptureHeight:(int)height
+                   width:(int)width
+               frameRate:(float)frameRate;
 
 // Start video capturing, register observers. Returns YES on sucess, NO
 // otherwise.

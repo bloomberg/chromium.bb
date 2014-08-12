@@ -174,7 +174,9 @@
   }
 }
 
-- (BOOL)setCaptureHeight:(int)height width:(int)width frameRate:(int)frameRate {
+- (BOOL)setCaptureHeight:(int)height
+                   width:(int)width
+               frameRate:(float)frameRate {
   if (!captureDeviceInput_) {
     [self sendErrorString:[NSString
         stringWithUTF8String:"No video capture device set."]];
@@ -185,7 +187,7 @@
         stringWithUTF8String:"Video capture capabilities already set."]];
     return NO;
   }
-  if (frameRate <= 0) {
+  if (frameRate <= 0.0f) {
     [self sendErrorString:[NSString stringWithUTF8String: "Wrong frame rate."]];
     return NO;
   }
@@ -205,7 +207,7 @@
   };
   [output setPixelBufferAttributes:videoSettingsDictionary];
 
-  [output setMinimumVideoFrameInterval:(NSTimeInterval)1/(float)frameRate];
+  [output setMinimumVideoFrameInterval:(NSTimeInterval)1/frameRate];
   return YES;
 }
 

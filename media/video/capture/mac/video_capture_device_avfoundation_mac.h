@@ -62,7 +62,7 @@ class VideoCaptureDeviceMac;
   // The following attributes are set via -setCaptureHeight:width:frameRate:.
   int frameWidth_;
   int frameHeight_;
-  int frameRate_;
+  float frameRate_;
 
   base::Lock lock_;  // Protects concurrent setting and using of frameReceiver_.
   media::VideoCaptureDeviceMac* frameReceiver_;  // weak.
@@ -105,7 +105,9 @@ class VideoCaptureDeviceMac;
 // Configures the capture properties for the capture session and the video data
 // output; this means it MUST be called after setCaptureDevice:. Return YES on
 // success, else NO.
-- (BOOL)setCaptureHeight:(int)height width:(int)width frameRate:(int)frameRate;
+- (BOOL)setCaptureHeight:(int)height
+                   width:(int)width
+               frameRate:(float)frameRate;
 
 // Starts video capturing and register the notification listeners. Must be
 // called after setCaptureDevice:, and, eventually, also after

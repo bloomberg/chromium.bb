@@ -171,7 +171,9 @@
   return YES;
 }
 
-- (BOOL)setCaptureHeight:(int)height width:(int)width frameRate:(int)frameRate {
+- (BOOL)setCaptureHeight:(int)height
+                   width:(int)width
+               frameRate:(float)frameRate {
   // Check if either of VideoCaptureDeviceMac::AllocateAndStart() or
   // VideoCaptureDeviceMac::ReceiveFrame() is calling here, depending on the
   // running state. VCDM::ReceiveFrame() calls here to change aspect ratio.
@@ -208,14 +210,14 @@
       [captureConnection isVideoMinFrameDurationSupported]) {
     [captureConnection setVideoMinFrameDuration:
         CoreMediaGlue::CMTimeMake(media::kFrameRatePrecision,
-                                  frameRate * media::kFrameRatePrecision)];
+            (int)(frameRate * media::kFrameRatePrecision))];
   }
   if ([captureConnection
            respondsToSelector:@selector(isVideoMaxFrameDurationSupported)] &&
       [captureConnection isVideoMaxFrameDurationSupported]) {
     [captureConnection setVideoMaxFrameDuration:
         CoreMediaGlue::CMTimeMake(media::kFrameRatePrecision,
-                                  frameRate * media::kFrameRatePrecision)];
+            (int)(frameRate * media::kFrameRatePrecision))];
   }
   return YES;
 }

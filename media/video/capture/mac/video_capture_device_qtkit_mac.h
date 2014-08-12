@@ -24,7 +24,7 @@ class VideoCaptureDeviceMac;
 @interface VideoCaptureDeviceQTKit : NSObject<PlatformVideoCapturingMac> {
  @private
   // Settings.
-  int frameRate_;
+  float frameRate_;
 
   NSLock *lock_;
   media::VideoCaptureDeviceMac *frameReceiver_;
@@ -58,7 +58,9 @@ class VideoCaptureDeviceMac;
 - (BOOL)setCaptureDevice:(NSString*)deviceId;
 
 // Configures the capture properties.
-- (BOOL)setCaptureHeight:(int)height width:(int)width frameRate:(int)frameRate;
+- (BOOL)setCaptureHeight:(int)height
+                   width:(int)width
+               frameRate:(float)frameRate;
 
 // Start video capturing. Returns YES on sucess, NO otherwise.
 - (BOOL)startCapture;
