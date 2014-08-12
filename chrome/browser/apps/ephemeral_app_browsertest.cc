@@ -23,8 +23,10 @@
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/alarms.h"
+#include "content/public/browser/power_save_blocker.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/api/power/power_api_manager.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
@@ -56,6 +58,8 @@ using extensions::Manifest;
 namespace {
 
 namespace alarms = extensions::api::alarms;
+
+const char kPowerTestApp[] = "ephemeral_apps/power";
 
 typedef std::vector<message_center::Notifier*> NotifierList;
 
@@ -112,6 +116,51 @@ class InstallObserver : public ExtensionRegistryObserver {
   std::vector<InstallParameters> install_params_;
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       registry_observer_;
+};
+
+// Instead of actually changing the system power settings, tests will just
+// issue requests to this mock.
+class PowerSettingsMock {
+ public:
+  PowerSettingsMock() : keep_awake_count_(0) {}
+
+  void request_keep_awake() { ++keep_awake_count_; }
+
+  void release_keep_awake() {
+    --keep_awake_count_;
+    ASSERT_GE(keep_awake_count_, 0);
+  }
+
+  int keep_awake_count() const { return keep_awake_count_; }
+
+ private:
+  int keep_awake_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(PowerSettingsMock);
+};
+
+// Stub implementation of content::PowerSaveBlocker that updates the
+// PowerSettingsMock.
+class PowerSaveBlockerStub : public content::PowerSaveBlocker {
+ public:
+  explicit PowerSaveBlockerStub(PowerSettingsMock* power_settings)
+      : power_settings_(power_settings) {
+    power_settings_->request_keep_awake();
+  }
+
+  virtual ~PowerSaveBlockerStub() { power_settings_->release_keep_awake(); }
+
+  static scoped_ptr<PowerSaveBlocker> Create(PowerSettingsMock* power_settings,
+                                             PowerSaveBlockerType type,
+                                             const std::string& reason) {
+    return scoped_ptr<PowerSaveBlocker>(
+        new PowerSaveBlockerStub(power_settings));
+  }
+
+ private:
+  PowerSettingsMock* power_settings_;  // Not owned.
+
+  DISALLOW_COPY_AND_ASSIGN(PowerSaveBlockerStub);
 };
 
 }  // namespace
@@ -973,4 +1022,23 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
   int creation_flags =
       ExtensionPrefs::Get(profile())->GetCreationFlags(app->id());
   EXPECT_EQ(0, creation_flags & Extension::IS_EPHEMERAL);
+}
+
+// Verifies that the power keep awake will be automatically released for
+// ephemeral apps that stop running. Well behaved apps should actually call
+// chrome.power.releaseKeepAwake() themselves.
+IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, ReleasePowerKeepAwake) {
+  PowerSettingsMock power_settings;
+  extensions::PowerApiManager* power_manager =
+      extensions::PowerApiManager::Get(profile());
+  power_manager->SetCreateBlockerFunctionForTesting(
+      base::Bind(&PowerSaveBlockerStub::Create, &power_settings));
+
+  const Extension* app = InstallAndLaunchEphemeralApp(kPowerTestApp);
+  ASSERT_TRUE(app);
+  EXPECT_EQ(1, power_settings.keep_awake_count());
+
+  CloseAppWaitForUnload(app->id());
+
+  EXPECT_EQ(0, power_settings.keep_awake_count());
 }
