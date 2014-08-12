@@ -156,7 +156,7 @@
 #include "components/startup_metric_utils/startup_metric_utils.h"
 #include "components/web_modal/popup_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
-#include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/interstitial_page.h"
@@ -2028,7 +2028,7 @@ void Browser::Observe(int type,
 
 void Browser::OnDevToolsDisabledChanged() {
   if (profile_->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled))
-    content::DevToolsAgentHost::DetachAllClients();
+    content::DevToolsManager::GetInstance()->CloseAllClientHosts();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

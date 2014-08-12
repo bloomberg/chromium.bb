@@ -32,6 +32,8 @@
 #include "chrome/common/url_constants.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
+#include "content/public/browser/devtools_client_host.h"
+#include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
@@ -259,8 +261,8 @@ void DevToolsUIBindings::FrontendWebContentsObserver::RenderProcessGone(
     case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
     case base::TERMINATION_STATUS_PROCESS_CRASHED:
-      if (devtools_bindings_->agent_host_)
-        devtools_bindings_->Detach();
+      content::DevToolsManager::GetInstance()->ClientHostClosing(
+          devtools_bindings_);
       break;
     default:
       break;
@@ -349,8 +351,7 @@ DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents,
 }
 
 DevToolsUIBindings::~DevToolsUIBindings() {
-  if (agent_host_)
-    agent_host_->DetachClient();
+  content::DevToolsManager::GetInstance()->ClientHostClosing(this);
 
   for (IndexingJobsMap::const_iterator jobs_it(indexing_jobs_.begin());
        jobs_it != indexing_jobs_.end(); ++jobs_it) {
@@ -402,25 +403,23 @@ void DevToolsUIBindings::HandleMessageFromDevToolsFrontend(
 
 void DevToolsUIBindings::HandleMessageFromDevToolsFrontendToBackend(
     const std::string& message) {
-  if (agent_host_)
-    agent_host_->DispatchProtocolMessage(message);
+  content::DevToolsManager::GetInstance()->DispatchOnInspectorBackend(
+      this, message);
 }
 
-// content::DevToolsAgentHostClient implementation --------------------------
-void DevToolsUIBindings::DispatchProtocolMessage(
-    content::DevToolsAgentHost* agent_host, const std::string& message) {
-  DCHECK(agent_host == agent_host_.get());
+// content::DevToolsClientHost implementation ---------------------------------
+void DevToolsUIBindings::DispatchOnInspectorFrontend(
+    const std::string& message) {
   base::StringValue message_value(message);
   CallClientFunction("InspectorFrontendAPI.dispatchMessage",
                      &message_value, NULL, NULL);
 }
 
-void DevToolsUIBindings::AgentHostClosed(
-    content::DevToolsAgentHost* agent_host,
-    bool replaced_with_another_client) {
-  DCHECK(agent_host == agent_host_.get());
-  agent_host_ = NULL;
+void DevToolsUIBindings::InspectedContentsClosing() {
   delegate_->InspectedContentsClosing();
+}
+
+void DevToolsUIBindings::ReplacedWithAnotherClient() {
 }
 
 // DevToolsEmbedderMessageDispatcher::Delegate implementation -----------------
@@ -626,8 +625,8 @@ void DevToolsUIBindings::SetDevicesUpdatesEnabled(bool enabled) {
 }
 
 void DevToolsUIBindings::SendMessageToBrowser(const std::string& message) {
-  if (agent_host_)
-    agent_host_->DispatchProtocolMessage(message);
+  content::DevToolsManager::GetInstance()->DispatchOnInspectorBackend(
+      this, message);
 }
 
 void DevToolsUIBindings::DeviceCountChanged(int count) {
@@ -779,28 +778,6 @@ void DevToolsUIBindings::AddDevToolsExtensionsToClient() {
 
 void DevToolsUIBindings::SetDelegate(Delegate* delegate) {
   delegate_.reset(delegate);
-}
-
-void DevToolsUIBindings::AttachTo(content::DevToolsAgentHost* agent_host) {
-  DCHECK(!agent_host_);
-  agent_host_ = agent_host;
-  agent_host_->AttachClient(this);
-}
-
-void DevToolsUIBindings::Reattach() {
-  DCHECK(agent_host_);
-  agent_host_->DetachClient();
-  agent_host_->AttachClient(this);
-}
-
-void DevToolsUIBindings::Detach() {
-  DCHECK(agent_host_);
-  agent_host_->DetachClient();
-  agent_host_ = NULL;
-}
-
-bool DevToolsUIBindings::IsAttachedTo(content::DevToolsAgentHost* agent_host) {
-  return agent_host_ == agent_host;
 }
 
 void DevToolsUIBindings::CallClientFunction(const std::string& function_name,

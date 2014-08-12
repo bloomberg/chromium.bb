@@ -16,6 +16,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -285,7 +286,8 @@ ProcessManager::ProcessManager(BrowserContext* context,
         base::TimeDelta::FromMilliseconds(suspending_time_msec);
   }
 
-  content::DevToolsAgentHost::AddAgentStateCallback(devtools_callback_);
+  content::DevToolsManager::GetInstance()->AddAgentStateCallback(
+      devtools_callback_);
 
   OnKeepaliveImpulseCheck();
 }
@@ -293,7 +295,8 @@ ProcessManager::ProcessManager(BrowserContext* context,
 ProcessManager::~ProcessManager() {
   CloseBackgroundHosts();
   DCHECK(background_hosts_.empty());
-  content::DevToolsAgentHost::RemoveAgentStateCallback(devtools_callback_);
+  content::DevToolsManager::GetInstance()->RemoveAgentStateCallback(
+      devtools_callback_);
 }
 
 const ProcessManager::ViewSet ProcessManager::GetAllViews() const {

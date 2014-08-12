@@ -17,47 +17,53 @@ class Message;
 
 namespace content {
 
-class BrowserContext;
-
 // Describes interface for managing devtools agents from the browser process.
 class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
  public:
+  class CONTENT_EXPORT CloseListener {
+   public:
+    virtual void AgentHostClosing(DevToolsAgentHostImpl*) = 0;
+   protected:
+    virtual ~CloseListener() {}
+  };
+
   // Informs the hosted agent that a client host has attached.
   virtual void Attach() = 0;
 
   // Informs the hosted agent that a client host has detached.
   virtual void Detach() = 0;
 
-  // Sends a message to the agent.
-  virtual void DispatchProtocolMessage(const std::string& message) = 0;
+  // Sends a message to the agent hosted by this object.
+  virtual void DispatchOnInspectorBackend(const std::string& message) = 0;
 
-  // Opens the inspector for this host.
-  void Inspect(BrowserContext* browser_context);
+  void set_close_listener(CloseListener* listener) {
+    close_listener_ = listener;
+  }
 
   // DevToolsAgentHost implementation.
-  virtual void AttachClient(DevToolsAgentHostClient* client) OVERRIDE;
-  virtual void DetachClient() OVERRIDE;
   virtual bool IsAttached() OVERRIDE;
+
   virtual void InspectElement(int x, int y) OVERRIDE;
+
   virtual std::string GetId() OVERRIDE;
+
   virtual WebContents* GetWebContents() OVERRIDE;
+
   virtual void DisconnectWebContents() OVERRIDE;
-  virtual void ConnectWebContents(WebContents* wc) OVERRIDE;
+
+  virtual void ConnectWebContents(WebContents* rvh) OVERRIDE;
+
   virtual bool IsWorker() const OVERRIDE;
 
  protected:
   DevToolsAgentHostImpl();
   virtual ~DevToolsAgentHostImpl();
 
-  void HostClosed();
-  void SendMessageToClient(const std::string& message);
-  static void NotifyCallbacks(DevToolsAgentHostImpl* agent_host, bool attached);
+  void NotifyCloseListener();
 
  private:
-  friend class DevToolsAgentHost; // for static methods
-
+  CloseListener* close_listener_;
   const std::string id_;
-  DevToolsAgentHostClient* client_;
 };
 
 }  // namespace content

@@ -34,6 +34,8 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/devtools_client_host.h"
+#include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -423,7 +425,9 @@ DevToolsWindow* DevToolsWindow::OpenDevToolsWindowForWorker(
   DevToolsWindow* window = FindDevToolsWindow(worker_agent);
   if (!window) {
     window = DevToolsWindow::CreateDevToolsWindowForWorker(profile);
-    window->bindings_->AttachTo(worker_agent);
+    // Will disconnect the current client host if there is one.
+    content::DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
+        worker_agent, window->bindings_);
   }
   window->ScheduleShow(DevToolsToggleAction::Show());
   return window;
@@ -475,7 +479,8 @@ void DevToolsWindow::OpenExternalFrontend(
   if (!window) {
     window = Create(profile, DevToolsUI::GetProxyURL(frontend_url), NULL,
                     false, true, false, "");
-    window->bindings_->AttachTo(agent_host);
+    content::DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
+        agent_host, window->bindings_);
   }
   window->ScheduleShow(DevToolsToggleAction::Show());
 }
@@ -488,6 +493,7 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
     const std::string& settings) {
   scoped_refptr<DevToolsAgentHost> agent(
       DevToolsAgentHost::GetOrCreateFor(inspected_web_contents));
+  content::DevToolsManager* manager = content::DevToolsManager::GetInstance();
   DevToolsWindow* window = FindDevToolsWindow(agent.get());
   bool do_open = force_open;
   if (!window) {
@@ -497,7 +503,7 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
         base::UserMetricsAction("DevTools_InspectRenderer"));
     window = Create(
         profile, GURL(), inspected_web_contents, false, false, true, settings);
-    window->bindings_->AttachTo(agent.get());
+    manager->RegisterDevToolsClientHostFor(agent.get(), window->bindings_);
     do_open = true;
   }
 
@@ -787,9 +793,10 @@ DevToolsWindow* DevToolsWindow::FindDevToolsWindow(
   if (!agent_host || g_instances == NULL)
     return NULL;
   DevToolsWindows* instances = g_instances.Pointer();
+  content::DevToolsManager* manager = content::DevToolsManager::GetInstance();
   for (DevToolsWindows::iterator it(instances->begin()); it != instances->end();
        ++it) {
-    if ((*it)->bindings_->IsAttachedTo(agent_host))
+    if (manager->GetDevToolsAgentHostFor((*it)->bindings_) == agent_host)
       return *it;
   }
   return NULL;
@@ -819,7 +826,14 @@ WebContents* DevToolsWindow::OpenURLFromTab(
         inspected_web_contents->OpenURL(params) : NULL;
   }
 
-  bindings_->Reattach();
+  content::DevToolsManager* manager = content::DevToolsManager::GetInstance();
+  scoped_refptr<DevToolsAgentHost> agent_host(
+      manager->GetDevToolsAgentHostFor(bindings_));
+  if (!agent_host.get())
+    return NULL;
+  manager->ClientHostClosing(bindings_);
+  manager->RegisterDevToolsClientHostFor(agent_host.get(),
+                                         bindings_);
 
   content::NavigationController::LoadURLParams load_url_params(params.url);
   main_web_contents_->GetController().LoadURLWithParams(load_url_params);
@@ -896,8 +910,10 @@ void DevToolsWindow::BeforeUnloadFired(WebContents* tab,
                                        bool* proceed_to_fire_unload) {
   if (!intercepted_page_beforeunload_) {
     // Docked devtools window closed directly.
-    if (proceed)
-      bindings_->Detach();
+    if (proceed) {
+      content::DevToolsManager::GetInstance()->ClientHostClosing(
+          bindings_);
+    }
     *proceed_to_fire_unload = proceed;
   } else {
     // Inspected page is attempting to close.

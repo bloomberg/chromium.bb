@@ -12,7 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/navigation_controller.h"
@@ -653,7 +653,7 @@ void WebKitTestController::OnCaptureSessionHistory() {
 }
 
 void WebKitTestController::OnCloseRemainingWindows() {
-  DevToolsAgentHost::DetachAllClients();
+  DevToolsManager::GetInstance()->CloseAllClientHosts();
   std::vector<Shell*> open_windows(Shell::windows());
   for (size_t i = 0; i < open_windows.size(); ++i) {
     if (open_windows[i] != main_window_)

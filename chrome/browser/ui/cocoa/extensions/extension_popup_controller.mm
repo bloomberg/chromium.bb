@@ -20,6 +20,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "components/web_modal/popup_manager.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
@@ -96,11 +97,13 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
       devtools_callback_(base::Bind(
           &DevtoolsNotificationBridge::OnDevToolsStateChanged,
           base::Unretained(this))) {
-    content::DevToolsAgentHost::AddAgentStateCallback(devtools_callback_);
+    content::DevToolsManager::GetInstance()->AddAgentStateCallback(
+        devtools_callback_);
   }
 
   virtual ~DevtoolsNotificationBridge() {
-    content::DevToolsAgentHost::RemoveAgentStateCallback(devtools_callback_);
+    content::DevToolsManager::GetInstance()->RemoveAgentStateCallback(
+        devtools_callback_);
   }
 
   void OnDevToolsStateChanged(content::DevToolsAgentHost* agent_host,

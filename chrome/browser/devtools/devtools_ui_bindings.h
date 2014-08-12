@@ -17,7 +17,7 @@
 #include "chrome/browser/devtools/devtools_file_helper.h"
 #include "chrome/browser/devtools/devtools_file_system_indexer.h"
 #include "chrome/browser/devtools/devtools_targets_ui.h"
-#include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_frontend_host.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -27,6 +27,7 @@ class InfoBarService;
 class Profile;
 
 namespace content {
+class DevToolsClientHost;
 struct FileChooserParams;
 class WebContents;
 }
@@ -36,7 +37,7 @@ class DevToolsUIBindings : public content::NotificationObserver,
                            public content::DevToolsFrontendHost::Delegate,
                            public DevToolsEmbedderMessageDispatcher::Delegate,
                            public DevToolsAndroidBridge::DeviceCountListener,
-                           public content::DevToolsAgentHostClient {
+                           public content::DevToolsClientHost {
  public:
   static GURL ApplyThemeToURL(Profile* profile, const GURL& base_url);
 
@@ -63,7 +64,6 @@ class DevToolsUIBindings : public content::NotificationObserver,
 
   content::WebContents* web_contents() { return web_contents_; }
   Profile* profile() { return profile_; }
-  content::DevToolsAgentHost* agent_host() { return agent_host_.get(); }
 
   // Takes ownership over the |delegate|.
   void SetDelegate(Delegate* delegate);
@@ -71,11 +71,6 @@ class DevToolsUIBindings : public content::NotificationObserver,
                           const base::Value* arg1,
                           const base::Value* arg2,
                           const base::Value* arg3);
-  void AttachTo(content::DevToolsAgentHost* agent_host);
-  void Reattach();
-  void Detach();
-  bool IsAttachedTo(content::DevToolsAgentHost* agent_host);
-
  private:
   // content::NotificationObserver overrides.
   virtual void Observe(int type,
@@ -88,13 +83,10 @@ class DevToolsUIBindings : public content::NotificationObserver,
   virtual void HandleMessageFromDevToolsFrontendToBackend(
       const std::string& message) OVERRIDE;
 
-  // content::DevToolsAgentHostClient implementation.
-  virtual void DispatchProtocolMessage(
-      content::DevToolsAgentHost* agent_host,
-      const std::string& message) OVERRIDE;
-  virtual void AgentHostClosed(
-       content::DevToolsAgentHost* agent_host,
-       bool replaced_with_another_client) OVERRIDE;
+  // content::DevToolsClientHost implementation.
+  virtual void DispatchOnInspectorFrontend(const std::string& message) OVERRIDE;
+  virtual void InspectedContentsClosing() OVERRIDE;
+  virtual void ReplacedWithAnotherClient() OVERRIDE;
 
   // DevToolsEmbedderMessageDispatcher::Delegate implementation.
   virtual void ActivateWindow() OVERRIDE;
@@ -174,7 +166,6 @@ class DevToolsUIBindings : public content::NotificationObserver,
   Profile* profile_;
   content::WebContents* web_contents_;
   scoped_ptr<Delegate> delegate_;
-  scoped_refptr<content::DevToolsAgentHost> agent_host_;
   content::NotificationRegistrar registrar_;
   scoped_ptr<content::DevToolsFrontendHost> frontend_host_;
   scoped_ptr<DevToolsFileHelper> file_helper_;

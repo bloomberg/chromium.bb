@@ -37,7 +37,9 @@
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_http_handler.h"
+#include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
@@ -53,6 +55,7 @@
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
 using content::BrowserThread;
+using content::DevToolsManager;
 using content::DevToolsAgentHost;
 using content::NavigationController;
 using content::RenderViewHost;

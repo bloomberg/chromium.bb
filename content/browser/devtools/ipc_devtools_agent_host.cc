@@ -18,7 +18,7 @@ void IPCDevToolsAgentHost::Detach() {
   OnClientDetached();
 }
 
-void IPCDevToolsAgentHost::DispatchProtocolMessage(
+void IPCDevToolsAgentHost::DispatchOnInspectorBackend(
     const std::string& message) {
   SendMessageToAgent(new DevToolsAgentMsg_DispatchOnInspectorBackend(
       MSG_ROUTING_NONE, message));

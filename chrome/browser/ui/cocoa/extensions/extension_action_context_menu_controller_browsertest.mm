@@ -22,7 +22,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
-#include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/devtools_manager.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/extension.h"
 #include "grit/generated_resources.h"
@@ -147,11 +147,13 @@ class DevToolsAttachedObserver {
         devtools_callback_(base::Bind(
             &DevToolsAttachedObserver::OnDevToolsStateChanged,
             base::Unretained(this))) {
-    content::DevToolsAgentHost::AddAgentStateCallback(devtools_callback_);
+    content::DevToolsManager::GetInstance()->AddAgentStateCallback(
+        devtools_callback_);
   }
 
   ~DevToolsAttachedObserver() {
-    content::DevToolsAgentHost::RemoveAgentStateCallback(devtools_callback_);
+    content::DevToolsManager::GetInstance()->RemoveAgentStateCallback(
+        devtools_callback_);
   }
 
   void OnDevToolsStateChanged(content::DevToolsAgentHost*, bool attached) {

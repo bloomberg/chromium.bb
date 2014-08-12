@@ -26,7 +26,9 @@
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_http_handler_delegate.h"
+#include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/devtools_target.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
@@ -67,37 +69,30 @@ const char kTargetFaviconUrlField[] = "faviconUrl";
 const char kTargetWebSocketDebuggerUrlField[] = "webSocketDebuggerUrl";
 const char kTargetDevtoolsFrontendUrlField[] = "devtoolsFrontendUrl";
 
-// An internal implementation of DevToolsAgentHostClient that delegates
-// messages sent to a DebuggerShell instance.
-class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
+// An internal implementation of DevToolsClientHost that delegates
+// messages sent for DevToolsClient to a DebuggerShell instance.
+class DevToolsClientHostImpl : public DevToolsClientHost {
  public:
-  DevToolsAgentHostClientImpl(base::MessageLoop* message_loop,
-                              net::HttpServer* server,
-                              int connection_id,
-                              DevToolsAgentHost* agent_host)
+  DevToolsClientHostImpl(base::MessageLoop* message_loop,
+                         net::HttpServer* server,
+                         int connection_id)
       : message_loop_(message_loop),
         server_(server),
         connection_id_(connection_id),
-        agent_host_(agent_host) {
-    agent_host_->AttachClient(this);
-  }
+        is_closed_(false),
+        detach_reason_("target_closed") {}
 
-  virtual ~DevToolsAgentHostClientImpl() {
-    if (agent_host_)
-      agent_host_->DetachClient();
-  }
+  virtual ~DevToolsClientHostImpl() {}
 
-  virtual void AgentHostClosed(
-      DevToolsAgentHost* agent_host,
-      bool replaced_with_another_client) OVERRIDE {
-    DCHECK(agent_host == agent_host_.get());
-    agent_host_ = NULL;
+  // DevToolsClientHost interface
+  virtual void InspectedContentsClosing() OVERRIDE {
+    if (is_closed_)
+      return;
+    is_closed_ = true;
 
     base::DictionaryValue notification;
     notification.SetString(
-        devtools::Inspector::detached::kParamReason,
-        replaced_with_another_client ?
-            "replaced_with_devtools" : "target_closed");
+        devtools::Inspector::detached::kParamReason, detach_reason_);
     std::string response = DevToolsProtocol::CreateNotification(
         devtools::Inspector::detached::kName,
         notification.DeepCopy())->Serialize();
@@ -113,27 +108,25 @@ class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
         base::Bind(&net::HttpServer::Close, server_, connection_id_));
   }
 
-  virtual void DispatchProtocolMessage(
-      DevToolsAgentHost* agent_host, const std::string& message) OVERRIDE {
-    DCHECK(agent_host == agent_host_.get());
+  virtual void DispatchOnInspectorFrontend(const std::string& data) OVERRIDE {
     message_loop_->PostTask(
         FROM_HERE,
         base::Bind(&net::HttpServer::SendOverWebSocket,
                    server_,
                    connection_id_,
-                   message));
+                   data));
   }
 
-  void OnMessage(const std::string& message) {
-    if (agent_host_)
-      agent_host_->DispatchProtocolMessage(message);
+  virtual void ReplacedWithAnotherClient() OVERRIDE {
+    detach_reason_ = "replaced_with_devtools";
   }
 
  private:
   base::MessageLoop* message_loop_;
   net::HttpServer* server_;
   int connection_id_;
-  scoped_refptr<DevToolsAgentHost> agent_host_;
+  bool is_closed_;
+  std::string detach_reason_;
 };
 
 static bool TimeComparator(const DevToolsTarget* target1,
@@ -619,9 +612,12 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
     return;
   }
 
-  DevToolsAgentHostClientImpl * client_host = new DevToolsAgentHostClientImpl(
-      thread_->message_loop(), server_.get(), connection_id, agent);
-  connection_to_client_ui_[connection_id] = client_host;
+  DevToolsClientHostImpl* client_host = new DevToolsClientHostImpl(
+      thread_->message_loop(), server_.get(), connection_id);
+  connection_to_client_host_ui_[connection_id] = client_host;
+
+  DevToolsManager::GetInstance()->
+      RegisterDevToolsClientHostFor(agent, client_host);
 
   AcceptWebSocket(connection_id, request);
 }
@@ -629,24 +625,24 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
 void DevToolsHttpHandlerImpl::OnWebSocketMessageUI(
     int connection_id,
     const std::string& data) {
-  ConnectionToClientMap::iterator it =
-      connection_to_client_ui_.find(connection_id);
-  if (it == connection_to_client_ui_.end())
+  ConnectionToClientHostMap::iterator it =
+      connection_to_client_host_ui_.find(connection_id);
+  if (it == connection_to_client_host_ui_.end())
     return;
 
-  DevToolsAgentHostClientImpl* client =
-      static_cast<DevToolsAgentHostClientImpl*>(it->second);
-  client->OnMessage(data);
+  DevToolsManager* manager = DevToolsManager::GetInstance();
+  manager->DispatchOnInspectorBackend(it->second, data);
 }
 
 void DevToolsHttpHandlerImpl::OnCloseUI(int connection_id) {
-  ConnectionToClientMap::iterator it =
-      connection_to_client_ui_.find(connection_id);
-  if (it != connection_to_client_ui_.end()) {
-    DevToolsAgentHostClientImpl* client =
-        static_cast<DevToolsAgentHostClientImpl*>(it->second);
-    delete client;
-    connection_to_client_ui_.erase(connection_id);
+  ConnectionToClientHostMap::iterator it =
+      connection_to_client_host_ui_.find(connection_id);
+  if (it != connection_to_client_host_ui_.end()) {
+    DevToolsClientHostImpl* client_host =
+        static_cast<DevToolsClientHostImpl*>(it->second);
+    DevToolsManager::GetInstance()->ClientHostClosing(client_host);
+    delete client_host;
+    connection_to_client_host_ui_.erase(connection_id);
   }
 }
 
