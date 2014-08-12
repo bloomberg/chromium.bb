@@ -43569,6 +43569,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="451" label="backface-visibility"/>
   <int value="452" label="grid-template"/>
   <int value="453" label="grid"/>
+  <int value="454" label="all"/>
+  <int value="455" label="justify-items"/>
 </enum>
 
 <enum name="MappedEditingCommands" type="int">
