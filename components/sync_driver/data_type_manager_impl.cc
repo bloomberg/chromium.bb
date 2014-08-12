@@ -88,9 +88,7 @@ void DataTypeManagerImpl::Configure(syncer::ModelTypeSet desired_types,
     if (syncer::IsControlType(type.Get()) ||
         iter != controllers_->end()) {
       if (iter != controllers_->end()) {
-        if (!iter->second->ReadyForStart() &&
-            !failed_data_types_handler_->GetUnreadyErrorTypes().Has(
-                type.Get())) {
+        if (!iter->second->ReadyForStart()) {
           // Add the type to the unready types set to prevent purging it. It's
           // up to the datatype controller to, if necessary, explicitly
           // mark the type as broken to trigger a purge.
@@ -101,7 +99,7 @@ void DataTypeManagerImpl::Configure(syncer::ModelTypeSet desired_types,
           std::map<syncer::ModelType, syncer::SyncError> errors;
           errors[type.Get()] = error;
           failed_data_types_handler_->UpdateFailedDataTypes(errors);
-        } else if (iter->second->ReadyForStart()) {
+        } else {
           failed_data_types_handler_->ResetUnreadyErrorFor(type.Get());
         }
       }
@@ -347,18 +345,14 @@ void DataTypeManagerImpl::DownloadReady(
   if (!failed_configuration_types.Empty()) {
     if (!unrecoverable_error_method_.is_null())
       unrecoverable_error_method_.Run();
-    FailedDataTypesHandler::TypeErrorMap errors;
-    for (syncer::ModelTypeSet::Iterator iter =
-             failed_configuration_types.First(); iter.Good(); iter.Inc()) {
-      syncer::SyncError error(
-          FROM_HERE,
-          syncer::SyncError::UNRECOVERABLE_ERROR,
-          "Backend failed to download type.",
-          iter.Get());
-      errors[iter.Get()] = error;
-    }
-    failed_data_types_handler_->UpdateFailedDataTypes(errors);
-    Abort(UNRECOVERABLE_ERROR);
+    std::string error_msg =
+        "Configuration failed for types " +
+        syncer::ModelTypeSetToString(failed_configuration_types);
+    syncer::SyncError error(FROM_HERE,
+                            syncer::SyncError::UNRECOVERABLE_ERROR,
+                            error_msg,
+                            failed_configuration_types.First().Get());
+    Abort(UNRECOVERABLE_ERROR, error);
     return;
   }
 
@@ -406,24 +400,8 @@ void DataTypeManagerImpl::StartNextAssociation() {
 }
 
 void DataTypeManagerImpl::OnSingleDataTypeWillStop(
-    syncer::ModelType type,
-    const syncer::SyncError& error) {
+    syncer::ModelType type) {
   configurer_->DeactivateDataType(type);
-  if (error.IsSet()) {
-    FailedDataTypesHandler::TypeErrorMap failed_types;
-    failed_types[type] = error;
-    failed_data_types_handler_->UpdateFailedDataTypes(
-            failed_types);
-
-    // Unrecoverable errors will shut down the entire backend, so no need to
-    // reconfigure.
-    if (error.error_type() != syncer::SyncError::UNRECOVERABLE_ERROR) {
-      needs_reconfigure_ = true;
-      ProcessReconfigure();
-    } else {
-      DCHECK_EQ(state_, CONFIGURING);
-    }
-  }
 }
 
 void DataTypeManagerImpl::OnSingleDataTypeAssociationDone(
@@ -471,6 +449,25 @@ void DataTypeManagerImpl::OnModelAssociationDone(
   if (state_ == STOPPING)
     return;
 
+  // Don't reconfigure due to failed data types if we have an unrecoverable
+  // error or have already aborted.
+  if (result.status  == PARTIAL_SUCCESS) {
+    if (!result.needs_crypto.Empty()) {
+      needs_reconfigure_ = true;
+      syncer::ModelTypeSet encrypted_types = result.needs_crypto;
+      encrypted_types.RemoveAll(
+          failed_data_types_handler_->GetCryptoErrorTypes());
+      FailedDataTypesHandler::TypeErrorMap crypto_errors =
+          GenerateCryptoErrorsForTypes(encrypted_types);
+      failed_data_types_handler_->UpdateFailedDataTypes(crypto_errors);
+    }
+    if (!result.failed_data_types.empty()) {
+      needs_reconfigure_ = true;
+      failed_data_types_handler_->UpdateFailedDataTypes(
+          result.failed_data_types);
+    }
+  }
+
   // Ignore abort/unrecoverable error if we need to reconfigure anyways.
   if (needs_reconfigure_) {
     association_types_queue_ = std::queue<AssociationTypesInfo>();
@@ -479,18 +476,38 @@ void DataTypeManagerImpl::OnModelAssociationDone(
   }
 
   if (result.status == ABORTED || result.status == UNRECOVERABLE_ERROR) {
-    Abort(result.status);
+    Abort(result.status, result.failed_data_types.size() >= 1 ?
+                         result.failed_data_types.begin()->second :
+                         syncer::SyncError());
     return;
   }
 
-  DCHECK(result.status == OK);
+  DCHECK(result.status == PARTIAL_SUCCESS || result.status == OK);
+  DCHECK(result.status != OK ||
+         (result.needs_crypto.Empty() && result.failed_data_types.empty()));
+
+  // It's possible this is a retry to disable failed types, in which case
+  // the association would be SUCCESS, but the overall configuration should
+  // still be PARTIAL_SUCCESS.
+  syncer::ModelTypeSet failed_data_types =
+      failed_data_types_handler_->GetFailedTypes();
+  ConfigureStatus status = result.status;
+  if (!syncer::Intersection(last_requested_types_,
+                            failed_data_types).Empty() && result.status == OK) {
+    status = PARTIAL_SUCCESS;
+  }
 
   association_types_queue_.pop();
   if (!association_types_queue_.empty()) {
     StartNextAssociation();
   } else if (download_types_queue_.empty()) {
     state_ = CONFIGURED;
-    NotifyDone(result);
+    ConfigureResult configure_result(status,
+                                     result.requested_types,
+                                     failed_data_types_handler_->GetAllErrors(),
+                                     result.unfinished_data_types,
+                                     result.needs_crypto);
+    NotifyDone(configure_result);
   }
 }
 
@@ -504,19 +521,29 @@ void DataTypeManagerImpl::Stop() {
 
   if (need_to_notify) {
     ConfigureResult result(ABORTED,
-                           last_requested_types_);
+                           last_requested_types_,
+                           std::map<syncer::ModelType, syncer::SyncError>(),
+                           syncer::ModelTypeSet(),
+                           syncer::ModelTypeSet());
     NotifyDone(result);
   }
 }
 
-void DataTypeManagerImpl::Abort(ConfigureStatus status) {
+void DataTypeManagerImpl::Abort(ConfigureStatus status,
+                                const syncer::SyncError& error) {
   DCHECK(state_ == DOWNLOAD_PENDING || state_ == CONFIGURING);
 
   StopImpl();
 
   DCHECK_NE(OK, status);
+  std::map<syncer::ModelType, syncer::SyncError> errors;
+  if (error.IsSet())
+    errors[error.model_type()] = error;
   ConfigureResult result(status,
-                         last_requested_types_);
+                         last_requested_types_,
+                         errors,
+                         syncer::ModelTypeSet(),
+                         syncer::ModelTypeSet());
   NotifyDone(result);
 }
 
@@ -566,7 +593,12 @@ void DataTypeManagerImpl::NotifyDone(const ConfigureResult& result) {
       UMA_HISTOGRAM_LONG_TIMES("Sync.ConfigureTime_Long.UNRECOVERABLE_ERROR",
                                configure_time_delta_);
       break;
-    case DataTypeManager::UNKNOWN:
+    case DataTypeManager::PARTIAL_SUCCESS:
+      DVLOG(1) << "NotifyDone called with result: PARTIAL_SUCCESS";
+      UMA_HISTOGRAM_LONG_TIMES("Sync.ConfigureTime_Long.PARTIAL_SUCCESS",
+                               configure_time_delta_);
+      break;
+    default:
       NOTREACHED();
       break;
   }

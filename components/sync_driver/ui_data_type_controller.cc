@@ -145,11 +145,6 @@ void UIDataTypeController::Associate() {
   }
 
   if (!shared_change_processor_->CryptoReadyIfNecessary()) {
-    syncer::SyncError error(FROM_HERE,
-                            syncer::SyncError::CRYPTO_ERROR,
-                            "",
-                            type());
-    local_merge_result.set_error(error);
     StartDone(NEEDS_CRYPTO,
               local_merge_result,
               syncer_merge_result);
@@ -242,7 +237,7 @@ void UIDataTypeController::AbortModelLoad() {
 }
 
 void UIDataTypeController::StartDone(
-    ConfigureResult start_result,
+    StartResult start_result,
     const syncer::SyncMergeResult& local_merge_result,
     const syncer::SyncMergeResult& syncer_merge_result) {
   DCHECK(ui_thread_->BelongsToCurrentThread());
@@ -262,7 +257,12 @@ void UIDataTypeController::StartDone(
     }
   }
 
-  start_callback_.Run(start_result, local_merge_result, syncer_merge_result);
+  // We have to release the callback before we call it, since it's possible
+  // invoking the callback will trigger a call to Stop(), which will get
+  // confused by the non-NULL start_callback_.
+  StartCallback callback = start_callback_;
+  start_callback_.Reset();
+  callback.Run(start_result, local_merge_result, syncer_merge_result);
 }
 
 void UIDataTypeController::Stop() {
@@ -285,6 +285,7 @@ void UIDataTypeController::Stop() {
     // still in MODEL_STARTING.
     return;
   }
+  DCHECK(start_callback_.is_null());
 
   StopModels();
 
@@ -326,15 +327,8 @@ void UIDataTypeController::OnSingleDatatypeUnrecoverableError(
   // TODO(tim): We double-upload some errors.  See bug 383480.
   if (!error_callback_.is_null())
     error_callback_.Run();
-  if (!start_callback_.is_null()) {
-    syncer::SyncError error(
-        from_here, syncer::SyncError::DATATYPE_ERROR, message, type());
-    syncer::SyncMergeResult local_merge_result(type());
-    local_merge_result.set_error(error);
-    start_callback_.Run(RUNTIME_ERROR,
-                        local_merge_result,
-                        syncer::SyncMergeResult(type()));
-  }
+  if (!disable_callback().is_null())
+    disable_callback().Run(from_here, message);
 }
 
 void UIDataTypeController::RecordAssociationTime(base::TimeDelta time) {
@@ -345,7 +339,7 @@ void UIDataTypeController::RecordAssociationTime(base::TimeDelta time) {
 #undef PER_DATA_TYPE_MACRO
 }
 
-void UIDataTypeController::RecordStartFailure(ConfigureResult result) {
+void UIDataTypeController::RecordStartFailure(StartResult result) {
   DCHECK(ui_thread_->BelongsToCurrentThread());
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures",
                             ModelTypeToHistogramInt(type()),

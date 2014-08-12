@@ -16,7 +16,7 @@ class StartCallbackMock {
   StartCallbackMock();
   virtual ~StartCallbackMock();
 
-  MOCK_METHOD3(Run, void(DataTypeController::ConfigureResult result,
+  MOCK_METHOD3(Run, void(DataTypeController::StartResult result,
                          const syncer::SyncMergeResult& local_merge_result,
                          const syncer::SyncMergeResult& syncer_merge_result));
 };

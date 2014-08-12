@@ -51,7 +51,7 @@ class DataTypeController
                     // so it is disabled waiting for it to be stopped.
   };
 
-  enum ConfigureResult {
+  enum StartResult {
     OK,                   // The data type has started normally.
     OK_FIRST_RUN,         // Same as OK, but sent on first successful
                           // start for this type for this user as
@@ -61,11 +61,10 @@ class DataTypeController
     UNRECOVERABLE_ERROR,  // An unrecoverable error occured.
     NEEDS_CRYPTO,         // The data type cannot be started yet because it
                           // depends on the cryptographer.
-    RUNTIME_ERROR,        // After starting, a runtime error was encountered.
     MAX_START_RESULT
   };
 
-  typedef base::Callback<void(ConfigureResult,
+  typedef base::Callback<void(StartResult,
                               const syncer::SyncMergeResult&,
                               const syncer::SyncMergeResult&)> StartCallback;
 
@@ -81,10 +80,10 @@ class DataTypeController
 
   // Returns true if the start result should trigger an unrecoverable error.
   // Public so unit tests can use this function as well.
-  static bool IsUnrecoverableResult(ConfigureResult result);
+  static bool IsUnrecoverableResult(StartResult result);
 
   // Returns true if the datatype started successfully.
-  static bool IsSuccessfulResult(ConfigureResult result);
+  static bool IsSuccessfulResult(StartResult result);
 
   // Begins asynchronous operation of loading the model to get it ready for
   // model association. Once the models are loaded the callback will be invoked

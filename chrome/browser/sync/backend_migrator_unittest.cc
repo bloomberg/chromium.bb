@@ -79,9 +79,13 @@ class SyncBackendMigratorTest : public testing::Test {
       DataTypeManager::ConfigureResult result(status, requested_types);
       migrator_->OnConfigureDone(result);
     } else {
+      std::map<syncer::ModelType, syncer::SyncError> errors;
       DataTypeManager::ConfigureResult result(
           status,
-          requested_types);
+          requested_types,
+          errors,
+          syncer::ModelTypeSet(),
+          syncer::ModelTypeSet());
       migrator_->OnConfigureDone(result);
     }
     message_loop_.RunUntilIdle();

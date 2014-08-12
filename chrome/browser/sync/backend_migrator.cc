@@ -164,7 +164,8 @@ void BackendMigrator::OnConfigureDoneImpl(
     return;
   }
 
-  if (result.status != sync_driver::DataTypeManager::OK) {
+  if (result.status != sync_driver::DataTypeManager::OK &&
+      result.status != sync_driver::DataTypeManager::PARTIAL_SUCCESS) {
     // If this fails, and we're disabling types, a type may or may not be
     // disabled until the user restarts the browser.  If this wasn't an abort,
     // any failure will be reported as an unrecoverable error to the UI. If it

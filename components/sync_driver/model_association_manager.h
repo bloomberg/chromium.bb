@@ -36,8 +36,7 @@ class ModelAssociationManagerDelegate {
   // Called when the ModelAssociationManager has decided it must stop |type|,
   // likely because it is no longer a desired data type or sync is shutting
   // down.
-  virtual void OnSingleDataTypeWillStop(syncer::ModelType type,
-                                        const syncer::SyncError& error) = 0;
+  virtual void OnSingleDataTypeWillStop(syncer::ModelType type) = 0;
 
   // Called when the ModelAssociationManager has tried to perform model
   // association for all desired types and has nothing left to do.
@@ -99,7 +98,7 @@ class ModelAssociationManager {
   // callback will be invoked when the model association is done.
   void TypeStartCallback(syncer::ModelType type,
                          base::TimeTicks type_start_time,
-                         DataTypeController::ConfigureResult start_result,
+                         DataTypeController::StartResult start_result,
                          const syncer::SyncMergeResult& local_merge_result,
                          const syncer::SyncMergeResult& syncer_merge_result);
 
@@ -107,12 +106,16 @@ class ModelAssociationManager {
   // will be passed to |LoadModels| function.
   void ModelLoadCallback(syncer::ModelType type, syncer::SyncError error);
 
+  // When a type fails to load or fails associating this method is invoked to
+  // do the book keeping and do the UMA reporting.
+  void AppendToFailedDatatypesAndLogError(const syncer::SyncError& error);
+
   // Called when all requested types are associated or association times out.
   // Notify |delegate_| of configuration results.
   void ModelAssociationDone();
 
   // A helper to stop an individual datatype.
-  void StopDatatype(const syncer::SyncError& error, DataTypeController* dtc);
+  void StopDatatype(DataTypeController* dtc);
 
   State state_;
 
@@ -132,6 +135,18 @@ class ModelAssociationManager {
   // Data types that are associated, i.e. no more action needed during
   // reconfiguration if not disabled.
   syncer::ModelTypeSet associated_types_;
+
+  // Data types that are still loading/associating when configuration times
+  // out.
+  syncer::ModelTypeSet slow_types_;
+
+  // Collects the list of errors resulting from failing to start a type. This
+  // would eventually be sent to the listeners after all the types have
+  // been given a chance to start.
+  std::map<syncer::ModelType, syncer::SyncError> failed_data_types_info_;
+
+  // The set of types that can't configure due to cryptographer errors.
+  syncer::ModelTypeSet needs_crypto_types_;
 
   // Time when StartAssociationAsync() is called to associate for a set of data
   // types.

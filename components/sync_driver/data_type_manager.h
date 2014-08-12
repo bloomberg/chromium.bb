@@ -37,7 +37,8 @@ class DataTypeManager {
   // this.
   enum ConfigureStatus {
     UNKNOWN = -1,
-    OK,                  // Configuration finished some or all types.
+    OK,                  // Configuration finished without error.
+    PARTIAL_SUCCESS,     // Some data types had an error while starting up.
     ABORTED,             // Start was aborted by calling Stop() before
                          // all types were started.
     UNRECOVERABLE_ERROR  // We got an unrecoverable error during startup.
@@ -48,10 +49,28 @@ class DataTypeManager {
     ConfigureResult();
     ConfigureResult(ConfigureStatus status,
                     syncer::ModelTypeSet requested_types);
+    ConfigureResult(ConfigureStatus status,
+                    syncer::ModelTypeSet requested_types,
+                    std::map<syncer::ModelType, syncer::SyncError>
+                        failed_data_types,
+                    syncer::ModelTypeSet unfinished_data_types,
+                    syncer::ModelTypeSet needs_crypto);
     ~ConfigureResult();
-
     ConfigureStatus status;
     syncer::ModelTypeSet requested_types;
+
+    // These types encountered a failure in association.
+    std::map<syncer::ModelType, syncer::SyncError> failed_data_types;
+
+    // List of types that failed to finish loading/associating within our
+    // alloted time period(see |kAssociationTimeOutInSeconds|). We move
+    // forward here and allow these types to continue to load/associate in
+    // the background.
+    syncer::ModelTypeSet unfinished_data_types;
+
+    // Those types that are unable to start due to the cryptographer not being
+    // ready.
+    syncer::ModelTypeSet needs_crypto;
   };
 
   virtual ~DataTypeManager() {}

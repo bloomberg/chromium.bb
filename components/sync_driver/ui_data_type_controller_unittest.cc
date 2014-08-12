@@ -15,7 +15,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
-using testing::Invoke;
 using testing::InvokeWithoutArgs;
 using testing::Return;
 
@@ -197,10 +196,11 @@ TEST_F(SyncUIDataTypeControllerTest, OnSingleDatatypeUnrecoverableError) {
   EXPECT_FALSE(syncable_service_.syncing());
   Start();
   EXPECT_TRUE(syncable_service_.syncing());
-
-  testing::Mock::VerifyAndClearExpectations(&start_callback_);
-  EXPECT_CALL(start_callback_, Run(DataTypeController::RUNTIME_ERROR, _, _));
   preference_dtc_->OnSingleDatatypeUnrecoverableError(FROM_HERE, "Test");
+  PumpLoop();
+  EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
+  EXPECT_TRUE(disable_callback_invoked_);
+  EXPECT_FALSE(syncable_service_.syncing());
 }
 
 }  // namespace

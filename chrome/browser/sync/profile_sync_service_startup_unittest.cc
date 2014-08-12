@@ -45,7 +45,6 @@ using testing::DoAll;
 using testing::InvokeArgument;
 using testing::Mock;
 using testing::Return;
-using testing::SaveArg;
 
 ACTION_P(InvokeOnConfigureStart, pss) {
   ProfileSyncService* service =
@@ -53,13 +52,11 @@ ACTION_P(InvokeOnConfigureStart, pss) {
   service->OnConfigureStart();
 }
 
-ACTION_P3(InvokeOnConfigureDone, pss, error_callback, result) {
+ACTION_P2(InvokeOnConfigureDone, pss, result) {
   ProfileSyncService* service =
       static_cast<ProfileSyncService*>(pss);
   DataTypeManager::ConfigureResult configure_result =
       static_cast<DataTypeManager::ConfigureResult>(result);
-  if (result.status == sync_driver::DataTypeManager::ABORTED)
-    error_callback.Run();
   service->OnConfigureDone(configure_result);
 }
 
@@ -70,8 +67,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
                        content::TestBrowserThreadBundle::REAL_FILE_THREAD |
                        content::TestBrowserThreadBundle::REAL_IO_THREAD),
         profile_manager_(TestingBrowserProcess::GetGlobal()),
-        sync_(NULL),
-        failed_data_types_handler_(NULL) {}
+        sync_(NULL) {}
 
   virtual ~ProfileSyncServiceStartupTest() {
   }
@@ -131,16 +127,6 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     return static_cast<FakeSigninManagerForTesting*>(sync_->signin());
   }
 
-  void SetError() {
-    sync_driver::FailedDataTypesHandler::TypeErrorMap errors;
-    errors[syncer::BOOKMARKS] =
-        syncer::SyncError(FROM_HERE,
-                          syncer::SyncError::UNRECOVERABLE_ERROR,
-                          "Error",
-                          syncer::BOOKMARKS);
-    failed_data_types_handler_->UpdateFailedDataTypes(errors);
-  }
-
  protected:
   void SimulateTestUserSignin() {
     profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
@@ -157,8 +143,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     DataTypeManagerMock* data_type_manager = new DataTypeManagerMock();
     EXPECT_CALL(*components_factory_mock(),
                 CreateDataTypeManager(_, _, _, _, _, _)).
-        WillOnce(DoAll(SaveArg<5>(&failed_data_types_handler_),
-                       Return(data_type_manager)));
+        WillOnce(Return(data_type_manager));
     return data_type_manager;
   }
 
@@ -176,7 +161,6 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   TestingProfile* profile_;
   ProfileSyncService* sync_;
   ProfileSyncServiceObserverMock observer_;
-  sync_driver::FailedDataTypesHandler* failed_data_types_handler_;
 };
 
 class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
@@ -524,16 +508,23 @@ TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
   SetUpSyncBackendHost();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   DataTypeManager::ConfigureStatus status = DataTypeManager::ABORTED;
+  syncer::SyncError error(
+      FROM_HERE,
+      syncer::SyncError::DATATYPE_ERROR,
+      "Association failed.",
+      syncer::BOOKMARKS);
+  std::map<syncer::ModelType, syncer::SyncError> errors;
+  errors[syncer::BOOKMARKS] = error;
   DataTypeManager::ConfigureResult result(
       status,
+      syncer::ModelTypeSet(),
+      errors,
+      syncer::ModelTypeSet(),
       syncer::ModelTypeSet());
-  EXPECT_CALL(*data_type_manager, Configure(_, _)).WillRepeatedly(
-      DoAll(InvokeOnConfigureStart(sync_),
-            InvokeOnConfigureDone(
-                sync_,
-                base::Bind(&ProfileSyncServiceStartupTest::SetError,
-                           base::Unretained(this)),
-                result)));
+  EXPECT_CALL(*data_type_manager, Configure(_, _)).
+      WillRepeatedly(
+          DoAll(InvokeOnConfigureStart(sync_),
+                InvokeOnConfigureDone(sync_, result)));
   EXPECT_CALL(*data_type_manager, state()).
       WillOnce(Return(DataTypeManager::STOPPED));
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());

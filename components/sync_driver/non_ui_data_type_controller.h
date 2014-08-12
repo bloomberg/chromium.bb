@@ -77,13 +77,13 @@ class NonUIDataTypeController : public DataTypeController {
   // Start up complete, update the state and invoke the callback.
   // Note: this is performed on the datatype's thread.
   virtual void StartDone(
-      DataTypeController::ConfigureResult start_result,
+      DataTypeController::StartResult start_result,
       const syncer::SyncMergeResult& local_merge_result,
       const syncer::SyncMergeResult& syncer_merge_result);
 
   // UI thread implementation of StartDone.
   virtual void StartDoneImpl(
-      DataTypeController::ConfigureResult start_result,
+      DataTypeController::StartResult start_result,
       DataTypeController::State new_state,
       const syncer::SyncMergeResult& local_merge_result,
       const syncer::SyncMergeResult& syncer_merge_result);
@@ -95,7 +95,7 @@ class NonUIDataTypeController : public DataTypeController {
   virtual void RecordAssociationTime(base::TimeDelta time);
 
   // Record causes of start failure.
-  virtual void RecordStartFailure(ConfigureResult result);
+  virtual void RecordStartFailure(StartResult result);
 
   // To allow unit tests to control thread interaction during non-ui startup
   // and shutdown, use a factory method to create the SharedChangeProcessor.

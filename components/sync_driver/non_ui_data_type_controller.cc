@@ -111,8 +111,11 @@ void NonUIDataTypeController::StartAssociating(
 
 void NonUIDataTypeController::Stop() {
   DCHECK(ui_thread_->BelongsToCurrentThread());
-  if (state() == NOT_RUNNING)
+  if (state() == NOT_RUNNING) {
+    // Stop() should never be called for datatypes that are already stopped.
+    NOTREACHED();
     return;
+  }
 
   // Disconnect the change processor. At this point, the
   // syncer::SyncableService can no longer interact with the Syncer, even if
@@ -172,6 +175,9 @@ void NonUIDataTypeController::OnSingleDatatypeUnrecoverableError(
   // TODO(tim): We double-upload some errors.  See bug 383480.
   if (!error_callback_.is_null())
     error_callback_.Run();
+  UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures",
+                            ModelTypeToHistogramInt(type()),
+                            syncer::MODEL_TYPE_COUNT);
   ui_thread_->PostTask(from_here,
       base::Bind(&NonUIDataTypeController::DisableImpl,
                  this,
@@ -187,7 +193,7 @@ NonUIDataTypeController::NonUIDataTypeController()
 NonUIDataTypeController::~NonUIDataTypeController() {}
 
 void NonUIDataTypeController::StartDone(
-    DataTypeController::ConfigureResult start_result,
+    DataTypeController::StartResult start_result,
     const syncer::SyncMergeResult& local_merge_result,
     const syncer::SyncMergeResult& syncer_merge_result) {
   DCHECK(!ui_thread_->BelongsToCurrentThread());
@@ -209,7 +215,7 @@ void NonUIDataTypeController::StartDone(
 }
 
 void NonUIDataTypeController::StartDoneImpl(
-    DataTypeController::ConfigureResult start_result,
+    DataTypeController::StartResult start_result,
     DataTypeController::State new_state,
     const syncer::SyncMergeResult& local_merge_result,
     const syncer::SyncMergeResult& syncer_merge_result) {
@@ -226,6 +232,7 @@ void NonUIDataTypeController::StartDoneImpl(
   // (due to Stop being called) and then posted from the non-UI thread. In
   // this case, we drop the second call because we've already been stopped.
   if (state_ == NOT_RUNNING) {
+    DCHECK(start_callback_.is_null());
     return;
   }
 
@@ -236,7 +243,12 @@ void NonUIDataTypeController::StartDoneImpl(
     RecordStartFailure(start_result);
   }
 
-  start_callback_.Run(start_result, local_merge_result, syncer_merge_result);
+  // We have to release the callback before we call it, since it's possible
+  // invoking the callback will trigger a call to STOP(), which will get
+  // confused by the non-NULL start_callback_.
+  StartCallback callback = start_callback_;
+  start_callback_.Reset();
+  callback.Run(start_result, local_merge_result, syncer_merge_result);
 }
 
 void NonUIDataTypeController::RecordAssociationTime(base::TimeDelta time) {
@@ -247,7 +259,7 @@ void NonUIDataTypeController::RecordAssociationTime(base::TimeDelta time) {
 #undef PER_DATA_TYPE_MACRO
 }
 
-void NonUIDataTypeController::RecordStartFailure(ConfigureResult result) {
+void NonUIDataTypeController::RecordStartFailure(StartResult result) {
   DCHECK(ui_thread_->BelongsToCurrentThread());
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures",
                             ModelTypeToHistogramInt(type()),
@@ -275,18 +287,8 @@ void NonUIDataTypeController::DisableImpl(
     const tracked_objects::Location& from_here,
     const std::string& message) {
   DCHECK(ui_thread_->BelongsToCurrentThread());
-  UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures",
-                            ModelTypeToHistogramInt(type()),
-                            syncer::MODEL_TYPE_COUNT);
-  if (!start_callback_.is_null()) {
-    syncer::SyncError error(
-        from_here, syncer::SyncError::DATATYPE_ERROR, message, type());
-    syncer::SyncMergeResult local_merge_result(type());
-    local_merge_result.set_error(error);
-    start_callback_.Run(RUNTIME_ERROR,
-                        local_merge_result,
-                        syncer::SyncMergeResult(type()));
-  }
+  if (!disable_callback().is_null())
+    disable_callback().Run(from_here, message);
 }
 
 bool NonUIDataTypeController::StartAssociationAsync() {
@@ -346,11 +348,6 @@ void NonUIDataTypeController::
   }
 
   if (!shared_change_processor->CryptoReadyIfNecessary()) {
-    syncer::SyncError error(FROM_HERE,
-                            syncer::SyncError::CRYPTO_ERROR,
-                            "",
-                            type());
-    local_merge_result.set_error(error);
     StartDone(NEEDS_CRYPTO,
               local_merge_result,
               syncer_merge_result);

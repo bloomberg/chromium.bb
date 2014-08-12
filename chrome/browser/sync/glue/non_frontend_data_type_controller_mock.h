@@ -39,11 +39,11 @@ class NonFrontendDataTypeControllerMock : public NonFrontendDataTypeController {
   MOCK_METHOD0(CreateSyncComponents,
                ProfileSyncComponentsFactory::SyncComponents());
   MOCK_METHOD3(StartDone,
-               void(DataTypeController::ConfigureResult result,
+               void(DataTypeController::StartResult result,
                     const syncer::SyncMergeResult& local_merge_result,
                     const syncer::SyncMergeResult& syncer_merge_result));
   MOCK_METHOD4(StartDoneImpl,
-               void(DataTypeController::ConfigureResult result,
+               void(DataTypeController::StartResult result,
                     DataTypeController::State new_state,
                     const syncer::SyncMergeResult& local_merge_result,
                     const syncer::SyncMergeResult& syncer_merge_result));
@@ -53,7 +53,7 @@ class NonFrontendDataTypeControllerMock : public NonFrontendDataTypeController {
   MOCK_METHOD2(RecordUnrecoverableError, void(const tracked_objects::Location&,
                                               const std::string&));
   MOCK_METHOD1(RecordAssociationTime, void(base::TimeDelta time));
-  MOCK_METHOD1(RecordStartFailure, void(ConfigureResult result));
+  MOCK_METHOD1(RecordStartFailure, void(StartResult result));
 
  protected:
   virtual ~NonFrontendDataTypeControllerMock();

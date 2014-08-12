@@ -34,9 +34,9 @@ class FrontendDataTypeControllerMock : public FrontendDataTypeController {
   MOCK_METHOD0(StartModels, bool());
   MOCK_METHOD0(Associate, bool());
   MOCK_METHOD0(CreateSyncComponents, void());
-  MOCK_METHOD2(StartFailed, void(ConfigureResult result,
+  MOCK_METHOD2(StartFailed, void(StartResult result,
                                  const syncer::SyncError& error));
-  MOCK_METHOD1(FinishStart, void(ConfigureResult result));
+  MOCK_METHOD1(FinishStart, void(StartResult result));
   MOCK_METHOD0(CleanUpState, void());
   MOCK_CONST_METHOD0(model_associator, sync_driver::AssociatorInterface*());
   MOCK_METHOD1(set_model_associator,
@@ -47,7 +47,7 @@ class FrontendDataTypeControllerMock : public FrontendDataTypeController {
   MOCK_METHOD2(RecordUnrecoverableError, void(const tracked_objects::Location&,
                                               const std::string&));
   MOCK_METHOD1(RecordAssociationTime, void(base::TimeDelta time));
-  MOCK_METHOD1(RecordStartFailure, void(ConfigureResult result));
+  MOCK_METHOD1(RecordStartFailure, void(StartResult result));
 
  protected:
   virtual ~FrontendDataTypeControllerMock();

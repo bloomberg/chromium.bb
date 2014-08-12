@@ -134,13 +134,13 @@ class NonFrontendDataTypeController : public sync_driver::DataTypeController {
   // Start up complete, update the state and invoke the callback.
   // Note: this is performed on the datatype's thread.
   virtual void StartDone(
-      DataTypeController::ConfigureResult start_result,
+      DataTypeController::StartResult start_result,
       const syncer::SyncMergeResult& local_merge_result,
       const syncer::SyncMergeResult& syncer_merge_result);
 
   // UI thread implementation of StartDone.
   virtual void StartDoneImpl(
-      DataTypeController::ConfigureResult start_result,
+      DataTypeController::StartResult start_result,
       DataTypeController::State new_state,
       const syncer::SyncMergeResult& local_merge_result,
       const syncer::SyncMergeResult& syncer_merge_result);
@@ -153,7 +153,7 @@ class NonFrontendDataTypeController : public sync_driver::DataTypeController {
   // Record association time. Called on Datatype's thread.
   virtual void RecordAssociationTime(base::TimeDelta time);
   // Record causes of start failure. Called on UI thread.
-  virtual void RecordStartFailure(ConfigureResult result);
+  virtual void RecordStartFailure(StartResult result);
 
   // Handles the reporting of unrecoverable error. It records stuff in
   // UMA and reports to breakpad.

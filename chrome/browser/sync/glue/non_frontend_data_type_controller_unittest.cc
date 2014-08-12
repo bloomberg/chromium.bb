@@ -97,7 +97,7 @@ class NonFrontendDataTypeControllerFake : public NonFrontendDataTypeController {
     mock_->RecordAssociationTime(time);
   }
   virtual void RecordStartFailure(
-      DataTypeController::ConfigureResult result) OVERRIDE {
+      DataTypeController::StartResult result) OVERRIDE {
     mock_->RecordStartFailure(result);
   }
   virtual void DisconnectProcessor(
@@ -160,7 +160,7 @@ class SyncNonFrontendDataTypeControllerTest : public testing::Test {
     EXPECT_CALL(*dtc_mock_.get(), RecordAssociationTime(_));
   }
 
-  void SetActivateExpectations(DataTypeController::ConfigureResult result) {
+  void SetActivateExpectations(DataTypeController::StartResult result) {
     EXPECT_CALL(start_callback_, Run(result, _, _));
   }
 
@@ -171,7 +171,7 @@ class SyncNonFrontendDataTypeControllerTest : public testing::Test {
                 WillOnce(Return(syncer::SyncError()));
   }
 
-  void SetStartFailExpectations(DataTypeController::ConfigureResult result) {
+  void SetStartFailExpectations(DataTypeController::StartResult result) {
     if (DataTypeController::IsUnrecoverableResult(result))
       EXPECT_CALL(*dtc_mock_.get(), RecordUnrecoverableError(_, _));
     if (model_associator_) {

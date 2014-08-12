@@ -21,8 +21,7 @@ class MockModelAssociationManagerDelegate :
   MOCK_METHOD2(OnSingleDataTypeAssociationDone,
       void(syncer::ModelType type,
       const syncer::DataTypeAssociationStats& association_stats));
-  MOCK_METHOD2(OnSingleDataTypeWillStop,
-               void(syncer::ModelType, const syncer::SyncError& error));
+  MOCK_METHOD1(OnSingleDataTypeWillStop, void(syncer::ModelType));
   MOCK_METHOD1(OnModelAssociationDone, void(
       const DataTypeManager::ConfigureResult& result));
 };
@@ -41,6 +40,22 @@ FakeDataTypeController* GetController(
 ACTION_P(VerifyResult, expected_result) {
   EXPECT_EQ(arg0.status, expected_result.status);
   EXPECT_TRUE(arg0.requested_types.Equals(expected_result.requested_types));
+  EXPECT_EQ(arg0.failed_data_types.size(),
+            expected_result.failed_data_types.size());
+
+  if (arg0.failed_data_types.size() ==
+          expected_result.failed_data_types.size()) {
+    std::map<syncer::ModelType, syncer::SyncError>::const_iterator it1, it2;
+    for (it1 = arg0.failed_data_types.begin(),
+         it2 = expected_result.failed_data_types.begin();
+         it1 != arg0.failed_data_types.end();
+         ++it1, ++it2) {
+      EXPECT_EQ((*it1).first, (*it2).first);
+    }
+  }
+
+  EXPECT_TRUE(arg0.unfinished_data_types.Equals(
+      expected_result.unfinished_data_types));
 }
 
 class SyncModelAssociationManagerTest : public testing::Test {
@@ -64,7 +79,12 @@ TEST_F(SyncModelAssociationManagerTest, SimpleModelStart) {
   ModelAssociationManager model_association_manager(&controllers_,
                                                     &delegate_);
   syncer::ModelTypeSet types(syncer::BOOKMARKS, syncer::APPS);
-  DataTypeManager::ConfigureResult expected_result(DataTypeManager::OK, types);
+  DataTypeManager::ConfigureResult expected_result(
+      DataTypeManager::OK,
+      types,
+      std::map<syncer::ModelType, syncer::SyncError>(),
+      syncer::ModelTypeSet(),
+      syncer::ModelTypeSet());
   EXPECT_CALL(delegate_, OnModelAssociationDone(_)).
               WillOnce(VerifyResult(expected_result));
 
@@ -104,13 +124,24 @@ TEST_F(SyncModelAssociationManagerTest, StopModelBeforeFinish) {
   syncer::ModelTypeSet types;
   types.Put(syncer::BOOKMARKS);
 
-  DataTypeManager::ConfigureResult expected_result(DataTypeManager::ABORTED,
-                                                   types);
+  std::map<syncer::ModelType, syncer::SyncError> errors;
+  syncer::SyncError error(FROM_HERE,
+                          syncer::SyncError::DATATYPE_ERROR,
+                          "Failed",
+                          syncer::BOOKMARKS);
+  errors[syncer::BOOKMARKS] = error;
+
+  DataTypeManager::ConfigureResult expected_result(
+      DataTypeManager::ABORTED,
+      types,
+      errors,
+      syncer::ModelTypeSet(syncer::BOOKMARKS),
+      syncer::ModelTypeSet());
 
   EXPECT_CALL(delegate_, OnModelAssociationDone(_)).
               WillOnce(VerifyResult(expected_result));
   EXPECT_CALL(delegate_,
-              OnSingleDataTypeWillStop(syncer::BOOKMARKS, _));
+              OnSingleDataTypeWillStop(syncer::BOOKMARKS));
 
   model_association_manager.Initialize(types);
   model_association_manager.StartAssociationAsync(types);
@@ -131,11 +162,16 @@ TEST_F(SyncModelAssociationManagerTest, StopAfterFinish) {
       &delegate_);
   syncer::ModelTypeSet types;
   types.Put(syncer::BOOKMARKS);
-  DataTypeManager::ConfigureResult expected_result(DataTypeManager::OK, types);
+  DataTypeManager::ConfigureResult expected_result(
+      DataTypeManager::OK,
+      types,
+      std::map<syncer::ModelType, syncer::SyncError>(),
+      syncer::ModelTypeSet(),
+      syncer::ModelTypeSet());
   EXPECT_CALL(delegate_, OnModelAssociationDone(_)).
               WillOnce(VerifyResult(expected_result));
   EXPECT_CALL(delegate_,
-              OnSingleDataTypeWillStop(syncer::BOOKMARKS, _));
+              OnSingleDataTypeWillStop(syncer::BOOKMARKS));
 
   model_association_manager.Initialize(types);
   model_association_manager.StartAssociationAsync(types);
@@ -159,9 +195,18 @@ TEST_F(SyncModelAssociationManagerTest, TypeFailModelAssociation) {
       &delegate_);
   syncer::ModelTypeSet types;
   types.Put(syncer::BOOKMARKS);
-  DataTypeManager::ConfigureResult expected_result(DataTypeManager::OK, types);
-  EXPECT_CALL(delegate_,
-              OnSingleDataTypeWillStop(syncer::BOOKMARKS, _));
+  std::map<syncer::ModelType, syncer::SyncError> errors;
+  syncer::SyncError error(FROM_HERE,
+                          syncer::SyncError::DATATYPE_ERROR,
+                          "Failed",
+                          syncer::BOOKMARKS);
+  errors[syncer::BOOKMARKS] = error;
+  DataTypeManager::ConfigureResult expected_result(
+      DataTypeManager::PARTIAL_SUCCESS,
+      types,
+      errors,
+      syncer::ModelTypeSet(),
+      syncer::ModelTypeSet());
   EXPECT_CALL(delegate_, OnModelAssociationDone(_)).
               WillOnce(VerifyResult(expected_result));
 
@@ -185,10 +230,18 @@ TEST_F(SyncModelAssociationManagerTest, TypeReturnUnrecoverableError) {
       &delegate_);
   syncer::ModelTypeSet types;
   types.Put(syncer::BOOKMARKS);
+  std::map<syncer::ModelType, syncer::SyncError> errors;
+  syncer::SyncError error(FROM_HERE,
+                          syncer::SyncError::DATATYPE_ERROR,
+                          "Failed",
+                          syncer::BOOKMARKS);
+  errors[syncer::BOOKMARKS] = error;
   DataTypeManager::ConfigureResult expected_result(
-      DataTypeManager::UNRECOVERABLE_ERROR, types);
-  EXPECT_CALL(delegate_,
-              OnSingleDataTypeWillStop(syncer::BOOKMARKS, _));
+      DataTypeManager::UNRECOVERABLE_ERROR,
+      types,
+      errors,
+      syncer::ModelTypeSet(),
+      syncer::ModelTypeSet());
   EXPECT_CALL(delegate_, OnModelAssociationDone(_)).
               WillOnce(VerifyResult(expected_result));
 
@@ -214,10 +267,21 @@ TEST_F(SyncModelAssociationManagerTest, SlowTypeAsFailedType) {
   types.Put(syncer::BOOKMARKS);
   types.Put(syncer::APPS);
 
+  std::map<syncer::ModelType, syncer::SyncError> errors;
+  syncer::SyncError error(FROM_HERE,
+                          syncer::SyncError::DATATYPE_ERROR,
+                          "Association timed out.",
+                          syncer::BOOKMARKS);
+  errors[syncer::BOOKMARKS] = error;
+
   syncer::ModelTypeSet expected_types_unfinished;
   expected_types_unfinished.Put(syncer::BOOKMARKS);
   DataTypeManager::ConfigureResult expected_result_partially_done(
-      DataTypeManager::OK, types);
+      DataTypeManager::PARTIAL_SUCCESS,
+      types,
+      errors,
+      expected_types_unfinished,
+      syncer::ModelTypeSet());
 
   EXPECT_CALL(delegate_, OnModelAssociationDone(_)).
               WillOnce(VerifyResult(expected_result_partially_done));
@@ -227,8 +291,6 @@ TEST_F(SyncModelAssociationManagerTest, SlowTypeAsFailedType) {
   GetController(controllers_, syncer::APPS)->FinishStart(
       DataTypeController::OK);
 
-  EXPECT_CALL(delegate_,
-              OnSingleDataTypeWillStop(syncer::BOOKMARKS, _));
   model_association_manager.GetTimerForTesting()->user_task().Run();
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING,
@@ -248,10 +310,16 @@ TEST_F(SyncModelAssociationManagerTest, StartMultipleTimes) {
 
   DataTypeManager::ConfigureResult result_1st(
       DataTypeManager::OK,
-      syncer::ModelTypeSet(syncer::BOOKMARKS));
+      syncer::ModelTypeSet(syncer::BOOKMARKS),
+      std::map<syncer::ModelType, syncer::SyncError>(),
+      syncer::ModelTypeSet(),
+      syncer::ModelTypeSet());
   DataTypeManager::ConfigureResult result_2nd(
       DataTypeManager::OK,
-      syncer::ModelTypeSet(syncer::APPS));
+      syncer::ModelTypeSet(syncer::APPS),
+      std::map<syncer::ModelType, syncer::SyncError>(),
+      syncer::ModelTypeSet(),
+      syncer::ModelTypeSet());
   EXPECT_CALL(delegate_, OnModelAssociationDone(_)).
       Times(2).
       WillOnce(VerifyResult(result_1st)).
@@ -299,48 +367,27 @@ TEST_F(SyncModelAssociationManagerTest, ModelLoadFailBeforeAssociationStart) {
       &delegate_);
   syncer::ModelTypeSet types;
   types.Put(syncer::BOOKMARKS);
-  DataTypeManager::ConfigureResult expected_result(DataTypeManager::OK, types);
-  EXPECT_CALL(delegate_,
-              OnSingleDataTypeWillStop(syncer::BOOKMARKS, _));
+  std::map<syncer::ModelType, syncer::SyncError> errors;
+  syncer::SyncError error(FROM_HERE,
+                          syncer::SyncError::DATATYPE_ERROR,
+                          "Failed",
+                          syncer::BOOKMARKS);
+  errors[syncer::BOOKMARKS] = error;
+  DataTypeManager::ConfigureResult expected_result(
+      DataTypeManager::PARTIAL_SUCCESS,
+      types,
+      errors,
+      syncer::ModelTypeSet(),
+      syncer::ModelTypeSet());
   EXPECT_CALL(delegate_, OnModelAssociationDone(_)).
               WillOnce(VerifyResult(expected_result));
 
   model_association_manager.Initialize(types);
-  EXPECT_EQ(DataTypeController::NOT_RUNNING,
+  EXPECT_EQ(DataTypeController::DISABLED,
             GetController(controllers_, syncer::BOOKMARKS)->state());
   model_association_manager.StartAssociationAsync(types);
   EXPECT_EQ(DataTypeController::NOT_RUNNING,
             GetController(controllers_, syncer::BOOKMARKS)->state());
-}
-
-// Test that a runtime error is handled by stopping the type.
-TEST_F(SyncModelAssociationManagerTest, StopAfterConfiguration) {
-  controllers_[syncer::BOOKMARKS] =
-      new FakeDataTypeController(syncer::BOOKMARKS);
-  ModelAssociationManager model_association_manager(
-      &controllers_,
-      &delegate_);
-  syncer::ModelTypeSet types;
-  types.Put(syncer::BOOKMARKS);
-  DataTypeManager::ConfigureResult expected_result(DataTypeManager::OK, types);
-  EXPECT_CALL(delegate_, OnModelAssociationDone(_)).
-              WillOnce(VerifyResult(expected_result));
-
-  model_association_manager.Initialize(types);
-  model_association_manager.StartAssociationAsync(types);
-
-  EXPECT_EQ(GetController(controllers_, syncer::BOOKMARKS)->state(),
-            DataTypeController::ASSOCIATING);
-  GetController(controllers_, syncer::BOOKMARKS)->FinishStart(
-      DataTypeController::OK);
-  EXPECT_EQ(GetController(controllers_, syncer::BOOKMARKS)->state(),
-            DataTypeController::RUNNING);
-
-  testing::Mock::VerifyAndClearExpectations(&delegate_);
-  EXPECT_CALL(delegate_,
-              OnSingleDataTypeWillStop(syncer::BOOKMARKS, _));
-  GetController(controllers_, syncer::BOOKMARKS)
-      ->OnSingleDatatypeUnrecoverableError(FROM_HERE, "runtime error");
 }
 
 }  // namespace sync_driver
