@@ -58,20 +58,6 @@
     waitForVideo('remote-view-2');
   }
 
-  // Test that we can setup a call with a video track and that the remote peer
-  // receives black frames if the local video track is disabled.
-  function callAndDisableLocalVideo(constraints) {
-    createConnections(null);
-    navigator.webkitGetUserMedia(constraints,
-        addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
-    detectVideoPlaying('remote-view-1',
-        function () {
-          assertEquals(gLocalStream.getVideoTracks().length, 1);
-          gLocalStream.getVideoTracks()[0].enabled = false;
-          waitForBlackVideo('remote-view-1');
-        });
-  }
-
   // Test that we can setup call with an audio and video track and check that
   // the video resolution is as expected.
   function callAndExpectResolution(constraints,

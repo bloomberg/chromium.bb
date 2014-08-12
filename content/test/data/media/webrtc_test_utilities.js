@@ -52,14 +52,6 @@ function detectVideoStopped(videoElementName, callback) {
               callback);
 }
 
-function detectBlackVideo(videoElementName, callback) {
-  detectVideo(videoElementName,
-              function (pixels, previous_pixels) {
-                return isVideoBlack(pixels);
-              },
-              callback);
-}
-
 function detectVideo(videoElementName, predicate, callback) {
   console.log('Looking at video in element ' + videoElementName);
 
@@ -103,11 +95,6 @@ function waitForVideo(videoElement) {
 function waitForVideoToStop(videoElement) {
   addExpectedEvent();
   detectVideoStopped(videoElement, function () { eventOccured(); });
-}
-
-function waitForBlackVideo(videoElement) {
-  addExpectedEvent();
-  detectBlackVideo(videoElement, function () { eventOccured(); });
 }
 
 // Calculates the current frame rate and compares to |expected_frame_rate|
@@ -182,16 +169,6 @@ function isVideoPlaying(pixels, previousPixels) {
     }
   }
   return false;
-}
-
-function isVideoBlack(pixels) {
-  for (var i = 0; i < pixels.length; i++) {
-    // |pixels| is in RGBA. Ignore the alpha channel.
-    if (pixels[i] != 0 && (i + 1) % 4 != 0) {
-      return false;
-    }
-  }
-  return true;
 }
 
 // This function matches |left| and |right| and fails the test if the
