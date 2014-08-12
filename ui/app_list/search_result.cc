@@ -25,7 +25,10 @@ SearchResult::Action::Action(const base::string16& label_text,
 SearchResult::Action::~Action() {}
 
 SearchResult::SearchResult()
-    : relevance_(0), is_installing_(false), percent_downloaded_(0) {
+    : relevance_(0),
+      display_type_(DISPLAY_LIST),
+      is_installing_(false),
+      percent_downloaded_(0) {
 }
 
 SearchResult::~SearchResult() {}

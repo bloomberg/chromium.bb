@@ -23,6 +23,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image_skia_operations.h"
 
@@ -36,6 +37,8 @@ AppResult::AppResult(Profile* profile,
       controller_(controller),
       extension_registry_(NULL) {
   set_id(extensions::Extension::GetBaseURLFromExtensionId(app_id_).spec());
+  if (app_list::switches::IsExperimentalAppListEnabled())
+    set_display_type(DISPLAY_TILE);
 
   const extensions::Extension* extension =
       extensions::ExtensionSystem::Get(profile_)->extension_service()
@@ -48,7 +51,8 @@ AppResult::AppResult(Profile* profile,
       profile_,
       extension,
       extensions::IconsInfo::GetIcons(extension),
-      extension_misc::EXTENSION_ICON_SMALL,
+      display_type() == DISPLAY_TILE ? extension_misc::EXTENSION_ICON_MEDIUM
+                                     : extension_misc::EXTENSION_ICON_SMALL,
       extensions::util::GetDefaultAppIcon(),
       this));
   UpdateIcon();
