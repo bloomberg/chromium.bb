@@ -288,10 +288,12 @@ bool PasswordGenerationAgent::FocusedNodeHasChanged(
     return true;
   }
 
-  // Only trigger if the password field is empty.
+  // Assume that if the password field has less than kMaximumOfferSize
+  // characters then the user is not finished typing their password and display
+  // the password suggestion.
   if (!element->isReadOnly() &&
       element->isEnabled() &&
-      element->value().isEmpty()) {
+      element->value().length() <= kMaximumOfferSize) {
     ShowGenerationPopup();
     return true;
   }
@@ -318,10 +320,7 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
 
     // Offer generation again.
     ShowGenerationPopup();
-  } else if (!password_is_generated_) {
-    // User has rejected the feature and has started typing a password.
-    HidePopup();
-  } else {
+  } else if (password_is_generated_) {
     password_edited_ = true;
     // Mirror edits to any confirmation password fields.
     for (std::vector<blink::WebInputElement>::iterator it =
@@ -329,6 +328,14 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
          it != password_elements_.end(); ++it) {
       it->setValue(element.value());
     }
+  } else if (element.value().length() > kMaximumOfferSize) {
+    // User has rejected the feature and has started typing a password.
+    HidePopup();
+  } else {
+    // Password isn't generated and there are fewer than kMaximumOfferSize
+    // characters typed, so keep offering the password. Note this function
+    // will just keep the previous popup if one is already showing.
+    ShowGenerationPopup();
   }
 
   return true;

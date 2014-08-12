@@ -58,7 +58,6 @@ class PasswordGenerationAgentTest : public ChromeRenderViewTest {
     WebElement element =
         document.getElementById(WebString::fromUTF8(element_id));
     ASSERT_FALSE(element.isNull());
-    WebInputElement target_element = element.to<WebInputElement>();
     ExecuteJavaScript(
         base::StringPrintf("document.getElementById('%s').focus();",
                            element_id).c_str());
@@ -254,6 +253,81 @@ TEST_F(PasswordGenerationAgentTest, AccountCreationFormsDetectedTest) {
   SetNotBlacklistedMessage(kAccountCreationFormHTML);
   SetAccountCreationFormsDetectedMessage(kAccountCreationFormHTML);
   ExpectPasswordGenerationAvailable("first_password", true);
+}
+
+TEST_F(PasswordGenerationAgentTest, MaximumOfferSize) {
+  LoadHTML(kAccountCreationFormHTML);
+  SetNotBlacklistedMessage(kAccountCreationFormHTML);
+  SetAccountCreationFormsDetectedMessage(kAccountCreationFormHTML);
+  ExpectPasswordGenerationAvailable("first_password", true);
+
+  WebDocument document = GetMainFrame()->document();
+  WebElement element =
+      document.getElementById(WebString::fromUTF8("first_password"));
+  ASSERT_FALSE(element.isNull());
+  WebInputElement first_password_element = element.to<WebInputElement>();
+
+  // Make a password just under maximum offer size.
+  first_password_element.setValue(
+      base::ASCIIToUTF16(
+          std::string(password_generation_->kMaximumOfferSize - 1, 'a')));
+  // Cast to WebAutofillClient where textFieldDidChange() is public.
+  static_cast<blink::WebAutofillClient*>(autofill_agent_)->textFieldDidChange(
+      first_password_element);
+  // textFieldDidChange posts a task, so we need to wait until it's been
+  // processed.
+  base::MessageLoop::current()->RunUntilIdle();
+  // There should now be a message to show the UI.
+  ASSERT_EQ(1u, password_generation_->messages().size());
+  EXPECT_EQ(AutofillHostMsg_ShowPasswordGenerationPopup::ID,
+            password_generation_->messages()[0]->type());
+  password_generation_->clear_messages();
+
+  // Simulate a user typing a password just over maximum offer size.
+  first_password_element.setValue(
+      base::ASCIIToUTF16(
+          std::string(password_generation_->kMaximumOfferSize + 1, 'a')));
+  // Cast to WebAutofillClient where textFieldDidChange() is public.
+  static_cast<blink::WebAutofillClient*>(autofill_agent_)->textFieldDidChange(
+      first_password_element);
+  // textFieldDidChange posts a task, so we need to wait until it's been
+  // processed.
+  base::MessageLoop::current()->RunUntilIdle();
+  // There should now be a message to hide the UI.
+  ASSERT_EQ(1u, password_generation_->messages().size());
+  EXPECT_EQ(AutofillHostMsg_HidePasswordGenerationPopup::ID,
+            password_generation_->messages()[0]->type());
+  password_generation_->clear_messages();
+
+  // Simulate the user deleting characters. The generation popup should be shown
+  // again.
+  first_password_element.setValue(
+      base::ASCIIToUTF16(
+          std::string(password_generation_->kMaximumOfferSize, 'a')));
+  // Cast to WebAutofillClient where textFieldDidChange() is public.
+  static_cast<blink::WebAutofillClient*>(autofill_agent_)->textFieldDidChange(
+      first_password_element);
+  // textFieldDidChange posts a task, so we need to wait until it's been
+  // processed.
+  base::MessageLoop::current()->RunUntilIdle();
+  // There should now be a message to show the UI.
+  ASSERT_EQ(1u, password_generation_->messages().size());
+  EXPECT_EQ(AutofillHostMsg_ShowPasswordGenerationPopup::ID,
+            password_generation_->messages()[0]->type());
+  password_generation_->clear_messages();
+
+  // Change focus. Bubble should be hidden, but that is handled by AutofilAgent,
+  // so no messages are sent.
+  ExecuteJavaScript("document.getElementById('username').focus();");
+  EXPECT_EQ(0u, password_generation_->messages().size());
+  password_generation_->clear_messages();
+
+  // Focusing the password field will bring up the generation UI again.
+  ExecuteJavaScript("document.getElementById('first_password').focus();");
+  EXPECT_EQ(1u, password_generation_->messages().size());
+  EXPECT_EQ(AutofillHostMsg_ShowPasswordGenerationPopup::ID,
+            password_generation_->messages()[0]->type());
+  password_generation_->clear_messages();
 }
 
 }  // namespace autofill

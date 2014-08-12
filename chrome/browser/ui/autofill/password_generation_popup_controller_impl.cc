@@ -172,7 +172,7 @@ void PasswordGenerationPopupControllerImpl::CalculateBounds() {
 
 void PasswordGenerationPopupControllerImpl::Show(bool display_password) {
   display_password_ = display_password;
-  if (display_password_)
+  if (display_password_ && current_password_.empty())
     current_password_ = base::ASCIIToUTF16(generator_->Generate());
 
   if (!view_) {

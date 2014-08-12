@@ -39,6 +39,9 @@ class PasswordGenerationAgent : public content::RenderViewObserver {
   // Returns true if the newly focused node caused the generation UI to show.
   bool FocusedNodeHasChanged(const blink::WebNode& node);
 
+  // The length that a password can be before the UI is hidden.
+  static const size_t kMaximumOfferSize = 5;
+
  protected:
   // Returns true if this document is one that we should consider analyzing.
   // Virtual so that it can be overriden during testing.

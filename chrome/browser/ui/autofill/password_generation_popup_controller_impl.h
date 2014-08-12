@@ -60,7 +60,7 @@ class PasswordGenerationPopupControllerImpl
   // Create a PasswordGenerationPopupView if one doesn't already exist.
   // If |display_password| is true, a generated password is shown that can be
   // selected by the user. Otherwise just the text explaining generated
-  // passwords is shown.
+  // passwords is shown. Idempotent.
   void Show(bool display_password);
 
   // Hides the popup and destroys |this|.
