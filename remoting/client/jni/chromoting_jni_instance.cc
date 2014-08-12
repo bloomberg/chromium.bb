@@ -280,7 +280,7 @@ void ChromotingJniInstance::OnConnectionState(
 
   jni_runtime_->ui_task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&ChromotingJniRuntime::ReportConnectionStatus,
+      base::Bind(&ChromotingJniRuntime::OnConnectionState,
                  base::Unretained(jni_runtime_),
                  state,
                  error));

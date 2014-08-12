@@ -235,13 +235,13 @@ void ChromotingJniRuntime::DisconnectFromHost() {
   }
 }
 
-void ChromotingJniRuntime::ReportConnectionStatus(
+void ChromotingJniRuntime::OnConnectionState(
     protocol::ConnectionToHost::State state,
     protocol::ErrorCode error) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_JniInterface_reportConnectionStatus(env, state, error);
+  Java_JniInterface_onConnectionState(env, state, error);
 }
 
 void ChromotingJniRuntime::DisplayAuthenticationPrompt(bool pairing_supported) {

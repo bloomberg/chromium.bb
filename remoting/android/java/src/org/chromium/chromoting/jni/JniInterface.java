@@ -18,6 +18,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
@@ -186,10 +187,21 @@ public class JniInterface {
 
     /** Severs the connection and cleans up. Called on the UI thread. */
     public static void disconnectFromHost() {
-        if (!sConnected) return;
+        if (!sConnected) {
+            return;
+        }
 
         sConnectionListener.onConnectionState(ConnectionListener.State.CLOSED,
                 ConnectionListener.Error.OK);
+
+        disconnectFromHostWithoutNotification();
+    }
+
+    /** Same as disconnectFromHost() but without notifying the ConnectionListener. */
+    private static void disconnectFromHostWithoutNotification() {
+        if (!sConnected) {
+            return;
+        }
 
         nativeDisconnect();
         sConnectionListener = null;
@@ -204,11 +216,17 @@ public class JniInterface {
     /** Performs the native portion of the cleanup. */
     private static native void nativeDisconnect();
 
-    /** Reports whenever the connection status changes. Called on the UI thread. */
+    /** Called by native code whenever the connection status changes. Called on the UI thread. */
     @CalledByNative
-    private static void reportConnectionStatus(int state, int error) {
-        sConnectionListener.onConnectionState(ConnectionListener.State.fromValue(state),
-                ConnectionListener.Error.fromValue(error));
+    private static void onConnectionState(int stateCode, int errorCode) {
+        ConnectionListener.State state = ConnectionListener.State.fromValue(stateCode);
+        ConnectionListener.Error error = ConnectionListener.Error.fromValue(errorCode);
+        sConnectionListener.onConnectionState(state, error);
+        if (state == ConnectionListener.State.FAILED || state == ConnectionListener.State.CLOSED) {
+            // Disconnect from the host here, otherwise the next time connectToHost() is called,
+            // it will try to disconnect, triggering an incorrect status notification.
+            disconnectFromHostWithoutNotification();
+        }
     }
 
     /** Prompts the user to enter a PIN. Called on the UI thread. */
@@ -235,8 +253,13 @@ public class JniInterface {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         Log.i("jniiface", "User provided a PIN code");
-                        nativeAuthenticationResponse(String.valueOf(pinTextView.getText()),
-                                pinCheckBox.isChecked(), Build.MODEL);
+                        if (sConnected) {
+                            nativeAuthenticationResponse(String.valueOf(pinTextView.getText()),
+                                    pinCheckBox.isChecked(), Build.MODEL);
+                        } else {
+                            String message = sContext.getString(R.string.error_network_error);
+                            Toast.makeText(sContext, message, Toast.LENGTH_LONG).show();
+                        }
                     }
                 });
 
@@ -457,5 +480,14 @@ public class JniInterface {
     /**
      * Notify the native code to continue authentication with the |token| and the |sharedSecret|.
      */
-    public static native void nativeOnThirdPartyTokenFetched(String token, String sharedSecret);
+    public static void onThirdPartyTokenFetched(String token, String sharedSecret) {
+        if (!sConnected) {
+            return;
+        }
+
+        nativeOnThirdPartyTokenFetched(token, sharedSecret);
+    }
+
+    /** Passes authentication data to the native handling code. */
+    private static native void nativeOnThirdPartyTokenFetched(String token, String sharedSecret);
 }

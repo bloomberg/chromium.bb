@@ -474,7 +474,7 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
                 // authenticate itself with the host using spake.
                 String sharedSecret = accessToken;
 
-                JniInterface.nativeOnThirdPartyTokenFetched(token, sharedSecret);
+                JniInterface.onThirdPartyTokenFetched(token, sharedSecret);
             }
         };
         return new ThirdPartyTokenFetcher(this, host.getTokenUrlPatterns(), callback);

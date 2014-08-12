@@ -70,9 +70,9 @@ class ChromotingJniRuntime {
     return session_;
   }
 
-  // Notifies the user of the current connection status. Call on UI thread.
-  void ReportConnectionStatus(protocol::ConnectionToHost::State state,
-                              protocol::ErrorCode error);
+  // Notifies Java code of the current connection status. Call on UI thread.
+  void OnConnectionState(protocol::ConnectionToHost::State state,
+                         protocol::ErrorCode error);
 
   // Pops up a dialog box asking the user to enter a PIN. Call on UI thread.
   void DisplayAuthenticationPrompt(bool pairing_supported);
