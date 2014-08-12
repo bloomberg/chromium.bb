@@ -140,4 +140,13 @@ inline FullscreenElementStack* FullscreenElementStack::fromIfExists(Document& do
 
 } // namespace blink
 
+// Needed by the HeapVector<> element stack.
+namespace WTF {
+
+template<>struct IsPod<blink::FullscreenElementStack::RequestType> {
+    static const bool value = true;
+};
+
+} // namespace WTF
+
 #endif // FullscreenElementStack_h
