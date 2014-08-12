@@ -177,7 +177,7 @@ bool ProfileHelper::IsOwnerProfile(Profile* profile) {
   return user->email() == chromeos::UserManager::Get()->GetOwnerEmail();
 }
 
-//static
+// static
 bool ProfileHelper::IsPrimaryProfile(Profile* profile) {
   if (!profile)
     return false;
@@ -242,11 +242,37 @@ Profile* ProfileHelper::GetProfileByUser(const user_manager::User* user) {
     return it == user_to_profile_for_testing_.end() ? NULL : it->second;
   }
 
+  if (!user->is_profile_created())
+    return NULL;
+  Profile* profile =
+      ProfileHelper::GetProfileByUserIdHash(user->username_hash());
+
+  // GetActiveUserProfile() or GetProfileByUserIdHash() returns a new instance
+  // of ProfileImpl(), but actually its OffTheRecordProfile() should be used.
+  if (UserManager::Get()->IsLoggedInAsGuest())
+    profile = profile->GetOffTheRecordProfile();
+
+  return profile;
+}
+
+Profile* ProfileHelper::GetProfileByUserUnsafe(const user_manager::User* user) {
+  // This map is non-empty only in tests.
+  if (!user_to_profile_for_testing_.empty()) {
+    std::map<const user_manager::User*, Profile*>::const_iterator it =
+        user_to_profile_for_testing_.find(user);
+    return it == user_to_profile_for_testing_.end() ? NULL : it->second;
+  }
+
   Profile* profile = NULL;
-  if (user->is_profile_created())
+  if (user->is_profile_created()) {
     profile = ProfileHelper::GetProfileByUserIdHash(user->username_hash());
-  else
+  } else {
+    LOG(WARNING) << "ProfileHelper::GetProfileByUserUnsafe is called when "
+                    "|user|'s profile is not created. It probably means that "
+                    "something is wrong with a calling code. Please report in "
+                    "http://crbug.com/361528 if you see this message.";
     profile = ProfileManager::GetActiveUserProfile();
+  }
 
   // GetActiveUserProfile() or GetProfileByUserIdHash() returns a new instance
   // of ProfileImpl(), but actually its OffTheRecordProfile() should be used.

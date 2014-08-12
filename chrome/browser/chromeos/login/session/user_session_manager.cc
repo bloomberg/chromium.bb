@@ -527,7 +527,7 @@ void UserSessionManager::OnConnectionTypeChanged(
     if (!(*it)->is_profile_created())
       continue;
 
-    Profile* user_profile = ProfileHelper::Get()->GetProfileByUser(*it);
+    Profile* user_profile = ProfileHelper::Get()->GetProfileByUserUnsafe(*it);
     bool should_restore_session =
         pending_signin_restore_sessions_.find((*it)->email()) !=
         pending_signin_restore_sessions_.end();

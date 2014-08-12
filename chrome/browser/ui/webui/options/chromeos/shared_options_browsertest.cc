@@ -131,7 +131,7 @@ class SharedOptionsTest : public LoginManagerTest {
 
   // Creates a browser and navigates to the Settings page.
   Browser* CreateBrowserForUser(const user_manager::User* user) {
-    Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
+    Profile* profile = ProfileHelper::Get()->GetProfileByUserUnsafe(user);
     profile->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                    user->email());
 
@@ -309,9 +309,9 @@ IN_PROC_BROWSER_TEST_F(SharedOptionsTest, ScreenLockPreferencePrimary) {
   const user_manager::User* user2 = manager->FindUser(kTestNonOwner);
 
   PrefService* prefs1 =
-      ProfileHelper::Get()->GetProfileByUser(user1)->GetPrefs();
+      ProfileHelper::Get()->GetProfileByUserUnsafe(user1)->GetPrefs();
   PrefService* prefs2 =
-      ProfileHelper::Get()->GetProfileByUser(user2)->GetPrefs();
+      ProfileHelper::Get()->GetProfileByUserUnsafe(user2)->GetPrefs();
 
   // Set both users' preference to false, then change the secondary user's to
   // true. We'll do the opposite in the next test. Doesn't provide 100% coverage
@@ -380,9 +380,9 @@ IN_PROC_BROWSER_TEST_F(SharedOptionsTest, ScreenLockPreferenceSecondary) {
   const user_manager::User* user2 = manager->FindUser(kTestNonOwner);
 
   PrefService* prefs1 =
-      ProfileHelper::Get()->GetProfileByUser(user1)->GetPrefs();
+      ProfileHelper::Get()->GetProfileByUserUnsafe(user1)->GetPrefs();
   PrefService* prefs2 =
-      ProfileHelper::Get()->GetProfileByUser(user2)->GetPrefs();
+      ProfileHelper::Get()->GetProfileByUserUnsafe(user2)->GetPrefs();
 
   // Set both users' preference to true, then change the secondary user's to
   // false.

@@ -146,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(PreferencesTest, MultiProfiles) {
   LoginUser(kTestUsers[0]);
   const user_manager::User* user1 = user_manager->FindUser(kTestUsers[0]);
   PrefService* prefs1 =
-      ProfileHelper::Get()->GetProfileByUser(user1)->GetPrefs();
+      ProfileHelper::Get()->GetProfileByUserUnsafe(user1)->GetPrefs();
   SetPrefs(prefs1, false);
   content::RunAllPendingInMessageLoop();
   CheckSettingsCorrespondToPrefs(prefs1);
@@ -160,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(PreferencesTest, MultiProfiles) {
   const user_manager::User* user2 = user_manager->FindUser(kTestUsers[1]);
   EXPECT_TRUE(user2->is_active());
   PrefService* prefs2 =
-      ProfileHelper::Get()->GetProfileByUser(user2)->GetPrefs();
+      ProfileHelper::Get()->GetProfileByUserUnsafe(user2)->GetPrefs();
   SetPrefs(prefs2, true);
 
   // Check that settings were changed accordingly.

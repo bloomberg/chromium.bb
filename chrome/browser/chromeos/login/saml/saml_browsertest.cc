@@ -816,7 +816,7 @@ std::string SAMLPolicyTest::GetCookieValue(const std::string& name) {
 }
 
 void SAMLPolicyTest::GetCookies() {
-  Profile* profile =chromeos::ProfileHelper::Get()->GetProfileByUser(
+  Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUserUnsafe(
       UserManager::Get()->GetActiveUser());
   ASSERT_TRUE(profile);
   base::RunLoop run_loop;

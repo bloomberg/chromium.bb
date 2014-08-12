@@ -452,7 +452,8 @@ void MessageCenterSettingsController::CreateNotifierGroupForGuestLogin() {
     return;
 
   user_manager::User* user = user_manager->GetActiveUser();
-  Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+  Profile* profile =
+      chromeos::ProfileHelper::Get()->GetProfileByUserUnsafe(user);
   DCHECK(profile);
   notifier_groups_.push_back(
       new message_center::ProfileNotifierGroup(gfx::Image(user->GetImage()),

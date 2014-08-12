@@ -366,7 +366,7 @@ void SupervisedUserTestBase::SigninAsSupervisedUser(
   LoginUser(user->email());
   if (check_homedir_calls)
     ::testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);
-  Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
+  Profile* profile = ProfileHelper::Get()->GetProfileByUserUnsafe(user);
   shared_settings_adapter_.reset(
       new SupervisedUsersSharedSettingsSyncTestAdapter(profile));
 
@@ -383,7 +383,7 @@ void SupervisedUserTestBase::SigninAsManager(int user_index) {
   const user_manager::User* user =
       UserManager::Get()->GetUsers().at(user_index);
   LoginUser(user->email());
-  Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
+  Profile* profile = ProfileHelper::Get()->GetProfileByUserUnsafe(user);
   shared_settings_adapter_.reset(
       new SupervisedUsersSharedSettingsSyncTestAdapter(profile));
   supervised_users_adapter_.reset(new SupervisedUsersSyncTestAdapter(profile));

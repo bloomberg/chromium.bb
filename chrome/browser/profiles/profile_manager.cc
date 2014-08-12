@@ -318,7 +318,7 @@ Profile* ProfileManager::GetPrimaryUserProfile() {
         profile_manager->user_data_dir());
   chromeos::UserManager* manager = chromeos::UserManager::Get();
   // Note: The ProfileHelper will take care of guest profiles.
-  return chromeos::ProfileHelper::Get()->GetProfileByUser(
+  return chromeos::ProfileHelper::Get()->GetProfileByUserUnsafe(
       manager->GetPrimaryUser());
 #else
   return profile_manager->GetActiveUserOrOffTheRecordProfileFromPath(
@@ -343,7 +343,7 @@ Profile* ProfileManager::GetActiveUserProfile() {
   // created we load the profile using the profile directly.
   // TODO: This should be cleaned up with the new profile manager.
   if (user && user->is_profile_created())
-    return chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+    return chromeos::ProfileHelper::Get()->GetProfileByUserUnsafe(user);
 
 #endif
   Profile* profile =

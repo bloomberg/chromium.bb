@@ -54,9 +54,10 @@ IN_PROC_BROWSER_TEST_F(DriveNotificationManagerFactoryGuestBrowserTest,
                        NoDriveNotificationManager) {
   chromeos::UserManager* user_manager = chromeos::UserManager::Get();
   EXPECT_TRUE(user_manager->IsLoggedInAsGuest());
-  Profile* guest_profile = chromeos::ProfileHelper::Get()
-                               ->GetProfileByUser(user_manager->GetActiveUser())
-                               ->GetOriginalProfile();
+  Profile* guest_profile =
+      chromeos::ProfileHelper::Get()
+          ->GetProfileByUserUnsafe(user_manager->GetActiveUser())
+          ->GetOriginalProfile();
   Profile* signin_profile =
       chromeos::ProfileHelper::GetSigninProfile()->GetOriginalProfile();
   EXPECT_FALSE(DriveNotificationManagerFactory::FindForBrowserContext(

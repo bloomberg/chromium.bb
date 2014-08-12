@@ -82,9 +82,11 @@ void TermsOfServiceScreenHandler::Show() {
     return;
   }
 
-  const std::string locale = ProfileHelper::Get()->GetProfileByUser(
-      UserManager::Get()->GetActiveUser())->GetPrefs()->GetString(
-          prefs::kApplicationLocale);
+  const std::string locale =
+      ProfileHelper::Get()
+          ->GetProfileByUserUnsafe(UserManager::Get()->GetActiveUser())
+          ->GetPrefs()
+          ->GetString(prefs::kApplicationLocale);
   if (locale.empty() || locale == g_browser_process->GetApplicationLocale()) {
     // If the user has not chosen a UI locale yet or the chosen locale matches
     // the current UI locale, show the screen immediately.
@@ -148,9 +150,10 @@ void TermsOfServiceScreenHandler::DoShow() {
   // Determine the user's most preferred input method.
   std::vector<std::string> input_methods;
   base::SplitString(
-      ProfileHelper::Get()->GetProfileByUser(
-          UserManager::Get()->GetActiveUser())->GetPrefs()->GetString(
-              prefs::kLanguagePreloadEngines),
+      ProfileHelper::Get()
+          ->GetProfileByUserUnsafe(UserManager::Get()->GetActiveUser())
+          ->GetPrefs()
+          ->GetString(prefs::kLanguagePreloadEngines),
       ',',
       &input_methods);
 

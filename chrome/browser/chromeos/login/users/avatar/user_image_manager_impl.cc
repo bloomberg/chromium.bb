@@ -747,7 +747,7 @@ int UserImageManagerImpl::GetDesiredImageSideLength() const {
 }
 
 Profile* UserImageManagerImpl::GetBrowserProfile() {
-  return ProfileHelper::Get()->GetProfileByUser(GetUser());
+  return ProfileHelper::Get()->GetProfileByUserUnsafe(GetUser());
 }
 
 std::string UserImageManagerImpl::GetCachedPictureURL() const {

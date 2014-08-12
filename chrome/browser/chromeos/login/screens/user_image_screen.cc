@@ -263,7 +263,7 @@ void UserImageScreen::Show() {
     return;
 
   DCHECK(!policy_registrar_);
-  Profile* profile = ProfileHelper::Get()->GetProfileByUser(GetUser());
+  Profile* profile = ProfileHelper::Get()->GetProfileByUserUnsafe(GetUser());
   if (profile) {
     policy::PolicyService* policy_service =
         policy::ProfilePolicyConnectorFactory::GetForProfile(profile)->

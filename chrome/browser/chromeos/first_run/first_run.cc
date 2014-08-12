@@ -97,8 +97,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 void MaybeLaunchDialogAfterSessionStart() {
   UserManager* user_manager = UserManager::Get();
-  new DialogLauncher(
-      ProfileHelper::Get()->GetProfileByUser(user_manager->GetActiveUser()));
+  new DialogLauncher(ProfileHelper::Get()->GetProfileByUserUnsafe(
+      user_manager->GetActiveUser()));
 }
 
 void LaunchTutorial() {

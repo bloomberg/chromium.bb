@@ -126,7 +126,7 @@ bool MultiProfileUserController::IsUserAllowedInSession(
   // used them yet then it can become tainted at any time during this session;
   // disable secondary profiles in this case too.
   Profile* primary_user_profile =
-      primary_user ? ProfileHelper::Get()->GetProfileByUser(primary_user)
+      primary_user ? ProfileHelper::Get()->GetProfileByUserUnsafe(primary_user)
                    : NULL;
   policy::PolicyCertService* service =
       primary_user_profile ? policy::PolicyCertServiceFactory::GetForProfile(

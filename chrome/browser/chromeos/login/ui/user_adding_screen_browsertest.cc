@@ -166,15 +166,15 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, AddingSeveralUsers) {
   // Now check how unlock policy works for these users.
   PrefService* prefs1 =
       ProfileHelper::Get()
-          ->GetProfileByUser(user_manager->GetLoggedInUsers()[0])
+          ->GetProfileByUserUnsafe(user_manager->GetLoggedInUsers()[0])
           ->GetPrefs();
   PrefService* prefs2 =
       ProfileHelper::Get()
-          ->GetProfileByUser(user_manager->GetLoggedInUsers()[1])
+          ->GetProfileByUserUnsafe(user_manager->GetLoggedInUsers()[1])
           ->GetPrefs();
   PrefService* prefs3 =
       ProfileHelper::Get()
-          ->GetProfileByUser(user_manager->GetLoggedInUsers()[2])
+          ->GetProfileByUserUnsafe(user_manager->GetLoggedInUsers()[2])
           ->GetPrefs();
   ASSERT_TRUE(prefs1 != NULL);
   ASSERT_TRUE(prefs2 != NULL);

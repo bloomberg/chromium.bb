@@ -107,8 +107,19 @@ class ProfileHelper : public BrowsingDataRemover::Observer,
   // Callback can be empty. Not thread-safe.
   void ClearSigninProfile(const base::Closure& on_clear_callback);
 
-  // Returns NULL if profile for user is not found or is not fully loaded.
+  // Returns profile of the |user| if it is created and fully initialized.
+  // Otherwise, returns NULL.
   Profile* GetProfileByUser(const user_manager::User* user);
+
+  // DEPRECATED
+  // Returns profile of the |user| if user's profile is created and fully
+  // initialized. Otherwise, if some user is active, returns his profile.
+  // Otherwise, returns signin profile.
+  // Behaviour of this function does not correspond to its name and can be
+  // very surprising, that's why it should not be used anymore.
+  // Use |GetProfileByUser| instead.
+  // TODO(dzhioev): remove this method. http://crbug.com/361528
+  Profile* GetProfileByUserUnsafe(const user_manager::User* user);
 
   // Returns NULL if User is not created.
   user_manager::User* GetUserByProfile(Profile* profile);

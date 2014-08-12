@@ -72,8 +72,8 @@ FirstRunController::FirstRunController()
 void FirstRunController::Init() {
   start_time_ = base::Time::Now();
   UserManager* user_manager = UserManager::Get();
-  user_profile_ =
-      ProfileHelper::Get()->GetProfileByUser(user_manager->GetActiveUser());
+  user_profile_ = ProfileHelper::Get()->GetProfileByUserUnsafe(
+      user_manager->GetActiveUser());
 
   shell_helper_.reset(ash::Shell::GetInstance()->CreateFirstRunHelper());
   shell_helper_->AddObserver(this);

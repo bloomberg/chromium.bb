@@ -827,7 +827,7 @@ SystemTrayDelegateChromeOS::GetUserAccountsDelegate(
     const std::string& user_id) {
   if (!accounts_delegates_.contains(user_id)) {
     const user_manager::User* user = UserManager::Get()->FindUser(user_id);
-    Profile* user_profile = ProfileHelper::Get()->GetProfileByUser(user);
+    Profile* user_profile = ProfileHelper::Get()->GetProfileByUserUnsafe(user);
     CHECK(user_profile);
     accounts_delegates_.set(
         user_id,

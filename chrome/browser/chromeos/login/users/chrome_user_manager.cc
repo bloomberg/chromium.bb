@@ -226,7 +226,8 @@ user_manager::UserList ChromeUserManager::GetUnlockUsers() const {
     return user_manager::UserList();
 
   user_manager::UserList unlock_users;
-  Profile* profile = ProfileHelper::Get()->GetProfileByUser(GetPrimaryUser());
+  Profile* profile =
+      ProfileHelper::Get()->GetProfileByUserUnsafe(GetPrimaryUser());
   std::string primary_behavior =
       profile->GetPrefs()->GetString(prefs::kMultiProfileUserBehavior);
 
@@ -242,7 +243,7 @@ user_manager::UserList ChromeUserManager::GetUnlockUsers() const {
          it != logged_in_users.end();
          ++it) {
       user_manager::User* user = (*it);
-      Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
+      Profile* profile = ProfileHelper::Get()->GetProfileByUserUnsafe(user);
       const std::string behavior =
           profile->GetPrefs()->GetString(prefs::kMultiProfileUserBehavior);
       if (behavior == MultiProfileUserController::kBehaviorUnrestricted &&

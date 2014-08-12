@@ -79,7 +79,7 @@ const char kTestUser1[] = "test-user@example.com";
 const char kTestUser2[] = "test-user2@example.com";
 
 policy::CloudPolicyStore* GetStoreForUser(const user_manager::User* user) {
-  Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
+  Profile* profile = ProfileHelper::Get()->GetProfileByUserUnsafe(user);
   if (!profile) {
     ADD_FAILURE();
     return NULL;

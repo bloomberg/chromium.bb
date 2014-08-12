@@ -58,7 +58,7 @@ bool ExtensionGarbageCollectorChromeOS::CanGarbageCollectSharedExtensions() {
   const user_manager::UserList& active_users = user_manager->GetLoggedInUsers();
   for (size_t i = 0; i < active_users.size(); i++) {
     Profile* profile =
-        chromeos::ProfileHelper::Get()->GetProfileByUser(active_users[i]);
+        chromeos::ProfileHelper::Get()->GetProfileByUserUnsafe(active_users[i]);
     ExtensionGarbageCollectorChromeOS* gc =
         ExtensionGarbageCollectorChromeOS::Get(profile);
     if (gc && gc->crx_installs_in_progress_ > 0)
