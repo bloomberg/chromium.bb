@@ -108,7 +108,7 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
   bool CreateNode(Id node_id) {
     changes_.clear();
     ErrorCode result = ERROR_CODE_NONE;
-    view_manager_->CreateNode(
+    view_manager_->CreateView(
         node_id,
         base::Bind(&ViewManagerProxy::GotResultWithErrorCode,
                    base::Unretained(this), &result));
@@ -118,7 +118,7 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
   ErrorCode CreateNodeWithErrorCode(Id node_id) {
     changes_.clear();
     ErrorCode result = ERROR_CODE_NONE;
-    view_manager_->CreateNode(
+    view_manager_->CreateView(
         node_id,
         base::Bind(&ViewManagerProxy::GotResultWithErrorCode,
                    base::Unretained(this), &result));
@@ -128,7 +128,7 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
   bool AddNode(Id parent, Id child) {
     changes_.clear();
     bool result = false;
-    view_manager_->AddNode(parent, child,
+    view_manager_->AddView(parent, child,
                            base::Bind(&ViewManagerProxy::GotResult,
                                       base::Unretained(this), &result));
     RunMainLoop();
@@ -137,7 +137,7 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
   bool RemoveNodeFromParent(Id node_id) {
     changes_.clear();
     bool result = false;
-    view_manager_->RemoveNodeFromParent(node_id,
+    view_manager_->RemoveViewFromParent(node_id,
         base::Bind(&ViewManagerProxy::GotResult,
                    base::Unretained(this), &result));
     RunMainLoop();
@@ -148,7 +148,7 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
                    OrderDirection direction) {
     changes_.clear();
     bool result = false;
-    view_manager_->ReorderNode(node_id, relative_node_id, direction,
+    view_manager_->ReorderView(node_id, relative_node_id, direction,
                                base::Bind(&ViewManagerProxy::GotResult,
                                           base::Unretained(this), &result));
     RunMainLoop();
@@ -156,7 +156,7 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
   }
   void GetNodeTree(Id node_id, std::vector<TestNode>* nodes) {
     changes_.clear();
-    view_manager_->GetNodeTree(node_id,
+    view_manager_->GetViewTree(node_id,
                                base::Bind(&ViewManagerProxy::GotNodeTree,
                                           base::Unretained(this), nodes));
     RunMainLoop();
@@ -175,7 +175,7 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
   bool DeleteNode(Id node_id) {
     changes_.clear();
     bool result = false;
-    view_manager_->DeleteNode(node_id,
+    view_manager_->DeleteView(node_id,
                               base::Bind(&ViewManagerProxy::GotResult,
                                          base::Unretained(this), &result));
     RunMainLoop();
@@ -184,7 +184,7 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
   bool SetNodeBounds(Id node_id, const gfx::Rect& bounds) {
     changes_.clear();
     bool result = false;
-    view_manager_->SetNodeBounds(node_id, Rect::From(bounds),
+    view_manager_->SetViewBounds(node_id, Rect::From(bounds),
                                  base::Bind(&ViewManagerProxy::GotResult,
                                             base::Unretained(this), &result));
     RunMainLoop();
@@ -238,8 +238,8 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
     main_run_loop_->Quit();
   }
 
-  void GotNodeTree(std::vector<TestNode>* nodes, Array<NodeDataPtr> results) {
-    NodeDatasToTestNodes(results, nodes);
+  void GotNodeTree(std::vector<TestNode>* nodes, Array<ViewDataPtr> results) {
+    ViewDatasToTestNodes(results, nodes);
     DCHECK(main_run_loop_);
     main_run_loop_->Quit();
   }
@@ -297,30 +297,30 @@ class TestViewManagerClientConnection
   virtual void OnEmbed(
       ConnectionSpecificId connection_id,
       const String& creator_url,
-      NodeDataPtr root,
+      ViewDataPtr root,
       InterfaceRequest<ServiceProvider> services) OVERRIDE {
     tracker_.OnEmbed(connection_id, creator_url, root.Pass());
   }
-  virtual void OnNodeBoundsChanged(Id node_id,
+  virtual void OnViewBoundsChanged(Id node_id,
                                    RectPtr old_bounds,
                                    RectPtr new_bounds) OVERRIDE {
     tracker_.OnNodeBoundsChanged(node_id, old_bounds.Pass(), new_bounds.Pass());
   }
-  virtual void OnNodeHierarchyChanged(Id node,
+  virtual void OnViewHierarchyChanged(Id node,
                                       Id new_parent,
                                       Id old_parent,
-                                      Array<NodeDataPtr> nodes) OVERRIDE {
+                                      Array<ViewDataPtr> nodes) OVERRIDE {
     tracker_.OnNodeHierarchyChanged(node, new_parent, old_parent, nodes.Pass());
   }
-  virtual void OnNodeReordered(Id node_id,
+  virtual void OnViewReordered(Id node_id,
                                Id relative_node_id,
                                OrderDirection direction) OVERRIDE {
     tracker_.OnNodeReordered(node_id, relative_node_id, direction);
   }
-  virtual void OnNodeDeleted(Id node) OVERRIDE {
+  virtual void OnViewDeleted(Id node) OVERRIDE {
     tracker_.OnNodeDeleted(node);
   }
-  virtual void OnNodeInputEvent(Id node_id,
+  virtual void OnViewInputEvent(Id node_id,
                                 EventPtr event,
                                 const Callback<void()>& callback) OVERRIDE {
     tracker_.OnNodeInputEvent(node_id, event.Pass());
@@ -332,7 +332,7 @@ class TestViewManagerClientConnection
       InterfaceRequest<ServiceProvider> service_provider) OVERRIDE {
     tracker_.DelegateEmbed(url);
   }
-  virtual void DispatchOnNodeInputEvent(Id node_id,
+  virtual void DispatchOnViewInputEvent(Id node_id,
                                         mojo::EventPtr event) OVERRIDE {
   }
 
@@ -1178,7 +1178,7 @@ TEST_F(ViewManagerTest, OnNodeInput) {
   {
     EventPtr event(Event::New());
     event->action = static_cast<EventType>(1);
-    connection_->view_manager()->DispatchOnNodeInputEvent(
+    connection_->view_manager()->DispatchOnViewInputEvent(
         BuildNodeId(1, 1),
         event.Pass());
     connection2_->DoRunLoopUntilChangesCount(1);

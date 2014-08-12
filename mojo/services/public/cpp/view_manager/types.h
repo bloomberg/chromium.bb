@@ -12,12 +12,12 @@
 
 namespace mojo {
 
-// Used to identify nodes, views and change ids.
+// Used to identify views and change ids.
 typedef uint32_t Id;
 
-// Used to identify a connection as well as a connection specific view or node
-// id. For example, the Id for a node consists of the ConnectionSpecificId of
-// the connection and the ConnectionSpecificId of the node.
+// Used to identify a connection as well as a connection specific view id. For
+// example, the Id for a view consists of the ConnectionSpecificId of the
+// connection and the ConnectionSpecificId of the view.
 typedef uint16_t ConnectionSpecificId;
 
 }  // namespace mojo

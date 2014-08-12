@@ -86,11 +86,11 @@ class MinimalInputEventFilter : public ui::internal::InputMethodDelegate,
 }  // namespace
 
 NativeWidgetViewManager::NativeWidgetViewManager(
-    views::internal::NativeWidgetDelegate* delegate, Node* node)
+    views::internal::NativeWidgetDelegate* delegate, View* view)
     : NativeWidgetAura(delegate),
-      node_(node) {
-  node_->AddObserver(this);
-  window_tree_host_.reset(new WindowTreeHostMojo(node_, this));
+      view_(view) {
+  view_->AddObserver(this);
+  window_tree_host_.reset(new WindowTreeHostMojo(view_, this));
   window_tree_host_->InitHost();
 
   ime_filter_.reset(
@@ -110,8 +110,8 @@ NativeWidgetViewManager::NativeWidgetViewManager(
 }
 
 NativeWidgetViewManager::~NativeWidgetViewManager() {
-  if (node_)
-    node_->RemoveObserver(this);
+  if (view_)
+    view_->RemoveObserver(this);
 }
 
 void NativeWidgetViewManager::InitNativeWidget(
@@ -125,24 +125,24 @@ void NativeWidgetViewManager::InitNativeWidget(
 
 void NativeWidgetViewManager::CompositorContentsChanged(
     const SkBitmap& bitmap) {
-  if (node_)
-    node_->SetContents(bitmap);
+  if (view_)
+    view_->SetContents(bitmap);
 }
 
-void NativeWidgetViewManager::OnNodeDestroyed(Node* node) {
-  DCHECK_EQ(node, node_);
-  node->RemoveObserver(this);
-  node_ = NULL;
+void NativeWidgetViewManager::OnViewDestroyed(View* view) {
+  DCHECK_EQ(view, view_);
+  view->RemoveObserver(this);
+  view_ = NULL;
   window_tree_host_.reset();
 }
 
-void NativeWidgetViewManager::OnNodeBoundsChanged(Node* node,
+void NativeWidgetViewManager::OnViewBoundsChanged(View* view,
                                                   const gfx::Rect& old_bounds,
                                                   const gfx::Rect& new_bounds) {
-  GetWidget()->SetBounds(gfx::Rect(node->bounds().size()));
+  GetWidget()->SetBounds(gfx::Rect(view->bounds().size()));
 }
 
-void NativeWidgetViewManager::OnNodeInputEvent(Node* node,
+void NativeWidgetViewManager::OnViewInputEvent(View* view,
                                                const EventPtr& event) {
   scoped_ptr<ui::Event> ui_event(event.To<scoped_ptr<ui::Event> >());
   if (ui_event)

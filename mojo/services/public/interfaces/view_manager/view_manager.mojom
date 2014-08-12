@@ -9,9 +9,9 @@ import "mojo/services/public/interfaces/view_manager/view_manager_constants.mojo
 
 module mojo {
 
-struct NodeData {
+struct ViewData {
   uint32 parent_id;
-  uint32 node_id;
+  uint32 view_id;
   mojo.Rect bounds;
   // TODO(sky): add visible.
 };
@@ -23,170 +23,170 @@ enum ErrorCode {
 };
 
 // ViewManagerInitService is used to grant an application a connection to the
-// ViewManager by embedding it at an approriate Node.
+// ViewManager by embedding it at an approriate View.
 interface ViewManagerInitService {
-  // Embed the application @ |url| at an appropriate Node.
+  // Embed the application @ |url| at an appropriate View.
   // The first time this method is called in the lifetime of a View Manager
-  // application instance, the "appropriate Node" is defined as being the
-  // service root Node.
+  // application instance, the "appropriate View" is defined as being the
+  // service root View.
   // Subsequent times, implementation of this method is delegated to the
-  // application embedded at the service root Node. This application is
+  // application embedded at the service root View. This application is
   // typically referred to as the "window manager", and will have a specific
-  // definition of where within its Node hierarchy to embed an unparented URL.
+  // definition of where within its View hierarchy to embed an unparented URL.
   // See ViewManagerService below for more details about |service_provider|.
   Embed(string url, ServiceProvider service_provider) => (bool success);
 };
 
-// Nodes are identified by a uint32. The upper 16 bits are the connection id,
+// Views are identified by a uint32. The upper 16 bits are the connection id,
 // and the lower 16 the id assigned by the client.
 //
-// The root node is identified with a connection id of 0, and value of 1.
+// The root view is identified with a connection id of 0, and value of 1.
 [Client=ViewManagerClient]
 interface ViewManagerService {
-  // Creates a new node with the specified id. It is up to the client to ensure
+  // Creates a new view with the specified id. It is up to the client to ensure
   // the id is unique to the connection (the id need not be globally unique).
-  // Additionally the connection id (embedded in |node_id|) must match that of
+  // Additionally the connection id (embedded in |view_id|) must match that of
   // the connection.
   // Errors:
-  //   ERROR_CODE_VALUE_IN_USE: a node already exists with the specified id.
-  //   ERROR_CODE_ILLEGAL_ARGUMENT: The connection part of |node_id| does not
+  //   ERROR_CODE_VALUE_IN_USE: a view already exists with the specified id.
+  //   ERROR_CODE_ILLEGAL_ARGUMENT: The connection part of |view_id| does not
   //     match the connection id of the client.
-  CreateNode(uint32 node_id) => (ErrorCode error_code);
+  CreateView(uint32 view_id) => (ErrorCode error_code);
 
-  // Deletes a node. This does not recurse. No hierarchy change notifications
-  // are sent as a result of this. Only the connection that created the node can
+  // Deletes a view. This does not recurse. No hierarchy change notifications
+  // are sent as a result of this. Only the connection that created the view can
   // delete it.
-  DeleteNode(uint32 node_id) => (bool success);
+  DeleteView(uint32 view_id) => (bool success);
 
-  // Sets the specified bounds of the specified node.
-  SetNodeBounds(uint32 node_id, mojo.Rect bounds) => (bool success);
+  // Sets the specified bounds of the specified view.
+  SetViewBounds(uint32 view_id, mojo.Rect bounds) => (bool success);
 
-  // Sets the visibility of the specified node to |visible|. Connections are
-  // allowed to change the visibility of any node they have created, as well as
+  // Sets the visibility of the specified view to |visible|. Connections are
+  // allowed to change the visibility of any view they have created, as well as
   // any of their roots.
-  SetNodeVisibility(uint32 node_id, bool visible) => (bool success);
+  SetViewVisibility(uint32 view_id, bool visible) => (bool success);
 
-  // Reparents a node.
+  // Reparents a view.
   // This fails for any of the following reasons:
-  // . |parent| or |child| does not identify a valid node.
+  // . |parent| or |child| does not identify a valid view.
   // . |child| is an ancestor of |parent|.
   // . |child| is already a child of |parent|.
   //
-  // This may result in a connection getting OnNodeDeleted(). See
-  // RemoveNodeFromParent for details.
-  AddNode(uint32 parent, uint32 child) => (bool success);
+  // This may result in a connection getting OnViewDeleted(). See
+  // RemoveViewFromParent for details.
+  AddView(uint32 parent, uint32 child) => (bool success);
 
-  // Removes a node from its current parent. This fails if the node is not
-  // valid or the node already has no parent.
+  // Removes a view from its current parent. This fails if the view is not
+  // valid or the view already has no parent.
   //
-  // Removing a node from a parent may result in OnNodeDeleted() being sent to
-  // other connections. For example, connection A has nodes 1 and 2, with 2 a
+  // Removing a view from a parent may result in OnViewDeleted() being sent to
+  // other connections. For example, connection A has views 1 and 2, with 2 a
   // child of 1. Connection B has a root 1. If 2 is removed from 1 then B gets
-  // OnNodeDeleted(). This is done as node 2 is effectively no longer visible to
+  // OnViewDeleted(). This is done as view 2 is effectively no longer visible to
   // connection B.
-  RemoveNodeFromParent(uint32 node_id) => (bool success);
+  RemoveViewFromParent(uint32 view_id) => (bool success);
 
-  // Reorders a node in its parent, relative to |relative_node_id| according to
+  // Reorders a view in its parent, relative to |relative_view_id| according to
   // |direction|.
-  // Only the connection that created the node's parent can reorder its
+  // Only the connection that created the view's parent can reorder its
   // children.
-  ReorderNode(uint32 node_id,
-              uint32 relative_node_id,
+  ReorderView(uint32 view_id,
+              uint32 relative_view_id,
               OrderDirection direction) => (bool success);
 
-  // Returns the nodes comprising the tree starting at |node_id|. |node_id| is
-  // the first result in the return value, unless |node_id| is invalid, in which
-  // case an empty vector is returned. The nodes are visited using a depth first
+  // Returns the views comprising the tree starting at |view_id|. |view_id| is
+  // the first result in the return value, unless |view_id| is invalid, in which
+  // case an empty vector is returned. The views are visited using a depth first
   // search (pre-order).
-  GetNodeTree(uint32 node_id) => (NodeData[] nodes);
+  GetViewTree(uint32 view_id) => (ViewData[] views);
 
-  // Shows the specified image (png encoded) in the specified node.
-  SetNodeContents(uint32 node_id,
+  // Shows the specified image (png encoded) in the specified view.
+  SetViewContents(uint32 view_id,
                   handle<shared_buffer> buffer,
                   uint32 buffer_size) => (bool success);
 
-  // Sets focus to the specified node.
-  SetFocus(uint32 node_id) => (bool success);
+  // Sets focus to the specified view.
+  SetFocus(uint32 view_id) => (bool success);
 
-  // Embeds the app for |url| in the specified node. More specifically this
+  // Embeds the app for |url| in the specified view. More specifically this
   // creates a new connection to the specified url, expecting to get a
-  // ViewManagerClient and configures it with the root node |node|. Fails
-  // if |node| was not created by this connection.
+  // ViewManagerClient and configures it with the root view |view|. Fails
+  // if |view| was not created by this connection.
   //
   // If a particular client invokes Embed() multiple times with the same url,
   // the connection is reused. When this happens the ViewManagerClient is
   // notified of the additional roots by way of OnEmbed().
   //
-  // A node may only be a root of one connection at a time. Subsequent calls to
-  // Embed() for the same node result in the node being removed from the
+  // A view may only be a root of one connection at a time. Subsequent calls to
+  // Embed() for the same view result in the view being removed from the
   // current connection. The current connection is told this by way of
-  // OnNodeDeleted().
+  // OnViewDeleted().
   //
   // When a connection embeds an app the connection no longer has priviledges
-  // to access or see any of the children of the node. If the node had existing
+  // to access or see any of the children of the view. If the view had existing
   // children the children are removed. The one exception is the root
   // connection.
   //
-  // If |node_id| is 0, the View Manager delegates determination of what node to
-  // embed |url| at to the app embedded at the service root node (i.e. the
+  // If |view_id| is 0, the View Manager delegates determination of what view to
+  // embed |url| at to the app embedded at the service root view (i.e. the
   // window manager).
   // 
   // |service_provider| encapsulates services offered by the embedder to the
   // embedded app alongside this Embed() call. It also provides a means for
   // the embedder to connect to services symmetrically exposed by the embedded
-  // app. Note that if a different app is subsequently embedded at |node_id|
+  // app. Note that if a different app is subsequently embedded at |view_id|
   // the |service_provider|'s connection to its client in the embedded app and
   // any services it provided are not broken and continue to be valid.
   Embed(string url,
-        uint32 node_id,
+        uint32 view_id,
         ServiceProvider service_provider) => (bool success);
 
   // TODO(sky): move these to a separate interface when FIFO works.
 
-  // Sends OnNodeInputEvent() to the owner of the specified node.
-  DispatchOnNodeInputEvent(uint32 node_id, mojo.Event event);
+  // Sends OnViewInputEvent() to the owner of the specified view.
+  DispatchOnViewInputEvent(uint32 view_id, mojo.Event event);
 };
 
-// Changes to nodes are not sent to the connection that originated the
-// change. For example, if connection 1 changes the bounds of a node by calling
-// SetBounds(), connection 1 does not receive OnNodeBoundsChanged().
+// Changes to views are not sent to the connection that originated the
+// change. For example, if connection 1 changes the bounds of a view by calling
+// SetBounds(), connection 1 does not receive OnViewBoundsChanged().
 [Client=ViewManagerService]
 interface ViewManagerClient {
   // Invoked when the client application has been embedded at |root|.
   // See Embed() on ViewManagerService for more details.
   OnEmbed(uint16 connection_id,
           string embedder_url,
-          NodeData root,
+          ViewData root,
           ServiceProvider& service_provider);
 
-  // Invoked when a node's bounds have changed.
-  OnNodeBoundsChanged(uint32 node, mojo.Rect old_bounds, mojo.Rect new_bounds);
+  // Invoked when a view's bounds have changed.
+  OnViewBoundsChanged(uint32 view, mojo.Rect old_bounds, mojo.Rect new_bounds);
 
   // Invoked when a change is done to the hierarchy. A value of 0 is used to
-  // identify a null node. For example, if the old_parent is NULL, 0 is
+  // identify a null view. For example, if the old_parent is NULL, 0 is
   // supplied.
-  // |nodes| contains any nodes that are that the client has not been told
-  // about. This is not sent for hierarchy changes of nodes not known to this
+  // |views| contains any views that are that the client has not been told
+  // about. This is not sent for hierarchy changes of views not known to this
   // client or not attached to the tree.
-  OnNodeHierarchyChanged(uint32 node,
+  OnViewHierarchyChanged(uint32 view,
                          uint32 new_parent,
                          uint32 old_parent,
-                         NodeData[] nodes);
+                         ViewData[] views);
 
-  // Invoked when the order of nodes within a parent changes.
-  OnNodeReordered(uint32 node_id,
-                  uint32 relative_node_id,
+  // Invoked when the order of views within a parent changes.
+  OnViewReordered(uint32 view_id,
+                  uint32 relative_view_id,
                   OrderDirection direction);                     
 
-  // Invoked when a node is deleted.
-  OnNodeDeleted(uint32 node);
+  // Invoked when a view is deleted.
+  OnViewDeleted(uint32 view);
 
-  // Invoked when an event is targeted at the specified node.
-  OnNodeInputEvent(uint32 node, mojo.Event event) => ();
+  // Invoked when an event is targeted at the specified view.
+  OnViewInputEvent(uint32 view, mojo.Event event) => ();
 
-  // Invoked when focus shifts from one Node to another. |gained_focus_id| is
-  // the id of the node that gained focus, or 0 if the node that gained focus is
-  // not known to this connection. |lost_focus_id| is likewise the node that
+  // Invoked when focus shifts from one View to another. |gained_focus_id| is
+  // the id of the view that gained focus, or 0 if the view that gained focus is
+  // not known to this connection. |lost_focus_id| is likewise the view that
   // lost focus.
   // TODO(beng): once aura is removed from the service, focus management should
   //             entirely move to the window manager and this method can be
@@ -194,16 +194,16 @@ interface ViewManagerClient {
   OnFocusChanged(uint32 gained_focus_id, uint32 lost_focus_id);
 
   // TODO(sky): The following methods represent an interface between the view
-  //            manager and the application embedded at the service root node
+  //            manager and the application embedded at the service root view
   //            (i.e. the window manager). These methods are not called on
   //            any other clients. They should be moved to a separate interface
   //            once support for derived FIFOs is landed.
 
-  // Requests the window manager create a "top level" node embedding |url|.
+  // Requests the window manager create a "top level" view embedding |url|.
   Embed(string url, ServiceProvider& service_provider);
 
-  // Requests the view manager dispatch the event targeted at |node|.
-  DispatchOnNodeInputEvent(uint32 node, mojo.Event event);
+  // Requests the view manager dispatch the event targeted at |view|.
+  DispatchOnViewInputEvent(uint32 view, mojo.Event event);
 };
 
 }

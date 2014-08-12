@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/public/cpp/view_manager/node.h"
+#include "mojo/services/public/cpp/view_manager/view.h"
 
 #include "mojo/public/cpp/application/service_provider_impl.h"
-#include "mojo/services/public/cpp/view_manager/lib/node_private.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_manager_client_impl.h"
-#include "mojo/services/public/cpp/view_manager/node_observer.h"
+#include "mojo/services/public/cpp/view_manager/lib/view_private.h"
+#include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "ui/gfx/canvas.h"
 
 namespace mojo {
@@ -15,42 +15,42 @@ namespace mojo {
 namespace {
 
 void NotifyViewTreeChangeAtReceiver(
-    Node* receiver,
-    const NodeObserver::TreeChangeParams& params,
+    View* receiver,
+    const ViewObserver::TreeChangeParams& params,
     bool change_applied) {
-  NodeObserver::TreeChangeParams local_params = params;
+  ViewObserver::TreeChangeParams local_params = params;
   local_params.receiver = receiver;
   if (change_applied) {
-    FOR_EACH_OBSERVER(NodeObserver,
-                      *NodePrivate(receiver).observers(),
+    FOR_EACH_OBSERVER(ViewObserver,
+                      *ViewPrivate(receiver).observers(),
                       OnTreeChanged(local_params));
   } else {
-    FOR_EACH_OBSERVER(NodeObserver,
-                      *NodePrivate(receiver).observers(),
+    FOR_EACH_OBSERVER(ViewObserver,
+                      *ViewPrivate(receiver).observers(),
                       OnTreeChanging(local_params));
   }
 }
 
 void NotifyViewTreeChangeUp(
-    Node* start_at,
-    const NodeObserver::TreeChangeParams& params,
+    View* start_at,
+    const ViewObserver::TreeChangeParams& params,
     bool change_applied) {
-  for (Node* current = start_at; current; current = current->parent())
+  for (View* current = start_at; current; current = current->parent())
     NotifyViewTreeChangeAtReceiver(current, params, change_applied);
 }
 
 void NotifyViewTreeChangeDown(
-    Node* start_at,
-    const NodeObserver::TreeChangeParams& params,
+    View* start_at,
+    const ViewObserver::TreeChangeParams& params,
     bool change_applied) {
   NotifyViewTreeChangeAtReceiver(start_at, params, change_applied);
-  Node::Children::const_iterator it = start_at->children().begin();
+  View::Children::const_iterator it = start_at->children().begin();
   for (; it != start_at->children().end(); ++it)
     NotifyViewTreeChangeDown(*it, params, change_applied);
 }
 
 void NotifyViewTreeChange(
-    const NodeObserver::TreeChangeParams& params,
+    const ViewObserver::TreeChangeParams& params,
     bool change_applied) {
   NotifyViewTreeChangeDown(params.target, params, change_applied);
   if (params.old_parent)
@@ -61,7 +61,7 @@ void NotifyViewTreeChange(
 
 class ScopedTreeNotifier {
  public:
-  ScopedTreeNotifier(Node* target, Node* old_parent, Node* new_parent) {
+  ScopedTreeNotifier(View* target, View* old_parent, View* new_parent) {
     params_.target = target;
     params_.old_parent = old_parent;
     params_.new_parent = new_parent;
@@ -72,57 +72,57 @@ class ScopedTreeNotifier {
   }
 
  private:
-  NodeObserver::TreeChangeParams params_;
+  ViewObserver::TreeChangeParams params_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedTreeNotifier);
 };
 
-void RemoveChildImpl(Node* child, Node::Children* children) {
-  Node::Children::iterator it =
+void RemoveChildImpl(View* child, View::Children* children) {
+  View::Children::iterator it =
       std::find(children->begin(), children->end(), child);
   if (it != children->end()) {
     children->erase(it);
-    NodePrivate(child).ClearParent();
+    ViewPrivate(child).ClearParent();
   }
 }
 
 class ScopedOrderChangedNotifier {
  public:
-  ScopedOrderChangedNotifier(Node* node,
-                             Node* relative_node,
+  ScopedOrderChangedNotifier(View* view,
+                             View* relative_view,
                              OrderDirection direction)
-      : node_(node),
-        relative_node_(relative_node),
+      : view_(view),
+        relative_view_(relative_view),
         direction_(direction) {
-    FOR_EACH_OBSERVER(NodeObserver,
-                      *NodePrivate(node_).observers(),
-                      OnNodeReordering(node_, relative_node_, direction_));
+    FOR_EACH_OBSERVER(ViewObserver,
+                      *ViewPrivate(view_).observers(),
+                      OnViewReordering(view_, relative_view_, direction_));
   }
   ~ScopedOrderChangedNotifier() {
-    FOR_EACH_OBSERVER(NodeObserver,
-                      *NodePrivate(node_).observers(),
-                      OnNodeReordered(node_, relative_node_, direction_));
+    FOR_EACH_OBSERVER(ViewObserver,
+                      *ViewPrivate(view_).observers(),
+                      OnViewReordered(view_, relative_view_, direction_));
   }
 
  private:
-  Node* node_;
-  Node* relative_node_;
+  View* view_;
+  View* relative_view_;
   OrderDirection direction_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedOrderChangedNotifier);
 };
 
 // Returns true if the order actually changed.
-bool ReorderImpl(Node::Children* children,
-                 Node* node,
-                 Node* relative,
+bool ReorderImpl(View::Children* children,
+                 View* view,
+                 View* relative,
                  OrderDirection direction) {
   DCHECK(relative);
-  DCHECK_NE(node, relative);
-  DCHECK_EQ(node->parent(), relative->parent());
+  DCHECK_NE(view, relative);
+  DCHECK_EQ(view->parent(), relative->parent());
 
   const size_t child_i =
-      std::find(children->begin(), children->end(), node) - children->begin();
+      std::find(children->begin(), children->end(), view) - children->begin();
   const size_t target_i =
       std::find(children->begin(), children->end(), relative) -
       children->begin();
@@ -131,71 +131,71 @@ bool ReorderImpl(Node::Children* children,
     return false;
   }
 
-  ScopedOrderChangedNotifier notifier(node, relative, direction);
+  ScopedOrderChangedNotifier notifier(view, relative, direction);
 
   const size_t dest_i = direction == ORDER_DIRECTION_ABOVE
                             ? (child_i < target_i ? target_i : target_i + 1)
                             : (child_i < target_i ? target_i - 1 : target_i);
   children->erase(children->begin() + child_i);
-  children->insert(children->begin() + dest_i, node);
+  children->insert(children->begin() + dest_i, view);
 
   return true;
 }
 
 class ScopedSetBoundsNotifier {
  public:
-  ScopedSetBoundsNotifier(Node* node,
+  ScopedSetBoundsNotifier(View* view,
                           const gfx::Rect& old_bounds,
                           const gfx::Rect& new_bounds)
-      : node_(node),
+      : view_(view),
         old_bounds_(old_bounds),
         new_bounds_(new_bounds) {
-    FOR_EACH_OBSERVER(NodeObserver,
-                      *NodePrivate(node_).observers(),
-                      OnNodeBoundsChanging(node_, old_bounds_, new_bounds_));
+    FOR_EACH_OBSERVER(ViewObserver,
+                      *ViewPrivate(view_).observers(),
+                      OnViewBoundsChanging(view_, old_bounds_, new_bounds_));
   }
   ~ScopedSetBoundsNotifier() {
-    FOR_EACH_OBSERVER(NodeObserver,
-                      *NodePrivate(node_).observers(),
-                      OnNodeBoundsChanged(node_, old_bounds_, new_bounds_));
+    FOR_EACH_OBSERVER(ViewObserver,
+                      *ViewPrivate(view_).observers(),
+                      OnViewBoundsChanged(view_, old_bounds_, new_bounds_));
   }
 
  private:
-  Node* node_;
+  View* view_;
   const gfx::Rect old_bounds_;
   const gfx::Rect new_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedSetBoundsNotifier);
 };
 
-// Some operations are only permitted in the connection that created the node.
-bool OwnsNode(ViewManager* manager, Node* node) {
+// Some operations are only permitted in the connection that created the view.
+bool OwnsView(ViewManager* manager, View* view) {
   return !manager ||
-      static_cast<ViewManagerClientImpl*>(manager)->OwnsNode(node->id());
+      static_cast<ViewManagerClientImpl*>(manager)->OwnsView(view->id());
 }
 
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// Node, public:
+// View, public:
 
 // static
-Node* Node::Create(ViewManager* view_manager) {
-  Node* node = new Node(view_manager);
-  static_cast<ViewManagerClientImpl*>(view_manager)->AddNode(node);
-  return node;
+View* View::Create(ViewManager* view_manager) {
+  View* view = new View(view_manager);
+  static_cast<ViewManagerClientImpl*>(view_manager)->AddView(view);
+  return view;
 }
 
-void Node::Destroy() {
-  if (!OwnsNode(manager_, this))
+void View::Destroy() {
+  if (!OwnsView(manager_, this))
     return;
 
   if (manager_)
-    static_cast<ViewManagerClientImpl*>(manager_)->DestroyNode(id_);
+    static_cast<ViewManagerClientImpl*>(manager_)->DestroyView(id_);
   while (!children_.empty()) {
-    Node* child = children_.front();
-    if (!OwnsNode(manager_, child)) {
-      NodePrivate(child).ClearParent();
+    View* child = children_.front();
+    if (!OwnsView(manager_, child)) {
+      ViewPrivate(child).ClearParent();
       children_.erase(children_.begin());
     } else {
       child->Destroy();
@@ -206,8 +206,8 @@ void Node::Destroy() {
   LocalDestroy();
 }
 
-void Node::SetBounds(const gfx::Rect& bounds) {
-  if (!OwnsNode(manager_, this))
+void View::SetBounds(const gfx::Rect& bounds) {
+  if (!OwnsView(manager_, this))
     return;
 
   if (manager_)
@@ -215,34 +215,34 @@ void Node::SetBounds(const gfx::Rect& bounds) {
   LocalSetBounds(bounds_, bounds);
 }
 
-void Node::SetVisible(bool value) {
+void View::SetVisible(bool value) {
   if (manager_)
     static_cast<ViewManagerClientImpl*>(manager_)->SetVisible(id_, value);
 }
 
-void Node::AddObserver(NodeObserver* observer) {
+void View::AddObserver(ViewObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void Node::RemoveObserver(NodeObserver* observer) {
+void View::RemoveObserver(ViewObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void Node::AddChild(Node* child) {
+void View::AddChild(View* child) {
   // TODO(beng): not necessarily valid to all connections, but possibly to the
   //             embeddee in an embedder-embeddee relationship.
   if (manager_)
-    CHECK_EQ(NodePrivate(child).view_manager(), manager_);
+    CHECK_EQ(ViewPrivate(child).view_manager(), manager_);
   LocalAddChild(child);
   if (manager_)
     static_cast<ViewManagerClientImpl*>(manager_)->AddChild(child->id(), id_);
 }
 
-void Node::RemoveChild(Node* child) {
+void View::RemoveChild(View* child) {
   // TODO(beng): not necessarily valid to all connections, but possibly to the
   //             embeddee in an embedder-embeddee relationship.
   if (manager_)
-    CHECK_EQ(NodePrivate(child).view_manager(), manager_);
+    CHECK_EQ(ViewPrivate(child).view_manager(), manager_);
   LocalRemoveChild(child);
   if (manager_) {
     static_cast<ViewManagerClientImpl*>(manager_)->RemoveChild(child->id(),
@@ -250,15 +250,15 @@ void Node::RemoveChild(Node* child) {
   }
 }
 
-void Node::MoveToFront() {
+void View::MoveToFront() {
   Reorder(parent_->children_.back(), ORDER_DIRECTION_ABOVE);
 }
 
-void Node::MoveToBack() {
+void View::MoveToBack() {
   Reorder(parent_->children_.front(), ORDER_DIRECTION_BELOW);
 }
 
-void Node::Reorder(Node* relative, OrderDirection direction) {
+void View::Reorder(View* relative, OrderDirection direction) {
   if (!LocalReorder(relative, direction))
     return;
   if (manager_) {
@@ -268,53 +268,53 @@ void Node::Reorder(Node* relative, OrderDirection direction) {
   }
 }
 
-bool Node::Contains(Node* child) const {
+bool View::Contains(View* child) const {
   if (manager_)
-    CHECK_EQ(NodePrivate(child).view_manager(), manager_);
-  for (Node* p = child->parent(); p; p = p->parent()) {
+    CHECK_EQ(ViewPrivate(child).view_manager(), manager_);
+  for (View* p = child->parent(); p; p = p->parent()) {
     if (p == this)
       return true;
   }
   return false;
 }
 
-Node* Node::GetChildById(Id id) {
+View* View::GetChildById(Id id) {
   if (id == id_)
     return this;
-  // TODO(beng): this could be improved depending on how we decide to own nodes.
+  // TODO(beng): this could be improved depending on how we decide to own views.
   Children::const_iterator it = children_.begin();
   for (; it != children_.end(); ++it) {
-    Node* node = (*it)->GetChildById(id);
-    if (node)
-      return node;
+    View* view = (*it)->GetChildById(id);
+    if (view)
+      return view;
   }
   return NULL;
 }
 
-void Node::SetContents(const SkBitmap& contents) {
+void View::SetContents(const SkBitmap& contents) {
   if (manager_) {
-    static_cast<ViewManagerClientImpl*>(manager_)->SetNodeContents(id_,
+    static_cast<ViewManagerClientImpl*>(manager_)->SetViewContents(id_,
         contents);
   }
 }
 
-void Node::SetColor(SkColor color) {
+void View::SetColor(SkColor color) {
   gfx::Canvas canvas(bounds_.size(), 1.0f, true);
   canvas.DrawColor(color);
   SetContents(skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(true));
 }
 
-void Node::SetFocus() {
+void View::SetFocus() {
   if (manager_)
     static_cast<ViewManagerClientImpl*>(manager_)->SetFocus(id_);
 }
 
-void Node::Embed(const String& url) {
+void View::Embed(const String& url) {
   static_cast<ViewManagerClientImpl*>(manager_)->Embed(url, id_);
 }
 
 scoped_ptr<ServiceProvider>
-    Node::Embed(const String& url,
+    View::Embed(const String& url,
                 scoped_ptr<ServiceProviderImpl> exported_services) {
   scoped_ptr<ServiceProvider> imported_services;
   // BindToProxy() takes ownership of |exported_services|.
@@ -329,37 +329,37 @@ scoped_ptr<ServiceProvider>
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Node, protected:
+// View, protected:
 
-Node::Node()
+View::View()
     : manager_(NULL),
       id_(static_cast<Id>(-1)),
       parent_(NULL) {}
 
-Node::~Node() {
-  FOR_EACH_OBSERVER(NodeObserver, observers_, OnNodeDestroying(this));
+View::~View() {
+  FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewDestroying(this));
   if (parent_)
     parent_->LocalRemoveChild(this);
   // TODO(beng): It'd be better to do this via a destruction observer in the
   //             ViewManagerClientImpl.
   if (manager_)
-    static_cast<ViewManagerClientImpl*>(manager_)->RemoveNode(id_);
-  FOR_EACH_OBSERVER(NodeObserver, observers_, OnNodeDestroyed(this));
+    static_cast<ViewManagerClientImpl*>(manager_)->RemoveView(id_);
+  FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewDestroyed(this));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Node, private:
+// View, private:
 
-Node::Node(ViewManager* manager)
+View::View(ViewManager* manager)
     : manager_(manager),
-      id_(static_cast<ViewManagerClientImpl*>(manager_)->CreateNode()),
+      id_(static_cast<ViewManagerClientImpl*>(manager_)->CreateView()),
       parent_(NULL) {}
 
-void Node::LocalDestroy() {
+void View::LocalDestroy() {
   delete this;
 }
 
-void Node::LocalAddChild(Node* child) {
+void View::LocalAddChild(View* child) {
   ScopedTreeNotifier notifier(child, child->parent(), this);
   if (child->parent())
     RemoveChildImpl(child, &child->parent_->children_);
@@ -367,17 +367,17 @@ void Node::LocalAddChild(Node* child) {
   child->parent_ = this;
 }
 
-void Node::LocalRemoveChild(Node* child) {
+void View::LocalRemoveChild(View* child) {
   DCHECK_EQ(this, child->parent());
   ScopedTreeNotifier notifier(child, this, NULL);
   RemoveChildImpl(child, &children_);
 }
 
-bool Node::LocalReorder(Node* relative, OrderDirection direction) {
+bool View::LocalReorder(View* relative, OrderDirection direction) {
   return ReorderImpl(&parent_->children_, this, relative, direction);
 }
 
-void Node::LocalSetBounds(const gfx::Rect& old_bounds,
+void View::LocalSetBounds(const gfx::Rect& old_bounds,
                           const gfx::Rect& new_bounds) {
   DCHECK(old_bounds == bounds_);
   ScopedSetBoundsNotifier notifier(this, old_bounds, new_bounds);

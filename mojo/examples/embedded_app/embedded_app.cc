@@ -11,11 +11,11 @@
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/application/interface_factory_impl.h"
-#include "mojo/services/public/cpp/view_manager/node.h"
-#include "mojo/services/public/cpp/view_manager/node_observer.h"
+#include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
+#include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "mojo/services/public/interfaces/navigation/navigation.mojom.h"
 #include "ui/events/event_constants.h"
 #include "url/gurl.h"
@@ -31,7 +31,7 @@ class NavigatorImpl : public InterfaceImpl<Navigator> {
 
  private:
   virtual void Navigate(
-      uint32 node_id,
+      uint32 view_id,
       NavigationDetailsPtr navigation_details,
       ResponseDetailsPtr response_details) OVERRIDE;
 
@@ -42,7 +42,7 @@ class NavigatorImpl : public InterfaceImpl<Navigator> {
 class EmbeddedApp
     : public ApplicationDelegate,
       public ViewManagerDelegate,
-      public NodeObserver {
+      public ViewObserver {
  public:
   EmbeddedApp()
       : navigator_factory_(this),
@@ -52,9 +52,9 @@ class EmbeddedApp
   }
   virtual ~EmbeddedApp() {}
 
-  void SetNodeColor(uint32 node_id, SkColor color) {
-    pending_node_colors_[node_id] = color;
-    ProcessPendingNodeColor(node_id);
+  void SetViewColor(uint32 view_id, SkColor color) {
+    pending_view_colors_[view_id] = color;
+    ProcessPendingViewColor(view_id);
   }
 
  private:
@@ -76,45 +76,45 @@ class EmbeddedApp
 
   // Overridden from ViewManagerDelegate:
   virtual void OnEmbed(ViewManager* view_manager,
-                       Node* root,
+                       View* root,
                        ServiceProviderImpl* exported_services,
                        scoped_ptr<ServiceProvider> imported_services) OVERRIDE {
     root->AddObserver(this);
     roots_[root->id()] = root;
-    ProcessPendingNodeColor(root->id());
+    ProcessPendingViewColor(root->id());
   }
   virtual void OnViewManagerDisconnected(ViewManager* view_manager) OVERRIDE {
     base::MessageLoop::current()->Quit();
   }
 
-  // Overridden from NodeObserver:
-  virtual void OnNodeDestroyed(Node* node) OVERRIDE {
-    DCHECK(roots_.find(node->id()) != roots_.end());
-    roots_.erase(node->id());
+  // Overridden from ViewObserver:
+  virtual void OnViewDestroyed(View* view) OVERRIDE {
+    DCHECK(roots_.find(view->id()) != roots_.end());
+    roots_.erase(view->id());
   }
-  virtual void OnNodeInputEvent(Node* node, const EventPtr& event) OVERRIDE {
+  virtual void OnViewInputEvent(View* view, const EventPtr& event) OVERRIDE {
     if (event->action == EVENT_TYPE_MOUSE_RELEASED) {
       if (event->flags & EVENT_FLAGS_LEFT_MOUSE_BUTTON) {
         NavigationDetailsPtr nav_details(NavigationDetails::New());
         nav_details->request->url =
             "http://www.aaronboodman.com/z_dropbox/test.html";
-        navigator_host_->RequestNavigate(node->id(), TARGET_SOURCE_NODE,
+        navigator_host_->RequestNavigate(view->id(), TARGET_SOURCE_NODE,
                                          nav_details.Pass());
       }
     }
   }
 
-  void ProcessPendingNodeColor(uint32 node_id) {
-    RootMap::iterator root = roots_.find(node_id);
+  void ProcessPendingViewColor(uint32 view_id) {
+    RootMap::iterator root = roots_.find(view_id);
     if (root == roots_.end())
       return;
 
-    PendingNodeColors::iterator color = pending_node_colors_.find(node_id);
-    if (color == pending_node_colors_.end())
+    PendingViewColors::iterator color = pending_view_colors_.find(view_id);
+    if (color == pending_view_colors_.end())
       return;
 
     root->second->SetColor(color->second);
-    pending_node_colors_.erase(color);
+    pending_view_colors_.erase(color);
   }
 
   InterfaceFactoryImplWithContext<NavigatorImpl, EmbeddedApp>
@@ -124,17 +124,17 @@ class EmbeddedApp
   NavigatorHostPtr navigator_host_;
   ViewManagerClientFactory view_manager_client_factory_;
 
-  typedef std::map<Id, Node*> RootMap;
+  typedef std::map<Id, View*> RootMap;
   RootMap roots_;
 
-  // We can receive navigations for nodes we don't have yet.
-  typedef std::map<uint32, SkColor> PendingNodeColors;
-  PendingNodeColors pending_node_colors_;
+  // We can receive navigations for views we don't have yet.
+  typedef std::map<uint32, SkColor> PendingViewColors;
+  PendingViewColors pending_view_colors_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedApp);
 };
 
-void NavigatorImpl::Navigate(uint32 node_id,
+void NavigatorImpl::Navigate(uint32 view_id,
                              NavigationDetailsPtr navigation_details,
                              ResponseDetailsPtr response_details) {
   GURL url(navigation_details->request->url.To<std::string>());
@@ -148,7 +148,7 @@ void NavigatorImpl::Navigate(uint32 node_id,
     LOG(ERROR) << "Invalid URL, path not convertible to integer";
     return;
   }
-  app_->SetNodeColor(node_id, color);
+  app_->SetViewColor(view_id, color);
 }
 
 }  // namespace examples

@@ -12,7 +12,7 @@
 #include "mojo/public/cpp/application/interface_factory_impl.h"
 #include "mojo/public/cpp/application/service_provider_impl.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
-#include "mojo/services/public/cpp/view_manager/node.h"
+#include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
@@ -43,7 +43,7 @@ class EmbedderImpl : public mojo::InterfaceImpl<Embedder> {
 // This app starts its life via Connect() rather than by being embed, so it does
 // not start with a connection to the ViewManager service. It has to obtain a
 // connection by connecting to the ViewManagerInit service and asking to be
-// embed without a node context.
+// embed without a view context.
 class WMFlowApp : public mojo::ApplicationDelegate,
                   public mojo::ViewManagerDelegate {
  public:
@@ -71,12 +71,12 @@ class WMFlowApp : public mojo::ApplicationDelegate,
   // Overridden from mojo::ViewManagerDelegate:
   virtual void OnEmbed(
       mojo::ViewManager* view_manager,
-      mojo::Node* root,
+      mojo::View* root,
       mojo::ServiceProviderImpl* exported_services,
       scoped_ptr<mojo::ServiceProvider> imported_services) MOJO_OVERRIDE {
     root->SetColor(kColors[embed_count_++ % arraysize(kColors)]);
 
-    mojo::Node* embed = mojo::Node::Create(view_manager);
+    mojo::View* embed = mojo::View::Create(view_manager);
     root->AddChild(embed);
     gfx::Rect bounds = root->bounds();
     bounds.Inset(25, 25);

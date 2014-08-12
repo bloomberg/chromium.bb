@@ -13,7 +13,7 @@
 
 namespace mojo {
 class ApplicationConnection;
-class Node;
+class View;
 class ViewManagerDelegate;
 class WindowManagerDelegate;
 
@@ -24,22 +24,22 @@ class WindowManagerDelegate;
 class ViewManager {
  public:
   // Sets the window manager delegate. Can only be called by the app embedded at
-  // the service root node.
+  // the service root view.
   virtual void SetWindowManagerDelegate(
       WindowManagerDelegate* window_manager_delegate) = 0;
 
-  // Dispatches the supplied event to the specified Node. Can be called only
+  // Dispatches the supplied event to the specified View. Can be called only
   // by the application that called SetWindowManagerDelegate().
-  virtual void DispatchEvent(Node* target, EventPtr event) = 0;
+  virtual void DispatchEvent(View* target, EventPtr event) = 0;
 
   // Returns the URL of the application that embedded this application.
   virtual const std::string& GetEmbedderURL() const = 0;
 
-  // Returns all root nodes known to this connection.
-  virtual const std::vector<Node*>& GetRoots() const = 0;
+  // Returns all root views known to this connection.
+  virtual const std::vector<View*>& GetRoots() const = 0;
 
-  // Returns a Node known to this connection.
-  virtual Node* GetNodeById(Id id) = 0;
+  // Returns a View known to this connection.
+  virtual View* GetViewById(Id id) = 0;
 
  protected:
   virtual ~ViewManager() {}

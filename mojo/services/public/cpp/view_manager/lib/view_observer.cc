@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/public/cpp/view_manager/node_observer.h"
+#include "mojo/services/public/cpp/view_manager/view_observer.h"
 
 #include "base/basictypes.h"
 
 namespace mojo {
 
 ////////////////////////////////////////////////////////////////////////////////
-// NodeObserver, public:
+// ViewObserver, public:
 
-NodeObserver::TreeChangeParams::TreeChangeParams()
+ViewObserver::TreeChangeParams::TreeChangeParams()
     : target(NULL),
       old_parent(NULL),
       new_parent(NULL),

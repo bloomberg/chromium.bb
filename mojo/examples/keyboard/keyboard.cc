@@ -11,7 +11,7 @@
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/interface_factory_impl.h"
-#include "mojo/services/public/cpp/view_manager/node.h"
+#include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
@@ -35,7 +35,7 @@ class KeyboardServiceImpl : public InterfaceImpl<KeyboardService> {
   virtual ~KeyboardServiceImpl() {}
 
   // KeyboardService:
-  virtual void SetTarget(uint32_t node_id) OVERRIDE;
+  virtual void SetTarget(uint32_t view_id) OVERRIDE;
 
  private:
   Keyboard* keyboard_;
@@ -73,7 +73,7 @@ class Keyboard : public ApplicationDelegate,
     return true;
   }
 
-  void CreateWidget(Node* node) {
+  void CreateWidget(View* view) {
     views::WidgetDelegateView* widget_delegate = new views::WidgetDelegateView;
     widget_delegate->GetContentsView()->AddChildView(new KeyboardView(this));
     widget_delegate->GetContentsView()->SetLayoutManager(new views::FillLayout);
@@ -81,16 +81,16 @@ class Keyboard : public ApplicationDelegate,
     views::Widget* widget = new views::Widget;
     views::Widget::InitParams params(
         views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-    params.native_widget = new NativeWidgetViewManager(widget, node);
+    params.native_widget = new NativeWidgetViewManager(widget, view);
     params.delegate = widget_delegate;
-    params.bounds = gfx::Rect(node->bounds().width(), node->bounds().height());
+    params.bounds = gfx::Rect(view->bounds().width(), view->bounds().height());
     widget->Init(params);
     widget->Show();
   }
 
   // ViewManagerDelegate:
   virtual void OnEmbed(ViewManager* view_manager,
-                       Node* root,
+                       View* root,
                        ServiceProviderImpl* exported_services,
                        scoped_ptr<ServiceProvider> imported_services) OVERRIDE {
     // TODO: deal with OnEmbed() being invoked multiple times.
@@ -132,8 +132,8 @@ KeyboardServiceImpl::KeyboardServiceImpl(Keyboard* keyboard)
   keyboard_->set_keyboard_service(this);
 }
 
-void KeyboardServiceImpl::SetTarget(uint32_t node_id) {
-  keyboard_->set_target(node_id);
+void KeyboardServiceImpl::SetTarget(uint32_t view_id) {
+  keyboard_->set_target(view_id);
 }
 
 }  // namespace examples

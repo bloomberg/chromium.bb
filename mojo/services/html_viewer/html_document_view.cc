@@ -13,7 +13,7 @@
 #include "mojo/services/html_viewer/blink_input_events_type_converters.h"
 #include "mojo/services/html_viewer/webstoragenamespace_impl.h"
 #include "mojo/services/html_viewer/weburlloader_impl.h"
-#include "mojo/services/public/cpp/view_manager/node.h"
+#include "mojo/services/public/cpp/view_manager/view.h"
 #include "skia/ext/refptr.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
@@ -171,8 +171,8 @@ HTMLDocumentView::~HTMLDocumentView() {
     root_->RemoveObserver(this);
 }
 
-void HTMLDocumentView::AttachToNode(Node* node) {
-  root_ = node;
+void HTMLDocumentView::AttachToView(View* view) {
+  root_ = view;
   root_->SetColor(SK_ColorCYAN);  // Dummy background color.
 
   web_view_ = blink::WebView::create(this);
@@ -266,20 +266,20 @@ void HTMLDocumentView::didNavigateWithinPage(
                                       history_item.urlString().utf8());
 }
 
-void HTMLDocumentView::OnNodeBoundsChanged(Node* node,
+void HTMLDocumentView::OnViewBoundsChanged(View* view,
                                            const gfx::Rect& old_bounds,
                                            const gfx::Rect& new_bounds) {
-  DCHECK_EQ(node, root_);
-  web_view_->resize(node->bounds().size());
+  DCHECK_EQ(view, root_);
+  web_view_->resize(view->bounds().size());
 }
 
-void HTMLDocumentView::OnNodeDestroyed(Node* node) {
-  DCHECK_EQ(node, root_);
-  node->RemoveObserver(this);
+void HTMLDocumentView::OnViewDestroyed(View* view) {
+  DCHECK_EQ(view, root_);
+  view->RemoveObserver(this);
   root_ = NULL;
 }
 
-void HTMLDocumentView::OnNodeInputEvent(Node* node, const EventPtr& event) {
+void HTMLDocumentView::OnViewInputEvent(View* view, const EventPtr& event) {
   scoped_ptr<blink::WebInputEvent> web_event =
       TypeConverter<EventPtr, scoped_ptr<blink::WebInputEvent> >::ConvertTo(
           event);

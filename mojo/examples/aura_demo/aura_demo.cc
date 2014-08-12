@@ -13,7 +13,7 @@
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/services/public/cpp/view_manager/node.h"
+#include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
@@ -117,7 +117,7 @@ class AuraDemo : public ApplicationDelegate,
  private:
   // Overridden from ViewManagerDelegate:
   virtual void OnEmbed(ViewManager* view_manager,
-                       Node* root,
+                       View* root,
                        ServiceProviderImpl* exported_services,
                        scoped_ptr<ServiceProvider> imported_services) OVERRIDE {
     // TODO(beng): this function could be called multiple times!
@@ -190,7 +190,7 @@ class AuraDemo : public ApplicationDelegate,
   aura::Window* window2_;
   aura::Window* window21_;
 
-  Node* root_;
+  View* root_;
 
   ViewManagerClientFactory view_manager_client_factory_;
 

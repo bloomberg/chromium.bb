@@ -11,7 +11,7 @@
 namespace mojo {
 
 class ServiceProviderImpl;
-class Node;
+class View;
 class ViewManager;
 
 // Interface implemented by an application using the view manager.
@@ -32,7 +32,7 @@ class ViewManagerDelegate {
   // to the embedder and any services obtained from it are not broken and will
   // continue to be valid.
   virtual void OnEmbed(ViewManager* view_manager,
-                       Node* root,
+                       View* root,
                        ServiceProviderImpl* exported_services,
                        scoped_ptr<ServiceProvider> imported_services) = 0;
 

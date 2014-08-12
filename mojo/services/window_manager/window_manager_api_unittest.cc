@@ -9,8 +9,8 @@
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/application/service_provider_impl.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
-#include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
+#include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
@@ -123,7 +123,7 @@ class TestApplicationLoader : public ApplicationLoader,
                               public ApplicationDelegate,
                               public ViewManagerDelegate {
  public:
-  typedef base::Callback<void(Node*)> RootAddedCallback;
+  typedef base::Callback<void(View*)> RootAddedCallback;
 
   explicit TestApplicationLoader(const RootAddedCallback& root_added_callback)
       : root_added_callback_(root_added_callback),
@@ -155,7 +155,7 @@ class TestApplicationLoader : public ApplicationLoader,
   // Overridden from ViewManagerDelegate:
   virtual void OnEmbed(
       ViewManager* view_manager,
-      Node* root,
+      View* root,
       ServiceProviderImpl* exported_services,
       scoped_ptr<ServiceProvider> imported_services) MOJO_OVERRIDE {
     root_added_callback_.Run(root);
@@ -242,14 +242,14 @@ class WindowManagerApiTest : public testing::Test {
     connect_loop.Run();
   }
 
-  void OnRootAdded(Node* root) {
+  void OnRootAdded(View* root) {
     if (!root_added_callback_.is_null())
       root_added_callback_.Run(root);
   }
 
   void OnEmbed(Id* root_id,
                base::RunLoop* loop,
-               Node* root) {
+               View* root) {
     *root_id = root->id();
     loop->Quit();
   }

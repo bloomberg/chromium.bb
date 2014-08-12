@@ -10,19 +10,19 @@
 
 namespace mojo {
 
-class Node;
+class View;
 
 // A WindowManagerDelegate is provided by the application embedded at the
-// service root node.
+// service root view.
 class WindowManagerDelegate {
  public:
-  // Create an appropriate node to embed |url|.
+  // Create an appropriate view to embed |url|.
   virtual void Embed(const String& url,
                      InterfaceRequest<ServiceProvider> service_provider) {}
 
-  // Dispatch the supplied input event to the appropriate node (taking into
+  // Dispatch the supplied input event to the appropriate view (taking into
   // account focus, activation, modality, etc.).
-  virtual void DispatchEvent(Node* target, EventPtr event) = 0;
+  virtual void DispatchEvent(View* target, EventPtr event) = 0;
 
  protected:
   virtual ~WindowManagerDelegate() {}

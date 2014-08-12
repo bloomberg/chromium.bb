@@ -61,19 +61,19 @@ class TreeHosts : public base::SupportsUserData::Data {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHostMojo, public:
 
-WindowTreeHostMojo::WindowTreeHostMojo(Node* node,
+WindowTreeHostMojo::WindowTreeHostMojo(View* view,
                                        WindowTreeHostMojoDelegate* delegate)
-    : node_(node),
-      bounds_(node->bounds()),
+    : view_(view),
+      bounds_(view->bounds()),
       delegate_(delegate) {
-  node_->AddObserver(this);
+  view_->AddObserver(this);
   CreateCompositor(GetAcceleratedWidget());
 
   TreeHosts::Get()->Add(this);
 }
 
 WindowTreeHostMojo::~WindowTreeHostMojo() {
-  node_->RemoveObserver(this);
+  view_->RemoveObserver(this);
   TreeHosts::Get()->Remove(this);
   DestroyCompositor();
   DestroyDispatcher();
@@ -157,10 +157,10 @@ ui::EventProcessor* WindowTreeHostMojo::GetEventProcessor() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WindowTreeHostMojo, NodeObserver implementation:
+// WindowTreeHostMojo, ViewObserver implementation:
 
-void WindowTreeHostMojo::OnNodeBoundsChanged(
-    Node* node,
+void WindowTreeHostMojo::OnViewBoundsChanged(
+    View* view,
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds) {
   bounds_ = new_bounds;

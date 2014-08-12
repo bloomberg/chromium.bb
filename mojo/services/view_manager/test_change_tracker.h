@@ -26,7 +26,7 @@ enum ChangeType {
   CHANGE_TYPE_DELEGATE_EMBED,
 };
 
-// TODO(sky): consider nuking and converting directly to NodeData.
+// TODO(sky): consider nuking and converting directly to ViewData.
 struct TestNode {
   // Returns a string description of this.
   std::string ToString() const;
@@ -63,8 +63,8 @@ std::vector<std::string> ChangesToDescription1(
 // if change.size() != 1.
 std::string ChangeNodeDescription(const std::vector<Change>& changes);
 
-// Converts NodeDatas to TestNodes.
-void NodeDatasToTestNodes(const Array<NodeDataPtr>& data,
+// Converts ViewDatas to TestNodes.
+void ViewDatasToTestNodes(const Array<ViewDataPtr>& data,
                           std::vector<TestNode>* test_nodes);
 
 // TestChangeTracker is used to record ViewManagerClient functions. It notifies
@@ -94,12 +94,12 @@ class TestChangeTracker {
   // ViewManagerClient function.
   void OnEmbed(ConnectionSpecificId connection_id,
                const String& creator_url,
-               NodeDataPtr root);
+               ViewDataPtr root);
   void OnNodeBoundsChanged(Id node_id, RectPtr old_bounds, RectPtr new_bounds);
   void OnNodeHierarchyChanged(Id node_id,
                               Id new_parent_id,
                               Id old_parent_id,
-                              Array<NodeDataPtr> nodes);
+                              Array<ViewDataPtr> nodes);
   void OnNodeReordered(Id node_id,
                        Id relative_node_id,
                        OrderDirection direction);

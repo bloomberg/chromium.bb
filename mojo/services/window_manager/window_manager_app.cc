@@ -9,7 +9,7 @@
 #include "mojo/aura/aura_init.h"
 #include "mojo/aura/window_tree_host_mojo.h"
 #include "mojo/public/cpp/application/application_connection.h"
-#include "mojo/services/public/cpp/view_manager/node.h"
+#include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
@@ -18,15 +18,15 @@
 #include "ui/wm/core/focus_rules.h"
 #include "ui/wm/public/activation_client.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(mojo::Node*);
+DECLARE_WINDOW_PROPERTY_TYPE(mojo::View*);
 
 namespace mojo {
 namespace {
 
-DEFINE_WINDOW_PROPERTY_KEY(Node*, kNodeKey, NULL);
+DEFINE_WINDOW_PROPERTY_KEY(View*, kViewKey, NULL);
 
 Id GetIdForWindow(aura::Window* window) {
-  return window ? window->GetProperty(kNodeKey)->id() : 0;
+  return window ? window->GetProperty(kViewKey)->id() : 0;
 }
 
 class WMFocusRules : public wm::FocusRules {
@@ -81,7 +81,7 @@ WindowManagerApp::WindowManagerApp(ViewManagerDelegate* delegate)
 WindowManagerApp::~WindowManagerApp() {
   // TODO(beng): Figure out if this should be done in
   //             OnViewManagerDisconnected().
-  STLDeleteValues(&node_id_to_window_map_);
+  STLDeleteValues(&view_id_to_window_map_);
   if (focus_client_.get())
     focus_client_->RemoveObserver(this);
   if (activation_client_)
@@ -99,32 +99,32 @@ void WindowManagerApp::RemoveConnection(WindowManagerServiceImpl* connection) {
 }
 
 Id WindowManagerApp::OpenWindow() {
-  Node* node = Node::Create(view_manager_);
-  root_->AddChild(node);
-  return node->id();
+  View* view = View::Create(view_manager_);
+  root_->AddChild(view);
+  return view->id();
 }
 
 Id WindowManagerApp::OpenWindowWithURL(const String& url) {
-  Node* node = Node::Create(view_manager_);
-  root_->AddChild(node);
-  node->Embed(url);
-  return node->id();
+  View* view = View::Create(view_manager_);
+  root_->AddChild(view);
+  view->Embed(url);
+  return view->id();
 }
 
-void WindowManagerApp::SetCapture(Id node) {
-  capture_client_->capture_client()->SetCapture(GetWindowForNodeId(node));
+void WindowManagerApp::SetCapture(Id view) {
+  capture_client_->capture_client()->SetCapture(GetWindowForViewId(view));
   // TODO(beng): notify connected clients that capture has changed, probably
   //             by implementing some capture-client observer.
 }
 
-void WindowManagerApp::FocusWindow(Id node) {
-  aura::Window* window = GetWindowForNodeId(node);
+void WindowManagerApp::FocusWindow(Id view) {
+  aura::Window* window = GetWindowForViewId(view);
   DCHECK(window);
   focus_client_->FocusWindow(window);
 }
 
-void WindowManagerApp::ActivateWindow(Id node) {
-  aura::Window* window = GetWindowForNodeId(node);
+void WindowManagerApp::ActivateWindow(Id view) {
+  aura::Window* window = GetWindowForViewId(view);
   DCHECK(window);
   activation_client_->ActivateWindow(window);
 }
@@ -151,7 +151,7 @@ bool WindowManagerApp::ConfigureIncomingConnection(
 // WindowManagerApp, ViewManagerDelegate implementation:
 
 void WindowManagerApp::OnEmbed(ViewManager* view_manager,
-                               Node* root,
+                               View* root,
                                ServiceProviderImpl* exported_services,
                                scoped_ptr<ServiceProvider> imported_services) {
   DCHECK(!view_manager_ && !root_);
@@ -194,21 +194,21 @@ void WindowManagerApp::OnViewManagerDisconnected(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WindowManagerApp, NodeObserver implementation:
+// WindowManagerApp, ViewObserver implementation:
 
 void WindowManagerApp::OnTreeChanged(
-    const NodeObserver::TreeChangeParams& params) {
+    const ViewObserver::TreeChangeParams& params) {
   DCHECK_EQ(params.receiver, root_);
   DCHECK(params.old_parent || params.new_parent);
   if (!params.target)
     return;
 
   if (params.new_parent) {
-    if (node_id_to_window_map_.find(params.target->id()) ==
-        node_id_to_window_map_.end()) {
-      NodeIdToWindowMap::const_iterator it =
-          node_id_to_window_map_.find(params.new_parent->id());
-      DCHECK(it != node_id_to_window_map_.end());
+    if (view_id_to_window_map_.find(params.target->id()) ==
+        view_id_to_window_map_.end()) {
+      ViewIdToWindowMap::const_iterator it =
+          view_id_to_window_map_.find(params.new_parent->id());
+      DCHECK(it != view_id_to_window_map_.end());
       RegisterSubtree(params.target->id(), it->second);
     }
   } else if (params.old_parent) {
@@ -216,7 +216,7 @@ void WindowManagerApp::OnTreeChanged(
   }
 }
 
-void WindowManagerApp::OnNodeDestroyed(Node* node) {
+void WindowManagerApp::OnViewDestroyed(View* view) {
   root_ = NULL;
   window_tree_host_.reset();
 }
@@ -236,7 +236,7 @@ void WindowManagerApp::OnWindowFocused(aura::Window* gained_focus,
                                        aura::Window* lost_focus) {
   for (Connections::const_iterator it = connections_.begin();
        it != connections_.end(); ++it) {
-    (*it)->NotifyNodeFocused(GetIdForWindow(gained_focus),
+    (*it)->NotifyViewFocused(GetIdForWindow(gained_focus),
                              GetIdForWindow(lost_focus));
   }
 }
@@ -256,33 +256,32 @@ void WindowManagerApp::OnWindowActivated(aura::Window* gained_active,
 ////////////////////////////////////////////////////////////////////////////////
 // WindowManagerApp, private:
 
-aura::Window* WindowManagerApp::GetWindowForNodeId(
-    Id node) const {
-  NodeIdToWindowMap::const_iterator it = node_id_to_window_map_.find(node);
-  return it != node_id_to_window_map_.end() ? it->second : NULL;
+aura::Window* WindowManagerApp::GetWindowForViewId(Id view) const {
+  ViewIdToWindowMap::const_iterator it = view_id_to_window_map_.find(view);
+  return it != view_id_to_window_map_.end() ? it->second : NULL;
 }
 
 void WindowManagerApp::RegisterSubtree(Id id,
                                        aura::Window* parent) {
-  Node* node = view_manager_->GetNodeById(id);
-  DCHECK(node_id_to_window_map_.find(id) == node_id_to_window_map_.end());
+  View* view = view_manager_->GetViewById(id);
+  DCHECK(view_id_to_window_map_.find(id) == view_id_to_window_map_.end());
   aura::Window* window = new aura::Window(NULL);
-  window->SetProperty(kNodeKey, node);
+  window->SetProperty(kViewKey, view);
   parent->AddChild(window);
-  node_id_to_window_map_[id] = window;
-  Node::Children::const_iterator it = node->children().begin();
-  for (; it != node->children().end(); ++it)
+  view_id_to_window_map_[id] = window;
+  View::Children::const_iterator it = view->children().begin();
+  for (; it != view->children().end(); ++it)
     RegisterSubtree((*it)->id(), window);
 }
 
 void WindowManagerApp::UnregisterSubtree(Id id) {
-  Node* node = view_manager_->GetNodeById(id);
-  NodeIdToWindowMap::iterator it = node_id_to_window_map_.find(id);
-  DCHECK(it != node_id_to_window_map_.end());
+  View* view = view_manager_->GetViewById(id);
+  ViewIdToWindowMap::iterator it = view_id_to_window_map_.find(id);
+  DCHECK(it != view_id_to_window_map_.end());
   scoped_ptr<aura::Window> window(it->second);
-  node_id_to_window_map_.erase(it);
-  Node::Children::const_iterator child = node->children().begin();
-  for (; child != node->children().end(); ++child)
+  view_id_to_window_map_.erase(it);
+  View::Children::const_iterator child = view->children().begin();
+  for (; child != view->children().end(); ++child)
     UnregisterSubtree((*child)->id());
 }
 

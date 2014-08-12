@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/public/cpp/view_manager/lib/node_private.h"
+#include "mojo/services/public/cpp/view_manager/lib/view_private.h"
 
 namespace mojo {
 
-NodePrivate::NodePrivate(Node* node)
-    : node_(node) {
+ViewPrivate::ViewPrivate(View* view)
+    : view_(view) {
 }
 
-NodePrivate::~NodePrivate() {
+ViewPrivate::~ViewPrivate() {
 }
 
 // static
-Node* NodePrivate::LocalCreate() {
-  return new Node;
+View* ViewPrivate::LocalCreate() {
+  return new View;
 }
 
 }  // namespace mojo

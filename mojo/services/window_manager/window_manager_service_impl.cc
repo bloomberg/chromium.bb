@@ -1,3 +1,4 @@
+
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -25,7 +26,7 @@ void WindowManagerServiceImpl::NotifyReady() {
   client()->OnWindowManagerReady();
 }
 
-void WindowManagerServiceImpl::NotifyNodeFocused(Id new_focused_id,
+void WindowManagerServiceImpl::NotifyViewFocused(Id new_focused_id,
                                                  Id old_focused_id) {
   client()->OnFocusChanged(old_focused_id, new_focused_id);
 }

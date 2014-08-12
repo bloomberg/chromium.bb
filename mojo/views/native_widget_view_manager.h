@@ -6,7 +6,7 @@
 #define MOJO_VIEWS_NATIVE_WIDGET_VIEW_MANAGER_H_
 
 #include "mojo/aura/window_tree_host_mojo_delegate.h"
-#include "mojo/services/public/cpp/view_manager/node_observer.h"
+#include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "ui/views/widget/native_widget_aura.h"
 
 namespace ui {
@@ -26,10 +26,10 @@ class WindowTreeHostMojo;
 
 class NativeWidgetViewManager : public views::NativeWidgetAura,
                                 public WindowTreeHostMojoDelegate,
-                                public NodeObserver {
+                                public ViewObserver {
  public:
   NativeWidgetViewManager(views::internal::NativeWidgetDelegate* delegate,
-                          Node* node);
+                          View* view);
   virtual ~NativeWidgetViewManager();
 
  private:
@@ -40,12 +40,12 @@ class NativeWidgetViewManager : public views::NativeWidgetAura,
   // WindowTreeHostMojoDelegate:
   virtual void CompositorContentsChanged(const SkBitmap& bitmap) OVERRIDE;
 
-  // NodeObserver:
-  virtual void OnNodeDestroyed(Node* node) OVERRIDE;
-  virtual void OnNodeBoundsChanged(Node* node,
+  // ViewObserver:
+  virtual void OnViewDestroyed(View* view) OVERRIDE;
+  virtual void OnViewBoundsChanged(View* view,
                                    const gfx::Rect& old_bounds,
                                    const gfx::Rect& new_bounds) OVERRIDE;
-  virtual void OnNodeInputEvent(Node* node, const EventPtr& event) OVERRIDE;
+  virtual void OnViewInputEvent(View* view, const EventPtr& event) OVERRIDE;
 
   scoped_ptr<WindowTreeHostMojo> window_tree_host_;
 
@@ -53,7 +53,7 @@ class NativeWidgetViewManager : public views::NativeWidgetAura,
 
   scoped_ptr<ui::internal::InputMethodDelegate> ime_filter_;
 
-  Node* node_;
+  View* view_;
 
   scoped_ptr<wm::ScopedCaptureClient> capture_client_;
 

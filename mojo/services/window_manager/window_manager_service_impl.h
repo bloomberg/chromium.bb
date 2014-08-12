@@ -19,7 +19,7 @@ class WindowManagerServiceImpl : public InterfaceImpl<WindowManagerService> {
   virtual ~WindowManagerServiceImpl();
 
   void NotifyReady();
-  void NotifyNodeFocused(Id new_focused_id, Id old_focused_id);
+  void NotifyViewFocused(Id new_focused_id, Id old_focused_id);
   void NotifyWindowActivated(Id new_active_id, Id old_active_id);
 
  private:

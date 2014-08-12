@@ -91,17 +91,17 @@ std::string ChangeNodeDescription(const std::vector<Change>& changes) {
   return JoinString(node_strings, ',');
 }
 
-TestNode NodeDataToTestNode(const NodeDataPtr& data) {
+TestNode ViewDataToTestNode(const ViewDataPtr& data) {
   TestNode node;
   node.parent_id = data->parent_id;
-  node.node_id = data->node_id;
+  node.node_id = data->view_id;
   return node;
 }
 
-void NodeDatasToTestNodes(const Array<NodeDataPtr>& data,
+void ViewDatasToTestNodes(const Array<ViewDataPtr>& data,
                           std::vector<TestNode>* test_nodes) {
   for (size_t i = 0; i < data.size(); ++i)
-    test_nodes->push_back(NodeDataToTestNode(data[i]));
+    test_nodes->push_back(ViewDataToTestNode(data[i]));
 }
 
 Change::Change()
@@ -126,12 +126,12 @@ TestChangeTracker::~TestChangeTracker() {
 
 void TestChangeTracker::OnEmbed(ConnectionSpecificId connection_id,
                                 const String& creator_url,
-                                NodeDataPtr root) {
+                                ViewDataPtr root) {
   Change change;
   change.type = CHANGE_TYPE_EMBED;
   change.connection_id = connection_id;
   change.creator_url = creator_url;
-  change.nodes.push_back(NodeDataToTestNode(root));
+  change.nodes.push_back(ViewDataToTestNode(root));
   AddChange(change);
 }
 
@@ -149,13 +149,13 @@ void TestChangeTracker::OnNodeBoundsChanged(Id node_id,
 void TestChangeTracker::OnNodeHierarchyChanged(Id node_id,
                                                Id new_parent_id,
                                                Id old_parent_id,
-                                               Array<NodeDataPtr> nodes) {
+                                               Array<ViewDataPtr> nodes) {
   Change change;
   change.type = CHANGE_TYPE_NODE_HIERARCHY_CHANGED;
   change.node_id = node_id;
   change.node_id2 = new_parent_id;
   change.node_id3 = old_parent_id;
-  NodeDatasToTestNodes(nodes, &change.nodes);
+  ViewDatasToTestNodes(nodes, &change.nodes);
   AddChange(change);
 }
 

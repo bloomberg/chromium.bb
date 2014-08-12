@@ -11,7 +11,7 @@
 #include "mojo/public/cpp/application/connect.h"
 #include "mojo/public/cpp/application/interface_factory_impl.h"
 #include "mojo/public/cpp/application/service_provider_impl.h"
-#include "mojo/services/public/cpp/view_manager/node.h"
+#include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
@@ -57,7 +57,7 @@ class WMFlowEmbedded : public mojo::ApplicationDelegate,
   // Overridden from mojo::ViewManagerDelegate:
   virtual void OnEmbed(
       mojo::ViewManager* view_manager,
-      mojo::Node* root,
+      mojo::View* root,
       mojo::ServiceProviderImpl* exported_services,
       scoped_ptr<mojo::ServiceProvider> imported_services) MOJO_OVERRIDE {
     root->SetColor(SK_ColorMAGENTA);

@@ -5,7 +5,7 @@
 #ifndef MOJO_EXAMPLES_AURA_DEMO_WINDOW_TREE_HOST_VIEW_MANAGER_H_
 #define MOJO_EXAMPLES_AURA_DEMO_WINDOW_TREE_HOST_VIEW_MANAGER_H_
 
-#include "mojo/services/public/cpp/view_manager/node_observer.h"
+#include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_source.h"
 #include "ui/gfx/geometry/rect.h"
@@ -22,9 +22,9 @@ class WindowTreeHostMojoDelegate;
 
 class WindowTreeHostMojo : public aura::WindowTreeHost,
                            public ui::EventSource,
-                           public NodeObserver {
+                           public ViewObserver {
  public:
-  WindowTreeHostMojo(Node* node, WindowTreeHostMojoDelegate* delegate);
+  WindowTreeHostMojo(View* view, WindowTreeHostMojoDelegate* delegate);
   virtual ~WindowTreeHostMojo();
 
   // Returns the WindowTreeHostMojo for the specified compositor.
@@ -59,13 +59,13 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
   // ui::EventSource:
   virtual ui::EventProcessor* GetEventProcessor() OVERRIDE;
 
-  // NodeObserver:
-  virtual void OnNodeBoundsChanged(
-      Node* node,
+  // ViewObserver:
+  virtual void OnViewBoundsChanged(
+      View* view,
       const gfx::Rect& old_bounds,
       const gfx::Rect& new_bounds) OVERRIDE;
 
-  Node* node_;
+  View* view_;
 
   gfx::Rect bounds_;
 

@@ -10,8 +10,8 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
-#include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
+#include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 
@@ -33,30 +33,30 @@ class ViewManagerClientImpl : public ViewManager,
   bool connected() const { return connected_; }
   ConnectionSpecificId connection_id() const { return connection_id_; }
 
-  // API exposed to the node/view implementations that pushes local changes to
-  // the service.
-  Id CreateNode();
-  void DestroyNode(Id node_id);
+  // API exposed to the view implementations that pushes local changes to the
+  // service.
+  Id CreateView();
+  void DestroyView(Id view_id);
 
   // These methods take TransportIds. For views owned by the current connection,
   // the connection id high word can be zero. In all cases, the TransportId 0x1
-  // refers to the root node.
+  // refers to the root view.
   void AddChild(Id child_id, Id parent_id);
   void RemoveChild(Id child_id, Id parent_id);
 
-  void Reorder(Id node_id, Id relative_node_id, OrderDirection direction);
+  void Reorder(Id view_id, Id relative_view_id, OrderDirection direction);
 
-  // Returns true if the specified node was created by this connection.
-  bool OwnsNode(Id id) const;
+  // Returns true if the specified view was created by this connection.
+  bool OwnsView(Id id) const;
 
-  void SetBounds(Id node_id, const gfx::Rect& bounds);
-  void SetNodeContents(Id node_id, const SkBitmap& contents);
-  void SetFocus(Id node_id);
-  void SetVisible(Id node_id, bool visible);
+  void SetBounds(Id view_id, const gfx::Rect& bounds);
+  void SetViewContents(Id view_id, const SkBitmap& contents);
+  void SetFocus(Id view_id);
+  void SetVisible(Id view_id, bool visible);
 
-  void Embed(const String& url, Id node_id);
+  void Embed(const String& url, Id view_id);
   void Embed(const String& url,
-             Id node_id,
+             Id view_id,
              ServiceProviderPtr service_provider);
 
   void set_change_acked_callback(const base::Callback<void(void)>& callback) {
@@ -66,24 +66,24 @@ class ViewManagerClientImpl : public ViewManager,
     change_acked_callback_ = base::Callback<void(void)>();
   }
 
-  // Start/stop tracking nodes. While tracked, they can be retrieved via
-  // ViewManager::GetNodeById.
-  void AddNode(Node* node);
-  void RemoveNode(Id node_id);
+  // Start/stop tracking views. While tracked, they can be retrieved via
+  // ViewManager::GetViewById.
+  void AddView(View* view);
+  void RemoveView(Id view_id);
 
  private:
   friend class RootObserver;
 
-  typedef std::map<Id, Node*> IdToNodeMap;
+  typedef std::map<Id, View*> IdToViewMap;
   typedef std::map<Id, View*> IdToViewMap;
 
   // Overridden from ViewManager:
   virtual void SetWindowManagerDelegate(
       WindowManagerDelegate* delegate) OVERRIDE;
-  virtual void DispatchEvent(Node* target, EventPtr event) OVERRIDE;
+  virtual void DispatchEvent(View* target, EventPtr event) OVERRIDE;
   virtual const std::string& GetEmbedderURL() const OVERRIDE;
-  virtual const std::vector<Node*>& GetRoots() const OVERRIDE;
-  virtual Node* GetNodeById(Id id) OVERRIDE;
+  virtual const std::vector<View*>& GetRoots() const OVERRIDE;
+  virtual View* GetViewById(Id id) OVERRIDE;
 
   // Overridden from InterfaceImpl:
   virtual void OnConnectionEstablished() OVERRIDE;
@@ -91,29 +91,29 @@ class ViewManagerClientImpl : public ViewManager,
   // Overridden from ViewManagerClient:
   virtual void OnEmbed(ConnectionSpecificId connection_id,
                        const String& creator_url,
-                       NodeDataPtr root,
+                       ViewDataPtr root,
                        InterfaceRequest<ServiceProvider> services) OVERRIDE;
-  virtual void OnNodeBoundsChanged(Id node_id,
+  virtual void OnViewBoundsChanged(Id view_id,
                                    RectPtr old_bounds,
                                    RectPtr new_bounds) OVERRIDE;
-  virtual void OnNodeHierarchyChanged(Id node_id,
+  virtual void OnViewHierarchyChanged(Id view_id,
                                       Id new_parent_id,
                                       Id old_parent_id,
-                                      Array<NodeDataPtr> nodes) OVERRIDE;
-  virtual void OnNodeReordered(Id node_id,
-                               Id relative_node_id,
+                                      Array<ViewDataPtr> views) OVERRIDE;
+  virtual void OnViewReordered(Id view_id,
+                               Id relative_view_id,
                                OrderDirection direction) OVERRIDE;
-  virtual void OnNodeDeleted(Id node_id) OVERRIDE;
-  virtual void OnNodeInputEvent(Id node,
+  virtual void OnViewDeleted(Id view_id) OVERRIDE;
+  virtual void OnViewInputEvent(Id view,
                                 EventPtr event,
                                 const Callback<void()>& callback) OVERRIDE;
   virtual void OnFocusChanged(Id gained_focus_id, Id lost_focus_id) OVERRIDE;
   virtual void Embed(
       const String& url,
       InterfaceRequest<ServiceProvider> service_provider) OVERRIDE;
-  virtual void DispatchOnNodeInputEvent(Id node_id, EventPtr event) OVERRIDE;
+  virtual void DispatchOnViewInputEvent(Id view_id, EventPtr event) OVERRIDE;
 
-  void RemoveRoot(Node* root);
+  void RemoveRoot(View* root);
 
   void OnActionCompleted(bool success);
   void OnActionCompletedWithErrorCode(ErrorCode code);
@@ -132,9 +132,9 @@ class ViewManagerClientImpl : public ViewManager,
   ViewManagerDelegate* delegate_;
   WindowManagerDelegate* window_manager_delegate_;
 
-  std::vector<Node*> roots_;
+  std::vector<View*> roots_;
 
-  IdToNodeMap nodes_;
+  IdToViewMap views_;
 
   ViewManagerService* service_;
 

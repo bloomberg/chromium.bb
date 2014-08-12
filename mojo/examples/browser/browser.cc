@@ -11,7 +11,7 @@
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
-#include "mojo/services/public/cpp/view_manager/node.h"
+#include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
@@ -68,11 +68,11 @@ class KeyboardManager
  public:
   KeyboardManager(views::Widget* widget,
                   IWindowManager* window_manager,
-                  Node* node)
+                  View* view)
       : widget_(widget),
         window_manager_(window_manager),
-        node_(node),
-        last_node_id_(0),
+        view_(view),
+        last_view_id_(0),
         focused_view_(NULL) {
     widget_->GetFocusManager()->AddFocusChangeListener(this);
     widget_->AddObserver(this);
@@ -94,8 +94,8 @@ class KeyboardManager
 
     const gfx::Rect bounds_in_widget =
         view->ConvertRectToWidget(gfx::Rect(view->bounds().size()));
-    last_node_id_ = node_->id();
-    window_manager_->ShowKeyboard(last_node_id_,
+    last_view_id_ = view_->id();
+    window_manager_->ShowKeyboard(last_view_id_,
                                   Rect::From(bounds_in_widget));
     // TODO(sky): listen for view to be removed.
     focused_view_ = view;
@@ -105,8 +105,8 @@ class KeyboardManager
     if (!focused_view_)
       return;
 
-    window_manager_->HideKeyboard(last_node_id_);
-    last_node_id_ = 0;
+    window_manager_->HideKeyboard(last_view_id_);
+    last_view_id_ = 0;
     focused_view_ = NULL;
   }
 
@@ -137,8 +137,8 @@ class KeyboardManager
 
   views::Widget* widget_;
   IWindowManager* window_manager_;
-  Node* node_;
-  Id last_node_id_;
+  View* view_;
+  Id last_view_id_;
   views::View* focused_view_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardManager);
@@ -149,7 +149,7 @@ class KeyboardManager
 class Browser : public ApplicationDelegate,
                 public ViewManagerDelegate,
                 public views::TextfieldController,
-                public NodeObserver {
+                public ViewObserver {
  public:
   Browser()
       : view_manager_(NULL),
@@ -176,7 +176,7 @@ class Browser : public ApplicationDelegate,
     return true;
   }
 
-  void CreateWidget(Node* node) {
+  void CreateWidget(View* view) {
     views::Textfield* textfield = new views::Textfield;
     textfield->set_controller(this);
 
@@ -190,19 +190,19 @@ class Browser : public ApplicationDelegate,
     widget_ = new views::Widget;
     views::Widget::InitParams params(
         views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-    params.native_widget = new NativeWidgetViewManager(widget_, node);
+    params.native_widget = new NativeWidgetViewManager(widget_, view);
     params.delegate = widget_delegate;
-    params.bounds = gfx::Rect(node->bounds().width(), node->bounds().height());
+    params.bounds = gfx::Rect(view->bounds().width(), view->bounds().height());
     widget_->Init(params);
     // KeyboardManager handles deleting itself when the widget is destroyed.
-    new KeyboardManager(widget_, window_manager_.get(), node);
+    new KeyboardManager(widget_, window_manager_.get(), view);
     widget_->Show();
     textfield->RequestFocus();
   }
 
   // ViewManagerDelegate:
   virtual void OnEmbed(ViewManager* view_manager,
-                       Node* root,
+                       View* root,
                        ServiceProviderImpl* exported_services,
                        scoped_ptr<ServiceProvider> imported_services) OVERRIDE {
     // TODO: deal with OnEmbed() being invoked multiple times.
@@ -234,9 +234,9 @@ class Browser : public ApplicationDelegate,
     return false;
   }
 
-  // NodeObserver:
-  virtual void OnNodeFocusChanged(Node* gained_focus,
-                                  Node* lost_focus) OVERRIDE {
+  // ViewObserver:
+  virtual void OnViewFocusChanged(View* gained_focus,
+                                  View* lost_focus) OVERRIDE {
     aura::client::FocusClient* focus_client =
         aura::client::GetFocusClient(widget_->GetNativeView());
     if (lost_focus == root_)
@@ -244,9 +244,9 @@ class Browser : public ApplicationDelegate,
     else if (gained_focus == root_)
       focus_client->FocusWindow(widget_->GetNativeView());
   }
-  virtual void OnNodeDestroyed(Node* node) OVERRIDE {
-    DCHECK_EQ(root_, node);
-    node->RemoveObserver(this);
+  virtual void OnViewDestroyed(View* view) OVERRIDE {
+    DCHECK_EQ(root_, view);
+    view->RemoveObserver(this);
     root_ = NULL;
   }
 
@@ -254,7 +254,7 @@ class Browser : public ApplicationDelegate,
 
   ViewManager* view_manager_;
   ViewManagerClientFactory view_manager_client_factory_;
-  Node* root_;
+  View* root_;
   views::Widget* widget_;
   NavigatorHostPtr navigator_host_;
   IWindowManagerPtr window_manager_;

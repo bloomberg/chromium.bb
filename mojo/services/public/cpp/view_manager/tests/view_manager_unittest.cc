@@ -13,12 +13,12 @@
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/application/service_provider_impl.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
-#include "mojo/services/public/cpp/view_manager/lib/node_private.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_manager_client_impl.h"
-#include "mojo/services/public/cpp/view_manager/node_observer.h"
+#include "mojo/services/public/cpp/view_manager/lib/view_private.h"
 #include "mojo/services/public/cpp/view_manager/util.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
+#include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "mojo/shell/shell_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -45,7 +45,7 @@ class ConnectApplicationLoader : public ApplicationLoader,
                                  public ApplicationDelegate,
                                  public ViewManagerDelegate {
  public:
-  typedef base::Callback<void(ViewManager*, Node*)> LoadedCallback;
+  typedef base::Callback<void(ViewManager*, View*)> LoadedCallback;
 
   explicit ConnectApplicationLoader(const LoadedCallback& callback)
       : callback_(callback), view_manager_client_factory_(this) {}
@@ -75,7 +75,7 @@ class ConnectApplicationLoader : public ApplicationLoader,
 
   // Overridden from ViewManagerDelegate:
   virtual void OnEmbed(ViewManager* view_manager,
-                       Node* root,
+                       View* root,
                        ServiceProviderImpl* exported_services,
                        scoped_ptr<ServiceProvider> imported_services) OVERRIDE {
     callback_.Run(view_manager, root);
@@ -89,166 +89,166 @@ class ConnectApplicationLoader : public ApplicationLoader,
   DISALLOW_COPY_AND_ASSIGN(ConnectApplicationLoader);
 };
 
-class BoundsChangeObserver : public NodeObserver {
+class BoundsChangeObserver : public ViewObserver {
  public:
-  explicit BoundsChangeObserver(Node* node) : node_(node) {}
+  explicit BoundsChangeObserver(View* view) : view_(view) {}
   virtual ~BoundsChangeObserver() {}
 
  private:
-  // Overridden from NodeObserver:
-  virtual void OnNodeBoundsChanged(Node* node,
+  // Overridden from ViewObserver:
+  virtual void OnViewBoundsChanged(View* view,
                                    const gfx::Rect& old_bounds,
                                    const gfx::Rect& new_bounds) OVERRIDE {
-    DCHECK_EQ(node, node_);
+    DCHECK_EQ(view, view_);
     QuitRunLoop();
   }
 
-  Node* node_;
+  View* view_;
 
   DISALLOW_COPY_AND_ASSIGN(BoundsChangeObserver);
 };
 
-// Wait until the bounds of the supplied node change.
-void WaitForBoundsToChange(Node* node) {
-  BoundsChangeObserver observer(node);
-  node->AddObserver(&observer);
+// Wait until the bounds of the supplied view change.
+void WaitForBoundsToChange(View* view) {
+  BoundsChangeObserver observer(view);
+  view->AddObserver(&observer);
   DoRunLoop();
-  node->RemoveObserver(&observer);
+  view->RemoveObserver(&observer);
 }
 
-// Spins a runloop until the tree beginning at |root| has |tree_size| nodes
+// Spins a runloop until the tree beginning at |root| has |tree_size| views
 // (including |root|).
-class TreeSizeMatchesObserver : public NodeObserver {
+class TreeSizeMatchesObserver : public ViewObserver {
  public:
-  TreeSizeMatchesObserver(Node* tree, size_t tree_size)
+  TreeSizeMatchesObserver(View* tree, size_t tree_size)
       : tree_(tree),
         tree_size_(tree_size) {}
   virtual ~TreeSizeMatchesObserver() {}
 
   bool IsTreeCorrectSize() {
-    return CountNodes(tree_) == tree_size_;
+    return CountViews(tree_) == tree_size_;
   }
 
  private:
-  // Overridden from NodeObserver:
+  // Overridden from ViewObserver:
   virtual void OnTreeChanged(const TreeChangeParams& params) OVERRIDE {
     if (IsTreeCorrectSize())
       QuitRunLoop();
   }
 
-  size_t CountNodes(const Node* node) const {
+  size_t CountViews(const View* view) const {
     size_t count = 1;
-    Node::Children::const_iterator it = node->children().begin();
-    for (; it != node->children().end(); ++it)
-      count += CountNodes(*it);
+    View::Children::const_iterator it = view->children().begin();
+    for (; it != view->children().end(); ++it)
+      count += CountViews(*it);
     return count;
   }
 
-  Node* tree_;
+  View* tree_;
   size_t tree_size_;
 
   DISALLOW_COPY_AND_ASSIGN(TreeSizeMatchesObserver);
 };
 
-void WaitForTreeSizeToMatch(Node* node, size_t tree_size) {
-  TreeSizeMatchesObserver observer(node, tree_size);
+void WaitForTreeSizeToMatch(View* view, size_t tree_size) {
+  TreeSizeMatchesObserver observer(view, tree_size);
   if (observer.IsTreeCorrectSize())
     return;
-  node->AddObserver(&observer);
+  view->AddObserver(&observer);
   DoRunLoop();
-  node->RemoveObserver(&observer);
+  view->RemoveObserver(&observer);
 }
 
-// Utility class that waits for the destruction of some number of nodes and
+// Utility class that waits for the destruction of some number of views and
 // views.
-class DestructionObserver : public NodeObserver {
+class DestructionObserver : public ViewObserver {
  public:
-  // |nodes| or |views| can be NULL.
-  explicit DestructionObserver(std::set<Id>* nodes) : nodes_(nodes) {}
+  // |views| or |views| can be NULL.
+  explicit DestructionObserver(std::set<Id>* views) : views_(views) {}
 
  private:
-  // Overridden from NodeObserver:
-  virtual void OnNodeDestroyed(Node* node) OVERRIDE {
-    std::set<Id>::iterator it = nodes_->find(node->id());
-    if (it != nodes_->end())
-      nodes_->erase(it);
+  // Overridden from ViewObserver:
+  virtual void OnViewDestroyed(View* view) OVERRIDE {
+    std::set<Id>::iterator it = views_->find(view->id());
+    if (it != views_->end())
+      views_->erase(it);
     if (CanQuit())
       QuitRunLoop();
   }
 
   bool CanQuit() {
-    return !nodes_ || nodes_->empty();
+    return !views_ || views_->empty();
   }
 
-  std::set<Id>* nodes_;
+  std::set<Id>* views_;
 
   DISALLOW_COPY_AND_ASSIGN(DestructionObserver);
 };
 
-void WaitForDestruction(ViewManager* view_manager, std::set<Id>* nodes) {
-  DestructionObserver observer(nodes);
-  DCHECK(nodes);
-  if (nodes) {
-    for (std::set<Id>::const_iterator it = nodes->begin();
-          it != nodes->end(); ++it) {
-      view_manager->GetNodeById(*it)->AddObserver(&observer);
+void WaitForDestruction(ViewManager* view_manager, std::set<Id>* views) {
+  DestructionObserver observer(views);
+  DCHECK(views);
+  if (views) {
+    for (std::set<Id>::const_iterator it = views->begin();
+          it != views->end(); ++it) {
+      view_manager->GetViewById(*it)->AddObserver(&observer);
     }
   }
   DoRunLoop();
 }
 
-class OrderChangeObserver : public NodeObserver {
+class OrderChangeObserver : public ViewObserver {
  public:
-  OrderChangeObserver(Node* node) : node_(node) {
-    node_->AddObserver(this);
+  OrderChangeObserver(View* view) : view_(view) {
+    view_->AddObserver(this);
   }
   virtual ~OrderChangeObserver() {
-    node_->RemoveObserver(this);
+    view_->RemoveObserver(this);
   }
 
  private:
-  // Overridden from NodeObserver:
-  virtual void OnNodeReordered(Node* node,
-                               Node* relative_node,
+  // Overridden from ViewObserver:
+  virtual void OnViewReordered(View* view,
+                               View* relative_view,
                                OrderDirection direction) OVERRIDE {
-    DCHECK_EQ(node, node_);
+    DCHECK_EQ(view, view_);
     QuitRunLoop();
   }
 
-  Node* node_;
+  View* view_;
 
   DISALLOW_COPY_AND_ASSIGN(OrderChangeObserver);
 };
 
-void WaitForOrderChange(ViewManager* view_manager, Node* node) {
-  OrderChangeObserver observer(node);
+void WaitForOrderChange(ViewManager* view_manager, View* view) {
+  OrderChangeObserver observer(view);
   DoRunLoop();
 }
 
-// Tracks a node's destruction. Query is_valid() for current state.
-class NodeTracker : public NodeObserver {
+// Tracks a view's destruction. Query is_valid() for current state.
+class ViewTracker : public ViewObserver {
  public:
-  explicit NodeTracker(Node* node) : node_(node) {
-    node_->AddObserver(this);
+  explicit ViewTracker(View* view) : view_(view) {
+    view_->AddObserver(this);
   }
-  virtual ~NodeTracker() {
-    if (node_)
-      node_->RemoveObserver(this);
+  virtual ~ViewTracker() {
+    if (view_)
+      view_->RemoveObserver(this);
   }
 
-  bool is_valid() const { return !!node_; }
+  bool is_valid() const { return !!view_; }
 
  private:
-  // Overridden from NodeObserver:
-  virtual void OnNodeDestroyed(Node* node) OVERRIDE {
-    DCHECK_EQ(node, node_);
-    node_ = NULL;
+  // Overridden from ViewObserver:
+  virtual void OnViewDestroyed(View* view) OVERRIDE {
+    DCHECK_EQ(view, view_);
+    view_ = NULL;
   }
 
   int id_;
-  Node* node_;
+  View* view_;
 
-  DISALLOW_COPY_AND_ASSIGN(NodeTracker);
+  DISALLOW_COPY_AND_ASSIGN(ViewTracker);
 };
 
 }  // namespace
@@ -256,7 +256,7 @@ class NodeTracker : public NodeObserver {
 // ViewManager -----------------------------------------------------------------
 
 // These tests model synchronization of two peer connections to the view manager
-// service, that are given access to some root node.
+// service, that are given access to some root view.
 
 class ViewManagerTest : public testing::Test {
  public:
@@ -269,17 +269,17 @@ class ViewManagerTest : public testing::Test {
  protected:
   ViewManager* window_manager() { return window_manager_; }
 
-  Node* CreateNodeInParent(Node* parent) {
-    ViewManager* parent_manager = NodePrivate(parent).view_manager();
-    Node* node = Node::Create(parent_manager);
-    parent->AddChild(node);
-    return node;
+  View* CreateViewInParent(View* parent) {
+    ViewManager* parent_manager = ViewPrivate(parent).view_manager();
+    View* view = View::Create(parent_manager);
+    parent->AddChild(view);
+    return view;
   }
 
-  // Embeds another version of the test app @ node.
-  ViewManager* Embed(ViewManager* view_manager, Node* node) {
-    DCHECK_EQ(view_manager, NodePrivate(node).view_manager());
-    node->Embed(kEmbeddedApp1URL);
+  // Embeds another version of the test app @ view.
+  ViewManager* Embed(ViewManager* view_manager, View* view) {
+    DCHECK_EQ(view_manager, ViewPrivate(view).view_manager());
+    view->Embed(kEmbeddedApp1URL);
     RunRunLoop();
     return GetLoadedViewManager();
   }
@@ -332,7 +332,7 @@ class ViewManagerTest : public testing::Test {
     return result;
   }
 
-  void OnViewManagerLoaded(ViewManager* view_manager, Node* root) {
+  void OnViewManagerLoaded(ViewManager* view_manager, View* root) {
     loaded_view_manager_ = view_manager;
     connect_loop_->Quit();
   }
@@ -350,7 +350,7 @@ class ViewManagerTest : public testing::Test {
   // Used to receive the most recent view manager loaded by an embed action.
   ViewManager* loaded_view_manager_;
   // The View Manager connection held by the window manager (app running at the
-  // root node).
+  // root view).
   ViewManager* window_manager_;
   int commit_count_;
 
@@ -360,26 +360,26 @@ class ViewManagerTest : public testing::Test {
 TEST_F(ViewManagerTest, SetUp) {}
 
 TEST_F(ViewManagerTest, Embed) {
-  Node* node = Node::Create(window_manager());
-  window_manager()->GetRoots().front()->AddChild(node);
-  ViewManager* embedded = Embed(window_manager(), node);
+  View* view = View::Create(window_manager());
+  window_manager()->GetRoots().front()->AddChild(view);
+  ViewManager* embedded = Embed(window_manager(), view);
   EXPECT_TRUE(NULL != embedded);
 
-  Node* node_in_embedded = embedded->GetRoots().front();
-  EXPECT_EQ(node->parent(), window_manager()->GetRoots().front());
-  EXPECT_EQ(NULL, node_in_embedded->parent());
+  View* view_in_embedded = embedded->GetRoots().front();
+  EXPECT_EQ(view->parent(), window_manager()->GetRoots().front());
+  EXPECT_EQ(NULL, view_in_embedded->parent());
 }
 
-// Window manager has two nodes, N1 and N11. Embeds A at N1. A should not see
+// Window manager has two views, N1 and N11. Embeds A at N1. A should not see
 // N11.
 // TODO(sky): Update client lib to match server.
 TEST_F(ViewManagerTest, DISABLED_EmbeddedDoesntSeeChild) {
-  Node* node = Node::Create(window_manager());
-  window_manager()->GetRoots().front()->AddChild(node);
-  Node* nested = Node::Create(window_manager());
-  node->AddChild(nested);
+  View* view = View::Create(window_manager());
+  window_manager()->GetRoots().front()->AddChild(view);
+  View* nested = View::Create(window_manager());
+  view->AddChild(nested);
 
-  ViewManager* embedded = Embed(window_manager(), node);
+  ViewManager* embedded = Embed(window_manager(), view);
   EXPECT_EQ(embedded->GetRoots().front()->children().front()->id(),
             nested->id());
   EXPECT_TRUE(embedded->GetRoots().front()->children().empty());
@@ -387,135 +387,135 @@ TEST_F(ViewManagerTest, DISABLED_EmbeddedDoesntSeeChild) {
 }
 
 // http://crbug.com/396300
-TEST_F(ViewManagerTest, DISABLED_ViewManagerDestroyed_CleanupNode) {
-  Node* node = Node::Create(window_manager());
-  window_manager()->GetRoots().front()->AddChild(node);
-  ViewManager* embedded = Embed(window_manager(), node);
+TEST_F(ViewManagerTest, DISABLED_ViewManagerDestroyed_CleanupView) {
+  View* view = View::Create(window_manager());
+  window_manager()->GetRoots().front()->AddChild(view);
+  ViewManager* embedded = Embed(window_manager(), view);
 
-  Id node_id = node->id();
+  Id view_id = view->id();
 
   UnloadApplication(GURL(kWindowManagerURL));
 
-  std::set<Id> nodes;
-  nodes.insert(node_id);
-  WaitForDestruction(embedded, &nodes);
+  std::set<Id> views;
+  views.insert(view_id);
+  WaitForDestruction(embedded, &views);
 
   EXPECT_TRUE(embedded->GetRoots().empty());
 }
 
 // TODO(beng): write a replacement test for the one that once existed here:
 // This test validates the following scenario:
-// -  a node originating from one connection
+// -  a view originating from one connection
 // -  a view originating from a second connection
-// +  the connection originating the node is destroyed
+// +  the connection originating the view is destroyed
 // -> the view should still exist (since the second connection is live) but
-//    should be disconnected from any nodes.
+//    should be disconnected from any views.
 // http://crbug.com/396300
 //
 // TODO(beng): The new test should validate the scenario as described above
 //             except that the second connection still has a valid tree.
 
-// Verifies that bounds changes applied to a node hierarchy in one connection
+// Verifies that bounds changes applied to a view hierarchy in one connection
 // are reflected to another.
 TEST_F(ViewManagerTest, SetBounds) {
-  Node* node = Node::Create(window_manager());
-  window_manager()->GetRoots().front()->AddChild(node);
-  ViewManager* embedded = Embed(window_manager(), node);
+  View* view = View::Create(window_manager());
+  window_manager()->GetRoots().front()->AddChild(view);
+  ViewManager* embedded = Embed(window_manager(), view);
 
-  Node* node_in_embedded = embedded->GetNodeById(node->id());
-  EXPECT_EQ(node->bounds(), node_in_embedded->bounds());
+  View* view_in_embedded = embedded->GetViewById(view->id());
+  EXPECT_EQ(view->bounds(), view_in_embedded->bounds());
 
-  node->SetBounds(gfx::Rect(100, 100));
-  EXPECT_NE(node->bounds(), node_in_embedded->bounds());
-  WaitForBoundsToChange(node_in_embedded);
-  EXPECT_EQ(node->bounds(), node_in_embedded->bounds());
+  view->SetBounds(gfx::Rect(100, 100));
+  EXPECT_NE(view->bounds(), view_in_embedded->bounds());
+  WaitForBoundsToChange(view_in_embedded);
+  EXPECT_EQ(view->bounds(), view_in_embedded->bounds());
 }
 
-// Verifies that bounds changes applied to a node owned by a different
+// Verifies that bounds changes applied to a view owned by a different
 // connection are refused.
 TEST_F(ViewManagerTest, SetBoundsSecurity) {
-  Node* node = Node::Create(window_manager());
-  window_manager()->GetRoots().front()->AddChild(node);
-  ViewManager* embedded = Embed(window_manager(), node);
+  View* view = View::Create(window_manager());
+  window_manager()->GetRoots().front()->AddChild(view);
+  ViewManager* embedded = Embed(window_manager(), view);
 
-  Node* node_in_embedded = embedded->GetNodeById(node->id());
-  node->SetBounds(gfx::Rect(800, 600));
-  WaitForBoundsToChange(node_in_embedded);
+  View* view_in_embedded = embedded->GetViewById(view->id());
+  view->SetBounds(gfx::Rect(800, 600));
+  WaitForBoundsToChange(view_in_embedded);
 
-  node_in_embedded->SetBounds(gfx::Rect(1024, 768));
+  view_in_embedded->SetBounds(gfx::Rect(1024, 768));
   // Bounds change should have been rejected.
-  EXPECT_EQ(node->bounds(), node_in_embedded->bounds());
+  EXPECT_EQ(view->bounds(), view_in_embedded->bounds());
 }
 
-// Verifies that a node can only be destroyed by the connection that created it.
+// Verifies that a view can only be destroyed by the connection that created it.
 TEST_F(ViewManagerTest, DestroySecurity) {
-  Node* node = Node::Create(window_manager());
-  window_manager()->GetRoots().front()->AddChild(node);
-  ViewManager* embedded = Embed(window_manager(), node);
+  View* view = View::Create(window_manager());
+  window_manager()->GetRoots().front()->AddChild(view);
+  ViewManager* embedded = Embed(window_manager(), view);
 
-  Node* node_in_embedded = embedded->GetNodeById(node->id());
+  View* view_in_embedded = embedded->GetViewById(view->id());
 
-  NodeTracker tracker2(node_in_embedded);
-  node_in_embedded->Destroy();
-  // Node should not have been destroyed.
+  ViewTracker tracker2(view_in_embedded);
+  view_in_embedded->Destroy();
+  // View should not have been destroyed.
   EXPECT_TRUE(tracker2.is_valid());
 
-  NodeTracker tracker1(node);
-  node->Destroy();
+  ViewTracker tracker1(view);
+  view->Destroy();
   EXPECT_FALSE(tracker1.is_valid());
 }
 
 TEST_F(ViewManagerTest, MultiRoots) {
-  Node* node1 = Node::Create(window_manager());
-  window_manager()->GetRoots().front()->AddChild(node1);
-  Node* node2 = Node::Create(window_manager());
-  window_manager()->GetRoots().front()->AddChild(node2);
-  ViewManager* embedded1 = Embed(window_manager(), node1);
-  ViewManager* embedded2 = Embed(window_manager(), node2);
+  View* view1 = View::Create(window_manager());
+  window_manager()->GetRoots().front()->AddChild(view1);
+  View* view2 = View::Create(window_manager());
+  window_manager()->GetRoots().front()->AddChild(view2);
+  ViewManager* embedded1 = Embed(window_manager(), view1);
+  ViewManager* embedded2 = Embed(window_manager(), view2);
   EXPECT_EQ(embedded1, embedded2);
 }
 
 TEST_F(ViewManagerTest, EmbeddingIdentity) {
-  Node* node = Node::Create(window_manager());
-  window_manager()->GetRoots().front()->AddChild(node);
-  ViewManager* embedded = Embed(window_manager(), node);
+  View* view = View::Create(window_manager());
+  window_manager()->GetRoots().front()->AddChild(view);
+  ViewManager* embedded = Embed(window_manager(), view);
   EXPECT_EQ(kWindowManagerURL, embedded->GetEmbedderURL());
 }
 
 TEST_F(ViewManagerTest, Reorder) {
-  Node* node1 = Node::Create(window_manager());
-  window_manager()->GetRoots().front()->AddChild(node1);
+  View* view1 = View::Create(window_manager());
+  window_manager()->GetRoots().front()->AddChild(view1);
 
-  ViewManager* embedded = Embed(window_manager(), node1);
+  ViewManager* embedded = Embed(window_manager(), view1);
 
-  Node* node11 = Node::Create(embedded);
-  embedded->GetRoots().front()->AddChild(node11);
-  Node* node12 = Node::Create(embedded);
-  embedded->GetRoots().front()->AddChild(node12);
+  View* view11 = View::Create(embedded);
+  embedded->GetRoots().front()->AddChild(view11);
+  View* view12 = View::Create(embedded);
+  embedded->GetRoots().front()->AddChild(view12);
 
-  Node* node1_in_wm = window_manager()->GetNodeById(node1->id());
+  View* view1_in_wm = window_manager()->GetViewById(view1->id());
 
   {
-    WaitForTreeSizeToMatch(node1, 2u);
-    node11->MoveToFront();
+    WaitForTreeSizeToMatch(view1, 2u);
+    view11->MoveToFront();
     WaitForOrderChange(window_manager(),
-                       window_manager()->GetNodeById(node11->id()));
+                       window_manager()->GetViewById(view11->id()));
 
-    EXPECT_EQ(node1_in_wm->children().front(),
-              window_manager()->GetNodeById(node12->id()));
-    EXPECT_EQ(node1_in_wm->children().back(),
-              window_manager()->GetNodeById(node11->id()));
+    EXPECT_EQ(view1_in_wm->children().front(),
+              window_manager()->GetViewById(view12->id()));
+    EXPECT_EQ(view1_in_wm->children().back(),
+              window_manager()->GetViewById(view11->id()));
   }
 
   {
-    node11->MoveToBack();
+    view11->MoveToBack();
     WaitForOrderChange(window_manager(),
-                       window_manager()->GetNodeById(node11->id()));
+                       window_manager()->GetViewById(view11->id()));
 
-    EXPECT_EQ(node1_in_wm->children().front(),
-              window_manager()->GetNodeById(node11->id()));
-    EXPECT_EQ(node1_in_wm->children().back(),
-              window_manager()->GetNodeById(node12->id()));
+    EXPECT_EQ(view1_in_wm->children().front(),
+              window_manager()->GetViewById(view11->id()));
+    EXPECT_EQ(view1_in_wm->children().back(),
+              window_manager()->GetViewById(view12->id()));
   }
 }
 
@@ -523,8 +523,8 @@ TEST_F(ViewManagerTest, Reorder) {
 // - verify that we see events for all views.
 
 // TODO(beng): tests for focus:
-// - focus between two nodes known to a connection
-// - focus between nodes unknown to one of the connections.
-// - focus between nodes unknown to either connection.
+// - focus between two views known to a connection
+// - focus between views unknown to one of the connections.
+// - focus between views unknown to either connection.
 
 }  // namespace mojo

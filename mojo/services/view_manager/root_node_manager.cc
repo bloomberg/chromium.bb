@@ -160,7 +160,7 @@ void RootNodeManager::DispatchNodeInputEventToWindowManager(
   ViewManagerServiceImpl* connection = GetConnection(kWindowManagerConnection);
   if (!connection)
     return;
-  connection->client()->DispatchOnNodeInputEvent(
+  connection->client()->DispatchOnViewInputEvent(
       NodeIdToTransportId(node->id()),
       TypeConverter<EventPtr, ui::Event>::ConvertFrom(*event));
 }

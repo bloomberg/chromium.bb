@@ -18,18 +18,18 @@ source_set("view_manager") {
   ]
 
   sources = [
-    "lib/node.cc",
-    "lib/node_observer.cc",
-    "lib/node_private.cc",
-    "lib/node_private.h",
+    "lib/view.cc",
     "lib/view_manager_client_factory.cc",
     "lib/view_manager_client_impl.cc",
     "lib/view_manager_client_impl.h",
-    "node.h",
-    "node_observer.h",
+    "lib/view_observer.cc",
+    "lib/view_private.cc",
+    "lib/view_private.h",
+    "view.h",
     "view_manager.h",
     "view_manager_client_factory.h",
     "view_manager_delegate.h",
+    "view_observer.h",
     "window_manager_delegate.h",
   ]
 }

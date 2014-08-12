@@ -11,10 +11,10 @@
 #include "mojo/public/cpp/application/connect.h"
 #include "mojo/public/cpp/application/service_provider_impl.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
-#include "mojo/services/public/cpp/view_manager/lib/node_private.h"
-#include "mojo/services/public/cpp/view_manager/node_observer.h"
+#include "mojo/services/public/cpp/view_manager/lib/view_private.h"
 #include "mojo/services/public/cpp/view_manager/util.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
+#include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "mojo/services/public/cpp/view_manager/window_manager_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -26,69 +26,69 @@ Id MakeTransportId(ConnectionSpecificId connection_id,
   return (connection_id << 16) | local_id;
 }
 
-// Helper called to construct a local node/view object from transport data.
-Node* AddNodeToViewManager(ViewManagerClientImpl* client,
-                           Node* parent,
-                           Id node_id,
+// Helper called to construct a local view object from transport data.
+View* AddViewToViewManager(ViewManagerClientImpl* client,
+                           View* parent,
+                           Id view_id,
                            const gfx::Rect& bounds) {
   // We don't use the ctor that takes a ViewManager here, since it will call
-  // back to the service and attempt to create a new node.
-  Node* node = NodePrivate::LocalCreate();
-  NodePrivate private_node(node);
-  private_node.set_view_manager(client);
-  private_node.set_id(node_id);
-  client->AddNode(node);
-  private_node.LocalSetBounds(gfx::Rect(), bounds);
+  // back to the service and attempt to create a new view.
+  View* view = ViewPrivate::LocalCreate();
+  ViewPrivate private_view(view);
+  private_view.set_view_manager(client);
+  private_view.set_id(view_id);
+  client->AddView(view);
+  private_view.LocalSetBounds(gfx::Rect(), bounds);
   if (parent)
-    NodePrivate(parent).LocalAddChild(node);
-  return node;
+    ViewPrivate(parent).LocalAddChild(view);
+  return view;
 }
 
-Node* BuildNodeTree(ViewManagerClientImpl* client,
-                    const Array<NodeDataPtr>& nodes,
-                    Node* initial_parent) {
-  std::vector<Node*> parents;
-  Node* root = NULL;
-  Node* last_node = NULL;
+View* BuildViewTree(ViewManagerClientImpl* client,
+                    const Array<ViewDataPtr>& views,
+                    View* initial_parent) {
+  std::vector<View*> parents;
+  View* root = NULL;
+  View* last_view = NULL;
   if (initial_parent)
     parents.push_back(initial_parent);
-  for (size_t i = 0; i < nodes.size(); ++i) {
-    if (last_node && nodes[i]->parent_id == last_node->id()) {
-      parents.push_back(last_node);
+  for (size_t i = 0; i < views.size(); ++i) {
+    if (last_view && views[i]->parent_id == last_view->id()) {
+      parents.push_back(last_view);
     } else if (!parents.empty()) {
-      while (parents.back()->id() != nodes[i]->parent_id)
+      while (parents.back()->id() != views[i]->parent_id)
         parents.pop_back();
     }
-    Node* node = AddNodeToViewManager(
+    View* view = AddViewToViewManager(
         client,
         !parents.empty() ? parents.back() : NULL,
-        nodes[i]->node_id,
-        nodes[i]->bounds.To<gfx::Rect>());
-    if (!last_node)
-      root = node;
-    last_node = node;
+        views[i]->view_id,
+        views[i]->bounds.To<gfx::Rect>());
+    if (!last_view)
+      root = view;
+    last_view = view;
   }
   return root;
 }
 
-// Responsible for removing a root from the ViewManager when that node is
+// Responsible for removing a root from the ViewManager when that view is
 // destroyed.
-class RootObserver : public NodeObserver {
+class RootObserver : public ViewObserver {
  public:
-  explicit RootObserver(Node* root) : root_(root) {}
+  explicit RootObserver(View* root) : root_(root) {}
   virtual ~RootObserver() {}
 
  private:
-  // Overridden from NodeObserver:
-  virtual void OnNodeDestroyed(Node* node) OVERRIDE {
-    DCHECK_EQ(node, root_);
+  // Overridden from ViewObserver:
+  virtual void OnViewDestroyed(View* view) OVERRIDE {
+    DCHECK_EQ(view, root_);
     static_cast<ViewManagerClientImpl*>(
-        NodePrivate(root_).view_manager())->RemoveRoot(root_);
-    node->RemoveObserver(this);
+        ViewPrivate(root_).view_manager())->RemoveRoot(root_);
+    view->RemoveObserver(this);
     delete this;
   }
 
-  Node* root_;
+  View* root_;
 
   DISALLOW_COPY_AND_ASSIGN(RootObserver);
 };
@@ -125,18 +125,18 @@ ViewManagerClientImpl::ViewManagerClientImpl(ViewManagerDelegate* delegate)
 }
 
 ViewManagerClientImpl::~ViewManagerClientImpl() {
-  std::vector<Node*> non_owned;
-  while (!nodes_.empty()) {
-    IdToNodeMap::iterator it = nodes_.begin();
-    if (OwnsNode(it->second->id())) {
+  std::vector<View*> non_owned;
+  while (!views_.empty()) {
+    IdToViewMap::iterator it = views_.begin();
+    if (OwnsView(it->second->id())) {
       it->second->Destroy();
     } else {
       non_owned.push_back(it->second);
-      nodes_.erase(it);
+      views_.erase(it);
     }
   }
-  // Delete the non-owned nodes last. In the typical case these are roots. The
-  // exception is the window manager, which may know aboutother random nodes
+  // Delete the non-owned views last. In the typical case these are roots. The
+  // exception is the window manager, which may know aboutother random views
   // that it doesn't own.
   // NOTE: we manually delete as we're a friend.
   for (size_t i = 0; i < non_owned.size(); ++i)
@@ -144,48 +144,48 @@ ViewManagerClientImpl::~ViewManagerClientImpl() {
   delegate_->OnViewManagerDisconnected(this);
 }
 
-Id ViewManagerClientImpl::CreateNode() {
+Id ViewManagerClientImpl::CreateView() {
   DCHECK(connected_);
-  const Id node_id = MakeTransportId(connection_id_, ++next_id_);
-  service_->CreateNode(node_id, ActionCompletedCallbackWithErrorCode());
-  return node_id;
+  const Id view_id = MakeTransportId(connection_id_, ++next_id_);
+  service_->CreateView(view_id, ActionCompletedCallbackWithErrorCode());
+  return view_id;
 }
 
-void ViewManagerClientImpl::DestroyNode(Id node_id) {
+void ViewManagerClientImpl::DestroyView(Id view_id) {
   DCHECK(connected_);
-  service_->DeleteNode(node_id, ActionCompletedCallback());
+  service_->DeleteView(view_id, ActionCompletedCallback());
 }
 
 void ViewManagerClientImpl::AddChild(Id child_id, Id parent_id) {
   DCHECK(connected_);
-  service_->AddNode(parent_id, child_id, ActionCompletedCallback());
+  service_->AddView(parent_id, child_id, ActionCompletedCallback());
 }
 
 void ViewManagerClientImpl::RemoveChild(Id child_id, Id parent_id) {
   DCHECK(connected_);
-  service_->RemoveNodeFromParent(child_id, ActionCompletedCallback());
+  service_->RemoveViewFromParent(child_id, ActionCompletedCallback());
 }
 
 void ViewManagerClientImpl::Reorder(
-    Id node_id,
-    Id relative_node_id,
+    Id view_id,
+    Id relative_view_id,
     OrderDirection direction) {
   DCHECK(connected_);
-  service_->ReorderNode(node_id, relative_node_id, direction,
+  service_->ReorderView(view_id, relative_view_id, direction,
                         ActionCompletedCallback());
 }
 
-bool ViewManagerClientImpl::OwnsNode(Id id) const {
+bool ViewManagerClientImpl::OwnsView(Id id) const {
   return HiWord(id) == connection_id_;
 }
 
-void ViewManagerClientImpl::SetBounds(Id node_id, const gfx::Rect& bounds) {
+void ViewManagerClientImpl::SetBounds(Id view_id, const gfx::Rect& bounds) {
   DCHECK(connected_);
-  service_->SetNodeBounds(node_id, Rect::From(bounds),
+  service_->SetViewBounds(view_id, Rect::From(bounds),
                           ActionCompletedCallback());
 }
 
-void ViewManagerClientImpl::SetNodeContents(Id node_id,
+void ViewManagerClientImpl::SetViewContents(Id view_id,
                                             const SkBitmap& contents) {
   DCHECK(connected_);
   std::vector<unsigned char> data;
@@ -202,45 +202,45 @@ void ViewManagerClientImpl::SetNodeContents(Id node_id,
 
   memcpy(memory, &data[0], data.size());
 
-  service_->SetNodeContents(node_id, duped.Pass(),
+  service_->SetViewContents(view_id, duped.Pass(),
                             static_cast<uint32_t>(data.size()),
                             ActionCompletedCallback());
 }
 
-void ViewManagerClientImpl::SetFocus(Id node_id) {
+void ViewManagerClientImpl::SetFocus(Id view_id) {
   DCHECK(connected_);
-  service_->SetFocus(node_id, ActionCompletedCallback());
+  service_->SetFocus(view_id, ActionCompletedCallback());
 }
 
-void ViewManagerClientImpl::SetVisible(Id node_id, bool visible) {
+void ViewManagerClientImpl::SetVisible(Id view_id, bool visible) {
   DCHECK(connected_);
-  service_->SetNodeVisibility(node_id, visible, ActionCompletedCallback());
+  service_->SetViewVisibility(view_id, visible, ActionCompletedCallback());
 }
 
-void ViewManagerClientImpl::Embed(const String& url, Id node_id) {
+void ViewManagerClientImpl::Embed(const String& url, Id view_id) {
   ServiceProviderPtr sp;
   BindToProxy(new ServiceProviderImpl, &sp);
-  Embed(url, node_id, sp.Pass());
+  Embed(url, view_id, sp.Pass());
 }
 
 void ViewManagerClientImpl::Embed(
     const String& url,
-    Id node_id,
+    Id view_id,
     ServiceProviderPtr service_provider) {
   DCHECK(connected_);
-  service_->Embed(url, node_id, service_provider.Pass(),
+  service_->Embed(url, view_id, service_provider.Pass(),
                   ActionCompletedCallback());
 }
 
-void ViewManagerClientImpl::AddNode(Node* node) {
-  DCHECK(nodes_.find(node->id()) == nodes_.end());
-  nodes_[node->id()] = node;
+void ViewManagerClientImpl::AddView(View* view) {
+  DCHECK(views_.find(view->id()) == views_.end());
+  views_[view->id()] = view;
 }
 
-void ViewManagerClientImpl::RemoveNode(Id node_id) {
-  IdToNodeMap::iterator it = nodes_.find(node_id);
-  if (it != nodes_.end())
-    nodes_.erase(it);
+void ViewManagerClientImpl::RemoveView(Id view_id) {
+  IdToViewMap::iterator it = views_.find(view_id);
+  if (it != views_.end())
+    views_.erase(it);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -248,26 +248,26 @@ void ViewManagerClientImpl::RemoveNode(Id node_id) {
 
 void ViewManagerClientImpl::SetWindowManagerDelegate(
     WindowManagerDelegate* window_manager_delegate) {
-  CHECK(NULL != GetNodeById(1));
+  CHECK(NULL != GetViewById(1));
   window_manager_delegate_ = window_manager_delegate;
 }
 
-void ViewManagerClientImpl::DispatchEvent(Node* target, EventPtr event) {
+void ViewManagerClientImpl::DispatchEvent(View* target, EventPtr event) {
   CHECK(window_manager_delegate_);
-  service_->DispatchOnNodeInputEvent(target->id(), event.Pass());
+  service_->DispatchOnViewInputEvent(target->id(), event.Pass());
 }
 
 const std::string& ViewManagerClientImpl::GetEmbedderURL() const {
   return creator_url_;
 }
 
-const std::vector<Node*>& ViewManagerClientImpl::GetRoots() const {
+const std::vector<View*>& ViewManagerClientImpl::GetRoots() const {
   return roots_;
 }
 
-Node* ViewManagerClientImpl::GetNodeById(Id id) {
-  IdToNodeMap::const_iterator it = nodes_.find(id);
-  return it != nodes_.end() ? it->second : NULL;
+View* ViewManagerClientImpl::GetViewById(Id id) {
+  IdToViewMap::const_iterator it = views_.find(id);
+  return it != views_.end() ? it->second : NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -283,7 +283,7 @@ void ViewManagerClientImpl::OnConnectionEstablished() {
 void ViewManagerClientImpl::OnEmbed(
     ConnectionSpecificId connection_id,
     const String& creator_url,
-    NodeDataPtr root_data,
+    ViewDataPtr root_data,
     InterfaceRequest<ServiceProvider> service_provider) {
   if (!connected_) {
     connected_ = true;
@@ -296,7 +296,7 @@ void ViewManagerClientImpl::OnEmbed(
 
   // A new root must not already exist as a root or be contained by an existing
   // hierarchy visible to this view manager.
-  Node* root = AddNodeToViewManager(this, NULL, root_data->node_id,
+  View* root = AddViewToViewManager(this, NULL, root_data->view_id,
                                     root_data->bounds.To<gfx::Rect>());
   roots_.push_back(root);
   root->AddObserver(new RootObserver(root));
@@ -309,74 +309,74 @@ void ViewManagerClientImpl::OnEmbed(
   delegate_->OnEmbed(this, root, exported_services, remote.Pass());
 }
 
-void ViewManagerClientImpl::OnNodeBoundsChanged(Id node_id,
+void ViewManagerClientImpl::OnViewBoundsChanged(Id view_id,
                                                 RectPtr old_bounds,
                                                 RectPtr new_bounds) {
-  Node* node = GetNodeById(node_id);
-  NodePrivate(node).LocalSetBounds(old_bounds.To<gfx::Rect>(),
+  View* view = GetViewById(view_id);
+  ViewPrivate(view).LocalSetBounds(old_bounds.To<gfx::Rect>(),
                                    new_bounds.To<gfx::Rect>());
 }
 
-void ViewManagerClientImpl::OnNodeHierarchyChanged(
-    Id node_id,
+void ViewManagerClientImpl::OnViewHierarchyChanged(
+    Id view_id,
     Id new_parent_id,
     Id old_parent_id,
-    mojo::Array<NodeDataPtr> nodes) {
-  Node* initial_parent = nodes.size() ?
-      GetNodeById(nodes[0]->parent_id) : NULL;
+    mojo::Array<ViewDataPtr> views) {
+  View* initial_parent = views.size() ?
+      GetViewById(views[0]->parent_id) : NULL;
 
-  BuildNodeTree(this, nodes, initial_parent);
+  BuildViewTree(this, views, initial_parent);
 
-  Node* new_parent = GetNodeById(new_parent_id);
-  Node* old_parent = GetNodeById(old_parent_id);
-  Node* node = GetNodeById(node_id);
+  View* new_parent = GetViewById(new_parent_id);
+  View* old_parent = GetViewById(old_parent_id);
+  View* view = GetViewById(view_id);
   if (new_parent)
-    NodePrivate(new_parent).LocalAddChild(node);
+    ViewPrivate(new_parent).LocalAddChild(view);
   else
-    NodePrivate(old_parent).LocalRemoveChild(node);
+    ViewPrivate(old_parent).LocalRemoveChild(view);
 }
 
-void ViewManagerClientImpl::OnNodeReordered(Id node_id,
-                                            Id relative_node_id,
+void ViewManagerClientImpl::OnViewReordered(Id view_id,
+                                            Id relative_view_id,
                                             OrderDirection direction) {
-  Node* node = GetNodeById(node_id);
-  Node* relative_node = GetNodeById(relative_node_id);
-  if (node && relative_node)
-    NodePrivate(node).LocalReorder(relative_node, direction);
+  View* view = GetViewById(view_id);
+  View* relative_view = GetViewById(relative_view_id);
+  if (view && relative_view)
+    ViewPrivate(view).LocalReorder(relative_view, direction);
 }
 
-void ViewManagerClientImpl::OnNodeDeleted(Id node_id) {
-  Node* node = GetNodeById(node_id);
-  if (node)
-    NodePrivate(node).LocalDestroy();
+void ViewManagerClientImpl::OnViewDeleted(Id view_id) {
+  View* view = GetViewById(view_id);
+  if (view)
+    ViewPrivate(view).LocalDestroy();
 }
 
-void ViewManagerClientImpl::OnNodeInputEvent(
-    Id node_id,
+void ViewManagerClientImpl::OnViewInputEvent(
+    Id view_id,
     EventPtr event,
     const Callback<void()>& ack_callback) {
-  Node* node = GetNodeById(node_id);
-  if (node) {
-    FOR_EACH_OBSERVER(NodeObserver,
-                      *NodePrivate(node).observers(),
-                      OnNodeInputEvent(node, event));
+  View* view = GetViewById(view_id);
+  if (view) {
+    FOR_EACH_OBSERVER(ViewObserver,
+                      *ViewPrivate(view).observers(),
+                      OnViewInputEvent(view, event));
   }
   ack_callback.Run();
 }
 
 void ViewManagerClientImpl::OnFocusChanged(Id gained_focus_id,
                                            Id lost_focus_id) {
-  Node* focused = GetNodeById(gained_focus_id);
-  Node* blurred = GetNodeById(lost_focus_id);
+  View* focused = GetViewById(gained_focus_id);
+  View* blurred = GetViewById(lost_focus_id);
   if (blurred) {
-    FOR_EACH_OBSERVER(NodeObserver,
-                      *NodePrivate(blurred).observers(),
-                      OnNodeFocusChanged(focused, blurred));
+    FOR_EACH_OBSERVER(ViewObserver,
+                      *ViewPrivate(blurred).observers(),
+                      OnViewFocusChanged(focused, blurred));
   }
   if (focused) {
-    FOR_EACH_OBSERVER(NodeObserver,
-                      *NodePrivate(focused).observers(),
-                      OnNodeFocusChanged(focused, blurred));
+    FOR_EACH_OBSERVER(ViewObserver,
+                      *ViewPrivate(focused).observers(),
+                      OnViewFocusChanged(focused, blurred));
   }
 }
 
@@ -386,17 +386,17 @@ void ViewManagerClientImpl::Embed(
   window_manager_delegate_->Embed(url, service_provider.Pass());
 }
 
-void ViewManagerClientImpl::DispatchOnNodeInputEvent(Id node_id,
+void ViewManagerClientImpl::DispatchOnViewInputEvent(Id view_id,
                                                      EventPtr event) {
   if (window_manager_delegate_)
-    window_manager_delegate_->DispatchEvent(GetNodeById(node_id), event.Pass());
+    window_manager_delegate_->DispatchEvent(GetViewById(view_id), event.Pass());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // ViewManagerClientImpl, private:
 
-void ViewManagerClientImpl::RemoveRoot(Node* root) {
-  std::vector<Node*>::iterator it =
+void ViewManagerClientImpl::RemoveRoot(View* root) {
+  std::vector<View*>::iterator it =
       std::find(roots_.begin(), roots_.end(), root);
   if (it != roots_.end())
     roots_.erase(it);

@@ -6,7 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "mojo/services/public/cpp/view_manager/node.h"
+#include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/views/native_widget_view_manager.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/background.h"
@@ -24,9 +24,9 @@ const int kNavigationTargetGroupId = 1;
 
 }  // namespace
 
-DebugPanel::DebugPanel(Delegate* delegate, Node* node)
+DebugPanel::DebugPanel(Delegate* delegate, View* view)
     : delegate_(delegate),
-      node_(node),
+      view_(view),
       navigation_target_label_(new views::Label(
           base::ASCIIToUTF16("Navigation target:"))),
       navigation_target_new_(new views::RadioButton(
@@ -60,9 +60,9 @@ DebugPanel::DebugPanel(Delegate* delegate, Node* node)
   views::Widget* widget = new views::Widget();
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.native_widget = new NativeWidgetViewManager(widget, node);
+  params.native_widget = new NativeWidgetViewManager(widget, view);
   params.delegate = widget_delegate;
-  params.bounds = gfx::Rect(node->bounds().size());
+  params.bounds = gfx::Rect(view->bounds().size());
   widget->Init(params);
   widget->Show();
 }
@@ -130,7 +130,7 @@ void DebugPanel::ButtonPressed(views::Button* sender, const ui::Event& event) {
 void DebugPanel::Navigate(const std::string& url) {
   NavigationDetailsPtr details(NavigationDetails::New());
   details->request->url = url;
-  delegate_->RequestNavigate(node_->id(), TARGET_NEW_NODE, details.Pass());
+  delegate_->RequestNavigate(view_->id(), TARGET_NEW_NODE, details.Pass());
 }
 
 }  // namespace examples
