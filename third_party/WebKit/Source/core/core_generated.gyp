@@ -205,16 +205,9 @@
         },
         {
           'action_name': 'CSSPropertyNames',
-          'variables': {
-            'in_files': [
-              'css/CSSPropertyNames.in',
-              'css/SVGCSSPropertyNames.in',
-            ],
-          },
           'inputs': [
-            '<@(scripts_for_in_files)',
+            '<@(css_properties_files)',
             '../build/scripts/make_css_property_names.py',
-            '<@(in_files)'
           ],
           'outputs': [
             '<(blink_core_output_dir)/CSSPropertyNames.cpp',
@@ -223,7 +216,7 @@
           'action': [
             'python',
             '../build/scripts/make_css_property_names.py',
-            '<@(in_files)',
+            'css/CSSProperties.in',
             '--output_dir',
             '<(blink_core_output_dir)',
             '--gperf', '<(gperf_exe)',

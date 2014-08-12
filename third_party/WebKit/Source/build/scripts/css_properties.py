@@ -9,6 +9,7 @@ from name_utilities import lower_first
 
 class CSSProperties(in_generator.Writer):
     defaults = {
+        'alias_for': None,
         'longhands': '',
         'font': False,
         'svg': False,
@@ -43,10 +44,18 @@ class CSSProperties(in_generator.Writer):
 
         properties = self.in_file.name_dictionaries
 
-        for property in properties:
+        self._aliases = {property['name']: property['alias_for'] for property in properties if property['alias_for']}
+        properties = [property for property in properties if not property['alias_for']]
+
+        assert len(properties) <= 1024, 'There are more than 1024 CSS Properties, you need to update CSSProperty.h/StylePropertyMetadata m_propertyID accordingly.'
+        # We currently assign 0 to CSSPropertyInvalid
+        self._first_enum_value = 1
+        for offset, property in enumerate(properties):
             property['property_id'] = css_name_to_enum(property['name'])
             property['upper_camel_name'] = camelcase_css_name(property['name'])
             property['lower_camel_name'] = lower_first(property['upper_camel_name'])
+            property['enum_value'] = self._first_enum_value + offset
+            property['is_internal'] = property['name'].startswith('-internal-')
 
         self._properties_list = properties
         self._properties = {property['property_id']: property for property in properties}

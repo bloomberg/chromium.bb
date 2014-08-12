@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 
-import os.path
-import re
 import subprocess
 import sys
 
-from in_file import InFile
+import css_properties
 import in_generator
 import license
 
@@ -178,71 +176,47 @@ bool isInternalProperty(CSSPropertyID id)
 """
 
 
-class CSSPropertiesWriter(in_generator.Writer):
+class CSSPropertyNamesWriter(css_properties.CSSProperties):
     class_name = "CSSPropertyNames"
-    defaults = {
-        'alias_for': None,
-        'is_internal': False,
-    }
 
-    def __init__(self, file_paths):
-        in_generator.Writer.__init__(self, file_paths)
+    def __init__(self, in_file_path):
+        super(CSSPropertyNamesWriter, self).__init__(in_file_path)
         self._outputs = {(self.class_name + ".h"): self.generate_header,
                          (self.class_name + ".cpp"): self.generate_implementation,
                         }
 
-        self._aliases = filter(lambda property: property['alias_for'], self.in_file.name_dictionaries)
-        for offset, property in enumerate(self._aliases):
-            # Aliases use the enum_name that they are an alias for.
-            property['enum_name'] = self._enum_name_from_property_name(property['alias_for'])
-            # Aliases do not get an enum_value.
-
-        self._properties = filter(lambda property: not property['alias_for'], self.in_file.name_dictionaries)
-        if len(self._properties) > 1024:
-            print "ERROR : There is more than 1024 CSS Properties, you need to update CSSProperty.h/StylePropertyMetadata m_propertyID accordingly."
-            exit(1)
-        self._first_property_id = 1  # We start after CSSPropertyInvalid.
-        property_id = self._first_property_id
-        for offset, property in enumerate(self._properties):
-            property['enum_name'] = self._enum_name_from_property_name(property['name'])
-            property['enum_value'] = self._first_property_id + offset
-            if property['name'].startswith('-internal-'):
-                property['is_internal'] = True
-
-    def _enum_name_from_property_name(self, property_name):
-        return "CSSProperty" + re.sub(r'(^[^-])|-(.)', lambda match: (match.group(1) or match.group(2)).upper(), property_name)
-
     def _enum_declaration(self, property):
-        return "    %(enum_name)s = %(enum_value)s," % property
+        return "    %(property_id)s = %(enum_value)s," % property
 
     def generate_header(self):
         return HEADER_TEMPLATE % {
             'license': license.license_for_generated_cpp(),
             'class_name': self.class_name,
-            'property_enums': "\n".join(map(self._enum_declaration, self._properties)),
-            'first_property_id': self._first_property_id,
+            'property_enums': "\n".join(map(self._enum_declaration, self._properties_list)),
+            'first_property_id': self._first_enum_value,
             'properties_count': len(self._properties),
-            'last_property_id': self._first_property_id + len(self._properties) - 1,
-            'max_name_length': reduce(max, map(len, map(lambda property: property['name'], self._properties))),
+            'last_property_id': self._first_enum_value + len(self._properties) - 1,
+            'max_name_length': max(map(len, self._properties)),
         }
-
-    def _case_properties(self, property):
-        return "case %(enum_name)s:" % property
 
     def generate_implementation(self):
         property_offsets = []
         current_offset = 0
-        for property in self._properties:
+        for property in self._properties_list:
             property_offsets.append(current_offset)
             current_offset += len(property["name"]) + 1
+
+        css_name_and_enum_pairs = [(property['name'], property_id) for property_id, property in self._properties.items()]
+        for name, aliased_name in self._aliases.items():
+            css_name_and_enum_pairs.append((name, css_properties.css_name_to_enum(aliased_name)))
 
         gperf_input = GPERF_TEMPLATE % {
             'license': license.license_for_generated_cpp(),
             'class_name': self.class_name,
-            'property_name_strings': '\n'.join(map(lambda property: '    "%(name)s\\0"' % property, self._properties)),
+            'property_name_strings': '\n'.join(map(lambda property: '    "%(name)s\\0"' % property, self._properties_list)),
             'property_name_offsets': '\n'.join(map(lambda offset: '    %d,' % offset, property_offsets)),
-            'property_to_enum_map': '\n'.join(map(lambda property: '%(name)s, %(enum_name)s' % property, self._properties + self._aliases)),
-            'internal_properties': '\n'.join(map(self._case_properties, filter(lambda property: property['is_internal'], self._properties))),
+            'property_to_enum_map': '\n'.join(map(lambda property: '%s, %s' % property, css_name_and_enum_pairs)),
+            'internal_properties': '\n'.join("case %s:" % property_id for property_id, property in self._properties.items() if property['is_internal']),
         }
         # FIXME: If we could depend on Python 2.7, we would use subprocess.check_output
         gperf_args = [self.gperf_path, '--key-positions=*', '-P', '-n']
@@ -253,4 +227,4 @@ class CSSPropertiesWriter(in_generator.Writer):
 
 
 if __name__ == "__main__":
-    in_generator.Maker(CSSPropertiesWriter).main(sys.argv)
+    in_generator.Maker(CSSPropertyNamesWriter).main(sys.argv)

@@ -589,12 +589,8 @@ group("make_core_generated") {
 }
 
 # "CSSPropertyNames" in make_core_generated from GYP.
-process_in_files("make_core_generated_css_property_names") {
+css_properties("make_core_generated_css_property_names") {
   script = "../build/scripts/make_css_property_names.py"
-  in_files = [
-    "css/CSSPropertyNames.in",
-    "css/SVGCSSPropertyNames.in",
-  ]
   outputs = [
     "$blink_core_output_dir/CSSPropertyNames.cpp",
     "$blink_core_output_dir/CSSPropertyNames.h",
