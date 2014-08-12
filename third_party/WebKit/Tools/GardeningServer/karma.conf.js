@@ -20,17 +20,17 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      {pattern: 'bower_components/chai/chai.js', watched: true, included: true, served: true},
-      {pattern: 'bower_components/sugar/release/sugar-full.development.js', watched: true, included: true, served: true},
-      {pattern: 'bower_components/platform/platform.js', watched: true, included: true, served: true},
-      {pattern: 'bower_components/polymer/polymer.html', watched: true, included: true, served: true},
-      {pattern: 'bower_components/**/*.{js,html,css,map}', watched: true, included: false, served: true},
-      {pattern: 'node_modules/mocha/mocha.js', watched: true, included: true, served: true},
-      {pattern: 'polymer-load-warning.html', watched: true, included: false, served: true},
-      {pattern: 'model/*.html', watched: true, included: false, served: true},
-      {pattern: 'model/test/*.html', watched: true, included: true, served: true},
-      {pattern: 'scripts/*.js', watched: true, included: true, served: true},
-      {pattern: 'ui/*.html', watched: true, included: false, served: true},
+      'bower_components/platform/platform.js',
+      'test/karma_loader.html',
+      'bower_components/chai/chai.js',
+      'bower_components/sugar/release/sugar-full.development.js',
+      {pattern: 'bower_components/**/*.{js,html,css,map}', included: false},
+      'node_modules/mocha/mocha.js',
+      'polymer-load-warning.html',
+      {pattern: 'model/*.html', included: false},
+      'model/test/*.html',
+      'scripts/*.js',
+      {pattern: 'ui/*.html', included: false},
       'ui/test/*',
     ],
 
