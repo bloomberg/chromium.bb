@@ -334,6 +334,11 @@ struct input {
 		xkb_mod_mask_t shift_mask;
 	} xkb;
 
+	int32_t repeat_rate_sec;
+	int32_t repeat_rate_nsec;
+	int32_t repeat_delay_sec;
+	int32_t repeat_delay_nsec;
+
 	struct task repeat_task;
 	int repeat_timer_fd;
 	uint32_t repeat_sym;
@@ -2864,10 +2869,10 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 		input->repeat_sym = sym;
 		input->repeat_key = key;
 		input->repeat_time = time;
-		its.it_interval.tv_sec = 0;
-		its.it_interval.tv_nsec = 25 * 1000 * 1000;
-		its.it_value.tv_sec = 0;
-		its.it_value.tv_nsec = 400 * 1000 * 1000;
+		its.it_interval.tv_sec = input->repeat_rate_sec;
+		its.it_interval.tv_nsec = input->repeat_rate_nsec;
+		its.it_value.tv_sec = input->repeat_delay_sec;
+		its.it_value.tv_nsec = input->repeat_delay_nsec;
 		timerfd_settime(input->repeat_timer_fd, 0, &its, NULL);
 	}
 }
@@ -2899,12 +2904,44 @@ keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
 		input->modifiers |= MOD_SHIFT_MASK;
 }
 
+static void
+set_repeat_info(struct input *input, int32_t rate, int32_t delay)
+{
+	input->repeat_rate_sec = input->repeat_rate_nsec = 0;
+	input->repeat_delay_sec = input->repeat_delay_nsec = 0;
+
+	/* a rate of zero disables any repeating, regardless of the delay's
+	 * value */
+	if (rate == 0)
+		return;
+
+	if (rate == 1)
+		input->repeat_rate_sec = 1;
+	else
+		input->repeat_rate_nsec = 1000000000 / rate;
+
+	input->repeat_delay_sec = delay / 1000;
+	delay -= (input->repeat_delay_sec * 1000);
+	input->repeat_delay_nsec = delay * 1000 * 1000;
+}
+
+static void
+keyboard_handle_repeat_info(void *data, struct wl_keyboard *keyboard,
+			    int32_t rate, int32_t delay)
+{
+	struct input *input = data;
+
+	set_repeat_info(input, rate, delay);
+}
+
 static const struct wl_keyboard_listener keyboard_listener = {
 	keyboard_handle_keymap,
 	keyboard_handle_enter,
 	keyboard_handle_leave,
 	keyboard_handle_key,
 	keyboard_handle_modifiers,
+	keyboard_handle_repeat_info
+
 };
 
 static void
@@ -4969,7 +5006,7 @@ display_add_input(struct display *d, uint32_t id)
 	input = xzalloc(sizeof *input);
 	input->display = d;
 	input->seat = wl_registry_bind(d->registry, id, &wl_seat_interface,
-				       MIN(d->seat_version, 3));
+				       MIN(d->seat_version, 4));
 	input->touch_focus = NULL;
 	input->pointer_focus = NULL;
 	input->keyboard_focus = NULL;
@@ -4989,6 +5026,8 @@ display_add_input(struct display *d, uint32_t id)
 	}
 
 	input->pointer_surface = wl_compositor_create_surface(d->compositor);
+
+	set_repeat_info(input, 40, 400);
 
 	input->repeat_timer_fd = timerfd_create(CLOCK_MONOTONIC,
 						TFD_CLOEXEC | TFD_NONBLOCK);

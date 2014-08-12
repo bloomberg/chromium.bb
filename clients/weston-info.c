@@ -32,6 +32,8 @@
 
 #include "../shared/os-compatibility.h"
 
+#define MIN(x,y) (((x) < (y)) ? (x) : (y))
+
 typedef void (*print_info_t)(void *info);
 typedef void (*destroy_info_t)(void *info);
 
@@ -87,9 +89,13 @@ struct shm_info {
 struct seat_info {
 	struct global_info global;
 	struct wl_seat *seat;
+	struct weston_info *info;
 
 	uint32_t capabilities;
 	char *name;
+
+	int32_t repeat_rate;
+	int32_t repeat_delay;
 };
 
 struct weston_info {
@@ -291,14 +297,89 @@ print_seat_info(void *data)
 		printf(" touch");
 
 	printf("\n");
+
+	if (seat->repeat_rate > 0)
+		printf("\tkeyboard repeat rate: %d\n", seat->repeat_rate);
+	if (seat->repeat_delay > 0)
+		printf("\tkeyboard repeat delay: %d\n", seat->repeat_delay);
 }
+
+static void
+keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
+		       uint32_t format, int fd, uint32_t size)
+{
+}
+
+static void
+keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
+		      uint32_t serial, struct wl_surface *surface,
+		      struct wl_array *keys)
+{
+}
+
+static void
+keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
+		      uint32_t serial, struct wl_surface *surface)
+{
+}
+
+static void
+keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
+		    uint32_t serial, uint32_t time, uint32_t key,
+		    uint32_t state)
+{
+}
+
+static void
+keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
+			  uint32_t serial, uint32_t mods_depressed,
+			  uint32_t mods_latched, uint32_t mods_locked,
+			  uint32_t group)
+{
+}
+
+static void
+keyboard_handle_repeat_info(void *data, struct wl_keyboard *keyboard,
+			    int32_t rate, int32_t delay)
+{
+	struct seat_info *seat = data;
+
+	seat->repeat_rate = rate;
+	seat->repeat_delay = delay;
+}
+
+static const struct wl_keyboard_listener keyboard_listener = {
+	keyboard_handle_keymap,
+	keyboard_handle_enter,
+	keyboard_handle_leave,
+	keyboard_handle_key,
+	keyboard_handle_modifiers,
+	keyboard_handle_repeat_info,
+};
 
 static void
 seat_handle_capabilities(void *data, struct wl_seat *wl_seat,
 			 enum wl_seat_capability caps)
 {
 	struct seat_info *seat = data;
+
 	seat->capabilities = caps;
+
+	/* we want listen for repeat_info from wl_keyboard, but only
+	 * do so if the seat info is >= 4 and if we actually have a
+	 * keyboard */
+	if (seat->global.version < 4)
+		return;
+
+	if (caps & WL_SEAT_CAPABILITY_KEYBOARD) {
+		struct wl_keyboard *keyboard;
+
+		keyboard = wl_seat_get_keyboard(seat->seat);
+		wl_keyboard_add_listener(keyboard, &keyboard_listener,
+					 seat);
+
+		seat->info->roundtrip_needed = true;
+	}
 }
 
 static void
@@ -330,13 +411,19 @@ add_seat_info(struct weston_info *info, uint32_t id, uint32_t version)
 {
 	struct seat_info *seat = xzalloc(sizeof *seat);
 
+	/* required to set roundtrip_needed to true in capabilities
+	 * handler */
+	seat->info = info;
+
 	init_global_info(info, &seat->global, id, "wl_seat", version);
 	seat->global.print = print_seat_info;
 	seat->global.destroy = destroy_seat_info;
 
 	seat->seat = wl_registry_bind(info->registry,
-				      id, &wl_seat_interface, 2);
+				      id, &wl_seat_interface, MIN(version, 4));
 	wl_seat_add_listener(seat->seat, &seat_listener, seat);
+
+	seat->repeat_rate = seat->repeat_delay = -1;
 
 	info->roundtrip_needed = true;
 }
