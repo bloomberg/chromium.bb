@@ -207,7 +207,7 @@ class GetFile(webapp2.RequestHandler):
             if json is None:
                 json, date = self._get_file_content(master_data['name'], builder, test_type, build_number, name)
 
-            if test_list_json:
+            if json and test_list_json:
                 json = JsonResults.get_test_list(builder, json)
 
         if json:

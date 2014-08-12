@@ -117,6 +117,32 @@ class TestFileHandlerTest(unittest.TestCase):
         response_json = json.loads(response.normal_body)
         self.assertEqual(response_json[builder]['tests']['Test1.testproc1'], {})
 
+    def test_get_nonexistant_results(self):
+        master = master_config.getMaster('chromium.chromiumos')
+        builder = 'test-builder'
+        test_type = 'test-type'
+
+        params = collections.OrderedDict([
+            (testfilehandler.PARAM_BUILDER, builder),
+            (testfilehandler.PARAM_MASTER, master['url_name']),
+            (testfilehandler.PARAM_TEST_TYPE, test_type),
+            (testfilehandler.PARAM_NAME, 'results.json')
+        ])
+
+        try:
+            response = self.testapp.get('/testfile', params=params)
+        except webtest.app.AppError as e:
+            # FIXME: Is there a better way to check for a 404?
+            self.assertIn('404', e.message)
+
+        params[testfilehandler.PARAM_TEST_LIST_JSON] = '1'
+
+        try:
+            response = self.testapp.get('/testfile', params=params)
+        except webtest.app.AppError as e:
+            # FIXME: Is there a better way to check for a 404?
+            self.assertIn('404', e.message)
+
     def test_deprecated_master_name(self):
         """Verify that a file uploaded with a deprecated master name
         can be downloaded by the corresponding new-style master name.
