@@ -53,10 +53,6 @@ public:
     static RenderLayerFilterInfo* createFilterInfoForRenderLayerIfNeeded(RenderLayer*);
     static void removeFilterInfoForRenderLayer(RenderLayer*);
 
-    const LayoutRect& dirtySourceRect() const { return m_dirtySourceRect; }
-    void expandDirtySourceRect(const LayoutRect& rect) { m_dirtySourceRect.unite(rect); }
-    void resetDirtySourceRect() { m_dirtySourceRect = LayoutRect(); }
-
     FilterEffectRenderer* renderer() const { return m_renderer.get(); }
     void setRenderer(PassRefPtr<FilterEffectRenderer>);
 
@@ -71,7 +67,6 @@ private:
     RenderLayer* m_layer;
 
     RefPtr<FilterEffectRenderer> m_renderer;
-    LayoutRect m_dirtySourceRect;
 
     static RenderLayerFilterInfoMap* s_filterMap;
     WillBePersistentHeapVector<RefPtrWillBeMember<Element> > m_internalSVGReferences;

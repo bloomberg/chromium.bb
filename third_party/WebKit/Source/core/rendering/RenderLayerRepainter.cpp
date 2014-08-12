@@ -128,9 +128,7 @@ void RenderLayerRepainter::setFilterBackendNeedsRepaintingInRect(const LayoutRec
     LayoutRect rectForRepaint = rect;
     m_renderer.style()->filterOutsets().expandRect(rectForRepaint);
 
-    RenderLayerFilterInfo* filterInfo = m_renderer.layer()->filterInfo();
-    ASSERT(filterInfo);
-    filterInfo->expandDirtySourceRect(rectForRepaint);
+    ASSERT(m_renderer.layer()->filterInfo());
 
     RenderLayer* parentLayer = enclosingFilterRepaintLayer();
     ASSERT(parentLayer);

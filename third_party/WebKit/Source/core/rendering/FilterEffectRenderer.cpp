@@ -301,7 +301,7 @@ LayoutRect FilterEffectRenderer::computeSourceImageRectForDirtyRect(const Layout
     return LayoutRect(rectForRepaint);
 }
 
-bool FilterEffectRendererHelper::prepareFilterEffect(RenderLayer* renderLayer, const LayoutRect& filterBoxRect, const LayoutRect& dirtyRect, const LayoutRect& layerRepaintRect)
+bool FilterEffectRendererHelper::prepareFilterEffect(RenderLayer* renderLayer, const LayoutRect& filterBoxRect, const LayoutRect& dirtyRect)
 {
     ASSERT(m_haveFilterEffect && renderLayer->filterRenderer());
     m_renderLayer = renderLayer;
@@ -337,10 +337,8 @@ bool FilterEffectRendererHelper::prepareFilterEffect(RenderLayer* renderLayer, c
     if (filter->hasFilterThatMovesPixels()) {
         if (hasUpdatedBackingStore)
             m_repaintRect = filterSourceRect;
-        else {
-            m_repaintRect.unite(layerRepaintRect);
+        else
             m_repaintRect.intersect(filterSourceRect);
-        }
     }
     return true;
 }
