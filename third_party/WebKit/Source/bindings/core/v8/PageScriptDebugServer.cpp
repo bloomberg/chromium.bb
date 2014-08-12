@@ -308,6 +308,11 @@ String PageScriptDebugServer::preprocessEventListener(LocalFrame* frame, const S
     return m_scriptPreprocessor->preprocessSourceCode(source, url, functionName);
 }
 
+void PageScriptDebugServer::clearPreprocessor()
+{
+    m_scriptPreprocessor.clear();
+}
+
 void PageScriptDebugServer::muteWarningsAndDeprecations()
 {
     FrameConsole::mute();

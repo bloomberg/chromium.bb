@@ -162,6 +162,7 @@ void InspectorDebuggerAgent::disable()
 
     scriptDebugServer().clearBreakpoints();
     scriptDebugServer().clearCompiledScripts();
+    scriptDebugServer().clearPreprocessor();
     stopListeningScriptDebugServer();
     clear();
 

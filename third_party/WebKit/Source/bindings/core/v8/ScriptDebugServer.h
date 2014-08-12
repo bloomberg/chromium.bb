@@ -108,6 +108,7 @@ public:
     virtual void preprocessBeforeCompile(const v8::Debug::EventDetails&) { }
     virtual PassOwnPtr<ScriptSourceCode> preprocess(LocalFrame*, const ScriptSourceCode&);
     virtual String preprocessEventListener(LocalFrame*, const String& source, const String& url, const String& functionName);
+    virtual void clearPreprocessor() { }
 
     virtual void muteWarningsAndDeprecations() { }
     virtual void unmuteWarningsAndDeprecations() { }
