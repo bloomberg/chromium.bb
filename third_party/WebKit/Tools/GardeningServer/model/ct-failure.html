@@ -43,4 +43,12 @@ CTFailure.prototype.flakinessDashboardURL = function(tree) {
 CTFailure.prototype.embeddedFlakinessDashboardURL = function(tree) {
   return this.flakinessDashboardURL(tree) + '&showChrome=false';
 }
+
+CTFailure.prototype.reasonGroupName = function() {
+  if (!this.testName)
+    return undefined;
+  if (this.step == 'webkit_tests')
+    return this.testName.substr(0, this.testName.lastIndexOf('/'));
+  return this.testName.substr(0, this.testName.lastIndexOf('.'));
+};
 </script>

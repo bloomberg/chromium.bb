@@ -4,24 +4,87 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+
 <polymer-element name="ct-test-list" attributes="tests tree">
   <template>
     <style>
       :host {
         display: block;
       }
+
+      paper-icon-button {
+        vertical-align: middle;
+      }
     </style>
-    <template repeat="{{ test in tests }}">
+    <template repeat="{{ groups in testGroups_ }}">
       <!-- FIXME: Find a less redundant UI than repeating the step on each line. -->
-      <div>
-        {{ test.step }}
-        <template if="{{ test.testName }}"><a href="{{ test | flakinessDashboardURL }}">{{ test.testName }}</a></template>
-        <template if="{{ !test.testName }}"><b>whole step failed</b></template>
-      </div>
+      <template repeat="{{ group in groups.tests }}">
+        <!-- Case 1: entire step failed -->
+        <template if="{{ !group.name }}">
+          <div>{{ groups.step }} <b>whole step failed</b></div>
+        </template>
+        <!-- Case 2: single test failure -->
+        <template if="{{ group.name && (group.tests.length == 1 || group.expanded) }}">
+          <template repeat="{{ test in group.tests }}">
+            <div>
+              {{ groups.step }}
+              <a href="{{ test | flakinessDashboardURL }}">{{ test.testName }}</a>
+            </div>
+          </template>
+        </template>
+        <!-- Case 3: group of tests failed -->
+        <template if="{{ group.name && group.tests.length > 1 && !group.expanded }}">
+          <div>
+            {{ groups.step }} {{ group.name }} ({{ group.tests.length }} Tests)
+            <paper-icon-button id="expand" icon="more-vert" step="{{ groups.step }}" group="{{ group.name }}" on-click="{{ _expand }}"></paper-icon-button>
+          </div>
+        </template>
+      </template>
     </template>
   </template>
   <script>
-    Polymer({
+    Polymer('ct-test-list', {
+      testsChanged: function() {
+        var groups = {};
+        if (this.tests) {
+          this.tests.forEach(function(test) {
+            if (!groups[test.step])
+              groups[test.step] = {};
+            var testName = test.reasonGroupName();
+            if (!groups[test.step][testName])
+              groups[test.step][testName] = [];
+            groups[test.step][testName].push(test);
+          }.bind(this));
+        }
+        this.testGroups_ = [];
+        Object.keys(groups, function(step, testsByName) {
+          var tests = [];
+          Object.keys(testsByName, function(name, testList) {
+            if (name == 'undefined')
+              name = undefined;
+            tests.push({'name': name, 'tests': testList, 'expanded': false});
+          }.bind(this));
+          tests.sortBy('name');
+          this.testGroups_.push({'step': step, 'tests': tests});
+        }.bind(this));
+        this.testGroups_.sortBy('step');
+      },
+
+      _expand: function(evt) {
+        step = evt.target.attributes['step'].value;
+        name = evt.target.attributes['group'].value;
+        this.testGroups_.forEach(function(testGroup) {
+          if (testGroup.step == step) {
+            testGroup.tests.forEach(function(test) {
+              // FIXME: This attribute should be persisted over reloads.
+              if (test.name == name)
+                test.expanded = true;
+            });
+          }
+        });
+      },
+
       flakinessDashboardURL: function(test) {
         return test.flakinessDashboardURL(this.tree);
       },
