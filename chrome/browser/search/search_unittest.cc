@@ -474,7 +474,7 @@ TEST_F(SearchTest, GetInstantURL) {
   profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch", "Group1 espv:8 use_alternate_instant_url:1"));
-  EXPECT_EQ(GURL("https://foo.com/search?foo=foo&qbp=1#foo=foo&strk"),
+  EXPECT_EQ(GURL("https://foo.com/instant?foo=foo&qbp=1#foo=foo&strk"),
             GetInstantURL(profile(), false));
 }
 

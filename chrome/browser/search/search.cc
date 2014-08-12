@@ -61,7 +61,6 @@ const char kReuseInstantSearchBasePage[] = "reuse_instant_search_base_page";
 // Controls whether to use the alternate Instant search base URL. This allows
 // experimentation of Instant search.
 const char kUseAltInstantURL[] = "use_alternate_instant_url";
-const char kAltInstantURLPath[] = "search";
 const char kAltInstantURLQueryParams[] = "&qbp=1";
 
 const char kDisplaySearchButtonFlagName[] = "display_search_button";
@@ -494,8 +493,6 @@ GURL GetInstantURL(Profile* profile, bool force_instant_results) {
 
   if (ShouldUseAltInstantURL()) {
     GURL::Replacements replacements;
-    const std::string path(kAltInstantURLPath);
-    replacements.SetPathStr(path);
     const std::string query(
         instant_url.query() + std::string(kAltInstantURLQueryParams));
     replacements.SetQueryStr(query);
