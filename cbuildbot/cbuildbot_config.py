@@ -1393,6 +1393,7 @@ _x86_release_boards = frozenset([
   'bayleybay',
   'beltino',
   'butterfly',
+  'candy',
   'clapper',
   'enguarde',
   'expresso',
@@ -1738,6 +1739,12 @@ internal_paladin.add_config('butterfly-paladin',
   full_paladin,
   boards=['butterfly'],
   paladin_builder_name='butterfly paladin',
+)
+
+internal_paladin.add_config('candy-paladin',
+  boards=['candy'],
+  paladin_builder_name='candy paladin',
+  important=False,
 )
 
 internal_paladin.add_config('clapper-paladin',
@@ -2542,6 +2549,7 @@ _x86_firmware_boards = (
   'bayleybay',
   'beltino',
   'butterfly',
+  'candy',
   'clapper',
   'enguarde',
   'expresso',
@@ -2572,6 +2580,7 @@ _x86_firmware_boards = (
 
 _x86_depthcharge_firmware_boards = (
   'bayleybay',
+  'candy',
   'clapper',
   'enguarde',
   'expresso',
