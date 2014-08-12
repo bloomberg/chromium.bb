@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_vector.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 #include "mojo/services/view_manager/root_node_manager.h"
 #include "mojo/services/view_manager/view_manager_export.h"
@@ -17,7 +16,6 @@
 namespace mojo {
 
 class ApplicationConnection;
-class ServiceProvider;
 
 namespace service {
 
@@ -39,36 +37,13 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerInitServiceImpl
                              ViewManagerInitServiceContext* context);
   virtual ~ViewManagerInitServiceImpl();
 
-  void OnNativeViewportDeleted();
-
-  void OnRootViewManagerWindowTreeHostCreated();
-
  private:
-  struct ConnectParams {
-    ConnectParams();
-    ~ConnectParams();
-
-    std::string url;
-    InterfaceRequest<ServiceProvider> service_provider;
-    Callback<void(bool)> callback;
-  };
-
-  void MaybeEmbed();
-
   // ViewManagerInitService overrides:
   virtual void Embed(const String& url,
                      ServiceProviderPtr service_provider,
                      const Callback<void(bool)>& callback) OVERRIDE;
 
   ViewManagerInitServiceContext* context_;
-
-  ServiceProvider* service_provider_;
-
-  // Stores information about inbound calls to Embed() pending execution on
-  // the window tree host being ready to use.
-  ScopedVector<ConnectParams> connect_params_;
-
-  bool is_tree_host_ready_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerInitServiceImpl);
 };

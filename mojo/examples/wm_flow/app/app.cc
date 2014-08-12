@@ -56,9 +56,10 @@ class WMFlowApp : public mojo::ApplicationDelegate,
   // Overridden from Application:
   virtual void Initialize(mojo::ApplicationImpl* app) MOJO_OVERRIDE {
     mojo::ServiceProviderPtr sp;
-    app->ConnectToService("mojo:mojo_view_manager", &init_svc_);
-    init_svc_->Embed("mojo:mojo_wm_flow_app", sp.Pass(),
-                     base::Bind(&ConnectCallback));
+    mojo::ViewManagerInitServicePtr init_svc;
+    app->ConnectToService("mojo:mojo_view_manager", &init_svc);
+    init_svc->Embed("mojo:mojo_wm_flow_app", sp.Pass(),
+                    base::Bind(&ConnectCallback));
   }
   virtual bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) MOJO_OVERRIDE {
@@ -103,7 +104,6 @@ class WMFlowApp : public mojo::ApplicationDelegate,
   mojo::ViewManagerClientFactory view_manager_client_factory_;
   mojo::InterfaceFactoryImpl<EmbedderImpl> embedder_factory_;
   EmbeddeePtr embeddee_;
-  mojo::ViewManagerInitServicePtr init_svc_;
 
   DISALLOW_COPY_AND_ASSIGN(WMFlowApp);
 };
