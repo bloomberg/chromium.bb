@@ -9,7 +9,6 @@
 #include "mojo/examples/compositor_app/compositor_host.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
-#include "mojo/public/cpp/gles2/gles2.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/public/interfaces/native_viewport/native_viewport.mojom.h"
@@ -53,7 +52,6 @@ class SampleApp : public ApplicationDelegate, public NativeViewportClient {
   }
 
  private:
-  mojo::GLES2Initializer gles2;
   NativeViewportPtr viewport_;
   scoped_ptr<CompositorHost> host_;
   DISALLOW_COPY_AND_ASSIGN(SampleApp);

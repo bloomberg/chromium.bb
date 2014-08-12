@@ -5,6 +5,7 @@
 #include "mojo/cc/context_provider_mojo.h"
 
 #include "base/logging.h"
+#include "mojo/public/cpp/environment/environment.h"
 
 namespace mojo {
 
@@ -16,10 +17,10 @@ ContextProviderMojo::ContextProviderMojo(
 
 bool ContextProviderMojo::BindToCurrentThread() {
   DCHECK(command_buffer_handle_.is_valid());
-  context_ = MojoGLES2CreateContext(
-      command_buffer_handle_.release().value(),
-      &ContextLostThunk,
-      this);
+  context_ = MojoGLES2CreateContext(command_buffer_handle_.release().value(),
+                                    &ContextLostThunk,
+                                    this,
+                                    Environment::GetDefaultAsyncWaiter());
   return !!context_;
 }
 

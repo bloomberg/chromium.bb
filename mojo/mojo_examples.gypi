@@ -379,7 +379,6 @@
         'mojo_surfaces_bindings',
         'mojo_surfaces_app_bindings',
         'mojo_surfaces_lib',
-        '<(mojo_gles2_for_loadable_module)',
         '<(mojo_system_for_loadable_module)',
       ],
       'sources': [

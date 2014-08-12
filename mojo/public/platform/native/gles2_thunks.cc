@@ -13,22 +13,13 @@ extern "C" {
 static MojoGLES2ControlThunks g_control_thunks = {0};
 static MojoGLES2ImplThunks g_impl_thunks = {0};
 
-void MojoGLES2Initialize(const MojoAsyncWaiter* async_waiter) {
-  assert(g_control_thunks.GLES2Initialize);
-  g_control_thunks.GLES2Initialize(async_waiter);
-}
-
-void MojoGLES2Terminate() {
-  assert(g_control_thunks.GLES2Terminate);
-  g_control_thunks.GLES2Terminate();
-}
-
-MojoGLES2Context MojoGLES2CreateContext(
-    MojoHandle handle,
-    MojoGLES2ContextLost lost_callback,
-    void* closure) {
+MojoGLES2Context MojoGLES2CreateContext(MojoHandle handle,
+                                        MojoGLES2ContextLost lost_callback,
+                                        void* closure,
+                                        const MojoAsyncWaiter* async_waiter) {
   assert(g_control_thunks.GLES2CreateContext);
-  return g_control_thunks.GLES2CreateContext(handle, lost_callback, closure);
+  return g_control_thunks.GLES2CreateContext(
+      handle, lost_callback, closure, async_waiter);
 }
 
 void MojoGLES2DestroyContext(MojoGLES2Context context) {

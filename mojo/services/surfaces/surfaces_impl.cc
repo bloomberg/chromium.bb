@@ -9,7 +9,6 @@
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "mojo/cc/context_provider_mojo.h"
-#include "mojo/public/cpp/gles2/gles2.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/public/cpp/surfaces/surfaces_type_converters.h"
 
@@ -90,8 +89,6 @@ void SurfacesImpl::ReturnResources(const cc::ReturnedResourceArray& resources) {
 }
 
 scoped_ptr<cc::OutputSurface> SurfacesImpl::CreateOutputSurface() {
-  static GLES2Initializer* gles2 = new GLES2Initializer;
-  DCHECK(gles2);
   return make_scoped_ptr(new cc::OutputSurface(
       new ContextProviderMojo(command_buffer_handle_.Pass())));
 }

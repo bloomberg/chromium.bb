@@ -18,12 +18,10 @@
 struct MojoGLES2ControlThunks {
   size_t size;  // Should be set to sizeof(MojoGLES2ControlThunks).
 
-  void (*GLES2Initialize)(const MojoAsyncWaiter* async_waiter);
-  void (*GLES2Terminate)();
-  MojoGLES2Context (*GLES2CreateContext)(
-      MojoHandle handle,
-      MojoGLES2ContextLost lost_callback,
-      void* closure);
+  MojoGLES2Context (*GLES2CreateContext)(MojoHandle handle,
+                                         MojoGLES2ContextLost lost_callback,
+                                         void* closure,
+                                         const MojoAsyncWaiter* async_waiter);
   void (*GLES2DestroyContext)(MojoGLES2Context context);
   void (*GLES2MakeCurrent)(MojoGLES2Context context);
   void (*GLES2SwapBuffers)();
@@ -40,8 +38,6 @@ struct MojoGLES2ControlThunks {
 inline MojoGLES2ControlThunks MojoMakeGLES2ControlThunks() {
   MojoGLES2ControlThunks gles2_control_thunks = {
     sizeof(MojoGLES2ControlThunks),
-    MojoGLES2Initialize,
-    MojoGLES2Terminate,
     MojoGLES2CreateContext,
     MojoGLES2DestroyContext,
     MojoGLES2MakeCurrent,

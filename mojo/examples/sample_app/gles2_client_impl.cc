@@ -10,6 +10,7 @@
 #include <stdlib.h>
 
 #include "mojo/public/c/gles2/gles2.h"
+#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/utility/run_loop.h"
 
 namespace examples {
@@ -28,10 +29,11 @@ float GetRandomColor() {
 
 GLES2ClientImpl::GLES2ClientImpl(mojo::CommandBufferPtr command_buffer)
     : last_time_(mojo::GetTimeTicksNow()), waiting_to_draw_(false) {
-  context_ = MojoGLES2CreateContext(
-      command_buffer.PassMessagePipe().release().value(),
-      &ContextLostThunk,
-      this);
+  context_ =
+      MojoGLES2CreateContext(command_buffer.PassMessagePipe().release().value(),
+                             &ContextLostThunk,
+                             this,
+                             mojo::Environment::GetDefaultAsyncWaiter());
   MojoGLES2MakeCurrent(context_);
 }
 

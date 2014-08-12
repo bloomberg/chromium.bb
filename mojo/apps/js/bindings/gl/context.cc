@@ -11,6 +11,7 @@
 #include "gin/object_template_builder.h"
 #include "gin/per_context_data.h"
 #include "mojo/public/c/gles2/gles2.h"
+#include "mojo/public/cpp/environment/environment.h"
 
 namespace gin {
 template<>
@@ -154,10 +155,10 @@ Context::Context(v8::Isolate* isolate,
   v8::Handle<v8::Context> context = isolate->GetCurrentContext();
   runner_ = gin::PerContextData::From(context)->runner()->GetWeakPtr();
   context_lost_callback_.Reset(isolate, context_lost_callback);
-  context_ = MojoGLES2CreateContext(
-      handle.value(),
-      &ContextLostThunk,
-      this);
+  context_ = MojoGLES2CreateContext(handle.value(),
+                                    &ContextLostThunk,
+                                    this,
+                                    Environment::GetDefaultAsyncWaiter());
   MojoGLES2MakeCurrent(context_);
 }
 

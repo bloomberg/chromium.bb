@@ -13,7 +13,6 @@
 #include "mojo/examples/pepper_container_app/type_converters.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
-#include "mojo/public/cpp/gles2/gles2.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/services/public/interfaces/native_viewport/native_viewport.mojom.h"
 #include "ppapi/c/pp_rect.h"

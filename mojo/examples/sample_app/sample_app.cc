@@ -9,7 +9,6 @@
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
-#include "mojo/public/cpp/gles2/gles2.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "mojo/public/cpp/utility/run_loop.h"
@@ -70,7 +69,6 @@ class SampleApp : public mojo::ApplicationDelegate,
   }
 
  private:
-  mojo::GLES2Initializer gles2;
   scoped_ptr<GLES2ClientImpl> gles2_client_;
   mojo::NativeViewportPtr viewport_;
 

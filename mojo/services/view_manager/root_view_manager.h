@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/callback.h"
-#include "mojo/public/cpp/gles2/gles2.h"
 #include "mojo/services/view_manager/view_manager_export.h"
 
 namespace aura {
@@ -52,8 +51,6 @@ class MOJO_VIEW_MANAGER_EXPORT RootViewManager {
   RootViewManagerDelegate* delegate_;
 
   RootNodeManager* root_node_manager_;
-
-  GLES2Initializer gles_initializer_;
 
   // Returns true if adding the root node's window to |window_tree_host_|.
   bool in_setup_;

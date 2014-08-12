@@ -8,6 +8,7 @@
 #include "mojo/examples/pepper_container_app/mojo_ppapi_globals.h"
 #include "mojo/examples/pepper_container_app/plugin_instance.h"
 #include "mojo/public/c/gles2/gles2.h"
+#include "mojo/public/cpp/environment/environment.h"
 #include "ppapi/c/pp_errors.h"
 
 namespace mojo {
@@ -28,7 +29,8 @@ Graphics3DResource::Graphics3DResource(PP_Instance instance)
   ScopedMessagePipeHandle pipe = MojoPpapiGlobals::Get()->CreateGLES2Context();
   context_ = MojoGLES2CreateContext(pipe.release().value(),
                                     &ContextLostThunk,
-                                    this);
+                                    this,
+                                    Environment::GetDefaultAsyncWaiter());
 }
 
 bool Graphics3DResource::IsBoundGraphics() const {
