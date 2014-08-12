@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GUEST_VIEW_GUEST_VIEW_H_
-#define CHROME_BROWSER_GUEST_VIEW_GUEST_VIEW_H_
+#ifndef EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_H_
+#define EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_H_
 
 #include "base/bind.h"
-#include "chrome/browser/guest_view/guest_view_base.h"
 #include "content/public/browser/render_frame_host.h"
+#include "extensions/browser/guest_view/guest_view_base.h"
+
+namespace extensions {
 
 // A GuestView is the templated base class for out-of-process frames in the
 // chrome layer. GuestView is templated on its derived type to allow for type-
@@ -69,4 +71,6 @@ class GuestView : public GuestViewBase {
   DISALLOW_COPY_AND_ASSIGN(GuestView);
 };
 
-#endif  // CHROME_BROWSER_GUEST_VIEW_GUEST_VIEW_H_
+}  // namespace extensions
+
+#endif  // EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_H_

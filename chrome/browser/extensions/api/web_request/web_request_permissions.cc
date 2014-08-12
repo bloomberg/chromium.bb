@@ -86,7 +86,7 @@ bool WebRequestPermissions::HideRequest(
   if (info) {
     int process_id = info->GetChildID();
     // Never hide requests from guest processes.
-    if (WebViewRendererState::GetInstance()->IsGuest(process_id))
+    if (extensions::WebViewRendererState::GetInstance()->IsGuest(process_id))
       return false;
 
     if (extension_info_map && (

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GUEST_VIEW_GUEST_VIEW_BASE_H_
-#define CHROME_BROWSER_GUEST_VIEW_GUEST_VIEW_BASE_H_
+#ifndef EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_BASE_H_
+#define EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_BASE_H_
 
 #include <queue>
 
@@ -16,6 +16,8 @@
 #include "content/public/browser/web_contents_observer.h"
 
 struct RendererContentSettingRules;
+
+namespace extensions {
 
 // A GuestViewBase is the base class browser-side API implementation for a
 // <*view> tag. GuestViewBase maintains an association between a guest
@@ -328,4 +330,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   DISALLOW_COPY_AND_ASSIGN(GuestViewBase);
 };
 
-#endif  // CHROME_BROWSER_GUEST_VIEW_GUEST_VIEW_BASE_H_
+}  // namespace extensions
+
+#endif  // EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_BASE_H_

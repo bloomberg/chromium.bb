@@ -461,7 +461,8 @@ void RenderViewContextMenu::AppendCurrentExtensionItems() {
     // Only add extension items from this extension.
     int index = 0;
     const MenuItem::ExtensionKey key(
-        extension->id(), WebViewGuest::GetViewInstanceId(source_web_contents_));
+        extension->id(),
+        extensions::WebViewGuest::GetViewInstanceId(source_web_contents_));
     extension_items_.AppendExtensionItems(
         key, PrintableSelectionText(), &index);
   }

@@ -123,8 +123,8 @@ void UpdateBrowserModalDialogPosition(views::Widget* widget,
 views::Widget* ShowWebModalDialogViews(
     views::WidgetDelegate* dialog,
     content::WebContents* initiator_web_contents) {
-  WebViewGuest* web_view_guest = WebViewGuest::FromWebContents(
-      initiator_web_contents);
+  extensions::WebViewGuest* web_view_guest =
+      extensions::WebViewGuest::FromWebContents(initiator_web_contents);
   // For embedded WebContents, use the embedder's WebContents for constrained
   // window.
   content::WebContents* web_contents =

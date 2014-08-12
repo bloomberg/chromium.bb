@@ -7,6 +7,8 @@
 
 #include "content/public/browser/javascript_dialog_manager.h"
 
+namespace extensions {
+
 class WebViewGuest;
 
 class JavaScriptDialogHelper : public content::JavaScriptDialogManager {
@@ -49,5 +51,7 @@ class JavaScriptDialogHelper : public content::JavaScriptDialogManager {
 
   DISALLOW_COPY_AND_ASSIGN(JavaScriptDialogHelper);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_JAVASCRIPT_DIALOG_HELPER_H_

@@ -8,7 +8,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/guest_view/guest_view_base.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
@@ -22,6 +21,7 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/guest_view/guest_view_base.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/constants.h"
 
@@ -85,7 +85,8 @@ WebContentsTarget::WebContentsTarget(WebContents* web_contents, bool is_tab)
     set_favicon_url(entry->GetFavicon().url);
   set_last_activity_time(web_contents->GetLastActiveTime());
 
-  GuestViewBase* guest = GuestViewBase::FromWebContents(web_contents);
+  extensions::GuestViewBase* guest =
+      extensions::GuestViewBase::FromWebContents(web_contents);
   WebContents* guest_contents = guest ? guest->embedder_web_contents() : NULL;
   if (guest_contents) {
     set_type(kTargetTypeWebView);

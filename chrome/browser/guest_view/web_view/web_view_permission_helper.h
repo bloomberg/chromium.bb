@@ -15,6 +15,8 @@
 
 using base::UserMetricsAction;
 
+namespace extensions {
+
 class WebViewGuest;
 
 // WebViewPermissionHelper manages <webview> permission requests. This helper
@@ -210,5 +212,7 @@ class WebViewPermissionHelper
 
   DISALLOW_COPY_AND_ASSIGN(WebViewPermissionHelper);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_PERMISSION_HELPER_H_

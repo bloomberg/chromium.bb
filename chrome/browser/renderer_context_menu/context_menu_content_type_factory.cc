@@ -58,7 +58,7 @@ ContextMenuContentType* ContextMenuContentTypeFactory::CreateInternal(
     content::WebContents* web_contents,
     const content::ContextMenuParams& params) {
 #if defined(ENABLE_EXTENSIONS)
-  if (WebViewGuest::FromWebContents(web_contents))
+  if (extensions::WebViewGuest::FromWebContents(web_contents))
     return new ContextMenuContentTypeWebView(web_contents, params);
 
   if (chrome::IsRunningInForcedAppMode())

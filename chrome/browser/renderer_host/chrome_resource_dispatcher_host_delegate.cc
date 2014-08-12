@@ -465,7 +465,7 @@ bool ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
 #else
 
 #if defined(ENABLE_EXTENSIONS)
-  if (WebViewRendererState::GetInstance()->IsGuest(child_id))
+  if (extensions::WebViewRendererState::GetInstance()->IsGuest(child_id))
     return false;
 
 #endif  // defined(ENABLE_EXTENSIONS)

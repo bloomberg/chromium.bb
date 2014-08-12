@@ -8,5 +8,6 @@ include_rules = [
   "+sync",
   "+third_party/leveldatabase",
   "+third_party/skia/include",
+  "+third_party/WebKit/public/web/WebInputEvent.h",
   "+webkit/browser/fileapi",
 ]

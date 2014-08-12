@@ -20,6 +20,8 @@
 using content::BrowserPluginGuestDelegate;
 using content::RenderViewHost;
 
+namespace extensions {
+
 namespace {
 static std::string PermissionTypeToString(WebViewPermissionType type) {
   switch (type) {
@@ -597,3 +599,5 @@ WebViewPermissionHelper::PermissionResponseInfo::PermissionResponseInfo(
 
 WebViewPermissionHelper::PermissionResponseInfo::~PermissionResponseInfo() {
 }
+
+}  // namespace extensions

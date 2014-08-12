@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/extensions/script_executor.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
-#include "chrome/browser/guest_view/guest_view_manager.h"
 #include "chrome/browser/guest_view/web_view/web_view_constants.h"
 #include "chrome/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "chrome/browser/guest_view/web_view/web_view_permission_types.h"
@@ -49,6 +48,7 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/guest_view/guest_view_constants.h"
+#include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/common/constants.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/escape.h"
@@ -73,6 +73,8 @@ using base::UserMetricsAction;
 using content::RenderFrameHost;
 using content::ResourceType;
 using content::WebContents;
+
+namespace extensions {
 
 namespace {
 
@@ -1259,3 +1261,5 @@ void WebViewGuest::OnWebViewNewWindowResponse(
   if (!allow)
     guest->Destroy();
 }
+
+}  // namespace extensions

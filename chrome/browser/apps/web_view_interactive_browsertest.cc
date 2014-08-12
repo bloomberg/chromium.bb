@@ -10,9 +10,6 @@
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
-#include "chrome/browser/guest_view/guest_view_base.h"
-#include "chrome/browser/guest_view/guest_view_manager.h"
-#include "chrome/browser/guest_view/guest_view_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
@@ -27,6 +24,9 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/browser/guest_view/guest_view_base.h"
+#include "extensions/browser/guest_view/guest_view_manager.h"
+#include "extensions/browser/guest_view/guest_view_manager_factory.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/text_input_client.h"
@@ -35,7 +35,7 @@
 
 using apps::AppWindow;
 
-class TestGuestViewManager : public GuestViewManager {
+class TestGuestViewManager : public extensions::GuestViewManager {
  public:
   explicit TestGuestViewManager(content::BrowserContext* context) :
       GuestViewManager(context),
@@ -54,7 +54,8 @@ class TestGuestViewManager : public GuestViewManager {
   // GuestViewManager override:
   virtual void AddGuest(int guest_instance_id,
                         content::WebContents* guest_web_contents) OVERRIDE{
-    GuestViewManager::AddGuest(guest_instance_id, guest_web_contents);
+    extensions::GuestViewManager::AddGuest(
+        guest_instance_id, guest_web_contents);
     web_contents_ = guest_web_contents;
 
     if (message_loop_runner_)
@@ -66,14 +67,14 @@ class TestGuestViewManager : public GuestViewManager {
 };
 
 // Test factory for creating test instances of GuestViewManager.
-class TestGuestViewManagerFactory : public GuestViewManagerFactory {
+class TestGuestViewManagerFactory : public extensions::GuestViewManagerFactory {
  public:
   TestGuestViewManagerFactory() :
       test_guest_view_manager_(NULL) {}
 
   virtual ~TestGuestViewManagerFactory() {}
 
-  virtual GuestViewManager* CreateGuestViewManager(
+  virtual extensions::GuestViewManager* CreateGuestViewManager(
       content::BrowserContext* context) OVERRIDE {
     return GetManager(context);
   }
@@ -100,7 +101,7 @@ class WebViewInteractiveTest
         corner_(gfx::Point()),
         mouse_click_result_(false),
         first_click_(true) {
-    GuestViewManager::set_factory_for_testing(&factory_);
+    extensions::GuestViewManager::set_factory_for_testing(&factory_);
   }
 
   TestGuestViewManager* GetGuestViewManager() {
@@ -286,7 +287,7 @@ class WebViewInteractiveTest
 
     guest_web_contents_ = source->GetWebContents();
     embedder_web_contents_ =
-        GuestViewBase::FromWebContents(guest_web_contents_)->
+        extensions::GuestViewBase::FromWebContents(guest_web_contents_)->
             embedder_web_contents();
 
     gfx::Rect offset = embedder_web_contents_->GetContainerBounds();

@@ -41,7 +41,7 @@ const char* ExtensionOptionsGuest::GetAPINamespace() {
 }
 
 // static
-GuestViewBase* ExtensionOptionsGuest::Create(
+extensions::GuestViewBase* ExtensionOptionsGuest::Create(
     content::BrowserContext* browser_context,
     int guest_instance_id) {
   if (!extensions::FeatureSwitch::embedded_extension_options()->IsEnabled()) {
@@ -114,7 +114,7 @@ void ExtensionOptionsGuest::DidInitialize() {
 
 void ExtensionOptionsGuest::DidStopLoading() {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  DispatchEventToEmbedder(new GuestViewBase::Event(
+  DispatchEventToEmbedder(new extensions::GuestViewBase::Event(
       extensions::api::extension_options_internal::OnLoad::kEventName,
       args.Pass()));
 }
@@ -144,7 +144,7 @@ void ExtensionOptionsGuest::GuestSizeChangedDueToAutoSize(
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetInteger(extensionoptions::kWidth, new_size.width());
   args->SetInteger(extensionoptions::kHeight, new_size.height());
-  DispatchEventToEmbedder(new GuestViewBase::Event(
+  DispatchEventToEmbedder(new extensions::GuestViewBase::Event(
       extension_options_internal::OnSizeChanged::kEventName, args.Pass()));
 }
 

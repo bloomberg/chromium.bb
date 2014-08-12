@@ -4,12 +4,12 @@
 
 #include "chrome/browser/extensions/api/guest_view/guest_view_internal_api.h"
 
-#include "chrome/browser/guest_view/guest_view_base.h"
-#include "chrome/browser/guest_view/guest_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/guest_view_internal.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "extensions/browser/guest_view/guest_view_base.h"
+#include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/common/permissions/permissions_data.h"
 
 namespace guest_view_internal = extensions::api::guest_view_internal;

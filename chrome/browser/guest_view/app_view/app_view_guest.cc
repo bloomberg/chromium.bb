@@ -8,7 +8,6 @@
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/guest_view/app_view/app_view_constants.h"
-#include "chrome/browser/guest_view/guest_view_manager.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/renderer_context_menu/context_menu_delegate.h"
@@ -18,6 +17,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/api/app_runtime.h"
@@ -29,6 +29,8 @@ namespace app_runtime = extensions::core_api::app_runtime;
 using content::RenderFrameHost;
 using content::WebContents;
 using extensions::ExtensionHost;
+
+namespace extensions {
 
 namespace {
 
@@ -248,3 +250,4 @@ void AppViewGuest::LaunchAppAndFireEvent(
       browser_context(), embed_request.Pass(), extension_host->extension());
 }
 
+}  // namespace extensions

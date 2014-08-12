@@ -41,8 +41,8 @@ bool GeolocationPermissionContextExtensions::RequestPermission(
 #if defined(ENABLE_EXTENSIONS)
   GURL requesting_frame_origin = requesting_frame.GetOrigin();
 
-  WebViewPermissionHelper* web_view_permission_helper =
-      WebViewPermissionHelper::FromWebContents(web_contents);
+  extensions::WebViewPermissionHelper* web_view_permission_helper =
+      extensions::WebViewPermissionHelper::FromWebContents(web_contents);
   if (web_view_permission_helper) {
     web_view_permission_helper->RequestGeolocationPermission(
         bridge_id, requesting_frame, user_gesture, callback);
@@ -90,9 +90,10 @@ bool GeolocationPermissionContextExtensions::CancelPermissionRequest(
     content::WebContents* web_contents,
     int bridge_id) {
 #if defined(ENABLE_EXTENSIONS)
-  WebViewPermissionHelper* web_view_permission_helper =
-      web_contents ? WebViewPermissionHelper::FromWebContents(web_contents)
-                   : NULL;
+  extensions::WebViewPermissionHelper* web_view_permission_helper =
+      web_contents ?
+      extensions::WebViewPermissionHelper::FromWebContents(web_contents)
+      : NULL;
   if (web_view_permission_helper) {
     web_view_permission_helper->CancelGeolocationPermissionRequest(bridge_id);
     return true;

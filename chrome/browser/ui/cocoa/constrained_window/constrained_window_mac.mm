@@ -28,7 +28,8 @@ ConstrainedWindowMac::ConstrainedWindowMac(
       sheet_([sheet retain]),
       shown_(false) {
   DCHECK(web_contents);
-  WebViewGuest* web_view_guest = WebViewGuest::FromWebContents(web_contents);
+  extensions::WebViewGuest* web_view_guest =
+    extensions::WebViewGuest::FromWebContents(web_contents);
   // For embedded WebContents, use the embedder's WebContents for constrained
   // window.
   web_contents_ = web_view_guest && web_view_guest->embedder_web_contents() ?

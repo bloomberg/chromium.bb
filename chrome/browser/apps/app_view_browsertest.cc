@@ -5,24 +5,24 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
-#include "chrome/browser/guest_view/guest_view_manager.h"
-#include "chrome/browser/guest_view/guest_view_manager_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/guest_view/guest_view_manager.h"
+#include "extensions/browser/guest_view/guest_view_manager_factory.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 
 namespace {
 
-class TestGuestViewManager : public GuestViewManager {
+class TestGuestViewManager : public extensions::GuestViewManager {
  public:
   explicit TestGuestViewManager(content::BrowserContext* context) :
-      GuestViewManager(context),
+      extensions::GuestViewManager(context),
       web_contents_(NULL) {}
 
   content::WebContents* WaitForGuestCreated() {
@@ -38,7 +38,8 @@ class TestGuestViewManager : public GuestViewManager {
   // GuestViewManager override:
   virtual void AddGuest(int guest_instance_id,
                         content::WebContents* guest_web_contents) OVERRIDE{
-    GuestViewManager::AddGuest(guest_instance_id, guest_web_contents);
+    extensions::GuestViewManager::AddGuest(
+        guest_instance_id, guest_web_contents);
     web_contents_ = guest_web_contents;
 
     if (message_loop_runner_)
@@ -50,14 +51,14 @@ class TestGuestViewManager : public GuestViewManager {
 };
 
 // Test factory for creating test instances of GuestViewManager.
-class TestGuestViewManagerFactory : public GuestViewManagerFactory {
+class TestGuestViewManagerFactory : public extensions::GuestViewManagerFactory {
  public:
   TestGuestViewManagerFactory() :
       test_guest_view_manager_(NULL) {}
 
   virtual ~TestGuestViewManagerFactory() {}
 
-  virtual GuestViewManager* CreateGuestViewManager(
+  virtual extensions::GuestViewManager* CreateGuestViewManager(
       content::BrowserContext* context) OVERRIDE {
     return GetManager(context);
   }
@@ -80,7 +81,7 @@ class TestGuestViewManagerFactory : public GuestViewManagerFactory {
 class AppViewTest : public extensions::PlatformAppBrowserTest {
  public:
   AppViewTest() {
-    GuestViewManager::set_factory_for_testing(&factory_);
+    extensions::GuestViewManager::set_factory_for_testing(&factory_);
   }
 
   TestGuestViewManager* GetGuestViewManager() {

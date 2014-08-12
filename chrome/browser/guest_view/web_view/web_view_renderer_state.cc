@@ -7,6 +7,8 @@
 
 using content::BrowserThread;
 
+namespace extensions {
+
 // static
 WebViewRendererState* WebViewRendererState::GetInstance() {
   return Singleton<WebViewRendererState>::get();
@@ -79,3 +81,5 @@ bool WebViewRendererState::GetPartitionID(int guest_process_id,
   }
   return false;
 }
+
+}  // namespace extensions

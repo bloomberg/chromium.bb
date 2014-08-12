@@ -11,6 +11,8 @@
 
 #include "base/memory/singleton.h"
 
+namespace extensions {
+
 class WebViewGuest;
 
 // This class keeps track of <webview> renderer state for use on the IO thread.
@@ -69,5 +71,7 @@ class WebViewRendererState {
 
   DISALLOW_COPY_AND_ASSIGN(WebViewRendererState);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_RENDERER_STATE_H_

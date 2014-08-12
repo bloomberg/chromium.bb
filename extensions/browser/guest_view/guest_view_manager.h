@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GUEST_VIEW_GUEST_VIEW_MANAGER_H_
-#define CHROME_BROWSER_GUEST_VIEW_GUEST_VIEW_MANAGER_H_
+#ifndef EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_MANAGER_H_
+#define EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_MANAGER_H_
 
 #include <map>
 
@@ -14,14 +14,16 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 
-class GuestViewBase;
-class GuestViewManagerFactory;
 class GURL;
 
 namespace content {
 class BrowserContext;
 class WebContents;
 }  // namespace content
+
+namespace extensions{
+class GuestViewBase;
+class GuestViewManagerFactory;
 
 class GuestViewManager : public content::BrowserPluginGuestManager,
                          public base::SupportsUserData::Data {
@@ -120,4 +122,6 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
   DISALLOW_COPY_AND_ASSIGN(GuestViewManager);
 };
 
-#endif  // CHROME_BROWSER_GUEST_VIEW_GUEST_VIEW_MANAGER_H_
+}  // namespace extensions
+
+#endif  // EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_MANAGER_H_

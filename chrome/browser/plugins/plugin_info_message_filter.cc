@@ -247,7 +247,8 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
     CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     // NPAPI plugins are not supported inside <webview> guests.
 #if defined(ENABLE_EXTENSIONS)
-    if (WebViewRendererState::GetInstance()->IsGuest(render_process_id_)) {
+    if (extensions::WebViewRendererState::GetInstance()->IsGuest(
+        render_process_id_)) {
       status->value =
           ChromeViewHostMsg_GetPluginInfo_Status::kNPAPINotSupported;
       return;
@@ -325,7 +326,8 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
     // and update the status as appropriate depending on the response from the
     // embedder.
 #if defined(ENABLE_EXTENSIONS)
-    if (WebViewRendererState::GetInstance()->IsGuest(render_process_id_))
+    if (extensions::WebViewRendererState::GetInstance()->IsGuest(
+        render_process_id_))
       status->value = ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized;
 
 #endif

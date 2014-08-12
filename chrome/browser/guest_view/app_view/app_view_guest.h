@@ -6,13 +6,12 @@
 #define CHROME_BROWSER_GUEST_VIEW_APP_VIEW_APP_VIEW_GUEST_H_
 
 #include "base/id_map.h"
-#include "chrome/browser/guest_view/guest_view.h"
 #include "extensions/browser/extension_function_dispatcher.h"
+#include "extensions/browser/guest_view/guest_view.h"
 
 namespace extensions {
 class Extension;
 class ExtensionHost;
-};
 
 // An AppViewGuest provides the browser-side implementation of <appview> API.
 // AppViewGuest is created on attachment. That is, when a guest WebContents is
@@ -82,5 +81,7 @@ class AppViewGuest : public GuestView<AppViewGuest>,
 
   DISALLOW_COPY_AND_ASSIGN(AppViewGuest);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_GUEST_VIEW_APP_VIEW_APP_VIEW_GUEST_H_

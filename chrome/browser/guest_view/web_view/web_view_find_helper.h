@@ -16,7 +16,6 @@
 
 namespace extensions {
 class WebViewInternalFindFunction;
-} // namespace extensions
 class WebViewGuest;
 
 // Helper class for find requests and replies for the web_view_internal find
@@ -185,5 +184,7 @@ class WebViewFindHelper {
 
   DISALLOW_COPY_AND_ASSIGN(WebViewFindHelper);
 };
+
+} // namespace extensions
 
 #endif  // CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_FIND_HELPER_H_

@@ -2,15 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/guest_view/guest_view_manager.h"
+#include "extensions/browser/guest_view/guest_view_manager.h"
 
-#include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "extensions/browser/extensions_test.h"
 
 using content::WebContents;
 using content::WebContentsTester;
+
+namespace extensions {
 
 namespace guestview {
 
@@ -38,19 +41,21 @@ class TestGuestViewManager : public GuestViewManager {
 
 namespace {
 
-class GuestViewManagerTest : public testing::Test {
+class GuestViewManagerTest : public extensions::ExtensionsTest {
  public:
-  GuestViewManagerTest() {}
+  GuestViewManagerTest() :
+    notification_service_(content::NotificationService::Create()) {}
   virtual ~GuestViewManagerTest() {}
 
   scoped_ptr<WebContents> CreateWebContents() {
     return scoped_ptr<WebContents>(
-        WebContentsTester::CreateTestWebContents(&profile_, NULL));
+        WebContentsTester::CreateTestWebContents(&browser_context_, NULL));
   }
 
  private:
+  scoped_ptr<content::NotificationService> notification_service_;
   content::TestBrowserThreadBundle thread_bundle_;
-  TestingProfile profile_;
+  content::TestBrowserContext browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(GuestViewManagerTest);
 };
@@ -58,9 +63,9 @@ class GuestViewManagerTest : public testing::Test {
 }  // namespace
 
 TEST_F(GuestViewManagerTest, AddRemove) {
-  TestingProfile profile;
+  content::TestBrowserContext browser_context;
   scoped_ptr<guestview::TestGuestViewManager> manager(
-      new guestview::TestGuestViewManager(&profile));
+      new guestview::TestGuestViewManager(&browser_context));
 
   scoped_ptr<WebContents> web_contents1(CreateWebContents());
   scoped_ptr<WebContents> web_contents2(CreateWebContents());
@@ -100,3 +105,5 @@ TEST_F(GuestViewManagerTest, AddRemove) {
 
   EXPECT_EQ(0u, manager->GetRemovedInstanceIdSize());
 }
+
+}  // namespace extensions

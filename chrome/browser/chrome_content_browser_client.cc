@@ -222,12 +222,12 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/suggest_permission_util.h"
-#include "chrome/browser/guest_view/guest_view_base.h"
-#include "chrome/browser/guest_view/guest_view_manager.h"
 #include "chrome/browser/guest_view/web_view/web_view_guest.h"
 #include "chrome/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "chrome/browser/guest_view/web_view/web_view_renderer_state.h"
+#include "extensions/browser/guest_view/guest_view_base.h"
 #include "extensions/browser/guest_view/guest_view_constants.h"
+#include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #endif
 
@@ -741,7 +741,7 @@ void ChromeContentBrowserClient::GetStoragePartitionConfigForSite(
 
   bool success = false;
 #if defined(ENABLE_EXTENSIONS)
-  success = WebViewGuest::GetGuestPartitionConfigForSite(
+  success = extensions::WebViewGuest::GetGuestPartitionConfigForSite(
       site, partition_domain, partition_name, in_memory);
 
   if (!success && site.SchemeIs(extensions::kExtensionScheme)) {
@@ -1576,7 +1576,7 @@ void ChromeContentBrowserClient::GuestPermissionRequestHelper(
 
     process_map.insert(std::pair<int, int>(i->first, i->second));
 
-    if (WebViewRendererState::GetInstance()->IsGuest(i->first))
+    if (extensions::WebViewRendererState::GetInstance()->IsGuest(i->first))
       has_web_view_guest = true;
   }
   if (!has_web_view_guest) {
@@ -1608,9 +1608,9 @@ void ChromeContentBrowserClient::RequestFileSystemPermissionOnUIThread(
     bool allowed_by_default,
     const base::Callback<void(bool)>& callback) {
   DCHECK(BrowserThread:: CurrentlyOn(BrowserThread::UI));
-  WebViewPermissionHelper* web_view_permission_helper =
-      WebViewPermissionHelper::FromFrameID(render_process_id,
-                                           render_frame_id);
+  extensions::WebViewPermissionHelper* web_view_permission_helper =
+      extensions::WebViewPermissionHelper::FromFrameID(
+          render_process_id, render_frame_id);
   web_view_permission_helper->RequestFileSystemPermission(url,
                                                           allowed_by_default,
                                                           callback);
@@ -2035,7 +2035,8 @@ bool ChromeContentBrowserClient::CanCreateWindow(
   }
 
 #if defined(ENABLE_EXTENSIONS)
-  if (WebViewRendererState::GetInstance()->IsGuest(render_process_id))
+  if (extensions::WebViewRendererState::GetInstance()->IsGuest(
+      render_process_id))
     return true;
 #endif
 

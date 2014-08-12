@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GUEST_VIEW_GUEST_VIEW_MANAGER_FACTORY_H_
-#define CHROME_BROWSER_GUEST_VIEW_GUEST_VIEW_MANAGER_FACTORY_H_
+#ifndef EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_MANAGER_FACTORY_H_
+#define EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_MANAGER_FACTORY_H_
+
+namespace extensions {
 
 class GuestViewManagerFactory {
  public:
@@ -14,5 +16,7 @@ class GuestViewManagerFactory {
   virtual ~GuestViewManagerFactory() {}
 };
 
-#endif  // CHROME_BROWSER_GUEST_VIEW_GUEST_VIEW_MANAGER_FACTORY_H_
+}  // namespace extensions
+
+#endif  // EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_MANAGER_FACTORY_H_
 

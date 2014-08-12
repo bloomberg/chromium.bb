@@ -28,7 +28,7 @@
 #include "url/gurl.h"
 
 #if defined(ENABLE_EXTENSIONS)
-#include "chrome/browser/guest_view/guest_view_base.h"
+#include "extensions/browser/guest_view/guest_view_base.h"
 #endif
 
 using base::TimeDelta;
@@ -177,7 +177,7 @@ void PrerenderLinkManager::OnAddPrerender(int launcher_child_id,
       rvh ? content::WebContents::FromRenderViewHost(rvh) : NULL;
   // Guests inside <webview> do not support cross-process navigation and so we
   // do not allow guests to prerender content.
-  if (GuestViewBase::IsGuest(web_contents))
+  if (extensions::GuestViewBase::IsGuest(web_contents))
     return;
 #endif
 

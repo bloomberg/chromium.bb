@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/guest_view/guest_view_base.h"
+#include "extensions/browser/guest_view/guest_view_base.h"
 
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/guest_view/guest_view_manager.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -16,12 +15,15 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/guest_view_constants.h"
+#include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 using content::WebContents;
+
+namespace extensions {
 
 namespace {
 
@@ -448,3 +450,5 @@ void GuestViewBase::CompleteInit(const std::string& embedder_extension_id,
 void GuestViewBase::RegisterGuestViewTypes() {
   extensions::ExtensionsAPIClient::Get()->RegisterGuestViewTypes();
 }
+
+}  // namespace extensions

@@ -71,8 +71,8 @@
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
-#include "chrome/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/common/extension.h"
 #endif
 
@@ -364,7 +364,7 @@ HostContentSettingsMap* OffTheRecordProfileImpl::GetHostContentSettingsMap() {
 
 content::BrowserPluginGuestManager* OffTheRecordProfileImpl::GetGuestManager() {
 #if defined(ENABLE_EXTENSIONS)
-  return GuestViewManager::FromBrowserContext(this);
+  return extensions::GuestViewManager::FromBrowserContext(this);
 #else
   return NULL;
 #endif

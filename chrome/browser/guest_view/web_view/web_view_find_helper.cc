@@ -9,6 +9,8 @@
 #include "chrome/browser/extensions/api/web_view/web_view_internal_api.h"
 #include "chrome/browser/guest_view/web_view/web_view_constants.h"
 
+namespace extensions {
+
 WebViewFindHelper::WebViewFindHelper(WebViewGuest* webview_guest)
     : webview_guest_(webview_guest), current_find_request_id_(0) {
 }
@@ -276,3 +278,5 @@ void WebViewFindHelper::FindInfo::SendResponse(bool canceled) {
   find_function_->SetResult(results.DeepCopy());
   find_function_->SendResponse(true);
 }
+
+}  // namespace extensions

@@ -12,6 +12,8 @@
 #include "chrome/browser/guest_view/web_view/web_view_permission_types.h"
 #include "extensions/browser/guest_view/guest_view_constants.h"
 
+namespace extensions {
+
 namespace {
 
 std::string JavaScriptMessageTypeToString(
@@ -100,3 +102,5 @@ void JavaScriptDialogHelper::OnPermissionResponse(
   callback.Run(allow && web_view_guest_->attached(),
                base::UTF8ToUTF16(user_input));
 }
+
+}  // namespace extensions
