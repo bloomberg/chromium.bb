@@ -125,7 +125,7 @@ void ChromeNativeAppWindowViewsWin::InitializeDefaultWindow(
 
   web_app::UpdateRelaunchDetailsForApp(profile, extension, hwnd);
 
-  if (!create_params.transparent_background && !IsRunningInAsh())
+  if (!create_params.alpha_enabled && !IsRunningInAsh())
     EnsureCaptionStyleSet();
   UpdateShelfMenu();
 }

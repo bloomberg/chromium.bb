@@ -212,7 +212,7 @@ void ChromeNativeAppWindowViews::InitializeDefaultWindow(
   init_params.delegate = this;
   init_params.remove_standard_frame = IsFrameless() || has_frame_color_;
   init_params.use_system_default_icon = true;
-  if (create_params.transparent_background)
+  if (create_params.alpha_enabled)
     init_params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   init_params.keep_on_top = create_params.always_on_top;
 

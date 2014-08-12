@@ -262,8 +262,7 @@ void NativeAppWindowViews::OnWidgetActivationChanged(views::Widget* widget,
 
 void NativeAppWindowViews::RenderViewCreated(
     content::RenderViewHost* render_view_host) {
-  if (app_window_->requested_transparent_background() &&
-      CanHaveAlphaEnabled()) {
+  if (app_window_->requested_alpha_enabled() && CanHaveAlphaEnabled()) {
     content::RenderWidgetHostView* view = render_view_host->GetView();
     DCHECK(view);
     view->SetBackgroundOpaque(false);

@@ -26,6 +26,7 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/image_util.h"
+#include "extensions/common/features/simple_feature.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -54,6 +55,10 @@ const char kAlwaysOnTopPermission[] =
     "The \"app.window.alwaysOnTop\" permission is required.";
 const char kInvalidUrlParameter[] =
     "The URL used for window creation must be local for security reasons.";
+const char kAlphaEnabledWrongChannel[] =
+    "The alphaEnabled option requires dev channel or newer.";
+const char kAlphaEnabledMissingPermission[] =
+    "The alphaEnabled option requires app.window.alpha permission.";
 }  // namespace app_window_constants
 
 const char kNoneFrameOption[] = "none";
@@ -233,12 +238,34 @@ bool AppWindowCreateFunction::RunAsync() {
     if (!GetFrameOptions(*options, &create_params))
       return false;
 
-    if (options->transparent_background.get() &&
-        (extension()->permissions_data()->HasAPIPermission(
-             APIPermission::kExperimental) ||
-         CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableExperimentalExtensionApis))) {
-      create_params.transparent_background = *options->transparent_background;
+    if (options->alpha_enabled.get()) {
+      const char* whitelist[] = {
+        "0F42756099D914A026DADFA182871C015735DD95",  // http://crbug.com/323773
+        "2D22CDB6583FD0A13758AEBE8B15E45208B4E9A7",
+        "E7E2461CE072DF036CF9592740196159E2D7C089",  // http://crbug.com/356200
+        "A74A4D44C7CFCD8844830E6140C8D763E12DD8F3",
+        "312745D9BF916161191143F6490085EEA0434997",
+        "53041A2FA309EECED01FFC751E7399186E860B2C"
+      };
+      if (GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV &&
+          !extensions::SimpleFeature::IsIdInList(
+              extension_id(),
+              std::set<std::string>(whitelist,
+                                    whitelist + arraysize(whitelist)))) {
+        error_ = app_window_constants::kAlphaEnabledWrongChannel;
+        return false;
+      }
+      if (!extension()->permissions_data()->HasAPIPermission(
+              APIPermission::kAlphaEnabled)) {
+        error_ = app_window_constants::kAlphaEnabledMissingPermission;
+        return false;
+      }
+#if defined(USE_AURA)
+      create_params.alpha_enabled = *options->alpha_enabled;
+#else
+      // Transparency is only supported on Aura.
+      // Fallback to creating an opaque window (by ignoring alphaEnabled).
+#endif
     }
 
     if (options->hidden.get())

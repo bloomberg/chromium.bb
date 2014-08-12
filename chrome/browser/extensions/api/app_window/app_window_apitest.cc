@@ -15,6 +15,10 @@
 #include "ui/base/base_window.h"
 #include "ui/gfx/rect.h"
 
+#if defined(OS_WIN)
+#include "ui/base/win/shell.h"
+#endif
+
 using apps::AppWindow;
 
 namespace {
@@ -112,6 +116,42 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiGet) {
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiSetShape) {
   EXPECT_TRUE(RunPlatformAppTest("platform_apps/windows_api_shape"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+                       WindowsApiAlphaEnabledHasPermissions) {
+  const char* no_alpha_dir =
+      "platform_apps/windows_api_alpha_enabled/has_permissions_no_alpha";
+  const char* test_dir = no_alpha_dir;
+
+#if defined(USE_AURA) && (defined(OS_CHROMEOS) || !defined(OS_LINUX))
+  test_dir =
+      "platform_apps/windows_api_alpha_enabled/has_permissions_has_alpha";
+#if defined(OS_WIN)
+  if (!ui::win::IsAeroGlassEnabled()) {
+    test_dir = no_alpha_dir;
+  }
+#endif  // OS_WIN
+#endif  // USE_AURA && (OS_CHROMEOS || !OS_LINUX)
+
+  EXPECT_TRUE(RunPlatformAppTest(test_dir)) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+                       WindowsApiAlphaEnabledNoPermissions) {
+  EXPECT_TRUE(RunPlatformAppTest(
+      "platform_apps/windows_api_alpha_enabled/no_permissions"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiAlphaEnabledInStable) {
+  extensions::ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_STABLE);
+  EXPECT_TRUE(RunPlatformAppTestWithFlags(
+      "platform_apps/windows_api_alpha_enabled/in_stable",
+      // Ignore manifest warnings because the extension will not load at all
+      // in stable.
+      kFlagIgnoreManifestWarnings))
       << message_;
 }
 

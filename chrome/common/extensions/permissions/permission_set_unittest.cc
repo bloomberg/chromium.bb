@@ -638,6 +638,7 @@ TEST(PermissionsTest, PermissionMessages) {
   // a prompt.
   skip.insert(APIPermission::kActiveTab);
   skip.insert(APIPermission::kAlarms);
+  skip.insert(APIPermission::kAlphaEnabled);
   skip.insert(APIPermission::kAlwaysOnTopWindows);
   skip.insert(APIPermission::kAppView);
   skip.insert(APIPermission::kAudio);

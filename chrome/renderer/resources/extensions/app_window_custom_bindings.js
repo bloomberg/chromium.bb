@@ -243,7 +243,7 @@ appWindow.registerCustomHook(function(bindingsAPI) {
     };
     AppWindow.prototype.alphaEnabled = function() {
       return appWindowData.alphaEnabled;
-    }
+    };
     AppWindow.prototype.handleWindowFirstShownForTests = function(callback) {
       // This allows test apps to get have their callback run even if they
       // call this after the first show has happened.

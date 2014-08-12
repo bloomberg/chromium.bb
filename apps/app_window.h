@@ -152,7 +152,7 @@ class AppWindow : public content::NotificationObserver,
     bool has_frame_color;
     SkColor active_frame_color;
     SkColor inactive_frame_color;
-    bool transparent_background;  // Only supported on ash.
+    bool alpha_enabled;
 
     // The initial content/inner bounds specification (excluding any window
     // decorations).
@@ -344,10 +344,8 @@ class AppWindow : public content::NotificationObserver,
   // app.
   void WindowEventsReady();
 
-  // Whether the app window wants a transparent background.
-  bool requested_transparent_background() const {
-    return requested_transparent_background_;
-  }
+  // Whether the app window wants to be alpha enabled.
+  bool requested_alpha_enabled() const { return requested_alpha_enabled_; }
 
  protected:
   virtual ~AppWindow();
@@ -547,8 +545,8 @@ class AppWindow : public content::NotificationObserver,
   // taskbar.
   bool cached_always_on_top_;
 
-  // Whether |transparent_background| was set in the CreateParams.
-  bool requested_transparent_background_;
+  // Whether |alpha_enabled| was set in the CreateParams.
+  bool requested_alpha_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(AppWindow);
 };
