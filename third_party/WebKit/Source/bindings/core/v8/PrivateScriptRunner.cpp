@@ -205,8 +205,19 @@ v8::Handle<v8::Value> PrivateScriptRunner::runDOMMethod(ScriptState* scriptState
     return V8ScriptRunner::callFunction(v8::Handle<v8::Function>::Cast(method), scriptState->executionContext(), holder, argc, argv, scriptState->isolate());
 }
 
-bool PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(v8::Isolate* isolate, ExceptionState& exceptionState, v8::Handle<v8::Value> exception)
+static void dumpJSError(String exceptionName, String message)
 {
+    // FIXME: Set a ScriptOrigin of the private script and print a more informative message.
+#ifndef NDEBUG
+    fprintf(stderr, "Private script throws an exception: %s\n", exceptionName.utf8().data());
+    if (!message.isEmpty())
+        fprintf(stderr, "%s\n", message.utf8().data());
+#endif
+}
+
+bool PrivateScriptRunner::rethrowExceptionInPrivateScript(v8::Isolate* isolate, ExceptionState& exceptionState, v8::TryCatch& block)
+{
+    v8::Handle<v8::Value> exception = block.Exception();
     if (exception.IsEmpty() || !exception->IsObject())
         return false;
 
@@ -216,47 +227,57 @@ bool PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(v8::Isolate* 
         return false;
     String exceptionName = toCoreString(v8::Handle<v8::String>::Cast(name));
     if (exceptionName == "DOMExceptionInPrivateScript") {
-        v8::Handle<v8::Value> message = exceptionObject->Get(v8String(isolate, "message"));
-        RELEASE_ASSERT(!message.IsEmpty() && message->IsString());
+        v8::Handle<v8::Value> v8Message = exceptionObject->Get(v8String(isolate, "message"));
+        RELEASE_ASSERT(!v8Message.IsEmpty() && v8Message->IsString());
         v8::Handle<v8::Value> code = exceptionObject->Get(v8String(isolate, "code"));
         RELEASE_ASSERT(!code.IsEmpty() && code->IsInt32());
-        exceptionState.throwDOMException(toInt32(code), toCoreString(v8::Handle<v8::String>::Cast(message)));
+        exceptionState.throwDOMException(toInt32(code), toCoreString(v8::Handle<v8::String>::Cast(v8Message)));
         exceptionState.throwIfNeeded();
         return true;
     }
     if (exceptionName == "Error") {
-        v8::Handle<v8::Value> message = exceptionObject->Get(v8String(isolate, "message"));
-        RELEASE_ASSERT(!message.IsEmpty() && message->IsString());
-        exceptionState.throwDOMException(V8GeneralError, toCoreString(v8::Handle<v8::String>::Cast(message)));
+        v8::Handle<v8::Value> v8Message = exceptionObject->Get(v8String(isolate, "message"));
+        RELEASE_ASSERT(!v8Message.IsEmpty() && v8Message->IsString());
+        String message = toCoreString(v8::Handle<v8::String>::Cast(v8Message));
+        exceptionState.throwDOMException(V8GeneralError, message);
         exceptionState.throwIfNeeded();
+        dumpJSError(exceptionName, message);
         return true;
     }
     if (exceptionName == "TypeError") {
-        v8::Handle<v8::Value> message = exceptionObject->Get(v8String(isolate, "message"));
-        RELEASE_ASSERT(!message.IsEmpty() && message->IsString());
-        exceptionState.throwDOMException(V8TypeError, toCoreString(v8::Handle<v8::String>::Cast(message)));
+        v8::Handle<v8::Value> v8Message = exceptionObject->Get(v8String(isolate, "message"));
+        RELEASE_ASSERT(!v8Message.IsEmpty() && v8Message->IsString());
+        String message = toCoreString(v8::Handle<v8::String>::Cast(v8Message));
+        exceptionState.throwDOMException(V8TypeError, message);
         exceptionState.throwIfNeeded();
+        dumpJSError(exceptionName, message);
         return true;
     }
     if (exceptionName == "RangeError") {
-        v8::Handle<v8::Value> message = exceptionObject->Get(v8String(isolate, "message"));
-        RELEASE_ASSERT(!message.IsEmpty() && message->IsString());
-        exceptionState.throwDOMException(V8RangeError, toCoreString(v8::Handle<v8::String>::Cast(message)));
+        v8::Handle<v8::Value> v8Message = exceptionObject->Get(v8String(isolate, "message"));
+        RELEASE_ASSERT(!v8Message.IsEmpty() && v8Message->IsString());
+        String message = toCoreString(v8::Handle<v8::String>::Cast(v8Message));
+        exceptionState.throwDOMException(V8RangeError, message);
         exceptionState.throwIfNeeded();
+        dumpJSError(exceptionName, message);
         return true;
     }
     if (exceptionName == "SyntaxError") {
-        v8::Handle<v8::Value> message = exceptionObject->Get(v8String(isolate, "message"));
-        RELEASE_ASSERT(!message.IsEmpty() && message->IsString());
-        exceptionState.throwDOMException(V8SyntaxError, toCoreString(v8::Handle<v8::String>::Cast(message)));
+        v8::Handle<v8::Value> v8Message = exceptionObject->Get(v8String(isolate, "message"));
+        RELEASE_ASSERT(!v8Message.IsEmpty() && v8Message->IsString());
+        String message = toCoreString(v8::Handle<v8::String>::Cast(v8Message));
+        exceptionState.throwDOMException(V8SyntaxError, message);
         exceptionState.throwIfNeeded();
+        dumpJSError(exceptionName, message);
         return true;
     }
     if (exceptionName == "ReferenceError") {
-        v8::Handle<v8::Value> message = exceptionObject->Get(v8String(isolate, "message"));
-        RELEASE_ASSERT(!message.IsEmpty() && message->IsString());
-        exceptionState.throwDOMException(V8ReferenceError, toCoreString(v8::Handle<v8::String>::Cast(message)));
+        v8::Handle<v8::Value> v8Message = exceptionObject->Get(v8String(isolate, "message"));
+        RELEASE_ASSERT(!v8Message.IsEmpty() && v8Message->IsString());
+        String message = toCoreString(v8::Handle<v8::String>::Cast(v8Message));
+        exceptionState.throwDOMException(V8ReferenceError, message);
         exceptionState.throwIfNeeded();
+        dumpJSError(exceptionName, message);
         return true;
     }
     return false;

@@ -564,7 +564,7 @@ bool {{v8_class}}::PrivateScript::{{method.name}}Method({{method.argument_declar
     {% if method.idl_type == 'void' %}
     PrivateScriptRunner::runDOMMethod(scriptState, "{{cpp_class}}", "{{method.name}}", holder, {{method.arguments | length}}, argv);
     if (block.HasCaught()) {
-        if (!PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(scriptState->isolate(), exceptionState, block.Exception())) {
+        if (!PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block)) {
             // FIXME: We should support more exceptions.
             RELEASE_ASSERT_NOT_REACHED();
         }
@@ -574,7 +574,7 @@ bool {{v8_class}}::PrivateScript::{{method.name}}Method({{method.argument_declar
     {% else %}
     v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, "{{cpp_class}}", "{{method.name}}", holder, {{method.arguments | length}}, argv);
     if (block.HasCaught()) {
-        if (!PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(scriptState->isolate(), exceptionState, block.Exception())) {
+        if (!PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block)) {
             // FIXME: We should support more exceptions.
             RELEASE_ASSERT_NOT_REACHED();
         }

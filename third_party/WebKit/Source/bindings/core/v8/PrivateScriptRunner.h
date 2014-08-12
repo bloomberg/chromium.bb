@@ -21,7 +21,7 @@ public:
     static void runDOMAttributeSetter(ScriptState*, String className, String attributeName, v8::Handle<v8::Value> holder, v8::Handle<v8::Value> v8Value);
     static v8::Handle<v8::Value> runDOMMethod(ScriptState*, String className, String methodName, v8::Handle<v8::Value> holder, int argc, v8::Handle<v8::Value> argv[]);
 
-    static bool throwDOMExceptionInPrivateScriptIfNeeded(v8::Isolate*, ExceptionState&, v8::Handle<v8::Value>);
+    static bool rethrowExceptionInPrivateScript(v8::Isolate*, ExceptionState&, v8::TryCatch&);
 };
 
 } // namespace blink
