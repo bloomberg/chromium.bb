@@ -4,10 +4,13 @@
 
 #include "content/browser/service_worker/service_worker_unregister_job.h"
 
+#include "base/memory/weak_ptr.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
+#include "content/browser/service_worker/service_worker_utils.h"
+#include "content/browser/service_worker/service_worker_version.h"
 
 namespace content {
 
@@ -18,7 +21,9 @@ ServiceWorkerUnregisterJob::ServiceWorkerUnregisterJob(
     const GURL& pattern)
     : context_(context),
       pattern_(pattern),
-      weak_factory_(this) {}
+      is_promise_resolved_(false),
+      weak_factory_(this) {
+}
 
 ServiceWorkerUnregisterJob::~ServiceWorkerUnregisterJob() {}
 
@@ -57,28 +62,19 @@ void ServiceWorkerUnregisterJob::OnRegistrationFound(
     return;
   }
 
-  if (status != SERVICE_WORKER_OK) {
+  if (status != SERVICE_WORKER_OK || registration->is_uninstalling()) {
     Complete(status);
     return;
   }
 
-  DCHECK(registration);
-  DeleteRegistration(registration);
-}
+  // TODO: "7. If registration.updatePromise is not null..."
 
-void ServiceWorkerUnregisterJob::DeleteRegistration(
-    const scoped_refptr<ServiceWorkerRegistration>& registration) {
-  // TODO: Also doom installing version.
-  if (registration->waiting_version())
-    registration->waiting_version()->Doom();
-  if (registration->active_version())
-    registration->active_version()->Doom();
+  // "8. Resolve promise."
+  ResolvePromise(SERVICE_WORKER_OK);
 
-  context_->storage()->DeleteRegistration(
-      registration->id(),
-      registration->script_url().GetOrigin(),
-      base::Bind(&ServiceWorkerUnregisterJob::Complete,
-                 weak_factory_.GetWeakPtr()));
+  registration->ClearWhenReady();
+
+  Complete(SERVICE_WORKER_OK);
 }
 
 void ServiceWorkerUnregisterJob::Complete(ServiceWorkerStatusCode status) {
@@ -88,6 +84,14 @@ void ServiceWorkerUnregisterJob::Complete(ServiceWorkerStatusCode status) {
 
 void ServiceWorkerUnregisterJob::CompleteInternal(
     ServiceWorkerStatusCode status) {
+  if (!is_promise_resolved_)
+    ResolvePromise(status);
+}
+
+void ServiceWorkerUnregisterJob::ResolvePromise(
+    ServiceWorkerStatusCode status) {
+  DCHECK(!is_promise_resolved_);
+  is_promise_resolved_ = true;
   for (std::vector<UnregistrationCallback>::iterator it = callbacks_.begin();
        it != callbacks_.end();
        ++it) {

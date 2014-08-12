@@ -87,6 +87,8 @@ class CONTENT_EXPORT ServiceWorkerStorage
                              const GURL& origin,
                              const FindRegistrationCallback& callback);
 
+  ServiceWorkerRegistration* GetUninstallingRegistration(const GURL& scope);
+
   // Returns info about all stored and initially installing registrations.
   void GetAllRegistrations(const GetAllRegistrationInfosCallback& callback);
 
@@ -136,13 +138,17 @@ class CONTENT_EXPORT ServiceWorkerStorage
   int64 NewVersionId();
   int64 NewResourceId();
 
-  // Intended for use only by ServiceWorkerRegisterJob.
+  // Intended for use only by ServiceWorkerRegisterJob and
+  // ServiceWorkerRegistration.
   void NotifyInstallingRegistration(
       ServiceWorkerRegistration* registration);
   void NotifyDoneInstallingRegistration(
       ServiceWorkerRegistration* registration,
       ServiceWorkerVersion* version,
       ServiceWorkerStatusCode status);
+  void NotifyUninstallingRegistration(ServiceWorkerRegistration* registration);
+  void NotifyDoneUninstallingRegistration(
+      ServiceWorkerRegistration* registration);
 
   void Disable();
   bool IsDisabled() const;
@@ -335,8 +341,9 @@ class CONTENT_EXPORT ServiceWorkerStorage
       const StatusCallback& callback,
       bool result);
 
-  // For finding registrations being installed.
+  // For finding registrations being installed or uninstalled.
   RegistrationRefsById installing_registrations_;
+  RegistrationRefsById uninstalling_registrations_;
 
   // Origins having registations.
   std::set<GURL> registered_origins_;

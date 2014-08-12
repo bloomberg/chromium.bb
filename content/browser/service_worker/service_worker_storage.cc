@@ -327,6 +327,22 @@ void ServiceWorkerStorage::FindRegistrationForPattern(
                      weak_factory_.GetWeakPtr(), scope, callback)));
 }
 
+ServiceWorkerRegistration* ServiceWorkerStorage::GetUninstallingRegistration(
+    const GURL& scope) {
+  if (state_ != INITIALIZED || !context_)
+    return NULL;
+  for (RegistrationRefsById::const_iterator it =
+           uninstalling_registrations_.begin();
+       it != uninstalling_registrations_.end();
+       ++it) {
+    if (it->second->pattern() == scope) {
+      DCHECK(it->second->is_uninstalling());
+      return it->second;
+    }
+  }
+  return NULL;
+}
+
 void ServiceWorkerStorage::FindRegistrationForId(
     int64 registration_id,
     const GURL& origin,
@@ -418,7 +434,7 @@ void ServiceWorkerStorage::StoreRegistration(
   data.has_fetch_handler = true;
   data.version_id = version->version_id();
   data.last_update_check = base::Time::Now();
-  data.is_active = false;  // initially stored in the waiting state
+  data.is_active = (version == registration->active_version());
 
   ResourceList resources;
   version->script_cache_map()->GetResources(&resources);
@@ -435,6 +451,8 @@ void ServiceWorkerStorage::StoreRegistration(
                  base::Bind(&ServiceWorkerStorage::DidStoreRegistration,
                             weak_factory_.GetWeakPtr(),
                             callback)));
+
+  registration->set_is_deleted(false);
 }
 
 void ServiceWorkerStorage::UpdateToActiveState(
@@ -492,7 +510,7 @@ void ServiceWorkerStorage::DeleteRegistration(
   ServiceWorkerRegistration* registration =
       context_->GetLiveRegistration(registration_id);
   if (registration)
-    registration->set_is_deleted();
+    registration->set_is_deleted(true);
 }
 
 scoped_ptr<ServiceWorkerResponseReader>
@@ -581,6 +599,8 @@ int64 ServiceWorkerStorage::NewResourceId() {
 
 void ServiceWorkerStorage::NotifyInstallingRegistration(
       ServiceWorkerRegistration* registration) {
+  DCHECK(installing_registrations_.find(registration->id()) ==
+         installing_registrations_.end());
   installing_registrations_[registration->id()] = registration;
 }
 
@@ -604,6 +624,18 @@ void ServiceWorkerStorage::NotifyDoneInstallingRegistration(
             base::Unretained(database_.get()),
             ids));
   }
+}
+
+void ServiceWorkerStorage::NotifyUninstallingRegistration(
+    ServiceWorkerRegistration* registration) {
+  DCHECK(uninstalling_registrations_.find(registration->id()) ==
+         uninstalling_registrations_.end());
+  uninstalling_registrations_[registration->id()] = registration;
+}
+
+void ServiceWorkerStorage::NotifyDoneUninstallingRegistration(
+    ServiceWorkerRegistration* registration) {
+  uninstalling_registrations_.erase(registration->id());
 }
 
 void ServiceWorkerStorage::Disable() {
@@ -924,7 +956,7 @@ ServiceWorkerStorage::GetOrCreateRegistration(
       data.scope, data.script, data.registration_id, context_);
   if (pending_deletions_.find(data.registration_id) !=
       pending_deletions_.end()) {
-    registration->set_is_deleted();
+    registration->set_is_deleted(true);
   }
   scoped_refptr<ServiceWorkerVersion> version =
       context_->GetLiveVersion(data.version_id);

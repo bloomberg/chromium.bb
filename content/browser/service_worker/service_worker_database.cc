@@ -513,6 +513,9 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteRegistration(
     // Delete a resource from the uncommitted list.
     batch.Delete(CreateResourceIdKey(
         kUncommittedResIdKeyPrefix, itr->resource_id));
+    // Delete from the purgeable list in case this version was once deleted.
+    batch.Delete(
+        CreateResourceIdKey(kPurgeableResIdKeyPrefix, itr->resource_id));
   }
 
   // Retrieve a previous version to sweep purgeable resources.

@@ -83,7 +83,13 @@ void ServiceWorkerRegisterJob::Start() {
         &ServiceWorkerRegisterJob::ContinueWithUpdate,
         weak_factory_.GetWeakPtr());
   }
-  context_->storage()->FindRegistrationForPattern(pattern_, next_step);
+
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      context_->storage()->GetUninstallingRegistration(pattern_);
+  if (registration)
+    RunSoon(base::Bind(next_step, SERVICE_WORKER_OK, registration));
+  else
+    context_->storage()->FindRegistrationForPattern(pattern_, next_step);
 }
 
 void ServiceWorkerRegisterJob::Abort() {
@@ -163,53 +169,48 @@ void ServiceWorkerRegisterJob::SetPhase(Phase phase) {
   phase_ = phase;
 }
 
-// This function corresponds to the steps in Register following
-// "Let serviceWorkerRegistration be _GetRegistration(scope)"
-// |existing_registration| corresponds to serviceWorkerRegistration.
+// This function corresponds to the steps in [[Register]] following
+// "Let registration be the result of running the [[GetRegistration]] algorithm.
 // Throughout this file, comments in quotes are excerpts from the spec.
 void ServiceWorkerRegisterJob::ContinueWithRegistration(
     ServiceWorkerStatusCode status,
     const scoped_refptr<ServiceWorkerRegistration>& existing_registration) {
   DCHECK_EQ(REGISTRATION_JOB, job_type_);
-  // On unexpected error, abort this registration job.
   if (status != SERVICE_WORKER_ERROR_NOT_FOUND && status != SERVICE_WORKER_OK) {
     Complete(status);
     return;
   }
 
-  // "If serviceWorkerRegistration is not null and script is equal to
-  // serviceWorkerRegistration.scriptUrl..." resolve with the existing
-  // registration and abort.
-  if (existing_registration.get() &&
-      existing_registration->script_url() == script_url_) {
+  if (!existing_registration) {
+    RegisterAndContinue(SERVICE_WORKER_OK);
+    return;
+  }
+
+  // "Set registration.[[Uninstalling]] to false."
+  existing_registration->AbortPendingClear();
+
+  // "If scriptURL is equal to registration.[[ScriptURL]], then:"
+  if (existing_registration->script_url() == script_url_) {
+    // Spec says to resolve with registration.[[GetNewestWorker]]. We come close
+    // by resolving with the active version.
     set_registration(existing_registration);
-    // If there's no active version, go ahead to Update (this isn't in the spec
-    // but seems reasonable, and without SoftUpdate implemented we can never
-    // Update otherwise).
+
     if (!existing_registration->active_version()) {
       UpdateAndContinue();
       return;
     }
+
     ResolvePromise(
         status, existing_registration, existing_registration->active_version());
     Complete(SERVICE_WORKER_OK);
     return;
   }
 
-  // "If serviceWorkerRegistration is null..." create a new registration.
-  if (!existing_registration.get()) {
-    RegisterAndContinue(SERVICE_WORKER_OK);
-    return;
-  }
-
-  // On script URL mismatch, "set serviceWorkerRegistration.scriptUrl to
-  // script." We accomplish this by deleting the existing registration and
-  // registering a new one.
-  // TODO(falken): Match the spec. We now throw away the active_version_ and
-  // waiting_version_ of the existing registration, which isn't in the spec.
+  // "Set registration.[[ScriptURL]] to scriptURL." We accomplish this by
+  // deleting the existing registration and registering a new one.
   // TODO(michaeln): Deactivate the live existing_registration object and
-  // eventually call storage->DeleteVersionResources()
-  // when it no longer has any controllees.
+  // eventually call storage->DeleteVersionResources() when it no longer has any
+  // controllees.
   context_->storage()->DeleteRegistration(
       existing_registration->id(),
       existing_registration->script_url().GetOrigin(),
