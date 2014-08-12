@@ -551,6 +551,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // invoke it from the message loop.
   void ShutdownHost();
 
+  // Tear down all components of the browser compositor in an order that will
+  // ensure no dangling references.
+  void ShutdownBrowserCompositor();
+
   void EnsureBrowserCompositorView();
   void DestroyBrowserCompositorView();
 

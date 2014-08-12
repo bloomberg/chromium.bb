@@ -558,6 +558,9 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
 
   UnlockMouse();
 
+  // Ensure that the browser compositor is destroyed in a safe order.
+  ShutdownBrowserCompositor();
+
   // Make sure that the layer doesn't reach into the now-invalid object.
   DestroyCompositedIOSurfaceAndLayer();
   DestroySoftwareLayer();
@@ -660,6 +663,8 @@ void RenderWidgetHostViewMac::DestroyBrowserCompositorView() {
   if (!browser_compositor_view_)
     return;
 
+  // Marking the DelegatedFrameHost as removed from the window hierarchy is
+  // necessary to remove all connections to its old ui::Compositor.
   delegated_frame_host_->WasHidden();
   delegated_frame_host_->RemovingFromWindow();
   browser_compositor_view_.reset();
@@ -1143,10 +1148,7 @@ void RenderWidgetHostViewMac::Destroy() {
 
   // Delete the delegated frame state, which will reach back into
   // render_widget_host_.
-  DestroyBrowserCompositorView();
-  delegated_frame_host_.reset();
-  root_layer_.reset();
-  browser_compositor_view_placeholder_.reset();
+  ShutdownBrowserCompositor();
 
   // We get this call just before |render_widget_host_| deletes
   // itself.  But we are owned by |cocoa_view_|, which may be retained
@@ -2028,6 +2030,13 @@ void RenderWidgetHostViewMac::ShutdownHost() {
   weak_factory_.InvalidateWeakPtrs();
   render_widget_host_->Shutdown();
   // Do not touch any members at this point, |this| has been deleted.
+}
+
+void RenderWidgetHostViewMac::ShutdownBrowserCompositor() {
+  DestroyBrowserCompositorView();
+  delegated_frame_host_.reset();
+  root_layer_.reset();
+  browser_compositor_view_placeholder_.reset();
 }
 
 void RenderWidgetHostViewMac::GotAcceleratedFrame() {
