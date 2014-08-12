@@ -272,7 +272,7 @@ bool ChannelMojo::MessageReader::Send(scoped_ptr<Message> message) {
 
 //------------------------------------------------------------------------------
 
-// MessagePipeReader implemenation for control messages.
+// MessagePipeReader implementation for control messages.
 // Actual message handling is implemented by sublcasses.
 class ChannelMojo::ControlReader : public internal::MessagePipeReader {
  public:
@@ -488,26 +488,12 @@ ChannelMojo::ChannelMojo(
       bootstrap_(bootstrap.Pass()),
       mode_(mode), listener_(listener),
       peer_pid_(base::kNullProcessId) {
-  DCHECK(mode_ == MODE_SERVER || mode_ == MODE_CLIENT);
-  mojo::ScopedMessagePipeHandle control_pipe
-      = mojo::embedder::CreateChannel(
-          mojo::embedder::ScopedPlatformHandle(
-              ToPlatformHandle(bootstrap_->TakePipeHandle())),
-          io_thread_task_runner,
-          base::Bind(&ChannelMojo::DidCreateChannel, base::Unretained(this)),
-          io_thread_task_runner);
-
-  // MessagePipeReader, that is crated in InitOnIOThread(), should live only in
-  // IO thread, but IPC::Channel can be instantiated outside of it.
-  // So we move the creation to the appropriate thread.
   if (base::MessageLoopProxy::current() == io_thread_task_runner) {
-    InitOnIOThread(control_pipe.Pass());
+    InitOnIOThread();
   } else {
-    io_thread_task_runner->PostTask(
-        FROM_HERE,
-        base::Bind(&ChannelMojo::InitOnIOThread,
-                   weak_factory_.GetWeakPtr(),
-                   base::Passed(control_pipe.Pass())));
+    io_thread_task_runner->PostTask(FROM_HERE,
+                                    base::Bind(&ChannelMojo::InitOnIOThread,
+                                               weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -515,20 +501,26 @@ ChannelMojo::~ChannelMojo() {
   Close();
 }
 
-void ChannelMojo::InitOnIOThread(mojo::ScopedMessagePipeHandle control_pipe) {
-  control_reader_ = CreateControlReader(control_pipe.Pass());
-}
+void ChannelMojo::InitOnIOThread() {
+  mojo::embedder::ChannelInfo* channel_info;
+  mojo::ScopedMessagePipeHandle control_pipe =
+      mojo::embedder::CreateChannelOnIOThread(
+          mojo::embedder::ScopedPlatformHandle(
+              ToPlatformHandle(bootstrap_->TakePipeHandle())),
+          &channel_info);
+  channel_info_.reset(channel_info);
 
-scoped_ptr<ChannelMojo::ControlReader> ChannelMojo::CreateControlReader(
-    mojo::ScopedMessagePipeHandle pipe) {
-  if (MODE_SERVER == mode_) {
-    return make_scoped_ptr(
-        new ServerControlReader(pipe.Pass(), this)).PassAs<ControlReader>();
+  switch (mode_) {
+    case MODE_SERVER:
+      control_reader_.reset(new ServerControlReader(control_pipe.Pass(), this));
+      break;
+    case MODE_CLIENT:
+      control_reader_.reset(new ClientControlReader(control_pipe.Pass(), this));
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
-
-  DCHECK(mode_ == MODE_CLIENT);
-  return make_scoped_ptr(
-      new ClientControlReader(pipe.Pass(), this)).PassAs<ControlReader>();
 }
 
 bool ChannelMojo::Connect() {
@@ -583,10 +575,6 @@ base::ProcessId ChannelMojo::GetSelfPID() const {
 
 ChannelHandle ChannelMojo::TakePipeHandle() {
   return bootstrap_->TakePipeHandle();
-}
-
-void ChannelMojo::DidCreateChannel(mojo::embedder::ChannelInfo* info) {
-  channel_info_.reset(info);
 }
 
 void ChannelMojo::OnMessageReceived(Message& message) {

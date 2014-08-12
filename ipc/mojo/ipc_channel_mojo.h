@@ -106,10 +106,7 @@ class IPC_MOJO_EXPORT ChannelMojo : public Channel {
   ChannelMojo(scoped_ptr<Channel> bootstrap, Mode mode, Listener* listener,
               scoped_refptr<base::TaskRunner> io_thread_task_runner);
 
-  void InitOnIOThread(mojo::ScopedMessagePipeHandle control_pipe);
-  scoped_ptr<ControlReader> CreateControlReader(
-      mojo::ScopedMessagePipeHandle pipe);
-  void DidCreateChannel(mojo::embedder::ChannelInfo*);
+  void InitOnIOThread();
 
   base::WeakPtrFactory<ChannelMojo> weak_factory_;
   scoped_ptr<Channel> bootstrap_;
