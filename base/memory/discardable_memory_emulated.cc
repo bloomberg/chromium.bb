@@ -13,12 +13,14 @@ namespace {
 // This is admittedly pretty magical.
 const size_t kEmulatedMemoryLimit = 512 * 1024 * 1024;
 const size_t kEmulatedSoftMemoryLimit = 32 * 1024 * 1024;
+const size_t kEmulatedBytesToKeepUnderModeratePressure = 4 * 1024 * 1024;
 const size_t kEmulatedHardMemoryLimitExpirationTimeMs = 1000;
 
 struct SharedState {
   SharedState()
       : manager(kEmulatedMemoryLimit,
                 kEmulatedSoftMemoryLimit,
+                kEmulatedBytesToKeepUnderModeratePressure,
                 TimeDelta::FromMilliseconds(
                     kEmulatedHardMemoryLimitExpirationTimeMs)) {}
 
@@ -43,14 +45,18 @@ DiscardableMemoryEmulated::~DiscardableMemoryEmulated() {
 }
 
 // static
-bool DiscardableMemoryEmulated::ReduceMemoryUsage() {
-  return g_shared_state.Pointer()->manager.ReduceMemoryUsage();
+void DiscardableMemoryEmulated::RegisterMemoryPressureListeners() {
+  g_shared_state.Pointer()->manager.RegisterMemoryPressureListener();
 }
 
 // static
-void DiscardableMemoryEmulated::ReduceMemoryUsageUntilWithinLimit(
-    size_t bytes) {
-  g_shared_state.Pointer()->manager.ReduceMemoryUsageUntilWithinLimit(bytes);
+void DiscardableMemoryEmulated::UnregisterMemoryPressureListeners() {
+  g_shared_state.Pointer()->manager.UnregisterMemoryPressureListener();
+}
+
+// static
+bool DiscardableMemoryEmulated::ReduceMemoryUsage() {
+  return g_shared_state.Pointer()->manager.ReduceMemoryUsage();
 }
 
 // static

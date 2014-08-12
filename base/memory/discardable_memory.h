@@ -64,6 +64,14 @@ class BASE_EXPORT DiscardableMemory {
  public:
   virtual ~DiscardableMemory() {}
 
+  // Call this on a thread with a MessageLoop current to allow discardable
+  // memory implementations to respond to memory pressure signals.
+  static void RegisterMemoryPressureListeners();
+
+  // Call this to prevent discardable memory implementations from responding
+  // to memory pressure signals.
+  static void UnregisterMemoryPressureListeners();
+
   // Gets the discardable memory type with a given name.
   static DiscardableMemoryType GetNamedType(const std::string& name);
 

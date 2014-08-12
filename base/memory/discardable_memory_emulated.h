@@ -19,12 +19,9 @@ class DiscardableMemoryEmulated
   explicit DiscardableMemoryEmulated(size_t bytes);
   virtual ~DiscardableMemoryEmulated();
 
+  static void RegisterMemoryPressureListeners();
+  static void UnregisterMemoryPressureListeners();
   static bool ReduceMemoryUsage();
-
-  // TODO(reveman): Remove this as it is breaking the discardable memory design
-  // principle that implementations should not rely on information this is
-  // unavailable in kernel space. crbug.com/400423
-  BASE_EXPORT static void ReduceMemoryUsageUntilWithinLimit(size_t bytes);
 
   static void PurgeForTesting();
 

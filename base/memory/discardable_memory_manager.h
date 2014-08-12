@@ -8,6 +8,7 @@
 #include "base/base_export.h"
 #include "base/containers/hash_tables.h"
 #include "base/containers/mru_cache.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 
@@ -59,14 +60,26 @@ namespace internal {
 // of all allocation instances (in case they need to be purged), and the total
 // amount of allocated memory (in case this forces a purge). When memory usage
 // reaches the limit, the manager purges the LRU memory.
+//
+// When notified of memory pressure, the manager either purges the LRU memory --
+// if the pressure is moderate -- or all discardable memory if the pressure is
+// critical.
 class BASE_EXPORT_PRIVATE DiscardableMemoryManager {
  public:
   typedef DiscardableMemoryManagerAllocation Allocation;
 
   DiscardableMemoryManager(size_t memory_limit,
                            size_t soft_memory_limit,
+                           size_t bytes_to_keep_under_moderate_pressure,
                            TimeDelta hard_memory_limit_expiration_time);
   virtual ~DiscardableMemoryManager();
+
+  // Call this to register memory pressure listener. Must be called on a thread
+  // with a MessageLoop current.
+  void RegisterMemoryPressureListener();
+
+  // Call this to unregister memory pressure listener.
+  void UnregisterMemoryPressureListener();
 
   // The maximum number of bytes of memory that may be allocated before we force
   // a purge.
@@ -76,6 +89,9 @@ class BASE_EXPORT_PRIVATE DiscardableMemoryManager {
   // limit expiration time without getting purged.
   void SetSoftMemoryLimit(size_t bytes);
 
+  // Sets the amount of memory to keep when we're under moderate pressure.
+  void SetBytesToKeepUnderModeratePressure(size_t bytes);
+
   // Sets the memory usage cutoff time for hard memory limit.
   void SetHardMemoryLimitExpirationTime(
       TimeDelta hard_memory_limit_expiration_time);
@@ -84,10 +100,6 @@ class BASE_EXPORT_PRIVATE DiscardableMemoryManager {
   // limit. Returns true if there's no need to call this again until allocations
   // have been used.
   bool ReduceMemoryUsage();
-
-  // This can be called to attempt to reduce memory footprint until within
-  // limit for bytes to keep under moderate pressure.
-  void ReduceMemoryUsageUntilWithinLimit(size_t bytes);
 
   // Adds the given allocation to the manager's collection.
   void Register(Allocation* allocation, size_t bytes);
@@ -129,6 +141,14 @@ class BASE_EXPORT_PRIVATE DiscardableMemoryManager {
   };
   typedef HashingMRUCache<Allocation*, AllocationInfo> AllocationMap;
 
+  // This can be called as a hint that the system is under memory pressure.
+  void OnMemoryPressure(
+      MemoryPressureListener::MemoryPressureLevel pressure_level);
+
+  // Purges memory until usage is less or equal to
+  // |bytes_to_keep_under_moderate_pressure_|.
+  void PurgeUntilWithinBytesToKeepUnderModeratePressure();
+
   // Purges memory not used since |hard_memory_limit_expiration_time_| before
   // "right now" until usage is less or equal to |soft_memory_limit_|.
   // Returns true if total amount of memory is less or equal to soft memory
@@ -164,6 +184,14 @@ class BASE_EXPORT_PRIVATE DiscardableMemoryManager {
   // |hard_memory_limit_expiration_time_| amount of time when receiving an idle
   // notification.
   size_t soft_memory_limit_;
+
+  // Under moderate memory pressure, we will purge memory until usage is within
+  // this limit.
+  size_t bytes_to_keep_under_moderate_pressure_;
+
+  // Allows us to be respond when the system reports that it is under memory
+  // pressure.
+  scoped_ptr<MemoryPressureListener> memory_pressure_listener_;
 
   // Amount of time it takes for an allocation to become affected by
   // |soft_memory_limit_|.

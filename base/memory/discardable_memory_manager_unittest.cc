@@ -5,6 +5,7 @@
 #include "base/memory/discardable_memory_manager.h"
 
 #include "base/bind.h"
+#include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,6 +46,7 @@ class TestAllocationImpl : public internal::DiscardableMemoryManagerAllocation {
 // something else needs to explicit set the limit.
 const size_t kDefaultMemoryLimit = 1024;
 const size_t kDefaultSoftMemoryLimit = kDefaultMemoryLimit;
+const size_t kDefaultBytesToKeepUnderModeratePressure = kDefaultMemoryLimit;
 
 class TestDiscardableMemoryManagerImpl
     : public internal::DiscardableMemoryManager {
@@ -52,6 +54,7 @@ class TestDiscardableMemoryManagerImpl
   TestDiscardableMemoryManagerImpl()
       : DiscardableMemoryManager(kDefaultMemoryLimit,
                                  kDefaultSoftMemoryLimit,
+                                 kDefaultBytesToKeepUnderModeratePressure,
                                  TimeDelta::Max()) {}
 
   void SetNow(TimeTicks now) { now_ = now; }
@@ -65,7 +68,9 @@ class TestDiscardableMemoryManagerImpl
 
 class DiscardableMemoryManagerTestBase {
  public:
-  DiscardableMemoryManagerTestBase() {}
+  DiscardableMemoryManagerTestBase() {
+    manager_.RegisterMemoryPressureListener();
+  }
 
  protected:
   enum LockStatus {
@@ -79,6 +84,10 @@ class DiscardableMemoryManagerTestBase {
   void SetMemoryLimit(size_t bytes) { manager_.SetMemoryLimit(bytes); }
 
   void SetSoftMemoryLimit(size_t bytes) { manager_.SetSoftMemoryLimit(bytes); }
+
+  void SetBytesToKeepUnderModeratePressure(size_t bytes) {
+    manager_.SetBytesToKeepUnderModeratePressure(bytes);
+  }
 
   void SetHardMemoryLimitExpirationTime(TimeDelta time) {
     manager_.SetHardMemoryLimitExpirationTime(time);
@@ -118,15 +127,10 @@ class DiscardableMemoryManagerTestBase {
 
   void SetNow(TimeTicks now) { manager_.SetNow(now); }
 
-  void PurgeAll() { return manager_.PurgeAll(); }
-
   bool ReduceMemoryUsage() { return manager_.ReduceMemoryUsage(); }
 
-  void ReduceMemoryUsageUntilWithinLimit(size_t bytes) {
-    manager_.ReduceMemoryUsageUntilWithinLimit(bytes);
-  }
-
  private:
+  MessageLoopForIO message_loop_;
   TestDiscardableMemoryManagerImpl manager_;
 };
 
@@ -188,7 +192,11 @@ TEST_F(DiscardableMemoryManagerTest, LockAfterPurge) {
   EXPECT_TRUE(CanBePurged(&allocation));
 
   // Force the system to purge.
-  PurgeAll();
+  MemoryPressureListener::NotifyMemoryPressure(
+      MemoryPressureListener::MEMORY_PRESSURE_CRITICAL);
+
+  // Required because ObserverListThreadSafe notifies via PostTask.
+  RunLoop().RunUntilIdle();
 
   EXPECT_EQ(LOCK_STATUS_PURGED, Lock(&allocation));
   EXPECT_FALSE(CanBePurged(&allocation));
@@ -293,14 +301,17 @@ class DiscardableMemoryManagerPermutationTest
   TestAllocationImpl allocation_[3];
 };
 
-// Verify that memory was discarded in the correct order after reducing usage to
-// limit.
-TEST_P(DiscardableMemoryManagerPermutationTest, LRUDiscarded) {
+// Verify that memory was discarded in the correct order after applying
+// memory pressure.
+TEST_P(DiscardableMemoryManagerPermutationTest, LRUDiscardedModeratePressure) {
   RegisterAndUseAllocations();
 
+  SetBytesToKeepUnderModeratePressure(1024);
   SetMemoryLimit(2048);
 
-  ReduceMemoryUsageUntilWithinLimit(1024);
+  MemoryPressureListener::NotifyMemoryPressure(
+      MemoryPressureListener::MEMORY_PRESSURE_MODERATE);
+  RunLoop().RunUntilIdle();
 
   EXPECT_NE(LOCK_STATUS_FAILED, Lock(allocation(2)));
   EXPECT_EQ(LOCK_STATUS_PURGED, Lock(allocation(1)));
@@ -315,6 +326,7 @@ TEST_P(DiscardableMemoryManagerPermutationTest, LRUDiscarded) {
 TEST_P(DiscardableMemoryManagerPermutationTest, LRUDiscardedExceedLimit) {
   RegisterAndUseAllocations();
 
+  SetBytesToKeepUnderModeratePressure(1024);
   SetMemoryLimit(2048);
 
   EXPECT_NE(LOCK_STATUS_FAILED, Lock(allocation(2)));
@@ -328,6 +340,7 @@ TEST_P(DiscardableMemoryManagerPermutationTest, LRUDiscardedExceedLimit) {
 // Verify that no more memory than necessary was discarded after changing
 // memory limit.
 TEST_P(DiscardableMemoryManagerPermutationTest, LRUDiscardedAmount) {
+  SetBytesToKeepUnderModeratePressure(2048);
   SetMemoryLimit(4096);
 
   RegisterAndUseAllocations();
@@ -345,7 +358,9 @@ TEST_P(DiscardableMemoryManagerPermutationTest, LRUDiscardedAmount) {
 TEST_P(DiscardableMemoryManagerPermutationTest, PurgeFreesAllUnlocked) {
   RegisterAndUseAllocations();
 
-  PurgeAll();
+  MemoryPressureListener::NotifyMemoryPressure(
+      MemoryPressureListener::MEMORY_PRESSURE_CRITICAL);
+  RunLoop().RunUntilIdle();
 
   for (int i = 0; i < 3; ++i) {
     if (i == 0)
