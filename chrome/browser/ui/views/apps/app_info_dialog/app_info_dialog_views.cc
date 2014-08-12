@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_dialog_views.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/views/app_list/app_list_dialog_contents_view.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_footer_panel.h"
@@ -12,6 +13,8 @@
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_permissions_panel.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_summary_panel.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/manifest.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -24,6 +27,13 @@
 void ShowAppInfoDialog(AppListControllerDelegate* app_list_controller_delegate,
                        Profile* profile,
                        const extensions::Extension* app) {
+  UMA_HISTOGRAM_ENUMERATION("Apps.AppInfoDialogOpenedForType",
+                            app->GetType(),
+                            extensions::Manifest::NUM_LOAD_TYPES);
+  UMA_HISTOGRAM_ENUMERATION("Apps.AppInfoDialogOpenedForLocation",
+                            app->location(),
+                            extensions::Manifest::NUM_LOCATIONS);
+
   gfx::NativeWindow app_list_window =
       app_list_controller_delegate->GetAppListWindow();
   DCHECK(app_list_window);

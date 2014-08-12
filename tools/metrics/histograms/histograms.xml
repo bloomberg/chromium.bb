@@ -418,6 +418,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Apps.AppInfoDialog.OpenedForLocation" enum="AppLocation">
+  <owner>sashab@chromium.org</owner>
+  <summary>
+    The location of the app that the dialog was opened for. This is gathered
+    each time the app info dialog is opened.
+  </summary>
+</histogram>
+
+<histogram name="Apps.AppInfoDialog.OpenedForType" enum="ExtensionType">
+  <owner>sashab@chromium.org</owner>
+  <summary>
+    The type of the app that the dialog was opened for. This is gathered each
+    time the app info dialog is opened.
+  </summary>
+</histogram>
+
 <histogram name="Apps.AppLaunch" enum="AppLaunch">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -36600,6 +36616,20 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="2" label="WEBSTORE"/>
   <int value="3" label="SEARCH_WEBSTORE"/>
   <int value="4" label="SEARCH_PEOPLE"/>
+</enum>
+
+<enum name="AppLocation" type="int">
+  <int value="0" label="Invalid location"/>
+  <int value="1" label="Internal extension"/>
+  <int value="2" label="Internal extension (loaded via prefs)"/>
+  <int value="3" label="Internal extension (loaded via the registry)"/>
+  <int value="4" label="Unpacked extension"/>
+  <int value="5" label="Component app"/>
+  <int value="6" label="External extension (downloaded via prefs)"/>
+  <int value="7" label="External extension (downloaded via admin policies)"/>
+  <int value="8" label="Command-line extension"/>
+  <int value="9" label="External extension (loaded via prefs and cached)"/>
+  <int value="10" label="Component app (downloaded)"/>
 </enum>
 
 <enum name="AppPromoAction" type="int">
