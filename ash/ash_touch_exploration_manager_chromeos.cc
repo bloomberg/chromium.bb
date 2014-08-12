@@ -57,6 +57,14 @@ void AshTouchExplorationManager::SetOutputLevel(int volume) {
     audio_handler_->SetOutputMute(true);
 }
 
+void AshTouchExplorationManager::SilenceSpokenFeedback() {
+  AccessibilityDelegate* delegate =
+    Shell::GetInstance()->accessibility_delegate();
+  if (!delegate->IsSpokenFeedbackEnabled())
+    return;
+  delegate->SilenceSpokenFeedback();
+}
+
 void AshTouchExplorationManager::UpdateTouchExplorationState() {
   AccessibilityDelegate* delegate =
       Shell::GetInstance()->accessibility_delegate();

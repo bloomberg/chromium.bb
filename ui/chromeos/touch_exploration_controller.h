@@ -40,6 +40,9 @@ class TouchExplorationControllerDelegate {
   // Takes an int from 0.0 to 100.0 that indicates the percent the volume
   // should be set to.
   virtual void SetOutputLevel(int volume) = 0;
+
+  // Silences spoken feedback.
+  virtual void SilenceSpokenFeedback() = 0;
 };
 
 // TouchExplorationController is used in tandem with "Spoken Feedback" to
@@ -60,9 +63,10 @@ class TouchExplorationControllerDelegate {
 // down with two fingers, the running app will see a one-finger swipe. Slide
 // gestures performed on the edge of the screen can change settings
 // continuously. For example, sliding a finger along the right side of the
-// screen will change the volume.
-// When a user double taps and holds with one finger, the finger is passed
-// through as if accessibility was turned off.
+// screen will change the volume. When a user double taps and holds with one
+// finger, the finger is passed through as if accessibility was turned off. If
+// the user taps the screen with two fingers, the user can silence spoken
+// feedback if it is playing.
 //
 // ** Long version **
 //
@@ -116,6 +120,9 @@ class TouchExplorationControllerDelegate {
 // their touch exploration finger by tapping anywhere else on the screen with
 // a second finger, while the touch exploration finger is still pressed.
 //
+// Once touch exploration mode has been activated, it remains in that mode until
+// all fingers have been released.
+//
 // If the user places a finger on the edge of the screen and moves their finger
 // past slop, a slide gesture is performed. The user can then slide one finger
 // along an edge of the screen and continuously control a setting. Once the user
@@ -134,8 +141,8 @@ class TouchExplorationControllerDelegate {
 // automatically sets the volume to 100% and the bottome right corner of the
 // screen automatically sets the volume to 0% once the user has moved past slop.
 //
-// Once touch exploration mode has been activated,
-// it remains in that mode until all fingers have been released.
+// If the user taps the screen with two fingers and lifts both fingers before
+// the grace period has passed, spoken feedback is silenced.
 //
 // The caller is expected to retain ownership of instances of this class and
 // destroy them before |root_window| is destroyed.
@@ -182,6 +189,8 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
   ui::EventRewriteStatus InWaitForOneFinger(
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
   ui::EventRewriteStatus InSlideGesture(
+      const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
+  ui::EventRewriteStatus InTwoFingerTap(
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
 
   // Returns the current time of the tick clock.
@@ -314,6 +323,10 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
     // including corners, then the resulting movements will be interpreted as
     // slide gestures.
     SLIDE_GESTURE,
+
+    // If the user taps the screen with two fingers and releases both fingers
+    // before the grace period has passed, spoken feedback will be silenced.
+    TWO_FINGER_TAP,
   };
 
   enum ScreenLocation {
@@ -354,6 +367,10 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
 
   // A copy of the event from the initial touch press.
   scoped_ptr<ui::TouchEvent> initial_press_;
+
+  // Map of touch ids to where its initial press occurred relative to the
+  // screen.
+  std::map<int, gfx::Point> initial_presses_;
 
   // In one finger passthrough, the touch is displaced relative to the
   // last touch exploration location.

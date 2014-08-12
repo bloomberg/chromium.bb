@@ -81,6 +81,8 @@ class MockTouchExplorationControllerDelegate
   virtual void SetOutputLevel(int volume) OVERRIDE {
     volume_changes_.push_back(volume);
   }
+  virtual void SilenceSpokenFeedback() OVERRIDE {
+  }
 
   const std::vector<float> VolumeChanges() { return volume_changes_; }
   const size_t NumAdjustSounds() { return num_times_adjust_sound_played_; }
@@ -125,6 +127,11 @@ class TouchExplorationControllerTestApi {
   bool IsInSlideGestureStateForTesting() const {
     return touch_exploration_controller_->state_ ==
            touch_exploration_controller_->SLIDE_GESTURE;
+  }
+
+  bool IsInTwoFingerTapStateForTesting() const {
+    return touch_exploration_controller_->state_ ==
+           touch_exploration_controller_->TWO_FINGER_TAP;
   }
 
   gfx::Rect BoundsOfRootWindowInDIPForTesting() const {
@@ -285,6 +292,10 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
 
   bool IsInSlideGestureState() {
     return touch_exploration_controller_->IsInSlideGestureStateForTesting();
+  }
+
+  bool IsInTwoFingerTapState() {
+    return touch_exploration_controller_->IsInTwoFingerTapStateForTesting();
   }
 
   gfx::Rect BoundsOfRootWindowInDIP() {
@@ -1525,6 +1536,129 @@ TEST_F(TouchExplorationTest, InBoundariesTouchExploration) {
   EXPECT_FALSE(IsInGestureInProgressState());
   EXPECT_FALSE(IsInSlideGestureState());
   EXPECT_TRUE(IsInTouchToMouseMode());
+}
+
+// If two fingers tap the screen at the same time and release before the tap
+// timer runs out, a control key event should be sent to silence chromevox.
+TEST_F(TouchExplorationTest, TwoFingerTap) {
+  SwitchTouchExplorationMode(true);
+
+  generator_->PressTouchId(1);
+  EXPECT_FALSE(IsInTwoFingerTapState());
+
+  generator_->PressTouchId(2);
+  EXPECT_TRUE(IsInTwoFingerTapState());
+
+  const ScopedVector<ui::Event>& captured_events = GetCapturedEvents();
+  ASSERT_EQ(0U, captured_events.size());
+
+  generator_->ReleaseTouchId(1);
+  generator_->ReleaseTouchId(2);
+
+  // Two key events should have been sent to silence the feedback.
+  EXPECT_EQ(2U, captured_events.size());
+}
+
+// If the fingers are not released before the tap timer runs out, a control
+// keyevent is not sent and the state will no longer be in two finger tap.
+TEST_F(TouchExplorationTest, TwoFingerTapAndHold) {
+  SwitchTouchExplorationMode(true);
+
+  generator_->PressTouchId(1);
+  EXPECT_FALSE(IsInTwoFingerTapState());
+
+  generator_->PressTouchId(2);
+  EXPECT_TRUE(IsInTwoFingerTapState());
+
+  const ScopedVector<ui::Event>& captured_events = GetCapturedEvents();
+  ASSERT_EQ(0U, captured_events.size());
+
+  AdvanceSimulatedTimePastTapDelay();
+  // Since the tap delay has elapsed, it should no longer be in two finger tap.
+  EXPECT_FALSE(IsInTwoFingerTapState());
+}
+
+// The next two tests set up two finger swipes to happen. If one of the fingers
+// moves out of slop before the tap timer fires, a two finger tap is not made.
+// In this first test, the first finger placed will move out of slop.
+TEST_F(TouchExplorationTest, TwoFingerTapAndMoveFirstFinger) {
+  SwitchTouchExplorationMode(true);
+
+  // Once one of the fingers leaves slop, it should no longer be in two finger
+  // tap.
+  ui::TouchEvent first_press_id_1(
+      ui::ET_TOUCH_PRESSED, gfx::Point(100, 200), 1, Now());
+  ui::TouchEvent first_press_id_2(
+      ui::ET_TOUCH_PRESSED, gfx::Point(110, 200), 2, Now());
+
+  ui::TouchEvent slop_move_id_1(
+      ui::ET_TOUCH_MOVED,
+      gfx::Point(100 + gesture_detector_config_.touch_slop, 200),
+      1,
+      Now());
+  ui::TouchEvent slop_move_id_2(
+      ui::ET_TOUCH_MOVED,
+      gfx::Point(110 + gesture_detector_config_.touch_slop, 200),
+      2,
+      Now());
+
+  ui::TouchEvent out_slop_id_1(
+      ui::ET_TOUCH_MOVED,
+      gfx::Point(100 + gesture_detector_config_.touch_slop + 1, 200),
+      1,
+      Now());
+
+  // Dispatch the inital presses.
+  generator_->Dispatch(&first_press_id_1);
+  EXPECT_FALSE(IsInTwoFingerTapState());
+  generator_->Dispatch(&first_press_id_2);
+  EXPECT_TRUE(IsInTwoFingerTapState());
+
+  const ScopedVector<ui::Event>& captured_events = GetCapturedEvents();
+  ASSERT_EQ(0U, captured_events.size());
+
+  // The presses have not moved out of slop yet so it should still be in
+  // TwoFingerTap.
+  generator_->Dispatch(&slop_move_id_1);
+  EXPECT_TRUE(IsInTwoFingerTapState());
+  generator_->Dispatch(&slop_move_id_2);
+  EXPECT_TRUE(IsInTwoFingerTapState());
+
+  // Once one of the fingers moves out of slop, we are no longer in
+  // TwoFingerTap.
+  generator_->Dispatch(&out_slop_id_1);
+  EXPECT_FALSE(IsInTwoFingerTapState());
+}
+
+// Similar test to the previous test except the second finger placed will be the
+// one to move out of slop.
+TEST_F(TouchExplorationTest, TwoFingerTapAndMoveSecondFinger) {
+  SwitchTouchExplorationMode(true);
+
+  // Once one of the fingers leaves slop, it should no longer be in two finger
+  // tap.
+  ui::TouchEvent first_press_id_1(
+      ui::ET_TOUCH_PRESSED, gfx::Point(100, 200), 1, Now());
+  ui::TouchEvent first_press_id_2(
+      ui::ET_TOUCH_PRESSED, gfx::Point(110, 200), 2, Now());
+
+  ui::TouchEvent out_slop_id_2(
+      ui::ET_TOUCH_MOVED,
+      gfx::Point(100 + gesture_detector_config_.touch_slop + 1, 200),
+      1,
+      Now());
+
+  generator_->Dispatch(&first_press_id_1);
+  EXPECT_FALSE(IsInTwoFingerTapState());
+
+  generator_->Dispatch(&first_press_id_2);
+  EXPECT_TRUE(IsInTwoFingerTapState());
+
+  const ScopedVector<ui::Event>& captured_events = GetCapturedEvents();
+  ASSERT_EQ(0U, captured_events.size());
+
+  generator_->Dispatch(&out_slop_id_2);
+  EXPECT_FALSE(IsInTwoFingerTapState());
 }
 
 }  // namespace ui

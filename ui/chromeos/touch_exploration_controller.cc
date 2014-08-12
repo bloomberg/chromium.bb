@@ -134,6 +134,8 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
       return InOneFingerPassthrough(touch_event, rewritten_event);
     case WAIT_FOR_ONE_FINGER:
       return InWaitForOneFinger(touch_event, rewritten_event);
+    case TWO_FINGER_TAP:
+      return InTwoFingerTap(touch_event, rewritten_event);
   }
   NOTREACHED();
   return ui::EVENT_REWRITE_CONTINUE;
@@ -148,19 +150,20 @@ ui::EventRewriteStatus TouchExplorationController::NextDispatchEvent(
 ui::EventRewriteStatus TouchExplorationController::InNoFingersDown(
     const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event) {
   const ui::EventType type = event.type();
-  if (type == ui::ET_TOUCH_PRESSED) {
-    initial_press_.reset(new TouchEvent(event));
-    last_unused_finger_event_.reset(new TouchEvent(event));
-    StartTapTimer();
-    gesture_provider_.OnTouchEvent(event);
-    gesture_provider_.OnTouchEventAck(false);
-    ProcessGestureEvents();
-    state_ = SINGLE_TAP_PRESSED;
-    VLOG_STATE();
-    return ui::EVENT_REWRITE_DISCARD;
+  if (type != ui::ET_TOUCH_PRESSED) {
+    NOTREACHED() << "Unexpected event type received: " << event.name();
+    return ui::EVENT_REWRITE_CONTINUE;
   }
-  NOTREACHED() << "Unexpected event type received: " << event.name();
-  return ui::EVENT_REWRITE_CONTINUE;
+  initial_press_.reset(new TouchEvent(event));
+  initial_presses_[event.touch_id()] = event.location();
+  last_unused_finger_event_.reset(new TouchEvent(event));
+  StartTapTimer();
+  gesture_provider_.OnTouchEvent(event);
+  gesture_provider_.OnTouchEventAck(false);
+  ProcessGestureEvents();
+  state_ = SINGLE_TAP_PRESSED;
+  VLOG_STATE();
+  return ui::EVENT_REWRITE_DISCARD;
 }
 
 ui::EventRewriteStatus TouchExplorationController::InSingleTapPressed(
@@ -168,9 +171,9 @@ ui::EventRewriteStatus TouchExplorationController::InSingleTapPressed(
   const ui::EventType type = event.type();
 
   if (type == ui::ET_TOUCH_PRESSED) {
-    // TODO (evy, lisayin) : add support for multifinger swipes.
-    // For now, we wait for there to be only one finger down again.
-    state_ = WAIT_FOR_ONE_FINGER;
+    initial_presses_[event.touch_id()] = event.location();
+    state_ = TWO_FINGER_TAP;
+    VLOG_STATE();
     return EVENT_REWRITE_DISCARD;
   } else if (type == ui::ET_TOUCH_RELEASED || type == ui::ET_TOUCH_CANCELLED) {
     if (current_touch_ids_.size() == 0 &&
@@ -549,6 +552,48 @@ ui::EventRewriteStatus TouchExplorationController::InSlideGesture(
   return ui::EVENT_REWRITE_DISCARD;
 }
 
+ui::EventRewriteStatus TouchExplorationController::InTwoFingerTap(
+    const ui::TouchEvent& event,
+    scoped_ptr<ui::Event>* rewritten_event) {
+  ui::EventType type = event.type();
+  if (type == ui::ET_TOUCH_PRESSED) {
+    // TODO(evy): Process three finger gestures here.
+    state_ = WAIT_FOR_ONE_FINGER;
+    VLOG_STATE();
+    return ui::EVENT_REWRITE_DISCARD;
+  }
+
+  if (type == ui::ET_TOUCH_MOVED) {
+    // Determine if it was a swipe.
+    gfx::Point original_location = initial_presses_[event.touch_id()];
+    float distance = (event.location() - original_location).Length();
+    // If the user moves too far from the original position, consider the
+    // movement a swipe.
+    // TODO(evy, lisayin): Add multifinger swipe processing.
+    if (distance > gesture_detector_config_.touch_slop) {
+      state_ = WAIT_FOR_ONE_FINGER;
+    }
+    return ui::EVENT_REWRITE_DISCARD;
+  }
+
+  if (current_touch_ids_.size() != 0)
+    return ui::EVENT_REWRITE_DISCARD;
+
+  if (type == ui::ET_TOUCH_RELEASED) {
+    // In ChromeVox, pressing control will stop ChromeVox from speaking.
+    ui::KeyEvent control_down(
+        ui::ET_KEY_PRESSED, ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN);
+    ui::KeyEvent control_up(ui::ET_KEY_RELEASED, ui::VKEY_CONTROL, ui::EF_NONE);
+
+    DispatchEvent(&control_down);
+    DispatchEvent(&control_up);
+
+    ResetToNoFingersDown();
+    return ui::EVENT_REWRITE_DISCARD;
+  }
+  return ui::EVENT_REWRITE_DISCARD;
+}
+
 base::TimeDelta TouchExplorationController::Now() {
   if (tick_clock_) {
     // This is the same as what EventTimeForNow() does, but here we do it
@@ -593,6 +638,10 @@ void TouchExplorationController::OnTapTimerFired() {
       // Discard any pending gestures.
       delete gesture_provider_.GetAndResetPendingGestures();
       state_ = TOUCH_EXPLORATION;
+      VLOG_STATE();
+      break;
+    case TWO_FINGER_TAP:
+      state_ = WAIT_FOR_ONE_FINGER;
       VLOG_STATE();
       break;
     default:
@@ -800,6 +849,7 @@ void TouchExplorationController::EnterTouchToMouseMode() {
 
 void TouchExplorationController::ResetToNoFingersDown() {
   ProcessGestureEvents();
+  initial_presses_.clear();
   if (sound_timer_.IsRunning())
     sound_timer_.Stop();
   state_ = NO_FINGERS_DOWN;
@@ -875,6 +925,8 @@ const char* TouchExplorationController::EnumStateToString(State state) {
       return "ONE_FINGER_PASSTHROUGH";
     case WAIT_FOR_ONE_FINGER:
       return "WAIT_FOR_ONE_FINGER";
+    case TWO_FINGER_TAP:
+      return "TWO_FINGER_TAP";
   }
   return "Not a state";
 }
