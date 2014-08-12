@@ -171,6 +171,9 @@ MAX_MAC_BUILD_TIME = 14400
 MAX_WIN_BUILD_TIME = 14400
 MAX_LINUX_BUILD_TIME = 14400
 
+# The confidence percentage at which confidence can be consider "high".
+HIGH_CONFIDENCE = 95
+
 # Patch template to add a new file, DEPS.sha under src folder.
 # This file contains SHA1 value of the DEPS changes made while bisecting
 # dependency repositories. This patch send along with DEPS patch to tryserver.
@@ -191,9 +194,9 @@ BISECT_MODE_MEAN = 'mean'
 BISECT_MODE_STD_DEV = 'std_dev'
 BISECT_MODE_RETURN_CODE = 'return_code'
 
-# The perf dashboard specifically looks for the string
-# "Estimated Confidence: 95%" to decide whether or not to cc the author(s).
-# If you change this, please update the perf dashboard as well.
+# The perf dashboard looks for a string like "Estimated Confidence: 95%"
+# to decide whether or not to cc the author(s). If you change this, please
+# update the perf dashboard as well.
 RESULTS_BANNER = """
 ===== BISECT JOB RESULTS =====
 Status: %(status)s
@@ -280,12 +283,18 @@ def ConfidenceScore(good_results_lists, bad_results_lists):
   Returns:
     A number in the range [0, 100].
   """
-  if not good_results_lists or not bad_results_lists:
+  # If there's only one item in either list, this means only one revision was
+  # classified good or bad; this isn't good enough evidence to make a decision.
+  # If an empty list was passed, that also implies zero confidence.
+  if len(good_results_lists) <= 1 or len(bad_results_lists) <= 1:
     return 0.0
 
   # Flatten the lists of results lists.
   sample1 = sum(good_results_lists, [])
   sample2 = sum(bad_results_lists, [])
+
+  # If there were only empty lists in either of the lists (this is unexpected
+  # and normally shouldn't happen), then we also want to return 0.
   if not sample1 or not sample2:
     return 0.0
 
@@ -2889,7 +2898,7 @@ class BisectPerformanceMetrics(object):
     if not results_dict['confidence']:
       return None
     confidence_status = 'Successful with %(level)s confidence%(warning)s.'
-    if results_dict['confidence'] >= 95:
+    if results_dict['confidence'] >= HIGH_CONFIDENCE:
       level = 'high'
     else:
       level = 'low'
@@ -3173,18 +3182,13 @@ class BisectPerformanceMetrics(object):
     if self.opts.repeat_test_count == 1:
       self.warnings.append('Tests were only set to run once. This may '
                            'be insufficient to get meaningful results.')
-    if results_dict['confidence'] < 100:
-      if results_dict['confidence']:
-        self.warnings.append(
-            'Confidence is less than 100%. There could be other candidates '
-            'for this regression. Try bisecting again with increased '
-            'repeat_count or on a sub-metric that shows the regression more '
-            'clearly.')
-      else:
-        self.warnings.append(
-          'Confidence is 0%. Try bisecting again on another platform, with '
-          'increased repeat_count or on a sub-metric that shows the '
-          'regression more clearly.')
+    if 0 < results_dict['confidence'] < HIGH_CONFIDENCE:
+      self.warnings.append('Confidence is not high. Try bisecting again '
+                           'with increased repeat_count, larger range, or '
+                           'on another metric.')
+    if not results_dict['confidence']:
+      self.warnings.append('Confidence score is 0%. Try bisecting again on '
+                           'another platform or another metric.')
 
   def FormatAndPrintResults(self, bisect_results):
     """Prints the results from a bisection run in a readable format.

@@ -25,8 +25,11 @@ class BisectPerfRegressionTest(unittest.TestCase):
       bad_values: First list of numbers.
       good_values: Second list of numbers.
     """
-    # ConfidenceScore takes a list of lists but these lists are flattened.
-    confidence = bisect_perf_module.ConfidenceScore([bad_values], [good_values])
+    # ConfidenceScore takes a list of lists but these lists are flattened
+    # inside the function.
+    confidence = bisect_perf_module.ConfidenceScore(
+        [[v] for v in bad_values],
+        [[v] for v in good_values])
     self.assertEqual(score, confidence)
 
   def testConfidenceScore_ZeroConfidence(self):
@@ -45,10 +48,9 @@ class BisectPerfRegressionTest(unittest.TestCase):
     self._AssertConfidence(99.9, [1, 1, 1, 1], [1.2, 1.2, 1.2, 1.2])
     self._AssertConfidence(99.9, [1, 1, 1, 1], [1.01, 1.01, 1.01, 1.01])
 
-  def testConfidenceScore_ImbalancedSampleSize(self):
-    # The second set of numbers only contains one number, so confidence is low.
-    self._AssertConfidence(
-        80.0, [1.1, 1.2, 1.1, 1.2, 1.0, 1.3, 1.2, 1.3],[1.4])
+  def testConfidenceScore_UnbalancedSampleSize(self):
+    # The second set of numbers only contains one number, so confidence is 0.
+    self._AssertConfidence(0.0, [1.1, 1.2, 1.1, 1.2, 1.0, 1.3, 1.2], [1.4])
 
   def testConfidenceScore_EmptySample(self):
     # Confidence is zero if either or both samples are empty.
