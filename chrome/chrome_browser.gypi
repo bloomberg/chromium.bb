@@ -1376,6 +1376,7 @@
       'browser/sync/sync_error_controller.h',
       'browser/sync/sync_startup_tracker.cc',
       'browser/sync/sync_startup_tracker.h',
+      'browser/sync/sync_type_preference_provider.h',
       'browser/tab_contents/navigation_metrics_recorder.cc',
       'browser/tab_contents/navigation_metrics_recorder.h',
       'browser/tab_contents/retargeting_details.h',

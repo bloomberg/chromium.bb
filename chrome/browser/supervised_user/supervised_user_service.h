@@ -17,6 +17,7 @@
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
+#include "chrome/browser/sync/sync_type_preference_provider.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/web_contents.h"
@@ -51,6 +52,7 @@ class SupervisedUserService : public KeyedService,
                               public extensions::ManagementPolicy::Provider,
                               public extensions::ExtensionRegistryObserver,
 #endif
+                              public SyncTypePreferenceProvider,
                               public ProfileSyncServiceObserver,
                               public chrome::BrowserListObserver {
  public:
@@ -139,7 +141,7 @@ class SupervisedUserService : public KeyedService,
   // Convenience method that registers this supervised user using
   // |registration_utility| and initializes sync with the returned token.
   // The |callback| will be called when registration is complete,
-  // whether it suceeded or not -- unless registration was cancelled manually,
+  // whether it succeeded or not -- unless registration was cancelled manually,
   // in which case the callback will be ignored.
   void RegisterAndInitSync(
       SupervisedUserRegistrationUtility* registration_utility,
@@ -171,6 +173,9 @@ class SupervisedUserService : public KeyedService,
       const extensions::Extension* extension,
       extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
 #endif
+
+  // SyncTypePreferenceProvider implementation:
+  virtual syncer::ModelTypeSet GetPreferredDataTypes() const OVERRIDE;
 
   // ProfileSyncServiceObserver implementation:
   virtual void OnStateChanged() OVERRIDE;
@@ -290,6 +295,9 @@ class SupervisedUserService : public KeyedService,
 
   // Sets a profile in elevated state for testing if set to true.
   bool elevated_for_testing_;
+
+  // True only when |Init()| method has been called.
+  bool did_init_;
 
   // True only when |Shutdown()| method has been called.
   bool did_shutdown_;

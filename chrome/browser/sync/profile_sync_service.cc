@@ -6,8 +6,7 @@
 
 #include <cstddef>
 #include <map>
-#include <set>
-#include <utility>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/bind.h"
@@ -55,6 +54,7 @@
 #include "chrome/browser/sync/sessions/sessions_sync_manager.h"
 #include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/browser/sync/sync_error_controller.h"
+#include "chrome/browser/sync/sync_type_preference_provider.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -1824,7 +1824,8 @@ ProfileSyncService::GetPreferredDirectoryDataTypes() const {
       GetRegisteredDirectoryDataTypes();
   const syncer::ModelTypeSet preferred_types =
       sync_prefs_.GetPreferredDataTypes(registered_directory_types);
-  return preferred_types;
+
+  return Union(preferred_types, GetDataTypesFromPreferenceProviders());
 }
 
 syncer::ModelTypeSet
@@ -2280,6 +2281,25 @@ void ProfileSyncService::RemoveTypeDebugInfoObserver(
   }
 }
 
+void ProfileSyncService::AddPreferenceProvider(
+    SyncTypePreferenceProvider* provider) {
+  DCHECK(!HasPreferenceProvider(provider))
+      << "Providers may only be added once!";
+  preference_providers_.insert(provider);
+}
+
+void ProfileSyncService::RemovePreferenceProvider(
+    SyncTypePreferenceProvider* provider) {
+  DCHECK(HasPreferenceProvider(provider))
+      << "Only providers that have been added before can be removed!";
+  preference_providers_.erase(provider);
+}
+
+bool ProfileSyncService::HasPreferenceProvider(
+    SyncTypePreferenceProvider* provider) const {
+  return preference_providers_.count(provider) > 0;
+}
+
 namespace {
 
 class GetAllNodesRequestHelper
@@ -2466,6 +2486,18 @@ void ProfileSyncService::ReconfigureDatatypeManager() {
     DVLOG(0) << "ConfigureDataTypeManager not invoked because backend is not "
              << "initialized";
   }
+}
+
+syncer::ModelTypeSet ProfileSyncService::GetDataTypesFromPreferenceProviders()
+    const {
+  syncer::ModelTypeSet types;
+  for (std::set<SyncTypePreferenceProvider*>::const_iterator it =
+           preference_providers_.begin();
+       it != preference_providers_.end();
+       ++it) {
+    types.PutAll((*it)->GetPreferredDataTypes());
+  }
+  return types;
 }
 
 const FailedDataTypesHandler& ProfileSyncService::failed_data_types_handler()

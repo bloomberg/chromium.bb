@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_H_
 #define CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_H_
 
+#include <set>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -57,6 +57,7 @@ class ProfileOAuth2TokenService;
 class ProfileSyncComponentsFactory;
 class SupervisedUserSigninManagerWrapper;
 class SyncErrorController;
+class SyncTypePreferenceProvider;
 
 namespace base {
 class CommandLine;
@@ -300,6 +301,15 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   void AddTypeDebugInfoObserver(syncer::TypeDebugInfoObserver* observer);
   void RemoveTypeDebugInfoObserver(syncer::TypeDebugInfoObserver* observer);
+
+  // Add a sync type preference provider. Each provider may only be added once.
+  void AddPreferenceProvider(SyncTypePreferenceProvider* provider);
+  // Remove a sync type preference provider. May only be called for providers
+  // that have been added. Providers must not remove themselves while being
+  // called back.
+  void RemovePreferenceProvider(SyncTypePreferenceProvider* provider);
+  // Check whether a given sync type preference provider has been added.
+  bool HasPreferenceProvider(SyncTypePreferenceProvider* provider) const;
 
   // Asynchronously fetches base::Value representations of all sync nodes and
   // returns them to the specified callback on this thread.
@@ -915,6 +925,9 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // want to startup once more.
   virtual void ReconfigureDatatypeManager();
 
+  // Collects preferred sync data types from |preference_providers_|.
+  syncer::ModelTypeSet GetDataTypesFromPreferenceProviders() const;
+
   // Called when the user changes the sync configuration, to update the UMA
   // stats.
   void UpdateSelectedTypesHistogram(
@@ -1018,6 +1031,8 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   ObserverList<ProfileSyncServiceBase::Observer> observers_;
   ObserverList<browser_sync::ProtocolEventObserver> protocol_event_observers_;
   ObserverList<syncer::TypeDebugInfoObserver> type_debug_info_observers_;
+
+  std::set<SyncTypePreferenceProvider*> preference_providers_;
 
   syncer::SyncJsController sync_js_controller_;
 
