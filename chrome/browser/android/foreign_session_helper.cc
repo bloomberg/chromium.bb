@@ -46,6 +46,44 @@ OpenTabsUIDelegate* GetOpenTabsUIDelegate(Profile* profile) {
   return service->GetOpenTabsUIDelegate();
 }
 
+bool ShouldSkipTab(const SessionTab& session_tab) {
+    if (session_tab.navigations.empty())
+      return true;
+
+    int selected_index = session_tab.current_navigation_index;
+    if (selected_index < 0 ||
+        selected_index >= static_cast<int>(session_tab.navigations.size()))
+      return true;
+
+    const ::sessions::SerializedNavigationEntry& current_navigation =
+        session_tab.navigations.at(selected_index);
+
+    if (current_navigation.virtual_url().is_empty())
+      return true;
+
+    return false;
+}
+
+bool ShouldSkipWindow(const SessionWindow& window) {
+  for (std::vector<SessionTab*>::const_iterator tab_it = window.tabs.begin();
+      tab_it != window.tabs.end(); ++tab_it) {
+    const SessionTab &session_tab = **tab_it;
+    if (!ShouldSkipTab(session_tab))
+      return false;
+  }
+  return true;
+}
+
+bool ShouldSkipSession(const browser_sync::SyncedSession& session) {
+  for (SyncedSession::SyncedWindowMap::const_iterator it =
+      session.windows.begin(); it != session.windows.end(); ++it) {
+    const SessionWindow  &window = *(it->second);
+    if (!ShouldSkipWindow(window))
+      return false;
+  }
+  return true;
+}
+
 void CopyTabsToJava(
     JNIEnv* env,
     const SessionWindow& window,
@@ -54,7 +92,12 @@ void CopyTabsToJava(
       tab_it != window.tabs.end(); ++tab_it) {
     const SessionTab &session_tab = **tab_it;
 
-    int selected_index = session_tab.normalized_navigation_index();
+    if (ShouldSkipTab(session_tab))
+      continue;
+
+    int selected_index = session_tab.current_navigation_index;
+    DCHECK(selected_index >= 0);
+    DCHECK(selected_index < static_cast<int>(session_tab.navigations.size()));
 
     const ::sessions::SerializedNavigationEntry& current_navigation =
         session_tab.navigations.at(selected_index);
@@ -77,6 +120,9 @@ void CopyWindowsToJava(
   for (SyncedSession::SyncedWindowMap::const_iterator it =
       session.windows.begin(); it != session.windows.end(); ++it) {
     const SessionWindow &window = *(it->second);
+
+    if (ShouldSkipWindow(window))
+      continue;
 
     ScopedJavaLocalRef<jobject> last_pushed_window;
     last_pushed_window.Reset(
@@ -178,6 +224,8 @@ jboolean ForeignSessionHelper::GetForeignSessions(JNIEnv* env,
   // Note: we don't own the SyncedSessions themselves.
   for (size_t i = 0; i < sessions.size(); ++i) {
     const browser_sync::SyncedSession &session = *(sessions[i]);
+    if (ShouldSkipSession(session))
+      continue;
 
     const bool is_collapsed = collapsed_sessions->HasKey(session.session_tag);
 
