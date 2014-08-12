@@ -33,12 +33,19 @@ bool GuestViewInternalCreateGuestFunction::RunAsync() {
   GuestViewManager::WebContentsCreatedCallback callback =
       base::Bind(&GuestViewInternalCreateGuestFunction::CreateGuestCallback,
                  this);
+
+  content::WebContents* embedder_web_contents =
+      content::WebContents::FromRenderViewHost(render_view_host());
+  if (!embedder_web_contents) {
+    error_ = "Guest views can only be embedded in web content";
+    return false;
+  }
+
   guest_view_manager->CreateGuest(view_type,
                                   extension_id(),
-                                  GetAssociatedWebContents(),
+                                  embedder_web_contents,
                                   *create_params,
                                   callback);
-
   return true;
 }
 

@@ -121,6 +121,9 @@ void GuestViewBase::Init(const std::string& embedder_extension_id,
       extensions::ExtensionRegistry::Get(browser_context_)
           ->enabled_extensions()
           .GetByID(embedder_extension_id);
+  // Ok for |embedder_extension| to be NULL, the embedder might be WebUI.
+
+  CHECK(embedder_web_contents);
   int embedder_process_id =
       embedder_web_contents->GetRenderProcessHost()->GetID();
 

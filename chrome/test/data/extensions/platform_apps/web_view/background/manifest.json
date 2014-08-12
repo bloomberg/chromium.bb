@@ -1,0 +1,12 @@
+{
+  "name": "Platform App Test: <webview> background page access",
+  "version": "1",
+  "permissions": [
+    "webview"
+  ],
+  "app": {
+    "background": {
+      "page": "background.html"
+    }
+  }
+}

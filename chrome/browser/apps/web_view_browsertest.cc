@@ -2252,3 +2252,8 @@ IN_PROC_BROWSER_TEST_F(WebViewCaptureTest,
                        DISABLED_Shim_ScreenshotCapture) {
   TestHelper("testScreenshotCapture", "web_view/shim", NO_TEST_SERVER);
 }
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, WebViewInBackgroundPage) {
+  ASSERT_TRUE(RunExtensionTest("platform_apps/web_view/background"))
+      << message_;
+}
