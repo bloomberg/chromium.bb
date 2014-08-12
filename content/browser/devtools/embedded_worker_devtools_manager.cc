@@ -60,16 +60,6 @@ DevToolsAgentHost* EmbeddedWorkerDevToolsManager::GetDevToolsAgentHostForWorker(
   return it == workers_.end() ? NULL : it->second;
 }
 
-DevToolsAgentHost*
-EmbeddedWorkerDevToolsManager::GetDevToolsAgentHostForServiceWorker(
-    const ServiceWorkerIdentifier& service_worker_id) {
-  AgentHostMap::iterator it =
-      FindExistingServiceWorkerAgentHost(service_worker_id);
-  if (it == workers_.end())
-    return NULL;
-  return GetDevToolsAgentHostForWorker(it->first.first, it->first.second);
-}
-
 EmbeddedWorkerDevToolsManager::EmbeddedWorkerDevToolsManager()
     : debug_service_worker_on_start_(false) {
 }

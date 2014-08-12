@@ -48,8 +48,6 @@ class CONTENT_EXPORT EmbeddedWorkerDevToolsManager {
 
   DevToolsAgentHost* GetDevToolsAgentHostForWorker(int worker_process_id,
                                                    int worker_route_id);
-  DevToolsAgentHost* GetDevToolsAgentHostForServiceWorker(
-      const ServiceWorkerIdentifier& service_worker_id);
 
   // Returns true when the worker must be paused on start because a DevTool
   // window for the same former SharedWorkerInstance is still opened.
