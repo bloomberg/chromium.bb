@@ -171,22 +171,6 @@ void PrintContext::begin(float width, float height)
     m_frame->setPrinting(true, minLayoutSize, originalPageSize, printingMaximumShrinkFactor / printingMinimumShrinkFactor);
 }
 
-void PrintContext::spoolPage(GraphicsContext& ctx, int pageNumber, float width)
-{
-    // FIXME: Not correct for vertical text.
-    IntRect pageRect = m_pageRects[pageNumber];
-    float scale = width / pageRect.width();
-
-    ctx.save();
-    ctx.scale(scale, scale);
-    ctx.translate(-pageRect.x(), -pageRect.y());
-    ctx.clip(pageRect);
-    m_frame->view()->paintContents(&ctx, pageRect);
-    if (ctx.supportsURLFragments())
-        outputLinkedDestinations(ctx, m_frame->document(), pageRect);
-    ctx.restore();
-}
-
 void PrintContext::end()
 {
     ASSERT(m_isPrinting);
@@ -329,54 +313,6 @@ int PrintContext::numberOfPages(LocalFrame* frame, const FloatSize& pageSizeInPi
     scaledPageSize.scale(frame->view()->contentsSize().width() / pageRect.width());
     printContext.computePageRectsWithPageSize(scaledPageSize, false);
     return printContext.pageCount();
-}
-
-void PrintContext::spoolAllPagesWithBoundaries(LocalFrame* frame, GraphicsContext& graphicsContext, const FloatSize& pageSizeInPixels)
-{
-    if (!frame->document() || !frame->view() || !frame->document()->renderView())
-        return;
-
-    frame->document()->updateLayout();
-
-    PrintContext printContext(frame);
-    printContext.begin(pageSizeInPixels.width(), pageSizeInPixels.height());
-
-    float pageHeight;
-    printContext.computePageRects(FloatRect(FloatPoint(0, 0), pageSizeInPixels), 0, 0, 1, pageHeight);
-
-    const float pageWidth = pageSizeInPixels.width();
-    const Vector<IntRect>& pageRects = printContext.pageRects();
-    int totalHeight = pageRects.size() * (pageSizeInPixels.height() + 1) - 1;
-
-    // Fill the whole background by white.
-    graphicsContext.setFillColor(Color(255, 255, 255));
-    graphicsContext.fillRect(FloatRect(0, 0, pageWidth, totalHeight));
-
-    graphicsContext.save();
-    graphicsContext.translate(0, totalHeight);
-    graphicsContext.scale(1, -1);
-
-    int currentHeight = 0;
-    for (size_t pageIndex = 0; pageIndex < pageRects.size(); pageIndex++) {
-        // Draw a line for a page boundary if this isn't the first page.
-        if (pageIndex > 0) {
-            graphicsContext.save();
-            graphicsContext.setStrokeColor(Color(0, 0, 255));
-            graphicsContext.setFillColor(Color(0, 0, 255));
-            graphicsContext.drawLine(IntPoint(0, currentHeight),
-                                     IntPoint(pageWidth, currentHeight));
-            graphicsContext.restore();
-        }
-
-        graphicsContext.save();
-        graphicsContext.translate(0, currentHeight);
-        printContext.spoolPage(graphicsContext, pageIndex, pageWidth);
-        graphicsContext.restore();
-
-        currentHeight += pageSizeInPixels.height() + 1;
-    }
-
-    graphicsContext.restore();
 }
 
 void PrintContext::trace(Visitor* visitor)

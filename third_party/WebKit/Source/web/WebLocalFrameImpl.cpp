@@ -302,11 +302,6 @@ public:
         PrintContext::begin(m_printedPageWidth, height);
     }
 
-    virtual void end()
-    {
-        PrintContext::end();
-    }
-
     virtual float getPageShrink(int pageNumber) const
     {
         IntRect pageRect = m_pageRects[pageNumber];
@@ -379,16 +374,6 @@ public:
 
             currentHeight += pageSizeInPixels.height() + 1;
         }
-    }
-
-    virtual void computePageRects(const FloatRect& printRect, float headerHeight, float footerHeight, float userScaleFactor, float& outPageHeight)
-    {
-        PrintContext::computePageRects(printRect, headerHeight, footerHeight, userScaleFactor, outPageHeight);
-    }
-
-    virtual int pageCount() const
-    {
-        return PrintContext::pageCount();
     }
 
 private:

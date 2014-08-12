@@ -62,9 +62,6 @@ public:
     // This function can be called multiple times to apply new print options without going back to screen mode.
     void begin(float width, float height = 0);
 
-    // FIXME: eliminate width argument.
-    void spoolPage(GraphicsContext& ctx, int pageNumber, float width);
-
     // Return to screen mode.
     void end();
 
@@ -74,10 +71,6 @@ public:
     static bool isPageBoxVisible(LocalFrame* frame, int pageNumber);
     static String pageSizeAndMarginsInPixels(LocalFrame* frame, int pageNumber, int width, int height, int marginTop, int marginRight, int marginBottom, int marginLeft);
     static int numberOfPages(LocalFrame*, const FloatSize& pageSizeInPixels);
-    // Draw all pages into a graphics context with lines which mean page boundaries.
-    // The height of the graphics context should be
-    // (pageSizeInPixels.height() + 1) * number-of-pages - 1
-    static void spoolAllPagesWithBoundaries(LocalFrame*, GraphicsContext&, const FloatSize& pageSizeInPixels);
 
     virtual void trace(Visitor*);
 
