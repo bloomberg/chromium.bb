@@ -9,24 +9,24 @@
 namespace content {
 
 bool CrossSiteRequestManager::HasPendingCrossSiteRequest(int renderer_id,
-                                                         int render_view_id) {
+                                                         int render_frame_id) {
   base::AutoLock lock(lock_);
 
-  std::pair<int, int> key(renderer_id, render_view_id);
-  return pending_cross_site_views_.find(key) !=
-      pending_cross_site_views_.end();
+  std::pair<int, int> key(renderer_id, render_frame_id);
+  return pending_cross_site_frames_.find(key) !=
+         pending_cross_site_frames_.end();
 }
 
 void CrossSiteRequestManager::SetHasPendingCrossSiteRequest(int renderer_id,
-                                                            int render_view_id,
+                                                            int render_frame_id,
                                                             bool has_pending) {
   base::AutoLock lock(lock_);
 
-  std::pair<int, int> key(renderer_id, render_view_id);
+  std::pair<int, int> key(renderer_id, render_frame_id);
   if (has_pending) {
-    pending_cross_site_views_.insert(key);
+    pending_cross_site_frames_.insert(key);
   } else {
-    pending_cross_site_views_.erase(key);
+    pending_cross_site_frames_.erase(key);
   }
 }
 

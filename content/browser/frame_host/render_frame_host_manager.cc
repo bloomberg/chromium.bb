@@ -273,9 +273,8 @@ bool RenderFrameHostManager::ShouldCloseTabOnUnresponsiveRenderer() {
     // that the beforeunload handler will later finish and possibly return
     // false (meaning the navigation should not proceed), but we'll ignore it
     // in this case because it took too long.
-    if (pending_render_frame_host_->render_view_host()->
-            are_navigations_suspended()) {
-      pending_render_frame_host_->render_view_host()->SetNavigationsSuspended(
+    if (pending_render_frame_host_->are_navigations_suspended()) {
+      pending_render_frame_host_->SetNavigationsSuspended(
           false, base::TimeTicks::Now());
     }
   }
@@ -298,10 +297,9 @@ void RenderFrameHostManager::OnBeforeUnloadACK(
       // already made by ShouldCloseTabOnUnresponsiveRenderer.  In that case, it
       // is ok to do nothing here.
       if (pending_render_frame_host_ &&
-          pending_render_frame_host_->render_view_host()->
-              are_navigations_suspended()) {
-        pending_render_frame_host_->render_view_host()->
-            SetNavigationsSuspended(false, proceed_time);
+          pending_render_frame_host_->are_navigations_suspended()) {
+        pending_render_frame_host_->SetNavigationsSuspended(false,
+                                                            proceed_time);
       }
     } else {
       // Current page says to cancel.
@@ -458,8 +456,7 @@ void RenderFrameHostManager::DidNavigateFrame(
     // then we still need to swap out the old RFH first and run its unload
     // handler, only if it hasn't happened yet.  OK for that to happen in the
     // background.
-    if (pending_render_frame_host_->render_view_host()->
-            HasPendingCrossSiteRequest() &&
+    if (pending_render_frame_host_->HasPendingCrossSiteRequest() &&
         pending_render_frame_host_->render_view_host()->rvh_state() ==
             RenderViewHostImpl::STATE_DEFAULT) {
       SwapOutOldPage();
@@ -549,8 +546,7 @@ void RenderFrameHostManager::SwapOutOldPage() {
   // navigation.  Thus, we no longer need to remember that the RenderFrameHost
   // is part of a pending cross-site request.
   if (pending_render_frame_host_) {
-    pending_render_frame_host_->render_view_host()->
-        SetHasPendingCrossSiteRequest(false);
+    pending_render_frame_host_->SetHasPendingCrossSiteRequest(false);
   }
 }
 
@@ -1409,8 +1405,7 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
     // Navigate message) until we hear back from the old renderer's
     // beforeunload handler.  If the handler returns false, we'll have to
     // cancel the request.
-    DCHECK(!pending_render_frame_host_->render_view_host()->
-               are_navigations_suspended());
+    DCHECK(!pending_render_frame_host_->are_navigations_suspended());
     bool is_transfer =
         entry.transferred_global_request_id() != GlobalRequestID();
     if (is_transfer) {
@@ -1425,15 +1420,13 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
       render_frame_host_->render_view_host()->Send(new ViewMsg_Stop(
           render_frame_host_->render_view_host()->GetRoutingID()));
 
-      pending_render_frame_host_->render_view_host()->SetNavigationsSuspended(
-          true, base::TimeTicks());
+      pending_render_frame_host_->SetNavigationsSuspended(true,
+                                                          base::TimeTicks());
 
-      // Tell the CrossSiteRequestManager that this RVH has a pending cross-site
+      // Tell the CrossSiteRequestManager that this RFH has a pending cross-site
       // request, so that ResourceDispatcherHost will know to tell us to run the
       // old page's unload handler before it sends the response.
-      // TODO(creis): This needs to be on the RFH.
-      pending_render_frame_host_->render_view_host()->
-          SetHasPendingCrossSiteRequest(true);
+      pending_render_frame_host_->SetHasPendingCrossSiteRequest(true);
     }
 
     // We now have a pending RFH.
@@ -1508,7 +1501,7 @@ void RenderFrameHostManager::CancelPending() {
       pending_render_frame_host->GetSiteInstance());
   if (site_instance->active_view_count() > 1) {
     // Any currently suspended navigations are no longer needed.
-    pending_render_frame_host->render_view_host()->CancelSuspendedNavigations();
+    pending_render_frame_host->CancelSuspendedNavigations();
 
     RenderFrameProxyHost* proxy =
         new RenderFrameProxyHost(site_instance, frame_tree_node_);

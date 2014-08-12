@@ -368,6 +368,7 @@ class RenderViewHostImplTestHarness : public RenderViewHostTestHarness {
   TestRenderViewHost* pending_test_rvh();
   TestRenderViewHost* active_test_rvh();
   TestRenderFrameHost* main_test_rfh();
+  TestRenderFrameHost* pending_main_test_rfh();
   TestWebContents* contents();
 
  private:

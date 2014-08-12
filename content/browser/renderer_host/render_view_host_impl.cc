@@ -24,7 +24,6 @@
 #include "base/values.h"
 #include "cc/base/switches.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/cross_site_request_manager.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/gpu/compositor_util.h"
@@ -189,7 +188,6 @@ RenderViewHostImpl::RenderViewHostImpl(
       instance_(static_cast<SiteInstanceImpl*>(instance)),
       waiting_for_drag_context_response_(false),
       enabled_bindings_(0),
-      navigations_suspended_(false),
       main_frame_routing_id_(main_frame_routing_id),
       run_modal_reply_msg_(NULL),
       run_modal_opener_id_(MSG_ROUTING_NONE),
@@ -239,10 +237,6 @@ RenderViewHostImpl::~RenderViewHostImpl() {
   }
 
   delegate_->RenderViewDeleted(this);
-
-  // Be sure to clean up any leftover state from cross-site requests.
-  CrossSiteRequestManager::GetInstance()->SetHasPendingCrossSiteRequest(
-      GetProcess()->GetID(), GetRoutingID(), false);
 
   // If this was swapped out, it already decremented the active view
   // count of the SiteInstance it belongs to.
@@ -488,34 +482,6 @@ void RenderViewHostImpl::NavigateToURL(const GURL& url) {
   delegate_->GetFrameTree()->GetMainFrame()->NavigateToURL(url);
 }
 
-void RenderViewHostImpl::SetNavigationsSuspended(
-    bool suspend,
-    const base::TimeTicks& proceed_time) {
-  // This should only be called to toggle the state.
-  DCHECK(navigations_suspended_ != suspend);
-
-  navigations_suspended_ = suspend;
-  if (!suspend && suspended_nav_params_) {
-    // There's navigation message params waiting to be sent.  Now that we're not
-    // suspended anymore, resume navigation by sending them.  If we were swapped
-    // out, we should also stop filtering out the IPC messages now.
-    SetState(STATE_DEFAULT);
-
-    DCHECK(!proceed_time.is_null());
-    suspended_nav_params_->browser_navigation_start = proceed_time;
-    Send(new FrameMsg_Navigate(
-        main_frame_routing_id_, *suspended_nav_params_.get()));
-    suspended_nav_params_.reset();
-  }
-}
-
-void RenderViewHostImpl::CancelSuspendedNavigations() {
-  // Clear any state if a pending navigation is canceled or pre-empted.
-  if (suspended_nav_params_)
-    suspended_nav_params_.reset();
-  navigations_suspended_ = false;
-}
-
 void RenderViewHostImpl::SuppressDialogsUntilSwapOut() {
   Send(new ViewMsg_SuppressDialogsUntilSwapOut(GetRoutingID()));
 }
@@ -634,17 +600,6 @@ void RenderViewHostImpl::ClosePageIgnoringUnloadEvents() {
 
   sudden_termination_allowed_ = true;
   delegate_->Close(this);
-}
-
-bool RenderViewHostImpl::HasPendingCrossSiteRequest() {
-  return CrossSiteRequestManager::GetInstance()->HasPendingCrossSiteRequest(
-      GetProcess()->GetID(), GetRoutingID());
-}
-
-void RenderViewHostImpl::SetHasPendingCrossSiteRequest(
-    bool has_pending_request) {
-  CrossSiteRequestManager::GetInstance()->SetHasPendingCrossSiteRequest(
-      GetProcess()->GetID(), GetRoutingID(), has_pending_request);
 }
 
 #if defined(OS_ANDROID)

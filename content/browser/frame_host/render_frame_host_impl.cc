@@ -13,6 +13,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/cross_site_request_manager.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/cross_site_transferring_request.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -166,6 +167,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(RenderViewHostImpl* render_view_host,
       routing_id_(routing_id),
       is_swapped_out_(is_swapped_out),
       renderer_initialized_(false),
+      navigations_suspended_(false),
       weak_ptr_factory_(this) {
   frame_tree_->RegisterRenderFrameHost(this);
   GetProcess()->AddRoute(routing_id_, this);
@@ -188,6 +190,10 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   GetProcess()->RemoveRoute(routing_id_);
   g_routing_id_frame_map.Get().erase(
       RenderFrameHostID(GetProcess()->GetID(), routing_id_));
+  // Clean up any leftover state from cross-site requests.
+  CrossSiteRequestManager::GetInstance()->SetHasPendingCrossSiteRequest(
+      GetProcess()->GetID(), routing_id_, false);
+
   if (delegate_)
     delegate_->RenderFrameDeleted(this);
 
@@ -1011,14 +1017,13 @@ void RenderFrameHostImpl::Navigate(const FrameMsg_Navigate_Params& params) {
 
   // Only send the message if we aren't suspended at the start of a cross-site
   // request.
-  if (render_view_host_->navigations_suspended_) {
+  if (navigations_suspended_) {
     // Shouldn't be possible to have a second navigation while suspended, since
     // navigations will only be suspended during a cross-site request.  If a
     // second navigation occurs, RenderFrameHostManager will cancel this pending
     // RFH and create a new pending RFH.
-    DCHECK(!render_view_host_->suspended_nav_params_.get());
-    render_view_host_->suspended_nav_params_.reset(
-        new FrameMsg_Navigate_Params(params));
+    DCHECK(!suspended_nav_params_.get());
+    suspended_nav_params_.reset(new FrameMsg_Navigate_Params(params));
   } else {
     // Get back to a clean state, in case we start a new navigation without
     // completing a RVH swap or unload handler.
@@ -1141,6 +1146,17 @@ void RenderFrameHostImpl::NotificationClosed(int notification_id) {
   cancel_notification_callbacks_.erase(notification_id);
 }
 
+bool RenderFrameHostImpl::HasPendingCrossSiteRequest() {
+  return CrossSiteRequestManager::GetInstance()->HasPendingCrossSiteRequest(
+      GetProcess()->GetID(), routing_id_);
+}
+
+void RenderFrameHostImpl::SetHasPendingCrossSiteRequest(
+    bool has_pending_request) {
+  CrossSiteRequestManager::GetInstance()->SetHasPendingCrossSiteRequest(
+      GetProcess()->GetID(), routing_id_, has_pending_request);
+}
+
 void RenderFrameHostImpl::PlatformNotificationPermissionRequestDone(
     int request_id, blink::WebNotificationPermission permission) {
   Send(new PlatformNotificationMsg_PermissionRequestComplete(
@@ -1196,6 +1212,33 @@ void RenderFrameHostImpl::ClearPendingTransitionRequestData() {
           base::Unretained(TransitionRequestManager::GetInstance()),
           GetProcess()->GetID(),
           routing_id_));
+}
+
+void RenderFrameHostImpl::SetNavigationsSuspended(
+    bool suspend,
+    const base::TimeTicks& proceed_time) {
+  // This should only be called to toggle the state.
+  DCHECK(navigations_suspended_ != suspend);
+
+  navigations_suspended_ = suspend;
+  if (!suspend && suspended_nav_params_) {
+    // There's navigation message params waiting to be sent. Now that we're not
+    // suspended anymore, resume navigation by sending them. If we were swapped
+    // out, we should also stop filtering out the IPC messages now.
+    render_view_host_->SetState(RenderViewHostImpl::STATE_DEFAULT);
+
+    DCHECK(!proceed_time.is_null());
+    suspended_nav_params_->browser_navigation_start = proceed_time;
+    Send(new FrameMsg_Navigate(routing_id_, *suspended_nav_params_));
+    suspended_nav_params_.reset();
+  }
+}
+
+void RenderFrameHostImpl::CancelSuspendedNavigations() {
+  // Clear any state if a pending navigation is canceled or preempted.
+  if (suspended_nav_params_)
+    suspended_nav_params_.reset();
+  navigations_suspended_ = false;
 }
 
 }  // namespace content

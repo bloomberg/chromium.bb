@@ -189,6 +189,30 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Load the specified URL; this is a shortcut for Navigate().
   void NavigateToURL(const GURL& url);
 
+  // Returns whether navigation messages are currently suspended for this
+  // RenderFrameHost. Only true during a cross-site navigation, while waiting
+  // for the onbeforeunload handler.
+  bool are_navigations_suspended() const { return navigations_suspended_; }
+
+  // Suspends (or unsuspends) any navigation messages from being sent from this
+  // RenderFrameHost. This is called when a pending RenderFrameHost is created
+  // for a cross-site navigation, because we must suspend any navigations until
+  // we hear back from the old renderer's onbeforeunload handler. Note that it
+  // is important that only one navigation event happen after calling this
+  // method with |suspend| equal to true. If |suspend| is false and there is a
+  // suspended_nav_message_, this will send the message. This function should
+  // only be called to toggle the state; callers should check
+  // are_navigations_suspended() first. If |suspend| is false, the time that the
+  // user decided the navigation should proceed should be passed as
+  // |proceed_time|.
+  void SetNavigationsSuspended(bool suspend,
+                               const base::TimeTicks& proceed_time);
+
+  // Clears any suspended navigation state after a cross-site navigation is
+  // canceled or suspended. This is important if we later return to this
+  // RenderFrameHost.
+  void CancelSuspendedNavigations();
+
   // Runs the beforeunload handler for this frame. |for_cross_site_transition|
   // indicates whether this call is for the current frame during a cross-process
   // navigation. False means we're closing the entire tab.
@@ -242,6 +266,17 @@ class CONTENT_EXPORT RenderFrameHostImpl
       gfx::NativeViewAccessible accessible_parent);
   gfx::NativeViewAccessible GetParentNativeViewAccessible() const;
 #endif
+
+  // Returns whether this RenderFrameHost has an outstanding cross-site request.
+  // Cleared when we hear the response and start to swap out the old
+  // RenderFrameHost, or if we hear a commit here without a network request.
+  bool HasPendingCrossSiteRequest();
+
+  // Sets whether this RenderFrameHost has an outstanding cross-site request,
+  // for which another renderer will need to run an onunload event handler.
+  // This is called before the first navigation event for this RenderFrameHost,
+  // and cleared when we hear the response or commit.
+  void SetHasPendingCrossSiteRequest(bool has_pending_request);
 
  protected:
   friend class RenderFrameHostFactory;
@@ -373,6 +408,19 @@ class CONTENT_EXPORT RenderFrameHostImpl
   int routing_id_;
   bool is_swapped_out_;
   bool renderer_initialized_;
+
+  // Whether we should buffer outgoing Navigate messages rather than sending
+  // them. This will be true when a RenderFrameHost is created for a cross-site
+  // request, until we hear back from the onbeforeunload handler of the old
+  // RenderFrameHost.
+  bool navigations_suspended_;
+
+  // We only buffer the params for a suspended navigation while this RFH is the
+  // pending RenderFrameHost of a RenderFrameHostManager. There will only ever
+  // be one suspended navigation, because RenderFrameHostManager will destroy
+  // the pending RenderFrameHost and create a new one if a second navigation
+  // occurs.
+  scoped_ptr<FrameMsg_Navigate_Params> suspended_nav_params_;
 
   // When the last BeforeUnload message was sent.
   base::TimeTicks send_before_unload_start_time_;
