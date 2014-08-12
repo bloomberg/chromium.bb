@@ -431,27 +431,21 @@ class FileSystemMetaDataTest(ForgivingImageTestCase):
     block_size = int(fs_stat['Block size'])
 
     sum_file_size = 0
-    sum_block_size = 0
     for root, _, filenames in os.walk(ROOT_A):
       for file_name in filenames:
         full_name = os.path.join(root, file_name)
         file_stat = os.lstat(full_name)
         sum_file_size += file_stat.st_size
-        if file_stat.st_size < 60:
-          # Small files (< 60 bytes) are inlined in the inode, no data block
-          # is needed.
-          continue
-        else:
-          sum_block_size += ((file_stat.st_size + block_size - 1) /
-                             block_size) * block_size
+
+    metadata_size = (block_count - free_blocks) * block_size - sum_file_size
 
     self.OutputPerfValue('free_inodes_over_inode_count',
-                         float(free_inodes) / inode_count, 'percent',
+                         free_inodes * 100.0 / inode_count, 'percent',
                          graph='free_over_used_ratio')
     self.OutputPerfValue('free_blocks_over_block_count',
-                         float(free_blocks) / block_count, 'percent',
+                         free_blocks * 100.0 / block_count, 'percent',
                          graph='free_over_used_ratio')
-    self.OutputPerfValue('file_size', sum_file_size, 'bytes',
-                         higher_is_better=False, graph='disk_space')
-    self.OutputPerfValue('disk_size', sum_block_size, 'bytes',
-                         higher_is_better=False, graph='disk_space')
+    self.OutputPerfValue('apparent_size', sum_file_size, 'bytes',
+                         higher_is_better=False, graph='filesystem_stats')
+    self.OutputPerfValue('metadata_size', metadata_size, 'bytes',
+                         higher_is_better=False, graph='filesystem_stats')
