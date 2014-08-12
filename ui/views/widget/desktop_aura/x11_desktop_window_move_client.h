@@ -12,8 +12,8 @@
 #include "base/message_loop/message_loop.h"
 #include "ui/gfx/point.h"
 #include "ui/views/views_export.h"
+#include "ui/views/widget/desktop_aura/x11_move_loop_delegate.h"
 #include "ui/views/widget/desktop_aura/x11_whole_screen_move_loop.h"
-#include "ui/views/widget/desktop_aura/x11_whole_screen_move_loop_delegate.h"
 #include "ui/wm/public/window_move_client.h"
 
 namespace aura {
@@ -24,7 +24,7 @@ namespace views {
 
 // When we're dragging tabs, we need to manually position our window.
 class VIEWS_EXPORT X11DesktopWindowMoveClient :
-      public views::X11WholeScreenMoveLoopDelegate,
+      public views::X11MoveLoopDelegate,
       public aura::client::WindowMoveClient {
  public:
   X11DesktopWindowMoveClient();

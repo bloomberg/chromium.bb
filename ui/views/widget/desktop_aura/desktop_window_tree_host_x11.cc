@@ -291,6 +291,7 @@ DesktopWindowTreeHostX11::CreateDragDropClient(
     DesktopNativeCursorManager* cursor_manager) {
   drag_drop_client_ = new DesktopDragDropClientAuraX11(
       window(), cursor_manager, xdisplay_, xwindow_);
+  drag_drop_client_->Init();
   return scoped_ptr<aura::client::DragDropClient>(drag_drop_client_).Pass();
 }
 

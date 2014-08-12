@@ -6,6 +6,7 @@
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_DRAG_DROP_CLIENT_AURAX11_H_
 
 #include <set>
+#include <vector>
 #include <X11/Xlib.h>
 
 #include "base/compiler_specific.h"
@@ -18,8 +19,7 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/views/views_export.h"
-#include "ui/views/widget/desktop_aura/x11_whole_screen_move_loop.h"
-#include "ui/views/widget/desktop_aura/x11_whole_screen_move_loop_delegate.h"
+#include "ui/views/widget/desktop_aura/x11_move_loop_delegate.h"
 #include "ui/wm/public/drag_drop_client.h"
 
 namespace aura {
@@ -42,6 +42,7 @@ class SelectionFormatMap;
 
 namespace views {
 class DesktopNativeCursorManager;
+class X11MoveLoop;
 
 // Implements drag and drop on X11 for aura. On one side, this class takes raw
 // X11 events forwarded from DesktopWindowTreeHostLinux, while on the other, it
@@ -49,7 +50,7 @@ class DesktopNativeCursorManager;
 class VIEWS_EXPORT DesktopDragDropClientAuraX11
     : public aura::client::DragDropClient,
       public aura::WindowObserver,
-      public X11WholeScreenMoveLoopDelegate {
+      public X11MoveLoopDelegate {
  public:
   DesktopDragDropClientAuraX11(
       aura::Window* root_window,
@@ -62,6 +63,8 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   // their ::Windows. We do this so that we're able to short circuit sending
   // X11 messages to windows in our process.
   static DesktopDragDropClientAuraX11* GetForWindow(::Window window);
+
+  void Init();
 
   // These methods handle the various X11 client messages from the platform.
   void OnXdndEnter(const XClientMessageEvent& event);
@@ -99,6 +102,10 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
 
  protected:
   // The following methods are virtual for the sake of testing.
+
+  // Creates a move loop.
+  virtual scoped_ptr<X11MoveLoop> CreateMoveLoop(
+      X11MoveLoopDelegate* delegate);
 
   // Finds the topmost X11 window at |screen_point| and returns it if it is
   // Xdnd aware. Returns NULL otherwise.
@@ -178,8 +185,8 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   void SendXdndDrop(::Window dest_window);
 
   // A nested message loop that notifies this object of events through the
-  // X11WholeScreenMoveLoopDelegate interface.
-  X11WholeScreenMoveLoop move_loop_;
+  // X11MoveLoopDelegate interface.
+  scoped_ptr<X11MoveLoop> move_loop_;
 
   aura::Window* root_window_;
 

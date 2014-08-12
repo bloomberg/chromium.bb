@@ -2,18 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_X11_WHOLE_SCREEN_MOVE_LOOP_DELEGATE_H_
-#define UI_VIEWS_WIDGET_DESKTOP_AURA_X11_WHOLE_SCREEN_MOVE_LOOP_DELEGATE_H_
+#ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_X11_MOVE_LOOP_DELEGATE_H_
+#define UI_VIEWS_WIDGET_DESKTOP_AURA_X11_MOVE_LOOP_DELEGATE_H_
 
 #include <X11/Xlib.h>
-// Get rid of a macro from Xlib.h that conflicts with Aura's RootWindow class.
-#undef RootWindow
 
 namespace views {
 
-// Receives mouse events while the X11WholeScreenMoveLoop is tracking a drag on
-// the screen.
-class X11WholeScreenMoveLoopDelegate {
+// Receives mouse events while the X11MoveLoop is tracking a drag.
+class X11MoveLoopDelegate {
  public:
   // Called when we receive a motion event.
   virtual void OnMouseMovement(XMotionEvent* event) = 0;
@@ -28,4 +25,4 @@ class X11WholeScreenMoveLoopDelegate {
 
 }  // namespace views
 
-#endif  // UI_VIEWS_WIDGET_DESKTOP_AURA_X11_WHOLE_SCREEN_MOVE_LOOP_DELEGATE_H_
+#endif  // UI_VIEWS_WIDGET_DESKTOP_AURA_X11_MOVE_LOOP_DELEGATE_H_
