@@ -232,7 +232,7 @@ String HitTestResult::title(TextDirection& dir) const
     for (Node* titleNode = m_innerNode.get(); titleNode; titleNode = titleNode->parentNode()) {
         if (titleNode->isElementNode()) {
             String title = toElement(titleNode)->title();
-            if (!title.isEmpty()) {
+            if (!title.isNull()) {
                 if (RenderObject* renderer = titleNode->renderer())
                     dir = renderer->style()->direction();
                 return title;
