@@ -23,12 +23,20 @@ void AvatarMenu::GetImageForMenuButton(Profile* profile,
     return;
   }
 
-  // Ensure we are using the default resource, not the downloaded high-res one.
+  // If there is a Gaia image available, try to use that.
+  if (cache.IsUsingGAIAPictureOfProfileAtIndex(index)) {
+    const gfx::Image* gaia_image = cache.GetGAIAPictureOfProfileAtIndex(index);
+    if (gaia_image) {
+      *image = *gaia_image;
+      *is_rectangle = true;
+      return;
+    }
+  }
+
+  // Otherwise, use the default resource, not the downloaded high-res one.
   const size_t icon_index = cache.GetAvatarIconIndexOfProfileAtIndex(index);
   const int resource_id =
       profiles::GetDefaultAvatarIconResourceIDAtIndex(icon_index);
   *image = ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
-  *is_rectangle =
-      cache.IsUsingGAIAPictureOfProfileAtIndex(index) &&
-      cache.GetGAIAPictureOfProfileAtIndex(index);
+  *is_rectangle = false;
 }
