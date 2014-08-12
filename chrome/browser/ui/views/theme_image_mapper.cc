@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 namespace chrome {
 
 int MapThemeImage(HostDesktopType desktop_type, int resource) {
+#if !defined(OS_CHROMEOS)
   if (desktop_type != HOST_DESKTOP_TYPE_NATIVE)
     return resource;
 
@@ -34,6 +35,8 @@ int MapThemeImage(HostDesktopType desktop_type, int resource) {
     default:
       break;
   }
+#endif  // !defined(OS_CHROMEOS)
+
   return resource;
 }
 
