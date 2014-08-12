@@ -101,9 +101,8 @@ TEST_F(ProfileChooserControllerTest, InitialLayoutWithNewMenu) {
   subviews = [[subviews objectAtIndex:0] subviews];
 
   // Three profiles means we should have one active card, one separator and
-  // one option buttons view. We also have an update promo for the new avatar
-  // menu.
-  ASSERT_EQ(4U, [subviews count]);
+  // one option buttons view.
+  ASSERT_EQ(3U, [subviews count]);
 
   // There should be two buttons and a separator in the option buttons view.
   NSArray* buttonSubviews = [[subviews objectAtIndex:0] subviews];
@@ -166,9 +165,8 @@ TEST_F(ProfileChooserControllerTest, InitialLayoutWithFastUserSwitcher) {
 
   // Three profiles means we should have one active card and a
   // fast user switcher which has two "other" profiles and 2 separators, and
-  // an option buttons view with its separator. We also have a promo for
-  // the new avatar menu.
-  ASSERT_EQ(8U, [subviews count]);
+  // an option buttons view with its separator.
+  ASSERT_EQ(7U, [subviews count]);
 
   // There should be two buttons and a separator in the option buttons view.
   // These buttons are tested in InitialLayoutWithNewMenu.
@@ -239,9 +237,8 @@ TEST_F(ProfileChooserControllerTest, OtherProfilesSortedAlphabetically) {
                               @"Test 1",
                               @"Test 2" };
   // There are four "other" profiles, each with a button and a separator, an
-  // active profile card, and an option buttons view with a separator. We
-  // also have an update promo for the new avatar menu.
-  ASSERT_EQ(12U, [subviews count]);
+  // active profile card, and an option buttons view with a separator.
+  ASSERT_EQ(11U, [subviews count]);
   // There should be four "other profiles" items, sorted alphabetically. The
   // "other profiles" start at index 2 (after the option buttons view and its
   // separator), and each have a separator. We need to iterate through the
