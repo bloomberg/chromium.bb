@@ -4,17 +4,22 @@
 
 #include "config.h"
 #include "modules/credentialmanager/LocalCredential.h"
+
+#include "bindings/core/v8/ExceptionState.h"
 #include "platform/credentialmanager/PlatformLocalCredential.h"
 
 namespace blink {
 
-LocalCredential* LocalCredential::create(const String& id, const String& name, const String& avatarURL, const String& password)
+LocalCredential* LocalCredential::create(const String& id, const String& name, const String& avatar, const String& password, ExceptionState& exceptionState)
 {
+    KURL avatarURL = parseStringAsURL(avatar, exceptionState);
+    if (exceptionState.hadException())
+        return nullptr;
     return new LocalCredential(id, name, avatarURL, password);
 }
 
-LocalCredential::LocalCredential(const String& id, const String& name, const String& avatarURL, const String& password)
-    : Credential(PlatformLocalCredential::create(id, name, avatarURL, password))
+LocalCredential::LocalCredential(const String& id, const String& name, const KURL& avatar, const String& password)
+    : Credential(PlatformLocalCredential::create(id, name, avatar, password))
 {
 }
 

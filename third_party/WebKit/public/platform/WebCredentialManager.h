@@ -26,7 +26,7 @@ public:
     virtual void dispatchFailedSignIn(const WebCredential&, NotificationCallbacks*) { }
     virtual void dispatchSignedIn(const WebCredential&, NotificationCallbacks*) { }
     virtual void dispatchSignedOut(NotificationCallbacks*) { }
-    virtual void dispatchRequest(bool zeroClickOnly, const WebVector<WebString>& federations, RequestCallbacks*) { }
+    virtual void dispatchRequest(bool zeroClickOnly, const WebVector<WebURL>& federations, RequestCallbacks*) { }
 };
 
 } // namespace blink

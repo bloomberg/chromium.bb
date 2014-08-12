@@ -7,12 +7,12 @@
 
 namespace blink {
 
-PlatformLocalCredential* PlatformLocalCredential::create(const String& id, const String& name, const String& avatarURL, const String& password)
+PlatformLocalCredential* PlatformLocalCredential::create(const String& id, const String& name, const KURL& avatarURL, const String& password)
 {
     return new PlatformLocalCredential(id, name, avatarURL, password);
 }
 
-PlatformLocalCredential::PlatformLocalCredential(const String& id, const String& name, const String& avatarURL, const String& password)
+PlatformLocalCredential::PlatformLocalCredential(const String& id, const String& name, const KURL& avatarURL, const String& password)
     : PlatformCredential(id, name, avatarURL)
     , m_password(password)
 {

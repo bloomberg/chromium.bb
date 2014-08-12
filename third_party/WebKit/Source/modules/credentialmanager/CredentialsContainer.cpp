@@ -62,6 +62,7 @@ public:
 
     virtual void onSuccess(WebCredential* credential) OVERRIDE
     {
+        // FIXME: Split this into Local/Federated types.
         m_resolver->resolve(Credential::create(credential->id(), credential->name(), credential->avatarURL()));
     }
 

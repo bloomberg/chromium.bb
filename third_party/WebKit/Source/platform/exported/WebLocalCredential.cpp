@@ -9,7 +9,7 @@
 
 namespace blink {
 
-WebLocalCredential::WebLocalCredential(const WebString& id, const WebString& name, const WebString& avatarURL, const WebString& password)
+WebLocalCredential::WebLocalCredential(const WebString& id, const WebString& name, const WebURL& avatarURL, const WebString& password)
     : WebCredential(PlatformLocalCredential::create(id, name, avatarURL, password))
 {
 }

@@ -5,9 +5,10 @@
 #ifndef WebCredential_h
 #define WebCredential_h
 
-#include "WebCommon.h"
-#include "WebPrivatePtr.h"
-#include "WebString.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebPrivatePtr.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
 
 namespace blink {
 
@@ -15,7 +16,7 @@ class PlatformCredential;
 
 class WebCredential {
 public:
-    BLINK_PLATFORM_EXPORT WebCredential(const WebString& id, const WebString& name, const WebString& avatarURL);
+    BLINK_PLATFORM_EXPORT WebCredential(const WebString& id, const WebString& name, const WebURL& avatarURL);
     ~WebCredential() { reset(); }
 
     BLINK_PLATFORM_EXPORT void assign(const WebCredential&);
@@ -23,7 +24,7 @@ public:
 
     BLINK_PLATFORM_EXPORT WebString id() const;
     BLINK_PLATFORM_EXPORT WebString name() const;
-    BLINK_PLATFORM_EXPORT WebString avatarURL() const;
+    BLINK_PLATFORM_EXPORT WebURL avatarURL() const;
 
 protected:
     BLINK_PLATFORM_EXPORT explicit WebCredential(PlatformCredential*);

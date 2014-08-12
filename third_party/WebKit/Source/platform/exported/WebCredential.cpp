@@ -9,7 +9,7 @@
 
 namespace blink {
 
-WebCredential::WebCredential(const WebString& id, const WebString& name, const WebString& avatarURL)
+WebCredential::WebCredential(const WebString& id, const WebString& name, const WebURL& avatarURL)
     : m_platformCredential(PlatformCredential::create(id, name, avatarURL))
 {
 }
@@ -39,7 +39,7 @@ WebString WebCredential::name() const
     return m_platformCredential->name();
 }
 
-WebString WebCredential::avatarURL() const
+WebURL WebCredential::avatarURL() const
 {
     return m_platformCredential->avatarURL();
 }

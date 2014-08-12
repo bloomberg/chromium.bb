@@ -5,19 +5,20 @@
 #ifndef WebFederatedCredential_h
 #define WebFederatedCredential_h
 
-#include "WebCommon.h"
-#include "WebCredential.h"
-#include "WebString.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebCredential.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
 
 namespace blink {
 
 class WebFederatedCredential : public WebCredential {
 public:
-    BLINK_PLATFORM_EXPORT WebFederatedCredential(const WebString& id, const WebString& name, const WebString& avatarURL, const WebString& federation);
+    BLINK_PLATFORM_EXPORT WebFederatedCredential(const WebString& id, const WebString& name, const WebURL& avatarURL, const WebURL& federation);
 
     BLINK_PLATFORM_EXPORT void assign(const WebFederatedCredential&);
 
-    BLINK_PLATFORM_EXPORT WebString federation() const;
+    BLINK_PLATFORM_EXPORT WebURL federation() const;
 };
 
 } // namespace blink

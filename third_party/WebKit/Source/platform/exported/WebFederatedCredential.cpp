@@ -9,7 +9,7 @@
 
 namespace blink {
 
-WebFederatedCredential::WebFederatedCredential(const WebString& id, const WebString& name, const WebString& avatarURL, const WebString& federation)
+WebFederatedCredential::WebFederatedCredential(const WebString& id, const WebString& name, const WebURL& avatarURL, const WebURL& federation)
     : WebCredential(PlatformFederatedCredential::create(id, name, avatarURL, federation))
 {
 }
@@ -19,7 +19,7 @@ void WebFederatedCredential::assign(const WebFederatedCredential& other)
     m_platformCredential = other.m_platformCredential;
 }
 
-WebString WebFederatedCredential::federation() const
+WebURL WebFederatedCredential::federation() const
 {
     return static_cast<PlatformFederatedCredential*>(m_platformCredential.get())->federation();
 }

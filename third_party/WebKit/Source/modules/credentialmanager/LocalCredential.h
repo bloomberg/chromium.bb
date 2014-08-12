@@ -9,18 +9,19 @@
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "modules/credentialmanager/Credential.h"
 #include "platform/heap/Handle.h"
+#include "platform/weborigin/KURL.h"
 
 namespace blink {
 
 class LocalCredential FINAL : public Credential {
 public:
-    static LocalCredential* create(const String& id, const String& name, const String& avatarURL, const String& password);
+    static LocalCredential* create(const String& id, const String& name, const String& avatar, const String& password, ExceptionState&);
 
     // LocalCredential.idl
     const String& password() const;
 
 private:
-    LocalCredential(const String& id, const String& name, const String& avatarURL, const String& password);
+    LocalCredential(const String& id, const String& name, const KURL& avatar, const String& password);
 };
 
 } // namespace blink

@@ -9,25 +9,31 @@
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "platform/credentialmanager/PlatformCredential.h"
 #include "platform/heap/Handle.h"
+#include "platform/weborigin/KURL.h"
 
 namespace blink {
 
 class WebCredential;
+class ExceptionState;
 
 class Credential : public GarbageCollected<Credential>, public ScriptWrappable {
 public:
-    static Credential* create(const String& id, const String& name, const String& avatarURL);
+    static Credential* create(const String& id, const String& name, const KURL& avatar);
+    static Credential* create(const String& id, const String& name, const String& avatar, ExceptionState&);
 
     // Credential.idl
     const String& id() const { return m_platformCredential->id(); }
     const String& name() const { return m_platformCredential->name(); }
-    const String& avatarURL() const { return m_platformCredential->avatarURL(); }
+    const KURL& avatarURL() const { return m_platformCredential->avatarURL(); }
 
     virtual void trace(Visitor*);
 
 protected:
     explicit Credential(PlatformCredential*);
-    Credential(const String& id, const String& name, const String& avatarURL);
+    Credential(const String& id, const String& name, const KURL& avatar);
+
+    // Parses a string as a KURL. Throws an exception via |exceptionState| if an invalid URL is produced.
+    static KURL parseStringAsURL(const String&, ExceptionState&);
 
     Member<PlatformCredential> m_platformCredential;
 };

@@ -9,18 +9,19 @@
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "modules/credentialmanager/Credential.h"
 #include "platform/heap/Handle.h"
+#include "platform/weborigin/KURL.h"
 
 namespace blink {
 
 class FederatedCredential FINAL : public Credential {
 public:
-    static FederatedCredential* create(const String& id, const String& name, const String& avatarURL, const String& federation);
+    static FederatedCredential* create(const String& id, const String& name, const String& avatar, const String& federation, ExceptionState&);
 
     // FederatedCredential.idl
-    const String& federation() const;
+    const KURL& federation() const;
 
 private:
-    FederatedCredential(const String& id, const String& name, const String& avatarURL, const String& federation);
+    FederatedCredential(const String& id, const String& name, const KURL& avatar, const KURL& federation);
 };
 
 } // namespace blink
