@@ -925,7 +925,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyReNavigation) {
 
   // Check that the navigation is still suspended because the old RVH
   // is not swapped out, yet.
-  EXPECT_TRUE(host2->are_navigations_suspended());
+  EXPECT_TRUE(host2->render_view_host()->are_navigations_suspended());
   MockRenderProcessHost* test_process_host2 =
       static_cast<MockRenderProcessHost*>(host2->GetProcess());
   test_process_host2->sink().ClearMessages();
@@ -976,7 +976,8 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyReNavigation) {
   EXPECT_NE(host3->GetProcess()->GetID(), host2_process_id);
 
   // Navigations in the new RVH should be suspended.
-  EXPECT_TRUE(host3->are_navigations_suspended());
+  EXPECT_TRUE(static_cast<RenderViewHostImpl*>(
+      host3->render_view_host())->are_navigations_suspended());
   EXPECT_EQ(host, manager->current_frame_host());
   EXPECT_FALSE(manager->current_frame_host()->is_swapped_out());
 
@@ -1047,10 +1048,10 @@ TEST_F(RenderFrameHostManagerTest, NewCrossNavigationBetweenSwapOutAndCommit) {
   // Pending rvh2 is already deleted.
   contents()->ProceedWithCrossSiteNavigation();
 
-  TestRenderFrameHost* rfh3 = pending_main_test_rfh();
-  EXPECT_TRUE(rfh3);
+  TestRenderViewHost* rvh3 = pending_test_rvh();
+  EXPECT_TRUE(rvh3);
   // Navigation should be already unblocked by rvh1.
-  EXPECT_FALSE(rfh3->are_navigations_suspended());
+  EXPECT_FALSE(rvh3->are_navigations_suspended());
 }
 
 // Tests WebUI creation.

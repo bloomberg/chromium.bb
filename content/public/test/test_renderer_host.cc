@@ -112,19 +112,9 @@ RenderViewHost* RenderViewHostTestHarness::active_rvh() {
 }
 
 RenderFrameHost* RenderViewHostTestHarness::main_rfh() {
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(this->web_contents());
-  RenderFrameHostManager* main_frame_render_manager =
-      web_contents->GetFrameTree()->root()->render_manager();
-  return main_frame_render_manager->current_frame_host();
-}
-
-RenderFrameHost* RenderViewHostTestHarness::pending_main_rfh() {
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(this->web_contents());
-  RenderFrameHostManager* main_frame_render_manager =
-      web_contents->GetFrameTree()->root()->render_manager();
-  return main_frame_render_manager->pending_frame_host();
+  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
+      this->web_contents());
+  return web_contents->GetFrameTree()->GetMainFrame();
 }
 
 BrowserContext* RenderViewHostTestHarness::browser_context() {

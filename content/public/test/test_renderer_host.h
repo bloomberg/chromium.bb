@@ -160,7 +160,6 @@ class RenderViewHostTestHarness : public testing::Test {
   RenderViewHost* pending_rvh();
   RenderViewHost* active_rvh();
   RenderFrameHost* main_rfh();
-  RenderFrameHost* pending_main_rfh();
   BrowserContext* browser_context();
   MockRenderProcessHost* process();
 

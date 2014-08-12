@@ -201,10 +201,9 @@ bool CrossSiteResourceHandler::OnNormalResponseStarted(
     return DeferForNavigationPolicyCheck(info, response, defer);
   }
 
-  bool swap_needed =
-      should_transfer ||
-      CrossSiteRequestManager::GetInstance()->HasPendingCrossSiteRequest(
-          info->GetChildID(), info->GetRenderFrameID());
+  bool swap_needed = should_transfer ||
+      CrossSiteRequestManager::GetInstance()->
+          HasPendingCrossSiteRequest(info->GetChildID(), info->GetRouteID());
 
   // If this is a download, just pass the response through without doing a
   // cross-site check.  The renderer will see it is a download and abort the
@@ -294,7 +293,7 @@ void CrossSiteResourceHandler::OnResponseCompleted(
     if (has_started_response_ ||
         status.status() != net::URLRequestStatus::FAILED ||
         !CrossSiteRequestManager::GetInstance()->HasPendingCrossSiteRequest(
-            info->GetChildID(), info->GetRenderFrameID())) {
+            info->GetChildID(), info->GetRouteID())) {
       next_handler_->OnResponseCompleted(status, security_info, defer);
       return;
     }

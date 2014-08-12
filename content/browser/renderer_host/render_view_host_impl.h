@@ -260,6 +260,30 @@ class CONTENT_EXPORT RenderViewHostImpl
   // RenderFrameHostImpl.
   void NavigateToURL(const GURL& url);
 
+  // Returns whether navigation messages are currently suspended for this
+  // RenderViewHost.  Only true during a cross-site navigation, while waiting
+  // for the onbeforeunload handler.
+  bool are_navigations_suspended() const { return navigations_suspended_; }
+
+  // Suspends (or unsuspends) any navigation messages from being sent from this
+  // RenderViewHost.  This is called when a pending RenderViewHost is created
+  // for a cross-site navigation, because we must suspend any navigations until
+  // we hear back from the old renderer's onbeforeunload handler.  Note that it
+  // is important that only one navigation event happen after calling this
+  // method with |suspend| equal to true.  If |suspend| is false and there is
+  // a suspended_nav_message_, this will send the message.  This function
+  // should only be called to toggle the state; callers should check
+  // are_navigations_suspended() first. If |suspend| is false, the time that the
+  // user decided the navigation should proceed should be passed as
+  // |proceed_time|.
+  void SetNavigationsSuspended(bool suspend,
+                               const base::TimeTicks& proceed_time);
+
+  // Clears any suspended navigation state after a cross-site navigation is
+  // canceled or suspended.  This is important if we later return to this
+  // RenderViewHost.
+  void CancelSuspendedNavigations();
+
   // Whether this RenderViewHost has been swapped out to be displayed by a
   // different process.
   bool IsSwappedOut() const { return rvh_state_ == STATE_SWAPPED_OUT; }
@@ -291,6 +315,17 @@ class CONTENT_EXPORT RenderViewHostImpl
   // This is called after the beforeunload and unload events have fired
   // and the user has agreed to continue with closing the page.
   void ClosePageIgnoringUnloadEvents();
+
+  // Returns whether this RenderViewHost has an outstanding cross-site request.
+  // Cleared when we hear the response and start to swap out the old
+  // RenderViewHost, or if we hear a commit here without a network request.
+  bool HasPendingCrossSiteRequest();
+
+  // Sets whether this RenderViewHost has an outstanding cross-site request,
+  // for which another renderer will need to run an onunload event handler.
+  // This is called before the first navigation event for this RenderViewHost,
+  // and cleared when we hear the response or commit.
+  void SetHasPendingCrossSiteRequest(bool has_pending_request);
 
   // Tells the renderer view to focus the first (last if reverse is true) node.
   void SetInitialFocus(bool reverse);
@@ -499,6 +534,19 @@ class CONTENT_EXPORT RenderViewHostImpl
   // See BindingsPolicy for details.
   int enabled_bindings_;
 
+  // Whether we should buffer outgoing Navigate messages rather than sending
+  // them.  This will be true when a RenderViewHost is created for a cross-site
+  // request, until we hear back from the onbeforeunload handler of the old
+  // RenderViewHost.
+  // TODO(nasko): Move to RenderFrameHost, as this is per-frame state.
+  bool navigations_suspended_;
+
+  // We only buffer the params for a suspended navigation while we have a
+  // pending RVH for a WebContentsImpl.  There will only ever be one suspended
+  // navigation, because WebContentsImpl will destroy the pending RVH and create
+  // a new one if a second navigation occurs.
+  // TODO(nasko): Move to RenderFrameHost, as this is per-frame state.
+  scoped_ptr<FrameMsg_Navigate_Params> suspended_nav_params_;
 
   // The current state of this RVH.
   // TODO(nasko): Move to RenderFrameHost, as this is per-frame state.

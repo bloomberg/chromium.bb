@@ -500,12 +500,13 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
       static_cast<TestRenderViewHost*>(contents()->GetPendingRenderViewHost());
   int pending_rvh_delete_count = 0;
   pending_rvh->set_delete_counter(&pending_rvh_delete_count);
-  RenderFrameHostImpl* pending_rfh = pending_main_test_rfh();
+  RenderFrameHostImpl* pending_rfh = contents()->GetFrameTree()->root()->
+      render_manager()->pending_frame_host();
 
-  // Navigations should be suspended in pending_rfh until BeforeUnloadACK.
-  EXPECT_TRUE(pending_rfh->are_navigations_suspended());
+  // Navigations should be suspended in pending_rvh until BeforeUnloadACK.
+  EXPECT_TRUE(pending_rvh->are_navigations_suspended());
   orig_rvh->SendBeforeUnloadACK(true);
-  EXPECT_FALSE(pending_rfh->are_navigations_suspended());
+  EXPECT_FALSE(pending_rvh->are_navigations_suspended());
 
   // DidNavigate from the pending page
   contents()->TestDidNavigate(
@@ -531,22 +532,23 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
 
   // Going back should switch SiteInstances again.  The first SiteInstance is
   // stored in the NavigationEntry, so it should be the same as at the start.
-  // We should use the same RFH as before, swapping it back in.
+  // We should use the same RVH as before, swapping it back in.
   controller().GoBack();
-  TestRenderFrameHost* goback_rfh = pending_main_test_rfh();
-  EXPECT_EQ(orig_rfh, goback_rfh);
+  TestRenderViewHost* goback_rvh =
+      static_cast<TestRenderViewHost*>(contents()->GetPendingRenderViewHost());
+  EXPECT_EQ(orig_rvh, goback_rvh);
   EXPECT_TRUE(contents()->cross_navigation_pending());
 
-  // Navigations should be suspended in goback_rfh until BeforeUnloadACK.
-  EXPECT_TRUE(goback_rfh->are_navigations_suspended());
+  // Navigations should be suspended in goback_rvh until BeforeUnloadACK.
+  EXPECT_TRUE(goback_rvh->are_navigations_suspended());
   pending_rvh->SendBeforeUnloadACK(true);
-  EXPECT_FALSE(goback_rfh->are_navigations_suspended());
+  EXPECT_FALSE(goback_rvh->are_navigations_suspended());
 
   // DidNavigate from the back action
   contents()->TestDidNavigate(
-      goback_rfh->GetRenderViewHost(), 1, url2, PAGE_TRANSITION_TYPED);
+      goback_rvh, 1, url2, PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_EQ(goback_rfh->GetRenderViewHost(), contents()->GetRenderViewHost());
+  EXPECT_EQ(goback_rvh, contents()->GetRenderViewHost());
   EXPECT_EQ(instance1, contents()->GetSiteInstance());
   // The pending RFH should now be swapped out, not deleted.
   EXPECT_TRUE(contents()->GetRenderManagerForTesting()->
@@ -674,7 +676,8 @@ TEST_F(WebContentsImplTest, NavigateFromSitelessUrl) {
   SetBrowserClientForTesting(&browser_client);
 
   TestRenderViewHost* orig_rvh = test_rvh();
-  RenderFrameHostImpl* orig_rfh = main_test_rfh();
+  RenderFrameHostImpl* orig_rfh =
+      contents()->GetFrameTree()->root()->current_frame_host();
   int orig_rvh_delete_count = 0;
   orig_rvh->set_delete_counter(&orig_rvh_delete_count);
   SiteInstanceImpl* orig_instance =
@@ -724,17 +727,15 @@ TEST_F(WebContentsImplTest, NavigateFromSitelessUrl) {
   EXPECT_TRUE(contents()->cross_navigation_pending());
   EXPECT_EQ(url, contents()->GetLastCommittedURL());
   EXPECT_EQ(url2, contents()->GetVisibleURL());
-  TestRenderFrameHost* pending_rfh = pending_main_test_rfh();
-  TestRenderViewHost* pending_rvh = pending_test_rvh();
-  EXPECT_EQ(pending_rfh->GetRenderViewHost(), pending_rvh);
+  TestRenderViewHost* pending_rvh =
+      static_cast<TestRenderViewHost*>(contents()->GetPendingRenderViewHost());
   int pending_rvh_delete_count = 0;
   pending_rvh->set_delete_counter(&pending_rvh_delete_count);
 
   // Navigations should be suspended in pending_rvh until BeforeUnloadACK.
-  EXPECT_TRUE(pending_rfh->are_navigations_suspended());
+  EXPECT_TRUE(pending_rvh->are_navigations_suspended());
   orig_rvh->SendBeforeUnloadACK(true);
-  EXPECT_FALSE(pending_rfh->are_navigations_suspended());
-  EXPECT_EQ(pending_rfh->GetRenderViewHost(), pending_rvh);
+  EXPECT_FALSE(pending_rvh->are_navigations_suspended());
 
   // DidNavigate from the pending page.
   contents()->TestDidNavigate(
