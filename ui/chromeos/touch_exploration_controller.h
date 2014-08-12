@@ -55,9 +55,7 @@ class TouchExplorationControllerDelegate {
 // is in touch exploration or a double-tap simulates a click, and gestures
 // can be used to send high-level accessibility commands. For example, a swipe
 // right would correspond to the keyboard short cut shift+search+right.
-// When two or more fingers are pressed initially, from then on the events
-// are passed through, but with the initial finger removed - so if you swipe
-// down with two fingers, the running app will see a one-finger swipe. Slide
+// Swipes with up to four fingers are also mapped to commands. Slide
 // gestures performed on the edge of the screen can change settings
 // continuously. For example, sliding a finger along the right side of the
 // screen will change the volume.
@@ -89,13 +87,13 @@ class TouchExplorationControllerDelegate {
 // anywhere to activate it.
 //
 // The user can perform swipe gestures in one of the four cardinal directions
-// which will be interpreted and used to control the UI. The gesture will only
-// be registered if the finger moves outside the slop and completed within the
-// grace period. If additional fingers are added during the grace period, the
-// state changes to wait for those fingers to be released, and then goes to
-// touch exploration mode. If the gesture fails to be completed within the
-// grace period, the state changes to touch exploration mode. Once the state has
-// changed, any gestures made during the grace period are discarded.
+// which will be interpreted and used to control the UI. All gestures will only
+// be registered if the fingers move outside the slop, and all fingers will only
+// be registered if they are completed within the grace period. If a single
+// finger gesture fails to be completed within the grace period, the state
+// changes to touch exploration mode. If a multi finger gesture fails to be
+// completed within the grace period, the user must lift all fingers before
+// completing any more actions.
 //
 // If the user double-taps, the second tap is passed through, allowing the
 // user to click - however, the double-tap location is changed to the location
@@ -171,15 +169,13 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
   ui::EventRewriteStatus InTouchExploration(
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
-  ui::EventRewriteStatus InTwoToOneFinger(
-      const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
   ui::EventRewriteStatus InOneFingerPassthrough(
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
   ui::EventRewriteStatus InGestureInProgress(
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
   ui::EventRewriteStatus InTouchExploreSecondPress(
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
-  ui::EventRewriteStatus InWaitForOneFinger(
+  ui::EventRewriteStatus InWaitForNoFingers(
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
   ui::EventRewriteStatus InSlideGesture(
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
@@ -209,21 +205,25 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
   void ProcessGestureEvents();
 
   void OnSwipeEvent(ui::GestureEvent* swipe_gesture);
-
   void SideSlideControl(ui::GestureEvent* gesture);
 
   // Dispatches the keyboard short cut Shift+Search+<arrow key>
   // outside the event rewritting flow.
-  void DispatchShiftSearchKeyEvent(const ui::KeyboardCode direction);
+  void DispatchShiftSearchKeyEvent(const ui::KeyboardCode third_key);
+
+  // Binds DispatchShiftSearchKeyEvent to a specific third key.
+  base::Closure BindShiftSearchKeyEvent(const ui::KeyboardCode third_key);
+
+  // Dispatches a single key with the given flags.
+  void DispatchKeyWithFlags(const ui::KeyboardCode key, int flags);
+
+  // Binds DispatchKeyWithFlags to a specific key and flags.
+  base::Closure BindKeyEventWithFlags(const ui::KeyboardCode key, int flags);
 
   scoped_ptr<ui::Event> CreateMouseMoveEvent(const gfx::PointF& location,
                                              int flags);
 
   void EnterTouchToMouseMode();
-
-  // Set the state to NO_FINGERS_DOWN and reset any other fields to their
-  // default value.
-  void ResetToNoFingersDown();
 
   void PlaySoundForTimer();
 
@@ -258,7 +258,7 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
     // The user was in touch explore mode and released the finger.
     // If another touch press occurs within the grace period, a single
     // tap click occurs. This state differs from SINGLE_TAP_RELEASED
-    // In that if a second tap doesn't occur within the grace period,
+    // in that if a second tap doesn't occur within the grace period,
     // there is no mouse move dispatched.
     TOUCH_EXPLORE_RELEASED,
 
@@ -305,10 +305,10 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
     // If the user added another finger in SINGLE_TAP_PRESSED, or if the user
     // has multiple fingers fingers down in any other state between
     // passthrough, touch exploration, and gestures, they must release
-    // all fingers except before completing any more actions. This state is
+    // all fingers before completing any more actions. This state is
     // generally useful for developing new features, because it creates a
     // simple way to handle a dead end in user flow.
-    WAIT_FOR_ONE_FINGER,
+    WAIT_FOR_NO_FINGERS,
 
     // If the user is within the given bounds from an edge of the screen, not
     // including corners, then the resulting movements will be interpreted as
@@ -331,12 +331,20 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
   // SCREEN_CENTER.
   int FindEdgesWithinBounds(gfx::Point point, float bounds);
 
+  // Set the state and modifies any variables related to the state change.
+  // (e.g. resetting the gesture provider).
+  void SetState(State new_state, const char* function_name);
+
   void VlogState(const char* function_name);
 
   void VlogEvent(const ui::TouchEvent& event, const char* function_name);
 
   // Gets enum name from integer value.
   const char* EnumStateToString(State state);
+
+  // Maps each single/multi finger swipe to the function that dispatches
+  // the corresponding key events.
+  void InitializeSwipeGestureMaps();
 
   aura::Window* root_window_;
 
@@ -368,7 +376,7 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
   // we send the passed-through tap to the location of this event.
   scoped_ptr<ui::TouchEvent> last_touch_exploration_;
 
-  // A timer to fire the mouse move event after the double-tap delay.
+  // A timer that fires after the double-tap delay.
   base::OneShotTimer<TouchExplorationController> tap_timer_;
 
   // A timer to fire an indicating sound when sliding to change volume.
@@ -379,7 +387,7 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
   ui::GestureDetector::Config gesture_detector_config_;
 
   // Gesture Handler to interpret the touch events.
-  ui::GestureProviderAura gesture_provider_;
+  scoped_ptr<ui::GestureProviderAura> gesture_provider_;
 
   // The previous state entered.
   State prev_state_;
@@ -393,6 +401,13 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
   // When touch_exploration_controller gets time relative to real time during
   // testing, this clock is set to the simulated clock and used.
   base::TickClock* tick_clock_;
+
+  // Maps the number of fingers in a swipe to the resulting functions that
+  // dispatch key events.
+  std::map<int, base::Closure> left_swipe_gestures_;
+  std::map<int, base::Closure> right_swipe_gestures_;
+  std::map<int, base::Closure> up_swipe_gestures_;
+  std::map<int, base::Closure> down_swipe_gestures_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchExplorationController);
 };
