@@ -288,9 +288,11 @@ void ProfileMetrics::LogProfileAvatarSelection(size_t icon_index) {
                             NUM_PROFILE_AVATAR_METRICS);
 }
 
-void ProfileMetrics::LogProfileDeleteUser(ProfileNetUserCounts metric) {
-  DCHECK(metric < NUM_PROFILE_NET_METRICS);
-  UMA_HISTOGRAM_ENUMERATION("Profile.NetUserCount", metric,
+void ProfileMetrics::LogProfileDeleteUser(ProfileDelete metric) {
+  DCHECK(metric < NUM_DELETE_PROFILE_METRICS);
+  UMA_HISTOGRAM_ENUMERATION("Profile.DeleteProfileAction", metric,
+                            NUM_DELETE_PROFILE_METRICS);
+  UMA_HISTOGRAM_ENUMERATION("Profile.NetUserCount", PROFILE_DELETED,
                             NUM_PROFILE_NET_METRICS);
 }
 

@@ -24454,11 +24454,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Profile.Delete" enum="BooleanProfileSignedIn">
   <owner>mlerman@chromium.org</owner>
   <summary>
-    The user used the settings page to delete a profile. Please note this
-    histogram tracks the user interaction, and not the actual delete of the
-    profile, which can happen much later. The parameter indicates if the profile
-    was signed in or not; true means the profile was signed in, false means the
-    profile was not signed in.
+    This histogram tracks the deletion of the profile. This tracks when the
+    cleanup actually takes place, not the UI interaction. The parameter
+    indicates if the profile was signed in or not; true means the profile was
+    signed in, false means the profile was not signed in.
+  </summary>
+</histogram>
+
+<histogram name="Profile.DeleteProfileAction" enum="ProfileDeleteAction">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    Thie histogram tracks which UI screen was used to delete a profile. This
+    does not track when the profile is actually deleted, which is an
+    asycnhronous process that happens later.
   </summary>
 </histogram>
 
@@ -46674,6 +46682,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="2" label="Created but not initialized (should never happen)"/>
   <int value="3" label="Succeeded"/>
   <int value="4" label="Canceled"/>
+</enum>
+
+<enum name="ProfileDeleteAction" type="int">
+  <int value="0" label="Settings Page"/>
+  <int value="1" label="User Manager"/>
 </enum>
 
 <enum name="ProfileDesktopMenu" type="int">

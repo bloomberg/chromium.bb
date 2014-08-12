@@ -60,7 +60,7 @@ void DeleteProfileAtPath(base::FilePath file_path, content::WebUI* web_ui) {
   if (!profiles::IsMultipleProfilesEnabled())
     return;
 
-  ProfileMetrics::LogProfileDeleteUser(ProfileMetrics::PROFILE_DELETED);
+  ProfileMetrics::LogProfileDeleteUser(ProfileMetrics::DELETE_PROFILE_SETTINGS);
 
   g_browser_process->profile_manager()->ScheduleProfileForDeletion(
       file_path,

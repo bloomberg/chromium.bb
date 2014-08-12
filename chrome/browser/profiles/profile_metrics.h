@@ -40,6 +40,12 @@ class ProfileMetrics {
     NUM_PROFILE_ADD_METRICS
   };
 
+  enum ProfileDelete {
+    DELETE_PROFILE_SETTINGS = 0,  // Delete profile from settings page.
+    DELETE_PROFILE_USER_MANAGER,  // Delete profile from User Manager.
+    NUM_DELETE_PROFILE_METRICS
+  };
+
   // Enum for counting the ways user profiles and menus were opened.
   enum ProfileOpen {
     NTP_AVATAR_BUBBLE = 0,    // User opens avatar icon menu from NTP
@@ -146,7 +152,7 @@ class ProfileMetrics {
   static void LogNumberOfProfiles(ProfileManager* manager);
   static void LogProfileAddNewUser(ProfileAdd metric);
   static void LogProfileAvatarSelection(size_t icon_index);
-  static void LogProfileDeleteUser(ProfileNetUserCounts metric);
+  static void LogProfileDeleteUser(ProfileDelete metric);
   static void LogProfileOpenMethod(ProfileOpen metric);
   static void LogProfileSwitchGaia(ProfileGaia metric);
   static void LogProfileSwitchUser(ProfileOpen metric);
