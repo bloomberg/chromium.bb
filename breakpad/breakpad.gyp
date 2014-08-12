@@ -501,10 +501,6 @@
           ],
 
           'conditions': [
-            # Android NDK toolchain doesn't support -mimplicit-it=always
-            ['target_arch=="arm" and OS!="android"', {
-              'cflags': ['-Wa,-mimplicit-it=always'],
-            }],
             ['target_arch=="arm" and chromeos==1', {
               # Avoid running out of registers in
               # linux_syscall_support.h:sys_clone()'s inline assembly.

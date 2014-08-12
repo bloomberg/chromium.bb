@@ -437,10 +437,6 @@ if (is_linux && current_toolchain == host_toolchain) {
     configs += [ "//build/config/compiler:no_chromium_code" ]
     direct_dependent_configs = [ ":client_config" ]
 
-    # Android NDK toolchain doesn't support -mimplicit-it=always
-    if (cpu_arch == "arm" && !is_android) {
-      cflags = [ "-Wa,-mimplicit-it=always" ]
-    }
     if (cpu_arch == "arm" && is_chromeos) {
       # Avoid running out of registers in
       # linux_syscall_support.h:sys_clone()'s inline assembly.
