@@ -746,7 +746,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, SyncEventHandled) {
   EXPECT_EQ(200, response.status_code);
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, Reload) {
+// ServiceWorkerBrowserTest.Reload is flaky crbug.com/393486
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, DISABLED_Reload) {
   const std::string kPageUrl = "/service_worker/reload.html";
   const std::string kWorkerUrl = "/service_worker/fetch_event_reload.js";
   {
