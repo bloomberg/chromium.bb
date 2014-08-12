@@ -57,7 +57,7 @@ public:
     Element* adjustedFocusedElement() const;
     Element* getElementById(const AtomicString&) const;
     const WillBeHeapVector<RawPtrWillBeMember<Element> >& getAllElementsById(const AtomicString&) const;
-    bool hasElementWithId(StringImpl* id) const;
+    bool hasElementWithId(const AtomicString& id) const;
     bool containsMultipleElementsWithId(const AtomicString& id) const;
     void addElementById(const AtomicString& elementId, Element*);
     void removeElementById(const AtomicString& elementId, Element*);
@@ -195,15 +195,15 @@ private:
     mutable RefPtrWillBeMember<DOMSelection> m_selection;
 };
 
-inline bool TreeScope::hasElementWithId(StringImpl* id) const
+inline bool TreeScope::hasElementWithId(const AtomicString& id) const
 {
-    ASSERT(id);
+    ASSERT(!id.isNull());
     return m_elementsById && m_elementsById->contains(id);
 }
 
 inline bool TreeScope::containsMultipleElementsWithId(const AtomicString& id) const
 {
-    return m_elementsById && m_elementsById->containsMultiple(id.impl());
+    return m_elementsById && m_elementsById->containsMultiple(id);
 }
 
 DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(TreeScope)
