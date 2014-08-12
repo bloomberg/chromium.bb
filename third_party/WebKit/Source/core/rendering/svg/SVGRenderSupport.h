@@ -92,7 +92,6 @@ public:
 
 private:
     static void updateObjectBoundingBox(FloatRect& objectBoundingBox, bool& objectBoundingBoxValid, RenderObject* other, FloatRect otherBoundingBox);
-    static void invalidateResourcesOfChildren(RenderObject* start);
     static bool layoutSizeOfNearestViewportChanged(const RenderObject* start);
 };
 

@@ -157,16 +157,6 @@ const RenderSVGRoot* SVGRenderSupport::findTreeRootObject(const RenderObject* st
     return toRenderSVGRoot(start);
 }
 
-inline void SVGRenderSupport::invalidateResourcesOfChildren(RenderObject* start)
-{
-    ASSERT(!start->needsLayout());
-    if (SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(start))
-        resources->removeClientFromCache(start, false);
-
-    for (RenderObject* child = start->slowFirstChild(); child; child = child->nextSibling())
-        invalidateResourcesOfChildren(child);
-}
-
 inline bool SVGRenderSupport::layoutSizeOfNearestViewportChanged(const RenderObject* start)
 {
     while (start && !start->isSVGRoot() && !start->isSVGViewportContainer())
@@ -195,24 +185,27 @@ bool SVGRenderSupport::transformToRootChanged(RenderObject* ancestor)
 
 void SVGRenderSupport::layoutChildren(RenderObject* start, bool selfNeedsLayout)
 {
-    bool layoutSizeChanged = layoutSizeOfNearestViewportChanged(start);
+    // When hasRelativeLengths() is false, no descendants have relative lengths
+    // (hence no one is interested in viewport size changes).
+    bool layoutSizeChanged = toSVGElement(start->node())->hasRelativeLengths()
+        && layoutSizeOfNearestViewportChanged(start);
     bool transformChanged = transformToRootChanged(start);
-    HashSet<RenderObject*> notlayoutedObjects;
 
     for (RenderObject* child = start->slowFirstChild(); child; child = child->nextSibling()) {
-        bool needsLayout = selfNeedsLayout;
+        bool forceLayout = selfNeedsLayout;
 
         if (transformChanged) {
             // If the transform changed we need to update the text metrics (note: this also happens for layoutSizeChanged=true).
             if (child->isSVGText())
                 toRenderSVGText(child)->setNeedsTextMetricsUpdate();
-            needsLayout = true;
+            forceLayout = true;
         }
 
         if (layoutSizeChanged) {
             // When selfNeedsLayout is false and the layout size changed, we have to check whether this child uses relative lengths
             if (SVGElement* element = child->node()->isSVGElement() ? toSVGElement(child->node()) : 0) {
                 if (element->hasRelativeLengths()) {
+                    // FIXME: this should be done on invalidation, not during layout.
                     // When the layout size changed and when using relative values tell the RenderSVGShape to update its shape object
                     if (child->isSVGShape()) {
                         toRenderSVGShape(child)->setNeedsShapeUpdate();
@@ -221,7 +214,7 @@ void SVGRenderSupport::layoutChildren(RenderObject* start, bool selfNeedsLayout)
                         toRenderSVGText(child)->setNeedsPositioningValuesUpdate();
                     }
 
-                    needsLayout = true;
+                    forceLayout = true;
                 }
             }
         }
@@ -231,27 +224,13 @@ void SVGRenderSupport::layoutChildren(RenderObject* start, bool selfNeedsLayout)
         // Since they only care about viewport size changes (to resolve their relative lengths), we trigger
         // their invalidation directly from SVGSVGElement::svgAttributeChange() or at a higher
         // SubtreeLayoutScope (in RenderView::layout()).
-        if (needsLayout && !child->isSVGResourceContainer())
+        if (forceLayout && !child->isSVGResourceContainer())
             layoutScope.setNeedsLayout(child);
 
+        // Lay out any referenced resources before the child.
         layoutResourcesIfNeeded(child);
-
-        if (child->needsLayout()) {
-            child->layout();
-        } else if (layoutSizeChanged) {
-            notlayoutedObjects.add(child);
-        }
+        child->layoutIfNeeded();
     }
-
-    if (!layoutSizeChanged) {
-        ASSERT(notlayoutedObjects.isEmpty());
-        return;
-    }
-
-    // If the layout size changed, invalidate all resources of all children that didn't go through the layout() code path.
-    HashSet<RenderObject*>::iterator end = notlayoutedObjects.end();
-    for (HashSet<RenderObject*>::iterator it = notlayoutedObjects.begin(); it != end; ++it)
-        invalidateResourcesOfChildren(*it);
 }
 
 void SVGRenderSupport::layoutResourcesIfNeeded(const RenderObject* object)
