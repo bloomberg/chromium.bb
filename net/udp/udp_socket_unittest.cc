@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/udp/udp_socket.h"
+
 #include "net/udp/udp_client_socket.h"
 #include "net/udp/udp_server_socket.h"
 
@@ -585,6 +587,155 @@ TEST_F(UDPSocketTest, MulticastOptions) {
   socket.Close();
 }
 
+// Checking that DSCP bits are set correctly is difficult,
+// but let's check that the code doesn't crash at least.
+TEST_F(UDPSocketTest, SetDSCP) {
+  // Setup the server to listen.
+  IPEndPoint bind_address;
+  UDPSocket client(DatagramSocket::DEFAULT_BIND,
+                   RandIntCallback(),
+                   NULL,
+                   NetLog::Source());
+  // We need a real IP, but we won't actually send anything to it.
+  CreateUDPAddress("8.8.8.8", 9999, &bind_address);
+  int rv = client.Connect(bind_address);
+  if (rv != OK) {
+    // Let's try localhost then..
+    CreateUDPAddress("127.0.0.1", 9999, &bind_address);
+    rv = client.Connect(bind_address);
+  }
+  EXPECT_EQ(OK, rv);
+
+  client.SetDiffServCodePoint(DSCP_NO_CHANGE);
+  client.SetDiffServCodePoint(DSCP_AF41);
+  client.SetDiffServCodePoint(DSCP_DEFAULT);
+  client.SetDiffServCodePoint(DSCP_CS2);
+  client.SetDiffServCodePoint(DSCP_NO_CHANGE);
+  client.SetDiffServCodePoint(DSCP_DEFAULT);
+  client.Close();
+}
+
 }  // namespace
+
+#if defined(OS_WIN)
+
+namespace {
+
+const HANDLE kFakeHandle = (HANDLE)19;
+const QOS_FLOWID kFakeFlowId = (QOS_FLOWID)27;
+
+BOOL WINAPI FakeQOSCreateHandleFAIL(PQOS_VERSION version, PHANDLE handle) {
+  EXPECT_EQ(0, version->MinorVersion);
+  EXPECT_EQ(1, version->MajorVersion);
+  SetLastError(ERROR_OPEN_FAILED);
+  return false;
+}
+
+BOOL WINAPI FakeQOSCreateHandle(PQOS_VERSION version, PHANDLE handle) {
+  EXPECT_EQ(0, version->MinorVersion);
+  EXPECT_EQ(1, version->MajorVersion);
+  *handle = kFakeHandle;
+  return true;
+}
+
+BOOL WINAPI FakeQOSCloseHandle(HANDLE handle) {
+  EXPECT_EQ(kFakeHandle, handle);
+  return true;
+}
+
+QOS_TRAFFIC_TYPE g_expected_traffic_type;
+
+BOOL WINAPI FakeQOSAddSocketToFlow(HANDLE handle,
+                                   SOCKET socket,
+                                   PSOCKADDR addr,
+                                   QOS_TRAFFIC_TYPE traffic_type,
+                                   DWORD flags,
+                                   PQOS_FLOWID flow_id) {
+  EXPECT_EQ(kFakeHandle, handle);
+  EXPECT_EQ(NULL, addr);
+  EXPECT_EQ(QOS_NON_ADAPTIVE_FLOW, flags);
+  EXPECT_EQ(0, *flow_id);
+  *flow_id = kFakeFlowId;
+  return true;
+}
+
+BOOL WINAPI FakeQOSRemoveSocketFromFlow(HANDLE handle,
+                                        SOCKET socket,
+                                        QOS_FLOWID flowid,
+                                        DWORD reserved) {
+  EXPECT_EQ(kFakeHandle, handle);
+  EXPECT_EQ(NULL, socket);
+  EXPECT_EQ(kFakeFlowId, flowid);
+  EXPECT_EQ(0, reserved);
+  return true;
+}
+
+DWORD g_expected_dscp;
+
+BOOL WINAPI FakeQOSSetFlow(HANDLE handle,
+                           QOS_FLOWID flow_id,
+                           QOS_SET_FLOW op,
+                           ULONG size,
+                           PVOID data,
+                           DWORD reserved,
+                           LPOVERLAPPED overlapped) {
+  EXPECT_EQ(kFakeHandle, handle);
+  EXPECT_EQ(QOSSetOutgoingDSCPValue, op);
+  EXPECT_EQ(sizeof(DWORD), size);
+  EXPECT_EQ(g_expected_dscp, *reinterpret_cast<DWORD*>(data));
+  EXPECT_EQ(kFakeFlowId, flow_id);
+  EXPECT_EQ(0, reserved);
+  EXPECT_EQ(NULL, overlapped);
+  return true;
+}
+
+}  // namespace
+
+// Mock out the Qwave functions and make sure they are
+// called correctly. Must be in net namespace for friendship
+// reasons.
+TEST_F(UDPSocketTest, SetDSCPFake) {
+  // Setup the server to listen.
+  IPEndPoint bind_address;
+  // We need a real IP, but we won't actually send anything to it.
+  CreateUDPAddress("8.8.8.8", 9999, &bind_address);
+  UDPSocket client(DatagramSocket::DEFAULT_BIND,
+                   RandIntCallback(),
+                   NULL,
+                   NetLog::Source());
+  int rv = client.SetDiffServCodePoint(DSCP_AF41);
+  EXPECT_EQ(ERR_SOCKET_NOT_CONNECTED, rv);
+  rv = client.Connect(bind_address);
+  EXPECT_EQ(OK, rv);
+
+  QwaveAPI& qos(QwaveAPI::Get());
+  qos.create_handle_func_ = FakeQOSCreateHandleFAIL;
+  qos.close_handle_func_ = FakeQOSCloseHandle;
+  qos.add_socket_to_flow_func_ = FakeQOSAddSocketToFlow;
+  qos.remove_socket_from_flow_func_ = FakeQOSRemoveSocketFromFlow;
+  qos.set_flow_func_ = FakeQOSSetFlow;
+  qos.qwave_supported_ = true;
+
+  EXPECT_EQ(OK, client.SetDiffServCodePoint(DSCP_NO_CHANGE));
+  EXPECT_EQ(ERROR_NOT_SUPPORTED, client.SetDiffServCodePoint(DSCP_AF41));
+  qos.create_handle_func_ = FakeQOSCreateHandle;
+  g_expected_dscp = DSCP_AF41;
+  g_expected_traffic_type = QOSTrafficTypeAudioVideo;
+  EXPECT_EQ(OK, client.SetDiffServCodePoint(DSCP_AF41));
+  g_expected_dscp = DSCP_DEFAULT;
+  g_expected_traffic_type = QOSTrafficTypeBestEffort;
+  EXPECT_EQ(OK, client.SetDiffServCodePoint(DSCP_DEFAULT));
+  g_expected_dscp = DSCP_CS2;
+  g_expected_traffic_type = QOSTrafficTypeExcellentEffort;
+  EXPECT_EQ(OK, client.SetDiffServCodePoint(DSCP_CS2));
+  g_expected_dscp = DSCP_CS3;
+  g_expected_traffic_type = QOSTrafficTypeExcellentEffort;
+  EXPECT_EQ(OK, client.SetDiffServCodePoint(DSCP_NO_CHANGE));
+  g_expected_dscp = DSCP_DEFAULT;
+  g_expected_traffic_type = QOSTrafficTypeBestEffort;
+  EXPECT_EQ(OK, client.SetDiffServCodePoint(DSCP_DEFAULT));
+  client.Close();
+}
+#endif
 
 }  // namespace net

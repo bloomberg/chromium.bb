@@ -5,6 +5,7 @@
 #ifndef NET_UDP_UDP_SOCKET_WIN_H_
 #define NET_UDP_UDP_SOCKET_WIN_H_
 
+#include <qos2.h>
 #include <winsock2.h>
 
 #include "base/memory/ref_counted.h"
@@ -257,8 +258,69 @@ class NET_EXPORT UDPSocketWin : NON_EXPORTED_BASE(public base::NonThreadSafe) {
 
   BoundNetLog net_log_;
 
+  // QWAVE data. Used to set DSCP bits on outgoing packets.
+  HANDLE qos_handle_;
+  QOS_FLOWID qos_flow_id_;
+
   DISALLOW_COPY_AND_ASSIGN(UDPSocketWin);
 };
+
+//-----------------------------------------------------------------------------
+
+// QWAVE (Quality Windows Audio/Video Experience) is the latest windows
+// library for setting packet priorities (and other things). Unfortunately,
+// Microsoft has decided that setting the DSCP bits with setsockopt() no
+// longer works, so we have to use this API instead.
+// This class is meant to be used as a singleton. It exposes a few dynamically
+// loaded functions and a bool called "qwave_supported".
+class NET_EXPORT QwaveAPI {
+  typedef BOOL (WINAPI *CreateHandleFn)(PQOS_VERSION, PHANDLE);
+  typedef BOOL (WINAPI *CloseHandleFn)(HANDLE);
+  typedef BOOL (WINAPI *AddSocketToFlowFn)(
+      HANDLE, SOCKET, PSOCKADDR, QOS_TRAFFIC_TYPE, DWORD, PQOS_FLOWID);
+  typedef BOOL (WINAPI *RemoveSocketFromFlowFn)(
+      HANDLE, SOCKET, QOS_FLOWID, DWORD);
+  typedef BOOL (WINAPI *SetFlowFn)(
+      HANDLE, QOS_FLOWID, QOS_SET_FLOW, ULONG, PVOID, DWORD, LPOVERLAPPED);
+
+ public:
+  QwaveAPI();
+
+  static QwaveAPI& Get();
+
+  bool qwave_supported() const;
+  BOOL CreateHandle(PQOS_VERSION version, PHANDLE handle);
+  BOOL CloseHandle(HANDLE handle);
+  BOOL AddSocketToFlow(HANDLE handle,
+                       SOCKET socket,
+                       PSOCKADDR addr,
+                       QOS_TRAFFIC_TYPE traffic_type,
+                       DWORD flags,
+                       PQOS_FLOWID flow_id);
+  BOOL RemoveSocketFromFlow(HANDLE handle,
+                            SOCKET socket,
+                            QOS_FLOWID flow_id,
+                            DWORD reserved);
+  BOOL SetFlow(HANDLE handle,
+               QOS_FLOWID flow_id,
+               QOS_SET_FLOW op,
+               ULONG size,
+               PVOID data,
+               DWORD reserved,
+               LPOVERLAPPED overlapped);
+
+ private:
+  bool qwave_supported_;
+  CreateHandleFn create_handle_func_;
+  CloseHandleFn close_handle_func_;
+  AddSocketToFlowFn add_socket_to_flow_func_;
+  RemoveSocketFromFlowFn remove_socket_from_flow_func_;
+  SetFlowFn set_flow_func_;
+
+  FRIEND_TEST_ALL_PREFIXES(UDPSocketTest, SetDSCPFake);
+  DISALLOW_COPY_AND_ASSIGN(QwaveAPI);
+};
+
 
 }  // namespace net
 

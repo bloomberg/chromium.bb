@@ -7,6 +7,7 @@
 #include <mstcpip.h>
 
 #include "base/callback.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -156,6 +157,82 @@ void UDPSocketWin::Core::WriteDelegate::OnObjectSignaled(HANDLE object) {
 
   core_->Release();
 }
+//-----------------------------------------------------------------------------
+
+QwaveAPI::QwaveAPI() : qwave_supported_(false) {
+  HMODULE qwave = LoadLibrary(L"qwave.dll");
+  if (!qwave)
+    return;
+  create_handle_func_ =
+      (CreateHandleFn)GetProcAddress(qwave, "QOSCreateHandle");
+  close_handle_func_ =
+      (CloseHandleFn)GetProcAddress(qwave, "QOSCloseHandle");
+  add_socket_to_flow_func_ =
+      (AddSocketToFlowFn)GetProcAddress(qwave, "QOSAddSocketToFlow");
+  remove_socket_from_flow_func_ =
+      (RemoveSocketFromFlowFn)GetProcAddress(qwave, "QOSRemoveSocketFromFlow");
+  set_flow_func_ = (SetFlowFn)GetProcAddress(qwave, "QOSSetFlow");
+
+  if (create_handle_func_ && close_handle_func_ &&
+      add_socket_to_flow_func_ && remove_socket_from_flow_func_ &&
+      set_flow_func_) {
+    qwave_supported_ = true;
+  }
+}
+
+QwaveAPI& QwaveAPI::Get() {
+  static base::LazyInstance<QwaveAPI>::Leaky lazy_qwave =
+    LAZY_INSTANCE_INITIALIZER;
+  return lazy_qwave.Get();
+}
+
+bool QwaveAPI::qwave_supported() const {
+  return qwave_supported_;
+}
+BOOL QwaveAPI::CreateHandle(PQOS_VERSION version, PHANDLE handle) {
+  return create_handle_func_(version, handle);
+}
+BOOL QwaveAPI::CloseHandle(HANDLE handle) {
+  return close_handle_func_(handle);
+}
+
+BOOL QwaveAPI::AddSocketToFlow(HANDLE handle,
+                               SOCKET socket,
+                               PSOCKADDR addr,
+                               QOS_TRAFFIC_TYPE traffic_type,
+                               DWORD flags,
+                               PQOS_FLOWID flow_id) {
+  return add_socket_to_flow_func_(handle,
+                                  socket,
+                                  addr,
+                                  traffic_type,
+                                  flags,
+                                  flow_id);
+}
+
+BOOL QwaveAPI::RemoveSocketFromFlow(HANDLE handle,
+                                    SOCKET socket,
+                                    QOS_FLOWID flow_id,
+                                    DWORD reserved) {
+  return remove_socket_from_flow_func_(handle, socket, flow_id, reserved);
+}
+
+BOOL QwaveAPI::SetFlow(HANDLE handle,
+                       QOS_FLOWID flow_id,
+                       QOS_SET_FLOW op,
+                       ULONG size,
+                       PVOID data,
+                       DWORD reserved,
+                       LPOVERLAPPED overlapped) {
+  return set_flow_func_(handle,
+                        flow_id,
+                        op,
+                        size,
+                        data,
+                        reserved,
+                        overlapped);
+}
+
 
 //-----------------------------------------------------------------------------
 
@@ -171,7 +248,9 @@ UDPSocketWin::UDPSocketWin(DatagramSocket::BindType bind_type,
       bind_type_(bind_type),
       rand_int_cb_(rand_int_cb),
       recv_from_address_(NULL),
-      net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_UDP_SOCKET)) {
+      net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_UDP_SOCKET)),
+      qos_handle_(NULL),
+      qos_flow_id_(0) {
   EnsureWinsockInit();
   net_log_.BeginEvent(NetLog::TYPE_SOCKET_ALIVE,
                       source.ToEventParametersCallback());
@@ -189,6 +268,10 @@ void UDPSocketWin::Close() {
 
   if (!is_connected())
     return;
+
+  if (qos_handle_) {
+    QwaveAPI::Get().CloseHandle(qos_handle_);
+  }
 
   // Zero out any pending read/write callback state.
   read_callback_.Reset();
@@ -831,10 +914,97 @@ int UDPSocketWin::SetMulticastLoopbackMode(bool loopback) {
   return OK;
 }
 
-// TODO(hubbe): Implement differentiated services for windows.
-// Note: setsockopt(IP_TOS) does not work on windows XP and later.
 int UDPSocketWin::SetDiffServCodePoint(DiffServCodePoint dscp) {
-  return ERR_NOT_IMPLEMENTED;
+  if (dscp == DSCP_NO_CHANGE) {
+    return OK;
+  }
+
+  if (!is_connected())
+    return ERR_SOCKET_NOT_CONNECTED;
+
+  QwaveAPI& qos(QwaveAPI::Get());
+
+  if (!qos.qwave_supported())
+    return ERROR_NOT_SUPPORTED;
+
+  if (qos_handle_ == NULL) {
+    QOS_VERSION version;
+    version.MajorVersion = 1;
+    version.MinorVersion = 0;
+    qos.CreateHandle(&version, &qos_handle_);
+    if (qos_handle_ == NULL)
+      return ERROR_NOT_SUPPORTED;
+  }
+
+  QOS_TRAFFIC_TYPE traffic_type = QOSTrafficTypeBestEffort;
+  switch (dscp) {
+    case DSCP_CS0:
+      traffic_type = QOSTrafficTypeBestEffort;
+      break;
+    case DSCP_CS1:
+      traffic_type = QOSTrafficTypeBackground;
+      break;
+    case DSCP_AF11:
+    case DSCP_AF12:
+    case DSCP_AF13:
+    case DSCP_CS2:
+    case DSCP_AF21:
+    case DSCP_AF22:
+    case DSCP_AF23:
+    case DSCP_CS3:
+    case DSCP_AF31:
+    case DSCP_AF32:
+    case DSCP_AF33:
+    case DSCP_CS4:
+      traffic_type = QOSTrafficTypeExcellentEffort;
+      break;
+    case DSCP_AF41:
+    case DSCP_AF42:
+    case DSCP_AF43:
+    case DSCP_CS5:
+      traffic_type = QOSTrafficTypeAudioVideo;
+      break;
+    case DSCP_EF:
+    case DSCP_CS6:
+      traffic_type = QOSTrafficTypeVoice;
+      break;
+    case DSCP_CS7:
+      traffic_type = QOSTrafficTypeControl;
+      break;
+    case DSCP_NO_CHANGE:
+      NOTREACHED();
+      break;
+  }
+  if (qos_flow_id_ != 0) {
+    qos.RemoveSocketFromFlow(qos_handle_, NULL, qos_flow_id_, 0);
+    qos_flow_id_ = 0;
+  }
+  if (!qos.AddSocketToFlow(qos_handle_,
+                           socket_,
+                           NULL,
+                           traffic_type,
+                           QOS_NON_ADAPTIVE_FLOW,
+                           &qos_flow_id_)) {
+    DWORD err = GetLastError();
+    if (err == ERROR_DEVICE_REINITIALIZATION_NEEDED) {
+      qos.CloseHandle(qos_handle_);
+      qos_flow_id_ = 0;
+      qos_handle_ = 0;
+    }
+    return MapSystemError(err);
+  }
+  // This requires admin rights, and may fail, if so we ignore it
+  // as AddSocketToFlow should still do *approximately* the right thing.
+  DWORD buf = dscp;
+  qos.SetFlow(qos_handle_,
+              qos_flow_id_,
+              QOSSetOutgoingDSCPValue,
+              sizeof(buf),
+              &buf,
+              0,
+              NULL);
+
+  return OK;
 }
 
 void UDPSocketWin::DetachFromThread() {

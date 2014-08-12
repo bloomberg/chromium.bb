@@ -172,8 +172,11 @@ bool UdpTransport::SendPacket(PacketRef packet, const base::Closure& cb) {
       VLOG(1) << "Unable to set DSCP: " << next_dscp_value_
               << " to socket; Error: " << result;
     }
-    // Don't change DSCP in next send.
-    next_dscp_value_ = net::DSCP_NO_CHANGE;
+
+    if (result != net::ERR_SOCKET_NOT_CONNECTED) {
+      // Don't change DSCP in next send.
+      next_dscp_value_ = net::DSCP_NO_CHANGE;
+    }
   }
 
   scoped_refptr<net::IOBuffer> buf =
