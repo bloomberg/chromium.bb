@@ -332,6 +332,7 @@ using base::UserMetricsAction;
          toPopUpButton:folderPopUpButton_
            indentation:0];
   NSMenu* menu = [folderPopUpButton_ menu];
+  [menu addItem:[NSMenuItem separatorItem]];
   NSString* title = [[self class] chooseAnotherFolderString];
   NSMenuItem *item = [menu addItemWithTitle:title
                                      action:NULL
