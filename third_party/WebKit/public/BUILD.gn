@@ -12,6 +12,7 @@ group("blink") {
     ":blink_headers",
     ":blink_minimal",
     "//third_party/WebKit/Source/web",
+    "//third_party/WebKit/Source/platform",
   ]
 }
 

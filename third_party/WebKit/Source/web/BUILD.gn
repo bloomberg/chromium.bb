@@ -47,6 +47,28 @@ component("web") {
   if (!use_default_render_theme) {
     sources -= [ "default/WebRenderTheme.cpp" ]
   }
+
+  if (is_component_build) {
+    deps += [
+      "//base/test:test_support",
+      "//testing/gmock",
+      "//testing/gtest",
+      "//third_party/WebKit/Source/core:testing",
+      "//third_party/WebKit/Source/modules:modules_testing",
+    ]
+
+    configs -= [
+      "//third_party/WebKit/Source:non_test_config",
+    ]
+
+    sources += web_gypi.web_unittest_files
+    sources += bindings_unittest_files
+    sources += core_unittest_files
+    sources += modules_unittest_files
+    sources += platform_web_unittest_files
+
+    sources += [ "WebTestingSupport.cpp" ]
+  }
 }
 
 # GYP version: WebKit/Source/web/web.gyp:blink_web_test_support
@@ -69,8 +91,6 @@ source_set("test_support") {
   }
 }
 
-# TODO(GYP): Enable when //content/test:test_support links.
-if (false) {
 # GYP version: WebKit/Source/web/web_tests.gyp:webkit_unit_tests
 test("webkit_unit_tests") {
   deps = [
@@ -87,9 +107,11 @@ test("webkit_unit_tests") {
     "//third_party/zlib",
     "//url",
     "//v8",
-   ]
+  ]
 
   sources = [ "tests/RunAllTests.cpp" ]
+
+  configs += [ "//third_party/WebKit/Source:config" ]
 
   if (!is_component_build) {
     deps += [ "//third_party/WebKit/Source/core" ]
@@ -102,5 +124,4 @@ test("webkit_unit_tests") {
     sources += modules_unittest_files
     sources += platform_web_unittest_files
   }
-}
 }
