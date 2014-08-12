@@ -225,7 +225,10 @@ public class LibraryLoader {
 
         // From now on, keep tracing in sync with native.
         TraceEvent.registerNativeEnabledObserver();
+    }
 
+    // Called after all native initializations are complete.
+    public static void onNativeInitializationComplete() {
         // Record histogram for the Chromium linker.
         if (Linker.isUsed()) {
             nativeRecordChromiumAndroidLinkerHistogram(Linker.loadAtFixedAddressFailed(),
