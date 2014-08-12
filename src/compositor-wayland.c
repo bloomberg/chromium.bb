@@ -1573,12 +1573,24 @@ input_handle_modifiers(void *data, struct wl_keyboard *keyboard,
 	notify_modifiers(&input->base, serial_out);
 }
 
+static void
+input_handle_repeat_info(void *data, struct wl_keyboard *keyboard,
+			 int32_t rate, int32_t delay)
+{
+	struct wayland_input *input = data;
+	struct wayland_compositor *c = input->compositor;
+
+	c->base.kb_repeat_rate = rate;
+	c->base.kb_repeat_delay = delay;
+}
+
 static const struct wl_keyboard_listener keyboard_listener = {
 	input_handle_keymap,
 	input_handle_keyboard_enter,
 	input_handle_keyboard_leave,
 	input_handle_key,
 	input_handle_modifiers,
+	input_handle_repeat_info,
 };
 
 static void
@@ -1609,12 +1621,19 @@ input_handle_capabilities(void *data, struct wl_seat *seat,
 	}
 }
 
+static void
+input_handle_name(void *data, struct wl_seat *seat,
+		  const char *name)
+{
+}
+
 static const struct wl_seat_listener seat_listener = {
 	input_handle_capabilities,
+	input_handle_name,
 };
 
 static void
-display_add_seat(struct wayland_compositor *c, uint32_t id)
+display_add_seat(struct wayland_compositor *c, uint32_t id, uint32_t version)
 {
 	struct wayland_input *input;
 
@@ -1625,7 +1644,7 @@ display_add_seat(struct wayland_compositor *c, uint32_t id)
 	weston_seat_init(&input->base, &c->base, "default");
 	input->compositor = c;
 	input->parent.seat = wl_registry_bind(c->parent.registry, id,
-					      &wl_seat_interface, 1);
+					      &wl_seat_interface, MIN(version, 4));
 	wl_list_insert(c->input_list.prev, &input->link);
 
 	wl_seat_add_listener(input->parent.seat, &seat_listener, input);
@@ -1781,7 +1800,7 @@ registry_handle_global(void *data, struct wl_registry *registry, uint32_t name,
 			wl_registry_bind(registry, name,
 					 &_wl_fullscreen_shell_interface, 1);
 	} else if (strcmp(interface, "wl_seat") == 0) {
-		display_add_seat(c, name);
+		display_add_seat(c, name, version);
 	} else if (strcmp(interface, "wl_output") == 0) {
 		wayland_compositor_register_output(c, name);
 	} else if (strcmp(interface, "wl_shm") == 0) {
