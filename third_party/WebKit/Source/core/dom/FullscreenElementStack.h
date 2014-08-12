@@ -36,7 +36,6 @@
 #include "platform/geometry/LayoutRect.h"
 #include "wtf/Deque.h"
 #include "wtf/RefPtr.h"
-#include "wtf/TypeTraits.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -140,10 +139,5 @@ inline FullscreenElementStack* FullscreenElementStack::fromIfExists(Document& do
 }
 
 } // namespace blink
-
-// Needed by the HeapVector<> element stack.
-template<>struct WTF::IsPod<blink::FullscreenElementStack::RequestType> {
-    static const bool value = true;
-};
 
 #endif // FullscreenElementStack_h
