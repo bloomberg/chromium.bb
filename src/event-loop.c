@@ -233,7 +233,7 @@ wl_event_source_signal_dispatch(struct wl_event_source *source,
 	int len;
 
 	len = read(source->fd, &signal_info, sizeof signal_info);
-	if (len != sizeof signal_info)
+	if (!(len == -1 && errno == EAGAIN) && len != sizeof signal_info)
 		/* Is there anything we can do here?  Will this ever happen? */
 		wl_log("signalfd read error: %m\n");
 
@@ -263,7 +263,7 @@ wl_event_loop_add_signal(struct wl_event_loop *loop,
 
 	sigemptyset(&mask);
 	sigaddset(&mask, signal_number);
-	source->base.fd = signalfd(-1, &mask, SFD_CLOEXEC);
+	source->base.fd = signalfd(-1, &mask, SFD_CLOEXEC | SFD_NONBLOCK);
 	sigprocmask(SIG_BLOCK, &mask, NULL);
 
 	source->func = func;
