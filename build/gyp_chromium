@@ -189,9 +189,7 @@ def additional_include_files(supplemental_files, args=[]):
 if __name__ == '__main__':
   args = sys.argv[1:]
 
-  # TODO(sky): remove analyzer2 once updated recipes.
-  use_analyzer = len(args) and (args[0] == '--analyzer' or
-                                args[0] == '--analyzer2')
+  use_analyzer = len(args) and args[0] == '--analyzer'
   if use_analyzer:
     args.pop(0)
     os.environ['GYP_GENERATORS'] = 'analyzer'
