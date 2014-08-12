@@ -296,6 +296,9 @@ void Channel::OnError(Error error) {
       // The other side was cleanly closed, so this isn't actually an error.
       DVLOG(1) << "RawChannel read error (shutdown)";
       break;
+    case ERROR_READ_BROKEN:
+      LOG(ERROR) << "RawChannel read error (connection broken)";
+      break;
     case ERROR_READ_BAD_MESSAGE:
       // Receiving a bad message means either a bug, data corruption, or
       // malicious attack (probably due to some other bug).

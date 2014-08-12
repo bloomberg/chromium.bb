@@ -284,12 +284,10 @@ void RawChannel::OnReadCompleted(IOResult io_result, size_t bytes_read) {
       case IO_SUCCEEDED:
         break;
       case IO_FAILED_SHUTDOWN:
-        read_stopped_ = true;
-        CallOnError(Delegate::ERROR_READ_SHUTDOWN);
-        return;
+      case IO_FAILED_BROKEN:
       case IO_FAILED_UNKNOWN:
         read_stopped_ = true;
-        CallOnError(Delegate::ERROR_READ_UNKNOWN);
+        CallOnError(ReadIOResultToError(io_result));
         return;
       case IO_PENDING:
         NOTREACHED();
@@ -454,6 +452,24 @@ bool RawChannel::OnReadMessageForRawChannel(
   LOG(ERROR) << "Invalid control message (subtype " << message_view.subtype()
              << ")";
   return false;
+}
+
+// static
+RawChannel::Delegate::Error RawChannel::ReadIOResultToError(
+    IOResult io_result) {
+  switch (io_result) {
+    case IO_FAILED_SHUTDOWN:
+      return Delegate::ERROR_READ_SHUTDOWN;
+    case IO_FAILED_BROKEN:
+      return Delegate::ERROR_READ_BROKEN;
+    case IO_FAILED_UNKNOWN:
+      return Delegate::ERROR_READ_UNKNOWN;
+    case IO_SUCCEEDED:
+    case IO_PENDING:
+      NOTREACHED();
+      break;
+  }
+  return Delegate::ERROR_READ_UNKNOWN;
 }
 
 void RawChannel::CallOnError(Delegate::Error error) {

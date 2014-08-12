@@ -211,14 +211,18 @@ RawChannel::IOResult RawChannelPosix::Read(size_t* bytes_read) {
     return IO_FAILED_SHUTDOWN;
   }
 
-  if (errno != EAGAIN && errno != EWOULDBLOCK) {
-    PLOG(WARNING) << "recvmsg";
-    // Make sure that |OnFileCanReadWithoutBlocking()| won't be called again.
-    read_watcher_.reset();
-    return IO_FAILED_UNKNOWN;
-  }
+  if (errno == EAGAIN || errno == EWOULDBLOCK)
+    return ScheduleRead();
 
-  return ScheduleRead();
+  IOResult rv = IO_FAILED_UNKNOWN;
+  if (errno == ECONNRESET)
+    rv = IO_FAILED_BROKEN;
+  else
+    PLOG(WARNING) << "recvmsg";
+
+  // Make sure that |OnFileCanReadWithoutBlocking()| won't be called again.
+  read_watcher_.reset();
+  return rv;
 }
 
 RawChannel::IOResult RawChannelPosix::ScheduleRead() {

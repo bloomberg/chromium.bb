@@ -438,6 +438,10 @@ class ErrorRecordingRawChannelDelegate
         expecting_read_error_ = false;
         got_read_error_event_.Signal();
         break;
+      case ERROR_READ_BROKEN:
+        // TODO(vtl): Test broken connections.
+        CHECK(false);
+        break;
       case ERROR_READ_BAD_MESSAGE:
         // TODO(vtl): Test reception/detection of bad messages.
         CHECK(false);

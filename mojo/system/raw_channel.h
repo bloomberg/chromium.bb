@@ -51,6 +51,9 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
     enum Error {
       // Failed read due to raw channel shutdown (e.g., on the other side).
       ERROR_READ_SHUTDOWN,
+      // Failed read due to raw channel being broken (e.g., if the other side
+      // died without shutting down).
+      ERROR_READ_BROKEN,
       // Received a bad message.
       ERROR_READ_BAD_MESSAGE,
       // Unknown read error.
@@ -115,6 +118,8 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
     IO_SUCCEEDED,
     // Failed due to a (probably) clean shutdown (e.g., of the other end).
     IO_FAILED_SHUTDOWN,
+    // Failed due to the connection being broken (e.g., the other end dying).
+    IO_FAILED_BROKEN,
     // Failed due to some other (unexpected) reason.
     IO_FAILED_UNKNOWN,
     IO_PENDING
@@ -283,6 +288,9 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
                                 scoped_ptr<WriteBuffer> write_buffer) = 0;
 
  private:
+  // Converts an |IO_FAILED_...| for a read to a |Delegate::Error|.
+  static Delegate::Error ReadIOResultToError(IOResult io_result);
+
   // Calls |delegate_->OnError(error)|. Must be called on the I/O thread WITHOUT
   // |write_lock_| held.
   void CallOnError(Delegate::Error error);
