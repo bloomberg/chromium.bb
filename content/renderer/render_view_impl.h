@@ -571,6 +571,7 @@ class CONTENT_EXPORT RenderViewImpl
   // code away from this class.
   friend class RenderFrameImpl;
 
+  FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuDisplayNoneTest, SelectItem);
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuRemoveTest, RemoveOnChange);
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, NormalCase);
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, ShowPopupThenNavigate);

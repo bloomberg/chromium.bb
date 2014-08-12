@@ -145,4 +145,44 @@ TEST_F(ExternalPopupMenuRemoveTest, RemoveOnChange) {
   EXPECT_FALSE(SimulateElementClick(kSelectID));
 }
 
+class ExternalPopupMenuDisplayNoneTest : public ExternalPopupMenuTest {
+  public:
+  ExternalPopupMenuDisplayNoneTest() {}
+
+  virtual void SetUp() {
+    RenderViewTest::SetUp();
+    // We need to set this explictly as RenderMain is not run.
+    blink::WebView::setUseExternalPopupMenus(true);
+
+    std::string html = "<select id='mySelect'>"
+                       "  <option value='zero'>zero</option>"
+                       "  <optgroup label='hide' style='display: none'>"
+                       "    <option value='one'>one</option>"
+                       "  </optgroup>"
+                       "  <option value='two'>two</option>"
+                       "  <option value='three'>three</option>"
+                       "  <option value='four'>four</option>"
+                       "  <option value='five'>five</option>"
+                       "</select>";
+    // Load the test page.
+    LoadHTML(html.c_str());
+
+    // Set a minimum size and give focus so simulated events work.
+    view()->webwidget()->resize(blink::WebSize(500, 500));
+    view()->webwidget()->setFocus(true);
+  }
+
+};
+
+TEST_F(ExternalPopupMenuDisplayNoneTest, SelectItem) {
+  // Click the text field once to show the popup.
+  EXPECT_TRUE(SimulateElementClick(kSelectID));
+
+  // Select index 1 item. This should select item with index 2,
+  // skipping the item with 'display: none'
+  view()->OnSelectPopupMenuItem(1);
+
+  EXPECT_EQ(2,GetSelectedIndex());
+}
+
 }  // namespace content
