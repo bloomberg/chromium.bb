@@ -75,7 +75,6 @@ class ViewManagerClientImpl : public ViewManager,
   friend class RootObserver;
 
   typedef std::map<Id, View*> IdToViewMap;
-  typedef std::map<Id, View*> IdToViewMap;
 
   // Overridden from ViewManager:
   virtual void SetWindowManagerDelegate(
