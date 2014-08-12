@@ -79,6 +79,15 @@ WebCompositorAnimationImpl::targetProperty() const {
       animation_->target_property());
 }
 
+#if WEB_ANIMATION_SUPPORTS_FRACTIONAL_ITERATIONS
+double WebCompositorAnimationImpl::iterations() const {
+  return animation_->iterations();
+}
+
+void WebCompositorAnimationImpl::setIterations(double n) {
+  animation_->set_iterations(n);
+}
+#else
 int WebCompositorAnimationImpl::iterations() const {
   return animation_->iterations();
 }
@@ -86,6 +95,7 @@ int WebCompositorAnimationImpl::iterations() const {
 void WebCompositorAnimationImpl::setIterations(int n) {
   animation_->set_iterations(n);
 }
+#endif
 
 double WebCompositorAnimationImpl::startTime() const {
   return (animation_->start_time() - base::TimeTicks()).InSecondsF();

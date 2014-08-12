@@ -194,10 +194,12 @@ double Animation::TrimTimeToCurrentIteration(
   // We need to know the current iteration if we're alternating.
   int iteration = 0;
 
-  // If we are past the active interval, return iteration duration.
+  // If we are past the active interval, return iteration duration of last
+  // iteration
   if (is_past_total_duration) {
     iteration = iterations_ - 1;
-    trimmed_in_seconds = curve_->Duration();
+    double frac = fmod(curve_->Duration() * iterations_, curve_->Duration());
+    trimmed_in_seconds = frac == 0 ? curve_->Duration() : frac;
   } else {
     iteration = static_cast<int>(trimmed_in_seconds / curve_->Duration());
     // Calculate x where trimmed = x + n * curve_->Duration() for some positive

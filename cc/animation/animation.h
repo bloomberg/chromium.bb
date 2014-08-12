@@ -68,8 +68,8 @@ class CC_EXPORT Animation {
   // This is the number of times that the animation will play. If this
   // value is zero the animation will not play. If it is negative, then
   // the animation will loop indefinitely.
-  int iterations() const { return iterations_; }
-  void set_iterations(int n) { iterations_ = n; }
+  double iterations() const { return iterations_; }
+  void set_iterations(double n) { iterations_ = n; }
 
   base::TimeTicks start_time() const { return start_time_; }
 
@@ -161,7 +161,7 @@ class CC_EXPORT Animation {
 
   TargetProperty target_property_;
   RunState run_state_;
-  int iterations_;
+  double iterations_;
   base::TimeTicks start_time_;
   Direction direction_;
 

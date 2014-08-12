@@ -18,7 +18,7 @@ static base::TimeTicks TicksFromSecondsF(double seconds) {
                                             base::Time::kMicrosecondsPerSecond);
 }
 
-scoped_ptr<Animation> CreateAnimation(int iterations, double duration) {
+scoped_ptr<Animation> CreateAnimation(double iterations, double duration) {
   scoped_ptr<Animation> to_return(Animation::Create(
       make_scoped_ptr(
           new FakeFloatAnimationCurve(duration)).PassAs<AnimationCurve>(),
@@ -29,7 +29,7 @@ scoped_ptr<Animation> CreateAnimation(int iterations, double duration) {
   return to_return.Pass();
 }
 
-scoped_ptr<Animation> CreateAnimation(int iterations) {
+scoped_ptr<Animation> CreateAnimation(double iterations) {
   return CreateAnimation(iterations, 1);
 }
 
@@ -48,11 +48,22 @@ TEST(AnimationTest, TrimTimeOneIteration) {
   EXPECT_EQ(1, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(2.0)));
 }
 
+TEST(AnimationTest, TrimTimeOneHalfIteration) {
+  scoped_ptr<Animation> anim(CreateAnimation(1.5));
+  EXPECT_EQ(0.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(-1.0)));
+  EXPECT_EQ(0.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.0)));
+  EXPECT_EQ(0.5, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.5)));
+  EXPECT_EQ(0.9, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.9)));
+  EXPECT_EQ(0.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(1.0)));
+  EXPECT_EQ(0.5, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(1.5)));
+  EXPECT_EQ(0.5, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(2.0)));
+}
+
 TEST(AnimationTest, TrimTimeInfiniteIterations) {
   scoped_ptr<Animation> anim(CreateAnimation(-1));
-  EXPECT_EQ(0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.0)));
+  EXPECT_EQ(0.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.0)));
   EXPECT_EQ(0.5, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.5)));
-  EXPECT_EQ(0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(1.0)));
+  EXPECT_EQ(0.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(1.0)));
   EXPECT_EQ(0.5, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(1.5)));
 }
 
@@ -101,6 +112,22 @@ TEST(AnimationTest, TrimTimeAlternateTwoIterations) {
   EXPECT_EQ(0.25, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(1.75)));
   EXPECT_EQ(0.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(2.0)));
   EXPECT_EQ(0.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(2.25)));
+}
+
+TEST(AnimationTest, TrimTimeAlternateTwoHalfIterations) {
+  scoped_ptr<Animation> anim(CreateAnimation(2.5));
+  anim->set_direction(Animation::Alternate);
+  EXPECT_EQ(0.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.0)));
+  EXPECT_EQ(0.25, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.25)));
+  EXPECT_EQ(0.5, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.5)));
+  EXPECT_EQ(0.75, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.75)));
+  EXPECT_EQ(1.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(1.0)));
+  EXPECT_EQ(0.75, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(1.25)));
+  EXPECT_EQ(0.25, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(1.75)));
+  EXPECT_EQ(0.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(2.0)));
+  EXPECT_EQ(0.25, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(2.25)));
+  EXPECT_EQ(0.5, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(2.50)));
+  EXPECT_EQ(0.5, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(2.75)));
 }
 
 TEST(AnimationTest, TrimTimeAlternateReverseInfiniteIterations) {

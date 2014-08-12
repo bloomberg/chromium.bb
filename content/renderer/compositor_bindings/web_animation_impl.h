@@ -28,8 +28,13 @@ class WebCompositorAnimationImpl : public blink::WebCompositorAnimation {
   // blink::WebCompositorAnimation implementation
   virtual int id();
   virtual TargetProperty targetProperty() const;
+#if WEB_ANIMATION_SUPPORTS_FRACTIONAL_ITERATIONS
+  virtual double iterations() const;
+  virtual void setIterations(double iterations);
+#else
   virtual int iterations() const;
   virtual void setIterations(int iterations);
+#endif
   virtual double startTime() const;
   virtual void setStartTime(double monotonic_time);
   virtual double timeOffset() const;
