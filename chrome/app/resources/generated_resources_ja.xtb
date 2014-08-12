@@ -93,7 +93,7 @@
 <translation id="5437452584883783369">プレビューを終了して再起動</translation>
 <translation id="7392118418926456391">ウイルス スキャンに失敗しました</translation>
 <translation id="1156689104822061371">キーボード レイアウト:</translation>
-<translation id="4764776831041365478"><ph name="URL"/> のウェブページは一時的に停止しているか、新しい URL に移動した可能性があります。</translation>
+<translation id="4764776831041365478"><ph name="URL"/> のウェブページは一時的に停止しているか、新しいウェブアドレスに移動した可能性があります。</translation>
 <translation id="6156863943908443225">スクリプト キャッシュ</translation>
 <translation id="4274187853770964845">同期エラー: 同期を停止してからもう一度開始してください。</translation>
 <translation id="6499114579475440437">ログインして Google ウォレットで支払う</translation>
@@ -1841,7 +1841,7 @@
 <translation id="2902382079633781842">ブックマークが追加されました</translation>
 <translation id="5436510242972373446"><ph name="SITE_NAME"/> を検索:</translation>
 <translation id="3800764353337460026">記号のスタイル</translation>
-<translation id="1278049586634282054">ビューを調査:</translation>
+<translation id="1278049586634282054">ビューを検証:</translation>
 <translation id="3254434849914415189"><ph name="FILE_TYPE"/> ファイルのデフォルト アプリを選択:</translation>
 <translation id="4991420928586866460">キーボードの最上段のキーをファンクション キーとして使用する</translation>
 <translation id="4350019051035968019">このデバイスは、別のドメインの管理対象として指定されているため、現在のアカウントの所属先ドメインに登録することはできません。</translation>
@@ -2912,7 +2912,7 @@
 <translation id="7347751611463936647">この拡張機能を使用するには、「<ph name="EXTENSION_KEYWORD"/>」と入力して Tab キーを押してからコマンドまたは検索キーワードを入力してください。</translation>
 <translation id="878431691778285679">この名前でユーザーを既に管理しているようです。<ph name="LINE_BREAK"/><ph name="BEGIN_LINK"/>このデバイスに <ph name="PROFILE_NAME"/> をインポート<ph name="END_LINK"/>しますか？</translation>
 <translation id="2912905526406334195"><ph name="HOST"/> がマイクへのアクセスを求めています。</translation>
-<translation id="2805756323405976993">Apps</translation>
+<translation id="2805756323405976993">アプリ</translation>
 <translation id="5151511998946489774">このウェブサイトの識別情報は <ph name="ISSUER"/> により確認済みで、公開監査が可能です。</translation>
 <translation id="1608626060424371292">このユーザーを削除</translation>
 <translation id="2779552785085366231">このページをアプリ ランチャーに追加できます</translation>

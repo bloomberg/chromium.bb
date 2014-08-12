@@ -121,7 +121,7 @@
 <translation id="5080758118274074384">डबल क्लिक किया गया</translation>
 <translation id="6281876499889881039">अगला समान तत्व.</translation>
 <translation id="8767968232364267681">अगले स्‍तर 4 का शीर्षक</translation>
-<translation id="5042770794184672516">वाक् वॉल्‍यूम बढ़ाएं</translation>
+<translation id="5042770794184672516">बोली वॉल्‍यूम बढ़ाएं</translation>
 <translation id="3865806312596179194">mnu itm</translation>
 <translation id="3149472044574196936">अगली पंक्ति</translation>
 <translation id="5866042630553435010">आंशिक रूप से चेक किया गया</translation>
@@ -135,7 +135,7 @@
 <translation id="6364795331201459219">h6</translation>
 <translation id="1156132699680778945">1 लिंक</translation>
 <translation id="3629895152177651589">hd</translation>
-<translation id="5876817486144482042">वाक् वॉल्‍यूम घटाएं</translation>
+<translation id="5876817486144482042">बोली वॉल्‍यूम घटाएं</translation>
 <translation id="5608798115546226984">स्वतः पूर्णता इनलाइन</translation>
 <translation id="5963413905009737549">अनुभाग</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{रिक्ति}one{# रिक्तियां}other{# रिक्तियां}}</translation>
@@ -224,7 +224,7 @@
 <translation id="962913030769097253">अगले स्तर 1 का शीर्षक</translation>
 <translation id="3616113530831147358">ऑडियो</translation>
 <translation id="3406283310380167331">फ़ॉर्म सूची दिखाएं</translation>
-<translation id="225732394367814946">वाक् की दर बढ़ाएं</translation>
+<translation id="225732394367814946">बोली की दर बढ़ाएं</translation>
 <translation id="3093176084511590672">अगला स्थानचिह्न</translation>
 <translation id="5402367795255837559">ब्रेल</translation>
 <translation id="1452236308086741652"><ph name="VALUE"/>, पासवर्ड पाठ बॉक्‍स</translation>
@@ -354,7 +354,7 @@
 <translation id="1653266918374749391">पिछले स्‍तर 3 का शीर्षक</translation>
 <translation id="3493915602752813531">कोई अगला एंकर नहीं.</translation>
 <translation id="5919442531159595654">प्रतिलिपि बनाएं.</translation>
-<translation id="3712520970944678024">वाक् नियंत्रित करना</translation>
+<translation id="3712520970944678024">बोली नियंत्रित करना</translation>
 <translation id="3392045790598181549"><ph name="NAME"/>, मेनू आइटम</translation>
 <translation id="5851548754964597211">टैब सूची</translation>
 <translation id="5054047268577924192">पिछला सूची आइटम</translation>
@@ -430,7 +430,7 @@
 <translation id="7693840228159394336">पिछला रेडियो बटन</translation>
 <translation id="844681116543532394">कोई पिछला चेकबॉक्स नहीं.</translation>
 <translation id="3030432017085518523">मेनू आइटम रेडियो बटन</translation>
-<translation id="4372705107434148843">वाक् रोकें</translation>
+<translation id="4372705107434148843">बोली रोकें</translation>
 <translation id="2100350898815792233">सभी विराम चिह्न</translation>
 <translation id="7226216518520804442">lst</translation>
 <translation id="4206289001967551965">तालिका के अंदर</translation>
@@ -484,7 +484,7 @@
 <translation id="7609342235116740824">वर्तमान पृष्ठ का URL प्रदर्शित करें</translation>
 <translation id="5102981729317424850">टूल बार</translation>
 <translation id="1810107444790159527">सूची बॉक्स</translation>
-<translation id="948171205378458592">वाक् की दर घटाएं</translation>
+<translation id="948171205378458592">बोली की दर घटाएं</translation>
 <translation id="4842108708071771135">कोई अगला ब्लॉककोट नहीं.</translation>
 <translation id="3286390186030710347">स्लाइडर</translation>
 <translation id="7041173719775863268">चयन समाप्त करें</translation>

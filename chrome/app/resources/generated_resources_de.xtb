@@ -1167,7 +1167,7 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognito-Modus (<ph name="SHORTCUT_
 <translation id="3791151686802386313">Erste Unternehmensanmeldung wird vorbereitet...</translation>
 <translation id="3393716657345709557">Angeforderter Eintrag wurde nicht im Cache gefunden.</translation>
 <translation id="7191454237977785534">Datei speichern unter</translation>
-<translation id="7241389281993241388">Melden Sie sich in <ph name="TOKEN_NAME"/> an, um das Client-Zertifikat zu importieren.</translation>
+<translation id="7241389281993241388">Melden Sie sich in <ph name="TOKEN_NAME"/> an, um das Clientzertifikat zu importieren.</translation>
 <translation id="8996526648899750015">Konto hinzufügen...</translation>
 <translation id="1773292249699193156">Für Ihr <ph name="ACCOUNT_EMAIL"/>-Konto verfügt die Erweiterung optional über folgende Berechtigungen:</translation>
 <translation id="7206693748120342859"><ph name="PLUGIN_NAME"/> wird heruntergeladen...</translation>
@@ -2592,7 +2592,7 @@ Achten Sie darauf, dass dadurch keine vertraulichen Informationen offengelegt we
 <translation id="7303492016543161086">Optionen für Bedienungshilfen im Systemmenü anzeigen</translation>
 <translation id="6410257289063177456">Bilddateien</translation>
 <translation id="6419902127459849040">Mitteleuropäisch</translation>
-<translation id="6707389671160270963">SSL-Client-Zertifikat</translation>
+<translation id="6707389671160270963">SSL-Clientzertifikat</translation>
 <translation id="6083557600037991373">Zur Beschleunigung von Webseiten speichert <ph name="PRODUCT_NAME"/> heruntergeladene Dateien vorübergehend auf einem Laufwerk. Wenn <ph name="PRODUCT_NAME"/> nicht richtig beendet wird, können diese Dateien beschädigt werden, was schließlich zu einem Fehler führt. Das Problem kann gelöst werden, indem die Seite neu geladen wird, und ein richtiges Beenden sollte solchen Problemen in Zukunft vorbeugen.<ph name="LINE_BREAK"/>Sollte das Problem aber weiterhin auftreten, so versuchen Sie, den Cache zu leeren. In einigen Fällen kann dies auch auf Hardwareprobleme hinweisen.</translation>
 <translation id="5154176924561037127">F8</translation>
 <translation id="5298219193514155779">Design von</translation>
@@ -3476,7 +3476,7 @@ Achten Sie darauf, dass dadurch keine vertraulichen Informationen offengelegt we
 <translation id="1425734930786274278">Die folgenden Cookies wurden blockiert (Cookies von Drittanbietern werden ausnahmslos blockiert):</translation>
 <translation id="3290704484208221223">Prozent</translation>
 <translation id="5265562206369321422">Seit über einer Woche offline</translation>
-<translation id="6805647936811177813">Melden Sie sich in <ph name="TOKEN_NAME"/> an, um das Client-Zertifikat von <ph name="HOST_NAME"/> herunterzuladen.</translation>
+<translation id="6805647936811177813">Melden Sie sich in <ph name="TOKEN_NAME"/> an, um das Clientzertifikat von <ph name="HOST_NAME"/> herunterzuladen.</translation>
 <translation id="6412931879992742813">Neues Inkognitofenster</translation>
 <translation id="1105117579475534983">Webseite blockiert</translation>
 <translation id="1673103856845176271">Auf die Datei konnte aus Sicherheitsgründen nicht zugegriffen werden.</translation>
@@ -5060,7 +5060,7 @@ Sind Sie einverstanden?</translation>
 <translation id="4912643508233590958">Inaktive Weckbefehle</translation>
 <translation id="7839192898639727867">Schlüssel-ID für Antragsteller des Zertifikats</translation>
 <translation id="4759238208242260848">Downloads</translation>
-<translation id="2879560882721503072">Das von <ph name="ISSUER"/> ausgestellte Client-Zertifikat wurde erfolgreich gespeichert.</translation>
+<translation id="2879560882721503072">Das von <ph name="ISSUER"/> ausgestellte Clientzertifikat wurde erfolgreich gespeichert.</translation>
 <translation id="1275718070701477396">Ausgewählt</translation>
 <translation id="1178581264944972037">Anhalten</translation>
 <translation id="3948633535993872459"><ph name="PROTOCOL"/>-Links</translation>
@@ -5092,7 +5092,7 @@ Sind Sie einverstanden?</translation>
 <translation id="7427348830195639090">Hintergrundseite: <ph name="BACKGROUND_PAGE_URL"/></translation>
 <translation id="8390029840652165810">Überprüfen Sie, ob Ihre Netzwerkverbindung funktioniert. Falls das Problem weiterhin besteht, melden Sie sich ab und wieder an, um Ihre Anmeldedaten neu zu laden.</translation>
 <translation id="4034042927394659004">Tastenhelligkeit verringern</translation>
-<translation id="5898154795085152510">Der Server hat ein ungültiges Client-Zertifikat zurückgegeben. Fehler <ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>).</translation>
+<translation id="5898154795085152510">Der Server hat ein ungültiges Clientzertifikat zurückgegeben. Fehler <ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>).</translation>
 <translation id="2704184184447774363">Microsoft-Dokumentsignatur</translation>
 <translation id="5677928146339483299">Blockiert</translation>
 <translation id="4645676300727003670">&amp;Beibehalten</translation>
@@ -5127,7 +5127,7 @@ Sind Sie einverstanden?</translation>
 <translation id="2669198762040460457">Sie haben einen falschen Nutzernamen oder ein falsches Passwort eingegeben.</translation>
 <translation id="5849626805825065073">Bei deaktivierter Option wird der Text bei beschleunigtem Aufbau mit Graustufen-Antialiasing anstelle von LCD-Subpixeln gerendert.</translation>
 <translation id="8509646642152301857">Beim Herunterladen des Wörterbuchs für die Rechtschreibprüfung ist ein Fehler aufgetreten.</translation>
-<translation id="1161575384898972166">Melden Sie sich in <ph name="TOKEN_NAME"/> an, um das Client-Zertifikat zu exportieren.</translation>
+<translation id="1161575384898972166">Melden Sie sich in <ph name="TOKEN_NAME"/> an, um das Clientzertifikat zu exportieren.</translation>
 <translation id="7056526158851679338">&amp;Geräte untersuchen</translation>
 <translation id="1718559768876751602">Jetzt ein Google-Konto erstellen</translation>
 <translation id="7408287099496324465">Wenn diese Option aktiviert ist, wird die EmbeddedSearch API zur Übermittlung von Suchanfragen auf der Suchergebnisseite verwendet.</translation>

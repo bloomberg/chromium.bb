@@ -256,11 +256,11 @@
 
       Hvis denne politik ikke indstilles, vil den blive aktiveret, men brugeren vil være i stand til at ændre den.</translation>
 <translation id="268577405881275241">Aktivér proxyfunktionen for datakomprimering</translation>
-<translation id="3820526221169548563">Aktivér tilgængelighedsfunktionen Skærmtastatur.
+<translation id="3820526221169548563">Aktivér hjælpefunktionen Skærmtastatur.
 
-          Hvis denne politik er angivet til Sand, vil tilgængelighedsfunktionen Skærmtastatur altid være slået til.
+          Hvis denne politik er angivet som Sand, vil hjælpefunktionen Skærmtastatur altid være slået til.
 
-          Hvis denne politik er angivet til Falsk, vil tilgængelighedsfunktionen Skærmtastatur altid være slået fra.
+          Hvis denne politik er angivet som Falsk, vil hjælpefunktionen Skærmtastatur altid være slået fra.
 
           Hvis du indstiller denne politik, kan brugerne ikke ændre eller tilsidesætte den.
 
@@ -1141,11 +1141,11 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME"/> tillade br
 <translation id="2805707493867224476">Tillad, at alle websites viser pop op-vinduer</translation>
 <translation id="1727394138581151779">Bloker alle plugins</translation>
 <translation id="8118665053362250806">Angiv størrelse på mediediskcache</translation>
-<translation id="6565312346072273043">Angiv standardtilstanden for tilgængelighedsfunktionen Skærmtastatur på loginskærmen.
+<translation id="6565312346072273043">Angiv standardtilstanden for hjælpefunktionen Skærmtastatur på loginskærmen.
 
-          Hvis denne politik er angivet til Sand, aktiveres skærmtastaturet, når loginskærmen vises.
+          Hvis denne politik er angivet som Sand, aktiveres skærmtastaturet, når loginskærmen vises.
 
-          Hvis denne politik er angivet til Falsk, deaktiveres skærmtastaturet, når loginskærmen vises.
+          Hvis denne politik er angivet som Falsk, deaktiveres skærmtastaturet, når loginskærmen vises.
 
           Hvis du har indstillet denne politik, kan brugerne midlertidigt tilsidesætte den ved at aktivere eller deaktivere skærmtastaturet. Brugerens valg er dog ikke permanent, og standardindstillingen gendannes, når loginskærmen vises på ny, eller når brugeren har været inaktiv på loginskærmen i et minut.
 
@@ -1397,11 +1397,11 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME"/> tillade br
 <translation id="3891357445869647828">Aktiver JavaScript</translation>
 <translation id="2274864612594831715">Denne politik konfigurerer aktiveringen af det virtuelle tastatur som inputenhed i ChromeOS. Brugere kan ikke tilsidesætte denne politik.
 
-      Hvis politikken er indstillet til sand, vil det virtuelle tastatur på skærmen altid være aktiveret.
+      Hvis politikken er angivet som Sand, vil det virtuelle tastatur på skærmen altid være aktiveret.
 
-      Hvis den er sat til falsk, vil det virtuelle tastatur på skærmen altid være deaktiveret.
+      Hvis den er angivet som Falsk, vil det virtuelle tastatur på skærmen altid være deaktiveret.
 
-      Hvis du har indstillet denne politik, kan brugere ikke ændre eller tilsidesætte den. Brugere kan dog stadig aktivere/deaktivere et tilgængelighedstastatur på skærmen, som har forrang over det virtuelle tastatur, der kontrolleres af denne politik. Se mere om kontrol af tilgængelighedstastaturet på skærmen i politikken |VirtualKeyboardEnabled|.
+      Hvis du har indstillet denne politik, kan brugere ikke ændre eller tilsidesætte den. Brugere kan dog stadig aktivere/deaktivere et skærmtastatur som hjælpefunktion, som har forrang over det virtuelle tastatur, der kontrolleres af denne politik. Se mere om kontrol af skærmtastaturet som hjælpefunktion i politikken |VirtualKeyboardEnabled|.
 
       Hvis denne politik ikke indstilles, er tastaturet på skærmen slået fra til at starte med, men kan til enhver tid aktiveres af brugeren. Der kan også benyttes heuristiske regler til at bestemme, hvornår tastaturet skal vises.</translation>
 <translation id="6774533686631353488">Tillad indbyggede beskedhosts, der er installeret på brugerniveau (installeret uden administratortilladelser).</translation>
@@ -1629,15 +1629,15 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME"/> tillade br
       Når denne politik er angivet, åbnes de administrerede bogmærker som standard, når visningen Bogmærker åbnes i Chrome.
 
       Administrerede bogmærker synkroniseres ikke med brugerkontoen.</translation>
-<translation id="6757375960964186754">Vis tilgængelighedsindstillingerne for <ph name="PRODUCT_OS_NAME"/> i systemmenuen.
+<translation id="6757375960964186754">Vis hjælpeindstillingerne for <ph name="PRODUCT_OS_NAME"/> i systemmenuen.
 
-          Hvis denne politik er angivet til Sand, vises tilgængelighedsindstillingerne altid i proceslinjemenuen.
+          Hvis denne politik er angivet som Sand, vises hjælpeindstillingerne altid i proceslinjemenuen.
 
-          Hvis denne politik er angivet til Falsk, vises tilgængelighedsindstillingerne aldrig i proceslinjemenuen.
+          Hvis denne politik er angivet som Falsk, vises hjælpeindstillingerne aldrig i proceslinjemenuen.
 
           Hvis du har indstillet denne politik, kan brugerne ikke ændre eller tilsidesætte den.
 
-          Hvis denne politik ikke er indstillet, vises tilgængelighedsindstillingerne ikke i proceslinjemenuen, men brugeren kan forårsage, at tilgængelighedsindstillingerne vises via siden Indstillinger.</translation>
+          Hvis denne politik ikke er indstillet, vises hjælpeindstillingerne ikke i proceslinjemenuen, men brugeren kan forårsage, at hjælpeindstillingerne vises via siden Indstillinger.</translation>
 <translation id="8303314579975657113">Angiver, hvilket GSSAPI-samling der skal bruges til HTTP-godkendelse. Du kan enten angive et samlingsnavn eller en hel sti. Hvis der ikke angives en indstilling, går <ph name="PRODUCT_NAME"/> tilbage til at bruge et standardsamlingsnavn.</translation>
 <translation id="8549772397068118889">Vis en advarsel, når du er på websites uden for indholdspakkerne</translation>
 <translation id="7749402620209366169">Aktiverer godkendelse med to faktorer for værter med fjernadgang i stedet for en brugerangivet pinkode.
@@ -1712,9 +1712,9 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME"/> tillade br
           Hvis denne politik ikke indstilles, kan brugeren selv vælge sin startside, hvis HomepageIsNewTabPage heller ikke er indstillet.</translation>
 <translation id="3806576699227917885">Tillad lydafspilning.
 
-      Hvis denne politik er angivet til Falsk, vil lydoutput ikke være tilgængeligt på enheden, mens brugeren er logget ind.
+      Hvis denne politik er angivet som Falsk, vil lydoutput ikke være tilgængeligt på enheden, mens brugeren er logget ind.
 
-      Denne politik påvirker alle former for lydoutput, og ikke kun de indbyggede højttalere. Tilgængelighedsfunktioner for lyd forhindres også af denne politik. Hvis brugeren har behov for en skærmlæser, skal du ikke aktivere denne politik.
+      Denne politik påvirker alle former for lydoutput, og ikke kun de indbyggede højttalere. Hjælpefunktioner for lyd forhindres også af denne politik. Hvis brugeren har behov for en skærmlæser, skal du ikke aktivere denne politik.
 
       Hvis denne indstilling er angivet til Sand eller ikke er konfigureret, kan brugerne bruge alle understøttede former for lydoutput på deres enhed.</translation>
 <translation id="6517678361166251908">Tillad gnubby-godkendelse</translation>

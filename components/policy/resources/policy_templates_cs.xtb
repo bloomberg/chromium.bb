@@ -65,11 +65,11 @@ Hodnota prodloužení musí být 100 % nebo více.</translation>
 
           Pokud zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultImagesSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
 <translation id="4680961954980851756">Aktivovat Automatické vyplňování</translation>
-<translation id="5183383917553127163">Umožňuje určit rozšíření, kterých se netýká černá listina.
+<translation id="5183383917553127163">Umožňuje určit rozšíření, kterých se netýká seznam zakázaných rozšíření.
 
-          Pokud je na černé listině uvedena hodnota *, znamená to, že jsou na ní všechna rozšíření a uživatelé mohou instalovat pouze rozšíření uvedená na bílé listině.
+          Pokud je na seznamu zakázaných rozšíření uvedena hodnota *, znamená to, že jsou na ní všechna rozšíření a uživatelé mohou instalovat pouze rozšíření uvedená v seznamu povolených rozšíření.
 
-          Ve výchozím nastavení jsou všechna rozšíření na bílé listině. Pokud však byla všechna rozšíření pomocí zásady umístěna na černou listinu, lze tuto zásadu pomocí bílé listiny přepsat.</translation>
+          Ve výchozím nastavení jsou všechna rozšíření na seznamu povolených. Pokud však byla všechna rozšíření pomocí zásady umístěna na seznam zakázaných rozšíření, lze tuto zásadu pomocí seznamu povolených přepsat.</translation>
 <translation id="5921888683953999946">Nastavuje výchozí stav funkce usnadnění přístupu pomocí velkého kurzoru na přihlašovací obrazovce.
 
 Pokud je tato zásada nastavena na hodnotu true, bude při zobrazení přihlašovací obrazovky velký kurzor aktivní.
@@ -233,9 +233,9 @@ Pokud bude tato zásada ponechána nenastavená nebo bude seznam prázdný, bude
 <translation id="5966615072639944554">Rozšíření, která mohou používat rozhraní API vzdáleného ověření identity</translation>
 <translation id="1617235075406854669">Aktivovat smazání historie prohlížeče a stahování</translation>
 <translation id="5290940294294002042">Určete seznam pluginů, které uživatel může povolit nebo zakázat</translation>
-<translation id="3153348162326497318">Umožňuje určit rozšíření, která uživatelé NEMOHOU nainstalovat. Pokud se na černé listině vyskytne rozšíření, které již bylo nainstalováno, bude odebráno
+<translation id="3153348162326497318">Umožňuje určit rozšíření, která uživatelé NEMOHOU nainstalovat. Pokud se na seznamu zakázaných vyskytne rozšíření, které již bylo nainstalováno, bude odebráno.
 
-          Pokud je na černé listině uvedena hodnota *, znamená to, že jsou zakázána všechna rozšíření, která nejsou explicitně uvedena na bílé listině.
+          Pokud je na seznamu zakázaných rozšíření uvedena hodnota *, znamená to, že jsou zakázána všechna rozšíření, která nejsou explicitně uvedena na seznamu povolených rozšíření.
 
          Pokud zásadu nenastavíte, mohou uživatelé v aplikaci <ph name="PRODUCT_NAME"/> instalovat libovolná rozšíření.</translation>
 <translation id="3067188277482006117">Pokud má hodnotu true, uživatel může pomocí hardwaru, který je součástí zařízení Chrome, vzdáleně sdělit svou identitu funkci Privacy CA prostřednictvím rozhraní Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey().
@@ -654,11 +654,11 @@ Pokud tuto zásadu ponecháte nenastavenou, bude tato možnost aktivována a už
 
           Příklad: Zásada <ph name="EXTENSION_POLICY_EXAMPLE"/> nainstaluje rozšíření <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> ze standardní adresy URL Internetového obchodu Chrome. Další informace o hostování rozšíření naleznete na adrese <ph name="LINK_TO_EXTENSION_DOC2"/>.
 
-          Rozšíření nainstalovaná pomocí této zásady nemohou uživatelé odinstalovat. Pokud rozšíření z tohoto seznamu odeberete, bude prohlížečem <ph name="PRODUCT_NAME"/> automaticky odinstalováno. Rozšíření uvedená v tomto seznamu jsou také automaticky přidána na bílou listinu a zásada ExtensionsInstallBlacklist je neovlivňuje.
+          Rozšíření nainstalovaná pomocí této zásady nemohou uživatelé odinstalovat. Pokud rozšíření z tohoto seznamu odeberete, bude prohlížečem <ph name="PRODUCT_NAME"/> automaticky odinstalováno. Rozšíření uvedená v tomto seznamu jsou také automaticky přidána na seznam povolených rozšíření a zásada ExtensionsInstallBlacklist je neovlivňuje.
 
           Není-li tato zásada nastavena na konkrétní hodnotu, uživatel může z prohlížeče <ph name="PRODUCT_NAME"/> odinstalovat libovolné rozšíření.</translation>
 <translation id="6899705656741990703">Zjistit nastavení proxy serveru automaticky</translation>
-<translation id="4639407427807680016">Názvy hostitelů zasílání nativních zpráv, kterým chcete udělit výjimku z černé listiny.</translation>
+<translation id="4639407427807680016">Názvy hostitelů zasílání nativních zpráv, kterým chcete udělit výjimku ze seznamu zakázaných položek.</translation>
 <translation id="8382184662529825177">Povolit použití vzdáleného ověření identity k ochraně obsahu v zařízení</translation>
 <translation id="7003334574344702284">Je-li tato zásada aktivovaná, vynucuje import uložených hesel z předchozího výchozího prohlížeče. Aktivace této zásady má také vliv na dialogové okno importu.
 
@@ -732,7 +732,7 @@ Pokud tuto zásadu ponecháte nenastavenou, bude tato možnost aktivována a už
       Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé je v aplikaci <ph name="PRODUCT_NAME"/> nebudou moci změnit ani přepsat.
 
       Pokud nastavení neupravíte, mohou si uživatelé vybrat, zda bude funkci používat, či nikoliv.</translation>
-<translation id="9035964157729712237">ID rozšíření, která mají být vyňata z černé listiny</translation>
+<translation id="9035964157729712237">ID rozšíření, která mají být vyňata ze seznamu zakázaných</translation>
 <translation id="8244525275280476362">Maximální zpoždění načítání po zneplatnění zásady</translation>
 <translation id="8587229956764455752">Povolit vytváření nových uživatelských účtů</translation>
 <translation id="7417972229667085380">Procento prodloužení prodlevy režimu nečinnosti v režimu prezentace (podpora ukončena)</translation>
@@ -749,11 +749,11 @@ Pokud tuto zásadu ponecháte nenastavenou, bude tato možnost aktivována a už
       Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé je nebudou moci změnit ani přepsat.
 
       Není-li zásada nastavena, mohou si uživatelé vybrat, zda chtějí být vyzváni k zadání hesla k odemčení zařízení, nebo nikoliv.</translation>
-<translation id="383466854578875212">Umožňuje určit, na které hostitele zasílání nativních zpráv se nebude vztahovat černá listina.
+<translation id="383466854578875212">Umožňuje určit, na které hostitele zasílání nativních zpráv se nebude vztahovat seznam zakázaných hostitelů.
 
-          Hodnota * v černé listině znamená, že jsou všichni hostitelé zasílání nativních zpráv zakázáni a že budou načteni pouze hostitelé uvedení na bílé listině.
+          Hodnota * v seznamu zakázaných znamená, že jsou všichni hostitelé zasílání nativních zpráv zakázáni a že budou načteni pouze hostitelé uvedení na seznamu povolených hostitelů.
 
-          Ve výchozím nastavení jsou povoleni všichni hostitelé zasílání nativních zpráv. Pokud však byly všichni hostitelé zasílání nativních zpráv pomocí zásady přidáni na černou listinu, je možné tuto zásadu pomocí bílé listiny přepsat.</translation>
+          Ve výchozím nastavení jsou povoleni všichni hostitelé zasílání nativních zpráv. Pokud však byly všichni hostitelé zasílání nativních zpráv pomocí zásady přidáni na seznam zakázaných, je možné tuto zásadu pomocí seznamu povolených hostitelů přepsat.</translation>
 <translation id="6022948604095165524">Akce při spuštění</translation>
 <translation id="9042911395677044526">Umožňuje přenést nastavení sítě, která se uplatní pro jednotlivé uživatele v zařízení se systémem <ph name="PRODUCT_OS_NAME"/>. Konfigurace sítě je řetězec ve formátu JSON, který se řídí definicí formátu Open Network Configuration popsanou na stránce <ph name="ONC_SPEC_URL"/>.</translation>
 <translation id="7128918109610518786">Seznam identifikátorů aplikací, které se v <ph name="PRODUCT_OS_NAME"/> zobrazují jako připnuté na liště spouštěče.
@@ -820,11 +820,11 @@ POZNÁMKA: Tato zásada je v současnosti podporována pouze v režimu veřejné
 <translation id="7912255076272890813">Konfigurovat povolené typy aplikací nebo rozšíření</translation>
 <translation id="817455428376641507">Povoluje přístup k adresám URL uvedeným v seznamu, které tedy představují výjimky ze seznamu zakázaných adres URL.
 
-      Formát položek v tomto seznamu naleznete v popisu zásady pro vytvoření černé listiny adres URL.
+      Formát položek v tomto seznamu naleznete v popisu zásady pro vytvoření seznamu zakázaných adres URL.
 
-      Pomocí této zásady můžete určit výjimky z omezující černé listiny. Příklad: Přidáním pravidla „*“ na černou listinu zablokujete všechny požadavky. Pomocí této zásady poté můžete povolit přístup omezenému seznamu adres URL. Můžete definovat výjimky v podobě schémat, subdomén, portů nebo konkrétních cest.
+      Pomocí této zásady můžete určit výjimky ze seznamu zakázaných adres. Příklad: Přidáním pravidla „*“ na seznam zakázaných zablokujete všechny požadavky. Pomocí této zásady poté můžete povolit přístup omezenému seznamu adres URL. Můžete definovat výjimky v podobě schémat, subdomén, portů nebo konkrétních cest.
 
-      Zda je adresa URL blokována nebo povolena, určuje vždy nejkonkrétnější filtr, přičemž bílá listina má přednost před černou listinou.
+      Zda je adresa URL blokována nebo povolena, určuje vždy nejkonkrétnější filtr, přičemž seznam povolených má přednost před seznamem zakázaných adres.
 
       Počet záznamů v této zásadě je omezen na 1000. Všechny další záznamy budou ignorovány.
 
@@ -838,7 +838,7 @@ Pokud je tato zásada nastavena na hodnotu false, režim vysokého kontrastu bud
 Pokud tuto zásadu nastavíte, uživatelé ji nebudou moci změnit ani přepsat.
 
 Pokud ji ponecháte nenastavenou, režim vysokého kontrastu bude ve výchozím nastavení deaktivován, ale uživatelé jej budou moci kdykoli aktivovat.</translation>
-<translation id="2201555246697292490">Konfigurace bílé listiny zasílání nativních zpráv</translation>
+<translation id="2201555246697292490">Konfigurace seznamu povolených hostitelů zasílání nativních zpráv</translation>
 <translation id="6177482277304066047">Nastavuje cílovou verzi automatické aktualizace.
 
       Určuje předponu cílové verze, na kterou se má <ph name="PRODUCT_OS_NAME"/> aktualizovat. Pokud zařízení obsahuje starší verzi, než jakou určuje předpona, bude systém aktualizován na poslední verzi s danou předponou. Jestliže zařízení již obsahuje novější verzi, nestane se nic (tj. nedojde k přechodu na nižší verzi) a zařízení zůstane u stávající verze. Formát předpony funguje na základě komponent, jak ukazuje následující příklad:
@@ -872,7 +872,7 @@ Pokud ji ponecháte nenastavenou, režim vysokého kontrastu bude ve výchozím 
       Seznam rozšíření, která se automaticky nainstalují pro uživatele ukázky v zařízeních v režimu prodeje. Tato rozšíření se uloží v zařízení a po instalaci mohou být nainstalována v režimu offline.
 
       Každý záznam v seznamu obsahuje adresář, který musí zahrnovat ID rozšíření v poli „extension-id“ a jeho webovou adresu pro aktualizace v poli „update-url“.</translation>
-<translation id="9096086085182305205">Bílá listina serverů pro ověřování</translation>
+<translation id="9096086085182305205">Seznam povolených serverů pro ověřování</translation>
 <translation id="4980301635509504364">Povoluje nebo zakazuje záznam videa.
 
 Pokud je tato zásada aktivní nebo není nakonfigurována (výchozí nastavení), uživatel bude vyzván k udělení přístupu pro záznam videa (s výjimkou adres URL nakonfigurovaných v seznamu VideoCaptureAllowedUrls, kterým bude přístup udělen bez vyzvání).
@@ -958,7 +958,7 @@ Tato zásada ovlivňuje kromě integrované webové kamery i všechny ostatní v
 <translation id="5586942249556966598">Nedělat nic</translation>
 <translation id="131353325527891113">Zobrazit uživatelská jména na přihlašovací obrazovce</translation>
 <translation id="5365946944967967336">Zobrazit na liště tlačítko Domů</translation>
-<translation id="3709266154059827597">Konfigurace černé listiny instalace rozšíření</translation>
+<translation id="3709266154059827597">Konfigurace seznamu zakázaných položek instalace rozšíření</translation>
 <translation id="1933378685401357864">Obrázek tapety</translation>
 <translation id="8451988835943702790">Jako domovskou použít stránku Nová karta</translation>
 <translation id="4617338332148204752">Přeskočení kontroly metaznaček ve službě <ph name="PRODUCT_FRAME_NAME"/></translation>
@@ -1169,7 +1169,7 @@ Pokud ji ponecháte nenastavenou, velký kurzor bude ve výchozím nastavení de
 
       Pokud tuto zásadu nenastavíte, bude použita výchozí velikost a uživatel ji bude moci přepsat pomocí příznaku  „--disk-cache-size“.</translation>
 <translation id="5475361623548884387">Povolit tisk</translation>
-<translation id="7287359148642300270">Určuje, které servery mají být umístěny na bílou listinu pro integrované ověření. Integrované ověření je povoleno pouze v případě, že <ph name="PRODUCT_NAME"/> obdrží výzvu ověřování ze proxy serveru nebo jiného serveru, které jsou uvedeny v tomto seznamu povolených serverů. 
+<translation id="7287359148642300270">Určuje, které servery mají být umístěny na seznam povolených pro integrované ověření. Integrované ověření je povoleno pouze v případě, že <ph name="PRODUCT_NAME"/> obdrží výzvu ověřování ze proxy serveru nebo jiného serveru, které jsou uvedeny v tomto seznamu povolených serverů. 
           
           Chcete-li zadat několik názvů serverů, oddělte je čárkami. Zástupné znaky (*) jsou povoleny.
 
@@ -1254,7 +1254,7 @@ Pokud ji ponecháte nenastavenou, velký kurzor bude ve výchozím nastavení de
 
           Tato zásada je určena k internímu použití prohlížečem Chrome.</translation>
 <translation id="913195841488580904">Blokování přístupu k seznamu adres URL</translation>
-<translation id="5461308170340925511">Nakonfiguruje zásady související s rozšířeními. Uživatel nebude moci instalovat rozšíření na černé listině, pokud nebudou autorizována. U aplikace <ph name="PRODUCT_NAME"/> také můžete vynutit automatickou instalaci rozšíření jejich zadáním do zásady <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Rozšíření, jejichž instalace je vynucena, budou nainstalována bez ohledu na to, zda jsou uvedena na černé listině.</translation>
+<translation id="5461308170340925511">Nakonfiguruje zásady související s rozšířeními. Uživatel nebude moci instalovat rozšíření na seznamu zakázaných rozšíření, pokud nebudou autorizována. U aplikace <ph name="PRODUCT_NAME"/> také můžete vynutit automatickou instalaci rozšíření jejich zadáním do zásady <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Rozšíření, jejichž instalace je vynucena, budou nainstalována bez ohledu na to, zda jsou uvedena na seznamu zakázaných.</translation>
 <translation id="3292147213643666827">Umožňuje prohlížeči <ph name="PRODUCT_NAME"/> fungovat jako proxy server mezi službou <ph name="CLOUD_PRINT_NAME"/> a staršími tiskárnami připojenými k počítači.
 
       Pokud je toto nastavení aktivované nebo není nakonfigurované, mohou uživatelé proxy server pro tisk z cloudu aktivovat ověřením pomocí účtu Google.
@@ -1274,7 +1274,7 @@ Pokud ji ponecháte nenastavenou, velký kurzor bude ve výchozím nastavení de
 
       Táto zásada má umožnit striktní zakázání pluginů tam, kde seznam DisabledPlugins obsahuje zástupné znaky, jako například deaktivovat všechny pluginy „*“ nebo deaktivovat všechny pluginy Java „'*Java*“, avšak správce chce určité verze povolit (například „IcedTea Java 2.3“). Tuto konkrétní verzi lze určit v této zásadě.
 
-      Upozorňujeme, že je třeba zadat výjimku pro název pluginu i pro název skupiny pluginů. Jednotlivé skupiny pluginů se na stránce about:plugins zobrazují v samostatných sekcích a každá sekce může obsahovat jeden nebo více pluginů. Plugin Shockwave Flash například patří do skupiny Adobe Flash Player. Pokud má být vyloučen z černé listiny, musí být v seznamu výjimek uvedeny oba názvy.
+      Upozorňujeme, že je třeba zadat výjimku pro název pluginu i pro název skupiny pluginů. Jednotlivé skupiny pluginů se na stránce about:plugins zobrazují v samostatných sekcích a každá sekce může obsahovat jeden nebo více pluginů. Plugin Shockwave Flash například patří do skupiny Adobe Flash Player. Pokud má být vyloučen ze seznamu zakázaných, musí být v seznamu výjimek uvedeny oba názvy.
 
       Pokud tato zásada není nastavena, bude jakýkoliv plugin, který odpovídá vzoru v seznamu DisabledPlugins, uzamčen jako deaktivovaný a uživatelé jej nebudou moci aktivovat.</translation>
 <translation id="8951350807133946005">Nastavit adresář mezipaměti na disku</translation>
@@ -1382,7 +1382,7 @@ Pokud ji ponecháte nenastavenou, velký kurzor bude ve výchozím nastavení de
 
       Pokud je tato zásada ponechána nenastavená, uživatel si může zvolit, jaký obrázek bude mít zobrazený na ploše a na pozadí přihlašovací obrazovky.</translation>
 <translation id="2761483219396643566">Prodleva upozornění na nečinnost při napájení z baterie</translation>
-<translation id="6281043242780654992">Konfiguruje zásady pro zasílání nativních zpráv. Hostitelé zasílání nativních zpráv uvedení na černé listině nebudou povoleni (pokud nebudou uvedeni na bílé listině).</translation>
+<translation id="6281043242780654992">Konfiguruje zásady pro zasílání nativních zpráv. Hostitelé zasílání nativních zpráv uvedení na seznamu zakázaných nebudou povoleni (pokud nebudou uvedeni na seznamu povolených hostitelů).</translation>
 <translation id="1468307069016535757">Nastavuje výchozí stav funkce usnadnění přístupu pomocí režimu vysokého kontrastu na přihlašovací obrazovce.
 
 Pokud je tato zásada nastavena na hodnotu true, bude při zobrazení obrazovky přihlášení režim vysokého kontrastu aktivní.
@@ -1494,7 +1494,7 @@ Pokud ji ponecháte nenastavenou, bude hlasová odezva ve výchozím nastavení 
           Pokud zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultNotificationsSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
 <translation id="527237119693897329">Umožňuje zadat, kteří hostitelé zasílání nativních zpráv se nemají načítat.
 
-          Hodnota * v černé listině znamená, že jsou zakázáni všichni hostitelé zasílání nativních zpráv, kteří nejsou uvedeni na bílé listině.
+          Hodnota * v seznamu zakázaných hostitelů znamená, že jsou zakázáni všichni hostitelé zasílání nativních zpráv, kteří nejsou uvedeni na seznamu povolených.
 
           Pokud je tato zásada ponechána nenastavená, <ph name="PRODUCT_NAME"/> bude načítat všechny nainstalované hostitele zasílání nativních zpráv.</translation>
 <translation id="749556411189861380">Hlásí verzi operačního systému a firmwaru v registrovaných zařízeních.
@@ -1560,7 +1560,7 @@ Pokud ji ponecháte nenastavenou, bude hlasová odezva ve výchozím nastavení 
 
       Pokud tuto zásadu nenastavíte, bude použita výchozí velikost a uživatel ji bude moci přepsat pomocí příznaku  „--media-cache-size“.</translation>
 <translation id="5142301680741828703">Následující vzory adres URL vykreslovat vždy v pluginu <ph name="PRODUCT_FRAME_NAME"/></translation>
-<translation id="4625915093043961294">Konfigurovat bílou listinu pro instalaci rozšíření</translation>
+<translation id="4625915093043961294">Konfigurovat seznam povolených pro instalaci rozšíření</translation>
 <translation id="5893553533827140852">Pokud je toto nastavení povoleno, žádosti gnubby o ověření budou zprostředkovány přes připojení ke vzdálenému hostiteli.
 
           Pokud je toto nastavení zakázáno nebo není nakonfigurováno, žádosti gnubby o ověření nebudou zprostředkovány.</translation>
@@ -1632,7 +1632,7 @@ Pokud ji ponecháte nenastavenou, lupa bude ve výchozím nastavení deaktivová
           Zásada bude dodržována pouze v případě, že je aktivní zásada DefaultSearchProviderEnabled.</translation>
 <translation id="7194407337890404814">Název výchozího poskytovatele vyhledávání</translation>
 <translation id="1843117931376765605">Obnovovací frekvence zásad pro uživatele</translation>
-<translation id="5535973522252703021">Bílá listina serverů pro delegování ověření protokolu Kerberos</translation>
+<translation id="5535973522252703021">Seznam povolených serverů pro delegování ověření protokolu Kerberos</translation>
 <translation id="9187743794267626640">Zakázat připojení externího úložiště</translation>
 <translation id="6353901068939575220">Udává parametry, které budou použity při vyhledávání adresy URL pomocí metody POST. Sestává z párů název–hodnota oddělených čárkou. Pokud je hodnotou parametr šablony (např. {searchTerms} v příkladu výše), bude nahrazen skutečnými údaji vyhledávacích dotazů.
 
@@ -1812,7 +1812,7 @@ Až bude okamžité přihlašování podporovat všechny přihlašovací procesy
        Deaktivací tohoto nastavení umožníte, aby prvky webové stránky, které nepocházejí z domény uvedené v adresním řádku prohlížeče, mohly nastavovat soubory cookie.
 
      Pokud zásadu nenastavíte, budou soubory cookie třetích stran povoleny, uživatelé však budou moci toto nastavení změnit.</translation>
-<translation id="4604931264910482931">Konfigurace černé listiny zasílání nativních zpráv</translation>
+<translation id="4604931264910482931">Konfigurace seznamu zakázaných položek zasílání nativních zpráv</translation>
 <translation id="6810445994095397827">Blokovat JavaScript na těchto stránkách</translation>
 <translation id="6672934768721876104">Tato zásada se již nepoužívá. Namísto ní prosím použijte zásadu ProxyMode.
 

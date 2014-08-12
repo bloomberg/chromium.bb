@@ -900,7 +900,7 @@ Maelezo yako ya kuingia katika akaunti yamepitwa na wakati.</translation>
 <translation id="2849936225196189499">Muhimu</translation>
 <translation id="9001035236599590379">Aina ya MIME</translation>
 <translation id="7238207184783103780">Google Wallet haipatikani kwa sasa.</translation>
-<translation id="3451859089869683931">Nambari batili ya simu. Tafadhali angalia na ujaribu tena.</translation>
+<translation id="3451859089869683931">Nambari ya simu si sahihi. Tafadhali angalia na ujaribu tena.</translation>
 <translation id="3464868340187708956">Ongeza Mtumiaji Mpya</translation>
 <translation id="7986039047000333986">Usasishaji maalum wa usalama kwa <ph name="PRODUCT_NAME"/> umetekelezwa hivi karibuni; unastahili kuanzisha upya sasa ili uanze kufanya kazi (tutarejesha upya vichupo vyako).</translation>
 <translation id="2787591391657537328">Ruhusu vipakuliwa ambavyo vimekatizwa kuendelea au kuanzishwa tena, kwa kutumia kipengee cha menyu ya maudhui cha Endelea.</translation>
@@ -1699,7 +1699,7 @@ Baada ya kuunda mtumiaji mpya anayesimamiwa, unaweza kusimamia mipangilio yake w
 <translation id="4343792725927556911">Mipangilio mipya ya kamera na maikrofoni itaanza kufanya kazi baada ya kupakia upya ukurasa.</translation>
 <translation id="3847089579761895589">Unapewa usaidizi. Je, unataka kuendelea?</translation>
 <translation id="5634367113401639867">Lo! Kuna kitu kimeharibika wakati wa kusajili kiotomatiki kifaa hiki. Tafadhali jaribu tena kutoka kwenye skrini ya kuingia katika akaunti ukitumia vitufe vya Ctrl-Alt-E kwa pamoja, ua wasiliana na mhudumu wako wa usaidizi.</translation>
-<translation id="8452588990572106089">Nambari batili ya kadi. Tafadhali angalia na ujaribu tena.</translation>
+<translation id="8452588990572106089">Nambari ya kadi si sahihi. Tafadhali angalia na ujaribu tena.</translation>
 <translation id="7701869757853594372">Mishiko ya MTUMIAJI</translation>
 <translation id="5714678912774000384">Amilisha kichupo cha mwisho</translation>
 <translation id="7654972694106903394">Zima upangaji wa chapa kwa kujaribu ugongaji.</translation>
@@ -3377,7 +3377,7 @@ Baada ya kuunda mtumiaji mpya anayesimamiwa, unaweza kusimamia mipangilio yake w
 <translation id="7317938878466090505"><ph name="PROFILE_NAME"/> (sasa)</translation>
 <translation id="6774230405643443657">Inawezesha usimbaji wa picha zinazotofautiana.</translation>
 <translation id="2148999191776934271">Inachaji
-<ph name="HOUR"/>:<ph name="MINUTE"/> hadi ijae</translation>
+Imebakisha <ph name="HOUR"/>:<ph name="MINUTE"/> ijae</translation>
 <translation id="6007237601604674381">Kusogezwa kumeshindika. <ph name="ERROR_MESSAGE"/></translation>
 <translation id="907841381057066561">Imeshindwa kuunda faili ya muda ya zip wakati wa kufungasha.</translation>
 <translation id="1064912851688322329">Tenganisha Akaunti yako ya Google</translation>

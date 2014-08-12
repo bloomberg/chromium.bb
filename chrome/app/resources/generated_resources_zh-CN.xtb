@@ -441,9 +441,9 @@
 <translation id="3855676282923585394">导入书签和设置...</translation>
 <translation id="1116694919640316211">关于</translation>
 <translation id="8381977081675353473">斯洛伐克语</translation>
-<translation id="2849866606957084126">已创建名为<ph name="NEW_PROFILE_NAME"/>的受监管用户。要设置该用户可以浏览哪些网站，您可以访问<ph name="BEGIN_LINK"/>www.chrome.com/manage<ph name="END_LINK"/>，在其中配置相应限制和设置。如果您未更改默认设置，<ph name="NEW_PROFILE_NAME"/>将可以浏览所有网站。
+<translation id="2849866606957084126">已创建名为“<ph name="NEW_PROFILE_NAME"/>”的受监管用户。要设置该用户可以浏览哪些网站，您可以访问<ph name="BEGIN_LINK"/>www.chrome.com/manage<ph name="END_LINK"/>，在其中配置相应限制和设置。如果您不更改默认设置，“<ph name="NEW_PROFILE_NAME"/>”将可以浏览所有网站。
 
-  有关详细说明，请查看<ph name="ACCOUNT_EMAIL"/>中的电子邮件。</translation>
+有关详细说明，请查看<ph name="ACCOUNT_EMAIL"/>中的电子邮件。</translation>
 <translation id="4422347585044846479">修改此页的书签</translation>
 <translation id="1965624977906726414">无需特殊权限。</translation>
 <translation id="2452539774207938933">切换到用户：<ph name="PROFILE_NAME"/></translation>
@@ -588,7 +588,7 @@
          “<ph name="PRODUCT_NAME"/>”不会使用不安全的连接。</translation>
 <translation id="7851858861565204677">来自其他设备的同步</translation>
 <translation id="1662837784918284394">（无）</translation>
-<translation id="2573269395582837871">选择照片和名称</translation>
+<translation id="2573269395582837871">选择照片和名字</translation>
 <translation id="5910363049092958439">图片存储为(&amp;V)...</translation>
 <translation id="8793975580333839911">运行此插件</translation>
 <translation id="1864146862702347178">启用滚动联想查询</translation>
@@ -4172,7 +4172,7 @@
 <translation id="1317502925920562130">这是您想要的主页吗？</translation>
 <translation id="7763146744708046348">请勿汇总数据 - 这可能会使速度变慢！</translation>
 <translation id="8616352574453019203">ID为“<ph name="IMPORT_ID"/>”的共享模块未列入白名单，无法导入。</translation>
-<translation id="5626134646977739690">名称：</translation>
+<translation id="5626134646977739690">名字：</translation>
 <translation id="4899837262951879307">触摸滚动模式。</translation>
 <translation id="5854409662653665676">如果您经常遇到问题，可以试着用以下方法解决此模块存在的问题：</translation>
 <translation id="3776796446459804932">此扩展程序违反了 Chrome 网上应用店政策。</translation>
@@ -4852,7 +4852,7 @@
 <translation id="3807747707162121253">取消(&amp;C)</translation>
 <translation id="202352106777823113">下载时间过长，网络已停止下载。</translation>
 <translation id="6155817405098385604">在无法使用 GPU 的情况下，不改用 3D 软件光栅器。</translation>
-<translation id="3306897190788753224">暂时停用个性化转化、基于历史记录的建议以及用户词典。</translation>
+<translation id="3306897190788753224">暂时停用个性化转化、基于历史记录的建议以及用户字典。</translation>
 <translation id="8941882480823041320">上一个字</translation>
 <translation id="2489435327075806094">指针速度：</translation>
 <translation id="2574102660421949343">允许来自 <ph name="DOMAIN"/> 的 Cookie。</translation>

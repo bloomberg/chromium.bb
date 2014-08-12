@@ -2871,7 +2871,7 @@
 <translation id="7347751611463936647">ในการใช้ส่วนขยายนี้ ให้พิมพ์ &quot;<ph name="EXTENSION_KEYWORD"/>&quot; แล้วกด TAB ตามด้วยคำสั่งหรือการค้นหาของคุณ</translation>
 <translation id="878431691778285679">ดูเหมือนว่าคุณกำลังจัดการผู้ใช้ที่ชื่อนั้นอยู่แล้ว<ph name="LINE_BREAK"/>คุณต้องการ <ph name="BEGIN_LINK"/>นำเข้า <ph name="PROFILE_NAME"/> มายังอุปกรณ์นี้<ph name="END_LINK"/>ไหม</translation>
 <translation id="2912905526406334195"><ph name="HOST"/> ต้องการใช้ไมโครโฟนของคุณ</translation>
-<translation id="2805756323405976993">แอปพลิเคชัน</translation>
+<translation id="2805756323405976993">แอป</translation>
 <translation id="5151511998946489774">เว็บไซต์นี้ได้รับการยืนยันตัวตนโดย <ph name="ISSUER"/> และสามารถตรวจสอบได้แบบสาธารณะ</translation>
 <translation id="1608626060424371292">ลบผู้ใช้รายนี้</translation>
 <translation id="2779552785085366231">สามารถเพิ่มหน้านี้ลงในเครื่องเรียกใช้งานแอป</translation>

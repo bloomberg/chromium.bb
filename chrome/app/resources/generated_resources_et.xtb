@@ -15,7 +15,7 @@
 <translation id="166179487779922818">Parool on liiga lühike.</translation>
 <translation id="9048642391959913289">Teksti suuruse automaatse muutmise kiirem rakendamine.</translation>
 <translation id="2345460471437425338">Hosti vale sertifikaat.</translation>
-<translation id="3688507211863392146">Kirjutage failidesse ja kaustadesse, mille rakenduses avate</translation>
+<translation id="3688507211863392146">Failidesse ja kaustadesse kirjutamine, mille rakenduses avate</translation>
 <translation id="3595596368722241419">Aku on täis</translation>
 <translation id="8098352321677019742">Toote <ph name="PRODUCT_NAME"/> märguanded</translation>
 <translation id="3566021033012934673">Teie ühendus ei ole privaatne</translation>
@@ -3466,7 +3466,7 @@ Veenduge, et te ei avalikustaks tundlikke andmeid.</translation>
 <translation id="1834560242799653253">Suund:</translation>
 <translation id="6440616190620341629">Lubab krüpteeritud meediumilaiendustele vaikimisi mittekoostava dekodeerimise rakenduses MediaDrm.</translation>
 <translation id="7185025270390719314">Vaadake ja muutke oma arvutis ja külastatavatel veebisaitidel kõiki oma andmeid</translation>
-<translation id="8353683614194668312">See võib:</translation>
+<translation id="8353683614194668312">Rakendus saab teha järgmist.</translation>
 <translation id="1047956942837015229"><ph name="COUNT"/> üksuse kustutamine ...</translation>
 <translation id="1531961661616401172">Luba katselised sünkroonitud märguanded.</translation>
 <translation id="7361039089383199231">$1 baiti</translation>

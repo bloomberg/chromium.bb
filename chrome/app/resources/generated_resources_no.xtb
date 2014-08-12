@@ -121,7 +121,7 @@
 <translation id="4654488276758583406">Veldig liten</translation>
 <translation id="6647228709620733774">Nettadresse for tilbakekalling av Netscape-autoritetssertifikat</translation>
 <translation id="546411240573627095">Talltastaturstil</translation>
-<translation id="2310216585920710503">Konfigurer enkel opplåsing</translation>
+<translation id="2310216585920710503">Konfigurer Enkel opplåsing</translation>
 <translation id="8425213833346101688">Endre</translation>
 <translation id="2972581237482394796">Gjø&amp;r om</translation>
 <translation id="5895138241574237353">Start på nytt</translation>
@@ -519,7 +519,7 @@ Sjekk e-posten din på <ph name="ACCOUNT_EMAIL"/> for instruksjoner om dette og 
 <translation id="413121957363593859">Komponenter</translation>
 <translation id="715487527529576698">Opprinnelig kinesisk modus er forenklet kinesisk</translation>
 <translation id="6522350652862471760">Slå på Google-profilnavn og -ikon</translation>
-<translation id="6181259999130430430">Slå på enkel opplåsing for denne enheten.</translation>
+<translation id="6181259999130430430">Slå på Enkel opplåsing for denne enheten.</translation>
 <translation id="8703575177326907206">Tilkoblingen til <ph name="DOMAIN"/> er ikke kryptert.</translation>
 <translation id="6135622770221372891">ID-er for kanal</translation>
 <translation id="8472623782143987204">maskinvarestøttet</translation>
@@ -712,7 +712,7 @@ Alle brukere må logge av for å fortsette.</translation>
 <translation id="3984921062031549150">Gjengivelsen slutter å fungere</translation>
 <translation id="7925285046818567682">Venter på <ph name="HOST_NAME"/>...</translation>
 <translation id="1079766198702302550">Blokkér alltid bruk av kameraet</translation>
-<translation id="2964845078799970531">Med enkel opplåsing kan du låse opp Chromebooken når den er i nærheten av telefonen din.</translation>
+<translation id="2964845078799970531">Med Enkel opplåsing kan du låse opp Chromebooken når den er i nærheten av telefonen din.</translation>
 <translation id="5053803681436838483">Ny leveringsadresse</translation>
 <translation id="5952256601775839173">Aktivér trefingerklikk for styreflaten.</translation>
 <translation id="3280237271814976245">L&amp;agre som...</translation>
@@ -1289,7 +1289,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY"/>) kan være kjekt neste gang
 <translation id="9033857511263905942">&amp;Lim inn</translation>
 <translation id="1028690605877243613">Bruk den alternative hylleutformingen.</translation>
 <translation id="6736045498964449756">Beklager. Passordene samsvarer ikke!</translation>
-<translation id="4558985768677321342">Aktiver enkel opplåsing.</translation>
+<translation id="4558985768677321342">Aktiver Enkel opplåsing.</translation>
 <translation id="1221825588892235038">Bare utvalg</translation>
 <translation id="2227939492629426903">Aktiverer den nye brukerbildemenyen. Når den kombineres med ny profiladministrasjon, vises den nye brukerbildemenyen for administrasjon av profiler. I andre tilfeller viser den en brukerbildemeny med ny utforming, men med samme funksjonalitet som den gamle menyen. I tillegg vises et veiledningskort øverst som ber brukeren om å prøve det nye grensesnittet for administrasjon av profiler.</translation>
 <translation id="5582883434676861778"><ph name="PRODUCT_NAME"/> har blokkert tilgangen til <ph name="HOST_NAME"/>. Dette nettstedet har blitt rapportert som et nettfiskingsnettsted.</translation>
@@ -3323,7 +3323,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="5917011688104426363">Fokuser adressefelt i søkemodus</translation>
 <translation id="3269101346657272573">Skriv inn personlig kode.</translation>
 <translation id="2822854841007275488">Arabisk</translation>
-<translation id="6559948977408379772">Dette ikonet vises når du og telefonen din er i nærheten og enkel opplåsing er tilgjengelig. Bare klikk for å åpne – ingen passord kreves.</translation>
+<translation id="6559948977408379772">Dette ikonet vises når du og telefonen din er i nærheten og Enkel opplåsing er tilgjengelig. Bare klikk for å åpne – ingen passord kreves.</translation>
 <translation id="5857090052475505287">Ny mappe</translation>
 <translation id="7450732239874446337">Nettverks-IO er sperret.</translation>
 <translation id="4003393903129308792">Aktiver én-kopis rasterenhet</translation>
@@ -3439,7 +3439,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="1526560967942511387">Dokument uten tittel</translation>
 <translation id="3979748722126423326">Aktiver <ph name="NETWORKDEVICE"/></translation>
 <translation id="7819857487979277519">PSK (WPA eller RSN)</translation>
-<translation id="7561031016893995297">Administrer enheter med enkel opplåsing i kontoinnstillingene dine.</translation>
+<translation id="7561031016893995297">Administrer enheter med Enkel opplåsing i kontoinnstillingene dine.</translation>
 <translation id="2238379619048995541">Data om frekvenstilstand</translation>
 <translation id="4367133129601245178">K&amp;opier bildeadressen</translation>
 <translation id="6326175484149238433">Fjern fra Chrome</translation>
@@ -4439,7 +4439,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="8148264977957212129">Pinyin inndatametode</translation>
 <translation id="2288278176040912387">Platespiller</translation>
 <translation id="7772032839648071052">Bekreft passord</translation>
-<translation id="3676582787770338561">Slå på enkel opplåsing for denne <ph name="DEVICE_TYPE"/>-enheten.</translation>
+<translation id="3676582787770338561">Slå på Enkel opplåsing for denne <ph name="DEVICE_TYPE"/>-enheten.</translation>
 <translation id="2871813825302180988">Denne kontoen er allerede i bruk på denne enheten.</translation>
 <translation id="1642505962779453775">Det siste kvartalet</translation>
 <translation id="3323235640813116393">Gjør det mulig å lagre sider som MHTML – én enkelt tekstfil som inneholder HTML og alle underressurser.</translation>

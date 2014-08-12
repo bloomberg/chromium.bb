@@ -7,7 +7,7 @@
 <translation id="9056953843249698117">Store</translation>
 <translation id="6431217872648827691">आपके Google पासवर्ड के द्वारा 
           <ph name="TIME"/> तक का सभी डेटा एन्क्रिप्ट किया गया था</translation>
-<translation id="335581015389089642">वाक्</translation>
+<translation id="335581015389089642">बोली</translation>
 <translation id="1890570400853666479">स्थिर गैलरी के बजाय प्रयोगात्मक नई गैलरी का उपयोग करें.</translation>
 <translation id="8206745257863499010">ब्‍लुसी</translation>
 <translation id="3314762460582564620">प्लेन झुयिन मोड.  स्वचालित उम्मीदवार चयन और संबंधित विकल्प
@@ -1444,7 +1444,7 @@
 <translation id="6051086608691487286">ओवरले स्क्रॉलबार</translation>
 <translation id="6132509723755265994">Google वॉलेट इस व्यापारी के साथ समर्थित नहीं है.</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT"/> फ़ाइलें चयनित</translation>
-<translation id="4498419978438799658">संश्लेषि‍त वाक् का उपयोग करके बोले गए सभी टेक्स्ट तक पहुंचें</translation>
+<translation id="4498419978438799658">संश्लेषि‍त बोली का उपयोग करके बोले गए सभी टेक्स्ट तक पहुंचें</translation>
 <translation id="7339898014177206373">नई विंडो</translation>
 <translation id="8362900609631365882">पहुंच-योग्यता टैब स्विचर सक्षम करें.</translation>
 <translation id="1895215930471128025">सैंडबॉक्स न किए गए प्लग-इन को कभी भी <ph name="HOST"/> पर अनुमति न दें</translation>
@@ -2933,7 +2933,7 @@
 <translation id="7347751611463936647">इस एक्सटेंशन का उपयोग करने के लिए, &quot;<ph name="EXTENSION_KEYWORD"/>&quot; लिखें, फिर टैब लगाएं, फिर अपना आदेश या खोज लिखें.</translation>
 <translation id="878431691778285679">ऐसा लगता है आप पहले से ही उस नाम से किसी उपयोगकर्ता को प्रबंधित कर रहे हैं.<ph name="LINE_BREAK"/>क्या आप<ph name="BEGIN_LINK"/> <ph name="PROFILE_NAME"/> को इस उपकरण में निर्यात करना चाहते थे<ph name="END_LINK"/>?</translation>
 <translation id="2912905526406334195"><ph name="HOST"/> आपके माइक्रोफ़ोन का उपयोग करना चाहता है.</translation>
-<translation id="2805756323405976993">Apps</translation>
+<translation id="2805756323405976993">ऐप्स</translation>
 <translation id="5151511998946489774">इस वेबसाइट की पहचान को <ph name="ISSUER"/> द्वारा सत्यापित किया गया है और यह सार्वजनिक रूप से ऑडिट किए जाने योग्य है.</translation>
 <translation id="1608626060424371292">इस उपयोगकर्ता को निकालें</translation>
 <translation id="2779552785085366231">इस पृष्ठ को ऐप्स लॉन्चर में जोड़ा जा सकता है</translation>

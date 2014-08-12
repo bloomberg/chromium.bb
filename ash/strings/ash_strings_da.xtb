@@ -177,7 +177,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="5045550434625856497">Ugyldig adgangskode</translation>
 <translation id="1602076796624386989">Aktivér mobildata</translation>
 <translation id="68610848741840742">ChromeVox (talefeedback)</translation>
-<translation id="6981982820502123353">Hjælpemidler</translation>
+<translation id="6981982820502123353">Hjælpefunktioner</translation>
 <translation id="6585808820553845416">Sessionen slutter om <ph name="SESSION_TIME_REMAINING"/>.</translation>
 <translation id="4274292172790327596">Fejlen genkendes ikke</translation>
 <translation id="5977415296283489383">Hovedtelefon</translation>
@@ -194,7 +194,7 @@ Servermeddelelse: <ph name="SERVER_MSG"/></translation>
 <translation id="9044646465488564462">Det var ikke muligt at oprette forbindelse til netværket: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Afslut session</translation>
 <translation id="8454013096329229812">Wi-Fi er slået til.</translation>
-<translation id="4872237917498892622">Alt+Søg eller Skift</translation>
+<translation id="4872237917498892622">Alt+Søg eller Shift</translation>
 <translation id="2429753432712299108">Bluetooth-enheden &quot;<ph name="DEVICE_NAME"/>&quot; vil gerne have parringstilladelse. Inden du accepterer, skal du bekræfte, at denne adgangsnøgle er vist på den pågældende enhed: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Batteriet er <ph name="PERCENTAGE"/> % opladet.</translation>
 <translation id="2983818520079887040">Indstillinger...</translation>
@@ -218,10 +218,10 @@ Servermeddelelse: <ph name="SERVER_MSG"/></translation>
 <translation id="4895488851634969361">Batteriet er helt opladet.</translation>
 <translation id="615957422585914272">Vis skærmtastatur</translation>
 <translation id="5947494881799873997">Fortryd</translation>
-<translation id="7593891976182323525">Søg eller skift</translation>
+<translation id="7593891976182323525">Søg eller Shift</translation>
 <translation id="7649070708921625228">Hjælp</translation>
 <translation id="3050422059534974565">CAPS LOCK er slået til.
-Tryk på Søg eller Skift for at annullere.</translation>
+Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="397105322502079400">Beregner...</translation>
 <translation id="158849752021629804">Hjemmenetværk mangler</translation>
 <translation id="1013923882670373915">Bluetooth-enheden &quot;<ph name="DEVICE_NAME"/>&quot; vil gerne have parringstilladelse. Indtast denne pinkode på den pågældende enhed: <ph name="PINCODE"/></translation>
@@ -242,7 +242,7 @@ Tryk på Søg eller Skift for at annullere.</translation>
 Tryk på Ctrl+Alt+Z for at deaktivere dette.</translation>
 <translation id="5045002648206642691">Google Drev-indstillinger...</translation>
 <translation id="7209101170223508707">CAPS LOCK er slået til.
-Tryk på Alt+Søg eller Skift for at annullere.</translation>
+Tryk på Alt+Søg eller Shift for at annullere.</translation>
 <translation id="8940956008527784070">Batteriniveauet er lavt (<ph name="PERCENTAGE"/> %)</translation>
 <translation id="4918086044614829423">Accepter</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> tilbage</translation>
