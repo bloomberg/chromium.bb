@@ -9,9 +9,6 @@ namespace switches {
 // Also emit full event trace logs for successful tests.
 const char kAlsoEmitSuccessLogs[] = "also-emit-success-logs";
 
-// Enable displaying error dialogs (for debugging).
-const char kEnableErrorDialogs[] = "enable-errdialogs";
-
 #if defined(OS_WIN)
 // Force browser tests to run in Ash/Metro on Windows 8.
 const char kAshBrowserTests[] = "ash-browsertests";

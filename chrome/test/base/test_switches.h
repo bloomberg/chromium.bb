@@ -12,7 +12,6 @@ namespace switches {
 // All switches in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
 extern const char kAlsoEmitSuccessLogs[];
-extern const char kEnableErrorDialogs[];
 
 #if defined(OS_WIN)
 extern const char kAshBrowserTests[];
