@@ -157,6 +157,10 @@
         'test/base/interactive_ui_tests_main.cc',
         'test/base/view_event_test_base.cc',
         'test/base/view_event_test_base.h',
+        'test/base/view_event_test_platform_part.h',
+        'test/base/view_event_test_platform_part_ash.cc',
+        'test/base/view_event_test_platform_part_chromeos.cc',
+        'test/base/view_event_test_platform_part_mac.mm',
         'test/ppapi/ppapi_interactive_browsertest.cc',
       ],
       'conditions': [
@@ -238,6 +242,10 @@
             '../ui/views/views.gyp:views_test_support',
           ],
         }, { # else: toolkit_views == 0
+          'sources!': [
+            'test/base/view_event_test_base.cc',
+            'test/base/view_event_test_base.h',
+          ],
           'sources/': [
             ['exclude', '^browser/ui/views/'],
             ['exclude', '^../ui/views/'],
@@ -310,6 +318,9 @@
             'browser/ui/panels/stacked_panel_browsertest.cc',
             'browser/ui/views/message_center/web_notification_tray_browsertest.cc',
             'browser/ui/views/panels/panel_view_browsertest.cc',
+
+            # Use only the _chromeos version on ChromeOS.
+            'test/base/view_event_test_platform_part_ash.cc',
           ],
         }],
         ['OS=="win"', {
