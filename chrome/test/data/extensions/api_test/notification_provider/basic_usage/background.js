@@ -4,6 +4,19 @@
 
 const notificationProvider = chrome.notificationProvider;
 
+function createNotification(notificationId, options) {
+  return new Promise(function (resolve, reject) {
+    chrome.notifications.create(notificationId, options, function (id) {
+      if (chrome.runtime.lastError) {
+        reject(new Error("Unable to create notification"));
+        return;
+      }
+      resolve(id);
+      return;
+    });
+  });
+};
+
 function notifyOnCleared(senderId, notificationId) {
   return new Promise(function (resolve, reject) {
     notificationProvider.notifyOnCleared(senderId,
@@ -85,28 +98,44 @@ function failTest(testName) {
 };
 
 function testFunctions() {
-  var testName = "testFunctions";
-  var notifierId;
-  var notId;
-  notificationProvider.onCreated.addListener(function(senderId,
-                                                      notificationId,
-                                                      content) {
-    notifierId = senderId;
-    notId = notificationId;
+  var myId = chrome.runtime.id;
+  var id1 = "id1";
+  var returnId = myId + "-" + id1;
+  var content = {
+    type: "basic",
+    iconUrl: "icon.png",
+    title: "Title",
+    message: "This is the message."
+  };
 
-    notifyOnClicked(notifierId, notId)
-      .catch(function() { failTest("NotifyOnClickedFailed"); })
-      .then(function() { return notifyOnButtonClicked(notifierId, notId, 0); })
-      .catch(function() { failTest("NotifyOnButtonClickedFailed"); })
-      .then(function () { return notifyOnCleared(notifierId, notId); })
-      .catch(function() { failTest("NotifyOnClearedFailed"); })
-      .then(function () { return notifyOnPermissionLevelChanged(notifierId,
-                                                                "granted"); })
-      .catch(function() { failTest("NotifyOnPermissionLevelChangedFailed"); })
-      .then(function () { return notifyOnShowSettings(notifierId); })
-      .catch(function() { failTest("NotifyOnShowSettingsFailed"); })
-      .then(function() { chrome.test.succeed(testName); });
-  });
+  // Create a notification, so there will be one existing notification
+  createNotification(id1, content)
+    .catch(function() { failTest("notifications.create"); })
+    // Notify the sender that a notificaion was clicked.
+    .then(function() { return notifyOnClicked(myId, returnId); })
+    .catch(function() { failTest("NotifyOnClicked1"); })
+    // Try to notify that an non-existent notification was clicked.
+    .then(function() { return notifyOnClicked(myId, "doesNotExist"); })
+    // Fail if it returns true.
+    .then(function() { failTest("NotifyOnClicked2"); })
+    // Notify the sender that a notificaion button was clicked.
+    .catch(function() { return notifyOnButtonClicked(myId, returnId, 0); })
+    .catch(function() { failTest("NotifyOnButtonClicked"); })
+    // Try to notify that a non-existent notification button was clicked.
+    .then(function() { return notifyOnButtonClicked(myId, "doesNotExist", 0)})
+    .then(function() { failTest("NotifyOnButtonClicked"); })
+    // Try to notify that an non-existent notification was cleared.
+    .catch(function () { return notifyOnCleared(myId, "doesNotExist"); })
+    .then(function() { failTest("NotifyOnCleared"); })
+    // Notify that the original notification was cleared.
+    .catch(function() { return notifyOnCleared(myId, returnId); })
+    .catch(function() { failTest("NotifyOnCleared"); })
+    .then(function () { return notifyOnPermissionLevelChanged(myId,
+                                                              "granted"); })
+    .catch(function() { failTest("NotifyOnPermissionLevelChanged"); })
+    .then(function () { return notifyOnShowSettings(myId); })
+    .catch(function() { failTest("NotifyOnShowSettings"); })
+    .then(function() { chrome.test.succeed(); });
 };
 
 chrome.test.runTests([ testFunctions ]);

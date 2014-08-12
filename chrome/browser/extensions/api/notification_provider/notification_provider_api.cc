@@ -10,6 +10,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/common/chrome_version_info.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/extension.h"
@@ -109,8 +111,17 @@ NotificationProviderNotifyOnClearedFunction::Run() {
       api::notification_provider::NotifyOnCleared::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  return RespondNow(ArgumentList(
-      api::notification_provider::NotifyOnCleared::Results::Create(true)));
+  const Notification* notification =
+      g_browser_process->notification_ui_manager()->FindById(
+          params->notification_id);
+
+  bool found_notification = notification != NULL;
+  if (found_notification)
+    notification->delegate()->Close(true);
+
+  return RespondNow(
+      ArgumentList(api::notification_provider::NotifyOnCleared::Results::Create(
+          found_notification)));
 }
 
 NotificationProviderNotifyOnClickedFunction::
@@ -127,8 +138,17 @@ NotificationProviderNotifyOnClickedFunction::Run() {
       api::notification_provider::NotifyOnClicked::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  return RespondNow(ArgumentList(
-      api::notification_provider::NotifyOnClicked::Results::Create(true)));
+  const Notification* notification =
+      g_browser_process->notification_ui_manager()->FindById(
+          params->notification_id);
+
+  bool found_notification = notification != NULL;
+  if (found_notification)
+    notification->delegate()->Click();
+
+  return RespondNow(
+      ArgumentList(api::notification_provider::NotifyOnClicked::Results::Create(
+          found_notification)));
 }
 
 NotificationProviderNotifyOnButtonClickedFunction::
@@ -145,9 +165,17 @@ NotificationProviderNotifyOnButtonClickedFunction::Run() {
       api::notification_provider::NotifyOnButtonClicked::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
+  const Notification* notification =
+      g_browser_process->notification_ui_manager()->FindById(
+          params->notification_id);
+
+  bool found_notification = notification != NULL;
+  if (found_notification)
+    notification->delegate()->ButtonClick(params->button_index);
+
   return RespondNow(ArgumentList(
       api::notification_provider::NotifyOnButtonClicked::Results::Create(
-          true)));
+          found_notification)));
 }
 
 NotificationProviderNotifyOnPermissionLevelChangedFunction::

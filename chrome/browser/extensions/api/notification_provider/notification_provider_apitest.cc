@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/api/notification_provider/notification_provider_api.h"
+
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
@@ -54,27 +55,6 @@ IN_PROC_BROWSER_TEST_F(NotificationProviderApiTest, Events) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationProviderApiTest, TestBasicUsage) {
-  // set up content of a notification
-  std::string sender_id1 = "SenderId";
-  std::string notification_id1 = "NotificationId";
-
-  scoped_ptr<extensions::api::notifications::NotificationOptions> options(
-      new extensions::api::notifications::NotificationOptions());
-  CreateNotificationOptionsForTest(options.get());
-
-  ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
-
-  // Test notification provider extension
-  const extensions::Extension* extension = LoadExtension(
-      test_data_dir_.AppendASCII("notification_provider/basic_usage"));
-  ASSERT_TRUE(extension);
-
-  scoped_ptr<extensions::NotificationProviderEventRouter> event_router(
-      new extensions::NotificationProviderEventRouter(browser()->profile()));
-
-  event_router->CreateNotification(
-      extension->id(), sender_id1, notification_id1, *options);
-
-  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  ASSERT_TRUE(RunExtensionTest("notification_provider/basic_usage"))
+      << message_;
 }
