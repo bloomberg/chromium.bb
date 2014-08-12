@@ -40,6 +40,8 @@ class CONTENT_EXPORT ServiceWorkerScriptCacheMap {
   void SetResources(
      const std::vector<ServiceWorkerDatabase::ResourceRecord>& resources);
 
+  size_t size() const { return resource_ids_.size(); }
+
  private:
   typedef std::map<GURL, int64> ResourceIDMap;
 

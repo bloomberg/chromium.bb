@@ -32,6 +32,9 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/url_request/url_request_filter.h"
+#include "net/url_request/url_request_interceptor.h"
+#include "net/url_request/url_request_test_job.h"
 #include "webkit/browser/blob/blob_data_handle.h"
 #include "webkit/browser/blob/blob_storage_context.h"
 #include "webkit/common/blob/blob_data.h"
@@ -170,6 +173,78 @@ scoped_ptr<net::test_server::HttpResponse> VerifyServiceWorkerHeaderInRequest(
       new net::test_server::BasicHttpResponse());
   http_response->set_content_type("text/javascript");
   return http_response.PassAs<net::test_server::HttpResponse>();
+}
+
+// The ImportsBustMemcache test requires that the imported script
+// would naturally be cached in blink's memcache, but the embedded
+// test server doesn't produce headers that allow the blink's memcache
+// to do that. This interceptor injects headers that give the import
+// an experiration far in the future.
+class LongLivedResourceInterceptor : public net::URLRequestInterceptor {
+ public:
+  LongLivedResourceInterceptor(const std::string& body)
+      : body_(body) {}
+  virtual ~LongLivedResourceInterceptor() {}
+
+  // net::URLRequestInterceptor implementation
+  virtual net::URLRequestJob* MaybeInterceptRequest(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE {
+    const char kHeaders[] =
+        "HTTP/1.1 200 OK\0"
+        "Expires: Thu, 1 Jan 2100 20:00:00 GMT\0"
+        "\0";
+    std::string headers(kHeaders, arraysize(kHeaders));
+    return new net::URLRequestTestJob(
+        request, network_delegate, headers, body_, true);
+  }
+
+ private:
+  std::string body_;
+  DISALLOW_COPY_AND_ASSIGN(LongLivedResourceInterceptor);
+};
+
+void CreateLongLivedResourceInterceptors(
+    const GURL& worker_url, const GURL& import_url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  scoped_ptr<net::URLRequestInterceptor> interceptor;
+
+  interceptor.reset(new LongLivedResourceInterceptor(
+      "importScripts('long_lived_import.js');"));
+  net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
+      worker_url, interceptor.Pass());
+
+  interceptor.reset(new LongLivedResourceInterceptor(
+      "// the imported script does nothing"));
+  net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
+      import_url, interceptor.Pass());
+}
+
+void CountScriptResources(
+    ServiceWorkerContextWrapper* wrapper,
+    const GURL& scope,
+    int* num_resources) {
+  *num_resources = -1;
+
+  std::vector<ServiceWorkerRegistrationInfo> infos =
+     wrapper->context()->GetAllLiveRegistrationInfo();
+  if (infos.empty())
+    return;
+
+  int version_id;
+  size_t index = infos.size() - 1;
+  if (!infos[index].installing_version.is_null)
+    version_id = infos[index].installing_version.version_id;
+  else if (!infos[index].waiting_version.is_null)
+    version_id = infos[1].waiting_version.version_id;
+  else if (!infos[index].active_version.is_null)
+    version_id = infos[index].active_version.version_id;
+  else
+    return;
+
+  ServiceWorkerVersion* version =
+      wrapper->context()->GetLiveVersion(version_id);
+  *num_resources = static_cast<int>(version->script_cache_map()->size());
 }
 
 }  // namespace
@@ -704,6 +779,36 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, Reload) {
         base::Bind(&ExpectResultAndRun, true, run_loop.QuitClosure()));
     run_loop.Run();
   }
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, ImportsBustMemcache) {
+  const std::string kScopeUrl = "/service_worker/imports_bust_memcache_scope/";
+  const std::string kPageUrl = "/service_worker/imports_bust_memcache.html";
+  const std::string kScriptUrl = "/service_worker/worker_with_one_import.js";
+  const std::string kImportUrl = "/service_worker/long_lived_import.js";
+  const base::string16 kOKTitle(base::ASCIIToUTF16("OK"));
+  const base::string16 kFailTitle(base::ASCIIToUTF16("FAIL"));
+
+  RunOnIOThread(
+      base::Bind(&CreateLongLivedResourceInterceptors,
+                 embedded_test_server()->GetURL(kScriptUrl),
+                 embedded_test_server()->GetURL(kImportUrl)));
+
+  TitleWatcher title_watcher(shell()->web_contents(), kOKTitle);
+  title_watcher.AlsoWaitForTitle(kFailTitle);
+  NavigateToURL(shell(), embedded_test_server()->GetURL(kPageUrl));
+  base::string16 title = title_watcher.WaitAndGetTitle();
+  EXPECT_EQ(kOKTitle, title);
+
+  // Verify the number of resources in the implicit script cache is correct.
+  const int kExpectedNumResources = 2;
+  int num_resources = 0;
+  RunOnIOThread(
+      base::Bind(&CountScriptResources,
+                 base::Unretained(wrapper()),
+                 embedded_test_server()->GetURL(kScopeUrl),
+                 &num_resources));
+  EXPECT_EQ(kExpectedNumResources, num_resources);
 }
 
 class ServiceWorkerBlackBoxBrowserTest : public ServiceWorkerBrowserTest {
