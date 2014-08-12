@@ -158,7 +158,9 @@
         # TODO(yoz): Something is off here; should this .gyp file be
         # in the parent directory? Test target extensions_browsertests?
         '../browser/api/dns/dns_apitest.cc',
+        '../browser/api/socket/socket_apitest.cc',
         '../browser/api/sockets_tcp/sockets_tcp_apitest.cc',
+        '../browser/api/sockets_udp/sockets_udp_apitest.cc',
         'browser/shell_browsertest.cc',
         'test/shell_test.h',
         'test/shell_test.cc',
