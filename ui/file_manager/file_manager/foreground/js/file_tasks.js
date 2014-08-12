@@ -335,6 +335,9 @@ FileTasks.prototype.executeDefaultInternal_ = function(entries, opt_callback) {
       case '.exe':
         textMessageId = 'NO_ACTION_FOR_EXECUTABLE';
         break;
+      case '.dmg':
+        textMessageId = 'NO_ACTION_FOR_DMG';
+        break;
       case '.crx':
         textMessageId = 'NO_ACTION_FOR_CRX';
         titleMessageId = 'NO_ACTION_FOR_CRX_TITLE';
