@@ -85,6 +85,8 @@ finish
 focus
 focusin
 focusout
+fullscreenchange
+fullscreenerror
 gamepadconnected
 gamepaddisconnected
 gesturescrollend

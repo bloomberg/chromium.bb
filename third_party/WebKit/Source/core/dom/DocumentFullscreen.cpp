@@ -30,6 +30,23 @@
 
 namespace blink {
 
+bool DocumentFullscreen::fullscreenEnabled(Document& document)
+{
+    return FullscreenElementStack::fullscreenEnabled(document);
+}
+
+Element* DocumentFullscreen::fullscreenElement(Document& document)
+{
+    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(document))
+        return fullscreen->fullscreenElement();
+    return 0;
+}
+
+void DocumentFullscreen::exitFullscreen(Document& document)
+{
+    FullscreenElementStack::from(document).exitFullscreen();
+}
+
 bool DocumentFullscreen::webkitIsFullScreen(Document& document)
 {
     if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(document))
@@ -49,23 +66,6 @@ Element* DocumentFullscreen::webkitCurrentFullScreenElement(Document& document)
     if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(document))
         return fullscreen->webkitCurrentFullScreenElement();
     return 0;
-}
-
-bool DocumentFullscreen::webkitFullscreenEnabled(Document& document)
-{
-    return FullscreenElementStack::fullscreenEnabled(document);
-}
-
-Element* DocumentFullscreen::webkitFullscreenElement(Document& document)
-{
-    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(document))
-        return fullscreen->fullscreenElement();
-    return 0;
-}
-
-void DocumentFullscreen::webkitExitFullscreen(Document& document)
-{
-    FullscreenElementStack::from(document).exitFullscreen();
 }
 
 } // namespace blink

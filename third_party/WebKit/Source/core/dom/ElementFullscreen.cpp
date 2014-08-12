@@ -9,6 +9,11 @@
 
 namespace blink {
 
+void ElementFullscreen::requestFullscreen(Element& element)
+{
+    FullscreenElementStack::from(element.document()).requestFullscreen(element, FullscreenElementStack::UnprefixedRequest);
+}
+
 void ElementFullscreen::webkitRequestFullscreen(Element& element)
 {
     FullscreenElementStack::from(element.document()).requestFullscreen(element, FullscreenElementStack::PrefixedRequest);

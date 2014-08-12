@@ -65,6 +65,7 @@ FileAPIBlobClose status=experimental
 FileConstructor status=stable
 FileSystem status=stable
 FontLoadEvents status=stable
+FullscreenUnprefixed status=test
 Gamepad status=stable
 Geofencing status=test
 GeometryInterfaces status=test

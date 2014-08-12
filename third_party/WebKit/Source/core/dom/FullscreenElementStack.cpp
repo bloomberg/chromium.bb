@@ -71,9 +71,16 @@ static bool fullscreenIsSupported(const Document& document, const Element& eleme
     return fullscreenIsSupported(document);
 }
 
+static bool isPrefixed(const AtomicString& type)
+{
+    return type == EventTypeNames::webkitfullscreenchange || type == EventTypeNames::webkitfullscreenerror;
+}
+
 static PassRefPtrWillBeRawPtr<Event> createEvent(const AtomicString& type, EventTarget& target)
 {
-    RefPtrWillBeRawPtr<Event> event = Event::createBubble(type);
+    EventInit initializer;
+    initializer.bubbles = isPrefixed(type);
+    RefPtrWillBeRawPtr<Event> event = Event::create(type, initializer);
     event->setTarget(&target);
     return event;
 }
@@ -257,8 +264,8 @@ void FullscreenElementStack::requestFullscreen(Element& element, RequestType req
             // stack, and queue a task to fire an event named fullscreenchange with its bubbles attribute
             // set to true on the document.
             if (!followingDoc) {
-                from(*currentDoc).pushFullscreenElementStack(element);
-                enqueueChangeEvent(*currentDoc);
+                from(*currentDoc).pushFullscreenElementStack(element, requestType);
+                enqueueChangeEvent(*currentDoc, requestType);
                 continue;
             }
 
@@ -269,8 +276,8 @@ void FullscreenElementStack::requestFullscreen(Element& element, RequestType req
                 // ...push following document's browsing context container on document's fullscreen element
                 // stack, and queue a task to fire an event named fullscreenchange with its bubbles attribute
                 // set to true on document.
-                from(*currentDoc).pushFullscreenElementStack(*followingDoc->ownerElement());
-                enqueueChangeEvent(*currentDoc);
+                from(*currentDoc).pushFullscreenElementStack(*followingDoc->ownerElement(), requestType);
+                enqueueChangeEvent(*currentDoc, requestType);
                 continue;
             }
 
@@ -286,7 +293,7 @@ void FullscreenElementStack::requestFullscreen(Element& element, RequestType req
         return;
     } while (0);
 
-    enqueueErrorEvent(element);
+    enqueueErrorEvent(element, requestType);
 }
 
 void FullscreenElementStack::fullyExitFullscreen()
@@ -298,9 +305,9 @@ void FullscreenElementStack::fullyExitFullscreen()
 
     // To achieve that aim, remove all the elements from the top document's stack except for the first before
     // calling exitFullscreen():
-    WillBeHeapVector<RefPtrWillBeMember<Element> > replacementFullscreenElementStack;
-    replacementFullscreenElementStack.append(fullscreenElementFrom(document()->topDocument()));
+    WillBeHeapVector<std::pair<RefPtrWillBeMember<Element>, RequestType> > replacementFullscreenElementStack;
     FullscreenElementStack& topFullscreenElementStack = from(document()->topDocument());
+    replacementFullscreenElementStack.append(topFullscreenElementStack.m_fullScreenElementStack.last());
     topFullscreenElementStack.m_fullScreenElementStack.swap(replacementFullscreenElementStack);
     topFullscreenElementStack.exitFullscreen();
 }
@@ -334,13 +341,16 @@ void FullscreenElementStack::exitFullscreen()
     // task to fire an event named fullscreenchange with its bubbles attribute set to true on descendant.
     for (WillBeHeapDeque<RefPtrWillBeMember<Document> >::iterator i = descendants.begin(); i != descendants.end(); ++i) {
         ASSERT(*i);
+        RequestType requestType = from(**i).m_fullScreenElementStack.last().second;
         from(**i).clearFullscreenElementStack();
-        enqueueChangeEvent(**i);
+        enqueueChangeEvent(**i, requestType);
     }
 
     // 5. While doc is not null, run these substeps:
     Element* newTop = 0;
     while (currentDoc) {
+        RequestType requestType = from(*currentDoc).m_fullScreenElementStack.last().second;
+
         // 1. Pop the top element of doc's fullscreen element stack.
         from(*currentDoc).popFullscreenElementStack();
 
@@ -352,7 +362,7 @@ void FullscreenElementStack::exitFullscreen()
 
         // 2. Queue a task to fire an event named fullscreenchange with its bubbles attribute set to true
         // on doc.
-        enqueueChangeEvent(*currentDoc);
+        enqueueChangeEvent(*currentDoc, requestType);
 
         // 3. If doc's fullscreen element stack is empty and doc's browsing context has a browsing context
         // container, set doc to that browsing context container's node document.
@@ -504,23 +514,33 @@ void FullscreenElementStack::fullScreenRendererDestroyed()
     m_fullScreenRenderer = nullptr;
 }
 
-void FullscreenElementStack::enqueueChangeEvent(Document& document)
+void FullscreenElementStack::enqueueChangeEvent(Document& document, RequestType requestType)
 {
-    ASSERT(document.hasFullscreenElementStack());
-    FullscreenElementStack& fullscreen = from(document);
-
-    EventTarget* target = fullscreen.fullscreenElement();
-    if (!target)
-        target = fullscreen.webkitCurrentFullScreenElement();
-    if (!target)
-        target = &document;
-    m_eventQueue.append(createEvent(EventTypeNames::webkitfullscreenchange, *target));
+    RefPtrWillBeRawPtr<Event> event;
+    if (requestType == UnprefixedRequest) {
+        event = createEvent(EventTypeNames::fullscreenchange, document);
+    } else {
+        ASSERT(document.hasFullscreenElementStack());
+        FullscreenElementStack& fullscreen = from(document);
+        EventTarget* target = fullscreen.fullscreenElement();
+        if (!target)
+            target = fullscreen.webkitCurrentFullScreenElement();
+        if (!target)
+            target = &document;
+        event = createEvent(EventTypeNames::webkitfullscreenchange, *target);
+    }
+    m_eventQueue.append(event);
     // NOTE: The timer is started in didEnterFullScreenForElement/didExitFullScreenForElement.
 }
 
-void FullscreenElementStack::enqueueErrorEvent(Element& element)
+void FullscreenElementStack::enqueueErrorEvent(Element& element, RequestType requestType)
 {
-    m_eventQueue.append(createEvent(EventTypeNames::webkitfullscreenerror, element));
+    RefPtrWillBeRawPtr<Event> event;
+    if (requestType == UnprefixedRequest)
+        event = createEvent(EventTypeNames::fullscreenerror, element.document());
+    else
+        event = createEvent(EventTypeNames::webkitfullscreenerror, element);
+    m_eventQueue.append(event);
     m_eventQueueTimer.startOneShot(0, FROM_HERE);
 }
 
@@ -538,8 +558,10 @@ void FullscreenElementStack::eventQueueTimerFired(Timer<FullscreenElementStack>*
         Node* target = event->target()->toNode();
 
         // If the element was removed from our tree, also message the documentElement.
-        if (!target->inDocument() && document()->documentElement())
+        if (!target->inDocument() && document()->documentElement()) {
+            ASSERT(isPrefixed(event->type()));
             eventQueue.append(createEvent(event->type(), *document()->documentElement()));
+        }
 
         target->dispatchEvent(event);
     }
@@ -583,9 +605,9 @@ void FullscreenElementStack::popFullscreenElementStack()
     m_fullScreenElementStack.removeLast();
 }
 
-void FullscreenElementStack::pushFullscreenElementStack(Element& element)
+void FullscreenElementStack::pushFullscreenElementStack(Element& element, RequestType requestType)
 {
-    m_fullScreenElementStack.append(&element);
+    m_fullScreenElementStack.append(std::make_pair(&element, requestType));
 }
 
 void FullscreenElementStack::trace(Visitor* visitor)

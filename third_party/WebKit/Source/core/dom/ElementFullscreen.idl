@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 partial interface Element {
+    [RuntimeEnabled=FullscreenUnprefixed] void requestFullscreen();
+
     // Mozilla version
     const unsigned short ALLOW_KEYBOARD_INPUT = 1;
     [LogActivity, LogAllWorlds, MeasureAs=PrefixedElementRequestFullScreen] void webkitRequestFullScreen([Default=Undefined] optional unsigned short flags);

@@ -13,6 +13,8 @@ class Element;
 
 class ElementFullscreen {
 public:
+    static void requestFullscreen(Element&);
+
     // Mozilla version
     static const unsigned short ALLOW_KEYBOARD_INPUT = 1;
     static void webkitRequestFullScreen(Element&, unsigned short flags);

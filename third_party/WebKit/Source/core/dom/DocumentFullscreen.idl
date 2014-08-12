@@ -20,16 +20,24 @@
  */
 
 partial interface Document {
+    [RuntimeEnabled=FullscreenUnprefixed] readonly attribute boolean fullscreenEnabled;
+    [RuntimeEnabled=FullscreenUnprefixed] readonly attribute Element? fullscreenElement;
+
+    [RuntimeEnabled=FullscreenUnprefixed] void exitFullscreen();
+
+    [RuntimeEnabled=FullscreenUnprefixed] attribute EventHandler onfullscreenchange;
+    [RuntimeEnabled=FullscreenUnprefixed] attribute EventHandler onfullscreenerror;
+
     // Mozilla version
     [MeasureAs=PrefixedDocumentIsFullscreen] readonly attribute boolean webkitIsFullScreen;
     [MeasureAs=PrefixedDocumentFullScreenKeyboardInputAllowed] readonly attribute boolean webkitFullScreenKeyboardInputAllowed;
     [MeasureAs=PrefixedDocumentCurrentFullScreenElement] readonly attribute Element webkitCurrentFullScreenElement;
-    [MeasureAs=PrefixedDocumentCancelFullScreen, ImplementedAs=webkitExitFullscreen] void webkitCancelFullScreen();
+    [MeasureAs=PrefixedDocumentCancelFullScreen, ImplementedAs=exitFullscreen] void webkitCancelFullScreen();
 
     // W3C version
-    [MeasureAs=PrefixedDocumentFullscreenEnabled] readonly attribute boolean webkitFullscreenEnabled;
-    [MeasureAs=PrefixedDocumentFullscreenElement] readonly attribute Element webkitFullscreenElement;
-    [MeasureAs=PrefixedDocumentExitFullscreen] void webkitExitFullscreen();
+    [MeasureAs=PrefixedDocumentFullscreenEnabled, ImplementedAs=fullscreenEnabled] readonly attribute boolean webkitFullscreenEnabled;
+    [MeasureAs=PrefixedDocumentFullscreenElement, ImplementedAs=fullscreenElement] readonly attribute Element webkitFullscreenElement;
+    [MeasureAs=PrefixedDocumentExitFullscreen, ImplementedAs=exitFullscreen] void webkitExitFullscreen();
 
     attribute EventHandler onwebkitfullscreenchange;
     attribute EventHandler onwebkitfullscreenerror;

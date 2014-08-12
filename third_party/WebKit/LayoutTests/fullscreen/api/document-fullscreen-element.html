@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<title>Document.fullscreenElement</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../trusted-event.js"></script>
+<div id="log"></div>
+<script>
+async_test(function(t)
+{
+    var div = document.querySelector("div");
+
+    document.onfullscreenchange = t.step_func(function()
+    {
+        assert_equals(document.fullscreenElement, div, "fullscreenElement before exitFullscreen()");
+        document.exitFullscreen();
+        // FIXME: per spec fullscreenElement should still be div
+        assert_equals(document.fullscreenElement, null, "fullscreenElement after exitFullscreen()");
+
+        document.onfullscreenchange = t.step_func(function()
+        {
+            assert_equals(document.fullscreenElement, null, "fullscreenElement after exiting fullscreen");
+            t.done();
+        });
+    });
+
+    trusted_event(t.step_func(function()
+    {
+        assert_equals(document.fullscreenElement, null, "fullscreenElement before requestFullscreen()");
+        div.requestFullscreen();
+        // FIXME: per spec fullscreenElement should still be null
+        assert_equals(document.fullscreenElement, div, "fullscreenElement after requestFullscreen()");
+    }), document.body);
+});
+</script>
