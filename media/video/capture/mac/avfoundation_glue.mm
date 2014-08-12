@@ -120,9 +120,6 @@ bool AVFoundationGlue::IsAVFoundationSupported() {
     return false;
 
   // Next in precedence is the enable-avfoundation flag.
-  // TODO(mcasas,vrk): There should be 3 states of AVFoundation: user forced on,
-  // user forced off (i.e. force QTKit), and default (respect field trial).
-  // crbug.com/396764
   // TODO(vrk): Does this really need to be static?
   static bool should_enable_avfoundation =
       command_line->HasSwitch(switches::kEnableAVFoundation) ||

@@ -489,6 +489,14 @@ const Experiment::Choice kEnableDropSyncCredentialChoices[] = {
     password_manager::switches::kDisableDropSyncCredential, "" },
 };
 
+#if defined(OS_MACOSX)
+const Experiment::Choice kEnableAVFoundationChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED, switches::kEnableAVFoundation, ""},
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED, switches::kForceQTKit, ""}
+};
+#endif
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -1214,7 +1222,7 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_AVFOUNDATION_NAME,
     IDS_FLAGS_ENABLE_AVFOUNDATION_DESCRIPTION,
     kOsMac,
-    SINGLE_VALUE_TYPE(switches::kEnableAVFoundation)
+    MULTI_VALUE_TYPE(kEnableAVFoundationChoices)
   },
 #endif
   {
