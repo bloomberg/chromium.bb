@@ -329,26 +329,11 @@ RendererWebKitPlatformSupportImpl::prescientNetworking() {
   return GetContentClient()->renderer()->GetPrescientNetworking();
 }
 
-bool
-RendererWebKitPlatformSupportImpl::CheckPreparsedJsCachingEnabled() const {
-  static bool checked = false;
-  static bool result = false;
-  if (!checked) {
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-    result = command_line.HasSwitch(switches::kEnablePreparsedJsCaching);
-    checked = true;
-  }
-  return result;
-}
-
 void RendererWebKitPlatformSupportImpl::cacheMetadata(
     const blink::WebURL& url,
     double response_time,
     const char* data,
     size_t size) {
-  if (!CheckPreparsedJsCachingEnabled())
-    return;
-
   // Let the browser know we generated cacheable metadata for this resource. The
   // browser may cache it and return it on subsequent responses to speed
   // the processing of this resource.

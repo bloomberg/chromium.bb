@@ -35,6 +35,13 @@ enum EditingBehavior {
   EDITING_BEHAVIOR_LAST = EDITING_BEHAVIOR_ANDROID
 };
 
+enum V8CacheOptions {
+  V8_CACHE_OPTIONS_OFF,
+  V8_CACHE_OPTIONS_PARSE,
+  V8_CACHE_OPTIONS_CODE,
+  V8_CACHE_OPTIONS_LAST = V8_CACHE_OPTIONS_CODE
+};
+
 // The ISO 15924 script code for undetermined script aka Common. It's the
 // default used on WebKit's side to get/set a font setting when no script is
 // specified.
@@ -140,6 +147,7 @@ struct CONTENT_EXPORT WebPreferences {
   int pinch_overlay_scrollbar_thickness;
   bool use_solid_color_scrollbars;
   bool navigate_on_drag_drop;
+  V8CacheOptions v8_cache_options;
 
   // This flags corresponds to a Page's Settings' setCookieEnabled state. It
   // only controls whether or not the "document.cookie" field is properly

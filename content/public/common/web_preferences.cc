@@ -31,6 +31,15 @@ COMPILE_ASSERT_MATCHING_ENUMS(EDITING_BEHAVIOR_UNIX,
 COMPILE_ASSERT_MATCHING_ENUMS(EDITING_BEHAVIOR_ANDROID,
                               WebSettings::EditingBehaviorAndroid);
 
+COMPILE_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_OFF,
+                              WebSettings::V8CacheOptionsOff);
+COMPILE_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_PARSE,
+                              WebSettings::V8CacheOptionsParse);
+COMPILE_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_CODE,
+                              WebSettings::V8CacheOptionsCode);
+COMPILE_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_LAST,
+                              WebSettings::V8CacheOptionsCode);
+
 WebPreferences::WebPreferences()
     : default_font_size(16),
       default_fixed_font_size(13),
@@ -128,6 +137,7 @@ WebPreferences::WebPreferences()
       pinch_overlay_scrollbar_thickness(0),
       use_solid_color_scrollbars(false),
       navigate_on_drag_drop(true),
+      v8_cache_options(V8_CACHE_OPTIONS_OFF),
       cookie_enabled(true),
       pepper_accelerated_video_decode_enabled(false)
 #if defined(OS_ANDROID)

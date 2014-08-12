@@ -1123,6 +1123,9 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 
   settings->setSelectionIncludesAltImageText(true);
 
+  settings->setV8CacheOptions(
+      static_cast<WebSettings::V8CacheOptions>(prefs.v8_cache_options));
+
 #if defined(OS_ANDROID)
   settings->setAllowCustomScrollbarInMainFrame(false);
   settings->setTextAutosizingEnabled(prefs.text_autosizing_enabled);

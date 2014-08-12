@@ -986,25 +986,10 @@ void RenderMessageFilter::OnFreeTransportDIB(
 }
 #endif
 
-bool RenderMessageFilter::CheckPreparsedJsCachingEnabled() const {
-  static bool checked = false;
-  static bool result = false;
-  if (!checked) {
-    const base::CommandLine& command_line =
-        *base::CommandLine::ForCurrentProcess();
-    result = command_line.HasSwitch(switches::kEnablePreparsedJsCaching);
-    checked = true;
-  }
-  return result;
-}
-
 void RenderMessageFilter::OnCacheableMetadataAvailable(
     const GURL& url,
     double expected_response_time,
     const std::vector<char>& data) {
-  if (!CheckPreparsedJsCachingEnabled())
-    return;
-
   net::HttpCache* cache = request_context_->GetURLRequestContext()->
       http_transaction_factory()->GetCache();
   DCHECK(cache);

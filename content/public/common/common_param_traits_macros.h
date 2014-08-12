@@ -42,6 +42,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::EditingBehavior,
 IPC_ENUM_TRAITS_MAX_VALUE(WindowOpenDisposition,
                           WINDOW_OPEN_DISPOSITION_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(net::RequestPriority, net::MAXIMUM_PRIORITY)
+IPC_ENUM_TRAITS_MAX_VALUE(content::V8CacheOptions,
+                          content::V8_CACHE_OPTIONS_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebPoint)
   IPC_STRUCT_TRAITS_MEMBER(x)
@@ -176,6 +178,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(cookie_enabled)
   IPC_STRUCT_TRAITS_MEMBER(navigate_on_drag_drop)
   IPC_STRUCT_TRAITS_MEMBER(spatial_navigation_enabled)
+  IPC_STRUCT_TRAITS_MEMBER(v8_cache_options)
   IPC_STRUCT_TRAITS_MEMBER(pepper_accelerated_video_decode_enabled)
 #if defined(OS_ANDROID)
   IPC_STRUCT_TRAITS_MEMBER(text_autosizing_enabled)
