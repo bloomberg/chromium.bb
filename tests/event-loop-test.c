@@ -173,6 +173,44 @@ TEST(event_loop_signal)
 	wl_event_loop_destroy(loop);
 }
 
+TEST(event_loop_multiple_same_signals)
+{
+	struct wl_event_loop *loop = wl_event_loop_create();
+	struct wl_event_source *s1, *s2;
+	int calls_no = 0;
+	int i;
+
+	s1 = wl_event_loop_add_signal(loop, SIGUSR1,
+				      signal_callback, &calls_no);
+	assert(s1);
+
+	s2 = wl_event_loop_add_signal(loop, SIGUSR1,
+				      signal_callback, &calls_no);
+	assert(s2);
+
+	assert(wl_event_loop_dispatch(loop, 0) == 0);
+	assert(!calls_no);
+
+	/* Try it more times */
+	for (i = 0; i < 5; ++i) {
+		calls_no = 0;
+		kill(getpid(), SIGUSR1);
+		assert(wl_event_loop_dispatch(loop, 0) == 0);
+		assert(calls_no == 2);
+	}
+
+	wl_event_source_remove(s1);
+
+	/* Try it again  with one source */
+	calls_no = 0;
+	kill(getpid(), SIGUSR1);
+	assert(wl_event_loop_dispatch(loop, 0) == 0);
+	assert(calls_no == 1);
+
+	wl_event_source_remove(s2);
+
+	wl_event_loop_destroy(loop);
+}
 
 static int
 timer_callback(void *data)
