@@ -1316,12 +1316,12 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     }
 
     {
-      // Enable load stale cache if this session is in the field trial, one
-      // of the forced on channels, or the user explicitly enabled it.
-      // Note that as far as the renderer  is concerned, the feature is
-      // enabled if-and-only-if the kEnableOfflineLoadStaleCache flag
-      // is on the command line; the yes/no/default behavior is only
-      // at the browser command line level.
+      // Enable load stale cache if this session is in the field trial or
+      // the user explicitly enabled it.  Note that as far as the renderer
+      // is concerned, the feature is enabled if-and-only-if the
+      // kEnableOfflineLoadStaleCache flag is on the command line;
+      // the yes/no/default behavior is only at the browser command line
+      // level.
 
       // Command line switches override
       if (browser_command_line.HasSwitch(
@@ -1331,17 +1331,8 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
           switches::kDisableOfflineLoadStaleCache)) {
         std::string group =
             base::FieldTrialList::FindFullName("LoadStaleCacheExperiment");
-        chrome::VersionInfo::Channel channel =
-            chrome::VersionInfo::GetChannel();
-#if defined(OS_ANDROID) || defined(OS_IOS)
-        chrome::VersionInfo::Channel force_channel =
-            chrome::VersionInfo::CHANNEL_DEV;
-#else
-        chrome::VersionInfo::Channel force_channel =
-            chrome::VersionInfo::CHANNEL_CANARY;
-#endif
 
-        if (channel <= force_channel || group == "Enabled")
+        if (group == "Enabled")
           command_line->AppendSwitch(switches::kEnableOfflineLoadStaleCache);
       }
     }
