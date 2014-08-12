@@ -36,36 +36,9 @@ def GetDataHeader(exported, struct):
   return struct
 
 def ExpectedArraySize(kind):
-  if isinstance(kind, mojom.FixedArray):
+  if mojom.IsFixedArrayKind(kind):
     return kind.length
   return 0
-
-def IsArrayKind(kind):
-  return isinstance(kind, (mojom.Array, mojom.FixedArray))
-
-def IsStringKind(kind):
-  return kind.spec == 's'
-
-def IsEnumKind(kind):
-  return isinstance(kind, mojom.Enum)
-
-def IsObjectKind(kind):
-  return isinstance(kind, (mojom.Struct, mojom.Array, mojom.FixedArray)) or \
-         IsStringKind(kind)
-
-def IsHandleKind(kind):
-  return kind.spec.startswith('h') or \
-         isinstance(kind, mojom.Interface) or \
-         isinstance(kind, mojom.InterfaceRequest)
-
-def IsInterfaceKind(kind):
-  return isinstance(kind, mojom.Interface)
-
-def IsInterfaceRequestKind(kind):
-  return isinstance(kind, mojom.InterfaceRequest)
-
-def IsMoveOnlyKind(kind):
-  return IsObjectKind(kind) or IsHandleKind(kind)
 
 def StudlyCapsToCamel(studly):
   return studly[0].lower() + studly[1:]

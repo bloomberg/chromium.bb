@@ -22,7 +22,7 @@ p{{loop.index}}.Pass()
 mojo::MakeProxy<{{param.kind|get_name_for_kind}}>(mojo::MakeScopedHandle(mojo::internal::FetchAndReset(&params->{{param.name}})))
 {%-     elif param.kind|is_interface_request_kind -%}
 mojo::MakeRequest<{{param.kind.kind|get_name_for_kind}}>(mojo::MakeScopedHandle(mojo::internal::FetchAndReset(&params->{{param.name}})))
-{%-     elif param.kind|is_handle_kind -%}
+{%-     elif param.kind|is_any_handle_kind -%}
 mojo::MakeScopedHandle(mojo::internal::FetchAndReset(&params->{{param.name}}))
 {%-     elif param.kind|is_enum_kind -%}
 static_cast<{{param.kind|cpp_wrapper_type}}>(params->{{param.name}})
@@ -61,7 +61,7 @@ params->{{param.name}}
 {%-     elif param.kind|is_interface_request_kind %}
   // Delegate handle.
   params->{{param.name}} = in_{{param.name}}.PassMessagePipe().release();
-{%-     elif param.kind|is_handle_kind %}
+{%-     elif param.kind|is_any_handle_kind %}
   params->{{param.name}} = in_{{param.name}}.release();
 {%-     else %}
   params->{{param.name}} = in_{{param.name}};

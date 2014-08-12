@@ -22,13 +22,13 @@
   if (!{{wrapper_type}}::Data_::Validate(
           mojo::internal::DecodePointerRaw(&object->{{name}}.offset),
           bounds_checker
-{%-     if packed_field.field.kind|is_array_kind -%}
+{%-     if packed_field.field.kind|is_any_array_kind -%}
           , {{packed_field.field.kind|expected_array_size}}
 {%-     endif -%}
           )) {
     return false;
   }
-{%-     elif packed_field.field.kind|is_handle_kind %}
+{%-     elif packed_field.field.kind|is_any_handle_kind %}
   if (!bounds_checker->ClaimHandle(object->{{name}})) {
     ReportValidationError(mojo::internal::VALIDATION_ERROR_ILLEGAL_HANDLE);
     return false;
@@ -78,7 +78,7 @@
 {%-   for pf in struct.packed.packed_fields %}
 {%-     if pf.field.kind|is_object_kind %}
 mojo::internal::Encode(&{{pf.field.name}}, handles);
-{%-     elif pf.field.kind|is_handle_kind %}
+{%-     elif pf.field.kind|is_any_handle_kind %}
 mojo::internal::EncodeHandle(&{{pf.field.name}}, handles);
 {%-     endif %}
 {%-   endfor %}
@@ -88,7 +88,7 @@ mojo::internal::EncodeHandle(&{{pf.field.name}}, handles);
 {%-   for pf in struct.packed.packed_fields %}
 {%-     if pf.field.kind|is_object_kind %}
 mojo::internal::Decode(&{{pf.field.name}}, handles);
-{%-     elif pf.field.kind|is_handle_kind %}
+{%-     elif pf.field.kind|is_any_handle_kind %}
 mojo::internal::DecodeHandle(&{{pf.field.name}}, handles);
 {%-     endif %}
 {%-   endfor %}

@@ -21,43 +21,58 @@ GENERATOR_PREFIX = 'java'
 _HEADER_SIZE = 8
 
 _spec_to_java_type = {
-  'b':     'boolean',
-  'd':     'double',
-  'f':     'float',
-  'h:d:c': 'org.chromium.mojo.system.DataPipe.ConsumerHandle',
-  'h:d:p': 'org.chromium.mojo.system.DataPipe.ProducerHandle',
-  'h:m':   'org.chromium.mojo.system.MessagePipeHandle',
-  'h':     'org.chromium.mojo.system.UntypedHandle',
-  'h:s':   'org.chromium.mojo.system.SharedBufferHandle',
-  'i16':   'short',
-  'i32':   'int',
-  'i64':   'long',
-  'i8':    'byte',
-  's':     'String',
-  'u16':   'short',
-  'u32':   'int',
-  'u64':   'long',
-  'u8':    'byte',
+  mojom.BOOL.spec: 'boolean',
+  mojom.DCPIPE.spec: 'org.chromium.mojo.system.DataPipe.ConsumerHandle',
+  mojom.DOUBLE.spec: 'double',
+  mojom.DPPIPE.spec: 'org.chromium.mojo.system.DataPipe.ProducerHandle',
+  mojom.FLOAT.spec: 'float',
+  mojom.HANDLE.spec: 'org.chromium.mojo.system.UntypedHandle',
+  mojom.INT16.spec: 'short',
+  mojom.INT32.spec: 'int',
+  mojom.INT64.spec: 'long',
+  mojom.INT8.spec: 'byte',
+  mojom.MSGPIPE.spec: 'org.chromium.mojo.system.MessagePipeHandle',
+  mojom.NULLABLE_DCPIPE.spec:
+      'org.chromium.mojo.system.DataPipe.ConsumerHandle',
+  mojom.NULLABLE_DPPIPE.spec:
+      'org.chromium.mojo.system.DataPipe.ProducerHandle',
+  mojom.NULLABLE_HANDLE.spec: 'org.chromium.mojo.system.UntypedHandle',
+  mojom.NULLABLE_MSGPIPE.spec: 'org.chromium.mojo.system.MessagePipeHandle',
+  mojom.NULLABLE_SHAREDBUFFER.spec:
+      'org.chromium.mojo.system.SharedBufferHandle',
+  mojom.NULLABLE_STRING.spec: 'String',
+  mojom.SHAREDBUFFER.spec: 'org.chromium.mojo.system.SharedBufferHandle',
+  mojom.STRING.spec: 'String',
+  mojom.UINT16.spec: 'short',
+  mojom.UINT32.spec: 'int',
+  mojom.UINT64.spec: 'long',
+  mojom.UINT8.spec: 'byte',
 }
 
 _spec_to_decode_method = {
-  'b':     'readBoolean',
-  'd':     'readDouble',
-  'f':     'readFloat',
-  'h:d:c': 'readConsumerHandle',
-  'h:d:p': 'readProducerHandle',
-  'h:m':   'readMessagePipeHandle',
-  'h':     'readUntypedHandle',
-  'h:s':   'readSharedBufferHandle',
-  'i16':   'readShort',
-  'i32':   'readInt',
-  'i64':   'readLong',
-  'i8':    'readByte',
-  's':     'readString',
-  'u16':   'readShort',
-  'u32':   'readInt',
-  'u64':   'readLong',
-  'u8':    'readByte',
+  mojom.BOOL.spec:                  'readBoolean',
+  mojom.DCPIPE.spec:                'readConsumerHandle',
+  mojom.DOUBLE.spec:                'readDouble',
+  mojom.DPPIPE.spec:                'readProducerHandle',
+  mojom.FLOAT.spec:                 'readFloat',
+  mojom.HANDLE.spec:                'readUntypedHandle',
+  mojom.INT16.spec:                 'readShort',
+  mojom.INT32.spec:                 'readInt',
+  mojom.INT64.spec:                 'readLong',
+  mojom.INT8.spec:                  'readByte',
+  mojom.MSGPIPE.spec:               'readMessagePipeHandle',
+  mojom.NULLABLE_DCPIPE.spec:       'readConsumerHandle',
+  mojom.NULLABLE_DPPIPE.spec:       'readProducerHandle',
+  mojom.NULLABLE_HANDLE.spec:       'readUntypedHandle',
+  mojom.NULLABLE_MSGPIPE.spec:      'readMessagePipeHandle',
+  mojom.NULLABLE_SHAREDBUFFER.spec: 'readSharedBufferHandle',
+  mojom.NULLABLE_STRING.spec:       'readString',
+  mojom.SHAREDBUFFER.spec:          'readSharedBufferHandle',
+  mojom.STRING.spec:                'readString',
+  mojom.UINT16.spec:                'readShort',
+  mojom.UINT32.spec:                'readInt',
+  mojom.UINT64.spec:                'readLong',
+  mojom.UINT8.spec:                 'readByte',
 }
 
 _java_primitive_to_boxed_type = {
@@ -97,11 +112,10 @@ def ConstantStyle(name):
   return '_'.join([x.upper() for x in components])
 
 def GetNameForElement(element):
-  if isinstance(element, (mojom.Enum,
-                          mojom.Interface,
-                          mojom.Struct)):
+  if (mojom.IsEnumKind(element) or mojom.IsInterfaceKind(element) or
+      mojom.IsStructKind(element)):
     return UpperCamelCase(element.name)
-  if isinstance(element, mojom.InterfaceRequest):
+  if mojom.IsInterfaceRequestKind(element):
     return GetNameForElement(element.kind)
   if isinstance(element, (mojom.Method,
                           mojom.Parameter,
@@ -122,28 +136,25 @@ def ParseStringAttribute(attribute):
   assert isinstance(attribute, basestring)
   return attribute
 
-def IsArray(kind):
-  return isinstance(kind, (mojom.Array, mojom.FixedArray))
-
 @contextfilter
 def DecodeMethod(context, kind, offset, bit):
   def _DecodeMethodName(kind):
-    if IsArray(kind):
+    if mojom.IsAnyArrayKind(kind):
       return _DecodeMethodName(kind.kind) + 's'
-    if isinstance(kind, mojom.Enum):
+    if mojom.IsEnumKind(kind):
       return _DecodeMethodName(mojom.INT32)
-    if isinstance(kind, mojom.InterfaceRequest):
+    if mojom.IsInterfaceRequestKind(kind):
       return "readInterfaceRequest"
-    if isinstance(kind, mojom.Interface):
+    if mojom.IsInterfaceKind(kind):
       return "readServiceInterface"
     return _spec_to_decode_method[kind.spec]
   methodName = _DecodeMethodName(kind)
   additionalParams = ''
   if (kind == mojom.BOOL):
     additionalParams = ', %d' % bit
-  if isinstance(kind, mojom.Interface):
+  if mojom.IsInterfaceKind(kind):
     additionalParams = ', %s.BUILDER' % GetJavaType(context, kind)
-  if IsArray(kind) and isinstance(kind.kind, mojom.Interface):
+  if mojom.IsAnyArrayKind(kind) and mojom.IsInterfaceKind(kind.kind):
     additionalParams = ', %s.BUILDER' % GetJavaType(context, kind.kind)
   return '%s(%s%s)' % (methodName, offset, additionalParams)
 
@@ -152,9 +163,9 @@ def EncodeMethod(context, kind, variable, offset, bit):
   additionalParams = ''
   if (kind == mojom.BOOL):
     additionalParams = ', %d' % bit
-  if isinstance(kind, mojom.Interface):
+  if mojom.IsInterfaceKind(kind):
     additionalParams = ', %s.BUILDER' % GetJavaType(context, kind)
-  if IsArray(kind) and isinstance(kind.kind, mojom.Interface):
+  if mojom.IsAnyArrayKind(kind) and mojom.IsInterfaceKind(kind.kind):
     additionalParams = ', %s.BUILDER' % GetJavaType(context, kind.kind)
   return 'encode(%s, %s%s)' % (variable, offset, additionalParams)
 
@@ -189,19 +200,16 @@ def GetBoxedJavaType(context, kind):
 def GetJavaType(context, kind, boxed=False):
   if boxed:
     return GetBoxedJavaType(context, kind)
-  if isinstance(kind, (mojom.Struct, mojom.Interface)):
+  if mojom.IsStructKind(kind) or mojom.IsInterfaceKind(kind):
     return GetNameForKind(context, kind)
-  if isinstance(kind, mojom.InterfaceRequest):
+  if mojom.IsInterfaceRequestKind(kind):
     return ("org.chromium.mojo.bindings.InterfaceRequest<%s>" %
             GetNameForKind(context, kind.kind))
-  if IsArray(kind):
+  if mojom.IsAnyArrayKind(kind):
     return "%s[]" % GetJavaType(context, kind.kind)
-  if isinstance(kind, mojom.Enum):
+  if mojom.IsEnumKind(kind):
     return "int"
   return _spec_to_java_type[kind.spec]
-
-def IsHandle(kind):
-  return kind.spec[0] == 'h'
 
 @contextfilter
 def DefaultValue(context, field):
@@ -221,7 +229,7 @@ def ConstantValue(context, constant):
 
 @contextfilter
 def NewArray(context, kind, size):
-  if IsArray(kind.kind):
+  if mojom.IsAnyArrayKind(kind.kind):
     return NewArray(context, kind.kind, size) + '[]'
   return 'new %s[%s]' % (GetJavaType(context, kind.kind), size)
 
@@ -255,10 +263,10 @@ def ExpressionToText(context, token, kind_spec=''):
   return token
 
 def IsPointerArrayKind(kind):
-  if not IsArray(kind):
+  if not mojom.IsAnyArrayKind(kind):
     return False
   sub_kind = kind.kind
-  return generator.IsObjectKind(sub_kind)
+  return mojom.IsObjectKind(sub_kind)
 
 def GetConstantsMainEntityName(module):
   if 'JavaConstantsClassName' in module.attributes:
@@ -277,9 +285,9 @@ class Generator(generator.Generator):
     "decode_method": DecodeMethod,
     "expression_to_text": ExpressionToText,
     "encode_method": EncodeMethod,
-    "is_handle": IsHandle,
+    "is_handle": mojom.IsNonInterfaceHandleKind,
     "is_pointer_array_kind": IsPointerArrayKind,
-    "is_struct_kind": lambda kind: isinstance(kind, mojom.Struct),
+    "is_struct_kind": mojom.IsStructKind,
     "java_type": GetJavaType,
     "name": GetNameForElement,
     "new_array": NewArray,

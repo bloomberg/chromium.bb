@@ -11,22 +11,27 @@ from mojom.generate.template_expander import UseJinja
 
 
 _kind_to_cpp_type = {
-  mojom.BOOL:         "bool",
-  mojom.INT8:         "int8_t",
-  mojom.UINT8:        "uint8_t",
-  mojom.INT16:        "int16_t",
-  mojom.UINT16:       "uint16_t",
-  mojom.INT32:        "int32_t",
-  mojom.UINT32:       "uint32_t",
-  mojom.FLOAT:        "float",
-  mojom.HANDLE:       "mojo::Handle",
-  mojom.DCPIPE:       "mojo::DataPipeConsumerHandle",
-  mojom.DPPIPE:       "mojo::DataPipeProducerHandle",
-  mojom.MSGPIPE:      "mojo::MessagePipeHandle",
-  mojom.SHAREDBUFFER: "mojo::SharedBufferHandle",
-  mojom.INT64:        "int64_t",
-  mojom.UINT64:       "uint64_t",
-  mojom.DOUBLE:       "double",
+  mojom.BOOL:                  "bool",
+  mojom.INT8:                  "int8_t",
+  mojom.UINT8:                 "uint8_t",
+  mojom.INT16:                 "int16_t",
+  mojom.UINT16:                "uint16_t",
+  mojom.INT32:                 "int32_t",
+  mojom.UINT32:                "uint32_t",
+  mojom.FLOAT:                 "float",
+  mojom.HANDLE:                "mojo::Handle",
+  mojom.DCPIPE:                "mojo::DataPipeConsumerHandle",
+  mojom.DPPIPE:                "mojo::DataPipeProducerHandle",
+  mojom.MSGPIPE:               "mojo::MessagePipeHandle",
+  mojom.SHAREDBUFFER:          "mojo::SharedBufferHandle",
+  mojom.NULLABLE_HANDLE:       "mojo::Handle",
+  mojom.NULLABLE_DCPIPE:       "mojo::DataPipeConsumerHandle",
+  mojom.NULLABLE_DPPIPE:       "mojo::DataPipeProducerHandle",
+  mojom.NULLABLE_MSGPIPE:      "mojo::MessagePipeHandle",
+  mojom.NULLABLE_SHAREDBUFFER: "mojo::SharedBufferHandle",
+  mojom.INT64:                 "int64_t",
+  mojom.UINT64:                "uint64_t",
+  mojom.DOUBLE:                "double",
 }
 
 _kind_to_cpp_literal_suffix = {
@@ -42,7 +47,7 @@ def ConstantValue(constant):
 
 def DefaultValue(field):
   if field.default:
-    if isinstance(field.kind, mojom.Struct):
+    if mojom.IsStructKind(field.kind):
       assert field.default == "default"
       return "%s::New()" % GetNameForKind(field.kind)
     return ExpressionToText(field.default, kind=field.kind)
@@ -63,149 +68,147 @@ def GetNameForKind(kind, internal = False):
   return "::".join(parts)
 
 def GetCppType(kind):
-  if isinstance(kind, mojom.Struct):
+  if mojom.IsStructKind(kind):
     return "%s_Data*" % GetNameForKind(kind, internal=True)
-  if isinstance(kind, (mojom.Array, mojom.FixedArray)):
+  if mojom.IsAnyArrayKind(kind):
     return "mojo::internal::Array_Data<%s>*" % GetCppType(kind.kind)
-  if isinstance(kind, mojom.Interface) or \
-     isinstance(kind, mojom.InterfaceRequest):
+  if mojom.IsInterfaceKind(kind) or mojom.IsInterfaceRequestKind(kind):
     return "mojo::MessagePipeHandle"
-  if isinstance(kind, mojom.Enum):
+  if mojom.IsEnumKind(kind):
     return "int32_t"
-  if kind.spec == 's':
+  if mojom.IsStringKind(kind):
     return "mojo::internal::String_Data*"
   return _kind_to_cpp_type[kind]
 
 def GetCppPodType(kind):
-  if kind.spec == 's':
+  if mojom.IsStringKind(kind):
     return "char*"
   return _kind_to_cpp_type[kind]
 
 def GetCppArrayArgWrapperType(kind):
-  if isinstance(kind, mojom.Enum):
+  if mojom.IsEnumKind(kind):
     return GetNameForKind(kind)
-  if isinstance(kind, mojom.Struct):
+  if mojom.IsStructKind(kind):
     return "%sPtr" % GetNameForKind(kind)
-  if isinstance(kind, (mojom.Array, mojom.FixedArray)):
+  if mojom.IsAnyArrayKind(kind):
     return "mojo::Array<%s> " % GetCppArrayArgWrapperType(kind.kind)
-  if isinstance(kind, mojom.Interface):
+  if mojom.IsInterfaceKind(kind):
     raise Exception("Arrays of interfaces not yet supported!")
-  if isinstance(kind, mojom.InterfaceRequest):
+  if mojom.IsInterfaceRequestKind(kind):
     raise Exception("Arrays of interface requests not yet supported!")
-  if kind.spec == 's':
+  if mojom.IsStringKind(kind):
     return "mojo::String"
-  if kind.spec == 'h':
+  if mojom.IsHandleKind(kind):
     return "mojo::ScopedHandle"
-  if kind.spec == 'h:d:c':
+  if mojom.IsDataPipeConsumerKind(kind):
     return "mojo::ScopedDataPipeConsumerHandle"
-  if kind.spec == 'h:d:p':
+  if mojom.IsDataPipeProducerKind(kind):
     return "mojo::ScopedDataPipeProducerHandle"
-  if kind.spec == 'h:m':
+  if mojom.IsMessagePipeKind(kind):
     return "mojo::ScopedMessagePipeHandle"
-  if kind.spec == 'h:s':
+  if mojom.IsSharedBufferKind(kind):
     return "mojo::ScopedSharedBufferHandle"
   return _kind_to_cpp_type[kind]
 
 def GetCppResultWrapperType(kind):
-  if isinstance(kind, mojom.Enum):
+  if mojom.IsEnumKind(kind):
     return GetNameForKind(kind)
-  if isinstance(kind, mojom.Struct):
+  if mojom.IsStructKind(kind):
     return "%sPtr" % GetNameForKind(kind)
-  if isinstance(kind, (mojom.Array, mojom.FixedArray)):
+  if mojom.IsAnyArrayKind(kind):
     return "mojo::Array<%s>" % GetCppArrayArgWrapperType(kind.kind)
-  if isinstance(kind, mojom.Interface):
+  if mojom.IsInterfaceKind(kind):
     return "%sPtr" % GetNameForKind(kind)
-  if isinstance(kind, mojom.InterfaceRequest):
+  if mojom.IsInterfaceRequestKind(kind):
     return "mojo::InterfaceRequest<%s>" % GetNameForKind(kind.kind)
-  if kind.spec == 's':
+  if mojom.IsStringKind(kind):
     return "mojo::String"
-  if kind.spec == 'h':
+  if mojom.IsHandleKind(kind):
     return "mojo::ScopedHandle"
-  if kind.spec == 'h:d:c':
+  if mojom.IsDataPipeConsumerKind(kind):
     return "mojo::ScopedDataPipeConsumerHandle"
-  if kind.spec == 'h:d:p':
+  if mojom.IsDataPipeProducerKind(kind):
     return "mojo::ScopedDataPipeProducerHandle"
-  if kind.spec == 'h:m':
+  if mojom.IsMessagePipeKind(kind):
     return "mojo::ScopedMessagePipeHandle"
-  if kind.spec == 'h:s':
+  if mojom.IsSharedBufferKind(kind):
     return "mojo::ScopedSharedBufferHandle"
   return _kind_to_cpp_type[kind]
 
 def GetCppWrapperType(kind):
-  if isinstance(kind, mojom.Enum):
+  if mojom.IsEnumKind(kind):
     return GetNameForKind(kind)
-  if isinstance(kind, mojom.Struct):
+  if mojom.IsStructKind(kind):
     return "%sPtr" % GetNameForKind(kind)
-  if isinstance(kind, (mojom.Array, mojom.FixedArray)):
+  if mojom.IsAnyArrayKind(kind):
     return "mojo::Array<%s>" % GetCppArrayArgWrapperType(kind.kind)
-  if isinstance(kind, mojom.Interface):
+  if mojom.IsInterfaceKind(kind):
     return "%sPtr" % GetNameForKind(kind)
-  if isinstance(kind, mojom.InterfaceRequest):
+  if mojom.IsInterfaceRequestKind(kind):
     raise Exception("InterfaceRequest fields not supported!")
-  if kind.spec == 's':
+  if mojom.IsStringKind(kind):
     return "mojo::String"
-  if kind.spec == 'h':
+  if mojom.IsHandleKind(kind):
     return "mojo::ScopedHandle"
-  if kind.spec == 'h:d:c':
+  if mojom.IsDataPipeConsumerKind(kind):
     return "mojo::ScopedDataPipeConsumerHandle"
-  if kind.spec == 'h:d:p':
+  if mojom.IsDataPipeProducerKind(kind):
     return "mojo::ScopedDataPipeProducerHandle"
-  if kind.spec == 'h:m':
+  if mojom.IsMessagePipeKind(kind):
     return "mojo::ScopedMessagePipeHandle"
-  if kind.spec == 'h:s':
+  if mojom.IsSharedBufferKind(kind):
     return "mojo::ScopedSharedBufferHandle"
   return _kind_to_cpp_type[kind]
 
 def GetCppConstWrapperType(kind):
-  if isinstance(kind, mojom.Struct):
+  if mojom.IsStructKind(kind):
     return "%sPtr" % GetNameForKind(kind)
-  if isinstance(kind, (mojom.Array, mojom.FixedArray)):
+  if mojom.IsAnyArrayKind(kind):
     return "mojo::Array<%s>" % GetCppArrayArgWrapperType(kind.kind)
-  if isinstance(kind, mojom.Interface):
+  if mojom.IsInterfaceKind(kind):
     return "%sPtr" % GetNameForKind(kind)
-  if isinstance(kind, mojom.InterfaceRequest):
+  if mojom.IsInterfaceRequestKind(kind):
     return "mojo::InterfaceRequest<%s>" % GetNameForKind(kind.kind)
-  if isinstance(kind, mojom.Enum):
+  if mojom.IsEnumKind(kind):
     return GetNameForKind(kind)
-  if kind.spec == 's':
+  if mojom.IsStringKind(kind):
     return "const mojo::String&"
-  if kind.spec == 'h':
+  if mojom.IsHandleKind(kind):
     return "mojo::ScopedHandle"
-  if kind.spec == 'h:d:c':
+  if mojom.IsDataPipeConsumerKind(kind):
     return "mojo::ScopedDataPipeConsumerHandle"
-  if kind.spec == 'h:d:p':
+  if mojom.IsDataPipeProducerKind(kind):
     return "mojo::ScopedDataPipeProducerHandle"
-  if kind.spec == 'h:m':
+  if mojom.IsMessagePipeKind(kind):
     return "mojo::ScopedMessagePipeHandle"
-  if kind.spec == 'h:s':
+  if mojom.IsSharedBufferKind(kind):
     return "mojo::ScopedSharedBufferHandle"
   if not kind in _kind_to_cpp_type:
     print "missing:", kind.spec
   return _kind_to_cpp_type[kind]
 
 def GetCppFieldType(kind):
-  if isinstance(kind, mojom.Struct):
+  if mojom.IsStructKind(kind):
     return ("mojo::internal::StructPointer<%s_Data>" %
         GetNameForKind(kind, internal=True))
-  if isinstance(kind, (mojom.Array, mojom.FixedArray)):
+  if mojom.IsAnyArrayKind(kind):
     return "mojo::internal::ArrayPointer<%s>" % GetCppType(kind.kind)
-  if isinstance(kind, mojom.Interface) or \
-     isinstance(kind, mojom.InterfaceRequest):
+  if mojom.IsInterfaceKind(kind) or mojom.IsInterfaceRequestKind(kind):
     return "mojo::MessagePipeHandle"
-  if isinstance(kind, mojom.Enum):
+  if mojom.IsEnumKind(kind):
     return GetNameForKind(kind)
-  if kind.spec == 's':
+  if mojom.IsStringKind(kind):
     return "mojo::internal::StringPointer"
   return _kind_to_cpp_type[kind]
 
 def IsStructWithHandles(struct):
   for pf in struct.packed.packed_fields:
-    if generator.IsHandleKind(pf.field.kind):
+    if mojom.IsAnyHandleKind(pf.field.kind):
       return True
   return False
 
 def TranslateConstants(token, kind):
-  if isinstance(token, (mojom.NamedValue, mojom.EnumValue)):
+  if isinstance(token, mojom.NamedValue):
     # Both variable and enum constants are constructed like:
     # Namespace::Struct::CONSTANT_NAME
     # For enums, CONSTANT_NAME is ENUM_NAME_ENUM_VALUE.
@@ -236,7 +239,7 @@ def ShouldInlineStruct(struct):
   if len(struct.fields) > 4:
     return False
   for field in struct.fields:
-    if generator.IsHandleKind(field.kind) or generator.IsObjectKind(field.kind):
+    if mojom.IsMoveOnlyKind(field.kind):
       return False
   return True
 
@@ -259,14 +262,14 @@ class Generator(generator.Generator):
     "get_pad": pack.GetPad,
     "has_callbacks": HasCallbacks,
     "should_inline": ShouldInlineStruct,
-    "is_array_kind": generator.IsArrayKind,
-    "is_enum_kind": generator.IsEnumKind,
-    "is_move_only_kind": generator.IsMoveOnlyKind,
-    "is_handle_kind": generator.IsHandleKind,
-    "is_interface_kind": generator.IsInterfaceKind,
-    "is_interface_request_kind": generator.IsInterfaceRequestKind,
-    "is_object_kind": generator.IsObjectKind,
-    "is_string_kind": generator.IsStringKind,
+    "is_any_array_kind": mojom.IsAnyArrayKind,
+    "is_enum_kind": mojom.IsEnumKind,
+    "is_move_only_kind": mojom.IsMoveOnlyKind,
+    "is_any_handle_kind": mojom.IsAnyHandleKind,
+    "is_interface_kind": mojom.IsInterfaceKind,
+    "is_interface_request_kind": mojom.IsInterfaceRequestKind,
+    "is_object_kind": mojom.IsObjectKind,
+    "is_string_kind": mojom.IsStringKind,
     "is_struct_with_handles": IsStructWithHandles,
     "struct_size": lambda ps: ps.GetTotalSize() + _HEADER_SIZE,
     "struct_from_method": generator.GetStructFromMethod,

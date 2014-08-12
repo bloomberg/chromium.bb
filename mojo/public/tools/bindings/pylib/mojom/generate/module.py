@@ -317,3 +317,86 @@ class Module(object):
     struct=Struct(name, module=self)
     self.structs.append(struct)
     return struct
+
+
+def IsBoolKind(kind):
+  return kind.spec == BOOL.spec
+
+
+def IsStringKind(kind):
+  return kind.spec == STRING.spec or kind.spec == NULLABLE_STRING.spec
+
+
+def IsHandleKind(kind):
+  return kind.spec == HANDLE.spec or kind.spec == NULLABLE_HANDLE.spec
+
+
+def IsDataPipeConsumerKind(kind):
+  return kind.spec == DCPIPE.spec or kind.spec == NULLABLE_DCPIPE.spec
+
+
+def IsDataPipeProducerKind(kind):
+  return kind.spec == DPPIPE.spec or kind.spec == NULLABLE_DPPIPE.spec
+
+
+def IsMessagePipeKind(kind):
+  return kind.spec == MSGPIPE.spec or kind.spec == NULLABLE_MSGPIPE.spec
+
+
+def IsSharedBufferKind(kind):
+  return (kind.spec == SHAREDBUFFER.spec or
+          kind.spec == NULLABLE_SHAREDBUFFER.spec)
+
+
+def IsStructKind(kind):
+  return isinstance(kind, Struct)
+
+
+def IsArrayKind(kind):
+  return isinstance(kind, Array)
+
+
+def IsFixedArrayKind(kind):
+  return isinstance(kind, FixedArray)
+
+
+def IsInterfaceKind(kind):
+  return isinstance(kind, Interface)
+
+
+def IsInterfaceRequestKind(kind):
+  return isinstance(kind, InterfaceRequest)
+
+
+def IsEnumKind(kind):
+  return isinstance(kind, Enum)
+
+
+def IsNullableKind(kind):
+  return isinstance(kind, ReferenceKind) and kind.is_nullable
+
+
+def IsAnyArrayKind(kind):
+  return IsArrayKind(kind) or IsFixedArrayKind(kind)
+
+
+def IsObjectKind(kind):
+  return IsStructKind(kind) or IsAnyArrayKind(kind) or IsStringKind(kind)
+
+
+def IsNonInterfaceHandleKind(kind):
+  return (IsHandleKind(kind) or
+          IsDataPipeConsumerKind(kind) or
+          IsDataPipeProducerKind(kind) or
+          IsMessagePipeKind(kind) or
+          IsSharedBufferKind(kind))
+
+
+def IsAnyHandleKind(kind):
+  return (IsNonInterfaceHandleKind(kind) or
+          IsInterfaceKind(kind) or
+          IsInterfaceRequestKind(kind))
+
+
+def IsMoveOnlyKind(kind):
+  return IsObjectKind(kind) or IsAnyHandleKind(kind)
