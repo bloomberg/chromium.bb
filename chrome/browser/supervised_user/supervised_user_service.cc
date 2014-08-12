@@ -214,11 +214,14 @@ void SupervisedUserService::RegisterProfilePrefs(
 }
 
 void SupervisedUserService::SetDelegate(Delegate* delegate) {
-  if (delegate_ == delegate)
-    return;
-  // If the delegate changed, deactivate first to give the old delegate a chance
-  // to clean up.
-  SetActive(false);
+  if (delegate) {
+    // Changing delegates isn't allowed.
+    DCHECK(!delegate_);
+  } else {
+    // If the delegate is removed, deactivate first to give the old delegate a
+    // chance to clean up.
+    SetActive(false);
+  }
   delegate_ = delegate;
 }
 
