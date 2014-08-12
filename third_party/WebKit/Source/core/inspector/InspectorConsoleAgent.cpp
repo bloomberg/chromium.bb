@@ -108,7 +108,7 @@ void InspectorConsoleAgent::enable(ErrorString*)
     m_state->setBoolean(ConsoleAgentState::consoleMessagesEnabled, true);
 
     if (m_expiredConsoleMessageCount) {
-        InspectorConsoleMessage expiredMessage(!isWorkerAgent(), OtherMessageSource, LogMessageType, WarningMessageLevel, String::format("%d console messages are not shown.", m_expiredConsoleMessageCount));
+        InspectorConsoleMessage expiredMessage(OtherMessageSource, LogMessageType, WarningMessageLevel, String::format("%d console messages are not shown.", m_expiredConsoleMessageCount));
         expiredMessage.setTimestamp(0);
         expiredMessage.addToFrontend(m_frontend, m_injectedScriptManager, false);
     }
@@ -172,8 +172,8 @@ void InspectorConsoleAgent::addMessageToConsole(ConsoleMessage* consoleMessage)
     if (consoleMessage->callStack()) {
         addConsoleMessage(adoptPtr(new InspectorConsoleMessage(consoleMessage->source(), LogMessageType, consoleMessage->level(), consoleMessage->message(), consoleMessage->callStack(), consoleMessage->requestIdentifier())));
     } else {
-        bool canGenerateCallStack = !isWorkerAgent() && m_frontend;
-        addConsoleMessage(adoptPtr(new InspectorConsoleMessage(canGenerateCallStack, consoleMessage->source(), LogMessageType, consoleMessage->level(), consoleMessage->message(), consoleMessage->url(), consoleMessage->lineNumber(), consoleMessage->columnNumber(), consoleMessage->scriptState(), consoleMessage->requestIdentifier())));
+        bool shouldGenerateCallStack = m_frontend;
+        addConsoleMessage(adoptPtr(new InspectorConsoleMessage(shouldGenerateCallStack, consoleMessage->source(), LogMessageType, consoleMessage->level(), consoleMessage->message(), consoleMessage->url(), consoleMessage->lineNumber(), consoleMessage->columnNumber(), consoleMessage->scriptState(), consoleMessage->requestIdentifier())));
     }
 }
 
@@ -184,7 +184,7 @@ void InspectorConsoleAgent::addConsoleAPIMessageToConsole(MessageType type, Mess
         clearMessages(&error);
     }
 
-    addConsoleMessage(adoptPtr(new InspectorConsoleMessage(!isWorkerAgent(), ConsoleAPIMessageSource, type, level, message, arguments, scriptState, requestIdentifier)));
+    addConsoleMessage(adoptPtr(new InspectorConsoleMessage(ConsoleAPIMessageSource, type, level, message, arguments, scriptState, requestIdentifier)));
 }
 
 Vector<unsigned> InspectorConsoleAgent::consoleMessageArgumentCounts()

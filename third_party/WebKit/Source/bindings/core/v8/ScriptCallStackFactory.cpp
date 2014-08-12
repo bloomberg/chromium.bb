@@ -111,7 +111,7 @@ PassRefPtrWillBeRawPtr<ScriptCallStack> createScriptCallStack(size_t maxStackSiz
     return createScriptCallStack(stackTrace, maxStackSize, emptyStackIsAllowed, isolate);
 }
 
-PassRefPtrWillBeRawPtr<ScriptCallStack> createScriptCallStackForConsole(size_t maxStackSize)
+PassRefPtrWillBeRawPtr<ScriptCallStack> createScriptCallStackForConsole(size_t maxStackSize, bool emptyStackIsAllowed)
 {
     size_t stackSize = 1;
     if (InspectorInstrumentation::hasFrontends()) {
@@ -121,7 +121,7 @@ PassRefPtrWillBeRawPtr<ScriptCallStack> createScriptCallStackForConsole(size_t m
         if (InspectorInstrumentation::consoleAgentEnabled(currentExecutionContext(isolate)))
             stackSize = maxStackSize;
     }
-    return createScriptCallStack(stackSize);
+    return createScriptCallStack(stackSize, emptyStackIsAllowed);
 }
 
 PassRefPtrWillBeRawPtr<ScriptArguments> createScriptArguments(ScriptState* scriptState, const v8::FunctionCallbackInfo<v8::Value>& v8arguments, unsigned skipArgumentCount)
