@@ -378,23 +378,16 @@ bool InspectorOverlay::handleMouseEvent(const PlatformMouseEvent& event)
         return false;
 
     EventHandler& eventHandler = toLocalFrame(overlayPage()->mainFrame())->eventHandler();
-    bool result;
     switch (event.type()) {
     case PlatformEvent::MouseMoved:
-        result = eventHandler.handleMouseMoveEvent(event);
-        break;
+        return eventHandler.handleMouseMoveEvent(event);
     case PlatformEvent::MousePressed:
-        result = eventHandler.handleMousePressEvent(event);
-        break;
+        return eventHandler.handleMousePressEvent(event);
     case PlatformEvent::MouseReleased:
-        result = eventHandler.handleMouseReleaseEvent(event);
-        break;
+        return eventHandler.handleMouseReleaseEvent(event);
     default:
         return false;
     }
-
-    toLocalFrame(overlayPage()->mainFrame())->document()->updateLayout();
-    return result;
 }
 
 bool InspectorOverlay::handleTouchEvent(const PlatformTouchEvent& event)
@@ -503,11 +496,8 @@ void InspectorOverlay::update()
         drawPausedInDebuggerMessage();
     drawViewSize();
 
-    // Position DOM elements.
-    toLocalFrame(overlayPage()->mainFrame())->document()->setNeedsStyleRecalc(SubtreeStyleChange);
-    toLocalFrame(overlayPage()->mainFrame())->document()->updateLayout();
+    toLocalFrame(overlayPage()->mainFrame())->view()->updateLayoutAndStyleForPainting();
 
-    // Kick paint.
     m_client->highlight();
 }
 
