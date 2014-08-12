@@ -307,6 +307,17 @@ TEST_F(DesktopWindowTreeHostX11Test, Shape) {
   EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, 15, 5));
   EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, 95, 15));
   EXPECT_FALSE(ShapeRectContainsPoint(shape_rects, 105, 15));
+
+  // Setting the shape to NULL resets the shape back to the entire
+  // window bounds.
+  widget2->SetShape(NULL);
+  shape_rects = GetShapeRects(xid2);
+  ASSERT_FALSE(shape_rects.empty());
+  EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, 5, 5));
+  EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, 15, 5));
+  EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, 95, 15));
+  EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, 105, 15));
+  EXPECT_FALSE(ShapeRectContainsPoint(shape_rects, 500, 500));
 }
 
 // Test that the widget ignores changes in fullscreen state initiated by the

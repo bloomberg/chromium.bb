@@ -496,10 +496,15 @@ gfx::Rect DesktopWindowTreeHostX11::GetWorkAreaBoundsInScreen() const {
 void DesktopWindowTreeHostX11::SetShape(gfx::NativeRegion native_region) {
   if (window_shape_)
     XDestroyRegion(window_shape_);
-  custom_window_shape_ = true;
-  window_shape_ = gfx::CreateRegionFromSkRegion(*native_region);
+  custom_window_shape_ = false;
+  window_shape_ = NULL;
+
+  if (native_region) {
+    custom_window_shape_ = true;
+    window_shape_ = gfx::CreateRegionFromSkRegion(*native_region);
+    delete native_region;
+  }
   ResetWindowRegion();
-  delete native_region;
 }
 
 void DesktopWindowTreeHostX11::Activate() {

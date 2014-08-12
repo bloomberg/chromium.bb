@@ -438,8 +438,10 @@ void NativeWidgetAura::StackBelow(gfx::NativeView native_view) {
 }
 
 void NativeWidgetAura::SetShape(gfx::NativeRegion region) {
-  // No need for this. Just delete and ignore.
-  delete region;
+  if (window_)
+    window_->layer()->SetAlphaShape(make_scoped_ptr(region));
+  else
+    delete region;
 }
 
 void NativeWidgetAura::Close() {

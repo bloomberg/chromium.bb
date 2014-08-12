@@ -110,4 +110,9 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiGet) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiSetShape) {
+  EXPECT_TRUE(RunPlatformAppTest("platform_apps/windows_api_shape"))
+      << message_;
+}
+
 }  // namespace extensions
