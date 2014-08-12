@@ -169,3 +169,10 @@ crbug.com/376188 inspector/sources/debugger/skip-stack-frames-steps.html [ Leak 
 crbug.com/376188 inspector/sources/debugger/step-through-event-listeners.html [ Leak ]
 crbug.com/376188 inspector/sources/debugger/watch-expressions-panel-switch.html [ Leak ]
 crbug.com/376188 inspector/sources/debugger/xhr-breakpoints.html [ Leak ]
+
+# Resource leak
+crbug.com/402743 http/tests/xmlhttprequest/xmlhttprequest-sync-vs-async-assertion-failure.html [ Leak ]
+crbug.com/402743 http/tests/xmlhttprequest/xmlhttprequest-leaks-on-multiple-send.html [ Leak ]
+
+# AudioNode leak
+crbug.com/402742 webaudio/panner-loop.html [ Leak ]
