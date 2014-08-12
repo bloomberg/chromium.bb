@@ -33,6 +33,19 @@ class SubstitutionWriter {
   SubstitutionWriter();
   ~SubstitutionWriter();
 
+  // Converts the given SubstitutionList to OutputFiles assuming there are
+  // no substitutions (it will assert if there are). This is used for cases
+  // like actions where the outputs are explicit, but the list is stored as
+  // a SubstitutionList.
+  static void GetListAsSourceFiles(
+      const Settings* settings,
+      const SubstitutionList& list,
+      std::vector<SourceFile>* output);
+  static void GetListAsOutputFiles(
+      const Settings* settings,
+      const SubstitutionList& list,
+      std::vector<OutputFile>* output);
+
   // Applies the substitution pattern to a source file, returning the result
   // as either a SourceFile or OutputFile.
   static SourceFile ApplyPatternToSource(

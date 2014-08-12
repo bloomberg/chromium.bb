@@ -20,13 +20,11 @@ void GetOutputsForTarget(const Settings* settings,
                          std::vector<SourceFile>* ret) {
   switch (target->output_type()) {
     case Target::ACTION: {
-      // Actions just use the output list with no substitution. To keep things
-      // simple, pass an empty "source file" in to use the same code path for
-      // computing substitution outputs.
+      // Actions just use the output list with no substitution.
       std::vector<SourceFile> sources;
       sources.push_back(SourceFile());
-      SubstitutionWriter::ApplyListToSources(
-          settings, target->action_values().outputs(), sources, ret);
+      SubstitutionWriter::GetListAsSourceFiles(
+          settings, target->action_values().outputs(), ret);
       break;
     }
 

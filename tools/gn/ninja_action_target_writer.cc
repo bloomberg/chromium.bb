@@ -53,11 +53,10 @@ void NinjaActionTargetWriter::Run() {
     DCHECK(target_->output_type() == Target::ACTION);
 
     // Write a rule that invokes the script once with the outputs as outputs,
-    // and the data as inputs.
+    // and the data as inputs. It does not depend on the sources.
     out_ << "build";
-    SubstitutionWriter::ApplyListToSourcesAsOutputFile(
-        settings_, target_->action_values().outputs(), target_->sources(),
-        &output_files);
+    SubstitutionWriter::GetListAsOutputFiles(
+        settings_, target_->action_values().outputs(), &output_files);
     for (size_t i = 0; i < output_files.size(); i++) {
       out_ << " ";
       path_output_.WriteFile(out_, output_files[i]);
