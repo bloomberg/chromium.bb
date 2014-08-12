@@ -12,22 +12,48 @@ found in the LICENSE file.
 var assert = chai.assert;
 
 describe('ct-last-updated', function() {
-  var builder;
+  var lastUpdated;
 
-  beforeEach(function(done) {
-    builder = document.createElement('ct-last-updated');
-    // Set the date to 5 minutes ago.
-    builder.date = new Date(Date.now() - (5 * 60 * 1000));
-    requestAnimationFrame(function() { done(); });
-  });
+  describe('Updated 5 minutes ago', function() {
+    beforeEach(function(done) {
+      lastUpdated = document.createElement('ct-last-updated');
+      // Set the date to 5 minutes ago.
+      lastUpdated.date = new Date(Date.now() - (5 * 60 * 1000));
+      requestAnimationFrame(function() { done(); });
+    });
 
-  describe('default UI', function() {
     it('should have correct text', function() {
-      var expected = 'Updated 5 min ago @ ' + builder.date.getHours() + ':' +
-                     builder.date.getMinutes();
-      assert.equal(builder.shadowRoot.innerHTML.trim(), expected);
+      var expected = 'Updated 5 min ago @ ' + lastUpdated.date.getHours() + ':' +
+                     lastUpdated.date.getMinutes();
+      assert.include(lastUpdated.shadowRoot.innerHTML.trim(), expected);
     });
   });
+
+  describe('No updated data', function() {
+    beforeEach(function(done) {
+      lastUpdated = document.createElement('ct-last-updated');
+      requestAnimationFrame(function() { done(); });
+    });
+
+    it('no text should be visible', function() {
+      assert.notInclude(lastUpdated.shadowRoot.querySelector('template').innerHTML.trim(), "Updated");
+    });
+  });
+
+  describe('Pad minutes when less than 10', function() {
+    beforeEach(function(done) {
+      lastUpdated = document.createElement('ct-last-updated');
+      // Set the date to 5 minutes ago.
+      lastUpdated.date = Date.create('11:05');
+      requestAnimationFrame(function() { done(); });
+    });
+
+    it('should have correct text', function() {
+      var expected = '11:05';
+      assert.include(lastUpdated.shadowRoot.innerHTML.trim(), expected);
+    });
+  });
+
 });
 
 })()

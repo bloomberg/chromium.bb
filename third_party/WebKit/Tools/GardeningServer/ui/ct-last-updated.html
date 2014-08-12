@@ -6,12 +6,14 @@ found in the LICENSE file.
 
 <polymer-element name="ct-last-updated" attributes="date">
   <template>
-    Updated {{ date | _deltaMinutes }} min ago @ {{ date | _hours }}:{{ date | _minutes }}
+    <template if="{{ date }}">
+      Updated {{ date | _deltaMinutes }} min ago @ {{ date | _hours }}:{{ date | _minutes }}
+    </template>
   </template>
   <script>
   (function() {
     Polymer({
-      date: new Date(0),
+      date: null,
 
       _deltaMinutes: function(date) {
         return date.minutesAgo();
@@ -20,7 +22,10 @@ found in the LICENSE file.
         return date.getHours();
       },
       _minutes: function(date) {
-        return date.getMinutes();
+        var s = date.getMinutes().toString();
+        if (s.length == 1)
+          s = "0" + s;
+        return s;
       },
     });
   })();
