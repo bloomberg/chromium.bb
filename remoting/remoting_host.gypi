@@ -362,6 +362,10 @@
                 '../third_party/webrtc/modules/modules.gyp:desktop_capture',
                 '../third_party/libjingle/libjingle.gyp:libpeerconnection',
               ],
+              'sources': [
+                'host/cast_video_capturer_adapter.cc',
+                'host/cast_video_capturer_adapter.h'
+              ],
             }],
           ],
         },  # end of target 'remoting_host'
