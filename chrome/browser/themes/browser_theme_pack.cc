@@ -112,8 +112,10 @@ PersistingImagesTable kPersistingImages[] = {
     "theme_toolbar" },
   { PRS_THEME_TAB_BACKGROUND, IDR_THEME_TAB_BACKGROUND,
     "theme_tab_background" },
+#if !defined(OS_MACOSX)
   { PRS_THEME_TAB_BACKGROUND_INCOGNITO, IDR_THEME_TAB_BACKGROUND_INCOGNITO,
     "theme_tab_background_incognito" },
+#endif
   { PRS_THEME_TAB_BACKGROUND_V, IDR_THEME_TAB_BACKGROUND_V,
     "theme_tab_background_v"},
   { PRS_THEME_NTP_BACKGROUND, IDR_THEME_NTP_BACKGROUND,

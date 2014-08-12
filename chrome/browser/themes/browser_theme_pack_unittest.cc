@@ -240,7 +240,9 @@ class BrowserThemePackTest : public ::testing::Test {
     EXPECT_FALSE(pack->HasCustomImage(IDR_THEME_FRAME_INACTIVE));
     EXPECT_FALSE(pack->HasCustomImage(IDR_THEME_FRAME_INCOGNITO));
     EXPECT_FALSE(pack->HasCustomImage(IDR_THEME_FRAME_INCOGNITO_INACTIVE));
+#if !defined(OS_MACOSX)
     EXPECT_FALSE(pack->HasCustomImage(IDR_THEME_TAB_BACKGROUND_INCOGNITO));
+#endif
 
     // Make sure we don't have phantom data.
     EXPECT_FALSE(pack->GetColor(ThemeProperties::COLOR_CONTROL_BACKGROUND,
@@ -258,8 +260,9 @@ class BrowserThemePackTest : public ::testing::Test {
 
     // The high DPI theme does not define the following images:
     EXPECT_FALSE(pack->HasCustomImage(IDR_THEME_TAB_BACKGROUND));
-    EXPECT_FALSE(pack->HasCustomImage(IDR_THEME_TAB_BACKGROUND));
+#if !defined(OS_MACOSX)
     EXPECT_FALSE(pack->HasCustomImage(IDR_THEME_TAB_BACKGROUND_INCOGNITO));
+#endif
     EXPECT_FALSE(pack->HasCustomImage(IDR_THEME_TAB_BACKGROUND_V));
     EXPECT_FALSE(pack->HasCustomImage(IDR_THEME_NTP_BACKGROUND));
     EXPECT_FALSE(pack->HasCustomImage(IDR_THEME_FRAME_OVERLAY));
