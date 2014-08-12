@@ -243,6 +243,11 @@ bool MediaSource::isTypeSupported(const String& type)
     if (contentType.type().isEmpty())
         return false;
 
+    // Note: MediaSource.isTypeSupported() returning true implies that HTMLMediaElement.canPlayType() will return "maybe" or "probably"
+    // since it does not make sense for a MediaSource to support a type the HTMLMediaElement knows it cannot play.
+    if (HTMLMediaElement::supportsType(contentType, String()) == WebMimeRegistry::IsNotSupported)
+        return false;
+
     // 3. If type contains a media type or media subtype that the MediaSource does not support, then return false.
     // 4. If type contains at a codec that the MediaSource does not support, then return false.
     // 5. If the MediaSource does not support the specified combination of media type, media subtype, and codecs then return false.
