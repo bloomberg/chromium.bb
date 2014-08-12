@@ -15,7 +15,6 @@
 #include "ui/views/view.h"
 
 class Browser;
-class BrowserActionButton;
 class ExtensionAction;
 
 namespace extensions {
@@ -28,9 +27,16 @@ class Image;
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserActionView
-// A single entry in the browser action container. This contains the actual
-// BrowserActionButton, as well as the logic to paint the badge.
-class BrowserActionView : public views::View {
+// A wrapper around an ExtensionActionViewController to display an extension
+// action in the BrowserActionsContainer.
+// Despite its name, this class can handle either Browser Actions or Page
+// Actions.
+// TODO(devlin): Rename this and BrowserActionsContainer when more of the
+// toolbar redesign is done.
+class BrowserActionView : public views::MenuButton,
+                          public ExtensionActionViewDelegate,
+                          public views::ButtonListener,
+                          public content::NotificationObserver {
  public:
   // Need DragController here because BrowserActionView could be
   // dragged/dropped.
@@ -56,7 +62,7 @@ class BrowserActionView : public views::View {
     virtual views::View* GetOverflowReferenceView() = 0;
 
     // Sets the delegate's active popup owner to be |popup_owner|.
-    virtual void SetPopupOwner(BrowserActionButton* popup_owner) = 0;
+    virtual void SetPopupOwner(BrowserActionView* popup_owner) = 0;
 
     // Hides the active popup of the delegate, if one exists.
     virtual void HideActivePopup() = 0;
@@ -65,47 +71,6 @@ class BrowserActionView : public views::View {
     virtual ~Delegate() {}
   };
 
-  BrowserActionView(const extensions::Extension* extension,
-                    Browser* browser,
-                    Delegate* delegate);
-  virtual ~BrowserActionView();
-
-  BrowserActionButton* button() { return button_.get(); }
-
-  // Gets browser action button icon with the badge.
-  gfx::ImageSkia GetIconWithBadge();
-
-  // Overridden from views::View:
-  virtual void Layout() OVERRIDE;
-  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-
- protected:
-  // Overridden from views::View to paint the badge on top of children.
-  virtual void PaintChildren(gfx::Canvas* canvas,
-                             const views::CullSet& cull_set) OVERRIDE;
-
- private:
-  // Usually a container for this view.
-  Delegate* delegate_;
-
-  // The button this view contains.
-  scoped_ptr<BrowserActionButton> button_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserActionView);
-};
-
-////////////////////////////////////////////////////////////////////////////////
-// BrowserActionButton
-
-// The BrowserActionButton is a specialization of the MenuButton class.
-// This wraps an ExtensionActionView, and has knowledge of how to render itself
-// and when to trigger the extension action.
-class BrowserActionButton : public views::MenuButton,
-                            public ExtensionActionViewDelegate,
-                            public views::ButtonListener,
-                            public content::NotificationObserver {
- public:
   // The IconObserver will receive a notification when the button's icon has
   // been updated.
   class IconObserver {
@@ -116,10 +81,10 @@ class BrowserActionButton : public views::MenuButton,
     virtual ~IconObserver() {}
   };
 
-  BrowserActionButton(const extensions::Extension* extension,
+  BrowserActionView(const extensions::Extension* extension,
                       Browser* browser,
                       BrowserActionView::Delegate* delegate);
-  virtual ~BrowserActionButton();
+  virtual ~BrowserActionView();
 
   const extensions::Extension* extension() const {
     return view_controller_->extension();
@@ -182,13 +147,15 @@ class BrowserActionButton : public views::MenuButton,
   // Returns button icon so it can be accessed during tests.
   gfx::ImageSkia GetIconForTest();
 
- protected:
+ private:
   // Overridden from views::View:
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE;
   virtual void OnDragDone() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual void PaintChildren(gfx::Canvas* canvas,
+                             const views::CullSet& cull_set) OVERRIDE;
 
- private:
   // ExtensionActionViewDelegate:
   virtual views::View* GetAsView() OVERRIDE;
   virtual bool IsShownInMenu() OVERRIDE;
@@ -218,7 +185,7 @@ class BrowserActionButton : public views::MenuButton,
   // updated.
   IconObserver* icon_observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserActionButton);
+  DISALLOW_COPY_AND_ASSIGN(BrowserActionView);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_BROWSER_ACTION_VIEW_H_

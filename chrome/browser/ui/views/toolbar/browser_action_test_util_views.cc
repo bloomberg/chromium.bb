@@ -37,40 +37,39 @@ int BrowserActionTestUtil::VisibleBrowserActions() {
 ExtensionAction* BrowserActionTestUtil::GetExtensionAction(int index) {
   return extensions::ExtensionActionManager::Get(browser_->profile())->
       GetBrowserAction(*GetContainer(browser_)->GetBrowserActionViewAt(index)->
-                       button()->extension());
+                       extension());
 }
 
 void BrowserActionTestUtil::InspectPopup(int index) {
-  GetContainer(browser_)->GetBrowserActionViewAt(index)->button()->
+  GetContainer(browser_)->GetBrowserActionViewAt(index)->
       view_controller()->InspectPopup();
 }
 
 bool BrowserActionTestUtil::HasIcon(int index) {
-  return !GetContainer(browser_)->GetBrowserActionViewAt(index)->button()->
+  return !GetContainer(browser_)->GetBrowserActionViewAt(index)->
       GetImage(views::Button::STATE_NORMAL).isNull();
 }
 
 gfx::Image BrowserActionTestUtil::GetIcon(int index) {
   gfx::ImageSkia icon = GetContainer(browser_)->GetBrowserActionViewAt(index)->
-      button()->GetIconForTest();
+      GetIconForTest();
   return gfx::Image(icon);
 }
 
 void BrowserActionTestUtil::Press(int index) {
   GetContainer(browser_)->GetBrowserActionViewAt(index)->
-      button()->view_controller()->ExecuteActionByUser();
+      view_controller()->ExecuteActionByUser();
 }
 
 std::string BrowserActionTestUtil::GetExtensionId(int index) {
-  BrowserActionButton* button =
-      GetContainer(browser_)->GetBrowserActionViewAt(index)->button();
-  return button->extension()->id();
+  return GetContainer(browser_)->GetBrowserActionViewAt(index)->
+      extension()->id();
 }
 
 std::string BrowserActionTestUtil::GetTooltip(int index) {
   base::string16 text;
-  GetContainer(browser_)->GetBrowserActionViewAt(index)->button()->
-    GetTooltipText(gfx::Point(), &text);
+  GetContainer(browser_)->GetBrowserActionViewAt(index)->
+      GetTooltipText(gfx::Point(), &text);
   return base::UTF16ToUTF8(text);
 }
 

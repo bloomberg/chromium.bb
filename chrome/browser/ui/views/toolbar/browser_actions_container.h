@@ -235,7 +235,7 @@ class BrowserActionsContainer
   virtual bool ShownInsideMenu() const OVERRIDE;
   virtual void OnBrowserActionViewDragDone() OVERRIDE;
   virtual views::View* GetOverflowReferenceView() OVERRIDE;
-  virtual void SetPopupOwner(BrowserActionButton* popup_owner) OVERRIDE;
+  virtual void SetPopupOwner(BrowserActionView* popup_owner) OVERRIDE;
   virtual void HideActivePopup() OVERRIDE;
 
   // Overridden from extension::ExtensionKeybindingRegistry::Delegate:
@@ -370,9 +370,9 @@ class BrowserActionsContainer
   // the difference between main and overflow.
   BrowserActionsContainer* main_container_;
 
-  // The button that triggered the current popup (just a reference to a button
+  // The view that triggered the current popup (just a reference to a view
   // from browser_action_views_).
-  BrowserActionButton* popup_owner_;
+  BrowserActionView* popup_owner_;
 
   // The model that tracks the order of the toolbar icons.
   extensions::ExtensionToolbarModel* model_;
