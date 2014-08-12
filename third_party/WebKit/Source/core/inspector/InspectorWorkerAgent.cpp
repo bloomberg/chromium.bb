@@ -199,6 +199,15 @@ void InspectorWorkerAgent::setAutoconnectToWorkers(ErrorString*, bool value)
     m_state->setBoolean(WorkerAgentState::autoconnectToWorkers, value);
 }
 
+void InspectorWorkerAgent::setTracingSessionId(const String& sessionId)
+{
+    m_tracingSessionId = sessionId;
+    if (sessionId.isEmpty())
+        return;
+    for (DedicatedWorkers::iterator it = m_dedicatedWorkers.begin(); it != m_dedicatedWorkers.end(); ++it)
+        it->key->writeTimelineStartedEvent(sessionId);
+}
+
 bool InspectorWorkerAgent::shouldPauseDedicatedWorkerOnStart()
 {
     return m_state->getBoolean(WorkerAgentState::autoconnectToWorkers);
@@ -209,6 +218,8 @@ void InspectorWorkerAgent::didStartWorkerGlobalScope(WorkerGlobalScopeProxy* wor
     m_dedicatedWorkers.set(workerGlobalScopeProxy, url.string());
     if (m_inspectorFrontend && m_state->getBoolean(WorkerAgentState::workerInspectionEnabled))
         createWorkerFrontendChannel(workerGlobalScopeProxy, url.string());
+    if (!m_tracingSessionId.isEmpty())
+        workerGlobalScopeProxy->writeTimelineStartedEvent(m_tracingSessionId);
 }
 
 void InspectorWorkerAgent::workerGlobalScopeTerminated(WorkerGlobalScopeProxy* proxy)

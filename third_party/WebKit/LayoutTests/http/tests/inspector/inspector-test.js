@@ -115,7 +115,7 @@ InspectorTest.didInvokePageFunctionAsync = function(callId, value)
 {
     var callback = pendingEvalRequests[callId];
     if (!callback) {
-        InspectorTest.addResult("Missing callback for ascyn eval " + callId + ", perhaps callback invoked twice?");
+        InspectorTest.addResult("Missing callback for async eval " + callId + ", perhaps callback invoked twice?");
         return;
     }
     delete pendingEvalRequests[callId];

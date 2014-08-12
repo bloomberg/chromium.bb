@@ -60,6 +60,7 @@ public:
     virtual void connectToInspector(WorkerGlobalScopeProxy::PageInspector*) OVERRIDE;
     virtual void disconnectFromInspector() OVERRIDE;
     virtual void sendMessageToInspector(const String&) OVERRIDE;
+    virtual void writeTimelineStartedEvent(const String& sessionId) OVERRIDE;
 
     // These methods come from worker context thread via WorkerObjectProxy
     // and are called on the worker object thread (e.g. main thread).

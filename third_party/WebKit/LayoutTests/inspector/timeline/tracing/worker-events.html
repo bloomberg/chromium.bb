@@ -1,0 +1,72 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/timeline-test.js"></script>
+<script src="../../tracing-test.js"></script>
+<script>
+
+function startWorkerAndRunTest()
+{
+    var worker1 = new Worker("resources/worker.js");
+    worker1.postMessage("");
+
+    if (window.testRunner) {
+        testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+    }
+
+    worker1.onmessage = function(event)
+    {
+        worker1.onmessage = null;
+        runTest();
+    }
+}
+
+function startSecondWorker(onActionComplete)
+{
+    var worker2 = new Worker("resources/worker.js");
+    worker2.postMessage("");
+    worker2.onmessage = function(event)
+    {
+        onActionComplete();
+        worker2.onmessage = null;
+    }
+}
+
+function test()
+{
+    InspectorTest.invokeWithTracing("startSecondWorker", processTracingEvents);
+
+    var workerMetadataEventCount = 0;
+    function processTracingEvents()
+    {
+        InspectorTest.tracingModel.sortedProcesses().forEach(function(process) {
+            process.sortedThreads().forEach(function(thread) {
+                thread.events().forEach(processEvent);
+            });
+        });
+        InspectorTest.assertEquals(2, workerMetadataEventCount);
+        InspectorTest.completeTest();
+    }
+
+    function processEvent(event)
+    {
+        if (event.category !== WebInspector.TracingModel.DevToolsMetadataEventCategory || event.name !== WebInspector.TracingModel.DevToolsMetadataEvent.TracingStartedInWorker)
+            return;
+
+        ++workerMetadataEventCount;
+        InspectorTest.assertEquals(InspectorTest.tracingModel.sessionId(), event.args["sessionId"]);
+        InspectorTest.addResult("Got DevTools worker metadata event(" + workerMetadataEventCount +  "): " + event.name);
+    }
+
+}
+
+</script>
+</head>
+
+<body onload="startWorkerAndRunTest()">
+<p>
+Tests that worker events are recorded with proper devtools metadata events.
+</p>
+</body>
+</html>

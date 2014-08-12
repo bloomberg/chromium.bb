@@ -11,6 +11,7 @@
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorState.h"
+#include "core/inspector/InspectorWorkerAgent.h"
 #include "platform/TraceEvent.h"
 
 namespace blink {
@@ -25,11 +26,12 @@ namespace {
 const char devtoolsMetadataEventCategory[] = TRACE_DISABLED_BY_DEFAULT("devtools.timeline");
 }
 
-InspectorTracingAgent::InspectorTracingAgent(InspectorClient* client)
+InspectorTracingAgent::InspectorTracingAgent(InspectorClient* client, InspectorWorkerAgent* workerAgent)
     : InspectorBaseAgent<InspectorTracingAgent>("Tracing")
     , m_layerTreeId(0)
     , m_client(client)
     , m_frontend(0)
+    , m_workerAgent(workerAgent)
 {
 }
 
@@ -48,7 +50,7 @@ void InspectorTracingAgent::end(ErrorString* errorString)
 {
     m_state->setBoolean(TracingAgentState::tracingStarted, false);
     m_consoleTimelines.clear();
-    m_frontend->stopped();
+    notifyTracingStopped();
 }
 
 void InspectorTracingAgent::innerStart(const String& categoryFilter, bool fromConsole)
@@ -72,6 +74,7 @@ void InspectorTracingAgent::emitMetadataEvents()
     TRACE_EVENT_INSTANT1(devtoolsMetadataEventCategory, "TracingStartedInPage", "sessionId", sessionId().utf8());
     if (m_layerTreeId)
         setLayerTreeId(m_layerTreeId);
+    m_workerAgent->setTracingSessionId(sessionId());
 }
 
 void InspectorTracingAgent::setLayerTreeId(int layerTreeId)
@@ -98,8 +101,14 @@ void InspectorTracingAgent::consoleTimelineEnd(const String& title)
     if (!m_consoleTimelines.size()
         && m_state->getBoolean(TracingAgentState::tracingStarted)
         && !m_state->getBoolean(TracingAgentState::tracingStartedFromProtocol))
-        m_frontend->stopped();
+        notifyTracingStopped();
     m_state->setBoolean(TracingAgentState::tracingStarted, false);
+}
+
+void InspectorTracingAgent::notifyTracingStopped()
+{
+    m_frontend->stopped();
+    m_workerAgent->setTracingSessionId(String());
 }
 
 void InspectorTracingAgent::setFrontend(InspectorFrontend* frontend)

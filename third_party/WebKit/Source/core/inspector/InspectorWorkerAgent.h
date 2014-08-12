@@ -68,6 +68,8 @@ public:
     virtual void sendMessageToWorker(ErrorString*, int workerId, const RefPtr<JSONObject>& message) OVERRIDE;
     virtual void setAutoconnectToWorkers(ErrorString*, bool value) OVERRIDE;
 
+    void setTracingSessionId(const String&);
+
 private:
     InspectorWorkerAgent();
     void createWorkerFrontendChannelsForExistingWorkers();
@@ -81,6 +83,7 @@ private:
     WorkerChannels m_idToChannel;
     typedef HashMap<WorkerGlobalScopeProxy*, String> DedicatedWorkers;
     DedicatedWorkers m_dedicatedWorkers;
+    String m_tracingSessionId;
 };
 
 } // namespace blink

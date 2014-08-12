@@ -48,6 +48,7 @@
 #include "core/workers/WorkerObjectProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "platform/NotImplemented.h"
+#include "platform/TraceEvent.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Functional.h"
 #include "wtf/MainThread.h"
@@ -251,6 +252,22 @@ void WorkerMessagingProxy::sendMessageToInspector(const String& message)
         return;
     m_workerThread->postDebuggerTask(createCrossThreadTask(dispatchOnInspectorBackendTask, String(message)));
     m_workerThread->interruptAndDispatchInspectorCommands();
+}
+
+static void dispatchWriteTimelineStartedEvent(ExecutionContext* context, const String& sessionId)
+{
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "TracingStartedInWorker", "sessionId", sessionId.utf8());
+}
+
+void WorkerMessagingProxy::writeTimelineStartedEvent(const String& sessionId)
+{
+    if (m_askedToTerminate)
+        return;
+    OwnPtr<ExecutionContextTask> task = createCrossThreadTask(dispatchWriteTimelineStartedEvent, String(sessionId));
+    if (m_workerThread)
+        m_workerThread->postTask(task.release());
+    else
+        m_queuedEarlyTasks.append(task.release());
 }
 
 void WorkerMessagingProxy::workerGlobalScopeDestroyed()

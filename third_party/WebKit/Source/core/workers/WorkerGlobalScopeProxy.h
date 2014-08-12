@@ -64,6 +64,7 @@ namespace blink {
         virtual void connectToInspector(PageInspector*) { }
         virtual void disconnectFromInspector() { }
         virtual void sendMessageToInspector(const String&) { }
+        virtual void writeTimelineStartedEvent(const String& sessionId) { }
     };
 
 } // namespace blink
