@@ -13,6 +13,7 @@
 #include "cc/quads/checkerboard_draw_quad.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/io_surface_draw_quad.h"
+#include "cc/quads/largest_draw_quad.h"
 #include "cc/quads/picture_draw_quad.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/render_pass_draw_quad.h"
@@ -226,27 +227,6 @@ void CompareDrawQuad(DrawQuad* quad,
   }                                                              \
   SETUP_AND_COPY_QUAD_ALL(Type, quad_all);
 
-#define CREATE_QUAD_5_NEW_RP(Type, a, b, c, d, e, copy_a)                 \
-  Type* quad_new = render_pass->CreateAndAppendDrawQuad<Type>();          \
-  { QUAD_DATA quad_new->SetNew(shared_state, quad_rect, a, b, c, d, e); } \
-  SETUP_AND_COPY_QUAD_NEW_RP(Type, quad_new, copy_a);
-
-#define CREATE_QUAD_5_ALL_RP(Type, a, b, c, d, e, copy_a)        \
-  Type* quad_all = render_pass->CreateAndAppendDrawQuad<Type>(); \
-  {                                                              \
-    QUAD_DATA quad_all->SetAll(shared_state,                     \
-                               quad_rect,                        \
-                               quad_opaque_rect,                 \
-                               quad_visible_rect,                \
-                               needs_blending,                   \
-                               a,                                \
-                               b,                                \
-                               c,                                \
-                               d,                                \
-                               e);                               \
-  }                                                              \
-  SETUP_AND_COPY_QUAD_ALL_RP(Type, quad_all, copy_a);
-
 #define CREATE_QUAD_6_NEW(Type, a, b, c, d, e, f)                            \
   Type* quad_new = render_pass->CreateAndAppendDrawQuad<Type>();             \
   { QUAD_DATA quad_new->SetNew(shared_state, quad_rect, a, b, c, d, e, f); } \
@@ -294,31 +274,6 @@ void CompareDrawQuad(DrawQuad* quad,
   }                                                              \
   SETUP_AND_COPY_QUAD_ALL(Type, quad_all);
 
-#define CREATE_QUAD_7_NEW_RP(Type, a, b, c, d, e, f, g, copy_a)               \
-  Type* quad_new = render_pass->CreateAndAppendDrawQuad<Type>();              \
-  {                                                                           \
-    QUAD_DATA quad_new->SetNew(shared_state, quad_rect, a, b, c, d, e, f, g); \
-  }                                                                           \
-  SETUP_AND_COPY_QUAD_NEW_RP(Type, quad_new, copy_a);
-
-#define CREATE_QUAD_7_ALL_RP(Type, a, b, c, d, e, f, g, copy_a)  \
-  Type* quad_all = render_pass->CreateAndAppendDrawQuad<Type>(); \
-  {                                                              \
-    QUAD_DATA quad_all->SetAll(shared_state,                     \
-                               quad_rect,                        \
-                               quad_opaque_rect,                 \
-                               quad_visible_rect,                \
-                               needs_blending,                   \
-                               a,                                \
-                               b,                                \
-                               c,                                \
-                               d,                                \
-                               e,                                \
-                               f,                                \
-                               g);                               \
-  }                                                              \
-  SETUP_AND_COPY_QUAD_ALL_RP(Type, quad_all, copy_a);
-
 #define CREATE_QUAD_8_NEW(Type, a, b, c, d, e, f, g, h)          \
   Type* quad_new = render_pass->CreateAndAppendDrawQuad<Type>(); \
   {                                                              \
@@ -346,25 +301,6 @@ void CompareDrawQuad(DrawQuad* quad,
   }                                                              \
   SETUP_AND_COPY_QUAD_ALL(Type, quad_all);
 
-#define CREATE_QUAD_8_ALL_RP(Type, a, b, c, d, e, f, g, h, copy_a) \
-  Type* quad_all = render_pass->CreateAndAppendDrawQuad<Type>();   \
-  {                                                                \
-    QUAD_DATA quad_all->SetAll(shared_state,                       \
-                               quad_rect,                          \
-                               quad_opaque_rect,                   \
-                               quad_visible_rect,                  \
-                               needs_blending,                     \
-                               a,                                  \
-                               b,                                  \
-                               c,                                  \
-                               d,                                  \
-                               e,                                  \
-                               f,                                  \
-                               g,                                  \
-                               h);                                 \
-  }                                                                \
-  SETUP_AND_COPY_QUAD_ALL_RP(Type, quad_all, copy_a);
-
 #define CREATE_QUAD_9_NEW(Type, a, b, c, d, e, f, g, h, i)       \
   Type* quad_new = render_pass->CreateAndAppendDrawQuad<Type>(); \
   {                                                              \
@@ -372,14 +308,6 @@ void CompareDrawQuad(DrawQuad* quad,
         shared_state, quad_rect, a, b, c, d, e, f, g, h, i);     \
   }                                                              \
   SETUP_AND_COPY_QUAD_NEW(Type, quad_new);
-
-#define CREATE_QUAD_9_NEW_RP(Type, a, b, c, d, e, f, g, h, i, copy_a) \
-  Type* quad_new = render_pass->CreateAndAppendDrawQuad<Type>();      \
-  {                                                                   \
-    QUAD_DATA quad_new->SetNew(                                       \
-        shared_state, quad_rect, a, b, c, d, e, f, g, h, i);          \
-  }                                                                   \
-  SETUP_AND_COPY_QUAD_NEW_RP(Type, quad_new, copy_a);
 
 #define CREATE_QUAD_9_ALL(Type, a, b, c, d, e, f, g, h, i) \
   {                                                        \
@@ -399,6 +327,30 @@ void CompareDrawQuad(DrawQuad* quad,
                                i);                         \
   }                                                        \
   SETUP_AND_COPY_QUAD_ALL(Type, quad_all);
+
+#define CREATE_QUAD_ALL_RP(Type, a, b, c, d, e, f, copy_a)       \
+  Type* quad_all = render_pass->CreateAndAppendDrawQuad<Type>(); \
+  {                                                              \
+    QUAD_DATA quad_all->SetAll(shared_state,                     \
+                               quad_rect,                        \
+                               quad_opaque_rect,                 \
+                               quad_visible_rect,                \
+                               needs_blending,                   \
+                               a,                                \
+                               b,                                \
+                               c,                                \
+                               d,                                \
+                               e,                                \
+                               f);                               \
+  }                                                              \
+  SETUP_AND_COPY_QUAD_ALL_RP(Type, quad_all, copy_a);
+
+#define CREATE_QUAD_NEW_RP(Type, a, b, c, d, e, f, g, copy_a)                 \
+  Type* quad_new = render_pass->CreateAndAppendDrawQuad<Type>();              \
+  {                                                                           \
+    QUAD_DATA quad_new->SetNew(shared_state, quad_rect, a, b, c, d, e, f, g); \
+  }                                                                           \
+  SETUP_AND_COPY_QUAD_NEW_RP(Type, quad_new, copy_a);
 
 TEST(DrawQuadTest, CopyCheckerboardDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
@@ -464,9 +416,7 @@ TEST(DrawQuadTest, CopyIOSurfaceDrawQuad) {
 TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
   RenderPass::Id render_pass_id(22, 64);
-  bool is_replica = true;
   ResourceProvider::ResourceId mask_resource_id = 78;
-  gfx::Rect contents_changed_since_last_frame(42, 11, 74, 24);
   gfx::RectF mask_u_v_rect(-45.f, -21.f, 33.f, 19.f);
   FilterOperations filters;
   filters.Append(FilterOperation::CreateBlurFilter(1.f));
@@ -478,46 +428,38 @@ TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
   RenderPass::Id copied_render_pass_id(235, 11);
   CREATE_SHARED_STATE();
 
-  CREATE_QUAD_9_NEW_RP(RenderPassDrawQuad,
-                       visible_rect,
-                       render_pass_id,
-                       is_replica,
-                       mask_resource_id,
-                       contents_changed_since_last_frame,
-                       mask_u_v_rect,
-                       filters,
-                       filters_scale,
-                       background_filters,
-                       copied_render_pass_id);
+  CREATE_QUAD_NEW_RP(RenderPassDrawQuad,
+                     visible_rect,
+                     render_pass_id,
+                     mask_resource_id,
+                     mask_u_v_rect,
+                     filters,
+                     filters_scale,
+                     background_filters,
+                     copied_render_pass_id);
   EXPECT_EQ(DrawQuad::RENDER_PASS, copy_quad->material);
   EXPECT_RECT_EQ(visible_rect, copy_quad->visible_rect);
   EXPECT_EQ(copied_render_pass_id, copy_quad->render_pass_id);
-  EXPECT_EQ(is_replica, copy_quad->is_replica);
   EXPECT_EQ(mask_resource_id, copy_quad->mask_resource_id);
-  EXPECT_RECT_EQ(contents_changed_since_last_frame,
-                 copy_quad->contents_changed_since_last_frame);
   EXPECT_EQ(mask_u_v_rect.ToString(), copy_quad->mask_uv_rect.ToString());
   EXPECT_EQ(filters, copy_quad->filters);
+  EXPECT_EQ(filters_scale, copy_quad->filters_scale);
   EXPECT_EQ(background_filters, copy_quad->background_filters);
 
-  CREATE_QUAD_8_ALL_RP(RenderPassDrawQuad,
-                       render_pass_id,
-                       is_replica,
-                       mask_resource_id,
-                       contents_changed_since_last_frame,
-                       mask_u_v_rect,
-                       filters,
-                       filters_scale,
-                       background_filters,
-                       copied_render_pass_id);
+  CREATE_QUAD_ALL_RP(RenderPassDrawQuad,
+                     render_pass_id,
+                     mask_resource_id,
+                     mask_u_v_rect,
+                     filters,
+                     filters_scale,
+                     background_filters,
+                     copied_render_pass_id);
   EXPECT_EQ(DrawQuad::RENDER_PASS, copy_quad->material);
   EXPECT_EQ(copied_render_pass_id, copy_quad->render_pass_id);
-  EXPECT_EQ(is_replica, copy_quad->is_replica);
   EXPECT_EQ(mask_resource_id, copy_quad->mask_resource_id);
-  EXPECT_RECT_EQ(contents_changed_since_last_frame,
-                 copy_quad->contents_changed_since_last_frame);
   EXPECT_EQ(mask_u_v_rect.ToString(), copy_quad->mask_uv_rect.ToString());
   EXPECT_EQ(filters, copy_quad->filters);
+  EXPECT_EQ(filters_scale, copy_quad->filters_scale);
   EXPECT_EQ(background_filters, copy_quad->background_filters);
 }
 
@@ -813,12 +755,11 @@ TEST_F(DrawQuadIteratorTest, IOSurfaceDrawQuad) {
 TEST_F(DrawQuadIteratorTest, RenderPassDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
   RenderPass::Id render_pass_id(22, 64);
-  bool is_replica = true;
   ResourceProvider::ResourceId mask_resource_id = 78;
-  gfx::Rect contents_changed_since_last_frame(42, 11, 74, 24);
   gfx::RectF mask_u_v_rect(-45.f, -21.f, 33.f, 19.f);
   FilterOperations filters;
   filters.Append(FilterOperation::CreateBlurFilter(1.f));
+  gfx::Vector2dF filters_scale(2.f, 3.f);
   FilterOperations background_filters;
   background_filters.Append(
       FilterOperation::CreateGrayscaleFilter(1.f));
@@ -826,17 +767,15 @@ TEST_F(DrawQuadIteratorTest, RenderPassDrawQuad) {
   RenderPass::Id copied_render_pass_id(235, 11);
 
   CREATE_SHARED_STATE();
-  CREATE_QUAD_9_NEW_RP(RenderPassDrawQuad,
-                       visible_rect,
-                       render_pass_id,
-                       is_replica,
-                       mask_resource_id,
-                       contents_changed_since_last_frame,
-                       mask_u_v_rect,
-                       filters,
-                       gfx::Vector2dF(),
-                       background_filters,
-                       copied_render_pass_id);
+  CREATE_QUAD_NEW_RP(RenderPassDrawQuad,
+                     visible_rect,
+                     render_pass_id,
+                     mask_resource_id,
+                     mask_u_v_rect,
+                     filters,
+                     filters_scale,
+                     background_filters,
+                     copied_render_pass_id);
   EXPECT_EQ(mask_resource_id, quad_new->mask_resource_id);
   EXPECT_EQ(1, IterateAndCount(quad_new));
   EXPECT_EQ(mask_resource_id + 1, quad_new->mask_resource_id);
@@ -981,6 +920,97 @@ TEST_F(DrawQuadIteratorTest, DISABLED_PictureDrawQuad) {
                     contents_scale,
                     picture_pile);
   EXPECT_EQ(0, IterateAndCount(quad_new));
+}
+
+TEST(DrawQuadTest, LargestQuadType) {
+  size_t largest = 0;
+
+  for (int i = 0; i <= DrawQuad::MATERIAL_LAST; ++i) {
+    switch (static_cast<DrawQuad::Material>(i)) {
+      case DrawQuad::CHECKERBOARD:
+        largest = std::max(largest, sizeof(CheckerboardDrawQuad));
+        break;
+      case DrawQuad::DEBUG_BORDER:
+        largest = std::max(largest, sizeof(DebugBorderDrawQuad));
+        break;
+      case DrawQuad::IO_SURFACE_CONTENT:
+        largest = std::max(largest, sizeof(IOSurfaceDrawQuad));
+        break;
+      case DrawQuad::PICTURE_CONTENT:
+        largest = std::max(largest, sizeof(PictureDrawQuad));
+        break;
+      case DrawQuad::TEXTURE_CONTENT:
+        largest = std::max(largest, sizeof(TextureDrawQuad));
+        break;
+      case DrawQuad::RENDER_PASS:
+        largest = std::max(largest, sizeof(RenderPassDrawQuad));
+        break;
+      case DrawQuad::SOLID_COLOR:
+        largest = std::max(largest, sizeof(SolidColorDrawQuad));
+        break;
+      case DrawQuad::SURFACE_CONTENT:
+        largest = std::max(largest, sizeof(SurfaceDrawQuad));
+        break;
+      case DrawQuad::TILED_CONTENT:
+        largest = std::max(largest, sizeof(TileDrawQuad));
+        break;
+      case DrawQuad::STREAM_VIDEO_CONTENT:
+        largest = std::max(largest, sizeof(StreamVideoDrawQuad));
+        break;
+      case DrawQuad::YUV_VIDEO_CONTENT:
+        largest = std::max(largest, sizeof(YUVVideoDrawQuad));
+        break;
+      case DrawQuad::INVALID:
+        break;
+    }
+  }
+  EXPECT_EQ(sizeof(kLargestDrawQuad), largest);
+
+  if (!HasFailure())
+    return;
+
+  // On failure, output the size of all quads for debugging.
+  LOG(ERROR) << "largest " << largest;
+  LOG(ERROR) << "kLargestDrawQuad " << sizeof(kLargestDrawQuad);
+  for (int i = 0; i <= DrawQuad::MATERIAL_LAST; ++i) {
+    switch (static_cast<DrawQuad::Material>(i)) {
+      case DrawQuad::CHECKERBOARD:
+        LOG(ERROR) << "CheckerboardDrawQuad " << sizeof(CheckerboardDrawQuad);
+        break;
+      case DrawQuad::DEBUG_BORDER:
+        LOG(ERROR) << "DebugBorderDrawQuad " << sizeof(DebugBorderDrawQuad);
+        break;
+      case DrawQuad::IO_SURFACE_CONTENT:
+        LOG(ERROR) << "IOSurfaceDrawQuad " << sizeof(IOSurfaceDrawQuad);
+        break;
+      case DrawQuad::PICTURE_CONTENT:
+        LOG(ERROR) << "PictureDrawQuad " << sizeof(PictureDrawQuad);
+        break;
+      case DrawQuad::TEXTURE_CONTENT:
+        LOG(ERROR) << "TextureDrawQuad " << sizeof(TextureDrawQuad);
+        break;
+      case DrawQuad::RENDER_PASS:
+        LOG(ERROR) << "RenderPassDrawQuad " << sizeof(RenderPassDrawQuad);
+        break;
+      case DrawQuad::SOLID_COLOR:
+        LOG(ERROR) << "SolidColorDrawQuad " << sizeof(SolidColorDrawQuad);
+        break;
+      case DrawQuad::SURFACE_CONTENT:
+        LOG(ERROR) << "SurfaceDrawQuad " << sizeof(SurfaceDrawQuad);
+        break;
+      case DrawQuad::TILED_CONTENT:
+        LOG(ERROR) << "TileDrawQuad " << sizeof(TileDrawQuad);
+        break;
+      case DrawQuad::STREAM_VIDEO_CONTENT:
+        LOG(ERROR) << "StreamVideoDrawQuad " << sizeof(StreamVideoDrawQuad);
+        break;
+      case DrawQuad::YUV_VIDEO_CONTENT:
+        LOG(ERROR) << "YUVVideoDrawQuad " << sizeof(YUVVideoDrawQuad);
+        break;
+      case DrawQuad::INVALID:
+        break;
+    }
+  }
 }
 
 }  // namespace

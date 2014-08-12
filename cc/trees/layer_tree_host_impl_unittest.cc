@@ -5137,7 +5137,6 @@ TEST_F(LayerTreeHostImplTest, ReflectionMaskLayerWithDifferentBounds) {
               frame.render_passes[0]->quad_list[1]->material);
     const RenderPassDrawQuad* replica_quad =
         RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[1]);
-    EXPECT_TRUE(replica_quad->is_replica);
     EXPECT_EQ(gfx::Rect(0, 0, 50, 50).ToString(),
               replica_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
@@ -5165,7 +5164,6 @@ TEST_F(LayerTreeHostImplTest, ReflectionMaskLayerWithDifferentBounds) {
               frame.render_passes[0]->quad_list[1]->material);
     const RenderPassDrawQuad* replica_quad =
         RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[1]);
-    EXPECT_TRUE(replica_quad->is_replica);
     EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
               replica_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
@@ -5196,7 +5194,6 @@ TEST_F(LayerTreeHostImplTest, ReflectionMaskLayerWithDifferentBounds) {
               frame.render_passes[0]->quad_list[1]->material);
     const RenderPassDrawQuad* replica_quad =
         RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[1]);
-    EXPECT_TRUE(replica_quad->is_replica);
     EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
               replica_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
@@ -5222,7 +5219,6 @@ TEST_F(LayerTreeHostImplTest, ReflectionMaskLayerWithDifferentBounds) {
               frame.render_passes[0]->quad_list[1]->material);
     const RenderPassDrawQuad* replica_quad =
         RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[1]);
-    EXPECT_TRUE(replica_quad->is_replica);
     EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
               replica_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
@@ -5300,7 +5296,6 @@ TEST_F(LayerTreeHostImplTest, ReflectionMaskLayerForSurfaceWithUnclippedChild) {
               frame.render_passes[0]->quad_list[0]->material);
     const RenderPassDrawQuad* render_pass_quad =
         RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[0]);
-    EXPECT_FALSE(render_pass_quad->is_replica);
     EXPECT_EQ(gfx::Rect(0, 0, 100, 50).ToString(),
               render_pass_quad->rect.ToString());
 
@@ -5309,7 +5304,6 @@ TEST_F(LayerTreeHostImplTest, ReflectionMaskLayerForSurfaceWithUnclippedChild) {
               frame.render_passes[0]->quad_list[1]->material);
     const RenderPassDrawQuad* replica_quad =
         RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[1]);
-    EXPECT_TRUE(replica_quad->is_replica);
     EXPECT_EQ(gfx::Rect(0, 0, 100, 50).ToString(),
               replica_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 2.f, 1.f).ToString(),
@@ -5334,7 +5328,6 @@ TEST_F(LayerTreeHostImplTest, ReflectionMaskLayerForSurfaceWithUnclippedChild) {
               frame.render_passes[0]->quad_list[0]->material);
     const RenderPassDrawQuad* render_pass_quad =
         RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[0]);
-    EXPECT_FALSE(render_pass_quad->is_replica);
     EXPECT_EQ(gfx::Rect(-50, 0, 100, 50).ToString(),
               render_pass_quad->rect.ToString());
 
@@ -5343,7 +5336,6 @@ TEST_F(LayerTreeHostImplTest, ReflectionMaskLayerForSurfaceWithUnclippedChild) {
               frame.render_passes[0]->quad_list[1]->material);
     const RenderPassDrawQuad* replica_quad =
         RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[1]);
-    EXPECT_TRUE(replica_quad->is_replica);
     EXPECT_EQ(gfx::Rect(-50, 0, 100, 50).ToString(),
               replica_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(-1.f, 0.f, 2.f, 1.f).ToString(),
@@ -5428,7 +5420,6 @@ TEST_F(LayerTreeHostImplTest, MaskLayerForSurfaceWithClippedLayer) {
               frame.render_passes[0]->quad_list[0]->material);
     const RenderPassDrawQuad* render_pass_quad =
         RenderPassDrawQuad::MaterialCast(frame.render_passes[0]->quad_list[0]);
-    EXPECT_FALSE(render_pass_quad->is_replica);
     EXPECT_EQ(gfx::Rect(20, 10, 10, 20).ToString(),
               render_pass_quad->rect.ToString());
 

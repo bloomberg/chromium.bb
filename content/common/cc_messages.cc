@@ -6,6 +6,7 @@
 
 #include "cc/output/compositor_frame.h"
 #include "cc/output/filter_operations.h"
+#include "cc/quads/largest_draw_quad.h"
 #include "content/public/common/common_param_traits.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkFlattenableSerialization.h"
@@ -388,7 +389,7 @@ static size_t ReserveSizeForRenderPassWrite(const cc::RenderPass& p) {
   to_reserve += p.quad_list.size() * sizeof(size_t);
 
   // The largest quad type, verified by a unit test.
-  to_reserve += p.quad_list.size() * sizeof(cc::RenderPassDrawQuad);
+  to_reserve += p.quad_list.size() * sizeof(cc::kLargestDrawQuad);
   return to_reserve;
 }
 

@@ -318,6 +318,7 @@
         'quads/draw_quad.h',
         'quads/io_surface_draw_quad.cc',
         'quads/io_surface_draw_quad.h',
+        'quads/largest_draw_quad.h',
         'quads/picture_draw_quad.cc',
         'quads/picture_draw_quad.h',
         'quads/render_pass.cc',

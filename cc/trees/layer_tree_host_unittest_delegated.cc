@@ -190,9 +190,7 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
                  output_rect,
                  output_rect,
                  id,
-                 false,  // is_replica
                  0,      // mask_resource_id
-                 damage_rect,
                  gfx::Rect(0, 0, 1, 1),  // mask_uv_rect
                  filters,
                  gfx::Vector2dF(),

@@ -66,10 +66,6 @@ void RenderSurfaceImpl::SetClipRect(const gfx::Rect& clip_rect) {
   clip_rect_ = clip_rect;
 }
 
-bool RenderSurfaceImpl::ContentsChanged() const {
-  return !damage_tracker_->current_damage_rect().IsEmpty();
-}
-
 void RenderSurfaceImpl::SetContentRect(const gfx::Rect& content_rect) {
   if (content_rect_ == content_rect)
     return;
@@ -221,8 +217,6 @@ void RenderSurfaceImpl::AppendQuads(
 
   ResourceProvider::ResourceId mask_resource_id =
       mask_layer ? mask_layer->ContentsResourceId() : 0;
-  gfx::Rect contents_changed_since_last_frame =
-      ContentsChanged() ? content_rect_ : gfx::Rect();
 
   DCHECK(owning_layer_->draw_properties().target_space_transform.IsScale2d());
   gfx::Vector2dF owning_layer_to_target_scale =
@@ -236,9 +230,7 @@ void RenderSurfaceImpl::AppendQuads(
                content_rect_,
                visible_content_rect,
                render_pass_id,
-               for_replica,
                mask_resource_id,
-               contents_changed_since_last_frame,
                mask_uv_rect,
                owning_layer_->filters(),
                owning_layer_to_target_scale,

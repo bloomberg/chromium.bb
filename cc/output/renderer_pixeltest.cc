@@ -104,9 +104,7 @@ void CreateTestRenderPassDrawQuad(const SharedQuadState* shared_state,
                rect,
                rect,
                pass_id,
-               false,                 // is_replica
                0,                     // mask_resource_id
-               rect,                  // contents_changed_since_last_frame
                gfx::RectF(1.f, 1.f),  // mask_uv_rect
                FilterOperations(),    // foreground filters
                gfx::Vector2dF(),      // filters scale
@@ -807,9 +805,7 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlpha) {
                            pass_rect,
                            pass_rect,
                            child_pass_id,
-                           false,
                            0,
-                           pass_rect,
                            gfx::RectF(),
                            filters,
                            gfx::Vector2dF(),
@@ -880,9 +876,7 @@ TYPED_TEST(RendererPixelTest, FastPassSaturateFilter) {
                            pass_rect,
                            pass_rect,
                            child_pass_id,
-                           false,
                            0,
-                           pass_rect,
                            gfx::RectF(),
                            filters,
                            gfx::Vector2dF(),
@@ -952,9 +946,7 @@ TYPED_TEST(RendererPixelTest, FastPassFilterChain) {
                            pass_rect,
                            pass_rect,
                            child_pass_id,
-                           false,
                            0,
-                           pass_rect,
                            gfx::RectF(),
                            filters,
                            gfx::Vector2dF(),
@@ -1046,9 +1038,7 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlphaTranslation) {
                            pass_rect,
                            pass_rect,
                            child_pass_id,
-                           false,
                            0,
-                           pass_rect,
                            gfx::RectF(),
                            filters,
                            gfx::Vector2dF(),
@@ -1255,9 +1245,7 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
                     sub_rect,
                     sub_rect,
                     child_pass_id,
-                    false,  // is_replica
                     mask_resource_id,
-                    sub_rect,              // contents_changed_since_last_frame
                     gfx::RectF(1.f, 1.f),  // mask_uv_rect
                     FilterOperations(),    // foreground filters
                     gfx::Vector2dF(),      // filters scale
@@ -1330,9 +1318,7 @@ class RendererPixelTestWithBackgroundFilter
           filter_pass_content_rect_,
           filter_pass_content_rect_,
           filter_pass_id,
-          false,                      // is_replica
           0,                          // mask_resource_id
-          filter_pass_content_rect_,  // contents_changed_since_last_frame
           gfx::RectF(),               // mask_uv_rect
           FilterOperations(),         // filters
           gfx::Vector2dF(),           // filters_scale
