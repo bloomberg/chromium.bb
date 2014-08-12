@@ -389,6 +389,10 @@ TestRenderFrameHost* RenderViewHostImplTestHarness::main_test_rfh() {
   return static_cast<TestRenderFrameHost*>(main_rfh());
 }
 
+TestRenderFrameHost* RenderViewHostImplTestHarness::pending_main_test_rfh() {
+  return static_cast<TestRenderFrameHost*>(pending_main_rfh());
+}
+
 TestWebContents* RenderViewHostImplTestHarness::contents() {
   return static_cast<TestWebContents*>(web_contents());
 }
