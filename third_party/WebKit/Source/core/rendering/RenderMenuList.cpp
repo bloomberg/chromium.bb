@@ -65,9 +65,15 @@ RenderMenuList::RenderMenuList(Element* element)
 
 RenderMenuList::~RenderMenuList()
 {
+    ASSERT(!m_popup);
+}
+
+void RenderMenuList::destroy()
+{
     if (m_popup)
         m_popup->disconnectClient();
     m_popup = nullptr;
+    RenderFlexibleBox::destroy();
 }
 
 void RenderMenuList::trace(Visitor* visitor)

@@ -39,9 +39,9 @@ class RenderMenuList FINAL : public RenderFlexibleBox, private PopupMenuClient {
 public:
     RenderMenuList(Element*);
     virtual ~RenderMenuList();
+    virtual void destroy() OVERRIDE;
     virtual void trace(Visitor*) OVERRIDE;
 
-public:
     bool popupIsVisible() const { return m_popupIsVisible; }
     void showPopup();
     void hidePopup();
