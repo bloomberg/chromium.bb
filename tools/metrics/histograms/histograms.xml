@@ -3328,6 +3328,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     enum="DataReductionProxyBypassType">
   <owner>bengr@chromium.org</owner>
   <owner>marq@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
   <summary>
     Counts various events that trigger Chrome to block the fallback
     configuration of the data reduction proxy.
@@ -3338,6 +3339,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     enum="DataReductionProxyBypassType">
   <owner>bengr@chromium.org</owner>
   <owner>marq@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
   <summary>
     Counts various events that trigger Chrome to block the primary configuration
     of the data reduction proxy.
@@ -3346,6 +3348,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="DataReductionProxy.BypassedBytes" units="bytes">
   <owner>bengr@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
   <summary>
     Counts the response bytes that did not go through the data reduction proxy
     as the result of a bypass event.
@@ -3354,6 +3357,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="DataReductionProxy.BypassedBytes.NotBypassed" units="bytes">
   <owner>bengr@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
   <summary>
     Counts the response bytes that went through the data reduction proxy and
     were not bypassed.
@@ -3410,6 +3414,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     enum="DataReductionProxyBypassType">
   <owner>bengr@chromium.org</owner>
   <owner>marq@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
   <summary>
     Counts various events that trigger Chrome to bypass the fallback
     configuration of the data reduction proxy.
@@ -3420,6 +3425,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     enum="DataReductionProxyBypassType">
   <owner>bengr@chromium.org</owner>
   <owner>marq@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
   <summary>
     Counts various events that trigger Chrome to bypass the primary
     configuration of the data reduction proxy.
@@ -22468,6 +22474,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="PLT.PT_BeginToCommit_DataReductionProxy" units="milliseconds">
   <owner>pmeenan@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
   <summary>
     This time is based on the PerformanceTiming spec and is a more accurate
     version of PLT.BeginToCommit. Commit: responseStart. Begin: requestStart or
@@ -22487,6 +22495,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="PLT.PT_BeginToFinish_DataReductionProxy" units="milliseconds">
   <owner>pmeenan@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
   <summary>
     This time is based on the PerformanceTiming spec and is a more accurate
     version of PLT.BeginToFinish_SpdyProxy. Finish: loadEventEnd. Begin:
@@ -22507,6 +22517,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="PLT.PT_BeginToFinishDoc_DataReductionProxy"
     units="milliseconds">
   <owner>pmeenan@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
   <summary>
     This time is based on the PerformanceTiming spec and is a more accurate
     version of PLT.BeginToFinishDoc_SpdyProxy. FinishDoc: loadEventStart. Begin:
@@ -22525,6 +22537,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="PLT.PT_CommitToFinish_DataReductionProxy" units="milliseconds">
   <owner>pmeenan@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
   <summary>
     This time is based on the PerformanceTiming spec and is a more accurate
     version of PLT.CommitToFinish. Commit: responseStart. Finish: loadEventEnd.
@@ -22544,6 +22558,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="PLT.PT_CommitToFinishDoc_DataReductionProxy"
     units="milliseconds">
   <owner>pmeenan@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
   <summary>
     This time is based on the PerformanceTiming spec and is a more accurate
     version of PLT.CommitToFinishDoc. Commit: responseStart. FinishDoc:
@@ -22563,7 +22579,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="PLT.PT_FinishDocToFinish_DataReductionProxy"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>bengr@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
   <summary>
     This time is based on the PerformanceTiming spec and is a more accurate
     version of PLT.FinishDocToFinish. Finish: loadEventEnd. FinishDoc:
@@ -22602,6 +22619,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="PLT.PT_RequestToFinish_DataReductionProxy"
     units="milliseconds">
   <owner>pmeenan@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
   <summary>
     This time is based on the PerformanceTiming spec and is a more accurate
     version of PLT.RequestToFinish. Finish: loadEventEnd. Request:
@@ -22629,7 +22648,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="PLT.PT_RequestToStart_DataReductionProxy" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>bengr@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
   <summary>
     This time is based on the PerformanceTiming spec and is a more accurate
     version of PLT.RequestToStart. Start: requestStart. Request:
@@ -22647,7 +22667,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="PLT.PT_StartToCommit_DataReductionProxy" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>bengr@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
   <summary>
     This time is based on the PerformanceTiming spec and is a more accurate
     version of PLT.StartToCommit. Start: requestStart. Commit: responseStart.
@@ -22664,7 +22685,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="PLT.PT_StartToFinish_DataReductionProxy" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>bengr@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
   <summary>
     This time is based on the PerformanceTiming spec and is a more accurate
     version of PLT.StartToFinish. Start: requestStart. Finish: loadEventEnd.
