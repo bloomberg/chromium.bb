@@ -1084,14 +1084,6 @@ void AwContents::SetDipScale(JNIEnv* env, jobject obj, jfloat dip_scale) {
   browser_view_renderer_.SetDipScale(dip_scale);
 }
 
-void AwContents::SetFixedLayoutSize(JNIEnv* env,
-                                    jobject obj,
-                                    jint width_dip,
-                                    jint height_dip) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  render_view_host_ext_->SetFixedLayoutSize(gfx::Size(width_dip, height_dip));
-}
-
 void AwContents::ScrollTo(JNIEnv* env, jobject obj, jint x, jint y) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   browser_view_renderer_.ScrollTo(gfx::Vector2d(x, y));

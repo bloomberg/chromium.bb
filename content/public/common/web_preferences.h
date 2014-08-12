@@ -174,6 +174,7 @@ struct CONTENT_EXPORT WebPreferences {
   bool use_legacy_background_size_shorthand_behavior;
   bool wide_viewport_quirk;
   bool use_wide_viewport;
+  bool force_zero_layout_height;
   bool viewport_meta_layout_size_quirk;
   bool viewport_meta_merge_content_quirk;
   bool viewport_meta_non_user_scalable_quirk;

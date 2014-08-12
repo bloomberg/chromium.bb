@@ -343,10 +343,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
 
         final int expectedWidthCss =
             (int) Math.ceil(getRootLayoutWidthOnMainThread() / deviceDIPScale);
-        final int expectedHeightCss = contentHeightCss +
-            // The second div in the contents is styled to have 150% of the viewport height, hence
-            // the 1.5.
-            (int) (AwLayoutSizer.FIXED_LAYOUT_HEIGHT * 1.5);
+        final int expectedHeightCss = contentHeightCss;
 
         loadPageOfSizeAndWaitForSizeChange(testContainerView.getAwContents(),
                 mOnContentSizeChangedHelper, expectedWidthCss, contentHeightCss, true);

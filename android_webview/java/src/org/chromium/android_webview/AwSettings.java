@@ -87,6 +87,8 @@ public class AwSettings {
     private boolean mDomStorageEnabled = false;
     private boolean mDatabaseEnabled = false;
     private boolean mUseWideViewport = false;
+    private boolean mZeroLayoutHeightDisablesViewportQuirk = false;
+    private boolean mForceZeroLayoutHeight = false;
     private boolean mLoadWithOverviewMode = false;
     private boolean mMediaPlaybackRequiresUserGesture = true;
     private String mDefaultVideoPosterURL;
@@ -1225,6 +1227,48 @@ public class AwSettings {
     private boolean getUseWideViewportLocked() {
         assert Thread.holdsLock(mAwSettingsLock);
         return mUseWideViewport;
+    }
+
+    public void setZeroLayoutHeightDisablesViewportQuirk(boolean enabled) {
+        synchronized (mAwSettingsLock) {
+            if (mZeroLayoutHeightDisablesViewportQuirk != enabled) {
+                mZeroLayoutHeightDisablesViewportQuirk = enabled;
+                mEventHandler.updateWebkitPreferencesLocked();
+            }
+        }
+    }
+
+    public boolean getZeroLayoutHeightDisablesViewportQuirk() {
+        synchronized (mAwSettingsLock) {
+            return getZeroLayoutHeightDisablesViewportQuirkLocked();
+        }
+    }
+
+    @CalledByNative
+    private boolean getZeroLayoutHeightDisablesViewportQuirkLocked() {
+        assert Thread.holdsLock(mAwSettingsLock);
+        return mZeroLayoutHeightDisablesViewportQuirk;
+    }
+
+    public void setForceZeroLayoutHeight(boolean enabled) {
+        synchronized (mAwSettingsLock) {
+            if (mForceZeroLayoutHeight != enabled) {
+                mForceZeroLayoutHeight = enabled;
+                mEventHandler.updateWebkitPreferencesLocked();
+            }
+        }
+    }
+
+    public boolean getForceZeroLayoutHeight() {
+        synchronized (mAwSettingsLock) {
+            return getForceZeroLayoutHeightLocked();
+        }
+    }
+
+    @CalledByNative
+    private boolean getForceZeroLayoutHeightLocked() {
+        assert Thread.holdsLock(mAwSettingsLock);
+        return mForceZeroLayoutHeight;
     }
 
     @CalledByNative

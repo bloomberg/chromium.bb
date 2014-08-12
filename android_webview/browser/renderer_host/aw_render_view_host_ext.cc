@@ -74,11 +74,6 @@ void AwRenderViewHostExt::SetTextZoomFactor(float factor) {
   Send(new AwViewMsg_SetTextZoomFactor(web_contents()->GetRoutingID(), factor));
 }
 
-void AwRenderViewHostExt::SetFixedLayoutSize(const gfx::Size& size) {
-  DCHECK(CalledOnValidThread());
-  Send(new AwViewMsg_SetFixedLayoutSize(web_contents()->GetRoutingID(), size));
-}
-
 void AwRenderViewHostExt::ResetScrollAndScaleState() {
   DCHECK(CalledOnValidThread());
   Send(new AwViewMsg_ResetScrollAndScaleState(web_contents()->GetRoutingID()));

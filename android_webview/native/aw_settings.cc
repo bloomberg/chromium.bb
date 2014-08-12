@@ -338,6 +338,14 @@ void AwSettings::PopulateWebPreferencesLocked(
   web_prefs->use_wide_viewport =
       Java_AwSettings_getUseWideViewportLocked(env, obj);
 
+  web_prefs->force_zero_layout_height =
+      Java_AwSettings_getForceZeroLayoutHeightLocked(env, obj);
+
+  const bool zero_layout_height_disables_viewport_quirk =
+      Java_AwSettings_getZeroLayoutHeightDisablesViewportQuirkLocked(env, obj);
+  web_prefs->viewport_enabled = !(zero_layout_height_disables_viewport_quirk &&
+                                  web_prefs->force_zero_layout_height);
+
   web_prefs->double_tap_to_zoom_enabled =
       Java_AwSettings_supportsDoubleTapZoomLocked(env, obj);
 

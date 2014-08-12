@@ -1148,6 +1148,7 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
       prefs.use_legacy_background_size_shorthand_behavior);
   settings->setWideViewportQuirkEnabled(prefs.wide_viewport_quirk);
   settings->setUseWideViewport(prefs.use_wide_viewport);
+  settings->setForceZeroLayoutHeight(prefs.force_zero_layout_height);
   settings->setViewportMetaLayoutSizeQuirk(
       prefs.viewport_meta_layout_size_quirk);
   settings->setViewportMetaMergeContentQuirk(

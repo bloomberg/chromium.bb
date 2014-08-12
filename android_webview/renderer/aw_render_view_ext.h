@@ -49,8 +49,6 @@ class AwRenderViewExt : public content::RenderViewObserver {
 
   void OnSetInitialPageScale(double page_scale_factor);
 
-  void OnSetFixedLayoutSize(const gfx::Size& size);
-
   void OnSetBackgroundColor(SkColor c);
 
   void UpdatePageScaleFactor();

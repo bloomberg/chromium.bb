@@ -1355,6 +1355,127 @@ public class AwSettingsTest extends AwTestBase {
         private int mOnScaleChangedCallCount;
     }
 
+    class AwSettingsForceZeroLayoutHeightTestHelper extends AwSettingsTestHelper<Boolean> {
+
+        AwSettingsForceZeroLayoutHeightTestHelper(
+                AwTestContainerView containerView,
+                TestAwContentsClient contentViewClient,
+                boolean withViewPortTag) throws Throwable {
+            super(containerView, contentViewClient, true);
+            mWithViewPortTag = withViewPortTag;
+            mAwSettings.setUseWideViewPort(true);
+        }
+
+        @Override
+        protected Boolean getAlteredValue() {
+            return ENABLED;
+        }
+
+        @Override
+        protected Boolean getInitialValue() {
+            return DISABLED;
+        }
+
+        @Override
+        protected Boolean getCurrentValue() {
+            return mAwSettings.getForceZeroLayoutHeight();
+        }
+
+        @Override
+        protected void setCurrentValue(Boolean value) {
+            mAwSettings.setForceZeroLayoutHeight(value);
+        }
+
+        @Override
+        protected void doEnsureSettingHasValue(Boolean value) throws Throwable {
+            loadDataSync(getData());
+            int height = Integer.parseInt(getTitleOnUiThread());
+            if (value) {
+                assertEquals(0, height);
+            } else {
+                assertTrue("Div should be at least 50px high, was: " + height, height >= 50);
+            }
+        }
+
+        private String getData() {
+            return "<html><head>" +
+                    (mWithViewPortTag ? "<meta name='viewport' content='height=3000' />" : "") +
+                    "  <script type='text/javascript'> " +
+                    "    window.addEventListener('load', function(event) { " +
+                    "       document.title = document.getElementById('testDiv').clientHeight; " +
+                    "    }); " +
+                    "  </script> " +
+                    "</head>" +
+                    "<body> " +
+                    "  <div style='height:50px;'>test</div> " +
+                    "  <div id='testDiv' style='height:100%;'></div> " +
+                    "</body></html>";
+        }
+
+        private final boolean mWithViewPortTag;
+    }
+
+    class AwSettingsZeroLayoutHeightDisablesViewportQuirkTestHelper extends
+            AwSettingsTestHelper<Boolean> {
+
+        AwSettingsZeroLayoutHeightDisablesViewportQuirkTestHelper(
+                AwTestContainerView containerView,
+                TestAwContentsClient contentViewClient) throws Throwable {
+            super(containerView, contentViewClient, true);
+            mAwSettings.setUseWideViewPort(true);
+            mAwSettings.setForceZeroLayoutHeight(true);
+        }
+
+        @Override
+        protected Boolean getAlteredValue() {
+            return ENABLED;
+        }
+
+        @Override
+        protected Boolean getInitialValue() {
+            return DISABLED;
+        }
+
+        @Override
+        protected Boolean getCurrentValue() {
+            return mAwSettings.getZeroLayoutHeightDisablesViewportQuirk();
+        }
+
+        @Override
+        protected void setCurrentValue(Boolean value) {
+            mAwSettings.setZeroLayoutHeightDisablesViewportQuirk(value);
+        }
+
+        @Override
+        protected void doEnsureSettingHasValue(Boolean value) throws Throwable {
+            DeviceDisplayInfo deviceInfo = DeviceDisplayInfo.create(mContext);
+            int displayWidth = (int) (deviceInfo.getDisplayWidth() / deviceInfo.getDIPScale());
+
+            loadDataSync(getData());
+            int width = Integer.parseInt(getTitleOnUiThread());
+            if (value) {
+                assertEquals(displayWidth, width);
+            } else {
+                assertEquals(3000, width);
+            }
+        }
+
+        private String getData() {
+            return "<html><head>" +
+                    "<meta name='viewport' content='width=3000' />" +
+                    "  <script type='text/javascript'> " +
+                    "    window.addEventListener('load', function(event) { " +
+                    "       document.title = document.documentElement.clientWidth; " +
+                    "    }); " +
+                    "  </script> " +
+                    "</head>" +
+                    "<body> " +
+                    "  <div style='height:50px;'>test</div> " +
+                    "  <div id='testDiv' style='height:100%;'></div> " +
+                    "</body></html>";
+        }
+    }
+
     // The test verifies that JavaScript is disabled upon WebView
     // creation without accessing AwSettings. If the test passes,
     // it means that WebView-specific web preferences configuration
@@ -2480,6 +2601,39 @@ public class AwSettingsTest extends AwTestBase {
         final float zoomedOutScale = getScaleOnUiThread(awContents);
         assertTrue("zoomedOut: " + zoomedOutScale + ", initial: " + initialScale,
                 zoomedOutScale < initialScale);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testForceZeroLayoutHeightWithTwoViews() throws Throwable {
+        ViewPair views = createViews();
+        runPerViewSettingsTest(
+                new AwSettingsForceZeroLayoutHeightTestHelper(
+                        views.getContainer0(), views.getClient0(), false),
+                new AwSettingsForceZeroLayoutHeightTestHelper(
+                        views.getContainer1(), views.getClient1(), false));
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testForceZeroLayoutHeightViewportTagWithTwoViews() throws Throwable {
+        ViewPair views = createViews();
+        runPerViewSettingsTest(
+                new AwSettingsForceZeroLayoutHeightTestHelper(
+                        views.getContainer0(), views.getClient0(), true),
+                new AwSettingsForceZeroLayoutHeightTestHelper(
+                        views.getContainer1(), views.getClient1(), true));
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testZeroLayoutHeightDisablesViewportQuirkWithTwoViews() throws Throwable {
+        ViewPair views = createViews();
+        runPerViewSettingsTest(
+                new AwSettingsZeroLayoutHeightDisablesViewportQuirkTestHelper(
+                        views.getContainer0(), views.getClient0()),
+                new AwSettingsZeroLayoutHeightDisablesViewportQuirkTestHelper(
+                        views.getContainer1(), views.getClient1()));
     }
 
     @SmallTest

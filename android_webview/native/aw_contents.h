@@ -212,10 +212,6 @@ class AwContents : public FindHelper::Listener,
 
   void ScrollTo(JNIEnv* env, jobject obj, jint x, jint y);
   void SetDipScale(JNIEnv* env, jobject obj, jfloat dip_scale);
-  void SetFixedLayoutSize(JNIEnv* env,
-                          jobject obj,
-                          jint width_dip,
-                          jint height_dip);
   void SetSaveFormData(bool enabled);
 
   // Sets the java client

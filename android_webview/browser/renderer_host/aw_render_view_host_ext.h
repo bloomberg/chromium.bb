@@ -69,8 +69,6 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
   // Text Autosizing.
   void SetTextZoomFactor(float factor);
 
-  void SetFixedLayoutSize(const gfx::Size& size);
-
   void ResetScrollAndScaleState();
 
   // Sets the initial page scale. This overrides initial scale set by
