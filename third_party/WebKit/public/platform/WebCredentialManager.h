@@ -19,8 +19,8 @@ public:
     typedef WebCallbacks<WebCredential, WebCredentialManagerError> RequestCallbacks;
     typedef WebCallbacks<void, WebCredentialManagerError> NotificationCallbacks;
 
-    WebCredentialManager();
-    virtual ~WebCredentialManager();
+    WebCredentialManager() { }
+    virtual ~WebCredentialManager() { }
 
     // Ownership of the callback is transferred to the callee for each of the following methods.
     virtual void dispatchFailedSignIn(const WebCredential&, NotificationCallbacks*) { }
