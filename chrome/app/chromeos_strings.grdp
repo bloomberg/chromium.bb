@@ -769,7 +769,7 @@ Press any key to continue exploring.
     Wait just a sec
   </message>
   <message name="IDS_FILE_BROWSER_NO_ACTION_FOR_CRX" desc="Message shown when a user tries to open a *.crx file, which we don't handle in Files.app.">
-    We're constantly looking for ways to make your browsing safer. Previously, any website could prompt you to add an extension into your browser. In the latest versions of Google Chrome, you must explicitly tell Chrome that you want to install these extensions by adding them through the Extensions page. <ph name="BEGIN_LINK">&lt;a target='_blank' href='https://support.google.com/chrome_webstore/answer/2664769?p=crx_warning&amp;rd=1'&gt;</ph>Lean more<ph name="END_LINK">&lt;/a&gt;</ph>
+    We're constantly looking for ways to make your browsing safer. Previously, any website could prompt you to add an extension into your browser. In the latest versions of Google Chrome, you must explicitly tell Chrome that you want to install these extensions by adding them through the Extensions page. <ph name="BEGIN_LINK">&lt;a target='_blank' href='https://support.google.com/chrome_webstore/answer/2664769?p=crx_warning&amp;rd=1'&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
   </message>
 
   <message name="IDS_FILE_BROWSER_FOLDER" desc="Folder entry type">
