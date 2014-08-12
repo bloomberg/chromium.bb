@@ -40,8 +40,6 @@
 #include "platform/transforms/TranslateTransformOperation.h"
 #include "public/platform/WebTransformOperations.h"
 
-using namespace blink;
-
 namespace blink {
 
 void toWebTransformOperations(const TransformOperations& transformOperations, WebTransformOperations* webTransformOperations)

@@ -43,11 +43,10 @@
 #include <gtest/gtest.h>
 
 using namespace blink;
-using namespace blink;
 
 namespace {
 
-class WebTransformOperationsMock : public blink::WebTransformOperations {
+class WebTransformOperationsMock : public WebTransformOperations {
 public:
     MOCK_CONST_METHOD1(canBlendWith, bool(const WebTransformOperations&));
     MOCK_METHOD3(appendTranslate, void(double, double, double));
@@ -60,7 +59,7 @@ public:
     MOCK_CONST_METHOD0(isIdentity, bool());
 };
 
-class WebFilterOperationsMock : public blink::WebFilterOperations {
+class WebFilterOperationsMock : public WebFilterOperations {
 public:
     MOCK_METHOD1(appendGrayscaleFilter, void(float));
     MOCK_METHOD1(appendSepiaFilter, void(float));
@@ -88,7 +87,7 @@ TEST(AnimationTranslationUtilTest, transformsWork)
     EXPECT_CALL(outOps, appendRotate(0.1, 0.2, 0.3, 200000.4));
     EXPECT_CALL(outOps, appendScale(50.2, 100, -4));
 
-    ops.operations().append(TranslateTransformOperation::create(Length(2, blink::Fixed), Length(0, blink::Fixed), TransformOperation::TranslateX));
+    ops.operations().append(TranslateTransformOperation::create(Length(2, Fixed), Length(0, Fixed), TransformOperation::TranslateX));
     ops.operations().append(RotateTransformOperation::create(0.1, 0.2, 0.3, 200000.4, TransformOperation::Rotate3D));
     ops.operations().append(ScaleTransformOperation::create(50.2, 100, -4, TransformOperation::Scale3D));
     toWebTransformOperations(ops, &outOps);
