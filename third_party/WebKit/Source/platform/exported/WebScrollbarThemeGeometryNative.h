@@ -32,16 +32,13 @@
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
+
 class ScrollbarTheme;
-}
-
-namespace blink {
-
 class WebScrollbar;
 
 class PLATFORM_EXPORT WebScrollbarThemeGeometryNative : public WebScrollbarThemeGeometry {
 public:
-    static PassOwnPtr<WebScrollbarThemeGeometryNative> create(blink::ScrollbarTheme*);
+    static PassOwnPtr<WebScrollbarThemeGeometryNative> create(ScrollbarTheme*);
 
     // WebScrollbarThemeGeometry overrides
     virtual WebScrollbarThemeGeometryNative* clone() const OVERRIDE;
@@ -63,12 +60,12 @@ public:
     virtual void splitTrack(WebScrollbar*, const WebRect& track, WebRect& startTrack, WebRect& thumb, WebRect& endTrack) OVERRIDE;
 
 private:
-    explicit WebScrollbarThemeGeometryNative(blink::ScrollbarTheme*);
+    explicit WebScrollbarThemeGeometryNative(ScrollbarTheme*);
 
     // The theme is not owned by this class. It is assumed that the theme is a
     // static pointer and its lifetime is essentially infinite. Only thread-safe
     // functions on the theme can be called by this theme.
-    blink::ScrollbarTheme* m_theme;
+    ScrollbarTheme* m_theme;
 };
 
 } // namespace blink

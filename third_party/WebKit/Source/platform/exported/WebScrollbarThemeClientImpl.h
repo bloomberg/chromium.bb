@@ -40,7 +40,7 @@ class PLATFORM_EXPORT WebScrollbarThemeClientImpl : public ScrollbarThemeClient 
 public:
     // Caller must retain ownership of this pointer and ensure that its lifetime
     // exceeds this instance.
-    WebScrollbarThemeClientImpl(blink::WebScrollbar*);
+    WebScrollbarThemeClientImpl(WebScrollbar*);
     virtual ~WebScrollbarThemeClientImpl();
 
     // Implement ScrollbarThemeClient interface
@@ -80,9 +80,9 @@ public:
     virtual void setIsAlphaLocked(bool) OVERRIDE;
 
 private:
-    blink::WebScrollbar* m_scrollbar;
+    WebScrollbar* m_scrollbar;
 };
 
-}
+} // namespace blink
 
 #endif // WebScrollbarThemeClientImpl_h

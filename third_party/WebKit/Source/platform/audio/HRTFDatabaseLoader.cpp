@@ -97,7 +97,7 @@ void HRTFDatabaseLoader::loadAsynchronously()
 
     if (!m_hrtfDatabase && !m_databaseLoaderThread) {
         // Start the asynchronous database loading process.
-        m_databaseLoaderThread = adoptPtr(blink::Platform::current()->createThread("HRTF database loader"));
+        m_databaseLoaderThread = adoptPtr(Platform::current()->createThread("HRTF database loader"));
         m_databaseLoaderThread->postTask(new Task(WTF::bind(&HRTFDatabaseLoader::load, this)));
     }
 }

@@ -13,8 +13,8 @@ public:
         : m_isReload(false) { }
     WebURL m_url;
     WebString m_method;
-    blink::HTTPHeaderMap m_headers;
-    blink::Referrer m_referrer;
+    HTTPHeaderMap m_headers;
+    Referrer m_referrer;
     bool m_isReload;
 };
 
@@ -60,17 +60,17 @@ void WebServiceWorkerRequest::setHeader(const WebString& key, const WebString& v
     m_private->m_headers.add(key, value);
 }
 
-const blink::HTTPHeaderMap& WebServiceWorkerRequest::headers() const
+const HTTPHeaderMap& WebServiceWorkerRequest::headers() const
 {
     return m_private->m_headers;
 }
 
 void WebServiceWorkerRequest::setReferrer(const WebString& referrer, WebReferrerPolicy referrerPolicy)
 {
-    m_private->m_referrer = blink::Referrer(referrer, static_cast<blink::ReferrerPolicy>(referrerPolicy));
+    m_private->m_referrer = Referrer(referrer, static_cast<ReferrerPolicy>(referrerPolicy));
 }
 
-const blink::Referrer& WebServiceWorkerRequest::referrer() const
+const Referrer& WebServiceWorkerRequest::referrer() const
 {
     return m_private->m_referrer;
 }

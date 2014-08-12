@@ -29,16 +29,13 @@
 #include "public/platform/WebScrollbar.h"
 
 namespace blink {
+
 class Scrollbar;
-}
-
-namespace blink {
-
 class PLATFORM_EXPORT WebScrollbarImpl : public WebScrollbar {
 public:
-    explicit WebScrollbarImpl(blink::Scrollbar*);
+    explicit WebScrollbarImpl(Scrollbar*);
 
-    // Implement blink::WebScrollbar methods
+    // Implement WebScrollbar methods
     virtual bool isOverlay() const OVERRIDE;
     virtual int value() const OVERRIDE;
     virtual WebPoint location() const OVERRIDE;
@@ -60,7 +57,7 @@ public:
     virtual void setIsAlphaLocked(bool) OVERRIDE;
 
 private:
-    RefPtr<blink::Scrollbar> m_scrollbar;
+    RefPtr<Scrollbar> m_scrollbar;
 };
 
 } // namespace blink

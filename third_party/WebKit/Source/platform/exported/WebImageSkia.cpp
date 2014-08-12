@@ -44,8 +44,6 @@
 #include "wtf/Vector.h"
 #include <algorithm>
 
-using namespace blink;
-
 namespace blink {
 
 WebImage WebImage::fromData(const WebData& data, const WebSize& desiredSize)

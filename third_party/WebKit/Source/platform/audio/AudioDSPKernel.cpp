@@ -37,4 +37,4 @@ AudioDSPKernel::~AudioDSPKernel()
 {
 }
 
-}
+} // namespace blink

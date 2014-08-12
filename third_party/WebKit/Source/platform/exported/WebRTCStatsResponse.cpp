@@ -29,8 +29,6 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-using namespace blink;
-
 namespace blink {
 
 WebRTCStatsResponse::WebRTCStatsResponse(RTCStatsResponseBase* request)
@@ -48,7 +46,7 @@ void WebRTCStatsResponse::reset()
     m_private.reset();
 }
 
-WebRTCStatsResponse::operator blink::RTCStatsResponseBase*() const
+WebRTCStatsResponse::operator RTCStatsResponseBase*() const
 {
     return m_private.get();
 }

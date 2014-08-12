@@ -37,4 +37,4 @@ AudioDestinationConsumer::~AudioDestinationConsumer()
 {
 }
 
-}
+} // namespace blink

@@ -637,15 +637,15 @@ void AudioBus::clearSilentFlag()
 
 PassRefPtr<AudioBus> decodeAudioFileData(const char* data, size_t size)
 {
-    blink::WebAudioBus webAudioBus;
-    if (blink::Platform::current()->loadAudioResource(&webAudioBus, data, size))
+    WebAudioBus webAudioBus;
+    if (Platform::current()->loadAudioResource(&webAudioBus, data, size))
         return webAudioBus.release();
     return nullptr;
 }
 
 PassRefPtr<AudioBus> AudioBus::loadPlatformResource(const char* name, float sampleRate)
 {
-    const blink::WebData& resource = blink::Platform::current()->loadResource(name);
+    const WebData& resource = Platform::current()->loadResource(name);
     if (resource.isEmpty())
         return nullptr;
 

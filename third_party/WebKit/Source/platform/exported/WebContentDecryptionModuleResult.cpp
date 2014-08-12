@@ -27,7 +27,7 @@ void WebContentDecryptionModuleResult::completeWithError(WebContentDecryptionMod
     reset();
 }
 
-WebContentDecryptionModuleResult::WebContentDecryptionModuleResult(blink::ContentDecryptionModuleResult* impl)
+WebContentDecryptionModuleResult::WebContentDecryptionModuleResult(ContentDecryptionModuleResult* impl)
     : m_impl(impl)
 {
     ASSERT(m_impl.get());

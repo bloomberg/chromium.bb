@@ -34,8 +34,6 @@
 #include "platform/network/WebSocketHandshakeResponse.h"
 #include "public/platform/WebString.h"
 
-using blink::WebSocketHandshakeResponse;
-
 namespace blink {
 
 WebSocketHandshakeResponseInfo::WebSocketHandshakeResponseInfo() : m_private(new WebSocketHandshakeResponse)

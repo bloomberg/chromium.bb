@@ -33,9 +33,9 @@
 
 #include "public/platform/WebString.h"
 
-namespace blink { class ResourceResponse; }
-
 namespace blink {
+
+class ResourceResponse;
 
 class WebURLResponsePrivate {
 public:
@@ -44,7 +44,7 @@ public:
     // Called by WebURLResponse when it no longer needs this object.
     virtual void dispose() = 0;
 
-    blink::ResourceResponse* m_resourceResponse;
+    ResourceResponse* m_resourceResponse;
 };
 
 } // namespace blink

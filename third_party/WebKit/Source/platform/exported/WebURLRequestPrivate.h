@@ -31,9 +31,9 @@
 #ifndef WebURLRequestPrivate_h
 #define WebURLRequestPrivate_h
 
-namespace blink { class ResourceRequest; }
-
 namespace blink {
+
+class ResourceRequest;
 
 class WebURLRequestPrivate {
 public:
@@ -45,7 +45,7 @@ public:
     // Called by WebURLRequest when it no longer needs this object.
     virtual void dispose() = 0;
 
-    blink::ResourceRequest* m_resourceRequest;
+    ResourceRequest* m_resourceRequest;
 };
 
 } // namespace blink

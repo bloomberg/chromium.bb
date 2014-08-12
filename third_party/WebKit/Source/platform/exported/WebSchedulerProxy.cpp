@@ -28,7 +28,7 @@ WebSchedulerProxy WebSchedulerProxy::create()
 }
 
 WebSchedulerProxy::WebSchedulerProxy()
-    : m_scheduler(blink::Scheduler::shared())
+    : m_scheduler(Scheduler::shared())
 {
     ASSERT(m_scheduler);
 }

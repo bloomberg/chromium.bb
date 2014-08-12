@@ -35,8 +35,6 @@
 #include "platform/weborigin/KURL.h"
 #include "wtf/text/CString.h"
 
-using namespace blink;
-
 namespace blink {
 
 WebURLError::WebURLError(const ResourceError& error)

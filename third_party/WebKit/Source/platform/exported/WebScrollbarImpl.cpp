@@ -31,7 +31,7 @@
 
 namespace blink {
 
-WebScrollbarImpl::WebScrollbarImpl(blink::Scrollbar* scrollbar)
+WebScrollbarImpl::WebScrollbarImpl(Scrollbar* scrollbar)
     : m_scrollbar(scrollbar)
 {
 }
@@ -83,7 +83,7 @@ bool WebScrollbarImpl::isScrollableAreaActive() const
 
 void WebScrollbarImpl::getTickmarks(WebVector<WebRect>& webTickmarks) const
 {
-    Vector<blink::IntRect> tickmarks;
+    Vector<IntRect> tickmarks;
     m_scrollbar->getTickmarks(tickmarks);
 
     WebVector<WebRect> result(tickmarks.size());

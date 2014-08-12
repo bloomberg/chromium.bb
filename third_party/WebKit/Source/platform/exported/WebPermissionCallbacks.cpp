@@ -8,8 +8,6 @@
 
 #include "platform/PermissionCallbacks.h"
 
-using namespace blink;
-
 namespace blink {
 
 class WebPermissionCallbacksPrivate : public RefCounted<WebPermissionCallbacksPrivate> {

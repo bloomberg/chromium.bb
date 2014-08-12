@@ -52,8 +52,6 @@ namespace blink {
 
 namespace {
 
-using namespace blink;
-
 class TimingFunctionTest : public ::testing::Test {
 public:
     void notEqualHelperLoop(Vector<std::pair<std::string, RefPtr<TimingFunction> > >& v)

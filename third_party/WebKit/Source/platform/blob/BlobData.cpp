@@ -106,7 +106,7 @@ void BlobData::appendText(const String& text, bool doNormalizeLineEndingsToNativ
 
     CString utf8Text = UTF8Encoding().normalizeAndEncode(text, WTF::EntitiesForUnencodables);
     if (doNormalizeLineEndingsToNative) {
-        blink::normalizeLineEndingsToNative(utf8Text, *buffer);
+        normalizeLineEndingsToNative(utf8Text, *buffer);
     } else {
         buffer->append(utf8Text.data(), utf8Text.length());
     }

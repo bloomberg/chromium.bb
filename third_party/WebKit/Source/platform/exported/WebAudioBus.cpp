@@ -39,8 +39,6 @@ class AudioBus : public ThreadSafeRefCounted<AudioBus> {
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
-using namespace blink;
-
 namespace blink {
 
 class WebAudioBusPrivate : public AudioBus {

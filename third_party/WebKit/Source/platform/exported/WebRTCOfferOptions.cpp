@@ -7,8 +7,6 @@
 
 #include "platform/mediastream/RTCOfferOptions.h"
 
-using namespace blink;
-
 namespace blink {
 
 WebRTCOfferOptions::WebRTCOfferOptions(const PassRefPtr<RTCOfferOptions>& options)

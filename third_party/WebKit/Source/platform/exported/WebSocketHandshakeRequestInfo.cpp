@@ -35,8 +35,6 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 
-using blink::WebSocketHandshakeRequest;
-
 namespace blink {
 
 WebSocketHandshakeRequestInfo::WebSocketHandshakeRequestInfo() : m_private(WebSocketHandshakeRequest::create())

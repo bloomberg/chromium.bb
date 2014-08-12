@@ -41,8 +41,6 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
-using namespace blink;
-
 namespace blink {
 
 namespace {
@@ -65,7 +63,7 @@ WebMediaStreamSource WebMediaStreamSource::ExtraData::owner()
     return WebMediaStreamSource(m_owner);
 }
 
-void WebMediaStreamSource::ExtraData::setOwner(blink::MediaStreamSource* owner)
+void WebMediaStreamSource::ExtraData::setOwner(MediaStreamSource* owner)
 {
     ASSERT(!m_owner);
     m_owner = owner;
@@ -76,7 +74,7 @@ WebMediaStreamSource::WebMediaStreamSource(const PassRefPtr<MediaStreamSource>& 
 {
 }
 
-WebMediaStreamSource& WebMediaStreamSource::operator=(blink::MediaStreamSource* mediaStreamSource)
+WebMediaStreamSource& WebMediaStreamSource::operator=(MediaStreamSource* mediaStreamSource)
 {
     m_private = mediaStreamSource;
     return *this;
@@ -168,7 +166,7 @@ bool WebMediaStreamSource::requiresAudioConsumer() const
     return m_private->requiresAudioConsumer();
 }
 
-class ConsumerWrapper : public blink::AudioDestinationConsumer {
+class ConsumerWrapper : public AudioDestinationConsumer {
 public:
     static PassRefPtr<ConsumerWrapper> create(WebAudioDestinationConsumer* consumer)
     {
@@ -199,7 +197,7 @@ void ConsumerWrapper::consumeAudio(AudioBus* bus, size_t numberOfFrames)
 
     // Wrap AudioBus.
     size_t numberOfChannels = bus->numberOfChannels();
-    blink::WebVector<const float*> busVector(numberOfChannels);
+    WebVector<const float*> busVector(numberOfChannels);
     for (size_t i = 0; i < numberOfChannels; ++i)
         busVector[i] = bus->channel(i)->data();
 

@@ -33,8 +33,6 @@
 #include "public/platform/WebMediaStreamSource.h"
 #include "public/platform/WebString.h"
 
-using namespace blink;
-
 namespace blink {
 
 namespace {
@@ -57,23 +55,23 @@ WebMediaStreamTrack WebMediaStreamTrack::ExtraData::owner()
     return WebMediaStreamTrack(m_owner);
 }
 
-void WebMediaStreamTrack::ExtraData::setOwner(blink::MediaStreamComponent* owner)
+void WebMediaStreamTrack::ExtraData::setOwner(MediaStreamComponent* owner)
 {
     ASSERT(!m_owner);
     m_owner = owner;
 }
 
-WebMediaStreamTrack::WebMediaStreamTrack(PassRefPtr<blink::MediaStreamComponent> mediaStreamComponent)
+WebMediaStreamTrack::WebMediaStreamTrack(PassRefPtr<MediaStreamComponent> mediaStreamComponent)
     : m_private(mediaStreamComponent)
 {
 }
 
-WebMediaStreamTrack::WebMediaStreamTrack(blink::MediaStreamComponent* mediaStreamComponent)
+WebMediaStreamTrack::WebMediaStreamTrack(MediaStreamComponent* mediaStreamComponent)
     : m_private(mediaStreamComponent)
 {
 }
 
-WebMediaStreamTrack& WebMediaStreamTrack::operator=(blink::MediaStreamComponent* mediaStreamComponent)
+WebMediaStreamTrack& WebMediaStreamTrack::operator=(MediaStreamComponent* mediaStreamComponent)
 {
     m_private = mediaStreamComponent;
     return *this;

@@ -37,19 +37,19 @@ namespace blink {
 class PlatformSpeechSynthesizer;
 class PlatformSpeechSynthesizerClient;
 
-class WebSpeechSynthesizerClientImpl FINAL : public GarbageCollectedFinalized<WebSpeechSynthesizerClientImpl>, public blink::WebSpeechSynthesizerClient {
+class WebSpeechSynthesizerClientImpl FINAL : public GarbageCollectedFinalized<WebSpeechSynthesizerClientImpl>, public WebSpeechSynthesizerClient {
 public:
     WebSpeechSynthesizerClientImpl(PlatformSpeechSynthesizer*, PlatformSpeechSynthesizerClient*);
     virtual ~WebSpeechSynthesizerClientImpl();
 
-    virtual void setVoiceList(const blink::WebVector<blink::WebSpeechSynthesisVoice>& voices);
-    virtual void didStartSpeaking(const blink::WebSpeechSynthesisUtterance&);
-    virtual void didFinishSpeaking(const blink::WebSpeechSynthesisUtterance&);
-    virtual void didPauseSpeaking(const blink::WebSpeechSynthesisUtterance&);
-    virtual void didResumeSpeaking(const blink::WebSpeechSynthesisUtterance&);
-    virtual void speakingErrorOccurred(const blink::WebSpeechSynthesisUtterance&);
-    virtual void wordBoundaryEventOccurred(const blink::WebSpeechSynthesisUtterance&, unsigned charIndex);
-    virtual void sentenceBoundaryEventOccurred(const blink::WebSpeechSynthesisUtterance&, unsigned charIndex);
+    virtual void setVoiceList(const WebVector<WebSpeechSynthesisVoice>& voices);
+    virtual void didStartSpeaking(const WebSpeechSynthesisUtterance&);
+    virtual void didFinishSpeaking(const WebSpeechSynthesisUtterance&);
+    virtual void didPauseSpeaking(const WebSpeechSynthesisUtterance&);
+    virtual void didResumeSpeaking(const WebSpeechSynthesisUtterance&);
+    virtual void speakingErrorOccurred(const WebSpeechSynthesisUtterance&);
+    virtual void wordBoundaryEventOccurred(const WebSpeechSynthesisUtterance&, unsigned charIndex);
+    virtual void sentenceBoundaryEventOccurred(const WebSpeechSynthesisUtterance&, unsigned charIndex);
 
     void trace(Visitor*);
 

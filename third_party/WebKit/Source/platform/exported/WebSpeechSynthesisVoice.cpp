@@ -32,7 +32,7 @@
 namespace blink {
 
 WebSpeechSynthesisVoice::WebSpeechSynthesisVoice()
-    : m_private(blink::PlatformSpeechSynthesisVoice::create())
+    : m_private(PlatformSpeechSynthesisVoice::create())
 {
 }
 
@@ -71,7 +71,7 @@ void WebSpeechSynthesisVoice::setIsDefault(bool isDefault)
     m_private->setIsDefault(isDefault);
 }
 
-WebSpeechSynthesisVoice::operator blink::PlatformSpeechSynthesisVoice*() const
+WebSpeechSynthesisVoice::operator PlatformSpeechSynthesisVoice*() const
 {
     return m_private.get();
 }

@@ -35,8 +35,6 @@
 #include "public/platform/WebHTTPHeaderVisitor.h"
 #include "public/platform/WebString.h"
 
-using namespace blink;
-
 namespace blink {
 
 void WebHTTPLoadInfo::initialize()
@@ -54,12 +52,12 @@ void WebHTTPLoadInfo::assign(const WebHTTPLoadInfo& r)
     m_private = r.m_private;
 }
 
-WebHTTPLoadInfo::WebHTTPLoadInfo(WTF::PassRefPtr<blink::ResourceLoadInfo> value)
+WebHTTPLoadInfo::WebHTTPLoadInfo(WTF::PassRefPtr<ResourceLoadInfo> value)
     : m_private(value)
 {
 }
 
-WebHTTPLoadInfo::operator WTF::PassRefPtr<blink::ResourceLoadInfo>() const
+WebHTTPLoadInfo::operator WTF::PassRefPtr<ResourceLoadInfo>() const
 {
     return m_private.get();
 }

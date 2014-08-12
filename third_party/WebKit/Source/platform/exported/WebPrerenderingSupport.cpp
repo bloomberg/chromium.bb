@@ -51,4 +51,4 @@ WebPrerenderingSupport* WebPrerenderingSupport::current()
     return s_platform;
 }
 
-}
+} // namespace blink

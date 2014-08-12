@@ -83,7 +83,7 @@ private:
 
     // Holding a m_threadLock is required when accessing m_databaseLoaderThread since we access it from multiple threads.
     Mutex m_threadLock;
-    OwnPtr<blink::WebThread> m_databaseLoaderThread;
+    OwnPtr<WebThread> m_databaseLoaderThread;
 
     float m_databaseSampleRate;
 };

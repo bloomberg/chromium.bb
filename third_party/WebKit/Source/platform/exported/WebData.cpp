@@ -33,8 +33,6 @@
 
 #include "platform/SharedBuffer.h"
 
-using namespace blink;
-
 namespace blink {
 
 void WebData::reset()

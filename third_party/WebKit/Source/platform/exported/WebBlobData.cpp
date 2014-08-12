@@ -35,8 +35,6 @@
 #include "platform/blob/BlobData.h"
 #include "wtf/PassOwnPtr.h"
 
-using namespace blink;
-
 namespace blink {
 
 WebBlobData::WebBlobData()

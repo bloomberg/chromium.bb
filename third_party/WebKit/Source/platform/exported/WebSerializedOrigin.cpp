@@ -9,7 +9,7 @@
 
 namespace blink {
 
-WebSerializedOrigin::WebSerializedOrigin(const blink::SecurityOrigin& origin)
+WebSerializedOrigin::WebSerializedOrigin(const SecurityOrigin& origin)
     : m_string(origin.toString())
 {
 }

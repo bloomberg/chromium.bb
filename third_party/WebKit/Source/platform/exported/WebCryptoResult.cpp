@@ -53,7 +53,7 @@ void WebCryptoResult::completeWithBuffer(const WebArrayBuffer& buffer)
 
 void WebCryptoResult::completeWithBuffer(const void* bytes, unsigned bytesSize)
 {
-    WebArrayBuffer buffer = blink::WebArrayBuffer::create(bytesSize, 1);
+    WebArrayBuffer buffer = WebArrayBuffer::create(bytesSize, 1);
     RELEASE_ASSERT(!buffer.isNull());
     memcpy(buffer.data(), bytes, bytesSize);
     completeWithBuffer(buffer);
@@ -91,7 +91,7 @@ bool WebCryptoResult::cancelled() const
     return m_impl->cancelled();
 }
 
-WebCryptoResult::WebCryptoResult(const PassRefPtr<blink::CryptoResult>& impl)
+WebCryptoResult::WebCryptoResult(const PassRefPtr<CryptoResult>& impl)
     : m_impl(impl)
 {
     ASSERT(m_impl.get());

@@ -36,8 +36,6 @@
 #include "public/platform/WebRTCSessionDescription.h"
 #include "wtf/PassOwnPtr.h"
 
-using namespace blink;
-
 namespace blink {
 
 namespace {

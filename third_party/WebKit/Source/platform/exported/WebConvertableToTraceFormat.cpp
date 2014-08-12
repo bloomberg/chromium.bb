@@ -8,12 +8,9 @@
 #include "platform/EventTracer.h"
 #include "public/platform/WebString.h"
 
-using blink::WebConvertableToTraceFormat;
-using blink::WebString;
-
 namespace blink {
 
-WebConvertableToTraceFormat::WebConvertableToTraceFormat(blink::TraceEvent::ConvertableToTraceFormat* convertable)
+WebConvertableToTraceFormat::WebConvertableToTraceFormat(TraceEvent::ConvertableToTraceFormat* convertable)
     : m_private(convertable)
 {
 }
@@ -33,4 +30,4 @@ void WebConvertableToTraceFormat::reset()
     m_private.reset();
 }
 
-}
+} // namespace blink

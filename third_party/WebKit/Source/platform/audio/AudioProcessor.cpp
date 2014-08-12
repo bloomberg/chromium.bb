@@ -41,4 +41,4 @@ void AudioProcessor::trace(Visitor*)
 {
 }
 
-}
+} // namespace blink

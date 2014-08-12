@@ -37,8 +37,6 @@
 #include "public/platform/WebHTTPHeaderVisitor.h"
 #include "public/platform/WebURL.h"
 
-using namespace blink;
-
 namespace blink {
 
 namespace {

@@ -33,8 +33,6 @@
 
 #include "platform/Cursor.h"
 
-using namespace blink;
-
 namespace blink {
 
 WebCursorInfo::WebCursorInfo(const Cursor& cursor)

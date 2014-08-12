@@ -34,8 +34,6 @@
 #include "platform/network/SocketStreamError.h"
 #include "public/platform/WebString.h"
 
-using namespace blink;
-
 namespace blink {
 
 void WebSocketStreamError::assign(int code, const WebString& message)
@@ -69,4 +67,4 @@ WebSocketStreamError::operator PassRefPtr<SocketStreamError>() const
     return m_private.get();
 }
 
-}
+} // namespace blink

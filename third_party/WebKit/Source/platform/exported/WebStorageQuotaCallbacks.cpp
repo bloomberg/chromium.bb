@@ -16,19 +16,19 @@ namespace blink {
 
 class WebStorageQuotaCallbacksPrivate : public RefCounted<WebStorageQuotaCallbacksPrivate> {
 public:
-    static PassRefPtr<WebStorageQuotaCallbacksPrivate> create(const PassOwnPtr<blink::StorageQuotaCallbacks>& callbacks)
+    static PassRefPtr<WebStorageQuotaCallbacksPrivate> create(const PassOwnPtr<StorageQuotaCallbacks>& callbacks)
     {
         return adoptRef(new WebStorageQuotaCallbacksPrivate(callbacks));
     }
 
-    blink::StorageQuotaCallbacks* callbacks() { return m_callbacks.get(); }
+    StorageQuotaCallbacks* callbacks() { return m_callbacks.get(); }
 
 private:
-    WebStorageQuotaCallbacksPrivate(const PassOwnPtr<blink::StorageQuotaCallbacks>& callbacks) : m_callbacks(callbacks) { }
-    OwnPtr<blink::StorageQuotaCallbacks> m_callbacks;
+    WebStorageQuotaCallbacksPrivate(const PassOwnPtr<StorageQuotaCallbacks>& callbacks) : m_callbacks(callbacks) { }
+    OwnPtr<StorageQuotaCallbacks> m_callbacks;
 };
 
-WebStorageQuotaCallbacks::WebStorageQuotaCallbacks(const PassOwnPtr<blink::StorageQuotaCallbacks>& callbacks)
+WebStorageQuotaCallbacks::WebStorageQuotaCallbacks(const PassOwnPtr<StorageQuotaCallbacks>& callbacks)
 {
     m_private = WebStorageQuotaCallbacksPrivate::create(callbacks);
 }

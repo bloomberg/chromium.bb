@@ -45,25 +45,25 @@ public:
 
     WrappedResourceRequest() { }
 
-    WrappedResourceRequest(blink::ResourceRequest& resourceRequest)
+    WrappedResourceRequest(ResourceRequest& resourceRequest)
     {
         bind(resourceRequest);
     }
 
-    WrappedResourceRequest(const blink::ResourceRequest& resourceRequest)
+    WrappedResourceRequest(const ResourceRequest& resourceRequest)
     {
         bind(resourceRequest);
     }
 
-    void bind(blink::ResourceRequest& resourceRequest)
+    void bind(ResourceRequest& resourceRequest)
     {
         m_handle.m_resourceRequest = &resourceRequest;
         assign(&m_handle);
     }
 
-    void bind(const blink::ResourceRequest& resourceRequest)
+    void bind(const ResourceRequest& resourceRequest)
     {
-        bind(*const_cast<blink::ResourceRequest*>(&resourceRequest));
+        bind(*const_cast<ResourceRequest*>(&resourceRequest));
     }
 
 private:
