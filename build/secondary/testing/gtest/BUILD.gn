@@ -9,7 +9,6 @@ config("gtest_config") {
   ]
 
   defines = [
-    "UNIT_TEST",
 
     # In order to allow regex matches in gtest to be shared between Windows
     # and other systems, we tell gtest to always use it's internal engine.
@@ -52,6 +51,11 @@ config("gtest_config") {
       "GTEST_HAS_TR1_TUPLE=1",
     ]
   }
+}
+
+config("gtest_direct_config") {
+  visibility = ":*"
+  defines = [ "UNIT_TEST" ]
 }
 
 static_library("gtest") {
@@ -100,6 +104,7 @@ static_library("gtest") {
   include_dirs = [ "." ]
 
   all_dependent_configs = [ ":gtest_config" ]
+  direct_dependent_configs = [ ":gtest_direct_config" ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
