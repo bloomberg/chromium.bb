@@ -355,7 +355,6 @@ bool LinuxSandbox::LimitAddressSpace(const std::string& process_type) {
   // For now, increase limit to 16GB for renderer and worker and gpu processes
   // to accomodate.
   if (process_type == switches::kRendererProcess ||
-      process_type == switches::kWorkerProcess ||
       process_type == switches::kGpuProcess) {
     address_space_limit = 1L << 34;
   }
@@ -394,7 +393,6 @@ void LinuxSandbox::CheckForBrokenPromises(const std::string& process_type) {
   // Make sure that any promise made with GetStatus() wasn't broken.
   bool promised_seccomp_bpf_would_start = false;
   if (process_type == switches::kRendererProcess ||
-      process_type == switches::kWorkerProcess ||
       process_type == switches::kPpapiPluginProcess) {
     promised_seccomp_bpf_would_start =
         (sandbox_status_flags_ != kSandboxLinuxInvalid) &&

@@ -114,7 +114,6 @@ ResultExpr AllowAllPolicy::EvaluateSyscall(int sysno) const {
 // If a BPF policy is engaged for |process_type|, run a few sanity checks.
 void RunSandboxSanityChecks(const std::string& process_type) {
   if (process_type == switches::kRendererProcess ||
-      process_type == switches::kWorkerProcess ||
       process_type == switches::kGpuProcess ||
       process_type == switches::kPpapiPluginProcess) {
     int syscall_ret;
@@ -181,8 +180,7 @@ bool StartBPFSandbox(const base::CommandLine& command_line,
 
   if (process_type == switches::kGpuProcess) {
     policy.reset(GetGpuProcessSandbox().release());
-  } else if (process_type == switches::kRendererProcess ||
-             process_type == switches::kWorkerProcess) {
+  } else if (process_type == switches::kRendererProcess) {
     policy.reset(new RendererProcessPolicy);
   } else if (process_type == switches::kPpapiPluginProcess) {
     policy.reset(new PpapiProcessPolicy);

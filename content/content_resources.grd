@@ -32,7 +32,6 @@
       <include name="IDR_WEBRTC_INTERNALS_JS" file="browser/resources/media/webrtc_internals.js" flattenhtml="true" type="BINDATA" />
       <if expr="is_macosx">
         <include name="IDR_GPU_SANDBOX_PROFILE" file="browser/gpu.sb" type="BINDATA" />
-        <include name="IDR_WORKER_SANDBOX_PROFILE" file="browser/worker.sb" type="BINDATA" />
         <include name="IDR_COMMON_SANDBOX_PROFILE" file="common/common.sb" type="BINDATA" />
         <include name="IDR_PPAPI_SANDBOX_PROFILE" file="ppapi_plugin/ppapi.sb" type="BINDATA" />
         <include name="IDR_RENDERER_SANDBOX_PROFILE" file="renderer/renderer.sb" type="BINDATA" />

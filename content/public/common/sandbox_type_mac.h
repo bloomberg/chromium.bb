@@ -18,12 +18,6 @@ enum SandboxType {
 
   SANDBOX_TYPE_RENDERER = SANDBOX_TYPE_FIRST_TYPE,
 
-  // The worker process uses the most restrictive sandbox which has almost
-  // *everything* locked down. Only a couple of /System/Library/ paths and
-  // some other very basic operations (e.g., reading metadata to allow
-  // following symlinks) are permitted.
-  SANDBOX_TYPE_WORKER,
-
   // Utility process is as restrictive as the worker process except full
   // access is allowed to one configurable directory.
   SANDBOX_TYPE_UTILITY,

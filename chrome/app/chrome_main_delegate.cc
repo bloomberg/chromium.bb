@@ -188,7 +188,6 @@ static void AdjustLinuxOOMScore(const std::string& process_type) {
     // The broker should be killed before the PPAPI plugin.
     score = kPluginScore + kScoreBump;
   } else if (process_type == switches::kUtilityProcess ||
-             process_type == switches::kWorkerProcess ||
              process_type == switches::kGpuProcess ||
              process_type == switches::kServiceProcess) {
     score = kMiscScore;
@@ -225,8 +224,6 @@ bool SubprocessNeedsResourceBundle(const std::string& process_type) {
       // Windows needs resources for the default/null plugin.
       // Mac needs them for the plugin process name.
       process_type == switches::kPluginProcess ||
-      // Needed for scrollbar related images.
-      process_type == switches::kWorkerProcess ||
 #endif
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
       // The zygote process opens the resources for the renderers.

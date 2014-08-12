@@ -48,9 +48,6 @@ bool GetSandboxTypeFromCommandLine(int* sandbox_type,
     *sandbox_type = SANDBOX_TYPE_UTILITY;
     *allowed_dir =
         command_line.GetSwitchValuePath(switches::kUtilityProcessAllowedDir);
-  } else if (process_type == switches::kWorkerProcess) {
-    // Worker process sandbox.
-    *sandbox_type = SANDBOX_TYPE_WORKER;
   } else if (process_type == switches::kGpuProcess) {
     if (command_line.HasSwitch(switches::kDisableGpuSandbox))
       return false;
