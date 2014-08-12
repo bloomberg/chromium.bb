@@ -17,7 +17,7 @@ config("media_config") {
   }
   if (use_pulseaudio) {
     defines += [ "USE_PULSEAUDIO" ]
-    if (linux_link_pulseaudio) {
+    if (!linux_link_pulseaudio) {
       defines += [ "DLOPEN_PULSEAUDIO" ]
     }
   }
@@ -570,6 +570,7 @@ test("media_unittests") {
     # TODO(dalecurtis): Port the rest of Widevine stuff.
     "//third_party/widevine/cdm:version_h",
     "//ui/gfx:test_support",
+    "//url",
   ]
   if (media_use_ffmpeg) {
     deps += [

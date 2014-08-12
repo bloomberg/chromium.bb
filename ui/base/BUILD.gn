@@ -289,6 +289,7 @@ component("base") {
     "//net",
     "//skia",
     "//third_party/icu",
+    "//ui/events/platform",
     "//ui/events:events_base",
     "//ui/resources",
     "//ui/strings",

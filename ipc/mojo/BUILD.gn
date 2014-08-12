@@ -10,13 +10,15 @@ component("mojo") {
     "ipc_message_pipe_reader.h",
   ]
 
+  defines = [ "IPC_MOJO_IMPLEMENTATION" ]
+
   deps = [
     "//base",
+    "//base/third_party/dynamic_annotations",
     "//ipc",
+    "//mojo/environment:chromium",
     "//mojo/public/cpp/bindings",
     "//mojo/system",
-    # TODO(viettrungluu): Needed for base/lazy_instance.h, which is suspect.
-    "//base/third_party/dynamic_annotations",
   ]
 }
 
@@ -28,7 +30,6 @@ test("ipc_mojo_unittests") {
 
   deps = [
     "//base",
-    # TODO(viettrungluu): Needed for base/lazy_instance.h, which is suspect.
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations",
     "//ipc",

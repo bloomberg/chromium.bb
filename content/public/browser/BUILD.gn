@@ -5,7 +5,18 @@
 import("//content/browser/browser.gni")
 import("//build/config/ui.gni")
 
-source_set("browser") {
+group("browser") {
+  if (is_component_build) {
+    deps = [ "//content" ]
+  } else {
+    deps = [ ":sources" ]
+  }
+  forward_dependent_configs_from = deps
+}
+
+source_set("sources") {
+  visibility = [ "//content", ":browser" ]
+
   if (is_ios) {
     # iOS doesn't get the normal file list and only takes these whitelisted
     # files.

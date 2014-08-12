@@ -14,7 +14,7 @@ content_shared_components = [
   "//content/plugin",
   "//content/ppapi_plugin",
   "//content/public/app",
-  "//content/public/browser",
+  "//content/public/browser:sources",
   "//content/public/child",
   "//content/public/common",
   "//content/public/plugin",
@@ -28,6 +28,7 @@ if (is_component_build) {
     deps = content_shared_components + [
       "//content/app",
     ]
+    forward_dependent_configs_from = deps
   }
 } else {
   group("content") {

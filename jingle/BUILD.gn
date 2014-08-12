@@ -4,12 +4,12 @@
 
 import("//build/config/features.gni")
 
-jingle_includes = exec_script("//build/gypi_to_gn.py",
-                              [ rebase_path("jingle.gypi") ],
-                              "scope",
-                              [ "jingle.gypi" ])
-
 if (enable_webrtc || !is_android) {
+  jingle_includes = exec_script("//build/gypi_to_gn.py",
+                                [ rebase_path("jingle.gypi") ],
+                                "scope",
+                                [ "jingle.gypi" ])
+
   # GYP version: jingle/jingle.gyp:jingle_glue
   static_library("jingle_glue") {
     sources = jingle_includes.jingle_glue_sources

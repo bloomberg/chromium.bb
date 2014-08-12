@@ -220,6 +220,7 @@ source_set("test_support") {
     "//third_party/libyuv",
     "//third_party/mt19937ar",
     "//ui/gfx",
+    "//ui/gfx/geometry",
   ]
 }
 

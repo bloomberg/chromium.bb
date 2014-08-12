@@ -396,6 +396,7 @@ source_set("sync_core") {
   deps = [
     "//base",
     "//base:i18n",
+    "//base/third_party/dynamic_annotations",
     "//crypto",
     "//google_apis",
     "//net",

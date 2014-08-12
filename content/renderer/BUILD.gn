@@ -149,6 +149,7 @@ source_set("renderer") {
       "//ppapi:ppapi_host",
       "//ppapi:ppapi_proxy",
       "//ppapi:ppapi_shared",
+      "//third_party/libyuv",
     ]
   } else {
     # These files are in the WebRTC list, but also require plugins.
@@ -164,5 +165,9 @@ source_set("renderer") {
     sources += rebase_path(
         content_renderer_gypi_values.private_renderer_plugin_webrtc_sources,
         ".", "//content")
+  }
+
+  if (printing_mode == 1) {
+    deps += [ "//printing" ]
   }
 }

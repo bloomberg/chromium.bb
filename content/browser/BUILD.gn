@@ -23,6 +23,7 @@ source_set("browser") {
   # Shared deps. See also non-iOS deps below.
   deps = [
     "//base",
+    "//base:base_static",
     "//content:resources",
     "//content/browser/service_worker:proto",
     "//content/browser/speech/proto",

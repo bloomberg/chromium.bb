@@ -48,7 +48,6 @@
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
 #include "content/renderer/media/renderer_webmidiaccessor_impl.h"
 #include "content/renderer/media/webcontentdecryptionmodule_impl.h"
-#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_clipboard_client.h"
 #include "content/renderer/screen_orientation/screen_orientation_observer.h"
@@ -115,6 +114,10 @@
 #elif !defined(OS_MACOSX)
 #include "third_party/WebKit/public/platform/WebScrollbarBehavior.h"
 #define WebScrollbarBehaviorImpl blink::WebScrollbarBehavior
+#endif
+
+#if defined(ENABLE_WEBRTC)
+#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #endif
 
 using blink::Platform;

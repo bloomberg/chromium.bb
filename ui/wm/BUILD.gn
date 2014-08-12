@@ -79,6 +79,7 @@ component("wm") {
     "//ui/base",
     "//ui/compositor",
     "//ui/events",
+    "//ui/events/platform",
     "//ui/events:events_base",
     "//ui/events/platform",
     "//ui/gfx",

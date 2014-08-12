@@ -239,9 +239,10 @@ source_set("test_support") {
   deps = [
     "//base",
     "//skia",
+    "//ui/events/platform",
     "//ui/gfx/geometry",
-    ":events_base",
     ":events",
+    ":events_base",
     ":gesture_detection",
   ]
 
@@ -281,8 +282,23 @@ test("events_unittests") {
     "x/events_x_unittest.cc",
   ]
 
+  deps = [
+    ":dom4_keycode_converter",
+    ":events",
+    ":events_base",
+    ":gesture_detection",
+    ":test_support",
+    "//base",
+    "//base/test:run_all_unittests",
+    "//skia",
+    "//testing/gtest",
+    "//ui/events/platform",
+    "//ui/gfx:test_support",
+  ]
+
   if (use_x11) {
     configs += [ "//build/config/linux:x11" ]
+    deps += [ "//ui/gfx/x" ]
   } else {
     sources -= [
       "x/events_x_unittest.cc",
@@ -301,16 +317,4 @@ test("events_unittests") {
       "gestures/gesture_provider_aura_unittest.cc",
     ]
   }
-
-  deps = [
-    ":events",
-    ":events_base",
-    ":gesture_detection",
-    ":test_support",
-    "//base",
-    "//base/test:run_all_unittests",
-    "//skia",
-    "//testing/gtest",
-    "//ui/gfx:test_support",
-  ]
 }

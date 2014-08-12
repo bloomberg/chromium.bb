@@ -49,8 +49,6 @@ source_set("common") {
       "//cc",
       "//ipc",
       "//ipc/mojo",
-      "//mojo/environment:chromium",
-      "//mojo/system",
       # TODO: the dependency on gl_in_process_context should be decoupled from
       # content and moved to android_webview. See crbug.com/365797.
       "//gpu/command_buffer/client:gl_in_process_context",
@@ -61,7 +59,10 @@ source_set("common") {
       "//gpu/skia_bindings",
       "//media",
       "//media:shared_memory_support",
+      "//mojo/environment:chromium",
       "//mojo/public/interfaces/application",
+      "//mojo/system",
+      "//sandbox",
       "//third_party/WebKit/public:blink",
       "//ui/gl",
       "//webkit/browser:storage",

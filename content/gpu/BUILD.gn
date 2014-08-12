@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ui.gni")
 import("//content/content.gni")
 
 # We don't support x64 prior to Win7 and D3DCompiler_43.dll is not needed on
@@ -50,6 +51,10 @@ source_set("gpu") {
 
   if (is_chromeos && cpu_arch != "arm") {
     configs += [ "//third_party/libva/libva_config" ]
+  }
+
+  if (use_x11) {
+    deps += [ "//ui/events/platform/x11" ]
   }
 }
 

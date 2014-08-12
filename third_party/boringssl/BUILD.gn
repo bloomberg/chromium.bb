@@ -7,7 +7,7 @@ config("openssl_config") {
   include_dirs = []
   include_dirs += [ "src/include" ]
   if (is_component_build) {
-    defines += [
+    defines = [
       "BORINGSSL_SHARED_LIBRARY",
     ]
   }

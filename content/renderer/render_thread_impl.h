@@ -270,6 +270,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   blink::WebMediaStreamCenter* CreateMediaStreamCenter(
       blink::WebMediaStreamCenterClient* client);
 
+#if defined(ENABLE_WEBRTC)
   // Returns a factory used for creating RTC PeerConnection objects.
   PeerConnectionDependencyFactory* GetPeerConnectionDependencyFactory();
 
@@ -281,6 +282,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   P2PSocketDispatcher* p2p_socket_dispatcher() {
     return p2p_socket_dispatcher_.get();
   }
+#endif
 
   VideoCaptureImplManager* video_capture_impl_manager() const {
     return vc_manager_.get();
@@ -473,6 +475,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
 #endif
   scoped_refptr<DevToolsAgentFilter> devtools_agent_message_filter_;
 
+#if defined(ENABLE_WEBRTC)
   scoped_ptr<PeerConnectionDependencyFactory> peer_connection_factory_;
 
   // This is used to communicate to the browser process the status
@@ -481,6 +484,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
 
   // Dispatches all P2P sockets.
   scoped_refptr<P2PSocketDispatcher> p2p_socket_dispatcher_;
+#endif
 
   // Used on the render thread.
   scoped_ptr<VideoCaptureImplManager> vc_manager_;
@@ -552,7 +556,9 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
 
   scoped_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
+#if defined(ENABLE_WEBRTC)
   scoped_ptr<WebRTCIdentityService> webrtc_identity_service_;
+#endif
 
   // TODO(reveman): Allow AllocateGpuMemoryBuffer to be called from
   // multiple threads. Current allocation mechanism for IOSurface
