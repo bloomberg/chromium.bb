@@ -60,8 +60,8 @@ public:
     void assertCondition(ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>, bool condition);
     void count(ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>);
     void markTimeline(const String&);
-    void profile(ScriptState*, const String&);
-    void profileEnd(ScriptState*, const String&);
+    void profile(const String&);
+    void profileEnd(const String&);
     void time(const String&);
     void timeEnd(ScriptState*, const String&);
     void timeStamp(const String&);

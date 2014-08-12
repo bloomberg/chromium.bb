@@ -64,9 +64,9 @@ static PassRefPtr<TypeBuilder::Profiler::CPUProfile> createCPUProfile(const Scri
     return profile.release();
 }
 
-static PassRefPtr<TypeBuilder::Debugger::Location> currentDebugLocation(ScriptState* scriptState)
+static PassRefPtr<TypeBuilder::Debugger::Location> currentDebugLocation()
 {
-    RefPtrWillBeRawPtr<ScriptCallStack> callStack(createScriptCallStackForConsole(scriptState, 1));
+    RefPtrWillBeRawPtr<ScriptCallStack> callStack(createScriptCallStack(1));
     const ScriptCallFrame& lastCaller = callStack->at(0);
     RefPtr<TypeBuilder::Debugger::Location> location = TypeBuilder::Debugger::Location::create()
         .setScriptId(lastCaller.scriptId())
@@ -104,17 +104,17 @@ InspectorProfilerAgent::~InspectorProfilerAgent()
 {
 }
 
-void InspectorProfilerAgent::consoleProfile(ExecutionContext* context, const String& title, ScriptState* scriptState)
+void InspectorProfilerAgent::consoleProfile(ExecutionContext* context, const String& title)
 {
     UseCounter::count(context, UseCounter::DevToolsConsoleProfile);
     ASSERT(m_frontend && enabled());
     String id = nextProfileId();
     m_startedProfiles.append(ProfileDescriptor(id, title));
     ScriptProfiler::start(id);
-    m_frontend->consoleProfileStarted(id, currentDebugLocation(scriptState), title.isNull() ? 0 : &title);
+    m_frontend->consoleProfileStarted(id, currentDebugLocation(), title.isNull() ? 0 : &title);
 }
 
-void InspectorProfilerAgent::consoleProfileEnd(const String& title, ScriptState* scriptState)
+void InspectorProfilerAgent::consoleProfileEnd(const String& title)
 {
     ASSERT(m_frontend && enabled());
     String id;
@@ -141,7 +141,7 @@ void InspectorProfilerAgent::consoleProfileEnd(const String& title, ScriptState*
     RefPtrWillBeRawPtr<ScriptProfile> profile = ScriptProfiler::stop(id);
     if (!profile)
         return;
-    RefPtr<TypeBuilder::Debugger::Location> location = currentDebugLocation(scriptState);
+    RefPtr<TypeBuilder::Debugger::Location> location = currentDebugLocation();
     m_frontend->consoleProfileFinished(id, location, createCPUProfile(*profile), resolvedTitle.isNull() ? 0 : &resolvedTitle);
 }
 

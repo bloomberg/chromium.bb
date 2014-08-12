@@ -111,14 +111,14 @@ void ConsoleBase::markTimeline(const String& title)
     timeStamp(title);
 }
 
-void ConsoleBase::profile(ScriptState* scriptState, const String& title)
+void ConsoleBase::profile(const String& title)
 {
-    InspectorInstrumentation::consoleProfile(context(), title, scriptState);
+    InspectorInstrumentation::consoleProfile(context(), title);
 }
 
-void ConsoleBase::profileEnd(ScriptState* scriptState, const String& title)
+void ConsoleBase::profileEnd(const String& title)
 {
-    InspectorInstrumentation::consoleProfileEnd(context(), title, scriptState);
+    InspectorInstrumentation::consoleProfileEnd(context(), title);
 }
 
 void ConsoleBase::time(const String& title)
@@ -175,7 +175,7 @@ void ConsoleBase::internalAddMessage(MessageType type, MessageLevel level, Scrip
         return;
 
     size_t stackSize = printTrace ? ScriptCallStack::maxCallStackSizeToCapture : 1;
-    RefPtrWillBeRawPtr<ScriptCallStack> callStack(createScriptCallStackForConsole(scriptState, stackSize));
+    RefPtrWillBeRawPtr<ScriptCallStack> callStack(createScriptCallStackForConsole(stackSize));
 
     String message;
     bool gotStringMessage = arguments->getFirstArgumentAsString(message);

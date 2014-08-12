@@ -75,7 +75,7 @@ InspectorConsoleMessage::InspectorConsoleMessage(bool canGenerateCallStack, Mess
     autogenerateMetadata(canGenerateCallStack, scriptState);
 }
 
-InspectorConsoleMessage::InspectorConsoleMessage(bool, MessageSource source, MessageType type, MessageLevel level, const String& message, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack, unsigned long requestIdentifier)
+InspectorConsoleMessage::InspectorConsoleMessage(MessageSource source, MessageType type, MessageLevel level, const String& message, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack, unsigned long requestIdentifier)
     : m_source(source)
     , m_type(type)
     , m_level(level)
@@ -122,7 +122,7 @@ void InspectorConsoleMessage::autogenerateMetadata(bool canGenerateCallStack, Sc
         return;
 
     if (scriptState)
-        m_callStack = createScriptCallStackForConsole(scriptState);
+        m_callStack = createScriptCallStackForConsole();
     else if (canGenerateCallStack)
         m_callStack = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture, true);
     else

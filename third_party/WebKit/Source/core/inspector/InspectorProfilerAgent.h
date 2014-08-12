@@ -60,8 +60,8 @@ public:
     virtual ~InspectorProfilerAgent();
     virtual void trace(Visitor*) OVERRIDE;
 
-    void consoleProfile(ExecutionContext*, const String& title, ScriptState*);
-    void consoleProfileEnd(const String& title, ScriptState*);
+    void consoleProfile(ExecutionContext*, const String& title);
+    void consoleProfileEnd(const String& title);
 
     virtual void enable(ErrorString*) OVERRIDE;
     virtual void disable(ErrorString*) OVERRIDE;

@@ -44,8 +44,8 @@
     [CallWith=(ScriptArguments,ScriptState)] void count();
     [DeprecateAs=ConsoleMarkTimeline] void markTimeline(optional DOMString title = null);
 
-    [CallWith=ScriptState] void profile(optional DOMString title = null);
-    [CallWith=ScriptState] void profileEnd(optional DOMString title = null);
+    void profile(optional DOMString title = null);
+    void profileEnd(optional DOMString title = null);
 
     void time(optional DOMString title = null);
     [CallWith=ScriptState] void timeEnd(optional DOMString title = null);
