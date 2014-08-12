@@ -75,8 +75,13 @@ RenderImage* RenderImage::createAnonymous(Document* document)
 
 RenderImage::~RenderImage()
 {
+}
+
+void RenderImage::destroy()
+{
     ASSERT(m_imageResource);
     m_imageResource->shutdown();
+    RenderReplaced::destroy();
 }
 
 void RenderImage::setImageResource(PassOwnPtr<RenderImageResource> imageResource)

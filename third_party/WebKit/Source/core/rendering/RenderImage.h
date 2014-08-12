@@ -37,6 +37,7 @@ class RenderImage : public RenderReplaced {
 public:
     RenderImage(Element*);
     virtual ~RenderImage();
+    virtual void destroy() OVERRIDE;
 
     static RenderImage* createAnonymous(Document*);
 
