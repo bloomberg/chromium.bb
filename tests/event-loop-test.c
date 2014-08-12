@@ -37,7 +37,7 @@ fd_dispatch(int fd, uint32_t mask, void *data)
 	int *p = data;
 
 	assert(mask == 0);
-	*p = 1;
+	++(*p);
 
 	return 0;
 }
@@ -58,7 +58,7 @@ TEST(event_loop_post_dispatch_check)
 	wl_event_source_check(source);
 
 	wl_event_loop_dispatch(loop, 0);
-	assert(dispatch_ran);
+	assert(dispatch_ran == 1);
 
 	assert(close(p[0]) == 0);
 	assert(close(p[1]) == 0);
@@ -148,7 +148,7 @@ signal_callback(int signal_number, void *data)
 	int *got_it = data;
 
 	assert(signal_number == SIGUSR1);
-	*got_it = 1;
+	++(*got_it);
 
 	return 1;
 }
@@ -161,11 +161,13 @@ TEST(event_loop_signal)
 
 	source = wl_event_loop_add_signal(loop, SIGUSR1,
 					  signal_callback, &got_it);
+	assert(source);
+
 	wl_event_loop_dispatch(loop, 0);
 	assert(!got_it);
 	kill(getpid(), SIGUSR1);
 	wl_event_loop_dispatch(loop, 0);
-	assert(got_it);
+	assert(got_it == 1);
 
 	wl_event_source_remove(source);
 	wl_event_loop_destroy(loop);
@@ -177,7 +179,7 @@ timer_callback(void *data)
 {
 	int *got_it = data;
 
-	*got_it = 1;
+	++(*got_it);
 
 	return 1;
 }
@@ -194,7 +196,7 @@ TEST(event_loop_timer)
 	wl_event_loop_dispatch(loop, 0);
 	assert(!got_it);
 	wl_event_loop_dispatch(loop, 20);
-	assert(got_it);
+	assert(got_it == 1);
 
 	wl_event_source_remove(source);
 	wl_event_loop_destroy(loop);
