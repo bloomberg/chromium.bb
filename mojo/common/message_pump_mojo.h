@@ -31,6 +31,7 @@ class MOJO_COMMON_EXPORT MessagePumpMojo : public base::MessagePump {
 
   // Registers a MessagePumpMojoHandler for the specified handle. Only one
   // handler can be registered for a specified handle.
+  // NOTE: a value of 0 for |deadline| indicates an indefinite timeout.
   void AddHandler(MessagePumpMojoHandler* handler,
                   const Handle& handle,
                   MojoHandleSignals wait_signals,

@@ -92,6 +92,8 @@ MessageLoop::MessagePumpFactory* message_pump_for_ui_factory_ = NULL;
 // time for every task that is added to the MessageLoop incoming queue.
 bool AlwaysNotifyPump(MessageLoop::Type type) {
 #if defined(OS_ANDROID)
+  // The Android UI message loop needs to get notified each time a task is added
+  // to the incoming queue.
   return type == MessageLoop::TYPE_UI || type == MessageLoop::TYPE_JAVA;
 #else
   return false;
@@ -528,8 +530,6 @@ void MessageLoop::ReloadWorkQueue() {
 }
 
 void MessageLoop::ScheduleWork(bool was_empty) {
-  // The Android UI message loop needs to get notified each time
-  // a task is added to the incoming queue.
   if (was_empty || AlwaysNotifyPump(type_))
     pump_->ScheduleWork();
 }

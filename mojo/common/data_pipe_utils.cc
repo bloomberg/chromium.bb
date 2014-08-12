@@ -11,7 +11,6 @@
 #include "base/files/scoped_file.h"
 #include "base/message_loop/message_loop.h"
 #include "base/task_runner_util.h"
-#include "mojo/common/handle_watcher.h"
 
 namespace mojo {
 namespace common {
