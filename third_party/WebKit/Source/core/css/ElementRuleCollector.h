@@ -131,10 +131,6 @@ public:
     void clearMatchedRules();
     void addElementStyleProperties(const StylePropertySet*, bool isCacheable = true);
 
-    unsigned lastMatchedRulesPosition() const { return m_matchedRules ? m_matchedRules->size() : 0; }
-    void sortMatchedRulesFrom(unsigned position);
-    void sortAndTransferMatchedRulesWithOnlySortBySpecificity();
-
 private:
     void collectRuleIfMatches(const RuleData&, SelectorChecker::ContextFlags, CascadeScope, CascadeOrder, const MatchRequest&, RuleRange&);
 
