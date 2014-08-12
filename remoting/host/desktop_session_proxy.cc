@@ -139,10 +139,10 @@ scoped_ptr<ScreenControls> DesktopSessionProxy::CreateScreenControls() {
   return scoped_ptr<ScreenControls>(new IpcScreenControls(this));
 }
 
-scoped_ptr<webrtc::ScreenCapturer> DesktopSessionProxy::CreateVideoCapturer() {
+scoped_ptr<webrtc::DesktopCapturer> DesktopSessionProxy::CreateVideoCapturer() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  return scoped_ptr<webrtc::ScreenCapturer>(new IpcVideoFrameCapturer(this));
+  return scoped_ptr<webrtc::DesktopCapturer>(new IpcVideoFrameCapturer(this));
 }
 
 scoped_ptr<webrtc::MouseCursorMonitor>

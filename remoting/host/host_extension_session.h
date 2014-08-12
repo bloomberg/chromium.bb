@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 
 namespace webrtc {
-class ScreenCapturer;
+class DesktopCapturer;
 }
 
 namespace remoting {
@@ -30,8 +30,8 @@ class HostExtensionSession {
   // Optional hook functions for HostExtensions which need to wrap or replace
   // parts of the video, audio, input, etc pipelines.
   // These are called in response to ResetVideoPipeline().
-  virtual scoped_ptr<webrtc::ScreenCapturer> OnCreateVideoCapturer(
-      scoped_ptr<webrtc::ScreenCapturer> capturer);
+  virtual scoped_ptr<webrtc::DesktopCapturer> OnCreateVideoCapturer(
+      scoped_ptr<webrtc::DesktopCapturer> capturer);
   virtual scoped_ptr<VideoEncoder> OnCreateVideoEncoder(
       scoped_ptr<VideoEncoder> encoder);
   virtual bool ModifiesVideoPipeline() const;
@@ -48,4 +48,3 @@ class HostExtensionSession {
 }  // namespace remoting
 
 #endif  // REMOTING_HOST_HOST_EXTENSION_SESSION_H_
-

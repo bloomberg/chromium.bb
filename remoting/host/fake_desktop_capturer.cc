@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/fake_screen_capturer.h"
+#include "remoting/host/fake_desktop_capturer.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -12,11 +12,11 @@
 
 namespace remoting {
 
-// FakeScreenCapturer generates a white picture of size kWidth x kHeight
+// FakeDesktopCapturer generates a white picture of size kWidth x kHeight
 // with a rectangle of size kBoxWidth x kBoxHeight. The rectangle moves kSpeed
 // pixels per frame along both axes, and bounces off the sides of the screen.
-static const int kWidth = FakeScreenCapturer::kWidth;
-static const int kHeight = FakeScreenCapturer::kHeight;
+static const int kWidth = FakeDesktopCapturer::kWidth;
+static const int kHeight = FakeDesktopCapturer::kHeight;
 static const int kBoxWidth = 140;
 static const int kBoxHeight = 140;
 static const int kSpeed = 20;
@@ -40,7 +40,7 @@ class DefaultFrameGenerator
         first_frame_(true) {}
 
   scoped_ptr<webrtc::DesktopFrame> GenerateFrame(
-      webrtc::ScreenCapturer::Callback* callback);
+      webrtc::DesktopCapturer::Callback* callback);
 
  private:
   friend class base::RefCountedThreadSafe<DefaultFrameGenerator>;
@@ -58,7 +58,7 @@ class DefaultFrameGenerator
 };
 
 scoped_ptr<webrtc::DesktopFrame> DefaultFrameGenerator::GenerateFrame(
-    webrtc::ScreenCapturer::Callback* callback) {
+    webrtc::DesktopCapturer::Callback* callback) {
   const int kBytesPerPixel = webrtc::DesktopFrame::kBytesPerPixel;
   int buffer_size = kWidth * kHeight * kBytesPerPixel;
   webrtc::SharedMemory* shared_memory =
@@ -120,50 +120,32 @@ scoped_ptr<webrtc::DesktopFrame> DefaultFrameGenerator::GenerateFrame(
 
 }  // namespace
 
-FakeScreenCapturer::FakeScreenCapturer()
-    : callback_(NULL),
-      mouse_shape_observer_(NULL) {
+FakeDesktopCapturer::FakeDesktopCapturer()
+    : callback_(NULL) {
   frame_generator_ = base::Bind(&DefaultFrameGenerator::GenerateFrame,
                                 new DefaultFrameGenerator());
 }
 
-FakeScreenCapturer::~FakeScreenCapturer() {}
+FakeDesktopCapturer::~FakeDesktopCapturer() {}
 
-void FakeScreenCapturer::set_frame_generator(
+void FakeDesktopCapturer::set_frame_generator(
     const FrameGenerator& frame_generator) {
   DCHECK(!callback_);
   frame_generator_ = frame_generator;
 }
 
-void FakeScreenCapturer::Start(Callback* callback) {
+void FakeDesktopCapturer::Start(Callback* callback) {
   DCHECK(!callback_);
   DCHECK(callback);
   callback_ = callback;
 }
 
-void FakeScreenCapturer::Capture(const webrtc::DesktopRegion& region) {
+void FakeDesktopCapturer::Capture(const webrtc::DesktopRegion& region) {
   base::Time capture_start_time = base::Time::Now();
   scoped_ptr<webrtc::DesktopFrame> frame = frame_generator_.Run(callback_);
   frame->set_capture_time_ms(
       (base::Time::Now() - capture_start_time).InMillisecondsRoundedUp());
   callback_->OnCaptureCompleted(frame.release());
-}
-
-void FakeScreenCapturer::SetMouseShapeObserver(
-      MouseShapeObserver* mouse_shape_observer) {
-  DCHECK(!mouse_shape_observer_);
-  DCHECK(mouse_shape_observer);
-  mouse_shape_observer_ = mouse_shape_observer;
-}
-
-bool FakeScreenCapturer::GetScreenList(ScreenList* screens) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-bool FakeScreenCapturer::SelectScreen(webrtc::ScreenId id) {
-  NOTIMPLEMENTED();
-  return false;
 }
 
 }  // namespace remoting

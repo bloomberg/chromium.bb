@@ -33,7 +33,7 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
   virtual scoped_ptr<AudioCapturer> CreateAudioCapturer() OVERRIDE;
   virtual scoped_ptr<InputInjector> CreateInputInjector() OVERRIDE;
   virtual scoped_ptr<ScreenControls> CreateScreenControls() OVERRIDE;
-  virtual scoped_ptr<webrtc::ScreenCapturer> CreateVideoCapturer() OVERRIDE;
+  virtual scoped_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() OVERRIDE;
   virtual scoped_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor()
       OVERRIDE;
   virtual std::string GetCapabilities() const OVERRIDE;
@@ -76,7 +76,7 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
   // Used to run UI code.
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
-  // Options shared between |ScreenCapturer| and |MouseCursorMonitor|. It
+  // Options shared between |DesktopCapturer| and |MouseCursorMonitor|. It
   // might contain expensive resources, thus justifying the sharing.
   // Also: it's dynamically allocated to avoid having to bring in
   // desktop_capture_options.h which brings in X11 headers which causes hard to

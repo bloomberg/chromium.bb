@@ -12,7 +12,7 @@
 #include "base/memory/scoped_vector.h"
 
 namespace webrtc {
-class ScreenCapturer;
+class DesktopCapturer;
 }
 
 namespace remoting {
@@ -42,8 +42,8 @@ class HostExtensionSessionManager {
 
   // Calls the corresponding hook functions in each extension in turn, to give
   // them an opportunity to wrap or replace video components.
-  scoped_ptr<webrtc::ScreenCapturer> OnCreateVideoCapturer(
-      scoped_ptr<webrtc::ScreenCapturer> capturer);
+  scoped_ptr<webrtc::DesktopCapturer> OnCreateVideoCapturer(
+      scoped_ptr<webrtc::DesktopCapturer> capturer);
   scoped_ptr<VideoEncoder> OnCreateVideoEncoder(
       scoped_ptr<VideoEncoder> encoder);
 

@@ -5,7 +5,7 @@
 #include "remoting/host/fake_desktop_environment.h"
 
 #include "remoting/host/audio_capturer.h"
-#include "remoting/host/fake_screen_capturer.h"
+#include "remoting/host/fake_desktop_capturer.h"
 #include "remoting/host/gnubby_auth_handler.h"
 #include "remoting/host/input_injector.h"
 
@@ -55,12 +55,12 @@ scoped_ptr<ScreenControls> FakeDesktopEnvironment::CreateScreenControls() {
   return scoped_ptr<ScreenControls>(new FakeScreenControls());
 }
 
-scoped_ptr<webrtc::ScreenCapturer>
+scoped_ptr<webrtc::DesktopCapturer>
 FakeDesktopEnvironment::CreateVideoCapturer() {
-  scoped_ptr<FakeScreenCapturer> result(new FakeScreenCapturer());
+  scoped_ptr<FakeDesktopCapturer> result(new FakeDesktopCapturer());
   if (!frame_generator_.is_null())
     result->set_frame_generator(frame_generator_);
-  return result.PassAs<webrtc::ScreenCapturer>();
+  return result.PassAs<webrtc::DesktopCapturer>();
 }
 
 scoped_ptr<webrtc::MouseCursorMonitor>

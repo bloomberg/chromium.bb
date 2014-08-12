@@ -14,7 +14,7 @@
 #include "remoting/host/input_injector.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/transport.h"
-#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
 namespace remoting {
 
@@ -34,9 +34,9 @@ scoped_ptr<ScreenControls> MockDesktopEnvironment::CreateScreenControls() {
   return scoped_ptr<ScreenControls>(CreateScreenControlsPtr());
 }
 
-scoped_ptr<webrtc::ScreenCapturer>
+scoped_ptr<webrtc::DesktopCapturer>
 MockDesktopEnvironment::CreateVideoCapturer() {
-  return scoped_ptr<webrtc::ScreenCapturer>(CreateVideoCapturerPtr());
+  return scoped_ptr<webrtc::DesktopCapturer>(CreateVideoCapturerPtr());
 }
 
 scoped_ptr<GnubbyAuthHandler>

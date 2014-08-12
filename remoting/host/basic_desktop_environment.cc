@@ -60,13 +60,13 @@ scoped_ptr<GnubbyAuthHandler> BasicDesktopEnvironment::CreateGnubbyAuthHandler(
   return scoped_ptr<GnubbyAuthHandler>();
 }
 
-scoped_ptr<webrtc::ScreenCapturer>
+scoped_ptr<webrtc::DesktopCapturer>
 BasicDesktopEnvironment::CreateVideoCapturer() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   // The basic desktop environment does not use X DAMAGE, since it is
   // broken on many systems - see http://crbug.com/73423.
-  return scoped_ptr<webrtc::ScreenCapturer>(
+  return scoped_ptr<webrtc::DesktopCapturer>(
       webrtc::ScreenCapturer::Create(*desktop_capture_options_));
 }
 

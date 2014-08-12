@@ -12,8 +12,8 @@
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/codec/video_encoder.h"
 #include "remoting/codec/video_encoder_verbatim.h"
+#include "remoting/host/fake_desktop_capturer.h"
 #include "remoting/host/fake_mouse_cursor_monitor.h"
-#include "remoting/host/fake_screen_capturer.h"
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/video.pb.h"
@@ -92,20 +92,20 @@ class ThreadCheckVideoEncoder : public VideoEncoderVerbatim {
   DISALLOW_COPY_AND_ASSIGN(ThreadCheckVideoEncoder);
 };
 
-class ThreadCheckScreenCapturer : public FakeScreenCapturer {
+class ThreadCheckDesktopCapturer : public FakeDesktopCapturer {
  public:
-  ThreadCheckScreenCapturer(
+  ThreadCheckDesktopCapturer(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : task_runner_(task_runner) {
   }
-  virtual ~ThreadCheckScreenCapturer() {
+  virtual ~ThreadCheckDesktopCapturer() {
     EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
   }
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  DISALLOW_COPY_AND_ASSIGN(ThreadCheckScreenCapturer);
+  DISALLOW_COPY_AND_ASSIGN(ThreadCheckDesktopCapturer);
 };
 
 class ThreadCheckMouseCursorMonitor : public FakeMouseCursorMonitor {
@@ -132,14 +132,16 @@ class VideoSchedulerTest : public testing::Test {
   virtual void TearDown() OVERRIDE;
 
   void StartVideoScheduler(
-      scoped_ptr<webrtc::ScreenCapturer> capturer,
+      scoped_ptr<webrtc::DesktopCapturer> capturer,
       scoped_ptr<VideoEncoder> encoder,
       scoped_ptr<webrtc::MouseCursorMonitor> mouse_monitor);
   void StopVideoScheduler();
 
-  // webrtc::ScreenCapturer mocks.
-  void OnCapturerStart(webrtc::ScreenCapturer::Callback* callback);
+  // webrtc::DesktopCapturer mocks.
+  void OnCapturerStart(webrtc::DesktopCapturer::Callback* callback);
   void OnCaptureFrame(const webrtc::DesktopRegion& region);
+
+  // webrtc::MouseCursorMonitor mocks.
   void OnMouseCursorMonitorInit(
       webrtc::MouseCursorMonitor::Callback* callback,
       webrtc::MouseCursorMonitor::Mode mode);
@@ -157,8 +159,8 @@ class VideoSchedulerTest : public testing::Test {
   MockClientStub client_stub_;
   MockVideoStub video_stub_;
 
-  // Points to the callback passed to webrtc::ScreenCapturer::Start().
-  webrtc::ScreenCapturer::Callback* capturer_callback_;
+  // Points to the callback passed to webrtc::DesktopCapturer::Start().
+  webrtc::DesktopCapturer::Callback* capturer_callback_;
 
   // Points to the callback passed to webrtc::MouseCursor::Init().
   webrtc::MouseCursorMonitor::Callback* mouse_monitor_callback_;
@@ -190,7 +192,7 @@ void VideoSchedulerTest::TearDown() {
 }
 
 void VideoSchedulerTest::StartVideoScheduler(
-    scoped_ptr<webrtc::ScreenCapturer> capturer,
+    scoped_ptr<webrtc::DesktopCapturer> capturer,
     scoped_ptr<VideoEncoder> encoder,
     scoped_ptr<webrtc::MouseCursorMonitor> mouse_monitor) {
   scheduler_ = new VideoScheduler(
@@ -211,7 +213,7 @@ void VideoSchedulerTest::StopVideoScheduler() {
 }
 
 void VideoSchedulerTest::OnCapturerStart(
-    webrtc::ScreenCapturer::Callback* callback) {
+    webrtc::DesktopCapturer::Callback* callback) {
   EXPECT_FALSE(capturer_callback_);
   EXPECT_TRUE(callback);
 
@@ -315,7 +317,7 @@ TEST_F(VideoSchedulerTest, StartAndStop) {
   // Start video frame capture.
   scoped_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor(
       new FakeMouseCursorMonitor());
-  StartVideoScheduler(capturer.PassAs<webrtc::ScreenCapturer>(),
+  StartVideoScheduler(capturer.PassAs<webrtc::DesktopCapturer>(),
                       encoder.PassAs<VideoEncoder>(),
                       cursor_monitor.PassAs<webrtc::MouseCursorMonitor>());
 
@@ -331,8 +333,8 @@ TEST_F(VideoSchedulerTest, DeleteOnThreads) {
   capture_task_runner_ = AutoThread::Create("capture", main_task_runner_);
   encode_task_runner_ = AutoThread::Create("encode", main_task_runner_);
 
-  scoped_ptr<webrtc::ScreenCapturer> capturer(
-      new ThreadCheckScreenCapturer(capture_task_runner_));
+  scoped_ptr<webrtc::DesktopCapturer> capturer(
+      new ThreadCheckDesktopCapturer(capture_task_runner_));
   scoped_ptr<VideoEncoder> encoder(
       new ThreadCheckVideoEncoder(encode_task_runner_));
   scoped_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor(

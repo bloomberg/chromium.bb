@@ -17,9 +17,9 @@
 #include "ipc/ipc_platform_file.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/protocol/clipboard_stub.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
-#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
 namespace IPC {
 class ChannelProxy;
@@ -219,7 +219,7 @@ class DesktopSessionAgent
   bool started_;
 
   // Captures the screen.
-  scoped_ptr<webrtc::ScreenCapturer> video_capturer_;
+  scoped_ptr<webrtc::DesktopCapturer> video_capturer_;
 
   // Captures mouse shapes.
   scoped_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor_;

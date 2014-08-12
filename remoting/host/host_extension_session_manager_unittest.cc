@@ -9,7 +9,7 @@
 #include "remoting/proto/control.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
 namespace remoting {
 
@@ -107,7 +107,8 @@ TEST_F(HostExtensionSessionManagerTest, CanWrapVideoCapturer) {
   extension3_.set_steal_video_capturer(true);
   extension_manager.OnNegotiatedCapabilities(&client_stub_, "cap1");
 
-  extension_manager.OnCreateVideoCapturer(scoped_ptr<webrtc::ScreenCapturer>());
+  extension_manager.OnCreateVideoCapturer(
+      scoped_ptr<webrtc::DesktopCapturer>());
 
   EXPECT_FALSE(extension1_.has_wrapped_video_encoder());
   EXPECT_TRUE(extension1_.has_wrapped_video_capturer());
@@ -147,7 +148,8 @@ TEST_F(HostExtensionSessionManagerTest, RespectModifiesVideoPipeline) {
   extension2_.set_steal_video_capturer(true);
   extension_manager.OnNegotiatedCapabilities(&client_stub_, "cap1");
 
-  extension_manager.OnCreateVideoCapturer(scoped_ptr<webrtc::ScreenCapturer>());
+  extension_manager.OnCreateVideoCapturer(
+      scoped_ptr<webrtc::DesktopCapturer>());
   extension_manager.OnCreateVideoEncoder(scoped_ptr<VideoEncoder>());
 
   EXPECT_FALSE(extension1_.has_wrapped_video_encoder());

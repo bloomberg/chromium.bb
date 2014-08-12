@@ -49,7 +49,7 @@ class DesktopEnvironmentFactory;
 //
 // 2. We listen for incoming connection using libjingle. We will create
 //    a ConnectionToClient object that wraps around linjingle for transport.
-//    A VideoScheduler is created with an Encoder and a webrtc::ScreenCapturer.
+//    A VideoScheduler is created with an Encoder and a webrtc::DesktopCapturer.
 //    A ConnectionToClient is added to the ScreenRecorder for transporting
 //    the screen captures. An InputStub is created and registered with the
 //    ConnectionToClient to receive mouse / keyboard events from the remote

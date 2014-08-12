@@ -20,10 +20,10 @@
 #include "remoting/protocol/cursor_shape_stub.h"
 #include "remoting/protocol/message_decoder.h"
 #include "remoting/protocol/video_stub.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor_shape.h"
-#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
 namespace remoting {
 
@@ -48,7 +48,7 @@ VideoScheduler::VideoScheduler(
     scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-    scoped_ptr<webrtc::ScreenCapturer> capturer,
+    scoped_ptr<webrtc::DesktopCapturer> capturer,
     scoped_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor,
     scoped_ptr<VideoEncoder> encoder,
     protocol::CursorShapeStub* cursor_stub,

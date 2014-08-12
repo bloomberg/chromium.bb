@@ -1,11 +1,11 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/shaped_screen_capturer.h"
+#include "remoting/host/shaped_desktop_capturer.h"
 
 #include "remoting/host/desktop_shape_tracker.h"
-#include "remoting/host/fake_screen_capturer.h"
+#include "remoting/host/fake_desktop_capturer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
@@ -39,7 +39,7 @@ class FakeDesktopShapeTracker : public DesktopShapeTracker {
   webrtc::DesktopRegion shape_;
 };
 
-class ShapedScreenCapturerTest : public testing::Test,
+class ShapedDesktopCapturerTest : public testing::Test,
                                  public webrtc::DesktopCapturer::Callback {
  public:
   // webrtc::DesktopCapturer::Callback interface
@@ -55,9 +55,9 @@ class ShapedScreenCapturerTest : public testing::Test,
 };
 
 // Verify that captured frame have shape.
-TEST_F(ShapedScreenCapturerTest, Basic) {
-  ShapedScreenCapturer capturer(
-      scoped_ptr<webrtc::ScreenCapturer>(new FakeScreenCapturer()),
+TEST_F(ShapedDesktopCapturerTest, Basic) {
+  ShapedDesktopCapturer capturer(
+      scoped_ptr<webrtc::DesktopCapturer>(new FakeDesktopCapturer()),
       scoped_ptr<DesktopShapeTracker>(new FakeDesktopShapeTracker()));
   capturer.Start(this);
   capturer.Capture(webrtc::DesktopRegion());

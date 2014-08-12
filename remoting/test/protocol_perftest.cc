@@ -348,7 +348,7 @@ class IntermittentChangeFrameGenerator
       : frame_index_(0) {}
 
   scoped_ptr<webrtc::DesktopFrame> GenerateFrame(
-      webrtc::ScreenCapturer::Callback* callback) {
+      webrtc::DesktopCapturer::Callback* callback) {
     const int kWidth = 800;
     const int kHeight = 600;
 

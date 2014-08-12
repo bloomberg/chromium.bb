@@ -5,12 +5,12 @@
 #include "remoting/host/host_extension_session.h"
 
 #include "remoting/codec/video_encoder.h"
-#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
 namespace remoting {
 
-scoped_ptr<webrtc::ScreenCapturer> HostExtensionSession::OnCreateVideoCapturer(
-    scoped_ptr<webrtc::ScreenCapturer> capturer) {
+scoped_ptr<webrtc::DesktopCapturer> HostExtensionSession::OnCreateVideoCapturer(
+    scoped_ptr<webrtc::DesktopCapturer> capturer) {
   return capturer.Pass();
 }
 

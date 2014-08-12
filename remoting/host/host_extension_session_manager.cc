@@ -9,7 +9,7 @@
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/host_extension.h"
 #include "remoting/host/host_extension_session.h"
-#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 namespace remoting {
 
 HostExtensionSessionManager::HostExtensionSessionManager(
@@ -39,9 +39,9 @@ std::string HostExtensionSessionManager::GetCapabilities() {
   return capabilities;
 }
 
-scoped_ptr<webrtc::ScreenCapturer>
+scoped_ptr<webrtc::DesktopCapturer>
     HostExtensionSessionManager::OnCreateVideoCapturer(
-        scoped_ptr<webrtc::ScreenCapturer> capturer) {
+        scoped_ptr<webrtc::DesktopCapturer> capturer) {
   for(HostExtensionSessionList::const_iterator it = extension_sessions_.begin();
       it != extension_sessions_.end(); ++it) {
     if ((*it)->ModifiesVideoPipeline()) {

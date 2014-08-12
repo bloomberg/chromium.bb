@@ -36,7 +36,6 @@ class MouseCursor;
 }  // namespace webrtc
 
 struct SerializedDesktopFrame;
-struct SerializedMouseCursor;
 
 namespace remoting {
 
@@ -82,7 +81,7 @@ class DesktopSessionProxy
   scoped_ptr<AudioCapturer> CreateAudioCapturer();
   scoped_ptr<InputInjector> CreateInputInjector();
   scoped_ptr<ScreenControls> CreateScreenControls();
-  scoped_ptr<webrtc::ScreenCapturer> CreateVideoCapturer();
+  scoped_ptr<webrtc::DesktopCapturer> CreateVideoCapturer();
   scoped_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor();
   std::string GetCapabilities() const;
   void SetCapabilities(const std::string& capabilities);
@@ -107,7 +106,7 @@ class DesktopSessionProxy
   // on the |audio_capture_task_runner_| thread.
   void SetAudioCapturer(const base::WeakPtr<IpcAudioCapturer>& audio_capturer);
 
-  // APIs used to implement the webrtc::ScreenCapturer interface. These must be
+  // APIs used to implement the webrtc::DesktopCapturer interface. These must be
   // called on the |video_capture_task_runner_| thread.
   void CaptureFrame();
 

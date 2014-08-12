@@ -18,7 +18,7 @@ class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace webrtc {
-class ScreenCapturer;
+class DesktopCapturer;
 class MouseCursorMonitor;
 }  // namespace webrtc
 
@@ -45,7 +45,7 @@ class DesktopEnvironment {
   virtual scoped_ptr<AudioCapturer> CreateAudioCapturer() = 0;
   virtual scoped_ptr<InputInjector> CreateInputInjector() = 0;
   virtual scoped_ptr<ScreenControls> CreateScreenControls() = 0;
-  virtual scoped_ptr<webrtc::ScreenCapturer> CreateVideoCapturer() = 0;
+  virtual scoped_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() = 0;
   virtual scoped_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor() = 0;
 
   // Returns the set of all capabilities supported by |this|.

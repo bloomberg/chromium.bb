@@ -6,8 +6,8 @@
 #define REMOTING_HOST_FAKE_DESKTOP_ENVIRONMENT_H_
 
 #include "remoting/host/desktop_environment.h"
+#include "remoting/host/fake_desktop_capturer.h"
 #include "remoting/host/fake_mouse_cursor_monitor.h"
-#include "remoting/host/fake_screen_capturer.h"
 #include "remoting/host/input_injector.h"
 #include "remoting/host/screen_controls.h"
 
@@ -41,9 +41,10 @@ class FakeDesktopEnvironment : public DesktopEnvironment {
   FakeDesktopEnvironment();
   virtual ~FakeDesktopEnvironment();
 
-  // Sets frame generator to be used for FakeScreenCapturer created by
+  // Sets frame generator to be used for FakeDesktopCapturer created by
   // FakeDesktopEnvironment.
-  void set_frame_generator(FakeScreenCapturer::FrameGenerator frame_generator) {
+  void set_frame_generator(
+      FakeDesktopCapturer::FrameGenerator frame_generator) {
     frame_generator_ = frame_generator;
   }
 
@@ -51,7 +52,7 @@ class FakeDesktopEnvironment : public DesktopEnvironment {
   virtual scoped_ptr<AudioCapturer> CreateAudioCapturer() OVERRIDE;
   virtual scoped_ptr<InputInjector> CreateInputInjector() OVERRIDE;
   virtual scoped_ptr<ScreenControls> CreateScreenControls() OVERRIDE;
-  virtual scoped_ptr<webrtc::ScreenCapturer> CreateVideoCapturer() OVERRIDE;
+  virtual scoped_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() OVERRIDE;
   virtual scoped_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor()
       OVERRIDE;
   virtual std::string GetCapabilities() const OVERRIDE;
@@ -60,7 +61,7 @@ class FakeDesktopEnvironment : public DesktopEnvironment {
       protocol::ClientStub* client_stub) OVERRIDE;
 
  private:
-  FakeScreenCapturer::FrameGenerator frame_generator_;
+  FakeDesktopCapturer::FrameGenerator frame_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDesktopEnvironment);
 };
@@ -70,9 +71,10 @@ class FakeDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
   FakeDesktopEnvironmentFactory();
   virtual ~FakeDesktopEnvironmentFactory();
 
-  // Sets frame generator to be used for FakeScreenCapturer created by
+  // Sets frame generator to be used for FakeDesktopCapturer created by
   // FakeDesktopEnvironment.
-  void set_frame_generator(FakeScreenCapturer::FrameGenerator frame_generator) {
+  void set_frame_generator(
+      FakeDesktopCapturer::FrameGenerator frame_generator) {
     frame_generator_ = frame_generator;
   }
 
@@ -84,7 +86,7 @@ class FakeDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
   virtual void SetEnableGnubbyAuth(bool enable) OVERRIDE;
 
  private:
-  FakeScreenCapturer::FrameGenerator frame_generator_;
+  FakeDesktopCapturer::FrameGenerator frame_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDesktopEnvironmentFactory);
 };

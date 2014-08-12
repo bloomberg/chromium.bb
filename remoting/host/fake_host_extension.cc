@@ -10,7 +10,7 @@
 #include "remoting/codec/video_encoder.h"
 #include "remoting/host/host_extension_session.h"
 #include "remoting/proto/control.pb.h"
-#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
 namespace remoting {
 
@@ -19,8 +19,8 @@ class FakeExtension::Session : public HostExtensionSession {
   Session(FakeExtension* extension, const std::string& message_type);
   virtual ~Session() {}
 
-  virtual scoped_ptr<webrtc::ScreenCapturer> OnCreateVideoCapturer(
-      scoped_ptr<webrtc::ScreenCapturer> encoder) OVERRIDE;
+  virtual scoped_ptr<webrtc::DesktopCapturer> OnCreateVideoCapturer(
+      scoped_ptr<webrtc::DesktopCapturer> encoder) OVERRIDE;
   virtual scoped_ptr<VideoEncoder> OnCreateVideoEncoder(
       scoped_ptr<VideoEncoder> encoder) OVERRIDE;
   virtual bool ModifiesVideoPipeline() const OVERRIDE;
@@ -42,9 +42,9 @@ FakeExtension::Session::Session(
     message_type_(message_type) {
 }
 
-scoped_ptr<webrtc::ScreenCapturer>
+scoped_ptr<webrtc::DesktopCapturer>
 FakeExtension::Session::OnCreateVideoCapturer(
-    scoped_ptr<webrtc::ScreenCapturer> capturer) {
+    scoped_ptr<webrtc::DesktopCapturer> capturer) {
   extension_->has_wrapped_video_capturer_ = true;
   if (extension_->steal_video_capturer_) {
     capturer.reset();

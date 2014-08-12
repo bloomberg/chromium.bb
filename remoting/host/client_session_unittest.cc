@@ -15,9 +15,9 @@
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/client_session.h"
 #include "remoting/host/desktop_environment.h"
+#include "remoting/host/fake_desktop_capturer.h"
 #include "remoting/host/fake_host_extension.h"
 #include "remoting/host/fake_mouse_cursor_monitor.h"
-#include "remoting/host/fake_screen_capturer.h"
 #include "remoting/host/host_extension.h"
 #include "remoting/host/host_extension_session.h"
 #include "remoting/host/host_mock_objects.h"
@@ -135,7 +135,7 @@ class ClientSessionTest : public testing::Test {
   void StopClientSession();
 
  protected:
-  // Creates a DesktopEnvironment with a fake webrtc::ScreenCapturer, to mock
+  // Creates a DesktopEnvironment with a fake webrtc::DesktopCapturer, to mock
   // DesktopEnvironmentFactory::Create().
   DesktopEnvironment* CreateDesktopEnvironment();
 
@@ -143,9 +143,9 @@ class ClientSessionTest : public testing::Test {
   // DesktopEnvironment::CreateInputInjector().
   InputInjector* CreateInputInjector();
 
-  // Creates a fake webrtc::ScreenCapturer, to mock
+  // Creates a fake webrtc::DesktopCapturer, to mock
   // DesktopEnvironment::CreateVideoCapturer().
-  webrtc::ScreenCapturer* CreateVideoCapturer();
+  webrtc::DesktopCapturer* CreateVideoCapturer();
 
   // Creates a MockMouseCursorMonitor, to mock
   // DesktopEnvironment::CreateMouseCursorMonitor
@@ -301,8 +301,8 @@ InputInjector* ClientSessionTest::CreateInputInjector() {
   return input_injector_.release();
 }
 
-webrtc::ScreenCapturer* ClientSessionTest::CreateVideoCapturer() {
-  return new FakeScreenCapturer();
+webrtc::DesktopCapturer* ClientSessionTest::CreateVideoCapturer() {
+  return new FakeDesktopCapturer();
 }
 
 webrtc::MouseCursorMonitor* ClientSessionTest::CreateMouseCursorMonitor() {
@@ -596,9 +596,9 @@ TEST_F(ClientSessionTest, ClampMouseEvents) {
   Expectation connected = authenticated;
 
   int input_x[3] = { -999, 100, 999 };
-  int expected_x[3] = { 0, 100, FakeScreenCapturer::kWidth - 1 };
+  int expected_x[3] = { 0, 100, FakeDesktopCapturer::kWidth - 1 };
   int input_y[3] = { -999, 50, 999 };
-  int expected_y[3] = { 0, 50, FakeScreenCapturer::kHeight - 1 };
+  int expected_y[3] = { 0, 50, FakeDesktopCapturer::kHeight - 1 };
 
   protocol::MouseEvent expected_event;
   for (int j = 0; j < 3; j++) {

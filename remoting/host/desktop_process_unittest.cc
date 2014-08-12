@@ -19,7 +19,7 @@
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/desktop_process.h"
-#include "remoting/host/fake_screen_capturer.h"
+#include "remoting/host/fake_desktop_capturer.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/host/screen_resolution.h"
@@ -105,7 +105,7 @@ class DesktopProcessTest : public testing::Test {
   void ConnectNetworkChannel(IPC::PlatformFileForTransit desktop_process);
   void OnDesktopAttached(IPC::PlatformFileForTransit desktop_process);
 
-  // Creates a DesktopEnvironment with a fake webrtc::ScreenCapturer, to mock
+  // Creates a DesktopEnvironment with a fake webrtc::DesktopCapturer, to mock
   // DesktopEnvironmentFactory::Create().
   DesktopEnvironment* CreateDesktopEnvironment();
 
@@ -113,9 +113,9 @@ class DesktopProcessTest : public testing::Test {
   // DesktopEnvironment::CreateInputInjector().
   InputInjector* CreateInputInjector();
 
-  // Creates a fake webrtc::ScreenCapturer, to mock
+  // Creates a fake webrtc::DesktopCapturer, to mock
   // DesktopEnvironment::CreateVideoCapturer().
-  webrtc::ScreenCapturer* CreateVideoCapturer();
+  webrtc::DesktopCapturer* CreateVideoCapturer();
 
   // Disconnects the daemon-to-desktop channel causing the desktop process to
   // exit.
@@ -218,8 +218,8 @@ InputInjector* DesktopProcessTest::CreateInputInjector() {
   return input_injector;
 }
 
-webrtc::ScreenCapturer* DesktopProcessTest::CreateVideoCapturer() {
-  return new FakeScreenCapturer();
+webrtc::DesktopCapturer* DesktopProcessTest::CreateVideoCapturer() {
+  return new FakeDesktopCapturer();
 }
 
 void DesktopProcessTest::DisconnectChannels() {

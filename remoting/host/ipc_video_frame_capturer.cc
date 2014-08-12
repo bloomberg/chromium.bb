@@ -13,7 +13,6 @@ namespace remoting {
 IpcVideoFrameCapturer::IpcVideoFrameCapturer(
     scoped_refptr<DesktopSessionProxy> desktop_session_proxy)
     : callback_(NULL),
-      mouse_shape_observer_(NULL),
       desktop_session_proxy_(desktop_session_proxy),
       capture_pending_(false),
       weak_factory_(this) {
@@ -29,23 +28,6 @@ void IpcVideoFrameCapturer::Start(Callback* callback) {
   desktop_session_proxy_->SetVideoCapturer(weak_factory_.GetWeakPtr());
 }
 
-void IpcVideoFrameCapturer::SetMouseShapeObserver(
-      MouseShapeObserver* mouse_shape_observer) {
-  DCHECK(!mouse_shape_observer_);
-  DCHECK(mouse_shape_observer);
-  mouse_shape_observer_ = mouse_shape_observer;
-}
-
-bool IpcVideoFrameCapturer::GetScreenList(ScreenList* screens) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-bool IpcVideoFrameCapturer::SelectScreen(webrtc::ScreenId id) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void IpcVideoFrameCapturer::Capture(const webrtc::DesktopRegion& region) {
   DCHECK(!capture_pending_);
   capture_pending_ = true;
@@ -57,12 +39,6 @@ void IpcVideoFrameCapturer::OnCaptureCompleted(
   DCHECK(capture_pending_);
   capture_pending_ = false;
   callback_->OnCaptureCompleted(frame.release());
-}
-
-void IpcVideoFrameCapturer::OnCursorShapeChanged(
-    scoped_ptr<webrtc::MouseCursorShape> cursor_shape) {
-  if (mouse_shape_observer_)
-    mouse_shape_observer_->OnCursorShapeChanged(cursor_shape.release());
 }
 
 }  // namespace remoting

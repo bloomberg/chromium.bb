@@ -28,7 +28,7 @@
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/clipboard_thread_proxy.h"
 #include "remoting/protocol/pairing_registry.h"
-#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
 // Default DPI to assume for old clients that use notifyClientDimensions.
 const int kDefaultDPI = 96;
@@ -453,9 +453,9 @@ void ClientSession::ResetVideoPipeline() {
     video_scheduler_ = NULL;
   }
 
-  // Create VideoEncoder and ScreenCapturer to match the session's video channel
-  // configuration.
-  scoped_ptr<webrtc::ScreenCapturer> video_capturer =
+  // Create VideoEncoder and DesktopCapturer to match the session's video
+  // channel configuration.
+  scoped_ptr<webrtc::DesktopCapturer> video_capturer =
       extension_manager_->OnCreateVideoCapturer(
           desktop_environment_->CreateVideoCapturer());
   scoped_ptr<VideoEncoder> video_encoder =

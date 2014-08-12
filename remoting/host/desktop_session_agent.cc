@@ -441,11 +441,11 @@ void DesktopSessionAgent::OnCaptureFrame() {
 
   mouse_cursor_monitor_->Capture();
 
-  // webrtc::ScreenCapturer supports a very few (currently 2) outstanding
+  // webrtc::DesktopCapturer supports a very few (currently 2) outstanding
   // capture requests. The requests are serialized on
   // |video_capture_task_runner()| task runner. If the client issues more
   // requests, pixel data in captured frames will likely be corrupted but
-  // stability of webrtc::ScreenCapturer will not be affected.
+  // stability of webrtc::DesktopCapturer will not be affected.
   video_capturer_->Capture(webrtc::DesktopRegion());
 }
 
