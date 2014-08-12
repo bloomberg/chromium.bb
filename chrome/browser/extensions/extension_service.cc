@@ -38,6 +38,7 @@
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_cache.h"
+#include "chrome/browser/extensions/updater/extension_downloader.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_identity_provider.h"
@@ -91,6 +92,8 @@ using content::BrowserThread;
 using content::DevToolsAgentHost;
 using extensions::CrxInstaller;
 using extensions::Extension;
+using extensions::ExtensionDownloader;
+using extensions::ExtensionDownloaderDelegate;
 using extensions::ExtensionIdSet;
 using extensions::ExtensionInfo;
 using extensions::ExtensionRegistry;
@@ -321,7 +324,8 @@ ExtensionService::ExtensionService(Profile* profile,
         profile,
         update_frequency,
         extensions::ExtensionCache::GetInstance(),
-        CreateWebstoreIdentityProvider(profile_)));
+        base::Bind(&ExtensionService::CreateExtensionDownloader,
+                   base::Unretained(this))));
   }
 
   component_loader_.reset(
@@ -580,6 +584,20 @@ bool ExtensionService::UpdateExtension(const std::string& id,
     *out_crx_installer = installer.get();
 
   return true;
+}
+
+scoped_ptr<ExtensionDownloader> ExtensionService::CreateExtensionDownloader(
+    ExtensionDownloaderDelegate* delegate) {
+  scoped_ptr<ExtensionDownloader> downloader;
+#if defined(ENABLE_EXTENSIONS)
+  scoped_ptr<IdentityProvider> identity_provider =
+      CreateWebstoreIdentityProvider(profile_);
+  downloader.reset(new ExtensionDownloader(
+      delegate,
+      profile_->GetRequestContext()));
+  downloader->SetWebstoreIdentityProvider(identity_provider.Pass());
+#endif
+  return downloader.Pass();
 }
 
 void ExtensionService::ReloadExtensionImpl(

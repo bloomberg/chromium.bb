@@ -47,7 +47,6 @@ struct UpdateDetails {
 
 class ExtensionCache;
 class ExtensionUpdaterTest;
-class WebstoreOAuth2TokenProvider;
 
 // A class that checks for updates of a given list of extensions, and downloads
 // the crx file when updates are found. It uses a |ExtensionDownloaderDelegate|
@@ -57,13 +56,16 @@ class ExtensionDownloader
     : public net::URLFetcherDelegate,
       public OAuth2TokenService::Consumer {
  public:
+  // A closure which constructs a new ExtensionDownloader to be owned by the
+  // caller.
+  typedef base::Callback<
+      scoped_ptr<ExtensionDownloader>(ExtensionDownloaderDelegate* delegate)>
+      Factory;
+
   // |delegate| is stored as a raw pointer and must outlive the
-  // ExtensionDownloader. |webstore_identity_provider| may be NULL if this
-  // ExtensionDownloader does not need OAuth2 support; if not NULL, the
-  // given IdentityProvider must outlive this ExtensionDownloader.
+  // ExtensionDownloader.
   ExtensionDownloader(ExtensionDownloaderDelegate* delegate,
-                      net::URLRequestContextGetter* request_context,
-                      IdentityProvider* webstore_identity_provider);
+                      net::URLRequestContextGetter* request_context);
   virtual ~ExtensionDownloader();
 
   // Adds |extension| to the list of extensions to check for updates.
@@ -92,6 +94,11 @@ class ExtensionDownloader
   void StartBlacklistUpdate(const std::string& version,
                             const ManifestFetchData::PingData& ping_data,
                             int request_id);
+
+  // Sets an IdentityProvider to be used for OAuth2 authentication on protected
+  // Webstore downloads.
+  void SetWebstoreIdentityProvider(
+      scoped_ptr<IdentityProvider> identity_provider);
 
   // These are needed for unit testing, to help identify the correct mock
   // URLFetcher objects.
@@ -275,7 +282,7 @@ class ExtensionDownloader
 
   // An IdentityProvider which may be used for authentication on protected
   // download requests. May be NULL.
-  IdentityProvider* identity_provider_;
+  scoped_ptr<IdentityProvider> identity_provider_;
 
   // A Webstore download-scoped access token for the |identity_provider_|'s
   // active account, if any.

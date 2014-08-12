@@ -20,12 +20,12 @@
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/extensions/updater/extension_downloader.h"
 #include "chrome/browser/extensions/updater/extension_downloader_delegate.h"
 #include "chrome/browser/extensions/updater/manifest_fetch_data.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_registry_observer.h"
-#include "google_apis/gaia/identity_provider.h"
 #include "url/gurl.h"
 
 class ExtensionServiceInterface;
@@ -39,7 +39,6 @@ class BrowserContext;
 namespace extensions {
 
 class ExtensionCache;
-class ExtensionDownloader;
 class ExtensionPrefs;
 class ExtensionRegistry;
 class ExtensionSet;
@@ -51,7 +50,8 @@ class ExtensionUpdaterTest;
 //                                                  extension_prefs,
 //                                                  pref_service,
 //                                                  profile,
-//                                                  update_frequency_secs);
+//                                                  update_frequency_secs,
+//                                                  downloader_factory);
 // updater->Start();
 // ....
 // updater->Stop();
@@ -89,7 +89,7 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
                    Profile* profile,
                    int frequency_seconds,
                    ExtensionCache* cache,
-                   scoped_ptr<IdentityProvider> identity_provider);
+                   const ExtensionDownloader::Factory& downloader_factory);
 
   virtual ~ExtensionUpdater();
 
@@ -156,6 +156,10 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   };
 
   struct ThrottleInfo;
+
+  // Ensure that we have a valid ExtensionDownloader instance referenced by
+  // |downloader|.
+  void EnsureDownloaderCreated();
 
   // Computes when to schedule the first update check.
   base::TimeDelta DetermineFirstCheckDelay();
@@ -240,6 +244,10 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   // Pointer back to the service that owns this ExtensionUpdater.
   ExtensionServiceInterface* service_;
 
+  // A closure passed into the ExtensionUpdater to teach it how to construct
+  // new ExtensionDownloader instances.
+  const ExtensionDownloader::Factory downloader_factory_;
+
   // Fetches the crx files for the extensions that have an available update.
   scoped_ptr<ExtensionDownloader> downloader_;
 
@@ -271,9 +279,6 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   CheckParams default_params_;
 
   ExtensionCache* extension_cache_;
-
-  // Provided to the ExtensionDownloader to enable OAuth2 support.
-  scoped_ptr<IdentityProvider> webstore_identity_provider_;
 
   // Keeps track of when an extension tried to update itself, so we can throttle
   // checks to prevent too many requests from being made.

@@ -176,8 +176,7 @@ ExtensionDownloader::ExtensionFetch::~ExtensionFetch() {}
 
 ExtensionDownloader::ExtensionDownloader(
     ExtensionDownloaderDelegate* delegate,
-    net::URLRequestContextGetter* request_context,
-    IdentityProvider* webstore_identity_provider)
+    net::URLRequestContextGetter* request_context)
     : OAuth2TokenService::Consumer(kTokenServiceConsumerId),
       delegate_(delegate),
       request_context_(request_context),
@@ -188,8 +187,7 @@ ExtensionDownloader::ExtensionDownloader(
       extensions_queue_(&kDefaultBackoffPolicy,
                         base::Bind(&ExtensionDownloader::CreateExtensionFetcher,
                                    base::Unretained(this))),
-      extension_cache_(NULL),
-      identity_provider_(webstore_identity_provider) {
+      extension_cache_(NULL) {
   DCHECK(delegate_);
   DCHECK(request_context_);
 }
@@ -277,6 +275,11 @@ void ExtensionDownloader::StartBlacklistUpdate(
                                 std::string(),
                                 kDefaultInstallSource);
   StartUpdateCheck(blacklist_fetch.Pass());
+}
+
+void ExtensionDownloader::SetWebstoreIdentityProvider(
+    scoped_ptr<IdentityProvider> identity_provider) {
+  identity_provider_.swap(identity_provider);
 }
 
 bool ExtensionDownloader::AddExtensionData(const std::string& id,
@@ -746,7 +749,7 @@ void ExtensionDownloader::CreateExtensionFetcher() {
       // We should try OAuth2, but we have no token cached. This
       // ExtensionFetcher will be started once the token fetch is complete,
       // in either OnTokenFetchSuccess or OnTokenFetchFailure.
-      DCHECK(identity_provider_);
+      DCHECK(identity_provider_.get());
       OAuth2TokenService::ScopeSet webstore_scopes;
       webstore_scopes.insert(kWebstoreOAuth2Scope);
       access_token_request_ =
@@ -871,7 +874,7 @@ bool ExtensionDownloader::IterateFetchCredentialsAfterFailure(
       // should invalidate the token and try again.
       if (response_code == net::HTTP_UNAUTHORIZED &&
           fetch->oauth2_attempt_count <= kMaxOAuth2Attempts) {
-        DCHECK(identity_provider_ != NULL);
+        DCHECK(identity_provider_.get());
         OAuth2TokenService::ScopeSet webstore_scopes;
         webstore_scopes.insert(kWebstoreOAuth2Scope);
         identity_provider_->GetTokenService()->InvalidateToken(

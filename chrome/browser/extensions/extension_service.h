@@ -49,6 +49,8 @@ namespace extensions {
 class ComponentLoader;
 class CrxInstaller;
 class ExtensionActionStorageManager;
+class ExtensionDownloader;
+class ExtensionDownloaderDelegate;
 class ExtensionErrorController;
 class ExtensionRegistry;
 class ExtensionSystem;
@@ -456,6 +458,10 @@ class ExtensionService
 
 
  private:
+  // Creates an ExtensionDownloader for use by the updater.
+  scoped_ptr<extensions::ExtensionDownloader> CreateExtensionDownloader(
+      extensions::ExtensionDownloaderDelegate* delegate);
+
   // Reloads the specified extension, sending the onLaunched() event to it if it
   // currently has any window showing. |be_noisy| determines whether noisy
   // failures are allowed for unpacked extension installs.
