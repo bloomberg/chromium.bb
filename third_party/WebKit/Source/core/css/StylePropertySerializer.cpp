@@ -229,7 +229,7 @@ String StylePropertySerializer::asText() const
         } else
             value = property.value()->cssText();
 
-        if (value == "initial" && !CSSPropertyMetadata::isInheritedProperty(propertyID))
+        if (value == "initial" && !CSSProperty::isInheritedProperty(propertyID))
             continue;
 
         result.append(getPropertyText(propertyID, value, property.isImportant(), numDecls++));

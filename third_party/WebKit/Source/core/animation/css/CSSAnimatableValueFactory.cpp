@@ -52,10 +52,10 @@
 #include "core/animation/animatable/AnimatableTransform.h"
 #include "core/animation/animatable/AnimatableUnknown.h"
 #include "core/animation/animatable/AnimatableVisibility.h"
+#include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
-#include "core/css/CSSPropertyMetadata.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "platform/Length.h"
 #include "platform/LengthBox.h"
@@ -270,7 +270,7 @@ static PassRefPtrWillBeRawPtr<AnimatableValue> createFromFontWeight(FontWeight f
 // FIXME: Generate this function.
 PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID property, const RenderStyle& style)
 {
-    ASSERT(CSSPropertyMetadata::isAnimatableProperty(property));
+    ASSERT(CSSAnimations::isAnimatableProperty(property));
     switch (property) {
     case CSSPropertyBackgroundColor:
         return createFromColor(property, style);

@@ -22,7 +22,6 @@
 #define CSSProperty_h
 
 #include "core/CSSPropertyNames.h"
-#include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSValue.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/text/TextDirection.h"
@@ -57,7 +56,7 @@ class CSSProperty {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     CSSProperty(CSSPropertyID propertyID, PassRefPtrWillBeRawPtr<CSSValue> value, bool important = false, bool isSetFromShorthand = false, int indexInShorthandsVector = 0, bool implicit = false)
-        : m_metadata(propertyID, isSetFromShorthand, indexInShorthandsVector, important, implicit, CSSPropertyMetadata::isInheritedProperty(propertyID))
+        : m_metadata(propertyID, isSetFromShorthand, indexInShorthandsVector, important, implicit, isInheritedProperty(propertyID))
         , m_value(value)
     {
     }
@@ -79,6 +78,7 @@ public:
     void wrapValueInCommaSeparatedList();
 
     static CSSPropertyID resolveDirectionAwareProperty(CSSPropertyID, TextDirection, WritingMode);
+    static bool isInheritedProperty(CSSPropertyID);
     static bool isAffectedByAllProperty(CSSPropertyID);
 
     const StylePropertyMetadata& metadata() const { return m_metadata; }

@@ -53,7 +53,7 @@
 #include "core/css/CSSLineBoxContainValue.h"
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
-#include "core/css/CSSPropertyMetadata.h"
+#include "core/css/CSSProperty.h"
 #include "core/css/Counter.h"
 #include "core/css/Pair.h"
 #include "core/css/Rect.h"
@@ -125,7 +125,7 @@ void StyleBuilder::applyProperty(CSSPropertyID id, StyleResolverState& state, CS
     if (primitiveValue && primitiveValue->getValueID() == CSSValueCurrentcolor)
         state.style()->setHasCurrentColor();
 
-    if (isInherit && !state.parentStyle()->hasExplicitlyInheritedProperties() && !CSSPropertyMetadata::isInheritedProperty(id))
+    if (isInherit && !state.parentStyle()->hasExplicitlyInheritedProperties() && !CSSProperty::isInheritedProperty(id))
         state.parentStyle()->setHasExplicitlyInheritedProperties();
 
     StyleBuilder::applyProperty(id, state, value, isInitial, isInherit);

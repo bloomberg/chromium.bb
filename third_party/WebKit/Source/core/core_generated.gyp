@@ -205,9 +205,16 @@
         },
         {
           'action_name': 'CSSPropertyNames',
+          'variables': {
+            'in_files': [
+              'css/CSSPropertyNames.in',
+              'css/SVGCSSPropertyNames.in',
+            ],
+          },
           'inputs': [
-            '<@(css_properties_files)',
+            '<@(scripts_for_in_files)',
             '../build/scripts/make_css_property_names.py',
+            '<@(in_files)'
           ],
           'outputs': [
             '<(blink_core_output_dir)/CSSPropertyNames.cpp',
@@ -216,7 +223,7 @@
           'action': [
             'python',
             '../build/scripts/make_css_property_names.py',
-            'css/CSSProperties.in',
+            '<@(in_files)',
             '--output_dir',
             '<(blink_core_output_dir)',
             '--gperf', '<(gperf_exe)',
@@ -345,24 +352,6 @@
           'action': [
             'python',
             '../build/scripts/make_style_builder.py',
-            'css/CSSProperties.in',
-            '--output_dir',
-            '<(blink_core_output_dir)',
-          ],
-        },
-        {
-          'action_name': 'CSSPropertyMetadata',
-          'inputs': [
-            '<@(css_properties_files)',
-            '../build/scripts/make_css_property_metadata.py',
-            '../build/scripts/templates/CSSPropertyMetadata.cpp.tmpl',
-          ],
-          'outputs': [
-            '<(blink_core_output_dir)/CSSPropertyMetadata.cpp',
-          ],
-          'action': [
-            'python',
-            '../build/scripts/make_css_property_metadata.py',
             'css/CSSProperties.in',
             '--output_dir',
             '<(blink_core_output_dir)',

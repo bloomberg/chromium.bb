@@ -1291,8 +1291,8 @@ template<> CSSPropertyID StyleResolver::lastCSSPropertyId<StyleResolver::HighPri
 // lastCSSPropertyId<LowPriorityProperties>.
 template<> CSSPropertyID StyleResolver::firstCSSPropertyId<StyleResolver::LowPriorityProperties>()
 {
-    COMPILE_ASSERT(CSSPropertyAlignContent == CSSPropertyLineHeight + 1, CSS_background_is_first_low_priority_property);
-    return CSSPropertyAlignContent;
+    COMPILE_ASSERT(CSSPropertyBackground == CSSPropertyLineHeight + 1, CSS_background_is_first_low_priority_property);
+    return CSSPropertyBackground;
 }
 
 // This method returns the last CSSPropertyId of low priority properties.
@@ -1336,7 +1336,7 @@ void StyleResolver::applyAllProperty(StyleResolverState& state, CSSValue* allVal
         if (!isUnsetValue) {
             value = allValue;
         } else {
-            if (CSSPropertyMetadata::isInheritedProperty(propertyId))
+            if (CSSProperty::isInheritedProperty(propertyId))
                 value = cssValuePool().createInheritedValue().get();
             else
                 value = cssValuePool().createExplicitInitialValue().get();
