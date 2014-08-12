@@ -110,25 +110,21 @@ def Main(args):
                         'libcxxabi': 'libc++abi',
                         'llvm-test-suite': 'LLVM test suite',
                         'pnacl-newlib': 'Newlib',
-                        'compiler-rt': 'compiler-rt'}
+                        'compiler-rt': 'compiler-rt',
+                        'subzero': 'Subzero'}
 
   src_base = 'toolchain_build/src'
-  if not os.path.exists(src_base):
-    # This build is still using the old build.sh based process.
-    # TODO(dschuff) Get rid of this once rid of build.sh in favor of
-    #               toolchain_build_pnacl.py.
-    src_base = 'pnacl/git'
-    component_name_map['gcc'] = 'GCC'
-    component_name_map['nacl-newlib'] = 'Newlib'
-
   git_dir = os.path.join(src_base, options.component)
   component_name = component_name_map.get(options.component, options.component)
-  if options.component == 'gcc':
+  if options.component == 'pnacl-gcc':
     pnacl_branch = 'origin/pnacl'
     upstream_branches = []
   elif options.component == 'binutils':
-    pnacl_branch = 'origin/pnacl/2.23/master'
-    upstream_branches = ['origin/ng/2.23/master']
+    pnacl_branch = 'origin/pnacl/2.24/master'
+    upstream_branches = ['origin/ng/2.24/master']
+  elif options.component == 'subzero':
+    pnacl_branch = 'origin/master'
+    upstream_branches = []
   else:
     pnacl_branch = 'origin/master'
     # Skip changes merged (but not cherry-picked) from upstream SVN.
