@@ -92,6 +92,9 @@
     'serviceworkers_tests' : {
       'filepath': 'LayoutTests/http/tests/serviceworker'
     },
+    'sheriff_o_matic' : {
+      'filepath': 'Tools/GardeningServer'
+    },
     'spellcheck' : {
       'filepath':  'Source/core/editing/Editor' \
                    '|Source/core/editing/Spell' \
@@ -387,6 +390,13 @@
                         'michaeln@chromium.org',
                         'serviceworker-reviews@chromium.org' ],
     'serviceworkers_tests': [ 'kenjibaheux+watch@chromium.org' ],
+    'sheriff_o_matic': [ 'jochen@chromium.org',
+                         'szager@chromium.org',
+                         'dsinclair@chromium.org',
+                         'ojan@chromium.org',
+                         'leviw@chromium.org',
+                         'michaelpg@chromium.org',
+                         'teravest@chromium.org' ],
     'spellcheck' : [ 'groby+blinkspell@chromium.org' ],
     'device_orientation': [ 'timvolodine@chromium.org', 'mvanouwerkerk+watch@chromium.org', 'ch.dumez@samsung.com' ],
     'webp': [ 'urvang@google.com',
