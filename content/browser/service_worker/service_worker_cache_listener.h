@@ -2,23 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_STORES_LISTENER_H_
-#define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_STORES_LISTENER_H_
+#ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CACHE_LISTENER_H_
+#define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CACHE_LISTENER_H_
 
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
+#include "content/browser/service_worker/service_worker_cache_storage.h"
 
 namespace content {
 
 class ServiceWorkerVersion;
 
-// This class listens for requests on the Store APIs, and sends response
+// This class listens for requests on the Cache APIs, and sends response
 // messages to the renderer process. There is one instance per
 // ServiceWorkerVersion instance.
-class ServiceWorkerStoresListener : public EmbeddedWorkerInstance::Listener {
+class ServiceWorkerCacheListener : public EmbeddedWorkerInstance::Listener {
  public:
-  explicit ServiceWorkerStoresListener(ServiceWorkerVersion* version);
-  virtual ~ServiceWorkerStoresListener();
+  ServiceWorkerCacheListener(ServiceWorkerVersion* version,
+                             base::WeakPtr<ServiceWorkerContextCore> context);
+  virtual ~ServiceWorkerCacheListener();
 
   // From EmbeddedWorkerInstance::Listener:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -35,10 +38,38 @@ class ServiceWorkerStoresListener : public EmbeddedWorkerInstance::Listener {
  private:
   void Send(const IPC::Message& message);
 
+  void OnCacheStorageGetCallback(
+      int request_id,
+      int cache_id,
+      ServiceWorkerCacheStorage::CacheStorageError error);
+  void OnCacheStorageHasCallback(
+      int request_id,
+      bool has_cache,
+      ServiceWorkerCacheStorage::CacheStorageError error);
+  void OnCacheStorageCreateCallback(
+      int request_id,
+      int cache_id,
+      ServiceWorkerCacheStorage::CacheStorageError error);
+  void OnCacheStorageDeleteCallback(
+      int request_id,
+      bool deleted,
+      ServiceWorkerCacheStorage::CacheStorageError error);
+  void OnCacheStorageKeysCallback(
+      int request_id,
+      const std::vector<std::string>& strings,
+      ServiceWorkerCacheStorage::CacheStorageError error);
+
   // The ServiceWorkerVersion to use for messaging back to the renderer thread.
   ServiceWorkerVersion* version_;
+
+  // The ServiceWorkerContextCore should always outlive this.
+  base::WeakPtr<ServiceWorkerContextCore> context_;
+
+  base::WeakPtrFactory<ServiceWorkerCacheListener> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerCacheListener);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_STORES_LISTENER_H_
+#endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CACHE_LISTENER_H_

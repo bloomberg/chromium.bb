@@ -285,7 +285,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   GURL scope_;
   Status status_;
   scoped_ptr<EmbeddedWorkerInstance> embedded_worker_;
-  scoped_ptr<ServiceWorkerStoresListener> stores_listener_;
+  scoped_ptr<ServiceWorkerCacheListener> cache_listener_;
   std::vector<StatusCallback> start_callbacks_;
   std::vector<StatusCallback> stop_callbacks_;
   std::vector<base::Closure> status_change_callbacks_;

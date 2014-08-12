@@ -62,7 +62,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   typedef IDMap<ServiceWorkerProviderHost, IDMapOwnPointer> ProviderMap;
   typedef IDMap<ProviderMap, IDMapOwnPointer> ProcessToProviderMap;
 
-  // Directory for ServiceWorkerStorage and ServiceWorkerFetchStores.
+  // Directory for ServiceWorkerStorage and ServiceWorkerCacheManager.
   static const base::FilePath::CharType kServiceWorkerDirectory[];
 
   // Iterates over ServiceWorkerProviderHost objects in a ProcessToProviderMap.
@@ -93,7 +93,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // be called on the thread which called AddObserver() of |observer_list|.
   ServiceWorkerContextCore(
       const base::FilePath& user_data_directory,
-      base::SequencedTaskRunner* stores_task_runner,
+      base::SequencedTaskRunner* cache_task_runner,
       base::SequencedTaskRunner* database_task_runner,
       base::MessageLoopProxy* disk_cache_thread,
       quota::QuotaManagerProxy* quota_manager_proxy,
@@ -121,8 +121,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                                       const GURL& source_url) OVERRIDE;
 
   ServiceWorkerStorage* storage() { return storage_.get(); }
-  ServiceWorkerCacheStorageManager* fetch_stores_manager() {
-    return fetch_stores_manager_.get();
+  ServiceWorkerCacheStorageManager* cache_manager() {
+    return cache_manager_.get();
   }
   ServiceWorkerProcessManager* process_manager();
   EmbeddedWorkerRegistry* embedded_worker_registry() {
@@ -202,7 +202,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   ServiceWorkerContextWrapper* wrapper_;
   scoped_ptr<ProcessToProviderMap> providers_;
   scoped_ptr<ServiceWorkerStorage> storage_;
-  scoped_ptr<ServiceWorkerCacheStorageManager> fetch_stores_manager_;
+  scoped_ptr<ServiceWorkerCacheStorageManager> cache_manager_;
   scoped_refptr<EmbeddedWorkerRegistry> embedded_worker_registry_;
   scoped_ptr<ServiceWorkerJobCoordinator> job_coordinator_;
   std::map<int64, ServiceWorkerRegistration*> live_registrations_;
