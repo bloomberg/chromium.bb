@@ -381,6 +381,17 @@ hooks = [
     'action':
          [
     'python',
+    'src/build/landmines.py'
+],
+    'pattern':
+         '.',
+    'name':
+         'landmines'
+},
+    {
+    'action':
+         [
+    'python',
     'src/build/download_nacl_toolchains.py',
     '--exclude',
     'arm_trusted'
