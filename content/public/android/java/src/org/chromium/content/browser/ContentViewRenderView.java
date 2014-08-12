@@ -16,9 +16,6 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.ui.base.WindowAndroid;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /***
  * This view is used by a ContentView to render its content.
  * Call {@link #setCurrentContentViewCore(ContentViewCore)} with the contentViewCore that should be
@@ -30,45 +27,11 @@ public class ContentViewRenderView extends FrameLayout {
     // The native side of this object.
     private long mNativeContentViewRenderView;
     private SurfaceHolder.Callback mSurfaceCallback;
-    private List<DelayedSurfaceRunnable> mDelayedSurfaceRunnableList;
 
     private final SurfaceView mSurfaceView;
     protected ContentViewCore mContentViewCore;
 
     private ContentReadbackHandler mContentReadbackHandler;
-
-    /**
-     * Constructing the SurfaceView early sends surface created notifications
-     * before the native library is loaded. This runnable sends the same signals after
-     * the library is loaded.
-     */
-    private class DelayedSurfaceRunnable implements Runnable {
-        private final SurfaceHolder mHolder;
-        private final int mFormat;
-        private final int mWidth;
-        private final int mHeight;
-
-        /**
-         * see https://developer.android.com/reference/android/view/SurfaceHolder.Callback.html#
-         * surfaceChanged(android.view.SurfaceHolder, int, int, int)
-         */
-        public DelayedSurfaceRunnable(SurfaceHolder holder, int format, int width, int height) {
-            mHolder = holder;
-            mFormat = format;
-            mWidth = width;
-            mHeight = height;
-        }
-
-        @Override
-        public void run() {
-            assert mNativeContentViewRenderView != 0;
-            nativeSurfaceChanged(mNativeContentViewRenderView, mFormat, mWidth, mHeight,
-                    mHolder.getSurface());
-            if (mContentViewCore != null) {
-                mContentViewCore.onPhysicalBackingSizeChanged(mWidth, mHeight);
-            }
-        }
-    }
 
     /**
      * Constructs a new ContentViewRenderView.
@@ -84,34 +47,11 @@ public class ContentViewRenderView extends FrameLayout {
         mSurfaceView.setZOrderMediaOverlay(true);
 
         setSurfaceViewBackgroundColor(Color.WHITE);
-
-        // Add a placeholder callback which will keep track of the last surfaceChanged call if we
-        // get any until the native libraries have been loaded.
-        mSurfaceCallback = new SurfaceHolder.Callback() {
-            @Override
-            public void surfaceDestroyed(SurfaceHolder holder) {
-                mDelayedSurfaceRunnableList = null;
-            }
-
-            @Override
-            public void surfaceCreated(SurfaceHolder holder) {
-                mDelayedSurfaceRunnableList =
-                        new ArrayList<ContentViewRenderView.DelayedSurfaceRunnable>();
-            }
-
-            @Override
-            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-                mDelayedSurfaceRunnableList.add(
-                        new DelayedSurfaceRunnable(holder, format, width, height));
-                return;
-            }
-        };
-        mSurfaceView.getHolder().addCallback(mSurfaceCallback);
-
         addView(mSurfaceView,
                 new FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.MATCH_PARENT));
+        mSurfaceView.setVisibility(GONE);
     }
 
     /**
@@ -120,10 +60,11 @@ public class ContentViewRenderView extends FrameLayout {
      * @param rootWindow The {@link WindowAndroid} this render view should be linked to.
      */
     public void onNativeLibraryLoaded(WindowAndroid rootWindow) {
+        assert !mSurfaceView.getHolder().getSurface().isValid() :
+                "Surface created before native library loaded.";
         assert rootWindow != null;
         mNativeContentViewRenderView = nativeInit(rootWindow.getNativePointer());
         assert mNativeContentViewRenderView != 0;
-        mSurfaceView.getHolder().removeCallback(mSurfaceCallback);
         mSurfaceCallback = new SurfaceHolder.Callback() {
             @Override
             public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
@@ -151,6 +92,7 @@ public class ContentViewRenderView extends FrameLayout {
             }
         };
         mSurfaceView.getHolder().addCallback(mSurfaceCallback);
+        mSurfaceView.setVisibility(VISIBLE);
 
         mContentReadbackHandler = new ContentReadbackHandler() {
             @Override
@@ -159,13 +101,6 @@ public class ContentViewRenderView extends FrameLayout {
             }
         };
         mContentReadbackHandler.initNativeContentReadbackHandler();
-        if (mDelayedSurfaceRunnableList != null) {
-            nativeSurfaceCreated(mNativeContentViewRenderView);
-            for (int i = 0; i < mDelayedSurfaceRunnableList.size(); i++) {
-                mDelayedSurfaceRunnableList.get(i).run();
-            }
-            mDelayedSurfaceRunnableList = null;
-        }
     }
 
     /**
