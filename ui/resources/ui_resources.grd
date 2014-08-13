@@ -258,6 +258,9 @@
       <structure type="chrome_scaled_image" name="IDR_DEFAULT_FAVICON" file="common/default_favicon.png" />
       <structure type="chrome_scaled_image" name="IDR_DEFAULT_FAVICON_32" file="common/default_favicon_32.png" />
       <structure type="chrome_scaled_image" name="IDR_DEFAULT_FAVICON_64" file="common/default_favicon_64.png" />
+      <structure type="chrome_scaled_image" name="IDR_EASY_UNLOCK_LOCKED" file="common/easy_unlock_locked.png" />
+      <structure type="chrome_scaled_image" name="IDR_EASY_UNLOCK_SPINNER" file="common/easy_unlock_spinner.png" />
+      <structure type="chrome_scaled_image" name="IDR_EASY_UNLOCK_UNLOCKED" file="common/easy_unlock_unlocked.png" />
       <structure type="chrome_scaled_image" name="IDR_FOLDER_CLOSED" file="common/folder_closed.png" />
       <structure type="chrome_scaled_image" name="IDR_FOLDER_CLOSED_RTL" file="common/folder_closed_rtl.png" />
       <if expr="toolkit_views">
