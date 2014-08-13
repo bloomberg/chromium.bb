@@ -283,10 +283,12 @@ void RunSimulation(const base::FilePath& source_path,
 
   // Connect sender to receiver. This initializes the pipe.
   receiver_to_sender.Initialize(
-      ipp.NewBuffer(128 * 1024), transport_sender->PacketReceiverForTesting(),
+      ipp.NewBuffer(128 * 1024).Pass(),
+      transport_sender->PacketReceiverForTesting(),
       task_runner, &testing_clock);
   sender_to_receiver.Initialize(
-      ipp.NewBuffer(128 * 1024), cast_receiver->packet_receiver(), task_runner,
+      ipp.NewBuffer(128 * 1024).Pass(),
+      cast_receiver->packet_receiver(), task_runner,
       &testing_clock);
 
   // Start receiver.
