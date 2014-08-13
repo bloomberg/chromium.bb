@@ -98,6 +98,10 @@ class UserSessionManager
   // Initialize RLZ.
   void InitRlz(Profile* profile);
 
+  // Get the NSS cert database for the user represented with |profile|
+  // and start certificate loader with it.
+  void InitializeCerts(Profile* profile);
+
   // TODO(nkostylev): Drop these methods once LoginUtilsImpl::AttemptRestart()
   // is migrated.
   OAuth2LoginManager::SessionRestoreStrategy GetSigninSessionRestoreStrategy();
@@ -198,10 +202,6 @@ class UserSessionManager
 
   // Initializes RLZ. If |disabled| is true, RLZ pings are disabled.
   void InitRlzImpl(Profile* profile, bool disabled);
-
-  // Get the NSS cert database for the user represented with |profile|
-  // and start certificate loader with it.
-  void InitializeCerts(Profile* profile);
 
   // Starts loading CRL set.
   void InitializeCRLSetFetcher(const user_manager::User* user);

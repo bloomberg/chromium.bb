@@ -36,7 +36,9 @@ void RestoreAfterCrashSessionManagerDelegate::Start() {
   // breaking tests.
   if (command_line->HasSwitch(chromeos::switches::kLoginUser)) {
     // This is done in SessionManager::OnProfileCreated during normal login.
-    UserSessionManager::GetInstance()->InitRlz(profile());
+    UserSessionManager* user_session_mgr = UserSessionManager::GetInstance();
+    user_session_mgr->InitRlz(profile());
+    user_session_mgr->InitializeCerts(profile());
 
     // Send the PROFILE_PREPARED notification and call SessionStarted()
     // so that the Launcher and other Profile dependent classes are created.
@@ -51,7 +53,7 @@ void RestoreAfterCrashSessionManagerDelegate::Start() {
     // Now is the good time to retrieve other logged in users for this session.
     // First user has been already marked as logged in and active in
     // PreProfileInit(). Restore sessions for other users in the background.
-    UserSessionManager::GetInstance()->RestoreActiveSessions();
+    user_session_mgr->RestoreActiveSessions();
   }
 
   bool is_running_test = command_line->HasSwitch(::switches::kTestName) ||
