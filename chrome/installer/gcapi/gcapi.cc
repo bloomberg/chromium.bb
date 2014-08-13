@@ -503,18 +503,21 @@ BOOL __stdcall LaunchGoogleChrome() {
     }
   }
 
+  CommandLine chrome_command(chrome_exe_path);
+
   bool ret = false;
   ScopedComPtr<IProcessLauncher> ipl;
   if (SUCCEEDED(ipl.CreateInstance(__uuidof(ProcessLauncherClass),
                                    NULL,
                                    CLSCTX_LOCAL_SERVER))) {
-    if (SUCCEEDED(ipl->LaunchCmdLine(chrome_exe_path.value().c_str())))
+    if (SUCCEEDED(ipl->LaunchCmdLine(
+            chrome_command.GetCommandLineString().c_str())))
       ret = true;
     ipl.Release();
   } else {
     // Couldn't get Omaha's process launcher, Omaha may not be installed at
     // system level. Try just running Chrome instead.
-    ret = base::LaunchProcess(chrome_exe_path.value(),
+    ret = base::LaunchProcess(chrome_command.GetCommandLineString(),
                               base::LaunchOptions(),
                               NULL);
   }
