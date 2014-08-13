@@ -167,7 +167,7 @@ FragmentShaderId GetFragmentShaderId(bool premultiply_alpha,
   }
 
   NOTREACHED();
-  return shader_ids[index][SAMPLER_2D];
+  return shader_ids[0][SAMPLER_2D];
 }
 
 void CompileShader(GLuint shader, const char* shader_source) {
@@ -186,6 +186,68 @@ void DeleteShader(GLuint shader) {
     glDeleteShader(shader);
 }
 
+bool BindFramebufferTexture2D(GLenum target,
+                              GLuint texture_id,
+                              GLint level,
+                              GLuint framebuffer) {
+  DCHECK(target == GL_TEXTURE_2D || target == GL_TEXTURE_RECTANGLE_ARB);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(target, texture_id);
+  // NVidia drivers require texture settings to be a certain way
+  // or they won't report FRAMEBUFFER_COMPLETE.
+  glTexParameterf(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameterf(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebuffer);
+  glFramebufferTexture2DEXT(
+      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, texture_id, level);
+
+#ifndef NDEBUG
+  GLenum fb_status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
+  if (GL_FRAMEBUFFER_COMPLETE != fb_status) {
+    DLOG(ERROR) << "CopyTextureCHROMIUM: Incomplete framebuffer.";
+    return false;
+  }
+#endif
+  return true;
+}
+
+void DoCopyTexImage2D(const gpu::gles2::GLES2Decoder* decoder,
+                      GLenum source_target,
+                      GLuint source_id,
+                      GLuint dest_id,
+                      GLint dest_level,
+                      GLenum dest_internal_format,
+                      GLsizei width,
+                      GLsizei height,
+                      GLuint framebuffer) {
+  DCHECK(source_target == GL_TEXTURE_2D ||
+         source_target == GL_TEXTURE_RECTANGLE_ARB);
+  if (BindFramebufferTexture2D(
+          source_target, source_id, 0 /* level */, framebuffer)) {
+    glBindTexture(GL_TEXTURE_2D, dest_id);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glCopyTexImage2D(GL_TEXTURE_2D,
+                     dest_level,
+                     dest_internal_format,
+                     0 /* x */,
+                     0 /* y */,
+                     width,
+                     height,
+                     0 /* border */);
+  }
+
+  decoder->RestoreTextureState(source_id);
+  decoder->RestoreTextureState(dest_id);
+  decoder->RestoreTextureUnitBindings(0);
+  decoder->RestoreActiveTexture();
+  decoder->RestoreFramebufferBindings();
+}
+
 }  // namespace
 
 namespace gpu {
@@ -197,13 +259,19 @@ CopyTextureCHROMIUMResourceManager::CopyTextureCHROMIUMResourceManager()
       buffer_id_(0u),
       framebuffer_(0u) {}
 
-CopyTextureCHROMIUMResourceManager::~CopyTextureCHROMIUMResourceManager() {}
+CopyTextureCHROMIUMResourceManager::~CopyTextureCHROMIUMResourceManager() {
+  DCHECK(!buffer_id_);
+  DCHECK(!framebuffer_);
+}
 
 void CopyTextureCHROMIUMResourceManager::Initialize(
     const gles2::GLES2Decoder* decoder) {
   COMPILE_ASSERT(
       kVertexPositionAttrib == 0u,
       Position_attribs_must_be_0);
+  DCHECK(!buffer_id_);
+  DCHECK(!framebuffer_);
+  DCHECK(programs_.empty());
 
   // Initialize all of the GPU resources required to perform the copy.
   glGenBuffersARB(1, &buffer_id_);
@@ -227,6 +295,7 @@ void CopyTextureCHROMIUMResourceManager::Destroy() {
     return;
 
   glDeleteFramebuffersEXT(1, &framebuffer_);
+  framebuffer_ = 0;
 
   std::for_each(vertex_shaders_.begin(), vertex_shaders_.end(), DeleteShader);
   std::for_each(
@@ -239,37 +308,70 @@ void CopyTextureCHROMIUMResourceManager::Destroy() {
   }
 
   glDeleteBuffersARB(1, &buffer_id_);
+  buffer_id_ = 0;
 }
 
 void CopyTextureCHROMIUMResourceManager::DoCopyTexture(
     const gles2::GLES2Decoder* decoder,
     GLenum source_target,
-    GLenum dest_target,
     GLuint source_id,
+    GLenum source_internal_format,
     GLuint dest_id,
-    GLint level,
+    GLint dest_level,
+    GLenum dest_internal_format,
     GLsizei width,
     GLsizei height,
     bool flip_y,
     bool premultiply_alpha,
     bool unpremultiply_alpha) {
+  bool premultiply_alpha_change = premultiply_alpha ^ unpremultiply_alpha;
+  // GL_INVALID_OPERATION is generated if the currently bound framebuffer's
+  // format does not contain a superset of the components required by the base
+  // format of internalformat.
+  // https://www.khronos.org/opengles/sdk/docs/man/xhtml/glCopyTexImage2D.xml
+  bool source_format_contain_superset_of_dest_format =
+      source_internal_format == dest_internal_format ||
+      (source_internal_format == GL_RGBA && dest_internal_format == GL_RGB);
+  // GL_TEXTURE_RECTANGLE_ARB on FBO is supported by OpenGL, not GLES2,
+  // so restrict this to GL_TEXTURE_2D.
+  if (source_target == GL_TEXTURE_2D && !flip_y && !premultiply_alpha_change &&
+      source_format_contain_superset_of_dest_format) {
+    DoCopyTexImage2D(decoder,
+                     source_target,
+                     source_id,
+                     dest_id,
+                     dest_level,
+                     dest_internal_format,
+                     width,
+                     height,
+                     framebuffer_);
+    return;
+  }
+
   // Use default transform matrix if no transform passed in.
   const static GLfloat default_matrix[16] = {1.0f, 0.0f, 0.0f, 0.0f,
                                              0.0f, 1.0f, 0.0f, 0.0f,
                                              0.0f, 0.0f, 1.0f, 0.0f,
                                              0.0f, 0.0f, 0.0f, 1.0f};
-  DoCopyTextureWithTransform(decoder, source_target, dest_target, source_id,
-      dest_id, level, width, height, flip_y, premultiply_alpha,
-      unpremultiply_alpha, default_matrix);
+  DoCopyTextureWithTransform(decoder,
+                             source_target,
+                             source_id,
+                             dest_id,
+                             dest_level,
+                             width,
+                             height,
+                             flip_y,
+                             premultiply_alpha,
+                             unpremultiply_alpha,
+                             default_matrix);
 }
 
 void CopyTextureCHROMIUMResourceManager::DoCopyTextureWithTransform(
     const gles2::GLES2Decoder* decoder,
     GLenum source_target,
-    GLenum dest_target,
     GLuint source_id,
     GLuint dest_id,
-    GLint level,
+    GLint dest_level,
     GLsizei width,
     GLsizei height,
     bool flip_y,
@@ -286,27 +388,27 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureWithTransform(
 
   VertexShaderId vertex_shader_id = GetVertexShaderId(flip_y);
   DCHECK_LT(static_cast<size_t>(vertex_shader_id), vertex_shaders_.size());
-  GLuint* vertex_shader = &vertex_shaders_[vertex_shader_id];
-  if (!*vertex_shader) {
-    *vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    CompileShader(*vertex_shader, vertex_shader_source[vertex_shader_id]);
-  }
-
   FragmentShaderId fragment_shader_id = GetFragmentShaderId(
       premultiply_alpha, unpremultiply_alpha, source_target);
   DCHECK_LT(static_cast<size_t>(fragment_shader_id), fragment_shaders_.size());
-  GLuint* fragment_shader = &fragment_shaders_[fragment_shader_id];
-  if (!*fragment_shader) {
-    *fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    CompileShader(*fragment_shader, fragment_shader_source[fragment_shader_id]);
-  }
 
   ProgramMapKey key(vertex_shader_id, fragment_shader_id);
   ProgramInfo* info = &programs_[key];
   // Create program if necessary.
   if (!info->program) {
     info->program = glCreateProgram();
+    GLuint* vertex_shader = &vertex_shaders_[vertex_shader_id];
+    if (!*vertex_shader) {
+      *vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+      CompileShader(*vertex_shader, vertex_shader_source[vertex_shader_id]);
+    }
     glAttachShader(info->program, *vertex_shader);
+    GLuint* fragment_shader = &fragment_shaders_[fragment_shader_id];
+    if (!*fragment_shader) {
+      *fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+      CompileShader(*fragment_shader,
+                    fragment_shader_source[fragment_shader_id]);
+    }
     glAttachShader(info->program, *fragment_shader);
     glBindAttribLocation(info->program, kVertexPositionAttrib, "a_position");
     glLinkProgram(info->program);
@@ -337,25 +439,9 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureWithTransform(
     glUniform2f(info->half_size_handle, width / 2.0f, height / 2.0f);
   else
     glUniform2f(info->half_size_handle, 0.5f, 0.5f);
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, dest_id);
-  // NVidia drivers require texture settings to be a certain way
-  // or they won't report FRAMEBUFFER_COMPLETE.
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebuffer_);
-  glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, dest_target,
-                            dest_id, level);
 
-#ifndef NDEBUG
-  GLenum fb_status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
-  if (GL_FRAMEBUFFER_COMPLETE != fb_status) {
-    DLOG(ERROR) << "CopyTextureCHROMIUM: Incomplete framebuffer.";
-  } else
-#endif
-  {
+  if (BindFramebufferTexture2D(
+          GL_TEXTURE_2D, dest_id, dest_level, framebuffer_)) {
     decoder->ClearAllAttributes();
     glEnableVertexAttribArray(kVertexPositionAttrib);
 

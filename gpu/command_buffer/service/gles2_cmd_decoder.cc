@@ -10055,6 +10055,11 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
       return;
   }
 
+  GLenum source_type = 0;
+  GLenum source_internal_format = 0;
+  source_texture->GetLevelType(
+      source_texture->target(), 0, &source_type, &source_internal_format);
+
   GLenum dest_type_previous = dest_type;
   GLenum dest_internal_format = internal_format;
   bool dest_level_defined = dest_texture->GetLevelSize(
@@ -10063,6 +10068,20 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
   if (dest_level_defined) {
     dest_texture->GetLevelType(GL_TEXTURE_2D, level, &dest_type_previous,
                                &dest_internal_format);
+  }
+
+  // The destination format should be GL_ALPHA, GL_RGB, GL_RGBA, GL_LUMINANCE,
+  // or GL_LUMINANCE_ALPHA.
+  bool valid_dest_format = dest_internal_format >= GL_ALPHA &&
+                           dest_internal_format <= GL_LUMINANCE_ALPHA;
+  // The source format can be GL_BGRA_EXT.
+  bool valid_source_format = (source_internal_format >= GL_ALPHA &&
+                              source_internal_format <= GL_LUMINANCE_ALPHA) ||
+                             source_internal_format == GL_BGRA_EXT;
+  if (!valid_source_format || !valid_dest_format) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glCopyTextureCHROMIUM", "invalid internal format");
+    return;
   }
 
   // Resize the destination texture to the dimensions of the source texture.
@@ -10105,25 +10124,28 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
     copy_texture_CHROMIUM_->DoCopyTextureWithTransform(
         this,
         source_texture->target(),
-        dest_texture->target(),
         source_texture->service_id(),
-        dest_texture->service_id(), level,
-        source_width, source_height,
+        dest_texture->service_id(),
+        level,
+        source_width,
+        source_height,
         unpack_flip_y_,
         unpack_premultiply_alpha_,
         unpack_unpremultiply_alpha_,
         default_matrix);
   } else {
-    copy_texture_CHROMIUM_->DoCopyTexture(
-        this,
-        source_texture->target(),
-        dest_texture->target(),
-        source_texture->service_id(),
-        dest_texture->service_id(), level,
-        source_width, source_height,
-        unpack_flip_y_,
-        unpack_premultiply_alpha_,
-        unpack_unpremultiply_alpha_);
+    copy_texture_CHROMIUM_->DoCopyTexture(this,
+                                          source_texture->target(),
+                                          source_texture->service_id(),
+                                          source_internal_format,
+                                          dest_texture->service_id(),
+                                          level,
+                                          internal_format,
+                                          source_width,
+                                          source_height,
+                                          unpack_flip_y_,
+                                          unpack_premultiply_alpha_,
+                                          unpack_unpremultiply_alpha_);
   }
 
   DoDidUseTexImageIfNeeded(source_texture, source_texture->target());

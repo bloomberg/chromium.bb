@@ -20,7 +20,8 @@ class GLES2Decoder;
 
 // This class encapsulates the resources required to implement the
 // GL_CHROMIUM_copy_texture extension.  The copy operation is performed
-// via a blit to a framebuffer object.
+// via glCopyTexImage2D() or a blit to a framebuffer object.
+// The target of |dest_id| texture must be GL_TEXTURE_2D.
 class GPU_EXPORT CopyTextureCHROMIUMResourceManager {
  public:
   CopyTextureCHROMIUMResourceManager();
@@ -29,18 +30,29 @@ class GPU_EXPORT CopyTextureCHROMIUMResourceManager {
   void Initialize(const gles2::GLES2Decoder* decoder);
   void Destroy();
 
-  void DoCopyTexture(const gles2::GLES2Decoder* decoder, GLenum source_target,
-                     GLenum dest_target, GLuint source_id, GLuint dest_id,
-                     GLint level, GLsizei width, GLsizei height,
-                     bool flip_y, bool premultiply_alpha,
+  void DoCopyTexture(const gles2::GLES2Decoder* decoder,
+                     GLenum source_target,
+                     GLuint source_id,
+                     GLenum source_internal_format,
+                     GLuint dest_id,
+                     GLint dest_level,
+                     GLenum dest_internal_format,
+                     GLsizei width,
+                     GLsizei height,
+                     bool flip_y,
+                     bool premultiply_alpha,
                      bool unpremultiply_alpha);
 
   // This will apply a transform on the source texture before copying to
   // destination texture.
   void DoCopyTextureWithTransform(const gles2::GLES2Decoder* decoder,
-                                  GLenum source_target, GLenum dest_target,
-                                  GLuint source_id, GLuint dest_id, GLint level,
-                                  GLsizei width, GLsizei height, bool flip_y,
+                                  GLenum source_target,
+                                  GLuint source_id,
+                                  GLuint dest_id,
+                                  GLint dest_level,
+                                  GLsizei width,
+                                  GLsizei height,
+                                  bool flip_y,
                                   bool premultiply_alpha,
                                   bool unpremultiply_alpha,
                                   const GLfloat transform_matrix[16]);

@@ -47,7 +47,18 @@ New Procedures and Functions
     destination texture. The level parameter must be 0 at present.
 
     The internal format of the destination texture is converted to that
-    specified by <internal_format>.
+    specified by <internal_format>. Must be one of the following symbolic
+    constants: GL_ALPHA, GL_LUMINANCE, GL_LUMINANCE_ALPHA, GL_RGB, GL_RGBA
+    When <source_id> texture doens't contain a superset of the component
+    required by <internal_format>, fill the components by following rules.
+
+                   source format          color components
+             =================================================
+                   GL_ALPHA               (0, 0, 0, A)
+                   GL_LUMINANCE           (L, L, L, 1)
+                   GL_LUMINANCE_ALPHA     (L, L, L, A)
+                   GL_RGB                 (R, G, B, 1)
+                   GL_RGBA                (R, G, B, A)
 
     The format type of the destination texture is converted to that specified
     by <dest_type>.
