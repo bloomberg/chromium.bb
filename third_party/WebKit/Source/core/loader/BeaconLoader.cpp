@@ -21,8 +21,7 @@ namespace blink {
 
 void BeaconLoader::prepareRequest(LocalFrame* frame, ResourceRequest& request)
 {
-    // NOTE: do not distinguish Beacon by target type.
-    request.setRequestContext(blink::WebURLRequest::RequestContextPing);
+    request.setRequestContext(WebURLRequest::RequestContextBeacon);
     request.setHTTPMethod("POST");
     request.setHTTPHeaderField("Cache-Control", "max-age=0");
     request.setAllowStoredCredentials(true);
