@@ -1,24 +1,29 @@
 This test verifies URL created by WebInspector.DocumentationURLProvider
 Property max:
-http://docs.webplatform.org/w/api.php?action=query&titles=javascript/Math/max&prop=revisions&rvprop=timestamp|content&format=json
+    0: http://docs.webplatform.org/w/api.php?action=query&titles=javascript/Math/max&prop=revisions&rvprop=timestamp|content&format=json
 Property insertBefore:
-http://docs.webplatform.org/w/api.php?action=query&titles=dom/Node/insertBefore&prop=revisions&rvprop=timestamp|content&format=json
+    0: http://docs.webplatform.org/w/api.php?action=query&titles=dom/Node/insertBefore&prop=revisions&rvprop=timestamp|content&format=json
 Property eval:
-http://docs.webplatform.org/w/api.php?action=query&titles=javascript/eval&prop=revisions&rvprop=timestamp|content&format=json
+    0: http://docs.webplatform.org/w/api.php?action=query&titles=javascript/eval&prop=revisions&rvprop=timestamp|content&format=json
 Property stringify:
-http://docs.webplatform.org/w/api.php?action=query&titles=javascript/JSON/stringify&prop=revisions&rvprop=timestamp|content&format=json
+    0: http://docs.webplatform.org/w/api.php?action=query&titles=javascript/JSON/stringify&prop=revisions&rvprop=timestamp|content&format=json
 Property isArray:
-http://docs.webplatform.org/w/api.php?action=query&titles=javascript/Array/isArray&prop=revisions&rvprop=timestamp|content&format=json
+    0: http://docs.webplatform.org/w/api.php?action=query&titles=javascript/Array/isArray&prop=revisions&rvprop=timestamp|content&format=json
 Property now:
-http://docs.webplatform.org/w/api.php?action=query&titles=javascript/Date/now&prop=revisions&rvprop=timestamp|content&format=json
+    0: http://docs.webplatform.org/w/api.php?action=query&titles=javascript/Date/now&prop=revisions&rvprop=timestamp|content&format=json
 Property fromCharCode:
-http://docs.webplatform.org/w/api.php?action=query&titles=javascript/String/fromCharCode&prop=revisions&rvprop=timestamp|content&format=json
+    0: http://docs.webplatform.org/w/api.php?action=query&titles=javascript/String/fromCharCode&prop=revisions&rvprop=timestamp|content&format=json
 Property keys:
-http://docs.webplatform.org/w/api.php?action=query&titles=javascript/Object/keys&prop=revisions&rvprop=timestamp|content&format=json
+    0: http://docs.webplatform.org/w/api.php?action=query&titles=javascript/Object/keys&prop=revisions&rvprop=timestamp|content&format=json
+    1: http://docs.webplatform.org/w/api.php?action=query&titles=javascript/Array/keys&prop=revisions&rvprop=timestamp|content&format=json
 Property notExist:
-null
+    null
 Property indexOf:
-http://docs.webplatform.org/w/api.php?action=query&titles=javascript/Array/indexOf&prop=revisions&rvprop=timestamp|content&format=json
+    0: http://docs.webplatform.org/w/api.php?action=query&titles=javascript/Array/indexOf&prop=revisions&rvprop=timestamp|content&format=json
+    1: http://docs.webplatform.org/w/api.php?action=query&titles=javascript/String/indexOf&prop=revisions&rvprop=timestamp|content&format=json
 Property setDate:
-http://docs.webplatform.org/w/api.php?action=query&titles=javascript/Date/setDate&prop=revisions&rvprop=timestamp|content&format=json
+    0: http://docs.webplatform.org/w/api.php?action=query&titles=javascript/Date/setDate&prop=revisions&rvprop=timestamp|content&format=json
+Property parse:
+    0: http://docs.webplatform.org/w/api.php?action=query&titles=javascript/Date/parse&prop=revisions&rvprop=timestamp|content&format=json
+    1: http://docs.webplatform.org/w/api.php?action=query&titles=javascript/JSON/parse&prop=revisions&rvprop=timestamp|content&format=json
 

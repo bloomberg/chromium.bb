@@ -17,12 +17,19 @@ function test()
         "keys",
         "notExist",
         "indexOf",
-        "setDate"
-        ];
+        "setDate",
+        "parse"
+    ];
     var urlFormer = new WebInspector.DocumentationURLProvider();
     for (var i = 0; i < testCases.length; ++i) {
         InspectorTest.addResult("Property " + testCases[i] + ":");
-        InspectorTest.addResult(urlFormer.itemPath(testCases[i]));
+        var properties = urlFormer.itemDescriptors(testCases[i]);
+        if (properties.length === 0) {
+            InspectorTest.addResult("    null");
+            continue;
+        }
+        for (var j = 0; j < properties.length; ++j)
+            InspectorTest.addResult("    " + j + ": " + properties[j].url);
     }
     InspectorTest.completeTest();
 }
