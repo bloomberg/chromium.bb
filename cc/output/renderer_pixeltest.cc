@@ -2108,6 +2108,48 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadNonIdentityScale) {
       ExactPixelComparator(true)));
 }
 
+TEST_F(GLRendererPixelTest, PictureDrawQuadTexture4444) {
+  gfx::Size pile_tile_size(1000, 1000);
+  gfx::Rect viewport(this->device_viewport_size_);
+  ResourceFormat texture_format = RGBA_4444;
+
+  RenderPass::Id id(1, 1);
+  gfx::Transform transform_to_root;
+  scoped_ptr<RenderPass> pass =
+      CreateTestRenderPass(id, viewport, transform_to_root);
+
+  // One viewport-filling blue quad
+  scoped_refptr<FakePicturePileImpl> blue_pile =
+      FakePicturePileImpl::CreateFilledPile(pile_tile_size, viewport.size());
+  SkPaint blue_paint;
+  blue_paint.setColor(SK_ColorBLUE);
+  blue_pile->add_draw_rect_with_paint(viewport, blue_paint);
+  blue_pile->RerecordPile();
+
+  gfx::Transform blue_content_to_target_transform;
+  SharedQuadState* blue_shared_state = CreateTestSharedQuadState(
+      blue_content_to_target_transform, viewport, pass.get());
+
+  PictureDrawQuad* blue_quad = pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
+  blue_quad->SetNew(blue_shared_state,
+                    viewport,
+                    gfx::Rect(),
+                    viewport,
+                    gfx::RectF(0.f, 0.f, 1.f, 1.f),
+                    viewport.size(),
+                    texture_format,
+                    viewport,
+                    1.f,
+                    PicturePileImpl::CreateFromOther(blue_pile));
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  EXPECT_TRUE(this->RunPixelTest(&pass_list,
+                                 base::FilePath(FILE_PATH_LITERAL("blue.png")),
+                                 ExactPixelComparator(true)));
+}
+
 TYPED_TEST(RendererPixelTest, WrapModeRepeat) {
   gfx::Rect rect(this->device_viewport_size_);
 

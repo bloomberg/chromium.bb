@@ -44,7 +44,7 @@ class PlatformColor {
       case SOURCE_FORMAT_RGBA8:
         return format == RGBA_8888 || format == RGBA_4444;
       case SOURCE_FORMAT_BGRA8:
-        return format == BGRA_8888;
+        return format == BGRA_8888 || format == RGBA_4444;
     }
     NOTREACHED();
     return false;
