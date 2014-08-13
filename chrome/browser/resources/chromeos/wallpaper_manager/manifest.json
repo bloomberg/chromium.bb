@@ -12,6 +12,7 @@
   },
   "permissions": [
     "alarms",
+    "app.window.alpha",
     "experimental",
     "storage",
     "unlimitedStorage",
