@@ -296,7 +296,7 @@ class DataSeries1Test(CIDBIntegrationTest):
     Returns:
       build_id of build that was simulated.
     """
-    build_id = _SimulateBuildStart(cidb, metadata, master_build_id)
+    build_id = _SimulateBuildStart(db, metadata, master_build_id)
     metadata_dict = metadata.GetDict()
 
     # Insert child configs and boards

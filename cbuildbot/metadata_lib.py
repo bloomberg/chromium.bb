@@ -234,6 +234,19 @@ class CBuildbotMetadata(object):
     temp['board-metadata'] = per_board_dict
     return temp
 
+  # TODO(akeshet): crbug.com/406522 special case cl_actions and board-metadata
+  # so that GetValue can work with them as well.
+  def GetValue(self, key):
+    """Get an item from the metadata dictionary.
+
+    This method is in most cases an inexpensive equivalent to:
+    GetDict()[key]
+
+    However, it cannot be used for items like 'cl_actions' or 'board-metadata'
+    which are not stored directly in the metadata dictionary.
+    """
+    return self._metadata_dict[key]
+
   def GetJSON(self):
     """Return a JSON string representation of metadata."""
     return json.dumps(self.GetDict())
@@ -463,10 +476,6 @@ class BuildData(object):
       if bd.build_number is None:
         cros_build_lib.Warning('Metadata at %s was missing build number.',
                                url)
-        # metadata.json can be missing a build number if the build died before
-        # ReportBuildStartStage. See crbug.com/369748. As a workaround so that
-        # gather_builder_stats can still record these builds in the spreadsheet
-        # try to infer the build number from the file's url.
         m = re.match(r'.*-b([0-9]*)/.*', url)
         if m:
           inferred_number = int(m.groups()[0])

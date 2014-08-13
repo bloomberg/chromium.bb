@@ -48,6 +48,7 @@ from chromite.cbuildbot.stages import sync_stages
 from chromite.cbuildbot.stages import test_stages
 
 
+from chromite.lib import cidb
 from chromite.lib import cgroups
 from chromite.lib import cleanup
 from chromite.lib import commandline
@@ -168,6 +169,8 @@ class Builder(object):
     """Runs through the initialization steps of an actual build."""
     if self._run.options.resume:
       results_lib.LoadCheckpoint(self._run.buildroot)
+
+    self._RunStage(report_stages.BuildStartStage)
 
     self._RunStage(build_stages.CleanUpStage)
 
@@ -357,8 +360,6 @@ class Builder(object):
     Returns:
       Whether the build succeeded.
     """
-    report_stages.WriteBasicMetadata(self._run)
-
     self._InitializeTrybotPatchPool()
 
     if self._run.options.bootstrap:
@@ -388,7 +389,7 @@ class Builder(object):
         print_report = False
         success = self._ReExecuteInBuildroot(sync_instance)
       else:
-        self._RunStage(report_stages.ReportBuildStartStage)
+        self._RunStage(report_stages.BuildReexecutionFinishedStage)
         self.RunStages()
 
     except Exception as ex:
@@ -1663,6 +1664,23 @@ def _ParseCommandLine(parser, argv):
   return options, args
 
 
+def _SetupCidb(options):
+  """Set up CIDB the appropriate Setup call.
+
+  Args:
+    options: Command line options structure.
+  """
+  # Do not use cidb if not run with --buildbot
+  if not options.buildbot:
+    cidb.CIDBConnectionFactory.SetupNoCidb()
+    return
+
+  if options.debug:
+    cidb.CIDBConnectionFactory.SetupDebugCidb()
+  else:
+    cidb.CIDBConnectionFactory.SetupProdCidb()
+
+
 # TODO(build): This function is too damn long.
 def main(argv):
   # Turn on strict sudo checks.
@@ -1832,5 +1850,7 @@ def main(argv):
                 completion_stages.MasterSlaveSyncCompletionStage,
                 '_FetchSlaveStatuses',
                 return_value=mock_statuses)
+
+    _SetupCidb(options)
 
     _RunBuildStagesWrapper(options, build_config)

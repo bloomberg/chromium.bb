@@ -5,6 +5,7 @@
 
 """Unittests for chrome stages."""
 
+import mox
 import os
 import sys
 
@@ -14,6 +15,7 @@ from chromite.cbuildbot import constants
 from chromite.cbuildbot.cbuildbot_unittest import BuilderRunMock
 from chromite.cbuildbot.stages import chrome_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
+from chromite.lib import cidb
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
@@ -31,6 +33,12 @@ class ChromeSDKStageTest(generic_stages_unittest.AbstractStageTest,
   def setUp(self):
     self.StartPatcher(BuilderRunMock())
     self.StartPatcher(parallel_unittest.ParallelMock())
+
+    # Set up a general purpose cidb mock. Tests with more specific
+    # mock requirements can replace this with a separate call to
+    # SetupMockCidb
+    mock_cidb = mox.MockObject(cidb.CIDBConnection)
+    cidb.CIDBConnectionFactory.SetupMockCidb(mock_cidb)
 
     self._Prepare()
 

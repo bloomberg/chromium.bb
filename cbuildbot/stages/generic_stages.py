@@ -28,6 +28,7 @@ from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import portage_utilities
 from chromite.cbuildbot import repository
+from chromite.lib import cidb
 from chromite.lib import cros_build_lib
 from chromite.lib import gs
 from chromite.lib import osutils
@@ -737,12 +738,15 @@ class ArchivingStageMixin(object):
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def UploadMetadata(self, upload_queue=None, filename=None):
-    """Create and upload JSON file of the builder run's metadata.
+    """Create and upload JSON file of the builder run's metadata, and to cidb.
 
     This uses the existing metadata stored in the builder run. The default
     metadata.json file should only be uploaded once, at the end of the run,
     and considered immutable. During the build, intermediate metadata snapshots
     can be uploaded to other files, such as partial-metadata.json.
+
+    This method also updates the metadata in the cidb database, if there is a
+    valid cidb connection set up.
 
     Args:
       upload_queue: If specified then put the artifact file to upload on
@@ -766,3 +770,13 @@ class ArchivingStageMixin(object):
     else:
       cros_build_lib.Info('Uploading metadata file %s now.', metadata_json)
       self.UploadArtifact(filename, archive=False)
+
+    if cidb.CIDBConnectionFactory.IsCIDBSetup():
+      db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
+      if db:
+        build_id = self._run.attrs.metadata.GetValue('build_id')
+        cros_build_lib.Info('Writing updated metadata to database for build_id '
+                            '%s.', build_id)
+        db.UpdateMetadata(build_id, self._run.attrs.metadata)
+      else:
+        cros_build_lib.Info('Skipping database update.')

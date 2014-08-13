@@ -26,7 +26,9 @@ from chromite.cbuildbot import constants
 from chromite.cbuildbot import portage_utilities
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version
+from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import tree_status
+from chromite.lib import cidb
 from chromite.lib import cros_build_lib
 from chromite.lib import gerrit
 from chromite.lib import git
@@ -1582,7 +1584,7 @@ class ValidationPool(object):
     kwargs.setdefault('pre_cq', True)
     kwargs.setdefault('is_master', True)
     pool = cls(*args, **kwargs)
-    pool.RecordPatchesInMetadata()
+    pool.RecordPatchesInMetadataAndDatabase()
     return pool
 
   @classmethod
@@ -1701,7 +1703,7 @@ class ValidationPool(object):
                    time_left / 60)
       time.sleep(cls.SLEEP_TIMEOUT)
 
-    pool.RecordPatchesInMetadata()
+    pool.RecordPatchesInMetadataAndDatabase()
     return pool
 
   def AddPendingCommitsIntoPool(self, manifest):
@@ -1757,7 +1759,7 @@ class ValidationPool(object):
     pool = ValidationPool(overlays, repo.directory, build_number, builder_name,
                           is_master, dryrun, metadata=metadata)
     pool.AddPendingCommitsIntoPool(manifest)
-    pool.RecordPatchesInMetadata()
+    pool.RecordPatchesInMetadataAndDatabase()
     return pool
 
   @classmethod
@@ -2133,8 +2135,8 @@ class ValidationPool(object):
 
       return dict(p_errors)
 
-  def RecordPatchesInMetadata(self):
-    """Mark all patches as having been picked up in metadata.json.
+  def RecordPatchesInMetadataAndDatabase(self):
+    """Mark all patches as having been picked up in metadata.json and cidb.
 
     If self._metadata is None, then this function does nothing.
     """
@@ -2143,6 +2145,11 @@ class ValidationPool(object):
       for change in self.changes:
         self._metadata.RecordCLAction(change, constants.CL_ACTION_PICKED_UP,
                                       timestamp)
+        # TODO(akeshet): If a separate query for each insert here becomes
+        # a performance issue, consider batch inserting all the cl actions
+        # with a single query.
+        self._InsertCLActionToDatabase(change, constants.CL_ACTION_PICKED_UP,
+                                       timestamp)
 
   @classmethod
   def FilterModifiedChanges(cls, changes):
@@ -2237,7 +2244,9 @@ class ValidationPool(object):
         action = constants.CL_ACTION_SUBMITTED
       else:
         action = constants.CL_ACTION_SUBMIT_FAILED
-      self._metadata.RecordCLAction(change, action)
+      timestamp = int(time.time())
+      self._metadata.RecordCLAction(change, action, timestamp)
+      self._InsertCLActionToDatabase(change, action, timestamp)
 
     return was_change_submitted
 
@@ -2246,7 +2255,30 @@ class ValidationPool(object):
     self._helper_pool.ForChange(change).RemoveCommitReady(change,
         dryrun=self.dryrun)
     if self._metadata:
-      self._metadata.RecordCLAction(change, constants.CL_ACTION_KICKED_OUT)
+      timestamp = int(time.time())
+      self._metadata.RecordCLAction(change, constants.CL_ACTION_KICKED_OUT,
+                                    timestamp)
+      self._InsertCLActionToDatabase(change, constants.CL_ACTION_KICKED_OUT,
+                                     timestamp)
+
+  def _InsertCLActionToDatabase(self, change, action, timestamp=None):
+    """If cidb is set up and not None, insert given cl action to cidb.
+
+    Args:
+      change: A GerritPatch or GerritPatchTuple object.
+      action: The action taken, should be one of constants.CL_ACTIONS
+      timestamp: An integer timestamp such as int(time.time()) at which
+                 the action was taken. Default: Now.
+    """
+    if cidb.CIDBConnectionFactory.IsCIDBSetup():
+      db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
+      if db:
+        build_id = self._metadata.GetValue('build_id')
+        # NOTE(akeshet): If timestamp is None, then the database timestamp
+        # will differ slightly from the metadata timestamp, but I don't
+        # think that matters.
+        db.InsertCLActions(build_id,
+            [metadata_lib.GetCLActionTuple(change, action, timestamp)])
 
   def SubmitNonManifestChanges(self, check_tree_open=True):
     """Commits changes to Gerrit from Pool that aren't part of the checkout.

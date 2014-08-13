@@ -34,7 +34,7 @@ import mock
 
 
 DEFAULT_BUILD_NUMBER = 1234321
-
+DEFAULT_BUILD_ID = 31337
 
 # The inheritence order ensures the patchers are stopped before
 # cleaning up the temporary directories.
@@ -69,7 +69,7 @@ class StageTest(cros_test_lib.MockOutputTestCase,
     self._run = None
 
   def _Prepare(self, bot_id=None, extra_config=None, cmd_args=None,
-               extra_cmd_args=None):
+               extra_cmd_args=None, build_id=DEFAULT_BUILD_ID):
     """Prepare a BuilderRun at self._run for this test.
 
     This method must allow being called more than once.  Subclasses can
@@ -93,6 +93,7 @@ class StageTest(cros_test_lib.MockOutputTestCase,
         is a good way to adjust an options value for your test.
         Example: ['branch-name', 'some-branch-name'] will effectively cause
         self._run.options.branch_name to be set to 'some-branch-name'.
+      build_id: mock build id
     """
     # Use cbuildbot parser to create options object and populate default values.
     parser = cbuildbot._CreateParser()
@@ -137,6 +138,8 @@ class StageTest(cros_test_lib.MockOutputTestCase,
 
     # Construct a real BuilderRun using options and build_config.
     self._run = cbuildbot_run.BuilderRun(options, build_config, self._manager)
+
+    self._run.attrs.metadata.UpdateWithDict({'build_id': build_id})
 
     if self.RELEASE_TAG is not None:
       self._run.attrs.release_tag = self.RELEASE_TAG

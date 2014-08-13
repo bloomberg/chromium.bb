@@ -11,6 +11,7 @@ import sys
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
+from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import tree_status
@@ -18,6 +19,7 @@ from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import alerts
+from chromite.lib import cidb
 from chromite.lib import cros_build_lib
 from chromite.lib import gs
 from chromite.lib import osutils
@@ -25,46 +27,97 @@ from chromite.lib import toolchain
 
 
 def WriteBasicMetadata(builder_run):
-  """Writes the most basic metadata that should be known at start of execution.
+  """Writes basic metadata that should be known at start of execution.
 
-  This method writes basic metadata values to the |builder_run| metadata, to
-  guarantee that these values will be part of the metadata even if some early
-  build stage (like a Sync stage) fails unexpectedly before ReportBuildStart
-  can run.
+  This method writes to |build_run|'s metadata instance the basic metadata
+  values that should be known at the beginning of the first cbuildbot
+  execution, prior to any reexecutions.
+
+  In particular, this method does not write any metadata values that depend
+  on the builder config, as the config may be modified by patches that are
+  applied before the final reexectuion.
 
   This method is safe to run more than once (for instance, once per cbuildbot
-  execution) because it will write the same data each time. In particular, this
-  method does not write any metadata values that depend on the builder config,
-  as the config may be different in inner cbuildbot executions than it is in
-  outermost one.
+  execution) because it will write the same data each time.
 
   Args:
     builder_run: The BuilderRun instance for this build.
   """
+  start_time = results_lib.Results.start_time
+  start_time_stamp = cros_build_lib.UserDateTimeFormat(timeval=start_time)
+
   metadata = {
       # Data for this build.
       'bot-hostname': cros_build_lib.GetHostName(fully_qualified=True),
       'build-number': builder_run.buildnumber,
       'builder-name': os.environ.get('BUILDBOT_BUILDERNAME', ''),
+      'buildbot-url': os.environ.get('BUILDBOT_BUILDBOTURL', ''),
+      'buildbot-master-name':
+          os.environ.get('BUILDBOT_MASTERNAME', ''),
+      'bot-config': builder_run.config['name'],
+      'time': {
+          'start': start_time_stamp,
+      },
+      'master_build_id': builder_run.options.master_build_id,
   }
 
   builder_run.attrs.metadata.UpdateWithDict(metadata)
 
 
-class ReportBuildStartStage(generic_stages.BuilderStage,
-                            generic_stages.ArchivingStageMixin):
-  """Uploads partial metadata artifact describing what will be built.
+class BuildStartStage(generic_stages.BuilderStage):
+  """The first stage to run.
 
-  This stage should be the first stage run after the final cbuildbot
-  bootstrap/reexecution. By the time this stage is run, all sync stages
-  are complete and version numbers of chrome and chromeos are known.
+  This stage writes a few basic metadata values that are known at the start of
+  build, and inserts the build into the database, if appropriate.
+  """
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
+  def PerformStage(self):
+    WriteBasicMetadata(self._run)
+    d = self._run.attrs.metadata.GetDict()
+
+    # BuildStartStage should only run once per build. But just in case it
+    # is somehow running a second time, we do not want to insert an additional
+    # database entry. Detect if a database entry has been inserted already
+    # and if so quit the stage.
+    if 'build_id' in d:
+      logging.info('Already have build_id %s, not inserting an entry.',
+                   d['build_id'])
+      return
+
+    if cidb.CIDBConnectionFactory.IsCIDBSetup():
+      db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
+      if db:
+        waterfall = d['buildbot-master-name']
+        assert waterfall in ('chromeos', 'chromiumos', 'chromiumos.tryserver')
+        build_id = db.InsertBuild(
+             builder_name=d['builder-name'],
+             waterfall=waterfall,
+             build_number=d['build-number'],
+             build_config=d['bot-config'],
+             bot_hostname=d['bot-hostname'],
+             start_time=cros_build_lib.ParseUserDateTimeFormat(
+                 d['time']['start']),
+             master_build_id=d['master_build_id'])
+        self._run.attrs.metadata.UpdateWithDict({'build_id': build_id})
+        logging.info('Inserted build_id %s into cidb database.', build_id)
+
+
+class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
+                                    generic_stages.ArchivingStageMixin):
+  """The first stage to run after the final cbuildbot reexecution.
+
+  This stage is the first stage run after the final cbuildbot
+  bootstrap/reexecution. By the time this stage is run, the sync stages
+  are complete and version numbers of chromeos are known (though chrome
+  version may not be known until SyncChrome).
+
+  This stage writes metadata values that are first known after the final
+  reexecution (such as those that come from the config). This stage also
+  updates the build's cidb entry if appropriate.
 
   Where possible, metadata that is already known at this time should be
   written at this time rather than in ReportStage.
   """
-  def init(self, builder_run, **kwargs):
-    super(ReportBuildStartStage, self).__init__(builder_run, **kwargs)
-
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     config = self._run.config
@@ -80,9 +133,6 @@ class ReportBuildStartStage(generic_stages.BuilderStage,
         os.path.join(build_root, constants.SDK_VERSION_FILE),
         ignore_missing=True)
 
-    start_time = results_lib.Results.start_time
-    start_time_stamp = cros_build_lib.UserDateTimeFormat(timeval=start_time)
-
     verinfo = self._run.GetVersionInfo(build_root)
     platform_tag = getattr(self._run.attrs, 'release_tag')
     if not platform_tag:
@@ -97,12 +147,8 @@ class ReportBuildStartStage(generic_stages.BuilderStage,
     metadata = {
         # Version of the metadata format.
         'metadata-version': '2',
-        'bot-config': config['name'],
         'boards': config['boards'],
         'child-configs': child_configs,
-        'time': {
-            'start': start_time_stamp,
-        },
         'build_type': config['build_type'],
 
         # Data for the toolchain used.
@@ -124,7 +170,33 @@ class ReportBuildStartStage(generic_stages.BuilderStage,
     # version to uprev).
     logging.info("Metadata 'version' being written: %s", version)
     self._run.attrs.metadata.UpdateKeyDictWithDict('version', version)
+
+    # Ensure that all boards and child config boards have a per-board
+    # metadata subdict.
+    for b in config['boards']:
+      self._run.attrs.metadata.UpdateBoardDictWithDict(b, {})
+
+    for cc in child_configs:
+      for b in cc['boards']:
+        self._run.attrs.metadata.UpdateBoardDictWithDict(b, {})
+
+    # Upload build metadata (and write it to database if necessary)
     self.UploadMetadata(filename=constants.PARTIAL_METADATA_JSON)
+
+    # Write child-per-build and board-per-build rows to database
+    if cidb.CIDBConnectionFactory.IsCIDBSetup():
+      db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
+      if db:
+        build_id = self._run.attrs.metadata.GetValue('build_id')
+        # TODO(akeshet): replace this with a GetValue call once crbug.com/406522
+        # is resolved
+        per_board_dict = self._run.attrs.metadata.GetDict()['board-metadata']
+        for board, board_metadata in per_board_dict.items():
+          db.InsertBoardPerBuild(build_id, board)
+          if board_metadata:
+            db.UpdateBoardPerBuildMetadata(build_id, board, board_metadata)
+        for child_config in self._run.attrs.metadata.GetValue('child-configs'):
+          db.InsertChildConfigPerBuild(build_id, child_config['name'])
 
 
 class ReportStage(generic_stages.BuilderStage,
@@ -375,6 +447,22 @@ class ReportStage(generic_stages.BuilderStage,
     version = getattr(self._run.attrs, 'release_tag', '')
     results_lib.Results.Report(sys.stdout, archive_urls=archive_urls,
                                current_version=version)
+
+    if cidb.CIDBConnectionFactory.IsCIDBSetup():
+      db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
+      if db:
+        build_id = self._run.attrs.metadata.GetValue('build_id')
+        # TODO(akeshet): Eliminate this status string translate once
+        # these differing status strings are merged, crbug.com/318930
+        if final_status == constants.FINAL_STATUS_PASSED:
+          status_for_db = manifest_version.BuilderStatus.STATUS_PASSED
+        else:
+          status_for_db = manifest_version.BuilderStatus.STATUS_FAILED
+
+        # TODO(akeshet): Consider uploading the status pickle to the database,
+        # (by specifying that argument to FinishBuild), or come up with a
+        # pickle-free mechanism to describe failure details in database.
+        db.FinishBuild(build_id, status=status_for_db)
 
 
 class RefreshPackageStatusStage(generic_stages.BuilderStage):

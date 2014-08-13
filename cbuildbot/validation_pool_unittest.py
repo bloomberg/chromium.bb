@@ -659,6 +659,7 @@ class TestSubmitChange(MoxBase):
     # Prepare replay script.
     pool._helper_pool.ForChange(change).AndReturn(helper)
     helper.SubmitChange(change, dryrun=False)
+    pool._InsertCLActionToDatabase(change, mox.IgnoreArg(), mox.IgnoreArg())
     for result in results:
       helper.QuerySingleRecord(change.gerrit_number).AndReturn(result)
     self.mox.ReplayAll()

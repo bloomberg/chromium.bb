@@ -123,6 +123,9 @@ class SchemaVersionedMySQLConnection(object):
 
     self.schema_version = self.QuerySchemaVersion()
 
+    logging.debug('Created a SchemaVersionedMySQLConnection, '
+                  'sqlalchemy version %s', sqlalchemy.__version__)
+
   def DropDatabase(self):
     """Delete all data and tables from database, and drop database.
 
@@ -260,7 +263,18 @@ class SchemaVersionedMySQLConnection(object):
    """
     self._ReflectToMetadata()
     t = self._meta.tables[table]
-    key_columns = t.primary_key.columns.values()
+
+    # TODO(akeshet): between sqlalchemy 0.7 and 0.8, a breaking change was
+    # made to how t.columns and t.primary_key are stored, and in sqlalchemy
+    # 0.7 t.columns does not have a .values() method. Hence this clumsy way
+    # of extracting the primary key column. Currently, our builders have 0.7
+    # installed. Once we drop support for 0.7, this code can be simply replaced
+    # by:
+    # key_columns = t.primary_key.columns.values()
+    col_names = t.columns.keys()
+    cols = [t.columns[n] for n in col_names]
+    key_columns = [c for c in cols if c.primary_key]
+
     if len(key_columns) != 1:
       raise DBException('Table %s does not have a 1-column primary '
                         'key.' % table)
@@ -386,7 +400,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                   current time will be used.
       master_build_id: (Optional) primary key of master build to this build.
     """
-    start_time = start_time or time.mktime()
+    start_time = start_time or time.time()
     dt = datetime.datetime.fromtimestamp(start_time)
 
     return self._Insert('buildTable', {'builder_name': builder_name,
@@ -564,7 +578,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       status_pickle: Pickled manifest_version.BuilderStatus.
     """
     self._ReflectToMetadata()
-    finish_time = finish_time or time.mktime()
+    finish_time = finish_time or time.time()
     dt = datetime.datetime.fromtimestamp(finish_time)
 
     # TODO(akeshet) atomically update the final field of metadata to
@@ -586,6 +600,7 @@ class CIDBConnectionFactory(object):
   _ConnectionType = None
   _ConnectionCredsPath = None
   _MockCIDB = None
+  _CachedCIDB = None
 
   _CONNECTION_TYPE_PROD = 'prod'   # production database
   _CONNECTION_TYPE_DEBUG = 'debug' # debug database, used by --debug builds
@@ -681,7 +696,10 @@ class CIDBConnectionFactory(object):
     elif cls._ConnectionType == cls._CONNECTION_TYPE_NONE:
       return None
     else:
-      return CIDBConnection(cls._ConnectionCredsPath)
+      if cls._CachedCIDB:
+        return cls._CachedCIDB
+      cls._CachedCIDB = CIDBConnection(cls._ConnectionCredsPath)
+      return cls._CachedCIDB
 
   @classmethod
   def _ClearCIDBSetup(cls):
@@ -690,5 +708,6 @@ class CIDBConnectionFactory(object):
     cls._ConnectionType = None
     cls._ConnectionCredsPath = None
     cls._MockCIDB = None
+    cls._CachedCIDB = None
 
 
