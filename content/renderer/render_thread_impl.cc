@@ -15,6 +15,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/discardable_memory.h"
+#include "base/memory/discardable_memory_emulated.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
@@ -181,6 +182,9 @@ const int kMaxRasterThreads = 64;
 // require pre-scaling if the default filter would require an
 // allocation that exceeds this limit.
 const size_t kImageCacheSingleAllocationByteLimit = 64 * 1024 * 1024;
+
+const size_t kEmulatedDiscardableMemoryBytesToKeepWhenWidgetsHidden =
+    4 * 1024 * 1024;
 
 // Keep the global RenderThreadImpl in a TLS slot so it is impossible to access
 // incorrectly from the wrong thread.
@@ -547,10 +551,6 @@ void RenderThreadImpl::Init() {
   }
 
   base::DiscardableMemory::SetPreferredType(type);
-
-  // Allow discardable memory implementations to register memory pressure
-  // listeners.
-  base::DiscardableMemory::RegisterMemoryPressureListeners();
 
   // AllocateGpuMemoryBuffer must be used exclusively on one thread but
   // it doesn't have to be the same thread RenderThreadImpl is created on.
@@ -1628,6 +1628,12 @@ void RenderThreadImpl::WidgetHidden() {
   hidden_widget_count_++;
 
   if (widget_count_ && hidden_widget_count_ == widget_count_) {
+    // TODO(reveman): Remove this when we have a better mechanism to prevent
+    // total discardable memory used by all renderers from growing too large.
+    base::internal::DiscardableMemoryEmulated::
+        ReduceMemoryUsageUntilWithinLimit(
+            kEmulatedDiscardableMemoryBytesToKeepWhenWidgetsHidden);
+
     if (GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
       ScheduleIdleHandler(kInitialIdleHandlerDelayMs);
   }

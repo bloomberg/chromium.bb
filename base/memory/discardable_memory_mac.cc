@@ -25,11 +25,7 @@ namespace {
 const size_t kMacMemoryLimit = 512 * 1024 * 1024;
 
 struct SharedState {
-  SharedState()
-      : manager(kMacMemoryLimit,
-                kMacMemoryLimit,
-                kMacMemoryLimit,
-                TimeDelta::Max()) {}
+  SharedState() : manager(kMacMemoryLimit, kMacMemoryLimit, TimeDelta::Max()) {}
 
   internal::DiscardableMemoryManager manager;
 };
@@ -158,16 +154,6 @@ class DiscardableMemoryMac
 };
 
 }  // namespace
-
-// static
-void DiscardableMemory::RegisterMemoryPressureListeners() {
-  internal::DiscardableMemoryEmulated::RegisterMemoryPressureListeners();
-}
-
-// static
-void DiscardableMemory::UnregisterMemoryPressureListeners() {
-  internal::DiscardableMemoryEmulated::UnregisterMemoryPressureListeners();
-}
 
 // static
 bool DiscardableMemory::ReduceMemoryUsage() {

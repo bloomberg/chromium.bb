@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)
@@ -19,12 +18,8 @@ namespace {
 class DiscardableMemoryTest
     : public testing::TestWithParam<DiscardableMemoryType> {
  public:
-  DiscardableMemoryTest() : message_loop_(MessageLoop::TYPE_IO) {
-    // Register memory pressure listeners now that we have a message loop.
-    DiscardableMemory::RegisterMemoryPressureListeners();
-  }
+  DiscardableMemoryTest() {}
   virtual ~DiscardableMemoryTest() {
-    DiscardableMemory::UnregisterMemoryPressureListeners();
   }
 
  protected:
@@ -32,9 +27,6 @@ class DiscardableMemoryTest
     return DiscardableMemory::CreateLockedMemoryWithType(
         GetParam(), size).Pass();
   }
-
- private:
-  MessageLoop message_loop_;
 };
 
 const size_t kSize = 1024;

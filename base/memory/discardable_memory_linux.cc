@@ -11,16 +11,6 @@
 namespace base {
 
 // static
-void DiscardableMemory::RegisterMemoryPressureListeners() {
-  internal::DiscardableMemoryEmulated::RegisterMemoryPressureListeners();
-}
-
-// static
-void DiscardableMemory::UnregisterMemoryPressureListeners() {
-  internal::DiscardableMemoryEmulated::UnregisterMemoryPressureListeners();
-}
-
-// static
 bool DiscardableMemory::ReduceMemoryUsage() {
   return internal::DiscardableMemoryEmulated::ReduceMemoryUsage();
 }

@@ -32,10 +32,7 @@ size_t GetOptimalAshmemRegionSizeForAllocator() {
 // Holds the shared state used for allocations.
 struct SharedState {
   SharedState()
-      : manager(kAshmemMemoryLimit,
-                kAshmemMemoryLimit,
-                kAshmemMemoryLimit,
-                TimeDelta::Max()),
+      : manager(kAshmemMemoryLimit, kAshmemMemoryLimit, TimeDelta::Max()),
         allocator(kAshmemAllocatorName,
                   GetOptimalAshmemRegionSizeForAllocator()) {}
 
@@ -45,16 +42,6 @@ struct SharedState {
 LazyInstance<SharedState>::Leaky g_shared_state = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
-
-// static
-void DiscardableMemory::RegisterMemoryPressureListeners() {
-  internal::DiscardableMemoryEmulated::RegisterMemoryPressureListeners();
-}
-
-// static
-void DiscardableMemory::UnregisterMemoryPressureListeners() {
-  internal::DiscardableMemoryEmulated::UnregisterMemoryPressureListeners();
-}
 
 // static
 bool DiscardableMemory::ReduceMemoryUsage() {

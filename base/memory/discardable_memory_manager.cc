@@ -18,14 +18,11 @@ namespace internal {
 DiscardableMemoryManager::DiscardableMemoryManager(
     size_t memory_limit,
     size_t soft_memory_limit,
-    size_t bytes_to_keep_under_moderate_pressure,
     TimeDelta hard_memory_limit_expiration_time)
     : allocations_(AllocationMap::NO_AUTO_EVICT),
       bytes_allocated_(0u),
       memory_limit_(memory_limit),
       soft_memory_limit_(soft_memory_limit),
-      bytes_to_keep_under_moderate_pressure_(
-          bytes_to_keep_under_moderate_pressure),
       hard_memory_limit_expiration_time_(hard_memory_limit_expiration_time) {
   BytesAllocatedChanged(bytes_allocated_);
 }
@@ -33,20 +30,6 @@ DiscardableMemoryManager::DiscardableMemoryManager(
 DiscardableMemoryManager::~DiscardableMemoryManager() {
   DCHECK(allocations_.empty());
   DCHECK_EQ(0u, bytes_allocated_);
-}
-
-void DiscardableMemoryManager::RegisterMemoryPressureListener() {
-  AutoLock lock(lock_);
-  DCHECK(base::MessageLoop::current());
-  DCHECK(!memory_pressure_listener_);
-  memory_pressure_listener_.reset(new MemoryPressureListener(base::Bind(
-      &DiscardableMemoryManager::OnMemoryPressure, Unretained(this))));
-}
-
-void DiscardableMemoryManager::UnregisterMemoryPressureListener() {
-  AutoLock lock(lock_);
-  DCHECK(memory_pressure_listener_);
-  memory_pressure_listener_.reset();
 }
 
 void DiscardableMemoryManager::SetMemoryLimit(size_t bytes) {
@@ -61,12 +44,6 @@ void DiscardableMemoryManager::SetSoftMemoryLimit(size_t bytes) {
   soft_memory_limit_ = bytes;
 }
 
-void DiscardableMemoryManager::SetBytesToKeepUnderModeratePressure(
-    size_t bytes) {
-  AutoLock lock(lock_);
-  bytes_to_keep_under_moderate_pressure_ = bytes;
-}
-
 void DiscardableMemoryManager::SetHardMemoryLimitExpirationTime(
     TimeDelta hard_memory_limit_expiration_time) {
   AutoLock lock(lock_);
@@ -77,13 +54,14 @@ bool DiscardableMemoryManager::ReduceMemoryUsage() {
   return PurgeIfNotUsedSinceHardLimitCutoffUntilWithinSoftMemoryLimit();
 }
 
+void DiscardableMemoryManager::ReduceMemoryUsageUntilWithinLimit(size_t bytes) {
+  AutoLock lock(lock_);
+  PurgeIfNotUsedSinceTimestampUntilUsageIsWithinLimitWithLockAcquired(Now(),
+                                                                      bytes);
+}
+
 void DiscardableMemoryManager::Register(Allocation* allocation, size_t bytes) {
   AutoLock lock(lock_);
-  // A registered memory listener is currently required. This DCHECK can be
-  // moved or removed if we decide that it's useful to relax this condition.
-  // TODO(reveman): Enable this DCHECK when skia and blink are able to
-  // register memory pressure listeners. crbug.com/333907
-  // DCHECK(memory_pressure_listener_);
   DCHECK(allocations_.Peek(allocation) == allocations_.end());
   allocations_.Put(allocation, AllocationInfo(bytes));
 }
@@ -180,28 +158,6 @@ bool DiscardableMemoryManager::CanBePurgedForTest(
 size_t DiscardableMemoryManager::GetBytesAllocatedForTest() const {
   AutoLock lock(lock_);
   return bytes_allocated_;
-}
-
-void DiscardableMemoryManager::OnMemoryPressure(
-    MemoryPressureListener::MemoryPressureLevel pressure_level) {
-  switch (pressure_level) {
-    case MemoryPressureListener::MEMORY_PRESSURE_MODERATE:
-      PurgeUntilWithinBytesToKeepUnderModeratePressure();
-      return;
-    case MemoryPressureListener::MEMORY_PRESSURE_CRITICAL:
-      PurgeAll();
-      return;
-  }
-
-  NOTREACHED();
-}
-
-void
-DiscardableMemoryManager::PurgeUntilWithinBytesToKeepUnderModeratePressure() {
-  AutoLock lock(lock_);
-
-  PurgeIfNotUsedSinceTimestampUntilUsageIsWithinLimitWithLockAcquired(
-      Now(), bytes_to_keep_under_moderate_pressure_);
 }
 
 bool DiscardableMemoryManager::
