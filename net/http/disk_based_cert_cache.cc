@@ -81,10 +81,10 @@ class DiskBasedCertCache::WriteWorker {
 
  private:
   enum State {
-    STATE_CREATE,
-    STATE_CREATE_COMPLETE,
     STATE_OPEN,
     STATE_OPEN_COMPLETE,
+    STATE_CREATE,
+    STATE_CREATE_COMPLETE,
     STATE_WRITE,
     STATE_WRITE_COMPLETE,
     STATE_NONE
@@ -93,10 +93,10 @@ class DiskBasedCertCache::WriteWorker {
   void OnIOComplete(int rv);
   int DoLoop(int rv);
 
-  int DoCreate();
-  int DoCreateComplete(int rv);
   int DoOpen();
   int DoOpenComplete(int rv);
+  int DoCreate();
+  int DoCreateComplete(int rv);
   int DoWrite();
   int DoWriteComplete(int rv);
 
@@ -146,7 +146,8 @@ DiskBasedCertCache::WriteWorker::~WriteWorker() {
 
 void DiskBasedCertCache::WriteWorker::Start() {
   DCHECK_EQ(STATE_NONE, next_state_);
-  next_state_ = STATE_CREATE;
+
+  next_state_ = STATE_OPEN;
   int rv = DoLoop(OK);
 
   if (rv == ERR_IO_PENDING)
@@ -183,17 +184,17 @@ int DiskBasedCertCache::WriteWorker::DoLoop(int rv) {
     State state = next_state_;
     next_state_ = STATE_NONE;
     switch (state) {
-      case STATE_CREATE:
-        rv = DoCreate();
-        break;
-      case STATE_CREATE_COMPLETE:
-        rv = DoCreateComplete(rv);
-        break;
       case STATE_OPEN:
         rv = DoOpen();
         break;
       case STATE_OPEN_COMPLETE:
         rv = DoOpenComplete(rv);
+        break;
+      case STATE_CREATE:
+        rv = DoCreate();
+        break;
+      case STATE_CREATE_COMPLETE:
+        rv = DoCreateComplete(rv);
         break;
       case STATE_WRITE:
         rv = DoWrite();
@@ -210,18 +211,15 @@ int DiskBasedCertCache::WriteWorker::DoLoop(int rv) {
   return rv;
 }
 
-int DiskBasedCertCache::WriteWorker::DoCreate() {
-  next_state_ = STATE_CREATE_COMPLETE;
-
-  return backend_->CreateEntry(key_, &entry_, io_callback_);
+int DiskBasedCertCache::WriteWorker::DoOpen() {
+  next_state_ = STATE_OPEN_COMPLETE;
+  return backend_->OpenEntry(key_, &entry_, io_callback_);
 }
 
-int DiskBasedCertCache::WriteWorker::DoCreateComplete(int rv) {
-  // An error here usually signifies that the entry already exists.
-  // If this occurs, it is necessary to instead open the previously
-  // existing entry.
+int DiskBasedCertCache::WriteWorker::DoOpenComplete(int rv) {
+  // The entry doesn't exist yet, so we should create it.
   if (rv < 0) {
-    next_state_ = STATE_OPEN;
+    next_state_ = STATE_CREATE;
     return OK;
   }
 
@@ -229,12 +227,12 @@ int DiskBasedCertCache::WriteWorker::DoCreateComplete(int rv) {
   return OK;
 }
 
-int DiskBasedCertCache::WriteWorker::DoOpen() {
-  next_state_ = STATE_OPEN_COMPLETE;
-  return backend_->OpenEntry(key_, &entry_, io_callback_);
+int DiskBasedCertCache::WriteWorker::DoCreate() {
+  next_state_ = STATE_CREATE_COMPLETE;
+  return backend_->CreateEntry(key_, &entry_, io_callback_);
 }
 
-int DiskBasedCertCache::WriteWorker::DoOpenComplete(int rv) {
+int DiskBasedCertCache::WriteWorker::DoCreateComplete(int rv) {
   if (rv < 0)
     return rv;
 
