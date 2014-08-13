@@ -6,6 +6,7 @@
 import hashlib
 import json
 import logging
+import optparse
 import os
 import re
 import shutil
@@ -209,23 +210,40 @@ def main():
     sys.stderr.write('This script work only on Linux.')
     return 1
 
+  option_parser = optparse.OptionParser(
+      '%s /path/to/maps [/path/to/output_data_dir/]' % sys.argv[0])
+  option_parser.add_option('--alternative-dirs', dest='alternative_dirs',
+                           metavar='/path/on/target@/path/on/host[:...]',
+                           help='Read files in /path/on/host/ instead of '
+                           'files in /path/on/target/.')
+  option_parser.add_option('--verbose', dest='verbose', action='store_true',
+                           help='Enable verbose mode.')
+  options, args = option_parser.parse_args(sys.argv)
+  alternative_dirs_dict = {}
+  if options.alternative_dirs:
+    for alternative_dir_pair in options.alternative_dirs.split(':'):
+      target_path, host_path = alternative_dir_pair.split('@', 1)
+      alternative_dirs_dict[target_path] = host_path
+
   LOGGER.setLevel(logging.DEBUG)
   handler = logging.StreamHandler()
-  handler.setLevel(logging.INFO)
+  if options.verbose:
+    handler.setLevel(logging.DEBUG)
+  else:
+    handler.setLevel(logging.INFO)
   formatter = logging.Formatter('%(message)s')
   handler.setFormatter(formatter)
   LOGGER.addHandler(handler)
 
-  # TODO(dmikurube): Specify |alternative_dirs| from command line.
-  if len(sys.argv) < 2:
-    sys.stderr.write("""Usage:
-%s /path/to/maps [/path/to/output_data_dir/]
-""" % sys.argv[0])
+  if len(args) < 2:
+    option_parser.error('Argument error.')
     return 1
-  elif len(sys.argv) == 2:
-    result, _ = prepare_symbol_info(sys.argv[1])
+  elif len(args) == 2:
+    result, _ = prepare_symbol_info(args[1],
+                                    alternative_dirs=alternative_dirs_dict)
   else:
-    result, _ = prepare_symbol_info(sys.argv[1], sys.argv[2])
+    result, _ = prepare_symbol_info(args[1], args[2],
+                                    alternative_dirs=alternative_dirs_dict)
 
   return not result
 
