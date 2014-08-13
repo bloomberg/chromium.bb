@@ -400,10 +400,17 @@ bool MetadataDatabaseIndex::HasDemotedDirtyTracker() const {
   return !demoted_dirty_trackers_.empty();
 }
 
-void MetadataDatabaseIndex::PromoteDemotedDirtyTrackers() {
+void MetadataDatabaseIndex::PromoteDemotedDirtyTracker(int64 tracker_id) {
+  if (demoted_dirty_trackers_.erase(tracker_id) == 1)
+    dirty_trackers_.insert(tracker_id);
+}
+
+bool MetadataDatabaseIndex::PromoteDemotedDirtyTrackers() {
+  bool promoted = !demoted_dirty_trackers_.empty();
   dirty_trackers_.insert(demoted_dirty_trackers_.begin(),
                          demoted_dirty_trackers_.end());
   demoted_dirty_trackers_.clear();
+  return promoted;
 }
 
 size_t MetadataDatabaseIndex::CountDirtyTracker() const {

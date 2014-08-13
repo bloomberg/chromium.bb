@@ -201,6 +201,20 @@ class LocalToRemoteSyncerTest : public testing::Test {
     return status;
   }
 
+  SyncStatusCode RunRemoteToLocalSyncerUntilIdle() {
+    SyncStatusCode status;
+    int retry_count = 0;
+    do {
+      if (retry_count++ > kRetryLimit)
+        break;
+      status = RunRemoteToLocalSyncer();
+    } while (status == SYNC_STATUS_OK ||
+             status == SYNC_STATUS_RETRY ||
+             GetMetadataDatabase()->PromoteLowerPriorityTrackersToNormal());
+    EXPECT_EQ(SYNC_STATUS_NO_CHANGE_TO_SYNC, status);
+    return status;
+  }
+
   ScopedVector<google_apis::ResourceEntry>
   GetResourceEntriesForParentAndTitle(const std::string& parent_folder_id,
                                       const std::string& title) {
@@ -249,7 +263,6 @@ class LocalToRemoteSyncerTest : public testing::Test {
   scoped_ptr<SyncEngineContext> context_;
   scoped_ptr<FakeDriveServiceHelper> fake_drive_helper_;
   scoped_ptr<FakeRemoteChangeProcessor> remote_change_processor_;
-  scoped_ptr<MetadataDatabase> metadata_database_;
   scoped_ptr<SyncTaskManager> sync_task_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalToRemoteSyncerTest);
@@ -431,16 +444,8 @@ TEST_F(LocalToRemoteSyncerTest, Conflict_UpdateDeleteOnFile) {
 
   const std::string file_id = CreateRemoteFile(app_root, "foo", "data");
   EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
-
-  SyncStatusCode status;
-  int retry_count = 0;
-  do {
-    if (retry_count++ > kRetryLimit)
-      break;
-    status = RunRemoteToLocalSyncer();
-  } while (status == SYNC_STATUS_OK ||
-           status == SYNC_STATUS_RETRY);
-  EXPECT_EQ(SYNC_STATUS_NO_CHANGE_TO_SYNC, status);
+  EXPECT_EQ(SYNC_STATUS_NO_CHANGE_TO_SYNC,
+            RunRemoteToLocalSyncerUntilIdle());
 
   DeleteResource(file_id);
 
@@ -470,15 +475,8 @@ TEST_F(LocalToRemoteSyncerTest, Conflict_CreateDeleteOnFile) {
 
   const std::string file_id = CreateRemoteFile(app_root, "foo", "data");
   EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
-  SyncStatusCode status;
-  int retry_count = 0;
-  do {
-    if (retry_count++ > kRetryLimit)
-      break;
-    status = RunRemoteToLocalSyncer();
-  } while (status == SYNC_STATUS_OK ||
-           status == SYNC_STATUS_RETRY);
-  EXPECT_EQ(SYNC_STATUS_NO_CHANGE_TO_SYNC, status);
+  EXPECT_EQ(SYNC_STATUS_NO_CHANGE_TO_SYNC,
+            RunRemoteToLocalSyncerUntilIdle());
 
   DeleteResource(file_id);
 
@@ -537,15 +535,8 @@ TEST_F(LocalToRemoteSyncerTest, AppRootDeletion) {
 
   DeleteResource(app_root);
   EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
-  SyncStatusCode status;
-  int retry_count = 0;
-  do {
-    if (retry_count++ > kRetryLimit)
-      break;
-    status = RunRemoteToLocalSyncer();
-  } while (status == SYNC_STATUS_OK ||
-           status == SYNC_STATUS_RETRY);
-  EXPECT_EQ(SYNC_STATUS_NO_CHANGE_TO_SYNC, status);
+  EXPECT_EQ(SYNC_STATUS_NO_CHANGE_TO_SYNC,
+            RunRemoteToLocalSyncerUntilIdle());
 
   EXPECT_EQ(SYNC_STATUS_UNKNOWN_ORIGIN, RunLocalToRemoteSyncer(
       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,

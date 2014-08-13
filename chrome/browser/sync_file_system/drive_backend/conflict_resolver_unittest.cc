@@ -209,9 +209,18 @@ class ConflictResolverTest : public testing::Test {
   }
 
   void RunRemoteToLocalSyncerUntilIdle() {
-    SyncStatusCode status = SYNC_STATUS_UNKNOWN;
-    while (status != SYNC_STATUS_NO_CHANGE_TO_SYNC)
+    const int kRetryLimit = 100;
+    SyncStatusCode status;
+    int retry_count = 0;
+    MetadataDatabase* metadata_database = context_->GetMetadataDatabase();
+    do {
+      if (retry_count++ > kRetryLimit)
+        break;
       status = RunRemoteToLocalSyncer();
+    } while (status == SYNC_STATUS_OK ||
+             status == SYNC_STATUS_RETRY ||
+             metadata_database->PromoteLowerPriorityTrackersToNormal());
+    EXPECT_EQ(SYNC_STATUS_NO_CHANGE_TO_SYNC, status);
   }
 
   SyncStatusCode RunConflictResolver() {

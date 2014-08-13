@@ -90,8 +90,12 @@ class MetadataDatabaseIndexInterface {
 
   virtual bool HasDemotedDirtyTracker() const = 0;
 
+  // Promotes single demoted dirty tracker to a normal dirty tracker.
+  virtual void PromoteDemotedDirtyTracker(int64 tracker_id) = 0;
+
   // Promotes all demoted dirty trackers to normal dirty trackers.
-  virtual void PromoteDemotedDirtyTrackers() = 0;
+  // Returns true if any tracker was promoted.
+  virtual bool PromoteDemotedDirtyTrackers() = 0;
 
   virtual size_t CountDirtyTracker() const = 0;
   virtual size_t CountFileMetadata() const = 0;

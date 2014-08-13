@@ -1190,6 +1190,8 @@ void MetadataDatabase::UpdateTracker(int64 tracker_id,
   scoped_ptr<FileTracker> updated_tracker = CloneFileTracker(&tracker);
   *updated_tracker->mutable_synced_details() = updated_details;
 
+  bool should_promote = false;
+
   // Activate the tracker if:
   //   - There is no active tracker that tracks |tracker->file_id()|.
   //   - There is no active tracker that has the same |parent| and |title|.
@@ -1198,10 +1200,13 @@ void MetadataDatabase::UpdateTracker(int64 tracker_id,
     updated_tracker->set_dirty(true);
     updated_tracker->set_needs_folder_listing(
         tracker.synced_details().file_kind() == FILE_KIND_FOLDER);
+    should_promote = true;
   } else if (tracker.dirty() && !ShouldKeepDirty(tracker)) {
     updated_tracker->set_dirty(false);
   }
   index_->StoreFileTracker(updated_tracker.Pass());
+  if (should_promote)
+    index_->PromoteDemotedDirtyTracker(tracker_id);
 
   WriteToDatabase(callback);
 }
@@ -1281,9 +1286,16 @@ void MetadataDatabase::LowerTrackerPriority(int64 tracker_id) {
   WriteToDatabase(base::Bind(&EmptyStatusCallback));
 }
 
-void MetadataDatabase::PromoteLowerPriorityTrackersToNormal() {
+bool MetadataDatabase::PromoteLowerPriorityTrackersToNormal() {
   DCHECK(worker_sequence_checker_.CalledOnValidSequencedThread());
-  index_->PromoteDemotedDirtyTrackers();
+  bool promoted = index_->PromoteDemotedDirtyTrackers();
+  WriteToDatabase(base::Bind(&EmptyStatusCallback));
+  return promoted;
+}
+
+void MetadataDatabase::PromoteDemotedTracker(int64 tracker_id) {
+  DCHECK(worker_sequence_checker_.CalledOnValidSequencedThread());
+  index_->PromoteDemotedDirtyTracker(tracker_id);
   WriteToDatabase(base::Bind(&EmptyStatusCallback));
 }
 

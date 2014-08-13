@@ -528,7 +528,18 @@ bool MetadataDatabaseIndexOnDisk::HasDemotedDirtyTracker() const {
   return StartsWithASCII(itr->key().ToString(), kDemotedDirtyIDKeyPrefix, true);
 }
 
-void MetadataDatabaseIndexOnDisk::PromoteDemotedDirtyTrackers() {
+void MetadataDatabaseIndexOnDisk::PromoteDemotedDirtyTracker(int64 tracker_id) {
+  std::string demoted_key = GenerateDemotedDirtyIDKey(tracker_id);
+
+  std::string empty;
+  if (db_->Get(demoted_key, &empty).ok()) {
+    db_->Delete(demoted_key);
+    db_->Put(GenerateDirtyIDKey(tracker_id), std::string());
+  }
+}
+
+bool MetadataDatabaseIndexOnDisk::PromoteDemotedDirtyTrackers() {
+  bool promoted = false;
   scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
   for (itr->Seek(kDirtyIDKeyPrefix); itr->Valid(); itr->Next()) {
     std::string id_str;
@@ -541,7 +552,9 @@ void MetadataDatabaseIndexOnDisk::PromoteDemotedDirtyTrackers() {
 
     db_->Delete(itr->key().ToString());
     db_->Put(GenerateDemotedDirtyIDKey(tracker_id), std::string());
+    promoted = true;
   }
+  return promoted;
 }
 
 size_t MetadataDatabaseIndexOnDisk::CountDirtyTracker() const {

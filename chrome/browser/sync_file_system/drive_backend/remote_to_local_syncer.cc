@@ -129,6 +129,7 @@ void RemoteToLocalSyncer::RunExclusive(scoped_ptr<SyncTaskToken> token) {
           dirty_tracker_.get())) {
     token->RecordLog(base::StringPrintf(
         "Start: tracker_id=%" PRId64, dirty_tracker_->tracker_id()));
+    metadata_database()->LowerTrackerPriority(dirty_tracker_->tracker_id());
     ResolveRemoteChange(token.Pass());
     return;
   }
@@ -344,6 +345,8 @@ void RemoteToLocalSyncer::DidUpdateDatabaseForRemoteMetadata(
     return;
   }
 
+  metadata_database()->PromoteDemotedTracker(dirty_tracker_->tracker_id());
+
   // Do not update |dirty_tracker_|.
   SyncCompleted(token.Pass(), SYNC_STATUS_RETRY);
 }
@@ -383,9 +386,7 @@ void RemoteToLocalSyncer::DidPrepareForAddOrUpdateFile(
 
     // Got a remote regular file modification for existing local folder.
     // Our policy prioritize folders in this case.
-    // Lower the priority of the tracker to prevent repeated remote sync to the
-    // same tracker, and let local-to-remote sync phase process this change.
-    metadata_database()->LowerTrackerPriority(dirty_tracker_->tracker_id());
+    // Let local-to-remote sync phase process this change.
     remote_change_processor()->RecordFakeLocalChange(
         url_,
         FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
@@ -397,10 +398,6 @@ void RemoteToLocalSyncer::DidPrepareForAddOrUpdateFile(
   DCHECK(local_changes_->back().IsAddOrUpdate());
   // Conflict case.
   // Do nothing for the change now, and handle this in LocalToRemoteSync phase.
-
-  // Lower the priority of the tracker to prevent repeated remote sync to the
-  // same tracker.
-  metadata_database()->LowerTrackerPriority(dirty_tracker_->tracker_id());
   SyncCompleted(token.Pass(), SYNC_STATUS_RETRY);
 }
 
@@ -728,10 +725,6 @@ void RemoteToLocalSyncer::DidDownloadFile(scoped_ptr<SyncTaskToken> token,
 
   if (md5 != remote_metadata_->details().md5()) {
     // File has been modified since last metadata retrieval.
-
-    // Lower the priority of the tracker to prevent repeated remote sync to the
-    // same tracker.
-    metadata_database()->LowerTrackerPriority(dirty_tracker_->tracker_id());
     SyncCompleted(token.Pass(), SYNC_STATUS_RETRY);
     return;
   }
@@ -747,8 +740,6 @@ void RemoteToLocalSyncer::DidDownloadFile(scoped_ptr<SyncTaskToken> token,
 void RemoteToLocalSyncer::DidApplyDownload(scoped_ptr<SyncTaskToken> token,
                                            webkit_blob::ScopedFile,
                                            SyncStatusCode status) {
-  if (status != SYNC_STATUS_OK)
-    metadata_database()->LowerTrackerPriority(dirty_tracker_->tracker_id());
   SyncCompleted(token.Pass(), status);
 }
 

@@ -53,7 +53,8 @@ class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
   virtual int64 PickDirtyTracker() const OVERRIDE;
   virtual void DemoteDirtyTracker(int64 tracker_id) OVERRIDE;
   virtual bool HasDemotedDirtyTracker() const OVERRIDE;
-  virtual void PromoteDemotedDirtyTrackers() OVERRIDE;
+  virtual void PromoteDemotedDirtyTracker(int64 tracker_id) OVERRIDE;
+  virtual bool PromoteDemotedDirtyTrackers() OVERRIDE;
   virtual size_t CountDirtyTracker() const OVERRIDE;
   virtual size_t CountFileMetadata() const OVERRIDE;
   virtual size_t CountFileTracker() const OVERRIDE;
