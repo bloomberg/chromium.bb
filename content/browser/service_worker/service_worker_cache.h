@@ -9,6 +9,14 @@
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 
+namespace net {
+class URLRequestContext;
+}
+
+namespace webkit_blob {
+class BlobStorageContext;
+}
+
 namespace content {
 
 // TODO(jkarlin): Fill this in with a real Cache implementation as
@@ -23,10 +31,15 @@ namespace content {
 class ServiceWorkerCache {
  public:
   static scoped_ptr<ServiceWorkerCache> CreateMemoryCache(
-      const std::string& name);
+      const std::string& name,
+      net::URLRequestContext* request_context,
+      base::WeakPtr<webkit_blob::BlobStorageContext> blob_context);
   static scoped_ptr<ServiceWorkerCache> CreatePersistentCache(
       const base::FilePath& path,
-      const std::string& name);
+      const std::string& name,
+      net::URLRequestContext* request_context,
+      base::WeakPtr<webkit_blob::BlobStorageContext> blob_context);
+
   virtual ~ServiceWorkerCache();
 
   // Loads the backend and calls the callback with the result (true for
@@ -42,10 +55,16 @@ class ServiceWorkerCache {
   base::WeakPtr<ServiceWorkerCache> AsWeakPtr();
 
  private:
-  ServiceWorkerCache(const base::FilePath& path, const std::string& name);
+  ServiceWorkerCache(
+      const base::FilePath& path,
+      const std::string& name,
+      net::URLRequestContext* request_context,
+      base::WeakPtr<webkit_blob::BlobStorageContext> blob_context);
 
   base::FilePath path_;
   std::string name_;
+  net::URLRequestContext* request_context_;
+  base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context_;
   int32 id_;
 
   base::WeakPtrFactory<ServiceWorkerCache> weak_ptr_factory_;

@@ -9,10 +9,14 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/browser/service_worker/service_worker_process_manager.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/url_request/url_request_context_getter.h"
+#include "webkit/browser/blob/blob_storage_context.h"
 #include "webkit/browser/quota/quota_manager_proxy.h"
 
 namespace content {
@@ -39,13 +43,13 @@ void ServiceWorkerContextWrapper::Init(
               base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
   scoped_refptr<base::MessageLoopProxy> disk_cache_thread =
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE);
-  scoped_refptr<base::SequencedTaskRunner> stores_task_runner =
+  scoped_refptr<base::SequencedTaskRunner> cache_task_runner =
       BrowserThread::GetBlockingPool()
           ->GetSequencedTaskRunnerWithShutdownBehavior(
               BrowserThread::GetBlockingPool()->GetSequenceToken(),
               base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
   InitInternal(user_data_directory,
-               stores_task_runner,
+               cache_task_runner,
                database_task_runner,
                disk_cache_thread,
                quota_manager_proxy);
@@ -220,6 +224,18 @@ void ServiceWorkerContextWrapper::AddObserver(
 void ServiceWorkerContextWrapper::RemoveObserver(
     ServiceWorkerContextObserver* observer) {
   observer_list_->RemoveObserver(observer);
+}
+
+void ServiceWorkerContextWrapper::SetBlobParametersForCache(
+    net::URLRequestContextGetter* request_context,
+    ChromeBlobStorageContext* blob_storage_context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (context_core_ && request_context && blob_storage_context) {
+    context_core_->SetBlobParametersForCache(
+        request_context->GetURLRequestContext(),
+        blob_storage_context->context()->AsWeakPtr());
+  }
 }
 
 void ServiceWorkerContextWrapper::InitInternal(

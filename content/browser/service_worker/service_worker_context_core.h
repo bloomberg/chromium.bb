@@ -29,6 +29,10 @@ class MessageLoopProxy;
 class SequencedTaskRunner;
 }
 
+namespace net {
+class URLRequestContext;
+}
+
 namespace quota {
 class QuotaManagerProxy;
 }
@@ -172,6 +176,10 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // Deletes all files on disk and restarts the system. This leaves the system
   // in a disabled state until it's done.
   void DeleteAndStartOver(const StatusCallback& callback);
+
+  void SetBlobParametersForCache(
+      net::URLRequestContext* request_context,
+      base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context);
 
   base::WeakPtr<ServiceWorkerContextCore> AsWeakPtr() {
     return weak_factory_.GetWeakPtr();

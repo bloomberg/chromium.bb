@@ -16,7 +16,15 @@
 
 namespace base {
 class SequencedTaskRunner;
-}  // namespace base
+}
+
+namespace net {
+class URLRequestContext;
+}
+
+namespace webkit_blob {
+class BlobStorageContext;
+}
 
 namespace content {
 
@@ -58,10 +66,11 @@ class CONTENT_EXPORT ServiceWorkerCacheStorageManager {
       const ServiceWorkerCacheStorage::StringsAndErrorCallback& callback);
   // TODO(jkarlin): Add match() function.
 
-  base::FilePath root_path() const { return root_path_; }
-  scoped_refptr<base::SequencedTaskRunner> cache_task_runner() const {
-    return cache_task_runner_;
-  }
+  // This must be called before creating any of the public *Cache functions
+  // above.
+  void SetBlobParametersForCache(
+      net::URLRequestContext* request_context,
+      base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context);
 
  private:
   typedef std::map<GURL, ServiceWorkerCacheStorage*>
@@ -76,12 +85,26 @@ class CONTENT_EXPORT ServiceWorkerCacheStorageManager {
   ServiceWorkerCacheStorage* FindOrCreateServiceWorkerCacheManager(
       const GURL& origin);
 
+  net::URLRequestContext* url_request_context() const {
+    return request_context_;
+  }
+  base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context() const {
+    return blob_context_;
+  }
+  base::FilePath root_path() const { return root_path_; }
+  scoped_refptr<base::SequencedTaskRunner> cache_task_runner() const {
+    return cache_task_runner_;
+  }
+
   base::FilePath root_path_;
   scoped_refptr<base::SequencedTaskRunner> cache_task_runner_;
 
   // The map owns the CacheStorages and the CacheStorages are only accessed on
   // |cache_task_runner_|.
   ServiceWorkerCacheStorageMap cache_storage_map_;
+
+  net::URLRequestContext* request_context_;
+  base::WeakPtr<webkit_blob::BlobStorageContext> blob_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerCacheStorageManager);
 };

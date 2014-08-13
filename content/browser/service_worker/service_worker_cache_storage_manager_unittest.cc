@@ -8,9 +8,13 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
+#include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/browser/blob/blob_storage_context.h"
 
 namespace content {
 
@@ -26,6 +30,13 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
         origin2_("http://example2.com") {}
 
   virtual void SetUp() OVERRIDE {
+    ChromeBlobStorageContext* blob_storage_context(
+        ChromeBlobStorageContext::GetFor(&browser_context_));
+    // Wait for ChromeBlobStorageContext to finish initializing.
+    base::RunLoop().RunUntilIdle();
+
+    net::URLRequestContext* url_request_context =
+        browser_context_.GetRequestContext()->GetURLRequestContext();
     if (MemoryOnly()) {
       cache_manager_ = ServiceWorkerCacheStorageManager::Create(
           base::FilePath(), base::MessageLoopProxy::current());
@@ -34,6 +45,9 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
       cache_manager_ = ServiceWorkerCacheStorageManager::Create(
           temp_dir_.path(), base::MessageLoopProxy::current());
     }
+
+    cache_manager_->SetBlobParametersForCache(
+        url_request_context, blob_storage_context->context()->AsWeakPtr());
   }
 
   virtual bool MemoryOnly() { return false; }
@@ -160,6 +174,7 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
   }
 
  protected:
+  TestBrowserContext browser_context_;
   TestBrowserThreadBundle browser_thread_bundle_;
 
   base::ScopedTempDir temp_dir_;

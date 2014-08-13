@@ -330,6 +330,15 @@ void ServiceWorkerContextCore::DeleteAndStartOver(
   storage_->DeleteAndStartOver(callback);
 }
 
+void ServiceWorkerContextCore::SetBlobParametersForCache(
+    net::URLRequestContext* request_context,
+    base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  cache_manager_->SetBlobParametersForCache(request_context,
+                                            blob_storage_context);
+}
+
 void ServiceWorkerContextCore::OnWorkerStarted(ServiceWorkerVersion* version) {
   if (!observer_list_)
     return;

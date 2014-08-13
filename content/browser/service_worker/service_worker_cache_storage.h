@@ -17,6 +17,14 @@ namespace base {
 class SequencedTaskRunner;
 }
 
+namespace net {
+class URLRequestContext;
+}
+
+namespace webkit_blob {
+class BlobStorageContext;
+}
+
 namespace content {
 class ServiceWorkerCache;
 
@@ -41,9 +49,12 @@ class ServiceWorkerCacheStorage {
   typedef base::Callback<void(const std::vector<std::string>&,
                               CacheStorageError)> StringsAndErrorCallback;
 
-  ServiceWorkerCacheStorage(const base::FilePath& origin_path,
-                            bool memory_only,
-                            base::SequencedTaskRunner* cache_task_runner);
+  ServiceWorkerCacheStorage(
+      const base::FilePath& origin_path,
+      bool memory_only,
+      base::SequencedTaskRunner* cache_task_runner,
+      net::URLRequestContext* request_context,
+      base::WeakPtr<webkit_blob::BlobStorageContext> blob_context);
 
   virtual ~ServiceWorkerCacheStorage();
 
