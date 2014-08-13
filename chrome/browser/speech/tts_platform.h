@@ -23,7 +23,8 @@ class TtsPlatformImpl {
   // false if it's already loaded or if there's no extension to load.
   // Will call TtsController::RetrySpeakingQueuedUtterances when
   // the extension finishes loading.
-  virtual bool LoadBuiltInTtsExtension(Profile* profile);
+  virtual bool LoadBuiltInTtsExtension(
+      content::BrowserContext* browser_context);
 
   // Speak the given utterance with the given parameters if possible,
   // and return true on success. Utterance will always be nonempty.

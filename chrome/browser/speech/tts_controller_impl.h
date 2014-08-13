@@ -16,6 +16,10 @@
 #include "chrome/browser/speech/tts_controller.h"
 #include "url/gurl.h"
 
+namespace content {
+class BrowserContext;
+}
+
 // Singleton class that manages text-to-speech for the TTS and TTS engine
 // extension APIs, maintaining a queue of pending utterances and keeping
 // track of all state.
@@ -34,7 +38,7 @@ class TtsControllerImpl : public TtsController {
                   TtsEventType event_type,
                   int char_index,
                   const std::string& error_message) OVERRIDE;
-  virtual void GetVoices(Profile* profile,
+  virtual void GetVoices(content::BrowserContext* browser_context,
                          std::vector<VoiceData>* out_voices) OVERRIDE;
   virtual void VoicesChanged() OVERRIDE;
   virtual void AddVoicesChangedDelegate(

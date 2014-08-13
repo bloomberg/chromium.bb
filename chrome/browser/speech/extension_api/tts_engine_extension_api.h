@@ -17,6 +17,10 @@ namespace base {
 class ListValue;
 }
 
+namespace content {
+class BrowserContext;
+}
+
 namespace extensions {
 class Extension;
 }
@@ -34,15 +38,15 @@ class TtsExtensionEngine : public TtsEngineDelegate {
   static TtsExtensionEngine* GetInstance();
 
   // Overridden from TtsEngineDelegate:
-  virtual void GetVoices(Profile* profile,
-                 std::vector<VoiceData>* out_voices) OVERRIDE;
+  virtual void GetVoices(content::BrowserContext* browser_context,
+                         std::vector<VoiceData>* out_voices) OVERRIDE;
   virtual void Speak(Utterance* utterance, const VoiceData& voice) OVERRIDE;
   virtual void Stop(Utterance* utterance) OVERRIDE;
   virtual void Pause(Utterance* utterance) OVERRIDE;
   virtual void Resume(Utterance* utterance) OVERRIDE;
-  virtual bool LoadBuiltInTtsExtension(Profile* profile) OVERRIDE;
+  virtual bool LoadBuiltInTtsExtension(
+      content::BrowserContext* browser_context) OVERRIDE;
 };
-
 // Hidden/internal extension function used to allow TTS engine extensions
 // to send events back to the client that's calling tts.speak().
 class ExtensionTtsEngineSendTtsEventFunction : public SyncExtensionFunction {

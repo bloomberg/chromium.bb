@@ -65,8 +65,8 @@ VoiceData::~VoiceData() {}
 // static
 int Utterance::next_utterance_id_ = 0;
 
-Utterance::Utterance(Profile* profile)
-    : profile_(profile),
+Utterance::Utterance(content::BrowserContext* browser_context)
+    : browser_context_(browser_context),
       id_(next_utterance_id_++),
       src_id_(-1),
       gender_(TTS_GENDER_NONE),
@@ -153,11 +153,11 @@ void TtsControllerImpl::SpeakNow(Utterance* utterance) {
   // Ensure we have all built-in voices loaded. This is a no-op if already
   // loaded.
   bool loaded_built_in =
-      GetPlatformImpl()->LoadBuiltInTtsExtension(utterance->profile());
+      GetPlatformImpl()->LoadBuiltInTtsExtension(utterance->browser_context());
 
   // Get all available voices and try to find a matching voice.
   std::vector<VoiceData> voices;
-  GetVoices(utterance->profile(), &voices);
+  GetVoices(utterance->browser_context(), &voices);
   int index = GetMatchingVoice(utterance, voices);
 
   VoiceData voice;
@@ -305,18 +305,18 @@ void TtsControllerImpl::OnTtsEvent(int utterance_id,
   }
 }
 
-void TtsControllerImpl::GetVoices(Profile* profile,
+void TtsControllerImpl::GetVoices(content::BrowserContext* browser_context,
                               std::vector<VoiceData>* out_voices) {
 #if !defined(OS_ANDROID)
-  if (profile && tts_engine_delegate_)
-    tts_engine_delegate_->GetVoices(profile, out_voices);
+  if (browser_context && tts_engine_delegate_)
+    tts_engine_delegate_->GetVoices(browser_context, out_voices);
 #endif
 
   TtsPlatformImpl* platform_impl = GetPlatformImpl();
   if (platform_impl) {
     // Ensure we have all built-in voices loaded. This is a no-op if already
     // loaded.
-    platform_impl->LoadBuiltInTtsExtension(profile);
+    platform_impl->LoadBuiltInTtsExtension(browser_context);
     if (platform_impl->PlatformImplAvailable())
       platform_impl->GetVoices(out_voices);
   }

@@ -17,10 +17,13 @@
 
 class Utterance;
 class TtsPlatformImpl;
-class Profile;
 
 namespace base {
 class Value;
+}
+
+namespace content {
+class BrowserContext;
 }
 
 // Events sent back from the TTS engine indicating the progress.
@@ -83,7 +86,7 @@ class TtsEngineDelegate {
   virtual ~TtsEngineDelegate() {}
 
   // Return a list of all available voices registered.
-  virtual void GetVoices(Profile* profile,
+  virtual void GetVoices(content::BrowserContext* browser_context,
                          std::vector<VoiceData>* out_voices) = 0;
 
   // Speak the given utterance by sending an event to the given TTS engine.
@@ -100,7 +103,8 @@ class TtsEngineDelegate {
   virtual void Resume(Utterance* utterance) = 0;
 
   // Load the built-in component extension for ChromeOS.
-  virtual bool LoadBuiltInTtsExtension(Profile* profile) = 0;
+  virtual bool LoadBuiltInTtsExtension(
+      content::BrowserContext* browser_context) = 0;
 };
 
 // Class that wants to receive events on utterances.
@@ -127,7 +131,7 @@ class Utterance {
   // Construct an utterance given a profile and a completion task to call
   // when the utterance is done speaking. Before speaking this utterance,
   // its other parameters like text, rate, pitch, etc. should all be set.
-  explicit Utterance(Profile* profile);
+  explicit Utterance(content::BrowserContext* browser_context);
   ~Utterance();
 
   // Sends an event to the delegate. If the event type is TTS_EVENT_END
@@ -211,13 +215,13 @@ class Utterance {
   }
 
   // Getters and setters for internal state.
-  Profile* profile() const { return profile_; }
+  content::BrowserContext* browser_context() const { return browser_context_; }
   int id() const { return id_; }
   bool finished() const { return finished_; }
 
  private:
-  // The profile that initiated this utterance.
-  Profile* profile_;
+  // The BrowserContext that initiated this utterance.
+  content::BrowserContext* browser_context_;
 
   // The extension ID of the extension providing TTS for this utterance, or
   // empty if native TTS is being used.
@@ -301,13 +305,13 @@ class TtsController {
   // trigger finishing the current utterance and starting the next one, if
   // any.
   virtual void OnTtsEvent(int utterance_id,
-                  TtsEventType event_type,
-                  int char_index,
-                  const std::string& error_message) = 0;
+                          TtsEventType event_type,
+                          int char_index,
+                          const std::string& error_message) = 0;
 
   // Return a list of all available voices, including the native voice,
   // if supported, and all voices registered by extensions.
-  virtual void GetVoices(Profile* profile,
+  virtual void GetVoices(content::BrowserContext* browser_context,
                          std::vector<VoiceData>* out_voices) = 0;
 
   // Called by the extension system or platform implementation when the

@@ -9,8 +9,6 @@
 // an implementation of LoadBuiltInTtsExtension and dummy implementations of
 // everything else.
 
-class Profile;
-
 class TtsPlatformImplChromeOs : public TtsPlatformImpl {
  public:
   // TtsPlatformImpl overrides:
@@ -18,11 +16,12 @@ class TtsPlatformImplChromeOs : public TtsPlatformImpl {
     return false;
   }
 
-  virtual bool LoadBuiltInTtsExtension(Profile* profile) OVERRIDE {
+  virtual bool LoadBuiltInTtsExtension(
+      content::BrowserContext* browser_context) OVERRIDE {
     TtsEngineDelegate* tts_engine_delegate =
         TtsController::GetInstance()->GetTtsEngineDelegate();
     if (tts_engine_delegate)
-      return tts_engine_delegate->LoadBuiltInTtsExtension(profile);
+      return tts_engine_delegate->LoadBuiltInTtsExtension(browser_context);
     return false;
   }
 

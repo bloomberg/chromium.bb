@@ -6,7 +6,8 @@
 
 #include <string>
 
-bool TtsPlatformImpl::LoadBuiltInTtsExtension(Profile* profile) {
+bool TtsPlatformImpl::LoadBuiltInTtsExtension(
+    content::BrowserContext* browser_context) {
   return false;
 }
 
