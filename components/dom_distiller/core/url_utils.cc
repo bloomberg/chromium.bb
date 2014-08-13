@@ -8,7 +8,9 @@
 
 #include "base/guid.h"
 #include "components/dom_distiller/core/url_constants.h"
+#include "grit/component_resources.h"
 #include "net/base/url_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
 namespace dom_distiller {
@@ -49,6 +51,11 @@ bool IsUrlDistillable(const GURL& url) {
 
 bool IsDistilledPage(const GURL& url) {
   return url.is_valid() && url.scheme() == kDomDistillerScheme;
+}
+
+std::string GetIsDistillableJs() {
+  return ResourceBundle::GetSharedInstance()
+      .GetRawDataResource(IDR_IS_DISTILLABLE_JS).as_string();
 }
 
 }  // namespace url_utils
