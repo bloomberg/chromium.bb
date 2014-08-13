@@ -6,10 +6,12 @@
 #define ATHENA_WM_WINDOW_OVERVIEW_MODE_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/window.h"
+
+namespace aura {
+class Window;
+}
 
 namespace athena {
-class WindowListProvider;
 
 class WindowOverviewModeDelegate {
  public:
@@ -24,7 +26,6 @@ class WindowOverviewMode {
 
   static scoped_ptr<WindowOverviewMode> Create(
       aura::Window* container,
-      const WindowListProvider* window_list_provider,
       WindowOverviewModeDelegate* delegate);
 };
 

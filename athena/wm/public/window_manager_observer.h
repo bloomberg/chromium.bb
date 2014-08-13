@@ -13,10 +13,10 @@ class ATHENA_EXPORT WindowManagerObserver {
  public:
   virtual ~WindowManagerObserver() {}
 
-  // Called immediately before the overview mode is displayed.
+  // Called when the overview mode is displayed.
   virtual void OnOverviewModeEnter() = 0;
 
-  // Called immediately after going out of the overview mode.
+  // Called when going out of overview mode.
   virtual void OnOverviewModeExit() = 0;
 };
 
