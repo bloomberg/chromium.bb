@@ -4654,6 +4654,8 @@ public:
             // shutting it down.
             stackPtrValue = reinterpret_cast<uintptr_t>(cto.get());
         }
+        RELEASE_ASSERT(stackPtrValue);
+
         // At this point it is "programatically" okay to shut down the worker thread
         // since the cto object should be dead. However out stackPtrValue will cause a
         // trace of the object when doing a conservative GC.
@@ -4676,13 +4678,6 @@ public:
         Heap::collectGarbage(ThreadState::HeapPointersOnStack);
         EXPECT_EQ(0, CrossThreadObject::s_destructorCalls);
         EXPECT_EQ(1, IntWrapper::s_destructorCalls);
-
-        // This release assert is here to ensure the stackValuePtr is not
-        // optimized away before doing the above conservative GC. If the
-        // EXPECT_EQ(0, CrossThreadObject::s_destructorCalls) call above
-        // starts failing it means we have to find a better way to ensure
-        // the stackPtrValue is not optimized away.
-        RELEASE_ASSERT(stackPtrValue);
 
         // Do a GC with no pointers on the stack to see the cto being collected.
         Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
