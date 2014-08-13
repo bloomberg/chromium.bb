@@ -1070,6 +1070,10 @@ brillo_public_full.add_config('gizmo-full',
   boards=['gizmo'],
 )
 
+brillo_public_full.add_config('mipsel-o32-generic-full',
+  boards=['mipsel-o32-generic'],
+)
+
 # This adds Chrome branding.
 official_chrome = _config(
   useflags=[constants.USE_CHROME_INTERNAL],
