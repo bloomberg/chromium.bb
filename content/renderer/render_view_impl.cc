@@ -992,7 +992,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setImagesEnabled(prefs.images_enabled);
   settings->setPluginsEnabled(prefs.plugins_enabled);
   settings->setDOMPasteAllowed(prefs.dom_paste_enabled);
-  settings->setNeedsSiteSpecificQuirks(prefs.site_specific_quirks_enabled);
   settings->setShrinksStandaloneImagesToFit(
       prefs.shrinks_standalone_images_to_fit);
   settings->setUsesEncodingDetector(prefs.uses_universal_detector);

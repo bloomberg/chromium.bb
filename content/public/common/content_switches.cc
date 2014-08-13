@@ -250,9 +250,6 @@ const char kDisableSharedWorkers[]          = "disable-shared-workers";
 const char kDisableSingleThreadProxyScheduler[] =
     "disable-single-thread-proxy-scheduler";
 
-// Disables site-specific tailoring to compatibility issues in WebKit.
-const char kDisableSiteSpecificQuirks[]     = "disable-site-specific-quirks";
-
 // Disable smooth scrolling for testing.
 const char kDisableSmoothScrolling[]        = "disable-smooth-scrolling";
 

@@ -73,7 +73,6 @@ struct CONTENT_EXPORT WebPreferences {
   bool plugins_enabled;
   bool dom_paste_enabled;
   WebInspectorPreferences inspector_settings;
-  bool site_specific_quirks_enabled;
   bool shrinks_standalone_images_to_fit;
   bool uses_universal_detector;
   bool text_areas_are_resizable;

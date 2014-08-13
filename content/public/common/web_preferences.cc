@@ -53,7 +53,6 @@ WebPreferences::WebPreferences()
       images_enabled(true),
       plugins_enabled(true),
       dom_paste_enabled(false),  // enables execCommand("paste")
-      site_specific_quirks_enabled(false),
       shrinks_standalone_images_to_fit(true),
       uses_universal_detector(false),  // Disabled: page cycler regression
       text_areas_are_resizable(true),
