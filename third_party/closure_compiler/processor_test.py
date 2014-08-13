@@ -3,11 +3,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Test resources processing, i.e. <if> and <include> tag handling."""
+
 import unittest
 from processor import FileCache, Processor, LineNumber
 
 
 class ProcessorTest(unittest.TestCase):
+  """Test <include> tag processing logic."""
+
   def __init__(self, *args, **kwargs):
     unittest.TestCase.__init__(self, *args, **kwargs)
     self.maxDiff = None
@@ -58,6 +62,7 @@ debug(global);
     self.assertEqual(expected_line.line_number, actual_line.line_number)
 
   def testGetFileFromLine(self):
+    """Verify that inlined files retain their original line info."""
     self.assertLineNumber(1, LineNumber("/checked.js", 1))
     self.assertLineNumber(5, LineNumber("/checked.js", 5))
     self.assertLineNumber(6, LineNumber("/global.js", 1))
@@ -68,11 +73,14 @@ debug(global);
     self.assertLineNumber(11, LineNumber("/checked.js", 8))
 
   def testIncludedFiles(self):
+    """Verify that files are tracked correctly as they're inlined."""
     self.assertEquals(set(["/global.js", "/debug.js"]),
-                      self._processor.included_files())
+                      self._processor.included_files)
 
 
 class IfStrippingTest(unittest.TestCase):
+  """Test that the contents of XML <if> blocks are stripped."""
+
   def __init__(self, *args, **kwargs):
     unittest.TestCase.__init__(self, *args, **kwargs)
     self.maxDiff = None

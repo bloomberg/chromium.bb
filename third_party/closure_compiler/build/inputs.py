@@ -24,7 +24,7 @@ def GetInputs(args):
   files = set()
   for file in opts.sources + opts.depends + opts.externs:
     files.add(file)
-    files.update(processor.Processor(file).included_files())
+    files.update(processor.Processor(file).included_files)
 
   return files
 

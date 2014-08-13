@@ -3,17 +3,22 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Runs Closure compiler on a JavaScript file to check for errors."""
+
 import argparse
 import os
-import processor
 import re
 import subprocess
 import sys
 import tempfile
+import processor
 
 
 class Checker(object):
-  _common_closure_args = [
+  """Runs the Closure compiler on a given source file and returns the
+  success/errors."""
+
+  _COMMON_CLOSURE_ARGS = [
     "--accept_const_keyword",
     "--language_in=ECMASCRIPT5",
     "--summary_detail_level=3",
@@ -42,15 +47,15 @@ class Checker(object):
     "--jscomp_off=duplicate",
   ]
 
-  _found_java = False
-
-  _jar_command = [
+  _JAR_COMMAND = [
     "java",
     "-jar",
     "-Xms1024m",
     "-server",
     "-XX:+TieredCompilation"
   ]
+
+  _found_java = False
 
   def __init__(self, verbose=False):
     current_dir = os.path.join(os.path.dirname(__file__))
@@ -77,6 +82,14 @@ class Checker(object):
     self._clean_up()
 
   def _run_command(self, cmd):
+    """Runs a shell command.
+
+    Args:
+        cmd: A list of tokens to be joined into a shell command.
+
+    Return:
+        True if the exit code was 0, else False.
+    """
     cmd_str = " ".join(cmd)
     self._debug("Running command: " + cmd_str)
 
@@ -85,6 +98,7 @@ class Checker(object):
         cmd_str, stdout=devnull, stderr=subprocess.PIPE, shell=True)
 
   def _check_java_path(self):
+    """Checks that `java` is on the system path."""
     if not self._found_java:
       proc = self._run_command(["which", "java"])
       proc.communicate()
@@ -95,24 +109,42 @@ class Checker(object):
 
     return self._found_java
 
-  def _run_jar(self, jar, args=[]):
+  def _run_jar(self, jar, args=None):
+    args = args or []
     self._check_java_path()
-    return self._run_command(self._jar_command + [jar] + args)
+    return self._run_command(self._JAR_COMMAND + [jar] + args)
 
   def _fix_line_number(self, match):
+    """Changes a line number from /tmp/file:300 to /orig/file:100.
+
+    Args:
+        match: A re.MatchObject from matching against a line number regex.
+
+    Returns:
+        The fixed up /file and :line number.
+    """
     real_file = self._processor.get_file_from_line(match.group(1))
     return "%s:%d" % (os.path.abspath(real_file.file), real_file.line_number)
 
   def _fix_up_error(self, error):
+    """Filter out irrelevant errors or fix line numbers.
+    
+    Args:
+        error: A Closure compiler error (2 line string with error and source).
+    
+    Return:
+        The fixed up erorr string (blank if it should be ignored).
+    """
     if " first declared in " in error:
       # Ignore "Variable x first declared in /same/file".
       return ""
 
-    file = self._expanded_file
-    fixed = re.sub("%s:(\d+)" % file, self._fix_line_number, error)
-    return fixed.replace(file, os.path.abspath(self._file_arg))
+    expanded_file = self._expanded_file
+    fixed = re.sub("%s:(\d+)" % expanded_file, self._fix_line_number, error)
+    return fixed.replace(expanded_file, os.path.abspath(self._file_arg))
 
   def _format_errors(self, errors):
+    """Formats Closure compiler errors to easily spot compiler output."""
     errors = filter(None, errors)
     contents = ("\n" + "## ").join("\n\n".join(errors).splitlines())
     return "## " + contents if contents else ""
@@ -123,22 +155,38 @@ class Checker(object):
       tmp_file.write(contents)
     return tmp_file.name
 
-  def check(self, file, depends=[], externs=[]):
+  def check(self, source_file, depends=None, externs=None):
+    """Closure compile a file and check for errors.
+
+    Args:
+        source_file: A file to check.
+        depends: Other files that would be included with a <script> earlier in
+            the page.
+        externs: @extern files that inform the compiler about custom globals.
+
+    Returns:
+        (exitcode, output) The exit code of the Closure compiler (as a number)
+            and its output (as a string).
+    """
+    depends = depends or []
+    externs = externs or []
+
     if not self._check_java_path():
       return 1, ""
 
-    self._debug("FILE: " + file)
+    self._debug("FILE: " + source_file)
 
-    if file.endswith("_externs.js"):
-      self._debug("Skipping externs: " + file)
+    if source_file.endswith("_externs.js"):
+      self._debug("Skipping externs: " + source_file)
       return
 
-    self._file_arg = file
+    self._file_arg = source_file
 
     tmp_dir = tempfile.gettempdir()
     rel_path = lambda f: os.path.join(os.path.relpath(os.getcwd(), tmp_dir), f)
 
-    contents = ['<include src="%s">' % rel_path(f) for f in depends + [file]]
+    includes = [rel_path(f) for f in depends + [source_file]]
+    contents = ['<include src="%s">' % i for i in includes]
     meta_file = self._create_temp_file("\n".join(contents))
     self._debug("Meta file: " + meta_file)
 
@@ -147,7 +195,7 @@ class Checker(object):
     self._debug("Expanded file: " + self._expanded_file)
 
     args = ["--js=" + self._expanded_file] + ["--externs=" + e for e in externs]
-    args_file_content = " " + " ".join(self._common_closure_args + args)
+    args_file_content = " " + " ".join(self._COMMON_CLOSURE_ARGS + args)
     self._debug("Args: " + args_file_content.strip())
 
     args_file = self._create_temp_file(args_file_content)
@@ -162,7 +210,7 @@ class Checker(object):
 
     output = self._format_errors(map(self._fix_up_error, errors))
     if runner_cmd.returncode:
-      self._error("Error in: " + file + ("\n" + output if output else ""))
+      self._error("Error in: " + source_file + ("\n" + output if output else ""))
     elif output:
       self._debug("Output: " + output)
 
