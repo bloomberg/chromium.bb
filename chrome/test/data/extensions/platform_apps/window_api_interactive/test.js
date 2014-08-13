@@ -49,6 +49,58 @@ function testWindowNeverGetsFocus(win) {
   });
 }
 
+// Test that the window's content size is the same as our inner bounds.
+// This has to be an interactive test because contentWindow.innerWidth|Height is
+// sometimes 0 in the browser test due to an unidentified race condition.
+function testInnerBounds() {
+  var innerBounds = {
+    width: 300,
+    height: 301,
+    minWidth: 200,
+    minHeight: 201,
+    maxWidth: 400,
+    maxHeight: 401
+  };
+
+  function assertInnerBounds(win) {
+    chrome.test.assertEq(300, win.contentWindow.innerWidth);
+    chrome.test.assertEq(301, win.contentWindow.innerHeight);
+
+    chrome.test.assertEq(300, win.innerBounds.width);
+    chrome.test.assertEq(301, win.innerBounds.height);
+    chrome.test.assertEq(200, win.innerBounds.minWidth);
+    chrome.test.assertEq(201, win.innerBounds.minHeight);
+    chrome.test.assertEq(400, win.innerBounds.maxWidth);
+    chrome.test.assertEq(401, win.innerBounds.maxHeight);
+  }
+
+  chrome.test.runTests([
+    function createFrameChrome() {
+      chrome.app.window.create('test.html', {
+        innerBounds: innerBounds
+      }, callbackPass(function (win) {
+        assertInnerBounds(win);
+      }));
+    },
+    function createFrameNone() {
+      chrome.app.window.create('test.html', {
+        frame: 'none',
+        innerBounds: innerBounds
+      }, callbackPass(function (win) {
+        assertInnerBounds(win);
+      }));
+    },
+    function createFrameColor() {
+      chrome.app.window.create('test.html', {
+        frame: {color: '#ff0000'},
+        innerBounds: innerBounds
+      }, callbackPass(function (win) {
+        assertInnerBounds(win);
+      }));
+    }
+  ]);
+}
+
 function testCreate() {
   chrome.test.runTests([
     function createUnfocusedWindow() {

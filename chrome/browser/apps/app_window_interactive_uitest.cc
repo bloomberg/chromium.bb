@@ -11,6 +11,15 @@
 #include "base/mac/mac_util.h"
 #endif
 
+#if defined(OS_WIN)
+#include <windows.h>
+#include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
+#include "ui/views/win/hwnd_message_handler_delegate.h"
+#include "ui/views/win/hwnd_util.h"
+#endif
+
 using apps::NativeAppWindow;
 
 // Helper class that has to be created in the stack to check if the fullscreen
@@ -69,6 +78,9 @@ class AppWindowInteractiveTest : public extensions::PlatformAppBrowserTest {
       content::RunAllPendingInMessageLoop();
     }
   }
+
+  // This test is a method so that we can test with each frame type.
+  void TestOuterBoundsHelper(const std::string& frame_type);
 };
 
 IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, ESCLeavesFullscreenWindow) {
@@ -316,6 +328,85 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
   // that nothing happens, we might end up with random-success when the feature
   // is broken.
   EXPECT_TRUE(GetFirstAppWindow()->GetBaseWindow()->IsFullscreen());
+}
+
+IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, TestInnerBounds) {
+  ASSERT_TRUE(RunAppWindowInteractiveTest("testInnerBounds")) << message_;
+}
+
+void AppWindowInteractiveTest::TestOuterBoundsHelper(
+    const std::string& frame_type) {
+  ExtensionTestMessageListener launched_listener("Launched", true);
+  const extensions::Extension* app =
+      LoadAndLaunchPlatformApp("outer_bounds", &launched_listener);
+
+  launched_listener.Reply(frame_type);
+  launched_listener.Reset();
+  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+
+  apps::AppWindow* window = GetFirstAppWindowForApp(app->id());
+  gfx::Rect window_bounds;
+  gfx::Size min_size, max_size;
+
+#if defined(OS_WIN)
+  // Get the bounds from the HWND.
+  HWND hwnd = views::HWNDForNativeWindow(window->GetNativeWindow());
+  RECT rect;
+  ::GetWindowRect(hwnd, &rect);
+  window_bounds = gfx::Rect(
+      rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
+
+  // HWNDMessageHandler calls this when responding to WM_GETMINMAXSIZE, so it's
+  // the closest to what the window will see.
+  views::HWNDMessageHandlerDelegate* host =
+      static_cast<views::HWNDMessageHandlerDelegate*>(
+          static_cast<views::DesktopWindowTreeHostWin*>(
+              aura::WindowTreeHost::GetForAcceleratedWidget(hwnd)));
+  host->GetMinMaxSize(&min_size, &max_size);
+  // Note that this does not include the the client area insets so we need to
+  // add them.
+  gfx::Insets insets;
+  host->GetClientAreaInsets(&insets);
+  min_size = gfx::Size(min_size.width() + insets.left() + insets.right(),
+                       min_size.height() + insets.top() + insets.bottom());
+  max_size = gfx::Size(
+      max_size.width() ? max_size.width() + insets.left() + insets.right() : 0,
+      max_size.height() ? max_size.height() + insets.top() + insets.bottom()
+                        : 0);
+#endif  // defined(OS_WIN)
+
+  // These match the values in the outer_bounds/test.js
+  EXPECT_EQ(gfx::Rect(10, 11, 300, 301), window_bounds);
+  EXPECT_EQ(window->GetBaseWindow()->GetBounds(), window_bounds);
+  EXPECT_EQ(200, min_size.width());
+  EXPECT_EQ(201, min_size.height());
+  EXPECT_EQ(400, max_size.width());
+  EXPECT_EQ(401, max_size.height());
+}
+
+// TODO(jackhou): Make this test work for other OSes.
+#if !defined(OS_WIN)
+#define MAYBE_TestOuterBoundsFrameChrome DISABLED_TestOuterBoundsFrameChrome
+#define MAYBE_TestOuterBoundsFrameNone DISABLED_TestOuterBoundsFrameNone
+#define MAYBE_TestOuterBoundsFrameColor DISABLED_TestOuterBoundsFrameColor
+#else
+#define MAYBE_TestOuterBoundsFrameChrome TestOuterBoundsFrameChrome
+#define MAYBE_TestOuterBoundsFrameNone TestOuterBoundsFrameNone
+#define MAYBE_TestOuterBoundsFrameColor TestOuterBoundsFrameColor
+#endif
+
+// Test that the outer bounds match that of the native window.
+IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
+                       MAYBE_TestOuterBoundsFrameChrome) {
+  TestOuterBoundsHelper("chrome");
+}
+IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
+                       MAYBE_TestOuterBoundsFrameNone) {
+  TestOuterBoundsHelper("none");
+}
+IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
+                       MAYBE_TestOuterBoundsFrameColor) {
+  TestOuterBoundsHelper("color");
 }
 
 // This test does not work on Linux Aura because ShowInactive() is not
