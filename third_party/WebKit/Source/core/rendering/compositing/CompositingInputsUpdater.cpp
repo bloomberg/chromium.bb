@@ -165,14 +165,15 @@ void CompositingInputsUpdater::updateRecursive(RenderLayer* layer, UpdateType up
     RenderLayer::DescendantDependentCompositingInputs descendantProperties;
     for (RenderLayer* child = layer->firstChild(); child; child = child->nextSibling()) {
         updateRecursive(child, updateType, info);
+
         descendantProperties.hasDescendantWithClipPath |= child->hasDescendantWithClipPath() || child->renderer()->hasClipPath();
+        descendantProperties.hasDescendantWithBlendMode |= child->hasDescendantWithBlendMode() || child->renderer()->hasBlendMode();
     }
 
-    m_geometryMap.popMappingsToAncestor(layer->parent());
-
     layer->updateDescendantDependentCompositingInputs(descendantProperties);
-
     layer->didUpdateCompositingInputs();
+
+    m_geometryMap.popMappingsToAncestor(layer->parent());
 }
 
 #if ENABLE(ASSERT)

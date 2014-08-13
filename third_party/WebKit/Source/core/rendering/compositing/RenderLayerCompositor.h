@@ -188,6 +188,7 @@ private:
     // Whether the given RL needs to paint into its own separate backing (and hence would need its own CompositedLayerMapping).
     bool needsOwnBacking(const RenderLayer*) const;
 
+    void updateWithoutAcceleratedCompositing(CompositingUpdateType);
     void updateIfNeeded();
 
     void computeCompositingRequirements(RenderLayer* ancestorLayer, RenderLayer*, OverlapMap&, struct CompositingRecursionData&, bool& descendantHas3DTransform, Vector<RenderLayer*>& unclippedDescendants, IntRect& absoluteDecendantBoundingBox);

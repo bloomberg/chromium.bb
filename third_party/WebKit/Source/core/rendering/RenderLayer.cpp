@@ -139,7 +139,6 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer, LayerType type)
     , m_groupedMapping(0)
     , m_repainter(*renderer)
     , m_clipper(*renderer)
-    , m_blendInfo(*renderer)
 {
     updateStackingNode();
 
@@ -670,23 +669,6 @@ void RenderLayer::updateDescendantDependentFlags()
         m_visibleDescendantStatusDirty = false;
     }
 
-    if (m_blendInfo.childLayerHasBlendModeStatusDirty()) {
-        m_blendInfo.setChildLayerHasBlendMode(false);
-        for (RenderLayer* child = firstChild(); child; child = child->nextSibling()) {
-            if (!child->stackingNode()->isStackingContext())
-                child->updateDescendantDependentFlags();
-
-            bool childLayerHadBlendMode = child->blendInfo().childLayerHasBlendModeWhileDirty();
-            bool childLayerHasBlendMode = childLayerHadBlendMode || child->blendInfo().hasBlendMode();
-
-            m_blendInfo.setChildLayerHasBlendMode(childLayerHasBlendMode);
-
-            if (childLayerHasBlendMode)
-                break;
-        }
-        m_blendInfo.setChildLayerHasBlendModeStatusDirty(false);
-    }
-
     if (m_visibleContentStatusDirty) {
         bool previouslyHasVisibleContent = m_hasVisibleContent;
         if (renderer()->style()->visibility() == VISIBLE)
@@ -1192,7 +1174,7 @@ LayoutRect RenderLayer::paintingExtent(const RenderLayer* rootLayer, const Layou
 
 void RenderLayer::beginTransparencyLayers(GraphicsContext* context, const RenderLayer* rootLayer, const LayoutRect& paintDirtyRect, const LayoutSize& subPixelAccumulation, PaintBehavior paintBehavior)
 {
-    bool createTransparencyLayerForBlendMode = m_stackingNode->isStackingContext() && m_blendInfo.childLayerHasBlendMode();
+    bool createTransparencyLayerForBlendMode = m_stackingNode->isStackingContext() && hasDescendantWithBlendMode();
     if ((paintsWithTransparency(paintBehavior) || paintsWithBlendMode() || createTransparencyLayerForBlendMode) && m_usedTransparency)
         return;
 
@@ -1207,7 +1189,7 @@ void RenderLayer::beginTransparencyLayers(GraphicsContext* context, const Render
         context->clip(clipRect);
 
         if (paintsWithBlendMode())
-            context->setCompositeOperation(context->compositeOperation(), m_blendInfo.blendMode());
+            context->setCompositeOperation(context->compositeOperation(), m_renderer->style()->blendMode());
 
         context->beginTransparencyLayer(renderer()->opacity());
 
@@ -1265,9 +1247,6 @@ void RenderLayer::addChild(RenderLayer* child, RenderLayer* beforeChild)
     dirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
 
     child->updateDescendantDependentFlags();
-
-    if (child->blendInfo().hasBlendMode() || child->blendInfo().childLayerHasBlendMode())
-        m_blendInfo.setAncestorChainBlendedDescendant();
 }
 
 RenderLayer* RenderLayer::removeChild(RenderLayer* oldChild)
@@ -1305,9 +1284,6 @@ RenderLayer* RenderLayer::removeChild(RenderLayer* oldChild)
 
     if (oldChild->m_hasVisibleContent || oldChild->m_hasVisibleDescendant)
         dirtyAncestorChainVisibleDescendantStatus();
-
-    if (oldChild->m_blendInfo.hasBlendMode() || oldChild->blendInfo().childLayerHasBlendMode())
-        m_blendInfo.dirtyAncestorChainBlendedDescendantStatus();
 
     return oldChild;
 }
@@ -1802,7 +1778,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
 
     // Blending operations must be performed only with the nearest ancestor stacking context.
     // Note that there is no need to create a transparency layer if we're painting the root.
-    bool createTransparencyLayerForBlendMode = !renderer()->isDocumentElement() && m_stackingNode->isStackingContext() && m_blendInfo.childLayerHasBlendMode();
+    bool createTransparencyLayerForBlendMode = !renderer()->isDocumentElement() && m_stackingNode->isStackingContext() && hasDescendantWithBlendMode();
 
     if (createTransparencyLayerForBlendMode)
         beginTransparencyLayers(context, paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior);
@@ -3261,9 +3237,6 @@ CompositedLayerMapping* RenderLayer::ensureCompositedLayerMapping()
         m_compositedLayerMapping->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
 
         updateOrRemoveFilterEffectRenderer();
-
-        if (RuntimeEnabledFeatures::cssCompositingEnabled())
-            compositedLayerMapping()->setBlendMode(m_blendInfo.blendMode());
     }
     return m_compositedLayerMapping.get();
 }
@@ -3325,7 +3298,7 @@ bool RenderLayer::paintsWithTransform(PaintBehavior paintBehavior) const
 
 bool RenderLayer::paintsWithBlendMode() const
 {
-    return m_blendInfo.hasBlendMode() && compositingState() != PaintsIntoOwnBacking;
+    return m_renderer->hasBlendMode() && compositingState() != PaintsIntoOwnBacking;
 }
 
 bool RenderLayer::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) const
@@ -3545,9 +3518,6 @@ void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle
         ASSERT(!oldStyle || diff.needsFullLayout());
         updateReflectionInfo(oldStyle);
     }
-
-    if (RuntimeEnabledFeatures::cssCompositingEnabled())
-        m_blendInfo.updateBlendMode();
 
     updateDescendantDependentFlags();
 

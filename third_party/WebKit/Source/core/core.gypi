@@ -1578,7 +1578,6 @@
             'rendering/RenderInline.cpp',
             'rendering/RenderInline.h',
             'rendering/RenderLayer.cpp',
-            'rendering/RenderLayerBlendInfo.cpp',
             'rendering/RenderLayerClipper.cpp',
             'rendering/RenderLayerFilterInfo.cpp',
             'rendering/RenderLayerFilterInfo.h',

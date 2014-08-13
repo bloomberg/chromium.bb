@@ -48,7 +48,6 @@
 #include "core/rendering/LayerFragment.h"
 #include "core/rendering/LayerPaintingInfo.h"
 #include "core/rendering/RenderBox.h"
-#include "core/rendering/RenderLayerBlendInfo.h"
 #include "core/rendering/RenderLayerClipper.h"
 #include "core/rendering/RenderLayerFilterInfo.h"
 #include "core/rendering/RenderLayerReflectionInfo.h"
@@ -57,6 +56,7 @@
 #include "core/rendering/RenderLayerStackingNode.h"
 #include "core/rendering/RenderLayerStackingNodeIterator.h"
 #include "platform/graphics/CompositingReasons.h"
+#include "public/platform/WebBlendMode.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
@@ -398,8 +398,6 @@ public:
     // paintLayer() assumes that the caller will clip to the bounds of the painting dirty if necessary.
     void paintLayer(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
 
-    RenderLayerBlendInfo& blendInfo() { return m_blendInfo; }
-
     bool scrollsOverflow() const;
 
     CompositingReasons potentialCompositingReasonsFromStyle() const { return m_potentialCompositingReasonsFromStyle; }
@@ -460,8 +458,13 @@ public:
 
     class DescendantDependentCompositingInputs {
     public:
-        DescendantDependentCompositingInputs() : hasDescendantWithClipPath(false) { }
+        DescendantDependentCompositingInputs()
+            : hasDescendantWithClipPath(false)
+            , hasDescendantWithBlendMode(false)
+        { }
+
         unsigned hasDescendantWithClipPath : 1;
+        unsigned hasDescendantWithBlendMode : 1;
     };
 
     void setNeedsCompositingInputsUpdate();
@@ -492,6 +495,7 @@ public:
     bool isUnclippedDescendant() const { return ancestorDependentCompositingInputs().isUnclippedDescendant; }
     bool hasAncestorWithClipPath() const { return ancestorDependentCompositingInputs().hasAncestorWithClipPath; }
     bool hasDescendantWithClipPath() const { return descendantDependentCompositingInputs().hasDescendantWithClipPath; }
+    bool hasDescendantWithBlendMode() const { return descendantDependentCompositingInputs().hasDescendantWithBlendMode; }
 
     bool lostGroupedMapping() const { ASSERT(isAllowedToQueryCompositingState()); return m_lostGroupedMapping; }
     void setLostGroupedMapping(bool b) { m_lostGroupedMapping = b; }
@@ -734,7 +738,6 @@ private:
     RenderLayerClipper m_clipper; // FIXME: Lazily allocate?
     OwnPtr<RenderLayerStackingNode> m_stackingNode;
     OwnPtrWillBePersistent<RenderLayerReflectionInfo> m_reflectionInfo;
-    RenderLayerBlendInfo m_blendInfo;
 
     LayoutSize m_subpixelAccumulation; // The accumulated subpixel offset of a composited layer's composited bounds compared to absolute coordinates.
 };

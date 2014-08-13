@@ -550,8 +550,8 @@ static void write(TextStream& ts, RenderLayer& l,
     else if (paintPhase == LayerPaintPhaseForeground)
         ts << " layerType: foreground only";
 
-    if (l.blendInfo().hasBlendMode())
-        ts << " blendMode: " << compositeOperatorName(CompositeSourceOver, l.blendInfo().blendMode());
+    if (l.renderer()->hasBlendMode())
+        ts << " blendMode: " << compositeOperatorName(CompositeSourceOver, l.renderer()->style()->blendMode());
 
     if (behavior & RenderAsTextShowCompositedLayers) {
         if (l.hasCompositedLayerMapping()) {

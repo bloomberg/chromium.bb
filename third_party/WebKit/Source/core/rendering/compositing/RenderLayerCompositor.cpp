@@ -284,12 +284,29 @@ void RenderLayerCompositor::applyOverlayFullscreenVideoAdjustment()
     m_inOverlayFullscreenVideo = true;
 }
 
+void RenderLayerCompositor::updateWithoutAcceleratedCompositing(CompositingUpdateType updateType)
+{
+    ASSERT(!hasAcceleratedCompositing());
+
+    if (updateType >= CompositingUpdateAfterCompositingInputChange)
+        CompositingInputsUpdater(rootRenderLayer()).update();
+
+#if ENABLE(ASSERT)
+    CompositingInputsUpdater::assertNeedsCompositingInputsUpdateBitsCleared(rootRenderLayer());
+#endif
+}
+
 void RenderLayerCompositor::updateIfNeeded()
 {
     CompositingUpdateType updateType = m_pendingUpdateType;
     m_pendingUpdateType = CompositingUpdateNone;
 
-    if (!hasAcceleratedCompositing() || updateType == CompositingUpdateNone)
+    if (!hasAcceleratedCompositing()) {
+        updateWithoutAcceleratedCompositing(updateType);
+        return;
+    }
+
+    if (updateType == CompositingUpdateNone)
         return;
 
     RenderLayer* updateRoot = rootRenderLayer();
