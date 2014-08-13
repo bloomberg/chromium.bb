@@ -92,7 +92,7 @@ private:
 
 inline CSSPropertyID prefixingVariantForPropertyId(CSSPropertyID propId)
 {
-    if (!RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled() && (propId >= CSSPropertyWebkitAnimation && propId <= CSSPropertyAnimationTimingFunction))
+    if (!RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled())
         return propId;
 
     CSSPropertyID propertyId = CSSPropertyInvalid;

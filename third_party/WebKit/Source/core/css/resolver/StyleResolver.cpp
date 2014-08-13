@@ -1291,8 +1291,8 @@ template<> CSSPropertyID StyleResolver::lastCSSPropertyId<StyleResolver::HighPri
 // lastCSSPropertyId<LowPriorityProperties>.
 template<> CSSPropertyID StyleResolver::firstCSSPropertyId<StyleResolver::LowPriorityProperties>()
 {
-    COMPILE_ASSERT(CSSPropertyBackground == CSSPropertyLineHeight + 1, CSS_background_is_first_low_priority_property);
-    return CSSPropertyBackground;
+    COMPILE_ASSERT(CSSPropertyAlignContent == CSSPropertyLineHeight + 1, CSS_background_is_first_low_priority_property);
+    return CSSPropertyAlignContent;
 }
 
 // This method returns the last CSSPropertyId of low priority properties.
