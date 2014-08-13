@@ -2253,7 +2253,15 @@ IN_PROC_BROWSER_TEST_F(WebViewCaptureTest,
   TestHelper("testScreenshotCapture", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, WebViewInBackgroundPage) {
+#if defined(OS_WIN)
+// Test is disabled on Windows because it times out often.
+// http://crbug.com/403325
+#define MAYBE_WebViewInBackgroundPage \
+    DISABLED_WebViewInBackgroundPage
+#else
+#define MAYBE_WebViewInBackgroundPage WebViewInBackgroundPage
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_WebViewInBackgroundPage) {
   ASSERT_TRUE(RunExtensionTest("platform_apps/web_view/background"))
       << message_;
 }
