@@ -308,7 +308,7 @@ deps = {
     "/trunk/deps/third_party/mesa@265279",
 
   "src/third_party/cld_2/src":
-    (Var("googlecode_url") % "cld2") + "/trunk@165",
+    (Var("googlecode_url") % "cld2") + "/trunk@166",
 
   "src/chrome/browser/resources/pdf/html_office":
      Var("chromium_git") +
