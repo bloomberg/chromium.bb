@@ -53,6 +53,10 @@ class MockAccountReconcilor : public testing::StrictMock<AccountReconcilor> {
                         SigninClient* client);
   virtual ~MockAccountReconcilor() {}
 
+  virtual void StartFetchingExternalCcResult() OVERRIDE {
+    // Don't do this in tests.
+  }
+
   MOCK_METHOD1(PerformMergeAction, void(const std::string& account_id));
   MOCK_METHOD1(PerformStartRemoveAction, void(const std::string& account_id));
   MOCK_METHOD3(

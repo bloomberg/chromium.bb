@@ -431,6 +431,8 @@ void AccountReconcilor::StartReconcile() {
 
   is_reconcile_started_ = true;
 
+  StartFetchingExternalCcResult();
+
   // Reset state for validating gaia cookie.
   are_gaia_accounts_set_ = false;
   gaia_accounts_.clear();
@@ -458,6 +460,10 @@ void AccountReconcilor::GetAccountsFromCookie(
         this, GaiaConstants::kChromeSource, client_->GetURLRequestContext()));
     gaia_fetcher_->StartListAccounts();
   }
+}
+
+void AccountReconcilor::StartFetchingExternalCcResult() {
+  merge_session_helper_.StartFetchingExternalCcResult();
 }
 
 void AccountReconcilor::OnListAccountsSuccess(const std::string& data) {
@@ -650,6 +656,8 @@ void AccountReconcilor::FinishReconcile() {
   // SignalComplete() will change the array.
   std::vector<std::string> add_to_cookie_copy = add_to_cookie_;
   int added_to_cookie = 0;
+  bool external_cc_result_completed =
+      !merge_session_helper_.StillFetchingExternalCcResult();
   for (size_t i = 0; i < add_to_cookie_copy.size(); ++i) {
     if (gaia_accounts_.end() !=
             std::find_if(gaia_accounts_.begin(),
@@ -665,6 +673,11 @@ void AccountReconcilor::FinishReconcile() {
       added_to_cookie++;
     }
   }
+
+  // Log whether the external connection checks were completed when we tried
+  // to add the accounts to the cookie.
+  if (added_to_cookie > 0)
+    signin_metrics::LogExternalCcResultFetches(external_cc_result_completed);
 
   std::string signin_scoped_device_id = client_->GetSigninScopedDeviceId();
   // For each account in the gaia cookie not known to chrome,

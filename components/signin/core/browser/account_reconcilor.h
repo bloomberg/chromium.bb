@@ -110,6 +110,8 @@ class AccountReconcilor : public KeyedService,
     return invalid_chrome_accounts_;
   }
 
+  // Virtual so that it can be overridden in tests.
+  virtual void StartFetchingExternalCcResult();
 
   friend class AccountReconcilorTest;
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, SigninManagerRegistration);

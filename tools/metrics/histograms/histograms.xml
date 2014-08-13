@@ -28566,6 +28566,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Signin.Reconciler.AllExternalCcResultCompleted"
+    enum="BooleanSuccess">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    Records whether all external connections have been successfully checked (a
+    value of &quot;true&quot;) or not (&quot;false&quot;) when the reconciler
+    attempts to perform MergeSession.
+  </summary>
+</histogram>
+
 <histogram name="Signin.Reconciler.DifferentPrimaryAccounts"
     enum="DifferentPrimaryAccounts">
   <owner>mlerman@chromium.org</owner>

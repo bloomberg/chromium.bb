@@ -149,7 +149,7 @@ void OAuth2LoginVerifier::StartMergeSession() {
       new GaiaAuthFetcher(this,
                           std::string(GaiaConstants::kChromeOSSource),
                           user_request_context_.get()));
-  gaia_fetcher_->StartMergeSession(gaia_token_);
+  gaia_fetcher_->StartMergeSession(gaia_token_, std::string());
 }
 
 void OAuth2LoginVerifier::OnMergeSessionSuccess(const std::string& data) {

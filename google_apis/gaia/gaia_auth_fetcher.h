@@ -148,9 +148,17 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   // credentials represented by the account whose uber-auth token is
   // |uber_token|.  This method will modify the cookies of the current profile.
   //
+  // The |external_cc_result| string can specify the result of connetion checks
+  // for various google properties, and MergeSession will set cookies on those
+  // properties too if appropriate.  See StartGetCheckConnectionInfo() for
+  // details.  The string is a comma separated list of token/result pairs, where
+  // token and result are separated by a colon.  This string may be empty, in
+  // which case no specific handling is performed.
+  //
   // Either OnMergeSessionSuccess or OnMergeSessionFailure will be
   // called on the consumer on the original thread.
-  void StartMergeSession(const std::string& uber_token);
+  void StartMergeSession(const std::string& uber_token,
+                         const std::string& external_cc_result);
 
   // Start a request to exchange an OAuthLogin-scoped oauth2 access token for an
   // uber-auth token.  The returned token can be used with the method
@@ -173,6 +181,11 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
 
   // Starts a request to list the accounts in the GAIA cookie.
   void StartListAccounts();
+
+  // Starts a request to get the list of URLs to check for connection info.
+  // Returns token/URL pairs to check, and the resulting status can be given to
+  // /MergeSession requests.
+  void StartGetCheckConnectionInfo();
 
   // Implementation of net::URLFetcherDelegate
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
@@ -293,6 +306,10 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
                            const net::URLRequestStatus& status,
                            int response_code);
 
+  void OnGetCheckConnectionInfoFetched(const std::string& data,
+                                       const net::URLRequestStatus& status,
+                                       int response_code);
+
   // Tokenize the results of a ClientLogin fetch.
   static void ParseClientLoginResponse(const std::string& data,
                                        std::string* sid,
@@ -342,8 +359,9 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
 
   // Supply the authentication token returned from StartIssueAuthToken.
   static std::string MakeMergeSessionBody(const std::string& auth_token,
-                                       const std::string& continue_url,
-                                       const std::string& source);
+                                          const std::string& external_cc_result,
+                                          const std::string& continue_url,
+                                          const std::string& source);
 
   static std::string MakeGetAuthCodeHeader(const std::string& auth_token);
 
@@ -384,6 +402,7 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   const GURL uberauth_token_gurl_;
   const GURL oauth_login_gurl_;
   const GURL list_accounts_gurl_;
+  const GURL get_check_connection_info_url_;
 
   // While a fetch is going on:
   scoped_ptr<net::URLFetcher> fetcher_;

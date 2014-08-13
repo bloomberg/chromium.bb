@@ -85,6 +85,10 @@ class GaiaAuthConsumer {
 
   virtual void OnListAccountsSuccess(const std::string& data) {}
   virtual void OnListAccountsFailure(const GoogleServiceAuthError& error) {}
+
+  virtual void OnGetCheckConnectionInfoSuccess(const std::string& data) {}
+  virtual void OnGetCheckConnectionInfoError(
+      const GoogleServiceAuthError& error) {}
 };
 
 #endif  // GOOGLE_APIS_GAIA_GAIA_AUTH_CONSUMER_H_

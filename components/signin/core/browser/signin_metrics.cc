@@ -64,4 +64,9 @@ void LogSignout(ProfileSignout metric) {
                             NUM_PROFILE_SIGNOUT_METRICS);
 }
 
+void LogExternalCcResultFetches(bool fetches_completed) {
+  UMA_HISTOGRAM_BOOLEAN("Signin.Reconciler.AllExternalCcResultCompleted",
+                        fetches_completed);
+}
+
 }  // namespace signin_metrics

@@ -8,6 +8,7 @@
 #include <deque>
 
 #include "base/observer_list.h"
+#include "base/timer/timer.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/ubertoken_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -17,6 +18,7 @@ class GoogleServiceAuthError;
 class OAuth2TokenService;
 
 namespace net {
+class URLFetcher;
 class URLRequestContextGetter;
 }
 
@@ -39,6 +41,65 @@ class MergeSessionHelper : public GaiaAuthConsumer,
                                        const GoogleServiceAuthError& error) = 0;
    protected:
     virtual ~Observer() {}
+  };
+
+  // Class to retrieve the external connection check results from gaia.
+  // Declared publicly for unit tests.
+  class ExternalCcResultFetcher : public GaiaAuthConsumer,
+                                  public net::URLFetcherDelegate {
+   public:
+    // Maps connection URLs, as returned by StartGetCheckConnectionInfo() to
+    // token and URLFetcher used to fetch the URL.
+    typedef std::map<GURL, std::pair<std::string, net::URLFetcher*> >
+        URLToTokenAndFetcher;
+
+    // Maps tokens to the fetched result for that token.
+    typedef std::map<std::string, std::string> ResultMap;
+
+    ExternalCcResultFetcher(MergeSessionHelper* helper);
+    virtual ~ExternalCcResultFetcher();
+
+    // Gets the current value of the external connection check result string.
+    std::string GetExternalCcResult();
+
+    // Start fetching the external CC result.  If a fetch is already in progress
+    // it is canceled.
+    void Start();
+
+    // Are external URLs still being checked?
+    bool IsRunning();
+
+    // Returns a copy of the internal token to fetcher map.
+    URLToTokenAndFetcher get_fetcher_map_for_testing() {
+      return fetchers_;
+    }
+
+    // Simulate a timeout for tests.
+    void TimeoutForTests();
+
+   private:
+    // Overridden from GaiaAuthConsumer.
+    virtual void OnGetCheckConnectionInfoSuccess(
+        const std::string& data) OVERRIDE;
+
+    // Creates and initializes a URL fetcher for doing a connection check.
+    net::URLFetcher* CreateFetcher(const GURL& url);
+
+    // Overridden from URLFetcherDelgate.
+    virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+
+    // Any fetches still ongoing after this call are considered timed out.
+    void Timeout();
+
+    void CleanupTransientState();
+
+    MergeSessionHelper* helper_;
+    base::OneShotTimer<ExternalCcResultFetcher> timer_;
+    scoped_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
+    URLToTokenAndFetcher fetchers_;
+    ResultMap results_;
+
+    DISALLOW_COPY_AND_ASSIGN(ExternalCcResultFetcher);
   };
 
   MergeSessionHelper(OAuth2TokenService* token_service,
@@ -74,7 +135,17 @@ class MergeSessionHelper : public GaiaAuthConsumer,
   // Returns true of there are pending log ins or outs.
   bool is_running() const { return accounts_.size() > 0; }
 
+  // Start the process of fetching the external check connection result so that
+  // its ready when we try to perform a merge session.
+  void StartFetchingExternalCcResult();
+
+  // Returns true if the helper is still fetching external check connection
+  // results.
+  bool StillFetchingExternalCcResult();
+
  private:
+  net::URLRequestContextGetter* request_context() { return request_context_; }
+
   // Overridden from UbertokenConsumer.
   virtual void OnUbertokenSuccess(const std::string& token) OVERRIDE;
   virtual void OnUbertokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
@@ -104,6 +175,7 @@ class MergeSessionHelper : public GaiaAuthConsumer,
   net::URLRequestContextGetter* request_context_;
   scoped_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
   scoped_ptr<UbertokenFetcher> uber_token_fetcher_;
+  ExternalCcResultFetcher result_fetcher_;
 
   // A worklist for this class. Accounts names are stored here if
   // we are pending a signin action for that account. Empty strings

@@ -35,6 +35,7 @@ class GaiaUrls {
   const GURL& list_accounts_url() const;
   const GURL& embedded_signin_url() const;
   const GURL& add_account_url() const;
+  const GURL& get_check_connection_info_url() const;
 
   const std::string& oauth2_chrome_client_id() const;
   const std::string& oauth2_chrome_client_secret() const;
@@ -76,6 +77,7 @@ class GaiaUrls {
   GURL list_accounts_url_;
   GURL embedded_signin_url_;
   GURL add_account_url_;
+  GURL get_check_connection_info_url_;
 
   std::string oauth2_chrome_client_id_;
   std::string oauth2_chrome_client_secret_;
