@@ -56,7 +56,7 @@ RenderLayerRepainter::RenderLayerRepainter(RenderLayerModelObject& renderer)
 {
 }
 
-void RenderLayerRepainter::computeRepaintRectsIncludingNonCompositingDescendants()
+void RenderLayerRepainter::computePaintInvalidationRectsIncludingNonCompositingDescendants()
 {
     // FIXME: boundsRectForPaintInvalidation() has to walk up the parent chain
     // for every layer to compute the rects. We should make this more efficient.
@@ -68,12 +68,12 @@ void RenderLayerRepainter::computeRepaintRectsIncludingNonCompositingDescendants
 
     for (RenderLayer* layer = m_renderer.layer()->firstChild(); layer; layer = layer->nextSibling()) {
         if (layer->compositingState() != PaintsIntoOwnBacking && layer->compositingState() != PaintsIntoGroupedBacking)
-            layer->repainter().computeRepaintRectsIncludingNonCompositingDescendants();
+            layer->paintInvalidator().computePaintInvalidationRectsIncludingNonCompositingDescendants();
     }
 }
 
 // Since we're only painting non-composited layers, we know that they all share the same repaintContainer.
-void RenderLayerRepainter::repaintIncludingNonCompositingDescendants()
+void RenderLayerRepainter::paintInvalidationIncludingNonCompositingDescendants()
 {
     repaintIncludingNonCompositingDescendantsInternal(m_renderer.containerForPaintInvalidation());
 }
@@ -87,7 +87,7 @@ void RenderLayerRepainter::repaintIncludingNonCompositingDescendantsInternal(con
 
     for (RenderLayer* curr = m_renderer.layer()->firstChild(); curr; curr = curr->nextSibling()) {
         if (curr->compositingState() != PaintsIntoOwnBacking && curr->compositingState() != PaintsIntoGroupedBacking)
-            curr->repainter().repaintIncludingNonCompositingDescendantsInternal(repaintContainer);
+            curr->paintInvalidator().repaintIncludingNonCompositingDescendantsInternal(repaintContainer);
     }
 }
 
@@ -100,7 +100,7 @@ LayoutRect RenderLayerRepainter::repaintRectIncludingNonCompositingDescendants()
         if (child->compositingState() == PaintsIntoOwnBacking || child->compositingState() == PaintsIntoGroupedBacking)
             continue;
 
-        repaintRect.unite(child->repainter().repaintRectIncludingNonCompositingDescendants());
+        repaintRect.unite(child->paintInvalidator().repaintRectIncludingNonCompositingDescendants());
     }
     return repaintRect;
 }
@@ -139,12 +139,12 @@ void RenderLayerRepainter::setFilterBackendNeedsRepaintingInRect(const LayoutRec
         return;
 
     if (parentLayer->hasCompositedLayerMapping()) {
-        parentLayer->repainter().setBackingNeedsRepaintInRect(parentLayerRect);
+        parentLayer->paintInvalidator().setBackingNeedsRepaintInRect(parentLayerRect);
         return;
     }
 
     if (parentLayer->paintsWithFilters()) {
-        parentLayer->repainter().setFilterBackendNeedsRepaintingInRect(parentLayerRect);
+        parentLayer->paintInvalidator().setFilterBackendNeedsRepaintingInRect(parentLayerRect);
         return;
     }
 

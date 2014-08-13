@@ -52,7 +52,7 @@ typedef unsigned GraphicsLayerPaintingPhase;
 enum {
     LayerTreeNormal = 0,
     LayerTreeIncludesDebugInfo = 1 << 0, // Dump extra debugging info like layer addresses.
-    LayerTreeIncludesRepaintRects = 1 << 1,
+    LayerTreeIncludesPaintInvalidationRects = 1 << 1,
     LayerTreeIncludesPaintingPhases = 1 << 2,
     LayerTreeIncludesRootLayer = 1 << 3,
     LayerTreeIncludesClipAndScrollParents = 1 << 4
@@ -67,7 +67,7 @@ public:
     virtual void notifyAnimationStarted(const GraphicsLayer*, double monotonicTime) = 0;
 
     virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) = 0;
-    virtual bool isTrackingRepaints() const { return false; }
+    virtual bool isTrackingPaintInvalidations() const { return false; }
 
     virtual String debugName(const GraphicsLayer*) = 0;
 

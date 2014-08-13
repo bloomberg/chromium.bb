@@ -59,7 +59,7 @@ void GraphicsLayerTreeBuilder::rebuild(RenderLayer& layer, AncestorInfo info)
 {
     // Make the layer compositing if necessary, and set up clipping and content layers.
     // Note that we can only do work here that is independent of whether the descendant layers
-    // have been processed. computeCompositingRequirements() will already have done the repaint if necessary.
+    // have been processed. computeCompositingRequirements() will already have done the paint invalidation if necessary.
 
     layer.stackingNode()->updateLayerListsIfNeeded();
 

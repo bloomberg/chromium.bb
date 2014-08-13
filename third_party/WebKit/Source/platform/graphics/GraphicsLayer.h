@@ -218,7 +218,7 @@ public:
     // pointers for the layers and timing data will be included in the returned string.
     String layerTreeAsText(LayerTreeFlags = LayerTreeNormal) const;
 
-    void resetTrackedRepaints();
+    void resetTrackedPaintInvalidations();
     void addRepaintRect(const FloatRect&);
 
     void addLinkHighlight(LinkHighlightClient*);

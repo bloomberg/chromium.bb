@@ -158,7 +158,7 @@ public:
     // GraphicsLayerClient interface
     virtual void notifyAnimationStarted(const GraphicsLayer*, double monotonicTime) OVERRIDE;
     virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& clip) OVERRIDE;
-    virtual bool isTrackingRepaints() const OVERRIDE;
+    virtual bool isTrackingPaintInvalidations() const OVERRIDE;
 
 #if ENABLE(ASSERT)
     virtual void verifyNotPainting() OVERRIDE;
@@ -377,7 +377,7 @@ private:
     //         + root content layer
     //
     // With the hierarchy set up like this, the root content layer is able to scroll without affecting
-    // the background layer (or repainting).
+    // the background layer (or paint invalidation).
     OwnPtr<GraphicsLayer> m_foregroundLayer; // Only used in cases where we need to draw the foreground separately.
     OwnPtr<GraphicsLayer> m_backgroundLayer; // Only used in cases where we need to draw the background separately.
 

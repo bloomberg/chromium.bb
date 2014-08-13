@@ -1529,7 +1529,7 @@ void RenderObject::invalidatePaintUsingContainer(const RenderLayerModelObject* p
     }
 
     if (paintInvalidationContainer->hasFilter() && paintInvalidationContainer->layer()->requiresFullLayerImageForFilters()) {
-        paintInvalidationContainer->layer()->repainter().setFilterBackendNeedsRepaintingInRect(r);
+        paintInvalidationContainer->layer()->paintInvalidator().setFilterBackendNeedsRepaintingInRect(r);
         return;
     }
 
@@ -1540,7 +1540,7 @@ void RenderObject::invalidatePaintUsingContainer(const RenderLayerModelObject* p
 
     if (view()->usesCompositing()) {
         ASSERT(paintInvalidationContainer->hasLayer() && (paintInvalidationContainer->layer()->compositingState() == PaintsIntoOwnBacking || paintInvalidationContainer->layer()->compositingState() == PaintsIntoGroupedBacking));
-        paintInvalidationContainer->layer()->repainter().setBackingNeedsRepaintInRect(r);
+        paintInvalidationContainer->layer()->paintInvalidator().setBackingNeedsRepaintInRect(r);
     }
 }
 

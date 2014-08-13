@@ -68,7 +68,7 @@ RenderLayerCompositor::RenderLayerCompositor(RenderView& renderView)
     , m_compositing(false)
     , m_rootShouldAlwaysCompositeDirty(true)
     , m_needsUpdateFixedBackground(false)
-    , m_isTrackingRepaints(false)
+    , m_isTrackingPaintInvalidations(false)
     , m_rootLayerAttachment(RootLayerUnattached)
     , m_inOverlayFullscreenVideo(false)
 {
@@ -311,7 +311,7 @@ void RenderLayerCompositor::updateIfNeeded()
 
     RenderLayer* updateRoot = rootRenderLayer();
 
-    Vector<RenderLayer*> layersNeedingRepaint;
+    Vector<RenderLayer*> layersNeedingPaintInvalidation;
 
     if (updateType >= CompositingUpdateAfterCompositingInputChange) {
         CompositingInputsUpdater(updateRoot).update();
@@ -324,7 +324,7 @@ void RenderLayerCompositor::updateIfNeeded()
         CompositingRequirementsUpdater(m_renderView, m_compositingReasonFinder).update(updateRoot);
 
         CompositingLayerAssigner layerAssigner(this);
-        layerAssigner.assign(updateRoot, layersNeedingRepaint);
+        layerAssigner.assign(updateRoot, layersNeedingPaintInvalidation);
 
         bool layersChanged = layerAssigner.layersChanged();
 
@@ -342,7 +342,7 @@ void RenderLayerCompositor::updateIfNeeded()
 
     if (updateType != CompositingUpdateNone) {
         GraphicsLayerUpdater updater;
-        updater.update(*updateRoot, layersNeedingRepaint);
+        updater.update(*updateRoot, layersNeedingPaintInvalidation);
 
         if (updater.needsRebuildTree())
             updateType = std::max(updateType, CompositingUpdateRebuildTree);
@@ -376,11 +376,11 @@ void RenderLayerCompositor::updateIfNeeded()
         m_needsUpdateFixedBackground = false;
     }
 
-    for (unsigned i = 0; i < layersNeedingRepaint.size(); i++) {
-        RenderLayer* layer = layersNeedingRepaint[i];
-        layer->repainter().computeRepaintRectsIncludingNonCompositingDescendants();
+    for (unsigned i = 0; i < layersNeedingPaintInvalidation.size(); i++) {
+        RenderLayer* layer = layersNeedingPaintInvalidation[i];
+        layer->paintInvalidator().computePaintInvalidationRectsIncludingNonCompositingDescendants();
 
-        repaintOnCompositingChange(layer);
+        paintInvalidationOnCompositingChange(layer);
     }
 
     // Inform the inspector that the layer tree has changed.
@@ -400,11 +400,11 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
         ASSERT(!layer->hasCompositedLayerMapping());
         setCompositingModeEnabled(true);
 
-        // If we need to repaint, do so before allocating the compositedLayerMapping and clearing out the groupedMapping.
-        repaintOnCompositingChange(layer);
+        // If we need to issue paint invalidations, do so before allocating the compositedLayerMapping and clearing out the groupedMapping.
+        paintInvalidationOnCompositingChange(layer);
 
         // If this layer was previously squashed, we need to remove its reference to a groupedMapping right away, so
-        // that computing repaint rects will know the layer's correct compositingState.
+        // that computing paint invalidation rects will know the layer's correct compositingState.
         // FIXME: do we need to also remove the layer from it's location in the squashing list of its groupedMapping?
         // Need to create a test where a squashed layer pops into compositing. And also to cover all other
         // sorts of compositingState transitions.
@@ -468,13 +468,13 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
     return compositedLayerMappingChanged;
 }
 
-void RenderLayerCompositor::repaintOnCompositingChange(RenderLayer* layer)
+void RenderLayerCompositor::paintInvalidationOnCompositingChange(RenderLayer* layer)
 {
-    // If the renderer is not attached yet, no need to repaint.
+    // If the renderer is not attached yet, no need to issue paint invalidations.
     if (layer->renderer() != &m_renderView && !layer->renderer()->parent())
         return;
 
-    layer->repainter().repaintIncludingNonCompositingDescendants();
+    layer->paintInvalidator().paintInvalidationIncludingNonCompositingDescendants();
 }
 
 void RenderLayerCompositor::frameViewDidChangeLocation(const IntPoint& contentsOffset)
@@ -583,8 +583,8 @@ String RenderLayerCompositor::layerTreeAsText(LayerTreeFlags flags)
     String layerTreeText = rootLayer->layerTreeAsText(flags);
 
     // The true root layer is not included in the dump, so if we want to report
-    // its repaint rects, they must be included here.
-    if (flags & LayerTreeIncludesRepaintRects)
+    // its paint invalidation rects, they must be included here.
+    if (flags & LayerTreeIncludesPaintInvalidationRects)
         return m_renderView.frameView()->trackedPaintInvalidationRectsAsText() + layerTreeText;
 
     return layerTreeText;
@@ -817,41 +817,41 @@ GraphicsLayer* RenderLayerCompositor::fixedRootBackgroundLayer() const
     return 0;
 }
 
-static void resetTrackedRepaintRectsRecursive(GraphicsLayer* graphicsLayer)
+static void resetTrackedPaintInvalidationRectsRecursive(GraphicsLayer* graphicsLayer)
 {
     if (!graphicsLayer)
         return;
 
-    graphicsLayer->resetTrackedRepaints();
+    graphicsLayer->resetTrackedPaintInvalidations();
 
     for (size_t i = 0; i < graphicsLayer->children().size(); ++i)
-        resetTrackedRepaintRectsRecursive(graphicsLayer->children()[i]);
+        resetTrackedPaintInvalidationRectsRecursive(graphicsLayer->children()[i]);
 
     if (GraphicsLayer* replicaLayer = graphicsLayer->replicaLayer())
-        resetTrackedRepaintRectsRecursive(replicaLayer);
+        resetTrackedPaintInvalidationRectsRecursive(replicaLayer);
 
     if (GraphicsLayer* maskLayer = graphicsLayer->maskLayer())
-        resetTrackedRepaintRectsRecursive(maskLayer);
+        resetTrackedPaintInvalidationRectsRecursive(maskLayer);
 
     if (GraphicsLayer* clippingMaskLayer = graphicsLayer->contentsClippingMaskLayer())
-        resetTrackedRepaintRectsRecursive(clippingMaskLayer);
+        resetTrackedPaintInvalidationRectsRecursive(clippingMaskLayer);
 }
 
-void RenderLayerCompositor::resetTrackedRepaintRects()
+void RenderLayerCompositor::resetTrackedPaintInvalidationRects()
 {
     if (GraphicsLayer* rootLayer = rootGraphicsLayer())
-        resetTrackedRepaintRectsRecursive(rootLayer);
+        resetTrackedPaintInvalidationRectsRecursive(rootLayer);
 }
 
-void RenderLayerCompositor::setTracksRepaints(bool tracksRepaints)
+void RenderLayerCompositor::setTracksPaintInvalidations(bool tracksPaintInvalidations)
 {
     ASSERT(lifecycle().state() == DocumentLifecycle::PaintInvalidationClean);
-    m_isTrackingRepaints = tracksRepaints;
+    m_isTrackingPaintInvalidations = tracksPaintInvalidations;
 }
 
-bool RenderLayerCompositor::isTrackingRepaints() const
+bool RenderLayerCompositor::isTrackingPaintInvalidations() const
 {
-    return m_isTrackingRepaints;
+    return m_isTrackingPaintInvalidations;
 }
 
 static bool shouldCompositeOverflowControls(FrameView* view)

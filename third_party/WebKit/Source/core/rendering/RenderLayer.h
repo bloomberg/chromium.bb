@@ -382,7 +382,7 @@ public:
 
     // FIXME: This should probably return a ScrollableArea but a lot of internal methods are mistakenly exposed.
     RenderLayerScrollableArea* scrollableArea() const { return m_scrollableArea.get(); }
-    RenderLayerRepainter& repainter() { return m_repainter; }
+    RenderLayerRepainter& paintInvalidator() { return m_repainter; }
     RenderLayerClipper& clipper() { return m_clipper; }
     const RenderLayerClipper& clipper() const { return m_clipper; }
 

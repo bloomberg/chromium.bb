@@ -137,7 +137,7 @@ GraphicsLayer::~GraphicsLayer()
     removeAllChildren();
     removeFromParent();
 
-    resetTrackedRepaints();
+    resetTrackedPaintInvalidations();
     ASSERT(!m_parent);
 }
 
@@ -430,14 +430,14 @@ WebLayer* GraphicsLayer::contentsLayerIfRegistered()
     return m_contentsLayer;
 }
 
-void GraphicsLayer::resetTrackedRepaints()
+void GraphicsLayer::resetTrackedPaintInvalidations()
 {
     repaintRectMap().remove(this);
 }
 
 void GraphicsLayer::addRepaintRect(const FloatRect& repaintRect)
 {
-    if (m_client->isTrackingRepaints()) {
+    if (m_client->isTrackingPaintInvalidations()) {
         FloatRect largestRepaintRect(FloatPoint(), m_size);
         largestRepaintRect.intersect(repaintRect);
         RepaintMap::iterator repaintIt = repaintRectMap().find(this);
@@ -610,7 +610,7 @@ PassRefPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags flags, Rend
     if (m_replicatedLayer)
         json->setString("replicatedLayer", flags & LayerTreeIncludesDebugInfo ? pointerAsString(m_replicatedLayer) : "");
 
-    if ((flags & LayerTreeIncludesRepaintRects) && repaintRectMap().contains(this) && !repaintRectMap().get(this).isEmpty()) {
+    if ((flags & LayerTreeIncludesPaintInvalidationRects) && repaintRectMap().contains(this) && !repaintRectMap().get(this).isEmpty()) {
         Vector<FloatRect> repaintRectsCopy = repaintRectMap().get(this);
         std::sort(repaintRectsCopy.begin(), repaintRectsCopy.end(), &compareFloatRects);
         RefPtr<JSONArray> repaintRectsJSON = adoptRef(new JSONArray);

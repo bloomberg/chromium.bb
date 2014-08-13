@@ -1286,7 +1286,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
             return false;
         }
 
-        IntRect updateRect = pixelSnappedIntRect(layer->repainter().repaintRectIncludingNonCompositingDescendants());
+        IntRect updateRect = pixelSnappedIntRect(layer->paintInvalidator().repaintRectIncludingNonCompositingDescendants());
 
         const RenderLayerModelObject* repaintContainer = layer->renderer()->containerForPaintInvalidation();
         if (repaintContainer && !repaintContainer->isRenderView()) {
@@ -1316,7 +1316,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
         scrolledRect.move(-scrollDelta);
         updateRect.unite(scrolledRect);
         // FIXME: We should be able to issue these invalidations separately and before we actually scroll.
-        renderView()->layer()->repainter().setBackingNeedsRepaintInRect(rootViewToContents(updateRect));
+        renderView()->layer()->paintInvalidator().setBackingNeedsRepaintInRect(rootViewToContents(updateRect));
     }
 
     return true;
@@ -1327,7 +1327,7 @@ void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
     if (contentsInCompositedLayer()) {
         IntRect updateRect = visibleContentRect();
         ASSERT(renderView());
-        renderView()->layer()->repainter().setBackingNeedsRepaintInRect(updateRect);
+        renderView()->layer()->paintInvalidator().setBackingNeedsRepaintInRect(updateRect);
     }
     if (RenderPart* frameRenderer = m_frame->ownerRenderer()) {
         if (isEnclosedInCompositingLayer()) {
@@ -1570,7 +1570,7 @@ void FrameView::updateFixedElementPaintInvalidationRectsAfterScroll()
         if (layer->compositingState() == PaintsIntoOwnBacking)
             continue;
 
-        layer->repainter().computeRepaintRectsIncludingNonCompositingDescendants();
+        layer->paintInvalidator().computePaintInvalidationRectsIncludingNonCompositingDescendants();
     }
 }
 
@@ -2975,7 +2975,7 @@ void FrameView::setTracksPaintInvalidations(bool trackPaintInvalidations)
         if (!frame->isLocalFrame())
             continue;
         if (RenderView* renderView = toLocalFrame(frame)->contentRenderer())
-            renderView->compositor()->setTracksRepaints(trackPaintInvalidations);
+            renderView->compositor()->setTracksPaintInvalidations(trackPaintInvalidations);
     }
 
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"),
@@ -2989,7 +2989,7 @@ void FrameView::resetTrackedPaintInvalidations()
 {
     m_trackedPaintInvalidationRects.clear();
     if (RenderView* renderView = this->renderView())
-        renderView->compositor()->resetTrackedRepaintRects();
+        renderView->compositor()->resetTrackedPaintInvalidationRects();
 }
 
 String FrameView::trackedPaintInvalidationRectsAsText() const

@@ -575,11 +575,11 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(const LayoutPoint& off
         LayoutPoint offsetFromTransformedAncestorForSquashedLayer = layers[i].renderLayer->computeOffsetFromTransformedAncestor();
         LayoutSize offsetFromSquashLayerOrigin = (offsetFromTransformedAncestorForSquashedLayer - referenceOffsetFromTransformedAncestor) - squashLayerOriginInOwningLayerSpace;
 
-        // It is ok to repaint here, because all of the geometry needed to correctly repaint is computed by this point.
+        // It is ok to issue paint invalidation here, because all of the geometry needed to correctly invalidate paint is computed by this point.
         IntSize newOffsetFromRenderer = -IntSize(offsetFromSquashLayerOrigin.width().round(), offsetFromSquashLayerOrigin.height().round());
         LayoutSize subpixelAccumulation = offsetFromSquashLayerOrigin + newOffsetFromRenderer;
         if (layers[i].offsetFromRendererSet && layers[i].offsetFromRenderer != newOffsetFromRenderer) {
-            layers[i].renderLayer->repainter().repaintIncludingNonCompositingDescendants();
+            layers[i].renderLayer->paintInvalidator().paintInvalidationIncludingNonCompositingDescendants();
             layersNeedingPaintInvalidation.append(layers[i].renderLayer);
         }
         layers[i].offsetFromRenderer = newOffsetFromRenderer;
@@ -1401,7 +1401,6 @@ bool CompositedLayerMapping::updateForegroundLayer(bool needsForegroundLayer)
             layerChanged = true;
         }
     } else if (m_foregroundLayer) {
-        FloatRect repaintRect(FloatPoint(), m_foregroundLayer->size());
         m_foregroundLayer->removeFromParent();
         m_foregroundLayer = nullptr;
         layerChanged = true;
@@ -1892,7 +1891,7 @@ bool CompositedLayerMapping::updateRequiresOwnBackingStoreForAncestorReasons(con
             || compositingAncestorLayer->compositedLayerMapping()->paintsIntoCompositedAncestor());
 
     if (paintsIntoCompositedAncestor() != previousPaintsIntoCompositedAncestor)
-        compositor()->repaintOnCompositingChange(&m_owningLayer);
+        compositor()->paintInvalidationOnCompositingChange(&m_owningLayer);
 
     m_requiresOwnBackingStoreForAncestorReasons = !canPaintIntoAncestor;
 
@@ -1914,7 +1913,7 @@ bool CompositedLayerMapping::updateRequiresOwnBackingStoreForIntrinsicReasons()
         || renderer->hasFilter();
 
     if (paintsIntoCompositedAncestor() != previousPaintsIntoCompositedAncestor)
-        compositor()->repaintOnCompositingChange(&m_owningLayer);
+        compositor()->paintInvalidationOnCompositingChange(&m_owningLayer);
 
 
     return m_requiresOwnBackingStoreForIntrinsicReasons != previousRequiresOwnBackingStoreForIntrinsicReasons;
@@ -1952,7 +1951,7 @@ void CompositedLayerMapping::setSquashingContentsNeedDisplay()
 
 void CompositedLayerMapping::setContentsNeedDisplay()
 {
-    // FIXME: need to split out repaints for the background.
+    // FIXME: need to split out paint invalidations for the background.
     ASSERT(!paintsIntoCompositedAncestor());
     ApplyToGraphicsLayers(this, SetContentsNeedsDisplayFunctor(), ApplyToContentLayers);
 }
@@ -1973,7 +1972,7 @@ struct SetContentsNeedsDisplayInRectFunctor {
 // r is in the coordinate space of the layer's render object
 void CompositedLayerMapping::setContentsNeedDisplayInRect(const LayoutRect& r)
 {
-    // FIXME: need to split out repaints for the background.
+    // FIXME: need to split out paint invalidations for the background.
     ASSERT(!paintsIntoCompositedAncestor());
 
     SetContentsNeedsDisplayInRectFunctor functor = {
@@ -2169,10 +2168,10 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
 #endif
 }
 
-bool CompositedLayerMapping::isTrackingRepaints() const
+bool CompositedLayerMapping::isTrackingPaintInvalidations() const
 {
     GraphicsLayerClient* client = compositor();
-    return client ? client->isTrackingRepaints() : false;
+    return client ? client->isTrackingPaintInvalidations() : false;
 }
 
 #if ENABLE(ASSERT)
@@ -2208,12 +2207,12 @@ bool CompositedLayerMapping::updateSquashingLayerAssignment(RenderLayer* squashe
     bool updatedAssignment = false;
     if (nextSquashedLayerIndex < m_squashedLayers.size()) {
         if (paintInfo.renderLayer != m_squashedLayers[nextSquashedLayerIndex].renderLayer) {
-            compositor()->repaintOnCompositingChange(squashedLayer);
+            compositor()->paintInvalidationOnCompositingChange(squashedLayer);
             updatedAssignment = true;
             m_squashedLayers[nextSquashedLayerIndex] = paintInfo;
         }
     } else {
-        compositor()->repaintOnCompositingChange(squashedLayer);
+        compositor()->paintInvalidationOnCompositingChange(squashedLayer);
         m_squashedLayers.append(paintInfo);
         updatedAssignment = true;
     }

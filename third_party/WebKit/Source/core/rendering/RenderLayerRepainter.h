@@ -60,9 +60,9 @@ public:
 
     LayoutRect repaintRectIncludingNonCompositingDescendants() const;
 
-    void repaintIncludingNonCompositingDescendants();
+    void paintInvalidationIncludingNonCompositingDescendants();
 
-    void computeRepaintRectsIncludingNonCompositingDescendants();
+    void computePaintInvalidationRectsIncludingNonCompositingDescendants();
 
     // Indicate that the layer contents need to be repainted. Only has an effect
     // if layer compositing is being used,
