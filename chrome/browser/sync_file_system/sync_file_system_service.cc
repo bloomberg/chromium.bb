@@ -368,8 +368,11 @@ void SyncFileSystemService::OnSyncIdle() {
            local_sync_runners_.begin();
        iter != local_sync_runners_.end(); ++iter)
     local_changes += (*iter)->pending_changes();
-  if (local_changes == 0 && v2_remote_service_)
-    v2_remote_service_->PromoteDemotedChanges(NoopClosure());
+  if (local_changes == 0) {
+    remote_service_->PromoteDemotedChanges(NoopClosure());
+    if (v2_remote_service_)
+      v2_remote_service_->PromoteDemotedChanges(NoopClosure());
+  }
 }
 
 SyncServiceState SyncFileSystemService::GetSyncServiceState() {

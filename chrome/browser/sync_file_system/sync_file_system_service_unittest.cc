@@ -119,6 +119,11 @@ ACTION_P2(MockSyncFileCallback, status, url) {
       FROM_HERE, base::Bind(arg0, status, url));
 }
 
+ACTION(InvokeCompletionClosure) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(arg0));
+}
+
 class SyncFileSystemServiceTest : public testing::Test {
  protected:
   SyncFileSystemServiceTest()
@@ -349,6 +354,9 @@ TEST_F(SyncFileSystemServiceTest, SimpleLocalSyncFlow) {
               ApplyLocalChange(change, _, _, kFile, _))
       .WillOnce(MockStatusCallback(SYNC_STATUS_OK));
 
+  EXPECT_CALL(*mock_remote_service(), PromoteDemotedChanges(_))
+      .WillRepeatedly(InvokeCompletionClosure());
+
   EXPECT_EQ(base::File::FILE_OK, file_system_->CreateFile(kFile));
 
   run_loop.Run();
@@ -397,6 +405,9 @@ TEST_F(SyncFileSystemServiceTest, SimpleSyncFlowWithFileBusy) {
     EXPECT_CALL(*mock_remote_service(), ProcessRemoteChange(_))
         .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   }
+
+  EXPECT_CALL(*mock_remote_service(), PromoteDemotedChanges(_))
+      .WillRepeatedly(InvokeCompletionClosure());
 
   // We might also see an activity for local sync as we're going to make
   // a local write operation on kFile.
