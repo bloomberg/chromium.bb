@@ -1374,13 +1374,17 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
     scoped_ptr<base::Value> auto_connect_value(
         new base::FundamentalValue(auto_connect));
     ::onc::ONCSource auto_connect_onc_source = onc_source;
+
+    DCHECK_EQ(onc == NULL, onc_source == ::onc::ONC_SOURCE_NONE);
     bool auto_connect_recommended =
         auto_connect_onc_source != ::onc::ONC_SOURCE_NONE &&
         onc::IsRecommendedValue(onc, onc_path_to_auto_connect);
-    // |auto_connect_default_value| will contain either a recommended value
-    // if |auto_connect_recommended| is true, or an enforced value otherwise.
+    // If a policy exists, |auto_connect_default_value| will contain either a
+    // recommended value (if |auto_connect_recommended| is true) or an enforced
+    // value (if |auto_connect_recommended| is false).
     const base::Value* auto_connect_default_value = NULL;
-    onc->Get(onc_path_to_auto_connect, &auto_connect_default_value);
+    if (onc)
+      onc->Get(onc_path_to_auto_connect, &auto_connect_default_value);
 
     // Autoconnect can be controlled by the GlobalNetworkConfiguration of the
     // ONC policy.
