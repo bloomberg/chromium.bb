@@ -820,8 +820,7 @@ void PrintWebViewHelper::DidStartLoading() {
 
 void PrintWebViewHelper::DidStopLoading() {
   is_loading_ = false;
-  if (!on_stop_loading_closure_.is_null())
-    on_stop_loading_closure_.Run();
+  ShowScriptedPrintPreview();
 }
 
 // Prints |frame| which called window.print().
@@ -1712,9 +1711,6 @@ void PrintWebViewHelper::RequestPrintPreview(PrintPreviewRequestType type) {
         // Wait for DidStopLoading. Plugins may not know the correct
         // |is_modifiable| value until they are fully loaded, which occurs when
         // DidStopLoading() is called. Defer showing the preview until then.
-        on_stop_loading_closure_ =
-            base::Bind(&PrintWebViewHelper::ShowScriptedPrintPreview,
-                       base::Unretained(this));
       } else {
         base::MessageLoop::current()->PostTask(
             FROM_HERE,
@@ -1729,17 +1725,6 @@ void PrintWebViewHelper::RequestPrintPreview(PrintPreviewRequestType type) {
       return;
     }
     case PRINT_PREVIEW_USER_INITIATED_ENTIRE_FRAME: {
-      // Wait for DidStopLoading. Continuing with this function while
-      // |is_loading_| is true will cause print preview to hang when try to
-      // print a PDF document.
-      if (is_loading_ && GetPlugin(print_preview_context_.source_frame())) {
-        on_stop_loading_closure_ =
-            base::Bind(&PrintWebViewHelper::RequestPrintPreview,
-                       base::Unretained(this),
-                       type);
-        return;
-      }
-
       break;
     }
     case PRINT_PREVIEW_USER_INITIATED_SELECTION: {
@@ -1748,15 +1733,6 @@ void PrintWebViewHelper::RequestPrintPreview(PrintPreviewRequestType type) {
       break;
     }
     case PRINT_PREVIEW_USER_INITIATED_CONTEXT_NODE: {
-      // Same situation as in PRINT_PREVIEW_USER_INITIATED_ENTIRE_FRAME.
-      if (is_loading_ && GetPlugin(print_preview_context_.source_frame())) {
-        on_stop_loading_closure_ =
-            base::Bind(&PrintWebViewHelper::RequestPrintPreview,
-                       base::Unretained(this),
-                       type);
-        return;
-      }
-
       params.webnode_only = true;
       break;
     }
