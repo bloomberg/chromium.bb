@@ -43,19 +43,23 @@ bool QuadF::IsCounterClockwise() const {
   // counter-clockwise. Note carefully: this is backwards from conventional
   // math because our geometric space uses screen coordiantes with y-axis
   // pointing downards.
-  // Reference: http://mathworld.wolfram.com/PolygonArea.html
+  // Reference: http://mathworld.wolfram.com/PolygonArea.html.
+  // The equation can be written:
+  // Signed area = determinant1 + determinant2 + determinant3 + determinant4
+  // In practise, Refactoring the computation of adding determinants so that
+  // reducing the number of operations. The equation is:
+  // Signed area = element1 + element2 - element3 - element4
+
+  float p24 = p2_.y() - p4_.y();
+  float p31 = p3_.y() - p1_.y();
 
   // Up-cast to double so this cannot overflow.
-  double determinant1 = static_cast<double>(p1_.x()) * p2_.y()
-      - static_cast<double>(p2_.x()) * p1_.y();
-  double determinant2 = static_cast<double>(p2_.x()) * p3_.y()
-      - static_cast<double>(p3_.x()) * p2_.y();
-  double determinant3 = static_cast<double>(p3_.x()) * p4_.y()
-      - static_cast<double>(p4_.x()) * p3_.y();
-  double determinant4 = static_cast<double>(p4_.x()) * p1_.y()
-      - static_cast<double>(p1_.x()) * p4_.y();
+  double element1 = static_cast<double>(p1_.x()) * p24;
+  double element2 = static_cast<double>(p2_.x()) * p31;
+  double element3 = static_cast<double>(p3_.x()) * p24;
+  double element4 = static_cast<double>(p4_.x()) * p31;
 
-  return determinant1 + determinant2 + determinant3 + determinant4 < 0;
+  return element1 + element2 < element3 + element4;
 }
 
 static inline bool PointIsInTriangle(const PointF& point,
