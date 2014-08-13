@@ -696,7 +696,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Indicates whether a page is loading or not.
   bool is_loading_;
 
-  // Indicates whether a page is hidden or not.
+  // Indicates whether a page is hidden or not. It has to stay in sync with the
+  // most recent call to process_->WidgetRestored() / WidgetHidden().
   bool is_hidden_;
 
   // Indicates whether a page is fullscreen or not.
