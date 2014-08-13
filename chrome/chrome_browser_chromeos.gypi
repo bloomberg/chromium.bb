@@ -1157,8 +1157,6 @@
             'browser/chromeos/events/system_key_event_listener.h',
             'browser/chromeos/events/xinput_hierarchy_changed_event_listener.cc',
             'browser/chromeos/events/xinput_hierarchy_changed_event_listener.h',
-            'browser/chromeos/input_method/input_method_engine.cc',
-            'browser/chromeos/input_method/input_method_engine.h',
           ],
         }],
       ],

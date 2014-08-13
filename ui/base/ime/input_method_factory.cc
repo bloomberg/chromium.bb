@@ -6,7 +6,7 @@
 
 #include "ui/base/ime/mock_input_method.h"
 
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
 #include "ui/base/ime/input_method_chromeos.h"
 #elif defined(OS_WIN)
 #include "base/win/metro.h"
@@ -39,7 +39,7 @@ scoped_ptr<InputMethod> CreateInputMethod(
   if (g_input_method_set_for_testing)
     return scoped_ptr<InputMethod>(new MockInputMethod(delegate));
 
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
   return scoped_ptr<InputMethod>(new InputMethodChromeOS(delegate));
 #elif defined(OS_WIN)
   if (IsRemoteInputMethodWinRequired(widget))

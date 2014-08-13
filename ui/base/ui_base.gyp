@@ -644,7 +644,7 @@
             'ime/input_method_minimal.h',
           ],
         }],
-        ['chromeos==0 or use_x11==0', {
+        ['chromeos==0', {
           'sources!': [
             'ime/input_method_chromeos.cc',
             'ime/input_method_chromeos.h',
@@ -678,8 +678,6 @@
           'sources!': [
             'ime/composition_text_util_pango.cc',
             'ime/composition_text_util_pango.h',
-            'ime/chromeos/character_composer.cc',
-            'ime/chromeos/character_composer.h',
           ],
         }],
       ],

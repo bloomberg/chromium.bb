@@ -6,6 +6,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
@@ -22,10 +23,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/manifest_handlers/background_info.h"
-
-#if defined(USE_X11)
-#include "chrome/browser/chromeos/input_method/input_method_engine.h"
-#endif
 
 namespace input_ime = extensions::api::input_ime;
 namespace KeyEventHandled = extensions::api::input_ime::KeyEventHandled;
@@ -345,7 +342,6 @@ InputImeEventRouter::GetInstance() {
 bool InputImeEventRouter::RegisterImeExtension(
     const std::string& extension_id,
     const std::vector<extensions::InputComponentInfo>& input_components) {
-#if defined(USE_X11)
   VLOG(1) << "RegisterImeExtension: " << extension_id;
 
   if (engine_map_[extension_id])
@@ -395,11 +391,6 @@ bool InputImeEventRouter::RegisterImeExtension(
   manager->AddInputMethodExtension(extension_id, descriptors, engine);
 
   return true;
-#else
-  // TODO(spang): IME support under ozone.
-  NOTIMPLEMENTED();
-  return false;
-#endif
 }
 
 void InputImeEventRouter::UnregisterAllImes(const std::string& extension_id) {

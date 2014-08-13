@@ -2763,10 +2763,6 @@
           'sources!': [
             # crbug.com/354036
             'browser/chromeos/events/event_rewriter_unittest.cc',
-
-            # crbug.com/362698
-            'browser/chromeos/input_method/input_method_engine_unittest.cc',
-            'browser/chromeos/input_method/input_method_manager_impl_unittest.cc',
           ],
         }],
         ['enable_plugin_installation==0', {
