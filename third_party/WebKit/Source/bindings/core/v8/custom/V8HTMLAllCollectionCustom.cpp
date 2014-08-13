@@ -55,12 +55,14 @@ static v8::Handle<v8::Value> getNamedItems(HTMLAllCollection* collection, Atomic
     // FIXME: HTML5 specification says this should be a HTMLCollection.
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#htmlallcollection
     //
-    // FIXME: Oilpan: explicit conversion needed as there is currently
-    // no implicit RawPtr<T>(RawPtr<U>) constructor (for type
-    // convertible pairs T and U) that would implicitly convert a
-    // RawPtr<StaticElementList> to a RawPtr<NodeList> (the former is
-    // a subclass of the latter.) Such a conversion is needed to
-    // resolve the toV8() call.
+    // FIXME: Oilpan: explicitly convert adopt()'s result so as to
+    // disambiguate the (implicit) conversion of its
+    // PassRefPtrWillBeRawPtr<StaticElementList> result -- the
+    // other toV8() overload that introduces the ambiguity is
+    // toV8(NodeList*, ...).
+    //
+    // When adopt() no longer uses transition types, the conversion
+    // can be removed.
     return toV8(PassRefPtrWillBeRawPtr<NodeList>(StaticElementList::adopt(namedItems)), info.Holder(), info.GetIsolate());
 }
 
