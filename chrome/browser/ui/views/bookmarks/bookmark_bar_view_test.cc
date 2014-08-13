@@ -733,7 +733,9 @@ class BookmarkBarViewTest5 : public BookmarkBarViewEventTestBase {
   GURL url_dragging_;
 };
 
+#if !defined(OS_WIN)  // flaky http://crbug.com/400578
 VIEW_TEST(BookmarkBarViewTest5, MAYBE(DND))
+#endif
 
 // Tests holding mouse down on overflow button, dragging such that menu pops up
 // then selecting an item.
