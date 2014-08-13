@@ -146,8 +146,6 @@
         'build_glibc': 0,
         'build_newlib': 0,
         'build_pnacl_newlib': 1,
-        'enable_x86_32': 0,
-        'enable_x86_64': 0,
         'extra_deps_pnacl_newlib': [
           '>(tc_lib_dir_pnacl_newlib)/libbase_i18n_nacl.a',
           '>(tc_lib_dir_pnacl_newlib)/libbase_nacl.a',
