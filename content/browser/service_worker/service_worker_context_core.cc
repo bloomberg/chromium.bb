@@ -102,6 +102,7 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
       embedded_worker_registry_(EmbeddedWorkerRegistry::Create(AsWeakPtr())),
       job_coordinator_(new ServiceWorkerJobCoordinator(AsWeakPtr())),
       next_handle_id_(0),
+      next_registration_handle_id_(0),
       observer_list_(observer_list) {
 }
 
@@ -120,6 +121,7 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
           old_context->embedded_worker_registry())),
       job_coordinator_(new ServiceWorkerJobCoordinator(AsWeakPtr())),
       next_handle_id_(0),
+      next_registration_handle_id_(0),
       observer_list_(old_context->observer_list_) {
 }
 
@@ -315,6 +317,10 @@ ServiceWorkerContextCore::GetAllLiveVersionInfo() {
 
 int ServiceWorkerContextCore::GetNewServiceWorkerHandleId() {
   return next_handle_id_++;
+}
+
+int ServiceWorkerContextCore::GetNewRegistrationHandleId() {
+  return next_registration_handle_id_++;
 }
 
 void ServiceWorkerContextCore::ScheduleDeleteAndStartOver() const {

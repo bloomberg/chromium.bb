@@ -13,6 +13,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_handle.h"
 #include "content/browser/service_worker/service_worker_registration.h"
+#include "content/browser/service_worker/service_worker_registration_handle.h"
 #include "content/browser/service_worker/service_worker_utils.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_messages.h"
@@ -135,6 +136,10 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
                         OnIncrementServiceWorkerRefCount)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount,
                         OnDecrementServiceWorkerRefCount)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_IncrementRegistrationRefCount,
+                        OnIncrementRegistrationRefCount)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_DecrementRegistrationRefCount,
+                        OnDecrementRegistrationRefCount)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -163,6 +168,12 @@ void ServiceWorkerDispatcherHost::RegisterServiceWorkerHandle(
     scoped_ptr<ServiceWorkerHandle> handle) {
   int handle_id = handle->handle_id();
   handles_.AddWithID(handle.release(), handle_id);
+}
+
+void ServiceWorkerDispatcherHost::RegisterServiceWorkerRegistrationHandle(
+    scoped_ptr<ServiceWorkerRegistrationHandle> handle) {
+  int handle_id = handle->handle_id();
+  registration_handles_.AddWithID(handle.release(), handle_id);
 }
 
 void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
@@ -331,6 +342,23 @@ ServiceWorkerHandle* ServiceWorkerDispatcherHost::FindHandle(int provider_id,
   return NULL;
 }
 
+ServiceWorkerRegistrationHandle*
+ServiceWorkerDispatcherHost::FindRegistrationHandle(int provider_id,
+                                                    int64 registration_id) {
+  for (IDMap<ServiceWorkerRegistrationHandle, IDMapOwnPointer>::iterator
+           iter(&registration_handles_);
+       !iter.IsAtEnd();
+       iter.Advance()) {
+    ServiceWorkerRegistrationHandle* handle = iter.GetCurrentValue();
+    DCHECK(handle);
+    if (handle->provider_id() == provider_id && handle->registration() &&
+        handle->registration()->id() == registration_id) {
+      return handle;
+    }
+  }
+  return NULL;
+}
+
 void ServiceWorkerDispatcherHost::RegistrationComplete(
     int thread_id,
     int provider_id,
@@ -350,6 +378,7 @@ void ServiceWorkerDispatcherHost::RegistrationComplete(
   DCHECK(version);
   DCHECK_EQ(registration_id, version->registration_id());
   ServiceWorkerObjectInfo info;
+
   ServiceWorkerHandle* handle = FindHandle(provider_id, version_id);
   if (handle) {
     DCHECK_EQ(thread_id, handle->thread_id());
@@ -361,8 +390,27 @@ void ServiceWorkerDispatcherHost::RegistrationComplete(
     info = new_handle->GetObjectInfo();
     RegisterServiceWorkerHandle(new_handle.Pass());
   }
+
+  ServiceWorkerRegistration* registration =
+      GetContext()->GetLiveRegistration(registration_id);
+  DCHECK(registration);
+
+  ServiceWorkerRegistrationHandle* registration_handle =
+      FindRegistrationHandle(provider_id, registration_id);
+  int registration_handle_id = kInvalidServiceWorkerRegistrationHandleId;
+  if (registration_handle) {
+    registration_handle->IncrementRefCount();
+    registration_handle_id = registration_handle->handle_id();
+  } else {
+    scoped_ptr<ServiceWorkerRegistrationHandle> new_handle(
+        new ServiceWorkerRegistrationHandle(
+            GetContext()->AsWeakPtr(), this, provider_id, registration));
+    registration_handle_id = new_handle->handle_id();
+    RegisterServiceWorkerRegistrationHandle(new_handle.Pass());
+  }
+
   Send(new ServiceWorkerMsg_ServiceWorkerRegistered(
-      thread_id, request_id, info));
+      thread_id, request_id, registration_handle_id, info));
 }
 
 void ServiceWorkerDispatcherHost::OnWorkerScriptLoaded(int embedded_worker_id) {
@@ -465,6 +513,30 @@ void ServiceWorkerDispatcherHost::OnDecrementServiceWorkerRefCount(
   handle->DecrementRefCount();
   if (handle->HasNoRefCount())
     handles_.Remove(handle_id);
+}
+
+void ServiceWorkerDispatcherHost::OnIncrementRegistrationRefCount(
+    int registration_handle_id) {
+  ServiceWorkerRegistrationHandle* handle =
+      registration_handles_.Lookup(registration_handle_id);
+  if (!handle) {
+    BadMessageReceived();
+    return;
+  }
+  handle->IncrementRefCount();
+}
+
+void ServiceWorkerDispatcherHost::OnDecrementRegistrationRefCount(
+    int registration_handle_id) {
+  ServiceWorkerRegistrationHandle* handle =
+      registration_handles_.Lookup(registration_handle_id);
+  if (!handle) {
+    BadMessageReceived();
+    return;
+  }
+  handle->DecrementRefCount();
+  if (handle->HasNoRefCount())
+    registration_handles_.Remove(registration_handle_id);
 }
 
 void ServiceWorkerDispatcherHost::UnregistrationComplete(

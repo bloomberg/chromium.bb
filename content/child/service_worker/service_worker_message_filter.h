@@ -37,10 +37,12 @@ class CONTENT_EXPORT ServiceWorkerMessageFilter
   void OnStaleRegistered(
       int thread_id,
       int request_id,
+      int registration_handle_id,
       const ServiceWorkerObjectInfo& info);
   void OnStaleSetVersionAttributes(
       int thread_id,
       int provider_id,
+      int registration_handle_id,
       int changed_mask,
       const ServiceWorkerVersionAttributes& attributes);
   void OnStaleSetControllerServiceWorker(

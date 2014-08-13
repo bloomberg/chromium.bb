@@ -165,6 +165,8 @@
       'child/service_worker/service_worker_network_provider.h',
       'child/service_worker/service_worker_provider_context.cc',
       'child/service_worker/service_worker_provider_context.h',
+      'child/service_worker/service_worker_registration_handle_reference.cc',
+      'child/service_worker/service_worker_registration_handle_reference.h',
       'child/service_worker/web_service_worker_impl.cc',
       'child/service_worker/web_service_worker_impl.h',
       'child/service_worker/web_service_worker_provider_impl.cc',

@@ -11,6 +11,7 @@
 #include "content/browser/service_worker/service_worker_controllee_request_handler.h"
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
 #include "content/browser/service_worker/service_worker_handle.h"
+#include "content/browser/service_worker/service_worker_registration_handle.h"
 #include "content/browser/service_worker/service_worker_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/service_worker_messages.h"
@@ -99,7 +100,11 @@ void ServiceWorkerProviderHost::SetVersionAttributes(
     attributes.active = CreateHandleAndPass(active_version);
 
   dispatcher_host_->Send(new ServiceWorkerMsg_SetVersionAttributes(
-      kDocumentMainThreadId, provider_id(), mask.changed(), attributes));
+      kDocumentMainThreadId,
+      provider_id(),
+      kInvalidServiceWorkerRegistrationHandleId,
+      mask.changed(),
+      attributes));
 }
 
 void ServiceWorkerProviderHost::SetVersionAttributesInternal(

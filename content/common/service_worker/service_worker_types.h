@@ -25,6 +25,7 @@ static const int kInvalidServiceWorkerRequestId = -1;
 
 // Constants for invalid identifiers.
 static const int kInvalidServiceWorkerHandleId = -1;
+static const int kInvalidServiceWorkerRegistrationHandleId = -1;
 static const int kInvalidServiceWorkerProviderId = -1;
 static const int64 kInvalidServiceWorkerRegistrationId = -1;
 static const int64 kInvalidServiceWorkerVersionId = -1;

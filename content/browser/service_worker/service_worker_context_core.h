@@ -168,8 +168,9 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   std::vector<ServiceWorkerRegistrationInfo> GetAllLiveRegistrationInfo();
   std::vector<ServiceWorkerVersionInfo> GetAllLiveVersionInfo();
 
-  // Returns new context-local unique ID for ServiceWorkerHandle.
+  // Returns new context-local unique ID.
   int GetNewServiceWorkerHandleId();
+  int GetNewRegistrationHandleId();
 
   void ScheduleDeleteAndStartOver() const;
 
@@ -216,6 +217,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   std::map<int64, ServiceWorkerRegistration*> live_registrations_;
   std::map<int64, ServiceWorkerVersion*> live_versions_;
   int next_handle_id_;
+  int next_registration_handle_id_;
   scoped_refptr<ObserverListThreadSafe<ServiceWorkerContextObserver> >
       observer_list_;
 

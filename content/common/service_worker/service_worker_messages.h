@@ -102,8 +102,16 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_ProviderDestroyed,
 // counting in the browser side. The ServiceWorker object is created
 // with ref-count==1 initially.
 IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_IncrementServiceWorkerRefCount,
-                     int /* handle_id */)
+                     int /* registration_handle_id */)
 IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount,
+                     int /* registration_handle_id */)
+
+// Increments and decrements the ServiceWorkerRegistration object's reference
+// counting in the browser side. The registration object is created with
+// ref-count==1 initially.
+IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_IncrementRegistrationRefCount,
+                     int /* handle_id */)
+IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_DecrementRegistrationRefCount,
                      int /* handle_id */)
 
 // Informs the browser that |provider_id| is associated
@@ -170,9 +178,10 @@ IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_CacheStorageKeys,
 // on the correct thread.
 
 // Response to ServiceWorkerMsg_RegisterServiceWorker.
-IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ServiceWorkerRegistered,
+IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerRegistered,
                      int /* thread_id */,
                      int /* request_id */,
+                     int /* registration_handle_id */,
                      content::ServiceWorkerObjectInfo)
 
 // Response to ServiceWorkerMsg_UnregisterServiceWorker.
@@ -195,9 +204,10 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ServiceWorkerStateChanged,
                      blink::WebServiceWorkerState)
 
 // Tells the child process to set service workers for the given provider.
-IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_SetVersionAttributes,
+IPC_MESSAGE_CONTROL5(ServiceWorkerMsg_SetVersionAttributes,
                      int /* thread_id */,
                      int /* provider_id */,
+                     int /* registration_handle_id */,
                      int /* changed_mask */,
                      content::ServiceWorkerVersionAttributes)
 

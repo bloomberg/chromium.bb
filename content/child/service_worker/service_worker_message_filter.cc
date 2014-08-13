@@ -19,12 +19,21 @@ namespace {
 // Sends a ServiceWorkerObjectDestroyed message to the browser so it can delete
 // the ServiceWorker handle.
 void SendServiceWorkerObjectDestroyed(
-    scoped_refptr<ThreadSafeSender> sender,
+    ThreadSafeSender* sender,
     int handle_id) {
   if (handle_id == kInvalidServiceWorkerHandleId)
     return;
   sender->Send(
       new ServiceWorkerHostMsg_DecrementServiceWorkerRefCount(handle_id));
+}
+
+void SendRegistrationObjectDestroyed(
+    ThreadSafeSender* sender,
+    int handle_id) {
+  if (handle_id == kInvalidServiceWorkerRegistrationHandleId)
+    return;
+  sender->Send(
+      new ServiceWorkerHostMsg_DecrementRegistrationRefCount(handle_id));
 }
 
 }  // namespace
@@ -72,13 +81,16 @@ void ServiceWorkerMessageFilter::OnStaleMessageReceived(
 void ServiceWorkerMessageFilter::OnStaleRegistered(
     int thread_id,
     int request_id,
+    int registration_handle_id,
     const ServiceWorkerObjectInfo& info) {
   SendServiceWorkerObjectDestroyed(thread_safe_sender_, info.handle_id);
+  SendRegistrationObjectDestroyed(thread_safe_sender_, registration_handle_id);
 }
 
 void ServiceWorkerMessageFilter::OnStaleSetVersionAttributes(
     int thread_id,
     int provider_id,
+    int registration_handle_id,
     int changed_mask,
     const ServiceWorkerVersionAttributes& attributes) {
   SendServiceWorkerObjectDestroyed(thread_safe_sender_,
@@ -87,6 +99,7 @@ void ServiceWorkerMessageFilter::OnStaleSetVersionAttributes(
                                    attributes.waiting.handle_id);
   SendServiceWorkerObjectDestroyed(thread_safe_sender_,
                                    attributes.active.handle_id);
+  SendRegistrationObjectDestroyed(thread_safe_sender_, registration_handle_id);
 }
 
 void ServiceWorkerMessageFilter::OnStaleSetControllerServiceWorker(

@@ -8,21 +8,36 @@
 #include "base/compiler_specific.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerRegistration.h"
 
+namespace blink {
+class WebServiceWorker;
+class WebServiceWorkerRegistrationProxy;
+}
+
 namespace content {
 
+class ServiceWorkerRegistrationHandleReference;
+class ThreadSafeSender;
 struct ServiceWorkerObjectInfo;
 
 class WebServiceWorkerRegistrationImpl
     : NON_EXPORTED_BASE(public blink::WebServiceWorkerRegistration) {
  public:
   explicit WebServiceWorkerRegistrationImpl(
-      const ServiceWorkerObjectInfo& info);
+      scoped_ptr<ServiceWorkerRegistrationHandleReference> handle_ref);
   virtual ~WebServiceWorkerRegistrationImpl();
+
+  void OnUpdateFound();
+
+  virtual void setProxy(blink::WebServiceWorkerRegistrationProxy* proxy);
+  virtual void setInstalling(blink::WebServiceWorker* service_worker);
+  virtual void setWaiting(blink::WebServiceWorker* service_worker);
+  virtual void setActive(blink::WebServiceWorker* service_worker);
 
   virtual blink::WebURL scope() const;
 
  private:
-  const GURL scope_;
+  scoped_ptr<ServiceWorkerRegistrationHandleReference> handle_ref_;
+  blink::WebServiceWorkerRegistrationProxy* proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(WebServiceWorkerRegistrationImpl);
 };
