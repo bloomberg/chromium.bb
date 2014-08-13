@@ -69,6 +69,7 @@
 #include "content/browser/media/midi_host.h"
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/mime_registry_message_filter.h"
+#include "content/browser/mojo/mojo_application_host.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/profiler_message_filter.h"
 #include "content/browser/push_messaging_message_filter.h"
