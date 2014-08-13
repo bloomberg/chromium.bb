@@ -380,7 +380,13 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, SrcDoc) {
   ASSERT_TRUE(RunExtensionTest("webnavigation/srcdoc")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, OpenTab) {
+// Crashes on Windows. http://crbug.com/402943
+#if defined(OS_WIN)
+#define MAYBE_OpenTab DISABLED_OpenTab
+#else
+#define MAYBE_OpenTab OpenTab
+#endif
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_OpenTab) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("webnavigation/openTab")) << message_;
 }
