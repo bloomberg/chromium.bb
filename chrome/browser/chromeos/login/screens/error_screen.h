@@ -103,7 +103,9 @@ class ErrorScreen : public WizardScreen,
   void StartGuestSessionAfterOwnershipCheck(
       DeviceSettingsService::OwnershipStatus ownership_status);
 
+  void* volatile canary_1_;  // For debugging of https://crbug.com/396557.
   ErrorScreenActor* actor_;
+  void* volatile canary_2_;
 
   OobeDisplay::Screen parent_screen_;
 

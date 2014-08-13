@@ -11,21 +11,30 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 
+namespace {
+void* const kCanaryConstant = (void*)0xbaddecafbaddecafLLU;
+}
+
 namespace chromeos {
 
 ErrorScreen::ErrorScreen(ScreenObserver* screen_observer,
                          ErrorScreenActor* actor)
     : WizardScreen(screen_observer),
+      canary_1_(kCanaryConstant),
       actor_(actor),
+      canary_2_(kCanaryConstant),
       parent_screen_(OobeDisplay::SCREEN_UNKNOWN),
       weak_factory_(this) {
-  DCHECK(actor_);
+  CHECK(actor_);
   actor_->SetDelegate(this);
 }
 
 ErrorScreen::~ErrorScreen() {
-  if (actor_)
-    actor_->SetDelegate(NULL);
+  CHECK(this);
+  CHECK(canary_1_ == kCanaryConstant);
+  CHECK(canary_2_ == kCanaryConstant);
+  CHECK(actor_);
+  actor_->SetDelegate(NULL);
 }
 
 void ErrorScreen::PrepareToShow() {
