@@ -39,6 +39,11 @@ class ResetTest : public LoginManagerTest {
   }
   virtual ~ResetTest() {}
 
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
+    LoginManagerTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kEnableRollbackOption);
+  }
+
   // LoginManagerTest overrides:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     FakeDBusThreadManager* dbus_manager = new FakeDBusThreadManager;
@@ -91,6 +96,7 @@ class ResetFirstAfterBootTest : public ResetTest {
   virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
     LoginManagerTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kFirstExecAfterBoot);
+    command_line->AppendSwitch(switches::kEnableRollbackOption);
   }
 };
 
