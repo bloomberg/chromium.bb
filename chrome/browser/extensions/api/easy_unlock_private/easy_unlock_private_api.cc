@@ -63,6 +63,11 @@ bool EasyUnlockPrivateGetStringsFunction::RunSync() {
   const base::string16 device_type = base::ASCIIToUTF16("Chromeschnozzle");
 #endif  // defined(OS_CHROMEOS)
 
+  // Common strings.
+  strings->SetString(
+      "learnMoreLinkTitle",
+      l10n_util::GetStringUTF16(IDS_EASY_UNLOCK_LEARN_MORE_LINK_TITLE));
+
   // Setup notification strings.
   strings->SetString(
       "setupNotificationTitle",
@@ -85,6 +90,17 @@ bool EasyUnlockPrivateGetStringsFunction::RunSync() {
       "successNotificationMessage",
       l10n_util::GetStringFUTF16(IDS_EASY_UNLOCK_SUCCESS_NOTIFICATION_MESSAGE,
                                  device_type));
+
+  // Chromebook added to Easy Unlock notification strings.
+  strings->SetString(
+      "chromebookAddedNotificationTitle",
+      l10n_util::GetStringUTF16(
+          IDS_EASY_UNLOCK_CHROMEBOOK_ADDED_NOTIFICATION_TITLE));
+  strings->SetString(
+     "chromebookAddedNotificationMessage",
+     l10n_util::GetStringFUTF16(
+          IDS_EASY_UNLOCK_CHROMEBOOK_ADDED_NOTIFICATION_MESSAGE,
+          device_type));
 
   // Setup dialog strings.
   // Step 1: Intro.
@@ -109,6 +125,10 @@ bool EasyUnlockPrivateGetStringsFunction::RunSync() {
       l10n_util::GetStringUTF16(
           IDS_EASY_UNLOCK_SETUP_INTRO_FINDING_PHONE_BUTTON_LABEL));
   strings->SetString(
+      "setupIntroRetryFindPhoneButtonLabel",
+      l10n_util::GetStringUTF16(
+          IDS_EASY_UNLOCK_SETUP_INTRO_RETRY_FIND_PHONE_BUTTON_LABEL));
+  strings->SetString(
       "setupIntroHowIsThisSecureLinkText",
       l10n_util::GetStringUTF16(
           IDS_EASY_UNLOCK_SETUP_INTRO_HOW_IS_THIS_SECURE_LINK_TEXT));
@@ -125,6 +145,10 @@ bool EasyUnlockPrivateGetStringsFunction::RunSync() {
       "setupFoundPhoneUseThisPhoneButtonLabel",
       l10n_util::GetStringUTF16(
           IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_USE_THIS_PHONE_BUTTON_LABEL));
+  strings->SetString(
+      "setupPairingPhoneFailedButtonLabel",
+      l10n_util::GetStringUTF16(
+          IDS_EASY_UNLOCK_SETUP_PAIRING_PHONE_FAILED_BUTTON_LABEL));
   // Step 3: Setup completed successfully.
   strings->SetString(
       "setupCompleteHeaderTitle",
@@ -160,6 +184,15 @@ bool EasyUnlockPrivateGetStringsFunction::RunSync() {
       l10n_util::GetStringFUTF16(
           IDS_EASY_UNLOCK_SETUP_ERROR_BLUETOOTH_CONNECTION_FAILED,
           device_type));
+  strings->SetString(
+      "setupErrorConnectionToPhoneTimeout",
+       l10n_util::GetStringFUTF16(
+           IDS_EASY_UNLOCK_SETUP_ERROR_CONNECT_TO_PHONE_TIMEOUT,
+           device_type));
+  strings->SetString(
+      "setupErrorSyncPhoneState",
+       l10n_util::GetStringUTF16(
+           IDS_EASY_UNLOCK_SETUP_ERROR_SYNC_PHONE_STATE_FAILED));
   strings->SetString(
       "setupErrorConnectingToPhone",
       l10n_util::GetStringFUTF16(
