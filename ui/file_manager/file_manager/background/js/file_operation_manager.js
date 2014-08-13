@@ -241,10 +241,16 @@ fileOperationUtil.copyTo = function(
 
         case 'end_copy_entry':
           // TODO(mtomasz): Convert URL to Entry in custom bindings.
-          util.URLsToEntries(
-              [status.destinationUrl], function(destinationEntries) {
-                entryChangedCallback(status.sourceUrl,
-                                     destinationEntries[0] || null);
+          (source.isFile ? parent.getFile : parent.getDirectory).call(
+              parent,
+              newName,
+              null,
+              function(entry) {
+                entryChangedCallback(status.sourceUrl, entry);
+                callback();
+              },
+              function() {
+                entryChangedCallback(status.sourceUrl, null);
                 callback();
               });
           break;
@@ -1039,9 +1045,10 @@ FileOperationManager.ZipTask.prototype.run = function(
             this.zipBaseDirEntry,
             destPath,
             function(entry) {
+              this.processedBytes = this.totalBytes;
               entryChangedCallback(util.EntryChangedKind.CREATED, entry);
               successCallback();
-            },
+            }.bind(this),
             function(error) {
               errorCallback(new FileOperationManager.Error(
                   util.FileOperationErrorType.FILESYSTEM_ERROR, error));
@@ -1156,7 +1163,6 @@ FileOperationManager.prototype.paste = function(
 
   if (isMove) {
     for (var index = 0; index < sourceEntries.length; index++) {
-      var sourceEntry = sourceEntries[index];
       resolveGroup.run(function(sourceEntry, callback) {
         sourceEntry.getParent(function(inParentEntry) {
           if (!util.isSameEntry(inParentEntry, targetEntry))
@@ -1169,7 +1175,7 @@ FileOperationManager.prototype.paste = function(
           filteredEntries.push(sourceEntry);
           callback();
         });
-      }.bind(this, sourceEntry));
+      }.bind(this, sourceEntries[index]));
     }
   } else {
     // Always copy all of the files.
@@ -1186,28 +1192,6 @@ FileOperationManager.prototype.paste = function(
 };
 
 /**
- * Checks if the move operation is available between the given two locations.
- * This method uses the volume manager, which is lazily created, therefore the
- * result is returned asynchronously.
- *
- * @param {DirectoryEntry} sourceEntry An entry from the source.
- * @param {DirectoryEntry} targetDirEntry Directory entry for the target.
- * @param {function(boolean)} callback Callback with result whether the entries
- *     can be directly moved.
- * @private
- */
-FileOperationManager.prototype.isMovable_ = function(
-    sourceEntry, targetDirEntry, callback) {
-  VolumeManager.getInstance(function(volumeManager) {
-    var sourceLocationInfo = volumeManager.getLocationInfo(sourceEntry);
-    var targetDirLocationInfo = volumeManager.getLocationInfo(targetDirEntry);
-    callback(
-        sourceLocationInfo && targetDirLocationInfo &&
-        sourceLocationInfo.volumeInfo === targetDirLocationInfo.volumeInfo);
-  });
-};
-
-/**
  * Initiate a file copy. When copying files, null can be specified as source
  * directory.
  *
@@ -1218,34 +1202,28 @@ FileOperationManager.prototype.isMovable_ = function(
  */
 FileOperationManager.prototype.queueCopy_ = function(
     targetDirEntry, entries, isMove) {
-  var createTask = function(task) {
-    task.taskId = this.generateTaskId_();
-    this.eventRouter_.sendProgressEvent(
-        'BEGIN', task.getStatus(), task.taskId);
-    task.initialize(function() {
-      this.copyTasks_.push(task);
-      if (this.copyTasks_.length === 1)
-        this.serviceAllTasks_();
-    }.bind(this));
-  }.bind(this);
-
   var task;
   if (isMove) {
     // When moving between different volumes, moving is implemented as a copy
     // and delete. This is because moving between volumes is slow, and moveTo()
     // is not cancellable nor provides progress feedback.
-    this.isMovable_(entries[0], targetDirEntry, function(isMovable) {
-      if (isMovable) {
-        createTask(new FileOperationManager.MoveTask(entries, targetDirEntry));
-      } else {
-        createTask(
-            new FileOperationManager.CopyTask(entries, targetDirEntry, true));
-      }
-    });
+    if (util.isSameFileSystem(entries[0].filesystem,
+                              targetDirEntry.filesystem)) {
+      task = new FileOperationManager.MoveTask(entries, targetDirEntry);
+    } else {
+      task = new FileOperationManager.CopyTask(entries, targetDirEntry, true);
+    }
   } else {
-    createTask(
-        new FileOperationManager.CopyTask(entries, targetDirEntry, false));
+    task = new FileOperationManager.CopyTask(entries, targetDirEntry, false);
   }
+
+  task.taskId = this.generateTaskId_();
+  this.eventRouter_.sendProgressEvent('BEGIN', task.getStatus(), task.taskId);
+  task.initialize(function() {
+    this.copyTasks_.push(task);
+    if (this.copyTasks_.length === 1)
+      this.serviceAllTasks_();
+  }.bind(this));
 };
 
 /**

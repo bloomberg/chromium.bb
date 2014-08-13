@@ -237,11 +237,6 @@ function testCopy(callback) {
     assertEquals(0, lastEvent.status.numRemainingItems);
     assertEquals(10, lastEvent.status.processedBytes);
     assertEquals(10, lastEvent.status.totalBytes);
-
-    assertTrue(events.some(function(event) {
-      return event.type === 'entry-changed' &&
-          event.entry === targetEntry;
-    }));
   }), callback);
 
   fileOperationManager.paste(sourceEntries, targetEntry, false);
