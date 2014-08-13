@@ -9,8 +9,8 @@ from telemetry.core import exceptions
 from telemetry.core import wpr_modes
 from telemetry.page import page
 from telemetry.page import page_test
-from telemetry.testing import page_test_test_case
 from telemetry.unittest import options_for_unittests
+from telemetry.unittest import page_test_test_case
 
 class FakePlatform(object):
   def IsRawDisplayFrameRateSupported(self):

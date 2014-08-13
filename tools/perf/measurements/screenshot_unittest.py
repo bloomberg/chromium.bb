@@ -9,8 +9,8 @@ import tempfile
 from measurements import screenshot
 from telemetry import benchmark
 from telemetry.page import page_test
-from telemetry.testing import page_test_test_case
 from telemetry.unittest import options_for_unittests
+from telemetry.unittest import page_test_test_case
 
 
 class ScreenshotUnitTest(page_test_test_case.PageTestTestCase):

@@ -4,8 +4,8 @@
 
 from measurements import loading_trace
 from telemetry.core import wpr_modes
-from telemetry.testing import page_test_test_case
 from telemetry.unittest import options_for_unittests
+from telemetry.unittest import page_test_test_case
 
 class LoadingTraceUnitTest(page_test_test_case.PageTestTestCase):
   def setUp(self):

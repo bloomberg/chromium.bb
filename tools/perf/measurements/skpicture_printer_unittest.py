@@ -6,8 +6,8 @@ import shutil
 import tempfile
 
 from measurements import skpicture_printer
-from telemetry.testing import page_test_test_case
 from telemetry.unittest import options_for_unittests
+from telemetry.unittest import page_test_test_case
 from telemetry.unittest import test
 
 
