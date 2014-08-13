@@ -482,7 +482,9 @@ public:
     void didUpdateCompositingInputs();
 
     const AncestorDependentCompositingInputs& ancestorDependentCompositingInputs() const { ASSERT(!m_needsAncestorDependentCompositingInputsUpdate); return m_ancestorDependentCompositingInputs; }
-    const DescendantDependentCompositingInputs& descendantDependentCompositingInputs() const { ASSERT(!m_needsDescendantDependentCompositingInputsUpdate); return m_descendantDependentCompositingInputs; }
+
+    // FIXME: This function should ASSERT(!m_needsDescendantDependentCompositingInputsUpdate).
+    const DescendantDependentCompositingInputs& descendantDependentCompositingInputs() const { return m_descendantDependentCompositingInputs; }
 
     IntRect clippedAbsoluteBoundingBox() const { return ancestorDependentCompositingInputs().clippedAbsoluteBoundingBox; }
     const RenderLayer* opacityAncestor() const { return ancestorDependentCompositingInputs().opacityAncestor; }
