@@ -57,16 +57,6 @@
 
 namespace blink {
 
-void CoreInitializer::initEventNames()
-{
-    EventNames::init();
-}
-
-void CoreInitializer::initEventTargetNames()
-{
-    EventTargetNames::init();
-}
-
 void CoreInitializer::registerEventFactory()
 {
     static bool isRegistered = false;
@@ -79,8 +69,7 @@ void CoreInitializer::registerEventFactory()
 
 void CoreInitializer::init()
 {
-    if (m_isInited)
-        return;
+    ASSERT(!m_isInited);
     m_isInited = true;
 
     // It would make logical sense to do this and WTF::StringStatics::init() in
@@ -93,8 +82,8 @@ void CoreInitializer::init()
     XMLNSNames::init();
     XMLNames::init();
 
-    initEventNames();
-    initEventTargetNames();
+    EventNames::init();
+    EventTargetNames::init();
     EventTypeNames::init();
     FetchInitiatorTypeNames::init();
     FontFamilyNames::init();
@@ -108,7 +97,6 @@ void CoreInitializer::init()
     Partitions::init();
     EventTracer::initialize();
 
-    initBindings();
     registerEventFactory();
 
     // Ensure that the main thread's thread-local data is initialized before

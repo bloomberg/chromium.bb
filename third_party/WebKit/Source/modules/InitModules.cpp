@@ -14,27 +14,19 @@
 
 namespace blink {
 
-void ModulesInitializer::initEventNames()
+void ModulesInitializer::init()
 {
-    EventNames::init();
+    ASSERT(!isInitialized());
+
+    // Strings must be initialized before calling CoreInitializer::init().
     EventNames::initModules();
-}
-
-void ModulesInitializer::initEventTargetNames()
-{
-    EventTargetNames::init();
     EventTargetNames::initModules();
-}
-
-void ModulesInitializer::registerEventFactory()
-{
-    CoreInitializer::registerEventFactory();
     Document::registerEventFactory(EventModulesFactory::create());
-}
-
-void ModulesInitializer::initBindings()
-{
     ModuleBindingsInitializer::init();
+
+    CoreInitializer::init();
+
+    ASSERT(isInitialized());
 }
 
 } // namespace blink

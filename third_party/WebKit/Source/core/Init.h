@@ -37,17 +37,17 @@ class CoreInitializer {
 public:
     CoreInitializer() : m_isInited(false) { }
     // Should be called by clients before trying to create Frames.
-    void init();
-
-    virtual void registerEventFactory();
-    virtual void initEventNames();
-    virtual void initEventTargetNames();
-    virtual void initBindings() { }
+    virtual void init();
 
     // FIXME: Why is this function static?
     static void shutdown();
 
+protected:
+    bool isInitialized() const { return m_isInited; }
+
 private:
+    void registerEventFactory();
+
     bool m_isInited;
 };
 
