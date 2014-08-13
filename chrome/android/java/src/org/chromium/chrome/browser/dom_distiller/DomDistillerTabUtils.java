@@ -27,5 +27,16 @@ public class DomDistillerTabUtils {
         nativeDistillCurrentPageAndView(webContents);
     }
 
+    /**
+     * Returns the formatted version of the original URL of a distillation, given the original URL.
+     *
+     * @param url The original URL.
+     * @return the formatted URL of the original page.
+     */
+    public static String getFormattedUrlFromOriginalDistillerUrl(String url) {
+        return nativeGetFormattedUrlFromOriginalDistillerUrl(url);
+    }
+
     private static native void nativeDistillCurrentPageAndView(WebContents webContents);
+    private static native String nativeGetFormattedUrlFromOriginalDistillerUrl(String url);
 }
