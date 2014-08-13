@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "9.0",
+  "version": "8.11",
   "entries": [
     {
       "id": 1,
@@ -42,7 +42,10 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "os": {
         "type": "linux"
       },
-      "gl_renderer": "(?i).*software.*",
+      "gl_renderer": {
+        "op": "contains",
+        "value": "software"
+      },
       "features": [
         "all"
       ]
@@ -73,7 +76,10 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "vendor_id": "0x1002",
       "exceptions": [
         {
-          "driver_vendor": ".*AMD.*",
+          "driver_vendor": {
+            "op": "contains",
+            "value": "AMD"
+          },
           "driver_version": {
             "op": ">=",
             "style": "lexical",
@@ -81,7 +87,10 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
           }
         },
         {
-          "driver_vendor": "Mesa",
+          "driver_vendor": {
+            "op": "=",
+            "value": "Mesa"
+          },
           "driver_version": {
             "op": ">=",
             "value": "10.0.4"
@@ -141,7 +150,10 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
           }
         },
         {
-          "driver_vendor": "osmesa"
+          "driver_vendor": {
+            "op": "=",
+            "value": "osmesa"
+          }
         },
         {
           "vendor_id": "0x1414",
@@ -160,7 +172,10 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "type": "linux"
       },
       "vendor_id": "0x8086",
-      "driver_vendor": "Mesa",
+      "driver_vendor": {
+        "op": "=",
+        "value": "Mesa"
+      },
       "driver_version": {
         "op": "<",
         "value": "10.1"
@@ -225,14 +240,20 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "os": {
         "type": "linux"
       },
-      "driver_vendor": "Mesa",
+      "driver_vendor": {
+        "op": "=",
+        "value": "Mesa"
+      },
       "driver_version": {
         "op": "<",
         "value": "7.11"
       },
       "exceptions": [
         {
-          "driver_vendor": "osmesa"
+          "driver_vendor": {
+            "op": "=",
+            "value": "osmesa"
+          }
         }
       ],
       "features": [
@@ -256,10 +277,16 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "os": {
         "type": "linux"
       },
-      "gl_vendor": "ATI.*",
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "ATI"
+      },
       "exceptions": [
         {
-          "driver_vendor": ".*AMD.*",
+          "driver_vendor": {
+            "op": "contains",
+            "value": "AMD"
+          },
           "driver_version": {
             "op": ">=",
             "style": "lexical",
@@ -267,7 +294,10 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
           }
         },
         {
-          "driver_vendor": "Mesa",
+          "driver_vendor": {
+            "op": "=",
+            "value": "Mesa"
+          },
           "driver_version": {
             "op": ">=",
             "value": "10.0.4"
@@ -285,11 +315,20 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "os": {
         "type": "linux"
       },
-      "gl_vendor": "X\\.Org.*",
-      "gl_renderer": ".*AMD.*",
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "X.Org"
+      },
+      "gl_renderer": {
+        "op": "contains",
+        "value": "AMD"
+      },
       "exceptions": [
         {
-          "driver_vendor": "Mesa",
+          "driver_vendor": {
+            "op": "=",
+            "value": "Mesa"
+          },
           "driver_version": {
             "op": ">=",
             "value": "10.0.4"
@@ -307,11 +346,20 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "os": {
         "type": "linux"
       },
-      "gl_vendor": "X\\.Org.*",
-      "gl_renderer": ".*ATI.*",
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "X.Org"
+      },
+      "gl_renderer": {
+        "op": "contains",
+        "value": "ATI"
+      },
       "exceptions": [
         {
-          "driver_vendor": "Mesa",
+          "driver_vendor": {
+            "op": "=",
+            "value": "Mesa"
+          },
           "driver_version": {
             "op": ">=",
             "value": "10.0.4"
@@ -330,7 +378,10 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "type": "linux"
       },
       "vendor_id": "0x10de",
-      "gl_vendor": "(?i)nouveau.*",
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "nouveau"
+      },
       "features": [
         "all"
       ]
@@ -354,7 +405,10 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
           }
         },
         {
-          "cpu_info": "(?i).*Atom.*"
+          "cpu_info": {
+            "op": "contains",
+            "value": "Atom"
+          }
         }
       ],
       "features": [
@@ -395,12 +449,18 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "multi_gpu_style": "optimus",
       "exceptions": [
         {
-          "driver_vendor": "Mesa",
+          "driver_vendor": {
+            "op": "=",
+            "value": "Mesa"
+          },
           "driver_version": {
             "op": ">=",
             "value": "10.1"
           },
-          "gl_vendor": "Intel.*"
+          "gl_vendor": {
+            "op": "beginwith",
+            "value": "Intel"
+          }
         }
       ],
       "features": [
@@ -497,7 +557,10 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "type": "linux"
       },
       "vendor_id": "0x10de",
-      "driver_vendor": "NVIDIA",
+      "driver_vendor": {
+        "op": "=",
+        "value": "NVIDIA"
+      },
       "driver_version": {
         "op": "<",
         "value": "295"
@@ -558,15 +621,24 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "os": {
         "type": "linux"
       },
-      "gl_vendor": "VMware.*",
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "VMware"
+      },
       "exceptions": [
         {
-          "driver_vendor": "Mesa",
+          "driver_vendor": {
+            "op": "=",
+            "value": "Mesa"
+          },
           "driver_version": {
             "op": ">=",
             "value": "9.2.1"
           },
-          "gl_renderer": ".*SVGA3D.*"
+          "gl_renderer": {
+            "op": "contains",
+            "value": "SVGA3D"
+          }
         }
       ],
       "features": [
@@ -591,7 +663,10 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "type": "linux"
       },
       "vendor_id": "0x10de",
-      "driver_vendor": "NVIDIA",
+      "driver_vendor": {
+        "op": "=",
+        "value": "NVIDIA"
+      },
       "features": [
         "accelerated_video_decode",
         "flash_3d",
@@ -641,7 +716,10 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "os": {
         "type": "android"
       },
-      "gl_renderer": ".*Adreno.*",
+      "gl_renderer": {
+        "op": "contains",
+        "value": "Adreno"
+      },
       "driver_version": {
         "op": "<",
         "value": "4.1"
@@ -770,7 +848,10 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "os": {
         "type": "win"
       },
-      "driver_vendor": "Microsoft",
+      "driver_vendor": {
+        "op": "=",
+        "value": "Microsoft"
+      },
       "exceptions": [
         {
           "vendor_id": "0x1414",
@@ -1031,7 +1112,10 @@ LONG_STRING_CONST(
         "type": "linux"
       },
       "vendor_id": "0x1002",
-      "driver_vendor": ".*AMD.*",
+      "driver_vendor": {
+        "op": "contains",
+        "value": "AMD"
+      },
       "driver_version": {
         "op": "=",
         "value": "13.101"
