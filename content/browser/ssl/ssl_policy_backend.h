@@ -15,7 +15,7 @@
 
 namespace content {
 class NavigationControllerImpl;
-class SSLHostState;
+class SSLHostStateDelegate;
 
 class SSLPolicyBackend {
  public:
@@ -45,8 +45,8 @@ class SSLPolicyBackend {
                                         net::CertStatus error);
 
  private:
-  // SSL state specific for each host.
-  SSLHostState* ssl_host_state_;
+  // SSL state delegate specific for each host.
+  SSLHostStateDelegate* ssl_host_state_delegate_;
 
   NavigationControllerImpl* controller_;
 

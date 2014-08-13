@@ -15,6 +15,7 @@
 #include "content/public/common/signed_certificate_timestamp_id_and_status.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane_listener.h"
 
@@ -30,6 +31,7 @@ class WebContents;
 }
 
 namespace views {
+class LabelButton;
 class Link;
 class TabbedPane;
 class Widget;
@@ -118,9 +120,8 @@ class WebsiteSettingsPopupView
                               const base::string16& headline,
                               const base::string16& text,
                               views::Link* link,
-                              views::Link* secondary_link);
-  // Handles LinkClicked asynchronously.
-  void HandleLinkClickedAsync(views::Link* source);
+                              views::Link* secondary_link,
+                              views::LabelButton* reset_decisions_button);
 
   // The web contents of the current tab. The popup can't live longer than a
   // tab.
@@ -159,6 +160,9 @@ class WebsiteSettingsPopupView
   // Certificate Transparency info. If no such SCTs accompany the certificate
   // then |signed_certificate_timestamps_link_| is NULL.
   views::Link* signed_certificate_timestamps_link_;
+  // The button to reset the Allow/Deny certificate errors decision for the
+  // current host.
+  views::LabelButton* reset_decisions_button_;
 
   // The id of the certificate provided by the site. If the site does not
   // provide a certificate then |cert_id_| is 0.

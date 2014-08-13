@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -26,9 +27,12 @@
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
+#include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
 #include "chrome/browser/ui/website_settings/website_settings_infobar_delegate.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings_pattern.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cert_store.h"
@@ -121,6 +125,33 @@ WebsiteSettings::SiteIdentityStatus GetSiteIdentityStatusByCTInfo(
                : WebsiteSettings::SITE_IDENTITY_STATUS_CERT;
 }
 
+const char kRememberCertificateErrorDecisionsFieldTrialName[] =
+    "RememberCertificateErrorDecisions";
+const char kRememberCertificateErrorDecisionsFieldTrialDefaultGroup[] =
+    "Default";
+const char kRememberCertificateErrorDecisionsFieldTrialDisableGroup[] =
+    "Disable";
+// Returns true if the user is in the experimental group or has the flag enabled
+// for remembering SSL error decisions, otherwise false.
+//
+// TODO(jww): The field trial is scheduled to end 2015/02/28. This should be
+// removed at that point unless the field trial or flag continues.
+bool InRememberCertificateErrorDecisionsGroup() {
+  std::string group_name = base::FieldTrialList::FindFullName(
+      kRememberCertificateErrorDecisionsFieldTrialName);
+
+  // The Default and Disable groups are the "old-style" forget-at-session
+  // restart groups, so they do not get the button.
+  bool in_experimental_group = !group_name.empty() &&
+      group_name.compare(
+          kRememberCertificateErrorDecisionsFieldTrialDefaultGroup) != 0 &&
+      group_name.compare(
+          kRememberCertificateErrorDecisionsFieldTrialDisableGroup) != 0;
+  bool has_command_line_switch = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kRememberCertErrorDecisions);
+  return in_experimental_group || has_command_line_switch;
+}
+
 }  // namespace
 
 WebsiteSettings::WebsiteSettings(
@@ -141,7 +172,9 @@ WebsiteSettings::WebsiteSettings(
       cert_id_(0),
       site_connection_status_(SITE_CONNECTION_STATUS_UNKNOWN),
       cert_store_(cert_store),
-      content_settings_(profile->GetHostContentSettingsMap()) {
+      content_settings_(profile->GetHostContentSettingsMap()),
+      chrome_ssl_host_state_delegate_(
+          ChromeSSLHostStateDelegateFactory::GetForProfile(profile)) {
   Init(profile, url, ssl);
 
   HistoryService* history_service = HistoryServiceFactory::GetForProfile(
@@ -532,6 +565,17 @@ void WebsiteSettings::Init(Profile* profile,
     }
   }
 
+  // Check if a user decision has been made to allow or deny certificates with
+  // errors on this site.
+  ChromeSSLHostStateDelegate* delegate =
+      ChromeSSLHostStateDelegateFactory::GetForProfile(profile);
+  DCHECK(delegate);
+  // Only show an SSL decision revoke button if both the user has chosen to
+  // bypass SSL host errors for this host in the past and the user is not using
+  // the traditional "forget-at-session-restart" error decision memory.
+  show_ssl_decision_revoke_button_ = delegate->HasUserDecision(url.host()) &&
+      InRememberCertificateErrorDecisionsGroup();
+
   // By default select the permissions tab that displays all the site
   // permissions. In case of a connection error or an issue with the
   // certificate presented by the website, select the connection tab to draw
@@ -665,6 +709,7 @@ void WebsiteSettings::PresentSiteIdentity() {
   info.signed_certificate_timestamp_ids.assign(
       signed_certificate_timestamp_ids_.begin(),
       signed_certificate_timestamp_ids_.end());
+  info.show_ssl_decision_revoke_button = show_ssl_decision_revoke_button_;
   ui_->SetIdentityInfo(info);
 }
 
