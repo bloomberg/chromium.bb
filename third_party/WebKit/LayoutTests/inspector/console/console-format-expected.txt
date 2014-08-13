@@ -78,6 +78,8 @@ CONSOLE MESSAGE: line 12: 42
 CONSOLE MESSAGE: line 13: 42
 CONSOLE MESSAGE: line 12: abc
 CONSOLE MESSAGE: line 13: abc
+CONSOLE MESSAGE: line 12: [object Uint16Array]
+CONSOLE MESSAGE: line 13: [object Uint16Array]
 Tests that console logging dumps proper messages.
 
  Array[10]0: "test"1: "test2"4: "test4"foo: Objectlength: 10__proto__: Array[0] console-format.html:26
@@ -226,4 +228,8 @@ String {0: "a", 1: "b", 2: "c", length: 3, [[PrimitiveValue]]: "abc"} console-fo
 [String]0: Stringlength: 1__proto__: Array[0] console-format.html:13
 globals[32]
 String {0: "a", 1: "b", 2: "c", length: 3, [[PrimitiveValue]]: "abc"}
+[1, 2, 3] console-format.html:12
+[Uint16Array[3]]0: Uint16Array[3]length: 1__proto__: Array[0] console-format.html:13
+globals[33]
+[1, 2, 3]
 

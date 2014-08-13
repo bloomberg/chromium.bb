@@ -37,6 +37,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8DOMTokenList.h"
 #include "bindings/core/v8/V8EventTarget.h"
 #include "bindings/core/v8/V8HTMLAllCollection.h"
 #include "bindings/core/v8/V8HTMLCollection.h"
@@ -164,7 +165,7 @@ void V8InjectedScriptHost::typeMethodCustom(const v8::FunctionCallbackInfo<v8::V
         v8SetReturnValue(info, v8AtomicString(isolate, "string"));
         return;
     }
-    if (value->IsArray()) {
+    if (value->IsArray() || value->IsTypedArray()) {
         v8SetReturnValue(info, v8AtomicString(isolate, "array"));
         return;
     }
@@ -188,27 +189,10 @@ void V8InjectedScriptHost::typeMethodCustom(const v8::FunctionCallbackInfo<v8::V
         v8SetReturnValue(info, v8AtomicString(isolate, "node"));
         return;
     }
-    if (V8NodeList::hasInstance(value, isolate)) {
-        v8SetReturnValue(info, v8AtomicString(isolate, "array"));
-        return;
-    }
-    if (V8HTMLCollection::hasInstance(value, isolate)) {
-        v8SetReturnValue(info, v8AtomicString(isolate, "array"));
-        return;
-    }
-    if (V8Int8Array::hasInstance(value, isolate) || V8Int16Array::hasInstance(value, isolate) || V8Int32Array::hasInstance(value, isolate)) {
-        v8SetReturnValue(info, v8AtomicString(isolate, "array"));
-        return;
-    }
-    if (V8Uint8Array::hasInstance(value, isolate) || V8Uint16Array::hasInstance(value, isolate) || V8Uint32Array::hasInstance(value, isolate)) {
-        v8SetReturnValue(info, v8AtomicString(isolate, "array"));
-        return;
-    }
-    if (V8Float32Array::hasInstance(value, isolate) || V8Float64Array::hasInstance(value, isolate)) {
-        v8SetReturnValue(info, v8AtomicString(isolate, "array"));
-        return;
-    }
-    if (V8Uint8ClampedArray::hasInstance(value, isolate)) {
+    if (V8NodeList::hasInstance(value, isolate)
+        || V8DOMTokenList::hasInstance(value, isolate)
+        || V8HTMLCollection::hasInstance(value, isolate)
+        || V8HTMLAllCollection::hasInstance(value, isolate)) {
         v8SetReturnValue(info, v8AtomicString(isolate, "array"));
         return;
     }

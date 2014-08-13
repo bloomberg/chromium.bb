@@ -152,11 +152,7 @@ function isArrayLike(obj)
         if (typeof obj.splice === "function")
             return isFinite(obj.length);
         var str = InjectedScriptHost.callFunction(Object.prototype.toString, obj);
-        if (str === "[object Array]" ||
-            str === "[object Arguments]" ||
-            str === "[object HTMLCollection]" ||
-            str === "[object NodeList]" ||
-            str === "[object DOMTokenList]")
+        if (str === "[object Arguments]")
             return isFinite(obj.length);
     } catch (e) {
     }
@@ -981,9 +977,6 @@ InjectedScript.prototype = {
 
         if (this.isPrimitiveValue(obj))
             return null;
-
-        if (this._isHTMLAllCollection(obj))
-            return "array";
 
         var preciseType = InjectedScriptHost.type(obj);
         if (preciseType)
