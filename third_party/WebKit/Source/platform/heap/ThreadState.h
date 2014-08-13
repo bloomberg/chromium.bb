@@ -242,8 +242,11 @@ public:
     static void attachMainThread();
     static void detachMainThread();
 
-    // Trace all GC roots, called when marking the managed heap objects.
-    static void visitRoots(Visitor*);
+    // Trace all persistent roots, called when marking the managed heap objects.
+    static void visitPersistentRoots(Visitor*);
+
+    // Trace all objects found on the stack, used when doing conservative GCs.
+    static void visitStackRoots(Visitor*);
 
     // Associate ThreadState object with the current thread. After this
     // call thread can start using the garbage collected heap infrastructure.
@@ -509,7 +512,6 @@ public:
     HeapStats& statsAfterLastGC() { return m_statsAfterLastGC; }
 
     void setupHeapsForTermination();
-    void visitLocalRoots(Visitor*);
 
 private:
     explicit ThreadState();
@@ -561,8 +563,6 @@ private:
     // For this we reserve static storage for the main ThreadState
     // and lazily construct ThreadState in it using placement new.
     static uint8_t s_mainThreadStateStorage[];
-
-    void trace(Visitor*);
 
     ThreadIdentifier m_thread;
     OwnPtr<PersistentNode> m_persistents;

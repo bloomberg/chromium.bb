@@ -2082,7 +2082,23 @@ void Heap::collectGarbage(ThreadState::StackState stackState)
 
     prepareForGC();
 
-    traceRootsAndPerformGlobalWeakProcessing<GlobalMarking>();
+    // 1. trace persistent roots.
+    ThreadState::visitPersistentRoots(s_markingVisitor);
+
+    // 2. trace objects reachable from the persistent roots including ephemerons.
+    processMarkingStack<GlobalMarking>();
+
+    // 3. trace objects reachable from the stack. We do this independent of the
+    // given stackState since other threads might have a different stack state.
+    ThreadState::visitStackRoots(s_markingVisitor);
+
+    // 4. trace objects reachable from the stack "roots" including ephemerons.
+    // Only do the processing if we found a pointer to an object on one of the
+    // thread stacks.
+    if (lastGCWasConservative())
+        processMarkingStack<GlobalMarking>();
+
+    globalWeakProcessingAndCleanup();
 
     // After a global marking we know that any orphaned page that was not reached
     // cannot be reached in a subsequent GC. This is due to a thread either having
@@ -2122,7 +2138,23 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
         state->enterGC();
         state->prepareForGC();
 
-        traceRootsAndPerformGlobalWeakProcessing<ThreadLocalMarking>();
+        // 1. trace the thread local persistent roots. For thread local GCs we
+        // don't trace the stack (ie. no conservative scanning) since this is
+        // only called during thread shutdown where there should be no objects
+        // on the stack.
+        // We also assume that orphaned pages have no objects reachable from
+        // persistent handles on other threads or CrossThreadPersistents. The
+        // only cases where this could happen is if a subsequent conservative
+        // global GC finds a "pointer" on the stack or due to a programming
+        // error where an object has a dangling cross-thread pointer to an
+        // object on this heap.
+        state->visitPersistents(s_markingVisitor);
+
+        // 2. trace objects reachable from the thread's persistent roots
+        // including ephemerons.
+        processMarkingStack<ThreadLocalMarking>();
+
+        globalWeakProcessingAndCleanup();
 
         state->leaveGC();
     }
@@ -2130,18 +2162,14 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
 }
 
 template<CallbackInvocationMode Mode>
-void Heap::traceRootsAndPerformGlobalWeakProcessing()
+void Heap::processMarkingStack()
 {
-    if (Mode == ThreadLocalMarking)
-        ThreadState::current()->visitLocalRoots(s_markingVisitor);
-    else
-        ThreadState::visitRoots(s_markingVisitor);
-
     // Ephemeron fixed point loop.
     do {
-        // Recursively mark all objects that are reachable from the roots for
-        // this thread. If Mode is ThreadLocalMarking don't continue tracing if
-        // the trace hits an object on another thread's heap.
+        // Iteratively mark all objects that are reachable from the objects
+        // currently pushed onto the marking stack. If Mode is ThreadLocalMarking
+        // don't continue tracing if the trace hits an object on another thread's
+        // heap.
         while (popAndInvokeTraceCallback<Mode>(s_markingVisitor)) { }
 
         // Mark any strong pointers that have now become reachable in ephemeron
@@ -2150,7 +2178,10 @@ void Heap::traceRootsAndPerformGlobalWeakProcessing()
 
         // Rerun loop if ephemeron processing queued more objects for tracing.
     } while (!s_markingStack->isEmpty());
+}
 
+void Heap::globalWeakProcessingAndCleanup()
+{
     // Call weak callbacks on objects that may now be pointing to dead
     // objects and call ephemeronIterationDone callbacks on weak tables
     // to do cleanup (specifically clear the queued bits for weak hash

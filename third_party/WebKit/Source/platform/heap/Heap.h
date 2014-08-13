@@ -969,7 +969,8 @@ public:
     static void collectGarbage(ThreadState::StackState);
     static void collectGarbageForTerminatingThread(ThreadState*);
     static void collectAllGarbage();
-    template<CallbackInvocationMode Mode> static void traceRootsAndPerformGlobalWeakProcessing();
+    template<CallbackInvocationMode Mode> static void processMarkingStack();
+    static void globalWeakProcessingAndCleanup();
     static void setForcePreciseGCForTesting();
 
     static void prepareForGC();
