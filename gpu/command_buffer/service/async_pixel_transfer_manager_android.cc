@@ -10,7 +10,6 @@
 #include "gpu/command_buffer/service/async_pixel_transfer_manager_idle.h"
 #include "gpu/command_buffer/service/async_pixel_transfer_manager_stub.h"
 #include "gpu/command_buffer/service/async_pixel_transfer_manager_sync.h"
-#include "gpu/command_buffer/service/mailbox_synchronizer.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 
@@ -64,8 +63,7 @@ AsyncPixelTransferManager* AsyncPixelTransferManager::Create(
           !IsBroadcom() &&
           !IsImagination() &&
           !IsNvidia31() &&
-          !base::SysInfo::IsLowEndDevice() &&
-          !gles2::MailboxSynchronizer::GetInstance()) {
+          !base::SysInfo::IsLowEndDevice()) {
         return new AsyncPixelTransferManagerEGL;
       }
       return new AsyncPixelTransferManagerIdle;
