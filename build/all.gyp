@@ -409,11 +409,6 @@
             '../components/nacl.gyp:nacl_loader_unittests',
           ],
         }],
-        ['disable_nacl==0 and disable_nacl_untrusted==0', {
-          'dependencies': [
-            '../testing/gtest_nacl.gyp:*',
-          ],
-        }],
       ],
     }, # target_name: chromium_builder_tests
   ],
