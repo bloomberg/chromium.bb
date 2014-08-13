@@ -10,10 +10,8 @@
 #include "base/time/time.h"
 #include "cc/animation/animation_events.h"
 #include "cc/output/begin_frame_args.h"
-#include "cc/scheduler/scheduler.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/proxy.h"
-#include "cc/trees/proxy_timing_history.h"
 
 namespace cc {
 
@@ -22,8 +20,7 @@ class LayerTreeHost;
 class LayerTreeHostSingleThreadClient;
 
 class CC_EXPORT SingleThreadProxy : public Proxy,
-                                    NON_EXPORTED_BASE(LayerTreeHostImplClient),
-                                    SchedulerClient {
+                                    NON_EXPORTED_BASE(LayerTreeHostImplClient) {
  public:
   static scoped_ptr<Proxy> Create(
       LayerTreeHost* layer_tree_host,
@@ -55,24 +52,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   virtual void AsValueInto(base::debug::TracedValue* state) const OVERRIDE;
   virtual bool MainFrameWillHappenForTesting() OVERRIDE;
 
-  // SchedulerClient implementation
-  virtual void SetNeedsBeginFrame(bool enable) OVERRIDE;
-  virtual void WillBeginImplFrame(const BeginFrameArgs& args) OVERRIDE;
-  virtual void ScheduledActionSendBeginMainFrame() OVERRIDE;
-  virtual DrawResult ScheduledActionDrawAndSwapIfPossible() OVERRIDE;
-  virtual DrawResult ScheduledActionDrawAndSwapForced() OVERRIDE;
-  virtual void ScheduledActionCommit() OVERRIDE;
-  virtual void ScheduledActionAnimate() OVERRIDE;
-  virtual void ScheduledActionUpdateVisibleTiles() OVERRIDE;
-  virtual void ScheduledActionActivateSyncTree() OVERRIDE;
-  virtual void ScheduledActionBeginOutputSurfaceCreation() OVERRIDE;
-  virtual void ScheduledActionManageTiles() OVERRIDE;
-  virtual void DidAnticipatedDrawTimeChange(base::TimeTicks time) OVERRIDE;
-  virtual base::TimeDelta DrawDurationEstimate() OVERRIDE;
-  virtual base::TimeDelta BeginMainFrameToCommitDurationEstimate() OVERRIDE;
-  virtual base::TimeDelta CommitToActivateDurationEstimate() OVERRIDE;
-  virtual void DidBeginImplFrameDeadline() OVERRIDE;
-
   // LayerTreeHostImplClient implementation
   virtual void UpdateRendererCapabilitiesOnImplThread() OVERRIDE;
   virtual void DidLoseOutputSurfaceOnImplThread() OVERRIDE;
@@ -82,7 +61,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   virtual void SetMaxSwapsPendingOnImplThread(int max) OVERRIDE {}
   virtual void DidSwapBuffersOnImplThread() OVERRIDE;
   virtual void DidSwapBuffersCompleteOnImplThread() OVERRIDE;
-  virtual void BeginFrame(const BeginFrameArgs& args) OVERRIDE;
+  virtual void BeginFrame(const BeginFrameArgs& args) OVERRIDE {}
   virtual void OnCanDrawStateChanged(bool can_draw) OVERRIDE;
   virtual void NotifyReadyToActivate() OVERRIDE;
   virtual void SetNeedsRedrawOnImplThread() OVERRIDE;
@@ -103,7 +82,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
       const base::Closure& start_fade,
       base::TimeDelta delay) OVERRIDE {}
   virtual void DidActivateSyncTree() OVERRIDE {}
-  virtual void DidManageTiles() OVERRIDE;
+  virtual void DidManageTiles() OVERRIDE {}
   virtual void SetDebugState(const LayerTreeDebugState& debug_state) OVERRIDE {}
 
   // Attempts to create the context and renderer synchronously. Calls
@@ -119,13 +98,10 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
       LayerTreeHostSingleThreadClient* client,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
 
-  void BeginMainFrame();
-  void BeginMainFrameAbortedOnImplThread();
-  void DoCommit(base::TimeTicks frame_begin_time);
-  DrawResult DoComposite(base::TimeTicks frame_begin_time,
-                         LayerTreeHostImpl::FrameData* frame);
-  void DoSwap();
-  void DidCommitAndDrawFrame();
+  void DoCommit(scoped_ptr<ResourceUpdateQueue> queue);
+  bool DoComposite(base::TimeTicks frame_begin_time,
+                   LayerTreeHostImpl::FrameData* frame);
+  void DidSwapFrame();
 
   bool ShouldComposite() const;
   void UpdateBackgroundAnimateTicking();
@@ -139,18 +115,9 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   scoped_ptr<LayerTreeHostImpl> layer_tree_host_impl_;
   RendererCapabilities renderer_capabilities_for_main_thread_;
 
-  // Accessed from both threads.
-  scoped_ptr<Scheduler> scheduler_on_impl_thread_;
-  ProxyTimingHistory timing_history_;
-
   bool next_frame_is_newly_committed_frame_;
 
   bool inside_draw_;
-  bool defer_commits_;
-  bool commit_was_deferred_;
-  bool commit_requested_;
-
-  base::WeakPtrFactory<SingleThreadProxy> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SingleThreadProxy);
 };

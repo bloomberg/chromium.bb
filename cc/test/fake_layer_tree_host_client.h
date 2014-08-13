@@ -42,6 +42,8 @@ class FakeLayerTreeHostClient : public LayerTreeHostClient,
   virtual void DidCompleteSwapBuffers() OVERRIDE {}
 
   // LayerTreeHostSingleThreadClient implementation.
+  virtual void ScheduleComposite() OVERRIDE {}
+  virtual void ScheduleAnimation() OVERRIDE {}
   virtual void DidPostSwapBuffers() OVERRIDE {}
   virtual void DidAbortSwapBuffers() OVERRIDE {}
 

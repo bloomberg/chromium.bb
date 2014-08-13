@@ -25,7 +25,6 @@
 #include "cc/trees/blocking_task_runner.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
-#include "cc/trees/scoped_abort_remaining_swap_promises.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/gfx/frame_time.h"
 
@@ -37,6 +36,19 @@ namespace {
 const double kSmoothnessTakesPriorityExpirationDelay = 0.25;
 
 unsigned int nextBeginFrameId = 0;
+
+class SwapPromiseChecker {
+ public:
+  explicit SwapPromiseChecker(LayerTreeHost* layer_tree_host)
+      : layer_tree_host_(layer_tree_host) {}
+
+  ~SwapPromiseChecker() {
+    layer_tree_host_->BreakSwapPromises(SwapPromise::COMMIT_FAILS);
+  }
+
+ private:
+  LayerTreeHost* layer_tree_host_;
+};
 
 }  // namespace
 
@@ -441,10 +453,9 @@ void ThreadProxy::SetNextCommitWaitsForActivation() {
 
 void ThreadProxy::SetDeferCommits(bool defer_commits) {
   DCHECK(IsMainThread());
-  if (main().defer_commits == defer_commits)
-    return;
-
+  DCHECK_NE(main().defer_commits, defer_commits);
   main().defer_commits = defer_commits;
+
   if (main().defer_commits)
     TRACE_EVENT_ASYNC_BEGIN0("cc", "ThreadProxy::SetDeferCommits", this);
   else
@@ -724,9 +735,9 @@ void ThreadProxy::BeginMainFrame(
   }
 
   // If the commit finishes, LayerTreeHost will transfer its swap promises to
-  // LayerTreeImpl. The destructor of ScopedSwapPromiseChecker aborts the
-  // remaining swap promises.
-  ScopedAbortRemainingSwapPromises swap_promise_checker(layer_tree_host());
+  // LayerTreeImpl. The destructor of SwapPromiseChecker checks LayerTressHost's
+  // swap promises.
+  SwapPromiseChecker swap_promise_checker(layer_tree_host());
 
   main().commit_requested = false;
   main().commit_request_sent_to_impl_thread = false;

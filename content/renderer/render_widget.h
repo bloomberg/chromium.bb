@@ -142,6 +142,7 @@ class CONTENT_EXPORT RenderWidget
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   // blink::WebWidgetClient
+  virtual void suppressCompositorScheduling(bool enable);
   virtual void willBeginCompositorFrame();
   virtual void didAutoResize(const blink::WebSize& new_size);
   virtual void initializeLayerTreeView();
@@ -171,9 +172,6 @@ class CONTENT_EXPORT RenderWidget
 
   // Begins the compositor's scheduler to start producing frames.
   void StartCompositor();
-
-  // Stop compositing.
-  void DestroyLayerTreeView();
 
   // Called when a plugin is moved.  These events are queued up and sent with
   // the next paint or scroll message to the host.
@@ -625,9 +623,6 @@ class CONTENT_EXPORT RenderWidget
   // True if we have requested this widget be closed.  No more messages will
   // be sent, except for a Close.
   bool closing_;
-
-  // True if it is known that the host is in the process of being shut down.
-  bool host_closing_;
 
   // Whether this RenderWidget is currently swapped out, such that the view is
   // being rendered by another process.  If all RenderWidgets in a process are

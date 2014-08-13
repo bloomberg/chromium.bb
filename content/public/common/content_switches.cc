@@ -246,10 +246,6 @@ const char kDisableSetuidSandbox[]          = "disable-setuid-sandbox";
 // Disable shared workers.
 const char kDisableSharedWorkers[]          = "disable-shared-workers";
 
-// For tests, disable single thread scheduler and only manually composite.
-const char kDisableSingleThreadProxyScheduler[] =
-    "disable-single-thread-proxy-scheduler";
-
 // Disable smooth scrolling for testing.
 const char kDisableSmoothScrolling[]        = "disable-smooth-scrolling";
 
