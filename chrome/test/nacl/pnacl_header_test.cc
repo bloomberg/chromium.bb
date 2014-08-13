@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/path_service.h"
+#include "base/test/scoped_path_override.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
@@ -45,6 +46,16 @@ void PnaclHeaderTest::RunLoadTest(const std::string& url,
   content::JavascriptTestObserver observer(
       browser()->tab_strip_model()->GetActiveWebContents(),
       &handler);
+
+  // Make sure this is able to do a pexe fetch, even without access
+  // to the PNaCl component files (make DIR_PNACL_COMPONENT empty).
+  // The pexe fetch that is done with special headers must be able to
+  // start before the component files are on disk. This is because it
+  // is the pexe fetch that helps trigger an on-demand installation
+  // which installs the files to disk (if that hasn't already happened
+  // in the background).
+  base::ScopedPathOverride component_dir(chrome::DIR_PNACL_COMPONENT);
+
   ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL(url));
   // Wait until the NMF and pexe are also loaded, not just the HTML.
   // Do this by waiting till the LoadTestMessageHandler responds.
