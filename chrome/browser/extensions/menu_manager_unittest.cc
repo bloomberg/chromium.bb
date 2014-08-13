@@ -453,6 +453,8 @@ TEST_F(MenuManagerTest, ExtensionUnloadRemovesMenuItems) {
   ASSERT_TRUE(manager_.GetItemById(item2->id()) != NULL);
 }
 
+namespace {
+
 // A mock message service for tests of MenuManager::ExecuteCommand.
 class MockEventRouter : public EventRouter {
  public:
@@ -501,6 +503,8 @@ class MockExtensionSystem : public TestExtensionSystem {
 KeyedService* BuildMockExtensionSystem(content::BrowserContext* profile) {
   return new MockExtensionSystem(static_cast<Profile*>(profile));
 }
+
+}  // namespace
 
 // Tests the RemoveAll functionality.
 TEST_F(MenuManagerTest, RemoveAll) {

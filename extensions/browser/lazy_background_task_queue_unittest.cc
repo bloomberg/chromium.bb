@@ -13,11 +13,11 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_test.h"
+#include "extensions/browser/mock_extension_system.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/test_extensions_browser_client.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/one_shot_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserContext;
@@ -53,70 +53,18 @@ class TestProcessManager : public ProcessManager {
 };
 
 // A simple ExtensionSystem that returns a TestProcessManager.
-class MockExtensionSystem : public ExtensionSystem {
+class MockExtensionSystemWithProcessManager : public MockExtensionSystem {
  public:
-  explicit MockExtensionSystem(BrowserContext* context)
-      : test_process_manager_(context) {}
-  virtual ~MockExtensionSystem() {}
+  explicit MockExtensionSystemWithProcessManager(BrowserContext* context)
+      : MockExtensionSystem(context), test_process_manager_(context) {}
+  virtual ~MockExtensionSystemWithProcessManager() {}
 
-  virtual void InitForRegularProfile(bool extensions_enabled) OVERRIDE {}
-  virtual ExtensionService* extension_service() OVERRIDE { return NULL; }
-  virtual RuntimeData* runtime_data() OVERRIDE { return NULL; }
-  virtual ManagementPolicy* management_policy() OVERRIDE { return NULL; }
-  virtual UserScriptMaster* user_script_master() OVERRIDE { return NULL; }
   virtual ProcessManager* process_manager() OVERRIDE {
     return &test_process_manager_;
-  }
-  virtual StateStore* state_store() OVERRIDE { return NULL; }
-  virtual StateStore* rules_store() OVERRIDE { return NULL; }
-  virtual InfoMap* info_map() OVERRIDE { return NULL; }
-  virtual LazyBackgroundTaskQueue* lazy_background_task_queue() OVERRIDE {
-    return NULL;
-  }
-  virtual EventRouter* event_router() OVERRIDE { return NULL; }
-  virtual ExtensionWarningService* warning_service() OVERRIDE { return NULL; }
-  virtual Blacklist* blacklist() OVERRIDE { return NULL; }
-  virtual ErrorConsole* error_console() OVERRIDE { return NULL; }
-  virtual InstallVerifier* install_verifier() OVERRIDE { return NULL; }
-  virtual QuotaService* quota_service() OVERRIDE { return NULL; }
-  virtual const OneShotEvent& ready() const OVERRIDE { return ready_; }
-  virtual ContentVerifier* content_verifier() OVERRIDE { return NULL; }
-  virtual scoped_ptr<ExtensionSet> GetDependentExtensions(
-      const Extension* extension) OVERRIDE {
-    return scoped_ptr<ExtensionSet>();
   }
 
  private:
   TestProcessManager test_process_manager_;
-  OneShotEvent ready_;
-};
-
-// A factory to create a MockExtensionSystem.
-class MockExtensionSystemFactory : public ExtensionSystemProvider {
- public:
-  MockExtensionSystemFactory()
-      : ExtensionSystemProvider(
-            "MockExtensionSystem",
-            BrowserContextDependencyManager::GetInstance()) {
-    DependsOn(ExtensionRegistryFactory::GetInstance());
-  }
-  virtual ~MockExtensionSystemFactory() {}
-
-  // BrowserContextKeyedServiceFactory overrides:
-  virtual KeyedService* BuildServiceInstanceFor(
-      BrowserContext* context) const OVERRIDE {
-    return new MockExtensionSystem(context);
-  }
-
-  // ExtensionSystemProvider overrides:
-  virtual ExtensionSystem* GetForBrowserContext(
-      BrowserContext* context) OVERRIDE {
-    return static_cast<MockExtensionSystem*>(
-        GetServiceForBrowserContext(context, true));
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockExtensionSystemFactory);
 };
 
 }  // namespace
@@ -172,7 +120,8 @@ class LazyBackgroundTaskQueueTest : public ExtensionsTest {
 
  private:
   scoped_ptr<content::NotificationService> notification_service_;
-  MockExtensionSystemFactory extension_system_factory_;
+  MockExtensionSystemFactory<MockExtensionSystemWithProcessManager>
+      extension_system_factory_;
 
   // The total number of pending tasks that have been executed.
   int task_run_count_;
