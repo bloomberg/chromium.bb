@@ -9,6 +9,9 @@ handlers:
   static_files: sheriff-o-matic.html
   upload: sheriff-o-matic.html
 
+- url: /alerts
+  script: alerts.app
+
 - url: /favicon.ico
   static_files: favicon.ico
   upload: favicon.ico
@@ -40,9 +43,15 @@ skip_files:
 - ^(.*/)?#.*#$
 - ^(.*/)?.*~$
 - ^(.*/)?.*\.py[co]$
+- ^(.*/)?.*_test\.py$
+- ^(.*/)?tests\.py$
 - ^(.*/)?.*/RCS/.*$
 - ^(.*/)?\..*$
 - ^(.*/)?.*\.md$
 - ^(.*/)?LICENSE$
 - ^(.*/)?README$
 - ^(.*/)?Makefile$
+
+libraries:
+- name: webapp2
+  version: "latest"
