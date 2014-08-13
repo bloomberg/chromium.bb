@@ -316,12 +316,15 @@ class PathContext(object):
 
   def _GetSVNRevisionFromGitHashWithoutGitCheckout(self, git_sha1, depot):
     json_url = GITHASH_TO_SVN_URL[depot] % git_sha1
-    try:
-      response = urllib.urlopen(json_url)
-    except urllib.HTTPError as error:
-      msg = 'HTTP Error %d for %s' % (error.getcode(), git_sha1)
-      return None
-    data = json.loads(response.read()[4:])
+    response = urllib.urlopen(json_url)
+    if response.getcode() == 200:
+      try:
+        data = json.loads(response.read()[4:])
+      except ValueError:
+        print 'ValueError for JSON URL: %s' % json_url
+        raise ValueError
+    else:
+      raise ValueError
     if 'message' in data:
       message = data['message'].split('\n')
       message = [line for line in message if line.strip()]
@@ -636,29 +639,17 @@ class DownloadJob(object):
     self.thread.join()
 
 
-def Bisect(base_url,
-           platform,
-           official_builds,
-           is_aura,
-           is_asan,
-           use_local_repo,
-           good_rev=0,
-           bad_rev=0,
+def Bisect(context,
            num_runs=1,
            command='%p %a',
            try_args=(),
            profile=None,
-           flash_path=None,
-           pdf_path=None,
            interactive=True,
            evaluate=AskIsGoodBuild):
   """Given known good and known bad revisions, run a binary search on all
   archived revisions to determine the last known good revision.
 
-  @param platform Which build to download/run ('mac', 'win', 'linux64', etc.).
-  @param official_builds Specify build type (Chromium or Official build).
-  @param good_rev Number/tag of the known good revision.
-  @param bad_rev Number/tag of the known bad revision.
+  @param context PathContext object initialized with user provided parameters.
   @param num_runs Number of times to run each build for asking good/bad.
   @param try_args A tuple of arguments to pass to the test application.
   @param profile The name of the user profile to run with.
@@ -685,19 +676,18 @@ def Bisect(base_url,
   if not profile:
     profile = 'profile'
 
-  context = PathContext(base_url, platform, good_rev, bad_rev,
-                        official_builds, is_aura, is_asan, use_local_repo,
-                        flash_path, pdf_path)
+  good_rev = context.good_revision
+  bad_rev = context.bad_revision
   cwd = os.getcwd()
 
   print 'Downloading list of known revisions...',
-  if not use_local_repo:
+  if not context.use_local_repo:
     print '(use --use-local-repo for speed if you have a local checkout)'
   else:
     print
   _GetDownloadPath = lambda rev: os.path.join(cwd,
       '%s-%s' % (str(rev), context.archive_name))
-  if official_builds:
+  if context.is_official:
     revlist = context.GetOfficialBuildsList()
   else:
     revlist = context.GetRevList()
@@ -774,7 +764,7 @@ def Bisect(base_url,
           answer = 'g'
           print 'Good revision: %s' % rev
       else:
-        answer = evaluate(rev, official_builds, status, stdout, stderr)
+        answer = evaluate(rev, context.is_official, status, stdout, stderr)
       if ((answer == 'g' and good_rev < bad_rev)
           or (answer == 'b' and bad_rev < good_rev)):
         fetch.Stop()
@@ -842,7 +832,7 @@ def Bisect(base_url,
 
     rev = revlist[pivot]
 
-  return (revlist[minrev], revlist[maxrev])
+  return (revlist[minrev], revlist[maxrev], context)
 
 
 def GetBlinkDEPSRevisionForChromiumRevision(rev):
@@ -859,7 +849,7 @@ def GetBlinkDEPSRevisionForChromiumRevision(rev):
     raise Exception('Could not get Blink revision for Chromium rev %d' % rev)
 
 
-def GetBlinkRevisionForChromiumRevision(self, rev):
+def GetBlinkRevisionForChromiumRevision(context, rev):
   """Returns the blink revision that was in REVISIONS file at
   chromium revision |rev|."""
   def _IsRevisionNumber(revision):
@@ -867,17 +857,24 @@ def GetBlinkRevisionForChromiumRevision(self, rev):
       return True
     else:
       return revision.isdigit()
-  if str(rev) in self.githash_svn_dict:
-    rev = self.githash_svn_dict[str(rev)]
-  file_url = '%s/%s%s/REVISIONS' % (self.base_url,
-                                    self._listing_platform_dir, rev)
+  if str(rev) in context.githash_svn_dict:
+    rev = context.githash_svn_dict[str(rev)]
+  file_url = '%s/%s%s/REVISIONS' % (context.base_url,
+                                    context._listing_platform_dir, rev)
   url = urllib.urlopen(file_url)
-  data = json.loads(url.read())
+  if url.getcode() == 200:
+    try:
+      data = json.loads(url.read())
+    except ValueError:
+      print 'ValueError for JSON URL: %s' % file_url
+      raise ValueError
+  else:
+    raise ValueError
   url.close()
   if 'webkit_revision' in data:
     blink_rev = data['webkit_revision']
     if not _IsRevisionNumber(blink_rev):
-      blink_rev = self.GetSVNRevisionFromGitHash(blink_rev, 'blink')
+      blink_rev = int(context.GetSVNRevisionFromGitHash(blink_rev, 'blink'))
     return blink_rev
   else:
     raise Exception('Could not get blink revision for cr rev %d' % rev)
@@ -1044,39 +1041,33 @@ def main():
     base_url = CHROMIUM_BASE_URL
 
   # Create the context. Initialize 0 for the revisions as they are set below.
-  context = PathContext(base_url, opts.archive, 0, 0,
+  context = PathContext(base_url, opts.archive, opts.good, opts.bad,
                         opts.official_builds, opts.aura, opts.asan,
-                        opts.use_local_repo, None)
+                        opts.use_local_repo, opts.flash_path, opts.pdf_path)
   # Pick a starting point, try to get HEAD for this.
-  if opts.bad:
-    bad_rev = opts.bad
-  else:
-    bad_rev = '999.0.0.0'
-    if not opts.official_builds:
-      bad_rev = GetChromiumRevision(context, context.GetLastChangeURL())
+  if not opts.bad:
+    context.bad_revision = '999.0.0.0'
+    context.bad_revision = GetChromiumRevision(
+        context, context.GetLastChangeURL())
 
   # Find out when we were good.
-  if opts.good:
-    good_rev = opts.good
-  else:
-    good_rev = '0.0.0.0' if opts.official_builds else 0
+  if not opts.good:
+    context.good_revision = '0.0.0.0' if opts.official_builds else 0
 
   if opts.flash_path:
-    flash_path = opts.flash_path
-    msg = 'Could not find Flash binary at %s' % flash_path
-    assert os.path.exists(flash_path), msg
+    msg = 'Could not find Flash binary at %s' % opts.flash_path
+    assert os.path.exists(opts.flash_path), msg
 
   if opts.pdf_path:
-    pdf_path = opts.pdf_path
-    msg = 'Could not find PDF binary at %s' % pdf_path
-    assert os.path.exists(pdf_path), msg
+    msg = 'Could not find PDF binary at %s' % opts.pdf_path
+    assert os.path.exists(opts.pdf_path), msg
 
   if opts.official_builds:
-    good_rev = LooseVersion(good_rev)
-    bad_rev = LooseVersion(bad_rev)
+    context.good_revision = LooseVersion(context.good_revision)
+    context.bad_revision = LooseVersion(context.bad_revision)
   else:
-    good_rev = int(good_rev)
-    bad_rev = int(bad_rev)
+    context.good_revision = int(context.good_revision)
+    context.bad_revision = int(context.bad_revision)
 
   if opts.times < 1:
     print('Number of times to run (%d) must be greater than or equal to 1.' %
@@ -1089,10 +1080,13 @@ def main():
   else:
     evaluator = AskIsGoodBuild
 
-  (min_chromium_rev, max_chromium_rev) = Bisect(
-      base_url, opts.archive, opts.official_builds, opts.aura, opts.asan,
-      opts.use_local_repo, good_rev, bad_rev, opts.times, opts.command,
-      args, opts.profile, opts.flash_path, opts.pdf_path,
+  # Save these revision numbers to compare when showing the changelog URL
+  # after the bisect.
+  good_rev = context.good_revision
+  bad_rev = context.bad_revision
+
+  (min_chromium_rev, max_chromium_rev, context) = Bisect(
+      context, opts.times, opts.command, args, opts.profile,
       not opts.not_interactive, evaluator)
 
   # Get corresponding blink revisions.
