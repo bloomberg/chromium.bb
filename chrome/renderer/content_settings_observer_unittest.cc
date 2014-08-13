@@ -6,11 +6,14 @@
 
 #include "chrome/common/url_constants.h"
 #include "content/public/common/url_constants.h"
-#include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "url/gurl.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "extensions/common/constants.h"
+#endif
 
 using blink::WebSecurityOrigin;
 
@@ -31,11 +34,13 @@ TEST_F(ContentSettingsObserverTest, WhitelistedSchemes) {
       WebSecurityOrigin::create(chrome_dev_tools_url),
       GURL()));
 
+#if defined(ENABLE_EXTENSIONS)
   GURL extension_url =
       GURL(std::string(extensions::kExtensionScheme).append(end_url));
   EXPECT_TRUE(ContentSettingsObserver::IsWhitelistedForContentSettings(
       WebSecurityOrigin::create(extension_url),
       GURL()));
+#endif
 
   GURL file_url("file:///dir/");
   EXPECT_TRUE(ContentSettingsObserver::IsWhitelistedForContentSettings(

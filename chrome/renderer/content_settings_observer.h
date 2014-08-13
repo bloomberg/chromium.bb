@@ -12,7 +12,6 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
-#include "extensions/common/permissions/api_permission.h"
 #include "third_party/WebKit/public/web/WebPermissionClient.h"
 
 class GURL;
@@ -104,10 +103,16 @@ class ContentSettingsObserver
   // Resets the |content_blocked_| array.
   void ClearBlockedContentSettings();
 
+  // Whether the observed RenderFrame is for a platform app.
+  bool IsPlatformApp();
+
+#if defined(ENABLE_EXTENSIONS)
   // If |origin| corresponds to an installed extension, returns that extension.
   // Otherwise returns NULL.
   const extensions::Extension* GetExtension(
       const blink::WebSecurityOrigin& origin) const;
+
+#endif
 
   // Helpers.
   // True if |frame| contains content that is white-listed for content settings.
@@ -116,8 +121,10 @@ class ContentSettingsObserver
       const blink::WebSecurityOrigin& origin,
       const GURL& document_url);
 
+#if defined(ENABLE_EXTENSIONS)
   // Owned by ChromeContentRendererClient and outlive us.
   extensions::Dispatcher* extension_dispatcher_;
+#endif
 
   // Insecure content may be permitted for the duration of this render view.
   bool allow_displaying_insecure_content_;

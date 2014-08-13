@@ -13,10 +13,6 @@
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
-#include "extensions/common/constants.h"
-#include "extensions/common/extension.h"
-#include "extensions/common/permissions/permissions_data.h"
-#include "extensions/renderer/dispatcher.h"
 #include "third_party/WebKit/public/platform/WebPermissionCallbacks.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
@@ -28,6 +24,9 @@
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/common/extensions/chrome_extension_messages.h"
+#include "extensions/common/constants.h"
+#include "extensions/common/extension.h"
+#include "extensions/renderer/dispatcher.h"
 #endif
 
 using blink::WebDataSource;
@@ -40,7 +39,6 @@ using blink::WebURL;
 using blink::WebView;
 using content::DocumentState;
 using content::NavigationState;
-using extensions::APIPermission;
 
 namespace {
 
@@ -154,7 +152,9 @@ ContentSettingsObserver::ContentSettingsObserver(
     : content::RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<ContentSettingsObserver>(
           render_frame),
+#if defined(ENABLE_EXTENSIONS)
       extension_dispatcher_(extension_dispatcher),
+#endif
       allow_displaying_insecure_content_(false),
       allow_running_insecure_content_(false),
       content_setting_rules_(NULL),
@@ -429,19 +429,11 @@ bool ContentSettingsObserver::allowWriteToClipboard(bool default_value) {
 }
 
 bool ContentSettingsObserver::allowMutationEvents(bool default_value) {
-  WebFrame* frame = render_frame()->GetWebFrame();
-  WebSecurityOrigin origin = frame->document().securityOrigin();
-  const extensions::Extension* extension = GetExtension(origin);
-  if (extension && extension->is_platform_app())
-    return false;
-  return default_value;
+  return IsPlatformApp() ? false : default_value;
 }
 
 bool ContentSettingsObserver::allowPushState() {
-  WebFrame* frame = render_frame()->GetWebFrame();
-  WebSecurityOrigin origin = frame->document().securityOrigin();
-  const extensions::Extension* extension = GetExtension(origin);
-  return !extension || !extension->is_platform_app();
+  return !IsPlatformApp();
 }
 
 static void SendInsecureContentSignal(int signal) {
@@ -635,6 +627,18 @@ void ContentSettingsObserver::ClearBlockedContentSettings() {
   cached_script_permissions_.clear();
 }
 
+bool ContentSettingsObserver::IsPlatformApp() {
+#if defined(ENABLE_EXTENSIONS)
+  WebFrame* frame = render_frame()->GetWebFrame();
+  WebSecurityOrigin origin = frame->document().securityOrigin();
+  const extensions::Extension* extension = GetExtension(origin);
+  return extension && extension->is_platform_app();
+#else
+  return false;
+#endif
+}
+
+#if defined(ENABLE_EXTENSIONS)
 const extensions::Extension* ContentSettingsObserver::GetExtension(
     const WebSecurityOrigin& origin) const {
   if (!EqualsASCII(origin.protocol(), extensions::kExtensionScheme))
@@ -646,6 +650,7 @@ const extensions::Extension* ContentSettingsObserver::GetExtension(
 
   return extension_dispatcher_->extensions()->GetByID(extension_id);
 }
+#endif
 
 bool ContentSettingsObserver::IsWhitelistedForContentSettings(
     content::RenderFrame* frame) {
@@ -678,8 +683,10 @@ bool ContentSettingsObserver::IsWhitelistedForContentSettings(
   if (EqualsASCII(origin.protocol(), content::kChromeDevToolsScheme))
     return true;  // DevTools UI elements should still work.
 
+#if defined(ENABLE_EXTENSIONS)
   if (EqualsASCII(origin.protocol(), extensions::kExtensionScheme))
     return true;
+#endif
 
   // TODO(creis, fsamuel): Remove this once the concept of swapped out
   // RenderFrames goes away.
