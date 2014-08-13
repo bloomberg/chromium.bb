@@ -94,12 +94,22 @@ class FutureTest(unittest.TestCase):
     callbacks = (callback_with_value(1),
                  callback_with_value(2),
                  MockFunction(throws_error))
+
     future = All(Future(callback=callback) for callback in callbacks)
     for callback in callbacks:
       self.assertTrue(*callback.CheckAndReset(0))
-    # Can't check that the callbacks were actually run because in theory the
-    # Futures can be resolved in any order.
     self.assertRaises(ValueError, future.Get)
+    for callback in callbacks:
+      # Can't check that the callbacks were actually run because in theory the
+      # Futures can be resolved in any order.
+      callback.CheckAndReset(0)
+
+    # Test throwing an error with except_pass.
+    future = All((Future(callback=callback) for callback in callbacks),
+                 except_pass=ValueError)
+    for callback in callbacks:
+      self.assertTrue(*callback.CheckAndReset(0))
+    self.assertEqual([1, 2, None], future.Get())
 
   def testRaceSuccess(self):
     callback = MockFunction(lambda: 42)
@@ -158,6 +168,19 @@ class FutureTest(unittest.TestCase):
                  Future(callback=throws_error)),
                  except_pass=(ValueError,))
     self.assertRaises(ValueError, race.Get)
+
+    # Test except_pass with default values.
+    race = Race((Future(callback=throws_error),
+                 Future(callback=throws_except_error)),
+                 except_pass=(NotImplementedError,),
+                 default=42)
+    self.assertRaises(ValueError, race.Get)
+
+    race = Race((Future(callback=throws_error),
+                 Future(callback=throws_error)),
+                 except_pass=(ValueError,),
+                 default=42)
+    self.assertEqual(42, race.Get())
 
   def testThen(self):
     def assertIs42(val):

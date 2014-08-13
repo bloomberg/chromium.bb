@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
 import sys
+import traceback
 
 _no_value = object()
 
@@ -11,12 +13,15 @@ def _DefaultErrorHandler(error):
   raise error
 
 
-def All(futures, except_pass=None):
+def All(futures, except_pass=None, except_pass_log=False):
   '''Creates a Future which returns a list of results from each Future in
   |futures|.
 
   If any Future raises an error other than those in |except_pass| the returned
   Future will raise as well.
+
+  If any Future raises an error in |except_pass| then None will be inserted as
+  its result. If |except_pass_log| is True then the exception will be logged.
   '''
   def resolve():
     resolved = []
@@ -25,17 +30,21 @@ def All(futures, except_pass=None):
         resolved.append(f.Get())
       # "except None" will simply not catch any errors.
       except except_pass:
+        if except_pass_log:
+          logging.error(traceback.format_exc())
+        resolved.append(None)
         pass
     return resolved
   return Future(callback=resolve)
 
 
-def Race(futures, except_pass=None):
+def Race(futures, except_pass=None, default=_no_value):
   '''Returns a Future which resolves to the first Future in |futures| that
   either succeeds or throws an error apart from those in |except_pass|.
 
-  If all Futures throw errors in |except_pass| then the returned Future
-  will re-throw one of those errors, for a nice stack trace.
+  If all Futures throw errors in |except_pass| then |default| is returned,
+  if specified. If |default| is not specified then one of the passed errors
+  will be re-thrown, for a nice stack trace.
   '''
   def resolve():
     first_future = None
@@ -47,8 +56,10 @@ def Race(futures, except_pass=None):
       # "except None" will simply not catch any errors.
       except except_pass:
         pass
-    # Everything failed, propagate the first error even though it was
-    # caught by |except_pass|.
+    if default is not _no_value:
+      return default
+    # Everything failed and there is no default value, propagate the first
+    # error even though it was caught by |except_pass|.
     return first_future.Get()
   return Future(callback=resolve)
 

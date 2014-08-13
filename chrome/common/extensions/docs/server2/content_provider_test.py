@@ -76,15 +76,15 @@ _TEST_DATA = {
 
 class ContentProviderUnittest(unittest.TestCase):
   def setUp(self):
+    self._test_file_system = TestFileSystem(_TEST_DATA)
     self._content_provider = self._CreateContentProvider()
 
   def _CreateContentProvider(self, supports_zip=False):
     object_store_creator = ObjectStoreCreator.ForTest()
-    test_file_system = TestFileSystem(_TEST_DATA)
     return ContentProvider(
         'foo',
         CompiledFileSystem.Factory(object_store_creator),
-        test_file_system,
+        self._test_file_system,
         object_store_creator,
         default_extensions=('.html', '.md'),
         # TODO(kalman): Test supports_templates=False.
@@ -97,16 +97,18 @@ class ContentProviderUnittest(unittest.TestCase):
     self.assertEqual(content, content_and_type.content)
     self.assertEqual(content_type, content_and_type.content_type)
 
-  def _assertTemplateContent(self, content, path):
+  def _assertTemplateContent(self, content, path, version):
     content_and_type = self._content_provider.GetContentAndType(path).Get()
     self.assertEqual(Handlebar, type(content_and_type.content))
     content_and_type.content = content_and_type.content.source
     self._assertContent(content, 'text/html', content_and_type)
+    self.assertEqual(version, self._content_provider.GetVersion(path).Get())
 
-  def _assertMarkdownContent(self, content, path):
+  def _assertMarkdownContent(self, content, path, version):
     content_and_type = self._content_provider.GetContentAndType(path).Get()
     content_and_type.content = content_and_type.content.source
     self._assertContent(content, 'text/html', content_and_type)
+    self.assertEqual(version, self._content_provider.GetVersion(path).Get())
 
   def testPlainText(self):
     self._assertContent(
@@ -129,7 +131,9 @@ class ContentProviderUnittest(unittest.TestCase):
         self._content_provider.GetContentAndType('site.css').Get())
 
   def testTemplate(self):
-    self._assertTemplateContent(u'storage.html content', 'storage.html')
+    self._assertTemplateContent(u'storage.html content', 'storage.html', '0')
+    self._test_file_system.IncrementStat('storage.html')
+    self._assertTemplateContent(u'storage.html content', 'storage.html', '1')
 
   def testImage(self):
     self._assertContent(
@@ -174,9 +178,10 @@ class ContentProviderUnittest(unittest.TestCase):
         zip_content_provider.GetCanonicalPath('diR.zip'))
 
   def testMarkdown(self):
-    self._assertMarkdownContent(
-        '\n'.join(text[1] for text in _MARKDOWN_CONTENT),
-        'markdown')
+    expected_content = '\n'.join(text[1] for text in _MARKDOWN_CONTENT)
+    self._assertMarkdownContent(expected_content, 'markdown', '0')
+    self._test_file_system.IncrementStat('markdown.md')
+    self._assertMarkdownContent(expected_content, 'markdown', '1')
 
   def testNotFound(self):
     self.assertRaises(
@@ -184,18 +189,24 @@ class ContentProviderUnittest(unittest.TestCase):
         self._content_provider.GetContentAndType('oops').Get)
 
   def testIndexRedirect(self):
-    self._assertTemplateContent(u'index.html content', '')
-    self._assertTemplateContent(u'index.html content 1', 'dir4')
-    self._assertTemplateContent(u'dir5.html content', 'dir5')
+    self._assertTemplateContent(u'index.html content', '', '0')
+    self._assertTemplateContent(u'index.html content 1', 'dir4', '0')
+    self._assertTemplateContent(u'dir5.html content', 'dir5', '0')
     self._assertMarkdownContent(
         '\n'.join(text[1] for text in _MARKDOWN_CONTENT),
-        'dir7')
+        'dir7',
+        '0')
     self._assertContent(
         'noextension content', 'text/plain',
         self._content_provider.GetContentAndType('noextension').Get())
     self.assertRaises(
         FileNotFoundError,
         self._content_provider.GetContentAndType('dir6').Get)
+
+  def testCron(self):
+    # Not entirely sure what to test here, but get some code coverage.
+    self._content_provider.Cron().Get()
+
 
 if __name__ == '__main__':
   unittest.main()
