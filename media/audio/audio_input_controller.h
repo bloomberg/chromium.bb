@@ -254,8 +254,7 @@ class MEDIA_EXPORT AudioInputController
   // Methods called on the audio thread (owned by the AudioManager).
   void DoCreate(AudioManager* audio_manager, const AudioParameters& params,
                 const std::string& device_id);
-  void DoCreateForStream(AudioInputStream* stream_to_control,
-                         bool enable_nodata_timer);
+  void DoCreateForStream(AudioInputStream* stream_to_control);
   void DoRecord();
   void DoClose();
   void DoReportError();

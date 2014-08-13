@@ -47,6 +47,27 @@ const int kPowerMonitorLogIntervalSeconds = 5;
 #endif
 }
 
+// Used to log the result of capture startup.
+// This was previously logged as a boolean with only the no callback and OK
+// options. The enum order is kept to ensure backwards compatibility.
+// Elements in this enum should not be deleted or rearranged; the only
+// permitted operation is to add new elements before CAPTURE_STARTUP_RESULT_MAX
+// and update CAPTURE_STARTUP_RESULT_MAX.
+enum CaptureStartupResult {
+  CAPTURE_STARTUP_NO_DATA_CALLBACK = 0,
+  CAPTURE_STARTUP_OK = 1,
+  CAPTURE_STARTUP_CREATE_STREAM_FAILED = 2,
+  CAPTURE_STARTUP_OPEN_STREAM_FAILED = 3,
+  CAPTURE_STARTUP_RESULT_MAX = CAPTURE_STARTUP_OPEN_STREAM_FAILED
+};
+
+void LogCaptureStartupResult(CaptureStartupResult result) {
+  UMA_HISTOGRAM_ENUMERATION("Media.AudioInputControllerCaptureStartupSuccess",
+                            result,
+                            CAPTURE_STARTUP_RESULT_MAX + 1);
+
+}
+
 namespace media {
 
 // static
@@ -157,8 +178,9 @@ scoped_refptr<AudioInputController> AudioInputController::CreateForStream(
   // mirroring use case only.
   if (!controller->task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&AudioInputController::DoCreateForStream, controller,
-                     stream, false))) {
+          base::Bind(&AudioInputController::DoCreateForStream,
+                     controller,
+                     stream))) {
     controller = NULL;
   }
 
@@ -209,12 +231,11 @@ void AudioInputController::DoCreate(AudioManager* audio_manager,
   // platform audio input requires the |no_data_timer_| be used to auto-detect
   // errors.  In reality, probably only Windows needs to be treated as
   // unreliable here.
-  DoCreateForStream(audio_manager->MakeAudioInputStream(params, device_id),
-                    true);
+  DoCreateForStream(audio_manager->MakeAudioInputStream(params, device_id));
 }
 
 void AudioInputController::DoCreateForStream(
-    AudioInputStream* stream_to_control, bool enable_nodata_timer) {
+    AudioInputStream* stream_to_control) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   DCHECK(!stream_);
@@ -223,6 +244,7 @@ void AudioInputController::DoCreateForStream(
   if (!stream_) {
     if (handler_)
       handler_->OnError(this, STREAM_CREATE_ERROR);
+    LogCaptureStartupResult(CAPTURE_STARTUP_CREATE_STREAM_FAILED);
     return;
   }
 
@@ -231,29 +253,24 @@ void AudioInputController::DoCreateForStream(
     stream_ = NULL;
     if (handler_)
       handler_->OnError(this, STREAM_OPEN_ERROR);
+    LogCaptureStartupResult(CAPTURE_STARTUP_OPEN_STREAM_FAILED);
     return;
   }
 
   DCHECK(!no_data_timer_.get());
 
+  // Create the data timer which will call FirstCheckForNoData(). The timer
+  // is started in DoRecord() and restarted in each DoCheckForNoData()
+  // callback.
   // The timer is enabled for logging purposes. The NO_DATA_ERROR triggered
   // from the timer must be ignored by the EventHandler.
   // TODO(henrika): remove usage of timer when it has been verified on Canary
   // that we are safe doing so. Goal is to get rid of |no_data_timer_| and
   // everything that is tied to it. crbug.com/357569.
-  enable_nodata_timer = true;
-
-  if (enable_nodata_timer) {
-    // Create the data timer which will call FirstCheckForNoData(). The timer
-    // is started in DoRecord() and restarted in each DoCheckForNoData()
-    // callback.
-    no_data_timer_.reset(new base::Timer(
-        FROM_HERE, base::TimeDelta::FromSeconds(kTimerInitialIntervalSeconds),
-        base::Bind(&AudioInputController::FirstCheckForNoData,
-                   base::Unretained(this)), false));
-  } else {
-    DVLOG(1) << "Disabled: timer check for no data.";
-  }
+  no_data_timer_.reset(new base::Timer(
+      FROM_HERE, base::TimeDelta::FromSeconds(kTimerInitialIntervalSeconds),
+      base::Bind(&AudioInputController::FirstCheckForNoData,
+                 base::Unretained(this)), false));
 
   state_ = CREATED;
   if (handler_)
@@ -352,8 +369,9 @@ void AudioInputController::DoSetAutomaticGainControl(bool enabled) {
 
 void AudioInputController::FirstCheckForNoData() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  UMA_HISTOGRAM_BOOLEAN("Media.AudioInputControllerCaptureStartupSuccess",
-                        GetDataIsActive());
+  LogCaptureStartupResult(GetDataIsActive() ?
+                          CAPTURE_STARTUP_OK :
+                          CAPTURE_STARTUP_NO_DATA_CALLBACK);
   DoCheckForNoData();
 }
 

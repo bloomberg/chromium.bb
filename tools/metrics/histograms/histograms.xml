@@ -10730,7 +10730,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Media.AudioInputControllerCaptureStartupSuccess"
-    enum="BooleanSuccess">
+    enum="CaptureStartupResult">
   <summary>
     Whether capture started successfully after an input stream startup was
     requested.
@@ -37536,6 +37536,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="6" label="MJPEG"/>
   <int value="7" label="NV21"/>
   <int value="8" label="YV12"/>
+</enum>
+
+<enum name="CaptureStartupResult" type="int">
+  <int value="0" label="No data callback"/>
+  <int value="1" label="OK"/>
+  <int value="2" label="Failed to create stream"/>
+  <int value="3" label="Failed to open stream"/>
 </enum>
 
 <enum name="CastPlayBackState" type="int">
