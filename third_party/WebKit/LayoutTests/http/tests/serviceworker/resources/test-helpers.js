@@ -23,9 +23,9 @@ function service_worker_unregister_and_done(test, scope) {
 // Rejection-specific helper that provides more details
 function unreached_rejection(test, prefix) {
     return test.step_func(function(error) {
-        var reason = error.name ? error.name : error;
-        var prefix = prefix ? prefix : "unexpected rejection";
-        assert_unreached(prefix + ': ' + reason);
+        var reason = error.message || error.name || error;
+        var error_prefix = prefix || 'unexpected rejection';
+        assert_unreached(error_prefix + ': ' + reason);
     });
 }
 
@@ -42,6 +42,17 @@ function with_iframe(url, f) {
         };
         document.body.appendChild(frame);
     });
+}
+
+function unload_iframe(iframe) {
+  var saw_unload = new Promise(function(resolve) {
+      iframe.contentWindow.addEventListener('unload', function() {
+          resolve();
+        });
+    });
+  iframe.src = '';
+  iframe.remove();
+  return saw_unload;
 }
 
 function normalizeURL(url) {
