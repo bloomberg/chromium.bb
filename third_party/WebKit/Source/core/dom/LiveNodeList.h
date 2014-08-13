@@ -48,8 +48,6 @@ public:
     virtual void invalidateCache(Document* oldDocument = 0) const OVERRIDE FINAL;
     void invalidateCacheForAttribute(const QualifiedName*) const;
 
-    bool shouldOnlyIncludeDirectChildren() const { return false; }
-
     // Collection IndexCache API.
     bool canTraverseBackward() const { return true; }
     Element* traverseToFirstElement() const;
