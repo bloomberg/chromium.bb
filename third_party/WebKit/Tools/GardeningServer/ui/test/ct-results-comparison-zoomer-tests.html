@@ -1,0 +1,68 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../ct-results-comparison-zoomer.html">
+
+<link rel="import" href="../../base/ct-canvas-2d-context-mock.html">
+
+<script>
+(function () {
+
+var assert = chai.assert;
+
+describe('ct-results-comparison-zoomer', function() {
+  var zoomer;
+
+  beforeEach(function(done) {
+    zoomer = document.createElement('ct-results-comparison-zoomer');
+    setTimeout(done);
+  });
+
+  it('should draw after position is changed', function(done) {
+    // FIXME: This should set zoomer.position instead, but there's no way
+    // to get between the microtask and requestAnimationFrame to verify the
+    // behavior.
+    zoomer.positionChanged();
+    assert(zoomer._drawScheduled);
+
+    requestAnimationFrame(function() {
+      assert(!zoomer._drawScheduled);
+      done();
+    });
+  });
+
+  it('draw', function() {
+    zoomer._drawAll();
+
+    // FIXME: Use a proper model class instead of a dumb object.
+    zoomer.position = {x: 0, y: 0};
+    zoomer._drawAll();
+
+    zoomer._draw(zoomer.$.diffZoomer);
+  });
+
+  it('drawCanvas', function(done) {
+    zoomer.position = {x: 0.2, y: 0.5};
+
+    setTimeout(function() {
+      var canvasContext = new CTCanvas2dContextMock();
+      zoomer._drawCanvas(canvasContext, zoomer.$.diffZoomer);
+
+      var expectedContext = new CTCanvas2dContextMock();
+      expectedContext.imageSmoothingEnabled = false;
+      expectedContext.translate(-960, -1800);
+      expectedContext.strokeRect(-1.5, -1.5, 4802, 3602);
+      expectedContext.scale(6, 6);
+      expectedContext.drawImage(zoomer.shadowRoot.querySelector('img'), 0, 0);
+      assert.deepEqual(canvasContext, expectedContext);
+
+      done();
+    });
+  });
+});
+
+})();
+</script>

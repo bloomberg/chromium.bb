@@ -1,0 +1,103 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../ct-test-output.html">
+
+<script>
+(function () {
+
+var assert = chai.assert;
+
+describe('ct-test-output', function() {
+  var output;
+  var resultType;
+  var url;
+
+  beforeEach(function(done) {
+    output = document.createElement('ct-test-output');
+    output.type = resultType;
+    output.url = url;
+
+    setTimeout(done);
+  });
+
+  describe('image', function() {
+    before(function() {
+      resultType = results.kImageType;
+      url = 'http://domain.com/dummy-expected';
+    });
+
+    it('image', function() {
+      assert.lengthOf(output.shadowRoot.querySelectorAll('iframe'), 0);
+      assert.lengthOf(output.shadowRoot.querySelectorAll('audio'), 0);
+
+      var images = output.shadowRoot.querySelectorAll('img');
+      assert.lengthOf(images, 1);
+      assert.equal(images[0].src, url);
+    });
+  });
+
+  describe('text', function() {
+    before(function() {
+      resultType = results.kTextType;
+      url = 'http://domain.com/dummy-expected';
+    });
+
+    it('text', function() {
+      assert.lengthOf(output.shadowRoot.querySelectorAll('img'), 0);
+      assert.lengthOf(output.shadowRoot.querySelectorAll('audio'), 0);
+
+      var iframes = output.shadowRoot.querySelectorAll('iframe');
+      assert.lengthOf(iframes, 1);
+      assert.equal(iframes[0].src, url);
+    });
+  });
+
+  describe('audio', function() {
+    before(function() {
+      resultType = results.kAudioType;
+      url = 'http://domain.com/dummy-expected';
+    });
+
+    it('audio', function() {
+      assert.lengthOf(output.shadowRoot.querySelectorAll('iframe'), 0);
+      assert.lengthOf(output.shadowRoot.querySelectorAll('img'), 0);
+
+      var audios = output.shadowRoot.querySelectorAll('audio');
+      assert.lengthOf(audios, 1);
+      assert.equal(audios[0].src, url);
+    });
+  });
+
+  describe('unknown type', function() {
+    before(function() {
+      resultType = 'lambeosaurus';
+      url = 'http://domain.com/dummy-expected';
+    });
+
+    it('no output', function() {
+      assert.lengthOf(output.shadowRoot.querySelectorAll('iframe'), 0);
+      assert.lengthOf(output.shadowRoot.querySelectorAll('audio'), 0);
+      assert.lengthOf(output.shadowRoot.querySelectorAll('img'), 0);
+    });
+  });
+
+  describe('no url', function() {
+    before(function() {
+      resultType = results.kImageType;
+      url = undefined;
+    });
+
+    it('no output', function() {
+      assert.lengthOf(output.shadowRoot.querySelectorAll('iframe'), 0);
+      assert.lengthOf(output.shadowRoot.querySelectorAll('audio'), 0);
+      assert.lengthOf(output.shadowRoot.querySelectorAll('img'), 0);
+    });
+  });
+});
+
+})();
+</script>
