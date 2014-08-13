@@ -22,7 +22,6 @@ from pylib.base import test_dispatcher
 from pylib.utils import watchdog_timer
 
 
-
 class TestException(Exception):
   pass
 
@@ -120,6 +119,11 @@ class TestFunctions(unittest.TestCase):
     for i in xrange(5):
       self.assertEqual(counter.GetAndIncrement(), i)
 
+  def testApplyMaxPerRun(self):
+    self.assertEqual(
+        ['A:B', 'C:D', 'E', 'F:G', 'H:I'],
+        test_dispatcher.ApplyMaxPerRun(['A:B', 'C:D:E', 'F:G:H:I'], 2))
+
 
 class TestThreadGroupFunctions(unittest.TestCase):
   """Tests test_dispatcher._RunAllTests and test_dispatcher._CreateRunners."""
@@ -187,15 +191,6 @@ class TestShard(unittest.TestCase):
         [], MockRunner, ['0', '1'], shard=True)
     self.assertEqual(len(results.GetAll()), 0)
     self.assertEqual(exit_code, constants.ERROR_EXIT_CODE)
-
-  def testTestsRemainWithAllDevicesOffline(self):
-    attached_devices = android_commands.GetAttachedDevices
-    android_commands.GetAttachedDevices = lambda: []
-    try:
-      with self.assertRaises(AssertionError):
-        _results, _exit_code = TestShard._RunShard(MockRunner)
-    finally:
-      android_commands.GetAttachedDevices = attached_devices
 
 
 class TestReplicate(unittest.TestCase):

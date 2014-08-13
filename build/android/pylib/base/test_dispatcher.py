@@ -330,9 +330,31 @@ def _TearDownRunners(runners, timeout=None):
   threads.JoinAll(watchdog_timer.WatchdogTimer(timeout))
 
 
+def ApplyMaxPerRun(tests, max_per_run):
+  """Rearrange the tests so that no group contains more than max_per_run tests.
+
+  Args:
+    tests:
+    max_per_run:
+
+  Returns:
+    A list of tests with no more than max_per_run per run.
+  """
+  tests_expanded = []
+  for test_group in tests:
+    if type(test_group) != str:
+      # Do not split test objects which are not strings.
+      tests_expanded.append(test_group)
+    else:
+      test_split = test_group.split(':')
+      for i in range(0, len(test_split), max_per_run):
+        tests_expanded.append(':'.join(test_split[i:i+max_per_run]))
+  return tests_expanded
+
+
 def RunTests(tests, runner_factory, devices, shard=True,
              test_timeout=DEFAULT_TIMEOUT, setup_timeout=DEFAULT_TIMEOUT,
-             num_retries=2):
+             num_retries=2, max_per_run=256):
   """Run all tests on attached devices, retrying tests that don't pass.
 
   Args:
@@ -349,6 +371,7 @@ def RunTests(tests, runner_factory, devices, shard=True,
     setup_timeout: Watchdog timeout in seconds for creating and cleaning up
         test runners.
     num_retries: Number of retries for a test.
+    max_per_run: Maximum number of tests to run in any group.
 
   Returns:
     A tuple of (base_test_result.TestRunResults object, exit code).
@@ -357,21 +380,24 @@ def RunTests(tests, runner_factory, devices, shard=True,
     logging.critical('No tests to run.')
     return (base_test_result.TestRunResults(), constants.ERROR_EXIT_CODE)
 
+  tests_expanded = ApplyMaxPerRun(tests, max_per_run)
   if shard:
     # Generate a shared _TestCollection object for all test runners, so they
     # draw from a common pool of tests.
-    shared_test_collection = _TestCollection([_Test(t) for t in tests])
+    shared_test_collection = _TestCollection([_Test(t) for t in tests_expanded])
     test_collection_factory = lambda: shared_test_collection
     tag_results_with_device = False
     log_string = 'sharded across devices'
   else:
     # Generate a unique _TestCollection object for each test runner, but use
     # the same set of tests.
-    test_collection_factory = lambda: _TestCollection([_Test(t) for t in tests])
+    test_collection_factory = lambda: _TestCollection(
+        [_Test(t) for t in tests_expanded])
     tag_results_with_device = True
     log_string = 'replicated on each device'
 
-  logging.info('Will run %d tests (%s): %s', len(tests), log_string, str(tests))
+  logging.info('Will run %d tests (%s): %s',
+               len(tests_expanded), log_string, str(tests_expanded))
   runners = _CreateRunners(runner_factory, devices, setup_timeout)
   try:
     return _RunAllTests(runners, test_collection_factory,
