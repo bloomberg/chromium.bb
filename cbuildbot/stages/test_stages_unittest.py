@@ -23,6 +23,7 @@ from chromite.lib import cgroups
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
+from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import timeout_util
 
@@ -410,8 +411,11 @@ class ImageTestStageTest(generic_stages_unittest.AbstractStageTest,
   RELEASE_TAG = 'ToT.0.0'
 
   def setUp(self):
+    self._test_root = os.path.join(self.build_root, 'tmp/results_dir')
     self.PatchObject(commands, 'CreateTestRoot', autospec=True,
                      return_value='/tmp/results_dir')
+    self.PatchObject(git, 'ReinterpretPathForChroot',
+                     side_effect=lambda x: x)
     self.StartPatcher(BuilderRunMock())
     self._Prepare()
 
@@ -427,9 +431,13 @@ class ImageTestStageTest(generic_stages_unittest.AbstractStageTest,
     stage = self.ConstructStage()
     stage.PerformStage()
     cmd = [
+        'sudo', '--',
+        os.path.join(self.build_root, 'chromite', 'bin', 'test_image'),
         '--board', self._current_board,
-        '--test_results_root', '/tmp/results_dir/image_test_results',
-        stage.GetImageDirSymlink(),
+        '--test_results_root',
+        cros_build_lib.ToChrootPath(os.path.join(self._test_root,
+                                                 'image_test_results')),
+        cros_build_lib.ToChrootPath(stage.GetImageDirSymlink()),
     ]
     self.assertCommandContains(cmd)
 

@@ -54,7 +54,8 @@ class ImageTestCase(unittest.TestCase, BoardAndDirectoryMixin):
   Tests MUST use prefix "Test" (e.g.: TestLinkage, TestDiskSpace), not "test"
   prefix, in order to be picked up by the test runner.
 
-  Tests are run outside chroot.
+  Tests are run inside chroot. Tests are run as root. DO NOT modify any mounted
+  partitions.
 
   The current working directory is set up so that "ROOT_A", and "STATEFUL"
   constants refer to the mounted partitions. The partitions are mounted
@@ -311,21 +312,15 @@ class LinkageTest(NonForgivingImageTestCase):
   """Verify that all binaries and libraries have proper linkage."""
 
   def setUp(self):
-    self._outside_chroot = os.getcwd()
-    try:
-      self._inside_chroot = cros_build_lib.ToChrootPath(self._outside_chroot)
-    except ValueError:
-      self._inside_chroot = self._outside_chroot
-
     osutils.MountDir(
-        os.path.join(self._outside_chroot, STATEFUL, 'var_overlay'),
-        os.path.join(self._outside_chroot, ROOT_A, 'var'),
+        os.path.join(STATEFUL, 'var_overlay'),
+        os.path.join(ROOT_A, 'var'),
         mount_opts=('bind', ),
     )
 
   def tearDown(self):
     osutils.UmountDir(
-        os.path.join(self._outside_chroot, ROOT_A, 'var'),
+        os.path.join(ROOT_A, 'var'),
         cleanup=False,
     )
 
@@ -333,11 +328,10 @@ class LinkageTest(NonForgivingImageTestCase):
     cmd = [
         'portageq-%s' % self._board,
         'has_version',
-        os.path.join(self._inside_chroot, ROOT_A),
+        ROOT_A,
         package_name
     ]
-    ret = cros_build_lib.RunCommand(cmd, error_code_ok=True,
-                                    enter_chroot=True)
+    ret = cros_build_lib.RunCommand(cmd, error_code_ok=True)
     return ret.returncode == 0
 
   def TestLinkage(self):

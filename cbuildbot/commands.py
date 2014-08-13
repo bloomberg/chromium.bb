@@ -81,10 +81,12 @@ def RunBuildScript(buildroot, cmd, chromite_cmd=False, **kwargs):
     chromite_cmd: Whether the command should be evaluated relative to the
       chromite/bin subdir of the |buildroot|.
     kwargs: Optional args passed to RunCommand; see RunCommand for specifics.
+      In addition, if 'sudo' kwarg is True, SudoRunCommand will be used.
   """
   assert not kwargs.get('shell', False), 'Cannot execute shell commands'
   kwargs.setdefault('cwd', buildroot)
   enter_chroot = kwargs.get('enter_chroot', False)
+  sudo = kwargs.pop('sudo', False)
 
   if chromite_cmd:
     cmd = cmd[:]
@@ -104,8 +106,11 @@ def RunBuildScript(buildroot, cmd, chromite_cmd=False, **kwargs):
       status_file = stack.Add(tempfile.NamedTemporaryFile, dir=chroot_tmp)
       kwargs['extra_env']['PARALLEL_EMERGE_STATUS_FILE'] = \
           git.ReinterpretPathForChroot(status_file.name)
+    runcmd = cros_build_lib.RunCommand
+    if sudo:
+      runcmd = cros_build_lib.SudoRunCommand
     try:
-      return cros_build_lib.RunCommand(cmd, **kwargs)
+      return runcmd(cmd, **kwargs)
     except cros_build_lib.RunCommandError as ex:
       # Print the original exception.
       cros_build_lib.Error('\n%s', ex)
@@ -520,10 +525,15 @@ def BuildVMImageForTesting(buildroot, board, extra_env=None, disk_layout=None):
 def RunTestImage(buildroot, board, image_dir, results_dir):
   """Executes test_image on the produced image in |image_dir|.
 
+  The "test_image" script will be run as root in chroot. Running the script as
+  root will allow the tests to read normally-forbidden files such as those
+  owned by root. Running tests inside the chroot allows us to control
+  dependencies better.
+
   Args:
     buildroot: The buildroot of the current build.
     board: The board the image was built for.
-    image_dir: The directory in which to find {,u}mount_image.sh and the image.
+    image_dir: The directory in which to find the image.
     results_dir: The directory to store result files.
 
   Raises:
@@ -532,10 +542,11 @@ def RunTestImage(buildroot, board, image_dir, results_dir):
   cmd = [
       'test_image',
       '--board', board,
-      '--test_results_root', results_dir,
-      image_dir,
+      '--test_results_root', cros_build_lib.ToChrootPath(results_dir),
+      cros_build_lib.ToChrootPath(image_dir),
   ]
-  RunBuildScript(buildroot, cmd, chromite_cmd=True)
+  RunBuildScript(buildroot, cmd, enter_chroot=True, chromite_cmd=True,
+                 sudo=True)
 
 
 def RunSignerTests(buildroot, board):

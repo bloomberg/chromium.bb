@@ -349,16 +349,21 @@ class ImageTestStage(generic_stages.BoardSpecificBuilderStage,
 
   def PerformStage(self):
     test_results_dir = commands.CreateTestRoot(self._build_root)
+    # CreateTestRoot returns a temp directory inside chroot.
+    # We bring that back out to the build root.
+    test_results_dir = os.path.join(self._build_root, test_results_dir[1:])
     test_results_dir = os.path.join(test_results_dir, 'image_test_results')
     osutils.SafeMakedirs(test_results_dir)
-    with timeout_util.Timeout(self.IMAGE_TEST_TIMEOUT):
-      commands.RunTestImage(
-          self._build_root,
-          self._current_board,
-          self.GetImageDirSymlink(),
-          test_results_dir,
-      )
-    self.SendPerfValues(test_results_dir)
+    try:
+      with timeout_util.Timeout(self.IMAGE_TEST_TIMEOUT):
+        commands.RunTestImage(
+            self._build_root,
+            self._current_board,
+            self.GetImageDirSymlink(),
+            test_results_dir,
+        )
+    finally:
+      self.SendPerfValues(test_results_dir)
 
   def SendPerfValues(self, test_results_dir):
     """Gather all perf values in |test_results_dir| and send them to chromeperf.

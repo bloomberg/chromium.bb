@@ -15,6 +15,7 @@ sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import failures_lib
 from chromite.lib import cros_build_lib_unittest
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
 from chromite.lib import git
@@ -32,13 +33,15 @@ import mock
 class RunBuildScriptTest(cros_test_lib.TempDirTestCase):
   """Test RunBuildScript in a variety of cases."""
 
-  def _assertRunBuildScript(self, in_chroot=False, error=None, raises=None):
+  def _assertRunBuildScript(self, in_chroot=False, error=None, raises=None,
+                            **kwargs):
     """Test the RunBuildScript function.
 
     Args:
       in_chroot: Whether to enter the chroot or not.
       error: error result message to simulate.
       raises: If the command should fail, the exception to be raised.
+      kwargs: Extra kwargs passed to RunBuildScript.
     """
     # Write specified error message to status file.
     def WriteError(_cmd, extra_env=None, **_kwargs):
@@ -47,24 +50,27 @@ class RunBuildScriptTest(cros_test_lib.TempDirTestCase):
         osutils.WriteFile(status_file, error)
 
     buildroot = self.tempdir
-    os.makedirs(os.path.join(buildroot, '.repo'))
+    osutils.SafeMakedirs(os.path.join(buildroot, '.repo'))
     if error is not None:
-      os.makedirs(os.path.join(buildroot, 'chroot', 'tmp'))
+      osutils.SafeMakedirs(os.path.join(buildroot, 'chroot', 'tmp'))
 
     # Run the command, throwing an exception if it fails.
     with cros_build_lib_unittest.RunCommandMock() as m:
       cmd = ['example', 'command']
+      sudo_cmd = ['sudo', '--'] + cmd
       returncode = 1 if raises else 0
       m.AddCmdResult(cmd, returncode=returncode, side_effect=WriteError)
+      m.AddCmdResult(sudo_cmd, returncode=returncode, side_effect=WriteError)
       with mock.patch.object(git, 'ReinterpretPathForChroot',
                              side_effect=lambda x: x):
         with cros_test_lib.LoggingCapturer():
           # If the script failed, the exception should be raised and printed.
           if raises:
             self.assertRaises(raises, commands.RunBuildScript, buildroot,
-                              cmd, enter_chroot=in_chroot)
+                              cmd, enter_chroot=in_chroot, **kwargs)
           else:
-            commands.RunBuildScript(buildroot, cmd, enter_chroot=in_chroot)
+            commands.RunBuildScript(buildroot, cmd, enter_chroot=in_chroot,
+                                    **kwargs)
 
   def testSuccessOutsideChroot(self):
     """Test executing a command outside the chroot."""
@@ -96,6 +102,11 @@ class RunBuildScriptTest(cros_test_lib.TempDirTestCase):
     """Test detecting a package build failure."""
     self._assertRunBuildScript(in_chroot=True, error=constants.CHROME_CP,
                                raises=failures_lib.PackageBuildFailure)
+
+  def testSuccessWithSudo(self):
+    """Test a command run with sudo."""
+    self._assertRunBuildScript(in_chroot=False, sudo=True)
+    self._assertRunBuildScript(in_chroot=True, sudo=True)
 
 
 class RunTestSuiteTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
@@ -616,6 +627,8 @@ class ImageTestCommandsTest(cros_build_lib_unittest.RunCommandTestCase):
     self._board = 'test-board'
     self._image_dir = 'image-dir'
     self._result_dir = 'result-dir'
+    self.PatchObject(git, 'ReinterpretPathForChroot',
+                     side_effect=lambda x: x)
 
   def testRunTestImage(self):
     """Verifies RunTestImage calls into test-image script properly."""
@@ -623,10 +636,14 @@ class ImageTestCommandsTest(cros_build_lib_unittest.RunCommandTestCase):
                           self._result_dir)
     self.assertCommandContains(
         [
+          'sudo', '--',
+          os.path.join(self._build, 'chromite', 'bin', 'test_image'),
           '--board', self._board,
-          '--test_results_root', self._result_dir,
-          self._image_dir,
+          '--test_results_root',
+          cros_build_lib.ToChrootPath(self._result_dir),
+          cros_build_lib.ToChrootPath(self._image_dir),
         ],
+        enter_chroot=True,
     )
 
 
