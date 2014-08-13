@@ -43,14 +43,23 @@ const char kExpectedSession2[] = "0-1633771873-1633771873-1633771873";
 const char kExpectedHeader2[] =
     "ps=0-1633771873-1633771873-1633771873, "
     "sid=c911fdb402f578787562cf7f00eda972, v=0, c=android";
+const char kExpectedHeader3[] =
+    "ps=86401-1633771873-1633771873-1633771873, "
+    "sid=d7c1c34ef6b90303b01c48a6c1db6419, v=0, c=android";
 #elif defined(OS_IOS)
 const char kExpectedHeader2[] =
     "ps=0-1633771873-1633771873-1633771873, "
     "sid=c911fdb402f578787562cf7f00eda972, v=0, c=ios";
+const char kExpectedHeader3[] =
+    "ps=86401-1633771873-1633771873-1633771873, "
+    "sid=d7c1c34ef6b90303b01c48a6c1db6419, v=0, c=ios";
 #else
 const char kExpectedHeader2[] =
     "ps=0-1633771873-1633771873-1633771873, "
     "sid=c911fdb402f578787562cf7f00eda972, v=0";
+const char kExpectedHeader3[] =
+    "ps=86401-1633771873-1633771873-1633771873, "
+    "sid=d7c1c34ef6b90303b01c48a6c1db6419, v=0";
 #endif
 
 const char kDataReductionProxyKey[] = "12345";
@@ -75,7 +84,7 @@ class TestDataReductionProxyAuthRequestHandler
   }
 
   virtual base::Time Now() const OVERRIDE {
-    return base::Time::UnixEpoch();
+    return base::Time::UnixEpoch() + now_offset_;
   }
 
   virtual void RandBytes(void* output, size_t length) OVERRIDE {
@@ -84,6 +93,14 @@ class TestDataReductionProxyAuthRequestHandler
       c[i] = 'a';
     }
   }
+
+  // Time after the unix epoch that Now() reports.
+  void set_offset(const base::TimeDelta& now_offset) {
+    now_offset_ = now_offset;
+  }
+
+ private:
+  base::TimeDelta now_offset_;
 };
 
 }  // namespace
@@ -134,22 +151,52 @@ TEST_F(DataReductionProxyAuthRequestHandlerTest, Authorization) {
 
   // Don't write headers with a valid proxy, that's not a data reduction proxy.
   auth_handler.MaybeAddRequestHeader(
-    NULL,
-    net::ProxyServer::FromURI(kOtherProxy, net::ProxyServer::SCHEME_HTTP),
-    &headers);
+      NULL,
+      net::ProxyServer::FromURI(kOtherProxy, net::ProxyServer::SCHEME_HTTP),
+      &headers);
   EXPECT_FALSE(headers.HasHeader(kChromeProxyHeader));
 
   // Write headers with a valid data reduction proxy;
   auth_handler.MaybeAddRequestHeader(
-    NULL,
-    net::ProxyServer::FromURI(
-        net::HostPortPair::FromURL(GURL(params->DefaultOrigin())).ToString(),
-        net::ProxyServer::SCHEME_HTTP),
-    &headers);
+      NULL,
+      net::ProxyServer::FromURI(
+          net::HostPortPair::FromURL(GURL(params->DefaultOrigin())).ToString(),
+          net::ProxyServer::SCHEME_HTTP),
+      &headers);
   EXPECT_TRUE(headers.HasHeader(kChromeProxyHeader));
   std::string header_value;
   headers.GetHeader(kChromeProxyHeader, &header_value);
   EXPECT_EQ(kExpectedHeader2, header_value);
+
+  // Fast forward 24 hours. The header should be the same.
+  auth_handler.set_offset(base::TimeDelta::FromSeconds(24 * 60 * 60));
+  net::HttpRequestHeaders headers2;
+  // Write headers with a valid data reduction proxy;
+  auth_handler.MaybeAddRequestHeader(
+      NULL,
+      net::ProxyServer::FromURI(
+          net::HostPortPair::FromURL(GURL(params->DefaultOrigin())).ToString(),
+          net::ProxyServer::SCHEME_HTTP),
+      &headers2);
+  EXPECT_TRUE(headers2.HasHeader(kChromeProxyHeader));
+  std::string header_value2;
+  headers2.GetHeader(kChromeProxyHeader, &header_value2);
+  EXPECT_EQ(kExpectedHeader2, header_value2);
+
+  // Fast forward one more second. The header should be new.
+  auth_handler.set_offset(base::TimeDelta::FromSeconds(24 * 60 * 60 + 1));
+  net::HttpRequestHeaders headers3;
+  // Write headers with a valid data reduction proxy;
+  auth_handler.MaybeAddRequestHeader(
+      NULL,
+      net::ProxyServer::FromURI(
+          net::HostPortPair::FromURL(GURL(params->DefaultOrigin())).ToString(),
+          net::ProxyServer::SCHEME_HTTP),
+      &headers3);
+  EXPECT_TRUE(headers3.HasHeader(kChromeProxyHeader));
+  std::string header_value3;
+  headers3.GetHeader(kChromeProxyHeader, &header_value3);
+  EXPECT_EQ(kExpectedHeader3, header_value3);
 }
 
 TEST_F(DataReductionProxyAuthRequestHandlerTest, AuthHashForSalt) {

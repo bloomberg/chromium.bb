@@ -82,9 +82,15 @@ class DataReductionProxyAuthRequestHandler {
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyAuthRequestHandlerTest,
                            AuthHashForSalt);
 
-  void InitAuthentication(
-      const std::string& session,
-      const std::string& credentials);
+  // Stores the supplied key and sets up credentials suitable for authenticating
+  // with the data reduction proxy.
+  void InitAuthentication(const std::string& key);
+
+  // Generates a session ID and credentials suitable for authenticating with
+  // the data reduction proxy.
+  void ComputeCredentials(const base::Time& now,
+                          std::string* session,
+                          std::string* credentials);
 
   // Authentication state.
   std::string key_;
@@ -97,6 +103,10 @@ class DataReductionProxyAuthRequestHandler {
   // Both live on the IO thread.
   std::string client_;
   std::string version_;
+
+  // The last time the session was updated. Used to ensure that a session is
+  // never used for more than twenty-four hours.
+  base::Time last_update_time_;
 
   DataReductionProxyParams* data_reduction_proxy_params_;
 

@@ -99,6 +99,11 @@ void DataReductionProxyAuthRequestHandler::MaybeAddRequestHeader(
 
 void DataReductionProxyAuthRequestHandler::AddAuthorizationHeader(
     net::HttpRequestHeaders* headers) {
+  base::Time now = Now();
+  if (now - last_update_time_ > base::TimeDelta::FromHours(24)) {
+    last_update_time_ = now;
+    ComputeCredentials(last_update_time_, &session_, &credentials_);
+  }
   const char kChromeProxyHeader[] = "Chrome-Proxy";
   std::string header_value;
   if (headers->HasHeader(kChromeProxyHeader)) {
@@ -115,34 +120,40 @@ void DataReductionProxyAuthRequestHandler::AddAuthorizationHeader(
 
 void DataReductionProxyAuthRequestHandler::InitAuthenticationOnUI(
     const std::string& key) {
-  key_ = key;
-  int64 timestamp =
-      (Now() - base::Time::UnixEpoch()).InMilliseconds() / 1000;
-
-  int32 rand[3];
-  RandBytes(rand, 3 * sizeof(rand[0]));
-  std::string session = base::StringPrintf("%lld-%u-%u-%u",
-                                           static_cast<long long>(timestamp),
-                                           rand[0],
-                                           rand[1],
-                                           rand[2]);
-  std::string credentials = base::UTF16ToUTF8(AuthHashForSalt(timestamp, key_));
-
-  DVLOG(1) << "session: [" << session << "] "
-           << "password: [" << credentials  << "]";
   network_task_runner_->PostTask(FROM_HERE, base::Bind(
       &DataReductionProxyAuthRequestHandler::InitAuthentication,
       base::Unretained(this),
-      session,
-      credentials));
+      key));
+}
+
+void DataReductionProxyAuthRequestHandler::ComputeCredentials(
+    const base::Time& now,
+    std::string* session,
+    std::string* credentials) {
+  DCHECK(session);
+  DCHECK(credentials);
+  int64 timestamp =
+      (now - base::Time::UnixEpoch()).InMilliseconds() / 1000;
+
+  int32 rand[3];
+  RandBytes(rand, 3 * sizeof(rand[0]));
+  *session = base::StringPrintf("%lld-%u-%u-%u",
+                                static_cast<long long>(timestamp),
+                                rand[0],
+                                rand[1],
+                                rand[2]);
+  *credentials = base::UTF16ToUTF8(AuthHashForSalt(timestamp, key_));
+
+  DVLOG(1) << "session: [" << *session << "] "
+           << "password: [" << *credentials  << "]";
 }
 
 void DataReductionProxyAuthRequestHandler::InitAuthentication(
-    const std::string& session,
-    const std::string& credentials) {
+    const std::string& key) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
-  session_ = session;
-  credentials_ = credentials;
+  key_ = key;
+  last_update_time_ = Now();
+  ComputeCredentials(last_update_time_, &session_, &credentials_);
 }
 
 void DataReductionProxyAuthRequestHandler::SetKeyOnUI(const std::string& key) {
