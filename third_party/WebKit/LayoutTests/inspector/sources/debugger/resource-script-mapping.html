@@ -55,7 +55,7 @@ function test()
                 }
 
                 InspectorTest.checkUILocation(originalUISourceCode, 0, 5, uiLocation(script, 0, 5));
-                InspectorTest.checkRawLocation(script, 10, 0, originalUISourceCode.uiLocationToRawLocation(target, 10, 0));
+                InspectorTest.checkRawLocation(script, 10, 0, InspectorTest.testDebuggerWorkspaceBinding.uiLocationToRawLocation(target, originalUISourceCode, 10, 0));
                 InspectorTest.dumpUISourceCode(originalUISourceCode, step2);
             }
 
@@ -68,7 +68,7 @@ function test()
                 function uiSourceCodeAdded(uiSourceCode)
                 {
                     InspectorTest.checkUILocation(uiSourceCode, 0, 5, uiLocation(script, 0, 5));
-                    InspectorTest.checkRawLocation(script, 10, 0, uiSourceCode.uiLocationToRawLocation(target, 10, 0));
+                    InspectorTest.checkRawLocation(script, 10, 0, InspectorTest.testDebuggerWorkspaceBinding.uiLocationToRawLocation(target, uiSourceCode, 10, 0));
                     InspectorTest.dumpUISourceCode(uiSourceCode, next);
                 }
             }
@@ -102,7 +102,7 @@ function test()
                 script = InspectorTest.createScriptMock(url, 0, 0, false, "<script source>");
                 resourceScriptMapping.addScript(script);
                 InspectorTest.checkUILocation(mockUISourceCode, 0, 5, uiLocation(script, 0, 5));
-                InspectorTest.checkRawLocation(script, 10, 0, mockUISourceCode.uiLocationToRawLocation(target, 10, 0));
+                InspectorTest.checkRawLocation(script, 10, 0, InspectorTest.testDebuggerWorkspaceBinding.uiLocationToRawLocation(target, mockUISourceCode, 10, 0));
                 InspectorTest.dumpUISourceCode(mockUISourceCode, next);
             }
         },
@@ -134,7 +134,7 @@ function test()
                 }
 
                 InspectorTest.checkUILocation(originalUISourceCode1, 0, 5, uiLocation(script1, 0, 5));
-                InspectorTest.checkRawLocation(script1, 10, 0, originalUISourceCode1.uiLocationToRawLocation(target, 10, 0));
+                InspectorTest.checkRawLocation(script1, 10, 0, InspectorTest.testDebuggerWorkspaceBinding.uiLocationToRawLocation(target, originalUISourceCode1, 10, 0));
                 InspectorTest.dumpUISourceCode(originalUISourceCode1, step2);
             }
 
@@ -151,7 +151,7 @@ function test()
                     originalUISourceCode2 = uiSourceCode;
                 }
                 InspectorTest.checkUILocation(originalUISourceCode2, 0, 45, uiLocation(script2, 0, 45));
-                InspectorTest.checkRawLocation(script1, 10, 0, originalUISourceCode1.uiLocationToRawLocation(target, 10, 0));
+                InspectorTest.checkRawLocation(script1, 10, 0, InspectorTest.testDebuggerWorkspaceBinding.uiLocationToRawLocation(target, originalUISourceCode1, 10, 0));
                 InspectorTest.dumpUISourceCode(originalUISourceCode2, step3);
             }
 
@@ -164,7 +164,7 @@ function test()
                 function uiSourceCodeAdded(uiSourceCode)
                 {
                     InspectorTest.checkUILocation(uiSourceCode, 0, 5, uiLocation(script1, 0, 5));
-                    InspectorTest.checkRawLocation(script1, 10, 0, uiSourceCode.uiLocationToRawLocation(target, 10, 0));
+                    InspectorTest.checkRawLocation(script1, 10, 0, InspectorTest.testDebuggerWorkspaceBinding.uiLocationToRawLocation(target, uiSourceCode, 10, 0));
                     InspectorTest.dumpUISourceCode(uiSourceCode, next);
                 }
             }
@@ -199,8 +199,8 @@ function test()
                 script1 = InspectorTest.createScriptMock(url, 1, 10, false, "<script source 1>");
                 resourceScriptMapping.addScript(script1);
                 InspectorTest.checkUILocation(mockUISourceCode, 1, 20, uiLocation(script1, 1, 20));
-                InspectorTest.checkRawLocation(script1, 1, 0, mockUISourceCode.uiLocationToRawLocation(target, 1, 0));
-                InspectorTest.checkRawLocation(script1, 6, 0, mockUISourceCode.uiLocationToRawLocation(target, 6, 0));
+                InspectorTest.checkRawLocation(script1, 1, 0, InspectorTest.testDebuggerWorkspaceBinding.uiLocationToRawLocation(target, mockUISourceCode, 1, 0));
+                InspectorTest.checkRawLocation(script1, 6, 0, InspectorTest.testDebuggerWorkspaceBinding.uiLocationToRawLocation(target, mockUISourceCode, 6, 0));
                 InspectorTest.dumpUISourceCode(mockUISourceCode, step3);
             }
 
@@ -210,14 +210,13 @@ function test()
                 script2 = InspectorTest.createScriptMock(url, 5, 45, false, "<script\nsource\n2>");
                 resourceScriptMapping.addScript(script2);
                 InspectorTest.checkUILocation(mockUISourceCode, 1, 20, uiLocation(script1, 1, 20));
-                InspectorTest.checkRawLocation(script1, 1, 0, mockUISourceCode.uiLocationToRawLocation(target, 1, 0));
-                InspectorTest.checkRawLocation(script2, 6, 0, mockUISourceCode.uiLocationToRawLocation(target, 6, 0));
+                InspectorTest.checkRawLocation(script1, 1, 0, InspectorTest.testDebuggerWorkspaceBinding.uiLocationToRawLocation(target, mockUISourceCode, 1, 0));
+                InspectorTest.checkRawLocation(script2, 6, 0, InspectorTest.testDebuggerWorkspaceBinding.uiLocationToRawLocation(target, mockUISourceCode, 6, 0));
                 InspectorTest.dumpUISourceCode(mockUISourceCode, next);
             }
         }
     ]);
 };
-
 </script>
 </head>
 <body onload="runTest()">

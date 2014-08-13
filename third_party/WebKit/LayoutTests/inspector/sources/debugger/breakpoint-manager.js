@@ -226,7 +226,7 @@ InspectorTest.addScript = function(target, breakpointManager, url)
     for (var i = 0; i < uiSourceCodes.length; ++i) {
         var uiSourceCode = uiSourceCodes[i];
         if (uiSourceCode.url === url) {
-            uiSourceCode.setSourceMappingForTarget(target, breakpointManager.defaultMapping);
+            breakpointManager._debuggerWorkspaceBinding.setSourceMapping(target, uiSourceCode, breakpointManager.defaultMapping);
             InspectorTest.uiSourceCodes[url] = uiSourceCode;
             return uiSourceCode;
         }
@@ -243,7 +243,7 @@ InspectorTest.addUISourceCode = function(target, breakpointManager, url, doNotSe
     var uiSourceCode = binding._networkWorkspaceBinding.addFileForURL(url, contentProvider);
     InspectorTest.uiSourceCodes[url] = uiSourceCode;
     if (!doNotSetSourceMapping) {
-        uiSourceCode.setSourceMappingForTarget(target, breakpointManager.defaultMapping);
+        breakpointManager._debuggerWorkspaceBinding.setSourceMapping(target, uiSourceCode, breakpointManager.defaultMapping);
         breakpointManager._debuggerWorkspaceBinding.updateLocations(target.debuggerModel.scriptForId(url));
     }
     return uiSourceCode;

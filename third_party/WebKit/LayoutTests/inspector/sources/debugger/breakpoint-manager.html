@@ -292,7 +292,7 @@ function test()
             InspectorTest.addResult("\n  Toggling source mapping.");
             var sourceMapping = createSourceMapping(uiSourceCodeA, uiSourceCodeB);
             mockTarget.debuggerModel.pushSourceMapping(sourceMapping);
-            uiSourceCodeB.setSourceMappingForTarget(mockTarget, sourceMapping);
+            breakpointManager._debuggerWorkspaceBinding.setSourceMapping(mockTarget, uiSourceCodeB, sourceMapping);
             InspectorTest.runAfterPendingBreakpointUpdates(breakpointManager, breakpointActionsPerformedBeforeReload.bind(this));
 
             function breakpointActionsPerformedBeforeReload()
@@ -310,7 +310,7 @@ function test()
                 InspectorTest.addResult("\n  Toggling source mapping.");
                 var sourceMapping = createSourceMapping(uiSourceCodeA, uiSourceCodeB);
                 mockTarget.debuggerModel.pushSourceMapping(sourceMapping);
-                uiSourceCodeB.setSourceMappingForTarget(mockTarget, sourceMapping);
+                breakpointManager._debuggerWorkspaceBinding.setSourceMapping(mockTarget, uiSourceCodeB, sourceMapping);
                 InspectorTest.runAfterPendingBreakpointUpdates(breakpointManager, breakpointActionsPerformed.bind(this));
             }
 
@@ -353,7 +353,6 @@ function test()
         },
     ]);
 };
-
 </script>
 
 </head>

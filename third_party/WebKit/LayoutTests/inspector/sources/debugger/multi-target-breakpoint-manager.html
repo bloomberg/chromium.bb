@@ -38,7 +38,7 @@ function test()
                 target2 = InspectorTest.createMockTarget(2);
                 InspectorTest.testTargetManager.addTarget(target2);
                 target2.debuggerModel._addScript("a.js", "a.js");
-                uiSourceCode.setSourceMappingForTarget(target2, target2.defaultMapping);
+                breakpointManager._debuggerWorkspaceBinding.setSourceMapping(target2, uiSourceCode, target2.defaultMapping);
                 window.setBreakpointCallback = step2;
             }
 

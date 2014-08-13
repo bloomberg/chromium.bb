@@ -285,9 +285,9 @@ function test() {
                 InspectorTest.checkUILocation(uiSourceCode2, 7, 4, uiLocation(script, 1, 151));
                 InspectorTest.checkUILocation(originalUISourceCode, 1, 200, uiLocation(script, 1, 200));
 
-                InspectorTest.checkRawLocation(script, 0, 42, uiSourceCode1.uiLocationToRawLocation(target, 3, 10));
-                InspectorTest.checkRawLocation(script, 1, 85, uiSourceCode2.uiLocationToRawLocation(target, 0, 0));
-                InspectorTest.checkRawLocation(script, 1, 110, uiSourceCode2.uiLocationToRawLocation(target, 5, 2));
+                InspectorTest.checkRawLocation(script, 0, 42, InspectorTest.testDebuggerWorkspaceBinding.uiLocationToRawLocation(target, uiSourceCode1, 3, 10));
+                InspectorTest.checkRawLocation(script, 1, 85, InspectorTest.testDebuggerWorkspaceBinding.uiLocationToRawLocation(target, uiSourceCode2, 0, 0));
+                InspectorTest.checkRawLocation(script, 1, 110, InspectorTest.testDebuggerWorkspaceBinding.uiLocationToRawLocation(target, uiSourceCode2, 5, 2));
 
                 uiSourceCode1.requestContent(didRequestContent1);
 
@@ -350,9 +350,9 @@ function test() {
                 InspectorTest.checkUILocation(uiSourceCode2, 7, 4, uiLocation(script, 1, 151));
                 InspectorTest.checkUILocation(originalUISourceCode, 1, 200, uiLocation(script, 1, 200));
 
-                InspectorTest.checkRawLocation(script, 0, 42, uiSourceCode1.uiLocationToRawLocation(target, 3, 10));
-                InspectorTest.checkRawLocation(script, 1, 85, uiSourceCode2.uiLocationToRawLocation(target, 0, 0));
-                InspectorTest.checkRawLocation(script, 1, 110, uiSourceCode2.uiLocationToRawLocation(target, 5, 2));
+                InspectorTest.checkRawLocation(script, 0, 42, InspectorTest.testDebuggerWorkspaceBinding.uiLocationToRawLocation(target, uiSourceCode1, 3, 10));
+                InspectorTest.checkRawLocation(script, 1, 85, InspectorTest.testDebuggerWorkspaceBinding.uiLocationToRawLocation(target, uiSourceCode2, 0, 0));
+                InspectorTest.checkRawLocation(script, 1, 110, InspectorTest.testDebuggerWorkspaceBinding.uiLocationToRawLocation(target, uiSourceCode2, 5, 2));
 
                 uiSourceCode1.requestContent(didRequestContent1);
 
