@@ -5069,6 +5069,15 @@
    fun:_ZN11leveldb_env19ParseMethodAndErrorEPKcPNS_8MethodIDEPi
 }
 {
+   bug_252641_b
+   Memcheck:Uninitialized
+   fun:pthread_rwlock_init$UNIX2003
+   fun:_ZN3re25MutexC2Ev
+   fun:_ZN3re25MutexC1Ev
+   ...
+   fun:_ZN3gpu12_GLOBAL__N_114StringMismatchERKSsS2_
+}
+{
    bug_253797
    Memcheck:Uninitialized
    fun:_ZNSt11char_traitsIcE6lengthEPKc
