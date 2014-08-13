@@ -165,7 +165,7 @@ void TestRenderFrameHost::SendBeginNavigationWithURL(const GURL& url) {
   params.method = "GET";
   params.url = url;
   params.referrer_policy = blink::WebReferrerPolicyDefault;
-  params.load_flags = net::LOAD_NORMAL | net::LOAD_ENABLE_LOAD_TIMING;
+  params.load_flags = net::LOAD_NORMAL;
   params.has_user_gesture = false;
   params.transition_type = PAGE_TRANSITION_LINK;
   params.should_replace_current_entry = false;

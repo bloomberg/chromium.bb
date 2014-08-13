@@ -185,6 +185,9 @@ IPC_STRUCT_BEGIN(ResourceHostMsg_Request)
   // True if the request was user initiated.
   IPC_STRUCT_MEMBER(bool, has_user_gesture)
 
+  // True if load timing data should be collected for request.
+  IPC_STRUCT_MEMBER(bool, enable_load_timing)
+
   // The routing id of the RenderFrame.
   IPC_STRUCT_MEMBER(int, render_frame_id)
 

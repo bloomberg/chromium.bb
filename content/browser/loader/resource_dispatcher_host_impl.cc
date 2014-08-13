@@ -1075,6 +1075,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
           false,  // is stream
           allow_download,
           request_data.has_user_gesture,
+          request_data.enable_load_timing,
           request_data.referrer_policy,
           request_data.visiblity_state,
           resource_context,
@@ -1296,6 +1297,7 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       false,     // is_stream
       download,  // allow_download
       false,     // has_user_gesture
+      false,     // enable_load_timing
       blink::WebReferrerPolicyDefault,
       blink::WebPageVisibilityStateVisible,
       context,

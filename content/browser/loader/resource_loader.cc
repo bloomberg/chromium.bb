@@ -38,7 +38,8 @@ using base::TimeTicks;
 namespace content {
 namespace {
 
-void PopulateResourceResponse(net::URLRequest* request,
+void PopulateResourceResponse(ResourceRequestInfoImpl* info,
+                              net::URLRequest* request,
                               ResourceResponse* response) {
   response->head.error_code = request->status().error();
   response->head.request_time = request->request_time();
@@ -65,8 +66,7 @@ void PopulateResourceResponse(net::URLRequest* request,
       request,
       &response->head.appcache_id,
       &response->head.appcache_manifest_url);
-  // TODO(mmenke):  Figure out if LOAD_ENABLE_LOAD_TIMING is safe to remove.
-  if (request->load_flags() & net::LOAD_ENABLE_LOAD_TIMING)
+  if (info->is_load_timing_enabled())
     request->GetLoadTimingInfo(&response->head.load_timing);
 }
 
@@ -228,7 +228,7 @@ void ResourceLoader::OnReceivedRedirect(net::URLRequest* unused,
   }
 
   scoped_refptr<ResourceResponse> response(new ResourceResponse());
-  PopulateResourceResponse(request_.get(), response.get());
+  PopulateResourceResponse(info, request_.get(), response.get());
 
   if (!handler_->OnRequestRedirected(new_url, response.get(), defer)) {
     Cancel();
@@ -527,7 +527,7 @@ void ResourceLoader::CompleteResponseStarted() {
   ResourceRequestInfoImpl* info = GetRequestInfo();
 
   scoped_refptr<ResourceResponse> response(new ResourceResponse());
-  PopulateResourceResponse(request_.get(), response.get());
+  PopulateResourceResponse(info, request_.get(), response.get());
 
   if (request_->ssl_info().cert.get()) {
     int cert_id = CertStore::GetInstance()->StoreCert(

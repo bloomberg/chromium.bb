@@ -332,7 +332,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       request.httpHeaderField(WebString::fromUTF8("Referer")).latin1());
   const std::string& method = request.httpMethod().latin1();
 
-  int load_flags = net::LOAD_NORMAL | net::LOAD_ENABLE_LOAD_TIMING;
+  int load_flags = net::LOAD_NORMAL;
   switch (request.cachePolicy()) {
     case WebURLRequest::ReloadIgnoringCacheData:
       // Required by LayoutTests/http/tests/misc/refresh-headers.php
@@ -384,6 +384,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   request_info.referrer = referrer_url;
   request_info.headers = flattener.GetBuffer();
   request_info.load_flags = load_flags;
+  request_info.enable_load_timing = true;
   // requestor_pid only needs to be non-zero if the request originates outside
   // the render process, so we can use requestorProcessID even for requests
   // from in-process plugins.

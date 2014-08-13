@@ -128,6 +128,7 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
   request_.appcache_host_id = request_info.appcache_host_id;
   request_.download_to_file = request_info.download_to_file;
   request_.has_user_gesture = request_info.has_user_gesture;
+  request_.enable_load_timing = request_info.enable_load_timing;
 
   const RequestExtraData kEmptyData;
   const RequestExtraData* extra_data;

@@ -287,8 +287,7 @@ IPC_STRUCT_BEGIN(FrameHostMsg_BeginNavigation_Params)
   // Additional HTTP request headers.
   IPC_STRUCT_MEMBER(std::string, headers)
 
-  // net::URLRequest load flags (net::LOAD_NORMAL | net::LOAD_ENABLE_LOAD_TIMING
-  // by default).
+  // net::URLRequest load flags (net::LOAD_NORMAL) by default).
   IPC_STRUCT_MEMBER(int, load_flags)
 
   // Optional resource request body (may be null).

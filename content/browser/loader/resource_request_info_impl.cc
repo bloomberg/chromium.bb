@@ -48,6 +48,7 @@ void ResourceRequestInfo::AllocateForTesting(net::URLRequest* request,
           false,                             // is_stream
           true,                              // allow_download
           false,                             // has_user_gesture
+          false,                             // enable load timing
           blink::WebReferrerPolicyDefault,   // referrer_policy
           blink::WebPageVisibilityStateVisible,  // visibility_state
           context,                           // context
@@ -102,6 +103,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     bool is_stream,
     bool allow_download,
     bool has_user_gesture,
+    bool enable_load_timing,
     blink::WebReferrerPolicy referrer_policy,
     blink::WebPageVisibilityState visibility_state,
     ResourceContext* context,
@@ -123,6 +125,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       is_stream_(is_stream),
       allow_download_(allow_download),
       has_user_gesture_(has_user_gesture),
+      enable_load_timing_(enable_load_timing),
       was_ignored_by_handler_(false),
       resource_type_(resource_type),
       transition_type_(transition_type),

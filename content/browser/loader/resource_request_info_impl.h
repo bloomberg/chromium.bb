@@ -56,6 +56,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       bool is_stream,
       bool allow_download,
       bool has_user_gesture,
+      bool enable_load_timing,
       blink::WebReferrerPolicy referrer_policy,
       blink::WebPageVisibilityState visibility_state,
       ResourceContext* context,
@@ -152,6 +153,8 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   int memory_cost() const { return memory_cost_; }
   void set_memory_cost(int cost) { memory_cost_ = cost; }
 
+  bool is_load_timing_enabled() const { return enable_load_timing_; }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
                            DeletedFilterDetached);
@@ -175,6 +178,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   bool is_stream_;
   bool allow_download_;
   bool has_user_gesture_;
+  bool enable_load_timing_;
   bool was_ignored_by_handler_;
   ResourceType resource_type_;
   PageTransition transition_type_;

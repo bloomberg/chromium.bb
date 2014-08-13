@@ -202,7 +202,7 @@ function painterTestURLRequest() {
     },
     {
       'params': {
-        'load_flags': 136446208,
+        'load_flags': 68222976,
         'method': 'GET',
         'priority': 4,
         'url': 'http://www.google.com/'
@@ -226,7 +226,7 @@ function painterTestURLRequest() {
     },
     {
       'params': {
-        'load_flags': 136446208,
+        'load_flags': 68222976,
         'method': 'GET',
         'priority': 4,
         'url': 'http://www.google.com/'
@@ -733,15 +733,15 @@ function painterTestURLRequest() {
   testCase.expectedText =
 't=1338864633224 [st=  0] +REQUEST_ALIVE  [dt=789]\n' +
 't=1338864633238 [st= 14]    URL_REQUEST_START_JOB  [dt=8]\n' +
-'                            --> load_flags = 136446208 ' +
-    '(ENABLE_LOAD_TIMING | MAIN_FRAME | MAYBE_USER_GESTURE ' +
+'                            --> load_flags = 68222976 ' +
+    '(MAIN_FRAME | MAYBE_USER_GESTURE ' +
     '| VERIFY_EV_CERT)\n' +
 '                            --> method = "GET"\n' +
 '                            --> priority = 4\n' +
 '                            --> url = "http://www.google.com/"\n' +
 't=1338864633248 [st= 24]   +URL_REQUEST_START_JOB  [dt=279]\n' +
-'                            --> load_flags = 136446208 ' +
-    '(ENABLE_LOAD_TIMING | MAIN_FRAME | MAYBE_USER_GESTURE ' +
+'                            --> load_flags = 68222976 ' +
+    '(MAIN_FRAME | MAYBE_USER_GESTURE ' +
     '| VERIFY_EV_CERT)\n' +
 '                            --> method = "GET"\n' +
 '                            --> priority = 4\n' +
@@ -819,7 +819,7 @@ function painterTestURLRequestIncomplete() {
     },
     {
       'params': {
-        'load_flags': 256,
+        'load_flags': 0,
         'method': 'GET',
         'priority': 4,
         'url': 'http://www.google.com/'
@@ -846,7 +846,7 @@ function painterTestURLRequestIncomplete() {
   testCase.expectedText =
 't=1338864633224 [st=  0] +REQUEST_ALIVE  [dt=?]\n' +
 't=1338864633356 [st=132]    URL_REQUEST_START_JOB  [dt=60]\n' +
-'                            --> load_flags = 256 (ENABLE_LOAD_TIMING)\n' +
+'                            --> load_flags = 0 (NORMAL)\n' +
 '                            --> method = "GET"\n' +
 '                            --> priority = 4\n' +
 '                            --> url = "http://www.google.com/"';
@@ -864,7 +864,7 @@ function painterTestURLRequestIncompleteFromLoadedLog() {
   testCase.expectedText =
 't=1338864633224 [st=  0] +REQUEST_ALIVE  [dt=789+]\n' +
 't=1338864633356 [st=132]    URL_REQUEST_START_JOB  [dt=60]\n' +
-'                            --> load_flags = 256 (ENABLE_LOAD_TIMING)\n' +
+'                            --> load_flags = 0 (NORMAL)\n' +
 '                            --> method = "GET"\n' +
 '                            --> priority = 4\n' +
 '                            --> url = "http://www.google.com/"\n' +
@@ -906,7 +906,7 @@ function painterTestNetError() {
     },
     {
       'params': {
-        'load_flags': 136446208,
+        'load_flags': 68222976,
         'method': 'GET',
         'priority': 4,
         'url': 'http://www.doesnotexistdomain.com/'
@@ -930,7 +930,7 @@ function painterTestNetError() {
     },
     {
       'params': {
-        'load_flags': 136446208,
+        'load_flags': 68222976,
         'method': 'GET',
         'priority': 4,
         'url': 'http://www.doesnotexistdomain.com/'
@@ -1065,15 +1065,15 @@ function painterTestNetError() {
   testCase.expectedText =
 't=1338864773894 [st=  0] +REQUEST_ALIVE  [dt=475]\n' +
 't=1338864773901 [st=  7]    URL_REQUEST_START_JOB  [dt=5]\n' +
-'                            --> load_flags = 136446208 (' +
-        'ENABLE_LOAD_TIMING | MAIN_FRAME | MAYBE_USER_GESTURE ' +
+'                            --> load_flags = 68222976 (' +
+        'MAIN_FRAME | MAYBE_USER_GESTURE ' +
         '| VERIFY_EV_CERT)\n' +
 '                            --> method = "GET"\n' +
 '                            --> priority = 4\n' +
 '                            --> url = "http://www.doesnotexistdomain.com/"\n' +
 't=1338864773906 [st= 12]   +URL_REQUEST_START_JOB  [dt=245]\n' +
-'                            --> load_flags = 136446208 (' +
-        'ENABLE_LOAD_TIMING | MAIN_FRAME | MAYBE_USER_GESTURE ' +
+'                            --> load_flags = 68222976 (' +
+        'MAIN_FRAME | MAYBE_USER_GESTURE ' +
         '| VERIFY_EV_CERT)\n' +
 '                            --> method = "GET"\n' +
 '                            --> priority = 4\n' +
@@ -2051,7 +2051,7 @@ function painterTestInProgressURLRequest() {
   testCase.logEntries = [
     {
       'params': {
-        'load_flags': 136446208,
+        'load_flags': 68222976,
         'load_state': LoadState.READING_RESPONSE,
         'method': 'GET',
         'url': 'http://www.MagicPonyShopper.com'
@@ -2095,8 +2095,8 @@ function painterTestInProgressURLRequest() {
 
   testCase.expectedText =
 't=1338864773994 [st=  0] +REQUEST_ALIVE  [dt=375]\n' +
-'                          --> load_flags = 136446208 ' +
-    '(ENABLE_LOAD_TIMING | MAIN_FRAME | MAYBE_USER_GESTURE ' +
+'                          --> load_flags = 68222976 ' +
+    '(MAIN_FRAME | MAYBE_USER_GESTURE ' +
     '| VERIFY_EV_CERT)\n' +
 '                          --> load_state = ' + LoadState.READING_RESPONSE +
     ' (READING_RESPONSE)\n' +

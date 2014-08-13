@@ -75,6 +75,10 @@ struct CONTENT_EXPORT RequestInfo {
   // True if the request was user initiated.
   bool has_user_gesture;
 
+  // TODO(mmenke): Investigate if enable_load_timing is safe to remove.
+  // True if load timing data should be collected for the request.
+  bool enable_load_timing;
+
   // Extra data associated with this request.  We do not own this pointer.
   blink::WebURLRequest::ExtraData* extra_data;
 

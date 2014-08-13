@@ -182,6 +182,7 @@ class ResourceSchedulerTest : public testing::Test {
         false,                                   // is_stream
         true,                                    // allow_download
         false,                                   // has_user_gesture
+        false,                                   // enable_load_timing
         blink::WebReferrerPolicyDefault,         // referrer_policy
         blink::WebPageVisibilityStateVisible,    // visibility_state
         NULL,                                    // context
