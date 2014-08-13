@@ -391,7 +391,6 @@
         '../cc/cc.gyp:cc_surfaces',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         'mojo_base.gyp:mojo_environment_chromium',
-        'mojo_base.gyp:mojo_system_impl',
         'mojo_base.gyp:mojo_application_chromium',
         'mojo_cc_support',
         'mojo_geometry_bindings',
