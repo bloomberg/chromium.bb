@@ -4,8 +4,10 @@
 
 package org.chromium.chrome.browser.input;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Build;
 import android.provider.MediaStore;
 import android.test.suitebuilder.annotation.MediumTest;
 
@@ -88,6 +90,7 @@ public class SelectFileDialogTest extends ChromeShellTestBase {
     /**
      * Tests that clicks on <input type="file" /> trigger intent calls to ActivityWindowAndroid.
      */
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @MediumTest
     @Feature({"TextInput", "Main"})
     public void testSelectFileAndCancelRequest() throws Throwable {
@@ -104,7 +107,9 @@ public class SelectFileDialogTest extends ChromeShellTestBase {
         Intent contentIntent = (Intent)
                 mActivityWindowAndroidForTest.lastIntent.getParcelableExtra(Intent.EXTRA_INTENT);
         assertNotNull(contentIntent);
-        assertTrue(contentIntent.hasExtra(Intent.EXTRA_ALLOW_MULTIPLE));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            assertTrue(contentIntent.hasExtra(Intent.EXTRA_ALLOW_MULTIPLE));
+        }
         resetActivityWindowAndroidForTest();
 
         DOMUtils.clickNode(this, mContentViewCore, "input_image");

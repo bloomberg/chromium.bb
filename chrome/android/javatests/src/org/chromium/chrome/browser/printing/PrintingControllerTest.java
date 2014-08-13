@@ -4,6 +4,8 @@
 
 package org.chromium.printing;
 
+import android.annotation.TargetApi;
+import android.os.Build;
 import android.os.CancellationSignal;
 import android.os.ParcelFileDescriptor;
 import android.print.PageRange;
@@ -72,6 +74,7 @@ public class PrintingControllerTest extends ChromeShellTestBase {
      * controller: onStart, onLayout, onWrite, onFinish.  Each one is called once, and in this
      * order, in the UI thread.
      */
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     @LargeTest
     @Feature({"Printing"})
     public void testNormalPrintingFlow() throws Throwable {
@@ -197,6 +200,7 @@ public class PrintingControllerTest extends ChromeShellTestBase {
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private void callLayoutOnUiThread(
             final PrintingControllerImpl controller,
             final PrintAttributes oldAttributes,
@@ -219,6 +223,7 @@ public class PrintingControllerTest extends ChromeShellTestBase {
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     private void callWriteOnUiThread(
             final PrintingControllerImpl controller,
             final ParcelFileDescriptor descriptor,

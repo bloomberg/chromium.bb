@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser;
 
+import android.annotation.TargetApi;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -47,6 +48,7 @@ public class ClipboardTest extends ContentShellTestBase {
      * the HTML representation of the fragment to be available.
      */
     @LargeTest
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     @Feature({"Clipboard","TextInput"})
     @RerunWithUpdatedContainerView
     public void testCopyDocumentFragment() throws Throwable {

@@ -4,9 +4,11 @@
 
 package org.chromium.chrome.browser;
 
+import android.annotation.TargetApi;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Rect;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -98,10 +100,15 @@ public class SmartClipProviderTest extends ChromeShellTestBase implements Handle
                 new Class[] { Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE });
     }
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @Override
     public void tearDown() throws Exception {
         try {
-            mHandlerThread.quitSafely();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                mHandlerThread.quitSafely();
+            } else {
+                mHandlerThread.quit();
+            }
         } finally {
             super.tearDown();
         }
