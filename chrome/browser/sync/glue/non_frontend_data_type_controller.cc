@@ -340,7 +340,7 @@ bool NonFrontendDataTypeController::IsOnBackendThread() {
 }
 
 void NonFrontendDataTypeController::StartDone(
-    DataTypeController::StartResult start_result,
+    DataTypeController::ConfigureResult start_result,
     const syncer::SyncMergeResult& local_merge_result,
     const syncer::SyncMergeResult& syncer_merge_result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -359,7 +359,7 @@ void NonFrontendDataTypeController::StartDone(
 }
 
 void NonFrontendDataTypeController::StartDoneImpl(
-    DataTypeController::StartResult start_result,
+    DataTypeController::ConfigureResult start_result,
     DataTypeController::State new_state,
     const syncer::SyncMergeResult& local_merge_result,
     const syncer::SyncMergeResult& syncer_merge_result) {
@@ -398,7 +398,7 @@ void NonFrontendDataTypeController::RecordAssociationTime(
 #undef PER_DATA_TYPE_MACRO
 }
 
-void NonFrontendDataTypeController::RecordStartFailure(StartResult result) {
+void NonFrontendDataTypeController::RecordStartFailure(ConfigureResult result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures",
                             ModelTypeToHistogramInt(type()),

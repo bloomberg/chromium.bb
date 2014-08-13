@@ -10,25 +10,10 @@ DataTypeManager::ConfigureResult::ConfigureResult()
     : status(UNKNOWN) {
 }
 
-DataTypeManager::ConfigureResult::ConfigureResult(ConfigureStatus status,
-                                                  syncer::ModelTypeSet
-                                                      requested_types)
-    : status(status),
-      requested_types(requested_types) {
-  DCHECK_EQ(OK, status);
-}
-
 DataTypeManager::ConfigureResult::ConfigureResult(
     ConfigureStatus status,
-    syncer::ModelTypeSet requested_types,
-    std::map<syncer::ModelType, syncer::SyncError> failed_data_types,
-    syncer::ModelTypeSet unfinished_data_types,
-    syncer::ModelTypeSet needs_crypto)
-    : status(status),
-      requested_types(requested_types),
-      failed_data_types(failed_data_types),
-      unfinished_data_types(unfinished_data_types),
-      needs_crypto(needs_crypto) {
+    syncer::ModelTypeSet requested_types)
+    : status(status), requested_types(requested_types) {
 }
 
 DataTypeManager::ConfigureResult::~ConfigureResult() {
@@ -43,12 +28,11 @@ std::string DataTypeManager::ConfigureStatusToString(ConfigureStatus status) {
       return "Aborted";
     case UNRECOVERABLE_ERROR:
       return "Unrecoverable Error";
-    case PARTIAL_SUCCESS:
-      return "Partial Success";
-    default:
+    case UNKNOWN:
       NOTREACHED();
       return std::string();
   }
+  return std::string();
 }
 
 }  // namespace sync_driver

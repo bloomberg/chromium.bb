@@ -93,14 +93,14 @@ class FrontendDataTypeController : public sync_driver::DataTypeController {
 
   // Helper method for cleaning up state and running the start callback.
   virtual void StartDone(
-      StartResult start_result,
+      ConfigureResult start_result,
       const syncer::SyncMergeResult& local_merge_result,
       const syncer::SyncMergeResult& syncer_merge_result);
 
   // Record association time.
   virtual void RecordAssociationTime(base::TimeDelta time);
   // Record causes of start failure.
-  virtual void RecordStartFailure(StartResult result);
+  virtual void RecordStartFailure(ConfigureResult result);
 
   virtual sync_driver::AssociatorInterface* model_associator() const;
   virtual void set_model_associator(

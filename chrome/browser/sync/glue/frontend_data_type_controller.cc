@@ -262,7 +262,7 @@ void FrontendDataTypeController::AbortModelLoad() {
 }
 
 void FrontendDataTypeController::StartDone(
-    StartResult start_result,
+    ConfigureResult start_result,
     const syncer::SyncMergeResult& local_merge_result,
     const syncer::SyncMergeResult& syncer_merge_result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -295,7 +295,7 @@ void FrontendDataTypeController::RecordAssociationTime(base::TimeDelta time) {
 #undef PER_DATA_TYPE_MACRO
 }
 
-void FrontendDataTypeController::RecordStartFailure(StartResult result) {
+void FrontendDataTypeController::RecordStartFailure(ConfigureResult result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures",
                             ModelTypeToHistogramInt(type()),

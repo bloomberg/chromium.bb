@@ -64,8 +64,8 @@ COMPILE_ASSERT(arraysize(kStartOrder) ==
                kStartOrder_IncorrectSize);
 
 // The amount of time we wait for association to finish. If some types haven't
-// finished association by the time, configuration result will be
-// PARTIAL_SUCCESS and DataTypeManager is notified of the unfinished types.
+// finished association by the time, DataTypeManager is notified of the
+// unfinished types.
 const int64 kAssociationTimeOutInSeconds = 600;
 
 syncer::DataTypeAssociationStats BuildAssociationStatsFromMergeResults(
@@ -134,7 +134,6 @@ void ModelAssociationManager::Initialize(syncer::ModelTypeSet desired_types) {
 
   // Only keep types that have controllers.
   desired_types_.Clear();
-  slow_types_.Clear();
   for (syncer::ModelTypeSet::Iterator it = desired_types.First();
       it.Good(); it.Inc()) {
     if (controllers_->find(it.Get()) != controllers_->end())
@@ -150,13 +149,18 @@ void ModelAssociationManager::Initialize(syncer::ModelTypeSet desired_types) {
   LoadEnabledTypes();
 }
 
-void ModelAssociationManager::StopDatatype(DataTypeController* dtc) {
-  // First tell the sync backend that we no longer want to listen to
-  // changes for this type.
-  delegate_->OnSingleDataTypeWillStop(dtc->type());
+void ModelAssociationManager::StopDatatype(
+    const syncer::SyncError& error,
+    DataTypeController* dtc) {
+  loaded_types_.Remove(dtc->type());
+  associated_types_.Remove(dtc->type());
+  associating_types_.Remove(dtc->type());
 
-  // Then tell all data type specific logic to shut down.
-  dtc->Stop();
+  if (error.IsSet() || dtc->state() != DataTypeController::NOT_RUNNING) {
+    // If an error was set, the delegate must be informed of the error.
+    delegate_->OnSingleDataTypeWillStop(dtc->type(), error);
+    dtc->Stop();
+  }
 }
 
 void ModelAssociationManager::StopDisabledTypes() {
@@ -165,12 +169,9 @@ void ModelAssociationManager::StopDisabledTypes() {
        it != controllers_->end(); ++it) {
     DataTypeController* dtc = (*it).second.get();
     if (dtc->state() != DataTypeController::NOT_RUNNING &&
-        (!desired_types_.Has(dtc->type()) ||
-            failed_data_types_info_.count(dtc->type()) > 0)) {
+        !desired_types_.Has(dtc->type())) {
       DVLOG(1) << "ModelTypeToString: stop " << dtc->name();
-      StopDatatype(dtc);
-      loaded_types_.Remove(dtc->type());
-      associated_types_.Remove(dtc->type());
+      StopDatatype(syncer::SyncError(), dtc);
     }
   }
 }
@@ -208,13 +209,6 @@ void ModelAssociationManager::StartAssociationAsync(
 
   // Assume success.
   configure_status_ = DataTypeManager::OK;
-
-  // Remove types that already failed.
-  for (std::map<syncer::ModelType, syncer::SyncError>::const_iterator it =
-          failed_data_types_info_.begin();
-      it != failed_data_types_info_.end(); ++it) {
-    associating_types_.Remove(it->first);
-  }
 
   // Done if no types to associate.
   if (associating_types_.Empty()) {
@@ -255,29 +249,27 @@ void ModelAssociationManager::ResetForNextAssociation() {
   // |loaded_types_| and |associated_types_| are not cleared. So
   // reconfiguration won't restart types that are already started.
   requested_types_.Clear();
-  failed_data_types_info_.clear();
   associating_types_.Clear();
-  needs_crypto_types_.Clear();
 }
 
 void ModelAssociationManager::Stop() {
   // Ignore callbacks from controllers.
   weak_ptr_factory_.InvalidateWeakPtrs();
 
+  desired_types_.Clear();
+  loaded_types_.Clear();
+  associated_types_.Clear();
+  associating_types_.Clear();
+
   // Stop started data types.
   for (DataTypeController::TypeMap::const_iterator it = controllers_->begin();
        it != controllers_->end(); ++it) {
     DataTypeController* dtc = (*it).second.get();
     if (dtc->state() != DataTypeController::NOT_RUNNING) {
-      StopDatatype(dtc);
+      StopDatatype(syncer::SyncError(), dtc);
       DVLOG(1) << "ModelAssociationManager: Stopped " << dtc->name();
     }
   }
-
-  desired_types_.Clear();
-  loaded_types_.Clear();
-  associated_types_.Clear();
-  slow_types_.Clear();
 
   if (state_ == CONFIGURING) {
     if (configure_status_ == DataTypeManager::OK)
@@ -291,24 +283,10 @@ void ModelAssociationManager::Stop() {
   state_ = IDLE;
 }
 
-void ModelAssociationManager::AppendToFailedDatatypesAndLogError(
-    const syncer::SyncError& error) {
-  failed_data_types_info_[error.model_type()] = error;
-  LOG(ERROR) << "Failed to associate models for "
-             << syncer::ModelTypeToString(error.model_type());
-  UMA_HISTOGRAM_ENUMERATION("Sync.ConfigureFailed",
-                            ModelTypeToHistogramInt(error.model_type()),
-                            syncer::MODEL_TYPE_COUNT);
-}
-
 void ModelAssociationManager::ModelLoadCallback(syncer::ModelType type,
                                                 syncer::SyncError error) {
   DVLOG(1) << "ModelAssociationManager: ModelLoadCallback for "
       << syncer::ModelTypeToString(type);
-
-  // TODO(haitaol): temporary fix for 335606.
-  if (slow_types_.Has(type))
-    return;
 
   // This happens when slow loading type is disabled by new configuration.
   if (!desired_types_.Has(type))
@@ -327,7 +305,7 @@ void ModelAssociationManager::ModelLoadCallback(syncer::ModelType type,
   }
 
   loaded_types_.Put(type);
-  if (associating_types_.Has(type) || slow_types_.Has(type)) {
+  if (associating_types_.Has(type)) {
     DataTypeController* dtc = controllers_->find(type)->second.get();
     dtc->StartAssociating(
         base::Bind(&ModelAssociationManager::TypeStartCallback,
@@ -339,41 +317,34 @@ void ModelAssociationManager::ModelLoadCallback(syncer::ModelType type,
 void ModelAssociationManager::TypeStartCallback(
     syncer::ModelType type,
     base::TimeTicks type_start_time,
-    DataTypeController::StartResult start_result,
+    DataTypeController::ConfigureResult start_result,
     const syncer::SyncMergeResult& local_merge_result,
     const syncer::SyncMergeResult& syncer_merge_result) {
-  // TODO(haitaol): temporary fix for 335606.
-  if (slow_types_.Has(type))
-    return;
+  if (desired_types_.Has(type) &&
+      !DataTypeController::IsSuccessfulResult(start_result)) {
+    DVLOG(1) << "ModelAssociationManager: Type encountered an error.";
+    desired_types_.Remove(type);
+    DataTypeController* dtc = controllers_->find(type)->second.get();
+    StopDatatype(local_merge_result.error(), dtc);
 
-  // This happens when slow associating type is disabled by new configuration.
-  if (!desired_types_.Has(type))
-    return;
+    // Update configuration result.
+    if (start_result == DataTypeController::UNRECOVERABLE_ERROR)
+      configure_status_ = DataTypeManager::UNRECOVERABLE_ERROR;
+  }
 
-  slow_types_.Remove(type);
+  // This happens when a slow associating type is disabled or if a type
+  // disables itself after initial configuration.
+  if (!desired_types_.Has(type)) {
+      // It's possible all types failed to associate, in which case association
+      // is complete.
+      if (state_ == CONFIGURING && associating_types_.Empty())
+        ModelAssociationDone();
+      return;
+  }
 
   DCHECK(!associated_types_.Has(type));
-  if (DataTypeController::IsSuccessfulResult(start_result)) {
-    associated_types_.Put(type);
-  } else if (state_ == IDLE) {
-    // For type that failed in IDLE mode, simply stop the controller. Next
-    // configuration will try to restart from scratch if the type is still
-    // enabled.
-    DataTypeController* dtc = controllers_->find(type)->second.get();
-    if (dtc->state() != DataTypeController::NOT_RUNNING)
-      StopDatatype(dtc);
-    loaded_types_.Remove(type);
-  } else {
-    // Record error in CONFIGURING or INITIALIZED_TO_CONFIGURE mode. The error
-    // will be reported when data types association finishes.
-    if (start_result == DataTypeController::NEEDS_CRYPTO) {
-      DVLOG(1) << "ModelAssociationManager: Encountered an undecryptable type";
-      needs_crypto_types_.Put(type);
-    } else {
-      DVLOG(1) << "ModelAssociationManager: Encountered a failed type";
-      AppendToFailedDatatypesAndLogError(local_merge_result.error());
-    }
-  }
+  DCHECK(DataTypeController::IsSuccessfulResult(start_result));
+  associated_types_.Put(type);
 
   if (state_ != CONFIGURING)
     return;
@@ -385,9 +356,7 @@ void ModelAssociationManager::TypeStartCallback(
 
   // Track the merge results if we succeeded or an association failure
   // occurred.
-  if ((DataTypeController::IsSuccessfulResult(start_result) ||
-       start_result == DataTypeController::ASSOCIATION_FAILED) &&
-      syncer::ProtocolTypes().Has(type)) {
+  if (syncer::ProtocolTypes().Has(type)) {
     base::TimeDelta association_wait_time =
         std::max(base::TimeDelta(), type_start_time - association_start_time_);
     base::TimeDelta association_time =
@@ -400,14 +369,6 @@ void ModelAssociationManager::TypeStartCallback(
     delegate_->OnSingleDataTypeAssociationDone(type, stats);
   }
 
-  // Update configuration result.
-  if (configure_status_ == DataTypeManager::OK &&
-      start_result == DataTypeController::ASSOCIATION_FAILED) {
-    configure_status_ = DataTypeManager::PARTIAL_SUCCESS;
-  }
-  if (start_result == DataTypeController::UNRECOVERABLE_ERROR)
-    configure_status_ = DataTypeManager::UNRECOVERABLE_ERROR;
-
   associating_types_.Remove(type);
 
   if (associating_types_.Empty())
@@ -419,34 +380,26 @@ void ModelAssociationManager::ModelAssociationDone() {
 
   timer_.Stop();
 
-  slow_types_.PutAll(associating_types_);
-
-  // TODO(haitaol): temporary fix for 335606.
-  for (syncer::ModelTypeSet::Iterator it = associating_types_.First();
-      it.Good(); it.Inc()) {
-    AppendToFailedDatatypesAndLogError(
-        syncer::SyncError(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
-                          "Association timed out.", it.Get()));
-  }
-
-  // Stop controllers of failed types.
-  StopDisabledTypes();
-
-  if (configure_status_ == DataTypeManager::OK &&
-      (!associating_types_.Empty() || !failed_data_types_info_.empty() ||
-          !needs_crypto_types_.Empty())) {
-    // We have not configured all types that we have been asked to configure.
-    // Either we have failed types or types that have not completed loading
-    // yet.
-    DVLOG(1) << "ModelAssociationManager: setting partial success";
-    configure_status_ = DataTypeManager::PARTIAL_SUCCESS;
+  // Treat any unfinished types as having errors.
+  desired_types_.RemoveAll(associating_types_);
+  for (DataTypeController::TypeMap::const_iterator it = controllers_->begin();
+       it != controllers_->end(); ++it) {
+    DataTypeController* dtc = (*it).second.get();
+    if (associating_types_.Has(dtc->type()) &&
+        dtc->state() != DataTypeController::NOT_RUNNING) {
+      UMA_HISTOGRAM_ENUMERATION("Sync.ConfigureFailed",
+                                ModelTypeToHistogramInt(dtc->type()),
+                                syncer::MODEL_TYPE_COUNT);
+      StopDatatype(syncer::SyncError(FROM_HERE,
+                                     syncer::SyncError::DATATYPE_ERROR,
+                                     "Association timed out.",
+                                     dtc->type()),
+                   dtc);
+    }
   }
 
   DataTypeManager::ConfigureResult result(configure_status_,
-                                          requested_types_,
-                                          failed_data_types_info_,
-                                          associating_types_,
-                                          needs_crypto_types_);
+                                          requested_types_);
 
   // Reset state before notifying |delegate_| because that might
   // trigger a new round of configuration.
