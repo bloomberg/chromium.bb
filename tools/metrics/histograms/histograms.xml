@@ -3596,11 +3596,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="DevTools.ActionTaken" enum="DevToolsAction">
   <owner>sergeyv@chromium.org</owner>
+  <owner>vsevik@chromium.org</owner>
+  <owner>pfeldman@chromium.org</owner>
   <summary>Specified DevTools action has been taken.</summary>
 </histogram>
 
 <histogram name="DevTools.InspectElement" units="milliseconds">
   <owner>sergeyv@chromium.org</owner>
+  <owner>vsevik@chromium.org</owner>
+  <owner>pfeldman@chromium.org</owner>
   <summary>
     Time to load Developer Tools when user clicks Inspect Element in the context
     menu.
@@ -3609,11 +3613,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="DevTools.PanelShown" enum="DevToolsPanel">
   <owner>sergeyv@chromium.org</owner>
+  <owner>vsevik@chromium.org</owner>
+  <owner>pfeldman@chromium.org</owner>
   <summary>Specified DevTools panel was shown.</summary>
 </histogram>
 
 <histogram name="DevTools.SettingChanged" enum="DevToolsSetting">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>sergeyv@chromium.org</owner>
+  <owner>vsevik@chromium.org</owner>
+  <owner>pfeldman@chromium.org</owner>
   <summary>Specified DevTools setting was changed.</summary>
 </histogram>
 
