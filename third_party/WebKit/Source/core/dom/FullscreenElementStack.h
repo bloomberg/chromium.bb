@@ -103,6 +103,8 @@ private:
 
     Document* document();
 
+    static bool elementReady(Element&, RequestType);
+
     void clearFullscreenElementStack();
     void popFullscreenElementStack();
     void pushFullscreenElementStack(Element&, RequestType);

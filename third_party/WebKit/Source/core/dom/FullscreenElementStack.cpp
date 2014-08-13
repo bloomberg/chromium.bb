@@ -35,7 +35,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
-#include "core/html/HTMLFrameOwnerElement.h"
+#include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
@@ -169,63 +169,56 @@ void FullscreenElementStack::documentWasDisposed()
 }
 #endif
 
+bool FullscreenElementStack::elementReady(Element& element, RequestType requestType)
+{
+    // A fullscreen element ready check for an element returns true if all of the following are
+    // true, and false otherwise:
+
+    // element is in a document.
+    if (!element.inDocument())
+        return false;
+
+    // element's node document's fullscreen enabled flag is set.
+    if (!fullscreenIsAllowedForAllOwners(element.document())) {
+        if (requestType == PrefixedVideoRequest)
+            UseCounter::count(element.document(), UseCounter::VideoFullscreenAllowedExemption);
+        else
+            return false;
+    }
+
+    // element's node document fullscreen element stack is either empty or its top element is an
+    // ancestor of element.
+    if (Element* lastElementOnStack = fullscreenElementFrom(element.document())) {
+        if (!element.isDescendantOf(lastElementOnStack)) {
+            if (requestType == PrefixedMozillaRequest || requestType == PrefixedMozillaAllowKeyboardInputRequest)
+                UseCounter::count(element.document(), UseCounter::LegacyFullScreenErrorExemption);
+            else
+                return false;
+        }
+    }
+
+    // element has no ancestor element whose local name is iframe and namespace is the HTML
+    // namespace.
+    if (Traversal<HTMLIFrameElement>::firstAncestor(element))
+        return false;
+
+    return true;
+}
+
 void FullscreenElementStack::requestFullscreen(Element& element, RequestType requestType)
 {
     // Ignore this request if the document is not in a live frame.
     if (!document()->isActive())
         return;
 
-    // The Mozilla Full Screen API <https://wiki.mozilla.org/Gecko:FullScreenAPI> has different requirements
-    // for full screen mode, and do not have the concept of a full screen element stack.
-    bool inLegacyMozillaMode = requestType == PrefixedMozillaRequest || requestType == PrefixedMozillaAllowKeyboardInputRequest;
-
     do {
         // 1. If any of the following conditions are true, terminate these steps and queue a task to fire
         // an event named fullscreenerror with its bubbles attribute set to true on the context object's
         // node document:
 
-        // The context object is not in a document.
-        if (!element.inDocument())
+        // The fullscreen element ready check returns false.
+        if (!elementReady(element, requestType))
             break;
-
-        // The context object's node document, or an ancestor browsing context's document does not have
-        // the fullscreen enabled flag set.
-        if (!fullscreenIsAllowedForAllOwners(element.document())) {
-            if (requestType == PrefixedVideoRequest)
-                UseCounter::count(element.document(), UseCounter::VideoFullscreenAllowedExemption);
-            else
-                break;
-        }
-
-        // The context object's node document fullscreen element stack is not empty and its top element
-        // is not an ancestor of the context object. (NOTE: Ignore this requirement if the request was
-        // made via the legacy Mozilla-style API.)
-        if (Element* lastElementOnStack = fullscreenElement()) {
-            if (!element.isDescendantOf(lastElementOnStack)) {
-                if (inLegacyMozillaMode)
-                    UseCounter::count(element.document(), UseCounter::LegacyFullScreenErrorExemption);
-                else
-                    break;
-            }
-        }
-
-        // A descendant browsing context's document has a non-empty fullscreen element stack.
-        bool descendentHasNonEmptyStack = false;
-        for (Frame* descendant = document()->frame() ? document()->frame()->tree().traverseNext() : 0; descendant; descendant = descendant->tree().traverseNext()) {
-            if (!descendant->isLocalFrame())
-                continue;
-            ASSERT(toLocalFrame(descendant)->document());
-            if (fullscreenElementFrom(*toLocalFrame(descendant)->document())) {
-                descendentHasNonEmptyStack = true;
-                break;
-            }
-        }
-        if (descendentHasNonEmptyStack) {
-            if (inLegacyMozillaMode)
-                UseCounter::count(element.document(), UseCounter::LegacyFullScreenErrorExemption);
-            else
-                break;
-        }
 
         // This algorithm is not allowed to show a pop-up:
         //   An algorithm is allowed to show a pop-up if, in the task in which the algorithm is running, either:
