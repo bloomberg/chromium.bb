@@ -66,6 +66,7 @@
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebHitTestResult.h"
 #include "public/web/WebInputEvent.h"
+#include "public/web/WebScriptSource.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebViewClient.h"
 #include "public/web/WebWidget.h"
@@ -2138,6 +2139,20 @@ TEST_F(WebViewTest, FirstUserGestureObservedGestureTap)
 
     EXPECT_EQ(1, client.getUserGestureNotificationsCount());
     webView->setAutofillClient(0);
+}
+
+TEST_F(WebViewTest, CompareSelectAllToContentAsText)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("longpress_selection.html"));
+    WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "longpress_selection.html", true);
+
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
+    frame->executeScript(WebScriptSource(WebString::fromUTF8("document.execCommand('SelectAll', false, null)")));
+    std::string actual = frame->selectionAsText().utf8();
+
+    const int kMaxOutputCharacters = 1024;
+    std::string expected = frame->contentAsText(kMaxOutputCharacters).utf8();
+    EXPECT_EQ(expected, actual);
 }
 
 } // namespace
