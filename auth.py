@@ -46,7 +46,7 @@ class AuthService(object):
       bot:<id> - if using HMAC based authentication.
       anonymous:anonymous - if not authenticated.
     """
-    identity = self._service.json_request('GET', '/auth/api/v1/accounts/self')
+    identity = self._service.json_request('/auth/api/v1/accounts/self')
     if not identity:
       raise AuthServiceError('Failed to fetch identity')
     return identity['identity']

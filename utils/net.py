@@ -166,7 +166,7 @@ class HttpError(NetError):
     self.code = code
 
 
-def url_open(url, **kwargs):
+def url_open(url, **kwargs):  # pylint: disable=W0621
   """Attempts to open the given url multiple times.
 
   |data| can be either:
@@ -198,6 +198,21 @@ def url_read(url, **kwargs):
     return None
   try:
     return response.read()
+  except TimeoutError:
+    return None
+
+
+def url_read_json(url, **kwargs):
+  """Attempts to open the given url multiple times and read all data from it.
+
+  Accepts same arguments as url_open function.
+
+  Returns all data read or None if it was unable to connect or read the data.
+  """
+  urlhost, urlpath = split_server_request_url(url)
+  service = get_http_service(urlhost)
+  try:
+    return service.json_request(urlpath, **kwargs)
   except TimeoutError:
     return None
 
@@ -581,8 +596,8 @@ class HttpService(object):
 
   def json_request(
       self,
-      method,
       urlpath,
+      method=None,
       body=None,
       max_attempts=URL_OPEN_MAX_ATTEMPTS,
       timeout=URL_OPEN_TIMEOUT,
@@ -597,6 +612,10 @@ class HttpService(object):
       timeout: how long to wait for a response (including all retries).
       headers: dict with additional request headers.
 
+    If |method| is given it can be 'GET', 'POST' or 'PUT' and it will be used
+    when performing the request. By default it's GET if |data| is None and POST
+    if |data| is not None.
+
     Returns:
       Deserialized JSON response on success, None on error or timeout.
     """
@@ -606,10 +625,10 @@ class HttpService(object):
         data=body,
         headers=headers,
         max_attempts=max_attempts,
-        method=method,
         retry_404=False,
         retry_50x=True,
         stream=False,
+        method=method,
         timeout=timeout)
     if not response:
       return None

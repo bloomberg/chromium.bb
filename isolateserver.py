@@ -1005,17 +1005,12 @@ class IsolateServer(StorageApi):
     # namespace-level ACLs to this call.
     with self._lock:
       if self._server_caps is None:
-        request_body = json.dumps(
-            self._generate_handshake_request(), separators=(',', ':'))
-        response = net.url_read(
-            url=self._base_url + '/content-gs/handshake',
-            data=request_body,
-            content_type='application/json',
-            method='POST')
-        if response is None:
-          raise MappingError('Failed to perform handshake.')
         try:
-          caps = json.loads(response)
+          caps = net.url_read_json(
+              url=self._base_url + '/content-gs/handshake',
+              data=self._generate_handshake_request())
+          if caps is None:
+            raise MappingError('Failed to perform handshake.')
           if not isinstance(caps, dict):
             raise ValueError('Expecting JSON dict')
           self._server_caps = self._validate_handshake_response(caps)
@@ -1133,11 +1128,7 @@ class IsolateServer(StorageApi):
       # send it to isolated server. That way isolate server can verify that
       # the data safely reached Google Storage (GS provides MD5 and CRC32C of
       # stored files).
-      response = net.url_read(
-          url=push_state.finalize_url,
-          data='',
-          content_type='application/json',
-          method='POST')
+      response = net.url_read_json(url=push_state.finalize_url, data={})
       if response is None:
         raise IOError('Failed to finalize an upload of %s' % item.digest)
     push_state.finalized = True
@@ -1161,17 +1152,13 @@ class IsolateServer(StorageApi):
         self._base_url,
         self._namespace,
         urllib.quote(self._server_capabilities['access_token']))
-    response_body = net.url_read(
-        url=query_url,
-        data=json.dumps(body, separators=(',', ':')),
-        content_type='application/json',
-        method='POST')
-    if response_body is None:
-      raise MappingError('Failed to execute /pre-upload query')
 
     # Response body is a list of push_urls (or null if file is already present).
+    response = None
     try:
-      response = json.loads(response_body)
+      response = net.url_read_json(url=query_url, data=body)
+      if response is None:
+        raise MappingError('Failed to execute /pre-upload query')
       if not isinstance(response, list):
         raise ValueError('Expecting response with json-encoded list')
       if len(response) != len(items):
@@ -1180,7 +1167,7 @@ class IsolateServer(StorageApi):
             'but got %d' % (len(items), len(response)))
     except ValueError as err:
       raise MappingError(
-          'Invalid response from server: %s, body is %s' % (err, response_body))
+          'Invalid response from server: %s, body is %s' % (err, response))
 
     # Pick Items that are missing, attach _PushState to them.
     missing_items = {}
