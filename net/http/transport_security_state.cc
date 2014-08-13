@@ -133,14 +133,8 @@ bool TransportSecurityState::CheckPublicKeyPins(
   //
   // * the server's certificate chain chains up to a known root (i.e. not a
   //   user-installed trust anchor); and
-  // * the build is recent (very old builds should fail open so that users
-  //   have some chance to recover).
   // * the server actually has public key pins.
-  //
-  // TODO(rsleevi): http://crbug.com/391032 - Only disable static HPKP if the
-  // build is not timely.
-  if (!is_issued_by_known_root || !IsBuildTimely() ||
-      !HasPublicKeyPins(host, sni_available)) {
+  if (!is_issued_by_known_root || !HasPublicKeyPins(host, sni_available)) {
     return true;
   }
 
