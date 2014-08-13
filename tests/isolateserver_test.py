@@ -501,7 +501,12 @@ class IsolateServerStorageApiTest(TestCase):
         '',
         None,
       ),
-      (push_urls[1], {'data': {}}, {}),
+      (
+        push_urls[1],
+        {'content_type': 'application/json', 'data': '', 'method': 'POST'},
+        '',
+        None,
+      ),
     ]
     self.expected_requests(requests)
     storage = isolateserver.IsolateServer(server, namespace)
@@ -569,7 +574,12 @@ class IsolateServerStorageApiTest(TestCase):
         '',
         None,
       ),
-      (push_urls[1], {'data': {}}, None),
+      (
+        push_urls[1],
+        {'content_type': 'application/json', 'data': '', 'method': 'POST'},
+        None,
+        None,
+      ),
     ]
     self.expected_requests(requests)
     storage = isolateserver.IsolateServer(server, namespace)

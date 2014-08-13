@@ -1128,7 +1128,13 @@ class IsolateServer(StorageApi):
       # send it to isolated server. That way isolate server can verify that
       # the data safely reached Google Storage (GS provides MD5 and CRC32C of
       # stored files).
-      response = net.url_read_json(url=push_state.finalize_url, data={})
+      # TODO(maruel): Fix the server to accept propery data={} so
+      # url_read_json() can be used.
+      response = net.url_read(
+          url=push_state.finalize_url,
+          data='',
+          content_type='application/json',
+          method='POST')
       if response is None:
         raise IOError('Failed to finalize an upload of %s' % item.digest)
     push_state.finalized = True
