@@ -59,7 +59,8 @@ v8::Handle<v8::Value> GetFilesInDirectory(gin::Arguments* args) {
     names.push_back(name.BaseName().AsUTF8Unsafe());
   }
 
-  return gin::Converter<std::vector<std::string>>::ToV8(args->isolate(), names);
+  return gin::Converter<std::vector<std::string> >::ToV8(args->isolate(),
+                                                         names);
 }
 
 gin::WrapperInfo g_wrapper_info = { gin::kEmbedderNativeGin };
