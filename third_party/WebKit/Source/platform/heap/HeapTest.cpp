@@ -4225,6 +4225,24 @@ TEST(HeapTest, MapWithCustomWeaknessHandling2)
     EXPECT_EQ(livingInt, i1->value.second);
 }
 
+static void addElementsToWeakMap(HeapHashMap<int, WeakMember<IntWrapper> >* map)
+{
+    // Key cannot be zero in hashmap.
+    for (int i = 1; i < 11; i++)
+        map->add(i, IntWrapper::create(i));
+}
+
+// crbug.com/402426
+// If it doesn't assert a concurrent modification to the map, then it's passing.
+TEST(HeapTest, RegressNullIsStrongified)
+{
+    Persistent<HeapHashMap<int, WeakMember<IntWrapper> > > map = new HeapHashMap<int, WeakMember<IntWrapper> >();
+    addElementsToWeakMap(map);
+    HeapHashMap<int, WeakMember<IntWrapper> >::AddResult result = map->add(800, nullptr);
+    Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+    result.storedValue->value = IntWrapper::create(42);
+}
+
 TEST(HeapTest, Bind)
 {
     Closure closure = bind(&Bar::trace, Bar::create(), static_cast<Visitor*>(0));

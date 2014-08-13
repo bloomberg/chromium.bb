@@ -385,7 +385,14 @@ public:
     {
         // Check that we actually know the definition of T when tracing.
         COMPILE_ASSERT(sizeof(T), WeNeedToKnowTheDefinitionOfTheTypeWeAreTracing);
-        return !!obj && ObjectAliveTrait<T>::isAlive(this, obj);
+        // The strongification of collections relies on the fact that once a
+        // collection has been strongified, there is no way that it can contain
+        // non-live entries, so no entries will be removed. Since you can't set
+        // the mark bit on a null pointer, that means that null pointers are
+        // always 'alive'.
+        if (!obj)
+            return true;
+        return ObjectAliveTrait<T>::isAlive(this, obj);
     }
     template<typename T> inline bool isAlive(const Member<T>& member)
     {
