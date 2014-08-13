@@ -19,6 +19,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
+#include "ui/events/x/keysym_to_unicode.h"
 
 #define VKEY_UNSUPPORTED VKEY_UNKNOWN
 
@@ -476,7 +477,7 @@ KeyboardCode KeyboardCodeFromXKeyEvent(const XEvent* xev) {
   // 8. If not found, fallback to find with the hardware code in US layout.
 
   KeySym keysym = NoSymbol;
-  XEvent xkeyevent;
+  XEvent xkeyevent = {0};
   if (xev->type == GenericEvent) {
     // Convert the XI2 key event into a core key event so that we can
     // continue to use XLookupString() until crbug.com/367732 is complete.
@@ -841,9 +842,8 @@ const char* CodeFromXEvent(const XEvent* xev) {
 }
 
 uint16 GetCharacterFromXEvent(const XEvent* xev) {
-  XEvent xkeyevent;
+  XEvent xkeyevent = {0};
   const XKeyEvent* xkey = NULL;
-  char buf[6];
   if (xev->type == GenericEvent) {
     // Convert the XI2 key event into a core key event so that we can
     // continue to use XLookupString() until crbug.com/367732 is complete.
@@ -852,15 +852,9 @@ uint16 GetCharacterFromXEvent(const XEvent* xev) {
   } else {
     xkey = &xev->xkey;
   }
-  int bytes_written =
-      XLookupString(const_cast<XKeyEvent*>(xkey), buf, 6, NULL, NULL);
-  DCHECK_LE(bytes_written, 6);
-
-  if (bytes_written <= 0)
-    return 0;
-  const base::string16& result = base::WideToUTF16(
-      base::SysNativeMBToWide(base::StringPiece(buf, bytes_written)));
-  return result.length() == 1 ? result[0] : 0;
+  KeySym keysym = XK_VoidSymbol;
+  XLookupString(const_cast<XKeyEvent*>(xkey), NULL, 0, &keysym, NULL);
+  return GetUnicodeCharacterFromXKeySym(keysym);
 }
 
 KeyboardCode DefaultKeyboardCodeFromHardwareKeycode(

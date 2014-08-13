@@ -67,6 +67,8 @@
         'x/device_data_manager_x11.h',
         'x/device_list_cache_x.cc',
         'x/device_list_cache_x.h',
+        'x/keysym_to_unicode.cc',
+        'x/keysym_to_unicode.h',
         'x/touch_factory_x11.cc',
         'x/touch_factory_x11.h',
       ],
