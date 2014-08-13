@@ -5,20 +5,26 @@ Dumping matched rules:
     color: red;
 }
 Adding a rule to the existing stylesheet.
-Dumping matched rules: 
-*#inspected* {    regular
+==== Style sheet text ====
+#inspected {}#inspected {
     color: red;
 }
+Dumping matched rules: 
 *#inspected* {    regular
+}
+*#inspected* {    regular
+    color: red;
 }
 Creating inspector stylesheet.
 Style sheet added: inspector
 Adding a rule to the inspector stylesheet.
+==== Style sheet text ====
+#inspected {}
 Dumping matched rules: 
 *#inspected* {    regular
-    color: red;
 }
 *#inspected* {    regular
+    color: red;
 }
 *#inspected* {    inspector
 }

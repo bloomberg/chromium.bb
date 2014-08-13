@@ -1,0 +1,179 @@
+<html>
+<head>
+<link rel="stylesheet" href="resources/add-rule.css"/>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script type="text/javascript" src="css-protocol-test.js"></script>
+<script type="text/javascript">
+function test()
+{
+    var addRule;
+    var verifyProtocolError;
+    var dumpStyleSheet;
+    var documentNodeId;
+
+    InspectorTest.requestDocumentNodeId(onDocumentNodeId);
+
+    function onDocumentNodeId(nodeId)
+    {
+        documentNodeId = nodeId;
+        InspectorTest.eventHandler["CSS.styleSheetAdded"] = styleSheetAdded;
+        InspectorTest.sendCommandOrDie("CSS.enable", {});
+    }
+
+    function styleSheetAdded(result)
+    {
+        var styleSheetId = result.params.header.styleSheetId;
+        addRule = InspectorTest.addRule.bind(InspectorTest, styleSheetId, false);
+        verifyProtocolError = InspectorTest.addRule.bind(InspectorTest, styleSheetId, true);
+        dumpStyleSheet = InspectorTest.dumpStyleSheetText.bind(null, styleSheetId);
+        InspectorTest.sendCommandOrDie("CSS.getStyleSheetText", { styleSheetId: styleSheetId }, onInitialStyleSheetText);
+    }
+
+    function dumpAndNext(next)
+    {
+        return InspectorTest.loadAndDumpMatchingRules.bind(InspectorTest, documentNodeId, "#test", InspectorTest.undoAndNext(next));
+    }
+
+    function onInitialStyleSheetText(result)
+    {
+        InspectorTest.log("==== Initial style sheet text ====");
+        InspectorTest.log(result.text);
+        InspectorTest.runTestSuite(testSuite);
+    }
+
+    var testSuite = [
+        /* Tests that add rule into style sheet. */
+
+        function testAddRuleToStyleSheetBeginning(next)
+        {
+            addRule({
+                location: { startLine: 0, startColumn: 0, endLine: 0, endColumn: 0 },
+                ruleText: "#test { content: 'EDITED'; }",
+            }, dumpAndNext(next));
+        },
+
+        function testAddRuleToStyleSheetEnding(next)
+        {
+            addRule({
+                location: { startLine: 20, startColumn: 0, endLine: 20, endColumn: 0 },
+                ruleText: "#test { content: 'EDITED'; }",
+            }, dumpAndNext(next));
+        },
+
+        function testAddRuleToStyleSheetCenter(next)
+        {
+            addRule({
+                location: { startLine: 11, startColumn: 0, endLine: 11, endColumn: 0 },
+                ruleText: "#test { content: 'EDITED'; }",
+            }, dumpAndNext(next));
+        },
+
+        function testAddRuleToRuleEnding(next)
+        {
+            addRule({
+                location: { startLine: 2, startColumn: 1, endLine: 2, endColumn: 1 },
+                ruleText: "#test{\n    content: 'EDITED';\n}",
+            }, dumpAndNext(next));
+        },
+
+        function testAddRuleWithFormatting(next)
+        {
+            addRule({
+                location: { startLine: 2, startColumn: 1, endLine: 2, endColumn: 1 },
+                ruleText: "\n\n#test{\n    content: 'EDITED';\n}",
+            }, dumpAndNext(next));
+        },
+
+        /* Tests that add rule into MediaRule. */
+
+        function testAddRuleToMediaRuleBeginning(next)
+        {
+            addRule({
+                location: { startLine: 12, startColumn: 25, endLine: 12, endColumn: 25 },
+                ruleText: "#test { content: 'EDITED'; }",
+            }, dumpAndNext(next));
+        },
+
+        function testAddRuleToMediaRuleCenter(next)
+        {
+            addRule({
+                location: { startLine: 16, startColumn: 0, endLine: 16, endColumn: 0 },
+                ruleText: "#test { content: 'EDITED'; }",
+            }, dumpAndNext(next));
+        },
+
+        function testAddRuleToMediaRuleEnd(next)
+        {
+            addRule({
+                location: { startLine: 19, startColumn: 0, endLine: 19, endColumn: 0 },
+                ruleText: "#test { content: 'EDITED'; }",
+            }, dumpAndNext(next));
+        },
+
+        /* Tests that verify error reporting. */
+
+        function testInvalidRule(next)
+        {
+            verifyProtocolError({
+                location: { startLine: 0, startColumn: 0, endLine: 0, endColumn: 0 },
+                ruleText: "#test { content: 'EDITED';",
+            }, next);
+        },
+
+        function testAddingRuleInsideSelector(next)
+        {
+            verifyProtocolError({
+                location: { startLine: 0, startColumn: 2, endLine: 0, endColumn: 2 },
+                ruleText: "#test { content: 'EDITED'; }",
+            }, next);
+        },
+
+        function testAddingRuleBeforeRuleBody(next)
+        {
+            verifyProtocolError({
+                location: { startLine: 4, startColumn: 6, endLine: 4, endColumn: 6 },
+                ruleText: "#test { content: 'EDITED'; }",
+            }, next);
+        },
+
+        function testAddingRuleInsideMedia1(next)
+        {
+            verifyProtocolError({
+                location: { startLine: 12, startColumn: 3, endLine: 12, endColumn: 3 },
+                ruleText: "#test { content: 'EDITED'; }",
+            }, next);
+        },
+
+        function testAddingRuleInsideMedia2(next)
+        {
+            verifyProtocolError({
+                location: { startLine: 12, startColumn: 15, endLine: 12, endColumn: 15 },
+                ruleText: "#test { content: 'EDITED'; }",
+            }, next);
+        },
+
+        function testAddingRuleBeforeMediaBody(next)
+        {
+            verifyProtocolError({
+                location: { startLine: 12, startColumn: 24, endLine: 12, endColumn: 24 },
+                ruleText: "#test { content: 'EDITED'; }",
+            }, next);
+        },
+
+        function testAddingRuleInsideStyleRule(next)
+        {
+            verifyProtocolError({
+                location: { startLine: 18, startColumn: 0, endLine: 18, endColumn: 0 },
+                ruleText: "#test { content: 'EDITED'; }",
+            }, next);
+        },
+   ];
+}
+
+</script>
+</head>
+<body onload="runTest();">
+<p>The test verifies functionality of protocol method CSS.addRule.</p>
+<article id="test"></article>
+</body>
+</html>

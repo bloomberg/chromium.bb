@@ -429,7 +429,6 @@ void ParsedStyleSheet::setSourceData(PassOwnPtrWillBeRawPtr<RuleSourceDataList> 
         m_sourceData.clear();
         return;
     }
-
     m_sourceData = adoptPtrWillBeNoop(new RuleSourceDataList());
 
     // FIXME: This is a temporary solution to retain the original flat sourceData structure
@@ -1056,60 +1055,147 @@ bool InspectorStyleSheet::setRuleSelector(const InspectorCSSId& id, const String
     return true;
 }
 
-static bool checkStyleRuleSelector(Document* document, const String& selector)
+unsigned InspectorStyleSheet::ruleIndexBySourceRange(const CSSMediaRule* parentMediaRule, const SourceRange& sourceRange)
 {
-    CSSSelectorList selectorList;
-    BisonCSSParser(parserContextForDocument(document)).parseSelector(selector, selectorList);
-    return selectorList.isValid();
+    unsigned index = 0;
+    for (size_t i = 0; i < m_flatRules.size(); ++i) {
+        RefPtrWillBeRawPtr<CSSRule> rule = m_flatRules.at(i);
+        if (rule->parentRule() != parentMediaRule)
+            continue;
+        RefPtrWillBeRawPtr<CSSRuleSourceData> ruleSourceData = m_parsedStyleSheet->ruleSourceDataAt(i);
+        if (ruleSourceData->ruleBodyRange.end < sourceRange.start)
+            ++index;
+    }
+    return index;
 }
 
-CSSStyleRule* InspectorStyleSheet::addRule(const String& selector, ExceptionState& exceptionState)
+CSSStyleRule* InspectorStyleSheet::insertCSSOMRuleInStyleSheet(const SourceRange& sourceRange, const String& ruleText, ExceptionState& exceptionState)
 {
-    if (!checkStyleRuleSelector(m_pageStyleSheet->ownerDocument(), selector)) {
-        exceptionState.throwDOMException(SyntaxError, "The selector '" + selector + "' could not be added.");
+    unsigned index = ruleIndexBySourceRange(nullptr, sourceRange);
+    m_pageStyleSheet->insertRule(ruleText, index, exceptionState);
+    CSSRule* rule = m_pageStyleSheet->item(index);
+    CSSStyleRule* styleRule = InspectorCSSAgent::asCSSStyleRule(rule);
+    if (!styleRule) {
+        m_pageStyleSheet->deleteRule(index, ASSERT_NO_EXCEPTION);
+        exceptionState.throwDOMException(SyntaxError, "The rule '" + ruleText + "' could not be added in style sheet.");
+        return 0;
+    }
+    return styleRule;
+}
+
+CSSStyleRule* InspectorStyleSheet::insertCSSOMRuleInMediaRule(CSSMediaRule* mediaRule, const SourceRange& sourceRange, const String& ruleText, ExceptionState& exceptionState)
+{
+    unsigned index = ruleIndexBySourceRange(mediaRule, sourceRange);
+    mediaRule->insertRule(ruleText, index, exceptionState);
+    CSSRule* rule = mediaRule->item(index);
+    CSSStyleRule* styleRule = InspectorCSSAgent::asCSSStyleRule(rule);
+    if (!styleRule) {
+        mediaRule->deleteRule(index, ASSERT_NO_EXCEPTION);
+        exceptionState.throwDOMException(SyntaxError, "The rule '" + ruleText + "' could not be added in media rule.");
+        return 0;
+    }
+    return styleRule;
+}
+
+CSSStyleRule* InspectorStyleSheet::insertCSSOMRuleBySourceRange(const SourceRange& sourceRange, const String& ruleText, ExceptionState& exceptionState)
+{
+    int containingRuleIndex = -1;
+    unsigned containingRuleLength = 0;
+    for (size_t i = 0; i < m_parsedStyleSheet->ruleCount(); ++i) {
+        RefPtrWillBeRawPtr<CSSRuleSourceData> ruleSourceData = m_parsedStyleSheet->ruleSourceDataAt(i);
+        if (ruleSourceData->ruleHeaderRange.start < sourceRange.start && sourceRange.start < ruleSourceData->ruleBodyRange.start) {
+            exceptionState.throwDOMException(NotFoundError, "Cannot insert rule inside rule selector.");
+            return 0;
+        }
+        if (sourceRange.start < ruleSourceData->ruleBodyRange.start || ruleSourceData->ruleBodyRange.end < sourceRange.start)
+            continue;
+        if (containingRuleIndex == -1 || containingRuleLength > ruleSourceData->ruleBodyRange.length()) {
+            containingRuleIndex = i;
+            containingRuleLength = ruleSourceData->ruleBodyRange.length();
+        }
+    }
+    if (containingRuleIndex == -1)
+        return insertCSSOMRuleInStyleSheet(sourceRange, ruleText, exceptionState);
+    RefPtrWillBeRawPtr<CSSRule> rule = m_flatRules.at(containingRuleIndex);
+    if (rule->type() != CSSRule::MEDIA_RULE) {
+        exceptionState.throwDOMException(NotFoundError, "Cannot insert rule in non-media rule.");
+        return 0;
+    }
+    return insertCSSOMRuleInMediaRule(toCSSMediaRule(rule.get()), sourceRange, ruleText, exceptionState);
+}
+
+bool InspectorStyleSheet::verifyRuleText(const String& ruleText)
+{
+    DEFINE_STATIC_LOCAL(String, bogusPropertyName, ("-webkit-boguz-propertee"));
+    RefPtrWillBeRawPtr<MutableStylePropertySet> tempMutableStyle = MutableStylePropertySet::create();
+    RuleSourceDataList sourceData;
+    RefPtrWillBeRawPtr<StyleSheetContents> styleSheetContents = StyleSheetContents::create(strictCSSParserContext());
+    String text = ruleText + " div { " + bogusPropertyName + ": none; }";
+    StyleSheetHandler handler(text, ownerDocument(), styleSheetContents.get(), &sourceData);
+    BisonCSSParser(parserContextForDocument(ownerDocument())).parseSheet(styleSheetContents.get(), text, TextPosition::minimumPosition(), &handler);
+    unsigned ruleCount = sourceData.size();
+
+    // Exactly two rules should be parsed.
+    if (ruleCount != 2)
+        return false;
+
+    // Added rule must be style rule.
+    if (!sourceData.at(0)->styleSourceData)
+        return false;
+
+    WillBeHeapVector<CSSPropertySourceData>& propertyData = sourceData.at(1)->styleSourceData->propertyData;
+    unsigned propertyCount = propertyData.size();
+
+    // Exactly one property should be in rule.
+    if (propertyCount != 1)
+        return false;
+
+    // Check for the property name.
+    if (propertyData.at(0).name != bogusPropertyName)
+        return false;
+
+    return true;
+}
+
+CSSStyleRule* InspectorStyleSheet::addRule(const String& ruleText, const SourceRange& location, ExceptionState& exceptionState)
+{
+    if (!ensureParsedDataReady()) {
+        exceptionState.throwDOMException(NotFoundError, "Cannot parse style sheet.");
+        return 0;
+    }
+
+    if (location.start != location.end) {
+        exceptionState.throwDOMException(NotFoundError, "Source range must be collapsed.");
+        return 0;
+    }
+
+    if (!verifyRuleText(ruleText)) {
+        exceptionState.throwDOMException(SyntaxError, "Rule text is not valid.");
         return 0;
     }
 
     String text;
     bool success = getText(&text);
     if (!success) {
-        exceptionState.throwDOMException(NotFoundError, "The selector '" + selector + "' could not be added.");
+        exceptionState.throwDOMException(NotFoundError, "The rule '" + ruleText + "' could not be added.");
         return 0;
     }
-    StringBuilder styleSheetText;
-    styleSheetText.append(text);
 
-    m_pageStyleSheet->addRule(selector, "", exceptionState);
+    ensureFlatRules();
+    CSSStyleRule* styleRule = insertCSSOMRuleBySourceRange(location, ruleText, exceptionState);
     if (exceptionState.hadException())
         return 0;
-    ASSERT(m_pageStyleSheet->length());
-    unsigned lastRuleIndex = m_pageStyleSheet->length() - 1;
-    CSSRule* rule = m_pageStyleSheet->item(lastRuleIndex);
-    ASSERT(rule);
 
-    CSSStyleRule* styleRule = InspectorCSSAgent::asCSSStyleRule(rule);
-    if (!styleRule) {
-        // What we just added has to be a CSSStyleRule - we cannot handle other types of rules yet.
-        // If it is not a style rule, pretend we never touched the stylesheet.
-        m_pageStyleSheet->deleteRule(lastRuleIndex, ASSERT_NO_EXCEPTION);
-        exceptionState.throwDOMException(SyntaxError, "The selector '" + selector + "' could not be added.");
-        return 0;
-    }
+    text.insert(ruleText, location.start);
 
-    if (!styleSheetText.isEmpty())
-        styleSheetText.append('\n');
-
-    styleSheetText.append(selector);
-    styleSheetText.appendLiteral(" {}");
-    m_parsedStyleSheet->setText(styleSheetText.toString());
+    m_parsedStyleSheet->setText(text);
     m_flatRules.clear();
 
     fireStyleSheetChanged();
-
     return styleRule;
 }
 
-bool InspectorStyleSheet::deleteRule(const InspectorCSSId& id, ExceptionState& exceptionState)
+bool InspectorStyleSheet::deleteRule(const InspectorCSSId& id, const String& oldText, ExceptionState& exceptionState)
 {
     RefPtrWillBeRawPtr<CSSStyleRule> rule = ruleForId(id);
     if (!rule) {
@@ -1128,15 +1214,31 @@ bool InspectorStyleSheet::deleteRule(const InspectorCSSId& id, ExceptionState& e
         return false;
     }
 
-    styleSheet->deleteRule(id.ordinal(), exceptionState);
+    CSSRule* parentRule = rule->parentRule();
+    if (parentRule) {
+        if (parentRule->type() != CSSRule::MEDIA_RULE) {
+            exceptionState.throwDOMException(NotFoundError, "Cannot remove rule from non-media rule.");
+            return false;
+        }
+        CSSMediaRule* parentMediaRule = toCSSMediaRule(parentRule);
+        size_t index = 0;
+        while (index < parentMediaRule->length() && parentMediaRule->item(index) != rule)
+            ++index;
+        ASSERT(index < parentMediaRule->length());
+        parentMediaRule->deleteRule(index, exceptionState);
+    } else {
+        size_t index = 0;
+        while (index < styleSheet->length() && styleSheet->item(index) != rule)
+            ++index;
+        ASSERT(index < styleSheet->length());
+        styleSheet->deleteRule(index, exceptionState);
+    }
     // |rule| MAY NOT be addressed after this line!
 
     if (exceptionState.hadException())
         return false;
 
-    String sheetText = m_parsedStyleSheet->text();
-    sheetText.remove(sourceData->ruleHeaderRange.start, sourceData->ruleBodyRange.end - sourceData->ruleHeaderRange.start + 1);
-    m_parsedStyleSheet->setText(sheetText);
+    m_parsedStyleSheet->setText(oldText);
     m_flatRules.clear();
     fireStyleSheetChanged();
     return true;

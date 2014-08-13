@@ -44,8 +44,12 @@ function test()
     function step4()
     {
         // Click "Add new rule".
-        document.getElementById("add-style-button-test-id").click();
-        InspectorTest.selectNodeAndWaitForStyles("inspected", step5);
+        InspectorTest.addNewRule(null, onRuleAdded);
+
+        function onRuleAdded()
+        {
+            InspectorTest.selectNodeAndWaitForStyles("inspected", step5);
+        }
     }
 
     function step5()

@@ -316,10 +316,11 @@ private:
 class InspectorCSSAgent::AddRuleAction FINAL : public InspectorCSSAgent::StyleSheetAction {
     WTF_MAKE_NONCOPYABLE(AddRuleAction);
 public:
-    AddRuleAction(InspectorStyleSheet* styleSheet, const String& selector)
+    AddRuleAction(InspectorStyleSheet* styleSheet, const String& ruleText, const SourceRange& location)
         : InspectorCSSAgent::StyleSheetAction("AddRule")
         , m_styleSheet(styleSheet)
-        , m_selector(selector)
+        , m_ruleText(ruleText)
+        , m_location(location)
     {
     }
 
@@ -330,12 +331,14 @@ public:
 
     virtual bool undo(ExceptionState& exceptionState) OVERRIDE
     {
-        return m_styleSheet->deleteRule(m_newId, exceptionState);
+        return m_styleSheet->deleteRule(m_newId, m_oldText, exceptionState);
     }
 
     virtual bool redo(ExceptionState& exceptionState) OVERRIDE
     {
-        CSSStyleRule* cssStyleRule = m_styleSheet->addRule(m_selector, exceptionState);
+        if (!m_styleSheet->getText(&m_oldText))
+            return false;
+        CSSStyleRule* cssStyleRule = m_styleSheet->addRule(m_ruleText, m_location, exceptionState);
         if (exceptionState.hadException())
             return false;
         m_newId = m_styleSheet->ruleId(cssStyleRule);
@@ -353,8 +356,9 @@ public:
 private:
     RefPtrWillBeMember<InspectorStyleSheet> m_styleSheet;
     InspectorCSSId m_newId;
-    String m_selector;
-    String m_oldSelector;
+    String m_ruleText;
+    String m_oldText;
+    SourceRange m_location;
 };
 
 // static
@@ -932,14 +936,17 @@ void InspectorCSSAgent::createStyleSheet(ErrorString* errorString, const String&
     *outStyleSheetId = inspectorStyleSheet->id();
 }
 
-void InspectorCSSAgent::addRule(ErrorString* errorString, const String& styleSheetId, const String& selector, RefPtr<TypeBuilder::CSS::CSSRule>& result)
+void InspectorCSSAgent::addRule(ErrorString* errorString, const String& styleSheetId, const String& ruleText, const RefPtr<JSONObject>& location, RefPtr<TypeBuilder::CSS::CSSRule>& result)
 {
     InspectorStyleSheet* inspectorStyleSheet = assertInspectorStyleSheetForId(errorString, styleSheetId);
     if (!inspectorStyleSheet)
         return;
+    SourceRange ruleLocation;
+    if (!jsonRangeToSourceRange(errorString, inspectorStyleSheet, location, &ruleLocation))
+        return;
 
     TrackExceptionState exceptionState;
-    RefPtrWillBeRawPtr<AddRuleAction> action = adoptRefWillBeNoop(new AddRuleAction(inspectorStyleSheet, selector));
+    RefPtrWillBeRawPtr<AddRuleAction> action = adoptRefWillBeNoop(new AddRuleAction(inspectorStyleSheet, ruleText, ruleLocation));
     bool success = m_domAgent->history()->perform(action, exceptionState);
     if (!success) {
         *errorString = InspectorDOMAgent::toErrorString(exceptionState);

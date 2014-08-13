@@ -22,7 +22,7 @@ element.style  { ()
 color: red;
 
 [expanded] 
-div#other  { (inspector-stylesheet:4 -> inspector-stylesheet:4:1)
+div#other  { (inspector-stylesheet:5 -> inspector-stylesheet:5:1)
 
 [expanded] 
 div  { (user agent stylesheet)
@@ -33,7 +33,7 @@ display: block;
 element.style  { ()
 
 [expanded] 
-.my-class  { (inspector-stylesheet:5 -> inspector-stylesheet:5:1)
+.my-class  { (inspector-stylesheet:7 -> inspector-stylesheet:7:1)
 
 [expanded] 
 div  { (user agent stylesheet)
@@ -44,7 +44,7 @@ display: block;
 element.style  { ()
 
 [expanded] 
-.class-1.class-2.class-3  { (inspector-stylesheet:6 -> inspector-stylesheet:6:1)
+.class-1.class-2.class-3  { (inspector-stylesheet:9 -> inspector-stylesheet:9:1)
 
 [expanded] 
 div  { (user agent stylesheet)

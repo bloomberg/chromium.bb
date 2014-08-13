@@ -41,6 +41,7 @@ class ParsedStyleSheet;
 
 namespace blink {
 
+class CSSMediaRule;
 class CSSRuleList;
 class CSSStyleDeclaration;
 class CSSStyleRule;
@@ -206,8 +207,8 @@ public:
     virtual bool getText(String* result) const OVERRIDE;
     String ruleSelector(const InspectorCSSId&, ExceptionState&);
     bool setRuleSelector(const InspectorCSSId&, const String& selector, ExceptionState&);
-    CSSStyleRule* addRule(const String& selector, ExceptionState&);
-    bool deleteRule(const InspectorCSSId&, ExceptionState&);
+    CSSStyleRule* addRule(const String& ruleText, const SourceRange& location, ExceptionState&);
+    bool deleteRule(const InspectorCSSId&, const String& oldText, ExceptionState&);
 
     CSSStyleSheet* pageStyleSheet() const { return m_pageStyleSheet.get(); }
 
@@ -237,7 +238,11 @@ protected:
 
 private:
     InspectorStyleSheet(InspectorPageAgent*, InspectorResourceAgent*, const String& id, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum, const String& documentURL, Listener*);
-
+    unsigned ruleIndexBySourceRange(const CSSMediaRule* parentMediaRule, const SourceRange&);
+    CSSStyleRule* insertCSSOMRuleInStyleSheet(const SourceRange&, const String& ruleText, ExceptionState&);
+    CSSStyleRule* insertCSSOMRuleInMediaRule(CSSMediaRule*, const SourceRange&, const String& ruleText, ExceptionState&);
+    CSSStyleRule* insertCSSOMRuleBySourceRange(const SourceRange&, const String& ruleText, ExceptionState&);
+    bool verifyRuleText(const String& ruleText);
     unsigned ruleIndexByStyle(CSSStyleDeclaration*) const;
     String sourceMapURL() const;
     String sourceURL() const;

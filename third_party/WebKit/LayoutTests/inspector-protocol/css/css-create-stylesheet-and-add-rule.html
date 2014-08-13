@@ -40,7 +40,10 @@ function test()
     function step3()
     {
         InspectorTest.log("Adding a rule to the existing stylesheet.");
-        InspectorTest.sendCommandOrDie("CSS.addRule", { styleSheetId: styleSheetHeader.styleSheetId, selector: "#inspected" }, step4);
+        InspectorTest.addRule(styleSheetHeader.styleSheetId, false, {
+            location: { startLine: 0, startColumn: 0, endLine: 0, endColumn: 0 },
+            ruleText: "#inspected {}",
+        }, step4);
     }
 
     function step4()
@@ -57,7 +60,10 @@ function test()
     function step6(result)
     {
         InspectorTest.log("Adding a rule to the inspector stylesheet.");
-        InspectorTest.sendCommandOrDie("CSS.addRule", { styleSheetId: result.styleSheetId, selector: "#inspected" }, step7);
+        InspectorTest.addRule(result.styleSheetId, false, {
+            location: { startLine: 0, startColumn: 0, endLine: 0, endColumn: 0 },
+            ruleText: "#inspected {}",
+        }, step7);
     }
 
     function step7()

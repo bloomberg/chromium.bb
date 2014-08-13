@@ -7,7 +7,7 @@ element.style  { ()
 font-size: 12px;
 
 [expanded] 
-div.foo  { (inspector-stylesheet:2 -> inspector-stylesheet:2:1)
+div.foo  { (inspector-stylesheet:3 -> inspector-stylesheet:3:1)
 
 [expanded] 
 div.foo  { (inspector-stylesheet:1 -> inspector-stylesheet:1:1)
@@ -19,6 +19,7 @@ display: block;
 
 ===== Style sheet text: =====
 div.foo {}
+
 div.foo {}
 =============================
 After undo:
@@ -36,7 +37,6 @@ display: block;
 
 ===== Style sheet text: =====
 div.foo {}
-
 =============================
 After redo:
 [expanded] 

@@ -23,12 +23,7 @@ function test()
             {
                 nodeId = node.id;
                 stylesPane = WebInspector.panels.elements.sidebarPanes.styles;
-                stylesPane.addBlankSection();
-                var section = stylesPane.sections[0][2];
-                section.startEditingSelector();
-                section._selectorElement.textContent = "foo, #inspected, .bar, #inspected";
-                section._selectorElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-                InspectorTest.runAfterPendingDispatches(callback);
+                InspectorTest.addNewRule("foo, #inspected, .bar, #inspected", callback);
             }
 
             function callback()
