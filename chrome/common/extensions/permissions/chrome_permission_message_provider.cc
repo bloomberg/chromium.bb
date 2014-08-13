@@ -6,13 +6,13 @@
 
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/grit/generated_resources.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permission_message_util.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 

@@ -10,11 +10,11 @@
 #include "base/values.h"
 #include "chrome/common/extensions/api/bluetooth/bluetooth_manifest_data.h"
 #include "chrome/common/extensions/api/manifest_types.h"
+#include "chrome/grit/generated_resources.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_constants.h"
-#include "grit/generated_resources.h"
 #include "ipc/ipc_message.h"
 #include "ui/base/l10n/l10n_util.h"
 

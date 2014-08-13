@@ -4,13 +4,13 @@
 
 #include "chrome/common/extensions/permissions/chrome_api_permissions.h"
 
+#include "chrome/grit/generated_resources.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/media_galleries_permission.h"
 #include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permissions_info.h"
-#include "grit/extensions_strings.h"
-#include "grit/generated_resources.h"
+#include "extensions/strings/grit/extensions_strings.h"
 
 namespace extensions {
 

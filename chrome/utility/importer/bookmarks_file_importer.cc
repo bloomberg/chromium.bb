@@ -10,10 +10,10 @@
 #include "chrome/common/importer/importer_bridge.h"
 #include "chrome/common/importer/importer_data_types.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/utility/importer/bookmark_html_reader.h"
 #include "components/url_fixer/url_fixer.h"
 #include "content/public/common/url_constants.h"
-#include "grit/generated_resources.h"
 
 namespace {
 

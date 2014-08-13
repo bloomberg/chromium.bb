@@ -1,4 +1,5 @@
 include_rules = [
   "+gin",
   "+third_party/widevine",
+  "+webkit/grit",
 ]

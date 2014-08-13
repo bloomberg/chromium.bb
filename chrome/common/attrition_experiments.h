@@ -5,7 +5,7 @@
 #ifndef CHROME_COMMON_ATTRITION_EXPERIMENTS_H_
 #define CHROME_COMMON_ATTRITION_EXPERIMENTS_H_
 
-#include "grit/chromium_strings.h"
+#include "chrome/grit/chromium_strings.h"
 
 namespace attrition_experiments {
 
@@ -21,6 +21,6 @@ enum Experiment {
 // A comma-separated list of brand codes that are associated with Skype.
 const wchar_t kSkypeBrandCode[] = L"SKPC,SKPG,SKPH,SKPI,SKPL,SKPM,SKPN";
 
-}  // namespace
+}  // namespace attrition_experiments
 
 #endif  // CHROME_COMMON_ATTRITION_EXPERIMENTS_H_

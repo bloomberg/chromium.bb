@@ -20,7 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "grit/chromium_strings.h"
+#include "chrome/grit/chromium_strings.h"
 #include "ui/base/resource/data_pack.h"
 
 namespace {

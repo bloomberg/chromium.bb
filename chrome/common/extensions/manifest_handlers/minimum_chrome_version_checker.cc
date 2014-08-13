@@ -7,10 +7,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/grit/chromium_strings.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
-#include "grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {

@@ -6,7 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "ui/base/l10n/l10n_util.h"

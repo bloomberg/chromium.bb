@@ -16,8 +16,8 @@
 #include "base/values.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "chrome/common/cloud_print/cloud_print_helpers.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/service/cloud_print/cloud_print_service_helpers.h"
-#include "grit/generated_resources.h"
 #include "net/base/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"
 

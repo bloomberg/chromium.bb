@@ -52,7 +52,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "crypto/scoped_nss_types.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"

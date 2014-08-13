@@ -5,11 +5,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/extensions/manifest_handlers/automation.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
+#include "chrome/grit/generated_resources.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "grit/extensions_strings.h"
-#include "grit/generated_resources.h"
+#include "extensions/strings/grit/extensions_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 

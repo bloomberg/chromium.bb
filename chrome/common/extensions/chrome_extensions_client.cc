@@ -11,6 +11,8 @@
 #include "chrome/common/extensions/features/chrome_channel_feature_filter.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/common_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/api/generated_schemas.h"
 #include "extensions/common/common_manifest_handlers.h"
@@ -30,14 +32,13 @@
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
-#include "grit/common_resources.h"
-#if defined(ENABLE_EXTENSIONS)
-#include "grit/extensions_api_resources.h"
-#endif
-#include "grit/extensions_resources.h"
-#include "grit/generated_resources.h"
+#include "extensions/grit/extensions_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/grit/extensions_api_resources.h"
+#endif
 
 namespace extensions {
 

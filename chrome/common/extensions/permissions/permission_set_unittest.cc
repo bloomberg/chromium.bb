@@ -12,6 +12,7 @@
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/permissions/chrome_permission_message_provider.h"
+#include "chrome/grit/generated_resources.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -22,8 +23,7 @@
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/permissions/socket_permission.h"
 #include "extensions/common/value_builder.h"
-#include "grit/extensions_strings.h"
-#include "grit/generated_resources.h"
+#include "extensions/strings/grit/extensions_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 

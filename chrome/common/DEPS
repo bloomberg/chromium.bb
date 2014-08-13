@@ -1,6 +1,7 @@
 include_rules = [
   "+apps/app_shim",  # For app shim messages.
   "+breakpad",  # For Breakpad constants.
+  "+chrome/grit",  # For generated headers
   "+chromeos",  # For chromeos_switches.h
   "+components/autofill/content/common",
   "+components/autofill/core/common",
@@ -18,7 +19,7 @@ include_rules = [
   "+components/translate/core/common",
   "+extensions/common",
   "+google_apis/gaia",  # For gaia_switches.h
-  "+grit",  # For generated headers
+  "+grit",  # For generated headers. TODO(thestig): Remove.
   "+media",
   "+ppapi/native_client/src/trusted/plugin/ppapi_entrypoints.h",
   "+ppapi/shared_impl",
