@@ -516,17 +516,120 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                                           'final' : True})
 
 
-def GetCIDBConnectionForBuilder(builder_run):
-  """Get a CIDBConnection.
+class CIDBConnectionFactory(object):
+  """Factory class used by builders to fetch the appropriate cidb connection"""
 
-  Args:
-    builder_run: BuildRun instance for this builder.
+  # A call to one of the Setup methods below is necessary before using the
+  # GetCIDBConnectionForBuilder Factory. This ensures that unit tests do not
+  # accidentally use one of the live database instances.
 
-  Returns:
-    A CIDBConnection instance.
-  """
-  if builder_run.options.debug:
-    return CIDBConnection(constants.CIDB_DEBUG_BOT_CREDS)
-  else:
-    return CIDBConnection(constants.CIDB_PROD_BOT_CREDS)
+  _ConnectionIsSetup = False
+  _ConnectionType = None
+  _ConnectionCredsPath = None
+  _MockCIDB = None
+
+  _CONNECTION_TYPE_PROD = 'prod'   # production database
+  _CONNECTION_TYPE_DEBUG = 'debug' # debug database, used by --debug builds
+  _CONNECTION_TYPE_MOCK = 'mock'   # mock connection, not backed by database
+  _CONNECTION_TYPE_NONE = 'none'   # explicitly no connection
+
+
+  @classmethod
+  def IsCIDBSetup(cls):
+    """Returns True iff GetCIDBConnectionForBuilder is ready to be called."""
+    return cls._ConnectionIsSetup
+
+
+  @classmethod
+  def SetupProdCidb(cls):
+    """Sets up CIDB to use the prod instance of the database.
+
+    May be called only once, and may not be called after any other CIDB Setup
+    method, otherwise it will raise an AssertionError.
+    """
+    assert not cls._ConnectionIsSetup, 'CIDB is already set up.'
+    assert not cls._ConnectionType == cls._CONNECTION_TYPE_MOCK, (
+        'CIDB set for mock use.')
+    cls._ConnectionType = cls._CONNECTION_TYPE_PROD
+    cls._ConnectionCredsPath = constants.CIDB_PROD_BOT_CREDS
+    cls._ConnectionIsSetup = True
+
+
+  @classmethod
+  def SetupDebugCidb(cls):
+    """Sets up CIDB to use the debug instance of the database.
+
+    May be called only once, and may not be called after any other CIDB Setup
+    method, otherwise it will raise an AssertionError.
+    """
+    assert not cls._ConnectionIsSetup, 'CIDB is already set up.'
+    assert not cls._ConnectionType == cls._CONNECTION_TYPE_MOCK, (
+        'CIDB set for mock use.')
+    cls._ConnectionType = cls._CONNECTION_TYPE_DEBUG
+    cls._ConnectionCredsPath = constants.CIDB_DEBUG_BOT_CREDS
+    cls._ConnectionIsSetup = True
+
+
+  @classmethod
+  def SetupMockCidb(cls, mock_cidb=None):
+    """Sets up CIDB to use a mock object. May be called more than once.
+
+    Args:
+      mock_cidb: (optional) The mock cidb object to be returned by
+                 GetCIDBConnection. If not supplied, then CIDB will be
+                 considered not set up, but future calls to set up a
+                 non-(mock or None) connection will fail.
+    """
+    if cls._ConnectionIsSetup:
+      assert cls._ConnectionType == cls._CONNECTION_TYPE_MOCK, (
+          'A non-mock CIDB is already set up.')
+    cls._ConnectionType = cls._CONNECTION_TYPE_MOCK
+    if mock_cidb:
+      cls._ConnectionIsSetup = True
+      cls._MockCIDB = mock_cidb
+
+
+  @classmethod
+  def SetupNoCidb(cls):
+    """Sets up CIDB to use an explicit None connection.
+
+    May be called more than once, or after SetupMockCidb.
+    """
+    if cls._ConnectionIsSetup:
+      assert (cls._ConnectionType == cls._CONNECTION_TYPE_MOCK or
+              cls._ConnectionType == cls._CONNECTION_TYPE_NONE) , (
+          'A non-mock CIDB is already set up.')
+    cls._ConnectionType = cls._CONNECTION_TYPE_NONE
+    cls._ConnectionIsSetup = True
+
+
+  @classmethod
+  def GetCIDBConnectionForBuilder(cls):
+    """Get a CIDBConnection.
+
+    A call to one of the CIDB Setup methods must have been made before calling
+    this factory method.
+
+    Returns:
+      A CIDBConnection instance connected to either the prod or debug
+      instance of the database, or a mock connection, depending on which
+      Setup method was called. Returns None if CIDB has been explicitly
+      set up for that using SetupNoCidb.
+    """
+    assert cls._ConnectionIsSetup, 'CIDB has not be set up with a Setup call.'
+    if cls._ConnectionType == cls._CONNECTION_TYPE_MOCK:
+      return cls._MockCIDB
+    elif cls._ConnectionType == cls._CONNECTION_TYPE_NONE:
+      return None
+    else:
+      return CIDBConnection(cls._ConnectionCredsPath)
+
+  @classmethod
+  def _ClearCIDBSetup(cls):
+    """Clears the CIDB Setup state. For testing purposes only."""
+    cls._ConnectionIsSetup = False
+    cls._ConnectionType = None
+    cls._ConnectionCredsPath = None
+    cls._MockCIDB = None
+
 

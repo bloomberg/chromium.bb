@@ -59,6 +59,12 @@ class CIDBIntegrationTest(cros_test_lib.TestCase):
       A CIDBConnection instance, connected to a an empty database as the
       root user.
     """
+    # Note: We do not use the cidb.CIDBConnectionFactory
+    # in this module. That factory method is used only to construct
+    # connections as the bot user, which is how the builders will always
+    # connect to the database. In this module, however, we need to test
+    # database connections as other mysql users.
+
     # Connect to database and drop its contents.
     db = cidb.CIDBConnection(TEST_DB_CRED_ROOT)
     db.DropDatabase()

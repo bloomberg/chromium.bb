@@ -26,11 +26,17 @@ import unittest
 import urllib
 
 from chromite.cbuildbot import constants
+from chromite.lib import cidb
 import cros_build_lib
 import gob_util
 import osutils
 import terminal
 import timeout_util
+
+# Unit tests should never connect to the live prod or debug instances
+# of the cidb. This call ensures that they will not accidentally
+# do so through the normal cidb SetUp / GetConnectionForBuilder factory.
+cidb.CIDBConnectionFactory.SetupMockCidb()
 
 if 'chromite' not in sys.modules:
   # TODO(build): Finish test wrapper (http://crosbug.com/37517).
