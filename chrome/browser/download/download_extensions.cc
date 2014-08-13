@@ -222,7 +222,8 @@ DownloadDangerLevel GetFileDangerLevel(const base::FilePath& path) {
     ascii_extension.erase(0, 1);
 
   for (size_t i = 0; i < arraysize(g_executables); ++i) {
-    if (LowerCaseEqualsASCII(ascii_extension, g_executables[i].extension))
+    if (base::LowerCaseEqualsASCII(ascii_extension,
+                                   g_executables[i].extension))
       return g_executables[i].level;
   }
   return NOT_DANGEROUS;

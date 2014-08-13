@@ -22,6 +22,7 @@
         'build_pnacl_newlib': 1,
       },
       'dependencies': [
+        '../base/base_nacl.gyp:base_nacl',
         '../crypto/crypto_nacl.gyp:crypto_nacl',
         '../native_client/tools.gyp:prep_toolchain',
         '../native_client_sdk/native_client_sdk_untrusted.gyp:nacl_io_untrusted',

@@ -22,11 +22,13 @@ WindowContainerType WindowFeaturesToContainerType(
   bool persistent = false;
 
   for (size_t i = 0; i < window_features.additionalFeatures.size(); ++i) {
-    if (LowerCaseEqualsASCII(window_features.additionalFeatures[i],
-                             kBackground))
+    if (base::LowerCaseEqualsASCII(
+            base::string16(window_features.additionalFeatures[i]),
+            kBackground))
       background = true;
-    else if (LowerCaseEqualsASCII(window_features.additionalFeatures[i],
-                                  kPersistent))
+    else if (base::LowerCaseEqualsASCII(
+                 base::string16(window_features.additionalFeatures[i]),
+                 kPersistent))
       persistent = true;
   }
 

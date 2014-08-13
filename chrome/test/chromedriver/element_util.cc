@@ -338,10 +338,12 @@ Status IsElementAttributeEqualToIgnoreCase(
   if (status.IsError())
     return status;
   std::string actual_value;
-  if (result->GetAsString(&actual_value))
-    *is_equal = LowerCaseEqualsASCII(actual_value, attribute_value.c_str());
-  else
+  if (result->GetAsString(&actual_value)) {
+    *is_equal =
+        base::LowerCaseEqualsASCII(actual_value, attribute_value.c_str());
+  } else {
     *is_equal = false;
+  }
   return status;
 }
 

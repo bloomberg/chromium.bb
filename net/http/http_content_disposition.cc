@@ -361,9 +361,9 @@ std::string::const_iterator HttpContentDisposition::ConsumeDispositionType(
 
   DCHECK(std::find(type_begin, type_end, '=') == type_end);
 
-  if (LowerCaseEqualsASCII(type_begin, type_end, "inline")) {
+  if (base::LowerCaseEqualsASCII(type_begin, type_end, "inline")) {
     type_ = INLINE;
-  } else if (LowerCaseEqualsASCII(type_begin, type_end, "attachment")) {
+  } else if (base::LowerCaseEqualsASCII(type_begin, type_end, "attachment")) {
     type_ = ATTACHMENT;
   } else {
     parse_result_flags_ |= HAS_UNKNOWN_DISPOSITION_TYPE;
@@ -405,22 +405,22 @@ void HttpContentDisposition::Parse(const std::string& header,
 
   HttpUtil::NameValuePairsIterator iter(pos, end, ';');
   while (iter.GetNext()) {
-    if (filename.empty() && LowerCaseEqualsASCII(iter.name_begin(),
-                                                 iter.name_end(),
-                                                 "filename")) {
+    if (filename.empty() && base::LowerCaseEqualsASCII(iter.name_begin(),
+                                                       iter.name_end(),
+                                                       "filename")) {
       DecodeFilenameValue(iter.value(), referrer_charset, &filename,
                           &parse_result_flags_);
       if (!filename.empty())
         parse_result_flags_ |= HAS_FILENAME;
-    } else if (name.empty() && LowerCaseEqualsASCII(iter.name_begin(),
-                                                    iter.name_end(),
-                                                    "name")) {
+    } else if (name.empty() && base::LowerCaseEqualsASCII(iter.name_begin(),
+                                                          iter.name_end(),
+                                                          "name")) {
       DecodeFilenameValue(iter.value(), referrer_charset, &name, NULL);
       if (!name.empty())
         parse_result_flags_ |= HAS_NAME;
-    } else if (ext_filename.empty() && LowerCaseEqualsASCII(iter.name_begin(),
-                                                            iter.name_end(),
-                                                            "filename*")) {
+    } else if (ext_filename.empty() &&
+               base::LowerCaseEqualsASCII(iter.name_begin(), iter.name_end(),
+                                          "filename*")) {
       DecodeExtValue(iter.raw_value(), &ext_filename);
       if (!ext_filename.empty())
         parse_result_flags_ |= HAS_EXT_FILENAME;

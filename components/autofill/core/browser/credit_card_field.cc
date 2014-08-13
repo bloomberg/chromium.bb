@@ -94,7 +94,8 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
       continue;
     }
 
-    if (LowerCaseEqualsASCII(scanner->Cursor()->form_control_type, "month")) {
+    if (base::LowerCaseEqualsASCII(scanner->Cursor()->form_control_type,
+                                   "month")) {
       credit_card_field->expiration_date_ = scanner->Cursor();
       scanner->Advance();
     } else {

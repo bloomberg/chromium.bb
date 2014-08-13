@@ -41,9 +41,9 @@ void ElideChromeProxyDirective(const std::string& header_value,
                                std::string::const_iterator* redact_end) {
   HttpUtil::ValuesIterator it(header_value.begin(), header_value.end(), ',');
   while (it.GetNext()) {
-    if (LowerCaseEqualsASCII(it.value_begin(),
-                             it.value_begin() + directive.size(),
-                             directive.c_str())) {
+    if (base::LowerCaseEqualsASCII(it.value_begin(),
+                                   it.value_begin() + directive.size(),
+                                   directive.c_str())) {
       *redact_begin = it.value_begin();
       *redact_end = it.value_end();
       return;

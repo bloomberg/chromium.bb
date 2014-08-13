@@ -83,7 +83,7 @@ HttpAuth::AuthorizationResult HttpAuthHandlerMock::HandleAnotherChallenge(
   // challenge for a non connection based scheme, assume it's a rejection.
   if (!is_connection_based() || challenge->base64_param().empty())
     return HttpAuth::AUTHORIZATION_RESULT_REJECT;
-  if (!LowerCaseEqualsASCII(challenge->scheme(), "mock"))
+  if (!base::LowerCaseEqualsASCII(challenge->scheme(), "mock"))
     return HttpAuth::AUTHORIZATION_RESULT_INVALID;
   return HttpAuth::AUTHORIZATION_RESULT_ACCEPT;
 }

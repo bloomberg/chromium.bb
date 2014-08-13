@@ -257,7 +257,7 @@ LRESULT CALLBACK SystemMenuTestCBTHook(int n_code,
     GetClassName(reinterpret_cast<HWND>(w_param),
                  class_name,
                  arraysize(class_name));
-    if (LowerCaseEqualsASCII(class_name, "#32768")) {
+    if (base::LowerCaseEqualsASCII(class_name, "#32768")) {
       // Select the New Tab option and then send the enter key to execute it.
       ::PostMessage(reinterpret_cast<HWND>(w_param), WM_CHAR, 'T', 0);
       ::PostMessage(reinterpret_cast<HWND>(w_param), WM_KEYDOWN, VK_RETURN, 0);

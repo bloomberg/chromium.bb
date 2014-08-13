@@ -98,7 +98,8 @@ const char* const kNonUpdatedHeaderPrefixes[] = {
 bool ShouldUpdateHeader(const std::string::const_iterator& name_begin,
                         const std::string::const_iterator& name_end) {
   for (size_t i = 0; i < arraysize(kNonUpdatedHeaders); ++i) {
-    if (LowerCaseEqualsASCII(name_begin, name_end, kNonUpdatedHeaders[i]))
+    if (base::LowerCaseEqualsASCII(name_begin, name_end,
+                                   kNonUpdatedHeaders[i]))
       return false;
   }
   for (size_t i = 0; i < arraysize(kNonUpdatedHeaderPrefixes); ++i) {
@@ -632,7 +633,7 @@ HttpVersion HttpResponseHeaders::ParseVersion(
   // TODO: (1*DIGIT apparently means one or more digits, but we only handle 1).
   // TODO: handle leading zeros, which is allowed by the rfc1616 sec 3.1.
 
-  if ((line_end - p < 4) || !LowerCaseEqualsASCII(p, p + 4, "http")) {
+  if ((line_end - p < 4) || !base::LowerCaseEqualsASCII(p, p + 4, "http")) {
     DVLOG(1) << "missing status line";
     return HttpVersion();
   }
@@ -763,9 +764,9 @@ bool HttpResponseHeaders::GetCacheControlDirective(const StringPiece& directive,
   void* iter = NULL;
   while (EnumerateHeader(&iter, name, &value)) {
     if (value.size() > directive_size + 1 &&
-        LowerCaseEqualsASCII(value.begin(),
-                             value.begin() + directive_size,
-                             directive.begin()) &&
+        base::LowerCaseEqualsASCII(value.begin(),
+                                   value.begin() + directive_size,
+                                   directive.begin()) &&
         value[directive_size] == '=') {
       int64 seconds;
       base::StringToInt64(
@@ -1184,10 +1185,10 @@ bool HttpResponseHeaders::IsKeepAlive() const {
 
   if (http_version_ == HttpVersion(1, 0)) {
     // HTTP/1.0 responses default to NOT keep-alive
-    keep_alive = LowerCaseEqualsASCII(connection_val, "keep-alive");
+    keep_alive = base::LowerCaseEqualsASCII(connection_val, "keep-alive");
   } else {
     // HTTP/1.1 responses default to keep-alive
-    keep_alive = !LowerCaseEqualsASCII(connection_val, "close");
+    keep_alive = !base::LowerCaseEqualsASCII(connection_val, "close");
   }
 
   return keep_alive;
@@ -1262,9 +1263,9 @@ bool HttpResponseHeaders::GetContentRange(int64* first_byte_position,
   std::string::const_iterator content_range_spec_end =
       content_range_spec.begin() + space_position;
   HttpUtil::TrimLWS(&content_range_spec_begin, &content_range_spec_end);
-  if (!LowerCaseEqualsASCII(content_range_spec_begin,
-                            content_range_spec_end,
-                            "bytes")) {
+  if (!base::LowerCaseEqualsASCII(content_range_spec_begin,
+                                  content_range_spec_end,
+                                  "bytes")) {
     return false;
   }
 
@@ -1283,7 +1284,7 @@ bool HttpResponseHeaders::GetContentRange(int64* first_byte_position,
   std::string byte_range_resp_spec(byte_range_resp_spec_begin,
                                    byte_range_resp_spec_end);
   // If byte-range-resp-spec != "*".
-  if (!LowerCaseEqualsASCII(byte_range_resp_spec, "*")) {
+  if (!base::LowerCaseEqualsASCII(byte_range_resp_spec, "*")) {
     size_t minus_position = byte_range_resp_spec.find('-');
     if (minus_position != std::string::npos) {
       // Obtain first-byte-pos.
@@ -1327,7 +1328,8 @@ bool HttpResponseHeaders::GetContentRange(int64* first_byte_position,
       content_range_spec.end();
   HttpUtil::TrimLWS(&instance_length_begin, &instance_length_end);
 
-  if (LowerCaseEqualsASCII(instance_length_begin, instance_length_end, "*")) {
+  if (base::LowerCaseEqualsASCII(instance_length_begin, instance_length_end,
+                                 "*")) {
     return false;
   } else if (!base::StringToInt64(StringPiece(instance_length_begin,
                                               instance_length_end),

@@ -146,12 +146,13 @@ bool ParseWebAppFromWebDocument(WebFrame* frame,
       //
       // Streamlined Hosted Apps also support "apple-touch-icon" and
       // "apple-touch-icon-precomposed".
-      if (LowerCaseEqualsASCII(rel, "icon") ||
-          LowerCaseEqualsASCII(rel, "shortcut icon") ||
+      if (base::LowerCaseEqualsASCII(rel, "icon") ||
+          base::LowerCaseEqualsASCII(rel, "shortcut icon") ||
           (CommandLine::ForCurrentProcess()->
               HasSwitch(switches::kEnableStreamlinedHostedApps) &&
-            (LowerCaseEqualsASCII(rel, "apple-touch-icon") ||
-             LowerCaseEqualsASCII(rel, "apple-touch-icon-precomposed")))) {
+            (base::LowerCaseEqualsASCII(rel, "apple-touch-icon") ||
+             base::LowerCaseEqualsASCII(rel,
+                                        "apple-touch-icon-precomposed")))) {
         AddInstallIcon(elem, &app_info->icons);
       }
     } else if (elem.hasHTMLTagName("meta") && elem.hasAttribute("name")) {

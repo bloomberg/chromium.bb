@@ -159,7 +159,7 @@ bool Address::SetInfo(const AutofillType& type,
       return false;
     }
 
-    country_code_ = StringToUpperASCII(base::UTF16ToASCII(value));
+    country_code_ = base::StringToUpperASCII(base::UTF16ToASCII(value));
     return true;
   } else if (type.html_type() == HTML_TYPE_FULL_ADDRESS) {
     // Parsing a full address is too hard.

@@ -70,7 +70,7 @@ bool WebPluginDelegateImpl::Initialize(
   scoped_ptr<char*[]> argv(new char*[arg_names.size()]);
   for (size_t i = 0; i < arg_names.size(); ++i) {
     if (quirks_ & PLUGIN_QUIRK_NO_WINDOWLESS &&
-        LowerCaseEqualsASCII(arg_names[i], "windowlessvideo")) {
+        base::LowerCaseEqualsASCII(arg_names[i], "windowlessvideo")) {
       continue;
     }
     argn[argc] = const_cast<char*>(arg_names[i].c_str());

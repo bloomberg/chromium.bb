@@ -306,11 +306,14 @@ void DataReductionProxyTamperDetection::
   std::string IMAGE = "image/";
 
   size_t mime_type_size = mime_type.size();
-  if ((mime_type_size >= JS1.size() && LowerCaseEqualsASCII(mime_type.begin(),
+  if ((mime_type_size >= JS1.size() &&
+       base::LowerCaseEqualsASCII(mime_type.begin(),
       mime_type.begin() + JS1.size(), JS1.c_str())) ||
-      (mime_type_size >= JS2.size() && LowerCaseEqualsASCII(mime_type.begin(),
+      (mime_type_size >= JS2.size() &&
+       base::LowerCaseEqualsASCII(mime_type.begin(),
       mime_type.begin() + JS2.size(), JS2.c_str())) ||
-      (mime_type_size >= JS3.size() && LowerCaseEqualsASCII(mime_type.begin(),
+      (mime_type_size >= JS3.size() &&
+       base::LowerCaseEqualsASCII(mime_type.begin(),
       mime_type.begin() + JS3.size(), JS3.c_str()))) {
     REPORT_TAMPER_DETECTION_UMA(
         scheme_is_https_,
@@ -318,7 +321,7 @@ void DataReductionProxyTamperDetection::
         "DataReductionProxy.HeaderTamperedHTTP_ContentLength_JS",
         carrier_id_);
   } else if (mime_type_size >= CSS.size() &&
-      LowerCaseEqualsASCII(mime_type.begin(),
+      base::LowerCaseEqualsASCII(mime_type.begin(),
       mime_type.begin() + CSS.size(), CSS.c_str())) {
     REPORT_TAMPER_DETECTION_UMA(
         scheme_is_https_,
@@ -326,7 +329,7 @@ void DataReductionProxyTamperDetection::
         "DataReductionProxy.HeaderTamperedHTTP_ContentLength_CSS",
         carrier_id_);
   } else if (mime_type_size >= IMAGE.size() &&
-      LowerCaseEqualsASCII(mime_type.begin(),
+      base::LowerCaseEqualsASCII(mime_type.begin(),
       mime_type.begin() + IMAGE.size(), IMAGE.c_str())) {
     REPORT_TAMPER_DETECTION_UMA(
         scheme_is_https_,

@@ -151,7 +151,7 @@ bool HouseNumberParser::Parse(
     if (IsAsciiAlpha(*it_)) {
       // Handle special case 'one'.
       if (result_chars_ == 0) {
-        if (it_ + 3 <= end_ && LowerCaseEqualsASCII(it_, it_ + 3, "one"))
+        if (it_ + 3 <= end_ && base::LowerCaseEqualsASCII(it_, it_ + 3, "one"))
           AcceptChars(3);
         else
           RestartOnNextDelimiter();

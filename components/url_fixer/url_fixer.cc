@@ -538,7 +538,7 @@ GURL url_fixer::FixupURL(const std::string& text,
 
   // Parse and rebuild about: and chrome: URLs, except about:blank.
   bool chrome_url =
-      !LowerCaseEqualsASCII(trimmed, url::kAboutBlankURL) &&
+      !base::LowerCaseEqualsASCII(trimmed, url::kAboutBlankURL) &&
       ((scheme == url::kAboutScheme) || (scheme == kChromeUIScheme));
 
   // For some schemes whose layouts we understand, we rebuild it.

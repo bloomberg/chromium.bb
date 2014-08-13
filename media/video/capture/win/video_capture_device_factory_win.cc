@@ -138,8 +138,8 @@ static void GetDeviceNamesDirectShow(VideoCaptureDevice::Names* device_names) {
 
       if ((wcsstr(str_ptr, L"(VFW)") == NULL) &&
           lstrlenW(str_ptr) < name_length ||
-          (!(LowerCaseEqualsASCII(str_ptr, str_ptr + name_length,
-                                  kGoogleCameraAdapter)))) {
+          (!(base::LowerCaseEqualsASCII(str_ptr, str_ptr + name_length,
+                                        kGoogleCameraAdapter)))) {
         std::string id;
         std::string device_name(base::SysWideToUTF8(str_ptr));
         name.Reset();

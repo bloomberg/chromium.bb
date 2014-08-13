@@ -381,11 +381,12 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
       const NavigationEntry* last_committed_entry =
           contents->GetController().GetLastCommittedEntry();
       if ((last_committed_entry &&
-           LowerCaseEqualsASCII(last_committed_entry->GetVirtualURL().spec(),
-                                chrome::kChromeUIMemoryURL)) ||
+           base::LowerCaseEqualsASCII(
+              last_committed_entry->GetVirtualURL().spec(),
+              chrome::kChromeUIMemoryURL)) ||
           (pending_entry &&
-           LowerCaseEqualsASCII(pending_entry->GetVirtualURL().spec(),
-                                chrome::kChromeUIMemoryURL))) {
+           base::LowerCaseEqualsASCII(pending_entry->GetVirtualURL().spec(),
+                                      chrome::kChromeUIMemoryURL))) {
         process.is_diagnostics = true;
       }
     }

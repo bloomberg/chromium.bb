@@ -2605,8 +2605,10 @@ bool RenderViewImpl::IsEditableNode(const WebNode& node) const {
 
     // Also return true if it has an ARIA role of 'textbox'.
     for (unsigned i = 0; i < element.attributeCount(); ++i) {
-      if (LowerCaseEqualsASCII(element.attributeLocalName(i), "role")) {
-        if (LowerCaseEqualsASCII(element.attributeValue(i), "textbox"))
+      if (base::LowerCaseEqualsASCII(
+              base::string16(element.attributeLocalName(i)), "role")) {
+        if (base::LowerCaseEqualsASCII(
+                base::string16(element.attributeValue(i)), "textbox"))
           return true;
         break;
       }

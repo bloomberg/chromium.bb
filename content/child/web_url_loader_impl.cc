@@ -80,10 +80,10 @@ class HeaderFlattener : public WebHTTPHeaderVisitor {
 
     // Skip over referrer headers found in the header map because we already
     // pulled it out as a separate parameter.
-    if (LowerCaseEqualsASCII(name_latin1, "referer"))
+    if (base::LowerCaseEqualsASCII(name_latin1, "referer"))
       return;
 
-    if (LowerCaseEqualsASCII(name_latin1, "accept"))
+    if (base::LowerCaseEqualsASCII(name_latin1, "accept"))
       has_accept_header_ = true;
 
     if (!buffer_.empty())

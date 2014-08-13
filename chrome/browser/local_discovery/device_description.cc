@@ -17,13 +17,15 @@ namespace {
 
 DeviceDescription::ConnectionState
 ConnectionStateFromString(const std::string& str) {
-  if (LowerCaseEqualsASCII(str, kPrivetConnectionStatusOnline)) {
+  if (base::LowerCaseEqualsASCII(str, kPrivetConnectionStatusOnline)) {
     return DeviceDescription::ONLINE;
-  } else if (LowerCaseEqualsASCII(str, kPrivetConnectionStatusOffline)) {
+  } else if (base::LowerCaseEqualsASCII(str, kPrivetConnectionStatusOffline)) {
     return DeviceDescription::OFFLINE;
-  } else if (LowerCaseEqualsASCII(str, kPrivetConnectionStatusConnecting)) {
+  } else if (base::LowerCaseEqualsASCII(str,
+                                        kPrivetConnectionStatusConnecting)) {
     return DeviceDescription::CONNECTING;
-  } else if (LowerCaseEqualsASCII(str, kPrivetConnectionStatusNotConfigured)) {
+  } else if (base::LowerCaseEqualsASCII(str,
+                                        kPrivetConnectionStatusNotConfigured)) {
     return DeviceDescription::NOT_CONFIGURED;
   }
 
@@ -57,20 +59,20 @@ void DeviceDescription::FillFromServiceDescription(
     std::string key = i->substr(0, equals_pos);
     std::string value = i->substr(equals_pos + 1);
 
-    if (LowerCaseEqualsASCII(key, kPrivetTxtKeyVersion)) {
+    if (base::LowerCaseEqualsASCII(key, kPrivetTxtKeyVersion)) {
       if (!base::StringToInt(value, &version))
         continue;  // Unknown version.
-    } else if (LowerCaseEqualsASCII(key, kPrivetTxtKeyName)) {
+    } else if (base::LowerCaseEqualsASCII(key, kPrivetTxtKeyName)) {
       name = value;
-    } else if (LowerCaseEqualsASCII(key, kPrivetTxtKeyDescription)) {
+    } else if (base::LowerCaseEqualsASCII(key, kPrivetTxtKeyDescription)) {
       description = value;
-    } else if (LowerCaseEqualsASCII(key, kPrivetTxtKeyURL)) {
+    } else if (base::LowerCaseEqualsASCII(key, kPrivetTxtKeyURL)) {
       url = value;
-    } else if (LowerCaseEqualsASCII(key, kPrivetTxtKeyType)) {
+    } else if (base::LowerCaseEqualsASCII(key, kPrivetTxtKeyType)) {
       type = value;
-    } else if (LowerCaseEqualsASCII(key, kPrivetTxtKeyID)) {
+    } else if (base::LowerCaseEqualsASCII(key, kPrivetTxtKeyID)) {
       id = value;
-    } else if (LowerCaseEqualsASCII(key, kPrivetTxtKeyConnectionState)) {
+    } else if (base::LowerCaseEqualsASCII(key, kPrivetTxtKeyConnectionState)) {
       connection_state = ConnectionStateFromString(value);
     }
   }

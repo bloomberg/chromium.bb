@@ -57,8 +57,8 @@ void FetchHeaders(const std::string& headers,
   net::HttpUtil::HeadersIterator iter(headers.begin(), headers.end(), "\r\n");
   while (iter.GetNext()) {
     for (size_t i = 0; i < headers_to_get_len; i++) {
-      if (LowerCaseEqualsASCII(iter.name_begin(), iter.name_end(),
-                               headers_to_get[i])) {
+      if (base::LowerCaseEqualsASCII(iter.name_begin(), iter.name_end(),
+                                     headers_to_get[i])) {
         values->push_back(iter.values());
       }
     }
@@ -98,7 +98,8 @@ std::string FilterHeaders(
     bool should_remove = false;
     if (GetHeaderName(line_begin, line_end, &name_begin, &name_end)) {
       for (size_t i = 0; i < headers_to_remove_len; ++i) {
-        if (LowerCaseEqualsASCII(name_begin, name_end, headers_to_remove[i])) {
+        if (base::LowerCaseEqualsASCII(name_begin, name_end,
+                                       headers_to_remove[i])) {
           should_remove = true;
           break;
         }
@@ -238,31 +239,31 @@ bool WebSocketHandshakeRequestHandler::GetRequestHeaderBlock(
 
   HttpUtil::HeadersIterator iter(headers_.begin(), headers_.end(), "\r\n");
   while (iter.GetNext()) {
-    if (LowerCaseEqualsASCII(iter.name_begin(),
-                             iter.name_end(),
-                             websockets::kUpgradeLowercase) ||
-        LowerCaseEqualsASCII(
+    if (base::LowerCaseEqualsASCII(iter.name_begin(),
+                                   iter.name_end(),
+                                   websockets::kUpgradeLowercase) ||
+        base::LowerCaseEqualsASCII(
             iter.name_begin(), iter.name_end(), "connection") ||
-        LowerCaseEqualsASCII(iter.name_begin(),
-                             iter.name_end(),
-                             websockets::kSecWebSocketVersionLowercase)) {
+        base::LowerCaseEqualsASCII(iter.name_begin(),
+                                   iter.name_end(),
+                                   websockets::kSecWebSocketVersionLowercase)) {
       // These headers must be ignored.
       continue;
-    } else if (LowerCaseEqualsASCII(iter.name_begin(),
-                                    iter.name_end(),
-                                    websockets::kSecWebSocketKeyLowercase)) {
+    } else if (base::LowerCaseEqualsASCII(
+                   iter.name_begin(), iter.name_end(),
+                   websockets::kSecWebSocketKeyLowercase)) {
       *challenge = iter.values();
       // Sec-WebSocket-Key is not sent to the server.
       continue;
-    } else if (LowerCaseEqualsASCII(
+    } else if (base::LowerCaseEqualsASCII(
                    iter.name_begin(), iter.name_end(), "host") ||
-               LowerCaseEqualsASCII(
+               base::LowerCaseEqualsASCII(
                    iter.name_begin(), iter.name_end(), "origin") ||
-               LowerCaseEqualsASCII(
+               base::LowerCaseEqualsASCII(
                    iter.name_begin(),
                    iter.name_end(),
                    websockets::kSecWebSocketProtocolLowercase) ||
-               LowerCaseEqualsASCII(
+               base::LowerCaseEqualsASCII(
                    iter.name_begin(),
                    iter.name_end(),
                    websockets::kSecWebSocketExtensionsLowercase)) {
@@ -423,9 +424,9 @@ bool WebSocketHandshakeResponseHandler::ParseResponseHeaderBlock(
     // we separate that back out into individual headers for each value
     // in the list.
     if ((spdy_protocol_version <= 2 &&
-         LowerCaseEqualsASCII(iter->first, "status")) ||
+         base::LowerCaseEqualsASCII(iter->first, "status")) ||
         (spdy_protocol_version >= 3 &&
-         LowerCaseEqualsASCII(iter->first, ":status"))) {
+         base::LowerCaseEqualsASCII(iter->first, ":status"))) {
       // The status value is already handled as the first line of
       // |response_message|. Just skip here.
       continue;
@@ -441,10 +442,10 @@ bool WebSocketHandshakeResponseHandler::ParseResponseHeaderBlock(
       else
         tval = value.substr(start);
       if (spdy_protocol_version >= 3 &&
-          (LowerCaseEqualsASCII(iter->first,
-                                websockets::kSecWebSocketProtocolSpdy3) ||
-           LowerCaseEqualsASCII(iter->first,
-                                websockets::kSecWebSocketExtensionsSpdy3)))
+          (base::LowerCaseEqualsASCII(iter->first,
+               websockets::kSecWebSocketProtocolSpdy3) ||
+           base::LowerCaseEqualsASCII(iter->first,
+               websockets::kSecWebSocketExtensionsSpdy3)))
         AppendHeader(iter->first.substr(1), tval, &response_message);
       else
         AppendHeader(iter->first, tval, &response_message);

@@ -2635,7 +2635,7 @@ void RenderFrameImpl::willSendRequest(
         navigation_state->extra_headers().begin(),
         navigation_state->extra_headers().end(), "\n");
         i.GetNext(); ) {
-      if (LowerCaseEqualsASCII(i.name(), "referer")) {
+      if (base::LowerCaseEqualsASCII(i.name(), "referer")) {
         WebString referrer = WebSecurityPolicy::generateReferrerHeader(
             blink::WebReferrerPolicyDefault,
             request.url(),

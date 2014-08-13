@@ -139,7 +139,7 @@ bool WebstoreBindings::GetWebstoreItemIdFromFrame(
       continue;
 
     std::string rel = elem.getAttribute("rel").utf8();
-    if (!LowerCaseEqualsASCII(rel, kWebstoreLinkRelation))
+    if (!base::LowerCaseEqualsASCII(rel, kWebstoreLinkRelation))
       continue;
 
     std::string webstore_url_string(elem.getAttribute("href").utf8());

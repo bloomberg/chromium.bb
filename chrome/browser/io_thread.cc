@@ -1243,9 +1243,9 @@ bool IOThread::ShouldEnableQuicPacing(
   if (command_line.HasSwitch(switches::kDisableQuicPacing))
     return false;
 
-  if (LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "enable_pacing"),
-      "true"))
+  if (base::LowerCaseEqualsASCII(
+          GetVariationParam(quic_trial_params, "enable_pacing"),
+          "true"))
     return true;
 
   return quic_trial_group.ends_with(kQuicFieldTrialPacingSuffix);
@@ -1321,9 +1321,10 @@ bool IOThread::ShouldEnableQuicTimeBasedLossDetection(
   if (command_line.HasSwitch(switches::kDisableQuicTimeBasedLossDetection))
     return false;
 
-  if (LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "enable_time_based_loss_detection"),
-      "true"))
+  if (base::LowerCaseEqualsASCII(
+          GetVariationParam(quic_trial_params,
+                            "enable_time_based_loss_detection"),
+          "true"))
     return true;
 
   return quic_trial_group.ends_with(

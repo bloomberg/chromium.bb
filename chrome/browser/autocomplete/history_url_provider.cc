@@ -973,7 +973,7 @@ bool HistoryURLProvider::CanFindIntranetURL(
   // input's text and parts between Parse() and here, it seems better to be
   // paranoid and check.
   if ((input.type() != metrics::OmniboxInputType::UNKNOWN) ||
-      !LowerCaseEqualsASCII(input.scheme(), url::kHttpScheme) ||
+      !base::LowerCaseEqualsASCII(input.scheme(), url::kHttpScheme) ||
       !input.parts().host.is_nonempty())
     return false;
   const std::string host(base::UTF16ToUTF8(

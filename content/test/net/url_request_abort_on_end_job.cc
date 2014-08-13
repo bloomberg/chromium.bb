@@ -53,8 +53,8 @@ void URLRequestAbortOnEndJob::GetResponseInfoConst(
     net::HttpResponseInfo* info) const {
   // Send back mock headers.
   std::string raw_headers;
-  if (LowerCaseEqualsASCII(k400AbortOnEndUrl,
-                           request_->url().spec().c_str())) {
+  if (base::LowerCaseEqualsASCII(k400AbortOnEndUrl,
+                                 request_->url().spec().c_str())) {
     raw_headers.append(
       "HTTP/1.1 400 This is not OK\n"
       "Content-type: text/plain\n");

@@ -292,7 +292,7 @@ void CorrectLanguageCodeTypo(std::string* code) {
   size_t dash_index = code->find('-');
   if (dash_index != std::string::npos) {
     *code = base::StringToLowerASCII(code->substr(0, dash_index)) +
-        StringToUpperASCII(code->substr(dash_index));
+        base::StringToUpperASCII(code->substr(dash_index));
   } else {
     *code = base::StringToLowerASCII(*code);
   }

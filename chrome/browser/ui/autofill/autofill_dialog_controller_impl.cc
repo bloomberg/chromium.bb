@@ -3323,7 +3323,7 @@ bool AutofillDialogControllerImpl::CanAcceptCountry(
   DCHECK_EQ(2U, country_code.size());
 
   if (section == SECTION_CC_BILLING)
-    return LowerCaseEqualsASCII(country_code, "us");
+    return base::LowerCaseEqualsASCII(country_code, "us");
 
   CountryComboboxModel* model = CountryComboboxModelForSection(section);
   const std::vector<AutofillCountry*>& countries = model->countries();

@@ -155,7 +155,8 @@ void FilterUntrustedPolicy(PolicyMap* policy) {
       if (pos == std::string::npos)
         continue;
       // Only allow custom update urls in enterprise environments.
-      if (!LowerCaseEqualsASCII(entry.substr(pos), kExpectedWebStoreUrl)) {
+      if (!base::LowerCaseEqualsASCII(entry.substr(pos),
+                                      kExpectedWebStoreUrl)) {
         entry = kBlockedExtensionPrefix + entry;
         invalid_policies++;
       }

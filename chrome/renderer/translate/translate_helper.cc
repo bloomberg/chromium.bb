@@ -369,7 +369,7 @@ bool TranslateHelper::IsTranslationAllowed(WebDocument* document) {
       attribute = element.getAttribute(content);
     if (attribute.isNull())
       continue;
-    if (LowerCaseEqualsASCII(attribute, "notranslate"))
+    if (base::LowerCaseEqualsASCII(base::string16(attribute), "notranslate"))
       return false;
   }
   return true;

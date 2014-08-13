@@ -23,7 +23,7 @@ void OnError(bool* succeeded) {
 // Returns true if the |tag| matches |expected_key|.
 bool ExtractString(AVDictionaryEntry* tag, const char* expected_key,
                    std::string* destination) {
-  if (!LowerCaseEqualsASCII(std::string(tag->key), expected_key))
+  if (!base::LowerCaseEqualsASCII(tag->key, expected_key))
     return false;
 
   if (destination->empty())
@@ -35,7 +35,7 @@ bool ExtractString(AVDictionaryEntry* tag, const char* expected_key,
 // Returns true if the |tag| matches |expected_key|.
 bool ExtractInt(AVDictionaryEntry* tag, const char* expected_key,
                 int* destination) {
-  if (!LowerCaseEqualsASCII(std::string(tag->key), expected_key))
+  if (!base::LowerCaseEqualsASCII(tag->key, expected_key))
     return false;
 
   int temporary = -1;

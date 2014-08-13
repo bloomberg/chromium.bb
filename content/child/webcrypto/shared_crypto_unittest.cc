@@ -669,8 +669,9 @@ scoped_ptr<base::DictionaryValue> GetJwkDictionary(
   std::string k_value;
   if (!webcrypto::Base64DecodeUrlSafe(value_string, &k_value))
     return ::testing::AssertionFailure() << "Base64DecodeUrlSafe(k) failed";
-  if (!LowerCaseEqualsASCII(base::HexEncode(k_value.data(), k_value.size()),
-                            k_expected_hex.c_str())) {
+  if (!base::LowerCaseEqualsASCII(
+          base::HexEncode(k_value.data(), k_value.size()),
+          k_expected_hex.c_str())) {
     return ::testing::AssertionFailure() << "Expected 'k' to be "
                                          << k_expected_hex
                                          << " but found something different";
@@ -710,8 +711,9 @@ scoped_ptr<base::DictionaryValue> GetJwkDictionary(
   std::string e_value;
   if (!webcrypto::Base64DecodeUrlSafe(value_string, &e_value))
     return ::testing::AssertionFailure() << "Base64DecodeUrlSafe(e) failed";
-  if (!LowerCaseEqualsASCII(base::HexEncode(e_value.data(), e_value.size()),
-                            e_expected_hex.c_str())) {
+  if (!base::LowerCaseEqualsASCII(
+          base::HexEncode(e_value.data(), e_value.size()),
+          e_expected_hex.c_str())) {
     return ::testing::AssertionFailure() << "Expected 'e' to be "
                                          << e_expected_hex
                                          << " but found something different";

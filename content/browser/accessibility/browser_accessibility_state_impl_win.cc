@@ -58,13 +58,13 @@ void BrowserAccessibilityStateImpl::UpdatePlatformSpecificHistograms() {
     TCHAR filename[MAX_PATH];
     GetModuleFileName(modules[i], filename, sizeof(filename));
     base::string16 module_name(base::FilePath(filename).BaseName().value());
-    if (LowerCaseEqualsASCII(module_name, "fsdomsrv.dll"))
+    if (base::LowerCaseEqualsASCII(module_name, "fsdomsrv.dll"))
       jaws = true;
-    if (LowerCaseEqualsASCII(module_name, "vbufbackend_gecko_ia2.dll"))
+    if (base::LowerCaseEqualsASCII(module_name, "vbufbackend_gecko_ia2.dll"))
       nvda = true;
-    if (LowerCaseEqualsASCII(module_name, "stsaw32.dll"))
+    if (base::LowerCaseEqualsASCII(module_name, "stsaw32.dll"))
       satogo = true;
-    if (LowerCaseEqualsASCII(module_name, "zslhook.dll"))
+    if (base::LowerCaseEqualsASCII(module_name, "zslhook.dll"))
       zoomtext = true;
   }
 

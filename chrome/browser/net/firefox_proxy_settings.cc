@@ -106,8 +106,8 @@ bool ParsePrefFile(const base::FilePath& pref_file,
                                     stop_value - start_value - 1);
     base::TrimWhitespace(value, base::TRIM_ALL, &value);
     // Value could be a boolean.
-    bool is_value_true = LowerCaseEqualsASCII(value, "true");
-    if (is_value_true || LowerCaseEqualsASCII(value, "false")) {
+    bool is_value_true = base::LowerCaseEqualsASCII(value, "true");
+    if (is_value_true || base::LowerCaseEqualsASCII(value, "false")) {
       prefs->SetBoolean(key, is_value_true);
       continue;
     }

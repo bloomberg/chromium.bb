@@ -55,20 +55,20 @@ bool DocumentLoader::Init(const pp::URLLoader& loader,
     net::HttpUtil::HeadersIterator it(response_headers.begin(),
                                       response_headers.end(), "\n");
     while (it.GetNext()) {
-      if (LowerCaseEqualsASCII(it.name(), "content-length")) {
+      if (base::LowerCaseEqualsASCII(it.name(), "content-length")) {
         content_length = atoi(it.values().c_str());
-      } else if (LowerCaseEqualsASCII(it.name(), "accept-ranges")) {
-        accept_ranges_bytes = LowerCaseEqualsASCII(it.values(), "bytes");
-      } else if (LowerCaseEqualsASCII(it.name(), "content-encoding")) {
+      } else if (base::LowerCaseEqualsASCII(it.name(), "accept-ranges")) {
+        accept_ranges_bytes = base::LowerCaseEqualsASCII(it.values(), "bytes");
+      } else if (base::LowerCaseEqualsASCII(it.name(), "content-encoding")) {
         content_encoded = true;
-      } else if (LowerCaseEqualsASCII(it.name(), "content-type")) {
+      } else if (base::LowerCaseEqualsASCII(it.name(), "content-type")) {
         type = it.values();
         size_t semi_colon_pos = type.find(';');
         if (semi_colon_pos != std::string::npos) {
           type = type.substr(0, semi_colon_pos);
         }
         TrimWhitespace(type, base::TRIM_ALL, &type);
-      } else if (LowerCaseEqualsASCII(it.name(), "content-disposition")) {
+      } else if (base::LowerCaseEqualsASCII(it.name(), "content-disposition")) {
         disposition = it.values();
       }
     }
@@ -334,7 +334,7 @@ bool DocumentLoader::GetByteRange(const std::string& headers, uint32* start,
                                   uint32* end) {
   net::HttpUtil::HeadersIterator it(headers.begin(), headers.end(), "\n");
   while (it.GetNext()) {
-    if (LowerCaseEqualsASCII(it.name(), "content-range")) {
+    if (base::LowerCaseEqualsASCII(it.name(), "content-range")) {
       std::string range = it.values().c_str();
       if (StartsWithASCII(range, "bytes", false)) {
         range = range.substr(strlen("bytes"));
@@ -356,7 +356,7 @@ bool DocumentLoader::GetByteRange(const std::string& headers, uint32* start,
 std::string DocumentLoader::GetMultiPartBoundary(const std::string& headers) {
   net::HttpUtil::HeadersIterator it(headers.begin(), headers.end(), "\n");
   while (it.GetNext()) {
-    if (LowerCaseEqualsASCII(it.name(), "content-type")) {
+    if (base::LowerCaseEqualsASCII(it.name(), "content-type")) {
       std::string type = base::StringToLowerASCII(it.values());
       if (StartsWithASCII(type, "multipart/", true)) {
         const char* boundary = strstr(type.c_str(), "boundary=");

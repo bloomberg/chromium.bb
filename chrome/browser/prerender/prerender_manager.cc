@@ -908,7 +908,7 @@ bool PrerenderManager::HasRecentlyBeenNavigatedTo(Origin origin,
 bool PrerenderManager::IsValidHttpMethod(const std::string& method) {
   // method has been canonicalized to upper case at this point so we can just
   // compare them.
-  DCHECK_EQ(method, StringToUpperASCII(method));
+  DCHECK_EQ(method, base::StringToUpperASCII(method));
   for (size_t i = 0; i < arraysize(kValidHttpMethods); ++i) {
     if (method.compare(kValidHttpMethods[i]) == 0)
       return true;

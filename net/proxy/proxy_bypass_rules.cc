@@ -267,7 +267,7 @@ bool ProxyBypassRules::AddRuleFromStringInternal(
 
   // This is the special syntax used by WinInet's bypass list -- we allow it
   // on all platforms and interpret it the same way.
-  if (LowerCaseEqualsASCII(raw, "<local>")) {
+  if (base::LowerCaseEqualsASCII(raw, "<local>")) {
     AddRuleToBypassLocal();
     return true;
   }

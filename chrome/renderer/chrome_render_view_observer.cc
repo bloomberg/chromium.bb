@@ -225,7 +225,7 @@ void ChromeRenderViewObserver::OnRetrieveWebappInformation(
       &found_tag,
       &content_str);
   bool is_mobile_webapp_capable = mobile_parse_success && found_tag &&
-      LowerCaseEqualsASCII(content_str, "yes");
+      base::LowerCaseEqualsASCII(content_str, "yes");
 
   // Search for the "apple-mobile-web-app-capable" tag.
   bool apple_parse_success = RetrieveMetaTagContent(
@@ -235,7 +235,7 @@ void ChromeRenderViewObserver::OnRetrieveWebappInformation(
       &found_tag,
       &content_str);
   bool is_apple_mobile_webapp_capable = apple_parse_success && found_tag &&
-      LowerCaseEqualsASCII(content_str, "yes");
+      base::LowerCaseEqualsASCII(content_str, "yes");
 
   bool is_only_apple_mobile_webapp_capable =
       is_apple_mobile_webapp_capable && !is_mobile_webapp_capable;
@@ -470,7 +470,8 @@ bool ChromeRenderViewObserver::HasRefreshMetaTag(WebFrame* frame) {
     if (!element.hasHTMLTagName(tag_name))
       continue;
     WebString value = element.getAttribute(attribute_name);
-    if (value.isNull() || !LowerCaseEqualsASCII(value, "refresh"))
+    if (value.isNull() ||
+        !base::LowerCaseEqualsASCII(base::string16(value), "refresh"))
       continue;
     return true;
   }

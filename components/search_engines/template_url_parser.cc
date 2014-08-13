@@ -345,7 +345,7 @@ void TemplateURLParsingContext::ParseURL(const xmlChar** atts) {
     } else if (name == kURLTemplateAttribute) {
       template_url = XMLCharToString(value);
     } else if (name == kParamMethodAttribute) {
-      is_post = LowerCaseEqualsASCII(XMLCharToString(value), "post");
+      is_post = base::LowerCaseEqualsASCII(XMLCharToString(value), "post");
     }
   }
 

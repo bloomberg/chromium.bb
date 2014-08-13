@@ -200,7 +200,7 @@ bool IsDuplicateName(const std::string& locale_name) {
   // Skip all 'es_RR'. Currently, we use 'es' for es-ES (Spanish in Spain).
   // 'es-419' (Spanish in Latin America) is not available in ICU so that it
   // has to be added manually in GetAvailableLocales().
-  if (LowerCaseEqualsASCII(locale_name.substr(0, 3),  "es_"))
+  if (base::LowerCaseEqualsASCII(locale_name.substr(0, 3),  "es_"))
     return true;
   for (size_t i = 0; i < arraysize(kDuplicateNames); ++i) {
     if (base::strcasecmp(kDuplicateNames[i], locale_name.c_str()) == 0)
@@ -286,9 +286,9 @@ struct AvailableLocalesTraits
       std::replace(locale_name.begin(), locale_name.end(), '_', '-');
 
       // Map the Chinese locale names over to zh-CN and zh-TW.
-      if (LowerCaseEqualsASCII(locale_name, "zh-hans")) {
+      if (base::LowerCaseEqualsASCII(locale_name, "zh-hans")) {
         locale_name = "zh-CN";
-      } else if (LowerCaseEqualsASCII(locale_name, "zh-hant")) {
+      } else if (base::LowerCaseEqualsASCII(locale_name, "zh-hant")) {
         locale_name = "zh-TW";
       }
       locales->push_back(locale_name);
@@ -341,26 +341,26 @@ bool CheckAndResolveLocale(const std::string& locale,
     std::string tmp_locale(lang);
     // Map es-RR other than es-ES to es-419 (Chrome's Latin American
     // Spanish locale).
-    if (LowerCaseEqualsASCII(lang, "es") &&
-        !LowerCaseEqualsASCII(region, "es")) {
+    if (base::LowerCaseEqualsASCII(lang, "es") &&
+        !base::LowerCaseEqualsASCII(region, "es")) {
       tmp_locale.append("-419");
-    } else if (LowerCaseEqualsASCII(lang, "zh")) {
+    } else if (base::LowerCaseEqualsASCII(lang, "zh")) {
       // Map zh-HK and zh-MO to zh-TW. Otherwise, zh-FOO is mapped to zh-CN.
-      if (LowerCaseEqualsASCII(region, "hk") ||
-          LowerCaseEqualsASCII(region, "mo")) { // Macao
+      if (base::LowerCaseEqualsASCII(region, "hk") ||
+          base::LowerCaseEqualsASCII(region, "mo")) { // Macao
         tmp_locale.append("-TW");
       } else {
         tmp_locale.append("-CN");
       }
-    } else if (LowerCaseEqualsASCII(lang, "en")) {
+    } else if (base::LowerCaseEqualsASCII(lang, "en")) {
       // Map Australian, Canadian, New Zealand and South African English
       // to British English for now.
       // TODO(jungshik): en-CA may have to change sides once
       // we have OS locale separate from app locale (Chrome's UI language).
-      if (LowerCaseEqualsASCII(region, "au") ||
-          LowerCaseEqualsASCII(region, "ca") ||
-          LowerCaseEqualsASCII(region, "nz") ||
-          LowerCaseEqualsASCII(region, "za")) {
+      if (base::LowerCaseEqualsASCII(region, "au") ||
+          base::LowerCaseEqualsASCII(region, "ca") ||
+          base::LowerCaseEqualsASCII(region, "nz") ||
+          base::LowerCaseEqualsASCII(region, "za")) {
         tmp_locale.append("-GB");
       } else {
         tmp_locale.append("-US");
@@ -384,7 +384,7 @@ bool CheckAndResolveLocale(const std::string& locale,
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(alias_map); ++i) {
-    if (LowerCaseEqualsASCII(lang, alias_map[i].source)) {
+    if (base::LowerCaseEqualsASCII(lang, alias_map[i].source)) {
       std::string tmp_locale(alias_map[i].dest);
       if (IsLocaleAvailable(tmp_locale)) {
         resolved_locale->swap(tmp_locale);

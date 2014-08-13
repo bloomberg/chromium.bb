@@ -45,8 +45,8 @@ void GetGoogleCookiesCallback(
   std::string host = wallet::GetPassiveAuthUrl(0).host();
   std::string wallet_cookie;
   for (size_t i = 0; i < cookies.size(); ++i) {
-    if (LowerCaseEqualsASCII(cookies[i].Name(), kWalletCookieName) &&
-        LowerCaseEqualsASCII(cookies[i].Domain(), host.c_str())) {
+    if (base::LowerCaseEqualsASCII(cookies[i].Name(), kWalletCookieName) &&
+        base::LowerCaseEqualsASCII(cookies[i].Domain(), host.c_str())) {
       wallet_cookie = cookies[i].Value();
       break;
     }
@@ -155,7 +155,7 @@ void WalletSigninHelper::OnURLFetchComplete(
     return;
   }
 
-  if (!LowerCaseEqualsASCII(data, "yes")) {
+  if (!base::LowerCaseEqualsASCII(data, "yes")) {
     OnServiceError(
         GoogleServiceAuthError(GoogleServiceAuthError::USER_NOT_SIGNED_UP));
     return;

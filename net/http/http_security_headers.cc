@@ -196,11 +196,11 @@ bool ParseHSTSHeader(const std::string& value,
       case DIRECTIVE_END:
         if (IsAsciiWhitespace(*tokenizer.token_begin()))
           continue;
-        if (LowerCaseEqualsASCII(tokenizer.token(), "max-age")) {
+        if (base::LowerCaseEqualsASCII(tokenizer.token(), "max-age")) {
           state = AFTER_MAX_AGE_LABEL;
           max_age_observed++;
-        } else if (LowerCaseEqualsASCII(tokenizer.token(),
-                                        "includesubdomains")) {
+        } else if (base::LowerCaseEqualsASCII(tokenizer.token(),
+                                              "includesubdomains")) {
           state = AFTER_INCLUDE_SUBDOMAINS;
           include_subdomains_observed++;
           include_subdomains_candidate = true;
@@ -293,20 +293,20 @@ bool ParseHPKPHeader(const std::string& value,
     equals.first = Strip(equals.first);
     equals.second = Strip(equals.second);
 
-    if (LowerCaseEqualsASCII(equals.first, "max-age")) {
+    if (base::LowerCaseEqualsASCII(equals.first, "max-age")) {
       if (equals.second.empty() ||
           !MaxAgeToInt(equals.second.begin(), equals.second.end(),
                        &max_age_candidate)) {
         return false;
       }
       parsed_max_age = true;
-    } else if (LowerCaseEqualsASCII(equals.first, "pin-sha1")) {
+    } else if (base::LowerCaseEqualsASCII(equals.first, "pin-sha1")) {
       if (!ParseAndAppendPin(equals.second, HASH_VALUE_SHA1, &pins))
         return false;
-    } else if (LowerCaseEqualsASCII(equals.first, "pin-sha256")) {
+    } else if (base::LowerCaseEqualsASCII(equals.first, "pin-sha256")) {
       if (!ParseAndAppendPin(equals.second, HASH_VALUE_SHA256, &pins))
         return false;
-    } else if (LowerCaseEqualsASCII(equals.first, "includesubdomains")) {
+    } else if (base::LowerCaseEqualsASCII(equals.first, "includesubdomains")) {
       include_subdomains_candidate = true;
     } else {
       // Silently ignore unknown directives for forward compatibility.
