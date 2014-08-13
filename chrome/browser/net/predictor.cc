@@ -233,7 +233,7 @@ void Predictor::AnticipateOmniboxUrl(const GURL& url, bool preconnectable) {
     return;
   if (!url.is_valid() || !url.has_host())
     return;
-  if (!CanPredictNetworkActionsUI())
+  if (!CanPreresolveAndPreconnect())
     return;
 
   std::string host = url.HostNoBrackets();
@@ -270,12 +270,12 @@ void Predictor::AnticipateOmniboxUrl(const GURL& url, bool preconnectable) {
         // get with a fake request (/gen_204 might be the good path on Google).
         const int kMaxSearchKeepaliveSeconds(10);
         if ((now - last_omnibox_preconnect_).InSeconds() <
-             kMaxSearchKeepaliveSeconds)
+            kMaxSearchKeepaliveSeconds)
           return;  // We've done a preconnect recently.
         last_omnibox_preconnect_ = now;
         const int kConnectionsNeeded = 1;
-        PreconnectUrl(CanonicalizeUrl(url), GURL(), motivation,
-                      kConnectionsNeeded);
+        PreconnectUrl(
+            CanonicalizeUrl(url), GURL(), motivation, kConnectionsNeeded);
         return;  // Skip pre-resolution, since we'll open a connection.
       }
     } else {
@@ -309,14 +309,8 @@ void Predictor::PreconnectUrlAndSubresources(const GURL& url,
   if (!predictor_enabled_ || !preconnect_enabled_ ||
       !url.is_valid() || !url.has_host())
     return;
-
-  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    if (!CanPredictNetworkActionsUI())
-      return;
-  } else {
-    if (!CanPredictNetworkActionsIO())
-      return;
-  }
+  if (!CanPreresolveAndPreconnect())
+    return;
 
   UrlInfo::ResolutionMotivation motivation(UrlInfo::EARLY_LOAD_MOTIVATED);
   const int kConnectionsNeeded = 1;
@@ -473,7 +467,7 @@ void Predictor::Resolve(const GURL& url,
 void Predictor::LearnFromNavigation(const GURL& referring_url,
                                     const GURL& target_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!predictor_enabled_ || !CanPredictNetworkActionsIO())
+  if (!predictor_enabled_ || !CanPrefetchAndPrerender())
     return;
   DCHECK_EQ(referring_url, Predictor::CanonicalizeUrl(referring_url));
   DCHECK_NE(referring_url, GURL::EmptyGURL());
@@ -497,7 +491,7 @@ void Predictor::PredictorGetHtmlInfo(Predictor* predictor,
                  // "<META HTTP-EQUIV=\"Pragma\" CONTENT=\"no-cache\">"
                  "</head><body>");
   if (predictor && predictor->predictor_enabled() &&
-      predictor->CanPredictNetworkActionsIO()) {
+      predictor->CanPrefetchAndPrerender()) {
     predictor->GetHtmlInfo(output);
   } else {
     output->append("DNS pre-resolution and TCP pre-connection is disabled.");
@@ -728,8 +722,9 @@ void Predictor::FinalizeInitializationOnIOThread(
 void Predictor::LearnAboutInitialNavigation(const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!predictor_enabled_ || NULL == initial_observer_.get() ||
-      !CanPredictNetworkActionsIO())
+      !CanPrefetchAndPrerender()) {
     return;
+  }
   initial_observer_->Append(url, this);
 }
 
@@ -758,14 +753,8 @@ void Predictor::DnsPrefetchMotivatedList(
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!predictor_enabled_)
     return;
-
-  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    if (!CanPredictNetworkActionsUI())
-      return;
-  } else {
-    if (!CanPredictNetworkActionsIO())
-      return;
-  }
+  if (!CanPrefetchAndPrerender())
+    return;
 
   if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     ResolveList(urls, motivation);
@@ -800,14 +789,8 @@ static void SaveDnsPrefetchStateForNextStartupAndTrimOnIOThread(
 void Predictor::SaveStateForNextStartupAndTrim() {
   if (!predictor_enabled_)
     return;
-
-  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    if (!CanPredictNetworkActionsUI())
-      return;
-  } else {
-    if (!CanPredictNetworkActionsIO())
-      return;
-  }
+  if (!CanPrefetchAndPrerender())
+    return;
 
   base::WaitableEvent completion(true, false);
 
@@ -906,14 +889,8 @@ void Predictor::PredictFrameSubresources(const GURL& url,
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!predictor_enabled_)
     return;
-
-  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    if (!CanPredictNetworkActionsUI())
-      return;
-  } else {
-    if (!CanPredictNetworkActionsIO())
-      return;
-  }
+  if (!CanPrefetchAndPrerender())
+    return;
   DCHECK_EQ(url.GetWithEmptyPath(), url);
   // Add one pass through the message loop to allow current navigation to
   // proceed.
@@ -948,12 +925,22 @@ void Predictor::AdviseProxy(const GURL& url,
   }
 }
 
-bool Predictor::CanPredictNetworkActionsUI() {
-  return chrome_browser_net::CanPredictNetworkActionsUI(user_prefs_);
+bool Predictor::CanPrefetchAndPrerender() const {
+  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    return chrome_browser_net::CanPrefetchAndPrerenderUI(user_prefs_);
+  } else {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    return chrome_browser_net::CanPrefetchAndPrerenderIO(profile_io_data_);
+  }
 }
 
-bool Predictor::CanPredictNetworkActionsIO() {
-  return chrome_browser_net::CanPredictNetworkActionsIO(profile_io_data_);
+bool Predictor::CanPreresolveAndPreconnect() const {
+  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    return chrome_browser_net::CanPreresolveAndPreconnectUI(user_prefs_);
+  } else {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    return chrome_browser_net::CanPreresolveAndPreconnectIO(profile_io_data_);
+  }
 }
 
 enum SubresourceValue {
@@ -1345,7 +1332,7 @@ void SimplePredictor::ShutdownOnUIThread() {
   SetShutdown(true);
 }
 
-bool SimplePredictor::CanPredictNetworkActionsUI() { return true; }
-bool SimplePredictor::CanPredictNetworkActionsIO() { return true; }
+bool SimplePredictor::CanPrefetchAndPrerender() const { return true; }
+bool SimplePredictor::CanPreresolveAndPreconnect() const { return true; }
 
 }  // namespace chrome_browser_net

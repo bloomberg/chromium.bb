@@ -16,9 +16,9 @@ namespace {
 
 // Since looking up preferences and current network connection are presumably
 // both cheap, we do not cache them here.
-bool CanPredictNetworkActions(int NetworkPredictionOptions,
-                              bool NetworkPredictionEnabled) {
-  switch (NetworkPredictionOptions) {
+bool CanPrefetchAndPrerender(int network_prediction_options,
+                             bool network_prediction_enabled) {
+  switch (network_prediction_options) {
     case chrome_browser_net::NETWORK_PREDICTION_ALWAYS:
       return true;
     case chrome_browser_net::NETWORK_PREDICTION_WIFI_ONLY:
@@ -27,7 +27,26 @@ bool CanPredictNetworkActions(int NetworkPredictionOptions,
     case chrome_browser_net::NETWORK_PREDICTION_NEVER:
       return false;
     case chrome_browser_net::NETWORK_PREDICTION_UNSET:
-      return NetworkPredictionEnabled;
+      return network_prediction_enabled;
+    default:
+      NOTREACHED() << "Unknown kNetworkPredictionOptions value.";
+      return false;
+  }
+}
+
+bool CanPreresolveAndPreconnect(int network_prediction_options,
+                                bool network_prediction_enabled) {
+  switch (network_prediction_options) {
+    case chrome_browser_net::NETWORK_PREDICTION_ALWAYS:
+      return true;
+    // DNS preresolution and TCP preconnect are performed even on cellular
+    // networks if the user setting is WIFI_ONLY.
+    case chrome_browser_net::NETWORK_PREDICTION_WIFI_ONLY:
+      return true;
+    case chrome_browser_net::NETWORK_PREDICTION_NEVER:
+      return false;
+    case chrome_browser_net::NETWORK_PREDICTION_UNSET:
+      return network_prediction_enabled;
     default:
       NOTREACHED() << "Unknown kNetworkPredictionOptions value.";
       return false;
@@ -67,19 +86,38 @@ void MigrateNetworkPredictionUserPrefs(PrefService* pref_service) {
   }
 }
 
-bool CanPredictNetworkActionsIO(ProfileIOData* profile_io_data) {
+bool CanPrefetchAndPrerenderIO(ProfileIOData* profile_io_data) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   DCHECK(profile_io_data);
-
-  return CanPredictNetworkActions(
+  return CanPrefetchAndPrerender(
       profile_io_data->network_prediction_options()->GetValue(),
       profile_io_data->network_prediction_enabled()->GetValue());
 }
 
-bool CanPredictNetworkActionsUI(PrefService* prefs) {
+bool CanPrefetchAndPrerenderUI(PrefService* prefs) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(prefs);
-  return CanPredictNetworkActions(
+  return CanPrefetchAndPrerender(
+      prefs->GetInteger(prefs::kNetworkPredictionOptions),
+      prefs->GetBoolean(prefs::kNetworkPredictionEnabled));
+}
+
+bool CanPredictNetworkActionsUI(PrefService* prefs) {
+  return CanPrefetchAndPrerenderUI(prefs);
+}
+
+bool CanPreresolveAndPreconnectIO(ProfileIOData* profile_io_data) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK(profile_io_data);
+  return CanPreresolveAndPreconnect(
+      profile_io_data->network_prediction_options()->GetValue(),
+      profile_io_data->network_prediction_enabled()->GetValue());
+}
+
+bool CanPreresolveAndPreconnectUI(PrefService* prefs) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(prefs);
+  return CanPreresolveAndPreconnect(
       prefs->GetInteger(prefs::kNetworkPredictionOptions),
       prefs->GetBoolean(prefs::kNetworkPredictionEnabled));
 }

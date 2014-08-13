@@ -435,10 +435,10 @@ class Predictor {
                    UrlInfo::ResolutionMotivation motivation,
                    bool is_preconnect);
 
-  // There two members call the corresponding global functions in
-  // prediction_options.cc.
-  virtual bool CanPredictNetworkActionsUI();
-  virtual bool CanPredictNetworkActionsIO();
+  // These two members call the appropriate global functions in
+  // prediction_options.cc depending on which thread they are called on.
+  virtual bool CanPrefetchAndPrerender() const;
+  virtual bool CanPreresolveAndPreconnect() const;
 
   // ------------- Start IO thread methods.
 
@@ -613,9 +613,9 @@ class SimplePredictor : public Predictor {
       ProfileIOData* profile_io_data) OVERRIDE;
   virtual void ShutdownOnUIThread() OVERRIDE;
  private:
-  // There member functions return True for unittests.
-  virtual bool CanPredictNetworkActionsUI() OVERRIDE;
-  virtual bool CanPredictNetworkActionsIO() OVERRIDE;
+  // These member functions return True for unittests.
+  virtual bool CanPrefetchAndPrerender() const OVERRIDE;
+  virtual bool CanPreresolveAndPreconnect() const OVERRIDE;
 };
 
 }  // namespace chrome_browser_net

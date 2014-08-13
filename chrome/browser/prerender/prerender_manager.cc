@@ -1866,7 +1866,7 @@ bool PrerenderManager::IsEnabled() const {
   if (profile_ && profile_->GetPrefs() &&
         profile_->GetPrefs()->GetInteger(prefs::kNetworkPredictionOptions) !=
         chrome_browser_net::NETWORK_PREDICTION_UNSET) {
-    return chrome_browser_net::CanPredictNetworkActionsUI(profile_->GetPrefs());
+    return chrome_browser_net::CanPrefetchAndPrerenderUI(profile_->GetPrefs());
   }
   // TODO(bnc): remove rest of method as per crbug.com/334602.
   if (!enabled_)

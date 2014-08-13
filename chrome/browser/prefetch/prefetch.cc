@@ -30,7 +30,7 @@ bool IsPrefetchEnabled(content::ResourceContext* resource_context) {
     return false;
   }
 
-  return chrome_browser_net::CanPredictNetworkActionsIO(io_data) &&
+  return chrome_browser_net::CanPrefetchAndPrerenderIO(io_data) &&
          !DisableForFieldTrial();
 }
 
