@@ -23,6 +23,6 @@ def GetPreferredTryMasters(project, change):
     },
     'tryserver.chromium.win': {
       'win_chromium_compile_dbg': tests,
-      'win_chromium_rel': tests,
+      'win_chromium_rel_swarming': tests,
     }
   }

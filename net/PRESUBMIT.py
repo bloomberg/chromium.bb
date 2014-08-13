@@ -17,7 +17,7 @@ def GetPreferredTryMasters(project, change):
       'mac_chromium_rel_swarming': set(['defaulttests']),
     },
     'tryserver.chromium.win': {
-      'win_chromium_rel': set(['defaulttests']),
+      'win_chromium_rel_swarming': set(['defaulttests']),
     }
   }
   # Changes that touch NSS files will likely need a corresponding OpenSSL edit.
