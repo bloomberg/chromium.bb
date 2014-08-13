@@ -9094,6 +9094,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_PAGEINFO_CERT_TRANSPARENCY_INFO_BUTTON" desc="Text of button in the page info that shows Signed Certificate Timestamps.">
           Transparency information
         </message>
+        <message name="IDS_PAGEINFO_RESET_INVALID_CERTIFICATE_DECISIONS_BUTTON" desc="Text of button in the page info that resets allow/deny decisions of invalid certificates.">
+          Stop using an invalid certificate
+        </message>
       </if>
       <if expr="use_titlecase">
         <message name="IDS_PAGEINFO_CERT_INFO_BUTTON" desc="In Title Case: Text of button in the page info that shows the SSL certificate.">
@@ -9101,6 +9104,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
         <message name="IDS_PAGEINFO_CERT_TRANSPARENCY_INFO_BUTTON" desc="Text of button in the page info that shows Signed Certificate Timestamps.">
           Transparency Information
+        </message>
+        <message name="IDS_PAGEINFO_RESET_INVALID_CERTIFICATE_DECISIONS_BUTTON" desc="Text of button in the page info that resets allow/deny decisions of invalid certificates.">
+          Stop using an invalid certificate
         </message>
       </if>
       <message name="IDS_PAGE_INFO_HELP_CENTER_LINK" desc="This is the text of the link pointing to the Help Center. This appears at the bottom of the SSL dialog and 'this' refers to the sections within the bubble.">
@@ -14521,7 +14527,7 @@ Do you accept?
 
     <!-- Invalid SSL certificate memory strategy strings -->
     <message name="IDS_FLAGS_REMEMBER_CERTIFICATE_ERROR_DECISIONS_NAME" desc="Name of the remember certificate error decisions lab">
-      Remember certificate error decisions
+      Remember decisions to proceed through SSL errors for a specified length of time.
     </message>
     <message name="IDS_FLAGS_REMEMBER_CERTIFICATE_ERROR_DECISIONS_DESCRIPTION" desc="Description of the remember certificate error decisions lab">
       Remember decisions to proceed through SSL errors for a specified length of time.

@@ -83,7 +83,8 @@ WebsiteSettingsUI::PermissionInfo::PermissionInfo()
 WebsiteSettingsUI::IdentityInfo::IdentityInfo()
     : identity_status(WebsiteSettings::SITE_IDENTITY_STATUS_UNKNOWN),
       cert_id(0),
-      connection_status(WebsiteSettings::SITE_CONNECTION_STATUS_UNKNOWN) {
+      connection_status(WebsiteSettings::SITE_CONNECTION_STATUS_UNKNOWN),
+      show_ssl_decision_revoke_button(false) {
 }
 
 WebsiteSettingsUI::IdentityInfo::~IdentityInfo() {}

@@ -46,6 +46,9 @@ class WebContents;
   // The link button for showing certificate information.
   NSButton* certificateInfoButton_;
 
+  // The link button for revoking certificate decisions.
+  NSButton* resetDecisionsButton_;
+
   // The ID of the server certificate from the identity info.
   // This should always be non-zero on a secure connection, and 0 otherwise.
   int certificateId_;

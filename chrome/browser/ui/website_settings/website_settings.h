@@ -22,6 +22,7 @@ class CertStore;
 struct SSLStatus;
 }
 
+class ChromeSSLHostStateDelegate;
 class InfoBarService;
 class HostContentSettingsMap;
 class Profile;
@@ -97,6 +98,8 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
     return site_connection_status_;
   }
 
+  const GURL& site_url() const { return site_url_; }
+
   SiteIdentityStatus site_identity_status() const {
     return site_identity_status_;
   }
@@ -111,6 +114,10 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
 
   base::string16 organization_name() const {
     return organization_name_;
+  }
+
+  ChromeSSLHostStateDelegate* chrome_ssl_host_state_delegate() {
+    return chrome_ssl_host_state_delegate_;
   }
 
   // SiteDataObserver implementation.
@@ -178,6 +185,14 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   // This string will be displayed in the UI.
   base::string16 site_identity_details_;
 
+  // Set when the user has explicitly bypassed an SSL error for this host or
+  // explicitly denied it (the latter of which is not currently possible in the
+  // Chrome UI) and has a flag set to remember ssl decisions (explicit flag or
+  // in the experimental group).  When |show_ssl_decision_revoke_button| is
+  // true, the connection area of the page info will include an option for the
+  // user to revoke their decision to bypass the SSL error for this host.
+  bool show_ssl_decision_revoke_button_;
+
   // Details about the connection to the website. In case of an encrypted
   // connection |site_connection_details_| contains encryption details, like
   // encryption strength and ssl protocol version. This string will be
@@ -199,6 +214,10 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
 
   // Used to request the number of page visits.
   base::CancelableTaskTracker visit_count_task_tracker_;
+
+  // Service for managing SSL error page bypasses. Used to revoke bypass
+  // decisions by users.
+  ChromeSSLHostStateDelegate* chrome_ssl_host_state_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WebsiteSettings);
 };

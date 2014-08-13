@@ -5,6 +5,7 @@
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
@@ -19,6 +20,9 @@
 #include "components/variations/variations_associated_data.h"
 #include "net/base/hash_value.h"
 #include "net/cert/x509_certificate.h"
+#include "net/http/http_transaction_factory.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
 namespace {
@@ -41,6 +45,21 @@ const char kSSLCertDecisionExpirationTimeKey[] = "decision_expiration_time";
 const char kSSLCertDecisionVersionKey[] = "version";
 
 const int kDefaultSSLCertDecisionVersion = 1;
+
+// Closes all idle network connections for the given URLRequestContext. This is
+// a big hammer and should be wielded with extreme caution as it can have a big,
+// negative impact on network performance. In this case, it is used by
+// RevokeUserDecisionsHard, which should only be called by rare, user initiated
+// events. See the comment before RevokeUserDecisionsHard implementation for
+// more information.
+void CloseIdleConnections(
+    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter) {
+  url_request_context_getter->
+      GetURLRequestContext()->
+      http_transaction_factory()->
+      GetSession()->
+      CloseIdleConnections();
+}
 
 // All SSL decisions are per host (and are shared arcoss schemes), so this
 // canonicalizes all hosts into a secure scheme GURL to use with content
@@ -290,8 +309,7 @@ net::CertPolicy::Judgment ChromeSSLHostStateDelegate::QueryPolicy(
   return net::CertPolicy::Judgment::UNKNOWN;
 }
 
-void ChromeSSLHostStateDelegate::RevokeAllowAndDenyPreferences(
-    const std::string& host) {
+void ChromeSSLHostStateDelegate::RevokeUserDecisions(const std::string& host) {
   GURL url = GetSecureGURLForHost(host);
   const ContentSettingsPattern pattern =
       ContentSettingsPattern::FromURLNoWildcard(url);
@@ -304,8 +322,31 @@ void ChromeSSLHostStateDelegate::RevokeAllowAndDenyPreferences(
                          NULL);
 }
 
-bool ChromeSSLHostStateDelegate::HasAllowedOrDeniedCert(
+// TODO(jww): This will revoke all of the decisions in the browser context.
+// However, the networking stack actually keeps track of its own list of
+// exceptions per-HttpNetworkTransaction in the SSLConfig structure (see the
+// allowed_bad_certs Vector in net/ssl/ssl_config.h). This dual-tracking of
+// exceptions introduces a problem where the browser context can revoke a
+// certificate, but if a transaction reuses a cached version of the SSLConfig
+// (probably from a pooled socket), it may bypass the intestitial layer.
+//
+// Over time, the cached versions should expire and it should converge on
+// showing the interstitial. We probably need to introduce into the networking
+// stack a way revoke SSLConfig's allowed_bad_certs lists per socket.
+//
+// For now, RevokeUserDecisionsHard is our solution for the rare case where it
+// is necessary to revoke the preferences immediately. It does so by flushing
+// idle sockets.
+void ChromeSSLHostStateDelegate::RevokeUserDecisionsHard(
     const std::string& host) {
+  RevokeUserDecisions(host);
+  scoped_refptr<net::URLRequestContextGetter> getter(
+      profile_->GetRequestContext());
+  profile_->GetRequestContext()->GetNetworkTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&CloseIdleConnections, getter));
+}
+
+bool ChromeSSLHostStateDelegate::HasUserDecision(const std::string& host) {
   GURL url = GetSecureGURLForHost(host);
   const ContentSettingsPattern pattern =
       ContentSettingsPattern::FromURLNoWildcard(url);
@@ -332,6 +373,16 @@ bool ChromeSSLHostStateDelegate::HasAllowedOrDeniedCert(
   return false;
 }
 
+void ChromeSSLHostStateDelegate::HostRanInsecureContent(const std::string& host,
+                                                        int pid) {
+  ran_insecure_content_hosts_.insert(BrokenHostEntry(host, pid));
+}
+
+bool ChromeSSLHostStateDelegate::DidHostRunInsecureContent(
+    const std::string& host,
+    int pid) const {
+  return !!ran_insecure_content_hosts_.count(BrokenHostEntry(host, pid));
+}
 void ChromeSSLHostStateDelegate::SetClock(scoped_ptr<base::Clock> clock) {
   clock_.reset(clock.release());
 }

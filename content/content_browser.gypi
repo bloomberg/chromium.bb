@@ -1237,8 +1237,6 @@
       'browser/ssl/ssl_client_auth_handler.h',
       'browser/ssl/ssl_error_handler.cc',
       'browser/ssl/ssl_error_handler.h',
-      'browser/ssl/ssl_host_state.cc',
-      'browser/ssl/ssl_host_state.h',
       'browser/ssl/ssl_manager.cc',
       'browser/ssl/ssl_manager.h',
       'browser/ssl/ssl_policy_backend.cc',

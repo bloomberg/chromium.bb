@@ -25,6 +25,10 @@ class WebsiteSettingsPopupAndroid : public WebsiteSettingsUI {
   virtual ~WebsiteSettingsPopupAndroid();
   void Destroy(JNIEnv* env, jobject obj);
 
+  // Revokes any current user exceptions for bypassing SSL error interstitials
+  // on this page.
+  void ResetCertDecisions(JNIEnv* env, jobject obj, jobject java_web_contents);
+
   // WebsiteSettingsUI implementations.
   virtual void SetCookieInfo(const CookieInfoList& cookie_info_list) OVERRIDE;
   virtual void SetPermissionInfo(
