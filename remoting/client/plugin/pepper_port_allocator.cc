@@ -51,8 +51,7 @@ class PepperPortAllocatorSession
 
   pp::InstanceHandle instance_;
 
-  rtc::SocketAddress stun_address_;
-  int stun_port_;
+  cricket::ServerAddresses stun_hosts_;
 
   scoped_ptr<pp::URLLoader> relay_url_loader_;
   std::vector<char> relay_response_body_;
@@ -83,12 +82,9 @@ PepperPortAllocatorSession::PepperPortAllocatorSession(
                                    relay_token,
                                    std::string()),
       instance_(instance),
-      stun_port_(0),
+      stun_hosts_(stun_hosts.begin(), stun_hosts.end()),
       relay_response_received_(false),
       callback_factory_(this) {
-  if (stun_hosts.size() > 0) {
-    stun_address_ = stun_hosts[0];
-  }
 }
 
 PepperPortAllocatorSession::~PepperPortAllocatorSession() {
@@ -115,7 +111,7 @@ void PepperPortAllocatorSession::GetPortConfigurations() {
   // Add a configuration without relay response first so local and STUN
   // candidates can be allocated without waiting for the relay response.
   ConfigReady(new cricket::PortConfiguration(
-      stun_address_, std::string(), std::string()));
+      stun_hosts_, std::string(), std::string()));
 
   TryCreateRelaySession();
 }
