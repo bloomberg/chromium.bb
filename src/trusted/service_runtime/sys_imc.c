@@ -15,6 +15,7 @@
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_copy.h"
+#include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 
@@ -508,6 +509,11 @@ int32_t NaClSysImcMemObjCreate(struct NaClAppThread  *natp,
           ("Entered NaClSysImcMemObjCreate(0x%08"NACL_PRIxPTR
            " 0x%08"NACL_PRIxS")\n"),
           (uintptr_t) natp, size);
+
+  /* This syscall is not used in Chromium so is disabled by default. */
+  if (!NaClAclBypassChecks) {
+    return -NACL_ABI_EACCES;
+  }
 
   if (0 != (size & (NACL_MAP_PAGESIZE - 1))) {
     return -NACL_ABI_EINVAL;

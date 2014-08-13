@@ -44,7 +44,9 @@ nacl_create_memory_object_test_nexe = env.ComponentProgram(
                 '${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
     'nacl_create_memory_object_test_nexe.out',
-    nacl_create_memory_object_test_nexe)
+    nacl_create_memory_object_test_nexe,
+    # Pass '-a' to enable imc_mem_obj_create().
+    sel_ldr_flags=['-a'])
 env.AddNodeToTestSuite(node,
                        ['small_tests'],
                        'run_nacl_create_memory_object_test_nexe')

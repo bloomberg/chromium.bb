@@ -7,7 +7,6 @@ Import(['nacl_env'])
 
 # Select the set of tests to run through inbrowser_test_runner.
 exe_list = [
-    'imc_shm_mmap_test',
     'random_test',
 ]
 # These conditionals mirror conditionals in
