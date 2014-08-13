@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_COPRESENCE_MEDIUMS_AUDIO_AUDIO_RECORDER_
-#define COMPONENTS_COPRESENCE_MEDIUMS_AUDIO_AUDIO_RECORDER_
+#ifndef COMPONENTS_COPRESENCE_MEDIUMS_AUDIO_AUDIO_RECORDER_H_
+#define COMPONENTS_COPRESENCE_MEDIUMS_AUDIO_AUDIO_RECORDER_H_
 
 #include <string>
 
@@ -33,13 +33,15 @@ class AudioRecorder : public media::AudioInputStream::AudioInputCallback,
   explicit AudioRecorder(const DecodeSamplesCallback& decode_callback);
 
   // Initializes the object. Do not use this object before calling this method.
-  void Initialize();
+  virtual void Initialize();
 
-  void Record();
-  void Stop();
+  virtual void Record();
+  virtual void Stop();
 
   // Cleans up and deletes this object. Do not use object after this call.
-  void Finalize();
+  virtual void Finalize();
+
+  bool IsRecording();
 
   // Takes ownership of the stream.
   void set_input_stream_for_testing(
@@ -52,12 +54,14 @@ class AudioRecorder : public media::AudioInputStream::AudioInputCallback,
     params_for_testing_.reset(params_for_testing);
   }
 
+ protected:
+  virtual ~AudioRecorder();
+  void set_is_recording(bool is_recording) { is_recording_ = is_recording; }
+
  private:
   friend class AudioRecorderTest;
   FRIEND_TEST_ALL_PREFIXES(AudioRecorderTest, BasicRecordAndStop);
   FRIEND_TEST_ALL_PREFIXES(AudioRecorderTest, OutOfOrderRecordAndStopMultiple);
-
-  virtual ~AudioRecorder();
 
   // Methods to do our various operations; all of these need to be run on the
   // audio thread.
@@ -85,8 +89,9 @@ class AudioRecorder : public media::AudioInputStream::AudioInputCallback,
   // performed.
   void FlushAudioLoopForTesting();
 
-  media::AudioInputStream* stream_;
   bool is_recording_;
+
+  media::AudioInputStream* stream_;
   DecodeSamplesCallback decode_callback_;
 
   // ProvideInput will use this buffer as its source.
@@ -108,4 +113,4 @@ class AudioRecorder : public media::AudioInputStream::AudioInputCallback,
 
 }  // namespace copresence
 
-#endif  // COMPONENTS_COPRESENCE_MEDIUMS_AUDIO_AUDIO_RECORDER_
+#endif  // COMPONENTS_COPRESENCE_MEDIUMS_AUDIO_AUDIO_RECORDER_H_

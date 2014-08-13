@@ -5,7 +5,7 @@
 #include "components/copresence/mediums/audio/audio_player.h"
 
 #include <algorithm>
-#include <vector>
+#include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -29,7 +29,7 @@ namespace copresence {
 // Public methods.
 
 AudioPlayer::AudioPlayer()
-    : stream_(NULL), is_playing_(false), frame_index_(0) {
+    : is_playing_(false), stream_(NULL), frame_index_(0) {
 }
 
 AudioPlayer::~AudioPlayer() {
@@ -54,6 +54,10 @@ void AudioPlayer::Stop() {
   media::AudioManager::Get()->GetTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&AudioPlayer::StopOnAudioThread, base::Unretained(this)));
+}
+
+bool AudioPlayer::IsPlaying() {
+  return is_playing_;
 }
 
 void AudioPlayer::Finalize() {
@@ -104,7 +108,6 @@ void AudioPlayer::PlayOnAudioThread(
       return;
   }
 
-  DVLOG(2) << "Playing Audio.";
   is_playing_ = true;
   stream_->Start(this);
 }

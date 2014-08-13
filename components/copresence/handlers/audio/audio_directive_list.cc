@@ -6,24 +6,8 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/strings/string_util.h"
-#include "media/base/audio_bus.h"
-
-namespace {
-
-// UrlSafe is defined as:
-// '/' represented by a '_' and '+' represented by a '-'
-// TODO(rkc): Move this processing to the whispernet wrapper.
-std::string FromUrlSafe(std::string token) {
-  base::ReplaceChars(token, "-", "+", &token);
-  base::ReplaceChars(token, "_", "/", &token);
-  return token;
-}
-
-const int kSampleExpiryTimeMs = 60 * 60 * 1000;  // 60 minutes.
-const int kMaxSamples = 10000;
-
-}  // namespace
+#include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 
 namespace copresence {
 
@@ -32,117 +16,71 @@ namespace copresence {
 AudioDirective::AudioDirective() {
 }
 
-AudioDirective::AudioDirective(const std::string& token,
-                               const std::string& op_id,
-                               base::Time end_time)
-    : token(token), op_id(op_id), end_time(end_time) {
+AudioDirective::AudioDirective(const std::string& op_id, base::Time end_time)
+    : op_id(op_id), end_time(end_time) {
 }
 
-AudioDirective::AudioDirective(
-    const std::string& token,
-    const std::string& op_id,
-    base::Time end_time,
-    const scoped_refptr<media::AudioBusRefCounted>& samples)
-    : token(token), op_id(op_id), end_time(end_time), samples(samples) {
-}
-
-AudioDirective::~AudioDirective() {
-}
-
-AudioDirectiveList::AudioDirectiveList(
-    const EncodeTokenCallback& encode_token_callback,
-    const base::Closure& token_added_callback,
-    bool use_audible_encoding)
-    : encode_token_callback_(encode_token_callback),
-      token_added_callback_(token_added_callback),
-      use_audible_encoding_(use_audible_encoding),
-      samples_cache_(base::TimeDelta::FromMilliseconds(kSampleExpiryTimeMs),
-                     kMaxSamples) {
+AudioDirectiveList::AudioDirectiveList() {
 }
 
 AudioDirectiveList::~AudioDirectiveList() {
 }
 
-void AudioDirectiveList::AddTransmitDirective(const std::string& token,
-                                              const std::string& op_id,
-                                              base::TimeDelta ttl) {
-  std::string valid_token = FromUrlSafe(token);
+void AudioDirectiveList::AddDirective(const std::string& op_id,
+                                      base::TimeDelta ttl) {
   base::Time end_time = base::Time::Now() + ttl;
 
-  if (samples_cache_.HasKey(valid_token)) {
-    active_transmit_tokens_.push(AudioDirective(
-        valid_token, op_id, end_time, samples_cache_.GetValue(valid_token)));
+  // In case this op is already in the list, update it instead of adding
+  // it again.
+  std::vector<AudioDirective>::iterator it = FindDirectiveByOpId(op_id);
+  if (it != active_directives_.end()) {
+    it->end_time = end_time;
+    std::make_heap(active_directives_.begin(),
+                   active_directives_.end(),
+                   LatestFirstComparator());
     return;
   }
 
-  // If an encode request for this token has been sent, don't send it again.
-  if (pending_transmit_tokens_.find(valid_token) !=
-      pending_transmit_tokens_.end()) {
-    return;
+  active_directives_.push_back(AudioDirective(op_id, end_time));
+  std::push_heap(active_directives_.begin(),
+                 active_directives_.end(),
+                 LatestFirstComparator());
+}
+
+void AudioDirectiveList::RemoveDirective(const std::string& op_id) {
+  std::vector<AudioDirective>::iterator it = FindDirectiveByOpId(op_id);
+  if (it != active_directives_.end())
+    active_directives_.erase(it);
+
+  std::make_heap(active_directives_.begin(),
+                 active_directives_.end(),
+                 LatestFirstComparator());
+}
+
+scoped_ptr<AudioDirective> AudioDirectiveList::GetActiveDirective() {
+  // The top is always the instruction that is ending the latest. If that time
+  // has passed, means all our previous instructions have expired too, hence
+  // clear the list.
+  if (!active_directives_.empty() &&
+      active_directives_.front().end_time < base::Time::Now()) {
+    active_directives_.clear();
   }
 
-  pending_transmit_tokens_[valid_token] =
-      AudioDirective(valid_token, op_id, end_time);
-  // All whispernet callbacks will be cleared before we are destructed, so
-  // unretained is safe to use here.
-  encode_token_callback_.Run(
-      valid_token,
-      use_audible_encoding_,
-      base::Bind(&AudioDirectiveList::OnTokenEncoded, base::Unretained(this)));
-}
-
-void AudioDirectiveList::AddReceiveDirective(const std::string& op_id,
-                                             base::TimeDelta ttl) {
-  active_receive_tokens_.push(
-      AudioDirective(std::string(), op_id, base::Time::Now() + ttl));
-}
-
-scoped_ptr<AudioDirective> AudioDirectiveList::GetNextTransmit() {
-  return GetNextFromList(&active_transmit_tokens_);
-}
-
-scoped_ptr<AudioDirective> AudioDirectiveList::GetNextReceive() {
-  return GetNextFromList(&active_receive_tokens_);
-}
-
-scoped_ptr<AudioDirective> AudioDirectiveList::GetNextFromList(
-    AudioDirectiveQueue* list) {
-  CHECK(list);
-
-  // Checks if we have any valid tokens at all (since the top of the list is
-  // always pointing to the token with the latest expiry time). If we don't
-  // have any valid tokens left, clear the list.
-  if (!list->empty() && list->top().end_time < base::Time::Now()) {
-    while (!list->empty())
-      list->pop();
-  }
-
-  if (list->empty())
+  if (active_directives_.empty())
     return make_scoped_ptr<AudioDirective>(NULL);
 
-  return make_scoped_ptr(new AudioDirective(list->top()));
+  return make_scoped_ptr(new AudioDirective(active_directives_.front()));
 }
 
-void AudioDirectiveList::OnTokenEncoded(
-    const std::string& token,
-    bool /* audible */,
-    const scoped_refptr<media::AudioBusRefCounted>& samples) {
-  // We shouldn't re-encode a token if it's already in the cache.
-  DCHECK(!samples_cache_.HasKey(token));
-  DVLOG(3) << "Token: " << token << " encoded.";
-  samples_cache_.Add(token, samples);
-
-  // Copy the samples into their corresponding directive object and move
-  // that object into the active queue.
-  std::map<std::string, AudioDirective>::iterator it =
-      pending_transmit_tokens_.find(token);
-
-  it->second.samples = samples;
-  active_transmit_tokens_.push(it->second);
-  pending_transmit_tokens_.erase(it);
-
-  if (!token_added_callback_.is_null())
-    token_added_callback_.Run();
+std::vector<AudioDirective>::iterator AudioDirectiveList::FindDirectiveByOpId(
+    const std::string& op_id) {
+  for (std::vector<AudioDirective>::iterator it = active_directives_.begin();
+       it != active_directives_.end();
+       ++it) {
+    if (it->op_id == op_id)
+      return it;
+  }
+  return active_directives_.end();
 }
 
 }  // namespace copresence

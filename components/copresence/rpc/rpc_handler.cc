@@ -105,7 +105,7 @@ BroadcastScanConfiguration ExtractTokenExchangeStrategy(
 
   // Strategies for publishes.
   if (request.has_manage_messages_request()) {
-    const RepeatedPtrField<PublishedMessage> messages =
+    const RepeatedPtrField<PublishedMessage>& messages =
         request.manage_messages_request().message_to_publish();
     for (int i = 0; i < messages.size(); ++i) {
       BroadcastScanConfiguration config =
@@ -119,7 +119,7 @@ BroadcastScanConfiguration ExtractTokenExchangeStrategy(
 
   // Strategies for subscriptions.
   if (request.has_manage_subscriptions_request()) {
-    const RepeatedPtrField<Subscription> messages =
+    const RepeatedPtrField<Subscription>& messages =
         request.manage_subscriptions_request().subscription();
     for (int i = 0; i < messages.size(); ++i) {
       BroadcastScanConfiguration config =
@@ -194,6 +194,17 @@ ClientVersion* CreateVersion(const std::string& client,
   return version;
 }
 
+void AddTokenToRequest(ReportRequest* request, const AudioToken& token) {
+  TokenObservation* token_observation =
+      request->mutable_update_signals_request()->add_token_observation();
+  token_observation->set_token_id(ToUrlSafe(token.token));
+
+  TokenSignals* signals = token_observation->add_signals();
+  signals->set_medium(token.audible ? AUDIO_AUDIBLE_DTMF
+                                    : AUDIO_ULTRASOUND_PASSBAND);
+  signals->set_observed_time_millis(base::Time::Now().ToJsTime());
+}
+
 }  // namespace
 
 // Public methods
@@ -251,8 +262,15 @@ void RpcHandler::SendReportRequest(scoped_ptr<ReportRequest> request,
 
   DVLOG(3) << "Sending report request to server.";
 
+  // If we are unpublishing or unsubscribing, we need to stop those publish or
+  // subscribes right away, we don't need to wait for the server to tell us.
+  ProcessRemovedOperations(*request);
+
   request->mutable_update_signals_request()->set_allocated_state(
       GetDeviceCapabilities(*request).release());
+
+  AddPlayingTokens(request.get());
+
   SendServerRequest(kReportRequestRpcName,
                     app_id,
                     request.Pass(),
@@ -262,25 +280,15 @@ void RpcHandler::SendReportRequest(scoped_ptr<ReportRequest> request,
                                status_callback));
 }
 
-void RpcHandler::ReportTokens(const std::vector<FullToken>& tokens) {
+void RpcHandler::ReportTokens(const std::vector<AudioToken>& tokens) {
   DCHECK(!tokens.empty());
 
   scoped_ptr<ReportRequest> request(new ReportRequest);
   for (size_t i = 0; i < tokens.size(); ++i) {
-    const std::string& token = ToUrlSafe(tokens[i].token);
-    if (invalid_audio_token_cache_.HasKey(token))
+    if (invalid_audio_token_cache_.HasKey(ToUrlSafe(tokens[i].token)))
       continue;
-
-    DVLOG(3) << "Sending token " << token << " to server.";
-
-    TokenObservation* token_observation =
-        request->mutable_update_signals_request()->add_token_observation();
-    token_observation->set_token_id(token);
-
-    TokenSignals* signals = token_observation->add_signals();
-    signals->set_medium(tokens[i].audible ? AUDIO_AUDIBLE_DTMF
-                                          : AUDIO_ULTRASOUND_PASSBAND);
-    signals->set_observed_time_millis(base::Time::Now().ToJsTime());
+    DVLOG(3) << "Sending token " << tokens[i].token << " to server.";
+    AddTokenToRequest(request.get(), tokens[i]);
   }
   SendReportRequest(request.Pass());
 }
@@ -413,6 +421,38 @@ void RpcHandler::ReportResponseHandler(const StatusCallback& status_callback,
   // TODO(ckehoe): Return a more detailed status response.
   if (!status_callback.is_null())
     status_callback.Run(SUCCESS);
+}
+
+void RpcHandler::ProcessRemovedOperations(const ReportRequest& request) {
+  // Remove unpublishes.
+  if (request.has_manage_messages_request()) {
+    const RepeatedPtrField<std::string>& unpublishes =
+        request.manage_messages_request().id_to_unpublish();
+    for (int i = 0; i < unpublishes.size(); ++i)
+      directive_handler_->RemoveDirectives(unpublishes.Get(i));
+  }
+
+  // Remove unsubscribes.
+  if (request.has_manage_subscriptions_request()) {
+    const RepeatedPtrField<std::string>& unsubscribes =
+        request.manage_subscriptions_request().id_to_unsubscribe();
+    for (int i = 0; i < unsubscribes.size(); ++i)
+      directive_handler_->RemoveDirectives(unsubscribes.Get(i));
+  }
+}
+
+void RpcHandler::AddPlayingTokens(ReportRequest* request) {
+  if (!directive_handler_)
+    return;
+
+  const std::string& audible_token = directive_handler_->CurrentAudibleToken();
+  const std::string& inaudible_token =
+      directive_handler_->CurrentInaudibleToken();
+
+  if (!audible_token.empty())
+    AddTokenToRequest(request, AudioToken(audible_token, true));
+  if (!inaudible_token.empty())
+    AddTokenToRequest(request, AudioToken(inaudible_token, false));
 }
 
 void RpcHandler::DispatchMessages(

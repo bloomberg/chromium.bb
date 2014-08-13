@@ -137,7 +137,7 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest {
     run_loop_->Quit();
   }
 
-  void TokensCallback(const std::vector<copresence::FullToken>& tokens) {
+  void TokensCallback(const std::vector<copresence::AudioToken>& tokens) {
     ASSERT_TRUE(run_loop_);
     run_loop_->Quit();
 

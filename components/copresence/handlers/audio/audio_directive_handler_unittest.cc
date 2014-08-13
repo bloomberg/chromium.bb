@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "components/copresence/mediums/audio/audio_player.h"
+#include "components/copresence/mediums/audio/audio_recorder.h"
 #include "components/copresence/test/audio_test_support.h"
 #include "media/base/audio_bus.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -16,31 +18,50 @@ using ::testing::Le;
 
 namespace copresence {
 
-class MockAudioDirectiveHandler : public AudioDirectiveHandler {
+class TestAudioPlayer : public AudioPlayer {
  public:
-  MockAudioDirectiveHandler(
-      const AudioDirectiveList::EncodeTokenCallback& encode_cb)
-      : AudioDirectiveHandler(AudioRecorder::DecodeSamplesCallback(),
-                              encode_cb) {}
-  virtual ~MockAudioDirectiveHandler() {}
+  TestAudioPlayer() {}
+  virtual ~TestAudioPlayer() {}
 
-  // Mock out the play/record methods.
-  MOCK_METHOD2(PlayAudio,
-               void(const scoped_refptr<media::AudioBusRefCounted>&,
-                    base::TimeDelta));
-  MOCK_METHOD1(RecordAudio, void(base::TimeDelta));
+  // AudioPlayer overrides:
+  virtual void Initialize() OVERRIDE {}
+  virtual void Play(
+      const scoped_refptr<media::AudioBusRefCounted>& /* samples */) OVERRIDE {
+    set_is_playing(true);
+  }
+  virtual void Stop() OVERRIDE { set_is_playing(false); }
+  virtual void Finalize() OVERRIDE { delete this; }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockAudioDirectiveHandler);
+  DISALLOW_COPY_AND_ASSIGN(TestAudioPlayer);
+};
+
+class TestAudioRecorder : public AudioRecorder {
+ public:
+  TestAudioRecorder() : AudioRecorder(AudioRecorder::DecodeSamplesCallback()) {}
+  virtual ~TestAudioRecorder() {}
+
+  // AudioRecorder overrides:
+  virtual void Initialize() OVERRIDE {}
+  virtual void Record() OVERRIDE { set_is_recording(true); }
+  virtual void Stop() OVERRIDE { set_is_recording(false); }
+  virtual void Finalize() OVERRIDE { delete this; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestAudioRecorder);
 };
 
 class AudioDirectiveHandlerTest : public testing::Test {
  public:
   AudioDirectiveHandlerTest()
-      : directive_handler_(new MockAudioDirectiveHandler(
+      : directive_handler_(new AudioDirectiveHandler(
+            AudioRecorder::DecodeSamplesCallback(),
             base::Bind(&AudioDirectiveHandlerTest::EncodeToken,
-                       base::Unretained(this)))) {}
-
+                       base::Unretained(this)))) {
+    directive_handler_->set_player_audible_for_testing(new TestAudioPlayer());
+    directive_handler_->set_player_inaudible_for_testing(new TestAudioPlayer());
+    directive_handler_->set_recorder_for_testing(new TestAudioRecorder());
+  }
   virtual ~AudioDirectiveHandlerTest() {}
 
   void DirectiveAdded() {}
@@ -48,16 +69,19 @@ class AudioDirectiveHandlerTest : public testing::Test {
  protected:
   void EncodeToken(const std::string& token,
                    bool audible,
-                   const AudioDirectiveList::SamplesCallback& callback) {
+                   const AudioDirectiveHandler::SamplesCallback& callback) {
     callback.Run(
         token, audible, CreateRandomAudioRefCounted(0x1337, 1, 0x7331));
   }
 
   copresence::TokenInstruction CreateTransmitInstruction(
-      const std::string& token) {
+      const std::string& token,
+      bool audible) {
     copresence::TokenInstruction instruction;
     instruction.set_token_instruction_type(copresence::TRANSMIT);
     instruction.set_token_id(token);
+    instruction.set_medium(audible ? AUDIO_AUDIBLE_DTMF
+                                   : AUDIO_ULTRASOUND_PASSBAND);
     return instruction;
   }
 
@@ -71,37 +95,45 @@ class AudioDirectiveHandlerTest : public testing::Test {
   // our the audio directive handler since the directive list ctor (invoked
   // from the directive handler ctor) will post tasks.
   base::MessageLoop message_loop_;
-  scoped_ptr<MockAudioDirectiveHandler> directive_handler_;
+  scoped_ptr<AudioDirectiveHandler> directive_handler_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioDirectiveHandlerTest);
 };
 
-// TODO(rkc): This test is broken, possibly due to the changes for audible.
-TEST_F(AudioDirectiveHandlerTest, DISABLED_Basic) {
-  const base::TimeDelta kSmallTtl = base::TimeDelta::FromMilliseconds(0x1337);
-  const base::TimeDelta kLargeTtl = base::TimeDelta::FromSeconds(0x7331);
+TEST_F(AudioDirectiveHandlerTest, Basic) {
+  const base::TimeDelta kTtl = base::TimeDelta::FromMilliseconds(9999);
+  directive_handler_->AddInstruction(
+      CreateTransmitInstruction("token", true), "op_id1", kTtl);
+  directive_handler_->AddInstruction(
+      CreateTransmitInstruction("token", false), "op_id1", kTtl);
+  directive_handler_->AddInstruction(
+      CreateTransmitInstruction("token", false), "op_id2", kTtl);
+  directive_handler_->AddInstruction(
+      CreateReceiveInstruction(), "op_id1", kTtl);
+  directive_handler_->AddInstruction(
+      CreateReceiveInstruction(), "op_id2", kTtl);
+  directive_handler_->AddInstruction(
+      CreateReceiveInstruction(), "op_id3", kTtl);
 
-  // Expect to play and record instructions for 'less' than the TTL specified,
-  // since by the time that the token would have gotten encoded, we would
-  // have (TTL - time_to_encode) left to play on that instruction.
-  EXPECT_CALL(*directive_handler_, PlayAudio(_, testing::Le(kLargeTtl)))
-      .Times(3);
-  directive_handler_->AddInstruction(CreateTransmitInstruction("token1"),
-                                     kLargeTtl);
-  directive_handler_->AddInstruction(CreateTransmitInstruction("token2"),
-                                     kLargeTtl);
-  directive_handler_->AddInstruction(CreateTransmitInstruction("token3"),
-                                     kSmallTtl);
+  EXPECT_EQ(true, directive_handler_->player_audible_->IsPlaying());
+  EXPECT_EQ(true, directive_handler_->player_inaudible_->IsPlaying());
+  EXPECT_EQ(true, directive_handler_->recorder_->IsRecording());
 
-  EXPECT_CALL(*directive_handler_, RecordAudio(Le(kLargeTtl))).Times(3);
-  directive_handler_->AddInstruction(CreateReceiveInstruction(), kLargeTtl);
-  directive_handler_->AddInstruction(CreateReceiveInstruction(), kSmallTtl);
-  directive_handler_->AddInstruction(CreateReceiveInstruction(), kLargeTtl);
+  directive_handler_->RemoveInstructions("op_id1");
+  EXPECT_EQ(false, directive_handler_->player_audible_->IsPlaying());
+  EXPECT_EQ(true, directive_handler_->player_inaudible_->IsPlaying());
+  EXPECT_EQ(true, directive_handler_->recorder_->IsRecording());
+
+  directive_handler_->RemoveInstructions("op_id2");
+  EXPECT_EQ(false, directive_handler_->player_inaudible_->IsPlaying());
+  EXPECT_EQ(true, directive_handler_->recorder_->IsRecording());
+
+  directive_handler_->RemoveInstructions("op_id3");
+  EXPECT_EQ(false, directive_handler_->recorder_->IsRecording());
 }
 
-// TODO(rkc): When we are keeping track of which token we're currently playing,
-// add tests to make sure we don't replay if we get a token with a lower ttl
-// than the current active.
+// TODO(rkc): Write more tests that check more convoluted sequences of
+// transmits/receives.
 
 }  // namespace copresence

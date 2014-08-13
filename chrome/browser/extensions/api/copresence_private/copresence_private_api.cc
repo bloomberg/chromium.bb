@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/copresence_private/copresence_private_api.h"
 
+#include <vector>
+
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
 #include "chrome/browser/copresence/chrome_whispernet_client.h"
@@ -32,10 +34,10 @@ ExtensionFunction::ResponseAction CopresencePrivateSendFoundFunction::Run() {
   scoped_ptr<api::copresence_private::SendFound::Params> params(
       api::copresence_private::SendFound::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  std::vector<copresence::FullToken> tokens;
+  std::vector<copresence::AudioToken> tokens;
   for (size_t i = 0; i < params->tokens.size(); ++i) {
-    tokens.push_back(copresence::FullToken(params->tokens[i]->token,
-                                           params->tokens[i]->audible));
+    tokens.push_back(copresence::AudioToken(params->tokens[i]->token,
+                                            params->tokens[i]->audible));
   }
   GetWhispernetClient()->GetTokensCallback().Run(tokens);
   return RespondNow(NoArguments());

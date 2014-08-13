@@ -50,7 +50,7 @@ class RpcHandler {
                          const StatusCallback& callback);
 
   // Report a set of tokens to the server for a given medium.
-  void ReportTokens(const std::vector<FullToken>& tokens);
+  void ReportTokens(const std::vector<AudioToken>& tokens);
 
   // Create the directive handler and connect it to
   // the whispernet client specified by the delegate.
@@ -84,6 +84,15 @@ class RpcHandler {
                              HttpPost* completed_post,
                              int http_status_code,
                              const std::string& response_data);
+
+  // If the request has any unpublish or unsubscribe operations, it removes
+  // them from our directive handlers.
+  void ProcessRemovedOperations(const ReportRequest& request);
+
+  // Add all currently playing tokens to the update signals in this report
+  // request. This ensures that the server doesn't keep issueing new tokens to
+  // us when we're already playing valid tokens.
+  void AddPlayingTokens(ReportRequest* request);
 
   void DispatchMessages(
       const google::protobuf::RepeatedPtrField<SubscribedMessage>&

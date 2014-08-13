@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_COPRESENCE_MEDIUMS_AUDIO_AUDIO_PLAYER_
-#define COMPONENTS_COPRESENCE_MEDIUMS_AUDIO_AUDIO_PLAYER_
+#ifndef COMPONENTS_COPRESENCE_MEDIUMS_AUDIO_AUDIO_PLAYER_H_
+#define COMPONENTS_COPRESENCE_MEDIUMS_AUDIO_AUDIO_PLAYER_H_
 
 #include <vector>
 
@@ -26,17 +26,19 @@ class AudioPlayer : public media::AudioOutputStream::AudioSourceCallback {
   AudioPlayer();
 
   // Initializes the object. Do not use this object before calling this method.
-  void Initialize();
+  virtual void Initialize();
 
   // Play the given samples. These samples will keep on being played in a loop
   // till we explicitly tell the player to stop playing.
-  void Play(const scoped_refptr<media::AudioBusRefCounted>& samples);
+  virtual void Play(const scoped_refptr<media::AudioBusRefCounted>& samples);
 
   // Stop playing.
-  void Stop();
+  virtual void Stop();
 
   // Cleans up and deletes this object. Do not use object after this call.
-  void Finalize();
+  virtual void Finalize();
+
+  bool IsPlaying();
 
   // Takes ownership of the stream.
   void set_output_stream_for_testing(
@@ -44,12 +46,14 @@ class AudioPlayer : public media::AudioOutputStream::AudioSourceCallback {
     output_stream_for_testing_.reset(output_stream_for_testing);
   }
 
+ protected:
+  virtual ~AudioPlayer();
+  void set_is_playing(bool is_playing) { is_playing_ = is_playing; }
+
  private:
   friend class AudioPlayerTest;
   FRIEND_TEST_ALL_PREFIXES(AudioPlayerTest, BasicPlayAndStop);
   FRIEND_TEST_ALL_PREFIXES(AudioPlayerTest, OutOfOrderPlayAndStopMultiple);
-
-  virtual ~AudioPlayer();
 
   // Methods to do our various operations; all of these need to be run on the
   // audio thread.
@@ -70,12 +74,12 @@ class AudioPlayer : public media::AudioOutputStream::AudioSourceCallback {
   // performed.
   void FlushAudioLoopForTesting();
 
+  bool is_playing_;
+
   // Self-deleting object.
   media::AudioOutputStream* stream_;
 
   scoped_ptr<media::AudioOutputStream> output_stream_for_testing_;
-
-  bool is_playing_;
 
   // All fields below here are protected by this lock.
   base::Lock state_lock_;
@@ -90,4 +94,4 @@ class AudioPlayer : public media::AudioOutputStream::AudioSourceCallback {
 
 }  // namespace copresence
 
-#endif  // COMPONENTS_COPRESENCE_MEDIUMS_AUDIO_AUDIO_PLAYER_
+#endif  // COMPONENTS_COPRESENCE_MEDIUMS_AUDIO_AUDIO_PLAYER_H_

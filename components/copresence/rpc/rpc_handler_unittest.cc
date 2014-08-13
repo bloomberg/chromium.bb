@@ -62,7 +62,7 @@ class FakeDirectiveHandler : public DirectiveHandler {
 
   virtual void Initialize(
       const AudioRecorder::DecodeSamplesCallback& decode_cb,
-      const AudioDirectiveList::EncodeTokenCallback& encode_cb) OVERRIDE {}
+      const AudioDirectiveHandler::EncodeTokenCallback& encode_cb) OVERRIDE {}
 
   virtual void AddDirective(const Directive& directive) OVERRIDE {
     added_directives_.push_back(directive);
@@ -249,11 +249,15 @@ TEST_F(RpcHandlerTest, CreateRequestHeader) {
             report->header().registered_device_id());
 }
 
-TEST_F(RpcHandlerTest, ReportTokens) {
-  std::vector<FullToken> test_tokens;
-  test_tokens.push_back(FullToken("token 1", false));
-  test_tokens.push_back(FullToken("token 2", true));
-  test_tokens.push_back(FullToken("token 3", false));
+// TODO(ckehoe): Renable these after https://codereview.chromium.org/453203002/
+// lands.
+#define MAYBE_ReportTokens DISABLED_ReportTokens
+
+TEST_F(RpcHandlerTest, MAYBE_ReportTokens) {
+  std::vector<AudioToken> test_tokens;
+  test_tokens.push_back(AudioToken("token 1", false));
+  test_tokens.push_back(AudioToken("token 2", true));
+  test_tokens.push_back(AudioToken("token 3", false));
   AddInvalidToken("token 2");
 
   rpc_handler_.ReportTokens(test_tokens);

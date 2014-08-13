@@ -7,83 +7,74 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
-#include "components/copresence/test/audio_test_support.h"
-#include "media/base/audio_bus.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace copresence {
 
 class AudioDirectiveListTest : public testing::Test {
  public:
-  AudioDirectiveListTest()
-      : directive_list_(new AudioDirectiveList(
-            base::Bind(&AudioDirectiveListTest::EncodeToken,
-                       base::Unretained(this)),
-            base::Bind(&base::DoNothing),
-            false)) {}
+  AudioDirectiveListTest() : directive_list_(new AudioDirectiveList()) {}
 
   virtual ~AudioDirectiveListTest() {}
 
  protected:
-  void EncodeToken(const std::string& token,
-                   bool audible,
-                   const AudioDirectiveList::SamplesCallback& callback) {
-    callback.Run(
-        token, audible, CreateRandomAudioRefCounted(0x1337, 1, 0x7331));
-  }
-
   base::MessageLoop message_loop_;
   scoped_ptr<AudioDirectiveList> directive_list_;
 };
 
-// TODO(rkc): Fix errors in these tests. See crbug/402578.
-#define MAYBE_Basic DISABLED_Basic
-#define MAYBE_OutOfOrderAndMultiple DISABLED_OutOfOrderAndMultiple
+TEST_F(AudioDirectiveListTest, Basic) {
+  const base::TimeDelta kTtl = base::TimeDelta::FromSeconds(9999);
 
-TEST_F(AudioDirectiveListTest, MAYBE_Basic) {
-  const base::TimeDelta kZeroTtl = base::TimeDelta::FromMilliseconds(0);
-  const base::TimeDelta kLargeTtl = base::TimeDelta::FromSeconds(0x7331);
+  EXPECT_EQ(NULL, directive_list_->GetActiveDirective().get());
 
-  directive_list_->AddTransmitDirective("token1", "op_id1", kZeroTtl);
-  directive_list_->AddTransmitDirective("token2", "op_id2", kLargeTtl);
-  directive_list_->AddTransmitDirective("token3", "op_id1", kZeroTtl);
+  directive_list_->AddDirective("op_id1", kTtl);
+  directive_list_->AddDirective("op_id2", kTtl * 3);
+  directive_list_->AddDirective("op_id3", kTtl * 2);
+  EXPECT_EQ("op_id2", directive_list_->GetActiveDirective()->op_id);
 
-  EXPECT_EQ("token2", directive_list_->GetNextTransmit()->token);
-
-  directive_list_->AddReceiveDirective("op_id1", kZeroTtl);
-  directive_list_->AddReceiveDirective("op_id3", kZeroTtl);
-  directive_list_->AddReceiveDirective("op_id3", kLargeTtl);
-  directive_list_->AddReceiveDirective("op_id7", kZeroTtl);
-
-  EXPECT_EQ("op_id3", directive_list_->GetNextReceive()->op_id);
+  directive_list_->RemoveDirective("op_id2");
+  EXPECT_EQ("op_id3", directive_list_->GetActiveDirective()->op_id);
 }
 
-TEST_F(AudioDirectiveListTest, MAYBE_OutOfOrderAndMultiple) {
-  const base::TimeDelta kZeroTtl = base::TimeDelta::FromMilliseconds(0);
-  const base::TimeDelta kLargeTtl = base::TimeDelta::FromSeconds(0x7331);
+TEST_F(AudioDirectiveListTest, AddDirectiveMultiple) {
+  const base::TimeDelta kTtl = base::TimeDelta::FromSeconds(9999);
 
-  EXPECT_EQ(NULL, directive_list_->GetNextTransmit().get());
-  EXPECT_EQ(NULL, directive_list_->GetNextReceive().get());
+  directive_list_->AddDirective("op_id1", kTtl);
+  directive_list_->AddDirective("op_id2", kTtl * 2);
+  directive_list_->AddDirective("op_id3", kTtl * 3 * 2);
+  directive_list_->AddDirective("op_id3", kTtl * 3 * 3);
+  directive_list_->AddDirective("op_id4", kTtl * 4);
 
-  directive_list_->AddTransmitDirective("token1", "op_id1", kZeroTtl);
-  directive_list_->AddTransmitDirective("token2", "op_id2", kLargeTtl);
-  directive_list_->AddTransmitDirective("token3", "op_id1", kLargeTtl);
+  EXPECT_EQ("op_id3", directive_list_->GetActiveDirective()->op_id);
+  directive_list_->RemoveDirective("op_id3");
+  EXPECT_EQ("op_id4", directive_list_->GetActiveDirective()->op_id);
+  directive_list_->RemoveDirective("op_id4");
+  EXPECT_EQ("op_id2", directive_list_->GetActiveDirective()->op_id);
+  directive_list_->RemoveDirective("op_id2");
+  EXPECT_EQ("op_id1", directive_list_->GetActiveDirective()->op_id);
+  directive_list_->RemoveDirective("op_id1");
+  EXPECT_EQ(NULL, directive_list_->GetActiveDirective().get());
+}
 
-  // Should keep getting the directive till it expires or we add a newer one.
-  EXPECT_EQ("token3", directive_list_->GetNextTransmit()->token);
-  EXPECT_EQ("token3", directive_list_->GetNextTransmit()->token);
-  EXPECT_EQ("token3", directive_list_->GetNextTransmit()->token);
-  EXPECT_EQ(NULL, directive_list_->GetNextReceive().get());
+TEST_F(AudioDirectiveListTest, RemoveDirectiveMultiple) {
+  const base::TimeDelta kTtl = base::TimeDelta::FromSeconds(9999);
 
-  directive_list_->AddReceiveDirective("op_id1", kLargeTtl);
-  directive_list_->AddReceiveDirective("op_id3", kZeroTtl);
-  directive_list_->AddReceiveDirective("op_id3", kLargeTtl);
-  directive_list_->AddReceiveDirective("op_id7", kLargeTtl);
+  directive_list_->AddDirective("op_id1", kTtl);
+  directive_list_->AddDirective("op_id2", kTtl * 2);
+  directive_list_->AddDirective("op_id3", kTtl * 3);
+  directive_list_->AddDirective("op_id4", kTtl * 4);
 
-  // Should keep getting the directive till it expires or we add a newer one.
-  EXPECT_EQ("op_id7", directive_list_->GetNextReceive()->op_id);
-  EXPECT_EQ("op_id7", directive_list_->GetNextReceive()->op_id);
-  EXPECT_EQ("op_id7", directive_list_->GetNextReceive()->op_id);
+  EXPECT_EQ("op_id4", directive_list_->GetActiveDirective()->op_id);
+  directive_list_->RemoveDirective("op_id4");
+  EXPECT_EQ("op_id3", directive_list_->GetActiveDirective()->op_id);
+  directive_list_->RemoveDirective("op_id3");
+  directive_list_->RemoveDirective("op_id3");
+  directive_list_->RemoveDirective("op_id3");
+  EXPECT_EQ("op_id2", directive_list_->GetActiveDirective()->op_id);
+  directive_list_->RemoveDirective("op_id2");
+  EXPECT_EQ("op_id1", directive_list_->GetActiveDirective()->op_id);
+  directive_list_->RemoveDirective("op_id1");
+  EXPECT_EQ(NULL, directive_list_->GetActiveDirective().get());
 }
 
 }  // namespace copresence

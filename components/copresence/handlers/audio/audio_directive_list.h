@@ -2,21 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_COPRESENCE_HANDLERS_AUDIO_AUDIO_DIRECTIVE_LIST_
-#define COMPONENTS_COPRESENCE_HANDLERS_AUDIO_AUDIO_DIRECTIVE_LIST_
+#ifndef COMPONENTS_COPRESENCE_HANDLERS_AUDIO_AUDIO_DIRECTIVE_LIST_H_
+#define COMPONENTS_COPRESENCE_HANDLERS_AUDIO_AUDIO_DIRECTIVE_LIST_H_
 
-#include <map>
-#include <queue>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "components/copresence/timed_map.h"
 
 namespace media {
 class AudioBusRefCounted;
@@ -27,21 +22,10 @@ namespace copresence {
 struct AudioDirective {
   // Default ctor, required by the priority queue.
   AudioDirective();
-  // ctor used to store transmit directives that are awaiting samples.
-  AudioDirective(const std::string& token,
-                 const std::string& op_id,
-                 base::Time end_time);
-  // ctor used to construct a complete transmit directive.
-  AudioDirective(const std::string& token,
-                 const std::string& op_id,
-                 base::Time end_time,
-                 const scoped_refptr<media::AudioBusRefCounted>& samples);
-  ~AudioDirective();
+  AudioDirective(const std::string& op_id, base::Time end_time);
 
-  std::string token;
   std::string op_id;
   base::Time end_time;
-  scoped_refptr<media::AudioBusRefCounted> samples;
 };
 
 // This class maintains a list of active audio directives. It fetches the audio
@@ -52,35 +36,13 @@ struct AudioDirective {
 // classes from it.
 class AudioDirectiveList {
  public:
-  typedef base::Callback<void(const std::string&,
-                              bool,
-                              const scoped_refptr<media::AudioBusRefCounted>&)>
-      SamplesCallback;
-  typedef base::Callback<void(const std::string&, bool, const SamplesCallback&)>
-      EncodeTokenCallback;
-
-  AudioDirectiveList(const EncodeTokenCallback& encode_token_callback,
-                     const base::Closure& token_added_callback,
-                     bool use_audible_encoding);
+  AudioDirectiveList();
   virtual ~AudioDirectiveList();
 
-  // Adds a token to the token queue, after getting its corresponding samples
-  // from whispernet.
-  void AddTransmitDirective(const std::string& token,
-                            const std::string& op_id,
-                            base::TimeDelta ttl);
+  void AddDirective(const std::string& op_id, base::TimeDelta ttl);
+  void RemoveDirective(const std::string& op_id);
 
-  void AddReceiveDirective(const std::string& op_id, base::TimeDelta ttl);
-
-  // Returns the next audio token to play. This also cleans up expired tokens.
-  scoped_ptr<AudioDirective> GetNextTransmit();
-  scoped_ptr<AudioDirective> GetNextReceive();
-
-  // This is the method that the whispernet client needs to call to return
-  // samples to us.
-  void OnTokenEncoded(const std::string& token,
-                      bool audible,
-                      const scoped_refptr<media::AudioBusRefCounted>& samples);
+  scoped_ptr<AudioDirective> GetActiveDirective();
 
  private:
   // Comparator for comparing end_times on audio tokens.
@@ -93,32 +55,16 @@ class AudioDirectiveList {
     }
   };
 
-  typedef std::priority_queue<AudioDirective,
-                              std::vector<AudioDirective>,
-                              LatestFirstComparator> AudioDirectiveQueue;
-  typedef TimedMap<std::string, scoped_refptr<media::AudioBusRefCounted> >
-      SamplesMap;
+  std::vector<AudioDirective>::iterator FindDirectiveByOpId(
+      const std::string& op_id);
 
-  scoped_ptr<AudioDirective> GetNextFromList(AudioDirectiveQueue* list);
-
-  // A map of tokens that are awaiting their samples before we can
-  // add them to the active transmit tokens list.
-  std::map<std::string, AudioDirective> pending_transmit_tokens_;
-
-  AudioDirectiveQueue active_transmit_tokens_;
-  AudioDirectiveQueue active_receive_tokens_;
-
-  EncodeTokenCallback encode_token_callback_;
-  base::Closure token_added_callback_;
-  const bool use_audible_encoding_;
-
-  // Cache that holds the encoded samples. After reaching its limit, the cache
-  // expires the oldest samples first.
-  SamplesMap samples_cache_;
+  // This vector will be organized as a heap with the latest time as the first
+  // element. Only currently active directives will exist in this list.
+  std::vector<AudioDirective> active_directives_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDirectiveList);
 };
 
 }  // namespace copresence
 
-#endif  // COMPONENTS_COPRESENCE_HANDLERS_AUDIO_AUDIO_DIRECTIVE_LIST_
+#endif  // COMPONENTS_COPRESENCE_HANDLERS_AUDIO_AUDIO_DIRECTIVE_LIST_H_

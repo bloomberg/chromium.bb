@@ -18,8 +18,8 @@ class AudioBusRefCounted;
 
 namespace copresence {
 
-struct FullToken {
-  FullToken(const std::string& token, bool audible)
+struct AudioToken {
+  AudioToken(const std::string& token, bool audible)
       : token(token), audible(audible) {}
   std::string token;
   bool audible;
@@ -34,7 +34,7 @@ class WhispernetClient {
   // Generic callback to indicate a boolean success or failure.
   typedef base::Callback<void(bool)> SuccessCallback;
   // Callback that returns detected tokens.
-  typedef base::Callback<void(const std::vector<FullToken>&)> TokensCallback;
+  typedef base::Callback<void(const std::vector<AudioToken>&)> TokensCallback;
   // Callback that returns encoded samples for a given token.
   typedef base::Callback<void(const std::string&,
                               bool,
@@ -70,7 +70,7 @@ class WhispernetClient {
   virtual SuccessCallback GetDetectBroadcastCallback() = 0;
   virtual SuccessCallback GetInitializedCallback() = 0;
 
-  virtual ~WhispernetClient() {};
+  virtual ~WhispernetClient() {}
 };
 
 }  // namespace copresence
