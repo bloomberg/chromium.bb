@@ -414,10 +414,6 @@ class ChromeTests:
   def TestMojoViewManager(self):
     return self.SimpleTest("mojo_view_manager", "mojo_view_manager_unittests")
 
-  def TestMojoViewManagerLib(self):
-    return self.SimpleTest("mojo_view_manager_lib",
-                           "mojo_view_manager_lib_unittests")
-
   def TestNet(self):
     return self.SimpleTest("net", "net_unittests")
 
@@ -692,7 +688,6 @@ class ChromeTests:
     "mojo_public_sysperf": TestMojoPublicSysPerf,
     "mojo_application_manager": TestMojoApplicationManager,
     "mojo_view_manager": TestMojoViewManager,
-    "mojo_view_manager_lib": TestMojoViewManagerLib,
     "net": TestNet,              "net_unittests": TestNet,
     "net_perf": TestNetPerf,     "net_perftests": TestNetPerf,
     "phonenumber": TestPhoneNumber,
