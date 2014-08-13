@@ -2209,3 +2209,14 @@ system call NtWriteFile parameter #5
 KERNELBASE.dll!WriteFile
 KERNEL32.dll!WriteFile
 mojo_system_impl.dll!mojo::system::`anonymous namespace'::RawChannelWin::WriteNoLock
+
+HANDLE LEAK
+name=bug_403544
+system call NtCreateSemaphore
+KERNELBASE.dll!CreateSemaphoreExW
+...
+v8.dll!v8::internal::SweeperThread::SweeperThread
+...
+blink_web.dll!blink::WorkerScriptController::WorkerScriptController
+blink_web.dll!blink::WorkerGlobalScope::WorkerGlobalScope
+blink_web.dll!blink::ServiceWorkerGlobalScope::ServiceWorkerGlobalScope
