@@ -41,6 +41,7 @@
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLSrcsetParser.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/rendering/RenderImage.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -282,6 +283,8 @@ ImageCandidate HTMLImageElement::findBestFitImageFromPictureParent()
             continue;
 
         HTMLSourceElement* source = toHTMLSourceElement(child);
+        if (!source->fastGetAttribute(srcAttr).isNull())
+            UseCounter::countDeprecation(document(), UseCounter::PictureSourceSrc);
         String srcset = source->fastGetAttribute(srcsetAttr);
         if (srcset.isEmpty())
             continue;

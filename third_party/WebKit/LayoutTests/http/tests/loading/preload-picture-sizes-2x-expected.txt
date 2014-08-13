@@ -1,10 +1,12 @@
 main frame - didStartProvisionalLoadForFrame
 main frame - didCommitLoadForFrame
+CONSOLE WARNING: <source src> with a <picture> parent is invalid and therefore ignored. Please use <source srcset> instead.
 main frame - didFinishDocumentLoadForFrame
 main frame - didHandleOnloadEventsForFrame
 main frame - didFinishLoadForFrame
 main frame - didStartProvisionalLoadForFrame
 main frame - didCommitLoadForFrame
+CONSOLE WARNING: <source src> with a <picture> parent is invalid and therefore ignored. Please use <source srcset> instead.
 main frame - didFinishDocumentLoadForFrame
 main frame - didHandleOnloadEventsForFrame
 main frame - didFinishLoadForFrame

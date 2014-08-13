@@ -785,6 +785,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case HTMLTableElementHspace:
         return "The 'hspace' attribute on table is deprecated. Please use CSS instead.";
 
+    case PictureSourceSrc:
+        return "<source src> with a <picture> parent is invalid and therefore ignored. Please use <source srcset> instead.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
