@@ -47,6 +47,7 @@ public:
     static v8::Local<v8::Script> compileScript(v8::Handle<v8::String>, const String& fileName, const TextPosition&, ScriptResource*, v8::Isolate*, AccessControlStatus = SharableCrossOrigin, V8CacheOptions = V8CacheOptionsOff);
     static v8::Local<v8::Value> runCompiledScript(v8::Handle<v8::Script>, ExecutionContext*, v8::Isolate*);
     static v8::Local<v8::Value> compileAndRunInternalScript(v8::Handle<v8::String>, v8::Isolate*, const String& = String(), const TextPosition& = TextPosition());
+    static v8::Local<v8::Value> runCompiledInternalScript(v8::Handle<v8::Script>, v8::Isolate*);
     static v8::Local<v8::Value> callInternalFunction(v8::Handle<v8::Function>, v8::Handle<v8::Value> receiver, int argc, v8::Handle<v8::Value> info[], v8::Isolate*);
     static v8::Local<v8::Value> callFunction(v8::Handle<v8::Function>, ExecutionContext*, v8::Handle<v8::Value> receiver, int argc, v8::Handle<v8::Value> info[], v8::Isolate*);
     static v8::Local<v8::Value> callAsFunction(v8::Isolate*, v8::Handle<v8::Object>, v8::Handle<v8::Value> receiver, int argc, v8::Handle<v8::Value> info[]);

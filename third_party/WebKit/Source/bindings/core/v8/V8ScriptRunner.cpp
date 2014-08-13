@@ -183,12 +183,22 @@ v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Handle<v8::Script> sc
 
 v8::Local<v8::Value> V8ScriptRunner::compileAndRunInternalScript(v8::Handle<v8::String> source, v8::Isolate* isolate, const String& fileName, const TextPosition& scriptStartPosition)
 {
-    TRACE_EVENT0("v8", "v8.run");
-    TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
     v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(source, fileName, scriptStartPosition, 0, isolate);
     if (script.IsEmpty())
         return v8::Local<v8::Value>();
 
+    TRACE_EVENT0("v8", "v8.run");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
+    V8RecursionScope::MicrotaskSuppression recursionScope(isolate);
+    v8::Local<v8::Value> result = script->Run();
+    crashIfV8IsDead();
+    return result;
+}
+
+v8::Local<v8::Value> V8ScriptRunner::runCompiledInternalScript(v8::Handle<v8::Script> script, v8::Isolate* isolate)
+{
+    TRACE_EVENT0("v8", "v8.run");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
     V8RecursionScope::MicrotaskSuppression recursionScope(isolate);
     v8::Local<v8::Value> result = script->Run();
     crashIfV8IsDead();
