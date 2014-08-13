@@ -40,7 +40,8 @@ class OAuth2TokenServiceRequest::Core
  public:
   // Note the thread where an instance of Core is constructed is referred to as
   // the "owner thread" here.
-  Core(OAuth2TokenServiceRequest* owner, TokenServiceProvider* provider);
+  Core(OAuth2TokenServiceRequest* owner,
+       const scoped_refptr<TokenServiceProvider>& provider);
 
   // Starts the core.  Must be called on the owner thread.
   void Start();
@@ -75,12 +76,17 @@ class OAuth2TokenServiceRequest::Core
 
   scoped_refptr<base::SingleThreadTaskRunner> token_service_task_runner_;
   OAuth2TokenServiceRequest* owner_;
-  TokenServiceProvider* provider_;
+
+  // It is important that provider_ is destroyed on the owner thread, not the
+  // token_service_task_runner_ thread.
+  scoped_refptr<TokenServiceProvider> provider_;
+
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
-OAuth2TokenServiceRequest::Core::Core(OAuth2TokenServiceRequest* owner,
-                                      TokenServiceProvider* provider)
+OAuth2TokenServiceRequest::Core::Core(
+    OAuth2TokenServiceRequest* owner,
+    const scoped_refptr<TokenServiceProvider>& provider)
     : owner_(owner), provider_(provider) {
   DCHECK(owner_);
   DCHECK(provider_);
@@ -149,7 +155,8 @@ class RequestCore : public OAuth2TokenServiceRequest::Core,
                     public OAuth2TokenService::Consumer {
  public:
   RequestCore(OAuth2TokenServiceRequest* owner,
-              OAuth2TokenServiceRequest::TokenServiceProvider* provider,
+              const scoped_refptr<
+                  OAuth2TokenServiceRequest::TokenServiceProvider>& provider,
               OAuth2TokenService::Consumer* consumer,
               const std::string& account_id,
               const OAuth2TokenService::ScopeSet& scopes);
@@ -189,7 +196,8 @@ class RequestCore : public OAuth2TokenServiceRequest::Core,
 
 RequestCore::RequestCore(
     OAuth2TokenServiceRequest* owner,
-    OAuth2TokenServiceRequest::TokenServiceProvider* provider,
+    const scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>&
+        provider,
     OAuth2TokenService::Consumer* consumer,
     const std::string& account_id,
     const OAuth2TokenService::ScopeSet& scopes)
@@ -260,7 +268,8 @@ void RequestCore::InformOwnerOnGetTokenFailure(GoogleServiceAuthError error) {
 class InvalidateCore : public OAuth2TokenServiceRequest::Core {
  public:
   InvalidateCore(OAuth2TokenServiceRequest* owner,
-                 OAuth2TokenServiceRequest::TokenServiceProvider* provider,
+                 const scoped_refptr<
+                     OAuth2TokenServiceRequest::TokenServiceProvider>& provider,
                  const std::string& access_token,
                  const std::string& account_id,
                  const OAuth2TokenService::ScopeSet& scopes);
@@ -284,7 +293,8 @@ class InvalidateCore : public OAuth2TokenServiceRequest::Core {
 
 InvalidateCore::InvalidateCore(
     OAuth2TokenServiceRequest* owner,
-    OAuth2TokenServiceRequest::TokenServiceProvider* provider,
+    const scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>&
+        provider,
     const std::string& access_token,
     const std::string& account_id,
     const OAuth2TokenService::ScopeSet& scopes)
@@ -314,7 +324,7 @@ void InvalidateCore::StopOnTokenServiceThread() {
 
 // static
 scoped_ptr<OAuth2TokenServiceRequest> OAuth2TokenServiceRequest::CreateAndStart(
-    TokenServiceProvider* provider,
+    const scoped_refptr<TokenServiceProvider>& provider,
     const std::string& account_id,
     const OAuth2TokenService::ScopeSet& scopes,
     OAuth2TokenService::Consumer* consumer) {
@@ -328,7 +338,7 @@ scoped_ptr<OAuth2TokenServiceRequest> OAuth2TokenServiceRequest::CreateAndStart(
 
 // static
 void OAuth2TokenServiceRequest::InvalidateToken(
-    OAuth2TokenServiceRequest::TokenServiceProvider* provider,
+    const scoped_refptr<TokenServiceProvider>& provider,
     const std::string& account_id,
     const OAuth2TokenService::ScopeSet& scopes,
     const std::string& access_token) {

@@ -56,7 +56,7 @@ class SYNC_EXPORT AttachmentDownloader {
           url_request_context_getter,
       const std::string& account_id,
       const OAuth2TokenService::ScopeSet scopes,
-      scoped_ptr<OAuth2TokenServiceRequest::TokenServiceProvider>
+      const scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>&
           token_service_provider);
 };
 

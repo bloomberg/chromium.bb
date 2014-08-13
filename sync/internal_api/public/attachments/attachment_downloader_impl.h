@@ -36,7 +36,7 @@ class AttachmentDownloaderImpl : public AttachmentDownloader,
           url_request_context_getter,
       const std::string& account_id,
       const OAuth2TokenService::ScopeSet& scopes,
-      scoped_ptr<OAuth2TokenServiceRequest::TokenServiceProvider>
+      const scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>&
           token_service_provider);
   virtual ~AttachmentDownloaderImpl();
 
@@ -73,7 +73,7 @@ class AttachmentDownloaderImpl : public AttachmentDownloader,
 
   std::string account_id_;
   OAuth2TokenService::ScopeSet oauth2_scopes_;
-  scoped_ptr<OAuth2TokenServiceRequest::TokenServiceProvider>
+  scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>
       token_service_provider_;
   scoped_ptr<OAuth2TokenService::Request> access_token_request_;
 

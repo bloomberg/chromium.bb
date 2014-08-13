@@ -159,6 +159,8 @@ class OAuth2TokenServiceRequestTest : public testing::Test {
     virtual OAuth2TokenService* GetTokenService() OVERRIDE;
 
    private:
+    virtual ~Provider();
+
     scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
     OAuth2TokenService* token_service_;
   };
@@ -166,7 +168,7 @@ class OAuth2TokenServiceRequestTest : public testing::Test {
   base::MessageLoop ui_loop_;
   OAuth2TokenService::ScopeSet scopes_;
   scoped_ptr<MockOAuth2TokenService> oauth2_service_;
-  scoped_ptr<OAuth2TokenServiceRequest::TokenServiceProvider> provider_;
+  scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider> provider_;
   TestingOAuth2TokenServiceConsumer consumer_;
 };
 
@@ -174,8 +176,8 @@ void OAuth2TokenServiceRequestTest::SetUp() {
   scopes_.insert(kScope);
   oauth2_service_.reset(new MockOAuth2TokenService);
   oauth2_service_->AddAccount(kAccountId);
-  provider_.reset(
-      new Provider(base::MessageLoopProxy::current(), oauth2_service_.get()));
+  provider_ =
+      new Provider(base::MessageLoopProxy::current(), oauth2_service_.get());
 }
 
 void OAuth2TokenServiceRequestTest::TearDown() {
@@ -196,6 +198,9 @@ OAuth2TokenServiceRequestTest::Provider::GetTokenServiceTaskRunner() {
 
 OAuth2TokenService* OAuth2TokenServiceRequestTest::Provider::GetTokenService() {
   return token_service_;
+}
+
+OAuth2TokenServiceRequestTest::Provider::~Provider() {
 }
 
 TEST_F(OAuth2TokenServiceRequestTest, CreateAndStart_Failure) {

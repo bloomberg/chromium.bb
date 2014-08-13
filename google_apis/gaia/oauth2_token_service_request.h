@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/non_thread_safe.h"
@@ -23,10 +24,16 @@ class OAuth2TokenServiceRequest : public OAuth2TokenService::Request,
   class Core;
 
   // Interface for providing an OAuth2TokenService.
-  class TokenServiceProvider {
+  //
+  // Ref-counted so that OAuth2TokenServiceRequest can ensure this object isn't
+  // destroyed out from under the token service task runner thread.  Because
+  // OAuth2TokenServiceRequest has a reference, implementations of
+  // TokenServiceProvider must be capable of being destroyed on the same thread
+  // on which the OAuth2TokenServiceRequest was created.
+  class TokenServiceProvider
+      : public base::RefCountedThreadSafe<TokenServiceProvider> {
    public:
     TokenServiceProvider();
-    virtual ~TokenServiceProvider();
 
     // Returns the task runner on which the token service lives.
     //
@@ -42,12 +49,15 @@ class OAuth2TokenServiceRequest : public OAuth2TokenService::Request,
     // This method may only be called from the task runner returned by
     // |GetTokenServiceTaskRunner|.
     virtual OAuth2TokenService* GetTokenService() = 0;
+
+   protected:
+    friend class base::RefCountedThreadSafe<TokenServiceProvider>;
+    virtual ~TokenServiceProvider();
   };
 
   // Creates and starts an access token request for |account_id| and |scopes|.
   //
-  // |provider| is used to get the OAuth2TokenService and must outlive the
-  // returned request object.
+  // |provider| is used to get the OAuth2TokenService.
   //
   // |account_id| must not be empty.
   //
@@ -59,23 +69,23 @@ class OAuth2TokenServiceRequest : public OAuth2TokenService::Request,
   // network activities may not be canceled and the cache in OAuth2TokenService
   // may be populated with the fetched results.
   static scoped_ptr<OAuth2TokenServiceRequest> CreateAndStart(
-      TokenServiceProvider* provider,
+      const scoped_refptr<TokenServiceProvider>& provider,
       const std::string& account_id,
       const OAuth2TokenService::ScopeSet& scopes,
       OAuth2TokenService::Consumer* consumer);
 
   // Invalidates |access_token| for |account_id| and |scopes|.
   //
-  // |provider| is used to get the OAuth2TokenService and must outlive the
-  // returned request object.
+  // |provider| is used to get the OAuth2TokenService.
   //
   // |account_id| must not be empty.
   //
   // |scopes| must not be empty.
-  static void InvalidateToken(TokenServiceProvider* provider,
-                              const std::string& account_id,
-                              const OAuth2TokenService::ScopeSet& scopes,
-                              const std::string& access_token);
+  static void InvalidateToken(
+      const scoped_refptr<TokenServiceProvider>& provider,
+      const std::string& account_id,
+      const OAuth2TokenService::ScopeSet& scopes,
+      const std::string& access_token);
 
   virtual ~OAuth2TokenServiceRequest();
 

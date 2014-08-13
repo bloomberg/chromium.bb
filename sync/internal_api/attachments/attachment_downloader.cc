@@ -20,14 +20,14 @@ scoped_ptr<AttachmentDownloader> AttachmentDownloader::Create(
         url_request_context_getter,
     const std::string& account_id,
     const OAuth2TokenService::ScopeSet scopes,
-    scoped_ptr<OAuth2TokenServiceRequest::TokenServiceProvider>
+    const scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>&
         token_service_provider) {
   return scoped_ptr<AttachmentDownloader>(
       new AttachmentDownloaderImpl(sync_service_url,
                                    url_request_context_getter,
                                    account_id,
                                    scopes,
-                                   token_service_provider.Pass()));
+                                   token_service_provider));
 }
 
 }  // namespace syncer

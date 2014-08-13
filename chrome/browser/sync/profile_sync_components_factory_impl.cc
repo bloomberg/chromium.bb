@@ -600,7 +600,6 @@ class TokenServiceProvider
   TokenServiceProvider(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       OAuth2TokenService* token_service);
-  virtual ~TokenServiceProvider();
 
   // OAuth2TokenServiceRequest::TokenServiceProvider implementation.
   virtual scoped_refptr<base::SingleThreadTaskRunner>
@@ -608,6 +607,8 @@ class TokenServiceProvider
   virtual OAuth2TokenService* GetTokenService() OVERRIDE;
 
  private:
+  virtual ~TokenServiceProvider();
+
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   OAuth2TokenService* token_service_;
 };
@@ -646,7 +647,7 @@ ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
   // signed in sync user (e.g. sync is running in "backup" mode).
   if (!user_share.sync_credentials.email.empty() &&
       !user_share.sync_credentials.scope_set.empty()) {
-    scoped_ptr<OAuth2TokenServiceRequest::TokenServiceProvider>
+    scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>
         token_service_provider(new TokenServiceProvider(
             content::BrowserThread::GetMessageLoopProxyForThread(
                 content::BrowserThread::UI),
@@ -659,18 +660,18 @@ ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
         url_request_context_getter_,
         user_share.sync_credentials.email,
         user_share.sync_credentials.scope_set,
-        token_service_provider.Pass()));
+        token_service_provider));
 
-    token_service_provider.reset(new TokenServiceProvider(
+    token_service_provider = new TokenServiceProvider(
         content::BrowserThread::GetMessageLoopProxyForThread(
             content::BrowserThread::UI),
-        token_service_));
+        token_service_);
     attachment_downloader = syncer::AttachmentDownloader::Create(
         sync_service_url_,
         url_request_context_getter_,
         user_share.sync_credentials.email,
         user_share.sync_credentials.scope_set,
-        token_service_provider.Pass());
+        token_service_provider);
   }
 
   scoped_ptr<syncer::AttachmentService> attachment_service(

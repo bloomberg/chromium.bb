@@ -135,7 +135,6 @@ class TokenServiceProvider
       base::NonThreadSafe {
  public:
   TokenServiceProvider(OAuth2TokenService* token_service);
-  virtual ~TokenServiceProvider();
 
   // OAuth2TokenService::TokenServiceProvider implementation.
   virtual scoped_refptr<base::SingleThreadTaskRunner>
@@ -143,6 +142,8 @@ class TokenServiceProvider
   virtual OAuth2TokenService* GetTokenService() OVERRIDE;
 
  private:
+  virtual ~TokenServiceProvider();
+
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   OAuth2TokenService* token_service_;
 };
@@ -268,7 +269,7 @@ void AttachmentUploaderImplTest::SetUp() {
   GURL url(base::StringPrintf("http://localhost:%d/", server_.port()));
 
   token_service_.reset(new MockOAuth2TokenService);
-  scoped_ptr<OAuth2TokenServiceRequest::TokenServiceProvider>
+  scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>
       token_service_provider(new TokenServiceProvider(token_service_.get()));
 
   OAuth2TokenService::ScopeSet scopes;
@@ -277,7 +278,7 @@ void AttachmentUploaderImplTest::SetUp() {
                                               url_request_context_getter_,
                                               kAccountId,
                                               scopes,
-                                              token_service_provider.Pass()));
+                                              token_service_provider));
 
   upload_callback_ = base::Bind(&AttachmentUploaderImplTest::UploadDone,
                                 base::Unretained(this));

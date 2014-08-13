@@ -41,14 +41,14 @@ AttachmentDownloaderImpl::AttachmentDownloaderImpl(
         url_request_context_getter,
     const std::string& account_id,
     const OAuth2TokenService::ScopeSet& scopes,
-    scoped_ptr<OAuth2TokenServiceRequest::TokenServiceProvider>
+    const scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>&
         token_service_provider)
     : OAuth2TokenService::Consumer("attachment-downloader-impl"),
       sync_service_url_(sync_service_url),
       url_request_context_getter_(url_request_context_getter),
       account_id_(account_id),
       oauth2_scopes_(scopes),
-      token_service_provider_(token_service_provider.Pass()) {
+      token_service_provider_(token_service_provider) {
   DCHECK(!account_id.empty());
   DCHECK(!scopes.empty());
   DCHECK(token_service_provider_);

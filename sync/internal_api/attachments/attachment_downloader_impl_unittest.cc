@@ -99,7 +99,6 @@ class TokenServiceProvider
       base::NonThreadSafe {
  public:
   TokenServiceProvider(OAuth2TokenService* token_service);
-  virtual ~TokenServiceProvider();
 
   // OAuth2TokenService::TokenServiceProvider implementation.
   virtual scoped_refptr<base::SingleThreadTaskRunner>
@@ -107,6 +106,8 @@ class TokenServiceProvider
   virtual OAuth2TokenService* GetTokenService() OVERRIDE;
 
  private:
+  virtual ~TokenServiceProvider();
+
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   OAuth2TokenService* token_service_;
 };
@@ -182,7 +183,7 @@ void AttachmentDownloaderImplTest::SetUp() {
   url_fetcher_factory_.set_remove_fetcher_on_delete(true);
   token_service_.reset(new MockOAuth2TokenService());
   token_service_->AddAccount(kAccountId);
-  scoped_ptr<OAuth2TokenServiceRequest::TokenServiceProvider>
+  scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>
       token_service_provider(new TokenServiceProvider(token_service_.get()));
 
   OAuth2TokenService::ScopeSet scopes;
@@ -192,7 +193,7 @@ void AttachmentDownloaderImplTest::SetUp() {
                                    url_request_context_getter_,
                                    kAccountId,
                                    scopes,
-                                   token_service_provider.Pass());
+                                   token_service_provider);
 }
 
 void AttachmentDownloaderImplTest::TearDown() {
