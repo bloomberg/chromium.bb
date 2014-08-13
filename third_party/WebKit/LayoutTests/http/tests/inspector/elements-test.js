@@ -504,14 +504,19 @@ InspectorTest.dumpElementsTree = function(rootNode, depth, resultsArray)
 
 InspectorTest.expandElementsTree = function(callback)
 {
+    var expandedSomething = false;
     callback = InspectorTest.safeWrap(callback);
 
     function expand(treeItem)
     {
         var children = treeItem.children;
         for (var i = 0; children && i < children.length; ++i) {
-            children[i].expand();
-            expand(children[i]);
+            var child = children[i];
+            if (child.hasChildren && !child.expanded) {
+                child.expand();
+                expandedSomething = true;
+            }
+            expand(child);
         }
     }
 
@@ -519,7 +524,7 @@ InspectorTest.expandElementsTree = function(callback)
     {
         InspectorTest.firstElementsTreeOutline()._updateModifiedNodes();
         expand(InspectorTest.firstElementsTreeOutline());
-        callback();
+        callback(expandedSomething);
     }
     WebInspector.inspectorView.showPanel("elements");
     InspectorTest.findNode(function() { return false; }, onAllNodesAvailable);
@@ -571,21 +576,48 @@ InspectorTest.generateUndoTest = function(testBody)
         {
             InspectorTest.addResult("Post-action:");
             InspectorTest.dumpElementsTree(testNode);
-            WebInspector.domModel.undo(redo);
+            InspectorTest.expandElementsTree(expandedCallback);
+
+            function expandedCallback(expandedSomething)
+            {
+                if (expandedSomething) {
+                    InspectorTest.addResult("== Expanded: ==");
+                    InspectorTest.dumpElementsTree(testNode);
+                }
+                WebInspector.domModel.undo(redo);
+            }
         }
 
         function redo()
         {
             InspectorTest.addResult("Post-undo (initial):");
             InspectorTest.dumpElementsTree(testNode);
-            WebInspector.domModel.redo(done);
+            InspectorTest.expandElementsTree(expandedCallback);
+
+            function expandedCallback(expandedSomething)
+            {
+                if (expandedSomething) {
+                    InspectorTest.addResult("== Expanded: ==");
+                    InspectorTest.dumpElementsTree(testNode);
+                }
+                WebInspector.domModel.redo(done);
+            }
         }
 
         function done()
         {
             InspectorTest.addResult("Post-redo (action):");
             InspectorTest.dumpElementsTree(testNode);
-            next();
+            InspectorTest.expandElementsTree(expandedCallback);
+
+            function expandedCallback(expandedSomething)
+            {
+                if (expandedSomething) {
+                    InspectorTest.addResult("== Expanded: ==");
+                    InspectorTest.dumpElementsTree(testNode);
+                }
+                next();
+            }
         }
     }
     result.toString = function()

@@ -71,9 +71,7 @@ Running: removeAfter
 
 Running: removeBefore
 - <div id="container">
-    - <div id="inspected">
-          "Text"
-      </div>
+      <div id="inspected">Text</div>
     - <div id="empty">
           ::before
           ::after
@@ -81,6 +79,14 @@ Running: removeBefore
   </div>
 
 Running: addAfter
+- <div id="container">
+    + <div id="inspected">…</div>
+    - <div id="empty">
+          ::before
+          ::after
+      </div>
+  </div>
+== Expanding: ==
 - <div id="container">
     - <div id="inspected">
           "Text"

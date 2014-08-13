@@ -2,6 +2,7 @@ Tests that DOM modifications done in the Elements panel are undoable.
 
 
 Running: testSetUp
+Setting up
 
 Running: testRemove
 Initial:
@@ -9,15 +10,15 @@ Initial:
       <div id="node-to-remove"></div>
   </div>
 Post-action:
-- <div id="testRemove">
-  </div>
+  <div id="testRemove"></div>
 Post-undo (initial):
++ <div id="testRemove">…</div>
+== Expanded: ==
 - <div id="testRemove">
       <div id="node-to-remove"></div>
   </div>
 Post-redo (action):
-- <div id="testRemove">
-  </div>
+  <div id="testRemove"></div>
 
 Running: testSetNodeName
 Initial:
@@ -63,17 +64,29 @@ Initial:
       </div>
   </div>
 Post-action:
++ <div id="testEditAsHTML">…</div>
+== Expanded: ==
 - <div id="testEditAsHTML">
-    + <div id="node-to-edit-as-html">…</div>
+    - <div id="node-to-edit-as-html">
+          <div id="span2">Text2</div>
+      </div>
       <span>Second node</span>
   </div>
 Post-undo (initial):
++ <div id="testEditAsHTML">…</div>
+== Expanded: ==
 - <div id="testEditAsHTML">
-    + <div id="node-to-edit-as-html">…</div>
+    - <div id="node-to-edit-as-html">
+          <span id="span">Text</span>
+      </div>
   </div>
 Post-redo (action):
++ <div id="testEditAsHTML">…</div>
+== Expanded: ==
 - <div id="testEditAsHTML">
-    + <div id="node-to-edit-as-html">…</div>
+    - <div id="node-to-edit-as-html">
+          <div id="span2">Text2</div>
+      </div>
       <span>Second node</span>
   </div>
 

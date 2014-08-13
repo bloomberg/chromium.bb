@@ -5,5 +5,5 @@ Verifies that external change of inline style element updates its title.
     div { color: red }
 ​</style>​
 === inline style text after change ===
-<style id=​"inline-style">​…​</style>​
+<style id=​"inline-style">​span { border: 1px solid black }​</style>​
 

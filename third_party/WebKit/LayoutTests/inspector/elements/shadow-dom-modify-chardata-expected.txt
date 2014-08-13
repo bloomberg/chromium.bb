@@ -16,7 +16,7 @@ Running: testAppend
 - <div id="container">
     - <input type="text" id="input1">
         - #shadow-root (user-agent)
-            + <div id="inner-editor">…</div>
+              <div id="inner-editor">Bar</div>
       </input>
   </div>
 

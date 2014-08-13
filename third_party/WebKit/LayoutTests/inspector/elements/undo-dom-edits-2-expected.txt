@@ -2,6 +2,7 @@ Tests that DOM modifications done in the Elements panel are undoable (Part 2).
 
 
 Running: testSetUp
+Setting up
 
 Running: testSetAttribute
 Initial:

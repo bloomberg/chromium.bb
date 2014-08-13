@@ -153,7 +153,7 @@ function test()
 
         function addAfter(next)
         {
-            executeAndDumpTree("addAfterRule()", WebInspector.DOMModel.Events.NodeInserted, next);
+            executeAndDumpTree("addAfterRule()", WebInspector.DOMModel.Events.NodeInserted, expandAndDumpTree.bind(this, next));
         },
 
         function addBefore(next)
@@ -203,6 +203,17 @@ function test()
             InspectorTest.dumpElementsTree(containerNode);
             next();
         }
+    }
+
+    function expandAndDumpTree(next)
+    {
+          InspectorTest.addResult("== Expanding: ==");
+          InspectorTest.expandElementsTree(callback);
+          function callback()
+          {
+              InspectorTest.dumpElementsTree(containerNode);
+              next();
+          }
     }
 
     function selectNodeAndDumpStyles(id, pseudoTypeName, callback)

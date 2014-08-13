@@ -10,7 +10,13 @@ function test()
 
     function testSetUp(next)
     {
-        InspectorTest.expandElementsTree(next);
+        InspectorTest.addResult("Setting up");
+        InspectorTest.expandElementsTree(callback);
+
+        function callback()
+        {
+            InspectorTest.expandElementsTree(next);
+        }
     }
     testSuite.push(testSetUp);
 

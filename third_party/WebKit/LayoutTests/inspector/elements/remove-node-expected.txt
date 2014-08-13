@@ -33,6 +33,5 @@ Running: testRemoveLast
 
 Running: testRemoveTheOnly
 ===== Removed the only =====
-- <div id="container">
-  </div>
+  <div id="container"></div>
 

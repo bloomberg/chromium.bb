@@ -120,8 +120,7 @@ aNode removed
           <p>\nTests that DOMNode properly tracks own and descendants' user properties.\n</p>
         - <div id="container"> [descendantUserAttributeCounters:[attr1=1,attr2=1]]
               <div id="child1"></div>
-            - <div id="child2"> [userProperties:[attr2=anotherValue,attr1=true]]
-              </div>
+              <div id="child2"></div> [userProperties:[attr2=anotherValue,attr1=true]]
           </div>
         + <div>…</div>
       </body>
