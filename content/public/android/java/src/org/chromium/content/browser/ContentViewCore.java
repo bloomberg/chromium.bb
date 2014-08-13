@@ -2125,6 +2125,13 @@ public class ContentViewCore
         }
     }
 
+    /**
+     * Clears the current text selection.
+     */
+    public void clearSelection() {
+        mImeAdapter.unselect();
+    }
+
     private void hidePastePopup() {
         if (mPastePopupMenu == null) return;
         mPastePopupMenu.hide();
