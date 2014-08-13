@@ -32,6 +32,52 @@ METADATA_URL_GLOB = os.path.join(ARCHIVE_ROOT,
                                  'R%(milestone)s**//metadata.json')
 LATEST_URL = os.path.join(ARCHIVE_ROOT, 'LATEST-master')
 
+
+GerritPatchTuple = collections.namedtuple('GerritPatchTuple',
+                                          ['gerrit_number', 'patch_number',
+                                           'internal'])
+GerritChangeTuple = collections.namedtuple('GerritChangeTuple',
+                                           ['gerrit_number', 'internal'])
+CLActionTuple = collections.namedtuple('CLActionTuple',
+                                       ['change', 'action', 'timestamp',
+                                        'reason'])
+CLActionWithBuildTuple = collections.namedtuple('CLActionWithBuildTuple',
+    ['change', 'action', 'timestamp', 'reason', 'bot_type', 'build'])
+
+
+def GetChangeAsSmallDictionary(change):
+  """Returns a small dictionary representation of a gerrit change.
+
+  Args:
+    change: A GerritPatch or GerritPatchTuple object.
+
+  Returns:
+    A dictionary of the form {'gerrit_number': change.gerrit_number,
+                              'patch_number': change.patch_number,
+                              'internal': change.internal}
+  """
+  return  {'gerrit_number': change.gerrit_number,
+           'patch_number': change.patch_number,
+           'internal': change.internal}
+
+
+def GetCLActionTuple(change, action, timestamp=None, reason=None):
+  """Returns a CLActionTuple suitable for recording in metadata or cidb.
+
+  Args:
+    change: A GerritPatch or GerritPatchTuple object.
+    action: The action taken, should be one of constants.CL_ACTIONS
+    timestamp: An integer timestamp such as int(time.time()) at which
+               the action was taken. Default: Now.
+    reason: Description of the reason the action was taken. Default: ''
+  """
+  return CLActionTuple(
+      GetChangeAsSmallDictionary(change),
+      action,
+      timestamp or int(time.time()),
+      reason)
+
+
 class _DummyLock(object):
   """A Dummy clone of RLock that does nothing."""
   def acquire(self, blocking=1):
@@ -201,29 +247,9 @@ class CBuildbotMetadata(object):
     Returns:
       self
     """
-    cl_action = (self._ChangeAsSmallDictionary(change),
-                 action,
-                 timestamp or int(time.time()),
-                 reason or '')
-
-    self._cl_action_list.append(cl_action)
+    self._cl_action_list.append(
+        GetCLActionTuple(change, action, timestamp, reason))
     return self
-
-  @staticmethod
-  def _ChangeAsSmallDictionary(change):
-    """Returns a small dictionary representation of a gerrit change.
-
-    Args:
-      change: A GerritPatch or GerritPatchTuple object.
-
-    Returns:
-      A dictionary of the form {'gerrit_number': change.gerrit_number,
-                                'patch_number': change.patch_number,
-                                'internal': change.internal}
-    """
-    return  {'gerrit_number': change.gerrit_number,
-             'patch_number': change.patch_number,
-             'internal': change.internal}
 
   @staticmethod
   def GetReportMetadataDict(builder_run, get_changes_from_pool,
@@ -835,12 +861,3 @@ def GetMetadataURLsSince(target, start_date):
   return urls
 
 
-GerritPatchTuple = collections.namedtuple('GerritPatchTuple',
-                                          'gerrit_number patch_number internal')
-GerritChangeTuple = collections.namedtuple('GerritChangeTuple',
-                                           'gerrit_number internal')
-CLActionTuple = collections.namedtuple('CLActionTuple',
-                                       'change action timestamp reason')
-CLActionWithBuildTuple = collections.namedtuple('CLActionWithBuildTuple',
-                                                'change action timestamp '
-                                                'reason bot_type build')
