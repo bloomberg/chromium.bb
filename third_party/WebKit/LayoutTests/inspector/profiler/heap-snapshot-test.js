@@ -491,16 +491,18 @@ InspectorTest.checkArrayIsSorted = function(contents, sortType, sortOrder)
         name: function (data) { return data; },
         id: function (data) { return parseInt(data, 10); }
     }[sortType];
-    var acceptableComparisonResult = {
-        ascending: -1,
-        descending: 1
-    }[sortOrder];
 
     if (!extractor) {
         InspectorTest.addResult("Invalid sort type: " + sortType);
         return;
     }
-    if (!acceptableComparisonResult) {
+
+    var acceptableComparisonResult;
+    if (sortOrder === WebInspector.DataGrid.Order.Ascending) {
+        acceptableComparisonResult = -1;
+    } else if (sortOrder === WebInspector.DataGrid.Order.Descending) {
+        acceptableComparisonResult = 1;
+    } else {
         InspectorTest.addResult("Invalid sort order: " + sortOrder);
         return;
     }
