@@ -48,6 +48,7 @@ class TestSessionStateDelegate : public SessionStateDelegate {
   virtual bool ShouldShowAvatar(aura::Window* window) const OVERRIDE;
   virtual void SwitchActiveUser(const std::string& user_id) OVERRIDE;
   virtual void CycleActiveUser(CycleUser cycle_user) OVERRIDE;
+  virtual bool IsMultiProfileAllowedByPrimaryUserPolicy() const OVERRIDE;
   virtual void AddSessionStateObserver(
       ash::SessionStateObserver* observer) OVERRIDE;
   virtual void RemoveSessionStateObserver(

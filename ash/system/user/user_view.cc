@@ -493,8 +493,13 @@ void UserView::ToggleAddUserMenuOption() {
 
   const SessionStateDelegate* delegate =
       Shell::GetInstance()->session_state_delegate();
-  add_user_disabled_ = delegate->NumberOfLoggedInUsers() >=
-                       delegate->GetMaximumNumberOfLoggedInUsers();
+
+  bool multi_profile_allowed =
+      delegate->IsMultiProfileAllowedByPrimaryUserPolicy();
+  add_user_disabled_ = (delegate->NumberOfLoggedInUsers() >=
+                        delegate->GetMaximumNumberOfLoggedInUsers()) ||
+                       !multi_profile_allowed;
+
   ButtonFromView* button = new ButtonFromView(
       add_user_view,
       add_user_disabled_ ? NULL : this,
@@ -508,9 +513,15 @@ void UserView::ToggleAddUserMenuOption() {
 
   if (add_user_disabled_) {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+    int message_id;
+    if (!multi_profile_allowed)
+      message_id = IDS_ASH_STATUS_TRAY_MESSAGE_NOT_ALLOWED_PRIMARY_USER;
+    else
+      message_id = IDS_ASH_STATUS_TRAY_MESSAGE_CANNOT_ADD_USER;
+
     popup_message_.reset(new PopupMessage(
         bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_CAPTION_CANNOT_ADD_USER),
-        bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_MESSAGE_CANNOT_ADD_USER),
+        bundle.GetLocalizedString(message_id),
         PopupMessage::ICON_WARNING,
         add_user_view->anchor(),
         views::BubbleBorder::TOP_LEFT,

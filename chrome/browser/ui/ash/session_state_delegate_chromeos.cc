@@ -11,6 +11,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
+#include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -206,6 +207,12 @@ void SessionStateDelegateChromeos::CycleActiveUser(CycleUser cycle_user) {
 
   // Switch using the transformed |user_id|.
   chromeos::UserManager::Get()->SwitchActiveUser(user_id);
+}
+
+bool SessionStateDelegateChromeos::IsMultiProfileAllowedByPrimaryUserPolicy()
+    const {
+  return chromeos::MultiProfileUserController::GetPrimaryUserPolicy() ==
+         chromeos::MultiProfileUserController::ALLOWED;
 }
 
 void SessionStateDelegateChromeos::AddSessionStateObserver(

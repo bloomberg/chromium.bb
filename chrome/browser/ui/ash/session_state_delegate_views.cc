@@ -91,6 +91,10 @@ void SessionStateDelegate::CycleActiveUser(CycleUser cycle_user) {
   NOTIMPLEMENTED();
 }
 
+bool SessionStateDelegate::IsMultiProfileAllowedByPrimaryUserPolicy() const {
+  return true;
+}
+
 void SessionStateDelegate::AddSessionStateObserver(
     ash::SessionStateObserver* observer) {
   NOTIMPLEMENTED();

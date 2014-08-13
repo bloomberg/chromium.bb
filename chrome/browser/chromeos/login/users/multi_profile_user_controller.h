@@ -65,6 +65,11 @@ class MultiProfileUserController {
   // Returns the cached policy value for |user_email|.
   std::string GetCachedValue(const std::string& user_email) const;
 
+  // Returns primary user policy (only ALLOW,
+  // NOT_ALLOWED_PRIMARY_POLICY_CERT_TAINTED,
+  // NOT_ALLOWED_PRIMARY_USER_POLICY_FORBIDS)
+  static UserAllowedInSessionReason GetPrimaryUserPolicy();
+
   // Returns true if user allowed to be in the current session. If |reason| not
   // null stores UserAllowedInSessionReason enum that describes actual reason.
   bool IsUserAllowedInSession(const std::string& user_email,

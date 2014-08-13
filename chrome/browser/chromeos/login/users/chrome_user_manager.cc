@@ -211,7 +211,9 @@ user_manager::UserList ChromeUserManager::GetUsersAdmittedForMultiProfile()
       // Same applies to owner account (see http://crbug.com/385034).
       if (check == MultiProfileUserController::ALLOWED ||
           check == MultiProfileUserController::NOT_ALLOWED_POLICY_FORBIDS ||
-          check == MultiProfileUserController::NOT_ALLOWED_OWNER_AS_SECONDARY) {
+          check == MultiProfileUserController::NOT_ALLOWED_OWNER_AS_SECONDARY ||
+          check ==
+              MultiProfileUserController::NOT_ALLOWED_POLICY_CERT_TAINTED) {
         result.push_back(*it);
       }
     }

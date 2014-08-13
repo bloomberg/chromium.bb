@@ -227,6 +227,11 @@ void TestSessionStateDelegate::CycleActiveUser(CycleUser cycle_user) {
   SwitchActiveUser("someone@tray");
 }
 
+bool TestSessionStateDelegate::IsMultiProfileAllowedByPrimaryUserPolicy()
+    const {
+  return true;
+}
+
 void TestSessionStateDelegate::AddSessionStateObserver(
     SessionStateObserver* observer) {
 }

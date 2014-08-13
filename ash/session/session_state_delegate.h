@@ -134,6 +134,9 @@ class ASH_EXPORT SessionStateDelegate {
   // ordering as GetLoggedInUsers.
   virtual void CycleActiveUser(CycleUser cycle_user) = 0;
 
+  // Returns true if primary user policy does not forbid multiple signin.
+  virtual bool IsMultiProfileAllowedByPrimaryUserPolicy() const = 0;
+
   // Adds or removes sessions state observer.
   virtual void AddSessionStateObserver(SessionStateObserver* observer) = 0;
   virtual void RemoveSessionStateObserver(SessionStateObserver* observer) = 0;

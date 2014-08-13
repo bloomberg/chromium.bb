@@ -128,6 +128,9 @@ class SessionStateDelegateImpl : public SessionStateDelegate {
   }
   virtual void SwitchActiveUser(const std::string& user_id) OVERRIDE {}
   virtual void CycleActiveUser(CycleUser cycle_user) OVERRIDE {}
+  virtual bool IsMultiProfileAllowedByPrimaryUserPolicy() const OVERRIDE {
+    return true;
+  }
   virtual void AddSessionStateObserver(
       ash::SessionStateObserver* observer) OVERRIDE {}
   virtual void RemoveSessionStateObserver(

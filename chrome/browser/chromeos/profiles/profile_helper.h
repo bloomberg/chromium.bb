@@ -134,6 +134,7 @@ class ProfileHelper : public BrowsingDataRemover::Observer,
   friend class ParallelAuthenticatorTest;
   friend class ProfileHelperTest;
   friend class ProfileListChromeOSTest;
+  friend class SessionStateDelegateChromeOSTest;
 
   // BrowsingDataRemover::Observer implementation:
   virtual void OnBrowsingDataRemoverDone() OVERRIDE;

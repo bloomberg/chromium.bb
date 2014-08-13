@@ -250,6 +250,9 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_MESSAGE_CANNOT_ADD_USER" desc="The error message when the user has reached the limit of multi profile users.">
         You can only have up to three accounts in multiple sign-in.
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_MESSAGE_NOT_ALLOWED_PRIMARY_USER" desc="The error message when the primary user forbids multiple signin because of not-allowed policy or because of usage policy-pushed certificates.">
+        The administrator for this account has disallowed multiple sign-in.
+      </message>
 
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH" desc="The label used as the header in the bluetooth popup.">
         Bluetooth
