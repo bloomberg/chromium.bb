@@ -327,6 +327,29 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
     textfield_->OnMouseReleased(release);
   }
 
+  // Simulates a complete tap.
+  void Tap(const gfx::Point& point) {
+    GestureEventForTest begin(
+        ui::ET_GESTURE_BEGIN, point.x(), point.y(), 0.0f, 0.0f);
+    textfield_->OnGestureEvent(&begin);
+
+    GestureEventForTest tap_down(
+        ui::ET_GESTURE_TAP_DOWN, point.x(), point.y(), 0.0f, 0.0f);
+    textfield_->OnGestureEvent(&tap_down);
+
+    GestureEventForTest show_press(
+        ui::ET_GESTURE_SHOW_PRESS, point.x(), point.y(), 0.0f, 0.0f);
+    textfield_->OnGestureEvent(&show_press);
+
+    GestureEventForTest tap(
+        ui::ET_GESTURE_TAP, point.x(), point.y(), 1.0f, 0.0f);
+    textfield_->OnGestureEvent(&tap);
+
+    GestureEventForTest end(
+        ui::ET_GESTURE_END, point.x(), point.y(), 0.0f, 0.0f);
+    textfield_->OnGestureEvent(&end);
+  }
+
   void VerifyTextfieldContextMenuContents(bool textfield_has_selection,
                                           bool can_undo,
                                           ui::MenuModel* menu) {
@@ -1972,6 +1995,29 @@ TEST_F(TextfieldTest, TouchSelectionAndDraggingTest) {
   EXPECT_FALSE(long_press_3.handled());
 }
 #endif
+
+TEST_F(TextfieldTest, TouchSelectionInUnfocusableTextfield) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableTouchEditing);
+
+  InitTextfield();
+  textfield_->SetText(ASCIIToUTF16("hello world"));
+  gfx::Point touch_point(GetCursorPositionX(2), 0);
+
+  // Disable textfield and tap on it. Touch text selection should not get
+  // activated.
+  textfield_->SetEnabled(false);
+  Tap(touch_point);
+  EXPECT_FALSE(test_api_->touch_selection_controller());
+  textfield_->SetEnabled(true);
+
+  // Make textfield unfocusable and tap on it. Touch text selection should not
+  // get activated.
+  textfield_->SetFocusable(false);
+  Tap(touch_point);
+  EXPECT_FALSE(textfield_->HasFocus());
+  EXPECT_FALSE(test_api_->touch_selection_controller());
+  textfield_->SetFocusable(true);
+}
 
 // Long_Press gesture in Textfield can initiate a drag and drop now.
 TEST_F(TextfieldTest, TestLongPressInitiatesDragDrop) {
