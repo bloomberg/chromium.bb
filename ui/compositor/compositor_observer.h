@@ -5,6 +5,7 @@
 #ifndef UI_COMPOSITOR_COMPOSITOR_OBSERVER_H_
 #define UI_COMPOSITOR_COMPOSITOR_OBSERVER_H_
 
+#include "base/logging.h"
 #include "base/time/time.h"
 #include "ui/compositor/compositor_export.h"
 
@@ -41,9 +42,7 @@ class COMPOSITOR_EXPORT CompositorObserver {
   virtual void OnCompositingLockStateChanged(Compositor* compositor) = 0;
 
  protected:
-#if defined(OS_MACOSX)
-  // Debugging instrumentation for crbug.com/401630.
-  // TODO(ccameron): remove this.
+#if DCHECK_IS_ON
   friend class Compositor;
   int32 observing_count_;
 #endif

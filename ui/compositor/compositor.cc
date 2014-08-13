@@ -233,10 +233,8 @@ scoped_refptr<CompositorVSyncManager> Compositor::vsync_manager() const {
 }
 
 void Compositor::AddObserver(CompositorObserver* observer) {
-#if defined(OS_MACOSX)
-  // Debugging instrumentation for crbug.com/401630.
-  // TODO(ccameron): remove this.
-  CHECK(observer);
+#if DCHECK_IS_ON
+  DCHECK(observer);
   if (!observer_list_.HasObserver(observer))
     observer->observing_count_ += 1;
 #endif
@@ -245,9 +243,7 @@ void Compositor::AddObserver(CompositorObserver* observer) {
 }
 
 void Compositor::RemoveObserver(CompositorObserver* observer) {
-#if defined(OS_MACOSX)
-  // Debugging instrumentation for crbug.com/401630.
-  // TODO(ccameron): remove this.
+#if DCHECK_IS_ON
   if (observer_list_.HasObserver(observer))
     observer->observing_count_ -= 1;
 #endif

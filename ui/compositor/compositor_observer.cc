@@ -8,19 +8,17 @@
 
 namespace ui {
 
-#if defined(OS_MACOSX)
-// Debugging instrumentation for crbug.com/401630.
-// TODO(ccameron): remove this.
+#if DCHECK_IS_ON
 CompositorObserver::CompositorObserver() : observing_count_(0) {}
 #else
 CompositorObserver::CompositorObserver() {}
 #endif
 
 CompositorObserver::~CompositorObserver() {
+  // TODO(ccameron): Make this check not fire on non-Mac platforms.
+  // http://crbug.com/403011
 #if defined(OS_MACOSX)
-  // Debugging instrumentation for crbug.com/401630.
-  // TODO(ccameron): remove this.
-  CHECK_EQ(observing_count_, 0);
+  DCHECK_EQ(observing_count_, 0);
 #endif
 }
 
