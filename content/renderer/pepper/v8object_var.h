@@ -13,6 +13,10 @@
 #include "ppapi/shared_impl/var.h"
 #include "v8/include/v8.h"
 
+namespace content {
+class PepperPluginInstanceImpl;
+}  // namespace content
+
 namespace ppapi {
 
 // V8ObjectVar -----------------------------------------------------------------
@@ -40,8 +44,8 @@ class V8ObjectVar : public Var {
   // zeroed out.
   void InstanceDeleted();
 
-  // Possibly 0 if the object has outlived its instance.
-  PP_Instance instance() const { return instance_; }
+  // Possibly NULL if the object has outlived its instance.
+  content::PepperPluginInstanceImpl* instance() const { return instance_; }
 
   // Helper function that converts a PP_Var to an object. This will return NULL
   // if the PP_Var is not of object type or the object is invalid.
@@ -50,7 +54,7 @@ class V8ObjectVar : public Var {
  private:
   virtual ~V8ObjectVar();
 
-  PP_Instance instance_;
+  content::PepperPluginInstanceImpl* instance_;
 
   v8::Persistent<v8::Object> v8_object_;
 

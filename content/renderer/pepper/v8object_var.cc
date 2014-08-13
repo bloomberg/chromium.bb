@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "content/public/renderer/pepper_plugin_instance.h"
 #include "content/renderer/pepper/host_globals.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "ppapi/c/pp_var.h"
 
 namespace ppapi {
@@ -15,9 +16,8 @@ namespace ppapi {
 
 V8ObjectVar::V8ObjectVar(PP_Instance instance,
                          v8::Handle<v8::Object> v8_object)
-    : instance_(instance) {
-  v8_object_.Reset(
-      content::PepperPluginInstance::Get(instance_)->GetIsolate(), v8_object);
+    : instance_(content::HostGlobals::Get()->GetInstance(instance)) {
+  v8_object_.Reset(instance_->GetIsolate(), v8_object);
   content::HostGlobals::Get()->host_var_tracker()->AddV8ObjectVar(this);
 }
 
@@ -36,10 +36,8 @@ PP_VarType V8ObjectVar::GetType() const {
 }
 
 v8::Local<v8::Object> V8ObjectVar::GetHandle() const {
-  content::PepperPluginInstance* instance =
-      content::PepperPluginInstance::Get(instance_);
-  if (instance)
-    return v8::Local<v8::Object>::New(instance->GetIsolate(), v8_object_);
+  if (instance_)
+    return v8::Local<v8::Object>::New(instance_->GetIsolate(), v8_object_);
   return v8::Local<v8::Object>();
 }
 
@@ -47,7 +45,7 @@ void V8ObjectVar::InstanceDeleted() {
   // This is called by the HostVarTracker which will take care of removing us
   // from its set.
   DCHECK(instance_);
-  instance_ = 0;
+  instance_ = NULL;
 }
 
 // static
