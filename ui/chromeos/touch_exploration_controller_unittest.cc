@@ -1119,6 +1119,7 @@ TEST_F(TouchExplorationTest, EnterGestureInProgressState) {
   ui::TouchEvent first_press(ui::ET_TOUCH_PRESSED, gfx::Point(0, 1), 0, Now());
   gfx::Point second_location(distance / 2, 1);
   gfx::Point third_location(distance, 1);
+  gfx::Point touch_exploration_location(20, 21);
 
   generator_->Dispatch(&first_press);
   simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(10));
@@ -1137,10 +1138,13 @@ TEST_F(TouchExplorationTest, EnterGestureInProgressState) {
   ASSERT_EQ(0U, captured_events.size());
 
   // Exit out of gesture mode once grace period is over and enter touch
-  // exploration.
+  // exploration. There should be a move when entering touch exploration and
+  // also for the touch move.
   AdvanceSimulatedTimePastTapDelay();
-  ASSERT_EQ(1U, captured_events.size());
+  generator_->MoveTouch(touch_exploration_location);
+  ASSERT_EQ(2U, captured_events.size());
   EXPECT_EQ(ui::ET_MOUSE_MOVED, captured_events[0]->type());
+  EXPECT_EQ(ui::ET_MOUSE_MOVED, captured_events[1]->type());
   EXPECT_TRUE(IsInTouchToMouseMode());
   EXPECT_FALSE(IsInGestureInProgressState());
 }
@@ -1155,63 +1159,80 @@ TEST_F(TouchExplorationTest, GestureSwipe) {
   directions.push_back(ui::VKEY_UP);
   directions.push_back(ui::VKEY_DOWN);
 
-  for (std::vector<ui::KeyboardCode>::const_iterator it = directions.begin();
-       it != directions.end();
-       ++it) {
-    int x = 30;
-    int y = 31;
-    ui::TouchEvent origin(ui::ET_TOUCH_PRESSED, gfx::Point(x, y), 0, Now());
-    generator_->Dispatch(&origin);
+  // This value was taken from gesture_recognizer_unittest.cc in a swipe
+  // detector test, since it seems to be about the right amount to get a swipe.
+  const int kSteps = 15;
 
-    ui::KeyboardCode direction = *it;
-    float distance = gesture_detector_config_.touch_slop + 1;
-    scoped_ptr<gfx::Point> swipe;
-    switch (direction) {
-      case ui::VKEY_RIGHT:
-        swipe.reset(new gfx::Point(x + distance, y));
-        break;
-      case ui::VKEY_LEFT:
-        swipe.reset(new gfx::Point(x - distance, y));
-        break;
-      case ui::VKEY_UP:
-        swipe.reset(new gfx::Point(x, y - distance));
-        break;
-      case ui::VKEY_DOWN:
-        swipe.reset(new gfx::Point(x, y + distance));
-        break;
-      default:
-        return;
+  // There are gestures supported with up to four fingers.
+  for (int num_fingers = 1; num_fingers <= 4; num_fingers++) {
+    std::vector<gfx::Point> start_points;
+    for(int j = 0; j < num_fingers; j++){
+      start_points.push_back(gfx::Point(j * 10 + 100, j * 10 + 200));
     }
+    gfx::Point* start_points_array = &start_points[0];
+    const float distance = gesture_detector_config_.touch_slop + 1;
+    // Iterate through each swipe direction for this number of fingers.
+    for (std::vector<ui::KeyboardCode>::const_iterator it = directions.begin();
+         it != directions.end();
+         ++it) {
+      int move_x = 0;
+      int move_y = 0;
+      ui::KeyboardCode direction = *it;
+      switch (direction) {
+        case ui::VKEY_RIGHT:
+          move_x = distance;
+          break;
+        case ui::VKEY_LEFT:
+          move_x = 0 - distance;
+          break;
+        case ui::VKEY_UP:
+          move_y = 0 - distance;
+          break;
+        case ui::VKEY_DOWN:
+          move_y = distance;
+          break;
+        default:
+          return;
+      }
 
-    // A swipe is made when a fling starts
-    float delta_time =
-        distance / gesture_detector_config_.maximum_fling_velocity;
-    simulated_clock_->Advance(base::TimeDelta::FromSecondsD(delta_time));
-    generator_->MoveTouch(*swipe);
-    EXPECT_TRUE(IsInGestureInProgressState());
-    EXPECT_FALSE(IsInTouchToMouseMode());
-    const ScopedVector<ui::Event>& captured_events = GetCapturedEvents();
-    ASSERT_EQ(0U, captured_events.size());
-    generator_->ReleaseTouch();
+      // A swipe is made when a fling starts
+      float delta_time =
+          distance / gesture_detector_config_.maximum_fling_velocity;
+      // delta_time is in seconds, so we convert to ms.
+      int delta_time_ms = floor(delta_time * 1000);
+      generator_->GestureMultiFingerScroll(num_fingers,
+                                           start_points_array,
+                                           delta_time_ms,
+                                           kSteps,
+                                           move_x * 2,
+                                           move_y * 2);
 
-    // The swipe registered and sent the appropriate key events.
-    AssertDirectionalNavigationEvents(captured_events, direction);
-    EXPECT_TRUE(IsInNoFingersDownState());
-    EXPECT_FALSE(IsInTouchToMouseMode());
-    EXPECT_FALSE(IsInGestureInProgressState());
-    ClearCapturedEvents();
+      // The swipe registered and sent the appropriate key events.
+      const ScopedVector<ui::Event>& captured_events = GetCapturedEvents();
+      if (num_fingers == 1)
+        AssertDirectionalNavigationEvents(captured_events, direction);
+      else {
+        // Most of the time this is 2 right now, but two of the two finger
+        // swipes are mapped to chromevox commands which dispatch 6 key events,
+        // and these will probably be remapped a lot as we're developing.
+        ASSERT_GE(captured_events.size(), 2U);
+        std::vector<ui::Event>::size_type i;
+        for (i = 0; i != captured_events.size(); i++) {
+          EXPECT_TRUE(captured_events[i]->IsKeyEvent());
+        }
+      }
+      EXPECT_TRUE(IsInNoFingersDownState());
+      EXPECT_FALSE(IsInTouchToMouseMode());
+      EXPECT_FALSE(IsInGestureInProgressState());
+      ClearCapturedEvents();
+    }
   }
 }
 
-// Since there are so many permutations, this test is too slow in debug
-// mode, so it will only be run in release mode.
-#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
-#define MAYBE_AllFingerPermutations AllFingerPermutations
-#else
-#define MAYBE_AllFingerPermutations DISABLED_AllFingerPermutations
-#endif
+// Since there are so many permutations, this test is fairly slow. Therefore, it
+// is disabled and will be turned on to check during development.
 
-TEST_F(TouchExplorationTest, MAYBE_AllFingerPermutations) {
+TEST_F(TouchExplorationTest, DISABLED_AllFingerPermutations) {
   SwitchTouchExplorationMode(true);
   SuppressVLOGs(true);
   // We will test all permutations of events from three different fingers
@@ -1320,8 +1341,9 @@ TEST_F(TouchExplorationTest, MAYBE_AllFingerPermutations) {
   }
 }
 
-// With the simple swipe gestures, if additional fingers are added, then the
-// state should change to the wait for one finger state.
+// With the simple swipe gestures, if additional fingers are added and the tap
+// timer times out, then the state should change to the wait for one finger
+// state.
 TEST_F(TouchExplorationTest, GestureAddedFinger) {
   SwitchTouchExplorationMode(true);
   EXPECT_FALSE(IsInTouchToMouseMode());
@@ -1339,11 +1361,12 @@ TEST_F(TouchExplorationTest, GestureAddedFinger) {
   const ScopedVector<ui::Event>& captured_events = GetCapturedEvents();
   ASSERT_EQ(0U, captured_events.size());
 
-  // Generate a second press that should prevent gestures from continuing to
-  // go through.
+  // Generate a second press, but time out past the gesture period so that
+  // gestures are prevented from continuing to go through.
   ui::TouchEvent second_press(
       ui::ET_TOUCH_PRESSED, gfx::Point(20, 21), 1, Now());
   generator_->Dispatch(&second_press);
+  AdvanceSimulatedTimePastTapDelay();
   EXPECT_FALSE(IsInGestureInProgressState());
   EXPECT_FALSE(IsInTouchToMouseMode());
   ASSERT_EQ(0U, captured_events.size());
@@ -1360,6 +1383,7 @@ TEST_F(TouchExplorationTest, EnterSlideGestureState) {
       ui::ET_TOUCH_PRESSED, gfx::Point(window_right, 1), 0, Now());
   gfx::Point second_location(window_right, 1 + distance / 2);
   gfx::Point third_location(window_right, 1 + distance);
+  gfx::Point fourth_location(window_right, 35);
 
   generator_->Dispatch(&first_press);
   simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(10));
@@ -1377,19 +1401,21 @@ TEST_F(TouchExplorationTest, EnterSlideGestureState) {
   EXPECT_FALSE(IsInGestureInProgressState());
   EXPECT_TRUE(IsInSlideGestureState());
   EXPECT_FALSE(IsInTouchToMouseMode());
+
+  // Now that we are in slide gesture, we can adjust the volume.
+  generator_->MoveTouch(fourth_location);
   const ScopedVector<ui::Event>& captured_events = GetCapturedEvents();
   ASSERT_EQ(0U, captured_events.size());
 
   // Since we are at the right edge of the screen, but the sound timer has not
-  // elapsed, there should have two sounds that fired and two volume
-  // changes (one for each movement).
+  // elapsed, there should have been a sound that fired and a volume
+  // change.
   size_t num_adjust_sounds = delegate_.NumAdjustSounds();
-  ASSERT_EQ(2U, num_adjust_sounds);
-  ASSERT_EQ(2U, delegate_.VolumeChanges().size());
+  ASSERT_EQ(1U, num_adjust_sounds);
+  ASSERT_EQ(1U, delegate_.VolumeChanges().size());
 
   // Exit out of slide gesture once touch is lifted, but not before even if the
   // grace period is over.
-
   AdvanceSimulatedTimePastPotentialTapDelay();
   ASSERT_EQ(0U, captured_events.size());
   EXPECT_FALSE(IsInTouchToMouseMode());
@@ -1451,24 +1477,31 @@ TEST_F(TouchExplorationTest, TestingBoundaries) {
 
   gfx::Rect window = BoundsOfRootWindowInDIP();
   gfx::Point initial_press(window.right() - GetMaxDistanceFromEdge() / 2, 1);
-  ui::TouchEvent first_press(ui::ET_TOUCH_PRESSED, initial_press, 0, Now());
-  gfx::Point touch_move(initial_press.x() + gesture_detector_config_.touch_slop,
-                        1);
-  gfx::Point into_slop_boundaries(
-      window.right() - GetSlopDistanceFromEdge() / 2, 1);
+
   gfx::Point center_screen(window.right() / 2, window.bottom() / 2);
 
+  ui::TouchEvent first_press(ui::ET_TOUCH_PRESSED, initial_press, 0, Now());
   generator_->Dispatch(&first_press);
   simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(10));
-
-  generator_->MoveTouch(touch_move);
-  EXPECT_FALSE(IsInTouchToMouseMode());
   EXPECT_FALSE(IsInGestureInProgressState());
   EXPECT_FALSE(IsInSlideGestureState());
+  EXPECT_FALSE(IsInTouchToMouseMode());
+
+  // Move past the touch slop to begin slide gestures.
+  // + slop + 1 to actually leave slop.
+  gfx::Point touch_move(
+      initial_press.x(),
+      initial_press.y() + gesture_detector_config_.touch_slop + 1);
+  generator_->MoveTouch(touch_move);
+  EXPECT_FALSE(IsInGestureInProgressState());
+  EXPECT_TRUE(IsInSlideGestureState());
+  EXPECT_FALSE(IsInTouchToMouseMode());
   simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(10));
 
-  // Move the touch into slop boundaries. It should stil be in slide gestures
+  // Move the touch into slop boundaries. It should still be in slide gestures
   // and adjust the volume.
+  gfx::Point into_slop_boundaries(
+      window.right() - GetSlopDistanceFromEdge() / 2, 1);
   generator_->MoveTouch(into_slop_boundaries);
   EXPECT_FALSE(IsInGestureInProgressState());
   EXPECT_TRUE(IsInSlideGestureState());
@@ -1478,8 +1511,8 @@ TEST_F(TouchExplorationTest, TestingBoundaries) {
   simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(200));
 
   size_t num_adjust_sounds = delegate_.NumAdjustSounds();
-  ASSERT_EQ(2U, num_adjust_sounds);
-  ASSERT_EQ(2U, delegate_.VolumeChanges().size());
+  ASSERT_EQ(1U, num_adjust_sounds);
+  ASSERT_EQ(1U, delegate_.VolumeChanges().size());
 
   // Move the touch into the center of the window. It should still be in slide
   // gestures, but there should not be anymore volume adjustments.
@@ -1490,11 +1523,11 @@ TEST_F(TouchExplorationTest, TestingBoundaries) {
 
   simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(200));
   num_adjust_sounds = delegate_.NumAdjustSounds();
-  ASSERT_EQ(2U, num_adjust_sounds);
-  ASSERT_EQ(2U, delegate_.VolumeChanges().size());
+  ASSERT_EQ(1U, num_adjust_sounds);
+  ASSERT_EQ(1U, delegate_.VolumeChanges().size());
 
   // Move the touch back into slop edge distance and volume should be changing
-  // again.
+  // again, one volume change for each new move.
   generator_->MoveTouch(into_slop_boundaries);
   EXPECT_FALSE(IsInGestureInProgressState());
   EXPECT_TRUE(IsInSlideGestureState());
@@ -1506,7 +1539,7 @@ TEST_F(TouchExplorationTest, TestingBoundaries) {
   simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(200));
 
   num_adjust_sounds = delegate_.NumAdjustSounds();
-  ASSERT_EQ(3U, num_adjust_sounds);
+  ASSERT_EQ(2U, num_adjust_sounds);
   ASSERT_EQ(3U, delegate_.VolumeChanges().size());
 
   const ScopedVector<ui::Event>& captured_events = GetCapturedEvents();
@@ -1543,6 +1576,7 @@ TEST_F(TouchExplorationTest, InBoundariesTouchExploration) {
 TEST_F(TouchExplorationTest, TwoFingerTap) {
   SwitchTouchExplorationMode(true);
 
+  generator_->set_current_location(gfx::Point(101, 102));
   generator_->PressTouchId(1);
   EXPECT_FALSE(IsInTwoFingerTapState());
 
@@ -1553,6 +1587,7 @@ TEST_F(TouchExplorationTest, TwoFingerTap) {
   ASSERT_EQ(0U, captured_events.size());
 
   generator_->ReleaseTouchId(1);
+  EXPECT_TRUE(IsInTwoFingerTapState());
   generator_->ReleaseTouchId(2);
 
   // Two key events should have been sent to silence the feedback.
