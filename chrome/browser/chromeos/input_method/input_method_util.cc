@@ -381,7 +381,7 @@ base::string16 InputMethodUtil::GetInputMethodShortName(
     const size_t kMaxLanguageNameLen = 2;
     DCHECK(!input_method.language_codes().empty());
     const std::string language_code = input_method.language_codes().at(0);
-    text = base::StringToUpperASCII(base::UTF8ToUTF16(language_code)).substr(
+    text = StringToUpperASCII(base::UTF8ToUTF16(language_code)).substr(
         0, kMaxLanguageNameLen);
   }
   DCHECK(!text.empty()) << input_method.id();

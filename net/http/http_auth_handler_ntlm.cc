@@ -114,7 +114,7 @@ HttpAuth::AuthorizationResult HttpAuthHandlerNTLM::ParseChallenge(
   auth_data_.clear();
 
   // Verify the challenge's auth-scheme.
-  if (!base::LowerCaseEqualsASCII(tok->scheme(), "ntlm"))
+  if (!LowerCaseEqualsASCII(tok->scheme(), "ntlm"))
     return HttpAuth::AUTHORIZATION_RESULT_INVALID;
 
   std::string base64_param = tok->base64_param();

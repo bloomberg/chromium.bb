@@ -34,7 +34,7 @@ static bool CookiePartsContains(const std::vector<std::string>& parts,
                                 const char* part) {
   for (std::vector<std::string>::const_iterator it = parts.begin();
        it != parts.end(); ++it) {
-    if (base::LowerCaseEqualsASCII(*it, part))
+    if (LowerCaseEqualsASCII(*it, part))
       return true;
   }
   return false;

@@ -842,7 +842,7 @@ void AddVersionKeyWorkItems(HKEY root,
     // languages is a superset of Chrome's set of translations with this one
     // exception: what Chrome calls "en-us", Omaha calls "en".  sigh.
     base::string16 language(GetCurrentTranslation());
-    if (base::LowerCaseEqualsASCII(language, "en-us"))
+    if (LowerCaseEqualsASCII(language, "en-us"))
       language.resize(2);
     list->AddSetRegValueWorkItem(root,
                                  version_key,

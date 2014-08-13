@@ -143,13 +143,13 @@ int ThemeProperties::StringToAlignment(const std::string& alignment) {
   int alignment_mask = 0;
   for (std::vector<std::string>::iterator component(split.begin());
        component != split.end(); ++component) {
-    if (base::LowerCaseEqualsASCII(*component, kAlignmentTop))
+    if (LowerCaseEqualsASCII(*component, kAlignmentTop))
       alignment_mask |= ALIGN_TOP;
-    else if (base::LowerCaseEqualsASCII(*component, kAlignmentBottom))
+    else if (LowerCaseEqualsASCII(*component, kAlignmentBottom))
       alignment_mask |= ALIGN_BOTTOM;
-    else if (base::LowerCaseEqualsASCII(*component, kAlignmentLeft))
+    else if (LowerCaseEqualsASCII(*component, kAlignmentLeft))
       alignment_mask |= ALIGN_LEFT;
-    else if (base::LowerCaseEqualsASCII(*component, kAlignmentRight))
+    else if (LowerCaseEqualsASCII(*component, kAlignmentRight))
       alignment_mask |= ALIGN_RIGHT;
   }
   return alignment_mask;

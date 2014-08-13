@@ -419,9 +419,9 @@ void MakeInputForPasswordManager(
     LoginHandler* handler,
     std::vector<PasswordForm>* password_manager_input) {
   PasswordForm dialog_form;
-  if (base::LowerCaseEqualsASCII(auth_info->scheme, "basic")) {
+  if (LowerCaseEqualsASCII(auth_info->scheme, "basic")) {
     dialog_form.scheme = PasswordForm::SCHEME_BASIC;
-  } else if (base::LowerCaseEqualsASCII(auth_info->scheme, "digest")) {
+  } else if (LowerCaseEqualsASCII(auth_info->scheme, "digest")) {
     dialog_form.scheme = PasswordForm::SCHEME_DIGEST;
   } else {
     dialog_form.scheme = PasswordForm::SCHEME_OTHER;

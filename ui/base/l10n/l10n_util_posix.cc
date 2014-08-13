@@ -21,7 +21,7 @@ bool IsLocaleSupportedByOS(const std::string& locale) {
   // to return true.
   static const char* kUnsupportedLocales[] = {"am", "sw"};
   for (size_t i = 0; i < arraysize(kUnsupportedLocales); ++i) {
-    if (base::LowerCaseEqualsASCII(locale, kUnsupportedLocales[i]))
+    if (LowerCaseEqualsASCII(locale, kUnsupportedLocales[i]))
       return false;
   }
   return true;

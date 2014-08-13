@@ -293,7 +293,7 @@ bool ParseFolderNameFromLine(const std::string& line,
   }
 
   if (GetAttribute(attribute_list, kToolbarFolderAttribute, &value) &&
-      base::LowerCaseEqualsASCII(value, "true"))
+      LowerCaseEqualsASCII(value, "true"))
     *is_toolbar_folder = true;
   else
     *is_toolbar_folder = false;

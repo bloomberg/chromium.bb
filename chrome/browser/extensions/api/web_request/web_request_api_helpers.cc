@@ -347,7 +347,7 @@ EventResponseDelta* CalculateOnHeadersReceivedDelta(
       bool header_found = false;
       for (ResponseHeaders::const_iterator i = new_response_headers->begin();
            i != new_response_headers->end(); ++i) {
-        if (base::LowerCaseEqualsASCII(i->first, name_lowercase.c_str()) &&
+        if (LowerCaseEqualsASCII(i->first, name_lowercase.c_str()) &&
             value == i->second) {
           header_found = true;
           break;

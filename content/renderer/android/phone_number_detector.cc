@@ -36,7 +36,7 @@ PhoneNumberDetector::PhoneNumberDetector()
 // Region should be empty or an ISO 3166-1 alpha-2 country code.
 PhoneNumberDetector::PhoneNumberDetector(const std::string& region)
     : region_code_(region.empty() ? RegionCode::GetUnknown()
-                                  : base::StringToUpperASCII(region)) {
+                                  : StringToUpperASCII(region)) {
 }
 
 PhoneNumberDetector::~PhoneNumberDetector() {

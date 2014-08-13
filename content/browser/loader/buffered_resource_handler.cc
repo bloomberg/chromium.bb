@@ -260,7 +260,7 @@ bool BufferedResourceHandler::ShouldSniffContent() {
                                      &content_type_options);
 
   bool sniffing_blocked =
-      base::LowerCaseEqualsASCII(content_type_options, "nosniff");
+      LowerCaseEqualsASCII(content_type_options, "nosniff");
   bool we_would_like_to_sniff =
       net::ShouldSniffMimeType(request()->url(), mime_type);
 

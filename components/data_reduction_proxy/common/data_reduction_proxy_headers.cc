@@ -60,9 +60,9 @@ bool GetDataReductionProxyActionValue(
 
   while (headers->EnumerateHeader(&iter, kChromeProxyHeader, &value)) {
     if (value.size() > prefix.size()) {
-      if (base::LowerCaseEqualsASCII(value.begin(),
-                                     value.begin() + prefix.size(),
-                                     prefix.c_str())) {
+      if (LowerCaseEqualsASCII(value.begin(),
+                               value.begin() + prefix.size(),
+                               prefix.c_str())) {
         if (action_value)
           *action_value = value.substr(prefix.size());
         return true;
@@ -85,9 +85,9 @@ bool ParseHeadersAndSetBypassDuration(const net::HttpResponseHeaders* headers,
 
   while (headers->EnumerateHeader(&iter, kChromeProxyHeader, &value)) {
     if (value.size() > prefix.size()) {
-      if (base::LowerCaseEqualsASCII(value.begin(),
-                                     value.begin() + prefix.size(),
-                                     prefix.c_str())) {
+      if (LowerCaseEqualsASCII(value.begin(),
+                               value.begin() + prefix.size(),
+                               prefix.c_str())) {
         int64 seconds;
         if (!base::StringToInt64(
                 StringPiece(value.begin() + prefix.size(), value.end()),
@@ -269,10 +269,10 @@ void GetDataReductionProxyHeaderWithFingerprintRemoved(
   void* iter = NULL;
   while (headers->EnumerateHeader(&iter, kChromeProxyHeader, &value)) {
     if (value.size() > chrome_proxy_fingerprint_prefix.size()) {
-      if (base::LowerCaseEqualsASCII(
-              value.begin(),
-              value.begin() + chrome_proxy_fingerprint_prefix.size(),
-              chrome_proxy_fingerprint_prefix.c_str())) {
+      if (LowerCaseEqualsASCII(
+          value.begin(),
+          value.begin() + chrome_proxy_fingerprint_prefix.size(),
+          chrome_proxy_fingerprint_prefix.c_str())) {
         continue;
       }
     }

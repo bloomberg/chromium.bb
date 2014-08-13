@@ -263,6 +263,16 @@ template <class str> inline str StringToLowerASCII(const str& s) {
   return output;
 }
 
+}  // namespace base
+
+#if defined(OS_WIN)
+#include "base/strings/string_util_win.h"
+#elif defined(OS_POSIX)
+#include "base/strings/string_util_posix.h"
+#else
+#error Define string operations appropriately for your platform
+#endif
+
 // Converts the elements of the given string.  This version uses a pointer to
 // clearly differentiate it from the non-pointer variant.
 template <class str> inline void StringToUpperASCII(str* s) {
@@ -277,18 +287,14 @@ template <class str> inline str StringToUpperASCII(const str& s) {
   return output;
 }
 
-// Compare the lower-case form of the given string against the given
-// previously-lower-cased ASCII string. This is useful for doing checking if an
-// input string matches some token, and it is optimized to avoid intermediate
-// string copies.
-BASE_EXPORT bool LowerCaseEqualsASCII(StringPiece str,
-                                      const char* lower_cased_cmp);
-BASE_EXPORT bool LowerCaseEqualsASCII(StringPiece16 str,
-                                      const char* lower_cased_cmp);
+// Compare the lower-case form of the given string against the given ASCII
+// string.  This is useful for doing checking if an input string matches some
+// token, and it is optimized to avoid intermediate string copies.  This API is
+// borrowed from the equivalent APIs in Mozilla.
+BASE_EXPORT bool LowerCaseEqualsASCII(const std::string& a, const char* b);
+BASE_EXPORT bool LowerCaseEqualsASCII(const base::string16& a, const char* b);
 
 // Same thing, but with string iterators instead.
-// TODO(brettw) remove these variants in preference for the StringPiece
-// versions above.
 BASE_EXPORT bool LowerCaseEqualsASCII(std::string::const_iterator a_begin,
                                       std::string::const_iterator a_end,
                                       const char* b);
@@ -301,16 +307,6 @@ BASE_EXPORT bool LowerCaseEqualsASCII(const char* a_begin,
 BASE_EXPORT bool LowerCaseEqualsASCII(const base::char16* a_begin,
                                       const base::char16* a_end,
                                       const char* b);
-
-}  // namespace base
-
-#if defined(OS_WIN)
-#include "base/strings/string_util_win.h"
-#elif defined(OS_POSIX)
-#include "base/strings/string_util_posix.h"
-#else
-#error Define string operations appropriately for your platform
-#endif
 
 // Performs a case-sensitive string compare. The behavior is undefined if both
 // strings are not ASCII.

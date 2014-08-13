@@ -586,10 +586,10 @@ bool DataReductionProxySettings::DisableIfVPN() {
   const std::string vpn_interface_name_prefix = "tun";
   for (size_t i = 0; i < network_interfaces.size(); ++i) {
     std::string interface_name = network_interfaces[i].name;
-    if (base::LowerCaseEqualsASCII(
-            interface_name.begin(),
-            interface_name.begin() + vpn_interface_name_prefix.size(),
-            vpn_interface_name_prefix.c_str())) {
+    if (LowerCaseEqualsASCII(
+        interface_name.begin(),
+        interface_name.begin() + vpn_interface_name_prefix.size(),
+        vpn_interface_name_prefix.c_str())) {
       SetProxyConfigs(false,
                       IsDataReductionProxyAlternativeEnabled(),
                       false,

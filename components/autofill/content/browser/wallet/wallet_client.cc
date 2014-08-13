@@ -66,21 +66,21 @@ std::string RiskCapabilityToString(
 WalletClient::ErrorType StringToErrorType(const std::string& error_type) {
   std::string trimmed;
   base::TrimWhitespaceASCII(error_type, base::TRIM_ALL, &trimmed);
-  if (base::LowerCaseEqualsASCII(trimmed, "buyer_account_error"))
+  if (LowerCaseEqualsASCII(trimmed, "buyer_account_error"))
     return WalletClient::BUYER_ACCOUNT_ERROR;
-  if (base::LowerCaseEqualsASCII(trimmed, "unsupported_merchant"))
+  if (LowerCaseEqualsASCII(trimmed, "unsupported_merchant"))
     return WalletClient::UNSUPPORTED_MERCHANT;
-  if (base::LowerCaseEqualsASCII(trimmed, "internal_error"))
+  if (LowerCaseEqualsASCII(trimmed, "internal_error"))
     return WalletClient::INTERNAL_ERROR;
-  if (base::LowerCaseEqualsASCII(trimmed, "invalid_params"))
+  if (LowerCaseEqualsASCII(trimmed, "invalid_params"))
     return WalletClient::INVALID_PARAMS;
-  if (base::LowerCaseEqualsASCII(trimmed, "service_unavailable"))
+  if (LowerCaseEqualsASCII(trimmed, "service_unavailable"))
     return WalletClient::SERVICE_UNAVAILABLE;
-  if (base::LowerCaseEqualsASCII(trimmed, "unsupported_api_version"))
+  if (LowerCaseEqualsASCII(trimmed, "unsupported_api_version"))
     return WalletClient::UNSUPPORTED_API_VERSION;
-  if (base::LowerCaseEqualsASCII(trimmed, "unsupported_user_agent"))
+  if (LowerCaseEqualsASCII(trimmed, "unsupported_user_agent"))
     return WalletClient::UNSUPPORTED_USER_AGENT_OR_API_KEY;
-  if (base::LowerCaseEqualsASCII(trimmed, "spending_limit_exceeded"))
+  if (LowerCaseEqualsASCII(trimmed, "spending_limit_exceeded"))
     return WalletClient::SPENDING_LIMIT_EXCEEDED;
 
   DVLOG(1) << "Unknown wallet error string: \"" << error_type << '"';
@@ -93,9 +93,9 @@ WalletClient::ErrorType BuyerErrorStringToErrorType(
     const std::string& message_type_for_buyer) {
   std::string trimmed;
   base::TrimWhitespaceASCII(message_type_for_buyer, base::TRIM_ALL, &trimmed);
-  if (base::LowerCaseEqualsASCII(trimmed, "bla_country_not_supported"))
+  if (LowerCaseEqualsASCII(trimmed, "bla_country_not_supported"))
     return WalletClient::BUYER_LEGAL_ADDRESS_NOT_SUPPORTED;
-  if (base::LowerCaseEqualsASCII(trimmed, "buyer_kyc_error"))
+  if (LowerCaseEqualsASCII(trimmed, "buyer_kyc_error"))
     return WalletClient::UNVERIFIED_KNOW_YOUR_CUSTOMER_STATUS;
 
   return WalletClient::BUYER_ACCOUNT_ERROR;
@@ -642,7 +642,7 @@ void WalletClient::OnURLFetchComplete(
         std::string trimmed;
         base::TrimWhitespaceASCII(auth_result, base::TRIM_ALL, &trimmed);
         delegate_->OnDidAuthenticateInstrument(
-            base::LowerCaseEqualsASCII(trimmed, "success"));
+            LowerCaseEqualsASCII(trimmed, "success"));
       } else {
         HandleMalformedResponse(type, scoped_request.get());
       }

@@ -140,7 +140,7 @@ bool URLRequestFileJob::IsRedirectResponse(GURL* location,
 #if defined(OS_WIN)
   // Follow a Windows shortcut.
   // We just resolve .lnk file, ignore others.
-  if (!base::LowerCaseEqualsASCII(file_path_.Extension(), ".lnk"))
+  if (!LowerCaseEqualsASCII(file_path_.Extension(), ".lnk"))
     return false;
 
   base::FilePath new_path = file_path_;
@@ -161,7 +161,7 @@ bool URLRequestFileJob::IsRedirectResponse(GURL* location,
 
 Filter* URLRequestFileJob::SetupFilter() const {
   // Bug 9936 - .svgz files needs to be decompressed.
-  return base::LowerCaseEqualsASCII(file_path_.Extension(), ".svgz")
+  return LowerCaseEqualsASCII(file_path_.Extension(), ".svgz")
       ? Filter::GZipFactory() : NULL;
 }
 

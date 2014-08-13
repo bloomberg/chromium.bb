@@ -76,8 +76,7 @@ HttpAuth::AuthorizationResult HttpAuth::HandleChallengeResponse(
       HttpAuth::AUTHORIZATION_RESULT_INVALID;
   while (headers->EnumerateHeader(&iter, header_name, &challenge)) {
     HttpAuthChallengeTokenizer props(challenge.begin(), challenge.end());
-    if (!base::LowerCaseEqualsASCII(props.scheme(),
-                                    current_scheme_name.c_str()))
+    if (!LowerCaseEqualsASCII(props.scheme(), current_scheme_name.c_str()))
       continue;
     authorization_result = handler->HandleAnotherChallenge(&props);
     if (authorization_result != HttpAuth::AUTHORIZATION_RESULT_INVALID) {

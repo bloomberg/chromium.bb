@@ -602,8 +602,8 @@ void IEImporter::ImportPasswordsIE6() {
       continue;
 
     GURL url(ac_list[i].key.c_str());
-    if (!(base::LowerCaseEqualsASCII(url.scheme(), url::kHttpScheme) ||
-          base::LowerCaseEqualsASCII(url.scheme(), url::kHttpsScheme))) {
+    if (!(LowerCaseEqualsASCII(url.scheme(), url::kHttpScheme) ||
+          LowerCaseEqualsASCII(url.scheme(), url::kHttpsScheme))) {
       continue;
     }
 
@@ -812,7 +812,7 @@ void IEImporter::ParseFavoritesFolder(
   for (std::vector<base::FilePath::StringType>::iterator it = file_list.begin();
        it != file_list.end(); ++it) {
     base::FilePath shortcut(*it);
-    if (!base::LowerCaseEqualsASCII(shortcut.Extension(), ".url"))
+    if (!LowerCaseEqualsASCII(shortcut.Extension(), ".url"))
       continue;
 
     // Skip the bookmark with invalid URL.

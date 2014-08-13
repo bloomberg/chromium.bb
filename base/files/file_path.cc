@@ -141,14 +141,13 @@ StringType::size_type ExtensionSeparatorPosition(const StringType& path) {
 
   for (size_t i = 0; i < arraysize(kCommonDoubleExtensions); ++i) {
     StringType extension(path, penultimate_dot + 1);
-    if (base::LowerCaseEqualsASCII(extension, kCommonDoubleExtensions[i]))
+    if (LowerCaseEqualsASCII(extension, kCommonDoubleExtensions[i]))
       return penultimate_dot;
   }
 
   StringType extension(path, last_dot + 1);
   for (size_t i = 0; i < arraysize(kCommonDoubleExtensionSuffixes); ++i) {
-    if (base::LowerCaseEqualsASCII(extension,
-                                   kCommonDoubleExtensionSuffixes[i])) {
+    if (LowerCaseEqualsASCII(extension, kCommonDoubleExtensionSuffixes[i])) {
       if ((last_dot - penultimate_dot) <= 5U &&
           (last_dot - penultimate_dot) > 1U) {
         return penultimate_dot;

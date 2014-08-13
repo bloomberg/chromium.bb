@@ -229,8 +229,8 @@ void HttpAuthSSPI::ResetSecurityContext() {
 HttpAuth::AuthorizationResult HttpAuthSSPI::ParseChallenge(
     HttpAuthChallengeTokenizer* tok) {
   // Verify the challenge's auth-scheme.
-  if (!base::LowerCaseEqualsASCII(tok->scheme(),
-                                  base::StringToLowerASCII(scheme_).c_str()))
+  if (!LowerCaseEqualsASCII(tok->scheme(),
+                            base::StringToLowerASCII(scheme_).c_str()))
     return HttpAuth::AUTHORIZATION_RESULT_INVALID;
 
   std::string encoded_auth_token = tok->base64_param();

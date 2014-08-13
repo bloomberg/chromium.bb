@@ -67,7 +67,7 @@ bool MatchesSignature(StringPiece data,
     if (length < signature_length)
       continue;
 
-    if (base::LowerCaseEqualsASCII(
+    if (LowerCaseEqualsASCII(
             data.begin(), data.begin() + signature_length, signature.data()))
       return true;
   }
@@ -198,7 +198,7 @@ SiteIsolationPolicy::OnReceivedResponse(const GURL& frame_origin,
   resp_data->resource_type = resource_type;
   resp_data->canonical_mime_type = canonical_mime_type;
   resp_data->http_status_code = info.headers->response_code();
-  resp_data->no_sniff = base::LowerCaseEqualsASCII(no_sniff, "nosniff");
+  resp_data->no_sniff = LowerCaseEqualsASCII(no_sniff, "nosniff");
 
   return resp_data;
 }
@@ -306,23 +306,23 @@ bool SiteIsolationPolicy::ShouldBlockResponse(
 
 SiteIsolationResponseMetaData::CanonicalMimeType
 SiteIsolationPolicy::GetCanonicalMimeType(const std::string& mime_type) {
-  if (base::LowerCaseEqualsASCII(mime_type, kTextHtml)) {
+  if (LowerCaseEqualsASCII(mime_type, kTextHtml)) {
     return SiteIsolationResponseMetaData::HTML;
   }
 
-  if (base::LowerCaseEqualsASCII(mime_type, kTextPlain)) {
+  if (LowerCaseEqualsASCII(mime_type, kTextPlain)) {
     return SiteIsolationResponseMetaData::Plain;
   }
 
-  if (base::LowerCaseEqualsASCII(mime_type, kAppJson) ||
-      base::LowerCaseEqualsASCII(mime_type, kTextJson) ||
-      base::LowerCaseEqualsASCII(mime_type, kTextXjson)) {
+  if (LowerCaseEqualsASCII(mime_type, kAppJson) ||
+      LowerCaseEqualsASCII(mime_type, kTextJson) ||
+      LowerCaseEqualsASCII(mime_type, kTextXjson)) {
     return SiteIsolationResponseMetaData::JSON;
   }
 
-  if (base::LowerCaseEqualsASCII(mime_type, kTextXml) ||
-      base::LowerCaseEqualsASCII(mime_type, xAppRssXml) ||
-      base::LowerCaseEqualsASCII(mime_type, kAppXml)) {
+  if (LowerCaseEqualsASCII(mime_type, kTextXml) ||
+      LowerCaseEqualsASCII(mime_type, xAppRssXml) ||
+      LowerCaseEqualsASCII(mime_type, kAppXml)) {
     return SiteIsolationResponseMetaData::XML;
   }
 

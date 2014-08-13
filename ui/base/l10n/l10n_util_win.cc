@@ -112,8 +112,7 @@ bool IsLocaleSupportedByOS(const std::string& locale) {
   // 'Abyssinica SIL' in the resource bundle to use in the UI. Check
   // for its presence to determine whether or not to support Amharic UI on XP.
   return (base::win::GetVersion() >= base::win::VERSION_VISTA ||
-      !base::LowerCaseEqualsASCII(locale, "am") ||
-      IsFontPresent(L"Abyssinica SIL"));
+      !LowerCaseEqualsASCII(locale, "am") || IsFontPresent(L"Abyssinica SIL"));
 }
 
 bool NeedOverrideDefaultUIFont(base::string16* override_font_family,

@@ -38,13 +38,13 @@ const char kLegacyPackagedAppType[] = "legacy_packaged_app";
 // Converts the item type string from the web store to an
 // extensions::Manifest::Type.
 extensions::Manifest::Type ParseItemType(const std::string& item_type_str) {
-  if (base::LowerCaseEqualsASCII(item_type_str, kPlatformAppType))
+  if (LowerCaseEqualsASCII(item_type_str, kPlatformAppType))
     return extensions::Manifest::TYPE_PLATFORM_APP;
 
-  if (base::LowerCaseEqualsASCII(item_type_str, kLegacyPackagedAppType))
+  if (LowerCaseEqualsASCII(item_type_str, kLegacyPackagedAppType))
     return extensions::Manifest::TYPE_LEGACY_PACKAGED_APP;
 
-  if (base::LowerCaseEqualsASCII(item_type_str, kHostedAppType))
+  if (LowerCaseEqualsASCII(item_type_str, kHostedAppType))
     return extensions::Manifest::TYPE_HOSTED_APP;
 
   return extensions::Manifest::TYPE_UNKNOWN;

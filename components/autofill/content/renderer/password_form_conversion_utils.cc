@@ -26,9 +26,8 @@ namespace {
 // |element| is present and has the specified |value_in_lowercase|.
 bool HasAutocompleteAttributeValue(const WebInputElement& element,
                                    const char* value_in_lowercase) {
-  return base::LowerCaseEqualsASCII(
-      base::string16(element.getAttribute("autocomplete")),
-      value_in_lowercase);
+  return LowerCaseEqualsASCII(element.getAttribute("autocomplete"),
+                              value_in_lowercase);
 }
 
 // Helper to determine which password is the main (current) one, and which is

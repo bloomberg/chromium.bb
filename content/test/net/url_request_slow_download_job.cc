@@ -106,11 +106,9 @@ URLRequestSlowDownloadJob::URLRequestSlowDownloadJob(
 }
 
 void URLRequestSlowDownloadJob::StartAsync() {
-  if (base::LowerCaseEqualsASCII(kFinishDownloadUrl,
-                                 request_->url().spec().c_str()))
+  if (LowerCaseEqualsASCII(kFinishDownloadUrl, request_->url().spec().c_str()))
     URLRequestSlowDownloadJob::FinishPendingRequests();
-  if (base::LowerCaseEqualsASCII(kErrorDownloadUrl,
-                                 request_->url().spec().c_str()))
+  if (LowerCaseEqualsASCII(kErrorDownloadUrl, request_->url().spec().c_str()))
     URLRequestSlowDownloadJob::ErrorPendingRequests();
 
   NotifyHeadersComplete();
@@ -169,10 +167,10 @@ URLRequestSlowDownloadJob::FillBufferHelper(
 
 bool URLRequestSlowDownloadJob::ReadRawData(net::IOBuffer* buf, int buf_size,
                                             int* bytes_read) {
-  if (base::LowerCaseEqualsASCII(kFinishDownloadUrl,
-                                 request_->url().spec().c_str()) ||
-      base::LowerCaseEqualsASCII(kErrorDownloadUrl,
-                                 request_->url().spec().c_str())) {
+  if (LowerCaseEqualsASCII(kFinishDownloadUrl,
+                           request_->url().spec().c_str()) ||
+      LowerCaseEqualsASCII(kErrorDownloadUrl,
+                           request_->url().spec().c_str())) {
     VLOG(10) << __FUNCTION__ << " called w/ kFinish/ErrorDownloadUrl.";
     *bytes_read = 0;
     return true;
@@ -242,10 +240,10 @@ void URLRequestSlowDownloadJob::GetResponseInfoConst(
     net::HttpResponseInfo* info) const {
   // Send back mock headers.
   std::string raw_headers;
-  if (base::LowerCaseEqualsASCII(kFinishDownloadUrl,
-                                 request_->url().spec().c_str()) ||
-      base::LowerCaseEqualsASCII(kErrorDownloadUrl,
-                                 request_->url().spec().c_str())) {
+  if (LowerCaseEqualsASCII(kFinishDownloadUrl,
+                           request_->url().spec().c_str()) ||
+      LowerCaseEqualsASCII(kErrorDownloadUrl,
+                           request_->url().spec().c_str())) {
     raw_headers.append(
       "HTTP/1.1 200 OK\n"
       "Content-type: text/plain\n");
@@ -255,8 +253,7 @@ void URLRequestSlowDownloadJob::GetResponseInfoConst(
       "Content-type: application/octet-stream\n"
       "Cache-Control: max-age=0\n");
 
-    if (base::LowerCaseEqualsASCII(kKnownSizeUrl,
-                                   request_->url().spec().c_str())) {
+    if (LowerCaseEqualsASCII(kKnownSizeUrl, request_->url().spec().c_str())) {
       raw_headers.append(base::StringPrintf(
           "Content-Length: %d\n",
           kFirstDownloadSize + kSecondDownloadSize));

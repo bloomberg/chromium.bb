@@ -320,7 +320,7 @@ bool ComponentExtensionIMEManagerImpl::ReadEngineComponent(
   if (out->display_name.find("__MSG_") == 0) {
     const InputMethodNameMap* map = kInputMethodNameMap;
     size_t map_size = arraysize(kInputMethodNameMap);
-    std::string name = base::StringToUpperASCII(out->display_name);
+    std::string name = StringToUpperASCII(out->display_name);
     const InputMethodNameMap map_key = {name.c_str(), 0};
     const InputMethodNameMap* p =
         std::lower_bound(map, map + map_size, map_key);

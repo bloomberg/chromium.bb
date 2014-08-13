@@ -354,38 +354,38 @@ bool IsStringUTF8(const std::string& str) {
   return true;
 }
 
-template<typename StringType>
-static inline bool DoLowerCaseEqualsASCII(BasicStringPiece<StringType> str,
-                                          const char* lower_cased_cmp) {
-  for (typename BasicStringPiece<StringType>::const_iterator it = str.begin();
-       it != str.end(); ++it, ++lower_cased_cmp) {
-    if (!*lower_cased_cmp || base::ToLowerASCII(*it) != *lower_cased_cmp)
+}  // namespace base
+
+template<typename Iter>
+static inline bool DoLowerCaseEqualsASCII(Iter a_begin,
+                                          Iter a_end,
+                                          const char* b) {
+  for (Iter it = a_begin; it != a_end; ++it, ++b) {
+    if (!*b || base::ToLowerASCII(*it) != *b)
       return false;
   }
-  return *lower_cased_cmp == 0;
+  return *b == 0;
 }
 
 // Front-ends for LowerCaseEqualsASCII.
-bool LowerCaseEqualsASCII(StringPiece str, const char* lower_cased_cmp) {
-  return DoLowerCaseEqualsASCII(str, lower_cased_cmp);
+bool LowerCaseEqualsASCII(const std::string& a, const char* b) {
+  return DoLowerCaseEqualsASCII(a.begin(), a.end(), b);
 }
 
-bool LowerCaseEqualsASCII(StringPiece16 str, const char* lower_cased_cmp) {
-  return DoLowerCaseEqualsASCII(str, lower_cased_cmp);
+bool LowerCaseEqualsASCII(const string16& a, const char* b) {
+  return DoLowerCaseEqualsASCII(a.begin(), a.end(), b);
 }
 
 bool LowerCaseEqualsASCII(std::string::const_iterator a_begin,
                           std::string::const_iterator a_end,
                           const char* b) {
-  const char* a = &*a_begin;
-  return LowerCaseEqualsASCII(StringPiece(a, a_end - a_begin), b);
+  return DoLowerCaseEqualsASCII(a_begin, a_end, b);
 }
 
 bool LowerCaseEqualsASCII(string16::const_iterator a_begin,
                           string16::const_iterator a_end,
                           const char* b) {
-  const char16* a = &*a_begin;
-  return LowerCaseEqualsASCII(StringPiece16(a, a_end - a_begin), b);
+  return DoLowerCaseEqualsASCII(a_begin, a_end, b);
 }
 
 // TODO(port): Resolve wchar_t/iterator issues that require OS_ANDROID here.
@@ -393,17 +393,16 @@ bool LowerCaseEqualsASCII(string16::const_iterator a_begin,
 bool LowerCaseEqualsASCII(const char* a_begin,
                           const char* a_end,
                           const char* b) {
-  return DoLowerCaseEqualsASCII(StringPiece(a_begin, a_end - a_begin), b);
+  return DoLowerCaseEqualsASCII(a_begin, a_end, b);
 }
 
 bool LowerCaseEqualsASCII(const char16* a_begin,
                           const char16* a_end,
                           const char* b) {
-  return DoLowerCaseEqualsASCII(StringPiece16(a_begin, a_end - a_begin), b);
+  return DoLowerCaseEqualsASCII(a_begin, a_end, b);
 }
-#endif  // !defined(OS_ANDROID)
 
-}  // namespace base
+#endif  // !defined(OS_ANDROID)
 
 bool EqualsASCII(const string16& a, const base::StringPiece& b) {
   if (a.length() != b.length())

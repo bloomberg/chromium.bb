@@ -293,8 +293,7 @@ static bool HeaderMatches(const HttpRequestHeaders& headers,
 
     HttpUtil::ValuesIterator v(header_value.begin(), header_value.end(), ',');
     while (v.GetNext()) {
-      if (base::LowerCaseEqualsASCII(v.value_begin(), v.value_end(),
-                                     search->value))
+      if (LowerCaseEqualsASCII(v.value_begin(), v.value_end(), search->value))
         return true;
     }
   }

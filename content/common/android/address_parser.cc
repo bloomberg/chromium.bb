@@ -171,12 +171,10 @@ bool FindAddress(const base::string16::const_iterator& begin,
           if (current_word_length == 2 && words.size() > 2) {
             const Word& previous_word = words[state_first_word - 1];
             if (previous_word.end - previous_word.begin == 2 &&
-                base::LowerCaseEqualsASCII(previous_word.begin,
-                                           previous_word.end,
-                                           "et") &&
-                base::LowerCaseEqualsASCII(current_word.begin,
-                                           current_word.end,
-                                           "al"))
+                LowerCaseEqualsASCII(previous_word.begin, previous_word.end,
+                                     "et") &&
+                LowerCaseEqualsASCII(current_word.begin, current_word.end,
+                                     "al"))
               break;
           }
 

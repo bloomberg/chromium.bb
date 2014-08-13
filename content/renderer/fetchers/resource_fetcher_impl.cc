@@ -66,7 +66,7 @@ void ResourceFetcherImpl::SetHeader(const std::string& header,
   DCHECK(!request_.isNull());
   DCHECK(!loader_);
 
-  if (base::LowerCaseEqualsASCII(header, "referer")) {
+  if (LowerCaseEqualsASCII(header, "referer")) {
     blink::WebString referrer = WebSecurityPolicy::generateReferrerHeader(
         blink::WebReferrerPolicyDefault,
         request_.url(),

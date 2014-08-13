@@ -58,7 +58,7 @@ class LaunchInstance {
       base::StringTokenizer t(headers[i], ": ;=");
       while (t.GetNext()) {
         if (!t.token_is_delim() &&
-            base::LowerCaseEqualsASCII(t.token(), "content-type")) {
+            LowerCaseEqualsASCII(t.token(), "content-type")) {
           while (t.GetNext()) {
             if (!t.token_is_delim())
               return t.token();

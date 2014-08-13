@@ -42,11 +42,11 @@ bool EnumerateLinkHeaders(
         begin + url_end + 1, header_body.end(), ';');
 
     while (param_iter.GetNext()) {
-      if (base::LowerCaseEqualsASCII(
+      if (LowerCaseEqualsASCII(
               param_iter.name_begin(), param_iter.name_end(), "rel")) {
-        if (base::LowerCaseEqualsASCII(param_iter.value_begin(),
-                                       param_iter.value_end(),
-                                       rel.c_str())) {
+        if (LowerCaseEqualsASCII(param_iter.value_begin(),
+                                 param_iter.value_end(),
+                                 rel.c_str())) {
           if (url) {
             url->assign(begin + url_start + 1, begin + url_end);
           }

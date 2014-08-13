@@ -601,7 +601,7 @@ void AutofillAgent::ShowSuggestions(const WebFormControlElement& element,
   // disabled for *both* the element and for the form.
   const base::string16 autocomplete_attribute =
       element.getAttribute("autocomplete");
-  if (base::LowerCaseEqualsASCII(autocomplete_attribute, "off"))
+  if (LowerCaseEqualsASCII(autocomplete_attribute, "off"))
     display_warning_if_disabled = false;
 
   QueryAutofillSuggestions(element,

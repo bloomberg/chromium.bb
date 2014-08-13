@@ -94,8 +94,7 @@ bool MobileYouTubePlugin::IsYouTubeURL(const GURL& url,
                     EndsWith(host, "youtube-nocookie.com", true);
 
   return is_youtube && IsValidYouTubeVideo(url.path()) &&
-         base::LowerCaseEqualsASCII(mime_type,
-                                    content::kFlashPluginSwfMimeType);
+         LowerCaseEqualsASCII(mime_type, content::kFlashPluginSwfMimeType);
 }
 
 void MobileYouTubePlugin::OpenYoutubeUrlCallback() {

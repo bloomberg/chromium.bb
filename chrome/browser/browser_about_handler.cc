@@ -96,7 +96,7 @@ bool HandleNonNavigationAboutURL(const GURL& url) {
 #if !defined(OFFICIAL_BUILD)
 
 #if (defined(OS_MACOSX) || defined(OS_WIN)) && defined(IPC_MESSAGE_LOG_ENABLED)
-  if (base::LowerCaseEqualsASCII(url.spec(), chrome::kChromeUIIPCURL)) {
+  if (LowerCaseEqualsASCII(url.spec(), chrome::kChromeUIIPCURL)) {
     // Run the dialog. This will re-use the existing one if it's already up.
     chrome::ShowAboutIPCDialog();
     return true;

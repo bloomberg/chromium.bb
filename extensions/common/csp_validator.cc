@@ -66,9 +66,9 @@ bool HasOnlySecureTokens(base::StringTokenizer& tokenizer,
     if (source == "'self'" ||
         source == "'none'" ||
         source == "http://127.0.0.1" ||
-        base::LowerCaseEqualsASCII(source, "blob:") ||
-        base::LowerCaseEqualsASCII(source, "filesystem:") ||
-        base::LowerCaseEqualsASCII(source, "http://localhost") ||
+        LowerCaseEqualsASCII(source, "blob:") ||
+        LowerCaseEqualsASCII(source, "filesystem:") ||
+        LowerCaseEqualsASCII(source, "http://localhost") ||
         StartsWithASCII(source, "http://127.0.0.1:", false) ||
         StartsWithASCII(source, "http://localhost:", false) ||
         StartsWithASCII(source, "https://", true) ||

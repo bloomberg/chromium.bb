@@ -138,12 +138,12 @@ bool Filter::FlushStreamBuffer(int stream_data_len) {
 Filter::FilterType Filter::ConvertEncodingToType(
     const std::string& filter_type) {
   FilterType type_id;
-  if (base::LowerCaseEqualsASCII(filter_type, kDeflate)) {
+  if (LowerCaseEqualsASCII(filter_type, kDeflate)) {
     type_id = FILTER_TYPE_DEFLATE;
-  } else if (base::LowerCaseEqualsASCII(filter_type, kGZip) ||
-             base::LowerCaseEqualsASCII(filter_type, kXGZip)) {
+  } else if (LowerCaseEqualsASCII(filter_type, kGZip) ||
+             LowerCaseEqualsASCII(filter_type, kXGZip)) {
     type_id = FILTER_TYPE_GZIP;
-  } else if (base::LowerCaseEqualsASCII(filter_type, kSdch)) {
+  } else if (LowerCaseEqualsASCII(filter_type, kSdch)) {
     type_id = FILTER_TYPE_SDCH;
   } else {
     // Note we also consider "identity" and "uncompressed" UNSUPPORTED as
@@ -163,9 +163,9 @@ void Filter::FixupEncodingTypes(
 
   if ((1 == encoding_types->size()) &&
       (FILTER_TYPE_GZIP == encoding_types->front())) {
-    if (base::LowerCaseEqualsASCII(mime_type, kApplicationXGzip) ||
-        base::LowerCaseEqualsASCII(mime_type, kApplicationGzip) ||
-        base::LowerCaseEqualsASCII(mime_type, kApplicationXGunzip))
+    if (LowerCaseEqualsASCII(mime_type, kApplicationXGzip) ||
+        LowerCaseEqualsASCII(mime_type, kApplicationGzip) ||
+        LowerCaseEqualsASCII(mime_type, kApplicationXGunzip))
       // The server has told us that it sent us gziped content with a gzip
       // content encoding.  Sadly, Apache mistakenly sets these headers for all
       // .gz files.  We match Firefox's nsHttpChannel::ProcessNormal and ignore
@@ -190,8 +190,8 @@ void Filter::FixupEncodingTypes(
       // want to do that when downloading.
       // See Firefox's nonDecodableExtensions in nsExternalHelperAppService.cpp
       if (EndsWith(extension, FILE_PATH_LITERAL(".gz"), false) ||
-          base::LowerCaseEqualsASCII(extension, ".tgz") ||
-          base::LowerCaseEqualsASCII(extension, ".svgz"))
+          LowerCaseEqualsASCII(extension, ".tgz") ||
+          LowerCaseEqualsASCII(extension, ".svgz"))
         encoding_types->clear();
     } else {
       // When the user does not explicitly ask to download a file, if we get a
@@ -199,7 +199,7 @@ void Filter::FixupEncodingTypes(
       // However, if it's not a supported mime type, then we will attempt to
       // download it, and in that case, don't decompress .gz/.tgz files.
       if ((EndsWith(extension, FILE_PATH_LITERAL(".gz"), false) ||
-           base::LowerCaseEqualsASCII(extension, ".tgz")) &&
+           LowerCaseEqualsASCII(extension, ".tgz")) &&
           !IsSupportedMimeType(mime_type))
         encoding_types->clear();
     }

@@ -182,7 +182,7 @@ scoped_ptr<ViewerHandle> CreateViewRequest(
   std::string entry_id =
       url_utils::GetValueForKeyInUrlPathQuery(path, kEntryIdKey);
   bool has_valid_entry_id = !entry_id.empty();
-  entry_id = base::StringToUpperASCII(entry_id);
+  entry_id = StringToUpperASCII(entry_id);
 
   std::string requested_url_str =
       url_utils::GetValueForKeyInUrlPathQuery(path, kUrlKey);

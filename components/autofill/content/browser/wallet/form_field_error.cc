@@ -15,35 +15,35 @@ namespace wallet {
 namespace {
 
 FormFieldError::ErrorType ErrorTypeFromString(const std::string& error_type) {
-  if (base::LowerCaseEqualsASCII(error_type, "unknown_error"))
+  if (LowerCaseEqualsASCII(error_type, "unknown_error"))
     return FormFieldError::UNKNOWN_ERROR;
-  if (base::LowerCaseEqualsASCII(error_type, "invalid_phone_number"))
+  if (LowerCaseEqualsASCII(error_type, "invalid_phone_number"))
     return FormFieldError::INVALID_PHONE_NUMBER;
-  if (base::LowerCaseEqualsASCII(error_type, "invalid_postal_code"))
+  if (LowerCaseEqualsASCII(error_type, "invalid_postal_code"))
     return FormFieldError::INVALID_POSTAL_CODE;
-  if (base::LowerCaseEqualsASCII(error_type, "invalid_address"))
+  if (LowerCaseEqualsASCII(error_type, "invalid_address"))
     return FormFieldError::INVALID_ADDRESS;
-  if (base::LowerCaseEqualsASCII(error_type, "invalid_card_details"))
+  if (LowerCaseEqualsASCII(error_type, "invalid_card_details"))
     return FormFieldError::INVALID_CARD_DETAILS;
-  if (base::LowerCaseEqualsASCII(error_type, "invalid_city"))
+  if (LowerCaseEqualsASCII(error_type, "invalid_city"))
     return FormFieldError::INVALID_CITY;
-  if (base::LowerCaseEqualsASCII(error_type, "invalid_instrument"))
+  if (LowerCaseEqualsASCII(error_type, "invalid_instrument"))
     return FormFieldError::INVALID_INSTRUMENT;
-  if (base::LowerCaseEqualsASCII(error_type, "invalid_state"))
+  if (LowerCaseEqualsASCII(error_type, "invalid_state"))
     return FormFieldError::INVALID_STATE;
-  if (base::LowerCaseEqualsASCII(error_type, "required_field_not_set"))
+  if (LowerCaseEqualsASCII(error_type, "required_field_not_set"))
     return FormFieldError::REQUIRED_FIELD_NOT_SET;
   return FormFieldError::UNKNOWN_ERROR;
 }
 
 FormFieldError::Location LocationFromString(const std::string& location) {
-  if (base::LowerCaseEqualsASCII(location, "unknown_location"))
+  if (LowerCaseEqualsASCII(location, "unknown_location"))
     return FormFieldError::UNKNOWN_LOCATION;
-  if (base::LowerCaseEqualsASCII(location, "payment_instrument"))
+  if (LowerCaseEqualsASCII(location, "payment_instrument"))
     return FormFieldError::PAYMENT_INSTRUMENT;
-  if (base::LowerCaseEqualsASCII(location, "shipping_address"))
+  if (LowerCaseEqualsASCII(location, "shipping_address"))
     return FormFieldError::SHIPPING_ADDRESS;
-  if (base::LowerCaseEqualsASCII(location, "legal_address"))
+  if (LowerCaseEqualsASCII(location, "legal_address"))
     return FormFieldError::LEGAL_ADDRESS;
   return FormFieldError::UNKNOWN_LOCATION;
 }

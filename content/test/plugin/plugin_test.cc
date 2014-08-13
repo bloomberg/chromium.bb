@@ -121,7 +121,7 @@ void PluginTest::SetError(const std::string &msg) {
 
 void PluginTest::ExpectStringLowerCaseEqual(const std::string &val1,
                                             const std::string &val2) {
-  if (!base::LowerCaseEqualsASCII(val1, val2.c_str())) {
+  if (!LowerCaseEqualsASCII(val1, val2.c_str())) {
     std::string err;
     err = "Expected Equal for '";
     err.append(val1);

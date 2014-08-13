@@ -40,7 +40,7 @@ bool IsPacMimeType(const std::string& mime_type) {
     "application/x-javascript-config",
   };
   for (size_t i = 0; i < arraysize(kSupportedPacMimeTypes); ++i) {
-    if (base::LowerCaseEqualsASCII(mime_type, kSupportedPacMimeTypes[i]))
+    if (LowerCaseEqualsASCII(mime_type, kSupportedPacMimeTypes[i]))
       return true;
   }
   return false;

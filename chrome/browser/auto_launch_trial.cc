@@ -24,11 +24,11 @@ bool IsInAutoLaunchGroup() {
 }
 
 bool IsInExperimentGroup(const std::string& brand_code) {
-  return base::LowerCaseEqualsASCII(brand_code, "rngp");
+  return LowerCaseEqualsASCII(brand_code, "rngp");
 }
 
 bool IsInControlGroup(const std::string& brand_code) {
-  return base::LowerCaseEqualsASCII(brand_code, "rngq");
+  return LowerCaseEqualsASCII(brand_code, "rngq");
 }
 
 }  // namespace auto_launch_trial

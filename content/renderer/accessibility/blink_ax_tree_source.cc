@@ -56,7 +56,7 @@ bool IsParentUnignoredOf(WebAXObject ancestor,
 }
 
 bool IsTrue(std::string html_value) {
-  return base::LowerCaseEqualsASCII(html_value, "true");
+  return LowerCaseEqualsASCII(html_value, "true");
 }
 
 std::string GetEquivalentAriaRoleString(const ui::AXRole role) {
@@ -296,9 +296,7 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     WebElement element = node.to<WebElement>();
     is_iframe = (element.tagName() == ASCIIToUTF16("IFRAME"));
 
-    if (base::LowerCaseEqualsASCII(
-            base::string16(element.getAttribute("aria-expanded")),
-            "true"))
+    if (LowerCaseEqualsASCII(element.getAttribute("aria-expanded"), "true"))
       dst->state |= (1 << ui::AX_STATE_EXPANDED);
 
     // TODO(ctguil): The tagName in WebKit is lower cased but

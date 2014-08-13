@@ -25,10 +25,10 @@ class HeaderFlattener : public blink::WebHTTPHeaderVisitor {
 
     // Skip over referrer headers found in the header map because we already
     // pulled it out as a separate parameter.
-    if (base::LowerCaseEqualsASCII(name_latin1, "referer"))
+    if (LowerCaseEqualsASCII(name_latin1, "referer"))
       return;
 
-    if (base::LowerCaseEqualsASCII(name_latin1, "accept"))
+    if (LowerCaseEqualsASCII(name_latin1, "accept"))
       has_accept_header_ = true;
 
     buffer_.push_back(name_latin1 + ": " + value_latin1);

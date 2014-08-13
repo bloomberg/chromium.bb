@@ -54,12 +54,12 @@ bool IsValidHostName(const std::string& host,
     return false;
   // Removes the tld and the preceding dot.
   std::string host_minus_tld(host, 0, host.length() - tld_length - 1);
-  if (base::LowerCaseEqualsASCII(host_minus_tld, domain_in_lower_case.c_str()))
+  if (LowerCaseEqualsASCII(host_minus_tld, domain_in_lower_case.c_str()))
     return true;
   if (subdomain_permission == google_util::ALLOW_SUBDOMAIN)
     return EndsWith(host_minus_tld, "." + domain_in_lower_case, false);
-  return base::LowerCaseEqualsASCII(host_minus_tld,
-                                    ("www." + domain_in_lower_case).c_str());
+  return LowerCaseEqualsASCII(host_minus_tld,
+                              ("www." + domain_in_lower_case).c_str());
 }
 
 // True if |url| is a valid URL with HTTP or HTTPS scheme. If |port_permission|

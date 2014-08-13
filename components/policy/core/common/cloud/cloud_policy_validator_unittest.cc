@@ -161,7 +161,7 @@ TEST_F(CloudPolicyValidatorTest, SuccessfulRunValidationWithNoDMTokens) {
 
 TEST_F(CloudPolicyValidatorTest, UsernameCanonicalization) {
   policy_.policy_data().set_username(
-      base::StringToUpperASCII(std::string(PolicyBuilder::kFakeUsername)));
+      StringToUpperASCII(std::string(PolicyBuilder::kFakeUsername)));
   Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_OK));
 }
 

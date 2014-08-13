@@ -929,7 +929,7 @@ void WebPluginImpl::willSendRequest(WebURLLoader* loader,
       // just block cross origin 307 POST redirects.
       if (!client_info->notify_redirects) {
         if (response.httpStatusCode() == 307 &&
-            base::LowerCaseEqualsASCII(request.httpMethod().utf8(), "post")) {
+            LowerCaseEqualsASCII(request.httpMethod().utf8(), "post")) {
           GURL original_request_url(response.url());
           GURL response_url(request.url());
           if (original_request_url.GetOrigin() != response_url.GetOrigin()) {

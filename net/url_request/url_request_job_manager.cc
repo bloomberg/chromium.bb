@@ -160,7 +160,7 @@ URLRequestJob* URLRequestJobManager::MaybeInterceptResponse(
 // static
 bool URLRequestJobManager::SupportsScheme(const std::string& scheme) {
   for (size_t i = 0; i < arraysize(kBuiltinFactories); ++i) {
-    if (base::LowerCaseEqualsASCII(scheme, kBuiltinFactories[i].scheme))
+    if (LowerCaseEqualsASCII(scheme, kBuiltinFactories[i].scheme))
       return true;
   }
 

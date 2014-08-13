@@ -107,8 +107,8 @@ bool IsMetaElement(const WebNode& node, std::string& charset_info) {
     return false;
   charset_info.erase(0, charset_info.length());
   // Check the META charset declaration.
-  WebString http_equiv = meta.getAttribute("http-equiv");
-  if (base::LowerCaseEqualsASCII(base::string16(http_equiv), "content-type")) {
+  WebString httpEquiv = meta.getAttribute("http-equiv");
+  if (LowerCaseEqualsASCII(httpEquiv, "content-type")) {
     std::string content = meta.getAttribute("content").utf8();
     int pos = content.find("charset", 0);
     if (pos > -1) {

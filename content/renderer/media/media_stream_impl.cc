@@ -137,7 +137,7 @@ void MediaStreamImpl::requestUserMedia(
       std::string enable;
       if (options.GetFirstAudioConstraintByName(
               kMediaStreamRenderToAssociatedSink, &enable, NULL) &&
-          base::LowerCaseEqualsASCII(enable, "true")) {
+          LowerCaseEqualsASCII(enable, "true")) {
         enable_automatic_output_device_selection = true;
       }
     }

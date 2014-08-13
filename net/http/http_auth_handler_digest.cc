@@ -113,7 +113,7 @@ HttpAuth::AuthorizationResult HttpAuthHandlerDigest::HandleAnotherChallenge(
   // to differentiate between stale and rejected responses.
   // Note that the state of the current handler is not mutated - this way if
   // there is a rejection the realm hasn't changed.
-  if (!base::LowerCaseEqualsASCII(challenge->scheme(), "digest"))
+  if (!LowerCaseEqualsASCII(challenge->scheme(), "digest"))
     return HttpAuth::AUTHORIZATION_RESULT_INVALID;
 
   HttpUtil::NameValuePairsIterator parameters = challenge->param_pairs();
@@ -122,10 +122,10 @@ HttpAuth::AuthorizationResult HttpAuthHandlerDigest::HandleAnotherChallenge(
   // for the new challenge.
   std::string original_realm;
   while (parameters.GetNext()) {
-    if (base::LowerCaseEqualsASCII(parameters.name(), "stale")) {
-      if (base::LowerCaseEqualsASCII(parameters.value(), "true"))
+    if (LowerCaseEqualsASCII(parameters.name(), "stale")) {
+      if (LowerCaseEqualsASCII(parameters.value(), "true"))
         return HttpAuth::AUTHORIZATION_RESULT_STALE;
-    } else if (base::LowerCaseEqualsASCII(parameters.name(), "realm")) {
+    } else if (LowerCaseEqualsASCII(parameters.name(), "realm")) {
       original_realm = parameters.value();
     }
   }
@@ -199,7 +199,7 @@ bool HttpAuthHandlerDigest::ParseChallenge(
   realm_ = original_realm_ = nonce_ = domain_ = opaque_ = std::string();
 
   // FAIL -- Couldn't match auth-scheme.
-  if (!base::LowerCaseEqualsASCII(challenge->scheme(), "digest"))
+  if (!LowerCaseEqualsASCII(challenge->scheme(), "digest"))
     return false;
 
   HttpUtil::NameValuePairsIterator parameters = challenge->param_pairs();
@@ -225,38 +225,38 @@ bool HttpAuthHandlerDigest::ParseChallenge(
 
 bool HttpAuthHandlerDigest::ParseChallengeProperty(const std::string& name,
                                                    const std::string& value) {
-  if (base::LowerCaseEqualsASCII(name, "realm")) {
+  if (LowerCaseEqualsASCII(name, "realm")) {
     std::string realm;
     if (!net::ConvertToUtf8AndNormalize(value, kCharsetLatin1, &realm))
       return false;
     realm_ = realm;
     original_realm_ = value;
-  } else if (base::LowerCaseEqualsASCII(name, "nonce")) {
+  } else if (LowerCaseEqualsASCII(name, "nonce")) {
     nonce_ = value;
-  } else if (base::LowerCaseEqualsASCII(name, "domain")) {
+  } else if (LowerCaseEqualsASCII(name, "domain")) {
     domain_ = value;
-  } else if (base::LowerCaseEqualsASCII(name, "opaque")) {
+  } else if (LowerCaseEqualsASCII(name, "opaque")) {
     opaque_ = value;
-  } else if (base::LowerCaseEqualsASCII(name, "stale")) {
+  } else if (LowerCaseEqualsASCII(name, "stale")) {
     // Parse the stale boolean.
-    stale_ = base::LowerCaseEqualsASCII(value, "true");
-  } else if (base::LowerCaseEqualsASCII(name, "algorithm")) {
+    stale_ = LowerCaseEqualsASCII(value, "true");
+  } else if (LowerCaseEqualsASCII(name, "algorithm")) {
     // Parse the algorithm.
-    if (base::LowerCaseEqualsASCII(value, "md5")) {
+    if (LowerCaseEqualsASCII(value, "md5")) {
       algorithm_ = ALGORITHM_MD5;
-    } else if (base::LowerCaseEqualsASCII(value, "md5-sess")) {
+    } else if (LowerCaseEqualsASCII(value, "md5-sess")) {
       algorithm_ = ALGORITHM_MD5_SESS;
     } else {
       DVLOG(1) << "Unknown value of algorithm";
       return false;  // FAIL -- unsupported value of algorithm.
     }
-  } else if (base::LowerCaseEqualsASCII(name, "qop")) {
+  } else if (LowerCaseEqualsASCII(name, "qop")) {
     // Parse the comma separated list of qops.
     // auth is the only supported qop, and all other values are ignored.
     HttpUtil::ValuesIterator qop_values(value.begin(), value.end(), ',');
     qop_ = QOP_UNSPECIFIED;
     while (qop_values.GetNext()) {
-      if (base::LowerCaseEqualsASCII(qop_values.value(), "auth")) {
+      if (LowerCaseEqualsASCII(qop_values.value(), "auth")) {
         qop_ = QOP_AUTH;
         break;
       }

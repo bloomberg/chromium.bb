@@ -684,7 +684,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestWSSInvalidCertAndClose) {
   // The title will be changed to 'PASS'.
   ui_test_utils::NavigateToURL(browser(), master_url);
   const base::string16 result = watcher.WaitAndGetTitle();
-  EXPECT_TRUE(base::LowerCaseEqualsASCII(result, "pass"));
+  EXPECT_TRUE(LowerCaseEqualsASCII(result, "pass"));
 
   // Close tabs which contains the test page.
   for (int i = 0; i < 16; ++i)
@@ -721,7 +721,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSInvalidCertAndGoForward) {
   // Test page run a WebSocket wss connection test. The result will be shown
   // as page title.
   const base::string16 result = watcher.WaitAndGetTitle();
-  EXPECT_TRUE(base::LowerCaseEqualsASCII(result, "pass"));
+  EXPECT_TRUE(LowerCaseEqualsASCII(result, "pass"));
 }
 
 #if defined(USE_NSS)
@@ -809,7 +809,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithClientCert, TestWSSClientCert) {
   // Test page runs a WebSocket wss connection test. The result will be shown
   // as page title.
   const base::string16 result = watcher.WaitAndGetTitle();
-  EXPECT_TRUE(base::LowerCaseEqualsASCII(result, "pass"));
+  EXPECT_TRUE(LowerCaseEqualsASCII(result, "pass"));
 }
 #endif  // defined(USE_NSS)
 
@@ -1766,7 +1766,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITestIgnoreCertErrors, TestWSS) {
   // Test page run a WebSocket wss connection test. The result will be shown
   // as page title.
   const base::string16 result = watcher.WaitAndGetTitle();
-  EXPECT_TRUE(base::LowerCaseEqualsASCII(result, "pass"));
+  EXPECT_TRUE(LowerCaseEqualsASCII(result, "pass"));
 }
 
 // Verifies that the interstitial can proceed, even if JavaScript is disabled.

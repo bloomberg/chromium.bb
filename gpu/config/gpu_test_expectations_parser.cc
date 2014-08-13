@@ -135,7 +135,7 @@ Token ParseToken(const std::string& word) {
     return kConfigGPUDeviceID;
 
   for (int32 i = 0; i < kNumberOfExactMatchTokens; ++i) {
-    if (base::LowerCaseEqualsASCII(word, kTokenData[i].name))
+    if (LowerCaseEqualsASCII(word, kTokenData[i].name))
       return static_cast<Token>(i);
   }
   return kTokenWord;

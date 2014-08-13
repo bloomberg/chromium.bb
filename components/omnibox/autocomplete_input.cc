@@ -169,7 +169,7 @@ metrics::OmniboxInputType::Type AutocompleteInput::Parse(
   if (!canonicalized_url->is_valid())
     return metrics::OmniboxInputType::QUERY;
 
-  if (base::LowerCaseEqualsASCII(parsed_scheme_utf8, url::kFileScheme)) {
+  if (LowerCaseEqualsASCII(parsed_scheme_utf8, url::kFileScheme)) {
     // A user might or might not type a scheme when entering a file URL.  In
     // either case, |parsed_scheme_utf8| will tell us that this is a file URL,
     // but |parts->scheme| might be empty, e.g. if the user typed "C:\foo".
@@ -183,8 +183,8 @@ metrics::OmniboxInputType::Type AutocompleteInput::Parse(
   // (e.g. "ftp" or "view-source") but I'll wait to spend the effort on that
   // until I run into some cases that really need it.
   if (parts->scheme.is_nonempty() &&
-      !base::LowerCaseEqualsASCII(parsed_scheme_utf8, url::kHttpScheme) &&
-      !base::LowerCaseEqualsASCII(parsed_scheme_utf8, url::kHttpsScheme)) {
+      !LowerCaseEqualsASCII(parsed_scheme_utf8, url::kHttpScheme) &&
+      !LowerCaseEqualsASCII(parsed_scheme_utf8, url::kHttpsScheme)) {
     metrics::OmniboxInputType::Type type =
         scheme_classifier.GetInputTypeForScheme(parsed_scheme_utf8);
     if (type != metrics::OmniboxInputType::INVALID)
@@ -422,7 +422,7 @@ void AutocompleteInput::ParseForEmphasizeComponents(
   int after_scheme_and_colon = parts.scheme.end() + 1;
   // For the view-source scheme, we should emphasize the scheme and host of the
   // URL qualified by the view-source prefix.
-  if (base::LowerCaseEqualsASCII(scheme_str, kViewSourceScheme) &&
+  if (LowerCaseEqualsASCII(scheme_str, kViewSourceScheme) &&
       (static_cast<int>(text.length()) > after_scheme_and_colon)) {
     // Obtain the URL prefixed by view-source and parse it.
     base::string16 real_url(text.substr(after_scheme_and_colon));
@@ -444,7 +444,7 @@ void AutocompleteInput::ParseForEmphasizeComponents(
         host->reset();
       }
     }
-  } else if (base::LowerCaseEqualsASCII(scheme_str, url::kFileSystemScheme) &&
+  } else if (LowerCaseEqualsASCII(scheme_str, url::kFileSystemScheme) &&
              parts.inner_parsed() && parts.inner_parsed()->scheme.is_valid()) {
     *host = parts.inner_parsed()->host;
   }
