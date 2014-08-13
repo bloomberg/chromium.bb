@@ -114,8 +114,6 @@ private:
     RefPtr<SourceGraphic> m_sourceGraphic;
     RefPtr<FilterEffect> m_lastEffect;
 
-    IntRectExtent m_outsets;
-
     bool m_graphicsBufferAttached;
     bool m_hasFilterThatMovesPixels;
 };
