@@ -2896,18 +2896,25 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="GoogleNow.ButtonClicked0">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>robliao@chromium.org</owner>
+  <owner>skare@chromium.org</owner>
+  <description>
+    User clicked button index 0 (0-based) of a Now Notification.
+  </description>
 </action>
 
 <action name="GoogleNow.ButtonClicked1">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>robliao@chromium.org</owner>
+  <owner>skare@chromium.org</owner>
+  <description>
+    User clicked button index 1 (0-based) of a Now Notification.
+  </description>
 </action>
 
 <action name="GoogleNow.Dismissed">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>robliao@chromium.org</owner>
+  <owner>skare@chromium.org</owner>
+  <description>User dismissed a Now Notification.</description>
 </action>
 
 <action name="GoogleNow.MessageCenter.NotificationPoppedUp">
@@ -2919,23 +2926,36 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="GoogleNow.MessageClicked">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>robliao@chromium.org</owner>
+  <owner>skare@chromium.org</owner>
+  <description>
+    User clicked on the message text of a Now notification.
+  </description>
 </action>
 
 <action name="GoogleNow.WelcomeToastClickedNo">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>robliao@chromium.org</owner>
+  <owner>skare@chromium.org</owner>
+  <description>
+    User dismissed the Now Notifications welcome toast via the &quot;don't show
+    me notifications&quot; button.
+  </description>
 </action>
 
 <action name="GoogleNow.WelcomeToastClickedYes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>robliao@chromium.org</owner>
+  <owner>skare@chromium.org</owner>
+  <description>
+    User dismissed the Now Notifications welcome toast via the ok button.
+  </description>
 </action>
 
 <action name="GoogleNow.WelcomeToastDismissed">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>robliao@chromium.org</owner>
+  <owner>skare@chromium.org</owner>
+  <description>
+    User dismissed the Now Notifications welcome toast via the x.
+  </description>
 </action>
 
 <action name="GpuAccelerationDisabled">
