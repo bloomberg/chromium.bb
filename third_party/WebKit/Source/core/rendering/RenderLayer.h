@@ -114,6 +114,7 @@ public:
 
     void styleChanged(StyleDifference, const RenderStyle* oldStyle);
 
+    // FIXME: Many people call this function while it has out-of-date information.
     bool isSelfPaintingLayer() const { return m_isSelfPaintingLayer; }
 
     void setLayerType(LayerType layerType) { m_layerType = layerType; }
@@ -185,10 +186,6 @@ public:
     bool isVisuallyNonEmpty() const;
     // True if this layer container renderers that paint.
     bool hasNonEmptyChildRenderers() const;
-
-    // FIXME: We should ASSERT(!m_hasSelfPaintingLayerDescendantDirty); here but we hit the same bugs as visible content above.
-    // Part of the issue is with subtree relayout: we don't check if our ancestors have some descendant flags dirty, missing some updates.
-    bool hasSelfPaintingLayerDescendant() const { return m_hasSelfPaintingLayerDescendant; }
 
     // Will ensure that hasNonCompositiedChild are up to date.
     void updateScrollingStateAfterCompositingChange();
@@ -544,6 +541,16 @@ private:
     void setFirstChild(RenderLayer* first) { m_first = first; }
     void setLastChild(RenderLayer* last) { m_last = last; }
 
+    void updateHasSelfPaintingLayerDescendant() const;
+
+    bool hasSelfPaintingLayerDescendant() const
+    {
+        if (m_hasSelfPaintingLayerDescendantDirty)
+            updateHasSelfPaintingLayerDescendant();
+        ASSERT(!m_hasSelfPaintingLayerDescendantDirty);
+        return m_hasSelfPaintingLayerDescendant;
+    }
+
     LayoutPoint renderBoxLocation() const { return renderer()->isBox() ? toRenderBox(renderer())->location() : LayoutPoint(); }
 
     void paintLayerContentsAndReflection(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
@@ -645,8 +652,8 @@ private:
 
     // If have no self-painting descendants, we don't have to walk our children during painting. This can lead to
     // significant savings, especially if the tree has lots of non-self-painting layers grouped together (e.g. table cells).
-    unsigned m_hasSelfPaintingLayerDescendant : 1;
-    unsigned m_hasSelfPaintingLayerDescendantDirty : 1;
+    mutable unsigned m_hasSelfPaintingLayerDescendant : 1;
+    mutable unsigned m_hasSelfPaintingLayerDescendantDirty : 1;
 
     const unsigned m_isRootLayer : 1;
 

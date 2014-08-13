@@ -275,15 +275,20 @@ void RenderLayer::updateLayerPositionRecursive()
         child->updateLayerPositionRecursive();
 }
 
-void RenderLayer::setAncestorChainHasSelfPaintingLayerDescendant()
+void RenderLayer::updateHasSelfPaintingLayerDescendant() const
 {
-    for (RenderLayer* layer = this; layer; layer = layer->parent()) {
-        if (!layer->m_hasSelfPaintingLayerDescendantDirty && layer->hasSelfPaintingLayerDescendant())
-            break;
+    ASSERT(m_hasSelfPaintingLayerDescendantDirty);
 
-        layer->m_hasSelfPaintingLayerDescendantDirty = false;
-        layer->m_hasSelfPaintingLayerDescendant = true;
+    m_hasSelfPaintingLayerDescendant = false;
+
+    for (RenderLayer* child = firstChild(); child; child = child->nextSibling()) {
+        if (child->isSelfPaintingLayer() || child->hasSelfPaintingLayerDescendant()) {
+            m_hasSelfPaintingLayerDescendant = true;
+            break;
+        }
     }
+
+    m_hasSelfPaintingLayerDescendantDirty = false;
 }
 
 void RenderLayer::dirtyAncestorChainHasSelfPaintingLayerDescendantStatus()
@@ -293,7 +298,7 @@ void RenderLayer::dirtyAncestorChainHasSelfPaintingLayerDescendantStatus()
         // If we have reached a self-painting layer, we know our parent should have a self-painting descendant
         // in this case, there is no need to dirty our ancestors further.
         if (layer->isSelfPaintingLayer()) {
-            ASSERT(!parent() || parent()->m_hasSelfPaintingLayerDescendantDirty || parent()->hasSelfPaintingLayerDescendant());
+            ASSERT(!parent() || parent()->m_hasSelfPaintingLayerDescendantDirty || parent()->m_hasSelfPaintingLayerDescendant);
             break;
         }
     }
@@ -650,25 +655,19 @@ void RenderLayer::updateDescendantDependentFlagsForEntireSubtree()
 
 void RenderLayer::updateDescendantDependentFlags()
 {
-    if (m_visibleDescendantStatusDirty || m_hasSelfPaintingLayerDescendantDirty) {
+    if (m_visibleDescendantStatusDirty) {
         m_hasVisibleDescendant = false;
-        m_hasSelfPaintingLayerDescendant = false;
 
         for (RenderLayer* child = firstChild(); child; child = child->nextSibling()) {
             child->updateDescendantDependentFlags();
 
-            bool hasVisibleDescendant = child->m_hasVisibleContent || child->m_hasVisibleDescendant;
-            bool hasSelfPaintingLayerDescendant = child->isSelfPaintingLayer() || child->hasSelfPaintingLayerDescendant();
-
-            m_hasVisibleDescendant |= hasVisibleDescendant;
-            m_hasSelfPaintingLayerDescendant |= hasSelfPaintingLayerDescendant;
-
-            if (m_hasVisibleDescendant && m_hasSelfPaintingLayerDescendant)
+            if (child->m_hasVisibleContent || child->m_hasVisibleDescendant) {
+                m_hasVisibleDescendant = true;
                 break;
+            }
         }
 
         m_visibleDescendantStatusDirty = false;
-        m_hasSelfPaintingLayerDescendantDirty = false;
     }
 
     if (m_blendInfo.childLayerHasBlendModeStatusDirty()) {
@@ -1263,11 +1262,9 @@ void RenderLayer::addChild(RenderLayer* child, RenderLayer* beforeChild)
     }
 
     dirtyAncestorChainVisibleDescendantStatus();
+    dirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
 
     child->updateDescendantDependentFlags();
-
-    if (child->isSelfPaintingLayer() || child->hasSelfPaintingLayerDescendant())
-        setAncestorChainHasSelfPaintingLayerDescendant();
 
     if (child->blendInfo().hasBlendMode() || child->blendInfo().childLayerHasBlendMode())
         m_blendInfo.setAncestorChainBlendedDescendant();
@@ -1302,6 +1299,8 @@ RenderLayer* RenderLayer::removeChild(RenderLayer* oldChild)
     oldChild->setNextSibling(0);
     oldChild->m_parent = 0;
 
+    dirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
+
     oldChild->updateDescendantDependentFlags();
 
     if (oldChild->m_hasVisibleContent || oldChild->m_hasVisibleDescendant)
@@ -1309,9 +1308,6 @@ RenderLayer* RenderLayer::removeChild(RenderLayer* oldChild)
 
     if (oldChild->m_blendInfo.hasBlendMode() || oldChild->blendInfo().childLayerHasBlendMode())
         m_blendInfo.dirtyAncestorChainBlendedDescendantStatus();
-
-    if (oldChild->isSelfPaintingLayer() || oldChild->hasSelfPaintingLayerDescendant())
-        dirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
 
     return oldChild;
 }
@@ -3405,16 +3401,13 @@ bool RenderLayer::shouldBeSelfPaintingLayer() const
 
 void RenderLayer::updateSelfPaintingLayer()
 {
-    bool isSelfPaintingLayer = this->shouldBeSelfPaintingLayer();
+    bool isSelfPaintingLayer = shouldBeSelfPaintingLayer();
     if (this->isSelfPaintingLayer() == isSelfPaintingLayer)
         return;
 
     m_isSelfPaintingLayer = isSelfPaintingLayer;
-    if (!parent())
-        return;
-    if (isSelfPaintingLayer)
-        parent()->setAncestorChainHasSelfPaintingLayerDescendant();
-    else
+
+    if (parent())
         parent()->dirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
 }
 
