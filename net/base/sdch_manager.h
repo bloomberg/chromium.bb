@@ -265,11 +265,11 @@ class NET_EXPORT SdchManager : public NON_EXPORTED_BASE(base::NonThreadSafe) {
   // Used when filter errors are found from a given domain, but it is plausible
   // that the cause is temporary (such as application startup, where cached
   // entries are used, but a dictionary is not yet loaded).
-  void BlacklistDomain(const GURL& url);
+  void BlacklistDomain(const GURL& url, ProblemCodes blacklist_reason);
 
   // Used when SEVERE filter errors are found from a given domain, to prevent
   // further use of SDCH on that domain.
-  void BlacklistDomainForever(const GURL& url);
+  void BlacklistDomainForever(const GURL& url, ProblemCodes blacklist_reason);
 
   // Unit test only, this function resets enabling of sdch, and clears the
   // blacklist.
@@ -337,7 +337,18 @@ class NET_EXPORT SdchManager : public NON_EXPORTED_BASE(base::NonThreadSafe) {
   void SetAllowLatencyExperiment(const GURL& url, bool enable);
 
  private:
-  typedef std::map<std::string, int> DomainCounter;
+  struct BlacklistInfo {
+    BlacklistInfo()
+        : count(0),
+          exponential_count(0),
+          reason(MIN_PROBLEM_CODE) {}
+
+    int count;                   // # of times to refuse SDCH advertisement.
+    int exponential_count;       // Current exponential backoff ratchet.
+    ProblemCodes reason;         // Why domain was blacklisted.
+
+  };
+  typedef std::map<std::string, BlacklistInfo> DomainBlacklistInfo;
   typedef std::set<std::string> ExperimentSet;
 
   // A map of dictionaries info indexed by the hash that the server provides.
@@ -358,13 +369,8 @@ class NET_EXPORT SdchManager : public NON_EXPORTED_BASE(base::NonThreadSafe) {
   // An instance that can fetch a dictionary given a URL.
   scoped_ptr<SdchFetcher> fetcher_;
 
-  // List domains where decode failures have required disabling sdch, along with
-  // count of how many additonal uses should be blacklisted.
-  DomainCounter blacklisted_domains_;
-
-  // Support exponential backoff in number of domain accesses before
-  // blacklisting expires.
-  DomainCounter exponential_blacklist_count_;
+  // List domains where decode failures have required disabling sdch.
+  DomainBlacklistInfo blacklisted_domains_;
 
   // List of hostnames for which a latency experiment is allowed (because a
   // round trip test has recently passed).

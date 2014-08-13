@@ -65,11 +65,11 @@ TEST_F(SdchManagerTest, DomainBlacklisting) {
   GURL test_url("http://www.test.com");
   GURL google_url("http://www.google.com");
 
-  sdch_manager()->BlacklistDomain(test_url);
+  sdch_manager()->BlacklistDomain(test_url, SdchManager::MIN_PROBLEM_CODE);
   EXPECT_FALSE(sdch_manager()->IsInSupportedDomain(test_url));
   EXPECT_TRUE(sdch_manager()->IsInSupportedDomain(google_url));
 
-  sdch_manager()->BlacklistDomain(google_url);
+  sdch_manager()->BlacklistDomain(google_url, SdchManager::MIN_PROBLEM_CODE);
   EXPECT_FALSE(sdch_manager()->IsInSupportedDomain(google_url));
 }
 
@@ -79,7 +79,7 @@ TEST_F(SdchManagerTest, DomainBlacklistingCaseSensitivity) {
 
   EXPECT_TRUE(sdch_manager()->IsInSupportedDomain(test_url));
   EXPECT_TRUE(sdch_manager()->IsInSupportedDomain(test2_url));
-  sdch_manager()->BlacklistDomain(test_url);
+  sdch_manager()->BlacklistDomain(test_url, SdchManager::MIN_PROBLEM_CODE);
   EXPECT_FALSE(sdch_manager()->IsInSupportedDomain(test2_url));
 }
 
@@ -98,7 +98,7 @@ TEST_F(SdchManagerTest, BlacklistingSingleBlacklist) {
   std::string domain(gurl.host());
   sdch_manager()->ClearBlacklistings();
 
-  sdch_manager()->BlacklistDomain(gurl);
+  sdch_manager()->BlacklistDomain(gurl, SdchManager::MIN_PROBLEM_CODE);
   EXPECT_EQ(sdch_manager()->BlackListDomainCount(domain), 1);
   EXPECT_EQ(sdch_manager()->BlacklistDomainExponential(domain), 1);
 
@@ -115,7 +115,7 @@ TEST_F(SdchManagerTest, BlacklistingExponential) {
 
   int exponential = 1;
   for (int i = 1; i < 100; ++i) {
-    sdch_manager()->BlacklistDomain(gurl);
+    sdch_manager()->BlacklistDomain(gurl, SdchManager::MIN_PROBLEM_CODE);
     EXPECT_EQ(sdch_manager()->BlacklistDomainExponential(domain), exponential);
 
     EXPECT_EQ(sdch_manager()->BlackListDomainCount(domain), exponential);
@@ -483,7 +483,8 @@ TEST_F(SdchManagerTest, ClearDictionaryData) {
       &dictionary);
   EXPECT_TRUE(dictionary);
 
-  sdch_manager()->BlacklistDomain(GURL(blacklist_url));
+  sdch_manager()->BlacklistDomain(GURL(blacklist_url),
+                                  SdchManager::MIN_PROBLEM_CODE);
   EXPECT_FALSE(sdch_manager()->IsInSupportedDomain(blacklist_url));
 
   sdch_manager()->ClearData();

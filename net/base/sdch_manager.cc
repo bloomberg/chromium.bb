@@ -234,7 +234,6 @@ SdchManager::~SdchManager() {
 
 void SdchManager::ClearData() {
   blacklisted_domains_.clear();
-  exponential_blacklist_count_.clear();
   allow_latency_experiment_.clear();
   if (fetcher_.get())
     fetcher_->Cancel();
@@ -266,51 +265,63 @@ void SdchManager::EnableSecureSchemeSupport(bool enabled) {
   g_secure_scheme_supported_ = enabled;
 }
 
-void SdchManager::BlacklistDomain(const GURL& url) {
+void SdchManager::BlacklistDomain(const GURL& url,
+                                  ProblemCodes blacklist_reason) {
   SetAllowLatencyExperiment(url, false);
 
-  std::string domain(base::StringToLowerASCII(url.host()));
-  int count = blacklisted_domains_[domain];
-  if (count > 0)
+  BlacklistInfo* blacklist_info =
+      &blacklisted_domains_[base::StringToLowerASCII(url.host())];
+
+  if (blacklist_info->count > 0)
     return;  // Domain is already blacklisted.
 
-  count = 1 + 2 * exponential_blacklist_count_[domain];
-  if (count > 0)
-    exponential_blacklist_count_[domain] = count;
-  else
-    count = INT_MAX;
+  if (blacklist_info->exponential_count > (INT_MAX - 1) / 2) {
+    blacklist_info->exponential_count = INT_MAX;
+  } else {
+    blacklist_info->exponential_count =
+        blacklist_info->exponential_count * 2 + 1;
+  }
 
-  blacklisted_domains_[domain] = count;
+  blacklist_info->count = blacklist_info->exponential_count;
+  blacklist_info->reason = blacklist_reason;
 }
 
-void SdchManager::BlacklistDomainForever(const GURL& url) {
+void SdchManager::BlacklistDomainForever(const GURL& url,
+                                         ProblemCodes blacklist_reason) {
   SetAllowLatencyExperiment(url, false);
 
-  std::string domain(base::StringToLowerASCII(url.host()));
-  exponential_blacklist_count_[domain] = INT_MAX;
-  blacklisted_domains_[domain] = INT_MAX;
+  BlacklistInfo* blacklist_info =
+      &blacklisted_domains_[base::StringToLowerASCII(url.host())];
+  blacklist_info->count = INT_MAX;
+  blacklist_info->exponential_count = INT_MAX;
+  blacklist_info->reason = blacklist_reason;
 }
 
 void SdchManager::ClearBlacklistings() {
   blacklisted_domains_.clear();
-  exponential_blacklist_count_.clear();
 }
 
 void SdchManager::ClearDomainBlacklisting(const std::string& domain) {
-  blacklisted_domains_.erase(base::StringToLowerASCII(domain));
+  BlacklistInfo* blacklist_info = &blacklisted_domains_[
+      base::StringToLowerASCII(domain)];
+  blacklist_info->count = 0;
+  blacklist_info->reason = MIN_PROBLEM_CODE;
 }
 
 int SdchManager::BlackListDomainCount(const std::string& domain) {
-  if (blacklisted_domains_.end() == blacklisted_domains_.find(domain))
+  std::string domain_lower(base::StringToLowerASCII(domain));
+
+  if (blacklisted_domains_.end() == blacklisted_domains_.find(domain_lower))
     return 0;
-  return blacklisted_domains_[base::StringToLowerASCII(domain)];
+  return blacklisted_domains_[domain_lower].count;
 }
 
 int SdchManager::BlacklistDomainExponential(const std::string& domain) {
-  if (exponential_blacklist_count_.end() ==
-      exponential_blacklist_count_.find(domain))
+  std::string domain_lower(base::StringToLowerASCII(domain));
+
+  if (blacklisted_domains_.end() == blacklisted_domains_.find(domain_lower))
     return 0;
-  return exponential_blacklist_count_[base::StringToLowerASCII(domain)];
+  return blacklisted_domains_[domain_lower].exponential_count;
 }
 
 bool SdchManager::IsInSupportedDomain(const GURL& url) {
@@ -324,17 +335,23 @@ bool SdchManager::IsInSupportedDomain(const GURL& url) {
   if (blacklisted_domains_.empty())
     return true;
 
-  std::string domain(base::StringToLowerASCII(url.host()));
-  DomainCounter::iterator it = blacklisted_domains_.find(domain);
-  if (blacklisted_domains_.end() == it)
+  DomainBlacklistInfo::iterator it =
+      blacklisted_domains_.find(base::StringToLowerASCII(url.host()));
+  if (blacklisted_domains_.end() == it || it->second.count == 0)
     return true;
 
-  int count = it->second - 1;
-  if (count > 0)
-    blacklisted_domains_[domain] = count;
-  else
-    blacklisted_domains_.erase(domain);
+  UMA_HISTOGRAM_ENUMERATION("Sdch3.BlacklistReason", it->second.reason,
+                            MAX_PROBLEM_CODE);
   SdchErrorRecovery(DOMAIN_BLACKLIST_INCLUDES_TARGET);
+
+  int count = it->second.count - 1;
+  if (count > 0) {
+    it->second.count = count;
+  } else {
+    it->second.count = 0;
+    it->second.reason = MIN_PROBLEM_CODE;
+  }
+
   return false;
 }
 

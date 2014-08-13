@@ -55,7 +55,7 @@ SdchFilter::~SdchFilter() {
       // Note this will "wear off" quickly enough, and is just meant to assure
       // in some rare case that the user is not stuck.
       url_request_context_->sdch_manager()->BlacklistDomain(
-          url_);
+          url_, SdchManager::INCOMPLETE_SDCH_CONTENT);
       UMA_HISTOGRAM_COUNTS("Sdch3.PartialBytesIn",
            static_cast<int>(filter_context_.GetByteReadCount()));
       UMA_HISTOGRAM_COUNTS("Sdch3.PartialVcdiffIn", source_bytes_);
@@ -218,7 +218,8 @@ Filter::FilterStatus SdchFilter::ReadFilteredData(char* dest_buffer,
         SdchManager::SdchErrorRecovery(SdchManager::PASSING_THROUGH_NON_SDCH);
         decoding_status_ = PASS_THROUGH;
         // ... but further back-off on advertising SDCH support.
-        url_request_context_->sdch_manager()->BlacklistDomain(url_);
+        url_request_context_->sdch_manager()->BlacklistDomain(
+            url_, SdchManager::PASSING_THROUGH_NON_SDCH);
       }
 
       if (decoding_status_ == PASS_THROUGH) {
@@ -228,13 +229,13 @@ Filter::FilterStatus SdchFilter::ReadFilteredData(char* dest_buffer,
         if (std::string::npos == mime_type_.find("text/html")) {
           // Since we can't do a meta-refresh (along with an exponential
           // backoff), we'll just make sure this NEVER happens again.
-          url_request_context_->sdch_manager()->BlacklistDomainForever(url_);
-          if (filter_context_.IsCachedContent())
-            SdchManager::SdchErrorRecovery(
-                SdchManager::CACHED_META_REFRESH_UNSUPPORTED);
-          else
-            SdchManager::SdchErrorRecovery(
-                SdchManager::META_REFRESH_UNSUPPORTED);
+          SdchManager::ProblemCodes problem =
+              (filter_context_.IsCachedContent() ?
+               SdchManager::CACHED_META_REFRESH_UNSUPPORTED :
+               SdchManager::META_REFRESH_UNSUPPORTED);
+          url_request_context_->sdch_manager()->BlacklistDomainForever(
+              url_, problem);
+          SdchManager::SdchErrorRecovery(problem);
           return FILTER_ERROR;
         }
         // HTML content means we can issue a meta-refresh, and get the content
@@ -247,7 +248,8 @@ Filter::FilterStatus SdchFilter::ReadFilteredData(char* dest_buffer,
         } else {
           // Since it wasn't in the cache, we definately need at least some
           // period of blacklisting to get the correct content.
-          url_request_context_->sdch_manager()->BlacklistDomain(url_);
+          url_request_context_->sdch_manager()->BlacklistDomain(
+              url_, SdchManager::META_REFRESH_RECOVERY);
           SdchManager::SdchErrorRecovery(SdchManager::META_REFRESH_RECOVERY);
         }
         decoding_status_ = META_REFRESH_RECOVERY;

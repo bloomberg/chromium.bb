@@ -27531,6 +27531,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Sdch3.BlacklistReason" enum="SdchProblemCode">
+  <owner>rdsmith@chromium.org</owner>
+  <summary>
+    The reason why a blacklist blocking a request from advertising SDCH was
+    implemented.  There is one entry in this histogram per inhibited request.
+  </summary>
+</histogram>
+
 <histogram name="Sdch3.Dictionary size loaded" units="bytes">
   <owner>rdsmith@chromium.org</owner>
   <summary>
