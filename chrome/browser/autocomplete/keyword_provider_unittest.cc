@@ -7,7 +7,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
-#include "chrome/test/base/testing_browser_process.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/autocomplete_match.h"
 #include "components/search_engines/search_engines_switches.h"

@@ -18,7 +18,6 @@
 
 class AutocompleteInput;
 class KeywordProvider;
-class Profile;
 class TemplateURL;
 
 class KeywordExtensionsDelegate {
@@ -30,9 +29,8 @@ class KeywordExtensionsDelegate {
   // extension are current.
   virtual void IncrementInputId();
 
-  // Returns true if an extension is enabled in a given profile.
-  virtual bool IsEnabledExtension(Profile* profile,
-                                  const std::string& extension_id);
+  // Returns true if an extension is enabled.
+  virtual bool IsEnabledExtension(const std::string& extension_id);
 
   // Handles the extensions portion of KeywordProvider::Start().
   // Depending on |minimal_changes| and whether |input| wants matches

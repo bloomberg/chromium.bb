@@ -16,13 +16,13 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/autocomplete/keyword_extensions_delegate.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/omnibox/autocomplete_input.h"
 #include "components/omnibox/autocomplete_provider.h"
 
 class AutocompleteProviderListener;
 class KeywordExtensionsDelegate;
-class Profile;
 class TemplateURL;
 class TemplateURLService;
 
@@ -50,10 +50,13 @@ class TemplateURLService;
 // "<enter term(s)>" as the substituted input, and does nothing when selected.
 class KeywordProvider : public AutocompleteProvider {
  public:
-  KeywordProvider(AutocompleteProviderListener* listener, Profile* profile);
-  // For testing.
   KeywordProvider(AutocompleteProviderListener* listener,
                   TemplateURLService* model);
+
+  void set_extensions_delegate(
+      scoped_ptr<KeywordExtensionsDelegate> extensions_delegate) {
+    extensions_delegate_ = extensions_delegate.Pass();
+  }
 
   // Extracts the next whitespace-delimited token from input and returns it.
   // Sets |remaining_input| to everything after the first token (skipping over
@@ -141,10 +144,8 @@ class KeywordProvider : public AutocompleteProvider {
   TemplateURLService* GetTemplateURLService() const;
 
   AutocompleteProviderListener* listener_;
-  Profile* profile_;
 
-  // Model for the keywords.  This is only non-null when testing, otherwise the
-  // TemplateURLService from the Profile is used.
+  // Model for the keywords.
   TemplateURLService* model_;
 
   // Delegate to handle the extensions-only logic for KeywordProvider.

@@ -15,7 +15,6 @@ void KeywordExtensionsDelegate::IncrementInputId() {
 }
 
 bool KeywordExtensionsDelegate::IsEnabledExtension(
-    Profile* profile,
     const std::string& extension_id) {
   return false;
 }

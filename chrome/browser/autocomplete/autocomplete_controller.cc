@@ -31,6 +31,10 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/autocomplete/keyword_extensions_delegate_impl.h"
+#endif
+
 namespace {
 
 // Converts the given match to a type (and possibly subtype) based on the AQS
@@ -195,7 +199,12 @@ AutocompleteController::AutocompleteController(
   // "Tab to search" can be used on all platforms other than Android.
 #if !defined(OS_ANDROID)
   if (provider_types & AutocompleteProvider::TYPE_KEYWORD) {
-    keyword_provider_ = new KeywordProvider(this, profile);
+    keyword_provider_ = new KeywordProvider(this, template_url_service);
+#if defined(ENABLE_EXTENSIONS)
+    keyword_provider_->set_extensions_delegate(
+        scoped_ptr<KeywordExtensionsDelegate>(
+            new KeywordExtensionsDelegateImpl(profile, keyword_provider_)));
+#endif
     providers_.push_back(keyword_provider_);
   }
 #endif

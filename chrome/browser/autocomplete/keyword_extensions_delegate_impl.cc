@@ -19,8 +19,10 @@ namespace omnibox_api = extensions::api::omnibox;
 int KeywordExtensionsDelegateImpl::global_input_uid_ = 0;
 
 KeywordExtensionsDelegateImpl::KeywordExtensionsDelegateImpl(
+    Profile* profile,
     KeywordProvider* provider)
     : KeywordExtensionsDelegate(provider),
+      profile_(profile),
       provider_(provider) {
   DCHECK(provider_);
 
@@ -30,14 +32,14 @@ KeywordExtensionsDelegateImpl::KeywordExtensionsDelegateImpl(
   // suggestions are meant for us.
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_OMNIBOX_SUGGESTIONS_READY,
-                 content::Source<Profile>(profile()->GetOriginalProfile()));
+                 content::Source<Profile>(profile_->GetOriginalProfile()));
   registrar_.Add(
       this,
       extensions::NOTIFICATION_EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED,
-      content::Source<Profile>(profile()->GetOriginalProfile()));
+      content::Source<Profile>(profile_->GetOriginalProfile()));
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_OMNIBOX_INPUT_ENTERED,
-                 content::Source<Profile>(profile()));
+                 content::Source<Profile>(profile_));
 }
 
 KeywordExtensionsDelegateImpl::~KeywordExtensionsDelegateImpl() {
@@ -48,15 +50,14 @@ void  KeywordExtensionsDelegateImpl::IncrementInputId() {
 }
 
 bool KeywordExtensionsDelegateImpl::IsEnabledExtension(
-    Profile* profile,
     const std::string& extension_id) {
   ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
   const extensions::Extension* extension =
       extension_service->GetExtensionById(extension_id, false);
   return extension &&
-      (!profile->IsOffTheRecord() ||
-       !extensions::util::IsIncognitoEnabled(extension_id, profile));
+      (!profile_->IsOffTheRecord() ||
+       !extensions::util::IsIncognitoEnabled(extension_id, profile_));
 }
 
 bool KeywordExtensionsDelegateImpl::Start(
@@ -75,7 +76,7 @@ bool KeywordExtensionsDelegateImpl::Start(
   }
 
   extensions::ApplyDefaultSuggestionForExtensionKeyword(
-      profile(), template_url, remaining_input, &matches()->front());
+      profile_, template_url, remaining_input, &matches()->front());
 
   if (minimal_changes) {
     // If the input hasn't significantly changed, we can just use the
@@ -92,7 +93,7 @@ bool KeywordExtensionsDelegateImpl::Start(
     // We only have to wait for suggest results if there are actually
     // extensions listening for input changes.
     if (extensions::ExtensionOmniboxEventRouter::OnInputChanged(
-            profile(), template_url->GetExtensionId(),
+            profile_, template_url->GetExtensionId(),
             base::UTF16ToUTF8(remaining_input), current_input_id_))
       set_done(false);
   }
@@ -105,13 +106,13 @@ void KeywordExtensionsDelegateImpl::EnterExtensionKeywordMode(
   current_keyword_extension_id_ = extension_id;
 
   extensions::ExtensionOmniboxEventRouter::OnInputStarted(
-      profile(), current_keyword_extension_id_);
+      profile_, current_keyword_extension_id_);
 }
 
 void KeywordExtensionsDelegateImpl::MaybeEndExtensionKeywordMode() {
   if (!current_keyword_extension_id_.empty()) {
     extensions::ExtensionOmniboxEventRouter::OnInputCancelled(
-        profile(), current_keyword_extension_id_);
+        profile_, current_keyword_extension_id_);
     current_keyword_extension_id_.clear();
   }
 }
@@ -145,7 +146,7 @@ void KeywordExtensionsDelegateImpl::Observe(
       const TemplateURL* template_url(
           model->GetTemplateURLForKeyword(keyword));
       extensions::ApplyDefaultSuggestionForExtensionKeyword(
-          profile(), template_url, remaining_input, &matches()->front());
+          profile_, template_url, remaining_input, &matches()->front());
       OnProviderUpdate(true);
       return;
     }
