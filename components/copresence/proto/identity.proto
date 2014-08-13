@@ -4,7 +4,6 @@ option optimize_for = LITE_RUNTIME;
 import "enums.proto";
 message Identity {
   optional IdentityType type = 1;
-  optional string obfuscated_gaia_id = 2 [deprecated = true];
   optional string chromecast_id = 3;
   optional string android_id = 4;
   optional string chrome_id = 5;

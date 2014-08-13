@@ -64,13 +64,6 @@ enum TransmissionStrategy {
   OPPORTUNISTIC = 2;
   PASSIVE = 3;
 }
-enum DeleteAllType {
-  UNKNOWN_DELETE_ALL_TYPE = 0;
-  DELETE_NONE = 1;
-  DELETE_ALL_FOR_IDENTITY_DEVICE = 2;
-  DELETE_ALL_FOR_IDENTITY = 3;
-  DELETE_ALL_FOR_DEVICE_APP = 4;
-}
 enum StatusCode {
   STATUS_CODE_UNKNOWN = -1;
   OK = 0;

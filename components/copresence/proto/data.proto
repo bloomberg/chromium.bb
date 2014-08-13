@@ -13,16 +13,6 @@ message Status {
   optional StatusCode code = 1;
   optional string message = 2;
 }
-message DeviceRegistration {
-  optional PushService service = 1 [deprecated = true];
-  optional string device_token = 2 [deprecated = true];
-  optional DeviceIdentity device_identity = 3 [deprecated = true];
-  optional string app_name = 4 [deprecated = true];
-  optional bytes device_token_binary = 5 [deprecated = true];
-  optional string registered_device_id = 6 [deprecated = true];
-  optional int32 ulr_device_id = 7 [deprecated = true];
-  optional Identity registrant = 8 [deprecated = true];
-}
 message PushServiceRegistration {
   optional PushService service = 1;
 }
@@ -34,10 +24,8 @@ message DeviceIdentifiers {
 message Token {
   message Debug {
     repeated string email = 2;
-    extensions 1 to 1;
   }
   optional string id = 1;
-  optional uint32 ttl_millis_deprecated = 2 [deprecated = true];
   optional TokenStatus status = 3;
   optional Debug debug = 4;
 }
@@ -67,7 +55,6 @@ message DeviceState {
 }
 message DebugInfo {
   optional string served_by_task = 1;
-  optional bool listen_initiated_by_location_deprecated = 2 [deprecated = true];
   repeated string token_id = 3;
   optional int64 request_time_millis = 4;
 }
@@ -83,7 +70,6 @@ message TokenSignals {
 message AccessPolicy {
   optional int64 ttl_millis = 1;
   optional Acl acl = 2;
-  extensions 4 to 4;
 }
 message Acl {
   optional AclType acl_type = 1;
@@ -135,10 +121,6 @@ message Subscription {
   optional MessageType message_type = 4;
   optional TokenExchangeStrategy token_exchange_strategy = 7;
   optional OptInStateFilter opt_in_state_filter = 8;
-}
-message DeleteAll {
-  optional DeleteAllType type = 1;
-  repeated string namespace = 2;
 }
 message MessageResult {
   optional string published_message_id = 1;
