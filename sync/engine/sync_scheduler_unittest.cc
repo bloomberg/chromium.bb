@@ -1336,7 +1336,13 @@ TEST_F(SyncSchedulerTest, MAYBE_SuccessfulRetry) {
   StopSyncScheduler();
 }
 
-TEST_F(SyncSchedulerTest, FailedRetry) {
+#if defined(OS_WIN)
+// Times out: http://crbug.com/402212
+#define MAYBE_FailedRetry DISABLED_FailedRetry
+#else
+#define MAYBE_FailedRetry FailedRetry
+#endif
+TEST_F(SyncSchedulerTest, MAYBE_FailedRetry) {
   UseMockDelayProvider();
   EXPECT_CALL(*delay(), GetDelay(_))
       .WillRepeatedly(Return(TimeDelta::FromMilliseconds(1)));
