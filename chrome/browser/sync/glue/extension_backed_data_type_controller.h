@@ -22,7 +22,6 @@ class ExtensionBackedDataTypeController
       public extensions::ExtensionRegistryObserver {
  public:
   ExtensionBackedDataTypeController(
-      const DisableTypeCallback& disable_callback,
       syncer::ModelType type,
       const std::string& extension_hash,
       sync_driver::SyncApiComponentFactory* sync_factory,

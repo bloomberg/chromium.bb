@@ -15,8 +15,7 @@ class ThemeDataTypeController : public sync_driver::UIDataTypeController {
  public:
   ThemeDataTypeController(
       sync_driver::SyncApiComponentFactory* sync_factory,
-      Profile* profile,
-      const DisableTypeCallback& disable_callback);
+      Profile* profile);
 
  private:
   virtual ~ThemeDataTypeController();

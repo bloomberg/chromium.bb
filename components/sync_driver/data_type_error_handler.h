@@ -18,9 +18,8 @@ class DataTypeErrorHandler {
  public:
   // Call this to disable a datatype while it is running. This is usually
   // called for a runtime failure that is specific to a datatype.
-  virtual void OnSingleDatatypeUnrecoverableError(
-      const tracked_objects::Location& from_here,
-      const std::string& message) = 0;
+  virtual void OnSingleDataTypeUnrecoverableError(
+      const syncer::SyncError& error) = 0;
 
   // This will create a syncer::SyncError object. This will also upload
   // a breakpad call stack to crash server. A sync error usually means

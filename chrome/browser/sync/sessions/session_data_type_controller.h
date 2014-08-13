@@ -25,8 +25,7 @@ class SessionDataTypeController : public sync_driver::UIDataTypeController,
   SessionDataTypeController(sync_driver::SyncApiComponentFactory* factory,
                             Profile* profile,
                             SyncedWindowDelegatesGetter* synced_window_getter,
-                            LocalDeviceInfoProvider* local_device,
-                            const DisableTypeCallback& disable_callback);
+                            LocalDeviceInfoProvider* local_device);
 
   // NotificationObserver interface.
   virtual void Observe(int type,

@@ -24,8 +24,7 @@ class SearchEngineDataTypeController
  public:
   SearchEngineDataTypeController(
       sync_driver::SyncApiComponentFactory* profile_sync_factory,
-      Profile* profile,
-      const DisableTypeCallback& disable_callback);
+      Profile* profile);
 
   TemplateURLService::Subscription* GetSubscriptionForTesting();
 

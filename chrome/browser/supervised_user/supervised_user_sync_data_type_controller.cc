@@ -9,7 +9,6 @@
 #include "content/public/browser/browser_thread.h"
 
 SupervisedUserSyncDataTypeController::SupervisedUserSyncDataTypeController(
-    const DisableTypeCallback& disable_callback,
     syncer::ModelType type,
     sync_driver::SyncApiComponentFactory* sync_factory,
     Profile* profile)
@@ -17,7 +16,6 @@ SupervisedUserSyncDataTypeController::SupervisedUserSyncDataTypeController(
           content::BrowserThread::GetMessageLoopProxyForThread(
               content::BrowserThread::UI),
           base::Bind(&browser_sync::ChromeReportUnrecoverableError),
-          disable_callback,
           type,
           sync_factory),
       profile_(profile) {

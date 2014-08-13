@@ -22,8 +22,7 @@ class ExtensionDataTypeController : public sync_driver::UIDataTypeController {
   ExtensionDataTypeController(
       syncer::ModelType type,  // Either EXTENSIONS or APPS.
       sync_driver::SyncApiComponentFactory* sync_factory,
-      Profile* profile,
-      const DisableTypeCallback& disable_callback);
+      Profile* profile);
 
  private:
   virtual ~ExtensionDataTypeController();

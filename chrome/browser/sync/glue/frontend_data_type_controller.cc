@@ -30,7 +30,7 @@ FrontendDataTypeController::FrontendDataTypeController(
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* sync_service)
-    : DataTypeController(ui_thread, error_callback, DisableTypeCallback()),
+    : DataTypeController(ui_thread, error_callback),
       profile_sync_factory_(profile_sync_factory),
       profile_(profile),
       sync_service_(sync_service),
@@ -85,7 +85,6 @@ void FrontendDataTypeController::StartAssociating(
     const StartCallback& start_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!start_callback.is_null());
-  DCHECK(start_callback_.is_null());
   DCHECK_EQ(state_, MODEL_LOADED);
 
   start_callback_ = start_callback;
@@ -102,6 +101,9 @@ void FrontendDataTypeController::StartAssociating(
 void FrontendDataTypeController::Stop() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  if (state_ == NOT_RUNNING)
+    return;
+
   State prev_state = state_;
   state_ = STOPPING;
 
@@ -113,7 +115,6 @@ void FrontendDataTypeController::Stop() {
     // still in MODEL_STARTING.
     return;
   }
-  DCHECK(start_callback_.is_null());
 
   CleanUpState();
 
@@ -145,17 +146,21 @@ sync_driver::DataTypeController::State FrontendDataTypeController::state()
   return state_;
 }
 
-void FrontendDataTypeController::OnSingleDatatypeUnrecoverableError(
-    const tracked_objects::Location& from_here, const std::string& message) {
-  RecordUnrecoverableError(from_here, message);
-  syncer::SyncError error(
-      from_here, syncer::SyncError::DATATYPE_ERROR, message, type());
-  sync_service_->DisableDatatype(error);
+void FrontendDataTypeController::OnSingleDataTypeUnrecoverableError(
+    const syncer::SyncError& error) {
+  DCHECK_EQ(type(), error.model_type());
+  RecordUnrecoverableError(error.location(), error.message());
+  if (!start_callback_.is_null()) {
+    syncer::SyncMergeResult local_merge_result(type());
+    local_merge_result.set_error(error);
+    start_callback_.Run(RUNTIME_ERROR,
+                        local_merge_result,
+                        syncer::SyncMergeResult(type()));
+  }
 }
 
 FrontendDataTypeController::FrontendDataTypeController()
-    : DataTypeController(base::MessageLoopProxy::current(), base::Closure(),
-                         DisableTypeCallback()),
+    : DataTypeController(base::MessageLoopProxy::current(), base::Closure()),
       profile_sync_factory_(NULL),
       profile_(NULL),
       sync_service_(NULL),
@@ -279,12 +284,7 @@ void FrontendDataTypeController::StartDone(
     RecordStartFailure(start_result);
   }
 
-  // We have to release the callback before we call it, since it's possible
-  // invoking the callback will trigger a call to STOP(), which will get
-  // confused by the non-NULL start_callback_.
-  StartCallback callback = start_callback_;
-  start_callback_.Reset();
-  callback.Run(start_result, local_merge_result, syncer_merge_result);
+  start_callback_.Run(start_result, local_merge_result, syncer_merge_result);
 }
 
 void FrontendDataTypeController::RecordAssociationTime(base::TimeDelta time) {

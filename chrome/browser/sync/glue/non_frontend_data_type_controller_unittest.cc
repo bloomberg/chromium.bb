@@ -373,7 +373,7 @@ TEST_F(SyncNonFrontendDataTypeControllerTest, Stop) {
 
 // Disabled due to http://crbug.com/388367
 TEST_F(SyncNonFrontendDataTypeControllerTest,
-       DISABLED_OnSingleDatatypeUnrecoverableError) {
+       DISABLED_OnSingleDataTypeUnrecoverableError) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations(DataTypeController::OK);
@@ -387,11 +387,14 @@ TEST_F(SyncNonFrontendDataTypeControllerTest,
   WaitForDTC();
   EXPECT_EQ(DataTypeController::RUNNING, non_frontend_dtc_->state());
   // This should cause non_frontend_dtc_->Stop() to be called.
+  syncer::SyncError error(FROM_HERE,
+                          syncer::SyncError::DATATYPE_ERROR,
+                          "error",
+                          non_frontend_dtc_->type());
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE, base::Bind(
-      &NonFrontendDataTypeControllerFake::OnSingleDatatypeUnrecoverableError,
+      &NonFrontendDataTypeControllerFake::OnSingleDataTypeUnrecoverableError,
       non_frontend_dtc_.get(),
-      FROM_HERE,
-      std::string("Test")));
+      error));
   WaitForDTC();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_frontend_dtc_->state());
 }
