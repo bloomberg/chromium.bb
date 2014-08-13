@@ -18,7 +18,7 @@ class ExtensionHost;
 // associated with a particular embedder WebContents. This happens on calls to
 // the connect API.
 class AppViewGuest : public GuestView<AppViewGuest>,
-                     public extensions::ExtensionFunctionDispatcher::Delegate {
+                     public ExtensionFunctionDispatcher::Delegate {
  public:
   static const char Type[];
 
@@ -34,8 +34,7 @@ class AppViewGuest : public GuestView<AppViewGuest>,
                                int guest_instance_id);
 
   // ExtensionFunctionDispatcher::Delegate implementation.
-  virtual extensions::WindowController* GetExtensionWindowController() const
-      OVERRIDE;
+  virtual WindowController* GetExtensionWindowController() const OVERRIDE;
   virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
 
   // content::WebContentsObserver implementation.
@@ -64,16 +63,15 @@ class AppViewGuest : public GuestView<AppViewGuest>,
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
 
   void CompleteCreateWebContents(const GURL& url,
-                                 const extensions::Extension* guest_extension,
+                                 const Extension* guest_extension,
                                  const WebContentsCreatedCallback& callback);
 
   void LaunchAppAndFireEvent(const WebContentsCreatedCallback& callback,
-                             extensions::ExtensionHost* extension_host);
+                             ExtensionHost* extension_host);
 
   GURL url_;
   std::string guest_extension_id_;
-  scoped_ptr<extensions::ExtensionFunctionDispatcher>
-      extension_function_dispatcher_;
+  scoped_ptr<ExtensionFunctionDispatcher> extension_function_dispatcher_;
 
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.

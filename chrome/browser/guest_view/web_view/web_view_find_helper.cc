@@ -88,7 +88,7 @@ void WebViewFindHelper::Find(
     content::WebContents* guest_web_contents,
     const base::string16& search_text,
     const blink::WebFindOptions& options,
-    scoped_refptr<extensions::WebViewInternalFindFunction> find_function) {
+    scoped_refptr<WebViewInternalFindFunction> find_function) {
   // Need a new request_id for each new find request.
   ++current_find_request_id_;
 
@@ -241,7 +241,7 @@ WebViewFindHelper::FindInfo::FindInfo(
     int request_id,
     const base::string16& search_text,
     const blink::WebFindOptions& options,
-    scoped_refptr<extensions::WebViewInternalFindFunction> find_function)
+    scoped_refptr<WebViewInternalFindFunction> find_function)
     : request_id_(request_id),
       search_text_(search_text),
       options_(options),

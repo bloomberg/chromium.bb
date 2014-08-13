@@ -335,8 +335,8 @@ void WebViewGuest::DidAttachToEmbedder() {
 }
 
 void WebViewGuest::DidInitialize() {
-  script_executor_.reset(new extensions::ScriptExecutor(guest_web_contents(),
-                                                        &script_observers_));
+  script_executor_.reset(
+      new ScriptExecutor(guest_web_contents(), &script_observers_));
 
   notification_registrar_.Add(
       this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
@@ -368,8 +368,7 @@ void WebViewGuest::AttachWebViewHelpers(WebContents* contents) {
   ZoomController::CreateForWebContents(contents);
 
   FaviconTabHelper::CreateForWebContents(contents);
-  extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
-      contents);
+  ChromeExtensionWebContentsObserver::CreateForWebContents(contents);
 #if defined(ENABLE_PRINTING)
 #if defined(ENABLE_FULL_PRINTING)
   printing::PrintViewManager::CreateForWebContents(contents);
@@ -408,9 +407,9 @@ void WebViewGuest::EmbedderDestroyed() {
 
 void WebViewGuest::GuestDestroyed() {
   // Clean up custom context menu items for this guest.
-  extensions::MenuManager* menu_manager = extensions::MenuManager::Get(
+  MenuManager* menu_manager = MenuManager::Get(
       Profile::FromBrowserContext(browser_context()));
-  menu_manager->RemoveAllContextItems(extensions::MenuItem::ExtensionKey(
+  menu_manager->RemoveAllContextItems(MenuItem::ExtensionKey(
       embedder_extension_id(), view_instance_id()));
 
   RemoveWebViewStateFromIOThread(web_contents());
@@ -641,7 +640,7 @@ double WebViewGuest::GetZoom() {
 void WebViewGuest::Find(
     const base::string16& search_text,
     const blink::WebFindOptions& options,
-    scoped_refptr<extensions::WebViewInternalFindFunction> find_function) {
+    scoped_refptr<WebViewInternalFindFunction> find_function) {
   find_helper_.Find(guest_web_contents(), search_text, options, find_function);
 }
 
@@ -1244,7 +1243,7 @@ GURL WebViewGuest::ResolveURL(const std::string& src) {
   }
 
   GURL default_url(base::StringPrintf("%s://%s/",
-                                      extensions::kExtensionScheme,
+                                      kExtensionScheme,
                                       embedder_extension_id().c_str()));
   return default_url.Resolve(src);
 }

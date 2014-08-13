@@ -35,11 +35,11 @@ namespace extensions {
 namespace {
 
 struct ResponseInfo {
-  scoped_refptr<const extensions::Extension> guest_extension;
+  scoped_refptr<const Extension> guest_extension;
   base::WeakPtr<AppViewGuest> app_view_guest;
   GuestViewBase::WebContentsCreatedCallback callback;
 
-  ResponseInfo(const extensions::Extension* guest_extension,
+  ResponseInfo(const Extension* guest_extension,
                const base::WeakPtr<AppViewGuest>& app_view_guest,
                const GuestViewBase::WebContentsCreatedCallback& callback)
       : guest_extension(guest_extension),
@@ -108,8 +108,7 @@ AppViewGuest::AppViewGuest(content::BrowserContext* browser_context,
 AppViewGuest::~AppViewGuest() {
 }
 
-extensions::WindowController* AppViewGuest::GetExtensionWindowController()
-    const {
+WindowController* AppViewGuest::GetExtensionWindowController() const {
   return NULL;
 }
 
@@ -153,10 +152,9 @@ void AppViewGuest::CreateWebContents(
   }
 
   ExtensionService* service =
-      extensions::ExtensionSystem::Get(browser_context())->extension_service();
-  const extensions::Extension* guest_extension =
-      service->GetExtensionById(app_id, false);
-  const extensions::Extension* embedder_extension =
+      ExtensionSystem::Get(browser_context())->extension_service();
+  const Extension* guest_extension = service->GetExtensionById(app_id, false);
+  const Extension* embedder_extension =
       service->GetExtensionById(embedder_extension_id, false);
 
   if (!guest_extension || !guest_extension->is_platform_app() ||
@@ -172,9 +170,8 @@ void AppViewGuest::CreateWebContents(
                                         weak_ptr_factory_.GetWeakPtr(),
                                         callback))));
 
-  extensions::LazyBackgroundTaskQueue* queue =
-      extensions::ExtensionSystem::Get(browser_context())->
-          lazy_background_task_queue();
+  LazyBackgroundTaskQueue* queue =
+      ExtensionSystem::Get(browser_context())->lazy_background_task_queue();
   if (queue->ShouldEnqueueTask(browser_context(), guest_extension)) {
     queue->AddPendingTask(browser_context(),
                           guest_extension->id(),
@@ -184,8 +181,8 @@ void AppViewGuest::CreateWebContents(
     return;
   }
 
-  extensions::ProcessManager* process_manager =
-      extensions::ExtensionSystem::Get(browser_context())->process_manager();
+  ProcessManager* process_manager =
+      ExtensionSystem::Get(browser_context())->process_manager();
   ExtensionHost* host =
       process_manager->GetBackgroundHostForExtension(guest_extension->id());
   DCHECK(host);
@@ -203,7 +200,7 @@ void AppViewGuest::DidAttachToEmbedder() {
 
 void AppViewGuest::DidInitialize() {
   extension_function_dispatcher_.reset(
-      new extensions::ExtensionFunctionDispatcher(browser_context(), this));
+      new ExtensionFunctionDispatcher(browser_context(), this));
 }
 
 void AppViewGuest::OnRequest(const ExtensionHostMsg_Request_Params& params) {
@@ -213,7 +210,7 @@ void AppViewGuest::OnRequest(const ExtensionHostMsg_Request_Params& params) {
 
 void AppViewGuest::CompleteCreateWebContents(
     const GURL& url,
-    const extensions::Extension* guest_extension,
+    const Extension* guest_extension,
     const WebContentsCreatedCallback& callback) {
   if (!url.is_valid()) {
     callback.Run(NULL);
@@ -233,8 +230,7 @@ void AppViewGuest::CompleteCreateWebContents(
 void AppViewGuest::LaunchAppAndFireEvent(
     const WebContentsCreatedCallback& callback,
     ExtensionHost* extension_host) {
-  extensions::ExtensionSystem* system =
-      extensions::ExtensionSystem::Get(browser_context());
+  ExtensionSystem* system = ExtensionSystem::Get(browser_context());
   bool has_event_listener = system->event_router()->ExtensionHasEventListener(
       extension_host->extension()->id(),
       app_runtime::OnEmbedRequested::kEventName);
@@ -246,7 +242,7 @@ void AppViewGuest::LaunchAppAndFireEvent(
   scoped_ptr<base::DictionaryValue> embed_request(new base::DictionaryValue());
   embed_request->SetInteger(appview::kGuestInstanceID, GetGuestInstanceID());
   embed_request->SetString(appview::kEmbedderID, embedder_extension_id());
-  extensions::AppRuntimeEventRouter::DispatchOnEmbedRequestedEvent(
+  AppRuntimeEventRouter::DispatchOnEmbedRequestedEvent(
       browser_context(), embed_request.Pass(), extension_host->extension());
 }
 

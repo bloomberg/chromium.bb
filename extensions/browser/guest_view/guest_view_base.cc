@@ -108,17 +108,14 @@ void GuestViewBase::Init(const std::string& embedder_extension_id,
     return;
   initialized_ = true;
 
-  extensions::Feature* feature =
-      extensions::FeatureProvider::GetAPIFeatures()->GetFeature(
-          GetAPINamespace());
+  Feature* feature = FeatureProvider::GetAPIFeatures()->GetFeature(
+      GetAPINamespace());
   CHECK(feature);
 
-  extensions::ProcessMap* process_map =
-      extensions::ProcessMap::Get(browser_context());
+  ProcessMap* process_map = ProcessMap::Get(browser_context());
   CHECK(process_map);
 
-  const extensions::Extension* embedder_extension =
-      extensions::ExtensionRegistry::Get(browser_context_)
+  const Extension* embedder_extension = ExtensionRegistry::Get(browser_context_)
           ->enabled_extensions()
           .GetByID(embedder_extension_id);
   // Ok for |embedder_extension| to be NULL, the embedder might be WebUI.
@@ -127,12 +124,11 @@ void GuestViewBase::Init(const std::string& embedder_extension_id,
   int embedder_process_id =
       embedder_web_contents->GetRenderProcessHost()->GetID();
 
-  extensions::Feature::Availability availability =
-      feature->IsAvailableToContext(
-          embedder_extension,
-          process_map->GetMostLikelyContextType(embedder_extension,
-                                                embedder_process_id),
-          embedder_web_contents->GetLastCommittedURL());
+  Feature::Availability availability = feature->IsAvailableToContext(
+      embedder_extension,
+      process_map->GetMostLikelyContextType(embedder_extension,
+                                            embedder_process_id),
+      embedder_web_contents->GetLastCommittedURL());
   if (!availability.is_available()) {
     callback.Run(NULL);
     return;
@@ -403,18 +399,18 @@ void GuestViewBase::DispatchEventToEmbedder(Event* event) {
     return;
   }
 
-  extensions::EventFilteringInfo info;
+  EventFilteringInfo info;
   info.SetInstanceID(view_instance_id_);
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(event->GetArguments().release());
 
-  extensions::EventRouter::DispatchEvent(
+  EventRouter::DispatchEvent(
       embedder_web_contents_,
       browser_context_,
       embedder_extension_id_,
       event->name(),
       args.Pass(),
-      extensions::EventRouter::USER_GESTURE_UNKNOWN,
+      EventRouter::USER_GESTURE_UNKNOWN,
       info);
 }
 
@@ -447,7 +443,7 @@ void GuestViewBase::CompleteInit(const std::string& embedder_extension_id,
 
 // static
 void GuestViewBase::RegisterGuestViewTypes() {
-  extensions::ExtensionsAPIClient::Get()->RegisterGuestViewTypes();
+  ExtensionsAPIClient::Get()->RegisterGuestViewTypes();
 }
 
 }  // namespace extensions

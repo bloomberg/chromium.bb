@@ -23,8 +23,6 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #endif
 
-namespace webview_api = extensions::api::web_view_internal;
-
 class RenderViewContextMenu;
 
 namespace ui {
@@ -32,6 +30,9 @@ class SimpleMenuModel;
 }  // namespace ui
 
 namespace extensions {
+
+namespace webview_api = api::web_view_internal;
+
 class ScriptExecutor;
 class WebViewInternalFindFunction;
 
@@ -175,7 +176,7 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   void Find(
       const base::string16& search_text,
       const blink::WebFindOptions& options,
-      scoped_refptr<extensions::WebViewInternalFindFunction> find_function);
+      scoped_refptr<WebViewInternalFindFunction> find_function);
 
   // Conclude a find request to clear highlighting.
   void StopFinding(content::StopFindAction);
@@ -233,9 +234,7 @@ class WebViewGuest : public GuestView<WebViewGuest>,
                  uint32 removal_mask,
                  const base::Closure& callback);
 
-  extensions::ScriptExecutor* script_executor() {
-    return script_executor_.get();
-  }
+  ScriptExecutor* script_executor() { return script_executor_.get(); }
 
  private:
   friend class WebViewPermissionHelper;
@@ -336,9 +335,8 @@ class WebViewGuest : public GuestView<WebViewGuest>,
 
   void SetUpAutoSize();
 
-  ObserverList<extensions::TabHelper::ScriptExecutionObserver>
-      script_observers_;
-  scoped_ptr<extensions::ScriptExecutor> script_executor_;
+  ObserverList<TabHelper::ScriptExecutionObserver> script_observers_;
+  scoped_ptr<ScriptExecutor> script_executor_;
 
   content::NotificationRegistrar notification_registrar_;
 
