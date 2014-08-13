@@ -128,7 +128,7 @@ public:
     static String notAFiniteNumber(double value, const char* name = "value provided");
     static String notAFiniteNumber(const Decimal& value, const char* name = "value provided");
 
-    static String notEnoughArguments(unsigned expected, unsigned providedleastNumMandatoryParams);
+    static String notEnoughArguments(unsigned expected, unsigned provided);
 
     static String readOnly(const char* detail = 0);
 

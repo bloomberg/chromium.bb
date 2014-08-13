@@ -78,19 +78,19 @@ void setArityTypeError(ExceptionState& exceptionState, const char* valid, unsign
     exceptionState.throwTypeError(ExceptionMessages::invalidArity(valid, provided));
 }
 
-v8::Local<v8::Value> createMinimumArityTypeErrorForMethod(const char* method, const char* type, unsigned expected, unsigned providedLeastNumMandatoryParams, v8::Isolate* isolate)
+v8::Local<v8::Value> createMinimumArityTypeErrorForMethod(const char* method, const char* type, unsigned expected, unsigned provided, v8::Isolate* isolate)
 {
-    return V8ThrowException::createTypeError(ExceptionMessages::failedToExecute(method, type, ExceptionMessages::notEnoughArguments(expected, providedLeastNumMandatoryParams)), isolate);
+    return V8ThrowException::createTypeError(ExceptionMessages::failedToExecute(method, type, ExceptionMessages::notEnoughArguments(expected, provided)), isolate);
 }
 
-v8::Local<v8::Value> createMinimumArityTypeErrorForConstructor(const char* type, unsigned expected, unsigned providedLeastNumMandatoryParams, v8::Isolate* isolate)
+v8::Local<v8::Value> createMinimumArityTypeErrorForConstructor(const char* type, unsigned expected, unsigned provided, v8::Isolate* isolate)
 {
-    return V8ThrowException::createTypeError(ExceptionMessages::failedToConstruct(type, ExceptionMessages::notEnoughArguments(expected, providedLeastNumMandatoryParams)), isolate);
+    return V8ThrowException::createTypeError(ExceptionMessages::failedToConstruct(type, ExceptionMessages::notEnoughArguments(expected, provided)), isolate);
 }
 
-void setMinimumArityTypeError(ExceptionState& exceptionState, unsigned expected, unsigned providedLeastNumMandatoryParams)
+void setMinimumArityTypeError(ExceptionState& exceptionState, unsigned expected, unsigned provided)
 {
-    exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(expected, providedLeastNumMandatoryParams));
+    exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(expected, provided));
 }
 
 class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
