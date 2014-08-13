@@ -12,6 +12,10 @@
       }],
     ],
 
+    # If any of the linux_link_FOO below are set to 1, then the corresponding
+    # target will be linked against the FOO library (either dynamically or
+    # statically, depending on the pkg-config files), as opposed to loading the
+    # FOO library dynamically with dlopen.
     'linux_link_libgps%': 0,
     'linux_link_libpci%': 0,
     'linux_link_libspeechd%': 0,

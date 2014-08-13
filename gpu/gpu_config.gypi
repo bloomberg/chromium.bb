@@ -65,7 +65,7 @@
         '../third_party/amd/amd_videocard_info_win.cc',
       ],
     }],
-    ['OS=="linux"', {
+    ['OS=="linux" and (use_x11==1 or use_ozone==1)', {
       'dependencies': [
         '../build/linux/system.gyp:libpci',
       ],

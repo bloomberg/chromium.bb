@@ -59,7 +59,7 @@ source_set("config") {
       ]
     }
   }
-  if (is_linux) {
+  if (is_linux && (use_x11 || use_ozone)) {
     deps += [
       "//build/config/linux:libpci",
     ]
