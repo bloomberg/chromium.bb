@@ -356,13 +356,6 @@ remoting.ClientSession.KEY_RESIZE_TO_CLIENT = 'resizeToClient';
 remoting.ClientSession.KEY_SHRINK_TO_FIT = 'shrinkToFit';
 
 /**
- * The id of the client plugin
- *
- * @const
- */
-remoting.ClientSession.prototype.PLUGIN_ID = 'session-client-plugin';
-
-/**
  * Set of capabilities for which hasCapability_() can be used to test.
  *
  * @enum {string}
@@ -398,39 +391,6 @@ remoting.ClientSession.prototype.hasCapability_ = function(capability) {
 };
 
 /**
- * @param {string} id Id to use for the plugin element .
- * @param {function(string, string):boolean} onExtensionMessage The handler for
- *     protocol extension messages. Returns true if a message is recognized;
- *     false otherwise.
- * @return {remoting.ClientPlugin} Create plugin object for the locally
- * installed plugin.
- */
-remoting.ClientSession.prototype.createClientPlugin_ =
-    function(id, onExtensionMessage) {
-  var plugin = /** @type {remoting.ViewerPlugin} */
-      document.createElement('embed');
-
-  plugin.id = id;
-  if (remoting.settings.CLIENT_PLUGIN_TYPE == 'pnacl') {
-    plugin.src = 'remoting_client_pnacl.nmf';
-    plugin.type = 'application/x-pnacl';
-  } else if (remoting.settings.CLIENT_PLUGIN_TYPE == 'nacl') {
-    plugin.src = 'remoting_client_nacl.nmf';
-    plugin.type = 'application/x-nacl';
-  } else {
-    plugin.src = 'about://none';
-    plugin.type = 'application/vnd.chromium.remoting-viewer';
-  }
-
-  plugin.width = 0;
-  plugin.height = 0;
-  plugin.tabIndex = 0;  // Required, otherwise focus() doesn't work.
-  this.container_.querySelector('.client-plugin-container').appendChild(plugin);
-
-  return new remoting.ClientPlugin(plugin, onExtensionMessage);
-};
-
-/**
  * Callback function called when the plugin element gets focus.
  */
 remoting.ClientSession.prototype.pluginGotFocus_ = function() {
@@ -449,8 +409,7 @@ remoting.ClientSession.prototype.pluginLostFocus_ = function() {
       // Due to crbug.com/246335, we can't restore the focus immediately,
       // otherwise the plugin gets confused about whether or not it has focus.
       window.setTimeout(
-          this.plugin_.element().focus.bind(this.plugin_.element()),
-          0);
+          this.plugin_.element().focus.bind(this.plugin_.element()), 0);
     }
   }
 };
@@ -464,7 +423,9 @@ remoting.ClientSession.prototype.pluginLostFocus_ = function() {
  */
 remoting.ClientSession.prototype.createPluginAndConnect =
     function(onExtensionMessage) {
-  this.plugin_ = this.createClientPlugin_(this.PLUGIN_ID, onExtensionMessage);
+  this.plugin_ = new remoting.ClientPlugin(
+      this.container_.querySelector('.client-plugin-container'),
+      onExtensionMessage);
   remoting.HostSettings.load(this.hostId_,
                              this.onHostSettingsLoaded_.bind(this));
 };
@@ -515,7 +476,7 @@ remoting.ClientSession.prototype.setFocusHandlers_ = function() {
  */
 remoting.ClientSession.prototype.resetWithError_ = function(error) {
   this.plugin_.cleanup();
-  delete this.plugin_;
+  this.plugin_ = null;
   this.error_ = error;
   this.setState_(remoting.ClientSession.State.FAILED);
 }
