@@ -19,9 +19,12 @@ const char kLocalAbstractCommand[] = "localabstract:%s";
 const int kBufferSize = 16 * 1024;
 
 void OnOpenSocket(const UsbDeviceProvider::SocketCallback& callback,
-                  net::StreamSocket* socket,
+                  net::StreamSocket* socket_raw,
                   int result) {
-  callback.Run(result, result == net::OK ? socket : NULL);
+  scoped_ptr<net::StreamSocket> socket(socket_raw);
+  if (result != net::OK)
+    socket.reset();
+  callback.Run(result, socket.Pass());
 }
 
 void OnRead(net::StreamSocket* socket,
@@ -68,7 +71,8 @@ void RunCommand(scoped_refptr<AndroidUsbDevice> device,
     callback.Run(net::ERR_CONNECTION_FAILED, std::string());
     return;
   }
-  int result = socket->Connect(base::Bind(&OpenedForCommand, callback, socket));
+  int result = socket->Connect(
+      base::Bind(&OpenedForCommand, callback, socket));
   if (result != net::ERR_IO_PENDING)
     callback.Run(result, std::string());
 }
@@ -107,19 +111,21 @@ void UsbDeviceProvider::OpenSocket(const std::string& serial,
                                    const SocketCallback& callback) {
   UsbDeviceMap::iterator it = device_map_.find(serial);
   if (it == device_map_.end()) {
-    callback.Run(net::ERR_CONNECTION_FAILED, NULL);
+    callback.Run(net::ERR_CONNECTION_FAILED,
+                 make_scoped_ptr<net::StreamSocket>(NULL));
     return;
   }
   std::string socket_name =
       base::StringPrintf(kLocalAbstractCommand, name.c_str());
   net::StreamSocket* socket = it->second->CreateSocket(socket_name);
   if (!socket) {
-    callback.Run(net::ERR_CONNECTION_FAILED, NULL);
+    callback.Run(net::ERR_CONNECTION_FAILED,
+                 make_scoped_ptr<net::StreamSocket>(NULL));
     return;
   }
   int result = socket->Connect(base::Bind(&OnOpenSocket, callback, socket));
   if (result != net::ERR_IO_PENDING)
-    callback.Run(result, NULL);
+    callback.Run(result, make_scoped_ptr<net::StreamSocket>(NULL));
 }
 
 void UsbDeviceProvider::ReleaseDevice(const std::string& serial) {

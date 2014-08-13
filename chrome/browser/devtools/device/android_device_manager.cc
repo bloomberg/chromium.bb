@@ -50,9 +50,9 @@ static void PostSocketCallback(
     scoped_refptr<base::MessageLoopProxy> response_message_loop,
     const AndroidDeviceManager::SocketCallback& callback,
     int result,
-    net::StreamSocket* socket) {
-  response_message_loop->PostTask(FROM_HERE,
-                                  base::Bind(callback, result, socket));
+    scoped_ptr<net::StreamSocket> socket) {
+  response_message_loop->PostTask(
+      FROM_HERE, base::Bind(callback, result, base::Passed(&socket)));
 }
 
 class HttpRequest {
@@ -61,39 +61,41 @@ class HttpRequest {
   typedef AndroidDeviceManager::SocketCallback SocketCallback;
 
   static void CommandRequest(const std::string& request,
-                           const CommandCallback& callback,
-                           int result,
-                           net::StreamSocket* socket) {
+                             const CommandCallback& callback,
+                             int result,
+                             scoped_ptr<net::StreamSocket> socket) {
     if (result != net::OK) {
       callback.Run(result, std::string());
       return;
     }
-    new HttpRequest(socket, request, callback);
+    new HttpRequest(socket.Pass(), request, callback);
   }
 
   static void SocketRequest(const std::string& request,
-                          const SocketCallback& callback,
-                          int result,
-                          net::StreamSocket* socket) {
+                            const SocketCallback& callback,
+                            int result,
+                            scoped_ptr<net::StreamSocket> socket) {
     if (result != net::OK) {
-      callback.Run(result, NULL);
+      callback.Run(result, make_scoped_ptr<net::StreamSocket>(NULL));
       return;
     }
-    new HttpRequest(socket, request, callback);
+    new HttpRequest(socket.Pass(), request, callback);
   }
 
  private:
-  HttpRequest(net::StreamSocket* socket,
+  HttpRequest(scoped_ptr<net::StreamSocket> socket,
               const std::string& request,
               const CommandCallback& callback)
-      : socket_(socket), command_callback_(callback), body_pos_(0) {
+      : socket_(socket.Pass()),
+        command_callback_(callback),
+        body_pos_(0) {
     SendRequest(request);
   }
 
-  HttpRequest(net::StreamSocket* socket,
-                      const std::string& request,
-                      const SocketCallback& callback)
-    : socket_(socket),
+  HttpRequest(scoped_ptr<net::StreamSocket> socket,
+              const std::string& request,
+              const SocketCallback& callback)
+    : socket_(socket.Pass()),
       socket_callback_(callback),
       body_pos_(0) {
     SendRequest(request);
@@ -169,7 +171,7 @@ class HttpRequest {
       if (!command_callback_.is_null())
         command_callback_.Run(net::OK, response_.substr(body_pos_));
       else
-        socket_callback_.Run(net::OK, socket_.release());
+        socket_callback_.Run(net::OK, socket_.Pass());
       delete this;
       return;
     }
@@ -191,7 +193,7 @@ class HttpRequest {
     if (!command_callback_.is_null())
       command_callback_.Run(result, std::string());
     else
-      socket_callback_.Run(result, NULL);
+      socket_callback_.Run(result, make_scoped_ptr<net::StreamSocket>(NULL));
     delete this;
     return false;
   }

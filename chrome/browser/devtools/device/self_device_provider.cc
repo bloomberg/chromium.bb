@@ -17,9 +17,9 @@ const char kSerial[] = "local";
 
 static void RunSocketCallback(
     const AndroidDeviceManager::SocketCallback& callback,
-    net::StreamSocket* socket,
+    scoped_ptr<net::StreamSocket> socket,
     int result) {
-  callback.Run(result, socket);
+  callback.Run(result, socket.Pass());
 }
 
 }  // namespace
@@ -61,7 +61,8 @@ void SelfAsDeviceProvider::OpenSocket(const std::string& serial,
   base::StringToInt(socket_name, &port);
   net::AddressList address_list =
       net::AddressList::CreateFromIPAddress(ip_number, port);
-  net::TCPClientSocket* socket = new net::TCPClientSocket(
-      address_list, NULL, net::NetLog::Source());
-  socket->Connect(base::Bind(&RunSocketCallback, callback, socket));
+  scoped_ptr<net::StreamSocket> socket(new net::TCPClientSocket(
+      address_list, NULL, net::NetLog::Source()));
+  socket->Connect(
+      base::Bind(&RunSocketCallback, callback, base::Passed(&socket)));
 }

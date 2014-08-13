@@ -24,7 +24,8 @@ class AndroidDeviceManager
       public base::NonThreadSafe {
  public:
   typedef base::Callback<void(int, const std::string&)> CommandCallback;
-  typedef base::Callback<void(int result, net::StreamSocket*)> SocketCallback;
+  typedef base::Callback<void(int result, scoped_ptr<net::StreamSocket>)>
+      SocketCallback;
   typedef base::Callback<void(const std::vector<std::string>&)> SerialsCallback;
 
   struct BrowserInfo {
@@ -53,32 +54,21 @@ class AndroidDeviceManager
 
   typedef base::Callback<void(const DeviceInfo&)> DeviceInfoCallback;
 
-  class AndroidWebSocket : public base::RefCountedThreadSafe<AndroidWebSocket> {
+  class AndroidWebSocket {
    public:
     class Delegate {
      public:
       virtual void OnSocketOpened() = 0;
       virtual void OnFrameRead(const std::string& message) = 0;
-      virtual void OnSocketClosed(bool closed_by_device) = 0;
+      virtual void OnSocketClosed() = 0;
 
      protected:
       virtual ~Delegate() {}
     };
 
-    AndroidWebSocket() {}
-
-    virtual void Connect() = 0;
-    virtual void Disconnect() = 0;
-    virtual void SendFrame(const std::string& message) = 0;
-    virtual void ClearDelegate() = 0;
-
-   protected:
     virtual ~AndroidWebSocket() {}
 
-   private:
-    friend class base::RefCountedThreadSafe<AndroidWebSocket>;
-
-    DISALLOW_COPY_AND_ASSIGN(AndroidWebSocket);
+    virtual void SendFrame(const std::string& message) = 0;
   };
 
   class DeviceProvider;
@@ -103,7 +93,7 @@ class AndroidDeviceManager
                      const std::string& url,
                      const SocketCallback& callback);
 
-    scoped_refptr<AndroidWebSocket> CreateWebSocket(
+    AndroidWebSocket* CreateWebSocket(
         const std::string& socket_name,
         const std::string& url,
         AndroidWebSocket::Delegate* delegate);
