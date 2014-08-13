@@ -12,7 +12,6 @@
 #include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
-#include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -133,15 +132,14 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, QueryPolicy) {
 }
 
 // HasPolicyAndRevoke unit tests the expected behavior of calling
-// HasUserDecision before and after calling RevokeUserDecisions on the
-// SSLHostStateDelegate class.
+// HasAllowedOrDeniedCert before and after calling RevokeAllowAndDenyPreferences
+// on the SSLHostStateDelegate class.
 IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, HasPolicyAndRevoke) {
   scoped_refptr<net::X509Certificate> google_cert = GetGoogleCert();
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
-  ChromeSSLHostStateDelegate* state =
-      ChromeSSLHostStateDelegateFactory::GetForProfile(profile);
+  content::SSLHostStateDelegate* state = profile->GetSSLHostStateDelegate();
 
   // Simulate a user decision to allow an invalid certificate exception for
   // kWWWGoogleHost and for kExampleHost.
@@ -150,12 +148,13 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, HasPolicyAndRevoke) {
   state->AllowCert(
       kExampleHost, google_cert.get(), net::CERT_STATUS_DATE_INVALID);
 
-  // Verify that HasUserDecision correctly acknowledges that a user decision has
-  // been made about kWWWGoogleHost. Then verify that HasUserDecision correctly
-  // identifies that the decision has been revoked.
-  EXPECT_TRUE(state->HasUserDecision(kWWWGoogleHost));
-  state->RevokeUserDecisions(kWWWGoogleHost);
-  EXPECT_FALSE(state->HasUserDecision(kWWWGoogleHost));
+  // Verify that HasAllowedOrDeniedCert correctly acknowledges that a user
+  // decision has been made about kWWWGoogleHost. Then verify that
+  // HasAllowedOrDeniedCert correctly identifies that the decision has been
+  // revoked.
+  EXPECT_TRUE(state->HasAllowedOrDeniedCert(kWWWGoogleHost));
+  state->RevokeAllowAndDenyPreferences(kWWWGoogleHost);
+  EXPECT_FALSE(state->HasAllowedOrDeniedCert(kWWWGoogleHost));
   EXPECT_EQ(
       net::CertPolicy::UNKNOWN,
       state->QueryPolicy(
@@ -163,14 +162,14 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, HasPolicyAndRevoke) {
 
   // Verify that the revocation of the kWWWGoogleHost decision does not affect
   // the Allow for kExampleHost.
-  EXPECT_TRUE(state->HasUserDecision(kExampleHost));
+  EXPECT_TRUE(state->HasAllowedOrDeniedCert(kExampleHost));
 
   // Verify the revocation of the kWWWGoogleHost decision does not affect the
   // non-decision for kGoogleHost. Then verify that a revocation of a URL with
   // no decision has no effect.
-  EXPECT_FALSE(state->HasUserDecision(kGoogleHost));
-  state->RevokeUserDecisions(kGoogleHost);
-  EXPECT_FALSE(state->HasUserDecision(kGoogleHost));
+  EXPECT_FALSE(state->HasAllowedOrDeniedCert(kGoogleHost));
+  state->RevokeAllowAndDenyPreferences(kGoogleHost);
+  EXPECT_FALSE(state->HasAllowedOrDeniedCert(kGoogleHost));
 }
 
 // Clear unit tests the expected behavior of calling Clear to forget all cert
@@ -180,8 +179,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, Clear) {
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
-  ChromeSSLHostStateDelegate* state =
-      ChromeSSLHostStateDelegateFactory::GetForProfile(profile);
+  content::SSLHostStateDelegate* state = profile->GetSSLHostStateDelegate();
 
   // Simulate a user decision to allow an invalid certificate exception for
   // kWWWGoogleHost and for kExampleHost.
@@ -192,43 +190,16 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, Clear) {
   // decision made, and kExampleHost, which was untouched, are now in a
   // non-decision state.
   state->Clear();
-  EXPECT_FALSE(state->HasUserDecision(kWWWGoogleHost));
+  EXPECT_FALSE(state->HasAllowedOrDeniedCert(kWWWGoogleHost));
   EXPECT_EQ(
       net::CertPolicy::UNKNOWN,
       state->QueryPolicy(
           kWWWGoogleHost, google_cert.get(), net::CERT_STATUS_DATE_INVALID));
-  EXPECT_FALSE(state->HasUserDecision(kExampleHost));
+  EXPECT_FALSE(state->HasAllowedOrDeniedCert(kExampleHost));
   EXPECT_EQ(
       net::CertPolicy::UNKNOWN,
       state->QueryPolicy(
           kExampleHost, google_cert.get(), net::CERT_STATUS_DATE_INVALID));
-}
-
-// DidHostRunInsecureContent unit tests the expected behavior of calling
-// DidHostRunInsecureContent as well as HostRanInsecureContent to check if
-// insecure content has been run and to mark it as such.
-IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest,
-                       DidHostRunInsecureContent) {
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
-  content::SSLHostStateDelegate* state = profile->GetSSLHostStateDelegate();
-
-  EXPECT_FALSE(state->DidHostRunInsecureContent("www.google.com", 42));
-  EXPECT_FALSE(state->DidHostRunInsecureContent("www.google.com", 191));
-  EXPECT_FALSE(state->DidHostRunInsecureContent("example.com", 42));
-
-  state->HostRanInsecureContent("www.google.com", 42);
-
-  EXPECT_TRUE(state->DidHostRunInsecureContent("www.google.com", 42));
-  EXPECT_FALSE(state->DidHostRunInsecureContent("www.google.com", 191));
-  EXPECT_FALSE(state->DidHostRunInsecureContent("example.com", 42));
-
-  state->HostRanInsecureContent("example.com", 42);
-
-  EXPECT_TRUE(state->DidHostRunInsecureContent("www.google.com", 42));
-  EXPECT_FALSE(state->DidHostRunInsecureContent("www.google.com", 191));
-  EXPECT_TRUE(state->DidHostRunInsecureContent("example.com", 42));
 }
 
 // Tests the basic behavior of cert memory in incognito.

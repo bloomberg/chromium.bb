@@ -13,7 +13,6 @@
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #import "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
@@ -25,7 +24,6 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/page_navigator.h"
-#include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
@@ -517,16 +515,6 @@ NSColor* IdentityVerifiedTextColor() {
   ShowCertificateViewerByID(webContents_, [self parentWindow], certificateId_);
 }
 
-// Handler for the link button to revoke user certificate decisions.
-- (void)resetCertificateDecisions:(id)sender {
-  DCHECK(resetDecisionsButton_);
-  ChromeSSLHostStateDelegate* delegate =
-      presenter_->chrome_ssl_host_state_delegate();
-  DCHECK(delegate);
-  delegate->RevokeUserDecisionsHard(presenter_->site_url().host());
-  [self close];
-}
-
 // Handler for the link to show help information about the connection tab.
 - (void)showHelpPage:(id)sender {
   webContents_->OpenURL(content::OpenURLParams(
@@ -573,7 +561,6 @@ NSColor* IdentityVerifiedTextColor() {
              toView:contentView.get()
             atPoint:textPosition];
   certificateInfoButton_ = nil;  // This will be created only if necessary.
-  resetDecisionsButton_ = nil;   // This will be created only if necessary.
   separatorAfterConnection_ = [self addSeparatorToView:contentView];
   [separatorAfterConnection_ setAutoresizingMask:NSViewWidthSizable];
 
@@ -671,14 +658,6 @@ NSColor* IdentityVerifiedTextColor() {
     certificateButtonFrame.origin.y = yPos + kVerticalSpacing;
     [certificateInfoButton_ setFrame:certificateButtonFrame];
     yPos = NSMaxY(certificateButtonFrame);
-  }
-  if (resetDecisionsButton_) {
-    NSRect resetDecisionsButtonFrame = [resetDecisionsButton_ frame];
-    resetDecisionsButtonFrame.origin.x =
-        NSMinX([identityStatusDescriptionField_ frame]);
-    resetDecisionsButtonFrame.origin.y = yPos + kVerticalSpacing;
-    [resetDecisionsButton_ setFrame:resetDecisionsButtonFrame];
-    yPos = NSMaxY(resetDecisionsButtonFrame);
   }
   yPos = [self setYPositionOfView:separatorAfterIdentity_
                                to:yPos + kVerticalSpacing];
@@ -853,40 +832,6 @@ NSColor* IdentityVerifiedTextColor() {
   return button.get();
 }
 
-// Add a button with the given text to |view| setting the max size appropriately
-// for the connection info section.
-- (NSButton*)addButtonWithTextToConnectionSection:(NSString*)text
-                                           toView:(NSView*)view {
-  NSRect containerFrame = [view frame];
-  // Frame size is arbitrary; it will be adjusted by the layout tweaker.
-  NSRect frame = NSMakeRect(kFramePadding, 0, 100, 10);
-  base::scoped_nsobject<NSButton> button(
-      [[NSButton alloc] initWithFrame:frame]);
-
-  // Determine the largest possible size for this button. The size is the width
-  // of the connection section minus the padding on both sides minus the
-  // connection image size and spacing.
-  CGFloat maxTitleWidth = containerFrame.size.width - kFramePadding * 2 -
-                          kConnectionImageSize - kConnectionImageSpacing;
-
-  base::scoped_nsobject<NSButtonCell> cell(
-      [[NSButtonCell alloc] initTextCell:text]);
-  [button setCell:cell.get()];
-  [GTMUILocalizerAndLayoutTweaker sizeToFitView:button.get()];
-
-  // Ensure the containing view is large enough to contain the button with its
-  // widest possible title.
-  NSRect buttonFrame = [button frame];
-  buttonFrame.size.width = maxTitleWidth;
-
-  [button setFrame:buttonFrame];
-  [button setButtonType:NSMomentaryPushInButton];
-  [button setBezelStyle:NSRegularSquareBezelStyle];
-  [view addSubview:button.get()];
-
-  return button.get();
-}
-
 // Add a pop-up button for |permissionInfo| to the given view.
 - (NSPopUpButton*)addPopUpButtonForPermission:
     (const WebsiteSettingsUI::PermissionInfo&)permissionInfo
@@ -1051,18 +996,6 @@ NSColor* IdentityVerifiedTextColor() {
 
       [certificateInfoButton_ setTarget:self];
       [certificateInfoButton_ setAction:@selector(showCertificateInfo:)];
-    }
-
-    // Check if a security decision has been made, and if so, add a button to
-    // allow the user to retract their decision.
-    if (identityInfo.show_ssl_decision_revoke_button) {
-      NSString* text = l10n_util::GetNSString(
-          IDS_PAGEINFO_RESET_INVALID_CERTIFICATE_DECISIONS_BUTTON);
-      resetDecisionsButton_ =
-          [self addButtonWithTextToConnectionSection:text
-                                              toView:connectionTabContentView_];
-      [resetDecisionsButton_ setTarget:self];
-      [resetDecisionsButton_ setAction:@selector(resetCertificateDecisions:)];
     }
   } else {
     certificateInfoButton_ = nil;

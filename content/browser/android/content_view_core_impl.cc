@@ -36,6 +36,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/screen_orientation/screen_orientation_dispatcher_host.h"
+#include "content/browser/ssl/ssl_host_state.h"
 #include "content/browser/transition_request_manager.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
 #include "content/common/frame_messages.h"
@@ -46,7 +47,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -1413,13 +1413,9 @@ void ContentViewCoreImpl::UpdateImeAdapter(long native_ime_adapter,
 }
 
 void ContentViewCoreImpl::ClearSslPreferences(JNIEnv* env, jobject obj) {
-  content::SSLHostStateDelegate* delegate =
-      web_contents_->
-      GetController().
-      GetBrowserContext()->
-      GetSSLHostStateDelegate();
-  if (delegate)
-    delegate->Clear();
+  SSLHostState* state = SSLHostState::GetFor(
+      web_contents_->GetController().GetBrowserContext());
+  state->Clear();
 }
 
 void ContentViewCoreImpl::SetUseDesktopUserAgent(

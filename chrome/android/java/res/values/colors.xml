@@ -31,7 +31,6 @@
 
     <!--  Website Settings Popup colors -->
     <color name="website_settings_popup_text_link">#5595fe</color>
-    <color name="website_settings_popup_reset_cert_decisions_button">#000000</color>
 
     <!--  Distilled Page Prefs colors -->
     <color name="distilled_page_prefs_selected">#999999</color>

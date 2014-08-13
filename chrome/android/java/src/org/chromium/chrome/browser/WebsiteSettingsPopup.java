@@ -16,13 +16,11 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.content.browser.WebContentsObserverAndroid;
@@ -42,10 +40,8 @@ public class WebsiteSettingsPopup implements OnClickListener {
     private final LinearLayout mContainer;
     private final WebContents mWebContents;
     private final int mPaddingWide, mPaddingThin;
-    private final long mNativeWebsiteSettingsPopup;
     private TextView mCertificateViewer, mMoreInfoLink;
     private ViewGroup mCertificateLayout, mDescriptionLayout;
-    private Button mResetCertDecisionsButton;
     private String mLinkUrl;
 
     private WebsiteSettingsPopup(Context context, WebContents webContents) {
@@ -66,7 +62,7 @@ public class WebsiteSettingsPopup implements OnClickListener {
         mDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         mDialog.setCanceledOnTouchOutside(true);
         // This needs to come after other member initialization.
-        mNativeWebsiteSettingsPopup = nativeInit(this, webContents);
+        final long nativeWebsiteSettingsPopup = nativeInit(this, webContents);
         final WebContentsObserverAndroid webContentsObserver =
                 new WebContentsObserverAndroid(mWebContents) {
             @Override
@@ -79,9 +75,9 @@ public class WebsiteSettingsPopup implements OnClickListener {
         mDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialog) {
-                assert mNativeWebsiteSettingsPopup != 0;
+                assert nativeWebsiteSettingsPopup != 0;
                 webContentsObserver.detachFromWebContents();
-                nativeDestroy(mNativeWebsiteSettingsPopup);
+                nativeDestroy(nativeWebsiteSettingsPopup);
             }
         });
     }
@@ -144,29 +140,6 @@ public class WebsiteSettingsPopup implements OnClickListener {
     }
 
     @CalledByNative
-    private void addResetCertDecisionsButton(String label) {
-        assert mNativeWebsiteSettingsPopup != 0;
-        assert mResetCertDecisionsButton == null;
-
-        mResetCertDecisionsButton = new Button(mContext);
-        mResetCertDecisionsButton.setText(label);
-        ApiCompatibilityUtils.setBackgroundForView(mResetCertDecisionsButton,
-                mContext.getResources().getDrawable(
-                        R.drawable.website_settings_reset_cert_decisions));
-        mResetCertDecisionsButton.setTextColor(
-                mContext.getResources().getColor(
-                R.color.website_settings_popup_reset_cert_decisions_button));
-        mResetCertDecisionsButton.setTextSize(DESCRIPTION_TEXT_SIZE_SP);
-        mResetCertDecisionsButton.setOnClickListener(this);
-
-        LinearLayout container = new LinearLayout(mContext);
-        container.setOrientation(LinearLayout.VERTICAL);
-        container.addView(mResetCertDecisionsButton);
-        container.setPadding(0, 0, 0, mPaddingWide);
-        mContainer.addView(container);
-    }
-
-    @CalledByNative
     private void addMoreInfoLink(String linkText) {
         addUrl(linkText, HELP_URL);
     }
@@ -213,8 +186,6 @@ public class WebsiteSettingsPopup implements OnClickListener {
                 i.putExtra(Browser.EXTRA_APPLICATION_ID, mContext.getPackageName());
                 mContext.startActivity(i);
             } catch (URISyntaxException ex) {}
-        } else if (mResetCertDecisionsButton == v) {
-            nativeResetCertDecisions(mNativeWebsiteSettingsPopup, mWebContents);
         }
     }
 
@@ -235,7 +206,5 @@ public class WebsiteSettingsPopup implements OnClickListener {
 
     private static native long nativeInit(WebsiteSettingsPopup popup, WebContents webContents);
     private native void nativeDestroy(long nativeWebsiteSettingsPopupAndroid);
-    private native void nativeResetCertDecisions(
-            long nativeWebsiteSettingsPopupAndroid, WebContents webContents);
     private native byte[][] nativeGetCertificateChain(WebContents webContents);
 }
