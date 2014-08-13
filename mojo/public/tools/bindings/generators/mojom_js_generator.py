@@ -98,7 +98,7 @@ def CodecType(kind):
   if mojom.IsStructKind(kind):
     return "new codec.PointerTo(%s)" % CodecType(kind.name)
   if mojom.IsArrayKind(kind) and mojom.IsBoolKind(kind.kind):
-    return "new codec.ArrayOfBoolArrayPointers()"
+    return "new codec.ArrayOf(new codec.ArrayOf(codec.PackedBool))"
   if mojom.IsArrayKind(kind):
     return "new codec.ArrayOf(%s)" % CodecType(kind.kind)
   if mojom.IsInterfaceKind(kind) or mojom.IsInterfaceRequestKind(kind):
@@ -114,7 +114,7 @@ def JavaScriptDecodeSnippet(kind):
   if mojom.IsStructKind(kind):
     return "decodeStructPointer(%s)" % CodecType(kind.name)
   if mojom.IsArrayKind(kind) and mojom.IsBoolKind(kind.kind):
-    return "decodeBoolArrayPointer()"
+    return "decodeArrayPointer(new codec.ArrayOf(codec.PackedBool))"
   if mojom.IsArrayKind(kind):
     return "decodeArrayPointer(%s)" % CodecType(kind.kind)
   if mojom.IsInterfaceKind(kind) or mojom.IsInterfaceRequestKind(kind):
@@ -129,7 +129,7 @@ def JavaScriptEncodeSnippet(kind):
   if mojom.IsStructKind(kind):
     return "encodeStructPointer(%s, " % CodecType(kind.name)
   if mojom.IsArrayKind(kind) and mojom.IsBoolKind(kind.kind):
-    return "encodeBoolArrayPointer(";
+    return "encodeArrayPointer(new codec.ArrayOf(codec.PackedBool), ";
   if mojom.IsAnyArrayKind(kind):
     return "encodeArrayPointer(%s, " % CodecType(kind.kind)
   if mojom.IsInterfaceKind(kind) or mojom.IsInterfaceRequestKind(kind):
