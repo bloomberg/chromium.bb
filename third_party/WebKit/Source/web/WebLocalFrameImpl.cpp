@@ -308,27 +308,12 @@ public:
         return m_printedPageWidth / pageRect.width();
     }
 
-    // Spools the printed page, a subrect of frame(). Skip the scale step.
-    // NativeTheme doesn't play well with scaling. Scaling is done browser side
-    // instead. Returns the scale to be applied.
-    // On Linux, we don't have the problem with NativeTheme, hence we let WebKit
-    // do the scaling and ignore the return value.
-    virtual float spoolPage(GraphicsContext& context, int pageNumber)
+    float spoolSinglePage(GraphicsContext& graphicsContext, int pageNumber)
     {
-        IntRect pageRect = m_pageRects[pageNumber];
-        float scale = m_printedPageWidth / pageRect.width();
-
-        context.save();
-#if OS(POSIX) && !OS(MACOSX)
-        context.scale(scale, scale);
-#endif
-        context.translate(static_cast<float>(-pageRect.x()), static_cast<float>(-pageRect.y()));
-        context.clip(pageRect);
-        frame()->view()->paintContents(&context, pageRect);
-        if (context.supportsURLFragments())
-            outputLinkedDestinations(context, frame()->document(), pageRect);
-        context.restore();
-        return scale;
+        // FIXME: Why is it ok to proceed without all the null checks that
+        // spoolAllPagesWithBoundaries does?
+        frame()->view()->updateLayoutAndStyleForPainting();
+        return spoolPage(graphicsContext, pageNumber);
     }
 
     void spoolAllPagesWithBoundaries(GraphicsContext& graphicsContext, const FloatSize& pageSizeInPixels)
@@ -376,6 +361,30 @@ public:
         }
     }
 
+protected:
+    // Spools the printed page, a subrect of frame(). Skip the scale step.
+    // NativeTheme doesn't play well with scaling. Scaling is done browser side
+    // instead. Returns the scale to be applied.
+    // On Linux, we don't have the problem with NativeTheme, hence we let WebKit
+    // do the scaling and ignore the return value.
+    virtual float spoolPage(GraphicsContext& context, int pageNumber)
+    {
+        IntRect pageRect = m_pageRects[pageNumber];
+        float scale = m_printedPageWidth / pageRect.width();
+
+        context.save();
+#if OS(POSIX) && !OS(MACOSX)
+        context.scale(scale, scale);
+#endif
+        context.translate(static_cast<float>(-pageRect.x()), static_cast<float>(-pageRect.y()));
+        context.clip(pageRect);
+        frame()->view()->paintContents(&context, pageRect);
+        if (context.supportsURLFragments())
+            outputLinkedDestinations(context, frame()->document(), pageRect);
+        context.restore();
+        return scale;
+    }
+
 private:
     // Set when printing.
     float m_printedPageWidth;
@@ -419,6 +428,7 @@ public:
         return m_pageCount;
     }
 
+protected:
     // Spools the printed page, a subrect of frame(). Skip the scale step.
     // NativeTheme doesn't play well with scaling. Scaling is done browser side
     // instead. Returns the scale to be applied.
@@ -1287,7 +1297,7 @@ float WebLocalFrameImpl::printPage(int page, WebCanvas* canvas)
 
     GraphicsContext graphicsContext(canvas);
     graphicsContext.setPrinting(true);
-    return m_printContext->spoolPage(graphicsContext, page);
+    return m_printContext->spoolSinglePage(graphicsContext, page);
 #else
     return 0;
 #endif
