@@ -28369,7 +28369,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2014-07.
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gab@chromium.org</owner>
   <summary>
     Logs the tracked preference id when it is migrated to the new MAC algorithm.
     This should only happen once per pref per profile.
@@ -28378,7 +28378,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Settings.TrackedPreferenceMigratedLegacyDeviceId"
     enum="TrackedPreference">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gab@chromium.org</owner>
   <summary>
     The id of a tracked preference whose value has not changed since the last
     time Chrome set it, but which was last set using a legacy device ID. Each
@@ -28397,7 +28397,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2014-06.
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gab@chromium.org</owner>
   <summary>
     The version of a PrefHashStore, reported once for each alternate
     PrefHashStore (not associated to the default profile) from a delayed task on
@@ -28410,7 +28410,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 2014-06.
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gab@chromium.org</owner>
   <summary>
     The previous version of an alternate PrefHashStore (not associated to the
     default profile) that was updated from a delayed task on startup. This
