@@ -9,11 +9,36 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "mojo/public/platform/native/gles2_impl_chromium_sync_point_thunks.h"
+#include "mojo/public/platform/native/gles2_impl_chromium_texture_mailbox_thunks.h"
+#include "mojo/public/platform/native/gles2_impl_thunks.h"
 #include "mojo/public/platform/native/gles2_thunks.h"
 #include "mojo/public/platform/native/system_thunks.h"
 
 namespace mojo {
 namespace shell {
+
+namespace {
+
+template <typename Thunks>
+bool SetThunks(Thunks (*make_thunks)(),
+               const char* function_name,
+               base::ScopedNativeLibrary* library) {
+  typedef size_t (*SetThunksFn)(const Thunks* thunks);
+  SetThunksFn set_thunks =
+      reinterpret_cast<SetThunksFn>(library->GetFunctionPointer(function_name));
+  if (!set_thunks)
+    return false;
+  Thunks thunks = make_thunks();
+  size_t expected_size = set_thunks(&thunks);
+  if (expected_size > sizeof(Thunks)) {
+    LOG(ERROR) << "Invalid app library: expected " << function_name
+               << " to return thunks of size: " << expected_size;
+    return false;
+  }
+  return true;
+}
+}
 
 InProcessDynamicServiceRunner::InProcessDynamicServiceRunner(
     Context* context)
@@ -66,19 +91,8 @@ void InProcessDynamicServiceRunner::Run() {
       break;
     }
 
-    MojoSetSystemThunksFn mojo_set_system_thunks_fn =
-        reinterpret_cast<MojoSetSystemThunksFn>(app_library_.GetFunctionPointer(
-            "MojoSetSystemThunks"));
-    if (mojo_set_system_thunks_fn) {
-      MojoSystemThunks system_thunks = MojoMakeSystemThunks();
-      size_t expected_size = mojo_set_system_thunks_fn(&system_thunks);
-      if (expected_size > sizeof(MojoSystemThunks)) {
-        LOG(ERROR)
-            << "Invalid app library: expected MojoSystemThunks size: "
-            << expected_size;
-        break;
-      }
-    } else {
+    if (!SetThunks(
+            &MojoMakeSystemThunks, "MojoSetSystemThunks", &app_library_)) {
       // In the component build, Mojo Apps link against mojo_system_impl.
 #if !defined(COMPONENT_BUILD)
       // Strictly speaking this is not required, but it's very unusual to have
@@ -87,38 +101,14 @@ void InProcessDynamicServiceRunner::Run() {
 #endif
     }
 
-    MojoSetGLES2ControlThunksFn mojo_set_gles2_control_thunks_fn =
-        reinterpret_cast<MojoSetGLES2ControlThunksFn>(
-            app_library_.GetFunctionPointer("MojoSetGLES2ControlThunks"));
-    if (mojo_set_gles2_control_thunks_fn) {
-      MojoGLES2ControlThunks gles2_control_thunks =
-          MojoMakeGLES2ControlThunks();
-      size_t expected_size = mojo_set_gles2_control_thunks_fn(
-          &gles2_control_thunks);
-      if (expected_size > sizeof(MojoGLES2ControlThunks)) {
-        LOG(ERROR)
-            << "Invalid app library: expected MojoGLES2ControlThunks size: "
-            << expected_size;
-        break;
-      }
-
+    if (SetThunks(&MojoMakeGLES2ControlThunks,
+                  "MojoSetGLES2ControlThunks",
+                  &app_library_)) {
       // If we have the control thunks, we probably also have the
       // GLES2 implementation thunks.
-      MojoSetGLES2ImplThunksFn mojo_set_gles2_impl_thunks_fn =
-          reinterpret_cast<MojoSetGLES2ImplThunksFn>(
-              app_library_.GetFunctionPointer("MojoSetGLES2ImplThunks"));
-      if (mojo_set_gles2_impl_thunks_fn) {
-        MojoGLES2ImplThunks gles2_impl_thunks =
-            MojoMakeGLES2ImplThunks();
-        size_t expected_size = mojo_set_gles2_impl_thunks_fn(
-            &gles2_impl_thunks);
-        if (expected_size > sizeof(MojoGLES2ImplThunks)) {
-          LOG(ERROR)
-              << "Invalid app library: expected MojoGLES2ImplThunks size: "
-              << expected_size;
-          break;
-        }
-      } else {
+      if (!SetThunks(&MojoMakeGLES2ImplThunks,
+                     "MojoSetGLES2ImplThunks",
+                     &app_library_)) {
         // In the component build, Mojo Apps link against mojo_gles2_impl.
 #if !defined(COMPONENT_BUILD)
         // Warn on this really weird case: The library requires the GLES2
@@ -127,6 +117,16 @@ void InProcessDynamicServiceRunner::Run() {
                         "doesn't have MojoSetGLES2ImplThunks.";
 #endif
       }
+
+      // If the application is using GLES2 extension points, register those
+      // thunks. Applications may use or not use any of these, so don't warn if
+      // they are missing.
+      SetThunks(MojoMakeGLES2ImplChromiumTextureMailboxThunks,
+                "MojoSetGLES2ImplChromiumTextureMailboxThunks",
+                &app_library_);
+      SetThunks(MojoMakeGLES2ImplChromiumSyncPointThunks,
+                "MojoSetGLES2ImplChromiumSyncPointThunks",
+                &app_library_);
     }
     // Unlike system thunks, we don't warn on a lack of GLES2 thunks because
     // not everything is a visual app.

@@ -1382,7 +1382,7 @@ _FUNCTION_INFO = {
     'count': 64,  # GL_MAILBOX_SIZE_CHROMIUM
     'unit_test': False,
     'client_test': False,
-    'extension': True,
+    'extension': "CHROMIUM_texture_mailbox",
     'chromium': True,
     'trace_level': 1,
   },
@@ -1393,7 +1393,7 @@ _FUNCTION_INFO = {
     'data_transfer_methods': ['immediate'],
     'unit_test': False,
     'client_test': False,
-    'extension': True,
+    'extension': "CHROMIUM_texture_mailbox",
     'chromium': True,
   },
   'ClearStencil': {
@@ -1648,7 +1648,7 @@ _FUNCTION_INFO = {
   'GenMailboxCHROMIUM': {
     'type': 'HandWritten',
     'impl_func': False,
-    'extension': True,
+    'extension': "CHROMIUM_texture_mailbox",
     'chromium': True,
   },
   'GenFramebuffers': {
@@ -1976,7 +1976,7 @@ _FUNCTION_INFO = {
     'count': 64,  # GL_MAILBOX_SIZE_CHROMIUM
     'unit_test': False,
     'client_test': False,
-    'extension': True,
+    'extension': "CHROMIUM_texture_mailbox",
     'chromium': True,
     'trace_level': 1,
   },
@@ -1987,7 +1987,7 @@ _FUNCTION_INFO = {
     'count': 64,  # GL_MAILBOX_SIZE_CHROMIUM
     'unit_test': False,
     'client_test': False,
-    'extension': True,
+    'extension': "CHROMIUM_texture_mailbox",
     'chromium': True,
     'trace_level': 1,
   },
@@ -2559,13 +2559,13 @@ _FUNCTION_INFO = {
   'InsertSyncPointCHROMIUM': {
     'type': 'HandWritten',
     'impl_func': False,
-    'extension': True,
+    'extension': "CHROMIUM_sync_point",
     'chromium': True,
   },
   'WaitSyncPointCHROMIUM': {
     'type': 'Custom',
     'impl_func': True,
-    'extension': True,
+    'extension': "CHROMIUM_sync_point",
     'chromium': True,
     'trace_level': 1,
   },
@@ -8225,6 +8225,22 @@ const size_t GLES2Util::enum_to_string_table_len_ =
 
     file.Close()
 
+  def WriteMojoGLCallVisitorForExtension(self, filename, extension):
+    """Provides the GL implementation for mojo for a particular extension"""
+    file = CWriter(filename)
+    file.Write(_LICENSE)
+    file.Write(_DO_NOT_EDIT_WARNING)
+
+    for func in self.original_functions:
+      if func.GetInfo("extension") != extension:
+        continue
+      file.Write("VISIT_GL_CALL(%s, %s, (%s), (%s))\n" %
+                             (func.name, func.return_type,
+                              func.MakeTypedOriginalArgString(""),
+                              func.MakeOriginalArgString("")))
+
+    file.Close()
+
 def Format(generated_files):
   for filename in generated_files:
     call(["clang-format", "-i", "-style=chromium", filename])
@@ -8306,8 +8322,14 @@ def main(argv):
   gen.WriteCommonUtilsHeader("common/gles2_cmd_utils_autogen.h")
   gen.WriteCommonUtilsImpl("common/gles2_cmd_utils_implementation_autogen.h")
   gen.WriteGLES2Header("../GLES2/gl2chromium_autogen.h")
-  gen.WriteMojoGLCallVisitor(
-      "../../mojo/public/c/gles2/gles2_call_visitor_autogen.h")
+  mojo_gles2_prefix = "../../mojo/public/c/gles2/gles2_call_visitor"
+  gen.WriteMojoGLCallVisitor(mojo_gles2_prefix + "_autogen.h")
+  gen.WriteMojoGLCallVisitorForExtension(
+      mojo_gles2_prefix + "_chromium_texture_mailbox_autogen.h",
+      "CHROMIUM_texture_mailbox")
+  gen.WriteMojoGLCallVisitorForExtension(
+      mojo_gles2_prefix + "_chromium_sync_point_autogen.h",
+      "CHROMIUM_sync_point")
 
   Format([
       "common/gles2_cmd_format_autogen.h",
@@ -8337,9 +8359,12 @@ def main(argv):
       "service/gles2_cmd_validation_autogen.h",
       "service/gles2_cmd_validation_implementation_autogen.h"])
   os.chdir("../..")
+  mojo_gles2_prefix = "mojo/public/c/gles2/gles2_call_visitor"
   Format([
       "gpu/GLES2/gl2chromium_autogen.h",
-      "mojo/public/c/gles2/gles2_call_visitor_autogen.h",
+      mojo_gles2_prefix + "_autogen.h",
+      mojo_gles2_prefix + "_chromium_texture_mailbox_autogen.h",
+      mojo_gles2_prefix + "_chromium_sync_point_autogen.h",
       "ppapi/c/dev/ppb_opengles2ext_dev.h",
       "ppapi/c/ppb_opengles2.h",
       "ppapi/lib/gl/gles2/gles2.c",

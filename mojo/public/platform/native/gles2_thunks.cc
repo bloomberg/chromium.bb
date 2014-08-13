@@ -11,7 +11,6 @@
 extern "C" {
 
 static MojoGLES2ControlThunks g_control_thunks = {0};
-static MojoGLES2ImplThunks g_impl_thunks = {0};
 
 MojoGLES2Context MojoGLES2CreateContext(MojoHandle handle,
                                         MojoGLES2ContextLost lost_callback,
@@ -47,26 +46,11 @@ void* MojoGLES2GetContextSupport(MojoGLES2Context context) {
   return g_control_thunks.GLES2GetContextSupport(context);
 }
 
-#define VISIT_GL_CALL(Function, ReturnType, PARAMETERS, ARGUMENTS) \
-  ReturnType gl##Function PARAMETERS {                             \
-    assert(g_impl_thunks.Function);                                \
-    return g_impl_thunks.Function ARGUMENTS;                       \
-  }
-#include "mojo/public/c/gles2/gles2_call_visitor_autogen.h"
-#undef VISIT_GL_CALL
-
 extern "C" THUNK_EXPORT size_t MojoSetGLES2ControlThunks(
     const MojoGLES2ControlThunks* gles2_control_thunks) {
   if (gles2_control_thunks->size >= sizeof(g_control_thunks))
     g_control_thunks = *gles2_control_thunks;
   return sizeof(g_control_thunks);
-}
-
-extern "C" THUNK_EXPORT size_t MojoSetGLES2ImplThunks(
-    const MojoGLES2ImplThunks* gles2_impl_thunks) {
-  if (gles2_impl_thunks->size >= sizeof(g_impl_thunks))
-    g_impl_thunks = *gles2_impl_thunks;
-  return sizeof(g_impl_thunks);
 }
 
 }  // extern "C"

@@ -379,9 +379,10 @@
         '<(mojo_system_for_component)',
       ],
       'defines': [
-        'MOJO_GLES2_IMPL_IMPLEMENTATION',
-        'MOJO_GLES2_IMPLEMENTATION',
         'GLES2_USE_MOJO',
+        'GL_GLEXT_PROTOTYPES',
+        'MOJO_GLES2_IMPLEMENTATION',
+        'MOJO_GLES2_IMPL_IMPLEMENTATION',
         'MOJO_USE_GLES2_IMPL'
       ],
       'direct_dependent_settings': {

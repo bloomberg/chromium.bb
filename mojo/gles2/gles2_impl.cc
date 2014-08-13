@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/threading/thread_local.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "mojo/gles2/gles2_context.h"
 
@@ -65,6 +66,8 @@ void* MojoGLES2GetContextSupport(MojoGLES2Context context) {
     return g_gpu_interface.Get().Get()->Function ARGUMENTS;        \
   }
 #include "mojo/public/c/gles2/gles2_call_visitor_autogen.h"
+#include "mojo/public/c/gles2/gles2_call_visitor_chromium_sync_point_autogen.h"
+#include "mojo/public/c/gles2/gles2_call_visitor_chromium_texture_mailbox_autogen.h"
 #undef VISIT_GL_CALL
 
 }  // extern "C"

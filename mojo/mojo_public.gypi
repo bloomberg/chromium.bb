@@ -81,6 +81,12 @@
         'public/c/gles2/gles2_export.h',
         'public/platform/native/gles2_thunks.cc',
         'public/platform/native/gles2_thunks.h',
+        'public/platform/native/gles2_impl_thunks.cc',
+        'public/platform/native/gles2_impl_thunks.h',
+        'public/platform/native/gles2_impl_chromium_texture_mailbox_thunks.cc',
+        'public/platform/native/gles2_impl_chromium_texture_mailbox_thunks.h',
+        'public/platform/native/gles2_impl_chromium_sync_point_thunks.cc',
+        'public/platform/native/gles2_impl_chromium_sync_point_thunks.h',
       ],
     },
     {
