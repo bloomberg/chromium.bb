@@ -12250,11 +12250,93 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="MPArch.ChildProcessLaunchFirst">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    The time it takes to spawn the first child subprocess (including sandbox
+    init).
+  </summary>
+</histogram>
+
+<histogram name="MPArch.ChildProcessLaunchSubsequent">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    The time it takes to spawn child sub processes not counting the first one.
+  </summary>
+</histogram>
+
+<histogram name="MPArch.RendererLaunchFirst">
+  <obsolete>
+    Deprecated 2/2013, renamed.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    The time it takes to spawn the first renderer subprocess (including sandbox
+    init).
+  </summary>
+</histogram>
+
+<histogram name="MPArch.RendererLaunchSubsequent">
+  <obsolete>
+    Deprecated 2/2013, renamed.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    The time it takes to spawn renderer sub processes not counting the first
+    one.
+  </summary>
+</histogram>
+
+<histogram name="MPArch.RPHCountPerLoad">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    The number of RenderProcessHosts (i.e. renderer processes) present when each
+    load completes. This is basically the average number of sub-processes over
+    time. See also Tabs.TabCountPerLoad.
+  </summary>
+</histogram>
+
+<histogram name="MPArch.RWH_InputEventDelta" units="milliseconds">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    The time spent waiting for the renderer to acknowledge an input event.
+  </summary>
+</histogram>
+
+<histogram name="MPArch.RWH_OnMsgPaintRect" units="milliseconds">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>The time spent inside RenderWidgetHost::OnMsgPaintRect.</summary>
+</histogram>
+
+<histogram name="MPArch.RWH_OnMsgScrollRect" units="milliseconds">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>The time spent inside RenderWidgetHost::OnMsgScrollRect.</summary>
+</histogram>
+
+<histogram name="MPArch.RWH_OnMsgUpdateRect">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>TBD</summary>
+</histogram>
+
+<histogram name="MPArch.RWH_RepaintDelta">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>TBD</summary>
+</histogram>
+
 <histogram name="MPArch.RWH_TabSwitchPaintDuration" units="milliseconds">
   <owner>jbauman@chromium.org</owner>
   <summary>
     Time from tab switch requested to tab appearing on screen (Aura and Mac
     only).
+  </summary>
+</histogram>
+
+<histogram name="MPArch.RWHH_WhiteoutDuration" units="milliseconds">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    The time that the user sees a blank white page after switching to a
+    different tab, while the RenderWidgetHost receives data to paint from the
+    renderer process.
   </summary>
 </histogram>
 
