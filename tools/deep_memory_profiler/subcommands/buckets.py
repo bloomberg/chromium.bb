@@ -18,7 +18,7 @@ class BucketsCommand(SubCommand):
   def do(self, sys_argv, out=sys.stdout):
     _, args = self._parse_args(sys_argv, 1)
     dump_path = args[1]
-    bucket_set = SubCommand.load_basic_files(dump_path, True, True)
+    (bucket_set, _) = SubCommand.load_basic_files(dump_path, True)
 
     BucketsCommand._output(bucket_set, out)
     return 0

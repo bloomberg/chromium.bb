@@ -31,8 +31,7 @@ class SubCommand(object):
     self._parser = optparse.OptionParser(usage)
 
   @staticmethod
-  def load_basic_files(
-      dump_path, multiple, no_dump=False, alternative_dirs=None):
+  def load_basic_files(dump_path, multiple, alternative_dirs=None):
     prefix = SubCommand._find_prefix(dump_path)
     # If the target process is estimated to be working on Android, converts
     # a path in the Android device to a path estimated to be corresponding in
@@ -46,11 +45,10 @@ class SubCommand(object):
     symbol_data_sources.prepare()
     bucket_set = BucketSet()
     bucket_set.load(prefix)
-    if not no_dump:
-      if multiple:
-        dump_list = DumpList.load(SubCommand._find_all_dumps(dump_path))
-      else:
-        dump = Dump.load(dump_path)
+    if multiple:
+      dump_list = DumpList.load(SubCommand._find_all_dumps(dump_path))
+    else:
+      dump = Dump.load(dump_path)
     symbol_mapping_cache = SymbolMappingCache()
     with open(prefix + '.cache.function', 'a+') as cache_f:
       symbol_mapping_cache.update(
@@ -65,9 +63,7 @@ class SubCommand(object):
           SOURCEFILE_SYMBOLS, bucket_set,
           SymbolFinder(SOURCEFILE_SYMBOLS, symbol_data_sources), cache_f)
     bucket_set.symbolize(symbol_mapping_cache)
-    if no_dump:
-      return bucket_set
-    elif multiple:
+    if multiple:
       return (bucket_set, dump_list)
     else:
       return (bucket_set, dump)
