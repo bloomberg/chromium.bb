@@ -35,11 +35,11 @@ DnsSdRegistry::ServiceTypeData::~ServiceTypeData() {}
 
 void DnsSdRegistry::ServiceTypeData::ListenerAdded() {
   ref_count++;
-};
+}
 
 bool DnsSdRegistry::ServiceTypeData::ListenerRemoved() {
   return --ref_count == 0;
-};
+}
 
 int DnsSdRegistry::ServiceTypeData::GetListenerCount() {
   return ref_count;
@@ -71,7 +71,7 @@ bool DnsSdRegistry::ServiceTypeData::UpdateService(
           << ", known: " << known
           << ", updated or added: " << updated_or_added;
   return updated_or_added;
-};
+}
 
 bool DnsSdRegistry::ServiceTypeData::RemoveService(
     const std::string& service_name) {
@@ -83,9 +83,11 @@ bool DnsSdRegistry::ServiceTypeData::RemoveService(
     }
   }
   return false;
-};
+}
 
 bool DnsSdRegistry::ServiceTypeData::ClearServices() {
+  lister_->Discover(false);
+
   if (service_list_.empty())
     return false;
 
