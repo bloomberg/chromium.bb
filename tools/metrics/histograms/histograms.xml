@@ -14646,7 +14646,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.ErrorCodesForMainFrame3" enum="NetErrorCodes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mmenke@chromium.org</owner>
   <summary>
     Positive net error codes that requests for pages end with, including net::OK
     and net::ERR_ABORTED.  This only counts loads in &quot;main frames&quot; (it
@@ -14667,7 +14667,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.ErrorCodesForSubresources2" enum="NetErrorCodes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mmenke@chromium.org</owner>
   <summary>
     Net error codes that requests for &quot;subresources&quot; end with,
     including net::OK and net::ERR_ABORTED.
@@ -15069,7 +15069,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.HttpJob.TotalTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mmenke@chromium.org</owner>
   <summary>
     Time it takes to complete an HttpJob, from starting the transaction until we
     are done reading.
@@ -15077,7 +15077,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.HttpJob.TotalTimeCached" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mmenke@chromium.org</owner>
   <summary>
     Time it takes to complete an HttpJob, from starting the transaction until we
     are done reading, for jobs served from the cache.
@@ -15085,7 +15085,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.HttpJob.TotalTimeCancel" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mmenke@chromium.org</owner>
   <summary>
     Time it takes to complete an HttpJob, from starting the transaction until
     the job is killed. Note that we didn't detect the end of the data for this
@@ -15094,7 +15094,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.HttpJob.TotalTimeNotCached" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mmenke@chromium.org</owner>
   <summary>
     Time it takes to complete an HttpJob, from starting the transaction until we
     are done reading, for jobs not served from the cache.
@@ -15102,7 +15102,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.HttpJob.TotalTimeSuccess" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mmenke@chromium.org</owner>
   <summary>
     Time it takes to complete an HttpJob, from starting the transaction until we
     are done reading, for jobs when we read until no more data is available.
@@ -15126,17 +15126,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.HttpProxySocketRequestTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mmenke@chromium.org</owner>
   <summary>Time it takes to request a new (unused) HTTP proxy socket.</summary>
 </histogram>
 
 <histogram name="Net.HttpResponseCode">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mmenke@chromium.org</owner>
   <summary>The count of HTTP Response codes encountered.</summary>
 </histogram>
 
 <histogram name="Net.HttpResponseCode_Nxx_MainFrame">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mmenke@chromium.org</owner>
   <summary>
     The count of HTTP Response codes encountered, in response to MAIN_FRAME
     requests only; saving only the hundreds digit, e.g. 100-&gt;1, 300-&gt;3.
@@ -15152,7 +15152,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.HttpTimeToFirstByte" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mmenke@chromium.org</owner>
   <summary>
     Time from when an HTTP request is issued to when the first byte is
     processed.
@@ -16925,7 +16925,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.TCP_Connection_Latency" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mmenke@chromium.org</owner>
   <summary>
     Time from when the Connect() starts until it completes.  Only times under 10
     minutes are logged.
@@ -16933,7 +16933,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.TCP_Connection_Latency_IPv4_No_Race" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mmenke@chromium.org</owner>
   <summary>
     Time from when the Connect() starts until it completes when the network
     address only contains IPv4 addresses.  Only times under 10 minutes are
@@ -16943,7 +16943,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Net.TCP_Connection_Latency_IPv4_Wins_Race"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mmenke@chromium.org</owner>
   <summary>
     Time from when the Connect() starts until it completes when the IPv4
     fallback connection won the race against IPv6.  Only times under 10 minutes
@@ -16952,7 +16952,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.TCP_Connection_Latency_IPv6_Raceable" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mmenke@chromium.org</owner>
   <summary>
     Time from when the Connect() starts until it completes when we race an IPv6
     connection against an IPv4 connection with a 300ms delay.  Only times under
@@ -16961,7 +16961,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.TCP_Connection_Latency_IPv6_Solo" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mmenke@chromium.org</owner>
   <summary>
     Time from when the Connect() starts until it completes when the network
     address only contains IPv6 addresses.  Only times under 10 minutes are
