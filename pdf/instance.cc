@@ -307,6 +307,10 @@ Instance::Instance(PP_Instance instance)
 }
 
 Instance::~Instance() {
+  if (timer_pending_) {
+    timer_factory_.CancelAll();
+    timer_pending_ = false;
+  }
   // The engine may try to access this instance during its destruction.
   // Make sure this happens early while the instance is still intact.
   engine_.reset();
