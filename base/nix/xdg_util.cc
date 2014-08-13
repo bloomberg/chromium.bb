@@ -8,8 +8,8 @@
 
 #include "base/base_paths.h"
 #include "base/environment.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/third_party/xdg_user_dirs/xdg_user_dir_lookup.h"
 

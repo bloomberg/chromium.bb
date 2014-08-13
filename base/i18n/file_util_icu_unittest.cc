@@ -4,7 +4,7 @@
 
 #include "base/i18n/file_util_icu.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

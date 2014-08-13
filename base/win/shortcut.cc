@@ -8,7 +8,7 @@
 #include <shlobj.h>
 #include <propkey.h>
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_propvariant.h"

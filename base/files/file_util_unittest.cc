@@ -24,9 +24,9 @@
 #include <vector>
 
 #include "base/base_paths.h"
-#include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
@@ -52,8 +52,8 @@ namespace base {
 
 namespace {
 
-// To test that file_util::Normalize FilePath() deals with NTFS reparse points
-// correctly, we need functions to create and delete reparse points.
+// To test that NormalizeFilePath() deals with NTFS reparse points correctly,
+// we need functions to create and delete reparse points.
 #if defined(OS_WIN)
 typedef struct _REPARSE_DATA_BUFFER {
   ULONG  ReparseTag;

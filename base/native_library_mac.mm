@@ -7,8 +7,8 @@
 #include <dlfcn.h>
 #include <mach-o/getsect.h>
 
-#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/string_util.h"

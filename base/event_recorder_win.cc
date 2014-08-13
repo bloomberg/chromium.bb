@@ -7,7 +7,7 @@
 #include <mmsystem.h>
 
 #include "base/event_recorder.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 
 // A note about time.

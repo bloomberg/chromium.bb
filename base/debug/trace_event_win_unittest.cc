@@ -8,9 +8,9 @@
 
 #include "base/at_exit.h"
 #include "base/basictypes.h"
-#include "base/file_util.h"
 #include "base/debug/trace_event.h"
 #include "base/debug/trace_event_win.h"
+#include "base/files/file_util.h"
 #include "base/win/event_trace_consumer.h"
 #include "base/win/event_trace_controller.h"
 #include "base/win/event_trace_provider.h"
