@@ -8,6 +8,7 @@ import("//tools/grit/grit_rule.gni")
 #              (generate_locale_settings action)
 grit("locale_settings") {
   source = "locale_settings.grd"
+  output_dir = "$root_gen_dir/chrome"
   outputs = [
     "grit/locale_settings.h",
     "locale_settings_am.pak",

@@ -15,6 +15,7 @@ gypi_values = exec_script(
 # (generate_renderer_resources action)
 grit("resources") {
   source = "resources/renderer_resources.grd"
+  output_dir = "$root_gen_dir/chrome"
   outputs = [
     "grit/renderer_resources.h",
     "renderer_resources_100_percent.pak",

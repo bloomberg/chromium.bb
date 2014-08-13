@@ -8,6 +8,7 @@ import("//tools/grit/grit_rule.gni")
 #              (generate_generated_resources action)
 grit("generated_resources") {
   source = "generated_resources.grd"
+  output_dir = "$root_gen_dir/chrome"
   outputs = [
     "grit/generated_resources.h",
     "generated_resources_am.pak",
@@ -74,8 +75,8 @@ action("make_generated_resources_map") {
 
   script = "//chrome/browser/metrics/variations/generate_resources_map.py"
 
-  inputs = [ "$target_gen_dir/grit/generated_resources.h" ]
-  outputs = [ "$target_gen_dir/generated_resources_map.cc" ]
+  inputs = [ "$root_gen_dir/chrome/grit/generated_resources.h" ]
+  outputs = [ "$root_gen_dir/chrome/generated_resources_map.cc" ]
 
   args = rebase_path(inputs, root_build_dir) +
       rebase_path(outputs, root_build_dir)
@@ -94,6 +95,7 @@ source_set("generated_resources_map") {
 #              (generate_google_chrome_strings action)
 grit("google_chrome_strings") {
   source = "google_chrome_strings.grd"
+  output_dir = "$root_gen_dir/chrome"
   outputs = [
     "grit/google_chrome_strings.h",
     "google_chrome_strings_am.pak",
@@ -157,6 +159,7 @@ grit("google_chrome_strings") {
 #              (generate_chromium_strings action)
 grit("chromium_strings") {
   source = "chromium_strings.grd"
+  output_dir = "$root_gen_dir/chrome"
   outputs = [
     "grit/chromium_strings.h",
     "chromium_strings_am.pak",
