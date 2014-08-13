@@ -251,7 +251,6 @@ class Builder(object):
     # Setup optimization level.
     if options.build_config == 'Debug' or options.fast_build != '0':
       self.compile_options.append('-O0')
-      self.link_options.append('-O0')
       if (self.is_pnacl_toolchain
           and (self.outtype == 'nlib'
                or self.outtype == 'nexe')
@@ -266,7 +265,7 @@ class Builder(object):
         self.link_options.append('-Wt,-O0')
     elif options.build_config == 'Release':
       self.compile_options.append('-O2')
-      if not self.is_pnacl_toolchain:
+      if self.is_pnacl_toolchain and self.outtype == 'pexe':
         self.link_options.append('-O2')
     else:
       raise Error('Unknown build config: ' + options.build_config)
