@@ -1,2 +1,5 @@
 # bug_392485
 NodeObserverTest.Order
+
+# crbug.com/403177
+*.*
