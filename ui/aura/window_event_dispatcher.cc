@@ -285,6 +285,9 @@ ui::EventDispatchDetails WindowEventDispatcher::ProcessGestures(
     return details;
 
   Window* target = GetGestureTarget(gestures->get().at(0));
+  if (!target)
+    return details;
+
   for (size_t i = 0; i < gestures->size(); ++i) {
     ui::GestureEvent* event = gestures->get().at(i);
     event->ConvertLocationToTarget(window(), target);

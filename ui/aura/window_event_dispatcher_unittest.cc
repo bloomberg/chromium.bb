@@ -785,6 +785,19 @@ TEST_F(WindowEventDispatcherTest, TouchMovesHeld) {
   EXPECT_TRUE(recorder.events().empty());
 }
 
+// Verifies that a direct call to ProcessedTouchEvent() with a
+// TOUCH_PRESSED event does not cause a crash.
+TEST_F(WindowEventDispatcherTest, CallToProcessedTouchEvent) {
+  test::TestWindowDelegate delegate;
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      &delegate, 1, gfx::Rect(50, 50, 100, 100), root_window()));
+
+  ui::TouchEvent touch(
+      ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), 1, ui::EventTimeForNow());
+  host()->dispatcher()->ProcessedTouchEvent(
+      &touch, window.get(), ui::ER_UNHANDLED);
+}
+
 // This event handler requests the dispatcher to start holding pointer-move
 // events when it receives the first scroll-update gesture.
 class HoldPointerOnScrollHandler : public ui::test::TestEventHandler {
