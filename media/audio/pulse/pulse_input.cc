@@ -281,9 +281,6 @@ void PulseAudioInputStream::ReadData() {
     hardware_delay += fifo_.GetAvailableFrames() * params_.GetBytesPerFrame();
     callback_->OnData(this, audio_bus, hardware_delay, normalized_volume);
 
-    // TODO(xians): Remove once PPAPI is using circular buffers.
-    DVLOG(1) << "OnData is being called consecutively, sleep 5ms to "
-             << "wait until render consumes the data";
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(5));
   }
 
