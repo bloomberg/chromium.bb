@@ -38,7 +38,7 @@
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/text/TextStream.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebCompositorAnimation.h"
+#include "public/platform/WebAnimation.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebFilterOperations.h"
 #include "public/platform/WebFloatPoint.h"
@@ -59,7 +59,7 @@
 #endif
 
 using blink::Platform;
-using blink::WebCompositorAnimation;
+using blink::WebAnimation;
 using blink::WebFilterOperations;
 using blink::WebLayer;
 using blink::WebPoint;
@@ -952,9 +952,9 @@ void GraphicsLayer::setContentsToNinePatch(Image* image, const IntRect& aperture
     setContentsTo(m_ninePatchLayer ? m_ninePatchLayer->layer() : 0);
 }
 
-bool GraphicsLayer::addAnimation(PassOwnPtr<WebCompositorAnimation> popAnimation)
+bool GraphicsLayer::addAnimation(PassOwnPtr<WebAnimation> popAnimation)
 {
-    OwnPtr<WebCompositorAnimation> animation(popAnimation);
+    OwnPtr<WebAnimation> animation(popAnimation);
     ASSERT(animation);
     platformLayer()->setAnimationDelegate(this);
 
@@ -1033,13 +1033,13 @@ void GraphicsLayer::paint(GraphicsContext& context, const IntRect& clip)
 }
 
 
-void GraphicsLayer::notifyAnimationStarted(double monotonicTime, WebCompositorAnimation::TargetProperty)
+void GraphicsLayer::notifyAnimationStarted(double monotonicTime, WebAnimation::TargetProperty)
 {
     if (m_client)
         m_client->notifyAnimationStarted(this, monotonicTime);
 }
 
-void GraphicsLayer::notifyAnimationFinished(double, WebCompositorAnimation::TargetProperty)
+void GraphicsLayer::notifyAnimationFinished(double, WebAnimation::TargetProperty)
 {
     // Do nothing.
 }

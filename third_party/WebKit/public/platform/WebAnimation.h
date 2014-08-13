@@ -22,29 +22,61 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebTransformAnimationCurve_h
-#define WebTransformAnimationCurve_h
+#ifndef WebAnimation_h
+#define WebAnimation_h
 
-#include "WebAnimationCurve.h"
 #include "WebCommon.h"
-#include "WebCompositorAnimationCurve.h"
-#include "WebTransformKeyframe.h"
+#include "WebNonCopyable.h"
+#include "WebPrivateOwnPtr.h"
+
+#if BLINK_IMPLEMENTATION
+#include "wtf/Forward.h"
+#endif
+
+#define WebCompositorAnimation WebAnimation
+
+namespace blink {
+class CCActiveAnimation;
+}
 
 namespace blink {
 
-// A keyframed transform animation curve.
-class WebTransformAnimationCurve : public WebAnimationCurve {
-public:
-    virtual ~WebTransformAnimationCurve() { }
+class WebAnimationCurve;
 
-    // Adds the keyframe with the default timing function (ease).
-    virtual void add(const WebTransformKeyframe&) = 0;
-    virtual void add(const WebTransformKeyframe&, TimingFunctionType) = 0;
-    // Adds the keyframe with a custom, bezier timing function. Note, it is
-    // assumed that x0 = y0 = 0, and x3 = y3 = 1.
-    virtual void add(const WebTransformKeyframe&, double x1, double y1, double x2, double y2) = 0;
+// A compositor driven animation.
+class WebAnimation {
+public:
+    enum TargetProperty {
+        TargetPropertyTransform = 0,
+        TargetPropertyOpacity,
+        TargetPropertyFilter,
+        TargetPropertyScrollOffset
+    };
+
+    virtual ~WebAnimation() { }
+
+    // An id is effectively the animation's name, and it is not unique.
+    virtual int id() = 0;
+
+    virtual TargetProperty targetProperty() const = 0;
+
+    // This is the number of times that the animation will play. If this
+    // value is zero the animation will not play. If it is negative, then
+    // the animation will loop indefinitely.
+    virtual int iterations() const = 0;
+    virtual void setIterations(int) = 0;
+
+    virtual double startTime() const = 0;
+    virtual void setStartTime(double monotonicTime) = 0;
+
+    virtual double timeOffset() const = 0;
+    virtual void setTimeOffset(double monotonicTime) = 0;
+
+    // If alternatesDirection is true, on odd numbered iterations we reverse the curve.
+    virtual bool alternatesDirection() const = 0;
+    virtual void setAlternatesDirection(bool) = 0;
 };
 
 } // namespace blink
 
-#endif // WebTransformAnimationCurve_h
+#endif // WebAnimation_h

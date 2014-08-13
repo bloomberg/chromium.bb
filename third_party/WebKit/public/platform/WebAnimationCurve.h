@@ -22,29 +22,39 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebTransformAnimationCurve_h
-#define WebTransformAnimationCurve_h
+#ifndef WebAnimationCurve_h
+#define WebAnimationCurve_h
 
-#include "WebAnimationCurve.h"
 #include "WebCommon.h"
-#include "WebCompositorAnimationCurve.h"
-#include "WebTransformKeyframe.h"
+
+#define WebCompositorAnimationCurve WebAnimationCurve
+#define WEB_SCROLL_OFFSET_ANIMATION_CURVE_IS_DEFINED 1
 
 namespace blink {
 
-// A keyframed transform animation curve.
-class WebTransformAnimationCurve : public WebAnimationCurve {
+class WebAnimationCurve {
 public:
-    virtual ~WebTransformAnimationCurve() { }
+    virtual ~WebAnimationCurve() { }
 
-    // Adds the keyframe with the default timing function (ease).
-    virtual void add(const WebTransformKeyframe&) = 0;
-    virtual void add(const WebTransformKeyframe&, TimingFunctionType) = 0;
-    // Adds the keyframe with a custom, bezier timing function. Note, it is
-    // assumed that x0 = y0 = 0, and x3 = y3 = 1.
-    virtual void add(const WebTransformKeyframe&, double x1, double y1, double x2, double y2) = 0;
+    enum TimingFunctionType {
+        TimingFunctionTypeEase,
+        TimingFunctionTypeEaseIn,
+        TimingFunctionTypeEaseOut,
+        TimingFunctionTypeEaseInOut,
+        TimingFunctionTypeLinear
+    };
+
+    enum AnimationCurveType {
+        AnimationCurveTypeFilter,
+        AnimationCurveTypeFloat,
+        AnimationCurveTypeScrollOffset,
+        AnimationCurveTypeTransform,
+    };
+
+    virtual AnimationCurveType type() const = 0;
 };
 
 } // namespace blink
 
-#endif // WebTransformAnimationCurve_h
+#endif // WebAnimationCurve_h
+

@@ -31,7 +31,7 @@
 #ifndef WebFilterAnimationCurve_h
 #define WebFilterAnimationCurve_h
 
-#include "WebCompositorAnimationCurve.h"
+#include "WebAnimationCurve.h"
 
 #include "WebCommon.h"
 #include "WebFilterKeyframe.h"
@@ -39,7 +39,7 @@
 namespace blink {
 
 // A keyframed filter animation curve.
-class WebFilterAnimationCurve : public WebCompositorAnimationCurve {
+class WebFilterAnimationCurve : public WebAnimationCurve {
 public:
     virtual ~WebFilterAnimationCurve() { }
 

@@ -22,29 +22,22 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebTransformAnimationCurve_h
-#define WebTransformAnimationCurve_h
+#ifndef WebAnimationDelegate_h
+#define WebAnimationDelegate_h
 
-#include "WebAnimationCurve.h"
-#include "WebCommon.h"
-#include "WebCompositorAnimationCurve.h"
-#include "WebTransformKeyframe.h"
+#include "WebAnimation.h"
+
+#define WebCompositorAnimationDelegate WebAnimationDelegate
+#define WEB_ANIMATION_DELEGATE_TAKES_MONOTONIC_TIME 1
 
 namespace blink {
 
-// A keyframed transform animation curve.
-class WebTransformAnimationCurve : public WebAnimationCurve {
+class WebAnimationDelegate {
 public:
-    virtual ~WebTransformAnimationCurve() { }
-
-    // Adds the keyframe with the default timing function (ease).
-    virtual void add(const WebTransformKeyframe&) = 0;
-    virtual void add(const WebTransformKeyframe&, TimingFunctionType) = 0;
-    // Adds the keyframe with a custom, bezier timing function. Note, it is
-    // assumed that x0 = y0 = 0, and x3 = y3 = 1.
-    virtual void add(const WebTransformKeyframe&, double x1, double y1, double x2, double y2) = 0;
+    virtual void notifyAnimationStarted(double monotonicTime, WebAnimation::TargetProperty) = 0;
+    virtual void notifyAnimationFinished(double monotonicTime, WebAnimation::TargetProperty) = 0;
 };
 
 } // namespace blink
 
-#endif // WebTransformAnimationCurve_h
+#endif // WebAnimationDelegate_h

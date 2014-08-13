@@ -40,7 +40,7 @@
 #include "core/rendering/style/ShadowData.h"
 #include "platform/graphics/Color.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebCompositorAnimationCurve.h"
+#include "public/platform/WebAnimationCurve.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebFloatAnimationCurve.h"
 #include "public/platform/WebFloatPoint.h"
@@ -289,9 +289,9 @@ void LinkHighlight::startHighlightAnimationIfNeeded()
     if (extraDurationRequired)
         curve->add(WebFloatKeyframe(extraDurationRequired, startOpacity));
     // For layout tests we don't fade out.
-    curve->add(WebFloatKeyframe(fadeDuration + extraDurationRequired, layoutTestMode() ? startOpacity : 0));
+    curve->add(WebFloatKeyframe(fadeDuration + extraDurationRequired, blink::layoutTestMode() ? startOpacity : 0));
 
-    OwnPtr<WebCompositorAnimation> animation = adoptPtr(compositorSupport->createAnimation(*curve, WebCompositorAnimation::TargetPropertyOpacity));
+    OwnPtr<WebAnimation> animation = adoptPtr(compositorSupport->createAnimation(*curve, WebAnimation::TargetPropertyOpacity));
 
     m_contentLayer->layer()->setDrawsContent(true);
     m_contentLayer->layer()->addAnimation(animation.leakPtr());
@@ -308,11 +308,11 @@ void LinkHighlight::clearGraphicsLayerLinkHighlightPointer()
     }
 }
 
-void LinkHighlight::notifyAnimationStarted(double, WebCompositorAnimation::TargetProperty)
+void LinkHighlight::notifyAnimationStarted(double, blink::WebAnimation::TargetProperty)
 {
 }
 
-void LinkHighlight::notifyAnimationFinished(double, WebCompositorAnimation::TargetProperty)
+void LinkHighlight::notifyAnimationFinished(double, blink::WebAnimation::TargetProperty)
 {
     // Since WebViewImpl may hang on to us for a while, make sure we
     // release resources as soon as possible.

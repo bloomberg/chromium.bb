@@ -26,9 +26,9 @@
 #ifndef WebCompositorSupport_h
 #define WebCompositorSupport_h
 
+#include "WebAnimation.h"
+#include "WebAnimationCurve.h"
 #include "WebCommon.h"
-#include "WebCompositorAnimation.h"
-#include "WebCompositorAnimationCurve.h"
 #include "WebFloatPoint.h"
 #include "WebLayerTreeView.h"
 #include "WebScrollbar.h"
@@ -36,7 +36,7 @@
 
 namespace blink {
 
-class WebCompositorAnimationCurve;
+class WebAnimationCurve;
 class WebCompositorOutputSurface;
 class WebContentLayer;
 class WebContentLayerClient;
@@ -88,7 +88,7 @@ public:
 
     virtual WebFloatAnimationCurve* createFloatAnimationCurve() { return 0; }
 
-    virtual WebScrollOffsetAnimationCurve* createScrollOffsetAnimationCurve(WebFloatPoint targetValue, WebCompositorAnimationCurve::TimingFunctionType) { return 0; }
+    virtual WebScrollOffsetAnimationCurve* createScrollOffsetAnimationCurve(WebFloatPoint targetValue, WebAnimationCurve::TimingFunctionType) { return 0; }
 
     virtual WebTransformAnimationCurve* createTransformAnimationCurve() { return 0; }
 

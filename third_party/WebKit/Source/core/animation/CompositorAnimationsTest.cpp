@@ -43,7 +43,7 @@
 #include "platform/graphics/filters/FilterOperations.h"
 #include "platform/transforms/TransformOperations.h"
 #include "platform/transforms/TranslateTransformOperation.h"
-#include "public/platform/WebCompositorAnimation.h"
+#include "public/platform/WebAnimation.h"
 #include "wtf/HashFunctions.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -107,7 +107,7 @@ public:
     {
         return CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(timing, effect);
     }
-    void getAnimationOnCompositor(Timing& timing, AnimatableValueKeyframeEffectModel& effect, Vector<OwnPtr<WebCompositorAnimation> >& animations)
+    void getAnimationOnCompositor(Timing& timing, AnimatableValueKeyframeEffectModel& effect, Vector<OwnPtr<blink::WebAnimation> >& animations)
     {
         return CompositorAnimationsImpl::getAnimationOnCompositor(timing, std::numeric_limits<double>::quiet_NaN(), effect, animations);
     }
@@ -246,17 +246,17 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorKey
 TEST_F(AnimationCompositorAnimationsTest, isNotCandidateForCompositorAnimationTransformDependsOnBoxSize)
 {
     TransformOperations ops;
-    ops.operations().append(TranslateTransformOperation::create(Length(2, Fixed), Length(2, Fixed), TransformOperation::TranslateX));
+    ops.operations().append(TranslateTransformOperation::create(Length(2, blink::Fixed), Length(2, blink::Fixed), TransformOperation::TranslateX));
     RefPtrWillBeRawPtr<AnimatableValueKeyframe> goodKeyframe = createReplaceOpKeyframe(CSSPropertyTransform, AnimatableTransform::create(ops).get());
     EXPECT_TRUE(duplicateSingleKeyframeAndTestIsCandidateOnResult(goodKeyframe.get()));
 
-    ops.operations().append(TranslateTransformOperation::create(Length(50, Percent), Length(2, Fixed), TransformOperation::TranslateX));
+    ops.operations().append(TranslateTransformOperation::create(Length(50, blink::Percent), Length(2, blink::Fixed), TransformOperation::TranslateX));
     RefPtrWillBeRawPtr<AnimatableValueKeyframe> badKeyframe = createReplaceOpKeyframe(CSSPropertyTransform, AnimatableTransform::create(ops).get());
     EXPECT_FALSE(duplicateSingleKeyframeAndTestIsCandidateOnResult(badKeyframe.get()));
 
     TransformOperations ops2;
-    Length calcLength = Length(100, Percent).blend(Length(100, Fixed), 0.5, ValueRangeAll);
-    ops2.operations().append(TranslateTransformOperation::create(calcLength, Length(0, Fixed), TransformOperation::TranslateX));
+    Length calcLength = Length(100, blink::Percent).blend(Length(100, blink::Fixed), 0.5, blink::ValueRangeAll);
+    ops2.operations().append(TranslateTransformOperation::create(calcLength, Length(0, blink::Fixed), TransformOperation::TranslateX));
     RefPtrWillBeRawPtr<AnimatableValueKeyframe> badKeyframe2 = createReplaceOpKeyframe(CSSPropertyTransform, AnimatableTransform::create(ops2).get());
     EXPECT_FALSE(duplicateSingleKeyframeAndTestIsCandidateOnResult(badKeyframe2.get()));
 }
@@ -291,9 +291,9 @@ TEST_F(AnimationCompositorAnimationsTest, AnimatedBoundingBox)
 {
     Vector<TransformOperations> transformVector;
     transformVector.append(TransformOperations());
-    transformVector.last().operations().append(TranslateTransformOperation::create(Length(0, Fixed), Length(0, Fixed), 0.0, TransformOperation::Translate3D));
+    transformVector.last().operations().append(TranslateTransformOperation::create(Length(0, blink::Fixed), Length(0, blink::Fixed), 0.0, TransformOperation::Translate3D));
     transformVector.append(TransformOperations());
-    transformVector.last().operations().append(TranslateTransformOperation::create(Length(200, Fixed), Length(200, Fixed), 0.0, TransformOperation::Translate3D));
+    transformVector.last().operations().append(TranslateTransformOperation::create(Length(200, blink::Fixed), Length(200, blink::Fixed), 0.0, TransformOperation::Translate3D));
     OwnPtrWillBePersistent<AnimatableValueKeyframeVector> frames = createCompositableTransformKeyframeVector(transformVector);
     FloatBox bounds;
     EXPECT_TRUE(getAnimationBounds(bounds, *AnimatableValueKeyframeEffectModel::create(*frames).get(), 0, 1));
@@ -302,7 +302,7 @@ TEST_F(AnimationCompositorAnimationsTest, AnimatedBoundingBox)
     EXPECT_TRUE(getAnimationBounds(bounds, *AnimatableValueKeyframeEffectModel::create(*frames).get(), -1, 1));
     EXPECT_EQ(FloatBox(-200.0f, -200.0, 0.0, 400.0f, 400.0f, 0.0f), bounds);
     transformVector.append(TransformOperations());
-    transformVector.last().operations().append(TranslateTransformOperation::create(Length(-300, Fixed), Length(-400, Fixed), 1.0f, TransformOperation::Translate3D));
+    transformVector.last().operations().append(TranslateTransformOperation::create(Length(-300, blink::Fixed), Length(-400, blink::Fixed), 1.0f, TransformOperation::Translate3D));
     bounds = FloatBox();
     frames = createCompositableTransformKeyframeVector(transformVector);
     EXPECT_TRUE(getAnimationBounds(bounds, *AnimatableValueKeyframeEffectModel::create(*frames).get(), 0, 1));
@@ -584,19 +584,19 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimation)
     WebCompositorSupportMock mockCompositor;
 
     // Curve is created
-    WebFloatAnimationCurveMock* mockCurvePtr = new WebFloatAnimationCurveMock;
+    blink::WebFloatAnimationCurveMock* mockCurvePtr = new blink::WebFloatAnimationCurveMock;
     ExpectationSet usesMockCurve;
     EXPECT_CALL(mockCompositor, createFloatAnimationCurve())
         .WillOnce(Return(mockCurvePtr));
 
-    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(WebFloatKeyframe(0.0, 2.0), WebCompositorAnimationCurve::TimingFunctionTypeLinear));
-    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(WebFloatKeyframe(1.0, 5.0)));
+    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(0.0, 2.0), blink::WebAnimationCurve::TimingFunctionTypeLinear));
+    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(1.0, 5.0)));
 
     // Create animation
-    WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(WebCompositorAnimation::TargetPropertyOpacity);
+    blink::WebAnimationMock* mockAnimationPtr = new blink::WebAnimationMock(blink::WebAnimation::TargetPropertyOpacity);
     ExpectationSet usesMockAnimation;
 
-    usesMockCurve += EXPECT_CALL(mockCompositor, createAnimation(Ref(*mockCurvePtr), WebCompositorAnimation::TargetPropertyOpacity, _))
+    usesMockCurve += EXPECT_CALL(mockCompositor, createAnimation(Ref(*mockCurvePtr), blink::WebAnimation::TargetPropertyOpacity, _))
         .WillOnce(Return(mockAnimationPtr));
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(1));
@@ -612,7 +612,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimation)
 
     // Go!
     setCompositorForTesting(mockCompositor);
-    Vector<OwnPtr<WebCompositorAnimation> > result;
+    Vector<OwnPtr<blink::WebAnimation> > result;
     getAnimationOnCompositor(m_timing, *effect.get(), result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
@@ -631,19 +631,19 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationDuration)
     WebCompositorSupportMock mockCompositor;
 
     // Curve is created
-    WebFloatAnimationCurveMock* mockCurvePtr = new WebFloatAnimationCurveMock;
+    blink::WebFloatAnimationCurveMock* mockCurvePtr = new blink::WebFloatAnimationCurveMock;
     ExpectationSet usesMockCurve;
     EXPECT_CALL(mockCompositor, createFloatAnimationCurve())
         .WillOnce(Return(mockCurvePtr));
 
-    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(WebFloatKeyframe(0.0, 2.0), WebCompositorAnimationCurve::TimingFunctionTypeLinear));
-    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(WebFloatKeyframe(10.0, 5.0)));
+    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(0.0, 2.0), blink::WebAnimationCurve::TimingFunctionTypeLinear));
+    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(10.0, 5.0)));
 
     // Create animation
-    WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(WebCompositorAnimation::TargetPropertyOpacity);
+    blink::WebAnimationMock* mockAnimationPtr = new blink::WebAnimationMock(blink::WebAnimation::TargetPropertyOpacity);
     ExpectationSet usesMockAnimation;
 
-    usesMockCurve += EXPECT_CALL(mockCompositor, createAnimation(Ref(*mockCurvePtr), WebCompositorAnimation::TargetPropertyOpacity, _))
+    usesMockCurve += EXPECT_CALL(mockCompositor, createAnimation(Ref(*mockCurvePtr), blink::WebAnimation::TargetPropertyOpacity, _))
         .WillOnce(Return(mockAnimationPtr));
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(1));
@@ -659,7 +659,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationDuration)
 
     // Go!
     setCompositorForTesting(mockCompositor);
-    Vector<OwnPtr<WebCompositorAnimation> > result;
+    Vector<OwnPtr<blink::WebAnimation> > result;
     getAnimationOnCompositor(m_timing, *effect.get(), result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
@@ -681,22 +681,22 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
     WebCompositorSupportMock mockCompositor;
 
     // Curve is created
-    WebFloatAnimationCurveMock* mockCurvePtr = new WebFloatAnimationCurveMock();
+    blink::WebFloatAnimationCurveMock* mockCurvePtr = new blink::WebFloatAnimationCurveMock();
     ExpectationSet usesMockCurve;
 
     EXPECT_CALL(mockCompositor, createFloatAnimationCurve())
         .WillOnce(Return(mockCurvePtr));
 
-    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(WebFloatKeyframe(0.0, 2.0), WebCompositorAnimationCurve::TimingFunctionTypeLinear));
-    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(WebFloatKeyframe(0.25, -1.0), WebCompositorAnimationCurve::TimingFunctionTypeLinear));
-    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(WebFloatKeyframe(0.5, 20.0), WebCompositorAnimationCurve::TimingFunctionTypeLinear));
-    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(WebFloatKeyframe(1.0, 5.0)));
+    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(0.0, 2.0), blink::WebAnimationCurve::TimingFunctionTypeLinear));
+    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(0.25, -1.0), blink::WebAnimationCurve::TimingFunctionTypeLinear));
+    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(0.5, 20.0), blink::WebAnimationCurve::TimingFunctionTypeLinear));
+    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(1.0, 5.0)));
 
     // Animation is created
-    WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(WebCompositorAnimation::TargetPropertyOpacity);
+    blink::WebAnimationMock* mockAnimationPtr = new blink::WebAnimationMock(blink::WebAnimation::TargetPropertyOpacity);
     ExpectationSet usesMockAnimation;
 
-    usesMockCurve += EXPECT_CALL(mockCompositor, createAnimation(Ref(*mockCurvePtr), WebCompositorAnimation::TargetPropertyOpacity, _))
+    usesMockCurve += EXPECT_CALL(mockCompositor, createAnimation(Ref(*mockCurvePtr), blink::WebAnimation::TargetPropertyOpacity, _))
         .WillOnce(Return(mockAnimationPtr));
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(5));
@@ -712,7 +712,7 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
 
     // Go!
     setCompositorForTesting(mockCompositor);
-    Vector<OwnPtr<WebCompositorAnimation> > result;
+    Vector<OwnPtr<blink::WebAnimation> > result;
     getAnimationOnCompositor(m_timing, *effect.get(), result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
@@ -733,19 +733,19 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationStartDelay
     WebCompositorSupportMock mockCompositor;
 
     // Curve is created
-    WebFloatAnimationCurveMock* mockCurvePtr = new WebFloatAnimationCurveMock;
+    blink::WebFloatAnimationCurveMock* mockCurvePtr = new blink::WebFloatAnimationCurveMock;
     ExpectationSet usesMockCurve;
     EXPECT_CALL(mockCompositor, createFloatAnimationCurve())
         .WillOnce(Return(mockCurvePtr));
 
-    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(WebFloatKeyframe(0.0, 2.0), WebCompositorAnimationCurve::TimingFunctionTypeLinear));
-    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(WebFloatKeyframe(1.75, 5.0)));
+    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(0.0, 2.0), blink::WebAnimationCurve::TimingFunctionTypeLinear));
+    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(1.75, 5.0)));
 
     // Create animation
-    WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(WebCompositorAnimation::TargetPropertyOpacity);
+    blink::WebAnimationMock* mockAnimationPtr = new blink::WebAnimationMock(blink::WebAnimation::TargetPropertyOpacity);
     ExpectationSet usesMockAnimation;
 
-    usesMockCurve += EXPECT_CALL(mockCompositor, createAnimation(Ref(*mockCurvePtr), WebCompositorAnimation::TargetPropertyOpacity, _))
+    usesMockCurve += EXPECT_CALL(mockCompositor, createAnimation(Ref(*mockCurvePtr), blink::WebAnimation::TargetPropertyOpacity, _))
         .WillOnce(Return(mockAnimationPtr));
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(5));
@@ -761,7 +761,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationStartDelay
 
     // Go!
     setCompositorForTesting(mockCompositor);
-    Vector<OwnPtr<WebCompositorAnimation> > result;
+    Vector<OwnPtr<blink::WebAnimation> > result;
     getAnimationOnCompositor(m_timing, *effect.get(), result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
@@ -789,22 +789,22 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
     WebCompositorSupportMock mockCompositor;
 
     // Curve is created
-    WebFloatAnimationCurveMock* mockCurvePtr = new WebFloatAnimationCurveMock();
+    blink::WebFloatAnimationCurveMock* mockCurvePtr = new blink::WebFloatAnimationCurveMock();
     ExpectationSet usesMockCurve;
 
     EXPECT_CALL(mockCompositor, createFloatAnimationCurve())
         .WillOnce(Return(mockCurvePtr));
 
-    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(WebFloatKeyframe(0.0, 2.0), WebCompositorAnimationCurve::TimingFunctionTypeEase));
-    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(WebFloatKeyframe(0.5, -1.0), WebCompositorAnimationCurve::TimingFunctionTypeLinear));
-    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(WebFloatKeyframe(1.0, 20.0), 1.0, 2.0, 3.0, 4.0));
-    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(WebFloatKeyframe(2.0, 5.0)));
+    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(0.0, 2.0), blink::WebAnimationCurve::TimingFunctionTypeEase));
+    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(0.5, -1.0), blink::WebAnimationCurve::TimingFunctionTypeLinear));
+    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(1.0, 20.0), 1.0, 2.0, 3.0, 4.0));
+    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(2.0, 5.0)));
 
     // Animation is created
-    WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(WebCompositorAnimation::TargetPropertyOpacity);
+    blink::WebAnimationMock* mockAnimationPtr = new blink::WebAnimationMock(blink::WebAnimation::TargetPropertyOpacity);
     ExpectationSet usesMockAnimation;
 
-    usesMockCurve += EXPECT_CALL(mockCompositor, createAnimation(Ref(*mockCurvePtr), WebCompositorAnimation::TargetPropertyOpacity, _))
+    usesMockCurve += EXPECT_CALL(mockCompositor, createAnimation(Ref(*mockCurvePtr), blink::WebAnimation::TargetPropertyOpacity, _))
         .WillOnce(Return(mockAnimationPtr));
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(10));
@@ -820,7 +820,7 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
 
     // Go!
     setCompositorForTesting(mockCompositor);
-    Vector<OwnPtr<WebCompositorAnimation> > result;
+    Vector<OwnPtr<blink::WebAnimation> > result;
     getAnimationOnCompositor(m_timing, *effect.get(), result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
@@ -849,22 +849,22 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimation)
     WebCompositorSupportMock mockCompositor;
 
     // Curve is created
-    WebFloatAnimationCurveMock* mockCurvePtr = new WebFloatAnimationCurveMock();
+    blink::WebFloatAnimationCurveMock* mockCurvePtr = new blink::WebFloatAnimationCurveMock();
     ExpectationSet usesMockCurve;
 
     EXPECT_CALL(mockCompositor, createFloatAnimationCurve())
         .WillOnce(Return(mockCurvePtr));
 
-    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(WebFloatKeyframe(0.0, 5.0), 1.0, 0.0, 1.0, 1.0));
-    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(WebFloatKeyframe(0.5, 20.0), WebCompositorAnimationCurve::TimingFunctionTypeLinear));
-    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(WebFloatKeyframe(0.75, -1.0), WebCompositorAnimationCurve::TimingFunctionTypeEaseOut));
-    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(WebFloatKeyframe(1.0, 2.0)));
+    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(0.0, 5.0), 1.0, 0.0, 1.0, 1.0));
+    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(0.5, 20.0), blink::WebAnimationCurve::TimingFunctionTypeLinear));
+    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(0.75, -1.0), blink::WebAnimationCurve::TimingFunctionTypeEaseOut));
+    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(1.0, 2.0)));
 
     // Create the animation
-    WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(WebCompositorAnimation::TargetPropertyOpacity);
+    blink::WebAnimationMock* mockAnimationPtr = new blink::WebAnimationMock(blink::WebAnimation::TargetPropertyOpacity);
     ExpectationSet usesMockAnimation;
 
-    usesMockCurve += EXPECT_CALL(mockCompositor, createAnimation(Ref(*mockCurvePtr), WebCompositorAnimation::TargetPropertyOpacity, _))
+    usesMockCurve += EXPECT_CALL(mockCompositor, createAnimation(Ref(*mockCurvePtr), blink::WebAnimation::TargetPropertyOpacity, _))
         .WillOnce(Return(mockAnimationPtr));
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(10));
@@ -880,7 +880,7 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimation)
 
     // Go!
     setCompositorForTesting(mockCompositor);
-    Vector<OwnPtr<WebCompositorAnimation> > result;
+    Vector<OwnPtr<blink::WebAnimation> > result;
     getAnimationOnCompositor(m_timing, *effect.get(), result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();
@@ -902,19 +902,19 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimationNegative
     WebCompositorSupportMock mockCompositor;
 
     // Curve is created
-    WebFloatAnimationCurveMock* mockCurvePtr = new WebFloatAnimationCurveMock;
+    blink::WebFloatAnimationCurveMock* mockCurvePtr = new blink::WebFloatAnimationCurveMock;
     ExpectationSet usesMockCurve;
     EXPECT_CALL(mockCompositor, createFloatAnimationCurve())
         .WillOnce(Return(mockCurvePtr));
 
-    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(WebFloatKeyframe(0.0, 5.0), WebCompositorAnimationCurve::TimingFunctionTypeLinear));
-    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(WebFloatKeyframe(1.5, 2.0)));
+    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(0.0, 5.0), blink::WebAnimationCurve::TimingFunctionTypeLinear));
+    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(1.5, 2.0)));
 
     // Create animation
-    WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(WebCompositorAnimation::TargetPropertyOpacity);
+    blink::WebAnimationMock* mockAnimationPtr = new blink::WebAnimationMock(blink::WebAnimation::TargetPropertyOpacity);
     ExpectationSet usesMockAnimation;
 
-    usesMockCurve += EXPECT_CALL(mockCompositor, createAnimation(Ref(*mockCurvePtr), WebCompositorAnimation::TargetPropertyOpacity, _))
+    usesMockCurve += EXPECT_CALL(mockCompositor, createAnimation(Ref(*mockCurvePtr), blink::WebAnimation::TargetPropertyOpacity, _))
         .WillOnce(Return(mockAnimationPtr));
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(5));
@@ -930,7 +930,7 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimationNegative
 
     // Go!
     setCompositorForTesting(mockCompositor);
-    Vector<OwnPtr<WebCompositorAnimation> > result;
+    Vector<OwnPtr<blink::WebAnimation> > result;
     getAnimationOnCompositor(m_timing, *effect.get(), result);
     EXPECT_EQ(1U, result.size());
     result[0].clear();

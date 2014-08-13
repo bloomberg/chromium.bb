@@ -5,32 +5,6 @@
 #ifndef WebCompositorAnimationCurve_h
 #define WebCompositorAnimationCurve_h
 
-#define WEB_SCROLL_OFFSET_ANIMATION_CURVE_IS_DEFINED 1
-
-namespace blink {
-
-class WebCompositorAnimationCurve {
-public:
-    virtual ~WebCompositorAnimationCurve() { }
-
-    enum TimingFunctionType {
-        TimingFunctionTypeEase,
-        TimingFunctionTypeEaseIn,
-        TimingFunctionTypeEaseOut,
-        TimingFunctionTypeEaseInOut,
-        TimingFunctionTypeLinear
-    };
-
-    enum AnimationCurveType {
-        AnimationCurveTypeFilter,
-        AnimationCurveTypeFloat,
-        AnimationCurveTypeScrollOffset,
-        AnimationCurveTypeTransform,
-    };
-
-    virtual AnimationCurveType type() const = 0;
-};
-
-} // namespace blink
+#include "WebAnimationCurve.h"
 
 #endif // WebCompositorAnimationCurve_h

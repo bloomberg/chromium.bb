@@ -47,11 +47,11 @@ PassOwnPtr<T> CloneToPassOwnPtr(T& o)
 } // namespace testing
 
 
-// Test helpers and mocks for Web* types
+// Test helpers and mocks for blink::Web* types
 // -----------------------------------------------------------------------
 namespace blink {
 
-// WebFloatKeyframe is a plain struct, so we just create an == operator
+// blink::WebFloatKeyframe is a plain struct, so we just create an == operator
 // for it.
 inline bool operator==(const WebFloatKeyframe& a, const WebFloatKeyframe& b)
 {
@@ -65,14 +65,14 @@ inline void PrintTo(const WebFloatKeyframe& frame, ::std::ostream* os)
 
 // -----------------------------------------------------------------------
 
-class WebCompositorAnimationMock : public WebCompositorAnimation {
+class WebAnimationMock : public blink::WebAnimation {
 private:
-    WebCompositorAnimation::TargetProperty m_property;
+    blink::WebAnimation::TargetProperty m_property;
 
 public:
     // Target Property is set through the constructor.
-    WebCompositorAnimationMock(WebCompositorAnimation::TargetProperty p) : m_property(p) { }
-    virtual WebCompositorAnimation::TargetProperty targetProperty() const { return m_property; };
+    WebAnimationMock(blink::WebAnimation::TargetProperty p) : m_property(p) { }
+    virtual blink::WebAnimation::TargetProperty targetProperty() const { return m_property; };
 
     MOCK_METHOD0(id, int());
 
@@ -89,25 +89,25 @@ public:
     MOCK_METHOD1(setAlternatesDirection, void(bool));
 
     MOCK_METHOD0(delete_, void());
-    ~WebCompositorAnimationMock() { delete_(); }
+    ~WebAnimationMock() { delete_(); }
 };
 
-template<typename CurveType, WebCompositorAnimationCurve::AnimationCurveType CurveId, typename KeyframeType>
-class WebCompositorAnimationCurveMock : public CurveType {
+template<typename CurveType, blink::WebAnimationCurve::AnimationCurveType CurveId, typename KeyframeType>
+class WebAnimationCurveMock : public CurveType {
 public:
     MOCK_METHOD1_T(add, void(const KeyframeType&));
-    MOCK_METHOD2_T(add, void(const KeyframeType&, WebCompositorAnimationCurve::TimingFunctionType));
+    MOCK_METHOD2_T(add, void(const KeyframeType&, blink::WebAnimationCurve::TimingFunctionType));
     MOCK_METHOD5_T(add, void(const KeyframeType&, double, double, double, double));
 
     MOCK_CONST_METHOD1_T(getValue, float(double)); // Only on WebFloatAnimationCurve, but can't hurt to have here.
 
-    virtual WebCompositorAnimationCurve::AnimationCurveType type() const { return CurveId; };
+    virtual blink::WebAnimationCurve::AnimationCurveType type() const { return CurveId; };
 
     MOCK_METHOD0(delete_, void());
-    ~WebCompositorAnimationCurveMock() { delete_(); }
+    ~WebAnimationCurveMock() { delete_(); }
 };
 
-typedef WebCompositorAnimationCurveMock<WebFloatAnimationCurve, WebCompositorAnimationCurve::AnimationCurveTypeFloat, WebFloatKeyframe> WebFloatAnimationCurveMock;
+typedef WebAnimationCurveMock<blink::WebFloatAnimationCurve, blink::WebAnimationCurve::AnimationCurveTypeFloat, blink::WebFloatKeyframe> WebFloatAnimationCurveMock;
 
 } // namespace blink
 
@@ -117,39 +117,39 @@ class AnimationCompositorAnimationsTestBase : public ::testing::Test {
 public:
     AnimationCompositorAnimationsTestBase() : m_proxyPlatform(&m_mockCompositor) { };
 
-    class WebCompositorSupportMock : public WebCompositorSupport {
+    class WebCompositorSupportMock : public blink::WebCompositorSupport {
     public:
-        MOCK_METHOD3(createAnimation, WebCompositorAnimation*(const WebCompositorAnimationCurve& curve, WebCompositorAnimation::TargetProperty target, int animationId));
-        MOCK_METHOD0(createFloatAnimationCurve, WebFloatAnimationCurve*());
+        MOCK_METHOD3(createAnimation, blink::WebAnimation*(const blink::WebAnimationCurve& curve, blink::WebAnimation::TargetProperty target, int animationId));
+        MOCK_METHOD0(createFloatAnimationCurve, blink::WebFloatAnimationCurve*());
     };
 
 private:
-    class PlatformProxy : public Platform {
+    class PlatformProxy : public blink::Platform {
     public:
         PlatformProxy(WebCompositorSupportMock** compositor) : m_compositor(compositor) { }
 
         virtual void cryptographicallyRandomValues(unsigned char* buffer, size_t length) { ASSERT_NOT_REACHED(); }
     private:
         WebCompositorSupportMock** m_compositor;
-        virtual WebCompositorSupport* compositorSupport() OVERRIDE { return *m_compositor; }
+        virtual blink::WebCompositorSupport* compositorSupport() OVERRIDE { return *m_compositor; }
     };
 
     WebCompositorSupportMock* m_mockCompositor;
     PlatformProxy m_proxyPlatform;
 
 protected:
-    Platform* m_platform;
+    blink::Platform* m_platform;
 
     virtual void SetUp()
     {
         m_mockCompositor = 0;
-        m_platform = Platform::current();
-        Platform::initialize(&m_proxyPlatform);
+        m_platform = blink::Platform::current();
+        blink::Platform::initialize(&m_proxyPlatform);
     }
 
     virtual void TearDown()
     {
-        Platform::initialize(m_platform);
+        blink::Platform::initialize(m_platform);
     }
 
     void setCompositorForTesting(WebCompositorSupportMock& mock)

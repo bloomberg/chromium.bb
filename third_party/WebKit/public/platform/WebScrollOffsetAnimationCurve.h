@@ -5,12 +5,12 @@
 #ifndef WebScrollOffsetAnimationCurve_h
 #define WebScrollOffsetAnimationCurve_h
 
-#include "WebCompositorAnimationCurve.h"
+#include "WebAnimationCurve.h"
 #include "WebFloatPoint.h"
 
 namespace blink {
 
-class WebScrollOffsetAnimationCurve : public WebCompositorAnimationCurve {
+class WebScrollOffsetAnimationCurve : public WebAnimationCurve {
 public:
     virtual ~WebScrollOffsetAnimationCurve() { }
 

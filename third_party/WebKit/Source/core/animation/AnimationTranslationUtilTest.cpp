@@ -35,7 +35,7 @@
 #include "platform/transforms/ScaleTransformOperation.h"
 #include "platform/transforms/TransformOperations.h"
 #include "platform/transforms/TranslateTransformOperation.h"
-#include "public/platform/WebCompositorAnimation.h"
+#include "public/platform/WebAnimation.h"
 #include "public/platform/WebFilterOperations.h"
 #include "public/platform/WebTransformOperations.h"
 #include "wtf/RefPtr.h"
