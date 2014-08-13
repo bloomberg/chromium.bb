@@ -32,7 +32,7 @@
 // 6. "multi_gpu_category" is a string, valid values include "any", "primary",
 //    "secondary", and "active". If unspecified, the default value is "primary".
 //    See gpu_control_list.h for more details on the meanings of the strings.
-// 7. "driver_vendor" is a string pattern.
+// 7. "driver_vendor" is a STRING structure (defined below).
 // 8. "driver_version" is a VERSION structure (defined below).
 // 9. "driver_date" is a VERSION structure (defined below).
 //    The version is interpreted as "year.month.day".
@@ -41,16 +41,17 @@
 //    The default value on Android is "gles", on Windows is "angle", on other
 //    platforms is "gl".
 // 11. "gl_version" is a VERSION structure (defined below).
-// 12. "gl_vendor" is a string pattern.
-// 13. "gl_renderer" is a string pattern.
-// 14. "gl_extensions" is a string pattern.
+// 12. "gl_vendor" is a STRING structure (defined below).
+// 13. "gl_renderer" is a STRING structure (defined below).
+// 14. "gl_extensions" is a STRING structure (defined below).
 // 15. "perf_graphics" is a FLOAT structure (defined below).
 // 16. "perf_gaming" is a FLOAT structure (defined below).
 // 17. "perf_overall" is a FLOAT structure (defined below).
-// 18. "machine_model_name" is an array of string patterns.
+// 18. "machine_model_name" is an array of strings.  The strings can contain
+//     any characters.
 // 19. "machine_model_version" is a VERSION structure (defined below).
 // 20. "gpu_count" is a INT structure (defined below).
-// 21  "cpu_info" is a string pattern.
+// 21  "cpu_info" is a STRING structure (defined below).
 // 22. "exceptions" is a list of entries.
 // 23. "features" is a list of gpu control list options, which can be
 //     configured by a specific list. See its *_json.cc file for a list of
@@ -73,11 +74,12 @@
 // Only "driver_version" supports lexical style if the format is major.minor;
 // in that case, major is still numerical, but minor is lexical. 
 //
+// STRING includes "op" and "value".  "op" can be any of the following values:
+// "contains", "beginwith", "endwith", "=".  "value" is a string.
+//
 // FLOAT includes "op" "value", and "value2".  "op" can be any of the
 // following values: "=", "<", "<=", ">", ">=", "any", "between".  "value2" is
 // only used if "op" is "between".  "value" is used for all "op" values except
 // "any". "value" and "value2" are valid float numbers.
 // INT is very much like FLOAT, except that the values need to be integers.
-//
-// String pattern syntax can be found at
-// https://code.google.com/p/re2/wiki/Syntax.
+

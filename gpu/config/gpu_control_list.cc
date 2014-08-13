@@ -14,7 +14,6 @@
 #include "base/sys_info.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_util.h"
-#include "third_party/re2/re2/re2.h"
 
 namespace gpu {
 namespace {
@@ -88,13 +87,6 @@ int CompareLexicalNumberStrings(
       return -1;
   }
   return 0;
-}
-
-// A mismatch is identified only if both |input| and |pattern| are not empty.
-bool StringMismatch(const std::string& input, const std::string& pattern) {
-  if (input.empty() || pattern.empty())
-    return false;
-  return !RE2::FullMatch(input, pattern);
 }
 
 const char kMultiGpuStyleStringAMDSwitchable[] = "amd_switchable";
@@ -267,6 +259,45 @@ GpuControlList::OsType GpuControlList::OsInfo::StringToOsType(
   else if (os == "any")
     return kOsAny;
   return kOsUnknown;
+}
+
+GpuControlList::StringInfo::StringInfo(const std::string& string_op,
+                                     const std::string& string_value) {
+  op_ = StringToOp(string_op);
+  value_ = base::StringToLowerASCII(string_value);
+}
+
+bool GpuControlList::StringInfo::Contains(const std::string& value) const {
+  std::string my_value = base::StringToLowerASCII(value);
+  switch (op_) {
+    case kContains:
+      return strstr(my_value.c_str(), value_.c_str()) != NULL;
+    case kBeginWith:
+      return StartsWithASCII(my_value, value_, false);
+    case kEndWith:
+      return EndsWith(my_value, value_, false);
+    case kEQ:
+      return value_ == my_value;
+    default:
+      return false;
+  }
+}
+
+bool GpuControlList::StringInfo::IsValid() const {
+  return op_ != kUnknown;
+}
+
+GpuControlList::StringInfo::Op GpuControlList::StringInfo::StringToOp(
+    const std::string& string_op) {
+  if (string_op == "=")
+    return kEQ;
+  else if (string_op == "contains")
+    return kContains;
+  else if (string_op == "beginwith")
+    return kBeginWith;
+  else if (string_op == "endwith")
+    return kEndWith;
+  return kUnknown;
 }
 
 GpuControlList::FloatInfo::FloatInfo(const std::string& float_op,
@@ -489,9 +520,13 @@ GpuControlList::GpuControlListEntry::GetEntryFromValue(
     dictionary_entry_count++;
   }
 
-  std::string driver_vendor_value;
-  if (value->GetString("driver_vendor", &driver_vendor_value)) {
-    if (!entry->SetDriverVendorInfo(driver_vendor_value)) {
+  const base::DictionaryValue* driver_vendor_value = NULL;
+  if (value->GetDictionary("driver_vendor", &driver_vendor_value)) {
+    std::string vendor_op;
+    std::string vendor_value;
+    driver_vendor_value->GetString(kOp, &vendor_op);
+    driver_vendor_value->GetString("value", &vendor_value);
+    if (!entry->SetDriverVendorInfo(vendor_op, vendor_value)) {
       LOG(WARNING) << "Malformed driver_vendor entry " << entry->id();
       return NULL;
     }
@@ -559,27 +594,39 @@ GpuControlList::GpuControlListEntry::GetEntryFromValue(
     dictionary_entry_count++;
   }
 
-  std::string gl_vendor_value;
-  if (value->GetString("gl_vendor", &gl_vendor_value)) {
-    if (!entry->SetGLVendorInfo(gl_vendor_value)) {
+  const base::DictionaryValue* gl_vendor_value = NULL;
+  if (value->GetDictionary("gl_vendor", &gl_vendor_value)) {
+    std::string vendor_op;
+    std::string vendor_value;
+    gl_vendor_value->GetString(kOp, &vendor_op);
+    gl_vendor_value->GetString("value", &vendor_value);
+    if (!entry->SetGLVendorInfo(vendor_op, vendor_value)) {
       LOG(WARNING) << "Malformed gl_vendor entry " << entry->id();
       return NULL;
     }
     dictionary_entry_count++;
   }
 
-  std::string gl_renderer_value;
-  if (value->GetString("gl_renderer", &gl_renderer_value)) {
-    if (!entry->SetGLRendererInfo(gl_renderer_value)) {
+  const base::DictionaryValue* gl_renderer_value = NULL;
+  if (value->GetDictionary("gl_renderer", &gl_renderer_value)) {
+    std::string renderer_op;
+    std::string renderer_value;
+    gl_renderer_value->GetString(kOp, &renderer_op);
+    gl_renderer_value->GetString("value", &renderer_value);
+    if (!entry->SetGLRendererInfo(renderer_op, renderer_value)) {
       LOG(WARNING) << "Malformed gl_renderer entry " << entry->id();
       return NULL;
     }
     dictionary_entry_count++;
   }
 
-  std::string gl_extensions_value;
-  if (value->GetString("gl_extensions", &gl_extensions_value)) {
-    if (!entry->SetGLExtensionsInfo(gl_extensions_value)) {
+  const base::DictionaryValue* gl_extensions_value = NULL;
+  if (value->GetDictionary("gl_extensions", &gl_extensions_value)) {
+    std::string extensions_op;
+    std::string extensions_value;
+    gl_extensions_value->GetString(kOp, &extensions_op);
+    gl_extensions_value->GetString("value", &extensions_value);
+    if (!entry->SetGLExtensionsInfo(extensions_op, extensions_value)) {
       LOG(WARNING) << "Malformed gl_extensions entry " << entry->id();
       return NULL;
     }
@@ -604,9 +651,13 @@ GpuControlList::GpuControlListEntry::GetEntryFromValue(
     dictionary_entry_count++;
   }
 
-  std::string cpu_brand_value;
-  if (value->GetString("cpu_info", &cpu_brand_value)) {
-    if (!entry->SetCpuBrand(cpu_brand_value)) {
+  const base::DictionaryValue* cpu_brand_value = NULL;
+  if (value->GetDictionary("cpu_info", &cpu_brand_value)) {
+    std::string cpu_op;
+    std::string cpu_value;
+    cpu_brand_value->GetString(kOp, &cpu_op);
+    cpu_brand_value->GetString("value", &cpu_value);
+    if (!entry->SetCpuBrand(cpu_op, cpu_value)) {
       LOG(WARNING) << "Malformed cpu_brand entry " << entry->id();
       return NULL;
     }
@@ -847,9 +898,10 @@ bool GpuControlList::GpuControlListEntry::SetGLType(
 }
 
 bool GpuControlList::GpuControlListEntry::SetDriverVendorInfo(
+    const std::string& vendor_op,
     const std::string& vendor_value) {
-  driver_vendor_info_ = vendor_value;
-  return !driver_vendor_info_.empty();
+  driver_vendor_info_.reset(new StringInfo(vendor_op, vendor_value));
+  return driver_vendor_info_->IsValid();
 }
 
 bool GpuControlList::GpuControlListEntry::SetDriverVersionInfo(
@@ -881,21 +933,24 @@ bool GpuControlList::GpuControlListEntry::SetGLVersionInfo(
 }
 
 bool GpuControlList::GpuControlListEntry::SetGLVendorInfo(
+    const std::string& vendor_op,
     const std::string& vendor_value) {
-  gl_vendor_info_ = vendor_value;
-  return !gl_vendor_info_.empty();
+  gl_vendor_info_.reset(new StringInfo(vendor_op, vendor_value));
+  return gl_vendor_info_->IsValid();
 }
 
 bool GpuControlList::GpuControlListEntry::SetGLRendererInfo(
+    const std::string& renderer_op,
     const std::string& renderer_value) {
-  gl_renderer_info_ = renderer_value;
-  return !gl_renderer_info_.empty();
+  gl_renderer_info_.reset(new StringInfo(renderer_op, renderer_value));
+  return gl_renderer_info_->IsValid();
 }
 
 bool GpuControlList::GpuControlListEntry::SetGLExtensionsInfo(
+    const std::string& extensions_op,
     const std::string& extensions_value) {
-  gl_extensions_info_ = extensions_value;
-  return !gl_extensions_info_.empty();
+  gl_extensions_info_.reset(new StringInfo(extensions_op, extensions_value));
+  return gl_extensions_info_->IsValid();
 }
 
 bool GpuControlList::GpuControlListEntry::SetGLResetNotificationStrategyInfo(
@@ -908,9 +963,10 @@ bool GpuControlList::GpuControlListEntry::SetGLResetNotificationStrategyInfo(
 }
 
 bool GpuControlList::GpuControlListEntry::SetCpuBrand(
+    const std::string& cpu_op,
     const std::string& cpu_value) {
-  cpu_brand_ = cpu_value;
-  return !cpu_brand_.empty();
+  cpu_brand_.reset(new StringInfo(cpu_op, cpu_value));
+  return cpu_brand_->IsValid();
 }
 
 bool GpuControlList::GpuControlListEntry::SetPerfGraphicsInfo(
@@ -1180,7 +1236,8 @@ bool GpuControlList::GpuControlListEntry::Contains(
     case kMultiGpuStyleNone:
       break;
   }
-  if (StringMismatch(gpu_info.driver_vendor, driver_vendor_info_))
+  if (driver_vendor_info_.get() != NULL && !gpu_info.driver_vendor.empty() &&
+      !driver_vendor_info_->Contains(gpu_info.driver_vendor))
     return false;
   if (driver_version_info_.get() != NULL && !gpu_info.driver_version.empty()) {
     if (!driver_version_info_->Contains(gpu_info.driver_version))
@@ -1192,11 +1249,14 @@ bool GpuControlList::GpuControlListEntry::Contains(
   }
   if (GLVersionInfoMismatch(gpu_info.gl_version))
     return false;
-  if (StringMismatch(gpu_info.gl_vendor, gl_vendor_info_))
+  if (gl_vendor_info_.get() != NULL && !gpu_info.gl_vendor.empty() &&
+      !gl_vendor_info_->Contains(gpu_info.gl_vendor))
     return false;
-  if (StringMismatch(gpu_info.gl_renderer, gl_renderer_info_))
+  if (gl_renderer_info_.get() != NULL && !gpu_info.gl_renderer.empty() &&
+      !gl_renderer_info_->Contains(gpu_info.gl_renderer))
     return false;
-  if (StringMismatch(gpu_info.gl_extensions, gl_extensions_info_))
+  if (gl_extensions_info_.get() != NULL && !gpu_info.gl_extensions.empty() &&
+      !gl_extensions_info_->Contains(gpu_info.gl_extensions))
     return false;
   if (gl_reset_notification_strategy_info_.get() != NULL &&
       !gl_reset_notification_strategy_info_->Contains(
@@ -1219,8 +1279,7 @@ bool GpuControlList::GpuControlListEntry::Contains(
       return false;
     bool found_match = false;
     for (size_t ii = 0; ii < machine_model_name_list_.size(); ++ii) {
-      if (RE2::FullMatch(gpu_info.machine_model_name,
-                         machine_model_name_list_[ii])) {
+      if (machine_model_name_list_[ii] == gpu_info.machine_model_name) {
         found_match = true;
         break;
       }
@@ -1238,9 +1297,9 @@ bool GpuControlList::GpuControlListEntry::Contains(
   if (direct_rendering_info_.get() != NULL &&
       !direct_rendering_info_->Contains(gpu_info.direct_rendering))
     return false;
-  if (!cpu_brand_.empty()) {
+  if (cpu_brand_.get() != NULL) {
     base::CPU cpu_info;
-    if (StringMismatch(cpu_info.cpu_brand(), cpu_brand_))
+    if (!cpu_brand_->Contains(cpu_info.cpu_brand()))
       return false;
   }
 
@@ -1258,13 +1317,13 @@ bool GpuControlList::GpuControlListEntry::NeedsMoreInfo(
   // If certain info is missing due to some error, say, we fail to collect
   // vendor_id/device_id, then even if we launch GPU process and create a gl
   // context, we won't gather such missing info, so we still return false.
-  if (!driver_vendor_info_.empty() && gpu_info.driver_vendor.empty())
+  if (driver_vendor_info_.get() && gpu_info.driver_vendor.empty())
     return true;
   if (driver_version_info_.get() && gpu_info.driver_version.empty())
     return true;
-  if (!gl_vendor_info_.empty() && gpu_info.gl_vendor.empty())
+  if (gl_vendor_info_.get() && gpu_info.gl_vendor.empty())
     return true;
-  if (!gl_renderer_info_.empty() && gpu_info.gl_renderer.empty())
+  if (gl_renderer_info_.get() && gpu_info.gl_renderer.empty())
     return true;
   for (size_t i = 0; i < exceptions_.size(); ++i) {
     if (exceptions_[i]->NeedsMoreInfo(gpu_info))

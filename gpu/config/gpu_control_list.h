@@ -192,6 +192,32 @@ class GPU_EXPORT GpuControlList {
     scoped_ptr<VersionInfo> version_info_;
   };
 
+  class GPU_EXPORT StringInfo {
+   public:
+    StringInfo(const std::string& string_op, const std::string& string_value);
+
+    // Determines if a given string is included in the StringInfo.
+    bool Contains(const std::string& value) const;
+
+    // Determines if the StringInfo contains valid information.
+    bool IsValid() const;
+
+   private:
+    enum Op {
+      kContains,
+      kBeginWith,
+      kEndWith,
+      kEQ,  // =
+      kUnknown  // Indicates StringInfo data is invalid.
+    };
+
+    // Maps string to Op; returns kUnknown if it's not a valid Op.
+    static Op StringToOp(const std::string& string_op);
+
+    Op op_;
+    std::string value_;
+  };
+
   class GPU_EXPORT FloatInfo {
    public:
     FloatInfo(const std::string& float_op,
@@ -344,7 +370,8 @@ class GPU_EXPORT GpuControlList {
 
     bool SetGLType(const std::string& gl_type_string);
 
-    bool SetDriverVendorInfo(const std::string& vendor_value);
+    bool SetDriverVendorInfo(const std::string& vendor_op,
+                             const std::string& vendor_value);
 
     bool SetDriverVersionInfo(const std::string& version_op,
                               const std::string& version_style,
@@ -359,17 +386,21 @@ class GPU_EXPORT GpuControlList {
                           const std::string& version_string,
                           const std::string& version_string2);
 
-    bool SetGLVendorInfo(const std::string& vendor_value);
+    bool SetGLVendorInfo(const std::string& vendor_op,
+                         const std::string& vendor_value);
 
-    bool SetGLRendererInfo(const std::string& renderer_value);
+    bool SetGLRendererInfo(const std::string& renderer_op,
+                           const std::string& renderer_value);
 
-    bool SetGLExtensionsInfo(const std::string& extensions_value);
+    bool SetGLExtensionsInfo(const std::string& extensions_op,
+                             const std::string& extensions_value);
 
     bool SetGLResetNotificationStrategyInfo(const std::string& op,
                                             const std::string& int_string,
                                             const std::string& int_string2);
 
-    bool SetCpuBrand(const std::string& cpu_value);
+    bool SetCpuBrand(const std::string& cpu_op,
+                     const std::string& cpu_value);
 
     bool SetPerfGraphicsInfo(const std::string& op,
                              const std::string& float_string,
@@ -433,15 +464,15 @@ class GPU_EXPORT GpuControlList {
     MultiGpuStyle multi_gpu_style_;
     MultiGpuCategory multi_gpu_category_;
     GLType gl_type_;
-    std::string driver_vendor_info_;
+    scoped_ptr<StringInfo> driver_vendor_info_;
     scoped_ptr<VersionInfo> driver_version_info_;
     scoped_ptr<VersionInfo> driver_date_info_;
     scoped_ptr<VersionInfo> gl_version_info_;
-    std::string gl_vendor_info_;
-    std::string gl_renderer_info_;
-    std::string gl_extensions_info_;
+    scoped_ptr<StringInfo> gl_vendor_info_;
+    scoped_ptr<StringInfo> gl_renderer_info_;
+    scoped_ptr<StringInfo> gl_extensions_info_;
     scoped_ptr<IntInfo> gl_reset_notification_strategy_info_;
-    std::string cpu_brand_;
+    scoped_ptr<StringInfo> cpu_brand_;
     scoped_ptr<FloatInfo> perf_graphics_info_;
     scoped_ptr<FloatInfo> perf_gaming_info_;
     scoped_ptr<FloatInfo> perf_overall_info_;
