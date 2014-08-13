@@ -331,6 +331,8 @@ class CC_EXPORT LayerTreeHostImpl
   bool scroll_affects_scroll_handler() const {
     return scroll_affects_scroll_handler_;
   }
+  void QueueSwapPromiseForMainThreadScrollUpdate(
+      scoped_ptr<SwapPromise> swap_promise);
 
   bool IsCurrentlyScrolling() const;
 
@@ -575,6 +577,7 @@ class CC_EXPORT LayerTreeHostImpl
   void MarkUIResourceNotEvicted(UIResourceId uid);
 
   void NotifySwapPromiseMonitorsOfSetNeedsRedraw();
+  void NotifySwapPromiseMonitorsOfForwardingToMainThread();
 
   typedef base::hash_map<UIResourceId, UIResourceData>
       UIResourceMap;
@@ -621,6 +624,7 @@ class CC_EXPORT LayerTreeHostImpl
   bool wheel_scrolling_;
   bool scroll_affects_scroll_handler_;
   int scroll_layer_id_when_mouse_over_scrollbar_;
+  ScopedPtrVector<SwapPromise> swap_promises_for_main_thread_scroll_update_;
 
   bool tile_priorities_dirty_;
 
