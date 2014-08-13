@@ -80,6 +80,13 @@ class BrowserTestMacPort(BrowserTestPortOverrides, mac.MacPort):
     def _path_to_driver(self, configuration=None):
         return self._build_path_with_configuration(configuration, self.driver_name())
 
+    def default_timeout_ms(self):
+        timeout_ms = 20 * 1000
+        if self.get_option('configuration') == 'Debug':  # pylint: disable=E1101
+            # Debug is usually 2x-3x slower than Release.
+            return 3 * timeout_ms
+        return timeout_ms
+
 
 class BrowserTestWinPort(BrowserTestPortOverrides, win.WinPort):
     def default_timeout_ms(self):
