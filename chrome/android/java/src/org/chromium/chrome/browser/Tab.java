@@ -139,6 +139,10 @@ public class Tab implements NavigationClient {
 
     private boolean mIsClosing = false;
 
+    private Bitmap mFavicon = null;
+
+    private String mFaviconUrl = null;
+
     /**
      * A default {@link ChromeContextMenuItemDelegate} that supports some of the context menu
      * functionality.
@@ -885,10 +889,16 @@ public class Tab implements NavigationClient {
     /**
      * @return The bitmap of the favicon scaled to 16x16dp. null if no favicon
      *         is specified or it requires the default favicon.
-     *         TODO(bauerb): Upstream implementation.
      */
     public Bitmap getFavicon() {
-        return null;
+        if (mContentViewCore != null) {
+            if (mFavicon == null || !mContentViewCore.getUrl().equals(mFaviconUrl)) {
+                if (mNativeTabAndroid == 0) return null;
+                mFavicon = nativeGetFavicon(mNativeTabAndroid);
+                mFaviconUrl = mContentViewCore.getUrl();
+            }
+        }
+        return mFavicon;
     }
 
     /**
@@ -1014,6 +1024,8 @@ public class Tab implements NavigationClient {
      */
     @CalledByNative
     protected void onFaviconUpdated() {
+        mFavicon = null;
+        mFaviconUrl = null;
         for (TabObserver observer : mObservers) observer.onFaviconUpdated(this);
     }
 
@@ -1156,4 +1168,5 @@ public class Tab implements NavigationClient {
     private native void nativeSetActiveNavigationEntryTitleForUrl(long nativeTabAndroid, String url,
             String title);
     private native boolean nativePrint(long nativeTabAndroid);
+    private native Bitmap nativeGetFavicon(long nativeTabAndroid);
 }

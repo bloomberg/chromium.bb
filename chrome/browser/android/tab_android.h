@@ -147,6 +147,10 @@ class TabAndroid : public CoreTabHelperDelegate,
                                            jstring jurl,
                                            jstring jtitle);
   bool Print(JNIEnv* env, jobject obj);
+  // Called to get favicon of current tab, return null if no favicon is
+  // avaliable for current tab.
+  base::android::ScopedJavaLocalRef<jobject> GetFavicon(JNIEnv* env,
+                                                        jobject obj);
 
   // Register the Tab's native methods through JNI.
   static bool RegisterTabAndroid(JNIEnv* env);
