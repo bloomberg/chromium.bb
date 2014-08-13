@@ -41231,6 +41231,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="517" label="DevToolsConsoleTimeline"/>
   <int value="518" label="DevToolsConsoleProfile"/>
   <int value="519" label="SVGStyleElementTitle"/>
+  <int value="520" label="PictureSourceSrc"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
