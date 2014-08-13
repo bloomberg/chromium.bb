@@ -38894,6 +38894,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="26" label="Store token and ID failed">
     Enrollment failed because DM token and device ID couldn't be stored.
   </int>
+  <int value="27" label="Error getting FRE state keys">
+    Enrollment failed because FRE state keys couldn't be obtained.
+  </int>
+  <int value="28" label="Error validating policy">
+    Enrollment failed because policy couldn't be validated.
+  </int>
+  <int value="29" label="Error in CloudPolicyStore">
+    Enrollment failed because of error in CloudPolicyStore.
+  </int>
+  <int value="30" label="Error locking device">
+    Enrollment failed because device couldn't be locked.
+  </int>
 </enum>
 
 <enum name="EnterprisePolicies" type="int">

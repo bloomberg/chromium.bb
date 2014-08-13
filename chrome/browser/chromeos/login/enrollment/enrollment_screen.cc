@@ -278,10 +278,16 @@ void EnrollmentScreen::ReportEnrollmentStatus(policy::EnrollmentStatus status) {
       UMAFailure(policy::kMetricEnrollmentWrongUserError);
       return;
     case policy::EnrollmentStatus::STATUS_NO_STATE_KEYS:
+      UMAFailure(policy::kMetricEnrollmentNoStateKeys);
+      return;
     case policy::EnrollmentStatus::STATUS_VALIDATION_FAILED:
+      UMAFailure(policy::kMetricEnrollmentPolicyValidationFailed);
+      return;
     case policy::EnrollmentStatus::STATUS_STORE_ERROR:
+      UMAFailure(policy::kMetricEnrollmentCloudPolicyStoreError);
+      return;
     case policy::EnrollmentStatus::STATUS_LOCK_ERROR:
-      UMAFailure(policy::kMetricEnrollmentOtherFailed);
+      UMAFailure(policy::kMetricEnrollmentLockBackendError);
       return;
     case policy::EnrollmentStatus::STATUS_ROBOT_AUTH_FETCH_FAILED:
       UMAFailure(policy::kMetricEnrollmentRobotAuthCodeFetchFailed);

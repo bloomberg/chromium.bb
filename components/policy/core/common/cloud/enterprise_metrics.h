@@ -185,6 +185,14 @@ enum MetricEnrollment {
   kMetricEnrollmentRetried = 25,
   // Enrollment failed because DM token and device ID couldn't be stored.
   kMetricEnrollmentStoreTokenAndIdFailed = 26,
+  // Enrollment failed because FRE state keys couldn't be obtained.
+  kMetricEnrollmentNoStateKeys = 27,
+  // Enrollment failed because policy couldn't be validated.
+  kMetricEnrollmentPolicyValidationFailed = 28,
+  // Enrollment failed because of error in CloudPolicyStore.
+  kMetricEnrollmentCloudPolicyStoreError = 29,
+  // Enrollment failed because device couldn't be locked.
+  kMetricEnrollmentLockBackendError = 30,
 
   kMetricEnrollmentSize  // Must be the last.
 };
