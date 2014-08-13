@@ -14412,7 +14412,7 @@ Do you accept?
       All set!
     </message>
     <message name="IDS_EASY_UNLOCK_SUCCESS_NOTIFICATION_MESSAGE" desc="The body text for the notification informing the user that Easy Unlock has been successfully set up.">
-      You can unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> when you and your phone are nearby.
+      You can unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> when you and your Android phone are nearby.
     </message>
     <!-- Strings for the Easy Unlock setup dialog -->
     <!-- Step 1: Intro -->
