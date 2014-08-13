@@ -22,6 +22,11 @@ public:
     void trace(Visitor*); // Cannot override a non-virtual trace.
 };
 
+class D : public B {
+public:
+    virtual void trace(Visitor*); // Cannot override a non-virtual trace.
+};
+
 }
 
 #endif

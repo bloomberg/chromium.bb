@@ -129,6 +129,14 @@ const char kClassDeclaresPureVirtualTrace[] =
     "[blink-gc] Garbage collected class %0"
     " is not permitted to declare a pure-virtual trace method.";
 
+const char kLeftMostBaseMustBePolymorphic[] =
+    "[blink-gc] Left-most base class %0 of derived class %1"
+    " must be polymorphic.";
+
+const char kBaseClassMustDeclareVirtualTrace[] =
+    "[blink-gc] Left-most base class %0 of derived class %1"
+    " must define a virtual trace method.";
+
 struct BlinkGCPluginOptions {
   BlinkGCPluginOptions() : enable_oilpan(false), dump_graph(false) {}
   bool enable_oilpan;
@@ -771,6 +779,10 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         diagnostic_.getCustomDiagID(getErrorLevel(), kClassOverridesNew);
     diag_class_declares_pure_virtual_trace_ = diagnostic_.getCustomDiagID(
         getErrorLevel(), kClassDeclaresPureVirtualTrace);
+    diag_left_most_base_must_be_polymorphic_ = diagnostic_.getCustomDiagID(
+        getErrorLevel(), kLeftMostBaseMustBePolymorphic);
+    diag_base_class_must_declare_virtual_trace_ = diagnostic_.getCustomDiagID(
+        getErrorLevel(), kBaseClassMustDeclareVirtualTrace);
 
     // Register note messages.
     diag_base_requires_tracing_note_ = diagnostic_.getCustomDiagID(
@@ -900,6 +912,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     if (CXXMethodDecl* trace = info->GetTraceMethod()) {
       if (trace->isPure())
         ReportClassDeclaresPureVirtualTrace(info, trace);
+      if (info->record()->isPolymorphic())
+        CheckPolymorphicClass(info, trace);
     } else if (info->RequiresTraceMethod()) {
       ReportClassRequiresTraceMethod(info);
     }
@@ -930,6 +944,121 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     }
 
     DumpClass(info);
+  }
+
+  CXXRecordDecl* GetDependentTemplatedDecl(const Type& type) {
+    const TemplateSpecializationType* tmpl_type =
+        type.getAs<TemplateSpecializationType>();
+    if (!tmpl_type)
+      return 0;
+
+    TemplateDecl* tmpl_decl = tmpl_type->getTemplateName().getAsTemplateDecl();
+    if (!tmpl_decl)
+      return 0;
+
+    return dyn_cast<CXXRecordDecl>(tmpl_decl->getTemplatedDecl());
+  }
+
+  // The GC infrastructure assumes that if the vtable of a polymorphic
+  // base-class is not initialized for a given object (ie, it is partially
+  // initialized) then the object does not need to be traced. Thus, we must
+  // ensure that any polymorphic class with a trace method does not have any
+  // tractable fields that are initialized before we are sure that the vtable
+  // and the trace method are both defined.  There are two cases that need to
+  // hold to satisfy that assumption:
+  //
+  // 1. If trace is virtual, then it must be defined in the left-most base.
+  // This ensures that if the vtable is initialized and it contains a pointer to
+  // the trace method.
+  //
+  // 2. If trace is non-virtual, then the trace method is defined and we must
+  // ensure that the left-most base defines a vtable. This ensures that the
+  // first thing to be initialized when constructing the object is the vtable
+  // itself.
+  void CheckPolymorphicClass(RecordInfo* info, CXXMethodDecl* trace) {
+    CXXRecordDecl* left_most = info->record();
+    CXXRecordDecl::base_class_iterator it = left_most->bases_begin();
+    CXXRecordDecl* left_most_base = 0;
+    while (it != left_most->bases_end()) {
+      left_most_base = it->getType()->getAsCXXRecordDecl();
+      if (!left_most_base && it->getType()->isDependentType())
+        left_most_base = GetDependentTemplatedDecl(*it->getType());
+
+      // TODO: Find a way to correctly check actual instantiations
+      // for dependent types. The escape below will be hit, eg, when
+      // we have a primary template with no definition and
+      // specializations for each case (such as SupplementBase) in
+      // which case we don't succeed in checking the required
+      // properties.
+      if (!left_most_base || !left_most_base->hasDefinition())
+        return;
+
+      StringRef name = left_most_base->getName();
+      // We know GCMixin base defines virtual trace.
+      if (Config::IsGCMixinBase(name))
+        return;
+
+      // Stop with the left-most prior to a safe polymorphic base (a safe base
+      // is non-polymorphic and contains no fields that need tracing).
+      if (Config::IsSafePolymorphicBase(name))
+        break;
+
+      left_most = left_most_base;
+      it = left_most->bases_begin();
+    }
+
+    if (RecordInfo* left_most_info = cache_.Lookup(left_most)) {
+
+      // Check condition (1):
+      if (trace->isVirtual()) {
+        if (CXXMethodDecl* trace = left_most_info->GetTraceMethod()) {
+          if (trace->isVirtual())
+            return;
+        }
+        ReportBaseClassMustDeclareVirtualTrace(info, left_most);
+        return;
+      }
+
+      // Check condition (2):
+      if (DeclaresVirtualMethods(info->record()))
+        return;
+      if (left_most_base) {
+        ++it; // Get the base next to the "safe polymorphic base"
+        if (it != left_most->bases_end()) {
+          if (CXXRecordDecl* next_base = it->getType()->getAsCXXRecordDecl()) {
+            if (CXXRecordDecl* next_left_most = GetLeftMostBase(next_base)) {
+              if (DeclaresVirtualMethods(next_left_most))
+                return;
+              ReportLeftMostBaseMustBePolymorphic(info, next_left_most);
+              return;
+            }
+          }
+        }
+      }
+      ReportLeftMostBaseMustBePolymorphic(info, left_most);
+    }
+  }
+
+  CXXRecordDecl* GetLeftMostBase(CXXRecordDecl* left_most) {
+    CXXRecordDecl::base_class_iterator it = left_most->bases_begin();
+    while (it != left_most->bases_end()) {
+      if (it->getType()->isDependentType())
+        left_most = GetDependentTemplatedDecl(*it->getType());
+      else
+        left_most = it->getType()->getAsCXXRecordDecl();
+      if (!left_most || !left_most->hasDefinition())
+        return 0;
+      it = left_most->bases_begin();
+    }
+    return left_most;
+  }
+
+  bool DeclaresVirtualMethods(CXXRecordDecl* decl) {
+    CXXRecordDecl::method_iterator it = decl->method_begin();
+    for (; it != decl->method_end(); ++it)
+      if (it->isVirtual() && !it->isPure())
+        return true;
+    return false;
   }
 
   void CheckLeftMostDerived(RecordInfo* info) {
@@ -1074,16 +1203,12 @@ class BlinkGCPluginConsumer : public ASTConsumer {
   void CheckTraceMethod(RecordInfo* parent,
                         CXXMethodDecl* trace,
                         bool isTraceAfterDispatch) {
-    // A non-virtual trace method must not override another trace.
-    if (!isTraceAfterDispatch && !trace->isVirtual()) {
+    // A trace method must not override any non-virtual trace methods.
+    if (!isTraceAfterDispatch) {
       for (RecordInfo::Bases::iterator it = parent->GetBases().begin();
            it != parent->GetBases().end();
            ++it) {
         RecordInfo* base = it->second.info();
-        // We allow mixin bases to contain a non-virtual trace since it will
-        // never be used for dispatching.
-        if (base->IsGCMixin())
-          continue;
         if (CXXMethodDecl* other = base->InheritsNonVirtualTrace())
           ReportOverriddenNonVirtualTrace(parent, trace, other);
       }
@@ -1484,6 +1609,24 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         << info->record();
   }
 
+  void ReportLeftMostBaseMustBePolymorphic(RecordInfo* derived,
+                                           CXXRecordDecl* base) {
+    SourceLocation loc = base->getLocStart();
+    SourceManager& manager = instance_.getSourceManager();
+    FullSourceLoc full_loc(loc, manager);
+    diagnostic_.Report(full_loc, diag_left_most_base_must_be_polymorphic_)
+        << base << derived->record();
+  }
+
+  void ReportBaseClassMustDeclareVirtualTrace(RecordInfo* derived,
+                                              CXXRecordDecl* base) {
+    SourceLocation loc = base->getLocStart();
+    SourceManager& manager = instance_.getSourceManager();
+    FullSourceLoc full_loc(loc, manager);
+    diagnostic_.Report(full_loc, diag_base_class_must_declare_virtual_trace_)
+        << base << derived->record();
+  }
+
   void NoteManualDispatchMethod(CXXMethodDecl* dispatch) {
     SourceLocation loc = dispatch->getLocStart();
     SourceManager& manager = instance_.getSourceManager();
@@ -1574,6 +1717,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
   unsigned diag_derives_non_stack_allocated_;
   unsigned diag_class_overrides_new_;
   unsigned diag_class_declares_pure_virtual_trace_;
+  unsigned diag_left_most_base_must_be_polymorphic_;
+  unsigned diag_base_class_must_declare_virtual_trace_;
 
   unsigned diag_base_requires_tracing_note_;
   unsigned diag_field_requires_tracing_note_;

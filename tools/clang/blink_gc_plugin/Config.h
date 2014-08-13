@@ -105,19 +105,35 @@ class Config {
     return (IsHashMap(name) || name == "pair") ? 2 : 1;
   }
 
+  static bool IsDummyBase(const std::string& name) {
+    return name == "DummyBase";
+  }
+
+  static bool IsRefCountedBase(const std::string& name) {
+    return name == "RefCounted" ||
+           name == "ThreadSafeRefCounted";
+  }
+
   static bool IsGCMixinBase(const std::string& name) {
     return name == "GarbageCollectedMixin";
   }
 
   static bool IsGCFinalizedBase(const std::string& name) {
     return name == "GarbageCollectedFinalized" ||
-           name == "RefCountedGarbageCollected";
+           name == "RefCountedGarbageCollected" ||
+           name == "ThreadSafeRefCountedGarbageCollected";
   }
 
   static bool IsGCBase(const std::string& name) {
     return name == "GarbageCollected" ||
            IsGCFinalizedBase(name) ||
            IsGCMixinBase(name);
+  }
+
+  // Returns true of the base classes that do not need a vtable entry for trace
+  // because they cannot possibly initiate a GC during construction.
+  static bool IsSafePolymorphicBase(const std::string& name) {
+    return IsGCBase(name) || IsDummyBase(name) || IsRefCountedBase(name);
   }
 
   static bool IsAnnotated(clang::Decl* decl, const std::string& anno) {

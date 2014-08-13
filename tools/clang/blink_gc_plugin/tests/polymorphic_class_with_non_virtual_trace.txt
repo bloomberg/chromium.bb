@@ -1,0 +1,5 @@
+In file included from polymorphic_class_with_non_virtual_trace.cpp:5:
+./polymorphic_class_with_non_virtual_trace.h:17:1: warning: [blink-gc] Left-most base class 'NonPolymorphicBase' of derived class 'IsNotLeftMostPolymorphic' must be polymorphic.
+class NonPolymorphicBase {
+^
+1 warning generated.

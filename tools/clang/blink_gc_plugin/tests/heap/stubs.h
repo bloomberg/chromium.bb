@@ -216,6 +216,7 @@ public:
 class GarbageCollectedMixin {
     virtual void adjustAndMark(Visitor*) const = 0;
     virtual bool isAlive(Visitor*) const = 0;
+    virtual void trace(Visitor*) { }
 };
 
 template<typename T>
