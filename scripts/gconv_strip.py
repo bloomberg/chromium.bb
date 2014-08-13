@@ -7,6 +7,7 @@
 
 import ahocorasick
 import glob
+import lddtree
 import operator
 import os
 import stat
@@ -126,9 +127,31 @@ class GconvModules(object):
       used_modules.update(self._modules[charset])
     unused_modules = reduce(set.union, self._modules.values()) - used_modules
 
-    cros_build_lib.Debug('Used modules: %s', ', '.join(sorted(used_modules)))
-
     modules_dir = os.path.dirname(self._filename)
+
+    all_modules = set.union(used_modules, unused_modules)
+    # The list of charsets that depend on a given library. For example,
+    # libdeps['libCNS.so'] is the set of all the modules that require that
+    # library. These libraries live in the same directory as the modules.
+    libdeps = {}
+    for module in all_modules:
+      deps = lddtree.ParseELF(os.path.join(modules_dir, '%s.so' % module),
+                              modules_dir, [])
+      if not 'needed' in deps:
+        continue
+      for lib in deps['needed']:
+        # Ignore the libs without a path defined (outside the modules_dir).
+        if deps['libs'][lib]['path']:
+          libdeps[lib] = libdeps.get(lib, set()).union([module])
+
+    used_libdeps = set(lib for lib, deps in libdeps.iteritems()
+                       if deps.intersection(used_modules))
+    unused_libdeps = set(libdeps).difference(used_libdeps)
+
+    cros_build_lib.Debug('Used modules: %s', ', '.join(sorted(used_modules)))
+    cros_build_lib.Debug('Used dependency libs: %s',
+                         ', '.join(sorted(used_libdeps)))
+
     unused_size = 0
     for module in sorted(unused_modules):
       module_path = os.path.join(modules_dir, '%s.so' % module)
@@ -136,10 +159,20 @@ class GconvModules(object):
       cros_build_lib.Debug('rm %s', module_path)
       if not dry_run:
         os.unlink(module_path)
-    cros_build_lib.Info('Done. Using %d gconv modules. Removed %d unused'
-                        ' modules (%.1f KiB)',
-                        len(used_modules), len(unused_modules),
-                        unused_size / 1024.)
+
+    unused_libdeps_size = 0
+    for lib in sorted(unused_libdeps):
+      lib_path = os.path.join(modules_dir, lib)
+      unused_libdeps_size += os.lstat(lib_path).st_size
+      cros_build_lib.Debug('rm %s', lib_path)
+      if not dry_run:
+        os.unlink(lib_path)
+
+    cros_build_lib.Info(
+        'Done. Using %d gconv modules. Removed %d unused modules'
+        ' (%.1f KiB) and %d unused dependencies (%.1f KiB)',
+        len(used_modules), len(unused_modules), unused_size / 1024.,
+        len(unused_libdeps), unused_libdeps_size / 1024.)
 
     # Recompute the gconv-modules file with only the included gconv modules.
     result = []
