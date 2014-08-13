@@ -68,17 +68,17 @@ class Checker(object):
     if not self._temp_files:
       return
 
-    self._debug("Deleting temporary files: " + ", ".join(self._temp_files))
+    self._debug("Deleting temporary files: %s" % ", ".join(self._temp_files))
     for f in self._temp_files:
       os.remove(f)
     self._temp_files = []
 
   def _debug(self, msg, error=False):
     if self._verbose:
-      print "(INFO) " + msg
+      print "(INFO) %s" % msg
 
   def _error(self, msg):
-    print >> sys.stderr, "(ERROR) " + msg
+    print >> sys.stderr, "(ERROR) %s" % msg
     self._clean_up()
 
   def _run_command(self, cmd):
@@ -91,7 +91,7 @@ class Checker(object):
         True if the exit code was 0, else False.
     """
     cmd_str = " ".join(cmd)
-    self._debug("Running command: " + cmd_str)
+    self._debug("Running command: %s" % cmd_str)
 
     devnull = open(os.devnull, "w")
     return subprocess.Popen(
@@ -146,8 +146,8 @@ class Checker(object):
   def _format_errors(self, errors):
     """Formats Closure compiler errors to easily spot compiler output."""
     errors = filter(None, errors)
-    contents = ("\n" + "## ").join("\n\n".join(errors).splitlines())
-    return "## " + contents if contents else ""
+    contents = "\n## ".join("\n\n".join(errors).splitlines())
+    return "## %s" % contents if contents else ""
 
   def _create_temp_file(self, contents):
     with tempfile.NamedTemporaryFile(mode="wt", delete=False) as tmp_file:
@@ -174,10 +174,10 @@ class Checker(object):
     if not self._check_java_path():
       return 1, ""
 
-    self._debug("FILE: " + source_file)
+    self._debug("FILE: %s" % source_file)
 
     if source_file.endswith("_externs.js"):
-      self._debug("Skipping externs: " + source_file)
+      self._debug("Skipping externs: %s" % source_file)
       return
 
     self._file_arg = source_file
@@ -188,31 +188,32 @@ class Checker(object):
     includes = [rel_path(f) for f in depends + [source_file]]
     contents = ['<include src="%s">' % i for i in includes]
     meta_file = self._create_temp_file("\n".join(contents))
-    self._debug("Meta file: " + meta_file)
+    self._debug("Meta file: %s" % meta_file)
 
     self._processor = processor.Processor(meta_file)
     self._expanded_file = self._create_temp_file(self._processor.contents)
-    self._debug("Expanded file: " + self._expanded_file)
+    self._debug("Expanded file: %s" % self._expanded_file)
 
-    args = ["--js=" + self._expanded_file] + ["--externs=" + e for e in externs]
-    args_file_content = " " + " ".join(self._COMMON_CLOSURE_ARGS + args)
-    self._debug("Args: " + args_file_content.strip())
+    args = ["--js=%s" % self._expanded_file]
+    args += ["--externs=%s" % e for e in externs]
+    args_file_content = " %s" % " ".join(self._COMMON_CLOSURE_ARGS + args)
+    self._debug("Args: %s" % args_file_content.strip())
 
     args_file = self._create_temp_file(args_file_content)
-    self._debug("Args file: " + args_file)
+    self._debug("Args file: %s" % args_file)
 
-    runner_args = ["--compiler-args-file=" + args_file]
+    runner_args = ["--compiler-args-file=%s" % args_file]
     runner_cmd = self._run_jar(self._runner_jar, args=runner_args)
     (_, stderr) = runner_cmd.communicate()
 
     errors = stderr.strip().split("\n\n")
-    self._debug("Summary: " + errors.pop())
+    self._debug("Summary: %s" % errors.pop())
 
     output = self._format_errors(map(self._fix_up_error, errors))
     if runner_cmd.returncode:
-      self._error("Error in: " + source_file + ("\n" + output if output else ""))
+      self._error("Error in: %s%s" % (source_file, "\n" + output if output else ""))
     elif output:
-      self._debug("Output: " + output)
+      self._debug("Output: %s" % output)
 
     self._clean_up()
 
