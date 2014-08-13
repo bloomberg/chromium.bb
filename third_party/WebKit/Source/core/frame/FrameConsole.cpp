@@ -37,6 +37,7 @@
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
+#include "core/workers/WorkerGlobalScopeProxy.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -109,6 +110,11 @@ void FrameConsole::unmute()
 {
     ASSERT(muteCount > 0);
     muteCount--;
+}
+
+void FrameConsole::adoptWorkerConsoleMessages(WorkerGlobalScopeProxy* proxy)
+{
+    InspectorInstrumentation::adoptWorkerConsoleMessages(m_frame.document(), proxy);
 }
 
 } // namespace blink

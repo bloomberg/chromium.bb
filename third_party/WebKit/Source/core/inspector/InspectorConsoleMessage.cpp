@@ -56,6 +56,7 @@ InspectorConsoleMessage::InspectorConsoleMessage(MessageSource source, MessageTy
     , m_column(0)
     , m_requestId(IdentifiersFactory::requestId(0))
     , m_timestamp(WTF::currentTime())
+    , m_workerProxy(nullptr)
 {
     autogenerateMetadata();
 }
@@ -71,6 +72,7 @@ InspectorConsoleMessage::InspectorConsoleMessage(bool shouldGenerateCallStack, M
     , m_column(column)
     , m_requestId(IdentifiersFactory::requestId(requestIdentifier))
     , m_timestamp(WTF::currentTime())
+    , m_workerProxy(nullptr)
 {
     autogenerateMetadata(shouldGenerateCallStack);
 }
@@ -87,6 +89,7 @@ InspectorConsoleMessage::InspectorConsoleMessage(MessageSource source, MessageTy
     , m_column(0)
     , m_requestId(IdentifiersFactory::requestId(requestIdentifier))
     , m_timestamp(WTF::currentTime())
+    , m_workerProxy(nullptr)
 {
     autogenerateMetadata(false);
 }
@@ -103,6 +106,7 @@ InspectorConsoleMessage::InspectorConsoleMessage(MessageSource source, MessageTy
     , m_column(0)
     , m_requestId(IdentifiersFactory::requestId(requestIdentifier))
     , m_timestamp(WTF::currentTime())
+    , m_workerProxy(nullptr)
 {
     autogenerateMetadata();
 }
@@ -179,6 +183,9 @@ static TypeBuilder::Console::ConsoleMessage::Level::Enum messageLevelValue(Messa
 
 void InspectorConsoleMessage::addToFrontend(InspectorFrontend::Console* frontend, InjectedScriptManager* injectedScriptManager, bool generatePreview)
 {
+    if (m_workerProxy)
+        return;
+
     RefPtr<TypeBuilder::Console::ConsoleMessage> jsonObj = TypeBuilder::Console::ConsoleMessage::create()
         .setSource(messageSourceValue(m_source))
         .setLevel(messageLevelValue(m_level))

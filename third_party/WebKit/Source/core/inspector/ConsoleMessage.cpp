@@ -14,6 +14,7 @@ ConsoleMessage::ConsoleMessage()
     , m_columnNumber(0)
     , m_scriptState(nullptr)
     , m_requestIdentifier(0)
+    , m_workerProxy(nullptr)
 {
 }
 
@@ -31,6 +32,7 @@ ConsoleMessage::ConsoleMessage(MessageSource source,
     , m_columnNumber(columnNumber)
     , m_scriptState(nullptr)
     , m_requestIdentifier(0)
+    , m_workerProxy(nullptr)
 {
 }
 

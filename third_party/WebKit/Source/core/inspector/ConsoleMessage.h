@@ -18,6 +18,7 @@ namespace blink {
 
 class ScriptCallStack;
 class ScriptState;
+class WorkerGlobalScopeProxy;
 
 class ConsoleMessage FINAL: public RefCountedWillBeGarbageCollectedFinalized<ConsoleMessage> {
 public:
@@ -43,6 +44,8 @@ public:
     MessageLevel level() const;
     const String& message() const;
     unsigned columnNumber() const;
+    void setWorkerId(WorkerGlobalScopeProxy* proxy) { m_workerProxy = proxy; }
+    WorkerGlobalScopeProxy* workerId() { return m_workerProxy; }
 
     void trace(Visitor*);
 
@@ -59,6 +62,7 @@ private:
     RefPtrWillBeMember<ScriptCallStack> m_callStack;
     ScriptState* m_scriptState;
     unsigned long m_requestIdentifier;
+    WorkerGlobalScopeProxy* m_workerProxy;
 };
 
 } // namespace WebCore

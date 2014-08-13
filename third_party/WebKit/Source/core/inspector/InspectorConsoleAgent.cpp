@@ -44,6 +44,7 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
+#include "core/workers/WorkerGlobalScopeProxy.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceResponse.h"
 #include "wtf/CurrentTime.h"
@@ -169,11 +170,22 @@ void InspectorConsoleAgent::clearFrontend()
 
 void InspectorConsoleAgent::addMessageToConsole(ConsoleMessage* consoleMessage)
 {
+    InspectorConsoleMessage* message;
     if (consoleMessage->callStack()) {
-        addConsoleMessage(adoptPtr(new InspectorConsoleMessage(consoleMessage->source(), LogMessageType, consoleMessage->level(), consoleMessage->message(), consoleMessage->callStack(), consoleMessage->requestIdentifier())));
+        message = new InspectorConsoleMessage(consoleMessage->source(), LogMessageType, consoleMessage->level(), consoleMessage->message(), consoleMessage->callStack(), consoleMessage->requestIdentifier());
     } else {
         bool shouldGenerateCallStack = m_frontend;
-        addConsoleMessage(adoptPtr(new InspectorConsoleMessage(shouldGenerateCallStack, consoleMessage->source(), LogMessageType, consoleMessage->level(), consoleMessage->message(), consoleMessage->url(), consoleMessage->lineNumber(), consoleMessage->columnNumber(), consoleMessage->scriptState(), consoleMessage->requestIdentifier())));
+        message = new InspectorConsoleMessage(shouldGenerateCallStack, consoleMessage->source(), LogMessageType, consoleMessage->level(), consoleMessage->message(), consoleMessage->url(), consoleMessage->lineNumber(), consoleMessage->columnNumber(), consoleMessage->scriptState(), consoleMessage->requestIdentifier());
+    }
+    message->setWorkerGlobalScopeProxy(consoleMessage->workerId());
+    addConsoleMessage(adoptPtr(message));
+}
+
+void InspectorConsoleAgent::adoptWorkerConsoleMessages(WorkerGlobalScopeProxy* proxy)
+{
+    for (size_t i = 0; i < m_consoleMessages.size(); i++) {
+        if (m_consoleMessages[i]->workerGlobalScopeProxy() == proxy)
+            m_consoleMessages[i]->setWorkerGlobalScopeProxy(nullptr);
     }
 }
 

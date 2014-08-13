@@ -57,6 +57,7 @@ class ScriptArguments;
 class ScriptCallStack;
 class ScriptProfile;
 class ThreadableLoaderClient;
+class WorkerGlobalScopeProxy;
 class XMLHttpRequest;
 
 typedef String ErrorString;
@@ -81,7 +82,7 @@ public:
 
     void addConsoleAPIMessageToConsole(MessageType, MessageLevel, const String& message, ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>, unsigned long requestIdentifier = 0);
     void addMessageToConsole(ConsoleMessage*);
-
+    void adoptWorkerConsoleMessages(WorkerGlobalScopeProxy*);
     Vector<unsigned> consoleMessageArgumentCounts();
 
     void consoleTime(ExecutionContext*, const String& title);

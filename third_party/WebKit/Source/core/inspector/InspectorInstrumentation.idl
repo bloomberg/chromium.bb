@@ -510,6 +510,10 @@ class ConsoleMessage;
 
     [Profiler, Inline=FastReturn]
     void consoleProfileEnd(ExecutionContext* context, const String& title);
+
+    //FIXME: remove when we move console message storage from InspectorConsoleAgent to FrameConsole
+    [Console]
+    void adoptWorkerConsoleMessages(ExecutionContext* context, WorkerGlobalScopeProxy* proxy);
 }
 
 interface InspectorOverrides {

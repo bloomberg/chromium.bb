@@ -46,6 +46,7 @@ class ScriptArguments;
 class ScriptCallFrame;
 class ScriptCallStack;
 class ScriptValue;
+class WorkerGlobalScopeProxy;
 
 class InspectorConsoleMessage {
     WTF_MAKE_NONCOPYABLE(InspectorConsoleMessage); WTF_MAKE_FAST_ALLOCATED;
@@ -58,6 +59,8 @@ public:
 
     void addToFrontend(InspectorFrontend::Console*, InjectedScriptManager*, bool generatePreview);
     void setTimestamp(double timestamp) { m_timestamp = timestamp; }
+    void setWorkerGlobalScopeProxy(WorkerGlobalScopeProxy* proxy) { m_workerProxy = proxy; }
+    WorkerGlobalScopeProxy* workerGlobalScopeProxy() { return m_workerProxy; }
 
     MessageType type() const { return m_type; }
 
@@ -80,6 +83,7 @@ private:
     unsigned m_column;
     String m_requestId;
     double m_timestamp;
+    WorkerGlobalScopeProxy* m_workerProxy;
 };
 
 } // namespace blink

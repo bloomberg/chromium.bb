@@ -86,6 +86,7 @@ protected:
 
 private:
     static void workerObjectDestroyedInternal(ExecutionContext*, WorkerMessagingProxy*);
+    void terminateInternally();
 
     RefPtrWillBePersistent<ExecutionContext> m_executionContext;
     OwnPtr<WorkerObjectProxy> m_workerObjectProxy;
