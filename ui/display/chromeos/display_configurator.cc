@@ -22,9 +22,15 @@ namespace {
 
 typedef std::vector<const DisplayMode*> DisplayModeList;
 
-// The delay to perform configuration after RRNotify.  See the comment
-// in |Dispatch()|.
+// The delay to perform configuration after RRNotify. See the comment for
+// |configure_timer_|.
 const int kConfigureDelayMs = 500;
+
+// The delay spent before reading the display configuration after coming out of
+// suspend. While coming out of suspend the display state may be updating. This
+// is used to wait until the hardware had a chance to update the display state
+// such that we read an up to date state.
+const int kResumeDelayMs = 500;
 
 // Returns a string describing |state|.
 std::string DisplayPowerStateToString(chromeos::DisplayPowerState state) {
@@ -89,6 +95,12 @@ int GetDisplayPower(
 
 }  // namespace
 
+
+const int DisplayConfigurator::kSetDisplayPowerNoFlags = 0;
+const int DisplayConfigurator::kSetDisplayPowerForceProbe = 1 << 0;
+const int
+DisplayConfigurator::kSetDisplayPowerOnlyIfSingleInternalDisplay = 1 << 1;
+
 DisplayConfigurator::DisplayState::DisplayState()
     : display(NULL),
       touch_device_id(0),
@@ -96,10 +108,9 @@ DisplayConfigurator::DisplayState::DisplayState()
       mirror_mode(NULL) {}
 
 bool DisplayConfigurator::TestApi::TriggerConfigureTimeout() {
-  if (configurator_->configure_timer_.get() &&
-      configurator_->configure_timer_->IsRunning()) {
-    configurator_->configure_timer_.reset();
-    configurator_->ConfigureDisplays();
+  if (configurator_->configure_timer_.IsRunning()) {
+    configurator_->configure_timer_.user_task().Run();
+    configurator_->configure_timer_.Stop();
     return true;
   } else {
     return false;
@@ -437,8 +448,7 @@ bool DisplayConfigurator::SetDisplayPower(
   VLOG(1) << "SetDisplayPower: power_state="
           << DisplayPowerStateToString(power_state) << " flags=" << flags
           << ", configure timer="
-          << ((configure_timer_.get() && configure_timer_->IsRunning()) ?
-                  "Running" : "Stopped");
+          << (configure_timer_.IsRunning() ? "Running" : "Stopped");
   if (power_state == power_state_ && !(flags & kSetDisplayPowerForceProbe))
     return true;
 
@@ -499,11 +509,15 @@ bool DisplayConfigurator::SetDisplayMode(MultipleDisplayState new_state) {
 void DisplayConfigurator::OnConfigurationChanged() {
   // Configure displays with |kConfigureDelayMs| delay,
   // so that time-consuming ConfigureDisplays() won't be called multiple times.
-  if (configure_timer_.get()) {
-    configure_timer_->Reset();
+  if (configure_timer_.IsRunning()) {
+    // Note: when the timer is running it is possible that a different task
+    // (SetDisplayPower()) is scheduled. In these cases, prefer the already
+    // scheduled task to ConfigureDisplays() since ConfigureDisplays() performs
+    // only basic configuration while SetDisplayPower() will perform additional
+    // operations.
+    configure_timer_.Reset();
   } else {
-    configure_timer_.reset(new base::OneShotTimer<DisplayConfigurator>());
-    configure_timer_->Start(
+    configure_timer_.Start(
         FROM_HERE,
         base::TimeDelta::FromMilliseconds(kConfigureDelayMs),
         this,
@@ -539,7 +553,13 @@ void DisplayConfigurator::SuspendDisplays() {
 void DisplayConfigurator::ResumeDisplays() {
   // Force probing to ensure that we pick up any changes that were made
   // while the system was suspended.
-  SetDisplayPower(power_state_, kSetDisplayPowerForceProbe);
+  configure_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kResumeDelayMs),
+      base::Bind(base::IgnoreResult(&DisplayConfigurator::SetDisplayPower),
+                 base::Unretained(this),
+                 power_state_,
+                 kSetDisplayPowerForceProbe));
 }
 
 void DisplayConfigurator::UpdateCachedDisplays() {
@@ -687,8 +707,6 @@ bool DisplayConfigurator::FindMirrorMode(DisplayState* internal_display,
 }
 
 void DisplayConfigurator::ConfigureDisplays() {
-  configure_timer_.reset();
-
   if (!configure_display_)
     return;
 

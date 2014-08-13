@@ -117,7 +117,7 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
 
     // If |configure_timer_| is started, stops the timer, runs
     // ConfigureDisplays(), and returns true; returns false otherwise.
-    bool TriggerConfigureTimeout();
+    bool TriggerConfigureTimeout() WARN_UNUSED_RESULT;
 
    private:
     DisplayConfigurator* configurator_;  // not owned
@@ -126,12 +126,12 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   };
 
   // Flags that can be passed to SetDisplayPower().
-  static const int kSetDisplayPowerNoFlags = 0;
+  static const int kSetDisplayPowerNoFlags;
   // Configure displays even if the passed-in state matches |power_state_|.
-  static const int kSetDisplayPowerForceProbe = 1 << 0;
+  static const int kSetDisplayPowerForceProbe;
   // Do not change the state if multiple displays are connected or if the
   // only connected display is external.
-  static const int kSetDisplayPowerOnlyIfSingleInternalDisplay = 1 << 1;
+  static const int kSetDisplayPowerOnlyIfSingleInternalDisplay;
 
   // Gap between screens so cursor at bottom of active display doesn't
   // partially appear on top of inactive display. Higher numbers guard
@@ -348,9 +348,10 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
 
   ObserverList<Observer> observers_;
 
-  // The timer to delay configuring displays. See also the comments in
-  // Dispatch().
-  scoped_ptr<base::OneShotTimer<DisplayConfigurator> > configure_timer_;
+  // The timer to delay configuring displays. This is used to aggregate multiple
+  // display configuration events when they are reported in short time spans.
+  // See comment for NativeDisplayEventDispatcherX11 for more details.
+  base::OneShotTimer<DisplayConfigurator> configure_timer_;
 
   // Id for next display protection client.
   ContentProtectionClientId next_display_protection_client_id_;

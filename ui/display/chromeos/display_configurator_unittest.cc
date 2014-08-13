@@ -426,7 +426,7 @@ class DisplayConfiguratorTest : public testing::Test {
 
     if (send_events) {
       configurator_.OnConfigurationChanged();
-      test_api_.TriggerConfigureTimeout();
+      EXPECT_TRUE(test_api_.TriggerConfigureTimeout());
     }
   }
 
@@ -848,6 +848,7 @@ TEST_F(DisplayConfiguratorTest, SuspendAndResume) {
   configurator_.SuspendDisplays();
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
   configurator_.ResumeDisplays();
+  EXPECT_TRUE(test_api_.TriggerConfigureTimeout());
   EXPECT_EQ(
       JoinActions(
           kGrab,
@@ -884,6 +885,7 @@ TEST_F(DisplayConfiguratorTest, SuspendAndResume) {
       log_->GetActionsAndClear());
 
   configurator_.ResumeDisplays();
+  EXPECT_TRUE(test_api_.TriggerConfigureTimeout());
   EXPECT_EQ(
       JoinActions(
           kGrab,
@@ -929,6 +931,7 @@ TEST_F(DisplayConfiguratorTest, SuspendAndResume) {
   // pick up the change.
   UpdateOutputs(1, false);
   configurator_.ResumeDisplays();
+  EXPECT_TRUE(test_api_.TriggerConfigureTimeout());
   EXPECT_EQ(
       JoinActions(
           kGrab,
