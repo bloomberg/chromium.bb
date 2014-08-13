@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/system.gni")
+
 component("input_events") {
   deps = [
     "//base",
@@ -12,6 +14,7 @@ component("input_events") {
     "//mojo/services/public/interfaces/geometry",
     "//mojo/services/public/cpp/geometry",
   ]
+  deps += mojo_system_for_component
 
   defines = [
     "MOJO_INPUT_EVENTS_IMPLEMENTATION",
@@ -22,8 +25,4 @@ component("input_events") {
     "input_events_type_converters.h",
     "mojo_input_events_export.h",
   ]
-
-  if (is_component_build) {
-    deps += [ "//mojo/system" ]
-  }
 }

@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/system.gni")
+
 component("view_manager") {
   deps = [
     "//base",
@@ -30,6 +32,7 @@ component("view_manager") {
     "//ui/gl",
     "//webkit/common/gpu",
   ]
+  deps += mojo_system_for_component
 
   defines = [
     "MOJO_VIEW_MANAGER_IMPLEMENTATION",
@@ -66,8 +69,4 @@ component("view_manager") {
     "window_tree_host_impl.cc",
     "window_tree_host_impl.h",
   ]
-
-  if (is_component_build) {
-    deps += [ "//mojo/system" ]
-  }
 }

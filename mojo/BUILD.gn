@@ -8,6 +8,7 @@ group("mojo") {
     "//mojo/public",
     "//mojo/services",
     "//mojo/shell:mojo_shell",
+    "//mojo/shell:mojo_shell_tests",
   ]
 }
 

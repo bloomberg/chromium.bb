@@ -379,16 +379,16 @@ source_set("browser") {
         "compositor/software_output_device_x11.h",
       ]
     }
-    deps += [ "//ui/compositor" ]
-  }
 
-  if (!use_ozone) {
-    sources -= [
-      "compositor/overlay_candidate_validator_ozone.cc",
-      "compositor/overlay_candidate_validator_ozone.h",
-      "compositor/software_output_device_ozone.cc",
-      "compositor/software_output_device_ozone.h",
-    ]
+    if (!use_ozone) {
+      sources -= [
+        "compositor/overlay_candidate_validator_ozone.cc",
+        "compositor/overlay_candidate_validator_ozone.h",
+        "compositor/software_output_device_ozone.cc",
+        "compositor/software_output_device_ozone.h",
+      ]
+    }
+    deps += [ "//ui/compositor" ]
   }
 
   if (enable_web_speech) {

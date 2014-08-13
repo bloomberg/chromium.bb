@@ -33,11 +33,12 @@ source_set("lib") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//base:base_static",
+    "//mojo/application_manager",
     "//mojo/common",
     "//mojo/gles2",
     "//mojo/public/cpp/application:chromium",
+    "//mojo/public/gles2",
     "//mojo/public/interfaces/application",
-    "//mojo/application_manager",
     "//mojo/services/native_viewport",
     "//mojo/services/public/interfaces/native_viewport",
     "//mojo/services/public/interfaces/network",
@@ -102,7 +103,6 @@ source_set("lib") {
     deps += [
       # These are only necessary as long as we hard code use of ViewManager.
       "//skia",
-      "//mojo/public/gles2",
       "//mojo/services/view_manager",
       "//mojo/services/public/interfaces/view_manager",
     ]
@@ -123,4 +123,43 @@ mojom("external_service_bindings") {
   sources = [
     "external_service.mojom"
   ]
+}
+
+test("mojo_shell_tests") {
+  deps = [
+    ":lib",
+    "//base",
+    "//base:i18n",
+    "//base/test:test_support",
+    "//testing/gtest",
+    "//net:test_support",
+    "//url",
+    "//mojo/application_manager",
+    "//mojo/services/test_service:bindings",
+    "//mojo/common",
+    "//mojo/environment:chromium",
+    "//mojo/system",
+  ]
+
+  datadeps = [
+    "//mojo/services/test_service:mojo_test_app",
+    "//mojo/services/test_service:mojo_test_request_tracker_app",
+  ]
+
+  sources = [
+    "child_process_host_unittest.cc",
+    "dynamic_application_loader_unittest.cc",
+    "in_process_dynamic_service_runner_unittest.cc",
+    "shell_test_base.cc",
+    "shell_test_base.h",
+    "shell_test_base_unittest.cc",
+    "shell_test_main.cc",
+  ]
+
+  if (is_android) {
+    deps += [
+      # TODO(GYP):
+      #'../testing/android/native_test.gyp:native_test_native_code',
+    ]
+  }
 }

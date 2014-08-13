@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/system.gni")
+
 component("geometry") {
   output_name = "mojo_geometry_lib"
 
@@ -12,6 +14,7 @@ component("geometry") {
     "//mojo/environment:chromium",
     "//mojo/services/public/interfaces/geometry",
   ]
+  deps += mojo_system_for_component
 
   forward_dependent_configs_from = [ "//ui/gfx" ]
 
@@ -24,8 +27,4 @@ component("geometry") {
     "geometry_type_converters.h",
     "mojo_geometry_export.h",
   ]
-
-  if (is_component_build) {
-    deps += [ "//mojo/system" ]
-  }
 }

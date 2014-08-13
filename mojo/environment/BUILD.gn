@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP version: mojo.gyp:mojo_environment_chromium
+# GYP version: mojo_base.gyp:mojo_environment_chromium
 source_set("chromium") {
   output_name = "mojo_environment_chromium"
 
@@ -22,7 +22,7 @@ source_set("chromium") {
   ]
 }
 
-# GYP version: mojo.gyp:mojo_environment_chromium_impl
+# GYP version: mojo_base.gyp:mojo_environment_chromium_impl
 component("chromium_impl") {
   output_name = "mojo_environment_impl"
   visibility = "//mojo/*"

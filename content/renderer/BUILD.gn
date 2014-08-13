@@ -111,7 +111,6 @@ source_set("renderer") {
       "media/media_stream_audio_renderer.cc",
       "media/media_stream_audio_renderer.h",
       "media/media_stream_center.h",
-      "media/media_stream_client.h",
       "media/media_stream_constraints_util.cc",
       "media/media_stream_constraints_util.h",
       "media/media_stream_dispatcher.h",

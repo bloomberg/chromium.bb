@@ -263,6 +263,7 @@
       ],
     },
     {
+      # GN version: //mojo/shell:mojo_shell_tests
       'target_name': 'mojo_shell_tests',
       'type': '<(gtest_target_type)',
       'dependencies': [

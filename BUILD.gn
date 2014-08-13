@@ -162,7 +162,6 @@ group("root") {
     ]
 
     deps -= [
-      "//cc",
       "//chrome/browser",  # Blocked on content.
       "//chrome/browser/devtools",  # Blocked on content.
       "//chrome/browser/ui",  # Blocked on content.
@@ -179,12 +178,14 @@ group("root") {
       "//extensions/common",
       "//extensions/common/api",
       "//extensions/renderer",
-      "//mojo", # Blocked on GN toolchain support: https://codereview.chromium.org/428633006/
       "//pdf",  # Not compiled on Android in GYP yet, either.
       "//ppapi:ppapi_c",
       "//sandbox",
       "//third_party/libusb",
       "//ui/keyboard",  # Blocked on content.
+
+      # Blocked on neon stuff in vp8
+      "//third_party/WebKit/public:all_blink",
 
       # Seems to not be compiled on Android. Otherwise it will need a config.h.
       "//third_party/libxslt",
@@ -200,9 +201,6 @@ group("root") {
       # Fails on Android for unknown reasons.
       "//third_party/flac",
       "//breakpad:symupload",
-
-      # TODO(brettw) make Blink work on Android.
-      "//third_party/WebKit/public:all_blink",
 
       # Not tested on Android yet:
       "//google_apis/gcm",

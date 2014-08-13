@@ -62,7 +62,7 @@ static_library("libxslt") {
   configs += [ "//build/config/compiler:no_chromium_code" ]
   direct_dependent_configs = [ ":libxslt_config" ]
 
-  if (is_linux) {
+  if (is_linux || is_android) {
     include_dirs = [ "linux" ]
   } else if (is_win) {
     include_dirs = [ "win32" ]

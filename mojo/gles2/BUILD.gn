@@ -3,7 +3,17 @@
 # found in the LICENSE file.
 
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//mojo/system.gni")
 
+config("mojo_use_gles2") {
+  defines = [ "MOJO_USE_GLES2_IMPL" ]
+}
+
+config("gles2_use_mojo") {
+  defines = [ "USE_MOJO_GLES2" ]
+}
+
+# GYP version: mojo/mojo_base.gyp:mojo_gles2_impl
 component("gles2") {
   output_name = "mojo_gles2_impl"
 
@@ -18,12 +28,19 @@ component("gles2") {
     "//mojo/services/gles2:interfaces",
     "//mojo/environment:chromium",
   ]
+  deps += mojo_system_for_component
 
-  if (is_component_build) {
-    deps += [ "//mojo/system" ]
-  }
+  defines = [
+    "MOJO_GLES2_IMPL_IMPLEMENTATION",
+    "MOJO_GLES2_IMPLEMENTATION",
+  ]
 
-  defines = [ "MOJO_GLES2_IMPL_IMPLEMENTATION" ]
+  configs += [
+    ":gles2_use_mojo",
+    ":mojo_use_gles2",
+  ]
+  direct_dependent_configs = [ ":gles2_use_mojo" ]
+  all_dependent_configs = [ ":mojo_use_gles2" ]
 
   sources = [
     "command_buffer_client_impl.cc",

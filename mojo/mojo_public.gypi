@@ -251,6 +251,7 @@
       ],
     },
     {
+      # GN version: //mojo/public/cpp/application:standalone"
       'target_name': 'mojo_application_standalone',
       'type': 'static_library',
       'sources': [
