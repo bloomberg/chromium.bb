@@ -6,16 +6,17 @@
 #define Scheduler_h
 
 #include "platform/PlatformExport.h"
+#include "platform/TraceLocation.h"
+#include "wtf/DoubleBufferedDeque.h"
 #include "wtf/Functional.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/ThreadingPrimitives.h"
 
 namespace blink {
 class WebThread;
 }
 
 namespace blink {
-
-class TraceLocation;
 
 // The scheduler is an opinionated gateway for arranging work to be run on the
 // main thread. It decides which tasks get priority over others based on a
@@ -36,12 +37,12 @@ public:
     void postInputTask(const TraceLocation&, const Task&);
     void postCompositorTask(const TraceLocation&, const Task&);
     void postTask(const TraceLocation&, const Task&); // For generic (low priority) tasks.
-    void postIdleTask(const IdleTask&); // For non-critical tasks which may be reordered relative to other task types.
+    void postIdleTask(const TraceLocation&, const IdleTask&); // For non-critical tasks which may be reordered relative to other task types.
 
     // Returns true if there is high priority work pending on the main thread
     // and the caller should yield to let the scheduler service that work.
-    // Can be called on the main thread.
-    bool shouldYieldForHighPriorityWork();
+    // Can be called on any thread.
+    bool shouldYieldForHighPriorityWork() const;
 
     // The shared timer can be used to schedule a periodic callback which may
     // get preempted by higher priority work.
@@ -50,19 +51,49 @@ public:
     void stopSharedTimer();
 
 private:
+    class MainThreadPendingTaskRunner;
+    class MainThreadPendingHighPriorityTaskRunner;
+    friend class MainThreadPendingTaskRunner;
+    friend class MainThreadPendingHighPriorityTaskRunner;
+
     Scheduler();
     ~Scheduler();
 
-    void scheduleTask(const TraceLocation&, const Task&);
-    void scheduleIdleTask(const IdleTask&);
+    void scheduleIdleTask(const TraceLocation&, const IdleTask&);
 
     static void sharedTimerAdapter();
     void tickSharedTimer();
 
-    static Scheduler* s_sharedScheduler;
-    blink::WebThread* m_mainThread;
+    bool hasPendingHighPriorityWork() const;
+    void runHighPriorityTasks();
 
+    static Scheduler* s_sharedScheduler;
+
+    class TracedTask {
+    public:
+        TracedTask(const Task& task, const TraceLocation& location)
+            : m_task(task)
+            , m_location(location) { }
+
+        void run();
+
+    private:
+        Task m_task;
+        TraceLocation m_location;
+    };
+
+    // Should only be accessed from the main thread.
     void (*m_sharedTimerFunction)();
+
+    // These members can be accessed from any thread.
+    WebThread* m_mainThread;
+
+    // This mutex protects calls to the pending task queues.
+    Mutex m_pendingTasksMutex;
+    DoubleBufferedDeque<TracedTask> m_pendingInputTasks;
+    DoubleBufferedDeque<TracedTask> m_pendingCompositorTasks;
+
+    volatile int m_highPriorityTaskCount;
 };
 
 } // namespace blink

@@ -5,59 +5,93 @@
 #include "config.h"
 #include "platform/scheduler/Scheduler.h"
 
+#include "platform/PlatformThreadData.h"
 #include "platform/Task.h"
+#include "platform/ThreadTimers.h"
 #include "platform/TraceEvent.h"
-#include "platform/TraceLocation.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebThread.h"
+#include "wtf/MainThread.h"
+#include "wtf/ThreadingPrimitives.h"
+
 
 namespace blink {
 
 namespace {
 
-class MainThreadTaskAdapter : public blink::WebThread::Task {
+// Can be created from any thread.
+// Note if the scheduler gets shutdown, this may be run after.
+class MainThreadIdleTaskAdapter : public WebThread::Task {
 public:
-    explicit MainThreadTaskAdapter(const TraceLocation& location, const Scheduler::Task& task)
-        : m_location(location)
-        , m_task(task)
-    {
-    }
-
-    // WebThread::Task implementation.
-    virtual void run() OVERRIDE
-    {
-        TRACE_EVENT2("blink", "MainThreadTaskAdapter::run",
-            "src_file", m_location.fileName(),
-            "src_func", m_location.functionName());
-        m_task();
-    }
-
-private:
-    const TraceLocation m_location;
-    Scheduler::Task m_task;
-};
-
-class MainThreadIdleTaskAdapter : public blink::WebThread::Task {
-public:
-    MainThreadIdleTaskAdapter(const Scheduler::IdleTask& idleTask, double allottedTimeMs)
+    MainThreadIdleTaskAdapter(const Scheduler::IdleTask& idleTask, double allottedTimeMs, const TraceLocation& location)
         : m_idleTask(idleTask)
         , m_allottedTimeMs(allottedTimeMs)
+        , m_location(location)
     {
     }
 
     // WebThread::Task implementation.
     virtual void run() OVERRIDE
     {
-        TRACE_EVENT1("blink", "MainThreadIdleTaskAdapter::run", "allottedTime", m_allottedTimeMs);
+        TRACE_EVENT2("blink", "MainThreadIdleTaskAdapter::run",
+            "src_file", m_location.fileName(),
+            "src_func", m_location.functionName());
         m_idleTask(m_allottedTimeMs);
     }
 
 private:
     Scheduler::IdleTask m_idleTask;
     double m_allottedTimeMs;
+    TraceLocation m_location;
 };
 
-}
+} // namespace
+
+// Typically only created from compositor or render threads.
+// Note if the scheduler gets shutdown, this may be run after.
+class Scheduler::MainThreadPendingHighPriorityTaskRunner : public WebThread::Task {
+public:
+    MainThreadPendingHighPriorityTaskRunner()
+    {
+        ASSERT(Scheduler::shared());
+    }
+
+    // WebThread::Task implementation.
+    virtual void run() OVERRIDE
+    {
+        Scheduler* scheduler = Scheduler::shared();
+        // FIXME: This check should't be necessary, tasks should not outlive blink.
+        ASSERT(scheduler);
+        if (!scheduler)
+            return;
+        scheduler->runHighPriorityTasks();
+    }
+};
+
+
+// Can be created from any thread.
+// Note if the scheduler gets shutdown, this may be run after.
+class Scheduler::MainThreadPendingTaskRunner : public WebThread::Task {
+public:
+    MainThreadPendingTaskRunner(
+        const Scheduler::Task& task, const TraceLocation& location)
+        : m_task(task, location)
+    {
+        ASSERT(Scheduler::shared());
+    }
+
+    // WebThread::Task implementation.
+    virtual void run() OVERRIDE
+    {
+        Scheduler* scheduler = Scheduler::shared();
+        // FIXME: This check should't be necessary, tasks should not outlive blink.
+        ASSERT(scheduler);
+        if (scheduler)
+            Scheduler::shared()->runHighPriorityTasks();
+        m_task.run();
+    }
+
+    Scheduler::TracedTask m_task;
+};
 
 Scheduler* Scheduler::s_sharedScheduler = nullptr;
 
@@ -78,50 +112,89 @@ Scheduler* Scheduler::shared()
 }
 
 Scheduler::Scheduler()
-    : m_mainThread(blink::Platform::current()->currentThread())
-    , m_sharedTimerFunction(nullptr)
+    : m_sharedTimerFunction(nullptr)
+    , m_mainThread(blink::Platform::current()->currentThread())
+    , m_highPriorityTaskCount(0)
 {
 }
 
 Scheduler::~Scheduler()
 {
+    while (hasPendingHighPriorityWork()) {
+        runHighPriorityTasks();
+    }
 }
 
-void Scheduler::scheduleTask(const TraceLocation& location, const Task& task)
-{
-    m_mainThread->postTask(new MainThreadTaskAdapter(location, task));
-}
-
-void Scheduler::scheduleIdleTask(const IdleTask& idleTask)
+void Scheduler::scheduleIdleTask(const TraceLocation& location, const IdleTask& idleTask)
 {
     // TODO: send a real allottedTime here.
-    m_mainThread->postTask(new MainThreadIdleTaskAdapter(idleTask, 0));
+    m_mainThread->postTask(new MainThreadIdleTaskAdapter(idleTask, 0, location));
 }
 
 void Scheduler::postTask(const TraceLocation& location, const Task& task)
 {
-    scheduleTask(location, task);
+    m_mainThread->postTask(new MainThreadPendingTaskRunner(task, location));
 }
 
 void Scheduler::postInputTask(const TraceLocation& location, const Task& task)
 {
-    scheduleTask(location, task);
+    Locker<Mutex> lock(m_pendingTasksMutex);
+    m_pendingInputTasks.append(TracedTask(task, location));
+    atomicIncrement(&m_highPriorityTaskCount);
+    m_mainThread->postTask(new MainThreadPendingHighPriorityTaskRunner());
 }
 
 void Scheduler::postCompositorTask(const TraceLocation& location, const Task& task)
 {
-    scheduleTask(location, task);
+    Locker<Mutex> lock(m_pendingTasksMutex);
+    m_pendingCompositorTasks.append(TracedTask(task, location));
+    atomicIncrement(&m_highPriorityTaskCount);
+    m_mainThread->postTask(new MainThreadPendingHighPriorityTaskRunner());
 }
 
-void Scheduler::postIdleTask(const IdleTask& idleTask)
+void Scheduler::postIdleTask(const TraceLocation& location, const IdleTask& idleTask)
 {
-    scheduleIdleTask(idleTask);
+    scheduleIdleTask(location, idleTask);
 }
 
 void Scheduler::tickSharedTimer()
 {
     TRACE_EVENT0("blink", "Scheduler::tickSharedTimer");
+
+    // Run any high priority tasks that are queued up, otherwise the blink timers will yield immediately.
+    runHighPriorityTasks();
     m_sharedTimerFunction();
+
+    // The blink timers may have just yielded, so run any high priority tasks that where queued up
+    // while the blink timers were executing.
+    runHighPriorityTasks();
+}
+
+void Scheduler::runHighPriorityTasks()
+{
+    ASSERT(isMainThread());
+    TRACE_EVENT0("blink", "Scheduler::runHighPriorityTasks");
+
+    // These locks guard against another thread posting input or compositor tasks while we swap the buffers.
+    // One the buffers have been swapped we can safely access the returned deque without having to lock.
+    m_pendingTasksMutex.lock();
+    Deque<TracedTask>& inputTasks = m_pendingInputTasks.swapBuffers();
+    Deque<TracedTask>& compositorTasks = m_pendingCompositorTasks.swapBuffers();
+    m_pendingTasksMutex.unlock();
+
+    int highPriorityTasksExecuted = 0;
+    while (!inputTasks.isEmpty()) {
+        inputTasks.takeFirst().run();
+        highPriorityTasksExecuted++;
+    }
+
+    while (!compositorTasks.isEmpty()) {
+        compositorTasks.takeFirst().run();
+        highPriorityTasksExecuted++;
+    }
+
+    int highPriorityTaskCount = atomicSubtract(&m_highPriorityTaskCount, highPriorityTasksExecuted);
+    ASSERT_UNUSED(highPriorityTaskCount, highPriorityTaskCount >= 0);
 }
 
 void Scheduler::sharedTimerAdapter()
@@ -145,9 +218,27 @@ void Scheduler::stopSharedTimer()
     blink::Platform::current()->stopSharedTimer();
 }
 
-bool Scheduler::shouldYieldForHighPriorityWork()
+bool Scheduler::shouldYieldForHighPriorityWork() const
 {
-    return false;
+    return hasPendingHighPriorityWork();
+}
+
+bool Scheduler::hasPendingHighPriorityWork() const
+{
+    // This method is expected to be run on the main thread, but the high priority tasks will be posted by
+    // other threads. We could use locks here, but this function is (sometimes) called a lot by
+    // ThreadTimers::sharedTimerFiredInternal so we decided to use atomics + barrier loads here which
+    // should be cheaper.
+    // NOTE it's possible the barrier read is overkill here, since delayed yielding isn't a big deal.
+    return acquireLoad(&m_highPriorityTaskCount) != 0;
+}
+
+void Scheduler::TracedTask::run()
+{
+    TRACE_EVENT2("blink", "TracedTask::run",
+        "src_file", m_location.fileName(),
+        "src_func", m_location.functionName());
+    m_task();
 }
 
 } // namespace blink
