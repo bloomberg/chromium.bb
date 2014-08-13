@@ -22,7 +22,9 @@
     "identity",
     "notifications",
     "easyUnlockPrivate",
-    "systemPrivate"
+    "systemPrivate",
+    "alarms",
+    "gcm"
   ],
 
   "app": {
