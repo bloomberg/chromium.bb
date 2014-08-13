@@ -106,4 +106,44 @@ public interface WebContents {
      */
     public void selectWordAroundCaret();
 
+    /**
+     * Get the URL of the current page.
+     *
+     * @return The URL of the current page.
+     */
+    public String getUrl();
+
+    /**
+     * Get the InCognito state of WebContents.
+     *
+     * @return whether this WebContents is in InCognito mode or not
+     */
+    public boolean isIncognito();
+
+    /**
+     * Resumes the response which is deferred during start.
+     */
+    public void resumeResponseDeferredAtStart();
+
+    /**
+     * Set pending Navigation for transition testing on this WebContents.
+     */
+    public void setHasPendingNavigationTransitionForTesting();
+
+    /**
+     * Set delegate for notifying navigation transition.
+     */
+    public void setNavigationTransitionDelegate(NavigationTransitionDelegate delegate);
+
+    /**
+     * Inserts the provided markup sandboxed into the frame.
+     */
+    public void setupTransitionView(String markup);
+
+    /**
+     * Hides transition elements specified by the selector, and activates any
+     * exiting-transition stylesheets.
+     */
+    public void beginExitTransition(String cssSelector);
+
 }

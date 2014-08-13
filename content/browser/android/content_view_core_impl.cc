@@ -825,7 +825,8 @@ scoped_refptr<cc::Layer> ContentViewCoreImpl::GetLayer() const {
 // Methods called from Java via JNI
 // ----------------------------------------------------------------------------
 
-void ContentViewCoreImpl::SelectPopupMenuItems(JNIEnv* env, jobject obj,
+void ContentViewCoreImpl::SelectPopupMenuItems(JNIEnv* env,
+                                               jobject obj,
                                                jintArray indices) {
   RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
       web_contents_->GetRenderViewHost());
@@ -899,15 +900,6 @@ void ContentViewCoreImpl::LoadUrl(
   params.is_renderer_initiated = is_renderer_initiated;
 
   LoadUrl(params);
-}
-
-ScopedJavaLocalRef<jstring> ContentViewCoreImpl::GetURL(
-    JNIEnv* env, jobject) const {
-  return ConvertUTF8ToJavaString(env, GetWebContents()->GetURL().spec());
-}
-
-jboolean ContentViewCoreImpl::IsIncognito(JNIEnv* env, jobject obj) {
-  return GetWebContents()->GetBrowserContext()->IsOffTheRecord();
 }
 
 WebContents* ContentViewCoreImpl::GetWebContents() const {
@@ -1512,30 +1504,6 @@ void ContentViewCoreImpl::ExtractSmartClipData(JNIEnv* env,
       GetWebContents()->GetRoutingID(), rect));
 }
 
-void ContentViewCoreImpl::ResumeResponseDeferredAtStart(JNIEnv* env,
-                                                        jobject obj) {
-  static_cast<WebContentsImpl*>(GetWebContents())->
-      ResumeResponseDeferredAtStart();
-}
-
-void ContentViewCoreImpl::SetHasPendingNavigationTransitionForTesting(
-    JNIEnv* env,
-    jobject obj) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalWebPlatformFeatures);
-  RenderFrameHost* frame = static_cast<WebContentsImpl*>(GetWebContents())->
-      GetMainFrame();
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          &TransitionRequestManager::AddPendingTransitionRequestData,
-          base::Unretained(TransitionRequestManager::GetInstance()),
-          frame->GetProcess()->GetID(),
-          frame->GetRoutingID(),
-          "*", "", ""));
-}
-
 jint ContentViewCoreImpl::GetCurrentRenderProcessId(JNIEnv* env, jobject obj) {
   return GetRenderProcessIdFromRenderViewHost(
       web_contents_->GetRenderViewHost());
@@ -1545,22 +1513,6 @@ void ContentViewCoreImpl::SetBackgroundOpaque(JNIEnv* env, jobject jobj,
     jboolean opaque) {
   if (GetRenderWidgetHostViewAndroid())
     GetRenderWidgetHostViewAndroid()->SetBackgroundOpaque(opaque);
-}
-
-void ContentViewCoreImpl::SetupTransitionView(
-    JNIEnv* env, jobject jobj, jstring markup) {
-  if (!GetWebContents()) return;
-  GetWebContents()->GetMainFrame()->Send(new FrameMsg_SetupTransitionView(
-      GetWebContents()->GetMainFrame()->GetRoutingID(),
-      ConvertJavaStringToUTF8(env, markup)));
-}
-
-void ContentViewCoreImpl::BeginExitTransition(
-    JNIEnv* env, jobject jobj, jstring css_selector) {
-  if (!GetWebContents()) return;
-  GetWebContents()->GetMainFrame()->Send(new FrameMsg_BeginExitTransition(
-      GetWebContents()->GetMainFrame()->GetRoutingID(),
-      ConvertJavaStringToUTF8(env, css_selector)));
 }
 
 void ContentViewCoreImpl::RequestTextSurroundingSelection(
@@ -1578,65 +1530,6 @@ void ContentViewCoreImpl::RequestTextSurroundingSelection(
     focused_frame->Send(new FrameMsg_TextSurroundingSelectionRequest(
         focused_frame->GetRoutingID(), max_length));
   }
-}
-
-void ContentViewCoreImpl::DidDeferAfterResponseStarted(
-    const TransitionLayerData& transition_data) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj(java_ref_.get(env));
-  if (obj.is_null())
-    return;
-
-  std::vector<GURL> entering_stylesheets;
-  std::string transition_color;
-  if (transition_data.response_headers) {
-    TransitionRequestManager::ParseTransitionStylesheetsFromHeaders(
-        transition_data.response_headers, entering_stylesheets,
-        transition_data.request_url);
-
-    transition_data.response_headers->EnumerateHeader(
-        NULL, "X-Transition-Entering-Color", &transition_color);
-  }
-
-  ScopedJavaLocalRef<jstring> jstring_markup(ConvertUTF8ToJavaString(
-      env, transition_data.markup));
-
-  ScopedJavaLocalRef<jstring> jstring_css_selector(ConvertUTF8ToJavaString(
-      env, transition_data.css_selector));
-
-  ScopedJavaLocalRef<jstring> jstring_transition_color(ConvertUTF8ToJavaString(
-      env, transition_color));
-
-  Java_ContentViewCore_didDeferAfterResponseStarted(
-      env, obj.obj(), jstring_markup.obj(), jstring_css_selector.obj(),
-      jstring_transition_color.obj());
-
-  std::vector<GURL>::const_iterator iter = entering_stylesheets.begin();
-  for (; iter != entering_stylesheets.end(); ++iter) {
-    ScopedJavaLocalRef<jstring> jstring_url(ConvertUTF8ToJavaString(
-        env, iter->spec()));
-    Java_ContentViewCore_addEnteringStylesheetToTransition(
-        env, obj.obj(), jstring_url.obj());
-  }
-}
-
-bool ContentViewCoreImpl::WillHandleDeferAfterResponseStarted() {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return false;
-
-  return Java_ContentViewCore_willHandleDeferAfterResponseStarted(env,
-                                                                  obj.obj());
-}
-
-void ContentViewCoreImpl::DidStartNavigationTransitionForFrame(int64 frame_id) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj(java_ref_.get(env));
-  if (obj.is_null())
-    return;
-  Java_ContentViewCore_didStartNavigationTransitionForFrame(
-      env, obj.obj(), frame_id);
 }
 
 void ContentViewCoreImpl::OnSmartClipDataExtracted(

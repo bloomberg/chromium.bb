@@ -217,41 +217,6 @@ public class ContentViewCore
         public void onSmartClipDataExtracted(String text, String html, Rect clipRect);
     }
 
-    /**
-     * An interface that allows the embedder to be notified of navigation transition
-     * related events and respond to them.
-     */
-    public interface NavigationTransitionDelegate {
-        /**
-         * Called when the navigation is deferred immediately after the response started.
-         *
-         * @param enteringColor The background color of the entering document, as a String
-         *                      representing a legal CSS color value. This is inserted into
-         *                      the transition layer's markup after the entering stylesheets
-         *                      have been applied.
-         */
-        public void didDeferAfterResponseStarted(
-                String markup, String cssSelector, String enteringColor);
-
-        /**
-         * Called when a navigation transition has been detected, and we need to check
-         * if it's supported.
-         */
-        public boolean willHandleDeferAfterResponseStarted();
-
-        /**
-         * Called when the navigation is deferred immediately after the response
-         * started.
-         */
-        public void addEnteringStylesheetToTransition(String stylesheet);
-
-        /**
-         * Notifies that a navigation transition is started for a given frame.
-         * @param frameId A positive, non-zero integer identifying the navigating frame.
-         */
-        public void didStartNavigationTransitionForFrame(long frameId);
-    }
-
     private final Context mContext;
     private ViewGroup mContainerView;
     private InternalAccessDelegate mContainerViewInternals;
@@ -354,8 +319,6 @@ public class ContentViewCore
     private ViewAndroid mViewAndroid;
 
     private SmartClipDataListener mSmartClipDataListener = null;
-
-    private NavigationTransitionDelegate mNavigationTransitionDelegate = null;
 
     // This holds the state of editable text (e.g. contents of <input>, contenteditable) of
     // a focused element.
@@ -898,7 +861,8 @@ public class ContentViewCore
      * Stops loading the current web contents.
      */
     public void stopLoading() {
-        if (mWebContents != null) mWebContents.stop();
+        assert mWebContents != null;
+        mWebContents.stop();
     }
 
     /**
@@ -907,8 +871,8 @@ public class ContentViewCore
      * @return The URL of the current page.
      */
     public String getUrl() {
-        if (mNativeContentViewCore != 0) return nativeGetURL(mNativeContentViewCore);
-        return null;
+        assert mWebContents != null;
+        return mWebContents.getUrl();
     }
 
     /**
@@ -917,7 +881,8 @@ public class ContentViewCore
      * @return The title of the current page.
      */
     public String getTitle() {
-        return mWebContents == null ? null : mWebContents.getTitle();
+        assert mWebContents != null;
+        return mWebContents.getTitle();
     }
 
     /**
@@ -1367,8 +1332,8 @@ public class ContentViewCore
      * Inserts the provided markup sandboxed into the frame.
      */
     public void setupTransitionView(String markup) {
-        if (mNativeContentViewCore == 0) return;
-        nativeSetupTransitionView(mNativeContentViewCore, markup);
+        assert mWebContents != null;
+        mWebContents.setupTransitionView(markup);
     }
 
     /**
@@ -1376,8 +1341,8 @@ public class ContentViewCore
      * exiting-transition stylesheets.
      */
     public void beginExitTransition(String cssSelector) {
-        if (mNativeContentViewCore == 0) return;
-        nativeBeginExitTransition(mNativeContentViewCore, cssSelector);
+        assert mWebContents != null;
+        mWebContents.beginExitTransition(cssSelector);
     }
 
     /**
@@ -2112,9 +2077,10 @@ public class ContentViewCore
         mActionMode = null;
         // On ICS, startActionMode throws an NPE when getParent() is null.
         if (mContainerView.getParent() != null) {
+            assert mWebContents != null;
             mActionMode = mContainerView.startActionMode(
                     getContentViewClient().getSelectActionModeCallback(getContext(), actionHandler,
-                            nativeIsIncognito(mNativeContentViewCore)));
+                            mWebContents.isIncognito()));
         }
         mUnselectAllOnActionModeDismiss = true;
         if (mActionMode == null) {
@@ -3045,45 +3011,6 @@ public class ContentViewCore
         }
     }
 
-    @CalledByNative
-    private void didDeferAfterResponseStarted(String markup, String cssSelector,
-            String enteringColor) {
-        if (mNavigationTransitionDelegate != null ) {
-            mNavigationTransitionDelegate.didDeferAfterResponseStarted(markup,
-                cssSelector, enteringColor);
-        }
-    }
-
-    @CalledByNative
-    public void didStartNavigationTransitionForFrame(long frameId) {
-        if (mNavigationTransitionDelegate != null ) {
-            mNavigationTransitionDelegate.didStartNavigationTransitionForFrame(frameId);
-        }
-    }
-
-    @CalledByNative
-    private boolean willHandleDeferAfterResponseStarted() {
-        if (mNavigationTransitionDelegate == null) return false;
-        return mNavigationTransitionDelegate.willHandleDeferAfterResponseStarted();
-    }
-
-    @VisibleForTesting
-    void setHasPendingNavigationTransitionForTesting() {
-        if (mNativeContentViewCore == 0) return;
-        nativeSetHasPendingNavigationTransitionForTesting(mNativeContentViewCore);
-    }
-
-    public void setNavigationTransitionDelegate(NavigationTransitionDelegate delegate) {
-        mNavigationTransitionDelegate = delegate;
-    }
-
-    @CalledByNative
-    private void addEnteringStylesheetToTransition(String stylesheet) {
-        if (mNavigationTransitionDelegate != null ) {
-            mNavigationTransitionDelegate.addEnteringStylesheetToTransition(stylesheet);
-        }
-    }
-
     /**
      * Offer a long press gesture to the embedding View, primarily for WebView compatibility.
      *
@@ -3139,8 +3066,8 @@ public class ContentViewCore
     }
 
     public void resumeResponseDeferredAtStart() {
-        if (mNativeContentViewCore == 0) return;
-        nativeResumeResponseDeferredAtStart(mNativeContentViewCore);
+        assert mWebContents != null;
+        mWebContents.resumeResponseDeferredAtStart();
     }
 
     /**
@@ -3174,10 +3101,6 @@ public class ContentViewCore
             String virtualUrlForDataUrl,
             boolean canLoadLocalResources,
             boolean isRendererInitiated);
-
-    private native String nativeGetURL(long nativeContentViewCoreImpl);
-
-    private native boolean nativeIsIncognito(long nativeContentViewCoreImpl);
 
     private native void nativeSetFocus(long nativeContentViewCoreImpl, boolean focused);
 
@@ -3241,8 +3164,10 @@ public class ContentViewCore
     private native void nativeHideTextHandles(long nativeContentViewCoreImpl);
 
     private native void nativeResetGestureDetection(long nativeContentViewCoreImpl);
+
     private native void nativeSetDoubleTapSupportEnabled(
             long nativeContentViewCoreImpl, boolean enabled);
+
     private native void nativeSetMultiTouchZoomSupportEnabled(
             long nativeContentViewCoreImpl, boolean enabled);
 
@@ -3262,6 +3187,7 @@ public class ContentViewCore
 
     private native void nativeSetUseDesktopUserAgent(long nativeContentViewCoreImpl,
             boolean enabled, boolean reloadOnChange);
+
     private native boolean nativeGetUseDesktopUserAgent(long nativeContentViewCoreImpl);
 
     private native void nativeClearSslPreferences(long nativeContentViewCoreImpl);
@@ -3276,8 +3202,10 @@ public class ContentViewCore
             String name);
 
     private native int nativeGetNavigationHistory(long nativeContentViewCoreImpl, Object context);
+
     private native void nativeGetDirectedNavigationHistory(long nativeContentViewCoreImpl,
             Object context, boolean isForward, int maxEntries);
+
     private native String nativeGetOriginalUrlForActiveNavigationEntry(
             long nativeContentViewCoreImpl);
 
@@ -3288,13 +3216,6 @@ public class ContentViewCore
 
     private native void nativeExtractSmartClipData(long nativeContentViewCoreImpl,
             int x, int y, int w, int h);
-    private native void nativeSetBackgroundOpaque(long nativeContentViewCoreImpl, boolean opaque);
-    private native void nativeSetupTransitionView(long nativeContentViewCoreImpl, String markup);
-    private native void nativeBeginExitTransition(long nativeContentViewCoreImpl,
-            String cssSelector);
 
-    private native void nativeResumeResponseDeferredAtStart(
-            long nativeContentViewCoreImpl);
-    private native void nativeSetHasPendingNavigationTransitionForTesting(
-            long nativeContentViewCoreImpl);
+    private native void nativeSetBackgroundOpaque(long nativeContentViewCoreImpl, boolean opaque);
 }

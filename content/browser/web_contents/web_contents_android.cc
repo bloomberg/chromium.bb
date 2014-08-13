@@ -6,20 +6,25 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "jni/WebContentsImpl_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
+using base::android::ConvertUTF8ToJavaString;
 
 namespace content {
 
@@ -102,6 +107,55 @@ jint WebContentsAndroid::GetBackgroundColor(JNIEnv* env, jobject obj) {
   if (!rwhva)
     return SK_ColorWHITE;
   return rwhva->GetCachedBackgroundColor();
+}
+
+ScopedJavaLocalRef<jstring> WebContentsAndroid::GetURL(JNIEnv* env,
+                                                       jobject obj) const {
+  return ConvertUTF8ToJavaString(env, web_contents_->GetURL().spec());
+}
+
+jboolean WebContentsAndroid::IsIncognito(JNIEnv* env, jobject obj) {
+  return web_contents_->GetBrowserContext()->IsOffTheRecord();
+}
+
+void WebContentsAndroid::ResumeResponseDeferredAtStart(JNIEnv* env,
+                                                       jobject obj) {
+  static_cast<WebContentsImpl*>(web_contents_)->ResumeResponseDeferredAtStart();
+}
+
+void WebContentsAndroid::SetHasPendingNavigationTransitionForTesting(
+    JNIEnv* env,
+    jobject obj) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalWebPlatformFeatures);
+  RenderFrameHost* frame =
+      static_cast<WebContentsImpl*>(web_contents_)->GetMainFrame();
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&TransitionRequestManager::AddPendingTransitionRequestData,
+                 base::Unretained(TransitionRequestManager::GetInstance()),
+                 frame->GetProcess()->GetID(),
+                 frame->GetRoutingID(),
+                 "*",
+                 "",
+                 ""));
+}
+
+void WebContentsAndroid::SetupTransitionView(JNIEnv* env,
+                                             jobject jobj,
+                                             jstring markup) {
+  web_contents_->GetMainFrame()->Send(new FrameMsg_SetupTransitionView(
+      web_contents_->GetMainFrame()->GetRoutingID(),
+      ConvertJavaStringToUTF8(env, markup)));
+}
+
+void WebContentsAndroid::BeginExitTransition(JNIEnv* env,
+                                             jobject jobj,
+                                             jstring css_selector) {
+  web_contents_->GetMainFrame()->Send(new FrameMsg_BeginExitTransition(
+      web_contents_->GetMainFrame()->GetRoutingID(),
+      ConvertJavaStringToUTF8(env, css_selector)));
 }
 
 void WebContentsAndroid::OnHide(JNIEnv* env, jobject obj) {
@@ -199,6 +253,58 @@ void WebContentsAndroid::SelectWordAroundCaret(JNIEnv* env, jobject obj) {
   if (!host)
     return;
   host->SelectWordAroundCaret();
+}
+
+bool WebContentsAndroid::WillHandleDeferAfterResponseStarted() {
+  JNIEnv* env = AttachCurrentThread();
+  return Java_WebContentsImpl_willHandleDeferAfterResponseStarted(env,
+                                                                  obj_.obj());
+}
+
+void WebContentsAndroid::DidDeferAfterResponseStarted(
+    const TransitionLayerData& transition_data) {
+  JNIEnv* env = AttachCurrentThread();
+  std::vector<GURL> entering_stylesheets;
+  std::string transition_color;
+  if (transition_data.response_headers) {
+    TransitionRequestManager::ParseTransitionStylesheetsFromHeaders(
+        transition_data.response_headers,
+        entering_stylesheets,
+        transition_data.request_url);
+
+    transition_data.response_headers->EnumerateHeader(
+        NULL, "X-Transition-Entering-Color", &transition_color);
+  }
+
+  ScopedJavaLocalRef<jstring> jstring_markup(
+      ConvertUTF8ToJavaString(env, transition_data.markup));
+
+  ScopedJavaLocalRef<jstring> jstring_css_selector(
+      ConvertUTF8ToJavaString(env, transition_data.css_selector));
+
+  ScopedJavaLocalRef<jstring> jstring_transition_color(
+      ConvertUTF8ToJavaString(env, transition_color));
+
+  Java_WebContentsImpl_didDeferAfterResponseStarted(
+      env,
+      obj_.obj(),
+      jstring_markup.obj(),
+      jstring_css_selector.obj(),
+      jstring_transition_color.obj());
+
+  std::vector<GURL>::const_iterator iter = entering_stylesheets.begin();
+  for (; iter != entering_stylesheets.end(); ++iter) {
+    ScopedJavaLocalRef<jstring> jstring_url(
+        ConvertUTF8ToJavaString(env, iter->spec()));
+    Java_WebContentsImpl_addEnteringStylesheetToTransition(
+        env, obj_.obj(), jstring_url.obj());
+  }
+}
+
+void WebContentsAndroid::DidStartNavigationTransitionForFrame(int64 frame_id) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_WebContentsImpl_didStartNavigationTransitionForFrame(
+      env, obj_.obj(), frame_id);
 }
 
 }  // namespace content

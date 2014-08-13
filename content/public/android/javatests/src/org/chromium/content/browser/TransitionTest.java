@@ -9,8 +9,8 @@ import android.text.TextUtils;
 import android.util.Pair;
 
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.content.browser.ContentViewCore.NavigationTransitionDelegate;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
+import org.chromium.content_public.browser.NavigationTransitionDelegate;
 import org.chromium.content_shell_apk.ContentShellActivity;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 import org.chromium.net.test.util.TestWebServer;
@@ -110,11 +110,11 @@ public class TransitionTest extends ContentShellTestBase {
         TestCallbackHelperContainer testCallbackHelperContainer =
                 new TestCallbackHelperContainer(contentViewCore);
 
-        contentViewCore.setHasPendingNavigationTransitionForTesting();
+        contentViewCore.getWebContents().setHasPendingNavigationTransitionForTesting();
         TestNavigationTransitionDelegate delegate = new TestNavigationTransitionDelegate(
                 contentViewCore,
                 true);
-        contentViewCore.setNavigationTransitionDelegate(delegate);
+        contentViewCore.getWebContents().setNavigationTransitionDelegate(delegate);
 
         loadUrl(contentViewCore, testCallbackHelperContainer, new LoadUrlParams(URL_1));
 
@@ -133,11 +133,11 @@ public class TransitionTest extends ContentShellTestBase {
         TestCallbackHelperContainer testCallbackHelperContainer =
                 new TestCallbackHelperContainer(contentViewCore);
 
-        contentViewCore.setHasPendingNavigationTransitionForTesting();
+        contentViewCore.getWebContents().setHasPendingNavigationTransitionForTesting();
         TestNavigationTransitionDelegate delegate = new TestNavigationTransitionDelegate(
                 contentViewCore,
                 false);
-        contentViewCore.setNavigationTransitionDelegate(delegate);
+        contentViewCore.getWebContents().setNavigationTransitionDelegate(delegate);
 
         loadUrl(contentViewCore, testCallbackHelperContainer, new LoadUrlParams(URL_1));
 
@@ -158,7 +158,7 @@ public class TransitionTest extends ContentShellTestBase {
         TestNavigationTransitionDelegate delegate = new TestNavigationTransitionDelegate(
                 contentViewCore,
                 false);
-        contentViewCore.setNavigationTransitionDelegate(delegate);
+        contentViewCore.getWebContents().setNavigationTransitionDelegate(delegate);
 
         loadUrl(contentViewCore, testCallbackHelperContainer, new LoadUrlParams(URL_1));
 
@@ -183,10 +183,10 @@ public class TransitionTest extends ContentShellTestBase {
           ContentViewCore contentViewCore = activity.getActiveContentViewCore();
           TestCallbackHelperContainer testCallbackHelperContainer =
               new TestCallbackHelperContainer(contentViewCore);
-          contentViewCore.setHasPendingNavigationTransitionForTesting();
+          contentViewCore.getWebContents().setHasPendingNavigationTransitionForTesting();
           TestNavigationTransitionDelegate delegate =
               new TestNavigationTransitionDelegate(contentViewCore, true);
-          contentViewCore.setNavigationTransitionDelegate(delegate);
+          contentViewCore.getWebContents().setNavigationTransitionDelegate(delegate);
 
           int currentCallCount = testCallbackHelperContainer
               .getOnPageFinishedHelper().getCallCount();
@@ -235,10 +235,10 @@ public class TransitionTest extends ContentShellTestBase {
           ContentViewCore contentViewCore = activity.getActiveContentViewCore();
           TestCallbackHelperContainer testCallbackHelperContainer =
               new TestCallbackHelperContainer(contentViewCore);
-          contentViewCore.setHasPendingNavigationTransitionForTesting();
+          contentViewCore.getWebContents().setHasPendingNavigationTransitionForTesting();
           TestNavigationTransitionDelegate delegate =
               new TestNavigationTransitionDelegate(contentViewCore, true);
-          contentViewCore.setNavigationTransitionDelegate(delegate);
+          contentViewCore.getWebContents().setNavigationTransitionDelegate(delegate);
 
           int currentCallCount = testCallbackHelperContainer
               .getOnPageFinishedHelper().getCallCount();
@@ -277,10 +277,10 @@ public class TransitionTest extends ContentShellTestBase {
             ContentViewCore contentViewCore = activity.getActiveContentViewCore();
             TestCallbackHelperContainer testCallbackHelperContainer =
                     new TestCallbackHelperContainer(contentViewCore);
-            contentViewCore.setHasPendingNavigationTransitionForTesting();
+            contentViewCore.getWebContents().setHasPendingNavigationTransitionForTesting();
             TestNavigationTransitionDelegate delegate =
                     new TestNavigationTransitionDelegate(contentViewCore, true);
-            contentViewCore.setNavigationTransitionDelegate(delegate);
+            contentViewCore.getWebContents().setNavigationTransitionDelegate(delegate);
 
             String transitionEnteringColor = "#00FF00";
 

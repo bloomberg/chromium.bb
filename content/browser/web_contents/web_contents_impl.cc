@@ -2429,8 +2429,8 @@ void WebContentsImpl::DidStartNavigationTransition(
     RenderFrameHostImpl* render_frame_host) {
 #if defined(OS_ANDROID)
   int render_frame_id = render_frame_host->GetRoutingID();
-  ContentViewCoreImpl::FromWebContents(this)->
-      DidStartNavigationTransitionForFrame(render_frame_id);
+  GetWebContentsAndroid()->DidStartNavigationTransitionForFrame(
+      render_frame_id);
 #endif
 }
 
@@ -3604,15 +3604,13 @@ void WebContentsImpl::SwappedOut(RenderFrameHost* rfh) {
 void WebContentsImpl::DidDeferAfterResponseStarted(
     const TransitionLayerData& transition_data) {
 #if defined(OS_ANDROID)
-  ContentViewCoreImpl::FromWebContents(this)->DidDeferAfterResponseStarted(
-      transition_data);
+  GetWebContentsAndroid()->DidDeferAfterResponseStarted(transition_data);
 #endif
 }
 
 bool WebContentsImpl::WillHandleDeferAfterResponseStarted() {
 #if defined(OS_ANDROID)
-  return ContentViewCoreImpl::FromWebContents(this)->
-      WillHandleDeferAfterResponseStarted();
+  return GetWebContentsAndroid()->WillHandleDeferAfterResponseStarted();
 #else
   return false;
 #endif
@@ -4098,14 +4096,17 @@ bool WebContentsImpl::CreateRenderFrameForRenderManager(
 base::android::ScopedJavaLocalRef<jobject>
 WebContentsImpl::GetJavaWebContents() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return GetWebContentsAndroid()->GetJavaObject();
+}
 
+WebContentsAndroid* WebContentsImpl::GetWebContentsAndroid() {
   WebContentsAndroid* web_contents_android =
       static_cast<WebContentsAndroid*>(GetUserData(kWebContentsAndroidKey));
   if (!web_contents_android) {
     web_contents_android = new WebContentsAndroid(this);
     SetUserData(kWebContentsAndroidKey, web_contents_android);
   }
-  return web_contents_android->GetJavaObject();
+  return web_contents_android;
 }
 
 bool WebContentsImpl::CreateRenderViewForInitialEmptyDocument() {

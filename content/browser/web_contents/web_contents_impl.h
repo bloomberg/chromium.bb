@@ -75,6 +75,10 @@ struct LoadNotificationDetails;
 struct ResourceRedirectDetails;
 struct ResourceRequestDetails;
 
+#if defined(OS_ANDROID)
+class WebContentsAndroid;
+#endif
+
 // Factory function for the implementations that content knows about. Takes
 // ownership of |delegate|.
 WebContentsView* CreateWebContentsView(
@@ -328,6 +332,7 @@ class CONTENT_EXPORT WebContentsImpl
 #if defined(OS_ANDROID)
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents()
       OVERRIDE;
+  virtual WebContentsAndroid* GetWebContentsAndroid();
 #elif defined(OS_MACOSX)
   virtual void SetAllowOverlappingViews(bool overlapping) OVERRIDE;
   virtual bool GetAllowOverlappingViews() OVERRIDE;

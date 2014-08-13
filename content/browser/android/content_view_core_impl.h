@@ -94,8 +94,6 @@ class ContentViewCoreImpl : public ContentViewCore,
       jstring virtual_url_for_data_url,
       jboolean can_load_local_resources,
       jboolean is_renderer_initiated);
-  base::android::ScopedJavaLocalRef<jstring> GetURL(JNIEnv* env, jobject) const;
-  jboolean IsIncognito(JNIEnv* env, jobject obj);
   void SendOrientationChangeEvent(JNIEnv* env, jobject obj, jint orientation);
   jboolean OnTouchEvent(JNIEnv* env,
                         jobject obj,
@@ -209,32 +207,11 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   void SetBackgroundOpaque(JNIEnv* env, jobject jobj, jboolean opaque);
 
-  void SetupTransitionView(JNIEnv* env, jobject jobj, jstring markup);
-  void BeginExitTransition(JNIEnv* env, jobject jobj, jstring css_selector);
-
-  // Notifies the main frame that it can continue navigation (if it was deferred
-  // immediately at first response).
-  void ResumeResponseDeferredAtStart(JNIEnv* env, jobject obj);
-
-  void SetHasPendingNavigationTransitionForTesting(JNIEnv* env, jobject obj);
-
   jint GetCurrentRenderProcessId(JNIEnv* env, jobject obj);
 
   // --------------------------------------------------------------------------
   // Public methods that call to Java via JNI
   // --------------------------------------------------------------------------
-
-  // This method is invoked when the request is deferred immediately after
-  // receiving response headers.
-  void DidDeferAfterResponseStarted(
-      const TransitionLayerData& transition_data);
-
-  // This method is invoked when a navigation transition is detected, to
-  // determine if the embedder intends to handle it.
-  bool WillHandleDeferAfterResponseStarted();
-
-  // This method is invoked when a navigation transition has started.
-  void DidStartNavigationTransitionForFrame(int64 frame_id);
 
   void OnSmartClipDataExtracted(const base::string16& text,
                                 const base::string16& html,
