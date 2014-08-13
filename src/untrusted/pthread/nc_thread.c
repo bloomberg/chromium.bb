@@ -673,7 +673,7 @@ int pthread_attr_setdetachstate(pthread_attr_t *attr,
   return 0;
 }
 
-int pthread_attr_getdetachstate(pthread_attr_t *attr,
+int pthread_attr_getdetachstate(const pthread_attr_t *attr,
                                 int *detachstate) {
   if (NULL == attr) {
     return EINVAL;
@@ -694,7 +694,7 @@ int pthread_attr_setstacksize(pthread_attr_t *attr,
   return 0;
 }
 
-int pthread_attr_getstacksize(pthread_attr_t *attr,
+int pthread_attr_getstacksize(const pthread_attr_t *attr,
                               size_t *stacksize) {
   if (NULL == attr) {
     return EINVAL;

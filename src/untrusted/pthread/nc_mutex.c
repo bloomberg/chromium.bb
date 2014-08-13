@@ -89,7 +89,7 @@ int pthread_mutex_destroy(pthread_mutex_t *mutex) {
 }
 
 static int mutex_lock_nonrecursive(pthread_mutex_t *mutex, int try_only,
-                                   struct timespec *abstime) {
+                                   const struct timespec *abstime) {
   /*
    * Try to claim the mutex.  This compare-and-swap executes the full
    * memory barrier that pthread_mutex_lock() is required to execute.
@@ -132,7 +132,7 @@ static int mutex_lock_nonrecursive(pthread_mutex_t *mutex, int try_only,
 }
 
 static int mutex_lock(pthread_mutex_t *mutex, int try_only,
-                      struct timespec *abstime) {
+                      const struct timespec *abstime) {
   if (NACL_LIKELY(mutex->mutex_type == PTHREAD_MUTEX_FAST_NP)) {
     return mutex_lock_nonrecursive(mutex, try_only, abstime);
   }
@@ -177,7 +177,7 @@ int pthread_mutex_lock(pthread_mutex_t *mutex) {
 }
 
 int pthread_mutex_timedlock(pthread_mutex_t *mutex,
-                            struct timespec *abstime) {
+                            const struct timespec *abstime) {
   return mutex_lock(mutex, 0, abstime);
 }
 

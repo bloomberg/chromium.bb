@@ -207,7 +207,7 @@ extern int pthread_mutex_lock(pthread_mutex_t *mutex);
 
 /* Wait until lock becomes available, or specified time passes. */
 extern int pthread_mutex_timedlock(pthread_mutex_t *mutex,
-                                   struct timespec *abstime);
+                                   const struct timespec *abstime);
 
 /** @nqPosix
 * Unlocks a mutex.
@@ -541,7 +541,7 @@ extern int pthread_attr_setdetachstate(pthread_attr_t *attr,
 *
 * @return 0 on success, non-zero error code otherwise.
 */
-extern int pthread_attr_getdetachstate(pthread_attr_t *attr,
+extern int pthread_attr_getdetachstate(const pthread_attr_t *attr,
                                        int *detachstate);
 
 /** @nqPosix
@@ -568,7 +568,7 @@ extern int pthread_attr_setstacksize(pthread_attr_t *attr,
 *
 * @return 0 on success, non-zero error code otherwise.
 */
-extern int pthread_attr_getstacksize(pthread_attr_t *attr,
+extern int pthread_attr_getstacksize(const pthread_attr_t *attr,
                                      size_t *stacksize);
 
 /** @nqPosix

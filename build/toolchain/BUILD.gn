@@ -73,7 +73,7 @@ template("toolchain_copies") {
       "//native_client/src/untrusted/irt/irt_dev.h",
     ]
 
-    if (nacl_libc == "newlib") {
+    if (package_libc == "newlib") {
       sources += [
         "//native_client/src/untrusted/pthread/pthread.h",
         "//native_client/src/untrusted/pthread/semaphore.h",
