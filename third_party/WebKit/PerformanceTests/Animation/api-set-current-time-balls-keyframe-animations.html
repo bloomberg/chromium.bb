@@ -132,8 +132,6 @@ function generateParticleKeyframes(index) {
         }
         allParticleKeyframes[index].push(generateKeyframe(t, x, y));
     }
-
-    return keyframes;
 }
 
 function generateKeyframe(t, x, y) {
@@ -150,7 +148,7 @@ function Particle(index)
     domNode.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
 
     function start() {
-        var player = domNode.animate(allParticleKeyframes[index], {easing: "linear", iterations: Infinity, direction: "alternate", duration: animationDuration});
+        var player = domNode.animate(allParticleKeyframes[index], {easing: "linear", iterations: Infinity, direction: "alternate", duration: animationDuration * 1000});
         player.pause();
         this.player = player;
     }
@@ -171,7 +169,7 @@ function advance(timestamp)
     if (start == null)
         start = timestamp;
     for (var x in particles) {
-        particles[x].player.currentTime = (timestamp - start) / 1000;
+        particles[x].player.currentTime = timestamp - start;
     }
     if (particles.length !== 0)
         requestAnimationFrame(advance);

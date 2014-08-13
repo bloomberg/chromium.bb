@@ -77,10 +77,9 @@ window.onload = function () {
     for (var i = 0; i < maxParticles; i++) {
         generateParticleKeyframes(i);
         var particle = new Particle(i);
+        particle.start();
         particles.push(particle);
     }
-    for (var i = 0; i < maxParticles; i++)
-        particles[i].start();
 
     startTrackingFrameRate();
 }
@@ -133,8 +132,6 @@ function generateParticleKeyframes(index) {
         }
         allParticleKeyframes[index].push(generateKeyframe(t, x, y));
     }
-
-    return keyframes;
 }
 
 function generateKeyframe(t, x, y) {
@@ -151,7 +148,7 @@ function Particle(index)
     domNode.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
 
     function start() {
-        var player = domNode.animate(allParticleKeyframes[index], {easing: "linear", iterations: Infinity, direction: "alternate", duration: animationDuration});
+        var player = domNode.animate(allParticleKeyframes[index], {easing: "linear", iterations: Infinity, direction: "alternate", duration: animationDuration * 1000});
     }
 
     function destroy()
