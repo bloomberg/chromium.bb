@@ -78,7 +78,7 @@ def _GetPythonPath(paths):
 
 def _CpplintFiles(files, debug):
   """Returns true if cpplint ran successfully on all files."""
-  cmd = ['cpplint.py'] + files
+  cmd = [os.path.join(constants.DEPOT_TOOLS_DIR, 'cpplint.py')] + files
   res = cros_build_lib.RunCommand(cmd,
                                   error_code_ok=True,
                                   print_cmd=debug)
