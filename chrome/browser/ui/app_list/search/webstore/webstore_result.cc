@@ -67,12 +67,14 @@ WebstoreResult::WebstoreResult(Profile* profile,
                                const std::string& app_id,
                                const std::string& localized_name,
                                const GURL& icon_url,
+                               bool is_paid,
                                extensions::Manifest::Type item_type,
                                AppListControllerDelegate* controller)
     : profile_(profile),
       app_id_(app_id),
       localized_name_(localized_name),
       icon_url_(icon_url),
+      is_paid_(is_paid),
       item_type_(item_type),
       controller_(controller),
       install_tracker_(NULL),
@@ -117,6 +119,13 @@ void WebstoreResult::Open(int event_flags) {
 }
 
 void WebstoreResult::InvokeAction(int action_index, int event_flags) {
+  if (is_paid_) {
+    // Paid apps cannot be installed directly from the launcher. Instead, open
+    // the webstore page for the app.
+    Open(event_flags);
+    return;
+  }
+
   StartInstall(action_index == kLaunchEphemeralAppAction);
 }
 
@@ -125,6 +134,7 @@ scoped_ptr<ChromeSearchResult> WebstoreResult::Duplicate() {
                                                            app_id_,
                                                            localized_name_,
                                                            icon_url_,
+                                                           is_paid_,
                                                            item_type_,
                                                            controller_)).Pass();
 }
@@ -160,9 +170,9 @@ void WebstoreResult::UpdateActions() {
           l10n_util::GetStringUTF16(IDS_WEBSTORE_RESULT_INSTALL),
           l10n_util::GetStringUTF16(
               IDS_EXTENSION_INLINE_INSTALL_PROMPT_TITLE)));
-
-      if (item_type_ == extensions::Manifest::TYPE_PLATFORM_APP ||
-          item_type_ == extensions::Manifest::TYPE_HOSTED_APP) {
+      if ((item_type_ == extensions::Manifest::TYPE_PLATFORM_APP ||
+           item_type_ == extensions::Manifest::TYPE_HOSTED_APP) &&
+          !is_paid_) {
         actions.push_back(Action(
             l10n_util::GetStringUTF16(IDS_WEBSTORE_RESULT_LAUNCH),
             l10n_util::GetStringUTF16(IDS_WEBSTORE_RESULT_LAUNCH_APP_TOOLTIP)));

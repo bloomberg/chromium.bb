@@ -28,6 +28,7 @@ const char kKeyResults[] = "results";
 const char kKeyId[] = "id";
 const char kKeyLocalizedName[] = "localized_name";
 const char kKeyIconUrl[] = "icon_url";
+const char kKeyIsPaid[] = "is_paid";
 const char kKeyItemType[] = "item_type";
 
 const char kPlatformAppType[] = "platform_app";
@@ -152,9 +153,11 @@ scoped_ptr<ChromeSearchResult> WebstoreProvider::CreateResult(
   std::string app_id;
   std::string localized_name;
   std::string icon_url_string;
+  bool is_paid = false;
   if (!dict.GetString(kKeyId, &app_id) ||
       !dict.GetString(kKeyLocalizedName, &localized_name) ||
-      !dict.GetString(kKeyIconUrl, &icon_url_string)) {
+      !dict.GetString(kKeyIconUrl, &icon_url_string) ||
+      !dict.GetBoolean(kKeyIsPaid, &is_paid)) {
     return result.Pass();
   }
 
@@ -166,8 +169,13 @@ scoped_ptr<ChromeSearchResult> WebstoreProvider::CreateResult(
   dict.GetString(kKeyItemType, &item_type_string);
   extensions::Manifest::Type item_type = ParseItemType(item_type_string);
 
-  result.reset(new WebstoreResult(
-      profile_, app_id, localized_name, icon_url, item_type, controller_));
+  result.reset(new WebstoreResult(profile_,
+                                  app_id,
+                                  localized_name,
+                                  icon_url,
+                                  is_paid,
+                                  item_type,
+                                  controller_));
   return result.Pass();
 }
 

@@ -34,6 +34,7 @@ class WebstoreResult : public ChromeSearchResult,
                  const std::string& app_id,
                  const std::string& localized_name,
                  const GURL& icon_url,
+                 bool is_paid,
                  extensions::Manifest::Type item_type,
                  AppListControllerDelegate* controller);
   virtual ~WebstoreResult();
@@ -41,6 +42,7 @@ class WebstoreResult : public ChromeSearchResult,
   const std::string& app_id() const { return app_id_; }
   const GURL& icon_url() const { return icon_url_; }
   extensions::Manifest::Type item_type() const { return item_type_; }
+  bool is_paid() const { return is_paid_; }
 
   // ChromeSearchResult overides:
   virtual void Open(int event_flags) OVERRIDE;
@@ -83,6 +85,7 @@ class WebstoreResult : public ChromeSearchResult,
   const std::string app_id_;
   const std::string localized_name_;
   const GURL icon_url_;
+  const bool is_paid_;
   extensions::Manifest::Type item_type_;
 
   gfx::ImageSkia icon_;

@@ -40,7 +40,8 @@ const char kOneResult[] = "{"
       "{"
         "\"id\": \"app1_id\","
         "\"localized_name\": \"app1 name\","
-        "\"icon_url\": \"http://host/icon\""
+        "\"icon_url\": \"http://host/icon\","
+        "\"is_paid\": false"
       "}"
     "]}";
 
@@ -51,18 +52,21 @@ const char kThreeResults[] = "{"
         "\"id\": \"app1_id\","
         "\"localized_name\": \"one\","
         "\"icon_url\": \"http://host/icon1\","
+        "\"is_paid\": true,"
         "\"item_type\": \"PLATFORM_APP\""
       "},"
       "{"
         "\"id\": \"app2_id\","
         "\"localized_name\": \"two\","
         "\"icon_url\": \"http://host/icon2\","
+        "\"is_paid\": false,"
         "\"item_type\": \"HOSTED_APP\""
       "},"
       "{"
         "\"id\": \"app3_id\","
         "\"localized_name\": \"three\","
         "\"icon_url\": \"http://host/icon3\","
+        "\"is_paid\": false,"
         "\"item_type\": \"LEGACY_PACKAGED_APP\""
       "}"
     "]}";
@@ -71,20 +75,22 @@ struct ParsedSearchResult {
   const char* id;
   const char* title;
   const char* icon_url;
+  bool is_paid;
   Manifest::Type item_type;
   size_t num_actions;
 };
 
-ParsedSearchResult kParsedOneResult[] = {
-  { "app1_id", "app1 name", "http://host/icon", Manifest::TYPE_UNKNOWN, 1 }
-};
+ParsedSearchResult kParsedOneResult[] = {{"app1_id", "app1 name",
+                                          "http://host/icon", false,
+                                          Manifest::TYPE_UNKNOWN, 1}};
 
 ParsedSearchResult kParsedThreeResults[] = {
-  { "app1_id", "one", "http://host/icon1", Manifest::TYPE_PLATFORM_APP, 2 },
-  { "app2_id", "two", "http://host/icon2", Manifest::TYPE_HOSTED_APP, 2 },
-  { "app3_id", "three", "http://host/icon3",
-    Manifest::TYPE_LEGACY_PACKAGED_APP, 1 }
-};
+    {"app1_id", "one", "http://host/icon1", true, Manifest::TYPE_PLATFORM_APP,
+     1},
+    {"app2_id", "two", "http://host/icon2", false, Manifest::TYPE_HOSTED_APP,
+     2},
+    {"app3_id", "three", "http://host/icon3", false,
+     Manifest::TYPE_LEGACY_PACKAGED_APP, 1}};
 
 }  // namespace
 
@@ -170,6 +176,7 @@ class WebstoreProviderTest : public InProcessBrowserTest {
       EXPECT_EQ(expected_results[i].id, webstore_result->app_id());
       EXPECT_EQ(expected_results[i].icon_url,
                 webstore_result->icon_url().spec());
+      EXPECT_EQ(expected_results[i].is_paid, webstore_result->is_paid());
       EXPECT_EQ(expected_results[i].item_type, webstore_result->item_type());
     }
   }
