@@ -67,8 +67,8 @@ found in the LICENSE file.
 
       update: function() {
         var annotationPromise = CTFailureGroup.fetchAnnotations();
-        # FIXME: Change this to http://sheriff-o-matic.appspot.com/alerts
-        # when Sheriff-o-matic is redeployed to serve /alerts.
+        // FIXME: Change this to http://sheriff-o-matic.appspot.com/alerts
+        // when Sheriff-o-matic is redeployed to serve /alerts.
         net.json('http://auto-sheriff.appspot.com/data').then(function(data) {
           annotationPromise.then(function(annotations) {
             // FIXME: Don't special-case the blink master.
