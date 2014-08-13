@@ -71,8 +71,6 @@ class GLES2_IMPL_EXPORT ShareGroup
     return bind_generates_resource_;
   }
 
-  bool Initialize();
-
   IdHandlerInterface* GetIdHandler(int namespace_id) const {
     return id_handlers_[namespace_id].get();
   }

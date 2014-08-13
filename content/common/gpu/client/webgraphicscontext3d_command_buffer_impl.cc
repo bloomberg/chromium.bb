@@ -185,24 +185,13 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
     share_group_command_buffer = share_context->command_buffer_.get();
   }
 
+  ::gpu::gles2::ContextCreationAttribHelper attribs_for_gles2;
+  ConvertAttributes(attributes_, &attribs_for_gles2);
+  attribs_for_gles2.lose_context_when_out_of_memory =
+      lose_context_when_out_of_memory_;
+  DCHECK(attribs_for_gles2.buffer_preserved);
   std::vector<int32> attribs;
-  attribs.push_back(ALPHA_SIZE);
-  attribs.push_back(attributes_.alpha ? 8 : 0);
-  attribs.push_back(DEPTH_SIZE);
-  attribs.push_back(attributes_.depth ? 24 : 0);
-  attribs.push_back(STENCIL_SIZE);
-  attribs.push_back(attributes_.stencil ? 8 : 0);
-  attribs.push_back(SAMPLES);
-  attribs.push_back(attributes_.antialias ? 4 : 0);
-  attribs.push_back(SAMPLE_BUFFERS);
-  attribs.push_back(attributes_.antialias ? 1 : 0);
-  attribs.push_back(FAIL_IF_MAJOR_PERF_CAVEAT);
-  attribs.push_back(attributes_.failIfMajorPerformanceCaveat ? 1 : 0);
-  attribs.push_back(LOSE_CONTEXT_WHEN_OUT_OF_MEMORY);
-  attribs.push_back(lose_context_when_out_of_memory_ ? 1 : 0);
-  attribs.push_back(BIND_GENERATES_RESOURCES);
-  attribs.push_back(0);
-  attribs.push_back(NONE);
+  attribs_for_gles2.Serialize(&attribs);
 
   // Create a proxy to a command buffer in the GPU process.
   if (onscreen) {

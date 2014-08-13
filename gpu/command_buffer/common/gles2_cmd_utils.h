@@ -196,27 +196,25 @@ class GLES2_UTILS_EXPORT GLES2Util {
   int num_shader_binary_formats_;
 };
 
-class GLES2_UTILS_EXPORT ContextCreationAttribHelper {
- public:
+struct GLES2_UTILS_EXPORT ContextCreationAttribHelper {
   ContextCreationAttribHelper();
 
-  void Serialize(std::vector<int32_t>* attribs);
+  void Serialize(std::vector<int32_t>* attribs) const;
   bool Parse(const std::vector<int32_t>& attribs);
 
   // -1 if invalid or unspecified.
-  int32_t alpha_size_;
-  int32_t blue_size_;
-  int32_t green_size_;
-  int32_t red_size_;
-  int32_t depth_size_;
-  int32_t stencil_size_;
-  int32_t samples_;
-  int32_t sample_buffers_;
-  bool buffer_preserved_;
-  bool share_resources_;
-  bool bind_generates_resource_;
-  bool fail_if_major_perf_caveat_;
-  bool lose_context_when_out_of_memory_;
+  int32_t alpha_size;
+  int32_t blue_size;
+  int32_t green_size;
+  int32_t red_size;
+  int32_t depth_size;
+  int32_t stencil_size;
+  int32_t samples;
+  int32_t sample_buffers;
+  bool buffer_preserved;
+  bool bind_generates_resource;
+  bool fail_if_major_perf_caveat;
+  bool lose_context_when_out_of_memory;
 };
 
 }  // namespace gles2

@@ -135,6 +135,7 @@ GLES2Implementation::GLES2Implementation(
 
   share_group_ =
       (share_group ? share_group : new ShareGroup(bind_generates_resource));
+  DCHECK(share_group_->bind_generates_resource() == bind_generates_resource);
 
   memset(&reserved_ids_, 0, sizeof(reserved_ids_));
 }

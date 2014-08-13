@@ -784,6 +784,10 @@ bool GLES2Util::ParseUniformName(
 
 namespace {
 
+// WebGraphicsContext3DCommandBufferImpl configuration attributes. Those in
+// the 16-bit range are the same as used by EGL. Those outside the 16-bit range
+// are unique to Chromium. Attributes are matched using a closest fit algorithm.
+
 // From <EGL/egl.h>.
 const int32 kAlphaSize       = 0x3021;  // EGL_ALPHA_SIZE
 const int32 kBlueSize        = 0x3022;  // EGL_BLUE_SIZE
@@ -799,71 +803,67 @@ const int32 kBufferPreserved = 0x3094;  // EGL_BUFFER_PRESERVED
 const int32 kBufferDestroyed = 0x3095;  // EGL_BUFFER_DESTROYED
 
 // Chromium only.
-const int32 kShareResources        = 0x10000;
-const int32 kBindGeneratesResource = 0x10001;
-const int32 kFailIfMajorPerfCaveat = 0x10002;
-const int32 kLoseContextWhenOutOfMemory = 0x10003;
+const int32 kBindGeneratesResource = 0x10000;
+const int32 kFailIfMajorPerfCaveat = 0x10001;
+const int32 kLoseContextWhenOutOfMemory = 0x10002;
 
 }  // namespace
 
 ContextCreationAttribHelper::ContextCreationAttribHelper()
-    : alpha_size_(-1),
-      blue_size_(-1),
-      green_size_(-1),
-      red_size_(-1),
-      depth_size_(-1),
-      stencil_size_(-1),
-      samples_(-1),
-      sample_buffers_(-1),
-      buffer_preserved_(true),
-      share_resources_(false),
-      bind_generates_resource_(true),
-      fail_if_major_perf_caveat_(false),
-      lose_context_when_out_of_memory_(false) {}
+    : alpha_size(-1),
+      blue_size(-1),
+      green_size(-1),
+      red_size(-1),
+      depth_size(-1),
+      stencil_size(-1),
+      samples(-1),
+      sample_buffers(-1),
+      buffer_preserved(true),
+      bind_generates_resource(true),
+      fail_if_major_perf_caveat(false),
+      lose_context_when_out_of_memory(false) {}
 
-void ContextCreationAttribHelper::Serialize(std::vector<int32>* attribs) {
-  if (alpha_size_ != -1) {
+void ContextCreationAttribHelper::Serialize(std::vector<int32>* attribs) const {
+  if (alpha_size != -1) {
     attribs->push_back(kAlphaSize);
-    attribs->push_back(alpha_size_);
+    attribs->push_back(alpha_size);
   }
-  if (blue_size_ != -1) {
+  if (blue_size != -1) {
     attribs->push_back(kBlueSize);
-    attribs->push_back(blue_size_);
+    attribs->push_back(blue_size);
   }
-  if (green_size_ != -1) {
+  if (green_size != -1) {
     attribs->push_back(kGreenSize);
-    attribs->push_back(green_size_);
+    attribs->push_back(green_size);
   }
-  if (red_size_ != -1) {
+  if (red_size != -1) {
     attribs->push_back(kRedSize);
-    attribs->push_back(red_size_);
+    attribs->push_back(red_size);
   }
-  if (depth_size_ != -1) {
+  if (depth_size != -1) {
     attribs->push_back(kDepthSize);
-    attribs->push_back(depth_size_);
+    attribs->push_back(depth_size);
   }
-  if (stencil_size_ != -1) {
+  if (stencil_size != -1) {
     attribs->push_back(kStencilSize);
-    attribs->push_back(stencil_size_);
+    attribs->push_back(stencil_size);
   }
-  if (samples_ != -1) {
+  if (samples != -1) {
     attribs->push_back(kSamples);
-    attribs->push_back(samples_);
+    attribs->push_back(samples);
   }
-  if (sample_buffers_ != -1) {
+  if (sample_buffers != -1) {
     attribs->push_back(kSampleBuffers);
-    attribs->push_back(sample_buffers_);
+    attribs->push_back(sample_buffers);
   }
   attribs->push_back(kSwapBehavior);
-  attribs->push_back(buffer_preserved_ ? kBufferPreserved : kBufferDestroyed);
-  attribs->push_back(kShareResources);
-  attribs->push_back(share_resources_ ? 1 : 0);
+  attribs->push_back(buffer_preserved ? kBufferPreserved : kBufferDestroyed);
   attribs->push_back(kBindGeneratesResource);
-  attribs->push_back(bind_generates_resource_ ? 1 : 0);
+  attribs->push_back(bind_generates_resource ? 1 : 0);
   attribs->push_back(kFailIfMajorPerfCaveat);
-  attribs->push_back(fail_if_major_perf_caveat_ ? 1 : 0);
+  attribs->push_back(fail_if_major_perf_caveat ? 1 : 0);
   attribs->push_back(kLoseContextWhenOutOfMemory);
-  attribs->push_back(lose_context_when_out_of_memory_ ? 1 : 0);
+  attribs->push_back(lose_context_when_out_of_memory ? 1 : 0);
   attribs->push_back(kNone);
 }
 
@@ -883,43 +883,40 @@ bool ContextCreationAttribHelper::Parse(const std::vector<int32>& attribs) {
     const int32 value = attribs[i+1];
     switch (attrib) {
       case kAlphaSize:
-        alpha_size_ = value;
+        alpha_size = value;
         break;
       case kBlueSize:
-        blue_size_ = value;
+        blue_size = value;
         break;
       case kGreenSize:
-        green_size_ = value;
+        green_size = value;
         break;
       case kRedSize:
-        red_size_ = value;
+        red_size = value;
         break;
       case kDepthSize:
-        depth_size_ = value;
+        depth_size = value;
         break;
       case kStencilSize:
-        stencil_size_ = value;
+        stencil_size = value;
         break;
       case kSamples:
-        samples_ = value;
+        samples = value;
         break;
       case kSampleBuffers:
-        sample_buffers_ = value;
+        sample_buffers = value;
         break;
       case kSwapBehavior:
-        buffer_preserved_ = value == kBufferPreserved;
-        break;
-      case kShareResources:
-        share_resources_ = value != 0;
+        buffer_preserved = value == kBufferPreserved;
         break;
       case kBindGeneratesResource:
-        bind_generates_resource_ = value != 0;
+        bind_generates_resource = value != 0;
         break;
       case kFailIfMajorPerfCaveat:
-        fail_if_major_perf_caveat_ = value != 0;
+        fail_if_major_perf_caveat = value != 0;
         break;
       case kLoseContextWhenOutOfMemory:
-        lose_context_when_out_of_memory_ = value != 0;
+        lose_context_when_out_of_memory = value != 0;
         break;
       case kNone:
         // Terminate list, even if more attributes.

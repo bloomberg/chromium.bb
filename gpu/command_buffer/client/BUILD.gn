@@ -152,6 +152,7 @@ component("gl_in_process_context") {
   deps = [
     ":gles2_implementation",
     "//gpu",
+    "//gpu/command_buffer/common:gles2_utils",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//ui/gfx/geometry",

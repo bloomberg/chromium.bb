@@ -10,6 +10,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/skia_bindings/gl_bindings_skia_cmd_buffer.h"
 
 #include "third_party/khronos/GLES2/gl2.h"
@@ -978,6 +979,20 @@ void WebGraphicsContext3DImpl::copyTextureToParentTextureCHROMIUM(
 }
 
 void WebGraphicsContext3DImpl::releaseShaderCompiler() {
+}
+
+// static
+void WebGraphicsContext3DImpl::ConvertAttributes(
+    const blink::WebGraphicsContext3D::Attributes& attributes,
+    ::gpu::gles2::ContextCreationAttribHelper* output_attribs) {
+  output_attribs->alpha_size = attributes.alpha ? 8 : 0;
+  output_attribs->depth_size = attributes.depth ? 24 : 0;
+  output_attribs->stencil_size = attributes.stencil ? 8 : 0;
+  output_attribs->samples = attributes.antialias ? 4 : 0;
+  output_attribs->sample_buffers = attributes.antialias ? 1 : 0;
+  output_attribs->fail_if_major_perf_caveat =
+      attributes.failIfMajorPerformanceCaveat;
+  output_attribs->bind_generates_resource = false;
 }
 
 }  // namespace gpu

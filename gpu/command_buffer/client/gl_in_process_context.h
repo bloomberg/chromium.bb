@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "gl_in_process_context_export.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/in_process_command_buffer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_surface.h"
@@ -28,22 +29,6 @@ namespace gpu {
 namespace gles2 {
 class GLES2Implementation;
 }
-
-// The default uninitialized value is -1.
-struct GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContextAttribs {
-  GLInProcessContextAttribs();
-
-  int32 alpha_size;
-  int32 blue_size;
-  int32 green_size;
-  int32 red_size;
-  int32 depth_size;
-  int32 stencil_size;
-  int32 samples;
-  int32 sample_buffers;
-  int32 fail_if_major_perf_caveat;
-  int32 lose_context_when_out_of_memory;
-};
 
 class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
  public:
@@ -67,7 +52,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
       const gfx::Size& size,
       GLInProcessContext* share_context,
       bool use_global_share_group,
-      const GLInProcessContextAttribs& attribs,
+      const gpu::gles2::ContextCreationAttribHelper& attribs,
       gfx::GpuPreference gpu_preference);
 
   virtual void SetContextLostCallback(const base::Closure& callback) = 0;

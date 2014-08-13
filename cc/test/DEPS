@@ -3,5 +3,6 @@ include_rules = [
   "+gpu/command_buffer/client/gles2_implementation.h",
   "+gpu/command_buffer/client/gles2_interface_stub.h",
   "+gpu/command_buffer/client/gles2_lib.h",
+  "+gpu/command_buffer/common/gles2_cmd_utils.h",
   "+gpu/skia_bindings/gl_bindings_skia_cmd_buffer.h",
 ]

@@ -186,14 +186,14 @@ GpuCommandBufferStub::GpuCommandBufferStub(
   if (share_group) {
     context_group_ = share_group->context_group_;
     DCHECK(context_group_->bind_generates_resource() ==
-           attrib_parser.bind_generates_resource_);
+           attrib_parser.bind_generates_resource);
   } else {
     context_group_ = new gpu::gles2::ContextGroup(
         mailbox_manager,
         new GpuCommandBufferMemoryTracker(channel),
         channel_->gpu_channel_manager()->shader_translator_cache(),
         NULL,
-        attrib_parser.bind_generates_resource_);
+        attrib_parser.bind_generates_resource);
   }
 
   use_virtualized_gl_context_ |=

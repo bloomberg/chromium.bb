@@ -20,6 +20,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "ui/gfx/frame_time.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -33,6 +34,7 @@ namespace android_webview {
 namespace {
 
 using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
+using webkit::gpu::WebGraphicsContext3DImpl;
 
 scoped_refptr<cc::ContextProvider> CreateContext(
     scoped_refptr<gfx::GLSurface> surface,
@@ -46,10 +48,10 @@ scoped_refptr<cc::ContextProvider> CreateContext(
   attributes.stencil = false;
   attributes.shareResources = true;
   attributes.noAutomaticFlushes = true;
-  gpu::GLInProcessContextAttribs in_process_attribs;
-  WebGraphicsContext3DInProcessCommandBufferImpl::ConvertAttributes(
-      attributes, &in_process_attribs);
-  in_process_attribs.lose_context_when_out_of_memory = 1;
+  gpu::gles2::ContextCreationAttribHelper attribs_for_gles2;
+  WebGraphicsContext3DImpl::ConvertAttributes(
+      attributes, &attribs_for_gles2);
+  attribs_for_gles2.lose_context_when_out_of_memory = true;
 
   scoped_ptr<gpu::GLInProcessContext> context(
       gpu::GLInProcessContext::Create(service,
@@ -59,7 +61,7 @@ scoped_refptr<cc::ContextProvider> CreateContext(
                                       surface->GetSize(),
                                       share_context,
                                       false /* share_resources */,
-                                      in_process_attribs,
+                                      attribs_for_gles2,
                                       gpu_preference));
   DCHECK(context.get());
 

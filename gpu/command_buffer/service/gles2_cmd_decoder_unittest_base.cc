@@ -353,7 +353,7 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   shared_memory_id_ = kSharedMemoryId;
   shared_memory_base_ = buffer->memory();
 
-  static const int32 kLoseContextWhenOutOfMemory = 0x10003;
+  static const int32 kLoseContextWhenOutOfMemory = 0x10002;
 
   int32 attributes[] = {
       EGL_ALPHA_SIZE,

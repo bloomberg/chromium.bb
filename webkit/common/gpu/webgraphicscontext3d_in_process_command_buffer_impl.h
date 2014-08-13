@@ -22,12 +22,12 @@ class ContextSupport;
 namespace gles2 {
 class GLES2Interface;
 class GLES2Implementation;
+struct ContextCreationAttribHelper;
 }
 }
 
 namespace gpu {
 class GLInProcessContext;
-struct GLInProcessContextAttribs;
 }
 
 namespace webkit {
@@ -53,12 +53,6 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
           const blink::WebGraphicsContext3D::Attributes& attributes);
 
   virtual ~WebGraphicsContext3DInProcessCommandBufferImpl();
-
-  // Convert WebGL context creation attributes into GLInProcessContext / EGL
-  // size requests.
-  static void ConvertAttributes(
-      const blink::WebGraphicsContext3D::Attributes& attributes,
-      ::gpu::GLInProcessContextAttribs* output_attribs);
 
   //----------------------------------------------------------------------
   // WebGraphicsContext3D methods
@@ -90,7 +84,7 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   // instead of going through WebGraphicsContext3D.
   void ClearContext();
 
-  ::gpu::GLInProcessContextAttribs attribs_;
+  ::gpu::gles2::ContextCreationAttribHelper attribs_;
   bool share_resources_;
   bool webgl_context_;
 

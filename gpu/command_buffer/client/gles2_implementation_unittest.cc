@@ -393,7 +393,8 @@ class GLES2ImplementationTest : public testing::Test {
     TestContext() : commands_(NULL), token_(0) {}
 
     bool Initialize(ShareGroup* share_group,
-                    bool bind_generates_resource,
+                    bool bind_generates_resource_client,
+                    bool bind_generates_resource_service,
                     bool lose_context_when_out_of_memory) {
       command_buffer_.reset(new StrictMock<MockClientCommandBuffer>());
       if (!command_buffer_->Initialize())
@@ -428,7 +429,7 @@ class GLES2ImplementationTest : public testing::Test {
       int_state.num_compressed_texture_formats = kNumCompressedTextureFormats;
       int_state.num_shader_binary_formats = kNumShaderBinaryFormats;
       int_state.bind_generates_resource_chromium =
-          bind_generates_resource ? 1 : 0;
+          bind_generates_resource_service ? 1 : 0;
 
       // This just happens to work for now because IntState has 1 GLint per
       // state.
@@ -449,7 +450,7 @@ class GLES2ImplementationTest : public testing::Test {
         gl_.reset(new GLES2Implementation(helper_.get(),
                                           share_group,
                                           transfer_buffer_.get(),
-                                          bind_generates_resource,
+                                          bind_generates_resource_client,
                                           lose_context_when_out_of_memory,
                                           gpu_control_.get()));
 
@@ -537,12 +538,13 @@ class GLES2ImplementationTest : public testing::Test {
 
   bool Initialize(const ContextInitOptions& init_options) {
     bool success = true;
-    share_group_ = new ShareGroup(init_options.bind_generates_resource_service);
+    share_group_ = new ShareGroup(init_options.bind_generates_resource_client);
 
     for (int i = 0; i < kNumTestContexts; i++) {
       if (!test_contexts_[i].Initialize(
               share_group_.get(),
               init_options.bind_generates_resource_client,
+              init_options.bind_generates_resource_service,
               init_options.lose_context_when_out_of_memory))
         success = false;
     }

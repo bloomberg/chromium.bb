@@ -9,6 +9,7 @@
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/skia_bindings/gl_bindings_skia_cmd_buffer.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
@@ -22,7 +23,7 @@ namespace cc {
 scoped_ptr<gpu::GLInProcessContext> CreateTestInProcessContext() {
   const bool is_offscreen = true;
   const bool share_resources = true;
-  gpu::GLInProcessContextAttribs attribs;
+  gpu::gles2::ContextCreationAttribHelper attribs;
   attribs.alpha_size = 8;
   attribs.blue_size = 8;
   attribs.green_size = 8;
@@ -32,6 +33,7 @@ scoped_ptr<gpu::GLInProcessContext> CreateTestInProcessContext() {
   attribs.samples = 0;
   attribs.sample_buffers = 0;
   attribs.fail_if_major_perf_caveat = false;
+  attribs.bind_generates_resource = false;
   gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
 
   scoped_ptr<gpu::GLInProcessContext> context = make_scoped_ptr(

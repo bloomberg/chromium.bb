@@ -58,7 +58,7 @@ class GLInProcessContextImpl
       GLInProcessContext* share_context,
       gfx::AcceleratedWidget window,
       const gfx::Size& size,
-      const GLInProcessContextAttribs& attribs,
+      const gpu::gles2::ContextCreationAttribHelper& attribs,
       gfx::GpuPreference gpu_preference,
       const scoped_refptr<InProcessCommandBuffer::Service>& service);
 
@@ -126,71 +126,14 @@ bool GLInProcessContextImpl::Initialize(
     GLInProcessContext* share_context,
     gfx::AcceleratedWidget window,
     const gfx::Size& size,
-    const GLInProcessContextAttribs& attribs,
+    const gles2::ContextCreationAttribHelper& attribs,
     gfx::GpuPreference gpu_preference,
     const scoped_refptr<InProcessCommandBuffer::Service>& service) {
   DCHECK(!use_global_share_group || !share_context);
   DCHECK(size.width() >= 0 && size.height() >= 0);
 
-  // Changes to these values should also be copied to
-  // gpu/command_buffer/client/gl_in_process_context.cc and to
-  // content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h
-  const int32 ALPHA_SIZE     = 0x3021;
-  const int32 BLUE_SIZE      = 0x3022;
-  const int32 GREEN_SIZE     = 0x3023;
-  const int32 RED_SIZE       = 0x3024;
-  const int32 DEPTH_SIZE     = 0x3025;
-  const int32 STENCIL_SIZE   = 0x3026;
-  const int32 SAMPLES        = 0x3031;
-  const int32 SAMPLE_BUFFERS = 0x3032;
-  const int32 NONE           = 0x3038;
-
-  // Chromium-specific attributes
-  const int32 FAIL_IF_MAJOR_PERF_CAVEAT = 0x10002;
-  const int32 LOSE_CONTEXT_WHEN_OUT_OF_MEMORY = 0x10003;
-
   std::vector<int32> attrib_vector;
-  if (attribs.alpha_size >= 0) {
-    attrib_vector.push_back(ALPHA_SIZE);
-    attrib_vector.push_back(attribs.alpha_size);
-  }
-  if (attribs.blue_size >= 0) {
-    attrib_vector.push_back(BLUE_SIZE);
-    attrib_vector.push_back(attribs.blue_size);
-  }
-  if (attribs.green_size >= 0) {
-    attrib_vector.push_back(GREEN_SIZE);
-    attrib_vector.push_back(attribs.green_size);
-  }
-  if (attribs.red_size >= 0) {
-    attrib_vector.push_back(RED_SIZE);
-    attrib_vector.push_back(attribs.red_size);
-  }
-  if (attribs.depth_size >= 0) {
-    attrib_vector.push_back(DEPTH_SIZE);
-    attrib_vector.push_back(attribs.depth_size);
-  }
-  if (attribs.stencil_size >= 0) {
-    attrib_vector.push_back(STENCIL_SIZE);
-    attrib_vector.push_back(attribs.stencil_size);
-  }
-  if (attribs.samples >= 0) {
-    attrib_vector.push_back(SAMPLES);
-    attrib_vector.push_back(attribs.samples);
-  }
-  if (attribs.sample_buffers >= 0) {
-    attrib_vector.push_back(SAMPLE_BUFFERS);
-    attrib_vector.push_back(attribs.sample_buffers);
-  }
-  if (attribs.fail_if_major_perf_caveat > 0) {
-    attrib_vector.push_back(FAIL_IF_MAJOR_PERF_CAVEAT);
-    attrib_vector.push_back(attribs.fail_if_major_perf_caveat);
-  }
-  if (attribs.lose_context_when_out_of_memory > 0) {
-    attrib_vector.push_back(LOSE_CONTEXT_WHEN_OUT_OF_MEMORY);
-    attrib_vector.push_back(attribs.lose_context_when_out_of_memory);
-  }
-  attrib_vector.push_back(NONE);
+  attribs.Serialize(&attrib_vector);
 
   base::Closure wrapped_callback =
       base::Bind(&GLInProcessContextImpl::OnContextLost, AsWeakPtr());
@@ -247,15 +190,17 @@ bool GLInProcessContextImpl::Initialize(
   // Create a transfer buffer.
   transfer_buffer_.reset(new TransferBuffer(gles2_helper_.get()));
 
-  bool bind_generates_resources = false;
+  // Check for consistency.
+  DCHECK(!attribs.bind_generates_resource);
+  bool bind_generates_resource = false;
 
   // Create the object exposing the OpenGL API.
   gles2_implementation_.reset(new gles2::GLES2Implementation(
       gles2_helper_.get(),
       share_group,
       transfer_buffer_.get(),
-      bind_generates_resources,
-      attribs.lose_context_when_out_of_memory > 0,
+      bind_generates_resource,
+      attribs.lose_context_when_out_of_memory,
       command_buffer_.get()));
 
   if (use_global_share_group) {
@@ -300,18 +245,6 @@ GLInProcessContextImpl::GetSurfaceTexture(uint32 stream_id) {
 
 }  // anonymous namespace
 
-GLInProcessContextAttribs::GLInProcessContextAttribs()
-    : alpha_size(-1),
-      blue_size(-1),
-      green_size(-1),
-      red_size(-1),
-      depth_size(-1),
-      stencil_size(-1),
-      samples(-1),
-      sample_buffers(-1),
-      fail_if_major_perf_caveat(-1),
-      lose_context_when_out_of_memory(-1) {}
-
 GLInProcessContext* GLInProcessContext::Create(
     scoped_refptr<gpu::InProcessCommandBuffer::Service> service,
     scoped_refptr<gfx::GLSurface> surface,
@@ -320,7 +253,7 @@ GLInProcessContext* GLInProcessContext::Create(
     const gfx::Size& size,
     GLInProcessContext* share_context,
     bool use_global_share_group,
-    const GLInProcessContextAttribs& attribs,
+    const ::gpu::gles2::ContextCreationAttribHelper& attribs,
     gfx::GpuPreference gpu_preference) {
   DCHECK(!use_global_share_group || !share_context);
   if (surface.get()) {

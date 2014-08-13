@@ -158,11 +158,11 @@ void GLManager::Initialize(const GLManager::Options& options) {
   gfx::GpuPreference gpu_preference(gfx::PreferDiscreteGpu);
   std::vector<int32> attribs;
   gles2::ContextCreationAttribHelper attrib_helper;
-  attrib_helper.red_size_ = 8;
-  attrib_helper.green_size_ = 8;
-  attrib_helper.blue_size_ = 8;
-  attrib_helper.alpha_size_ = 8;
-  attrib_helper.depth_size_ = 16;
+  attrib_helper.red_size = 8;
+  attrib_helper.green_size = 8;
+  attrib_helper.blue_size = 8;
+  attrib_helper.alpha_size = 8;
+  attrib_helper.depth_size = 16;
   attrib_helper.Serialize(&attribs);
 
   if (!context_group) {

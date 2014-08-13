@@ -21,6 +21,7 @@
 #include "base/logging.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/skia_bindings/gl_bindings_skia_cmd_buffer.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_implementation.h"
@@ -115,19 +116,6 @@ WebGraphicsContext3DInProcessCommandBufferImpl::
 
 WebGraphicsContext3DInProcessCommandBufferImpl::
     ~WebGraphicsContext3DInProcessCommandBufferImpl() {
-}
-
-// static
-void WebGraphicsContext3DInProcessCommandBufferImpl::ConvertAttributes(
-    const blink::WebGraphicsContext3D::Attributes& attributes,
-    ::gpu::GLInProcessContextAttribs* output_attribs) {
-  output_attribs->alpha_size = attributes.alpha ? 8 : 0;
-  output_attribs->depth_size = attributes.depth ? 24 : 0;
-  output_attribs->stencil_size = attributes.stencil ? 8 : 0;
-  output_attribs->samples = attributes.antialias ? 4 : 0;
-  output_attribs->sample_buffers = attributes.antialias ? 1 : 0;
-  output_attribs->fail_if_major_perf_caveat =
-      attributes.failIfMajorPerformanceCaveat ? 1 : 0;
 }
 
 bool WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL() {

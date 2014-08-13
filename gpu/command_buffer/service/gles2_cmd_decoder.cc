@@ -2374,11 +2374,11 @@ bool GLES2DecoderImpl::Initialize(
 
   // Save the loseContextWhenOutOfMemory context creation attribute.
   lose_context_when_out_of_memory_ =
-      attrib_parser.lose_context_when_out_of_memory_;
+      attrib_parser.lose_context_when_out_of_memory;
 
   // If the failIfMajorPerformanceCaveat context creation attribute was true
   // and we are using a software renderer, fail.
-  if (attrib_parser.fail_if_major_perf_caveat_ &&
+  if (attrib_parser.fail_if_major_perf_caveat &&
       feature_info_->feature_flags().is_swiftshader) {
     group_ = NULL;  // Must not destroy ContextGroup if it is not initialized.
     Destroy(true);
@@ -2461,19 +2461,19 @@ bool GLES2DecoderImpl::Initialize(
   CHECK_GL_ERROR();
 
   if (offscreen) {
-    if (attrib_parser.samples_ > 0 && attrib_parser.sample_buffers_ > 0 &&
+    if (attrib_parser.samples > 0 && attrib_parser.sample_buffers > 0 &&
         features().chromium_framebuffer_multisample) {
       // Per ext_framebuffer_multisample spec, need max bound on sample count.
       // max_sample_count must be initialized to a sane value.  If
       // glGetIntegerv() throws a GL error, it leaves its argument unchanged.
       GLint max_sample_count = 1;
       glGetIntegerv(GL_MAX_SAMPLES_EXT, &max_sample_count);
-      offscreen_target_samples_ = std::min(attrib_parser.samples_,
+      offscreen_target_samples_ = std::min(attrib_parser.samples,
                                            max_sample_count);
     } else {
       offscreen_target_samples_ = 1;
     }
-    offscreen_target_buffer_preserved_ = attrib_parser.buffer_preserved_;
+    offscreen_target_buffer_preserved_ = attrib_parser.buffer_preserved;
 
     if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2) {
       const bool rgb8_supported =
@@ -2482,11 +2482,11 @@ bool GLES2DecoderImpl::Initialize(
       // little precision.  Don't enable multisampling unless 8-bit render
       // buffer formats are available--instead fall back to 8-bit textures.
       if (rgb8_supported && offscreen_target_samples_ > 1) {
-        offscreen_target_color_format_ = attrib_parser.alpha_size_ > 0 ?
+        offscreen_target_color_format_ = attrib_parser.alpha_size > 0 ?
             GL_RGBA8 : GL_RGB8;
       } else {
         offscreen_target_samples_ = 1;
-        offscreen_target_color_format_ = attrib_parser.alpha_size_ > 0 ?
+        offscreen_target_color_format_ = attrib_parser.alpha_size > 0 ?
             GL_RGBA : GL_RGB;
       }
 
@@ -2496,20 +2496,20 @@ bool GLES2DecoderImpl::Initialize(
           feature_info_->feature_flags().packed_depth24_stencil8;
       VLOG(1) << "GL_OES_packed_depth_stencil "
               << (depth24_stencil8_supported ? "" : "not ") << "supported.";
-      if ((attrib_parser.depth_size_ > 0 || attrib_parser.stencil_size_ > 0) &&
+      if ((attrib_parser.depth_size > 0 || attrib_parser.stencil_size > 0) &&
           depth24_stencil8_supported) {
         offscreen_target_depth_format_ = GL_DEPTH24_STENCIL8;
         offscreen_target_stencil_format_ = 0;
       } else {
         // It may be the case that this depth/stencil combination is not
         // supported, but this will be checked later by CheckFramebufferStatus.
-        offscreen_target_depth_format_ = attrib_parser.depth_size_ > 0 ?
+        offscreen_target_depth_format_ = attrib_parser.depth_size > 0 ?
             GL_DEPTH_COMPONENT16 : 0;
-        offscreen_target_stencil_format_ = attrib_parser.stencil_size_ > 0 ?
+        offscreen_target_stencil_format_ = attrib_parser.stencil_size > 0 ?
             GL_STENCIL_INDEX8 : 0;
       }
     } else {
-      offscreen_target_color_format_ = attrib_parser.alpha_size_ > 0 ?
+      offscreen_target_color_format_ = attrib_parser.alpha_size > 0 ?
           GL_RGBA : GL_RGB;
 
       // If depth is requested at all, use the packed depth stencil format if
@@ -2520,19 +2520,19 @@ bool GLES2DecoderImpl::Initialize(
       VLOG(1) << "GL_EXT_packed_depth_stencil "
               << (depth24_stencil8_supported ? "" : "not ") << "supported.";
 
-      if ((attrib_parser.depth_size_ > 0 || attrib_parser.stencil_size_ > 0) &&
+      if ((attrib_parser.depth_size > 0 || attrib_parser.stencil_size > 0) &&
           depth24_stencil8_supported) {
         offscreen_target_depth_format_ = GL_DEPTH24_STENCIL8;
         offscreen_target_stencil_format_ = 0;
       } else {
-        offscreen_target_depth_format_ = attrib_parser.depth_size_ > 0 ?
+        offscreen_target_depth_format_ = attrib_parser.depth_size > 0 ?
             GL_DEPTH_COMPONENT : 0;
-        offscreen_target_stencil_format_ = attrib_parser.stencil_size_ > 0 ?
+        offscreen_target_stencil_format_ = attrib_parser.stencil_size > 0 ?
             GL_STENCIL_INDEX : 0;
       }
     }
 
-    offscreen_saved_color_format_ = attrib_parser.alpha_size_ > 0 ?
+    offscreen_saved_color_format_ = attrib_parser.alpha_size > 0 ?
         GL_RGBA : GL_RGB;
 
     // Create the target frame buffer. This is the one that the client renders
@@ -2608,11 +2608,11 @@ bool GLES2DecoderImpl::Initialize(
     // user requested RGB then RGB. If the user did not specify a preference
     // than use whatever we were given. Same for DEPTH and STENCIL.
     back_buffer_color_format_ =
-        (attrib_parser.alpha_size_ != 0 && v > 0) ? GL_RGBA : GL_RGB;
+        (attrib_parser.alpha_size != 0 && v > 0) ? GL_RGBA : GL_RGB;
     glGetIntegerv(GL_DEPTH_BITS, &v);
-    back_buffer_has_depth_ = attrib_parser.depth_size_ != 0 && v > 0;
+    back_buffer_has_depth_ = attrib_parser.depth_size != 0 && v > 0;
     glGetIntegerv(GL_STENCIL_BITS, &v);
-    back_buffer_has_stencil_ = attrib_parser.stencil_size_ != 0 && v > 0;
+    back_buffer_has_stencil_ = attrib_parser.stencil_size != 0 && v > 0;
   }
 
   // OpenGL ES 2.0 implicitly enables the desktop GL capability

@@ -161,30 +161,6 @@ class WebGraphicsContext3DCommandBufferImpl
     BAD_ATTRIBUTE         = 0x3004,
     CONTEXT_LOST          = 0x300E
   };
-  // WebGraphicsContext3DCommandBufferImpl configuration attributes. Those in
-  // the 16-bit range are the same as used by EGL. Those outside the 16-bit
-  // range are unique to Chromium. Attributes are matched using a closest fit
-  // algorithm.
-  // Changes to this enum should also be copied to
-  // gpu/command_buffer/common/gles2_cmd_utils.cc and to
-  // gpu/command_buffer/client/gl_in_process_context.cc
-  enum Attribute {
-    ALPHA_SIZE = 0x3021,
-    BLUE_SIZE = 0x3022,
-    GREEN_SIZE = 0x3023,
-    RED_SIZE = 0x3024,
-    DEPTH_SIZE = 0x3025,
-    STENCIL_SIZE = 0x3026,
-    SAMPLES = 0x3031,
-    SAMPLE_BUFFERS = 0x3032,
-    HEIGHT = 0x3056,
-    WIDTH = 0x3057,
-    NONE = 0x3038,  // Attrib list = terminator
-    SHARE_RESOURCES = 0x10000,
-    BIND_GENERATES_RESOURCES = 0x10001,
-    FAIL_IF_MAJOR_PERF_CAVEAT = 0x10002,
-    LOSE_CONTEXT_WHEN_OUT_OF_MEMORY = 0x10003,
-  };
 
   // Initialize the underlying GL context. May be called multiple times; second
   // and subsequent calls are ignored. Must be called from the thread that is

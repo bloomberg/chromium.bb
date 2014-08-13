@@ -19,6 +19,7 @@ namespace gpu {
 namespace gles2 {
 class GLES2Interface;
 class GLES2ImplementationErrorMessageCallback;
+struct ContextCreationAttribHelper;
 }
 }
 
@@ -558,6 +559,12 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DImpl
   ::gpu::gles2::GLES2Interface* GetGLInterface() {
     return gl_;
   }
+
+  // Convert WebGL context creation attributes into command buffer / EGL size
+  // requests.
+  static void ConvertAttributes(
+      const blink::WebGraphicsContext3D::Attributes& attributes,
+      ::gpu::gles2::ContextCreationAttribHelper* output_attribs);
 
  protected:
   friend class WebGraphicsContext3DErrorMessageCallback;
