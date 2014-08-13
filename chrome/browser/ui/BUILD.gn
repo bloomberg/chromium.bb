@@ -242,9 +242,6 @@ static_library("ui") {
       sources += rebase_path(gypi_values.chrome_browser_ui_aura_non_chromeos,
                              ".", "//chrome")
     }
-  } else {  # Non-Aura.
-    sources += rebase_path(gypi_values.chrome_browser_ui_non_aura_sources,
-                           ".", "//chrome")
   }
   if (ui_compositor_image_transport) {
     deps += [ "//ui/gl" ]
