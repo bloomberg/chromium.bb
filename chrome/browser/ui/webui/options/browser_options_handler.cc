@@ -173,8 +173,7 @@ BrowserOptionsHandler::BrowserOptionsHandler()
 #endif
 
 #if defined(ENABLE_SERVICE_DISCOVERY)
-  cloud_print_mdns_ui_enabled_ = !CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kDisableDeviceDiscovery);
+  cloud_print_mdns_ui_enabled_ = true;
 #endif  // defined(ENABLE_SERVICE_DISCOVERY)
 }
 

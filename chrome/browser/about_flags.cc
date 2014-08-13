@@ -1358,13 +1358,6 @@ const Experiment kExperiments[] = {
   },
 #if defined(ENABLE_SERVICE_DISCOVERY)
   {
-    "disable-device-discovery",
-    IDS_FLAGS_DISABLE_DEVICE_DISCOVERY_NAME,
-    IDS_FLAGS_DISABLE_DEVICE_DISCOVERY_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kDisableDeviceDiscovery)
-  },
-  {
     "device-discovery-notifications",
     IDS_FLAGS_DEVICE_DISCOVERY_NOTIFICATIONS_NAME,
     IDS_FLAGS_DEVICE_DISCOVERY_NOTIFICATIONS_DESCRIPTION,

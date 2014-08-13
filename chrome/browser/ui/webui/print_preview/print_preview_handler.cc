@@ -606,8 +606,7 @@ void PrintPreviewHandler::RegisterMessages() {
 
 bool PrintPreviewHandler::PrivetPrintingEnabled() {
 #if defined(ENABLE_SERVICE_DISCOVERY)
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-    switches::kDisableDeviceDiscovery);
+  return true;
 #else
   return false;
 #endif
