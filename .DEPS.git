@@ -106,7 +106,7 @@ deps = {
     'src/third_party/openssl':
         Var('git_url') + '/chromium/deps/openssl.git@c9613e3123ff035683f45163af142817b38d03b6',
     'src/third_party/opus/src':
-        Var('git_url') + '/chromium/deps/opus.git@36fa2621472ebf5b859fd16bbdb749019c68cc69',
+        Var('git_url') + '/chromium/deps/opus.git@cae696156f1e60006e39821e79a1811ae1933c69',
     'src/third_party/ots':
         Var('git_url') + '/external/ots.git@98897009f3ea8a5fa3e20a4a74977da7aaa8e61a',
     'src/third_party/pdfium':
