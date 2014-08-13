@@ -8,7 +8,7 @@
 # is invoked by Chromium beyond what can be done in the gclient hooks.
 
 import glob
-import gyp_environment
+import gyp_helper
 import os
 import re
 import shlex
@@ -197,6 +197,10 @@ if __name__ == '__main__':
     args.append('-Ganalyzer_output_path=' + args.pop(0))
 
   if int(os.environ.get('GYP_CHROMIUM_NO_ACTION', 0)):
+    # Check for landmines (reasons to clobber the build) in any case.
+    print 'Running build/landmines.py...'
+    subprocess.check_call(
+        [sys.executable, os.path.join(script_dir, 'landmines.py')])
     print 'Skipping gyp_chromium due to GYP_CHROMIUM_NO_ACTION env var.'
     sys.exit(0)
 
@@ -221,6 +225,8 @@ if __name__ == '__main__':
     p.communicate()
     sys.exit(p.returncode)
 
+  gyp_helper.apply_chromium_gyp_env()
+
   # This could give false positives since it doesn't actually do real option
   # parsing.  Oh well.
   gyp_file_specified = False
@@ -240,8 +246,6 @@ if __name__ == '__main__':
     else:
       args.append(os.path.join(script_dir, 'all.gyp'))
 
-  gyp_environment.SetEnvironment()
-
   # There shouldn't be a circular dependency relationship between .gyp files,
   # but in Chromium's .gyp files, on non-Mac platforms, circular relationships
   # currently exist.  The check for circular dependencies is currently
@@ -259,6 +263,21 @@ if __name__ == '__main__':
   if re.search(r'(^|,|\s)make($|,|\s)', os.environ.get('GYP_GENERATORS', '')):
     print 'Error: make gyp generator not supported (check GYP_GENERATORS).'
     sys.exit(1)
+
+  # Default to ninja on linux and windows, but only if no generator has
+  # explicitly been set.
+  # Also default to ninja on mac, but only when not building chrome/ios.
+  # . -f / --format has precedence over the env var, no need to check for it
+  # . set the env var only if it hasn't been set yet
+  # . chromium.gyp_env has been applied to os.environ at this point already
+  if sys.platform.startswith(('linux', 'win', 'freebsd')) and \
+      not os.environ.get('GYP_GENERATORS'):
+    os.environ['GYP_GENERATORS'] = 'ninja'
+  elif sys.platform == 'darwin' and not os.environ.get('GYP_GENERATORS') and \
+      not 'OS=ios' in os.environ.get('GYP_DEFINES', []):
+    os.environ['GYP_GENERATORS'] = 'ninja'
+
+  vs2013_runtime_dll_dirs = vs_toolchain.SetEnvironmentAndGetRuntimeDllDirs()
 
   # If CHROMIUM_GYP_SYNTAX_CHECK is set to 1, it will invoke gyp with --check
   # to enfore syntax checking.
@@ -303,7 +322,13 @@ if __name__ == '__main__':
   gyp_rc = gyp.main(args)
 
   if not use_analyzer:
-    vs2013_runtime_dll_dirs = vs_toolchain.SetEnvironmentAndGetRuntimeDllDirs()
+    # Check for landmines (reasons to clobber the build). This must be run here,
+    # rather than a separate runhooks step so that any environment modifications
+    # from above are picked up.
+    print 'Running build/landmines.py...'
+    subprocess.check_call(
+      [sys.executable, os.path.join(script_dir, 'landmines.py')])
+
     if vs2013_runtime_dll_dirs:
       x64_runtime, x86_runtime = vs2013_runtime_dll_dirs
       vs_toolchain.CopyVsRuntimeDlls(
