@@ -42,12 +42,14 @@ class MyInterceptor : public Wrappable<MyInterceptor>,
       return v8::Local<v8::Value>();
     }
   }
-  virtual void SetNamedProperty(v8::Isolate* isolate,
+  virtual bool SetNamedProperty(v8::Isolate* isolate,
                                 const std::string& property,
                                 v8::Local<v8::Value> value) OVERRIDE {
-    if (property != "value")
-      return;
-    ConvertFromV8(isolate, value, &value_);
+    if (property == "value") {
+      ConvertFromV8(isolate, value, &value_);
+      return true;
+    }
+    return false;
   }
   virtual std::vector<std::string> EnumerateNamedProperties(
       v8::Isolate* isolate) OVERRIDE {
@@ -64,12 +66,15 @@ class MyInterceptor : public Wrappable<MyInterceptor>,
       return ConvertToV8(isolate, value_);
     return v8::Local<v8::Value>();
   }
-  virtual void SetIndexedProperty(v8::Isolate* isolate,
+  virtual bool SetIndexedProperty(v8::Isolate* isolate,
                                   uint32_t index,
                                   v8::Local<v8::Value> value) OVERRIDE {
-    if (index != 0)
-      return;
-    ConvertFromV8(isolate, value, &value_);
+    if (index == 0) {
+      ConvertFromV8(isolate, value, &value_);
+      return true;
+    }
+    // Don't allow bypassing the interceptor.
+    return true;
   }
   virtual std::vector<uint32_t> EnumerateIndexedProperties(v8::Isolate* isolate)
       OVERRIDE {
@@ -170,6 +175,22 @@ TEST_F(InterceptorTest, IndexedInterceptor) {
       "(function (obj) {"
       "   if (obj[0] !== 42) throw 'FAIL';"
       "   else obj[0] = 191; })");
+}
+
+TEST_F(InterceptorTest, BypassInterceptorAllowed) {
+  RunInterceptorTest(
+      "(function (obj) {"
+      "   obj.value = 191 /* make test happy */;"
+      "   obj.foo = 23;"
+      "   if (obj.foo !== 23) throw 'FAIL'; })");
+}
+
+TEST_F(InterceptorTest, BypassInterceptorForbidden) {
+  RunInterceptorTest(
+      "(function (obj) {"
+      "   obj.value = 191 /* make test happy */;"
+      "   obj[1] = 23;"
+      "   if (obj[1] === 23) throw 'FAIL'; })");
 }
 
 }  // namespace gin

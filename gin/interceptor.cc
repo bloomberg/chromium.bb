@@ -26,9 +26,11 @@ v8::Local<v8::Value> NamedPropertyInterceptor::GetNamedProperty(
   return v8::Local<v8::Value>();
 }
 
-void NamedPropertyInterceptor::SetNamedProperty(v8::Isolate* isolate,
+bool NamedPropertyInterceptor::SetNamedProperty(v8::Isolate* isolate,
                                                 const std::string& property,
-                                                v8::Local<v8::Value> value) {}
+                                                v8::Local<v8::Value> value) {
+  return false;
+}
 
 std::vector<std::string> NamedPropertyInterceptor::EnumerateNamedProperties(
     v8::Isolate* isolate) {
@@ -51,10 +53,12 @@ v8::Local<v8::Value> IndexedPropertyInterceptor::GetIndexedProperty(
   return v8::Local<v8::Value>();
 }
 
-void IndexedPropertyInterceptor::SetIndexedProperty(
+bool IndexedPropertyInterceptor::SetIndexedProperty(
     v8::Isolate* isolate,
     uint32_t index,
-    v8::Local<v8::Value> value) {}
+    v8::Local<v8::Value> value) {
+  return false;
+}
 
 std::vector<uint32_t> IndexedPropertyInterceptor::EnumerateIndexedProperties(
     v8::Isolate* isolate) {

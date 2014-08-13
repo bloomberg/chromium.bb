@@ -69,7 +69,8 @@ void NamedPropertySetter(v8::Local<v8::String> property,
     return;
   std::string name;
   ConvertFromV8(isolate, property, &name);
-  interceptor->SetNamedProperty(isolate, name, value);
+  if (interceptor->SetNamedProperty(isolate, name, value))
+    info.GetReturnValue().Set(value);
 }
 
 void NamedPropertyQuery(v8::Local<v8::String> property,
@@ -114,7 +115,8 @@ void IndexedPropertySetter(uint32_t index,
       IndexedInterceptorFromV8(isolate, info.Holder());
   if (!interceptor)
     return;
-  interceptor->SetIndexedProperty(isolate, index, value);
+  if (interceptor->SetIndexedProperty(isolate, index, value))
+    info.GetReturnValue().Set(value);
 }
 
 void IndexedPropertyEnumerator(

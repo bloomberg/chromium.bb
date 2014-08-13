@@ -25,7 +25,8 @@ class GIN_EXPORT NamedPropertyInterceptor {
 
   virtual v8::Local<v8::Value> GetNamedProperty(v8::Isolate* isolate,
                                                 const std::string& property);
-  virtual void SetNamedProperty(v8::Isolate* isolate,
+  // Return true if the set was interecepted.
+  virtual bool SetNamedProperty(v8::Isolate* isolate,
                                 const std::string& property,
                                 v8::Local<v8::Value> value);
   virtual std::vector<std::string> EnumerateNamedProperties(
@@ -45,7 +46,8 @@ class GIN_EXPORT IndexedPropertyInterceptor {
 
   virtual v8::Local<v8::Value> GetIndexedProperty(v8::Isolate* isolate,
                                                   uint32_t index);
-  virtual void SetIndexedProperty(v8::Isolate* isolate,
+  // Return true if the set was interecepted.
+  virtual bool SetIndexedProperty(v8::Isolate* isolate,
                                   uint32_t index,
                                   v8::Local<v8::Value> value);
   virtual std::vector<uint32_t> EnumerateIndexedProperties(
