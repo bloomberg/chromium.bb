@@ -249,6 +249,6 @@ IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, MAYBE_StatusIconBehavior) {
   EXPECT_TRUE(tray->status_icon_ != NULL);
   RemoveNotification("test_id");
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(tray->status_icon_ != NULL);
+  EXPECT_TRUE(tray->status_icon_ == NULL);
 }
 }  // namespace message_center

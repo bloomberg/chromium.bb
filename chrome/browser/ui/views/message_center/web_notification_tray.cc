@@ -276,6 +276,11 @@ void WebNotificationTray::UpdateStatusIcon() {
     tool_tip = l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_TOOLTIP);
   }
 
+  if (message_center()->GetVisibleNotifications().empty()) {
+    DestroyStatusIcon();
+    return;
+  }
+
   gfx::ImageSkia* icon_image = GetIcon(
       unread_notifications,
       message_center()->IsQuietMode());
