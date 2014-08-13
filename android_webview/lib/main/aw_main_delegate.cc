@@ -53,6 +53,7 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   CommandLine* cl = CommandLine::ForCurrentProcess();
   bool zero_copy_disabled_by_switch = cl->HasSwitch(switches::kDisableZeroCopy);
   bool use_zero_copy = !zero_copy_disabled_by_switch &&
+                       cl->HasSwitch(switches::kEnableZeroCopy) &&
                        gpu_memory_buffer_factory_.get()->Initialize();
 
   if (use_zero_copy) {
