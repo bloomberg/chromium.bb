@@ -10,3 +10,6 @@ This directory contains a copy of Opus library
 
 This library is used by Chrome Remote Desktop and WebRTC for audio stream
 encoding/decoding.
+
+Local changes:
+- merged http://git.xiph.org/?p=opus.git;a=commitdiff;h=e70faf98b0465e4f278c72ce2d7b4ad10221a2f2
