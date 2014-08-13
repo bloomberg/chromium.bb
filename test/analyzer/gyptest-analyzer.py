@@ -6,75 +6,237 @@
 """Tests for analyzer
 """
 
+import json
 import TestGyp
 
-found = 'Found dependency\n'
-not_found = 'No dependencies\n'
+found = 'Found dependency'
+not_found = 'No dependencies'
 
-def __CreateTestFile(files):
+
+def _CreateTestFile(files, targets):
   f = open('test_file', 'w')
-  for file in files:
-    f.write(file + '\n')
+  to_write = {'files': files, 'targets': targets }
+  json.dump(to_write, f)
   f.close()
 
+
+def _CreateBogusTestFile():
+  f = open('test_file','w')
+  f.write('bogus')
+  f.close()
+
+
+def _ReadOutputFileContents():
+  f = open('analyzer_output', 'r')
+  result = json.load(f)
+  f.close()
+  return result
+
+
+# NOTE: this would be clearer if it subclassed TestGypCustom, but that trips
+# over a bug in pylint (E1002).
 test = TestGyp.TestGypCustom(format='analyzer')
 
-# Verifies file_path must be specified.
-test.run_gyp('test.gyp',
-             stdout='Must specify files to analyze via file_path generator '
-             'flag\n')
+
+def run_analyzer(*args, **kw):
+  """Runs the test specifying a particular config and output path."""
+  args += ('-Gconfig_path=test_file',
+           '-Ganalyzer_output_path=analyzer_output')
+  test.run_gyp('test.gyp', *args, **kw)
+
+
+def run_analyzer2(*args, **kw):
+  """Runs the test specifying a particular config and output path."""
+  args += ('-Gconfig_path=test_file',
+           '-Ganalyzer_output_path=analyzer_output')
+  test.run_gyp('test2.gyp', *args, **kw)
+
+
+def EnsureContains(targets=set(), matched=False):
+  """Verifies output contains |targets|."""
+  result = _ReadOutputFileContents()
+  if result.get('error', None):
+    print 'unexpected error', result.get('error')
+    test.fail_test()
+
+  if result.get('warning', None):
+    print 'unexpected warning', result.get('warning')
+    test.fail_test()
+
+  actual_targets = set(result['targets'])
+  if actual_targets != targets:
+    print 'actual targets:', actual_targets, '\nexpected targets:', targets
+    test.fail_test()
+
+  if matched and result['status'] != found:
+    print 'expected', found, 'got', result['status']
+    test.fail_test()
+  elif not matched and result['status'] != not_found:
+    print 'expected', not_found, 'got', result['status']
+    test.fail_test()
+
+
+def EnsureError(expected_error_string):
+  """Verifies output contains the error string."""
+  result = _ReadOutputFileContents()
+  if result.get('error', '').find(expected_error_string) == -1:
+    print 'actual error:', result.get('error', ''), '\nexpected error:', \
+        expected_error_string
+    test.fail_test()
+
+
+def EnsureStdoutContains(expected_error_string):
+  if test.stdout().find(expected_error_string) == -1:
+    print 'actual stdout:', test.stdout(), '\nexpected stdout:', \
+        expected_error_string
+    test.fail_test()
+
+
+def EnsureWarning(expected_warning_string):
+  """Verifies output contains the warning string."""
+  result = _ReadOutputFileContents()
+  if result.get('warning', '').find(expected_warning_string) == -1:
+    print 'actual warning:', result.get('warning', ''), \
+        '\nexpected warning:', expected_warning_string
+    test.fail_test()
+
+
+# Verifies config_path must be specified.
+test.run_gyp('test.gyp')
+EnsureStdoutContains('Must specify files to analyze via config_path')
+
+# Verifies config_path must point to a valid file.
+test.run_gyp('test.gyp', '-Gconfig_path=bogus_file',
+             '-Ganalyzer_output_path=analyzer_output')
+EnsureError('Unable to open file bogus_file')
+
+# Verify get error when bad target is specified.
+_CreateTestFile(['exe2.c'], ['bad_target'])
+run_analyzer()
+EnsureWarning('Unable to find all targets')
+
+# Verifies config_path must point to a valid json file.
+_CreateBogusTestFile()
+run_analyzer()
+EnsureError('Unable to parse config file test_file')
 
 # Trivial test of a source.
-__CreateTestFile(['foo.c'])
-test.run_gyp('test.gyp', '-Gfile_path=test_file', stdout=found)
+_CreateTestFile(['foo.c'], [])
+run_analyzer()
+EnsureContains(matched=True)
 
 # Conditional source that is excluded.
-__CreateTestFile(['conditional_source.c'])
-test.run_gyp('test.gyp', '-Gfile_path=test_file', stdout=not_found)
+_CreateTestFile(['conditional_source.c'], [])
+run_analyzer()
+EnsureContains(matched=False)
 
 # Conditional source that is included by way of argument.
-__CreateTestFile(['conditional_source.c'])
-test.run_gyp('test.gyp', '-Gfile_path=test_file', '-Dtest_variable=1',
-             stdout=found)
+_CreateTestFile(['conditional_source.c'], [])
+run_analyzer('-Dtest_variable=1')
+EnsureContains(matched=True)
 
 # Two unknown files.
-__CreateTestFile(['unknown1.c', 'unoknow2.cc'])
-test.run_gyp('test.gyp', '-Gfile_path=test_file', stdout=not_found)
+_CreateTestFile(['unknown1.c', 'unoknow2.cc'], [])
+run_analyzer()
+EnsureContains()
 
 # Two unknown files.
-__CreateTestFile(['unknown1.c', 'subdir/subdir_sourcex.c'])
-test.run_gyp('test.gyp', '-Gfile_path=test_file', stdout=not_found)
+_CreateTestFile(['unknown1.c', 'subdir/subdir_sourcex.c'], [])
+run_analyzer()
+EnsureContains()
 
 # Included dependency
-__CreateTestFile(['unknown1.c', 'subdir/subdir_source.c'])
-test.run_gyp('test.gyp', '-Gfile_path=test_file', stdout=found)
+_CreateTestFile(['unknown1.c', 'subdir/subdir_source.c'], [])
+run_analyzer()
+EnsureContains(matched=True)
 
 # Included inputs to actions.
-__CreateTestFile(['action_input.c'])
-test.run_gyp('test.gyp', '-Gfile_path=test_file', stdout=found)
+_CreateTestFile(['action_input.c'], [])
+run_analyzer()
+EnsureContains(matched=True)
 
 # Don't consider outputs.
-__CreateTestFile(['action_output.c'])
-test.run_gyp('test.gyp', '-Gfile_path=test_file', stdout=not_found)
+_CreateTestFile(['action_output.c'], [])
+run_analyzer()
+EnsureContains(matched=False)
 
 # Rule inputs.
-__CreateTestFile(['rule_input.c'])
-test.run_gyp('test.gyp', '-Gfile_path=test_file', stdout=found)
+_CreateTestFile(['rule_input.c'], [])
+run_analyzer()
+EnsureContains(matched=True)
 
-# Ignore patch specified with PRODUCT_DIR.
-__CreateTestFile(['product_dir_input.c'])
-test.run_gyp('test.gyp', '-Gfile_path=test_file', stdout=not_found)
+# Ignore path specified with PRODUCT_DIR.
+_CreateTestFile(['product_dir_input.c'], [])
+run_analyzer()
+EnsureContains(matched=False)
 
 # Path specified via a variable.
-__CreateTestFile(['subdir/subdir_source2.c'])
-test.run_gyp('test.gyp', '-Gfile_path=test_file', stdout=found)
+_CreateTestFile(['subdir/subdir_source2.c'], [])
+run_analyzer()
+EnsureContains(matched=True)
 
 # Verifies paths with // are fixed up correctly.
-__CreateTestFile(['parent_source.c'])
-test.run_gyp('test.gyp', '-Gfile_path=test_file', stdout=found)
+_CreateTestFile(['parent_source.c'], [])
+run_analyzer()
+EnsureContains(matched=True)
 
 # Verifies relative paths are resolved correctly.
-__CreateTestFile(['subdir/subdir_source.h'])
-test.run_gyp('test.gyp', '-Gfile_path=test_file', stdout=found)
+_CreateTestFile(['subdir/subdir_source.h'], [])
+run_analyzer()
+EnsureContains(matched=True)
+
+# Various permutations when passing in targets.
+_CreateTestFile(['exe2.c', 'subdir/subdir2b_source.c'], ['exe', 'exe3'])
+run_analyzer()
+EnsureContains(matched=True, targets={'exe3'})
+
+_CreateTestFile(['exe2.c', 'subdir/subdir2b_source.c'], ['exe'])
+run_analyzer()
+EnsureContains(matched=True)
+
+# Verifies duplicates are ignored.
+_CreateTestFile(['exe2.c', 'subdir/subdir2b_source.c'], ['exe', 'exe'])
+run_analyzer()
+EnsureContains(matched=True)
+
+_CreateTestFile(['exe2.c'], ['exe'])
+run_analyzer()
+EnsureContains(matched=True)
+
+_CreateTestFile(['exe2.c'], [])
+run_analyzer()
+EnsureContains(matched=True)
+
+_CreateTestFile(['subdir/subdir2b_source.c', 'exe2.c'], [])
+run_analyzer()
+EnsureContains(matched=True)
+
+_CreateTestFile(['exe2.c'], [])
+run_analyzer()
+EnsureContains(matched=True)
+
+# Assertions when modifying build (gyp/gypi) files, especially when said files
+# are included.
+_CreateTestFile(['subdir2/d.cc'], ['exe', 'exe2', 'foo', 'exe3'])
+run_analyzer2()
+EnsureContains(matched=True, targets={'exe', 'foo'})
+
+_CreateTestFile(['subdir2/subdir.includes.gypi'],
+                ['exe', 'exe2', 'foo', 'exe3'])
+run_analyzer2()
+EnsureContains(matched=True, targets={'exe', 'foo'})
+
+_CreateTestFile(['subdir2/subdir.gyp'], ['exe', 'exe2', 'foo', 'exe3'])
+run_analyzer2()
+EnsureContains(matched=True, targets={'exe', 'foo'})
+
+_CreateTestFile(['test2.includes.gypi'], ['exe', 'exe2', 'foo', 'exe3'])
+run_analyzer2()
+EnsureContains(matched=True, targets={'exe', 'exe2', 'exe3'})
+
+# Verify modifying a file included makes all targets dirty.
+_CreateTestFile(['common.gypi'], ['exe', 'exe2', 'foo', 'exe3'])
+run_analyzer2('-Icommon.gypi')
+EnsureContains(matched=True, targets={'exe', 'foo', 'exe2', 'exe3'})
 
 test.pass_test()

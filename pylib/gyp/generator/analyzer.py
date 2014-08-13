@@ -167,32 +167,19 @@ class Target(object):
 
 class Config(object):
   """Details what we're looking for
-  look_for_dependency_only: if true only search for a target listing any of
-                            the files in files.
   files: set of files to search for
   targets: see file description for details"""
   def __init__(self):
-    self.look_for_dependency_only = True
     self.files = []
     self.targets = []
 
   def Init(self, params):
-    """Initializes Config. This is a separate method as it may raise an
-    exception if there is a parse error."""
+    """Initializes Config. This is a separate method as it raises an exception
+    if there is a parse error."""
     generator_flags = params.get('generator_flags', {})
-    # TODO(sky): nuke file_path and look_for_dependency_only once migrate
-    # recipes.
-    file_path = generator_flags.get('file_path', None)
-    if file_path:
-      self._InitFromFilePath(file_path)
-      return
-
-    # If |file_path| wasn't specified then we look for config_path.
-    # TODO(sky): always look for config_path once migrated recipes.
     config_path = generator_flags.get('config_path', None)
     if not config_path:
       return
-    self.look_for_dependency_only = False
     try:
       f = open(config_path, 'r')
       config = json.load(f)
@@ -206,18 +193,6 @@ class Config(object):
     self.files = config.get('files', [])
     # Coalesce duplicates
     self.targets = list(set(config.get('targets', [])))
-
-  def _InitFromFilePath(self, file_path):
-    try:
-      f = open(file_path, 'r')
-      for file_name in f:
-        if file_name.endswith('\n'):
-          file_name = file_name[0:len(file_name) - 1]
-          if len(file_name):
-            self.files.append(file_name)
-      f.close()
-    except IOError:
-      raise Exception('Unable to open file', file_path)
 
 
 def _WasBuildFileModified(build_file, data, files):
@@ -389,9 +364,6 @@ def GenerateOutput(target_list, target_dicts, data, params):
   try:
     config.Init(params)
     if not config.files:
-      if config.look_for_dependency_only:
-        print 'Must specify files to analyze via file_path generator flag'
-        return
       raise Exception('Must specify files to analyze via config_path generator '
                       'flag')
 
@@ -417,11 +389,6 @@ def GenerateOutput(target_list, target_dicts, data, params):
       all_targets, matched = _GenerateTargets(data, target_list, target_dicts,
                                               toplevel_dir,
                                               frozenset(config.files))
-
-    # Set of targets that refer to one of the files.
-    if config.look_for_dependency_only:
-      print found_dependency_string if matched else no_dependency_string
-      return
 
     warning = None
     if matched_include:
