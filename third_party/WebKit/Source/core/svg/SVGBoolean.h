@@ -55,9 +55,6 @@ public:
     virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) OVERRIDE;
     virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement*) OVERRIDE;
 
-    bool operator==(const SVGBoolean& other) const { return m_value == other.m_value; }
-    bool operator!=(const SVGBoolean& other) const { return !operator==(other); }
-
     bool value() const { return m_value; }
     void setValue(bool value) { m_value = value; }
 

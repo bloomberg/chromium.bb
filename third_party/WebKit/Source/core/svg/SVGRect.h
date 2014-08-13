@@ -62,9 +62,6 @@ public:
     void setWidth(float f) { m_value.setWidth(f); }
     void setHeight(float f) { m_value.setHeight(f); }
 
-    bool operator==(const SVGRect&) const;
-    bool operator!=(const SVGRect& other) const { return !operator==(other); }
-
     virtual String valueAsString() const OVERRIDE;
     void setValueAsString(const String&, ExceptionState&);
 

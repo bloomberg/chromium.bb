@@ -106,23 +106,11 @@ private:
     explicit SVGTransform(const AffineTransform&);
     SVGTransform(SVGTransformType, float, const FloatPoint&, const AffineTransform&);
 
-    friend bool operator==(const SVGTransform& a, const SVGTransform& b);
-
     SVGTransformType m_transformType;
     float m_angle;
     FloatPoint m_center;
     AffineTransform m_matrix;
 };
-
-inline bool operator==(const SVGTransform& a, const SVGTransform& b)
-{
-    return a.m_transformType == b.m_transformType && a.m_angle == b.m_angle && a.m_matrix == b.m_matrix;
-}
-
-inline bool operator!=(const SVGTransform& a, const SVGTransform& b)
-{
-    return !(a == b);
-}
 
 } // namespace blink
 

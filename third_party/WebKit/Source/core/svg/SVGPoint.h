@@ -65,9 +65,6 @@ public:
 
     FloatPoint matrixTransform(const AffineTransform&) const;
 
-    bool operator==(const SVGPoint&) const;
-    bool operator!=(const SVGPoint& other) const { return !operator==(other); }
-
     virtual String valueAsString() const OVERRIDE;
     void setValueAsString(const String&, ExceptionState&);
 
