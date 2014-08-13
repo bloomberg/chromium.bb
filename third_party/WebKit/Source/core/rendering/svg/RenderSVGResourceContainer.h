@@ -52,7 +52,7 @@ protected:
     enum InvalidationMode {
         LayoutAndBoundariesInvalidation = 1 << 0,
         BoundariesInvalidation = 1 << 1,
-        RepaintInvalidation = 1 << 2,
+        PaintInvalidation = 1 << 2,
         ParentOnlyInvalidation = 1 << 3
     };
 

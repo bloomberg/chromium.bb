@@ -40,14 +40,14 @@ void RenderSVGResourceGradient::removeAllClientsFromCache(bool markForInvalidati
 {
     m_gradientMap.clear();
     m_shouldCollectGradientAttributes = true;
-    markAllClientsForInvalidation(markForInvalidation ? RepaintInvalidation : ParentOnlyInvalidation);
+    markAllClientsForInvalidation(markForInvalidation ? PaintInvalidation : ParentOnlyInvalidation);
 }
 
 void RenderSVGResourceGradient::removeClientFromCache(RenderObject* client, bool markForInvalidation)
 {
     ASSERT(client);
     m_gradientMap.remove(client);
-    markClientForInvalidation(client, markForInvalidation ? RepaintInvalidation : ParentOnlyInvalidation);
+    markClientForInvalidation(client, markForInvalidation ? PaintInvalidation : ParentOnlyInvalidation);
 }
 
 bool RenderSVGResourceGradient::applyResource(RenderObject* object, RenderStyle* style, GraphicsContext*& context, unsigned short resourceMode)
