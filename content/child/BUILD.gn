@@ -90,10 +90,11 @@ source_set("child") {
       "//content/app/strings",
       "//crypto:platform",
       "//third_party/WebKit/public:blink",
+      "//third_party/WebKit/public:resources",
       "//third_party/npapi",
-      "//webkit:resources",
       "//webkit/child",
       "//webkit/common",
+      "//webkit/glue/resources",
     ]
   }
 

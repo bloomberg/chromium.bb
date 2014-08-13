@@ -52,6 +52,7 @@ static_library("extensions") {
     "//net",
     "//skia",
     "//sync",
+    "//third_party/WebKit/public:resources",
     "//third_party/cacheinvalidation",
     "//third_party/icu",
     "//third_party/leveldatabase",
@@ -63,9 +64,9 @@ static_library("extensions") {
     "//ui/resources",
     "//ui/strings",
     "//url",
-    "//webkit:resources",
     "//webkit/browser:storage",
     "//webkit/common:storage",
+    "//webkit/glue/resources",
     #"debugger",  TODO(GYP)
     #"installer_util",  TODO(GYP)
     #"../components/components.gyp:omaha_query_params",  TODO(GYP)

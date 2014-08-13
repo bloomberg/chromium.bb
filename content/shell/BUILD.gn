@@ -222,9 +222,10 @@ static_library("content_shell_lib") {
     "//net",
     "//net:net_resources",
     "//skia",
-    "//third_party/icu",
     "//third_party/WebKit/public:blink",
+    "//third_party/WebKit/public:resources",
     "//third_party/WebKit/public:test_support",
+    "//third_party/icu",
     "//ui/base",
     "//ui/events:events_base",
     "//ui/gfx",
@@ -233,8 +234,8 @@ static_library("content_shell_lib") {
     "//ui/gl",
     "//url",
     "//v8",
-    "//webkit:resources",
     "//webkit/browser:storage",
+    "//webkit/glue/resources",
     #'copy_test_netscape_plugin',  TODO(GYP)
   ]
 
@@ -407,9 +408,10 @@ repack("pak") {
     "//content/app/strings",
     "//content/browser/tracing:resources",
     "//net:net_resources",
+    "//third_party/WebKit/public:resources",
     "//ui/resources",
     "//ui/strings",
-    "//webkit:resources",
+    "//webkit/glue/resources",
   ]
 
   if (is_android) {

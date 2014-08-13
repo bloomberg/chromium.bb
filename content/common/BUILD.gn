@@ -96,8 +96,9 @@ source_set("common") {
     ]
 
     deps += [
-      "//webkit:resources",
       "//content:resources",
+      "//third_party/WebKit/public:resources",
+      "//webkit/glue/resources",
     ]
     libs += [ "QuartzCore.framework" ]
   }

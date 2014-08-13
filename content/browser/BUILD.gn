@@ -97,16 +97,17 @@ source_set("browser") {
       "//mojo/public/interfaces/application",
       "//mojo/public/js/bindings",
       "//net:http_server",
+      "//third_party/WebKit/public:resources",
       "//third_party/angle:commit_id",
       "//third_party/icu",
       "//third_party/leveldatabase",
       "//third_party/libyuv",
       "//ui/resources",
       "//ui/surface",
-      "//webkit:resources",
       "//webkit/browser:storage",
       "//webkit/common",
       "//webkit/common:storage",
+      "//webkit/glue/resources",
     ]
   }
 

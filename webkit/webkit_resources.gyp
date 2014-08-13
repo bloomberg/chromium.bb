@@ -5,7 +5,7 @@
 {
   'targets': [
     {
-      # GN version: //webkit:resources
+      # GN version: //webkit/glue/resources
       'target_name': 'webkit_resources',
       'type': 'none',
       'variables': {

@@ -48,6 +48,7 @@ static_library("renderer") {
     "//net",
     "//skia",
     "//third_party/WebKit/public:blink",
+    "//third_party/WebKit/public:resources",
     "//third_party/icu",
     "//third_party/npapi",
     "//third_party/re2",
@@ -56,7 +57,7 @@ static_library("renderer") {
     "//v8:v8",
     "//webkit/child",
     "//webkit/common",
-    "//webkit:resources",
+    "//webkit/glue/resources",
     #"../components/components.gyp:cdm_renderer",  TODO(GYP)
     #"../extensions/extensions.gyp:extensions_renderer",  TODO(GYP)
     #"../media/cast/cast.gyp:cast_sender",  TODO(GYP)

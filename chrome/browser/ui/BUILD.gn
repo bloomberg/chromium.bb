@@ -91,6 +91,7 @@ static_library("ui") {
       "//media",
       "//mojo/system",
       "//net:net_with_v8",
+      "//third_party/WebKit/public:resources",
       "//third_party/adobe/flash:flapper_version_h",
       "//third_party/expat",
       "//third_party/hunspell",
@@ -101,10 +102,10 @@ static_library("ui") {
       "//ui/surface",
       "//ui/web_dialogs",
       "//v8",
-      "//webkit:resources",
       "//webkit/browser:storage",
       "//webkit/common",
       "//webkit/common:storage",
+      "//webkit/glue/resources",
       #'debugger',  TODO(GYP)
       #'installer_util',  TODO(GYP)
       #'../third_party/libjingle/libjingle.gyp:libjingle',  TODO(GYP)
