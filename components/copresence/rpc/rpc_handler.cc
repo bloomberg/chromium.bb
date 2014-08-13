@@ -84,6 +84,7 @@ bool ReportErrorLogged(const ReportResponse& response) {
 }
 
 // Request construction
+// TODO(ckehoe): Move these into a separate file?
 
 template <typename T>
 BroadcastScanConfiguration GetBroadcastScanConfig(const T& msg) {
@@ -119,11 +120,11 @@ BroadcastScanConfiguration ExtractTokenExchangeStrategy(
 
   // Strategies for subscriptions.
   if (request.has_manage_subscriptions_request()) {
-    const RepeatedPtrField<Subscription>& messages =
+    const RepeatedPtrField<Subscription> subscriptions =
         request.manage_subscriptions_request().subscription();
-    for (int i = 0; i < messages.size(); ++i) {
+    for (int i = 0; i < subscriptions.size(); ++i) {
       BroadcastScanConfiguration config =
-          GetBroadcastScanConfig(messages.Get(i));
+          GetBroadcastScanConfig(subscriptions.Get(i));
       broadcast_only = broadcast_only || config == BROADCAST_ONLY;
       scan_only = scan_only || config == SCAN_ONLY;
       if (config == BROADCAST_AND_SCAN || (broadcast_only && scan_only))
@@ -205,6 +206,36 @@ void AddTokenToRequest(ReportRequest* request, const AudioToken& token) {
   signals->set_observed_time_millis(base::Time::Now().ToJsTime());
 }
 
+OptInStateFilter* CreateOptedInOrOutFilter() {
+  OptInStateFilter* filter = new OptInStateFilter;
+  filter->add_allowed_opt_in_state(copresence::OPTED_IN);
+  filter->add_allowed_opt_in_state(copresence::OPTED_OUT);
+  return filter;
+}
+
+void AllowOptedOutMessages(ReportRequest* request) {
+  // TODO(ckehoe): Collapse this pattern into ProcessPublish()
+  // and ProcessSubscribe() methods.
+
+  RepeatedPtrField<PublishedMessage>* messages =
+      request->mutable_manage_messages_request()->mutable_message_to_publish();
+  for (int i = 0; i < messages->size(); ++i) {
+    PublishedMessage* message = messages->Mutable(i);
+    if (!message->has_opt_in_state_filter())
+      message->set_allocated_opt_in_state_filter(CreateOptedInOrOutFilter());
+  }
+
+  RepeatedPtrField<Subscription>* subscriptions =
+        request->mutable_manage_subscriptions_request()->mutable_subscription();
+  for (int i = 0; i < subscriptions->size(); ++i) {
+    Subscription* subscription = subscriptions->Mutable(i);
+    if (!subscription->has_opt_in_state_filter()) {
+      subscription->set_allocated_opt_in_state_filter(
+          CreateOptedInOrOutFilter());
+    }
+  }
+}
+
 }  // namespace
 
 // Public methods
@@ -271,6 +302,7 @@ void RpcHandler::SendReportRequest(scoped_ptr<ReportRequest> request,
 
   AddPlayingTokens(request.get());
 
+  AllowOptedOutMessages(request.get());
   SendServerRequest(kReportRequestRpcName,
                     app_id,
                     request.Pass(),
