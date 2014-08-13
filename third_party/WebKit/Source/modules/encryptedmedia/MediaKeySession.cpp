@@ -55,13 +55,29 @@ class MediaKeySession::PendingAction : public GarbageCollectedFinalized<MediaKey
 public:
     enum Type {
         Update,
-        Release
+        Release,
+        Message
     };
 
     Type type() const { return m_type; }
-    const Persistent<ContentDecryptionModuleResult> result() const { return m_result; }
-    // |data| is only valid for Update types.
-    const RefPtr<ArrayBuffer> data() const { return m_data; }
+
+    const Persistent<ContentDecryptionModuleResult> result() const
+    {
+        ASSERT(m_type == Update || m_type == Release);
+        return m_result;
+    }
+
+    const RefPtr<ArrayBuffer> data() const
+    {
+        ASSERT(m_type == Update);
+        return m_data;
+    }
+
+    RefPtrWillBeRawPtr<Event> event()
+    {
+        ASSERT(m_type == Message);
+        return m_event;
+    }
 
     static PendingAction* CreatePendingUpdate(ContentDecryptionModuleResult* result, PassRefPtr<ArrayBuffer> data)
     {
@@ -74,6 +90,12 @@ public:
     {
         ASSERT(result);
         return new PendingAction(Release, result, PassRefPtr<ArrayBuffer>());
+    }
+
+    static PendingAction* CreatePendingMessage(PassRefPtrWillBeRawPtr<Event> event)
+    {
+        ASSERT(event);
+        return new PendingAction(Message, event);
     }
 
     ~PendingAction()
@@ -93,9 +115,16 @@ private:
     {
     }
 
+    PendingAction(Type type, PassRefPtrWillBeRawPtr<Event> event)
+        : m_type(type)
+        , m_event(event)
+    {
+    }
+
     const Type m_type;
     const Member<ContentDecryptionModuleResult> m_result;
     const RefPtr<ArrayBuffer> m_data;
+    const RefPtrWillBeRawPtr<Event> m_event;
 };
 
 // This class allows a MediaKeySession object to be created asynchronously.
@@ -444,6 +473,10 @@ void MediaKeySession::actionTimerFired(Timer<MediaKeySession>*)
             // 3.3 Resolve promise with undefined.
             m_session->release(action->result()->result());
             break;
+        case PendingAction::Message:
+            WTF_LOG(Media, "MediaKeySession(%p)::actionTimerFired: Message", this);
+            m_asyncEventQueue->enqueueEvent(action->event().release());
+            break;
         }
     }
 }
@@ -461,6 +494,21 @@ void MediaKeySession::message(const unsigned char* message, size_t messageLength
 
     RefPtrWillBeRawPtr<MediaKeyMessageEvent> event = MediaKeyMessageEvent::create(EventTypeNames::message, init);
     event->setTarget(this);
+
+    if (!hasEventListeners()) {
+        // Since this event may be generated immediately after resolving the
+        // CreateSession() promise, it is possible that the JavaScript hasn't
+        // had time to run the .then() action and bind any necessary event
+        // handlers. If there are no event handlers connected, delay enqueuing
+        // this message to provide time for the JavaScript to run. This will
+        // also affect the (rare) case where there is no message handler
+        // attched during normal operation.
+        m_pendingActions.append(PendingAction::CreatePendingMessage(event.release()));
+        if (!m_actionTimer.isActive())
+            m_actionTimer.startOneShot(0, FROM_HERE);
+        return;
+    }
+
     m_asyncEventQueue->enqueueEvent(event.release());
 }
 
