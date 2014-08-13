@@ -396,7 +396,7 @@ class GSContext(object):
                       **kwargs)
 
   @staticmethod
-  def _GetTrackerFilenames(dest_path):
+  def GetTrackerFilenames(dest_path):
     """Returns a list of gsutil tracker filenames.
 
     Tracker files are used by gsutil to resume downloads/uploads. This
@@ -489,7 +489,7 @@ class GSContext(object):
           # Assume a command: gsutil [options] cp [options] src_path dest_path
           # dest_path needs to be a fully qualified local path, which is already
           # required for GSContext.Copy().
-          tracker_filenames = self._GetTrackerFilenames(e.result.cmd[-1])
+          tracker_filenames = self.GetTrackerFilenames(e.result.cmd[-1])
           logging.info('Potential list of tracker files: %s',
                        tracker_filenames)
           for tracker_filename in tracker_filenames:
