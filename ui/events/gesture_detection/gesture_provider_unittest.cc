@@ -823,7 +823,7 @@ TEST_F(GestureProviderTest, FractionalScroll) {
     // Verify that the event co-ordinates are still the precise values we
     // supplied.
     EXPECT_EQ(kFakeCoordX + delta_x * i, gesture.x);
-    EXPECT_EQ(kFakeCoordY + delta_y * i, gesture.y);
+    EXPECT_FLOAT_EQ(kFakeCoordY + delta_y * i, gesture.y);
 
     // Verify that we're scrolling vertically by the expected amount
     // (modulo rounding).
@@ -2338,6 +2338,29 @@ TEST_F(GestureProviderTest, MaxGestureBoundsLength) {
             GetMostRecentGestureEvent().details.bounding_box_f().width());
   EXPECT_EQ(kMaxGestureBoundsLength,
             GetMostRecentGestureEvent().details.bounding_box_f().height());
+}
+
+TEST_F(GestureProviderTest, ZeroRadiusBoundingBox) {
+  base::TimeTicks event_time = base::TimeTicks::Now();
+  MockMotionEvent event =
+      ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN, 10, 20);
+  event.SetTouchMajor(0);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(gfx::RectF(10, 20, 0, 0),
+            GetMostRecentGestureEvent().details.bounding_box());
+
+  event = ObtainMotionEvent(
+      event_time, MotionEvent::ACTION_POINTER_DOWN, 10, 20, 110, 120);
+  event.SetTouchMajor(0);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  event = ObtainMotionEvent(
+      event_time, MotionEvent::ACTION_MOVE, 10, 20, 110, 150);
+  event.SetTouchMajor(0);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  EXPECT_EQ(gfx::RectF(10, 20, 100, 130),
+            GetMostRecentGestureEvent().details.bounding_box());
 }
 
 }  // namespace ui

@@ -31,15 +31,21 @@ const char* GetMotionEventActionName(MotionEvent::Action action) {
 }
 
 gfx::RectF GetBoundingBox(const MotionEvent& event) {
-  gfx::RectF bounds;
+  // Can't use gfx::RectF::Union, as it ignores touches with a radius of 0.
+  float left = std::numeric_limits<float>::max();
+  float top = std::numeric_limits<float>::max();
+  float right = -std::numeric_limits<float>::max();
+  float bottom = -std::numeric_limits<float>::max();
   for (size_t i = 0; i < event.GetPointerCount(); ++i) {
     float diameter = event.GetTouchMajor(i);
-    bounds.Union(gfx::RectF(event.GetX(i) - diameter / 2,
-                            event.GetY(i) - diameter / 2,
-                            diameter,
-                            diameter));
+    float x = event.GetX(i) - diameter / 2;
+    float y = event.GetY(i) - diameter / 2;
+    left = std::min(left, x);
+    right = std::max(right, x + diameter);
+    top = std::min(top, y);
+    bottom = std::max(bottom, y + diameter);
   }
-  return bounds;
+  return gfx::RectF(left, top, right - left, bottom - top);
 }
 
 GestureEventData CreateGesture(const GestureEventDetails& details,
