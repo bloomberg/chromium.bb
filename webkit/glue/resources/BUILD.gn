@@ -6,6 +6,7 @@ import("//tools/grit/grit_rule.gni")
 
 grit("resources") {
   source = "webkit_resources.grd"
+  output_dir = "$root_gen_dir/webkit"
   outputs = [
     "grit/webkit_resources.h",
     "webkit_resources_100_percent.pak",

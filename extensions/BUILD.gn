@@ -82,12 +82,12 @@ source_set("test_support") {
 # GYP version: //extensions/extensions.gyp:extensions_shell_and_test_pak
 repack("shell_and_test_pak") {
   sources = [
-    "$root_gen_dir/chrome/common/common_resources.pak",
-    "$root_gen_dir/chrome/common/extensions_api_resources.pak",
+    "$root_gen_dir/chrome/common_resources.pak",
+    "$root_gen_dir/chrome/extensions_api_resources.pak",
     # TODO(jamescook): Extract the extension/app related resources
     # from generated_resources_en-US.pak. http://crbug.com/397250
-    "$root_gen_dir/chrome/app/generated_resources_en-US.pak",
-    "$root_gen_dir/chrome/renderer/renderer_resources_100_percent.pak",
+    "$root_gen_dir/chrome/generated_resources_en-US.pak",
+    "$root_gen_dir/chrome/renderer_resources_100_percent.pak",
     "$root_gen_dir/content/content_resources.pak",
     "$root_gen_dir/content/shell/shell_resources.pak",
     "$root_gen_dir/extensions/extensions_renderer_resources.pak",
