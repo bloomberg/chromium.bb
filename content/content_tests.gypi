@@ -404,7 +404,6 @@
         'browser/appcache/mock_appcache_storage.cc',
         'browser/appcache/mock_appcache_storage.h',
         'browser/appcache/mock_appcache_storage_unittest.cc',
-        'browser/battery_status/battery_status_manager_linux_unittest.cc',
         'browser/battery_status/battery_status_service_unittest.cc',
         'browser/browser_thread_unittest.cc',
         'browser/browser_url_handler_impl_unittest.cc',

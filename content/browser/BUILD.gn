@@ -402,16 +402,12 @@ source_set("browser") {
   if (is_linux) {
     if (use_dbus) {
       sources -= [
-        "battery_status/battery_status_manager_default.cc",
         "geolocation/empty_wifi_data_provider.cc",
       ]
       deps += [ "//dbus" ]
     } else {
       # This will already have gotten removed for all non-Linux cases.
-       sources -= [
-         "battery_status/battery_status_manager_linux.cc",
-         "geolocation/wifi_data_provider_linux.cc",
-       ]
+       sources -= [ "geolocation/wifi_data_provider_linux.cc" ]
     }
   }
 }
