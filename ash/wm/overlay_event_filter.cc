@@ -56,16 +56,23 @@ void OverlayEventFilter::OnLockStateChanged(bool locked) {
 }
 
 void OverlayEventFilter::Activate(Delegate* delegate) {
+  if (delegate_)
+    delegate_->Cancel();
   delegate_ = delegate;
 }
 
-void OverlayEventFilter::Deactivate() {
-  delegate_ = NULL;
+void OverlayEventFilter::Deactivate(Delegate* delegate) {
+  if (delegate_ == delegate)
+    delegate_ = NULL;
 }
 
 void OverlayEventFilter::Cancel() {
   if (delegate_)
     delegate_->Cancel();
+}
+
+bool OverlayEventFilter::IsActive() {
+  return delegate_ != NULL;
 }
 
 }  // namespace ash

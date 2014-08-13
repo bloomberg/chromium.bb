@@ -40,7 +40,7 @@ FirstRunHelperImpl::FirstRunHelperImpl()
 }
 
 FirstRunHelperImpl::~FirstRunHelperImpl() {
-  Shell::GetInstance()->overlay_filter()->Deactivate();
+  Shell::GetInstance()->overlay_filter()->Deactivate(this);
   if (IsTrayBubbleOpened())
     CloseTrayBubble();
   widget_->Close();

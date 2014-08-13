@@ -1,0 +1,33 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "ash/test/test_overlay_delegate.h"
+
+namespace ash {
+namespace test {
+
+TestOverlayDelegate::TestOverlayDelegate()
+    : cancel_count_(0) {}
+TestOverlayDelegate::~TestOverlayDelegate() {}
+
+int TestOverlayDelegate::GetCancelCountAndReset() {
+  int count = cancel_count_;
+  cancel_count_ = 0;
+  return count;
+}
+
+void TestOverlayDelegate::Cancel() {
+  ++cancel_count_;
+}
+
+bool TestOverlayDelegate::IsCancelingKeyEvent(ui::KeyEvent* event) {
+  return false;
+}
+
+aura::Window* TestOverlayDelegate::GetWindow() {
+  return NULL;
+}
+
+}  // namespace test
+}  // namespace ash

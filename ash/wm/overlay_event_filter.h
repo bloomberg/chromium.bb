@@ -46,10 +46,13 @@ class ASH_EXPORT OverlayEventFilter : public ui::EventHandler,
   void Activate(Delegate* delegate);
 
   // Ends the filtering of events.
-  void Deactivate();
+  void Deactivate(Delegate* delegate);
 
   // Cancels the partial screenshot UI.  Do nothing if it's not activated.
   void Cancel();
+
+  // Returns true if it's currently active.
+  bool IsActive();
 
   // ui::EventHandler overrides:
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
@@ -60,6 +63,8 @@ class ASH_EXPORT OverlayEventFilter : public ui::EventHandler,
   virtual void OnLockStateChanged(bool locked) OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(PartialScreenshotViewTest, DontStartOverOverlay);
+
   Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayEventFilter);

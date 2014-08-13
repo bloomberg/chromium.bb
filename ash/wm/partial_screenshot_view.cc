@@ -70,7 +70,7 @@ class PartialScreenshotView::OverlayDelegate
 
  private:
   virtual ~OverlayDelegate() {
-    Shell::GetInstance()->overlay_filter()->Deactivate();
+    Shell::GetInstance()->overlay_filter()->Deactivate(this);
   }
 
   std::vector<views::Widget*> widgets_;
@@ -83,6 +83,10 @@ std::vector<PartialScreenshotView*>
 PartialScreenshotView::StartPartialScreenshot(
     ScreenshotDelegate* screenshot_delegate) {
   std::vector<PartialScreenshotView*> views;
+
+  if (Shell::GetInstance()->overlay_filter()->IsActive())
+    return views;
+
   OverlayDelegate* overlay_delegate = new OverlayDelegate();
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   for (aura::Window::Windows::iterator it = root_windows.begin();

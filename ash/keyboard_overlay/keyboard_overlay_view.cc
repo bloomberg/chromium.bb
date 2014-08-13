@@ -43,7 +43,7 @@ KeyboardOverlayView::~KeyboardOverlayView() {
 }
 
 void KeyboardOverlayView::Cancel() {
-  Shell::GetInstance()->overlay_filter()->Deactivate();
+  Shell::GetInstance()->overlay_filter()->Deactivate(this);
   views::Widget* widget = GetWidget();
   if (widget)
     widget->Close();
@@ -66,10 +66,14 @@ aura::Window* KeyboardOverlayView::GetWindow() {
   return GetWidget()->GetNativeWindow();
 }
 
+// static
 void KeyboardOverlayView::ShowDialog(
     content::BrowserContext* context,
     WebContentsHandler* handler,
     const GURL& url) {
+  if (Shell::GetInstance()->overlay_filter()->IsActive())
+    return;
+
   KeyboardOverlayDelegate* delegate = new KeyboardOverlayDelegate(
       l10n_util::GetStringUTF16(IDS_ASH_KEYBOARD_OVERLAY_TITLE), url);
   KeyboardOverlayView* view =
