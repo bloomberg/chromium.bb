@@ -38,6 +38,7 @@ scoped_ptr<extensions::MenuItem::Id> GetParentId(
 
 }  // namespace
 
+extern const char kActionNotAllowedError[];
 extern const char kCannotFindItemError[];
 extern const char kCheckedError[];
 extern const char kDuplicateIDError[];
@@ -88,6 +89,14 @@ MenuItem::ContextList GetContexts(const PropertyWithEnumT& property) {
       case PropertyWithEnumT::CONTEXTS_TYPE_LAUNCHER:
         // Not available for <webview>.
         contexts.Add(extensions::MenuItem::LAUNCHER);
+        break;
+      case PropertyWithEnumT::CONTEXTS_TYPE_BROWSER_ACTION:
+        // Not available for <webview>.
+        contexts.Add(extensions::MenuItem::BROWSER_ACTION);
+        break;
+      case PropertyWithEnumT::CONTEXTS_TYPE_PAGE_ACTION:
+        // Not available for <webview>.
+        contexts.Add(extensions::MenuItem::PAGE_ACTION);
         break;
       case PropertyWithEnumT::CONTEXTS_TYPE_NONE:
         NOTREACHED();
@@ -147,6 +156,15 @@ bool CreateMenuItem(const PropertyWithEnumT& create_properties,
     // Launcher item is not allowed for <webview>.
     if (!extension->is_platform_app() || is_webview) {
       *error = kLauncherNotAllowedError;
+      return false;
+    }
+  }
+
+  if (contexts.Contains(MenuItem::BROWSER_ACTION) ||
+      contexts.Contains(MenuItem::PAGE_ACTION)) {
+    // Action items are not allowed for <webview>.
+    if (!extension->is_extension() || is_webview) {
+      *error = kActionNotAllowedError;
       return false;
     }
   }

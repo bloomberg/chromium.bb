@@ -18,7 +18,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
@@ -418,17 +417,17 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
   std::set<MenuItem::ExtensionKey> ids = menu_manager->ExtensionIds();
   std::vector<base::string16> sorted_menu_titles;
   std::map<base::string16, std::string> map_ids;
-  for (std::set<MenuItem::ExtensionKey>::iterator i = ids.begin();
-       i != ids.end();
-       ++i) {
+  for (std::set<MenuItem::ExtensionKey>::iterator iter = ids.begin();
+       iter != ids.end();
+       ++iter) {
     const Extension* extension =
-        service->GetExtensionById(i->extension_id, false);
+        service->GetExtensionById(iter->extension_id, false);
     // Platform apps have their context menus created directly in
     // AppendPlatformAppItems.
     if (extension && !extension->is_platform_app()) {
       base::string16 menu_title = extension_items_.GetTopLevelContextMenuTitle(
-          *i, printable_selection_text);
-      map_ids[menu_title] = i->extension_id;
+          *iter, printable_selection_text);
+      map_ids[menu_title] = iter->extension_id;
       sorted_menu_titles.push_back(menu_title);
     }
   }
@@ -439,17 +438,14 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
   l10n_util::SortStrings16(app_locale, &sorted_menu_titles);
 
   int index = 0;
-  base::TimeTicks begin = base::TimeTicks::Now();
   for (size_t i = 0; i < sorted_menu_titles.size(); ++i) {
     const std::string& id = map_ids[sorted_menu_titles[i]];
     const MenuItem::ExtensionKey extension_key(id);
-    extension_items_.AppendExtensionItems(
-        extension_key, printable_selection_text, &index);
+    extension_items_.AppendExtensionItems(extension_key,
+                                          printable_selection_text,
+                                          &index,
+                                          false);  // is_action_menu
   }
-
-  UMA_HISTOGRAM_TIMES("Extensions.ContextMenus_BuildTime",
-                      base::TimeTicks::Now() - begin);
-  UMA_HISTOGRAM_COUNTS("Extensions.ContextMenus_ItemCount", index);
 }
 
 void RenderViewContextMenu::AppendCurrentExtensionItems() {
@@ -463,8 +459,10 @@ void RenderViewContextMenu::AppendCurrentExtensionItems() {
     const MenuItem::ExtensionKey key(
         extension->id(),
         extensions::WebViewGuest::GetViewInstanceId(source_web_contents_));
-    extension_items_.AppendExtensionItems(
-        key, PrintableSelectionText(), &index);
+    extension_items_.AppendExtensionItems(key,
+                                          PrintableSelectionText(),
+                                          &index,
+                                          false);  // is_action_menu
   }
 }
 

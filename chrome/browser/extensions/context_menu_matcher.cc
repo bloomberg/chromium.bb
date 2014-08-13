@@ -14,9 +14,21 @@
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image.h"
 
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/common/extensions/api/context_menus.h"
+#endif
+
 namespace extensions {
 
 namespace {
+
+int GetActionMenuTopLevelLimit() {
+#if defined(ENABLE_EXTENSIONS)
+  return api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT;
+#else
+  return 0;
+#endif
+}
 
 // The range of command IDs reserved for extension's custom menus.
 // TODO(oshima): These values will be injected by embedders.
@@ -53,7 +65,8 @@ ContextMenuMatcher::ContextMenuMatcher(
 void ContextMenuMatcher::AppendExtensionItems(
     const MenuItem::ExtensionKey& extension_key,
     const base::string16& selection_text,
-    int* index) {
+    int* index,
+    bool is_action_menu) {
   DCHECK_GE(*index, 0);
   int max_index =
       extensions_context_custom_last - extensions_context_custom_first;
@@ -77,11 +90,18 @@ void ContextMenuMatcher::AppendExtensionItems(
 
   // Extensions (other than platform apps) are only allowed one top-level slot
   // (and it can't be a radio or checkbox item because we are going to put the
-  // extension icon next to it).
-  // If they have more than that, we automatically push them into a submenu.
-  if (extension->is_platform_app()) {
-    RecursivelyAppendExtensionItems(items, can_cross_incognito, selection_text,
-                                    menu_model_, index);
+  // extension icon next to it), unless the context menu is an an action menu.
+  // Action menus do not include the extension action, and they only include
+  // items from one extension, so they are not placed within a submenu.
+  // Otherwise, we automatically push them into a submenu if there is more than
+  // one top-level item.
+  if (extension->is_platform_app() || is_action_menu) {
+    RecursivelyAppendExtensionItems(items,
+                                    can_cross_incognito,
+                                    selection_text,
+                                    menu_model_,
+                                    index,
+                                    is_action_menu);
   } else {
     int menu_id = ConvertToExtensionsCustomCommandId(*index);
     (*index)++;
@@ -107,10 +127,15 @@ void ContextMenuMatcher::AppendExtensionItems(
       ui::SimpleMenuModel* submenu = new ui::SimpleMenuModel(delegate_);
       extension_menu_models_.push_back(submenu);
       menu_model_->AddSubMenu(menu_id, title, submenu);
-      RecursivelyAppendExtensionItems(submenu_items, can_cross_incognito,
-                                      selection_text, submenu, index);
+      RecursivelyAppendExtensionItems(submenu_items,
+                                      can_cross_incognito,
+                                      selection_text,
+                                      submenu,
+                                      index,
+                                      false);  // is_action_menu_top_level
     }
-    SetExtensionIcon(extension_key.extension_id);
+    if (!is_action_menu)
+      SetExtensionIcon(extension_key.extension_id);
   }
 }
 
@@ -215,10 +240,11 @@ void ContextMenuMatcher::RecursivelyAppendExtensionItems(
     bool can_cross_incognito,
     const base::string16& selection_text,
     ui::SimpleMenuModel* menu_model,
-    int* index)
-{
+    int* index,
+    bool is_action_menu_top_level) {
   MenuItem::Type last_type = MenuItem::NORMAL;
   int radio_group_id = 1;
+  int num_items = 0;
 
   for (MenuItem::List::const_iterator i = items.begin();
        i != items.end(); ++i) {
@@ -233,9 +259,15 @@ void ContextMenuMatcher::RecursivelyAppendExtensionItems(
     }
 
     int menu_id = ConvertToExtensionsCustomCommandId(*index);
-    (*index)++;
-    if (menu_id >= extensions_context_custom_last)
+    ++(*index);
+    ++num_items;
+    // Action context menus have a limit for top level extension items to
+    // prevent control items from being pushed off the screen, since extension
+    // items will not be placed in a submenu.
+    if (menu_id >= extensions_context_custom_last ||
+        (is_action_menu_top_level && num_items >= GetActionMenuTopLevelLimit()))
       return;
+
     extension_item_map_[menu_id] = item->id();
     base::string16 title = item->TitleWithReplacement(selection_text,
                                                 kMaxExtensionItemTitleLength);
@@ -248,8 +280,12 @@ void ContextMenuMatcher::RecursivelyAppendExtensionItems(
         ui::SimpleMenuModel* submenu = new ui::SimpleMenuModel(delegate_);
         extension_menu_models_.push_back(submenu);
         menu_model->AddSubMenu(menu_id, title, submenu);
-        RecursivelyAppendExtensionItems(children, can_cross_incognito,
-                                        selection_text, submenu, index);
+        RecursivelyAppendExtensionItems(children,
+                                        can_cross_incognito,
+                                        selection_text,
+                                        submenu,
+                                        index,
+                                        false);  // is_action_menu_top_level
       }
     } else if (item->type() == MenuItem::CHECKBOX) {
       menu_model->AddCheckItem(menu_id, title);

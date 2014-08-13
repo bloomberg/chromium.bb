@@ -94,7 +94,9 @@ class MenuItem {
     VIDEO = 64,
     AUDIO = 128,
     FRAME = 256,
-    LAUNCHER = 512
+    LAUNCHER = 512,
+    BROWSER_ACTION = 1024,
+    PAGE_ACTION = 2048
   };
 
   // An item can be only one of these types.
@@ -167,7 +169,7 @@ class MenuItem {
   const Id& id() const { return id_; }
   Id* parent_id() const { return parent_id_.get(); }
   int child_count() const { return children_.size(); }
-  ContextList contexts() const { return contexts_; }
+  const ContextList& contexts() const { return contexts_; }
   Type type() const { return type_; }
   bool checked() const { return checked_; }
   bool enabled() const { return enabled_; }
