@@ -89,7 +89,14 @@ class VIEWS_EXPORT NativeWidgetDelegate {
   virtual void OnNativeWidgetMove() = 0;
 
   // Called when the NativeWidget changed size to |new_size|.
+  // This may happen at the same time as OnNativeWidgetWindowShowStateChanged,
+  // e.g. maximize.
   virtual void OnNativeWidgetSizeChanged(const gfx::Size& new_size) = 0;
+
+  // Called when the NativeWidget changes its window state.
+  // This may happen at the same time as OnNativeWidgetSizeChanged, e.g.
+  // maximize.
+  virtual void OnNativeWidgetWindowShowStateChanged() = 0;
 
   // Called when the user begins/ends to change the bounds of the window.
   virtual void OnNativeWidgetBeginUserBoundsChange() = 0;

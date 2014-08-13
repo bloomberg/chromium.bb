@@ -157,6 +157,9 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
         window_, context->GetRootWindow(), window_bounds);
   }
 
+  // Start observing property changes.
+  window_->AddObserver(this);
+
   // Wait to set the bounds until we have a parent. That way we can know our
   // true state/bounds (the LayoutManager may enforce a particular
   // state/bounds).
@@ -800,6 +803,7 @@ void NativeWidgetAura::OnDeviceScaleFactorChanged(float device_scale_factor) {
 }
 
 void NativeWidgetAura::OnWindowDestroying(aura::Window* window) {
+  window_->RemoveObserver(this);
   delegate_->OnNativeWidgetDestroying();
 
   // If the aura::Window is destroyed, we can no longer show tooltips.
@@ -824,6 +828,16 @@ bool NativeWidgetAura::HasHitTestMask() const {
 void NativeWidgetAura::GetHitTestMask(gfx::Path* mask) const {
   DCHECK(mask);
   delegate_->GetHitTestMask(mask);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeWidgetAura, aura::WindowObserver implementation:
+
+void NativeWidgetAura::OnWindowPropertyChanged(aura::Window* window,
+                                               const void* key,
+                                               intptr_t old) {
+  if (key == aura::client::kShowStateKey)
+    delegate_->OnNativeWidgetWindowShowStateChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

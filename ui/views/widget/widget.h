@@ -756,6 +756,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   virtual gfx::Size GetMaximumSize() const OVERRIDE;
   virtual void OnNativeWidgetMove() OVERRIDE;
   virtual void OnNativeWidgetSizeChanged(const gfx::Size& new_size) OVERRIDE;
+  virtual void OnNativeWidgetWindowShowStateChanged() OVERRIDE;
   virtual void OnNativeWidgetBeginUserBoundsChange() OVERRIDE;
   virtual void OnNativeWidgetEndUserBoundsChange() OVERRIDE;
   virtual bool HasFocusManager() const OVERRIDE;
@@ -816,6 +817,11 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Persists the window's restored position and "show" state using the
   // window delegate.
   void SaveWindowPlacement();
+
+  // Invokes SaveWindowPlacement() if the native widget has been initialized.
+  // This is called at times when the native widget may not have been
+  // initialized.
+  void SaveWindowPlacementIfInitialized();
 
   // Sizes and positions the window just after it is created.
   void SetInitialBounds(const gfx::Rect& bounds);

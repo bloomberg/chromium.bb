@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/events/event_constants.h"
 #include "ui/views/ime/input_method_delegate.h"
@@ -35,6 +36,7 @@ class VIEWS_EXPORT NativeWidgetAura
     : public internal::NativeWidgetPrivate,
       public internal::InputMethodDelegate,
       public aura::WindowDelegate,
+      public aura::WindowObserver,
       public aura::client::ActivationDelegate,
       public aura::client::ActivationChangeObserver,
       public aura::client::FocusChangeObserver,
@@ -157,6 +159,11 @@ class VIEWS_EXPORT NativeWidgetAura
   virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE;
   virtual bool HasHitTestMask() const OVERRIDE;
   virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE;
+
+  // Overridden from aura::WindowObserver:
+  virtual void OnWindowPropertyChanged(aura::Window* window,
+                                       const void* key,
+                                       intptr_t old) OVERRIDE;
 
   // Overridden from ui::EventHandler:
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;

@@ -1127,15 +1127,15 @@ void Widget::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
         focused_view->GetInputMethod()->OnCaretBoundsChanged(focused_view);
     }
   }
-  // Size changed notifications can fire prior to full initialization
-  // i.e. during session restore.  Avoid saving session state during these
-  // startup procedures.
-  if (native_widget_initialized_)
-    SaveWindowPlacement();
+  SaveWindowPlacementIfInitialized();
 
   FOR_EACH_OBSERVER(WidgetObserver, observers_, OnWidgetBoundsChanged(
     this,
     GetWindowBoundsInScreen()));
+}
+
+void Widget::OnNativeWidgetWindowShowStateChanged() {
+  SaveWindowPlacementIfInitialized();
 }
 
 void Widget::OnNativeWidgetBeginUserBoundsChange() {
@@ -1424,6 +1424,11 @@ void Widget::SaveWindowPlacement() {
   gfx::Rect bounds;
   native_widget_->GetWindowPlacement(&bounds, &show_state);
   widget_delegate_->SaveWindowPlacement(bounds, show_state);
+}
+
+void Widget::SaveWindowPlacementIfInitialized() {
+  if (native_widget_initialized_)
+    SaveWindowPlacement();
 }
 
 void Widget::SetInitialBounds(const gfx::Rect& bounds) {
