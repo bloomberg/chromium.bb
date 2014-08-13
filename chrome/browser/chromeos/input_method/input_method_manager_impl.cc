@@ -66,6 +66,13 @@ InputMethodManagerImpl::InputMethodManagerImpl(
     keyboard_.reset(ImeKeyboard::Create());
   else
     keyboard_.reset(new FakeImeKeyboard());
+
+  // Initializes the system IME list.
+  scoped_ptr<ComponentExtensionIMEManagerDelegate> comp_delegate(
+      new ComponentExtensionIMEManagerImpl());
+  component_extension_ime_manager_->Initialize(comp_delegate.Pass());
+  util_.ResetInputMethods(
+      component_extension_ime_manager_->GetAllIMEAsInputMethodDescriptor());
 }
 
 InputMethodManagerImpl::~InputMethodManagerImpl() {
@@ -794,15 +801,6 @@ InputMethodUtil* InputMethodManagerImpl::GetInputMethodUtil() {
 ComponentExtensionIMEManager*
     InputMethodManagerImpl::GetComponentExtensionIMEManager() {
   return component_extension_ime_manager_.get();
-}
-
-void InputMethodManagerImpl::InitializeComponentExtension() {
-  scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate(
-      new ComponentExtensionIMEManagerImpl());
-  component_extension_ime_manager_->Initialize(delegate.Pass());
-
-  util_.ResetInputMethods(
-      component_extension_ime_manager_->GetAllIMEAsInputMethodDescriptor());
 }
 
 void InputMethodManagerImpl::SetCandidateWindowControllerForTesting(

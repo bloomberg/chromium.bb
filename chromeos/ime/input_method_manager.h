@@ -76,9 +76,6 @@ class CHROMEOS_EXPORT InputMethodManager {
   // Destroy the global instance.
   static CHROMEOS_EXPORT void Shutdown();
 
-  // Initialize component extensions.
-  virtual void InitializeComponentExtension() = 0;
-
   // Get the current UI session state (e.g. login screen, lock screen, etc.).
   virtual State GetState() = 0;
 
