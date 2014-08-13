@@ -31,6 +31,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/events/EventQueue.h"
 #include "core/inspector/ScriptCallStack.h"
+#include "modules/IndexedDBNames.h"
 #include "modules/indexeddb/IDBDatabase.h"
 #include "modules/indexeddb/IDBEventDispatcher.h"
 #include "modules/indexeddb/IDBIndex.h"
@@ -56,24 +57,6 @@ IDBTransaction* IDBTransaction::create(ExecutionContext* context, int64_t id, ID
     IDBTransaction* transaction = adoptRefCountedGarbageCollectedWillBeNoop(new IDBTransaction(context, id, Vector<String>(), blink::WebIDBTransactionModeVersionChange, db, openDBRequest, previousMetadata));
     transaction->suspendIfNeeded();
     return transaction;
-}
-
-const AtomicString& IDBTransaction::modeReadOnly()
-{
-    DEFINE_STATIC_LOCAL(AtomicString, readonly, ("readonly", AtomicString::ConstructFromLiteral));
-    return readonly;
-}
-
-const AtomicString& IDBTransaction::modeReadWrite()
-{
-    DEFINE_STATIC_LOCAL(AtomicString, readwrite, ("readwrite", AtomicString::ConstructFromLiteral));
-    return readwrite;
-}
-
-const AtomicString& IDBTransaction::modeVersionChange()
-{
-    DEFINE_STATIC_LOCAL(AtomicString, versionchange, ("versionchange", AtomicString::ConstructFromLiteral));
-    return versionchange;
 }
 
 IDBTransaction::IDBTransaction(ExecutionContext* context, int64_t id, const Vector<String>& objectStoreNames, blink::WebIDBTransactionMode mode, IDBDatabase* db, IDBOpenDBRequest* openDBRequest, const IDBDatabaseMetadata& previousMetadata)
@@ -115,11 +98,6 @@ void IDBTransaction::trace(Visitor* visitor)
     visitor->trace(m_deletedObjectStores);
     visitor->trace(m_objectStoreCleanupMap);
     EventTargetWithInlineData::trace(visitor);
-}
-
-const String& IDBTransaction::mode() const
-{
-    return modeToString(m_mode);
 }
 
 void IDBTransaction::setError(PassRefPtrWillBeRawPtr<DOMError> error)
@@ -301,33 +279,30 @@ bool IDBTransaction::hasPendingActivity() const
 
 blink::WebIDBTransactionMode IDBTransaction::stringToMode(const String& modeString, ExceptionState& exceptionState)
 {
-    if (modeString == IDBTransaction::modeReadOnly())
+    if (modeString == IndexedDBNames::readonly)
         return blink::WebIDBTransactionModeReadOnly;
-    if (modeString == IDBTransaction::modeReadWrite())
+    if (modeString == IndexedDBNames::readwrite)
         return blink::WebIDBTransactionModeReadWrite;
 
     exceptionState.throwTypeError("The mode provided ('" + modeString + "') is not one of 'readonly' or 'readwrite'.");
     return blink::WebIDBTransactionModeReadOnly;
 }
 
-const AtomicString& IDBTransaction::modeToString(blink::WebIDBTransactionMode mode)
+const String& IDBTransaction::mode() const
 {
-    switch (mode) {
+    switch (m_mode) {
     case blink::WebIDBTransactionModeReadOnly:
-        return IDBTransaction::modeReadOnly();
-        break;
+        return IndexedDBNames::readonly;
 
     case blink::WebIDBTransactionModeReadWrite:
-        return IDBTransaction::modeReadWrite();
-        break;
+        return IndexedDBNames::readwrite;
 
     case blink::WebIDBTransactionModeVersionChange:
-        return IDBTransaction::modeVersionChange();
-        break;
+        return IndexedDBNames::versionchange;
     }
 
     ASSERT_NOT_REACHED();
-    return IDBTransaction::modeReadOnly();
+    return IndexedDBNames::readonly;
 }
 
 const AtomicString& IDBTransaction::interfaceName() const

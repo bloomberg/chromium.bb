@@ -11,6 +11,7 @@
 #include "modules/EventModulesFactory.h"
 #include "modules/EventModulesNames.h"
 #include "modules/EventTargetModulesNames.h"
+#include "modules/IndexedDBNames.h"
 
 namespace blink {
 
@@ -23,6 +24,7 @@ void ModulesInitializer::init()
     EventTargetNames::initModules();
     Document::registerEventFactory(EventModulesFactory::create());
     ModuleBindingsInitializer::init();
+    IndexedDBNames::init();
 
     CoreInitializer::init();
 

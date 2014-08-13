@@ -32,6 +32,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/inspector/ScriptCallStack.h"
+#include "modules/IndexedDBNames.h"
 #include "modules/indexeddb/IDBAny.h"
 #include "modules/indexeddb/IDBDatabase.h"
 #include "modules/indexeddb/IDBObjectStore.h"
@@ -51,30 +52,6 @@ namespace blink {
 IDBCursor* IDBCursor::create(PassOwnPtr<blink::WebIDBCursor> backend, blink::WebIDBCursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
 {
     return new IDBCursor(backend, direction, request, source, transaction);
-}
-
-const AtomicString& IDBCursor::directionNext()
-{
-    DEFINE_STATIC_LOCAL(AtomicString, next, ("next", AtomicString::ConstructFromLiteral));
-    return next;
-}
-
-const AtomicString& IDBCursor::directionNextUnique()
-{
-    DEFINE_STATIC_LOCAL(AtomicString, nextunique, ("nextunique", AtomicString::ConstructFromLiteral));
-    return nextunique;
-}
-
-const AtomicString& IDBCursor::directionPrev()
-{
-    DEFINE_STATIC_LOCAL(AtomicString, prev, ("prev", AtomicString::ConstructFromLiteral));
-    return prev;
-}
-
-const AtomicString& IDBCursor::directionPrevUnique()
-{
-    DEFINE_STATIC_LOCAL(AtomicString, prevunique, ("prevunique", AtomicString::ConstructFromLiteral));
-    return prevunique;
 }
 
 IDBCursor::IDBCursor(PassOwnPtr<blink::WebIDBCursor> backend, blink::WebIDBCursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
@@ -382,37 +359,37 @@ void IDBCursor::handleBlobAcks()
 
 blink::WebIDBCursorDirection IDBCursor::stringToDirection(const String& directionString, ExceptionState& exceptionState)
 {
-    if (directionString == IDBCursor::directionNext())
+    if (directionString == IndexedDBNames::next)
         return blink::WebIDBCursorDirectionNext;
-    if (directionString == IDBCursor::directionNextUnique())
+    if (directionString == IndexedDBNames::nextunique)
         return blink::WebIDBCursorDirectionNextNoDuplicate;
-    if (directionString == IDBCursor::directionPrev())
+    if (directionString == IndexedDBNames::prev)
         return blink::WebIDBCursorDirectionPrev;
-    if (directionString == IDBCursor::directionPrevUnique())
+    if (directionString == IndexedDBNames::prevunique)
         return blink::WebIDBCursorDirectionPrevNoDuplicate;
 
     exceptionState.throwTypeError("The direction provided ('" + directionString + "') is not one of 'next', 'nextunique', 'prev', or 'prevunique'.");
     return blink::WebIDBCursorDirectionNext;
 }
 
-const AtomicString& IDBCursor::directionToString(unsigned short direction)
+const String& IDBCursor::direction() const
 {
-    switch (direction) {
+    switch (m_direction) {
     case blink::WebIDBCursorDirectionNext:
-        return IDBCursor::directionNext();
+        return IndexedDBNames::next;
 
     case blink::WebIDBCursorDirectionNextNoDuplicate:
-        return IDBCursor::directionNextUnique();
+        return IndexedDBNames::nextunique;
 
     case blink::WebIDBCursorDirectionPrev:
-        return IDBCursor::directionPrev();
+        return IndexedDBNames::prev;
 
     case blink::WebIDBCursorDirectionPrevNoDuplicate:
-        return IDBCursor::directionPrevUnique();
+        return IndexedDBNames::prevunique;
 
     default:
         ASSERT_NOT_REACHED();
-        return IDBCursor::directionNext();
+        return IndexedDBNames::next;
     }
 }
 

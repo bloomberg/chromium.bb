@@ -47,13 +47,7 @@ class WebBlobInfo;
 
 class IDBCursor : public GarbageCollectedFinalized<IDBCursor>, public ScriptWrappable {
 public:
-    static const AtomicString& directionNext();
-    static const AtomicString& directionNextUnique();
-    static const AtomicString& directionPrev();
-    static const AtomicString& directionPrevUnique();
-
     static WebIDBCursorDirection stringToDirection(const String& modeString, ExceptionState&);
-    static const AtomicString& directionToString(unsigned short mode);
 
     static IDBCursor* create(PassOwnPtr<WebIDBCursor>, WebIDBCursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
     virtual ~IDBCursor();
@@ -61,7 +55,7 @@ public:
     void contextWillBeDestroyed() { m_backend.clear(); }
 
     // Implement the IDL
-    const String& direction() const { return directionToString(m_direction); }
+    const String& direction() const;
     ScriptValue key(ScriptState*);
     ScriptValue primaryKey(ScriptState*);
     ScriptValue value(ScriptState*);

@@ -287,6 +287,8 @@
       '<(blink_modules_output_dir)/EventTargetModulesInterfaces.h',
       '<(blink_modules_output_dir)/EventTargetModulesNames.cpp',
       '<(blink_modules_output_dir)/EventTargetModulesNames.h',
+      '<(blink_modules_output_dir)/IndexedDBNames.cpp',
+      '<(blink_modules_output_dir)/IndexedDBNames.h',
     ],
     'modules_files': [
       '<@(extra_blink_module_files)',

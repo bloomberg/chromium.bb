@@ -60,12 +60,7 @@ public:
     virtual ~IDBTransaction();
     virtual void trace(Visitor*) OVERRIDE;
 
-    static const AtomicString& modeReadOnly();
-    static const AtomicString& modeReadWrite();
-    static const AtomicString& modeVersionChange();
-
     static WebIDBTransactionMode stringToMode(const String&, ExceptionState&);
-    static const AtomicString& modeToString(WebIDBTransactionMode);
 
     // When the connection is closed backend will be 0.
     WebIDBDatabase* backendDB() const;

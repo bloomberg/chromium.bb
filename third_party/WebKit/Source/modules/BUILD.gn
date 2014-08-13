@@ -84,10 +84,29 @@ source_set("modules_testing") {
   ]
 }
 
-# GYP version: WebKit/Source/modules/modules.gyp:make_modules_generated
+action("module_names") {
+  script = "../build/scripts/make_names.py"
+
+  module_names_in = "indexeddb/IndexedDBNames.in"
+  inputs = make_names_files + [ module_names_in ]
+
+  outputs = [
+    "$blink_modules_output_dir/IndexedDBNames.cpp",
+    "$blink_modules_output_dir/IndexedDBNames.h",
+  ]
+
+  args = [
+    rebase_path(module_names_in, root_build_dir),
+    "--output_dir",
+    rebase_path(blink_modules_output_dir, root_build_dir),
+  ]
+}
+
+# GYP version: WebKit/Source/modules/modules_generated.gyp:make_modules_generated
 group("make_modules_generated") {
   deps = [
     "//third_party/WebKit/Source/core:core_event_interfaces",
     "//third_party/WebKit/Source/bindings/modules:bindings_modules_generated",
+    ":module_names",
   ]
 }

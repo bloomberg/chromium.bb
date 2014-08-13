@@ -42,6 +42,7 @@
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorState.h"
 #include "core/page/Page.h"
+#include "modules/IndexedDBNames.h"
 #include "modules/indexeddb/DOMWindowIndexedDatabase.h"
 #include "modules/indexeddb/IDBCursor.h"
 #include "modules/indexeddb/IDBCursorWithValue.h"
@@ -200,7 +201,7 @@ void ExecutableWithDatabase::start(IDBFactory* idbFactory, SecurityOrigin*, cons
     idbOpenDBRequest->addEventListener(EventTypeNames::success, callback, false);
 }
 
-static IDBTransaction* transactionForDatabase(ExecutionContext* executionContext, IDBDatabase* idbDatabase, const String& objectStoreName, const String& mode = IDBTransaction::modeReadOnly())
+static IDBTransaction* transactionForDatabase(ExecutionContext* executionContext, IDBDatabase* idbDatabase, const String& objectStoreName, const String& mode = IndexedDBNames::readonly)
 {
     TrackExceptionState exceptionState;
     IDBTransaction* idbTransaction = idbDatabase->transaction(executionContext, objectStoreName, mode, exceptionState);
@@ -730,7 +731,7 @@ public:
     {
         if (!requestCallback()->isActive())
             return;
-        IDBTransaction* idbTransaction = transactionForDatabase(context(), idbDatabase, m_objectStoreName, IDBTransaction::modeReadWrite());
+        IDBTransaction* idbTransaction = transactionForDatabase(context(), idbDatabase, m_objectStoreName, IndexedDBNames::readwrite);
         if (!idbTransaction) {
             m_requestCallback->sendFailure("Could not get transaction");
             return;

@@ -43,7 +43,7 @@
       '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
       '../config.gyp:config',
       '../core/core.gyp:webcore',
-      'make_modules_generated',
+      'modules_generated.gyp:make_modules_generated',
     ],
     'defines': [
       'BLINK_IMPLEMENTATION=1',
@@ -127,25 +127,5 @@
       '<@(modules_testing_files)',
     ],
 
-  },
-  {
-    # FIXME: should be in modules_generated.gyp
-    # GN version: //third_party/WebKit/Source/modules:make_modules_generated
-    'target_name': 'make_modules_generated',
-    'type': 'none',
-    'hard_dependency': 1,
-    'dependencies': [
-      #'generated_testing_idls',
-      '../core/core_generated.gyp:core_event_interfaces',
-      '../bindings/modules/generated.gyp:modules_event_generated',
-      '../config.gyp:config',
-    ],
-    'sources': [
-      # bison rule
-      '../core/css/CSSGrammar.y',
-      '../core/xml/XPathGrammar.y',
-    ],
-    'actions': [
-    ],
   }],
 }

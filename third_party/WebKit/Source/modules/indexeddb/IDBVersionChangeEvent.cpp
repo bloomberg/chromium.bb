@@ -26,6 +26,8 @@
 #include "config.h"
 #include "modules/indexeddb/IDBVersionChangeEvent.h"
 
+#include "modules/IndexedDBNames.h"
+
 namespace blink {
 
 
@@ -71,11 +73,9 @@ unsigned long long IDBVersionChangeEvent::newVersion(bool& isNull) const
 
 const AtomicString& IDBVersionChangeEvent::dataLoss() const
 {
-    DEFINE_STATIC_LOCAL(AtomicString, total, ("total", AtomicString::ConstructFromLiteral));
     if (m_dataLoss == blink::WebIDBDataLossTotal)
-        return total;
-    DEFINE_STATIC_LOCAL(AtomicString, none, ("none", AtomicString::ConstructFromLiteral));
-    return none;
+        return IndexedDBNames::total;
+    return IndexedDBNames::none;
 }
 
 const AtomicString& IDBVersionChangeEvent::interfaceName() const
