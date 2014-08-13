@@ -240,22 +240,40 @@ class Builder(object):
     self.goma_burst = goma_config.get('burst', False)
     self.goma_threads = goma_config.get('threads', 1)
 
-    # Define NDEBUG for Release builds.
-    if options.build_config == 'Release':
-      self.compile_options.append('-DNDEBUG')
+    # Setup debugging info flags.
+    if options.build_type == 'Official':
+      self.compile_options.append('-g')
+    elif options.fast_build != '0':
+      self.compile_options.append('-g0')
+    elif options.build_type == 'Debug':
+      self.compile_options.append('-g')
 
-    # Use unoptimized native objects for debug IRT builds for faster compiles.
-    if (self.is_pnacl_toolchain
-        and (self.outtype == 'nlib'
-             or self.outtype == 'nexe')
-        and self.arch != 'pnacl'):
-      if (options.build_config is not None
-          and options.build_config == 'Debug'):
+    # Setup optimization level.
+    if options.build_config == 'Debug' or options.fast_build != '0':
+      self.compile_options.append('-O0')
+      self.link_options.append('-O0')
+      if (self.is_pnacl_toolchain
+          and (self.outtype == 'nlib'
+               or self.outtype == 'nexe')
+          and self.arch != 'pnacl'):
+        # Use unoptimized native objects for debug IRT builds for faster
+        # compiles.
         self.compile_options.extend(['--pnacl-allow-translate',
                                      '--pnacl-allow-native',
                                      '-arch', self.arch])
-        # Also use fast translation because we are still translating libc/libc++
+        # Also use fast translation because we are still translating
+        # libc/libc++
         self.link_options.append('-Wt,-O0')
+    elif options.build_config == 'Release':
+      self.compile_options.append('-O2')
+      if not self.is_pnacl_toolchain:
+        self.link_options.append('-O2')
+    else:
+      raise Error('Unknown build config: ' + options.build_config)
+
+    # Define NDEBUG for Release builds.
+    if options.build_config == 'Release':
+      self.compile_options.append('-DNDEBUG')
 
     self.irt_layout = options.irt_layout
     if self.irt_layout:
@@ -933,22 +951,38 @@ def Main(argv):
                     help='Enable verbosity', action='store_true')
   parser.add_option('-t', '--toolpath', dest='toolpath',
                     help='Set the path for of the toolchains.')
+  parser.add_option('--build-type', dest='build_type',
+                    help='GYP build type (Dev/Official)')
   parser.add_option('--config-name', dest='build_config',
                     help='GYP build configuration name (Release/Debug)')
+  parser.add_option('--fast-build', dest='fast_build',
+                    help='GYP build fastbuild selection (0/1/2)')
   parser.add_option('--gomadir', dest='gomadir',
                     help='Path of the goma directory.')
   options, files = parser.parse_args(argv[1:])
 
   if options.name is None:
     parser.error('--name is required!')
+  if options.build_type is None:
+    parser.error('--build-type is required!')
   if options.build_config is None:
     parser.error('--config-name is required!')
+  if options.fast_build is None:
+    parser.error('--fast-build is required!')
   if options.root is None:
     parser.error('--root is required!')
   if options.arch is None:
     parser.error('--arch is required!')
   if options.build is None:
     parser.error('--build is required!')
+
+  # Official builds disable fastbuild.
+  if options.build_type == 'Official':
+    options.fast_build = '0'
+  # Disable stripping for fastbuild.
+  if options.fast_build != '0':
+    options.strip_all = 0
+    options.strip_debug = 0
 
   if not argv:
     parser.print_help()
