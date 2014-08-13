@@ -4,6 +4,7 @@
 
 #include "athena/home/minimized_home.h"
 
+#include "athena/wm/public/window_manager.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
@@ -72,6 +73,7 @@ class MinimizedHomeView : public views::View {
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
     if (event.IsLeftMouseButton() && event.GetClickCount() == 1) {
       bar_->SetActive(false);
+      athena::WindowManager::GetInstance()->ToggleOverview();
       return true;
     }
     return false;
