@@ -86,5 +86,7 @@ crbug.com/366455 svg/custom/svg-fonts-fallback.xhtml [ Leak ]
 crbug.com/402743 http/tests/xmlhttprequest/xmlhttprequest-sync-vs-async-assertion-failure.html [ Leak ]
 crbug.com/402743 http/tests/xmlhttprequest/xmlhttprequest-leaks-on-multiple-send.html [ Leak ]
 
+crbug.com/403363 http/tests/security/mixedContent/insecure-audio-video-in-main-frame.html [ Leak ]
+
 # AudioNode leak
 crbug.com/402742 webaudio/panner-loop.html [ Leak ]
