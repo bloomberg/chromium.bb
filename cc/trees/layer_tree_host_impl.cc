@@ -3027,15 +3027,23 @@ void LayerTreeHostImpl::AnimatePageScale(base::TimeTicks monotonic_time) {
 void LayerTreeHostImpl::AnimateTopControls(base::TimeTicks time) {
   if (!top_controls_manager_ || !top_controls_manager_->animation())
     return;
+
   gfx::Vector2dF scroll = top_controls_manager_->Animate(time);
+
+  if (top_controls_manager_->animation())
+    SetNeedsAnimate();
+
   if (active_tree_->TotalScrollOffset().y() == 0.f)
     return;
-  if (!scroll.IsZero()) {
-    ScrollViewportBy(gfx::ScaleVector2d(
-        scroll, 1.f / active_tree_->total_page_scale_factor()));
-    SetNeedsRedraw();
-  }
-  SetNeedsAnimate();
+
+  if (scroll.IsZero())
+    return;
+
+  ScrollViewportBy(gfx::ScaleVector2d(
+      scroll, 1.f / active_tree_->total_page_scale_factor()));
+  SetNeedsRedraw();
+  client_->SetNeedsCommitOnImplThread();
+  client_->RenewTreePriority();
 }
 
 void LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time) {

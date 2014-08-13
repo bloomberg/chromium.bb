@@ -6509,6 +6509,126 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, ScrollHandledByTopControls) {
   host_impl_->ScrollEnd();
 }
 
+TEST_F(LayerTreeHostImplWithTopControlsTest, TopControlsAnimationAtOrigin) {
+  LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 200));
+  host_impl_->SetViewportSize(gfx::Size(100, 200));
+  DrawFrame();
+
+  EXPECT_EQ(InputHandler::ScrollStarted,
+            host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
+  EXPECT_EQ(0, host_impl_->top_controls_manager()->controls_top_offset());
+  EXPECT_EQ(gfx::Vector2dF().ToString(),
+            scroll_layer->TotalScrollOffset().ToString());
+
+  // Scroll the top controls partially.
+  const float residue = 35;
+  float offset = top_controls_height_ - residue;
+  EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, offset)));
+  EXPECT_EQ(-offset, host_impl_->top_controls_manager()->controls_top_offset());
+  EXPECT_EQ(gfx::Vector2dF().ToString(),
+            scroll_layer->TotalScrollOffset().ToString());
+
+  did_request_redraw_ = false;
+  did_request_animate_ = false;
+  did_request_commit_ = false;
+
+  // End the scroll while the controls are still offset from their limit.
+  host_impl_->ScrollEnd();
+  ASSERT_TRUE(host_impl_->top_controls_manager()->animation());
+  EXPECT_TRUE(did_request_animate_);
+  EXPECT_TRUE(did_request_redraw_);
+  EXPECT_FALSE(did_request_commit_);
+
+  // The top controls should properly animate until finished, despite the scroll
+  // offset being at the origin.
+  base::TimeTicks animation_time = gfx::FrameTime::Now();
+  while (did_request_animate_) {
+    did_request_redraw_ = false;
+    did_request_animate_ = false;
+    did_request_commit_ = false;
+
+    float old_offset =
+        host_impl_->top_controls_manager()->controls_top_offset();
+
+    animation_time += base::TimeDelta::FromMilliseconds(5);
+    host_impl_->Animate(animation_time);
+    EXPECT_EQ(gfx::Vector2dF().ToString(),
+              scroll_layer->TotalScrollOffset().ToString());
+
+    float new_offset =
+        host_impl_->top_controls_manager()->controls_top_offset();
+
+    // No commit is needed as the controls are animating the content offset,
+    // not the scroll offset.
+    EXPECT_FALSE(did_request_commit_);
+
+    if (new_offset != old_offset)
+      EXPECT_TRUE(did_request_redraw_);
+
+    if (new_offset != 0) {
+      EXPECT_TRUE(host_impl_->top_controls_manager()->animation());
+      EXPECT_TRUE(did_request_animate_);
+    }
+  }
+  EXPECT_FALSE(host_impl_->top_controls_manager()->animation());
+}
+
+TEST_F(LayerTreeHostImplWithTopControlsTest, TopControlsAnimationAfterScroll) {
+  LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 200));
+  host_impl_->SetViewportSize(gfx::Size(100, 100));
+  float initial_scroll_offset = 50;
+  scroll_layer->SetScrollOffset(gfx::Vector2d(0, initial_scroll_offset));
+  DrawFrame();
+
+  EXPECT_EQ(InputHandler::ScrollStarted,
+            host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
+  EXPECT_EQ(0, host_impl_->top_controls_manager()->controls_top_offset());
+  EXPECT_EQ(gfx::Vector2dF(0, initial_scroll_offset).ToString(),
+            scroll_layer->TotalScrollOffset().ToString());
+
+  // Scroll the top controls partially.
+  const float residue = 15;
+  float offset = top_controls_height_ - residue;
+  EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, offset)));
+  EXPECT_EQ(-offset, host_impl_->top_controls_manager()->controls_top_offset());
+  EXPECT_EQ(gfx::Vector2dF(0, initial_scroll_offset).ToString(),
+            scroll_layer->TotalScrollOffset().ToString());
+
+  did_request_redraw_ = false;
+  did_request_animate_ = false;
+  did_request_commit_ = false;
+
+  // End the scroll while the controls are still offset from the limit.
+  host_impl_->ScrollEnd();
+  ASSERT_TRUE(host_impl_->top_controls_manager()->animation());
+  EXPECT_TRUE(did_request_animate_);
+  EXPECT_TRUE(did_request_redraw_);
+  EXPECT_FALSE(did_request_commit_);
+
+  // Animate the top controls to the limit.
+  base::TimeTicks animation_time = gfx::FrameTime::Now();
+  while (did_request_animate_) {
+    did_request_redraw_ = false;
+    did_request_animate_ = false;
+    did_request_commit_ = false;
+
+    float old_offset =
+        host_impl_->top_controls_manager()->controls_top_offset();
+
+    animation_time += base::TimeDelta::FromMilliseconds(5);
+    host_impl_->Animate(animation_time);
+
+    float new_offset =
+        host_impl_->top_controls_manager()->controls_top_offset();
+
+    if (new_offset != old_offset) {
+      EXPECT_TRUE(did_request_redraw_);
+      EXPECT_TRUE(did_request_commit_);
+    }
+  }
+  EXPECT_FALSE(host_impl_->top_controls_manager()->animation());
+}
+
 class LayerTreeHostImplVirtualViewportTest : public LayerTreeHostImplTest {
  public:
   void SetupVirtualViewportLayers(const gfx::Size& content_size,
