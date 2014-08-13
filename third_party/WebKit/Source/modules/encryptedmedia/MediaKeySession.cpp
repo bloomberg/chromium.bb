@@ -105,6 +105,7 @@ public:
     void trace(Visitor* visitor)
     {
         visitor->trace(m_result);
+        visitor->trace(m_event);
     }
 
 private:
@@ -124,7 +125,7 @@ private:
     const Type m_type;
     const Member<ContentDecryptionModuleResult> m_result;
     const RefPtr<ArrayBuffer> m_data;
-    const RefPtrWillBeRawPtr<Event> m_event;
+    const RefPtrWillBeMember<Event> m_event;
 };
 
 // This class allows a MediaKeySession object to be created asynchronously.
