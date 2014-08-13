@@ -121,7 +121,7 @@ class WebActivityController : public AcceleratorHandler {
   DISALLOW_COPY_AND_ASSIGN(WebActivityController);
 };
 
-const SkColor kDefaultTitleColor = SK_ColorGRAY;
+const SkColor kDefaultTitleColor = SkColorSetRGB(0xf2, 0xf2, 0xf2);
 const SkColor kDefaultUnavailableColor = SkColorSetRGB(0xbb, 0x77, 0x77);
 
 }  // namespace
