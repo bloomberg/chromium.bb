@@ -954,8 +954,11 @@ void RenderViewContextMenu::AppendProtocolHandlerSubMenu() {
 // Menu delegate functions -----------------------------------------------------
 
 bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
-  if (RenderViewContextMenuBase::IsCommandIdEnabled(id))
-    return true;
+  {
+    bool enabled = false;
+    if (RenderViewContextMenuBase::IsCommandIdKnown(id, &enabled))
+      return enabled;
+  }
 
   CoreTabHelper* core_tab_helper =
       CoreTabHelper::FromWebContents(source_web_contents_);

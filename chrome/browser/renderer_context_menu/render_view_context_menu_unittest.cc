@@ -289,3 +289,12 @@ TEST_F(RenderViewContextMenuPrefsTest,
   EXPECT_FALSE(
       menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD));
 }
+
+// Make sure the checking custom command id that is not enabled will not
+// cause DCHECK failure.
+TEST_F(RenderViewContextMenuPrefsTest,
+       IsCustomCommandIdEnabled) {
+  scoped_ptr<TestRenderViewContextMenu> menu(CreateContextMenu());
+
+  EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_CUSTOM_FIRST));
+}

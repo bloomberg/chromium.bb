@@ -78,9 +78,13 @@ class RenderViewContextMenuBase : public ui::SimpleMenuModel::Delegate,
   const ui::SimpleMenuModel& menu_model() const { return menu_model_; }
   const content::ContextMenuParams& params() const { return params_; }
 
+  // Returns true if the specified command id is known and valid for
+  // this menu. If the command is known |enabled| is set to indicate
+  // if the command is enabled.
+  bool IsCommandIdKnown(int command_id, bool* enabled) const;
+
   // SimpleMenuModel::Delegate implementation.
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
   virtual void MenuWillShow(ui::SimpleMenuModel* source) OVERRIDE;
   virtual void MenuClosed(ui::SimpleMenuModel* source) OVERRIDE;

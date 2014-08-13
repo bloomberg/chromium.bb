@@ -153,8 +153,11 @@ bool RenderViewContextMenuImpl::IsCommandIdChecked(int command_id) const {
 }
 
 bool RenderViewContextMenuImpl::IsCommandIdEnabled(int command_id) const {
-  if (RenderViewContextMenuBase::IsCommandIdEnabled(command_id))
-    return true;
+  {
+    bool enabled = false;
+    if (RenderViewContextMenuBase::IsCommandIdKnown(command_id, &enabled))
+      return enabled;
+  }
   switch (command_id) {
     // Navigation
     case CMD_BACK:

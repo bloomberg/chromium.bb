@@ -250,24 +250,30 @@ bool RenderViewContextMenuBase::AppendCustomItems() {
   return total_items > 0;
 }
 
-// Menu delegate functions -----------------------------------------------------
-
-bool RenderViewContextMenuBase::IsCommandIdEnabled(int id) const {
+bool RenderViewContextMenuBase::IsCommandIdKnown(
+    int id,
+    bool* enabled) const {
   // If this command is is added by one of our observers, we dispatch
   // it to the observer.
   ObserverListBase<RenderViewContextMenuObserver>::Iterator it(observers_);
   RenderViewContextMenuObserver* observer;
   while ((observer = it.GetNext()) != NULL) {
-    if (observer->IsCommandIdSupported(id))
-      return observer->IsCommandIdEnabled(id);
+    if (observer->IsCommandIdSupported(id)) {
+      *enabled = observer->IsCommandIdEnabled(id);
+      return true;
+    }
   }
 
   // Custom items.
-  if (IsContentCustomCommandId(id))
-    return IsCustomItemEnabled(id);
+  if (IsContentCustomCommandId(id)) {
+    *enabled = IsCustomItemEnabled(id);
+    return true;
+  }
 
   return false;
 }
+
+// Menu delegate functions -----------------------------------------------------
 
 bool RenderViewContextMenuBase::IsCommandIdChecked(int id) const {
   // If this command is is added by one of our observers, we dispatch it to the
