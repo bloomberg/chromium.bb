@@ -34,7 +34,8 @@ CloudPolicyInvalidator::CloudPolicyInvalidator(
     enterprise_management::DeviceRegisterRequest::Type type,
     CloudPolicyCore* core,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-    scoped_ptr<base::Clock> clock)
+    scoped_ptr<base::Clock> clock,
+    int64 highest_handled_invalidation_version)
     : state_(UNINITIALIZED),
       type_(type),
       core_(core),
@@ -47,11 +48,23 @@ CloudPolicyInvalidator::CloudPolicyInvalidator(
       invalid_(false),
       invalidation_version_(0),
       unknown_version_invalidation_count_(0),
+      highest_handled_invalidation_version_(
+          highest_handled_invalidation_version),
       weak_factory_(this),
       max_fetch_delay_(kMaxFetchDelayDefault),
       policy_hash_value_(0) {
   DCHECK(core);
   DCHECK(task_runner.get());
+  // |highest_handled_invalidation_version_| indicates the highest actual
+  // invalidation version handled. Since actual invalidations can have only
+  // positive versions, this member may be zero (no versioned invalidation
+  // handled yet) or positive. Negative values are not allowed:
+  //
+  // Negative version numbers are used internally by CloudPolicyInvalidator to
+  // keep track of unversioned invalidations. When such an invalidation is
+  // handled, |highest_handled_invalidation_version_| remains unchanged and does
+  // not become negative.
+  DCHECK_LE(0, highest_handled_invalidation_version_);
 }
 
 CloudPolicyInvalidator::~CloudPolicyInvalidator() {
@@ -154,10 +167,16 @@ void CloudPolicyInvalidator::OnStoreLoaded(CloudPolicyStore* store) {
                                 METRIC_POLICY_REFRESH_SIZE);
     }
 
+    const int64 store_invalidation_version = store->invalidation_version();
+
     // If the policy was invalid and the version stored matches the latest
     // invalidation version, acknowledge the latest invalidation.
-    if (invalid_ && store->invalidation_version() == invalidation_version_)
+    if (invalid_ && store_invalidation_version == invalidation_version_)
       AcknowledgeInvalidation();
+
+    // Update the highest invalidation version that was handled already.
+    if (store_invalidation_version > highest_handled_invalidation_version_)
+      highest_handled_invalidation_version_ = store_invalidation_version;
   }
 
   UpdateRegistration(store->policy());
@@ -172,6 +191,14 @@ void CloudPolicyInvalidator::HandleInvalidation(
   if (invalid_ &&
       !invalidation.is_unknown_version() &&
       invalidation.version() <= invalidation_version_) {
+    return;
+  }
+
+  if (!invalidation.is_unknown_version() &&
+      invalidation.version() <= highest_handled_invalidation_version_) {
+    // If this invalidation version was handled already, acknowledge the
+    // invalidation but ignore it otherwise.
+    invalidation.Acknowledge();
     return;
   }
 

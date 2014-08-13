@@ -64,11 +64,14 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
   // |task_runner| is used for scheduling delayed tasks. It must post tasks to
   // the main policy thread.
   // |clock| is used to get the current time.
+  // |highest_handled_invalidation_version| is the highest invalidation version
+  // that was handled already before this invalidator was created.
   CloudPolicyInvalidator(
       enterprise_management::DeviceRegisterRequest::Type type,
       CloudPolicyCore* core,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-      scoped_ptr<base::Clock> clock);
+      scoped_ptr<base::Clock> clock,
+      int64 highest_handled_invalidation_version);
   virtual ~CloudPolicyInvalidator();
 
   // Initializes the invalidator. No invalidations will be generated before this
@@ -84,6 +87,11 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
   // Whether the invalidator currently has the ability to receive invalidations.
   bool invalidations_enabled() {
     return invalidations_enabled_;
+  }
+
+  // The highest invalidation version that was handled already.
+  int64 highest_handled_invalidation_version() const {
+    return highest_handled_invalidation_version_;
   }
 
   // syncer::InvalidationHandler:
@@ -206,6 +214,9 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
   // invalidations do not provide a version number, this count is used to set
   // invalidation_version_ when such invalidations occur.
   int unknown_version_invalidation_count_;
+
+  // The highest invalidation version that was handled already.
+  int64 highest_handled_invalidation_version_;
 
   // The most up to date invalidation.
   scoped_ptr<syncer::Invalidation> invalidation_;

@@ -118,7 +118,8 @@ std::string DeviceCloudPolicyInvalidator::InvalidationServiceObserver::
 }
 
 DeviceCloudPolicyInvalidator::DeviceCloudPolicyInvalidator()
-    : invalidation_service_(NULL) {
+    : invalidation_service_(NULL),
+      highest_handled_invalidation_version_(0) {
   // The DeviceCloudPolicyInvalidator should be created before any user
   // Profiles.
   DCHECK(g_browser_process->profile_manager()->GetLoadedProfiles().empty());
@@ -251,18 +252,23 @@ void DeviceCloudPolicyInvalidator::TryToCreateInvalidator() {
 void DeviceCloudPolicyInvalidator::CreateInvalidator(
     invalidation::InvalidationService* invalidation_service) {
   invalidation_service_ = invalidation_service;
+  DCHECK(!invalidator_);
   invalidator_.reset(new CloudPolicyInvalidator(
       enterprise_management::DeviceRegisterRequest::DEVICE,
       g_browser_process->platform_part()->browser_policy_connector_chromeos()->
           GetDeviceCloudPolicyManager()->core(),
       base::MessageLoopProxy::current(),
-      scoped_ptr<base::Clock>(new base::DefaultClock())));
+      scoped_ptr<base::Clock>(new base::DefaultClock()),
+      highest_handled_invalidation_version_));
   invalidator_->Initialize(invalidation_service);
 }
 
 void DeviceCloudPolicyInvalidator::DestroyInvalidator() {
-  if (invalidator_)
+  if (invalidator_) {
+    highest_handled_invalidation_version_ =
+        invalidator_->highest_handled_invalidation_version();
     invalidator_->Shutdown();
+  }
   invalidator_.reset();
   invalidation_service_ = NULL;
 }

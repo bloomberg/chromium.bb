@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_CLOUD_POLICY_INVALIDATOR_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_CLOUD_POLICY_INVALIDATOR_H_
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -87,6 +88,9 @@ class DeviceCloudPolicyInvalidator : public content::NotificationObserver {
   // The invalidation service backing the current |CloudPolicyInvalidator|. NULL
   // if no |CloudPolicyInvalidator| exists.
   invalidation::InvalidationService* invalidation_service_;
+
+  // The highest invalidation version that was handled already.
+  int64 highest_handled_invalidation_version_;
 
   // The current |CloudPolicyInvalidator|. NULL if no connected invalidation
   // service is available.

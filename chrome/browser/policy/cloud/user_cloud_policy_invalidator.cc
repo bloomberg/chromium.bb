@@ -22,7 +22,8 @@ UserCloudPolicyInvalidator::UserCloudPolicyInvalidator(
     : CloudPolicyInvalidator(GetPolicyType(),
                              policy_manager->core(),
                              base::MessageLoopProxy::current(),
-                             scoped_ptr<base::Clock>(new base::DefaultClock())),
+                             scoped_ptr<base::Clock>(new base::DefaultClock()),
+                             0 /* highest_handled_invalidation_version */),
       profile_(profile) {
   DCHECK(profile);
 
