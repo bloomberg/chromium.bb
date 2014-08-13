@@ -16,37 +16,37 @@ public:
         OpacityChanged = 1 << 1,
         ZIndexChanged = 1 << 2,
         FilterChanged = 1 << 3,
-        // The object needs to be repainted if it contains text or properties dependent on color (e.g., border or outline).
+        // The object needs to issue paint invalidations if it contains text or properties dependent on color (e.g., border or outline).
         TextOrColorChanged = 1 << 4,
     };
 
     StyleDifference()
-        : m_repaintType(NoRepaint)
+        : m_paintInvalidationType(NoPaintInvalidation)
         , m_layoutType(NoLayout)
         , m_propertySpecificDifferences(0)
     { }
 
-    bool hasDifference() const { return m_repaintType || m_layoutType || m_propertySpecificDifferences; }
+    bool hasDifference() const { return m_paintInvalidationType || m_layoutType || m_propertySpecificDifferences; }
 
     bool hasAtMostPropertySpecificDifferences(unsigned propertyDifferences) const
     {
-        return !m_repaintType && !m_layoutType && !(m_propertySpecificDifferences & ~propertyDifferences);
+        return !m_paintInvalidationType && !m_layoutType && !(m_propertySpecificDifferences & ~propertyDifferences);
     }
 
-    bool needsRepaint() const { return m_repaintType != NoRepaint; }
-    void clearNeedsRepaint() { m_repaintType = NoRepaint; }
+    bool needsPaintInvalidation() const { return m_paintInvalidationType != NoPaintInvalidation; }
+    void clearNeedsPaintInvalidation() { m_paintInvalidationType = NoPaintInvalidation; }
 
-    // The object just needs to be repainted.
-    bool needsRepaintObject() const { return m_repaintType == RepaintObject; }
-    void setNeedsRepaintObject()
+    // The object just needs to issue paint invalidations.
+    bool needsPaintInvalidationObject() const { return m_paintInvalidationType == PaintInvalidationObject; }
+    void setNeedsPaintInvalidationObject()
     {
-        ASSERT(!needsRepaintLayer());
-        m_repaintType = RepaintObject;
+        ASSERT(!needsPaintInvalidationLayer());
+        m_paintInvalidationType = PaintInvalidationObject;
     }
 
-    // The layer and its descendant layers need to be repainted.
-    bool needsRepaintLayer() const { return m_repaintType == RepaintLayer; }
-    void setNeedsRepaintLayer() { m_repaintType = RepaintLayer; }
+    // The layer and its descendant layers need to issue paint invalidations.
+    bool needsPaintInvalidationLayer() const { return m_paintInvalidationType == PaintInvalidationLayer; }
+    void setNeedsPaintInvalidationLayer() { m_paintInvalidationType = PaintInvalidationLayer; }
 
     bool needsLayout() const { return m_layoutType != NoLayout; }
     void clearNeedsLayout() { m_layoutType = NoLayout; }
@@ -78,12 +78,12 @@ public:
     void setTextOrColorChanged() { m_propertySpecificDifferences |= TextOrColorChanged; }
 
 private:
-    enum RepaintType {
-        NoRepaint = 0,
-        RepaintObject,
-        RepaintLayer
+    enum PaintInvalidationType {
+        NoPaintInvalidation = 0,
+        PaintInvalidationObject,
+        PaintInvalidationLayer
     };
-    unsigned m_repaintType : 2;
+    unsigned m_paintInvalidationType : 2;
 
     enum LayoutType {
         NoLayout = 0,

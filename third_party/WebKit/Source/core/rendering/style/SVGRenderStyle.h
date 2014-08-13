@@ -423,8 +423,8 @@ private:
     SVGRenderStyle(const SVGRenderStyle&);
     SVGRenderStyle(CreateDefaultType); // Used to create the default style.
 
-    bool diffNeedsLayoutAndRepaint(const SVGRenderStyle* other) const;
-    bool diffNeedsRepaint(const SVGRenderStyle* other) const;
+    bool diffNeedsLayoutAndPaintInvalidation(const SVGRenderStyle* other) const;
+    bool diffNeedsPaintInvalidation(const SVGRenderStyle* other) const;
 
     void setBitDefaults()
     {

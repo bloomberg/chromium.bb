@@ -673,7 +673,7 @@ void SVGInlineTextBox::paintText(GraphicsContext* context, RenderStyle* style,
     // Draw text using selection style from the start to the end position of the selection
     if (style != selectionStyle) {
         StyleDifference diff;
-        diff.setNeedsRepaintObject();
+        diff.setNeedsPaintInvalidationObject();
         SVGResourcesCache::clientStyleChanged(&parent()->renderer(), diff, selectionStyle);
     }
 
@@ -681,7 +681,7 @@ void SVGInlineTextBox::paintText(GraphicsContext* context, RenderStyle* style,
 
     if (style != selectionStyle) {
         StyleDifference diff;
-        diff.setNeedsRepaintObject();
+        diff.setNeedsPaintInvalidationObject();
         SVGResourcesCache::clientStyleChanged(&parent()->renderer(), diff, selectionStyle);
     }
 

@@ -119,19 +119,19 @@ StyleDifference SVGRenderStyle::diff(const SVGRenderStyle* other) const
 {
     StyleDifference styleDifference;
 
-    if (diffNeedsLayoutAndRepaint(other)) {
+    if (diffNeedsLayoutAndPaintInvalidation(other)) {
         styleDifference.setNeedsFullLayout();
-        styleDifference.setNeedsRepaintObject();
-    } else if (diffNeedsRepaint(other)) {
-        styleDifference.setNeedsRepaintObject();
+        styleDifference.setNeedsPaintInvalidationObject();
+    } else if (diffNeedsPaintInvalidation(other)) {
+        styleDifference.setNeedsPaintInvalidationObject();
     }
 
     return styleDifference;
 }
 
-bool SVGRenderStyle::diffNeedsLayoutAndRepaint(const SVGRenderStyle* other) const
+bool SVGRenderStyle::diffNeedsLayoutAndPaintInvalidation(const SVGRenderStyle* other) const
 {
-    // If resources change, we need a relayout, as the presence of resources influences the repaint rect.
+    // If resources change, we need a relayout, as the presence of resources influences the paint invalidation rect.
     if (resources != other->resources)
         return true;
 
@@ -180,12 +180,12 @@ bool SVGRenderStyle::diffNeedsLayoutAndRepaint(const SVGRenderStyle* other) cons
     return false;
 }
 
-bool SVGRenderStyle::diffNeedsRepaint(const SVGRenderStyle* other) const
+bool SVGRenderStyle::diffNeedsPaintInvalidation(const SVGRenderStyle* other) const
 {
     if (stroke->opacity != other->stroke->opacity)
         return true;
 
-    // Painting related properties only need repaints.
+    // Painting related properties only need paint invalidation.
     if (misc.get() != other->misc.get()) {
         if (misc->floodColor != other->misc->floodColor
             || misc->floodOpacity != other->misc->floodOpacity
@@ -193,7 +193,7 @@ bool SVGRenderStyle::diffNeedsRepaint(const SVGRenderStyle* other) const
             return true;
     }
 
-    // If fill changes, we just need to repaint. Fill boundaries are not influenced by this, only by the Path, that RenderSVGPath contains.
+    // If fill changes, we just need to issue paint invalidations. Fill boundaries are not influenced by this, only by the Path, that RenderSVGPath contains.
     if (fill.get() != other->fill.get()) {
         if (fill->paintType != other->fill->paintType
             || fill->paintColor != other->fill->paintColor
@@ -202,11 +202,11 @@ bool SVGRenderStyle::diffNeedsRepaint(const SVGRenderStyle* other) const
             return true;
     }
 
-    // If gradient stops change, we just need to repaint. Style updates are already handled through RenderSVGGradientSTop.
+    // If gradient stops change, we just need to issue paint invalidations. Style updates are already handled through RenderSVGGradientSTop.
     if (stops != other->stops)
         return true;
 
-    // Changes of these flags only cause repaints.
+    // Changes of these flags only cause paint invalidations.
     if (svg_inherited_flags._colorRendering != other->svg_inherited_flags._colorRendering
         || svg_inherited_flags._shapeRendering != other->svg_inherited_flags._shapeRendering
         || svg_inherited_flags._clipRule != other->svg_inherited_flags._clipRule

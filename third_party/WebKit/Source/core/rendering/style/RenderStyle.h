@@ -1812,10 +1812,10 @@ private:
     void appendContent(PassOwnPtr<ContentData>);
     void addAppliedTextDecoration(const AppliedTextDecoration&);
 
-    bool diffNeedsFullLayoutAndRepaint(const RenderStyle& other) const;
+    bool diffNeedsFullLayoutAndPaintInvalidation(const RenderStyle& other) const;
     bool diffNeedsFullLayout(const RenderStyle& other) const;
-    bool diffNeedsRepaintLayer(const RenderStyle& other) const;
-    bool diffNeedsRepaintObject(const RenderStyle& other) const;
+    bool diffNeedsPaintInvalidationLayer(const RenderStyle& other) const;
+    bool diffNeedsPaintInvalidationObject(const RenderStyle& other) const;
     bool diffNeedsRecompositeLayer(const RenderStyle& other) const;
     void updatePropertySpecificDifferences(const RenderStyle& other, StyleDifference&) const;
 };

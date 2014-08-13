@@ -281,7 +281,7 @@ void RenderSVGRoot::styleDidChange(StyleDifference diff, const RenderStyle* oldS
 {
     if (diff.needsFullLayout())
         setNeedsBoundariesUpdate();
-    if (diff.needsRepaint()) {
+    if (diff.needsPaintInvalidation()) {
         // Box decorations may have appeared/disappeared - recompute status.
         m_hasBoxDecorationBackground = calculateHasBoxDecorations();
     }

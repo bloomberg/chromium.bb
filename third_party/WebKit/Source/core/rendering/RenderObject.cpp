@@ -1945,26 +1945,26 @@ StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff) const
         // Text nodes share style with their parents but transforms don't apply to them,
         // hence the !isText() check.
         if (!isText() && (!hasLayer() || !toRenderLayerModelObject(this)->layer()->hasStyleDeterminedDirectCompositingReasons()))
-            diff.setNeedsRepaintLayer();
+            diff.setNeedsPaintInvalidationLayer();
     }
 
     // If opacity or zIndex changed, and the layer does not paint into its own separate backing, then we need to invalidate paints (also
     // ignoring text nodes)
     if (diff.opacityChanged() || diff.zIndexChanged()) {
         if (!isText() && (!hasLayer() || !toRenderLayerModelObject(this)->layer()->hasStyleDeterminedDirectCompositingReasons()))
-            diff.setNeedsRepaintLayer();
+            diff.setNeedsPaintInvalidationLayer();
     }
 
     // If filter changed, and the layer does not paint into its own separate backing or it paints with filters, then we need to invalidate paints.
     if (diff.filterChanged() && hasLayer()) {
         RenderLayer* layer = toRenderLayerModelObject(this)->layer();
         if (!layer->hasStyleDeterminedDirectCompositingReasons() || layer->paintsWithFilters())
-            diff.setNeedsRepaintLayer();
+            diff.setNeedsPaintInvalidationLayer();
     }
 
-    if (diff.textOrColorChanged() && !diff.needsRepaint()
+    if (diff.textOrColorChanged() && !diff.needsPaintInvalidation()
         && hasImmediateNonWhitespaceTextChildOrPropertiesDependentOnColor())
-        diff.setNeedsRepaintObject();
+        diff.setNeedsPaintInvalidationObject();
 
     // The answer to layerTypeRequired() for plugins, iframes, and canvas can change without the actual
     // style changing, since it depends on whether we decide to composite these elements. When the
@@ -1975,10 +1975,10 @@ StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff) const
             diff.setNeedsFullLayout();
     }
 
-    // If we have no layer(), just treat a RepaintLayer hint as a normal paint invalidation.
-    if (diff.needsRepaintLayer() && !hasLayer()) {
-        diff.clearNeedsRepaint();
-        diff.setNeedsRepaintObject();
+    // If we have no layer(), just treat a PaintInvalidationLayer hint as a normal paint invalidation.
+    if (diff.needsPaintInvalidationLayer() && !hasLayer()) {
+        diff.clearNeedsPaintInvalidation();
+        diff.setNeedsPaintInvalidationObject();
     }
 
     return diff;
@@ -2091,9 +2091,9 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
             container->setNeedsOverflowRecalcAfterStyleChange();
     }
 
-    if (updatedDiff.needsRepaintLayer())
+    if (updatedDiff.needsPaintInvalidationLayer())
         toRenderLayerModelObject(this)->layer()->setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
-    else if (diff.needsRepaintObject() || updatedDiff.needsRepaintObject())
+    else if (diff.needsPaintInvalidationObject() || updatedDiff.needsPaintInvalidationObject())
         setShouldDoFullPaintInvalidation(true);
 }
 

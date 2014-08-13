@@ -144,7 +144,7 @@ void RenderBox::styleWillChange(StyleDifference diff, const RenderStyle& newStyl
     if (oldStyle) {
         // The background of the root element or the body element could propagate up to
         // the canvas. Just dirty the entire canvas when our style changes substantially.
-        if ((diff.needsRepaint() || diff.needsLayout()) && node()
+        if ((diff.needsPaintInvalidation() || diff.needsLayout()) && node()
             && (isHTMLHtmlElement(*node()) || isHTMLBodyElement(*node()))) {
             view()->paintInvalidationForWholeRenderer();
 
@@ -211,7 +211,7 @@ void RenderBox::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle
     }
 
     // Our opaqueness might have changed without triggering layout.
-    if (diff.needsRepaint()) {
+    if (diff.needsPaintInvalidation()) {
         RenderObject* parentToInvalidate = parent();
         for (unsigned i = 0; i < backgroundObscurationTestMaxDepth && parentToInvalidate; ++i) {
             parentToInvalidate->invalidateBackgroundObscurationStatus();

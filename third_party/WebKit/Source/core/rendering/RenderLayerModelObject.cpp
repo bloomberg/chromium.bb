@@ -91,7 +91,7 @@ void RenderLayerModelObject::styleWillChange(StyleDifference diff, const RenderS
     s_wasFloating = isFloating();
 
     if (RenderStyle* oldStyle = style()) {
-        if (parent() && diff.needsRepaintLayer()) {
+        if (parent() && diff.needsPaintInvalidationLayer()) {
             if (oldStyle->hasClip() != newStyle.hasClip()
                 || oldStyle->clip() != newStyle.clip())
                 layer()->clipper().clearClipRectsIncludingDescendants();
