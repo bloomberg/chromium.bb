@@ -225,7 +225,8 @@ void V8Element::animateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     default:
-        throwArityTypeError(exceptionState, "[1]", info.Length());
+        setArityTypeError(exceptionState, "[1]", info.Length());
+        exceptionState.throwIfNeeded();
         return;
         break;
     }

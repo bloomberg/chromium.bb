@@ -51,7 +51,8 @@ static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "item", "TestInterface2", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwMinimumArityTypeError(exceptionState, 1, info.Length());
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
@@ -80,7 +81,8 @@ static void setItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "setItem", "TestInterface2", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
-        throwMinimumArityTypeError(exceptionState, 2, info.Length());
+        setMinimumArityTypeError(exceptionState, 2, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
@@ -111,7 +113,8 @@ static void deleteItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "deleteItem", "TestInterface2", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwMinimumArityTypeError(exceptionState, 1, info.Length());
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
@@ -140,7 +143,8 @@ static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "namedItem", "TestInterface2", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwMinimumArityTypeError(exceptionState, 1, info.Length());
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
@@ -167,7 +171,8 @@ static void setNamedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "setNamedItem", "TestInterface2", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
-        throwMinimumArityTypeError(exceptionState, 2, info.Length());
+        setMinimumArityTypeError(exceptionState, 2, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
@@ -196,7 +201,8 @@ static void deleteNamedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& inf
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "deleteNamedItem", "TestInterface2", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwMinimumArityTypeError(exceptionState, 1, info.Length());
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestInterface2* impl = V8TestInterface2::toNative(info.Holder());

@@ -46,7 +46,7 @@ template <typename T> void V8_USE(T) { }
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        throwMinimumArityTypeErrorForConstructor("TestInterfaceConstructor3", 1, info.Length(), info.GetIsolate());
+        V8ThrowException::throwException(createMinimumArityTypeErrorForConstructor("TestInterfaceConstructor3", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
         return;
     }
     V8StringResource<> stringArg;

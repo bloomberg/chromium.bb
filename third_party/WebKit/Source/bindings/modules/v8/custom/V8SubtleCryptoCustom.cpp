@@ -114,7 +114,8 @@ void V8SubtleCrypto::verifyMethodCustom(const v8::FunctionCallbackInfo<v8::Value
         }
         break;
     default:
-        throwArityTypeError(exceptionState, "[4]", info.Length());
+        setArityTypeError(exceptionState, "[4]", info.Length());
+        exceptionState.throwIfNeeded();
         return;
         break;
     }

@@ -929,7 +929,7 @@ static void TestInterfaceImplementationForceSetAttributeOnThisCallback(v8::Local
 static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        throwMinimumArityTypeErrorForMethod("voidMethodTestInterfaceEmptyArg", "TestInterface", 1, info.Length(), info.GetIsolate());
+        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("voidMethodTestInterfaceEmptyArg", "TestInterface", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toNative(info.Holder());
@@ -956,7 +956,7 @@ static void voidMethodTestInterfaceEmptyArgMethodCallback(const v8::FunctionCall
 static void voidMethodDoubleArgFloatArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 2)) {
-        throwMinimumArityTypeErrorForMethod("voidMethodDoubleArgFloatArg", "TestInterface", 2, info.Length(), info.GetIsolate());
+        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("voidMethodDoubleArgFloatArg", "TestInterface", 2, info.Length(), info.GetIsolate()), info.GetIsolate());
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toNative(info.Holder());
@@ -989,7 +989,7 @@ static void voidMethodDoubleArgFloatArgMethodCallback(const v8::FunctionCallback
 static void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 2)) {
-        throwMinimumArityTypeErrorForMethod("voidMethodUnrestrictedDoubleArgUnrestrictedFloatArg", "TestInterface", 2, info.Length(), info.GetIsolate());
+        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("voidMethodUnrestrictedDoubleArgUnrestrictedFloatArg", "TestInterface", 2, info.Length(), info.GetIsolate()), info.GetIsolate());
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toNative(info.Holder());
@@ -1142,7 +1142,8 @@ static void implementsComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Val
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "implementsComplexMethod", "TestInterface", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
-        throwMinimumArityTypeError(exceptionState, 2, info.Length());
+        setMinimumArityTypeError(exceptionState, 2, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toNative(info.Holder());
@@ -1270,7 +1271,8 @@ static void partialVoidMethodLongArgMethod(const v8::FunctionCallbackInfo<v8::Va
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "partialVoidMethodLongArg", "TestInterface", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwMinimumArityTypeError(exceptionState, 1, info.Length());
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toNative(info.Holder());
@@ -1320,7 +1322,7 @@ static void partialCallWithExecutionContextRaisesExceptionVoidMethodMethodCallba
 static void partialVoidMethodPartialCallbackTypeArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        throwMinimumArityTypeErrorForMethod("partialVoidMethodPartialCallbackTypeArg", "TestInterface", 1, info.Length(), info.GetIsolate());
+        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("partialVoidMethodPartialCallbackTypeArg", "TestInterface", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toNative(info.Holder());
@@ -1348,7 +1350,8 @@ static void shortMethodWithShortArgumentImplementedInPrivateScriptMethod(const v
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "shortMethodWithShortArgumentImplementedInPrivateScript", "TestInterface", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwMinimumArityTypeError(exceptionState, 1, info.Length());
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toNative(info.Holder());

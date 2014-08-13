@@ -65,12 +65,10 @@ class ConvertableToTraceFormat;
 const int kMaxRecursionDepth = 22;
 
 // Helpers for throwing JavaScript TypeErrors for arity mismatches.
-void throwArityTypeErrorForMethod(const char* method, const char* type, const char* valid, unsigned provided, v8::Isolate*);
-void throwArityTypeErrorForConstructor(const char* type, const char* valid, unsigned provided, v8::Isolate*);
-void throwArityTypeError(ExceptionState&, const char* valid, unsigned provided);
-void throwMinimumArityTypeErrorForMethod(const char* method, const char* type, unsigned expected, unsigned providedLeastNumMandatoryParams, v8::Isolate*);
-void throwMinimumArityTypeErrorForConstructor(const char* type, unsigned expected, unsigned providedLeastNumMandatoryParams, v8::Isolate*);
-void throwMinimumArityTypeError(ExceptionState&, unsigned expected, unsigned providedLeastNumMandatoryParams);
+void setArityTypeError(ExceptionState&, const char* valid, unsigned provided);
+v8::Local<v8::Value> createMinimumArityTypeErrorForMethod(const char* method, const char* type, unsigned expected, unsigned providedLeastNumMandatoryParams, v8::Isolate*);
+v8::Local<v8::Value> createMinimumArityTypeErrorForConstructor(const char* type, unsigned expected, unsigned providedLeastNumMandatoryParams, v8::Isolate*);
+void setMinimumArityTypeError(ExceptionState&, unsigned expected, unsigned providedLeastNumMandatoryParams);
 
 v8::ArrayBuffer::Allocator* v8ArrayBufferAllocator();
 

@@ -10,7 +10,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {# Overloaded methods have length checked during overload resolution #}
     {% if method.number_of_required_arguments and not method.overload_index %}
     if (UNLIKELY(info.Length() < {{method.number_of_required_arguments}})) {
-        {{throw_minimum_arity_type_error(method, method.number_of_required_arguments)}};
+        {{throw_minimum_arity_type_error(method, method.number_of_required_arguments) | indent(8)}}
         return;
     }
     {% endif %}
@@ -321,21 +321,22 @@ v8SetReturnValueNull(info);
 {% if method.has_exception_state %}
 exceptionState.throwTypeError({{error_message}});
 {{throw_from_exception_state(method)}};
-{% elif method.is_constructor %}
-{% if method.idl_type == 'Promise' %}
-{# FIXME: reduce code duplication between sync / async exception handling. #}
-v8SetReturnValue(info, ScriptPromise::rejectWithTypeError(ScriptState::current(info.GetIsolate()), ExceptionMessages::failedToConstruct("{{interface_name}}", {{error_message}})).v8Value());
+{% elif method.idl_type == 'Promise' %}
+v8SetReturnValue(info, ScriptPromise::rejectRaw(info.GetIsolate(), V8ThrowException::createTypeError({{type_error_message(method, error_message)}}, info.GetIsolate())));
 {% else %}
-V8ThrowException::throwTypeError(ExceptionMessages::failedToConstruct("{{interface_name}}", {{error_message}}), info.GetIsolate());
-{% endif %}
-{% else %}{# method.has_exception_state #}
-{% if method.idl_type == 'Promise' %}
-v8SetReturnValue(info, ScriptPromise::rejectWithTypeError(ScriptState::current(info.GetIsolate()), ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", {{error_message}})).v8Value());
-{% else %}
-V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", {{error_message}}), info.GetIsolate());
-{% endif %}
+V8ThrowException::throwTypeError({{type_error_message(method, error_message)}}, info.GetIsolate());
 {% endif %}{# method.has_exception_state #}
 {% endmacro %}
+
+
+{######################################}
+{% macro type_error_message(method, error_message) %}
+{% if method.is_constructor %}
+ExceptionMessages::failedToConstruct("{{interface_name}}", {{error_message}})
+{%- else %}
+ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", {{error_message}})
+{%- endif %}
+{%- endmacro %}
 
 
 {######################################}
@@ -349,50 +350,32 @@ exceptionState.throwIfNeeded()
 
 
 {######################################}
-{% macro throw_arity_type_error(method, valid_arities) %}
-{% if method.idl_type == 'Promise' %}
+{% macro throw_minimum_arity_type_error(method, number_of_required_arguments) %}
 {% if method.has_exception_state %}
-v8SetReturnValue(info, ScriptPromise::rejectWithArityTypeError(ScriptState::current(info.GetIsolate()), exceptionState, {{valid_arities}}, info.Length()).v8Value())
-{%- elif method.is_constructor %}
-v8SetReturnValue(info, ScriptPromise::rejectWithArityTypeErrorForConstructor(ScriptState::current(info.GetIsolate()), "{{interface_name}}", {{valid_arities}}, info.Length()).v8Value())
+setMinimumArityTypeError(exceptionState, {{number_of_required_arguments}}, info.Length());
+{{throw_from_exception_state(method)}};
+{%- elif method.idl_type == 'Promise' %}
+v8SetReturnValue(info, ScriptPromise::rejectRaw(info.GetIsolate(), {{create_minimum_arity_type_error_without_exception_state(method, number_of_required_arguments)}}));
 {%- else %}
-v8SetReturnValue(info, ScriptPromise::rejectWithArityTypeErrorForMethod(ScriptState::current(info.GetIsolate()), "{{method.name}}", "{{interface_name}}", {{valid_arities}}, info.Length()).v8Value())
+V8ThrowException::throwException({{create_minimum_arity_type_error_without_exception_state(method, number_of_required_arguments)}}, info.GetIsolate());
 {%- endif %}
-{%- else %}{# methods.idl_type == 'Promise' #}
-{% if method.has_exception_state %}
-throwArityTypeError(exceptionState, {{valid_arities}}, info.Length())
-{%- elif method.is_constructor %}
-throwArityTypeErrorForConstructor("{{interface_name}}", {{valid_arities}}, info.Length(), info.GetIsolate())
-{%- else %}
-throwArityTypeErrorForMethod("{{method.name}}", "{{interface_name}}", {{valid_arities}}, info.Length(), info.GetIsolate())
-{%- endif %}
-{%- endif %}{# methods.idl_type == 'Promise' #}
-{% endmacro %}
+{%- endmacro %}
 
 
 {######################################}
-{% macro throw_minimum_arity_type_error(method, number_of_required_arguments) %}
-{% if method.idl_type == 'Promise' %}
-{% if method.has_exception_state %}
-v8SetReturnValue(info, ScriptPromise::rejectWithMinimumArityTypeError(ScriptState::current(info.GetIsolate()), exceptionState, {{number_of_required_arguments}}, info.Length()).v8Value())
-{%- elif method.is_constructor %}
-v8SetReturnValue(info, ScriptPromise::rejectWithMinimumArityTypeErrorForConstructor(ScriptState::current(info.GetIsolate()), "{{interface_name}}", {{number_of_required_arguments}}, info.Length()).v8Value())
+{% macro create_minimum_arity_type_error_without_exception_state(method, number_of_required_arguments) %}
+{% if method.is_constructor %}
+createMinimumArityTypeErrorForConstructor("{{interface_name}}", {{number_of_required_arguments}}, info.Length(), info.GetIsolate())
 {%- else %}
-v8SetReturnValue(info, ScriptPromise::rejectWithMinimumArityTypeErrorForMethod(ScriptState::current(info.GetIsolate()), "{{method.name}}", "{{interface_name}}", {{number_of_required_arguments}}, info.Length()).v8Value())
+createMinimumArityTypeErrorForMethod("{{method.name}}", "{{interface_name}}", {{number_of_required_arguments}}, info.Length(), info.GetIsolate())
 {%- endif %}
-{%- else %}{# methods.idl_type == 'Promise' #}
-{% if method.has_exception_state %}
-throwMinimumArityTypeError(exceptionState, {{number_of_required_arguments}}, info.Length())
-{%- elif method.is_constructor %}
-throwMinimumArityTypeErrorForConstructor("{{interface_name}}", {{number_of_required_arguments}}, info.Length(), info.GetIsolate())
-{%- else %}
-throwMinimumArityTypeErrorForMethod("{{method.name}}", "{{interface_name}}", {{number_of_required_arguments}}, info.Length(), info.GetIsolate())
-{%- endif %}
-{%- endif %}{# methods.idl_type == 'Promise' #}
-{% endmacro %}
+{%- endmacro %}
 
 
 {##############################################################################}
+{# FIXME: We should return a rejected Promise if an error occurs in this
+function when ALL methods in this overload return Promise. In order to do so,
+we must ensure either ALL or NO methods in this overload return Promise #}
 {% macro overload_resolution_method(overloads, world_suffix) %}
 static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -433,7 +416,8 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
         {# Report full list of valid arities if gaps and above minimum #}
         {% if overloads.valid_arities %}
         if (info.Length() >= {{overloads.minarg}}) {
-            throwArityTypeError(exceptionState, "{{overloads.valid_arities}}", info.Length());
+            setArityTypeError(exceptionState, "{{overloads.valid_arities}}", info.Length());
+            exceptionState.throwIfNeeded();
             return;
         }
         {% endif %}
@@ -614,7 +598,7 @@ static void {{name}}(const v8::FunctionCallbackInfo<v8::Value>& info)
     {# Overloaded constructors have length checked during overload resolution #}
     {% if constructor.number_of_required_arguments and not constructor.overload_index %}
     if (UNLIKELY(info.Length() < {{constructor.number_of_required_arguments}})) {
-        {{throw_minimum_arity_type_error(constructor, constructor.number_of_required_arguments)}};
+        {{throw_minimum_arity_type_error(constructor, constructor.number_of_required_arguments) | indent(8)}}
         return;
     }
     {% endif %}

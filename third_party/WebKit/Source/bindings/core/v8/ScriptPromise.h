@@ -119,21 +119,6 @@ public:
 
     static ScriptPromise rejectWithDOMException(ScriptState*, PassRefPtrWillBeRawPtr<DOMException>);
 
-    // static functions each of which returns a ScriptPromise rejected with
-    // the given error.
-    // They coresspond to functions in V8Binding.h, such as throwError,
-    // throwTypeError, etc.
-    // FIXME: Remove these functions.
-    static ScriptPromise rejectWithTypeError(ScriptState*, const String&);
-    static ScriptPromise rejectWithArityTypeErrorForMethod(ScriptState*, const char* method, const char* type, const char* valid, unsigned provided);
-    static ScriptPromise rejectWithArityTypeErrorForConstructor(ScriptState*, const char* type, const char* valid, unsigned provided);
-    static ScriptPromise rejectWithArityTypeError(ScriptState*, ExceptionState&, const char* valid, unsigned provided);
-    static ScriptPromise rejectWithMinimumArityTypeErrorForMethod(
-        ScriptState*, const char* method, const char* type, unsigned expected, unsigned providedLeastNumMandatoryParams);
-    static ScriptPromise rejectWithMinimumArityTypeErrorForConstructor(
-        ScriptState*, const char* type, unsigned expected, unsigned providedLeastNumMandatoryParams);
-    static ScriptPromise rejectWithMinimumArityTypeError(ScriptState*, ExceptionState&, unsigned expected, unsigned providedLeastNumMandatoryParams);
-
     static v8::Local<v8::Promise> rejectRaw(v8::Isolate*, v8::Handle<v8::Value>);
 
     // This is a utility class intended to be used internally.

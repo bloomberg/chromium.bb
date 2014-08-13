@@ -59,7 +59,7 @@ static void V8TestInterfaceNamedConstructor2ConstructorCallback(const v8::Functi
         return;
     }
     if (UNLIKELY(info.Length() < 1)) {
-        throwMinimumArityTypeErrorForConstructor("TestInterfaceNamedConstructor2", 1, info.Length(), info.GetIsolate());
+        V8ThrowException::throwException(createMinimumArityTypeErrorForConstructor("TestInterfaceNamedConstructor2", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
         return;
     }
     V8StringResource<> stringArg;
