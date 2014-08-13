@@ -19,7 +19,7 @@ namespace blink {
 // needs to be on Oilpan's heap whereas WebSocketImpl cannot be on Oilpan's
 // heap. Thus we need to introduce a proxy class to decouple WebSocketImpl
 // from WebSocketChannelClient.
-class WebSocketChannelClientProxy FINAL : public GarbageCollectedFinalized<WebSocketChannelClientProxy>, public blink::WebSocketChannelClient {
+class WebSocketChannelClientProxy FINAL : public GarbageCollectedFinalized<WebSocketChannelClientProxy>, public WebSocketChannelClient {
     USING_GARBAGE_COLLECTED_MIXIN(WebSocketChannelClientProxy)
 public:
     static WebSocketChannelClientProxy* create(WebSocketImpl* impl)

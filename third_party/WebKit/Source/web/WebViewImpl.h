@@ -61,15 +61,14 @@
 #include "wtf/Vector.h"
 
 namespace blink {
+
 class DataObject;
 class Frame;
-class RenderLayerCompositor;
-class UserGestureToken;
-}
-
-namespace blink {
+class FullscreenController;
 class LinkHighlight;
 class PopupContainer;
+class RenderLayerCompositor;
+class UserGestureToken;
 class WebActiveGestureAnimation;
 class WebDevToolsAgentPrivate;
 class WebLocalFrameImpl;
@@ -77,12 +76,11 @@ class WebImage;
 class WebPagePopupImpl;
 class WebPlugin;
 class WebSettingsImpl;
-class FullscreenController;
 
 class WebViewImpl FINAL : public WebView
     , public RefCounted<WebViewImpl>
     , public WebGestureCurveTarget
-    , public blink::PagePopupDriver
+    , public PagePopupDriver
     , public PageWidgetEventHandler {
 public:
     static WebViewImpl* create(WebViewClient*);
@@ -260,32 +258,32 @@ public:
 
     // WebViewImpl
 
-    blink::HitTestResult coreHitTestResultAt(const WebPoint&);
+    HitTestResult coreHitTestResultAt(const WebPoint&);
     void suppressInvalidations(bool enable);
-    void invalidateRect(const blink::IntRect&);
+    void invalidateRect(const IntRect&);
 
     void setIgnoreInputEvents(bool newValue);
     void setBackgroundColorOverride(WebColor);
     void setZoomFactorOverride(float);
     WebDevToolsAgentPrivate* devToolsAgentPrivate() { return m_devToolsAgent.get(); }
 
-    blink::Color baseBackgroundColor() const { return m_baseBackgroundColor; }
+    Color baseBackgroundColor() const { return m_baseBackgroundColor; }
 
     PageOverlayList* pageOverlays() const { return m_pageOverlays.get(); }
 
-    void setOverlayLayer(blink::GraphicsLayer*);
+    void setOverlayLayer(GraphicsLayer*);
 
     const WebPoint& lastMouseDownPoint() const
     {
         return m_lastMouseDownPoint;
     }
 
-    blink::Frame* focusedWebCoreFrame() const;
+    Frame* focusedWebCoreFrame() const;
 
     // Returns the currently focused Element or null if no element has focus.
-    blink::Element* focusedElement() const;
+    Element* focusedElement() const;
 
-    static WebViewImpl* fromPage(blink::Page*);
+    static WebViewImpl* fromPage(Page*);
 
     WebViewClient* client()
     {
@@ -304,7 +302,7 @@ public:
 
     // Returns the page object associated with this view. This may be null when
     // the page is shutting down, but will be valid at all other times.
-    blink::Page* page() const
+    Page* page() const
     {
         return m_page.get();
     }
@@ -322,7 +320,7 @@ public:
     void mouseDoubleClick(const WebMouseEvent&);
 
     bool detectContentOnTouch(const WebPoint&);
-    bool startPageScaleAnimation(const blink::IntPoint& targetPosition, bool useAnchor, float newScale, double durationInSeconds);
+    bool startPageScaleAnimation(const IntPoint& targetPosition, bool useAnchor, float newScale, double durationInSeconds);
 
     void hasTouchEventHandlers(bool);
 
@@ -337,7 +335,7 @@ public:
     // Keyboard event to the Right Mouse button down event.
     bool sendContextMenuEvent(const WebKeyboardEvent&);
 
-    void showContextMenuAtPoint(float x, float y, PassRefPtr<blink::ContextMenuProvider>);
+    void showContextMenuAtPoint(float x, float y, PassRefPtr<ContextMenuProvider>);
 
     // Notifies the WebView that a load has been committed. isNewNavigation
     // will be true if a new session history item should be created for that
@@ -371,22 +369,22 @@ public:
         return m_shouldAutoResize;
     }
 
-    blink::IntSize minAutoSize() const
+    IntSize minAutoSize() const
     {
         return m_minAutoSize;
     }
 
-    blink::IntSize maxAutoSize() const
+    IntSize maxAutoSize() const
     {
         return m_maxAutoSize;
     }
 
     void updateMainFrameLayoutSize();
-    void updatePageDefinedViewportConstraints(const blink::ViewportDescription&);
+    void updatePageDefinedViewportConstraints(const ViewportDescription&);
 
     // Start a system drag and drop operation.
     void startDragging(
-        blink::LocalFrame*,
+        LocalFrame*,
         const WebDragData& dragData,
         WebDragOperationsMask mask,
         const WebImage& dragImage,
@@ -396,8 +394,8 @@ public:
     void popupOpened(PopupContainer*);
     void popupClosed(PopupContainer*);
     // PagePopupDriver functions.
-    virtual blink::PagePopup* openPagePopup(blink::PagePopupClient*, const blink::IntRect& originBoundsInRootView) OVERRIDE;
-    virtual void closePagePopup(blink::PagePopup*) OVERRIDE;
+    virtual PagePopup* openPagePopup(PagePopupClient*, const IntRect& originBoundsInRootView) OVERRIDE;
+    virtual void closePagePopup(PagePopup*) OVERRIDE;
 
     // Returns the input event we're currently processing. This is used in some
     // cases where the WebCore DOM event doesn't have the information we need.
@@ -406,12 +404,12 @@ public:
         return m_currentInputEvent;
     }
 
-    blink::GraphicsLayer* rootGraphicsLayer();
-    void setRootGraphicsLayer(blink::GraphicsLayer*);
+    GraphicsLayer* rootGraphicsLayer();
+    void setRootGraphicsLayer(GraphicsLayer*);
     void scheduleCompositingLayerSync();
     void scrollRootLayer();
-    blink::GraphicsLayerFactory* graphicsLayerFactory() const;
-    blink::RenderLayerCompositor* compositor() const;
+    GraphicsLayerFactory* graphicsLayerFactory() const;
+    RenderLayerCompositor* compositor() const;
     void registerForAnimations(WebLayer*);
     void scheduleAnimation();
 
@@ -421,9 +419,10 @@ public:
     bool hasOpenedPopup() const { return m_selectPopup || m_pagePopup; }
 
     // Returns true if the event leads to scrolling.
-    static bool mapKeyCodeForScroll(int keyCode,
-                                   blink::ScrollDirection* scrollDirection,
-                                   blink::ScrollGranularity* scrollGranularity);
+    static bool mapKeyCodeForScroll(
+        int keyCode,
+        ScrollDirection*,
+        ScrollGranularity*);
 
     // Called by a full frame plugin inside this view to inform it that its
     // zoom level has been updated.  The plugin should only call this function
@@ -432,21 +431,21 @@ public:
     void fullFramePluginZoomLevelChanged(double zoomLevel);
 
     void computeScaleAndScrollForBlockRect(const WebPoint& hitPoint, const WebRect& blockRect, float padding, float defaultScaleWhenAlreadyLegible, float& scale, WebPoint& scroll);
-    blink::Node* bestTapNode(const blink::PlatformGestureEvent& tapEvent);
-    void enableTapHighlightAtPoint(const blink::PlatformGestureEvent& tapEvent);
-    void enableTapHighlights(WillBeHeapVector<RawPtrWillBeMember<blink::Node> >&);
-    void computeScaleAndScrollForFocusedNode(blink::Node* focusedNode, float& scale, blink::IntPoint& scroll, bool& needAnimation);
+    Node* bestTapNode(const PlatformGestureEvent& tapEvent);
+    void enableTapHighlightAtPoint(const PlatformGestureEvent& tapEvent);
+    void enableTapHighlights(WillBeHeapVector<RawPtrWillBeMember<Node> >&);
+    void computeScaleAndScrollForFocusedNode(Node* focusedNode, float& scale, IntPoint& scroll, bool& needAnimation);
 
-    void animateDoubleTapZoom(const blink::IntPoint&);
+    void animateDoubleTapZoom(const IntPoint&);
 
     void enableFakePageScaleAnimationForTesting(bool);
     bool fakeDoubleTapAnimationPendingForTesting() const { return m_doubleTapZoomPending; }
-    blink::IntPoint fakePageScaleAnimationTargetPositionForTesting() const { return m_fakePageScaleAnimationTargetPosition; }
+    IntPoint fakePageScaleAnimationTargetPositionForTesting() const { return m_fakePageScaleAnimationTargetPosition; }
     float fakePageScaleAnimationPageScaleForTesting() const { return m_fakePageScaleAnimationPageScaleFactor; }
     bool fakePageScaleAnimationUseAnchorForTesting() const { return m_fakePageScaleAnimationUseAnchor; }
 
-    void enterFullScreenForElement(blink::Element*);
-    void exitFullScreenForElement(blink::Element*);
+    void enterFullScreenForElement(Element*);
+    void exitFullScreenForElement(Element*);
 
     void clearCompositedSelectionBounds();
 
@@ -476,7 +475,7 @@ public:
     // Returns the bounding box of the block type node touched by the WebRect.
     WebRect computeBlockBounds(const WebRect&, bool ignoreClipping);
 
-    blink::IntPoint clampOffsetAtScale(const blink::IntPoint& offset, float scale);
+    IntPoint clampOffsetAtScale(const IntPoint& offset, float scale);
 
     // Exposed for tests.
     WebVector<WebCompositionUnderline> compositionUnderlines() const;
@@ -495,13 +494,13 @@ private:
     float legibleScale() const;
     void refreshPageScaleFactorAfterLayout();
     void resumeTreeViewCommits();
-    void setUserAgentPageScaleConstraints(blink::PageScaleConstraints newConstraints);
+    void setUserAgentPageScaleConstraints(PageScaleConstraints newConstraints);
     float clampPageScaleFactorToLimits(float) const;
-    blink::IntSize contentsSize() const;
+    IntSize contentsSize() const;
 
     void resetSavedScrollAndScaleState();
 
-    void updateMainFrameScrollPosition(const blink::IntPoint& scrollPosition, bool programmaticScroll);
+    void updateMainFrameScrollPosition(const IntPoint& scrollPosition, bool programmaticScroll);
 
     void performResize();
 
@@ -534,7 +533,7 @@ private:
 
     // Converts |pos| from window coordinates to contents coordinates and gets
     // the HitTestResult for it.
-    blink::HitTestResult hitTestResultForWindowPos(const blink::IntPoint&);
+    HitTestResult hitTestResultForWindowPos(const IntPoint&);
 
     // Consolidate some common code between starting a drag over a target and
     // updating a drag over a target. If we're starting a drag, |isEntering|
@@ -563,16 +562,16 @@ private:
     void pointerLockMouseEvent(const WebInputEvent&);
 
     // PageWidgetEventHandler functions
-    virtual void handleMouseLeave(blink::LocalFrame&, const WebMouseEvent&) OVERRIDE;
-    virtual void handleMouseDown(blink::LocalFrame&, const WebMouseEvent&) OVERRIDE;
-    virtual void handleMouseUp(blink::LocalFrame&, const WebMouseEvent&) OVERRIDE;
-    virtual bool handleMouseWheel(blink::LocalFrame&, const WebMouseWheelEvent&) OVERRIDE;
+    virtual void handleMouseLeave(LocalFrame&, const WebMouseEvent&) OVERRIDE;
+    virtual void handleMouseDown(LocalFrame&, const WebMouseEvent&) OVERRIDE;
+    virtual void handleMouseUp(LocalFrame&, const WebMouseEvent&) OVERRIDE;
+    virtual bool handleMouseWheel(LocalFrame&, const WebMouseWheelEvent&) OVERRIDE;
     virtual bool handleGestureEvent(const WebGestureEvent&) OVERRIDE;
     virtual bool handleKeyEvent(const WebKeyboardEvent&) OVERRIDE;
     virtual bool handleCharEvent(const WebKeyboardEvent&) OVERRIDE;
 
-    blink::InputMethodContext* inputMethodContext();
-    WebPlugin* focusedPluginIfInputMethodSupported(blink::LocalFrame*);
+    InputMethodContext* inputMethodContext();
+    WebPlugin* focusedPluginIfInputMethodSupported(LocalFrame*);
 
     WebViewClient* m_client; // Can be 0 (e.g. unittests, shared workers, etc.)
     WebAutofillClient* m_autofillClient;
@@ -592,11 +591,11 @@ private:
     // If true, automatically resize the render view around its content.
     bool m_shouldAutoResize;
     // The lower bound on the size when auto-resizing.
-    blink::IntSize m_minAutoSize;
+    IntSize m_minAutoSize;
     // The upper bound on the size when auto-resizing.
-    blink::IntSize m_maxAutoSize;
+    IntSize m_maxAutoSize;
 
-    OwnPtrWillBePersistent<blink::Page> m_page;
+    OwnPtrWillBePersistent<Page> m_page;
 
     // An object that can be used to manipulate m_page->settings() without linking
     // against WebCore. This is lazily allocated the first time GetWebSettings()
@@ -604,7 +603,7 @@ private:
     OwnPtr<WebSettingsImpl> m_webSettings;
 
     // A copy of the web drop data object we received from the browser.
-    RefPtrWillBePersistent<blink::DataObject> m_currentDragData;
+    RefPtrWillBePersistent<DataObject> m_currentDragData;
 
     // The point relative to the client area where the mouse was last pressed
     // down. This is used by the drag client to determine what was under the
@@ -632,7 +631,7 @@ private:
 
     // Used for testing purposes.
     bool m_enableFakePageScaleAnimationForTesting;
-    blink::IntPoint m_fakePageScaleAnimationTargetPosition;
+    IntPoint m_fakePageScaleAnimationTargetPosition;
     float m_fakePageScaleAnimationPageScaleFactor;
     bool m_fakePageScaleAnimationUseAnchor;
 
@@ -679,15 +678,15 @@ private:
     bool m_tabsToLinks;
 
     // If set, the (plugin) node which has mouse capture.
-    RefPtrWillBePersistent<blink::Node> m_mouseCaptureNode;
-    RefPtr<blink::UserGestureToken> m_mouseCaptureGestureToken;
+    RefPtrWillBePersistent<Node> m_mouseCaptureNode;
+    RefPtr<UserGestureToken> m_mouseCaptureGestureToken;
 
-    blink::IntRect m_rootLayerScrollDamage;
+    IntRect m_rootLayerScrollDamage;
     WebLayerTreeView* m_layerTreeView;
     WebLayer* m_rootLayer;
-    blink::GraphicsLayer* m_rootGraphicsLayer;
-    blink::GraphicsLayer* m_rootTransformLayer;
-    OwnPtr<blink::GraphicsLayerFactory> m_graphicsLayerFactory;
+    GraphicsLayer* m_rootGraphicsLayer;
+    GraphicsLayer* m_rootTransformLayer;
+    OwnPtr<GraphicsLayerFactory> m_graphicsLayerFactory;
     bool m_isAcceleratedCompositingActive;
     bool m_layerTreeViewCommitsDeferred;
     bool m_layerTreeViewClosed;

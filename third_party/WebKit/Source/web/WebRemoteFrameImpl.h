@@ -12,12 +12,10 @@
 #include "wtf/RefCounted.h"
 
 namespace blink {
+
 class FrameHost;
 class FrameOwner;
 class RemoteFrame;
-}
-
-namespace blink {
 
 class WebRemoteFrameImpl : public WebRemoteFrame, public RefCounted<WebRemoteFrameImpl> {
 public:
@@ -177,18 +175,18 @@ public:
     virtual WebLocalFrame* createLocalChild(const WebString& name, WebFrameClient*) OVERRIDE;
     virtual WebRemoteFrame* createRemoteChild(const WebString& name, WebFrameClient*) OVERRIDE;
 
-    void initializeWebCoreFrame(blink::FrameHost*, blink::FrameOwner*, const AtomicString& name);
+    void initializeWebCoreFrame(FrameHost*, FrameOwner*, const AtomicString& name);
 
-    void setWebCoreFrame(PassRefPtr<blink::RemoteFrame>);
-    blink::RemoteFrame* frame() const { return m_frame.get(); }
+    void setWebCoreFrame(PassRefPtr<RemoteFrame>);
+    RemoteFrame* frame() const { return m_frame.get(); }
 
-    static WebRemoteFrameImpl* fromFrame(blink::RemoteFrame&);
+    static WebRemoteFrameImpl* fromFrame(RemoteFrame&);
 
 private:
     RemoteFrameClient m_frameClient;
-    RefPtr<blink::RemoteFrame> m_frame;
+    RefPtr<RemoteFrame> m_frame;
 
-    HashMap<WebFrame*, OwnPtr<blink::FrameOwner> > m_ownersForChildren;
+    HashMap<WebFrame*, OwnPtr<FrameOwner> > m_ownersForChildren;
 };
 
 DEFINE_TYPE_CASTS(WebRemoteFrameImpl, WebFrame, frame, frame->isWebRemoteFrame(), frame.isWebRemoteFrame());

@@ -40,11 +40,8 @@
 #include "wtf/text/WTFString.h"
 
 namespace blink {
+
 class HTMLObjectElement;
-} // namespace blink
-
-namespace blink {
-
 class WebLocalFrameImpl;
 class WebPluginContainerImpl;
 
@@ -66,10 +63,10 @@ private:
     virtual ~WebHelperPluginImpl();
 
     bool initialize(const String& pluginType, WebLocalFrameImpl*);
-    void reallyDestroy(blink::Timer<WebHelperPluginImpl>*);
+    void reallyDestroy(Timer<WebHelperPluginImpl>*);
 
-    blink::Timer<WebHelperPluginImpl> m_destructionTimer;
-    RefPtrWillBePersistent<blink::HTMLObjectElement> m_objectElement;
+    Timer<WebHelperPluginImpl> m_destructionTimer;
+    RefPtrWillBePersistent<HTMLObjectElement> m_objectElement;
     RefPtr<WebPluginContainerImpl> m_pluginContainer;
 };
 

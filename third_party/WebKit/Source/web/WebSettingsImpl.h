@@ -34,15 +34,13 @@
 #include "public/web/WebSettings.h"
 
 namespace blink {
+
 class InspectorController;
 class Settings;
-}
-
-namespace blink {
 
 class WebSettingsImpl FINAL : public WebSettings {
 public:
-    explicit WebSettingsImpl(blink::Settings*, blink::InspectorController*);
+    explicit WebSettingsImpl(Settings*, InspectorController*);
     virtual ~WebSettingsImpl() { }
 
     virtual bool mainFrameResizesAreOrientationChanges() const OVERRIDE;
@@ -186,8 +184,8 @@ public:
     bool mockGestureTapHighlightsEnabled() const;
 
 private:
-    blink::Settings* m_settings;
-    blink::InspectorController* m_inspectorController;
+    Settings* m_settings;
+    InspectorController* m_inspectorController;
     bool m_showFPSCounter;
     bool m_showPaintRects;
     bool m_renderVSyncNotificationEnabled;

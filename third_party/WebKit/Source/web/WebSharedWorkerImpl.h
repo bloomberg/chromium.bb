@@ -46,6 +46,7 @@
 #include "wtf/WeakPtr.h"
 
 namespace blink {
+
 class ConsoleMessage;
 class ResourceResponse;
 class WebApplicationCacheHost;

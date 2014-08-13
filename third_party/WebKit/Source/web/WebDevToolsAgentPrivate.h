@@ -34,10 +34,8 @@
 #include "public/web/WebDevToolsAgent.h"
 
 namespace blink {
-class Page;
-}
 
-namespace blink {
+class Page;
 class WebLocalFrameImpl;
 class WebInputEvent;
 struct WebSize;
@@ -52,7 +50,7 @@ public:
     virtual void didCreateScriptContext(WebLocalFrameImpl*, int worldId) = 0;
 
     // DevTools may handle input event from WebViewImpl.
-    virtual bool handleInputEvent(blink::Page*, const WebInputEvent&) = 0;
+    virtual bool handleInputEvent(Page*, const WebInputEvent&) = 0;
 
     // Notification from WebViewImpl after layout.
     virtual void didLayout() = 0;

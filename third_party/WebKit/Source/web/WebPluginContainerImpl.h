@@ -45,6 +45,7 @@
 struct NPObject;
 
 namespace blink {
+
 class GestureEvent;
 class HTMLPlugInElement;
 class IntRect;
@@ -53,23 +54,18 @@ class MouseEvent;
 class PlatformGestureEvent;
 class ResourceError;
 class ResourceResponse;
-class TouchEvent;
-class WheelEvent;
-class Widget;
-}
-
-namespace blink {
-
-struct WebPrintParams;
-
 class ScrollbarGroup;
+class TouchEvent;
 class WebPlugin;
 class WebPluginLoadObserver;
 class WebExternalTextureLayer;
+class WheelEvent;
+class Widget;
+struct WebPrintParams;
 
-class WebPluginContainerImpl FINAL : public blink::PluginView, public WebPluginContainer, public blink::FrameDestructionObserver {
+class WebPluginContainerImpl FINAL : public PluginView, public WebPluginContainer, public FrameDestructionObserver {
 public:
-    static PassRefPtr<WebPluginContainerImpl> create(blink::HTMLPlugInElement* element, WebPlugin* webPlugin)
+    static PassRefPtr<WebPluginContainerImpl> create(HTMLPlugInElement* element, WebPlugin* webPlugin)
     {
         return adoptRef(new WebPluginContainerImpl(element, webPlugin));
     }
@@ -84,16 +80,16 @@ public:
     virtual bool wantsWheelEvents() OVERRIDE;
 
     // Widget methods
-    virtual void setFrameRect(const blink::IntRect&) OVERRIDE;
-    virtual void paint(blink::GraphicsContext*, const blink::IntRect&) OVERRIDE;
-    virtual void invalidateRect(const blink::IntRect&) OVERRIDE;
+    virtual void setFrameRect(const IntRect&) OVERRIDE;
+    virtual void paint(GraphicsContext*, const IntRect&) OVERRIDE;
+    virtual void invalidateRect(const IntRect&) OVERRIDE;
     virtual void setFocus(bool) OVERRIDE;
     virtual void show() OVERRIDE;
     virtual void hide() OVERRIDE;
-    virtual void handleEvent(blink::Event*) OVERRIDE;
+    virtual void handleEvent(Event*) OVERRIDE;
     virtual void frameRectsChanged() OVERRIDE;
     virtual void setParentVisible(bool) OVERRIDE;
-    virtual void setParent(blink::Widget*) OVERRIDE;
+    virtual void setParent(Widget*) OVERRIDE;
     virtual void widgetPositionsUpdated() OVERRIDE;
     virtual bool isPluginContainer() const OVERRIDE { return true; }
     virtual void eventListenersRemoved() OVERRIDE;
@@ -141,7 +137,7 @@ public:
     // Sets up printing at the specified WebPrintParams. Returns the number of pages to be printed at these settings.
     int printBegin(const WebPrintParams&) const;
     // Prints the page specified by pageNumber (0-based index) into the supplied canvas.
-    bool printPage(int pageNumber, blink::GraphicsContext* gc);
+    bool printPage(int pageNumber, GraphicsContext*);
     // Ends the print operation.
     void printEnd();
 
@@ -153,10 +149,10 @@ public:
     bool executeEditCommand(const WebString& name, const WebString& value);
 
     // Resource load events for the plugin's source data:
-    virtual void didReceiveResponse(const blink::ResourceResponse&) OVERRIDE;
+    virtual void didReceiveResponse(const ResourceResponse&) OVERRIDE;
     virtual void didReceiveData(const char *data, int dataLength) OVERRIDE;
     virtual void didFinishLoading() OVERRIDE;
-    virtual void didFailLoading(const blink::ResourceError&) OVERRIDE;
+    virtual void didFailLoading(const ResourceError&) OVERRIDE;
 
     void willDestroyPluginLoadObserver(WebPluginLoadObserver*);
 
@@ -165,39 +161,41 @@ public:
     void willStartLiveResize();
     void willEndLiveResize();
 
-    bool paintCustomOverhangArea(blink::GraphicsContext*, const blink::IntRect&, const blink::IntRect&, const blink::IntRect&);
+    bool paintCustomOverhangArea(GraphicsContext*, const IntRect&, const IntRect&, const IntRect&);
 
 #if ENABLE(OILPAN)
     virtual void detach() OVERRIDE;
 #endif
 
 private:
-    WebPluginContainerImpl(blink::HTMLPlugInElement* element, WebPlugin* webPlugin);
+    WebPluginContainerImpl(HTMLPlugInElement*, WebPlugin*);
     virtual ~WebPluginContainerImpl();
 
-    void handleMouseEvent(blink::MouseEvent*);
-    void handleDragEvent(blink::MouseEvent*);
-    void handleWheelEvent(blink::WheelEvent*);
-    void handleKeyboardEvent(blink::KeyboardEvent*);
-    void handleTouchEvent(blink::TouchEvent*);
-    void handleGestureEvent(blink::GestureEvent*);
+    void handleMouseEvent(MouseEvent*);
+    void handleDragEvent(MouseEvent*);
+    void handleWheelEvent(WheelEvent*);
+    void handleKeyboardEvent(KeyboardEvent*);
+    void handleTouchEvent(TouchEvent*);
+    void handleGestureEvent(GestureEvent*);
 
-    void synthesizeMouseEventIfPossible(blink::TouchEvent*);
+    void synthesizeMouseEventIfPossible(TouchEvent*);
 
     void focusPlugin();
 
-    void calculateGeometry(const blink::IntRect& frameRect,
-                           blink::IntRect& windowRect,
-                           blink::IntRect& clipRect,
-                           Vector<blink::IntRect>& cutOutRects);
-    blink::IntRect windowClipRect() const;
-    void windowCutOutRects(const blink::IntRect& frameRect,
-                           Vector<blink::IntRect>& cutOutRects);
+    void calculateGeometry(
+        const IntRect& frameRect,
+        IntRect& windowRect,
+        IntRect& clipRect,
+        Vector<IntRect>& cutOutRects);
+    IntRect windowClipRect() const;
+    void windowCutOutRects(
+        const IntRect& frameRect,
+        Vector<IntRect>& cutOutRects);
 
     // FIXME: Oilpan: consider moving Widget to the heap and turn this
     // into a traced member. For the time being, it is a bare pointer
     // of its owning PlugInElement and managed as such.
-    blink::HTMLPlugInElement* m_element;
+    HTMLPlugInElement* m_element;
     WebPlugin* m_webPlugin;
     Vector<WebPluginLoadObserver*> m_pluginLoadObservers;
 
@@ -211,7 +209,7 @@ private:
     bool m_wantsWheelEvents;
 };
 
-DEFINE_TYPE_CASTS(WebPluginContainerImpl, blink::Widget, widget, widget->isPluginContainer(), widget.isPluginContainer());
+DEFINE_TYPE_CASTS(WebPluginContainerImpl, Widget, widget, widget->isPluginContainer(), widget.isPluginContainer());
 // Unlike Widget, we need not worry about object type for container.
 // WebPluginContainerImpl is the only subclass of WebPluginContainer.
 DEFINE_TYPE_CASTS(WebPluginContainerImpl, WebPluginContainer, container, true, true);

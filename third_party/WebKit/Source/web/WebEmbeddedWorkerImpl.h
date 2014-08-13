@@ -37,15 +37,12 @@
 #include "public/web/WebFrameClient.h"
 
 namespace blink {
-class WorkerScriptLoader;
-class WorkerThread;
-}
-
-namespace blink {
 
 class ServiceWorkerGlobalScopeProxy;
 class WebServiceWorkerNetworkProvider;
 class WebView;
+class WorkerScriptLoader;
+class WorkerThread;
 
 class WebEmbeddedWorkerImpl FINAL
     : public WebEmbeddedWorker
@@ -102,7 +99,7 @@ private:
     // Kept around only while main script loading is ongoing.
     OwnPtr<Loader> m_mainScriptLoader;
 
-    RefPtr<blink::WorkerThread> m_workerThread;
+    RefPtr<WorkerThread> m_workerThread;
     OwnPtr<LoaderProxy> m_loaderProxy;
     OwnPtr<ServiceWorkerGlobalScopeProxy> m_workerGlobalScopeProxy;
 

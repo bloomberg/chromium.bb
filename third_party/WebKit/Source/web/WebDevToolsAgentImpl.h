@@ -43,6 +43,7 @@
 #include "wtf/Vector.h"
 
 namespace blink {
+
 class Document;
 class LocalFrame;
 class FrameView;
@@ -52,10 +53,6 @@ class InspectorController;
 class Node;
 class Page;
 class PlatformKeyboardEvent;
-}
-
-namespace blink {
-
 class WebDevToolsAgentClient;
 class WebFrame;
 class WebLocalFrameImpl;
@@ -69,8 +66,8 @@ struct WebDevToolsMessageData;
 
 class WebDevToolsAgentImpl FINAL
     : public WebDevToolsAgentPrivate
-    , public blink::InspectorClient
-    , public blink::InspectorFrontendChannel
+    , public InspectorClient
+    , public InspectorFrontendChannel
     , public WebPageOverlay
     , private WebThread::TaskObserver {
 public:
@@ -81,7 +78,7 @@ public:
 
     // WebDevToolsAgentPrivate implementation.
     virtual void didCreateScriptContext(WebLocalFrameImpl*, int worldId) OVERRIDE;
-    virtual bool handleInputEvent(blink::Page*, const WebInputEvent&) OVERRIDE;
+    virtual bool handleInputEvent(Page*, const WebInputEvent&) OVERRIDE;
     virtual void didLayout() OVERRIDE;
 
     // WebDevToolsAgent implementation.
@@ -103,7 +100,7 @@ public:
     virtual void highlight() OVERRIDE;
     virtual void hideHighlight() OVERRIDE;
     virtual void updateInspectorStateCookie(const WTF::String&) OVERRIDE;
-    virtual void sendMessageToFrontend(PassRefPtr<blink::JSONObject> message) OVERRIDE;
+    virtual void sendMessageToFrontend(PassRefPtr<JSONObject> message) OVERRIDE;
     virtual void flush() OVERRIDE;
 
     virtual void setDeviceMetricsOverride(int width, int height, float deviceScaleFactor, bool mobile, bool fitWindow, float scale, float offsetX, float offsetY) OVERRIDE;
@@ -120,8 +117,8 @@ public:
     virtual void startGPUEventsRecording() OVERRIDE;
     virtual void stopGPUEventsRecording() OVERRIDE;
 
-    virtual void dispatchKeyEvent(const blink::PlatformKeyboardEvent&) OVERRIDE;
-    virtual void dispatchMouseEvent(const blink::PlatformMouseEvent&) OVERRIDE;
+    virtual void dispatchKeyEvent(const PlatformKeyboardEvent&) OVERRIDE;
+    virtual void dispatchMouseEvent(const PlatformMouseEvent&) OVERRIDE;
 
     // WebPageOverlay
     virtual void paintPageOverlay(WebCanvas*) OVERRIDE;
@@ -137,8 +134,8 @@ private:
     void disableMobileEmulation();
     void updatePageScaleFactorLimits();
 
-    blink::InspectorController* inspectorController();
-    blink::LocalFrame* mainFrame();
+    InspectorController* inspectorController();
+    LocalFrame* mainFrame();
 
     int m_debuggerId;
     int m_layerTreeId;
@@ -159,10 +156,10 @@ private:
     bool m_pageScaleLimitsOverriden;
 
     bool m_touchEventEmulationEnabled;
-    OwnPtr<blink::IntPoint> m_lastPinchAnchorCss;
-    OwnPtr<blink::IntPoint> m_lastPinchAnchorDip;
+    OwnPtr<IntPoint> m_lastPinchAnchorCss;
+    OwnPtr<IntPoint> m_lastPinchAnchorDip;
 
-    typedef Vector<RefPtr<blink::JSONObject> > FrontendMessageQueue;
+    typedef Vector<RefPtr<JSONObject> > FrontendMessageQueue;
     FrontendMessageQueue m_frontendMessageQueue;
 };
 
