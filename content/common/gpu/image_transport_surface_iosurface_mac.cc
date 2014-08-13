@@ -40,7 +40,9 @@ void AddIntegerValue(CFMutableDictionaryRef dictionary,
 
 }  // namespace
 
-IOSurfaceStorageProvider::IOSurfaceStorageProvider() {}
+IOSurfaceStorageProvider::IOSurfaceStorageProvider(
+    ImageTransportSurfaceFBO* transport_surface)
+        : transport_surface_(transport_surface) {}
 
 IOSurfaceStorageProvider::~IOSurfaceStorageProvider() {
   DCHECK(!io_surface_);
@@ -108,6 +110,18 @@ uint64 IOSurfaceStorageProvider::GetSurfaceHandle() const {
 }
 
 void IOSurfaceStorageProvider::WillSwapBuffers() {
+  // The browser compositor will throttle itself, so we are free to unblock the
+  // context immediately. Make sure that the browser is doing its throttling
+  // appropriately by ensuring that the previous swap was acknowledged before
+  // we get another swap.
+  DCHECK(pending_swapped_surfaces_.empty());
+  pending_swapped_surfaces_.push_back(io_surface_);
+  transport_surface_->UnblockContextAfterPendingSwap();
+}
+
+void IOSurfaceStorageProvider::CanFreeSwappedBuffer() {
+  DCHECK(!pending_swapped_surfaces_.empty());
+  pending_swapped_surfaces_.pop_front();
 }
 
 }  //  namespace content

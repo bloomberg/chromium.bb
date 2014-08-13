@@ -43,12 +43,6 @@
 #include "ui/events/latency_info.h"
 #include "ui/gl/gl_switches.h"
 
-#if defined(OS_MACOSX)
-#include <IOSurface/IOSurfaceAPI.h>
-#include "base/mac/scoped_cftyperef.h"
-#include "content/common/gpu/surface_handle_types_mac.h"
-#endif
-
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "content/common/sandbox_win.h"
@@ -762,44 +756,9 @@ void GpuProcessHost::OnGpuMemoryUmaStatsReceived(
 }
 
 #if defined(OS_MACOSX)
-namespace {
-void HoldIOSurfaceReference(base::ScopedCFTypeRef<IOSurfaceRef> io_surface) {}
-}  // namespace
-
 void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
     const IPC::Message& message) {
   RenderWidgetResizeHelper::Get()->PostGpuProcessMsg(host_id_, message);
-
-  if (!IsDelegatedRendererEnabled())
-    return;
-
-  GpuHostMsg_AcceleratedSurfaceBuffersSwapped::Param param;
-  if (!GpuHostMsg_AcceleratedSurfaceBuffersSwapped::Read(&message, &param))
-    return;
-  const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params = param.a;
-
-  if (GetSurfaceHandleType(params.surface_handle) ==
-          kSurfaceHandleTypeIOSurface) {
-    // As soon as the frame is acked, the IOSurface may be thrown away by the
-    // GPU process. Open the IOSurface and post a task referencing it to the UI
-    // thread. This will keep the IOSurface from being thrown away until the UI
-    // thread can open another reference to it, if needed.
-    base::ScopedCFTypeRef<IOSurfaceRef> io_surface(IOSurfaceLookup(
-        IOSurfaceIDFromSurfaceHandle(params.surface_handle)));
-    BrowserThread::PostTask(BrowserThread::UI,
-                            FROM_HERE,
-                            base::Bind(HoldIOSurfaceReference, io_surface));
-  }
-
-  // If delegated rendering is enabled, then immediately acknowledge this frame
-  // on the IO thread instead of the UI thread. The UI thread will wait on the
-  // GPU process. If the UI thread were to be responsible for acking swaps,
-  // then there would be a cycle and a potential deadlock. Back-pressure from
-  // the GPU is provided through the compositor's output surface.
-  AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
-  ack_params.sync_point = 0;
-  ack_params.renderer_id = 0;
-  Send(new AcceleratedSurfaceMsg_BufferPresented(params.route_id, ack_params));
 }
 #endif
 

@@ -301,7 +301,7 @@
       'common/gpu/image_transport_surface_android.cc',
       'common/gpu/image_transport_surface_calayer_mac.mm',
       'common/gpu/image_transport_surface_calayer_mac.h',
-      'common/gpu/image_transport_surface_fbo_mac.cc',
+      'common/gpu/image_transport_surface_fbo_mac.mm',
       'common/gpu/image_transport_surface_fbo_mac.h',
       'common/gpu/image_transport_surface_linux.cc',
       'common/gpu/image_transport_surface_mac.mm',

@@ -270,7 +270,8 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
             params.surface_id);
     BrowserCompositorViewMac::GotAcceleratedFrame(
         native_widget, params.surface_handle, params.surface_id,
-        params.latency_info, params.size, params.scale_factor);
+        params.latency_info, params.size, params.scale_factor,
+        host_id_, params.route_id);
     return;
   }
 #endif

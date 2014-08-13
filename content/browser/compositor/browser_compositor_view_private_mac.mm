@@ -91,15 +91,11 @@ void BrowserCompositorViewMacInternal::ResetClient() {
   ScopedCAActionDisabler disabler;
 
   [flipped_layer_ removeFromSuperlayer];
+  DestroyIOSurfaceLayer(io_surface_layer_);
+  DestroyCAContextLayer(ca_context_layer_);
+  DestroySoftwareLayer();
 
-  [io_surface_layer_ removeFromSuperlayer];
-  [io_surface_layer_ resetClient];
-  io_surface_layer_.reset();
   accelerated_output_surface_id_ = 0;
-
-  [software_layer_ removeFromSuperlayer];
-  software_layer_.reset();
-
   last_swap_size_dip_ = gfx::Size();
 
   compositor_->SetScaleAndSize(1.0, gfx::Size(0, 0));
@@ -110,6 +106,12 @@ void BrowserCompositorViewMacInternal::ResetClient() {
 bool BrowserCompositorViewMacInternal::HasFrameOfSize(
     const gfx::Size& dip_size) const {
   return last_swap_size_dip_ == dip_size;
+}
+
+int BrowserCompositorViewMacInternal::GetRendererID() const {
+  if (io_surface_layer_)
+    return [io_surface_layer_ iosurface]->GetRendererID();
+  return 0;
 }
 
 void BrowserCompositorViewMacInternal::BeginPumpingFrames() {

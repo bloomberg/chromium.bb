@@ -5,6 +5,7 @@
 #include "content/common/gpu/image_transport_surface_fbo_mac.h"
 
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/gpu/image_transport_surface_calayer_mac.h"
 #include "content/common/gpu/image_transport_surface_iosurface_mac.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_context.h"
@@ -14,12 +15,10 @@
 namespace content {
 
 ImageTransportSurfaceFBO::ImageTransportSurfaceFBO(
-    StorageProvider* storage_provider,
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
     gfx::PluginWindowHandle handle)
-    : storage_provider_(storage_provider),
-      backbuffer_suggested_allocation_(true),
+    : backbuffer_suggested_allocation_(true),
       frontbuffer_suggested_allocation_(true),
       fbo_id_(0),
       texture_id_(0),
@@ -30,6 +29,9 @@ ImageTransportSurfaceFBO::ImageTransportSurfaceFBO(
       made_current_(false),
       is_swap_buffers_pending_(false),
       did_unschedule_(false) {
+  // TODO(ccameron): If the remote layer API is supported on this system,
+  // use a CALayerStorageProvider instead of an IOSurfaceStorageProvider.
+  storage_provider_.reset(new IOSurfaceStorageProvider(this));
   helper_.reset(new ImageTransportHelper(this, manager, stub, handle));
 }
 
@@ -142,27 +144,9 @@ bool ImageTransportSurfaceFBO::SwapBuffers() {
 
 bool ImageTransportSurfaceFBO::PostSubBuffer(
     int x, int y, int width, int height) {
-  DCHECK(backbuffer_suggested_allocation_);
-  if (!frontbuffer_suggested_allocation_)
-    return true;
-  glFlush();
-
-  GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params;
-  params.surface_handle = storage_provider_->GetSurfaceHandle();
-  params.x = x;
-  params.y = y;
-  params.width = width;
-  params.height = height;
-  params.surface_size = GetSize();
-  params.surface_scale_factor = scale_factor_;
-  params.latency_info.swap(latency_info_);
-  helper_->SendAcceleratedSurfacePostSubBuffer(params);
-
-  DCHECK(!is_swap_buffers_pending_);
-  is_swap_buffers_pending_ = true;
-
-  storage_provider_->WillSwapBuffers();
-  return true;
+  // Mac does not support sub-buffer swaps.
+  NOTREACHED();
+  return false;
 }
 
 bool ImageTransportSurfaceFBO::SupportsPostSubBuffer() {
@@ -183,9 +167,12 @@ void* ImageTransportSurfaceFBO::GetDisplay() {
 
 void ImageTransportSurfaceFBO::OnBufferPresented(
     const AcceleratedSurfaceMsg_BufferPresented_Params& params) {
-  DCHECK(is_swap_buffers_pending_);
-
   context_->share_group()->SetRendererID(params.renderer_id);
+  storage_provider_->CanFreeSwappedBuffer();
+}
+
+void ImageTransportSurfaceFBO::UnblockContextAfterPendingSwap() {
+  DCHECK(is_swap_buffers_pending_);
   is_swap_buffers_pending_ = false;
   if (did_unschedule_) {
     did_unschedule_ = false;

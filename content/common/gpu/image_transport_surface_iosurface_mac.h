@@ -5,6 +5,8 @@
 #ifndef CONTENT_COMMON_GPU_IMAGE_TRANSPORT_SURFACE_IOSURFACE_MAC_H_
 #define CONTENT_COMMON_GPU_IMAGE_TRANSPORT_SURFACE_IOSURFACE_MAC_H_
 
+#include <list>
+
 #include "content/common/gpu/image_transport_surface_fbo_mac.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -17,7 +19,7 @@ namespace content {
 class IOSurfaceStorageProvider
     : public ImageTransportSurfaceFBO::StorageProvider {
  public:
-  IOSurfaceStorageProvider();
+  IOSurfaceStorageProvider(ImageTransportSurfaceFBO* transport_surface);
   virtual ~IOSurfaceStorageProvider();
 
   // ImageTransportSurfaceFBO::StorageProvider implementation:
@@ -28,9 +30,17 @@ class IOSurfaceStorageProvider
   virtual void FreeColorBufferStorage() OVERRIDE;
   virtual uint64 GetSurfaceHandle() const OVERRIDE;
   virtual void WillSwapBuffers() OVERRIDE;
+  virtual void CanFreeSwappedBuffer() OVERRIDE;
 
  private:
+  ImageTransportSurfaceFBO* transport_surface_;
+
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
+
+  // The list of IOSurfaces that have been sent to the browser process but have
+  // not been opened in the browser process yet. This list should never have
+  // more than one entry.
+  std::list<base::ScopedCFTypeRef<IOSurfaceRef>> pending_swapped_surfaces_;
 
   // The id of |io_surface_| or 0 if that's NULL.
   IOSurfaceID io_surface_id_;

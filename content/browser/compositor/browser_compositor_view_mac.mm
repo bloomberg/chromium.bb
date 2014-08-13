@@ -6,7 +6,9 @@
 
 #include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
+#include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/compositor/browser_compositor_view_private_mac.h"
+#include "content/common/gpu/gpu_messages.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserCompositorViewMac
@@ -76,12 +78,25 @@ void BrowserCompositorViewMac::GotAcceleratedFrame(
     gfx::AcceleratedWidget widget,
     uint64 surface_handle, int surface_id,
     const std::vector<ui::LatencyInfo>& latency_info,
-    gfx::Size pixel_size, float scale_factor) {
+    gfx::Size pixel_size, float scale_factor,
+    int gpu_host_id, int gpu_route_id) {
   BrowserCompositorViewMacInternal* internal_view =
       BrowserCompositorViewMacInternal::FromAcceleratedWidget(widget);
+  int renderer_id = 0;
   if (internal_view) {
     internal_view->GotAcceleratedFrame(
         surface_handle, surface_id, latency_info, pixel_size, scale_factor);
+    renderer_id = internal_view->GetRendererID();
+  }
+
+  // Acknowledge the swap, now that it has been processed.
+  AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
+  ack_params.sync_point = 0;
+  ack_params.renderer_id = renderer_id;
+  GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::FromID(gpu_host_id);
+  if (ui_shim) {
+    ui_shim->Send(new AcceleratedSurfaceMsg_BufferPresented(
+        gpu_route_id, ack_params));
   }
 }
 

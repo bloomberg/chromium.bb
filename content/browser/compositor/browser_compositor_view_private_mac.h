@@ -33,6 +33,9 @@ class BrowserCompositorViewMacInternal
   // Return true if the last frame swapped has a size in DIP of |dip_size|.
   bool HasFrameOfSize(const gfx::Size& dip_size) const;
 
+  // Return the CGL renderer ID for the surface, if one is available.
+  int GetRendererID() const;
+
   // Mark a bracket in which new frames are being pumped in a restricted nested
   // run loop.
   void BeginPumpingFrames();

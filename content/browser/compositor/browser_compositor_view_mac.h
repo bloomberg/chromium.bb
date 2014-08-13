@@ -70,7 +70,8 @@ class BrowserCompositorViewMac {
       gfx::AcceleratedWidget widget,
       uint64 surface_handle, int surface_id,
       const std::vector<ui::LatencyInfo>& latency_info,
-      gfx::Size pixel_size, float scale_factor);
+      gfx::Size pixel_size, float scale_factor,
+      int gpu_host_id, int gpu_route_id);
 
   static void GotSoftwareFrame(
       gfx::AcceleratedWidget widget,

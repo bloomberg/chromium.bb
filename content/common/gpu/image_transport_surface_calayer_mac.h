@@ -11,12 +11,7 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/scoped_cgl.h"
 
-@interface ImageTransportLayer : CAOpenGLLayer {
-  base::ScopedTypeRef<CGLContextObj> shareContext_;
-  GLuint texture_;
-  gfx::Size pixelSize_;
-}
-@end
+@class ImageTransportLayer;
 
 namespace content {
 
@@ -24,7 +19,7 @@ namespace content {
 class CALayerStorageProvider
     : public ImageTransportSurfaceFBO::StorageProvider {
  public:
-  CALayerStorageProvider();
+  CALayerStorageProvider(ImageTransportSurfaceFBO* transport_surface);
   virtual ~CALayerStorageProvider();
 
   // ImageTransportSurfaceFBO::StorageProvider implementation:
@@ -35,8 +30,31 @@ class CALayerStorageProvider
   virtual void FreeColorBufferStorage() OVERRIDE;
   virtual uint64 GetSurfaceHandle() const OVERRIDE;
   virtual void WillSwapBuffers() OVERRIDE;
+  virtual void CanFreeSwappedBuffer() OVERRIDE;
+
+  // Interface to ImageTransportLayer:
+  CGLContextObj LayerShareGroupContext();
+  bool LayerCanDraw();
+  void LayerDoDraw();
 
  private:
+  ImageTransportSurfaceFBO* transport_surface_;
+
+  // Set when a new swap occurs, and un-set when |layer_| draws that frame.
+  bool has_pending_draw_;
+
+  // A counter that is incremented whenever LayerCanDraw returns false. If this
+  // reaches a threshold, then |layer_| is switched to synchronous drawing to
+  // save CPU work.
+  uint32 can_draw_returned_false_count_;
+
+  // The texture with the pixels to draw, and the share group it is allocated
+  // in.
+  base::ScopedTypeRef<CGLContextObj> share_group_context_;
+  GLuint fbo_texture_;
+  gfx::Size fbo_pixel_size_;
+
+  // The CALayer that the current frame is being drawn into.
   base::scoped_nsobject<CAContext> context_;
   base::scoped_nsobject<ImageTransportLayer> layer_;
 
