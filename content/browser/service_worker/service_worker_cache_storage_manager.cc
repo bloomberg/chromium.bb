@@ -58,7 +58,7 @@ ServiceWorkerCacheStorageManager::~ServiceWorkerCacheStorageManager() {
   for (ServiceWorkerCacheStorageMap::iterator it = cache_storage_map_.begin();
        it != cache_storage_map_.end();
        ++it) {
-    cache_task_runner_->DeleteSoon(FROM_HERE, it->second);
+    delete it->second;
   }
 }
 
@@ -71,12 +71,7 @@ void ServiceWorkerCacheStorageManager::CreateCache(
   ServiceWorkerCacheStorage* cache_storage =
       FindOrCreateServiceWorkerCacheManager(origin);
 
-  cache_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&ServiceWorkerCacheStorage::CreateCache,
-                 base::Unretained(cache_storage),
-                 cache_name,
-                 callback));
+  cache_storage->CreateCache(cache_name, callback);
 }
 
 void ServiceWorkerCacheStorageManager::GetCache(
@@ -87,11 +82,8 @@ void ServiceWorkerCacheStorageManager::GetCache(
 
   ServiceWorkerCacheStorage* cache_storage =
       FindOrCreateServiceWorkerCacheManager(origin);
-  cache_task_runner_->PostTask(FROM_HERE,
-                               base::Bind(&ServiceWorkerCacheStorage::GetCache,
-                                          base::Unretained(cache_storage),
-                                          cache_name,
-                                          callback));
+
+  cache_storage->GetCache(cache_name, callback);
 }
 
 void ServiceWorkerCacheStorageManager::HasCache(
@@ -102,11 +94,7 @@ void ServiceWorkerCacheStorageManager::HasCache(
 
   ServiceWorkerCacheStorage* cache_storage =
       FindOrCreateServiceWorkerCacheManager(origin);
-  cache_task_runner_->PostTask(FROM_HERE,
-                               base::Bind(&ServiceWorkerCacheStorage::HasCache,
-                                          base::Unretained(cache_storage),
-                                          cache_name,
-                                          callback));
+  cache_storage->HasCache(cache_name, callback);
 }
 
 void ServiceWorkerCacheStorageManager::DeleteCache(
@@ -117,12 +105,7 @@ void ServiceWorkerCacheStorageManager::DeleteCache(
 
   ServiceWorkerCacheStorage* cache_storage =
       FindOrCreateServiceWorkerCacheManager(origin);
-  cache_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&ServiceWorkerCacheStorage::DeleteCache,
-                 base::Unretained(cache_storage),
-                 cache_name,
-                 callback));
+  cache_storage->DeleteCache(cache_name, callback);
 }
 
 void ServiceWorkerCacheStorageManager::EnumerateCaches(
@@ -133,11 +116,7 @@ void ServiceWorkerCacheStorageManager::EnumerateCaches(
   ServiceWorkerCacheStorage* cache_storage =
       FindOrCreateServiceWorkerCacheManager(origin);
 
-  cache_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&ServiceWorkerCacheStorage::EnumerateCaches,
-                 base::Unretained(cache_storage),
-                 callback));
+  cache_storage->EnumerateCaches(callback);
 }
 
 ServiceWorkerCacheStorageManager::ServiceWorkerCacheStorageManager(
@@ -158,7 +137,7 @@ ServiceWorkerCacheStorageManager::FindOrCreateServiceWorkerCacheManager(
     ServiceWorkerCacheStorage* cache_storage =
         new ServiceWorkerCacheStorage(ConstructOriginPath(root_path_, origin),
                                       memory_only,
-                                      base::MessageLoopProxy::current());
+                                      cache_task_runner_);
     // The map owns fetch_stores.
     cache_storage_map_.insert(std::make_pair(origin, cache_storage));
     return cache_storage;

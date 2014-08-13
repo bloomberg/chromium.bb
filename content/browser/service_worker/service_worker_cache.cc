@@ -11,16 +11,16 @@
 namespace content {
 
 // static
-ServiceWorkerCache* ServiceWorkerCache::CreateMemoryCache(
+scoped_ptr<ServiceWorkerCache> ServiceWorkerCache::CreateMemoryCache(
     const std::string& name) {
-  return new ServiceWorkerCache(base::FilePath(), name);
+  return make_scoped_ptr(new ServiceWorkerCache(base::FilePath(), name));
 }
 
 // static
-ServiceWorkerCache* ServiceWorkerCache::CreatePersistentCache(
+scoped_ptr<ServiceWorkerCache> ServiceWorkerCache::CreatePersistentCache(
     const base::FilePath& path,
     const std::string& name) {
-  return new ServiceWorkerCache(path, name);
+  return make_scoped_ptr(new ServiceWorkerCache(path, name));
 }
 
 void ServiceWorkerCache::CreateBackend(
@@ -28,9 +28,13 @@ void ServiceWorkerCache::CreateBackend(
   callback.Run(true);
 }
 
+base::WeakPtr<ServiceWorkerCache> ServiceWorkerCache::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 ServiceWorkerCache::ServiceWorkerCache(const base::FilePath& path,
                                        const std::string& name)
-    : path_(path), name_(name), id_(0) {
+    : path_(path), name_(name), id_(0), weak_ptr_factory_(this) {
 }
 
 ServiceWorkerCache::~ServiceWorkerCache() {
