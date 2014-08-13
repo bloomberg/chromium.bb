@@ -210,10 +210,6 @@ void EventBindings::AttachFilteredEvent(
     return;
 
   std::string extension_id = context()->GetExtensionID();
-  if (extension_id.empty()) {
-    args.GetReturnValue().Set(static_cast<int32_t>(-1));
-    return;
-  }
 
   scoped_ptr<base::DictionaryValue> filter;
   scoped_ptr<content::V8ValueConverter> converter(
@@ -256,8 +252,6 @@ void EventBindings::DetachFilteredEvent(
   bool is_manual = args[1]->BooleanValue();
 
   std::string extension_id = context()->GetExtensionID();
-  if (extension_id.empty())
-    return;
 
   int matcher_id = args[0]->Int32Value();
   EventFilter& event_filter = g_event_filter.Get();

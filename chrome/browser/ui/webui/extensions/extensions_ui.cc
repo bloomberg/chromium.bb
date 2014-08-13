@@ -84,6 +84,10 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   web_ui->AddMessageHandler(new MetricsHandler());
 
+  // Need to allow <object> elements so that the <extensionoptions> browser
+  // plugin can be loaded within chrome://extensions.
+  source->OverrideContentSecurityPolicyObjectSrc("object-src 'self';");
+
   content::WebUIDataSource::Add(profile, source);
 }
 

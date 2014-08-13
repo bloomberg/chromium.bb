@@ -18,6 +18,8 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/common/api/test.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/feature_switch.h"
+#include "extensions/common/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -108,6 +110,18 @@ class ExtensionWebUITest : public ExtensionApiTest {
         base::Bind(&FindFrame, frame_url, &frame_host));
     return frame_host;
   }
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    FeatureSwitch::ScopedOverride enable_options(
+        FeatureSwitch::embedded_extension_options(), true);
+    // Need to add a command line flag as well as a FeatureSwitch because the
+    // FeatureSwitch is not copied over to the renderer process from the
+    // browser process.
+    command_line->AppendSwitch(switches::kEnableEmbeddedExtensionOptions);
+    ExtensionApiTest::SetUpCommandLine(command_line);
+  }
+
+  scoped_ptr<FeatureSwitch::ScopedOverride> enable_options_;
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebUITest, SanityCheckAvailableAPIs) {
@@ -165,6 +179,23 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebUITest, RuntimeLastError) {
   listener.reset(new ExtensionTestMessageListener(false));
   ASSERT_TRUE(listener->WaitUntilSatisfied());
   EXPECT_EQ("true", listener->message());
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionWebUITest, CanEmbedExtensionOptions) {
+  scoped_ptr<ExtensionTestMessageListener> listener(
+      new ExtensionTestMessageListener("ready", true));
+
+  const Extension* extension = InstallExtension(
+      test_data_dir_.AppendASCII("extension_options").AppendASCII("embed_self"),
+      1);
+  ASSERT_TRUE(extension);
+
+  ASSERT_TRUE(RunTestOnExtensions("can_embed_extension_options.js"));
+
+  ASSERT_TRUE(listener->WaitUntilSatisfied());
+  listener->Reply(extension->id());
+  listener.reset(new ExtensionTestMessageListener("guest loaded", false));
+  ASSERT_TRUE(listener->WaitUntilSatisfied());
 }
 
 }  // namespace

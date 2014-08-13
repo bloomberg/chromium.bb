@@ -397,10 +397,6 @@ GuestViewBase::~GuestViewBase() {
 
 void GuestViewBase::DispatchEventToEmbedder(Event* event) {
   scoped_ptr<Event> event_ptr(event);
-  if (!in_extension()) {
-    NOTREACHED();
-    return;
-  }
 
   if (!attached()) {
     pending_events_.push_back(linked_ptr<Event>(event_ptr.release()));

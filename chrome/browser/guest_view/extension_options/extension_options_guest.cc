@@ -64,7 +64,9 @@ void ExtensionOptionsGuest::CreateWebContents(
     return;
   }
 
-  if (extension_id != embedder_extension_id) {
+  if (extensions::Extension::IdIsValid(embedder_extension_id) &&
+      extension_id != embedder_extension_id) {
+    // Extensions cannot embed other extensions' options pages.
     callback.Run(NULL);
     return;
   }

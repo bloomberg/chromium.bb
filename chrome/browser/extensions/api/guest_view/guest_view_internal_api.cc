@@ -40,9 +40,15 @@ bool GuestViewInternalCreateGuestFunction::RunAsync() {
     error_ = "Guest views can only be embedded in web content";
     return false;
   }
+  // If the guest is an <extensionoptions> to be embedded in a WebUI, then
+  // there is no extension, and extension() will be null. Use an empty string
+  // instead.
+  std::string embedder_extension_id;
+  if (extension())
+    embedder_extension_id = extension_id();
 
   guest_view_manager->CreateGuest(view_type,
-                                  extension_id(),
+                                  embedder_extension_id,
                                   embedder_web_contents,
                                   *create_params,
                                   callback);
