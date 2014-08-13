@@ -14,7 +14,6 @@ gypi_values = exec_script(
 #              (generate_common_resources action)
 grit("resources") {
   source = "common_resources.grd"
-  output_dir = "$root_gen_dir/chrome"
   outputs = [
     "grit/common_resources.h",
     "common_resources.pak",
@@ -25,7 +24,6 @@ grit("resources") {
 #              (generate_extensions_api_resources action)
 grit("extensions_api_resources") {
   source = "extensions_api_resources.grd"
-  output_dir = "$root_gen_dir/chrome"
   outputs = [
     "grit/extensions_api_resources.h",
     "extensions_api_resources.pak",

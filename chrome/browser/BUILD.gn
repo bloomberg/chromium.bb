@@ -614,7 +614,6 @@ static_library("browser") {
 # (generate_browser_resources action)
 grit("resources") {
   source = "browser_resources.grd"
-  output_dir = "$root_gen_dir/chrome"
   outputs = [
     "grit/browser_resources.h",
     "browser_resources.pak",
