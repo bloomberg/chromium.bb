@@ -3570,16 +3570,6 @@ void WebViewImpl::showContextMenu()
     m_contextMenuAllowed = false;
 }
 
-void WebViewImpl::getSmartClipData(WebRect rect, WebString& clipText, WebRect& clipRect)
-{
-    LocalFrame* frame = toLocalFrame(focusedWebCoreFrame());
-    if (!frame)
-        return;
-    SmartClipData clipData = blink::SmartClip(frame).dataForRect(rect);
-    clipText = clipData.clipData();
-    clipRect = clipData.rect();
-}
-
 void WebViewImpl::extractSmartClipData(WebRect rect, WebString& clipText, WebString& clipHtml, WebRect& clipRect)
 {
     LocalFrame* localFrame = toLocalFrame(focusedWebCoreFrame());
