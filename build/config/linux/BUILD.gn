@@ -47,10 +47,8 @@ pkg_config("pangoft2") {
   packages = [ "pangoft2" ]
 }
 
-if (use_udev) {
-  pkg_config("udev") {
-    packages = [ "libudev" ]
-  }
+pkg_config("udev") {
+  packages = [ "libudev" ]
 }
 
 # Note: if your target also depends on //dbus, you don't need to add this
