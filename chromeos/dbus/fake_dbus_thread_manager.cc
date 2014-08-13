@@ -10,7 +10,6 @@
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/dbus_thread_manager_observer.h"
 #include "chromeos/dbus/fake_bluetooth_adapter_client.h"
 #include "chromeos/dbus/fake_bluetooth_agent_manager_client.h"
 #include "chromeos/dbus/fake_bluetooth_device_client.h"
@@ -52,8 +51,6 @@ FakeDBusThreadManager::FakeDBusThreadManager() {
 }
 
 FakeDBusThreadManager::~FakeDBusThreadManager() {
-  FOR_EACH_OBSERVER(DBusThreadManagerObserver, observers_,
-                    OnDBusThreadManagerDestroying(this));
 }
 
 void FakeDBusThreadManager::SetFakeClients() {
@@ -317,17 +314,6 @@ void FakeDBusThreadManager::SetSystemClockClient(
 void FakeDBusThreadManager::SetUpdateEngineClient(
     scoped_ptr<UpdateEngineClient> client) {
   update_engine_client_ = client.Pass();
-}
-
-void FakeDBusThreadManager::AddObserver(DBusThreadManagerObserver* observer) {
-  DCHECK(observer);
-  observers_.AddObserver(observer);
-}
-
-void FakeDBusThreadManager::RemoveObserver(
-    DBusThreadManagerObserver* observer) {
-  DCHECK(observer);
-  observers_.RemoveObserver(observer);
 }
 
 dbus::Bus* FakeDBusThreadManager::GetSystemBus() {

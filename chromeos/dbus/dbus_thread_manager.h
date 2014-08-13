@@ -21,8 +21,6 @@ class ObjectPath;
 
 namespace chromeos {
 
-class DBusThreadManagerObserver;
-
 // Style Note: Clients are sorted by names.
 class BluetoothAdapterClient;
 class BluetoothAgentManagerClient;
@@ -115,10 +113,6 @@ class CHROMEOS_EXPORT DBusThreadManager {
 
   // Gets the global instance. Initialize() must be called first.
   static DBusThreadManager* Get();
-
-  // Adds or removes an observer.
-  virtual void AddObserver(DBusThreadManagerObserver* observer) = 0;
-  virtual void RemoveObserver(DBusThreadManagerObserver* observer) = 0;
 
   // Returns various D-Bus bus instances, owned by DBusThreadManager.
   virtual dbus::Bus* GetSystemBus() = 0;

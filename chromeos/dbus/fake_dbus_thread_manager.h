@@ -6,7 +6,6 @@
 #define CHROMEOS_DBUS_FAKE_DBUS_THREAD_MANAGER_H_
 
 #include "base/logging.h"
-#include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
@@ -16,8 +15,6 @@ class ObjectPath;
 }  // namespace dbus
 
 namespace chromeos {
-
-class DBusThreadManagerObserver;
 
 // This class provides a fake implementation of DBusThreadManager, which
 // hosts fake D-Bus clients.
@@ -78,8 +75,6 @@ class CHROMEOS_EXPORT FakeDBusThreadManager : public DBusThreadManager {
   void SetSystemClockClient(scoped_ptr<SystemClockClient> client);
   void SetUpdateEngineClient(scoped_ptr<UpdateEngineClient> client);
 
-  virtual void AddObserver(DBusThreadManagerObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(DBusThreadManagerObserver* observer) OVERRIDE;
   virtual dbus::Bus* GetSystemBus() OVERRIDE;
 
   virtual BluetoothAdapterClient* GetBluetoothAdapterClient() OVERRIDE;
@@ -124,10 +119,6 @@ class CHROMEOS_EXPORT FakeDBusThreadManager : public DBusThreadManager {
   virtual UpdateEngineClient* GetUpdateEngineClient() OVERRIDE;
 
  private:
-  // Note: Keep this before other members so they can call AddObserver() in
-  // their c'tors.
-  ObserverList<DBusThreadManagerObserver> observers_;
-
   scoped_ptr<BluetoothAdapterClient> bluetooth_adapter_client_;
   scoped_ptr<BluetoothAgentManagerClient> bluetooth_agent_manager_client_;
   scoped_ptr<BluetoothDeviceClient> bluetooth_device_client_;

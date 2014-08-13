@@ -5,7 +5,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 
 #include "base/command_line.h"
-#include "base/observer_list.h"
 #include "base/sys_info.h"
 #include "base/threading/thread.h"
 #include "chromeos/chromeos_switches.h"
@@ -22,7 +21,6 @@
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_client.h"
-#include "chromeos/dbus/dbus_thread_manager_observer.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/dbus/easy_unlock_client.h"
 #include "chromeos/dbus/fake_dbus_thread_manager.h"
@@ -279,9 +277,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   }
 
   virtual ~DBusThreadManagerImpl() {
-    FOR_EACH_OBSERVER(DBusThreadManagerObserver, observers_,
-                      OnDBusThreadManagerDestroying(this));
-
     // PowerPolicyController's destructor depends on PowerManagerClient.
     power_policy_controller_.reset();
 
@@ -297,16 +292,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   }
 
   // DBusThreadManager overrides:
-  virtual void AddObserver(DBusThreadManagerObserver* observer) OVERRIDE {
-    DCHECK(observer);
-    observers_.AddObserver(observer);
-  }
-
-  virtual void RemoveObserver(DBusThreadManagerObserver* observer) OVERRIDE {
-    DCHECK(observer);
-    observers_.RemoveObserver(observer);
-  }
-
   virtual dbus::Bus* GetSystemBus() OVERRIDE {
     return system_bus_.get();
   }
@@ -465,10 +450,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     client_bundle_.reset(new DBusClientBundle);
     power_policy_controller_.reset(new PowerPolicyController);
   }
-
-  // Note: Keep this before other members so they can call AddObserver() in
-  // their c'tors.
-  ObserverList<DBusThreadManagerObserver> observers_;
 
   scoped_ptr<base::Thread> dbus_thread_;
   scoped_refptr<dbus::Bus> system_bus_;
