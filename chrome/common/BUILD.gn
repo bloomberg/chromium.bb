@@ -12,7 +12,7 @@ gypi_values = exec_script(
 
 # GYP version: chrome/chrome_resources.gyp:chrome_resources
 #              (generate_common_resources action)
-grit("resources") {
+grit("common_resources") {
   source = "common_resources.grd"
   output_dir = "$root_gen_dir/chrome"
   outputs = [

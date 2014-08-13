@@ -13,7 +13,7 @@ gypi_values = exec_script(
 
 # GYP version: chrome/chrome_resources.gyp:chrome_resources
 # (generate_renderer_resources action)
-grit("resources") {
+grit("renderer_resources") {
   source = "resources/renderer_resources.grd"
   output_dir = "$root_gen_dir/chrome"
   outputs = [

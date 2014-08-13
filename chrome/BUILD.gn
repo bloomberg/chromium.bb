@@ -11,8 +11,8 @@ group("resources") {
     # these are just dependencies for the actions themselves, which our actions
     # list individually when needed.
     "//chrome/browser:resources",
-    "//chrome/common:resources",
-    "//chrome/renderer:resources",
+    "//chrome/common:common_resources",
+    "//chrome/renderer:renderer_resources",
   ]
 
   if (enable_extensions) {
