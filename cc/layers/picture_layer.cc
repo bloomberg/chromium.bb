@@ -4,6 +4,7 @@
 
 #include "cc/layers/picture_layer.h"
 
+#include "base/auto_reset.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -85,7 +86,11 @@ bool PictureLayer::Update(ResourceUpdateQueue* queue,
   update_source_frame_number_ = layer_tree_host()->source_frame_number();
   bool updated = Layer::Update(queue, occlusion);
 
-  UpdateCanUseLCDText();
+  {
+    base::AutoReset<bool> ignore_set_needs_commit(&ignore_set_needs_commit_,
+                                                  true);
+    UpdateCanUseLCDText();
+  }
 
   gfx::Rect visible_layer_rect = gfx::ScaleToEnclosingRect(
       visible_content_rect(), 1.f / contents_scale_x());

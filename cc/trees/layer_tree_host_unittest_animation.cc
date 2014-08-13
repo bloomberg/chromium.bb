@@ -722,63 +722,6 @@ class LayerTreeHostAnimationTestLayerAddedWithAnimation
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostAnimationTestLayerAddedWithAnimation);
 
-class LayerTreeHostAnimationTestContinuousAnimate
-    : public LayerTreeHostAnimationTest {
- public:
-  LayerTreeHostAnimationTestContinuousAnimate()
-      : num_commit_complete_(0), num_draw_layers_(0), have_animated_(false) {}
-
-  virtual void SetupTree() OVERRIDE {
-    LayerTreeHostAnimationTest::SetupTree();
-    // Create a fake content layer so we actually produce new content for every
-    // animation frame.
-    content_ = FakeContentLayer::Create(&client_);
-    content_->set_always_update_resources(true);
-    layer_tree_host()->root_layer()->AddChild(content_);
-  }
-
-  virtual void BeginTest() OVERRIDE {
-    PostSetNeedsCommitToMainThread();
-  }
-
-  virtual void Animate(base::TimeTicks) OVERRIDE {
-    if (num_draw_layers_ == 2)
-      return;
-    layer_tree_host()->SetNeedsAnimate();
-    have_animated_ = true;
-  }
-
-  virtual void Layout() OVERRIDE {
-    layer_tree_host()->root_layer()->SetNeedsDisplay();
-  }
-
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* tree_impl) OVERRIDE {
-    if (num_draw_layers_ == 1)
-      num_commit_complete_++;
-  }
-
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    num_draw_layers_++;
-    if (num_draw_layers_ == 2)
-      EndTest();
-  }
-
-  virtual void AfterTest() OVERRIDE {
-    // Check that we didn't commit twice between first and second draw.
-    EXPECT_EQ(1, num_commit_complete_);
-    EXPECT_TRUE(have_animated_);
-  }
-
- private:
-  int num_commit_complete_;
-  int num_draw_layers_;
-  bool have_animated_;
-  FakeContentLayerClient client_;
-  scoped_refptr<FakeContentLayer> content_;
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestContinuousAnimate);
-
 class LayerTreeHostAnimationTestCancelAnimateCommit
     : public LayerTreeHostAnimationTest {
  public:

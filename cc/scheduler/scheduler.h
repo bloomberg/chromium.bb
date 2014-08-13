@@ -98,6 +98,13 @@ class CC_EXPORT Scheduler {
   void DidLoseOutputSurface();
   void DidCreateAndInitializeOutputSurface();
 
+  // Tests do not want to shut down until all possible BeginMainFrames have
+  // occured to prevent flakiness.
+  bool MainFrameForTestingWillHappen() const {
+    return state_machine_.CommitPending() ||
+           state_machine_.CouldSendBeginMainFrame();
+  }
+
   bool CommitPending() const { return state_machine_.CommitPending(); }
   bool RedrawPending() const { return state_machine_.RedrawPending(); }
   bool ManageTilesPending() const {

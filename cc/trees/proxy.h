@@ -101,7 +101,7 @@ class CC_EXPORT Proxy {
   virtual void SetDebugState(const LayerTreeDebugState& debug_state) = 0;
 
   // Testing hooks
-  virtual bool CommitPendingForTesting() = 0;
+  virtual bool MainFrameWillHappenForTesting() = 0;
 
  protected:
   Proxy(scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,

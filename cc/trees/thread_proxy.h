@@ -172,7 +172,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
   virtual bool SupportsImplScrolling() const OVERRIDE;
   virtual void SetDebugState(const LayerTreeDebugState& debug_state) OVERRIDE;
   virtual void AsValueInto(base::debug::TracedValue* value) const OVERRIDE;
-  virtual bool CommitPendingForTesting() OVERRIDE;
+  virtual bool MainFrameWillHappenForTesting() OVERRIDE;
 
   // LayerTreeHostImplClient implementation
   virtual void UpdateRendererCapabilitiesOnImplThread() OVERRIDE;
@@ -251,7 +251,6 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void SendCommitRequestToImplThreadIfNeeded();
 
   // Called on impl thread.
-  struct CommitPendingRequest;
   struct SchedulerStateRequest;
 
   void StartCommitOnImplThread(CompletionEvent* completion,
@@ -272,7 +271,8 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void LayerTreeHostClosedOnImplThread(CompletionEvent* completion);
   DrawResult DrawSwapInternal(bool forced_draw);
   void ForceSerializeOnSwapBuffersOnImplThread(CompletionEvent* completion);
-  void CommitPendingOnImplThreadForTesting(CommitPendingRequest* request);
+  void MainFrameWillHappenOnImplThreadForTesting(CompletionEvent* completion,
+                                                 bool* main_frame_will_happen);
   void AsValueOnImplThread(CompletionEvent* completion,
                            base::debug::TracedValue* state) const;
   void SetSwapUsedIncompleteTileOnImplThread(bool used_incomplete_tile);

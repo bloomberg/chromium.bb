@@ -1152,7 +1152,7 @@ class TextureLayerNoExtraCommitForMailboxTest
   virtual void DidCommitAndDrawFrame() OVERRIDE {
     switch (layer_tree_host()->source_frame_number()) {
       case 1:
-        EXPECT_FALSE(proxy()->CommitPendingForTesting());
+        EXPECT_FALSE(proxy()->MainFrameWillHappenForTesting());
         // Invalidate the texture layer to clear the mailbox before
         // ending the test.
         texture_layer_->SetNeedsDisplay();

@@ -34,7 +34,9 @@ void FakeProxy::SetMaxPartialTextureUpdates(size_t max) {
 
 bool FakeProxy::SupportsImplScrolling() const { return false; }
 
-bool FakeProxy::CommitPendingForTesting() { return false; }
+bool FakeProxy::MainFrameWillHappenForTesting() {
+  return false;
+}
 
 void FakeProxy::AsValueInto(base::debug::TracedValue*) const {
 }

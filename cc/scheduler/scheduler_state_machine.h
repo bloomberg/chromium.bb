@@ -235,6 +235,8 @@ class CC_EXPORT SchedulerStateMachine {
     continuous_painting_ = continuous_painting;
   }
 
+  bool CouldSendBeginMainFrame() const;
+
  protected:
   bool BeginFrameNeededToAnimateOrDraw() const;
   bool ProactiveBeginFrameWanted() const;

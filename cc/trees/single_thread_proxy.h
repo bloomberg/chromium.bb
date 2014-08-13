@@ -53,7 +53,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   virtual void ForceSerializeOnSwapBuffers() OVERRIDE;
   virtual bool SupportsImplScrolling() const OVERRIDE;
   virtual void AsValueInto(base::debug::TracedValue* state) const OVERRIDE;
-  virtual bool CommitPendingForTesting() OVERRIDE;
+  virtual bool MainFrameWillHappenForTesting() OVERRIDE;
 
   // SchedulerClient implementation
   virtual void SetNeedsBeginFrame(bool enable) OVERRIDE;

@@ -550,7 +550,8 @@ void LayerTreeTest::Timeout() {
 }
 
 void LayerTreeTest::RealEndTest() {
-  if (layer_tree_host_ && proxy()->CommitPendingForTesting()) {
+  if (layer_tree_host_ && !timed_out_ &&
+      proxy()->MainFrameWillHappenForTesting()) {
     main_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&LayerTreeTest::RealEndTest, main_thread_weak_ptr_));

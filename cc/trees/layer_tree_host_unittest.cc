@@ -1805,47 +1805,6 @@ class LayerTreeHostTestEvictTextures : public LayerTreeHostTest {
 
 MULTI_THREAD_NOIMPL_TEST_F(LayerTreeHostTestEvictTextures);
 
-class LayerTreeHostTestContinuousCommit : public LayerTreeHostTest {
- public:
-  LayerTreeHostTestContinuousCommit()
-      : num_commit_complete_(0), num_draw_layers_(0) {}
-
-  virtual void BeginTest() OVERRIDE {
-    layer_tree_host()->SetViewportSize(gfx::Size(10, 10));
-    layer_tree_host()->root_layer()->SetBounds(gfx::Size(10, 10));
-
-    PostSetNeedsCommitToMainThread();
-  }
-
-  virtual void DidCommit() OVERRIDE {
-    if (num_draw_layers_ == 2)
-      return;
-    layer_tree_host()->SetNeedsCommit();
-  }
-
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    if (num_draw_layers_ == 1)
-      num_commit_complete_++;
-  }
-
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    num_draw_layers_++;
-    if (num_draw_layers_ == 2)
-      EndTest();
-  }
-
-  virtual void AfterTest() OVERRIDE {
-    // Check that we didn't commit twice between first and second draw.
-    EXPECT_EQ(1, num_commit_complete_);
-  }
-
- private:
-  int num_commit_complete_;
-  int num_draw_layers_;
-};
-
-MULTI_THREAD_TEST_F(LayerTreeHostTestContinuousCommit);
-
 class LayerTreeHostTestContinuousInvalidate : public LayerTreeHostTest {
  public:
   LayerTreeHostTestContinuousInvalidate()
@@ -4568,26 +4527,20 @@ class LayerTreeHostTestBreakSwapPromise : public LayerTreeHostTest {
 class LayerTreeHostTestBreakSwapPromiseForVisibilityAbortedCommit
     : public LayerTreeHostTest {
  protected:
-  LayerTreeHostTestBreakSwapPromiseForVisibilityAbortedCommit()
-      : commit_count_(0) {}
-
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
 
-  virtual void WillBeginMainFrame() OVERRIDE {
+  virtual void DidCommit() OVERRIDE {
     layer_tree_host()->SetDeferCommits(true);
     layer_tree_host()->SetNeedsCommit();
   }
 
   virtual void DidDeferCommit() OVERRIDE {
     layer_tree_host()->SetVisible(false);
-    layer_tree_host()->SetDeferCommits(false);
-
     scoped_ptr<SwapPromise> swap_promise(
         new TestSwapPromise(&swap_promise_result_));
     layer_tree_host()->QueueSwapPromise(swap_promise.Pass());
+    layer_tree_host()->SetDeferCommits(false);
   }
-
-  virtual void DidCommit() OVERRIDE { PostSetNeedsCommitToMainThread(); }
 
   virtual void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
                                              bool did_handle) OVERRIDE {
@@ -4604,7 +4557,6 @@ class LayerTreeHostTestBreakSwapPromiseForVisibilityAbortedCommit
     }
   }
 
-  int commit_count_;
   TestSwapPromiseResult swap_promise_result_;
 };
 
@@ -4614,30 +4566,36 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 class LayerTreeHostTestBreakSwapPromiseForContextAbortedCommit
     : public LayerTreeHostTest {
  protected:
-  LayerTreeHostTestBreakSwapPromiseForContextAbortedCommit()
-      : commit_count_(0) {}
-
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
 
-  virtual void WillBeginMainFrame() OVERRIDE {
+  virtual void DidCommit() OVERRIDE {
+    if (TestEnded())
+      return;
     layer_tree_host()->SetDeferCommits(true);
     layer_tree_host()->SetNeedsCommit();
   }
 
   virtual void DidDeferCommit() OVERRIDE {
     layer_tree_host()->DidLoseOutputSurface();
-    layer_tree_host()->SetDeferCommits(false);
-
     scoped_ptr<SwapPromise> swap_promise(
         new TestSwapPromise(&swap_promise_result_));
     layer_tree_host()->QueueSwapPromise(swap_promise.Pass());
+    layer_tree_host()->SetDeferCommits(false);
   }
-
-  virtual void DidCommit() OVERRIDE { PostSetNeedsCommitToMainThread(); }
 
   virtual void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
                                              bool did_handle) OVERRIDE {
     EndTest();
+    // This lets the test finally commit and exit.
+    MainThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&LayerTreeHostTestBreakSwapPromiseForContextAbortedCommit::
+                       FindOutputSurface,
+                   base::Unretained(this)));
+  }
+
+  void FindOutputSurface() {
+    layer_tree_host()->OnCreateAndInitializeOutputSurfaceAttempted(true);
   }
 
   virtual void AfterTest() OVERRIDE {
@@ -4650,7 +4608,6 @@ class LayerTreeHostTestBreakSwapPromiseForContextAbortedCommit
     }
   }
 
-  int commit_count_;
   TestSwapPromiseResult swap_promise_result_;
 };
 
@@ -4687,6 +4644,9 @@ class LayerTreeHostTestSimpleSwapPromiseMonitor : public LayerTreeHostTest {
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
 
   virtual void WillBeginMainFrame() OVERRIDE {
+    if (TestEnded())
+      return;
+
     int set_needs_commit_count = 0;
     int set_needs_redraw_count = 0;
 
@@ -4997,15 +4957,21 @@ class LayerTreeHostTestContinuousPainting : public LayerTreeHostTest {
   }
 
   virtual void BeginTest() OVERRIDE {
-    // Wait 50x longer than expected.
-    double milliseconds_per_frame =
-        1000 / layer_tree_host()->settings().refresh_rate;
-    EndTestAfterDelay(50 * kExpectedNumCommits * milliseconds_per_frame);
     MainThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::Bind(
             &LayerTreeHostTestContinuousPainting::EnableContinuousPainting,
             base::Unretained(this)));
+    // Wait 50x longer than expected.
+    double milliseconds_per_frame =
+        1000.0 / layer_tree_host()->settings().refresh_rate;
+    MainThreadTaskRunner()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(
+            &LayerTreeHostTestContinuousPainting::DisableContinuousPainting,
+            base::Unretained(this)),
+        base::TimeDelta::FromMilliseconds(50 * kExpectedNumCommits *
+                                          milliseconds_per_frame));
   }
 
   virtual void Animate(base::TimeTicks monotonic_time) OVERRIDE {
@@ -5034,6 +5000,13 @@ class LayerTreeHostTestContinuousPainting : public LayerTreeHostTest {
     LayerTreeDebugState debug_state = layer_tree_host()->debug_state();
     debug_state.continuous_painting = true;
     layer_tree_host()->SetDebugState(debug_state);
+  }
+
+  void DisableContinuousPainting() {
+    LayerTreeDebugState debug_state = layer_tree_host()->debug_state();
+    debug_state.continuous_painting = false;
+    layer_tree_host()->SetDebugState(debug_state);
+    EndTest();
   }
 
   int num_commits_;

@@ -418,8 +418,19 @@ bool SchedulerStateMachine::ShouldAnimate() const {
   return needs_redraw_ || needs_animate_;
 }
 
-bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
+bool SchedulerStateMachine::CouldSendBeginMainFrame() const {
   if (!needs_commit_)
+    return false;
+
+  // We can not perform commits if we are not visible.
+  if (!visible_)
+    return false;
+
+  return true;
+}
+
+bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
+  if (!CouldSendBeginMainFrame())
     return false;
 
   // Only send BeginMainFrame when there isn't another commit pending already.
@@ -432,10 +443,6 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
       (has_pending_tree_ || active_tree_needs_first_draw_)) {
     return false;
   }
-
-  // We do not need commits if we are not visible.
-  if (!visible_)
-    return false;
 
   // We want to start the first commit after we get a new output surface ASAP.
   if (output_surface_state_ == OUTPUT_SURFACE_WAITING_FOR_FIRST_COMMIT)

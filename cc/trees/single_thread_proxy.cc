@@ -550,7 +550,9 @@ void SingleThreadProxy::DidCommitAndDrawFrame() {
   }
 }
 
-bool SingleThreadProxy::CommitPendingForTesting() { return false; }
+bool SingleThreadProxy::MainFrameWillHappenForTesting() {
+  return false;
+}
 
 void SingleThreadProxy::SetNeedsBeginFrame(bool enable) {
   layer_tree_host_impl_->SetNeedsBeginFrame(enable);
