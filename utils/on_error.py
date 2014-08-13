@@ -118,7 +118,7 @@ def _post(params):
   if not _SERVER:
     return None
   return _SERVER.json_request(
-      '/ereporter2/api/v1/on_error', body=params, max_attempts=1, timeout=20)
+      '/ereporter2/api/v1/on_error', data=params, max_attempts=1, timeout=20)
 
 
 def _serialize_env():

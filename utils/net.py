@@ -598,7 +598,7 @@ class HttpService(object):
       self,
       urlpath,
       method=None,
-      body=None,
+      data=None,
       max_attempts=URL_OPEN_MAX_ATTEMPTS,
       timeout=URL_OPEN_TIMEOUT,
       headers=None):
@@ -607,7 +607,7 @@ class HttpService(object):
     Arguments:
       method: HTTP method to use ('GET', 'POST', ...).
       urlpath: relative request path (e.g. '/auth/v1/...').
-      body: object to serialize to JSON and sent in the request.
+      data: object to serialize to JSON and sent in the request.
       max_attempts: how many times to retry 50x errors.
       timeout: how long to wait for a response (including all retries).
       headers: dict with additional request headers.
@@ -621,8 +621,8 @@ class HttpService(object):
     """
     response = self.request(
         urlpath,
-        content_type=JSON_CONTENT_TYPE if body is not None else None,
-        data=body,
+        content_type=JSON_CONTENT_TYPE if data is not None else None,
+        data=data,
         headers=headers,
         max_attempts=max_attempts,
         retry_404=False,
