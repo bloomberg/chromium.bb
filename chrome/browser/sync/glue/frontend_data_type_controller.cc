@@ -153,9 +153,12 @@ void FrontendDataTypeController::OnSingleDataTypeUnrecoverableError(
   if (!start_callback_.is_null()) {
     syncer::SyncMergeResult local_merge_result(type());
     local_merge_result.set_error(error);
-    start_callback_.Run(RUNTIME_ERROR,
-                        local_merge_result,
-                        syncer::SyncMergeResult(type()));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(start_callback_,
+                   RUNTIME_ERROR,
+                   local_merge_result,
+                   syncer::SyncMergeResult(type())));
   }
 }
 
