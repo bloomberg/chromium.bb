@@ -9,6 +9,7 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/child/worker_thread_task_runner.h"
 #include "content/common/service_worker/service_worker_messages.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_message_macros.h"
 
 namespace content {
@@ -61,10 +62,10 @@ void ServiceWorkerMessageFilter::OnStaleMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerMessageFilter, msg)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerRegistered,
                         OnStaleRegistered)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetWaitingServiceWorker,
-                        OnStaleSetServiceWorker)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetVersionAttributes,
+                        OnStaleSetVersionAttributes)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetControllerServiceWorker,
-                        OnStaleSetServiceWorker)
+                        OnStaleSetControllerServiceWorker)
   IPC_END_MESSAGE_MAP()
 }
 
@@ -75,7 +76,20 @@ void ServiceWorkerMessageFilter::OnStaleRegistered(
   SendServiceWorkerObjectDestroyed(thread_safe_sender_, info.handle_id);
 }
 
-void ServiceWorkerMessageFilter::OnStaleSetServiceWorker(
+void ServiceWorkerMessageFilter::OnStaleSetVersionAttributes(
+    int thread_id,
+    int provider_id,
+    int changed_mask,
+    const ServiceWorkerVersionAttributes& attributes) {
+  SendServiceWorkerObjectDestroyed(thread_safe_sender_,
+                                   attributes.installing.handle_id);
+  SendServiceWorkerObjectDestroyed(thread_safe_sender_,
+                                   attributes.waiting.handle_id);
+  SendServiceWorkerObjectDestroyed(thread_safe_sender_,
+                                   attributes.active.handle_id);
+}
+
+void ServiceWorkerMessageFilter::OnStaleSetControllerServiceWorker(
     int thread_id,
     int provider_id,
     const ServiceWorkerObjectInfo& info) {

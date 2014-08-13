@@ -85,6 +85,12 @@ struct CONTENT_EXPORT ServiceWorkerObjectInfo {
   blink::WebServiceWorkerState state;
 };
 
+struct ServiceWorkerVersionAttributes {
+  ServiceWorkerObjectInfo installing;
+  ServiceWorkerObjectInfo waiting;
+  ServiceWorkerObjectInfo active;
+};
+
 class ChangedVersionAttributesMask {
  public:
   enum {

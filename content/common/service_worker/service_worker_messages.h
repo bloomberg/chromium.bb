@@ -57,6 +57,12 @@ IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerObjectInfo)
   IPC_STRUCT_TRAITS_MEMBER(state)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerVersionAttributes)
+  IPC_STRUCT_TRAITS_MEMBER(installing)
+  IPC_STRUCT_TRAITS_MEMBER(waiting)
+  IPC_STRUCT_TRAITS_MEMBER(active)
+IPC_STRUCT_TRAITS_END()
+
 IPC_ENUM_TRAITS_MAX_VALUE(
     blink::WebServiceWorkerCacheError,
     blink::WebServiceWorkerCacheErrorLast)
@@ -188,26 +194,12 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ServiceWorkerStateChanged,
                      int /* handle_id */,
                      blink::WebServiceWorkerState)
 
-// Tells the child process to set the installing ServiceWorker for the given
-// provider.
-IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_SetInstallingServiceWorker,
+// Tells the child process to set service workers for the given provider.
+IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_SetVersionAttributes,
                      int /* thread_id */,
                      int /* provider_id */,
-                     content::ServiceWorkerObjectInfo)
-
-// Tells the child process to set the waiting ServiceWorker for the given
-// provider.
-IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_SetWaitingServiceWorker,
-                     int /* thread_id */,
-                     int /* provider_id */,
-                     content::ServiceWorkerObjectInfo)
-
-// Tells the child process to set the active ServiceWorker for the given
-// provider.
-IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_SetActiveServiceWorker,
-                     int /* thread_id */,
-                     int /* provider_id */,
-                     content::ServiceWorkerObjectInfo)
+                     int /* changed_mask */,
+                     content::ServiceWorkerVersionAttributes)
 
 // Tells the child process to set the controller ServiceWorker for the given
 // provider.

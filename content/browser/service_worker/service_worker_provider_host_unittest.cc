@@ -59,16 +59,15 @@ class ServiceWorkerProviderHostTest : public testing::Test {
     context_.reset();
   }
 
-  void SetActiveVersion(
+  void VerifyVersionAttributes(
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-      ServiceWorkerVersion* version) {
-    provider_host->SetActiveVersion(version);
-  }
-
-  void SetWaitingVersion(
-      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-      ServiceWorkerVersion* version) {
-    provider_host->SetWaitingVersion(version);
+      ServiceWorkerVersion* installing,
+      ServiceWorkerVersion* waiting,
+      ServiceWorkerVersion* active) {
+    EXPECT_EQ(installing, provider_host->installing_version_);
+    EXPECT_EQ(waiting, provider_host->waiting_version_);
+    EXPECT_EQ(active, provider_host->active_version_);
+    EXPECT_FALSE(provider_host->controlling_version_);
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -85,77 +84,146 @@ class ServiceWorkerProviderHostTest : public testing::Test {
 };
 
 TEST_F(ServiceWorkerProviderHostTest, SetActiveVersion_ProcessStatus) {
+  provider_host1_->AssociateRegistration(registration_);
   ASSERT_FALSE(version_->HasProcessToRun());
 
   // Associating version_ to a provider_host's active version will internally
   // add the provider_host's process ref to the version.
-  SetActiveVersion(provider_host1_, version_);
+  registration_->SetActiveVersion(version_);
   ASSERT_TRUE(version_->HasProcessToRun());
 
   // Re-associating the same version and provider_host should just work too.
-  SetActiveVersion(provider_host1_, version_);
+  registration_->SetActiveVersion(version_);
   ASSERT_TRUE(version_->HasProcessToRun());
 
   // Resetting the provider_host's active version should remove process refs
   // from the version.
-  SetActiveVersion(provider_host1_, NULL);
+  provider_host1_->UnassociateRegistration();
   ASSERT_FALSE(version_->HasProcessToRun());
 }
 
 TEST_F(ServiceWorkerProviderHostTest,
        SetActiveVersion_MultipleHostsForSameProcess) {
+  provider_host1_->AssociateRegistration(registration_);
+  provider_host2_->AssociateRegistration(registration_);
   ASSERT_FALSE(version_->HasProcessToRun());
 
   // Associating version_ to two providers as active version.
-  SetActiveVersion(provider_host1_, version_);
-  SetActiveVersion(provider_host2_, version_);
+  registration_->SetActiveVersion(version_);
   ASSERT_TRUE(version_->HasProcessToRun());
 
   // Disassociating one provider_host shouldn't remove all process refs
   // from the version yet.
-  SetActiveVersion(provider_host1_, NULL);
+  provider_host1_->UnassociateRegistration();
   ASSERT_TRUE(version_->HasProcessToRun());
 
   // Disassociating the other provider_host will remove all process refs.
-  SetActiveVersion(provider_host2_, NULL);
+  provider_host2_->UnassociateRegistration();
   ASSERT_FALSE(version_->HasProcessToRun());
 }
 
 TEST_F(ServiceWorkerProviderHostTest, SetWaitingVersion_ProcessStatus) {
+  provider_host1_->AssociateRegistration(registration_);
   ASSERT_FALSE(version_->HasProcessToRun());
 
   // Associating version_ to a provider_host's waiting version will internally
   // add the provider_host's process ref to the version.
-  SetWaitingVersion(provider_host1_, version_);
+  registration_->SetWaitingVersion(version_);
   ASSERT_TRUE(version_->HasProcessToRun());
 
   // Re-associating the same version and provider_host should just work too.
-  SetWaitingVersion(provider_host1_, version_);
+  registration_->SetWaitingVersion(version_);
   ASSERT_TRUE(version_->HasProcessToRun());
 
   // Resetting the provider_host's waiting version should remove process refs
   // from the version.
-  SetWaitingVersion(provider_host1_, NULL);
+  provider_host1_->UnassociateRegistration();
   ASSERT_FALSE(version_->HasProcessToRun());
 }
 
 TEST_F(ServiceWorkerProviderHostTest,
        SetWaitingVersion_MultipleHostsForSameProcess) {
+  provider_host1_->AssociateRegistration(registration_);
+  provider_host2_->AssociateRegistration(registration_);
   ASSERT_FALSE(version_->HasProcessToRun());
 
-  // Associating version_ to two providers as active version.
-  SetWaitingVersion(provider_host1_, version_);
-  SetWaitingVersion(provider_host2_, version_);
+  // Associating version_ to two providers as waiting version.
+  registration_->SetWaitingVersion(version_);
   ASSERT_TRUE(version_->HasProcessToRun());
 
   // Disassociating one provider_host shouldn't remove all process refs
   // from the version yet.
-  SetWaitingVersion(provider_host1_, NULL);
+  provider_host1_->UnassociateRegistration();
   ASSERT_TRUE(version_->HasProcessToRun());
 
   // Disassociating the other provider_host will remove all process refs.
-  SetWaitingVersion(provider_host2_, NULL);
+  provider_host2_->UnassociateRegistration();
   ASSERT_FALSE(version_->HasProcessToRun());
+}
+
+TEST_F(ServiceWorkerProviderHostTest,
+       ObserveVersionAttributesChanged_Basic) {
+  provider_host1_->AssociateRegistration(registration_);
+  provider_host2_->AssociateRegistration(registration_);
+  VerifyVersionAttributes(provider_host1_, NULL, NULL, NULL);
+  VerifyVersionAttributes(provider_host2_, NULL, NULL, NULL);
+
+  registration_->SetInstallingVersion(version_);
+  VerifyVersionAttributes(provider_host1_, version_, NULL, NULL);
+  VerifyVersionAttributes(provider_host2_, version_, NULL, NULL);
+
+  registration_->SetWaitingVersion(version_);
+  VerifyVersionAttributes(provider_host1_, NULL, version_, NULL);
+  VerifyVersionAttributes(provider_host2_, NULL, version_, NULL);
+
+  // Disassociating the registration should clear all version attributes.
+  provider_host2_->UnassociateRegistration();
+  VerifyVersionAttributes(provider_host1_, NULL, version_, NULL);
+  VerifyVersionAttributes(provider_host2_, NULL, NULL, NULL);
+
+  // Shouldn't notify the disassociated provider of the change.
+  registration_->SetActiveVersion(version_);
+  VerifyVersionAttributes(provider_host1_, NULL, NULL, version_);
+  VerifyVersionAttributes(provider_host2_, NULL, NULL, NULL);
+}
+
+TEST_F(ServiceWorkerProviderHostTest,
+       ObserveVersionAttributesChanged_MultipleVersions) {
+  provider_host1_->AssociateRegistration(registration_);
+  provider_host2_->AssociateRegistration(registration_);
+  VerifyVersionAttributes(provider_host1_, NULL, NULL, NULL);
+  VerifyVersionAttributes(provider_host2_, NULL, NULL, NULL);
+
+  scoped_refptr<ServiceWorkerVersion> version1 =
+      new ServiceWorkerVersion(registration_, 10L, context_->AsWeakPtr());
+  scoped_refptr<ServiceWorkerVersion> version2 =
+      new ServiceWorkerVersion(registration_, 20L, context_->AsWeakPtr());
+
+  registration_->SetInstallingVersion(version1);
+  VerifyVersionAttributes(provider_host1_, version1, NULL, NULL);
+  VerifyVersionAttributes(provider_host2_, version1, NULL, NULL);
+
+  registration_->SetWaitingVersion(version1);
+  VerifyVersionAttributes(provider_host1_, NULL, version1, NULL);
+  VerifyVersionAttributes(provider_host2_, NULL, version1, NULL);
+
+  registration_->SetInstallingVersion(version2);
+  VerifyVersionAttributes(provider_host1_, version2, version1, NULL);
+  VerifyVersionAttributes(provider_host2_, version2, version1, NULL);
+
+  // Disassociating the registration should clear all version attributes.
+  provider_host2_->UnassociateRegistration();
+  VerifyVersionAttributes(provider_host1_, version2, version1, NULL);
+  VerifyVersionAttributes(provider_host2_, NULL, NULL, NULL);
+
+  // Shouldn't notify the disassociated provider of the change.
+  registration_->SetActiveVersion(version1);
+  VerifyVersionAttributes(provider_host1_, version2, NULL, version1);
+  VerifyVersionAttributes(provider_host2_, NULL, NULL, NULL);
+
+  registration_->SetActiveVersion(version2);
+  VerifyVersionAttributes(provider_host1_, NULL, NULL, version2);
+  VerifyVersionAttributes(provider_host2_, NULL, NULL, NULL);
 }
 
 }  // namespace content

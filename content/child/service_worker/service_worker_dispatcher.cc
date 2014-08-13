@@ -59,12 +59,8 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnRegistrationError)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerStateChanged,
                         OnServiceWorkerStateChanged)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetInstallingServiceWorker,
-                        OnSetInstallingServiceWorker)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetWaitingServiceWorker,
-                        OnSetWaitingServiceWorker)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetActiveServiceWorker,
-                        OnSetActiveServiceWorker)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetVersionAttributes,
+                        OnSetVersionAttributes)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetControllerServiceWorker,
                         OnSetControllerServiceWorker)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_MessageToDocument,
@@ -267,8 +263,21 @@ void ServiceWorkerDispatcher::OnServiceWorkerStateChanged(
     provider->second->OnServiceWorkerStateChanged(handle_id, state);
 }
 
-void ServiceWorkerDispatcher::OnSetInstallingServiceWorker(
+void ServiceWorkerDispatcher::OnSetVersionAttributes(
     int thread_id,
+    int provider_id,
+    int changed_mask,
+    const ServiceWorkerVersionAttributes& attributes) {
+  ChangedVersionAttributesMask mask(changed_mask);
+  if (mask.installing_changed())
+    SetInstallingServiceWorker(provider_id, attributes.installing);
+  if (mask.waiting_changed())
+    SetWaitingServiceWorker(provider_id, attributes.waiting);
+  if (mask.active_changed())
+    SetActiveServiceWorker(provider_id, attributes.active);
+}
+
+void ServiceWorkerDispatcher::SetInstallingServiceWorker(
     int provider_id,
     const ServiceWorkerObjectInfo& info) {
   ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);
@@ -294,8 +303,7 @@ void ServiceWorkerDispatcher::OnSetInstallingServiceWorker(
   }
 }
 
-void ServiceWorkerDispatcher::OnSetWaitingServiceWorker(
-    int thread_id,
+void ServiceWorkerDispatcher::SetWaitingServiceWorker(
     int provider_id,
     const ServiceWorkerObjectInfo& info) {
   ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);
@@ -321,8 +329,7 @@ void ServiceWorkerDispatcher::OnSetWaitingServiceWorker(
   }
 }
 
-void ServiceWorkerDispatcher::OnSetActiveServiceWorker(
-    int thread_id,
+void ServiceWorkerDispatcher::SetActiveServiceWorker(
     int provider_id,
     const ServiceWorkerObjectInfo& info) {
   ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);

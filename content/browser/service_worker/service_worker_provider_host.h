@@ -78,10 +78,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void SetDocumentUrl(const GURL& url);
   const GURL& document_url() const { return document_url_; }
 
-  // Associates |version| to the controller field or if |version| is NULL clears
-  // the field.
-  void SetControllerVersion(ServiceWorkerVersion* version);
-
   // Associates to |registration| to listen for its version change events.
   void AssociateRegistration(ServiceWorkerRegistration* registration);
 
@@ -97,9 +93,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   scoped_ptr<ServiceWorkerRequestHandler> CreateRequestHandler(
       ResourceType resource_type,
       base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context);
-
-  // Returns true if |version| can be associated with this provider.
-  bool CanAssociateVersion(ServiceWorkerVersion* version);
 
   // Returns true if |registration| can be associated with this provider.
   bool CanAssociateRegistration(ServiceWorkerRegistration* registration);
@@ -123,15 +116,22 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   virtual void OnRegistrationFailed(
       ServiceWorkerRegistration* registration) OVERRIDE;
 
-  // Associates |version| to the corresponding field or if |version| is NULL
-  // clears the field.
-  void SetActiveVersion(ServiceWorkerVersion* version);
-  void SetWaitingVersion(ServiceWorkerVersion* version);
-  void SetInstallingVersion(ServiceWorkerVersion* version);
+  // Sets the corresponding version field to the given version or if the given
+  // version is NULL, clears the field.
+  void SetVersionAttributes(
+      ServiceWorkerVersion* installing_version,
+      ServiceWorkerVersion* waiting_version,
+      ServiceWorkerVersion* active_version);
+  void SetVersionAttributesInternal(
+      ServiceWorkerVersion* version,
+      scoped_refptr<ServiceWorkerVersion>* data_member);
 
-  // If |version| is the installing, waiting, or active version of this
-  // provider, the method will reset that field to NULL.
-  void UnsetVersion(ServiceWorkerVersion* version);
+  // Sets the controller version field to |version| or if |version| is NULL,
+  // clears the field.
+  void SetControllerVersionAttribute(ServiceWorkerVersion* version);
+
+  // Clears all version fields.
+  void ClearVersionAttributes();
 
   // Creates a ServiceWorkerHandle to retain |version| and returns a
   // ServiceWorkerInfo with the handle ID to pass to the provider. The

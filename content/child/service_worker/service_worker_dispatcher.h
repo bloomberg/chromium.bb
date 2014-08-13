@@ -29,10 +29,11 @@ class Message;
 namespace content {
 
 class ServiceWorkerMessageFilter;
-struct ServiceWorkerObjectInfo;
 class ServiceWorkerProviderContext;
 class ThreadSafeSender;
 class WebServiceWorkerImpl;
+struct ServiceWorkerObjectInfo;
+struct ServiceWorkerVersionAttributes;
 
 // This class manages communication with the browser process about
 // registration of the service worker, exposed to renderer and worker
@@ -123,15 +124,10 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
   void OnServiceWorkerStateChanged(int thread_id,
                                    int handle_id,
                                    blink::WebServiceWorkerState state);
-  void OnSetInstallingServiceWorker(int thread_id,
-                                    int provider_id,
-                                    const ServiceWorkerObjectInfo& info);
-  void OnSetWaitingServiceWorker(int thread_id,
-                                 int provider_id,
-                                 const ServiceWorkerObjectInfo& info);
-  void OnSetActiveServiceWorker(int thread_id,
-                                int provider_id,
-                                const ServiceWorkerObjectInfo& info);
+  void OnSetVersionAttributes(int thread_id,
+                              int provider_id,
+                              int changed_mask,
+                              const ServiceWorkerVersionAttributes& attributes);
   void OnSetControllerServiceWorker(int thread_id,
                                     int provider_id,
                                     const ServiceWorkerObjectInfo& info);
@@ -140,6 +136,16 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
                      const base::string16& message,
                      const std::vector<int>& sent_message_port_ids,
                      const std::vector<int>& new_routing_ids);
+
+  void SetInstallingServiceWorker(
+      int provider_id,
+      const ServiceWorkerObjectInfo& info);
+  void SetWaitingServiceWorker(
+      int provider_id,
+      const ServiceWorkerObjectInfo& info);
+  void SetActiveServiceWorker(
+      int provider_id,
+      const ServiceWorkerObjectInfo& info);
 
   // Keeps map from handle_id to ServiceWorker object.
   void AddServiceWorker(int handle_id, WebServiceWorkerImpl* worker);

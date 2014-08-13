@@ -14,8 +14,9 @@ class MessageLoopProxy;
 
 namespace content {
 
-struct ServiceWorkerObjectInfo;
 class ThreadSafeSender;
+struct ServiceWorkerObjectInfo;
+struct ServiceWorkerVersionAttributes;
 
 class CONTENT_EXPORT ServiceWorkerMessageFilter
     : public NON_EXPORTED_BASE(ChildMessageFilter) {
@@ -33,12 +34,19 @@ class CONTENT_EXPORT ServiceWorkerMessageFilter
   virtual void OnStaleMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   // Message handlers for stale messages.
-  void OnStaleRegistered(int thread_id,
-                         int request_id,
-                         const ServiceWorkerObjectInfo& info);
-  void OnStaleSetServiceWorker(int thread_id,
-                               int provider_id,
-                               const ServiceWorkerObjectInfo& info);
+  void OnStaleRegistered(
+      int thread_id,
+      int request_id,
+      const ServiceWorkerObjectInfo& info);
+  void OnStaleSetVersionAttributes(
+      int thread_id,
+      int provider_id,
+      int changed_mask,
+      const ServiceWorkerVersionAttributes& attributes);
+  void OnStaleSetControllerServiceWorker(
+      int thread_id,
+      int provider_id,
+      const ServiceWorkerObjectInfo& info);
 
   scoped_refptr<base::MessageLoopProxy> main_thread_loop_proxy_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;

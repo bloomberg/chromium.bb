@@ -115,7 +115,6 @@ void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
   // The corresponding provider_host may already have associated a registration
   // in redirect case, unassociate it now.
   provider_host_->UnassociateRegistration();
-  provider_host_->SetControllerVersion(NULL);
 
   GURL stripped_url = net::SimplifyUrlForRequest(url);
   provider_host_->SetDocumentUrl(stripped_url);
@@ -166,8 +165,6 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
   }
 
   provider_host_->AssociateRegistration(registration);
-  provider_host_->SetControllerVersion(registration->active_version());
-
   job_->ForwardToServiceWorker();
 }
 
@@ -181,8 +178,6 @@ void ServiceWorkerControlleeRequestHandler::OnVersionStatusChanged(
   }
 
   provider_host_->AssociateRegistration(registration);
-  provider_host_->SetControllerVersion(registration->active_version());
-
   job_->ForwardToServiceWorker();
 }
 
