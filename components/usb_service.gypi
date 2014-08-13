@@ -27,6 +27,8 @@
       'usb_service/usb_device_impl.cc',
       'usb_service/usb_device_impl.h',
       'usb_service/usb_device.h',
+      'usb_service/usb_device_filter.cc',
+      'usb_service/usb_device_filter.h',
       'usb_service/usb_device_handle_impl.cc',
       'usb_service/usb_device_handle_impl.h',
       'usb_service/usb_device_handle.h',

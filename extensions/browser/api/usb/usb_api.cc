@@ -325,12 +325,12 @@ void RequestUsbDevicesAccessHelper(
     callback.Run(devices.Pass());
     return;
   }
-  (*i)->RequestUsbAcess(interface_id,
-                        base::Bind(RequestUsbDevicesAccessHelper,
-                                   base::Passed(devices.Pass()),
-                                   i,
-                                   interface_id,
-                                   callback));
+  (*i)->RequestUsbAccess(interface_id,
+                         base::Bind(RequestUsbDevicesAccessHelper,
+                                    base::Passed(devices.Pass()),
+                                    i,
+                                    interface_id,
+                                    callback));
 }
 
 void RequestUsbDevicesAccess(
@@ -342,12 +342,12 @@ void RequestUsbDevicesAccess(
     return;
   }
   std::vector<scoped_refptr<UsbDevice> >::iterator i = devices->begin();
-  (*i)->RequestUsbAcess(interface_id,
-                        base::Bind(RequestUsbDevicesAccessHelper,
-                                   base::Passed(devices.Pass()),
-                                   i,
-                                   interface_id,
-                                   callback));
+  (*i)->RequestUsbAccess(interface_id,
+                         base::Bind(RequestUsbDevicesAccessHelper,
+                                    base::Passed(devices.Pass()),
+                                    i,
+                                    interface_id,
+                                    callback));
 }
 #endif  // OS_CHROMEOS
 
@@ -680,7 +680,7 @@ void UsbRequestAccessFunction::AsyncWorkStart() {
   if (!device)
     return;
 
-  device->RequestUsbAcess(
+  device->RequestUsbAccess(
       parameters_->interface_id,
       base::Bind(&UsbRequestAccessFunction::OnCompleted, this));
 #else

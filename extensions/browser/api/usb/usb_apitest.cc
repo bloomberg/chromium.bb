@@ -131,7 +131,7 @@ class MockUsbDevice : public UsbDevice {
   }
 
 #if defined(OS_CHROMEOS)
-  virtual void RequestUsbAcess(
+  virtual void RequestUsbAccess(
       int interface_id,
       const base::Callback<void(bool success)>& callback) OVERRIDE {
     BrowserThread::PostTask(

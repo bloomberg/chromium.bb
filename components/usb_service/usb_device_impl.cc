@@ -61,7 +61,7 @@ UsbDeviceImpl::~UsbDeviceImpl() {
 
 #if defined(OS_CHROMEOS)
 
-void UsbDeviceImpl::RequestUsbAcess(
+void UsbDeviceImpl::RequestUsbAccess(
     int interface_id,
     const base::Callback<void(bool success)>& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());

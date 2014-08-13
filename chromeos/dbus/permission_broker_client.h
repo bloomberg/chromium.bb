@@ -24,8 +24,8 @@ namespace chromeos {
 class CHROMEOS_EXPORT PermissionBrokerClient : public DBusClient {
  public:
   // The ResultCallback is used for both the RequestPathAccess and
-  // RequestUsbAcess methods. Its boolean parameter represents the result of the
-  // operation that it was submitted alongside.
+  // RequestUsbAccess methods. Its boolean parameter represents the result of
+  // the operation that it was submitted alongside.
   typedef base::Callback<void(bool)> ResultCallback;
 
   virtual ~PermissionBrokerClient();

@@ -31,7 +31,7 @@ class USB_SERVICE_EXPORT UsbDevice
   // permission broker can change the owner of the device so that the unclaimed
   // interfaces can be used. If this argument is missing, permission broker will
   // not be used and this method fails if the device is claimed.
-  virtual void RequestUsbAcess(
+  virtual void RequestUsbAccess(
       int interface_id,
       const base::Callback<void(bool success)>& callback) = 0;
 #endif  // OS_CHROMEOS

@@ -404,6 +404,7 @@
                 'autofill/content/renderer/renderer_save_password_progress_logger_unittest.cc',
                 'dom_distiller/content/dom_distiller_viewer_source_unittest.cc',
                 'usb_service/usb_context_unittest.cc',
+                'usb_service/usb_device_filter_unittest.cc',
               ],
               'dependencies': [
                 # Dependencies of autofill
@@ -553,6 +554,7 @@
                 'storage_monitor/storage_info_unittest.cc',
                 'storage_monitor/storage_monitor_unittest.cc',
                 'usb_service/usb_context_unittest.cc',
+                'usb_service/usb_device_filter_unittest.cc',
                 'web_modal/web_contents_modal_dialog_manager_unittest.cc',
               ],
               'dependencies': [
