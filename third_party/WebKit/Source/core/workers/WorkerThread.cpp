@@ -240,12 +240,20 @@ void WorkerThread::initialize()
     KURL scriptURL = m_startupData->m_scriptURL;
     String sourceCode = m_startupData->m_sourceCode;
     WorkerThreadStartMode startMode = m_startupData->m_startMode;
-    m_microtaskRunner = adoptPtr(new MicrotaskRunner);
-    m_thread->addTaskObserver(m_microtaskRunner.get());
 
     {
         MutexLocker lock(m_threadCreationMutex);
 
+        // The worker was terminated before the thread had a chance to run.
+        if (m_terminated) {
+            // Notify the proxy that the WorkerGlobalScope has been disposed of.
+            // This can free this thread object, hence it must not be touched afterwards.
+            m_workerReportingProxy.workerGlobalScopeDestroyed();
+            return;
+        }
+
+        m_microtaskRunner = adoptPtr(new MicrotaskRunner);
+        m_thread->addTaskObserver(m_microtaskRunner.get());
         m_pendingGCRunner = adoptPtr(new PendingGCRunner);
         m_messageLoopInterruptor = adoptPtr(new MessageLoopInterruptor(m_thread.get()));
         m_thread->addTaskObserver(m_pendingGCRunner.get());
@@ -255,12 +263,6 @@ void WorkerThread::initialize()
 
         m_sharedTimer = adoptPtr(new WorkerSharedTimer(this));
         PlatformThreadData::current().threadTimers().setSharedTimer(m_sharedTimer.get());
-
-        if (m_terminated) {
-            // The worker was terminated before the thread had a chance to run. Since the context didn't exist yet,
-            // forbidExecution() couldn't be called from stop().
-            m_workerGlobalScope->script()->forbidExecution();
-        }
     }
 
     // The corresponding call to didStopWorkerRunLoop is in
@@ -378,6 +380,7 @@ void WorkerThread::stop()
     // If stop has already been called, just return.
     if (m_terminated)
         return;
+    m_terminated = true;
 
     // Signal the thread to notify that the thread's stopping.
     if (m_shutdownEvent)
@@ -392,7 +395,6 @@ void WorkerThread::stop()
     InspectorInstrumentation::didKillAllExecutionContextTasks(m_workerGlobalScope.get());
     m_debuggerMessageQueue.kill();
     postTask(WorkerThreadShutdownStartTask::create());
-    m_terminated = true;
 }
 
 bool WorkerThread::isCurrentThread() const
