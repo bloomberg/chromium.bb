@@ -192,6 +192,7 @@ class LongLivedResourceInterceptor : public net::URLRequestInterceptor {
       net::NetworkDelegate* network_delegate) const OVERRIDE {
     const char kHeaders[] =
         "HTTP/1.1 200 OK\0"
+        "Content-Type: text/javascript\0"
         "Expires: Thu, 1 Jan 2100 20:00:00 GMT\0"
         "\0";
     std::string headers(kHeaders, arraysize(kHeaders));
