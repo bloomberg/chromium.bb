@@ -48,6 +48,8 @@
         'services/html_viewer/blink_input_events_type_converters.h',
         'services/html_viewer/blink_platform_impl.cc',
         'services/html_viewer/blink_platform_impl.h',
+        'services/html_viewer/blink_url_request_type_converters.cc',
+        'services/html_viewer/blink_url_request_type_converters.h',
         'services/html_viewer/html_viewer.cc',
         'services/html_viewer/html_document_view.cc',
         'services/html_viewer/html_document_view.h',

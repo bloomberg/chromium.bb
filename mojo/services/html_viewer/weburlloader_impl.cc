@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/thread_task_runner_handle.h"
 #include "mojo/common/common_type_converters.h"
+#include "mojo/services/html_viewer/blink_url_request_type_converters.h"
 #include "mojo/services/public/interfaces/network/network_service.mojom.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
@@ -65,11 +66,8 @@ void WebURLLoaderImpl::loadAsynchronously(const blink::WebURLRequest& request,
   client_ = client;
   url_ = request.url();
 
-  URLRequestPtr url_request(URLRequest::New());
-  url_request->url = String::From(url_);
-  url_request->method = request.httpMethod().utf8();
+  URLRequestPtr url_request = URLRequest::From(request);
   url_request->auto_follow_redirects = false;
-  // TODO(darin): Copy other fields.
 
   if (request.extraData()) {
     WebURLRequestExtraData* extra_data =
