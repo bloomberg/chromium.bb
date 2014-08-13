@@ -22,6 +22,7 @@ action("cached_lex_yacc_tables") {
   inputs = idl_lexer_parser_files
   outputs = [
     "$bindings_scripts_output_dir/lextab.py",
+    "$bindings_scripts_output_dir/lextab.pyc",
     "$bindings_scripts_output_dir/parsetab.pickle",
   ]
 
