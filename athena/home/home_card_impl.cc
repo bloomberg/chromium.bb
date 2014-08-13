@@ -26,7 +26,7 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "ui/wm/core/shadow.h"
+#include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/visibility_controller.h"
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/public/activation_change_observer.h"
@@ -291,12 +291,10 @@ class HomeCardView : public views::WidgetDelegateView {
       contents_view->SetActivePage(contents_view->GetPageIndexForNamedPage(
           app_list::ContentsView::NAMED_PAGE_START));
     }
-
-    if (state == HomeCard::VISIBLE_MINIMIZED)
-      shadow_.reset();
-    // Do not create the shadow yet. Instead, create it in OnWidgetMove(), to
-    // make sure that widget has been resized correctly (because the size of the
-    // shadow depends on the size of the widget).
+    wm::SetShadowType(GetWidget()->GetNativeView(),
+                      state == HomeCard::VISIBLE_MINIMIZED ?
+                      wm::SHADOW_TYPE_NONE :
+                      wm::SHADOW_TYPE_RECTANGULAR);
   }
 
   void ClearGesture() {
@@ -329,24 +327,6 @@ class HomeCardView : public views::WidgetDelegateView {
   }
 
  private:
-  // views::WidgetDelegate:
-  virtual void OnWidgetMove() OVERRIDE {
-    if (!minimized_view_->visible()) {
-      aura::Window* window = GetWidget()->GetNativeWindow();
-      if (!shadow_) {
-        shadow_.reset(new wm::Shadow());
-        shadow_->Init(wm::Shadow::STYLE_ACTIVE);
-        shadow_->SetContentBounds(gfx::Rect(window->bounds().size()));
-        shadow_->layer()->SetVisible(true);
-
-        ui::Layer* layer = window->layer();
-        layer->Add(shadow_->layer());
-      } else {
-        shadow_->SetContentBounds(gfx::Rect(window->bounds().size()));
-      }
-    }
-  }
-
   virtual views::View* GetContentsView() OVERRIDE {
     return this;
   }
@@ -354,7 +334,6 @@ class HomeCardView : public views::WidgetDelegateView {
   app_list::AppListMainView* main_view_;
   BottomHomeView* bottom_view_;
   views::View* minimized_view_;
-  scoped_ptr<wm::Shadow> shadow_;
   scoped_ptr<HomeCardGestureManager> gesture_manager_;
   HomeCardGestureManager::Delegate* gesture_delegate_;
 

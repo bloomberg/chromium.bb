@@ -25,7 +25,7 @@
 #include "ui/events/gestures/fling_curve.h"
 #include "ui/gfx/frame_time.h"
 #include "ui/gfx/transform.h"
-#include "ui/wm/core/shadow.h"
+#include "ui/wm/core/shadow_types.h"
 
 namespace {
 
@@ -39,8 +39,6 @@ struct WindowOverviewState {
   // The current overview state of the window. 0.f means the window is at the
   // topmost position. 1.f means the window is at the bottom-most position.
   float progress;
-
-  scoped_ptr<wm::Shadow> shadow;
 };
 
 }  // namespace
@@ -76,6 +74,7 @@ void RestoreWindowState(aura::Window* window) {
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(250));
   window->SetTransform(gfx::Transform());
+  wm::SetShadowType(window, wm::SHADOW_TYPE_NONE);
 }
 
 // Always returns the same target.
@@ -167,8 +166,8 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
       state->top = top_transform;
       state->bottom = bottom_transform;
       state->progress = 0.f;
-      state->shadow = CreateShadowForWindow(window);
       window->SetProperty(kWindowOverviewState, state);
+      wm::SetShadowType(window, wm::SHADOW_TYPE_RECTANGULAR_ALWAYS_ACTIVE);
     }
   }
 
@@ -204,15 +203,6 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
         SetWindowProgress(window, progress);
       }
     }
-  }
-
-  scoped_ptr<wm::Shadow> CreateShadowForWindow(aura::Window* window) {
-    scoped_ptr<wm::Shadow> shadow(new wm::Shadow());
-    shadow->Init(wm::Shadow::STYLE_ACTIVE);
-    shadow->SetContentBounds(gfx::Rect(container_->bounds().size()));
-    shadow->layer()->SetVisible(true);
-    window->layer()->Add(shadow->layer());
-    return shadow.Pass();
   }
 
   aura::Window* SelectWindowAt(ui::LocatedEvent* event) {

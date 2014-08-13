@@ -19,8 +19,10 @@
 #include "base/observer_list.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
+#include "ui/wm/core/shadow_controller.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/core/wm_state.h"
+#include "ui/wm/public/activation_client.h"
 #include "ui/wm/public/window_types.h"
 
 namespace athena {
@@ -44,7 +46,7 @@ class WindowManagerImpl : public WindowManager,
 
  private:
   enum Command {
-    COMMAND_TOGGLE_OVERVIEW,
+    CMD_TOGGLE_OVERVIEW,
   };
 
   // Sets whether overview mode is active.
@@ -84,6 +86,7 @@ class WindowManagerImpl : public WindowManager,
   scoped_ptr<SplitViewController> split_view_controller_;
   scoped_ptr<wm::WMState> wm_state_;
   scoped_ptr<TitleDragController> title_drag_controller_;
+  scoped_ptr<wm::ShadowController> shadow_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerImpl);
 };
@@ -123,6 +126,9 @@ WindowManagerImpl::WindowManagerImpl() {
   container_->AddPreTargetHandler(bezel_controller_.get());
   title_drag_controller_.reset(new TitleDragController(container_.get(), this));
   wm_state_.reset(new wm::WMState());
+  aura::client::ActivationClient* activation_client =
+      aura::client::GetActivationClient(container_->GetRootWindow());
+  shadow_controller_.reset(new wm::ShadowController(activation_client));
   instance = this;
   InstallAccelerators();
 }
@@ -185,7 +191,7 @@ void WindowManagerImpl::SetInOverview(bool active) {
 
 void WindowManagerImpl::InstallAccelerators() {
   const AcceleratorData accelerator_data[] = {
-      {TRIGGER_ON_PRESS, ui::VKEY_F6, ui::EF_NONE, COMMAND_TOGGLE_OVERVIEW,
+      {TRIGGER_ON_PRESS, ui::VKEY_F6, ui::EF_NONE, CMD_TOGGLE_OVERVIEW,
        AF_NONE},
   };
   AcceleratorManager::Get()->RegisterAccelerators(
@@ -223,7 +229,7 @@ bool WindowManagerImpl::IsCommandEnabled(int command_id) const {
 bool WindowManagerImpl::OnAcceleratorFired(int command_id,
                                            const ui::Accelerator& accelerator) {
   switch (command_id) {
-    case COMMAND_TOGGLE_OVERVIEW:
+    case CMD_TOGGLE_OVERVIEW:
       ToggleOverview();
       break;
   }
