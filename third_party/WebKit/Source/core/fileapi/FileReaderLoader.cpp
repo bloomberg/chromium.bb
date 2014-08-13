@@ -101,7 +101,7 @@ void FileReaderLoader::startInternal(ExecutionContext& executionContext, const S
     ResourceRequest request(m_urlForReading);
 
     // FIXME: Should this really be 'internal'? Do we know anything about the actual request that generated this fetch?
-    request.setRequestContext(blink::WebURLRequest::RequestContextInternal);
+    request.setRequestContext(WebURLRequest::RequestContextInternal);
 
     request.setHTTPMethod("GET");
     if (m_hasRange)

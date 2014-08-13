@@ -223,16 +223,16 @@ void ViewportDescription::reportMobilePageStats(const LocalFrame* mainFrame) con
 
     if (!isSpecifiedByAuthor()) {
         if (mainFrame->document()->isMobileDocument())
-            blink::Platform::current()->histogramEnumeration("Viewport.MetaTagType", XhtmlMobileProfile, TypeCount);
+            Platform::current()->histogramEnumeration("Viewport.MetaTagType", XhtmlMobileProfile, TypeCount);
         else
-            blink::Platform::current()->histogramEnumeration("Viewport.MetaTagType", NoViewportTag, TypeCount);
+            Platform::current()->histogramEnumeration("Viewport.MetaTagType", NoViewportTag, TypeCount);
 
         return;
     }
 
     if (isMetaViewportType()) {
         if (maxWidth.type() == blink::Fixed) {
-            blink::Platform::current()->histogramEnumeration("Viewport.MetaTagType", ConstantWidth, TypeCount);
+            Platform::current()->histogramEnumeration("Viewport.MetaTagType", ConstantWidth, TypeCount);
 
             if (mainFrame->view()) {
                 // To get an idea of how "far" the viewport is from the device's ideal width, we
@@ -242,19 +242,19 @@ void ViewportDescription::reportMobilePageStats(const LocalFrame* mainFrame) con
                     ? mainFrame->host()->pinchViewport().size().width()
                     : mainFrame->view()->frameRect().width();
                 int overviewZoomPercent = 100 * windowWidth / static_cast<float>(viewportWidth);
-                blink::Platform::current()->histogramSparse("Viewport.OverviewZoom", overviewZoomPercent);
+                Platform::current()->histogramSparse("Viewport.OverviewZoom", overviewZoomPercent);
             }
 
         } else if (maxWidth.type() == blink::DeviceWidth || maxWidth.type() == blink::ExtendToZoom) {
-            blink::Platform::current()->histogramEnumeration("Viewport.MetaTagType", DeviceWidth, TypeCount);
+            Platform::current()->histogramEnumeration("Viewport.MetaTagType", DeviceWidth, TypeCount);
         } else {
             // Overflow bucket for cases we may be unaware of.
-            blink::Platform::current()->histogramEnumeration("Viewport.MetaTagType", MetaWidthOther, TypeCount);
+            Platform::current()->histogramEnumeration("Viewport.MetaTagType", MetaWidthOther, TypeCount);
         }
     } else if (type == ViewportDescription::HandheldFriendlyMeta) {
-        blink::Platform::current()->histogramEnumeration("Viewport.MetaTagType", MetaHandheldFriendly, TypeCount);
+        Platform::current()->histogramEnumeration("Viewport.MetaTagType", MetaHandheldFriendly, TypeCount);
     } else if (type == ViewportDescription::MobileOptimizedMeta) {
-        blink::Platform::current()->histogramEnumeration("Viewport.MetaTagType", MobileOptimizedMeta, TypeCount);
+        Platform::current()->histogramEnumeration("Viewport.MetaTagType", MobileOptimizedMeta, TypeCount);
     }
 #endif
 }

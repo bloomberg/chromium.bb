@@ -85,17 +85,17 @@ void MessagePort::postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValu
             return;
     }
 
-    blink::WebString messageString = message->toWireString();
-    OwnPtr<blink::WebMessagePortChannelArray> webChannels = toWebMessagePortChannelArray(channels.release());
+    WebString messageString = message->toWireString();
+    OwnPtr<WebMessagePortChannelArray> webChannels = toWebMessagePortChannelArray(channels.release());
     m_entangledChannel->postMessage(messageString, webChannels.leakPtr());
 }
 
 // static
-PassOwnPtr<blink::WebMessagePortChannelArray> MessagePort::toWebMessagePortChannelArray(PassOwnPtr<MessagePortChannelArray> channels)
+PassOwnPtr<WebMessagePortChannelArray> MessagePort::toWebMessagePortChannelArray(PassOwnPtr<MessagePortChannelArray> channels)
 {
-    OwnPtr<blink::WebMessagePortChannelArray> webChannels;
+    OwnPtr<WebMessagePortChannelArray> webChannels;
     if (channels && channels->size()) {
-        webChannels = adoptPtr(new blink::WebMessagePortChannelArray(channels->size()));
+        webChannels = adoptPtr(new WebMessagePortChannelArray(channels->size()));
         for (size_t i = 0; i < channels->size(); ++i)
             (*webChannels)[i] = (*channels)[i].leakPtr();
     }
@@ -103,7 +103,7 @@ PassOwnPtr<blink::WebMessagePortChannelArray> MessagePort::toWebMessagePortChann
 }
 
 // static
-PassOwnPtrWillBeRawPtr<MessagePortArray> MessagePort::toMessagePortArray(ExecutionContext* context, const blink::WebMessagePortChannelArray& webChannels)
+PassOwnPtrWillBeRawPtr<MessagePortArray> MessagePort::toMessagePortArray(ExecutionContext* context, const WebMessagePortChannelArray& webChannels)
 {
     OwnPtrWillBeRawPtr<MessagePortArray> ports = nullptr;
     if (!webChannels.isEmpty()) {
@@ -115,7 +115,7 @@ PassOwnPtrWillBeRawPtr<MessagePortArray> MessagePort::toMessagePortArray(Executi
     return ports.release();
 }
 
-PassOwnPtr<blink::WebMessagePortChannel> MessagePort::disentangle()
+PassOwnPtr<WebMessagePortChannel> MessagePort::disentangle()
 {
     ASSERT(m_entangledChannel);
     m_entangledChannel->setClient(0);
@@ -151,7 +151,7 @@ void MessagePort::close()
     m_closed = true;
 }
 
-void MessagePort::entangle(PassOwnPtr<blink::WebMessagePortChannel> remote)
+void MessagePort::entangle(PassOwnPtr<WebMessagePortChannel> remote)
 {
     // Only invoked to set our initial entanglement.
     ASSERT(!m_entangledChannel);
@@ -166,10 +166,10 @@ const AtomicString& MessagePort::interfaceName() const
     return EventTargetNames::MessagePort;
 }
 
-static bool tryGetMessageFrom(blink::WebMessagePortChannel& webChannel, RefPtr<SerializedScriptValue>& message, OwnPtr<MessagePortChannelArray>& channels)
+static bool tryGetMessageFrom(WebMessagePortChannel& webChannel, RefPtr<SerializedScriptValue>& message, OwnPtr<MessagePortChannelArray>& channels)
 {
-    blink::WebString messageString;
-    blink::WebMessagePortChannelArray webChannels;
+    WebString messageString;
+    WebMessagePortChannelArray webChannels;
     if (!webChannel.tryGetMessage(&messageString, webChannels))
         return false;
 

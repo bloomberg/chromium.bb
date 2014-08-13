@@ -70,7 +70,7 @@ inline void RenderedDocumentMarker::invalidate(const LayoutRect& r)
 
 DEFINE_TYPE_CASTS(RenderedDocumentMarker, DocumentMarker, marker, true, true);
 
-} // namespace
+} // namespace blink
 
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::RenderedDocumentMarker);
 

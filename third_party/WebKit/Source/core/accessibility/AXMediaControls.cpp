@@ -38,7 +38,6 @@ namespace blink {
 using blink::WebLocalizedString;
 using namespace HTMLNames;
 
-
 static inline String queryString(WebLocalizedString::Name name)
 {
     return Locale::defaultLocale().queryString(name);

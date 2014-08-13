@@ -37,9 +37,9 @@ DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(MessageChannel);
 
 static void createChannel(MessagePort* port1, MessagePort* port2)
 {
-    blink::WebMessagePortChannel* channel1;
-    blink::WebMessagePortChannel* channel2;
-    blink::Platform::current()->createMessageChannel(&channel1, &channel2);
+    WebMessagePortChannel* channel1;
+    WebMessagePortChannel* channel2;
+    Platform::current()->createMessageChannel(&channel1, &channel2);
     ASSERT(channel1 && channel2);
 
     // Now entangle the proxies with the appropriate local ports.

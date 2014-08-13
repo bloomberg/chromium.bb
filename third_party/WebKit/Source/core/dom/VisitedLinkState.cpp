@@ -99,7 +99,7 @@ EInsideLink VisitedLinkState::determineLinkStateSlowCase(const Element& element)
 
     if (LinkHash hash = linkHashForElement(element, attribute)) {
         m_linksCheckedForVisitedState.add(hash);
-        if (blink::Platform::current()->isLinkVisited(hash))
+        if (Platform::current()->isLinkVisited(hash))
             return InsideVisitedLink;
     }
 
@@ -111,4 +111,4 @@ void VisitedLinkState::trace(Visitor* visitor)
     visitor->trace(m_document);
 }
 
-}
+} // namespace blink

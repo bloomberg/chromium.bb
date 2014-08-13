@@ -98,7 +98,7 @@ File::File(const String& path, ContentTypeLookupPolicy policy, UserVisibility us
     , m_hasBackingFile(true)
     , m_userVisibility(userVisibility)
     , m_path(path)
-    , m_name(blink::Platform::current()->fileUtilities()->baseName(path))
+    , m_name(Platform::current()->fileUtilities()->baseName(path))
     , m_snapshotSize(-1)
     , m_snapshotModificationTime(invalidFileTime())
 {

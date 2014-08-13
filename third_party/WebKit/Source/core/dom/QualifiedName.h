@@ -172,7 +172,7 @@ struct QualifiedNameHash {
     static const bool safeToCompareToEmptyOrDeleted = false;
 };
 
-}
+} // namespace blink
 
 namespace WTF {
 

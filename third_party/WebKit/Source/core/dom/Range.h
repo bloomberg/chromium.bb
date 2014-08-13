@@ -174,7 +174,7 @@ PassRefPtrWillBeRawPtr<Range> rangeOfContents(Node*);
 
 bool areRangesEqual(const Range*, const Range*);
 
-} // namespace
+} // namespace blink
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.

@@ -836,12 +836,12 @@ PassRefPtrWillBeRawPtr<Element> Document::createElementNS(const AtomicString& na
     return element.release();
 }
 
-ScriptValue Document::registerElement(blink::ScriptState* scriptState, const AtomicString& name, ExceptionState& exceptionState)
+ScriptValue Document::registerElement(ScriptState* scriptState, const AtomicString& name, ExceptionState& exceptionState)
 {
     return registerElement(scriptState, name, Dictionary(), exceptionState);
 }
 
-ScriptValue Document::registerElement(blink::ScriptState* scriptState, const AtomicString& name, const Dictionary& options, ExceptionState& exceptionState, CustomElement::NameSet validNames)
+ScriptValue Document::registerElement(ScriptState* scriptState, const AtomicString& name, const Dictionary& options, ExceptionState& exceptionState, CustomElement::NameSet validNames)
 {
     if (!registrationContext()) {
         exceptionState.throwDOMException(NotSupportedError, "No element registration context is available.");
@@ -4355,7 +4355,7 @@ bool Document::execCommand(const String& commandName, bool userInterface, const 
     // DOM tree against implementation assumption.
     EventQueueScope eventQueueScope;
     Editor::Command editorCommand = command(this, commandName, userInterface);
-    blink::Platform::current()->histogramSparse("WebCore.Document.execCommand", editorCommand.idForHistogram());
+    Platform::current()->histogramSparse("WebCore.Document.execCommand", editorCommand.idForHistogram());
     return editorCommand.execute(value);
 }
 

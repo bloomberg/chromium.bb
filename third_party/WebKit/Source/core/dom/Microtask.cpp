@@ -52,11 +52,11 @@ void Microtask::performCheckpoint()
 
 static void microtaskFunctionCallback(void* data)
 {
-    OwnPtr<blink::WebThread::Task> task = adoptPtr(static_cast<blink::WebThread::Task*>(data));
+    OwnPtr<WebThread::Task> task = adoptPtr(static_cast<WebThread::Task*>(data));
     task->run();
 }
 
-void Microtask::enqueueMicrotask(PassOwnPtr<blink::WebThread::Task> callback)
+void Microtask::enqueueMicrotask(PassOwnPtr<WebThread::Task> callback)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     isolate->EnqueueMicrotask(&microtaskFunctionCallback, callback.leakPtr());
