@@ -369,71 +369,23 @@ class HomeCardImpl : public HomeCard,
   // AcceleratorHandler:
   virtual bool IsCommandEnabled(int command_id) const OVERRIDE { return true; }
   virtual bool OnAcceleratorFired(int command_id,
-                                  const ui::Accelerator& accelerator) OVERRIDE {
-    DCHECK_EQ(COMMAND_SHOW_HOME_CARD, command_id);
-
-    if (state_ == VISIBLE_CENTERED && original_state_ != VISIBLE_BOTTOM)
-      SetState(VISIBLE_MINIMIZED);
-    else if (state_ == VISIBLE_MINIMIZED)
-      SetState(VISIBLE_CENTERED);
-    return true;
-  }
+                                  const ui::Accelerator& accelerator) OVERRIDE;
 
   // HomeCardLayoutManager::Delegate:
-  virtual aura::Window* GetNativeWindow() OVERRIDE {
-    if (state_ == HIDDEN)
-      return NULL;
-
-    return home_card_widget_ ? home_card_widget_->GetNativeWindow() : NULL;
-  }
+  virtual aura::Window* GetNativeWindow() OVERRIDE;
 
   // HomeCardGestureManager::Delegate:
-  virtual void OnGestureEnded(State final_state) OVERRIDE {
-    home_card_view_->ClearGesture();
-    if (state_ != final_state &&
-        (state_ == VISIBLE_MINIMIZED || final_state == VISIBLE_MINIMIZED)) {
-      WindowManager::GetInstance()->ToggleOverview();
-    } else {
-      state_ = final_state;
-      home_card_view_->SetState(final_state);
-      layout_manager_->Layout();
-    }
-  }
-
+  virtual void OnGestureEnded(State final_state) OVERRIDE;
   virtual void OnGestureProgressed(
-      State from_state, State to_state, float progress) OVERRIDE {
-    // Do not update |state_| but update the look of home_card_view.
-    // TODO(mukai): allow mixed visual of |from_state| and |to_state|.
-    home_card_view_->SetState(to_state);
-
-    gfx::Rect screen_bounds =
-        home_card_widget_->GetNativeWindow()->GetRootWindow()->bounds();
-    home_card_widget_->SetBounds(gfx::Tween::RectValueBetween(
-        progress,
-        GetBoundsForState(screen_bounds, from_state),
-        GetBoundsForState(screen_bounds, to_state)));
-
-    // TODO(mukai): signals the update to the window manager so that it shows
-    // the intermediate visual state of overview mode.
-  }
+      State from_state, State to_state, float progress) OVERRIDE;
 
   // WindowManagerObserver:
-  virtual void OnOverviewModeEnter() OVERRIDE {
-    SetState(VISIBLE_BOTTOM);
-  }
-
-  virtual void OnOverviewModeExit() OVERRIDE {
-    SetState(VISIBLE_MINIMIZED);
-  }
+  virtual void OnOverviewModeEnter() OVERRIDE;
+  virtual void OnOverviewModeExit() OVERRIDE;
 
   // aura::client::ActivationChangeObserver:
   virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) OVERRIDE {
-    if (state_ != HIDDEN &&
-        gained_active != home_card_widget_->GetNativeWindow()) {
-      SetState(VISIBLE_MINIMIZED);
-    }
-  }
+                                 aura::Window* lost_active) OVERRIDE;
 
   scoped_ptr<AppModelBuilder> model_builder_;
 
@@ -476,6 +428,47 @@ HomeCardImpl::~HomeCardImpl() {
     activation_client_->RemoveObserver(this);
   home_card_widget_->CloseNow();
   instance = NULL;
+}
+
+void HomeCardImpl::Init() {
+  InstallAccelerators();
+  ScreenManager::ContainerParams params("HomeCardContainer", CP_HOME_CARD);
+  params.can_activate_children = true;
+  aura::Window* container = ScreenManager::Get()->CreateContainer(params);
+  layout_manager_ = new HomeCardLayoutManager(this);
+
+  container->SetLayoutManager(layout_manager_);
+  wm::SetChildWindowVisibilityChangesAnimated(container);
+
+  view_delegate_.reset(new AppListViewDelegate(model_builder_.get()));
+  if (search_provider_)
+    view_delegate_->RegisterSearchProvider(search_provider_.get());
+
+  home_card_view_ = new HomeCardView(view_delegate_.get(), container, this);
+  home_card_widget_ = new views::Widget();
+  views::Widget::InitParams widget_params(
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  widget_params.parent = container;
+  widget_params.delegate = home_card_view_;
+  widget_params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  home_card_widget_->Init(widget_params);
+
+  SetState(VISIBLE_MINIMIZED);
+  home_card_view_->Layout();
+
+  activation_client_ =
+      aura::client::GetActivationClient(container->GetRootWindow());
+  if (activation_client_)
+    activation_client_->AddObserver(this);
+}
+
+void HomeCardImpl::InstallAccelerators() {
+  const AcceleratorData accelerator_data[] = {
+      {TRIGGER_ON_PRESS, ui::VKEY_L, ui::EF_CONTROL_DOWN,
+       COMMAND_SHOW_HOME_CARD, AF_NONE},
+  };
+  AcceleratorManager::Get()->RegisterAccelerators(
+      accelerator_data, arraysize(accelerator_data), this);
 }
 
 void HomeCardImpl::SetState(HomeCard::State state) {
@@ -522,45 +515,67 @@ void HomeCardImpl::UpdateVirtualKeyboardBounds(
   }
 }
 
-void HomeCardImpl::Init() {
-  InstallAccelerators();
-  ScreenManager::ContainerParams params("HomeCardContainer", CP_HOME_CARD);
-  params.can_activate_children = true;
-  aura::Window* container = ScreenManager::Get()->CreateContainer(params);
-  layout_manager_ = new HomeCardLayoutManager(this);
+bool HomeCardImpl::OnAcceleratorFired(int command_id,
+                                      const ui::Accelerator& accelerator) {
+  DCHECK_EQ(COMMAND_SHOW_HOME_CARD, command_id);
 
-  container->SetLayoutManager(layout_manager_);
-  wm::SetChildWindowVisibilityChangesAnimated(container);
-
-  view_delegate_.reset(new AppListViewDelegate(model_builder_.get()));
-  if (search_provider_)
-    view_delegate_->RegisterSearchProvider(search_provider_.get());
-
-  home_card_view_ = new HomeCardView(view_delegate_.get(), container, this);
-  home_card_widget_ = new views::Widget();
-  views::Widget::InitParams widget_params(
-      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  widget_params.parent = container;
-  widget_params.delegate = home_card_view_;
-  widget_params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  home_card_widget_->Init(widget_params);
-
-  SetState(VISIBLE_MINIMIZED);
-  home_card_view_->Layout();
-
-  activation_client_ =
-      aura::client::GetActivationClient(container->GetRootWindow());
-  if (activation_client_)
-    activation_client_->AddObserver(this);
+  if (state_ == VISIBLE_CENTERED && original_state_ != VISIBLE_BOTTOM)
+    SetState(VISIBLE_MINIMIZED);
+  else if (state_ == VISIBLE_MINIMIZED)
+    SetState(VISIBLE_CENTERED);
+  return true;
 }
 
-void HomeCardImpl::InstallAccelerators() {
-  const AcceleratorData accelerator_data[] = {
-      {TRIGGER_ON_PRESS, ui::VKEY_L, ui::EF_CONTROL_DOWN,
-       COMMAND_SHOW_HOME_CARD, AF_NONE},
-  };
-  AcceleratorManager::Get()->RegisterAccelerators(
-      accelerator_data, arraysize(accelerator_data), this);
+aura::Window* HomeCardImpl::GetNativeWindow() {
+  if (state_ == HIDDEN)
+    return NULL;
+
+  return home_card_widget_ ? home_card_widget_->GetNativeWindow() : NULL;
+}
+
+void HomeCardImpl::OnGestureEnded(State final_state) {
+  home_card_view_->ClearGesture();
+  if (state_ != final_state &&
+      (state_ == VISIBLE_MINIMIZED || final_state == VISIBLE_MINIMIZED)) {
+    WindowManager::GetInstance()->ToggleOverview();
+  } else {
+    state_ = final_state;
+    home_card_view_->SetState(final_state);
+    layout_manager_->Layout();
+  }
+}
+
+void HomeCardImpl::OnGestureProgressed(
+    State from_state, State to_state, float progress) {
+  // Do not update |state_| but update the look of home_card_view.
+  // TODO(mukai): allow mixed visual of |from_state| and |to_state|.
+  home_card_view_->SetState(to_state);
+
+  gfx::Rect screen_bounds =
+      home_card_widget_->GetNativeWindow()->GetRootWindow()->bounds();
+  home_card_widget_->SetBounds(gfx::Tween::RectValueBetween(
+      progress,
+      GetBoundsForState(screen_bounds, from_state),
+      GetBoundsForState(screen_bounds, to_state)));
+
+  // TODO(mukai): signals the update to the window manager so that it shows the
+  // intermediate visual state of overview mode.
+}
+
+void HomeCardImpl::OnOverviewModeEnter() {
+  SetState(VISIBLE_BOTTOM);
+}
+
+void HomeCardImpl::OnOverviewModeExit() {
+  SetState(VISIBLE_MINIMIZED);
+}
+
+void HomeCardImpl::OnWindowActivated(aura::Window* gained_active,
+                                     aura::Window* lost_active) {
+  if (state_ != HIDDEN &&
+      gained_active != home_card_widget_->GetNativeWindow()) {
+    SetState(VISIBLE_MINIMIZED);
+  }
 }
 
 }  // namespace
