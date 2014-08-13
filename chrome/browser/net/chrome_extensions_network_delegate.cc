@@ -65,6 +65,11 @@ void ForwardRequestStatus(
   if (!info)
     return;
 
+  if (status == REQUEST_STARTED && request->url_chain().size() > 1) {
+    // It's a redirect, this request has already been counted.
+    return;
+  }
+
   int process_id, render_frame_id;
   if (info->GetAssociatedRenderFrame(&process_id, &render_frame_id)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
