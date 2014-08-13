@@ -1376,7 +1376,13 @@ ACTION_P2(VerifyRetryTimerDelay, scheduler_test, expected_delay) {
   EXPECT_EQ(expected_delay, scheduler_test->GetRetryTimerDelay());
 }
 
-TEST_F(SyncSchedulerTest, ReceiveNewRetryDelay) {
+#if defined(OS_WIN)
+// Times out: http://crbug.com/402212
+#define MAYBE_ReceiveNewRetryDelay DISABLED_ReceiveNewRetryDelay
+#else
+#define MAYBE_ReceiveNewRetryDelay ReceiveNewRetryDelay
+#endif
+TEST_F(SyncSchedulerTest, MAYBE_ReceiveNewRetryDelay) {
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
 
   SyncShareTimes times;
