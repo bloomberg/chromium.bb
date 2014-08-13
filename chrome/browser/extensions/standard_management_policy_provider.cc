@@ -6,6 +6,7 @@
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/blacklist.h"
+#include "chrome/browser/extensions/external_component_loader.h"
 #include "chrome/common/pref_names.h"
 #include "extensions/browser/admin_policy.h"
 #include "extensions/browser/extension_prefs.h"
@@ -54,13 +55,17 @@ bool StandardManagementPolicyProvider::UserMayLoad(
 bool StandardManagementPolicyProvider::UserMayModifySettings(
     const Extension* extension,
     base::string16* error) const {
-  return admin_policy::UserMayModifySettings(extension, error);
+  return admin_policy::UserMayModifySettings(extension, error) ||
+         (extension->location() == extensions::Manifest::EXTERNAL_COMPONENT &&
+          ExternalComponentLoader::IsModifiable(extension));
 }
 
 bool StandardManagementPolicyProvider::MustRemainEnabled(
     const Extension* extension,
     base::string16* error) const {
-  return admin_policy::MustRemainEnabled(extension, error);
+  return admin_policy::MustRemainEnabled(extension, error) ||
+         (extension->location() == extensions::Manifest::EXTERNAL_COMPONENT &&
+          ExternalComponentLoader::IsModifiable(extension));
 }
 
 }  // namespace extensions
