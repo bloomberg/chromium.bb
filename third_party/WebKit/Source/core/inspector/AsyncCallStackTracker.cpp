@@ -59,7 +59,7 @@ void AsyncCallStackTracker::ExecutionContextData::contextDestroyed()
 {
     ASSERT(executionContext());
     OwnPtrWillBeRawPtr<ExecutionContextData> self = m_tracker->m_executionContextDataMap.take(executionContext());
-    ASSERT(self == this);
+    ASSERT_UNUSED(self, self == this);
     ContextLifecycleObserver::contextDestroyed();
 }
 
