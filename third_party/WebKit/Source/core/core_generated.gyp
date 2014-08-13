@@ -351,6 +351,24 @@
           ],
         },
         {
+          'action_name': 'CSSPropertyMetadata',
+          'inputs': [
+            '<@(css_properties_files)',
+            '../build/scripts/make_css_property_metadata.py',
+            '../build/scripts/templates/CSSPropertyMetadata.cpp.tmpl',
+          ],
+          'outputs': [
+            '<(blink_core_output_dir)/CSSPropertyMetadata.cpp',
+          ],
+          'action': [
+            'python',
+            '../build/scripts/make_css_property_metadata.py',
+            'css/CSSProperties.in',
+            '--output_dir',
+            '<(blink_core_output_dir)',
+          ],
+        },
+        {
           'action_name': 'CSSValueKeywords',
           'variables': {
             'in_files': [

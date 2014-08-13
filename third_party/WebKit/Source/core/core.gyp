@@ -278,6 +278,9 @@
         # Generated from make_style_builder.py
         '<(blink_core_output_dir)/StyleBuilder.cpp',
         '<(blink_core_output_dir)/StyleBuilderFunctions.cpp',
+
+        # Generated from make_css_property_metadata.py
+        '<(blink_core_output_dir)/CSSPropertyMetadata.cpp',
       ],
       'conditions': [
         ['OS=="win" and component=="shared_library"', {
