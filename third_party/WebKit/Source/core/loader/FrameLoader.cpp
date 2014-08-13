@@ -1151,7 +1151,7 @@ void FrameLoader::detachClient()
     m_progressTracker.clear();
     setOpener(0);
     // Notify ScriptController that the frame is closing, since its cleanup ends up calling
-    // back to FrameLoaderClient via V8WindowShell.
+    // back to FrameLoaderClient via WindowProxy.
     m_frame->script().clearForClose();
 
     // client() should never be null because that means we somehow re-entered

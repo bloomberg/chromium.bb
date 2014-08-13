@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "bindings/core/v8/V8WindowShell.h"
+#include "bindings/core/v8/WindowProxy.h"
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptController.h"
@@ -74,19 +74,19 @@ static void checkDocumentWrapper(v8::Handle<v8::Object> wrapper, Document* docum
     ASSERT(!document->isHTMLDocument() || (V8Document::toNative(v8::Handle<v8::Object>::Cast(wrapper->GetPrototype())) == document));
 }
 
-PassOwnPtr<V8WindowShell> V8WindowShell::create(LocalFrame* frame, DOMWrapperWorld& world, v8::Isolate* isolate)
+PassOwnPtr<WindowProxy> WindowProxy::create(LocalFrame* frame, DOMWrapperWorld& world, v8::Isolate* isolate)
 {
-    return adoptPtr(new V8WindowShell(frame, &world, isolate));
+    return adoptPtr(new WindowProxy(frame, &world, isolate));
 }
 
-V8WindowShell::V8WindowShell(LocalFrame* frame, PassRefPtr<DOMWrapperWorld> world, v8::Isolate* isolate)
+WindowProxy::WindowProxy(LocalFrame* frame, PassRefPtr<DOMWrapperWorld> world, v8::Isolate* isolate)
     : m_frame(frame)
     , m_isolate(isolate)
     , m_world(world)
 {
 }
 
-void V8WindowShell::disposeContext(GlobalDetachmentBehavior behavior)
+void WindowProxy::disposeContext(GlobalDetachmentBehavior behavior)
 {
     if (!isContextInitialized())
         return;
@@ -106,7 +106,7 @@ void V8WindowShell::disposeContext(GlobalDetachmentBehavior behavior)
     V8GCForContextDispose::instanceTemplate().notifyContextDisposed(m_frame->isMainFrame());
 }
 
-void V8WindowShell::clearForClose()
+void WindowProxy::clearForClose()
 {
     if (!isContextInitialized())
         return;
@@ -115,7 +115,7 @@ void V8WindowShell::clearForClose()
     disposeContext(DoNotDetachGlobal);
 }
 
-void V8WindowShell::clearForNavigation()
+void WindowProxy::clearForNavigation()
 {
     if (!isContextInitialized())
         return;
@@ -170,7 +170,7 @@ void V8WindowShell::clearForNavigation()
 // the frame. However, a new inner window is created for the new page.
 // If there are JS code holds a closure to the old inner window,
 // it won't be able to reach the outer window via its global object.
-bool V8WindowShell::initializeIfNeeded()
+bool WindowProxy::initializeIfNeeded()
 {
     if (isContextInitialized())
         return true;
@@ -181,9 +181,9 @@ bool V8WindowShell::initializeIfNeeded()
     return result;
 }
 
-bool V8WindowShell::initialize()
+bool WindowProxy::initialize()
 {
-    TRACE_EVENT0("v8", "V8WindowShell::initialize");
+    TRACE_EVENT0("v8", "WindowProxy::initialize");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "InitializeWindow");
 
     ScriptForbiddenScope::AllowUserAgentScript allowScript;
@@ -231,7 +231,7 @@ bool V8WindowShell::initialize()
     return true;
 }
 
-void V8WindowShell::createContext()
+void WindowProxy::createContext()
 {
     // The documentLoader pointer could be 0 during frame shutdown.
     // FIXME: Can we remove this check?
@@ -266,9 +266,9 @@ void V8WindowShell::createContext()
     m_scriptState = ScriptState::create(context, m_world);
 
     double contextCreationDurationInMilliseconds = (currentTime() - contextCreationStartInSeconds) * 1000;
-    const char* histogramName = "WebCore.V8WindowShell.createContext.MainWorld";
+    const char* histogramName = "WebCore.WindowProxy.createContext.MainWorld";
     if (!m_world->isMainWorld())
-        histogramName = "WebCore.V8WindowShell.createContext.IsolatedWorld";
+        histogramName = "WebCore.WindowProxy.createContext.IsolatedWorld";
     blink::Platform::current()->histogramCustomCounts(histogramName, contextCreationDurationInMilliseconds, 0, 10000, 50);
 }
 
@@ -277,7 +277,7 @@ static v8::Handle<v8::Object> toInnerGlobalObject(v8::Handle<v8::Context> contex
     return v8::Handle<v8::Object>::Cast(context->Global()->GetPrototype());
 }
 
-bool V8WindowShell::installDOMWindow()
+bool WindowProxy::installDOMWindow()
 {
     LocalDOMWindow* window = m_frame->domWindow();
     v8::Local<v8::Object> windowWrapper = V8ObjectConstructor::newInstance(m_isolate, m_scriptState->perContextData()->constructorForType(&V8Window::wrapperTypeInfo));
@@ -314,13 +314,13 @@ bool V8WindowShell::installDOMWindow()
     return true;
 }
 
-void V8WindowShell::updateDocumentWrapper(v8::Handle<v8::Object> wrapper)
+void WindowProxy::updateDocumentWrapper(v8::Handle<v8::Object> wrapper)
 {
     ASSERT(m_world->isMainWorld());
     m_document.set(m_isolate, wrapper);
 }
 
-void V8WindowShell::updateDocumentProperty()
+void WindowProxy::updateDocumentProperty()
 {
     if (!m_world->isMainWorld())
         return;
@@ -348,7 +348,7 @@ void V8WindowShell::updateDocumentProperty()
     V8HiddenValue::setHiddenValue(m_isolate, toInnerGlobalObject(context), V8HiddenValue::document(m_isolate), documentWrapper);
 }
 
-void V8WindowShell::clearDocumentProperty()
+void WindowProxy::clearDocumentProperty()
 {
     ASSERT(isContextInitialized());
     if (!m_world->isMainWorld())
@@ -357,13 +357,13 @@ void V8WindowShell::clearDocumentProperty()
     m_scriptState->context()->Global()->ForceDelete(v8AtomicString(m_isolate, "document"));
 }
 
-void V8WindowShell::updateActivityLogger()
+void WindowProxy::updateActivityLogger()
 {
     m_scriptState->perContextData()->setActivityLogger(V8DOMActivityLogger::activityLogger(
         m_world->worldId(), m_frame->document() ? m_frame->document()->baseURI() : KURL()));
 }
 
-void V8WindowShell::setSecurityToken(SecurityOrigin* origin)
+void WindowProxy::setSecurityToken(SecurityOrigin* origin)
 {
     // If two tokens are equal, then the SecurityOrigins canAccess each other.
     // If two tokens are not equal, then we have to call canAccess.
@@ -400,7 +400,7 @@ void V8WindowShell::setSecurityToken(SecurityOrigin* origin)
     context->SetSecurityToken(v8AtomicString(m_isolate, utf8Token.data(), utf8Token.length()));
 }
 
-void V8WindowShell::updateDocument()
+void WindowProxy::updateDocument()
 {
     ASSERT(m_world->isMainWorld());
     if (!isGlobalInitialized())
@@ -450,7 +450,7 @@ static void getter(v8::Local<v8::String> property, const v8::PropertyCallbackInf
     }
 }
 
-void V8WindowShell::namedItemAdded(HTMLDocument* document, const AtomicString& name)
+void WindowProxy::namedItemAdded(HTMLDocument* document, const AtomicString& name)
 {
     ASSERT(m_world->isMainWorld());
 
@@ -464,7 +464,7 @@ void V8WindowShell::namedItemAdded(HTMLDocument* document, const AtomicString& n
     documentHandle->SetAccessor(v8String(m_isolate, name), getter);
 }
 
-void V8WindowShell::namedItemRemoved(HTMLDocument* document, const AtomicString& name)
+void WindowProxy::namedItemRemoved(HTMLDocument* document, const AtomicString& name)
 {
     ASSERT(m_world->isMainWorld());
 
@@ -481,7 +481,7 @@ void V8WindowShell::namedItemRemoved(HTMLDocument* document, const AtomicString&
     documentHandle->Delete(v8String(m_isolate, name));
 }
 
-void V8WindowShell::updateSecurityOrigin(SecurityOrigin* origin)
+void WindowProxy::updateSecurityOrigin(SecurityOrigin* origin)
 {
     ASSERT(m_world->isMainWorld());
     if (!isContextInitialized())

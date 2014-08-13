@@ -87,7 +87,7 @@ def interface_context(interface):
     is_document = inherits_interface(interface.name, 'Document')
     if is_document:
         includes.update(['bindings/core/v8/ScriptController.h',
-                         'bindings/core/v8/V8WindowShell.h',
+                         'bindings/core/v8/WindowProxy.h',
                          'core/frame/LocalFrame.h'])
 
     # [ActiveDOMObject]

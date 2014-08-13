@@ -39,9 +39,9 @@
 #include "bindings/core/v8/V8NodeFilterCondition.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8Window.h"
-#include "bindings/core/v8/V8WindowShell.h"
 #include "bindings/core/v8/V8WorkerGlobalScope.h"
 #include "bindings/core/v8/V8XPathNSResolver.h"
+#include "bindings/core/v8/WindowProxy.h"
 #include "bindings/core/v8/WorkerScriptController.h"
 #include "bindings/core/v8/custom/V8CustomXPathNSResolver.h"
 #include "core/dom/Document.h"
@@ -720,7 +720,7 @@ v8::Local<v8::Context> toV8Context(ExecutionContext* context, DOMWrapperWorld& w
     ASSERT(context);
     if (context->isDocument()) {
         if (LocalFrame* frame = toDocument(context)->frame())
-            return frame->script().windowShell(world)->context();
+            return frame->script().windowProxy(world)->context();
     } else if (context->isWorkerGlobalScope()) {
         if (WorkerScriptController* script = toWorkerGlobalScope(context)->script())
             return script->context();
@@ -732,7 +732,7 @@ v8::Local<v8::Context> toV8Context(LocalFrame* frame, DOMWrapperWorld& world)
 {
     if (!frame)
         return v8::Local<v8::Context>();
-    v8::Local<v8::Context> context = frame->script().windowShell(world)->context();
+    v8::Local<v8::Context> context = frame->script().windowProxy(world)->context();
     if (context.IsEmpty())
         return v8::Local<v8::Context>();
     LocalFrame* attachedFrame= toFrameIfNotDetached(context);

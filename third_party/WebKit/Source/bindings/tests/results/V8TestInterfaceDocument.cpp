@@ -12,7 +12,7 @@
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
-#include "bindings/core/v8/V8WindowShell.h"
+#include "bindings/core/v8/WindowProxy.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
@@ -98,7 +98,7 @@ v8::Handle<v8::Object> wrap(TestInterfaceDocument* impl, v8::Handle<v8::Object> 
     DOMWrapperWorld& world = DOMWrapperWorld::current(isolate);
     if (world.isMainWorld()) {
         if (LocalFrame* frame = impl->frame())
-            frame->script().windowShell(world)->updateDocumentWrapper(wrapper);
+            frame->script().windowProxy(world)->updateDocumentWrapper(wrapper);
     }
     return wrapper;
 }

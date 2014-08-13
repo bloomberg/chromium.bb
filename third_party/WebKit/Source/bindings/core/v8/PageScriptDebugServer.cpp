@@ -37,7 +37,7 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "bindings/core/v8/V8Window.h"
-#include "bindings/core/v8/V8WindowShell.h"
+#include "bindings/core/v8/WindowProxy.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
@@ -126,10 +126,10 @@ void PageScriptDebugServer::addListener(ScriptDebugListener* listener, Page* pag
     ASSERT(!debuggerScript->IsUndefined());
     m_listenersMap.set(page, listener);
 
-    V8WindowShell* shell = scriptController.existingWindowShell(DOMWrapperWorld::mainWorld());
-    if (!shell || !shell->isContextInitialized())
+    WindowProxy* windowProxy = scriptController.existingWindowProxy(DOMWrapperWorld::mainWorld());
+    if (!windowProxy || !windowProxy->isContextInitialized())
         return;
-    v8::Local<v8::Context> context = shell->context();
+    v8::Local<v8::Context> context = windowProxy->context();
     v8::Handle<v8::Function> getScriptsFunction = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8AtomicString(m_isolate, "getScripts")));
     v8::Handle<v8::Value> argv[] = { context->GetEmbedderData(0) };
     v8::Handle<v8::Value> value = V8ScriptRunner::callInternalFunction(getScriptsFunction, debuggerScript, WTF_ARRAY_LENGTH(argv), argv, m_isolate);

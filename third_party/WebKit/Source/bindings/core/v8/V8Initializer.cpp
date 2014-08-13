@@ -128,7 +128,7 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
     // avoid storing the exception object, as we can't create a wrapper during context creation.
     // FIXME: Can we even get here during initialization now that we bail out when GetEntered returns an empty handle?
     LocalFrame* frame = enteredWindow->document()->frame();
-    if (frame && frame->script().existingWindowShell(scriptState->world())) {
+    if (frame && frame->script().existingWindowProxy(scriptState->world())) {
         V8ErrorHandler::storeExceptionOnErrorEventWrapper(event.get(), data, scriptState->context()->Global(), isolate);
     }
 

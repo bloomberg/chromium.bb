@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8WindowShell_h
-#define V8WindowShell_h
+#ifndef WindowProxy_h
+#define WindowProxy_h
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScopedPersistent.h"
@@ -51,11 +51,11 @@ class LocalFrame;
 class HTMLDocument;
 class SecurityOrigin;
 
-// V8WindowShell represents all the per-global object state for a LocalFrame that
+// WindowProxy represents all the per-global object state for a LocalFrame that
 // persist between navigations.
-class V8WindowShell {
+class WindowProxy {
 public:
-    static PassOwnPtr<V8WindowShell> create(LocalFrame*, DOMWrapperWorld&, v8::Isolate*);
+    static PassOwnPtr<WindowProxy> create(LocalFrame*, DOMWrapperWorld&, v8::Isolate*);
 
     v8::Local<v8::Context> context() const { return m_scriptState ? m_scriptState->context() : v8::Local<v8::Context>(); }
     ScriptState* scriptState() const { return m_scriptState.get(); }
@@ -82,7 +82,7 @@ public:
     DOMWrapperWorld& world() { return *m_world; }
 
 private:
-    V8WindowShell(LocalFrame*, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);
+    WindowProxy(LocalFrame*, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);
     bool initialize();
 
     enum GlobalDetachmentBehavior {
@@ -106,7 +106,7 @@ private:
     void createContext();
     bool installDOMWindow();
 
-    static V8WindowShell* enteredIsolatedWorldContext();
+    static WindowProxy* enteredIsolatedWorldContext();
 
     LocalFrame* m_frame;
     v8::Isolate* m_isolate;
@@ -118,4 +118,4 @@ private:
 
 } // namespace blink
 
-#endif // V8WindowShell_h
+#endif // WindowProxy_h

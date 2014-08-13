@@ -235,7 +235,7 @@ void LocalFrame::setDOMWindow(PassRefPtrWillBeRawPtr<LocalDOMWindow> domWindow)
 {
     InspectorInstrumentation::frameWindowDiscarded(this, m_domWindow.get());
     if (domWindow)
-        script().clearWindowShell();
+        script().clearWindowProxy();
     Frame::setDOMWindow(domWindow);
 }
 

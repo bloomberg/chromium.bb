@@ -37,7 +37,7 @@
 #include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/V8Window.h"
-#include "bindings/core/v8/V8WindowShell.h"
+#include "bindings/core/v8/WindowProxy.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "core/dom/ExecutionContext.h"
 #include "wtf/HashTraits.h"

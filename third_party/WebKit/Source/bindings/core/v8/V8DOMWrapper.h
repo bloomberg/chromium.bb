@@ -79,7 +79,7 @@ inline void V8DOMWrapper::setNativeInfo(v8::Handle<v8::Object> wrapper, const Wr
 
 inline void V8DOMWrapper::setNativeInfoForHiddenWrapper(v8::Handle<v8::Object> wrapper, const WrapperTypeInfo* wrapperTypeInfo, ScriptWrappableBase* internalPointer)
 {
-    // see V8WindowShell::installDOMWindow() comment for why this version is needed and safe.
+    // see WindowProxy::installDOMWindow() comment for why this version is needed and safe.
     ASSERT(wrapper->InternalFieldCount() >= 2);
     ASSERT(internalPointer);
     ASSERT(wrapperTypeInfo);

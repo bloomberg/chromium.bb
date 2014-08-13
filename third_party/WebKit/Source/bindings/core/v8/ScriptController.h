@@ -56,7 +56,7 @@ class LocalFrame;
 class ScriptState;
 class ScriptSourceCode;
 class SecurityOrigin;
-class V8WindowShell;
+class WindowProxy;
 class Widget;
 
 typedef WTF::Vector<v8::Extension*> V8Extensions;
@@ -77,8 +77,8 @@ public:
     ~ScriptController();
 
     bool initializeMainWorld();
-    V8WindowShell* windowShell(DOMWrapperWorld&);
-    V8WindowShell* existingWindowShell(DOMWrapperWorld&);
+    WindowProxy* windowProxy(DOMWrapperWorld&);
+    WindowProxy* existingWindowProxy(DOMWrapperWorld&);
 
     // Evaluate JavaScript in the main world.
     void executeScriptInMainWorld(const String&, ExecuteScriptPolicy = DoNotExecuteScriptWhenScriptsDisabled);
@@ -124,7 +124,7 @@ public:
 
     TextPosition eventHandlerPosition() const;
 
-    void clearWindowShell();
+    void clearWindowProxy();
     void updateDocument();
 
     void namedItemAdded(HTMLDocument*, const AtomicString&);
@@ -150,7 +150,7 @@ public:
     v8::Isolate* isolate() const { return m_isolate; }
 
 private:
-    typedef HashMap<int, OwnPtr<V8WindowShell> > IsolatedWorldMap;
+    typedef HashMap<int, OwnPtr<WindowProxy> > IsolatedWorldMap;
     typedef HashMap<Widget*, NPObject*> PluginObjectMap;
 
     v8::Local<v8::Value> evaluateScriptInMainWorld(const ScriptSourceCode&, AccessControlStatus, ExecuteScriptPolicy);
@@ -159,7 +159,7 @@ private:
     const String* m_sourceURL;
     v8::Isolate* m_isolate;
 
-    OwnPtr<V8WindowShell> m_windowShell;
+    OwnPtr<WindowProxy> m_windowProxy;
     IsolatedWorldMap m_isolatedWorlds;
 
     // A mapping between Widgets and their corresponding script object.

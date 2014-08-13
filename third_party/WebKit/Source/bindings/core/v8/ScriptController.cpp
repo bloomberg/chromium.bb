@@ -46,7 +46,7 @@
 #include "bindings/core/v8/V8PerContextData.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "bindings/core/v8/V8Window.h"
-#include "bindings/core/v8/V8WindowShell.h"
+#include "bindings/core/v8/WindowProxy.h"
 #include "bindings/core/v8/npruntime_impl.h"
 #include "bindings/core/v8/npruntime_priv.h"
 #include "core/dom/Document.h"
@@ -94,15 +94,15 @@ ScriptController::ScriptController(LocalFrame* frame)
     : m_frame(frame)
     , m_sourceURL(0)
     , m_isolate(v8::Isolate::GetCurrent())
-    , m_windowShell(V8WindowShell::create(frame, DOMWrapperWorld::mainWorld(), m_isolate))
+    , m_windowProxy(WindowProxy::create(frame, DOMWrapperWorld::mainWorld(), m_isolate))
     , m_windowScriptNPObject(0)
 {
 }
 
 ScriptController::~ScriptController()
 {
-    // V8WindowShell::clearForClose() must be invoked before destruction starts.
-    ASSERT(!m_windowShell->isContextInitialized());
+    // WindowProxy::clearForClose() must be invoked before destruction starts.
+    ASSERT(!m_windowProxy->isContextInitialized());
 }
 
 void ScriptController::clearScriptObjects()
@@ -128,7 +128,7 @@ void ScriptController::clearScriptObjects()
 void ScriptController::clearForClose()
 {
     double start = currentTime();
-    m_windowShell->clearForClose();
+    m_windowProxy->clearForClose();
     for (IsolatedWorldMap::iterator iter = m_isolatedWorlds.begin(); iter != m_isolatedWorlds.end(); ++iter)
         iter->value->clearForClose();
     blink::Platform::current()->histogramCustomCounts("WebCore.ScriptController.clearForClose", (currentTime() - start) * 1000, 0, 10000, 50);
@@ -136,7 +136,7 @@ void ScriptController::clearForClose()
 
 void ScriptController::updateSecurityOrigin(SecurityOrigin* origin)
 {
-    m_windowShell->updateSecurityOrigin(origin);
+    m_windowProxy->updateSecurityOrigin(origin);
 }
 
 v8::Local<v8::Value> ScriptController::callFunction(v8::Handle<v8::Function> function, v8::Handle<v8::Value> receiver, int argc, v8::Handle<v8::Value> info[])
@@ -202,15 +202,15 @@ v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(v8::Handle<v8
 
 bool ScriptController::initializeMainWorld()
 {
-    if (m_windowShell->isContextInitialized())
+    if (m_windowProxy->isContextInitialized())
         return false;
-    return windowShell(DOMWrapperWorld::mainWorld())->isContextInitialized();
+    return windowProxy(DOMWrapperWorld::mainWorld())->isContextInitialized();
 }
 
-V8WindowShell* ScriptController::existingWindowShell(DOMWrapperWorld& world)
+WindowProxy* ScriptController::existingWindowProxy(DOMWrapperWorld& world)
 {
     if (world.isMainWorld())
-        return m_windowShell->isContextInitialized() ? m_windowShell.get() : 0;
+        return m_windowProxy->isContextInitialized() ? m_windowProxy.get() : 0;
 
     IsolatedWorldMap::iterator iter = m_isolatedWorlds.find(world.worldId());
     if (iter == m_isolatedWorlds.end())
@@ -218,24 +218,24 @@ V8WindowShell* ScriptController::existingWindowShell(DOMWrapperWorld& world)
     return iter->value->isContextInitialized() ? iter->value.get() : 0;
 }
 
-V8WindowShell* ScriptController::windowShell(DOMWrapperWorld& world)
+WindowProxy* ScriptController::windowProxy(DOMWrapperWorld& world)
 {
-    V8WindowShell* shell = 0;
+    WindowProxy* windowProxy = 0;
     if (world.isMainWorld()) {
-        shell = m_windowShell.get();
+        windowProxy = m_windowProxy.get();
     } else {
         IsolatedWorldMap::iterator iter = m_isolatedWorlds.find(world.worldId());
         if (iter != m_isolatedWorlds.end()) {
-            shell = iter->value.get();
+            windowProxy = iter->value.get();
         } else {
-            OwnPtr<V8WindowShell> isolatedWorldShell = V8WindowShell::create(m_frame, world, m_isolate);
-            shell = isolatedWorldShell.get();
-            m_isolatedWorlds.set(world.worldId(), isolatedWorldShell.release());
+            OwnPtr<WindowProxy> isolatedWorldWindowProxy = WindowProxy::create(m_frame, world, m_isolate);
+            windowProxy = isolatedWorldWindowProxy.get();
+            m_isolatedWorlds.set(world.worldId(), isolatedWorldWindowProxy.release());
         }
     }
-    if (!shell->isContextInitialized() && shell->initializeIfNeeded() && world.isMainWorld())
+    if (!windowProxy->isContextInitialized() && windowProxy->initializeIfNeeded() && world.isMainWorld())
         m_frame->loader().dispatchDidClearWindowObjectInMainWorld();
-    return shell;
+    return windowProxy;
 }
 
 bool ScriptController::shouldBypassMainWorldCSP()
@@ -271,18 +271,18 @@ void ScriptController::bindToWindowObject(LocalFrame* frame, const String& key, 
 
 void ScriptController::enableEval()
 {
-    if (!m_windowShell->isContextInitialized())
+    if (!m_windowProxy->isContextInitialized())
         return;
     v8::HandleScope handleScope(m_isolate);
-    m_windowShell->context()->AllowCodeGenerationFromStrings(true);
+    m_windowProxy->context()->AllowCodeGenerationFromStrings(true);
 }
 
 void ScriptController::disableEval(const String& errorMessage)
 {
-    if (!m_windowShell->isContextInitialized())
+    if (!m_windowProxy->isContextInitialized())
         return;
     v8::HandleScope handleScope(m_isolate);
-    v8::Local<v8::Context> v8Context = m_windowShell->context();
+    v8::Local<v8::Context> v8Context = m_windowProxy->context();
     v8Context->AllowCodeGenerationFromStrings(false);
     v8Context->SetErrorMessageForCodeGenerationFromStrings(v8String(m_isolate, errorMessage));
 }
@@ -416,19 +416,19 @@ NPObject* ScriptController::createScriptObjectForPluginElement(HTMLPlugInElement
     return npCreateV8ScriptObject(0, v8::Handle<v8::Object>::Cast(v8plugin), window, scriptState->isolate());
 }
 
-void ScriptController::clearWindowShell()
+void ScriptController::clearWindowProxy()
 {
     double start = currentTime();
-    // V8 binding expects ScriptController::clearWindowShell only be called
+    // V8 binding expects ScriptController::clearWindowProxy only be called
     // when a frame is loading a new page. This creates a new context for the new page.
 
     // The V8 context must be available for |clearScriptObjects()|.
     // The below call must be before |clearForNavigation()| which disposes the V8 context.
     clearScriptObjects();
-    m_windowShell->clearForNavigation();
+    m_windowProxy->clearForNavigation();
     for (IsolatedWorldMap::iterator iter = m_isolatedWorlds.begin(); iter != m_isolatedWorlds.end(); ++iter)
         iter->value->clearForNavigation();
-    blink::Platform::current()->histogramCustomCounts("WebCore.ScriptController.clearWindowShell", (currentTime() - start) * 1000, 0, 10000, 50);
+    blink::Platform::current()->histogramCustomCounts("WebCore.ScriptController.clearWindowProxy", (currentTime() - start) * 1000, 0, 10000, 50);
 }
 
 void ScriptController::setCaptureCallStackForUncaughtExceptions(bool value)
@@ -439,13 +439,13 @@ void ScriptController::setCaptureCallStackForUncaughtExceptions(bool value)
 void ScriptController::collectIsolatedContexts(Vector<std::pair<ScriptState*, SecurityOrigin*> >& result)
 {
     for (IsolatedWorldMap::iterator it = m_isolatedWorlds.begin(); it != m_isolatedWorlds.end(); ++it) {
-        V8WindowShell* isolatedWorldShell = it->value.get();
-        SecurityOrigin* origin = isolatedWorldShell->world().isolatedWorldSecurityOrigin();
+        WindowProxy* isolatedWorldWindowProxy = it->value.get();
+        SecurityOrigin* origin = isolatedWorldWindowProxy->world().isolatedWorldSecurityOrigin();
         if (!origin)
             continue;
-        if (!isolatedWorldShell->isContextInitialized())
+        if (!isolatedWorldWindowProxy->isContextInitialized())
             continue;
-        result.append(std::pair<ScriptState*, SecurityOrigin*>(isolatedWorldShell->scriptState(), origin));
+        result.append(std::pair<ScriptState*, SecurityOrigin*>(isolatedWorldWindowProxy->scriptState(), origin));
     }
 }
 
@@ -453,40 +453,40 @@ void ScriptController::setWorldDebugId(int worldId, int debuggerId)
 {
     ASSERT(debuggerId > 0);
     bool isMainWorld = worldId == MainWorldId;
-    V8WindowShell* shell = 0;
+    WindowProxy* windowProxy = 0;
     if (isMainWorld) {
-        shell = m_windowShell.get();
+        windowProxy = m_windowProxy.get();
     } else {
         IsolatedWorldMap::iterator iter = m_isolatedWorlds.find(worldId);
         if (iter != m_isolatedWorlds.end())
-            shell = iter->value.get();
+            windowProxy = iter->value.get();
     }
-    if (!shell || !shell->isContextInitialized())
+    if (!windowProxy || !windowProxy->isContextInitialized())
         return;
     v8::HandleScope scope(m_isolate);
-    v8::Local<v8::Context> context = shell->context();
+    v8::Local<v8::Context> context = windowProxy->context();
     const char* worldName = isMainWorld ? "page" : "injected";
     V8PerContextDebugData::setContextDebugData(context, worldName, debuggerId);
 }
 
 void ScriptController::updateDocument()
 {
-    // For an uninitialized main window shell, do not incur the cost of context initialization.
-    if (!m_windowShell->isGlobalInitialized())
+    // For an uninitialized main window windowProxy, do not incur the cost of context initialization.
+    if (!m_windowProxy->isGlobalInitialized())
         return;
 
     if (!initializeMainWorld())
-        windowShell(DOMWrapperWorld::mainWorld())->updateDocument();
+        windowProxy(DOMWrapperWorld::mainWorld())->updateDocument();
 }
 
 void ScriptController::namedItemAdded(HTMLDocument* doc, const AtomicString& name)
 {
-    windowShell(DOMWrapperWorld::mainWorld())->namedItemAdded(doc, name);
+    windowProxy(DOMWrapperWorld::mainWorld())->namedItemAdded(doc, name);
 }
 
 void ScriptController::namedItemRemoved(HTMLDocument* doc, const AtomicString& name)
 {
-    windowShell(DOMWrapperWorld::mainWorld())->namedItemRemoved(doc, name);
+    windowProxy(DOMWrapperWorld::mainWorld())->namedItemRemoved(doc, name);
 }
 
 static bool isInPrivateScriptIsolateWorld(v8::Isolate* isolate)
@@ -622,11 +622,11 @@ void ScriptController::executeScriptInIsolatedWorld(int worldID, const Vector<Sc
     ASSERT(worldID > 0);
 
     RefPtr<DOMWrapperWorld> world = DOMWrapperWorld::ensureIsolatedWorld(worldID, extensionGroup);
-    V8WindowShell* isolatedWorldShell = windowShell(*world);
-    if (!isolatedWorldShell->isContextInitialized())
+    WindowProxy* isolatedWorldWindowProxy = windowProxy(*world);
+    if (!isolatedWorldWindowProxy->isContextInitialized())
         return;
 
-    ScriptState* scriptState = isolatedWorldShell->scriptState();
+    ScriptState* scriptState = isolatedWorldWindowProxy->scriptState();
     v8::EscapableHandleScope handleScope(scriptState->isolate());
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Array> resultArray = v8::Array::New(m_isolate, sources.size());
