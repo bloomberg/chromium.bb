@@ -20,7 +20,7 @@ void ChromeReportUnrecoverableError() {
   }
 
   // We only want to upload |kErrorUploadRatio| ratio of errors.
-  const double kErrorUploadRatio = 0.15;
+  const double kErrorUploadRatio = 0.0;
   if (kErrorUploadRatio <= 0.0)
     return; // We are not allowed to upload errors.
   double random_number = base::RandDouble();
