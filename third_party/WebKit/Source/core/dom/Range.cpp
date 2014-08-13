@@ -462,9 +462,7 @@ bool Range::boundaryPointsValid() const
 
 void Range::deleteContents(ExceptionState& exceptionState)
 {
-    checkDeleteExtract(exceptionState);
-    if (exceptionState.hadException())
-        return;
+    ASSERT(boundaryPointsValid());
 
     {
         EventQueueScope eventQueueScope;
@@ -800,7 +798,7 @@ PassRefPtrWillBeRawPtr<Node> Range::processAncestorsAndTheirSiblings(ActionType 
 
 PassRefPtrWillBeRawPtr<DocumentFragment> Range::extractContents(ExceptionState& exceptionState)
 {
-    checkDeleteExtract(exceptionState);
+    checkExtractPrecondition(exceptionState);
     if (exceptionState.hadException())
         return nullptr;
 
@@ -1298,7 +1296,7 @@ void Range::setStartBefore(Node* refNode, ExceptionState& exceptionState)
     setStart(refNode->parentNode(), refNode->nodeIndex(), exceptionState);
 }
 
-void Range::checkDeleteExtract(ExceptionState& exceptionState)
+void Range::checkExtractPrecondition(ExceptionState& exceptionState)
 {
     ASSERT(boundaryPointsValid());
 
