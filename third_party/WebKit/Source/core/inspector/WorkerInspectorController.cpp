@@ -183,7 +183,7 @@ void WorkerInspectorController::trace(Visitor* visitor)
     visitor->trace(m_state);
     visitor->trace(m_instrumentingAgents);
     visitor->trace(m_injectedScriptManager);
-    m_agents.trace(visitor);
+    visitor->trace(m_agents);
     visitor->trace(m_workerDebuggerAgent);
 }
 

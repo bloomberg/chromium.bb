@@ -144,7 +144,7 @@ void InspectorController::trace(Visitor* visitor)
     visitor->trace(m_tracingAgent);
     visitor->trace(m_inspectorFrontendClient);
     visitor->trace(m_page);
-    m_agents.trace(visitor);
+    visitor->trace(m_agents);
 }
 
 PassOwnPtrWillBeRawPtr<InspectorController> InspectorController::create(Page* page, InspectorClient* client)
