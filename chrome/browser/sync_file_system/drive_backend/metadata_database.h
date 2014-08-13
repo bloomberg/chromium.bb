@@ -345,6 +345,11 @@ class MetadataDatabase {
   // Sets |app_ids| to a list of all registered app ids.
   void GetRegisteredAppIDs(std::vector<std::string>* app_ids);
 
+  // Clears dirty flag of trackers that can be cleared without external
+  // interactien.
+  void SweepDirtyTrackers(const std::vector<std::string>& file_ids,
+                          const SyncStatusCallback& callback);
+
  private:
   friend class MetadataDatabaseTest;
   struct CreateParam;
@@ -404,6 +409,7 @@ class MetadataDatabase {
                                   const std::string& file_id);
 
   void DetachFromSequence();
+  bool CanClearDirty(const FileTracker& tracker);
 
   scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
   base::FilePath database_path_;

@@ -1387,6 +1387,33 @@ void MetadataDatabase::GetRegisteredAppIDs(std::vector<std::string>* app_ids) {
   *app_ids = index_->GetRegisteredAppIDs();
 }
 
+void MetadataDatabase::SweepDirtyTrackers(
+    const std::vector<std::string>& file_ids,
+    const SyncStatusCallback& callback) {
+  DCHECK(worker_sequence_checker_.CalledOnValidSequencedThread());
+
+  std::set<int64> tracker_ids;
+  for (size_t i = 0; i < file_ids.size(); ++i) {
+    TrackerIDSet trackers_for_file_id =
+        index_->GetFileTrackerIDsByFileID(file_ids[i]);
+    for (TrackerIDSet::iterator itr = trackers_for_file_id.begin();
+         itr != trackers_for_file_id.end(); ++itr)
+      tracker_ids.insert(*itr);
+  }
+
+  for (std::set<int64>::iterator itr = tracker_ids.begin();
+       itr != tracker_ids.end(); ++itr) {
+    scoped_ptr<FileTracker> tracker(new FileTracker);
+    if (!index_->GetFileTracker(*itr, tracker.get()) ||
+        !CanClearDirty(*tracker))
+      continue;
+    tracker->set_dirty(false);
+    index_->StoreFileTracker(tracker.Pass());
+  }
+
+  WriteToDatabase(callback);
+}
+
 MetadataDatabase::MetadataDatabase(
     base::SequencedTaskRunner* worker_task_runner,
     const base::FilePath& database_path,
@@ -1911,6 +1938,36 @@ void MetadataDatabase::AttachInitialAppRoot(
 
 void MetadataDatabase::DetachFromSequence() {
   worker_sequence_checker_.DetachFromSequence();
+}
+
+bool MetadataDatabase::CanClearDirty(const FileTracker& tracker) {
+  DCHECK(worker_sequence_checker_.CalledOnValidSequencedThread());
+
+  FileMetadata metadata;
+  if (!index_->GetFileMetadata(tracker.file_id(), &metadata) ||
+      !tracker.active() || !tracker.dirty() ||
+      !tracker.has_synced_details() ||
+      tracker.needs_folder_listing())
+    return false;
+
+  const FileDetails& remote_details = metadata.details();
+  const FileDetails& synced_details = tracker.synced_details();
+  if (remote_details.title() != synced_details.title() ||
+      remote_details.md5() != synced_details.md5())
+    return false;
+
+  std::set<std::string> parents;
+  for (int i = 0; i < remote_details.parent_folder_ids_size(); ++i)
+    parents.insert(remote_details.parent_folder_ids(i));
+
+  for (int i = 0; i < synced_details.parent_folder_ids_size(); ++i)
+    if (parents.erase(synced_details.parent_folder_ids(i)) != 1)
+      return false;
+
+  if (!parents.empty())
+    return false;
+
+  return true;
 }
 
 }  // namespace drive_backend

@@ -113,9 +113,27 @@ void ListChangesTask::CheckInChangeList(int64 largest_change_id,
       "Got %" PRIuS " changes, updating MetadataDatabase.",
       change_list_.size()));
 
+  DCHECK(file_ids_.empty());
+  file_ids_.reserve(change_list_.size());
+  for (size_t i = 0; i < change_list_.size(); ++i)
+    file_ids_.push_back(change_list_[i]->file_id());
+
   metadata_database()->UpdateByChangeList(
       largest_change_id,
       change_list_.Pass(),
+      base::Bind(&ListChangesTask::DidCheckInChangeList,
+                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
+}
+
+void ListChangesTask::DidCheckInChangeList(scoped_ptr<SyncTaskToken> token,
+                                           SyncStatusCode status) {
+  if (status != SYNC_STATUS_OK) {
+    SyncTaskManager::NotifyTaskDone(token.Pass(), status);
+    return;
+  }
+
+  metadata_database()->SweepDirtyTrackers(
+      file_ids_,
       base::Bind(&SyncTaskManager::NotifyTaskDone, base::Passed(&token)));
 }
 
