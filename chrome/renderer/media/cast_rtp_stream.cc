@@ -236,14 +236,14 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
                       public content::MediaStreamVideoSink {
  public:
   // |track| provides data for this sink.
-  // |expected_coded_size| is the expected dimension of the video frame.
+  // |expected_natural_size| is the expected dimension of the video frame.
   // |error_callback| is called if video formats don't match.
   CastVideoSink(const blink::WebMediaStreamTrack& track,
-                const gfx::Size& expected_coded_size,
+                const gfx::Size& expected_natural_size,
                 const CastRtpStream::ErrorCallback& error_callback)
       : track_(track),
         sink_added_(false),
-        expected_coded_size_(expected_coded_size),
+        expected_natural_size_(expected_natural_size),
         error_callback_(error_callback) {}
 
   virtual ~CastVideoSink() {
@@ -254,21 +254,21 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
   // This static method is used to forward video frames to |frame_input|.
   static void OnVideoFrame(
       // These parameters are already bound when callback is created.
-      const gfx::Size& expected_coded_size,
+      const gfx::Size& expected_natural_size,
       const CastRtpStream::ErrorCallback& error_callback,
       const scoped_refptr<media::cast::VideoFrameInput> frame_input,
       // These parameters are passed for each frame.
       const scoped_refptr<media::VideoFrame>& frame,
       const media::VideoCaptureFormat& format,
       const base::TimeTicks& estimated_capture_time) {
-    if (frame->coded_size() != expected_coded_size) {
+    if (frame->natural_size() != expected_natural_size) {
       error_callback.Run(
           base::StringPrintf("Video frame resolution does not match config."
                              " Expected %dx%d. Got %dx%d.",
-                             expected_coded_size.width(),
-                             expected_coded_size.height(),
-                             frame->coded_size().width(),
-                             frame->coded_size().height()));
+                             expected_natural_size.width(),
+                             expected_natural_size.height(),
+                             frame->natural_size().width(),
+                             frame->natural_size().height()));
       return;
     }
 
@@ -297,7 +297,7 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
         this,
         base::Bind(
             &CastVideoSink::OnVideoFrame,
-            expected_coded_size_,
+            expected_natural_size_,
             error_callback_,
             frame_input),
         track_);
@@ -306,7 +306,7 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
  private:
   blink::WebMediaStreamTrack track_;
   bool sink_added_;
-  gfx::Size expected_coded_size_;
+  gfx::Size expected_natural_size_;
   CastRtpStream::ErrorCallback error_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CastVideoSink);
