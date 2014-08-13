@@ -307,7 +307,11 @@ PipelineIntegrationTestBase::CreateFilterCollection(
 void PipelineIntegrationTestBase::SetDecryptor(
     Decryptor* decryptor,
     const DecryptorReadyCB& decryptor_ready_cb) {
-  decryptor_ready_cb.Run(decryptor);
+  decryptor_ready_cb.Run(
+      decryptor,
+      base::Bind(&PipelineIntegrationTestBase::DecryptorAttached,
+                 base::Unretained(this)));
+  EXPECT_CALL(*this, DecryptorAttached(true));
 }
 
 void PipelineIntegrationTestBase::OnVideoRendererPaint(

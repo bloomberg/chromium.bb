@@ -40,6 +40,7 @@ class MessageLoopProxy;
 
 namespace blink {
 class WebContentDecryptionModule;
+class WebContentDecryptionModuleResult;
 class WebFrame;
 class WebURL;
 }
@@ -219,7 +220,14 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   virtual MediaKeyException cancelKeyRequest(
       const blink::WebString& key_system,
       const blink::WebString& session_id);
+  // TODO(jrummell): Remove this method once Blink updated to use the other
+  // two methods.
   virtual void setContentDecryptionModule(
+      blink::WebContentDecryptionModule* cdm);
+  virtual void setContentDecryptionModule(
+      blink::WebContentDecryptionModule* cdm,
+      blink::WebContentDecryptionModuleResult result);
+  virtual void setContentDecryptionModuleSync(
       blink::WebContentDecryptionModule* cdm);
 
   void OnKeyAdded(const std::string& session_id);
@@ -289,6 +297,12 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   // If |decryptor_ready_cb| is null, the existing callback will be fired with
   // NULL immediately and reset.
   void SetDecryptorReadyCB(const media::DecryptorReadyCB& decryptor_ready_cb);
+
+  // Called when the ContentDecryptionModule has been attached to the
+  // pipeline/decoders.
+  void ContentDecryptionModuleAttached(
+      blink::WebContentDecryptionModuleResult result,
+      bool success);
 
   bool EnsureTextureBackedSkBitmap(GrContext* gr, SkBitmap& bitmap,
                                    const blink::WebSize& size,

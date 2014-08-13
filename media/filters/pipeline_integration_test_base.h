@@ -135,6 +135,7 @@ class PipelineIntegrationTestBase {
 
   MOCK_METHOD1(OnMetadata, void(PipelineMetadata));
   MOCK_METHOD1(OnBufferingStateChanged, void(BufferingState));
+  MOCK_METHOD1(DecryptorAttached, void(bool));
 };
 
 }  // namespace media

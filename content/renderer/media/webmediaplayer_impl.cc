@@ -61,6 +61,7 @@
 #include "media/filters/video_renderer_impl.h"
 #include "media/filters/vpx_video_decoder.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModule.h"
+#include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
 #include "third_party/WebKit/public/platform/WebMediaSource.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
@@ -134,6 +135,10 @@ class SyncPointClientImpl : public media::VideoFrame::SyncPointClient {
  private:
   blink::WebGraphicsContext3D* web_graphics_context_;
 };
+
+// Used for calls to decryptor_ready_cb where the result can be ignored.
+void DoNothing(bool) {
+}
 
 }  // namespace
 
@@ -775,7 +780,7 @@ WebMediaPlayerImpl::GenerateKeyRequestInternal(const std::string& key_system,
 
     if (proxy_decryptor_ && !decryptor_ready_cb_.is_null()) {
       base::ResetAndReturn(&decryptor_ready_cb_)
-          .Run(proxy_decryptor_->GetDecryptor());
+          .Run(proxy_decryptor_->GetDecryptor(), base::Bind(DoNothing));
     }
 
     current_key_system_ = key_system;
@@ -888,7 +893,60 @@ void WebMediaPlayerImpl::setContentDecryptionModule(
   web_cdm_ = ToWebContentDecryptionModuleImpl(cdm);
 
   if (web_cdm_ && !decryptor_ready_cb_.is_null())
-    base::ResetAndReturn(&decryptor_ready_cb_).Run(web_cdm_->GetDecryptor());
+    base::ResetAndReturn(&decryptor_ready_cb_)
+        .Run(web_cdm_->GetDecryptor(), base::Bind(DoNothing));
+}
+
+void WebMediaPlayerImpl::setContentDecryptionModule(
+    blink::WebContentDecryptionModule* cdm,
+    blink::WebContentDecryptionModuleResult result) {
+  DCHECK(main_loop_->BelongsToCurrentThread());
+
+  // TODO(xhwang): Support setMediaKeys(0) if necessary: http://crbug.com/330324
+  if (!cdm) {
+    result.completeWithError(
+        blink::WebContentDecryptionModuleExceptionNotSupportedError,
+        0,
+        "Null MediaKeys object is not supported.");
+    return;
+  }
+
+  web_cdm_ = ToWebContentDecryptionModuleImpl(cdm);
+
+  if (web_cdm_ && !decryptor_ready_cb_.is_null()) {
+    base::ResetAndReturn(&decryptor_ready_cb_)
+        .Run(web_cdm_->GetDecryptor(),
+             BIND_TO_RENDER_LOOP1(
+                 &WebMediaPlayerImpl::ContentDecryptionModuleAttached, result));
+  } else {
+    // No pipeline/decoder connected, so resolve the promise. When something
+    // is connected, setting the CDM will happen in SetDecryptorReadyCB().
+    ContentDecryptionModuleAttached(result, true);
+  }
+}
+
+void WebMediaPlayerImpl::setContentDecryptionModuleSync(
+    blink::WebContentDecryptionModule* cdm) {
+  DCHECK(main_loop_->BelongsToCurrentThread());
+
+  // Used when loading media and no pipeline/decoder attached yet.
+  DCHECK(decryptor_ready_cb_.is_null());
+
+  web_cdm_ = ToWebContentDecryptionModuleImpl(cdm);
+}
+
+void WebMediaPlayerImpl::ContentDecryptionModuleAttached(
+    blink::WebContentDecryptionModuleResult result,
+    bool success) {
+  if (success) {
+    result.complete();
+    return;
+  }
+
+  result.completeWithError(
+      blink::WebContentDecryptionModuleExceptionNotSupportedError,
+      0,
+      "Unable to set MediaKeys object");
 }
 
 void WebMediaPlayerImpl::OnPipelineSeeked(bool time_changed,
@@ -1287,8 +1345,10 @@ void WebMediaPlayerImpl::SetDecryptorReadyCB(
 
   // Cancels the previous decryptor request.
   if (decryptor_ready_cb.is_null()) {
-    if (!decryptor_ready_cb_.is_null())
-      base::ResetAndReturn(&decryptor_ready_cb_).Run(NULL);
+    if (!decryptor_ready_cb_.is_null()) {
+      base::ResetAndReturn(&decryptor_ready_cb_)
+          .Run(NULL, base::Bind(DoNothing));
+    }
     return;
   }
 
@@ -1303,12 +1363,13 @@ void WebMediaPlayerImpl::SetDecryptorReadyCB(
   DCHECK(!proxy_decryptor_ || !web_cdm_);
 
   if (proxy_decryptor_) {
-    decryptor_ready_cb.Run(proxy_decryptor_->GetDecryptor());
+    decryptor_ready_cb.Run(proxy_decryptor_->GetDecryptor(),
+                           base::Bind(DoNothing));
     return;
   }
 
   if (web_cdm_) {
-    decryptor_ready_cb.Run(web_cdm_->GetDecryptor());
+    decryptor_ready_cb.Run(web_cdm_->GetDecryptor(), base::Bind(DoNothing));
     return;
   }
 

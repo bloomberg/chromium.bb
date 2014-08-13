@@ -34,6 +34,7 @@ class RenderAudioSourceProvider;
 
 namespace blink {
 class WebContentDecryptionModule;
+class WebContentDecryptionModuleResult;
 class WebLocalFrame;
 }
 
@@ -152,7 +153,14 @@ class WebMediaPlayerImpl
       const blink::WebString& key_system,
       const blink::WebString& session_id);
 
+  // TODO(jrummell): Remove this method once Blink updated to use the other
+  // two methods.
   virtual void setContentDecryptionModule(
+      blink::WebContentDecryptionModule* cdm);
+  virtual void setContentDecryptionModule(
+      blink::WebContentDecryptionModule* cdm,
+      blink::WebContentDecryptionModuleResult result);
+  virtual void setContentDecryptionModuleSync(
       blink::WebContentDecryptionModule* cdm);
 
   void OnPipelineSeeked(bool time_changed, media::PipelineStatus status);
@@ -228,6 +236,12 @@ class WebMediaPlayerImpl
   // If |decryptor_ready_cb| is null, the existing callback will be fired with
   // NULL immediately and reset.
   void SetDecryptorReadyCB(const media::DecryptorReadyCB& decryptor_ready_cb);
+
+  // Called when the ContentDecryptionModule has been attached to the
+  // pipeline/decoders.
+  void ContentDecryptionModuleAttached(
+      blink::WebContentDecryptionModuleResult result,
+      bool success);
 
   // Returns the current video frame from |compositor_|. Blocks until the
   // compositor can return the frame.

@@ -20,6 +20,22 @@ using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::StrictMock;
 
+// Use anonymous namespace here to prevent the actions to be defined multiple
+// times across multiple test files. Sadly we can't use static for them.
+namespace {
+
+ACTION_P3(ExecuteCallbackWithVerifier, decryptor, done_cb, verifier) {
+  // verifier must be called first since |done_cb| call will invoke it as well.
+  verifier->RecordACalled();
+  arg0.Run(decryptor, done_cb);
+}
+
+ACTION_P(ReportCallback, verifier) {
+  verifier->RecordBCalled();
+}
+
+}  // namespace
+
 namespace media {
 
 class VideoDecoderSelectorTest : public ::testing::Test {
@@ -51,6 +67,7 @@ class VideoDecoderSelectorTest : public ::testing::Test {
   MOCK_METHOD1(SetDecryptorReadyCallback, void(const media::DecryptorReadyCB&));
   MOCK_METHOD2(OnDecoderSelected,
                void(VideoDecoder*, DecryptingDemuxerStream*));
+  MOCK_METHOD1(DecryptorSet, void(bool));
 
   void MockOnDecoderSelected(
       scoped_ptr<VideoDecoder> decoder,
@@ -80,7 +97,13 @@ class VideoDecoderSelectorTest : public ::testing::Test {
     if (decryptor_capability == kDecryptOnly ||
         decryptor_capability == kDecryptAndDecode) {
       EXPECT_CALL(*this, SetDecryptorReadyCallback(_))
-          .WillRepeatedly(RunCallback<0>(decryptor_.get()));
+          .WillRepeatedly(ExecuteCallbackWithVerifier(
+              decryptor_.get(),
+              base::Bind(&VideoDecoderSelectorTest::DecryptorSet,
+                         base::Unretained(this)),
+              &verifier_));
+      EXPECT_CALL(*this, DecryptorSet(true))
+          .WillRepeatedly(ReportCallback(&verifier_));
 
       if (decryptor_capability == kDecryptOnly) {
         EXPECT_CALL(*decryptor_, InitializeVideoDecoder(_, _))
@@ -144,6 +167,8 @@ class VideoDecoderSelectorTest : public ::testing::Test {
   scoped_ptr<VideoDecoder> selected_decoder_;
 
   base::MessageLoop message_loop_;
+
+  CallbackPairChecker verifier_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoDecoderSelectorTest);

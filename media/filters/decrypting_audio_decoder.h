@@ -66,8 +66,10 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
     kError
   };
 
-  // Callback for DecryptorHost::RequestDecryptor().
-  void SetDecryptor(Decryptor* decryptor);
+  // Callback for DecryptorHost::RequestDecryptor(). |decryptor_attached_cb| is
+  // called when the decryptor has been completely attached to the pipeline.
+  void SetDecryptor(Decryptor* decryptor,
+                    const DecryptorAttachedCB& decryptor_attached_cb);
 
   // Initializes the audio decoder on the |decryptor_| with |config_|.
   void InitializeDecoder();

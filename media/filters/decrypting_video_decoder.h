@@ -55,8 +55,10 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
     kError
   };
 
-  // Callback for DecryptorHost::RequestDecryptor().
-  void SetDecryptor(Decryptor* decryptor);
+  // Callback for DecryptorHost::RequestDecryptor(). |decryptor_attached_cb| is
+  // called when the decryptor has been completely attached to the pipeline.
+  void SetDecryptor(Decryptor* decryptor,
+                    const DecryptorAttachedCB& decryptor_attached_cb);
 
   // Callback for Decryptor::InitializeVideoDecoder() during initialization.
   void FinishInitialization(bool success);

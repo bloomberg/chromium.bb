@@ -160,7 +160,9 @@ DecryptingDemuxerStream::~DecryptingDemuxerStream() {
   pending_buffer_to_decrypt_ = NULL;
 }
 
-void DecryptingDemuxerStream::SetDecryptor(Decryptor* decryptor) {
+void DecryptingDemuxerStream::SetDecryptor(
+    Decryptor* decryptor,
+    const DecryptorAttachedCB& decryptor_attached_cb) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kDecryptorRequested) << state_;
@@ -172,6 +174,7 @@ void DecryptingDemuxerStream::SetDecryptor(Decryptor* decryptor) {
   if (!decryptor) {
     state_ = kUninitialized;
     base::ResetAndReturn(&init_cb_).Run(DECODER_ERROR_NOT_SUPPORTED);
+    decryptor_attached_cb.Run(false);
     return;
   }
 
@@ -184,6 +187,7 @@ void DecryptingDemuxerStream::SetDecryptor(Decryptor* decryptor) {
 
   state_ = kIdle;
   base::ResetAndReturn(&init_cb_).Run(PIPELINE_OK);
+  decryptor_attached_cb.Run(true);
 }
 
 void DecryptingDemuxerStream::DecryptBuffer(

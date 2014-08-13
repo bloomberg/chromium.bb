@@ -166,7 +166,9 @@ DecryptingAudioDecoder::~DecryptingAudioDecoder() {
     base::ResetAndReturn(&reset_cb_).Run();
 }
 
-void DecryptingAudioDecoder::SetDecryptor(Decryptor* decryptor) {
+void DecryptingAudioDecoder::SetDecryptor(
+    Decryptor* decryptor,
+    const DecryptorAttachedCB& decryptor_attached_cb) {
   DVLOG(2) << "SetDecryptor()";
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kDecryptorRequested) << state_;
@@ -178,12 +180,14 @@ void DecryptingAudioDecoder::SetDecryptor(Decryptor* decryptor) {
   if (!decryptor) {
     base::ResetAndReturn(&init_cb_).Run(DECODER_ERROR_NOT_SUPPORTED);
     state_ = kError;
+    decryptor_attached_cb.Run(false);
     return;
   }
 
   decryptor_ = decryptor;
 
   InitializeDecoder();
+  decryptor_attached_cb.Run(true);
 }
 
 void DecryptingAudioDecoder::InitializeDecoder() {

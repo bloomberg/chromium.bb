@@ -53,9 +53,9 @@ ACTION_P(ReturnBuffer, buffer) {
 // Sets the |decryptor| if the DecryptorReadyCB (arg0) is not null. Sets
 // |is_decryptor_set| to true if a non-NULL |decryptor| has been set through the
 // callback.
-ACTION_P2(SetDecryptorIfNotNull, decryptor, is_decryptor_set) {
+ACTION_P3(SetDecryptorIfNotNull, decryptor, done_cb, is_decryptor_set) {
   if (!arg0.is_null())
-    arg0.Run(decryptor);
+    arg0.Run(decryptor, done_cb);
 
   *is_decryptor_set = !arg0.is_null() && decryptor;
 }
@@ -112,14 +112,23 @@ class DecryptingDemuxerStreamTest : public testing::Test {
     message_loop_.RunUntilIdle();
   }
 
+  void ExpectDecryptorNotification(Decryptor* decryptor, bool expected_result) {
+    EXPECT_CALL(*this, RequestDecryptorNotification(_))
+        .WillOnce(SetDecryptorIfNotNull(
+            decryptor,
+            base::Bind(&DecryptingDemuxerStreamTest::DecryptorSet,
+                       base::Unretained(this)),
+            &is_decryptor_set_));
+    EXPECT_CALL(*this, DecryptorSet(expected_result));
+  }
+
   // The following functions are used to test stream-type-neutral logic in
   // DecryptingDemuxerStream. Therefore, we don't specify audio or video in the
   // function names. But for testing purpose, they all use an audio input
   // demuxer stream.
 
   void Initialize() {
-    EXPECT_CALL(*this, RequestDecryptorNotification(_))
-        .WillOnce(SetDecryptorIfNotNull(decryptor_.get(), &is_decryptor_set_));
+    ExpectDecryptorNotification(decryptor_.get(), true);
     EXPECT_CALL(*decryptor_, RegisterNewKeyCB(Decryptor::kAudio, _))
         .WillOnce(SaveArg<1>(&key_added_cb_));
 
@@ -249,6 +258,8 @@ class DecryptingDemuxerStreamTest : public testing::Test {
   MOCK_METHOD2(BufferReady, void(DemuxerStream::Status,
                                  const scoped_refptr<DecoderBuffer>&));
 
+  MOCK_METHOD1(DecryptorSet, void(bool));
+
   base::MessageLoop message_loop_;
   scoped_ptr<DecryptingDemuxerStream> demuxer_stream_;
   scoped_ptr<StrictMock<MockDecryptor> > decryptor_;
@@ -276,8 +287,7 @@ TEST_F(DecryptingDemuxerStreamTest, Initialize_NormalAudio) {
 }
 
 TEST_F(DecryptingDemuxerStreamTest, Initialize_NormalVideo) {
-  EXPECT_CALL(*this, RequestDecryptorNotification(_))
-      .WillOnce(SetDecryptorIfNotNull(decryptor_.get(), &is_decryptor_set_));
+  ExpectDecryptorNotification(decryptor_.get(), true);
   EXPECT_CALL(*decryptor_, RegisterNewKeyCB(Decryptor::kVideo, _))
       .WillOnce(SaveArg<1>(&key_added_cb_));
 
@@ -303,10 +313,7 @@ TEST_F(DecryptingDemuxerStreamTest, Initialize_NormalVideo) {
 }
 
 TEST_F(DecryptingDemuxerStreamTest, Initialize_NullDecryptor) {
-  EXPECT_CALL(*this, RequestDecryptorNotification(_))
-      .WillRepeatedly(SetDecryptorIfNotNull(static_cast<Decryptor*>(NULL),
-                                            &is_decryptor_set_));
-
+  ExpectDecryptorNotification(NULL, false);
   AudioDecoderConfig input_config(kCodecVorbis, kSampleFormatPlanarF32,
                                   CHANNEL_LAYOUT_STEREO, 44100, NULL, 0, true);
   InitializeAudioAndExpectStatus(input_config, DECODER_ERROR_NOT_SUPPORTED);

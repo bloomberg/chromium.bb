@@ -17,12 +17,29 @@ using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::Assign;
 using ::testing::Invoke;
+using ::testing::InvokeWithoutArgs;
 using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::SaveArg;
 
 static const int kNumConfigs = 3;
 static const int kNumBuffersInOneConfig = 5;
+
+// Use anonymous namespace here to prevent the actions to be defined multiple
+// times across multiple test files. Sadly we can't use static for them.
+namespace {
+
+ACTION_P3(ExecuteCallbackWithVerifier, decryptor, done_cb, verifier) {
+  // verifier must be called first since |done_cb| call will invoke it as well.
+  verifier->RecordACalled();
+  arg0.Run(decryptor, done_cb);
+}
+
+ACTION_P(ReportCallback, verifier) {
+  verifier->RecordBCalled();
+}
+
+}  // namespace
 
 namespace media {
 
@@ -93,6 +110,7 @@ class VideoFrameStreamTest
 
   MOCK_METHOD1(OnNewSpliceBuffer, void(base::TimeDelta));
   MOCK_METHOD1(SetDecryptorReadyCallback, void(const media::DecryptorReadyCB&));
+  MOCK_METHOD1(DecryptorSet, void(bool));
 
   void OnStatistics(const PipelineStatistics& statistics) {
     total_bytes_decoded_ += statistics.video_bytes_decoded;
@@ -197,6 +215,17 @@ class VideoFrameStreamTest
     DECODER_RESET
   };
 
+  void ExpectDecryptorNotification() {
+    EXPECT_CALL(*this, SetDecryptorReadyCallback(_))
+        .WillRepeatedly(ExecuteCallbackWithVerifier(
+            decryptor_.get(),
+            base::Bind(&VideoFrameStreamTest::DecryptorSet,
+                       base::Unretained(this)),
+            &verifier_));
+    EXPECT_CALL(*this, DecryptorSet(true))
+        .WillRepeatedly(ReportCallback(&verifier_));
+  }
+
   void EnterPendingState(PendingState state) {
     DCHECK_NE(state, NOT_PENDING);
     switch (state) {
@@ -219,15 +248,13 @@ class VideoFrameStreamTest
         break;
 
       case DECRYPTOR_NO_KEY:
-        EXPECT_CALL(*this, SetDecryptorReadyCallback(_))
-            .WillRepeatedly(RunCallback<0>(decryptor_.get()));
+        ExpectDecryptorNotification();
         has_no_key_ = true;
         ReadOneFrame();
         break;
 
       case DECODER_INIT:
-        EXPECT_CALL(*this, SetDecryptorReadyCallback(_))
-            .WillRepeatedly(RunCallback<0>(decryptor_.get()));
+        ExpectDecryptorNotification();
         decoder_->HoldNextInit();
         InitializeVideoFrameStream();
         break;
@@ -331,6 +358,8 @@ class VideoFrameStreamTest
 
   // Decryptor has no key to decrypt a frame.
   bool has_no_key_;
+
+  CallbackPairChecker verifier_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoFrameStreamTest);

@@ -14,11 +14,28 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+using ::testing::InvokeWithoutArgs;
 using ::testing::IsNull;
 using ::testing::NiceMock;
 using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::StrictMock;
+
+// Use anonymous namespace here to prevent the actions to be defined multiple
+// times across multiple test files. Sadly we can't use static for them.
+namespace {
+
+ACTION_P3(ExecuteCallbackWithVerifier, decryptor, done_cb, verifier) {
+  // verifier must be called first since |done_cb| call will invoke it as well.
+  verifier->RecordACalled();
+  arg0.Run(decryptor, done_cb);
+}
+
+ACTION_P(ReportCallback, verifier) {
+  verifier->RecordBCalled();
+}
+
+}  // namespace
 
 namespace media {
 
@@ -51,6 +68,7 @@ class AudioDecoderSelectorTest : public ::testing::Test {
   MOCK_METHOD1(SetDecryptorReadyCallback, void(const media::DecryptorReadyCB&));
   MOCK_METHOD2(OnDecoderSelected,
                void(AudioDecoder*, DecryptingDemuxerStream*));
+  MOCK_METHOD1(DecryptorSet, void(bool));
 
   void MockOnDecoderSelected(scoped_ptr<AudioDecoder> decoder,
                              scoped_ptr<DecryptingDemuxerStream> stream) {
@@ -83,9 +101,14 @@ class AudioDecoderSelectorTest : public ::testing::Test {
 
     if (decryptor_capability == kDecryptOnly ||
         decryptor_capability == kDecryptAndDecode) {
-
       EXPECT_CALL(*this, SetDecryptorReadyCallback(_))
-          .WillRepeatedly(RunCallback<0>(decryptor_.get()));
+          .WillRepeatedly(ExecuteCallbackWithVerifier(
+              decryptor_.get(),
+              base::Bind(&AudioDecoderSelectorTest::DecryptorSet,
+                         base::Unretained(this)),
+              &verifier_));
+      EXPECT_CALL(*this, DecryptorSet(true))
+          .WillRepeatedly(ReportCallback(&verifier_));
 
       if (decryptor_capability == kDecryptOnly) {
         EXPECT_CALL(*decryptor_, InitializeAudioDecoder(_, _))
@@ -148,6 +171,8 @@ class AudioDecoderSelectorTest : public ::testing::Test {
   scoped_ptr<AudioDecoder> selected_decoder_;
 
   base::MessageLoop message_loop_;
+
+  CallbackPairChecker verifier_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioDecoderSelectorTest);

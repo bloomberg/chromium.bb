@@ -146,7 +146,9 @@ DecryptingVideoDecoder::~DecryptingVideoDecoder() {
     base::ResetAndReturn(&reset_cb_).Run();
 }
 
-void DecryptingVideoDecoder::SetDecryptor(Decryptor* decryptor) {
+void DecryptingVideoDecoder::SetDecryptor(
+    Decryptor* decryptor,
+    const DecryptorAttachedCB& decryptor_attached_cb) {
   DVLOG(2) << "SetDecryptor()";
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kDecryptorRequested) << state_;
@@ -157,6 +159,7 @@ void DecryptingVideoDecoder::SetDecryptor(Decryptor* decryptor) {
   if (!decryptor) {
     base::ResetAndReturn(&init_cb_).Run(DECODER_ERROR_NOT_SUPPORTED);
     state_ = kError;
+    decryptor_attached_cb.Run(false);
     return;
   }
 
@@ -167,6 +170,7 @@ void DecryptingVideoDecoder::SetDecryptor(Decryptor* decryptor) {
       config_,
       BindToCurrentLoop(base::Bind(
           &DecryptingVideoDecoder::FinishInitialization, weak_this_)));
+  decryptor_attached_cb.Run(true);
 }
 
 void DecryptingVideoDecoder::FinishInitialization(bool success) {

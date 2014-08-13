@@ -125,6 +125,19 @@ scoped_refptr<DecoderBuffer> CreateFakeVideoBufferForTest(
 bool VerifyFakeVideoBufferForTest(const scoped_refptr<DecoderBuffer>& buffer,
                                   const VideoDecoderConfig& config);
 
+// Used to verify that the each call to A() is followed by a call to B(),
+// before the next call to A(). There may be any number of pairs (including 0).
+class CallbackPairChecker {
+ public:
+  CallbackPairChecker();
+  ~CallbackPairChecker();
+  void RecordACalled();
+  void RecordBCalled();
+
+ private:
+  bool expecting_b_;
+};
+
 }  // namespace media
 
 #endif  // MEDIA_BASE_TEST_HELPERS_H_

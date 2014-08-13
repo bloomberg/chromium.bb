@@ -161,8 +161,14 @@ class MEDIA_EXPORT Decryptor {
   DISALLOW_COPY_AND_ASSIGN(Decryptor);
 };
 
-// Callback to notify that a decryptor is ready.
-typedef base::Callback<void(Decryptor*)> DecryptorReadyCB;
+// Callback to notify that the decryptor has been completely attached into the
+// pipeline. Parameter indicates whether the operation succeeded.
+typedef base::Callback<void(bool)> DecryptorAttachedCB;
+
+// Callback to notify that a decryptor is ready. DecryptorAttachedCB is called
+// when the decryptor has been completely inserted into the pipeline.
+typedef base::Callback<void(Decryptor*, const DecryptorAttachedCB&)>
+    DecryptorReadyCB;
 
 // Callback to set/cancel a DecryptorReadyCB.
 // Calling this callback with a non-null callback registers decryptor ready

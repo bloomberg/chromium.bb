@@ -54,11 +54,6 @@ ACTION_P(ReturnBuffer, buffer) {
   return buffer;
 }
 
-ACTION_P(RunCallbackIfNotNull, param) {
-  if (!arg0.is_null())
-    arg0.Run(param);
-}
-
 }  // namespace
 
 class DecryptingAudioDecoderTest : public testing::Test {
@@ -103,12 +98,19 @@ class DecryptingAudioDecoderTest : public testing::Test {
     message_loop_.RunUntilIdle();
   }
 
+  void ExpectDecryptorNotification(Decryptor* decryptor, bool expected_result) {
+    EXPECT_CALL(*this, RequestDecryptorNotification(_)).WillOnce(
+        RunCallback<0>(decryptor,
+                       base::Bind(&DecryptingAudioDecoderTest::DecryptorSet,
+                                  base::Unretained(this))));
+    EXPECT_CALL(*this, DecryptorSet(expected_result));
+  }
+
   void Initialize() {
     EXPECT_CALL(*decryptor_, InitializeAudioDecoder(_, _))
         .Times(AtMost(1))
         .WillOnce(RunCallback<1>(true));
-    EXPECT_CALL(*this, RequestDecryptorNotification(_))
-        .WillOnce(RunCallbackIfNotNull(decryptor_.get()));
+    ExpectDecryptorNotification(decryptor_.get(), true);
     EXPECT_CALL(*decryptor_, RegisterNewKeyCB(Decryptor::kAudio, _))
         .WillOnce(SaveArg<1>(&key_added_cb_));
 
@@ -248,6 +250,8 @@ class DecryptingAudioDecoderTest : public testing::Test {
   MOCK_METHOD1(FrameReady, void(const scoped_refptr<AudioBuffer>&));
   MOCK_METHOD1(DecodeDone, void(AudioDecoder::Status));
 
+  MOCK_METHOD1(DecryptorSet, void(bool));
+
   base::MessageLoop message_loop_;
   scoped_ptr<DecryptingAudioDecoder> decoder_;
   scoped_ptr<StrictMock<MockDecryptor> > decryptor_;
@@ -294,8 +298,7 @@ TEST_F(DecryptingAudioDecoderTest, Initialize_InvalidAudioConfig) {
 TEST_F(DecryptingAudioDecoderTest, Initialize_UnsupportedAudioConfig) {
   EXPECT_CALL(*decryptor_, InitializeAudioDecoder(_, _))
       .WillOnce(RunCallback<1>(false));
-  EXPECT_CALL(*this, RequestDecryptorNotification(_))
-      .WillOnce(RunCallbackIfNotNull(decryptor_.get()));
+  ExpectDecryptorNotification(decryptor_.get(), true);
 
   AudioDecoderConfig config(kCodecVorbis, kSampleFormatPlanarF32,
                             CHANNEL_LAYOUT_STEREO, kSampleRate, NULL, 0, true);
@@ -303,9 +306,7 @@ TEST_F(DecryptingAudioDecoderTest, Initialize_UnsupportedAudioConfig) {
 }
 
 TEST_F(DecryptingAudioDecoderTest, Initialize_NullDecryptor) {
-  EXPECT_CALL(*this, RequestDecryptorNotification(_))
-      .WillRepeatedly(RunCallbackIfNotNull(static_cast<Decryptor*>(NULL)));
-
+  ExpectDecryptorNotification(NULL, false);
   AudioDecoderConfig config(kCodecVorbis, kSampleFormatPlanarF32,
                             CHANNEL_LAYOUT_STEREO, kSampleRate, NULL, 0, true);
   InitializeAndExpectStatus(config, DECODER_ERROR_NOT_SUPPORTED);

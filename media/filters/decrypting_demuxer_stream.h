@@ -67,8 +67,10 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
     kWaitingForKey
   };
 
-  // Callback for DecryptorHost::RequestDecryptor().
-  void SetDecryptor(Decryptor* decryptor);
+  // Callback for DecryptorHost::RequestDecryptor(). |decryptor_attached_cb| is
+  // called when the decryptor has been completely attached to the pipeline.
+  void SetDecryptor(Decryptor* decryptor,
+                    const DecryptorAttachedCB& decryptor_attached_cb);
 
   // Callback for DemuxerStream::Read().
   void DecryptBuffer(DemuxerStream::Status status,
