@@ -2035,9 +2035,8 @@ binutils-gold-sb-configure() {
   # The Gold sandboxed build uses the normally-disallowed external
   # function __nacl_get_arch().  Allow that for now.
   #
-  # TODO(jfb) Gold currently only builds with libstdc++.
   local flags="-static -I$(GetAbsolutePath ${NACL_ROOT}/..) \
-    -fno-exceptions -O3 --pnacl-disable-abi-check -stdlib=${LIB_STDCPP_NAME} "
+    -fno-exceptions -O3 --pnacl-disable-abi-check "
   local configure_env=(
     AR="${PNACL_AR}" \
     AS="${PNACL_AS}" \
