@@ -169,7 +169,12 @@
                   'chrome/browser/ui/views/bubble/',
     },
     'cast': {
-      'filepath': 'media/cast/',
+      'filepath': 'media/cast/'\
+                  '|chrome/browser/extensions/api/cast_streaming/'\
+                  '|chrome/browser/media/cast'\
+                  '|chrome/renderer/media/cast'\
+                  '|chrome/test/data/extensions/api_test/cast_'\
+                  '|content/public/renderer/media_stream_',
     },
     'chromecast': {
       'filepath': 'chromecast/',
@@ -596,26 +601,30 @@
       'filepath': 'sync/protocol/',
     },
     'tab_capture': {
-      'filepath': 'chrome/browser/extensions/api/tab_capture/'\
-        '|chrome/browser/media/media_stream'\
-        '|content/browser/renderer_host/(backing_store|compositing_iosurface|'\
-            'render_widget_host_view)'\
-        '|content/browser/renderer_host/media/(audio_|'\
-            'media_stream_manager\.cc|video_|web_contents_)'\
-        '|content/browser/web_contents/web_contents_impl'\
-        '|content/renderer/media/audio_(device_factory|message_filter|'\
-            'renderer_mixer_manager)'\
-        '|content/renderer/p2p/ipc_socket_factory'\
-        '|content/renderer/pepper/pepper_platform_audio_output'\
-        '|media/audio/(audio_output|fake_audio_consumer|virtual_audio)'\
-        '|media/base/video_util'\
-        '|media/video/capture/video_capture'\
-        '|ui/surface/accelerated_surface.*_win',
+      'filepath': 'cc/output/copy_output_request'\
+        '|chrome/browser/extensions/api/tab_capture/'\
+        '|chrome/test/data/extensions/api_test/tab_capture/'\
+        '|content/browser/compositor/delegated_frame_host'\
+        '|content/browser/media/capture/'\
+        '|content/browser/renderer_host/compositing_iosurface'\
+        '|content/browser/renderer_host/media/(audio_'\
+            '|media_stream_manager|video_)'\
+        '|media/audio/(audio_output_controller|fake_audio_|virtual_audio_)'\
+        '|media/base/video_frame\.h'\
+        '|media/video/capture/video_capture_',
     },
     'tab_contents': {
       'filepath': 'chrome/browser/tab_contents/|'\
         'content/browser/tab_contents/|'\
         'chrome/browser/ui/tab_contents/',
+    },
+    'tab_media_indicators': {
+      'filepath': 'chrome/browser/media/audio_stream_monitor'\
+        '|chrome/browser/ui/cocoa/tabs/tab_controller\.mm'\
+        '|chrome/browser/ui/tabs/tab_utils'\
+        '|chrome/browser/ui/views/tabs/tab\.cc'\
+        '|chrome/browser/ui/views/tabs/tab_renderer_data'\
+        '|media/audio/audio_(output_controller|power_monitor)',
     },
     'task_manager': {
       'filepath': 'task_manager'
@@ -950,6 +959,7 @@
     'tab_capture': ['miu+watch@chromium.org'],
     'tab_contents': ['avi@chromium.org',
                      'creis+watch@chromium.org', 'ajwong+watch@chromium.org'],
+    'tab_media_indicators': ['miu+watch@chromium.org'],
     'tcmalloc': ['dmikurube+memory@chromium.org'],
     'telemetry': ['telemetry+watch@chromium.org'],
     'tests': [],
