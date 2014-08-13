@@ -509,6 +509,7 @@ TEST_F(TouchSelectionControllerTest, SelectionDragged) {
   gfx::PointF start_offset = start_rect.CenterPoint();
   event = MockMotionEvent(MockMotionEvent::ACTION_MOVE, event_time, 0, 5);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_EQ(SELECTION_DRAG_STARTED, GetLastEventType());
   EXPECT_TRUE(GetAndResetSelectionMoved());
   EXPECT_EQ(fixed_offset, GetLastSelectionStart());
   EXPECT_EQ(start_offset + gfx::Vector2dF(0, 5), GetLastSelectionEnd());
@@ -527,6 +528,7 @@ TEST_F(TouchSelectionControllerTest, SelectionDragged) {
 
   event = MockMotionEvent(MockMotionEvent::ACTION_UP, event_time, 10, 5);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_EQ(SELECTION_DRAG_STOPPED, GetLastEventType());
   EXPECT_FALSE(GetAndResetSelectionMoved());
 
   // Once the drag is complete, no more touch events should be consumed until
@@ -554,6 +556,7 @@ TEST_F(TouchSelectionControllerTest, SelectionDraggedWithOverlap) {
       MockMotionEvent::ACTION_DOWN, event_time, touch_down_x, 0);
   SetDraggingEnabled(true);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_EQ(SELECTION_DRAG_STARTED, GetLastEventType());
   EXPECT_FALSE(GetAndResetSelectionMoved());
 
   // Even though the ACTION_MOVE is over the start handle, it should continue
@@ -567,6 +570,7 @@ TEST_F(TouchSelectionControllerTest, SelectionDraggedWithOverlap) {
 
   event = MockMotionEvent(MockMotionEvent::ACTION_UP, event_time, 0, 0);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_EQ(SELECTION_DRAG_STOPPED, GetLastEventType());
   EXPECT_FALSE(GetAndResetSelectionMoved());
 }
 

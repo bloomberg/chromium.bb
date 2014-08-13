@@ -123,9 +123,18 @@ public class ContentViewClient {
 
     /**
      * Notification that the selection has changed.
+     * TODO(donnd): Remove this and instead expose a ContextualSearchClient, crbug.com/403001.
      * @param selection The newly established selection.
      */
     public void onSelectionChanged(String selection) {
+    }
+
+    /**
+     * Notification that a selection or insertion-related event has occurred.
+     * TODO(donnd): Remove this and instead expose a ContextualSearchClient, crbug.com/403001.
+     * @param eventType The selection event type, see {@link SelectionEventType}.
+     */
+    public void onSelectionEvent(int eventType) {
     }
 
     /**

@@ -2154,14 +2154,14 @@ public class ContentViewCore
                 hideSelectActionBar();
                 break;
 
-            case SelectionEventType.INSERTION_SHOWN:
-                mHasInsertion = true;
+            case SelectionEventType.SELECTION_DRAG_STARTED:
                 break;
 
-            case SelectionEventType.INSERTION_DRAG_STARTED:
-                mWasPastePopupShowingOnInsertionDragStart =
-                        mPastePopupMenu != null && mPastePopupMenu.isShowing();
-                hidePastePopup();
+            case SelectionEventType.SELECTION_DRAG_STOPPED:
+                break;
+
+            case SelectionEventType.INSERTION_SHOWN:
+                mHasInsertion = true;
                 break;
 
             case SelectionEventType.INSERTION_MOVED:
@@ -2185,9 +2185,16 @@ public class ContentViewCore
                 hidePastePopup();
                 break;
 
+            case SelectionEventType.INSERTION_DRAG_STARTED:
+                mWasPastePopupShowingOnInsertionDragStart =
+                        mPastePopupMenu != null && mPastePopupMenu.isShowing();
+                hidePastePopup();
+                break;
+
             default:
                 assert false : "Invalid selection event type.";
         }
+        getContentViewClient().onSelectionEvent(eventType);
     }
 
     public boolean getUseDesktopUserAgent() {

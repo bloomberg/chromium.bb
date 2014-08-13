@@ -184,7 +184,7 @@ bool TouchSelectionController::Animate(base::TimeTicks frame_time) {
 
 void TouchSelectionController::OnHandleDragBegin(const TouchHandle& handle) {
   if (&handle == insertion_handle_.get()) {
-    client_->OnSelectionEvent(INSERTION_DRAG_STARTED, GetStartPosition());
+    client_->OnSelectionEvent(INSERTION_DRAG_STARTED, handle.position());
     return;
   }
 
@@ -195,6 +195,7 @@ void TouchSelectionController::OnHandleDragBegin(const TouchHandle& handle) {
     fixed_handle_position_ = start_selection_handle_->position() -
                              gfx::Vector2dF(0, GetStartLineHeight() / 2.f);
   }
+  client_->OnSelectionEvent(SELECTION_DRAG_STARTED, handle.position());
 }
 
 void TouchSelectionController::OnHandleDragUpdate(const TouchHandle& handle,
@@ -213,11 +214,13 @@ void TouchSelectionController::OnHandleDragUpdate(const TouchHandle& handle,
 }
 
 void TouchSelectionController::OnHandleDragEnd(const TouchHandle& handle) {
+  if (&handle != insertion_handle_.get())
+    client_->OnSelectionEvent(SELECTION_DRAG_STOPPED, handle.position());
 }
 
 void TouchSelectionController::OnHandleTapped(const TouchHandle& handle) {
   if (insertion_handle_ && &handle == insertion_handle_.get())
-    client_->OnSelectionEvent(INSERTION_TAPPED, GetStartPosition());
+    client_->OnSelectionEvent(INSERTION_TAPPED, handle.position());
 }
 
 void TouchSelectionController::SetNeedsAnimate() {
