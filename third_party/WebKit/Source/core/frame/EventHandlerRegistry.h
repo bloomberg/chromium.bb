@@ -28,6 +28,7 @@ public:
     enum EventHandlerClass {
         ScrollEvent,
         WheelEvent,
+        TouchEvent,
 #if ENABLE(ASSERT)
         // Additional event categories for verifying handler tracking logic.
         EventsForTesting,
@@ -47,13 +48,15 @@ public:
     void didRemoveEventHandler(EventTarget&, const AtomicString& eventType);
     void didRemoveEventHandler(EventTarget&, EventHandlerClass);
     void didRemoveAllEventHandlers(EventTarget&);
+
     void didMoveIntoFrameHost(EventTarget&);
     void didMoveOutOfFrameHost(EventTarget&);
+    static void didMoveBetweenFrameHosts(EventTarget&, FrameHost* oldFrameHost, FrameHost* newFrameHost);
 
-    // Either |documentDetached| or |didMoveOutOfFrameHost| must be called
-    // whenever the FrameHost that is associated with a registered event target
-    // changes. This ensures the registry does not end up with stale references
-    // to handlers that are no longer related to it.
+    // Either |documentDetached| or |didMove{Into,OutOf,Between}FrameHosts| must
+    // be called whenever the FrameHost that is associated with a registered event
+    // target changes. This ensures the registry does not end up with stale
+    // references to handlers that are no longer related to it.
     void documentDetached(Document&);
 
     void trace(Visitor*);
@@ -78,6 +81,11 @@ private:
     // a given event class. |hasActiveHandlers| can be used to distinguish
     // between the two cases.
     void notifyHasHandlersChanged(EventHandlerClass, bool hasActiveHandlers);
+
+    // Called to notify clients whenever a single event handler target is
+    // registered or unregistered. If several handlers are registered for the
+    // same target, only the first registration will trigger this notification.
+    void notifyDidAddOrRemoveEventHandlerTarget(EventHandlerClass);
 
     // Record a change operation to a given event handler class and notify any
     // parent registry and other clients accordingly.

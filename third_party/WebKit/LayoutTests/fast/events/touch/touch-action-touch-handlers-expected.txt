@@ -28,6 +28,6 @@ PASS getTouchHandlerCount(document) is 2
 transitioning to auto should decrease handler count
 PASS getTouchHandlerCount(document) is 1
 touch-action on div inside frame should add a handler
-PASS getTouchHandlerCount(nestedDocument) is 1
+PASS getTouchHandlerCount(nestedDocument) is 2
 PASS getTouchHandlerCount(document) is 2
 

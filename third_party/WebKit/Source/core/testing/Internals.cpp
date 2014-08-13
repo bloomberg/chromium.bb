@@ -1211,14 +1211,7 @@ unsigned Internals::scrollEventHandlerCount(Document* document)
 unsigned Internals::touchEventHandlerCount(Document* document)
 {
     ASSERT(document);
-    const TouchEventTargetSet* touchHandlers = document->touchEventTargets();
-    if (!touchHandlers)
-        return 0;
-
-    unsigned count = 0;
-    for (TouchEventTargetSet::const_iterator iter = touchHandlers->begin(); iter != touchHandlers->end(); ++iter)
-        count += iter->value;
-    return count;
+    return eventHandlerCount(*document, EventHandlerRegistry::TouchEvent);
 }
 
 static RenderLayer* findRenderLayerForGraphicsLayer(RenderLayer* searchRoot, GraphicsLayer* graphicsLayer, IntSize* layerOffset, String* layerType)

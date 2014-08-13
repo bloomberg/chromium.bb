@@ -98,7 +98,7 @@ function runTests() {
     nestedDocument.open('text/html', 'replace');
     nestedDocument.write("<!DOCTYPE html>\n<div style='touch-action: none'></div>");
     window.internals.forceCompositingUpdate(document);
-    shouldBe("getTouchHandlerCount(nestedDocument)", "1");
+    shouldBe("getTouchHandlerCount(nestedDocument)", "2");
     shouldBe("getTouchHandlerCount(document)", "2");
 }
 </script>

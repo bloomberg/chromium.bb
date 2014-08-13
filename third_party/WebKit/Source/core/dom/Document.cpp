@@ -2209,8 +2209,6 @@ void Document::detach(const AttachContext& context)
 
     m_styleEngine->didDetach();
 
-    if (Document* parentDoc = parentDocument())
-        parentDoc->didClearTouchEventHandlers(this);
     frameHost()->eventHandlerRegistry().documentDetached(*this);
 
     // This is required, as our LocalFrame might delete itself as soon as it detaches
@@ -2226,12 +2224,6 @@ void Document::detach(const AttachContext& context)
     lifecycleNotifier().notifyDocumentWasDetached();
     m_lifecycle.advanceTo(DocumentLifecycle::Stopped);
 #if ENABLE(OILPAN)
-    // This mirrors the clearing of the document object's touch
-    // handlers that happens when the LocalDOMWindow is destructed in a
-    // non-Oilpan setting (LocalDOMWindow::removeAllEventListeners()),
-    // except that it is now done during detach instead.
-    didClearTouchEventHandlers(this);
-
     // Done with the window, explicitly clear to hasten its
     // destruction.
     clearDOMWindow();
@@ -5248,80 +5240,6 @@ PassRefPtrWillBeRawPtr<TouchList> Document::createTouchList(WillBeHeapVector<Ref
     return TouchList::create(touches);
 }
 
-void Document::didAddTouchEventHandler(Node* handler)
-{
-    // The node should either be in this document, or be the Document node of a child
-    // of this document.
-    ASSERT(&handler->document() == this
-        || (handler->isDocumentNode() && toDocument(handler)->parentDocument() == this));
-    if (!m_touchEventTargets.get())
-        m_touchEventTargets = adoptPtr(new TouchEventTargetSet);
-    bool isFirstHandler = m_touchEventTargets->isEmpty();
-
-    if (!m_touchEventTargets->add(handler).isNewEntry) {
-        // Just incremented refcount, no real change.
-        // If this is a child document node, then the count should never go above 1.
-        ASSERT(!handler->isDocumentNode() || &handler->document() == this);
-        return;
-    }
-
-    if (isFirstHandler) {
-        if (Document* parent = parentDocument()) {
-            parent->didAddTouchEventHandler(this);
-        } else {
-            // This is the first touch handler on the whole page.
-            if (FrameHost* frameHost = this->frameHost())
-                frameHost->chrome().client().needTouchEvents(true);
-        }
-    }
-
-    // When we're all done with all frames, ensure touch hit rects are marked as dirty.
-    if (!handler->isDocumentNode() || handler == this) {
-        if (Page* page = this->page()) {
-            if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
-                scrollingCoordinator->touchEventTargetRectsDidChange();
-        }
-    }
-}
-
-void Document::didRemoveTouchEventHandler(Node* handler, bool clearAll)
-{
-    // Note that we can't assert that |handler| is in this document because it might be in
-    // the process of moving out of it.
-    ASSERT(clearAll || m_touchEventTargets->contains(handler));
-    if (!m_touchEventTargets.get())
-        return;
-
-    if (clearAll) {
-        if (!m_touchEventTargets->contains(handler))
-            return;
-        m_touchEventTargets->removeAll(handler);
-    } else {
-        if (!m_touchEventTargets->remove(handler))
-            // Just decremented refcount, no real update.
-            return;
-    }
-
-    if (m_touchEventTargets->isEmpty()) {
-        if (Document* parent = parentDocument()) {
-            // This was the last handler in this document, update the parent document too.
-            parent->didRemoveTouchEventHandler(this, clearAll);
-        } else {
-            // We just removed the last touch handler on the whole page.
-            if (FrameHost* frameHost = this->frameHost())
-                frameHost->chrome().client().needTouchEvents(false);
-        }
-    }
-
-    // When we're all done with all frames, ensure touch hit rects are marked as dirty.
-    if (!handler->isDocumentNode() || handler == this) {
-        if (Page* page = this->page()) {
-            if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
-                scrollingCoordinator->touchEventTargetRectsDidChange();
-        }
-    }
-}
-
 DocumentLoader* Document::loader() const
 {
     if (!m_frame)
@@ -5806,17 +5724,6 @@ void Document::clearWeakMembers(Visitor* visitor)
 {
     if (m_axObjectCache)
         m_axObjectCache->clearWeakMembers(visitor);
-
-    // FIXME: Oilpan: Use a weak counted set instead.
-    if (m_touchEventTargets) {
-        Vector<Node*> deadNodes;
-        for (TouchEventTargetSet::iterator it = m_touchEventTargets->begin(); it != m_touchEventTargets->end(); ++it) {
-            if (!visitor->isAlive(it->key))
-                deadNodes.append(it->key);
-        }
-        for (unsigned i = 0; i < deadNodes.size(); ++i)
-            didClearTouchEventHandlers(deadNodes[i]);
-    }
 }
 
 void Document::trace(Visitor* visitor)

@@ -38,6 +38,7 @@
 #include "core/editing/htmlediting.h"
 #include "core/fetch/ResourceLoadPriorityOptimizer.h"
 #include "core/fetch/ResourceLoader.h"
+#include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLAnchorElement.h"
@@ -2184,10 +2185,11 @@ void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle& newS
     // handler will have already been added for its parent so ignore it.
     TouchAction oldTouchAction = m_style ? m_style->touchAction() : TouchActionAuto;
     if (node() && !node()->isTextNode() && (oldTouchAction == TouchActionAuto) != (newStyle.touchAction() == TouchActionAuto)) {
+        EventHandlerRegistry& registry = document().frameHost()->eventHandlerRegistry();
         if (newStyle.touchAction() != TouchActionAuto)
-            document().didAddTouchEventHandler(node());
+            registry.didAddEventHandler(*node(), EventHandlerRegistry::TouchEvent);
         else
-            document().didRemoveTouchEventHandler(node());
+            registry.didRemoveEventHandler(*node(), EventHandlerRegistry::TouchEvent);
     }
 }
 
@@ -2705,7 +2707,7 @@ void RenderObject::willBeDestroyed()
     // previously. Handlers are not added for text nodes so don't try removing
     // for one too. Need to check if m_style is null in cases of partial construction.
     if (!documentBeingDestroyed() && node() && !node()->isTextNode() && m_style && m_style->touchAction() != TouchActionAuto)
-        document().didRemoveTouchEventHandler(node());
+        document().frameHost()->eventHandlerRegistry().didRemoveEventHandler(*node(), EventHandlerRegistry::TouchEvent);
 
     setAncestorLineBoxDirty(false);
 

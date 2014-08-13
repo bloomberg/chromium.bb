@@ -176,8 +176,6 @@ enum NodeListInvalidationType {
 };
 const int numNodeListInvalidationTypes = InvalidateOnAnyAttrChange + 1;
 
-typedef HashCountedSet<Node*> TouchEventTargetSet;
-
 enum DocumentClass {
     DefaultDocumentClass = 0,
     HTMLDocumentClass = 1,
@@ -940,21 +938,6 @@ public:
 
     void initDNSPrefetch();
 
-    bool hasTouchEventHandlers() const { return (m_touchEventTargets.get()) ? m_touchEventTargets->size() : false; }
-
-    // Called when a single touch event handler has been added or removed for a node.
-    // The Node should always be in this Document, except for child Documents which report
-    // themselves to their parent exactly once if they have any touch handlers.
-    // Handlers added/removed from the LocalDOMWindow are reported as the Document.
-    void didAddTouchEventHandler(Node*);
-    void didRemoveTouchEventHandler(Node* handler) { didRemoveTouchEventHandler(handler, false); }
-
-    // Called whenever all touch event handlers have been removed for a node (such as when the
-    // node itself is being removed from the document).
-    void didClearTouchEventHandlers(Node* handler) { didRemoveTouchEventHandler(handler, true); }
-
-    const TouchEventTargetSet* touchEventTargets() const { return m_touchEventTargets.get(); }
-
     bool isInDocumentWrite() { return m_writeRecursionDepth > 0; }
 
     IntSize initialViewportSize() const;
@@ -1149,8 +1132,6 @@ private:
     void processHttpEquivXFrameOptions(const AtomicString& content);
     void processHttpEquivContentSecurityPolicy(const AtomicString& equiv, const AtomicString& content);
 
-    void didRemoveTouchEventHandler(Node*, bool clearAll);
-
     bool haveStylesheetsLoaded() const;
 
     void setHoverNode(PassRefPtrWillBeRawPtr<Node>);
@@ -1342,8 +1323,6 @@ private:
     RefPtrWillBeMember<MediaQueryMatcher> m_mediaQueryMatcher;
     bool m_writeRecursionIsTooDeep;
     unsigned m_writeRecursionDepth;
-
-    OwnPtr<TouchEventTargetSet> m_touchEventTargets;
 
     RefPtrWillBeMember<ScriptedAnimationController> m_scriptedAnimationController;
     OwnPtr<MainThreadTaskRunner> m_taskRunner;

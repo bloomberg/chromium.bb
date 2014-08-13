@@ -1704,15 +1704,17 @@ private:
     int m_hasTouchEventHandlerCount[2];
 };
 
-// This test verifies that WebWidgetClient::hasTouchEventHandlers is called accordingly for various
-// calls to Document::did{Add|Remove|Clear}TouchEventHandler. Verifying that those calls are made
-// correctly is the job of LayoutTests/fast/events/touch/touch-handler-count.html.
+// This test verifies that WebWidgetClient::hasTouchEventHandlers is called
+// accordingly for various calls to EventHandlerRegistry::did{Add|Remove|
+// RemoveAll}EventHandler(..., TouchEvent). Verifying that those calls are made
+// correctly is the job of LayoutTests/fast/events/event-handler-count.html.
 TEST_F(WebViewTest, HasTouchEventHandlers)
 {
     TouchEventHandlerWebViewClient client;
     std::string url = m_baseURL + "has_touch_event_handlers.html";
     URLTestHelpers::registerMockedURLLoad(toKURL(url), "has_touch_event_handlers.html");
     WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(url, true, 0, &client);
+    const blink::EventHandlerRegistry::EventHandlerClass touchEvent = blink::EventHandlerRegistry::TouchEvent;
 
     // The page is initialized with at least one no-handlers call.
     // In practice we get two such calls because WebViewHelper::initializeAndLoad first
@@ -1723,55 +1725,56 @@ TEST_F(WebViewTest, HasTouchEventHandlers)
 
     // Adding the first document handler results in a has-handlers call.
     blink::Document* document = webViewImpl->mainFrameImpl()->frame()->document();
-    document->didAddTouchEventHandler(document);
+    blink::EventHandlerRegistry* registry = &document->frameHost()->eventHandlerRegistry();
+    registry->didAddEventHandler(*document, touchEvent);
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(false));
     EXPECT_EQ(1, client.getAndResetHasTouchEventHandlerCallCount(true));
 
     // Adding another handler has no effect.
-    document->didAddTouchEventHandler(document);
+    registry->didAddEventHandler(*document, touchEvent);
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(false));
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(true));
 
     // Removing the duplicate handler has no effect.
-    document->didRemoveTouchEventHandler(document);
+    registry->didRemoveEventHandler(*document, touchEvent);
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(false));
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(true));
 
     // Removing the final handler results in a no-handlers call.
-    document->didRemoveTouchEventHandler(document);
+    registry->didRemoveEventHandler(*document, touchEvent);
     EXPECT_EQ(1, client.getAndResetHasTouchEventHandlerCallCount(false));
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(true));
 
     // Adding a handler on a div results in a has-handlers call.
     blink::Element* parentDiv = document->getElementById("parentdiv");
     ASSERT(parentDiv);
-    document->didAddTouchEventHandler(parentDiv);
+    registry->didAddEventHandler(*parentDiv, touchEvent);
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(false));
     EXPECT_EQ(1, client.getAndResetHasTouchEventHandlerCallCount(true));
 
     // Adding a duplicate handler on the div, clearing all document handlers
     // (of which there are none) and removing the extra handler on the div
     // all have no effect.
-    document->didAddTouchEventHandler(parentDiv);
-    document->didClearTouchEventHandlers(document);
-    document->didRemoveTouchEventHandler(parentDiv);
+    registry->didAddEventHandler(*parentDiv, touchEvent);
+    registry->didRemoveAllEventHandlers(*document);
+    registry->didRemoveEventHandler(*parentDiv, touchEvent);
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(false));
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(true));
 
     // Removing the final handler on the div results in a no-handlers call.
-    document->didRemoveTouchEventHandler(parentDiv);
+    registry->didRemoveEventHandler(*parentDiv, touchEvent);
     EXPECT_EQ(1, client.getAndResetHasTouchEventHandlerCallCount(false));
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(true));
 
     // Adding two handlers then clearing them in a single call results in a
     // has-handlers then no-handlers call.
-    document->didAddTouchEventHandler(parentDiv);
+    registry->didAddEventHandler(*parentDiv, touchEvent);
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(false));
     EXPECT_EQ(1, client.getAndResetHasTouchEventHandlerCallCount(true));
-    document->didAddTouchEventHandler(parentDiv);
+    registry->didAddEventHandler(*parentDiv, touchEvent);
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(false));
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(true));
-    document->didClearTouchEventHandlers(parentDiv);
+    registry->didRemoveAllEventHandlers(*parentDiv);
     EXPECT_EQ(1, client.getAndResetHasTouchEventHandlerCallCount(false));
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(true));
 
@@ -1781,42 +1784,42 @@ TEST_F(WebViewTest, HasTouchEventHandlers)
     blink::Document* childDocument = toHTMLIFrameElement(childFrame)->contentDocument();
     blink::Element* childDiv = childDocument->getElementById("childdiv");
     ASSERT(childDiv);
-    childDocument->didAddTouchEventHandler(childDiv);
+    registry->didAddEventHandler(*childDiv, touchEvent);
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(false));
     EXPECT_EQ(1, client.getAndResetHasTouchEventHandlerCallCount(true));
 
     // Adding and clearing handlers in the parent doc or elsewhere in the child doc
     // has no impact.
-    document->didAddTouchEventHandler(document);
-    document->didAddTouchEventHandler(childFrame);
-    childDocument->didAddTouchEventHandler(childDocument);
-    document->didClearTouchEventHandlers(document);
-    document->didClearTouchEventHandlers(childFrame);
-    childDocument->didClearTouchEventHandlers(childDocument);
+    registry->didAddEventHandler(*document, touchEvent);
+    registry->didAddEventHandler(*childFrame, touchEvent);
+    registry->didAddEventHandler(*childDocument, touchEvent);
+    registry->didRemoveAllEventHandlers(*document);
+    registry->didRemoveAllEventHandlers(*childFrame);
+    registry->didRemoveAllEventHandlers(*childDocument);
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(false));
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(true));
 
     // Removing the final handler inside the child frame results in a no-handlers call.
-    childDocument->didRemoveTouchEventHandler(childDiv);
+    registry->didRemoveAllEventHandlers(*childDiv);
     EXPECT_EQ(1, client.getAndResetHasTouchEventHandlerCallCount(false));
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(true));
 
     // Adding a handler inside the child frame results in a has-handlers call.
-    childDocument->didAddTouchEventHandler(childDocument);
+    registry->didAddEventHandler(*childDocument, touchEvent);
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(false));
     EXPECT_EQ(1, client.getAndResetHasTouchEventHandlerCallCount(true));
 
     // Adding a handler in the parent document and removing the one in the frame
     // has no effect.
-    document->didAddTouchEventHandler(childFrame);
-    childDocument->didRemoveTouchEventHandler(childDocument);
-    childDocument->didClearTouchEventHandlers(childDocument);
-    document->didClearTouchEventHandlers(document);
+    registry->didAddEventHandler(*childFrame, touchEvent);
+    registry->didRemoveEventHandler(*childDocument, touchEvent);
+    registry->didRemoveAllEventHandlers(*childDocument);
+    registry->didRemoveAllEventHandlers(*document);
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(false));
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(true));
 
     // Now removing the handler in the parent document results in a no-handlers call.
-    document->didRemoveTouchEventHandler(childFrame);
+    registry->didRemoveEventHandler(*childFrame, touchEvent);
     EXPECT_EQ(1, client.getAndResetHasTouchEventHandlerCallCount(false));
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(true));
 
