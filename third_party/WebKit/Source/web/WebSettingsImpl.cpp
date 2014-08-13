@@ -259,11 +259,6 @@ void WebSettingsImpl::setDOMPasteAllowed(bool enabled)
     m_settings->setDOMPasteAllowed(enabled);
 }
 
-void WebSettingsImpl::setNeedsSiteSpecificQuirks(bool enabled)
-{
-    m_settings->setNeedsSiteSpecificQuirks(enabled);
-}
-
 void WebSettingsImpl::setShrinksStandaloneImagesToFit(bool shrinkImages)
 {
     m_settings->setShrinksStandaloneImagesToFit(shrinkImages);

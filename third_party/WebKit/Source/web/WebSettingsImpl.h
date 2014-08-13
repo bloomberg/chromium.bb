@@ -113,7 +113,6 @@ public:
     virtual void setMinimumFontSize(int) OVERRIDE;
     virtual void setMinimumLogicalFontSize(int) OVERRIDE;
     virtual void setMockScrollbarsEnabled(bool) OVERRIDE;
-    virtual void setNeedsSiteSpecificQuirks(bool) OVERRIDE;
     virtual void setOfflineWebApplicationCacheEnabled(bool) OVERRIDE;
     virtual void setOpenGLMultisamplingEnabled(bool) OVERRIDE;
     virtual void setPasswordEchoDurationInSeconds(double) OVERRIDE;

@@ -75,7 +75,6 @@ shrinksStandaloneImagesToFit initial=true
 # FIXME: Does this do anything now that we don't support page cache?
 pageCacheSupportsPlugins initial=false
 
-needsSiteSpecificQuirks initial=false
 offlineWebApplicationCacheEnabled initial=false
 usesEncodingDetector initial=false
 allowScriptsToCloseWindows initial=false
