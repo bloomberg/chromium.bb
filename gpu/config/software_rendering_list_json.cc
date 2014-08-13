@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "8.10",
+  "version": "8.11",
   "entries": [
     {
       "id": 1,
@@ -1126,13 +1126,13 @@ LONG_STRING_CONST(
     },
     {
       "id": 96,
-      "description": "GPU rasterization is whitelisted on N4, N5, N7 and Moto X",
+      "description": "GPU rasterization is whitelisted on N4, N5, N7 and Moto X, and on Qualcomm GPUs on Android 4.4",
       "cr_bugs": [362779],
+      "os": {
+        "type": "android"
+      },
       "exceptions": [
         {
-          "os": {
-            "type": "android"
-          },
           "machine_model_name": ["Nexus 4", "Nexus 5", "Nexus 7",
                                  "XT1049", "XT1050", "XT1052", "XT1053",
                                  "XT1055", "XT1056", "XT1058", "XT1060"]
@@ -1144,6 +1144,19 @@ LONG_STRING_CONST(
               "op": ">=",
               "value": "4.4.99"
             }
+          }
+        },
+        {
+          "os": {
+            "type": "android",
+            "version": {
+              "op": ">=",
+              "value": "4.4"
+            }
+          },
+          "gl_vendor": {
+            "op": "beginwith",
+            "value": "Qualcomm"
           }
         }
       ],
@@ -1190,6 +1203,21 @@ LONG_STRING_CONST(
       ],
       "features": [
         "gpu_rasterization_expanded_heuristics"
+      ]
+    },
+    {
+      "id": 99,
+      "description": "GPU rasterization is blacklisted on non-Android",
+      "cr_bugs": [362779],
+      "exceptions": [
+        {
+          "os": {
+            "type": "android"
+          }
+        }
+      ],
+      "features": [
+        "gpu_rasterization"
       ]
     }
   ]
