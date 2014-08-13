@@ -6,6 +6,7 @@
 #define CHROMECAST_SHELL_BROWSER_CAST_CONTENT_BROWSER_CLIENT_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/content_browser_client.h"
 
 namespace chromecast {
@@ -69,8 +70,9 @@ class CastContentBrowserClient: public content::ContentBrowserClient {
       std::vector<content::FileDescriptorInfo>* mappings) OVERRIDE;
 
  private:
-  scoped_ptr<CastBrowserMainParts> shell_browser_main_parts_;
-
+  // Note: BrowserMainLoop holds ownership of CastBrowserMainParts after it is
+  // created.
+  CastBrowserMainParts* shell_browser_main_parts_;
   scoped_ptr<URLRequestContextFactory> url_request_context_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastContentBrowserClient);
