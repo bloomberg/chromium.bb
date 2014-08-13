@@ -247,14 +247,6 @@ def Which(binary, path=None, mode=os.X_OK):
   return None
 
 
-def FindDepotTools():
-  """Returns the location of depot_tools if it is in $PATH."""
-  gclient_dir = os.path.dirname(Which('gclient.py', mode=os.F_OK) or '')
-  gitcl_dir = os.path.dirname(Which('git_cl.py', mode=os.F_OK) or '')
-  if gclient_dir and gclient_dir == gitcl_dir:
-    return gclient_dir
-
-
 def FindMissingBinaries(needed_tools):
   """Verifies that the required tools are present on the system.
 

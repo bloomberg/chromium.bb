@@ -23,6 +23,7 @@ CHROOT_SOURCE_ROOT = '/mnt/host/source'
 
 CROSUTILS_DIR = os.path.join(SOURCE_ROOT, 'src/scripts')
 CHROMITE_DIR = os.path.join(SOURCE_ROOT, 'chromite')
+DEPOT_TOOLS_DIR = os.path.join(SOURCE_ROOT, 'chromium/tools/depot_tools')
 CHROMITE_BIN_SUBDIR = 'chromite/bin'
 CHROMITE_BIN_DIR = os.path.join(SOURCE_ROOT, CHROMITE_BIN_SUBDIR)
 PATH_TO_CBUILDBOT = os.path.join(CHROMITE_BIN_SUBDIR, 'cbuildbot')

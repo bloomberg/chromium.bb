@@ -204,9 +204,7 @@ def _SudoCommand():
 
   # Pass in the path to the depot_tools so that users can access them from
   # within the chroot.
-  depot_tools = osutils.FindDepotTools()
-  if depot_tools:
-    cmd += ['DEPOT_TOOLS=%s' % depot_tools]
+  cmd += ['DEPOT_TOOLS=%s' % constants.DEPOT_TOOLS_DIR]
 
   return cmd
 

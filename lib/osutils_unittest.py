@@ -114,30 +114,6 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
     self.assertTrue(os.path.exists(path))
     self.assertEqual(os.path.getsize(path), 0)
 
-  def testFindDepotTools(self):
-    """Verify FindDepotTools() works in various cases."""
-    depot_tools_path = self.tempdir
-    gclient_path = os.path.join(self.tempdir, 'gclient.py')
-    gitcl_path = os.path.join(self.tempdir, 'git_cl.py')
-
-    path = ':'.join(['/usr/local/bin', depot_tools_path, '/usr/bin'])
-    os.environ['PATH'] = path
-    # No binaries found.
-    self.assertEquals(osutils.FindDepotTools(), None)
-
-    osutils.Touch(gclient_path)
-    # No git_cl.py in path.
-    self.assertEquals(osutils.FindDepotTools(), None)
-
-    osutils.Touch(gitcl_path)
-    self.assertEquals(osutils.FindDepotTools(), depot_tools_path)
-
-    # Check trailing '/' in depot tools location in PATH is handled
-    # correctly.
-    path = ':'.join(['/usr/local/bin', depot_tools_path + '/', '/usr/bin'])
-    os.environ['PATH'] = path
-    self.assertEquals(osutils.FindDepotTools(), depot_tools_path)
-
 
 class TempDirTests(cros_test_lib.TestCase):
   """Unittests of osutils.TempDir.
