@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/debug/trace_event.h"
+#include "chrome/browser/android/accessibility/font_size_prefs_android.h"
 #include "chrome/browser/android/accessibility_util.h"
 #include "chrome/browser/android/banners/app_banner_manager.h"
 #include "chrome/browser/android/bookmarks/bookmarks_bridge.h"
@@ -140,6 +141,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
       RegisterExternalPrerenderHandlerAndroid },
   { "FaviconHelper", FaviconHelper::RegisterFaviconHelper },
   { "FeedbackReporter", dom_distiller::android::RegisterFeedbackReporter },
+  { "FontSizePrefsAndroid", FontSizePrefsAndroid::Register },
   { "ForeignSessionHelper",
     ForeignSessionHelper::RegisterForeignSessionHelper },
   { "InfoBarContainer", RegisterInfoBarContainer },
