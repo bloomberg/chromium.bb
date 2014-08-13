@@ -96,9 +96,9 @@ const RenderSVGText* RenderSVGText::locateRenderSVGTextAncestor(const RenderObje
 
 void RenderSVGText::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, bool fixed, const PaintInvalidationState* paintInvalidationState) const
 {
-    FloatRect repaintRect = rect;
-    computeFloatRectForPaintInvalidation(paintInvalidationContainer, repaintRect, fixed, paintInvalidationState);
-    rect = enclosingLayoutRect(repaintRect);
+    FloatRect paintInvalidationRect = rect;
+    computeFloatRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationRect, fixed, paintInvalidationState);
+    rect = enclosingLayoutRect(paintInvalidationRect);
 }
 
 static inline void collectLayoutAttributes(RenderObject* text, Vector<SVGTextLayoutAttributes*>& attributes)
@@ -393,9 +393,9 @@ void RenderSVGText::layout()
     LayoutUnit afterEdge = borderAfter() + paddingAfter() + scrollbarLogicalHeight();
     setLogicalHeight(beforeEdge);
 
-    LayoutUnit repaintLogicalTop = 0;
-    LayoutUnit repaintLogicalBottom = 0;
-    layoutInlineChildren(true, repaintLogicalTop, repaintLogicalBottom, afterEdge);
+    LayoutUnit paintInvalidationLogicalTop = 0;
+    LayoutUnit paintInvalidationLogicalBottom = 0;
+    layoutInlineChildren(true, paintInvalidationLogicalTop, paintInvalidationLogicalBottom, afterEdge);
 
     if (m_needsReordering)
         m_needsReordering = false;
@@ -503,13 +503,13 @@ FloatRect RenderSVGText::strokeBoundingBox() const
 
 FloatRect RenderSVGText::paintInvalidationRectInLocalCoordinates() const
 {
-    FloatRect repaintRect = strokeBoundingBox();
-    SVGRenderSupport::intersectRepaintRectWithResources(this, repaintRect);
+    FloatRect paintInvalidationRect = strokeBoundingBox();
+    SVGRenderSupport::intersectPaintInvalidationRectWithResources(this, paintInvalidationRect);
 
     if (const ShadowList* textShadow = style()->textShadow())
-        textShadow->adjustRectForShadow(repaintRect);
+        textShadow->adjustRectForShadow(paintInvalidationRect);
 
-    return repaintRect;
+    return paintInvalidationRect;
 }
 
 void RenderSVGText::addChild(RenderObject* child, RenderObject* beforeChild)

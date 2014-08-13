@@ -87,17 +87,17 @@ FloatRect RenderSVGInline::paintInvalidationRectInLocalCoordinates() const
 
 LayoutRect RenderSVGInline::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
-    return SVGRenderSupport::clippedOverflowRectForRepaint(this, paintInvalidationContainer, paintInvalidationState);
+    return SVGRenderSupport::clippedOverflowRectForPaintInvalidation(this, paintInvalidationContainer, paintInvalidationState);
 }
 
 void RenderSVGInline::computeFloatRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, FloatRect& paintInvalidationRect, bool fixed, const PaintInvalidationState* paintInvalidationState) const
 {
-    SVGRenderSupport::computeFloatRectForRepaint(this, paintInvalidationContainer, paintInvalidationRect, fixed, paintInvalidationState);
+    SVGRenderSupport::computeFloatRectForPaintInvalidation(this, paintInvalidationContainer, paintInvalidationRect, fixed, paintInvalidationState);
 }
 
-void RenderSVGInline::mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState& transformState, MapCoordinatesFlags, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
+void RenderSVGInline::mapLocalToContainer(const RenderLayerModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
-    SVGRenderSupport::mapLocalToContainer(this, repaintContainer, transformState, wasFixed, paintInvalidationState);
+    SVGRenderSupport::mapLocalToContainer(this, paintInvalidationContainer, transformState, wasFixed, paintInvalidationState);
 }
 
 const RenderObject* RenderSVGInline::pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const

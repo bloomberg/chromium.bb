@@ -105,8 +105,8 @@ void RenderSVGImage::layout()
     }
 
     if (m_needsBoundariesUpdate) {
-        m_repaintBoundingBox = m_objectBoundingBox;
-        SVGRenderSupport::intersectRepaintRectWithResources(this, m_repaintBoundingBox);
+        m_paintInvalidationBoundingBox = m_objectBoundingBox;
+        SVGRenderSupport::intersectPaintInvalidationRectWithResources(this, m_paintInvalidationBoundingBox);
 
         m_needsBoundariesUpdate = false;
     }
@@ -132,7 +132,7 @@ void RenderSVGImage::paint(PaintInfo& paintInfo, const LayoutPoint&)
         return;
 
     FloatRect boundingBox = paintInvalidationRectInLocalCoordinates();
-    if (!SVGRenderSupport::paintInfoIntersectsRepaintRect(boundingBox, m_localTransform, paintInfo))
+    if (!SVGRenderSupport::paintInfoIntersectsPaintInvalidationRect(boundingBox, m_localTransform, paintInfo))
         return;
 
     PaintInfo childPaintInfo(paintInfo);

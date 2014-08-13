@@ -53,7 +53,7 @@ void RenderSVGResourceMarker::layout()
 
     // RenderSVGHiddenContainer overwrites layout(). We need the
     // layouting of RenderSVGContainer for calculating  local
-    // transformations and repaint.
+    // transformations and paint invalidation.
     RenderSVGContainer::layout();
 
     clearInvalidationMask();
@@ -80,7 +80,7 @@ FloatRect RenderSVGResourceMarker::markerBoundaries(const AffineTransform& marke
 {
     FloatRect coordinates = RenderSVGContainer::paintInvalidationRectInLocalCoordinates();
 
-    // Map repaint rect into parent coordinate space, in which the marker boundaries have to be evaluated
+    // Map paint invalidation rect into parent coordinate space, in which the marker boundaries have to be evaluated
     coordinates = localToParentTransform().mapRect(coordinates);
 
     return markerTransformation.mapRect(coordinates);

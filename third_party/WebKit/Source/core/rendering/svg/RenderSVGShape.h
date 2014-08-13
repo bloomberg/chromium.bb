@@ -82,7 +82,7 @@ private:
     bool fillContains(const FloatPoint&, bool requiresFill = true, const WindRule fillRule = RULE_NONZERO);
     bool strokeContains(const FloatPoint&, bool requiresStroke = true);
 
-    virtual FloatRect paintInvalidationRectInLocalCoordinates() const OVERRIDE FINAL { return m_repaintBoundingBox; }
+    virtual FloatRect paintInvalidationRectInLocalCoordinates() const OVERRIDE FINAL { return m_paintInvalidationBoundingBox; }
     virtual const AffineTransform& localToParentTransform() const OVERRIDE FINAL { return m_localTransform; }
     virtual AffineTransform localTransform() const OVERRIDE FINAL { return m_localTransform; }
 
@@ -99,7 +99,7 @@ private:
     virtual FloatRect strokeBoundingBox() const OVERRIDE FINAL { return m_strokeBoundingBox; }
     FloatRect calculateObjectBoundingBox() const;
     FloatRect calculateStrokeBoundingBox() const;
-    void updateRepaintBoundingBox();
+    void updatePaintInvalidationBoundingBox();
 
     bool setupNonScalingStrokeContext(AffineTransform&, GraphicsContextStateSaver&);
 
@@ -112,7 +112,7 @@ private:
     void drawMarkers(PaintInfo&);
 
 private:
-    FloatRect m_repaintBoundingBox;
+    FloatRect m_paintInvalidationBoundingBox;
     AffineTransform m_localTransform;
     OwnPtr<Path> m_path;
     Vector<MarkerPosition> m_markerPositions;

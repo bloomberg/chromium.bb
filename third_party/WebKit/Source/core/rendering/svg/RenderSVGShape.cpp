@@ -138,7 +138,7 @@ void RenderSVGShape::layout()
     if (m_needsShapeUpdate || m_needsBoundariesUpdate) {
         updateShapeFromElement();
         m_needsShapeUpdate = false;
-        updateRepaintBoundingBox();
+        updatePaintInvalidationBoundingBox();
         m_needsBoundariesUpdate = false;
         updateCachedBoundariesInParents = true;
     }
@@ -237,7 +237,7 @@ void RenderSVGShape::paint(PaintInfo& paintInfo, const LayoutPoint&)
         return;
 
     FloatRect boundingBox = paintInvalidationRectInLocalCoordinates();
-    if (!SVGRenderSupport::paintInfoIntersectsRepaintRect(boundingBox, m_localTransform, paintInfo))
+    if (!SVGRenderSupport::paintInfoIntersectsPaintInvalidationRect(boundingBox, m_localTransform, paintInfo))
         return;
 
     PaintInfo childPaintInfo(paintInfo);
@@ -398,12 +398,12 @@ FloatRect RenderSVGShape::calculateStrokeBoundingBox() const
     return strokeBoundingBox;
 }
 
-void RenderSVGShape::updateRepaintBoundingBox()
+void RenderSVGShape::updatePaintInvalidationBoundingBox()
 {
-    m_repaintBoundingBox = strokeBoundingBox();
-    if (strokeWidth() < 1.0f && !m_repaintBoundingBox.isEmpty())
-        m_repaintBoundingBox.inflate(1);
-    SVGRenderSupport::intersectRepaintRectWithResources(this, m_repaintBoundingBox);
+    m_paintInvalidationBoundingBox = strokeBoundingBox();
+    if (strokeWidth() < 1.0f && !m_paintInvalidationBoundingBox.isEmpty())
+        m_paintInvalidationBoundingBox.inflate(1);
+    SVGRenderSupport::intersectPaintInvalidationRectWithResources(this, m_paintInvalidationBoundingBox);
 }
 
 float RenderSVGShape::strokeWidth() const

@@ -52,8 +52,8 @@ public:
     // Helper function determining wheter overflow is hidden
     static bool isOverflowHidden(const RenderObject*);
 
-    // Calculates the repaintRect in combination with filter, clipper and masker in local coordinates.
-    static void intersectRepaintRectWithResources(const RenderObject*, FloatRect&);
+    // Calculates the paintInvalidationRect in combination with filter, clipper and masker in local coordinates.
+    static void intersectPaintInvalidationRectWithResources(const RenderObject*, FloatRect&);
 
     // Determines whether a container needs to be laid out because it's filtered and a child is being laid out.
     static bool filtersForceContainerLayout(RenderObject*);
@@ -66,14 +66,14 @@ public:
     // the point is outside the clipping area.
     static bool transformToUserSpaceAndCheckClipping(RenderObject*, const AffineTransform& localTransform, const FloatPoint& pointInParent, FloatPoint& localPoint);
 
-    static void computeContainerBoundingBoxes(const RenderObject* container, FloatRect& objectBoundingBox, bool& objectBoundingBoxValid, FloatRect& strokeBoundingBox, FloatRect& repaintBoundingBox);
+    static void computeContainerBoundingBoxes(const RenderObject* container, FloatRect& objectBoundingBox, bool& objectBoundingBoxValid, FloatRect& strokeBoundingBox, FloatRect& paintInvalidationBoundingBox);
 
-    static bool paintInfoIntersectsRepaintRect(const FloatRect& localRepaintRect, const AffineTransform& localTransform, const PaintInfo&);
+    static bool paintInfoIntersectsPaintInvalidationRect(const FloatRect& localPaintInvalidationRect, const AffineTransform& localTransform, const PaintInfo&);
 
-    // Important functions used by nearly all SVG renderers centralizing coordinate transformations / repaint rect calculations
-    static LayoutRect clippedOverflowRectForRepaint(const RenderObject*, const RenderLayerModelObject* repaintContainer, const PaintInvalidationState*);
-    static void computeFloatRectForRepaint(const RenderObject*, const RenderLayerModelObject* repaintContainer, FloatRect&, bool fixed, const PaintInvalidationState*);
-    static void mapLocalToContainer(const RenderObject*, const RenderLayerModelObject* repaintContainer, TransformState&, bool* wasFixed = 0, const PaintInvalidationState* = 0);
+    // Important functions used by nearly all SVG renderers centralizing coordinate transformations / paint invalidation rect calculations
+    static LayoutRect clippedOverflowRectForPaintInvalidation(const RenderObject*, const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState*);
+    static void computeFloatRectForPaintInvalidation(const RenderObject*, const RenderLayerModelObject* paintInvalidationContainer, FloatRect&, bool fixed, const PaintInvalidationState*);
+    static void mapLocalToContainer(const RenderObject*, const RenderLayerModelObject* paintInvalidationContainer, TransformState&, bool* wasFixed = 0, const PaintInvalidationState* = 0);
     static const RenderObject* pushMappingToContainer(const RenderObject*, const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap&);
 
     // Shared between SVG renderers and resources.

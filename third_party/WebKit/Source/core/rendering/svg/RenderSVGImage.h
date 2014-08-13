@@ -54,7 +54,7 @@ private:
 
     virtual FloatRect objectBoundingBox() const OVERRIDE { return m_objectBoundingBox; }
     virtual FloatRect strokeBoundingBox() const OVERRIDE { return m_objectBoundingBox; }
-    virtual FloatRect paintInvalidationRectInLocalCoordinates() const OVERRIDE { return m_repaintBoundingBox; }
+    virtual FloatRect paintInvalidationRectInLocalCoordinates() const OVERRIDE { return m_paintInvalidationBoundingBox; }
 
     virtual void addFocusRingRects(Vector<IntRect>&, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer = 0) const OVERRIDE;
 
@@ -73,7 +73,7 @@ private:
     bool m_needsTransformUpdate : 1;
     AffineTransform m_localTransform;
     FloatRect m_objectBoundingBox;
-    FloatRect m_repaintBoundingBox;
+    FloatRect m_paintInvalidationBoundingBox;
     OwnPtr<RenderImageResource> m_imageResource;
 
     OwnPtr<ImageBuffer> m_bufferedForeground;

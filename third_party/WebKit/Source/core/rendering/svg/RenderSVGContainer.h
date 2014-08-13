@@ -65,7 +65,7 @@ protected:
 
     virtual FloatRect objectBoundingBox() const OVERRIDE FINAL { return m_objectBoundingBox; }
     virtual FloatRect strokeBoundingBox() const OVERRIDE FINAL { return m_strokeBoundingBox; }
-    virtual FloatRect paintInvalidationRectInLocalCoordinates() const OVERRIDE FINAL { return m_repaintBoundingBox; }
+    virtual FloatRect paintInvalidationRectInLocalCoordinates() const OVERRIDE FINAL { return m_paintInvalidationBoundingBox; }
 
     virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction) OVERRIDE;
 
@@ -87,7 +87,7 @@ private:
     FloatRect m_objectBoundingBox;
     bool m_objectBoundingBoxValid;
     FloatRect m_strokeBoundingBox;
-    FloatRect m_repaintBoundingBox;
+    FloatRect m_paintInvalidationBoundingBox;
     bool m_needsBoundariesUpdate : 1;
 };
 

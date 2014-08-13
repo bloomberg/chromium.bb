@@ -124,7 +124,7 @@ void SVGResourcesCache::clientStyleChanged(RenderObject* renderer, StyleDifferen
     if (!diff.hasDifference() || !renderer->parent())
         return;
 
-    // In this case the proper SVGFE*Element will decide whether the modified CSS properties require a relayout or repaint.
+    // In this case the proper SVGFE*Element will decide whether the modified CSS properties require a relayout or paintInvalidation.
     if (renderer->isSVGResourceFilterPrimitive() && !diff.needsLayout())
         return;
 

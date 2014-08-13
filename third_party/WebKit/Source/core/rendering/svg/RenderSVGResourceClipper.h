@@ -59,7 +59,7 @@ public:
     bool applyStatefulResource(RenderObject*, GraphicsContext*&, ClipperContext&);
     void postApplyStatefulResource(RenderObject*, GraphicsContext*&, ClipperContext&);
 
-    // clipPath can be clipped too, but don't have a boundingBox or repaintRect. So we can't call
+    // clipPath can be clipped too, but don't have a boundingBox or paintInvalidationRect. So we can't call
     // applyResource directly and use the rects from the object, since they are empty for RenderSVGResources
     // FIXME: We made applyClippingToContext public because we cannot call applyResource on HTML elements (it asserts on RenderObject::objectBoundingBox)
     bool applyClippingToContext(RenderObject*, const FloatRect&, const FloatRect&, GraphicsContext*, ClipperContext&);
@@ -77,7 +77,7 @@ private:
     bool tryPathOnlyClipping(GraphicsContext*, const AffineTransform&, const FloatRect&);
     void drawClipMaskContent(GraphicsContext*, const FloatRect& targetBoundingBox);
     PassRefPtr<DisplayList> asDisplayList(GraphicsContext*, const AffineTransform&);
-    void calculateClipContentRepaintRect();
+    void calculateClipContentPaintInvalidationRect();
 
     RefPtr<DisplayList> m_clipContentDisplayList;
     FloatRect m_clipBoundaries;

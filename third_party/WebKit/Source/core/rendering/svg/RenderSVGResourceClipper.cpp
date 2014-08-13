@@ -147,14 +147,14 @@ bool RenderSVGResourceClipper::tryPathOnlyClipping(GraphicsContext* context,
 }
 
 bool RenderSVGResourceClipper::applyClippingToContext(RenderObject* target, const FloatRect& targetBoundingBox,
-    const FloatRect& repaintRect, GraphicsContext* context, ClipperContext& clipperContext)
+    const FloatRect& paintInvalidationRect, GraphicsContext* context, ClipperContext& clipperContext)
 {
     ASSERT(target);
     ASSERT(context);
     ASSERT(clipperContext.state == ClipperContext::NotAppliedState);
     ASSERT_WITH_SECURITY_IMPLICATION(!needsLayout());
 
-    if (repaintRect.isEmpty() || m_inClipExpansion)
+    if (paintInvalidationRect.isEmpty() || m_inClipExpansion)
         return false;
     TemporaryChange<bool> inClipExpansionChange(m_inClipExpansion, true);
 
@@ -178,7 +178,7 @@ bool RenderSVGResourceClipper::applyClippingToContext(RenderObject* target, cons
     clipperContext.state = ClipperContext::AppliedMaskState;
 
     // Mask layer start
-    context->beginTransparencyLayer(1, &repaintRect);
+    context->beginTransparencyLayer(1, &paintInvalidationRect);
     {
         GraphicsContextStateSaver maskContentSaver(*context);
         context->concatCTM(animatedLocalTransform);
@@ -187,7 +187,7 @@ bool RenderSVGResourceClipper::applyClippingToContext(RenderObject* target, cons
         SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(this);
         RenderSVGResourceClipper* clipPathClipper = resources ? resources->clipper() : 0;
         ClipperContext clipPathClipperContext;
-        if (clipPathClipper && !clipPathClipper->applyClippingToContext(this, targetBoundingBox, repaintRect, context, clipPathClipperContext)) {
+        if (clipPathClipper && !clipPathClipper->applyClippingToContext(this, targetBoundingBox, paintInvalidationRect, context, clipPathClipperContext)) {
             // FIXME: Awkward state micro-management. Ideally, GraphicsContextStateSaver should
             //   a) pop saveLayers also
             //   b) pop multiple states if needed (similarly to SkCanvas::restoreToCount())
@@ -204,7 +204,7 @@ bool RenderSVGResourceClipper::applyClippingToContext(RenderObject* target, cons
     }
 
     // Masked content layer start.
-    context->beginLayer(1, CompositeSourceIn, &repaintRect);
+    context->beginLayer(1, CompositeSourceIn, &paintInvalidationRect);
 
     return true;
 }
@@ -307,7 +307,7 @@ PassRefPtr<DisplayList> RenderSVGResourceClipper::asDisplayList(GraphicsContext*
     return context->endRecording();
 }
 
-void RenderSVGResourceClipper::calculateClipContentRepaintRect()
+void RenderSVGResourceClipper::calculateClipContentPaintInvalidationRect()
 {
     // This is a rough heuristic to appraise the clip size and doesn't consider clip on clip.
     for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
@@ -366,7 +366,7 @@ FloatRect RenderSVGResourceClipper::resourceBoundingBox(const RenderObject* obje
         return object->objectBoundingBox();
 
     if (m_clipBoundaries.isEmpty())
-        calculateClipContentRepaintRect();
+        calculateClipContentPaintInvalidationRect();
 
     if (toSVGClipPathElement(element())->clipPathUnits()->currentValue()->enumValue() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
         FloatRect objectBoundingBox = object->objectBoundingBox();

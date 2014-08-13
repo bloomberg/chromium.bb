@@ -192,9 +192,9 @@ void RenderSVGRoot::layout()
     addVisualEffectOverflow();
 
     if (!shouldApplyViewportClip()) {
-        FloatRect contentRepaintRect = paintInvalidationRectInLocalCoordinates();
-        contentRepaintRect = m_localToBorderBoxTransform.mapRect(contentRepaintRect);
-        addVisualOverflow(enclosingLayoutRect(contentRepaintRect));
+        FloatRect contentPaintInvalidationRect = paintInvalidationRectInLocalCoordinates();
+        contentPaintInvalidationRect = m_localToBorderBoxTransform.mapRect(contentPaintInvalidationRect);
+        addVisualOverflow(enclosingLayoutRect(contentPaintInvalidationRect));
     }
 
     updateLayerTransformAfterLayout();
@@ -350,32 +350,32 @@ LayoutRect RenderSVGRoot::clippedOverflowRectForPaintInvalidation(const RenderLa
 {
     // This is an open-coded aggregate of SVGRenderSupport::clippedOverflowRectForPaintInvalidation,
     // RenderSVGRoot::computeFloatRectForPaintInvalidation and RenderReplaced::clippedOverflowRectForPaintInvalidation.
-    // The reason for this is to optimize/minimize the repaint rect when the box is not "decorated"
+    // The reason for this is to optimize/minimize the paint invalidation rect when the box is not "decorated"
     // (does not have background/border/etc.)
 
     // Return early for any cases where we don't actually paint.
     if (style()->visibility() != VISIBLE && !enclosingLayer()->hasVisibleContent())
         return LayoutRect();
 
-    // Compute the repaint rect of the content of the SVG in the border-box coordinate space.
-    FloatRect contentRepaintRect = paintInvalidationRectInLocalCoordinates();
-    contentRepaintRect = m_localToBorderBoxTransform.mapRect(contentRepaintRect);
+    // Compute the paint invalidation rect of the content of the SVG in the border-box coordinate space.
+    FloatRect contentPaintInvalidationRect = paintInvalidationRectInLocalCoordinates();
+    contentPaintInvalidationRect = m_localToBorderBoxTransform.mapRect(contentPaintInvalidationRect);
 
     // Apply initial viewport clip, overflow:visible content is added to visualOverflow
     // but the most common case is that overflow is hidden, so always intersect.
-    contentRepaintRect.intersect(pixelSnappedBorderBoxRect());
+    contentPaintInvalidationRect.intersect(pixelSnappedBorderBoxRect());
 
-    LayoutRect repaintRect = enclosingLayoutRect(contentRepaintRect);
+    LayoutRect paintInvalidationRect = enclosingLayoutRect(contentPaintInvalidationRect);
     // If the box is decorated or is overflowing, extend it to include the border-box and overflow.
     if (m_hasBoxDecorationBackground || hasRenderOverflow()) {
         // The selectionRect can project outside of the overflowRect, so take their union
-        // for repainting to avoid selection painting glitches.
-        LayoutRect decoratedRepaintRect = unionRect(localSelectionRect(false), visualOverflowRect());
-        repaintRect.unite(decoratedRepaintRect);
+        // for paint invalidation to avoid selection painting glitches.
+        LayoutRect decoratedPaintInvalidationRect = unionRect(localSelectionRect(false), visualOverflowRect());
+        paintInvalidationRect.unite(decoratedPaintInvalidationRect);
     }
 
-    // Compute the repaint rect in the parent coordinate space.
-    LayoutRect rect = enclosingIntRect(repaintRect);
+    // Compute the paint invalidation rect in the parent coordinate space.
+    LayoutRect rect = enclosingIntRect(paintInvalidationRect);
     RenderReplaced::mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
     return rect;
 }
@@ -398,14 +398,14 @@ void RenderSVGRoot::computeFloatRectForPaintInvalidation(const RenderLayerModelO
 // This method expects local CSS box coordinates.
 // Callers with local SVG viewport coordinates should first apply the localToBorderBoxTransform
 // to convert from SVG viewport coordinates to local CSS box coordinates.
-void RenderSVGRoot::mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
+void RenderSVGRoot::mapLocalToContainer(const RenderLayerModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
     ASSERT(mode & ~IsFixed); // We should have no fixed content in the SVG rendering tree.
     // We used to have this ASSERT here, but we removed it when enabling layer squashing.
     // See http://crbug.com/364901
     // ASSERT(mode & UseTransforms); // mapping a point through SVG w/o respecting trasnforms is useless.
 
-    RenderReplaced::mapLocalToContainer(repaintContainer, transformState, mode | ApplyContainerFlip, wasFixed, paintInvalidationState);
+    RenderReplaced::mapLocalToContainer(paintInvalidationContainer, transformState, mode | ApplyContainerFlip, wasFixed, paintInvalidationState);
 }
 
 const RenderObject* RenderSVGRoot::pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
@@ -415,8 +415,8 @@ const RenderObject* RenderSVGRoot::pushMappingToContainer(const RenderLayerModel
 
 void RenderSVGRoot::updateCachedBoundaries()
 {
-    SVGRenderSupport::computeContainerBoundingBoxes(this, m_objectBoundingBox, m_objectBoundingBoxValid, m_strokeBoundingBox, m_repaintBoundingBox);
-    SVGRenderSupport::intersectRepaintRectWithResources(this, m_repaintBoundingBox);
+    SVGRenderSupport::computeContainerBoundingBoxes(this, m_objectBoundingBox, m_objectBoundingBoxValid, m_strokeBoundingBox, m_paintInvalidationBoundingBox);
+    SVGRenderSupport::intersectPaintInvalidationRectWithResources(this, m_paintInvalidationBoundingBox);
 }
 
 bool RenderSVGRoot::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)

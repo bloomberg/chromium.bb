@@ -53,17 +53,17 @@ bool RenderSVGModelObject::isChildAllowed(RenderObject* child, RenderStyle*) con
 
 LayoutRect RenderSVGModelObject::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
-    return SVGRenderSupport::clippedOverflowRectForRepaint(this, paintInvalidationContainer, paintInvalidationState);
+    return SVGRenderSupport::clippedOverflowRectForPaintInvalidation(this, paintInvalidationContainer, paintInvalidationState);
 }
 
 void RenderSVGModelObject::computeFloatRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, FloatRect& paintInvalidationRect, bool fixed, const PaintInvalidationState* paintInvalidationState) const
 {
-    SVGRenderSupport::computeFloatRectForRepaint(this, paintInvalidationContainer, paintInvalidationRect, fixed, paintInvalidationState);
+    SVGRenderSupport::computeFloatRectForPaintInvalidation(this, paintInvalidationContainer, paintInvalidationRect, fixed, paintInvalidationState);
 }
 
-void RenderSVGModelObject::mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState& transformState, MapCoordinatesFlags, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
+void RenderSVGModelObject::mapLocalToContainer(const RenderLayerModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
-    SVGRenderSupport::mapLocalToContainer(this, repaintContainer, transformState, wasFixed, paintInvalidationState);
+    SVGRenderSupport::mapLocalToContainer(this, paintInvalidationContainer, transformState, wasFixed, paintInvalidationState);
 }
 
 const RenderObject* RenderSVGModelObject::pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
