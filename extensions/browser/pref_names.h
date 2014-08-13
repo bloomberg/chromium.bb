@@ -40,10 +40,6 @@ extern const char kAllowedTypes[];
 // by default.
 extern const char kBookmarkAppCreationLaunchType[];
 
-// Integer boolean representing the width (in pixels) of the container for
-// browser actions.
-extern const char kBrowserActionContainerWidth[];
-
 // Dictionary pref that keeps track of per-extension settings. The keys are
 // extension ids.
 extern const char kExtensions[];

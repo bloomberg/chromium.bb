@@ -7,7 +7,6 @@
 #include <cmath>
 #include <string>
 
-#include "base/prefs/pref_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_action.h"
@@ -25,13 +24,11 @@
 #import "chrome/browser/ui/cocoa/menu_button.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
-#include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/pref_names.h"
 #include "grit/theme_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 
@@ -379,19 +376,6 @@ class ExtensionServiceObserverBridge
 - (CGFloat)savedWidth {
   if (!toolbarModel_)
     return 0;
-  if (!profile_->GetPrefs()->HasPrefPath(
-          extensions::pref_names::kToolbarSize)) {
-    // Migration code to the new VisibleIconCount pref.
-    // TODO(mpcomplete): remove this at some point.
-    double predefinedWidth = profile_->GetPrefs()->GetDouble(
-        extensions::pref_names::kBrowserActionContainerWidth);
-    if (predefinedWidth != 0) {
-      int iconWidth = kBrowserActionWidth + kBrowserActionButtonPadding;
-      int extraWidth = kChevronWidth;
-      toolbarModel_->SetVisibleIconCount(
-          (predefinedWidth - extraWidth) / iconWidth);
-    }
-  }
 
   int savedButtonCount = toolbarModel_->GetVisibleIconCount();
   if (savedButtonCount < 0 ||  // all icons are visible

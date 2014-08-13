@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 
 #include "base/compiler_specific.h"
-#include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/extension_view_host.h"
@@ -23,7 +22,6 @@
 #include "chrome/common/extensions/command.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/pref_names.h"
 #include "extensions/browser/runtime_data.h"
 #include "extensions/common/feature_switch.h"
 #include "grit/generated_resources.h"
@@ -195,16 +193,6 @@ void BrowserActionsContainer::Init() {
 
   // We wait to set the container width until now so that the chevron images
   // will be loaded.  The width calculation needs to know the chevron size.
-  if (model_ &&
-      !profile_->GetPrefs()->HasPrefPath(
-          extensions::pref_names::kToolbarSize)) {
-    // Migration code to the new VisibleIconCount pref.
-    // TODO(mpcomplete): remove this after users are upgraded to 5.0.
-    int predefined_width = profile_->GetPrefs()->GetInteger(
-        extensions::pref_names::kBrowserActionContainerWidth);
-    if (predefined_width != 0)
-      model_->SetVisibleIconCount(WidthToIconCount(predefined_width));
-  }
   if (model_ && model_->extensions_initialized())
     SetContainerWidth();
 }
