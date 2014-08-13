@@ -31,14 +31,13 @@ class LocalNTPTest : public InProcessBrowserTest,
   }
 };
 
-// Flaky: crbug.com/267117
-IN_PROC_BROWSER_TEST_F(LocalNTPTest, DISABLED_LocalNTPJavascriptTest) {
+IN_PROC_BROWSER_TEST_F(LocalNTPTest, LocalNTPJavascriptTest) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmnibox();
 
   ui_test_utils::NavigateToURLWithDisposition(
       browser(),
-      instant_url(),
+      ntp_url(),
       NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
@@ -50,9 +49,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, DISABLED_LocalNTPJavascriptTest) {
   EXPECT_TRUE(success);
 }
 
-// Flaky.
 IN_PROC_BROWSER_TEST_F(LocalNTPTest,
-                       DISABLED_NTPRespectsBrowserLanguageSetting) {
+                       NTPRespectsBrowserLanguageSetting) {
   // Make sure the default language is not French.
   std::string default_locale = g_browser_process->GetApplicationLocale();
   EXPECT_NE("fr", default_locale);
@@ -60,7 +58,13 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest,
   // Switch browser language to French.
   std::string loaded_locale =
       ui::ResourceBundle::GetSharedInstance().ReloadLocaleResources("fr");
-  EXPECT_EQ("fr", loaded_locale);
+
+  // The platform cannot load the French locale (GetApplicationLocale() is
+  // platform specific, and has been observed to fail on a small number of
+  // platforms). Abort the test.
+  if (loaded_locale != "fr")
+    return;
+
   g_browser_process->SetApplicationLocale(loaded_locale);
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetString(prefs::kApplicationLocale, loaded_locale);

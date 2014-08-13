@@ -62,6 +62,8 @@ class InstantTestBase {
 
   const GURL& instant_url() const { return instant_url_; }
 
+  const GURL& ntp_url() const { return ntp_url_; }
+
   net::SpawnedTestServer& https_test_server() { return https_test_server_; }
 
   void KillInstantRenderView();
