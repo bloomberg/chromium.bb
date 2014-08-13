@@ -62,7 +62,7 @@ String NetworkInformation::type() const
     return connectionTypeToString(m_type);
 }
 
-void NetworkInformation::connectionTypeChange(blink::WebConnectionType type)
+void NetworkInformation::connectionTypeChange(WebConnectionType type)
 {
     ASSERT(executionContext()->isContextThread());
 

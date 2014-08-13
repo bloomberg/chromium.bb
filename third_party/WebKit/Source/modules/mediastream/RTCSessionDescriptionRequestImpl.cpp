@@ -61,7 +61,7 @@ RTCSessionDescriptionRequestImpl::~RTCSessionDescriptionRequestImpl()
 {
 }
 
-void RTCSessionDescriptionRequestImpl::requestSucceeded(const blink::WebRTCSessionDescription& webSessionDescription)
+void RTCSessionDescriptionRequestImpl::requestSucceeded(const WebRTCSessionDescription& webSessionDescription)
 {
     bool shouldFireCallback = m_requester ? m_requester->shouldFireDefaultCallbacks() : false;
     if (shouldFireCallback && m_successCallback)

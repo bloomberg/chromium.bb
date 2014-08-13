@@ -80,7 +80,7 @@ PassRefPtrWillBeRawPtr<FetchResponseData> FetchResponseData::createOpaqueFiltere
     return response.release();
 }
 
-void FetchResponseData::populateWebServiceWorkerResponse(blink::WebServiceWorkerResponse& response)
+void FetchResponseData::populateWebServiceWorkerResponse(WebServiceWorkerResponse& response)
 {
     if (m_internalResponse) {
         m_internalResponse->populateWebServiceWorkerResponse(response);

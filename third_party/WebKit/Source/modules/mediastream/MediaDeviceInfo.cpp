@@ -30,13 +30,13 @@
 
 namespace blink {
 
-MediaDeviceInfo* MediaDeviceInfo::create(const blink::WebMediaDeviceInfo& webMediaDeviceInfo)
+MediaDeviceInfo* MediaDeviceInfo::create(const WebMediaDeviceInfo& webMediaDeviceInfo)
 {
     ASSERT(!webMediaDeviceInfo.isNull());
     return new MediaDeviceInfo(webMediaDeviceInfo);
 }
 
-MediaDeviceInfo::MediaDeviceInfo(const blink::WebMediaDeviceInfo& webMediaDeviceInfo)
+MediaDeviceInfo::MediaDeviceInfo(const WebMediaDeviceInfo& webMediaDeviceInfo)
     : m_webMediaDeviceInfo(webMediaDeviceInfo)
 {
     ScriptWrappable::init(this);
@@ -50,11 +50,11 @@ String MediaDeviceInfo::deviceId() const
 String MediaDeviceInfo::kind() const
 {
     switch (m_webMediaDeviceInfo.kind()) {
-    case blink::WebMediaDeviceInfo::MediaDeviceKindAudioInput:
+    case WebMediaDeviceInfo::MediaDeviceKindAudioInput:
         return "audioinput";
-    case blink::WebMediaDeviceInfo::MediaDeviceKindAudioOutput:
+    case WebMediaDeviceInfo::MediaDeviceKindAudioOutput:
         return "audiooutput";
-    case blink::WebMediaDeviceInfo::MediaDeviceKindVideoInput:
+    case WebMediaDeviceInfo::MediaDeviceKindVideoInput:
         return "videoinput";
     }
 

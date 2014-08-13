@@ -10,17 +10,17 @@
 
 namespace blink {
 
-PushController::PushController(blink::WebPushClient* client)
+PushController::PushController(WebPushClient* client)
     : m_client(client)
 {
 }
 
-PassOwnPtrWillBeRawPtr<PushController> PushController::create(blink::WebPushClient* client)
+PassOwnPtrWillBeRawPtr<PushController> PushController::create(WebPushClient* client)
 {
     return adoptPtrWillBeNoop(new PushController(client));
 }
 
-blink::WebPushClient* PushController::clientFrom(Page* page)
+WebPushClient* PushController::clientFrom(Page* page)
 {
     if (PushController* controller = PushController::from(page))
         return controller->client();
@@ -32,7 +32,7 @@ const char* PushController::supplementName()
     return "PushController";
 }
 
-void providePushControllerTo(Page& page, blink::WebPushClient* client)
+void providePushControllerTo(Page& page, WebPushClient* client)
 {
     PushController::provideTo(page, PushController::supplementName(), PushController::create(client));
 }

@@ -62,7 +62,7 @@ typedef WorkerThreadableWebSocketChannel::Peer Peer;
 // thread. signalWorkerThread() must be called before any getters are called.
 class ThreadableWebSocketChannelSyncHelper : public GarbageCollectedFinalized<ThreadableWebSocketChannelSyncHelper> {
 public:
-    static ThreadableWebSocketChannelSyncHelper* create(PassOwnPtr<blink::WebWaitableEvent> event)
+    static ThreadableWebSocketChannelSyncHelper* create(PassOwnPtr<WebWaitableEvent> event)
     {
         return new ThreadableWebSocketChannelSyncHelper(event);
     }
@@ -97,13 +97,13 @@ public:
     void trace(Visitor* visitor) { }
 
 private:
-    explicit ThreadableWebSocketChannelSyncHelper(PassOwnPtr<blink::WebWaitableEvent> event)
+    explicit ThreadableWebSocketChannelSyncHelper(PassOwnPtr<WebWaitableEvent> event)
         : m_event(event)
         , m_connectRequestResult(false)
     {
     }
 
-    OwnPtr<blink::WebWaitableEvent> m_event;
+    OwnPtr<WebWaitableEvent> m_event;
     bool m_connectRequestResult;
 };
 
@@ -401,7 +401,7 @@ Bridge::Bridge(ThreadableWebSocketChannelClientWrapper* workerClientWrapper, Wor
     : m_workerClientWrapper(workerClientWrapper)
     , m_workerGlobalScope(workerGlobalScope)
     , m_loaderProxy(m_workerGlobalScope->thread()->workerLoaderProxy())
-    , m_syncHelper(ThreadableWebSocketChannelSyncHelper::create(adoptPtr(blink::Platform::current()->createWaitableEvent())))
+    , m_syncHelper(ThreadableWebSocketChannelSyncHelper::create(adoptPtr(Platform::current()->createWaitableEvent())))
     , m_peer(Peer::create(m_workerClientWrapper, m_loaderProxy, m_syncHelper))
 {
     ASSERT(m_workerClientWrapper.get());

@@ -44,9 +44,9 @@ static const long maxToneDurationMs = 6000;
 static const long minInterToneGapMs = 50;
 static const long defaultInterToneGapMs = 50;
 
-RTCDTMFSender* RTCDTMFSender::create(ExecutionContext* context, blink::WebRTCPeerConnectionHandler* peerConnectionHandler, MediaStreamTrack* track, ExceptionState& exceptionState)
+RTCDTMFSender* RTCDTMFSender::create(ExecutionContext* context, WebRTCPeerConnectionHandler* peerConnectionHandler, MediaStreamTrack* track, ExceptionState& exceptionState)
 {
-    OwnPtr<blink::WebRTCDTMFSenderHandler> handler = adoptPtr(peerConnectionHandler->createDTMFSender(track->component()));
+    OwnPtr<WebRTCDTMFSenderHandler> handler = adoptPtr(peerConnectionHandler->createDTMFSender(track->component()));
     if (!handler) {
         exceptionState.throwDOMException(NotSupportedError, "The MediaStreamTrack provided is not an element of a MediaStream that's currently in the local streams set.");
         return nullptr;
@@ -57,7 +57,7 @@ RTCDTMFSender* RTCDTMFSender::create(ExecutionContext* context, blink::WebRTCPee
     return dtmfSender;
 }
 
-RTCDTMFSender::RTCDTMFSender(ExecutionContext* context, MediaStreamTrack* track, PassOwnPtr<blink::WebRTCDTMFSenderHandler> handler)
+RTCDTMFSender::RTCDTMFSender(ExecutionContext* context, MediaStreamTrack* track, PassOwnPtr<WebRTCDTMFSenderHandler> handler)
     : ActiveDOMObject(context)
     , m_track(track)
     , m_duration(defaultToneDurationMs)
@@ -123,7 +123,7 @@ void RTCDTMFSender::insertDTMF(const String& tones, long duration, long interTon
         exceptionState.throwDOMException(SyntaxError, "Could not send provided tones, '" + tones + "'.");
 }
 
-void RTCDTMFSender::didPlayTone(const blink::WebString& tone)
+void RTCDTMFSender::didPlayTone(const WebString& tone)
 {
     scheduleDispatchEvent(RTCDTMFToneChangeEvent::create(tone));
 }

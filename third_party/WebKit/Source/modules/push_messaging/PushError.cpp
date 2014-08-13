@@ -14,9 +14,9 @@ PassRefPtrWillBeRawPtr<DOMException> PushError::take(ScriptPromiseResolver*, Web
 {
     OwnPtr<WebType> webError = adoptPtr(webErrorRaw);
     switch (webError->errorType) {
-    case blink::WebPushError::ErrorTypeAbort:
+    case WebPushError::ErrorTypeAbort:
         return DOMException::create(AbortError, webError->message);
-    case blink::WebPushError::ErrorTypeUnknown:
+    case WebPushError::ErrorTypeUnknown:
         return DOMException::create(UnknownError);
     }
     ASSERT_NOT_REACHED();

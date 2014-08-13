@@ -37,11 +37,11 @@ ScriptPromise PushManager::registerPushMessaging(ScriptState* scriptState, const
     if (!document->domWindow() || !document->page())
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Document is detached from window."));
 
-    blink::WebServiceWorkerProvider* serviceWorkerProvider = NavigatorServiceWorker::serviceWorker(document->domWindow()->navigator())->provider();
+    WebServiceWorkerProvider* serviceWorkerProvider = NavigatorServiceWorker::serviceWorker(document->domWindow()->navigator())->provider();
     if (!serviceWorkerProvider)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "No Service Worker installed for this document."));
 
-    blink::WebPushClient* client = PushController::clientFrom(document->page());
+    WebPushClient* client = PushController::clientFrom(document->page());
     ASSERT(client);
 
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);

@@ -47,9 +47,9 @@
 
 namespace blink {
 
-static blink::WebMediaConstraints parseOptions(const Dictionary& options, const String& mediaType, ExceptionState& exceptionState)
+static WebMediaConstraints parseOptions(const Dictionary& options, const String& mediaType, ExceptionState& exceptionState)
 {
-    blink::WebMediaConstraints constraints;
+    WebMediaConstraints constraints;
 
     Dictionary constraintsDictionary;
     bool ok = options.get(mediaType, constraintsDictionary);
@@ -67,11 +67,11 @@ static blink::WebMediaConstraints parseOptions(const Dictionary& options, const 
 
 UserMediaRequest* UserMediaRequest::create(ExecutionContext* context, UserMediaController* controller, const Dictionary& options, PassOwnPtr<NavigatorUserMediaSuccessCallback> successCallback, PassOwnPtr<NavigatorUserMediaErrorCallback> errorCallback, ExceptionState& exceptionState)
 {
-    blink::WebMediaConstraints audio = parseOptions(options, "audio", exceptionState);
+    WebMediaConstraints audio = parseOptions(options, "audio", exceptionState);
     if (exceptionState.hadException())
         return nullptr;
 
-    blink::WebMediaConstraints video = parseOptions(options, "video", exceptionState);
+    WebMediaConstraints video = parseOptions(options, "video", exceptionState);
     if (exceptionState.hadException())
         return nullptr;
 
@@ -83,7 +83,7 @@ UserMediaRequest* UserMediaRequest::create(ExecutionContext* context, UserMediaC
     return new UserMediaRequest(context, controller, audio, video, successCallback, errorCallback);
 }
 
-UserMediaRequest::UserMediaRequest(ExecutionContext* context, UserMediaController* controller, blink::WebMediaConstraints audio, blink::WebMediaConstraints video, PassOwnPtr<NavigatorUserMediaSuccessCallback> successCallback, PassOwnPtr<NavigatorUserMediaErrorCallback> errorCallback)
+UserMediaRequest::UserMediaRequest(ExecutionContext* context, UserMediaController* controller, WebMediaConstraints audio, WebMediaConstraints video, PassOwnPtr<NavigatorUserMediaSuccessCallback> successCallback, PassOwnPtr<NavigatorUserMediaErrorCallback> errorCallback)
     : ContextLifecycleObserver(context)
     , m_audio(audio)
     , m_video(video)
@@ -107,12 +107,12 @@ bool UserMediaRequest::video() const
     return !m_video.isNull();
 }
 
-blink::WebMediaConstraints UserMediaRequest::audioConstraints() const
+WebMediaConstraints UserMediaRequest::audioConstraints() const
 {
     return m_audio;
 }
 
-blink::WebMediaConstraints UserMediaRequest::videoConstraints() const
+WebMediaConstraints UserMediaRequest::videoConstraints() const
 {
     return m_video;
 }

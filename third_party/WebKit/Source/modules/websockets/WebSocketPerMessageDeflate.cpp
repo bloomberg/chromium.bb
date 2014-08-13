@@ -137,7 +137,7 @@ bool CompressionMessageExtensionProcessor::processResponse(const HashMap<String,
         m_failureReason = "Received an unexpected permessage-deflate extension parameter";
         return false;
     }
-    blink::Platform::current()->histogramEnumeration("WebCore.WebSocket.PerMessageDeflateContextTakeOverMode", mode, WebSocketDeflater::ContextTakeOverModeMax);
+    Platform::current()->histogramEnumeration("WebCore.WebSocket.PerMessageDeflateContextTakeOverMode", mode, WebSocketDeflater::ContextTakeOverModeMax);
     m_compress.enable(windowBits, mode);
     // Since we don't request server_no_context_takeover and server_max_window_bits, they should be ignored.
     return true;

@@ -56,7 +56,7 @@ String MediaStreamTrackSourcesRequestImpl::origin()
     return m_executionContext->securityOrigin()->toString();
 }
 
-void MediaStreamTrackSourcesRequestImpl::requestSucceeded(const blink::WebVector<blink::WebSourceInfo>& webSourceInfos)
+void MediaStreamTrackSourcesRequestImpl::requestSucceeded(const WebVector<WebSourceInfo>& webSourceInfos)
 {
     ASSERT(m_callback);
 

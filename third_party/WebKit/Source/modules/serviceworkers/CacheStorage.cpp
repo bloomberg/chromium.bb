@@ -77,7 +77,7 @@ public:
     explicit CacheStorageKeysCallbacks(PassRefPtr<ScriptPromiseResolver> resolver) : m_resolver(resolver) { }
     virtual ~CacheStorageKeysCallbacks() { }
 
-    virtual void onSuccess(blink::WebVector<blink::WebString>* keys) OVERRIDE
+    virtual void onSuccess(WebVector<WebString>* keys) OVERRIDE
     {
         Vector<String> wtfKeys;
         for (size_t i = 0; i < keys->size(); ++i)

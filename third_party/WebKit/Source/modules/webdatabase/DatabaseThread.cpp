@@ -72,7 +72,7 @@ void DatabaseThread::start()
 {
     if (m_thread)
         return;
-    m_thread = adoptPtr(blink::Platform::current()->createThread("WebCore: Database"));
+    m_thread = adoptPtr(Platform::current()->createThread("WebCore: Database"));
     m_thread->postTask(new Task(WTF::bind(&DatabaseThread::setupDatabaseThread, this)));
 }
 

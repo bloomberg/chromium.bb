@@ -262,7 +262,7 @@ void FetchManager::Loader::performHTTPFetch()
     // We use ResourceRequest class for HTTPRequest.
     // FIXME: Support body.
     ResourceRequest request(m_request->url());
-    request.setRequestContext(blink::WebURLRequest::RequestContextFetch);
+    request.setRequestContext(WebURLRequest::RequestContextFetch);
     request.setDownloadToFile(true);
     request.setHTTPMethod(m_request->method());
     const Vector<OwnPtr<FetchHeaderList::Header> >& list = m_request->headerList()->list();

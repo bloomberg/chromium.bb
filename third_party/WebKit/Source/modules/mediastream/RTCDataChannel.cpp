@@ -52,15 +52,15 @@ static void throwNoBlobSupportException(ExceptionState& exceptionState)
     exceptionState.throwDOMException(NotSupportedError, "Blob support not implemented yet");
 }
 
-RTCDataChannel* RTCDataChannel::create(ExecutionContext* context, RTCPeerConnection* connection, PassOwnPtr<blink::WebRTCDataChannelHandler> handler)
+RTCDataChannel* RTCDataChannel::create(ExecutionContext* context, RTCPeerConnection* connection, PassOwnPtr<WebRTCDataChannelHandler> handler)
 {
     ASSERT(handler);
     return adoptRefCountedGarbageCollectedWillBeNoop(new RTCDataChannel(context, connection, handler));
 }
 
-RTCDataChannel* RTCDataChannel::create(ExecutionContext* context, RTCPeerConnection* connection, blink::WebRTCPeerConnectionHandler* peerConnectionHandler, const String& label, const blink::WebRTCDataChannelInit& init, ExceptionState& exceptionState)
+RTCDataChannel* RTCDataChannel::create(ExecutionContext* context, RTCPeerConnection* connection, WebRTCPeerConnectionHandler* peerConnectionHandler, const String& label, const WebRTCDataChannelInit& init, ExceptionState& exceptionState)
 {
-    OwnPtr<blink::WebRTCDataChannelHandler> handler = adoptPtr(peerConnectionHandler->createDataChannel(label, init));
+    OwnPtr<WebRTCDataChannelHandler> handler = adoptPtr(peerConnectionHandler->createDataChannel(label, init));
     if (!handler) {
         exceptionState.throwDOMException(NotSupportedError, "RTCDataChannel is not supported");
         return nullptr;
@@ -68,7 +68,7 @@ RTCDataChannel* RTCDataChannel::create(ExecutionContext* context, RTCPeerConnect
     return adoptRefCountedGarbageCollectedWillBeNoop(new RTCDataChannel(context, connection, handler.release()));
 }
 
-RTCDataChannel::RTCDataChannel(ExecutionContext* context, RTCPeerConnection* connection, PassOwnPtr<blink::WebRTCDataChannelHandler> handler)
+RTCDataChannel::RTCDataChannel(ExecutionContext* context, RTCPeerConnection* connection, PassOwnPtr<WebRTCDataChannelHandler> handler)
     : m_executionContext(context)
     , m_handler(handler)
     , m_stopped(false)
@@ -227,7 +227,7 @@ void RTCDataChannel::close()
     m_handler->close();
 }
 
-void RTCDataChannel::didChangeReadyState(blink::WebRTCDataChannelHandlerClient::ReadyState newState)
+void RTCDataChannel::didChangeReadyState(WebRTCDataChannelHandlerClient::ReadyState newState)
 {
     if (m_stopped || m_readyState == ReadyStateClosed)
         return;
@@ -246,7 +246,7 @@ void RTCDataChannel::didChangeReadyState(blink::WebRTCDataChannelHandlerClient::
     }
 }
 
-void RTCDataChannel::didReceiveStringData(const blink::WebString& text)
+void RTCDataChannel::didReceiveStringData(const WebString& text)
 {
     if (m_stopped)
         return;

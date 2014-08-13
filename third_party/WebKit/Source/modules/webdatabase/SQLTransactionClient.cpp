@@ -45,8 +45,8 @@ namespace blink {
 
 static void databaseModified(DatabaseBackendBase* database)
 {
-    if (blink::Platform::current()->databaseObserver()) {
-        blink::Platform::current()->databaseObserver()->databaseModified(
+    if (Platform::current()->databaseObserver()) {
+        Platform::current()->databaseObserver()->databaseModified(
             createDatabaseIdentifierFromSecurityOrigin(database->securityOrigin()),
             database->stringIdentifier());
     }
@@ -71,4 +71,4 @@ bool SQLTransactionClient::didExceedQuota(DatabaseBackendBase* database)
     return false;
 }
 
-}
+} // namespace blink

@@ -30,13 +30,13 @@
 
 namespace blink {
 
-SourceInfo* SourceInfo::create(const blink::WebSourceInfo& webSourceInfo)
+SourceInfo* SourceInfo::create(const WebSourceInfo& webSourceInfo)
 {
     ASSERT(!webSourceInfo.isNull());
     return new SourceInfo(webSourceInfo);
 }
 
-SourceInfo::SourceInfo(const blink::WebSourceInfo& webSourceInfo)
+SourceInfo::SourceInfo(const WebSourceInfo& webSourceInfo)
     : m_webSourceInfo(webSourceInfo)
 {
     ScriptWrappable::init(this);
@@ -50,11 +50,11 @@ String SourceInfo::id() const
 String SourceInfo::kind() const
 {
     switch (m_webSourceInfo.kind()) {
-    case blink::WebSourceInfo::SourceKindAudio:
+    case WebSourceInfo::SourceKindAudio:
         return "audio";
-    case blink::WebSourceInfo::SourceKindVideo:
+    case WebSourceInfo::SourceKindVideo:
         return "video";
-    case blink::WebSourceInfo::SourceKindNone:
+    case WebSourceInfo::SourceKindNone:
         return "none";
     }
 
@@ -70,11 +70,11 @@ String SourceInfo::label() const
 String SourceInfo::facing() const
 {
     switch (m_webSourceInfo.facing()) {
-    case blink::WebSourceInfo::VideoFacingModeNone:
+    case WebSourceInfo::VideoFacingModeNone:
         return String();
-    case blink::WebSourceInfo::VideoFacingModeUser:
+    case WebSourceInfo::VideoFacingModeUser:
         return "user";
-    case blink::WebSourceInfo::VideoFacingModeEnvironment:
+    case WebSourceInfo::VideoFacingModeEnvironment:
         return "environment";
     }
 

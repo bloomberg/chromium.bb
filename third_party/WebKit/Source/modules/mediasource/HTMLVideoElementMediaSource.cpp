@@ -45,7 +45,7 @@ VideoPlaybackQuality* HTMLVideoElementMediaSource::getVideoPlaybackQuality(HTMLV
     unsigned total = 0;
     unsigned dropped = 0;
     unsigned corrupted = 0;
-    blink::WebMediaPlayer* webMediaPlayer = videoElement.webMediaPlayer();
+    WebMediaPlayer* webMediaPlayer = videoElement.webMediaPlayer();
     if (webMediaPlayer) {
         total = webMediaPlayer->decodedFrameCount();
         dropped = webMediaPlayer->droppedFrameCount();
@@ -55,4 +55,4 @@ VideoPlaybackQuality* HTMLVideoElementMediaSource::getVideoPlaybackQuality(HTMLV
     return VideoPlaybackQuality::create(videoElement.document(), total, dropped, corrupted);
 }
 
-}
+} // namespace blink

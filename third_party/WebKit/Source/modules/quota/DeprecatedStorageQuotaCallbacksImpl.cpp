@@ -64,7 +64,7 @@ void DeprecatedStorageQuotaCallbacksImpl::didGrantStorageQuota(unsigned long lon
         m_quotaCallback->handleEvent(grantedQuotaInBytes);
 }
 
-void DeprecatedStorageQuotaCallbacksImpl::didFail(blink::WebStorageQuotaError error)
+void DeprecatedStorageQuotaCallbacksImpl::didFail(WebStorageQuotaError error)
 {
     if (m_errorCallback)
         m_errorCallback->handleEvent(DOMError::create(static_cast<ExceptionCode>(error)).get());

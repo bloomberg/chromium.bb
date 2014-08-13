@@ -27,7 +27,7 @@ void ScreenOrientationController::persistentHostHasBeenDestroyed()
     observeContext(0);
 }
 
-void ScreenOrientationController::provideTo(LocalFrame& frame, blink::WebScreenOrientationClient* client)
+void ScreenOrientationController::provideTo(LocalFrame& frame, WebScreenOrientationClient* client)
 {
     ASSERT(RuntimeEnabledFeatures::screenOrientationEnabled());
 
@@ -40,7 +40,7 @@ ScreenOrientationController* ScreenOrientationController::from(LocalFrame& frame
     return static_cast<ScreenOrientationController*>(WillBeHeapSupplement<LocalFrame>::from(frame, supplementName()));
 }
 
-ScreenOrientationController::ScreenOrientationController(LocalFrame& frame, blink::WebScreenOrientationClient* client)
+ScreenOrientationController::ScreenOrientationController(LocalFrame& frame, WebScreenOrientationClient* client)
     : PlatformEventController(frame.page())
     , m_client(client)
     , m_frame(frame)
@@ -54,29 +54,29 @@ const char* ScreenOrientationController::supplementName()
 }
 
 // Compute the screen orientation using the orientation angle and the screen width / height.
-blink::WebScreenOrientationType ScreenOrientationController::computeOrientation(FrameView* view)
+WebScreenOrientationType ScreenOrientationController::computeOrientation(FrameView* view)
 {
     // Bypass orientation detection in layout tests to get consistent results.
     // FIXME: The screen dimension should be fixed when running the layout tests to avoid such
     // issues.
     if (LayoutTestSupport::isRunningLayoutTest())
-        return blink::WebScreenOrientationPortraitPrimary;
+        return WebScreenOrientationPortraitPrimary;
 
     FloatRect rect = screenRect(view);
     uint16_t rotation = screenOrientationAngle(view);
     bool isTallDisplay = rotation % 180 ? rect.height() < rect.width() : rect.height() > rect.width();
     switch (rotation) {
     case 0:
-        return isTallDisplay ? blink::WebScreenOrientationPortraitPrimary : blink::WebScreenOrientationLandscapePrimary;
+        return isTallDisplay ? WebScreenOrientationPortraitPrimary : WebScreenOrientationLandscapePrimary;
     case 90:
-        return isTallDisplay ? blink::WebScreenOrientationLandscapePrimary : blink::WebScreenOrientationPortraitSecondary;
+        return isTallDisplay ? WebScreenOrientationLandscapePrimary : WebScreenOrientationPortraitSecondary;
     case 180:
-        return isTallDisplay ? blink::WebScreenOrientationPortraitSecondary : blink::WebScreenOrientationLandscapeSecondary;
+        return isTallDisplay ? WebScreenOrientationPortraitSecondary : WebScreenOrientationLandscapeSecondary;
     case 270:
-        return isTallDisplay ? blink::WebScreenOrientationLandscapeSecondary : blink::WebScreenOrientationPortraitPrimary;
+        return isTallDisplay ? WebScreenOrientationLandscapeSecondary : WebScreenOrientationPortraitPrimary;
     default:
         ASSERT_NOT_REACHED();
-        return blink::WebScreenOrientationPortraitPrimary;
+        return WebScreenOrientationPortraitPrimary;
     }
 }
 
@@ -84,12 +84,12 @@ void ScreenOrientationController::updateOrientation()
 {
     ASSERT(m_orientation);
 
-    blink::WebScreenOrientationType orientationType = screenOrientationType(m_frame.view());
-    if (orientationType == blink::WebScreenOrientationUndefined) {
+    WebScreenOrientationType orientationType = screenOrientationType(m_frame.view());
+    if (orientationType == WebScreenOrientationUndefined) {
         // The embedder could not provide us with an orientation, deduce it ourselves.
         orientationType = computeOrientation(m_frame.view());
     }
-    ASSERT(orientationType != blink::WebScreenOrientationUndefined);
+    ASSERT(orientationType != WebScreenOrientationUndefined);
 
     m_orientation->setType(orientationType);
     m_orientation->setAngle(screenOrientationAngle(m_frame.view()));
@@ -153,7 +153,7 @@ void ScreenOrientationController::setOrientation(ScreenOrientation* orientation)
     notifyDispatcher();
 }
 
-void ScreenOrientationController::lock(blink::WebScreenOrientationLockType orientation, blink::WebLockOrientationCallback* callback)
+void ScreenOrientationController::lock(WebScreenOrientationLockType orientation, WebLockOrientationCallback* callback)
 {
     ASSERT(m_client);
     m_client->lockOrientation(orientation, callback);

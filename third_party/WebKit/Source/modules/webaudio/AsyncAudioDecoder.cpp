@@ -41,7 +41,7 @@
 namespace blink {
 
 AsyncAudioDecoder::AsyncAudioDecoder()
-    : m_thread(adoptPtr(blink::Platform::current()->createThread("Audio Decoder")))
+    : m_thread(adoptPtr(Platform::current()->createThread("Audio Decoder")))
 {
 }
 

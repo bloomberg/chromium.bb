@@ -30,7 +30,7 @@ PassRefPtrWillBeRawPtr<FetchRequestData> FetchRequestData::create(ExecutionConte
     return request.release();
 }
 
-PassRefPtrWillBeRawPtr<FetchRequestData> FetchRequestData::create(const blink::WebServiceWorkerRequest& webRequest)
+PassRefPtrWillBeRawPtr<FetchRequestData> FetchRequestData::create(const WebServiceWorkerRequest& webRequest)
 {
     RefPtrWillBeRawPtr<FetchRequestData> request = FetchRequestData::create();
     request->m_url = webRequest.url();

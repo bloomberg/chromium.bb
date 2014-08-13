@@ -156,7 +156,7 @@ PassRefPtrWillBeRawPtr<FetchBodyStream> Response::body(ExecutionContext* context
     return m_fetchBodyStream;
 }
 
-void Response::populateWebServiceWorkerResponse(blink::WebServiceWorkerResponse& response)
+void Response::populateWebServiceWorkerResponse(WebServiceWorkerResponse& response)
 {
     m_response->populateWebServiceWorkerResponse(response);
 }

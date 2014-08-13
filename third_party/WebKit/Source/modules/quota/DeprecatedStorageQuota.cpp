@@ -56,8 +56,8 @@ void DeprecatedStorageQuota::queryUsageAndQuota(ExecutionContext* executionConte
 {
     ASSERT(executionContext);
 
-    blink::WebStorageQuotaType storageType = static_cast<blink::WebStorageQuotaType>(m_type);
-    if (storageType != blink::WebStorageQuotaTypeTemporary && storageType != blink::WebStorageQuotaTypePersistent) {
+    WebStorageQuotaType storageType = static_cast<WebStorageQuotaType>(m_type);
+    if (storageType != WebStorageQuotaTypeTemporary && storageType != WebStorageQuotaTypePersistent) {
         // Unknown storage type is requested.
         executionContext->postTask(StorageErrorCallback::CallbackTask::create(errorCallback, NotSupportedError));
         return;
@@ -71,15 +71,15 @@ void DeprecatedStorageQuota::queryUsageAndQuota(ExecutionContext* executionConte
 
     KURL storagePartition = KURL(KURL(), securityOrigin->toString());
     OwnPtr<StorageQuotaCallbacks> callbacks = DeprecatedStorageQuotaCallbacksImpl::create(successCallback, errorCallback);
-    blink::Platform::current()->queryStorageUsageAndQuota(storagePartition, storageType, callbacks.release());
+    Platform::current()->queryStorageUsageAndQuota(storagePartition, storageType, callbacks.release());
 }
 
 void DeprecatedStorageQuota::requestQuota(ExecutionContext* executionContext, unsigned long long newQuotaInBytes, PassOwnPtr<StorageQuotaCallback> successCallback, PassOwnPtr<StorageErrorCallback> errorCallback)
 {
     ASSERT(executionContext);
 
-    blink::WebStorageQuotaType storageType = static_cast<blink::WebStorageQuotaType>(m_type);
-    if (storageType != blink::WebStorageQuotaTypeTemporary && storageType != blink::WebStorageQuotaTypePersistent) {
+    WebStorageQuotaType storageType = static_cast<WebStorageQuotaType>(m_type);
+    if (storageType != WebStorageQuotaTypeTemporary && storageType != WebStorageQuotaTypePersistent) {
         // Unknown storage type is requested.
         executionContext->postTask(StorageErrorCallback::CallbackTask::create(errorCallback, NotSupportedError));
         return;

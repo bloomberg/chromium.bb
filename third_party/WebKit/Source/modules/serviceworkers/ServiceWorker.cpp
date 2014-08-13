@@ -112,21 +112,21 @@ const AtomicString& ServiceWorker::state() const
     DEFINE_STATIC_LOCAL(AtomicString, redundant, ("redundant", AtomicString::ConstructFromLiteral));
 
     switch (m_outerWorker->state()) {
-    case blink::WebServiceWorkerStateUnknown:
+    case WebServiceWorkerStateUnknown:
         // The web platform should never see this internal state
         ASSERT_NOT_REACHED();
         return unknown;
-    case blink::WebServiceWorkerStateParsed:
+    case WebServiceWorkerStateParsed:
         return parsed;
-    case blink::WebServiceWorkerStateInstalling:
+    case WebServiceWorkerStateInstalling:
         return installing;
-    case blink::WebServiceWorkerStateInstalled:
+    case WebServiceWorkerStateInstalled:
         return installed;
-    case blink::WebServiceWorkerStateActivating:
+    case WebServiceWorkerStateActivating:
         return activating;
-    case blink::WebServiceWorkerStateActivated:
+    case WebServiceWorkerStateActivated:
         return activated;
-    case blink::WebServiceWorkerStateRedundant:
+    case WebServiceWorkerStateRedundant:
         return redundant;
     default:
         ASSERT_NOT_REACHED();
@@ -213,7 +213,7 @@ bool ServiceWorker::hasPendingActivity() const
         return true;
     if (m_proxyState == ContextStopped)
         return false;
-    return m_outerWorker->state() != blink::WebServiceWorkerStateRedundant;
+    return m_outerWorker->state() != WebServiceWorkerStateRedundant;
 }
 
 void ServiceWorker::stop()

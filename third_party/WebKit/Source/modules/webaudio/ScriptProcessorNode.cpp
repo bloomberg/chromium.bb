@@ -52,7 +52,7 @@ static size_t chooseBufferSize()
     // Choose a buffer size based on the audio hardware buffer size. Arbitarily make it a power of
     // two that is 4 times greater than the hardware buffer size.
     // FIXME: What is the best way to choose this?
-    size_t hardwareBufferSize = blink::Platform::current()->audioHardwareBufferSize();
+    size_t hardwareBufferSize = Platform::current()->audioHardwareBufferSize();
     size_t bufferSize = 1 << static_cast<unsigned>(log2(4 * hardwareBufferSize) + 0.5);
 
     if (bufferSize < 256)

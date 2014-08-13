@@ -213,7 +213,7 @@ RTCPeerConnection* RTCPeerConnection::create(ExecutionContext* context, const Di
     if (exceptionState.hadException())
         return nullptr;
 
-    blink::WebMediaConstraints constraints = MediaConstraintsImpl::create(mediaConstraints, exceptionState);
+    WebMediaConstraints constraints = MediaConstraintsImpl::create(mediaConstraints, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
 
@@ -225,7 +225,7 @@ RTCPeerConnection* RTCPeerConnection::create(ExecutionContext* context, const Di
     return peerConnection;
 }
 
-RTCPeerConnection::RTCPeerConnection(ExecutionContext* context, PassRefPtr<RTCConfiguration> configuration, blink::WebMediaConstraints constraints, ExceptionState& exceptionState)
+RTCPeerConnection::RTCPeerConnection(ExecutionContext* context, PassRefPtr<RTCConfiguration> configuration, WebMediaConstraints constraints, ExceptionState& exceptionState)
     : ActiveDOMObject(context)
     , m_signalingState(SignalingStateStable)
     , m_iceGatheringState(ICEGatheringStateNew)
@@ -246,7 +246,7 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context, PassRefPtr<RTCCo
         return;
     }
 
-    m_peerHandler = adoptPtr(blink::Platform::current()->createRTCPeerConnectionHandler(this));
+    m_peerHandler = adoptPtr(Platform::current()->createRTCPeerConnectionHandler(this));
     if (!m_peerHandler) {
         m_closed = true;
         m_stopped = true;
@@ -287,7 +287,7 @@ void RTCPeerConnection::createOffer(PassOwnPtr<RTCSessionDescriptionCallback> su
     if (offerOptions) {
         m_peerHandler->createOffer(request.release(), offerOptions.release());
     } else {
-        blink::WebMediaConstraints constraints = MediaConstraintsImpl::create(rtcOfferOptions, exceptionState);
+        WebMediaConstraints constraints = MediaConstraintsImpl::create(rtcOfferOptions, exceptionState);
         if (exceptionState.hadException())
             return;
 
@@ -302,7 +302,7 @@ void RTCPeerConnection::createAnswer(PassOwnPtr<RTCSessionDescriptionCallback> s
 
     ASSERT(successCallback);
 
-    blink::WebMediaConstraints constraints = MediaConstraintsImpl::create(mediaConstraints, exceptionState);
+    WebMediaConstraints constraints = MediaConstraintsImpl::create(mediaConstraints, exceptionState);
     if (exceptionState.hadException())
         return;
 
@@ -326,7 +326,7 @@ void RTCPeerConnection::setLocalDescription(RTCSessionDescription* sessionDescri
 
 RTCSessionDescription* RTCPeerConnection::localDescription(ExceptionState& exceptionState)
 {
-    blink::WebRTCSessionDescription webSessionDescription = m_peerHandler->localDescription();
+    WebRTCSessionDescription webSessionDescription = m_peerHandler->localDescription();
     if (webSessionDescription.isNull())
         return nullptr;
 
@@ -349,7 +349,7 @@ void RTCPeerConnection::setRemoteDescription(RTCSessionDescription* sessionDescr
 
 RTCSessionDescription* RTCPeerConnection::remoteDescription(ExceptionState& exceptionState)
 {
-    blink::WebRTCSessionDescription webSessionDescription = m_peerHandler->remoteDescription();
+    WebRTCSessionDescription webSessionDescription = m_peerHandler->remoteDescription();
     if (webSessionDescription.isNull())
         return nullptr;
 
@@ -365,7 +365,7 @@ void RTCPeerConnection::updateIce(const Dictionary& rtcConfiguration, const Dict
     if (exceptionState.hadException())
         return;
 
-    blink::WebMediaConstraints constraints = MediaConstraintsImpl::create(mediaConstraints, exceptionState);
+    WebMediaConstraints constraints = MediaConstraintsImpl::create(mediaConstraints, exceptionState);
     if (exceptionState.hadException())
         return;
 
@@ -481,7 +481,7 @@ void RTCPeerConnection::addStream(MediaStream* stream, const Dictionary& mediaCo
     if (m_localStreams.contains(stream))
         return;
 
-    blink::WebMediaConstraints constraints = MediaConstraintsImpl::create(mediaConstraints, exceptionState);
+    WebMediaConstraints constraints = MediaConstraintsImpl::create(mediaConstraints, exceptionState);
     if (exceptionState.hadException())
         return;
 
@@ -548,7 +548,7 @@ RTCDataChannel* RTCPeerConnection::createDataChannel(String label, const Diction
     if (throwExceptionIfSignalingStateClosed(m_signalingState, exceptionState))
         return nullptr;
 
-    blink::WebRTCDataChannelInit init;
+    WebRTCDataChannelInit init;
     DictionaryHelper::get(options, "ordered", init.ordered);
     DictionaryHelper::get(options, "negotiated", init.negotiated);
 
@@ -620,7 +620,7 @@ void RTCPeerConnection::negotiationNeeded()
     scheduleDispatchEvent(Event::create(EventTypeNames::negotiationneeded));
 }
 
-void RTCPeerConnection::didGenerateICECandidate(const blink::WebRTCICECandidate& webCandidate)
+void RTCPeerConnection::didGenerateICECandidate(const WebRTCICECandidate& webCandidate)
 {
     ASSERT(!m_closed);
     ASSERT(executionContext()->isContextThread());
@@ -653,7 +653,7 @@ void RTCPeerConnection::didChangeICEConnectionState(ICEConnectionState newState)
     changeIceConnectionState(newState);
 }
 
-void RTCPeerConnection::didAddRemoteStream(const blink::WebMediaStream& remoteStream)
+void RTCPeerConnection::didAddRemoteStream(const WebMediaStream& remoteStream)
 {
     ASSERT(!m_closed);
     ASSERT(executionContext()->isContextThread());
@@ -667,7 +667,7 @@ void RTCPeerConnection::didAddRemoteStream(const blink::WebMediaStream& remoteSt
     scheduleDispatchEvent(MediaStreamEvent::create(EventTypeNames::addstream, false, false, stream));
 }
 
-void RTCPeerConnection::didRemoveRemoteStream(const blink::WebMediaStream& remoteStream)
+void RTCPeerConnection::didRemoveRemoteStream(const WebMediaStream& remoteStream)
 {
     ASSERT(!m_closed);
     ASSERT(executionContext()->isContextThread());
@@ -688,7 +688,7 @@ void RTCPeerConnection::didRemoveRemoteStream(const blink::WebMediaStream& remot
     scheduleDispatchEvent(MediaStreamEvent::create(EventTypeNames::removestream, false, false, stream));
 }
 
-void RTCPeerConnection::didAddRemoteDataChannel(blink::WebRTCDataChannelHandler* handler)
+void RTCPeerConnection::didAddRemoteDataChannel(WebRTCDataChannelHandler* handler)
 {
     ASSERT(!m_closed);
     ASSERT(executionContext()->isContextThread());

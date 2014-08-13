@@ -25,12 +25,12 @@ ScreenOrientationDispatcher::~ScreenOrientationDispatcher()
 
 void ScreenOrientationDispatcher::startListening()
 {
-    blink::Platform::current()->startListening(WebPlatformEventScreenOrientation, 0);
+    Platform::current()->startListening(WebPlatformEventScreenOrientation, 0);
 }
 
 void ScreenOrientationDispatcher::stopListening()
 {
-    blink::Platform::current()->stopListening(WebPlatformEventScreenOrientation);
+    Platform::current()->stopListening(WebPlatformEventScreenOrientation);
 }
 
 } // namespace blink

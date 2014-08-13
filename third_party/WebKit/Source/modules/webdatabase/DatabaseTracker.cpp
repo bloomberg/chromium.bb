@@ -50,8 +50,8 @@ namespace blink {
 
 static void databaseClosed(DatabaseBackendBase* database)
 {
-    if (blink::Platform::current()->databaseObserver()) {
-        blink::Platform::current()->databaseObserver()->databaseClosed(
+    if (Platform::current()->databaseObserver()) {
+        Platform::current()->databaseObserver()->databaseClosed(
             createDatabaseIdentifierFromSecurityOrigin(database->securityOrigin()),
             database->stringIdentifier());
     }
@@ -169,8 +169,8 @@ void DatabaseTracker::removeOpenDatabase(DatabaseBackendBase* database)
 void DatabaseTracker::prepareToOpenDatabase(DatabaseBackendBase* database)
 {
     ASSERT(database->databaseContext()->executionContext()->isContextThread());
-    if (blink::Platform::current()->databaseObserver()) {
-        blink::Platform::current()->databaseObserver()->databaseOpened(
+    if (Platform::current()->databaseObserver()) {
+        Platform::current()->databaseObserver()->databaseOpened(
             createDatabaseIdentifierFromSecurityOrigin(database->securityOrigin()),
             database->stringIdentifier(),
             database->displayName(),
@@ -290,4 +290,4 @@ void DatabaseTracker::closeOneDatabaseImmediately(const String& originIdentifier
     database->closeImmediately();
 }
 
-}
+} // namespace blink

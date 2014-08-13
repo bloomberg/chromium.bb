@@ -49,23 +49,23 @@ namespace blink {
 namespace {
 
 struct StorageTypeMapping {
-    blink::WebStorageQuotaType type;
+    WebStorageQuotaType type;
     const char* const name;
 };
 
 const StorageTypeMapping storageTypeMappings[] = {
-    { blink::WebStorageQuotaTypeTemporary, "temporary" },
-    { blink::WebStorageQuotaTypePersistent, "persistent" },
+    { WebStorageQuotaTypeTemporary, "temporary" },
+    { WebStorageQuotaTypePersistent, "persistent" },
 };
 
-blink::WebStorageQuotaType stringToStorageQuotaType(const String& type)
+WebStorageQuotaType stringToStorageQuotaType(const String& type)
 {
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(storageTypeMappings); ++i) {
         if (storageTypeMappings[i].name == type)
             return storageTypeMappings[i].type;
     }
     ASSERT_NOT_REACHED();
-    return blink::WebStorageQuotaTypeTemporary;
+    return WebStorageQuotaTypeTemporary;
 }
 
 } // namespace
@@ -96,7 +96,7 @@ ScriptPromise StorageQuota::queryInfo(ScriptState* scriptState, String type)
 
     KURL storagePartition = KURL(KURL(), securityOrigin->toString());
     OwnPtr<StorageQuotaCallbacks> callbacks = StorageQuotaCallbacksImpl::create(resolver);
-    blink::Platform::current()->queryStorageUsageAndQuota(storagePartition, stringToStorageQuotaType(type), callbacks.release());
+    Platform::current()->queryStorageUsageAndQuota(storagePartition, stringToStorageQuotaType(type), callbacks.release());
     return promise;
 }
 

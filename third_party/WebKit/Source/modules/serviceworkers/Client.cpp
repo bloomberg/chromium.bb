@@ -33,8 +33,8 @@ void Client::postMessage(ExecutionContext* context, PassRefPtr<SerializedScriptV
     if (exceptionState.hadException())
         return;
 
-    blink::WebString messageString = message->toWireString();
-    OwnPtr<blink::WebMessagePortChannelArray> webChannels = MessagePort::toWebMessagePortChannelArray(channels.release());
+    WebString messageString = message->toWireString();
+    OwnPtr<WebMessagePortChannelArray> webChannels = MessagePort::toWebMessagePortChannelArray(channels.release());
     ServiceWorkerGlobalScopeClient::from(context)->postMessageToClient(m_id, messageString, webChannels.release());
 }
 

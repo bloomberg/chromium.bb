@@ -43,21 +43,21 @@ static ScreenOrientationInfo* orientationsMap(unsigned& length)
     DEFINE_STATIC_LOCAL(const AtomicString, natural, ("natural", AtomicString::ConstructFromLiteral));
 
     static ScreenOrientationInfo orientationMap[] = {
-        { portraitPrimary, blink::WebScreenOrientationLockPortraitPrimary },
-        { portraitSecondary, blink::WebScreenOrientationLockPortraitSecondary },
-        { landscapePrimary, blink::WebScreenOrientationLockLandscapePrimary },
-        { landscapeSecondary, blink::WebScreenOrientationLockLandscapeSecondary },
-        { any, blink::WebScreenOrientationLockAny },
-        { portrait, blink::WebScreenOrientationLockPortrait },
-        { landscape, blink::WebScreenOrientationLockLandscape },
-        { natural, blink::WebScreenOrientationLockNatural }
+        { portraitPrimary, WebScreenOrientationLockPortraitPrimary },
+        { portraitSecondary, WebScreenOrientationLockPortraitSecondary },
+        { landscapePrimary, WebScreenOrientationLockLandscapePrimary },
+        { landscapeSecondary, WebScreenOrientationLockLandscapeSecondary },
+        { any, WebScreenOrientationLockAny },
+        { portrait, WebScreenOrientationLockPortrait },
+        { landscape, WebScreenOrientationLockLandscape },
+        { natural, WebScreenOrientationLockNatural }
     };
     length = WTF_ARRAY_LENGTH(orientationMap);
 
     return orientationMap;
 }
 
-const AtomicString& ScreenOrientation::orientationTypeToString(blink::WebScreenOrientationType orientation)
+const AtomicString& ScreenOrientation::orientationTypeToString(WebScreenOrientationType orientation)
 {
     unsigned length = 0;
     ScreenOrientationInfo* orientationMap = orientationsMap(length);
@@ -70,17 +70,17 @@ const AtomicString& ScreenOrientation::orientationTypeToString(blink::WebScreenO
     return nullAtom;
 }
 
-static blink::WebScreenOrientationLockType stringToOrientationLock(const AtomicString& orientationLockString)
+static WebScreenOrientationLockType stringToOrientationLock(const AtomicString& orientationLockString)
 {
     unsigned length = 0;
     ScreenOrientationInfo* orientationMap = orientationsMap(length);
     for (unsigned i = 0; i < length; ++i) {
         if (orientationMap[i].name == orientationLockString)
-            return static_cast<blink::WebScreenOrientationLockType>(orientationMap[i].orientation);
+            return static_cast<WebScreenOrientationLockType>(orientationMap[i].orientation);
     }
 
     ASSERT_NOT_REACHED();
-    return blink::WebScreenOrientationLockDefault;
+    return WebScreenOrientationLockDefault;
 }
 
 // static
@@ -103,7 +103,7 @@ ScreenOrientation* ScreenOrientation::create(LocalFrame* frame)
 
 ScreenOrientation::ScreenOrientation(LocalFrame* frame)
     : DOMWindowProperty(frame)
-    , m_type(blink::WebScreenOrientationUndefined)
+    , m_type(WebScreenOrientationUndefined)
     , m_angle(0)
 {
     ScriptWrappable::init(this);
@@ -135,7 +135,7 @@ unsigned short ScreenOrientation::angle() const
     return m_angle;
 }
 
-void ScreenOrientation::setType(blink::WebScreenOrientationType type)
+void ScreenOrientation::setType(WebScreenOrientationType type)
 {
     m_type = type;
 }

@@ -444,9 +444,9 @@ void MediaSource::endOfStream(const AtomicString& error, ExceptionState& excepti
     DEFINE_STATIC_LOCAL(const AtomicString, decode, ("decode", AtomicString::ConstructFromLiteral));
 
     if (error == network) {
-        endOfStreamInternal(blink::WebMediaSource::EndOfStreamStatusNetworkError, exceptionState);
+        endOfStreamInternal(WebMediaSource::EndOfStreamStatusNetworkError, exceptionState);
     } else if (error == decode) {
-        endOfStreamInternal(blink::WebMediaSource::EndOfStreamStatusDecodeError, exceptionState);
+        endOfStreamInternal(WebMediaSource::EndOfStreamStatusDecodeError, exceptionState);
     } else {
         ASSERT_NOT_REACHED(); // IDL enforcement should prevent this case.
     }
@@ -454,10 +454,10 @@ void MediaSource::endOfStream(const AtomicString& error, ExceptionState& excepti
 
 void MediaSource::endOfStream(ExceptionState& exceptionState)
 {
-    endOfStreamInternal(blink::WebMediaSource::EndOfStreamStatusNoError, exceptionState);
+    endOfStreamInternal(WebMediaSource::EndOfStreamStatusNoError, exceptionState);
 }
 
-void MediaSource::endOfStreamInternal(const blink::WebMediaSource::EndOfStreamStatus eosStatus, ExceptionState& exceptionState)
+void MediaSource::endOfStreamInternal(const WebMediaSource::EndOfStreamStatus eosStatus, ExceptionState& exceptionState)
 {
     // 2.2 http://www.w3.org/TR/media-source/#widl-MediaSource-endOfStream-void-EndOfStreamError-error
     // 1. If the readyState attribute is not in the "open" state then throw an

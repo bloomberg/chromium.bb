@@ -184,12 +184,12 @@ Request::Request(PassRefPtrWillBeRawPtr<FetchRequestData> request)
     ScriptWrappable::init(this);
 }
 
-PassRefPtrWillBeRawPtr<Request> Request::create(const blink::WebServiceWorkerRequest& webRequest)
+PassRefPtrWillBeRawPtr<Request> Request::create(const WebServiceWorkerRequest& webRequest)
 {
     return adoptRefWillBeNoop(new Request(webRequest));
 }
 
-Request::Request(const blink::WebServiceWorkerRequest& webRequest)
+Request::Request(const WebServiceWorkerRequest& webRequest)
     : m_request(FetchRequestData::create(webRequest))
     , m_headers(Headers::create(m_request->headerList()))
 {

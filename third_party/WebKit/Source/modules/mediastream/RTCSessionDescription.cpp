@@ -59,15 +59,15 @@ RTCSessionDescription* RTCSessionDescription::create(const Dictionary& descripti
     String sdp;
     DictionaryHelper::get(descriptionInitDict, "sdp", sdp);
 
-    return new RTCSessionDescription(blink::WebRTCSessionDescription(type, sdp));
+    return new RTCSessionDescription(WebRTCSessionDescription(type, sdp));
 }
 
-RTCSessionDescription* RTCSessionDescription::create(blink::WebRTCSessionDescription webSessionDescription)
+RTCSessionDescription* RTCSessionDescription::create(WebRTCSessionDescription webSessionDescription)
 {
     return new RTCSessionDescription(webSessionDescription);
 }
 
-RTCSessionDescription::RTCSessionDescription(blink::WebRTCSessionDescription webSessionDescription)
+RTCSessionDescription::RTCSessionDescription(WebRTCSessionDescription webSessionDescription)
     : m_webSessionDescription(webSessionDescription)
 {
     ScriptWrappable::init(this);
@@ -96,7 +96,7 @@ void RTCSessionDescription::setSdp(const String& sdp)
     m_webSessionDescription.setSDP(sdp);
 }
 
-blink::WebRTCSessionDescription RTCSessionDescription::webSessionDescription()
+WebRTCSessionDescription RTCSessionDescription::webSessionDescription()
 {
     return m_webSessionDescription;
 }

@@ -202,13 +202,13 @@ ScriptPromise ServiceWorkerContainer::ready(ScriptState* callerState)
 // If the WebServiceWorker is up for adoption (does not have a
 // WebServiceWorkerProxy owner), rejects the adoption by deleting the
 // WebServiceWorker.
-static void deleteIfNoExistingOwner(blink::WebServiceWorker* serviceWorker)
+static void deleteIfNoExistingOwner(WebServiceWorker* serviceWorker)
 {
     if (serviceWorker && !serviceWorker->proxy())
         delete serviceWorker;
 }
 
-void ServiceWorkerContainer::setActive(blink::WebServiceWorker* serviceWorker)
+void ServiceWorkerContainer::setActive(WebServiceWorker* serviceWorker)
 {
     if (!executionContext()) {
         deleteIfNoExistingOwner(serviceWorker);
@@ -236,7 +236,7 @@ void ServiceWorkerContainer::checkReadyChanged(PassRefPtrWillBeRawPtr<ServiceWor
         m_ready->resolve(currentReadyWorker);
 }
 
-void ServiceWorkerContainer::setController(blink::WebServiceWorker* serviceWorker)
+void ServiceWorkerContainer::setController(WebServiceWorker* serviceWorker)
 {
     if (!executionContext()) {
         deleteIfNoExistingOwner(serviceWorker);
@@ -245,7 +245,7 @@ void ServiceWorkerContainer::setController(blink::WebServiceWorker* serviceWorke
     m_controller = ServiceWorker::from(executionContext(), serviceWorker);
 }
 
-void ServiceWorkerContainer::setInstalling(blink::WebServiceWorker* serviceWorker)
+void ServiceWorkerContainer::setInstalling(WebServiceWorker* serviceWorker)
 {
     if (!executionContext()) {
         deleteIfNoExistingOwner(serviceWorker);
@@ -254,7 +254,7 @@ void ServiceWorkerContainer::setInstalling(blink::WebServiceWorker* serviceWorke
     m_installing = ServiceWorker::from(executionContext(), serviceWorker);
 }
 
-void ServiceWorkerContainer::setWaiting(blink::WebServiceWorker* serviceWorker)
+void ServiceWorkerContainer::setWaiting(WebServiceWorker* serviceWorker)
 {
     if (!executionContext()) {
         deleteIfNoExistingOwner(serviceWorker);
@@ -263,7 +263,7 @@ void ServiceWorkerContainer::setWaiting(blink::WebServiceWorker* serviceWorker)
     m_waiting = ServiceWorker::from(executionContext(), serviceWorker);
 }
 
-void ServiceWorkerContainer::dispatchMessageEvent(const blink::WebString& message, const blink::WebMessagePortChannelArray& webChannels)
+void ServiceWorkerContainer::dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray& webChannels)
 {
     if (!executionContext() || !executionContext()->executingWindow())
         return;

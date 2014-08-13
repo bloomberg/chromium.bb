@@ -26,21 +26,21 @@ void LockOrientationCallback::onSuccess()
     m_resolver->resolve();
 }
 
-void LockOrientationCallback::onError(blink::WebLockOrientationError error)
+void LockOrientationCallback::onError(WebLockOrientationError error)
 {
     ExceptionCode code = 0;
     String msg = "";
 
     switch (error) {
-    case blink::WebLockOrientationErrorNotAvailable:
+    case WebLockOrientationErrorNotAvailable:
         code = NotSupportedError;
         msg = "lockOrientation() is not available on this device.";
         break;
-    case blink::WebLockOrientationErrorFullScreenRequired:
+    case WebLockOrientationErrorFullScreenRequired:
         code = SecurityError;
         msg = "The page needs to be fullscreen in order to call lockOrientation().";
         break;
-    case blink::WebLockOrientationErrorCanceled:
+    case WebLockOrientationErrorCanceled:
         code = AbortError;
         msg = "A call to lockOrientation() or unlockOrientation() canceled this call.";
         break;

@@ -34,6 +34,7 @@
 #include "core/dom/ExceptionCode.h"
 
 using blink::WebServiceWorkerError;
+
 namespace blink {
 
 // static

@@ -109,9 +109,9 @@ void NewWebSocketChannelImpl::BlobLoader::didFail(FileError::ErrorCode errorCode
     // |this| is deleted here.
 }
 
-NewWebSocketChannelImpl::NewWebSocketChannelImpl(ExecutionContext* context, WebSocketChannelClient* client, const String& sourceURL, unsigned lineNumber, blink::WebSocketHandle *handle)
+NewWebSocketChannelImpl::NewWebSocketChannelImpl(ExecutionContext* context, WebSocketChannelClient* client, const String& sourceURL, unsigned lineNumber, WebSocketHandle *handle)
     : ContextLifecycleObserver(context)
-    , m_handle(adoptPtr(handle ? handle : blink::Platform::current()->createWebSocketHandle()))
+    , m_handle(adoptPtr(handle ? handle : Platform::current()->createWebSocketHandle()))
     , m_client(client)
     , m_identifier(0)
     , m_sendingQuota(0)
@@ -153,7 +153,7 @@ bool NewWebSocketChannelImpl::connect(const KURL& url, const String& protocol)
         // it.
         protocol.split(", ", true, protocols);
     }
-    blink::WebVector<blink::WebString> webProtocols(protocols.size());
+    WebVector<WebString> webProtocols(protocols.size());
     for (size_t i = 0; i < protocols.size(); ++i) {
         webProtocols[i] = protocols[i];
     }
@@ -404,7 +404,7 @@ Document* NewWebSocketChannelImpl::document()
     return toDocument(context);
 }
 
-void NewWebSocketChannelImpl::didConnect(WebSocketHandle* handle, bool fail, const blink::WebString& selectedProtocol, const blink::WebString& extensions)
+void NewWebSocketChannelImpl::didConnect(WebSocketHandle* handle, bool fail, const WebString& selectedProtocol, const WebString& extensions)
 {
     WTF_LOG(Network, "NewWebSocketChannelImpl %p didConnect(%p, %d, %s, %s)", this, handle, fail, selectedProtocol.utf8().data(), extensions.utf8().data());
     ASSERT(m_handle);
@@ -418,7 +418,7 @@ void NewWebSocketChannelImpl::didConnect(WebSocketHandle* handle, bool fail, con
     m_client->didConnect(selectedProtocol, extensions);
 }
 
-void NewWebSocketChannelImpl::didStartOpeningHandshake(WebSocketHandle* handle, const blink::WebSocketHandshakeRequestInfo& request)
+void NewWebSocketChannelImpl::didStartOpeningHandshake(WebSocketHandle* handle, const WebSocketHandshakeRequestInfo& request)
 {
     WTF_LOG(Network, "NewWebSocketChannelImpl %p didStartOpeningHandshake(%p)", this, handle);
     if (m_identifier) {
@@ -430,7 +430,7 @@ void NewWebSocketChannelImpl::didStartOpeningHandshake(WebSocketHandle* handle, 
     }
 }
 
-void NewWebSocketChannelImpl::didFinishOpeningHandshake(WebSocketHandle* handle, const blink::WebSocketHandshakeResponseInfo& response)
+void NewWebSocketChannelImpl::didFinishOpeningHandshake(WebSocketHandle* handle, const WebSocketHandshakeResponseInfo& response)
 {
     WTF_LOG(Network, "NewWebSocketChannelImpl %p didFinishOpeningHandshake(%p)", this, handle);
     if (m_identifier) {
@@ -441,7 +441,7 @@ void NewWebSocketChannelImpl::didFinishOpeningHandshake(WebSocketHandle* handle,
     m_handshakeRequest.clear();
 }
 
-void NewWebSocketChannelImpl::didFail(WebSocketHandle* handle, const blink::WebString& message)
+void NewWebSocketChannelImpl::didFail(WebSocketHandle* handle, const WebString& message)
 {
     WTF_LOG(Network, "NewWebSocketChannelImpl %p didFail(%p, %s)", this, handle, message.utf8().data());
     // This function is called when the browser is required to fail the
@@ -502,7 +502,7 @@ void NewWebSocketChannelImpl::didReceiveData(WebSocketHandle* handle, bool fin, 
     }
 }
 
-void NewWebSocketChannelImpl::didClose(WebSocketHandle* handle, bool wasClean, unsigned short code, const blink::WebString& reason)
+void NewWebSocketChannelImpl::didClose(WebSocketHandle* handle, bool wasClean, unsigned short code, const WebString& reason)
 {
     WTF_LOG(Network, "NewWebSocketChannelImpl %p didClose(%p, %d, %u, %s)", this, handle, wasClean, code, String(reason).utf8().data());
     ASSERT(m_handle);

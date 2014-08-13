@@ -53,15 +53,15 @@ RTCIceCandidate* RTCIceCandidate::create(const Dictionary& dictionary, Exception
     unsigned short sdpMLineIndex = 0;
     DictionaryHelper::get(dictionary, "sdpMLineIndex", sdpMLineIndex);
 
-    return new RTCIceCandidate(blink::WebRTCICECandidate(candidate, sdpMid, sdpMLineIndex));
+    return new RTCIceCandidate(WebRTCICECandidate(candidate, sdpMid, sdpMLineIndex));
 }
 
-RTCIceCandidate* RTCIceCandidate::create(blink::WebRTCICECandidate webCandidate)
+RTCIceCandidate* RTCIceCandidate::create(WebRTCICECandidate webCandidate)
 {
     return new RTCIceCandidate(webCandidate);
 }
 
-RTCIceCandidate::RTCIceCandidate(blink::WebRTCICECandidate webCandidate)
+RTCIceCandidate::RTCIceCandidate(WebRTCICECandidate webCandidate)
     : m_webCandidate(webCandidate)
 {
     ScriptWrappable::init(this);
@@ -82,7 +82,7 @@ unsigned short RTCIceCandidate::sdpMLineIndex() const
     return m_webCandidate.sdpMLineIndex();
 }
 
-blink::WebRTCICECandidate RTCIceCandidate::webCandidate() const
+WebRTCICECandidate RTCIceCandidate::webCandidate() const
 {
     return m_webCandidate;
 }
