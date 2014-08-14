@@ -22,7 +22,7 @@
 
 namespace {
 
-wchar_t* GetBeaconKeyPath() {
+const wchar_t* GetBeaconKeyPath() {
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::CHANNEL_UNKNOWN;
 
   // We are called quite early, before the CommandLine is initialized. We don't
