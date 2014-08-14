@@ -363,6 +363,9 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_SEPIA_MODE" desc="Title of button that will change theme of distilled pages to sepia mode.">
         Sepia
       </message>
+      <message name="IDS_TEXT_SIZE_SIGNIFIER" desc="A typical letter of the alphabet.  This is drawn on either end of a slider bar that allows the user to change the font size.  On one end, it is drawn smaller and on the other end larger.">
+        A
+      </message>
 
       <!-- TalkBack upgrade -->
       <message name="IDS_OLD_TALKBACK_TITLE" desc="Title of dialog notifying user that the version of TalkBack they're running is too old.">
