@@ -526,7 +526,8 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoAudio_WebM) {
   TestSimplePlayback("bear-320x240-av_enc-av.webm", kWebMAudioVideo);
 }
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_WebM) {
+// http://crbug.com/402766
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_Playback_VideoOnly_WebM) {
   TestSimplePlayback("bear-320x240-v_enc-v.webm", kWebMVideoOnly);
 }
 
