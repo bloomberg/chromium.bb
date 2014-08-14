@@ -396,7 +396,7 @@ def add_includes_for_interface(interface_name):
 
 
 def impl_should_use_nullable_container(idl_type):
-    return idl_type.native_array_element_type or idl_type.is_primitive_type
+    return not(idl_type.cpp_type_has_null_value)
 
 IdlTypeBase.impl_should_use_nullable_container = property(
     impl_should_use_nullable_container)
@@ -790,15 +790,20 @@ IdlType.literal_cpp_value = literal_cpp_value
 ################################################################################
 
 
-def is_implicit_nullable(idl_type):
-    # Nullable type where the corresponding C++ type supports a null value.
+def cpp_type_has_null_value(idl_type):
     # - String types (String/AtomicString) represent null as a null string,
     #   i.e. one for which String::isNull() returns true.
     # - Wrapper types (raw pointer or RefPtr/PassRefPtr) represent null as
     #   a null pointer.
-    return idl_type.is_nullable and (
-        (idl_type.is_string_type or idl_type.is_wrapper_type) and
-        not idl_type.native_array_element_type)
+    return ((idl_type.is_string_type or idl_type.is_wrapper_type) and
+            not idl_type.native_array_element_type)
+
+IdlTypeBase.cpp_type_has_null_value = property(cpp_type_has_null_value)
+
+
+def is_implicit_nullable(idl_type):
+    # Nullable type where the corresponding C++ type supports a null value.
+    return idl_type.is_nullable and idl_type.cpp_type_has_null_value
 
 
 def is_explicit_nullable(idl_type):
