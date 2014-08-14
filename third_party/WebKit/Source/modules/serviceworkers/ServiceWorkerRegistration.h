@@ -63,11 +63,17 @@ private:
     static PassRefPtrWillBeRawPtr<ServiceWorkerRegistration> getOrCreate(ExecutionContext*, WebServiceWorkerRegistration*);
     ServiceWorkerRegistration(ExecutionContext*, PassOwnPtr<WebServiceWorkerRegistration>);
 
+    // ActiveDOMObject overrides.
+    virtual bool hasPendingActivity() const OVERRIDE;
+    virtual void stop() OVERRIDE;
+
     OwnPtr<WebServiceWorkerRegistration> m_outerRegistration;
     WebServiceWorkerProvider* m_provider;
     RefPtrWillBeMember<ServiceWorker> m_installing;
     RefPtrWillBeMember<ServiceWorker> m_waiting;
     RefPtrWillBeMember<ServiceWorker> m_active;
+
+    bool m_stopped;
 };
 
 } // namespace blink

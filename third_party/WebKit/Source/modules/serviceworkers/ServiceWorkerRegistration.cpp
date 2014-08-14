@@ -147,6 +147,7 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(ExecutionContext* execution
     , WebServiceWorkerRegistrationProxy(this)
     , m_outerRegistration(outerRegistration)
     , m_provider(0)
+    , m_stopped(false)
 {
     ASSERT(m_outerRegistration);
     ScriptWrappable::init(this);
@@ -164,6 +165,19 @@ void ServiceWorkerRegistration::trace(Visitor* visitor)
     visitor->trace(m_waiting);
     visitor->trace(m_active);
     EventTargetWithInlineData::trace(visitor);
+}
+
+bool ServiceWorkerRegistration::hasPendingActivity() const
+{
+    return !m_stopped;
+}
+
+void ServiceWorkerRegistration::stop()
+{
+    if (m_stopped)
+        return;
+    m_stopped = true;
+    m_outerRegistration->proxyStopped();
 }
 
 } // namespace blink

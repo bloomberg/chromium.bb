@@ -17,6 +17,7 @@ public:
 
     virtual void setProxy(WebServiceWorkerRegistrationProxy*) { }
     virtual WebServiceWorkerRegistrationProxy* proxy() { return 0; }
+    virtual void proxyStopped() { }
 
     virtual WebURL scope() const { return WebURL(); }
 };
