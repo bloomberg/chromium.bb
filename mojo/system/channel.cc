@@ -36,7 +36,10 @@ Channel::EndpointInfo::EndpointInfo(scoped_refptr<MessagePipe> message_pipe,
 Channel::EndpointInfo::~EndpointInfo() {
 }
 
-Channel::Channel() : is_running_(false), next_local_id_(kBootstrapEndpointId) {
+Channel::Channel()
+    : is_running_(false),
+      is_shutting_down_(false),
+      next_local_id_(kBootstrapEndpointId) {
 }
 
 bool Channel::Init(scoped_ptr<RawChannel> raw_channel) {
@@ -45,7 +48,7 @@ bool Channel::Init(scoped_ptr<RawChannel> raw_channel) {
 
   // No need to take |lock_|, since this must be called before this object
   // becomes thread-safe.
-  DCHECK(!is_running_no_lock());
+  DCHECK(!is_running_);
   raw_channel_ = raw_channel.Pass();
 
   if (!raw_channel_->Init(this)) {
@@ -63,7 +66,7 @@ void Channel::Shutdown() {
   IdToEndpointInfoMap to_destroy;
   {
     base::AutoLock locker(lock_);
-    if (!is_running_no_lock())
+    if (!is_running_)
       return;
 
     // Note: Don't reset |raw_channel_|, in case we're being called from within
@@ -93,6 +96,11 @@ void Channel::Shutdown() {
                                        << " zombies";
 }
 
+void Channel::WillShutdownSoon() {
+  base::AutoLock locker(lock_);
+  is_shutting_down_ = true;
+}
+
 MessageInTransit::EndpointId Channel::AttachMessagePipeEndpoint(
     scoped_refptr<MessagePipe> message_pipe,
     unsigned port) {
@@ -102,6 +110,9 @@ MessageInTransit::EndpointId Channel::AttachMessagePipeEndpoint(
   MessageInTransit::EndpointId local_id;
   {
     base::AutoLock locker(lock_);
+
+    DLOG_IF(WARNING, is_shutting_down_)
+        << "AttachMessagePipeEndpoint() while shutting down";
 
     while (next_local_id_ == MessageInTransit::kInvalidEndpointId ||
            local_id_to_endpoint_info_map_.find(next_local_id_) !=
@@ -151,6 +162,9 @@ bool Channel::RunMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
   {
     base::AutoLock locker(lock_);
 
+    DLOG_IF(WARNING, is_shutting_down_)
+        << "RunMessagePipeEndpoint() while shutting down";
+
     IdToEndpointInfoMap::const_iterator it =
         local_id_to_endpoint_info_map_.find(local_id);
     if (it == local_id_to_endpoint_info_map_.end())
@@ -197,19 +211,20 @@ void Channel::RunRemoteMessagePipeEndpoint(
 
 bool Channel::WriteMessage(scoped_ptr<MessageInTransit> message) {
   base::AutoLock locker(lock_);
-  if (!is_running_no_lock()) {
+  if (!is_running_) {
     // TODO(vtl): I think this is probably not an error condition, but I should
     // think about it (and the shutdown sequence) more carefully.
     LOG(WARNING) << "WriteMessage() after shutdown";
     return false;
   }
 
+  DLOG_IF(WARNING, is_shutting_down_) << "WriteMessage() while shutting down";
   return raw_channel_->WriteMessage(message.Pass());
 }
 
 bool Channel::IsWriteBufferEmpty() {
   base::AutoLock locker(lock_);
-  if (!is_running_no_lock())
+  if (!is_running_)
     return true;
   return raw_channel_->IsWriteBufferEmpty();
 }
@@ -222,7 +237,7 @@ void Channel::DetachMessagePipeEndpoint(
   bool should_send_remove_message = false;
   {
     base::AutoLock locker_(lock_);
-    if (!is_running_no_lock())
+    if (!is_running_)
       return;
 
     IdToEndpointInfoMap::iterator it =
@@ -268,7 +283,7 @@ size_t Channel::GetSerializedPlatformHandleSize() const {
 
 Channel::~Channel() {
   // The channel should have been shut down first.
-  DCHECK(!is_running_no_lock());
+  DCHECK(!is_running_);
 }
 
 void Channel::OnReadMessage(
@@ -296,9 +311,12 @@ void Channel::OnError(Error error) {
       // The other side was cleanly closed, so this isn't actually an error.
       DVLOG(1) << "RawChannel read error (shutdown)";
       break;
-    case ERROR_READ_BROKEN:
-      LOG(ERROR) << "RawChannel read error (connection broken)";
+    case ERROR_READ_BROKEN: {
+      base::AutoLock locker(lock_);
+      LOG_IF(ERROR, !is_shutting_down_)
+          << "RawChannel read error (connection broken)";
       break;
+    }
     case ERROR_READ_BAD_MESSAGE:
       // Receiving a bad message means either a bug, data corruption, or
       // malicious attack (probably due to some other bug).
@@ -335,7 +353,7 @@ void Channel::OnReadMessageForDownstream(
     // Since we own |raw_channel_|, and this method and |Shutdown()| should only
     // be called from the creation thread, |raw_channel_| should never be null
     // here.
-    DCHECK(is_running_no_lock());
+    DCHECK(is_running_);
 
     IdToEndpointInfoMap::const_iterator it =
         local_id_to_endpoint_info_map_.find(local_id);

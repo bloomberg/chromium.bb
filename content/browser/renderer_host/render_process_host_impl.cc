@@ -923,8 +923,7 @@ void RenderProcessHostImpl::NotifyTimezoneChange() {
 }
 
 ServiceRegistry* RenderProcessHostImpl::GetServiceRegistry() {
-  if (!mojo_application_host_)
-    return NULL;
+  DCHECK(mojo_application_host_);
   return mojo_application_host_->service_registry();
 }
 
@@ -1922,6 +1921,8 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead) {
                     RenderProcessExited(this, GetHandle(), status, exit_code));
   within_process_died_observer_ = false;
 
+  mojo_application_host_->WillDestroySoon();
+
   child_process_launcher_.reset();
   channel_.reset();
   gpu_message_filter_ = NULL;
@@ -2023,6 +2024,8 @@ void RenderProcessHostImpl::OnShutdownRequest() {
       NOTIFICATION_RENDERER_PROCESS_CLOSING,
       Source<RenderProcessHost>(this),
       NotificationService::NoDetails());
+
+  mojo_application_host_->WillDestroySoon();
 
   Send(new ChildProcessMsg_Shutdown());
 }

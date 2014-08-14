@@ -32,6 +32,8 @@ class MojoApplicationHost {
   bool Init();
   bool Activate(IPC::Sender* sender, base::ProcessHandle process_handle);
 
+  void WillDestroySoon();
+
   bool did_activate() const { return did_activate_; }
 
   ServiceRegistry* service_registry() { return &service_registry_; }

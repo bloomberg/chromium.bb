@@ -59,4 +59,8 @@ bool MojoApplicationHost::Activate(IPC::Sender* sender,
   return did_activate_;
 }
 
+void MojoApplicationHost::WillDestroySoon() {
+  channel_init_.WillDestroySoon();
+}
+
 }  // namespace content

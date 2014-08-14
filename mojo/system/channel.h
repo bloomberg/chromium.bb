@@ -67,6 +67,12 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // happen on any thread).
   void Shutdown();
 
+  // Signals that |Shutdown()| will be called soon (this may be called from any
+  // thread, unlike |Shutdown()|). Warnings will be issued if, e.g., messages
+  // are written after this is called; other warnings may be suppressed. (This
+  // may be called multiple times, or not at all.)
+  void WillShutdownSoon();
+
   // Attaches the given message pipe/port's endpoint (which must be a
   // |ProxyMessagePipeEndpoint|) to this channel. This assigns it a local ID,
   // which it returns. The first message pipe endpoint attached will always have
@@ -172,8 +178,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
                           MessageInTransit::EndpointId source_id,
                           MessageInTransit::EndpointId destination_id);
 
-  bool is_running_no_lock() const { return is_running_; }
-
   base::ThreadChecker creation_thread_checker_;
 
   // Note: |MessagePipe|s MUST NOT be used under |lock_|. I.e., |lock_| can only
@@ -185,6 +189,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
 
   scoped_ptr<RawChannel> raw_channel_;
   bool is_running_;
+  // Set when |WillShutdownSoon()| is called.
+  bool is_shutting_down_;
 
   typedef base::hash_map<MessageInTransit::EndpointId, EndpointInfo>
       IdToEndpointInfoMap;

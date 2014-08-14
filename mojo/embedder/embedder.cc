@@ -173,8 +173,19 @@ void DestroyChannel(ChannelInfo* channel_info) {
   DCHECK(channel_info);
   DCHECK(channel_info->io_thread_task_runner);
 
+  if (!channel_info->channel) {
+    // Presumably, |Init()| on the channel failed.
+    return;
+  }
+
+  channel_info->channel->WillShutdownSoon();
   channel_info->io_thread_task_runner->PostTask(
       FROM_HERE, base::Bind(&DestroyChannelOnIOThread, channel_info));
+}
+
+void WillDestroyChannelSoon(ChannelInfo* channel_info) {
+  DCHECK(channel_info);
+  channel_info->channel->WillShutdownSoon();
 }
 
 MojoResult CreatePlatformHandleWrapper(

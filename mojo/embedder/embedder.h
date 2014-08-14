@@ -96,6 +96,11 @@ MOJO_SYSTEM_IMPL_EXPORT void DestroyChannelOnIOThread(
 // |CreateChannel()|.
 MOJO_SYSTEM_IMPL_EXPORT void DestroyChannel(ChannelInfo* channel_info);
 
+// Inform the channel that it will soon be destroyed (doing so is optional).
+// This may be called from any thread, but the caller must ensure that this is
+// called before |DestroyChannel()| or |DestroyChannelOnIOThread()|.
+MOJO_SYSTEM_IMPL_EXPORT void WillDestroyChannelSoon(ChannelInfo* channel_info);
+
 // Creates a |MojoHandle| that wraps the given |PlatformHandle| (taking
 // ownership of it). This |MojoHandle| can then, e.g., be passed through message
 // pipes. Note: This takes ownership (and thus closes) |platform_handle| even on

@@ -15,11 +15,8 @@ ChannelInit::ChannelInit() : channel_info_(NULL), weak_factory_(this) {
 }
 
 ChannelInit::~ChannelInit() {
-  if (channel_info_) {
-    io_thread_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&mojo::embedder::DestroyChannelOnIOThread, channel_info_));
-  }
+  if (channel_info_)
+    DestroyChannel(channel_info_);
 }
 
 mojo::ScopedMessagePipeHandle ChannelInit::Init(
@@ -39,19 +36,22 @@ mojo::ScopedMessagePipeHandle ChannelInit::Init(
   return message_pipe.Pass();
 }
 
+void ChannelInit::WillDestroySoon() {
+  if (channel_info_)
+    WillDestroyChannelSoon(channel_info_);
+}
+
 // static
-void ChannelInit::OnCreatedChannel(base::WeakPtr<ChannelInit> host,
+void ChannelInit::OnCreatedChannel(base::WeakPtr<ChannelInit> self,
                                    scoped_refptr<base::TaskRunner> io_thread,
                                    embedder::ChannelInfo* channel) {
-  // By the time we get here |host| may have been destroyed. If so, shutdown the
-  // channel.
-  if (!host.get()) {
-    io_thread->PostTask(
-        FROM_HERE,
-        base::Bind(&mojo::embedder::DestroyChannelOnIOThread, channel));
+  // If |self| was already destroyed, shut the channel down.
+  if (!self) {
+    DestroyChannel(channel);
     return;
   }
-  host->channel_info_ = channel;
+
+  self->channel_info_ = channel;
 }
 
 }  // namespace embedder
