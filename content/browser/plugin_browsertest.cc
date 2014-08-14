@@ -443,7 +443,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, DISABLED_FlashSecurity) {
 // TODO(port) Port the following tests to platforms that have the required
 // plugins.
 // Flaky: http://crbug.com/55915
-IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(Quicktime)) {
+IN_PROC_BROWSER_TEST_F(PluginTest, DISABLED_Quicktime) {
   TestPlugin("quicktime.html");
 }
 
