@@ -820,6 +820,7 @@ extern const char kPartnerBookmarkMappings[];
 #endif
 
 extern const char kQuickCheckEnabled[];
+extern const char kBrowserGuestModeEnabled[];
 
 }  // namespace prefs
 

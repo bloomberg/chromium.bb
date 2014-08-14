@@ -2332,4 +2332,7 @@ const char kPartnerBookmarkMappings[] = "partnerbookmarks.mappings";
 // Whether DNS Quick Check is disabled in proxy resolution.
 const char kQuickCheckEnabled[] = "proxy.quick_check_enabled";
 
+// Whether Guest Mode is enabled within the browser.
+const char kBrowserGuestModeEnabled[] = "profile.browser_guest_enabled";
+
 }  // namespace prefs

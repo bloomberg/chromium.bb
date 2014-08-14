@@ -1651,6 +1651,16 @@
     "indicator_selector": "#wallpaper-indicator"
   },
 
+  "BrowserGuestModeEnabled": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "BrowserGuestModeEnabled": true },
+    "pref_mappings": [
+      { "pref": "profile.browser_guest_enabled",
+        "local_state": true
+      }
+    ]
+  },
+
   "----- Chrome OS policies ------------------------------------------------": {},
 
   "ChromeOsLockOnIdleSuspend": {

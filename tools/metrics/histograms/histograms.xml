@@ -39381,6 +39381,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="272" label="Enable EasyUnlock"/>
   <int value="273" label="Enable network prediction"/>
   <int value="274" label="Set the recommended locales for a public session"/>
+  <int value="275" label="Enable guest mode in the browser"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">
