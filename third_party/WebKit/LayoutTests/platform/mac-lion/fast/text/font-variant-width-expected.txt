@@ -1,0 +1,21 @@
+￼
+￼
+￼
+￼
+111
+999
+1234
+1111
+9999
+This is a testharness.js-based test.
+PASS Numbers expected to be laid out in one combining block 
+PASS Numbers expected to be laid out in one combining block 
+PASS Numbers expected to be laid out in one combining block 
+PASS Numbers expected to be laid out in one combining block 
+PASS Number laid out vertically, not combined. 
+PASS Number laid out vertically, not combined. 
+PASS Number laid out vertically, not combined. 
+PASS Number laid out vertically, not combined. 
+PASS Number laid out vertically, not combined. 
+Harness: the test ran to completion.
+

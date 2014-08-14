@@ -1,0 +1,21 @@
+￼
+￼
+￼
+￼
+￼
+￼
+￼
+￼
+￼
+This is a testharness.js-based test.
+PASS Numbers expected to be laid out in one combining block 
+PASS Numbers expected to be laid out in one combining block 
+PASS Numbers expected to be laid out in one combining block 
+PASS Numbers expected to be laid out in one combining block 
+FAIL Number laid out vertically, not combined. assert_true: 24 expected true got false
+FAIL Number laid out vertically, not combined. assert_true: 24 expected true got false
+FAIL Number laid out vertically, not combined. assert_true: 24 expected true got false
+FAIL Number laid out vertically, not combined. assert_true: 24 expected true got false
+FAIL Number laid out vertically, not combined. assert_true: 24 expected true got false
+Harness: the test ran to completion.
+
