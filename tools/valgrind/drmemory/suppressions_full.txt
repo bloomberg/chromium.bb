@@ -2220,3 +2220,19 @@ v8.dll!v8::internal::SweeperThread::SweeperThread
 blink_web.dll!blink::WorkerScriptController::WorkerScriptController
 blink_web.dll!blink::WorkerGlobalScope::WorkerGlobalScope
 blink_web.dll!blink::ServiceWorkerGlobalScope::ServiceWorkerGlobalScope
+
+
+HANDLE LEAK
+name=bug_403681
+system call NtCreateTimer
+KERNELBASE.dll!CreateWaitableTimerExW
+KERNEL32.dll!CreateWaitableTimerW
+content.dll!rtc::Timing::Timing
+content.dll!content::RenderProcessHostImpl::CreateMessageFilters
+...
+content.dll!content::RenderViewHostImpl::CreateRenderView
+content.dll!content::WebContentsImpl::CreateRenderViewForRenderManager
+...
+content.dll!content::NavigationControllerImpl::LoadEntry
+...
+*!extensions::ExtensionHost::LoadInitialURL
