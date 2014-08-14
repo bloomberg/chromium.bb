@@ -38,6 +38,7 @@ const char kEnabledExtensions[] = "enabled_extensions";
 const char kHomepageIsNewTabPage[] = "homepage_is_ntp";
 const char kHomepagePath[] = "homepage";
 const char kShortcuts[] = "shortcuts";
+const char kShowHomeButton[] = "show_home_button";
 const char kStartupTypePath[] = "startup_type";
 const char kStartupURLPath[] = "startup_urls";
 
@@ -66,6 +67,7 @@ ResettableSettingsSnapshot::ResettableSettingsSnapshot(
   DCHECK(prefs);
   homepage_ = prefs->GetString(prefs::kHomePage);
   homepage_is_ntp_ = prefs->GetBoolean(prefs::kHomePageIsNewTabPage);
+  show_home_button_ = prefs->GetBoolean(prefs::kShowHomeButton);
 
   TemplateURLService* service =
       TemplateURLServiceFactory::GetForProfile(profile);
@@ -110,7 +112,8 @@ int ResettableSettingsSnapshot::FindDifferentFields(
     bit_mask |= STARTUP_MODE;
 
   if (homepage_is_ntp_ != snapshot.homepage_is_ntp_ ||
-      homepage_ != snapshot.homepage_)
+      homepage_ != snapshot.homepage_ ||
+      show_home_button_ != snapshot.show_home_button_)
     bit_mask |= HOMEPAGE;
 
   if (dse_url_ != snapshot.dse_url_)
@@ -173,6 +176,7 @@ std::string SerializeSettingsReport(const ResettableSettingsSnapshot& snapshot,
   if (field_mask & ResettableSettingsSnapshot::HOMEPAGE) {
     dict.SetString(kHomepagePath, snapshot.homepage());
     dict.SetBoolean(kHomepageIsNewTabPage, snapshot.homepage_is_ntp());
+    dict.SetBoolean(kShowHomeButton, snapshot.show_home_button());
   }
 
   if (field_mask & ResettableSettingsSnapshot::DSE_URL)
@@ -294,6 +298,14 @@ scoped_ptr<base::ListValue> GetReadableFeedbackForSnapshot(
   AddPair(list.get(),
           l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_HOMEPAGE_IS_NTP),
           l10n_util::GetStringUTF16(is_ntp_message_id));
+
+  int show_home_button_id = snapshot.show_home_button() ?
+      IDS_RESET_PROFILE_SETTINGS_SHOW_HOME_BUTTON_TRUE :
+      IDS_RESET_PROFILE_SETTINGS_SHOW_HOME_BUTTON_FALSE;
+  AddPair(
+      list.get(),
+      l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_SHOW_HOME_BUTTON),
+      l10n_util::GetStringUTF16(show_home_button_id));
 
   TemplateURLService* service =
       TemplateURLServiceFactory::GetForProfile(profile);

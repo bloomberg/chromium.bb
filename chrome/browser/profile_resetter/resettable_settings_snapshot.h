@@ -49,6 +49,8 @@ class ResettableSettingsSnapshot {
 
   bool homepage_is_ntp() const { return homepage_is_ntp_; }
 
+  bool show_home_button() const { return show_home_button_; }
+
   const std::string& dse_url() const { return dse_url_; }
 
   const ExtensionList& enabled_extensions() const {
@@ -89,6 +91,7 @@ class ResettableSettingsSnapshot {
 
   std::string homepage_;
   bool homepage_is_ntp_;
+  bool show_home_button_;
 
   // Default search engine.
   std::string dse_url_;
