@@ -5,7 +5,6 @@
 #include "sync/internal_api/public/test/test_internal_components_factory.h"
 
 #include "sync/sessions/sync_session_context.h"
-#include "sync/syncable/deferred_on_disk_directory_backing_store.h"
 #include "sync/syncable/in_memory_directory_backing_store.h"
 #include "sync/syncable/on_disk_directory_backing_store.h"
 #include "sync/syncable/invalid_directory_backing_store.h"
@@ -15,11 +14,9 @@ namespace syncer {
 
 TestInternalComponentsFactory::TestInternalComponentsFactory(
     const Switches& switches,
-    StorageOption option,
-    StorageOption* storage_used)
+    StorageOption option)
     : switches_(switches),
-      storage_override_(option),
-      storage_used_(storage_used) {
+      storage_option_(option) {
 }
 
 TestInternalComponentsFactory::~TestInternalComponentsFactory() { }
@@ -57,12 +54,8 @@ TestInternalComponentsFactory::BuildContext(
 
 scoped_ptr<syncable::DirectoryBackingStore>
 TestInternalComponentsFactory::BuildDirectoryBackingStore(
-    StorageOption storage, const std::string& dir_name,
-    const base::FilePath& backing_filepath) {
-  if (storage_used_)
-    *storage_used_ = storage;
-
-  switch (storage_override_) {
+      const std::string& dir_name, const base::FilePath& backing_filepath) {
+  switch (storage_option_) {
     case STORAGE_IN_MEMORY:
       return scoped_ptr<syncable::DirectoryBackingStore>(
           new syncable::InMemoryDirectoryBackingStore(dir_name));
@@ -70,10 +63,6 @@ TestInternalComponentsFactory::BuildDirectoryBackingStore(
       return scoped_ptr<syncable::DirectoryBackingStore>(
           new syncable::OnDiskDirectoryBackingStore(dir_name,
                                                     backing_filepath));
-    case STORAGE_ON_DISK_DEFERRED:
-      return scoped_ptr<syncable::DirectoryBackingStore>(
-          new syncable::DeferredOnDiskDirectoryBackingStore(dir_name,
-                                                            backing_filepath));
     case STORAGE_INVALID:
       return scoped_ptr<syncable::DirectoryBackingStore>(
           new syncable::InvalidDirectoryBackingStore());

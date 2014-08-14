@@ -834,8 +834,6 @@ class SyncManagerTest : public testing::Test,
     sync_manager_.GetEncryptionHandler()->AddObserver(&encryption_observer_);
 
     EXPECT_TRUE(js_backend_.IsInitialized());
-    EXPECT_EQ(InternalComponentsFactory::STORAGE_ON_DISK,
-              storage_used_);
 
     if (initialization_succeeded_) {
       for (ModelSafeRoutingInfo::iterator i = routing_info.begin();
@@ -953,9 +951,7 @@ class SyncManagerTest : public testing::Test,
   }
 
   virtual InternalComponentsFactory* GetFactory() {
-    return new TestInternalComponentsFactory(
-        GetSwitches(), InternalComponentsFactory::STORAGE_IN_MEMORY,
-        &storage_used_);
+    return new TestInternalComponentsFactory(GetSwitches(), STORAGE_IN_MEMORY);
   }
 
   // Returns true if we are currently encrypting all sync data.  May
@@ -1015,7 +1011,6 @@ class SyncManagerTest : public testing::Test,
   StrictMock<SyncManagerObserverMock> manager_observer_;
   StrictMock<SyncEncryptionHandlerObserverMock> encryption_observer_;
   InternalComponentsFactory::Switches switches_;
-  InternalComponentsFactory::StorageOption storage_used_;
 };
 
 TEST_F(SyncManagerTest, GetAllNodesForTypeTest) {
@@ -2415,8 +2410,7 @@ class ComponentsFactory : public TestInternalComponentsFactory {
   ComponentsFactory(const Switches& switches,
                     SyncScheduler* scheduler_to_use,
                     sessions::SyncSessionContext** session_context)
-      : TestInternalComponentsFactory(
-          switches, InternalComponentsFactory::STORAGE_IN_MEMORY, NULL),
+      : TestInternalComponentsFactory(switches, syncer::STORAGE_IN_MEMORY),
         scheduler_to_use_(scheduler_to_use),
         session_context_(session_context) {}
   virtual ~ComponentsFactory() {}
@@ -3183,9 +3177,7 @@ class SyncManagerInitInvalidStorageTest : public SyncManagerTest {
   }
 
   virtual InternalComponentsFactory* GetFactory() OVERRIDE {
-    return new TestInternalComponentsFactory(
-        GetSwitches(), InternalComponentsFactory::STORAGE_INVALID,
-        &storage_used_);
+    return new TestInternalComponentsFactory(GetSwitches(), STORAGE_INVALID);
   }
 };
 

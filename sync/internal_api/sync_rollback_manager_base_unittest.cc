@@ -25,7 +25,6 @@ class SyncTestRollbackManager : public SyncRollbackManagerBase {
     SyncRollbackManagerBase::InitInternal(
         args->database_location,
         args->internal_components_factory.get(),
-        InternalComponentsFactory::STORAGE_IN_MEMORY,
         args->unrecoverable_error_handler.Pass(),
         args->report_unrecoverable_error_function);
   }
@@ -38,16 +37,12 @@ class SyncRollbackManagerBaseTest : public testing::Test {
     args.database_location = base::FilePath(base::FilePath::kCurrentDirectory);
     args.service_url = GURL("https://example.com/");
     args.internal_components_factory.reset(new TestInternalComponentsFactory(
-        InternalComponentsFactory::Switches(),
-        InternalComponentsFactory::STORAGE_IN_MEMORY,
-        &storage_used_));
+        InternalComponentsFactory::Switches(), STORAGE_IN_MEMORY));
     manager_.Init(&args);
-    EXPECT_EQ(InternalComponentsFactory::STORAGE_IN_MEMORY, storage_used_);
   }
 
   SyncTestRollbackManager manager_;
   base::MessageLoop loop_;    // Needed for WeakHandle
-  InternalComponentsFactory::StorageOption storage_used_;
 };
 
 TEST_F(SyncRollbackManagerBaseTest, InitTypeOnConfiguration) {

@@ -72,21 +72,6 @@ class SYNC_EXPORT InternalComponentsFactory {
     PreCommitUpdatesPolicy pre_commit_updates_policy;
   };
 
-  // For selecting the types of storage to use to persist sync data when
-  // BuildDirectoryBackingStore() is called.
-  enum StorageOption {
-    // BuildDirectoryBackingStore should not use persistent on-disk storage.
-    STORAGE_IN_MEMORY,
-    // Use this if you want BuildDirectoryBackingStore to create/use a real
-    // on disk store.
-    STORAGE_ON_DISK,
-    // Use this to defer creating on-disk database until
-    // DirectoryBackingStore::SaveChanges() is called.
-    STORAGE_ON_DISK_DEFERRED,
-    // Use this to test the case where a directory fails to load.
-    STORAGE_INVALID
-  };
-
   virtual ~InternalComponentsFactory() {}
 
   virtual scoped_ptr<SyncScheduler> BuildScheduler(
@@ -105,7 +90,6 @@ class SYNC_EXPORT InternalComponentsFactory {
 
   virtual scoped_ptr<syncable::DirectoryBackingStore>
   BuildDirectoryBackingStore(
-      StorageOption storage,
       const std::string& dir_name,
       const base::FilePath& backing_filepath) = 0;
 

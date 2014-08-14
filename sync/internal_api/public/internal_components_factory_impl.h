@@ -34,9 +34,9 @@ class SYNC_EXPORT InternalComponentsFactoryImpl
       const std::string& invalidator_client_id) OVERRIDE;
 
   virtual scoped_ptr<syncable::DirectoryBackingStore>
-  BuildDirectoryBackingStore(StorageOption storage,
-                             const std::string& dir_name,
-                             const base::FilePath& backing_filepath) OVERRIDE;
+  BuildDirectoryBackingStore(
+      const std::string& dir_name,
+      const base::FilePath& backing_filepath) OVERRIDE;
 
   virtual Switches GetSwitches() const OVERRIDE;
 

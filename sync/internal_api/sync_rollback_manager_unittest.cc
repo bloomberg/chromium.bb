@@ -102,8 +102,7 @@ class SyncRollbackManagerTest : public testing::Test,
   }
 
   void InitManager(SyncManager* manager, ModelTypeSet types,
-                   TestChangeDelegate* delegate,
-                   InternalComponentsFactory::StorageOption storage_option) {
+                   TestChangeDelegate* delegate, StorageOption storage_option) {
     manager_ = manager;
     types_ = types;
 
@@ -119,12 +118,9 @@ class SyncRollbackManagerTest : public testing::Test,
     args.service_url = GURL("https://example.com/");
     args.workers.push_back(worker_);
     args.change_delegate = delegate;
-
-    InternalComponentsFactory::StorageOption storage_used;
     args.internal_components_factory.reset(new TestInternalComponentsFactory(
-        InternalComponentsFactory::Switches(), storage_option, &storage_used));
+        InternalComponentsFactory::Switches(), storage_option));
     manager->Init(&args);
-    EXPECT_EQ(storage_option, storage_used);
     loop_.PostTask(FROM_HERE, run_loop.QuitClosure());
     run_loop.Run();
   }
@@ -134,9 +130,9 @@ class SyncRollbackManagerTest : public testing::Test,
     SyncBackupManager backup_manager;
     TestChangeDelegate delegate;
     InitManager(&backup_manager, ModelTypeSet(type), &delegate,
-                InternalComponentsFactory::STORAGE_ON_DISK_DEFERRED);
+                STORAGE_ON_DISK);
     CreateEntry(backup_manager.GetUserShare(), type, client_tag);
-    backup_manager.ShutdownOnSyncThread(SWITCH_MODE_SYNC);
+    backup_manager.ShutdownOnSyncThread(STOP_SYNC);
   }
 
   // Verify entry with |client_tag| exists in sync directory.
@@ -187,7 +183,7 @@ TEST_F(SyncRollbackManagerTest, RollbackBasic) {
   TestChangeDelegate delegate;
   SyncRollbackManager rollback_manager;
   InitManager(&rollback_manager, ModelTypeSet(PREFERENCES), &delegate,
-              InternalComponentsFactory::STORAGE_ON_DISK);
+              STORAGE_ON_DISK);
 
   // Simulate a new entry added during type initialization.
   int64 new_pref_id =
@@ -211,7 +207,7 @@ TEST_F(SyncRollbackManagerTest, NoRollbackOfTypesNotBackedUp) {
   TestChangeDelegate delegate;
   SyncRollbackManager rollback_manager;
   InitManager(&rollback_manager, ModelTypeSet(PREFERENCES, APPS), &delegate,
-              InternalComponentsFactory::STORAGE_ON_DISK);
+              STORAGE_ON_DISK);
 
   // Simulate new entry added during type initialization.
   int64 new_pref_id =
@@ -239,7 +235,7 @@ TEST_F(SyncRollbackManagerTest, BackupDbNotChangedOnAbort) {
   scoped_ptr<SyncRollbackManager> rollback_manager(
       new SyncRollbackManager);
   InitManager(rollback_manager.get(), ModelTypeSet(PREFERENCES), &delegate,
-              InternalComponentsFactory::STORAGE_ON_DISK);
+              STORAGE_ON_DISK);
 
   // Simulate a new entry added during type initialization.
   CreateEntry(rollback_manager->GetUserShare(), PREFERENCES, "pref2");
@@ -250,7 +246,7 @@ TEST_F(SyncRollbackManagerTest, BackupDbNotChangedOnAbort) {
   // Verify new entry was not persisted.
   rollback_manager.reset(new SyncRollbackManager);
   InitManager(rollback_manager.get(), ModelTypeSet(PREFERENCES), &delegate,
-              InternalComponentsFactory::STORAGE_ON_DISK);
+              STORAGE_ON_DISK);
   EXPECT_FALSE(VerifyEntry(rollback_manager->GetUserShare(), PREFERENCES,
                            "pref2"));
 }
@@ -260,7 +256,7 @@ TEST_F(SyncRollbackManagerTest, OnInitializationFailure) {
   scoped_ptr<SyncRollbackManager> rollback_manager(
       new SyncRollbackManager);
   InitManager(rollback_manager.get(), ModelTypeSet(PREFERENCES), NULL,
-              InternalComponentsFactory::STORAGE_ON_DISK);
+              STORAGE_ON_DISK);
 }
 
 }  // anonymous namespace

@@ -26,7 +26,6 @@ void SyncRollbackManager::Init(InitArgs* args) {
   if (SyncRollbackManagerBase::InitInternal(
           args->database_location,
           args->internal_components_factory.get(),
-          InternalComponentsFactory::STORAGE_ON_DISK,
           args->unrecoverable_error_handler.Pass(),
           args->report_unrecoverable_error_function)) {
     change_delegate_ = args->change_delegate;

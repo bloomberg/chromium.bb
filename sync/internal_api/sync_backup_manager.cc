@@ -23,7 +23,6 @@ void SyncBackupManager::Init(InitArgs* args) {
   if (SyncRollbackManagerBase::InitInternal(
           args->database_location,
           args->internal_components_factory.get(),
-          InternalComponentsFactory::STORAGE_ON_DISK_DEFERRED,
           args->unrecoverable_error_handler.Pass(),
           args->report_unrecoverable_error_function)) {
     GetUserShare()->directory->CollectMetaHandleCounts(
@@ -35,8 +34,10 @@ void SyncBackupManager::Init(InitArgs* args) {
 }
 
 void SyncBackupManager::SaveChanges() {
-  if (initialized())
+  if (initialized()) {
     NormalizeEntries();
+    GetUserShare()->directory->SaveChanges();
+  }
 }
 
 SyncStatus SyncBackupManager::GetDetailedStatus() const {
@@ -119,15 +120,6 @@ void SyncBackupManager::HideSyncPreference(ModelType type) {
           trans.GetWrappedWriteTrans(), &entry);
     }
   }
-}
-
-void SyncBackupManager::ShutdownOnSyncThread(ShutdownReason reason) {
-  if (reason == SWITCH_MODE_SYNC) {
-    NormalizeEntries();
-    GetUserShare()->directory->SaveChanges();
-  }
-
-  SyncRollbackManagerBase::ShutdownOnSyncThread(reason);
 }
 
 void SyncBackupManager::RegisterDirectoryTypeDebugInfoObserver(
