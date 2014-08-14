@@ -52,7 +52,7 @@ leak:v8::internal::Genesis::Genesis
 leak:WTF::StringImpl::createUninitialized
 leak:WTF::StringImpl::create8BitIfPossible
 leak:blink::MouseEvent::create
-leak:blink::V8WindowShell::initializeIfNeeded
+leak:blink::WindowProxy::initializeIfNeeded
 leak:blink::*::*GetterCallback
 leak:blink::CSSComputedStyleDeclaration::create
 leak:blink::V8PerIsolateData::ensureDomInJSContext
