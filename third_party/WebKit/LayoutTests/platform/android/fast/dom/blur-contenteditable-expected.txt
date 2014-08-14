@@ -13,4 +13,3 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 77x19
           text run at (0,0) width 77: "Test Passed."
       RenderBlock {DIV} at (0,66) size 784x0
-caret: position 0 of child 0 {#text} of child 1 {DIV} of body
