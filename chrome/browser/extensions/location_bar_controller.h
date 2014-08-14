@@ -10,14 +10,13 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/extensions/extension_action.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
 
 namespace content {
 class WebContents;
 }
-
-class ExtensionAction;
 
 namespace extensions {
 
@@ -32,13 +31,6 @@ class PageActionController;
 class LocationBarController : public content::WebContentsObserver,
                               public ExtensionRegistryObserver {
  public:
-  // The action that the UI should take after executing |OnClicked|.
-  enum Action {
-    ACTION_NONE,
-    ACTION_SHOW_POPUP,
-    ACTION_SHOW_CONTEXT_MENU,
-  };
-
   class ActionProvider {
    public:
     // Returns the action for the given extension, or NULL if there isn't one.
@@ -46,7 +38,7 @@ class LocationBarController : public content::WebContentsObserver,
         const Extension* extension) = 0;
 
     // Handles a click on an extension action.
-    virtual LocationBarController::Action OnClicked(
+    virtual ExtensionAction::ShowAction OnClicked(
         const Extension* extension) = 0;
 
     // A notification that the WebContents has navigated in the main frame (and
@@ -69,7 +61,7 @@ class LocationBarController : public content::WebContentsObserver,
 
   // Notifies this that an ExtensionAction has been clicked, and returns the
   // action which should be taken in response (if any).
-  Action OnClicked(const ExtensionAction* action);
+  ExtensionAction::ShowAction OnClicked(const ExtensionAction* action);
 
   // Notifies the window that the actions have changed.
   static void NotifyChange(content::WebContents* web_contents);

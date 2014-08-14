@@ -746,9 +746,9 @@ class ExtensionServiceObserverBridge
   GURL popupUrl;
   switch (toolbarModel_->ExecuteBrowserAction(extension, browser_, &popupUrl,
                                               shouldGrant)) {
-    case extensions::ExtensionToolbarModel::ACTION_NONE:
+    case ExtensionAction::ACTION_NONE:
       break;
-    case extensions::ExtensionToolbarModel::ACTION_SHOW_POPUP: {
+    case ExtensionAction::ACTION_SHOW_POPUP: {
       NSPoint arrowPoint = [self popupPointForBrowserAction:extension];
       [ExtensionPopupController showURL:popupUrl
                               inBrowser:browser_

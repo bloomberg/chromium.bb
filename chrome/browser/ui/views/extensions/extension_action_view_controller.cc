@@ -78,7 +78,7 @@ bool ExtensionActionViewController::ExecuteAction(
         extensions::ExtensionToolbarModel::Get(browser_->profile());
     show_popup = toolbar_model->ExecuteBrowserAction(
                      extension_, browser_, &popup_url, grant_tab_permissions) ==
-                 extensions::ExtensionToolbarModel::ACTION_SHOW_POPUP;
+                 ExtensionAction::ACTION_SHOW_POPUP;
   } else {  // PageAction
     content::WebContents* web_contents = delegate_->GetCurrentWebContents();
     if (!web_contents)
@@ -87,18 +87,11 @@ bool ExtensionActionViewController::ExecuteAction(
         extensions::TabHelper::FromWebContents(web_contents)->
             location_bar_controller();
     switch (controller->OnClicked(extension_action_)) {
-      case extensions::LocationBarController::ACTION_NONE:
+      case ExtensionAction::ACTION_NONE:
         break;
-      case extensions::LocationBarController::ACTION_SHOW_POPUP:
+      case ExtensionAction::ACTION_SHOW_POPUP:
         popup_url = extension_action_->GetPopupUrl(GetCurrentTabId());
         show_popup = true;
-        break;
-      case extensions::LocationBarController::ACTION_SHOW_CONTEXT_MENU:
-        // We are never passing OnClicked a right-click button, so assume that
-        // we're never going to be asked to show a context menu.
-        // TODO(kalman): if this changes, update this class to pass the real
-        // mouse button through to the LocationBarController.
-        NOTREACHED();
         break;
     }
   }

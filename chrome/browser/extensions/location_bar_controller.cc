@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "chrome/browser/extensions/active_script_controller.h"
-#include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/page_action_controller.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "content/public/browser/invalidate_type.h"
@@ -52,24 +51,25 @@ std::vector<ExtensionAction*> LocationBarController::GetCurrentActions() {
   return current_actions;
 }
 
-LocationBarController::Action LocationBarController::OnClicked(
+ExtensionAction::ShowAction LocationBarController::OnClicked(
     const ExtensionAction* action) {
   const Extension* extension =
       ExtensionRegistry::Get(web_contents_->GetBrowserContext())
           ->enabled_extensions().GetByID(action->extension_id());
   CHECK(extension) << action->extension_id();
 
-  Action page_action =
+  ExtensionAction::ShowAction page_action =
       page_action_controller_->GetActionForExtension(extension) ?
           page_action_controller_->OnClicked(extension) :
-          ACTION_NONE;
-  Action active_script_action =
+          ExtensionAction::ACTION_NONE;
+  ExtensionAction::ShowAction active_script_action =
       active_script_controller_->GetActionForExtension(extension) ?
           active_script_controller_->OnClicked(extension) :
-          ACTION_NONE;
+          ExtensionAction::ACTION_NONE;
 
   // PageAction response takes priority.
-  return page_action != ACTION_NONE ? page_action : active_script_action;
+  return page_action != ExtensionAction::ACTION_NONE ? page_action :
+                                                       active_script_action;
 }
 
 // static

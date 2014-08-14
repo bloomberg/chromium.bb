@@ -57,7 +57,7 @@ class ActiveScriptController : public LocationBarController::ActionProvider,
   // LocationBarControllerProvider implementation.
   virtual ExtensionAction* GetActionForExtension(
       const Extension* extension) OVERRIDE;
-  virtual LocationBarController::Action OnClicked(
+  virtual ExtensionAction::ShowAction OnClicked(
       const Extension* extension) OVERRIDE;
   virtual void OnNavigated() OVERRIDE;
   virtual void OnExtensionUnloaded(const Extension* extension) OVERRIDE;

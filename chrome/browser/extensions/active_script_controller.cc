@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
@@ -121,11 +120,11 @@ ExtensionAction* ActiveScriptController::GetActionForExtension(
   return action.get();
 }
 
-LocationBarController::Action ActiveScriptController::OnClicked(
+ExtensionAction::ShowAction ActiveScriptController::OnClicked(
     const Extension* extension) {
   DCHECK(ContainsKey(pending_requests_, extension->id()));
   RunPendingForExtension(extension);
-  return LocationBarController::ACTION_NONE;
+  return ExtensionAction::ACTION_NONE;
 }
 
 void ActiveScriptController::OnNavigated() {

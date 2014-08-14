@@ -107,19 +107,11 @@ bool PageActionDecoration::ActivatePageAction(NSRect frame) {
           location_bar_controller();
 
   switch (controller->OnClicked(page_action_)) {
-    case LocationBarController::ACTION_NONE:
+    case ExtensionAction::ACTION_NONE:
       break;
 
-    case LocationBarController::ACTION_SHOW_POPUP:
+    case ExtensionAction::ACTION_SHOW_POPUP:
       ShowPopup(frame, page_action_->GetPopupUrl(current_tab_id_));
-      break;
-
-    case LocationBarController::ACTION_SHOW_CONTEXT_MENU:
-      // We are never passing OnClicked a right-click button, so assume that
-      // we're never going to be asked to show a context menu.
-      // TODO(kalman): if this changes, update this class to pass the real
-      // mouse button through to the LocationBarController.
-      NOTREACHED();
       break;
   }
 

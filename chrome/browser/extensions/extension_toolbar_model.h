@@ -9,6 +9,7 @@
 #include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/extensions/extension_action.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -31,15 +32,6 @@ class ExtensionToolbarModel : public content::NotificationObserver,
  public:
   ExtensionToolbarModel(Profile* profile, ExtensionPrefs* extension_prefs);
   virtual ~ExtensionToolbarModel();
-
-  // The action that should be taken as a result of clicking a browser action.
-  enum Action {
-    ACTION_NONE,
-    ACTION_SHOW_POPUP,
-    // Unlike LocationBarController there is no ACTION_SHOW_CONTEXT_MENU,
-    // because UI implementations tend to handle this themselves at a higher
-    // level.
-  };
 
   // A class which is informed of changes to the model; represents the view of
   // MVC. Also used for signaling view changes such as showing extension popups.
@@ -90,10 +82,10 @@ class ExtensionToolbarModel : public content::NotificationObserver,
   // the extension should be granted page tab permissions, which is what happens
   // when the user clicks the browser action, but not, for example, when the
   // showPopup API is called.
-  Action ExecuteBrowserAction(const Extension* extension,
-                              Browser* browser,
-                              GURL* popup_url_out,
-                              bool should_grant);
+  ExtensionAction::ShowAction ExecuteBrowserAction(const Extension* extension,
+                                                   Browser* browser,
+                                                   GURL* popup_url_out,
+                                                   bool should_grant);
   // If count == size(), this will set the visible icon count to -1, meaning
   // "show all actions".
   void SetVisibleIconCount(int count);

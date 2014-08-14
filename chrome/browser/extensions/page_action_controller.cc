@@ -37,7 +37,7 @@ ExtensionAction* PageActionController::GetActionForExtension(
   return ExtensionActionManager::Get(GetProfile())->GetPageAction(*extension);
 }
 
-LocationBarController::Action PageActionController::OnClicked(
+ExtensionAction::ShowAction PageActionController::OnClicked(
     const Extension* extension) {
   ExtensionAction* page_action =
       ExtensionActionManager::Get(GetProfile())->GetPageAction(*extension);
@@ -48,7 +48,7 @@ LocationBarController::Action PageActionController::OnClicked(
       active_tab_permission_granter()->GrantIfRequested(extension);
 
   if (page_action->HasPopup(tab_id))
-    return LocationBarController::ACTION_SHOW_POPUP;
+    return ExtensionAction::ACTION_SHOW_POPUP;
 
   ExtensionActionAPI::PageActionExecuted(
       web_contents_->GetBrowserContext(),
@@ -57,7 +57,7 @@ LocationBarController::Action PageActionController::OnClicked(
       web_contents_->GetLastCommittedURL().spec(),
       1 /* Button indication. We only ever pass left-click. */);
 
-  return LocationBarController::ACTION_NONE;
+  return ExtensionAction::ACTION_NONE;
 }
 
 void PageActionController::OnNavigated() {

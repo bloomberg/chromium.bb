@@ -38,6 +38,14 @@ class Size;
 // a per-tab value, the global value is used instead.
 class ExtensionAction {
  public:
+  // The action that the UI should take after the ExtensionAction is clicked.
+  enum ShowAction {
+    ACTION_NONE,
+    ACTION_SHOW_POPUP,
+    // We don't need a SHOW_CONTEXT_MENU because that's handled separately in
+    // the UI.
+  };
+
   // Use this ID to indicate the default state for properties that take a tab_id
   // parameter.
   static const int kDefaultTabId;

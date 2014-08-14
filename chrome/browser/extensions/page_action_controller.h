@@ -25,7 +25,7 @@ class PageActionController : public LocationBarController::ActionProvider {
   // LocationBarController::Provider implementation.
   virtual ExtensionAction* GetActionForExtension(const Extension* extension)
       OVERRIDE;
-  virtual LocationBarController::Action OnClicked(
+  virtual ExtensionAction::ShowAction OnClicked(
       const Extension* extension) OVERRIDE;
   virtual void OnNavigated() OVERRIDE;
 
