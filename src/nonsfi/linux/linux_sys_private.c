@@ -364,6 +364,19 @@ int fork(void) {
                      0 /* stack */, 0 /* ptid */, 0 /* tls */, 0 /* ctid */));
 }
 
+#if defined(__i386__) || defined(__arm__)
+struct linux_termios {
+  uint32_t c_iflag;
+  uint32_t c_oflag;
+  uint32_t c_cflag;
+  uint32_t c_lflag;
+  int8_t c_line;
+  int8_t c_cc[19];
+};
+#else
+# error Unsupported architecture
+#endif
+
 int isatty(int fd) {
   struct linux_termios term;
   return errno_value_call(
