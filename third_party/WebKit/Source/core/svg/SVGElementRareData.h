@@ -20,9 +20,7 @@
 #ifndef SVGElementRareData_h
 #define SVGElementRareData_h
 
-#include "core/css/StylePropertySet.h"
-#include "core/css/resolver/StyleResolver.h"
-#include "core/svg/SVGCursorElement.h"
+#include "core/svg/SVGElement.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/StdLibExtras.h"
@@ -30,7 +28,7 @@
 namespace blink {
 
 class CSSCursorImageValue;
-class SVGElement;
+class SVGCursorElement;
 
 class SVGElementRareData : public NoBaseWillBeGarbageCollectedFinalized<SVGElementRareData> {
     WTF_MAKE_NONCOPYABLE(SVGElementRareData); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;

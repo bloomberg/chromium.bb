@@ -6,6 +6,8 @@
 #include "core/svg/SVGElementRareData.h"
 
 #include "core/css/CSSCursorImageValue.h"
+#include "core/css/resolver/StyleResolver.h"
+#include "core/dom/Document.h"
 
 namespace blink {
 

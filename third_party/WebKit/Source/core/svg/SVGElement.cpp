@@ -32,6 +32,7 @@
 #include "core/XMLNames.h"
 #include "core/css/CSSCursorImageValue.h"
 #include "core/css/parser/BisonCSSParser.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
