@@ -429,25 +429,28 @@ TEST_F('ManageProfileUITest', 'PolicyDynamicRefresh', function() {
   CreateProfileOverlay.updateSignedInStatus(custodianEmail);
   CreateProfileOverlay.updateSupervisedUsersAllowed(true);
   var checkbox = $('create-profile-supervised');
-  var link = $('create-profile-supervised-not-signed-in-link');
+  var signInPromo = $('create-profile-supervised-not-signed-in');
+  var signInLink = $('create-profile-supervised-sign-in-link');
   var indicator = $('create-profile-supervised-indicator');
 
   assertFalse(checkbox.disabled, 'allowed and signed in');
-  assertFalse(link.hidden, 'allowed and signed in');
+  assertTrue(signInPromo.hidden, 'allowed and signed in');
   assertEquals('none', window.getComputedStyle(indicator, null).display,
                'allowed and signed in');
 
   CreateProfileOverlay.updateSignedInStatus('');
   CreateProfileOverlay.updateSupervisedUsersAllowed(true);
   assertTrue(checkbox.disabled, 'allowed, not signed in');
-  assertFalse(link.hidden, 'allowed, not signed in');
+  assertFalse(signInPromo.hidden, 'allowed, not signed in');
+  assertTrue(signInLink.enabled, 'allowed, not signed in');
   assertEquals('none', window.getComputedStyle(indicator, null).display,
                'allowed, not signed in');
 
   CreateProfileOverlay.updateSignedInStatus('');
   CreateProfileOverlay.updateSupervisedUsersAllowed(false);
   assertTrue(checkbox.disabled, 'disallowed, not signed in');
-  assertTrue(link.hidden, 'disallowed, not signed in');
+  assertFalse(signInPromo.hidden, 'disallowed, not signed in');
+  assertFalse(signInLink.enabled, 'disallowed, not signed in');
   assertEquals('inline-block', window.getComputedStyle(indicator, null).display,
                'disallowed, not signed in');
   assertEquals('policy', indicator.getAttribute('controlled-by'));
@@ -455,7 +458,7 @@ TEST_F('ManageProfileUITest', 'PolicyDynamicRefresh', function() {
   CreateProfileOverlay.updateSignedInStatus(custodianEmail);
   CreateProfileOverlay.updateSupervisedUsersAllowed(false);
   assertTrue(checkbox.disabled, 'disallowed, signed in');
-  assertTrue(link.hidden, 'disallowed, signed in');
+  assertTrue(signInPromo.hidden, 'disallowed, signed in');
   assertEquals('inline-block', window.getComputedStyle(indicator, null).display,
                'disallowed, signed in');
   assertEquals('policy', indicator.getAttribute('controlled-by'));
@@ -463,7 +466,7 @@ TEST_F('ManageProfileUITest', 'PolicyDynamicRefresh', function() {
   CreateProfileOverlay.updateSignedInStatus(custodianEmail);
   CreateProfileOverlay.updateSupervisedUsersAllowed(true);
   assertFalse(checkbox.disabled, 're-allowed and signed in');
-  assertFalse(link.hidden, 're-allowed and signed in');
+  assertTrue(signInPromo.hidden, 're-allowed and signed in');
   assertEquals('none', window.getComputedStyle(indicator, null).display,
                're-allowed and signed in');
 });
@@ -477,11 +480,11 @@ TEST_F('ManageProfileUITest', 'CreateInProgress', function() {
   CreateProfileOverlay.updateSignedInStatus(custodianEmail);
   CreateProfileOverlay.updateSupervisedUsersAllowed(true);
   var checkbox = $('create-profile-supervised');
-  var link = $('create-profile-supervised-not-signed-in-link');
+  var signInPromo = $('create-profile-supervised-not-signed-in');
   var indicator = $('create-profile-supervised-indicator');
 
   assertFalse(checkbox.disabled, 'allowed and signed in');
-  assertFalse(link.hidden, 'allowed and signed in');
+  assertTrue(signInPromo.hidden, 'allowed and signed in');
   assertEquals('none', window.getComputedStyle(indicator, null).display,
                'allowed and signed in');
   assertFalse(indicator.hasAttribute('controlled-by'));

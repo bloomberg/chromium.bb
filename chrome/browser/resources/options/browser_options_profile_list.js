@@ -70,7 +70,7 @@ cr.define('options.browser_options', function() {
         var supervisedEl = this.ownerDocument.createElement('div');
         supervisedEl.className = 'profile-supervised';
         supervisedEl.textContent =
-          '(' + loadTimeData.getStringF('supervisedUserLabel') + ')';
+            loadTimeData.getString('supervisedUserLabel');
         containerEl.appendChild(supervisedEl);
       }
 

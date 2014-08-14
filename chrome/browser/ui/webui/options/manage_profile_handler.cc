@@ -89,14 +89,12 @@ void ManageProfileHandler::GetLocalizedValues(
         IDS_PROFILES_CREATE_EXISTING_SUPERVISED_USER_ERROR },
     { "manageProfilesSupervisedSignedInLabel",
         IDS_PROFILES_CREATE_SUPERVISED_SIGNED_IN_LABEL },
-    { "manageProfilesSupervisedNotSignedInLabel",
-        IDS_PROFILES_CREATE_SUPERVISED_NOT_SIGNED_IN_LABEL },
+    { "manageProfilesSupervisedNotSignedIn",
+        IDS_PROFILES_CREATE_SUPERVISED_NOT_SIGNED_IN_HTML },
     { "manageProfilesSupervisedAccountDetailsOutOfDate",
         IDS_PROFILES_CREATE_SUPERVISED_ACCOUNT_DETAILS_OUT_OF_DATE_LABEL },
     { "manageProfilesSupervisedSignInAgainLink",
         IDS_PROFILES_CREATE_SUPERVISED_SIGN_IN_AGAIN_LINK },
-    { "manageProfilesSupervisedNotSignedInLink",
-        IDS_PROFILES_CREATE_SUPERVISED_NOT_SIGNED_IN_LINK },
     { "deleteProfileTitle", IDS_PROFILES_DELETE_TITLE },
     { "deleteProfileOK", IDS_PROFILES_DELETE_OK_BUTTON_LABEL },
     { "deleteProfileMessage", IDS_PROFILES_DELETE_MESSAGE },
@@ -114,8 +112,6 @@ void ManageProfileHandler::GetLocalizedValues(
     { "removeProfileShortcutButton", IDS_PROFILES_REMOVE_SHORTCUT_BUTTON },
     { "importExistingSupervisedUserLink",
         IDS_PROFILES_IMPORT_EXISTING_SUPERVISED_USER_LINK },
-    { "signInToImportSupervisedUsers",
-        IDS_PROFILES_IMPORT_SUPERVISED_USER_NOT_SIGNED_IN },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));

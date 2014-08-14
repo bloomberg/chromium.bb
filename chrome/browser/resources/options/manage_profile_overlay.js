@@ -95,7 +95,7 @@ cr.define('options', function() {
         return false;
       };
 
-      $('create-profile-supervised-not-signed-in-link').onclick =
+      $('create-profile-supervised-sign-in-link').onclick =
           function(event) {
         // The signin process will open an overlay to configure sync, which
         // would replace this overlay. It's smoother to close this one now.
@@ -335,13 +335,22 @@ cr.define('options', function() {
     updateCreateOrImport_: function(mode) {
       // In 'create' mode, check for existing supervised users with the same
       // name.
-      if (mode == 'create' && $('create-profile-supervised').checked) {
-        options.SupervisedUserListData.requestExistingSupervisedUsers().then(
-            this.receiveExistingSupervisedUsers_.bind(this),
-            this.onSigninError_.bind(this));
+      if (mode == 'create') {
+        this.requestExistingSupervisedUsers_();
       } else {
         this.updateOkButton_(mode);
       }
+    },
+
+    /**
+     * Tries to get the list of existing supervised users and updates the UI
+     * accordingly.
+     * @private
+     */
+    requestExistingSupervisedUsers_: function() {
+      options.SupervisedUserListData.requestExistingSupervisedUsers().then(
+          this.receiveExistingSupervisedUsers_.bind(this),
+          this.onSigninError_.bind(this));
     },
 
     /**
@@ -349,10 +358,16 @@ cr.define('options', function() {
      * the currently entered name is the name of an already existing supervised
      * user. If yes, the user is prompted to import the existing supervised
      * user, and the create button is disabled.
+     * If the received list is empty, hides the "import" link.
      * @param {Array.<Object>} The list of existing supervised users.
      * @private
      */
     receiveExistingSupervisedUsers_: function(supervisedUsers) {
+      $('import-existing-supervised-user-link').hidden =
+          supervisedUsers.length === 0;
+      if (!$('create-profile-supervised').checked)
+        return;
+
       var newName = $('create-profile-name').value;
       var i;
       for (i = 0; i < supervisedUsers.length; ++i) {
@@ -401,7 +416,7 @@ cr.define('options', function() {
      * @private
      */
     onSigninError_: function() {
-      this.updateImportExistingSupervisedUserLink_(false);
+      this.updateSignedInStatus_(this.signedInEmail_, true);
     },
 
     /**
@@ -649,6 +664,7 @@ cr.define('options', function() {
       $('create-profile-supervised').onchange = function() {
         ManageProfileOverlay.getInstance().updateCreateOrImport_('create');
       };
+      $('create-profile-supervised').hidden = true;
       $('create-profile-supervised-signed-in').disabled = true;
       $('create-profile-supervised-signed-in').hidden = true;
       $('create-profile-supervised-not-signed-in').hidden = true;
@@ -766,6 +782,7 @@ cr.define('options', function() {
       this.signedInEmail_ = email;
       this.hasError_ = hasError;
       var isSignedIn = email !== '';
+      $('create-profile-supervised').hidden = !isSignedIn;
       $('create-profile-supervised-signed-in').hidden = !isSignedIn;
       $('create-profile-supervised-not-signed-in').hidden = isSignedIn;
 
@@ -786,24 +803,13 @@ cr.define('options', function() {
             hasError;
       }
 
-      this.updateImportExistingSupervisedUserLink_(isSignedIn && !hasError);
-    },
-
-    /**
-     * Enables/disables the 'import existing supervised users' link button.
-     * It also updates the button text.
-     * @param {boolean} enable True to enable the link button and
-     *     false otherwise.
-     * @private
-     */
-    updateImportExistingSupervisedUserLink_: function(enable) {
-      var importSupervisedUserElement =
-          $('import-existing-supervised-user-link');
-      importSupervisedUserElement.hidden = false;
-      importSupervisedUserElement.disabled = !enable || this.createInProgress_;
-      importSupervisedUserElement.textContent = enable ?
-          loadTimeData.getString('importExistingSupervisedUserLink') :
-          loadTimeData.getString('signInToImportSupervisedUsers');
+      this.updateCreateSupervisedUserCheckbox_();
+      // If we're signed in, showing/hiding import-existing-supervised-user-link
+      // is handled in receiveExistingSupervisedUsers_.
+      if (isSignedIn && !hasError)
+        this.requestExistingSupervisedUsers_();
+      else
+        $('import-existing-supervised-user-link').hidden = true;
     },
 
     /**
@@ -819,7 +825,7 @@ cr.define('options', function() {
       this.supervisedUsersAllowed_ = allowed;
       this.updateCreateSupervisedUserCheckbox_();
 
-      $('create-profile-supervised-not-signed-in-link').hidden = !allowed;
+      $('create-profile-supervised-sign-in-link').enabled = allowed;
       if (!allowed) {
         $('create-profile-supervised-indicator').setAttribute('controlled-by',
                                                               'policy');
