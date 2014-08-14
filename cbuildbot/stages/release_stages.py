@@ -18,6 +18,8 @@ from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import timeout_util
+from chromite.lib.paygen import gspaths
+from chromite.lib.paygen import paygen_build_lib
 
 
 class InvalidTestConditionException(Exception):
@@ -309,14 +311,11 @@ class PaygenStage(artifact_stages.ArchivingStage):
     # this here, no in the sub-process so we don't have to pass back a
     # failure reason.
     try:
-      from crostools.lib import paygen_build_lib
       paygen_build_lib.ValidateBoardConfig(board)
     except  paygen_build_lib.BoardNotConfigured:
       raise PaygenNoPaygenConfigForBoard(
           'No release.conf entry was found for board %s. Get a TPM to fix.' %
           board)
-    except  ImportError:
-      raise PaygenCrostoolsNotAvailableError()
 
     with parallel.BackgroundTaskRunner(self._RunPaygenInProcess) as per_channel:
       def channel_notifier(channel):
@@ -350,17 +349,6 @@ class PaygenStage(artifact_stages.ArchivingStage):
       skip_delta_payloads: Skip generating delta payloads.
       wait_for_consistency: We delay for GS consistency, but not during tests.
     """
-    # TODO(dgarrett): Remove when crbug.com/341152 is fixed.
-    # These modules are imported here because they aren't always available at
-    # cbuildbot startup.
-    # pylint: disable=F0401
-    try:
-      from crostools.lib import gspaths
-      from crostools.lib import paygen_build_lib
-    except  ImportError:
-      # We can't generate payloads without crostools.
-      raise PaygenCrostoolsNotAvailableError()
-
     if wait_for_consistency:
       # TODO(dgarrett): If this works, remove and do a retry on failures.
       #

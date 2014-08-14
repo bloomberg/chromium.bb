@@ -25,7 +25,13 @@ from chromite.lib.paygen import signer_payloads_client
 from chromite.lib.paygen import urilib
 from chromite.lib.paygen import utils
 
-from dev.host.lib import update_payload
+# If we are a bootstrap environment, this import will fail.
+# We quietly ignore the failure, but leave bombs around that will
+# explode if people try to really use this library.
+try:
+  from dev.host.lib import update_payload
+except ImportError:
+  update_payload = None
 
 
 class Error(Exception):

@@ -1118,6 +1118,8 @@ fsi_images: 2913.331.0,2465.105.0
     self.assertTrue(result.startswith(
         os.path.join(self.tempdir, 'paygen_build-control_files')))
 
+  @unittest.skipIf(not paygen_build_lib.config,
+                   'Internal crostools repository needed.')
   def testEmitControlFile(self):
     """Test that we emit control files correctly."""
     payload = gspaths.Payload(tgt_image=self.npo_image,

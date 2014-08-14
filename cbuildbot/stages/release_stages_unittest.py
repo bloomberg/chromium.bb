@@ -7,7 +7,6 @@
 
 import os
 import sys
-import unittest
 
 sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
 from chromite.cbuildbot.cbuildbot_unittest import BuilderRunMock
@@ -21,13 +20,8 @@ from chromite.lib import timeout_util
 
 from chromite.cbuildbot.stages.generic_stages_unittest import patch
 
-try:
-  # pylint: disable=F0401
-  from crostools.lib import gspaths
-  from crostools.lib import paygen_build_lib
-  CROSTOOLS_AVAILABLE = True
-except ImportError:
-  CROSTOOLS_AVAILABLE = False
+from chromite.lib.paygen import gspaths
+from chromite.lib.paygen import paygen_build_lib
 
 # TODO(build): Finish test wrapper (http://crosbug.com/37517).
 # Until then, this has to be after the chromite imports.
@@ -289,31 +283,30 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
         notifier(channel)
     return side_effect
 
-  @unittest.skipIf(not CROSTOOLS_AVAILABLE,
-                   'Internal crostools repository needed.')
   def testPerformStageSuccess(self):
     """Test that PaygenStage works when signing works."""
 
     with patch(release_stages.parallel, 'BackgroundTaskRunner') as background:
       queue = background().__enter__()
 
-      stage = self.ConstructStage()
+      # This patch is only required for external builds with no config data.
+      with patch(paygen_build_lib, 'ValidateBoardConfig'):
 
-      with patch(stage, '_WaitForPushImage') as wait_push:
-        with patch(stage, '_WaitForSigningResults') as wait_signing:
-          wait_push.return_value = self.INSNS_URLS_PER_CHANNEL
-          wait_signing.side_effect = self.generateNotifyCalls(('stable',
-                                                               'beta'))
-          stage.PerformStage()
+        stage = self.ConstructStage()
 
-      # Verify that we queue up work
-      self.assertEqual(
-          queue.put.call_args_list,
-          [mock.call(('stable', 'x86-mario', '0.0.1', False, False, False)),
-           mock.call(('beta', 'x86-mario', '0.0.1', False, False, False))])
+        with patch(stage, '_WaitForPushImage') as wait_push:
+          with patch(stage, '_WaitForSigningResults') as wait_signing:
+            wait_push.return_value = self.INSNS_URLS_PER_CHANNEL
+            wait_signing.side_effect = self.generateNotifyCalls(('stable',
+                                                                 'beta'))
+            stage.PerformStage()
 
-  @unittest.skipIf(not CROSTOOLS_AVAILABLE,
-                   'Internal crostools repository needed.')
+        # Verify that we queue up work
+        self.assertEqual(
+            queue.put.call_args_list,
+            [mock.call(('stable', 'x86-mario', '0.0.1', False, False, False)),
+             mock.call(('beta', 'x86-mario', '0.0.1', False, False, False))])
+
   def testPerformStageSuccessVarientBoard(self):
     """Test that SignerResultsStage works with varient boards.
 
@@ -324,100 +317,105 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
     with patch(release_stages.parallel, 'BackgroundTaskRunner') as background:
       queue = background().__enter__()
 
-      stage = self.ConstructStage()
+      # This patch is only required for external builds with no config data.
+      with patch(paygen_build_lib, 'ValidateBoardConfig'):
+        stage = self.ConstructStage()
 
-      with patch(stage, '_WaitForPushImage') as wait_push:
-        with patch(stage, '_WaitForSigningResults') as wait_signing:
-          wait_push.return_value = self.INSNS_URLS_PER_CHANNEL
-          wait_signing.side_effect = self.generateNotifyCalls(('stable',
-                                                               'beta'))
-          stage.PerformStage()
+        with patch(stage, '_WaitForPushImage') as wait_push:
+          with patch(stage, '_WaitForSigningResults') as wait_signing:
+            wait_push.return_value = self.INSNS_URLS_PER_CHANNEL
+            wait_signing.side_effect = self.generateNotifyCalls(('stable',
+                                                                 'beta'))
+            stage.PerformStage()
 
-      # Verify that we queue up work
-      self.assertEqual(
-          queue.put.call_args_list,
-          [mock.call(('stable', 'x86-alex-he', '0.0.1', False, False, False)),
-           mock.call(('beta', 'x86-alex-he', '0.0.1', False, False, False))])
+        # Verify that we queue up work
+        self.assertEqual(
+            queue.put.call_args_list,
+            [mock.call(('stable', 'x86-alex-he', '0.0.1', False, False, False)),
+             mock.call(('beta', 'x86-alex-he', '0.0.1', False, False, False))])
 
-  @unittest.skipIf(not CROSTOOLS_AVAILABLE,
-                   'Internal crostools repository needed.')
   def testPerformStageSigningFailed(self):
     """Test that PaygenStage works when signing works."""
     with patch(release_stages.parallel, 'BackgroundTaskRunner') as background:
       queue = background().__enter__()
 
-      stage = self.ConstructStage()
+      # This patch is only required for external builds with no config data.
+      with patch(paygen_build_lib, 'ValidateBoardConfig'):
+        stage = self.ConstructStage()
 
-      with patch(stage, '_WaitForPushImage') as wait_push:
-        with patch(stage, '_WaitForSigningResults') as wait_signing:
-          wait_push.return_value = self.INSNS_URLS_PER_CHANNEL
-          wait_signing.side_effect = release_stages.SignerFailure
+        with patch(stage, '_WaitForPushImage') as wait_push:
+          with patch(stage, '_WaitForSigningResults') as wait_signing:
+            wait_push.return_value = self.INSNS_URLS_PER_CHANNEL
+            wait_signing.side_effect = release_stages.SignerFailure
 
-          self.assertRaises(release_stages.SignerFailure,
-                            stage.PerformStage)
+            self.assertRaises(release_stages.SignerFailure,
+                              stage.PerformStage)
 
-      # Ensure no work was queued up.
-      self.assertFalse(queue.put.called)
+        # Ensure no work was queued up.
+        self.assertFalse(queue.put.called)
 
-  @unittest.skipIf(not CROSTOOLS_AVAILABLE,
-                   'Internal crostools repository needed.')
   def testPerformStageBackgroundFail(self):
     """Test that exception from background processes are properly handled."""
     with patch(paygen_build_lib, 'CreatePayloads') as create_payloads:
       create_payloads.side_effect = failures_lib.TestLabFailure
 
-      stage = release_stages.PaygenStage(
-          self._run, self._current_board,
-          archive_stage=None, channels=['foo', 'bar'])
+      # This patch is only required for external builds with no config data.
+      with patch(paygen_build_lib, 'ValidateBoardConfig'):
+        stage = release_stages.PaygenStage(
+            self._run, self._current_board,
+            archive_stage=None, channels=['foo', 'bar'])
 
-      with patch(stage, '_HandleExceptionAsWarning') as warning_handler:
-        warning_handler.return_value = (results_lib.Results.FORGIVEN,
-                                        'description',
-                                        0)
+        with patch(stage, '_HandleExceptionAsWarning') as warning_handler:
+          warning_handler.return_value = (results_lib.Results.FORGIVEN,
+                                          'description',
+                                          0)
 
-        stage.Run()
+          stage.Run()
 
-        # This proves the exception was turned into a warning.
-        self.assertTrue(warning_handler.called)
+          # This proves the exception was turned into a warning.
+          self.assertTrue(warning_handler.called)
 
-  @unittest.skipIf(not CROSTOOLS_AVAILABLE,
-                   'Internal crostools repository needed.')
   def testPerformStageTrybot(self):
     """Test the PerformStage alternate behavior for trybot runs."""
     with patch(release_stages.parallel, 'BackgroundTaskRunner') as background:
       queue = background().__enter__()
 
-      # The stage is constructed differently for trybots, so don't use
-      # ConstructStage.
-      stage = release_stages.PaygenStage(self._run, self._current_board,
-                                 archive_stage=None, channels=['foo', 'bar'])
-      with patch(stage, '_WaitForPushImage') as wait_push:
-        with patch(stage, '_WaitForSigningResults') as wait_signing:
-          stage.PerformStage()
+      # This patch is only required for external builds with no config data.
+      with patch(paygen_build_lib, 'ValidateBoardConfig'):
+        # The stage is constructed differently for trybots, so don't use
+        # ConstructStage.
+        stage = release_stages.PaygenStage(self._run, self._current_board,
+                                   archive_stage=None, channels=['foo', 'bar'])
+        with patch(stage, '_WaitForPushImage') as wait_push:
+          with patch(stage, '_WaitForSigningResults') as wait_signing:
+            stage.PerformStage()
 
-        # Make sure we don't wait on push_image or signing in this case.
-        self.assertEqual(wait_push.mock_calls, [])
-        self.assertEqual(wait_signing.mock_calls, [])
+          # Make sure we don't wait on push_image or signing in this case.
+          self.assertEqual(wait_push.mock_calls, [])
+          self.assertEqual(wait_signing.mock_calls, [])
 
-      # Notice that we didn't put anything in _wait_for_channel_signing, but
-      # still got results right away.
-      self.assertEqual(
-          queue.put.call_args_list,
-          [mock.call(('foo', 'x86-mario', '0.0.1', False, False, False)),
-           mock.call(('bar', 'x86-mario', '0.0.1', False, False, False))])
+        # Notice that we didn't put anything in _wait_for_channel_signing, but
+        # still got results right away.
+        self.assertEqual(
+            queue.put.call_args_list,
+            [mock.call(('foo', 'x86-mario', '0.0.1', False, False, False)),
+             mock.call(('bar', 'x86-mario', '0.0.1', False, False, False))])
 
-  @unittest.skipIf(not CROSTOOLS_AVAILABLE,
-                   'Internal crostools repository needed.')
   def testPerformStageUnknownBoard(self):
     """Test that PaygenStage exits when an unknown board is specified."""
     self._current_board = 'unknown-board-name'
-    stage = self.ConstructStage()
 
-    self.assertRaises(release_stages.PaygenNoPaygenConfigForBoard,
-                      stage.PerformStage)
+    badBoardException = paygen_build_lib.BoardNotConfigured(self._current_board)
 
-  @unittest.skipIf(not CROSTOOLS_AVAILABLE,
-                   'Internal crostools repository needed.')
+    # This patch is only required for external builds with no config data.
+    with patch(paygen_build_lib, 'ValidateBoardConfig') as validate_boards:
+      validate_boards.side_effect = badBoardException
+
+      stage = self.ConstructStage()
+
+      self.assertRaises(release_stages.PaygenNoPaygenConfigForBoard,
+                        stage.PerformStage)
+
   def testRunPaygenInProcess(self):
     """Test that _RunPaygenInProcess works in the simple case."""
     with patch(paygen_build_lib, 'CreatePayloads') as create_payloads:
@@ -439,8 +437,6 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
                                          skip_test_payloads=False,
                                          skip_autotest=False)
 
-  @unittest.skipIf(not CROSTOOLS_AVAILABLE,
-                   'Internal crostools repository needed.')
   def testRunPaygenInProcessComplex(self):
     """Test that _RunPaygenInProcess with arguments that are more unusual."""
     with patch(paygen_build_lib, 'CreatePayloads') as create_payloads:
