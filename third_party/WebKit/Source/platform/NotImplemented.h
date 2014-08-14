@@ -35,7 +35,7 @@
 
 namespace blink {
 PLATFORM_EXPORT WTFLogChannel* notImplementedLoggingChannel();
-}
+} // namespace blink
 
 #define notImplemented() do { \
         static bool havePrinted = false; \

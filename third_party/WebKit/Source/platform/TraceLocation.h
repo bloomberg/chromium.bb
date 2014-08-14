@@ -34,6 +34,6 @@ private:
 };
 
 #define FROM_HERE ::blink::TraceLocation(__FUNCTION__, __FILE__)
-}
+} // namespace blink
 
 #endif // TraceLocation_h

@@ -284,12 +284,12 @@ public:
 };
 
 template<typename T>
-struct ThreadingTrait<blink::SupplementBase<T, true> > {
+struct ThreadingTrait<SupplementBase<T, true> > {
     static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
 };
 
 template<typename T>
-struct ThreadingTrait<blink::SupplementableBase<T, true> > {
+struct ThreadingTrait<SupplementableBase<T, true> > {
     static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
 };
 

@@ -40,10 +40,6 @@ namespace blink {
 
 class WebDiscardableMemory;
 
-} // namespace blink
-
-namespace blink {
-
 // A simple vector implementation that supports purgeable memory. The vector is
 // already locked at construction and locking uses an internal counter which
 // means that N calls to lock() must be followed by N+1 calls to unlock() to
@@ -115,7 +111,7 @@ private:
     // Note that there can't be data both in |m_vector| and
     // |m_discardable|, i.e. only one of them is used at a given time.
     Vector<char> m_vector;
-    OwnPtr<blink::WebDiscardableMemory> m_discardable;
+    OwnPtr<WebDiscardableMemory> m_discardable;
     size_t m_discardableCapacity;
     size_t m_discardableSize;
     bool m_isPurgeable;

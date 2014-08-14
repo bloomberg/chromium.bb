@@ -68,7 +68,7 @@ public:
     virtual void didReadDirectoryEntries(bool hasMore) { ASSERT_NOT_REACHED(); }
 
     // Called when an AsyncFileWrter has been created successfully.
-    virtual void didCreateFileWriter(PassOwnPtr<blink::WebFileWriter>, long long length) { ASSERT_NOT_REACHED(); }
+    virtual void didCreateFileWriter(PassOwnPtr<WebFileWriter>, long long length) { ASSERT_NOT_REACHED(); }
 
     // Called when there was an error.
     virtual void didFail(int code) = 0;
@@ -91,6 +91,6 @@ private:
     bool m_blockUntilCompletion;
 };
 
-} // namespace
+} // namespace blink
 
 #endif // AsyncFileSystemCallbacks_h

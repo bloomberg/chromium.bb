@@ -10,10 +10,8 @@
 #include "public/platform/WebContentDecryptionModuleResult.h"
 
 namespace blink {
-class WebString;
-}
 
-namespace blink {
+class WebString;
 
 // Used to notify completion of a CDM operation.
 class ContentDecryptionModuleResult : public GarbageCollectedFinalized<ContentDecryptionModuleResult> {
@@ -21,12 +19,12 @@ public:
     virtual ~ContentDecryptionModuleResult() { }
 
     virtual void complete() = 0;
-    virtual void completeWithSession(blink::WebContentDecryptionModuleResult::SessionStatus) = 0;
-    virtual void completeWithError(blink::WebContentDecryptionModuleException, unsigned long systemCode, const blink::WebString&) = 0;
+    virtual void completeWithSession(WebContentDecryptionModuleResult::SessionStatus) = 0;
+    virtual void completeWithError(WebContentDecryptionModuleException, unsigned long systemCode, const WebString&) = 0;
 
-    blink::WebContentDecryptionModuleResult result()
+    WebContentDecryptionModuleResult result()
     {
-        return blink::WebContentDecryptionModuleResult(this);
+        return WebContentDecryptionModuleResult(this);
     }
 
     virtual void trace(Visitor*) { }

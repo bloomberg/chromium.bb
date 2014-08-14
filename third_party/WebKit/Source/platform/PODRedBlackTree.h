@@ -44,7 +44,7 @@
 // In debug mode, printing of the data contained in the tree is
 // enabled. This requires the template specialization to be available:
 //
-//   template<> struct blink::ValueToString<T> {
+//   template<> struct ValueToString<T> {
 //       static String string(const T& t);
 //   };
 //

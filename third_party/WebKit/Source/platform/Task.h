@@ -36,7 +36,7 @@
 
 namespace blink {
 
-class Task : public blink::WebThread::Task {
+class Task : public WebThread::Task {
 public:
     explicit Task(const Closure& closure)
         : m_closure(closure)

@@ -60,10 +60,10 @@ namespace blink {
 // enabled. This requires the following template specializations to be
 // available:
 //
-//   template<> struct blink::ValueToString<T> {
+//   template<> struct ValueToString<T> {
 //       static String string(const T& t);
 //   };
-//   template<> struct blink::ValueToString<UserData> {
+//   template<> struct ValueToString<UserData> {
 //       static String string(const UserData& t);
 //   };
 //

@@ -47,7 +47,7 @@ PLATFORM_EXPORT FloatRect screenAvailableRect(Widget*);
 PLATFORM_EXPORT void screenColorProfile(ColorProfile&);
 
 PLATFORM_EXPORT uint16_t screenOrientationAngle(Widget*);
-PLATFORM_EXPORT blink::WebScreenOrientationType screenOrientationType(Widget*);
+PLATFORM_EXPORT WebScreenOrientationType screenOrientationType(Widget*);
 
 } // namespace blink
 

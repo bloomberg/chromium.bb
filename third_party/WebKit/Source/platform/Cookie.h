@@ -72,7 +72,7 @@ struct CookieHash {
         return a.name == b.name && a.domain == b.domain && a.path == b.path && a.secure == b.secure;
     }
 };
-}
+} // namespace blink
 
 namespace WTF {
 template<typename T> struct DefaultHash;
