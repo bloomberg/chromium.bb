@@ -825,6 +825,7 @@
         '../components/components.gyp:keyed_service_content',
         '../content/content_shell_and_tests.gyp:test_support_content',
         '../device/serial/serial.gyp:device_serial',
+        '../device/serial/serial.gyp:device_serial_test_util',
         '../mojo/mojo_base.gyp:mojo_environment_chromium',
         '../mojo/mojo_base.gyp:mojo_cpp_bindings',
         '../mojo/mojo_base.gyp:mojo_js_bindings_lib',

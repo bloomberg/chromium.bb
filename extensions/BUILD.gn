@@ -166,6 +166,7 @@ test("unittests") {
     "//base/test:test_support",
     "//content/test:test_support",
     "//device/serial",
+    "//device/serial:test_util",
     "//extensions/common",
     "//extensions/renderer",
     "//extensions/strings",
