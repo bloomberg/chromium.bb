@@ -75,7 +75,7 @@
         <include name="IDR_PROFILE_AVATAR_2X_23" file="default_200_percent/common/profile_avatar_margarita.png" type="BINDATA" />
         <include name="IDR_PROFILE_AVATAR_2X_24" file="default_200_percent/common/profile_avatar_note.png" type="BINDATA" />
         <include name="IDR_PROFILE_AVATAR_2X_25" file="default_200_percent/common/profile_avatar_sun_cloud.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_2X_26" file="default_200_percent/common/login_guest.png" type="BINDATA" />
+        <include name="IDR_PROFILE_AVATAR_2X_26" file="default_200_percent/common/profile_avatar_placeholder.png" type="BINDATA" />
       </if>
       <if expr="is_macosx and enable_app_list">
         <!-- App Launcher icons for .app shim, dock icon. Unscaled, because the

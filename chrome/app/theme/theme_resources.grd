@@ -674,7 +674,7 @@
       <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_23" file="common/profile_avatar_margarita_mac.png" />
       <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_24" file="common/profile_avatar_note_mac.png" />
       <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_25" file="common/profile_avatar_sun_cloud_mac.png" />
-      <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_26" file="common/login_guest.png" />
+      <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_26" file="common/profile_avatar_placeholder.png" />
 
       <!-- New style avatar button -->
       <if expr="toolkit_views">
