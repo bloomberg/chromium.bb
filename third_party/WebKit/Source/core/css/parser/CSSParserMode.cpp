@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/css/CSSParserMode.h"
+#include "core/css/parser/CSSParserMode.h"
 
 #include "core/dom/Document.h"
 #include "core/frame/Settings.h"

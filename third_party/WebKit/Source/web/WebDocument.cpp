@@ -36,7 +36,6 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/accessibility/AXObjectCache.h"
-#include "core/css/CSSParserMode.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/CSSSelectorWatch.h"
 #include "core/dom/Document.h"

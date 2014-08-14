@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/css/CSSParserValues.h"
+#include "core/css/parser/CSSParserValues.h"
 
 #include <gtest/gtest.h>
 

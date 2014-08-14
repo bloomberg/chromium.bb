@@ -907,7 +907,7 @@ make_qualified_names("make_core_generated_xml_names") {
 
 # "MakeTokenMatcher" in make_core_generated from GYP.
 make_token_matcher("make_core_generated_make_token_matcher") {
-  input_file = "css/CSSTokenizer-in.cpp"
+  input_file = "css/parser/CSSTokenizer-in.cpp"
   output_file = "$blink_core_output_dir/CSSTokenizer.cpp"
 }
 
@@ -1068,7 +1068,7 @@ action("make_core_generated_html_element_lookup_trie") {
 action_foreach("make_core_generated_bison") {
   script = "../build/scripts/rule_bison.py"
   sources = [
-    "css/CSSGrammar.y",
+    "css/parser/CSSGrammar.y",
     "xml/XPathGrammar.y",
   ]
   outputs = [

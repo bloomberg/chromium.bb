@@ -14,7 +14,7 @@ HEADER_TEMPLATE = """
 #ifndef %(class_name)s_h
 #define %(class_name)s_h
 
-#include "core/css/CSSParserMode.h"
+#include "core/css/parser/CSSParserMode.h"
 #include "wtf/HashFunctions.h"
 #include "wtf/HashTraits.h"
 #include <string.h>

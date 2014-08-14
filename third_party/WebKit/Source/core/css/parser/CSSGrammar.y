@@ -30,7 +30,7 @@
 #include "core/css/CSSKeyframeRule.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/parser/BisonCSSParser.h"
-#include "core/css/CSSParserMode.h"
+#include "core/css/parser/CSSParserMode.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSSelectorList.h"

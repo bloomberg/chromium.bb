@@ -25,13 +25,13 @@
  */
 
 #include "config.h"
-#include "core/css/CSSTokenizer.h"
+#include "core/css/parser/CSSTokenizer.h"
 
 #include "core/css/CSSKeyframeRule.h"
-#include "core/css/parser/BisonCSSParser.h"
-#include "core/css/CSSParserValues.h"
 #include "core/css/MediaQuery.h"
 #include "core/css/StyleRule.h"
+#include "core/css/parser/BisonCSSParser.h"
+#include "core/css/parser/CSSParserValues.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/svg/SVGParserUtilities.h"
 

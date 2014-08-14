@@ -22,10 +22,10 @@
 #define StylePropertySet_h
 
 #include "core/CSSPropertyNames.h"
-#include "core/css/CSSParserMode.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSProperty.h"
 #include "core/css/PropertySetCSSStyleDeclaration.h"
+#include "core/css/parser/CSSParserMode.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"

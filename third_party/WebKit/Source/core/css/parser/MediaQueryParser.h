@@ -5,10 +5,10 @@
 #ifndef MediaQueryParser_h
 #define MediaQueryParser_h
 
-#include "core/css/CSSParserValues.h"
 #include "core/css/MediaList.h"
 #include "core/css/MediaQuery.h"
 #include "core/css/MediaQueryExp.h"
+#include "core/css/parser/CSSParserValues.h"
 #include "core/css/parser/MediaQueryBlockWatcher.h"
 #include "core/css/parser/MediaQueryToken.h"
 #include "wtf/text/WTFString.h"

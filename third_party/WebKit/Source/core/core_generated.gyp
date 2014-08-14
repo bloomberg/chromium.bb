@@ -139,7 +139,7 @@
       ],
       'sources': [
         # bison rule
-        'css/CSSGrammar.y',
+        'css/parser/CSSGrammar.y',
         'xml/XPathGrammar.y',
       ],
       'actions': [
@@ -748,7 +748,7 @@
           'inputs': [
             '<@(scripts_for_in_files)',
             '../build/scripts/make_token_matcher.py',
-            '../core/css/CSSTokenizer-in.cpp',
+            '../core/css/parser/CSSTokenizer-in.cpp',
           ],
           'outputs': [
             '<(blink_core_output_dir)/CSSTokenizer.cpp',
@@ -756,7 +756,7 @@
           'action': [
             'python',
             '../build/scripts/make_token_matcher.py',
-            '../core/css/CSSTokenizer-in.cpp',
+            '../core/css/parser/CSSTokenizer-in.cpp',
             '<(blink_core_output_dir)/CSSTokenizer.cpp',
           ],
         },
