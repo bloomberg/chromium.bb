@@ -114,14 +114,12 @@ NSString* Sandbox::AllowMetadataForPath(const base::FilePath& allowed_path) {
   // Collect a list of all parent directories.
   base::FilePath last_path = allowed_path;
   std::vector<base::FilePath> subpaths;
-
-  base::FilePath path = allowed_path;
-  do {
+  for (base::FilePath path = allowed_path;
+       path.value() != last_path.value();
+       path = path.DirName()) {
     subpaths.push_back(path);
-
     last_path = path;
-    path = path.DirName();
-  } while (path.value() != last_path.value());
+  }
 
   // Iterate through all parents and allow stat() on them explicitly.
   NSString* sandbox_command = @"(allow file-read-metadata ";
