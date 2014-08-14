@@ -8,8 +8,8 @@
 #include "base/basictypes.h"
 #include "base/observer_list.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
-#include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
+#include "components/omnibox/autocomplete_result.h"
 
 class OmniboxPopupModelObserver;
 class OmniboxPopupView;

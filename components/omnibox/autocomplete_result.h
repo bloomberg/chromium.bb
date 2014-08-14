@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_RESULT_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_RESULT_H_
+#ifndef COMPONENTS_OMNIBOX_AUTOCOMPLETE_RESULT_H_
+#define COMPONENTS_OMNIBOX_AUTOCOMPLETE_RESULT_H_
 
 #include <stddef.h>
 
@@ -202,4 +202,4 @@ class AutocompleteResult {
   DISALLOW_COPY_AND_ASSIGN(AutocompleteResult);
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_RESULT_H_
+#endif  // COMPONENTS_OMNIBOX_AUTOCOMPLETE_RESULT_H_

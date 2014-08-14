@@ -17,7 +17,6 @@ include_rules = [
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
   # http://crbug.com/370850
-  "!chrome/browser/autocomplete/autocomplete_result.h",
   "!chrome/browser/autocomplete/history_url_provider.h",
   "!chrome/browser/bookmarks/bookmark_model_factory.h",
   "!chrome/browser/browser_process.h",
@@ -48,6 +47,7 @@ include_rules = [
   "!components/bookmarks/browser/bookmark_model.h",
   "!components/bookmarks/browser/bookmark_utils.h",
   "!components/omnibox/autocomplete_match.h",
+  "!components/omnibox/autocomplete_result.h",
   "!components/omnibox/url_prefix.h",
 ]
 

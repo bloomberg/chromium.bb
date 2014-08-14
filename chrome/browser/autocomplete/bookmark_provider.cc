@@ -10,7 +10,6 @@
 
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/history_provider.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -19,6 +18,7 @@
 #include "components/bookmarks/browser/bookmark_match.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
+#include "components/omnibox/autocomplete_result.h"
 #include "components/omnibox/omnibox_field_trial.h"
 #include "components/omnibox/url_prefix.h"
 #include "net/base/net_util.h"

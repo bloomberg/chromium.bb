@@ -12,6 +12,8 @@ static_library("omnibox") {
     "autocomplete_match_type.h",
     "autocomplete_provider.cc",
     "autocomplete_provider.h",
+    "autocomplete_result.cc",
+    "autocomplete_result.h",
     "autocomplete_scheme_classifier.h",
     "omnibox_field_trial.cc",
     "omnibox_field_trial.h",
@@ -55,6 +57,7 @@ source_set("unit_tests") {
   sources = [
     "autocomplete_input_unittest.cc",
     "autocomplete_match_unittest.cc",
+    "autocomplete_result_unittest.cc",
     "omnibox_field_trial_unittest.cc",
   ]
 

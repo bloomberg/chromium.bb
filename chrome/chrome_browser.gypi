@@ -131,8 +131,6 @@
       'browser/autocomplete/autocomplete_controller.cc',
       'browser/autocomplete/autocomplete_controller.h',
       'browser/autocomplete/autocomplete_controller_delegate.h',
-      'browser/autocomplete/autocomplete_result.cc',
-      'browser/autocomplete/autocomplete_result.h',
       'browser/autocomplete/base_search_provider.cc',
       'browser/autocomplete/base_search_provider.h',
       'browser/autocomplete/bookmark_provider.cc',

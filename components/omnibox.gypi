@@ -33,6 +33,8 @@
         'omnibox/autocomplete_provider.cc',
         'omnibox/autocomplete_provider.h',
         'omnibox/autocomplete_provider_listener.h',
+        'omnibox/autocomplete_result.cc',
+        'omnibox/autocomplete_result.h',
         'omnibox/autocomplete_scheme_classifier.h',
         'omnibox/omnibox_field_trial.cc',
         'omnibox/omnibox_field_trial.h',

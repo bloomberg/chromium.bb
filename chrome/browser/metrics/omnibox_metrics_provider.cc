@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/omnibox/omnibox_log.h"
 #include "chrome/browser/ui/browser_otr_state.h"
@@ -18,6 +17,7 @@
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/omnibox/autocomplete_match.h"
 #include "components/omnibox/autocomplete_provider.h"
+#include "components/omnibox/autocomplete_result.h"
 #include "content/public/browser/notification_service.h"
 
 using metrics::OmniboxEventProto;
