@@ -465,6 +465,7 @@
         'mojo_base.gyp:mojo_cpp_bindings',
       ],
       'dependencies': [
+        'mojo_base.gyp:mojo_application_bindings',
         'mojo_base.gyp:mojo_cpp_bindings',
         'mojo_geometry_bindings',
         'mojo_input_events_bindings',
