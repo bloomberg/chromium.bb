@@ -17,9 +17,11 @@ COMPILE_ASSERT(ET_GESTURE_TYPE_END - ET_GESTURE_TYPE_START < 32,
 
 GestureEventData CreateGesture(EventType type,
                                int motion_event_id,
+                               MotionEvent::ToolType primary_tool_type,
                                const GestureEventDataPacket& packet) {
   return GestureEventData(GestureEventDetails(type, 0, 0),
                           motion_event_id,
+                          primary_tool_type,
                           packet.timestamp(),
                           packet.touch_location().x(),
                           packet.touch_location().y(),
@@ -128,6 +130,8 @@ bool IsTouchStartEvent(GestureEventDataPacket::GestureSource gesture_source) {
 TouchDispositionGestureFilter::TouchDispositionGestureFilter(
     TouchDispositionGestureFilterClient* client)
     : client_(client),
+      ending_event_motion_event_id_(0),
+      ending_event_primary_tool_type_(MotionEvent::TOOL_TYPE_UNKNOWN),
       needs_tap_ending_event_(false),
       needs_show_press_event_(false),
       needs_fling_ending_event_(false),
@@ -259,6 +263,7 @@ void TouchDispositionGestureFilter::SendGesture(
     case ET_GESTURE_TAP_DOWN:
       DCHECK(!needs_tap_ending_event_);
       ending_event_motion_event_id_ = event.motion_event_id;
+      ending_event_primary_tool_type_ = event.primary_tool_type;
       needs_show_press_event_ = true;
       needs_tap_ending_event_ = true;
       break;
@@ -289,6 +294,7 @@ void TouchDispositionGestureFilter::SendGesture(
       CancelFlingIfNecessary(packet_being_sent);
       EndScrollIfNecessary(packet_being_sent);
       ending_event_motion_event_id_ = event.motion_event_id;
+      ending_event_primary_tool_type_ = event.primary_tool_type;
       needs_scroll_ending_event_ = true;
       break;
     case ET_GESTURE_SCROLL_END:
@@ -297,6 +303,7 @@ void TouchDispositionGestureFilter::SendGesture(
     case ET_SCROLL_FLING_START:
       CancelFlingIfNecessary(packet_being_sent);
       ending_event_motion_event_id_ = event.motion_event_id;
+      ending_event_primary_tool_type_ = event.primary_tool_type;
       needs_fling_ending_event_ = true;
       needs_scroll_ending_event_ = false;
       break;
@@ -316,6 +323,7 @@ void TouchDispositionGestureFilter::CancelTapIfNecessary(
 
   SendGesture(CreateGesture(ET_GESTURE_TAP_CANCEL,
                             ending_event_motion_event_id_,
+                            ending_event_primary_tool_type_,
                             packet_being_sent),
               packet_being_sent);
   DCHECK(!needs_tap_ending_event_);
@@ -328,6 +336,7 @@ void TouchDispositionGestureFilter::CancelFlingIfNecessary(
 
   SendGesture(CreateGesture(ET_SCROLL_FLING_CANCEL,
                             ending_event_motion_event_id_,
+                            ending_event_primary_tool_type_,
                             packet_being_sent),
               packet_being_sent);
   DCHECK(!needs_fling_ending_event_);
@@ -340,6 +349,7 @@ void TouchDispositionGestureFilter::EndScrollIfNecessary(
 
   SendGesture(CreateGesture(ET_GESTURE_SCROLL_END,
                             ending_event_motion_event_id_,
+                            ending_event_primary_tool_type_,
                             packet_being_sent),
               packet_being_sent);
   DCHECK(!needs_scroll_ending_event_);

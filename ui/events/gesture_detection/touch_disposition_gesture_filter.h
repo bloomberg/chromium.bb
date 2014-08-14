@@ -95,6 +95,7 @@ class GESTURE_DETECTION_EXPORT TouchDispositionGestureFilter {
   // when necessary, e.g., GestureTapCancel when scrolling begins, or
   // GestureFlingCancel when a user taps following a GestureFlingStart.
   int ending_event_motion_event_id_;
+  MotionEvent::ToolType ending_event_primary_tool_type_;
   bool needs_tap_ending_event_;
   bool needs_show_press_event_;
   bool needs_fling_ending_event_;

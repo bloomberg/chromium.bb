@@ -202,6 +202,7 @@ class TouchDispositionGestureFilterTest
   GestureEventData CreateGesture(EventType type) {
     return GestureEventData(GestureEventDetails(type, 0, 0),
                             0,
+                            MotionEvent::TOOL_TYPE_FINGER,
                             base::TimeTicks(),
                             touch_event_.GetX(0),
                             touch_event_.GetY(0),

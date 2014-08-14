@@ -18,6 +18,7 @@ const float kTouchY = 14.2f;
 GestureEventData CreateGesture(EventType type) {
   return GestureEventData(GestureEventDetails(type, 0, 0),
                           0,
+                          MotionEvent::TOOL_TYPE_FINGER,
                           base::TimeTicks(),
                           kTouchX,
                           kTouchY,
@@ -31,9 +32,10 @@ GestureEventData CreateGesture(EventType type) {
 
 bool GestureEquals(const GestureEventData& lhs, const GestureEventData& rhs) {
   return lhs.type() == rhs.type() &&
-         lhs.motion_event_id == rhs.motion_event_id && lhs.time == rhs.time &&
-         lhs.x == rhs.x && lhs.y == rhs.y && lhs.raw_x == rhs.raw_x &&
-         lhs.raw_y == rhs.raw_y;
+         lhs.motion_event_id == rhs.motion_event_id &&
+         lhs.primary_tool_type == rhs.primary_tool_type &&
+         lhs.time == rhs.time && lhs.x == rhs.x && lhs.y == rhs.y &&
+         lhs.raw_x == rhs.raw_x && lhs.raw_y == rhs.raw_y;
 }
 
 bool PacketEquals(const GestureEventDataPacket& lhs,

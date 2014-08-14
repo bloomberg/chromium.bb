@@ -64,6 +64,8 @@ MotionEventAndroid::ToolType FromAndroidToolType(int android_tool_type) {
       return MotionEventAndroid::TOOL_TYPE_STYLUS;
     case TOOL_TYPE_MOUSE:
       return MotionEventAndroid::TOOL_TYPE_MOUSE;
+    case TOOL_TYPE_ERASER:
+      return MotionEventAndroid::TOOL_TYPE_ERASER;
     default:
       NOTREACHED() << "Invalid Android MotionEvent tool type: "
                    << android_tool_type;

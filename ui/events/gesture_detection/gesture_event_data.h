@@ -8,6 +8,7 @@
 #include "base/time/time.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/gesture_detection/gesture_detection_export.h"
+#include "ui/events/gesture_detection/motion_event.h"
 #include "ui/events/gesture_event_details.h"
 
 namespace ui {
@@ -17,6 +18,7 @@ class GestureEventDataPacket;
 struct GESTURE_DETECTION_EXPORT GestureEventData {
   GestureEventData(const GestureEventDetails&,
                    int motion_event_id,
+                   MotionEvent::ToolType primary_tool_type,
                    base::TimeTicks time,
                    float x,
                    float y,
@@ -30,6 +32,7 @@ struct GESTURE_DETECTION_EXPORT GestureEventData {
 
   GestureEventDetails details;
   int motion_event_id;
+  MotionEvent::ToolType primary_tool_type;
   base::TimeTicks time;
   float x;
   float y;

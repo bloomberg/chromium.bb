@@ -10,6 +10,7 @@ namespace ui {
 
 GestureEventData::GestureEventData(const GestureEventDetails& details,
                                    int motion_event_id,
+                                   MotionEvent::ToolType primary_tool_type,
                                    base::TimeTicks time,
                                    float x,
                                    float y,
@@ -19,6 +20,7 @@ GestureEventData::GestureEventData(const GestureEventDetails& details,
                                    const gfx::RectF& bounding_box)
     : details(details),
       motion_event_id(motion_event_id),
+      primary_tool_type(primary_tool_type),
       time(time),
       x(x),
       y(y),
@@ -34,6 +36,7 @@ GestureEventData::GestureEventData(EventType type,
                                    const GestureEventData& other)
     : details(type, 0, 0),
       motion_event_id(other.motion_event_id),
+      primary_tool_type(other.primary_tool_type),
       time(other.time),
       x(other.x),
       y(other.y),
@@ -44,7 +47,12 @@ GestureEventData::GestureEventData(EventType type,
 }
 
 GestureEventData::GestureEventData()
-    : motion_event_id(0), x(0), y(0), raw_x(0), raw_y(0) {
+    : motion_event_id(0),
+      primary_tool_type(MotionEvent::TOOL_TYPE_UNKNOWN),
+      x(0),
+      y(0),
+      raw_x(0),
+      raw_y(0) {
 }
 
 }  //  namespace ui

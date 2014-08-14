@@ -49,6 +49,8 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
     // The min and max size (both length and width, in dips) of the generated
     // bounding box for all gesture types. This is useful for touch streams
     // that may report zero or unreasonably small or large touch sizes.
+    // Note that these bounds are only applied for touch or unknown tool types;
+    // mouse and stylus-derived gestures will not be affected.
     // Both values default to 0 (disabled).
     float min_gesture_bounds_length;
     float max_gesture_bounds_length;

@@ -252,14 +252,10 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
     SetUpWithConfig(config);
   }
 
-  void SetMinGestureBoundsLength(float min_gesture_bound_length) {
+  void SetMinMaxGestureBoundsLength(float min_gesture_bound_length,
+                                    float max_gesture_bound_length) {
     GestureProvider::Config config = GetDefaultConfig();
     config.min_gesture_bounds_length = min_gesture_bound_length;
-    SetUpWithConfig(config);
-  }
-
-  void SetMaxGestureBoundsLength(float max_gesture_bound_length) {
-    GestureProvider::Config config = GetDefaultConfig();
     config.max_gesture_bounds_length = max_gesture_bound_length;
     SetUpWithConfig(config);
   }
@@ -284,12 +280,15 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
                               MotionEvent::ACTION_MOVE,
                               scroll_to_x,
                               scroll_to_y);
+    event.SetToolType(0, MotionEvent::TOOL_TYPE_FINGER);
     event.set_id(++motion_event_id);
 
     EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
     EXPECT_TRUE(gesture_provider_->IsScrollInProgress());
     EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SCROLL_BEGIN));
     EXPECT_EQ(motion_event_id, GetMostRecentGestureEvent().motion_event_id);
+    EXPECT_EQ(event.GetToolType(0),
+              GetMostRecentGestureEvent().primary_tool_type);
     EXPECT_EQ(ET_GESTURE_SCROLL_UPDATE, GetMostRecentGestureEventType());
     EXPECT_EQ(BoundsForSingleMockTouchAtLocation(scroll_to_x, scroll_to_y),
               GetMostRecentGestureEvent().details.bounding_box());
@@ -304,6 +303,7 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
 
     event = ObtainMotionEvent(
         event_time + kOneSecond, end_action_type, scroll_to_x, scroll_to_y);
+    event.SetToolType(0, MotionEvent::TOOL_TYPE_FINGER);
     event.set_id(++motion_event_id);
 
     gesture_provider_->OnTouchEvent(event);
@@ -311,6 +311,8 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
     EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SCROLL_END));
     EXPECT_EQ(ET_GESTURE_SCROLL_END, GetMostRecentGestureEventType());
     EXPECT_EQ(motion_event_id, GetMostRecentGestureEvent().motion_event_id);
+    EXPECT_EQ(event.GetToolType(0),
+              GetMostRecentGestureEvent().primary_tool_type);
     EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
     EXPECT_EQ(BoundsForSingleMockTouchAtLocation(scroll_to_x, scroll_to_y),
               GetMostRecentGestureEvent().details.bounding_box());
@@ -409,22 +411,28 @@ TEST_F(GestureProviderTest, GestureTap) {
 
   MockMotionEvent event =
       ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN);
+  event.SetToolType(0, MotionEvent::TOOL_TYPE_FINGER);
   event.set_id(++motion_event_id);
 
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetMostRecentGestureEventType());
   EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
+  EXPECT_EQ(event.GetToolType(0),
+            GetMostRecentGestureEvent().primary_tool_type);
   EXPECT_EQ(BoundsForSingleMockTouchAtLocation(kFakeCoordX, kFakeCoordY),
             GetMostRecentGestureEvent().details.bounding_box());
 
   event = ObtainMotionEvent(event_time + kOneMicrosecond,
                             MotionEvent::ACTION_UP);
+  event.SetToolType(0, MotionEvent::TOOL_TYPE_FINGER);
   event.set_id(++motion_event_id);
 
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_EQ(ET_GESTURE_TAP, GetMostRecentGestureEventType());
   // Ensure tap details have been set.
   EXPECT_EQ(1, GetMostRecentGestureEvent().details.tap_count());
+  EXPECT_EQ(event.GetToolType(0),
+            GetMostRecentGestureEvent().primary_tool_type);
   EXPECT_EQ(motion_event_id, GetMostRecentGestureEvent().motion_event_id);
   EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
   EXPECT_EQ(BoundsForSingleMockTouchAtLocation(kFakeCoordX, kFakeCoordY),
@@ -2290,7 +2298,7 @@ TEST_F(GestureProviderTest, PinchZoomWithThreshold) {
 // Verify that the min gesture bound setting is honored.
 TEST_F(GestureProviderTest, MinGestureBoundsLength) {
   const float kMinGestureBoundsLength = 10.f * kMockTouchRadius;
-  SetMinGestureBoundsLength(kMinGestureBoundsLength);
+  SetMinMaxGestureBoundsLength(kMinGestureBoundsLength, 0.f);
   gesture_provider_->SetDoubleTapSupportForPlatformEnabled(false);
 
   base::TimeTicks event_time = base::TimeTicks::Now();
@@ -2316,7 +2324,7 @@ TEST_F(GestureProviderTest, MinGestureBoundsLength) {
 
 TEST_F(GestureProviderTest, MaxGestureBoundsLength) {
   const float kMaxGestureBoundsLength = kMockTouchRadius / 10.f;
-  SetMaxGestureBoundsLength(kMaxGestureBoundsLength);
+  SetMinMaxGestureBoundsLength(0.f, kMaxGestureBoundsLength);
   gesture_provider_->SetDoubleTapSupportForPlatformEnabled(false);
 
   base::TimeTicks event_time = base::TimeTicks::Now();
@@ -2361,6 +2369,65 @@ TEST_F(GestureProviderTest, ZeroRadiusBoundingBox) {
 
   EXPECT_EQ(gfx::RectF(10, 20, 100, 130),
             GetMostRecentGestureEvent().details.bounding_box());
+}
+
+// Verify that the min/max gesture bound settings are not applied to stylus
+// or mouse-derived MotionEvents.
+TEST_F(GestureProviderTest, NoMinOrMaxGestureBoundsLengthWithStylusOrMouse) {
+  const float kMinGestureBoundsLength = 5.f * kMockTouchRadius;
+  const float kMaxGestureBoundsLength = 10.f * kMockTouchRadius;
+  SetMinMaxGestureBoundsLength(kMinGestureBoundsLength,
+                               kMaxGestureBoundsLength);
+  gesture_provider_->SetDoubleTapSupportForPlatformEnabled(false);
+
+  base::TimeTicks event_time = base::TimeTicks::Now();
+  MockMotionEvent event =
+      ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN);
+  event.SetTouchMajor(0);
+  event.SetToolType(0, MotionEvent::TOOL_TYPE_MOUSE);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetMostRecentGestureEventType());
+  EXPECT_EQ(MotionEvent::TOOL_TYPE_MOUSE,
+            GetMostRecentGestureEvent().primary_tool_type);
+  EXPECT_EQ(0.f, GetMostRecentGestureEvent().details.bounding_box_f().width());
+  EXPECT_EQ(0.f, GetMostRecentGestureEvent().details.bounding_box_f().height());
+
+  event =
+      ObtainMotionEvent(event_time + kOneMicrosecond, MotionEvent::ACTION_UP);
+  event.SetTouchMajor(1);
+  event.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_TAP, GetMostRecentGestureEventType());
+  EXPECT_EQ(MotionEvent::TOOL_TYPE_STYLUS,
+            GetMostRecentGestureEvent().primary_tool_type);
+  EXPECT_EQ(1.f, GetMostRecentGestureEvent().details.bounding_box_f().width());
+  EXPECT_EQ(1.f, GetMostRecentGestureEvent().details.bounding_box_f().height());
+
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN);
+  event.SetTouchMajor(2.f * kMaxGestureBoundsLength);
+  event.SetToolType(0, MotionEvent::TOOL_TYPE_MOUSE);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(MotionEvent::TOOL_TYPE_MOUSE,
+            GetMostRecentGestureEvent().primary_tool_type);
+  EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetMostRecentGestureEventType());
+  EXPECT_EQ(2.f * kMaxGestureBoundsLength,
+            GetMostRecentGestureEvent().details.bounding_box_f().width());
+  EXPECT_EQ(2.f * kMaxGestureBoundsLength,
+            GetMostRecentGestureEvent().details.bounding_box_f().height());
+
+  event =
+      ObtainMotionEvent(event_time + kOneMicrosecond, MotionEvent::ACTION_UP);
+  event.SetTouchMajor(2.f * kMaxGestureBoundsLength);
+  event.SetToolType(0, MotionEvent::TOOL_TYPE_ERASER);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_TAP, GetMostRecentGestureEventType());
+  EXPECT_EQ(MotionEvent::TOOL_TYPE_ERASER,
+            GetMostRecentGestureEvent().primary_tool_type);
+  EXPECT_EQ(2.f * kMaxGestureBoundsLength,
+            GetMostRecentGestureEvent().details.bounding_box_f().width());
+  EXPECT_EQ(2.f * kMaxGestureBoundsLength,
+            GetMostRecentGestureEvent().details.bounding_box_f().height());
 }
 
 }  // namespace ui
