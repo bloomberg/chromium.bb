@@ -35,7 +35,6 @@
 
     '../third_party/skia/src/opts/opts_check_x86.cpp',
 
-    '../third_party/skia/src/ports/SkFontConfigInterface_android.cpp',
     '../third_party/skia/src/ports/SkFontConfigInterface_direct.cpp',
 
     '../third_party/skia/src/fonts/SkFontMgr_fontconfig.cpp',
@@ -256,6 +255,7 @@
     [ 'OS=="win" or OS=="mac" or OS=="ios" or OS=="android"', {
       'sources!': [
         '../third_party/skia/src/ports/SkFontConfigInterface_direct.cpp',
+        '../third_party/skia/src/ports/SkFontHost_fontconfig.cpp',
         '../third_party/skia/src/fonts/SkFontMgr_fontconfig.cpp',
       ],
     }],
@@ -263,7 +263,6 @@
       'sources!': [
         '../third_party/skia/src/ports/SkFontHost_FreeType.cpp',
         '../third_party/skia/src/ports/SkFontHost_FreeType_common.cpp',
-        '../third_party/skia/src/ports/SkFontHost_fontconfig.cpp',
 
       ],
     }],

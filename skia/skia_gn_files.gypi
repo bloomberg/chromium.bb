@@ -13,7 +13,6 @@
     '<(skia_src_path)/fonts/SkRemotableFontMgr.cpp',
     '<(skia_src_path)/images/SkScaledBitmapSampler.cpp',
     '<(skia_src_path)/images/SkScaledBitmapSampler.h',
-    '<(skia_src_path)/ports/SkFontConfigInterface_android.cpp',
     '<(skia_src_path)/ports/SkFontConfigInterface_direct.cpp',
     '<(skia_src_path)/ports/SkFontConfigParser_android.cpp',
     '<(skia_src_path)/ports/SkFontHost_fontconfig.cpp',

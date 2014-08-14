@@ -444,7 +444,6 @@ component("skia") {
   }
   if (!is_android) {
     sources -= [
-      "//third_party/skia/src/ports/SkFontConfigInterface_android.cpp",
       "//third_party/skia/src/ports/SkFontConfigParser_android.cpp",
       "//third_party/skia/src/ports/SkFontMgr_android.cpp",
     ]
@@ -457,6 +456,7 @@ component("skia") {
 
   if (!is_linux) {
     sources -= [
+      "//third_party/skia/src/ports/SkFontHost_fontconfig.cpp",
       "//third_party/skia/src/fonts/SkFontMgr_fontconfig.cpp",
       "//third_party/skia/src/ports/SkFontConfigInterface_direct.cpp",
     ]
@@ -464,7 +464,6 @@ component("skia") {
 
   if (!is_linux && !is_android) {
     sources -= [
-      "//third_party/skia/src/ports/SkFontHost_fontconfig.cpp",
       "//third_party/skia/src/ports/SkFontHost_FreeType_common.cpp",
       "//third_party/skia/src/ports/SkFontHost_FreeType.cpp",
     ]
