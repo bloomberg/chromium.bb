@@ -137,8 +137,8 @@ function showConnectError_(errorTag) {
   if (mode == remoting.ClientSession.Mode.IT2ME) {
     remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME);
     remoting.hangoutSessionEvents.raiseEvent(
-      remoting.hangoutSessionEvents.sessionStateChanged,
-      remoting.ClientSession.State.FAILED
+        remoting.hangoutSessionEvents.sessionStateChanged,
+        remoting.ClientSession.State.FAILED
     );
   } else {
     remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_ME2ME);
@@ -325,8 +325,8 @@ remoting.onConnected = function(clientSession) {
   remoting.clipboard.startSession();
   updateStatistics_();
   remoting.hangoutSessionEvents.raiseEvent(
-    remoting.hangoutSessionEvents.sessionStateChanged,
-    remoting.ClientSession.State.CONNECTED
+      remoting.hangoutSessionEvents.sessionStateChanged,
+      remoting.ClientSession.State.CONNECTED
   );
   if (remoting.connector.pairingRequested) {
     /**

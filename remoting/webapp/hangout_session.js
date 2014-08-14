@@ -17,17 +17,25 @@ var remoting = remoting || {};
 
 /**
  * @constructor
+ * @param {string} senderId id of the current tab or window.
  */
-remoting.HangoutSession = function() {
+remoting.HangoutSession = function(senderId) {
   /**
    * @private
    * @type {chrome.runtime.Port}
    */
   this.port_ = null;
+
+  /**
+   * @private
+   * @type {string}
+   */
+  this.senderId_ = senderId;
 };
 
 remoting.HangoutSession.prototype.init = function() {
-  this.port_ = chrome.runtime.connect({name: 'it2me.helper.webapp'});
+  var portName = 'it2me.helper.webapp@' + this.senderId_;
+  this.port_ = chrome.runtime.connect({name: portName});
 
   remoting.hangoutSessionEvents.addEventListener(
       remoting.hangoutSessionEvents.sessionStateChanged,
@@ -44,6 +52,8 @@ remoting.HangoutSession.prototype.onSessionStateChanged_ = function(state) {
   } catch (e) {
     // postMessage will throw an exception if the port is disconnected.
     // We can safely ignore this exception.
+    var error = /** @type {Error} */ e;
+    console.error(error);
   } finally {
     if (state === State.FAILED || state === State.CLOSED) {
       // close the current window

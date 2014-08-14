@@ -61,7 +61,7 @@ remoting.V1AppLauncher.prototype.launch = function(opt_launchArgs) {
           if (!tab) {
             reject(new Error(chrome.runtime.lastError.message));
           } else {
-            resolve(tab.id);
+            resolve(String(tab.id));
           }
       });
   });

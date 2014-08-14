@@ -14,9 +14,15 @@
 {% else %}
     "background": {
       "page": "background.html"
-    }
+     }
 {% endif %}
   },
+{% if webapp_type == 'v1' %}
+  "background": {
+    "page": "background.html",
+    "persistent": false
+  },
+{% endif %}
   "icons": {
     "128": "chromoting128.webp",
     "48": "chromoting48.webp",
@@ -54,7 +60,11 @@
     "pages": [ "wcs_sandbox.html" ]
   },
 {% endif %}
-
+  "externally_connectable": {
+    "matches": [
+        "https://*.talkgadget.google.com/*"
+    ]
+  },
   "permissions": [
     "{{ OAUTH2_ACCOUNTS_HOST }}/*",
     "{{ OAUTH2_API_BASE_URL }}/*",

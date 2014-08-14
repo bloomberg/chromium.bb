@@ -327,7 +327,7 @@
           'destination': '<(output_dir)',
           'files': [
             '<@(webapp_js_files)',
-            '<@(remoting_webapp_unittest_cases)',
+            '<@(remoting_webapp_unittest_js_files)',
             '<@(remoting_webapp_unittest_additional_files)'
           ],
         },
@@ -339,7 +339,7 @@
             'webapp/build-html.py',
             '<(remoting_webapp_unittest_template_main)',
             '<@(webapp_js_files)',
-            '<@(remoting_webapp_unittest_cases)'
+            '<@(remoting_webapp_unittest_js_files)'
           ],
           'outputs': [
             '<(output_dir)/unittest.html',
@@ -353,7 +353,7 @@
             # instrumentedjs flag or else GYP will ignore the files in the
             # exclude list.
             '--exclude-js', '<@(remoting_webapp_unittest_exclude_files)',
-            '--js', '<@(remoting_webapp_unittest_cases)',
+            '--js', '<@(remoting_webapp_unittest_js_files)',
             '--instrument-js', '<@(webapp_js_files)',
            ],
         },

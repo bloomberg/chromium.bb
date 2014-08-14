@@ -60,6 +60,8 @@ chrome.runtime = {
   /** @type {chrome.Event} */
   onSuspend: null,
   /** @type {chrome.Event} */
+  onSuspendCanceled: null,
+  /** @type {chrome.Event} */
   onConnect: null,
   /** @type {chrome.Event} */
   onConnectExternal: null,

@@ -184,8 +184,8 @@ MediaSource.prototype.addSourceBuffer = function(format) {}
 var Promise = function (init) {};
 
 /**
- * @param {function(*=) : (Promise|void)} onFulfill
- * @param {function(*=) : (Promise|void)} onReject
+ * @param {function(?=) : (Promise|void)} onFulfill
+ * @param {function(?=) : (Promise|void)=} onReject
  * @return {Promise}
  */
 Promise.prototype.then = function (onFulfill, onReject) {};

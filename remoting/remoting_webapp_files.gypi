@@ -139,11 +139,14 @@
       'webapp/event_handlers.js',
     ],
     # The unit test cases for the webapp
-    'remoting_webapp_unittest_cases': [
+    'remoting_webapp_unittest_js_files': [
       'webapp/js_proto/chrome_proto.js',
+      'webapp/unittests/chrome_mocks.js',
       'webapp/unittests/base_unittest.js',
       'webapp/unittests/l10n_unittest.js',
       'webapp/unittests/menu_button_unittest.js',
+      'webapp/unittests/it2me_helper_channel_unittest.js',
+      'webapp/unittests/it2me_service_unittest.js'
     ],
     'remoting_webapp_unittest_additional_files': [
       'webapp/menu_button.css',
@@ -177,7 +180,9 @@
       'webapp/client_session.js',
       'webapp/typecheck.js',
       'webapp/background/app_launcher.js',
-      'webapp/background/background.js'
+      'webapp/background/background.js',
+      'webapp/background/it2me_helper_channel.js',
+      'webapp/background/it2me_service.js',
     ],
 
     # The JavaScript files required by wcs_sandbox.html.

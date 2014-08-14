@@ -133,23 +133,52 @@ remoting.init = function() {
     button.disabled = true;
   }
 
+  /**
+   * @return {Promise} A promise that resolves to the id of the current
+   * containing tab/window.
+   */
+  var getCurrentId = function () {
+    if (remoting.isAppsV2) {
+      return Promise.resolve(chrome.app.window.current().id);
+    }
+
+    /**
+     * @param {function(*=):void} resolve
+     * @param {function(*=):void} reject
+     */
+    return new Promise(function(resolve, reject) {
+      /** @param {chrome.Tab} tab */
+      chrome.tabs.getCurrent(function(tab){
+        if (tab) {
+          resolve(String(tab.id));
+        }
+        reject('Cannot retrieve the current tab.');
+      });
+    });
+  };
+
   var onLoad = function() {
     // Parse URL parameters.
     var urlParams = getUrlParameters_();
     if ('mode' in urlParams) {
-      if (urlParams['mode'] == 'me2me') {
+      if (urlParams['mode'] === 'me2me') {
         var hostId = urlParams['hostId'];
         remoting.connectMe2Me(hostId);
         return;
-      } else if (urlParams['mode'] == 'hangout') {
-        var accessCode = urlParams['accessCode'];
-        remoting.ensureSessionConnector_();
-        remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
-        remoting.connector.connectIT2Me(accessCode);
+      } else if (urlParams['mode'] === 'hangout') {
+        /** @param {*} id */
+        getCurrentId().then(function(id) {
+          /** @type {string} */
+          var accessCode = urlParams['accessCode'];
+          remoting.ensureSessionConnector_();
+          remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
+          remoting.connector.connectIT2Me(accessCode);
 
-        document.body.classList.add('hangout-remote-desktop');
-        var hangoutSession = new remoting.HangoutSession();
-        hangoutSession.init();
+          document.body.classList.add('hangout-remote-desktop');
+          var senderId = /** @type {string} */ String(id);
+          var hangoutSession = new remoting.HangoutSession(senderId);
+          hangoutSession.init();
+        });
         return;
       }
     }
