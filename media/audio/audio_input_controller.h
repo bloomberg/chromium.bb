@@ -246,6 +246,20 @@ class MEDIA_EXPORT AudioInputController
     CLOSED
   };
 
+#if defined(AUDIO_POWER_MONITORING)
+  // Used to log a silence report (see OnData).
+  // Elements in this enum should not be deleted or rearranged; the only
+  // permitted operation is to add new elements before SILENCE_STATE_MAX and
+  // update SILENCE_STATE_MAX.
+  enum SilenceState {
+    SILENCE_STATE_NO_MEASUREMENT = 0,
+    SILENCE_STATE_ONLY_AUDIO = 1,
+    SILENCE_STATE_ONLY_SILENCE = 2,
+    SILENCE_STATE_AUDIO_AND_SILENCE = 3,
+    SILENCE_STATE_MAX = SILENCE_STATE_AUDIO_AND_SILENCE
+  };
+#endif
+
   AudioInputController(EventHandler* handler,
                        SyncWriter* sync_writer,
                        UserInputMonitor* user_input_monitor);
@@ -276,6 +290,10 @@ class MEDIA_EXPORT AudioInputController
 
   void SetDataIsActive(bool enabled);
   bool GetDataIsActive();
+
+#if defined(AUDIO_POWER_MONITORING)
+  void LogSilenceState(SilenceState value);
+#endif
 
   // Gives access to the task runner of the creating thread.
   scoped_refptr<base::SingleThreadTaskRunner> creator_task_runner_;
@@ -326,6 +344,9 @@ class MEDIA_EXPORT AudioInputController
   // We need these to be able to feed data to the AudioPowerMonitor.
   media::AudioParameters audio_params_;
   base::TimeTicks last_audio_level_log_time_;
+
+  // The silence report sent as UMA stat at the end of a session.
+  SilenceState silence_state_;
 #endif
 
   size_t prev_key_down_count_;

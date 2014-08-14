@@ -10737,6 +10737,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Media.AudioInputControllerSessionSilenceReport"
+    enum="AudioInputSilenceReport">
+  <owner>grunell@chromium.org</owner>
+  <summary>The silence report for an audio input device session.</summary>
+</histogram>
+
 <histogram name="Media.AudioInputDeviceManager" units="ms">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Measures the time taken for AudioInputDeviceManager::</summary>
@@ -37093,6 +37099,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="6" label="k960"/>
   <int value="7" label="k1440"/>
   <int value="8" label="k1920"/>
+</enum>
+
+<enum name="AudioInputSilenceReport" type="int">
+  <int value="0" label="No measurement"/>
+  <int value="1" label="Only audio"/>
+  <int value="2" label="Only silence"/>
+  <int value="3" label="Audio and silence"/>
 </enum>
 
 <enum name="AudioRendererEvents" type="int">

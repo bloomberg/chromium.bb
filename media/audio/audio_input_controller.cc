@@ -84,6 +84,9 @@ AudioInputController::AudioInputController(EventHandler* handler,
       sync_writer_(sync_writer),
       max_volume_(0.0),
       user_input_monitor_(user_input_monitor),
+#if defined(AUDIO_POWER_MONITORING)
+      silence_state_(SILENCE_STATE_NO_MEASUREMENT),
+#endif
       prev_key_down_count_(0) {
   DCHECK(creator_task_runner_.get());
 }
@@ -225,6 +228,7 @@ void AudioInputController::DoCreate(AudioManager* audio_manager,
       params.sample_rate(),
       TimeDelta::FromMilliseconds(kPowerMeasurementTimeConstantMilliseconds)));
   audio_params_ = params;
+  silence_state_ = SILENCE_STATE_NO_MEASUREMENT;
 #endif
 
   // TODO(miu): See TODO at top of file.  Until that's resolved, assume all
@@ -323,6 +327,13 @@ void AudioInputController::DoClose() {
 
   if (user_input_monitor_)
     user_input_monitor_->DisableKeyPressMonitoring();
+
+#if defined(AUDIO_POWER_MONITORING)
+  // Send UMA stats if we have enabled power monitoring.
+  if (audio_level_) {
+    LogSilenceState(silence_state_);
+  }
+#endif
 
   state_ = CLOSED;
 }
@@ -492,8 +503,24 @@ void AudioInputController::DoLogAudioLevel(float level_dbfs) {
   std::string log_string = base::StringPrintf(
       "AIC::OnData: average audio level=%.2f dBFS", level_dbfs);
   static const float kSilenceThresholdDBFS = -72.24719896f;
-  if (level_dbfs < kSilenceThresholdDBFS)
+  if (level_dbfs < kSilenceThresholdDBFS) {
     log_string += " <=> no audio input!";
+    if (silence_state_ == SILENCE_STATE_NO_MEASUREMENT)
+      silence_state_ = SILENCE_STATE_ONLY_SILENCE;
+    else if (silence_state_ == SILENCE_STATE_ONLY_AUDIO)
+      silence_state_ = SILENCE_STATE_AUDIO_AND_SILENCE;
+    else
+      DCHECK(silence_state_ == SILENCE_STATE_ONLY_SILENCE ||
+             silence_state_ == SILENCE_STATE_AUDIO_AND_SILENCE);
+  } else {
+    if (silence_state_ == SILENCE_STATE_NO_MEASUREMENT)
+      silence_state_ = SILENCE_STATE_ONLY_AUDIO;
+    else if (silence_state_ == SILENCE_STATE_ONLY_SILENCE)
+      silence_state_ = SILENCE_STATE_AUDIO_AND_SILENCE;
+    else
+      DCHECK(silence_state_ == SILENCE_STATE_ONLY_AUDIO ||
+             silence_state_ == SILENCE_STATE_AUDIO_AND_SILENCE);
+  }
 
   handler_->OnLog(this, log_string);
 #endif
@@ -526,5 +553,13 @@ void AudioInputController::SetDataIsActive(bool enabled) {
 bool AudioInputController::GetDataIsActive() {
   return (base::subtle::Acquire_Load(&data_is_active_) != false);
 }
+
+#if defined(AUDIO_POWER_MONITORING)
+void AudioInputController::LogSilenceState(SilenceState value) {
+  UMA_HISTOGRAM_ENUMERATION("Media.AudioInputControllerSessionSilenceReport",
+                            value,
+                            SILENCE_STATE_MAX + 1);
+}
+#endif
 
 }  // namespace media
