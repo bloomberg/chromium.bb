@@ -245,7 +245,7 @@ html[dir='rtl'] #display-filter-controls label span.first-button-component,
 }
 
 .entry-box,
-.site-domain-wrapper {
+.site-domain-row {
   -webkit-align-items: center;
   cursor: default;
   display: -webkit-flex;
@@ -260,6 +260,7 @@ html[dir='rtl'] #display-filter-controls label span.first-button-component,
 
 .site-domain-wrapper {
   cursor: pointer;
+  display: -webkit-flex;
   width: 100%;
 }
 
@@ -344,7 +345,8 @@ html[dir='rtl'] .site-domain {
   white-space: nowrap;
 }
 
-.entry input[type='checkbox'] {
+.entry input[type='checkbox'],
+.site-domain-row input[type='checkbox'] {
   -webkit-margin-end: 6px;
   line-height: 1em;
   min-width: 13px;
@@ -415,14 +417,14 @@ html[dir='rtl'] .site-domain {
 }
 </if>
 
-.entry-box {
+.entry-box,
+.site-domain-row {
+  -webkit-padding-end: 6px;
   -webkit-padding-start: 6px;
   border-radius: 2px;
 }
 
-.entry-box:hover,
-.entry-box.lead,
-.entry-box.contains-focus {
+.active :-webkit-any(.entry-box, .site-domain-row) {
   background-color: rgba(0, 0, 0, .05);
 }
 
@@ -467,6 +469,7 @@ html[dir='rtl'] .site-domain {
 }
 
 .site-domain-arrow {
+  -webkit-transform: rotate(0);
   -webkit-transition: -webkit-transform 300ms linear;
   background: url(../disclosure_triangle_small.png) no-repeat;
   background-position: 5px 5px;
@@ -478,20 +481,12 @@ html[dir='rtl'] .site-domain {
   width: 21px;
 }
 
-.site-domain-arrow.collapse {
-  -webkit-transform: rotate(0);
-}
-
-.site-domain-arrow.expand {
-  -webkit-transform: rotate(90deg);
-}
-
-html[dir='rtl'] .site-domain-arrow.collapse {
-  -webkit-transform: rotate(90deg);
-}
-
-html[dir='rtl'] .site-domain-arrow.expand {
+html[dir='rtl'] .site-domain-arrow {
   -webkit-transform: rotate(180deg);
+}
+
+html .expand .site-domain-arrow {
+  -webkit-transform: rotate(90deg);
 }
 
 .entry .bookmark-section {
@@ -528,6 +523,7 @@ html[dir='rtl'] .site-domain-arrow.expand {
 }
 
 button.menu-button.drop-down {
+  -webkit-margin-end: 0;
   min-width: 12px;
   top: 0;
 }

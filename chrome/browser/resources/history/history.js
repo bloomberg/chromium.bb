@@ -148,6 +148,7 @@ Visit.prototype.getResultDOM = function(propertyBag) {
   var isSearchResult = propertyBag.isSearchResult || false;
   var addTitleFavicon = propertyBag.addTitleFavicon || false;
   var useMonthDate = propertyBag.useMonthDate || false;
+  var focusless = propertyBag.focusless || false;
   var node = createElementWithClassName('li', 'entry');
   var time = createElementWithClassName('div', 'time');
   var entryBox = createElementWithClassName('label', 'entry-box');
@@ -163,17 +164,18 @@ Visit.prototype.getResultDOM = function(propertyBag) {
     checkbox.type = 'checkbox';
     checkbox.id = 'checkbox-' + this.id_;
     checkbox.time = this.date.getTime();
-    checkbox.tabIndex = -1;
     checkbox.addEventListener('click', checkboxClicked);
     entryBox.appendChild(checkbox);
+
+    if (focusless)
+      checkbox.tabIndex = -1;
 
     // Clicking anywhere in the entryBox will check/uncheck the checkbox.
     entryBox.setAttribute('for', checkbox.id);
     entryBox.addEventListener('mousedown', entryBoxMousedown);
     entryBox.addEventListener('click', entryBoxClick);
+    entryBox.addEventListener('keydown', this.handleKeydown_.bind(this));
   }
-
-  entryBox.addEventListener('keydown', this.handleKeydown_.bind(this));
 
   // Keep track of the drop down that triggered the menu, so we know
   // which element to apply the command to.
@@ -209,9 +211,15 @@ Visit.prototype.getResultDOM = function(propertyBag) {
     visitEntryWrapper.classList.add('blocked-indicator');
     visitEntryWrapper.appendChild(this.getVisitAttemptDOM_());
   } else {
-    visitEntryWrapper.appendChild(this.getTitleDOM_(isSearchResult));
+    var title = visitEntryWrapper.appendChild(
+        this.getTitleDOM_(isSearchResult));
+
     if (addTitleFavicon)
       this.addFaviconToElement_(visitEntryWrapper);
+
+    if (focusless)
+      title.querySelector('a').tabIndex = -1;
+
     visitEntryWrapper.appendChild(domain);
   }
 
@@ -233,9 +241,11 @@ Visit.prototype.getResultDOM = function(propertyBag) {
     var dropDown = createElementWithClassName('button', 'drop-down');
     dropDown.value = 'Open action menu';
     dropDown.title = loadTimeData.getString('actionMenuDescription');
-    dropDown.tabIndex = -1;
     dropDown.setAttribute('menu', '#action-menu');
     dropDown.setAttribute('aria-haspopup', 'true');
+
+    if (focusless)
+      dropDown.tabIndex = -1;
 
     cr.ui.decorate(dropDown, MenuButton);
     dropDown.respondToArrowKeys = false;
@@ -287,34 +297,6 @@ Visit.prototype.removeFromHistory = function() {
   this.model_.removeVisitsFromHistory([this], function() {
     this.model_.getView().removeVisit(this);
   }.bind(this));
-};
-
-/**
- * @param {boolean} isLead Whether this visit is the "lead" visit, i.e. the one
- *     that would be focused if the entry list is tabbed to.
- */
-Visit.prototype.setIsLead = function(isLead) {
-  this.domNode_.querySelector('.entry-box').classList.toggle('lead', isLead);
-  if (!isLead) {
-    this.getFocusableControls_().forEach(function(control) {
-      control.tabIndex = -1;
-    });
-  }
-};
-
-/**
- * @param {Element} control A control element to focus.
- */
-Visit.prototype.focusControl = function(control) {
-  var controls = this.getFocusableControls_();
-  assert(controls.indexOf(control) >= 0);
-
-  for (var i = 0; i < controls.length; ++i) {
-    controls[i].tabIndex = controls[i] == control ? 0 : -1;
-  }
-
-  control.focus();
-  this.setIsLead(true);
 };
 
 Object.defineProperty(Visit.prototype, 'checkBox', {
@@ -387,7 +369,6 @@ Visit.prototype.getTitleDOM_ = function(isSearchResult) {
   link.href = this.url_;
   link.id = 'id-' + this.id_;
   link.target = '_top';
-  link.tabIndex = -1;
   var integerId = parseInt(this.id_, 10);
   link.addEventListener('click', function() {
     recordUmaAction('HistoryPage_EntryLinkClick');
@@ -459,52 +440,14 @@ Visit.prototype.showMoreFromSite_ = function() {
 };
 
 /**
- * @return {Array.<Element>} A list of focusable controls.
- * @private
- */
-Visit.prototype.getFocusableControls_ = function() {
-  var controls = [];
-
-  if (this.checkBox)
-    controls.push(this.checkBox);
-
-  if (this.bookmarkStar)
-    controls.push(this.bookmarkStar);
-
-  controls.push(this.titleLink);
-
-  if (this.dropDown)
-    controls.push(this.dropDown);
-
-  return controls;
-};
-
-/**
  * @param {Event} e A keydown event to handle.
  * @private
  */
 Visit.prototype.handleKeydown_ = function(e) {
-  var key = e.keyIdentifier;
-  if (key == 'U+0008' || key == 'U+007F') {  // Delete or Backspace.
-    if (!this.model_.isDeletingVisits())
-      this.removeEntryFromHistory_(e);
-    return;
-  }
-
-  var target = e.target;
-  if (target != document.activeElement || !(key == 'Left' || key == 'Right'))
-    return;
-
-  var controls = this.getFocusableControls_();
-  for (var i = 0; i < controls.length; ++i) {
-    if (controls[i].contains(target)) {
-      var toFocus = key == 'Left' ? controls[i - 1] : controls[i + 1];
-      if (toFocus) {
-        this.focusControl(toFocus);
-        e.preventDefault();
-      }
-      break;
-    }
+  // Delete or Backspace should delete the entry if allowed.
+  if ((e.keyIdentifier == 'U+0008' || e.keyIdentifier == 'U+007F') &&
+      !this.model_.isDeletingVisits()) {
+    this.removeEntryFromHistory_(e);
   }
 };
 
@@ -876,6 +819,34 @@ HistoryModel.prototype.getGroupByDomain = function() {
 };
 
 ///////////////////////////////////////////////////////////////////////////////
+// HistoryFocusObserver:
+
+/** @implements {cr.ui.FocusRow.Observer} */
+function HistoryFocusObserver() {}
+
+HistoryFocusObserver.prototype = {
+  /** @override */
+  onActivate: function(row) {
+    this.getActiveRowElement_(row).classList.add('active');
+  },
+
+  /** @override */
+  onDeactivate: function(row, el) {
+    this.getActiveRowElement_(row).classList.remove('active');
+  },
+
+  /**
+   * @param {cr.ui.FocusRow} row The row to find an element for.
+   * @return {Element} |row|'s "active" element.
+   * @private
+   */
+  getActiveRowElement_: function(row) {
+    return findAncestorByClass(row.items[0], 'entry') ||
+           findAncestorByClass(row.items[0], 'site-domain-wrapper');
+  },
+};
+
+///////////////////////////////////////////////////////////////////////////////
 // HistoryView:
 
 /**
@@ -889,6 +860,8 @@ function HistoryView(model) {
   this.editButtonTd_ = $('edit-button');
   this.editingControlsDiv_ = $('editing-controls');
   this.resultDiv_ = $('results-display');
+  this.focusGrid_ = new cr.ui.FocusGrid(this.resultDiv_,
+                                        new HistoryFocusObserver);
   this.pageDiv_ = $('results-pagination');
   this.model_ = model;
   this.pageIndex_ = 0;
@@ -950,15 +923,6 @@ function HistoryView(model) {
     else
       self.setOffset(0);
   });
-
-  this.resultDiv_.addEventListener(
-      'keydown', this.handleKeydown_.bind(this));
-  this.resultDiv_.addEventListener(
-      'mousedown', this.handleMousedown_.bind(this), true);
-  this.resultDiv_.addEventListener(
-      'focusin', this.updateFocusableElements_.bind(this));
-  this.resultDiv_.addEventListener(
-      'blur', this.updateFocusableElements_.bind(this));
 }
 
 // HistoryView, public: -------------------------------------------------------
@@ -1081,7 +1045,7 @@ HistoryView.prototype.onModelReady = function(doneLoading) {
   var hasResults = this.model_.visits_.length > 0;
   document.body.classList.toggle('has-results', hasResults);
 
-  this.updateFocusableElements_();
+  this.updateFocusGrid_();
   this.updateNavBar_();
 
   if (isMobileVersion()) {
@@ -1132,8 +1096,15 @@ HistoryView.prototype.showNotification = function(innerHTML, isWarning) {
  */
 HistoryView.prototype.onBeforeRemove = function(visit) {
   assert(this.currentVisits_.indexOf(visit) >= 0);
-  var toFocus = this.getVisitAfter_(visit) || this.getVisitBefore_(visit);
-  this.swapFocusedVisit_(toFocus);
+
+  var pos = this.focusGrid_.getPositionForTarget(document.activeElement);
+  if (!pos)
+    return;
+
+  var row = this.focusGrid_.rows[pos.row + 1] ||
+            this.focusGrid_.rows[pos.row - 1];
+  if (row)
+    row.focusIndex(Math.min(pos.col, row.items.length - 1));
 };
 
 /**
@@ -1182,6 +1153,7 @@ HistoryView.prototype.removeVisit = function(visit) {
   for (var i = 0; i < toRemove.length; ++i) {
     removeNode(toRemove[i], onRemove, this);
   }
+  this.updateFocusGrid_();
 
   var index = this.currentVisits_.indexOf(visit);
   if (index >= 0)
@@ -1265,9 +1237,11 @@ HistoryView.prototype.getGroupedVisitsDOM_ = function(
   var siteResults = results.appendChild(
       createElementWithClassName('li', 'site-entry'));
 
-  // Make a wrapper that will contain the arrow, the favicon and the domain.
   var siteDomainWrapper = siteResults.appendChild(
       createElementWithClassName('div', 'site-domain-wrapper'));
+  // Make a row that will contain the arrow, the favicon and the domain.
+  var siteDomainRow = siteDomainWrapper.appendChild(
+      createElementWithClassName('div', 'site-domain-row'));
 
   if (this.model_.editingEntriesAllowed) {
     var siteDomainCheckbox =
@@ -1276,13 +1250,12 @@ HistoryView.prototype.getGroupedVisitsDOM_ = function(
     siteDomainCheckbox.type = 'checkbox';
     siteDomainCheckbox.addEventListener('click', domainCheckboxClicked);
     siteDomainCheckbox.domain_ = domain;
-
-    siteDomainWrapper.appendChild(siteDomainCheckbox);
+    siteDomainRow.appendChild(siteDomainCheckbox);
   }
 
-  var siteArrow = siteDomainWrapper.appendChild(
-      createElementWithClassName('div', 'site-domain-arrow collapse'));
-  var siteDomain = siteDomainWrapper.appendChild(
+  var siteArrow = siteDomainRow.appendChild(
+      createElementWithClassName('div', 'site-domain-arrow'));
+  var siteDomain = siteDomainRow.appendChild(
       createElementWithClassName('div', 'site-domain'));
   var siteDomainLink = siteDomain.appendChild(
       createElementWithClassName('button', 'link-button'));
@@ -1297,10 +1270,11 @@ HistoryView.prototype.getGroupedVisitsDOM_ = function(
 
   domainVisits[0].addFaviconToElement_(siteDomain);
 
-  siteDomainWrapper.addEventListener('click', toggleHandler);
+  siteDomainWrapper.addEventListener(
+      'click', this.toggleGroupedVisits_.bind(this));
 
   if (this.model_.isSupervisedProfile) {
-    siteDomainWrapper.appendChild(
+    siteDomainRow.appendChild(
         getFilteringStatusDOM(domainVisits[0].hostFilteringBehavior));
   }
 
@@ -1316,7 +1290,8 @@ HistoryView.prototype.getGroupedVisitsDOM_ = function(
   var isMonthGroupedResult = this.getRangeInDays() == HistoryModel.Range.MONTH;
   for (var j = 0, visit; visit = domainVisits[j]; j++) {
     resultsList.appendChild(visit.getResultDOM({
-      useMonthDate: isMonthGroupedResult
+      focusless: true,
+      useMonthDate: isMonthGroupedResult,
     }));
     this.setVisitRendered_(visit);
   }
@@ -1563,6 +1538,34 @@ HistoryView.prototype.displayResults_ = function(doneLoading) {
   this.setTimeColumnWidth_(this.resultDiv_);
 };
 
+var focusGridRowSelector = [
+  '.day-results > .entry:not(.fade-out)',
+  '.expand .grouped .entry:not(.fade-out)',
+  '.site-domain-wrapper'
+].join(', ');
+
+var focusGridColumnSelector = [
+  '.entry-box input',
+  '.bookmark-section.starred',
+  '.title a',
+  '.drop-down',
+  '.domain-checkbox',
+  '.link-button',
+].join(', ');
+
+/** @private */
+HistoryView.prototype.updateFocusGrid_ = function() {
+  var rows = this.resultDiv_.querySelectorAll(focusGridRowSelector);
+  var grid = [];
+
+  for (var i = 0; i < rows.length; ++i) {
+    assert(rows[i].parentNode);
+    grid.push(rows[i].querySelectorAll(focusGridColumnSelector));
+  }
+
+  this.focusGrid_.setGrid(grid);
+};
+
 /**
  * Update the visibility of the page navigation buttons.
  * @private
@@ -1625,133 +1628,31 @@ HistoryView.prototype.setTimeColumnWidth_ = function() {
 };
 
 /**
- * @param {Visit} visit The starting point when looking for a previous visit.
- * @return {Visit|undefined} The previous visit (if there is one) or undefined.
+ * Toggles an element in the grouped history.
+ * @param {Element} e The element which was clicked on.
  * @private
  */
-HistoryView.prototype.getVisitBefore_ = function(visit) {
-  var index = this.currentVisits_.indexOf(visit);
-  return index < 0 ? undefined : this.currentVisits_[index - 1];
-};
+HistoryView.prototype.toggleGroupedVisits_ = function(e) {
+  var entry = findAncestorByClass(e.target, 'site-entry');
+  var innerResultList = entry.querySelector('.site-results');
 
-/**
- * @param {Visit} visit The starting point when looking for a previous visit.
- * @return {Visit|undefined} The next visit (if there is one) or undefined.
- * @private
- */
-HistoryView.prototype.getVisitAfter_ = function(visit) {
-  var index = this.currentVisits_.indexOf(visit);
-  return index < 0 ? undefined : this.currentVisits_[index + 1];
-};
-
-/**
- * Swaps focus to |toBeFocused|. Assumes the another visit is currently focused.
- * @param {Visit} visit A visit to focus.
- * @private
- */
-HistoryView.prototype.swapFocusedVisit_ = function(visit) {
-  if (!visit)
-    return;
-
-  var activeVisit = findAncestorByClass(document.activeElement, 'entry').visit;
-  var controls = activeVisit.getFocusableControls_();
-
-  for (var i = 0; i < controls.length; ++i) {
-    var control = controls[i];
-    if (!control.contains(document.activeElement))
-      continue;
-
-    // Try to focus the same type of control if the new visit has it.
-    if (control == activeVisit.checkBox && visit.checkBox) {
-      visit.focusControl(visit.checkBox);
-    } else if (control == activeVisit.bookmarkStar && visit.bookmarkStar) {
-      visit.focusControl(visit.bookmarkStar);
-    } else if (control == activeVisit.titleLink) {
-      visit.focusControl(visit.titleLink);
-    } else if (control == activeVisit.dropDown && visit.dropDown) {
-      visit.focusControl(visit.dropDown);
-    } else {
-      // Otherwise, just focus something that might be in a similar column.
-      var controlsToFocus = visit.getFocusableControls_();
-      var indexToFocus = Math.min(i, controlsToFocus.length - 1);
-      visit.focusControl(controlsToFocus[indexToFocus]);
-    }
-    break;
+  if (entry.classList.contains('expand')) {
+    innerResultList.style.height = 0;
+  } else {
+    innerResultList.style.height = 'auto';
+    // -webkit-transition does not work on height:auto elements so first set
+    // the height to auto so that it is computed and then set it to the
+    // computed value in pixels so the transition works properly.
+    var height = innerResultList.clientHeight;
+    innerResultList.style.height = 0;
+    setTimeout(function() {
+      innerResultList.style.height = height + 'px';
+    }, 0);
   }
 
-  activeVisit.setIsLead(false);
+  entry.classList.toggle('expand');
+  this.updateFocusGrid_();
 };
-
-/**
- * @param {Event} e A keydown event to handle.
- * @private
- */
-HistoryView.prototype.handleKeydown_ = function(e) {
-  // Only handle up or down arrows on the focused element.
-  var key = e.keyIdentifier, target = e.target;
-  if (target != document.activeElement || !(key == 'Up' || key == 'Down'))
-    return;
-
-  var entry = findAncestorByClass(e.target, 'entry');
-  var visit = entry && entry.visit;
-  this.swapFocusedVisit_(key == 'Up' ? this.getVisitBefore_(visit) :
-                                       this.getVisitAfter_(visit));
-};
-
-/**
- * @param {Event} e A mousedown event to handle.
- * @private
- */
-HistoryView.prototype.handleMousedown_ = function(e) {
-  var target = e.target;
-  var entry = findAncestorByClass(target, 'entry');
-  if (!entry || !entry.contains(target))
-    return;
-
-  var visit = entry.visit;
-  if (visit.bookmarkStar && visit.bookmarkStar.contains(target))
-    return;
-
-  if (visit.titleLink.contains(target))
-    visit.focusControl(visit.titleLink);
-  else if (visit.dropDown && visit.dropDown.contains(target))
-    visit.focusControl(visit.dropDown);
-  else  // Focus the checkbox by default. If no checkbox, focus the title.
-    visit.focusControl(visit.checkBox || visit.titleLink);
-
-  e.preventDefault();
-};
-
-/**
- * Ensures there's only 1 focusable visit.
- * @private
- */
-HistoryView.prototype.updateFocusableElements_ = function() {
-  var focusable = Array.prototype.slice.call(
-      this.resultDiv_.querySelectorAll('[tabindex="0"]'));
-
-  // Don't change the tabIndex of the first [tabindex=0] node or the active
-  // element if either are in |focusable|.
-  focusable.splice(Math.max(0, focusable.indexOf(document.activeElement)), 1);
-
-  for (var i = 0; i < focusable.length; ++i) {
-    var el = focusable[i];
-    var entry = findAncestorByClass(el, 'entry');
-    if (!entry.contains(document.activeElement))
-      entry.visit.setIsLead(false);
-    else
-      el.tabIndex = -1;
-  }
-
-  // If there's no focusable elements, allow the first visit to be focused.
-  if (!this.resultDiv_.querySelector('[tabindex="0"]') &&
-      this.currentVisits_.length > 0) {
-    var firstVisit = this.currentVisits_[0];
-    firstVisit.setIsLead(true);
-    (firstVisit.checkBox || firstVisit.titleLink).tabIndex = 0;
-  }
-};
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // State object:
@@ -1939,8 +1840,6 @@ function load() {
   // Adjust the position of the notification bar when the window size changes.
   window.addEventListener('resize',
       historyView.positionNotificationBar.bind(historyView));
-
-  cr.ui.FocusManager.disableMouseFocusOnButtons();
 
   if (isMobileVersion()) {
     // Move the search box out of the header.
@@ -2186,7 +2085,7 @@ function updateParentCheckbox(checkbox) {
 
   var groupCheckbox = entry.querySelector('.site-domain-wrapper input');
   if (groupCheckbox)
-      groupCheckbox.checked = false;
+    groupCheckbox.checked = false;
 }
 
 function entryBoxMousedown(event) {
@@ -2250,34 +2149,6 @@ function removeNode(node, onRemove, opt_scope) {
     if (onRemove)
       onRemove.call(opt_scope);
   });
-}
-
-/**
- * Toggles an element in the grouped history.
- * @param {Element} e The element which was clicked on.
- */
-function toggleHandler(e) {
-  var innerResultList = e.currentTarget.parentElement.querySelector(
-      '.site-results');
-  var innerArrow = e.currentTarget.parentElement.querySelector(
-      '.site-domain-arrow');
-  if (innerArrow.classList.contains('collapse')) {
-    innerResultList.style.height = 'auto';
-    // -webkit-transition does not work on height:auto elements so first set
-    // the height to auto so that it is computed and then set it to the
-    // computed value in pixels so the transition works properly.
-    var height = innerResultList.clientHeight;
-    innerResultList.style.height = 0;
-    setTimeout(function() {
-      innerResultList.style.height = height + 'px';
-    }, 0);
-    innerArrow.classList.remove('collapse');
-    innerArrow.classList.add('expand');
-  } else {
-    innerResultList.style.height = 0;
-    innerArrow.classList.remove('expand');
-    innerArrow.classList.add('collapse');
-  }
 }
 
 /**
