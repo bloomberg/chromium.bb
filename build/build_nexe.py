@@ -250,7 +250,13 @@ class Builder(object):
 
     # Setup optimization level.
     if options.build_config == 'Debug' or options.fast_build != '0':
-      self.compile_options.append('-O0')
+      # TODO(dschuff): When using O0, the libgles2_implementation_nacl build
+      # fails with an undefined reference to a template instantiation.
+      # Investigate this and change this to O0
+      if self.is_pnacl_toolchain:
+        self.compile_options.append('-O2')
+      else:
+        self.compile_options.append('-O0')
       if (self.is_pnacl_toolchain
           and (self.outtype == 'nlib'
                or self.outtype == 'nexe')
