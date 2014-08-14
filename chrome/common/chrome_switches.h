@@ -65,6 +65,7 @@ extern const char kDebugPackedApps[];
 extern const char kDiagnostics[];
 extern const char kDiagnosticsFormat[];
 extern const char kDiagnosticsRecovery[];
+extern const char kDisableAboutInSettings[];
 extern const char kDisableAsyncDns[];
 extern const char kDisableAuthNegotiateCnameLookup[];
 extern const char kDisableBackgroundNetworking[];
@@ -398,6 +399,7 @@ extern const char kAllowNaClSocketAPI[];
 extern const char kFileManagerExtensionPath[];
 #endif
 
+bool AboutInSettingsEnabled();
 bool SettingsWindowEnabled();
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in

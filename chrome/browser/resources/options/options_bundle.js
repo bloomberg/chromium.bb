@@ -17,6 +17,8 @@
 <include src="settings_banner.js">
 <if expr="chromeos">
 <include src="../chromeos/user_images_grid.js">
+<include src="../help/channel_change_page.js">
+<include src="../help/help_page.js">
 <include src="../../../../ui/webui/resources/js/chromeos/ui_account_tweaks.js">
 <include src="chromeos/change_picture_options.js">
 <include src="chromeos/internet_detail_ip_address_field.js">

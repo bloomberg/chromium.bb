@@ -36,7 +36,9 @@ HelpUI::HelpUI(content::WebUI* web_ui)
   content::WebUIDataSource* source = CreateAboutPageHTMLSource();
 
   HelpHandler* handler = new HelpHandler();
-  handler->GetLocalizedValues(source);
+  base::DictionaryValue localized_strings;
+  HelpHandler::GetLocalizedValues(&localized_strings);
+  source->AddLocalizedStrings(localized_strings);
   content::WebUIDataSource::Add(profile, source);
   web_ui->AddMessageHandler(handler);
 }

@@ -116,10 +116,14 @@ void OptionsUIBrowserTest::NavigateToSettingsSubpage(
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
   ASSERT_TRUE(web_contents->GetWebUI());
-  UberUI* uber_ui = static_cast<UberUI*>(
-      web_contents->GetWebUI()->GetController());
-  OptionsUI* options_ui = static_cast<OptionsUI*>(
-      uber_ui->GetSubpage(chrome::kChromeUISettingsFrameURL)->GetController());
+
+  content::WebUIController* controller =
+      web_contents->GetWebUI()->GetController();
+#if !defined(OS_CHROMEOS)
+  controller = static_cast<UberUI*>(controller)->
+      GetSubpage(chrome::kChromeUISettingsFrameURL)->GetController();
+#endif
+  OptionsUI* options_ui = static_cast<OptionsUI*>(controller);
 
   // It is not possible to subscribe to the OnFinishedLoading event before the
   // call to NavigateToURL(), because the WebUI does not yet exist at that time.
@@ -146,12 +150,17 @@ void OptionsUIBrowserTest::NavigateToSettingsFrame() {
 
 void OptionsUIBrowserTest::VerifyNavbar() {
   bool navbar_exist = false;
+#if defined(OS_CHROMEOS)
+  bool should_navbar_exist = false;
+#else
+  bool should_navbar_exist = true;
+#endif
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       browser()->tab_strip_model()->GetActiveWebContents(),
       "domAutomationController.send("
       "    !!document.getElementById('navigation'))",
       &navbar_exist));
-  EXPECT_EQ(true, navbar_exist);
+  EXPECT_EQ(should_navbar_exist, navbar_exist);
 }
 
 void OptionsUIBrowserTest::VerifyTitle() {

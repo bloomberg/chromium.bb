@@ -63,6 +63,8 @@
 <link rel="stylesheet" href="chromeos/keyboard_overlay.css">
 <link rel="stylesheet" href="chromeos/pointer_overlay.css">
 <link rel="stylesheet" href="factory_reset_overlay.css">
+<link rel="stylesheet" href="../help/help_content.css">
+<link rel="stylesheet" href="../help/channel_change_page.css">
 </if>
 <if expr="use_nss">
 <link rel="stylesheet" href="certificate_manager.css">
@@ -106,8 +108,7 @@
 <script src="chrome://settings-frame/options_bundle.js"></script>
 </head>
 
-<body class="uber-frame"
-    i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
 <div id="overlay-container-1" class="overlay transparent" hidden>
   <include src="autofill_options.html">
   <include src="clear_browser_data_overlay.html">
@@ -138,6 +139,7 @@
   <include src="chromeos/keyboard_overlay.html">
   <include src="chromeos/pointer_overlay.html">
   <include src="factory_reset_overlay.html">
+  <include src="../help/help_page.html">
 </if>
 <if expr="use_nss">
   <include src="certificate_manager.html">
@@ -161,6 +163,7 @@
   <include src="chromeos/internet_detail.html">
   <include src="chromeos/preferred_networks.html">
   <include src="chromeos/third_party_ime_confirm_overlay.html">
+  <include src="../help/channel_change_page.html">
 </if>
 <if expr="not is_win and not is_macosx">
   <include src="certificate_restore_overlay.html">
@@ -168,8 +171,6 @@
   <include src="certificate_edit_ca_trust_overlay.html">
   <include src="certificate_import_error_overlay.html">
 </if>
-</div>
-<div id="overlay-container-3" class="overlay transparent" hidden>
 </div>
 <div id="extension-controlled-settings-bubble-template" hidden>
   <div class="controlled-setting-bubble-content-row">

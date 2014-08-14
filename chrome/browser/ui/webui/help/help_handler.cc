@@ -28,7 +28,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/user_agent.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -59,30 +58,6 @@ using base::ListValue;
 using content::BrowserThread;
 
 namespace {
-
-// Returns the browser version as a string.
-base::string16 BuildBrowserVersionString() {
-  chrome::VersionInfo version_info;
-  DCHECK(version_info.is_valid());
-
-  std::string browser_version = version_info.Version();
-  std::string version_modifier =
-      chrome::VersionInfo::GetVersionStringModifier();
-  if (!version_modifier.empty())
-    browser_version += " " + version_modifier;
-
-#if !defined(GOOGLE_CHROME_BUILD)
-  browser_version += " (";
-  browser_version += version_info.LastChange();
-  browser_version += ")";
-#endif
-
-#if defined(ARCH_CPU_64_BITS)
-  browser_version += " (64-bit)";
-#endif
-
-  return base::UTF8ToUTF16(browser_version);
-}
 
 #if defined(OS_CHROMEOS)
 
@@ -144,7 +119,7 @@ HelpHandler::HelpHandler()
 HelpHandler::~HelpHandler() {
 }
 
-void HelpHandler::GetLocalizedValues(content::WebUIDataSource* source) {
+void HelpHandler::GetLocalizedValues(base::DictionaryValue* localized_strings) {
   struct L10nResources {
     const char* name;
     int ids;
@@ -219,25 +194,27 @@ void HelpHandler::GetLocalizedValues(content::WebUIDataSource* source) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(resources); ++i) {
-    source->AddString(resources[i].name,
-                      l10n_util::GetStringUTF16(resources[i].ids));
+    localized_strings->SetString(resources[i].name,
+                                 l10n_util::GetStringUTF16(resources[i].ids));
   }
 
 #if defined(OS_MACOSX)
-  source->AddString("updateObsoleteSystem",
-                    ObsoleteSystemMac::LocalizedObsoleteSystemString());
-  source->AddString("updateObsoleteSystemURL",
-                    chrome::kMac32BitDeprecationURL);
+  localized_strings->SetString(
+      "updateObsoleteSystem",
+      ObsoleteSystemMac::LocalizedObsoleteSystemString());
+  localized_strings->SetString(
+      "updateObsoleteSystemURL",
+      chrome::kMac32BitDeprecationURL);
 #endif
 
-  source->AddString(
+  localized_strings->SetString(
       "browserVersion",
       l10n_util::GetStringFUTF16(IDS_ABOUT_PRODUCT_VERSION,
                                  BuildBrowserVersionString()));
 
   base::Time::Exploded exploded_time;
   base::Time::Now().LocalExplode(&exploded_time);
-  source->AddString(
+  localized_strings->SetString(
       "productCopyright",
        l10n_util::GetStringFUTF16(IDS_ABOUT_VERSION_COPYRIGHT,
                                   base::IntToString16(exploded_time.year)));
@@ -246,21 +223,21 @@ void HelpHandler::GetLocalizedValues(content::WebUIDataSource* source) {
       IDS_ABOUT_VERSION_LICENSE,
       base::ASCIIToUTF16(chrome::kChromiumProjectURL),
       base::ASCIIToUTF16(chrome::kChromeUICreditsURL));
-  source->AddString("productLicense", license);
+  localized_strings->SetString("productLicense", license);
 
 #if defined(OS_CHROMEOS)
   base::string16 os_license = l10n_util::GetStringFUTF16(
       IDS_ABOUT_CROS_VERSION_LICENSE,
       base::ASCIIToUTF16(chrome::kChromeUIOSCreditsURL));
-  source->AddString("productOsLicense", os_license);
+  localized_strings->SetString("productOsLicense", os_license);
 
   base::string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME);
-  source->AddString(
+  localized_strings->SetString(
       "channelChangePageDelayedChangeMessage",
       l10n_util::GetStringFUTF16(
           IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_DELAYED_CHANGE_MESSAGE,
           product_name));
-  source->AddString(
+  localized_strings->SetString(
       "channelChangePageUnstableMessage",
       l10n_util::GetStringFUTF16(
           IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_UNSTABLE_MESSAGE,
@@ -268,24 +245,24 @@ void HelpHandler::GetLocalizedValues(content::WebUIDataSource* source) {
 
   if (CommandLine::ForCurrentProcess()->
       HasSwitch(chromeos::switches::kDisableNewChannelSwitcherUI)) {
-    source->AddBoolean("disableNewChannelSwitcherUI", true);
+    localized_strings->SetBoolean("disableNewChannelSwitcherUI", true);
   }
 #endif
 
   base::string16 tos = l10n_util::GetStringFUTF16(
       IDS_ABOUT_TERMS_OF_SERVICE, base::UTF8ToUTF16(chrome::kChromeUITermsURL));
-  source->AddString("productTOS", tos);
+  localized_strings->SetString("productTOS", tos);
 
-  source->AddString("webkitVersion", content::GetWebKitVersion());
+  localized_strings->SetString("webkitVersion", content::GetWebKitVersion());
 
-  source->AddString("jsEngine", "V8");
-  source->AddString("jsEngineVersion", v8::V8::GetVersion());
+  localized_strings->SetString("jsEngine", "V8");
+  localized_strings->SetString("jsEngineVersion", v8::V8::GetVersion());
 
-  source->AddString("userAgentInfo", GetUserAgent());
+  localized_strings->SetString("userAgentInfo", GetUserAgent());
 
   CommandLine::StringType command_line =
       CommandLine::ForCurrentProcess()->GetCommandLineString();
-  source->AddString("commandLineInfo", command_line);
+  localized_strings->SetString("commandLineInfo", command_line);
 }
 
 void HelpHandler::RegisterMessages() {
@@ -329,6 +306,30 @@ void HelpHandler::Observe(int type, const content::NotificationSource& source,
     default:
       NOTREACHED();
   }
+}
+
+// static
+base::string16 HelpHandler::BuildBrowserVersionString() {
+  chrome::VersionInfo version_info;
+  DCHECK(version_info.is_valid());
+
+  std::string browser_version = version_info.Version();
+  std::string version_modifier =
+      chrome::VersionInfo::GetVersionStringModifier();
+  if (!version_modifier.empty())
+    browser_version += " " + version_modifier;
+
+#if !defined(GOOGLE_CHROME_BUILD)
+  browser_version += " (";
+  browser_version += version_info.LastChange();
+  browser_version += ")";
+#endif
+
+#if defined(ARCH_CPU_64_BITS)
+  browser_version += " (64-bit)";
+#endif
+
+  return base::UTF8ToUTF16(browser_version);
 }
 
 void HelpHandler::OnPageLoaded(const base::ListValue* args) {

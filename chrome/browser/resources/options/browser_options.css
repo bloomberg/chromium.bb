@@ -451,3 +451,12 @@ list:not([disabled]) > .network-group[selected] {
   /* Same as .controlled-setting-with-label > input + span. */
   -webkit-margin-start: 0.6em;
 }
+
+footer {
+  display: flex;
+}
+
+#version-button {
+  -webkit-margin-start: auto;
+  color: #999;
+}

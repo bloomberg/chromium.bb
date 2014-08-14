@@ -1713,6 +1713,8 @@
       'browser/ui/webui/options/font_settings_utils_win.cc',
       'browser/ui/webui/options/handler_options_handler.cc',
       'browser/ui/webui/options/handler_options_handler.h',
+      'browser/ui/webui/options/help_overlay_handler.cc',
+      'browser/ui/webui/options/help_overlay_handler.h',
       'browser/ui/webui/options/home_page_overlay_handler.cc',
       'browser/ui/webui/options/home_page_overlay_handler.h',
       'browser/ui/webui/options/import_data_handler.cc',

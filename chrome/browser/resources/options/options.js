@@ -209,6 +209,12 @@ function load() {
                                 BrowserOptions.getInstance());
     PageManager.registerOverlay(ThirdPartyImeConfirmOverlay.getInstance(),
                                 LanguageOptions.getInstance());
+    if (loadTimeData.getBoolean('showVersion')) {
+      PageManager.registerOverlay(help.ChannelChangePage.getInstance(),
+                                  help.HelpPage.getInstance());
+      PageManager.registerOverlay(help.HelpPage.getInstance(),
+                                  BrowserOptions.getInstance());
+    }
   }
 
   if (!cr.isWindows && !cr.isMac) {

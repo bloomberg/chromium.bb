@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "components/url_fixer/url_fixer.h"
 
@@ -59,12 +60,22 @@ bool WillHandleBrowserAboutURL(GURL* url,
 #endif
   // Redirect chrome://settings
   } else if (host == chrome::kChromeUISettingsHost) {
-    host = chrome::kChromeUIUberHost;
-    path = chrome::kChromeUISettingsHost + url->path();
+    if (::switches::AboutInSettingsEnabled()) {
+      host = chrome::kChromeUISettingsFrameHost;
+    } else {
+      host = chrome::kChromeUIUberHost;
+      path = chrome::kChromeUISettingsHost + url->path();
+    }
   // Redirect chrome://help
   } else if (host == chrome::kChromeUIHelpHost) {
-    host = chrome::kChromeUIUberHost;
-    path = chrome::kChromeUIHelpHost + url->path();
+    if (::switches::AboutInSettingsEnabled()) {
+      host = chrome::kChromeUISettingsFrameHost;
+      if (url->path().empty() || url->path() == "/")
+        path = chrome::kChromeUIHelpHost;
+    } else {
+      host = chrome::kChromeUIUberHost;
+      path = chrome::kChromeUIHelpHost + url->path();
+    }
   }
 
   GURL::Replacements replacements;

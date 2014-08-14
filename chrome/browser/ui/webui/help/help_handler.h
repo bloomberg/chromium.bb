@@ -9,17 +9,20 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/ui/webui/help/version_updater.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 #if defined(OS_CHROMEOS)
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #endif  // defined(OS_CHROMEOS)
 
-namespace content {
-class WebUIDataSource;
+namespace base {
+class DictionaryValue;
+class ListValue;
 }
 
 // WebUI message handler for the help page.
@@ -32,12 +35,15 @@ class HelpHandler : public content::WebUIMessageHandler,
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
-  // Fills |source| with string values for the UI.
-  void GetLocalizedValues(content::WebUIDataSource* source);
+  // Adds string values for the UI to |localized_strings|.
+  static void GetLocalizedValues(base::DictionaryValue* localized_strings);
 
   // NotificationObserver implementation.
   virtual void Observe(int type, const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // Returns the browser version as a string.
+  static base::string16 BuildBrowserVersionString();
 
  private:
   // Initializes querying values for the page.

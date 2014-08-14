@@ -201,6 +201,10 @@ const char kDiagnosticsFormat[]             = "diagnostics-format";
 // Tells the diagnostics mode to do the requested recovery step(s).
 const char kDiagnosticsRecovery[]           = "diagnostics-recovery";
 
+// When kEnableSettingsWindow is used, About is shown as an overlay in Settings
+// instead of as a separate page, unless this flag is specified.
+const char kDisableAboutInSettings[]        = "disable-about-in-settings";
+
 // Disables the experimental asynchronous DNS client.
 const char kDisableAsyncDns[]               = "disable-async-dns";
 
@@ -1345,6 +1349,12 @@ const char kDebugPrint[] = "debug-print";
 // Enables overriding the path of file manager extension.
 const char kFileManagerExtensionPath[]      = "filemgr-ext-path";
 #endif
+
+bool AboutInSettingsEnabled() {
+  return SettingsWindowEnabled() &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kDisableAboutInSettings);
+}
 
 bool SettingsWindowEnabled() {
 #if defined(OS_CHROMEOS)

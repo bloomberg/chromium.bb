@@ -24,6 +24,12 @@ class ChromeContentBrowserClientBrowserTest : public InProcessBrowserTest {
     return browser()->tab_strip_model()->GetWebContentsAt(0)->
         GetController().GetLastCommittedEntry();
   }
+
+#if defined(OS_CHROMEOS)
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitch(switches::kDisableAboutInSettings);
+  }
+#endif
 };
 
 IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientBrowserTest,
