@@ -9,7 +9,7 @@
 
 #include "athena/common/container_priorities.h"
 #include "athena/home/app_list_view_delegate.h"
-#include "athena/home/bottom_home_view.h"
+#include "athena/home/athena_start_page_view.h"
 #include "athena/home/minimized_home.h"
 #include "athena/home/public/app_model_builder.h"
 #include "athena/input/public/accelerator_manager.h"
@@ -36,12 +36,11 @@ namespace athena {
 namespace {
 
 HomeCard* instance = NULL;
+const int kHomeCardHeight = 100;
+const int kHomeCardMinimizedHeight = 6;
 
 gfx::Rect GetBoundsForState(const gfx::Rect& screen_bounds,
                             HomeCard::State state) {
-  const int kHomeCardHeight = 150;
-  const int kHomeCardMinimizedHeight = 8;
-
   switch (state) {
     case HomeCard::HIDDEN:
       break;
@@ -269,23 +268,50 @@ class HomeCardView : public views::WidgetDelegateView {
                aura::Window* container,
                HomeCardGestureManager::Delegate* gesture_delegate)
       : gesture_delegate_(gesture_delegate) {
-    bottom_view_ = new BottomHomeView(view_delegate);
+    bottom_view_ = new AthenaStartPageView(view_delegate);
     AddChildView(bottom_view_);
+    bottom_view_->SetPaintToLayer(true);
+    bottom_view_->layer()->SetFillsBoundsOpaquely(false);
 
     main_view_ = new app_list::AppListMainView(
         view_delegate, 0 /* initial_apps_page */, container);
     AddChildView(main_view_);
     main_view_->set_background(
         views::Background::CreateSolidBackground(SK_ColorWHITE));
+    main_view_->SetPaintToLayer(true);
 
     minimized_view_ = CreateMinimizedHome();
+    minimized_view_->SetPaintToLayer(true);
     AddChildView(minimized_view_);
+  }
+
+  void SetStateProgress(HomeCard::State from_state,
+                        HomeCard::State to_state,
+                        float progress) {
+    if (from_state == HomeCard::VISIBLE_BOTTOM &&
+        to_state == HomeCard::VISIBLE_MINIMIZED) {
+      SetStateProgress(to_state, from_state, 1.0 - progress);
+      return;
+    }
+
+    // View from minimized to bottom.
+    if (from_state == HomeCard::VISIBLE_MINIMIZED &&
+        to_state == HomeCard::VISIBLE_BOTTOM) {
+      bottom_view_->SetVisible(true);
+      minimized_view_->SetVisible(true);
+      minimized_view_->layer()->SetOpacity(1.0f - progress);
+      return;
+    }
+
+    SetState(to_state);
   }
 
   void SetState(HomeCard::State state) {
     bottom_view_->SetVisible(state == HomeCard::VISIBLE_BOTTOM);
     main_view_->SetVisible(state == HomeCard::VISIBLE_CENTERED);
     minimized_view_->SetVisible(state == HomeCard::VISIBLE_MINIMIZED);
+    if (minimized_view_->visible())
+      minimized_view_->layer()->SetOpacity(1.0f);
     if (state == HomeCard::VISIBLE_CENTERED) {
       app_list::ContentsView* contents_view = main_view_->contents_view();
       contents_view->SetActivePage(contents_view->GetPageIndexForNamedPage(
@@ -306,13 +332,16 @@ class HomeCardView : public views::WidgetDelegateView {
     for (int i = 0; i < child_count(); ++i) {
       views::View* child = child_at(i);
       if (child->visible()) {
-        child->SetBoundsRect(bounds());
-        return;
+        if (child == minimized_view_) {
+          gfx::Rect minimized_bounds = bounds();
+          minimized_bounds.set_y(
+              minimized_bounds.bottom() - kHomeCardMinimizedHeight);
+          child->SetBoundsRect(minimized_bounds);
+        } else {
+          child->SetBoundsRect(bounds());
+        }
       }
     }
-
-    // One of the child views has to be visible.
-    NOTREACHED();
   }
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
     if (!gesture_manager_ &&
@@ -332,7 +361,7 @@ class HomeCardView : public views::WidgetDelegateView {
   }
 
   app_list::AppListMainView* main_view_;
-  BottomHomeView* bottom_view_;
+  views::View* bottom_view_;
   views::View* minimized_view_;
   scoped_ptr<HomeCardGestureManager> gesture_manager_;
   HomeCardGestureManager::Delegate* gesture_delegate_;
@@ -547,9 +576,7 @@ void HomeCardImpl::OnGestureEnded(State final_state) {
 
 void HomeCardImpl::OnGestureProgressed(
     State from_state, State to_state, float progress) {
-  // Do not update |state_| but update the look of home_card_view.
-  // TODO(mukai): allow mixed visual of |from_state| and |to_state|.
-  home_card_view_->SetState(to_state);
+  home_card_view_->SetStateProgress(from_state, to_state, progress);
 
   gfx::Rect screen_bounds =
       home_card_widget_->GetNativeWindow()->GetRootWindow()->bounds();
