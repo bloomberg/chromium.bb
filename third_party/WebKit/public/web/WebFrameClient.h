@@ -241,9 +241,7 @@ public:
     virtual void didCreateDataSource(WebLocalFrame*, WebDataSource*) { }
 
     // A new provisional load has been started.
-    virtual void didStartProvisionalLoad(WebLocalFrame* localFrame, bool isTransitionNavigation) { didStartProvisionalLoad(localFrame); }
-    // DEPRECATED
-    virtual void didStartProvisionalLoad(WebLocalFrame*) { }
+    virtual void didStartProvisionalLoad(WebLocalFrame* localFrame, bool isTransitionNavigation) { }
 
     // The provisional load was redirected via a HTTP 3xx response.
     virtual void didReceiveServerRedirectForProvisionalLoad(WebLocalFrame*) { }
