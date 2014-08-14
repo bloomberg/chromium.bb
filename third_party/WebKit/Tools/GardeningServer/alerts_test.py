@@ -4,6 +4,8 @@
 
 import alerts
 import json
+import random
+import string
 import unittest
 import webtest
 
@@ -62,3 +64,69 @@ class AlertsTest(unittest.TestCase):
         self.check_json_headers(res)
         alerts = json.loads(res.body)
         self.assertEqual(alerts['alerts'], 'everything is OK')
+
+    def test_large_number_of_alerts(self):
+        # This generates ~2.5MB of JSON that compresses to ~750K. Real
+        # data compresses about 6x better.
+        random.seed(0xf00f00)
+        put_alerts = self.generate_fake_alerts(4000)
+
+        params = {'content': json.dumps(put_alerts)}
+        self.testapp.post('/alerts', params)
+
+        res = self.testapp.get('/alerts')
+        got_alerts = json.loads(res.body)
+        self.assertEquals(got_alerts['alerts'], put_alerts['alerts'])
+
+    def generate_fake_alerts(self, n):
+        return {'alerts': [self.generate_fake_alert() for _ in range(n)]}
+
+    def generate_fake_alert(self):
+        # fake labels
+        labels = [['', 'last_', 'latest_', 'failing_', 'passing_'],
+                  ['build', 'builder', 'revision'],
+                  ['', 's', '_url', '_reason', '_name']]
+
+        def label():
+            return string.join(map(random.choice, labels), '')
+
+        # fake values
+        def time():
+            return random.randint(1407976107614, 1408076107614) / 101.0
+
+        def build():
+            return random.randint(2737, 2894)
+
+        def revision():
+            return random.randint(288849, 289415)
+
+        tests = [['Activity', 'Async', 'Browser', 'Content', 'Input'],
+                 ['Manager', 'Card', 'Sandbox', 'Container'],
+                 ['Test.'],
+                 ['', 'Basic', 'Empty', 'More'],
+                 ['Mouse', 'App', 'Selection', 'Network', 'Grab'],
+                 ['Input', 'Click', 'Failure', 'Capture']]
+
+        def test():
+            return string.join(map(random.choice, tests), '')
+
+        def literal_array():
+            generator = random.choice([time, build, revision])
+            return [generator() for _ in range(random.randint(0, 10))]
+
+        def literal_map():
+            generators = [build, revision, test, literal_array]
+            obj = {}
+            for _ in range(random.randint(3, 9)):
+                obj[label()] = random.choice(generators)()
+            return obj
+
+        def value():
+            generators = [time, build, revision, test, literal_array,
+                          literal_map]
+            return random.choice(generators)()
+
+        alert = {}
+        for _ in range(random.randint(6, 9)):
+            alert[label()] = value()
+        return alert

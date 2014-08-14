@@ -6,6 +6,7 @@ import calendar
 import datetime
 import json
 import webapp2
+import zlib
 
 from google.appengine.api import memcache
 
@@ -24,10 +25,11 @@ class AlertsHandler(webapp2.RequestHandler):
     def get(self):
         self.response.headers.add_header('Access-Control-Allow-Origin', '*')
         self.response.headers['Content-Type'] = 'application/json'
-        alerts = memcache.get(AlertsHandler.MEMCACHE_ALERTS_KEY)
-        if not alerts:
+        compressed = memcache.get(AlertsHandler.MEMCACHE_ALERTS_KEY)
+        if not compressed:
             return
-        self.response.write(json.dumps(alerts, cls=DateTimeEncoder, indent=1))
+        uncompressed = zlib.decompress(compressed)
+        self.response.write(uncompressed)
 
     def post(self):
         try:
@@ -39,7 +41,10 @@ class AlertsHandler(webapp2.RequestHandler):
             'date': datetime.datetime.utcnow(),
             'alerts': alerts['alerts']
         })
-        memcache.set(AlertsHandler.MEMCACHE_ALERTS_KEY, alerts)
+        uncompressed = json.dumps(alerts, cls=DateTimeEncoder, indent=1)
+        compression_level = 1
+        compressed = zlib.compress(uncompressed, compression_level)
+        memcache.set(AlertsHandler.MEMCACHE_ALERTS_KEY, compressed)
 
 
 app = webapp2.WSGIApplication([
