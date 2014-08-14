@@ -41,6 +41,7 @@
               'storage.json',
               'test.json',
               'usb.idl',
+              'usb_private.idl',
             ],
           }, {
             # TODO: Eliminate these on Android. See crbug.com/305852.

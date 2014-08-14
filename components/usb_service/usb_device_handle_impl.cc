@@ -196,7 +196,7 @@ UsbDeviceHandleImpl::UsbDeviceHandleImpl(
       context_(context) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(handle) << "Cannot create device with NULL handle.";
-  DCHECK(interfaces_) << "Unabled to list interfaces";
+  DCHECK(interfaces_) << "Unable to list interfaces";
 }
 
 UsbDeviceHandleImpl::~UsbDeviceHandleImpl() {
@@ -372,62 +372,145 @@ bool UsbDeviceHandleImpl::ResetDevice() {
   return rv == LIBUSB_SUCCESS;
 }
 
-bool UsbDeviceHandleImpl::GetSerial(base::string16* serial) {
+bool UsbDeviceHandleImpl::GetSupportedLanguages() {
+  if (!languages_.empty()) {
+    return true;
+  }
+
+  // The 1-byte length field limits the descriptor to 256-bytes (128 uint16s).
+  uint16 languages[128];
+  int size = libusb_get_string_descriptor(
+      handle_,
+      0,
+      0,
+      reinterpret_cast<unsigned char*>(&languages[0]),
+      sizeof(languages));
+  if (size < 0) {
+    VLOG(1) << "Failed to get list of supported languages: "
+            << ConvertErrorToString(size);
+    return false;
+  } else if (size < 2) {
+    VLOG(1) << "String descriptor zero has no header.";
+    return false;
+  // The first 2 bytes of the descriptor are the total length and type tag.
+  } else if ((languages[0] & 0xff) != size) {
+    VLOG(1) << "String descriptor zero size mismatch: " << (languages[0] & 0xff)
+            << " != " << size;
+    return false;
+  } else if ((languages[0] >> 8) != LIBUSB_DT_STRING) {
+    VLOG(1) << "String descriptor zero is not a string descriptor.";
+    return false;
+  }
+
+  languages_.assign(languages[1], languages[(size - 2) / 2]);
+  return true;
+}
+
+bool UsbDeviceHandleImpl::GetStringDescriptor(uint8 string_id,
+                                              base::string16* string) {
+  if (!GetSupportedLanguages()) {
+    return false;
+  }
+
+  std::map<uint8, base::string16>::const_iterator it = strings_.find(string_id);
+  if (it != strings_.end()) {
+    *string = it->second;
+    return true;
+  }
+
+  for (size_t i = 0; i < languages_.size(); ++i) {
+    // Get the string using language ID.
+    uint16 language_id = languages_[i];
+    // The 1-byte length field limits the descriptor to 256-bytes (128 char16s).
+    base::char16 text[128];
+    int size =
+        libusb_get_string_descriptor(handle_,
+                                     string_id,
+                                     language_id,
+                                     reinterpret_cast<unsigned char*>(&text[0]),
+                                     sizeof(text));
+    if (size < 0) {
+      VLOG(1) << "Failed to get string descriptor " << string_id << " (langid "
+              << language_id << "): " << ConvertErrorToString(size);
+      continue;
+    } else if (size < 2) {
+      VLOG(1) << "String descriptor " << string_id << " (langid " << language_id
+              << ") has no header.";
+      continue;
+    // The first 2 bytes of the descriptor are the total length and type tag.
+    } else if ((text[0] & 0xff) != size) {
+      VLOG(1) << "String descriptor " << string_id << " (langid " << language_id
+              << ") size mismatch: " << (text[0] & 0xff) << " != " << size;
+      continue;
+    } else if ((text[0] >> 8) != LIBUSB_DT_STRING) {
+      VLOG(1) << "String descriptor " << string_id << " (langid " << language_id
+              << ") is not a string descriptor.";
+      continue;
+    }
+
+    *string = base::string16(text + 1, (size - 2) / 2);
+    strings_[string_id] = *string;
+    return true;
+  }
+
+  return false;
+}
+
+bool UsbDeviceHandleImpl::GetManufacturer(base::string16* manufacturer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   PlatformUsbDevice device = libusb_get_device(handle_);
   libusb_device_descriptor desc;
 
+  // This is a non-blocking call as libusb has the descriptor in memory.
   const int rv = libusb_get_device_descriptor(device, &desc);
   if (rv != LIBUSB_SUCCESS) {
     VLOG(1) << "Failed to read device descriptor: " << ConvertErrorToString(rv);
     return false;
   }
 
-  if (desc.iSerialNumber == 0)
-    return false;
-
-  // Getting supported language ID.
-  uint16 langid[128] = {0};
-
-  int size =
-      libusb_get_string_descriptor(handle_,
-                                   0,
-                                   0,
-                                   reinterpret_cast<unsigned char*>(&langid[0]),
-                                   sizeof(langid));
-  if (size < 0) {
-    VLOG(1) << "Failed to get language IDs: " << ConvertErrorToString(size);
+  if (desc.iManufacturer == 0) {
     return false;
   }
 
-  int language_count = (size - 2) / 2;
+  return GetStringDescriptor(desc.iManufacturer, manufacturer);
+}
 
-  for (int i = 1; i <= language_count; ++i) {
-    // Get the string using language ID.
-    base::char16 text[256] = {0};
-    size =
-        libusb_get_string_descriptor(handle_,
-                                     desc.iSerialNumber,
-                                     langid[i],
-                                     reinterpret_cast<unsigned char*>(&text[0]),
-                                     sizeof(text));
-    if (size < 0) {
-      VLOG(1) << "Failed to get serial number (langid " << langid[i] << "): "
-              << ConvertErrorToString(size);
-      continue;
-    }
-    if (size <= 2)
-      continue;
-    if ((text[0] >> 8) != LIBUSB_DT_STRING)
-      continue;
-    if ((text[0] & 255) > size)
-      continue;
+bool UsbDeviceHandleImpl::GetProduct(base::string16* product) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  PlatformUsbDevice device = libusb_get_device(handle_);
+  libusb_device_descriptor desc;
 
-    size = size / 2 - 1;
-    *serial = base::string16(text + 1, size);
-    return true;
+  // This is a non-blocking call as libusb has the descriptor in memory.
+  const int rv = libusb_get_device_descriptor(device, &desc);
+  if (rv != LIBUSB_SUCCESS) {
+    VLOG(1) << "Failed to read device descriptor: " << ConvertErrorToString(rv);
+    return false;
   }
-  return false;
+
+  if (desc.iProduct == 0) {
+    return false;
+  }
+
+  return GetStringDescriptor(desc.iProduct, product);
+}
+
+bool UsbDeviceHandleImpl::GetSerial(base::string16* serial) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  PlatformUsbDevice device = libusb_get_device(handle_);
+  libusb_device_descriptor desc;
+
+  // This is a non-blocking call as libusb has the descriptor in memory.
+  const int rv = libusb_get_device_descriptor(device, &desc);
+  if (rv != LIBUSB_SUCCESS) {
+    VLOG(1) << "Failed to read device descriptor: " << ConvertErrorToString(rv);
+    return false;
+  }
+
+  if (desc.iSerialNumber == 0) {
+    return false;
+  }
+
+  return GetStringDescriptor(desc.iSerialNumber, serial);
 }
 
 void UsbDeviceHandleImpl::ControlTransfer(

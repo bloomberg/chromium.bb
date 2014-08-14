@@ -40547,6 +40547,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="871" label="FILESYSTEM_UNOBSERVEENTRY"/>
   <int value="872" label="FILESYSTEM_GETOBSERVEDENTRIES"/>
   <int value="873" label="BROWSINGDATA_REMOVESERVICEWORKERS"/>
+  <int value="874" label="USBPRIVATE_GETDEVICES"/>
+  <int value="875" label="USBPRIVATE_GETDEVICEINFO"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

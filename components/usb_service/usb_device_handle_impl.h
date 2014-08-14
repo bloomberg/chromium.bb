@@ -45,6 +45,8 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
       const int interface_number,
       const int alternate_setting) OVERRIDE;
   virtual bool ResetDevice() OVERRIDE;
+  virtual bool GetManufacturer(base::string16* manufacturer) OVERRIDE;
+  virtual bool GetProduct(base::string16* product) OVERRIDE;
   virtual bool GetSerial(base::string16* serial) OVERRIDE;
   virtual void ControlTransfer(const UsbEndpointDirection direction,
                                const TransferRequestType request_type,
@@ -123,6 +125,9 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
   // the in-flight transfer set.
   void TransferComplete(PlatformUsbTransferHandle transfer);
 
+  bool GetSupportedLanguages();
+  bool GetStringDescriptor(uint8 string_id, base::string16* string);
+
   // Informs the object to drop internal references.
   void InternalClose();
 
@@ -131,6 +136,9 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
   PlatformUsbDeviceHandle handle_;
 
   scoped_refptr<UsbConfigDescriptor> interfaces_;
+
+  std::vector<uint16> languages_;
+  std::map<uint8, base::string16> strings_;
 
   typedef std::map<int, scoped_refptr<InterfaceClaimer> > ClaimedInterfaceMap;
   ClaimedInterfaceMap claimed_interfaces_;

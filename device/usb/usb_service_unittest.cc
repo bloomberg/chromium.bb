@@ -32,9 +32,22 @@ TEST_F(UsbServiceTest, ClaimGadget) {
   ASSERT_TRUE(gadget.get());
 
   scoped_refptr<UsbDeviceHandle> handle = gadget->GetDevice()->Open();
-  base::string16 serial_utf16;
-  ASSERT_TRUE(handle->GetSerial(&serial_utf16));
-  ASSERT_EQ(gadget->GetSerial(), base::UTF16ToUTF8(serial_utf16));
+
+  base::string16 utf16;
+  ASSERT_TRUE(handle->GetManufacturer(&utf16));
+  ASSERT_EQ("Google Inc.", base::UTF16ToUTF8(utf16));
+  // Check again to make sure string descriptor caching works.
+  ASSERT_EQ("Google Inc.", base::UTF16ToUTF8(utf16));
+
+  ASSERT_TRUE(handle->GetProduct(&utf16));
+  ASSERT_EQ("Test Gadget (default state)", base::UTF16ToUTF8(utf16));
+  // Check again to make sure string descriptor caching works.
+  ASSERT_EQ("Test Gadget (default state)", base::UTF16ToUTF8(utf16));
+
+  ASSERT_TRUE(handle->GetSerial(&utf16));
+  ASSERT_EQ(gadget->GetSerial(), base::UTF16ToUTF8(utf16));
+  // Check again to make sure string descriptor caching works.
+  ASSERT_EQ(gadget->GetSerial(), base::UTF16ToUTF8(utf16));
 }
 
 TEST_F(UsbServiceTest, DisconnectAndReconnect) {

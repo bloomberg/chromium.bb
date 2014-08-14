@@ -1,0 +1,55 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Use the <code>chrome.usbPrivate</code> API to interact with connected USB
+// devices. This API provides private extensions to the <code>chrome.usb</code>
+// API which should only be available to trusted pages.
+namespace usbPrivate {
+
+  // Properties for matching devices. A device matches of any of its interfaces
+  // match the given properties. An empty dictionary matches any device.
+  dictionary DeviceFilter {
+    // Device-level matching criteria:
+    long? vendorId;
+    // Checked only if the vendorId matches.
+    long? productId;
+
+    // Per-interface matching criteria:
+    long? interfaceClass;
+    // Checked only if the interfaceClass matches.
+    long? interfaceSubclass;
+    // Checked only if the interfaceSubclass matches.
+    long? interfaceProtocol;
+  };
+
+  dictionary DeviceInfo {
+    long vendorId;  // idVendor from the device
+    long productId;  // idProduct from the device
+
+    // Vendor and product names from an internal database.
+    DOMString? vendorName;
+    DOMString? productName;
+
+    // iManufacturer, iProduct and iSerial strings from the device.
+    DOMString? manufacturerString;
+    DOMString? productString;
+    DOMString? serialString;
+  };
+
+  callback GetDevicesCallback = void (long[] deviceIds);
+  callback GetDeviceInfoCallback = void (DeviceInfo deviceInfo);
+
+  interface Functions {
+    // Lists USB devices matching any of the given filters.
+    // |filters|: The properties to search for on target devices.
+    // |callback|: Invoked with a list of device IDs on complete.
+    static void getDevices(DeviceFilter[] filters,
+                           GetDevicesCallback callback);
+
+    // Gets basic display information about a device.
+    // |deviceId|: The device ID (from |getDevices|).
+    // |callback|: Invoked with |DeviceInfo| from the device.
+    static void getDeviceInfo(long deviceId, GetDeviceInfoCallback callback);
+  };
+};

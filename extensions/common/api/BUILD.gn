@@ -23,6 +23,7 @@ generated_extensions_api("api") {
     "storage.json",
     "test.json",
     "usb.idl",
+    "usb_private.idl",
   ]
   root_namespace = "extensions::core_api::%(namespace)s"
   impl_dir = "//extensions/browser/api"

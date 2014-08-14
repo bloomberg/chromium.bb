@@ -90,6 +90,8 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
   MOCK_METHOD1(ReleaseInterface, bool(const int interface_number));
   MOCK_METHOD2(SetInterfaceAlternateSetting,
                bool(const int interface_number, const int alternate_setting));
+  MOCK_METHOD1(GetManufacturer, bool(base::string16* manufacturer));
+  MOCK_METHOD1(GetProduct, bool(base::string16* product));
   MOCK_METHOD1(GetSerial, bool(base::string16* serial));
 
   virtual scoped_refptr<UsbDevice> GetDevice() const OVERRIDE {

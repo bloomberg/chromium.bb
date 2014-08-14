@@ -155,5 +155,9 @@
   "usb": {
     "dependencies": ["permission:usb"],
     "contexts": ["blessed_extension"]
+  },
+  "usbPrivate": {
+    "channel": "dev",
+    "contexts": ["webui"]
   }
 }

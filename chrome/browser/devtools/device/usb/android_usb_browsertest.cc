@@ -43,6 +43,7 @@ const char kDeviceModelCommand[] = "shell:getprop ro.product.model";
 const char kDumpsysCommand[] = "shell:dumpsys window policy";
 const char kListProcessesCommand[] = "shell:ps";
 const char kInstalledChromePackagesCommand[] = "shell:pm list packages";
+const char kDeviceManufacturer[] = "Test Manufacturer";
 const char kDeviceModel[] = "Nexus 5";
 const char kDeviceSerial[] = "Sample serial";
 
@@ -253,6 +254,16 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
   }
 
   virtual bool ResetDevice() OVERRIDE { return true; }
+
+  virtual bool GetManufacturer(base::string16* manufacturer) OVERRIDE {
+    *manufacturer = base::UTF8ToUTF16(kDeviceManufacturer);
+    return true;
+  }
+
+  virtual bool GetProduct(base::string16* product) OVERRIDE {
+    *product = base::UTF8ToUTF16(kDeviceModel);
+    return true;
+  }
 
   virtual bool GetSerial(base::string16* serial) OVERRIDE {
     *serial = base::UTF8ToUTF16(kDeviceSerial);

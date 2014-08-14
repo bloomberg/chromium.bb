@@ -58,6 +58,8 @@ class USB_SERVICE_EXPORT UsbDeviceHandle
   virtual bool SetInterfaceAlternateSetting(const int interface_number,
                                             const int alternate_setting) = 0;
   virtual bool ResetDevice() = 0;
+  virtual bool GetManufacturer(base::string16* manufacturer) = 0;
+  virtual bool GetProduct(base::string16* product) = 0;
   virtual bool GetSerial(base::string16* serial) = 0;
 
   // Async IO. Can be called on any thread.

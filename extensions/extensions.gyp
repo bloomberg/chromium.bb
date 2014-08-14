@@ -370,6 +370,8 @@
         'browser/api/usb/usb_api.h',
         'browser/api/usb/usb_device_resource.cc',
         'browser/api/usb/usb_device_resource.h',
+        'browser/api/usb_private/usb_private_api.cc',
+        'browser/api/usb_private/usb_private_api.h',
         'browser/api_activity_monitor.h',
         'browser/app_sorting.h',
         'browser/blacklist_state.h',
