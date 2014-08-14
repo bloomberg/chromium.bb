@@ -110,10 +110,8 @@ void AudioNode::dispose()
     ASSERT(context()->isGraphOwner());
 
     context()->removeAutomaticPullNode(this);
-#if ENABLE(OILPAN)
     for (unsigned i = 0; i < m_outputs.size(); ++i)
         output(i)->disconnectAll();
-#endif
     context()->unmarkDirtyNode(*this);
 #if ENABLE(ASSERT)
     m_didCallDispose = true;
@@ -608,10 +606,6 @@ void AudioNode::finishDeref()
 #endif
 
     if (!m_normalRefCount && !m_isMarkedForDeletion) {
-        // All references are gone - we need to go away.
-        for (unsigned i = 0; i < m_outputs.size(); ++i)
-            output(i)->disconnectAll(); // This will deref() nodes we're connected to.
-
         // Mark for deletion at end of each render quantum or when context shuts
         // down.
         context()->markForDeletion(this);
