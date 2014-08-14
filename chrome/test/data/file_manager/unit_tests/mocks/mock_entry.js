@@ -3,16 +3,50 @@
 // found in the LICENSE file.
 
 /**
+ * Joins paths so that the two paths are connected by only 1 '/'.
+ * @param {string} a Path.
+ * @param {string} b Path.
+ * @return {string} Joined path.
+ */
+function joinPath(a, b) {
+  return a.replace(/\/+$/, '') + '/' + b.replace(/^\/+/, '');
+};
+
+/**
+ * Test file system.
+ *
+ * @param {string} fileSystemId File system ID.
+ * @constructor
+ */
+function TestFileSystem(fileSystemId) {
+  this.fileSystemId = fileSystemId;
+  this.entries = {};
+};
+
+TestFileSystem.prototype = {
+  get root() { return this.entries['/']; }
+};
+
+/**
  * Base class of mock entries.
  *
- * @param {string} volumeId ID of the volume that contains the entry.
+ * @param {TestFileSystem} filesystem File system where the entry is localed.
  * @param {string} fullpath Full path of the entry.
  * @constructor
  */
-function MockEntry(volumeId, fullPath) {
-  this.volumeId = volumeId;
+function MockEntry(filesystem, fullPath) {
+  this.filesystem = filesystem;
   this.fullPath = fullPath;
 }
+
+MockEntry.prototype = {
+  /**
+   * @return {string} Name of the entry.
+   */
+  get name() {
+    return this.fullPath.replace(/^.*\//, '');
+  }
+};
 
 /**
  * Returns fake URL.
@@ -20,22 +54,78 @@ function MockEntry(volumeId, fullPath) {
  * @return {string} Fake URL.
  */
 MockEntry.prototype.toURL = function() {
-  return 'filesystem:' + this.volumeId + this.fullPath;
+  return 'filesystem:' + this.filesystem.fileSystemId + this.fullPath;
+};
+
+/**
+ * Obtains parent directory.
+ *
+ * @param {function(MockDirectoryEntry)} onSuccess Callback invoked with
+ *     the parent directory.
+ * @param {function(Object)} onError Callback invoked with an error
+ *     object.
+ */
+MockEntry.prototype.getParent = function(
+    onSuccess, onError) {
+  var path = this.fullPath.replace(/\/[^\/]+$/, '') || '/';
+  if (this.filesystem.entries[path])
+    onSuccess(this.filesystem.entries[path]);
+  else
+    onError({name: util.FileError.NOT_FOUND_ERR});
+};
+
+/**
+ * Moves the entry to the directory.
+ *
+ * @param {MockDirectoryEntry} parent Destination directory.
+ * @param {string=} opt_newName New name.
+ * @param {function(MockDirectoryEntry)} onSuccess Callback invoked with the
+ *     moved entry.
+ * @param {function(Object)} onError Callback invoked with an error object.
+ */
+MockEntry.prototype.moveTo = function(parent, opt_newName, onSuccess, onError) {
+  Promise.resolve().then(function() {
+    this.filesystem.entries[this.fullPath] = null;
+    return this.clone(joinPath(parent.fullPath, opt_newName || this.name));
+  }.bind(this)).then(onSuccess, onError);
+};
+
+/**
+ * Removes the entry.
+ *
+ * @param {function()} onSuccess Success callback.
+ * @param {function(Object)} onError Callback invoked with an error object.
+ */
+MockEntry.prototype.remove = function(onSuccess, onError) {
+  Promise.resolve().then(function() {
+    this.filesystem.entries[this.fullPath] = null;
+  }.bind(this)).then(onSuccess, onError);
+};
+
+/**
+ * Clones the entry with the new fullpath.
+ *
+ * @param {string} fullpath New fullpath.
+ * @return {MockEntry} Cloned entry.
+ */
+MockEntry.prototype.clone = function(fullpath) {
+  throw new Error('Not implemented.');
 };
 
 /**
  * Mock class for FileEntry.
  *
- * @param {string} volumeId Id of the volume containing the entry.
+ * @param {FileSystem} filesystem File system where the entry is localed.
  * @param {string} fullPath Full path for the entry.
+ * @param {Object} metadata Metadata.
  * @extends {MockEntry}
  * @constructor
  */
-function MockFileEntry(volumeId, fullPath, metadata) {
-  MockEntry.call(this, volumeId, fullPath);
-  this.volumeId = volumeId;
-  this.fullPath = fullPath;
+function MockFileEntry(filesystem, fullPath, metadata) {
+  MockEntry.call(this, filesystem, fullPath);
   this.metadata_ = metadata;
+  this.isFile = true;
+  this.isDirectory = false;
 }
 
 MockFileEntry.prototype = {
@@ -54,18 +144,24 @@ MockFileEntry.prototype.getMetadata = function(callback) {
 };
 
 /**
+ * @override
+ */
+MockFileEntry.prototype.clone = function(path) {
+  return new MockFileEntry(this.filesystem, path, this.metadata);
+};
+
+/**
  * Mock class for DirectoryEntry.
  *
- * @param {string} volumeId Id of the volume containing the entry.
+ * @param {FileSystem} filesystem File system where the entry is localed.
  * @param {string} fullPath Full path for the entry.
- * @param {Object.<String, MockFileEntry|MockDirectoryEntry>} contents Map of
- *     path and MockEntry contained in the directory.
  * @extends {MockEntry}
  * @constructor
  */
-function MockDirectoryEntry(volumeId, fullPath, contents) {
-  MockEntry.call(this, volumeId, fullPath);
-  this.contents_ = contents;
+function MockDirectoryEntry(filesystem, fullPath) {
+  MockEntry.call(this, filesystem, fullPath);
+  this.isFile = false;
+  this.isDirectory = true;
 }
 
 MockDirectoryEntry.prototype = {
@@ -73,21 +169,29 @@ MockDirectoryEntry.prototype = {
 };
 
 /**
+ * @override
+ */
+MockDirectoryEntry.prototype.clone = function(path) {
+  return new MockDirectoryEntry(this.filesystem, path);
+};
+
+/**
  * Returns a file under the directory.
  *
  * @param {string} path Path.
  * @param {Object} option Option.
- * @param {callback(MockFileEntry)} successCallback Success callback.
- * @param {callback(Object)} failureCallback Failure callback;
+ * @param {callback(MockFileEntry)} onSuccess Success callback.
+ * @param {callback(Object)} onError Failure callback;
  */
 MockDirectoryEntry.prototype.getFile = function(
-    path, option, successCallback, failureCallback) {
-  if (!this.contents_[path])
-    failureCallback({name: util.FileError.NOT_FOUND_ERR});
-  else if (!(this.contents_[path] instanceof MockFileEntry))
-    failureCallback({name: util.FileError.TYPE_MISMATCH_ERR});
+    path, option, onSuccess, onError) {
+  var fullPath = path[0] === '/' ? path : joinPath(this.fullPath, path);
+  if (!this.filesystem.entries[fullPath])
+    onError({name: util.FileError.NOT_FOUND_ERR});
+  else if (!(this.filesystem.entries[fullPath] instanceof MockFileEntry))
+    onError({name: util.FileError.TYPE_MISMATCH_ERR});
   else
-    successCallback(this.contents_[path]);
+    onSuccess(this.filesystem.entries[fullPath]);
 };
 
 /**
@@ -95,15 +199,16 @@ MockDirectoryEntry.prototype.getFile = function(
  *
  * @param {string} path Path.
  * @param {Object} option Option.
- * @param {callback(MockDirectoryEntry)} successCallback Success callback.
- * @param {callback(Object)} failureCallback Failure callback;
+ * @param {callback(MockDirectoryEntry)} onSuccess Success callback.
+ * @param {callback(Object)} onError Failure callback;
  */
 MockDirectoryEntry.prototype.getDirectory =
-    function(path, option, successCallback, failureCallback) {
-  if (!this.contents_[path])
-    failureCallback({name: util.FileError.NOT_FOUND_ERR});
-  else if (!(this.contents_[path] instanceof MockDirectoryEntry))
-    failureCallback({name: util.FileError.TYPE_MISMATCH_ERR});
+    function(path, option, onSuccess, onError) {
+  var fullPath = path[0] === '/' ? path : joinPath(this.fullPath, path);
+  if (!this.filesystem.entries[fullPath])
+    onError({name: util.FileError.NOT_FOUND_ERR});
+  else if (!(this.filesystem.entries[fullPath] instanceof MockDirectoryEntry))
+    onError({name: util.FileError.TYPE_MISMATCH_ERR});
   else
-    successCallback(this.contents_[path]);
+    onSuccess(this.filesystem.entries[fullPath]);
 };
