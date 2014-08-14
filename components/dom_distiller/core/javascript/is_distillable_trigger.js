@@ -4,7 +4,7 @@
 
 (function() {
   var elems = document.querySelectorAll(
-      'meta[property="og:type"],meta[name=\\"og:type\\"]');
+      'meta[property="og:type"],meta[name="og:type"]');
   for (var i in elems) {
     if (elems[i].content && elems[i].content.toUpperCase() == 'ARTICLE') {
       return true;
