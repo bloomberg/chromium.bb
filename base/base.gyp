@@ -1411,10 +1411,10 @@
           'target_name': 'chromium_android_linker',
           'type': 'shared_library',
           'conditions': [
-            ['android_webview_build == 0 and target_arch != "x64"', {
-              # Avoid breaking the webview build because it
-              # does not have <(android_ndk_root)/crazy_linker.gyp.
-              # Note that webview never uses the linker anyway.
+            # Avoid breaking the webview build because it
+            # does not have <(android_ndk_root)/crazy_linker.gyp.
+            # Note that webview never uses the linker anyway.
+            ['android_webview_build == 0', {
               'sources': [
                 'android/linker/linker_jni.cc',
               ],
