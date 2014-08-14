@@ -297,7 +297,7 @@ bool FileLibraryOpener::Open(
 // Used for opening the library in a zip file.
 class ZipLibraryOpener {
  public:
-  ZipLibraryOpener(const char* zip_file) : zip_file_(zip_file) {}
+  explicit ZipLibraryOpener(const char* zip_file) : zip_file_(zip_file) {}
   bool Open(
       crazy_library_t** library,
       const char* library_name,
@@ -310,14 +310,14 @@ bool ZipLibraryOpener::Open(
     crazy_library_t** library,
     const char* library_name,
     crazy_context_t* context) const {
- if (!crazy_library_open_in_zip_file(
-         library, zip_file_, library_name, context)) {
-    LOG_ERROR("%s: Could not open %s in zip file %s: %s",
-              __FUNCTION__, library_name, zip_file_,
-              crazy_context_get_error(context));
-    return false;
- }
- return true;
+  if (!crazy_library_open_in_zip_file(
+          library, zip_file_, library_name, context)) {
+     LOG_ERROR("%s: Could not open %s in zip file %s: %s",
+               __FUNCTION__, library_name, zip_file_,
+               crazy_context_get_error(context));
+     return false;
+  }
+  return true;
 }
 
 }  // unnamed namespace
