@@ -82,6 +82,7 @@
 #include "public/web/WebFormElement.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebHistoryItem.h"
+#include "public/web/WebPrintParams.h"
 #include "public/web/WebRange.h"
 #include "public/web/WebRemoteFrame.h"
 #include "public/web/WebScriptSource.h"
@@ -5799,6 +5800,22 @@ TEST_F(WebFrameTest, NodeImageTestFloatLeft)
     EXPECT_TRUE(dragImage);
 
     nodeImageTestValidation(blink::IntSize(40, 40), dragImage.get());
+}
+
+TEST_F(WebFrameTest, PrintingBasic)
+{
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad("data:text/html,Hello, world.");
+
+    WebFrame* frame = webViewHelper.webView()->mainFrame();
+
+    WebPrintParams printParams;
+    printParams.printContentArea.width = 500;
+    printParams.printContentArea.height = 500;
+
+    int pageCount = frame->printBegin(printParams);
+    EXPECT_EQ(1, pageCount);
+    frame->printEnd();
 }
 
 class ThemeColorTestWebFrameClient : public FrameTestHelpers::TestWebFrameClient {

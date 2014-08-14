@@ -396,43 +396,43 @@ private:
 class ChromePluginPrintContext FINAL : public ChromePrintContext {
 public:
     ChromePluginPrintContext(LocalFrame* frame, WebPluginContainerImpl* plugin, const WebPrintParams& printParams)
-        : ChromePrintContext(frame), m_plugin(plugin), m_pageCount(0), m_printParams(printParams)
+        : ChromePrintContext(frame), m_plugin(plugin), m_printParams(printParams)
     {
     }
 
     virtual ~ChromePluginPrintContext() { }
 
-    virtual void begin(float width, float height)
+    virtual void begin(float width, float height) OVERRIDE
     {
     }
 
-    virtual void end()
+    virtual void end() OVERRIDE
     {
         m_plugin->printEnd();
     }
 
-    virtual float getPageShrink(int pageNumber) const
+    virtual float getPageShrink(int pageNumber) const OVERRIDE
     {
         // We don't shrink the page (maybe we should ask the widget ??)
         return 1.0;
     }
 
-    virtual void computePageRects(const FloatRect& printRect, float headerHeight, float footerHeight, float userScaleFactor, float& outPageHeight)
+    virtual void computePageRects(const FloatRect& printRect, float headerHeight, float footerHeight, float userScaleFactor, float& outPageHeight) OVERRIDE
     {
         m_printParams.printContentArea = IntRect(printRect);
-        m_pageCount = m_plugin->printBegin(m_printParams);
+        m_pageRects.fill(IntRect(printRect), m_plugin->printBegin(m_printParams));
     }
 
-    virtual int pageCount() const
+    virtual void computePageRectsWithPageSize(const FloatSize& pageSizeInPixels, bool allowHorizontalTiling) OVERRIDE
     {
-        return m_pageCount;
+        ASSERT_NOT_REACHED();
     }
 
 protected:
     // Spools the printed page, a subrect of frame(). Skip the scale step.
     // NativeTheme doesn't play well with scaling. Scaling is done browser side
     // instead. Returns the scale to be applied.
-    virtual float spoolPage(GraphicsContext& context, int pageNumber)
+    virtual float spoolPage(GraphicsContext& context, int pageNumber) OVERRIDE
     {
         m_plugin->printPage(pageNumber, &context);
         return 1.0;
@@ -441,9 +441,7 @@ protected:
 private:
     // Set when printing.
     WebPluginContainerImpl* m_plugin;
-    int m_pageCount;
     WebPrintParams m_printParams;
-
 };
 
 static WebDataSource* DataSourceForDocLoader(DocumentLoader* loader)
@@ -1281,7 +1279,7 @@ int WebLocalFrameImpl::printBegin(const WebPrintParams& printParams, const WebNo
     // browser. pageHeight is actually an output parameter.
     m_printContext->computePageRects(rect, 0, 0, 1.0, pageHeight);
 
-    return m_printContext->pageCount();
+    return static_cast<int>(m_printContext->pageCount());
 }
 
 float WebLocalFrameImpl::getPrintPageShrink(int page)

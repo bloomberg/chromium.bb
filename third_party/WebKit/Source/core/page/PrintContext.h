@@ -40,7 +40,7 @@ class Node;
 class PrintContext : public NoBaseWillBeGarbageCollectedFinalized<PrintContext> {
 public:
     explicit PrintContext(LocalFrame*);
-    ~PrintContext();
+    virtual ~PrintContext();
 
     LocalFrame* frame() const { return m_frame; }
 
@@ -48,10 +48,11 @@ public:
     // FIXME: This means that CSS page breaks won't be on page boundary if the size is different than what was passed to begin(). That's probably not always desirable.
     // FIXME: Header and footer height should be applied before layout, not after.
     // FIXME: The printRect argument is only used to determine page aspect ratio, it would be better to pass a FloatSize with page dimensions instead.
-    void computePageRects(const FloatRect& printRect, float headerHeight, float footerHeight, float userScaleFactor, float& outPageHeight, bool allowHorizontalTiling = false);
+    virtual void computePageRects(const FloatRect& printRect, float headerHeight, float footerHeight, float userScaleFactor, float& outPageHeight);
 
     // Deprecated. Page size computation is already in this class, clients shouldn't be copying it.
-    void computePageRectsWithPageSize(const FloatSize& pageSizeInPixels, bool allowHorizontalTiling);
+    // FIXME: Everyone passes |false| for the second paramer. We should remove the second parameter.
+    virtual void computePageRectsWithPageSize(const FloatSize& pageSizeInPixels, bool allowHorizontalTiling);
 
     // These are only valid after page rects are computed.
     size_t pageCount() const { return m_pageRects.size(); }
@@ -60,10 +61,10 @@ public:
 
     // Enter print mode, updating layout for new page size.
     // This function can be called multiple times to apply new print options without going back to screen mode.
-    void begin(float width, float height = 0);
+    virtual void begin(float width, float height = 0);
 
     // Return to screen mode.
-    void end();
+    virtual void end();
 
     // Used by layout tests.
     static int pageNumberForElement(Element*, const FloatSize& pageSizeInPixels); // Returns -1 if page isn't found.
