@@ -908,8 +908,13 @@ const char kPerformanceMonitorGathering[]   = "performance-monitor-gathering";
 
 // Development flag for permission request API. This flag is needed until
 // the API is finalized.
-// TODO(akuegel): Remove when this flag is not needed anymore.
-const char kPermissionRequestApiUrl[] = "permission-request-api-url";
+// TODO(bauerb): Remove when this flag is not needed anymore.
+const char kPermissionRequestApiScope[]     = "permission-request-api-scope";
+
+// Development flag for permission request API. This flag is needed until
+// the API is finalized.
+// TODO(bauerb): Remove when this flag is not needed anymore.
+const char kPermissionRequestApiUrl[]       = "permission-request-api-url";
 
 // Read previously recorded data from the cache. Only cached data is read.
 // See kRecordMode.

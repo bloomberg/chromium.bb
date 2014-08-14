@@ -71,7 +71,13 @@ void PermissionRequestCreatorApiary::CreatePermissionRequest(
 
 void PermissionRequestCreatorApiary::StartFetching() {
   OAuth2TokenService::ScopeSet scopes;
-  scopes.insert(signin_wrapper_->GetSyncScopeToUse());
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kPermissionRequestApiScope)) {
+    scopes.insert(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        switches::kPermissionRequestApiScope));
+  } else {
+    scopes.insert(signin_wrapper_->GetSyncScopeToUse());
+  }
   access_token_request_ = oauth2_token_service_->StartRequest(
       signin_wrapper_->GetAccountIdToUse(), scopes, this);
 }
