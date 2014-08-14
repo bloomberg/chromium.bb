@@ -3027,7 +3027,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Cookie.Count">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>battre@chromium.org</owner>
   <summary>
     Number of cookies in the store (recorded every 10 minutes of active browsing
     time)
@@ -3081,7 +3081,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Cookie.ExpirationDurationMinutes" units="minutes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>battre@chromium.org</owner>
   <summary>Number of minutes until cookie expires when set.</summary>
 </histogram>
 
@@ -7735,12 +7735,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.NetworkDelay" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>battre@chromium.org</owner>
   <summary>Time that network requests were blocked due to extensions.</summary>
 </histogram>
 
 <histogram name="Extensions.NetworkDelayPercentage" units="%">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>battre@chromium.org</owner>
   <summary>
     Percentage of total lifetime a network request was blocked due to an
     extension.
@@ -7748,7 +7748,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.NetworkDelayRegistryLoad" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>battre@chromium.org</owner>
   <summary>
     Time that network requests were blocked due to relevant rule registries
     loading.
