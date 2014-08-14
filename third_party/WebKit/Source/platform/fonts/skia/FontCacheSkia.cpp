@@ -164,6 +164,18 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescri
     return fontDataFromFontPlatformData(fontPlatformData, shouldRetain);
 }
 
+#if OS(WIN)
+static inline SkFontStyle fontStyle(const FontDescription& fontDescription)
+{
+    int width = SkFontStyle::kNormal_Width;
+    int weight = (fontDescription.weight() - FontWeight100 + 1) * 100;
+    SkFontStyle::Slant slant = fontDescription.style() == FontStyleItalic
+        ? SkFontStyle::kItalic_Slant
+        : SkFontStyle::kUpright_Slant;
+    return SkFontStyle(weight, width, slant);
+}
+#endif
+
 PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDescription, const FontFaceCreationParams& creationParams, CString& name)
 {
 #if !OS(WIN) && !OS(ANDROID)
@@ -201,16 +213,22 @@ PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDesc
 
 #if OS(WIN)
     if (s_sideloadedFonts) {
-        HashMap<String, SkTypeface*>::iterator sideloadedFont = s_sideloadedFonts->find(name.data());
-        if (sideloadedFont != s_sideloadedFonts->end()) {
+        HashMap<String, SkTypeface*>::iterator sideloadedFont =
+            s_sideloadedFonts->find(name.data());
+        if (sideloadedFont != s_sideloadedFonts->end())
             return adoptRef(sideloadedFont->value);
-        }
     }
-    // FIXME: Use SkFontStyle and matchFamilyStyle instead of legacyCreateTypeface.
-    if (m_fontManager)
-        return adoptRef(m_fontManager->legacyCreateTypeface(name.data(), style));
+
+    if (m_fontManager) {
+        return adoptRef(useDirectWrite()
+            ? m_fontManager->matchFamilyStyle(name.data(), fontStyle(fontDescription))
+            : m_fontManager->legacyCreateTypeface(name.data(), style)
+            );
+    }
 #endif
 
+    // FIXME: Use m_fontManager, SkFontStyle and matchFamilyStyle instead of
+    // CreateFromName on all platforms.
     return adoptRef(SkTypeface::CreateFromName(name.data(), static_cast<SkTypeface::Style>(style)));
 }
 
