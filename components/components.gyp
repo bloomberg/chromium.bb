@@ -62,6 +62,7 @@
         'cdm.gypi',
         'navigation_interception.gypi',
         'plugins.gypi',
+        'power.gypi',
         'sessions.gypi',
         'visitedlink.gypi',
         'web_contents_delegate_android.gypi',

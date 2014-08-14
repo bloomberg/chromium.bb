@@ -404,6 +404,7 @@
               'sources': [
                 'autofill/content/renderer/renderer_save_password_progress_logger_unittest.cc',
                 'dom_distiller/content/dom_distiller_viewer_source_unittest.cc',
+                'power/origin_power_map_unittest.cc',
                 'usb_service/usb_context_unittest.cc',
                 'usb_service/usb_device_filter_unittest.cc',
               ],
@@ -426,6 +427,9 @@
 
                 # Dependencies of precache/content
                 'components.gyp:precache_content',
+
+                # Dependencies of power
+                'components.gyp:power',
 
                 # Dependencies of sessions
                 '../third_party/protobuf/protobuf.gyp:protobuf_lite',

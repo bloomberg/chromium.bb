@@ -57,6 +57,7 @@ group("all_components") {
     "//components/password_manager/core/common",
     "//components/plugins/renderer",
     "//components/policy",
+    "//components/power",
     "//components/precache/core",
     "//components/precache/content",
     "//components/pref_registry",
@@ -137,6 +138,7 @@ group("all_components") {
       "//components/password_manager/core/browser",  # Should work, needs checking.
       "//components/password_manager/core/common",  # Should work, needs checking.
       "//components/plugins/renderer",  # Blocked on blink.
+      "//components/power",  # Blocked on content.
       "//components/policy",  # Blocked on content (indirectly via autofill).
       "//components/precache/content",  # Blocked on content.
       "//components/precache/core",  # Should work, needs checking.
