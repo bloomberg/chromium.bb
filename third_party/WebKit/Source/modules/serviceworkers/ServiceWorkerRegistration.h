@@ -60,7 +60,7 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    static PassRefPtrWillBeRawPtr<ServiceWorkerRegistration> getOrCreate(ExecutionContext*, PassOwnPtr<WebServiceWorkerRegistration>);
+    static PassRefPtrWillBeRawPtr<ServiceWorkerRegistration> getOrCreate(ExecutionContext*, WebServiceWorkerRegistration*);
     ServiceWorkerRegistration(ExecutionContext*, PassOwnPtr<WebServiceWorkerRegistration>);
 
     OwnPtr<WebServiceWorkerRegistration> m_outerRegistration;
