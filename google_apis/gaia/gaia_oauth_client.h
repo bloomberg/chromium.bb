@@ -47,6 +47,9 @@ class GaiaOAuthClient {
     virtual void OnGetUserEmailResponse(const std::string& user_email) {}
     // Invoked on a successful response to the GetUserId request.
     virtual void OnGetUserIdResponse(const std::string& user_id) {}
+    // Invoked on a successful response to the GetUserInfo request.
+    virtual void OnGetUserInfoResponse(
+        scoped_ptr<base::DictionaryValue> user_info) {}
     // Invoked on a successful response to the GetTokenInfo request.
     virtual void OnGetTokenInfoResponse(
         scoped_ptr<base::DictionaryValue> token_info) {}
@@ -103,6 +106,16 @@ class GaiaOAuthClient {
   void GetUserId(const std::string& oauth_access_token,
                  int max_retries,
                  Delegate* delegate);
+
+  // Call the userinfo API, returning all the user info associated
+  // with the given access token. The provided access token must have
+  // https://www.googleapis.com/auth/userinfo.profile in its scopes.  If
+  // email addresses are also to be retrieved, then
+  // https://www.googleapis.com/auth/userinfo.email must also be specified.
+  // See |max_retries| docs above.
+  void GetUserInfo(const std::string& oauth_access_token,
+                   int max_retries,
+                   Delegate* delegate);
 
   // Call the tokeninfo API, returning a dictionary of response values. The
   // provided access token may have any scope, and basic results will be
