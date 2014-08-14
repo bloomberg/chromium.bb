@@ -84,7 +84,7 @@ scoped_refptr<SelectFileDialog> SelectFileDialog::Create(
 #if defined(OS_WIN)
   // TODO(ananta)
   // Fix this for Chrome ASH on Windows.
-  return CreateWinSelectFileDialog(listener, policy);
+  return CreateDefaultWinSelectFileDialog(listener, policy);
 #elif defined(OS_MACOSX) && !defined(USE_AURA)
   return CreateMacSelectFileDialog(listener, policy);
 #elif defined(OS_ANDROID)

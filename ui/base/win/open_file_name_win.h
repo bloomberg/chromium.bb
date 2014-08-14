@@ -32,6 +32,10 @@ class UI_BASE_EXPORT OpenFileName {
   OpenFileName(HWND parent_window, DWORD flags);
   ~OpenFileName();
 
+  // Initializes |lpstrFilter| from the label/pattern pairs in |filters|.
+  void SetFilters(
+      const std::vector<Tuple2<base::string16, base::string16> >& filters);
+
   // Sets |lpstrInitialDir| and |lpstrFile|.
   void SetInitialSelection(const base::FilePath& initial_directory,
                            const base::FilePath& initial_filename);
@@ -47,10 +51,25 @@ class UI_BASE_EXPORT OpenFileName {
   // Returns the OPENFILENAME structure.
   OPENFILENAME* GetOPENFILENAME() { return &openfilename_; }
 
+  // Returns the OPENFILENAME structure.
+  const OPENFILENAME* GetOPENFILENAME() const { return &openfilename_; }
+
+  // Stores directory and filenames in the buffer pointed to by
+  // |openfilename->lpstrFile| and sized |openfilename->nMaxFile|.
+  static void SetResult(const base::FilePath& directory,
+                        const std::vector<base::FilePath>& filenames,
+                        OPENFILENAME* openfilename);
+
+  // Returns a vector of label/pattern pairs built from
+  // |openfilename->lpstrFilter|.
+  static std::vector<Tuple2<base::string16, base::string16> > GetFilters(
+      const OPENFILENAME* openfilename);
+
  private:
   OPENFILENAME openfilename_;
   base::string16 initial_directory_buffer_;
   wchar_t filename_buffer_[UNICODE_STRING_MAX_CHARS];
+  base::string16 filter_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(OpenFileName);
 };

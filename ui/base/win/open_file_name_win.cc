@@ -27,6 +27,25 @@ OpenFileName::OpenFileName(HWND parent_window, DWORD flags) {
 OpenFileName::~OpenFileName() {
 }
 
+void OpenFileName::SetFilters(
+    const std::vector<Tuple2<base::string16, base::string16> >& filters) {
+  openfilename_.lpstrFilter = NULL;
+  filter_buffer_.clear();
+  if (filters.empty())
+    return;
+  for (std::vector<Tuple2<base::string16, base::string16> >::const_iterator
+           it = filters.begin();
+       it != filters.end();
+       ++it) {
+    filter_buffer_.append(it->a);
+    filter_buffer_.push_back(0);
+    filter_buffer_.append(it->b);
+    filter_buffer_.push_back(0);
+  }
+  filter_buffer_.push_back(0);
+  openfilename_.lpstrFilter = filter_buffer_.c_str();
+}
+
 void OpenFileName::SetInitialSelection(const base::FilePath& initial_directory,
                                        const base::FilePath& initial_filename) {
   // First reset to the default case.
@@ -81,6 +100,59 @@ void OpenFileName::GetResult(base::FilePath* directory,
     *directory = (*filenames)[0];
     filenames->erase(filenames->begin());
   }
+}
+
+// static
+void OpenFileName::SetResult(const base::FilePath& directory,
+                             const std::vector<base::FilePath>& filenames,
+                             OPENFILENAME* openfilename) {
+  base::string16 filename_value;
+  if (filenames.size() == 1) {
+    filename_value = directory.Append(filenames[0]).value();
+  } else {
+    filename_value = directory.value();
+    filename_value.push_back(0);
+    for (std::vector<base::FilePath>::const_iterator it = filenames.begin();
+         it != filenames.end();
+         ++it) {
+      filename_value.append(it->value());
+      filename_value.push_back(0);
+    }
+  }
+  if (filename_value.size() + 1 < openfilename->nMaxFile) {
+    // Because the result has embedded nulls, we must memcpy.
+    memcpy(openfilename->lpstrFile,
+           filename_value.c_str(),
+           (filename_value.size() + 1) * sizeof(filename_value[0]));
+  } else if (openfilename->nMaxFile) {
+    openfilename->lpstrFile[0] = 0;
+  }
+}
+
+// static
+std::vector<Tuple2<base::string16, base::string16> > OpenFileName::GetFilters(
+    const OPENFILENAME* openfilename) {
+  std::vector<Tuple2<base::string16, base::string16> > filters;
+
+  const base::char16* display_string = openfilename->lpstrFilter;
+  if (!display_string)
+    return filters;
+
+  while (*display_string) {
+    const base::char16* display_string_end = display_string;
+    while (*display_string_end)
+      ++display_string_end;
+    const base::char16* pattern = display_string_end + 1;
+    const base::char16* pattern_end = pattern;
+    while (*pattern_end)
+      ++pattern_end;
+    filters.push_back(
+        MakeTuple(base::string16(display_string, display_string_end),
+                  base::string16(pattern, pattern_end)));
+    display_string = pattern_end + 1;
+  }
+
+  return filters;
 }
 
 }  // namespace win

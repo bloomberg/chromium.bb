@@ -27,6 +27,10 @@
 #include "chrome/utility/profile_import_handler.h"
 #endif
 
+#if defined(OS_WIN)
+#include "chrome/utility/shell_handler_win.h"
+#endif
+
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
 #include "chrome/utility/extensions/extensions_handler.h"
@@ -86,6 +90,10 @@ ChromeContentUtilityClient::ChromeContentUtilityClient()
           switches::kUtilityProcessEnableMDns)) {
     handlers_.push_back(new local_discovery::ServiceDiscoveryMessageHandler());
   }
+#endif
+
+#if defined(OS_WIN)
+  handlers_.push_back(new ShellHandler());
 #endif
 }
 

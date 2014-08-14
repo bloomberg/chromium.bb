@@ -4,8 +4,6 @@
 
 #include "ui/shell_dialogs/select_file_dialog_win.h"
 
-#include <windows.h>
-#include <commdlg.h>
 #include <shlobj.h>
 
 #include <algorithm>
@@ -38,29 +36,14 @@
 
 namespace {
 
+bool CallBuiltinGetOpenFileName(OPENFILENAME* ofn) {
+  return ::GetOpenFileName(ofn) == TRUE;
+}
+
 // Given |extension|, if it's not empty, then remove the leading dot.
 std::wstring GetExtensionWithoutLeadingDot(const std::wstring& extension) {
   DCHECK(extension.empty() || extension[0] == L'.');
   return extension.empty() ? extension : extension.substr(1);
-}
-
-// Diverts to a metro-specific implementation as appropriate.
-bool CallGetOpenFileName(OPENFILENAME* ofn) {
-  HMODULE metro_module = base::win::GetMetroModule();
-  if (metro_module != NULL) {
-    typedef BOOL (*MetroGetOpenFileName)(OPENFILENAME*);
-    MetroGetOpenFileName metro_get_open_file_name =
-        reinterpret_cast<MetroGetOpenFileName>(
-            ::GetProcAddress(metro_module, "MetroGetOpenFileName"));
-    if (metro_get_open_file_name == NULL) {
-      NOTREACHED();
-      return false;
-    }
-
-    return metro_get_open_file_name(ofn) == TRUE;
-  } else {
-    return GetOpenFileName(ofn) == TRUE;
-  }
 }
 
 // Diverts to a metro-specific implementation as appropriate.
@@ -410,8 +393,10 @@ bool SaveFileAs(HWND owner,
 class SelectFileDialogImpl : public ui::SelectFileDialog,
                              public ui::BaseShellDialogImpl {
  public:
-  explicit SelectFileDialogImpl(Listener* listener,
-                                ui::SelectFilePolicy* policy);
+  SelectFileDialogImpl(
+      Listener* listener,
+      ui::SelectFilePolicy* policy,
+      const base::Callback<bool(OPENFILENAME*)>& get_open_file_name_impl);
 
   // BaseShellDialog implementation:
   virtual bool IsRunning(gfx::NativeWindow owning_window) const OVERRIDE;
@@ -520,15 +505,19 @@ class SelectFileDialogImpl : public ui::SelectFileDialog,
   base::string16 GetFilterForFileTypes(const FileTypeInfo* file_types);
 
   bool has_multiple_file_type_choices_;
+  base::Callback<bool(OPENFILENAME*)> get_open_file_name_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(SelectFileDialogImpl);
 };
 
-SelectFileDialogImpl::SelectFileDialogImpl(Listener* listener,
-                                           ui::SelectFilePolicy* policy)
+SelectFileDialogImpl::SelectFileDialogImpl(
+    Listener* listener,
+    ui::SelectFilePolicy* policy,
+    const base::Callback<bool(OPENFILENAME*)>& get_open_file_name_impl)
     : SelectFileDialog(listener, policy),
       BaseShellDialogImpl(),
-      has_multiple_file_type_choices_(false) {
+      has_multiple_file_type_choices_(false),
+      get_open_file_name_impl_(get_open_file_name_impl) {
 }
 
 SelectFileDialogImpl::~SelectFileDialogImpl() {
@@ -786,7 +775,8 @@ bool SelectFileDialogImpl::RunOpenFileDialog(
 
   if (!filter.empty())
     ofn.GetOPENFILENAME()->lpstrFilter = filter.c_str();
-  bool success = CallGetOpenFileName(ofn.GetOPENFILENAME());
+
+  bool success = get_open_file_name_impl_.Run(ofn.GetOPENFILENAME());
   DisableOwner(owner);
   if (success)
     *path = ofn.GetSingleResult();
@@ -811,8 +801,9 @@ bool SelectFileDialogImpl::RunOpenMultiFileDialog(
   base::FilePath directory;
   std::vector<base::FilePath> filenames;
 
-  if (CallGetOpenFileName(ofn.GetOPENFILENAME()))
+  if (get_open_file_name_impl_.Run(ofn.GetOPENFILENAME()))
     ofn.GetResult(&directory, &filenames);
+
   DisableOwner(owner);
 
   for (std::vector<base::FilePath>::iterator it = filenames.begin();
@@ -894,8 +885,16 @@ std::wstring AppendExtensionIfNeeded(
 
 SelectFileDialog* CreateWinSelectFileDialog(
     SelectFileDialog::Listener* listener,
+    SelectFilePolicy* policy,
+    const base::Callback<bool(OPENFILENAME* ofn)>& get_open_file_name_impl) {
+  return new SelectFileDialogImpl(listener, policy, get_open_file_name_impl);
+}
+
+SelectFileDialog* CreateDefaultWinSelectFileDialog(
+    SelectFileDialog::Listener* listener,
     SelectFilePolicy* policy) {
-  return new SelectFileDialogImpl(listener, policy);
+  return CreateWinSelectFileDialog(
+      listener, policy, base::Bind(&CallBuiltinGetOpenFileName));
 }
 
 }  // namespace ui

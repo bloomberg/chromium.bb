@@ -4,6 +4,10 @@
 
 // Multiply-included message file, so no include guard.
 
+#if defined(OS_WIN)
+#include <Windows.h>
+#endif  // defined(OS_WIN)
+
 #include <string>
 #include <vector>
 
@@ -86,6 +90,28 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_AnalyzeZipFileForDownloadProtection,
                      IPC::PlatformFileForTransit /* zip_file */)
 #endif
 
+#if defined(OS_WIN)
+// A vector of filters, each being a Tuple2a display string (i.e. "Text Files")
+// and a filter pattern (i.e. "*.txt")..
+typedef std::vector<Tuple2<base::string16, base::string16> >
+    GetOpenFileNameFilter;
+
+// Instructs the utility process to invoke GetOpenFileName. |owner| is the
+// parent of the modal dialog, |flags| are OFN_* flags. |filter| constrains the
+// user's file choices. |initial_directory| and |filename| select the directory
+// to be displayed and the file to be initially selected.
+//
+// Either ChromeUtilityHostMsg_GetOpenFileName_Failed or
+// ChromeUtilityHostMsg_GetOpenFileName_Result will be returned when the
+// operation completes whether due to error or user action.
+IPC_MESSAGE_CONTROL5(ChromeUtilityMsg_GetOpenFileName,
+                     HWND /* owner */,
+                     DWORD /* flags */,
+                     GetOpenFileNameFilter /* filter */,
+                     base::FilePath /* initial_directory */,
+                     base::FilePath /* filename */)
+#endif  // defined(OS_WIN)
+
 //------------------------------------------------------------------------------
 // Utility process host messages:
 // These are messages from the utility process to the browser.
@@ -128,3 +154,10 @@ IPC_MESSAGE_CONTROL1(
     ChromeUtilityHostMsg_AnalyzeZipFileForDownloadProtection_Finished,
     safe_browsing::zip_analyzer::Results)
 #endif
+
+#if defined(OS_WIN)
+IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_GetOpenFileName_Failed)
+IPC_MESSAGE_CONTROL2(ChromeUtilityHostMsg_GetOpenFileName_Result,
+                     base::FilePath /* directory */,
+                     std::vector<base::FilePath> /* filenames */)
+#endif  // defined(OS_WIN)

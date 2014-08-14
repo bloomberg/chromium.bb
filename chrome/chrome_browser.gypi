@@ -260,6 +260,8 @@
       'browser/chrome_page_zoom.h',
       'browser/chrome_page_zoom_constants.cc',
       'browser/chrome_page_zoom_constants.h',
+      'browser/chrome_select_file_dialog_factory_win.cc',
+      'browser/chrome_select_file_dialog_factory_win.h',
       'browser/chrome_quota_permission_context.cc',
       'browser/chrome_quota_permission_context.h',
       'browser/command_observer.h',

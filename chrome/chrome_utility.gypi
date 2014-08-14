@@ -17,6 +17,8 @@
       'utility/local_discovery/service_discovery_message_handler.h',
       'utility/printing_handler.cc',
       'utility/printing_handler.h',
+      'utility/shell_handler_win.cc',
+      'utility/shell_handler_win.h',
       'utility/utility_message_handler.h',
       'utility/web_resource_unpacker.cc',
       'utility/web_resource_unpacker.h',

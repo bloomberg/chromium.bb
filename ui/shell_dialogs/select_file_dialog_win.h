@@ -5,6 +5,10 @@
 #ifndef UI_SHELL_DIALOGS_SELECT_FILE_DIALOG_WIN_H_
 #define UI_SHELL_DIALOGS_SELECT_FILE_DIALOG_WIN_H_
 
+#include <Windows.h>
+#include <commdlg.h>
+
+#include "base/callback_forward.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/shell_dialogs_export.h"
@@ -18,9 +22,12 @@ SHELL_DIALOGS_EXPORT std::wstring AppendExtensionIfNeeded(
     const std::wstring& filter_selected,
     const std::wstring& suggested_ext);
 
-// Intentionally not exported. Implementation detail of SelectFileDialog. Use
-// SelectFileDialog::Create() instead.
-SelectFileDialog* CreateWinSelectFileDialog(
+SHELL_DIALOGS_EXPORT SelectFileDialog* CreateWinSelectFileDialog(
+    SelectFileDialog::Listener* listener,
+    SelectFilePolicy* policy,
+    const base::Callback<bool(OPENFILENAME* ofn)>& get_open_file_name_impl);
+
+SelectFileDialog* CreateDefaultWinSelectFileDialog(
     SelectFileDialog::Listener* listener,
     SelectFilePolicy* policy);
 

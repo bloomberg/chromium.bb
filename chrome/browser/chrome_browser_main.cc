@@ -165,6 +165,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_util_win.h"
 #include "chrome/browser/chrome_browser_main_win.h"
+#include "chrome/browser/chrome_select_file_dialog_factory_win.h"
 #include "chrome/browser/component_updater/sw_reporter_installer_win.h"
 #include "chrome/browser/first_run/try_chrome_dialog_view.h"
 #include "chrome/browser/first_run/upgrade_util_win.h"
@@ -175,6 +176,7 @@
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/gfx/win/dpi.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
 #endif  // defined(OS_WIN)
 
 #if defined(OS_MACOSX)
@@ -1101,6 +1103,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     return ChromeBrowserMainPartsWin::HandleIconsCommands(
         parsed_command_line_);
   }
+
+  ui::SelectFileDialog::SetFactory(new ChromeSelectFileDialogFactory(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
 #endif
 
   if (parsed_command_line().HasSwitch(switches::kMakeDefaultBrowser)) {

@@ -12,16 +12,64 @@ const HWND kHwnd = reinterpret_cast<HWND>(0xDEADBEEF);
 const DWORD kFlags = OFN_OVERWRITEPROMPT | OFN_EXPLORER | OFN_ENABLESIZING;
 
 void SetResult(const base::string16& result, ui::win::OpenFileName* ofn) {
-  EXPECT_GT(ofn->GetOPENFILENAME()->nMaxFile, result.size());
-  if (ofn->GetOPENFILENAME()->nMaxFile > result.size()) {
-    if (!result.size()) {
-      ofn->GetOPENFILENAME()->lpstrFile[0] = 0;
-    } else {
-      // Because the result has embedded nulls, we must memcpy.
-      memcpy(ofn->GetOPENFILENAME()->lpstrFile,
-             result.c_str(),
-             (result.size() + 1) * sizeof(result[0]));
-    }
+  if (ofn->GetOPENFILENAME()->nMaxFile <= result.size()) {
+    ADD_FAILURE() << "filename buffer insufficient.";
+    return;
+  }
+  if (!result.size()) {
+    ofn->GetOPENFILENAME()->lpstrFile[0] = 0;
+  } else {
+    // Because the result has embedded nulls, we must memcpy.
+    memcpy(ofn->GetOPENFILENAME()->lpstrFile,
+           result.c_str(),
+           (result.size() + 1) * sizeof(result[0]));
+  }
+}
+
+void CheckFilters(
+    const std::vector<Tuple2<base::string16, base::string16> >& expected,
+    const std::vector<Tuple2<base::string16, base::string16> >& actual) {
+  if (expected.size() != actual.size()) {
+    ADD_FAILURE() << "filter count mismatch. Got " << actual.size()
+                  << " expected " << expected.size() << ".";
+    return;
+  }
+
+  for (size_t i = 0; i < expected.size(); ++i) {
+    EXPECT_EQ(expected[i].a, actual[i].a) << "Mismatch at index " << i;
+    EXPECT_EQ(expected[i].b, actual[i].b) << "Mismatch at index " << i;
+  }
+}
+
+void CheckFilterString(const base::string16& expected,
+                       const ui::win::OpenFileName& ofn) {
+  if (!ofn.GetOPENFILENAME()->lpstrFilter) {
+    ADD_FAILURE() << "Filter string is NULL.";
+    return;
+  }
+  if (expected.size() == 0) {
+    EXPECT_EQ(0, ofn.GetOPENFILENAME()->lpstrFilter[0]);
+  } else {
+    EXPECT_EQ(0,
+              memcmp(expected.c_str(),
+                     ofn.GetOPENFILENAME()->lpstrFilter,
+                     expected.size() + 1 * sizeof(expected[0])));
+  }
+}
+
+void CheckResult(const base::string16& expected,
+                 const ui::win::OpenFileName& ofn) {
+  if (!ofn.GetOPENFILENAME()->lpstrFile) {
+    ADD_FAILURE() << "File string is NULL.";
+    return;
+  }
+  if (expected.size() == 0) {
+    EXPECT_EQ(0, ofn.GetOPENFILENAME()->lpstrFile[0]);
+  } else {
+    EXPECT_EQ(0,
+              memcmp(expected.c_str(),
+                     ofn.GetOPENFILENAME()->lpstrFile,
+                     expected.size() + 1 * sizeof(expected[0])));
   }
 }
 
@@ -134,4 +182,55 @@ TEST(OpenFileNameTest, GetResult) {
   ofn.GetResult(&directory, &filenames);
   EXPECT_EQ(base::FilePath(), directory);
   ASSERT_EQ(0u, filenames.size());
+}
+
+TEST(OpenFileNameTest, SetAndGetFilters) {
+  const base::string16 kNull(L"\0", 1);
+
+  ui::win::OpenFileName ofn(kHwnd, kFlags);
+  std::vector<Tuple2<base::string16, base::string16> > filters;
+  ofn.SetFilters(filters);
+  EXPECT_FALSE(ofn.GetOPENFILENAME()->lpstrFilter);
+  CheckFilters(filters,
+               ui::win::OpenFileName::GetFilters(ofn.GetOPENFILENAME()));
+
+  filters.push_back(MakeTuple(base::string16(L"a"), base::string16(L"b")));
+  ofn.SetFilters(filters);
+  CheckFilterString(L"a" + kNull + L"b" + kNull, ofn);
+  CheckFilters(filters,
+               ui::win::OpenFileName::GetFilters(ofn.GetOPENFILENAME()));
+
+  filters.push_back(MakeTuple(base::string16(L"X"), base::string16(L"Y")));
+  ofn.SetFilters(filters);
+  CheckFilterString(L"a" + kNull + L"b" + kNull + L"X" + kNull + L"Y" + kNull,
+                    ofn);
+  CheckFilters(filters,
+               ui::win::OpenFileName::GetFilters(ofn.GetOPENFILENAME()));
+}
+
+TEST(OpenFileNameTest, SetResult) {
+  const base::string16 kNull(L"\0", 1);
+
+  ui::win::OpenFileName ofn(kHwnd, kFlags);
+  base::FilePath directory;
+  std::vector<base::FilePath> filenames;
+
+  ui::win::OpenFileName::SetResult(directory, filenames, ofn.GetOPENFILENAME());
+  CheckResult(L"", ofn);
+
+  directory = base::FilePath(L"C:\\dir");
+  filenames.push_back(base::FilePath(L"file"));
+  ui::win::OpenFileName::SetResult(directory, filenames, ofn.GetOPENFILENAME());
+  CheckResult(L"C:\\dir\\file" + kNull, ofn);
+
+  filenames.push_back(base::FilePath(L"otherfile"));
+  ui::win::OpenFileName::SetResult(directory, filenames, ofn.GetOPENFILENAME());
+  CheckResult(L"C:\\dir" + kNull + L"file" + kNull + L"otherfile" + kNull, ofn);
+
+  base::char16 short_buffer[10] = L"";
+
+  ofn.GetOPENFILENAME()->lpstrFile = short_buffer;
+  ofn.GetOPENFILENAME()->nMaxFile = arraysize(short_buffer);
+  ui::win::OpenFileName::SetResult(directory, filenames, ofn.GetOPENFILENAME());
+  CheckResult(L"", ofn);
 }
