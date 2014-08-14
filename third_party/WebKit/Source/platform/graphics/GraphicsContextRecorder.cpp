@@ -149,4 +149,4 @@ PassRefPtr<JSONArray> GraphicsContextSnapshot::snapshotCommandLog() const
     return canvas.log();
 }
 
-}
+} // namespace blink

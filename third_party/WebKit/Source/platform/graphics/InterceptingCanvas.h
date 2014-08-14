@@ -81,6 +81,6 @@ protected:
     unsigned m_depthCount;
 };
 
-}
+} // namespace blink
 
 #endif // InterceptingCanvas_h

@@ -88,7 +88,7 @@ public:
     {
     }
 
-    virtual void draw(GraphicsContext*, const FloatRect&, const FloatRect&, CompositeOperator, blink::WebBlendMode) OVERRIDE
+    virtual void draw(GraphicsContext*, const FloatRect&, const FloatRect&, CompositeOperator, WebBlendMode) OVERRIDE
     {
     }
 
@@ -104,7 +104,7 @@ public:
     explicit GraphicsLayerForTesting(GraphicsLayerClient* client)
         : GraphicsLayer(client) { };
 
-    virtual blink::WebLayer* contentsLayer() const { return GraphicsLayer::contentsLayer(); }
+    virtual WebLayer* contentsLayer() const { return GraphicsLayer::contentsLayer(); }
 };
 
 TEST(ImageLayerChromiumTest, opaqueImages)

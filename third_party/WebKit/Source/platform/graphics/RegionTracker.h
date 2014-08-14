@@ -113,5 +113,6 @@ private:
     Vector<CanvasLayerState, 3> m_canvasLayerStack;
 };
 
-}
+} // namespace blink
+
 #endif // RegionTracker_h

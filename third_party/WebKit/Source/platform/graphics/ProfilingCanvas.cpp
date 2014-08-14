@@ -275,4 +275,4 @@ void ProfilingCanvas::willRestore()
     this->SkCanvas::willRestore();
 }
 
-}
+} // namespace blink

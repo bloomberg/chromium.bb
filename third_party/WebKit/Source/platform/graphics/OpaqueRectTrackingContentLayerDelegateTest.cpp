@@ -35,8 +35,6 @@
 
 #include <gtest/gtest.h>
 
-using blink::WebRect;
-using blink::WebFloatRect;
 using namespace blink;
 
 namespace {

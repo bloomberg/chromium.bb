@@ -58,7 +58,6 @@
 #include "wtf/MathExtras.h"
 
 using namespace std;
-using blink::WebBlendMode;
 
 namespace blink {
 
@@ -1058,7 +1057,7 @@ void GraphicsContext::drawImage(Image* image, const IntRect& r, CompositeOperato
 
 void GraphicsContext::drawImage(Image* image, const FloatRect& dest, const FloatRect& src, CompositeOperator op, RespectImageOrientationEnum shouldRespectImageOrientation)
 {
-    drawImage(image, dest, src, op, blink::WebBlendModeNormal, shouldRespectImageOrientation);
+    drawImage(image, dest, src, op, WebBlendModeNormal, shouldRespectImageOrientation);
 }
 
 void GraphicsContext::drawImage(Image* image, const FloatRect& dest)
@@ -1913,7 +1912,7 @@ void GraphicsContext::preparePaintForDrawRectToRect(
     const SkRect& srcRect,
     const SkRect& destRect,
     CompositeOperator compositeOp,
-    blink::WebBlendMode blendMode,
+    WebBlendMode blendMode,
     bool isLazyDecoded,
     bool isDataComplete) const
 {
@@ -1953,4 +1952,4 @@ void GraphicsContext::preparePaintForDrawRectToRect(
     paint->setFilterLevel(static_cast<SkPaint::FilterLevel>(resampling));
 }
 
-}
+} // namespace blink

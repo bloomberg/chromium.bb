@@ -221,7 +221,7 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded)
     // LocalFrame can now be decoded completely.
     setFrameStatus(ImageFrame::FrameComplete);
     addNewData();
-    OwnPtr<blink::WebThread> thread = adoptPtr(blink::Platform::current()->createThread("DecodeThread"));
+    OwnPtr<WebThread> thread = adoptPtr(Platform::current()->createThread("DecodeThread"));
     thread->postTask(new Task(WTF::bind(&decodeThreadMain, m_generator.get())));
     thread.clear();
 

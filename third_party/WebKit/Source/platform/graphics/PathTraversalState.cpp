@@ -230,5 +230,5 @@ void PathTraversalState::processSegment()
     m_previous = m_current;
 }
 
-}
+} // namespace blink
 

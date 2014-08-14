@@ -42,11 +42,10 @@ class SkBitmap;
 class SkCanvas;
 class SkPicture;
 
-namespace blink { class WebLayer; }
-
 namespace blink {
 
 class ImageBuffer;
+class WebLayer;
 
 enum OpacityMode {
     NonOpaque,
@@ -63,7 +62,7 @@ public:
     virtual void willAccessPixels() { }
     virtual bool isValid() const = 0;
     virtual bool restore() { return false; };
-    virtual blink::WebLayer* layer() const { return 0; };
+    virtual WebLayer* layer() const { return 0; };
     virtual bool isAccelerated() const { return false; }
     virtual Platform3DObject getBackingTexture() const { return 0; }
     virtual bool cachedBitmapEnabled() const { return false; }

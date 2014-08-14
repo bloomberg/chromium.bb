@@ -83,6 +83,6 @@ private:
     friend class AutoStamper;
 };
 
-}
+} // namespace blink
 
 #endif // ProfilingCanvas_h

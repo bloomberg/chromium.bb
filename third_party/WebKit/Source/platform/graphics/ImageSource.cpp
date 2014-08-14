@@ -171,4 +171,4 @@ unsigned ImageSource::frameBytesAtIndex(size_t index) const
     return m_decoder->frameBytesAtIndex(index);
 }
 
-}
+} // namespace blink

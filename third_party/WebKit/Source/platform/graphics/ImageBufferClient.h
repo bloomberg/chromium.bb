@@ -41,7 +41,7 @@ public:
     virtual void didFinalizeFrame() = 0;
 };
 
-}
+} // namespace blink
 
 #endif
 

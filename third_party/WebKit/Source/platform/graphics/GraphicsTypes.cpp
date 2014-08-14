@@ -68,19 +68,19 @@ static const char* const blendOperatorNames[] = {
 const int numCompositeOperatorNames = WTF_ARRAY_LENGTH(compositeOperatorNames);
 const int numBlendOperatorNames = WTF_ARRAY_LENGTH(blendOperatorNames);
 
-bool parseCompositeAndBlendOperator(const String& s, CompositeOperator& op, blink::WebBlendMode& blendOp)
+bool parseCompositeAndBlendOperator(const String& s, CompositeOperator& op, WebBlendMode& blendOp)
 {
     for (int i = 0; i < numCompositeOperatorNames; i++) {
         if (s == compositeOperatorNames[i]) {
             op = static_cast<CompositeOperator>(i);
-            blendOp = blink::WebBlendModeNormal;
+            blendOp = WebBlendModeNormal;
             return true;
         }
     }
 
     for (int i = 0; i < numBlendOperatorNames; i++) {
         if (s == blendOperatorNames[i]) {
-            blendOp = static_cast<blink::WebBlendMode>(i+1);
+            blendOp = static_cast<WebBlendMode>(i+1);
             // For now, blending will always assume source-over. This will be fixed in the future
             op = CompositeSourceOver;
             return true;
@@ -92,13 +92,13 @@ bool parseCompositeAndBlendOperator(const String& s, CompositeOperator& op, blin
 
 // FIXME: when we support blend modes in combination with compositing other than source-over
 // this routine needs to be updated.
-String compositeOperatorName(CompositeOperator op, blink::WebBlendMode blendOp)
+String compositeOperatorName(CompositeOperator op, WebBlendMode blendOp)
 {
     ASSERT(op >= 0);
     ASSERT(op < numCompositeOperatorNames);
     ASSERT(blendOp >= 0);
     ASSERT(blendOp <= numBlendOperatorNames);
-    if (blendOp != blink::WebBlendModeNormal)
+    if (blendOp != WebBlendModeNormal)
         return blendOperatorNames[blendOp-1];
     return compositeOperatorNames[op];
 }
@@ -223,4 +223,4 @@ bool parseTextBaseline(const String& s, TextBaseline& baseline)
     return false;
 }
 
-}
+} // namespace blink

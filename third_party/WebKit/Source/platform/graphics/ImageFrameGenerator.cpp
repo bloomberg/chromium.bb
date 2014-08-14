@@ -324,4 +324,4 @@ bool ImageFrameGenerator::hasAlpha(size_t index)
     return true;
 }
 
-} // namespace
+} // namespace blink

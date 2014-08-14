@@ -126,9 +126,9 @@ public:
     void setColorFilter(PassRefPtr<SkColorFilter>);
 
     // Compositing control, for the CSS and Canvas compositing spec.
-    void setCompositeOperation(CompositeOperator, blink::WebBlendMode);
+    void setCompositeOperation(CompositeOperator, WebBlendMode);
     CompositeOperator compositeOperator() const { return m_compositeOperator; }
-    blink::WebBlendMode blendMode() const { return m_blendMode; }
+    WebBlendMode blendMode() const { return m_blendMode; }
     SkXfermode* xferMode() const { return m_xferMode.get(); }
 
     // Image interpolation control.
@@ -177,7 +177,7 @@ private:
     RefPtr<SkColorFilter> m_colorFilter;
 
     CompositeOperator m_compositeOperator;
-    blink::WebBlendMode m_blendMode;
+    WebBlendMode m_blendMode;
 
     InterpolationQuality m_interpolationQuality;
 

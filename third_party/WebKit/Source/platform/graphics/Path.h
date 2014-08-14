@@ -159,6 +159,6 @@ private:
 PLATFORM_EXPORT bool ellipseIsRenderable(float startAngle, float endAngle);
 #endif
 
-}
+} // namespace blink
 
 #endif

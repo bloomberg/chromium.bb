@@ -68,6 +68,6 @@ private:
     int m_externalMemoryAllocated;
 };
 
-} //namespace
+} // namespace blink
 
 #endif

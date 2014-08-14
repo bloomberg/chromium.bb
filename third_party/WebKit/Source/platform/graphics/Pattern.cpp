@@ -33,7 +33,6 @@
 #include "SkColorShader.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 
-
 namespace blink {
 
 PassRefPtr<Pattern> Pattern::createBitmapPattern(PassRefPtr<Image> tileImage, RepeatMode repeatMode)
@@ -117,4 +116,4 @@ void Pattern::setPatternSpaceTransform(const AffineTransform& patternSpaceTransf
     m_pattern.clear();
 }
 
-}
+} // namespace blink

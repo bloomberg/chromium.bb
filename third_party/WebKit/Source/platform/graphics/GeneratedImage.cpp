@@ -42,4 +42,4 @@ void GeneratedImage::computeIntrinsicDimensions(Length& intrinsicWidth, Length& 
     intrinsicRatio = FloatSize();
 }
 
-}
+} // namespace blink

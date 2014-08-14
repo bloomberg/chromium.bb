@@ -32,7 +32,7 @@ GraphicsLayerDebugInfo::GraphicsLayerDebugInfo()
 
 GraphicsLayerDebugInfo::~GraphicsLayerDebugInfo() { }
 
-void GraphicsLayerDebugInfo::appendAsTraceFormat(blink::WebString* out) const
+void GraphicsLayerDebugInfo::appendAsTraceFormat(WebString* out) const
 {
     RefPtr<JSONObject> jsonObject = JSONObject::create();
     appendLayoutRects(jsonObject.get());

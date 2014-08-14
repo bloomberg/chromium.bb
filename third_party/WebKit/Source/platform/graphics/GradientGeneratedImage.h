@@ -48,10 +48,10 @@ public:
 
 protected:
     virtual void draw(GraphicsContext*, const FloatRect&, const FloatRect&,
-        CompositeOperator, blink::WebBlendMode) OVERRIDE;
+        CompositeOperator, WebBlendMode) OVERRIDE;
     virtual void drawPattern(GraphicsContext*, const FloatRect&,
         const FloatSize&, const FloatPoint&, CompositeOperator,
-        const FloatRect&, blink::WebBlendMode, const IntSize& repeatSpacing) OVERRIDE;
+        const FloatRect&, WebBlendMode, const IntSize& repeatSpacing) OVERRIDE;
 
     GradientGeneratedImage(PassRefPtr<Gradient> generator, const IntSize& size)
         : m_gradient(generator)
@@ -62,6 +62,6 @@ protected:
     RefPtr<Gradient> m_gradient;
 };
 
-}
+} // namespace blink
 
 #endif

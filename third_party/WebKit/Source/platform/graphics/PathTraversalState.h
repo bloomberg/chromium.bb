@@ -65,6 +65,7 @@ public:
     FloatPoint m_previous;
     float m_normalAngle; // degrees
 };
-}
+
+} // namespace blink
 
 #endif

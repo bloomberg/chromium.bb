@@ -89,6 +89,6 @@ private:
     friend class AutoReplayer;
 };
 
-}
+} // namespace blink
 
 #endif // ReplayingCanvas_h

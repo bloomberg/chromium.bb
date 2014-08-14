@@ -294,4 +294,4 @@ void ReplayingCanvas::willRestore()
     this->SkCanvas::willRestore();
 }
 
-}
+} // namespace blink

@@ -132,6 +132,6 @@ private:
     GammaAndColorProfileOption m_gammaAndColorProfileOption;
 };
 
-}
+} // namespace blink
 
 #endif

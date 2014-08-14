@@ -45,7 +45,7 @@ protected:
     virtual ~GraphicsContextPainter() { }
 };
 
-class PLATFORM_EXPORT OpaqueRectTrackingContentLayerDelegate : public blink::WebContentLayerClient {
+class PLATFORM_EXPORT OpaqueRectTrackingContentLayerDelegate : public WebContentLayerClient {
     WTF_MAKE_NONCOPYABLE(OpaqueRectTrackingContentLayerDelegate);
 public:
     explicit OpaqueRectTrackingContentLayerDelegate(GraphicsContextPainter*);
@@ -55,15 +55,15 @@ public:
     // tracking opaqueness.
     void setOpaque(bool opaque) { m_opaque = opaque; }
 
-    // blink::WebContentLayerClient implementation.
-    virtual void paintContents(SkCanvas*, const blink::WebRect& clip, bool canPaintLCDText, blink::WebFloatRect& opaque,
-        blink::WebContentLayerClient::GraphicsContextStatus = GraphicsContextEnabled) OVERRIDE;
+    // WebContentLayerClient implementation.
+    virtual void paintContents(SkCanvas*, const WebRect& clip, bool canPaintLCDText, WebFloatRect& opaque,
+        WebContentLayerClient::GraphicsContextStatus = GraphicsContextEnabled) OVERRIDE;
 
 private:
     GraphicsContextPainter* m_painter;
     bool m_opaque;
 };
 
-}
+} // namespace blink
 
 #endif // OpaqueRectTrackingContentLayerDelegate_h

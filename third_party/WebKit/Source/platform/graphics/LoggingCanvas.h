@@ -134,6 +134,6 @@ private:
     String stringForText(const void* text, size_t byteLength, const SkPaint&);
 };
 
-}
+} // namespace blink
 
 #endif // LoggingCanvas_h

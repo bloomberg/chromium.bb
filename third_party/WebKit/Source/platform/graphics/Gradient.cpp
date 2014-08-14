@@ -265,4 +265,4 @@ SkShader* Gradient::shader()
     return m_gradient.get();
 }
 
-} //namespace
+} // namespace blink

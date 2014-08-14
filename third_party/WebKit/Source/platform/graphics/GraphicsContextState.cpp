@@ -16,7 +16,7 @@ GraphicsContextState::GraphicsContextState()
     , m_alpha(256)
     , m_xferMode(nullptr)
     , m_compositeOperator(CompositeSourceOver)
-    , m_blendMode(blink::WebBlendModeNormal)
+    , m_blendMode(WebBlendModeNormal)
     , m_interpolationQuality(InterpolationDefault)
     , m_saveCount(0)
     , m_shouldAntialias(true)
@@ -229,7 +229,7 @@ void GraphicsContextState::setColorFilter(PassRefPtr<SkColorFilter> colorFilter)
     m_fillPaint.setColorFilter(m_colorFilter.get());
 }
 
-void GraphicsContextState::setCompositeOperation(CompositeOperator compositeOperation, blink::WebBlendMode blendMode)
+void GraphicsContextState::setCompositeOperation(CompositeOperator compositeOperation, WebBlendMode blendMode)
 {
     m_compositeOperator = compositeOperation;
     m_blendMode = blendMode;

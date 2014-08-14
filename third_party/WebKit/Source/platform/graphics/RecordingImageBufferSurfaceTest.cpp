@@ -41,7 +41,7 @@ public:
     virtual void didFinalizeFrame()
     {
         if (m_isDirty) {
-            blink::Platform::current()->currentThread()->removeTaskObserver(this);
+            Platform::current()->currentThread()->removeTaskObserver(this);
             m_isDirty = false;
         }
         ++m_frameCount;
@@ -61,7 +61,7 @@ public:
         if (m_isDirty)
             return;
         m_isDirty = true;
-        blink::Platform::current()->currentThread()->addTaskObserver(this);
+        Platform::current()->currentThread()->addTaskObserver(this);
     }
 
     int frameCount() { return m_frameCount; }
@@ -213,13 +213,13 @@ class AutoInstallCurrentThreadPlatformMock {
 public:
     AutoInstallCurrentThreadPlatformMock()
     {
-        m_oldPlatform = blink::Platform::current();
-        blink::Platform::initialize(&m_mockPlatform);
+        m_oldPlatform = Platform::current();
+        Platform::initialize(&m_mockPlatform);
     }
 
     ~AutoInstallCurrentThreadPlatformMock()
     {
-        blink::Platform::initialize(m_oldPlatform);
+        Platform::initialize(m_oldPlatform);
     }
 
 private:
@@ -274,7 +274,7 @@ private:
         Task* m_task;
     };
 
-    class CurrentThreadPlatformMock : public blink::Platform {
+    class CurrentThreadPlatformMock : public Platform {
     public:
         CurrentThreadPlatformMock() { }
         virtual void cryptographicallyRandomValues(unsigned char* buffer, size_t length) { ASSERT_NOT_REACHED(); }
@@ -284,12 +284,12 @@ private:
     };
 
     CurrentThreadPlatformMock m_mockPlatform;
-    blink::Platform* m_oldPlatform;
+    Platform* m_oldPlatform;
 };
 
 
 #define DEFINE_TEST_TASK_WRAPPER_CLASS(TEST_METHOD)                                               \
-class TestWrapperTask_ ## TEST_METHOD : public blink::WebThread::Task {                           \
+class TestWrapperTask_ ## TEST_METHOD : public WebThread::Task {                           \
     public:                                                                                       \
         TestWrapperTask_ ## TEST_METHOD(RecordingImageBufferSurfaceTest* test) : m_test(test) { } \
         virtual void run() OVERRIDE { m_test->TEST_METHOD(); }                                    \
@@ -300,8 +300,8 @@ class TestWrapperTask_ ## TEST_METHOD : public blink::WebThread::Task {         
 #define CALL_TEST_TASK_WRAPPER(TEST_METHOD)                                                               \
     {                                                                                                     \
         AutoInstallCurrentThreadPlatformMock ctpm;                                                        \
-        blink::Platform::current()->currentThread()->postTask(new TestWrapperTask_ ## TEST_METHOD(this)); \
-        blink::Platform::current()->currentThread()->enterRunLoop();                                      \
+        Platform::current()->currentThread()->postTask(new TestWrapperTask_ ## TEST_METHOD(this)); \
+        Platform::current()->currentThread()->enterRunLoop();                                      \
     }
 
 TEST_F(RecordingImageBufferSurfaceTest, testEmptyPicture)

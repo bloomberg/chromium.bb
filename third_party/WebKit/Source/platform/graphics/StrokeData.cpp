@@ -111,4 +111,4 @@ void StrokeData::setupPaintDashPathEffect(SkPaint* paint, int length) const
     }
 }
 
-} // namespace
+} // namespace blink

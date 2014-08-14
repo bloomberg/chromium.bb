@@ -31,7 +31,7 @@
 
 namespace blink {
 
-void GradientGeneratedImage::draw(GraphicsContext* destContext, const FloatRect& destRect, const FloatRect& srcRect, CompositeOperator compositeOp, blink::WebBlendMode blendMode)
+void GradientGeneratedImage::draw(GraphicsContext* destContext, const FloatRect& destRect, const FloatRect& srcRect, CompositeOperator compositeOp, WebBlendMode blendMode)
 {
     GraphicsContextStateSaver stateSaver(*destContext);
     destContext->setCompositeOperation(compositeOp, blendMode);
@@ -45,7 +45,7 @@ void GradientGeneratedImage::draw(GraphicsContext* destContext, const FloatRect&
 }
 
 void GradientGeneratedImage::drawPattern(GraphicsContext* destContext, const FloatRect& srcRect, const FloatSize& scale,
-    const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& destRect, blink::WebBlendMode blendMode, const IntSize& repeatSpacing)
+    const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& destRect, WebBlendMode blendMode, const IntSize& repeatSpacing)
 {
     float stepX = srcRect.width() + repeatSpacing.width();
     float stepY = srcRect.height() + repeatSpacing.height();
@@ -99,4 +99,4 @@ void GradientGeneratedImage::drawPattern(GraphicsContext* destContext, const Flo
     }
 }
 
-}
+} // namespace blink

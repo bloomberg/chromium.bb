@@ -624,7 +624,7 @@ PassRefPtr<JSONObject> LoggingCanvas::objectForBitmapData(const SkBitmap& bitmap
 {
     RefPtr<JSONObject> dataItem = JSONObject::create();
     Vector<unsigned char> output;
-    blink::PNGImageEncoder::encode(bitmap, &output);
+    PNGImageEncoder::encode(bitmap, &output);
     dataItem->setString("base64", WTF::base64Encode(reinterpret_cast<char*>(output.data()), output.size()));
     dataItem->setString("mimeType", "image/png");
     return dataItem.release();
@@ -872,4 +872,5 @@ String LoggingCanvas::stringForText(const void* text, size_t byteLength, const S
         return "?";
     }
 }
-}
+
+} // namespace blink

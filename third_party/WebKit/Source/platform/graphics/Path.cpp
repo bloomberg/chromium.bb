@@ -503,4 +503,4 @@ bool ellipseIsRenderable(float startAngle, float endAngle)
 }
 #endif
 
-}
+} // namespace blink

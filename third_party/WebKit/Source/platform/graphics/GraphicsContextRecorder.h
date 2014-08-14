@@ -74,6 +74,6 @@ private:
     bool m_isCertainlyOpaque;
 };
 
-}
+} // namespace blink
 
 #endif // GraphicsContextRecorder_h

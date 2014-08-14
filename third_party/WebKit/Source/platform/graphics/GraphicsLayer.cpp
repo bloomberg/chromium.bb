@@ -58,12 +58,6 @@
 #include <stdio.h>
 #endif
 
-using blink::Platform;
-using blink::WebAnimation;
-using blink::WebFilterOperations;
-using blink::WebLayer;
-using blink::WebPoint;
-
 namespace blink {
 
 typedef HashMap<const GraphicsLayer*, Vector<FloatRect> > RepaintMap;
@@ -82,7 +76,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     : m_client(client)
     , m_backgroundColor(Color::transparent)
     , m_opacity(1)
-    , m_blendMode(blink::WebBlendModeNormal)
+    , m_blendMode(WebBlendModeNormal)
     , m_hasTransformOrigin(false)
     , m_contentsOpaque(false)
     , m_shouldFlattenTransform(true)
@@ -417,7 +411,7 @@ GraphicsLayerDebugInfo& GraphicsLayer::debugInfo()
     return m_debugInfo;
 }
 
-blink::WebGraphicsLayerDebugInfo* GraphicsLayer::takeDebugInfoFor(WebLayer* layer)
+WebGraphicsLayerDebugInfo* GraphicsLayer::takeDebugInfoFor(WebLayer* layer)
 {
     GraphicsLayerDebugInfo* clone = m_debugInfo.clone();
     clone->setDebugName(debugName(layer));
@@ -563,7 +557,7 @@ PassRefPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags flags, Rend
     if (m_opacity != 1)
         json->setNumber("opacity", m_opacity);
 
-    if (m_blendMode != blink::WebBlendModeNormal)
+    if (m_blendMode != WebBlendModeNormal)
         json->setString("blendMode", compositeOperatorName(CompositeSourceOver, m_blendMode));
 
     if (m_isRootForIsolatedGroup)
@@ -672,7 +666,7 @@ String GraphicsLayer::layerTreeAsText(LayerTreeFlags flags) const
     return json->toPrettyJSONString();
 }
 
-String GraphicsLayer::debugName(blink::WebLayer* webLayer) const
+String GraphicsLayer::debugName(WebLayer* webLayer) const
 {
     String name;
     if (!m_client)
@@ -795,13 +789,13 @@ void GraphicsLayer::setContentsVisible(bool contentsVisible)
     updateLayerIsDrawable();
 }
 
-void GraphicsLayer::setClipParent(blink::WebLayer* parent)
+void GraphicsLayer::setClipParent(WebLayer* parent)
 {
     m_hasClipParent = !!parent;
     m_layer->layer()->setClipParent(parent);
 }
 
-void GraphicsLayer::setScrollParent(blink::WebLayer* parent)
+void GraphicsLayer::setScrollParent(WebLayer* parent)
 {
     m_hasScrollParent = !!parent;
     m_layer->layer()->setScrollParent(parent);
@@ -862,12 +856,12 @@ void GraphicsLayer::setOpacity(float opacity)
     platformLayer()->setOpacity(opacity);
 }
 
-void GraphicsLayer::setBlendMode(blink::WebBlendMode blendMode)
+void GraphicsLayer::setBlendMode(WebBlendMode blendMode)
 {
     if (m_blendMode == blendMode)
         return;
     m_blendMode = blendMode;
-    platformLayer()->setBlendMode(blink::WebBlendMode(blendMode));
+    platformLayer()->setBlendMode(WebBlendMode(blendMode));
 }
 
 void GraphicsLayer::setIsRootForIsolatedGroup(bool isolated)

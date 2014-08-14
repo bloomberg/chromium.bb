@@ -40,12 +40,12 @@
 
 namespace blink {
 
-class GraphicsLayerDebugInfo FINAL : public blink::WebGraphicsLayerDebugInfo {
+class GraphicsLayerDebugInfo FINAL : public WebGraphicsLayerDebugInfo {
 public:
     GraphicsLayerDebugInfo();
     virtual ~GraphicsLayerDebugInfo();
 
-    virtual void appendAsTraceFormat(blink::WebString* out) const OVERRIDE;
+    virtual void appendAsTraceFormat(WebString* out) const OVERRIDE;
 
     GraphicsLayerDebugInfo* clone() const;
 
