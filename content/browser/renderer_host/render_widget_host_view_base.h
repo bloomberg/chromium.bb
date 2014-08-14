@@ -243,27 +243,27 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // Notifies the view that the scroll offset has changed.
   virtual void ScrollOffsetChanged() = 0;
 
-  // Copies the contents of the compositing surface into the given
-  // (uninitialized) PlatformCanvas if any.
-  // The rectangle region specified with |src_subrect| is copied from the
-  // contents, scaled to |dst_size|, and written to |output|.
-  // |callback| is invoked with true on success, false otherwise. |output| can
-  // be initialized even on failure.
-  // A smaller region than |src_subrect| may be copied if the underlying surface
-  // is smaller than |src_subrect|.
-  // NOTE: |callback| is called asynchronously.
+  // Copies the contents of the compositing surface, providing a new SkBitmap
+  // result via an asynchronously-run |callback|. |src_subrect| is specified in
+  // layer space coordinates for the current platform (e.g., DIP for Aura/Mac,
+  // physical for Android), and is the region to be copied from this view. The
+  // copy is then scaled to a SkBitmap of size |dst_size|. |callback| is run
+  // with true on success, false otherwise. A smaller region than |src_subrect|
+  // may be copied if the underlying surface is smaller than |src_subrect|.
   virtual void CopyFromCompositingSurface(
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
       const base::Callback<void(bool, const SkBitmap&)>& callback,
       const SkColorType color_type) = 0;
 
-  // Copies a given subset of the compositing surface's content into a YV12
-  // VideoFrame, and invokes a callback with a success/fail parameter. |target|
-  // must contain an allocated, YV12 video frame of the intended size. If the
-  // copy rectangle does not match |target|'s size, the copied content will be
-  // scaled and letterboxed with black borders. The copy will happen
-  // asynchronously. This operation will fail if there is no available
+  // Copies the contents of the compositing surface, populating the given
+  // |target| with YV12 image data. |src_subrect| is specified in layer space
+  // coordinates for the current platform (e.g., DIP for Aura/Mac, physical for
+  // Android), and is the region to be copied from this view. The copy is then
+  // scaled and letterboxed with black borders to fit |target|. Finally,
+  // |callback| is asynchronously run with true/false for
+  // success/failure. |target| must point to an allocated, YV12 video frame of
+  // the intended size. This operation will fail if there is no available
   // compositing surface.
   virtual void CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,

@@ -41,10 +41,12 @@ SNAPSHOT_EXPORT bool GrabViewSnapshot(
     std::vector<unsigned char>* png_representation,
     const gfx::Rect& snapshot_bounds);
 
+
+// These functions take a snapshot of |source_rect|, specified in layer space
+// coordinates (DIP for desktop, physical pixels for Android), and scale the
+// snapshot to |target_size| (in physical pixels), asynchronously.
 typedef base::Callback<void(const gfx::Image& snapshot)>
     GrabWindowSnapshotAsyncCallback;
-// GrabWindowSnapshotAndScaleAsync() copies snapshot of |source_rect| from
-// window and scales it to |target_size| asynchronously.
 SNAPSHOT_EXPORT void GrabWindowSnapshotAndScaleAsync(
     gfx::NativeWindow window,
     const gfx::Rect& source_rect,

@@ -278,10 +278,8 @@ void DesktopVideoCaptureMachine::Capture(bool dirty) {
         cc::CopyOutputRequest::CreateRequest(
             base::Bind(&DesktopVideoCaptureMachine::DidCopyOutput,
                        AsWeakPtr(), frame, start_time, capture_frame_cb));
-    gfx::Rect window_rect =
-        ui::ConvertRectToPixel(desktop_window_->layer(),
-                               gfx::Rect(desktop_window_->bounds().width(),
-                                         desktop_window_->bounds().height()));
+    gfx::Rect window_rect = gfx::Rect(desktop_window_->bounds().width(),
+                                      desktop_window_->bounds().height());
     request->set_area(window_rect);
     desktop_window_->layer()->RequestCopyOfOutput(request.Pass());
   }

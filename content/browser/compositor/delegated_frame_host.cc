@@ -183,9 +183,7 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceToVideoFrame(
           subscriber_texture,
           target,
           callback));
-  gfx::Rect src_subrect_in_pixel =
-      ConvertRectToPixel(client_->CurrentDeviceScaleFactor(), src_subrect);
-  request->set_area(src_subrect_in_pixel);
+  request->set_area(src_subrect);
   if (subscriber_texture.get()) {
     request->SetTextureMailbox(
         cc::TextureMailbox(subscriber_texture->mailbox(),
