@@ -25,6 +25,11 @@
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {
+
+namespace embedder {
+class PlatformSharedBufferMapping;
+}
+
 namespace system {
 
 class Channel;
@@ -34,7 +39,6 @@ class DispatcherTransport;
 class HandleTable;
 class LocalMessagePipeEndpoint;
 class ProxyMessagePipeEndpoint;
-class RawSharedBufferMapping;
 class TransportData;
 class Waiter;
 
@@ -113,10 +117,11 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   MojoResult DuplicateBufferHandle(
       UserPointer<const MojoDuplicateBufferHandleOptions> options,
       scoped_refptr<Dispatcher>* new_dispatcher);
-  MojoResult MapBuffer(uint64_t offset,
-                       uint64_t num_bytes,
-                       MojoMapBufferFlags flags,
-                       scoped_ptr<RawSharedBufferMapping>* mapping);
+  MojoResult MapBuffer(
+      uint64_t offset,
+      uint64_t num_bytes,
+      MojoMapBufferFlags flags,
+      scoped_ptr<embedder::PlatformSharedBufferMapping>* mapping);
 
   // Gets the current handle signals state. (The default implementation simply
   // returns a default-constructed |HandleSignalsState|, i.e., no signals
@@ -260,7 +265,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
       uint64_t offset,
       uint64_t num_bytes,
       MojoMapBufferFlags flags,
-      scoped_ptr<RawSharedBufferMapping>* mapping);
+      scoped_ptr<embedder::PlatformSharedBufferMapping>* mapping);
   virtual HandleSignalsState GetHandleSignalsStateImplNoLock() const;
   virtual MojoResult AddWaiterImplNoLock(Waiter* waiter,
                                          MojoHandleSignals signals,

@@ -6,8 +6,8 @@
 #define MOJO_SYSTEM_SHARED_BUFFER_DISPATCHER_H_
 
 #include "base/macros.h"
+#include "mojo/embedder/platform_shared_buffer.h"
 #include "mojo/system/memory.h"
-#include "mojo/system/raw_shared_buffer.h"
 #include "mojo/system/simple_dispatcher.h"
 #include "mojo/system/system_impl_export.h"
 
@@ -53,7 +53,7 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher : public SimpleDispatcher {
 
  private:
   explicit SharedBufferDispatcher(
-      scoped_refptr<RawSharedBuffer> shared_buffer_);
+      scoped_refptr<embedder::PlatformSharedBuffer> shared_buffer_);
   virtual ~SharedBufferDispatcher();
 
   // Validates and/or sets default options for
@@ -76,7 +76,7 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher : public SimpleDispatcher {
       uint64_t offset,
       uint64_t num_bytes,
       MojoMapBufferFlags flags,
-      scoped_ptr<RawSharedBufferMapping>* mapping) OVERRIDE;
+      scoped_ptr<embedder::PlatformSharedBufferMapping>* mapping) OVERRIDE;
   virtual void StartSerializeImplNoLock(Channel* channel,
                                         size_t* max_size,
                                         size_t* max_platform_handles) OVERRIDE;
@@ -86,7 +86,7 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher : public SimpleDispatcher {
       size_t* actual_size,
       embedder::PlatformHandleVector* platform_handles) OVERRIDE;
 
-  scoped_refptr<RawSharedBuffer> shared_buffer_;
+  scoped_refptr<embedder::PlatformSharedBuffer> shared_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedBufferDispatcher);
 };

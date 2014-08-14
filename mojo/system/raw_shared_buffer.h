@@ -8,33 +8,15 @@
 #include <stddef.h>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
-#include "mojo/embedder/scoped_platform_handle.h"
+#include "mojo/embedder/platform_shared_buffer.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {
 namespace system {
 
-class RawSharedBufferMapping;
-
-// |RawSharedBuffer| is a thread-safe, ref-counted wrapper around OS-specific
-// shared memory. It has the following features:
-//   - A |RawSharedBuffer| simply represents a piece of shared memory that *may*
-//     be mapped and *may* be shared to another process.
-//   - A single |RawSharedBuffer| may be mapped multiple times. The lifetime of
-//     the mapping (owned by |RawSharedBufferMapping|) is separate from the
-//     lifetime of the |RawSharedBuffer|.
-//   - Sizes/offsets (of the shared memory and mappings) are arbitrary, and not
-//     restricted by page size. However, more memory may actually be mapped than
-//     requested.
-//
-// It currently does NOT support the following:
-//   - Sharing read-only. (This will probably eventually be supported.)
-//
-// TODO(vtl): Rectify this with |base::SharedMemory|.
+// A simple implementation of |embedder::PlatformSharedBuffer|.
 class MOJO_SYSTEM_IMPL_EXPORT RawSharedBuffer
-    : public base::RefCountedThreadSafe<RawSharedBuffer> {
+    : public embedder::PlatformSharedBuffer {
  public:
   // Creates a shared buffer of size |num_bytes| bytes (initially zero-filled).
   // |num_bytes| must be nonzero. Returns null on failure.
@@ -44,34 +26,21 @@ class MOJO_SYSTEM_IMPL_EXPORT RawSharedBuffer
       size_t num_bytes,
       embedder::ScopedPlatformHandle platform_handle);
 
-  // Maps (some) of the shared buffer into memory; [|offset|, |offset + length|]
-  // must be contained in [0, |num_bytes|], and |length| must be at least 1.
-  // Returns null on failure.
-  scoped_ptr<RawSharedBufferMapping> Map(size_t offset, size_t length);
-
-  // Checks if |offset| and |length| are valid arguments.
-  bool IsValidMap(size_t offset, size_t length);
-
-  // Like |Map()|, but doesn't check its arguments (which should have been
-  // preflighted using |IsValidMap()|).
-  scoped_ptr<RawSharedBufferMapping> MapNoCheck(size_t offset, size_t length);
-
-  // Duplicates the underlying platform handle and passes it to the caller.
-  embedder::ScopedPlatformHandle DuplicatePlatformHandle();
-
-  // Passes the underlying platform handle to the caller. This should only be
-  // called if there's a unique reference to this object (owned by the caller).
-  // After calling this, this object should no longer be used, but should only
-  // be disposed of.
-  embedder::ScopedPlatformHandle PassPlatformHandle();
-
-  size_t num_bytes() const { return num_bytes_; }
+  // |embedder::PlatformSharedBuffer| implementation:
+  virtual size_t GetNumBytes() const OVERRIDE;
+  virtual scoped_ptr<embedder::PlatformSharedBufferMapping> Map(
+      size_t offset,
+      size_t length) OVERRIDE;
+  virtual bool IsValidMap(size_t offset, size_t length) OVERRIDE;
+  virtual scoped_ptr<embedder::PlatformSharedBufferMapping> MapNoCheck(
+      size_t offset,
+      size_t length) OVERRIDE;
+  virtual embedder::ScopedPlatformHandle DuplicatePlatformHandle() OVERRIDE;
+  virtual embedder::ScopedPlatformHandle PassPlatformHandle() OVERRIDE;
 
  private:
-  friend class base::RefCountedThreadSafe<RawSharedBuffer>;
-
   explicit RawSharedBuffer(size_t num_bytes);
-  ~RawSharedBuffer();
+  virtual ~RawSharedBuffer();
 
   // Implemented in raw_shared_buffer_{posix,win}.cc:
 
@@ -84,7 +53,8 @@ class MOJO_SYSTEM_IMPL_EXPORT RawSharedBuffer
   bool InitFromPlatformHandle(embedder::ScopedPlatformHandle platform_handle);
 
   // The platform-dependent part of |Map()|; doesn't check arguments.
-  scoped_ptr<RawSharedBufferMapping> MapImpl(size_t offset, size_t length);
+  scoped_ptr<embedder::PlatformSharedBufferMapping> MapImpl(size_t offset,
+                                                            size_t length);
 
   const size_t num_bytes_;
 
@@ -96,20 +66,15 @@ class MOJO_SYSTEM_IMPL_EXPORT RawSharedBuffer
   DISALLOW_COPY_AND_ASSIGN(RawSharedBuffer);
 };
 
-// A mapping of a |RawSharedBuffer| (compararable to a "file view" in Windows);
-// see above. Created by |RawSharedBuffer::Map()|. Automatically unmaps memory
-// on destruction.
-//
-// Mappings are NOT thread-safe.
-//
-// Note: This is an entirely separate class (instead of
-// |RawSharedBuffer::Mapping|) so that it can be forward-declared.
-class MOJO_SYSTEM_IMPL_EXPORT RawSharedBufferMapping {
+// An implementation of |embedder::PlatformSharedBufferMapping|, produced by
+// |RawSharedBuffer|.
+class MOJO_SYSTEM_IMPL_EXPORT RawSharedBufferMapping
+    : public embedder::PlatformSharedBufferMapping {
  public:
-  ~RawSharedBufferMapping() { Unmap(); }
+  virtual ~RawSharedBufferMapping();
 
-  void* base() const { return base_; }
-  size_t length() const { return length_; }
+  virtual void* GetBase() const OVERRIDE;
+  virtual size_t GetLength() const OVERRIDE;
 
  private:
   friend class RawSharedBuffer;

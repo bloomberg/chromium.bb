@@ -108,6 +108,7 @@
         'embedder/platform_handle_utils_posix.cc',
         'embedder/platform_handle_utils_win.cc',
         'embedder/platform_handle_vector.h',
+        'embedder/platform_shared_buffer.h',
         'embedder/scoped_platform_handle.h',
         'system/channel.cc',
         'system/channel.h',

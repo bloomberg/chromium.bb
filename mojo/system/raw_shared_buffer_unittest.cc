@@ -28,10 +28,11 @@ TEST(RawSharedBufferTest, Basic) {
   // Map it all, scribble some stuff, and then unmap it.
   {
     EXPECT_TRUE(buffer->IsValidMap(0, kNumBytes));
-    scoped_ptr<RawSharedBufferMapping> mapping(buffer->Map(0, kNumBytes));
+    scoped_ptr<embedder::PlatformSharedBufferMapping> mapping(
+        buffer->Map(0, kNumBytes));
     ASSERT_TRUE(mapping);
-    ASSERT_TRUE(mapping->base());
-    int* stuff = static_cast<int*>(mapping->base());
+    ASSERT_TRUE(mapping->GetBase());
+    int* stuff = static_cast<int*>(mapping->GetBase());
     for (size_t i = 0; i < kNumInts; i++)
       stuff[i] = static_cast<int>(i) + kFudge;
   }
@@ -43,19 +44,19 @@ TEST(RawSharedBufferTest, Basic) {
   {
     ASSERT_TRUE(buffer->IsValidMap(0, kNumBytes));
     // Use |MapNoCheck()| this time.
-    scoped_ptr<RawSharedBufferMapping> mapping1(
+    scoped_ptr<embedder::PlatformSharedBufferMapping> mapping1(
         buffer->MapNoCheck(0, kNumBytes));
     ASSERT_TRUE(mapping1);
-    ASSERT_TRUE(mapping1->base());
-    int* stuff1 = static_cast<int*>(mapping1->base());
+    ASSERT_TRUE(mapping1->GetBase());
+    int* stuff1 = static_cast<int*>(mapping1->GetBase());
     for (size_t i = 0; i < kNumInts; i++)
       EXPECT_EQ(static_cast<int>(i) + kFudge, stuff1[i]) << i;
 
-    scoped_ptr<RawSharedBufferMapping> mapping2(
+    scoped_ptr<embedder::PlatformSharedBufferMapping> mapping2(
         buffer->Map((kNumInts / 2) * sizeof(int), 2 * sizeof(int)));
     ASSERT_TRUE(mapping2);
-    ASSERT_TRUE(mapping2->base());
-    int* stuff2 = static_cast<int*>(mapping2->base());
+    ASSERT_TRUE(mapping2->GetBase());
+    int* stuff2 = static_cast<int*>(mapping2->GetBase());
     EXPECT_EQ(static_cast<int>(kNumInts / 2) + kFudge, stuff2[0]);
     EXPECT_EQ(static_cast<int>(kNumInts / 2) + 1 + kFudge, stuff2[1]);
 
@@ -75,11 +76,11 @@ TEST(RawSharedBufferTest, Basic) {
   // it to be.
   {
     EXPECT_TRUE(buffer->IsValidMap(sizeof(int), kNumBytes - sizeof(int)));
-    scoped_ptr<RawSharedBufferMapping> mapping(
+    scoped_ptr<embedder::PlatformSharedBufferMapping> mapping(
         buffer->Map(sizeof(int), kNumBytes - sizeof(int)));
     ASSERT_TRUE(mapping);
-    ASSERT_TRUE(mapping->base());
-    int* stuff = static_cast<int*>(mapping->base());
+    ASSERT_TRUE(mapping->GetBase());
+    int* stuff = static_cast<int*>(mapping->GetBase());
 
     for (size_t j = 0; j < kNumInts - 1; j++) {
       int i = static_cast<int>(j) + 1;
@@ -140,40 +141,43 @@ TEST(RawSharedBufferTest, TooBig) {
 // using the address as the key for unmapping.
 TEST(RawSharedBufferTest, MappingsDistinct) {
   scoped_refptr<RawSharedBuffer> buffer(RawSharedBuffer::Create(100));
-  scoped_ptr<RawSharedBufferMapping> mapping1(buffer->Map(0, 100));
-  scoped_ptr<RawSharedBufferMapping> mapping2(buffer->Map(0, 100));
-  EXPECT_NE(mapping1->base(), mapping2->base());
+  scoped_ptr<embedder::PlatformSharedBufferMapping> mapping1(
+      buffer->Map(0, 100));
+  scoped_ptr<embedder::PlatformSharedBufferMapping> mapping2(
+      buffer->Map(0, 100));
+  EXPECT_NE(mapping1->GetBase(), mapping2->GetBase());
 }
 
 TEST(RawSharedBufferTest, BufferZeroInitialized) {
   static const size_t kSizes[] = {10, 100, 1000, 10000, 100000};
   for (size_t i = 0; i < arraysize(kSizes); i++) {
     scoped_refptr<RawSharedBuffer> buffer(RawSharedBuffer::Create(kSizes[i]));
-    scoped_ptr<RawSharedBufferMapping> mapping(buffer->Map(0, kSizes[i]));
+    scoped_ptr<embedder::PlatformSharedBufferMapping> mapping(
+        buffer->Map(0, kSizes[i]));
     for (size_t j = 0; j < kSizes[i]; j++) {
       // "Assert" instead of "expect" so we don't spam the output with thousands
       // of failures if we fail.
-      ASSERT_EQ('\0', static_cast<char*>(mapping->base())[j])
+      ASSERT_EQ('\0', static_cast<char*>(mapping->GetBase())[j])
           << "size " << kSizes[i] << ", offset " << j;
     }
   }
 }
 
 TEST(RawSharedBufferTest, MappingsOutliveBuffer) {
-  scoped_ptr<RawSharedBufferMapping> mapping1;
-  scoped_ptr<RawSharedBufferMapping> mapping2;
+  scoped_ptr<embedder::PlatformSharedBufferMapping> mapping1;
+  scoped_ptr<embedder::PlatformSharedBufferMapping> mapping2;
 
   {
     scoped_refptr<RawSharedBuffer> buffer(RawSharedBuffer::Create(100));
     mapping1 = buffer->Map(0, 100).Pass();
     mapping2 = buffer->Map(50, 50).Pass();
-    static_cast<char*>(mapping1->base())[50] = 'x';
+    static_cast<char*>(mapping1->GetBase())[50] = 'x';
   }
 
-  EXPECT_EQ('x', static_cast<char*>(mapping2->base())[0]);
+  EXPECT_EQ('x', static_cast<char*>(mapping2->GetBase())[0]);
 
-  static_cast<char*>(mapping2->base())[1] = 'y';
-  EXPECT_EQ('y', static_cast<char*>(mapping1->base())[51]);
+  static_cast<char*>(mapping2->GetBase())[1] = 'y';
+  EXPECT_EQ('y', static_cast<char*>(mapping1->GetBase())[51]);
 }
 
 }  // namespace

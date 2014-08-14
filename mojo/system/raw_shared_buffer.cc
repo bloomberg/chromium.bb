@@ -25,6 +25,7 @@ RawSharedBuffer* RawSharedBuffer::Create(size_t num_bytes) {
   return rv;
 }
 
+// static
 RawSharedBuffer* RawSharedBuffer::CreateFromPlatformHandle(
     size_t num_bytes,
     embedder::ScopedPlatformHandle platform_handle) {
@@ -41,10 +42,15 @@ RawSharedBuffer* RawSharedBuffer::CreateFromPlatformHandle(
   return rv;
 }
 
-scoped_ptr<RawSharedBufferMapping> RawSharedBuffer::Map(size_t offset,
-                                                        size_t length) {
+size_t RawSharedBuffer::GetNumBytes() const {
+  return num_bytes_;
+}
+
+scoped_ptr<embedder::PlatformSharedBufferMapping> RawSharedBuffer::Map(
+    size_t offset,
+    size_t length) {
   if (!IsValidMap(offset, length))
-    return scoped_ptr<RawSharedBufferMapping>();
+    return scoped_ptr<embedder::PlatformSharedBufferMapping>();
 
   return MapNoCheck(offset, length);
 }
@@ -61,8 +67,9 @@ bool RawSharedBuffer::IsValidMap(size_t offset, size_t length) {
   return true;
 }
 
-scoped_ptr<RawSharedBufferMapping> RawSharedBuffer::MapNoCheck(size_t offset,
-                                                               size_t length) {
+scoped_ptr<embedder::PlatformSharedBufferMapping> RawSharedBuffer::MapNoCheck(
+    size_t offset,
+    size_t length) {
   DCHECK(IsValidMap(offset, length));
   return MapImpl(offset, length);
 }
@@ -80,6 +87,18 @@ RawSharedBuffer::RawSharedBuffer(size_t num_bytes) : num_bytes_(num_bytes) {
 }
 
 RawSharedBuffer::~RawSharedBuffer() {
+}
+
+RawSharedBufferMapping::~RawSharedBufferMapping() {
+  Unmap();
+}
+
+void* RawSharedBufferMapping::GetBase() const {
+  return base_;
+}
+
+size_t RawSharedBufferMapping::GetLength() const {
+  return length_;
 }
 
 }  // namespace system

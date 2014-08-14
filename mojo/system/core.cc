@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "mojo/embedder/platform_shared_buffer.h"
 #include "mojo/public/c/system/macros.h"
 #include "mojo/system/constants.h"
 #include "mojo/system/data_pipe.h"
@@ -19,7 +20,6 @@
 #include "mojo/system/memory.h"
 #include "mojo/system/message_pipe.h"
 #include "mojo/system/message_pipe_dispatcher.h"
-#include "mojo/system/raw_shared_buffer.h"
 #include "mojo/system/shared_buffer_dispatcher.h"
 #include "mojo/system/waiter.h"
 
@@ -516,13 +516,13 @@ MojoResult Core::MapBuffer(MojoHandle buffer_handle,
   if (!dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  scoped_ptr<RawSharedBufferMapping> mapping;
+  scoped_ptr<embedder::PlatformSharedBufferMapping> mapping;
   MojoResult result = dispatcher->MapBuffer(offset, num_bytes, flags, &mapping);
   if (result != MOJO_RESULT_OK)
     return result;
 
   DCHECK(mapping);
-  void* address = mapping->base();
+  void* address = mapping->GetBase();
   {
     base::AutoLock locker(mapping_table_lock_);
     result = mapping_table_.AddMapping(mapping.Pass());

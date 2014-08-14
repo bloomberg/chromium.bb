@@ -115,8 +115,9 @@ bool RawSharedBuffer::InitFromPlatformHandle(
   return true;
 }
 
-scoped_ptr<RawSharedBufferMapping> RawSharedBuffer::MapImpl(size_t offset,
-                                                            size_t length) {
+scoped_ptr<embedder::PlatformSharedBufferMapping> RawSharedBuffer::MapImpl(
+    size_t offset,
+    size_t length) {
   size_t offset_rounding = offset % base::SysInfo::VMAllocationGranularity();
   size_t real_offset = offset - offset_rounding;
   size_t real_length = length + offset_rounding;
@@ -136,11 +137,11 @@ scoped_ptr<RawSharedBufferMapping> RawSharedBuffer::MapImpl(size_t offset,
   // return null either.
   if (real_base == MAP_FAILED || !real_base) {
     PLOG(ERROR) << "mmap";
-    return scoped_ptr<RawSharedBufferMapping>();
+    return scoped_ptr<embedder::PlatformSharedBufferMapping>();
   }
 
   void* base = static_cast<char*>(real_base) + offset_rounding;
-  return make_scoped_ptr(
+  return scoped_ptr<embedder::PlatformSharedBufferMapping>(
       new RawSharedBufferMapping(base, length, real_base, real_length));
 }
 

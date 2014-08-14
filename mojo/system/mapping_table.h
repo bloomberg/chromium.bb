@@ -16,10 +16,14 @@
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {
+
+namespace embedder {
+class PlatformSharedBufferMapping;
+}
+
 namespace system {
 
 class Core;
-class RawSharedBufferMapping;
 
 // Test-only function (defined/used in embedder/test_embedder.cc). Declared here
 // so it can be friended.
@@ -28,7 +32,7 @@ bool ShutdownCheckNoLeaks(Core*);
 }
 
 // This class provides the (global) table of memory mappings (owned by |Core|),
-// which maps mapping base addresses to |RawSharedBuffer::Mapping|s.
+// which maps mapping base addresses to |PlatformSharedBufferMapping|s.
 //
 // This class is NOT thread-safe; locking is left to |Core|.
 class MOJO_SYSTEM_IMPL_EXPORT MappingTable {
@@ -38,13 +42,14 @@ class MOJO_SYSTEM_IMPL_EXPORT MappingTable {
 
   // Tries to add a mapping. (Takes ownership of the mapping in all cases; on
   // failure, it will be destroyed.)
-  MojoResult AddMapping(scoped_ptr<RawSharedBufferMapping> mapping);
+  MojoResult AddMapping(
+      scoped_ptr<embedder::PlatformSharedBufferMapping> mapping);
   MojoResult RemoveMapping(uintptr_t address);
 
  private:
   friend bool internal::ShutdownCheckNoLeaks(Core*);
 
-  typedef base::hash_map<uintptr_t, RawSharedBufferMapping*>
+  typedef base::hash_map<uintptr_t, embedder::PlatformSharedBufferMapping*>
       AddressToMappingMap;
   AddressToMappingMap address_to_mapping_map_;
 
