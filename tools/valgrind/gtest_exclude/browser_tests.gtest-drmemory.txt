@@ -9,3 +9,7 @@ BrowserOptionsOverlayWebUITest.testNavigationInBackground
 
 # http://crbug.com/403628
 RangeHistoryWebUITest.monthViewGrouped
+
+# http://crbug.com/403687
+SSLUITest.TestWSSInvalidCertAndGoForward
+SSLUITest.TestInterstitialJavaScriptProceeds
