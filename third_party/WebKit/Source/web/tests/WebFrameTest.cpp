@@ -5802,7 +5802,12 @@ TEST_F(WebFrameTest, NodeImageTestFloatLeft)
     nodeImageTestValidation(blink::IntSize(40, 40), dragImage.get());
 }
 
+// Crashes on Android: http://crbug.com/403804
+#if OS(ANDROID)
+TEST_F(WebFrameTest, DISABLED_PrintingBasic)
+#else
 TEST_F(WebFrameTest, PrintingBasic)
+#endif
 {
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad("data:text/html,Hello, world.");
