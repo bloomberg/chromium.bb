@@ -59,7 +59,7 @@ public:
     // Invoked when the thread is stopped and WorkerGlobalScope is being
     // destructed. (This is be the last method that is called on this
     // interface)
-    virtual void workerGlobalScopeDestroyed() = 0;
+    virtual void workerThreadTerminated() = 0;
 
     // Invoked when the thread is about to be stopped and WorkerGlobalScope
     // is to be destructed. (When this is called it is guaranteed that

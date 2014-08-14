@@ -223,7 +223,7 @@ void WorkerMessagingProxy::workerObjectDestroyedInternal(ExecutionContext*, Work
     if (proxy->m_workerThread)
         proxy->terminateWorkerGlobalScope();
     else
-        proxy->workerGlobalScopeDestroyed();
+        proxy->workerThreadTerminated();
 }
 
 static void connectToWorkerGlobalScopeInspectorTask(ExecutionContext* context, bool)
@@ -282,7 +282,7 @@ void WorkerMessagingProxy::writeTimelineStartedEvent(const String& sessionId)
         m_queuedEarlyTasks.append(task.release());
 }
 
-void WorkerMessagingProxy::workerGlobalScopeDestroyed()
+void WorkerMessagingProxy::workerThreadTerminated()
 {
     // This method is always the last to be performed, so the proxy is not needed for communication
     // in either side any more. However, the Worker object may still exist, and it assumes that the proxy exists, too.

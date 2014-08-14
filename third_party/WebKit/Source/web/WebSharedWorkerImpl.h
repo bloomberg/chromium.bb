@@ -79,7 +79,7 @@ public:
     virtual void updateInspectorStateCookie(const WTF::String&) OVERRIDE;
     virtual void workerGlobalScopeStarted(WorkerGlobalScope*) OVERRIDE;
     virtual void workerGlobalScopeClosed() OVERRIDE;
-    virtual void workerGlobalScopeDestroyed() OVERRIDE;
+    virtual void workerThreadTerminated() OVERRIDE;
     virtual void willDestroyWorkerGlobalScope() OVERRIDE { }
 
     // WorkerLoaderProxy methods:
@@ -125,7 +125,7 @@ private:
     static void connectTask(ExecutionContext*, PassOwnPtr<WebMessagePortChannel>);
     // Tasks that are run on the main thread.
     void workerGlobalScopeClosedOnMainThread();
-    void workerGlobalScopeDestroyedOnMainThread();
+    void workerThreadTerminatedOnMainThread();
 
     // 'shadow page' - created to proxy loading requests from the worker.
     RefPtrWillBePersistent<ExecutionContext> m_loadingDocument;

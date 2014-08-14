@@ -66,7 +66,7 @@ public:
     virtual void updateInspectorStateCookie(const String&) OVERRIDE;
     virtual void workerGlobalScopeStarted(WorkerGlobalScope*) OVERRIDE { }
     virtual void workerGlobalScopeClosed() OVERRIDE;
-    virtual void workerGlobalScopeDestroyed() OVERRIDE;
+    virtual void workerThreadTerminated() OVERRIDE;
     virtual void willDestroyWorkerGlobalScope() OVERRIDE { }
 
 private:

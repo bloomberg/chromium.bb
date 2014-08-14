@@ -282,12 +282,12 @@ void WebSharedWorkerImpl::workerGlobalScopeStarted(WorkerGlobalScope*)
 {
 }
 
-void WebSharedWorkerImpl::workerGlobalScopeDestroyed()
+void WebSharedWorkerImpl::workerThreadTerminated()
 {
-    callOnMainThread(bind(&WebSharedWorkerImpl::workerGlobalScopeDestroyedOnMainThread, this));
+    callOnMainThread(bind(&WebSharedWorkerImpl::workerThreadTerminatedOnMainThread, this));
 }
 
-void WebSharedWorkerImpl::workerGlobalScopeDestroyedOnMainThread()
+void WebSharedWorkerImpl::workerThreadTerminatedOnMainThread()
 {
     if (client())
         client()->workerContextDestroyed();

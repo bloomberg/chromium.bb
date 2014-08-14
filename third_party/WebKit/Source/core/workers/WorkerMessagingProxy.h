@@ -71,7 +71,7 @@ public:
     void confirmMessageFromWorkerObject(bool hasPendingActivity);
     void reportPendingActivity(bool hasPendingActivity);
     void workerGlobalScopeClosed();
-    void workerGlobalScopeDestroyed();
+    void workerThreadTerminated();
 
     // Implementation of WorkerLoaderProxy.
     // These methods are called on different threads to schedule loading

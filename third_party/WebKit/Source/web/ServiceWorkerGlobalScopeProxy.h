@@ -56,7 +56,7 @@ class WebServiceWorkerRequest;
 // e.g. onfetch.
 //
 // An instance of this class is supposed to outlive until
-// workerGlobalScopeDestroyed() is called by its corresponding
+// workerThreadTerminated() is called by its corresponding
 // WorkerGlobalScope.
 class ServiceWorkerGlobalScopeProxy FINAL
     : public WebServiceWorkerContextProxy
@@ -82,7 +82,7 @@ public:
     virtual void workerGlobalScopeStarted(blink::WorkerGlobalScope*) OVERRIDE;
     virtual void workerGlobalScopeClosed() OVERRIDE;
     virtual void willDestroyWorkerGlobalScope() OVERRIDE;
-    virtual void workerGlobalScopeDestroyed() OVERRIDE;
+    virtual void workerThreadTerminated() OVERRIDE;
 
 private:
     ServiceWorkerGlobalScopeProxy(WebEmbeddedWorkerImpl&, blink::ExecutionContext&, WebServiceWorkerContextClient&);

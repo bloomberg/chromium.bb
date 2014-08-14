@@ -248,7 +248,7 @@ void WorkerThread::initialize()
         if (m_terminated) {
             // Notify the proxy that the WorkerGlobalScope has been disposed of.
             // This can free this thread object, hence it must not be touched afterwards.
-            m_workerReportingProxy.workerGlobalScopeDestroyed();
+            m_workerReportingProxy.workerThreadTerminated();
             return;
         }
 
@@ -318,7 +318,7 @@ void WorkerThread::cleanup()
 
     // Notify the proxy that the WorkerGlobalScope has been disposed of.
     // This can free this thread object, hence it must not be touched afterwards.
-    workerReportingProxy().workerGlobalScopeDestroyed();
+    workerReportingProxy().workerThreadTerminated();
 
     // Clean up PlatformThreadData before WTF::WTFThreadData goes away!
     PlatformThreadData::current().destroy();

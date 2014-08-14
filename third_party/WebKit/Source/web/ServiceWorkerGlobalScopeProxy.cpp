@@ -151,7 +151,7 @@ void ServiceWorkerGlobalScopeProxy::willDestroyWorkerGlobalScope()
     m_client.willDestroyWorkerContext();
 }
 
-void ServiceWorkerGlobalScopeProxy::workerGlobalScopeDestroyed()
+void ServiceWorkerGlobalScopeProxy::workerThreadTerminated()
 {
     m_client.workerContextDestroyed();
 }

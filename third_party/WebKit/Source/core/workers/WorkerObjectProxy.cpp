@@ -93,10 +93,10 @@ void WorkerObjectProxy::workerGlobalScopeClosed()
     m_executionContext->postTask(createCrossThreadTask(&WorkerMessagingProxy::terminateWorkerGlobalScope, m_messagingProxy));
 }
 
-void WorkerObjectProxy::workerGlobalScopeDestroyed()
+void WorkerObjectProxy::workerThreadTerminated()
 {
     // This will terminate the MessagingProxy.
-    m_executionContext->postTask(createCrossThreadTask(&WorkerMessagingProxy::workerGlobalScopeDestroyed, m_messagingProxy));
+    m_executionContext->postTask(createCrossThreadTask(&WorkerMessagingProxy::workerThreadTerminated, m_messagingProxy));
 }
 
 WorkerObjectProxy::WorkerObjectProxy(ExecutionContext* executionContext, WorkerMessagingProxy* messagingProxy)
