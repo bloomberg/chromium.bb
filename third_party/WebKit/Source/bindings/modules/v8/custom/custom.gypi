@@ -7,7 +7,6 @@
         # Note: list duplicated in custom.gni.
         'bindings_modules_v8_custom_files': [
             'V8AudioNodeCustom.cpp',
-            'V8ClientCustom.cpp',
             'V8CryptoCustom.cpp',
             'V8CryptoKeyCustom.cpp',
             'V8CustomSQLStatementErrorCallback.cpp',
@@ -18,6 +17,7 @@
             'V8SQLResultSetRowListCustom.cpp',
             'V8SQLTransactionCustom.cpp',
             'V8SQLTransactionSyncCustom.cpp',
+            'V8ServiceWorkerClientCustom.cpp',
             'V8ServiceWorkerCustom.cpp',
             'V8SubtleCryptoCustom.cpp',
         ],

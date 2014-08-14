@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "modules/serviceworkers/Client.h"
+#include "modules/serviceworkers/ServiceWorkerClient.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
@@ -13,20 +13,20 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<Client> Client::create(unsigned id)
+PassRefPtrWillBeRawPtr<ServiceWorkerClient> ServiceWorkerClient::create(unsigned id)
 {
-    return adoptRefWillBeNoop(new Client(id));
+    return adoptRefWillBeNoop(new ServiceWorkerClient(id));
 }
 
-Client::Client(unsigned id)
+ServiceWorkerClient::ServiceWorkerClient(unsigned id)
     : m_id(id)
 {
     ScriptWrappable::init(this);
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(Client);
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ServiceWorkerClient);
 
-void Client::postMessage(ExecutionContext* context, PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionState& exceptionState)
+void ServiceWorkerClient::postMessage(ExecutionContext* context, PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionState& exceptionState)
 {
     // Disentangle the port in preparation for sending it to the remote context.
     OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(ports, exceptionState);

@@ -22,7 +22,7 @@ test(function() {
                         getServiced: 'function'
                     });
 
-    verifyInterface('Client');
+    verifyInterface('ServiceWorkerClient');
     // FIXME: Get an instance and test it, or ensure property exists on prototype.
 
 }, 'Interfaces and attributes in ServiceWorkerGlobalScope');

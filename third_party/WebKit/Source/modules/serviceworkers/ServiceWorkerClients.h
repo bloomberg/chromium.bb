@@ -12,10 +12,10 @@
 
 namespace blink {
 
-class Client;
 class ExecutionContext;
-class ScriptState;
 class ScriptPromise;
+class ScriptState;
+class ServiceWorkerClient;
 
 class ServiceWorkerClients FINAL : public RefCountedWillBeGarbageCollected<ServiceWorkerClients>, public ScriptWrappable {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ServiceWorkerClients);

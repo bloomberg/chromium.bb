@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "modules/serviceworkers/Client.h"
+#include "modules/serviceworkers/ServiceWorkerClient.h"
 #include "modules/serviceworkers/ServiceWorkerError.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "public/platform/WebServiceWorkerClientsInfo.h"
@@ -21,12 +21,12 @@ namespace {
     class ClientArray {
     public:
         typedef blink::WebServiceWorkerClientsInfo WebType;
-        static WillBeHeapVector<RefPtrWillBeMember<Client> > take(ScriptPromiseResolver*, WebType* webClientsRaw)
+        static WillBeHeapVector<RefPtrWillBeMember<ServiceWorkerClient> > take(ScriptPromiseResolver*, WebType* webClientsRaw)
         {
             OwnPtr<WebType> webClients = adoptPtr(webClientsRaw);
-            WillBeHeapVector<RefPtrWillBeMember<Client> > clients;
+            WillBeHeapVector<RefPtrWillBeMember<ServiceWorkerClient> > clients;
             for (size_t i = 0; i < webClients->clientIDs.size(); ++i) {
-                clients.append(Client::create(webClients->clientIDs[i]));
+                clients.append(ServiceWorkerClient::create(webClients->clientIDs[i]));
             }
             return clients;
         }
