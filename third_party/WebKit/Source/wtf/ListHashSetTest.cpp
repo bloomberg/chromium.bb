@@ -656,4 +656,66 @@ TEST(ListHashSetTest, WithOwnPtr)
     EXPECT_EQ(ptr2, ownPtr2);
 }
 
+template<typename Set>
+void swapTestHelper()
+{
+    int num = 10;
+    Set set0;
+    Set set1;
+    Set set2;
+    for (int i = 0; i < num; ++i) {
+        set1.add(i + 1);
+        set2.add(num - i);
+    }
+
+    typename Set::iterator it1 = set1.begin();
+    typename Set::iterator it2 = set2.begin();
+    for (int i = 0; i < num; ++i, ++it1, ++it2) {
+        EXPECT_EQ(*it1, i + 1);
+        EXPECT_EQ(*it2, num - i);
+    }
+    EXPECT_EQ(set0.begin(), set0.end());
+    EXPECT_EQ(it1, set1.end());
+    EXPECT_EQ(it2, set2.end());
+
+    // Shift sets: 2->1, 1->0, 0->2
+    set1.swap(set2); // Swap with non-empty sets.
+    set0.swap(set2); // Swap with an empty set.
+
+    it1 = set0.begin();
+    it2 = set1.begin();
+    for (int i = 0; i < num; ++i, ++it1, ++it2) {
+        EXPECT_EQ(*it1, i + 1);
+        EXPECT_EQ(*it2, num - i);
+    }
+    EXPECT_EQ(it1, set0.end());
+    EXPECT_EQ(it2, set1.end());
+    EXPECT_EQ(set2.begin(), set2.end());
+
+    int removedIndex = num >> 1;
+    set0.remove(removedIndex + 1);
+    set1.remove(num - removedIndex);
+
+    it1 = set0.begin();
+    it2 = set1.begin();
+    for (int i = 0; i < num; ++i, ++it1, ++it2) {
+        if (i == removedIndex)
+            ++i;
+        EXPECT_EQ(*it1, i + 1);
+        EXPECT_EQ(*it2, num - i);
+    }
+    EXPECT_EQ(it1, set0.end());
+    EXPECT_EQ(it2, set1.end());
+}
+
+TEST(ListHashSetTest, Swap)
+{
+    swapTestHelper<ListHashSet<int> >();
+}
+
+TEST(LinkedHashSetTest, Swap)
+{
+    swapTestHelper<LinkedHashSet<int> >();
+}
+
 } // namespace

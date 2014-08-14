@@ -499,7 +499,7 @@ template<typename T, typename U, typename V, typename W>
 inline void LinkedHashSet<T, U, V, W>::swap(LinkedHashSet& other)
 {
     m_impl.swap(other.m_impl);
-    swap(m_anchor, other.m_anchor);
+    swapAnchor(m_anchor, other.m_anchor);
 }
 
 template<typename T, typename U, typename V, typename Allocator>
@@ -667,8 +667,32 @@ inline void LinkedHashSet<T, U, V, W>::remove(ValuePeekInType value)
     remove(find(value));
 }
 
+inline void swapAnchor(LinkedHashSetNodeBase& a, LinkedHashSetNodeBase& b)
+{
+    ASSERT(a.m_prev && a.m_next && b.m_prev && b.m_next);
+    swap(a.m_prev, b.m_prev);
+    swap(a.m_next, b.m_next);
+    if (b.m_next == &a) {
+        ASSERT(b.m_prev == &a);
+        b.m_next = &b;
+        b.m_prev = &b;
+    } else {
+        b.m_next->m_prev = &b;
+        b.m_prev->m_next = &b;
+    }
+    if (a.m_next == &b) {
+        ASSERT(a.m_prev == &b);
+        a.m_next = &a;
+        a.m_prev = &a;
+    } else {
+        a.m_next->m_prev = &a;
+        a.m_prev->m_next = &a;
+    }
+}
+
 inline void swap(LinkedHashSetNodeBase& a, LinkedHashSetNodeBase& b)
 {
+    ASSERT(a.m_next != &a && b.m_next != &b);
     swap(a.m_prev, b.m_prev);
     swap(a.m_next, b.m_next);
     if (b.m_next) {
