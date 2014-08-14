@@ -8,18 +8,29 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/hash_tables.h"
+#include "base/lazy_instance.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_factory.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace content {
 
 namespace {
+
+// This is a global map between frame_tree_node_ids and pointer to
+// FrameTreeNodes.
+typedef base::hash_map<int64, FrameTreeNode*> FrameTreeNodeIDMap;
+
+base::LazyInstance<FrameTreeNodeIDMap> g_frame_tree_node_id_map =
+    LAZY_INSTANCE_INITIALIZER;
+
 // Used with FrameTree::ForEach() to search for the FrameTreeNode
-// corresponding to |frame_tree_node_id|.
+// corresponding to |frame_tree_node_id| whithin a specific FrameTree.
 bool FrameTreeNodeForId(int64 frame_tree_node_id,
                         FrameTreeNode** out_node,
                         FrameTreeNode* node) {
@@ -84,9 +95,22 @@ FrameTree::FrameTree(Navigator* navigator,
                               manager_delegate,
                               std::string())),
       focused_frame_tree_node_id_(-1) {
+    std::pair<FrameTreeNodeIDMap::iterator, bool> result =
+        g_frame_tree_node_id_map.Get().insert(
+            std::make_pair(root_->frame_tree_node_id(), root_.get()));
+    CHECK(result.second);
 }
 
 FrameTree::~FrameTree() {
+  g_frame_tree_node_id_map.Get().erase(root_->frame_tree_node_id());
+}
+
+// static
+FrameTreeNode* FrameTree::GloballyFindByID(int64 frame_tree_node_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  FrameTreeNodeIDMap* nodes = g_frame_tree_node_id_map.Pointer();
+  FrameTreeNodeIDMap::iterator it = nodes->find(frame_tree_node_id);
+  return it == nodes->end() ? NULL : it->second;
 }
 
 FrameTreeNode* FrameTree::FindByID(int64 frame_tree_node_id) {
@@ -124,6 +148,10 @@ RenderFrameHostImpl* FrameTree::AddFrame(FrameTreeNode* parent,
   scoped_ptr<FrameTreeNode> node(new FrameTreeNode(
       this, parent->navigator(), render_frame_delegate_, render_view_delegate_,
       render_widget_delegate_, manager_delegate_, frame_name));
+  std::pair<FrameTreeNodeIDMap::iterator, bool> result =
+      g_frame_tree_node_id_map.Get().insert(
+          std::make_pair(node->frame_tree_node_id(), node.get()));
+  CHECK(result.second);
   FrameTreeNode* node_ptr = node.get();
   // AddChild is what creates the RenderFrameHost.
   parent->AddChild(node.Pass(), new_routing_id);
@@ -142,7 +170,7 @@ void FrameTree::RemoveFrame(FrameTreeNode* child) {
   if (!on_frame_removed_.is_null()) {
     on_frame_removed_.Run(render_frame_host);
   }
-
+  g_frame_tree_node_id_map.Get().erase(child->frame_tree_node_id());
   parent->RemoveChild(child);
 }
 

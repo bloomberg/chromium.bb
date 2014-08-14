@@ -50,9 +50,13 @@ class CONTENT_EXPORT FrameTree {
             RenderFrameHostManager::Delegate* manager_delegate);
   ~FrameTree();
 
+  // Returns the FrameTreeNode with the given |frame_tree_node_id|.
+  static FrameTreeNode* GloballyFindByID(int64 frame_tree_node_id);
+
   FrameTreeNode* root() const { return root_.get(); }
 
-  // Returns the FrameTreeNode with the given |frame_tree_node_id|.
+  // Returns the FrameTreeNode with the given |frame_tree_node_id| if it is part
+  // of this FrameTree.
   FrameTreeNode* FindByID(int64 frame_tree_node_id);
 
   // Returns the FrameTreeNode with the given renderer-specific |routing_id|.
