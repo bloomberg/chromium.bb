@@ -321,10 +321,13 @@ cr.define('options', function() {
             node.querySelector('.dependent-extensions-message');
         dependentMessage.hidden = false;
         var dependentList = dependentMessage.querySelector('ul');
-        extension.dependentExtensions.forEach(function(id) {
-          var li = document.createElement('li');
-          li.innerText = id;
-          dependentList.appendChild(li);
+        var dependentTemplate = $('template-collection').querySelector(
+            '.dependent-list-item');
+        extension.dependentExtensions.forEach(function(elem) {
+          var depNode = dependentTemplate.cloneNode(true);
+          depNode.querySelector('.dep-extension-title').textContent = elem.name;
+          depNode.querySelector('.dep-extension-id').textContent = elem.id;
+          dependentList.appendChild(depNode);
         });
       }
 

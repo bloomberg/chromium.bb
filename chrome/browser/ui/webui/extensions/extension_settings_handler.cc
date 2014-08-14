@@ -276,7 +276,10 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
     for (ExtensionSet::const_iterator i = dependent_extensions->begin();
          i != dependent_extensions->end();
          i++) {
-      dependents_list->Append(new base::StringValue((*i)->id()));
+      base::DictionaryValue* dependent_entry = new base::DictionaryValue;
+      dependent_entry->SetString("id", (*i)->id());
+      dependent_entry->SetString("name", (*i)->name());
+      dependents_list->Append(dependent_entry);
     }
   }
   extension_data->Set("dependentExtensions", dependents_list);
