@@ -31,6 +31,11 @@ int32_t NaClSysImcMakeBoundSock(struct NaClAppThread *natp,
   struct NaClDesc             *pair[2];
   int32_t                     usr_pair[2];
 
+  /* This syscall is not used in Chromium so is disabled by default. */
+  if (!NaClAclBypassChecks) {
+    return -NACL_ABI_EACCES;
+  }
+
   NaClLog(3,
           ("Entered NaClSysImcMakeBoundSock(0x%08"NACL_PRIxPTR","
            " 0x%08"NACL_PRIxPTR")\n"),

@@ -22,7 +22,9 @@ srpc_message_untrusted_nexe = env.ComponentProgram(
 
 node = env.CommandSelLdrTestNacl('srpc_message_untrusted_test.out',
                                  srpc_message_untrusted_nexe,
-                                 args=['1048576', '65536', '32'])
+                                 args=['1048576', '65536', '32'],
+                                 # Pass '-a' to enable imc_makeboundsock().
+                                 sel_ldr_flags=['-a'])
 
 # TODO(ncbray) re-enable on Windows.
 # http://code.google.com/p/nativeclient/issues/detail?id=3022
