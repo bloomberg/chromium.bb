@@ -258,20 +258,21 @@
         'MOJO_NATIVE_VIEWPORT_IMPLEMENTATION',
       ],
       'sources': [
-        'services/native_viewport/native_viewport.h',
-        'services/native_viewport/native_viewport_android.cc',
-        'services/native_viewport/native_viewport_mac.mm',
-        'services/native_viewport/native_viewport_ozone.cc',
+        'services/native_viewport/native_viewport_export.h',
         'services/native_viewport/native_viewport_service.cc',
         'services/native_viewport/native_viewport_service.h',
-        'services/native_viewport/native_viewport_stub.cc',
-        'services/native_viewport/native_viewport_win.cc',
-        'services/native_viewport/native_viewport_x11.cc',
+        'services/native_viewport/platform_viewport.h',
+        'services/native_viewport/platform_viewport_android.cc',
+        'services/native_viewport/platform_viewport_mac.mm',
+        'services/native_viewport/platform_viewport_ozone.cc',
+        'services/native_viewport/platform_viewport_stub.cc',
+        'services/native_viewport/platform_viewport_win.cc',
+        'services/native_viewport/platform_viewport_x11.cc',
       ],
       'conditions': [
         ['OS=="win" or OS=="android" or OS=="linux" or OS=="mac"', {
           'sources!': [
-            'services/native_viewport/native_viewport_stub.cc',
+            'services/native_viewport/platform_viewport_stub.cc',
           ],
         }],
         ['OS=="android"', {

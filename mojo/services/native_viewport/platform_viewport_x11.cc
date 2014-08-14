@@ -2,32 +2,43 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/native_viewport/native_viewport.h"
+#include "mojo/services/native_viewport/platform_viewport.h"
 
-#include "base/memory/scoped_ptr.h"
+#include "base/command_line.h"
+#include "base/message_loop/message_loop.h"
+#include "ui/events/event.h"
+#include "ui/events/event_utils.h"
+#include "ui/events/platform/platform_event_dispatcher.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/rect.h"
+#include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
-#include "ui/platform_window/win/win_window.h"
+#include "ui/platform_window/x11/x11_window.h"
 
 namespace mojo {
 namespace services {
 
-class NativeViewportWin : public NativeViewport,
-                          public ui::PlatformWindowDelegate {
+class PlatformViewportX11 : public PlatformViewport,
+                            public ui::PlatformWindowDelegate {
  public:
-  explicit NativeViewportWin(NativeViewportDelegate* delegate)
-      : delegate_(delegate) {
+  explicit PlatformViewportX11(Delegate* delegate) : delegate_(delegate) {
   }
 
-  virtual ~NativeViewportWin() {
+  virtual ~PlatformViewportX11() {
     // Destroy the platform-window while |this| is still alive.
     platform_window_.reset();
   }
 
  private:
-  // Overridden from NativeViewport:
+  // Overridden from PlatformViewport:
   virtual void Init(const gfx::Rect& bounds) OVERRIDE {
-    platform_window_.reset(new ui::WinWindow(this, bounds));
+    CHECK(!event_source_);
+    CHECK(!platform_window_);
+
+    event_source_ = ui::PlatformEventSource::CreateDefault();
+
+    platform_window_.reset(new ui::X11Window(this));
+    platform_window_->SetBounds(bounds);
   }
 
   virtual void Show() OVERRIDE {
@@ -43,7 +54,7 @@ class NativeViewportWin : public NativeViewport,
   }
 
   virtual gfx::Size GetSize() OVERRIDE {
-    return platform_window_->GetBounds().size();
+    return bounds_.size();
   }
 
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE {
@@ -60,6 +71,7 @@ class NativeViewportWin : public NativeViewport,
 
   // ui::PlatformWindowDelegate:
   virtual void OnBoundsChanged(const gfx::Rect& new_bounds) OVERRIDE {
+    bounds_ = new_bounds;
     delegate_->OnBoundsChanged(new_bounds);
   }
 
@@ -91,16 +103,17 @@ class NativeViewportWin : public NativeViewport,
 
   virtual void OnActivationChanged(bool active) OVERRIDE {}
 
+  scoped_ptr<ui::PlatformEventSource> event_source_;
   scoped_ptr<ui::PlatformWindow> platform_window_;
-  NativeViewportDelegate* delegate_;
+  Delegate* delegate_;
+  gfx::Rect bounds_;
 
-  DISALLOW_COPY_AND_ASSIGN(NativeViewportWin);
+  DISALLOW_COPY_AND_ASSIGN(PlatformViewportX11);
 };
 
 // static
-scoped_ptr<NativeViewport> NativeViewport::Create(
-    NativeViewportDelegate* delegate) {
-  return scoped_ptr<NativeViewport>(new NativeViewportWin(delegate)).Pass();
+scoped_ptr<PlatformViewport> PlatformViewport::Create(Delegate* delegate) {
+  return scoped_ptr<PlatformViewport>(new PlatformViewportX11(delegate)).Pass();
 }
 
 }  // namespace services

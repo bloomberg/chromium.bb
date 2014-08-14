@@ -7,7 +7,7 @@
 #include "base/android/jni_registrar.h"
 #include "base/android/library_loader/library_loader_hooks.h"
 #include "base/logging.h"
-#include "mojo/services/native_viewport/native_viewport_android.h"
+#include "mojo/services/native_viewport/platform_viewport_android.h"
 #include "mojo/shell/android/mojo_main.h"
 #include "net/android/net_jni_registrar.h"
 
@@ -15,7 +15,8 @@ namespace {
 
 base::android::RegistrationMethod kMojoRegisteredMethods[] = {
   { "MojoMain", mojo::RegisterMojoMain },
-  { "NativeViewportAndroid", mojo::services::NativeViewportAndroid::Register },
+  { "PlatformViewportAndroid",
+     mojo::services::PlatformViewportAndroid::Register },
 };
 
 bool RegisterMojoJni(JNIEnv* env) {

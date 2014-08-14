@@ -27,16 +27,17 @@ component("native_viewport") {
   defines = [ "MOJO_NATIVE_VIEWPORT_IMPLEMENTATION" ]
 
   sources = [
-    "native_viewport.h",
-    "native_viewport_android.cc",
-    "native_viewport_mac.mm",
     "native_viewport_service.cc",
     "native_viewport_service.h",
-    "native_viewport_win.cc",
+    "platform_viewport.h",
+    "platform_viewport_android.cc",
+    "platform_viewport_android.h",
+    "platform_viewport_mac.mm",
+    "platform_viewport_win.cc",
   ]
 
   if (is_ios) {
-    sources += [ "native_viewport_stub.cc" ]
+    sources += [ "platform_viewport_stub.cc" ]
   }
 
   if (is_android) {
@@ -51,11 +52,11 @@ component("native_viewport") {
   }
 
   if (use_x11) {
-    sources += [ "native_viewport_x11.cc" ]
+    sources += [ "platform_viewport_x11.cc" ]
     deps += [ "//ui/platform_window/x11" ]
   }
 
   if (use_ozone) {
-    sources += [ "native_viewport_ozone.cc" ]
+    sources += [ "platform_viewport_ozone.cc" ]
   }
 }

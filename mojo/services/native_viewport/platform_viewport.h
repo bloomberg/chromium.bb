@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SERVICES_NATIVE_VIEWPORT_NATIVE_VIEWPORT_H_
-#define MOJO_SERVICES_NATIVE_VIEWPORT_NATIVE_VIEWPORT_H_
+#ifndef MOJO_SERVICES_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_H_
+#define MOJO_SERVICES_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "mojo/services/native_viewport/native_viewport_export.h"
@@ -21,22 +21,21 @@ class Event;
 namespace mojo {
 namespace services {
 
-class NativeViewportDelegate {
- public:
-  virtual ~NativeViewportDelegate() {}
-
-  virtual void OnBoundsChanged(const gfx::Rect& size) = 0;
-  virtual void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) = 0;
-  virtual bool OnEvent(ui::Event* ui_event) = 0;
-  virtual void OnDestroyed() = 0;
-};
-
 // Encapsulation of platform-specific Viewport.
-// TODO(abarth): Rename this class so that it doesn't conflict with the name of
-// the service.
-class NativeViewport {
+class PlatformViewport {
  public:
-  virtual ~NativeViewport() {}
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+
+    virtual void OnBoundsChanged(const gfx::Rect& size) = 0;
+    virtual void OnAcceleratedWidgetAvailable(
+        gfx::AcceleratedWidget widget) = 0;
+    virtual bool OnEvent(ui::Event* ui_event) = 0;
+    virtual void OnDestroyed() = 0;
+  };
+
+  virtual ~PlatformViewport() {}
 
   virtual void Init(const gfx::Rect& bounds) = 0;
   virtual void Show() = 0;
@@ -48,10 +47,10 @@ class NativeViewport {
   virtual void SetCapture() = 0;
   virtual void ReleaseCapture() = 0;
 
-  static scoped_ptr<NativeViewport> Create(NativeViewportDelegate* delegate);
+  static scoped_ptr<PlatformViewport> Create(Delegate* delegate);
 };
 
 }  // namespace services
 }  // namespace mojo
 
-#endif  // MOJO_SERVICES_NATIVE_VIEWPORT_NATIVE_VIEWPORT_H_
+#endif  // MOJO_SERVICES_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_H_

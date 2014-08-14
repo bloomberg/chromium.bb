@@ -18,7 +18,7 @@ import org.chromium.base.JNINamespace;
  * Exposes SurfaceView to native code.
  */
 @JNINamespace("mojo::services")
-public class NativeViewportAndroid extends SurfaceView {
+public class PlatformViewportAndroid extends SurfaceView {
 
     private long mNativeMojoViewport;
     private final SurfaceHolder.Callback mSurfaceCallback;
@@ -26,10 +26,10 @@ public class NativeViewportAndroid extends SurfaceView {
     @SuppressWarnings("unused")
     @CalledByNative
     public static void createForActivity(Activity activity, long nativeViewport) {
-        activity.setContentView(new NativeViewportAndroid(activity, nativeViewport));
+        activity.setContentView(new PlatformViewportAndroid(activity, nativeViewport));
     }
 
-    public NativeViewportAndroid(Context context, long nativeViewport) {
+    public PlatformViewportAndroid(Context context, long nativeViewport) {
         super(context);
 
         mNativeMojoViewport = nativeViewport;
@@ -74,16 +74,16 @@ public class NativeViewportAndroid extends SurfaceView {
                                 event.getEventTime());
     }
 
-    private static native void nativeDestroy(long nativeNativeViewportAndroid);
+    private static native void nativeDestroy(long nativePlatformViewportAndroid);
     private static native void nativeSurfaceCreated(
-        long nativeNativeViewportAndroid, Surface surface);
+        long nativePlatformViewportAndroid, Surface surface);
     private static native void nativeSurfaceDestroyed(
-        long nativeNativeViewportAndroid);
+        long nativePlatformViewportAndroid);
     private static native void nativeSurfaceSetSize(
-        long nativeNativeViewportAndroid,
+        long nativePlatformViewportAndroid,
         int width, int height);
     private static native boolean nativeTouchEvent(
-        long nativeNativeViewportAndroid,
+        long nativePlatformViewportAndroid,
         int pointerId,
         int action,
         float x, float y,

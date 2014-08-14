@@ -11,7 +11,7 @@
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/interface_factory.h"
 #include "mojo/services/gles2/command_buffer_impl.h"
-#include "mojo/services/native_viewport/native_viewport.h"
+#include "mojo/services/native_viewport/platform_viewport.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/public/cpp/input_events/input_events_type_converters.h"
 #include "mojo/services/public/interfaces/native_viewport/native_viewport.mojom.h"
@@ -29,8 +29,8 @@ bool IsRateLimitedEventType(ui::Event* event) {
 
 }  // namespace
 
-class NativeViewportImpl : public InterfaceImpl<mojo::NativeViewport>,
-                           public NativeViewportDelegate {
+class NativeViewportImpl : public InterfaceImpl<NativeViewport>,
+                           public PlatformViewport::Delegate {
  public:
   NativeViewportImpl()
       : widget_(gfx::kNullAcceleratedWidget),
@@ -39,32 +39,32 @@ class NativeViewportImpl : public InterfaceImpl<mojo::NativeViewport>,
   virtual ~NativeViewportImpl() {
     // Destroy the NativeViewport early on as it may call us back during
     // destruction and we want to be in a known state.
-    native_viewport_.reset();
+    platform_viewport_.reset();
   }
 
   virtual void Create(RectPtr bounds) OVERRIDE {
-    native_viewport_ = services::NativeViewport::Create(this);
-    native_viewport_->Init(bounds.To<gfx::Rect>());
+    platform_viewport_ = PlatformViewport::Create(this);
+    platform_viewport_->Init(bounds.To<gfx::Rect>());
     client()->OnCreated();
     OnBoundsChanged(bounds.To<gfx::Rect>());
   }
 
   virtual void Show() OVERRIDE {
-    native_viewport_->Show();
+    platform_viewport_->Show();
   }
 
   virtual void Hide() OVERRIDE {
-    native_viewport_->Hide();
+    platform_viewport_->Hide();
   }
 
   virtual void Close() OVERRIDE {
     command_buffer_.reset();
-    DCHECK(native_viewport_);
-    native_viewport_->Close();
+    DCHECK(platform_viewport_);
+    platform_viewport_->Close();
   }
 
   virtual void SetBounds(RectPtr bounds) OVERRIDE {
-    native_viewport_->SetBounds(bounds.To<gfx::Rect>());
+    platform_viewport_->SetBounds(bounds.To<gfx::Rect>());
   }
 
   virtual void CreateGLES2Context(
@@ -87,11 +87,11 @@ class NativeViewportImpl : public InterfaceImpl<mojo::NativeViewport>,
     DCHECK(!command_buffer_.get());
     if (widget_ == gfx::kNullAcceleratedWidget)
       return;
-    gfx::Size size = native_viewport_->GetSize();
+    gfx::Size size = platform_viewport_->GetSize();
     if (size.IsEmpty())
       return;
     command_buffer_.reset(
-        new CommandBufferImpl(widget_, native_viewport_->GetSize()));
+        new CommandBufferImpl(widget_, platform_viewport_->GetSize()));
     WeakBindToRequest(command_buffer_.get(), &command_buffer_request_);
   }
 
@@ -100,11 +100,11 @@ class NativeViewportImpl : public InterfaceImpl<mojo::NativeViewport>,
     switch (ui_event->type()) {
       case ui::ET_MOUSE_PRESSED:
       case ui::ET_TOUCH_PRESSED:
-        native_viewport_->SetCapture();
+        platform_viewport_->SetCapture();
         break;
       case ui::ET_MOUSE_RELEASED:
       case ui::ET_TOUCH_RELEASED:
-        native_viewport_->ReleaseCapture();
+        platform_viewport_->ReleaseCapture();
         break;
       default:
         break;
@@ -143,7 +143,7 @@ class NativeViewportImpl : public InterfaceImpl<mojo::NativeViewport>,
   }
 
   gfx::AcceleratedWidget widget_;
-  scoped_ptr<services::NativeViewport> native_viewport_;
+  scoped_ptr<PlatformViewport> platform_viewport_;
   InterfaceRequest<CommandBuffer> command_buffer_request_;
   scoped_ptr<CommandBufferImpl> command_buffer_;
   bool waiting_for_event_ack_;

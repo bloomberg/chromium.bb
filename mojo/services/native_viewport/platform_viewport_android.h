@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SERVICES_NATIVE_VIEWPORT_NATIVE_VIEWPORT_ANDROID_H_
-#define MOJO_SERVICES_NATIVE_VIEWPORT_NATIVE_VIEWPORT_ANDROID_H_
+#ifndef MOJO_SERVICES_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_ANDROID_H_
+#define MOJO_SERVICES_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_ANDROID_H_
 
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/weak_ptr.h"
-#include "mojo/services/native_viewport/native_viewport.h"
 #include "mojo/services/native_viewport/native_viewport_export.h"
+#include "mojo/services/native_viewport/platform_viewport.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/sequential_id_generator.h"
@@ -24,13 +24,13 @@ struct ANativeWindow;
 namespace mojo {
 namespace services {
 
-class MOJO_NATIVE_VIEWPORT_EXPORT NativeViewportAndroid
-    : public NativeViewport {
+class MOJO_NATIVE_VIEWPORT_EXPORT PlatformViewportAndroid
+    : public PlatformViewport {
  public:
   static MOJO_NATIVE_VIEWPORT_EXPORT bool Register(JNIEnv* env);
 
-  explicit NativeViewportAndroid(NativeViewportDelegate* delegate);
-  virtual ~NativeViewportAndroid();
+  explicit PlatformViewportAndroid(Delegate* delegate);
+  virtual ~PlatformViewportAndroid();
 
   void Destroy(JNIEnv* env, jobject obj);
   void SurfaceCreated(JNIEnv* env, jobject obj, jobject jsurface);
@@ -40,7 +40,7 @@ class MOJO_NATIVE_VIEWPORT_EXPORT NativeViewportAndroid
                   jfloat x, jfloat y, jlong time_ms);
 
  private:
-  // Overridden from NativeViewport:
+  // Overridden from PlatformViewport:
   virtual void Init(const gfx::Rect& bounds) OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
@@ -52,18 +52,18 @@ class MOJO_NATIVE_VIEWPORT_EXPORT NativeViewportAndroid
 
   void ReleaseWindow();
 
-  NativeViewportDelegate* delegate_;
+  Delegate* delegate_;
   ANativeWindow* window_;
   gfx::Rect bounds_;
   ui::SequentialIDGenerator id_generator_;
 
-  base::WeakPtrFactory<NativeViewportAndroid> weak_factory_;
+  base::WeakPtrFactory<PlatformViewportAndroid> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(NativeViewportAndroid);
+  DISALLOW_COPY_AND_ASSIGN(PlatformViewportAndroid);
 };
 
 
 }  // namespace services
 }  // namespace mojo
 
-#endif  // MOJO_SERVICES_NATIVE_VIEWPORT_NATIVE_VIEWPORT_ANDROID_H_
+#endif  // MOJO_SERVICES_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_ANDROID_H_

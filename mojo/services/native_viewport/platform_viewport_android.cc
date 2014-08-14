@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/native_viewport/native_viewport_android.h"
+#include "mojo/services/native_viewport/platform_viewport_android.h"
 
 #include <android/input.h>
 #include <android/native_window_jni.h>
 
 #include "base/android/jni_android.h"
-#include "jni/NativeViewportAndroid_jni.h"
+#include "jni/PlatformViewportAndroid_jni.h"
 #include "ui/events/event.h"
 #include "ui/gfx/point.h"
 
@@ -30,32 +30,32 @@ ui::EventType MotionEventActionToEventType(jint action) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeViewportAndroid, public:
+// PlatformViewportAndroid, public:
 
 // static
-bool NativeViewportAndroid::Register(JNIEnv* env) {
+bool PlatformViewportAndroid::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-NativeViewportAndroid::NativeViewportAndroid(NativeViewportDelegate* delegate)
+PlatformViewportAndroid::PlatformViewportAndroid(Delegate* delegate)
     : delegate_(delegate),
       window_(NULL),
       id_generator_(0),
       weak_factory_(this) {
 }
 
-NativeViewportAndroid::~NativeViewportAndroid() {
+PlatformViewportAndroid::~PlatformViewportAndroid() {
   if (window_)
     ReleaseWindow();
 }
 
-void NativeViewportAndroid::Destroy(JNIEnv* env, jobject obj) {
+void PlatformViewportAndroid::Destroy(JNIEnv* env, jobject obj) {
   delegate_->OnDestroyed();
 }
 
-void NativeViewportAndroid::SurfaceCreated(JNIEnv* env,
-                                           jobject obj,
-                                           jobject jsurface) {
+void PlatformViewportAndroid::SurfaceCreated(JNIEnv* env,
+                                             jobject obj,
+                                             jobject jsurface) {
   base::android::ScopedJavaLocalRef<jobject> protector(env, jsurface);
   // Note: This ensures that any local references used by
   // ANativeWindow_fromSurface are released immediately. This is needed as a
@@ -67,22 +67,22 @@ void NativeViewportAndroid::SurfaceCreated(JNIEnv* env,
   delegate_->OnAcceleratedWidgetAvailable(window_);
 }
 
-void NativeViewportAndroid::SurfaceDestroyed(JNIEnv* env, jobject obj) {
+void PlatformViewportAndroid::SurfaceDestroyed(JNIEnv* env, jobject obj) {
   DCHECK(window_);
   ReleaseWindow();
 }
 
-void NativeViewportAndroid::SurfaceSetSize(JNIEnv* env, jobject obj,
-                                           jint width, jint height) {
+void PlatformViewportAndroid::SurfaceSetSize(JNIEnv* env, jobject obj,
+                                             jint width, jint height) {
   bounds_ = gfx::Rect(width, height);
   delegate_->OnBoundsChanged(bounds_);
 }
 
-bool NativeViewportAndroid::TouchEvent(JNIEnv* env, jobject obj,
-                                       jint pointer_id,
-                                       jint action,
-                                       jfloat x, jfloat y,
-                                       jlong time_ms) {
+bool PlatformViewportAndroid::TouchEvent(JNIEnv* env, jobject obj,
+                                         jint pointer_id,
+                                         jint action,
+                                         jfloat x, jfloat y,
+                                         jlong time_ms) {
   gfx::Point location(static_cast<int>(x), static_cast<int>(y));
   ui::TouchEvent event(MotionEventActionToEventType(action), location,
                        id_generator_.GetGeneratedID(pointer_id),
@@ -96,62 +96,62 @@ bool NativeViewportAndroid::TouchEvent(JNIEnv* env, jobject obj,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeViewportAndroid, NativeViewport implementation:
+// PlatformViewportAndroid, PlatformViewport implementation:
 
-void NativeViewportAndroid::Init(const gfx::Rect& bounds) {
+void PlatformViewportAndroid::Init(const gfx::Rect& bounds) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_NativeViewportAndroid_createForActivity(
+  Java_PlatformViewportAndroid_createForActivity(
       env,
       base::android::GetApplicationContext(),
       reinterpret_cast<jlong>(this));
 }
 
-void NativeViewportAndroid::Show() {
+void PlatformViewportAndroid::Show() {
   // Nothing to do. View is created visible.
 }
 
-void NativeViewportAndroid::Hide() {
+void PlatformViewportAndroid::Hide() {
   // Nothing to do. View is always visible.
 }
 
-void NativeViewportAndroid::Close() {
+void PlatformViewportAndroid::Close() {
   // TODO(beng): close activity containing MojoView?
 
   // TODO(beng): perform this in response to view destruction.
   delegate_->OnDestroyed();
 }
 
-gfx::Size NativeViewportAndroid::GetSize() {
+gfx::Size PlatformViewportAndroid::GetSize() {
   return bounds_.size();
 }
 
-void NativeViewportAndroid::SetBounds(const gfx::Rect& bounds) {
+void PlatformViewportAndroid::SetBounds(const gfx::Rect& bounds) {
   NOTIMPLEMENTED();
 }
 
-void NativeViewportAndroid::SetCapture() {
+void PlatformViewportAndroid::SetCapture() {
   NOTIMPLEMENTED();
 }
 
-void NativeViewportAndroid::ReleaseCapture() {
+void PlatformViewportAndroid::ReleaseCapture() {
   NOTIMPLEMENTED();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeViewportAndroid, private:
+// PlatformViewportAndroid, private:
 
-void NativeViewportAndroid::ReleaseWindow() {
+void PlatformViewportAndroid::ReleaseWindow() {
   ANativeWindow_release(window_);
   window_ = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeViewport, public:
+// PlatformViewport, public:
 
 // static
-scoped_ptr<NativeViewport> NativeViewport::Create(
-    NativeViewportDelegate* delegate) {
-  return scoped_ptr<NativeViewport>(new NativeViewportAndroid(delegate)).Pass();
+scoped_ptr<PlatformViewport> PlatformViewport::Create(Delegate* delegate) {
+  return scoped_ptr<PlatformViewport>(
+      new PlatformViewportAndroid(delegate)).Pass();
 }
 
 }  // namespace services

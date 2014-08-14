@@ -2,23 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/native_viewport/native_viewport.h"
+#include "mojo/services/native_viewport/platform_viewport.h"
 
 // Stub to build on platforms we don't fully support yet.
 
 namespace mojo {
 namespace services {
 
-class NativeViewportStub : public NativeViewport {
+class PlatformViewportStub : public PlatformViewport {
  public:
-  NativeViewportStub(NativeViewportDelegate* delegate)
-      : delegate_(delegate) {
+  PlatformViewportStub(Delegate* delegate) : delegate_(delegate) {
   }
-  virtual ~NativeViewportStub() {
+  virtual ~PlatformViewportStub() {
   }
 
  private:
-  // Overridden from NativeViewport:
+  // Overridden from PlatformViewport:
   virtual void Init() OVERRIDE {
   }
   virtual void Show() OVERRIDE {
@@ -34,15 +33,15 @@ class NativeViewportStub : public NativeViewport {
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE {
   }
 
-  NativeViewportDelegate* delegate_;
+  Delegate* delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(NativeViewportStub);
+  DISALLOW_COPY_AND_ASSIGN(PlatformViewportStub);
 };
 
 // static
-scoped_ptr<NativeViewport> NativeViewport::Create(
-    NativeViewportDelegate* delegate) {
-  return scoped_ptr<NativeViewport>(new NativeViewportStub(delegate)).Pass();
+scoped_ptr<PlatformViewport> PlatformViewport::Create(Delegate* delegate) {
+  return scoped_ptr<PlatformViewport>(
+      new PlatformViewportStub(delegate)).Pass();
 }
 
 }  // namespace services

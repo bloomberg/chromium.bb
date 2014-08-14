@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/native_viewport/native_viewport.h"
+#include "mojo/services/native_viewport/platform_viewport.h"
 
 #import <AppKit/NSApplication.h>
 #import <AppKit/NSView.h>
@@ -14,20 +14,20 @@
 namespace mojo {
 namespace services {
 
-class NativeViewportMac : public NativeViewport {
+class PlatformViewportMac : public PlatformViewport {
  public:
-  NativeViewportMac(NativeViewportDelegate* delegate)
+  PlatformViewportMac(Delegate* delegate)
       : delegate_(delegate),
         window_(nil) {
   }
 
-  virtual ~NativeViewportMac() {
+  virtual ~PlatformViewportMac() {
     [window_ orderOut:nil];
     [window_ close];
   }
 
  private:
-  // Overridden from NativeViewport:
+  // Overridden from PlatformViewport:
   virtual void Init(const gfx::Rect& bounds) OVERRIDE {
     [NSApplication sharedApplication];
 
@@ -70,17 +70,16 @@ class NativeViewportMac : public NativeViewport {
     NOTIMPLEMENTED();
   }
 
-  NativeViewportDelegate* delegate_;
+  Delegate* delegate_;
   NSWindow* window_;
   gfx::Rect rect_;
 
-  DISALLOW_COPY_AND_ASSIGN(NativeViewportMac);
+  DISALLOW_COPY_AND_ASSIGN(PlatformViewportMac);
 };
 
 // static
-scoped_ptr<NativeViewport> NativeViewport::Create(
-    NativeViewportDelegate* delegate) {
-  return scoped_ptr<NativeViewport>(new NativeViewportMac(delegate)).Pass();
+scoped_ptr<PlatformViewport> PlatformViewport::Create(Delegate* delegate) {
+  return scoped_ptr<PlatformViewport>(new PlatformViewportMac(delegate)).Pass();
 }
 
 }  // namespace services

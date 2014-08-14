@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/native_viewport/native_viewport.h"
+#include "mojo/services/native_viewport/platform_viewport.h"
 
 #include "ui/events/event.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
@@ -17,23 +17,22 @@
 namespace mojo {
 namespace services {
 
-// TODO(spang): Deduplicate with NativeViewportX11.. but there's a hack
+// TODO(spang): Deduplicate with PlatformViewportX11.. but there's a hack
 // in there that prevents this.
-class NativeViewportOzone : public NativeViewport,
-                            public ui::PlatformWindowDelegate {
+class PlatformViewportOzone : public PlatformViewport,
+                              public ui::PlatformWindowDelegate {
  public:
-  explicit NativeViewportOzone(NativeViewportDelegate* delegate)
-      : delegate_(delegate) {
+  explicit PlatformViewportOzone(Delegate* delegate) : delegate_(delegate) {
     ui::OzonePlatform::InitializeForUI();
   }
 
-  virtual ~NativeViewportOzone() {
+  virtual ~PlatformViewportOzone() {
     // Destroy the platform-window while |this| is still alive.
     platform_window_.reset();
   }
 
  private:
-  // Overridden from NativeViewport:
+  // Overridden from PlatformViewport:
   virtual void Init(const gfx::Rect& bounds) OVERRIDE {
     platform_window_ =
         ui::OzonePlatform::GetInstance()->CreatePlatformWindow(this, bounds);
@@ -84,15 +83,15 @@ class NativeViewportOzone : public NativeViewport,
   virtual void OnActivationChanged(bool active) OVERRIDE {}
 
   scoped_ptr<ui::PlatformWindow> platform_window_;
-  NativeViewportDelegate* delegate_;
+  Delegate* delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(NativeViewportOzone);
+  DISALLOW_COPY_AND_ASSIGN(PlatformViewportOzone);
 };
 
 // static
-scoped_ptr<NativeViewport> NativeViewport::Create(
-    NativeViewportDelegate* delegate) {
-  return scoped_ptr<NativeViewport>(new NativeViewportOzone(delegate)).Pass();
+scoped_ptr<PlatformViewport> PlatformViewport::Create(Delegate* delegate) {
+  return scoped_ptr<PlatformViewport>(
+      new PlatformViewportOzone(delegate)).Pass();
 }
 
 }  // namespace services

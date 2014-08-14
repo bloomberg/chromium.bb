@@ -472,7 +472,7 @@
           'sources': [
             'android/javatests/src/org/chromium/mojo/MojoTestCase.java',
             'android/system/src/org/chromium/mojo/system/impl/CoreImpl.java',
-            'services/native_viewport/android/src/org/chromium/mojo/NativeViewportAndroid.java',
+            'services/native_viewport/android/src/org/chromium/mojo/PlatformViewportAndroid.java',
             'shell/android/apk/src/org/chromium/mojo_shell_apk/MojoMain.java',
           ],
           'variables': {
