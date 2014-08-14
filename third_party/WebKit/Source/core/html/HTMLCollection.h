@@ -55,6 +55,7 @@ public:
     void namedItems(const AtomicString& name, WillBeHeapVector<RefPtrWillBeMember<Element> >&) const;
     bool isEmpty() const { return m_collectionIndexCache.isEmpty(*this); }
     bool hasExactlyOneItem() const { return m_collectionIndexCache.hasExactlyOneNode(*this); }
+    bool elementMatches(const Element&) const;
 
     // CollectionIndexCache API.
     bool canTraverseBackward() const { return !overridesItemAfter(); }
