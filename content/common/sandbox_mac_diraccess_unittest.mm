@@ -127,7 +127,6 @@ TEST_F(MacDirAccessSandboxTest, RegexEscape) {
     std::string out;
     EXPECT_TRUE(Sandbox::QuoteStringForRegex(in_utf8, &out));
     EXPECT_EQ(expected, out);
-
   }
 }
 
@@ -175,6 +174,18 @@ TEST_F(MacDirAccessSandboxTest, SandboxAccess) {
     ScopedDirectory cleanup_sandbox_sibling(&sibling_sandbox_dir);
 
     EXPECT_TRUE(CheckSandbox(sandbox_dir.value()));
+  }
+}
+
+TEST_F(MacDirAccessSandboxTest, AllowMetadataForPath) {
+  {
+    std::string expected(
+        "(allow file-read-metadata (literal \"/\")(literal \"/System\")"
+        "(literal \"/System/Library\")"
+        "(literal \"/System/Library/Frameworks\"))");
+    NSString* sandbox_command = Sandbox::AllowMetadataForPath(
+        base::FilePath("/System/Library/Frameworks"));
+    EXPECT_EQ(base::SysNSStringToUTF8(sandbox_command), expected);
   }
 }
 

@@ -160,6 +160,7 @@ class CONTENT_EXPORT Sandbox {
   FRIEND_TEST_ALL_PREFIXES(MacDirAccessSandboxTest, StringEscape);
   FRIEND_TEST_ALL_PREFIXES(MacDirAccessSandboxTest, RegexEscape);
   FRIEND_TEST_ALL_PREFIXES(MacDirAccessSandboxTest, SandboxAccess);
+  FRIEND_TEST_ALL_PREFIXES(MacDirAccessSandboxTest, AllowMetadataForPath);
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(Sandbox);
 };
