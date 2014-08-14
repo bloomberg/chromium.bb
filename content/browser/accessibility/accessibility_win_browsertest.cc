@@ -640,8 +640,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 // If you made a change and this test now fails, check that the NativeViewHost
 // that wraps the tab contents returns the IAccessible implementation
 // provided by RenderWidgetHostViewWin in GetNativeViewAccessible().
+// flaky: http://crbug.com/402190
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       ContainsRendererAccessibilityTree) {
+                       DISABLED_ContainsRendererAccessibilityTree) {
   LoadInitialAccessibilityTreeFromHtml(
       "<html><head><title>MyDocument</title></head>"
       "<body>Content</body></html>");
