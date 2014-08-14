@@ -73,7 +73,7 @@ function testAppViewBasic(appToEmbed) {
   LOG('appToEmbed  ' + appToEmbed);
   // Step 1: Attempt to connect to a non-existant app.
   LOG('attempting to connect to non-existant app.');
-  appview.connect('abc123', function(success) {
+  appview.connect('abc123', {}, function(success) {
     // Make sure we fail.
     if (success) {
       embedder.test.fail();
@@ -82,7 +82,7 @@ function testAppViewBasic(appToEmbed) {
     LOG('failed to connect to non-existant app.');
     LOG('attempting to connect to known app.');
     // Step 2: Attempt to connect to an app we know exists.
-    appview.connect(appToEmbed, function(success) {
+    appview.connect(appToEmbed, {}, function(success) {
       // Make sure we don't fail.
       if (!success) {
         embedder.test.fail();
@@ -94,8 +94,41 @@ function testAppViewBasic(appToEmbed) {
   document.body.appendChild(appview);
 };
 
+function testAppViewRefusedDataShouldFail(appToEmbed) {
+  var appview = new AppView();
+  LOG('appToEmbed  ' + appToEmbed);
+  LOG('Attempting to connect to app with refused params.');
+  appview.connect(appToEmbed, { 'foo': 'bar' }, function(success) {
+    // Make sure we fail.
+    if (success) {
+      embedder.test.fail();
+      return;
+    }
+    embedder.test.succeed();
+  });
+  document.body.appendChild(appview);
+};
+
+function testAppViewGoodDataShouldSucceed(appToEmbed) {
+  var appview = new AppView();
+  LOG('appToEmbed  ' + appToEmbed);
+  LOG('Attempting to connect to app with good params.');
+  // Step 2: Attempt to connect to an app with good params.
+  appview.connect(appToEmbed, { 'foo': 'bleep' }, function(success) {
+    // Make sure we don't fail.
+    if (!success) {
+      embedder.test.fail();
+      return;
+    }
+    embedder.test.succeed();
+  });
+  document.body.appendChild(appview);
+};
+
 embedder.test.testList = {
-  'testAppViewBasic': testAppViewBasic
+  'testAppViewBasic': testAppViewBasic,
+  'testAppViewRefusedDataShouldFail': testAppViewRefusedDataShouldFail,
+  'testAppViewGoodDataShouldSucceed': testAppViewGoodDataShouldSucceed
 };
 
 onload = function() {

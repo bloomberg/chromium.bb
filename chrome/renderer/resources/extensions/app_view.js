@@ -39,14 +39,15 @@ AppViewInternal.prototype.createBrowserPluginNode = function() {
   return browserPluginNode;
 };
 
-AppViewInternal.prototype.connect = function(app, callback) {
-  var params = {
-    'appId': app
+AppViewInternal.prototype.connect = function(app, data, callback) {
+  var createParams = {
+    'appId': app,
+    'data': data
   };
   var self = this;
   GuestViewInternal.createGuest(
     'appview',
-    params,
+    createParams,
     function(instanceId) {
       if (!instanceId) {
         self.browserPluginNode.style.visibility = 'hidden';

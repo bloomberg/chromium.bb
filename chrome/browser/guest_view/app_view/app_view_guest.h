@@ -66,7 +66,8 @@ class AppViewGuest : public GuestView<AppViewGuest>,
                                  const Extension* guest_extension,
                                  const WebContentsCreatedCallback& callback);
 
-  void LaunchAppAndFireEvent(const WebContentsCreatedCallback& callback,
+  void LaunchAppAndFireEvent(scoped_ptr<base::DictionaryValue> data,
+                             const WebContentsCreatedCallback& callback,
                              ExtensionHost* extension_host);
 
   GURL url_;

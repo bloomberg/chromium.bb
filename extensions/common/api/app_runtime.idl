@@ -49,6 +49,10 @@ namespace app.runtime {
   dictionary EmbedRequest {
     DOMString embedderId;
 
+    // Optional developer specified data that the app to be embedded can use
+    // when making an embedding decision.
+    any? data;
+
     // Allows <code>embedderId</code> to embed this app in an &lt;appview&gt;
     // element. The <code>url</code> specifies the content to embed.
     [nocompile] static void allow(DOMString url);

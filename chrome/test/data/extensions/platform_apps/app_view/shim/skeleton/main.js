@@ -3,6 +3,13 @@
 // found in the LICENSE file.
 
 chrome.app.runtime.onEmbedRequested.addListener(function(request) {
-  request.allow('main.html');
+  if (!request.data.foo) {
+    request.allow('main.html');
+    return;
+  } else if (request.data.foo == 'bar') {
+    request.deny();
+  } else if (request.data.foo == 'bleep') {
+    request.allow('main.html');
+  }
 });
 

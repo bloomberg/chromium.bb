@@ -151,6 +151,12 @@ void AppViewGuest::CreateWebContents(
     return;
   }
 
+  const base::DictionaryValue* data = NULL;
+  if (!create_params.GetDictionary(appview::kData, &data)) {
+    callback.Run(NULL);
+    return;
+  }
+
   ExtensionService* service =
       ExtensionSystem::Get(browser_context())->extension_service();
   const Extension* guest_extension = service->GetExtensionById(app_id, false);
@@ -175,9 +181,11 @@ void AppViewGuest::CreateWebContents(
   if (queue->ShouldEnqueueTask(browser_context(), guest_extension)) {
     queue->AddPendingTask(browser_context(),
                           guest_extension->id(),
-                          base::Bind(&AppViewGuest::LaunchAppAndFireEvent,
-                                     weak_ptr_factory_.GetWeakPtr(),
-                                     callback));
+                          base::Bind(
+                              &AppViewGuest::LaunchAppAndFireEvent,
+                              weak_ptr_factory_.GetWeakPtr(),
+                              base::Passed(make_scoped_ptr(data->DeepCopy())),
+                              callback));
     return;
   }
 
@@ -186,7 +194,7 @@ void AppViewGuest::CreateWebContents(
   ExtensionHost* host =
       process_manager->GetBackgroundHostForExtension(guest_extension->id());
   DCHECK(host);
-  LaunchAppAndFireEvent(callback, host);
+  LaunchAppAndFireEvent(make_scoped_ptr(data->DeepCopy()), callback, host);
 }
 
 void AppViewGuest::DidAttachToEmbedder() {
@@ -228,6 +236,7 @@ void AppViewGuest::CompleteCreateWebContents(
 }
 
 void AppViewGuest::LaunchAppAndFireEvent(
+    scoped_ptr<base::DictionaryValue> data,
     const WebContentsCreatedCallback& callback,
     ExtensionHost* extension_host) {
   ExtensionSystem* system = ExtensionSystem::Get(browser_context());
@@ -242,6 +251,7 @@ void AppViewGuest::LaunchAppAndFireEvent(
   scoped_ptr<base::DictionaryValue> embed_request(new base::DictionaryValue());
   embed_request->SetInteger(appview::kGuestInstanceID, GetGuestInstanceID());
   embed_request->SetString(appview::kEmbedderID, embedder_extension_id());
+  embed_request->Set(appview::kData, data.release());
   AppRuntimeEventRouter::DispatchOnEmbedRequestedEvent(
       browser_context(), embed_request.Pass(), extension_host->extension());
 }

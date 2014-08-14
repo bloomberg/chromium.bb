@@ -149,3 +149,22 @@ IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewBasic) {
              NO_TEST_SERVER);
 }
 
+// Tests that <appview> correctly processes parameters passed on connect.
+IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewRefusedDataShouldFail) {
+  const extensions::Extension* skeleton_app =
+      InstallPlatformApp("app_view/shim/skeleton");
+  TestHelper("testAppViewRefusedDataShouldFail",
+             "app_view/shim",
+             skeleton_app->id(),
+             NO_TEST_SERVER);
+}
+
+// Tests that <appview> correctly processes parameters passed on connect.
+IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewGoodDataShouldSucceed) {
+  const extensions::Extension* skeleton_app =
+      InstallPlatformApp("app_view/shim/skeleton");
+  TestHelper("testAppViewGoodDataShouldSucceed",
+             "app_view/shim",
+             skeleton_app->id(),
+             NO_TEST_SERVER);
+}
