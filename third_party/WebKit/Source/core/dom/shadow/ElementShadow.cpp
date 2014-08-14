@@ -29,12 +29,12 @@
 
 #include "core/css/StyleSheetList.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/dom/NoEventDispatchAssertion.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/ContentDistribution.h"
 #include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLShadowElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "platform/EventDispatchForbiddenScope.h"
 #include "platform/ScriptForbiddenScope.h"
 
 namespace blink {
@@ -144,7 +144,7 @@ ElementShadow::~ElementShadow()
 
 ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost, ShadowRoot::ShadowRootType type)
 {
-    NoEventDispatchAssertion assertNoEventDispatch;
+    EventDispatchForbiddenScope assertNoEventDispatch;
     ScriptForbiddenScope forbidScript;
 
     if (type == ShadowRoot::AuthorShadowRoot && (!youngestShadowRoot() || youngestShadowRoot()->type() == ShadowRoot::UserAgentShadowRoot))

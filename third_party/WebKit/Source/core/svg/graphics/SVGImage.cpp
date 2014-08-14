@@ -30,7 +30,6 @@
 #include "core/svg/graphics/SVGImage.h"
 
 #include "core/animation/AnimationTimeline.h"
-#include "core/dom/NoEventDispatchAssertion.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/ComposedTreeWalker.h"
 #include "core/frame/FrameView.h"
@@ -46,6 +45,7 @@
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/animation/SMILTimeContainer.h"
 #include "core/svg/graphics/SVGImageChromeClient.h"
+#include "platform/EventDispatchForbiddenScope.h"
 #include "platform/LengthFunctions.h"
 #include "platform/TraceEvent.h"
 #include "platform/geometry/IntRect.h"
@@ -384,7 +384,7 @@ bool SVGImage::dataChanged(bool allDataReceived)
         // actually allow script to run so it's fine to call into it. We allow this
         // since it means an SVG data url can synchronously load like other image
         // types.
-        NoEventDispatchAssertion::AllowUserAgentEvents allowUserAgentEvents;
+        EventDispatchForbiddenScope::AllowUserAgentEvents allowUserAgentEvents;
 
         static FrameLoaderClient* dummyFrameLoaderClient = new EmptyFrameLoaderClient;
 

@@ -35,12 +35,12 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/NoEventDispatchAssertion.h"
 #include "core/editing/Editor.h"
 #include "core/events/Event.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/UseCounter.h"
+#include "platform/EventDispatchForbiddenScope.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
@@ -258,7 +258,7 @@ void EventTarget::countLegacyEvents(const AtomicString& legacyTypeName, EventLis
 
 bool EventTarget::fireEventListeners(Event* event)
 {
-    ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
+    ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
     ASSERT(event && !event->type().isEmpty());
 
     EventTargetData* d = eventTargetData();

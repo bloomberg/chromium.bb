@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NoEventDispatchAssertion_h
-#define NoEventDispatchAssertion_h
+#ifndef EventDispatchForbiddenScope_h
+#define EventDispatchForbiddenScope_h
 
 #include "wtf/MainThread.h"
 #include "wtf/TemporaryChange.h"
@@ -12,16 +12,16 @@ namespace blink {
 
 #if ENABLE(ASSERT)
 
-class NoEventDispatchAssertion {
+class EventDispatchForbiddenScope {
 public:
-    NoEventDispatchAssertion()
+    EventDispatchForbiddenScope()
     {
         if (!isMainThread())
             return;
         ++s_count;
     }
 
-    ~NoEventDispatchAssertion()
+    ~EventDispatchForbiddenScope()
     {
         if (!isMainThread())
             return;
@@ -57,9 +57,9 @@ private:
 
 #else
 
-class NoEventDispatchAssertion {
+class EventDispatchForbiddenScope {
 public:
-    NoEventDispatchAssertion() { }
+    EventDispatchForbiddenScope() { }
 
     class AllowUserAgentEvents {
     public:
@@ -71,4 +71,4 @@ public:
 
 } // namespace blink
 
-#endif // NoEventDispatchAssertion_h
+#endif // EventDispatchForbiddenScope_h

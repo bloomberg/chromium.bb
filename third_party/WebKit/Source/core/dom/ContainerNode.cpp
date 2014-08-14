@@ -31,7 +31,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/FullscreenElementStack.h"
 #include "core/dom/NameNodeList.h"
-#include "core/dom/NoEventDispatchAssertion.h"
 #include "core/dom/NodeChildRemovalTracker.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeRenderStyle.h"
@@ -51,6 +50,7 @@
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
+#include "platform/EventDispatchForbiddenScope.h"
 #include "platform/ScriptForbiddenScope.h"
 
 namespace blink {
@@ -61,7 +61,7 @@ static void dispatchChildInsertionEvents(Node&);
 static void dispatchChildRemovalEvents(Node&);
 
 #if ENABLE(ASSERT)
-unsigned NoEventDispatchAssertion::s_count = 0;
+unsigned EventDispatchForbiddenScope::s_count = 0;
 #endif
 
 static void collectChildrenAndRemoveFromOldParent(Node& node, NodeVector& nodes, ExceptionState& exceptionState)
@@ -256,7 +256,7 @@ PassRefPtrWillBeRawPtr<Node> ContainerNode::insertBefore(PassRefPtrWillBeRawPtr<
 
 void ContainerNode::insertBeforeCommon(Node& nextChild, Node& newChild)
 {
-    NoEventDispatchAssertion assertNoEventDispatch;
+    EventDispatchForbiddenScope assertNoEventDispatch;
     ScriptForbiddenScope forbidScript;
 
     ASSERT(!newChild.parentNode()); // Use insertBefore if you need to handle reparenting (and want DOM mutation events).
@@ -402,7 +402,7 @@ PassRefPtrWillBeRawPtr<Node> ContainerNode::replaceChild(PassRefPtrWillBeRawPtr<
 
         // Add child before "next".
         {
-            NoEventDispatchAssertion assertNoEventDispatch;
+            EventDispatchForbiddenScope assertNoEventDispatch;
             if (next)
                 insertBeforeCommon(*next, child);
             else
@@ -577,7 +577,7 @@ PassRefPtrWillBeRawPtr<Node> ContainerNode::removeChild(PassRefPtrWillBeRawPtr<N
 
 void ContainerNode::removeBetween(Node* previousChild, Node* nextChild, Node& oldChild)
 {
-    NoEventDispatchAssertion assertNoEventDispatch;
+    EventDispatchForbiddenScope assertNoEventDispatch;
 
     ASSERT(oldChild.parentNode() == this);
 
@@ -661,7 +661,7 @@ void ContainerNode::removeChildren()
         HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
 
         {
-            NoEventDispatchAssertion assertNoEventDispatch;
+            EventDispatchForbiddenScope assertNoEventDispatch;
             ScriptForbiddenScope forbidScript;
 
             removedChildren.reserveInitialCapacity(countChildren());
@@ -731,7 +731,7 @@ PassRefPtrWillBeRawPtr<Node> ContainerNode::appendChild(PassRefPtrWillBeRawPtr<N
             break;
 
         {
-            NoEventDispatchAssertion assertNoEventDispatch;
+            EventDispatchForbiddenScope assertNoEventDispatch;
             ScriptForbiddenScope forbidScript;
 
             treeScope().adoptIfNeeded(child);
@@ -758,7 +758,7 @@ void ContainerNode::parserAppendChild(PassRefPtrWillBeRawPtr<Node> newChild)
         document().adoptNode(newChild.get(), ASSERT_NO_EXCEPTION);
 
     {
-        NoEventDispatchAssertion assertNoEventDispatch;
+        EventDispatchForbiddenScope assertNoEventDispatch;
         ScriptForbiddenScope forbidScript;
 
         treeScope().adoptIfNeeded(*newChild);
@@ -772,7 +772,7 @@ void ContainerNode::parserAppendChild(PassRefPtrWillBeRawPtr<Node> newChild)
 
 void ContainerNode::notifyNodeInserted(Node& root, ChildrenChangeSource source)
 {
-    ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
+    ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
     ASSERT(!root.isShadowRoot());
 
     InspectorInstrumentation::didInsertDOMNode(&root);
@@ -794,7 +794,7 @@ void ContainerNode::notifyNodeInserted(Node& root, ChildrenChangeSource source)
 
 void ContainerNode::notifyNodeInsertedInternal(Node& root, NodeVector& postInsertionNotificationTargets)
 {
-    NoEventDispatchAssertion assertNoEventDispatch;
+    EventDispatchForbiddenScope assertNoEventDispatch;
     ScriptForbiddenScope forbidScript;
 
     for (Node* node = &root; node; node = NodeTraversal::next(*node, &root)) {
@@ -812,7 +812,7 @@ void ContainerNode::notifyNodeInsertedInternal(Node& root, NodeVector& postInser
 void ContainerNode::notifyNodeRemoved(Node& root)
 {
     ScriptForbiddenScope forbidScript;
-    NoEventDispatchAssertion assertNoEventDispatch;
+    EventDispatchForbiddenScope assertNoEventDispatch;
 
     Document& document = root.document();
     for (Node* node = &root; node; node = NodeTraversal::next(*node, &root)) {
@@ -1135,7 +1135,7 @@ static void dispatchChildInsertionEvents(Node& child)
     if (child.isInShadowTree())
         return;
 
-    ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
+    ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
 
     RefPtrWillBeRawPtr<Node> c(child);
     RefPtrWillBeRawPtr<Document> document(child.document());
@@ -1157,7 +1157,7 @@ static void dispatchChildRemovalEvents(Node& child)
         return;
     }
 
-    ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
+    ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
 
     InspectorInstrumentation::willRemoveDOMNode(&child);
 

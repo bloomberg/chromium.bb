@@ -48,7 +48,6 @@
 #include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/NoEventDispatchAssertion.h"
 #include "core/dom/RequestAnimationFrameCallback.h"
 #include "core/editing/Editor.h"
 #include "core/events/DOMWindowEventQueue.h"
@@ -96,6 +95,7 @@
 #include "core/storage/StorageArea.h"
 #include "core/storage/StorageNamespace.h"
 #include "core/timing/Performance.h"
+#include "platform/EventDispatchForbiddenScope.h"
 #include "platform/PlatformScreen.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
@@ -447,7 +447,7 @@ void LocalDOMWindow::enqueueDocumentEvent(PassRefPtrWillBeRawPtr<Event> event)
 
 void LocalDOMWindow::dispatchWindowLoadEvent()
 {
-    ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
+    ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
     dispatchLoadEvent();
 }
 
@@ -1591,7 +1591,7 @@ void LocalDOMWindow::dispatchLoadEvent()
 
 bool LocalDOMWindow::dispatchEvent(PassRefPtrWillBeRawPtr<Event> prpEvent, PassRefPtrWillBeRawPtr<EventTarget> prpTarget)
 {
-    ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
+    ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
 
     RefPtrWillBeRawPtr<EventTarget> protect(this);
     RefPtrWillBeRawPtr<Event> event = prpEvent;

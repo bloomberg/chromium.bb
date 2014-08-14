@@ -27,7 +27,6 @@
 #include "core/events/EventDispatcher.h"
 
 #include "core/dom/ContainerNode.h"
-#include "core/dom/NoEventDispatchAssertion.h"
 #include "core/events/EventDispatchMediator.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/ScopedEventQueue.h"
@@ -35,6 +34,7 @@
 #include "core/frame/FrameView.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
+#include "platform/EventDispatchForbiddenScope.h"
 #include "platform/TraceEvent.h"
 #include "wtf/RefPtr.h"
 
@@ -43,7 +43,7 @@ namespace blink {
 bool EventDispatcher::dispatchEvent(Node* node, PassRefPtrWillBeRawPtr<EventDispatchMediator> mediator)
 {
     TRACE_EVENT0("blink", "EventDispatcher::dispatchEvent");
-    ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
+    ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
     if (!mediator->event())
         return true;
     EventDispatcher dispatcher(node, mediator->event());
@@ -114,7 +114,7 @@ bool EventDispatcher::dispatch()
 #endif
 
     m_event->setTarget(EventPath::eventTargetRespectingTargetRules(m_node.get()));
-    ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
+    ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
     ASSERT(m_event->target());
     WindowEventContext windowEventContext(m_event.get(), m_node.get(), topNodeEventContext());
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "EventDispatch", "data", InspectorEventDispatchEvent::data(*m_event));

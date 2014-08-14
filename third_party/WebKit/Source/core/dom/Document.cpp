@@ -73,7 +73,6 @@
 #include "core/dom/ExecutionContextTask.h"
 #include "core/dom/MainThreadTaskRunner.h"
 #include "core/dom/MutationObserver.h"
-#include "core/dom/NoEventDispatchAssertion.h"
 #include "core/dom/NodeChildRemovalTracker.h"
 #include "core/dom/NodeFilter.h"
 #include "core/dom/NodeIterator.h"
@@ -183,6 +182,7 @@
 #include "core/xml/XSLTProcessor.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 #include "platform/DateComponents.h"
+#include "platform/EventDispatchForbiddenScope.h"
 #include "platform/Language.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
@@ -3756,7 +3756,7 @@ void Document::updateRangesAfterNodeMovedToAnotherDocument(const Node& node)
 
 void Document::nodeChildrenWillBeRemoved(ContainerNode& container)
 {
-    NoEventDispatchAssertion assertNoEventDispatch;
+    EventDispatchForbiddenScope assertNoEventDispatch;
     if (!m_ranges.isEmpty()) {
         AttachedRangeSet::const_iterator end = m_ranges.end();
         for (AttachedRangeSet::const_iterator it = m_ranges.begin(); it != end; ++it)

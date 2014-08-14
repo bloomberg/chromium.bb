@@ -41,12 +41,12 @@
 #include "bindings/core/v8/V8Window.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/NoEventDispatchAssertion.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ScriptCallStack.h"
+#include "platform/EventDispatchForbiddenScope.h"
 #include "platform/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "wtf/RefPtr.h"
@@ -133,13 +133,13 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
     }
 
     if (scriptState->world().isPrivateScriptIsolatedWorld()) {
-        // We allow a private script to dispatch error events even in a NoEventDispatchAssertion scope.
+        // We allow a private script to dispatch error events even in a EventDispatchForbiddenScope scope.
         // Without having this ability, it's hard to debug the private script because syntax errors
         // in the private script are not reported to console (the private script just crashes silently).
         // Allowing error events in private scripts is safe because error events don't propagate to
         // other isolated worlds (which means that the error events won't fire any event listeners
         // in user's scripts).
-        NoEventDispatchAssertion::AllowUserAgentEvents allowUserAgentEvents;
+        EventDispatchForbiddenScope::AllowUserAgentEvents allowUserAgentEvents;
         enteredWindow->document()->reportException(event.release(), callStack, corsStatus);
     } else {
         enteredWindow->document()->reportException(event.release(), callStack, corsStatus);

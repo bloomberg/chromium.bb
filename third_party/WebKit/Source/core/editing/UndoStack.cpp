@@ -28,8 +28,8 @@
 #include "core/editing/UndoStack.h"
 
 #include "core/dom/ContainerNode.h"
-#include "core/dom/NoEventDispatchAssertion.h"
 #include "core/editing/UndoStep.h"
+#include "platform/EventDispatchForbiddenScope.h"
 #include "wtf/TemporaryChange.h"
 
 namespace blink {
@@ -68,7 +68,7 @@ void UndoStack::registerRedoStep(PassRefPtrWillBeRawPtr<UndoStep> step)
 
 void UndoStack::didUnloadFrame(const LocalFrame& frame)
 {
-    NoEventDispatchAssertion assertNoEventDispatch;
+    EventDispatchForbiddenScope assertNoEventDispatch;
     filterOutUndoSteps(m_undoStack, frame);
     filterOutUndoSteps(m_redoStack, frame);
 }

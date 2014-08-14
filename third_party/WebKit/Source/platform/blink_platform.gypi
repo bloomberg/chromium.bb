@@ -38,6 +38,7 @@
       'Decimal.h',
       'DragImage.cpp',
       'DragImage.h',
+      'EventDispatchForbiddenScope.h',
       'EventTracer.cpp',
       'EventTracer.h',
       'FileChooser.cpp',

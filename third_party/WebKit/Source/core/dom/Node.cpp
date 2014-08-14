@@ -45,7 +45,6 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/LiveNodeList.h"
-#include "core/dom/NoEventDispatchAssertion.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/NodeTraversal.h"
@@ -87,6 +86,7 @@
 #include "core/rendering/FlowThreadController.h"
 #include "core/rendering/RenderBox.h"
 #include "core/svg/graphics/SVGImage.h"
+#include "platform/EventDispatchForbiddenScope.h"
 #include "platform/Partitions.h"
 #include "platform/TraceEvent.h"
 #include "platform/TracedValue.h"
@@ -2118,7 +2118,7 @@ void Node::dispatchSubtreeModifiedEvent()
     if (isInShadowTree())
         return;
 
-    ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
+    ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
 
     if (!document().hasListenerType(Document::DOMSUBTREEMODIFIED_LISTENER))
         return;
@@ -2128,7 +2128,7 @@ void Node::dispatchSubtreeModifiedEvent()
 
 bool Node::dispatchDOMActivateEvent(int detail, PassRefPtrWillBeRawPtr<Event> underlyingEvent)
 {
-    ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
+    ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
     RefPtrWillBeRawPtr<UIEvent> event = UIEvent::create(EventTypeNames::DOMActivate, true, true, document().domWindow(), detail);
     event->setUnderlyingEvent(underlyingEvent);
     dispatchScopedEvent(event);
