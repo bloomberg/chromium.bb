@@ -182,8 +182,8 @@ class ProfileChooserView : public views::BubbleDelegateView,
       views::LabelButton** button);
 
   // Create a view that shows various options for an upgrade user who is not
-  // the same person as the currently signed in user |avatar_item|.
-  views::View* CreateSwitchUserView(const AvatarMenu::Item& avatar_item);
+  // the same person as the currently signed in user.
+  views::View* CreateSwitchUserView();
 
   bool ShouldShowGoIncognito() const;
 

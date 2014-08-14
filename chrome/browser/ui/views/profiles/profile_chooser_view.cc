@@ -603,10 +603,10 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
                                   AvatarMenu* avatar_menu) {
   // The account management view should only be displayed if the active profile
   // is signed in.
-  const AvatarMenu::Item& active_item = avatar_menu->GetItemAt(
-      avatar_menu->GetActiveProfileIndex());
   if (view_to_display == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT) {
     DCHECK(switches::IsEnableAccountConsistency());
+    const AvatarMenu::Item& active_item = avatar_menu->GetItemAt(
+        avatar_menu->GetActiveProfileIndex());
     DCHECK(active_item.signed_in);
   }
 
@@ -638,7 +638,7 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
       break;
     case profiles::BUBBLE_VIEW_MODE_SWITCH_USER:
       layout = CreateSingleColumnLayout(this, kFixedSwitchUserViewWidth);
-      sub_view = CreateSwitchUserView(active_item);
+      sub_view = CreateSwitchUserView();
       break;
     default:
       layout = CreateSingleColumnLayout(this, kFixedMenuWidth);
@@ -1432,8 +1432,7 @@ views::View* ProfileChooserView::CreateSigninConfirmationView(){
       &tutorial_sync_settings_ok_button_);
 }
 
-views::View* ProfileChooserView::CreateSwitchUserView(
-    const AvatarMenu::Item& avatar_item) {
+views::View* ProfileChooserView::CreateSwitchUserView() {
   views::View* view = new views::View();
   views::GridLayout* layout = CreateSingleColumnLayout(
       view, kFixedSwitchUserViewWidth);
@@ -1450,6 +1449,8 @@ views::View* ProfileChooserView::CreateSwitchUserView(
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   const gfx::FontList& small_font_list =
       rb->GetFontList(ui::ResourceBundle::SmallFont);
+  const AvatarMenu::Item& avatar_item =
+      avatar_menu_->GetItemAt(avatar_menu_->GetActiveProfileIndex());
   views::Label* content_label = new views::Label(
       l10n_util::GetStringFUTF16(
           IDS_PROFILES_NOT_YOU_CONTENT_TEXT, avatar_item.name));
