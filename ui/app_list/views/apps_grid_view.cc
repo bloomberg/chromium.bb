@@ -555,7 +555,8 @@ void AppsGridView::OnGotShortcutPath(
 
 bool AppsGridView::UpdateDragFromItem(Pointer pointer,
                                       const ui::LocatedEvent& event) {
-  DCHECK(drag_view_);
+  if (!drag_view_)
+    return false;  // Drag canceled.
 
   gfx::Point drag_point_in_grid_view;
   ExtractDragLocation(event, &drag_point_in_grid_view);
@@ -577,9 +578,8 @@ void AppsGridView::UpdateDrag(Pointer pointer, const gfx::Point& point) {
   if (folder_delegate_)
     UpdateDragStateInsideFolder(pointer, point);
 
-  // EndDrag was called before if |drag_view_| is NULL.
   if (!drag_view_)
-    return;
+    return;  // Drag canceled.
 
   if (RunSynchronousDrag())
     return;
@@ -670,6 +670,14 @@ void AppsGridView::EndDrag(bool cancel) {
           false /* events_forwarded_to_drag_drop_host */,
           cancel /* cancel_drag */);
       EndDragForReparentInHiddenFolderGridView();
+      return;
+    }
+
+    if (IsDraggingForReparentInRootLevelGridView()) {
+      // An EndDrag can be received during a reparent via a model change. This
+      // is always a cancel and needs to be forwarded to the folder.
+      DCHECK(cancel);
+      delegate_->CancelDragInActiveFolder();
       return;
     }
 
@@ -795,6 +803,9 @@ void AppsGridView::InitiateDragFromReparentItemInRootLevelGridView(
 
 void AppsGridView::UpdateDragFromReparentItem(Pointer pointer,
                                               const gfx::Point& drag_point) {
+  // Note that if a cancel ocurrs while reparenting, the |drag_view_| in both
+  // root and folder grid views is cleared, so the check in UpdateDragFromItem()
+  // for |drag_view_| being NULL (in the folder grid) is sufficient.
   DCHECK(drag_view_);
   DCHECK(IsDraggingForReparentInRootLevelGridView());
 

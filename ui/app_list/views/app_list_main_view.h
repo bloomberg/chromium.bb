@@ -101,6 +101,7 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
   virtual void GetShortcutPathForApp(
       const std::string& app_id,
       const base::Callback<void(const base::FilePath&)>& callback) OVERRIDE;
+  virtual void CancelDragInActiveFolder() OVERRIDE;
 
   // Overridden from SearchBoxViewDelegate:
   virtual void QueryChanged(SearchBoxView* sender) OVERRIDE;

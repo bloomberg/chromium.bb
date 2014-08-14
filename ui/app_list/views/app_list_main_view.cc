@@ -19,6 +19,7 @@
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/search_box_model.h"
+#include "ui/app_list/views/app_list_folder_view.h"
 #include "ui/app_list/views/app_list_item_view.h"
 #include "ui/app_list/views/apps_container_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
@@ -300,6 +301,13 @@ void AppListMainView::GetShortcutPathForApp(
     const std::string& app_id,
     const base::Callback<void(const base::FilePath&)>& callback) {
   delegate_->GetShortcutPathForApp(app_id, callback);
+}
+
+void AppListMainView::CancelDragInActiveFolder() {
+  contents_view_->apps_container_view()
+      ->app_list_folder_view()
+      ->items_grid_view()
+      ->EndDrag(true);
 }
 
 void AppListMainView::QueryChanged(SearchBoxView* sender) {

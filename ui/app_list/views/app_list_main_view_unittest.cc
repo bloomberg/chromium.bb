@@ -169,6 +169,60 @@ class AppListMainViewTest : public views::ViewsTestBase {
     return FolderGridView()->view_model_for_test();
   }
 
+  AppListItemView* CreateAndOpenSingleItemFolder() {
+    // Prepare single folder with a single item in it.
+    AppListFolderItem* folder_item =
+        delegate_->GetTestModel()->CreateSingleItemFolder("single_item_folder",
+                                                          "single");
+    EXPECT_EQ(folder_item,
+              delegate_->GetTestModel()->FindFolderItem("single_item_folder"));
+    EXPECT_EQ(AppListFolderItem::kItemType, folder_item->GetItemType());
+
+    EXPECT_EQ(1, RootViewModel()->view_size());
+    AppListItemView* folder_item_view =
+        static_cast<AppListItemView*>(RootViewModel()->view_at(0));
+    EXPECT_EQ(folder_item_view->item(), folder_item);
+
+    // Click on the folder to open it.
+    EXPECT_FALSE(FolderView()->visible());
+    SimulateClick(folder_item_view);
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(FolderView()->visible());
+
+#if defined(OS_WIN)
+    AppsGridViewTestApi folder_grid_view_test_api(FolderGridView());
+    folder_grid_view_test_api.DisableSynchronousDrag();
+#endif
+    return folder_item_view;
+  }
+
+  AppListItemView* StartDragForReparent(int index_in_folder) {
+    // Start to drag the item in folder.
+    views::View* item_view = FolderViewModel()->view_at(index_in_folder);
+    gfx::Point point = item_view->bounds().CenterPoint();
+    AppListItemView* dragged =
+        SimulateInitiateDrag(FolderGridView(), AppsGridView::MOUSE, point);
+    EXPECT_EQ(item_view, dragged);
+    EXPECT_FALSE(RootGridView()->visible());
+    EXPECT_TRUE(FolderView()->visible());
+
+    // Drag it to top left corner.
+    point = gfx::Point(0, 0);
+    // Two update drags needed to actually drag the view. The first changes
+    // state and the 2nd one actually moves the view. The 2nd call can be
+    // removed when UpdateDrag is fixed.
+    SimulateUpdateDrag(FolderGridView(), AppsGridView::MOUSE, dragged, point);
+    SimulateUpdateDrag(FolderGridView(), AppsGridView::MOUSE, dragged, point);
+    base::RunLoop().RunUntilIdle();
+
+    // Wait until the folder view is invisible and root grid view shows up.
+    GridViewVisibleWaiter(RootGridView()).Wait();
+    EXPECT_TRUE(RootGridView()->visible());
+    EXPECT_EQ(0, FolderView()->layer()->opacity());
+
+    return dragged;
+  }
+
  protected:
   views::Widget* widget_;  // Owned by native window.
   AppListMainView* main_view_;  // Owned by |widget_|.
@@ -198,59 +252,17 @@ TEST_F(AppListMainViewTest, ModelChanged) {
 // Tests dragging an item out of a single item folder and drop it at the last
 // slot.
 TEST_F(AppListMainViewTest, DragLastItemFromFolderAndDropAtLastSlot) {
-  // Prepare single folder with a single item in it.
-  AppListFolderItem* folder_item =
-      delegate_->GetTestModel()->CreateSingleItemFolder("single_item_folder",
-                                                        "single");
-  EXPECT_EQ(folder_item,
-            delegate_->GetTestModel()->FindFolderItem("single_item_folder"));
-  EXPECT_EQ(AppListFolderItem::kItemType, folder_item->GetItemType());
-
-  EXPECT_EQ(1, RootViewModel()->view_size());
-  AppListItemView* folder_item_view =
-      static_cast<AppListItemView*>(RootViewModel()->view_at(0));
-  EXPECT_EQ(folder_item_view->item(), folder_item);
+  AppListItemView* folder_item_view = CreateAndOpenSingleItemFolder();
   const gfx::Rect first_slot_tile = folder_item_view->bounds();
 
-  // Click on the folder to open it.
-  EXPECT_FALSE(FolderView()->visible());
-  SimulateClick(folder_item_view);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(FolderView()->visible());
-
-#if defined(OS_WIN)
-  AppsGridViewTestApi folder_grid_view_test_api(FolderGridView());
-  folder_grid_view_test_api.DisableSynchronousDrag();
-#endif
-
-  // Start to drag the item in folder.
   EXPECT_EQ(1, FolderViewModel()->view_size());
-  views::View* item_view = FolderViewModel()->view_at(0);
-  gfx::Point point = item_view->bounds().CenterPoint();
-  AppListItemView* dragged =
-      SimulateInitiateDrag(FolderGridView(), AppsGridView::MOUSE, point);
-  EXPECT_EQ(item_view, dragged);
-  EXPECT_FALSE(RootGridView()->visible());
-  EXPECT_TRUE(FolderView()->visible());
 
-  // Drag it to top left corner.
-  point = gfx::Point(0, 0);
-  // Two update drags needed to actually drag the view. The first changes state
-  // and the 2nd one actually moves the view. The 2nd call can be removed when
-  // UpdateDrag is fixed.
-  SimulateUpdateDrag(FolderGridView(), AppsGridView::MOUSE, dragged, point);
-  SimulateUpdateDrag(FolderGridView(), AppsGridView::MOUSE, dragged, point);
-  base::RunLoop().RunUntilIdle();
-
-  // Wait until the folder view is invisible and root grid view shows up.
-  GridViewVisibleWaiter(RootGridView()).Wait();
-  EXPECT_TRUE(RootGridView()->visible());
-  EXPECT_EQ(0, FolderView()->layer()->opacity());
+  AppListItemView* dragged = StartDragForReparent(0);
 
   // Drop it to the slot on the right of first slot.
   gfx::Rect drop_target_tile(first_slot_tile);
   drop_target_tile.Offset(first_slot_tile.width(), 0);
-  point = drop_target_tile.CenterPoint();
+  gfx::Point point = drop_target_tile.CenterPoint();
   SimulateUpdateDrag(FolderGridView(), AppsGridView::MOUSE, dragged, point);
   SimulateUpdateDrag(FolderGridView(), AppsGridView::MOUSE, dragged, point);
   base::RunLoop().RunUntilIdle();
@@ -272,6 +284,29 @@ TEST_F(AppListMainViewTest, DragLastItemFromFolderAndDropAtLastSlot) {
   // Single item folder should be auto removed.
   EXPECT_EQ(NULL,
             delegate_->GetTestModel()->FindFolderItem("single_item_folder"));
+}
+
+// Test that an interrupted drag while reparenting an item from a folder, when
+// canceled via the root grid, correctly forwards the cancelation to the drag
+// ocurring from the folder.
+TEST_F(AppListMainViewTest, MouseDragItemOutOfFolderWithCancel) {
+  CreateAndOpenSingleItemFolder();
+  AppListItemView* dragged = StartDragForReparent(0);
+
+  // Now add an item to the model, not in any folder, e.g., as if by Sync.
+  EXPECT_TRUE(RootGridView()->has_dragged_view());
+  EXPECT_TRUE(FolderGridView()->has_dragged_view());
+  delegate_->GetTestModel()->CreateAndAddItem("Extra");
+
+  // The drag operation should get canceled.
+  EXPECT_FALSE(RootGridView()->has_dragged_view());
+  EXPECT_FALSE(FolderGridView()->has_dragged_view());
+
+  // Additional mouse move operations should be ignored.
+  gfx::Point point(1, 1);
+  SimulateUpdateDrag(FolderGridView(), AppsGridView::MOUSE, dragged, point);
+  EXPECT_FALSE(RootGridView()->has_dragged_view());
+  EXPECT_FALSE(FolderGridView()->has_dragged_view());
 }
 
 }  // namespace test

@@ -30,6 +30,11 @@ class APP_LIST_EXPORT AppsGridViewDelegate {
       const std::string& app_id,
       const base::Callback<void(const base::FilePath&)>& callback) = 0;
 
+  // Called by the root grid view to cancel a drag that started inside a folder.
+  // This can occur when the root grid is visible for a reparent and its model
+  // changes, necessitating a cancel of the drag operation.
+  virtual void CancelDragInActiveFolder() = 0;
+
  protected:
   virtual ~AppsGridViewDelegate() {}
 };

@@ -306,8 +306,17 @@ TEST_F(AppsGridViewTest, MouseDragWithFolderDisabled) {
 
   // Adding a launcher item cancels the drag and respects the order.
   SimulateDrag(AppsGridView::MOUSE, from, to);
+  EXPECT_TRUE(apps_grid_view_->has_dragged_view());
   model_->CreateAndAddItem("Extra");
-  apps_grid_view_->EndDrag(false);
+  // No need to EndDrag explicitly - adding an item should do this.
+  EXPECT_FALSE(apps_grid_view_->has_dragged_view());
+  // Even though cancelled, mouse move events can still arrive via the item
+  // view. Ensure that behaves sanely, and doesn't start a new drag.
+  ui::MouseEvent drag_event(
+      ui::ET_MOUSE_DRAGGED, gfx::Point(1, 1), gfx::Point(2, 2), 0, 0);
+  apps_grid_view_->UpdateDragFromItem(AppsGridView::MOUSE, drag_event);
+  EXPECT_FALSE(apps_grid_view_->has_dragged_view());
+
   EXPECT_EQ(std::string("Item 1,Item 2,Item 3,Extra"),
             model_->GetModelContent());
   test_api_->LayoutToIdealBounds();
