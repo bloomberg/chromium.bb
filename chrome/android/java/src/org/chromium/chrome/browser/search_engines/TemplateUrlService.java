@@ -223,6 +223,7 @@ public class TemplateUrlService {
         return nativeReplaceSearchTermsInUrl(mNativeTemplateUrlServiceAndroid, query, url);
     }
 
+    // TODO(jeremycho): Delete once Clank no longer references it.
     /**
      * Finds the default search engine for the default provider and returns the url query
      * {@link String} for {@code query} with the contextual search version param set.
@@ -230,7 +231,19 @@ public class TemplateUrlService {
      *              {@code query} inserted as the search parameter and contextual search param set.
      */
     public String getUrlForContextualSearchQuery(String query) {
-        return nativeGetUrlForContextualSearchQuery(mNativeTemplateUrlServiceAndroid, query);
+        return nativeGetUrlForContextualSearchQuery(mNativeTemplateUrlServiceAndroid, query, null);
+    }
+
+    /**
+     * Finds the default search engine for the default provider and returns the url query
+     * {@link String} for {@code query} with the contextual search version param set.
+     * @return      A {@link String} that contains the url of the default search engine with
+     *              {@code query} and {@code alternateTerm} inserted as parameters and contextual
+     *              search param set.
+     */
+    public String getUrlForContextualSearchQuery(String query, String alternateTerm) {
+        return nativeGetUrlForContextualSearchQuery(
+            mNativeTemplateUrlServiceAndroid, query, alternateTerm);
     }
 
     private native long nativeInit();
@@ -252,5 +265,5 @@ public class TemplateUrlService {
     private native String nativeReplaceSearchTermsInUrl(long nativeTemplateUrlServiceAndroid,
             String query, String currentUrl);
     private native String nativeGetUrlForContextualSearchQuery(long nativeTemplateUrlServiceAndroid,
-            String query);
+            String query, String alternateTerm);
 }

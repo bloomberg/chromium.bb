@@ -19,10 +19,6 @@
 #include "jni/TemplateUrlService_jni.h"
 #include "net/base/url_util.h"
 
-using base::android::ConvertJavaStringToUTF16;
-using base::android::ConvertUTF16ToJavaString;
-using base::android::ConvertUTF8ToJavaString;
-
 namespace {
 
 Profile* GetOriginalProfile() {
@@ -122,8 +118,10 @@ TemplateUrlServiceAndroid::GetPrepopulatedTemplateUrlAt(JNIEnv* env,
   return Java_TemplateUrl_create(
       env,
       index,
-      ConvertUTF16ToJavaString(env, template_url->short_name()).obj(),
-      ConvertUTF16ToJavaString(env, template_url->keyword()).obj());
+      base::android::ConvertUTF16ToJavaString(
+          env, template_url->short_name()).obj(),
+      base::android::ConvertUTF16ToJavaString(
+          env, template_url->keyword()).obj());
 }
 
 bool TemplateUrlServiceAndroid::IsPrepopulatedTemplate(TemplateURL* url) {
@@ -147,7 +145,7 @@ TemplateUrlServiceAndroid::GetUrlForSearchQuery(JNIEnv* env,
   const TemplateURL* default_provider =
       template_url_service_->GetDefaultSearchProvider();
 
-  base::string16 query(ConvertJavaStringToUTF16(env, jquery));
+  base::string16 query(base::android::ConvertJavaStringToUTF16(env, jquery));
 
   std::string url;
   if (default_provider &&
@@ -159,14 +157,14 @@ TemplateUrlServiceAndroid::GetUrlForSearchQuery(JNIEnv* env,
         template_url_service_->search_terms_data());
   }
 
-  return ConvertUTF8ToJavaString(env, url);
+  return base::android::ConvertUTF8ToJavaString(env, url);
 }
 
 base::android::ScopedJavaLocalRef<jstring>
 TemplateUrlServiceAndroid::GetUrlForVoiceSearchQuery(JNIEnv* env,
                                                      jobject obj,
                                                      jstring jquery) {
-  base::string16 query(ConvertJavaStringToUTF16(env, jquery));
+  base::string16 query(base::android::ConvertJavaStringToUTF16(env, jquery));
   std::string url;
 
   if (!query.empty()) {
@@ -176,7 +174,7 @@ TemplateUrlServiceAndroid::GetUrlForVoiceSearchQuery(JNIEnv* env,
     url = gurl.spec();
   }
 
-  return ConvertUTF8ToJavaString(env, url);
+  return base::android::ConvertUTF8ToJavaString(env, url);
 }
 
 base::android::ScopedJavaLocalRef<jstring>
@@ -187,37 +185,49 @@ TemplateUrlServiceAndroid::ReplaceSearchTermsInUrl(JNIEnv* env,
   TemplateURL* default_provider =
       template_url_service_->GetDefaultSearchProvider();
 
-  base::string16 query(ConvertJavaStringToUTF16(env, jquery));
-  GURL current_url(ConvertJavaStringToUTF16(env, jcurrent_url));
+  base::string16 query(base::android::ConvertJavaStringToUTF16(env, jquery));
+  GURL current_url(base::android::ConvertJavaStringToUTF16(env, jcurrent_url));
   GURL destination_url(current_url);
   if (default_provider && !query.empty()) {
     bool refined_query = default_provider->ReplaceSearchTermsInURL(
         current_url, TemplateURLRef::SearchTermsArgs(query),
         template_url_service_->search_terms_data(), &destination_url);
     if (refined_query)
-      return ConvertUTF8ToJavaString(env, destination_url.spec());
+      return base::android::ConvertUTF8ToJavaString(
+          env, destination_url.spec());
   }
   return base::android::ScopedJavaLocalRef<jstring>(env, NULL);
 }
 
 base::android::ScopedJavaLocalRef<jstring>
-TemplateUrlServiceAndroid::GetUrlForContextualSearchQuery(JNIEnv* env,
-                                                          jobject obj,
-                                                          jstring jquery) {
-  base::string16 query(ConvertJavaStringToUTF16(env, jquery));
+TemplateUrlServiceAndroid::GetUrlForContextualSearchQuery(
+    JNIEnv* env,
+    jobject obj,
+    jstring jquery,
+    jstring jalternate_term) {
+  base::string16 query(base::android::ConvertJavaStringToUTF16(env, jquery));
   std::string url;
 
   if (!query.empty()) {
     GURL gurl(GetDefaultSearchURLForSearchTerms(template_url_service_, query));
     if (google_util::IsGoogleSearchUrl(gurl)) {
-      gurl = net::AppendQueryParameter(gurl, "ctxs", "1");
+      gurl = net::AppendQueryParameter(gurl, "ctxs", "2");
       // Indicate that the search page is being prefetched.
       gurl = net::AppendQueryParameter(gurl, "pf", "c");
+
+      if (jalternate_term) {
+        std::string alternate_term(
+            base::android::ConvertJavaStringToUTF8(env, jalternate_term));
+        if (!alternate_term.empty()) {
+          gurl = net::AppendQueryParameter(
+              gurl, "ctxsl_alternate_term", alternate_term);
+        }
+      }
     }
     url = gurl.spec();
   }
 
-  return ConvertUTF8ToJavaString(env, url);
+  return base::android::ConvertUTF8ToJavaString(env, url);
 }
 
 static jlong Init(JNIEnv* env, jobject obj) {
