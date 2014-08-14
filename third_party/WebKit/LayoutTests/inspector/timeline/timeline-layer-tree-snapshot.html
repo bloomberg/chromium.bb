@@ -48,14 +48,14 @@ function test()
     var pendingEventCount = 0;
     function loadSnapshot(record)
     {
-        if (record.type !== WebInspector.TimelineModel.RecordType.UpdateLayerTree)
+        if (record.type() !== WebInspector.TimelineModel.RecordType.UpdateLayerTree)
             return;
         // Some updates may not produce new layer tree snapshot
-        if (!record.data["layerTree"])
+        if (!record.data()["layerTree"])
             return;
         ++pendingEventCount;
         var layerTree = new WebInspector.AgentLayerTree(WebInspector.targetManager.mainTarget());
-        layerTree.setLayers(record.data["layerTree"], onLayersSet.bind(null, layerTree));
+        layerTree.setLayers(record.data()["layerTree"], onLayersSet.bind(null, layerTree));
     }
 
     function onLayersSet(layerTree)

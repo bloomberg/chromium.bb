@@ -16,16 +16,13 @@ function test()
 {
     InspectorTest.invokeAsyncWithTimeline("produceGarbageForGCEvents", validate);
 
-    function validate(records)
+    function validate()
     {
-        var gcRecords = InspectorTest.filterTimelineRecords(WebInspector.TimelineModel.RecordType.GCEvent, true);
-        if (gcRecords.length) {
-            InspectorTest.addResult("The expected GC event record");
-            InspectorTest.addObject(gcRecords[0], InspectorTest.timelinePropertyFormatters);
-        } else {
-            InspectorTest.addResult("FAILED: GC event record wasn't found");
-        }
-
+        var gcRecord = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.GCEvent);
+        if (gcRecord)
+            InspectorTest.addResult("SUCCESS: Found expected GC event record");
+        else
+            InspectorTest.addResult("FAIL: GC event record wasn't found");
         InspectorTest.completeTest();
     }
 }

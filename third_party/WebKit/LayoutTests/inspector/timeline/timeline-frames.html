@@ -21,8 +21,8 @@ function test()
 {
     function formatRecord(record)
     {
-        if (record.type === WebInspector.TimelineModel.RecordType.TimeStamp ||
-            record.type === WebInspector.TimelineModel.RecordType.BeginFrame) {
+        if (record.type() === WebInspector.TimelineModel.RecordType.TimeStamp ||
+            record.type() === WebInspector.TimelineModel.RecordType.BeginFrame) {
             InspectorTest.dumpTimelineRecord(record);
         }
     }

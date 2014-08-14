@@ -22,11 +22,11 @@ function test()
     {
         function formatter(record)
         {
-            if (record.type === "FunctionCall") {
-                var scriptName = record.data.scriptName;
+            if (record.type() === "FunctionCall") {
+                var scriptName = record.data().scriptName;
                 var scriptNameShort = scriptName.substring(scriptName.lastIndexOf("/") + 1);
                 if (scriptNameShort !== "InjectedScript")
-                    InspectorTest.addResult(record.type + " " + scriptNameShort + ":" + record.data.scriptLine);
+                    InspectorTest.addResult(record.type() + " " + scriptNameShort + ":" + record.data().scriptLine);
             }
         }
         InspectorTest.printTimelineRecords(null, formatter);

@@ -1,11 +1,4 @@
 Tests the Timeline API instrumentation of a gc event
 
-The expected GC event record
-{
-    data : {
-    }
-    endTime : <number>
-    startTime : <number>
-    type : "GCEvent"
-}
+SUCCESS: Found expected GC event record
 

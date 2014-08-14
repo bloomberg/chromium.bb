@@ -57,11 +57,12 @@ function test()
 
     function dumpRecords(records)
     {
-        for (var i = 0; i < records.length; ++i) {
-            var record = records[i];
-            if (record.type === WebInspector.TimelineModel.RecordType.DecodeImage || record.type === WebInspector.TimelineModel.RecordType.ResizeImage) {
+        InspectorTest.timelineModel().forAllRecords(processRecord.bind(this));
+        function processRecord(record)
+        {
+            if (record.type() === WebInspector.TimelineModel.RecordType.DecodeImage || record.type() === WebInspector.TimelineModel.RecordType.ResizeImage) {
                 // Some decode events may happen in the background, so we won't have a stack trace.
-                delete record.stackTrace;
+                delete record._record.stackTrace;
                 InspectorTest.printTimelineRecordProperties(record);
             }
         }

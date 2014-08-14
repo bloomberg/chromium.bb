@@ -45,7 +45,7 @@ function test()
 
     function onTimelineRecorded(records)
     {
-        var layoutRecord = InspectorTest.findPresentationRecord("Layout");
+        var layoutRecord = InspectorTest.findFirstTimelineRecord("Layout");
         WebInspector.notifications.addEventListener(WebInspector.NotificationService.Events.SelectedNodeChanged, onSelectedNodeChanged);
         clickValueLink(layoutRecord, "Layout root");
     }

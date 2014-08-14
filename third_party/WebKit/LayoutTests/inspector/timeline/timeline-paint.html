@@ -28,9 +28,9 @@ function test()
 
     function step1(records)
     {
-        var filteredRecords = InspectorTest.filterTimelineRecords(WebInspector.TimelineModel.RecordType.Paint, true);
-        if (filteredRecords.length)
-            InspectorTest.printTimelineRecordProperties(filteredRecords[0]);
+        var record = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.Paint);
+        if (record)
+            InspectorTest.printTimelineRecordProperties(record);
         else
             InspectorTest.addResult("FAIL: no paint record found");
         InspectorTest.invokeAsyncWithTimeline("updateSubframeAndDisplay", step3);
@@ -38,19 +38,11 @@ function test()
 
     function step3(records)
     {
-        var filteredRecords = InspectorTest.filterTimelineRecords(WebInspector.TimelineModel.RecordType.Paint, true);
-        var paintRecord;
-        for (var i = 0; i < filteredRecords.length; ++i) {
-            var record = filteredRecords[i];
-            if (record.children && record.children.length) {
-                paintRecord = record;
-                break;
-            }
-        }
+        var paintRecord = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.Paint);
         InspectorTest.assertTrue(paintRecord, "Paint record with subframe paint not found");
-        var topQuad = paintRecord.data.clip;
-        var subframePaint = paintRecord.children[0];
-        var subframeQuad = subframePaint.data.clip;
+        var topQuad = paintRecord.data().clip;
+        var subframePaint = paintRecord.children()[0];
+        var subframeQuad = subframePaint.data().clip;
         InspectorTest.assertEquals(8, topQuad.length);
         InspectorTest.assertEquals(8, subframeQuad.length);
         InspectorTest.assertGreaterOrEqual(subframeQuad[0], topQuad[0]);

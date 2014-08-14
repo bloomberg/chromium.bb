@@ -33,9 +33,9 @@ function test()
     {
         function formatter(record)
         {
-            if (record.type === "TimerFire") {
-                var fnCallSite = record.children[0].data;
-                InspectorTest.addResult(record.type + " " + fnCallSite.scriptName + ":" + fnCallSite.scriptLine);
+            if (record.type() === "TimerFire") {
+                var fnCallSite = record.children()[0].data();
+                InspectorTest.addResult(record.type() + " " + fnCallSite.scriptName + ":" + fnCallSite.scriptLine);
             }
         }
         InspectorTest.printTimelineRecords(null, formatter);
