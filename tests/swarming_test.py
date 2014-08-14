@@ -134,6 +134,10 @@ def gen_yielded_data(index, shard_output, exit_codes):
   return index, gen_data(shard_output, exit_codes)
 
 
+def generate_url_response(shard_output, exit_codes):
+  return json.dumps(gen_data(shard_output, exit_codes))
+
+
 def get_swarm_results(keys, output_collector=None):
   """Simplifies the call to yield_results().
 
@@ -285,7 +289,8 @@ class TestGetSwarmResults(TestCase):
           (
             'http://host:9001/get_result?r=key1',
             {'retry_404': False, 'retry_50x': False},
-            gen_data(SWARM_OUTPUT_SUCCESS, '0, 0'),
+            generate_url_response(SWARM_OUTPUT_SUCCESS, '0, 0'),
+            None,
           ),
         ])
     expected = [gen_yielded_data(0, SWARM_OUTPUT_SUCCESS, '0, 0')]
@@ -298,7 +303,8 @@ class TestGetSwarmResults(TestCase):
           (
             'http://host:9001/get_result?r=key1',
             {'retry_404': False, 'retry_50x': False},
-            gen_data(SWARM_OUTPUT_FAILURE, '0, 1'),
+            generate_url_response(SWARM_OUTPUT_FAILURE, '0, 1'),
+            None,
           ),
         ])
     expected = [gen_yielded_data(0, SWARM_OUTPUT_FAILURE, '0, 1')]
@@ -311,7 +317,8 @@ class TestGetSwarmResults(TestCase):
           (
             'http://host:9001/get_result?r=key1',
             {'retry_404': False, 'retry_50x': False},
-            gen_data(SWARM_OUTPUT_WITH_NO_TEST_OUTPUT, '0, 0'),
+            generate_url_response(SWARM_OUTPUT_WITH_NO_TEST_OUTPUT, '0, 0'),
+            None,
           ),
         ])
     expected = [gen_yielded_data(0, SWARM_OUTPUT_WITH_NO_TEST_OUTPUT, '0, 0')]
@@ -341,6 +348,7 @@ class TestGetSwarmResults(TestCase):
             'http://host:9001/get_result?r=key1',
             {'retry_404': False, 'retry_50x': False},
             None,
+            None,
           )
         ])
     actual = get_swarm_results(['key1'])
@@ -353,17 +361,20 @@ class TestGetSwarmResults(TestCase):
           (
             'http://host:9001/get_result?r=key1',
             {'retry_404': False, 'retry_50x': False},
-            gen_data(TEST_SHARD_OUTPUT_1, '0, 0'),
+            generate_url_response(TEST_SHARD_OUTPUT_1, '0, 0'),
+            None,
           ),
           (
             'http://host:9001/get_result?r=key2',
             {'retry_404': False, 'retry_50x': False},
-            gen_data(TEST_SHARD_OUTPUT_2, '0, 0'),
+            generate_url_response(TEST_SHARD_OUTPUT_2, '0, 0'),
+            None,
           ),
           (
             'http://host:9001/get_result?r=key3',
             {'retry_404': False, 'retry_50x': False},
-            gen_data(TEST_SHARD_OUTPUT_3, '0, 0'),
+            generate_url_response(TEST_SHARD_OUTPUT_3, '0, 0'),
+            None,
           ),
         ])
     expected = [
@@ -381,17 +392,20 @@ class TestGetSwarmResults(TestCase):
           (
             'http://host:9001/get_result?r=key1',
             {'retry_404': False, 'retry_50x': False},
-            gen_data(TEST_SHARD_OUTPUT_1, '0, 0'),
+            generate_url_response(TEST_SHARD_OUTPUT_1, '0, 0'),
+            None,
           ),
           (
             'http://host:9001/get_result?r=key2',
             {'retry_404': False, 'retry_50x': False},
-            gen_data(TEST_SHARD_OUTPUT_2, '0, 0'),
+            generate_url_response(TEST_SHARD_OUTPUT_2, '0, 0'),
+            None,
           ),
           (
             'http://host:9001/get_result?r=key3',
             {'retry_404': False, 'retry_50x': False},
-            gen_data(SWARM_OUTPUT_FAILURE, '0, 1'),
+            generate_url_response(SWARM_OUTPUT_FAILURE, '0, 1'),
+            None,
           ),
         ])
 

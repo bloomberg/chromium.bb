@@ -356,22 +356,23 @@ def retrieve_results(
         if should_stop.is_set():
           return None
 
-    result = None
+    # Disable internal retries in net.url_read, since we are doing retries
+    # ourselves. Do not use retry_404 so should_stop is polled more often.
+    response = net.url_read(result_url, retry_404=False, retry_50x=False)
+
+    # Request failed. Try again.
+    if response is None:
+      continue
+
+    # Got some response, ensure it is JSON dict, retry if not.
     try:
-      # Disable internal retries in net.url_read, since we are doing retries
-      # ourselves. Do not use retry_404 so should_stop is polled more often.
-      result = net.url_read_json(result_url, retry_404=False, retry_50x=False)
-
-      # Request failed. Try again.
-      if result is None:
-        continue
-
+      result = json.loads(response) or {}
       if not isinstance(result, dict):
         raise ValueError()
     except (ValueError, TypeError):
       logging.warning(
           'Received corrupted or invalid data for task_key %s, retrying: %r',
-          task_key, result)
+          task_key, response)
       continue
 
     # Swarming server uses non-empty 'output' value as a flag that task has
