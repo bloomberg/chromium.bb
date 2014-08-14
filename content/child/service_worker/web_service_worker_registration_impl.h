@@ -29,6 +29,7 @@ class WebServiceWorkerRegistrationImpl
   void OnUpdateFound();
 
   virtual void setProxy(blink::WebServiceWorkerRegistrationProxy* proxy);
+  virtual blink::WebServiceWorkerRegistrationProxy* proxy();
   virtual void setInstalling(blink::WebServiceWorker* service_worker);
   virtual void setWaiting(blink::WebServiceWorker* service_worker);
   virtual void setActive(blink::WebServiceWorker* service_worker);

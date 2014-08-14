@@ -41,6 +41,11 @@ void WebServiceWorkerRegistrationImpl::setProxy(
   proxy_ = proxy;
 }
 
+blink::WebServiceWorkerRegistrationProxy*
+WebServiceWorkerRegistrationImpl::proxy() {
+  return proxy_;
+}
+
 void WebServiceWorkerRegistrationImpl::setInstalling(
     blink::WebServiceWorker* service_worker) {
   DCHECK(proxy_);
