@@ -128,8 +128,20 @@ bool ProxyDecryptor::GenerateKeyRequest(const std::string& content_type,
   media::MediaKeys::SessionType session_type =
       persistent ? media::MediaKeys::PERSISTENT_SESSION
                  : media::MediaKeys::TEMPORARY_SESSION;
-  media_keys_->CreateSession(
-      content_type, init_data, init_data_length, session_type, promise.Pass());
+
+  // Convert MIME types used in the prefixed implementation.
+  std::string init_data_type;
+  if (content_type == "audio/mp4" || content_type == "video/mp4") {
+    init_data_type = "cenc";
+  } else if (content_type == "audio/webm" || content_type == "video/webm") {
+    init_data_type = "webm";
+  } else {
+    NOTREACHED();
+    init_data_type = content_type;
+  }
+
+  media_keys_->CreateSession(init_data_type, init_data, init_data_length,
+                             session_type, promise.Pass());
   return true;
 }
 

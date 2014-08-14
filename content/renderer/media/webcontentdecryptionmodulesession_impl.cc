@@ -87,21 +87,22 @@ void WebContentDecryptionModuleSessionImpl::initializeNewSession(
     const blink::WebString& init_data_type,
     const uint8* init_data,
     size_t init_data_length) {
-  // TODO(ddorwin): Guard against this in supported types check and remove this.
-  // Chromium only supports ASCII MIME types.
-  if (!base::IsStringASCII(init_data_type)) {
-    NOTREACHED();
-    OnSessionError(media::MediaKeys::NOT_SUPPORTED_ERROR,
-                   0,
-                   "The initialization data type " + init_data_type.utf8() +
-                       " is not supported by the key system.");
-    return;
-  }
+  DCHECK(base::IsStringASCII(init_data_type));
 
   std::string init_data_type_as_ascii = base::UTF16ToASCII(init_data_type);
   DLOG_IF(WARNING, init_data_type_as_ascii.find('/') != std::string::npos)
       << "init_data_type '" << init_data_type_as_ascii
       << "' may be a MIME type";
+
+  // Attempt to translate content types.
+  // TODO(sandersd): Remove once tests stop using content types.
+  // http://crbug.com/385874
+  std::string content_type = base::StringToLowerASCII(init_data_type_as_ascii);
+  if (content_type == "audio/mp4" || content_type == "video/mp4") {
+    init_data_type_as_ascii = "cenc";
+  } else if (content_type == "audio/webm" || content_type == "video/webm") {
+    init_data_type_as_ascii = "webm";
+  }
 
   scoped_ptr<media::NewSessionCdmPromise> promise(
       new media::NewSessionCdmPromise(

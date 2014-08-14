@@ -57,9 +57,9 @@ void ProxyMediaKeys::CreateSession(
   // TODO(xhwang): Move these checks up to blink and DCHECK here.
   // See http://crbug.com/342510
   CdmHostMsg_CreateSession_ContentType create_session_content_type;
-  if (init_data_type == "audio/mp4" || init_data_type == "video/mp4") {
+  if (init_data_type == "cenc") {
     create_session_content_type = CREATE_SESSION_TYPE_MP4;
-  } else if (init_data_type == "audio/webm" || init_data_type == "video/webm") {
+  } else if (init_data_type == "webm") {
     create_session_content_type = CREATE_SESSION_TYPE_WEBM;
   } else {
     DLOG(ERROR) << "Unsupported EME CreateSession content type of "

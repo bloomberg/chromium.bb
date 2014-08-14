@@ -127,6 +127,12 @@ class CdmWrapper {
   virtual void ConvertInputBuffer(const cdm::InputBuffer& v2,
                                   cdm::InputBuffer_1* v1) = 0;
 
+  // Prior to CDM_6, |init_data_type| was a content type. This helper convererts
+  // an |init_data_type| to a content type.
+  // TODO(sandersd): Remove once Host_4 and Host_5 interfaces are removed.
+  virtual const char* ConvertInitDataTypeToContentType(
+      const char* init_data_type) const = 0;
+
  protected:
   CdmWrapper() {}
 
@@ -339,6 +345,15 @@ class CdmWrapperImpl : public CdmWrapper {
     v1->timestamp = v2.timestamp;
   }
 
+  virtual const char* ConvertInitDataTypeToContentType(
+      const char* init_data_type) const {
+    if (!strcmp(init_data_type, "cenc"))
+      return "video/mp4";
+    if (!strcmp(init_data_type, "webm"))
+      return "video/webm";
+    return init_data_type;
+  }
+
  private:
   CdmWrapperImpl(CdmInterface* cdm) : cdm_(cdm), next_session_id_(100) {
     PP_DCHECK(cdm_);
@@ -361,7 +376,8 @@ class CdmWrapperImpl : public CdmWrapper {
 // create a new session_id to pass to the CDM. For update and release, we need
 // to look up |web_session_id| and convert it into the existing |session_id|.
 // Since the callbacks don't come through this interface, cdm_adapter needs to
-// create the mapping (and delete it on release).
+// create the mapping (and delete it on release). Finally, for create, we need
+// to translate |init_data_type| to a MIME type.
 // TODO(jrummell): Remove these once Host_4 interface is removed.
 
 template <>
@@ -375,7 +391,7 @@ void CdmWrapperImpl<cdm::ContentDecryptionModule_4>::CreateSession(
   uint32_t session_id = CreateSessionId();
   RegisterPromise(session_id, promise_id);
   cdm_->CreateSession(session_id,
-                      init_data_type,
+                      ConvertInitDataTypeToContentType(init_data_type),
                       init_data_type_size,
                       init_data,
                       init_data_size);
@@ -470,6 +486,22 @@ CdmWrapperImpl<cdm::ContentDecryptionModule_4>::DecryptAndDecodeSamples(
 
 // Overrides for the cdm::Host_5 methods.
 // TODO(jrummell): Remove these once Host_5 interface is removed.
+
+template <>
+void CdmWrapperImpl<cdm::ContentDecryptionModule_5>::CreateSession(
+    uint32_t promise_id,
+    const char* init_data_type,
+    uint32_t init_data_type_size,
+    const uint8_t* init_data,
+    uint32_t init_data_size,
+    cdm::SessionType session_type) {
+  cdm_->CreateSession(promise_id,
+                      ConvertInitDataTypeToContentType(init_data_type),
+                      init_data_type_size,
+                      init_data,
+                      init_data_size,
+                      session_type);
+}
 
 template <>
 void CdmWrapperImpl<cdm::ContentDecryptionModule_5>::LoadSession(
