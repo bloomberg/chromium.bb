@@ -26,7 +26,7 @@ class ServiceWorkerVersion;
 class ServiceWorkerRegistrationHandle
     : public ServiceWorkerRegistration::Listener {
  public:
-  ServiceWorkerRegistrationHandle(
+  CONTENT_EXPORT ServiceWorkerRegistrationHandle(
       base::WeakPtr<ServiceWorkerContextCore> context,
       ServiceWorkerDispatcherHost* dispatcher_host,
       int provider_id,

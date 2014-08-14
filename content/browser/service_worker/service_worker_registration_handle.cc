@@ -33,6 +33,7 @@ ServiceWorkerRegistrationHandle::ServiceWorkerRegistrationHandle(
 }
 
 ServiceWorkerRegistrationHandle::~ServiceWorkerRegistrationHandle() {
+  DCHECK(registration_);
   registration_->RemoveListener(this);
 }
 
@@ -60,8 +61,6 @@ void ServiceWorkerRegistrationHandle::OnRegistrationFailed(
     ServiceWorkerRegistration* registration) {
   DCHECK_EQ(registration->id(), registration_->id());
   ClearVersionAttributes();
-  registration_->RemoveListener(this);
-  registration_ = NULL;
 }
 
 void ServiceWorkerRegistrationHandle::SetVersionAttributes(

@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_registration_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -144,6 +145,26 @@ TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
   EXPECT_TRUE(listener.observed_info_.waiting_version.is_null);
   EXPECT_TRUE(listener.observed_info_.installing_version.is_null);
   EXPECT_TRUE(listener.observed_info_.controlling_version.is_null);
+}
+
+TEST_F(ServiceWorkerRegistrationTest, FailedRegistrationNoCrash) {
+  const GURL kScope("http://www.example.not/");
+  const GURL kScript("http://www.example.not/service_worker.js");
+  int64 kRegistrationId = 1L;
+  int kProviderId = 1;
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      new ServiceWorkerRegistration(
+          kScope,
+          kScript,
+          kRegistrationId,
+          context_ptr_);
+  scoped_ptr<ServiceWorkerRegistrationHandle> handle(
+      new ServiceWorkerRegistrationHandle(context_ptr_,
+                                          NULL,
+                                          kProviderId,
+                                          registration.get()));
+  registration->NotifyRegistrationFailed();
+  // Don't crash when handle gets destructed.
 }
 
 }  // namespace content
