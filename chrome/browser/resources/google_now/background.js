@@ -818,6 +818,7 @@ function requestCardDismissal(
            Promise.resolve() :
            Promise.reject();
   }).catch(function(request) {
+    request = (typeof request === 'object') ? request : {};
     return (request.status == HTTP_BAD_REQUEST ||
            request.status == HTTP_METHOD_NOT_ALLOWED) ?
            Promise.resolve() :
