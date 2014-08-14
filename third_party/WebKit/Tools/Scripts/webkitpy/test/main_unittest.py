@@ -41,12 +41,6 @@ class TestStubs(unittest.TestCase):
     def integration_test_empty(self):
         pass
 
-    def serial_test_empty(self):
-        pass
-
-    def serial_integration_test_empty(self):
-        pass
-
 
 class TesterTest(unittest.TestCase):
 
@@ -83,28 +77,18 @@ class TesterTest(unittest.TestCase):
 
     def test_individual_names_are_not_run_twice(self):
         args = [STUBS_CLASS + '.test_empty']
-        parallel_tests, serial_tests = self._find_test_names(args)
-        self.assertEqual(parallel_tests, args)
-        self.assertEqual(serial_tests, [])
+        tests = self._find_test_names(args)
+        self.assertEqual(tests, args)
 
     def test_integration_tests_are_not_found_by_default(self):
-        parallel_tests, serial_tests = self._find_test_names([STUBS_CLASS])
-        self.assertEqual(parallel_tests, [
-            STUBS_CLASS + '.test_empty',
-            ])
-        self.assertEqual(serial_tests, [
-            STUBS_CLASS + '.serial_test_empty',
-            ])
+        tests = self._find_test_names([STUBS_CLASS])
+        self.assertEqual(tests, [STUBS_CLASS + '.test_empty'])
 
     def test_integration_tests_are_found(self):
-        parallel_tests, serial_tests = self._find_test_names(['--integration-tests', STUBS_CLASS])
-        self.assertEqual(parallel_tests, [
+        tests = self._find_test_names(['--integration-tests', STUBS_CLASS])
+        self.assertEqual(tests, [
             STUBS_CLASS + '.integration_test_empty',
             STUBS_CLASS + '.test_empty',
-            ])
-        self.assertEqual(serial_tests, [
-            STUBS_CLASS + '.serial_integration_test_empty',
-            STUBS_CLASS + '.serial_test_empty',
             ])
 
     def test_coverage_works(self):

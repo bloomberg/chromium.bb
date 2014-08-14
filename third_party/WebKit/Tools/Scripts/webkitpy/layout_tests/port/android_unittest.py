@@ -123,13 +123,6 @@ class AndroidCommandsTest(unittest.TestCase):
     def make_android_commands(self, device_count, serial):
         return android.AndroidCommands(self.make_executive(device_count), serial, debug_logging=False)
 
-    # The "adb" binary with the latest version should be used.
-    def serial_test_adb_command_path(self):
-        executive = self.make_executive(0)
-
-        android.AndroidCommands.set_adb_command_path_options(['path1', 'path2', 'path3'])
-        self.assertEqual('path2', android.AndroidCommands.adb_command_path(executive, debug_logging=False))
-
     # The used adb command should include the device's serial number, and get_serial() should reflect this.
     def test_adb_command_and_get_serial(self):
         android_commands = self.make_android_commands(1, '123456789ABCDEF0')

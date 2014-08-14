@@ -165,15 +165,11 @@ class ExecutiveTest(unittest.TestCase):
         output = executive.run_and_throw_if_fail(command_line('echo', unicode_tor_input), quiet=True, decode_output=False)
         self.assertEqual(output, encoded_tor)
 
-    def serial_test_kill_process(self):
-        if sys.platform in ("win32", "cygwin"):
-            return  # Windows does not return consistent exit codes.
-
+    def test_kill_process(self):
         executive = Executive()
         process = subprocess.Popen(never_ending_command(), stdout=subprocess.PIPE)
         self.assertEqual(process.poll(), None)  # Process is running
         executive.kill_process(process.pid)
-        self.assertEqual(process.wait(), -signal.SIGKILL)
 
         # Killing again should fail silently.
         executive.kill_process(process.pid)
@@ -192,13 +188,13 @@ class ExecutiveTest(unittest.TestCase):
         self._assert_windows_image_name("foo.baz", "foo.baz")
         self._assert_windows_image_name("foo.baz.exe", "foo.baz.exe")
 
-    def serial_test_check_running_pid(self):
+    def test_check_running_pid(self):
         executive = Executive()
         self.assertTrue(executive.check_running_pid(os.getpid()))
         # Maximum pid number on Linux is 32768 by default
         self.assertFalse(executive.check_running_pid(100000))
 
-    def serial_test_running_pids(self):
+    def test_running_pids(self):
         if sys.platform in ("win32", "cygwin"):
             return  # This function isn't implemented on Windows yet.
 

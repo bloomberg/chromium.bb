@@ -167,14 +167,13 @@ class Tester(object):
 
         self.printer.write_update("Finding the individual test methods ...")
         loader = _Loader()
-        parallel_tests, serial_tests = self._test_names(loader, names)
+        parallel_tests = self._test_names(loader, names)
 
         self.printer.write_update("Running the tests ...")
-        self.printer.num_tests = len(parallel_tests) + len(serial_tests)
+        self.printer.num_tests = len(parallel_tests)
         start = time.time()
         test_runner = Runner(self.printer, loader, self.webkit_finder)
         test_runner.run(parallel_tests, self._options.child_processes)
-        test_runner.run(serial_tests, 1)
 
         self.printer.print_result(time.time() - start)
 
@@ -196,27 +195,15 @@ class Tester(object):
 
     def _test_names(self, loader, names):
         parallel_test_method_prefixes = ['test_']
-        serial_test_method_prefixes = ['serial_test_']
         if self._options.integration_tests:
             parallel_test_method_prefixes.append('integration_test_')
-            serial_test_method_prefixes.append('serial_integration_test_')
 
         parallel_tests = []
         loader.test_method_prefixes = parallel_test_method_prefixes
         for name in names:
             parallel_tests.extend(self._all_test_names(loader.loadTestsFromName(name, None)))
 
-        serial_tests = []
-        loader.test_method_prefixes = serial_test_method_prefixes
-        for name in names:
-            serial_tests.extend(self._all_test_names(loader.loadTestsFromName(name, None)))
-
-        # loader.loadTestsFromName() will not verify that names begin with one of the test_method_prefixes
-        # if the names were explicitly provided (e.g., MainTest.test_basic), so this means that any individual
-        # tests will be included in both parallel_tests and serial_tests, and we need to de-dup them.
-        serial_tests = list(set(serial_tests).difference(set(parallel_tests)))
-
-        return (parallel_tests, serial_tests)
+        return parallel_tests
 
     def _all_test_names(self, suite):
         names = []
