@@ -24,8 +24,12 @@ b.addEventListener('click', function(event) {
     debug(dumpNodeList(event.path));
 });
 var clickEvent = document.createEvent("MouseEvents");
+debug("Makes sure that event.path is empty before dispatching the event.");
+debug(dumpNodeList(clickEvent.path));
 clickEvent.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
 b.dispatchEvent(clickEvent);
+debug("Makes sure that event.path isn't emptified after dispatching the event.");
+debug(dumpNodeList(clickEvent.path));
 </script>
 </body>
 </html>

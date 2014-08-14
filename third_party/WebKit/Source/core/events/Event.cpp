@@ -224,7 +224,17 @@ EventPath& Event::ensureEventPath()
 
 PassRefPtrWillBeRawPtr<StaticNodeList> Event::path() const
 {
-    if (!m_currentTarget || !m_currentTarget->toNode())
+    if (!m_currentTarget) {
+        ASSERT(m_eventPhase == PhaseType::NONE);
+        if (!m_eventPath) {
+            // Before dispatching the event
+            return StaticNodeList::createEmpty();
+        }
+        ASSERT(!m_eventPath->isEmpty());
+        // After dispatching the event
+        return m_eventPath->last().treeScopeEventContext().ensureEventPath(*m_eventPath);
+    }
+    if (!m_currentTarget->toNode())
         return StaticNodeList::createEmpty();
     Node* node = m_currentTarget->toNode();
     // FIXME: Support SVG Elements.

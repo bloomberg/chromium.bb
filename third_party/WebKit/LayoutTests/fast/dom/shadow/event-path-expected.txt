@@ -1,5 +1,9 @@
+Makes sure that event.path is empty before dispatching the event.
+length: 0
 #b, #a, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 5
 Makes sure that event.path returns static NodeList.
+#b, #a, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 5
+Makes sure that event.path isn't emptified after dispatching the event.
 #b, #a, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 5
 PASS successfullyParsed is true
 

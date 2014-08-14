@@ -55,7 +55,7 @@ public:
 
     NodeEventContext& operator[](size_t index) { return m_nodeEventContexts[index]; }
     const NodeEventContext& operator[](size_t index) const { return m_nodeEventContexts[index]; }
-    const NodeEventContext& last() const { return m_nodeEventContexts[size() - 1]; }
+    NodeEventContext& last() { return m_nodeEventContexts[size() - 1]; }
 
     bool isEmpty() const { return m_nodeEventContexts.isEmpty(); }
     size_t size() const { return m_nodeEventContexts.size(); }
