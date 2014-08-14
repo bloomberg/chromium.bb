@@ -6200,3 +6200,16 @@
    fun:_ZNK2cc9LayerImpl11AsValueIntoEPN4base5debug11TracedValueE
    fun:_ZNK2cc*LayerImpl11AsValueIntoEPN4base5debug11TracedValueE
 }
+{
+   bug_403774
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN5blink18ModulesInitializer4initEv
+   fun:_ZN5blink19initializeWithoutV8EPNS_8PlatformE
+   fun:_ZN5blink10initializeEPNS_8PlatformE
+   fun:_ZN7content25TestWebKitPlatformSupportC2Ev
+   fun:_ZN7content25TestWebKitPlatformSupportC1Ev
+   fun:_ZN7content17UnitTestTestSuiteC2EPN4base9TestSuiteE
+   fun:_ZN7content17UnitTestTestSuiteC1EPN4base9TestSuiteE
+}
