@@ -49,7 +49,8 @@ class SyncBackupManagerTest : public syncer::SyncManager::Observer,
     CHECK(temp_dir_.CreateUniqueTempDir());
   }
 
-  void InitManager(SyncManager* manager, StorageOption storage_option) {
+  void InitManager(SyncManager* manager,
+                   InternalComponentsFactory::StorageOption storage_option) {
     manager_ = manager;
     EXPECT_CALL(*this, OnInitializationComplete(_, _, _, _))
         .WillOnce(WithArgs<2>(Invoke(this,
@@ -65,8 +66,11 @@ class SyncBackupManagerTest : public syncer::SyncManager::Observer,
     args.service_url = GURL("https://example.com/");
     args.post_factory = scoped_ptr<HttpPostProviderFactory>().Pass();
     args.internal_components_factory.reset(new TestInternalComponentsFactory(
-        InternalComponentsFactory::Switches(), storage_option));
+        InternalComponentsFactory::Switches(), storage_option,
+        &storage_used_));
     manager->Init(&args);
+    EXPECT_EQ(InternalComponentsFactory::STORAGE_ON_DISK_DEFERRED,
+              storage_used_);
     loop_.PostTask(FROM_HERE, run_loop.QuitClosure());
     run_loop.Run();
   }
@@ -82,7 +86,6 @@ class SyncBackupManagerTest : public syncer::SyncManager::Observer,
               node.InitUniqueByCreation(type, type_root, client_tag));
   }
 
- private:
   void ConfigureSyncer() {
     manager_->ConfigureSyncer(CONFIGURE_REASON_NEW_CLIENT,
                               ModelTypeSet(SEARCH_ENGINES),
@@ -105,11 +108,12 @@ class SyncBackupManagerTest : public syncer::SyncManager::Observer,
   base::ScopedTempDir temp_dir_;
   base::MessageLoop loop_;    // Needed for WeakHandle
   SyncManager* manager_;
+  InternalComponentsFactory::StorageOption storage_used_;
 };
 
-TEST_F(SyncBackupManagerTest, NormalizeAndPersist) {
+TEST_F(SyncBackupManagerTest, NormalizeEntry) {
   scoped_ptr<SyncBackupManager> manager(new SyncBackupManager);
-  InitManager(manager.get(), STORAGE_ON_DISK);
+  InitManager(manager.get(), InternalComponentsFactory::STORAGE_IN_MEMORY);
 
   CreateEntry(manager->GetUserShare(), SEARCH_ENGINES, "test");
 
@@ -134,11 +138,20 @@ TEST_F(SyncBackupManagerTest, NormalizeAndPersist) {
     EXPECT_TRUE(pref.GetEntry()->GetId().ServerKnows());
     EXPECT_FALSE(pref.GetEntry()->GetIsUnsynced());
   }
-  manager->ShutdownOnSyncThread(STOP_SYNC);
+}
+
+TEST_F(SyncBackupManagerTest, PersistWithSwitchToSyncShutdown) {
+  scoped_ptr<SyncBackupManager> manager(new SyncBackupManager);
+  InitManager(manager.get(),
+              InternalComponentsFactory::STORAGE_ON_DISK_DEFERRED);
+
+  CreateEntry(manager->GetUserShare(), SEARCH_ENGINES, "test");
+  manager->SaveChanges();
+  manager->ShutdownOnSyncThread(SWITCH_MODE_SYNC);
 
   // Reopen db to verify entry is persisted.
   manager.reset(new SyncBackupManager);
-  InitManager(manager.get(), STORAGE_ON_DISK);
+  InitManager(manager.get(), InternalComponentsFactory::STORAGE_ON_DISK);
   {
     ReadTransaction trans(FROM_HERE, manager->GetUserShare());
     ReadNode pref(&trans);
@@ -149,10 +162,22 @@ TEST_F(SyncBackupManagerTest, NormalizeAndPersist) {
   }
 }
 
+TEST_F(SyncBackupManagerTest, DontPersistWithOtherShutdown) {
+  scoped_ptr<SyncBackupManager> manager(new SyncBackupManager);
+  InitManager(manager.get(),
+              InternalComponentsFactory::STORAGE_ON_DISK_DEFERRED);
+
+  CreateEntry(manager->GetUserShare(), SEARCH_ENGINES, "test");
+  manager->SaveChanges();
+  manager->ShutdownOnSyncThread(STOP_SYNC);
+  EXPECT_FALSE(base::PathExists(
+      temp_dir_.path().Append(syncable::Directory::kSyncDatabaseFilename)));
+}
+
 TEST_F(SyncBackupManagerTest, FailToInitialize) {
   // Test graceful shutdown on initialization failure.
   scoped_ptr<SyncBackupManager> manager(new SyncBackupManager);
-  InitManager(manager.get(), STORAGE_INVALID);
+  InitManager(manager.get(), InternalComponentsFactory::STORAGE_INVALID);
 }
 
 }  // anonymous namespace

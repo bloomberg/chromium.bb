@@ -9,20 +9,11 @@
 
 namespace syncer {
 
-enum StorageOption {
-  // BuildDirectoryBackingStore should not use persistent on-disk storage.
-  STORAGE_IN_MEMORY,
-  // Use this if you want BuildDirectoryBackingStore to create a real
-  // on disk store.
-  STORAGE_ON_DISK,
-  // Use this to test the case where a directory fails to load.
-  STORAGE_INVALID
-};
-
 class TestInternalComponentsFactory : public InternalComponentsFactory {
  public:
   explicit TestInternalComponentsFactory(const Switches& switches,
-                                         StorageOption option);
+                                         StorageOption option,
+                                         StorageOption* storage_used);
   virtual ~TestInternalComponentsFactory();
 
   virtual scoped_ptr<SyncScheduler> BuildScheduler(
@@ -41,6 +32,7 @@ class TestInternalComponentsFactory : public InternalComponentsFactory {
 
   virtual scoped_ptr<syncable::DirectoryBackingStore>
   BuildDirectoryBackingStore(
+      StorageOption storage,
       const std::string& dir_name,
       const base::FilePath& backing_filepath) OVERRIDE;
 
@@ -48,7 +40,8 @@ class TestInternalComponentsFactory : public InternalComponentsFactory {
 
  private:
   const Switches switches_;
-  const StorageOption storage_option_;
+  const StorageOption storage_override_;
+  StorageOption* storage_used_;
 
   DISALLOW_COPY_AND_ASSIGN(TestInternalComponentsFactory);
 };

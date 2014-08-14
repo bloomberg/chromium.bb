@@ -5,7 +5,6 @@
 #include "sync/internal_api/sync_rollback_manager_base.h"
 
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/internal_components_factory.h"
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/read_transaction.h"
 #include "sync/internal_api/public/write_transaction.h"
@@ -53,12 +52,13 @@ SyncRollbackManagerBase::~SyncRollbackManagerBase() {
 bool SyncRollbackManagerBase::InitInternal(
     const base::FilePath& database_location,
     InternalComponentsFactory* internal_components_factory,
+    InternalComponentsFactory::StorageOption storage,
     scoped_ptr<UnrecoverableErrorHandler> unrecoverable_error_handler,
     ReportUnrecoverableErrorFunction report_unrecoverable_error_function) {
   unrecoverable_error_handler_ = unrecoverable_error_handler.Pass();
   report_unrecoverable_error_function_ = report_unrecoverable_error_function;
 
-  if (!InitBackupDB(database_location, internal_components_factory)) {
+  if (!InitBackupDB(database_location, internal_components_factory, storage)) {
     NotifyInitializationFailure();
     return false;
   }
@@ -140,7 +140,6 @@ void SyncRollbackManagerBase::SaveChanges() {
 
 void SyncRollbackManagerBase::ShutdownOnSyncThread(ShutdownReason reason) {
   if (initialized_) {
-    SaveChanges();
     share_.directory->Close();
     share_.directory.reset();
     initialized_ = false;
@@ -239,12 +238,13 @@ scoped_ptr<base::ListValue> SyncRollbackManagerBase::GetAllNodesForType(
 
 bool SyncRollbackManagerBase::InitBackupDB(
     const base::FilePath& sync_folder,
-    InternalComponentsFactory* internal_components_factory) {
+    InternalComponentsFactory* internal_components_factory,
+    InternalComponentsFactory::StorageOption storage) {
   base::FilePath backup_db_path = sync_folder.Append(
       syncable::Directory::kSyncDatabaseFilename);
   scoped_ptr<syncable::DirectoryBackingStore> backing_store =
       internal_components_factory->BuildDirectoryBackingStore(
-          "backup", backup_db_path).Pass();
+          storage, "backup", backup_db_path).Pass();
 
   DCHECK(backing_store.get());
   share_.directory.reset(

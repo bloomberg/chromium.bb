@@ -317,6 +317,7 @@
         'sessions/model_type_registry_unittest.cc',
         'sessions/nudge_tracker_unittest.cc',
         'sessions/status_controller_unittest.cc',
+        'syncable/deferred_on_disk_directory_backing_store_unittest.cc',
         'syncable/directory_backing_store_unittest.cc',
         'syncable/directory_unittest.cc',
         'syncable/directory_unittest.h',
