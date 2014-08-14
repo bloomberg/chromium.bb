@@ -67,6 +67,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderListBox, isListBox());
 
-} // namepace WebCore
+} // namepace blink
 
 #endif // RenderListBox_h

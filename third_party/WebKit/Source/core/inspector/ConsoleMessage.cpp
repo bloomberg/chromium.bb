@@ -115,4 +115,4 @@ void ConsoleMessage::trace(Visitor* visitor)
     visitor->trace(m_callStack);
 }
 
-} // namespace WebCore
+} // namespace blink

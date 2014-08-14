@@ -19,4 +19,4 @@ GamepadButton::GamepadButton()
     ScriptWrappable::init(this);
 }
 
-} // namespace WebCore
+} // namespace blink

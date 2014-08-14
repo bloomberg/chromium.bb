@@ -65,6 +65,6 @@ private:
     WorkerGlobalScopeProxy* m_workerProxy;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ConsoleMessage_h
