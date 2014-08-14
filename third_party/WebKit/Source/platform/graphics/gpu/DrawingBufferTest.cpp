@@ -45,7 +45,6 @@
 #include <gtest/gtest.h>
 
 using namespace blink;
-using namespace blink;
 using testing::Test;
 using testing::_;
 
@@ -173,7 +172,7 @@ static const int alternateHeight = 50;
 
 class DrawingBufferForTests : public DrawingBuffer {
 public:
-    static PassRefPtr<DrawingBufferForTests> create(PassOwnPtr<blink::WebGraphicsContext3D> context,
+    static PassRefPtr<DrawingBufferForTests> create(PassOwnPtr<WebGraphicsContext3D> context,
         const IntSize& size, PreserveDrawingBuffer preserve, PassRefPtr<ContextEvictionManager> contextEvictionManager)
     {
         OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(context.get());
@@ -186,12 +185,12 @@ public:
         return drawingBuffer.release();
     }
 
-    DrawingBufferForTests(PassOwnPtr<blink::WebGraphicsContext3D> context,
+    DrawingBufferForTests(PassOwnPtr<WebGraphicsContext3D> context,
         PassOwnPtr<Extensions3DUtil> extensionsUtil,
         PreserveDrawingBuffer preserve,
         PassRefPtr<ContextEvictionManager> contextEvictionManager)
         : DrawingBuffer(context, extensionsUtil, false /* multisampleExtensionSupported */,
-            false /* packedDepthStencilExtensionSupported */, preserve, blink::WebGraphicsContext3D::Attributes(), contextEvictionManager)
+            false /* packedDepthStencilExtensionSupported */, preserve, WebGraphicsContext3D::Attributes(), contextEvictionManager)
         , m_live(0)
     { }
 
@@ -241,7 +240,7 @@ TEST_F(DrawingBufferTest, testPaintRenderingResultsToCanvas)
 
 TEST_F(DrawingBufferTest, verifyResizingProperlyAffectsMailboxes)
 {
-    blink::WebExternalTextureMailbox mailbox;
+    WebExternalTextureMailbox mailbox;
 
     IntSize initialSize(initialWidth, initialHeight);
     IntSize alternateSize(initialWidth, alternateHeight);
@@ -282,9 +281,9 @@ TEST_F(DrawingBufferTest, verifyDestructionCompleteAfterAllMailboxesReleased)
     bool live = true;
     m_drawingBuffer->m_live = &live;
 
-    blink::WebExternalTextureMailbox mailbox1;
-    blink::WebExternalTextureMailbox mailbox2;
-    blink::WebExternalTextureMailbox mailbox3;
+    WebExternalTextureMailbox mailbox1;
+    WebExternalTextureMailbox mailbox2;
+    WebExternalTextureMailbox mailbox3;
 
     IntSize initialSize(initialWidth, initialHeight);
 
@@ -319,9 +318,9 @@ TEST_F(DrawingBufferTest, verifyDrawingBufferStaysAliveIfResourcesAreLost)
 {
     bool live = true;
     m_drawingBuffer->m_live = &live;
-    blink::WebExternalTextureMailbox mailbox1;
-    blink::WebExternalTextureMailbox mailbox2;
-    blink::WebExternalTextureMailbox mailbox3;
+    WebExternalTextureMailbox mailbox1;
+    WebExternalTextureMailbox mailbox2;
+    WebExternalTextureMailbox mailbox3;
 
     m_drawingBuffer->markContentsChanged();
     EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailbox1, 0));
@@ -352,7 +351,7 @@ TEST_F(DrawingBufferTest, verifyDrawingBufferStaysAliveIfResourcesAreLost)
 
 class TextureMailboxWrapper {
 public:
-    explicit TextureMailboxWrapper(const blink::WebExternalTextureMailbox& mailbox)
+    explicit TextureMailboxWrapper(const WebExternalTextureMailbox& mailbox)
         : m_mailbox(mailbox)
     { }
 
@@ -367,14 +366,14 @@ public:
     }
 
 private:
-    blink::WebExternalTextureMailbox m_mailbox;
+    WebExternalTextureMailbox m_mailbox;
 };
 
 TEST_F(DrawingBufferTest, verifyOnlyOneRecycledMailboxMustBeKept)
 {
-    blink::WebExternalTextureMailbox mailbox1;
-    blink::WebExternalTextureMailbox mailbox2;
-    blink::WebExternalTextureMailbox mailbox3;
+    WebExternalTextureMailbox mailbox1;
+    WebExternalTextureMailbox mailbox2;
+    WebExternalTextureMailbox mailbox3;
 
     // Produce mailboxes.
     m_drawingBuffer->markContentsChanged();
@@ -394,13 +393,13 @@ TEST_F(DrawingBufferTest, verifyOnlyOneRecycledMailboxMustBeKept)
 
     // The first recycled mailbox must be 2. 1 and 3 were deleted by FIFO order because
     // DrawingBuffer never keeps more than one mailbox.
-    blink::WebExternalTextureMailbox recycledMailbox1;
+    WebExternalTextureMailbox recycledMailbox1;
     m_drawingBuffer->markContentsChanged();
     EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&recycledMailbox1, 0));
     EXPECT_EQ(TextureMailboxWrapper(mailbox2), TextureMailboxWrapper(recycledMailbox1));
 
     // The second recycled mailbox must be a new mailbox.
-    blink::WebExternalTextureMailbox recycledMailbox2;
+    WebExternalTextureMailbox recycledMailbox2;
     m_drawingBuffer->markContentsChanged();
     EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&recycledMailbox2, 0));
     EXPECT_NE(TextureMailboxWrapper(mailbox1), TextureMailboxWrapper(recycledMailbox2));
@@ -414,7 +413,7 @@ TEST_F(DrawingBufferTest, verifyOnlyOneRecycledMailboxMustBeKept)
 
 TEST_F(DrawingBufferTest, verifyInsertAndWaitSyncPointCorrectly)
 {
-    blink::WebExternalTextureMailbox mailbox;
+    WebExternalTextureMailbox mailbox;
 
     // Produce mailboxes.
     m_drawingBuffer->markContentsChanged();
@@ -466,7 +465,7 @@ protected:
 
 TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages)
 {
-    blink::WebExternalTextureMailbox mailbox;
+    WebExternalTextureMailbox mailbox;
 
     IntSize initialSize(initialWidth, initialHeight);
     IntSize alternateSize(initialWidth, alternateHeight);
@@ -625,7 +624,7 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported)
         DrawingBuffer::PreserveDrawingBuffer preserve = DrawingBuffer::Preserve;
         RefPtr<ContextEvictionManager> contextEvictionManager = adoptRef(new FakeContextEvictionManager);
 
-        blink::WebGraphicsContext3D::Attributes requestedAttributes;
+        WebGraphicsContext3D::Attributes requestedAttributes;
         requestedAttributes.stencil = cases[i].requestStencil;
         requestedAttributes.depth = cases[i].requestDepth;
         RefPtr<DrawingBuffer> drawingBuffer = DrawingBuffer::create(context.release(), IntSize(10, 10), preserve, requestedAttributes, contextEvictionManager);

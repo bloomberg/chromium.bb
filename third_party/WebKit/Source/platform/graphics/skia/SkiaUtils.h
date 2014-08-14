@@ -52,7 +52,7 @@ namespace blink {
 
 class GraphicsContext;
 
-PassRefPtr<SkXfermode> WebCoreCompositeToSkiaComposite(CompositeOperator, blink::WebBlendMode = blink::WebBlendModeNormal);
+PassRefPtr<SkXfermode> WebCoreCompositeToSkiaComposite(CompositeOperator, WebBlendMode = WebBlendModeNormal);
 
 // move this guy into SkColor.h
 SkColor SkPMColorToColor(SkPMColor);
@@ -110,6 +110,6 @@ InterpolationQuality computeInterpolationQuality(
 
 bool shouldDrawAntiAliased(const GraphicsContext*, const SkRect& destRect);
 
-}  // namespace blink
+} // namespace blink
 
 #endif  // SkiaUtils_h

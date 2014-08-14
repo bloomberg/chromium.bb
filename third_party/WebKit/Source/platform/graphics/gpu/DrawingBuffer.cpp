@@ -66,7 +66,7 @@ DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, drawingBufferCounter, ("Dra
 
 class ScopedTextureUnit0BindingRestorer {
 public:
-    ScopedTextureUnit0BindingRestorer(blink::WebGraphicsContext3D* context, GLenum activeTextureUnit, Platform3DObject textureUnitZeroId)
+    ScopedTextureUnit0BindingRestorer(WebGraphicsContext3D* context, GLenum activeTextureUnit, Platform3DObject textureUnitZeroId)
         : m_context(context)
         , m_oldActiveTextureUnit(activeTextureUnit)
         , m_oldTextureUnitZeroId(textureUnitZeroId)
@@ -80,14 +80,14 @@ public:
     }
 
 private:
-    blink::WebGraphicsContext3D* m_context;
+    WebGraphicsContext3D* m_context;
     GLenum m_oldActiveTextureUnit;
     Platform3DObject m_oldTextureUnitZeroId;
 };
 
 } // namespace
 
-PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<blink::WebGraphicsContext3D> context, const IntSize& size, PreserveDrawingBuffer preserve, blink::WebGraphicsContext3D::Attributes requestedAttributes, PassRefPtr<ContextEvictionManager> contextEvictionManager)
+PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<WebGraphicsContext3D> context, const IntSize& size, PreserveDrawingBuffer preserve, WebGraphicsContext3D::Attributes requestedAttributes, PassRefPtr<ContextEvictionManager> contextEvictionManager)
 {
     ASSERT(context);
     OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(context.get());
@@ -113,12 +113,12 @@ PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<blink::WebGraphicsCon
     return drawingBuffer.release();
 }
 
-DrawingBuffer::DrawingBuffer(PassOwnPtr<blink::WebGraphicsContext3D> context,
+DrawingBuffer::DrawingBuffer(PassOwnPtr<WebGraphicsContext3D> context,
     PassOwnPtr<Extensions3DUtil> extensionsUtil,
     bool multisampleExtensionSupported,
     bool packedDepthStencilExtensionSupported,
     PreserveDrawingBuffer preserve,
-    blink::WebGraphicsContext3D::Attributes requestedAttributes,
+    WebGraphicsContext3D::Attributes requestedAttributes,
     PassRefPtr<ContextEvictionManager> contextEvictionManager)
     : m_preserveDrawingBuffer(preserve)
     , m_scissorEnabled(false)
@@ -185,12 +185,12 @@ void DrawingBuffer::markLayerComposited()
     m_layerComposited = true;
 }
 
-blink::WebGraphicsContext3D* DrawingBuffer::context()
+WebGraphicsContext3D* DrawingBuffer::context()
 {
     return m_context.get();
 }
 
-bool DrawingBuffer::prepareMailbox(blink::WebExternalTextureMailbox* outMailbox, blink::WebExternalBitmap* bitmap)
+bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExternalBitmap* bitmap)
 {
     if (!m_contentsChanged)
         return false;
@@ -275,7 +275,7 @@ bool DrawingBuffer::prepareMailbox(blink::WebExternalTextureMailbox* outMailbox,
     return true;
 }
 
-void DrawingBuffer::mailboxReleased(const blink::WebExternalTextureMailbox& mailbox, bool lostResource)
+void DrawingBuffer::mailboxReleased(const WebExternalTextureMailbox& mailbox, bool lostResource)
 {
     if (m_destructionInProgress || m_context->isContextLost() || lostResource) {
         mailboxReleasedWhileDestructionInProgress(mailbox);
@@ -295,7 +295,7 @@ void DrawingBuffer::mailboxReleased(const blink::WebExternalTextureMailbox& mail
     ASSERT_NOT_REACHED();
 }
 
-void DrawingBuffer::mailboxReleasedWhileDestructionInProgress(const blink::WebExternalTextureMailbox& mailbox)
+void DrawingBuffer::mailboxReleasedWhileDestructionInProgress(const WebExternalTextureMailbox& mailbox)
 {
     ASSERT(m_textureMailboxes.size());
     m_context->makeContextCurrent();
@@ -309,7 +309,7 @@ PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::recycledMailbox()
     if (m_recycledMailboxQueue.isEmpty())
         return PassRefPtr<MailboxInfo>();
 
-    blink::WebExternalTextureMailbox mailbox;
+    WebExternalTextureMailbox mailbox;
     while (!m_recycledMailboxQueue.isEmpty()) {
         mailbox = m_recycledMailboxQueue.takeLast();
         // Never have more than one mailbox in the released state.
@@ -350,7 +350,7 @@ PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::createNewMailbox(const Tex
     return returnMailbox.release();
 }
 
-void DrawingBuffer::deleteMailbox(const blink::WebExternalTextureMailbox& mailbox)
+void DrawingBuffer::deleteMailbox(const WebExternalTextureMailbox& mailbox)
 {
     for (size_t i = 0; i < m_textureMailboxes.size(); i++) {
         if (nameEquals(m_textureMailboxes[i]->mailbox, mailbox)) {
@@ -417,17 +417,17 @@ bool DrawingBuffer::initialize(const IntSize& size)
     // If that succeeds, we then see what we actually got and update our actual attributes to reflect that.
     m_actualAttributes = m_requestedAttributes;
     if (m_requestedAttributes.alpha) {
-        blink::WGC3Dint alphaBits = 0;
+        WGC3Dint alphaBits = 0;
         m_context->getIntegerv(GL_ALPHA_BITS, &alphaBits);
         m_actualAttributes.alpha = alphaBits > 0;
     }
     if (m_requestedAttributes.depth) {
-        blink::WGC3Dint depthBits = 0;
+        WGC3Dint depthBits = 0;
         m_context->getIntegerv(GL_DEPTH_BITS, &depthBits);
         m_actualAttributes.depth = depthBits > 0;
     }
     if (m_requestedAttributes.stencil) {
-        blink::WGC3Dint stencilBits = 0;
+        WGC3Dint stencilBits = 0;
         m_context->getIntegerv(GL_STENCIL_BITS, &stencilBits);
         m_actualAttributes.stencil = stencilBits > 0;
     }
@@ -435,7 +435,7 @@ bool DrawingBuffer::initialize(const IntSize& size)
     return true;
 }
 
-bool DrawingBuffer::copyToPlatformTexture(blink::WebGraphicsContext3D* context, Platform3DObject texture, GLenum internalFormat, GLenum destType, GLint level, bool premultiplyAlpha, bool flipY, bool fromFrontBuffer)
+bool DrawingBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3DObject texture, GLenum internalFormat, GLenum destType, GLint level, bool premultiplyAlpha, bool flipY, bool fromFrontBuffer)
 {
     if (!m_context->makeContextCurrent())
         return false;
@@ -500,10 +500,10 @@ Platform3DObject DrawingBuffer::framebuffer() const
     return m_fbo;
 }
 
-blink::WebLayer* DrawingBuffer::platformLayer()
+WebLayer* DrawingBuffer::platformLayer()
 {
     if (!m_layer) {
-        m_layer = adoptPtr(blink::Platform::current()->compositorSupport()->createExternalTextureLayer(this));
+        m_layer = adoptPtr(Platform::current()->compositorSupport()->createExternalTextureLayer(this));
 
         m_layer->setOpaque(!m_actualAttributes.alpha);
         m_layer->setBlendBackgroundColor(m_actualAttributes.alpha);
@@ -529,11 +529,11 @@ void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
         m_context->flush();
 
         bufferMailbox->mailbox.syncPoint = m_context->insertSyncPoint();
-        OwnPtr<blink::WebGraphicsContext3DProvider> provider =
-            adoptPtr(blink::Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
+        OwnPtr<WebGraphicsContext3DProvider> provider =
+            adoptPtr(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
         if (!provider)
             return;
-        blink::WebGraphicsContext3D* context = provider->context3d();
+        WebGraphicsContext3D* context = provider->context3d();
         if (!context || !context->makeContextCurrent())
             return;
 

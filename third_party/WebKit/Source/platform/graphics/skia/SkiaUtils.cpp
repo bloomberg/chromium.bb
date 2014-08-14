@@ -58,31 +58,31 @@ static const struct CompositOpToXfermodeMode {
     { CompositePlusLighter,     SkXfermode::kPlus_Mode }
 };
 
-// keep this array in sync with blink::WebBlendMode enum in public/platform/WebBlendMode.h
+// keep this array in sync with WebBlendMode enum in public/platform/WebBlendMode.h
 static const uint8_t gMapBlendOpsToXfermodeModes[] = {
-    SkXfermode::kClear_Mode, // blink::WebBlendModeNormal
-    SkXfermode::kMultiply_Mode, // blink::WebBlendModeMultiply
-    SkXfermode::kScreen_Mode, // blink::WebBlendModeScreen
-    SkXfermode::kOverlay_Mode, // blink::WebBlendModeOverlay
-    SkXfermode::kDarken_Mode, // blink::WebBlendModeDarken
-    SkXfermode::kLighten_Mode, // blink::WebBlendModeLighten
-    SkXfermode::kColorDodge_Mode, // blink::WebBlendModeColorDodge
-    SkXfermode::kColorBurn_Mode, // blink::WebBlendModeColorBurn
-    SkXfermode::kHardLight_Mode, // blink::WebBlendModeHardLight
-    SkXfermode::kSoftLight_Mode, // blink::WebBlendModeSoftLight
-    SkXfermode::kDifference_Mode, // blink::WebBlendModeDifference
-    SkXfermode::kExclusion_Mode, // blink::WebBlendModeExclusion
-    SkXfermode::kHue_Mode, // blink::WebBlendModeHue
-    SkXfermode::kSaturation_Mode, // blink::WebBlendModeSaturation
-    SkXfermode::kColor_Mode, // blink::WebBlendModeColor
-    SkXfermode::kLuminosity_Mode // blink::WebBlendModeLuminosity
+    SkXfermode::kClear_Mode, // WebBlendModeNormal
+    SkXfermode::kMultiply_Mode, // WebBlendModeMultiply
+    SkXfermode::kScreen_Mode, // WebBlendModeScreen
+    SkXfermode::kOverlay_Mode, // WebBlendModeOverlay
+    SkXfermode::kDarken_Mode, // WebBlendModeDarken
+    SkXfermode::kLighten_Mode, // WebBlendModeLighten
+    SkXfermode::kColorDodge_Mode, // WebBlendModeColorDodge
+    SkXfermode::kColorBurn_Mode, // WebBlendModeColorBurn
+    SkXfermode::kHardLight_Mode, // WebBlendModeHardLight
+    SkXfermode::kSoftLight_Mode, // WebBlendModeSoftLight
+    SkXfermode::kDifference_Mode, // WebBlendModeDifference
+    SkXfermode::kExclusion_Mode, // WebBlendModeExclusion
+    SkXfermode::kHue_Mode, // WebBlendModeHue
+    SkXfermode::kSaturation_Mode, // WebBlendModeSaturation
+    SkXfermode::kColor_Mode, // WebBlendModeColor
+    SkXfermode::kLuminosity_Mode // WebBlendModeLuminosity
 };
 
-PassRefPtr<SkXfermode> WebCoreCompositeToSkiaComposite(CompositeOperator op, blink::WebBlendMode blendMode)
+PassRefPtr<SkXfermode> WebCoreCompositeToSkiaComposite(CompositeOperator op, WebBlendMode blendMode)
 {
-    if (blendMode != blink::WebBlendModeNormal) {
+    if (blendMode != WebBlendModeNormal) {
         if ((uint8_t)blendMode >= SK_ARRAY_COUNT(gMapBlendOpsToXfermodeModes)) {
-            SkDEBUGF(("GraphicsContext::setPlatformCompositeOperation unknown blink::WebBlendMode %d\n", blendMode));
+            SkDEBUGF(("GraphicsContext::setPlatformCompositeOperation unknown WebBlendMode %d\n", blendMode));
             return adoptRef(SkXfermode::Create(SkXfermode::kSrcOver_Mode));
         }
         SkXfermode::Mode mode = (SkXfermode::Mode)gMapBlendOpsToXfermodeModes[(uint8_t)blendMode];

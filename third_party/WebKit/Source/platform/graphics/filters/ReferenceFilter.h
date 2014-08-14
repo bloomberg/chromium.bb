@@ -63,6 +63,6 @@ private:
     RefPtr<FilterEffect> m_lastEffect;
 };
 
-}
+} // namespace blink
 
 #endif // ReferenceFilter_h

@@ -368,7 +368,7 @@ void FETurbulence::applySoftware()
     int optimalThreadNumber = (absolutePaintRect().width() * absolutePaintRect().height()) / s_minimalRectDimension;
     if (optimalThreadNumber > 1) {
         // Initialize parallel jobs
-        ParallelJobs<FillRegionParameters> parallelJobs(&blink::FETurbulence::fillRegionWorker, optimalThreadNumber);
+        ParallelJobs<FillRegionParameters> parallelJobs(&FETurbulence::fillRegionWorker, optimalThreadNumber);
 
         // Fill the parameter array
         int i = parallelJobs.numberOfJobs();

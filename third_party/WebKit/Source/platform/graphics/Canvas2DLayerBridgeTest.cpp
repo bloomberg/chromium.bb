@@ -41,7 +41,6 @@
 #include <gtest/gtest.h>
 
 using namespace blink;
-using namespace blink;
 using testing::InSequence;
 using testing::Return;
 using testing::Test;

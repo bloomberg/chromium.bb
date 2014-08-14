@@ -159,7 +159,7 @@ void NativeImageSkia::draw(
     const SkRect& srcRect,
     const SkRect& destRect,
     CompositeOperator compositeOp,
-    blink::WebBlendMode blendMode) const
+    WebBlendMode blendMode) const
 {
     TRACE_EVENT0("skia", "NativeImageSkia::draw");
 
@@ -200,7 +200,7 @@ void NativeImageSkia::drawPattern(
     const FloatPoint& phase,
     CompositeOperator compositeOp,
     const FloatRect& destRect,
-    blink::WebBlendMode blendMode,
+    WebBlendMode blendMode,
     const IntSize& repeatSpacing) const
 {
     FloatRect normSrcRect = floatSrcRect;

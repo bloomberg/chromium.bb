@@ -221,7 +221,7 @@ TEST_F(DeferredImageDecoderTest, decodeOnOtherThread)
     EXPECT_EQ(0, m_frameBufferRequestCount);
 
     // Create a thread to rasterize SkPicture.
-    OwnPtr<blink::WebThread> thread = adoptPtr(blink::Platform::current()->createThread("RasterThread"));
+    OwnPtr<WebThread> thread = adoptPtr(Platform::current()->createThread("RasterThread"));
     thread->postTask(new Task(WTF::bind(&rasterizeMain, m_canvas.get(), picture.get())));
     thread.clear();
     EXPECT_EQ(0, m_frameBufferRequestCount);

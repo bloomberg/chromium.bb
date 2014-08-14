@@ -82,7 +82,7 @@ DiscardablePixelRef::~DiscardablePixelRef()
 
 bool DiscardablePixelRef::allocAndLockDiscardableMemory(size_t bytes)
 {
-    m_discardable = adoptPtr(blink::Platform::current()->allocateAndLockDiscardableMemory(bytes));
+    m_discardable = adoptPtr(Platform::current()->allocateAndLockDiscardableMemory(bytes));
     if (m_discardable) {
         m_lockedMemory = m_discardable->data();
         return true;

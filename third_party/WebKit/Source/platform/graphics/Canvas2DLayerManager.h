@@ -32,7 +32,7 @@ class Canvas2DLayerManagerTest;
 
 namespace blink {
 
-class PLATFORM_EXPORT Canvas2DLayerManager : public blink::WebThread::TaskObserver {
+class PLATFORM_EXPORT Canvas2DLayerManager : public WebThread::TaskObserver {
 public:
     static Canvas2DLayerManager& get();
 
@@ -61,7 +61,7 @@ private:
     friend class ::Canvas2DLayerManagerTest; // for unit testing
 };
 
-}
+} // namespace blink
 
 #endif
 

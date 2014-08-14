@@ -31,18 +31,15 @@
 #include "wtf/Noncopyable.h"
 
 namespace blink {
-class WebContentDecryptionModule;
-class WebInbandTextTrack;
-class WebLayer;
-class WebMediaSource;
-}
-
-namespace blink {
 
 class AudioSourceProvider;
 class KURL;
 class MediaPlayer;
 class TimeRanges;
+class WebContentDecryptionModule;
+class WebInbandTextTrack;
+class WebLayer;
+class WebMediaSource;
 
 class MediaPlayerClient {
 public:
@@ -78,12 +75,12 @@ public:
     // the movie size has changed
     virtual void mediaPlayerSizeChanged() = 0;
 
-    virtual void mediaPlayerSetWebLayer(blink::WebLayer*) = 0;
+    virtual void mediaPlayerSetWebLayer(WebLayer*) = 0;
 
-    virtual void mediaPlayerDidAddTextTrack(blink::WebInbandTextTrack*) = 0;
-    virtual void mediaPlayerDidRemoveTextTrack(blink::WebInbandTextTrack*) = 0;
+    virtual void mediaPlayerDidAddTextTrack(WebInbandTextTrack*) = 0;
+    virtual void mediaPlayerDidRemoveTextTrack(WebInbandTextTrack*) = 0;
 
-    virtual void mediaPlayerMediaSourceOpened(blink::WebMediaSource*) = 0;
+    virtual void mediaPlayerMediaSourceOpened(WebMediaSource*) = 0;
 };
 
 typedef PassOwnPtr<MediaPlayer> (*CreateMediaEnginePlayer)(MediaPlayerClient*);
@@ -99,7 +96,7 @@ public:
     MediaPlayer() { }
     virtual ~MediaPlayer() { }
 
-    virtual void load(blink::WebMediaPlayer::LoadType, const String& url, blink::WebMediaPlayer::CORSMode) = 0;
+    virtual void load(WebMediaPlayer::LoadType, const String& url, WebMediaPlayer::CORSMode) = 0;
 
     enum Preload { None, MetaData, Auto };
     virtual void setPreload(Preload) = 0;
@@ -107,9 +104,9 @@ public:
 #if ENABLE(WEB_AUDIO)
     virtual AudioSourceProvider* audioSourceProvider() = 0;
 #endif
-    virtual blink::WebMediaPlayer* webMediaPlayer() const = 0;
+    virtual WebMediaPlayer* webMediaPlayer() const = 0;
 };
 
-}
+} // namespace blink
 
 #endif // MediaPlayer_h

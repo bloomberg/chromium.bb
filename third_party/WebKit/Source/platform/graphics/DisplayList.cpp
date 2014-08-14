@@ -73,4 +73,4 @@ void DisplayList::endRecording()
     }
 }
 
-}
+} // namespace blink

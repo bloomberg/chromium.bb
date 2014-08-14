@@ -29,14 +29,13 @@
 #include <gtest/gtest.h>
 
 using namespace blink;
-using namespace blink;
 
 namespace {
 
 TEST(FilterOperationsTest, getOutsetsBlur)
 {
     FilterOperations ops;
-    ops.operations().append(BlurFilterOperation::create(Length(20.0, blink::Fixed)));
+    ops.operations().append(BlurFilterOperation::create(Length(20.0, Fixed)));
     EXPECT_TRUE(ops.hasOutsets());
     FilterOutsets outsets = ops.outsets();
     EXPECT_EQ(57, outsets.top());

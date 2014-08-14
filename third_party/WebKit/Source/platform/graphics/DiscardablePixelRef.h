@@ -60,7 +60,7 @@ protected:
 
 private:
     void* m_lockedMemory;
-    OwnPtr<blink::WebDiscardableMemory> m_discardable;
+    OwnPtr<WebDiscardableMemory> m_discardable;
     OwnPtr<SkMutex> m_mutex;
     size_t m_rowBytes;
 };

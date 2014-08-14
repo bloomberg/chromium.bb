@@ -36,10 +36,8 @@
 #include "wtf/OwnPtr.h"
 
 namespace blink {
-class WebGraphicsContext3DProvider;
-}
 
-namespace blink {
+class WebGraphicsContext3DProvider;
 
 // This is a GPU backed surface that has no canvas or render target.
 class PLATFORM_EXPORT WebGLImageBufferSurface : public ImageBufferSurface {
@@ -63,9 +61,8 @@ private:
     // This raw-pixel based SkBitmap works as a cache at CPU side to avoid heavy cost
     // on readback from GPU side to CPU side in some cases.
     SkBitmap m_cachedBitmap;
-    OwnPtr<blink::WebGraphicsContext3DProvider> m_contextProvider;
+    OwnPtr<WebGraphicsContext3DProvider> m_contextProvider;
 };
-
 
 } // namespace blink
 

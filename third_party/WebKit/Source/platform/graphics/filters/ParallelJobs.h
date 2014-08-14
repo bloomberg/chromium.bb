@@ -64,11 +64,11 @@ public:
     ParallelJobs(WorkerFunction func, size_t requestedJobNumber)
         : m_func(func)
     {
-        size_t numberOfJobs = std::max(static_cast<size_t>(2), std::min(requestedJobNumber, blink::Platform::current()->numberOfProcessors()));
+        size_t numberOfJobs = std::max(static_cast<size_t>(2), std::min(requestedJobNumber, Platform::current()->numberOfProcessors()));
         m_parameters.grow(numberOfJobs);
         // The main thread can execute one job, so only create requestJobNumber - 1 threads.
         for (size_t i = 0; i < numberOfJobs - 1; ++i) {
-            OwnPtr<blink::WebThread> thread = adoptPtr(blink::Platform::current()->createThread("Unfortunate parallel worker"));
+            OwnPtr<WebThread> thread = adoptPtr(Platform::current()->createThread("Unfortunate parallel worker"));
             m_threads.append(thread.release());
         }
     }
@@ -93,7 +93,7 @@ public:
 
 private:
     WorkerFunction m_func;
-    Vector<OwnPtr<blink::WebThread> > m_threads;
+    Vector<OwnPtr<WebThread> > m_threads;
     Vector<Type> m_parameters;
 };
 

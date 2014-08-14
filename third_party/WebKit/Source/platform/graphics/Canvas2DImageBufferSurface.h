@@ -58,7 +58,7 @@ public:
     virtual SkCanvas* canvas() const OVERRIDE { return m_layerBridge->canvas(); }
     virtual bool isValid() const OVERRIDE { return m_layerBridge && m_layerBridge->checkSurfaceValid(); }
     virtual bool restore() OVERRIDE { return m_layerBridge->restoreSurface(); }
-    virtual blink::WebLayer* layer() const OVERRIDE { return m_layerBridge->layer(); }
+    virtual WebLayer* layer() const OVERRIDE { return m_layerBridge->layer(); }
     virtual Platform3DObject getBackingTexture() const OVERRIDE { return m_layerBridge->getBackingTexture(); }
     virtual bool isAccelerated() const OVERRIDE { return m_layerBridge->isAccelerated(); }
     virtual void setIsHidden(bool hidden) OVERRIDE { m_layerBridge->setIsHidden(hidden); }
@@ -68,6 +68,6 @@ private:
     RefPtr<Canvas2DLayerBridge> m_layerBridge;
 };
 
-}
+} // namespace blink
 
 #endif

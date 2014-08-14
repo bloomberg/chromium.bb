@@ -52,10 +52,10 @@ public:
 
 protected:
     virtual void draw(GraphicsContext*, const FloatRect&, const FloatRect&,
-        CompositeOperator, blink::WebBlendMode) OVERRIDE;
+        CompositeOperator, WebBlendMode) OVERRIDE;
     virtual void drawPattern(GraphicsContext*, const FloatRect&,
         const FloatSize&, const FloatPoint&, CompositeOperator,
-        const FloatRect&, blink::WebBlendMode, const IntSize& repeatSpacing) OVERRIDE;
+        const FloatRect&, WebBlendMode, const IntSize& repeatSpacing) OVERRIDE;
 
     CrossfadeGeneratedImage(Image* fromImage, Image* toImage, float percentage, IntSize crossfadeSize, const IntSize&);
 
@@ -69,6 +69,6 @@ private:
     IntSize m_crossfadeSize;
 };
 
-}
+} // namespace blink
 
 #endif

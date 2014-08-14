@@ -98,7 +98,7 @@ public:
         const SkRect& srcRect,
         const SkRect& destRect,
         CompositeOperator,
-        blink::WebBlendMode) const;
+        WebBlendMode) const;
 
     void drawPattern(
         GraphicsContext*,
@@ -107,7 +107,7 @@ public:
         const FloatPoint& phase,
         CompositeOperator,
         const FloatRect& destRect,
-        blink::WebBlendMode,
+        WebBlendMode,
         const IntSize& repeatSpacing) const;
 
 private:
@@ -170,5 +170,6 @@ private:
     mutable int m_resizeRequests;
 };
 
-}
+} // namespace blink
+
 #endif  // NativeImageSkia_h

@@ -61,9 +61,9 @@ public:
 
     static PassRefPtr<SharedBuffer> readFile(const char* fileName)
     {
-        String filePath = blink::Platform::current()->unitTestSupport()->webKitRootDir();
+        String filePath = Platform::current()->unitTestSupport()->webKitRootDir();
         filePath.append(fileName);
-        return blink::Platform::current()->unitTestSupport()->readFromFile(filePath);
+        return Platform::current()->unitTestSupport()->readFromFile(filePath);
     }
 
     // Accessors to BitmapImage's protected methods.
@@ -204,4 +204,4 @@ TEST_F(BitmapImageTest, webpHasColorProfile)
 
 #endif // USE(QCMSLIB)
 
-} // namespace
+} // namespace blink

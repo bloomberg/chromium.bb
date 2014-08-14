@@ -13,15 +13,13 @@
 #include "wtf/text/WTFString.h"
 
 namespace blink {
-class WebGraphicsContext3D;
-}
 
-namespace blink {
+class WebGraphicsContext3D;
 
 class PLATFORM_EXPORT Extensions3DUtil {
 public:
     // Creates a new Extensions3DUtil. If the passed WebGraphicsContext3D has been spontaneously lost, returns null.
-    static PassOwnPtr<Extensions3DUtil> create(blink::WebGraphicsContext3D*);
+    static PassOwnPtr<Extensions3DUtil> create(WebGraphicsContext3D*);
     ~Extensions3DUtil();
 
     bool supportsExtension(const String& name);
@@ -31,10 +29,10 @@ public:
     static bool canUseCopyTextureCHROMIUM(GLenum destFormat, GLenum destType, GLint level);
 
 private:
-    Extensions3DUtil(blink::WebGraphicsContext3D*);
+    Extensions3DUtil(WebGraphicsContext3D*);
     bool initializeExtensions();
 
-    blink::WebGraphicsContext3D* m_context;
+    WebGraphicsContext3D* m_context;
     HashSet<String> m_enabledExtensions;
     HashSet<String> m_requestableExtensions;
 };

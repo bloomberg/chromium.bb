@@ -47,16 +47,14 @@
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
+
+class Extensions3DUtil;
+class ImageBuffer;
+class ImageData;
 class WebExternalBitmap;
 class WebExternalTextureLayer;
 class WebGraphicsContext3D;
 class WebLayer;
-}
-
-namespace blink {
-class Extensions3DUtil;
-class ImageData;
-class ImageBuffer;
 
 // Abstract interface to allow basic context eviction management
 class PLATFORM_EXPORT ContextEvictionManager : public RefCounted<ContextEvictionManager> {
@@ -68,13 +66,13 @@ public:
 };
 
 // Manages a rendering target (framebuffer + attachment) for a canvas.  Can publish its rendering
-// results to a blink::WebLayer for compositing.
-class PLATFORM_EXPORT DrawingBuffer : public RefCounted<DrawingBuffer>, public blink::WebExternalTextureLayerClient  {
+// results to a WebLayer for compositing.
+class PLATFORM_EXPORT DrawingBuffer : public RefCounted<DrawingBuffer>, public WebExternalTextureLayerClient  {
     // If we used CHROMIUM_image as the backing storage for our buffers,
     // we need to know the mapping from texture id to image.
     struct TextureInfo {
         Platform3DObject textureId;
-        blink::WGC3Duint imageId;
+        WGC3Duint imageId;
 
         TextureInfo()
             : textureId(0)
@@ -84,7 +82,7 @@ class PLATFORM_EXPORT DrawingBuffer : public RefCounted<DrawingBuffer>, public b
     };
 
     struct MailboxInfo : public RefCounted<MailboxInfo> {
-        blink::WebExternalTextureMailbox mailbox;
+        WebExternalTextureMailbox mailbox;
         TextureInfo textureInfo;
         IntSize size;
         // This keeps the parent drawing buffer alive as long as the compositor is
@@ -98,7 +96,7 @@ public:
         Discard
     };
 
-    static PassRefPtr<DrawingBuffer> create(PassOwnPtr<blink::WebGraphicsContext3D>, const IntSize&, PreserveDrawingBuffer, blink::WebGraphicsContext3D::Attributes requestedAttributes, PassRefPtr<ContextEvictionManager>);
+    static PassRefPtr<DrawingBuffer> create(PassOwnPtr<WebGraphicsContext3D>, const IntSize&, PreserveDrawingBuffer, WebGraphicsContext3D::Attributes requestedAttributes, PassRefPtr<ContextEvictionManager>);
 
     virtual ~DrawingBuffer();
 
@@ -143,21 +141,21 @@ public:
     void markLayerComposited();
     bool layerComposited() const;
 
-    blink::WebLayer* platformLayer();
+    WebLayer* platformLayer();
     void paintCompositedResultsToCanvas(ImageBuffer*);
 
-    blink::WebGraphicsContext3D* context();
+    WebGraphicsContext3D* context();
 
     // Returns the actual context attributes for this drawing buffer which may differ from the
     // requested context attributes due to implementation limits.
-    blink::WebGraphicsContext3D::Attributes getActualAttributes() const { return m_actualAttributes; }
+    WebGraphicsContext3D::Attributes getActualAttributes() const { return m_actualAttributes; }
 
     // WebExternalTextureLayerClient implementation.
-    virtual bool prepareMailbox(blink::WebExternalTextureMailbox*, blink::WebExternalBitmap*) OVERRIDE;
-    virtual void mailboxReleased(const blink::WebExternalTextureMailbox&, bool lostResource = false) OVERRIDE;
+    virtual bool prepareMailbox(WebExternalTextureMailbox*, WebExternalBitmap*) OVERRIDE;
+    virtual void mailboxReleased(const WebExternalTextureMailbox&, bool lostResource = false) OVERRIDE;
 
     // Destroys the TEXTURE_2D binding for the owned context
-    bool copyToPlatformTexture(blink::WebGraphicsContext3D*, Platform3DObject texture, GLenum internalFormat,
+    bool copyToPlatformTexture(WebGraphicsContext3D*, Platform3DObject texture, GLenum internalFormat,
         GLenum destType, GLint level, bool premultiplyAlpha, bool flipY, bool fromFrontBuffer = false);
 
     void setPackAlignment(GLint param);
@@ -167,18 +165,18 @@ public:
 
 protected: // For unittests
     DrawingBuffer(
-        PassOwnPtr<blink::WebGraphicsContext3D>,
+        PassOwnPtr<WebGraphicsContext3D>,
         PassOwnPtr<Extensions3DUtil>,
         bool multisampleExtensionSupported,
         bool packedDepthStencilExtensionSupported,
         PreserveDrawingBuffer,
-        blink::WebGraphicsContext3D::Attributes requestedAttributes,
+        WebGraphicsContext3D::Attributes requestedAttributes,
         PassRefPtr<ContextEvictionManager>);
 
     bool initialize(const IntSize&);
 
 private:
-    void mailboxReleasedWhileDestructionInProgress(const blink::WebExternalTextureMailbox&);
+    void mailboxReleasedWhileDestructionInProgress(const WebExternalTextureMailbox&);
 
     unsigned createColorTexture();
     // Create the depth/stencil and multisample buffers, if needed.
@@ -194,7 +192,7 @@ private:
 
     PassRefPtr<MailboxInfo> recycledMailbox();
     PassRefPtr<MailboxInfo> createNewMailbox(const TextureInfo&);
-    void deleteMailbox(const blink::WebExternalTextureMailbox&);
+    void deleteMailbox(const WebExternalTextureMailbox&);
 
     // Updates the current size of the buffer, ensuring that s_currentResourceUsePixels is updated.
     void setSize(const IntSize& size);
@@ -234,10 +232,10 @@ private:
     Platform3DObject m_framebufferBinding;
     GLenum m_activeTextureUnit;
 
-    OwnPtr<blink::WebGraphicsContext3D> m_context;
+    OwnPtr<WebGraphicsContext3D> m_context;
     OwnPtr<Extensions3DUtil> m_extensionsUtil;
     IntSize m_size;
-    blink::WebGraphicsContext3D::Attributes m_requestedAttributes;
+    WebGraphicsContext3D::Attributes m_requestedAttributes;
     bool m_multisampleExtensionSupported;
     bool m_packedDepthStencilExtensionSupported;
     Platform3DObject m_fbo;
@@ -271,7 +269,7 @@ private:
 
     MultisampleMode m_multisampleMode;
 
-    blink::WebGraphicsContext3D::Attributes m_actualAttributes;
+    WebGraphicsContext3D::Attributes m_actualAttributes;
     unsigned m_internalColorFormat;
     unsigned m_colorFormat;
     unsigned m_internalRenderbufferFormat;
@@ -280,12 +278,12 @@ private:
     int m_packAlignment;
     bool m_destructionInProgress;
 
-    OwnPtr<blink::WebExternalTextureLayer> m_layer;
+    OwnPtr<WebExternalTextureLayer> m_layer;
 
     // All of the mailboxes that this DrawingBuffer has ever created.
     Vector<RefPtr<MailboxInfo> > m_textureMailboxes;
     // Mailboxes that were released by the compositor can be used again by this DrawingBuffer.
-    Deque<blink::WebExternalTextureMailbox> m_recycledMailboxQueue;
+    Deque<WebExternalTextureMailbox> m_recycledMailboxQueue;
 
     RefPtr<ContextEvictionManager> m_contextEvictionManager;
 

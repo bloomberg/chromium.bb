@@ -70,6 +70,6 @@ private:
     OwnPtr<SkPictureRecorder> m_recorder;
 };
 
-}
+} // namespace blink
 
 #endif // DisplayList_h
