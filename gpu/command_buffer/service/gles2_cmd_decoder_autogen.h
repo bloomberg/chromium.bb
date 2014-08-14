@@ -1360,7 +1360,7 @@ error::Error GLES2DecoderImpl::HandleLineWidth(
     uint32_t immediate_data_size,
     const gles2::cmds::LineWidth& c) {
   GLfloat width = static_cast<GLfloat>(c.width);
-  if (width <= 0.0f) {
+  if (width <= 0.0f || base::IsNaN(width)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "LineWidth", "width out of range");
     return error::kNoError;
   }

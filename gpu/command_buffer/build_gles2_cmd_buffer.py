@@ -425,6 +425,7 @@ _STATES = {
         'type': 'GLfloat',
         'default': '1.0f',
         'range_checks': [{'check': "<= 0.0f", 'test_value': "0.0f"}],
+        'nan_check': True,
       }],
   },
   'DepthMask': {
@@ -3324,19 +3325,27 @@ class StateSetHandler(TypeHandler):
     state = _STATES[state_name]
     states = state['states']
     args = func.GetOriginalArgs()
-    code = []
     for ndx,item in enumerate(states):
+      code = []
       if 'range_checks' in item:
         for range_check in item['range_checks']:
           code.append("%s %s" % (args[ndx].name, range_check['check']))
-    if len(code):
-      file.Write("  if (%s) {\n" % " ||\n      ".join(code))
-      file.Write(
-        '    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE,'
-        ' "%s", "%s out of range");\n' %
-        (func.name, args[ndx].name))
-      file.Write("    return error::kNoError;\n")
-      file.Write("  }\n")
+      if 'nan_check' in item:
+        # Drivers might generate an INVALID_VALUE error when a value is set
+        # to NaN. This is allowed behavior under GLES 3.0 section 2.1.1 or
+        # OpenGL 4.5 section 2.3.4.1 - providing NaN allows undefined results.
+        # Make this behavior consistent within Chromium, and avoid leaking GL
+        # errors by generating the error in the command buffer instead of
+        # letting the GL driver generate it.
+        code.append("base::IsNaN(%s)" % args[ndx].name)
+      if len(code):
+        file.Write("  if (%s) {\n" % " ||\n      ".join(code))
+        file.Write(
+          '    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE,'
+          ' "%s", "%s out of range");\n' %
+          (func.name, args[ndx].name))
+        file.Write("    return error::kNoError;\n")
+        file.Write("  }\n")
     code = []
     for ndx,item in enumerate(states):
       code.append("state_.%s != %s" % (item['name'], args[ndx].name))
@@ -3387,6 +3396,30 @@ TEST_P(%(test_name)s, %(name)sInvalidValue%(ndx)d_%(check_ndx)d) {
             'args': ", ".join(arg_strings),
           }
           file.Write(valid_test % vars)
+      if 'nan_check' in item:
+        valid_test = """
+TEST_P(%(test_name)s, %(name)sNaNValue%(ndx)d) {
+  SpecializedSetup<cmds::%(name)s, 0>(false);
+  cmds::%(name)s cmd;
+  cmd.Init(%(args)s);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+"""
+        name = func.name
+        arg_strings = [
+          arg.GetValidArg(func) \
+          for arg in func.GetOriginalArgs() if not arg.IsConstant()
+        ]
+
+        arg_strings[ndx] = 'nanf("")'
+        vars = {
+          'test_name': 'GLES2DecoderTest%d' % file.file_num,
+          'name': name,
+          'ndx': ndx,
+          'args': ", ".join(arg_strings),
+        }
+        file.Write(valid_test % vars)
 
 
 class StateSetRGBAlphaHandler(TypeHandler):

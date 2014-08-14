@@ -1887,6 +1887,14 @@ TEST_P(GLES2DecoderTest1, LineWidthInvalidValue0_0) {
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
+TEST_P(GLES2DecoderTest1, LineWidthNaNValue0) {
+  SpecializedSetup<cmds::LineWidth, 0>(false);
+  cmds::LineWidth cmd;
+  cmd.Init(nanf(""));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+
 TEST_P(GLES2DecoderTest1, LinkProgramValidArgs) {
   EXPECT_CALL(*gl_, LinkProgram(kServiceProgramId));
   SpecializedSetup<cmds::LinkProgram, 0>(true);
