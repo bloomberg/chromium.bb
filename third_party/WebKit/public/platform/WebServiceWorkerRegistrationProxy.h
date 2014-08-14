@@ -5,8 +5,11 @@
 #ifndef WebServiceWorkerRegistrationProxy_h
 #define WebServiceWorkerRegistrationProxy_h
 
+#include "public/platform/WebCommon.h"
+
 namespace blink {
 
+class ServiceWorkerRegistration;
 class WebServiceWorker;
 
 // A proxy interface, passed via WebServiceWorkerRegistration.setProxy() from
@@ -14,7 +17,7 @@ class WebServiceWorker;
 // embedder.
 class WebServiceWorkerRegistrationProxy {
 public:
-    WebServiceWorkerRegistrationProxy() { }
+    WebServiceWorkerRegistrationProxy() : m_private(0) { }
     virtual ~WebServiceWorkerRegistrationProxy() { }
 
     // Notifies that the registration entered the installation process.
@@ -25,6 +28,14 @@ public:
     virtual void setInstalling(WebServiceWorker*) = 0;
     virtual void setWaiting(WebServiceWorker*) = 0;
     virtual void setActive(WebServiceWorker*) = 0;
+
+#if INSIDE_BLINK
+    BLINK_PLATFORM_EXPORT WebServiceWorkerRegistrationProxy(ServiceWorkerRegistration*);
+    BLINK_PLATFORM_EXPORT operator ServiceWorkerRegistration*() const;
+#endif
+
+protected:
+    ServiceWorkerRegistration* m_private;
 };
 
 } // namespace blink

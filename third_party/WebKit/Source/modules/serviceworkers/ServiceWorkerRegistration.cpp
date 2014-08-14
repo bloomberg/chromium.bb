@@ -88,7 +88,7 @@ PassRefPtrWillBeRawPtr<ServiceWorkerRegistration> ServiceWorkerRegistration::tak
 {
     if (!registration)
         return nullptr;
-    return create(resolver->scriptState()->executionContext(), adoptPtr(registration));
+    return getOrCreate(resolver->scriptState()->executionContext(), adoptPtr(registration));
 }
 
 void ServiceWorkerRegistration::dispose(WebType* registration)
@@ -123,8 +123,20 @@ ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* scriptState)
     return promise;
 }
 
-PassRefPtrWillBeRawPtr<ServiceWorkerRegistration> ServiceWorkerRegistration::create(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorkerRegistration> outerRegistration)
+PassRefPtrWillBeRawPtr<ServiceWorkerRegistration> ServiceWorkerRegistration::getOrCreate(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorkerRegistration> outerRegistration)
 {
+    if (!outerRegistration)
+        return nullptr;
+
+    WebServiceWorkerRegistrationProxy* proxy = outerRegistration->proxy();
+    if (proxy) {
+        ServiceWorkerRegistration* existingRegistration = *proxy;
+        if (existingRegistration) {
+            ASSERT(existingRegistration->executionContext() == executionContext);
+            return existingRegistration;
+        }
+    }
+
     RefPtrWillBeRawPtr<ServiceWorkerRegistration> registration = adoptRefWillBeRefCountedGarbageCollected(new ServiceWorkerRegistration(executionContext, outerRegistration));
     registration->suspendIfNeeded();
     return registration.release();
@@ -132,6 +144,7 @@ PassRefPtrWillBeRawPtr<ServiceWorkerRegistration> ServiceWorkerRegistration::cre
 
 ServiceWorkerRegistration::ServiceWorkerRegistration(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorkerRegistration> outerRegistration)
     : ActiveDOMObject(executionContext)
+    , WebServiceWorkerRegistrationProxy(this)
     , m_outerRegistration(outerRegistration)
     , m_provider(0)
 {
