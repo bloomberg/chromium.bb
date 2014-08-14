@@ -223,6 +223,11 @@ void SynchronousCompositorFactoryImpl::CompositorReleasedHardwareDraw() {
   base::AutoLock lock(num_hardware_compositor_lock_);
   DCHECK_GT(num_hardware_compositors_, 0u);
   num_hardware_compositors_--;
+  if (num_hardware_compositors_ == 0) {
+    // Nullify the video_context_provider_ now so that it is not null only if
+    // there is at least 1 hardware compositor
+    video_context_provider_ = NULL;
+  }
 }
 
 bool SynchronousCompositorFactoryImpl::CanCreateMainThreadContext() {
@@ -236,8 +241,8 @@ SynchronousCompositorFactoryImpl::TryCreateStreamTextureFactory() {
       context_provider;
   // This check only guarantees the main thread context is created after
   // a compositor did successfully initialize hardware draw in the past.
-  // In particular this does not guarantee that the main thread context
-  // will fail creation when all compositors release hardware draw.
+  // When all compositors have released hardware draw, main thread context
+  // creation is guaranteed to fail.
   if (CanCreateMainThreadContext() && !video_context_provider_) {
     DCHECK(service_);
     DCHECK(share_context_.get());
