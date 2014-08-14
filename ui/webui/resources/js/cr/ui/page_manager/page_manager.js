@@ -536,9 +536,14 @@ cr.define('cr.ui.pageManager', function() {
       var topmostPage = null;
       for (var name in this.registeredOverlayPages) {
         var page = this.registeredOverlayPages[name];
-        if (page.visible &&
-            (!topmostPage || page.alwaysOnTop ||
-             this.getNestingLevel(page) > this.getNestingLevel(topmostPage))) {
+        if (!page.visible)
+          continue;
+
+        if (page.alwaysOnTop)
+          return page;
+
+        if (!topmostPage ||
+             this.getNestingLevel(page) > this.getNestingLevel(topmostPage)) {
           topmostPage = page;
         }
       }

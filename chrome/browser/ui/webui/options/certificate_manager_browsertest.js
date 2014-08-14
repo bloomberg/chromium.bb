@@ -235,8 +235,17 @@ TEST_F('CertificateManagerWebUITest',
 
   // Click on the delete button.
   $('personalCertsTab-delete').click();
+
+  // Click on the cancel button to verify the confirmation overlay closes.
+  $('alertOverlayCancel').click();
+  expectTrue($('alertOverlay').parentNode.classList.contains('transparent'));
+
+  // Click on the delete button.
+  $('personalCertsTab-delete').click();
+
   // Click on the ok button in the confirmation overlay.
   $('alertOverlayOk').click();
+  expectTrue($('alertOverlay').parentNode.classList.contains('transparent'));
 
   // Context sensitive buttons should be disabled.
   expectTrue($('personalCertsTab-view').disabled);
