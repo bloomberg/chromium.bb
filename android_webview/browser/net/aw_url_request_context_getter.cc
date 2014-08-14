@@ -79,6 +79,9 @@ void ApplyCmdlineOverridesToNetworkSessionParams(
         switches::kTestingFixedHttpsPort), &value);
     params->testing_fixed_https_port = value;
   }
+  if (command_line.HasSwitch(switches::kIgnoreCertificateErrors)) {
+    params->ignore_certificate_errors = true;
+  }
 }
 
 void PopulateNetworkSessionParams(
