@@ -101,6 +101,8 @@ public class ChildProcessLauncher {
                 assert mChildProcessConnections[slot] == null;
                 mChildProcessConnections[slot] = new ChildProcessConnectionImpl(context, slot,
                         mInSandbox, deathCallback, mChildClass, chromiumLinkerParams);
+                Log.d(TAG, "Allocator allocated a connection, sandbox: " + mInSandbox +
+                        ", slot: " + slot);
                 return mChildProcessConnections[slot];
             }
         }
@@ -118,6 +120,8 @@ public class ChildProcessLauncher {
                     mChildProcessConnections[slot] = null;
                     assert !mFreeConnectionIndices.contains(slot);
                     mFreeConnectionIndices.add(slot);
+                    Log.d(TAG, "Allocator freed a connection, sandbox: " + mInSandbox +
+                            ", slot: " + slot);
                 }
             }
         }
