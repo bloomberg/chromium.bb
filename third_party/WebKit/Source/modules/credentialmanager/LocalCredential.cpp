@@ -21,6 +21,7 @@ LocalCredential* LocalCredential::create(const String& id, const String& name, c
 LocalCredential::LocalCredential(const String& id, const String& name, const KURL& avatar, const String& password)
     : Credential(PlatformLocalCredential::create(id, name, avatar, password))
 {
+    ScriptWrappable::init(this);
 }
 
 const String& LocalCredential::password() const

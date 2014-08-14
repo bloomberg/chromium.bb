@@ -135,6 +135,8 @@ FontFace::FontFace(ExecutionContext* context, const AtomicString& family, const 
     : m_family(family)
     , m_status(Unloaded)
 {
+    ScriptWrappable::init(this);
+
     Document* document = toDocument(context);
     String value;
     if (DictionaryHelper::get(descriptors, "style", value))
