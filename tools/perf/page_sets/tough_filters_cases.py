@@ -8,7 +8,7 @@ from telemetry.page import page_set as page_set_module
 class ToughFiltersCasesPage(page_module.Page):
 
   def RunSmoothness(self, action_runner):
-    action_runner.Wait(5)
+    action_runner.Wait(10)
 
 
 class ToughFiltersCasesPageSet(page_set_module.PageSet):
