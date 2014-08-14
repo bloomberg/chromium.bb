@@ -453,7 +453,6 @@ public:
         KeyEventNotAllowedInFullScreen = 474,
         DOMWindowOpen = 475,
         DOMWindowOpenFeatures = 476,
-        LegacyFullScreenErrorExemption = 477,
         MediaStreamTrackGetSources = 478,
         AspectRatioFlexItem = 479,
         DetailsElement = 480,

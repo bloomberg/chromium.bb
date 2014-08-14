@@ -7,29 +7,15 @@
         logResult(false, "Element.prototype.webkitRequestFullScreen == undefined");
         endTest();
     } else {
-        var callback;
-        var fullscreenChanged = function(event)
-        {
-            if (callback)
-                callback(event)
-        };
-        waitForEvent(document, 'webkitfullscreenchange', fullscreenChanged);
-    
-        var span = document.getElementsByTagName('span')[0];
+        var span = document.getElementsByTagName("span")[0];
 
         var spanEnteredFullScreen = function() {
             testExpected("document.webkitCurrentFullScreenElement", span);
-            callback = documentEnteredFullScreen;
+            waitForEventAndEnd(document, "webkitfullscreenerror");
             runWithKeyDown(function(){document.documentElement.webkitRequestFullScreen()});
         };
-    
-        var documentEnteredFullScreen = function() {
-            testExpected("document.webkitCurrentFullScreenElement", document.documentElement);
-            callback = null;
-            endTest();
-        };
 
-        callback = spanEnteredFullScreen;
+        waitForEvent(document, "webkitfullscreenchange", spanEnteredFullScreen);
         runWithKeyDown(function(){span.webkitRequestFullScreen()});
     }
 </script>

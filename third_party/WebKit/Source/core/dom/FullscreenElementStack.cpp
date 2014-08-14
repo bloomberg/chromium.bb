@@ -186,15 +186,11 @@ bool FullscreenElementStack::elementReady(Element& element, RequestType requestT
             return false;
     }
 
-    // element's node document fullscreen element stack is either empty or its top element is an
+    // element's node document's fullscreen element stack is either empty or its top element is an
     // ancestor of element.
-    if (Element* lastElementOnStack = fullscreenElementFrom(element.document())) {
-        if (!element.isDescendantOf(lastElementOnStack)) {
-            if (requestType == PrefixedMozillaRequest || requestType == PrefixedMozillaAllowKeyboardInputRequest)
-                UseCounter::count(element.document(), UseCounter::LegacyFullScreenErrorExemption);
-            else
-                return false;
-        }
+    if (Element* topElement = fullscreenElementFrom(element.document())) {
+        if (!element.isDescendantOf(topElement))
+            return false;
     }
 
     // element has no ancestor element whose local name is iframe and namespace is the HTML
