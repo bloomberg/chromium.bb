@@ -47,14 +47,13 @@ AppResult::AppResult(Profile* profile,
 
   is_platform_app_ = extension->is_platform_app();
 
-  icon_.reset(new extensions::IconImage(
-      profile_,
-      extension,
-      extensions::IconsInfo::GetIcons(extension),
-      display_type() == DISPLAY_TILE ? extension_misc::EXTENSION_ICON_MEDIUM
-                                     : extension_misc::EXTENSION_ICON_SMALL,
-      extensions::util::GetDefaultAppIcon(),
-      this));
+  icon_.reset(
+      new extensions::IconImage(profile_,
+                                extension,
+                                extensions::IconsInfo::GetIcons(extension),
+                                GetPreferredIconDimension(),
+                                extensions::util::GetDefaultAppIcon(),
+                                this));
   UpdateIcon();
 
   StartObservingExtensionRegistry();

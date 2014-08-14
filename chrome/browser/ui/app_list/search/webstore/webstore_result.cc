@@ -34,16 +34,13 @@
 
 namespace {
 
-const int kIconSize = 32;
 const int kLaunchEphemeralAppAction = 1;
 
 // BadgedImageSource adds a webstore badge to a webstore app icon.
 class BadgedIconSource : public gfx::CanvasImageSource {
  public:
-  explicit BadgedIconSource(const gfx::ImageSkia& icon)
-      : CanvasImageSource(gfx::Size(kIconSize, kIconSize), false),
-        icon_(icon) {
-  }
+  BadgedIconSource(const gfx::ImageSkia& icon, const gfx::Size& icon_size)
+      : CanvasImageSource(icon_size, false), icon_(icon) {}
 
   virtual void Draw(gfx::Canvas* canvas) OVERRIDE {
     canvas->DrawImageInt(icon_, 0, 0);
@@ -89,14 +86,15 @@ WebstoreResult::WebstoreResult(Profile* profile,
   InitAndStartObserving();
   UpdateActions();
 
+  int icon_dimension = GetPreferredIconDimension();
   icon_ = gfx::ImageSkia(
-      new UrlIconSource(base::Bind(&WebstoreResult::OnIconLoaded,
-                                   weak_factory_.GetWeakPtr()),
-                        profile_->GetRequestContext(),
-                        icon_url_,
-                        kIconSize,
-                        IDR_WEBSTORE_ICON_32),
-      gfx::Size(kIconSize, kIconSize));
+      new UrlIconSource(
+          base::Bind(&WebstoreResult::OnIconLoaded, weak_factory_.GetWeakPtr()),
+          profile_->GetRequestContext(),
+          icon_url_,
+          icon_dimension,
+          IDR_WEBSTORE_ICON_32),
+      gfx::Size(icon_dimension, icon_dimension));
   SetIcon(icon_);
 }
 
@@ -203,9 +201,9 @@ void WebstoreResult::OnIconLoaded() {
   const std::vector<gfx::ImageSkiaRep>& image_reps = icon_.image_reps();
   for (size_t i = 0; i < image_reps.size(); ++i)
     icon_.RemoveRepresentation(image_reps[i].scale());
-
-  icon_ = gfx::ImageSkia(new BadgedIconSource(icon_),
-                         gfx::Size(kIconSize, kIconSize));
+  int icon_dimension = GetPreferredIconDimension();
+  gfx::Size icon_size(icon_dimension, icon_dimension);
+  icon_ = gfx::ImageSkia(new BadgedIconSource(icon_, icon_size), icon_size);
 
   SetIcon(icon_);
 }

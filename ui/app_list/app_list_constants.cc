@@ -66,6 +66,10 @@ const int kPreferredCols = 4;
 const int kPreferredRows = 4;
 const int kPreferredIconDimension = 48;
 
+// Preferred search result icon sizes.
+const int kListIconSize = 32;
+const int kTileIconSize = 48;
+
 // Preferred number of columns and rows in the experimental app list apps grid.
 const int kExperimentalPreferredCols = 6;
 const int kExperimentalPreferredRows = 3;

@@ -50,6 +50,9 @@ APP_LIST_EXPORT extern const int kPreferredCols;
 APP_LIST_EXPORT extern const int kPreferredRows;
 APP_LIST_EXPORT extern const int kPreferredIconDimension;
 
+APP_LIST_EXPORT extern const int kListIconSize;
+APP_LIST_EXPORT extern const int kTileIconSize;
+
 APP_LIST_EXPORT extern const int kExperimentalPreferredCols;
 APP_LIST_EXPORT extern const int kExperimentalPreferredRows;
 

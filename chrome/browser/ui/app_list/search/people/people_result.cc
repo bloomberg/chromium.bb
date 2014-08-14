@@ -33,7 +33,6 @@ using extensions::api::hangouts_private::HangoutRequest;
 
 namespace {
 
-const int kIconSize = 32;
 const char kImageSizePath[] = "s64-p/";
 const char kEmailUrlPrefix[] = "mailto:";
 
@@ -71,14 +70,15 @@ PeopleResult::PeopleResult(Profile* profile, scoped_ptr<Person> person)
   RefreshHangoutsExtensionId();
   SetDefaultActions();
 
+  int icon_size = GetPreferredIconDimension();
   image_ = gfx::ImageSkia(
-      new UrlIconSource(base::Bind(&PeopleResult::OnIconLoaded,
-                                   weak_factory_.GetWeakPtr()),
-                        profile_->GetRequestContext(),
-                        GetImageUrl(person_->image_url),
-                        kIconSize,
-                        IDR_PROFILE_PICTURE_LOADING),
-      gfx::Size(kIconSize, kIconSize));
+      new UrlIconSource(
+          base::Bind(&PeopleResult::OnIconLoaded, weak_factory_.GetWeakPtr()),
+          profile_->GetRequestContext(),
+          GetImageUrl(person_->image_url),
+          icon_size,
+          IDR_PROFILE_PICTURE_LOADING),
+      gfx::Size(icon_size, icon_size));
   SetIcon(image_);
 }
 

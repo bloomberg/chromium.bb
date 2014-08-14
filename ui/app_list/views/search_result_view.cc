@@ -25,14 +25,16 @@ namespace {
 
 const int kPreferredWidth = 300;
 const int kPreferredHeight = 52;
-const int kIconDimension = 32;
 const int kIconPadding = 14;
-const int kIconViewWidth = kIconDimension + 2 * kIconPadding;
 const int kTextTrailPadding = kIconPadding;
 const int kBorderSize = 1;
 
 // Extra margin at the right of the rightmost action icon.
 const int kActionButtonRightMargin = 8;
+
+int GetIconViewWidth() {
+  return kListIconSize + 2 * kIconPadding;
+}
 
 // Creates a RenderText of given |text| and |styles|. Caller takes ownership
 // of returned RenderText.
@@ -143,8 +145,8 @@ void SearchResultView::Layout() {
     return;
 
   gfx::Rect icon_bounds(rect);
-  icon_bounds.set_width(kIconViewWidth);
-  icon_bounds.Inset(kIconPadding, (rect.height() - kIconDimension) / 2);
+  icon_bounds.set_width(GetIconViewWidth());
+  icon_bounds.Inset(kIconPadding, (rect.height() - kListIconSize) / 2);
   icon_bounds.Intersect(rect);
   icon_->SetBoundsRect(icon_bounds);
 
@@ -221,16 +223,16 @@ void SearchResultView::OnPaint(gfx::Canvas* canvas) {
   canvas->FillRect(border_bottom, kResultBorderColor);
 
   gfx::Rect text_bounds(rect);
-  text_bounds.set_x(kIconViewWidth);
+  text_bounds.set_x(GetIconViewWidth());
   if (actions_view_->visible()) {
     text_bounds.set_width(
-        rect.width() - kIconViewWidth - kTextTrailPadding -
+        rect.width() - GetIconViewWidth() - kTextTrailPadding -
         actions_view_->bounds().width() -
         (actions_view_->has_children() ? kActionButtonRightMargin : 0));
   } else {
-    text_bounds.set_width(
-        rect.width() - kIconViewWidth - kTextTrailPadding -
-        progress_bar_->bounds().width() - kActionButtonRightMargin);
+    text_bounds.set_width(rect.width() - GetIconViewWidth() -
+                          kTextTrailPadding - progress_bar_->bounds().width() -
+                          kActionButtonRightMargin);
   }
   text_bounds.set_x(GetMirroredXWithWidthInView(text_bounds.x(),
                                                 text_bounds.width()));
@@ -279,11 +281,11 @@ void SearchResultView::OnIconChanged() {
     return;
 
   // Scales down big icons but leave small ones unchanged.
-  if (image.width() > kIconDimension || image.height() > kIconDimension) {
+  if (image.width() > kListIconSize || image.height() > kListIconSize) {
     image = gfx::ImageSkiaOperations::CreateResizedImage(
         image,
         skia::ImageOperations::RESIZE_BEST,
-        gfx::Size(kIconDimension, kIconDimension));
+        gfx::Size(kListIconSize, kListIconSize));
   } else {
     icon_->ResetImageSize();
   }

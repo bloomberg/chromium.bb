@@ -109,6 +109,9 @@ class APP_LIST_EXPORT SearchResult {
   int percent_downloaded() const { return percent_downloaded_; }
   void SetPercentDownloaded(int percent_downloaded);
 
+  // Returns the dimension at which this result's icon should be displayed.
+  int GetPreferredIconDimension() const;
+
   void NotifyItemInstalled();
   void NotifyItemUninstalled();
 

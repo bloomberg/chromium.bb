@@ -22,7 +22,6 @@ namespace {
 
 const int kTileSize = 90;
 const int kTileHorizontalPadding = 10;
-const int kTileImageSize = 48;
 
 const SkColor kTileBackgroundColor = SK_ColorWHITE;
 const int kTileColorStripHeight = 2;
@@ -85,7 +84,7 @@ TileItemView::TileItemView()
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   SetLayoutManager(layout_manager);
 
-  icon_->SetImageSize(gfx::Size(kTileImageSize, kTileImageSize));
+  icon_->SetImageSize(gfx::Size(kTileIconSize, kTileIconSize));
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   title_->SetAutoColorReadabilityEnabled(false);
