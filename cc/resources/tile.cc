@@ -27,7 +27,7 @@ Tile::Tile(TileManager* tile_manager,
            int flags)
     : RefCountedManaged<Tile>(tile_manager),
       tile_manager_(tile_manager),
-      tile_size_(tile_size),
+      size_(tile_size),
       content_rect_(content_rect),
       contents_scale_(contents_scale),
       opaque_rect_(opaque_rect),

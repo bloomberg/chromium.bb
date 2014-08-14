@@ -138,7 +138,7 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
 
   size_t GPUMemoryUsageInBytes() const;
 
-  gfx::Size size() const { return tile_size_.size(); }
+  gfx::Size size() const { return size_; }
 
   RasterMode DetermineRasterModeForTree(WhichTree tree) const;
   RasterMode DetermineOverallRasterMode() const;
@@ -178,7 +178,7 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
 
   TileManager* tile_manager_;
   scoped_refptr<PicturePileImpl> picture_pile_;
-  gfx::Rect tile_size_;
+  gfx::Size size_;
   gfx::Rect content_rect_;
   float contents_scale_;
   gfx::Rect opaque_rect_;
