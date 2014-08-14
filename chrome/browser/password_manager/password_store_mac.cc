@@ -632,19 +632,14 @@ std::vector<PasswordForm*> MacKeychainPasswordFormAdapter::PasswordsFillingForm(
   return ConvertKeychainItemsToForms(&keychain_items);
 }
 
-PasswordForm* MacKeychainPasswordFormAdapter::PasswordExactlyMatchingForm(
+bool MacKeychainPasswordFormAdapter::HasPasswordExactlyMatchingForm(
     const PasswordForm& query_form) {
   SecKeychainItemRef keychain_item = KeychainItemForForm(query_form);
   if (keychain_item) {
-    PasswordForm* form = new PasswordForm();
-    internal_keychain_helpers::FillPasswordFormFromKeychainItem(*keychain_,
-                                                                keychain_item,
-                                                                form,
-                                                                true);
     keychain_->Free(keychain_item);
-    return form;
+    return true;
   }
-  return NULL;
+  return false;
 }
 
 bool MacKeychainPasswordFormAdapter::HasPasswordsMergeableWithForm(
@@ -956,9 +951,7 @@ PasswordStoreChangeList PasswordStoreMac::RemoveLoginImpl(
     // handle deletes on them the way we would for an imported item.)
     MacKeychainPasswordFormAdapter owned_keychain_adapter(keychain_.get());
     owned_keychain_adapter.SetFindsOnlyOwnedItems(true);
-    PasswordForm* owned_password_form =
-        owned_keychain_adapter.PasswordExactlyMatchingForm(form);
-    if (owned_password_form) {
+    if (owned_keychain_adapter.HasPasswordExactlyMatchingForm(form)) {
       // If we don't have other forms using it (i.e., a form differing only by
       // the names of the form elements), delete the keychain entry.
       if (!DatabaseHasFormMatchingKeychainForm(form)) {

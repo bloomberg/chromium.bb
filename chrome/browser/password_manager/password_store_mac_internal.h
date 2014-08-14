@@ -30,12 +30,9 @@ class MacKeychainPasswordFormAdapter {
       const std::string& signon_realm,
       autofill::PasswordForm::Scheme scheme);
 
-  // Returns the PasswordForm for the Keychain entry that matches |form| on all
-  // of the fields that uniquely identify a Keychain item, or NULL if there is
-  // no such entry.
-  // Caller is responsible for deleting the returned form.
-  autofill::PasswordForm* PasswordExactlyMatchingForm(
-      const autofill::PasswordForm& query_form);
+  // Returns true if there is the Keychain entry that matches |query_form| on
+  // all of the fields that uniquely identify a Keychain item.
+  bool HasPasswordExactlyMatchingForm(const autofill::PasswordForm& query_form);
 
   // Returns true if the keychain contains any items that are mergeable with
   // |query_form|. This is different from actually extracting the passwords

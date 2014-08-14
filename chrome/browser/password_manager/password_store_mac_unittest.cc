@@ -502,15 +502,7 @@ TEST_F(PasswordStoreMacInternalsTest, TestKeychainExactSearch) {
     scoped_ptr<PasswordForm> base_form(CreatePasswordFormFromData(
         base_form_data[i]));
     EXPECT_TRUE(keychain_adapter.HasPasswordsMergeableWithForm(*base_form));
-    PasswordForm* match =
-        keychain_adapter.PasswordExactlyMatchingForm(*base_form);
-    EXPECT_TRUE(match != NULL);
-    if (match) {
-      EXPECT_EQ(base_form->scheme, match->scheme);
-      EXPECT_EQ(base_form->origin, match->origin);
-      EXPECT_EQ(base_form->username_value, match->username_value);
-      delete match;
-    }
+    EXPECT_TRUE(keychain_adapter.HasPasswordExactlyMatchingForm(*base_form));
 
     // Make sure that the matching isn't looser than it should be by checking
     // that slightly altered forms don't match.
@@ -538,10 +530,10 @@ TEST_F(PasswordStoreMacInternalsTest, TestKeychainExactSearch) {
     }
 
     for (unsigned int j = 0; j < modified_forms.size(); ++j) {
-      PasswordForm* match =
-          keychain_adapter.PasswordExactlyMatchingForm(*modified_forms[j]);
-      EXPECT_EQ(NULL, match) << "In modified version " << j << " of base form "
-                             << i;
+      bool match = keychain_adapter.HasPasswordExactlyMatchingForm(
+          *modified_forms[j]);
+      EXPECT_FALSE(match) << "In modified version " << j
+          << " of base form " << i;
     }
     STLDeleteElements(&modified_forms);
   }
@@ -589,14 +581,8 @@ TEST_F(PasswordStoreMacInternalsTest, TestKeychainAdd) {
     if (add_succeeded) {
       EXPECT_TRUE(owned_keychain_adapter.HasPasswordsMergeableWithForm(
           *in_form));
-      scoped_ptr<PasswordForm> out_form(
-          owned_keychain_adapter.PasswordExactlyMatchingForm(*in_form));
-      EXPECT_TRUE(out_form.get() != NULL);
-      EXPECT_EQ(out_form->scheme, in_form->scheme);
-      EXPECT_EQ(out_form->signon_realm, in_form->signon_realm);
-      EXPECT_EQ(out_form->origin, in_form->origin);
-      EXPECT_EQ(out_form->username_value, in_form->username_value);
-      EXPECT_EQ(out_form->password_value, in_form->password_value);
+      EXPECT_TRUE(owned_keychain_adapter.HasPasswordExactlyMatchingForm(
+          *in_form));
     }
   }
 
@@ -651,11 +637,8 @@ TEST_F(PasswordStoreMacInternalsTest, TestKeychainRemove) {
               owned_keychain_adapter.RemovePassword(*form));
 
     MacKeychainPasswordFormAdapter keychain_adapter(keychain_);
-    PasswordForm* match = keychain_adapter.PasswordExactlyMatchingForm(*form);
-    EXPECT_EQ(test_data[i].should_succeed, match == NULL);
-    if (match) {
-      delete match;
-    }
+    bool match = keychain_adapter.HasPasswordExactlyMatchingForm(*form);
+    EXPECT_EQ(test_data[i].should_succeed, !match);
   }
 }
 
