@@ -51,7 +51,8 @@ void AuraShellTestSuite::Initialize() {
 
   // Force unittests to run using en-US so if we test against string
   // output, it'll pass regardless of the system language.
-  ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
+  ui::ResourceBundle::InitSharedInstanceWithLocale(
+      "en-US", NULL, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
 }
 
 void AuraShellTestSuite::Shutdown() {

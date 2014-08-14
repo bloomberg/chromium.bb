@@ -31,7 +31,8 @@ bool LoadResources(const std::string& pref_locale) {
     PathService::Override(ui::DIR_LOCALES,
                           path.AppendASCII(kLocaleResourcesDirName));
 
-    ui::ResourceBundle::InitSharedInstanceLocaleOnly(pref_locale, NULL);
+    ui::ResourceBundle::InitSharedInstanceWithLocale(
+        pref_locale, NULL, ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
   }
 
   return true;

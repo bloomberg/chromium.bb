@@ -38,7 +38,8 @@ content::ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {
 }
 
 void ShellMainDelegate::InitializeResourceBundle() {
-  ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
+  ui::ResourceBundle::InitSharedInstanceWithLocale(
+      "en-US", NULL, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
 }
 
 }  // namespace shell

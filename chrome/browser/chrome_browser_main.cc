@@ -863,7 +863,8 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   TRACE_EVENT_BEGIN0("startup",
       "ChromeBrowserMainParts::PreCreateThreadsImpl:InitResourceBundle");
   const std::string loaded_locale =
-      ResourceBundle::InitSharedInstanceWithLocale(locale, NULL);
+      ui::ResourceBundle::InitSharedInstanceWithLocale(
+          locale, NULL, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
   TRACE_EVENT_END0("startup",
       "ChromeBrowserMainParts::PreCreateThreadsImpl:InitResourceBundle");
 

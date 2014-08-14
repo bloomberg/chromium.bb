@@ -738,7 +738,8 @@ void ChromeMainDelegate::PreSandboxStartup() {
     const std::string loaded_locale = locale;
 #else
     const std::string loaded_locale =
-        ResourceBundle::InitSharedInstanceWithLocale(locale, NULL);
+        ui::ResourceBundle::InitSharedInstanceWithLocale(
+            locale, NULL, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
 
     base::FilePath resources_pack_path;
     PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);

@@ -582,7 +582,8 @@ int ChromeAppModeStart(const app_mode::ChromeAppModeInfo* info) {
       l10n_util::GetApplicationLocale(preferred_localization));
 
   // Load localized strings.
-  ResourceBundle::InitSharedInstanceLocaleOnly(locale, NULL);
+  ui::ResourceBundle::InitSharedInstanceWithLocale(
+      locale, NULL, ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
 
   // Launch the IO thread.
   base::Thread::Options io_thread_options;

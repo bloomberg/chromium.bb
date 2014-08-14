@@ -32,7 +32,8 @@ bool LoadResources(const std::string& pref_locale) {
     if (pref_locale.empty())
       l10n_util::OverrideLocaleWithCocoaLocale();
 
-    ui::ResourceBundle::InitSharedInstanceLocaleOnly(pref_locale, NULL);
+    ui::ResourceBundle::InitSharedInstanceWithLocale(
+        pref_locale, NULL, ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
   }
 
   return true;

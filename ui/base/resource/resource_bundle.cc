@@ -164,18 +164,12 @@ class ResourceBundle::ResourceBundleImageSource : public gfx::ImageSkiaSource {
 
 // static
 std::string ResourceBundle::InitSharedInstanceWithLocale(
-    const std::string& pref_locale, Delegate* delegate) {
+    const std::string& pref_locale,
+    Delegate* delegate,
+    LoadResources load_resources) {
   InitSharedInstance(delegate);
-  g_shared_instance_->LoadCommonResources();
-  std::string result = g_shared_instance_->LoadLocaleResources(pref_locale);
-  InitDefaultFontList();
-  return result;
-}
-
-// static
-std::string ResourceBundle::InitSharedInstanceLocaleOnly(
-    const std::string& pref_locale, Delegate* delegate) {
-  InitSharedInstance(delegate);
+  if (load_resources == LOAD_COMMON_RESOURCES)
+    g_shared_instance_->LoadCommonResources();
   std::string result = g_shared_instance_->LoadLocaleResources(pref_locale);
   InitDefaultFontList();
   return result;

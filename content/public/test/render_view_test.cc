@@ -176,8 +176,9 @@ void RenderViewTest::SetUp() {
   // ResourceBundle isn't initialized (since we have to use a diferent test
   // suite implementation than for content_unittests). For browser_tests, this
   // is already initialized.
-  if (!ResourceBundle::HasSharedInstance())
-    ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
+  if (!ui::ResourceBundle::HasSharedInstance())
+    ui::ResourceBundle::InitSharedInstanceWithLocale(
+        "en-US", NULL, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
 
   mock_process_.reset(new MockRenderProcess);
 

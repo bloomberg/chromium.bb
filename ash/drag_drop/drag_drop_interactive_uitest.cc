@@ -130,7 +130,8 @@ class DragDropTest : public test::AshTestBase {
     gfx::GLSurface::InitializeOneOffForTests();
 
     ui::RegisterPathProvider();
-    ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
+    ui::ResourceBundle::InitSharedInstanceWithLocale(
+        "en-US", NULL, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
     base::FilePath resources_pack_path;
     PathService::Get(base::DIR_MODULE, &resources_pack_path);
     resources_pack_path =

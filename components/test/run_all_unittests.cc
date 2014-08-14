@@ -76,7 +76,8 @@ class ComponentsTestSuite : public base::TestSuite {
 
     // TODO(tfarina): This should be changed to InitSharedInstanceWithPakFile()
     // so we can load our pak file instead of chrome.pak. crbug.com/348563
-    ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
+    ui::ResourceBundle::InitSharedInstanceWithLocale(
+        "en-US", NULL, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
     base::FilePath resources_pack_path;
     PathService::Get(base::DIR_MODULE, &resources_pack_path);
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(

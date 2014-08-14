@@ -106,7 +106,8 @@ void MaybeShowInvalidUserDataDirWarningDialog() {
     const char kUserDataDirDialogFallbackLocale[] = "en-US";
     if (locale.empty())
       locale = kUserDataDirDialogFallbackLocale;
-    ResourceBundle::InitSharedInstanceWithLocale(locale, NULL);
+    ui::ResourceBundle::InitSharedInstanceWithLocale(
+        locale, NULL, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
   }
 
   const base::string16& title =
