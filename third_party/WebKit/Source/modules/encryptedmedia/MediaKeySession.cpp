@@ -136,7 +136,7 @@ public:
     static ScriptPromise create(ScriptState*, MediaKeys*, const String& initDataType, PassRefPtr<ArrayBuffer> initData, const String& sessionType);
     virtual ~MediaKeySessionInitializer();
 
-    void completeWithSession(blink::WebContentDecryptionModuleResult::SessionStatus);
+    void completeWithSession(WebContentDecryptionModuleResult::SessionStatus);
     void completeWithDOMException(ExceptionCode, const String& errorMessage);
 
 private:
@@ -144,7 +144,7 @@ private:
     void timerFired(Timer<MediaKeySessionInitializer>*);
 
     Persistent<MediaKeys> m_mediaKeys;
-    OwnPtr<blink::WebContentDecryptionModuleSession> m_cdmSession;
+    OwnPtr<WebContentDecryptionModuleSession> m_cdmSession;
 
     // The next 3 values are simply the initialization data saved so that the
     // asynchronous creation has the data needed.
@@ -172,12 +172,12 @@ public:
         m_initializer->completeWithDOMException(InvalidStateError, "Unexpected completion.");
     }
 
-    virtual void completeWithSession(blink::WebContentDecryptionModuleResult::SessionStatus status) OVERRIDE
+    virtual void completeWithSession(WebContentDecryptionModuleResult::SessionStatus status) OVERRIDE
     {
         m_initializer->completeWithSession(status);
     }
 
-    virtual void completeWithError(blink::WebContentDecryptionModuleException code, unsigned long systemCode, const blink::WebString& message) OVERRIDE
+    virtual void completeWithError(WebContentDecryptionModuleException code, unsigned long systemCode, const WebString& message) OVERRIDE
     {
         m_initializer->completeWithDOMException(WebCdmExceptionToExceptionCode(code), message);
     }
@@ -222,7 +222,7 @@ void MediaKeySessionInitializer::timerFired(Timer<MediaKeySessionInitializer>*)
     // 7.2 Let default URL be null. (Also provided by cdm in message event).
 
     // 7.3 Let cdm be the cdm loaded in create().
-    blink::WebContentDecryptionModule* cdm = m_mediaKeys->contentDecryptionModule();
+    WebContentDecryptionModule* cdm = m_mediaKeys->contentDecryptionModule();
 
     // 7.4 Use the cdm to execute the following steps:
     // 7.4.1 If the init data is not valid for initDataType, reject promise
@@ -246,12 +246,12 @@ void MediaKeySessionInitializer::timerFired(Timer<MediaKeySessionInitializer>*)
     // initializeNewSession() is synchronous, access to any members will crash.
 }
 
-void MediaKeySessionInitializer::completeWithSession(blink::WebContentDecryptionModuleResult::SessionStatus status)
+void MediaKeySessionInitializer::completeWithSession(WebContentDecryptionModuleResult::SessionStatus status)
 {
     WTF_LOG(Media, "MediaKeySessionInitializer::completeWithSession");
 
     switch (status) {
-    case blink::WebContentDecryptionModuleResult::NewSession: {
+    case WebContentDecryptionModuleResult::NewSession: {
         // Resume MediaKeys::createSession().
         // 7.5 Let the session ID be a unique Session ID string. It may be
         //     obtained from cdm (it is).
@@ -279,7 +279,7 @@ void MediaKeySessionInitializer::completeWithSession(blink::WebContentDecryption
         return;
     }
 
-    case blink::WebContentDecryptionModuleResult::SessionNotFound:
+    case WebContentDecryptionModuleResult::SessionNotFound:
         // Step 4.7.1 of MediaKeys::loadSession(): If there is no data
         // stored for the sessionId in the origin, resolve promise with
         // undefined.
@@ -287,7 +287,7 @@ void MediaKeySessionInitializer::completeWithSession(blink::WebContentDecryption
         WTF_LOG(Media, "MediaKeySessionInitializer::completeWithSession done w/undefined");
         return;
 
-    case blink::WebContentDecryptionModuleResult::SessionAlreadyExists:
+    case WebContentDecryptionModuleResult::SessionAlreadyExists:
         // If a session already exists, resolve the promise with null.
         resolve(V8NullType());
         WTF_LOG(Media, "MediaKeySessionInitializer::completeWithSession done w/null");
@@ -309,7 +309,7 @@ ScriptPromise MediaKeySession::create(ScriptState* scriptState, MediaKeys* media
     return MediaKeySessionInitializer::create(scriptState, mediaKeys, initDataType, initData, sessionType);
 }
 
-MediaKeySession::MediaKeySession(ExecutionContext* context, MediaKeys* keys, PassOwnPtr<blink::WebContentDecryptionModuleSession> cdmSession)
+MediaKeySession::MediaKeySession(ExecutionContext* context, MediaKeys* keys, PassOwnPtr<WebContentDecryptionModuleSession> cdmSession)
     : ActiveDOMObject(context)
     , m_keySystem(keys->keySystem())
     , m_asyncEventQueue(GenericEventQueue::create(this))
@@ -483,7 +483,7 @@ void MediaKeySession::actionTimerFired(Timer<MediaKeySession>*)
 }
 
 // Queue a task to fire a simple event named keymessage at the new object
-void MediaKeySession::message(const unsigned char* message, size_t messageLength, const blink::WebURL& destinationURL)
+void MediaKeySession::message(const unsigned char* message, size_t messageLength, const WebURL& destinationURL)
 {
     WTF_LOG(Media, "MediaKeySession(%p)::message", this);
 
@@ -561,7 +561,7 @@ void MediaKeySession::error(MediaKeyErrorCode errorCode, unsigned long systemCod
     m_asyncEventQueue->enqueueEvent(event.release());
 }
 
-void MediaKeySession::error(blink::WebContentDecryptionModuleException exception, unsigned long systemCode, const blink::WebString& errorMessage)
+void MediaKeySession::error(WebContentDecryptionModuleException exception, unsigned long systemCode, const WebString& errorMessage)
 {
     WTF_LOG(Media, "MediaKeySession::error: exception=%d, systemCode=%lu", exception, systemCode);
 
@@ -571,7 +571,7 @@ void MediaKeySession::error(blink::WebContentDecryptionModuleException exception
     // For now, simply generate an existing MediaKeyError.
     MediaKeyErrorCode errorCode;
     switch (exception) {
-    case blink::WebContentDecryptionModuleExceptionClientError:
+    case WebContentDecryptionModuleExceptionClientError:
         errorCode = MediaKeyErrorCodeClient;
         break;
     default:
@@ -630,4 +630,4 @@ void MediaKeySession::trace(Visitor* visitor)
     EventTargetWithInlineData::trace(visitor);
 }
 
-}
+} // namespace blink

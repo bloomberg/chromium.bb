@@ -43,7 +43,7 @@ FileWriterBase::~FileWriterBase()
 {
 }
 
-void FileWriterBase::initialize(PassOwnPtr<blink::WebFileWriter> writer, long long length)
+void FileWriterBase::initialize(PassOwnPtr<WebFileWriter> writer, long long length)
 {
     ASSERT(!m_writer);
     ASSERT(length >= 0);

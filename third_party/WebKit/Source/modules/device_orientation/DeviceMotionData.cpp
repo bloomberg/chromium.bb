@@ -77,7 +77,7 @@ PassRefPtrWillBeRawPtr<DeviceMotionData> DeviceMotionData::create(
     return adoptRefWillBeNoop(new DeviceMotionData(acceleration, accelerationIncludingGravity, rotationRate, canProvideInterval, interval));
 }
 
-PassRefPtrWillBeRawPtr<DeviceMotionData> DeviceMotionData::create(const blink::WebDeviceMotionData& data)
+PassRefPtrWillBeRawPtr<DeviceMotionData> DeviceMotionData::create(const WebDeviceMotionData& data)
 {
     return DeviceMotionData::create(
         DeviceMotionData::Acceleration::create(

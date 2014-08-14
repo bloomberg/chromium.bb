@@ -16,7 +16,7 @@ WebKitGamepad::~WebKitGamepad()
 {
 }
 
-void WebKitGamepad::setButtons(unsigned count, const blink::WebGamepadButton* data)
+void WebKitGamepad::setButtons(unsigned count, const WebGamepadButton* data)
 {
     m_buttons.resize(count);
     for (unsigned i = 0; i < count; ++i)

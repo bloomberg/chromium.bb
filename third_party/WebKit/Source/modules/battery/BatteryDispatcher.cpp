@@ -25,7 +25,7 @@ BatteryDispatcher::~BatteryDispatcher()
 {
 }
 
-void BatteryDispatcher::updateBatteryStatus(const blink::WebBatteryStatus& batteryStatus)
+void BatteryDispatcher::updateBatteryStatus(const WebBatteryStatus& batteryStatus)
 {
     m_batteryStatus = BatteryStatus::create(batteryStatus.charging, batteryStatus.chargingTime, batteryStatus.dischargingTime, batteryStatus.level);
     notifyControllers();
@@ -38,13 +38,13 @@ BatteryStatus* BatteryDispatcher::latestData()
 
 void BatteryDispatcher::startListening()
 {
-    blink::Platform::current()->startListening(WebPlatformEventBattery, this);
+    Platform::current()->startListening(WebPlatformEventBattery, this);
 }
 
 void BatteryDispatcher::stopListening()
 {
-    blink::Platform::current()->stopListening(WebPlatformEventBattery);
+    Platform::current()->stopListening(WebPlatformEventBattery);
     m_batteryStatus.clear();
 }
 
-}
+} // namespace blink

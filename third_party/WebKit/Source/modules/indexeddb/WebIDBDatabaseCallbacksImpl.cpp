@@ -55,7 +55,7 @@ void WebIDBDatabaseCallbacksImpl::onVersionChange(long long oldVersion, long lon
     m_callbacks->onVersionChange(oldVersion, newVersion);
 }
 
-void WebIDBDatabaseCallbacksImpl::onAbort(long long transactionId, const blink::WebIDBDatabaseError& error)
+void WebIDBDatabaseCallbacksImpl::onAbort(long long transactionId, const WebIDBDatabaseError& error)
 {
     m_callbacks->onAbort(transactionId, error);
 }

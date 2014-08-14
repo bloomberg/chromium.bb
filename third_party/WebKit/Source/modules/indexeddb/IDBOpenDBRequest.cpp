@@ -80,7 +80,7 @@ void IDBOpenDBRequest::onBlocked(int64_t oldVersion)
     enqueueEvent(IDBVersionChangeEvent::create(EventTypeNames::blocked, oldVersion, newVersionNullable));
 }
 
-void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion, PassOwnPtr<WebIDBDatabase> backend, const IDBDatabaseMetadata& metadata, blink::WebIDBDataLoss dataLoss, String dataLossMessage)
+void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion, PassOwnPtr<WebIDBDatabase> backend, const IDBDatabaseMetadata& metadata, WebIDBDataLoss dataLoss, String dataLossMessage)
 {
     IDB_TRACE("IDBOpenDBRequest::onUpgradeNeeded()");
     if (m_contextStopped || !executionContext()) {

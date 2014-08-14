@@ -16,21 +16,21 @@
 
 namespace blink {
 
-ExceptionCode WebCdmExceptionToExceptionCode(blink::WebContentDecryptionModuleException cdmException)
+ExceptionCode WebCdmExceptionToExceptionCode(WebContentDecryptionModuleException cdmException)
 {
     switch (cdmException) {
-    case blink::WebContentDecryptionModuleExceptionNotSupportedError:
+    case WebContentDecryptionModuleExceptionNotSupportedError:
         return NotSupportedError;
-    case blink::WebContentDecryptionModuleExceptionInvalidStateError:
+    case WebContentDecryptionModuleExceptionInvalidStateError:
         return InvalidStateError;
-    case blink::WebContentDecryptionModuleExceptionInvalidAccessError:
+    case WebContentDecryptionModuleExceptionInvalidAccessError:
         return InvalidAccessError;
-    case blink::WebContentDecryptionModuleExceptionQuotaExceededError:
+    case WebContentDecryptionModuleExceptionQuotaExceededError:
         return QuotaExceededError;
-    case blink::WebContentDecryptionModuleExceptionUnknownError:
+    case WebContentDecryptionModuleExceptionUnknownError:
         return UnknownError;
-    case blink::WebContentDecryptionModuleExceptionClientError:
-    case blink::WebContentDecryptionModuleExceptionOutputError:
+    case WebContentDecryptionModuleExceptionClientError:
+    case WebContentDecryptionModuleExceptionOutputError:
         // Currently no matching DOMException for these 2 errors.
         // FIXME: Update DOMException to handle these if actually added to
         // the EME spec.
@@ -56,13 +56,13 @@ void SimpleContentDecryptionModuleResult::complete()
     m_resolver.clear();
 }
 
-void SimpleContentDecryptionModuleResult::completeWithSession(blink::WebContentDecryptionModuleResult::SessionStatus status)
+void SimpleContentDecryptionModuleResult::completeWithSession(WebContentDecryptionModuleResult::SessionStatus status)
 {
     ASSERT_NOT_REACHED();
     completeWithDOMException(InvalidStateError, "Unexpected completion.");
 }
 
-void SimpleContentDecryptionModuleResult::completeWithError(blink::WebContentDecryptionModuleException exceptionCode, unsigned long systemCode, const blink::WebString& errorMessage)
+void SimpleContentDecryptionModuleResult::completeWithError(WebContentDecryptionModuleException exceptionCode, unsigned long systemCode, const WebString& errorMessage)
 {
     completeWithDOMException(WebCdmExceptionToExceptionCode(exceptionCode), errorMessage);
 }

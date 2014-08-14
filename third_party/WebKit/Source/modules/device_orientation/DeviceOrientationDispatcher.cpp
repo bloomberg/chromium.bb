@@ -53,16 +53,16 @@ DeviceOrientationDispatcher::~DeviceOrientationDispatcher()
 
 void DeviceOrientationDispatcher::startListening()
 {
-    blink::Platform::current()->startListening(WebPlatformEventDeviceOrientation, this);
+    Platform::current()->startListening(WebPlatformEventDeviceOrientation, this);
 }
 
 void DeviceOrientationDispatcher::stopListening()
 {
-    blink::Platform::current()->stopListening(WebPlatformEventDeviceOrientation);
+    Platform::current()->stopListening(WebPlatformEventDeviceOrientation);
     m_lastDeviceOrientationData.clear();
 }
 
-void DeviceOrientationDispatcher::didChangeDeviceOrientation(const blink::WebDeviceOrientationData& motion)
+void DeviceOrientationDispatcher::didChangeDeviceOrientation(const WebDeviceOrientationData& motion)
 {
     m_lastDeviceOrientationData = DeviceOrientationData::create(motion);
     notifyControllers();

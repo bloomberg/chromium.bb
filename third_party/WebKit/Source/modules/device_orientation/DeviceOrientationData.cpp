@@ -39,7 +39,7 @@ PassRefPtrWillBeRawPtr<DeviceOrientationData> DeviceOrientationData::create(bool
     return adoptRefWillBeNoop(new DeviceOrientationData(canProvideAlpha, alpha, canProvideBeta, beta, canProvideGamma, gamma, canProvideAbsolute, absolute));
 }
 
-PassRefPtrWillBeRawPtr<DeviceOrientationData> DeviceOrientationData::create(const blink::WebDeviceOrientationData& data)
+PassRefPtrWillBeRawPtr<DeviceOrientationData> DeviceOrientationData::create(const WebDeviceOrientationData& data)
 {
     return DeviceOrientationData::create(data.hasAlpha, data.alpha, data.hasBeta, data.beta, data.hasGamma, data.gamma, data.hasAbsolute, data.absolute);
 }

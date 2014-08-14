@@ -30,19 +30,18 @@
 
 namespace blink {
 
-
 IDBVersionChangeEventInit::IDBVersionChangeEventInit()
     : oldVersion(0)
 {
 }
 
 IDBVersionChangeEvent::IDBVersionChangeEvent()
-    : m_dataLoss(blink::WebIDBDataLossNone)
+    : m_dataLoss(WebIDBDataLossNone)
 {
     ScriptWrappable::init(this);
 }
 
-IDBVersionChangeEvent::IDBVersionChangeEvent(const AtomicString& eventType, unsigned long long oldVersion, const Nullable<unsigned long long>& newVersion, blink::WebIDBDataLoss dataLoss, const String& dataLossMessage)
+IDBVersionChangeEvent::IDBVersionChangeEvent(const AtomicString& eventType, unsigned long long oldVersion, const Nullable<unsigned long long>& newVersion, WebIDBDataLoss dataLoss, const String& dataLossMessage)
     : Event(eventType, false /*canBubble*/, false /*cancelable*/)
     , m_oldVersion(oldVersion)
     , m_newVersion(newVersion)
@@ -56,12 +55,12 @@ IDBVersionChangeEvent::IDBVersionChangeEvent(const AtomicString& eventType, cons
     : Event(eventType, false /*canBubble*/, false /*cancelable*/)
     , m_oldVersion(initializer.oldVersion)
     , m_newVersion(initializer.newVersion)
-    , m_dataLoss(blink::WebIDBDataLossNone)
+    , m_dataLoss(WebIDBDataLossNone)
 {
     if (initializer.dataLoss.isEmpty() || initializer.dataLoss == "none")
-        m_dataLoss = blink::WebIDBDataLossNone;
+        m_dataLoss = WebIDBDataLossNone;
     else if (initializer.dataLoss == "total")
-        m_dataLoss = blink::WebIDBDataLossTotal;
+        m_dataLoss = WebIDBDataLossTotal;
     ScriptWrappable::init(this);
 }
 
@@ -73,7 +72,7 @@ unsigned long long IDBVersionChangeEvent::newVersion(bool& isNull) const
 
 const AtomicString& IDBVersionChangeEvent::dataLoss() const
 {
-    if (m_dataLoss == blink::WebIDBDataLossTotal)
+    if (m_dataLoss == WebIDBDataLossTotal)
         return IndexedDBNames::total;
     return IndexedDBNames::none;
 }

@@ -512,9 +512,9 @@ public:
                 return;
             }
 
-            idbRequest = idbIndex->openCursor(scriptState(), m_idbKeyRange.get(), blink::WebIDBCursorDirectionNext);
+            idbRequest = idbIndex->openCursor(scriptState(), m_idbKeyRange.get(), WebIDBCursorDirectionNext);
         } else {
-            idbRequest = idbObjectStore->openCursor(scriptState(), m_idbKeyRange.get(), blink::WebIDBCursorDirectionNext);
+            idbRequest = idbObjectStore->openCursor(scriptState(), m_idbKeyRange.get(), WebIDBCursorDirectionNext);
         }
         idbRequest->addEventListener(EventTypeNames::success, openCursorCallback, false);
     }

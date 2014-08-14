@@ -20,7 +20,7 @@ MediaKeysController::MediaKeysController(MediaKeysClient* client)
 {
 }
 
-PassOwnPtr<blink::WebContentDecryptionModule> MediaKeysController::createContentDecryptionModule(ExecutionContext* context, const String& keySystem)
+PassOwnPtr<WebContentDecryptionModule> MediaKeysController::createContentDecryptionModule(ExecutionContext* context, const String& keySystem)
 {
     return m_client->createContentDecryptionModule(context, keySystem);
 }

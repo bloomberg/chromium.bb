@@ -40,7 +40,7 @@
 namespace blink {
 
 template<typename T>
-static void sampleGamepad(unsigned index, T& gamepad, const blink::WebGamepad& webGamepad)
+static void sampleGamepad(unsigned index, T& gamepad, const WebGamepad& webGamepad)
 {
     gamepad.setId(webGamepad.id);
     gamepad.setIndex(index);
@@ -54,12 +54,12 @@ static void sampleGamepad(unsigned index, T& gamepad, const blink::WebGamepad& w
 template<typename GamepadType, typename ListType>
 static void sampleGamepads(ListType* into)
 {
-    blink::WebGamepads gamepads;
+    WebGamepads gamepads;
 
     GamepadDispatcher::instance().sampleGamepads(gamepads);
 
-    for (unsigned i = 0; i < blink::WebGamepads::itemsLengthCap; ++i) {
-        blink::WebGamepad& webGamepad = gamepads.items[i];
+    for (unsigned i = 0; i < WebGamepads::itemsLengthCap; ++i) {
+        WebGamepad& webGamepad = gamepads.items[i];
         if (i < gamepads.length && webGamepad.connected) {
             GamepadType* gamepad = into->item(i);
             if (!gamepad)
@@ -271,7 +271,7 @@ void NavigatorGamepad::pageVisibilityChanged()
     GamepadList* newGamepads = m_gamepads.get();
     ASSERT(newGamepads);
 
-    for (unsigned i = 0; i < blink::WebGamepads::itemsLengthCap; ++i) {
+    for (unsigned i = 0; i < WebGamepads::itemsLengthCap; ++i) {
         Gamepad* oldGamepad = oldGamepads ? oldGamepads->item(i) : 0;
         Gamepad* newGamepad = newGamepads->item(i);
         bool oldWasConnected = oldGamepad && oldGamepad->connected();

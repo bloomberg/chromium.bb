@@ -272,7 +272,7 @@ FileWriterBaseCallbacks::FileWriterBaseCallbacks(PassRefPtrWillBeRawPtr<FileWrit
 {
 }
 
-void FileWriterBaseCallbacks::didCreateFileWriter(PassOwnPtr<blink::WebFileWriter> fileWriter, long long length)
+void FileWriterBaseCallbacks::didCreateFileWriter(PassOwnPtr<WebFileWriter> fileWriter, long long length)
 {
     m_fileWriter->initialize(fileWriter, length);
     if (m_successCallback)
@@ -338,4 +338,4 @@ void VoidCallbacks::didSucceed()
         handleEventOrScheduleCallback(m_successCallback.release());
 }
 
-} // namespace
+} // namespace blink

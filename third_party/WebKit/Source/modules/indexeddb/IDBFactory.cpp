@@ -88,7 +88,7 @@ IDBRequest* IDBFactory::getDatabaseNames(ScriptState* scriptState, ExceptionStat
         return request;
     }
 
-    blink::Platform::current()->idbFactory()->getDatabaseNames(WebIDBCallbacksImpl::create(request).leakPtr(), createDatabaseIdentifierFromSecurityOrigin(scriptState->executionContext()->securityOrigin()));
+    Platform::current()->idbFactory()->getDatabaseNames(WebIDBCallbacksImpl::create(request).leakPtr(), createDatabaseIdentifierFromSecurityOrigin(scriptState->executionContext()->securityOrigin()));
     return request;
 }
 
@@ -104,7 +104,7 @@ IDBOpenDBRequest* IDBFactory::open(ScriptState* scriptState, const String& name,
 
 IDBOpenDBRequest* IDBFactory::openInternal(ScriptState* scriptState, const String& name, int64_t version, ExceptionState& exceptionState)
 {
-    blink::Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBOpenCall, IDBMethodsMax);
+    Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBOpenCall, IDBMethodsMax);
     ASSERT(version >= 1 || version == IDBDatabaseMetadata::NoIntVersion);
     if (name.isNull()) {
         exceptionState.throwTypeError("The name provided must not be empty.");
@@ -126,7 +126,7 @@ IDBOpenDBRequest* IDBFactory::openInternal(ScriptState* scriptState, const Strin
         return request;
     }
 
-    blink::Platform::current()->idbFactory()->open(name, version, transactionId, WebIDBCallbacksImpl::create(request).leakPtr(), WebIDBDatabaseCallbacksImpl::create(databaseCallbacks).leakPtr(), createDatabaseIdentifierFromSecurityOrigin(scriptState->executionContext()->securityOrigin()));
+    Platform::current()->idbFactory()->open(name, version, transactionId, WebIDBCallbacksImpl::create(request).leakPtr(), WebIDBDatabaseCallbacksImpl::create(databaseCallbacks).leakPtr(), createDatabaseIdentifierFromSecurityOrigin(scriptState->executionContext()->securityOrigin()));
     return request;
 }
 
@@ -139,7 +139,7 @@ IDBOpenDBRequest* IDBFactory::open(ScriptState* scriptState, const String& name,
 IDBOpenDBRequest* IDBFactory::deleteDatabase(ScriptState* scriptState, const String& name, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBFactory::deleteDatabase");
-    blink::Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBDeleteDatabaseCall, IDBMethodsMax);
+    Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBDeleteDatabaseCall, IDBMethodsMax);
     if (name.isNull()) {
         exceptionState.throwTypeError("The name provided must not be empty.");
         return 0;
@@ -158,7 +158,7 @@ IDBOpenDBRequest* IDBFactory::deleteDatabase(ScriptState* scriptState, const Str
         return request;
     }
 
-    blink::Platform::current()->idbFactory()->deleteDatabase(name, WebIDBCallbacksImpl::create(request).leakPtr(), createDatabaseIdentifierFromSecurityOrigin(scriptState->executionContext()->securityOrigin()));
+    Platform::current()->idbFactory()->deleteDatabase(name, WebIDBCallbacksImpl::create(request).leakPtr(), createDatabaseIdentifierFromSecurityOrigin(scriptState->executionContext()->securityOrigin()));
     return request;
 }
 

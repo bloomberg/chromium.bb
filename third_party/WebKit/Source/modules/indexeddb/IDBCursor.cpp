@@ -49,12 +49,12 @@ using blink::WebIDBDatabase;
 
 namespace blink {
 
-IDBCursor* IDBCursor::create(PassOwnPtr<blink::WebIDBCursor> backend, blink::WebIDBCursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
+IDBCursor* IDBCursor::create(PassOwnPtr<WebIDBCursor> backend, WebIDBCursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
 {
     return new IDBCursor(backend, direction, request, source, transaction);
 }
 
-IDBCursor::IDBCursor(PassOwnPtr<blink::WebIDBCursor> backend, blink::WebIDBCursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
+IDBCursor::IDBCursor(PassOwnPtr<WebIDBCursor> backend, WebIDBCursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
     : m_backend(backend)
     , m_request(request)
     , m_direction(direction)
@@ -116,7 +116,7 @@ IDBRequest* IDBCursor::update(ScriptState* scriptState, ScriptValue& value, Exce
     }
 
     IDBObjectStore* objectStore = effectiveObjectStore();
-    return objectStore->put(scriptState, blink::WebIDBPutModeCursorUpdate, IDBAny::create(this), value, m_primaryKey, exceptionState);
+    return objectStore->put(scriptState, WebIDBPutModeCursorUpdate, IDBAny::create(this), value, m_primaryKey, exceptionState);
 }
 
 void IDBCursor::advance(unsigned long count, ExceptionState& exceptionState)
@@ -197,7 +197,7 @@ void IDBCursor::continueFunction(IDBKey* key, IDBKey* primaryKey, ExceptionState
 
     if (key) {
         ASSERT(m_key);
-        if (m_direction == blink::WebIDBCursorDirectionNext || m_direction == blink::WebIDBCursorDirectionNextNoDuplicate) {
+        if (m_direction == WebIDBCursorDirectionNext || m_direction == WebIDBCursorDirectionNextNoDuplicate) {
             const bool ok = m_key->isLessThan(key)
                 || (primaryKey && m_key->isEqual(key) && m_primaryKey->isLessThan(primaryKey));
             if (!ok) {
@@ -315,7 +315,7 @@ ScriptValue IDBCursor::source(ScriptState* scriptState) const
     return idbAnyToScriptValue(scriptState, m_source);
 }
 
-void IDBCursor::setValueReady(IDBKey* key, IDBKey* primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<blink::WebBlobInfo> > blobInfo)
+void IDBCursor::setValueReady(IDBKey* key, IDBKey* primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<WebBlobInfo> > blobInfo)
 {
     m_key = key;
     m_keyDirty = true;
@@ -357,34 +357,34 @@ void IDBCursor::handleBlobAcks()
     }
 }
 
-blink::WebIDBCursorDirection IDBCursor::stringToDirection(const String& directionString, ExceptionState& exceptionState)
+WebIDBCursorDirection IDBCursor::stringToDirection(const String& directionString, ExceptionState& exceptionState)
 {
     if (directionString == IndexedDBNames::next)
-        return blink::WebIDBCursorDirectionNext;
+        return WebIDBCursorDirectionNext;
     if (directionString == IndexedDBNames::nextunique)
-        return blink::WebIDBCursorDirectionNextNoDuplicate;
+        return WebIDBCursorDirectionNextNoDuplicate;
     if (directionString == IndexedDBNames::prev)
-        return blink::WebIDBCursorDirectionPrev;
+        return WebIDBCursorDirectionPrev;
     if (directionString == IndexedDBNames::prevunique)
-        return blink::WebIDBCursorDirectionPrevNoDuplicate;
+        return WebIDBCursorDirectionPrevNoDuplicate;
 
     exceptionState.throwTypeError("The direction provided ('" + directionString + "') is not one of 'next', 'nextunique', 'prev', or 'prevunique'.");
-    return blink::WebIDBCursorDirectionNext;
+    return WebIDBCursorDirectionNext;
 }
 
 const String& IDBCursor::direction() const
 {
     switch (m_direction) {
-    case blink::WebIDBCursorDirectionNext:
+    case WebIDBCursorDirectionNext:
         return IndexedDBNames::next;
 
-    case blink::WebIDBCursorDirectionNextNoDuplicate:
+    case WebIDBCursorDirectionNextNoDuplicate:
         return IndexedDBNames::nextunique;
 
-    case blink::WebIDBCursorDirectionPrev:
+    case WebIDBCursorDirectionPrev:
         return IndexedDBNames::prev;
 
-    case blink::WebIDBCursorDirectionPrevNoDuplicate:
+    case WebIDBCursorDirectionPrevNoDuplicate:
         return IndexedDBNames::prevunique;
 
     default:

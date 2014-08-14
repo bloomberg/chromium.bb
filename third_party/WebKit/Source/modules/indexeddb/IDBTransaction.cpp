@@ -44,7 +44,7 @@ using blink::WebIDBDatabase;
 
 namespace blink {
 
-IDBTransaction* IDBTransaction::create(ExecutionContext* context, int64_t id, const Vector<String>& objectStoreNames, blink::WebIDBTransactionMode mode, IDBDatabase* db)
+IDBTransaction* IDBTransaction::create(ExecutionContext* context, int64_t id, const Vector<String>& objectStoreNames, WebIDBTransactionMode mode, IDBDatabase* db)
 {
     IDBOpenDBRequest* openDBRequest = 0;
     IDBTransaction* transaction = adoptRefCountedGarbageCollectedWillBeNoop(new IDBTransaction(context, id, objectStoreNames, mode, db, openDBRequest, IDBDatabaseMetadata()));
@@ -54,12 +54,12 @@ IDBTransaction* IDBTransaction::create(ExecutionContext* context, int64_t id, co
 
 IDBTransaction* IDBTransaction::create(ExecutionContext* context, int64_t id, IDBDatabase* db, IDBOpenDBRequest* openDBRequest, const IDBDatabaseMetadata& previousMetadata)
 {
-    IDBTransaction* transaction = adoptRefCountedGarbageCollectedWillBeNoop(new IDBTransaction(context, id, Vector<String>(), blink::WebIDBTransactionModeVersionChange, db, openDBRequest, previousMetadata));
+    IDBTransaction* transaction = adoptRefCountedGarbageCollectedWillBeNoop(new IDBTransaction(context, id, Vector<String>(), WebIDBTransactionModeVersionChange, db, openDBRequest, previousMetadata));
     transaction->suspendIfNeeded();
     return transaction;
 }
 
-IDBTransaction::IDBTransaction(ExecutionContext* context, int64_t id, const Vector<String>& objectStoreNames, blink::WebIDBTransactionMode mode, IDBDatabase* db, IDBOpenDBRequest* openDBRequest, const IDBDatabaseMetadata& previousMetadata)
+IDBTransaction::IDBTransaction(ExecutionContext* context, int64_t id, const Vector<String>& objectStoreNames, WebIDBTransactionMode mode, IDBDatabase* db, IDBOpenDBRequest* openDBRequest, const IDBDatabaseMetadata& previousMetadata)
     : ActiveDOMObject(context)
     , m_id(id)
     , m_database(db)
@@ -72,7 +72,7 @@ IDBTransaction::IDBTransaction(ExecutionContext* context, int64_t id, const Vect
     , m_previousMetadata(previousMetadata)
 {
     ScriptWrappable::init(this);
-    if (mode == blink::WebIDBTransactionModeVersionChange) {
+    if (mode == WebIDBTransactionModeVersionChange) {
         // Not active until the callback.
         m_state = Inactive;
     }
@@ -277,27 +277,27 @@ bool IDBTransaction::hasPendingActivity() const
     return m_hasPendingActivity && !m_contextStopped;
 }
 
-blink::WebIDBTransactionMode IDBTransaction::stringToMode(const String& modeString, ExceptionState& exceptionState)
+WebIDBTransactionMode IDBTransaction::stringToMode(const String& modeString, ExceptionState& exceptionState)
 {
     if (modeString == IndexedDBNames::readonly)
-        return blink::WebIDBTransactionModeReadOnly;
+        return WebIDBTransactionModeReadOnly;
     if (modeString == IndexedDBNames::readwrite)
-        return blink::WebIDBTransactionModeReadWrite;
+        return WebIDBTransactionModeReadWrite;
 
     exceptionState.throwTypeError("The mode provided ('" + modeString + "') is not one of 'readonly' or 'readwrite'.");
-    return blink::WebIDBTransactionModeReadOnly;
+    return WebIDBTransactionModeReadOnly;
 }
 
 const String& IDBTransaction::mode() const
 {
     switch (m_mode) {
-    case blink::WebIDBTransactionModeReadOnly:
+    case WebIDBTransactionModeReadOnly:
         return IndexedDBNames::readonly;
 
-    case blink::WebIDBTransactionModeReadWrite:
+    case WebIDBTransactionModeReadWrite:
         return IndexedDBNames::readwrite;
 
-    case blink::WebIDBTransactionModeVersionChange:
+    case WebIDBTransactionModeVersionChange:
         return IndexedDBNames::versionchange;
     }
 
@@ -374,7 +374,7 @@ void IDBTransaction::enqueueEvent(PassRefPtrWillBeRawPtr<Event> event)
     eventQueue->enqueueEvent(event);
 }
 
-blink::WebIDBDatabase* IDBTransaction::backendDB() const
+WebIDBDatabase* IDBTransaction::backendDB() const
 {
     return m_database->backend();
 }

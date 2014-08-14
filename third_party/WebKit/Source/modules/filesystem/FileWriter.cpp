@@ -229,7 +229,7 @@ void FileWriter::didTruncate()
     signalCompletion(FileError::OK);
 }
 
-void FileWriter::didFail(blink::WebFileError code)
+void FileWriter::didFail(WebFileError code)
 {
     ASSERT(m_operationInProgress != OperationNone);
     ASSERT(static_cast<FileError::ErrorCode>(code) != FileError::OK);

@@ -37,7 +37,7 @@ Gamepad::~Gamepad()
 {
 }
 
-void Gamepad::setButtons(unsigned count, const blink::WebGamepadButton* data)
+void Gamepad::setButtons(unsigned count, const WebGamepadButton* data)
 {
     if (m_buttons.size() != count) {
         m_buttons.resize(count);

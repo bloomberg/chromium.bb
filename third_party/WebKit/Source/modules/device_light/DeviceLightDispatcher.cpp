@@ -27,12 +27,12 @@ DeviceLightDispatcher::~DeviceLightDispatcher()
 
 void DeviceLightDispatcher::startListening()
 {
-    blink::Platform::current()->startListening(WebPlatformEventDeviceLight, this);
+    Platform::current()->startListening(WebPlatformEventDeviceLight, this);
 }
 
 void DeviceLightDispatcher::stopListening()
 {
-    blink::Platform::current()->stopListening(WebPlatformEventDeviceLight);
+    Platform::current()->stopListening(WebPlatformEventDeviceLight);
     m_lastDeviceLightData = -1;
 }
 

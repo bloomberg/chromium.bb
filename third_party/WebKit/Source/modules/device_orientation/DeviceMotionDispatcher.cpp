@@ -53,16 +53,16 @@ DeviceMotionDispatcher::~DeviceMotionDispatcher()
 
 void DeviceMotionDispatcher::startListening()
 {
-    blink::Platform::current()->startListening(WebPlatformEventDeviceMotion, this);
+    Platform::current()->startListening(WebPlatformEventDeviceMotion, this);
 }
 
 void DeviceMotionDispatcher::stopListening()
 {
-    blink::Platform::current()->stopListening(WebPlatformEventDeviceMotion);
+    Platform::current()->stopListening(WebPlatformEventDeviceMotion);
     m_lastDeviceMotionData.clear();
 }
 
-void DeviceMotionDispatcher::didChangeDeviceMotion(const blink::WebDeviceMotionData& motion)
+void DeviceMotionDispatcher::didChangeDeviceMotion(const WebDeviceMotionData& motion)
 {
     m_lastDeviceMotionData = DeviceMotionData::create(motion);
     notifyControllers();

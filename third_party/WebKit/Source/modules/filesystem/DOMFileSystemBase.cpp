@@ -71,9 +71,9 @@ DOMFileSystemBase::~DOMFileSystemBase()
 {
 }
 
-blink::WebFileSystem* DOMFileSystemBase::fileSystem() const
+WebFileSystem* DOMFileSystemBase::fileSystem() const
 {
-    blink::Platform* platform = blink::Platform::current();
+    Platform* platform = Platform::current();
     if (!platform)
         return nullptr;
     return platform->fileSystem();

@@ -111,12 +111,12 @@ int64_t IDBDatabase::nextTransactionId()
     return atomicIncrement(&currentTransactionId);
 }
 
-void IDBDatabase::ackReceivedBlobs(const Vector<blink::WebBlobInfo>* blobInfo)
+void IDBDatabase::ackReceivedBlobs(const Vector<WebBlobInfo>* blobInfo)
 {
     ASSERT(blobInfo);
     if (!blobInfo->size() || !m_backend)
         return;
-    Vector<blink::WebBlobInfo>::const_iterator iter;
+    Vector<WebBlobInfo>::const_iterator iter;
     Vector<String> uuids;
     uuids.reserveCapacity(blobInfo->size());
     for (iter = blobInfo->begin(); iter != blobInfo->end(); ++iter)
@@ -217,7 +217,7 @@ IDBObjectStore* IDBDatabase::createObjectStore(const String& name, const Diction
 IDBObjectStore* IDBDatabase::createObjectStore(const String& name, const IDBKeyPath& keyPath, bool autoIncrement, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBDatabase::createObjectStore");
-    blink::Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBCreateObjectStoreCall, IDBMethodsMax);
+    Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBCreateObjectStoreCall, IDBMethodsMax);
     if (!m_versionChangeTransaction) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::notVersionChangeTransactionErrorMessage);
         return 0;
@@ -266,7 +266,7 @@ IDBObjectStore* IDBDatabase::createObjectStore(const String& name, const IDBKeyP
 void IDBDatabase::deleteObjectStore(const String& name, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBDatabase::deleteObjectStore");
-    blink::Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBDeleteObjectStoreCall, IDBMethodsMax);
+    Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBDeleteObjectStoreCall, IDBMethodsMax);
     if (!m_versionChangeTransaction) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::notVersionChangeTransactionErrorMessage);
         return;
@@ -299,13 +299,13 @@ void IDBDatabase::deleteObjectStore(const String& name, ExceptionState& exceptio
 IDBTransaction* IDBDatabase::transaction(ExecutionContext* context, const Vector<String>& scope, const String& modeString, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBDatabase::transaction");
-    blink::Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBTransactionCall, IDBMethodsMax);
+    Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBTransactionCall, IDBMethodsMax);
     if (!scope.size()) {
         exceptionState.throwDOMException(InvalidAccessError, "The storeNames parameter was empty.");
         return 0;
     }
 
-    blink::WebIDBTransactionMode mode = IDBTransaction::stringToMode(modeString, exceptionState);
+    WebIDBTransactionMode mode = IDBTransaction::stringToMode(modeString, exceptionState);
     if (exceptionState.hadException())
         return 0;
 

@@ -108,7 +108,7 @@ void FileWriterSync::didTruncate()
 #endif
 }
 
-void FileWriterSync::didFail(blink::WebFileError error)
+void FileWriterSync::didFail(WebFileError error)
 {
     ASSERT(m_error == FileError::OK);
     m_error = static_cast<FileError::ErrorCode>(error);

@@ -18,18 +18,18 @@
 
 namespace blink {
 
-static void throwExceptionIfMediaKeyExceptionOccurred(const String& keySystem, const String& sessionId, blink::WebMediaPlayer::MediaKeyException exception, ExceptionState& exceptionState)
+static void throwExceptionIfMediaKeyExceptionOccurred(const String& keySystem, const String& sessionId, WebMediaPlayer::MediaKeyException exception, ExceptionState& exceptionState)
 {
     switch (exception) {
-    case blink::WebMediaPlayer::MediaKeyExceptionNoError:
+    case WebMediaPlayer::MediaKeyExceptionNoError:
         return;
-    case blink::WebMediaPlayer::MediaKeyExceptionInvalidPlayerState:
+    case WebMediaPlayer::MediaKeyExceptionInvalidPlayerState:
         exceptionState.throwDOMException(InvalidStateError, "The player is in an invalid state.");
         return;
-    case blink::WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported:
+    case WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported:
         exceptionState.throwDOMException(NotSupportedError, "The key system provided ('" + keySystem +"') is not supported.");
         return;
-    case blink::WebMediaPlayer::MediaKeyExceptionInvalidAccess:
+    case WebMediaPlayer::MediaKeyExceptionInvalidAccess:
         exceptionState.throwDOMException(InvalidAccessError, "The session ID provided ('" + sessionId + "') is invalid.");
         return;
     }
@@ -70,7 +70,7 @@ bool HTMLMediaElementEncryptedMedia::setEmeMode(EmeMode emeMode, ExceptionState&
     return true;
 }
 
-blink::WebContentDecryptionModule* HTMLMediaElementEncryptedMedia::contentDecryptionModule()
+WebContentDecryptionModule* HTMLMediaElementEncryptedMedia::contentDecryptionModule()
 {
     return m_mediaKeys ? m_mediaKeys->contentDecryptionModule() : 0;
 }
@@ -135,7 +135,7 @@ void HTMLMediaElementEncryptedMedia::webkitGenerateKeyRequest(HTMLMediaElement& 
     HTMLMediaElementEncryptedMedia::from(element).generateKeyRequest(element.webMediaPlayer(), keySystem, initData, exceptionState);
 }
 
-void HTMLMediaElementEncryptedMedia::generateKeyRequest(blink::WebMediaPlayer* webMediaPlayer, const String& keySystem, PassRefPtr<Uint8Array> initData, ExceptionState& exceptionState)
+void HTMLMediaElementEncryptedMedia::generateKeyRequest(WebMediaPlayer* webMediaPlayer, const String& keySystem, PassRefPtr<Uint8Array> initData, ExceptionState& exceptionState)
 {
     WTF_LOG(Media, "HTMLMediaElementEncryptedMedia::webkitGenerateKeyRequest");
 
@@ -159,7 +159,7 @@ void HTMLMediaElementEncryptedMedia::generateKeyRequest(blink::WebMediaPlayer* w
         initDataLength = initData->length();
     }
 
-    blink::WebMediaPlayer::MediaKeyException result = webMediaPlayer->generateKeyRequest(keySystem, initDataPointer, initDataLength);
+    WebMediaPlayer::MediaKeyException result = webMediaPlayer->generateKeyRequest(keySystem, initDataPointer, initDataLength);
     throwExceptionIfMediaKeyExceptionOccurred(keySystem, String(), result, exceptionState);
 }
 
@@ -173,7 +173,7 @@ void HTMLMediaElementEncryptedMedia::webkitAddKey(HTMLMediaElement& element, con
     HTMLMediaElementEncryptedMedia::from(element).addKey(element.webMediaPlayer(), keySystem, key, initData, sessionId, exceptionState);
 }
 
-void HTMLMediaElementEncryptedMedia::addKey(blink::WebMediaPlayer* webMediaPlayer, const String& keySystem, PassRefPtr<Uint8Array> key, PassRefPtr<Uint8Array> initData, const String& sessionId, ExceptionState& exceptionState)
+void HTMLMediaElementEncryptedMedia::addKey(WebMediaPlayer* webMediaPlayer, const String& keySystem, PassRefPtr<Uint8Array> key, PassRefPtr<Uint8Array> initData, const String& sessionId, ExceptionState& exceptionState)
 {
     WTF_LOG(Media, "HTMLMediaElementEncryptedMedia::webkitAddKey");
 
@@ -207,7 +207,7 @@ void HTMLMediaElementEncryptedMedia::addKey(blink::WebMediaPlayer* webMediaPlaye
         initDataLength = initData->length();
     }
 
-    blink::WebMediaPlayer::MediaKeyException result = webMediaPlayer->addKey(keySystem, key->data(), key->length(), initDataPointer, initDataLength, sessionId);
+    WebMediaPlayer::MediaKeyException result = webMediaPlayer->addKey(keySystem, key->data(), key->length(), initDataPointer, initDataLength, sessionId);
     throwExceptionIfMediaKeyExceptionOccurred(keySystem, sessionId, result, exceptionState);
 }
 
@@ -221,7 +221,7 @@ void HTMLMediaElementEncryptedMedia::webkitCancelKeyRequest(HTMLMediaElement& el
     HTMLMediaElementEncryptedMedia::from(element).cancelKeyRequest(element.webMediaPlayer(), keySystem, sessionId, exceptionState);
 }
 
-void HTMLMediaElementEncryptedMedia::cancelKeyRequest(blink::WebMediaPlayer* webMediaPlayer, const String& keySystem, const String& sessionId, ExceptionState& exceptionState)
+void HTMLMediaElementEncryptedMedia::cancelKeyRequest(WebMediaPlayer* webMediaPlayer, const String& keySystem, const String& sessionId, ExceptionState& exceptionState)
 {
     WTF_LOG(Media, "HTMLMediaElementEncryptedMedia::webkitCancelKeyRequest");
 
@@ -238,7 +238,7 @@ void HTMLMediaElementEncryptedMedia::cancelKeyRequest(blink::WebMediaPlayer* web
         return;
     }
 
-    blink::WebMediaPlayer::MediaKeyException result = webMediaPlayer->cancelKeyRequest(keySystem, sessionId);
+    WebMediaPlayer::MediaKeyException result = webMediaPlayer->cancelKeyRequest(keySystem, sessionId);
     throwExceptionIfMediaKeyExceptionOccurred(keySystem, sessionId, result, exceptionState);
 }
 
@@ -257,28 +257,28 @@ void HTMLMediaElementEncryptedMedia::keyAdded(HTMLMediaElement& element, const S
     element.scheduleEvent(event.release());
 }
 
-void HTMLMediaElementEncryptedMedia::keyError(HTMLMediaElement& element, const String& keySystem, const String& sessionId, blink::WebMediaPlayerClient::MediaKeyErrorCode errorCode, unsigned short systemCode)
+void HTMLMediaElementEncryptedMedia::keyError(HTMLMediaElement& element, const String& keySystem, const String& sessionId, WebMediaPlayerClient::MediaKeyErrorCode errorCode, unsigned short systemCode)
 {
     WTF_LOG(Media, "HTMLMediaElementEncryptedMedia::mediaPlayerKeyError: sessionID=%s, errorCode=%d, systemCode=%d", sessionId.utf8().data(), errorCode, systemCode);
 
     MediaKeyError::Code mediaKeyErrorCode = MediaKeyError::MEDIA_KEYERR_UNKNOWN;
     switch (errorCode) {
-    case blink::WebMediaPlayerClient::MediaKeyErrorCodeUnknown:
+    case WebMediaPlayerClient::MediaKeyErrorCodeUnknown:
         mediaKeyErrorCode = MediaKeyError::MEDIA_KEYERR_UNKNOWN;
         break;
-    case blink::WebMediaPlayerClient::MediaKeyErrorCodeClient:
+    case WebMediaPlayerClient::MediaKeyErrorCodeClient:
         mediaKeyErrorCode = MediaKeyError::MEDIA_KEYERR_CLIENT;
         break;
-    case blink::WebMediaPlayerClient::MediaKeyErrorCodeService:
+    case WebMediaPlayerClient::MediaKeyErrorCodeService:
         mediaKeyErrorCode = MediaKeyError::MEDIA_KEYERR_SERVICE;
         break;
-    case blink::WebMediaPlayerClient::MediaKeyErrorCodeOutput:
+    case WebMediaPlayerClient::MediaKeyErrorCodeOutput:
         mediaKeyErrorCode = MediaKeyError::MEDIA_KEYERR_OUTPUT;
         break;
-    case blink::WebMediaPlayerClient::MediaKeyErrorCodeHardwareChange:
+    case WebMediaPlayerClient::MediaKeyErrorCodeHardwareChange:
         mediaKeyErrorCode = MediaKeyError::MEDIA_KEYERR_HARDWARECHANGE;
         break;
-    case blink::WebMediaPlayerClient::MediaKeyErrorCodeDomain:
+    case WebMediaPlayerClient::MediaKeyErrorCodeDomain:
         mediaKeyErrorCode = MediaKeyError::MEDIA_KEYERR_DOMAIN;
         break;
     }
@@ -296,7 +296,7 @@ void HTMLMediaElementEncryptedMedia::keyError(HTMLMediaElement& element, const S
     element.scheduleEvent(event.release());
 }
 
-void HTMLMediaElementEncryptedMedia::keyMessage(HTMLMediaElement& element, const String& keySystem, const String& sessionId, const unsigned char* message, unsigned messageLength, const blink::WebURL& defaultURL)
+void HTMLMediaElementEncryptedMedia::keyMessage(HTMLMediaElement& element, const String& keySystem, const String& sessionId, const unsigned char* message, unsigned messageLength, const WebURL& defaultURL)
 {
     WTF_LOG(Media, "HTMLMediaElementEncryptedMedia::mediaPlayerKeyMessage: sessionID=%s", sessionId.utf8().data());
 
@@ -344,7 +344,7 @@ void HTMLMediaElementEncryptedMedia::playerDestroyed(HTMLMediaElement& element)
     thisElement.setMediaKeysInternal(element, 0);
 }
 
-blink::WebContentDecryptionModule* HTMLMediaElementEncryptedMedia::contentDecryptionModule(HTMLMediaElement& element)
+WebContentDecryptionModule* HTMLMediaElementEncryptedMedia::contentDecryptionModule(HTMLMediaElement& element)
 {
     HTMLMediaElementEncryptedMedia& thisElement = HTMLMediaElementEncryptedMedia::from(element);
     return thisElement.contentDecryptionModule();

@@ -86,7 +86,7 @@ IDBRequest* IDBIndex::openCursor(ScriptState* scriptState, const ScriptValue& ra
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
         return 0;
     }
-    blink::WebIDBCursorDirection direction = IDBCursor::stringToDirection(directionString, exceptionState);
+    WebIDBCursorDirection direction = IDBCursor::stringToDirection(directionString, exceptionState);
     if (exceptionState.hadException())
         return 0;
 
@@ -102,11 +102,11 @@ IDBRequest* IDBIndex::openCursor(ScriptState* scriptState, const ScriptValue& ra
     return openCursor(scriptState, keyRange, direction);
 }
 
-IDBRequest* IDBIndex::openCursor(ScriptState* scriptState, IDBKeyRange* keyRange, blink::WebIDBCursorDirection direction)
+IDBRequest* IDBIndex::openCursor(ScriptState* scriptState, IDBKeyRange* keyRange, WebIDBCursorDirection direction)
 {
     IDBRequest* request = IDBRequest::create(scriptState, IDBAny::create(this), m_transaction.get());
     request->setCursorDetails(IndexedDB::CursorKeyAndValue, direction);
-    backendDB()->openCursor(m_transaction->id(), m_objectStore->id(), m_metadata.id, keyRange, direction, false, blink::WebIDBTaskTypeNormal, WebIDBCallbacksImpl::create(request).leakPtr());
+    backendDB()->openCursor(m_transaction->id(), m_objectStore->id(), m_metadata.id, keyRange, direction, false, WebIDBTaskTypeNormal, WebIDBCallbacksImpl::create(request).leakPtr());
     return request;
 }
 
@@ -155,7 +155,7 @@ IDBRequest* IDBIndex::openKeyCursor(ScriptState* scriptState, const ScriptValue&
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
         return 0;
     }
-    blink::WebIDBCursorDirection direction = IDBCursor::stringToDirection(directionString, exceptionState);
+    WebIDBCursorDirection direction = IDBCursor::stringToDirection(directionString, exceptionState);
     if (exceptionState.hadException())
         return 0;
 
@@ -169,7 +169,7 @@ IDBRequest* IDBIndex::openKeyCursor(ScriptState* scriptState, const ScriptValue&
 
     IDBRequest* request = IDBRequest::create(scriptState, IDBAny::create(this), m_transaction.get());
     request->setCursorDetails(IndexedDB::CursorKeyOnly, direction);
-    backendDB()->openCursor(m_transaction->id(), m_objectStore->id(), m_metadata.id, keyRange, direction, true, blink::WebIDBTaskTypeNormal, WebIDBCallbacksImpl::create(request).leakPtr());
+    backendDB()->openCursor(m_transaction->id(), m_objectStore->id(), m_metadata.id, keyRange, direction, true, WebIDBTaskTypeNormal, WebIDBCallbacksImpl::create(request).leakPtr());
     return request;
 }
 

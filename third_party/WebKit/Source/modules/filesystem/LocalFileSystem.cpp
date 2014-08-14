@@ -162,7 +162,7 @@ void LocalFileSystem::fileSystemAllowedInternal(
     }
 
     KURL storagePartition = KURL(KURL(), context->securityOrigin()->toString());
-    fileSystem()->openFileSystem(storagePartition, static_cast<blink::WebFileSystemType>(type), callbacks->release());
+    fileSystem()->openFileSystem(storagePartition, static_cast<WebFileSystemType>(type), callbacks->release());
 }
 
 void LocalFileSystem::resolveURLInternal(
@@ -187,7 +187,7 @@ void LocalFileSystem::deleteFileSystemInternal(
         return;
     }
     KURL storagePartition = KURL(KURL(), context->securityOrigin()->toString());
-    fileSystem()->deleteFileSystem(storagePartition, static_cast<blink::WebFileSystemType>(type), callbacks->release());
+    fileSystem()->deleteFileSystem(storagePartition, static_cast<WebFileSystemType>(type), callbacks->release());
 }
 
 LocalFileSystem::LocalFileSystem(PassOwnPtr<FileSystemClient> client)

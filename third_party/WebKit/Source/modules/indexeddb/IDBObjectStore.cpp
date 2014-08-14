@@ -143,22 +143,22 @@ static void generateIndexKeysForValue(v8::Isolate* isolate, const IDBIndexMetada
 IDBRequest* IDBObjectStore::add(ScriptState* scriptState, ScriptValue& value, const ScriptValue& key, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBObjectStore::add");
-    return put(scriptState, blink::WebIDBPutModeAddOnly, IDBAny::create(this), value, key, exceptionState);
+    return put(scriptState, WebIDBPutModeAddOnly, IDBAny::create(this), value, key, exceptionState);
 }
 
 IDBRequest* IDBObjectStore::put(ScriptState* scriptState, ScriptValue& value, const ScriptValue& key, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBObjectStore::put");
-    return put(scriptState, blink::WebIDBPutModeAddOrUpdate, IDBAny::create(this), value, key, exceptionState);
+    return put(scriptState, WebIDBPutModeAddOrUpdate, IDBAny::create(this), value, key, exceptionState);
 }
 
-IDBRequest* IDBObjectStore::put(ScriptState* scriptState, blink::WebIDBPutMode putMode, IDBAny* source, ScriptValue& value, const ScriptValue& keyValue, ExceptionState& exceptionState)
+IDBRequest* IDBObjectStore::put(ScriptState* scriptState, WebIDBPutMode putMode, IDBAny* source, ScriptValue& value, const ScriptValue& keyValue, ExceptionState& exceptionState)
 {
     IDBKey* key = keyValue.isUndefined() ? nullptr : scriptValueToIDBKey(scriptState->isolate(), keyValue);
     return put(scriptState, putMode, source, value, key, exceptionState);
 }
 
-IDBRequest* IDBObjectStore::put(ScriptState* scriptState, blink::WebIDBPutMode putMode, IDBAny* source, ScriptValue& value, IDBKey* key, ExceptionState& exceptionState)
+IDBRequest* IDBObjectStore::put(ScriptState* scriptState, WebIDBPutMode putMode, IDBAny* source, ScriptValue& value, IDBKey* key, ExceptionState& exceptionState)
 {
     if (isDeleted()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::objectStoreDeletedErrorMessage);
@@ -192,13 +192,13 @@ IDBRequest* IDBObjectStore::put(ScriptState* scriptState, blink::WebIDBPutMode p
     const bool usesInLineKeys = !keyPath.isNull();
     const bool hasKeyGenerator = autoIncrement();
 
-    if (putMode != blink::WebIDBPutModeCursorUpdate && usesInLineKeys && key) {
+    if (putMode != WebIDBPutModeCursorUpdate && usesInLineKeys && key) {
         exceptionState.throwDOMException(DataError, "The object store uses in-line keys and the key parameter was provided.");
         return 0;
     }
 
     // This test logically belongs in IDBCursor, but must operate on the cloned value.
-    if (putMode == blink::WebIDBPutModeCursorUpdate && usesInLineKeys) {
+    if (putMode == WebIDBPutModeCursorUpdate && usesInLineKeys) {
         ASSERT(key);
         if (clone.isEmpty())
             clone = deserializeScriptValue(scriptState, serializedValue.get(), &blobInfo);
@@ -260,7 +260,7 @@ IDBRequest* IDBObjectStore::put(ScriptState* scriptState, blink::WebIDBPutMode p
     serializedValue->toWireBytes(wireBytes);
     RefPtr<SharedBuffer> valueBuffer = SharedBuffer::adoptVector(wireBytes);
 
-    backendDB()->put(m_transaction->id(), id(), blink::WebData(valueBuffer), blobInfo, key, static_cast<blink::WebIDBPutMode>(putMode), WebIDBCallbacksImpl::create(request).leakPtr(), indexIds, indexKeys);
+    backendDB()->put(m_transaction->id(), id(), WebData(valueBuffer), blobInfo, key, static_cast<WebIDBPutMode>(putMode), WebIDBCallbacksImpl::create(request).leakPtr(), indexIds, indexKeys);
     return request;
 }
 
@@ -473,7 +473,7 @@ IDBIndex* IDBObjectStore::createIndex(ScriptState* scriptState, const String& na
     if (exceptionState.hadException())
         return 0;
 
-    IDBRequest* indexRequest = openCursor(scriptState, static_cast<IDBKeyRange*>(0), blink::WebIDBCursorDirectionNext, blink::WebIDBTaskTypePreemptive);
+    IDBRequest* indexRequest = openCursor(scriptState, static_cast<IDBKeyRange*>(0), WebIDBCursorDirectionNext, WebIDBTaskTypePreemptive);
     indexRequest->preventPropagation();
 
     // This is kept alive by being the success handler of the request, which is in turn kept alive by the owning transaction.
@@ -575,7 +575,7 @@ IDBRequest* IDBObjectStore::openCursor(ScriptState* scriptState, const ScriptVal
         return 0;
     }
 
-    blink::WebIDBCursorDirection direction = IDBCursor::stringToDirection(directionString, exceptionState);
+    WebIDBCursorDirection direction = IDBCursor::stringToDirection(directionString, exceptionState);
     if (exceptionState.hadException())
         return 0;
 
@@ -588,10 +588,10 @@ IDBRequest* IDBObjectStore::openCursor(ScriptState* scriptState, const ScriptVal
         return 0;
     }
 
-    return openCursor(scriptState, keyRange, direction, blink::WebIDBTaskTypeNormal);
+    return openCursor(scriptState, keyRange, direction, WebIDBTaskTypeNormal);
 }
 
-IDBRequest* IDBObjectStore::openCursor(ScriptState* scriptState, IDBKeyRange* range, blink::WebIDBCursorDirection direction, blink::WebIDBTaskType taskType)
+IDBRequest* IDBObjectStore::openCursor(ScriptState* scriptState, IDBKeyRange* range, WebIDBCursorDirection direction, WebIDBTaskType taskType)
 {
     IDBRequest* request = IDBRequest::create(scriptState, IDBAny::create(this), m_transaction.get());
     request->setCursorDetails(IndexedDB::CursorKeyAndValue, direction);
@@ -616,7 +616,7 @@ IDBRequest* IDBObjectStore::openKeyCursor(ScriptState* scriptState, const Script
         return 0;
     }
 
-    blink::WebIDBCursorDirection direction = IDBCursor::stringToDirection(directionString, exceptionState);
+    WebIDBCursorDirection direction = IDBCursor::stringToDirection(directionString, exceptionState);
     if (exceptionState.hadException())
         return 0;
 
@@ -632,7 +632,7 @@ IDBRequest* IDBObjectStore::openKeyCursor(ScriptState* scriptState, const Script
     IDBRequest* request = IDBRequest::create(scriptState, IDBAny::create(this), m_transaction.get());
     request->setCursorDetails(IndexedDB::CursorKeyOnly, direction);
 
-    backendDB()->openCursor(m_transaction->id(), id(), IDBIndexMetadata::InvalidId, keyRange, direction, true, blink::WebIDBTaskTypeNormal, WebIDBCallbacksImpl::create(request).leakPtr());
+    backendDB()->openCursor(m_transaction->id(), id(), IDBIndexMetadata::InvalidId, keyRange, direction, true, WebIDBTaskTypeNormal, WebIDBCallbacksImpl::create(request).leakPtr());
     return request;
 }
 
