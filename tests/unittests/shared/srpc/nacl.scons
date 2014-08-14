@@ -16,7 +16,9 @@ simple_srpc_test_nexe = env.ComponentProgram(
                 '${PTHREAD_LIBS}',
                 '${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
-    'simple_srpc_test_nexe.out', simple_srpc_test_nexe)
+    'simple_srpc_test_nexe.out', simple_srpc_test_nexe,
+    # Pass '-a' to enable imc_socketpair().
+    sel_ldr_flags=['-a'])
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_simple_srpc_test_nexe')
 
 types_srpc_test_nexe = env.ComponentProgram(
@@ -30,5 +32,7 @@ types_srpc_test_nexe = env.ComponentProgram(
                 '${PTHREAD_LIBS}',
                 '${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
-    'types_srpc_test_nexe.out', types_srpc_test_nexe)
+    'types_srpc_test_nexe.out', types_srpc_test_nexe,
+    # Pass '-a' to enable imc_socketpair().
+    sel_ldr_flags=['-a'])
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_types_srpc_test_nexe')

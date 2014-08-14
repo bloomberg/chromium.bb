@@ -14,7 +14,9 @@ nacl_close_test_nexe = env.ComponentProgram(
                                        'gio',
                                        '${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
-    'nacl_close_test_nexe.out', nacl_close_test_nexe)
+    'nacl_close_test_nexe.out', nacl_close_test_nexe,
+    # Pass '-a' to enable imc_socketpair().
+    sel_ldr_flags=['-a'])
 env.AddNodeToTestSuite(node,
                        ['small_tests'],
                        'run_nacl_close_test_nexe')
@@ -28,7 +30,9 @@ double_nacl_close_test_nexe = env.ComponentProgram(
                                               'gio',
                                               '${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
-    'double_nacl_close_test_nexe.out', double_nacl_close_test_nexe)
+    'double_nacl_close_test_nexe.out', double_nacl_close_test_nexe,
+    # Pass '-a' to enable imc_socketpair().
+    sel_ldr_flags=['-a'])
 env.AddNodeToTestSuite(node,
                        ['small_tests'],
                        'run_double_nacl_close_test_nexe')

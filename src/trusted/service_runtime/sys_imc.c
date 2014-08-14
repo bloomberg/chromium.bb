@@ -561,6 +561,11 @@ int32_t NaClSysImcSocketPair(struct NaClAppThread *natp,
            " 0x%08"NACL_PRIx32")\n"),
           (uintptr_t) natp, descs_out);
 
+  /* This syscall is not used in Chromium so is disabled by default. */
+  if (!NaClAclBypassChecks) {
+    return -NACL_ABI_EACCES;
+  }
+
   retval = NaClCommonDescSocketPair(pair);
   if (0 != retval) {
     goto cleanup;
