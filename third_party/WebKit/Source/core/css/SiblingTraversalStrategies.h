@@ -35,7 +35,8 @@
 
 namespace blink {
 
-struct DOMSiblingTraversalStrategy {
+class DOMSiblingTraversalStrategy {
+public:
     bool isFirstChild(Element&) const;
     bool isLastChild(Element&) const;
     bool isFirstOfType(Element&, const QualifiedName&) const;
@@ -45,6 +46,15 @@ struct DOMSiblingTraversalStrategy {
     int countElementsAfter(Element&) const;
     int countElementsOfTypeBefore(Element&, const QualifiedName&) const;
     int countElementsOfTypeAfter(Element&, const QualifiedName&) const;
+
+private:
+    class HasTagName {
+    public:
+        explicit HasTagName(const QualifiedName& tagName) : m_tagName(tagName) { }
+        bool operator() (const Element& element) const { return element.hasTagName(m_tagName); }
+    private:
+        const QualifiedName& m_tagName;
+    };
 };
 
 inline bool DOMSiblingTraversalStrategy::isFirstChild(Element& element) const
@@ -59,20 +69,12 @@ inline bool DOMSiblingTraversalStrategy::isLastChild(Element& element) const
 
 inline bool DOMSiblingTraversalStrategy::isFirstOfType(Element& element, const QualifiedName& type) const
 {
-    for (const Element* sibling = ElementTraversal::previousSibling(element); sibling; sibling = ElementTraversal::previousSibling(*sibling)) {
-        if (sibling->hasTagName(type))
-            return false;
-    }
-    return true;
+    return !ElementTraversal::previousSibling(element, HasTagName(type));
 }
 
 inline bool DOMSiblingTraversalStrategy::isLastOfType(Element& element, const QualifiedName& type) const
 {
-    for (const Element* sibling = ElementTraversal::nextSibling(element); sibling; sibling = ElementTraversal::nextSibling(*sibling)) {
-        if (sibling->hasTagName(type))
-            return false;
-    }
-    return true;
+    return !ElementTraversal::nextSibling(element, HasTagName(type));
 }
 
 inline int DOMSiblingTraversalStrategy::countElementsBefore(Element& element) const
@@ -87,11 +89,8 @@ inline int DOMSiblingTraversalStrategy::countElementsBefore(Element& element) co
 inline int DOMSiblingTraversalStrategy::countElementsOfTypeBefore(Element& element, const QualifiedName& type) const
 {
     int count = 0;
-    for (const Element* sibling = ElementTraversal::previousSibling(element); sibling; sibling = ElementTraversal::previousSibling(*sibling)) {
-        if (sibling->hasTagName(type))
-            ++count;
-    }
-
+    for (const Element* sibling = ElementTraversal::previousSibling(element, HasTagName(type)); sibling; sibling = ElementTraversal::previousSibling(*sibling, HasTagName(type)))
+        ++count;
     return count;
 }
 
@@ -100,18 +99,14 @@ inline int DOMSiblingTraversalStrategy::countElementsAfter(Element& element) con
     int count = 0;
     for (const Element* sibling = ElementTraversal::nextSibling(element); sibling; sibling = ElementTraversal::nextSibling(*sibling))
         ++count;
-
     return count;
 }
 
 inline int DOMSiblingTraversalStrategy::countElementsOfTypeAfter(Element& element, const QualifiedName& type) const
 {
     int count = 0;
-    for (const Element* sibling = ElementTraversal::nextSibling(element); sibling; sibling = ElementTraversal::nextSibling(*sibling)) {
-        if (sibling->hasTagName(type))
-            ++count;
-    }
-
+    for (const Element* sibling = ElementTraversal::nextSibling(element, HasTagName(type)); sibling; sibling = ElementTraversal::nextSibling(*sibling, HasTagName(type)))
+        ++count;
     return count;
 }
 
