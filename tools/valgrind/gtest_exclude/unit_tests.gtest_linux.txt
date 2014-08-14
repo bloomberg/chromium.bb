@@ -31,4 +31,4 @@ CpuInfoProviderTest.*
 NTPUserDataLoggerTest.TestLogging
 
 # http://crbug.com/403533
-ExtensionPathUtilTest.BasicPrettifyPath
+ExtensionPathUtilTest.BasicPrettifyPathTest
