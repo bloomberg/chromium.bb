@@ -30,12 +30,12 @@
 
 namespace blink {
 
-class RenderSelectionInfoBase {
-    WTF_MAKE_NONCOPYABLE(RenderSelectionInfoBase); WTF_MAKE_FAST_ALLOCATED;
+class RenderSelectionInfoBase : public NoBaseWillBeGarbageCollected<RenderSelectionInfoBase> {
+    WTF_MAKE_NONCOPYABLE(RenderSelectionInfoBase); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     RenderSelectionInfoBase()
-        : m_object(0)
-        , m_repaintContainer(0)
+        : m_object(nullptr)
+        , m_repaintContainer(nullptr)
         , m_state(RenderObject::SelectionNone)
     {
     }
@@ -47,18 +47,24 @@ public:
     {
     }
 
+    void trace(Visitor* visitor)
+    {
+        visitor->trace(m_object);
+        visitor->trace(m_repaintContainer);
+    }
+
     RenderObject* object() const { return m_object; }
     const RenderLayerModelObject* repaintContainer() const { return m_repaintContainer; }
     RenderObject::SelectionState state() const { return m_state; }
 
 protected:
-    RenderObject* m_object;
-    const RenderLayerModelObject* m_repaintContainer;
+    RawPtrWillBeMember<RenderObject> m_object;
+    RawPtrWillBeMember<const RenderLayerModelObject> m_repaintContainer;
     RenderObject::SelectionState m_state;
 };
 
 // This struct is used when the selection changes to cache the old and new state of the selection for each RenderObject.
-class RenderSelectionInfo : public RenderSelectionInfoBase {
+class RenderSelectionInfo FINAL : public RenderSelectionInfoBase {
 public:
     RenderSelectionInfo(RenderObject* o, bool clipToVisibleContent)
         : RenderSelectionInfoBase(o)
@@ -86,7 +92,7 @@ private:
 
 
 // This struct is used when the selection changes to cache the old and new state of the selection for each RenderBlock.
-class RenderBlockSelectionInfo : public RenderSelectionInfoBase {
+class RenderBlockSelectionInfo FINAL : public RenderSelectionInfoBase {
 public:
     RenderBlockSelectionInfo(RenderBlock* b)
         : RenderSelectionInfoBase(b)
