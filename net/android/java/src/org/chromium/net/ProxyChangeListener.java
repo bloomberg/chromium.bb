@@ -99,15 +99,19 @@ public class ProxyChangeListener {
             try {
                 final String GET_HOST_NAME = "getHost";
                 final String GET_PORT_NAME = "getPort";
-                Object props = intent.getExtras().get("proxy");
-                if (props == null) {
-                    return null;
-                }
                 String className;
+                String proxyInfo;
                 if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
                     className = "android.net.ProxyProperties";
+                    proxyInfo = "proxy";
                 } else {
                     className = "android.net.ProxyInfo";
+                    proxyInfo = "android.intent.extra.PROXY_INFO";
+                }
+
+                Object props = intent.getExtras().get(proxyInfo);
+                if (props == null) {
+                    return null;
                 }
 
                 Class<?> cls = Class.forName(className);
