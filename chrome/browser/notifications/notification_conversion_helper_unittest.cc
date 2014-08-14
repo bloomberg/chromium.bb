@@ -77,10 +77,7 @@ class NotificationConversionHelperTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(NotificationConversionHelperTest);
 };
 
-// TODO(liyanhou): This test is disabled due to memory leaks. Fix and re-enable.
-// http://crbug.com/403759
-TEST_F(NotificationConversionHelperTest,
-       DISABLED_NotificationToNotificationOptions) {
+TEST_F(NotificationConversionHelperTest, NotificationToNotificationOptions) {
   // Create a notification of image type
   scoped_ptr<Notification> notification1 =
       CreateNotification(message_center::NOTIFICATION_TYPE_IMAGE);
