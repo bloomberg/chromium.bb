@@ -28,8 +28,7 @@
   'sources': [
     # this should likely be moved into src/utils in skia
     '../third_party/skia/src/core/SkFlate.cpp',
-    '../third_party/skia/src/core/SkPaintOptionsAndroid.cpp',
-
+    
     '../third_party/skia/src/ports/SkImageDecoder_empty.cpp',
     '../third_party/skia/src/images/SkScaledBitmapSampler.cpp',
     '../third_party/skia/src/images/SkScaledBitmapSampler.h',
