@@ -2211,6 +2211,37 @@ def GetTreeStatusReason():
   return status['message']
 
 
+def GetBuilderMaster(bot_list):
+  """For a given builder, fetch the master from AE if available."""
+  map_url = 'https://builders-map.appspot.com/'
+  try:
+    master_map = json.load(urllib2.urlopen(map_url))
+  except urllib2.URLError as e:
+    return None, ('Failed to fetch builder-to-master map from %s. Error: %s.' %
+                  (map_url, e))
+  except ValueError as e:
+    return None, ('Invalid json string from %s. Error: %s.' % (map_url, e))
+  if not master_map:
+    return None, 'Failed to build master map.'
+
+  result_master = ''
+  for bot in bot_list:
+    builder = bot.split(':', 1)[0]
+    master_list = master_map.get(builder, [])
+    if not master_list:
+      return None, ('No matching master for builder %s.' % builder)
+    elif len(master_list) > 1:
+      return None, ('The builder name %s exists in multiple masters %s.' %
+                    (builder, master_list))
+    else:
+      cur_master = master_list[0]
+      if not result_master:
+        result_master = cur_master
+      elif result_master != cur_master:
+        return None, 'The builders do not belong to the same master.'
+  return result_master, None
+
+
 def CMDtree(parser, args):
   """Shows the status of the tree."""
   _, args = parser.parse_args(args)
@@ -2234,10 +2265,10 @@ def CMDtry(parser, args):
       "-b", "--bot", action="append",
       help=("IMPORTANT: specify ONE builder per --bot flag. Use it multiple "
             "times to specify multiple builders. ex: "
-            "'-bwin_rel:ui_tests,webkit_unit_tests -bwin_layout'. See "
+            "'-b win_rel:ui_tests,webkit_unit_tests -b win_layout'. See "
             "the try server waterfall for the builders name and the tests "
             "available. Can also be used to specify gtest_filter, e.g. "
-            "-bwin_rel:base_unittests:ValuesTest.*Value"))
+            "-b win_rel:base_unittests:ValuesTest.*Value"))
   group.add_option(
       "-m", "--master", default='',
       help=("Specify a try master where to run the tries."))
@@ -2279,8 +2310,11 @@ def CMDtry(parser, args):
     options.name = cl.GetBranch()
 
   if options.bot and not options.master:
-    parser.error('For manually specified bots please also specify the '
-                 'tryserver master, e.g. "-m tryserver.chromium.linux".')
+    options.master, err_msg = GetBuilderMaster(options.bot)
+    if err_msg:
+      parser.error('Tryserver master cannot be found because: %s\n'
+                   'Please manually specify the tryserver master'
+                   ', e.g. "-m tryserver.chromium.linux".' % err_msg)
 
   def GetMasterMap():
     # Process --bot and --testfilter.
