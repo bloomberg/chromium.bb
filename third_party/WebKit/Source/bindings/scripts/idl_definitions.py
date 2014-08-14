@@ -62,7 +62,7 @@ Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 
 import abc
 
-from idl_types import IdlType, IdlUnionType
+from idl_types import IdlType, IdlUnionType, IdlArrayType, IdlSequenceType
 
 SPECIAL_KEYWORD_LIST = ['GETTER', 'SETTER', 'DELETER']
 STANDARD_TYPEDEFS = {
@@ -755,25 +755,23 @@ def type_node_to_type(node):
     if len(children) < 1 or len(children) > 2:
         raise ValueError('Type node expects 1 or 2 children (type + optional array []), got %s (multi-dimensional arrays are not supported).' % len(children))
 
+    is_nullable = node.GetProperty('NULLABLE') or False  # syntax: T?
     type_node_child = children[0]
+    base_type = type_node_inner_to_type(type_node_child, is_nullable=is_nullable)
 
     if len(children) == 2:
         array_node = children[1]
         array_node_class = array_node.GetClass()
         if array_node_class != 'Array':
             raise ValueError('Expected Array node as TypeSuffix, got %s node.' % array_node_class)
-        # FIXME: use IdlArrayType instead of is_array, once have that
-        is_array = True
-    else:
-        is_array = False
+        array_is_nullable = array_node.GetProperty('NULLABLE') or False
+        return IdlArrayType(base_type, is_nullable=array_is_nullable)
 
-    is_nullable = node.GetProperty('NULLABLE') or False  # syntax: T?
-
-    return type_node_inner_to_type(type_node_child, is_array=is_array, is_nullable=is_nullable)
+    return base_type
 
 
-def type_node_inner_to_type(node, is_array=False, is_nullable=False):
-    # FIXME: remove is_array and is_nullable once have IdlArrayType and IdlNullableType
+def type_node_inner_to_type(node, is_nullable=False):
+    # FIXME: remove is_nullable once have IdlNullableType
     node_class = node.GetClass()
     # Note Type*r*ef, not Typedef, meaning the type is an identifier, thus
     # either a typedef shorthand (but not a Typedef declaration itself) or an
@@ -781,17 +779,13 @@ def type_node_inner_to_type(node, is_array=False, is_nullable=False):
     if node_class in ['PrimitiveType', 'Typeref']:
         # unrestricted syntax: unrestricted double | unrestricted float
         is_unrestricted = node.GetProperty('UNRESTRICTED') or False
-        return IdlType(node.GetName(), is_array=is_array, is_nullable=is_nullable, is_unrestricted=is_unrestricted)
+        return IdlType(node.GetName(), is_nullable=is_nullable, is_unrestricted=is_unrestricted)
     elif node_class == 'Any':
-        return IdlType('any', is_array=is_array, is_nullable=is_nullable)
+        return IdlType('any', is_nullable=is_nullable)
     elif node_class == 'Sequence':
-        if is_array:
-            raise ValueError('Arrays of sequences are not supported')
         sequence_is_nullable = node.GetProperty('NULLABLE') or False
         return sequence_node_to_type(node, is_nullable=sequence_is_nullable)
     elif node_class == 'UnionType':
-        if is_array:
-            raise ValueError('Arrays of unions are not supported')
         return union_type_node_to_idl_union_type(node, is_nullable=is_nullable)
     raise ValueError('Unrecognized node class: %s' % node_class)
 
@@ -804,8 +798,8 @@ def sequence_node_to_type(node, is_nullable=False):
     sequence_child_class = sequence_child.GetClass()
     if sequence_child_class != 'Type':
         raise ValueError('Unrecognized node class: %s' % sequence_child_class)
-    element_type = type_node_to_type(sequence_child).base_type
-    return IdlType(element_type, is_sequence=True, is_nullable=is_nullable)
+    element_type = type_node_to_type(sequence_child)
+    return IdlSequenceType(element_type, is_nullable=is_nullable)
 
 
 def typedef_node_to_type(node):

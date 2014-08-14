@@ -83,7 +83,6 @@ def member_context(member):
         'name': member.name,
         'setter_name': setter_name_for_dictionary_member(member),
         'v8_default_value': v8_default_value,
-        'v8_type': v8_types.v8_type(idl_type.base_type),
     }
 
 

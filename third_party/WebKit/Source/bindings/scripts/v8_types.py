@@ -39,7 +39,7 @@ Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 
 import posixpath
 
-from idl_types import IdlTypeBase, IdlType, IdlUnionType
+from idl_types import IdlTypeBase, IdlType, IdlUnionType, IdlArrayOrSequenceType
 import v8_attributes  # for IdlType.constructor_type_name
 from v8_globals import includes
 
@@ -152,7 +152,7 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
     extended_attributes = extended_attributes or {}
     idl_type = idl_type.preprocessed_type
 
-    # Composite types
+    # Array or sequence types
     if used_as_variadic_argument:
         native_array_element_type = idl_type
     else:
@@ -225,6 +225,11 @@ IdlTypeBase.cpp_type_args = cpp_type
 IdlUnionType.cpp_type = property(cpp_type_union)
 IdlUnionType.cpp_type_initializer = property(cpp_type_initializer_union)
 IdlUnionType.cpp_type_args = cpp_type_union
+
+
+IdlTypeBase.native_array_element_type = None
+IdlArrayOrSequenceType.native_array_element_type = property(
+    lambda self: self.element_type)
 
 
 def cpp_template_type(template, inner_type):
@@ -347,11 +352,6 @@ INCLUDES_FOR_TYPE = {
 def includes_for_type(idl_type):
     idl_type = idl_type.preprocessed_type
 
-    # Composite types
-    native_array_element_type = idl_type.native_array_element_type
-    if native_array_element_type:
-        return includes_for_type(native_array_element_type)
-
     # Simple types
     base_idl_type = idl_type.base_type
     if base_idl_type in INCLUDES_FOR_TYPE:
@@ -379,6 +379,8 @@ IdlType.includes_for_type = property(includes_for_type)
 IdlUnionType.includes_for_type = property(
     lambda self: set.union(*[includes_for_type(member_type)
                              for member_type in self.member_types]))
+IdlArrayOrSequenceType.includes_for_type = property(
+    lambda self: self.element_type.includes_for_type)
 
 
 def add_includes_for_type(idl_type):
@@ -472,7 +474,7 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index, isolat
     if idl_type.name == 'void':
         return ''
 
-    # Composite types
+    # Array or sequence types
     native_array_element_type = idl_type.native_array_element_type
     if native_array_element_type:
         return v8_value_to_cpp_value_array_or_sequence(native_array_element_type, v8_value, index)
@@ -537,7 +539,7 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
     idl_type = idl_type.preprocessed_type
     cpp_value = v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index, isolate)
     args = [variable_name, cpp_value]
-    if idl_type.base_type == 'DOMString' and not idl_type.native_array_element_type:
+    if idl_type.base_type == 'DOMString':
         macro = 'TOSTRING_DEFAULT' if used_in_private_script else 'TOSTRING_VOID'
     elif idl_type.may_raise_exception_on_conversion:
         macro = 'TONATIVE_DEFAULT_EXCEPTIONSTATE' if used_in_private_script else 'TONATIVE_VOID_EXCEPTIONSTATE'
@@ -614,7 +616,11 @@ def v8_conversion_type(idl_type, extended_attributes):
     """
     extended_attributes = extended_attributes or {}
 
-    # Composite types
+    # FIXME: Support union type.
+    if idl_type.is_union_type:
+        return ''
+
+    # Array or sequence types
     native_array_element_type = idl_type.native_array_element_type
     if native_array_element_type:
         if native_array_element_type.is_interface_type:
@@ -733,6 +739,7 @@ IdlType.release = property(lambda self: self.is_interface_type)
 IdlUnionType.release = property(
     lambda self: [member_type.is_interface_type
                   for member_type in self.member_types])
+IdlArrayOrSequenceType.release = False
 
 
 CPP_VALUE_TO_V8_VALUE = {
@@ -795,8 +802,7 @@ def cpp_type_has_null_value(idl_type):
     #   i.e. one for which String::isNull() returns true.
     # - Wrapper types (raw pointer or RefPtr/PassRefPtr) represent null as
     #   a null pointer.
-    return ((idl_type.is_string_type or idl_type.is_wrapper_type) and
-            not idl_type.native_array_element_type)
+    return idl_type.is_string_type or idl_type.is_wrapper_type
 
 IdlTypeBase.cpp_type_has_null_value = property(cpp_type_has_null_value)
 

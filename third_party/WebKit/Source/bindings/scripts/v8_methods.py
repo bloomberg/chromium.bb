@@ -54,7 +54,7 @@ CUSTOM_REGISTRATION_EXTENDED_ATTRIBUTES = frozenset([
 
 def argument_needs_try_catch(argument, return_promise):
     idl_type = argument.idl_type
-    base_type = not idl_type.native_array_element_type and idl_type.base_type
+    base_type = idl_type.base_type
 
     return not (
         # These cases are handled by separate code paths in the
@@ -234,7 +234,7 @@ def argument_context(interface, method, argument, index):
              has_extended_attribute_value(method, 'TypeChecking', 'Unrestricted')) and
             idl_type.name in ('Float', 'Double'),
         # Dictionary is special-cased, but arrays and sequences shouldn't be
-        'idl_type': not idl_type.native_array_element_type and idl_type.base_type,
+        'idl_type': idl_type.base_type,
         'idl_type_object': idl_type,
         'index': index,
         'is_clamp': 'Clamp' in extended_attributes,

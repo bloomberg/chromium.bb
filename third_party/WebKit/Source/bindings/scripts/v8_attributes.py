@@ -140,7 +140,6 @@ def attribute_context(interface, attribute):
         'runtime_enabled_function': v8_utilities.runtime_enabled_function_name(attribute),  # [RuntimeEnabled]
         'setter_callback': setter_callback_name(interface, attribute),
         'should_be_exposed_to_script': not (is_implemented_in_private_script and is_only_exposed_to_private_script),
-        'v8_type': v8_types.v8_type(base_idl_type),
         'world_suffixes': ['', 'ForMainWorld']
                           if 'PerWorldBindings' in extended_attributes
                           else [''],  # [PerWorldBindings]
@@ -375,7 +374,7 @@ def setter_expression(interface, attribute, context):
             arguments.append('V8EventListenerList::findOrCreateWrapper<V8ErrorHandler>(v8Value, true, ScriptState::current(info.GetIsolate()))')
         else:
             arguments.append('V8EventListenerList::getEventListener(ScriptState::current(info.GetIsolate()), v8Value, true, ListenerFindOrCreate)')
-    elif idl_type.is_interface_type and not idl_type.array_element_type:
+    elif idl_type.is_interface_type:
         # FIXME: should be able to eliminate WTF::getPtr in most or all cases
         arguments.append('WTF::getPtr(cppValue)')
     else:
@@ -496,7 +495,7 @@ idl_types.IdlType.constructor_type_name = property(
 
 def is_constructor_attribute(attribute):
     # FIXME: replace this with [ConstructorAttribute] extended attribute
-    return attribute.idl_type.base_type.endswith('Constructor')
+    return attribute.idl_type.name.endswith('Constructor')
 
 
 def constructor_getter_context(interface, attribute, context):
