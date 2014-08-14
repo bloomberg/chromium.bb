@@ -234,9 +234,9 @@ void shutdownWithoutV8()
 {
     ASSERT(!s_endOfTaskRunner);
     CoreInitializer::shutdown();
+    Scheduler::shutdown();
     Heap::shutdown();
     WTF::shutdown();
-    Scheduler::shutdown();
     Platform::shutdown();
     WebPrerenderingSupport::shutdown();
 }
