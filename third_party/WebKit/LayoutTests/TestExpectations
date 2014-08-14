@@ -1334,8 +1334,4 @@ crbug.com/401902  [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-lose-restore-goo
 crbug.com/402379 [ Win7 Debug ] storage/indexeddb/cursor-continue-validity.html [ Pass Slow ]
 crbug.com/402379 [ Win7 Debug ] storage/indexeddb/mozilla/indexes.html [ Pass Slow ]
 
-crbug.com/382809 editing/selection/repaint-rect-for-vertical-writing-mode-with-positioned-root.html [ NeedsRebaseline ]
-crbug.com/382809 fast/repaint/caret-outside-block.html [ NeedsRebaseline ]
-crbug.com/382809 fast/repaint/inline-outline-repaint.html [ NeedsRebaseline ]
-
 crbug.com/402801 [ XP Release ] http/tests/misc/location-replace-crossdomain.html [ Pass Slow ]
