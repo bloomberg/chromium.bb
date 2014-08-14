@@ -2700,8 +2700,7 @@ class ValidationPool(object):
     # when compared to other standard file systems.
 
     # For now we'll have forward/backward compatibility as far as reading the
-    # status. Future changes will start putting the status in its new
-    # location, and then removing backward compatability with the old
+    # status. A future change remove backward compatability with the old
     # mechanism.
     try:
       return ctx.Cat('%s/status' % url).output
@@ -2718,7 +2717,7 @@ class ValidationPool(object):
     for latest_patchset_only in (False, True):
       url = cls.GetCLStatusURL(bot, change, latest_patchset_only)
       ctx = gs.GSContext(dry_run=dry_run)
-      ctx.Copy('-', url, input=status)
+      ctx.Copy('-', '%s/status' % url, input=status)
       ctx.Counter('%s/%s' % (url, status)).Increment()
 
   @classmethod
