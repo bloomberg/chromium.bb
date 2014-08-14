@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/files/file_path.h"
+#include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/strings/string_util.h"
@@ -25,8 +25,13 @@ base::FilePath HelloWorldPath() {
 }
 
 TEST(GinShellTest, HelloWorld) {
-  CommandLine cmd(GinShellPath());
-  cmd.AppendArgPath(HelloWorldPath());
+  base::FilePath gin_shell_path(GinShellPath());
+  base::FilePath hello_world_path(HelloWorldPath());
+  ASSERT_TRUE(base::PathExists(gin_shell_path));
+  ASSERT_TRUE(base::PathExists(hello_world_path));
+
+  CommandLine cmd(gin_shell_path);
+  cmd.AppendArgPath(hello_world_path);
   std::string output;
   ASSERT_TRUE(base::GetAppOutput(cmd, &output));
   base::TrimWhitespaceASCII(output, base::TRIM_ALL, &output);
