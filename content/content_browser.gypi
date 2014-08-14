@@ -374,6 +374,8 @@
       'browser/battery_status/battery_status_manager_android.h',
       'browser/battery_status/battery_status_manager_chromeos.cc',
       'browser/battery_status/battery_status_manager_default.cc',
+      'browser/battery_status/battery_status_manager_linux.cc',
+      'browser/battery_status/battery_status_manager_linux.h',
       'browser/battery_status/battery_status_manager_mac.cc',
       'browser/battery_status/battery_status_manager.h',
       'browser/battery_status/battery_status_message_filter.cc',
@@ -1793,6 +1795,7 @@
       ],
       'sources!': [
         'browser/battery_status/battery_status_manager_default.cc',
+        'browser/battery_status/battery_status_manager_linux.cc',
         'browser/geolocation/wifi_data_provider_linux.cc',
         'browser/power_save_blocker_ozone.cc',
         'browser/power_save_blocker_x11.cc',
@@ -1849,6 +1852,7 @@
     }],
     ['OS == "linux" and use_dbus==1', {
       'sources!': [
+        'browser/battery_status/battery_status_manager_default.cc',
         'browser/geolocation/empty_wifi_data_provider.cc',
       ],
       'dependencies': [
@@ -1857,6 +1861,7 @@
       ],
     }, {  # OS != "linux" or use_dbus==0
       'sources!': [
+        'browser/battery_status/battery_status_manager_linux.cc',
         'browser/geolocation/wifi_data_provider_linux.cc',
       ],
     }],

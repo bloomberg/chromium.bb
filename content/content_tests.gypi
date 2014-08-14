@@ -404,6 +404,7 @@
         'browser/appcache/mock_appcache_storage.cc',
         'browser/appcache/mock_appcache_storage.h',
         'browser/appcache/mock_appcache_storage_unittest.cc',
+        'browser/battery_status/battery_status_manager_linux_unittest.cc',
         'browser/battery_status/battery_status_service_unittest.cc',
         'browser/browser_thread_unittest.cc',
         'browser/browser_url_handler_impl_unittest.cc',
@@ -877,6 +878,7 @@
             '../chromeos/chromeos.gyp:chromeos',
           ],
           'sources/': [
+            ['exclude', '^browser/battery_status/battery_status_manager_linux_unittest.cc'],
             ['exclude', '^browser/geolocation/wifi_data_provider_linux_unittest.cc'],
           ],
         }],
@@ -929,6 +931,7 @@
         }],
         ['use_dbus==0', {
           'sources!': [
+            'browser/battery_status/battery_status_manager_linux_unittest.cc',
             'browser/geolocation/wifi_data_provider_linux_unittest.cc',
           ],
         }],
