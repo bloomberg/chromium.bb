@@ -35,6 +35,8 @@ class TypingDetection;
 
 namespace content {
 
+class MediaStreamAudioBus;
+class MediaStreamAudioFifo;
 class RTCMediaConstraints;
 
 using webrtc::AudioProcessorInterface;
@@ -59,30 +61,32 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
                             int effects,
                             WebRtcPlayoutDataSource* playout_data_source);
 
-  // Called when format of the capture data has changed.
-  // Called on the main render thread.  The caller is responsible for stopping
+  // Called when the format of the capture data has changed.
+  // Called on the main render thread. The caller is responsible for stopping
   // the capture thread before calling this method.
   // After this method, the capture thread will be changed to a new capture
   // thread.
   void OnCaptureFormatChanged(const media::AudioParameters& source_params);
 
-  // Pushes capture data in |audio_source| to the internal FIFO.
+  // Pushes capture data in |audio_source| to the internal FIFO. Each call to
+  // this method should be followed by calls to ProcessAndConsumeData() while
+  // it returns false, to pull out all available data.
   // Called on the capture audio thread.
   void PushCaptureData(const media::AudioBus* audio_source);
 
   // Processes a block of 10 ms data from the internal FIFO and outputs it via
   // |out|. |out| is the address of the pointer that will be pointed to
   // the post-processed data if the method is returning a true. The lifetime
-  // of the data represeted by |out| is guaranteed to outlive the method call.
-  // That also says *|out| won't change until this method is called again.
+  // of the data represeted by |out| is guaranteed until this method is called
+  // again.
   // |new_volume| receives the new microphone volume from the AGC.
-  // The new microphoen volume range is [0, 255], and the value will be 0 if
+  // The new microphone volume range is [0, 255], and the value will be 0 if
   // the microphone volume should not be adjusted.
   // Returns true if the internal FIFO has at least 10 ms data for processing,
   // otherwise false.
-  // |capture_delay|, |volume| and |key_pressed| will be passed to
-  // webrtc::AudioProcessing to help processing the data.
   // Called on the capture audio thread.
+  //
+  // TODO(ajm): Don't we want this to output float?
   bool ProcessAndConsumeData(base::TimeDelta capture_delay,
                              int volume,
                              bool key_pressed,
@@ -93,10 +97,9 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   // this method.
   void Stop();
 
-  // The audio format of the input to the processor.
+  // The audio formats of the capture input to and output from the processor.
+  // Must only be called on the main render or audio capture threads.
   const media::AudioParameters& InputFormat() const;
-
-  // The audio format of the output from the processor.
   const media::AudioParameters& OutputFormat() const;
 
   // Accessor to check if the audio processing is enabled or not.
@@ -118,8 +121,6 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   FRIEND_TEST_ALL_PREFIXES(MediaStreamAudioProcessorTest,
                            GetAecDumpMessageFilter);
 
-  class MediaStreamAudioConverter;
-
   // WebRtcPlayoutDataSource::Sink implementation.
   virtual void OnPlayoutData(media::AudioBus* audio_bus,
                              int sample_rate,
@@ -135,64 +136,63 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
       const blink::WebMediaConstraints& constraints, int effects);
 
   // Helper to initialize the capture converter.
-  void InitializeCaptureConverter(const media::AudioParameters& source_params);
+  void InitializeCaptureFifo(const media::AudioParameters& input_format);
 
   // Helper to initialize the render converter.
-  void InitializeRenderConverterIfNeeded(int sample_rate,
-                                         int number_of_channels,
-                                         int frames_per_buffer);
+  void InitializeRenderFifoIfNeeded(int sample_rate,
+                                    int number_of_channels,
+                                    int frames_per_buffer);
 
   // Called by ProcessAndConsumeData().
   // Returns the new microphone volume in the range of |0, 255].
   // When the volume does not need to be updated, it returns 0.
-  int ProcessData(webrtc::AudioFrame* audio_frame,
+  int ProcessData(const float* const* process_ptrs,
+                  int process_frames,
                   base::TimeDelta capture_delay,
                   int volume,
-                  bool key_pressed);
+                  bool key_pressed,
+                  float* const* output_ptrs);
 
   // Cached value for the render delay latency. This member is accessed by
   // both the capture audio thread and the render audio thread.
   base::subtle::Atomic32 render_delay_ms_;
 
-  // webrtc::AudioProcessing module which does AEC, AGC, NS, HighPass filter,
-  // ..etc.
+  // Module to handle processing and format conversion.
   scoped_ptr<webrtc::AudioProcessing> audio_processing_;
 
-  // Converter used for the down-mixing and resampling of the capture data.
-  scoped_ptr<MediaStreamAudioConverter> capture_converter_;
+  // FIFO to provide 10 ms capture chunks.
+  scoped_ptr<MediaStreamAudioFifo> capture_fifo_;
+  // Receives processing output.
+  scoped_ptr<MediaStreamAudioBus> output_bus_;
+  // Receives interleaved int16 data for output.
+  scoped_ptr<int16[]> output_data_;
 
-  // AudioFrame used to hold the output of |capture_converter_|.
-  webrtc::AudioFrame capture_frame_;
+  // FIFO to provide 10 ms render chunks when the AEC is enabled.
+  scoped_ptr<MediaStreamAudioFifo> render_fifo_;
 
-  // Converter used for the down-mixing and resampling of the render data when
-  // the AEC is enabled.
-  scoped_ptr<MediaStreamAudioConverter> render_converter_;
-
-  // AudioFrame used to hold the output of |render_converter_|.
-  webrtc::AudioFrame render_frame_;
-
-  // Data bus to help converting interleaved data to an AudioBus.
-  scoped_ptr<media::AudioBus> render_data_bus_;
+  // These are mutated on the main render thread in OnCaptureFormatChanged().
+  // The caller guarantees this does not run concurrently with accesses on the
+  // capture audio thread.
+  media::AudioParameters input_format_;
+  media::AudioParameters output_format_;
+  // Only used on the render audio thread.
+  media::AudioParameters render_format_;
 
   // Raw pointer to the WebRtcPlayoutDataSource, which is valid for the
   // lifetime of RenderThread.
   WebRtcPlayoutDataSource* playout_data_source_;
 
-  // Used to DCHECK that the destructor is called on the main render thread.
+  // Used to DCHECK that some methods are called on the main render thread.
   base::ThreadChecker main_thread_checker_;
-
   // Used to DCHECK that some methods are called on the capture audio thread.
   base::ThreadChecker capture_thread_checker_;
-
-  // Used to DCHECK that PushRenderData() is called on the render audio thread.
+  // Used to DCHECK that some methods are called on the render audio thread.
   base::ThreadChecker render_thread_checker_;
 
-  // Flag to enable the stereo channels mirroring.
+  // Flag to enable stereo channel mirroring.
   bool audio_mirroring_;
 
-  // Used by the typing detection.
   scoped_ptr<webrtc::TypingDetection> typing_detector_;
-
   // This flag is used to show the result of typing detection.
   // It can be accessed by the capture audio thread and by the libjingle thread
   // which calls GetStats().

@@ -31,10 +31,32 @@ const int kAudioProcessingSampleRate = 16000;
 const int kAudioProcessingSampleRate = 32000;
 #endif
 const int kAudioProcessingNumberOfChannels = 1;
-const AudioProcessing::ChannelLayout kAudioProcessingChannelLayout =
-    AudioProcessing::kMono;
 
-const int kMaxNumberOfBuffersInFifo = 2;
+AudioProcessing::ChannelLayout MapLayout(media::ChannelLayout media_layout) {
+  switch (media_layout) {
+    case media::CHANNEL_LAYOUT_MONO:
+      return AudioProcessing::kMono;
+    case media::CHANNEL_LAYOUT_STEREO:
+      return AudioProcessing::kStereo;
+    case media::CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC:
+      return AudioProcessing::kStereoAndKeyboard;
+    default:
+      NOTREACHED() << "Layout not supported: " << media_layout;
+      return AudioProcessing::kMono;
+  }
+}
+
+AudioProcessing::ChannelLayout ChannelsToLayout(int num_channels) {
+  switch (num_channels) {
+    case 1:
+      return AudioProcessing::kMono;
+    case 2:
+      return AudioProcessing::kStereo;
+    default:
+      NOTREACHED() << "Channels not supported: " << num_channels;
+      return AudioProcessing::kMono;
+  }
+}
 
 // Used by UMA histograms and entries shouldn't be re-ordered or removed.
 enum AudioTrackProcessingStates {
@@ -51,122 +73,105 @@ void RecordProcessingState(AudioTrackProcessingStates state) {
 
 }  // namespace
 
-class MediaStreamAudioProcessor::MediaStreamAudioConverter
-    : public media::AudioConverter::InputCallback {
+// Wraps AudioBus to provide access to the array of channel pointers, since this
+// is the type webrtc::AudioProcessing deals in. The array is refreshed on every
+// channel_ptrs() call, and will be valid until the underlying AudioBus pointers
+// are changed, e.g. through calls to SetChannelData() or SwapChannels().
+//
+// All methods are called on one of the capture or render audio threads
+// exclusively.
+class MediaStreamAudioBus {
  public:
-  MediaStreamAudioConverter(const media::AudioParameters& source_params,
-                            const media::AudioParameters& sink_params)
-     : source_params_(source_params),
-       sink_params_(sink_params),
-       audio_converter_(source_params, sink_params_, false) {
-    // An instance of MediaStreamAudioConverter may be created in the main
-    // render thread and used in the audio thread, for example, the
-    // |MediaStreamAudioProcessor::capture_converter_|.
+  MediaStreamAudioBus(int channels, int frames)
+      : bus_(media::AudioBus::Create(channels, frames)),
+        channel_ptrs_(new float*[channels]) {
+    // May be created in the main render thread and used in the audio threads.
     thread_checker_.DetachFromThread();
-    audio_converter_.AddInput(this);
-
-    // Create and initialize audio fifo and audio bus wrapper.
-    // The size of the FIFO should be at least twice of the source buffer size
-    // or twice of the sink buffer size. Also, FIFO needs to have enough space
-    // to store pre-processed data before passing the data to
-    // webrtc::AudioProcessing, which requires 10ms as packet size.
-    int max_frame_size = std::max(source_params_.frames_per_buffer(),
-                                  sink_params_.frames_per_buffer());
-    int buffer_size = std::max(
-        kMaxNumberOfBuffersInFifo * max_frame_size,
-        kMaxNumberOfBuffersInFifo * source_params_.sample_rate() / 100);
-    fifo_.reset(new media::AudioFifo(source_params_.channels(), buffer_size));
-
-    // TODO(xians): Use CreateWrapper to save one memcpy.
-    audio_wrapper_ = media::AudioBus::Create(sink_params_.channels(),
-                                             sink_params_.frames_per_buffer());
   }
 
-  virtual ~MediaStreamAudioConverter() {
-    audio_converter_.RemoveInput(this);
-  }
-
-  void Push(const media::AudioBus* audio_source) {
-    // Called on the audio thread, which is the capture audio thread for
-    // |MediaStreamAudioProcessor::capture_converter_|, and render audio thread
-    // for |MediaStreamAudioProcessor::render_converter_|.
-    // And it must be the same thread as calling Convert().
+  media::AudioBus* bus() {
     DCHECK(thread_checker_.CalledOnValidThread());
-    fifo_->Push(audio_source);
+    return bus_.get();
   }
 
-  bool Convert(webrtc::AudioFrame* out, bool audio_mirroring) {
-    // Called on the audio thread, which is the capture audio thread for
-    // |MediaStreamAudioProcessor::capture_converter_|, and render audio thread
-    // for |MediaStreamAudioProcessor::render_converter_|.
+  float* const* channel_ptrs() {
     DCHECK(thread_checker_.CalledOnValidThread());
-    // Return false if there is not enough data in the FIFO, this happens when
-    // fifo_->frames() / source_params_.sample_rate() is less than
-    // sink_params.frames_per_buffer() / sink_params.sample_rate().
-    if (fifo_->frames() * sink_params_.sample_rate() <
-        sink_params_.frames_per_buffer() * source_params_.sample_rate()) {
-      return false;
+    for (int i = 0; i < bus_->channels(); ++i) {
+      channel_ptrs_[i] = bus_->channel(i);
     }
-
-    // Convert data to the output format, this will trigger ProvideInput().
-    audio_converter_.Convert(audio_wrapper_.get());
-    DCHECK_EQ(audio_wrapper_->frames(), sink_params_.frames_per_buffer());
-
-    // Swap channels before interleaving the data if |audio_mirroring| is
-    // set to true.
-    if (audio_mirroring &&
-        sink_params_.channel_layout() == media::CHANNEL_LAYOUT_STEREO) {
-      // Swap the first and second channels.
-      audio_wrapper_->SwapChannels(0, 1);
-    }
-
-    // TODO(xians): Figure out a better way to handle the interleaved and
-    // deinterleaved format switching.
-    audio_wrapper_->ToInterleaved(audio_wrapper_->frames(),
-                                  sink_params_.bits_per_sample() / 8,
-                                  out->data_);
-
-    out->samples_per_channel_ = sink_params_.frames_per_buffer();
-    out->sample_rate_hz_ = sink_params_.sample_rate();
-    out->speech_type_ = webrtc::AudioFrame::kNormalSpeech;
-    out->vad_activity_ = webrtc::AudioFrame::kVadUnknown;
-    out->num_channels_ = sink_params_.channels();
-
-    return true;
-  }
-
-  const media::AudioParameters& source_parameters() const {
-    return source_params_;
-  }
-  const media::AudioParameters& sink_parameters() const {
-    return sink_params_;
+    return channel_ptrs_.get();
   }
 
  private:
-  // AudioConverter::InputCallback implementation.
-  virtual double ProvideInput(media::AudioBus* audio_bus,
-                              base::TimeDelta buffer_delay) OVERRIDE {
-    // Called on realtime audio thread.
-    // TODO(xians): Figure out why the first Convert() triggers ProvideInput
-    // two times.
-    if (fifo_->frames() < audio_bus->frames())
-      return 0;
+  base::ThreadChecker thread_checker_;
+  scoped_ptr<media::AudioBus> bus_;
+  scoped_ptr<float*[]> channel_ptrs_;
+};
 
-    fifo_->Consume(audio_bus, 0, audio_bus->frames());
+// Wraps AudioFifo to provide a cleaner interface to MediaStreamAudioProcessor.
+// It avoids the FIFO when the source and destination frames match. All methods
+// are called on one of the capture or render audio threads exclusively.
+class MediaStreamAudioFifo {
+ public:
+  MediaStreamAudioFifo(int channels, int source_frames,
+                       int destination_frames)
+     : source_frames_(source_frames),
+       destination_(new MediaStreamAudioBus(channels, destination_frames)),
+       data_available_(false) {
+    if (source_frames != destination_frames) {
+      // Since we require every Push to be followed by as many Consumes as
+      // possible, twice the larger of the two is a (probably) loose upper bound
+      // on the FIFO size.
+      const int fifo_frames = 2 * std::max(source_frames, destination_frames);
+      fifo_.reset(new media::AudioFifo(channels, fifo_frames));
+    }
 
-    // Return 1.0 to indicate no volume scaling on the data.
-    return 1.0;
+    // May be created in the main render thread and used in the audio threads.
+    thread_checker_.DetachFromThread();
   }
 
-  base::ThreadChecker thread_checker_;
-  const media::AudioParameters source_params_;
-  const media::AudioParameters sink_params_;
+  void Push(const media::AudioBus* source) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_EQ(source->channels(), destination_->bus()->channels());
+    DCHECK_EQ(source->frames(), source_frames_);
 
-  // TODO(xians): consider using SincResampler to save some memcpy.
-  // Handles mixing and resampling between input and output parameters.
-  media::AudioConverter audio_converter_;
-  scoped_ptr<media::AudioBus> audio_wrapper_;
+    if (fifo_) {
+      fifo_->Push(source);
+    } else {
+      source->CopyTo(destination_->bus());
+      data_available_ = true;
+    }
+  }
+
+  // Returns true if there are destination_frames() of data available to be
+  // consumed, and otherwise false.
+  bool Consume(MediaStreamAudioBus** destination) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+
+    if (fifo_) {
+      if (fifo_->frames() < destination_->bus()->frames())
+        return false;
+
+      fifo_->Consume(destination_->bus(), 0, destination_->bus()->frames());
+    } else {
+      if (!data_available_)
+        return false;
+
+      // The data was already copied to |destination_| in this case.
+      data_available_ = false;
+    }
+
+    *destination = destination_.get();
+    return true;
+  }
+
+ private:
+  base::ThreadChecker thread_checker_;
+  const int source_frames_;  // For a DCHECK.
+  scoped_ptr<MediaStreamAudioBus> destination_;
   scoped_ptr<media::AudioFifo> fifo_;
+  // Only used when the FIFO is disabled;
+  bool data_available_;
 };
 
 bool MediaStreamAudioProcessor::IsAudioTrackProcessingEnabled() {
@@ -202,12 +207,12 @@ MediaStreamAudioProcessor::~MediaStreamAudioProcessor() {
 }
 
 void MediaStreamAudioProcessor::OnCaptureFormatChanged(
-    const media::AudioParameters& source_params) {
+    const media::AudioParameters& input_format) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   // There is no need to hold a lock here since the caller guarantees that
   // there is no more PushCaptureData() and ProcessAndConsumeData() callbacks
   // on the capture thread.
-  InitializeCaptureConverter(source_params);
+  InitializeCaptureFifo(input_format);
 
   // Reset the |capture_thread_checker_| since the capture data will come from
   // a new capture thread.
@@ -217,12 +222,8 @@ void MediaStreamAudioProcessor::OnCaptureFormatChanged(
 void MediaStreamAudioProcessor::PushCaptureData(
     const media::AudioBus* audio_source) {
   DCHECK(capture_thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(audio_source->channels(),
-            capture_converter_->source_parameters().channels());
-  DCHECK_EQ(audio_source->frames(),
-            capture_converter_->source_parameters().frames_per_buffer());
 
-  capture_converter_->Push(audio_source);
+  capture_fifo_->Push(audio_source);
 }
 
 bool MediaStreamAudioProcessor::ProcessAndConsumeData(
@@ -231,12 +232,31 @@ bool MediaStreamAudioProcessor::ProcessAndConsumeData(
   DCHECK(capture_thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("audio", "MediaStreamAudioProcessor::ProcessAndConsumeData");
 
-  if (!capture_converter_->Convert(&capture_frame_, audio_mirroring_))
+  MediaStreamAudioBus* process_bus;
+  if (!capture_fifo_->Consume(&process_bus))
     return false;
 
-  *new_volume = ProcessData(&capture_frame_, capture_delay, volume,
-                            key_pressed);
-  *out = capture_frame_.data_;
+  // Use the process bus directly if audio processing is disabled.
+  MediaStreamAudioBus* output_bus = process_bus;
+  *new_volume = 0;
+  if (audio_processing_) {
+    output_bus = output_bus_.get();
+    *new_volume = ProcessData(process_bus->channel_ptrs(),
+                              process_bus->bus()->frames(), capture_delay,
+                              volume, key_pressed, output_bus->channel_ptrs());
+  }
+
+  // Swap channels before interleaving the data.
+  if (audio_mirroring_ &&
+      output_format_.channel_layout() == media::CHANNEL_LAYOUT_STEREO) {
+    // Swap the first and second channels.
+    output_bus->bus()->SwapChannels(0, 1);
+  }
+
+  output_bus->bus()->ToInterleaved(output_bus->bus()->frames(),
+                                   sizeof(int16),
+                                   output_data_.get());
+  *out = output_data_.get();
 
   return true;
 }
@@ -265,11 +285,11 @@ void MediaStreamAudioProcessor::Stop() {
 }
 
 const media::AudioParameters& MediaStreamAudioProcessor::InputFormat() const {
-  return capture_converter_->source_parameters();
+  return input_format_;
 }
 
 const media::AudioParameters& MediaStreamAudioProcessor::OutputFormat() const {
-  return capture_converter_->sink_parameters();
+  return output_format_;
 }
 
 void MediaStreamAudioProcessor::OnAecDumpFile(
@@ -308,12 +328,18 @@ void MediaStreamAudioProcessor::OnPlayoutData(media::AudioBus* audio_bus,
             std::numeric_limits<base::subtle::Atomic32>::max());
   base::subtle::Release_Store(&render_delay_ms_, audio_delay_milliseconds);
 
-  InitializeRenderConverterIfNeeded(sample_rate, audio_bus->channels(),
-                                    audio_bus->frames());
+  InitializeRenderFifoIfNeeded(sample_rate, audio_bus->channels(),
+                               audio_bus->frames());
 
-  render_converter_->Push(audio_bus);
-  while (render_converter_->Convert(&render_frame_, false))
-    audio_processing_->AnalyzeReverseStream(&render_frame_);
+  render_fifo_->Push(audio_bus);
+  MediaStreamAudioBus* analysis_bus;
+  while (render_fifo_->Consume(&analysis_bus)) {
+    audio_processing_->AnalyzeReverseStream(
+        analysis_bus->channel_ptrs(),
+        analysis_bus->bus()->frames(),
+        sample_rate,
+        ChannelsToLayout(audio_bus->channels()));
+  }
 }
 
 void MediaStreamAudioProcessor::OnPlayoutDataSourceChanged() {
@@ -321,7 +347,7 @@ void MediaStreamAudioProcessor::OnPlayoutDataSourceChanged() {
   // There is no need to hold a lock here since the caller guarantees that
   // there is no more OnPlayoutData() callback on the render thread.
   render_thread_checker_.DetachFromThread();
-  render_converter_.reset();
+  render_fifo_.reset();
 }
 
 void MediaStreamAudioProcessor::GetStats(AudioProcessorStats* stats) {
@@ -384,12 +410,6 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
 
   // Create and configure the webrtc::AudioProcessing.
   audio_processing_.reset(webrtc::AudioProcessing::Create());
-  CHECK_EQ(0, audio_processing_->Initialize(kAudioProcessingSampleRate,
-                                            kAudioProcessingSampleRate,
-                                            kAudioProcessingSampleRate,
-                                            kAudioProcessingChannelLayout,
-                                            kAudioProcessingChannelLayout,
-                                            kAudioProcessingChannelLayout));
 
   // Enable the audio processing components.
   if (echo_cancellation) {
@@ -424,82 +444,95 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   RecordProcessingState(AUDIO_PROCESSING_ENABLED);
 }
 
-void MediaStreamAudioProcessor::InitializeCaptureConverter(
-    const media::AudioParameters& source_params) {
+void MediaStreamAudioProcessor::InitializeCaptureFifo(
+    const media::AudioParameters& input_format) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  DCHECK(source_params.IsValid());
+  DCHECK(input_format.IsValid());
+  input_format_ = input_format;
 
-  // Create and initialize audio converter for the source data.
-  // When the webrtc AudioProcessing is enabled, the sink format of the
-  // converter will be the same as the post-processed data format, which is
-  // 32k mono for desktops and 16k mono for Android. When the AudioProcessing
-  // is disabled, the sink format will be the same as the source format.
-  const int sink_sample_rate = audio_processing_ ?
-      kAudioProcessingSampleRate : source_params.sample_rate();
-  const media::ChannelLayout sink_channel_layout = audio_processing_ ?
+  // TODO(ajm): For now, we assume fixed parameters for the output when audio
+  // processing is enabled, to match the previous behavior. We should either
+  // use the input parameters (in which case, audio processing will convert
+  // at output) or ideally, have a backchannel from the sink to know what
+  // format it would prefer.
+  const int output_sample_rate = audio_processing_ ?
+      kAudioProcessingSampleRate : input_format.sample_rate();
+  const media::ChannelLayout output_channel_layout = audio_processing_ ?
       media::GuessChannelLayout(kAudioProcessingNumberOfChannels) :
-      source_params.channel_layout();
+      input_format.channel_layout();
 
-  // WebRtc AudioProcessing requires 10ms as its packet size. We use this
-  // native size when processing is enabled. While processing is disabled, and
-  // the source is running with a buffer size smaller than 10ms buffer, we use
-  // same buffer size as the incoming format to avoid extra FIFO for WebAudio.
-  int sink_buffer_size =  sink_sample_rate / 100;
-  if (!audio_processing_ &&
-      source_params.frames_per_buffer() < sink_buffer_size) {
-    sink_buffer_size = source_params.frames_per_buffer();
+  // webrtc::AudioProcessing requires a 10 ms chunk size. We use this native
+  // size when processing is enabled. When disabled we use the same size as
+  // the source if less than 10 ms.
+  //
+  // TODO(ajm): This conditional buffer size appears to be assuming knowledge of
+  // the sink based on the source parameters. PeerConnection sinks seem to want
+  // 10 ms chunks regardless, while WebAudio sinks want less, and we're assuming
+  // we can identify WebAudio sinks by the input chunk size. Less fragile would
+  // be to have the sink actually tell us how much it wants (as in the above
+  // TODO).
+  int processing_frames = input_format.sample_rate() / 100;
+  int output_frames = output_sample_rate / 100;
+  if (!audio_processing_ && input_format.frames_per_buffer() < output_frames) {
+    processing_frames = input_format.frames_per_buffer();
+    output_frames = processing_frames;
   }
 
-  media::AudioParameters sink_params(
-      media::AudioParameters::AUDIO_PCM_LOW_LATENCY, sink_channel_layout,
-      sink_sample_rate, 16, sink_buffer_size);
-  capture_converter_.reset(
-      new MediaStreamAudioConverter(source_params, sink_params));
+  output_format_ = media::AudioParameters(
+      media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+      output_channel_layout,
+      output_sample_rate,
+      16,
+      output_frames);
+
+  capture_fifo_.reset(
+      new MediaStreamAudioFifo(input_format.channels(),
+                               input_format.frames_per_buffer(),
+                               processing_frames));
+
+  if (audio_processing_) {
+    output_bus_.reset(new MediaStreamAudioBus(output_format_.channels(),
+                                              output_frames));
+  }
+  output_data_.reset(new int16[output_format_.GetBytesPerBuffer() /
+                               sizeof(int16)]);
 }
 
-void MediaStreamAudioProcessor::InitializeRenderConverterIfNeeded(
+void MediaStreamAudioProcessor::InitializeRenderFifoIfNeeded(
     int sample_rate, int number_of_channels, int frames_per_buffer) {
   DCHECK(render_thread_checker_.CalledOnValidThread());
-  // TODO(xians): Figure out if we need to handle the buffer size change.
-  if (render_converter_.get() &&
-      render_converter_->source_parameters().sample_rate() == sample_rate &&
-      render_converter_->source_parameters().channels() == number_of_channels) {
-    // Do nothing if the |render_converter_| has been setup properly.
+  if (render_fifo_.get() &&
+      render_format_.sample_rate() == sample_rate &&
+      render_format_.channels() == number_of_channels &&
+      render_format_.frames_per_buffer() == frames_per_buffer) {
+    // Do nothing if the |render_fifo_| has been setup properly.
     return;
   }
 
-  // Create and initialize audio converter for the render data.
-  // webrtc::AudioProcessing accepts the same format as what it uses to process
-  // capture data, which is 32k mono for desktops and 16k mono for Android.
-  media::AudioParameters source_params(
+  render_format_ = media::AudioParameters(
       media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-      media::GuessChannelLayout(number_of_channels), sample_rate, 16,
+      media::GuessChannelLayout(number_of_channels),
+      sample_rate,
+      16,
       frames_per_buffer);
-  media::AudioParameters sink_params(
-      media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-      media::CHANNEL_LAYOUT_MONO, kAudioProcessingSampleRate, 16,
-      kAudioProcessingSampleRate / 100);
-  render_converter_.reset(
-      new MediaStreamAudioConverter(source_params, sink_params));
-  render_data_bus_ = media::AudioBus::Create(number_of_channels,
-                                             frames_per_buffer);
+
+  const int analysis_frames = sample_rate / 100;  // 10 ms chunks.
+  render_fifo_.reset(
+      new MediaStreamAudioFifo(number_of_channels,
+                               frames_per_buffer,
+                               analysis_frames));
 }
 
-int MediaStreamAudioProcessor::ProcessData(webrtc::AudioFrame* audio_frame,
+int MediaStreamAudioProcessor::ProcessData(const float* const* process_ptrs,
+                                           int process_frames,
                                            base::TimeDelta capture_delay,
                                            int volume,
-                                           bool key_pressed) {
+                                           bool key_pressed,
+                                           float* const* output_ptrs) {
+  DCHECK(audio_processing_);
   DCHECK(capture_thread_checker_.CalledOnValidThread());
-  if (!audio_processing_)
-    return 0;
 
   TRACE_EVENT0("audio", "MediaStreamAudioProcessor::ProcessData");
-  DCHECK_EQ(audio_processing_->input_sample_rate_hz(),
-            capture_converter_->sink_parameters().sample_rate());
-  DCHECK_EQ(audio_processing_->num_input_channels(),
-            capture_converter_->sink_parameters().channels());
-  DCHECK_EQ(audio_processing_->num_output_channels(),
-            capture_converter_->sink_parameters().channels());
 
   base::subtle::Atomic32 render_delay_ms =
       base::subtle::Acquire_Load(&render_delay_ms_);
@@ -512,28 +545,34 @@ int MediaStreamAudioProcessor::ProcessData(webrtc::AudioFrame* audio_frame,
                  << "ms; render delay: " << render_delay_ms << "ms";
   }
 
-  audio_processing_->set_stream_delay_ms(total_delay_ms);
+  webrtc::AudioProcessing* ap = audio_processing_.get();
+  ap->set_stream_delay_ms(total_delay_ms);
 
   DCHECK_LE(volume, WebRtcAudioDeviceImpl::kMaxVolumeLevel);
-  webrtc::GainControl* agc = audio_processing_->gain_control();
+  webrtc::GainControl* agc = ap->gain_control();
   int err = agc->set_stream_analog_level(volume);
   DCHECK_EQ(err, 0) << "set_stream_analog_level() error: " << err;
 
-  audio_processing_->set_stream_key_pressed(key_pressed);
+  ap->set_stream_key_pressed(key_pressed);
 
-  err = audio_processing_->ProcessStream(audio_frame);
+  err = ap->ProcessStream(process_ptrs,
+                          process_frames,
+                          input_format_.sample_rate(),
+                          MapLayout(input_format_.channel_layout()),
+                          output_format_.sample_rate(),
+                          MapLayout(output_format_.channel_layout()),
+                          output_ptrs);
   DCHECK_EQ(err, 0) << "ProcessStream() error: " << err;
 
-  if (typing_detector_ &&
-      audio_frame->vad_activity_ != webrtc::AudioFrame::kVadUnknown) {
-    bool vad_active =
-        (audio_frame->vad_activity_ == webrtc::AudioFrame::kVadActive);
-    bool typing_detected = typing_detector_->Process(key_pressed, vad_active);
-    base::subtle::Release_Store(&typing_detected_, typing_detected);
+  if (typing_detector_) {
+    webrtc::VoiceDetection* vad = ap->voice_detection();
+    DCHECK(vad->is_enabled());
+    bool detected = typing_detector_->Process(key_pressed,
+                                              vad->stream_has_voice());
+    base::subtle::Release_Store(&typing_detected_, detected);
   }
 
-  // Return 0 if the volume has not been changed, otherwise return the new
-  // volume.
+  // Return 0 if the volume hasn't been changed, and otherwise the new volume.
   return (agc->stream_analog_level() == volume) ?
       0 : agc->stream_analog_level();
 }

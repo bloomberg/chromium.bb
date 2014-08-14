@@ -130,7 +130,8 @@ class WebRtcAudioCapturerTest : public testing::Test {
     EXPECT_CALL(*sink, FormatIsSet());
     EXPECT_CALL(*sink,
                 OnDataCallback(_, _, delay_ms, expected_volume_value,
-                               need_audio_processing, key_pressed));
+                               need_audio_processing, key_pressed))
+        .Times(AtLeast(1));
     callback->Capture(audio_bus.get(), delay_ms, volume, key_pressed);
 
     // Verify the cached values in the capturer fits what we expect.
