@@ -70,6 +70,7 @@ GLenum TextureToStorageFormat(ResourceFormat format) {
       storage_format = GL_BGRA8_EXT;
       break;
     case RGBA_4444:
+    case ALPHA_8:
     case LUMINANCE_8:
     case RGB_565:
     case ETC1:
@@ -86,6 +87,7 @@ bool IsFormatSupportedForStorage(ResourceFormat format) {
     case BGRA_8888:
       return true;
     case RGBA_4444:
+    case ALPHA_8:
     case LUMINANCE_8:
     case RGB_565:
     case ETC1:
@@ -516,6 +518,7 @@ SkCanvas* ResourceProvider::BitmapRasterBuffer::DoLockForWrite() {
       raster_bitmap_.installPixels(info, mapped_buffer_, stride);
       break;
     }
+    case ALPHA_8:
     case LUMINANCE_8:
     case RGB_565:
     case ETC1:

@@ -3284,8 +3284,16 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
     DeleteUIResource(uid);
 
   ResourceFormat format = resource_provider_->best_texture_format();
-  if (bitmap.GetFormat() == UIResourceBitmap::ETC1)
-    format = ETC1;
+  switch (bitmap.GetFormat()) {
+    case UIResourceBitmap::RGBA8:
+      break;
+    case UIResourceBitmap::ALPHA_8:
+      format = ALPHA_8;
+      break;
+    case UIResourceBitmap::ETC1:
+      format = ETC1;
+      break;
+  };
   id = resource_provider_->CreateResource(
       bitmap.GetSize(),
       wrap_mode,

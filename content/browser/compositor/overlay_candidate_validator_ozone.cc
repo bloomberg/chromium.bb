@@ -15,6 +15,7 @@ static ui::SurfaceFactoryOzone::BufferFormat GetOzoneFormat(
       return ui::SurfaceFactoryOzone::RGBA_8888;
     case cc::RGBA_4444:
     case cc::BGRA_8888:
+    case cc::ALPHA_8:
     case cc::LUMINANCE_8:
     case cc::RGB_565:
     case cc::ETC1:

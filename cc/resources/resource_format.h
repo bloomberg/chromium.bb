@@ -15,6 +15,7 @@ enum ResourceFormat {
   RGBA_8888,
   RGBA_4444,
   BGRA_8888,
+  ALPHA_8,
   LUMINANCE_8,
   RGB_565,
   ETC1,

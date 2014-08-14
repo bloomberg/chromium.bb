@@ -27,6 +27,7 @@ class CC_EXPORT UIResourceBitmap {
  public:
   enum UIResourceFormat {
     RGBA8,
+    ALPHA_8,
     ETC1
   };
   enum UIResourceWrapMode {
@@ -42,7 +43,7 @@ class CC_EXPORT UIResourceBitmap {
   void SetOpaque(bool opaque) { opaque_ = opaque; }
 
   // User must ensure that |skbitmap| is immutable.  The SkBitmap Format should
-  // be 32-bit RGBA.
+  // be 32-bit RGBA or 8-bit ALPHA.
   explicit UIResourceBitmap(const SkBitmap& skbitmap);
   UIResourceBitmap(const gfx::Size& size, bool is_opaque);
   UIResourceBitmap(const skia::RefPtr<SkPixelRef>& pixel_ref,

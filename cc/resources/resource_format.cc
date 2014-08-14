@@ -14,6 +14,7 @@ SkColorType ResourceFormatToSkColorType(ResourceFormat format) {
     case BGRA_8888:
       return kN32_SkColorType;
     case ETC1:
+    case ALPHA_8:
     case LUMINANCE_8:
     case RGB_565:
       NOTREACHED();

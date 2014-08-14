@@ -11,6 +11,26 @@
 #include "third_party/skia/include/core/SkPixelRef.h"
 
 namespace cc {
+namespace {
+
+UIResourceBitmap::UIResourceFormat SkColorTypeToUIResourceFormat(
+    SkColorType sk_type) {
+  UIResourceBitmap::UIResourceFormat format = UIResourceBitmap::RGBA8;
+  switch (sk_type) {
+    case kN32_SkColorType:
+      format = UIResourceBitmap::RGBA8;
+      break;
+    case kAlpha_8_SkColorType:
+      format = UIResourceBitmap::ALPHA_8;
+      break;
+    default:
+      NOTREACHED() << "Invalid SkColorType for UIResourceBitmap: " << sk_type;
+      break;
+  }
+  return format;
+}
+
+}  // namespace
 
 void UIResourceBitmap::Create(const skia::RefPtr<SkPixelRef>& pixel_ref,
                               const gfx::Size& size,
@@ -29,14 +49,14 @@ void UIResourceBitmap::Create(const skia::RefPtr<SkPixelRef>& pixel_ref,
 }
 
 UIResourceBitmap::UIResourceBitmap(const SkBitmap& skbitmap) {
-  DCHECK_EQ(skbitmap.colorType(), kN32_SkColorType);
   DCHECK_EQ(skbitmap.width(), skbitmap.rowBytesAsPixels());
   DCHECK(skbitmap.isImmutable());
 
   skia::RefPtr<SkPixelRef> pixel_ref = skia::SharePtr(skbitmap.pixelRef());
   const SkImageInfo& info = pixel_ref->info();
-  Create(
-      pixel_ref, gfx::Size(info.fWidth, info.fHeight), UIResourceBitmap::RGBA8);
+  Create(pixel_ref,
+         gfx::Size(info.fWidth, info.fHeight),
+         SkColorTypeToUIResourceFormat(skbitmap.colorType()));
 
   SetOpaque(skbitmap.isOpaque());
 }

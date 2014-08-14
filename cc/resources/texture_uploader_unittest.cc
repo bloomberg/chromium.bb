@@ -217,6 +217,15 @@ TEST(TextureUploaderTest, UploadContentsTest) {
   }
   UploadTexture(uploader.get(), RGBA_8888, gfx::Size(41, 43), buffer);
 
+  // Upload a tightly packed 41x86 ALPHA texture.
+  memset(buffer, 0, sizeof(buffer));
+  for (int i = 0; i < 86; ++i) {
+    // Mark the beginning and end of each row, for the test.
+    buffer[i * 1 * 41] = 0x1;
+    buffer[(i + 1) * 41 - 1] = 0x2;
+  }
+  UploadTexture(uploader.get(), ALPHA_8, gfx::Size(41, 86), buffer);
+
   // Upload a tightly packed 82x86 LUMINANCE texture.
   memset(buffer, 0, sizeof(buffer));
   for (int i = 0; i < 86; ++i) {

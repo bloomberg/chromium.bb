@@ -663,6 +663,7 @@ inline unsigned BitsPerPixel(ResourceFormat format) {
     32,  // RGBA_8888
     16,  // RGBA_4444
     32,  // BGRA_8888
+    8,   // ALPHA_8
     8,   // LUMINANCE_8
     16,  // RGB_565,
     4    // ETC1
@@ -676,6 +677,7 @@ inline GLenum GLDataType(ResourceFormat format) {
     GL_UNSIGNED_BYTE,           // RGBA_8888
     GL_UNSIGNED_SHORT_4_4_4_4,  // RGBA_4444
     GL_UNSIGNED_BYTE,           // BGRA_8888
+    GL_UNSIGNED_BYTE,           // ALPHA_8
     GL_UNSIGNED_BYTE,           // LUMINANCE_8
     GL_UNSIGNED_SHORT_5_6_5,    // RGB_565,
     GL_UNSIGNED_BYTE            // ETC1
@@ -689,6 +691,7 @@ inline GLenum GLDataFormat(ResourceFormat format) {
     GL_RGBA,           // RGBA_8888
     GL_RGBA,           // RGBA_4444
     GL_BGRA_EXT,       // BGRA_8888
+    GL_ALPHA,          // ALPHA_8
     GL_LUMINANCE,      // LUMINANCE_8
     GL_RGB,            // RGB_565
     GL_ETC1_RGB8_OES   // ETC1
