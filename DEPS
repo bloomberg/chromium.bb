@@ -46,7 +46,7 @@ vars = {
   "lss_revision": "31",
   "sfntly_revision": "239",
   "lighttpd_revision": "33737",
-  "skia_revision": "5c4b137592a7937b4d02d72a976fa783f8d3675a",
+  "skia_revision": "c773390eefe70d13faab147a70bd9319b9ac3afb",
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and V8 without interference from each other.
