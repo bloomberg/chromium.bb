@@ -39,6 +39,8 @@ class ServiceProviderImpl : public InterfaceImpl<ServiceProvider> {
   typedef std::map<std::string, internal::ServiceConnectorBase*>
       NameToServiceConnectorMap;
 
+  friend class internal::WeakServiceProvider;
+
   // Overridden from ServiceProvider:
   virtual void ConnectToService(
       const String& service_name,
@@ -51,6 +53,8 @@ class ServiceProviderImpl : public InterfaceImpl<ServiceProvider> {
       internal::ServiceConnectorBase* service_connector);
   void RemoveServiceConnector(
       internal::ServiceConnectorBase* service_connector);
+
+  void ClearRemote();
 
   NameToServiceConnectorMap service_connectors_;
 

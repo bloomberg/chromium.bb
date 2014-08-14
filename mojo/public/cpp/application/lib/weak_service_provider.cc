@@ -3,17 +3,25 @@
 // found in the LICENSE file.
 
 #include "mojo/public/cpp/application/lib/weak_service_provider.h"
+
+#include "mojo/public/cpp/application/service_provider_impl.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
 
 namespace mojo {
 namespace internal {
 
-WeakServiceProvider::WeakServiceProvider(ServiceProvider* service_provider)
-      : service_provider_(service_provider) {}
+WeakServiceProvider::WeakServiceProvider(ServiceProviderImpl* creator,
+                                         ServiceProvider* service_provider)
+      : creator_(creator),
+        service_provider_(service_provider) {}
 
-WeakServiceProvider::~WeakServiceProvider() {}
+WeakServiceProvider::~WeakServiceProvider() {
+  if (creator_)
+    creator_->ClearRemote();
+}
 
 void WeakServiceProvider::Clear() {
+  creator_ = NULL;
   service_provider_ = NULL;
 }
 

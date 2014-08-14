@@ -19,7 +19,7 @@ ServiceProviderImpl::~ServiceProviderImpl() {
 ServiceProvider* ServiceProviderImpl::CreateRemoteServiceProvider() {
   // TODO(beng): it sure would be nice if this method could return a scoped_ptr.
   MOJO_DCHECK(!remote_);
-  remote_ = new internal::WeakServiceProvider(client());
+  remote_ = new internal::WeakServiceProvider(this, client());
   return remote_;
 }
 
@@ -38,10 +38,7 @@ void ServiceProviderImpl::ConnectToService(
 }
 
 void ServiceProviderImpl::OnConnectionError() {
-  if (remote_) {
-    remote_->Clear();
-    remote_ = NULL;
-  }
+  ClearRemote();
 }
 
 void ServiceProviderImpl::AddServiceConnector(
@@ -60,6 +57,13 @@ void ServiceProviderImpl::RemoveServiceConnector(
     return;
   delete it->second;
   service_connectors_.erase(it);
+}
+
+void ServiceProviderImpl::ClearRemote() {
+  if (remote_) {
+    remote_->Clear();
+    remote_ = NULL;
+  }
 }
 
 }  // namespace mojo

@@ -47,33 +47,6 @@ bool InitEmbed(ViewManagerInitService* view_manager_init,
   return result;
 }
 
-void OpenWindowCallback(Id* id,
-                        base::RunLoop* run_loop,
-                        Id window_id) {
-  *id = window_id;
-  run_loop->Quit();
-}
-
-Id OpenWindow(WindowManagerService* window_manager) {
-  base::RunLoop run_loop;
-  Id id;
-  window_manager->OpenWindow(
-      base::Bind(&OpenWindowCallback, &id, &run_loop));
-  run_loop.Run();
-  return id;
-}
-
-Id OpenWindowWithURL(WindowManagerService* window_manager,
-                                   const std::string& url) {
-  base::RunLoop run_loop;
-  Id id;
-  window_manager->OpenWindowWithURL(
-      url,
-      base::Bind(&OpenWindowCallback, &id, &run_loop));
-  run_loop.Run();
-  return id;
-}
-
 class TestWindowManagerClient : public WindowManagerClient {
  public:
   typedef base::Callback<void(Id, Id)>
@@ -211,6 +184,15 @@ class WindowManagerApiTest : public testing::Test {
     return old_and_new;
   }
 
+  Id OpenWindow() {
+    return OpenWindowWithURL(kTestServiceURL);
+  }
+
+  Id OpenWindowWithURL(const std::string& url) {
+    InitEmbed(view_manager_init_.get(), url);
+    return WaitForEmbed();
+  }
+
   TestWindowManagerClient* window_manager_client() {
     return window_manager_client_.get();
   }
@@ -282,23 +264,15 @@ class WindowManagerApiTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WindowManagerApiTest);
 };
 
-TEST_F(WindowManagerApiTest, OpenWindow) {
-  OpenWindow(window_manager_.get());
-  Id created_node =
-      OpenWindowWithURL(window_manager_.get(), kTestServiceURL);
-  Id embed_node = WaitForEmbed();
-  EXPECT_EQ(created_node, embed_node);
-}
-
 TEST_F(WindowManagerApiTest, FocusAndActivateWindow) {
-  Id first_window = OpenWindow(window_manager_.get());
+  Id first_window = OpenWindow();
   window_manager_->FocusWindow(first_window,
                                base::Bind(&EmptyResultCallback));
   TwoIds ids = WaitForFocusChange();
   EXPECT_TRUE(ids.first == 0);
   EXPECT_EQ(ids.second, first_window);
 
-  Id second_window = OpenWindow(window_manager_.get());
+  Id second_window = OpenWindow();
   window_manager_->ActivateWindow(second_window,
                                   base::Bind(&EmptyResultCallback));
   ids = WaitForActiveWindowChange();

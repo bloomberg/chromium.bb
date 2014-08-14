@@ -52,8 +52,6 @@ class WindowManagerApp
   void AddConnection(WindowManagerServiceImpl* connection);
   void RemoveConnection(WindowManagerServiceImpl* connection);
 
-  Id OpenWindow();
-  Id OpenWindowWithURL(const String& url);
   void SetCapture(Id view);
   void FocusWindow(Id view);
   void ActivateWindow(Id view);

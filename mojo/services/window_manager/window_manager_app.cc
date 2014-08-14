@@ -78,15 +78,7 @@ WindowManagerApp::WindowManagerApp(ViewManagerDelegate* delegate)
       root_(NULL) {
 }
 
-WindowManagerApp::~WindowManagerApp() {
-  // TODO(beng): Figure out if this should be done in
-  //             OnViewManagerDisconnected().
-  STLDeleteValues(&view_id_to_window_map_);
-  if (focus_client_.get())
-    focus_client_->RemoveObserver(this);
-  if (activation_client_)
-    activation_client_->RemoveObserver(this);
-}
+WindowManagerApp::~WindowManagerApp() {}
 
 void WindowManagerApp::AddConnection(WindowManagerServiceImpl* connection) {
   DCHECK(connections_.find(connection) == connections_.end());
@@ -96,19 +88,6 @@ void WindowManagerApp::AddConnection(WindowManagerServiceImpl* connection) {
 void WindowManagerApp::RemoveConnection(WindowManagerServiceImpl* connection) {
   DCHECK(connections_.find(connection) != connections_.end());
   connections_.erase(connection);
-}
-
-Id WindowManagerApp::OpenWindow() {
-  View* view = View::Create(view_manager_);
-  root_->AddChild(view);
-  return view->id();
-}
-
-Id WindowManagerApp::OpenWindowWithURL(const String& url) {
-  View* view = View::Create(view_manager_);
-  root_->AddChild(view);
-  view->Embed(url);
-  return view->id();
 }
 
 void WindowManagerApp::SetCapture(Id view) {
@@ -218,6 +197,11 @@ void WindowManagerApp::OnTreeChanged(
 
 void WindowManagerApp::OnViewDestroyed(View* view) {
   root_ = NULL;
+  STLDeleteValues(&view_id_to_window_map_);
+  if (focus_client_.get())
+    focus_client_->RemoveObserver(this);
+  if (activation_client_)
+    activation_client_->RemoveObserver(this);
   window_tree_host_.reset();
 }
 

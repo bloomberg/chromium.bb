@@ -24,16 +24,12 @@ class WindowManagerServiceImpl : public InterfaceImpl<WindowManagerService> {
 
  private:
   // Overridden from WindowManagerService:
-  virtual void OpenWindow(const Callback<void(Id)>& callback) MOJO_OVERRIDE;
-  virtual void OpenWindowWithURL(
-      const String& url,
-      const Callback<void(Id)>& callback) MOJO_OVERRIDE;
-  virtual void SetCapture(Id node,
+  virtual void SetCapture(Id view,
                           const Callback<void(bool)>& callback) MOJO_OVERRIDE;
-  virtual void FocusWindow(Id node,
+  virtual void FocusWindow(Id view,
                            const Callback<void(bool)>& callback) MOJO_OVERRIDE;
   virtual void ActivateWindow(
-      Id node,
+      Id view,
       const Callback<void(bool)>& callback) MOJO_OVERRIDE;
 
   // Overridden from InterfaceImpl:

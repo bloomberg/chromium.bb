@@ -39,55 +39,30 @@ void WindowManagerServiceImpl::NotifyWindowActivated(Id new_active_id,
 ////////////////////////////////////////////////////////////////////////////////
 // WindowManagerServiceImpl, WindowManager implementation:
 
-void WindowManagerServiceImpl::OpenWindow(
-    const Callback<void(Id)>& callback) {
-  bool success = window_manager_->IsReady();
-  if (success) {
-    Id id = window_manager_->OpenWindow();
-    callback.Run(id);
-  } else {
-    // TODO(beng): perhaps should take an error code for this.
-    callback.Run(0);
-  }
-}
-
-void WindowManagerServiceImpl::OpenWindowWithURL(
-    const String& url,
-    const Callback<void(Id)>& callback) {
-  bool success = window_manager_->IsReady();
-  if (success) {
-    Id id = window_manager_->OpenWindowWithURL(url);
-    callback.Run(id);
-  } else {
-    // TODO(beng): perhaps should take an error code for this.
-    callback.Run(0);
-  }
-}
-
 void WindowManagerServiceImpl::SetCapture(
-    Id node,
+    Id view,
     const Callback<void(bool)>& callback) {
   bool success = window_manager_->IsReady();
   if (success)
-    window_manager_->SetCapture(node);
+    window_manager_->SetCapture(view);
   callback.Run(success);
 }
 
 void WindowManagerServiceImpl::FocusWindow(
-    Id node,
+    Id view,
     const Callback<void(bool)>& callback) {
   bool success = window_manager_->IsReady();
   if (success)
-    window_manager_->FocusWindow(node);
+    window_manager_->FocusWindow(view);
   callback.Run(success);
 }
 
 void WindowManagerServiceImpl::ActivateWindow(
-    Id node,
+    Id view,
     const Callback<void(bool)>& callback) {
   bool success = window_manager_->IsReady();
   if (success)
-    window_manager_->ActivateWindow(node);
+    window_manager_->ActivateWindow(view);
   callback.Run(success);
 }
 

@@ -8,6 +8,7 @@
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
 
 namespace mojo {
+class ServiceProviderImpl;
 namespace internal {
 class ServiceConnectorBase;
 
@@ -17,7 +18,8 @@ class ServiceConnectorBase;
 // Calls to ConnectToService() are silently dropped when the pipe is closed.
 class WeakServiceProvider : public ServiceProvider {
  public:
-  explicit WeakServiceProvider(ServiceProvider* service_provider);
+  WeakServiceProvider(ServiceProviderImpl* creator,
+                      ServiceProvider* service_provider);
   virtual ~WeakServiceProvider();
 
   void Clear();
@@ -28,6 +30,7 @@ class WeakServiceProvider : public ServiceProvider {
       const String& service_name,
       ScopedMessagePipeHandle client_handle) MOJO_OVERRIDE;
 
+  ServiceProviderImpl* creator_;
   ServiceProvider* service_provider_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(WeakServiceProvider);
