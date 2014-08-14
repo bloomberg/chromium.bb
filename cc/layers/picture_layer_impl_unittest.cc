@@ -3101,6 +3101,66 @@ TEST_F(PictureLayerImplTest, UpdateTilesForMasksWithNoVisibleContent) {
   EXPECT_NE(0u, pending_mask_content->num_tilings());
 }
 
+class PictureLayerImplTestWithDelegatingRenderer : public PictureLayerImplTest {
+ public:
+  PictureLayerImplTestWithDelegatingRenderer() : PictureLayerImplTest() {}
+
+  virtual void InitializeRenderer() OVERRIDE {
+    host_impl_.InitializeRenderer(
+        FakeOutputSurface::CreateDelegating3d().PassAs<OutputSurface>());
+  }
+};
+
+TEST_F(PictureLayerImplTestWithDelegatingRenderer,
+       DelegatingRendererWithTileOOM) {
+  // This test is added for crbug.com/402321, where quad should be produced when
+  // raster on demand is not allowed and tile is OOM.
+  gfx::Size tile_size = host_impl_.settings().default_tile_size;
+  gfx::Size layer_bounds(1000, 1000);
+
+  // Create tiles.
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  SetupPendingTree(pending_pile);
+  pending_layer_->SetBounds(layer_bounds);
+  host_impl_.SetViewportSize(layer_bounds);
+  ActivateTree();
+  host_impl_.active_tree()->UpdateDrawProperties();
+  std::vector<Tile*> tiles =
+      active_layer_->HighResTiling()->AllTilesForTesting();
+  host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(tiles);
+
+  // Force tiles after max_tiles to be OOM. TileManager uses
+  // GlobalStateThatImpactsTilesPriority from LayerTreeHostImpl, and we cannot
+  // directly set state to host_impl_, so we set policy that would change the
+  // state. We also need to update tree priority separately.
+  GlobalStateThatImpactsTilePriority state;
+  size_t max_tiles = 1;
+  size_t memory_limit = max_tiles * 4 * tile_size.width() * tile_size.height();
+  size_t resource_limit = max_tiles;
+  ManagedMemoryPolicy policy(memory_limit,
+                             gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING,
+                             resource_limit);
+  host_impl_.SetMemoryPolicy(policy);
+  host_impl_.SetTreePriority(SAME_PRIORITY_FOR_BOTH_TREES);
+  host_impl_.ManageTiles();
+
+  MockOcclusionTracker<LayerImpl> occlusion_tracker;
+  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  AppendQuadsData data;
+  active_layer_->WillDraw(DRAW_MODE_HARDWARE, NULL);
+  active_layer_->AppendQuads(render_pass.get(), occlusion_tracker, &data);
+  active_layer_->DidDraw(NULL);
+
+  // Even when OOM, quads should be produced, and should be different material
+  // from quads with resource.
+  EXPECT_LT(max_tiles, render_pass->quad_list.size());
+  EXPECT_EQ(DrawQuad::Material::TILED_CONTENT,
+            render_pass->quad_list.front()->material);
+  EXPECT_EQ(DrawQuad::Material::SOLID_COLOR,
+            render_pass->quad_list.back()->material);
+}
+
 class OcclusionTrackingSettings : public ImplSidePaintingSettings {
  public:
   OcclusionTrackingSettings() { use_occlusion_for_tile_prioritization = true; }

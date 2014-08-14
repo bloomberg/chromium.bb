@@ -281,6 +281,7 @@ void PictureLayerImpl::AppendQuads(
     append_quads_data->visible_content_area +=
         visible_geometry_rect.width() * visible_geometry_rect.height();
 
+    bool has_draw_quad = false;
     if (*iter && iter->IsReadyToDraw()) {
       const ManagedTileState::TileVersion& tile_version =
           iter->GetTileVersionForDrawing();
@@ -303,6 +304,7 @@ void PictureLayerImpl::AppendQuads(
                        texture_rect,
                        iter.texture_size(),
                        tile_version.contents_swizzled());
+          has_draw_quad = true;
           break;
         }
         case ManagedTileState::TileVersion::PICTURE_PILE_MODE: {
@@ -333,6 +335,7 @@ void PictureLayerImpl::AppendQuads(
                        iter->content_rect(),
                        iter->contents_scale(),
                        pile_);
+          has_draw_quad = true;
           break;
         }
         case ManagedTileState::TileVersion::SOLID_COLOR_MODE: {
@@ -343,10 +346,13 @@ void PictureLayerImpl::AppendQuads(
                        visible_geometry_rect,
                        tile_version.get_solid_color(),
                        false);
+          has_draw_quad = true;
           break;
         }
       }
-    } else {
+    }
+
+    if (!has_draw_quad) {
       if (draw_checkerboard_for_missing_tiles()) {
         CheckerboardDrawQuad* quad =
             render_pass->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
