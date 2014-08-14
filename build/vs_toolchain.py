@@ -30,6 +30,8 @@ def SetEnvironmentAndGetRuntimeDllDirs():
   depot_tools_win_toolchain = \
       bool(int(os.environ.get('DEPOT_TOOLS_WIN_TOOLCHAIN', '1')))
   if sys.platform in ('win32', 'cygwin') and depot_tools_win_toolchain:
+    if not os.path.exists(json_data_file):
+      Update()
     with open(json_data_file, 'r') as tempf:
       toolchain_data = json.load(tempf)
 

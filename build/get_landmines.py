@@ -8,7 +8,6 @@ This file emits the list of reasons why a particular build needs to be clobbered
 (or a list of 'landmines').
 """
 
-import optparse
 import sys
 
 import landmine_utils
@@ -21,10 +20,9 @@ gyp_msvs_version = landmine_utils.gyp_msvs_version
 platform = landmine_utils.platform
 
 
-def print_landmines(target):
+def print_landmines():
   """
   ALL LANDMINES ARE EMITTED FROM HERE.
-  target can be one of {'Release', 'Debug', 'Debug_x64', 'Release_x64'}.
   """
   if (distributor() == 'goma' and platform() == 'win32' and
       builder() == 'ninja'):
@@ -60,16 +58,7 @@ def print_landmines(target):
 
 
 def main():
-  parser = optparse.OptionParser()
-  parser.add_option('-t', '--target',
-                    help=='Target for which the landmines have to be emitted')
-
-  options, args = parser.parse_args()
-
-  if args:
-    parser.error('Unknown arguments %s' % args)
-
-  print_landmines(options.target)
+  print_landmines()
   return 0
 
 
