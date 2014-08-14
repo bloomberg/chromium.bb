@@ -468,7 +468,7 @@ Google Chrome is unable to recover your settings.
       </message>
       <if expr="is_win">
         <message name="IDS_OEM_MAIN_SHORTCUT_NAME" desc="Name of the desktop shortcut to start the application for OEM pre-installations.">
-          Internet Browser
+          Web Browser
         </message>
         <message name="IDS_SHORTCUT_TOOLTIP" desc="Text for the hover-on tooltip for the Google Chrome shortcuts.">
           Access the Internet
