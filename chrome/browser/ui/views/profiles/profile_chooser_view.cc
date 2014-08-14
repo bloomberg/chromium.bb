@@ -7,7 +7,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/signin/signin_header_helper.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
+#include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -73,9 +73,6 @@ const int kFixedGaiaViewWidth = 360;
 const int kFixedAccountRemovalViewWidth = 280;
 const int kFixedSwitchUserViewWidth = 280;
 const int kLargeImageSide = 88;
-
-// The maximum number of times to show the welcome tutorial for an upgrade user.
-const int kUpgradeWelcomeTutorialShowMax = 1;
 
 // Creates a GridLayout with a single column. This ensures that all the child
 // views added get auto-expanded to fill the full width of the bubble.
@@ -1389,24 +1386,22 @@ views::View* ProfileChooserView::CreateAccountRemovalView() {
 
 views::View* ProfileChooserView::CreateWelcomeUpgradeTutorialViewIfNeeded(
     bool tutorial_shown, const AvatarMenu::Item& avatar_item){
-  if (first_run::IsChromeFirstRun())
-    return NULL;
-
   Profile* profile = browser_->profile();
   if (!avatar_item.signed_in) {
     profile->GetPrefs()->SetInteger(
-        prefs::kProfileAvatarTutorialShown, kUpgradeWelcomeTutorialShowMax + 1);
+        prefs::kProfileAvatarTutorialShown,
+        signin_ui_util::kUpgradeWelcomeTutorialShowMax + 1);
     return NULL;
   }
 
   const int show_count = profile->GetPrefs()->GetInteger(
       prefs::kProfileAvatarTutorialShown);
   // Do not show the tutorial if user has dismissed it.
-  if (show_count > kUpgradeWelcomeTutorialShowMax)
+  if (show_count > signin_ui_util::kUpgradeWelcomeTutorialShowMax)
     return NULL;
 
   if (!tutorial_shown) {
-    if (show_count == kUpgradeWelcomeTutorialShowMax)
+    if (show_count == signin_ui_util::kUpgradeWelcomeTutorialShowMax)
       return NULL;
     profile->GetPrefs()->SetInteger(
         prefs::kProfileAvatarTutorialShown, show_count + 1);

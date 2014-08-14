@@ -17,6 +17,9 @@ class SigninManagerBase;
 // services and construct messages suitable for showing in UI.
 namespace signin_ui_util {
 
+// The maximum number of times to show the welcome tutorial for an upgrade user.
+const int kUpgradeWelcomeTutorialShowMax = 1;
+
 // If a signed in service is reporting an error, returns the GlobalError
 // object associated with that service, or NULL if no errors are reported.
 GlobalError* GetSignedInServiceError(Profile* profile);
@@ -32,6 +35,8 @@ void GetStatusLabelsForAuthError(Profile* profile,
                                  const SigninManagerBase& signin_manager,
                                  base::string16* status_label,
                                  base::string16* link_label);
+
+void InitializePrefsForProfile(Profile* profile);
 
 }  // namespace signin_ui_util
 

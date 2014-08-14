@@ -69,6 +69,7 @@
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/services/gcm/push_messaging_service_impl.h"
 #include "chrome/browser/sessions/session_service_factory.h"
+#include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
@@ -734,6 +735,10 @@ void ProfileImpl::DoFinalInit() {
 #endif
 
   gcm::PushMessagingServiceImpl::InitializeForProfile(this);
+
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && !defined(OS_IOS)
+  signin_ui_util::InitializePrefsForProfile(this);
+#endif
 }
 
 void ProfileImpl::InitHostZoomMap() {
