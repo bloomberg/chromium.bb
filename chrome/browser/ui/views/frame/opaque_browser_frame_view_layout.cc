@@ -387,19 +387,16 @@ void OpaqueBrowserFrameViewLayout::LayoutNewStyleAvatar(views::View* host) {
 
   int button_x = host->width() - trailing_button_start_ -
       button_size_with_offset;
-  int button_y = CaptionButtonY(false);
-  // If the window is maximized, the button is 1 pixel too short. Determined
-  // via visual inspection.
-  int extra_height = IsTitleBarCondensed() ? 1 : 0;
+  int button_y = CaptionButtonY(!IsTitleBarCondensed());
 
   trailing_button_start_ += button_size_with_offset;
   minimum_size_for_buttons_ += button_size_with_offset;
 
-  new_avatar_button_->SetBounds(
-      button_x,
-      button_y,
-      label_size.width(),
-      button_y + kCaptionButtonHeightWithPadding + extra_height);
+  // Do not include the 1px padding that is added for the caption buttons.
+  new_avatar_button_->SetBounds(button_x,
+                                button_y,
+                                label_size.width(),
+                                kCaptionButtonHeightWithPadding - 1);
 }
 
 void OpaqueBrowserFrameViewLayout::LayoutAvatar(views::View* host) {

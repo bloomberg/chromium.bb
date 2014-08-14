@@ -526,8 +526,8 @@ TEST_F(OpaqueBrowserFrameViewLayoutTest, WindowWithNewAvatar) {
 
   ExpectBasicWindowBounds();
 
-  // Check the location of the caption button
-  EXPECT_EQ("385,1 12x20", new_avatar_button_->bounds().ToString());
+  // Check the location of the avatar button.
+  EXPECT_EQ("385,1 12x18", new_avatar_button_->bounds().ToString());
   // The basic window bounds are (-1, 13 398x29). There should not be an icon
   // avatar in the left, and the new avatar button has an offset of 5 to its
   // next control.
