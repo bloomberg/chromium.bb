@@ -24,6 +24,9 @@ void Initialize();
 // TODO(nona): Remove this and use InputMethodManager::Initialize instead.
 void InitializeForTesting(InputMethodManager* mock_manager);
 
+// Disables the IME extension loading (e.g. for browser tests).
+void DisableExtensionLoading();
+
 // Destroys the global InputMethodManager instance.
 void Shutdown();
 

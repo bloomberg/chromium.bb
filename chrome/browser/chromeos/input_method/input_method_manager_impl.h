@@ -32,7 +32,8 @@ class InputMethodManagerImpl : public InputMethodManager,
  public:
   // Constructs an InputMethodManager instance. The client is responsible for
   // calling |SetState| in response to relevant changes in browser state.
-  explicit InputMethodManagerImpl(scoped_ptr<InputMethodDelegate> delegate);
+  InputMethodManagerImpl(scoped_ptr<InputMethodDelegate> delegate,
+                         bool enable_extension_loading);
   virtual ~InputMethodManagerImpl();
 
   // Receives notification of an InputMethodManager::State transition.
@@ -205,6 +206,9 @@ class InputMethodManagerImpl : public InputMethodManager,
 
   // The engine map from extension_id to an engine.
   std::map<std::string, InputMethodEngineInterface*> engine_map_;
+
+  // Whether load IME extensions.
+  bool enable_extension_loading_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodManagerImpl);
 };

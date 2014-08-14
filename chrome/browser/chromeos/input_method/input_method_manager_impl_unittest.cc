@@ -130,7 +130,7 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
 
     delegate_ = new FakeInputMethodDelegate();
     manager_.reset(new InputMethodManagerImpl(
-        scoped_ptr<InputMethodDelegate>(delegate_)));
+        scoped_ptr<InputMethodDelegate>(delegate_), false));
     manager_->GetInputMethodUtil()->UpdateHardwareLayoutCache();
     candidate_window_controller_ = new MockCandidateWindowController;
     manager_->SetCandidateWindowControllerForTesting(

@@ -25,6 +25,8 @@ void OnSessionStateChange(InputMethodManagerImpl* input_method_manager_impl,
   input_method_manager_impl->SetState(new_state);
 }
 
+bool g_disable_extension_loading = false;
+
 class InputMethodConfiguration {
  public:
   InputMethodConfiguration() {}
@@ -34,7 +36,8 @@ class InputMethodConfiguration {
     IMEBridge::Initialize();
 
     InputMethodManagerImpl* impl = new InputMethodManagerImpl(
-        scoped_ptr<InputMethodDelegate>(new InputMethodDelegateImpl));
+        scoped_ptr<InputMethodDelegate>(new InputMethodDelegateImpl),
+        !g_disable_extension_loading);
     InputMethodManager::Initialize(impl);
 
     DCHECK(InputMethodManager::Get());
@@ -86,6 +89,10 @@ void InitializeForTesting(InputMethodManager* mock_manager) {
   if (!g_input_method_configuration)
     g_input_method_configuration = new InputMethodConfiguration();
   g_input_method_configuration->InitializeForTesting(mock_manager);
+}
+
+void DisableExtensionLoading() {
+  g_disable_extension_loading = true;
 }
 
 void Shutdown() {

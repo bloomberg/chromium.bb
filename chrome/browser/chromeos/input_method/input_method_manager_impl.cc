@@ -57,11 +57,12 @@ bool InputMethodManagerImpl::MigrateInputMethods(
 }
 
 InputMethodManagerImpl::InputMethodManagerImpl(
-    scoped_ptr<InputMethodDelegate> delegate)
+    scoped_ptr<InputMethodDelegate> delegate, bool enable_extension_loading)
     : delegate_(delegate.Pass()),
       state_(STATE_LOGIN_SCREEN),
       util_(delegate_.get()),
-      component_extension_ime_manager_(new ComponentExtensionIMEManager()) {
+      component_extension_ime_manager_(new ComponentExtensionIMEManager()),
+      enable_extension_loading_(enable_extension_loading) {
   if (base::SysInfo::IsRunningOnChromeOS())
     keyboard_.reset(ImeKeyboard::Create());
   else
@@ -426,8 +427,9 @@ void InputMethodManagerImpl::LoadNecessaryComponentExtensions() {
       active_input_method_ids_.push_back(unfiltered_input_method_ids[i]);
     } else if (component_extension_ime_manager_->IsWhitelisted(
         unfiltered_input_method_ids[i])) {
-      component_extension_ime_manager_->LoadComponentExtensionIME(
-          unfiltered_input_method_ids[i]);
+      if (enable_extension_loading_)
+        component_extension_ime_manager_->LoadComponentExtensionIME(
+            unfiltered_input_method_ids[i]);
       active_input_method_ids_.push_back(unfiltered_input_method_ids[i]);
     }
   }

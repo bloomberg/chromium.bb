@@ -70,6 +70,10 @@
 #include "components/storage_monitor/test_storage_monitor.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
+#endif
+
 namespace {
 
 // Passed as value of kTestType.
@@ -176,6 +180,8 @@ void InProcessBrowserTest::SetUp() {
   // Make sure that the log directory exists.
   base::FilePath log_dir = logging::GetSessionLogFile(*command_line).DirName();
   base::CreateDirectory(log_dir);
+  // Disable IME extension loading to avoid many browser tests failures.
+  chromeos::input_method::DisableExtensionLoading();
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX)

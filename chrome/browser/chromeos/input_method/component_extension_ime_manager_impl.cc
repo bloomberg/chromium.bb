@@ -260,15 +260,6 @@ std::vector<ComponentExtensionIME> ComponentExtensionIMEManagerImpl::ListIME() {
 bool ComponentExtensionIMEManagerImpl::Load(const std::string& extension_id,
                                             const std::string& manifest,
                                             const base::FilePath& file_path) {
-  // If current environment is linux_chromeos, there should be no file path for
-  // the component extensions, so avoid loading them.
-  // The tests are also running on linux_chromeos environment. No test should
-  // run with the real component extensions because the component extension
-  // contents are not in chromium code base. They're installed through ebuild
-  // scripts from chromeos.
-  if (!base::SysInfo::IsRunningOnChromeOS())
-    return false;
-
   Profile* profile = ProfileManager::GetActiveUserProfile();
   extensions::ExtensionSystem* extension_system =
       extensions::ExtensionSystem::Get(profile);
