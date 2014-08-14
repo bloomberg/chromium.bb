@@ -1,0 +1,7 @@
+{
+  "gtest_tests": [
+    "browser_tests",
+    "content_browsertests",
+    "interactive_ui_tests"
+  ]
+}
