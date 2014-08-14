@@ -65,7 +65,8 @@ const size_t allocationGranularity = 8;
 const size_t allocationMask = allocationGranularity - 1;
 const size_t objectStartBitMapSize = (blinkPageSize + ((8 * allocationGranularity) - 1)) / (8 * allocationGranularity);
 const size_t reservedForObjectBitMap = ((objectStartBitMapSize + allocationMask) & ~allocationMask);
-const size_t maxHeapObjectSize = 1 << 27;
+const size_t maxHeapObjectSizeLog2 = 27;
+const size_t maxHeapObjectSize = 1 << maxHeapObjectSizeLog2;
 
 const size_t markBitMask = 1;
 const size_t freeListMask = 2;
@@ -76,7 +77,14 @@ const size_t freeListMask = 2;
 // tracing of already finalized objects in another thread's heap which is a
 // use-after-free situation.
 const size_t deadBitMask = 4;
+#if ENABLE(GC_PROFILE_HEAP)
+const size_t heapObjectGenerations = 8;
+const size_t maxHeapObjectAge = heapObjectGenerations - 1;
+const size_t heapObjectAgeMask = ~(maxHeapObjectSize - 1);
+const size_t sizeMask = ~heapObjectAgeMask & ~static_cast<size_t>(7);
+#else
 const size_t sizeMask = ~static_cast<size_t>(7);
+#endif
 const uint8_t freelistZapValue = 42;
 const uint8_t finalizedZapValue = 24;
 // The orphaned zap value must be zero in the lowest bits to allow for using
@@ -94,6 +102,10 @@ class PageMemory;
 template<ThreadAffinity affinity> class ThreadLocalPersistents;
 template<typename T, typename RootsAccessor = ThreadLocalPersistents<ThreadingTrait<T>::Affinity > > class Persistent;
 template<typename T> class CrossThreadPersistent;
+
+#if ENABLE(GC_PROFILE_HEAP)
+class TracedValue;
+#endif
 
 PLATFORM_EXPORT size_t osPageSize();
 
@@ -173,13 +185,17 @@ public:
     virtual void checkAndMarkPointer(Visitor*, Address) OVERRIDE;
     virtual bool isLargeObject() OVERRIDE { return true; }
 
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILE_MARKING)
     virtual const GCInfo* findGCInfo(Address address)
     {
         if (!objectContains(address))
             return 0;
         return gcInfo();
     }
+#endif
+
+#if ENABLE(GC_PROFILE_HEAP)
+    void snapshot(TracedValue*, ThreadState::SnapshotInfo*);
 #endif
 
     void link(LargeHeapObject<Header>** previousNext)
@@ -263,6 +279,22 @@ public:
 
     NO_SANITIZE_ADDRESS
     size_t size() const { return m_size & sizeMask; }
+
+#if ENABLE(GC_PROFILE_HEAP)
+    NO_SANITIZE_ADDRESS
+    size_t encodedSize() const { return m_size; }
+
+    NO_SANITIZE_ADDRESS
+    size_t age() const { return m_size >> maxHeapObjectSizeLog2; }
+
+    NO_SANITIZE_ADDRESS
+    void incAge()
+    {
+        size_t current = age();
+        if (current < maxHeapObjectAge)
+            m_size = ((current + 1) << maxHeapObjectSizeLog2) | (m_size & ~heapObjectAgeMask);
+    }
+#endif
 
 protected:
     size_t m_size;
@@ -474,8 +506,11 @@ public:
     void clearObjectStartBitMap();
     void finalize(Header*);
     virtual void checkAndMarkPointer(Visitor*, Address) OVERRIDE;
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILE_MARKING)
     const GCInfo* findGCInfo(Address) OVERRIDE;
+#endif
+#if ENABLE(GC_PROFILE_HEAP)
+    virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*);
 #endif
     ThreadHeap<Header>* heap() { return m_heap; }
 #if defined(ADDRESS_SANITIZER)
@@ -806,8 +841,12 @@ public:
     // page in this thread heap.
     virtual BaseHeapPage* heapPageFromAddress(Address) = 0;
 
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILE_MARKING)
     virtual const GCInfo* findGCInfoOfLargeHeapObject(Address) = 0;
+#endif
+
+#if ENABLE(GC_PROFILE_HEAP)
+    virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*) = 0;
 #endif
 
     // Sweep this part of the Blink heap. This finalizes dead objects
@@ -849,8 +888,11 @@ public:
     virtual void cleanupPages();
 
     virtual BaseHeapPage* heapPageFromAddress(Address);
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILE_MARKING)
     virtual const GCInfo* findGCInfoOfLargeHeapObject(Address);
+#endif
+#if ENABLE(GC_PROFILE_HEAP)
+    virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*);
 #endif
     virtual void sweep();
     virtual void clearFreeLists();
@@ -979,7 +1021,7 @@ public:
     // heaps. If so marks the object pointed to as live.
     static Address checkAndMarkPointer(Visitor*, Address);
 
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILE_MARKING)
     // Dump the path to specified object on the next GC. This method is to be invoked from GDB.
     static void dumpPathToObjectOnNextGC(void* p);
 
@@ -1833,7 +1875,7 @@ struct GCInfoTrait<HashMap<Key, Value, T, U, V, HeapAllocator> > {
             0,
             false, // HashMap needs no finalizer.
             WTF::IsPolymorphic<TargetType>::value,
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILING)
             TypenameStringTrait<TargetType>::get()
 #endif
         };
@@ -1851,7 +1893,7 @@ struct GCInfoTrait<HashSet<T, U, V, HeapAllocator> > {
             0,
             false, // HashSet needs no finalizer.
             WTF::IsPolymorphic<TargetType>::value,
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILING)
             TypenameStringTrait<TargetType>::get()
 #endif
         };
@@ -1869,7 +1911,7 @@ struct GCInfoTrait<LinkedHashSet<T, U, V, HeapAllocator> > {
             LinkedHashSet<T, U, V, HeapAllocator>::finalize,
             true, // Needs finalization. The anchor needs to unlink itself from the chain.
             WTF::IsPolymorphic<TargetType>::value,
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILING)
             TypenameStringTrait<TargetType>::get()
 #endif
         };
@@ -1887,7 +1929,7 @@ struct GCInfoTrait<ListHashSet<ValueArg, inlineCapacity, U, HeapListHashSetAlloc
             0,
             false, // ListHashSet needs no finalization though its backing might.
             false, // no vtable.
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILING)
             TypenameStringTrait<TargetType>::get()
 #endif
         };
@@ -1905,7 +1947,7 @@ struct GCInfoTrait<WTF::ListHashSetNode<T, Allocator> > {
             TargetType::finalize,
             WTF::HashTraits<T>::needsDestruction, // The node needs destruction if its data does.
             false, // no vtable.
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILING)
             TypenameStringTrait<TargetType>::get()
 #endif
         };
@@ -1917,7 +1959,7 @@ template<typename T>
 struct GCInfoTrait<Vector<T, 0, HeapAllocator> > {
     static const GCInfo* get()
     {
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILING)
         typedef Vector<T, 0, HeapAllocator> TargetType;
 #endif
         static const GCInfo info = {
@@ -1925,7 +1967,7 @@ struct GCInfoTrait<Vector<T, 0, HeapAllocator> > {
             0,
             false, // Vector needs no finalizer if it has no inline capacity.
             WTF::IsPolymorphic<Vector<T, 0, HeapAllocator> >::value,
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILING)
             TypenameStringTrait<TargetType>::get()
 #endif
         };
@@ -1947,7 +1989,7 @@ struct GCInfoTrait<Vector<T, inlineCapacity, HeapAllocator> > {
             // Finalizer is needed to destruct things stored in the inline capacity.
             inlineCapacity && VectorTraits<T>::needsDestruction,
             WTF::IsPolymorphic<TargetType>::value,
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILING)
             TypenameStringTrait<TargetType>::get()
 #endif
         };
@@ -1965,7 +2007,7 @@ struct GCInfoTrait<Deque<T, 0, HeapAllocator> > {
             0,
             false, // Deque needs no finalizer if it has no inline capacity.
             WTF::IsPolymorphic<TargetType>::value,
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILING)
             TypenameStringTrait<TargetType>::get()
 #endif
         };
@@ -1984,7 +2026,7 @@ struct GCInfoTrait<HashCountedSet<T, U, V, HeapAllocator> > {
             0,
             false, // HashCountedSet is just a HashTable, and needs no finalizer.
             WTF::IsPolymorphic<TargetType>::value,
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILING)
             TypenameStringTrait<TargetType>::get()
 #endif
         };
@@ -2007,7 +2049,7 @@ struct GCInfoTrait<Deque<T, inlineCapacity, HeapAllocator> > {
             // Finalizer is needed to destruct things stored in the inline capacity.
             inlineCapacity && VectorTraits<T>::needsDestruction,
             WTF::IsPolymorphic<TargetType>::value,
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILING)
             TypenameStringTrait<TargetType>::get()
 #endif
         };
@@ -2026,7 +2068,7 @@ struct GCInfoTrait<HeapVectorBacking<T, Traits> > {
             FinalizerTrait<TargetType>::finalize,
             Traits::needsDestruction,
             false, // We don't support embedded objects in HeapVectors with vtables.
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILING)
             TypenameStringTrait<TargetType>::get()
 #endif
         };
@@ -2044,7 +2086,7 @@ struct GCInfoTrait<HeapHashTableBacking<Table> > {
             HeapHashTableBacking<Table>::finalize,
             Table::ValueTraits::needsDestruction,
             WTF::IsPolymorphic<TargetType>::value,
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILING)
             TypenameStringTrait<TargetType>::get()
 #endif
         };

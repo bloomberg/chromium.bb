@@ -38,6 +38,9 @@
 #include "platform/heap/Heap.h"
 #include "public/platform/Platform.h"
 #include "wtf/ThreadingPrimitives.h"
+#if ENABLE(GC_PROFILE_HEAP)
+#include "platform/TracedValue.h"
+#endif
 
 #if OS(WIN)
 #include <stddef.h>
@@ -568,7 +571,7 @@ bool ThreadState::checkAndMarkPointer(Visitor* visitor, Address address)
     return false;
 }
 
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILE_MARKING)
 const GCInfo* ThreadState::findGCInfo(Address address)
 {
     BaseHeapPage* page = heapPageFromAddress(address);
@@ -576,6 +579,66 @@ const GCInfo* ThreadState::findGCInfo(Address address)
         return page->findGCInfo(address);
     }
     return 0;
+}
+#endif
+
+#if ENABLE(GC_PROFILE_HEAP)
+size_t ThreadState::SnapshotInfo::getClassTag(const GCInfo* gcinfo)
+{
+    HashMap<const GCInfo*, size_t>::AddResult result = classTags.add(gcinfo, classTags.size());
+    if (result.isNewEntry) {
+        liveCount.append(0);
+        deadCount.append(0);
+        generations.append(Vector<int, 8>());
+        generations.last().fill(0, 8);
+    }
+    return result.storedValue->value;
+}
+
+void ThreadState::snapshot()
+{
+    SnapshotInfo info(this);
+    RefPtr<TracedValue> json = TracedValue::create();
+
+#define SNAPSHOT_HEAP(HeapType)                                         \
+    {                                                                   \
+        json->beginDictionary();                                        \
+        json->setString("name", #HeapType);                             \
+        m_heaps[HeapType##Heap]->snapshot(json.get(), &info);          \
+        json->endDictionary();                                          \
+    }
+    json->beginArray("heaps");
+    SNAPSHOT_HEAP(General);
+    FOR_EACH_TYPED_HEAP(SNAPSHOT_HEAP);
+    json->endArray();
+#undef SNAPSHOT_HEAP
+
+    json->setInteger("allocatedSpace", m_stats.totalAllocatedSpace());
+    json->setInteger("objectSpace", m_stats.totalObjectSpace());
+    json->setInteger("liveSize", info.liveSize);
+    json->setInteger("deadSize", info.deadSize);
+    json->setInteger("freeSize", info.freeSize);
+    json->setInteger("pageCount", info.freeSize);
+
+    Vector<String> classNameVector(info.classTags.size());
+    for (HashMap<const GCInfo*, size_t>::iterator it = info.classTags.begin(); it != info.classTags.end(); ++it)
+        classNameVector[it->value] = it->key->m_className;
+
+    json->beginArray("classes");
+    for (size_t i = 0; i < classNameVector.size(); ++i) {
+        json->beginDictionary();
+        json->setString("name", classNameVector[i]);
+        json->setInteger("liveCount", info.liveCount[i]);
+        json->setInteger("deadCount", info.deadCount[i]);
+        json->beginArray("generations");
+        for (size_t j = 0; j < heapObjectGenerations; ++j)
+            json->pushInteger(info.generations[i][j]);
+        json->endArray();
+        json->endDictionary();
+    }
+    json->endArray();
+
+    TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID("blink_gc", "ThreadState", this, json);
 }
 #endif
 
@@ -886,7 +949,17 @@ void ThreadState::performPendingSweep()
     if (!sweepRequested())
         return;
 
-    TRACE_EVENT0("blink", "ThreadState::performPendingSweep");
+#if ENABLE(GC_PROFILE_HEAP)
+    // We snapshot the heap prior to sweeping to get numbers for both resources
+    // that have been allocated since the last GC and for resources that are
+    // going to be freed.
+    bool gcTracingEnabled;
+    TRACE_EVENT_CATEGORY_GROUP_ENABLED("blink_gc", &gcTracingEnabled);
+    if (gcTracingEnabled && m_stats.totalObjectSpace() > 0)
+        snapshot();
+#endif
+
+    TRACE_EVENT0("blink_gc", "ThreadState::performPendingSweep");
 
     double timeStamp = WTF::currentTimeMS();
     const char* samplingState = TRACE_EVENT_GET_SAMPLING_STATE();
@@ -961,7 +1034,7 @@ ThreadState::AttachedThreadStateSet& ThreadState::attachedThreads()
     return threads;
 }
 
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILE_MARKING)
 const GCInfo* ThreadState::findGCInfoFromAllThreads(Address address)
 {
     bool needLockForIteration = !isAnyThreadInGC();
@@ -981,4 +1054,5 @@ const GCInfo* ThreadState::findGCInfoFromAllThreads(Address address)
     return 0;
 }
 #endif
+
 }

@@ -39,13 +39,16 @@
 #include "wtf/Assertions.h"
 #include "wtf/LeakAnnotations.h"
 #include "wtf/PassOwnPtr.h"
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILE_MARKING)
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringHash.h"
 #include <stdio.h>
 #include <utility>
+#endif
+#if ENABLE(GC_PROFILE_HEAP)
+#include "platform/TracedValue.h"
 #endif
 
 #if OS(POSIX)
@@ -57,7 +60,7 @@
 
 namespace blink {
 
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILE_MARKING)
 static String classOf(const void* object)
 {
     const GCInfo* gcInfo = Heap::findGCInfo(reinterpret_cast<Address>(const_cast<void*>(object)));
@@ -369,10 +372,10 @@ public:
         , m_safePointScope(stackState)
         , m_parkedAllThreads(false)
     {
-        TRACE_EVENT0("blink", "Heap::GCScope");
+        TRACE_EVENT0("blink_gc", "Heap::GCScope");
         const char* samplingState = TRACE_EVENT_GET_SAMPLING_STATE();
         if (m_state->isMainThread())
-            TRACE_EVENT_SET_SAMPLING_STATE("blink", "BlinkGCWaiting");
+            TRACE_EVENT_SET_SAMPLING_STATE("blink_gc", "BlinkGCWaiting");
 
         m_state->checkThread();
 
@@ -512,7 +515,7 @@ void LargeHeapObject<Header>::checkAndMarkPointer(Visitor* visitor, Address addr
     ASSERT(contains(address));
     if (!objectContains(address) || heapObjectHeader()->hasDeadMark())
         return;
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILE_MARKING)
     visitor->setHostInfo(&address, "stack");
 #endif
     mark(visitor);
@@ -662,7 +665,7 @@ BaseHeapPage* ThreadHeap<Header>::heapPageFromAddress(Address address)
     return 0;
 }
 
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILE_MARKING)
 template<typename Header>
 const GCInfo* ThreadHeap<Header>::findGCInfoOfLargeHeapObject(Address address)
 {
@@ -671,6 +674,39 @@ const GCInfo* ThreadHeap<Header>::findGCInfoOfLargeHeapObject(Address address)
             return current->gcInfo();
     }
     return 0;
+}
+#endif
+
+#if ENABLE(GC_PROFILE_HEAP)
+#define GC_PROFILE_HEAP_PAGE_SNAPSHOT_THRESHOLD 0
+template<typename Header>
+void ThreadHeap<Header>::snapshot(TracedValue* json, ThreadState::SnapshotInfo* info)
+{
+    size_t previousPageCount = info->pageCount;
+
+    json->beginArray("pages");
+    for (HeapPage<Header>* page = m_firstPage; page; page = page->next(), ++info->pageCount) {
+        // FIXME: To limit the size of the snapshot we only output "threshold" many page snapshots.
+        if (info->pageCount < GC_PROFILE_HEAP_PAGE_SNAPSHOT_THRESHOLD) {
+            json->beginArray();
+            json->pushInteger(reinterpret_cast<intptr_t>(page));
+            page->snapshot(json, info);
+            json->endArray();
+        } else {
+            page->snapshot(0, info);
+        }
+    }
+    json->endArray();
+
+    json->beginArray("largeObjects");
+    for (LargeHeapObject<Header>* current = m_firstLargeHeapObject; current; current = current->next()) {
+        json->beginDictionary();
+        current->snapshot(json, info);
+        json->endDictionary();
+    }
+    json->endArray();
+
+    json->setInteger("pageCount", info->pageCount - previousPageCount);
 }
 #endif
 
@@ -1323,7 +1359,7 @@ void HeapPage<Header>::checkAndMarkPointer(Visitor* visitor, Address address)
     if (!header || header->hasDeadMark())
         return;
 
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILE_MARKING)
     visitor->setHostInfo(&address, "stack");
 #endif
     if (hasVTable(header) && !vTableInitialized(header->payload()))
@@ -1332,7 +1368,7 @@ void HeapPage<Header>::checkAndMarkPointer(Visitor* visitor, Address address)
         visitor->mark(header, traceCallback(header));
 }
 
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILE_MARKING)
 template<typename Header>
 const GCInfo* HeapPage<Header>::findGCInfo(Address address)
 {
@@ -1347,6 +1383,42 @@ const GCInfo* HeapPage<Header>::findGCInfo(Address address)
         return 0;
 
     return header->gcInfo();
+}
+#endif
+
+#if ENABLE(GC_PROFILE_HEAP)
+template<typename Header>
+void HeapPage<Header>::snapshot(TracedValue* json, ThreadState::SnapshotInfo* info)
+{
+    Header* header = 0;
+    for (Address addr = payload(); addr < end(); addr += header->size()) {
+        header = reinterpret_cast<Header*>(addr);
+        if (json)
+            json->pushInteger(header->encodedSize());
+        if (header->isFree()) {
+            info->freeSize += header->size();
+            continue;
+        }
+
+        size_t tag = info->getClassTag(header->gcInfo());
+        size_t age = header->age();
+        if (json)
+            json->pushInteger(tag);
+        if (header->isMarked()) {
+            info->liveCount[tag] += 1;
+            info->liveSize += header->size();
+            // Count objects that are live when promoted to the final generation.
+            if (age == maxHeapObjectAge - 1)
+                info->generations[tag][maxHeapObjectAge] += 1;
+            header->incAge();
+        } else {
+            info->deadCount[tag] += 1;
+            info->deadSize += header->size();
+            // Count objects that are dead before the final generation.
+            if (age < maxHeapObjectAge)
+                info->generations[tag][age] += 1;
+        }
+    }
 }
 #endif
 
@@ -1410,6 +1482,36 @@ void LargeHeapObject<Header>::getStats(HeapStats& stats)
     stats.increaseAllocatedSpace(size());
     stats.increaseObjectSpace(payloadSize());
 }
+
+#if ENABLE(GC_PROFILE_HEAP)
+template<typename Header>
+void LargeHeapObject<Header>::snapshot(TracedValue* json, ThreadState::SnapshotInfo* info)
+{
+    Header* header = heapObjectHeader();
+    size_t tag = info->getClassTag(header->gcInfo());
+    size_t age = header->age();
+    if (isMarked()) {
+        info->liveCount[tag] += 1;
+        info->liveSize += header->size();
+        // Count objects that are live when promoted to the final generation.
+        if (age == maxHeapObjectAge - 1)
+            info->generations[tag][maxHeapObjectAge] += 1;
+        header->incAge();
+    } else {
+        info->deadCount[tag] += 1;
+        info->deadSize += header->size();
+        // Count objects that are dead before the final generation.
+        if (age < maxHeapObjectAge)
+            info->generations[tag][age] += 1;
+    }
+
+    if (json) {
+        json->setInteger("class", tag);
+        json->setInteger("size", header->size());
+        json->setInteger("isMarked", isMarked());
+    }
+}
+#endif
 
 template<typename Entry>
 void HeapExtentCache<Entry>::flush()
@@ -1549,7 +1651,7 @@ bool CallbackStack::popAndInvokeCallback(CallbackStack** first, Visitor* visitor
     // collection. However we assert it in Heap::pushWeakObjectPointerCallback.
 
     VisitorCallback callback = item->callback();
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILE_MARKING)
     if (ThreadState::isAnyThreadInGC()) // weak-processing will also use popAndInvokeCallback
         visitor->setHostInfo(item->object(), classOf(item->object()));
 #endif
@@ -1624,7 +1726,7 @@ bool CallbackStack::hasCallbackForObject(const void* object)
 
 class MarkingVisitor : public Visitor {
 public:
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILE_MARKING)
     typedef HashSet<uintptr_t> LiveObjectSet;
     typedef HashMap<String, LiveObjectSet> LiveObjectMap;
     typedef HashMap<uintptr_t, std::pair<uintptr_t, String> > ObjectGraph;
@@ -1641,7 +1743,7 @@ public:
         if (header->isMarked())
             return;
         header->mark();
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILE_MARKING)
         MutexLocker locker(objectGraphMutex());
         String className(classOf(objectPointer));
         {
@@ -1747,7 +1849,7 @@ public:
     FOR_EACH_TYPED_HEAP(DEFINE_VISITOR_METHODS)
 #undef DEFINE_VISITOR_METHODS
 
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILE_MARKING)
     void reportStats()
     {
         fprintf(stderr, "\n---------- AFTER MARKING -------------------\n");
@@ -1938,12 +2040,14 @@ Address Heap::checkAndMarkPointer(Visitor* visitor, Address address)
     return 0;
 }
 
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILE_MARKING)
 const GCInfo* Heap::findGCInfo(Address address)
 {
     return ThreadState::findGCInfoFromAllThreads(address);
 }
+#endif
 
+#if ENABLE(GC_PROFILE_MARKING)
 void Heap::dumpPathToObjectOnNextGC(void* p)
 {
     static_cast<MarkingVisitor*>(s_markingVisitor)->dumpPathToObjectOnNextGC(p);
@@ -2068,10 +2172,10 @@ void Heap::collectGarbage(ThreadState::StackState stackState)
 
     s_lastGCWasConservative = false;
 
-    TRACE_EVENT0("blink", "Heap::collectGarbage");
-    TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "BlinkGC");
+    TRACE_EVENT0("blink_gc", "Heap::collectGarbage");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("blink_gc", "BlinkGC");
     double timeStamp = WTF::currentTimeMS();
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILE_MARKING)
     static_cast<MarkingVisitor*>(s_markingVisitor)->objectGraph().clear();
 #endif
 
@@ -2109,7 +2213,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState)
     // a dangling pointer.
     orphanedPagePool()->decommitOrphanedPages();
 
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILE_MARKING)
     static_cast<MarkingVisitor*>(s_markingVisitor)->reportStats();
 #endif
 

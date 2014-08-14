@@ -1924,7 +1924,7 @@ TEST(HeapTest, LargeObjects)
         Persistent<LargeObject> object = LargeObject::create();
         EXPECT_TRUE(ThreadState::current()->contains(object));
         EXPECT_TRUE(ThreadState::current()->contains(reinterpret_cast<char*>(object.get()) + sizeof(LargeObject) - 1));
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILE_MARKING)
         const GCInfo* info = ThreadState::current()->findGCInfo(reinterpret_cast<Address>(object.get()));
         EXPECT_NE(reinterpret_cast<const GCInfo*>(0), info);
         EXPECT_EQ(info, ThreadState::current()->findGCInfo(reinterpret_cast<Address>(object.get()) + sizeof(LargeObject) - 1));
