@@ -33,7 +33,7 @@ AppsContainerView::AppsContainerView(AppListMainView* app_list_main_view,
     cols = kExperimentalPreferredCols;
     rows = kExperimentalPreferredRows;
   }
-  apps_grid_view_->SetLayout(kPreferredIconDimension, cols, rows);
+  apps_grid_view_->SetLayout(cols, rows);
   AddChildView(apps_grid_view_);
 
   folder_background_view_ = new FolderBackgroundView();

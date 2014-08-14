@@ -13,7 +13,6 @@
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_item_observer.h"
 #include "ui/app_list/views/cached_label.h"
-#include "ui/gfx/shadow_value.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/custom_button.h"
 
@@ -40,8 +39,6 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
 
   AppListItemView(AppsGridView* apps_grid_view, AppListItem* item);
   virtual ~AppListItemView();
-
-  void SetIconSize(const gfx::Size& size);
 
   void Prerender();
 
@@ -138,9 +135,6 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   ProgressBarView* progress_bar_;  // Owned by views hierarchy.
 
   scoped_ptr<views::MenuRunner> context_menu_runner_;
-
-  gfx::Size icon_size_;
-  gfx::ShadowValues icon_shadows_;
 
   UIState ui_state_;
 

@@ -25,6 +25,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/shadow_value.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/image_view.h"
@@ -60,6 +61,15 @@ const float kDraggingIconScale = 1.5f;
 // Delay in milliseconds of when the dragging UI should be shown for mouse drag.
 const int kMouseDragUIDelayInMs = 200;
 
+const gfx::ShadowValues& GetIconShadows() {
+  CR_DEFINE_STATIC_LOCAL(
+      const gfx::ShadowValues,
+      icon_shadows,
+      (1,
+       gfx::ShadowValue(gfx::Point(0, 2), 2, SkColorSetARGB(0x24, 0, 0, 0))));
+  return icon_shadows;
+}
+
 }  // namespace
 
 // static
@@ -88,11 +98,6 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   title_->Invalidate();
   SetTitleSubpixelAA();
 
-  const gfx::ShadowValue kIconShadows[] = {
-    gfx::ShadowValue(gfx::Point(0, 2), 2, SkColorSetARGB(0x24, 0, 0, 0)),
-  };
-  icon_shadows_.assign(kIconShadows, kIconShadows + arraysize(kIconShadows));
-
   AddChildView(icon_);
   AddChildView(title_);
   AddChildView(progress_bar_);
@@ -112,19 +117,7 @@ AppListItemView::~AppListItemView() {
   item_->RemoveObserver(this);
 }
 
-void AppListItemView::SetIconSize(const gfx::Size& size) {
-  if (icon_size_ == size)
-    return;
-
-  icon_size_ = size;
-  UpdateIcon();
-}
-
 void AppListItemView::UpdateIcon() {
-  // Skip if |icon_size_| has not been determined.
-  if (icon_size_.IsEmpty())
-    return;
-
   gfx::ImageSkia icon = item_->icon();
   // Clear icon and bail out if item icon is empty.
   if (icon.isNull()) {
@@ -132,12 +125,13 @@ void AppListItemView::UpdateIcon() {
     return;
   }
 
-  gfx::ImageSkia resized(gfx::ImageSkiaOperations::CreateResizedImage(icon,
-      skia::ImageOperations::RESIZE_BEST, icon_size_));
+  gfx::ImageSkia resized(gfx::ImageSkiaOperations::CreateResizedImage(
+      icon,
+      skia::ImageOperations::RESIZE_BEST,
+      gfx::Size(kGridIconDimension, kGridIconDimension)));
   if (item_->has_shadow()) {
-    gfx::ImageSkia shadow(
-        gfx::ImageSkiaOperations::CreateImageWithDropShadow(resized,
-                                                            icon_shadows_));
+    gfx::ImageSkia shadow(gfx::ImageSkiaOperations::CreateImageWithDropShadow(
+        resized, GetIconShadows()));
     icon_->SetImage(shadow);
     return;
   }
@@ -313,7 +307,7 @@ void AppListItemView::Layout() {
   icon_->SetBoundsRect(GetIconBoundsForTargetViewBounds(GetContentsBounds()));
   const gfx::Size title_size = title_->GetPreferredSize();
   gfx::Rect title_bounds(rect.x() + (rect.width() - title_size.width()) / 2,
-                         y + icon_size_.height() + kIconTitleSpacing,
+                         y + kGridIconDimension + kIconTitleSpacing,
                          title_size.width(),
                          title_size.height());
   title_bounds.Intersect(rect);
@@ -525,8 +519,8 @@ gfx::Rect AppListItemView::GetIconBoundsForTargetViewBounds(
       title_->font_list().GetExpectedTextWidth(kLeftRightPaddingChars);
   rect.Inset(left_right_padding, kTopPadding, left_right_padding, 0);
 
-  gfx::Rect icon_bounds(rect.x(), rect.y(), rect.width(), icon_size_.height());
-  icon_bounds.Inset(gfx::ShadowValue::GetMargin(icon_shadows_));
+  gfx::Rect icon_bounds(rect.x(), rect.y(), rect.width(), kGridIconDimension);
+  icon_bounds.Inset(gfx::ShadowValue::GetMargin(GetIconShadows()));
   return icon_bounds;
 }
 

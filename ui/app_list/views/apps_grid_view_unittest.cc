@@ -31,7 +31,6 @@ namespace test {
 
 namespace {
 
-const int kIconDimension = 48;
 const int kCols = 2;
 const int kRows = 2;
 const int kTilesPerPage = kCols * kRows;
@@ -102,7 +101,7 @@ class AppsGridViewTest : public views::ViewsTestBase {
     model_->SetFoldersEnabled(true);
 
     apps_grid_view_.reset(new AppsGridView(NULL));
-    apps_grid_view_->SetLayout(kIconDimension, kCols, kRows);
+    apps_grid_view_->SetLayout(kCols, kRows);
     apps_grid_view_->SetBoundsRect(gfx::Rect(gfx::Size(kWidth, kHeight)));
     apps_grid_view_->SetModel(model_.get());
     apps_grid_view_->SetItemList(model_->top_level_item_list());
@@ -423,8 +422,8 @@ TEST_F(AppsGridViewTest, MouseDragItemReorder) {
   gfx::Point from = GetItemTileRectAt(0, 1).CenterPoint();
   int reorder_offset = (GetItemTileRectAt(0, 1).CenterPoint() -
                         GetItemTileRectAt(0, 0).CenterPoint()).Length() -
-                       kReorderDroppingCircleRadius -
-                       kPreferredIconDimension / 2 + 5;
+                       kReorderDroppingCircleRadius - kGridIconDimension / 2 +
+                       5;
   gfx::Point to = gfx::Point(from.x() - reorder_offset, from.y());
 
   // Dragging item_1 closing to item_0 should leads to re-ordering these two

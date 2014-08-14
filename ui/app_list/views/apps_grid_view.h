@@ -73,7 +73,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // Sets fixed layout parameters. After setting this, CalculateLayout below
   // is no longer called to dynamically choosing those layout params.
-  void SetLayout(int icon_size, int cols, int rows_per_page);
+  void SetLayout(int cols, int rows_per_page);
 
   int cols() const { return cols_; }
   int rows_per_page() const { return rows_per_page_; }
@@ -464,7 +464,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   PaginationModel pagination_model_;
   PageSwitcher* page_switcher_view_;  // Owned by views hierarchy.
 
-  gfx::Size icon_size_;
   int cols_;
   int rows_per_page_;
 

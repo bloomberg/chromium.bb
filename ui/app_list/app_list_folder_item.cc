@@ -98,8 +98,7 @@ void AppListFolderItem::UpdateIcon() {
   for (size_t i = 0; i < top_items_.size(); ++i)
     top_icons.push_back(top_items_[i]->icon());
 
-  const gfx::Size icon_size =
-      gfx::Size(kPreferredIconDimension, kPreferredIconDimension);
+  const gfx::Size icon_size = gfx::Size(kGridIconDimension, kGridIconDimension);
   gfx::ImageSkia icon = gfx::ImageSkia(
       new FolderImageSource(top_icons, icon_size),
       icon_size);

@@ -387,8 +387,7 @@ AppsGridView::~AppsGridView() {
   RemoveAllChildViews(true);
 }
 
-void AppsGridView::SetLayout(int icon_size, int cols, int rows_per_page) {
-  icon_size_.SetSize(icon_size, icon_size);
+void AppsGridView::SetLayout(int cols, int rows_per_page) {
   cols_ = cols;
   rows_per_page_ = rows_per_page;
 
@@ -774,7 +773,6 @@ void AppsGridView::InitiateDragFromReparentItemInRootLevelGridView(
   // Note: For testing purpose, SetFillsBoundsOpaquely can be set to true to
   // show the gray background.
   drag_view_->SetFillsBoundsOpaquely(false);
-  drag_view_->SetIconSize(icon_size_);
   drag_view_->SetBoundsRect(drag_view_rect);
   drag_view_->SetDragUIState();  // Hide the title of the drag_view_.
 
@@ -1016,7 +1014,6 @@ views::View* AppsGridView::CreateViewForItemAtIndex(size_t index) {
   DCHECK_LE(index, item_list_->item_count());
   AppListItemView* view = new AppListItemView(this,
                                               item_list_->item_at(index));
-  view->SetIconSize(icon_size_);
   view->SetPaintToLayer(true);
   view->SetFillsBoundsOpaquely(false);
   return view;
@@ -1842,7 +1839,7 @@ void AppsGridView::CancelFolderItemReparent(AppListItemView* drag_item_view) {
   gfx::Rect drag_view_icon_to_grid =
       drag_item_view->ConvertRectToParent(drag_item_view->GetIconBounds());
   drag_view_icon_to_grid.ClampToCenteredSize(
-        gfx::Size(kPreferredIconDimension, kPreferredIconDimension));
+      gfx::Size(kGridIconDimension, kGridIconDimension));
   TopIconAnimationView* icon_view = new TopIconAnimationView(
       drag_item_view->item()->icon(),
       target_icon_rect,
@@ -2029,9 +2026,8 @@ AppsGridView::Index AppsGridView::GetNearestTileForDragView() {
   CalculateNearestTileForVertex(pt, &nearest_tile, &d_min);
 
   const int d_folder_dropping =
-      kFolderDroppingCircleRadius + kPreferredIconDimension / 2;
-  const int d_reorder =
-      kReorderDroppingCircleRadius + kPreferredIconDimension / 2;
+      kFolderDroppingCircleRadius + kGridIconDimension / 2;
+  const int d_reorder = kReorderDroppingCircleRadius + kGridIconDimension / 2;
 
   // If user drags an item across pages to the last page, and targets it
   // to the last empty slot on it, push the last item for re-ordering.

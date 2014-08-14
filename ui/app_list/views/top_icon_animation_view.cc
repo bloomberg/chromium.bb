@@ -15,7 +15,7 @@ namespace app_list {
 TopIconAnimationView::TopIconAnimationView(const gfx::ImageSkia& icon,
                                            const gfx::Rect& scaled_rect,
                                            bool open_folder)
-    : icon_size_(kPreferredIconDimension, kPreferredIconDimension),
+    : icon_size_(kGridIconDimension, kGridIconDimension),
       icon_(new views::ImageView),
       scaled_rect_(scaled_rect),
       open_folder_(open_folder) {
