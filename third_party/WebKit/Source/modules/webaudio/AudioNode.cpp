@@ -108,8 +108,9 @@ void AudioNode::dispose()
 {
     ASSERT(isMainThread());
     ASSERT(context()->isGraphOwner());
-#if ENABLE(OILPAN)
+
     context()->removeAutomaticPullNode(this);
+#if ENABLE(OILPAN)
     for (unsigned i = 0; i < m_outputs.size(); ++i)
         output(i)->disconnectAll();
 #endif

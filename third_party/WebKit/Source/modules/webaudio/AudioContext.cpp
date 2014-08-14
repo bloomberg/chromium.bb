@@ -803,12 +803,6 @@ void AudioContext::markForDeletion(AudioNode* node)
         m_nodesToDelete.append(node);
     else
         m_nodesMarkedForDeletion.append(node);
-
-    // This is probably the best time for us to remove the node from automatic pull list,
-    // since all connections are gone and we hold the graph lock. Then when handlePostRenderTasks()
-    // gets a chance to schedule the deletion work, updateAutomaticPullNodes() also gets a chance to
-    // modify m_renderingAutomaticPullNodes.
-    removeAutomaticPullNode(node);
 }
 
 void AudioContext::scheduleNodeDeletion()
