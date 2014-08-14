@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_BATTERY_STATUS_BATTERY_STATUS_DISPATCHER_H_
 #define CONTENT_RENDERER_BATTERY_STATUS_BATTERY_STATUS_DISPATCHER_H_
 
-#include "content/public/renderer/platform_event_observer.h"
+#include "content/public/renderer/render_process_observer.h"
 
 namespace blink {
 class WebBatteryStatus;
@@ -15,24 +15,26 @@ class WebBatteryStatusListener;
 namespace content {
 class RenderThread;
 
-class CONTENT_EXPORT BatteryStatusDispatcher
-    : NON_EXPORTED_BASE(
-          public PlatformEventObserver<blink::WebBatteryStatusListener>) {
+class CONTENT_EXPORT BatteryStatusDispatcher : public RenderProcessObserver {
  public:
   explicit BatteryStatusDispatcher(RenderThread* thread);
   virtual ~BatteryStatusDispatcher();
 
-  // PlatformEventObserver public methods.
+  // RenderProcessObserver method.
   virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void SendFakeDataForTesting(void* data) OVERRIDE;
+
+  // Sets the listener to receive battery status updates. Returns true if the
+  // registration was successful.
+  bool SetListener(blink::WebBatteryStatusListener* listener);
 
  protected:
-  // PlatformEventObserver protected methods.
-  virtual void SendStartMessage() OVERRIDE;
-  virtual void SendStopMessage() OVERRIDE;
+  virtual bool Start();
+  virtual bool Stop();
 
  private:
   void OnDidChange(const blink::WebBatteryStatus& status);
+
+  blink::WebBatteryStatusListener* listener_;
 
   DISALLOW_COPY_AND_ASSIGN(BatteryStatusDispatcher);
 };

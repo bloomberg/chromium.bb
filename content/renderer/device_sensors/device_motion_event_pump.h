@@ -19,27 +19,27 @@ namespace content {
 typedef SharedMemorySeqLockReader<blink::WebDeviceMotionData>
     DeviceMotionSharedMemoryReader;
 
-class CONTENT_EXPORT DeviceMotionEventPump
-    : public DeviceSensorEventPump<blink::WebDeviceMotionListener> {
+class CONTENT_EXPORT DeviceMotionEventPump : public DeviceSensorEventPump {
  public:
-  explicit DeviceMotionEventPump(RenderThread* thread);
+  DeviceMotionEventPump();
+  explicit DeviceMotionEventPump(int pump_delay_millis);
   virtual ~DeviceMotionEventPump();
 
-  // // PlatformEventObserver.
+  // Sets the listener to receive updates for device motion data at
+  // regular intervals. Returns true if the registration was successful.
+  bool SetListener(blink::WebDeviceMotionListener* listener);
+
+  // RenderProcessObserver implementation.
   virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void SendFakeDataForTesting(void* fake_data) OVERRIDE;
 
  protected:
   virtual void FireEvent() OVERRIDE;
   virtual bool InitializeReader(base::SharedMemoryHandle handle) OVERRIDE;
+  virtual bool SendStartMessage() OVERRIDE;
+  virtual bool SendStopMessage() OVERRIDE;
 
-  // PlatformEventObserver.
-  virtual void SendStartMessage() OVERRIDE;
-  virtual void SendStopMessage() OVERRIDE;
-
+  blink::WebDeviceMotionListener* listener_;
   scoped_ptr<DeviceMotionSharedMemoryReader> reader_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeviceMotionEventPump);
 };
 
 }  // namespace content

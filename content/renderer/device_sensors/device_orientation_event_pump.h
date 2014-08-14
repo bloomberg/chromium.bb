@@ -19,34 +19,34 @@ namespace content {
 typedef SharedMemorySeqLockReader<blink::WebDeviceOrientationData>
     DeviceOrientationSharedMemoryReader;
 
-class CONTENT_EXPORT DeviceOrientationEventPump
-    : public DeviceSensorEventPump<blink::WebDeviceOrientationListener> {
+class CONTENT_EXPORT DeviceOrientationEventPump : public DeviceSensorEventPump {
  public:
   // Angle threshold beyond which two orientation events are considered
   // sufficiently different.
   static const double kOrientationThreshold;
 
-  explicit DeviceOrientationEventPump(RenderThread* thread);
+  DeviceOrientationEventPump();
+  explicit DeviceOrientationEventPump(int pump_delay_millis);
   virtual ~DeviceOrientationEventPump();
 
-  // PlatformEventObserver.
+  // Sets the listener to receive updates for device orientation data at
+  // regular intervals. Returns true if the registration was successful.
+  bool SetListener(blink::WebDeviceOrientationListener* listener);
+
+  // RenderProcessObserver implementation.
   virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void SendFakeDataForTesting(void* data) OVERRIDE;
 
  protected:
   virtual void FireEvent() OVERRIDE;
   virtual bool InitializeReader(base::SharedMemoryHandle handle) OVERRIDE;
-
-  // PlatformEventObserver.
-  virtual void SendStartMessage() OVERRIDE;
-  virtual void SendStopMessage() OVERRIDE;
+  virtual bool SendStartMessage() OVERRIDE;
+  virtual bool SendStopMessage() OVERRIDE;
 
   bool ShouldFireEvent(const blink::WebDeviceOrientationData& data) const;
 
+  blink::WebDeviceOrientationListener* listener_;
   blink::WebDeviceOrientationData data_;
   scoped_ptr<DeviceOrientationSharedMemoryReader> reader_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeviceOrientationEventPump);
 };
 
 }  // namespace content

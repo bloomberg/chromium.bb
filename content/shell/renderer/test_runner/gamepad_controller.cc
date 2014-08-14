@@ -137,7 +137,7 @@ void GamepadControllerBindings::SetAxisData(int index, int axis, double data) {
 }
 
 GamepadController::GamepadController()
-    : RendererGamepadProvider(0),
+    : listener_(NULL),
       weak_factory_(this) {
   Reset();
 }
@@ -162,14 +162,9 @@ void GamepadController::SampleGamepads(blink::WebGamepads& gamepads) {
   memcpy(&gamepads, &gamepads_, sizeof(blink::WebGamepads));
 }
 
-bool GamepadController::OnControlMessageReceived(const IPC::Message& msg) {
-  return false;
-}
-
-void GamepadController::SendStartMessage() {
-}
-
-void GamepadController::SendStopMessage() {
+void GamepadController::SetGamepadListener(
+    blink::WebGamepadListener* listener) {
+  listener_ = listener;
 }
 
 void GamepadController::Connect(int index) {
@@ -188,8 +183,8 @@ void GamepadController::DispatchConnected(int index) {
       || !gamepads_.items[index].connected)
     return;
   const WebGamepad& pad = gamepads_.items[index];
-  if (listener())
-    listener()->didConnectGamepad(index, pad);
+  if (listener_)
+    listener_->didConnectGamepad(index, pad);
 }
 
 void GamepadController::Disconnect(int index) {
@@ -202,8 +197,8 @@ void GamepadController::Disconnect(int index) {
     if (gamepads_.items[i].connected)
       gamepads_.length = i + 1;
   }
-  if (listener())
-    listener()->didDisconnectGamepad(index, pad);
+  if (listener_)
+    listener_->didDisconnectGamepad(index, pad);
 }
 
 void GamepadController::SetId(int index, const std::string& src) {

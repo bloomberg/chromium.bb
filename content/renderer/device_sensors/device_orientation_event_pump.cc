@@ -14,11 +14,21 @@ namespace content {
 
 const double DeviceOrientationEventPump::kOrientationThreshold = 0.1;
 
-DeviceOrientationEventPump::DeviceOrientationEventPump(RenderThread* thread)
-    : DeviceSensorEventPump<blink::WebDeviceOrientationListener>(thread) {
+DeviceOrientationEventPump::DeviceOrientationEventPump()
+    : DeviceSensorEventPump(), listener_(0) {
+}
+
+DeviceOrientationEventPump::DeviceOrientationEventPump(int pump_delay_millis)
+    : DeviceSensorEventPump(pump_delay_millis), listener_(0) {
 }
 
 DeviceOrientationEventPump::~DeviceOrientationEventPump() {
+}
+
+bool DeviceOrientationEventPump::SetListener(
+    blink::WebDeviceOrientationListener* listener) {
+  listener_ = listener;
+  return listener_ ? RequestStart() : Stop();
 }
 
 bool DeviceOrientationEventPump::OnControlMessageReceived(
@@ -32,11 +42,11 @@ bool DeviceOrientationEventPump::OnControlMessageReceived(
 }
 
 void DeviceOrientationEventPump::FireEvent() {
-  DCHECK(listener());
+  DCHECK(listener_);
   blink::WebDeviceOrientationData data;
   if (reader_->GetLatestData(&data) && ShouldFireEvent(data)) {
     memcpy(&data_, &data, sizeof(data));
-    listener()->didChangeDeviceOrientation(data);
+    listener_->didChangeDeviceOrientation(data);
   }
 }
 
@@ -74,19 +84,12 @@ bool DeviceOrientationEventPump::InitializeReader(
   return reader_->Initialize(handle);
 }
 
-void DeviceOrientationEventPump::SendStartMessage() {
-  RenderThread::Get()->Send(new DeviceOrientationHostMsg_StartPolling());
+bool DeviceOrientationEventPump::SendStartMessage() {
+  return RenderThread::Get()->Send(new DeviceOrientationHostMsg_StartPolling());
 }
 
-void DeviceOrientationEventPump::SendStopMessage() {
-  RenderThread::Get()->Send(new DeviceOrientationHostMsg_StopPolling());
-}
-
-void DeviceOrientationEventPump::SendFakeDataForTesting(void* fake_data) {
-  blink::WebDeviceOrientationData data =
-      *static_cast<blink::WebDeviceOrientationData*>(fake_data);
-
-  listener()->didChangeDeviceOrientation(data);
+bool DeviceOrientationEventPump::SendStopMessage() {
+  return RenderThread::Get()->Send(new DeviceOrientationHostMsg_StopPolling());
 }
 
 }  // namespace content

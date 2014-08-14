@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/battery_status_messages.h"
-#include "content/public/test/mock_render_thread.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebBatteryStatusListener.h"
@@ -36,16 +35,53 @@ class MockBatteryStatusListener : public blink::WebBatteryStatusListener {
   DISALLOW_COPY_AND_ASSIGN(MockBatteryStatusListener);
 };
 
-class BatteryStatusDispatcherTest : public testing::Test {
+class BatteryStatusDispatcherForTesting : public BatteryStatusDispatcher {
+ public:
+  BatteryStatusDispatcherForTesting()
+      : BatteryStatusDispatcher(0),
+        start_invoked_(false),
+        stop_invoked_(false) { }
+
+  virtual ~BatteryStatusDispatcherForTesting() { }
+
+  bool start_invoked() const { return start_invoked_; }
+  bool stop_invoked() const { return stop_invoked_; }
+
+ protected:
+  virtual bool Start() OVERRIDE {
+    start_invoked_ = true;
+    return true;
+  }
+
+  virtual bool Stop() OVERRIDE {
+    stop_invoked_ = true;
+    return true;
+  }
+
  private:
-  // We need to create a MockRenderThread so RenderThread::Get() doesn't return
-  // null.
-  MockRenderThread render_thread_;
+  bool start_invoked_;
+  bool stop_invoked_;
+
+  DISALLOW_COPY_AND_ASSIGN(BatteryStatusDispatcherForTesting);
 };
 
-TEST_F(BatteryStatusDispatcherTest, UpdateListener) {
+TEST(BatteryStatusDispatcherTest, Start) {
   MockBatteryStatusListener listener;
-  BatteryStatusDispatcher dispatcher(0);
+  BatteryStatusDispatcherForTesting dispatcher;
+
+  EXPECT_FALSE(dispatcher.start_invoked());
+  EXPECT_FALSE(dispatcher.stop_invoked());
+
+  dispatcher.SetListener(&listener);
+  EXPECT_TRUE(dispatcher.start_invoked());
+
+  dispatcher.SetListener(0);
+  EXPECT_TRUE(dispatcher.stop_invoked());
+}
+
+TEST(BatteryStatusDispatcherTest, UpdateListener) {
+  MockBatteryStatusListener listener;
+  BatteryStatusDispatcherForTesting dispatcher;
 
   blink::WebBatteryStatus status;
   status.charging = true;
@@ -53,7 +89,8 @@ TEST_F(BatteryStatusDispatcherTest, UpdateListener) {
   status.dischargingTime = 200;
   status.level = 0.5;
 
-  dispatcher.Start(&listener);
+  dispatcher.SetListener(&listener);
+  EXPECT_TRUE(dispatcher.start_invoked());
 
   BatteryStatusMsg_DidChange message(status);
   dispatcher.OnControlMessageReceived(message);
@@ -65,15 +102,17 @@ TEST_F(BatteryStatusDispatcherTest, UpdateListener) {
   EXPECT_EQ(status.dischargingTime, received_status.dischargingTime);
   EXPECT_EQ(status.level, received_status.level);
 
-  dispatcher.Stop();
+  dispatcher.SetListener(0);
+  EXPECT_TRUE(dispatcher.stop_invoked());
 }
 
-TEST_F(BatteryStatusDispatcherTest, NoUpdateWhenNullListener) {
+TEST(BatteryStatusDispatcherTest, NoUpdateWhenNullListener) {
   MockBatteryStatusListener listener;
-  BatteryStatusDispatcher dispatcher(0);
+  BatteryStatusDispatcherForTesting dispatcher;
 
-  dispatcher.Start(0);
-  dispatcher.Stop();
+  dispatcher.SetListener(0);
+  EXPECT_FALSE(dispatcher.start_invoked());
+  EXPECT_TRUE(dispatcher.stop_invoked());
 
   blink::WebBatteryStatus status;
   BatteryStatusMsg_DidChange message(status);

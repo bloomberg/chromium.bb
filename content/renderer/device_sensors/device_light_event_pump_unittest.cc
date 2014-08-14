@@ -39,15 +39,14 @@ class MockDeviceLightListener : public blink::WebDeviceLightListener {
 
 class DeviceLightEventPumpForTesting : public DeviceLightEventPump {
  public:
-  DeviceLightEventPumpForTesting()
-      : DeviceLightEventPump(0) {}
+  DeviceLightEventPumpForTesting() {}
   virtual ~DeviceLightEventPumpForTesting() {}
 
   void OnDidStart(base::SharedMemoryHandle renderer_handle) {
     DeviceLightEventPump::OnDidStart(renderer_handle);
   }
-  virtual void SendStartMessage() OVERRIDE { }
-  virtual void SendStopMessage() OVERRIDE { }
+  virtual bool SendStartMessage() OVERRIDE { return true; }
+  virtual bool SendStopMessage() OVERRIDE { return true; }
   virtual void FireEvent() OVERRIDE {
     DeviceLightEventPump::FireEvent();
     Stop();
@@ -101,7 +100,7 @@ TEST_F(DeviceLightEventPumpTest, DidStartPolling) {
 
   InitBuffer();
 
-  light_pump()->Start(listener());
+  light_pump()->SetListener(listener());
   light_pump()->OnDidStart(handle());
 
   base::MessageLoop::current()->Run();
@@ -116,7 +115,7 @@ TEST_F(DeviceLightEventPumpTest, DidStartPollingValuesEqual) {
 
   InitBuffer();
 
-  light_pump()->Start(listener());
+  light_pump()->SetListener(listener());
   light_pump()->OnDidStart(handle());
 
   base::MessageLoop::current()->Run();
@@ -129,10 +128,6 @@ TEST_F(DeviceLightEventPumpTest, DidStartPollingValuesEqual) {
   // Set next value to be same as previous value.
   buffer()->data.value = 1.0;
   listener()->set_did_change_device_light(false);
-
-  // Reset the pump's listener.
-  light_pump()->Start(listener());
-
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&DeviceLightEventPumpForTesting::FireEvent,

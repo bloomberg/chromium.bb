@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_RENDERER_RENDERER_GAMEPAD_PROVIDER_H_
-#define CONTENT_PUBLIC_RENDERER_RENDERER_GAMEPAD_PROVIDER_H_
-
-#include "content/public/renderer/platform_event_observer.h"
+#ifndef CONTENT_GAMEPAD_RENDERER_PROVIDER_H_
+#define CONTENT_GAMEPAD_RENDERER_PROVIDER_H_
 
 namespace blink {
 class WebGamepadListener;
@@ -15,18 +13,16 @@ class WebGamepads;
 namespace content {
 
 // Provides gamepad data and events for blink.
-class RendererGamepadProvider
-    : public PlatformEventObserver<blink::WebGamepadListener> {
+class RendererGamepadProvider {
  public:
-  explicit RendererGamepadProvider(RenderThread* thread)
-      : PlatformEventObserver<blink::WebGamepadListener>(thread) { }
   // Provides latest snapshot of gamepads.
   virtual void SampleGamepads(blink::WebGamepads& gamepads) = 0;
 
+  // Registers listener for be notified of events.
+  virtual void SetGamepadListener(blink::WebGamepadListener* listener) = 0;
+
  protected:
   virtual ~RendererGamepadProvider() {}
-
-  DISALLOW_COPY_AND_ASSIGN(RendererGamepadProvider);
 };
 
 } // namespace content
