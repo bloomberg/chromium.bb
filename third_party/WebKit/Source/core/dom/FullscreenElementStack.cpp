@@ -171,14 +171,14 @@ void FullscreenElementStack::documentWasDisposed()
 
 bool FullscreenElementStack::elementReady(Element& element, RequestType requestType)
 {
-    // A fullscreen element ready check for an element returns true if all of the following are
-    // true, and false otherwise:
+    // A fullscreen element ready check for an element |element| returns true if all of the
+    // following are true, and false otherwise:
 
-    // element is in a document.
+    // |element| is in a document.
     if (!element.inDocument())
         return false;
 
-    // element's node document's fullscreen enabled flag is set.
+    // |element|'s node document's fullscreen enabled flag is set.
     if (!fullscreenIsAllowedForAllOwners(element.document())) {
         if (requestType == PrefixedVideoRequest)
             UseCounter::count(element.document(), UseCounter::VideoFullscreenAllowedExemption);
@@ -186,14 +186,14 @@ bool FullscreenElementStack::elementReady(Element& element, RequestType requestT
             return false;
     }
 
-    // element's node document's fullscreen element stack is either empty or its top element is an
-    // ancestor of element.
+    // |element|'s node document's fullscreen element stack is either empty or its top element is an
+    // ancestor of |element|.
     if (Element* topElement = fullscreenElementFrom(element.document())) {
         if (!element.isDescendantOf(topElement))
             return false;
     }
 
-    // element has no ancestor element whose local name is iframe and namespace is the HTML
+    // |element| has no ancestor element whose local name is iframe and namespace is the HTML
     // namespace.
     if (Traversal<HTMLIFrameElement>::firstAncestor(element))
         return false;
