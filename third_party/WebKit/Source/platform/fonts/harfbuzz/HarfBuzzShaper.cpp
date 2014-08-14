@@ -522,6 +522,23 @@ void HarfBuzzShaper::setFontFeatures()
         break;
     }
 
+    static hb_feature_t hwid = { HB_TAG('h', 'w', 'i', 'd'), 1, 0, static_cast<unsigned>(-1) };
+    static hb_feature_t twid = { HB_TAG('t', 'w', 'i', 'd'), 1, 0, static_cast<unsigned>(-1) };
+    static hb_feature_t qwid = { HB_TAG('d', 'w', 'i', 'd'), 1, 0, static_cast<unsigned>(-1) };
+    switch (description.widthVariant()) {
+    case HalfWidth:
+        m_features.append(hwid);
+        break;
+    case ThirdWidth:
+        m_features.append(twid);
+        break;
+    case QuarterWidth:
+        m_features.append(qwid);
+        break;
+    case RegularWidth:
+        break;
+    }
+
     FontFeatureSettings* settings = description.featureSettings();
     if (!settings)
         return;

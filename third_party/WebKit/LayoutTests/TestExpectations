@@ -1304,3 +1304,9 @@ crbug.com/402379 [ Win7 Debug ] storage/indexeddb/cursor-continue-validity.html 
 crbug.com/402379 [ Win7 Debug ] storage/indexeddb/mozilla/indexes.html [ Pass Slow ]
 
 crbug.com/402801 [ XP Release ] http/tests/misc/location-replace-crossdomain.html [ Pass Slow ]
+
+# Following test needs to be rebase lines after https://codereview.chromium.org/263363005
+crbug.com/350404 [ Mac Win ] fast/text/font-variant-width.html [ NeedsRebaseline ]
+crbug.com/350404 fast/text/international/spaces-combined-in-vertical-text.html [ NeedsRebaseline ]
+crbug.com/350404 [ Mac Win ] virtual/antialiasedtext/fast/text/font-variant-width.html [ NeedsRebaseline ]
+crbug.com/350404 [ Mac Win ] virtual/antialiasedtext/fast/text/international/spaces-combined-in-vertical-text.html [ NeedsRebaseline ]

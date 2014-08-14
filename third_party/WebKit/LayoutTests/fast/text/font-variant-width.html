@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<title>Font Width Variant Text Combine</title>
+<style>
+@font-face {
+    font-family: CSSHWOrientationTest;
+    src: url(../../third_party/CSSOrientationTest/CSSHWOrientationTest.ttf) format("truetype");
+}
+
+.vertical {
+    font-family: "CSSHWOrientationTest";
+    font-size: 24px;
+    text-rendering: geometricPrecision;
+    -webkit-writing-mode: vertical-lr;
+    line-height: 100%;
+    margin: 0;
+    padding: 0px;
+}
+
+.combine {
+   -webkit-text-combine: horizontal;
+}
+
+</style>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+
+    <script type="text/javascript">
+    setup({ explicit_done: true });
+    function testWidthVariant() {
+        var EXPECTED_COMBINED_UNTIL = 4;
+        var EXPECTED_LINE_HEIGHT = 24;
+        var NUM_TESTS = 9;
+        for (var testId = 0; testId < NUM_TESTS; testId++) {
+            rectHeight = document.getElementsByClassName("combine")[testId].getBoundingClientRect().height;
+            if (testId < EXPECTED_COMBINED_UNTIL) {
+                test(function() {
+                    assert_equals(rectHeight, EXPECTED_LINE_HEIGHT, "Numbers laid out in one combining block.");
+                }, "Numbers expected to be laid out in one combining block");
+            } else {
+                test(function() {
+                    assert_true(rectHeight > EXPECTED_LINE_HEIGHT, EXPECTED_LINE_HEIGHT, "Number laid out vertically, not combined.");
+            }, "Number laid out vertically, not combined.");
+            }
+        }
+        done();
+    }
+    </script>
+</head>
+
+<body onload="testWidthVariant();">
+    <div class="vertical">
+        <!-- horizontally combined -->
+        <div><span class="combine">1</span></div>
+        <div><span class="combine">9</span></div>
+        <div><span class="combine">11</span></div>
+        <div><span class="combine">99</span></div>
+        <!-- vertical -->
+        <div><span class="combine">111</span></div>
+        <div><span class="combine">999</span></div>
+        <div><span class="combine">1234</span></div>
+        <div><span class="combine">1111</span></div>
+        <div><span class="combine">9999</span></div>
+    </div>
+    <div id="log"></div>
+</body>
+</html>
+
