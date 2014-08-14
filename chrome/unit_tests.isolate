@@ -108,6 +108,7 @@
           '<(PRODUCT_DIR)/osmesa.dll',
           '<(PRODUCT_DIR)/verifier_test_dll_1.dll',
           '<(PRODUCT_DIR)/verifier_test_dll_2.dll',
+          'test/data/safe_browsing/signed_binary.dll',
         ],
         'isolate_dependency_untracked': [
           '../ppapi/lib/gl/include/KHR/',

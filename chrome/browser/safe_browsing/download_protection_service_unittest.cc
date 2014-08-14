@@ -92,6 +92,8 @@ class FakeSafeBrowsingService : public SafeBrowsingService {
     return mock_database_manager_;
   }
 
+  virtual void RegisterAllDelayedAnalysis() OVERRIDE { }
+
  private:
   MockSafeBrowsingDatabaseManager* mock_database_manager_;
 

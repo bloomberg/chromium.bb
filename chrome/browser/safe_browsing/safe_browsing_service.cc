@@ -24,6 +24,7 @@
 #include "chrome/browser/prefs/tracked/tracked_preference_validation_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/safe_browsing/binary_integrity_analyzer.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/download_protection_service.h"
@@ -258,6 +259,11 @@ void SafeBrowsingService::Initialize() {
                        content::NotificationService::AllSources());
   prefs_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                        content::NotificationService::AllSources());
+
+#if defined(FULL_SAFE_BROWSING)
+  // Register all the delayed analysis to the incident reporting service.
+  RegisterAllDelayedAnalysis();
+#endif
 }
 
 void SafeBrowsingService::ShutDown() {
@@ -350,6 +356,10 @@ SafeBrowsingDatabaseManager* SafeBrowsingService::CreateDatabaseManager() {
 #else
   return NULL;
 #endif
+}
+
+void SafeBrowsingService::RegisterAllDelayedAnalysis() {
+  safe_browsing::RegisterBinaryIntegrityAnalysis();
 }
 
 void SafeBrowsingService::InitURLRequestContextOnIOThread(

@@ -351,8 +351,13 @@ message ClientIncidentReport {
       repeated string split_key = 3;
       optional ValueState value_state = 4;
     }
+    message BinaryIntegrityIncident {
+      optional string file_basename = 1;
+      optional ClientDownloadRequest.SignatureInfo signature = 2;
+    }
     optional int64 incident_time_msec = 1;
     optional TrackedPreferenceIncident tracked_preference = 2;
+    optional BinaryIntegrityIncident binary_integrity = 3;
   }
 
   repeated IncidentData incident = 1;

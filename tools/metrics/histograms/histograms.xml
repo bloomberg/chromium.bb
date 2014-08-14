@@ -42539,6 +42539,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <enum name="IncidentType" type="int">
   <int value="1" label="TrackedPreference"/>
+  <int value="2" label="BinaryIntegrity"/>
 </enum>
 
 <enum name="Inconsistencies" type="int">

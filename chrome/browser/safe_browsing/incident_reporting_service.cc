@@ -23,6 +23,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/tracked/tracked_preference_validation_delegate.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/binary_integrity_incident_handlers.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/environment_data_collection.h"
 #include "chrome/browser/safe_browsing/incident_report_uploader_impl.h"
@@ -45,6 +46,7 @@ enum IncidentType {
   // Start with 1 rather than zero; otherwise there won't be enough buckets for
   // the histogram.
   TRACKED_PREFERENCE = 1,
+  BINARY_INTEGRITY = 2,
   // Values for new incident types go here.
   NUM_INCIDENT_TYPES
 };
@@ -81,6 +83,8 @@ size_t CountIncidents(const ClientIncidentReport_IncidentData& incident) {
   size_t result = 0;
   if (incident.has_tracked_preference())
     ++result;
+  if (incident.has_binary_integrity())
+    ++result;
   // Add detection for new incident types here.
   return result;
 }
@@ -90,9 +94,11 @@ IncidentType GetIncidentType(
     const ClientIncidentReport_IncidentData& incident_data) {
   if (incident_data.has_tracked_preference())
     return TRACKED_PREFERENCE;
+  if (incident_data.has_binary_integrity())
+    return BINARY_INTEGRITY;
 
   // Add detection for new incident types here.
-  COMPILE_ASSERT(TRACKED_PREFERENCE + 1 == NUM_INCIDENT_TYPES,
+  COMPILE_ASSERT(BINARY_INTEGRITY + 1 == NUM_INCIDENT_TYPES,
                  add_support_for_new_types);
   NOTREACHED();
   return NUM_INCIDENT_TYPES;
@@ -121,9 +127,13 @@ PersistentIncidentState ComputeIncidentState(
       state.key = GetTrackedPreferenceIncidentKey(incident);
       state.digest = GetTrackedPreferenceIncidentDigest(incident);
       break;
+    case BINARY_INTEGRITY:
+      state.key = GetBinaryIntegrityIncidentKey(incident);
+      state.digest = GetBinaryIntegrityIncidentDigest(incident);
+      break;
     // Add handling for new incident types here.
     default:
-      COMPILE_ASSERT(TRACKED_PREFERENCE + 1 == NUM_INCIDENT_TYPES,
+      COMPILE_ASSERT(BINARY_INTEGRITY + 1 == NUM_INCIDENT_TYPES,
                      add_support_for_new_types);
       NOTREACHED();
       break;
