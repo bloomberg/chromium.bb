@@ -334,4 +334,45 @@ TEST(ScrollViewTest, ClipHeightToScrollbarUsesWidth) {
   EXPECT_EQ(gfx::Size(kWidth, kMaxHeight), scroll_view.size());
 }
 
+TEST(ScrollViewTest, CornerViewVisibility) {
+  ScrollView scroll_view;
+  View* contents = new View;
+  scroll_view.SetContents(contents);
+  scroll_view.SetBoundsRect(gfx::Rect(0, 0, 100, 100));
+  View* corner_view = scroll_view.corner_view_;
+
+  // Corner view should be visible when both scrollbars are visible.
+  contents->SetBounds(0, 0, 200, 200);
+  scroll_view.Layout();
+  EXPECT_EQ(&scroll_view, corner_view->parent());
+  EXPECT_TRUE(corner_view->visible());
+
+  // Corner view should be aligned to the scrollbars.
+  EXPECT_EQ(scroll_view.vertical_scroll_bar()->x(), corner_view->x());
+  EXPECT_EQ(scroll_view.horizontal_scroll_bar()->y(), corner_view->y());
+  EXPECT_EQ(scroll_view.GetScrollBarWidth(), corner_view->width());
+  EXPECT_EQ(scroll_view.GetScrollBarHeight(), corner_view->height());
+
+  // Corner view should be removed when only the vertical scrollbar is visible.
+  contents->SetBounds(0, 0, 50, 200);
+  scroll_view.Layout();
+  EXPECT_FALSE(corner_view->parent());
+
+  // ... or when only the horizontal scrollbar is visible.
+  contents->SetBounds(0, 0, 200, 50);
+  scroll_view.Layout();
+  EXPECT_FALSE(corner_view->parent());
+
+  // ... or when no scrollbar is visible.
+  contents->SetBounds(0, 0, 50, 50);
+  scroll_view.Layout();
+  EXPECT_FALSE(corner_view->parent());
+
+  // Corner view should reappear when both scrollbars reappear.
+  contents->SetBounds(0, 0, 200, 200);
+  scroll_view.Layout();
+  EXPECT_EQ(&scroll_view, corner_view->parent());
+  EXPECT_TRUE(corner_view->visible());
+}
+
 }  // namespace views

@@ -92,6 +92,7 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
                                  bool is_positive) OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ScrollViewTest, CornerViewVisibility);
   class Viewport;
 
   // Used internally by SetHeader() and SetContents() to reset the view.  Sets
@@ -111,7 +112,7 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
                                    bool* horiz_is_shown,
                                    bool* vert_is_shown) const;
 
-  // Shows or hides the scrollbar/resize_corner based on the value of
+  // Shows or hides the scrollbar/corner_view based on the value of
   // |should_show|.
   void SetControlVisibility(View* control, bool should_show);
 
@@ -134,8 +135,8 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   // Vertical scrollbar.
   ScrollBar* vert_sb_;
 
-  // Resize corner.
-  View* resize_corner_;
+  // Corner view.
+  View* corner_view_;
 
   // The min and max height for the bounded scroll view. These are negative
   // values if the view is not bounded.
