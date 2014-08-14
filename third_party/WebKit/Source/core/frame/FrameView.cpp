@@ -1254,7 +1254,7 @@ void FrameView::scrollContentsIfNeeded()
 
 bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll)
 {
-    if (!contentsInCompositedLayer())
+    if (!contentsInCompositedLayer() || hasSlowRepaintObjects())
         return false;
 
     if (!m_viewportConstrainedObjects || m_viewportConstrainedObjects->isEmpty()) {
