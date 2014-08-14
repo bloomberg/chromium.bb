@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.dom_distiller;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -50,6 +51,12 @@ public class DistilledPagePrefsView extends RadioGroup
     public static DistilledPagePrefsView create(Context context) {
         return (DistilledPagePrefsView) LayoutInflater.from(context)
                 .inflate(VIEW_LAYOUT, null);
+    }
+
+    public static void showDialog(Context context) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setView(DistilledPagePrefsView.create(context));
+        builder.show();
     }
 
     @Override
