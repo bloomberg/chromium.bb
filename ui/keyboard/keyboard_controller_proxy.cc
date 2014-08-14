@@ -169,6 +169,15 @@ void KeyboardControllerProxy::LoadSystemKeyboard() {
 void KeyboardControllerProxy::ReloadKeyboardIfNeeded() {
   DCHECK(keyboard_contents_);
   if (keyboard_contents_->GetURL() != GetVirtualKeyboardUrl()) {
+    if (keyboard_contents_->GetURL().GetOrigin() !=
+        GetVirtualKeyboardUrl().GetOrigin()) {
+      // Sets keyboard window height to 0 before navigate to a keyboard in a
+      // different extension. This keeps the UX the same as Android.
+      gfx::Rect bounds = GetKeyboardWindow()->bounds();
+      bounds.set_y(bounds.y() + bounds.height());
+      bounds.set_height(0);
+      GetKeyboardWindow()->SetBounds(bounds);
+    }
     LoadContents(GetVirtualKeyboardUrl());
   }
 }
