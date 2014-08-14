@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/system/raw_shared_buffer.h"
+#include "mojo/embedder/simple_platform_shared_buffer.h"
 
 #include <limits>
 
@@ -12,24 +12,24 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
-namespace system {
+namespace embedder {
 namespace {
 
-TEST(RawSharedBufferTest, Basic) {
+TEST(SimplePlatformSharedBufferTest, Basic) {
   const size_t kNumInts = 100;
   const size_t kNumBytes = kNumInts * sizeof(int);
   // A fudge so that we're not just writing zero bytes 75% of the time.
   const int kFudge = 1234567890;
 
   // Make some memory.
-  scoped_refptr<RawSharedBuffer> buffer(RawSharedBuffer::Create(kNumBytes));
+  scoped_refptr<SimplePlatformSharedBuffer> buffer(
+      SimplePlatformSharedBuffer::Create(kNumBytes));
   ASSERT_TRUE(buffer);
 
   // Map it all, scribble some stuff, and then unmap it.
   {
     EXPECT_TRUE(buffer->IsValidMap(0, kNumBytes));
-    scoped_ptr<embedder::PlatformSharedBufferMapping> mapping(
-        buffer->Map(0, kNumBytes));
+    scoped_ptr<PlatformSharedBufferMapping> mapping(buffer->Map(0, kNumBytes));
     ASSERT_TRUE(mapping);
     ASSERT_TRUE(mapping->GetBase());
     int* stuff = static_cast<int*>(mapping->GetBase());
@@ -44,7 +44,7 @@ TEST(RawSharedBufferTest, Basic) {
   {
     ASSERT_TRUE(buffer->IsValidMap(0, kNumBytes));
     // Use |MapNoCheck()| this time.
-    scoped_ptr<embedder::PlatformSharedBufferMapping> mapping1(
+    scoped_ptr<PlatformSharedBufferMapping> mapping1(
         buffer->MapNoCheck(0, kNumBytes));
     ASSERT_TRUE(mapping1);
     ASSERT_TRUE(mapping1->GetBase());
@@ -52,7 +52,7 @@ TEST(RawSharedBufferTest, Basic) {
     for (size_t i = 0; i < kNumInts; i++)
       EXPECT_EQ(static_cast<int>(i) + kFudge, stuff1[i]) << i;
 
-    scoped_ptr<embedder::PlatformSharedBufferMapping> mapping2(
+    scoped_ptr<PlatformSharedBufferMapping> mapping2(
         buffer->Map((kNumInts / 2) * sizeof(int), 2 * sizeof(int)));
     ASSERT_TRUE(mapping2);
     ASSERT_TRUE(mapping2->GetBase());
@@ -76,7 +76,7 @@ TEST(RawSharedBufferTest, Basic) {
   // it to be.
   {
     EXPECT_TRUE(buffer->IsValidMap(sizeof(int), kNumBytes - sizeof(int)));
-    scoped_ptr<embedder::PlatformSharedBufferMapping> mapping(
+    scoped_ptr<PlatformSharedBufferMapping> mapping(
         buffer->Map(sizeof(int), kNumBytes - sizeof(int)));
     ASSERT_TRUE(mapping);
     ASSERT_TRUE(mapping->GetBase());
@@ -97,8 +97,9 @@ TEST(RawSharedBufferTest, Basic) {
 
 // TODO(vtl): Bigger buffers.
 
-TEST(RawSharedBufferTest, InvalidMappings) {
-  scoped_refptr<RawSharedBuffer> buffer(RawSharedBuffer::Create(100));
+TEST(SimplePlatformSharedBufferTest, InvalidMappings) {
+  scoped_refptr<SimplePlatformSharedBuffer> buffer(
+      SimplePlatformSharedBuffer::Create(100));
   ASSERT_TRUE(buffer);
 
   // Zero length not allowed.
@@ -124,11 +125,12 @@ TEST(RawSharedBufferTest, InvalidMappings) {
   EXPECT_FALSE(buffer->IsValidMap(51, 50));
 }
 
-TEST(RawSharedBufferTest, TooBig) {
+TEST(SimplePlatformSharedBufferTest, TooBig) {
   // If |size_t| is 32-bit, it's quite possible/likely that |Create()| succeeds
   // (since it only involves creating a 4 GB file).
   const size_t kMaxSizeT = std::numeric_limits<size_t>::max();
-  scoped_refptr<RawSharedBuffer> buffer(RawSharedBuffer::Create(kMaxSizeT));
+  scoped_refptr<SimplePlatformSharedBuffer> buffer(
+      SimplePlatformSharedBuffer::Create(kMaxSizeT));
   // But, assuming |sizeof(size_t) == sizeof(void*)|, mapping all of it should
   // always fail.
   if (buffer)
@@ -139,21 +141,20 @@ TEST(RawSharedBufferTest, TooBig) {
 // Note: It's not inconceivable that the OS could ref-count identical mappings
 // and reuse the same address, in which case we'd have to be more careful about
 // using the address as the key for unmapping.
-TEST(RawSharedBufferTest, MappingsDistinct) {
-  scoped_refptr<RawSharedBuffer> buffer(RawSharedBuffer::Create(100));
-  scoped_ptr<embedder::PlatformSharedBufferMapping> mapping1(
-      buffer->Map(0, 100));
-  scoped_ptr<embedder::PlatformSharedBufferMapping> mapping2(
-      buffer->Map(0, 100));
+TEST(SimplePlatformSharedBufferTest, MappingsDistinct) {
+  scoped_refptr<SimplePlatformSharedBuffer> buffer(
+      SimplePlatformSharedBuffer::Create(100));
+  scoped_ptr<PlatformSharedBufferMapping> mapping1(buffer->Map(0, 100));
+  scoped_ptr<PlatformSharedBufferMapping> mapping2(buffer->Map(0, 100));
   EXPECT_NE(mapping1->GetBase(), mapping2->GetBase());
 }
 
-TEST(RawSharedBufferTest, BufferZeroInitialized) {
+TEST(SimplePlatformSharedBufferTest, BufferZeroInitialized) {
   static const size_t kSizes[] = {10, 100, 1000, 10000, 100000};
   for (size_t i = 0; i < arraysize(kSizes); i++) {
-    scoped_refptr<RawSharedBuffer> buffer(RawSharedBuffer::Create(kSizes[i]));
-    scoped_ptr<embedder::PlatformSharedBufferMapping> mapping(
-        buffer->Map(0, kSizes[i]));
+    scoped_refptr<SimplePlatformSharedBuffer> buffer(
+        SimplePlatformSharedBuffer::Create(kSizes[i]));
+    scoped_ptr<PlatformSharedBufferMapping> mapping(buffer->Map(0, kSizes[i]));
     for (size_t j = 0; j < kSizes[i]; j++) {
       // "Assert" instead of "expect" so we don't spam the output with thousands
       // of failures if we fail.
@@ -163,12 +164,13 @@ TEST(RawSharedBufferTest, BufferZeroInitialized) {
   }
 }
 
-TEST(RawSharedBufferTest, MappingsOutliveBuffer) {
-  scoped_ptr<embedder::PlatformSharedBufferMapping> mapping1;
-  scoped_ptr<embedder::PlatformSharedBufferMapping> mapping2;
+TEST(SimplePlatformSharedBufferTest, MappingsOutliveBuffer) {
+  scoped_ptr<PlatformSharedBufferMapping> mapping1;
+  scoped_ptr<PlatformSharedBufferMapping> mapping2;
 
   {
-    scoped_refptr<RawSharedBuffer> buffer(RawSharedBuffer::Create(100));
+    scoped_refptr<SimplePlatformSharedBuffer> buffer(
+        SimplePlatformSharedBuffer::Create(100));
     mapping1 = buffer->Map(0, 100).Pass();
     mapping2 = buffer->Map(50, 50).Pass();
     static_cast<char*>(mapping1->GetBase())[50] = 'x';
@@ -181,5 +183,5 @@ TEST(RawSharedBufferTest, MappingsOutliveBuffer) {
 }
 
 }  // namespace
-}  // namespace system
+}  // namespace embedder
 }  // namespace mojo

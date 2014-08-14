@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/system/raw_shared_buffer.h"
+#include "mojo/embedder/simple_platform_shared_buffer.h"
 
 #include <stdint.h>
 #include <stdio.h>     // For |fileno()|.
@@ -29,11 +29,11 @@ COMPILE_ASSERT(sizeof(size_t) <= sizeof(uint64_t), size_t_too_big);
 COMPILE_ASSERT(sizeof(off_t) <= sizeof(uint64_t), off_t_too_big);
 
 namespace mojo {
-namespace system {
+namespace embedder {
 
-// RawSharedBuffer -------------------------------------------------------------
+// SimplePlatformSharedBuffer --------------------------------------------------
 
-bool RawSharedBuffer::Init() {
+bool SimplePlatformSharedBuffer::Init() {
   DCHECK(!handle_.is_valid());
 
   base::ThreadRestrictions::ScopedAllowIO allow_io;
@@ -79,12 +79,12 @@ bool RawSharedBuffer::Init() {
     return false;
   }
 
-  handle_.reset(embedder::PlatformHandle(fd.release()));
+  handle_.reset(PlatformHandle(fd.release()));
   return true;
 }
 
-bool RawSharedBuffer::InitFromPlatformHandle(
-    embedder::ScopedPlatformHandle platform_handle) {
+bool SimplePlatformSharedBuffer::InitFromPlatformHandle(
+    ScopedPlatformHandle platform_handle) {
   DCHECK(!handle_.is_valid());
 
   if (static_cast<uint64_t>(num_bytes_) >
@@ -115,7 +115,7 @@ bool RawSharedBuffer::InitFromPlatformHandle(
   return true;
 }
 
-scoped_ptr<embedder::PlatformSharedBufferMapping> RawSharedBuffer::MapImpl(
+scoped_ptr<PlatformSharedBufferMapping> SimplePlatformSharedBuffer::MapImpl(
     size_t offset,
     size_t length) {
   size_t offset_rounding = offset % base::SysInfo::VMAllocationGranularity();
@@ -137,20 +137,21 @@ scoped_ptr<embedder::PlatformSharedBufferMapping> RawSharedBuffer::MapImpl(
   // return null either.
   if (real_base == MAP_FAILED || !real_base) {
     PLOG(ERROR) << "mmap";
-    return scoped_ptr<embedder::PlatformSharedBufferMapping>();
+    return scoped_ptr<PlatformSharedBufferMapping>();
   }
 
   void* base = static_cast<char*>(real_base) + offset_rounding;
-  return scoped_ptr<embedder::PlatformSharedBufferMapping>(
-      new RawSharedBufferMapping(base, length, real_base, real_length));
+  return scoped_ptr<PlatformSharedBufferMapping>(
+      new SimplePlatformSharedBufferMapping(
+          base, length, real_base, real_length));
 }
 
-// RawSharedBufferMapping ------------------------------------------------------
+// SimplePlatformSharedBufferMapping -------------------------------------------
 
-void RawSharedBufferMapping::Unmap() {
+void SimplePlatformSharedBufferMapping::Unmap() {
   int result = munmap(real_base_, real_length_);
   PLOG_IF(ERROR, result != 0) << "munmap";
 }
 
-}  // namespace system
+}  // namespace embedder
 }  // namespace mojo

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/system/raw_shared_buffer.h"
+#include "mojo/embedder/simple_platform_shared_buffer.h"
 
 #include <windows.h>
 
@@ -14,11 +14,11 @@
 #include "mojo/embedder/scoped_platform_handle.h"
 
 namespace mojo {
-namespace system {
+namespace embedder {
 
-// RawSharedBuffer -------------------------------------------------------------
+// SimplePlatformSharedBuffer --------------------------------------------------
 
-bool RawSharedBuffer::Init() {
+bool SimplePlatformSharedBuffer::Init() {
   DCHECK(!handle_.is_valid());
 
   // TODO(vtl): Currently, we only support mapping up to 2^32-1 bytes.
@@ -33,8 +33,7 @@ bool RawSharedBuffer::Init() {
   // TODO(vtl): Unlike |base::SharedMemory|, we don't round up the size (to a
   // multiple of 64 KB). This may cause problems with NaCl. Cross this bridge
   // when we get there. crbug.com/210609
-  handle_.reset(
-      embedder::PlatformHandle(CreateFileMapping(INVALID_HANDLE_VALUE,
+  handle_.reset(PlatformHandle(CreateFileMapping(INVALID_HANDLE_VALUE,
                                                  NULL,
                                                  PAGE_READWRITE,
                                                  0,
@@ -48,8 +47,8 @@ bool RawSharedBuffer::Init() {
   return true;
 }
 
-bool RawSharedBuffer::InitFromPlatformHandle(
-    embedder::ScopedPlatformHandle platform_handle) {
+bool SimplePlatformSharedBuffer::InitFromPlatformHandle(
+    ScopedPlatformHandle platform_handle) {
   DCHECK(!handle_.is_valid());
 
   // TODO(vtl): Implement.
@@ -57,7 +56,7 @@ bool RawSharedBuffer::InitFromPlatformHandle(
   return false;
 }
 
-scoped_ptr<embedder::PlatformSharedBufferMapping> RawSharedBuffer::MapImpl(
+scoped_ptr<PlatformSharedBufferMapping> SimplePlatformSharedBuffer::MapImpl(
     size_t offset,
     size_t length) {
   size_t offset_rounding = offset % base::SysInfo::VMAllocationGranularity();
@@ -76,20 +75,21 @@ scoped_ptr<embedder::PlatformSharedBufferMapping> RawSharedBuffer::MapImpl(
                                   real_length);
   if (!real_base) {
     PLOG(ERROR) << "MapViewOfFile";
-    return scoped_ptr<embedder::PlatformSharedBufferMapping>();
+    return scoped_ptr<PlatformSharedBufferMapping>();
   }
 
   void* base = static_cast<char*>(real_base) + offset_rounding;
-  return scoped_ptr<embedder::PlatformSharedBufferMapping>(
-      new RawSharedBufferMapping(base, length, real_base, real_length));
+  return scoped_ptr<PlatformSharedBufferMapping>(
+      new SimplePlatformSharedBufferMapping(
+          base, length, real_base, real_length));
 }
 
-// RawSharedBufferMapping ------------------------------------------------------
+// SimplePlatformSharedBufferMapping -------------------------------------------
 
-void RawSharedBufferMapping::Unmap() {
+void SimplePlatformSharedBufferMapping::Unmap() {
   BOOL result = UnmapViewOfFile(real_base_);
   PLOG_IF(ERROR, !result) << "UnmapViewOfFile";
 }
 
-}  // namespace system
+}  // namespace embedder
 }  // namespace mojo

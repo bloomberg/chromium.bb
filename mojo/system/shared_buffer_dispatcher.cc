@@ -8,11 +8,11 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "mojo/embedder/simple_platform_shared_buffer.h"
 #include "mojo/public/c/system/macros.h"
 #include "mojo/system/constants.h"
 #include "mojo/system/memory.h"
 #include "mojo/system/options_validation.h"
-#include "mojo/system/raw_shared_buffer.h"
 
 namespace mojo {
 namespace system {
@@ -72,7 +72,8 @@ MojoResult SharedBufferDispatcher::Create(
 
   // TODO(vtl): Call out to "platform support" for this.
   scoped_refptr<embedder::PlatformSharedBuffer> shared_buffer(
-      RawSharedBuffer::Create(static_cast<size_t>(num_bytes)));
+      embedder::SimplePlatformSharedBuffer::Create(
+          static_cast<size_t>(num_bytes)));
   if (!shared_buffer)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
@@ -121,7 +122,7 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
   // Wrapping |platform_handle| in a |ScopedPlatformHandle| means that it'll be
   // closed even if creation fails.
   scoped_refptr<embedder::PlatformSharedBuffer> shared_buffer(
-      RawSharedBuffer::CreateFromPlatformHandle(
+      embedder::SimplePlatformSharedBuffer::CreateFromPlatformHandle(
           num_bytes, embedder::ScopedPlatformHandle(platform_handle)));
   if (!shared_buffer) {
     LOG(ERROR)
