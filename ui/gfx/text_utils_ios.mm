@@ -20,7 +20,10 @@ int GetStringWidth(const base::string16& text, const FontList& font_list) {
 float GetStringWidthF(const base::string16& text, const FontList& font_list) {
   NSString* ns_text = base::SysUTF16ToNSString(text);
   NativeFont native_font = font_list.GetPrimaryFont().GetNativeFont();
-  return [ns_text sizeWithFont:native_font].width;
+  if (!native_font)
+    return 0;
+  NSDictionary* attributes = @{ NSFontAttributeName : native_font };
+  return std::ceil([ns_text sizeWithAttributes:attributes].width);
 }
 
 }  // namespace gfx
