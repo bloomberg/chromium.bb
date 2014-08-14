@@ -304,6 +304,12 @@ static PassRefPtr<JSONObject> buildObjectForBreakpointCookie(const String& url, 
     return breakpointObject;
 }
 
+static String scriptSourceURL(const ScriptDebugListener::Script& script)
+{
+    bool hasSourceURL = !script.sourceURL.isEmpty();
+    return hasSourceURL ? script.sourceURL : script.url;
+}
+
 static bool matches(const String& url, const String& pattern, bool isRegex)
 {
     if (isRegex) {
@@ -350,7 +356,7 @@ void InspectorDebuggerAgent::setBreakpointByUrl(ErrorString* errorString, int li
     if (!isAntiBreakpointValue) {
         ScriptBreakpoint breakpoint(lineNumber, columnNumber, condition);
         for (ScriptsMap::iterator it = m_scripts.begin(); it != m_scripts.end(); ++it) {
-            if (!matches(it->value.url, url, isRegex))
+            if (!matches(scriptSourceURL(it->value), url, isRegex))
                 continue;
             RefPtr<TypeBuilder::Debugger::Location> location = resolveBreakpoint(breakpointId, it->key, breakpoint, UserBreakpointSource);
             if (location)
@@ -486,7 +492,7 @@ String InspectorDebuggerAgent::scriptURL(JavaScriptCallFrame* frame)
     ScriptsMap::iterator it = m_scripts.find(scriptIdString);
     if (it == m_scripts.end())
         return String();
-    return it->value.url;
+    return scriptSourceURL(it->value);
 }
 
 ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::shouldSkipExceptionPause()
