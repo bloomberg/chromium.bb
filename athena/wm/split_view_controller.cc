@@ -67,6 +67,43 @@ bool SplitViewController::IsSplitViewModeActive() const {
   return state_ == ACTIVE;
 }
 
+void SplitViewController::ActivateSplitMode(aura::Window* left,
+                                            aura::Window* right) {
+  aura::Window::Windows windows = window_list_provider_->GetWindowList();
+  aura::Window::Windows::reverse_iterator iter = windows.rbegin();
+  if (state_ == ACTIVE) {
+    if (!left)
+      left = left_window_;
+    if (!right)
+      right = right_window_;
+  }
+
+  if (!left && iter != windows.rend()) {
+    left = *iter;
+    iter++;
+    if (left == right && iter != windows.rend()) {
+      left = *iter;
+      iter++;
+    }
+  }
+
+  if (!right && iter != windows.rend()) {
+    right = *iter;
+    iter++;
+    if (right == left && iter != windows.rend()) {
+      right = *iter;
+      iter++;
+    }
+  }
+
+  state_ = ACTIVE;
+  left_window_ = left;
+  right_window_ = right;
+  container_->StackChildAtTop(right_window_);
+  container_->StackChildAtTop(left_window_);
+  UpdateLayout(true);
+}
+
 void SplitViewController::UpdateLayout(bool animate) {
   if  (!left_window_)
     return;

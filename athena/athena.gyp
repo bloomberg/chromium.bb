@@ -18,6 +18,7 @@
         '../ui/events/events.gyp:events_base',
         '../ui/strings/ui_strings.gyp:ui_strings',
         '../ui/views/views.gyp:views',
+        'resources/athena_resources.gyp:athena_resources',
       ],
       'defines': [
         'ATHENA_IMPLEMENTATION',
@@ -73,6 +74,8 @@
         'wm/bezel_controller.h',
         'wm/mru_window_tracker.cc',
         'wm/mru_window_tracker.h',
+        'wm/overview_toolbar.cc',
+        'wm/overview_toolbar.h',
         'wm/public/window_list_provider.h',
         'wm/public/window_manager.h',
         'wm/public/window_manager_observer.h',

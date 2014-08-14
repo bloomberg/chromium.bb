@@ -16,6 +16,12 @@ class WindowOverviewModeDelegate {
   virtual ~WindowOverviewModeDelegate() {}
 
   virtual void OnSelectWindow(aura::Window* window) = 0;
+
+  // Gets into split-view mode with |left| on the left-side of the screen, and
+  // |right| on the right-side. If |left| or |right| is NULL, then the delegate
+  // selects the best option in its place.
+  virtual void OnSplitViewMode(aura::Window* left,
+                               aura::Window* right) = 0;
 };
 
 class WindowOverviewMode {

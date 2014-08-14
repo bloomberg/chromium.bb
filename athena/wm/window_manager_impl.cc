@@ -60,6 +60,8 @@ class WindowManagerImpl : public WindowManager,
 
   // WindowOverviewModeDelegate:
   virtual void OnSelectWindow(aura::Window* window) OVERRIDE;
+  virtual void OnSplitViewMode(aura::Window* left,
+                               aura::Window* right) OVERRIDE;
 
   // aura::WindowObserver
   virtual void OnWindowAdded(aura::Window* new_window) OVERRIDE;
@@ -209,6 +211,12 @@ void WindowManagerImpl::OnSelectWindow(aura::Window* window) {
   mru_window_tracker_->MoveToFront(window);
   wm::ActivateWindow(window);
   SetInOverview(false);
+}
+
+void WindowManagerImpl::OnSplitViewMode(aura::Window* left,
+                                        aura::Window* right) {
+  SetInOverview(false);
+  split_view_controller_->ActivateSplitMode(left, right);
 }
 
 void WindowManagerImpl::OnWindowAdded(aura::Window* new_window) {

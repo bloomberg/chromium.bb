@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "athena/common/closure_animation_observer.h"
+#include "athena/wm/overview_toolbar.h"
 #include "athena/wm/public/window_list_provider.h"
 #include "base/bind.h"
 #include "base/macros.h"
@@ -290,6 +291,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
   void DragWindow(const ui::GestureEvent& event) {
     CHECK(dragged_window_);
     CHECK_EQ(ui::ET_GESTURE_SCROLL_UPDATE, event.type());
+    CHECK(overview_toolbar_);
     gfx::Vector2dF dragged_distance =
         dragged_start_location_ - event.location();
     WindowOverviewState* dragged_state =
@@ -299,11 +301,50 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
     transform.Translate(-dragged_distance.x(), 0);
     dragged_window_->SetTransform(transform);
 
+    // Update the toolbar.
+    const int kMinDistanceForActionButtons = 20;
+    if (fabs(dragged_distance.x()) > kMinDistanceForActionButtons)
+      overview_toolbar_->ShowActionButtons();
+    else
+      overview_toolbar_->HideActionButtons();
+
+    // See if the touch-point is above one of the action-buttons.
+    OverviewToolbar::ActionType new_action =
+        overview_toolbar_->GetHighlightAction(event);
+
+    // If the touch-point is not above any of the action buttons, then highlight
+    // the close-button by default, if the user has dragged enough to close the
+    // window.
+    if (new_action == OverviewToolbar::ACTION_TYPE_NONE) {
+      if (fabs(dragged_distance.x()) > kMinDistanceForDismissal)
+        new_action = OverviewToolbar::ACTION_TYPE_CLOSE;
+      else
+        new_action = OverviewToolbar::ACTION_TYPE_NONE;
+    }
+    OverviewToolbar::ActionType previous_action =
+        overview_toolbar_->current_action();
+    overview_toolbar_->SetHighlightAction(new_action);
+
+    // If the user has selected to get into split-view mode, then show the
+    // window with full opacity. Otherwise, fade it out as it closes. Animate
+    // the opacity if transitioning to/from the split-view button.
+    bool animate_opacity =
+        (new_action != previous_action) &&
+        ((new_action == OverviewToolbar::ACTION_TYPE_SPLIT) ||
+         (previous_action == OverviewToolbar::ACTION_TYPE_SPLIT));
     float ratio = std::min(
         1.f, std::abs(dragged_distance.x()) / kMinDistanceForDismissal);
     float opacity =
-        gfx::Tween::FloatValueBetween(ratio, kMaxOpacity, kMinOpacity);
-    dragged_window_->layer()->SetOpacity(opacity);
+        (new_action == OverviewToolbar::ACTION_TYPE_SPLIT)
+            ? 1
+            : gfx::Tween::FloatValueBetween(ratio, kMaxOpacity, kMinOpacity);
+    if (animate_opacity) {
+      ui::ScopedLayerAnimationSettings settings(
+          dragged_window_->layer()->GetAnimator());
+      dragged_window_->layer()->SetOpacity(opacity);
+    } else {
+      dragged_window_->layer()->SetOpacity(opacity);
+    }
   }
 
   bool ShouldCloseDragWindow(const ui::GestureEvent& event) const {
@@ -382,6 +423,19 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
     dragged_window_ = NULL;
   }
 
+  void EndDragWindow(const ui::GestureEvent& gesture) {
+    CHECK(dragged_window_);
+    CHECK(overview_toolbar_);
+    OverviewToolbar::ActionType action = overview_toolbar_->current_action();
+    overview_toolbar_.reset();
+    if (action == OverviewToolbar::ACTION_TYPE_SPLIT)
+      delegate_->OnSplitViewMode(NULL, dragged_window_);
+    else if (ShouldCloseDragWindow(gesture))
+      CloseDragWindow(gesture);
+    else
+      RestoreDragWindow();
+  }
+
   // ui::EventHandler:
   virtual void OnMouseEvent(ui::MouseEvent* mouse) OVERRIDE {
     if (mouse->type() == ui::ET_MOUSE_PRESSED) {
@@ -412,6 +466,8 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
           std::abs(gesture->details().scroll_y_hint()) * 2) {
         dragged_start_location_ = gesture->location();
         dragged_window_ = SelectWindowAt(gesture);
+        if (dragged_window_)
+          overview_toolbar_.reset(new OverviewToolbar(container_));
       }
     } else if (gesture->type() == ui::ET_GESTURE_SCROLL_UPDATE) {
       if (dragged_window_)
@@ -420,19 +476,12 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
         DoScroll(gesture->details().scroll_y());
       gesture->SetHandled();
     } else if (gesture->type() == ui::ET_GESTURE_SCROLL_END) {
-      if (dragged_window_) {
-        if (ShouldCloseDragWindow(*gesture))
-          CloseDragWindow(*gesture);
-        else
-          RestoreDragWindow();
-      }
+      if (dragged_window_)
+        EndDragWindow(*gesture);
       gesture->SetHandled();
     } else if (gesture->type() == ui::ET_SCROLL_FLING_START) {
       if (dragged_window_) {
-        if (ShouldCloseDragWindow(*gesture))
-          CloseDragWindow(*gesture);
-        else
-          RestoreDragWindow();
+        EndDragWindow(*gesture);
       } else {
         CreateFlingerFor(*gesture);
         AddAnimationObserver();
@@ -477,6 +526,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
 
   aura::Window* dragged_window_;
   gfx::Point dragged_start_location_;
+  scoped_ptr<OverviewToolbar> overview_toolbar_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowOverviewModeImpl);
 };

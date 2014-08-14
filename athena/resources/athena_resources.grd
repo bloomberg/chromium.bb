@@ -11,6 +11,8 @@
     <structures fallback_to_low_resolution="true">
       <!-- KEEP THESE IN ALPHABETICAL ORDER! -->
       <structure type="chrome_scaled_image" name="IDR_ATHENA_BACKGROUND" file="background_wallpaper.png" />
+      <structure type="chrome_scaled_image" name="IDR_ATHENA_OVERVIEW_SPLIT" file="overview_split.png" />
+      <structure type="chrome_scaled_image" name="IDR_ATHENA_OVERVIEW_TRASH" file="overview_trash.png" />
     </structures>
   </release>
 </grit>

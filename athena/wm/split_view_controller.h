@@ -33,6 +33,11 @@ class SplitViewController : public BezelController::ScrollDelegate,
 
   bool IsSplitViewModeActive() const;
 
+  // Activates split-view mode with |left| and |right| windows. If |left| and/or
+  // |right| is NULL, then the first window in the window-list (which is neither
+  // |left| nor |right|) is selected instead.
+  void ActivateSplitMode(aura::Window* left, aura::Window* right);
+
  private:
   enum State {
     // Split View mode is not active. |left_window_| and |right_window| are
