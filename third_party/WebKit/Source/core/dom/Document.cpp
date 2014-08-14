@@ -758,6 +758,11 @@ void Document::childrenChanged(const ChildrenChange& change)
     m_documentElement = ElementTraversal::firstWithin(*this);
 }
 
+AtomicString Document::convertLocalName(const AtomicString& name)
+{
+    return isHTMLDocument() ? name.lower() : name;
+}
+
 PassRefPtrWillBeRawPtr<Element> Document::createElement(const AtomicString& name, ExceptionState& exceptionState)
 {
     if (!isValidName(name)) {
@@ -766,7 +771,7 @@ PassRefPtrWillBeRawPtr<Element> Document::createElement(const AtomicString& name
     }
 
     if (isXHTMLDocument() || isHTMLDocument())
-        return HTMLElementFactory::createHTMLElement(isHTMLDocument() ? name.lower() : name, *this, 0, false);
+        return HTMLElementFactory::createHTMLElement(convertLocalName(name), *this, 0, false);
 
     return Element::create(QualifiedName(nullAtom, name, nullAtom), this);
 }
@@ -781,7 +786,7 @@ PassRefPtrWillBeRawPtr<Element> Document::createElement(const AtomicString& loca
     RefPtrWillBeRawPtr<Element> element;
 
     if (CustomElement::isValidName(localName) && registrationContext()) {
-        element = registrationContext()->createCustomTagElement(*this, QualifiedName(nullAtom, localName, xhtmlNamespaceURI));
+        element = registrationContext()->createCustomTagElement(*this, QualifiedName(nullAtom, convertLocalName(localName), xhtmlNamespaceURI));
     } else {
         element = createElement(localName, exceptionState);
         if (exceptionState.hadException())

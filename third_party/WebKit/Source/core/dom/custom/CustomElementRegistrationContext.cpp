@@ -152,7 +152,7 @@ void CustomElementRegistrationContext::setTypeExtension(Element* element, const 
         return;
 
     element->setCustomElementState(Element::WaitingForUpgrade);
-    context->didGiveTypeExtension(element, type);
+    context->didGiveTypeExtension(element, element->document().convertLocalName(type));
 }
 
 void CustomElementRegistrationContext::trace(Visitor* visitor)

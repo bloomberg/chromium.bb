@@ -1030,6 +1030,8 @@ public:
     bool hasSVGFilterElementsRequiringLayerUpdate() const { return m_layerUpdateSVGFilterElements.size(); }
     void didRecalculateStyleForElement() { ++m_styleRecalcElementCounter; }
 
+    AtomicString convertLocalName(const AtomicString&);
+
 protected:
     Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);
 
