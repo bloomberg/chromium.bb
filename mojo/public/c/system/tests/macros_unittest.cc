@@ -58,11 +58,17 @@ TEST(MacrosTest, Alignof) {
 #if defined(_MSC_VER)
 #pragma warning(push)
 // Disable the warning "structure was padded due to __declspec(align())".
-#pragma warning(disable:4324)
+#pragma warning(disable : 4324)
 #endif
-struct MOJO_ALIGNAS(1) StructAlignas1 { char x; };
-struct MOJO_ALIGNAS(4) StructAlignas4 { char x; };
-struct MOJO_ALIGNAS(8) StructAlignas8 { char x; };
+struct MOJO_ALIGNAS(1) StructAlignas1 {
+  char x;
+};
+struct MOJO_ALIGNAS(4) StructAlignas4 {
+  char x;
+};
+struct MOJO_ALIGNAS(8) StructAlignas8 {
+  char x;
+};
 #if defined(_MSC_VER)
 #pragma warning(pop)
 #endif

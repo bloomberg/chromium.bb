@@ -35,7 +35,7 @@
 //   if (TakeOwnership(my_var.get()) == SUCCESS)
 //     mojo_ignore_result(my_var.release());
 //
-template<typename T>
+template <typename T>
 inline void mojo_ignore_result(const T&) {
 }
 #endif
@@ -47,9 +47,12 @@ inline void mojo_ignore_result(const T&) {
 #if __cplusplus >= 201103L
 #define MOJO_COMPILE_ASSERT(expr, msg) static_assert(expr, #msg)
 #elif defined(__cplusplus)
-namespace mojo { template <bool> struct CompileAssert {}; }
+namespace mojo {
+template <bool>
+struct CompileAssert {};
+}
 #define MOJO_COMPILE_ASSERT(expr, msg) \
-    typedef ::mojo::CompileAssert<(bool(expr))> msg[bool(expr) ? 1 : -1]
+  typedef ::mojo::CompileAssert<(bool(expr))> msg[bool(expr) ? 1 : -1]
 #else
 #define MOJO_COMPILE_ASSERT(expr, msg)
 #endif

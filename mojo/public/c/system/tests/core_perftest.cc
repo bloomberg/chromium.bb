@@ -28,9 +28,7 @@ namespace {
 class MessagePipeWriterThread : public mojo::Thread {
  public:
   MessagePipeWriterThread(MojoHandle handle, uint32_t num_bytes)
-      : handle_(handle),
-        num_bytes_(num_bytes),
-        num_writes_(0) {}
+      : handle_(handle), num_bytes_(num_bytes), num_writes_(0) {}
   virtual ~MessagePipeWriterThread() {}
 
   virtual void Run() MOJO_OVERRIDE {
@@ -39,8 +37,8 @@ class MessagePipeWriterThread : public mojo::Thread {
 
     // TODO(vtl): Should I throttle somehow?
     for (;;) {
-      MojoResult result = MojoWriteMessage(handle_, buffer, num_bytes_, NULL, 0,
-                                           MOJO_WRITE_MESSAGE_FLAG_NONE);
+      MojoResult result = MojoWriteMessage(
+          handle_, buffer, num_bytes_, NULL, 0, MOJO_WRITE_MESSAGE_FLAG_NONE);
       if (result == MOJO_RESULT_OK) {
         num_writes_++;
         continue;
@@ -68,9 +66,7 @@ class MessagePipeWriterThread : public mojo::Thread {
 class MessagePipeReaderThread : public mojo::Thread {
  public:
   explicit MessagePipeReaderThread(MojoHandle handle)
-      : handle_(handle),
-        num_reads_(0) {
-  }
+      : handle_(handle), num_reads_(0) {}
   virtual ~MessagePipeReaderThread() {}
 
   virtual void Run() MOJO_OVERRIDE {
@@ -78,16 +74,16 @@ class MessagePipeReaderThread : public mojo::Thread {
 
     for (;;) {
       uint32_t num_bytes = static_cast<uint32_t>(sizeof(buffer));
-      MojoResult result = MojoReadMessage(handle_, buffer, &num_bytes, NULL,
-                                          NULL, MOJO_READ_MESSAGE_FLAG_NONE);
+      MojoResult result = MojoReadMessage(
+          handle_, buffer, &num_bytes, NULL, NULL, MOJO_READ_MESSAGE_FLAG_NONE);
       if (result == MOJO_RESULT_OK) {
         num_reads_++;
         continue;
       }
 
       if (result == MOJO_RESULT_SHOULD_WAIT) {
-        result = MojoWait(handle_, MOJO_HANDLE_SIGNAL_READABLE,
-                          MOJO_DEADLINE_INDEFINITE);
+        result = MojoWait(
+            handle_, MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE);
         if (result == MOJO_RESULT_OK) {
           // Go to the top of the loop to read again.
           continue;
@@ -118,8 +114,7 @@ class CorePerftest : public testing::Test {
   CorePerftest() : buffer_(NULL), num_bytes_(0) {}
   virtual ~CorePerftest() {}
 
-  static void NoOp(void* /*closure*/) {
-  }
+  static void NoOp(void* /*closure*/) {}
 
   static void MessagePipe_CreateAndClose(void* closure) {
     CorePerftest* self = static_cast<CorePerftest*>(closure);
@@ -136,14 +131,18 @@ class CorePerftest : public testing::Test {
     CorePerftest* self = static_cast<CorePerftest*>(closure);
     MojoResult result MOJO_ALLOW_UNUSED;
     result = MojoWriteMessage(self->h0_,
-                              self->buffer_, self->num_bytes_,
-                              NULL, 0,
+                              self->buffer_,
+                              self->num_bytes_,
+                              NULL,
+                              0,
                               MOJO_WRITE_MESSAGE_FLAG_NONE);
     assert(result == MOJO_RESULT_OK);
     uint32_t read_bytes = self->num_bytes_;
     result = MojoReadMessage(self->h1_,
-                             self->buffer_, &read_bytes,
-                             NULL, NULL,
+                             self->buffer_,
+                             &read_bytes,
+                             NULL,
+                             NULL,
                              MOJO_READ_MESSAGE_FLAG_NONE);
     assert(result == MOJO_RESULT_OK);
   }
@@ -151,10 +150,8 @@ class CorePerftest : public testing::Test {
   static void MessagePipe_EmptyRead(void* closure) {
     CorePerftest* self = static_cast<CorePerftest*>(closure);
     MojoResult result MOJO_ALLOW_UNUSED;
-    result = MojoReadMessage(self->h0_,
-                             NULL, NULL,
-                             NULL, NULL,
-                             MOJO_READ_MESSAGE_FLAG_MAY_DISCARD);
+    result = MojoReadMessage(
+        self->h0_, NULL, NULL, NULL, NULL, MOJO_READ_MESSAGE_FLAG_MAY_DISCARD);
     assert(result == MOJO_RESULT_SHOULD_WAIT);
   }
 
@@ -223,18 +220,24 @@ class CorePerftest : public testing::Test {
     readers.clear();
 
     char test_name[200];
-    sprintf(test_name, "MessagePipe_Threaded_Writes_%uw_%ur_%ubytes",
-            num_writers, num_readers, static_cast<unsigned>(num_bytes));
-    mojo::test::LogPerfResult(test_name,
-                              1000000.0 * static_cast<double>(num_writes) /
-                                  (end_time - start_time),
-                              "writes/second");
-    sprintf(test_name, "MessagePipe_Threaded_Reads_%uw_%ur_%ubytes",
-            num_writers, num_readers, static_cast<unsigned>(num_bytes));
-    mojo::test::LogPerfResult(test_name,
-                              1000000.0 * static_cast<double>(num_reads) /
-                                  (end_time - start_time),
-                                  "reads/second");
+    sprintf(test_name,
+            "MessagePipe_Threaded_Writes_%uw_%ur_%ubytes",
+            num_writers,
+            num_readers,
+            static_cast<unsigned>(num_bytes));
+    mojo::test::LogPerfResult(
+        test_name,
+        1000000.0 * static_cast<double>(num_writes) / (end_time - start_time),
+        "writes/second");
+    sprintf(test_name,
+            "MessagePipe_Threaded_Reads_%uw_%ur_%ubytes",
+            num_writers,
+            num_readers,
+            static_cast<unsigned>(num_bytes));
+    mojo::test::LogPerfResult(
+        test_name,
+        1000000.0 * static_cast<double>(num_reads) / (end_time - start_time),
+        "reads/second");
   }
 #endif  // !defined(WIN32)
 
@@ -248,8 +251,8 @@ class CorePerftest : public testing::Test {
 #if !defined(WIN32)
   void Sleep(int64_t microseconds) {
     struct timespec req = {
-      static_cast<time_t>(microseconds / 1000000),  // Seconds.
-      static_cast<long>(microseconds % 1000000) * 1000L  // Nanoseconds.
+        static_cast<time_t>(microseconds / 1000000),       // Seconds.
+        static_cast<long>(microseconds % 1000000) * 1000L  // Nanoseconds.
     };
     int rv MOJO_ALLOW_UNUSED;
     rv = nanosleep(&req, NULL);
@@ -275,7 +278,7 @@ TEST_F(CorePerftest, MessagePipe_WriteAndRead) {
   MojoResult result MOJO_ALLOW_UNUSED;
   result = MojoCreateMessagePipe(NULL, &h0_, &h1_);
   assert(result == MOJO_RESULT_OK);
-  char buffer[10000] = { 0 };
+  char buffer[10000] = {0};
   buffer_ = buffer;
   num_bytes_ = 10u;
   mojo::test::IterateAndReportPerf("MessagePipe_WriteAndRead_10bytes",
@@ -303,9 +306,8 @@ TEST_F(CorePerftest, MessagePipe_EmptyRead) {
   MojoResult result MOJO_ALLOW_UNUSED;
   result = MojoCreateMessagePipe(NULL, &h0_, &h1_);
   assert(result == MOJO_RESULT_OK);
-  mojo::test::IterateAndReportPerf("MessagePipe_EmptyRead",
-                                   &CorePerftest::MessagePipe_EmptyRead,
-                                   this);
+  mojo::test::IterateAndReportPerf(
+      "MessagePipe_EmptyRead", &CorePerftest::MessagePipe_EmptyRead, this);
   result = MojoClose(h0_);
   assert(result == MOJO_RESULT_OK);
   result = MojoClose(h1_);

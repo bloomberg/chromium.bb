@@ -29,7 +29,7 @@ typedef uint32_t MojoHandle;
 #ifdef __cplusplus
 const MojoHandle MOJO_HANDLE_INVALID = 0;
 #else
-#define MOJO_HANDLE_INVALID ((MojoHandle) 0)
+#define MOJO_HANDLE_INVALID ((MojoHandle)0)
 #endif
 
 // |MojoResult|: Result codes for Mojo operations. Non-negative values are
@@ -110,24 +110,24 @@ const MojoResult MOJO_RESULT_DATA_LOSS = -15;
 const MojoResult MOJO_RESULT_BUSY = -16;
 const MojoResult MOJO_RESULT_SHOULD_WAIT = -17;
 #else
-#define MOJO_RESULT_OK ((MojoResult) 0)
-#define MOJO_RESULT_CANCELLED ((MojoResult) -1)
-#define MOJO_RESULT_UNKNOWN ((MojoResult) -2)
-#define MOJO_RESULT_INVALID_ARGUMENT ((MojoResult) -3)
-#define MOJO_RESULT_DEADLINE_EXCEEDED ((MojoResult) -4)
-#define MOJO_RESULT_NOT_FOUND ((MojoResult) -5)
-#define MOJO_RESULT_ALREADY_EXISTS ((MojoResult) -6)
-#define MOJO_RESULT_PERMISSION_DENIED ((MojoResult) -7)
-#define MOJO_RESULT_RESOURCE_EXHAUSTED ((MojoResult) -8)
-#define MOJO_RESULT_FAILED_PRECONDITION ((MojoResult) -9)
-#define MOJO_RESULT_ABORTED ((MojoResult) -10)
-#define MOJO_RESULT_OUT_OF_RANGE ((MojoResult) -11)
-#define MOJO_RESULT_UNIMPLEMENTED ((MojoResult) -12)
-#define MOJO_RESULT_INTERNAL ((MojoResult) -13)
-#define MOJO_RESULT_UNAVAILABLE ((MojoResult) -14)
-#define MOJO_RESULT_DATA_LOSS ((MojoResult) -15)
-#define MOJO_RESULT_BUSY ((MojoResult) -16)
-#define MOJO_RESULT_SHOULD_WAIT ((MojoResult) -17)
+#define MOJO_RESULT_OK ((MojoResult)0)
+#define MOJO_RESULT_CANCELLED ((MojoResult) - 1)
+#define MOJO_RESULT_UNKNOWN ((MojoResult) - 2)
+#define MOJO_RESULT_INVALID_ARGUMENT ((MojoResult) - 3)
+#define MOJO_RESULT_DEADLINE_EXCEEDED ((MojoResult) - 4)
+#define MOJO_RESULT_NOT_FOUND ((MojoResult) - 5)
+#define MOJO_RESULT_ALREADY_EXISTS ((MojoResult) - 6)
+#define MOJO_RESULT_PERMISSION_DENIED ((MojoResult) - 7)
+#define MOJO_RESULT_RESOURCE_EXHAUSTED ((MojoResult) - 8)
+#define MOJO_RESULT_FAILED_PRECONDITION ((MojoResult) - 9)
+#define MOJO_RESULT_ABORTED ((MojoResult) - 10)
+#define MOJO_RESULT_OUT_OF_RANGE ((MojoResult) - 11)
+#define MOJO_RESULT_UNIMPLEMENTED ((MojoResult) - 12)
+#define MOJO_RESULT_INTERNAL ((MojoResult) - 13)
+#define MOJO_RESULT_UNAVAILABLE ((MojoResult) - 14)
+#define MOJO_RESULT_DATA_LOSS ((MojoResult) - 15)
+#define MOJO_RESULT_BUSY ((MojoResult) - 16)
+#define MOJO_RESULT_SHOULD_WAIT ((MojoResult) - 17)
 #endif
 
 // |MojoDeadline|: Used to specify deadlines (timeouts), in microseconds (except
@@ -139,7 +139,7 @@ typedef uint64_t MojoDeadline;
 #ifdef __cplusplus
 const MojoDeadline MOJO_DEADLINE_INDEFINITE = static_cast<MojoDeadline>(-1);
 #else
-#define MOJO_DEADLINE_INDEFINITE ((MojoDeadline) -1)
+#define MOJO_DEADLINE_INDEFINITE ((MojoDeadline) - 1)
 #endif
 
 // |MojoHandleSignals|: Used to specify signals that can be waited on for a
@@ -157,9 +157,9 @@ const MojoHandleSignals MOJO_HANDLE_SIGNAL_NONE = 0;
 const MojoHandleSignals MOJO_HANDLE_SIGNAL_READABLE = 1 << 0;
 const MojoHandleSignals MOJO_HANDLE_SIGNAL_WRITABLE = 1 << 1;
 #else
-#define MOJO_HANDLE_SIGNAL_NONE ((MojoHandleSignals) 0)
-#define MOJO_HANDLE_SIGNAL_READABLE ((MojoHandleSignals) 1 << 0)
-#define MOJO_HANDLE_SIGNAL_WRITABLE ((MojoHandleSignals) 1 << 1)
+#define MOJO_HANDLE_SIGNAL_NONE ((MojoHandleSignals)0)
+#define MOJO_HANDLE_SIGNAL_READABLE ((MojoHandleSignals)1 << 0)
+#define MOJO_HANDLE_SIGNAL_WRITABLE ((MojoHandleSignals)1 << 1)
 #endif
 
 // TODO(vtl): Add out parameters with this to MojoWait/MojoWaitMany.

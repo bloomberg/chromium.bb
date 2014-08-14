@@ -24,7 +24,7 @@ TEST(CoreTest, GetTimeTicksNow) {
 TEST(CoreTest, InvalidHandle) {
   MojoHandle h0, h1;
   MojoHandleSignals sig;
-  char buffer[10] = { 0 };
+  char buffer[10] = {0};
   uint32_t buffer_size;
   void* write_pointer;
   const void* read_pointer;
@@ -41,13 +41,14 @@ TEST(CoreTest, InvalidHandle) {
             MojoWaitMany(&h0, &sig, 1, MOJO_DEADLINE_INDEFINITE));
 
   // Message pipe:
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoWriteMessage(h0, buffer, 3, NULL, 0,
-                             MOJO_WRITE_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(
+      MOJO_RESULT_INVALID_ARGUMENT,
+      MojoWriteMessage(h0, buffer, 3, NULL, 0, MOJO_WRITE_MESSAGE_FLAG_NONE));
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoReadMessage(h0, buffer, &buffer_size, NULL, NULL,
-                            MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(
+      MOJO_RESULT_INVALID_ARGUMENT,
+      MojoReadMessage(
+          h0, buffer, &buffer_size, NULL, NULL, MOJO_READ_MESSAGE_FLAG_NONE));
 
   // Data pipe:
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
@@ -55,16 +56,16 @@ TEST(CoreTest, InvalidHandle) {
             MojoWriteData(h0, buffer, &buffer_size, MOJO_WRITE_DATA_FLAG_NONE));
   write_pointer = NULL;
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoBeginWriteData(h0, &write_pointer, &buffer_size,
-                               MOJO_WRITE_DATA_FLAG_NONE));
+            MojoBeginWriteData(
+                h0, &write_pointer, &buffer_size, MOJO_WRITE_DATA_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoEndWriteData(h0, 1));
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             MojoReadData(h0, buffer, &buffer_size, MOJO_READ_DATA_FLAG_NONE));
   read_pointer = NULL;
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoBeginReadData(h0, &read_pointer, &buffer_size,
-                              MOJO_READ_DATA_FLAG_NONE));
+            MojoBeginReadData(
+                h0, &read_pointer, &buffer_size, MOJO_READ_DATA_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoEndReadData(h0, 1));
 
   // Shared buffer:
@@ -78,7 +79,7 @@ TEST(CoreTest, InvalidHandle) {
 TEST(CoreTest, BasicMessagePipe) {
   MojoHandle h0, h1;
   MojoHandleSignals sig;
-  char buffer[10] = { 0 };
+  char buffer[10] = {0};
   uint32_t buffer_size;
 
   h0 = MOJO_HANDLE_INVALID;
@@ -96,16 +97,18 @@ TEST(CoreTest, BasicMessagePipe) {
 
   // Try to read.
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
-  EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
-            MojoReadMessage(h0, buffer, &buffer_size, NULL, NULL,
-                            MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(
+      MOJO_RESULT_SHOULD_WAIT,
+      MojoReadMessage(
+          h0, buffer, &buffer_size, NULL, NULL, MOJO_READ_MESSAGE_FLAG_NONE));
 
   // Write to |h1|.
   static const char kHello[] = "hello";
   buffer_size = static_cast<uint32_t>(sizeof(kHello));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWriteMessage(h1, kHello, buffer_size, NULL, 0,
-                             MOJO_WRITE_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(
+      MOJO_RESULT_OK,
+      MojoWriteMessage(
+          h1, kHello, buffer_size, NULL, 0, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // |h0| should be readable.
   sig = MOJO_HANDLE_SIGNAL_READABLE;
@@ -114,9 +117,10 @@ TEST(CoreTest, BasicMessagePipe) {
 
   // Read from |h0|.
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoReadMessage(h0, buffer, &buffer_size, NULL, NULL,
-                            MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(
+      MOJO_RESULT_OK,
+      MojoReadMessage(
+          h0, buffer, &buffer_size, NULL, NULL, MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(static_cast<uint32_t>(sizeof(kHello)), buffer_size);
   EXPECT_STREQ(kHello, buffer);
 
@@ -128,10 +132,10 @@ TEST(CoreTest, BasicMessagePipe) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h0));
 
   // |h1| should no longer be readable or writable.
-  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            MojoWait(h1,
-                     MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
-                     1000));
+  EXPECT_EQ(
+      MOJO_RESULT_FAILED_PRECONDITION,
+      MojoWait(
+          h1, MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE, 1000));
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h1));
 }
@@ -139,7 +143,7 @@ TEST(CoreTest, BasicMessagePipe) {
 TEST(CoreTest, BasicDataPipe) {
   MojoHandle hp, hc;
   MojoHandleSignals sig;
-  char buffer[20] = { 0 };
+  char buffer[20] = {0};
   uint32_t buffer_size;
   void* write_pointer;
   const void* read_pointer;
@@ -165,16 +169,16 @@ TEST(CoreTest, BasicDataPipe) {
   // Try to begin a two-phase read from |hc|.
   read_pointer = NULL;
   EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
-            MojoBeginReadData(hc, &read_pointer, &buffer_size,
-                              MOJO_READ_DATA_FLAG_NONE));
+            MojoBeginReadData(
+                hc, &read_pointer, &buffer_size, MOJO_READ_DATA_FLAG_NONE));
 
   // Write to |hp|.
   static const char kHello[] = "hello ";
   // Don't include terminating null.
   buffer_size = static_cast<uint32_t>(strlen(kHello));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWriteData(hp, kHello, &buffer_size,
-                          MOJO_WRITE_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(
+      MOJO_RESULT_OK,
+      MojoWriteData(hp, kHello, &buffer_size, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // |hc| should be(come) readable.
   sig = MOJO_HANDLE_SIGNAL_READABLE;
@@ -183,8 +187,8 @@ TEST(CoreTest, BasicDataPipe) {
 
   // Do a two-phase write to |hp|.
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoBeginWriteData(hp, &write_pointer, &buffer_size,
-                               MOJO_WRITE_DATA_FLAG_NONE));
+            MojoBeginWriteData(
+                hp, &write_pointer, &buffer_size, MOJO_WRITE_DATA_FLAG_NONE));
   static const char kWorld[] = "world";
   ASSERT_GE(buffer_size, sizeof(kWorld));
   // Include the terminating null.
@@ -207,8 +211,8 @@ TEST(CoreTest, BasicDataPipe) {
   // Do a two-phase read from |hc|.
   read_pointer = NULL;
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoBeginReadData(hc, &read_pointer, &buffer_size,
-                              MOJO_READ_DATA_FLAG_NONE));
+            MojoBeginReadData(
+                hc, &read_pointer, &buffer_size, MOJO_READ_DATA_FLAG_NONE));
   ASSERT_LE(buffer_size, sizeof(buffer) - 1);
   memcpy(&buffer[1], read_pointer, buffer_size);
   EXPECT_EQ(MOJO_RESULT_OK, MojoEndReadData(hc, buffer_size));

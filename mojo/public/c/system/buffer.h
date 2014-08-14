@@ -35,7 +35,7 @@ const MojoCreateSharedBufferOptionsFlags
     MOJO_CREATE_SHARED_BUFFER_OPTIONS_FLAG_NONE = 0;
 #else
 #define MOJO_CREATE_SHARED_BUFFER_OPTIONS_FLAG_NONE \
-    ((MojoCreateSharedBufferOptionsFlags) 0)
+  ((MojoCreateSharedBufferOptionsFlags)0)
 #endif
 
 MOJO_COMPILE_ASSERT(MOJO_ALIGNOF(int64_t) == 8, int64_t_has_weird_alignment);
@@ -64,7 +64,7 @@ const MojoDuplicateBufferHandleOptionsFlags
     MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE = 0;
 #else
 #define MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE \
-    ((MojoDuplicateBufferHandleOptionsFlags) 0)
+  ((MojoDuplicateBufferHandleOptionsFlags)0)
 #endif
 
 struct MojoDuplicateBufferHandleOptions {
@@ -82,7 +82,7 @@ typedef uint32_t MojoMapBufferFlags;
 #ifdef __cplusplus
 const MojoMapBufferFlags MOJO_MAP_BUFFER_FLAG_NONE = 0;
 #else
-#define MOJO_MAP_BUFFER_FLAG_NONE ((MojoMapBufferFlags) 0)
+#define MOJO_MAP_BUFFER_FLAG_NONE ((MojoMapBufferFlags)0)
 #endif
 
 #ifdef __cplusplus
@@ -116,8 +116,8 @@ extern "C" {
 //   |MOJO_RESULT_UNIMPLEMENTED| if an unsupported flag was set in |*options|.
 MOJO_SYSTEM_EXPORT MojoResult MojoCreateSharedBuffer(
     const struct MojoCreateSharedBufferOptions* options,  // Optional.
-    uint64_t num_bytes,  // In.
-    MojoHandle* shared_buffer_handle);  // Out.
+    uint64_t num_bytes,                                   // In.
+    MojoHandle* shared_buffer_handle);                    // Out.
 
 // Duplicates the handle |buffer_handle| to a buffer. This creates another
 // handle (returned in |*new_buffer_handle| on success), which can then be sent
@@ -138,7 +138,7 @@ MOJO_SYSTEM_EXPORT MojoResult MojoCreateSharedBuffer(
 MOJO_SYSTEM_EXPORT MojoResult MojoDuplicateBufferHandle(
     MojoHandle buffer_handle,
     const struct MojoDuplicateBufferHandleOptions* options,  // Optional.
-    MojoHandle* new_buffer_handle);  // Out.
+    MojoHandle* new_buffer_handle);                          // Out.
 
 // Maps the part (at offset |offset| of length |num_bytes|) of the buffer given
 // by |buffer_handle| into memory, with options specified by |flags|. |offset +
