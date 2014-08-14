@@ -152,7 +152,8 @@ Atomic64 Release_Load(volatile const Atomic64* ptr);
 #include "base/atomicops_internals_arm64_gcc.h"
 #elif defined(COMPILER_GCC) && defined(ARCH_CPU_X86_FAMILY)
 #include "base/atomicops_internals_x86_gcc.h"
-#elif defined(COMPILER_GCC) && defined(ARCH_CPU_MIPS_FAMILY)
+#elif defined(COMPILER_GCC) && \
+      (defined(ARCH_CPU_MIPS_FAMILY) || defined(ARCH_CPU_MIPS64_FAMILY))
 #include "base/atomicops_internals_mips_gcc.h"
 #else
 #error "Atomic operations are not supported on your platform"
