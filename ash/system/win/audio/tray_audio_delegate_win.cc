@@ -7,8 +7,6 @@
 #include <audiopolicy.h>
 #include <cmath>
 
-#include "grit/ash_resources.h"
-#include "grit/ash_strings.h"
 #include "media/audio/win/core_audio_util_win.h"
 
 using base::win::ScopedComPtr;

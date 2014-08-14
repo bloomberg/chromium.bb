@@ -10,7 +10,6 @@
 #include "ash/shell.h"
 #include "grit/ash_strings.h"
 #include "ui/aura/window.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
 

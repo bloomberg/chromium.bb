@@ -11,7 +11,6 @@
 #include "base/threading/worker_pool.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/skia_util.h"
 

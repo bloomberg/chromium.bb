@@ -15,7 +15,6 @@
 #include "ash/system/user/user_view.h"
 #include "base/macros.h"
 #include "grit/ash_strings.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
 

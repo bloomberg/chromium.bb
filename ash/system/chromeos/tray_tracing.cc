@@ -13,7 +13,6 @@
 #include "ash/system/tray/tray_constants.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/image_view.h"
