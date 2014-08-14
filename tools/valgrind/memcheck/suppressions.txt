@@ -6213,3 +6213,11 @@
    fun:_ZN7content17UnitTestTestSuiteC2EPN4base9TestSuiteE
    fun:_ZN7content17UnitTestTestSuiteC1EPN4base9TestSuiteE
 }
+{
+   bug_403775
+   Memcheck:Leak
+   fun:_Zna*
+   fun:_ZN28NotificationConversionHelper28GfxImageToNotificationBitmapEPKN3gfx5ImageEPN10extensions3api13notifications18NotificationBitmapE
+   fun:_ZN28NotificationConversionHelper33NotificationToNotificationOptionsERK12NotificationPN10extensions3api13notifications19NotificationOptionsE
+   fun:_ZN71NotificationConversionHelperTest_NotificationToNotificationOptions_Test8TestBodyEv
+}
