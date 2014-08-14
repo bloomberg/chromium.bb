@@ -11,7 +11,7 @@ option optimize_for = LITE_RUNTIME;
 
 package metrics;
 
-// Next tag: 19
+// Next tag: 20
 message SystemProfileProto {
   // The time when the client was compiled/linked, in seconds since the epoch.
   optional int64 build_timestamp = 1;
@@ -507,4 +507,18 @@ message SystemProfileProto {
   // extensions.  If multiple extensions map to the same bucket, that bucket is
   // still only reported once.
   repeated int32 occupied_extension_bucket = 18;
+
+  // The state of loaded extensions for this system. The system can have either
+  // no applicable extensions, extensions only from the webstore and verified by
+  // the webstore, extensions only from the webstore but not verified, or
+  // extensions not from the store. If there is a single off-store extension,
+  // then HAS_OFFSTORE is reported. This should be kept in sync with the
+  // corresponding enum in chrome/browser/metrics/extensions_metrics_provider.cc
+  enum ExtensionsState {
+    NO_EXTENSIONS = 0;
+    NO_OFFSTORE_VERIFIED = 1;
+    NO_OFFSTORE_UNVERIFIED = 2;
+    HAS_OFFSTORE = 3;
+  }
+  optional ExtensionsState offstore_extensions_state = 19;
 }

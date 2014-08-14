@@ -48,6 +48,9 @@ class InstallVerifier : public ManagementPolicy::Provider {
   // Returns whether |extension| is of a type that needs verification.
   static bool NeedsVerification(const Extension& extension);
 
+  // Determines if an extension claims to be from the webstore.
+  static bool IsFromStore(const Extension& extension);
+
   // Initializes this object for use, including reading preferences and
   // validating the stored signature.
   void Init();
@@ -57,7 +60,11 @@ class InstallVerifier : public ManagementPolicy::Provider {
 
   // Returns true if |id| is either verified or our stored signature explicitly
   // tells us that it was invalid when we asked the server about it.
-  bool IsKnownId(const std::string& id);
+  bool IsKnownId(const std::string& id) const;
+
+  // Returns whether the given |id| is considered invalid by our verified
+  // signature.
+  bool IsInvalid(const std::string& id) const;
 
   // Attempts to verify a single extension and add it to the verified list.
   void VerifyExtension(const std::string& extension_id);
@@ -72,6 +79,9 @@ class InstallVerifier : public ManagementPolicy::Provider {
   // Removes an id or set of ids from the verified list.
   void Remove(const std::string& id);
   void RemoveMany(const ExtensionIdSet& ids);
+
+  // Returns whether an extension id is allowed by policy.
+  bool AllowedByEnterprisePolicy(const std::string& id) const;
 
   // ManagementPolicy::Provider interface.
   virtual std::string GetDebugPolicyProviderName() const OVERRIDE;
@@ -117,9 +127,6 @@ class InstallVerifier : public ManagementPolicy::Provider {
 
   // Removes any no-longer-installed ids, requesting a new signature if needed.
   void GarbageCollect();
-
-  // Returns whether an extension id is allowed by policy.
-  bool AllowedByEnterprisePolicy(const std::string& id) const;
 
   // Returns whether the given |id| is included in our verified signature.
   bool IsVerified(const std::string& id) const;

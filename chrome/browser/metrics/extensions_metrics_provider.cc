@@ -10,11 +10,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_state_manager.h"
 #include "components/metrics/proto/system_profile.pb.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_set.h"
 #include "third_party/smhasher/src/City.h"
 
@@ -28,6 +30,85 @@ const size_t kExtensionListClientKeys = 4096;
 // The number of hash buckets into which extension IDs are mapped.  This sets
 // the possible output range of the HashExtension function.
 const size_t kExtensionListBuckets = 1024;
+
+// Possible states for extensions. The order of these enum values is important,
+// and is used when combining the state of multiple extensions and multiple
+// profiles. Combining two states should always result in the higher state.
+// Ex: One profile is in state FROM_STORE_VERIFIED, and another is in
+// FROM_STORE_UNVERIFIED. The state of the two profiles together will be
+// FROM_STORE_UNVERIFIED.
+// This enum should be kept in sync with the corresponding enum in
+// components/metrics/proto/system_profile.proto
+enum ExtensionState {
+  NO_EXTENSIONS,
+  FROM_STORE_VERIFIED,
+  FROM_STORE_UNVERIFIED,
+  OFF_STORE
+};
+
+metrics::SystemProfileProto::ExtensionsState ExtensionStateAsProto(
+    ExtensionState value) {
+  switch (value) {
+    case NO_EXTENSIONS:
+      return metrics::SystemProfileProto::NO_EXTENSIONS;
+    case FROM_STORE_VERIFIED:
+      return metrics::SystemProfileProto::NO_OFFSTORE_VERIFIED;
+    case FROM_STORE_UNVERIFIED:
+      return metrics::SystemProfileProto::NO_OFFSTORE_UNVERIFIED;
+    case OFF_STORE:
+      return metrics::SystemProfileProto::HAS_OFFSTORE;
+  }
+  NOTREACHED();
+  return metrics::SystemProfileProto::NO_EXTENSIONS;
+}
+
+// Determines if the |extension| is an extension (can use extension APIs) and is
+// not from the webstore. If local information claims the extension is from the
+// webstore, we attempt to verify with |verifier| by checking if it has been
+// explicitly deemed invalid. If |verifier| is inactive or if the extension is
+// unknown to |verifier|, the local information is trusted.
+ExtensionState IsOffStoreExtension(
+    const extensions::Extension& extension,
+    const extensions::InstallVerifier& verifier) {
+  if (!extension.is_extension() && !extension.is_legacy_packaged_app())
+    return NO_EXTENSIONS;
+
+  // Component extensions are considered safe.
+  if (extensions::Manifest::IsComponentLocation(extension.location()))
+    return NO_EXTENSIONS;
+
+  if (verifier.AllowedByEnterprisePolicy(extension.id()))
+    return NO_EXTENSIONS;
+
+  if (!extensions::InstallVerifier::IsFromStore(extension))
+    return OFF_STORE;
+
+  // Local information about the extension implies it is from the store. We try
+  // to use the install verifier to verify this.
+  if (!verifier.IsKnownId(extension.id()))
+    return FROM_STORE_UNVERIFIED;
+
+  if (verifier.IsInvalid(extension.id()))
+    return OFF_STORE;
+
+  return FROM_STORE_VERIFIED;
+}
+
+// Finds the ExtensionState of |extensions|. The return value will be the
+// highest (as defined by the order of ExtensionState) value of each extension
+// in |extensions|.
+ExtensionState CheckForOffStore(const extensions::ExtensionSet& extensions,
+                                const extensions::InstallVerifier& verifier) {
+  ExtensionState state = NO_EXTENSIONS;
+  for (extensions::ExtensionSet::const_iterator it = extensions.begin();
+       it != extensions.end() && state < OFF_STORE;
+       ++it) {
+    // Combine the state of each extension, always favoring the higher state as
+    // defined by the order of ExtensionState.
+    state = std::max(state, IsOffStoreExtension(**it, verifier));
+  }
+  return state;
+}
 
 }  // namespace
 
@@ -74,18 +155,11 @@ Profile* ExtensionsMetricsProvider::GetMetricsProfile() {
 }
 
 scoped_ptr<extensions::ExtensionSet>
-ExtensionsMetricsProvider::GetInstalledExtensions() {
-#if defined(ENABLE_EXTENSIONS)
-  // UMA reports do not support multiple profiles, but extensions are installed
-  // per-profile.  We return the extensions installed in the primary profile.
-  // In the future, we might consider reporting data about extensions in all
-  // profiles.
-  Profile* profile = GetMetricsProfile();
+ExtensionsMetricsProvider::GetInstalledExtensions(Profile* profile) {
   if (profile) {
     return extensions::ExtensionRegistry::Get(profile)
         ->GenerateInstalledExtensionsSet();
   }
-#endif  // defined(ENABLE_EXTENSIONS)
   return scoped_ptr<extensions::ExtensionSet>();
 }
 
@@ -98,9 +172,46 @@ uint64 ExtensionsMetricsProvider::GetClientID() {
 
 void ExtensionsMetricsProvider::ProvideSystemProfileMetrics(
     metrics::SystemProfileProto* system_profile) {
-  scoped_ptr<extensions::ExtensionSet> extensions(GetInstalledExtensions());
-  if (!extensions)
+  ProvideOffStoreMetric(system_profile);
+  ProvideOccupiedBucketMetric(system_profile);
+}
+
+void ExtensionsMetricsProvider::ProvideOffStoreMetric(
+    metrics::SystemProfileProto* system_profile) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  if (!profile_manager)
     return;
+
+  ExtensionState state = NO_EXTENSIONS;
+
+  // The off-store metric includes information from all loaded profiles at the
+  // time when this metric is generated.
+  std::vector<Profile*> profiles = profile_manager->GetLoadedProfiles();
+  for (size_t i = 0u; i < profiles.size() && state < OFF_STORE; ++i) {
+    extensions::InstallVerifier* verifier =
+        extensions::ExtensionSystem::Get(profiles[i])->install_verifier();
+
+    scoped_ptr<extensions::ExtensionSet> extensions(
+        GetInstalledExtensions(profiles[i]));
+
+    // Combine the state from each profile, always favoring the higher state as
+    // defined by the order of ExtensionState.
+    state = std::max(state, CheckForOffStore(*extensions.get(), *verifier));
+  }
+
+  system_profile->set_offstore_extensions_state(ExtensionStateAsProto(state));
+}
+
+void ExtensionsMetricsProvider::ProvideOccupiedBucketMetric(
+    metrics::SystemProfileProto* system_profile) {
+  // UMA reports do not support multiple profiles, but extensions are installed
+  // per-profile.  We return the extensions installed in the primary profile.
+  // In the future, we might consider reporting data about extensions in all
+  // profiles.
+  Profile* profile = GetMetricsProfile();
+
+  scoped_ptr<extensions::ExtensionSet> extensions(
+      GetInstalledExtensions(profile));
 
   const int client_key = GetClientID() % kExtensionListClientKeys;
 

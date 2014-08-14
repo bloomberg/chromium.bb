@@ -2116,6 +2116,7 @@
             'browser/extensions/user_script_listener_unittest.cc',
             'browser/extensions/webstore_inline_installer_unittest.cc',
             'browser/extensions/webstore_installer_unittest.cc',
+            'browser/metrics/extensions_metrics_provider_unittest.cc',
             'browser/search/hotword_service_unittest.cc',
             'browser/web_applications/web_app_unittest.cc',
             'common/extensions/sync_type_unittest.cc',

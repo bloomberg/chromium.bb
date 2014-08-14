@@ -22,7 +22,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/metrics/chrome_stability_metrics_provider.h"
-#include "chrome/browser/metrics/extensions_metrics_provider.h"
 #include "chrome/browser/metrics/gpu_metrics_provider.h"
 #include "chrome/browser/metrics/network_metrics_provider.h"
 #include "chrome/browser/metrics/omnibox_metrics_provider.h"
@@ -46,6 +45,10 @@
 #include "chrome/browser/metrics/android_metrics_provider.h"
 #else
 #include "chrome/browser/service_process/service_process_control.h"
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/metrics/extensions_metrics_provider.h"
 #endif
 
 #if defined(ENABLE_PLUGINS)
@@ -281,9 +284,11 @@ void ChromeMetricsServiceClient::Initialize() {
       metrics_state_manager_, this, g_browser_process->local_state()));
 
   // Register metrics providers.
+#if defined(ENABLE_EXTENSIONS)
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr<metrics::MetricsProvider>(
           new ExtensionsMetricsProvider(metrics_state_manager_)));
+#endif
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr<metrics::MetricsProvider>(new NetworkMetricsProvider));
   metrics_service_->RegisterMetricsProvider(

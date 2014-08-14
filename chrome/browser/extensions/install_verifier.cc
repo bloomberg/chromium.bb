@@ -128,19 +128,6 @@ void LogInitResultHistogram(InitResult result) {
                             result, INIT_RESULT_MAX);
 }
 
-bool FromStore(const Extension& extension) {
-  if (extension.from_webstore() || ManifestURL::UpdatesFromGallery(&extension))
-    return true;
-
-  // If an extension has no update url, our autoupdate code will ask the
-  // webstore about it (to aid in migrating to the webstore from self-hosting
-  // or sideloading based installs). So we want to do verification checks on
-  // such extensions too so that we don't accidentally disable old installs of
-  // extensions that did migrate to the webstore.
-  return (ManifestURL::GetUpdateURL(&extension).is_empty() &&
-          Manifest::IsAutoUpdateableLocation(extension.location()));
-}
-
 bool CanUseExtensionApis(const Extension& extension) {
   return extension.is_extension() || extension.is_legacy_packaged_app();
 }
@@ -196,7 +183,23 @@ InstallVerifier::~InstallVerifier() {}
 
 // static
 bool InstallVerifier::NeedsVerification(const Extension& extension) {
-  return FromStore(extension) && CanUseExtensionApis(extension);
+  return IsFromStore(extension) && CanUseExtensionApis(extension);
+}
+
+
+
+// static
+bool InstallVerifier::IsFromStore(const Extension& extension) {
+  if (extension.from_webstore() || ManifestURL::UpdatesFromGallery(&extension))
+    return true;
+
+  // If an extension has no update url, our autoupdate code will ask the
+  // webstore about it (to aid in migrating to the webstore from self-hosting
+  // or sideloading based installs). So we want to do verification checks on
+  // such extensions too so that we don't accidentally disable old installs of
+  // extensions that did migrate to the webstore.
+  return (ManifestURL::GetUpdateURL(&extension).is_empty() &&
+          Manifest::IsAutoUpdateableLocation(extension.location()));
 }
 
 void InstallVerifier::Init() {
@@ -242,9 +245,13 @@ base::Time InstallVerifier::SignatureTimestamp() {
     return base::Time();
 }
 
-bool InstallVerifier::IsKnownId(const std::string& id) {
+bool InstallVerifier::IsKnownId(const std::string& id) const {
   return signature_.get() && (ContainsKey(signature_->ids, id) ||
                               ContainsKey(signature_->invalid_ids, id));
+}
+
+bool InstallVerifier::IsInvalid(const std::string& id) const {
+  return ((signature_.get() && ContainsKey(signature_->invalid_ids, id)));
 }
 
 void InstallVerifier::VerifyExtension(const std::string& extension_id) {
@@ -314,6 +321,24 @@ void InstallVerifier::RemoveMany(const ExtensionIdSet& ids) {
     BeginFetch();
 }
 
+bool InstallVerifier::AllowedByEnterprisePolicy(const std::string& id) const {
+  PrefService* pref_service = prefs_->pref_service();
+  if (pref_service->IsManagedPreference(pref_names::kInstallAllowList)) {
+    const base::ListValue* whitelist =
+        pref_service->GetList(pref_names::kInstallAllowList);
+    base::StringValue id_value(id);
+    if (whitelist && whitelist->Find(id_value) != whitelist->end())
+      return true;
+  }
+  if (pref_service->IsManagedPreference(pref_names::kInstallForceList)) {
+    const base::DictionaryValue* forcelist =
+        pref_service->GetDictionary(pref_names::kInstallForceList);
+    if (forcelist && forcelist->HasKey(id))
+      return true;
+  }
+  return false;
+}
+
 std::string InstallVerifier::GetDebugPolicyProviderName() const {
   return std::string("InstallVerifier");
 }
@@ -372,7 +397,7 @@ bool InstallVerifier::MustRemainDisabled(const Extension* extension,
   if (ContainsKey(InstallSigner::GetForcedNotFromWebstore(), extension->id())) {
     verified = false;
     outcome = FORCED_NOT_VERIFIED;
-  } else if (!FromStore(*extension)) {
+  } else if (!IsFromStore(*extension)) {
     verified = false;
     outcome = NOT_FROM_STORE;
   } else if (signature_.get() == NULL &&
@@ -508,24 +533,6 @@ void InstallVerifier::GarbageCollect() {
   if (!leftovers.empty()) {
     RemoveMany(leftovers);
   }
-}
-
-bool InstallVerifier::AllowedByEnterprisePolicy(const std::string& id) const {
-  PrefService* pref_service = prefs_->pref_service();
-  if (pref_service->IsManagedPreference(pref_names::kInstallAllowList)) {
-    const base::ListValue* whitelist =
-        pref_service->GetList(pref_names::kInstallAllowList);
-    base::StringValue id_value(id);
-    if (whitelist && whitelist->Find(id_value) != whitelist->end())
-      return true;
-  }
-  if (pref_service->IsManagedPreference(pref_names::kInstallForceList)) {
-    const base::DictionaryValue* forcelist =
-        pref_service->GetDictionary(pref_names::kInstallForceList);
-    if (forcelist && forcelist->HasKey(id))
-      return true;
-  }
-  return false;
 }
 
 bool InstallVerifier::IsVerified(const std::string& id) const {

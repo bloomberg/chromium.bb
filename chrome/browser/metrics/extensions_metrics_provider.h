@@ -34,20 +34,15 @@ class ExtensionsMetricsProvider : public metrics::MetricsProvider {
   virtual ~ExtensionsMetricsProvider();
 
   // metrics::MetricsProvider:
-
-  // Writes the hashed list of installed extensions into the specified
-  // SystemProfileProto object.
   virtual void ProvideSystemProfileMetrics(
       metrics::SystemProfileProto* system_profile) OVERRIDE;
 
  protected:
   // Exposed for the sake of mocking in test code.
 
-  // Retrieves the set of extensions installed in the current profile.
-  // TODO(mvrable): If metrics are ever converted to being per-profile, then
-  // this should be updated to return extensions installed in a specified
-  // profile.
-  virtual scoped_ptr<extensions::ExtensionSet> GetInstalledExtensions();
+  // Retrieves the set of extensions installed in the given |profile|.
+  virtual scoped_ptr<extensions::ExtensionSet> GetInstalledExtensions(
+      Profile* profile);
 
   // Retrieves the client ID.
   virtual uint64 GetClientID();
@@ -63,12 +58,19 @@ class ExtensionsMetricsProvider : public metrics::MetricsProvider {
   // same value so that reported extensions are consistent.
   Profile* GetMetricsProfile();
 
+  // Writes whether any loaded profiles have extensions not from the webstore.
+  void ProvideOffStoreMetric(metrics::SystemProfileProto* system_profile);
+
+  // Writes the hashed list of installed extensions into the specified
+  // SystemProfileProto object.
+  void ProvideOccupiedBucketMetric(metrics::SystemProfileProto* system_profile);
+
   // The MetricsStateManager from which the client ID is obtained.
   metrics::MetricsStateManager* metrics_state_manager_;
 
-  // The profile for which extensions are gathered.  Once a profile is found
-  // its value is cached here so that GetMetricsProfile() can return a
-  // consistent value.
+  // The profile for which extensions are gathered for the occupied bucket
+  // metric. Once a profile is found its value is cached here so that
+  // GetMetricsProfile() can return a consistent value.
   Profile* cached_profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsMetricsProvider);
