@@ -123,8 +123,7 @@ class CC_EXPORT TileManager : public RasterizerClient,
       ManagedTileState::TileVersion& tile_version =
           mts.tile_versions[HIGH_QUALITY_RASTER_MODE];
 
-      tile_version.resource_ =
-          resource_pool_->AcquireResource(tiles[i]->size());
+      tile_version.resource_ = resource_pool_->AcquireResource(gfx::Size(1, 1));
 
       bytes_releasable_ += BytesConsumedIfAllocated(tiles[i]);
       ++resources_releasable_;
