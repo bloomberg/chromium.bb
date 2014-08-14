@@ -1257,8 +1257,7 @@ TEST_P(SSLClientSocketPoolTest, NeedProxyAuth) {
   EXPECT_FALSE(tunnel_handle->socket()->IsConnected());
 }
 
-// TODO(rch): re-enable this.
-TEST_P(SSLClientSocketPoolTest, DISABLED_IPPooling) {
+TEST_P(SSLClientSocketPoolTest, IPPooling) {
   const int kTestPort = 80;
   struct TestHosts {
     std::string name;

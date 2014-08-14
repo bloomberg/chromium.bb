@@ -11,6 +11,7 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/transport_security_state.h"
 #include "net/quic/congestion_control/receive_algorithm_interface.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
 #include "net/quic/crypto/crypto_protocol.h"
@@ -214,6 +215,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
                               scoped_ptr<DatagramClientSocket>(socket),
                               writer_.Pass(), NULL,
                               &crypto_client_stream_factory_,
+                              &transport_security_state_,
                               make_scoped_ptr((QuicServerInfo*)NULL),
                               QuicServerId(kServerHostname, kServerPort,
                                            false, PRIVACY_MODE_DISABLED),
@@ -299,6 +301,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   testing::StrictMock<MockConnectionVisitor> visitor_;
   scoped_ptr<QuicHttpStream> stream_;
   scoped_ptr<QuicDefaultPacketWriter> writer_;
+  TransportSecurityState transport_security_state_;
   scoped_ptr<QuicClientSession> session_;
   QuicCryptoClientConfig crypto_config_;
   TestCompletionCallback callback_;
