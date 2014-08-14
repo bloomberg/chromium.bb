@@ -3217,12 +3217,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Cookie.TimeInitializeDB" units="ms">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>nyquist@chromium.org</owner>
   <summary>The amount of time (ms) to initialize the cookies database.</summary>
 </histogram>
 
 <histogram name="Cookie.TimeInitializeDomainMap" units="ms">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>nyquist@chromium.org</owner>
   <summary>
     The amount of time (ms) to read and parse the domain map from the cookies
     database.
@@ -3254,14 +3254,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Cookie.TimeLoadDomains" units="ms">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>nyquist@chromium.org</owner>
   <summary>
     The amount of time (ms) to read the domain map from the cookies database.
   </summary>
 </histogram>
 
 <histogram name="Cookie.TimeParseDomains" units="ms">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>nyquist@chromium.org</owner>
   <summary>
     The amount of time (ms) to parse the domains already loaded from the cookies
     database and put them in the domain map.
