@@ -2693,23 +2693,11 @@ class ValidationPool(object):
     """
     url = cls.GetCLStatusURL(bot, change)
     ctx = gs.GSContext()
-    # We're going to move the current status into a file called "status"
-    # rather than a file which is also a directory for status stats. Having
-    # the same name as a file and a directory confuses gsutil and makes it
-    # put things in the wrong place, and is also a fairly odd thing to do
-    # when compared to other standard file systems.
-
-    # For now we'll have forward/backward compatibility as far as reading the
-    # status. A future change remove backward compatability with the old
-    # mechanism.
     try:
       return ctx.Cat('%s/status' % url).output
     except gs.GSNoSuchKey:
-      try:
-        return ctx.Cat(url).output
-      except gs.GSNoSuchKey:
-        logging.debug('No status yet for %r', url)
-        return None
+      logging.debug('No status yet for %r', url)
+      return None
 
   @classmethod
   def UpdateCLStatus(cls, bot, change, status, dry_run):
