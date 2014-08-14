@@ -19,20 +19,18 @@ ChannelInit::~ChannelInit() {
     DestroyChannel(channel_info_);
 }
 
-mojo::ScopedMessagePipeHandle ChannelInit::Init(
+ScopedMessagePipeHandle ChannelInit::Init(
     base::PlatformFile file,
     scoped_refptr<base::TaskRunner> io_thread_task_runner) {
   DCHECK(!io_thread_task_runner_.get());  // Should only init once.
   io_thread_task_runner_ = io_thread_task_runner;
-  mojo::ScopedMessagePipeHandle message_pipe =
-      mojo::embedder::CreateChannel(
-          mojo::embedder::ScopedPlatformHandle(
-              mojo::embedder::PlatformHandle(file)),
-          io_thread_task_runner,
-          base::Bind(&ChannelInit::OnCreatedChannel,
-                     weak_factory_.GetWeakPtr(),
-                     io_thread_task_runner),
-          base::MessageLoop::current()->message_loop_proxy()).Pass();
+  ScopedMessagePipeHandle message_pipe =
+      CreateChannel(ScopedPlatformHandle(PlatformHandle(file)),
+                    io_thread_task_runner,
+                    base::Bind(&ChannelInit::OnCreatedChannel,
+                               weak_factory_.GetWeakPtr(),
+                               io_thread_task_runner),
+                    base::MessageLoop::current()->message_loop_proxy()).Pass();
   return message_pipe.Pass();
 }
 
@@ -44,7 +42,7 @@ void ChannelInit::WillDestroySoon() {
 // static
 void ChannelInit::OnCreatedChannel(base::WeakPtr<ChannelInit> self,
                                    scoped_refptr<base::TaskRunner> io_thread,
-                                   embedder::ChannelInfo* channel) {
+                                   ChannelInfo* channel) {
   // If |self| was already destroyed, shut the channel down.
   if (!self) {
     DestroyChannel(channel);

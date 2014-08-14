@@ -45,12 +45,12 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelInit {
   // since we want to destroy the channel even if we're destroyed.)
   static void OnCreatedChannel(base::WeakPtr<ChannelInit> self,
                                scoped_refptr<base::TaskRunner> io_thread,
-                               embedder::ChannelInfo* channel);
+                               ChannelInfo* channel);
 
   scoped_refptr<base::TaskRunner> io_thread_task_runner_;
 
   // If non-null the channel has been established.
-  embedder::ChannelInfo* channel_info_;
+  ChannelInfo* channel_info_;
 
   base::WeakPtrFactory<ChannelInit> weak_factory_;
 
