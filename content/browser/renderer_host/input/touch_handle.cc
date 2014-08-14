@@ -17,11 +17,15 @@ const double kFadeDurationMs = 200;
 // when the handle is moving rapidly while the fade is active.
 const double kFadeDistanceSquared = 20.f * 20.f;
 
+// Avoid using an empty touch rect, as it may fail the intersection test event
+// if it lies within the other rect's bounds.
+const float kMinTouchMajorForHitTesting = 1.f;
+
 // The maximum touch size to use when computing whether a touch point is
 // targetting a touch handle. This is necessary for devices that misreport
 // touch radii, preventing inappropriately largely touch sizes from completely
 // breaking handle dragging behavior.
-const float kMaxTouchMajorForHitTesting = 48.f;
+const float kMaxTouchMajorForHitTesting = 36.f;
 
 }  // namespace
 
@@ -120,8 +124,9 @@ bool TouchHandle::WillHandleTouchEvent(const ui::MotionEvent& event) {
     case ui::MotionEvent::ACTION_DOWN: {
       if (!is_visible_)
         return false;
-      const float touch_size =
-          std::min(event.GetTouchMajor(), kMaxTouchMajorForHitTesting);
+      const float touch_size = std::max(
+          kMinTouchMajorForHitTesting,
+          std::min(kMaxTouchMajorForHitTesting, event.GetTouchMajor()));
       const gfx::RectF touch_rect(event.GetX() - touch_size * .5f,
                                   event.GetY() - touch_size * .5f,
                                   touch_size,

@@ -424,6 +424,15 @@ TEST_F(TouchHandleTest, DragTargettingUsesTouchSize) {
   event.SetTouchMajor(kTouchSize * 2.f);
   EXPECT_TRUE(handle.WillHandleTouchEvent(event));
   EXPECT_TRUE(IsDragging());
+
+  // Ensure a touch size of 0 can still register a hit.
+  event = MockMotionEvent(MockMotionEvent::ACTION_DOWN,
+                          event_time,
+                          kDefaultDrawableSize / 2.f,
+                          kDefaultDrawableSize / 2.f);
+  event.SetTouchMajor(0);
+  EXPECT_TRUE(handle.WillHandleTouchEvent(event));
+  EXPECT_TRUE(IsDragging());
 }
 
 TEST_F(TouchHandleTest, Tap) {
