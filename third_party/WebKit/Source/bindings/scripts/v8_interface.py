@@ -255,7 +255,7 @@ def interface_context(interface):
     # Stringifier
     if interface.stringifier:
         stringifier = interface.stringifier
-        method = IdlOperation()
+        method = IdlOperation(interface.idl_name)
         method.name = 'toString'
         method.idl_type = IdlType('DOMString')
         method.extended_attributes.update(stringifier.extended_attributes)

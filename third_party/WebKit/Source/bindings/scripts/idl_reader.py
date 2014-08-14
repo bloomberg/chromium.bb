@@ -69,7 +69,8 @@ class IdlReader(object):
         ast = blink_idl_parser.parse_file(self.parser, idl_filename)
         if not ast:
             raise Exception('Failed to parse %s' % idl_filename)
-        definitions = IdlDefinitions(ast)
+        idl_name = os.path.basename(idl_filename)
+        definitions = IdlDefinitions(idl_name, ast)
 
         # Validate file contents with filename convention
         # The Blink IDL filenaming convention is that the file
