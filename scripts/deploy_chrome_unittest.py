@@ -286,7 +286,7 @@ class StagingTest(cros_test_lib.MockTempDirTestCase):
 
 
 class DeployTestBuildDir(cros_test_lib.MockTempDirTestCase):
-  """Setup a deploy object with a build-dir for use in Content Shell tests"""
+  """Set up a deploy object with a build-dir for use in deployment type tests"""
 
   def _GetDeployChrome(self, args):
     options, _ = _ParseCommandLine(args)
@@ -302,40 +302,39 @@ class DeployTestBuildDir(cros_test_lib.MockTempDirTestCase):
                              '--board=lumpy', '--staging-only', '--cache-dir',
                              self.tempdir, '--sloppy'])
 
+  def getCopyPath(self, source_path):
+    """Return a chrome_util.Path or None if not present."""
+    paths = [p for p in self.deploy.copy_paths if p.src == source_path]
+    return paths[0] if paths else None
 
-class TestContentDeploymentType(DeployTestBuildDir):
+class TestDeploymentType(DeployTestBuildDir):
   """Test detection of deployment type using build dir."""
 
-  def testContentShellDetection(self):
-    """Check for a content_shell deployment"""
-    osutils.Touch(os.path.join(self.deploy.options.build_dir,
-                               'system.unand/chrome/eureka_shell'),
+  def testAppShellDetection(self):
+    """Check for an app_shell deployment"""
+    osutils.Touch(os.path.join(self.deploy.options.build_dir, 'app_shell'),
                   makedirs=True)
     self.deploy._CheckDeployType()
-    self.assertTrue(self.deploy.content_shell)
+    self.assertTrue(self.getCopyPath('app_shell'))
+    self.assertFalse(self.getCopyPath('chrome'))
 
-  def testContentShellOnlyDetection(self):
-    """Check for a content_shell deployment when no chrome exists."""
-    osutils.Touch(os.path.join(self.deploy.options.build_dir, 'content_shell'),
-                  makedirs=True)
-    self.deploy._CheckDeployType()
-    self.assertTrue(self.deploy.content_shell)
-
-  def testChromeAndContentShellDetection(self):
-    """Check for a regular chrome deployment when content_shell also exists."""
+  def testChromeAndAppShellDetection(self):
+    """Check for a regular chrome deployment when app_shell also exists."""
     osutils.Touch(os.path.join(self.deploy.options.build_dir, 'chrome'),
                   makedirs=True)
-    osutils.Touch(os.path.join(self.deploy.options.build_dir, 'content_shell'),
+    osutils.Touch(os.path.join(self.deploy.options.build_dir, 'app_shell'),
                   makedirs=True)
     self.deploy._CheckDeployType()
-    self.assertFalse(self.deploy.content_shell)
+    self.assertFalse(self.getCopyPath('app_shell'))
+    self.assertTrue(self.getCopyPath('chrome'))
 
   def testChromeDetection(self):
     """Check for a regular chrome deployment"""
     osutils.Touch(os.path.join(self.deploy.options.build_dir, 'chrome'),
                   makedirs=True)
     self.deploy._CheckDeployType()
-    self.assertFalse(self.deploy.content_shell)
+    self.assertFalse(self.getCopyPath('app_shell'))
+    self.assertTrue(self.getCopyPath('chrome'))
 
 if __name__ == '__main__':
   cros_test_lib.main()
