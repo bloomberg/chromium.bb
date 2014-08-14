@@ -41,6 +41,10 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 namespace base {
 
 // Launches a child process using |command_line|. If the child process is still
@@ -1034,9 +1038,10 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
 
     // Allow break-away from job since sandbox and few other places rely on it
     // on Windows versions prior to Windows 8 (which supports nested jobs).
-    // TODO(phajdan.jr): Do not allow break-away on Windows 8.
-    if (flags & TestLauncher::ALLOW_BREAKAWAY_FROM_JOB)
+    if (win::GetVersion() < win::VERSION_WIN8 &&
+        flags & TestLauncher::ALLOW_BREAKAWAY_FROM_JOB) {
       job_flags |= JOB_OBJECT_LIMIT_BREAKAWAY_OK;
+    }
 
     if (!SetJobObjectLimitFlags(job_handle.Get(), job_flags)) {
       LOG(ERROR) << "Could not SetJobObjectLimitFlags.";
