@@ -17,6 +17,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/bookmarks/common/android/bookmark_type.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/BookmarksBridge_jni.h"
@@ -26,13 +27,13 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ScopedJavaLocalRef;
 using base::android::ScopedJavaGlobalRef;
+using bookmarks::android::JavaBookmarkIdGetId;
+using bookmarks::android::JavaBookmarkIdGetType;
+using bookmarks::BookmarkType;
 using content::BrowserThread;
 
-// Should mirror constants in BookmarksBridge.java
-static const int kBookmarkTypeNormal = 0;
-static const int kBookmarkTypePartner = 1;
-
 namespace {
+
 class BookmarkNodeCreationTimeCompareFunctor {
  public:
   bool operator()(const BookmarkNode* lhs, const BookmarkNode* rhs) {
@@ -88,6 +89,14 @@ bool BookmarksBridge::RegisterBookmarksBridge(JNIEnv* env) {
 static jlong Init(JNIEnv* env, jobject obj, jobject j_profile) {
   BookmarksBridge* delegate = new BookmarksBridge(env, obj, j_profile);
   return reinterpret_cast<intptr_t>(delegate);
+}
+
+static jlong GetNativeBookmarkModel(JNIEnv* env,
+                                    jclass caller,
+                                    jobject j_profile) {
+  Profile *profile = ProfileAndroid::FromProfileAndroid(j_profile);
+  BookmarkModel *bookmark_model_ = BookmarkModelFactory::GetForProfile(profile);
+  return reinterpret_cast<jlong>(bookmark_model_);
 }
 
 static bool IsEditBookmarksEnabled() {
@@ -169,7 +178,7 @@ void BookmarksBridge::GetChildIDs(JNIEnv* env,
         env,
         j_result_obj,
         partner_bookmarks_shim_->GetPartnerBookmarksRoot()->id(),
-        kBookmarkTypePartner);
+        BookmarkType::PARTNER);
   }
 }
 
@@ -258,8 +267,8 @@ void BookmarksBridge::GetBookmarksForFolder(JNIEnv* env,
                                             jobject j_callback_obj,
                                             jobject j_result_obj) {
   DCHECK(IsLoaded());
-  long folder_id = Java_BookmarkId_getId(env, j_folder_id_obj);
-  int type = Java_BookmarkId_getType(env, j_folder_id_obj);
+  long folder_id = JavaBookmarkIdGetId(env, j_folder_id_obj);
+  int type = JavaBookmarkIdGetType(env, j_folder_id_obj);
   const BookmarkNode* folder = GetFolderWithFallback(folder_id, type);
 
   if (!folder->is_folder() || !IsReachable(folder))
@@ -298,8 +307,8 @@ void BookmarksBridge::GetCurrentFolderHierarchy(JNIEnv* env,
                                                 jobject j_callback_obj,
                                                 jobject j_result_obj) {
   DCHECK(IsLoaded());
-  long folder_id = Java_BookmarkId_getId(env, j_folder_id_obj);
-  int type = Java_BookmarkId_getType(env, j_folder_id_obj);
+  long folder_id = JavaBookmarkIdGetId(env, j_folder_id_obj);
+  int type = JavaBookmarkIdGetType(env, j_folder_id_obj);
   const BookmarkNode* folder = GetFolderWithFallback(folder_id, type);
 
   if (!folder->is_folder() || !IsReachable(folder))
@@ -328,8 +337,8 @@ void BookmarksBridge::DeleteBookmark(JNIEnv* env,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(IsLoaded());
 
-  long bookmark_id = Java_BookmarkId_getId(env, j_bookmark_id_obj);
-  int type = Java_BookmarkId_getType(env, j_bookmark_id_obj);
+  long bookmark_id = JavaBookmarkIdGetId(env, j_bookmark_id_obj);
+  int type = JavaBookmarkIdGetType(env, j_bookmark_id_obj);
   const BookmarkNode* node = GetNodeByID(bookmark_id, type);
   if (!IsEditable(node)) {
     NOTREACHED();
@@ -352,15 +361,15 @@ void BookmarksBridge::MoveBookmark(JNIEnv* env,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(IsLoaded());
 
-  long bookmark_id = Java_BookmarkId_getId(env, j_bookmark_id_obj);
-  int type = Java_BookmarkId_getType(env, j_bookmark_id_obj);
+  long bookmark_id = JavaBookmarkIdGetId(env, j_bookmark_id_obj);
+  int type = JavaBookmarkIdGetType(env, j_bookmark_id_obj);
   const BookmarkNode* node = GetNodeByID(bookmark_id, type);
   if (!IsEditable(node)) {
     NOTREACHED();
     return;
   }
-  bookmark_id = Java_BookmarkId_getId(env, j_parent_id_obj);
-  type = Java_BookmarkId_getType(env, j_parent_id_obj);
+  bookmark_id = JavaBookmarkIdGetId(env, j_parent_id_obj);
+  type = JavaBookmarkIdGetType(env, j_parent_id_obj);
   const BookmarkNode* new_parent_node = GetNodeByID(bookmark_id, type);
   bookmark_model_->Move(node, new_parent_node, index);
 }
@@ -400,7 +409,7 @@ void BookmarksBridge::ExtractBookmarkNodeInformation(const BookmarkNode* node,
 
 const BookmarkNode* BookmarksBridge::GetNodeByID(long node_id, int type) {
   const BookmarkNode* node;
-  if (type == kBookmarkTypePartner) {
+  if (type == BookmarkType::PARTNER) {
     node = partner_bookmarks_shim_->GetNodeByID(
         static_cast<int64>(node_id));
   } else {
@@ -450,9 +459,9 @@ const BookmarkNode* BookmarksBridge::GetParentNode(const BookmarkNode* node) {
 
 int BookmarksBridge::GetBookmarkType(const BookmarkNode* node) {
   if (partner_bookmarks_shim_->IsPartnerBookmark(node))
-    return kBookmarkTypePartner;
+    return BookmarkType::PARTNER;
   else
-    return kBookmarkTypeNormal;
+    return BookmarkType::NORMAL;
 }
 
 base::string16 BookmarksBridge::GetTitle(const BookmarkNode* node) const {

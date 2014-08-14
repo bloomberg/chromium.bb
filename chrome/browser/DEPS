@@ -24,6 +24,7 @@ include_rules = [
   "+components/data_reduction_proxy",
   "+components/dom_distiller",
   "+components/domain_reliability",
+  "+components/enhanced_bookmarks",
   "+components/favicon_base",
   "+components/feedback",
   "+components/gcm_driver",

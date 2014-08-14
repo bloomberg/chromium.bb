@@ -73,7 +73,9 @@
 #include "chrome/browser/ui/android/toolbar/toolbar_model_android.h"
 #include "chrome/browser/ui/android/website_settings_popup_android.h"
 #include "components/autofill/core/browser/android/component_jni_registrar.h"
+#include "components/bookmarks/common/android/component_jni_registrar.h"
 #include "components/dom_distiller/android/component_jni_registrar.h"
+#include "components/enhanced_bookmarks/android/component_jni_registrar.h"
 #include "components/gcm_driver/android/component_jni_registrar.h"
 #include "components/navigation_interception/component_jni_registrar.h"
 #include "components/variations/android/component_jni_registrar.h"
@@ -90,7 +92,10 @@ namespace android {
 
 static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   // Register JNI for components we depend on.
+  { "Bookmarks", bookmarks::android::RegisterBookmarks },
   { "DomDistiller", dom_distiller::android::RegisterDomDistiller },
+  { "EnhancedBookmarks",
+    enhanced_bookmarks::android::RegisterEnhancedBookmarks },
   { "GCMDriver", gcm::android::RegisterGCMDriverJni },
   { "NavigationInterception",
     navigation_interception::RegisterNavigationInterceptionJni },

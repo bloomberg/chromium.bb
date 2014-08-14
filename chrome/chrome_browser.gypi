@@ -3282,6 +3282,7 @@
         ['OS=="android"', {
           'dependencies': [
             '../components/components.gyp:cdm_browser',
+            '../components/components.gyp:enhanced_bookmarks',
             '../components/components.gyp:web_contents_delegate_android',
             '../third_party/android_opengl/etc1/etc1.gyp:etc1',
             'chrome_browser_jni_headers',

@@ -14,6 +14,7 @@
 #include "chrome/browser/android/bookmarks/partner_bookmarks_shim.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
+#include "components/bookmarks/common/android/bookmark_id.h"
 
 class Profile;
 
