@@ -759,8 +759,11 @@ For Google Chrome, processes used to display diagnostics information (such as th
       <message name="IDS_PROFILES_CONFIRM_SIGNIN_TUTORIAL_TITLE" desc="The title of the tutorial card in the avatar menu bubble view shown when a user signs in to Chrome.">
         You're now signed in to Chrome
       </message>
+      <message name="IDS_PROFILES_WELCOME_UPGRADE_TUTORIAL_TITLE" desc="Title of the tutorial card in the avatar menu bubble view that introduces an upgrade user to the new profile management UI.">
+        This is your Chrome
+      </message>
       <message name="IDS_PROFILES_WELCOME_UPGRADE_TUTORIAL_CONTENT_TEXT" desc="The main content of the tutorial card in the avatar menu bubble view that introduces an upgrade user to the new profile management UI.">
-       Share a computer? Now you can set up Chrome just the way you like it.
+        Share a computer? Now you can set up Chrome just the way you like it.
       </message>
 
       <!-- Account removal view in the avatar menu bubble -->
@@ -773,7 +776,7 @@ For Google Chrome, processes used to display diagnostics information (such as th
 
       <!-- Switch user view in the avatar menu bubble -->
       <message name="IDS_PROFILES_NOT_YOU_CONTENT_TEXT" desc="Main text of the switch user view. for an upgrade user">
-        If you share this computer with <ph name="PROFILE_NAME">$1<ex>Claire</ex></ph>, add yourself to Chrome to browser separately. Otherwise disconnect your Google Account.
+        If you share this computer with <ph name="PROFILE_NAME">$1<ex>Claire</ex></ph>, add yourself to Chrome to browse separately. Otherwise disconnect their Google Account.
       </message>
 
       <!-- One click sign-in infobar -->

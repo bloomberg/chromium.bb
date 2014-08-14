@@ -11291,9 +11291,6 @@ Chrome ran out of memory.
       <message name="IDS_PROFILES_ACCOUNT_REMOVAL_BUTTON" desc="Text of the ok button on the account removal view in the avatar menu bubble.">
         Remove account
       </message>
-      <message name="IDS_PROFILES_WELCOME_UPGRADE_TUTORIAL_TITLE" desc="Title of the tutorial card in the avatar menu bubble view that introduces an upgrade user to the new profile management UI.">
-        Hi, <ph name="PROFILE_NAME">$1<ex>Claire</ex></ph>
-      </message>
       <message name="IDS_PROFILES_CONFIRM_SIGNIN_TUTORIAL_CONTENT_TEXT" desc="Content of the tutorial card in the avatar menu bubble view shown when a user successfully signs in to Chrome.">
         Your tabs, bookmarks, history, and other settings will be synced to your Google Account and available across all your devices.
       </message>
@@ -11304,7 +11301,7 @@ Chrome ran out of memory.
         Not <ph name="PROFILE_NAME">$1<ex>Claire</ex></ph>?
       </message>
       <message name="IDS_PROFILES_DISCONNECT_BUTTON" desc="Button in the avatar menu bubble for disconnecting the current profile">
-        Disconnect your Google Account
+        Disconnect Google Account
       </message>
       <message name="IDS_PROFILES_ADD_PERSON_BUTTON" desc="Button in the avatar menu bubble for adding a new profile">
         Add person

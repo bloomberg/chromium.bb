@@ -1190,8 +1190,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
         prefs::kProfileAvatarTutorialShown, showCount + 1);
   }
 
-  NSString* titleMessage = l10n_util::GetNSStringF(
-      IDS_PROFILES_WELCOME_UPGRADE_TUTORIAL_TITLE, avatarItem.name);
+  NSString* titleMessage = l10n_util::GetNSString(
+      IDS_PROFILES_WELCOME_UPGRADE_TUTORIAL_TITLE);
   NSString* contentMessage = l10n_util::GetNSString(
       IDS_PROFILES_WELCOME_UPGRADE_TUTORIAL_CONTENT_TEXT);
   NSString* linkMessage = l10n_util::GetNSStringF(

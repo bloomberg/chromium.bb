@@ -1414,8 +1414,8 @@ views::View* ProfileChooserView::CreateWelcomeUpgradeTutorialViewIfNeeded(
 
   return CreateTutorialView(
       profiles::TUTORIAL_MODE_WELCOME_UPGRADE,
-      l10n_util::GetStringFUTF16(
-          IDS_PROFILES_WELCOME_UPGRADE_TUTORIAL_TITLE, avatar_item.name),
+      l10n_util::GetStringUTF16(
+          IDS_PROFILES_WELCOME_UPGRADE_TUTORIAL_TITLE),
       l10n_util::GetStringUTF16(
           IDS_PROFILES_WELCOME_UPGRADE_TUTORIAL_CONTENT_TEXT),
       l10n_util::GetStringFUTF16(
