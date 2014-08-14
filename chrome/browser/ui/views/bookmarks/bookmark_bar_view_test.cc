@@ -1685,6 +1685,8 @@ class BookmarkBarViewTest17 : public BookmarkBarViewEventTestBase {
 #elif defined(USE_OZONE)
 // ozone bringup - http://crbug.com/401304
 #define MAYBE_ContextMenus3 DISABLED_ContextMenus3
+#elif defined(OS_WIN)  // http://crbug.com/128961
+#define MAYBE_ContextMenus3 DISABLED_ContextMenus3
 #else
 #define MAYBE_ContextMenus3 ContextMenus3
 #endif
