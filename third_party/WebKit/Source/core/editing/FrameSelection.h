@@ -89,6 +89,10 @@ public:
         NonDirectional,
         Directional
     };
+    enum ResetCaretBlinkOption {
+        None,
+        ResetCaretBlink
+    };
 
     Element* rootEditableElement() const { return m_selection.rootEditableElement(); }
     Element* rootEditableElementOrDocumentElement() const;
@@ -139,13 +143,8 @@ public:
     // Return the renderer that is responsible for painting the caret (in the selection start node)
     RenderBlock* caretRenderer() const;
 
-    // Caret rect local to the caret's renderer
-    LayoutRect localCaretRect();
-    LayoutRect localCaretRectWithoutUpdateForTesting() const { return CaretBase::localCaretRectWithoutUpdate(); }
-
     // Bounds of (possibly transformed) caret in absolute coords
     IntRect absoluteCaretBounds();
-    void setCaretRectNeedsUpdate() { CaretBase::setCaretRectNeedsUpdate(); }
 
     void didChangeFocus();
     void willBeModified(EAlteration, SelectionDirection);
@@ -168,8 +167,11 @@ public:
     void didMergeTextNodes(const Text& oldNode, unsigned offset);
     void didSplitTextNode(const Text& oldNode);
 
+    void updateAppearance(ResetCaretBlinkOption = None);
     void setCaretVisible(bool caretIsVisible) { setCaretVisibility(caretIsVisible ? Visible : Hidden); }
-    bool recomputeCaretRect();
+    bool isCaretBoundsDirty() const { return m_caretRectDirty; }
+    void setCaretRectNeedsUpdate();
+    void scheduleVisualUpdate() const;
     void invalidateCaretRect();
     void paintCaret(GraphicsContext*, const LayoutPoint&, const LayoutRect& clipRect);
 
@@ -182,9 +184,6 @@ public:
     bool isFocused() const { return m_focused; }
     bool isFocusedAndActive() const;
     void pageActivationChanged();
-
-    // Painting.
-    void updateAppearance();
 
     void updateSecureKeyboardEntryIfActive();
 
@@ -280,13 +279,13 @@ private:
     RefPtrWillBeMember<Range> m_logicalRange;
 
     RefPtrWillBeMember<Node> m_previousCaretNode; // The last node which painted the caret. Retained for clearing the old caret when it moves.
+    LayoutRect m_previousCaretRect;
 
     RefPtrWillBeMember<EditingStyle> m_typingStyle;
 
     Timer<FrameSelection> m_caretBlinkTimer;
-    // The painted bounds of the caret in absolute coordinates
-    IntRect m_absCaretBounds;
-    bool m_absCaretBoundsDirty : 1;
+
+    bool m_caretRectDirty : 1;
     bool m_caretPaint : 1;
     bool m_isCaretBlinkingSuspended : 1;
     bool m_focused : 1;

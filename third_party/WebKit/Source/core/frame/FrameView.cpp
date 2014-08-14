@@ -995,6 +995,9 @@ void FrameView::invalidateTreeIfNeeded()
 #ifndef NDEBUG
     renderView()->assertSubtreeClearedPaintInvalidationState();
 #endif
+
+    if (m_frame->selection().isCaretBoundsDirty())
+        m_frame->selection().invalidateCaretRect();
 }
 
 DocumentLifecycle& FrameView::lifecycle() const

@@ -20,6 +20,7 @@
 #include "core/page/SpellCheckerClient.h"
 #include "core/rendering/RenderTreeAsText.h"
 #include "core/testing/DummyPageHolder.h"
+#include "core/testing/UnitTestHelpers.h"
 #include "wtf/OwnPtr.h"
 #include <gtest/gtest.h>
 
@@ -107,35 +108,29 @@ TEST_F(HTMLTextFormControlElementTest, SetSelectionRange)
     EXPECT_EQ(3, textControl().selectionEnd());
 }
 
-TEST_F(HTMLTextFormControlElementTest, FrameSelectionLocalCaretRectDoesNotCauseLayout)
-{
-    input().focus();
-    input().setValue("Hello, input form.");
-    FrameSelection& frameSelection = document().frame()->selection();
-    frameSelection.setCaretRectNeedsUpdate();
-
-    forceLayoutFlag();
-    int startLayoutCount = layoutCount();
-    frameSelection.localCaretRect();
-    EXPECT_EQ(startLayoutCount, layoutCount());
-}
-
-TEST_F(HTMLTextFormControlElementTest, SetSameSelectionRangeDoesNotCauseLayout)
+TEST_F(HTMLTextFormControlElementTest, SetSelectionRangeDoesNotCauseLayout)
 {
     input().focus();
     input().setValue("Hello, input form.");
     input().setSelectionRange(1, 1);
     FrameSelection& frameSelection = document().frame()->selection();
-    LayoutRect oldCaretRect = frameSelection.localCaretRectWithoutUpdateForTesting();
+    forceLayoutFlag();
+    LayoutRect oldCaretRect = frameSelection.absoluteCaretBounds();
     EXPECT_FALSE(oldCaretRect.isEmpty());
-
-    forceLayoutFlag();
     int startLayoutCount = layoutCount();
     input().setSelectionRange(1, 1);
     EXPECT_EQ(startLayoutCount, layoutCount());
-
-    LayoutRect newCaretRect = frameSelection.localCaretRectWithoutUpdateForTesting();
+    LayoutRect newCaretRect = frameSelection.absoluteCaretBounds();
     EXPECT_EQ(oldCaretRect, newCaretRect);
+
+    forceLayoutFlag();
+    oldCaretRect = frameSelection.absoluteCaretBounds();
+    EXPECT_FALSE(oldCaretRect.isEmpty());
+    startLayoutCount = layoutCount();
+    input().setSelectionRange(2, 2);
+    EXPECT_EQ(startLayoutCount, layoutCount());
+    newCaretRect = frameSelection.absoluteCaretBounds();
+    EXPECT_NE(oldCaretRect, newCaretRect);
 }
 
 typedef Position (*PositionFunction)(const Position&);
@@ -164,7 +159,7 @@ void testBoundary(HTMLDocument& document, HTMLTextFormControlElement& textContro
     for (unsigned i = 0; i < textControl.innerEditorValue().length(); i++) {
         textControl.setSelectionRange(i, i);
         Position position = document.frame()->selection().start();
-        SCOPED_TRACE(testing::Message() << "offset " << position.deprecatedEditingOffset() << " of " << nodePositionAsStringForTesting(position.deprecatedNode()).ascii().data());
+        SCOPED_TRACE(::testing::Message() << "offset " << position.deprecatedEditingOffset() << " of " << nodePositionAsStringForTesting(position.deprecatedNode()).ascii().data());
         {
             SCOPED_TRACE("HTMLTextFormControlElement::startOfWord");
             testFunctionEquivalence(position, HTMLTextFormControlElement::startOfWord, startOfWord);
