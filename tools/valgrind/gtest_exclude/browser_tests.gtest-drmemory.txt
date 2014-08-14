@@ -11,5 +11,10 @@ BrowserOptionsOverlayWebUITest.testNavigationInBackground
 RangeHistoryWebUITest.monthViewGrouped
 
 # http://crbug.com/403687
-SSLUITest.TestWSSInvalidCertAndGoForward
+ContentScriptCssInjectionTest.ContentScriptInjectsStyles
+MediaFileValidatorTest.UnsupportedExtension
+MessageCenterNotificationsTest.RetrieveBaseParts
+RequirementsCheckerBrowserTest.Check3DExtension
 SSLUITest.TestInterstitialJavaScriptProceeds
+SSLUITest.TestRefNavigation
+SSLUITest.TestWSSInvalidCertAndGoForward
