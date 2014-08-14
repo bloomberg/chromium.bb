@@ -57,11 +57,14 @@ While we still have tests using QUnit, you can run these at: http://localhost:80
 
 # PUSHING
 
-Fill in the revision you're pushing for XXXX.
-1. appcfg.py update . --version rXXXX
-2. Go to appengine.google.com and select the sheriff-o-matic app.
-3. Click on the version tab
-4. Make the rXXXX version the default
+In GardeningServer:
+
+1. make update
+2. appcfg.py update . --version r$(git svn find-rev HEAD) --oauth2
+3. Go to appengine.google.com and select the sheriff-o-matic app.
+4. Click on the version tab
+5. Make the rXXXX version the default, where XXXX is:
+   git svn find-rev HEAD
 
 The versioning is so that we can easily roll back if there's something
 wrong with the push and so we can know what we've pushed.

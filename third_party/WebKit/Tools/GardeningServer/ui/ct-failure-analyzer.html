@@ -67,9 +67,7 @@ found in the LICENSE file.
 
       update: function() {
         var annotationPromise = CTFailureGroup.fetchAnnotations();
-        // FIXME: Change this to http://sheriff-o-matic.appspot.com/alerts
-        // when Sheriff-o-matic is redeployed to serve /alerts.
-        net.json('http://auto-sheriff.appspot.com/data').then(function(data) {
+        net.json('http://sheriff-o-matic.appspot.com/alerts').then(function(data) {
           annotationPromise.then(function(annotations) {
             // FIXME: Don't special-case the blink master.
             this.builderLatestRevisions = new CTBuilderRevisions(data.latest_revisions['chromium.webkit']);
@@ -109,9 +107,6 @@ found in the LICENSE file.
 
         group.failure_keys.forEach(function(failure_key) {
           var failure = failures.find(function(item) { return item.key == failure_key; });
-          if (failure.ignored_by.length)
-            return;
-
           var reason, failureType;
           if (failure.reason) {
             // FIXME: Store the actual failure type in a different field instead of smashing it into the reason.
