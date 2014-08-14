@@ -172,11 +172,14 @@ void WebsiteSettingsHandler::UpdateOrigins() {
     base::DictionaryValue* origin_entry = new base::DictionaryValue();
     origin_entry->SetDoubleWithoutPathExpansion("usage",
                                                 last_usage.ToDoubleT());
-    origin_entry->SetStringWithoutPathExpansion(
-        "usageString",
-        ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_ELAPSED,
-                               ui::TimeFormat::LENGTH_SHORT,
-                               base::Time::Now() - last_usage));
+    base::string16 usage_string;
+    if (last_usage.ToDoubleT()) {
+      usage_string = ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_ELAPSED,
+                                            ui::TimeFormat::LENGTH_SHORT,
+                                            base::Time::Now() - last_usage);
+    }
+    origin_entry->SetStringWithoutPathExpansion("usageString", usage_string);
+
     origins.SetWithoutPathExpansion(origin, origin_entry);
   }
 
