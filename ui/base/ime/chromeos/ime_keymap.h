@@ -15,6 +15,9 @@ namespace ui {
 // Translates the DOM4 key code string to ui::KeyboardCode.
 UI_BASE_EXPORT KeyboardCode DomKeycodeToKeyboardCode(const std::string& code);
 
+// Translates the ui::KeyboardCode to DOM4 key code string.
+UI_BASE_EXPORT std::string KeyboardCodeToDomKeycode(KeyboardCode code);
+
 }  // namespace ui
 
 #endif  // UI_BASE_IME_CHROMEOS_IME_KEYMAP_H_

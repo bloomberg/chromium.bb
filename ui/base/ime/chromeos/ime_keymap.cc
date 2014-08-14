@@ -134,6 +134,10 @@ const struct KeyCodeTable {
   {VKEY_VOLUME_MUTE, "VolumeMute"},
   {VKEY_VOLUME_DOWN, "VolumeDown"},
   {VKEY_VOLUME_UP, "VolumeUp"},
+  {VKEY_BRIGHTNESS_DOWN, "BrightnessDown"},
+  {VKEY_BRIGHTNESS_UP, "BrightnessUp"},
+  {VKEY_MEDIA_LAUNCH_APP1, "ChromeOSSwitchWindow"},
+  {VKEY_MEDIA_LAUNCH_APP2, "ChromeOSFullscreen"},
   {VKEY_MEDIA_NEXT_TRACK, "MediaTrackNext"},
   {VKEY_MEDIA_PREV_TRACK, "MediaTrackPrevious"},
   {VKEY_MEDIA_STOP, "MediaStop"},
@@ -154,18 +158,27 @@ const struct KeyCodeTable {
 class KeyCodeMap {
  public:
   KeyCodeMap() {
-    for (size_t i = 0; i < arraysize(kKeyCodeTable); ++i)
-      map_[kKeyCodeTable[i].dom_code] = kKeyCodeTable[i].keyboard_code;
+    for (size_t i = 0; i < arraysize(kKeyCodeTable); ++i) {
+      map_dom_key_[kKeyCodeTable[i].dom_code] = kKeyCodeTable[i].keyboard_code;
+      map_key_dom_[kKeyCodeTable[i].keyboard_code] = kKeyCodeTable[i].dom_code;
+    }
   }
 
   KeyboardCode GetKeyboardCode(const std::string& dom_code) const {
     std::map<std::string, KeyboardCode>::const_iterator it =
-        map_.find(dom_code);
-    return (it == map_.end()) ? VKEY_UNKNOWN : it->second;
+        map_dom_key_.find(dom_code);
+    return (it == map_dom_key_.end()) ? VKEY_UNKNOWN : it->second;
+  }
+
+  std::string GetDomKeycode(KeyboardCode key_code) const {
+    std::map<KeyboardCode, std::string>::const_iterator it =
+        map_key_dom_.find(key_code);
+    return (it == map_key_dom_.end()) ? "" : it->second;
   }
 
  private:
-  std::map<std::string, KeyboardCode> map_;
+  std::map<std::string, KeyboardCode> map_dom_key_;
+  std::map<KeyboardCode, std::string> map_key_dom_;
 };
 
 base::LazyInstance<KeyCodeMap>::Leaky g_keycode_map =
@@ -175,6 +188,10 @@ base::LazyInstance<KeyCodeMap>::Leaky g_keycode_map =
 
 KeyboardCode DomKeycodeToKeyboardCode(const std::string& code) {
   return g_keycode_map.Get().GetKeyboardCode(code);
+}
+
+std::string KeyboardCodeToDomKeycode(KeyboardCode code) {
+  return g_keycode_map.Get().GetDomKeycode(code);
 }
 
 }  // namespace ui

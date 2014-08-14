@@ -29,6 +29,7 @@
 #include "ui/base/ime/chromeos/ime_keymap.h"
 #include "ui/events/event.h"
 #include "ui/events/event_processor.h"
+#include "ui/events/keycodes/dom4/keycode_converter.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
 
@@ -99,7 +100,11 @@ void GetExtensionKeyboardEventFromKeyEvent(
   DCHECK(ext_event);
   ext_event->type = (event.type() == ui::ET_KEY_RELEASED) ? "keyup" : "keydown";
 
-  ext_event->code = event.code();
+  std::string dom_code = event.code();
+  if (dom_code ==
+      ui::KeycodeConverter::GetInstance()->InvalidKeyboardEventCode())
+    dom_code = ui::KeyboardCodeToDomKeycode(event.key_code());
+  ext_event->code = dom_code;
   ext_event->key_code = static_cast<int>(event.key_code());
   ext_event->alt_key = event.IsAltDown();
   ext_event->ctrl_key = event.IsControlDown();
