@@ -2,44 +2,38 @@
 <script>
 var runPixelTests = true;
 var init = function() {
-    // Bail out early if the full screen API is not enabled or is missing:
-    if (Element.prototype.webkitRequestFullScreen == undefined) {
-        logResult(false, "Element.prototype.webkitRequestFullScreen == undefined");
-        endTest();
-    } else {
-        var callback;
-        var fullscreenChanged = function(event)
-        {
-            if (callback)
-                callback(event)
-        };
-        document.onwebkitfullscreenchange = fullscreenChanged;
+    var callback;
+    var fullscreenChanged = function(event)
+    {
+        if (callback)
+            callback(event)
+    };
+    document.onwebkitfullscreenchange = fullscreenChanged;
 
-        var one = document.getElementById('one');
-        var two = document.getElementById('two');
-        var three = document.getElementById('three');
+    var one = document.getElementById('one');
+    var two = document.getElementById('two');
+    var three = document.getElementById('three');
 
-        var threeEnteredFullScreen = function(event) {
-            if (document.webkitCurrentFullScreenElement == three) {
-                callback = threeExitedFullScreen;
-                one.removeChild(two);
-            }
-        };
-
-        var threeExitedFullScreen = function(event) {
-            if (document.webkitCurrentFullScreenElement == null) {
-                callback = null;
-                endTest();
-            }
-        };
-
-        callback = threeEnteredFullScreen;
-
-        function goFullScreen() {
-            document.getElementById('three').webkitRequestFullScreen();
+    var threeEnteredFullScreen = function(event) {
+        if (document.webkitCurrentFullScreenElement == three) {
+            callback = threeExitedFullScreen;
+            one.removeChild(two);
         }
-        runWithKeyDown(goFullScreen);
+    };
+
+    var threeExitedFullScreen = function(event) {
+        if (document.webkitCurrentFullScreenElement == null) {
+            callback = null;
+            endTest();
+        }
+    };
+
+    callback = threeEnteredFullScreen;
+
+    function goFullScreen() {
+        document.getElementById('three').webkitRequestFullScreen();
     }
+    runWithKeyDown(goFullScreen);
 };
 </script>
 <script src="full-screen-test.js"></script>

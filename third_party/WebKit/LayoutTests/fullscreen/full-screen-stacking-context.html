@@ -5,14 +5,8 @@
             var runPixelTests = true;
             
             function init() {
-                // Bail out early if the full screen API is not enabled or is missing:
-                if (Element.prototype.webkitRequestFullScreen == undefined) {
-                    logResult(false, "Element.prototype.webkitRequestFullScreen == undefined");
-                    endTest();
-                } else {
-                    waitForEventAndEnd(document, 'webkitfullscreenchange');
-                    runWithKeyDown(goFullScreen);
-                }
+                waitForEventAndEnd(document, 'webkitfullscreenchange');
+                runWithKeyDown(goFullScreen);
             }
             
             function goFullScreen() {

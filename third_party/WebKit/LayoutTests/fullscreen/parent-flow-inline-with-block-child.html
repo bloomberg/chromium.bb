@@ -6,39 +6,37 @@
 </div>
 
 <script>
-    if ('webkitRequestFullScreen' in Element.prototype) {
-        if (window.testRunner) 
-            testRunner.waitUntilDone();
+    if (window.testRunner)
+        testRunner.waitUntilDone();
 
-        var callback;
-        var fullscreenChanged = function(event)
-        {
-            if (callback)
-                callback(event)
-        };
-        document.addEventListener('webkitfullscreenchange', fullscreenChanged);
+    var callback;
+    var fullscreenChanged = function(event)
+    {
+        if (callback)
+            callback(event)
+    };
+    document.addEventListener('webkitfullscreenchange', fullscreenChanged);
 
-        document.body.offsetTop;
-        var span = document.getElementById('c2');
-        var div = span.parentNode;
+    document.body.offsetTop;
+    var span = document.getElementById('c2');
+    var div = span.parentNode;
 
-        var spanEnteredFullScreen = function(event) {
-            setTimeout(function () {
-                span.appendChild(document.createElement('div'));
-                callback = function() {
-                    if (window.testRunner)
-                        testRunner.notifyDone();
-                }
-                document.webkitCancelFullScreen();
-            }, 0);
-        };
+    var spanEnteredFullScreen = function(event) {
+        setTimeout(function () {
+            span.appendChild(document.createElement('div'));
+            callback = function() {
+                if (window.testRunner)
+                    testRunner.notifyDone();
+            }
+            document.webkitCancelFullScreen();
+        }, 0);
+    };
 
-        callback = spanEnteredFullScreen;
+    callback = spanEnteredFullScreen;
 
-        document.addEventListener('keydown', function () {
-            span.webkitRequestFullScreen();
-        });
-        if (window.eventSender)
-            eventSender.keyDown('a');
-    }
+    document.addEventListener('keydown', function () {
+        span.webkitRequestFullScreen();
+    });
+    if (window.eventSender)
+        eventSender.keyDown('a');
 </script>

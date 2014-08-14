@@ -6,11 +6,6 @@
 </div>
 
 <script>
-// Bail out early if the full screen API is not enabled or is missing:
-if (Element.prototype.webkitRequestFullScreen == undefined) {
-    logResult(false, "Element.prototype.webkitRequestFullScreen == undefined");
-    endTest();
-} else {
     var callback;
     waitForEvent(document, 'webkitfullscreenchange', function() {
         var one = document.getElementById('one');
@@ -23,5 +18,4 @@ if (Element.prototype.webkitRequestFullScreen == undefined) {
         document.getElementById('fullscreen').webkitRequestFullScreen();
     }
     runWithKeyDown(goFullScreen);
-}
 </script>

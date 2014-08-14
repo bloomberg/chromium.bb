@@ -15,12 +15,7 @@ function runWithKeyDown(fn)
 }
 
 function init() {
-    // Bail out early if the full screen API is not enabled or is missing:
-    if (Element.prototype.webkitRequestFullScreen == undefined) {
-        alert("Fullscreen API not available.");
-    } else {
-        runWithKeyDown(goFullScreen);
-    }
+    runWithKeyDown(goFullScreen);
 }
 
 function goFullScreen() {

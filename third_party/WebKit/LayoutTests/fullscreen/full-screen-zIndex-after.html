@@ -5,20 +5,14 @@
             var runPixelTests = true;
 
             function init() {
-                // Bail out early if the full screen API is not enabled or is missing:
-                if (Element.prototype.webkitRequestFullScreen == undefined) {
-                    logResult(false, 'Element.prototype.webkitRequestFullScreen == undefined');
-                    endTest();
-                } else {
-                    document.onwebkitfullscreenchange = function() {
-                        document.onwebkitfullscreenchange = endTest;
-                        document.webkitCancelFullScreen();
-                    };
-                    function goFullScreen() {
-                        document.getElementById('block1').webkitRequestFullScreen();
-                    }
-                    runWithKeyDown(goFullScreen);
+                document.onwebkitfullscreenchange = function() {
+                    document.onwebkitfullscreenchange = endTest;
+                    document.webkitCancelFullScreen();
+                };
+                function goFullScreen() {
+                    document.getElementById('block1').webkitRequestFullScreen();
                 }
+                runWithKeyDown(goFullScreen);
             }
         </script>
         <script src="full-screen-test.js"></script>

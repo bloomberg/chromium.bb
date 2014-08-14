@@ -1,8 +1,6 @@
 <span><object><div>PASS</div></span>
 <script src="full-screen-test.js"></script>
 <script>
-  if (Element.prototype.webkitRequestFullScreen == undefined) {
-  } else {
     var span = document.getElementsByTagName('span')[0];
 
     document.onwebkitfullscreenchange = function(event) {
@@ -12,5 +10,4 @@
     };
 
     runWithKeyDown(function(){span.webkitRequestFullScreen()});
-  }
 </script>

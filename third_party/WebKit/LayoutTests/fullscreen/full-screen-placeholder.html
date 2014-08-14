@@ -29,38 +29,32 @@
 <div id="clear" />
 <span id="two">Two</span>
 <script>
-    // Bail out early if the full screen API is not enabled or is missing:
-    if (Element.prototype.webkitRequestFullScreen == undefined) {
-        logResult(false, "Element.prototype.webkitRequestFullScreen == undefined");
-        endTest();
-    } else {
-        var callback;
-        var fullscreenChanged = function(event)
-        {
-            if (callback)
-                callback(event)
-        };
-        document.onwebkitfullscreenchange = fullscreenChanged;
+    var callback;
+    var fullscreenChanged = function(event)
+    {
+        if (callback)
+            callback(event)
+    };
+    document.onwebkitfullscreenchange = fullscreenChanged;
 
-        var div = document.getElementById("float");
+    var div = document.getElementById("float");
 
-        var divEnteredFullScreen = function()
-        {
-            if (document.webkitCurrentFullScreenElement == div) {
-                callback = cancelledFullScreen;
-                runWithKeyDown(function(){document.webkitCancelFullScreen()});
-            }
-        };
+    var divEnteredFullScreen = function()
+    {
+        if (document.webkitCurrentFullScreenElement == div) {
+            callback = cancelledFullScreen;
+            runWithKeyDown(function(){document.webkitCancelFullScreen()});
+        }
+    };
 
-        var cancelledFullScreen = function()
-        {
-            if (document.webkitCurrentFullScreenElement == null) {
-                callback = null;
-                endTest();
-            }
-        };
+    var cancelledFullScreen = function()
+    {
+        if (document.webkitCurrentFullScreenElement == null) {
+            callback = null;
+            endTest();
+        }
+    };
 
-        callback = divEnteredFullScreen;
-        runWithKeyDown(function(){div.webkitRequestFullScreen()});
-    }
+    callback = divEnteredFullScreen;
+    runWithKeyDown(function(){div.webkitRequestFullScreen()});
 </script>

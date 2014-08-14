@@ -11,23 +11,21 @@ Test passes if it does not crash.
 </i>
 </summary>
 <script>
-if (window.testRunner)
-    testRunner.dumpAsText();
+    if (window.testRunner)
+        testRunner.dumpAsText();
 
-if ("webkitRequestFullScreen" in Element.prototype) {
-	var span = document.getElementById('test');
-	var fullscreenChangeEvent = function(event) {
-	    if (document.webkitIsFullScreen)
-	        document.webkitCancelFullScreen();
-	};
+    var span = document.getElementById('test');
+    var fullscreenChangeEvent = function(event) {
+        if (document.webkitIsFullScreen)
+            document.webkitCancelFullScreen();
+    };
 
-	document.addEventListener('webkitfullscreenchange', fullscreenChangeEvent);
-	document.addEventListener('keydown', function () {
-	    span.webkitRequestFullScreen();
+    document.addEventListener('webkitfullscreenchange', fullscreenChangeEvent);
+    document.addEventListener('keydown', function () {
+        span.webkitRequestFullScreen();
     });
 
     eventSender.keyDown('a');
-}
 </script>
 </body>
 </html>

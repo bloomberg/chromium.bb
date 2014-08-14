@@ -3,42 +3,36 @@
 <p>Test that webkitCancelFullScreen only exits one level of fullscreen</p>
 <div><span></span></div>
 <script>
-    // Bail out early if the full screen API is not enabled or is missing:
-    if (Element.prototype.webkitRequestFullScreen == undefined) {
-        logResult(false, "Element.prototype.webkitRequestFullScreen == undefined");
+    var callback;
+    function fullscreenChanged(event)
+    {
+        if (callback)
+            callback(event)
+    };
+    waitForEvent(document, "webkitfullscreenchange", fullscreenChanged);
+
+    var div = document.querySelector("div");
+    function divEnteredFullScreen()
+    {
+        testExpected("document.webkitCurrentFullScreenElement", div);
+        callback = spanEnteredFullScreen;
+        runWithKeyDown(function() { span.webkitRequestFullScreen(); });
+    };
+
+    var span = document.querySelector("span");
+    function spanEnteredFullScreen()
+    {
+        testExpected("document.webkitCurrentFullScreenElement", span);
+        callback = cancelledFullScreen;
+        document.webkitCancelFullScreen();
+    };
+
+    function cancelledFullScreen()
+    {
+        testExpected("document.webkitCurrentFullScreenElement", div);
         endTest();
-    } else {
-        var callback;
-        function fullscreenChanged(event)
-        {
-            if (callback)
-                callback(event)
-        };
-        waitForEvent(document, "webkitfullscreenchange", fullscreenChanged);
+    };
 
-        var div = document.querySelector("div");
-        function divEnteredFullScreen()
-        {
-            testExpected("document.webkitCurrentFullScreenElement", div);
-            callback = spanEnteredFullScreen;
-            runWithKeyDown(function() { span.webkitRequestFullScreen(); });
-        };
-
-        var span = document.querySelector("span");
-        function spanEnteredFullScreen()
-        {
-            testExpected("document.webkitCurrentFullScreenElement", span);
-            callback = cancelledFullScreen;
-            document.webkitCancelFullScreen();
-        };
-
-        function cancelledFullScreen()
-        {
-            testExpected("document.webkitCurrentFullScreenElement", div);
-            endTest();
-        };
-
-        callback = divEnteredFullScreen;
-        runWithKeyDown(function() { div.webkitRequestFullScreen(); });
-    }
+    callback = divEnteredFullScreen;
+    runWithKeyDown(function() { div.webkitRequestFullScreen(); });
 </script>

@@ -2,49 +2,43 @@
 <script src="full-screen-test.js"></script>
 <span></span>
 <script>
-    // Bail out early if the full screen API is not enabled or is missing:
-    if (Element.prototype.webkitRequestFullscreen == undefined) {
-        logResult(false, "Element.prototype.webkitRequestFullscreen == undefined");
-        endTest();
-    } else {
-        var span = document.getElementsByTagName('span')[0];
+    var span = document.getElementsByTagName('span')[0];
 
-        var documentEnteredFullScreen = function() {
-            testExpected("document.webkitCurrentFullScreenElement", document.documentElement);
-            runWithKeyDown(function(){document.documentElement.webkitRequestFullscreen()});
-            waitForEvent(document, 'webkitfullscreenerror', documentDidNotReenterFullScreen, false, true);
-        };
-
-        var documentDidNotReenterFullScreen = function() {
-            testExpected("document.webkitCurrentFullScreenElement", document.documentElement);
-            runWithKeyDown(function(){span.webkitRequestFullscreen()});
-            waitForEvent(document, 'webkitfullscreenchange', spanEnteredFullScreen, false, true);
-        };
-
-        var spanEnteredFullScreen = function() {
-            testExpected("document.webkitCurrentFullScreenElement", span);
-            runWithKeyDown(function(){span.webkitRequestFullscreen()});
-            waitForEvent(document, 'webkitfullscreenerror', spanDidNotReenterFullScreen, false, true);
-        };
-
-        var spanDidNotReenterFullScreen = function() {
-            testExpected("document.webkitCurrentFullScreenElement", span);
-            waitForEvent(document, 'webkitfullscreenchange', spanExited, false, true);
-            document.webkitExitFullscreen();
-        };
-
-        var spanExited = function() {
-            testExpected("document.webkitCurrentFullScreenElement", document.documentElement);
-            waitForEvent(document, 'webkitfullscreenchange', documentExited, false, true);
-            document.webkitExitFullscreen();
-        };
-
-        var documentExited = function() {
-            testExpected("document.webkitCurrentFullScreenElement", undefined);
-            endTest();
-        };
-
+    var documentEnteredFullScreen = function() {
+        testExpected("document.webkitCurrentFullScreenElement", document.documentElement);
         runWithKeyDown(function(){document.documentElement.webkitRequestFullscreen()});
-        waitForEvent(document, 'webkitfullscreenchange', documentEnteredFullScreen, false, true);
-    }
+        waitForEvent(document, 'webkitfullscreenerror', documentDidNotReenterFullScreen, false, true);
+    };
+
+    var documentDidNotReenterFullScreen = function() {
+        testExpected("document.webkitCurrentFullScreenElement", document.documentElement);
+        runWithKeyDown(function(){span.webkitRequestFullscreen()});
+        waitForEvent(document, 'webkitfullscreenchange', spanEnteredFullScreen, false, true);
+    };
+
+    var spanEnteredFullScreen = function() {
+        testExpected("document.webkitCurrentFullScreenElement", span);
+        runWithKeyDown(function(){span.webkitRequestFullscreen()});
+        waitForEvent(document, 'webkitfullscreenerror', spanDidNotReenterFullScreen, false, true);
+    };
+
+    var spanDidNotReenterFullScreen = function() {
+        testExpected("document.webkitCurrentFullScreenElement", span);
+        waitForEvent(document, 'webkitfullscreenchange', spanExited, false, true);
+        document.webkitExitFullscreen();
+    };
+
+    var spanExited = function() {
+        testExpected("document.webkitCurrentFullScreenElement", document.documentElement);
+        waitForEvent(document, 'webkitfullscreenchange', documentExited, false, true);
+        document.webkitExitFullscreen();
+    };
+
+    var documentExited = function() {
+        testExpected("document.webkitCurrentFullScreenElement", undefined);
+        endTest();
+    };
+
+    runWithKeyDown(function(){document.documentElement.webkitRequestFullscreen()});
+    waitForEvent(document, 'webkitfullscreenchange', documentEnteredFullScreen, false, true);
 </script>

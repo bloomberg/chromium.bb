@@ -23,36 +23,30 @@
       <div class="inner">Number 4</div>
   </div></div>
 <script>
-    // Bail out early if the full screen API is not enabled or is missing:
-    if (Element.prototype.webkitRequestFullScreen == undefined) {
-        logResult(false, "Element.prototype.webkitRequestFullScreen == undefined");
+    var callback;
+    var fullscreenChanged = function(event)
+    {
+        if (callback)
+            callback(event)
+    };
+    waitForEvent(document, 'webkitfullscreenchange', fullscreenChanged);
+
+    var div = document.getElementsByTagName('div')[0];
+    var oldHeight = div.offsetHeight;
+
+    var divEnteredFullScreen = function(event) {
+        callback = divExitedFullScreen;
+        document.webkitExitFullscreen();
+    };
+
+    var divExitedFullScreen = function(event) {
+        callback = null;
+        testExpected(div.offsetHeight, oldHeight);
+        div.innerHTML = "";  // simplify the text dump
         endTest();
-    } else {
-        var callback;
-        var fullscreenChanged = function(event)
-        {
-            if (callback)
-                callback(event)
-        };
-        waitForEvent(document, 'webkitfullscreenchange', fullscreenChanged);
+    };
 
-        var div = document.getElementsByTagName('div')[0];
-        var oldHeight = div.offsetHeight;
-
-        var divEnteredFullScreen = function(event) {
-            callback = divExitedFullScreen;
-            document.webkitExitFullscreen();
-        };
-
-        var divExitedFullScreen = function(event) {
-            callback = null;
-            testExpected(div.offsetHeight, oldHeight);
-            div.innerHTML = "";  // simplify the text dump
-            endTest();
-        };
-
-        callback = divEnteredFullScreen;
-        runWithKeyDown(function(){div.webkitRequestFullScreen()});
-    }
+    callback = divEnteredFullScreen;
+    runWithKeyDown(function(){div.webkitRequestFullScreen()});
 </script>
 <button onclick="div.webkitRequestFullScreen()">Enter Fullscreen</button>

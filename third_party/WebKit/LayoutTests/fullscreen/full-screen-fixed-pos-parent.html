@@ -47,8 +47,7 @@
         if (window.eventSender)
             eventSender.keyDown('a');
     }
-    if ("webkitRequestFullScreen" in Element.prototype)
-        window.addEventListener("load", doTest, false);
+    window.addEventListener("load", doTest, false);
 </script>
 <body>
     <!-- when full screening the iframe, bad should not be visible -->
