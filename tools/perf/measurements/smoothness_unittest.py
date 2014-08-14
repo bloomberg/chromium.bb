@@ -11,6 +11,7 @@ from telemetry.page import page
 from telemetry.page import page_test
 from telemetry.unittest import options_for_unittests
 from telemetry.unittest import page_test_test_case
+from telemetry.unittest import test
 
 class FakePlatform(object):
   def IsRawDisplayFrameRateSupported(self):
@@ -120,6 +121,7 @@ class SmoothnessUnitTest(page_test_test_case.PageTestTestCase):
       self.assertGreater(
           mean_input_event_latency[0].GetRepresentativeNumber(), 0)
 
+  @test.Disabled('mac')  # http://crbug.com/403903
   def testSmoothnessForPageWithNoGesture(self):
     ps = self.CreateEmptyPageSet()
     ps.AddPage(AnimatedPage(ps))
