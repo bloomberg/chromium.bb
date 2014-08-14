@@ -107,6 +107,13 @@ ContentAppModelBuilder::~ContentAppModelBuilder() {
 }
 
 void ContentAppModelBuilder::PopulateApps(app_list::AppListModel* model) {
+  ShellExtensionSystem* extension_system =
+      GetShellExtensionSystem(browser_context_);
+  if (extension_system && extension_system->extension()) {
+    model->AddItem(scoped_ptr<app_list::AppListItem>(
+        new AppItem(extension_system->extension(), browser_context_)));
+  }
+
   model->AddItem(scoped_ptr<app_list::AppListItem>(new DummyItem(
       "mail", GURL("http://gmail.com/"), SK_ColorRED, browser_context_)));
   model->AddItem(scoped_ptr<app_list::AppListItem>(new DummyItem(
@@ -120,13 +127,6 @@ void ContentAppModelBuilder::PopulateApps(app_list::AppListModel* model) {
   model->AddItem(scoped_ptr<app_list::AppListItem>(new DummyItem(
       "contact", GURL("https://www.google.com/contacts"),
       SK_ColorCYAN, browser_context_)));
-
-  ShellExtensionSystem* extension_system =
-      GetShellExtensionSystem(browser_context_);
-  if (extension_system && extension_system->extension()) {
-    model->AddItem(scoped_ptr<app_list::AppListItem>(
-        new AppItem(extension_system->extension(), browser_context_)));
-  }
 }
 
 }  // namespace athena
