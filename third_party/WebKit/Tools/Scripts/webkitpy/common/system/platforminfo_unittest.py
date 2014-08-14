@@ -70,8 +70,6 @@ class TestPlatformInfo(unittest.TestCase):
     def make_info(self, sys_module=None, platform_module=None, executive=None):
         return PlatformInfo(sys_module or fake_sys(), platform_module or fake_platform(), executive or fake_executive())
 
-    # FIXME: This should be called integration_test_real_code(), but integration tests aren't
-    # yet run by default and there's no reason not to run this everywhere by default.
     def test_real_code(self):
         # This test makes sure the real (unmocked) code actually works.
         info = PlatformInfo(sys, platform, Executive())

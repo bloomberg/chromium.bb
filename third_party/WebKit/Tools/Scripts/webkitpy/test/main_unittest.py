@@ -28,7 +28,7 @@ import StringIO
 from webkitpy.common.system.filesystem import FileSystem
 from webkitpy.common.system.executive import Executive
 from webkitpy.common.system.outputcapture import OutputCapture
-from webkitpy.test.main import Tester, _Loader
+from webkitpy.test.main import Tester
 
 
 STUBS_CLASS = __name__ + ".TestStubs"
@@ -36,9 +36,6 @@ STUBS_CLASS = __name__ + ".TestStubs"
 
 class TestStubs(unittest.TestCase):
     def test_empty(self):
-        pass
-
-    def integration_test_empty(self):
         pass
 
 
@@ -73,23 +70,12 @@ class TesterTest(unittest.TestCase):
     def _find_test_names(self, args):
         tester = Tester()
         tester._options, args = tester._parse_args(args)
-        return tester._test_names(_Loader(), args)
+        return tester._test_names(unittest.TestLoader(), args)
 
     def test_individual_names_are_not_run_twice(self):
         args = [STUBS_CLASS + '.test_empty']
         tests = self._find_test_names(args)
         self.assertEqual(tests, args)
-
-    def test_integration_tests_are_not_found_by_default(self):
-        tests = self._find_test_names([STUBS_CLASS])
-        self.assertEqual(tests, [STUBS_CLASS + '.test_empty'])
-
-    def test_integration_tests_are_found(self):
-        tests = self._find_test_names(['--integration-tests', STUBS_CLASS])
-        self.assertEqual(tests, [
-            STUBS_CLASS + '.integration_test_empty',
-            STUBS_CLASS + '.test_empty',
-            ])
 
     def test_coverage_works(self):
         # This is awkward; by design, running test-webkitpy -c will

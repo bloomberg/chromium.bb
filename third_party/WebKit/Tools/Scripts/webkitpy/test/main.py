@@ -94,8 +94,6 @@ class Tester(object):
                           help='run all the tests')
         parser.add_option('-c', '--coverage', action='store_true', default=False,
                           help='generate code coverage info')
-        parser.add_option('-i', '--integration-tests', action='store_true', default=False,
-                          help='run integration tests as well as unit tests'),
         parser.add_option('-j', '--child-processes', action='store', type='int', default=(1 if sys.platform == 'win32' else multiprocessing.cpu_count()),
                           help='number of tests to run in parallel (default=%default)')
         parser.add_option('-p', '--pass-through', action='store_true', default=False,
@@ -166,14 +164,14 @@ class Tester(object):
             return False
 
         self.printer.write_update("Finding the individual test methods ...")
-        loader = _Loader()
-        parallel_tests = self._test_names(loader, names)
+        loader = unittest.TestLoader()
+        tests = self._test_names(loader, names)
 
         self.printer.write_update("Running the tests ...")
-        self.printer.num_tests = len(parallel_tests)
+        self.printer.num_tests = len(tests)
         start = time.time()
         test_runner = Runner(self.printer, loader, self.webkit_finder)
-        test_runner.run(parallel_tests, self._options.child_processes)
+        test_runner.run(tests, self._options.child_processes)
 
         self.printer.print_result(time.time() - start)
 
@@ -194,16 +192,10 @@ class Tester(object):
         return True
 
     def _test_names(self, loader, names):
-        parallel_test_method_prefixes = ['test_']
-        if self._options.integration_tests:
-            parallel_test_method_prefixes.append('integration_test_')
-
-        parallel_tests = []
-        loader.test_method_prefixes = parallel_test_method_prefixes
+        tests = []
         for name in names:
-            parallel_tests.extend(self._all_test_names(loader.loadTestsFromName(name, None)))
-
-        return parallel_tests
+            tests.extend(self._all_test_names(loader.loadTestsFromName(name, None)))
+        return tests
 
     def _all_test_names(self, suite):
         names = []
@@ -220,18 +212,6 @@ class Tester(object):
         for l in s.buflist:
             _log.error('  ' + l.rstrip())
 
-
-class _Loader(unittest.TestLoader):
-    test_method_prefixes = []
-
-    def getTestCaseNames(self, testCaseClass):
-        def isTestMethod(attrname, testCaseClass=testCaseClass):
-            if not hasattr(getattr(testCaseClass, attrname), '__call__'):
-                return False
-            return (any(attrname.startswith(prefix) for prefix in self.test_method_prefixes))
-        testFnNames = filter(isTestMethod, dir(testCaseClass))
-        testFnNames.sort()
-        return testFnNames
 
 
 if __name__ == '__main__':
