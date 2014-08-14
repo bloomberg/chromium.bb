@@ -46,8 +46,8 @@ def main():
                 class_name, ', '.join(hex_values)))
     contents.append('struct %s {' % source_name)
     contents.append("""
+    const char* scriptClassName;
     const char* className;
-    const char* dependencyClassName;
     const unsigned char* source;
     size_t size;
 };
@@ -55,9 +55,9 @@ def main():
 """)
     contents.append('struct %s k%s[] = {\n' % (source_name, source_name))
     for input_filename in input_filenames:
-        class_name, ext = os.path.splitext(os.path.basename(input_filename))
-        dependency_class_name = extract_partial_interface_name(input_filename) or class_name
-        contents.append('    { "%s", "%s", kSourceOf%s, sizeof(kSourceOf%s) },\n' % (class_name, dependency_class_name, class_name, class_name))
+        script_class_name, ext = os.path.splitext(os.path.basename(input_filename))
+        class_name = extract_partial_interface_name(input_filename) or script_class_name
+        contents.append('    { "%s", "%s", kSourceOf%s, sizeof(kSourceOf%s) },\n' % (script_class_name, class_name, script_class_name, script_class_name))
     contents.append('};\n')
 
     with open(output_filename, 'w') as output_file:

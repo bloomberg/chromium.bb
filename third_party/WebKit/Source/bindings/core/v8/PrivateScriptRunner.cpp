@@ -43,21 +43,21 @@ static void dumpJSError(String exceptionName, v8::Handle<v8::Message> message)
 #endif
 }
 
-static v8::Handle<v8::Value> compileAndRunPrivateScript(v8::Isolate* isolate, String className, const unsigned char* source, size_t size)
+static v8::Handle<v8::Value> compileAndRunPrivateScript(v8::Isolate* isolate, String scriptClassName, const unsigned char* source, size_t size)
 {
     v8::TryCatch block;
     String sourceString(reinterpret_cast<const char*>(source), size);
-    String fileName = className + ".js";
+    String fileName = scriptClassName + ".js";
     v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(v8String(isolate, sourceString), fileName, TextPosition::minimumPosition(), 0, isolate, NotSharableCrossOrigin, V8CacheOptionsOff);
     if (block.HasCaught()) {
-        fprintf(stderr, "Private script error: Compile failed. (Class name = %s)\n", className.utf8().data());
+        fprintf(stderr, "Private script error: Compile failed. (Class name = %s)\n", scriptClassName.utf8().data());
         dumpV8Message(block.Message());
         RELEASE_ASSERT_NOT_REACHED();
     }
 
     v8::Handle<v8::Value> result = V8ScriptRunner::runCompiledInternalScript(script, isolate);
     if (block.HasCaught()) {
-        fprintf(stderr, "Private script error: installClass() failed. (Class name = %s)\n", className.utf8().data());
+        fprintf(stderr, "Private script error: installClass() failed. (Class name = %s)\n", scriptClassName.utf8().data());
         dumpV8Message(block.Message());
         RELEASE_ASSERT_NOT_REACHED();
     }
@@ -68,15 +68,15 @@ static v8::Handle<v8::Value> compileAndRunPrivateScript(v8::Isolate* isolate, St
 // are compiled when any of the JS files is requested. Ideally we should avoid compiling
 // unrelated JS files. For example, if a method in XPartial-1.js is requested, we just
 // need to compile X.js and XPartial-1.js, and don't need to compile XPartial-2.js.
-static void installPrivateScript(v8::Isolate* isolate, String dependencyClassName)
+static void installPrivateScript(v8::Isolate* isolate, String className)
 {
     int compiledScriptCount = 0;
     // |kPrivateScriptSourcesForTesting| is defined in V8PrivateScriptSources.h, which is auto-generated
     // by make_private_script_source.py.
 #ifndef NDEBUG
     for (size_t index = 0; index < WTF_ARRAY_LENGTH(kPrivateScriptSourcesForTesting); index++) {
-        if (dependencyClassName == kPrivateScriptSourcesForTesting[index].dependencyClassName) {
-            compileAndRunPrivateScript(isolate, kPrivateScriptSourcesForTesting[index].className, kPrivateScriptSourcesForTesting[index].source, kPrivateScriptSourcesForTesting[index].size);
+        if (className == kPrivateScriptSourcesForTesting[index].className) {
+            compileAndRunPrivateScript(isolate, kPrivateScriptSourcesForTesting[index].scriptClassName, kPrivateScriptSourcesForTesting[index].source, kPrivateScriptSourcesForTesting[index].size);
             compiledScriptCount++;
         }
     }
@@ -85,14 +85,14 @@ static void installPrivateScript(v8::Isolate* isolate, String dependencyClassNam
     // |kPrivateScriptSources| is defined in V8PrivateScriptSources.h, which is auto-generated
     // by make_private_script_source.py.
     for (size_t index = 0; index < WTF_ARRAY_LENGTH(kPrivateScriptSources); index++) {
-        if (dependencyClassName == kPrivateScriptSources[index].dependencyClassName) {
-            compileAndRunPrivateScript(isolate, kPrivateScriptSources[index].className, kPrivateScriptSources[index].source, kPrivateScriptSources[index].size);
+        if (className == kPrivateScriptSources[index].className) {
+            compileAndRunPrivateScript(isolate, kPrivateScriptSources[index].scriptClassName, kPrivateScriptSources[index].source, kPrivateScriptSources[index].size);
             compiledScriptCount++;
         }
     }
 
     if (!compiledScriptCount) {
-        fprintf(stderr, "Private script error: Target source code was not found. (Class name = %s)\n", dependencyClassName.utf8().data());
+        fprintf(stderr, "Private script error: Target source code was not found. (Class name = %s)\n", className.utf8().data());
         RELEASE_ASSERT_NOT_REACHED();
     }
 }
