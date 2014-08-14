@@ -39,55 +39,55 @@ namespace blink {
 class Element;
 struct WebRect;
 
-    // Provides access to some properties of a DOM element node.
-    class WebElement : public WebNode {
-    public:
-        WebElement() : WebNode() { }
-        WebElement(const WebElement& e) : WebNode(e) { }
+// Provides access to some properties of a DOM element node.
+class WebElement : public WebNode {
+public:
+    WebElement() : WebNode() { }
+    WebElement(const WebElement& e) : WebNode(e) { }
 
-        WebElement& operator=(const WebElement& e) { WebNode::assign(e); return *this; }
-        void assign(const WebElement& e) { WebNode::assign(e); }
+    WebElement& operator=(const WebElement& e) { WebNode::assign(e); return *this; }
+    void assign(const WebElement& e) { WebNode::assign(e); }
 
-        BLINK_EXPORT bool isFormControlElement() const;
-        BLINK_EXPORT bool isTextFormControlElement() const;
-        // Returns the qualified name, which may contain a prefix and a colon.
-        BLINK_EXPORT WebString tagName() const;
-        // Check if this element has the specified local tag name, and the HTML
-        // namespace. Tag name matching is case-insensitive.
-        BLINK_EXPORT bool hasHTMLTagName(const WebString&) const;
-        BLINK_EXPORT bool hasAttribute(const WebString&) const;
-        BLINK_EXPORT void removeAttribute(const WebString&);
-        BLINK_EXPORT WebString getAttribute(const WebString&) const;
-        BLINK_EXPORT bool setAttribute(const WebString& name, const WebString& value);
-        BLINK_EXPORT WebString innerText();
-        BLINK_EXPORT void requestFullScreen();
-        BLINK_EXPORT WebString attributeLocalName(unsigned index) const;
-        BLINK_EXPORT WebString attributeValue(unsigned index) const;
-        BLINK_EXPORT unsigned attributeCount() const;
-        BLINK_EXPORT WebNode shadowRoot() const;
+    BLINK_EXPORT bool isFormControlElement() const;
+    BLINK_EXPORT bool isTextFormControlElement() const;
+    // Returns the qualified name, which may contain a prefix and a colon.
+    BLINK_EXPORT WebString tagName() const;
+    // Check if this element has the specified local tag name, and the HTML
+    // namespace. Tag name matching is case-insensitive.
+    BLINK_EXPORT bool hasHTMLTagName(const WebString&) const;
+    BLINK_EXPORT bool hasAttribute(const WebString&) const;
+    BLINK_EXPORT void removeAttribute(const WebString&);
+    BLINK_EXPORT WebString getAttribute(const WebString&) const;
+    BLINK_EXPORT bool setAttribute(const WebString& name, const WebString& value);
+    BLINK_EXPORT WebString innerText();
+    BLINK_EXPORT void requestFullScreen();
+    BLINK_EXPORT WebString attributeLocalName(unsigned index) const;
+    BLINK_EXPORT WebString attributeValue(unsigned index) const;
+    BLINK_EXPORT unsigned attributeCount() const;
+    BLINK_EXPORT WebNode shadowRoot() const;
 
-        // Returns the language code specified for this element.  This attribute
-        // is inherited, so the returned value is drawn from the closest parent
-        // element that has the lang attribute set, or from the HTTP
-        // "Content-Language" header as a fallback.
-        BLINK_EXPORT WebString computeInheritedLanguage() const;
+    // Returns the language code specified for this element. This attribute
+    // is inherited, so the returned value is drawn from the closest parent
+    // element that has the lang attribute set, or from the HTTP
+    // "Content-Language" header as a fallback.
+    BLINK_EXPORT WebString computeInheritedLanguage() const;
 
-        // Returns the bounds of the element in viewport space. The bounds
-        // have been adjusted to include any transformations. This view is
-        // also called the Root View in WebKit.
-        // This function will update the layout if required.
-        BLINK_EXPORT WebRect boundsInViewportSpace();
+    // Returns the bounds of the element in viewport space. The bounds
+    // have been adjusted to include any transformations. This view is
+    // also called the Root View in Blink.
+    // This function will update the layout if required.
+    BLINK_EXPORT WebRect boundsInViewportSpace();
 
-        // Returns the image contents of this element or a null WebImage
-        // if there isn't any.
-        BLINK_EXPORT WebImage imageContents();
+    // Returns the image contents of this element or a null WebImage
+    // if there isn't any.
+    BLINK_EXPORT WebImage imageContents();
 
 #if BLINK_IMPLEMENTATION
-        WebElement(const PassRefPtrWillBeRawPtr<Element>&);
-        WebElement& operator=(const PassRefPtrWillBeRawPtr<Element>&);
-        operator PassRefPtrWillBeRawPtr<Element>() const;
+    WebElement(const PassRefPtrWillBeRawPtr<Element>&);
+    WebElement& operator=(const PassRefPtrWillBeRawPtr<Element>&);
+    operator PassRefPtrWillBeRawPtr<Element>() const;
 #endif
-    };
+};
 
 } // namespace blink
 
