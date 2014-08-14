@@ -257,3 +257,409 @@ pre {
 .hidden {
   display: none;
 }
+
+/* Loading Indicator. */
+#loader {
+  height: 22px;
+  margin-left: auto;
+  margin-right: auto;
+  position: relative;
+  width: 22px;
+}
+
+#loader * {
+  display: block;
+  position: absolute;
+}
+
+#loader .circle {
+  border-radius: 50%;
+  height: 100%;
+  opacity: 0;
+  overflow: hidden;
+  width: 100%;
+}
+
+#loader .mask {
+  height: 100%;
+  opacity: 0;
+  overflow: hidden;
+  width: 100%;
+}
+
+#loader .mask.first {
+  transition-delay: 0.22s;
+  transition-duration: 0s;
+  transition-property: border-color;
+}
+
+#loader .circle.initial .mask {
+  height: 50%;
+  top: 0;
+}
+
+#loader .circle.red .mask.first {
+  border-bottom: 1px solid #555;
+  height: 50%;
+  top: 0;
+}
+
+#loader .circle.red .mask.second {
+  bottom: 0;
+  height: 50%;
+}
+
+#loader .circle.yellow .mask.first {
+  border-left: 1px solid #888;
+  right: 0;
+  width: 50%;
+}
+
+#loader .circle.yellow .mask.second {
+  left: 0;
+  width: 50%;
+}
+
+#loader .circle.green .mask.first {
+  border-top: 1px solid #555;
+  bottom: 0;
+  height: 50%;
+}
+
+#loader .circle.green .mask.second {
+  height: 50%;
+  top: 0;
+}
+
+#loader .circle.blue .mask.first {
+  border-right: 1px solid #888;
+  left: 0;
+  width: 50%;
+}
+
+#loader .circle.blue .mask.second {
+  right: 0;
+  width: 50%;
+}
+
+#loader .circle .mask .base {
+  border-radius: 50%;
+  height: 100%;
+  opacity: 0;
+  transition-property: opacity;
+  transition-timing-function: linear;
+  transition-duration: 0s;
+  transition-delay: 0s;
+  width: 100%;
+}
+
+#loader .circle .mask .mover {
+  border-radius: 50%;
+  height: 100%;
+  transition-delay: 0s;
+  transition-duration: 0.22s;
+  transition-property: background-color, left, top, right, bottom, width,
+      height;
+  transition-timing-function: ease-in;
+  width: 100%;
+}
+
+#loader .circle .mask.second .mover,
+#loader .circle.initial .mask .mover {
+  transition-delay: 0.22s;
+  transition-timing-function: ease-out;
+}
+
+#loader .circle.red .mask.first .base {
+  height: 200%;
+  top: 0;
+}
+#loader .circle.red .mask.second .base {
+  bottom: 0;
+  height: 200%;
+}
+
+#loader .circle.yellow .mask.first .base {
+  right: 0;
+  width: 200%;
+}
+
+#loader .circle.yellow .mask.second .base {
+  left: 0;
+  width: 200%;
+}
+
+#loader .circle.green .mask.first .base {
+  bottom: 0;
+  height: 200%;
+}
+
+#loader .circle.green .mask.second .base {
+  height: 200%;
+  top: 0;
+}
+
+#loader .circle.blue .mask.first .base {
+  left: 0;
+  width: 200%;
+}
+
+#loader .circle.blue .mask.second .base {
+  right: 0;
+  width: 200%;
+}
+
+#loader .circle.initial .mask .mover {
+  height: 0;
+  top: 100%;
+}
+
+#loader .circle.red .mask.first .mover {
+  height: 200%;
+  top: 0;
+}
+
+#loader .circle.red .mask.second .mover {
+  bottom: 100%;
+  height: 0;
+}
+
+#loader .circle.yellow .mask.first .mover {
+  right: 0;
+  width: 200%;
+}
+
+#loader .circle.yellow .mask.second .mover {
+  left: 100%;
+  width: 0;
+}
+
+#loader .circle.green .mask.first .mover {
+  bottom: 0;
+  height: 200%;
+}
+
+#loader .circle.green .mask.second .mover {
+ height: 0;
+ top: 100%;
+}
+
+#loader .circle.blue .mask.first .mover {
+  left: 0;
+  width: 200%;
+}
+
+#loader .circle.blue .mask.second .mover {
+  right: 100%;
+  width: 0;
+}
+
+/* Initial State. */
+#loader.initial .circle.initial,
+#loader.initial .circle.initial .mask {
+  opacity: 1;
+}
+#loader.initial .circle.initial .mask .mover {
+  height: 200%;
+  top: 0;
+}
+
+/* Moving from Red to Yellow. */
+#loader.yellow .circle.yellow,
+#loader.yellow .circle.yellow .mask,
+#loader.yellow .circle.yellow .mask .base {
+  opacity: 1;
+}
+#loader.yellow .circle.yellow .mask.first .mover {
+  right: 100%;
+  width: 0;
+}
+#loader.yellow .circle.yellow .mask.second .mover {
+  left: 0;
+  width: 200%;
+}
+
+/* Moving from Yellow to Green. */
+#loader.green .circle.green,
+#loader.green .circle.green .mask,
+#loader.green .circle.green .mask .base {
+  opacity: 1;
+}
+#loader.green .circle.green .mask.first .mover {
+  bottom: 100%;
+  height: 0;
+}
+#loader.green .circle.green .mask.second .mover {
+  height: 200%;
+  top: 0;
+}
+
+
+/* Moving from Green to Blue. */
+#loader.blue .circle.blue,
+#loader.blue .circle.blue .mask,
+#loader.blue .circle.blue .mask .base {
+  opacity: 1;
+}
+#loader.blue .circle.blue .mask.first .mover {
+  left: 100%;
+  width: 0;
+}
+#loader.blue .circle.blue .mask.second .mover {
+  right: 0;
+  width: 200%;
+}
+
+/* Moving from Blue to Red. */
+#loader.red .circle.red,
+#loader.red .circle.red .mask,
+#loader.red .circle.red .mask .base {
+  opacity: 1;
+}
+#loader.red.firstTime .circle.red .mask.second .base {
+  opacity: 0;
+}
+#loader.red .circle.red .mask.first .mover {
+  height: 0;
+  top: 100%;
+}
+#loader.red .circle.red .mask.second .mover {
+  bottom: 0;
+  height: 200%;
+}
+
+#loader .circle.red .mask.first {
+  border-bottom-color: rgb(60,120,248);
+}
+
+#loader .circle.yellow .mask.first {
+  border-left-color: rgb(250,36,36);
+}
+
+#loader .circle.green .mask.first {
+  border-top-color: rgb(255,211,75);
+}
+
+#loader .circle.blue .mask.first {
+  border-right-color: rgb(0,177,95);
+}
+
+#loader .circle.red .mask.first .base {
+  background-color: rgb(250,36,36);
+}
+
+#loader .circle.red .mask.second .base {
+  background-color: rgb(60,120,248);
+}
+
+#loader .circle.yellow .mask.first .base {
+  background-color: rgb(255,211,75);
+}
+
+#loader .circle.yellow .mask.second .base {
+  background-color: rgb(250,36,36);
+}
+
+#loader .circle.green .mask.first .base {
+  background-color: rgb(0,177,95);
+}
+
+#loader .circle.green .mask.second .base {
+  background-color: rgb(255,211,75);
+}
+
+#loader .circle.blue .mask.first .base {
+  background-color: rgb(60,120,248);
+}
+
+#loader .circle.blue .mask.second .base {
+  background-color: rgb(0,177,95);
+}
+
+#loader .circle.initial .mask .mover {
+  background-color: rgb(33,89,189);
+}
+
+#loader .circle.red .mask.first .mover {
+  background-color: rgb(60,120,248);
+}
+
+#loader .circle.red .mask.second .mover {
+  background-color: rgb(158,18,18);
+}
+
+#loader .circle.yellow .mask.first .mover {
+  background-color: rgb(250,36,36);
+}
+
+#loader .circle.yellow .mask.second .mover {
+  background-color: rgb(222,161,26);
+}
+
+#loader .circle.green .mask.first .mover {
+  background-color: rgb(255,211,75);
+}
+
+#loader .circle.green .mask.second .mover {
+  background-color: rgb(0,137,72);
+}
+
+#loader .circle.blue .mask.first .mover {
+  background-color: rgb(0,177,95);
+}
+
+#loader .circle.blue .mask.second .mover {
+  background-color: rgb(33,89,189);
+}
+
+#loader.initial .circle.initial .mask .mover {
+  background-color: rgb(60,120,248);
+}
+
+#loader.yellow .circle.yellow .mask.first {
+  border-color: rgb(255,211,75);
+}
+
+#loader.yellow .circle.yellow .mask.first .mover {
+  background-color: rgb(158,18,18);
+}
+
+#loader.yellow .circle.yellow .mask.second .mover {
+  background-color: rgb(255,211,75);
+}
+
+#loader.green .circle.green .mask.first {
+ border-color: rgb(0,177,95);
+}
+
+#loader.green .circle.green .mask.first .mover {
+ background-color: rgb(222,161,26);
+}
+
+#loader.green .circle.green .mask.second .mover {
+ background-color: rgb(0,177,95);
+}
+
+#loader.blue .circle.blue .mask.first {
+  border-color: rgb(60,120,248);
+}
+
+#loader.blue .circle.blue .mask.first .mover {
+  background-color: rgb(0,137,72);
+}
+
+#loader.blue .circle.blue .mask.second .mover {
+  background-color: rgb(60,120,248);
+}
+
+#loader.red .circle.red .mask.first {
+  border-color: rgb(250,36,36);
+}
+
+#loader.red .circle.red .mask.first .mover {
+  background-color: rgb(33,89,189);
+}
+
+#loader.red .circle.red .mask.second .mover {
+  background-color: rgb(250,36,36);
+}

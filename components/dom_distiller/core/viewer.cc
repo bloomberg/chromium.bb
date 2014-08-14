@@ -75,11 +75,9 @@ std::string ReplaceHtmlTemplateValues(
   substitutions.push_back(GetCssClass(theme));                            // $4
   substitutions.push_back(content);                                       // $5
   substitutions.push_back(loading_indicator_class);                       // $6
+  substitutions.push_back(original_url);                                  // $7
   substitutions.push_back(
-      l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_LOADING_STRING)); // $7
-  substitutions.push_back(original_url);                                  // $8
-  substitutions.push_back(
-      l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_VIEW_ORIGINAL));  // $9
+      l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_VIEW_ORIGINAL));  // $8
   return ReplaceStringPlaceholders(html_template, substitutions, NULL);
 }
 
