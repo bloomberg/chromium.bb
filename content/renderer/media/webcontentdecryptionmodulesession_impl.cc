@@ -15,6 +15,8 @@
 
 namespace content {
 
+const char kCreateSessionUMAName[] = "CreateSession";
+
 // For backwards compatibility with blink not using
 // WebContentDecryptionModuleResult, reserve an index for |outstanding_results_|
 // that will not be used when adding a WebContentDecryptionModuleResult.
@@ -107,7 +109,8 @@ void WebContentDecryptionModuleSessionImpl::initializeNewSession(
                      weak_ptr_factory_.GetWeakPtr(),
                      kReservedIndex),
           base::Bind(&WebContentDecryptionModuleSessionImpl::OnSessionError,
-                     weak_ptr_factory_.GetWeakPtr())));
+                     weak_ptr_factory_.GetWeakPtr()),
+          adapter_->GetKeySystemUMAPrefix() + kCreateSessionUMAName));
   adapter_->InitializeNewSession(init_data_type_as_ascii,
                                  init_data,
                                  init_data_length,
@@ -168,7 +171,8 @@ void WebContentDecryptionModuleSessionImpl::initializeNewSession(
                      result_index),
           base::Bind(&WebContentDecryptionModuleSessionImpl::SessionError,
                      weak_ptr_factory_.GetWeakPtr(),
-                     result_index)));
+                     result_index),
+          adapter_->GetKeySystemUMAPrefix() + kCreateSessionUMAName));
   adapter_->InitializeNewSession(init_data_type_as_ascii,
                                  init_data,
                                  init_data_length,

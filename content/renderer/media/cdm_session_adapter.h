@@ -88,6 +88,9 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   // after WebContentDecryptionModule is freed. http://crbug.com/330324
   media::Decryptor* GetDecryptor();
 
+  // Returns a prefix to use for UMAs.
+  const std::string& GetKeySystemUMAPrefix() const;
+
 #if defined(ENABLE_BROWSER_CDMS)
   // Returns the CDM ID associated with the |media_keys_|. May be kInvalidCdmId
   // if no CDM ID is associated.
@@ -124,6 +127,8 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
 #if defined(ENABLE_BROWSER_CDMS)
   int cdm_id_;
 #endif
+
+  std::string key_system_uma_prefix_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<CdmSessionAdapter> weak_ptr_factory_;

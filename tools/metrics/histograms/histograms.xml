@@ -10893,6 +10893,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>cancelKeyRequest result using the Clear Key key system.</summary>
 </histogram>
 
+<histogram name="Media.EME.ClearKey.CreateSession" enum="CdmPromiseResult">
+  <owner>sandersd@chromium.org</owner>
+  <summary>
+    Result of Clear Key createSession promises handled by Chromium code.
+  </summary>
+</histogram>
+
 <histogram name="Media.EME.ClearKey.DecryptError">
   <owner>xhwang@chromium.org</owner>
   <summary>
@@ -10939,6 +10946,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>cancelKeyRequest result using an unknown key system.</summary>
 </histogram>
 
+<histogram name="Media.EME.Unknown.CreateSession" enum="CdmPromiseResult">
+  <owner>sandersd@chromium.org</owner>
+  <summary>
+    Result of createSession promises for unknown key systems promises that were
+    handled by Chromium code.
+  </summary>
+</histogram>
+
 <histogram name="Media.EME.Unknown.DecryptError">
   <owner>xhwang@chromium.org</owner>
   <summary>Decryption error event count using an unknown key system.</summary>
@@ -10967,6 +10982,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Media.EME.Widevine.cancelKeyRequest" enum="MediaKeyException">
   <owner>xhwang@chromium.org</owner>
   <summary>cancelKeyRequest result using the Widevine key system.</summary>
+</histogram>
+
+<histogram name="Media.EME.Widevine.CreateSession" enum="CdmPromiseResult">
+  <owner>sandersd@chromium.org</owner>
+  <summary>
+    Result of Widevine createSession promises handled by Chromium code.
+  </summary>
 </histogram>
 
 <histogram name="Media.EME.Widevine.DecryptError">
@@ -37664,6 +37686,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="18" label="FutureCat (&gt;10.10), 32-bit (?)"/>
   <int value="19" label="FutureCat (&gt;10.10), 64-bit"/>
   <int value="20" label="FutureCat (&gt;10.10), 8-bit (?)"/>
+</enum>
+
+<enum name="CdmPromiseResult" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="NotSupportedError"/>
+  <int value="2" label="InvalidStateError"/>
+  <int value="3" label="InvalidAccessError"/>
+  <int value="4" label="QuotaExceededError"/>
+  <int value="5" label="UnknownError"/>
+  <int value="6" label="ClientError"/>
+  <int value="7" label="OutputError"/>
 </enum>
 
 <enum name="CertificateChainPosition" type="int">

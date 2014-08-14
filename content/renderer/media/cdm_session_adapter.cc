@@ -9,12 +9,16 @@
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "content/renderer/media/crypto/content_decryption_module_factory.h"
+#include "content/renderer/media/crypto/key_systems.h"
 #include "content/renderer/media/webcontentdecryptionmodulesession_impl.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/media_keys.h"
 #include "url/gurl.h"
 
 namespace content {
+
+const char kMediaEME[] = "Media.EME.";
+const char kDot[] = ".";
 
 CdmSessionAdapter::CdmSessionAdapter() :
 #if defined(ENABLE_BROWSER_CDMS)
@@ -32,6 +36,7 @@ bool CdmSessionAdapter::Initialize(
 #endif  // defined(ENABLE_PEPPER_CDMS)
     const std::string& key_system,
     const GURL& security_origin) {
+  key_system_uma_prefix_ = kMediaEME + KeySystemNameForUMA(key_system) + kDot;
   base::WeakPtr<CdmSessionAdapter> weak_this = weak_ptr_factory_.GetWeakPtr();
   media_keys_ = ContentDecryptionModuleFactory::Create(
       key_system,
@@ -101,6 +106,10 @@ void CdmSessionAdapter::ReleaseSession(
 
 media::Decryptor* CdmSessionAdapter::GetDecryptor() {
   return media_keys_->GetDecryptor();
+}
+
+const std::string& CdmSessionAdapter::GetKeySystemUMAPrefix() const {
+  return key_system_uma_prefix_;
 }
 
 #if defined(ENABLE_BROWSER_CDMS)
