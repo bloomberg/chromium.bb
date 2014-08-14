@@ -43,8 +43,9 @@
 
 namespace media {
 
-const int kMinFrameRate = 1;
-const int kMaxFrameRate = 30;
+// Mac specific limits for minimum and maximum frame rate.
+const float kMinFrameRate = 1.0f;
+const float kMaxFrameRate = 30.0f;
 
 // In device identifiers, the USB VID and PID are stored in 4 bytes each.
 const size_t kVidPidSize = 4;
@@ -350,7 +351,9 @@ VideoCaptureDeviceMac::VideoCaptureDeviceMac(const Name& device_name)
       state_(kNotInitialized),
       capture_device_(nil),
       weak_factory_(this) {
-  final_resolution_selected_ = AVFoundationGlue::IsAVFoundationSupported();
+  // Avoid reconfiguring AVFoundation or blacklisted devices.
+  final_resolution_selected_ = AVFoundationGlue::IsAVFoundationSupported() ||
+      device_name.is_blacklisted();
 }
 
 VideoCaptureDeviceMac::~VideoCaptureDeviceMac() {
@@ -569,13 +572,13 @@ void VideoCaptureDeviceMac::LogMessage(const std::string& message) {
 }
 
 bool VideoCaptureDeviceMac::UpdateCaptureResolution() {
- if (![capture_device_ setCaptureHeight:capture_format_.frame_size.height()
-                                  width:capture_format_.frame_size.width()
-                              frameRate:capture_format_.frame_rate]) {
-   ReceiveError("Could not configure capture device.");
-   return false;
- }
- return true;
+  if (![capture_device_ setCaptureHeight:capture_format_.frame_size.height()
+                                   width:capture_format_.frame_size.width()
+                               frameRate:capture_format_.frame_rate]) {
+    ReceiveError("Could not configure capture device.");
+    return false;
+  }
+  return true;
 }
 
 } // namespace media

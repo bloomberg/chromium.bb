@@ -20,10 +20,16 @@ namespace media {
 // Some devices are not correctly supported in AVFoundation, f.i. Blackmagic,
 // see http://crbug.com/347371. The devices are identified by a characteristic
 // trailing substring of uniqueId and by (part of) the vendor's name.
+// Blackmagic cameras are known to crash if VGA is requested , see
+// http://crbug.com/396812; for them HD is the only supported resolution.
 const struct NameAndVid {
   const char* unique_id_signature;
   const char* name;
-} kBlacklistedCameras[] = { { "-01FDA82C8A9C", "Blackmagic" } };
+  const int capture_width;
+  const int capture_height;
+  const float capture_frame_rate;
+} kBlacklistedCameras[] = {
+  { "-01FDA82C8A9C", "Blackmagic", 1280, 720, 60.0f } };
 
 static scoped_ptr<media::VideoCaptureDevice::Names>
 EnumerateDevicesUsingQTKit() {
@@ -36,6 +42,13 @@ EnumerateDevicesUsingQTKit() {
     VideoCaptureDevice::Name name(
         [[[capture_devices valueForKey:key] deviceName] UTF8String],
         [key UTF8String], VideoCaptureDevice::Name::QTKIT);
+    for (size_t i = 0; i < arraysize(kBlacklistedCameras); ++i) {
+      if (name.id().find(kBlacklistedCameras[i].name) != std::string::npos) {
+        DVLOG(2) << "Found blacklisted camera: " << name.id();
+        name.set_is_blacklisted(true);
+        break;
+      }
+    }
     device_names->push_back(name);
   }
   return device_names.Pass();
@@ -175,7 +188,21 @@ void VideoCaptureDeviceFactoryMac::GetDeviceSupportedFormats(
     [VideoCaptureDeviceAVFoundation getDevice:device
                              supportedFormats:supported_formats];
   } else {
-    NOTIMPLEMENTED();
+    // Blacklisted cameras provide their own supported format(s), otherwise no
+    // such information is provided for QTKit.
+    if (device.is_blacklisted()) {
+      for (size_t i = 0; i < arraysize(kBlacklistedCameras); ++i) {
+        if (device.id().find(kBlacklistedCameras[i].name) !=
+            std::string::npos) {
+          supported_formats->push_back(media::VideoCaptureFormat(
+              gfx::Size(kBlacklistedCameras[i].capture_width,
+                        kBlacklistedCameras[i].capture_height),
+              kBlacklistedCameras[i].capture_frame_rate,
+              media::PIXEL_FORMAT_UYVY));
+          break;
+        }
+      }
+    }
   }
 }
 

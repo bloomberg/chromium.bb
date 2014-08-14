@@ -38,7 +38,8 @@ VideoCaptureDevice::Name::Name(const std::string& name,
     : device_name_(name),
       unique_id_(id),
       capture_api_class_(api_type),
-      transport_type_(OTHER_TRANSPORT) {}
+      transport_type_(OTHER_TRANSPORT),
+      is_blacklisted_(false) {}
 
 VideoCaptureDevice::Name::Name(const std::string& name,
                                const std::string& id,
@@ -47,7 +48,8 @@ VideoCaptureDevice::Name::Name(const std::string& name,
     : device_name_(name),
       unique_id_(id),
       capture_api_class_(api_type),
-      transport_type_(transport_type) {}
+      transport_type_(transport_type),
+      is_blacklisted_(false) {}
 #endif
 
 VideoCaptureDevice::Name::~Name() {}
