@@ -7,6 +7,10 @@
 
 class Browser;
 
+namespace content {
+class BrowserContext;
+}
+
 namespace chromeos {
 namespace accessibility {
 
@@ -18,6 +22,8 @@ bool IsVirtualKeyboardEnabled();
 
 // Shows the accessibility help tab on the browser.
 void ShowAccessibilityHelp(Browser* browser);
+
+void SimulateTouchScreenInChromeVoxForTest(content::BrowserContext* profile);
 
 }  // namespace accessibility
 }  // namespace chromeos

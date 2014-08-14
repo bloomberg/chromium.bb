@@ -280,6 +280,8 @@
             }],
           ],
           'sources': [
+            'browser/chromeos/accessibility/accessibility_util.cc',
+            'browser/chromeos/accessibility/accessibility_util.h',
             'browser/chromeos/accessibility/speech_monitor.cc',
             'browser/chromeos/accessibility/speech_monitor.h',
             'browser/chromeos/accessibility/spoken_feedback_browsertest.cc',
@@ -302,6 +304,7 @@
             'browser/chromeos/login/users/wallpaper/wallpaper_manager_browsertest.cc',
             'browser/chromeos/login/users/wallpaper/wallpaper_manager_test_utils.cc',
             'browser/chromeos/login/users/wallpaper/wallpaper_manager_test_utils.h',
+            'browser/ui/views/accessibility/spoken_feedback_chromeos_views_browsertest.cc',
             'test/data/chromeos/service_login.html',
           ],
           'sources!': [

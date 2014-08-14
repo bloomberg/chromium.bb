@@ -142,6 +142,9 @@ class BookmarkBarView : public DetachableToolbarView,
   // Returns the drop MenuItemView, or NULL if a menu isn't showing.
   views::MenuItemView* GetDropMenu();
 
+  // Returns the BookmarkBarInstructionView, or NULL if it isn't showing.
+  views::View* GetBookmarkBarInstructionsView();
+
   // If a button is currently throbbing, it is stopped. If immediate is true
   // the throb stops immediately, otherwise it stops after a couple more
   // throbs.
