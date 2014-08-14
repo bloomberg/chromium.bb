@@ -23,6 +23,7 @@ namespace {
 const char kChromeProxyHeader[] = "chrome-proxy";
 const char kActionValueDelimiter = '=';
 
+const char kChromeProxyActionBlockOnce[] = "block-once";
 const char kChromeProxyActionBlock[] = "block";
 const char kChromeProxyActionBypass[] = "bypass";
 
@@ -42,6 +43,7 @@ base::TimeDelta GetDefaultBypassDuration() {
                     base::TimeDelta::FromMinutes(5).InMilliseconds());
   return TimeDelta::FromMilliseconds(delta_ms);
 }
+
 }  // namespace
 
 namespace data_reduction_proxy {
@@ -111,7 +113,7 @@ bool ParseHeadersAndSetBypassDuration(const net::HttpResponseHeaders* headers,
 bool ParseHeadersAndSetProxyInfo(const net::HttpResponseHeaders* headers,
                                  DataReductionProxyInfo* proxy_info) {
   DCHECK(proxy_info);
-  proxy_info->bypass_all = false;
+
   // Support header of the form Chrome-Proxy: bypass|block=<duration>, where
   // <duration> is the number of seconds to wait before retrying
   // the proxy. If the duration is 0, then the default proxy retry delay
@@ -120,19 +122,37 @@ bool ParseHeadersAndSetProxyInfo(const net::HttpResponseHeaders* headers,
   // proxy, whereas 'block' instructs Chrome to bypass all available data
   // reduction proxies.
 
-  // 'block' takes precedence over 'bypass', so look for it first.
+  // 'block' takes precedence over 'bypass' and 'block-once', so look for it
+  // first.
   // TODO(bengr): Reduce checks for 'block' and 'bypass' to a single loop.
   if (ParseHeadersAndSetBypassDuration(
           headers, kChromeProxyActionBlock, &proxy_info->bypass_duration)) {
     proxy_info->bypass_all = true;
+    proxy_info->mark_proxies_as_bad = true;
     return true;
   }
 
   // Next, look for 'bypass'.
   if (ParseHeadersAndSetBypassDuration(
           headers, kChromeProxyActionBypass, &proxy_info->bypass_duration)) {
+    proxy_info->bypass_all = false;
+    proxy_info->mark_proxies_as_bad = true;
     return true;
   }
+
+  // Lastly, look for 'block-once'. 'block-once' instructs Chrome to retry the
+  // current request (if it's idempotent), bypassing all available data
+  // reduction proxies. Unlike 'block', 'block-once' does not cause data
+  // reduction proxies to be bypassed for an extended period of time;
+  // 'block-once' only affects the retry of the current request.
+  if (headers->HasHeaderValue(kChromeProxyHeader,
+                              kChromeProxyActionBlockOnce)) {
+    proxy_info->bypass_all = true;
+    proxy_info->mark_proxies_as_bad = false;
+    proxy_info->bypass_duration = TimeDelta();
+    return true;
+  }
+
   return false;
 }
 
@@ -179,17 +199,23 @@ DataReductionProxyBypassType GetDataReductionProxyBypassType(
   if (ParseHeadersAndSetProxyInfo(headers, data_reduction_proxy_info)) {
     // A chrome-proxy response header is only present in a 502. For proper
     // reporting, this check must come before the 5xx checks below.
+    if (!data_reduction_proxy_info->mark_proxies_as_bad)
+      return BYPASS_EVENT_TYPE_CURRENT;
+
     const TimeDelta& duration = data_reduction_proxy_info->bypass_duration;
-    // bypass=0 means bypass for a random duration between 1 to 5 minutes
-    if (duration == TimeDelta())
-      return BYPASS_EVENT_TYPE_MEDIUM;
     if (duration <= TimeDelta::FromSeconds(kShortBypassMaxSeconds))
       return BYPASS_EVENT_TYPE_SHORT;
     if (duration <= TimeDelta::FromSeconds(kMediumBypassMaxSeconds))
       return BYPASS_EVENT_TYPE_MEDIUM;
     return BYPASS_EVENT_TYPE_LONG;
   }
+
+  // If a bypass is triggered by any of the following cases, then the data
+  // reduction proxy should be bypassed for a random duration between 1 and 5
+  // minutes.
+  data_reduction_proxy_info->mark_proxies_as_bad = true;
   data_reduction_proxy_info->bypass_duration = GetDefaultBypassDuration();
+
   // Fall back if a 500, 502 or 503 is returned.
   if (headers->response_code() == net::HTTP_INTERNAL_SERVER_ERROR)
     return BYPASS_EVENT_TYPE_STATUS_500_HTTP_INTERNAL_SERVER_ERROR;

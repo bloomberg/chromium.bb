@@ -25,7 +25,6 @@ namespace data_reduction_proxy {
 // name in metrics/histograms/histograms.xml.
 enum DataReductionProxyBypassType {
   // Bypass due to explicit instruction for the current request.
-  // Not yet supported.
   BYPASS_EVENT_TYPE_CURRENT = 0,
 
   // Bypass the proxy for less than one minute.
@@ -64,13 +63,19 @@ enum DataReductionProxyBypassType {
 
 // Contains instructions contained in the Chrome-Proxy header.
 struct DataReductionProxyInfo {
-  DataReductionProxyInfo() : bypass_all(false) {}
+  DataReductionProxyInfo()
+      : bypass_all(false), mark_proxies_as_bad(false) {}
 
   // True if Chrome should bypass all available data reduction proxies. False
   // if only the currently connected data reduction proxy should be bypassed.
   bool bypass_all;
 
-  // Amount of time to bypass the data reduction proxy or proxies.
+  // True iff Chrome should mark the data reduction proxy or proxies as bad for
+  // the period of time specified in |bypass_duration|.
+  bool mark_proxies_as_bad;
+
+  // Amount of time to bypass the data reduction proxy or proxies. This value is
+  // ignored if |mark_proxies_as_bad| is false.
   base::TimeDelta bypass_duration;
 };
 

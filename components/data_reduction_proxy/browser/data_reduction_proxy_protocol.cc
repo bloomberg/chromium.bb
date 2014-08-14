@@ -90,10 +90,12 @@ bool MaybeBypassProxyAndPrepareToRetry(
         bypass_type);
   }
 
-  MarkProxiesAsBadUntil(request,
-                        data_reduction_proxy_info.bypass_duration,
-                        data_reduction_proxy_info.bypass_all,
-                        data_reduction_proxy_type_info.proxy_servers);
+  if (data_reduction_proxy_info.mark_proxies_as_bad) {
+    MarkProxiesAsBadUntil(request,
+                          data_reduction_proxy_info.bypass_duration,
+                          data_reduction_proxy_info.bypass_all,
+                          data_reduction_proxy_type_info.proxy_servers);
+  }
 
   // Only retry idempotent methods.
   if (!IsRequestIdempotent(request))

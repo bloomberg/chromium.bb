@@ -323,6 +323,15 @@ TEST_F(DataReductionProxyProtocolTest, OverrideResponseAsRedirect) {
         "Via: 1.1 Chrome-Compression-Proxy\n"
         "Location: http://www.google.com/\n"
       },
+      { "HTTP/1.1 200 0K\n"
+        "Chrome-Proxy: block-once\n"
+        "Via: 1.1 Chrome-Compression-Proxy\n",
+
+        "HTTP/1.1 302 Found\n"
+        "Chrome-Proxy: block-once\n"
+        "Via: 1.1 Chrome-Compression-Proxy\n"
+        "Location: http://www.google.com/\n"
+      },
       { "HTTP/1.1 302 Found\n"
         "Location: http://foo.com/\n",
 
@@ -577,7 +586,124 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       true,
       1,
       BYPASS_EVENT_TYPE_SHORT
-    }
+    },
+    // Valid data reduction proxy response with a block-once message. It will be
+    // retried, and there will be no proxies on the retry list since block-once
+    // only affects the current request.
+    { "GET",
+      "HTTP/1.1 200 OK\r\n"
+      "Server: proxy\r\n"
+      "Chrome-Proxy: block-once\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+      true,
+      0u,
+      true,
+      0,
+      BYPASS_EVENT_TYPE_CURRENT
+    },
+    // Same as above with the OPTIONS method, which is idempotent.
+    { "OPTIONS",
+      "HTTP/1.1 200 OK\r\n"
+      "Server: proxy\r\n"
+      "Chrome-Proxy: block-once\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+      true,
+      0u,
+      true,
+      0,
+      BYPASS_EVENT_TYPE_CURRENT
+    },
+    // Same as above with the HEAD method, which is idempotent.
+    { "HEAD",
+      "HTTP/1.1 200 OK\r\n"
+      "Server: proxy\r\n"
+      "Chrome-Proxy: block-once\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+      true,
+      0u,
+      false,
+      0,
+      BYPASS_EVENT_TYPE_CURRENT
+    },
+    // Same as above with the PUT method, which is idempotent.
+    { "PUT",
+      "HTTP/1.1 200 OK\r\n"
+      "Server: proxy\r\n"
+      "Chrome-Proxy: block-once\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+      true,
+      0u,
+      true,
+      0,
+      BYPASS_EVENT_TYPE_CURRENT
+    },
+    // Same as above with the DELETE method, which is idempotent.
+    { "DELETE",
+      "HTTP/1.1 200 OK\r\n"
+      "Server: proxy\r\n"
+      "Chrome-Proxy: block-once\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+      true,
+      0u,
+      true,
+      0,
+      BYPASS_EVENT_TYPE_CURRENT
+    },
+    // Same as above with the TRACE method, which is idempotent.
+    { "TRACE",
+      "HTTP/1.1 200 OK\r\n"
+      "Server: proxy\r\n"
+      "Chrome-Proxy: block-once\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+      true,
+      0u,
+      true,
+      0,
+      BYPASS_EVENT_TYPE_CURRENT
+    },
+    // Valid data reduction proxy response with a block-once message. It will
+    // not be retried because the request is non-idempotent, and there will be
+    // no proxies on the retry list since block-once only affects the current
+    // request.
+    { "POST",
+      "HTTP/1.1 200 OK\r\n"
+      "Server: proxy\r\n"
+      "Chrome-Proxy: block-once\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+      false,
+      0u,
+      true,
+      0,
+      BYPASS_EVENT_TYPE_CURRENT
+    },
+    // Valid data reduction proxy response with block and block-once messages.
+    // The block message will override the block-once message, so both proxies
+    // should be on the retry list when it completes.
+    { "GET",
+      "HTTP/1.1 200 OK\r\n"
+      "Server: proxy\r\n"
+      "Chrome-Proxy: block=1, block-once\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+      true,
+      2u,
+      true,
+      1,
+      BYPASS_EVENT_TYPE_SHORT
+    },
+    // Valid data reduction proxy response with bypass and block-once messages.
+    // The bypass message will override the block-once message, so one proxy
+    // should be on the retry list when it completes.
+    { "GET",
+      "HTTP/1.1 200 OK\r\n"
+      "Server: proxy\r\n"
+      "Chrome-Proxy: bypass=1, block-once\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+      true,
+      1u,
+      true,
+      1,
+      BYPASS_EVENT_TYPE_SHORT
+    },
   };
   std::string primary = proxy_params_->DefaultOrigin();
   std::string fallback = proxy_params_->DefaultFallbackOrigin();

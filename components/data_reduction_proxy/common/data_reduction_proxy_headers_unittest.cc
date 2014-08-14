@@ -95,6 +95,14 @@ TEST_F(DataReductionProxyHeadersTest, GetDataReductionProxyActionValue) {
       true,
       "123",
     },
+    { "HTTP/1.1 200 OK\n"
+      "connection: proxy-bypass\n"
+      "Chrome-Proxy: block-once\n"
+      "Content-Length: 999\n",
+      "block-once",
+      false,
+      "",
+    },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
     std::string headers(tests[i].headers);
@@ -118,11 +126,13 @@ TEST_F(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
      bool expected_result;
      int64 expected_retry_delay;
      bool expected_bypass_all;
+     bool expected_mark_proxies_as_bad;
   } tests[] = {
     { "HTTP/1.1 200 OK\n"
       "Content-Length: 999\n",
       false,
       0,
+      false,
       false,
     },
     { "HTTP/1.1 200 OK\n"
@@ -130,6 +140,7 @@ TEST_F(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
       "Content-Length: 999\n",
       false,
       0,
+      false,
       false,
     },
     { "HTTP/1.1 200 OK\n"
@@ -139,6 +150,7 @@ TEST_F(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
       true,
       86400,
       false,
+      true,
     },
     { "HTTP/1.1 200 OK\n"
       "connection: keep-alive\n"
@@ -146,6 +158,7 @@ TEST_F(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
       "Content-Length: 999\n",
       false,
       0,
+      false,
       false,
     },
     { "HTTP/1.1 200 OK\n"
@@ -155,6 +168,7 @@ TEST_F(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
       false,
       0,
       false,
+      false,
     },
     { "HTTP/1.1 200 OK\n"
       "connection: keep-alive\n"
@@ -162,6 +176,7 @@ TEST_F(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
       "Content-Length: 999\n",
       false,
       0,
+      false,
       false,
     },
     { "HTTP/1.1 200 OK\n"
@@ -171,6 +186,7 @@ TEST_F(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
       true,
       86400,
       false,
+      true,
     },
     { "HTTP/1.1 200 OK\n"
       "connection: keep-alive\n"
@@ -179,6 +195,7 @@ TEST_F(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
       true,
       86400,
       false,
+      true,
     },
     { "HTTP/1.1 200 OK\n"
       "connection: keep-alive\n"
@@ -188,6 +205,7 @@ TEST_F(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
       true,
       3600,
       false,
+      true,
     },
     { "HTTP/1.1 200 OK\n"
       "connection: keep-alive\n"
@@ -196,6 +214,7 @@ TEST_F(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
       true,
       3600,
       false,
+      true,
     },
     { "HTTP/1.1 200 OK\n"
       "connection: keep-alive\n"
@@ -204,6 +223,7 @@ TEST_F(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
       true,
       86400,
       false,
+      true,
     },
     { "HTTP/1.1 200 OK\n"
       "connection: keep-alive\n"
@@ -213,6 +233,7 @@ TEST_F(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
       true,
       86400,
       false,
+      true,
     },
     { "HTTP/1.1 200 OK\n"
       "connection: keep-alive\n"
@@ -220,6 +241,7 @@ TEST_F(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
       "Content-Length: 999\n",
       true,
       3600,
+      true,
       true,
     },
     { "HTTP/1.1 200 OK\n"
@@ -229,6 +251,7 @@ TEST_F(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
       true,
       3600,
       true,
+      true,
     },
     { "HTTP/1.1 200 OK\n"
       "connection: proxy-bypass\n"
@@ -237,6 +260,7 @@ TEST_F(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
       true,
       86400,
       false,
+      true,
     },
     { "HTTP/1.1 200 OK\n"
       "connection: proxy-bypass\n"
@@ -245,6 +269,7 @@ TEST_F(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
       false,
       0,
       false,
+      false,
     },
     { "HTTP/1.1 200 OK\n"
       "connection: proxy-bypass\n"
@@ -252,6 +277,80 @@ TEST_F(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
       "Content-Length: 999\n",
       false,
       0,
+      false,
+      false,
+    },
+    { "HTTP/1.1 200 OK\n"
+      "connection: keep-alive\n"
+      "Chrome-Proxy: block-once\n"
+      "Content-Length: 999\n",
+      true,
+      0,
+      true,
+      false,
+    },
+    { "HTTP/1.1 200 OK\n"
+      "connection: keep-alive\n"
+      "Chrome-Proxy: block-once=\n"
+      "Content-Length: 999\n",
+      false,
+      0,
+      false,
+      false,
+    },
+    { "HTTP/1.1 200 OK\n"
+      "connection: keep-alive\n"
+      "Chrome-Proxy: block-once=10\n"
+      "Content-Length: 999\n",
+      false,
+      0,
+      false,
+      false,
+    },
+    { "HTTP/1.1 200 OK\n"
+      "connection: keep-alive\n"
+      "Chrome-Proxy: block-once, bypass=86400, block=3600\n"
+      "Content-Length: 999\n",
+      true,
+      3600,
+      true,
+      true,
+    },
+    { "HTTP/1.1 200 OK\n"
+      "connection: keep-alive\n"
+      "Chrome-Proxy: block-once\n"
+      "Chrome-Proxy: bypass=86400, block=3600\n"
+      "Content-Length: 999\n",
+      true,
+      3600,
+      true,
+      true,
+    },
+    { "HTTP/1.1 200 OK\n"
+      "connection: keep-alive\n"
+      "Chrome-Proxy: block-once, bypass=86400\n"
+      "Content-Length: 999\n",
+      true,
+      86400,
+      false,
+      true,
+    },
+    { "HTTP/1.1 200 OK\n"
+      "connection: keep-alive\n"
+      "Chrome-Proxy: block-once, block=3600\n"
+      "Content-Length: 999\n",
+      true,
+      3600,
+      true,
+      true,
+    },
+    { "HTTP/1.1 200 OK\n"
+      "connection: keep-alive\n"
+      "Chrome-Proxy: bypass=, block=, block-once\n"
+      "Content-Length: 999\n",
+      true,
+      0,
+      true,
       false,
     },
   };
@@ -268,6 +367,8 @@ TEST_F(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
               data_reduction_proxy_info.bypass_duration.InSeconds());
     EXPECT_EQ(tests[i].expected_bypass_all,
               data_reduction_proxy_info.bypass_all);
+    EXPECT_EQ(tests[i].expected_mark_proxies_as_bad,
+              data_reduction_proxy_info.mark_proxies_as_bad);
   }
 }
 
@@ -459,6 +560,11 @@ TEST_F(DataReductionProxyHeadersTest, GetDataReductionProxyBypassEventType) {
       "Chrome-Proxy: bypass=301\n"
       "Via: 1.1 Chrome-Compression-Proxy\n",
       BYPASS_EVENT_TYPE_LONG,
+    },
+    { "HTTP/1.1 200 OK\n"
+      "Chrome-Proxy: block-once\n"
+      "Via: 1.1 Chrome-Compression-Proxy\n",
+      BYPASS_EVENT_TYPE_CURRENT,
     },
     { "HTTP/1.1 500 Internal Server Error\n"
       "Via: 1.1 Chrome-Compression-Proxy\n",
