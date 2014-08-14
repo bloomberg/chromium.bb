@@ -5787,6 +5787,7 @@ void Document::trace(Visitor* visitor)
     TreeScope::trace(visitor);
     ContainerNode::trace(visitor);
     ExecutionContext::trace(visitor);
+    LifecycleContext<Document>::trace(visitor);
 }
 
 } // namespace blink

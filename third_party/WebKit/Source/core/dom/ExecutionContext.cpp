@@ -329,6 +329,7 @@ void ExecutionContext::trace(Visitor* visitor)
     visitor->trace(m_pendingExceptions);
 #endif
     WillBeHeapSupplementable<ExecutionContext>::trace(visitor);
+    LifecycleContext<ExecutionContext>::trace(visitor);
 }
 
 } // namespace blink

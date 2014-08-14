@@ -596,6 +596,7 @@ void Page::trace(Visitor* visitor)
     visitor->trace(m_frameHost);
 #endif
     WillBeHeapSupplementable<Page>::trace(visitor);
+    LifecycleContext<Page>::trace(visitor);
 }
 
 void Page::willBeDestroyed()

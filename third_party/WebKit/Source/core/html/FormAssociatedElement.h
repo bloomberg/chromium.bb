@@ -94,7 +94,7 @@ public:
 protected:
     FormAssociatedElement();
 
-    void trace(Visitor*);
+    virtual void trace(Visitor*);
     void insertedInto(ContainerNode*);
     void removedFrom(ContainerNode*);
     void didMoveToNewDocument(Document& oldDocument);

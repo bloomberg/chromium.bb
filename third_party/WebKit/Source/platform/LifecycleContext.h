@@ -36,6 +36,8 @@
 
 namespace blink {
 
+class Visitor;
+
 template <typename T>
 class LifecycleContext {
 public:
@@ -52,6 +54,8 @@ public:
 
     // Called from the destructor of observers.
     void wasUnobservedBy(Observer*);
+
+    virtual void trace(Visitor*) { }
 
 protected:
     Notifier& lifecycleNotifier();

@@ -204,7 +204,7 @@ public:
     void setObservedDocument(Document&);
 
 protected:
-    void trace(Visitor*);
+    virtual void trace(Visitor*);
 
 private:
     void registerObserver(Document&);

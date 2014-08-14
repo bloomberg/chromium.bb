@@ -1917,6 +1917,7 @@ void LocalDOMWindow::trace(Visitor* visitor)
     visitor->trace(m_eventQueue);
     WillBeHeapSupplementable<LocalDOMWindow>::trace(visitor);
     EventTargetWithInlineData::trace(visitor);
+    LifecycleContext<LocalDOMWindow>::trace(visitor);
 }
 
 } // namespace blink

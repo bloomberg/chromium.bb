@@ -119,6 +119,7 @@ template<>
 class SupplementTracing<false> {
 public:
     virtual ~SupplementTracing() { }
+    virtual void trace(Visitor*) { }
 };
 
 template<typename T, bool isGarbageCollected = false>
@@ -143,26 +144,16 @@ public:
         return host ? host->requireSupplement(key) : 0;
     }
 
-    virtual void trace(Visitor*) { }
     virtual void willBeDestroyed() { }
 
     // FIXME: Oilpan: Remove this callback once PersistentHeapSupplementable is removed again.
     virtual void persistentHostHasBeenDestroyed() { }
 };
 
-template<typename T, bool>
-class SupplementableTracing;
-
-template<typename T>
-class SupplementableTracing<T, true> { };
-
-template<typename T>
-class SupplementableTracing<T, false> { };
-
 // Helper class for implementing Supplementable, HeapSupplementable, and
 // PersistentHeapSupplementable.
 template<typename T, bool isGarbageCollected = false>
-class SupplementableBase : public SupplementableTracing<T, isGarbageCollected> {
+class SupplementableBase {
 public:
     void provideSupplement(const char* key, typename SupplementableTraits<T, isGarbageCollected>::SupplementArgumentType supplement)
     {
