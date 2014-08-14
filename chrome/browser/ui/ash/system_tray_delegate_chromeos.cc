@@ -137,9 +137,13 @@ void ExtractIMEInfo(const input_method::InputMethodDescriptor& ime,
 
 gfx::NativeWindow GetNativeWindowByStatus(ash::user::LoginStatus login_status,
                                           bool session_started) {
+  bool isUserAddingRunning = ash::Shell::GetInstance()
+                                 ->session_state_delegate()
+                                 ->IsInSecondaryLoginScreen();
+
   int container_id =
       (!session_started || login_status == ash::user::LOGGED_IN_NONE ||
-       login_status == ash::user::LOGGED_IN_LOCKED)
+       login_status == ash::user::LOGGED_IN_LOCKED || isUserAddingRunning)
           ? ash::kShellWindowId_LockSystemModalContainer
           : ash::kShellWindowId_SystemModalContainer;
   return ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
