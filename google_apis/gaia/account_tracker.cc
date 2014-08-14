@@ -274,8 +274,10 @@ AccountIdFetcher::~AccountIdFetcher() {
 }
 
 void AccountIdFetcher::Start() {
+  OAuth2TokenService::ScopeSet scopes;
+  scopes.insert("https://www.googleapis.com/auth/userinfo.profile");
   login_token_request_ = token_service_->StartRequest(
-      account_key_, OAuth2TokenService::ScopeSet(), this);
+      account_key_, scopes, this);
 }
 
 void AccountIdFetcher::OnGetTokenSuccess(
