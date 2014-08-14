@@ -236,7 +236,8 @@ void NativeThemeBase::Paint(SkCanvas* canvas,
     case kScrollbarUpArrow:
     case kScrollbarLeftArrow:
     case kScrollbarRightArrow:
-      PaintArrowButton(canvas, rect, part, state);
+      if (scrollbar_button_length_ > 0)
+        PaintArrowButton(canvas, rect, part, state);
       break;
     case kScrollbarHorizontalThumb:
     case kScrollbarVerticalThumb:

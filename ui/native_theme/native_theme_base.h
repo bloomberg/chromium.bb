@@ -200,6 +200,8 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
       const SkScalar borderRadius) const;
 
   unsigned int scrollbar_width_;
+
+  // The length of the arrow buttons, 0 means no buttons are drawn.
   unsigned int scrollbar_button_length_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeThemeBase);

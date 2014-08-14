@@ -12,9 +12,25 @@
 #include "base/mac/sdk_forward_declarations.h"
 #include "ui/native_theme/common_theme.h"
 #import "skia/ext/skia_utils_mac.h"
+#include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/skia_util.h"
 
 namespace {
+
+const SkColor kScrollerTrackGradientColors[] = {
+    SkColorSetRGB(0xEF, 0xEF, 0xEF),
+    SkColorSetRGB(0xF9, 0xF9, 0xF9),
+    SkColorSetRGB(0xFD, 0xFD, 0xFD),
+    SkColorSetRGB(0xF6, 0xF6, 0xF6) };
+const SkColor kScrollerTrackInnerBorderColor = SkColorSetRGB(0xE4, 0xE4, 0xE4);
+const SkColor kScrollerTrackOuterBorderColor = SkColorSetRGB(0xEF, 0xEF, 0xEF);
+const SkColor kScrollerThumbColor = SkColorSetARGB(0x38, 0, 0, 0);
+const SkColor kScrollerThumbHoverColor = SkColorSetARGB(0x80, 0, 0, 0);
+const int kScrollerTrackBorderWidth = 1;
+
+// The amount the thumb is inset from both the ends and the sides of the track.
+const int kScrollerThumbInset = 3;
 
 // Values calculated by reading pixels and solving simultaneous equations
 // derived from "A over B" alpha compositing. Steps: Sample the semi-transparent
@@ -184,6 +200,131 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
   return FallbackTheme::GetSystemColor(color_id);
 }
 
+void NativeThemeMac::PaintScrollbarTrack(
+    SkCanvas* canvas,
+    Part part,
+    State state,
+    const ScrollbarTrackExtraParams& extra_params,
+    const gfx::Rect& rect) const {
+  // Emulate the non-overlay scroller style from OSX 10.7 and later.
+  SkPoint gradient_bounds[2];
+  if (part == kScrollbarVerticalTrack) {
+    gradient_bounds[0].set(rect.x(), rect.y());
+    gradient_bounds[1].set(rect.right(), rect.y());
+  } else {
+    DCHECK_EQ(part, kScrollbarHorizontalTrack);
+    gradient_bounds[0].set(rect.x(), rect.y());
+    gradient_bounds[1].set(rect.x(), rect.bottom());
+  }
+  skia::RefPtr<SkShader> shader = skia::AdoptRef(
+      SkGradientShader::CreateLinear(gradient_bounds,
+                                     kScrollerTrackGradientColors,
+                                     NULL,
+                                     arraysize(kScrollerTrackGradientColors),
+                                     SkShader::kClamp_TileMode));
+  SkPaint gradient;
+  gradient.setShader(shader.get());
+
+  SkIRect track_rect = gfx::RectToSkIRect(rect);
+  canvas->drawIRect(track_rect, gradient);
+
+  // Draw inner and outer line borders.
+  if (part == kScrollbarVerticalTrack) {
+    SkPaint paint;
+    paint.setColor(kScrollerTrackInnerBorderColor);
+    canvas->drawRectCoords(track_rect.left(),
+                           track_rect.top(),
+                           track_rect.left() + kScrollerTrackBorderWidth,
+                           track_rect.bottom(),
+                           paint);
+    paint.setColor(kScrollerTrackOuterBorderColor);
+    canvas->drawRectCoords(track_rect.right() - kScrollerTrackBorderWidth,
+                           track_rect.top(),
+                           track_rect.right(),
+                           track_rect.bottom(),
+                           paint);
+  } else {
+    SkPaint paint;
+    paint.setColor(kScrollerTrackInnerBorderColor);
+    canvas->drawRectCoords(track_rect.left(),
+                           track_rect.top(),
+                           track_rect.right(),
+                           track_rect.top() + kScrollerTrackBorderWidth,
+                           paint);
+    paint.setColor(kScrollerTrackOuterBorderColor);
+    canvas->drawRectCoords(track_rect.left(),
+                           track_rect.bottom() - kScrollerTrackBorderWidth,
+                           track_rect.right(),
+                           track_rect.bottom(),
+                           paint);
+  }
+}
+
+void NativeThemeMac::PaintScrollbarThumb(SkCanvas* canvas,
+                                         Part part,
+                                         State state,
+                                         const gfx::Rect& rect) const {
+  gfx::Rect thumb_rect(rect);
+  switch (part) {
+    case kScrollbarHorizontalThumb:
+      thumb_rect.Inset(0, kScrollerTrackBorderWidth, 0, 0);
+      break;
+    case kScrollbarVerticalThumb:
+      thumb_rect.Inset(kScrollerTrackBorderWidth, 0, 0, 0);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  thumb_rect.Inset(kScrollerThumbInset, kScrollerThumbInset);
+
+  SkPaint paint;
+  paint.setAntiAlias(true);
+  paint.setColor(state == kHovered ? thumb_active_color_
+                                   : thumb_inactive_color_);
+  const SkScalar radius = std::min(rect.width(), rect.height());
+  canvas->drawRoundRect(gfx::RectToSkRect(thumb_rect), radius, radius, paint);
+}
+
+void NativeThemeMac::PaintScrollbarCorner(SkCanvas* canvas,
+                                          State state,
+                                          const gfx::Rect& rect) const {
+  DCHECK_GT(rect.width(), 0);
+  DCHECK_GT(rect.height(), 0);
+
+  // Draw radial gradient from top-left corner.
+  skia::RefPtr<SkShader> shader = skia::AdoptRef(
+      SkGradientShader::CreateRadial(SkPoint::Make(rect.x(), rect.y()),
+                                     rect.width(),
+                                     kScrollerTrackGradientColors,
+                                     NULL,
+                                     arraysize(kScrollerTrackGradientColors),
+                                     SkShader::kClamp_TileMode));
+  SkPaint gradient;
+  gradient.setStyle(SkPaint::kFill_Style);
+  gradient.setAntiAlias(true);
+  gradient.setShader(shader.get());
+  canvas->drawRect(gfx::RectToSkRect(rect), gradient);
+
+  // Draw inner border corner point.
+  canvas->drawPoint(rect.x(), rect.y(), kScrollerTrackInnerBorderColor);
+
+  // Draw outer borders.
+  SkPaint paint;
+  paint.setColor(kScrollerTrackOuterBorderColor);
+  canvas->drawRectCoords(rect.right() - kScrollerTrackBorderWidth,
+                         rect.y(),
+                         rect.right(),
+                         rect.bottom(),
+                         paint);
+  canvas->drawRectCoords(rect.x(),
+                         rect.bottom() - kScrollerTrackBorderWidth,
+                         rect.right(),
+                         rect.bottom(),
+                         paint);
+}
+
 void NativeThemeMac::PaintMenuPopupBackground(
     SkCanvas* canvas,
     const gfx::Size& size,
@@ -217,6 +358,10 @@ void NativeThemeMac::PaintMenuItemBackground(
 }
 
 NativeThemeMac::NativeThemeMac() {
+  set_scrollbar_button_length(0);
+  SetScrollbarColors(kScrollerThumbColor,
+                     kScrollerThumbHoverColor,
+                     kScrollerTrackGradientColors[0]);
 }
 
 NativeThemeMac::~NativeThemeMac() {
