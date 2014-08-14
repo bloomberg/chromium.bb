@@ -34,6 +34,12 @@ Gnubby.U2F_V1 = 'U2F_V1';
 /** V2 of the applet. */
 Gnubby.U2F_V2 = 'U2F_V2';
 
+/**
+ * Google corporate appId hash
+ * @private
+ */
+Gnubby.GOOGLE_CORP_APP_ID_HASH_ = 'ZEZHL99u7Xvzwzcg8jZnbDbhtF6-BIXbiaPN_dJL1p8';
+
 /** Perform enrollment
  * @param {ArrayBuffer|Uint8Array} challenge Enrollment challenge
  * @param {ArrayBuffer|Uint8Array} appIdHash Hashed application id
@@ -43,11 +49,11 @@ Gnubby.prototype.enroll = function(challenge, appIdHash, cb) {
   var apdu = new Uint8Array(
       [0x00,
        Gnubby.U2F_ENROLL,
-       Gnubby.P1_TUP_REQUIRED | Gnubby.P1_TUP_CONSUME |
-         Gnubby.P1_INDIVIDUAL_KEY,
+       Gnubby.P1_TUP_REQUIRED | Gnubby.P1_TUP_CONSUME,
        0x00, 0x00, 0x00,
        challenge.length + appIdHash.length]);
-  // TODO: only use P1_INDIVIDUAL_KEY for corp appIdHashes.
+  if (B64_encode(appIdHash) == Gnubby.GOOGLE_CORP_APP_ID_HASH_)
+    apdu[2] |= Gnubby.P1_INDIVIDUAL_KEY;
   var u8 = new Uint8Array(apdu.length + challenge.length +
       appIdHash.length + 2);
   for (var i = 0; i < apdu.length; ++i) u8[i] = apdu[i];
