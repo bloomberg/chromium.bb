@@ -351,7 +351,7 @@ bool RenderThemeChromiumSkia::paintMediaFullscreenButton(RenderObject* object, c
     return RenderMediaControls::paintMediaControlsPart(MediaEnterFullscreenButton, object, paintInfo, rect);
 }
 
-void RenderThemeChromiumSkia::adjustMenuListStyle(RenderStyle* style, blink::Element*) const
+void RenderThemeChromiumSkia::adjustMenuListStyle(RenderStyle* style, Element*) const
 {
     // Height is locked to auto on all browsers.
     style->setLineHeight(RenderStyle::initialLineHeight());

@@ -184,7 +184,7 @@ public:
 
     void updateFilters(const RenderStyle*);
 
-    void setBlendMode(blink::WebBlendMode);
+    void setBlendMode(WebBlendMode);
 
     bool needsGraphicsLayerUpdate() { return m_pendingUpdateScope > GraphicsLayerUpdateNone; }
     void setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateScope scope) { m_pendingUpdateScope = std::max(static_cast<GraphicsLayerUpdateScope>(m_pendingUpdateScope), scope); }

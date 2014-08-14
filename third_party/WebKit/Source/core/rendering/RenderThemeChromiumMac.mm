@@ -1740,7 +1740,7 @@ String RenderThemeChromiumMac::fileListNameForWidth(Locale& locale, const FileLi
 
     String strToTruncate;
     if (fileList->isEmpty()) {
-        strToTruncate = locale.queryString(blink::WebLocalizedString::FileButtonNoFileSelectedLabel);
+        strToTruncate = locale.queryString(WebLocalizedString::FileButtonNoFileSelectedLabel);
     } else if (fileList->length() == 1) {
         File* file = fileList->item(0);
         if (file->userVisibility() == File::IsUserVisible)
@@ -1749,7 +1749,7 @@ String RenderThemeChromiumMac::fileListNameForWidth(Locale& locale, const FileLi
             strToTruncate = file->name();
     } else {
         // FIXME: Localization of fileList->length().
-        return StringTruncator::rightTruncate(locale.queryString(blink::WebLocalizedString::MultipleFileUploadText, String::number(fileList->length())), width, font);
+        return StringTruncator::rightTruncate(locale.queryString(WebLocalizedString::MultipleFileUploadText, String::number(fileList->length())), width, font);
     }
 
     return StringTruncator::centerTruncate(strToTruncate, width, font);

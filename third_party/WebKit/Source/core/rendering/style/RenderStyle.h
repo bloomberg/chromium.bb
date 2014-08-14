@@ -948,8 +948,8 @@ public:
     const FilterOperations& filter() const { return rareNonInheritedData->m_filter->m_operations; }
     bool hasFilter() const { return !rareNonInheritedData->m_filter->m_operations.operations().isEmpty(); }
 
-    blink::WebBlendMode blendMode() const;
-    void setBlendMode(blink::WebBlendMode v);
+    WebBlendMode blendMode() const;
+    void setBlendMode(WebBlendMode v);
     bool hasBlendMode() const;
 
     EIsolation isolation() const;
@@ -1726,7 +1726,7 @@ public:
     static ETextSecurity initialTextSecurity() { return TSNONE; }
     static Color initialTapHighlightColor();
     static const FilterOperations& initialFilter() { DEFINE_STATIC_LOCAL(FilterOperations, ops, ()); return ops; }
-    static blink::WebBlendMode initialBlendMode() { return blink::WebBlendModeNormal; }
+    static WebBlendMode initialBlendMode() { return WebBlendModeNormal; }
     static EIsolation initialIsolation() { return IsolationAuto; }
 private:
     void setVisitedLinkColor(const Color&);

@@ -2523,7 +2523,7 @@ void RenderObject::addLayerHitTestRects(LayerHitTestRects& layerRects, const Ren
     const size_t maxRectsPerLayer = 100;
 
     LayerHitTestRects::iterator iter = layerRects.find(currentLayer);
-    Vector<blink::LayoutRect>* iterValue;
+    Vector<LayoutRect>* iterValue;
     if (iter == layerRects.end())
         iterValue = &layerRects.add(currentLayer, Vector<LayoutRect>()).storedValue->value;
     else

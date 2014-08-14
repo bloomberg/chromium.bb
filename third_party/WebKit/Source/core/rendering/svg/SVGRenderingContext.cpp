@@ -132,7 +132,7 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
         m_paintInfo->context->beginTransparencyLayer(opacity);
 
         if (hasBlendMode)
-            m_paintInfo->context->setCompositeOperation(CompositeSourceOver, blink::WebBlendModeNormal);
+            m_paintInfo->context->setCompositeOperation(CompositeSourceOver, WebBlendModeNormal);
 
         m_renderingFlags |= EndOpacityLayer;
     }
@@ -308,4 +308,4 @@ bool SVGRenderingContext::bufferForeground(OwnPtr<ImageBuffer>& imageBuffer)
     return true;
 }
 
-}
+} // namespace blink

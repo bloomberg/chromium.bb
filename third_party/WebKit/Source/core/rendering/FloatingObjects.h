@@ -124,7 +124,7 @@ struct FloatingObjectHashFunctions {
 struct FloatingObjectHashTranslator {
     static unsigned hash(RenderBox* key) { return DefaultHash<RenderBox*>::Hash::hash(key); }
     static bool equal(FloatingObject* a, RenderBox* b) { return a->renderer() == b; }
-    static bool equal(const OwnPtr<blink::FloatingObject>& a, RenderBox* b) { return a->renderer() == b; }
+    static bool equal(const OwnPtr<FloatingObject>& a, RenderBox* b) { return a->renderer() == b; }
 };
 typedef ListHashSet<OwnPtr<FloatingObject>, 4, FloatingObjectHashFunctions> FloatingObjectSet;
 typedef FloatingObjectSet::const_iterator FloatingObjectSetIterator;

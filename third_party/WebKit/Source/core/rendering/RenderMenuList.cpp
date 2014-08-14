@@ -257,7 +257,7 @@ void RenderMenuList::setTextFromOption(int optionIndex)
         } else {
             Locale& locale = select->locale();
             String localizedNumberString = locale.convertToLocalizedNumber(String::number(selectedCount));
-            text = locale.queryString(blink::WebLocalizedString::SelectMenuListText, localizedNumberString);
+            text = locale.queryString(WebLocalizedString::SelectMenuListText, localizedNumberString);
             ASSERT(!m_optionStyle);
         }
     } else {
@@ -623,4 +623,4 @@ void RenderMenuList::setTextFromItem(unsigned listIndex)
     setTextFromOption(selectElement()->listToOptionIndex(listIndex));
 }
 
-}
+} // namespace blink

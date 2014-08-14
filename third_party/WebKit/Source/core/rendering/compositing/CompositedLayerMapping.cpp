@@ -129,7 +129,7 @@ static bool contentLayerSupportsDirectBackgroundComposition(const RenderObject* 
     return contentsRect(renderer).contains(backgroundRect(renderer));
 }
 
-static blink::WebLayer* platformLayerForPlugin(RenderObject* renderer)
+static WebLayer* platformLayerForPlugin(RenderObject* renderer)
 {
     if (!renderer->isEmbeddedObject())
         return 0;
@@ -460,10 +460,10 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
     if (isDirectlyCompositedImage())
         updateImageContents();
 
-    if (blink::WebLayer* layer = platformLayerForPlugin(renderer)) {
+    if (WebLayer* layer = platformLayerForPlugin(renderer)) {
         m_graphicsLayer->setContentsToPlatformLayer(layer);
     } else if (renderer->node() && renderer->node()->isFrameOwnerElement() && toHTMLFrameOwnerElement(renderer->node())->contentFrame()) {
-        blink::WebLayer* layer = toHTMLFrameOwnerElement(renderer->node())->contentFrame()->remotePlatformLayer();
+        WebLayer* layer = toHTMLFrameOwnerElement(renderer->node())->contentFrame()->remotePlatformLayer();
         if (layer)
             m_graphicsLayer->setContentsToPlatformLayer(layer);
     } else if (renderer->isVideo()) {
@@ -1104,7 +1104,7 @@ void CompositedLayerMapping::updateDrawsContent()
     if (hasPaintedContent && isAcceleratedCanvas(renderer())) {
         CanvasRenderingContext* context = toHTMLCanvasElement(renderer()->node())->renderingContext();
         // Content layer may be null if context is lost.
-        if (blink::WebLayer* contentLayer = context->platformLayer()) {
+        if (WebLayer* contentLayer = context->platformLayer()) {
             Color bgColor(Color::transparent);
             if (contentLayerSupportsDirectBackgroundComposition(renderer())) {
                 bgColor = rendererBackgroundColor();
@@ -1919,11 +1919,11 @@ bool CompositedLayerMapping::updateRequiresOwnBackingStoreForIntrinsicReasons()
     return m_requiresOwnBackingStoreForIntrinsicReasons != previousRequiresOwnBackingStoreForIntrinsicReasons;
 }
 
-void CompositedLayerMapping::setBlendMode(blink::WebBlendMode blendMode)
+void CompositedLayerMapping::setBlendMode(WebBlendMode blendMode)
 {
     if (m_ancestorClippingLayer) {
         m_ancestorClippingLayer->setBlendMode(blendMode);
-        m_graphicsLayer->setBlendMode(blink::WebBlendModeNormal);
+        m_graphicsLayer->setBlendMode(WebBlendModeNormal);
     } else {
         m_graphicsLayer->setBlendMode(blendMode);
     }

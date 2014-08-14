@@ -140,4 +140,4 @@ void GraphicsContextAnnotator::finishAnnotation()
     m_context->endAnnotation();
 }
 
-}
+} // namespace blink

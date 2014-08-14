@@ -526,7 +526,7 @@ void RenderLayerCompositor::frameViewDidScroll()
         m_scrollLayer->setPosition(-scrollPosition);
 
 
-    blink::Platform::current()->histogramEnumeration("Renderer.AcceleratedFixedRootBackground",
+    Platform::current()->histogramEnumeration("Renderer.AcceleratedFixedRootBackground",
         ScrolledMainFrameBucket,
         AcceleratedFixedRootBackgroundHistogramMax);
 }

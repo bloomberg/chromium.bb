@@ -1194,7 +1194,7 @@ void RenderLayer::beginTransparencyLayers(GraphicsContext* context, const Render
         context->beginTransparencyLayer(renderer()->opacity());
 
         if (paintsWithBlendMode())
-            context->setCompositeOperation(context->compositeOperation(), blink::WebBlendModeNormal);
+            context->setCompositeOperation(context->compositeOperation(), WebBlendModeNormal);
 #ifdef REVEAL_TRANSPARENCY_LAYERS
         context->setFillColor(Color(0.0f, 0.0f, 0.5f, 0.2f));
         context->fillRect(clipRect);

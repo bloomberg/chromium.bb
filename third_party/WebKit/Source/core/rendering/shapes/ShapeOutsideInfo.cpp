@@ -111,7 +111,7 @@ static bool isValidRasterShapeRect(const LayoutRect& rect)
     static double maxImageSizeBytes = 0;
     if (!maxImageSizeBytes) {
         size_t size32MaxBytes =  0xFFFFFFFF / 4; // Some platforms don't limit maxDecodedImageBytes.
-        maxImageSizeBytes = std::min(size32MaxBytes, blink::Platform::current()->maxDecodedImageBytes());
+        maxImageSizeBytes = std::min(size32MaxBytes, Platform::current()->maxDecodedImageBytes());
     }
     return (rect.width().toFloat() * rect.height().toFloat() * 4.0) < maxImageSizeBytes;
 }
@@ -347,4 +347,4 @@ FloatSize ShapeOutsideInfo::shapeToRendererSize(FloatSize size) const
     return size;
 }
 
-}
+} // namespace blink
