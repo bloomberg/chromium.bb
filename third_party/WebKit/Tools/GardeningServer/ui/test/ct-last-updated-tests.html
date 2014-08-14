@@ -24,7 +24,7 @@ describe('ct-last-updated', function() {
 
     it('should have correct text', function() {
       var expected = 'Updated 5 min ago @ ' + lastUpdated.date.getHours() + ':' +
-                     lastUpdated.date.getMinutes();
+                     lastUpdated.date.getMinutes().toString().padLeft(2, '0');
       assert.include(lastUpdated.shadowRoot.innerHTML.trim(), expected);
     });
   });
@@ -43,7 +43,6 @@ describe('ct-last-updated', function() {
   describe('Pad minutes when less than 10', function() {
     beforeEach(function(done) {
       lastUpdated = document.createElement('ct-last-updated');
-      // Set the date to 5 minutes ago.
       lastUpdated.date = Date.create('11:05');
       requestAnimationFrame(function() { done(); });
     });
@@ -53,6 +52,20 @@ describe('ct-last-updated', function() {
       assert.include(lastUpdated.shadowRoot.innerHTML.trim(), expected);
     });
   });
+
+  describe('Pad minutes when greater than 10', function() {
+    beforeEach(function(done) {
+      lastUpdated = document.createElement('ct-last-updated');
+      lastUpdated.date = Date.create('11:25');
+      requestAnimationFrame(function() { done(); });
+    });
+
+    it('should have correct text', function() {
+      var expected = '11:25';
+      assert.include(lastUpdated.shadowRoot.innerHTML.trim(), expected);
+    });
+  });
+
 
 });
 

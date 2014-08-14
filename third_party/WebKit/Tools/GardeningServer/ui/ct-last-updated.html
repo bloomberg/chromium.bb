@@ -22,10 +22,7 @@ found in the LICENSE file.
         return date.getHours();
       },
       _minutes: function(date) {
-        var s = date.getMinutes().toString();
-        if (s.length == 1)
-          s = "0" + s;
-        return s;
+        return date.getMinutes().toString().padLeft(2, '0');
       },
     });
   })();
