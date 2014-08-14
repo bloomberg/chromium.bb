@@ -1461,7 +1461,7 @@ void ExtensionService::AddComponentExtension(const Extension* extension) {
         << old_version_string << "' to " << extension->version()->GetString();
 
     AddNewOrUpdatedExtension(extension,
-                             Extension::ENABLED_COMPONENT,
+                             Extension::ENABLED,
                              extensions::kInstallFlagNone,
                              syncer::StringOrdinal(),
                              std::string());

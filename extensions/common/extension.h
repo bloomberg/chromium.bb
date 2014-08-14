@@ -62,9 +62,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     // An external extension that the user uninstalled. We should not reinstall
     // such extensions on startup.
     EXTERNAL_EXTENSION_UNINSTALLED,
-    // Special state for component extensions, since they are always loaded by
-    // the component loader, and should never be auto-installed on startup.
-    ENABLED_COMPONENT,
+    // DEPRECATED: Special state for component extensions.
+    // Maintained as a placeholder since states may be stored to disk.
+    ENABLED_COMPONENT_DEPRECATED,
     NUM_STATES
   };
 

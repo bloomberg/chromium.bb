@@ -1337,23 +1337,14 @@ scoped_ptr<ExtensionInfo> ExtensionPrefs::GetInstalledInfoHelper(
   if (!extension->GetInteger(kPrefLocation, &location_value))
     return scoped_ptr<ExtensionInfo>();
 
-  base::FilePath::StringType path;
-  if (!extension->GetString(kPrefPath, &path))
-    return scoped_ptr<ExtensionInfo>();
-
-  // Make path absolute. Unpacked extensions will already have absolute paths,
-  // otherwise make it so.
   Manifest::Location location = static_cast<Manifest::Location>(location_value);
-#if !defined(OS_CHROMEOS)
-  if (!Manifest::IsUnpackedLocation(location)) {
-    DCHECK(location == Manifest::COMPONENT ||
-           !base::FilePath(path).IsAbsolute());
-#else
-  // On Chrome OS some extensions can be installed to shared location and
-  // thus use absolute paths in prefs.
-  if (!base::FilePath(path).IsAbsolute()) {
-#endif  // !defined(OS_CHROMEOS)
-    path = install_directory_.Append(path).value();
+  if (location == Manifest::COMPONENT) {
+    // Component extensions are ignored. Component extensions may have data
+    // saved in preferences, but they are already loaded at this point (by
+    // ComponentLoader) and shouldn't be populated into the result of
+    // GetInstalledExtensionsInfo, otherwise InstalledLoader would also want to
+    // load them.
+    return scoped_ptr<ExtensionInfo>();
   }
 
   // Only the following extension types have data saved in the preferences.
@@ -1371,6 +1362,14 @@ scoped_ptr<ExtensionInfo> ExtensionPrefs::GetInstalledInfoHelper(
     // Just a warning for now.
   }
 
+  base::FilePath::StringType path;
+  if (!extension->GetString(kPrefPath, &path))
+    return scoped_ptr<ExtensionInfo>();
+
+  // Make path absolute. Most (but not all) extension types have relative paths.
+  if (!base::FilePath(path).IsAbsolute())
+    path = install_directory_.Append(path).value();
+
   return scoped_ptr<ExtensionInfo>(new ExtensionInfo(
       manifest, extension_id, base::FilePath(path), location));
 }
@@ -1384,13 +1383,8 @@ scoped_ptr<ExtensionInfo> ExtensionPrefs::GetInstalledExtensionInfo(
       !extensions->GetDictionaryWithoutPathExpansion(extension_id, &ext))
     return scoped_ptr<ExtensionInfo>();
   int state_value;
-  if (!ext->GetInteger(kPrefState, &state_value) ||
-      state_value == Extension::ENABLED_COMPONENT) {
-    // Old preferences files may not have kPrefState for component extensions.
-    return scoped_ptr<ExtensionInfo>();
-  }
-
-  if (state_value == Extension::EXTERNAL_EXTENSION_UNINSTALLED) {
+  if (ext->GetInteger(kPrefState, &state_value) &&
+      state_value == Extension::EXTERNAL_EXTENSION_UNINSTALLED) {
     LOG(WARNING) << "External extension with id " << extension_id
                  << " has been uninstalled by the user";
     return scoped_ptr<ExtensionInfo>();
@@ -2047,12 +2041,7 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
     int install_flags,
     const std::string& install_parameter,
     base::DictionaryValue* extension_dict) {
-  // Leave the state blank for component extensions so that old chrome versions
-  // loading new profiles do not fail in GetInstalledExtensionInfo. Older
-  // Chrome versions would only check for an omitted state.
-  if (initial_state != Extension::ENABLED_COMPONENT)
-    extension_dict->Set(kPrefState, new base::FundamentalValue(initial_state));
-
+  extension_dict->Set(kPrefState, new base::FundamentalValue(initial_state));
   extension_dict->Set(kPrefLocation,
                       new base::FundamentalValue(extension->location()));
   extension_dict->Set(kPrefCreationFlags,

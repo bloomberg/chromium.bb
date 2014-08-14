@@ -1051,6 +1051,36 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ComponentAppBackgroundPage) {
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 }
 
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+                       ComponentExtensionRuntimeReload) {
+  // Ensure that we wait until the background page is run (to register the
+  // OnLaunched listener) before trying to open the application. This is similar
+  // to LoadAndLaunchPlatformApp, but we want to load as a component extension.
+  content::WindowedNotificationObserver app_loaded_observer(
+      content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+      content::NotificationService::AllSources());
+
+  const Extension* extension = LoadExtensionAsComponent(
+      test_data_dir_.AppendASCII("platform_apps").AppendASCII("component"));
+  ASSERT_TRUE(extension);
+
+  app_loaded_observer.Wait();
+
+  {
+    ExtensionTestMessageListener launched_listener("Launched", false);
+    OpenApplication(AppLaunchParams(
+        browser()->profile(), extension, LAUNCH_CONTAINER_NONE, NEW_WINDOW));
+    ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+  }
+
+  {
+    ASSERT_TRUE(ExecuteScriptInBackgroundPageNoWait(
+        extension->id(), "chrome.runtime.reload();"));
+    ExtensionTestMessageListener launched_listener("Launched", false);
+    ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+  }
+}
+
 // Fails on Win7. http://crbug.com/171450
 #if defined(OS_WIN)
 #define MAYBE_Messaging DISABLED_Messaging
