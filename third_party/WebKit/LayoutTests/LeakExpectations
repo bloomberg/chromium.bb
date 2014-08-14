@@ -51,10 +51,6 @@ crbug.com/385384 fast/dom/navigator-detached-no-crash.html [ Leak ]
 # Untriaged but known leaks which may be false positives.
 # -----------------------------------------------------------------
 
-crbug.com/398742 fast/workers/shared-worker-event-listener.html [ Leak ]
-crbug.com/398742 fast/workers/worker-crash-with-invalid-location.html [ Leak ]
-crbug.com/398742 http/tests/security/contentSecurityPolicy/1.1/child-src/worker-shared-allowed.html [ Leak ]
-
 crbug.com/364411 fast/frames/location-observe-callback-crash.html [ Leak ]
 
 crbug.com/364417 editing/selection/selection-in-iframe-removed-crash.html [ Leak ]
