@@ -453,25 +453,12 @@ void WizardController::ShowUserImageScreen() {
   }
   VLOG(1) << "Showing user image screen.";
 
-  bool profile_picture_enabled = true;
-  std::string user_id;
-  if (screen_parameters_.get()) {
-    screen_parameters_->GetBoolean("profile_picture_enabled",
-        &profile_picture_enabled);
-    screen_parameters_->GetString("user_id", &user_id);
-  }
-
   // Status area has been already shown at sign in screen so it
   // doesn't make sense to hide it here and then show again at user session as
   // this produces undesired UX transitions.
   SetStatusAreaVisible(true);
 
-  UserImageScreen* screen = GetUserImageScreen();
-  if (!user_id.empty())
-    screen->SetUserID(user_id);
-  screen->SetProfilePictureEnabled(profile_picture_enabled);
-
-  SetCurrentScreen(screen);
+  SetCurrentScreen(GetUserImageScreen());
 }
 
 void WizardController::ShowEulaScreen() {

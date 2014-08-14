@@ -220,8 +220,4 @@ void UserImageScreenHandler::HideCurtain() {
   CallJS("hideCurtain");
 }
 
-void UserImageScreenHandler::SetProfilePictureEnabled(bool enabled) {
-  CallJS("setProfilePictureEnabled", enabled);
-}
-
 }  // namespace chromeos

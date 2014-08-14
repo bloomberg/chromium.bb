@@ -43,8 +43,6 @@ class UserImageScreenHandler : public UserImageScreenActor,
   virtual void SendProfileImage(const std::string& data_url) OVERRIDE;
   virtual void OnProfileImageAbsent() OVERRIDE;
 
-  virtual void SetProfilePictureEnabled(bool enabled) OVERRIDE;
-
   virtual void SetCameraPresent(bool enabled) OVERRIDE;
 
   virtual void HideCurtain() OVERRIDE;

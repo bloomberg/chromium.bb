@@ -38,11 +38,6 @@ class UserImageScreen: public WizardScreen,
                   UserImageScreenActor* actor);
   virtual ~UserImageScreen();
 
-  // Indicates whether profile picture is enabled for given user.
-  void SetProfilePictureEnabled(bool support_profile_picture);
-  // Sets |user_id| of user that would have picture updated.
-  void SetUserID(const std::string& user_id);
-
   // WizardScreen implementation:
   virtual void PrepareToShow() OVERRIDE;
   virtual void Show() OVERRIDE;
@@ -128,15 +123,11 @@ class UserImageScreen: public WizardScreen,
   // Index of the selected user image.
   int selected_image_;
 
-  bool profile_picture_enabled_;
-
   // Encoded profile picture.
   std::string profile_picture_data_url_;
 
   // True if user has no custom profile picture.
   bool profile_picture_absent_;
-
-  std::string user_id_;
 
   // Timer used for waiting for user image sync.
   scoped_ptr<base::Timer> sync_timer_;

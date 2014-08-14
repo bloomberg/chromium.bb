@@ -62,13 +62,17 @@ UserImageScreen::UserImageScreen(ScreenObserver* screen_observer,
       actor_(actor),
       accept_photo_after_decoding_(false),
       selected_image_(user_manager::User::USER_IMAGE_INVALID),
-      profile_picture_enabled_(false),
       profile_picture_data_url_(url::kAboutBlankURL),
       profile_picture_absent_(false),
       is_screen_ready_(false),
       user_has_selected_image_(false) {
   actor_->SetDelegate(this);
-  SetProfilePictureEnabled(true);
+  notification_registrar_.Add(this,
+                              chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
+                              content::NotificationService::AllSources());
+  notification_registrar_.Add(this,
+                              chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
+                              content::NotificationService::AllSources());
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
                               content::NotificationService::AllSources());
@@ -209,45 +213,13 @@ void UserImageScreen::OnImageAccepted() {
 }
 
 
-void UserImageScreen::SetProfilePictureEnabled(bool profile_picture_enabled) {
-  if (profile_picture_enabled_ == profile_picture_enabled)
-    return;
-  profile_picture_enabled_ = profile_picture_enabled;
-  if (profile_picture_enabled) {
-    notification_registrar_.Add(this,
-                                chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
-                                content::NotificationService::AllSources());
-    notification_registrar_.Add(
-        this,
-        chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
-        content::NotificationService::AllSources());
-  } else {
-    notification_registrar_.Remove(this,
-                                   chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
-        content::NotificationService::AllSources());
-    notification_registrar_.Remove(
-        this,
-        chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
-        content::NotificationService::AllSources());
-  }
-  if (actor_)
-    actor_->SetProfilePictureEnabled(profile_picture_enabled);
-}
-
-void UserImageScreen::SetUserID(const std::string& user_id) {
-  DCHECK(!user_id.empty());
-  user_id_ = user_id;
-}
-
 void UserImageScreen::PrepareToShow() {
   if (actor_)
     actor_->PrepareToShow();
 }
 
 const user_manager::User* UserImageScreen::GetUser() {
-  if (user_id_.empty())
-    return UserManager::Get()->GetLoggedInUser();
-  return UserManager::Get()->FindUser(user_id_);
+  return UserManager::Get()->GetLoggedInUser();
 }
 
 UserImageManager* UserImageScreen::GetUserImageManager() {
@@ -263,8 +235,7 @@ void UserImageScreen::Show() {
     return;
 
   DCHECK(!policy_registrar_);
-  Profile* profile = ProfileHelper::Get()->GetProfileByUserUnsafe(GetUser());
-  if (profile) {
+  if (Profile* profile = ProfileHelper::Get()->GetProfileByUser(GetUser())) {
     policy::PolicyService* policy_service =
         policy::ProfilePolicyConnectorFactory::GetForProfile(profile)->
             policy_service();
@@ -309,19 +280,17 @@ void UserImageScreen::Show() {
   }
   CameraPresenceNotifier::GetInstance()->AddObserver(this);
   actor_->Show();
-  actor_->SetProfilePictureEnabled(profile_picture_enabled_);
 
   selected_image_ = GetUser()->image_index();
   actor_->SelectImage(selected_image_);
 
-  if (profile_picture_enabled_) {
-    // Start fetching the profile image.
-    GetUserImageManager()->DownloadProfileImage(kProfileDownloadReason);
-  }
+  // Start fetching the profile image.
+  GetUserImageManager()->DownloadProfileImage(kProfileDownloadReason);
 }
 
 void UserImageScreen::Hide() {
   CameraPresenceNotifier::GetInstance()->RemoveObserver(this);
+  notification_registrar_.RemoveAll();
   if (actor_)
     actor_->Hide();
 }
@@ -338,7 +307,6 @@ void UserImageScreen::OnActorDestroyed(UserImageScreenActor* actor) {
 void UserImageScreen::Observe(int type,
                               const content::NotificationSource& source,
                               const content::NotificationDetails& details) {
-  DCHECK(profile_picture_enabled_);
   switch (type) {
     case chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED: {
       // We've got a new profile image.

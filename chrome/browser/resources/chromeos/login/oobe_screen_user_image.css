@@ -78,16 +78,16 @@
 /* White background for spinner styled like user image */
 #profile-image .spinner-bg {
   background-color: white;
+  display: none;
   height: 50px;
   left: 3px;
   position: absolute;
   top: 3px;
-  visibility: hidden;
   width: 50px;
 }
 
 .profile-image-loading #profile-image .spinner-bg {
-  visibility: visible;
+  display: block;
 }
 
 #profile-image .spinner {

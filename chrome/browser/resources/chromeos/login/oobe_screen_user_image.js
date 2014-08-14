@@ -61,11 +61,6 @@ cr.define('login', function() {
     selectedUserImage_: -1,
 
     /**
-     * Indicates if profile picture should be displayed on current screen.
-     */
-    profilePictureEnabled_: false,
-
-    /**
      * URL for profile picture.
      */
     profileImageUrl_: null,
@@ -97,9 +92,25 @@ cr.define('login', function() {
           loadTimeData.getString('takePhoto'),
           loadTimeData.getString('photoFromCamera'));
 
-      this.setProfilePictureEnabled_(true);
-
       this.profileImageLoading = true;
+
+      // Profile image data (if present).
+      this.profileImage_ = imageGrid.addItem(
+          ButtonImages.PROFILE_PICTURE,           // Image URL.
+          loadTimeData.getString('profilePhoto'), // Title.
+          undefined,                              // Click handler.
+          0,                                      // Position.
+          function(el) {
+            // Custom decorator for Profile image element.
+            var spinner = el.ownerDocument.createElement('div');
+            spinner.className = 'spinner';
+            var spinnerBg = el.ownerDocument.createElement('div');
+            spinnerBg.className = 'spinner-bg';
+            spinnerBg.appendChild(spinner);
+            el.appendChild(spinnerBg);
+            el.id = 'profile-image';
+          });
+      this.profileImage_.type = 'profile';
 
       $('take-photo').addEventListener(
           'click', this.handleTakePhoto_.bind(this));
@@ -164,8 +175,8 @@ cr.define('login', function() {
     },
     set profileImageLoading(value) {
       this.profileImageLoading_ = value;
-      $('user-image-screen-main').classList[
-          value ? 'add' : 'remove']('profile-image-loading');
+      $('user-image-screen-main').classList.toggle('profile-image-loading',
+                                                   value);
       if (value)
         announceAccessibleMessage(loadTimeData.getString('syncingPreferences'));
       this.updateProfileImageCaption_();
@@ -349,32 +360,8 @@ cr.define('login', function() {
      * @private
      */
     setProfilePictureEnabled_: function(enabled) {
-      if (this.profilePictureEnabled_ == enabled)
-        return;
-      this.profilePictureEnabled_ = enabled;
       var imageGrid = $('user-image-grid');
       if (enabled) {
-        var url = ButtonImages.PROFILE_PICTURE;
-        if (!this.profileImageLoading && this.profileImageUrl_ !== null) {
-          url = this.profileImageUrl_;
-        }
-        // Profile image data (if present).
-        this.profileImage_ = imageGrid.addItem(
-            url,                                    // Image URL.
-            loadTimeData.getString('profilePhoto'), // Title.
-            undefined,                              // Click handler.
-            0,                                      // Position.
-            this.profileImageLoading ? function(el) {
-              // Custom decorator for Profile image element.
-              var spinner = el.ownerDocument.createElement('div');
-              spinner.className = 'spinner';
-              var spinnerBg = el.ownerDocument.createElement('div');
-              spinnerBg.className = 'spinner-bg';
-              spinnerBg.appendChild(spinner);
-              el.appendChild(spinnerBg);
-              el.id = 'profile-image';
-            } : undefined);
-        this.profileImage_.type = 'profile';
       } else {
         imageGrid.removeItem(this.profileImage_);
       }

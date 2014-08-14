@@ -68,9 +68,6 @@ class UserImageScreenActor {
   // Indicates that there is no custom profile image for the user.
   virtual void OnProfileImageAbsent() = 0;
 
-  // Enables or disables profile picture.
-  virtual void SetProfilePictureEnabled(bool enabled) = 0;
-
   // Sends result of camera check
   virtual void SetCameraPresent(bool enabled) = 0;
 
