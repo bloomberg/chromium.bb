@@ -135,6 +135,7 @@ WindowManagerImpl::WindowManagerImpl() {
 
 WindowManagerImpl::~WindowManagerImpl() {
   overview_.reset();
+  split_view_controller_.reset();
   mru_window_tracker_.reset();
   if (container_) {
     container_->RemoveObserver(this);
