@@ -44,8 +44,6 @@
 #include "public/web/WebViewClient.h"
 #include "web/WebViewImpl.h"
 
-using namespace blink;
-
 namespace blink {
 
 ExternalPopupMenu::ExternalPopupMenu(LocalFrame& frame, PopupMenuClient* popupMenuClient, WebViewImpl& webView)
@@ -202,7 +200,7 @@ void ExternalPopupMenu::getPopupMenuInfo(WebPopupMenuInfo* info)
             popupItem.type = WebMenuItemInfo::Option;
         popupItem.enabled = m_popupMenuClient->itemIsEnabled(i);
         popupItem.checked = m_popupMenuClient->itemIsSelected(i);
-        if (style.textDirection() == blink::RTL)
+        if (style.textDirection() == RTL)
             popupItem.textDirection = WebTextDirectionRightToLeft;
         else
             popupItem.textDirection = WebTextDirectionLeftToRight;
@@ -212,7 +210,7 @@ void ExternalPopupMenu::getPopupMenuInfo(WebPopupMenuInfo* info)
     info->itemHeight = m_popupMenuClient->menuStyle().font().fontMetrics().height();
     info->itemFontSize = static_cast<int>(m_popupMenuClient->menuStyle().font().fontDescription().computedSize());
     info->selectedIndex = toExternalPopupMenuItemIndex(m_popupMenuClient->selectedIndex());
-    info->rightAligned = m_popupMenuClient->menuStyle().textDirection() == blink::RTL;
+    info->rightAligned = m_popupMenuClient->menuStyle().textDirection() == RTL;
     info->allowMultipleSelection = m_popupMenuClient->multiple();
     info->items = items;
 }
@@ -252,4 +250,4 @@ int ExternalPopupMenu::toExternalPopupMenuItemIndex(int popupMenuItemIndex)
     return -1;
 }
 
-}
+} // namespace blink

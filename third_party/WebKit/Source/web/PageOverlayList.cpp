@@ -112,7 +112,7 @@ void PageOverlayList::update()
         m_pageOverlays[i]->update();
 }
 
-void PageOverlayList::paintWebFrame(blink::GraphicsContext& gc)
+void PageOverlayList::paintWebFrame(GraphicsContext& gc)
 {
     for (size_t i = 0; i < m_pageOverlays.size(); ++i)
         m_pageOverlays[i]->paintWebFrame(gc);
@@ -127,7 +127,7 @@ size_t PageOverlayList::find(WebPageOverlay* overlay)
     return WTF::kNotFound;
 }
 
-size_t PageOverlayList::findGraphicsLayer(blink::GraphicsLayer* layer)
+size_t PageOverlayList::findGraphicsLayer(GraphicsLayer* layer)
 {
     for (size_t i = 0; i < m_pageOverlays.size(); ++i) {
         if (m_pageOverlays[i]->graphicsLayer() == layer)

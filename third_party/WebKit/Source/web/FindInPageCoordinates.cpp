@@ -44,8 +44,6 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/IntPoint.h"
 
-using namespace blink;
-
 namespace blink {
 
 static const RenderBlock* enclosingScrollableAncestor(const RenderObject* renderer)

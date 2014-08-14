@@ -41,8 +41,6 @@
 #include "web/WorkerPermissionClient.h"
 #include "wtf/text/WTFString.h"
 
-using namespace blink;
-
 namespace blink {
 
 PassOwnPtr<FileSystemClient> LocalFileSystemClient::create()
@@ -66,7 +64,7 @@ bool LocalFileSystemClient::requestFileSystemAccessSync(ExecutionContext* contex
     return WorkerPermissionClient::from(*toWorkerGlobalScope(context))->requestFileSystemAccessSync();
 }
 
-void LocalFileSystemClient::requestFileSystemAccessAsync(ExecutionContext* context, PassOwnPtr<blink::PermissionCallbacks> callbacks)
+void LocalFileSystemClient::requestFileSystemAccessAsync(ExecutionContext* context, PassOwnPtr<PermissionCallbacks> callbacks)
 {
     ASSERT(context);
     if (!context->isDocument()) {

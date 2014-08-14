@@ -33,8 +33,6 @@
 
 #include "web/CompositionUnderlineBuilder.h"
 
-using namespace blink;
-
 namespace blink {
 
 CompositionUnderlineVectorBuilder::CompositionUnderlineVectorBuilder(

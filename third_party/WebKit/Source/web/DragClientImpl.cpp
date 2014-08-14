@@ -47,8 +47,6 @@
 #include "wtf/Assertions.h"
 #include "wtf/RefPtr.h"
 
-using namespace blink;
-
 namespace blink {
 
 DragDestinationAction DragClientImpl::actionMaskForDrag(DragData*)

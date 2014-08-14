@@ -29,8 +29,6 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "web/WebViewImpl.h"
 
-using namespace blink;
-
 namespace blink {
 
 GraphicsLayerFactoryChromium::GraphicsLayerFactoryChromium(WebViewImpl* webView)

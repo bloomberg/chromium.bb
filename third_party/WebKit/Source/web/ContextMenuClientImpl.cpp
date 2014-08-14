@@ -80,8 +80,6 @@
 #include "web/WebViewImpl.h"
 #include "wtf/text/WTFString.h"
 
-using namespace blink;
-
 namespace blink {
 
 // Figure out the URL of a page or subframe. Returns |page_type| as the type,
@@ -179,7 +177,7 @@ static String selectMisspellingAsync(LocalFrame* selectedFrame, String& descript
     return markerRange->text();
 }
 
-void ContextMenuClientImpl::showContextMenu(const blink::ContextMenu* defaultMenu)
+void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
 {
     // Displaying the context menu in this function is a big hack as we don't
     // have context, i.e. whether this is being invoked via a script or in
@@ -440,7 +438,7 @@ static void populateSubMenuItems(const Vector<ContextMenuItem>& inputMenu, WebVe
     subMenuItems.swap(outputItems);
 }
 
-void ContextMenuClientImpl::populateCustomMenuItems(const blink::ContextMenu* defaultMenu, WebContextMenuData* data)
+void ContextMenuClientImpl::populateCustomMenuItems(const ContextMenu* defaultMenu, WebContextMenuData* data)
 {
     populateSubMenuItems(defaultMenu->items(), data->customItems);
 }

@@ -43,7 +43,7 @@ GeolocationClientProxy::~GeolocationClientProxy()
 {
 }
 
-void GeolocationClientProxy::setController(blink::GeolocationController* controller)
+void GeolocationClientProxy::setController(GeolocationController* controller)
 {
     // We support there not being a client, provided we don't do any Geolocation.
     if (m_client) {
@@ -73,25 +73,25 @@ void GeolocationClientProxy::setEnableHighAccuracy(bool highAccuracy)
     m_client->setEnableHighAccuracy(highAccuracy);
 }
 
-blink::GeolocationPosition* GeolocationClientProxy::lastPosition()
+GeolocationPosition* GeolocationClientProxy::lastPosition()
 {
     WebGeolocationPosition webPosition;
     if (m_client->lastPosition(webPosition))
-        m_lastPosition = static_cast<blink::GeolocationPosition*>(webPosition);
+        m_lastPosition = static_cast<GeolocationPosition*>(webPosition);
     else
         m_lastPosition.clear();
 
     return m_lastPosition.get();
 }
 
-void GeolocationClientProxy::requestPermission(blink::Geolocation* geolocation)
+void GeolocationClientProxy::requestPermission(Geolocation* geolocation)
 {
     m_client->requestPermission(WebGeolocationPermissionRequest(geolocation));
 }
 
-void GeolocationClientProxy::cancelPermissionRequest(blink::Geolocation* geolocation)
+void GeolocationClientProxy::cancelPermissionRequest(Geolocation* geolocation)
 {
     m_client->cancelPermissionRequest(WebGeolocationPermissionRequest(geolocation));
 }
 
-}
+} // namespace blink

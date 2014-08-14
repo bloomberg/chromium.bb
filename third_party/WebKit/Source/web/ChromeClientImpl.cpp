@@ -108,11 +108,9 @@
 #include "wtf/text/StringConcatenate.h"
 #include "wtf/unicode/CharacterNames.h"
 
-using namespace blink;
-
 namespace blink {
 
-// Converts a blink::AXObjectCache::AXNotification to a blink::WebAXEvent
+// Converts a AXObjectCache::AXNotification to a WebAXEvent
 static WebAXEvent toWebAXEvent(AXObjectCache::AXNotification notification)
 {
     // These enums have the same values; enforced in AssertMatchingEnums.cpp.
@@ -206,7 +204,7 @@ void ChromeClientImpl::focusedNodeChanged(Node* node)
     m_webView->client()->setKeyboardFocusURL(focusURL);
 }
 
-void ChromeClientImpl::focusedFrameChanged(blink::LocalFrame* frame)
+void ChromeClientImpl::focusedFrameChanged(LocalFrame* frame)
 {
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(frame);
     if (webframe && webframe->client())
@@ -386,7 +384,7 @@ bool ChromeClientImpl::runBeforeUnloadConfirmPanel(const String& message, LocalF
     bool isReload = false;
     WebDataSource* ds = webframe->provisionalDataSource();
     if (ds)
-        isReload = (ds->navigationType() == blink::WebNavigationTypeReload);
+        isReload = (ds->navigationType() == WebNavigationTypeReload);
 
     if (webframe->client())
         return webframe->client()->runModalBeforeUnloadDialog(isReload, message);
@@ -639,7 +637,7 @@ void ChromeClientImpl::enumerateChosenDirectory(FileChooser* fileChooser)
         chooserCompletion->didChooseFile(WebVector<WebString>());
 }
 
-void ChromeClientImpl::setCursor(const blink::Cursor& cursor)
+void ChromeClientImpl::setCursor(const Cursor& cursor)
 {
     setCursor(WebCursorInfo(cursor));
 }
@@ -755,7 +753,7 @@ bool ChromeClientImpl::shouldRunModalDialogDuringPageDismissal(const DialogType&
     int dismissal = static_cast<int>(dismissalType) - 1; // Exclude NoDismissal.
     ASSERT_WITH_SECURITY_IMPLICATION(0 <= dismissal && dismissal < static_cast<int>(arraysize(kDismissals)));
 
-    blink::Platform::current()->histogramEnumeration("Renderer.ModalDialogsDuringPageDismissal", dismissal * arraysize(kDialogs) + dialog, arraysize(kDialogs) * arraysize(kDismissals));
+    Platform::current()->histogramEnumeration("Renderer.ModalDialogsDuringPageDismissal", dismissal * arraysize(kDialogs) + dialog, arraysize(kDialogs) * arraysize(kDismissals));
 
     String message = String("Blocked ") + kDialogs[dialog] + "('" + dialogMessage + "') during " + kDismissals[dismissal] + ".";
     m_webView->mainFrame()->addMessageToConsole(WebConsoleMessage(WebConsoleMessage::LevelError, message));
@@ -833,7 +831,7 @@ void ChromeClientImpl::handleKeyboardEventOnTextField(HTMLInputElement& inputEle
 // FIXME: Remove this code once we have input routing in the browser
 // process. See http://crbug.com/339659.
 void ChromeClientImpl::forwardInputEvent(
-    blink::Frame* frame, blink::Event* event)
+    Frame* frame, Event* event)
 {
     // FIXME: Input event forwarding to out-of-process frames is broken until
     // WebRemoteFrameImpl has a WebFrameClient.
@@ -846,17 +844,17 @@ void ChromeClientImpl::forwardInputEvent(
     // need to forward input events across processes.
     // FIXME: Add a check for out-of-process iframes enabled.
     if (event->isKeyboardEvent()) {
-        WebKeyboardEventBuilder webEvent(*static_cast<blink::KeyboardEvent*>(event));
+        WebKeyboardEventBuilder webEvent(*static_cast<KeyboardEvent*>(event));
         webFrame->client()->forwardInputEvent(&webEvent);
     } else if (event->isMouseEvent()) {
-        WebMouseEventBuilder webEvent(webFrame->frameView(), frame->ownerRenderer(), *static_cast<blink::MouseEvent*>(event));
+        WebMouseEventBuilder webEvent(webFrame->frameView(), frame->ownerRenderer(), *static_cast<MouseEvent*>(event));
         // Internal Blink events should not be forwarded.
         if (webEvent.type == WebInputEvent::Undefined)
             return;
 
         webFrame->client()->forwardInputEvent(&webEvent);
     } else if (event->isWheelEvent()) {
-        WebMouseWheelEventBuilder webEvent(webFrame->frameView(), frame->ownerRenderer(), *static_cast<blink::WheelEvent*>(event));
+        WebMouseWheelEventBuilder webEvent(webFrame->frameView(), frame->ownerRenderer(), *static_cast<WheelEvent*>(event));
         if (webEvent.type == WebInputEvent::Undefined)
             return;
         webFrame->client()->forwardInputEvent(&webEvent);

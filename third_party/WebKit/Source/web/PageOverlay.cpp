@@ -39,8 +39,6 @@
 #include "public/web/WebViewClient.h"
 #include "web/WebViewImpl.h"
 
-using namespace blink;
-
 namespace blink {
 
 namespace {
@@ -64,7 +62,7 @@ PageOverlay::PageOverlay(WebViewImpl* viewImpl, WebPageOverlay* overlay)
 {
 }
 
-class OverlayGraphicsLayerClientImpl : public blink::GraphicsLayerClient {
+class OverlayGraphicsLayerClientImpl : public GraphicsLayerClient {
 public:
     static PassOwnPtr<OverlayGraphicsLayerClientImpl> create(WebPageOverlay* overlay)
     {
@@ -102,7 +100,7 @@ void PageOverlay::clear()
 
     if (m_layer) {
         m_layer->removeFromParent();
-        if (blink::Page* page = m_viewImpl->page())
+        if (Page* page = m_viewImpl->page())
             page->inspectorController().didRemovePageOverlay(m_layer.get());
         m_layer = nullptr;
         m_layerClient = nullptr;
@@ -118,7 +116,7 @@ void PageOverlay::update()
         m_layer = GraphicsLayer::create(m_viewImpl->graphicsLayerFactory(), m_layerClient.get());
         m_layer->setDrawsContent(true);
 
-        if (blink::Page* page = m_viewImpl->page())
+        if (Page* page = m_viewImpl->page())
             page->inspectorController().willAddPageOverlay(m_layer.get());
 
         // This is required for contents of overlay to stay in sync with the page while scrolling.

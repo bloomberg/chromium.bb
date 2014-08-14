@@ -39,9 +39,6 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WorkerPermissionClient.h"
 
-
-using namespace blink;
-
 namespace blink {
 
 IndexedDBClient* IndexedDBClientImpl::create()

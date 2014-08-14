@@ -52,8 +52,6 @@
 #include "web/WebViewImpl.h"
 #include "wtf/CurrentTime.h"
 
-using namespace blink;
-
 namespace blink {
 
 class WebViewImpl;
@@ -360,4 +358,4 @@ WebLayer* LinkHighlight::layer()
     return clipLayer();
 }
 
-} // namespace WeKit
+} // namespace blink

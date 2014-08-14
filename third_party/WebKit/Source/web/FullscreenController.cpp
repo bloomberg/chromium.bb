@@ -42,8 +42,6 @@
 #include "web/WebSettingsImpl.h"
 #include "web/WebViewImpl.h"
 
-using namespace blink;
-
 namespace blink {
 
 PassOwnPtr<FullscreenController> FullscreenController::create(WebViewImpl* webViewImpl)
@@ -153,7 +151,7 @@ void FullscreenController::didExitFullScreen()
     m_fullScreenFrame.clear();
 }
 
-void FullscreenController::enterFullScreenForElement(blink::Element* element)
+void FullscreenController::enterFullScreenForElement(Element* element)
 {
     // We are already transitioning to fullscreen for a different element.
     if (m_provisionalFullScreenElement) {
@@ -176,7 +174,7 @@ void FullscreenController::enterFullScreenForElement(blink::Element* element)
     }
 }
 
-void FullscreenController::exitFullScreenForElement(blink::Element* element)
+void FullscreenController::exitFullScreenForElement(Element* element)
 {
     // The client is exiting full screen, so don't send a notification.
     if (m_isCancelingFullScreen)
@@ -185,5 +183,5 @@ void FullscreenController::exitFullScreenForElement(blink::Element* element)
         client->exitFullScreen();
 }
 
-}
+} // namespace blink
 

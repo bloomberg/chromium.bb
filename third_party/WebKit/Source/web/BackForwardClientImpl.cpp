@@ -34,8 +34,6 @@
 #include "public/web/WebViewClient.h"
 #include "web/WebViewImpl.h"
 
-using namespace blink;
-
 namespace blink {
 
 BackForwardClientImpl::BackForwardClientImpl(WebViewImpl* webView)

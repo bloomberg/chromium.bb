@@ -38,8 +38,6 @@
 #include "web/WebLocalFrameImpl.h"
 #include "wtf/RefPtr.h"
 
-using namespace blink;
-
 namespace blink {
 
 UserMediaClientImpl::UserMediaClientImpl(WebLocalFrameImpl* webFrame)

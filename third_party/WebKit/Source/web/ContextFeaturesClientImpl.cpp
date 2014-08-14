@@ -37,8 +37,6 @@
 #include "public/web/WebPermissionClient.h"
 #include "web/WebLocalFrameImpl.h"
 
-using namespace blink;
-
 namespace blink {
 
 class ContextFeaturesCache FINAL : public NoBaseWillBeGarbageCollectedFinalized<ContextFeaturesCache>, public DocumentSupplement {

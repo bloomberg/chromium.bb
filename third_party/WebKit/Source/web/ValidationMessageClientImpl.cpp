@@ -37,8 +37,6 @@
 #include "web/WebViewImpl.h"
 #include "wtf/CurrentTime.h"
 
-using namespace blink;
-
 namespace blink {
 
 ValidationMessageClientImpl::ValidationMessageClientImpl(WebViewImpl& webView)
@@ -152,4 +150,4 @@ void ValidationMessageClientImpl::trace(Visitor* visitor)
     ValidationMessageClient::trace(visitor);
 }
 
-}
+} // namespace blink

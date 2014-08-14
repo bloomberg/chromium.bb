@@ -48,8 +48,6 @@
 #include "web/WebLocalFrameImpl.h"
 #include "wtf/Threading.h"
 
-using namespace blink;
-
 namespace blink {
 
 PassOwnPtrWillBeRawPtr<StorageQuotaClientImpl> StorageQuotaClientImpl::create()

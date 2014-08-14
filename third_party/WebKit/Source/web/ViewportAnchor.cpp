@@ -36,8 +36,6 @@
 #include "core/page/EventHandler.h"
 #include "core/rendering/HitTestResult.h"
 
-using namespace blink;
-
 namespace blink {
 
 namespace {

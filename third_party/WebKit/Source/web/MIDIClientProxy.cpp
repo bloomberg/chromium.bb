@@ -42,7 +42,7 @@ MIDIClientProxy::MIDIClientProxy(WebMIDIClient* client)
 {
 }
 
-void MIDIClientProxy::requestSysexPermission(blink::MIDIAccessInitializer* initializer)
+void MIDIClientProxy::requestSysexPermission(MIDIAccessInitializer* initializer)
 {
     if (m_client)
         m_client->requestSysexPermission(WebMIDIPermissionRequest(initializer));
@@ -50,7 +50,7 @@ void MIDIClientProxy::requestSysexPermission(blink::MIDIAccessInitializer* initi
         initializer->setSysexEnabled(false);
 }
 
-void MIDIClientProxy::cancelSysexPermissionRequest(blink::MIDIAccessInitializer* initializer)
+void MIDIClientProxy::cancelSysexPermissionRequest(MIDIAccessInitializer* initializer)
 {
     if (m_client)
         m_client->cancelSysexPermissionRequest(WebMIDIPermissionRequest(initializer));

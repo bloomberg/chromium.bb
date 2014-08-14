@@ -44,8 +44,6 @@
 #include "web/WebInputEventConversion.h"
 #include "wtf/CurrentTime.h"
 
-using namespace blink;
-
 namespace blink {
 
 static inline FrameView* mainFrameView(Page* page)
@@ -218,4 +216,4 @@ bool PageWidgetEventHandler::handleTouchEvent(LocalFrame& mainFrame, const WebTo
     return mainFrame.eventHandler().handleTouchEvent(PlatformTouchEventBuilder(mainFrame.view(), event));
 }
 
-}
+} // namespace blink

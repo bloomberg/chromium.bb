@@ -38,8 +38,6 @@
 #include "public/web/WebServiceWorkerContextClient.h"
 #include "wtf/PassOwnPtr.h"
 
-using namespace blink;
-
 namespace blink {
 
 PassOwnPtrWillBeRawPtr<ServiceWorkerGlobalScopeClient> ServiceWorkerGlobalScopeClientImpl::create(WebServiceWorkerContextClient& client)

@@ -38,8 +38,6 @@
 #include "web/WebTextCheckingCompletionImpl.h"
 #include "web/WebViewImpl.h"
 
-using namespace blink;
-
 namespace blink {
 
 SpellCheckerClientImpl::SpellCheckerClientImpl(WebViewImpl* webview)
@@ -151,7 +149,7 @@ void SpellCheckerClientImpl::checkSpellingOfString(const String& text, int* miss
         *misspellingLength = spellLength;
 }
 
-void SpellCheckerClientImpl::requestCheckingOfString(WTF::PassRefPtr<blink::TextCheckingRequest> request)
+void SpellCheckerClientImpl::requestCheckingOfString(WTF::PassRefPtr<TextCheckingRequest> request)
 {
     if (m_webView->spellCheckClient()) {
         const String& text = request->data().text();
@@ -232,4 +230,4 @@ bool SpellCheckerClientImpl::spellingUIIsShowing()
     return false;
 }
 
-} // namesace WebKit
+} // namespace blink

@@ -34,8 +34,6 @@
 #include "platform/Length.h"
 #include "wtf/Assertions.h"
 
-using namespace blink;
-
 namespace blink {
 
 static const float defaultMinimumScale = 0.25f;

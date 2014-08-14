@@ -44,7 +44,7 @@ PrerendererClientImpl::PrerendererClientImpl(WebPrerendererClient* client)
 {
 }
 
-void PrerendererClientImpl::willAddPrerender(blink::Prerender* prerender)
+void PrerendererClientImpl::willAddPrerender(Prerender* prerender)
 {
     if (!m_client)
         return;
@@ -52,4 +52,4 @@ void PrerendererClientImpl::willAddPrerender(blink::Prerender* prerender)
     m_client->willAddPrerender(&webPrerender);
 }
 
-}
+} // namespace blink

@@ -14,42 +14,42 @@ RemoteFrameClient::RemoteFrameClient(WebRemoteFrameImpl* webFrame)
 {
 }
 
-blink::Frame* RemoteFrameClient::opener() const
+Frame* RemoteFrameClient::opener() const
 {
     return toWebCoreFrame(m_webFrame->opener());
 }
 
-void RemoteFrameClient::setOpener(blink::Frame*)
+void RemoteFrameClient::setOpener(Frame*)
 {
     // FIXME: Implement.
 }
 
-blink::Frame* RemoteFrameClient::parent() const
+Frame* RemoteFrameClient::parent() const
 {
     return toWebCoreFrame(m_webFrame->parent());
 }
 
-blink::Frame* RemoteFrameClient::top() const
+Frame* RemoteFrameClient::top() const
 {
     return toWebCoreFrame(m_webFrame->top());
 }
 
-blink::Frame* RemoteFrameClient::previousSibling() const
+Frame* RemoteFrameClient::previousSibling() const
 {
     return toWebCoreFrame(m_webFrame->previousSibling());
 }
 
-blink::Frame* RemoteFrameClient::nextSibling() const
+Frame* RemoteFrameClient::nextSibling() const
 {
     return toWebCoreFrame(m_webFrame->nextSibling());
 }
 
-blink::Frame* RemoteFrameClient::firstChild() const
+Frame* RemoteFrameClient::firstChild() const
 {
     return toWebCoreFrame(m_webFrame->firstChild());
 }
 
-blink::Frame* RemoteFrameClient::lastChild() const
+Frame* RemoteFrameClient::lastChild() const
 {
     return toWebCoreFrame(m_webFrame->lastChild());
 }

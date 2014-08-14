@@ -11,15 +11,13 @@
 #include "public/web/WebFrameClient.h"
 #include "web/WebLocalFrameImpl.h"
 
-using namespace blink;
-
 namespace blink {
 
 MediaKeysClientImpl::MediaKeysClientImpl()
 {
 }
 
-PassOwnPtr<WebContentDecryptionModule> MediaKeysClientImpl::createContentDecryptionModule(blink::ExecutionContext* executionContext, const String& keySystem)
+PassOwnPtr<WebContentDecryptionModule> MediaKeysClientImpl::createContentDecryptionModule(ExecutionContext* executionContext, const String& keySystem)
 {
     Document* document = toDocument(executionContext);
     WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());

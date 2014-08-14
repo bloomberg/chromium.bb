@@ -51,9 +51,6 @@
 #include "wtf/HashSet.h"
 #include "wtf/text/WTFString.h"
 
-using namespace blink;
-using namespace WTF;
-
 namespace blink {
 
 namespace {
@@ -301,7 +298,7 @@ AssociatedURLLoader::~AssociatedURLLoader()
 }
 
 #define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, webcore_name) \
-    COMPILE_ASSERT(static_cast<int>(blink::webkit_name) == static_cast<int>(blink::webcore_name), mismatching_enums)
+    COMPILE_ASSERT(static_cast<int>(webkit_name) == static_cast<int>(webcore_name), mismatching_enums)
 
 COMPILE_ASSERT_MATCHING_ENUM(WebURLLoaderOptions::CrossOriginRequestPolicyDeny, DenyCrossOriginRequests);
 COMPILE_ASSERT_MATCHING_ENUM(WebURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl, UseAccessControl);
@@ -340,8 +337,8 @@ void AssociatedURLLoader::loadAsynchronously(const WebURLRequest& request, WebUR
 
     if (allowLoad) {
         ThreadableLoaderOptions options;
-        options.preflightPolicy = static_cast<blink::PreflightPolicy>(m_options.preflightPolicy);
-        options.crossOriginRequestPolicy = static_cast<blink::CrossOriginRequestPolicy>(m_options.crossOriginRequestPolicy);
+        options.preflightPolicy = static_cast<PreflightPolicy>(m_options.preflightPolicy);
+        options.crossOriginRequestPolicy = static_cast<CrossOriginRequestPolicy>(m_options.crossOriginRequestPolicy);
 
         ResourceLoaderOptions resourceLoaderOptions;
         resourceLoaderOptions.sniffContent = m_options.sniffContent ? SniffContent : DoNotSniffContent;
@@ -349,11 +346,11 @@ void AssociatedURLLoader::loadAsynchronously(const WebURLRequest& request, WebUR
         resourceLoaderOptions.dataBufferingPolicy = DoNotBufferData;
 
         const ResourceRequest& webcoreRequest = newRequest.toResourceRequest();
-        if (webcoreRequest.requestContext() == blink::WebURLRequest::RequestContextUnspecified) {
+        if (webcoreRequest.requestContext() == WebURLRequest::RequestContextUnspecified) {
             // FIXME: We load URLs without setting a TargetType (and therefore a request context) in several
             // places in content/ (P2PPortAllocatorSession::AllocateLegacyRelaySession, for example). Remove
             // this once those places are patched up.
-            newRequest.setRequestContext(blink::WebURLRequest::RequestContextInternal);
+            newRequest.setRequestContext(WebURLRequest::RequestContextInternal);
         }
 
         Document* webcoreDocument = m_frameImpl->frame()->document();

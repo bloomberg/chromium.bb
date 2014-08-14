@@ -57,8 +57,6 @@
 #include "wtf/CurrentTime.h"
 #include <limits>
 
-using namespace blink;
-
 namespace blink {
 
 using namespace WTF::Unicode;

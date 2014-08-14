@@ -37,8 +37,6 @@
 #include "core/frame/Settings.h"
 #include "web/PopupContainer.h"
 
-using namespace blink;
-
 namespace blink {
 
 PopupMenuChromium::PopupMenuChromium(LocalFrame& frame, PopupMenuClient* client)
