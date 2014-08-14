@@ -8311,6 +8311,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_PRINT_PREVIEW_ADVANCED_SETTINGS_DIALOG_CONFIRM" desc="In title case: The text for the accept button on the printer advanced settings dialog.">
           Apply
         </message>
+        <message name="IDS_PRINT_PREVIEW_ADVANCED_OPTIONS_LABEL" desc="Printer advanced options section label.">
+          Advanced
+        </message>
+        <message name="IDS_PRINT_PREVIEW_SHOW_ADVANCED_OPTIONS" desc="The text for the button to open the printer's advanced settings dialog.">
+          Change printer options...
+        </message>
       </if>
 
       <!-- Load State -->

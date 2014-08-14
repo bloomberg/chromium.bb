@@ -159,6 +159,15 @@ cr.define('print_preview', function() {
     this.addChild(this.otherOptionsSettings_);
 
     /**
+     * Component that renders the advanced options button.
+     * @type {!print_preview.AdvancedOptionsSettings}
+     * @private
+     */
+    this.advancedOptionsSettings_ = new print_preview.AdvancedOptionsSettings(
+        this.destinationStore_);
+    this.addChild(this.advancedOptionsSettings_);
+
+    /**
      * Component used to search for print destinations.
      * @type {!print_preview.AdvancedSettings}
      * @private
@@ -383,6 +392,11 @@ cr.define('print_preview', function() {
           print_preview.DestinationListItem.EventType.REGISTER_PROMO_CLICKED,
           this.onCloudPrintRegisterPromoClick_.bind(this));
 
+      this.tracker.add(
+          this.advancedOptionsSettings_,
+          print_preview.AdvancedOptionsSettings.EventType.BUTTON_ACTIVATED,
+          this.onAdvancedOptionsButtonActivated_.bind(this));
+
       // TODO(rltoscano): Move no-destinations-promo into its own component
       // instead being part of PrintPreview.
       this.tracker.add(
@@ -411,6 +425,7 @@ cr.define('print_preview', function() {
       this.colorSettings_.decorate($('color-settings'));
       this.marginSettings_.decorate($('margin-settings'));
       this.otherOptionsSettings_.decorate($('other-options-settings'));
+      this.advancedOptionsSettings_.decorate($('advanced-options-settings'));
       this.advancedSettings_.decorate($('advanced-settings'));
       this.previewArea_.decorate($('preview-area'));
 
@@ -436,6 +451,7 @@ cr.define('print_preview', function() {
       this.colorSettings_.isEnabled = isEnabled;
       this.marginSettings_.isEnabled = isEnabled;
       this.otherOptionsSettings_.isEnabled = isEnabled;
+      this.advancedOptionsSettings_.isEnabled = isEnabled;
     },
 
     /**
@@ -851,6 +867,16 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * Called when the destination settings' change button is activated.
+     * Displays the destination search component.
+     * @private
+     */
+    onAdvancedOptionsButtonActivated_: function() {
+      this.advancedSettings_.showForDestination(
+          this.destinationStore_.selectedDestination);
+    },
+
+    /**
      * Called when the destination search dispatches manage cloud destinations
      * event. Calls corresponding native layer method.
      * @private
@@ -1172,6 +1198,7 @@ cr.define('print_preview', function() {
 <include src="settings/margin_settings.js"/>
 <include src="settings/destination_settings.js"/>
 <include src="settings/other_options_settings.js"/>
+<include src="settings/advanced_options_settings.js"/>
 <include src="settings/advanced_settings/advanced_settings.js"/>
 <include src="settings/advanced_settings/advanced_settings_item.js"/>
 

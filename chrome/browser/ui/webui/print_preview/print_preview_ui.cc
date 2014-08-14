@@ -339,6 +339,10 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
       "advancedSettingsDialogConfirm",
       IDS_PRINT_PREVIEW_ADVANCED_SETTINGS_DIALOG_CONFIRM);
   source->AddLocalizedString("cancel", IDS_CANCEL);
+  source->AddLocalizedString("advancedOptionsLabel",
+                             IDS_PRINT_PREVIEW_ADVANCED_OPTIONS_LABEL);
+  source->AddLocalizedString("showAdvancedOptions",
+                             IDS_PRINT_PREVIEW_SHOW_ADVANCED_OPTIONS);
 
   source->SetJsonPath("strings.js");
   source->AddResourcePath("print_preview.js", IDR_PRINT_PREVIEW_JS);
