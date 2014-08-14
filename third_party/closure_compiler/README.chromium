@@ -18,6 +18,7 @@ Local modifications:
   compiler to "IDE mode" (single-file checks, doesn't stop on first error).
 - Chrome-specific coding conventions to understand cr.addSingletonGetter().
 - third_party/closure_compiler/runner/src/com/google/javascript/jscomp/ChromePass.java
-  Added pass to handle Chrome-specific namespace creation with cr.define()
+  Added pass to handle namespace definition with cr.define() and property
+  definition with {cr|Object}.defineProperty().
   See third_party/closure_compiler/runner/how_to_test_compiler_pass.md for
   testing instructions on this pass.

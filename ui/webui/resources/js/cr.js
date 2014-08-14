@@ -75,17 +75,20 @@ var cr = function() {
     /**
      * Plain old JS property where the backing data is stored as a "private"
      * field on the object.
+     * Use for properties of any type. Type will not be checked.
      */
     JS: 'js',
 
     /**
      * The property backing data is stored as an attribute on an element.
+     * Use only for properties of type {string}.
      */
     ATTR: 'attr',
 
     /**
      * The property backing data is stored as an attribute on an element. If the
      * element has the attribute then the value is true.
+     * Use only for properties of type {boolean}.
      */
     BOOL_ATTR: 'boolAttr'
   };

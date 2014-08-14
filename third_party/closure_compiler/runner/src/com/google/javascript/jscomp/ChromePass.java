@@ -6,7 +6,10 @@ package com.google.javascript.jscomp;
 
 import com.google.javascript.jscomp.NodeTraversal.AbstractPostOrderCallback;
 import com.google.javascript.rhino.IR;
+import com.google.javascript.rhino.JSDocInfoBuilder;
+import com.google.javascript.rhino.JSTypeExpression;
 import com.google.javascript.rhino.Node;
+import com.google.javascript.rhino.Token;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,73 +17,25 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Compiler pass for Chrome-specific needs. Right now it allows the compiler to check types with
- * methods defined inside Chrome namespaces.
+ * Compiler pass for Chrome-specific needs. It handles the following Chrome JS features:
+ * <ul>
+ * <li>namespace declaration using {@code cr.define()},
+ * <li>unquoted property declaration using {@code {cr|Object}.defineProperty()}.
+ * </ul>
  *
- * <p>The namespaces in Chrome JS are declared as follows:
- * <pre>
- * cr.define('my.namespace.name', function() {
- *   /** @param {number} arg
- *   function internalStaticMethod(arg) {}
- *
- *   /** @constructor
- *   function InternalClass() {}
- *
- *   InternalClass.prototype = {
- *     /** @param {number} arg
- *     method: function(arg) {
- *       internalStaticMethod(arg);  // let's demonstrate the change of local names after our pass
- *     }
- *   };
- *
- *   return {
- *     externalStaticMethod: internalStaticMethod,
- *     ExternalClass: InternalClass
- *   }
- * });
- * </pre>
- *
- * <p>Outside of cr.define() statement the function can be called like this:
- * {@code my.namespace.name.externalStaticMethod(42);}.
- *
- * <p>We need to check the types of arguments and return values of such functions. However, the
- * function is assigned to its namespace dictionary only at run-time and the original Closure
- * Compiler isn't smart enough to predict behavior in that case. Therefore, we need to modify the
- * AST before any compiler checks. That's how we modify it to tell the compiler what's going on:
- *
- * <pre>
- * var my = my || {};
- * my.namespace = my.namespace || {};
- * my.namespace.name = my.namespace.name || {};
- *
- * cr.define('my.namespace.name', function() {
- *   /** @param {number} arg
- *   my.namespace.name.externalStaticMethod(arg) {}
- *
- *   /** @constructor
- *   my.namespace.name.ExternalClass = function() {};
- *
- *   my.namespace.name.ExternalClass.prototype = {
- *     /** @param {number} arg
- *     method: function(arg) {
- *       my.namespace.name.externalStaticMethod(arg);  // see, it has been changed
- *     }
- *   };
- *
- *   return {
- *     externalStaticMethod: my.namespace.name.externalStaticMethod,
- *     ExternalClass: my.namespace.name.ExternalClass
- *   }
- * });
- * </pre>
+ * <p>For the details, see tests inside ChromePassTest.java.
  */
 public class ChromePass extends AbstractPostOrderCallback implements CompilerPass {
     final AbstractCompiler compiler;
 
     private static final String CR_DEFINE = "cr.define";
 
-    private static final String CR_DEFINE_COMMON_EXPLANATION = "It should be called like this: " +
-            "cr.define('name.space', function() '{ ... return {Export: Internal}; }');";
+    private static final String OBJECT_DEFINE_PROPERTY = "Object.defineProperty";
+
+    private static final String CR_DEFINE_PROPERTY = "cr.defineProperty";
+
+    private static final String CR_DEFINE_COMMON_EXPLANATION = "It should be called like this:"
+            + " cr.define('name.space', function() '{ ... return {Export: Internal}; }');";
 
     static final DiagnosticType CR_DEFINE_WRONG_NUMBER_OF_ARGUMENTS =
             DiagnosticType.error("JSC_CR_DEFINE_WRONG_NUMBER_OF_ARGUMENTS",
@@ -96,8 +51,13 @@ public class ChromePass extends AbstractPostOrderCallback implements CompilerPas
 
     static final DiagnosticType CR_DEFINE_INVALID_RETURN_IN_FUNCTION =
             DiagnosticType.error("JSC_CR_DEFINE_INVALID_RETURN_IN_SECOND_ARGUMENT",
-                    "Function passed as second argument of cr.define() should return the " +
-                    "dictionary in its last statement. " + CR_DEFINE_COMMON_EXPLANATION);
+                    "Function passed as second argument of cr.define() should return the"
+                    + " dictionary in its last statement. " + CR_DEFINE_COMMON_EXPLANATION);
+
+    static final DiagnosticType CR_DEFINE_PROPERTY_INVALID_PROPERTY_KIND =
+            DiagnosticType.error("JSC_CR_DEFINE_PROPERTY_INVALID_PROPERTY_KIND",
+                    "Invalid cr.PropertyKind passed to cr.defineProperty(): expected ATTR,"
+                    + " BOOL_ATTR or JS, found \"{0}\".");
 
     public ChromePass(AbstractCompiler compiler) {
         this.compiler = compiler;
@@ -115,8 +75,56 @@ public class ChromePass extends AbstractPostOrderCallback implements CompilerPas
             if (callee.matchesQualifiedName(CR_DEFINE)) {
                 visitNamespaceDefinition(node, parent);
                 compiler.reportCodeChange();
+            } else if (callee.matchesQualifiedName(OBJECT_DEFINE_PROPERTY) ||
+                    callee.matchesQualifiedName(CR_DEFINE_PROPERTY)) {
+                visitPropertyDefinition(node, parent);
+                compiler.reportCodeChange();
             }
         }
+    }
+
+    private void visitPropertyDefinition(Node call, Node parent) {
+        Node callee = call.getFirstChild();
+        String target = call.getChildAtIndex(1).getQualifiedName();
+        if (callee.matchesQualifiedName(CR_DEFINE_PROPERTY) && !target.endsWith(".prototype")) {
+            target += ".prototype";
+        }
+
+        Node property = call.getChildAtIndex(2);
+
+        Node getPropNode = NodeUtil.newQualifiedNameNode(compiler.getCodingConvention(),
+                target + "." + property.getString()).srcrefTree(call);
+
+        if (callee.matchesQualifiedName(CR_DEFINE_PROPERTY)) {
+            setJsDocWithType(getPropNode, getTypeByCrPropertyKind(call.getChildAtIndex(3)));
+        } else {
+            setJsDocWithType(getPropNode, new Node(Token.QMARK));
+        }
+
+        Node definitionNode = IR.exprResult(getPropNode).srcref(parent);
+
+        parent.getParent().addChildAfter(definitionNode, parent);
+    }
+
+    private Node getTypeByCrPropertyKind(Node propertyKind) {
+        if (propertyKind.matchesQualifiedName("cr.PropertyKind.ATTR")) {
+            return IR.string("string");
+        }
+        if (propertyKind.matchesQualifiedName("cr.PropertyKind.BOOL_ATTR")) {
+            return IR.string("boolean");
+        }
+        if (propertyKind.matchesQualifiedName("cr.PropertyKind.JS")) {
+            return new Node(Token.QMARK);
+        }
+        compiler.report(JSError.make(propertyKind, CR_DEFINE_PROPERTY_INVALID_PROPERTY_KIND,
+                propertyKind.getQualifiedName()));
+        return null;
+    }
+
+    private void setJsDocWithType(Node target, Node type) {
+        JSDocInfoBuilder builder = new JSDocInfoBuilder(false);
+        builder.recordType(new JSTypeExpression(type, ""));
+        target.setJSDocInfo(builder.build(target));
     }
 
     private void visitNamespaceDefinition(Node crDefineCallNode, Node parent) {
@@ -141,14 +149,14 @@ public class ChromePass extends AbstractPostOrderCallback implements CompilerPas
             parent.getParent().addChildBefore(n, parent);
         }
 
-        Node returnNode, functionBlock, objectLit;
         if (!function.isFunction()) {
             compiler.report(JSError.make(namespaceArg, CR_DEFINE_INVALID_SECOND_ARGUMENT));
             return;
         }
 
-        if ((functionBlock = function.getLastChild()) == null ||
-                (returnNode = functionBlock.getLastChild()) == null ||
+        Node returnNode, objectLit;
+        Node functionBlock = function.getLastChild();
+        if ((returnNode = functionBlock.getLastChild()) == null ||
                 !returnNode.isReturn() ||
                 (objectLit = returnNode.getFirstChild()) == null ||
                 !objectLit.isObjectLit()) {
@@ -210,9 +218,9 @@ public class ChromePass extends AbstractPostOrderCallback implements CompilerPas
     }
 
     private class RenameInternalsToExternalsCallback extends AbstractPostOrderCallback {
-        final private String namespaceName;
-        final private Map<String, String> exports;
-        final private Node namespaceBlock;
+        private final String namespaceName;
+        private final Map<String, String> exports;
+        private final Node namespaceBlock;
 
         public RenameInternalsToExternalsCallback(String namespaceName,
                 Map<String, String> exports, Node namespaceBlock) {
@@ -223,10 +231,6 @@ public class ChromePass extends AbstractPostOrderCallback implements CompilerPas
 
         @Override
         public void visit(NodeTraversal t, Node n, Node parent) {
-            if (n == null) {
-                return;
-            }
-
             if (n.isFunction() && parent == this.namespaceBlock &&
                     this.exports.containsKey(n.getFirstChild().getString())) {
                 // It's a top-level function/constructor definition.
@@ -245,8 +249,9 @@ public class ChromePass extends AbstractPostOrderCallback implements CompilerPas
                 // externalName.
                 Node functionTree = n.cloneTree();
                 Node exprResult = IR.exprResult(
-                        IR.assign(buildQualifiedName(n.getFirstChild()), functionTree));
-                NodeUtil.setDebugInformation(exprResult, n, n.getFirstChild().getString());
+                            IR.assign(buildQualifiedName(n.getFirstChild()), functionTree).srcref(n)
+                        ).srcref(n);
+
                 if (n.getJSDocInfo() != null) {
                     exprResult.getFirstChild().setJSDocInfo(n.getJSDocInfo());
                     functionTree.removeProp(Node.JSDOC_INFO_PROP);
@@ -266,8 +271,9 @@ public class ChromePass extends AbstractPostOrderCallback implements CompilerPas
                         //   my.namespace.name.enum = { 'one': 1, 'two': 2 };
                         Node varContent = n.removeFirstChild();
                         Node exprResult = IR.exprResult(
-                                IR.assign(buildQualifiedName(n), varContent));
-                        NodeUtil.setDebugInformation(exprResult, parent, n.getString());
+                                    IR.assign(buildQualifiedName(n), varContent).srcref(parent)
+                                ).srcref(parent);
+
                         if (parent.getJSDocInfo() != null) {
                             exprResult.getFirstChild().setJSDocInfo(parent.getJSDocInfo().clone());
                         }
@@ -294,9 +300,8 @@ public class ChromePass extends AbstractPostOrderCallback implements CompilerPas
         private Node buildQualifiedName(Node internalName) {
             String externalName = this.exports.get(internalName.getString());
             return NodeUtil.newQualifiedNameNode(compiler.getCodingConvention(),
-                                                 this.namespaceName + "." + externalName,
-                                                 internalName,
-                                                 internalName.getString());
+                    this.namespaceName + "." + externalName).srcrefTree(internalName);
         }
     }
+
 }

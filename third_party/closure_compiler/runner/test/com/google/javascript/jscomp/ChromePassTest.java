@@ -184,4 +184,55 @@ public class ChromePassTest extends CompilerTestCase {
             null, ChromePass.CR_DEFINE_INVALID_RETURN_IN_FUNCTION);
     }
 
+    public void testObjectDefinePropertyDefinesUnquotedProperty() throws Exception {
+        test(
+            "Object.defineProperty(a.b, 'c', {});",
+            "Object.defineProperty(a.b, 'c', {});\n" +
+            "/** @type {?} */\n" +
+            "a.b.c;");
+    }
+
+    public void testCrDefinePropertyDefinesUnquotedPropertyWithStringTypeForPropertyKindAttr()
+            throws Exception {
+        test(
+            "cr.defineProperty(a.prototype, 'c', cr.PropertyKind.ATTR);",
+            "cr.defineProperty(a.prototype, 'c', cr.PropertyKind.ATTR);\n" +
+            "/** @type {string} */\n" +
+            "a.prototype.c;");
+    }
+
+    public void testCrDefinePropertyDefinesUnquotedPropertyWithBooleanTypeForPropertyKindBoolAttr()
+            throws Exception {
+        test(
+            "cr.defineProperty(a.prototype, 'c', cr.PropertyKind.BOOL_ATTR);",
+            "cr.defineProperty(a.prototype, 'c', cr.PropertyKind.BOOL_ATTR);\n" +
+            "/** @type {boolean} */\n" +
+            "a.prototype.c;");
+    }
+
+    public void testCrDefinePropertyDefinesUnquotedPropertyWithAnyTypeForPropertyKindJs()
+            throws Exception {
+        test(
+            "cr.defineProperty(a.prototype, 'c', cr.PropertyKind.JS);",
+            "cr.defineProperty(a.prototype, 'c', cr.PropertyKind.JS);\n" +
+            "/** @type {?} */\n" +
+            "a.prototype.c;");
+    }
+
+    public void testCrDefinePropertyDefinesUnquotedPropertyOnPrototypeWhenFunctionIsPassed()
+            throws Exception {
+        test(
+            "cr.defineProperty(a, 'c', cr.PropertyKind.JS);",
+            "cr.defineProperty(a, 'c', cr.PropertyKind.JS);\n" +
+            "/** @type {?} */\n" +
+            "a.prototype.c;");
+    }
+
+    public void testCrDefinePropertyInvalidPropertyKind()
+            throws Exception {
+        test(
+            "cr.defineProperty(a.b, 'c', cr.PropertyKind.INEXISTENT_KIND);",
+            null, ChromePass.CR_DEFINE_PROPERTY_INVALID_PROPERTY_KIND);
+    }
+
 }

@@ -6,7 +6,8 @@
 import os
 import unittest
 
-from checker import Checker, FileCache, Flattener
+from checker import Checker
+from processor import FileCache, Processor
 
 
 CR_FILE = os.path.join("..", "..", "ui", "webui", "resources", "js", "cr.js")
@@ -18,22 +19,32 @@ def rel_to_abs(rel_path):
 
 
 class CompilerCustomizationTest(unittest.TestCase):
-  _CR_DEFINE_DEFINITION = Flattener(rel_to_abs(CR_FILE)).contents
+  _CR_DEFINE_DEFINITION = Processor(rel_to_abs(CR_FILE)).contents
 
   def setUp(self):
     self._checker = Checker()
 
-  def _runCheckerTest(self, source_code, expected_error):
+  def _runChecker(self, source_code):
     file_path = "/script.js"
     FileCache._cache[file_path] = source_code
-    _, output = self._checker.check(file_path)
+    return self._checker.check(file_path)
+
+  def _runCheckerTestExpectError(self, source_code, expected_error):
+    _, output = self._runChecker(source_code)
 
     self.assertTrue(expected_error in output,
         msg="Expected chunk: \n%s\n\nOutput:\n%s\n" % (
             expected_error, output))
 
+  def _runCheckerTestExpectSuccess(self, source_code):
+    return_code, output = self._runChecker(source_code)
+
+    self.assertTrue(return_code == 0,
+        msg="Expected success, got return code %d\n\nOutput:\n%s\n" % (
+            return_code, output))
+
   def testGetInstance(self):
-    self._runCheckerTest(source_code="""
+    self._runCheckerTestExpectError("""
 var cr = {
   /** @param {!Function} ctor */
   addSingletonGetter: function(ctor) {
@@ -51,12 +62,11 @@ function Class() {
 
 cr.addSingletonGetter(Class);
 Class.getInstance().needsNumber("wrong type");
-""",
-      expected_error="ERROR - actual parameter 1 of Class.needsNumber does "
-                     "not match formal parameter")
+""", "ERROR - actual parameter 1 of Class.needsNumber does not match formal "
+        "parameter")
 
   def testCrDefineFunctionDefinition(self):
-    self._runCheckerTest(source_code=self._CR_DEFINE_DEFINITION + """
+    self._runCheckerTestExpectError(self._CR_DEFINE_DEFINITION + """
 cr.define('a.b.c', function() {
   /** @param {number} num */
   function internalName(num) {}
@@ -67,11 +77,11 @@ cr.define('a.b.c', function() {
 });
 
 a.b.c.needsNumber("wrong type");
-""", expected_error="ERROR - actual parameter 1 of a.b.c.needsNumber does "
-                    "not match formal parameter")
+""", "ERROR - actual parameter 1 of a.b.c.needsNumber does not match formal "
+        "parameter")
 
   def testCrDefineFunctionAssignment(self):
-    self._runCheckerTest(source_code=self._CR_DEFINE_DEFINITION + """
+    self._runCheckerTestExpectError(self._CR_DEFINE_DEFINITION + """
 cr.define('a.b.c', function() {
   /** @param {number} num */
   var internalName = function(num) {};
@@ -82,11 +92,11 @@ cr.define('a.b.c', function() {
 });
 
 a.b.c.needsNumber("wrong type");
-""", expected_error="ERROR - actual parameter 1 of a.b.c.needsNumber does "
-                    "not match formal parameter")
+""", "ERROR - actual parameter 1 of a.b.c.needsNumber does not match formal "
+        "parameter")
 
   def testCrDefineConstructorDefinitionPrototypeMethod(self):
-    self._runCheckerTest(source_code=self._CR_DEFINE_DEFINITION + """
+    self._runCheckerTestExpectError(self._CR_DEFINE_DEFINITION + """
 cr.define('a.b.c', function() {
   /** @constructor */
   function ClassInternalName() {}
@@ -102,11 +112,11 @@ cr.define('a.b.c', function() {
 });
 
 new a.b.c.ClassExternalName().method("wrong type");
-""", expected_error="ERROR - actual parameter 1 of a.b.c.ClassExternalName."
-                    "prototype.method does not match formal parameter")
+""", "ERROR - actual parameter 1 of a.b.c.ClassExternalName.prototype.method "
+        "does not match formal parameter")
 
   def testCrDefineConstructorAssignmentPrototypeMethod(self):
-    self._runCheckerTest(source_code=self._CR_DEFINE_DEFINITION + """
+    self._runCheckerTestExpectError(self._CR_DEFINE_DEFINITION + """
 cr.define('a.b.c', function() {
   /** @constructor */
   var ClassInternalName = function() {};
@@ -122,11 +132,11 @@ cr.define('a.b.c', function() {
 });
 
 new a.b.c.ClassExternalName().method("wrong type");
-""", expected_error="ERROR - actual parameter 1 of a.b.c.ClassExternalName."
-                    "prototype.method does not match formal parameter")
+""", "ERROR - actual parameter 1 of a.b.c.ClassExternalName.prototype.method "
+        "does not match formal parameter")
 
   def testCrDefineEnum(self):
-    self._runCheckerTest(source_code=self._CR_DEFINE_DEFINITION + """
+    self._runCheckerTestExpectError(self._CR_DEFINE_DEFINITION + """
 cr.define('a.b.c', function() {
   /** @enum {string} */
   var internalNameForEnum = {key: 'wrong_type'};
@@ -140,8 +150,42 @@ cr.define('a.b.c', function() {
 function needsNumber(num) {}
 
 needsNumber(a.b.c.exportedEnum.key);
-""", expected_error="ERROR - actual parameter 1 of needsNumber does not "
-                    "match formal parameter")
+""", "ERROR - actual parameter 1 of needsNumber does not match formal "
+        "parameter")
+
+  def testObjectDefineProperty(self):
+    self._runCheckerTestExpectSuccess("""
+/** @constructor */
+function Class() {}
+
+Object.defineProperty(Class.prototype, 'myProperty', {});
+
+alert(new Class().myProperty);
+""")
+
+  def testCrDefineProperty(self):
+    self._runCheckerTestExpectSuccess(self._CR_DEFINE_DEFINITION + """
+/** @constructor */
+function Class() {}
+
+cr.defineProperty(Class.prototype, 'myProperty', cr.PropertyKind.JS);
+
+alert(new Class().myProperty);
+""")
+
+  def testCrDefinePropertyTypeChecking(self):
+    self._runCheckerTestExpectError(self._CR_DEFINE_DEFINITION + """
+/** @constructor */
+function Class() {}
+
+cr.defineProperty(Class.prototype, 'booleanProp', cr.PropertyKind.BOOL_ATTR);
+
+/** @param {number} num */
+function needsNumber(num) {}
+
+needsNumber(new Class().booleanProp);
+""", "ERROR - actual parameter 1 of needsNumber does not match formal "
+        "parameter")
 
 
 if __name__ == "__main__":
