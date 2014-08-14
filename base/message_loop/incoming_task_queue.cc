@@ -4,7 +4,6 @@
 
 #include "base/message_loop/incoming_task_queue.h"
 
-#include "base/debug/trace_event.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
@@ -130,9 +129,8 @@ bool IncomingTaskQueue::PostPendingTask(PendingTask* pending_task) {
   // delayed_run_time value) and for identifying the task in about:tracing.
   pending_task->sequence_num = next_sequence_num_++;
 
-  TRACE_EVENT_FLOW_BEGIN0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
-      "MessageLoop::PostTask",
-      TRACE_ID_MANGLE(message_loop_->GetTaskTraceID(*pending_task)));
+  message_loop_->task_annotator()->DidQueueTask("MessageLoop::PostTask",
+                                                *pending_task);
 
   bool was_empty = incoming_queue_.empty();
   incoming_queue_.push(*pending_task);

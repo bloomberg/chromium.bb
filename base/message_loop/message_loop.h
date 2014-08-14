@@ -11,6 +11,7 @@
 #include "base/base_export.h"
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/debug/task_annotator.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -426,10 +427,9 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   // true if some work was done.
   bool DeletePendingTasks();
 
-  // Creates a process-wide unique ID to represent this task in trace events.
-  // This will be mangled with a Process ID hash to reduce the likelyhood of
-  // colliding with MessageLoop pointers on other processes.
-  uint64 GetTaskTraceID(const PendingTask& task);
+  // Returns the TaskAnnotator which is used to add debug information to posted
+  // tasks.
+  debug::TaskAnnotator* task_annotator() { return &task_annotator_; }
 
   // Loads tasks from the incoming queue to |work_queue_| if the latter is
   // empty.
@@ -489,6 +489,8 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   RunLoop* run_loop_;
 
   ObserverList<TaskObserver> task_observers_;
+
+  debug::TaskAnnotator task_annotator_;
 
   scoped_refptr<internal::IncomingTaskQueue> incoming_task_queue_;
 

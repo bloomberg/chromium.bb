@@ -158,6 +158,8 @@
           'debug/stack_trace_android.cc',
           'debug/stack_trace_posix.cc',
           'debug/stack_trace_win.cc',
+          'debug/task_annotator.cc',
+          'debug/task_annotator.h',
           'debug/trace_event.h',
           'debug/trace_event_android.cc',
           'debug/trace_event_argument.cc',
