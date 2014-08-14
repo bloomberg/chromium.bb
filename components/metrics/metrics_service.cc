@@ -438,7 +438,6 @@ void MetricsService::DisableRecording() {
     metrics_providers_[i]->OnRecordingDisabled();
 
   PushPendingLogsToPersistentStorage();
-  DCHECK(!log_manager_.has_staged_log());
 }
 
 bool MetricsService::recording_active() const {
