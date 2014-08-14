@@ -93,38 +93,34 @@ MultiProfileUserController::GetPrimaryUserPolicy() {
   UserManager* user_manager = UserManager::Get();
   CHECK(user_manager);
 
-  const user_manager::User* primary_user = user_manager->GetPrimaryUser();
-  if (!primary_user)
+  const user_manager::User* user = user_manager->GetPrimaryUser();
+  if (!user)
     return ALLOWED;
-  Profile* primary_user_profile =
-      ProfileHelper::Get()->GetProfileByUserUnsafe(primary_user);
-
-  std::string primary_user_email = primary_user->email();
 
   // Don't allow any secondary profiles if the primary profile is tainted.
-  if (policy::PolicyCertServiceFactory::UsedPolicyCertificates(
-          primary_user_email)) {
+  if (policy::PolicyCertServiceFactory::UsedPolicyCertificates(user->email())) {
     // Check directly in local_state before checking if the primary user has
     // a PolicyCertService. His profile may have been tainted previously though
     // he didn't get a PolicyCertService created for this session.
     return NOT_ALLOWED_PRIMARY_POLICY_CERT_TAINTED;
   }
 
-  // If the primary profile already has policy certificates installed but hasn't
-  // used them yet then it can become tainted at any time during this session;
-  // disable secondary profiles in this case too.
+  Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
+  if (!profile)
+    return ALLOWED;
+
+  // If the primary profile already has policy certificates installed but
+  // hasn't used them yet then it can become tainted at any time during this
+  // session disable secondary profiles in this case too.
   policy::PolicyCertService* service =
-      primary_user_profile ? policy::PolicyCertServiceFactory::GetForProfile(
-                                 primary_user_profile)
-                           : NULL;
+      policy::PolicyCertServiceFactory::GetForProfile(profile);
   if (service && service->has_policy_certificates())
     return NOT_ALLOWED_PRIMARY_POLICY_CERT_TAINTED;
 
   // No user is allowed if the primary user policy forbids it.
-  const std::string primary_user_behavior =
-      primary_user_profile->GetPrefs()->GetString(
-          prefs::kMultiProfileUserBehavior);
-  if (primary_user_behavior == kBehaviorNotAllowed)
+  const std::string behavior = profile->GetPrefs()->GetString(
+      prefs::kMultiProfileUserBehavior);
+  if (behavior == kBehaviorNotAllowed)
     return NOT_ALLOWED_PRIMARY_USER_POLICY_FORBIDS;
 
   return ALLOWED;
