@@ -93,7 +93,7 @@ class PathContext(object):
   """A PathContext is used to carry the information used to construct URLs and
   paths when dealing with the storage server and archives."""
   def __init__(self, base_url, platform, good_revision, bad_revision,
-               is_official, is_aura, is_asan, use_local_repo, flash_path = None,
+               is_official, is_asan, use_local_repo, flash_path = None,
                pdf_path = None):
     super(PathContext, self).__init__()
     # Store off the input parameters.
@@ -102,7 +102,6 @@ class PathContext(object):
     self.good_revision = good_revision
     self.bad_revision = bad_revision
     self.is_official = is_official
-    self.is_aura = is_aura
     self.is_asan = is_asan
     self.build_type = 'release'
     self.flash_path = flash_path
@@ -151,10 +150,7 @@ class PathContext(object):
         self._listing_platform_dir = 'mac/'
         self._binary_name = 'Google Chrome.app/Contents/MacOS/Google Chrome'
       elif self.platform == 'win':
-        if self.is_aura:
-          self._listing_platform_dir = 'win-aura/'
-        else:
-          self._listing_platform_dir = 'win/'
+        self._listing_platform_dir = 'win/'
     else:
       if self.platform in ('linux', 'linux64', 'linux-arm'):
         self.archive_name = 'chrome-linux.zip'
@@ -228,16 +224,6 @@ class PathContext(object):
     else:
       extract_dir = self._archive_extract_dir
     return os.path.join(extract_dir, self._binary_name)
-
-  @staticmethod
-  def IsAuraBuild(build):
-    """Checks whether the given build is an Aura build."""
-    return build.split('.')[3] == '1'
-
-  @staticmethod
-  def IsOfficialASANBuild(build):
-    """Checks whether the given build is an ASAN build."""
-    return build.split('.')[3] == '2'
 
   def ParseDirectoryIndex(self):
     """Parses the Google Storage directory listing into a list of revision
@@ -427,17 +413,7 @@ class PathContext(object):
         if build_number > maxrev:
           break
         if build_number >= minrev:
-          # If we are bisecting Aura, we want to include only builds which
-          # ends with ".1".
-          if self.is_aura:
-            if self.IsAuraBuild(str(build_number)):
-              final_list.append(str(build_number))
-          # If we are bisecting only official builds (without --aura),
-          # we can not include builds which ends with '.1' or '.2' since
-          # they have different folder hierarchy inside.
-          elif (not self.IsAuraBuild(str(build_number)) and
-                not self.IsOfficialASANBuild(str(build_number))):
-            final_list.append(str(build_number))
+          final_list.append(str(build_number))
       except urllib.HTTPError:
         pass
     return final_list
@@ -991,11 +967,6 @@ def main():
                     action='store_true',
                     default=False,
                     help='Use command exit code to tell good/bad revision.')
-  parser.add_option('--aura',
-                    dest='aura',
-                    action='store_true',
-                    default=False,
-                    help='Allow the script to bisect aura builds')
   parser.add_option('--asan',
                     dest='asan',
                     action='store_true',
@@ -1017,12 +988,6 @@ def main():
     parser.print_help()
     return 1
 
-  if opts.aura:
-    if opts.archive != 'win' or not opts.official_builds:
-      print ('Error: Aura is supported only on Windows platform '
-             'and official builds.')
-      return 1
-
   if opts.asan:
     supported_platforms = ['linux', 'mac', 'win']
     if opts.archive not in supported_platforms:
@@ -1042,8 +1007,8 @@ def main():
 
   # Create the context. Initialize 0 for the revisions as they are set below.
   context = PathContext(base_url, opts.archive, opts.good, opts.bad,
-                        opts.official_builds, opts.aura, opts.asan,
-                        opts.use_local_repo, opts.flash_path, opts.pdf_path)
+                        opts.official_builds, opts.asan, opts.use_local_repo,
+                        opts.flash_path, opts.pdf_path)
   # Pick a starting point, try to get HEAD for this.
   if not opts.bad:
     context.bad_revision = '999.0.0.0'
