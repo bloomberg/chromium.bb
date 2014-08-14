@@ -1,4 +1,4 @@
-# Copyright 2013 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -13,15 +13,14 @@
       },
       'actions': [
         {
-          'action_name': 'webkit_resources',
+          'action_name': 'generate_webkit_resources',
           'variables': {
-            'grit_grd_file': 'glue/resources/webkit_resources.grd',
+            'grit_grd_file': 'webkit_resources.grd',
           },
-          'includes': [ '../build/grit_action.gypi' ],
+          'includes': [ '../../../build/grit_action.gypi' ],
         },
       ],
-      'includes': [ '../build/grit_target.gypi' ],
+      'includes': [ '../../../build/grit_target.gypi' ],
     },
   ]
 }
-

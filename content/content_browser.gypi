@@ -1603,7 +1603,7 @@
         '../webkit/common/webkit_common.gyp:webkit_common',
         '../webkit/storage_browser.gyp:webkit_storage_browser',
         '../webkit/storage_common.gyp:webkit_storage_common',
-        '../webkit/webkit_resources.gyp:webkit_resources',
+        '../webkit/glue/resources/webkit_resources.gyp:webkit_resources',
       ],
     }],
     ['enable_printing!=0', {

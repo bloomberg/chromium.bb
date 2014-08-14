@@ -113,7 +113,7 @@
                 '../crypto/crypto.gyp:crypto',
                 '../net/net.gyp:net_resources',
                 '../ui/views/views.gyp:views',
-                '../webkit/webkit_resources.gyp:webkit_resources',
+                '../webkit/glue/resources/webkit_resources.gyp:webkit_resources',
               ],
               'sources': [
                 'app/chrome_command_ids.h',

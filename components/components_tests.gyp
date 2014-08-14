@@ -873,7 +873,7 @@
                 '<(DEPTH)/third_party/WebKit/public/blink_resources.gyp:blink_resources',
                 '<(DEPTH)/third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
                 '<(DEPTH)/third_party/isimpledom/isimpledom.gyp:isimpledom',
-                '<(DEPTH)/webkit/webkit_resources.gyp:webkit_resources',
+                '<(DEPTH)/webkit/glue/resources/webkit_resources.gyp:webkit_resources',
               ],
               'configurations': {
                 'Debug_Base': {

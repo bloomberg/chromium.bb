@@ -2015,7 +2015,7 @@
             '../tools/json_schema_compiler/test/json_schema_compiler_tests.gyp:json_schema_compiler_tests',
             '../ui/gl/gl.gyp:gl',
             '../v8/tools/gyp/v8.gyp:v8',
-            '../webkit/webkit_resources.gyp:webkit_resources',
+            '../webkit/glue/resources/webkit_resources.gyp:webkit_resources',
           ],
           # TODO(scr): Use this in browser_tests too.
           'includes': [

@@ -2618,7 +2618,7 @@
             '../v8/tools/gyp/v8.gyp:v8',
             '../webkit/storage_browser.gyp:webkit_storage_browser',
             '../webkit/storage_common.gyp:webkit_storage_common',
-            '../webkit/webkit_resources.gyp:webkit_resources',
+            '../webkit/glue/resources/webkit_resources.gyp:webkit_resources',
           ],
           'defines': [
             '<@(nacl_defines)',

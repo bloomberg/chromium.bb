@@ -1007,7 +1007,7 @@
         '../url/url.gyp:url_lib',
         '../webkit/storage_browser.gyp:webkit_storage_browser',
         '../webkit/storage_common.gyp:webkit_storage_common',
-        '../webkit/webkit_resources.gyp:webkit_resources',
+        '../webkit/glue/resources/webkit_resources.gyp:webkit_resources',
       ],
       'include_dirs': [
         '..',

@@ -302,7 +302,7 @@
         '../third_party/npapi/npapi.gyp:npapi',
         '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
         '../ui/surface/surface.gyp:surface',
-        '../webkit/webkit_resources.gyp:webkit_resources',
+        '../webkit/glue/resources/webkit_resources.gyp:webkit_resources',
       ],
       'include_dirs': [
         '..',

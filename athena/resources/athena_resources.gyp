@@ -33,7 +33,7 @@
         '../../extensions/extensions.gyp:extensions_shell_and_test_pak',
         '../../ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',
         '../../ui/chromeos/ui_chromeos.gyp:ui_chromeos_strings',
-        '../../webkit/webkit_resources.gyp:webkit_resources',
+        '../../webkit/glue/resources/webkit_resources.gyp:webkit_resources',
         'athena_resources',
       ],
       'actions': [{

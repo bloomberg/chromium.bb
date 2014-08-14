@@ -36,7 +36,7 @@
         '../third_party/zlib/zlib.gyp:zlib',
         '../ui/base/ui_base.gyp:ui_base_test_support',
         '../ui/web_dialogs/web_dialogs.gyp:web_dialogs_test_support',
-        '../webkit/webkit_resources.gyp:webkit_resources',
+        '../webkit/glue/resources/webkit_resources.gyp:webkit_resources',
       ],
       'include_dirs': [
         '..',

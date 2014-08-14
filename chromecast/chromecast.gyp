@@ -81,7 +81,7 @@
         '../third_party/WebKit/public/blink_resources.gyp:blink_resources',
         '../ui/resources/ui_resources.gyp:ui_resources',
         '../ui/strings/ui_strings.gyp:ui_strings',
-        '../webkit/webkit_resources.gyp:webkit_resources',
+        '../webkit/glue/resources/webkit_resources.gyp:webkit_resources',
       ],
       'actions': [
         {

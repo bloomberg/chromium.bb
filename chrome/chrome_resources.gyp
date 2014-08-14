@@ -444,7 +444,7 @@
             '<(DEPTH)/content/app/strings/content_strings.gyp:content_strings',
             '<(DEPTH)/content/content_resources.gyp:content_resources',
             '<(DEPTH)/third_party/WebKit/public/blink_resources.gyp:blink_resources',
-            '<(DEPTH)/webkit/webkit_resources.gyp:webkit_resources',
+            '<(DEPTH)/webkit/glue/resources/webkit_resources.gyp:webkit_resources',
           ],
         }],
         ['use_ash==1', {

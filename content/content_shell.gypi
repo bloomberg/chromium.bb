@@ -63,7 +63,7 @@
         '../url/url.gyp:url_lib',
         '../v8/tools/gyp/v8.gyp:v8',
         '../webkit/storage_browser.gyp:webkit_storage_browser',
-        '../webkit/webkit_resources.gyp:webkit_resources',
+        '../webkit/glue/resources/webkit_resources.gyp:webkit_resources',
       ],
       'include_dirs': [
         '..',
@@ -439,7 +439,7 @@
         '<(DEPTH)/third_party/WebKit/public/blink_resources.gyp:blink_resources',
         '<(DEPTH)/ui/resources/ui_resources.gyp:ui_resources',
         '<(DEPTH)/ui/strings/ui_strings.gyp:ui_strings',
-        '<(DEPTH)/webkit/webkit_resources.gyp:webkit_resources',
+        '<(DEPTH)/webkit/glue/resources/webkit_resources.gyp:webkit_resources',
       ],
       'conditions': [
         ['OS!="android"', {

@@ -67,7 +67,7 @@
         '<(DEPTH)/net/net.gyp:net_resources',
         '<(DEPTH)/third_party/WebKit/public/blink_resources.gyp:blink_resources',
         '<(DEPTH)/ui/resources/ui_resources.gyp:ui_resources',
-        '<(DEPTH)/webkit/webkit_resources.gyp:webkit_resources',
+        '<(DEPTH)/webkit/glue/resources/webkit_resources.gyp:webkit_resources',
       ],
       'actions': [
         {
