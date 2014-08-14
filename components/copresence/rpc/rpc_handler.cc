@@ -350,7 +350,8 @@ void RpcHandler::RegisterResponseHandler(
     int http_status_code,
     const std::string& response_data) {
   if (completed_post) {
-    DCHECK(pending_posts_.erase(completed_post));
+    int elements_erased = pending_posts_.erase(completed_post);
+    DCHECK(elements_erased);
     delete completed_post;
   }
 
@@ -379,7 +380,8 @@ void RpcHandler::ReportResponseHandler(const StatusCallback& status_callback,
                                        int http_status_code,
                                        const std::string& response_data) {
   if (completed_post) {
-    DCHECK(pending_posts_.erase(completed_post));
+    int elements_erased = pending_posts_.erase(completed_post);
+    DCHECK(elements_erased);
     delete completed_post;
   }
 
