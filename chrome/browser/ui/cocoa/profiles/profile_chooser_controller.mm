@@ -1522,12 +1522,11 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   }
 
   if ([self shouldShowGoIncognito]) {
-    // TODO(noms): Use the correct incognito icon when it's available.
     NSButton* goIncognitoButton =
         [self hoverButtonWithRect:viewRect
                              text:l10n_util::GetNSString(
                                   IDS_PROFILES_GO_INCOGNITO_BUTTON)
-                  imageResourceId:IDR_ICON_PROFILES_MENU_AVATAR
+                  imageResourceId:IDR_ICON_PROFILES_MENU_INCOGNITO
                            action:@selector(goIncognito:)];
     viewRect.origin.y = NSMaxY([goIncognitoButton frame]);
     [container addSubview:goIncognitoButton];

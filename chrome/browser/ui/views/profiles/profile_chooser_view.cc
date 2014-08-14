@@ -1145,11 +1145,10 @@ views::View* ProfileChooserView::CreateOptionsView(bool enable_lock) {
     layout->StartRow(1, 0);
     layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
 
-    // TODO(noms): Use the correct incognito icon when it's available.
     go_incognito_button_ = new BackgroundColorHoverButton(
         this,
         l10n_util::GetStringUTF16(IDS_PROFILES_GO_INCOGNITO_BUTTON),
-        *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_MENU_AVATAR));
+        *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_MENU_INCOGNITO));
     layout->StartRow(1, 0);
     layout->AddView(go_incognito_button_);
   }
