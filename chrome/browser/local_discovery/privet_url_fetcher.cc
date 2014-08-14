@@ -34,8 +34,10 @@ struct TokenMapHolder {
 };
 
 const char kXPrivetTokenHeaderPrefix[] = "X-Privet-Token: ";
+const char kXPrivetAuthTokenHeaderPrefix[] = "X-Privet-Auth: ";
 const char kRangeHeaderFormat[] = "Range: bytes=%d-%d";
 const char kXPrivetEmptyToken[] = "\"\"";
+const char kPrivetAuthTokenUnknown[] = "Unknown";
 const int kPrivetMaxRetries = 20;
 const int kPrivetTimeoutOnError = 5;
 const int kHTTPErrorCodeInvalidXPrivetToken = 418;
@@ -53,6 +55,10 @@ void PrivetURLFetcher::Delegate::OnNeedPrivetToken(
     PrivetURLFetcher* fetcher,
     const TokenCallback& callback) {
   OnError(fetcher, TOKEN_ERROR);
+}
+
+std::string PrivetURLFetcher::Delegate::GetAuthToken() {
+  return kPrivetAuthTokenUnknown;
 }
 
 bool PrivetURLFetcher::Delegate::OnRawData(PrivetURLFetcher* fetcher,
@@ -75,10 +81,12 @@ PrivetURLFetcher::PrivetURLFetcher(
       send_empty_privet_token_(false),
       has_byte_range_(false),
       make_response_file_(false),
+      v3_mode_(false),
       byte_range_start_(0),
       byte_range_end_(0),
       tries_(0),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+}
 
 PrivetURLFetcher::~PrivetURLFetcher() {
 }
@@ -123,6 +131,10 @@ void PrivetURLFetcher::SaveResponseToFile() {
   make_response_file_ = true;
 }
 
+void PrivetURLFetcher::V3Mode() {
+  v3_mode_ = true;
+}
+
 void PrivetURLFetcher::SetByteRange(int start, int end) {
   DCHECK(tries_ == 0);
   byte_range_start_ = start;
@@ -133,15 +145,26 @@ void PrivetURLFetcher::SetByteRange(int start, int end) {
 void PrivetURLFetcher::Try() {
   tries_++;
   if (tries_ < kPrivetMaxRetries) {
-    std::string token = GetPrivetAccessToken();
 
-    if (token.empty())
-      token = kXPrivetEmptyToken;
 
     url_fetcher_.reset(net::URLFetcher::Create(url_, request_type_, this));
     url_fetcher_->SetRequestContext(request_context_);
-    url_fetcher_->AddExtraRequestHeader(std::string(kXPrivetTokenHeaderPrefix) +
-                                        token);
+
+    if (v3_mode_) {
+      std::string auth_token = delegate_->GetAuthToken();
+
+      url_fetcher_->AddExtraRequestHeader(
+          std::string(kXPrivetAuthTokenHeaderPrefix) + auth_token);
+    } else {
+      std::string token = GetPrivetAccessToken();
+
+      if (token.empty())
+        token = kXPrivetEmptyToken;
+
+      url_fetcher_->AddExtraRequestHeader(
+          std::string(kXPrivetTokenHeaderPrefix) + token);
+    }
+
     if (has_byte_range_) {
       url_fetcher_->AddExtraRequestHeader(
           MakeRangeHeader(byte_range_start_, byte_range_end_));
@@ -177,7 +200,7 @@ void PrivetURLFetcher::Try() {
 void PrivetURLFetcher::Start() {
   DCHECK_EQ(tries_, 0);  // We haven't called |Start()| yet.
 
-  if (!send_empty_privet_token_) {
+  if (!send_empty_privet_token_ && !v3_mode_) {
     std::string privet_access_token;
     privet_access_token = GetPrivetAccessToken();
     if (privet_access_token.empty()) {

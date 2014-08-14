@@ -54,6 +54,7 @@ class PrivetHTTPClient {
   virtual scoped_ptr<PrivetJSONOperation> CreateInfoOperation(
       const PrivetJSONOperation::ResultCallback& callback) = 0;
 
+  // Creates a URL fetcher for PrivetV1.
   virtual scoped_ptr<PrivetURLFetcher> CreateURLFetcher(
       const GURL& url,
       net::URLFetcher::RequestType request_type,
