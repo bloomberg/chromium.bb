@@ -25,7 +25,7 @@ const int kInitialNumberOfLiveAudioNodes = 0;
 const int kInitialNumberOfLiveDocuments = 1;
 const int kInitialNumberOfLiveNodes = 4;
 const int kInitialNumberOfLiveRenderObjects = 3;
-const int kInitialNumberOfLiveResources = 1;
+const int kInitialNumberOfLiveResources = 0;
 
 LeakDetector::LeakDetector(WebKitTestRunner* test_runner)
     : test_runner_(test_runner),
