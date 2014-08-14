@@ -42,17 +42,15 @@ window.addEventListener('DOMContentLoaded', function() {
     function createThumbnail(src) {
       var image = document.createElement('img');
       image.onload = function() {
-        var shadow = document.createElement('span');
-        shadow.className = 'shadow';
         var link = createMostVisitedLink(
             params, data.url, data.title, undefined, data.direction,
             data.provider);
-        link.appendChild(shadow);
         link.appendChild(image);
         displayLink(link);
       };
       image.onerror = function() {
-        if (data.domain) {
+        // If no external thumbnail fallback (etfb), and have domain.
+        if (!params.etfb && data.domain) {
           showDomainElement();
           logEvent(NTP_LOGGING_EVENT_TYPE.NTP_GRAY_TILE_FALLBACK);
         } else {

@@ -36,7 +36,8 @@ namespace {
 const char kMaterialDesignNTPFieldTrialName[] = "MaterialDesignNTP";
 const char kMaterialDesignNTPFieldTrialEnabledPrefix[] = "Enabled";
 
-// Name to be used for the new design in local resources.
+// Names of NTP designs in local resources, also used in CSS.
+const char kClassicalNTPName[] = "classical";
 const char kMaterialDesignNTPName[] = "md";
 
 // Signifies a locally constructed resource, i.e. not from grit/.
@@ -188,7 +189,7 @@ void LocalNtpSource::StartDataRequest(
   if (stripped_path == kLocalNTPFilename) {
     SendResourceWithClass(
         IDR_LOCAL_NTP_HTML,
-        IsMaterialDesignEnabled() ? kMaterialDesignNTPName : "",
+        IsMaterialDesignEnabled() ? kMaterialDesignNTPName : kClassicalNTPName,
         callback);
     return;
   }

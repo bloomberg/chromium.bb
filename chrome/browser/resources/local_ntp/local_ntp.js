@@ -28,12 +28,16 @@ var CLASSES = {
   ALTERNATE_LOGO: 'alternate-logo', // Shows white logo if required by theme
   BLACKLIST: 'mv-blacklist', // triggers tile blacklist animation
   BLACKLIST_BUTTON: 'mv-x',
+  DARK: 'dark',
+  DEFAULT_THEME: 'default-theme',
   DELAYED_HIDE_NOTIFICATION: 'mv-notice-delayed-hide',
+  DOT: 'dot',
   FAKEBOX_DISABLE: 'fakebox-disable', // Makes fakebox non-interactive
   FAKEBOX_FOCUS: 'fakebox-focused', // Applies focus styles to the fakebox
   // Applies drag focus style to the fakebox
   FAKEBOX_DRAG_FOCUS: 'fakebox-drag-focused',
   FAVICON: 'mv-favicon',
+  FAVICON_FALLBACK: 'mv-favicon-fallback',
   HIDE_BLACKLIST_BUTTON: 'mv-x-hide', // hides blacklist button during animation
   HIDE_FAKEBOX_AND_LOGO: 'hide-fakebox-logo',
   HIDE_NOTIFICATION: 'mv-notice-hide',
@@ -43,8 +47,10 @@ var CLASSES = {
   PAGE_READY: 'mv-page-ready',  // page tile when ready
   RTL: 'rtl',  // Right-to-left language text.
   THUMBNAIL: 'mv-thumb',
+  THUMBNAIL_FALLBACK: 'mv-thumb-fallback',
   THUMBNAIL_MASK: 'mv-mask',
   TILE: 'mv-tile',
+  TILE_INNER: 'mv-tile-inner',
   TITLE: 'mv-title'
 };
 
@@ -60,6 +66,7 @@ var IDS = {
   CUSTOM_THEME_STYLE: 'ct-style',
   FAKEBOX: 'fakebox',
   FAKEBOX_INPUT: 'fakebox-input',
+  FAKEBOX_TEXT: 'fakebox-text',
   LOGO: 'logo',
   NOTIFICATION: 'mv-notice',
   NOTIFICATION_CLOSE_BUTTON: 'mv-notice-x',
@@ -169,6 +176,13 @@ var isBlacklisting = false;
 
 
 /**
+ * Stores whether the current theme has a dark background.
+ * @type {boolean}
+ */
+var isBackgroundDark = false;
+
+
+/**
  * Current number of tiles columns shown based on the window width, including
  * those that just contain filler.
  * @type {number}
@@ -266,15 +280,19 @@ var MOST_VISITED_PAINT_TIMEOUT_MSEC = 500;
  * pad out the section when not enough pages exist.
  *
  * @param {Element} elem The element for rendering the tile.
+ * @param {Element=} opt_innerElem The element for contents of tile.
  * @param {Element=} opt_titleElem The element for rendering the title.
  * @param {Element=} opt_thumbnailElem The element for rendering the thumbnail.
  * @param {number=} opt_rid The RID for the corresponding Most Visited page.
  *     Should only be left unspecified when creating a filler tile.
  * @constructor
  */
-function Tile(elem, opt_titleElem, opt_thumbnailElem, opt_rid) {
+function Tile(elem, opt_innerElem, opt_titleElem, opt_thumbnailElem, opt_rid) {
   /** @type {Element} */
   this.elem = elem;
+
+  /** @type {Element|undefined} */
+  this.innerElem = opt_innerElem;
 
   /** @type {Element|undefined} */
   this.titleElem = opt_titleElem;
@@ -288,13 +306,33 @@ function Tile(elem, opt_titleElem, opt_thumbnailElem, opt_rid) {
 
 
 /**
+ * Determines whether a theme should be considered to have dark background.
+ * @param {ThemeBackgroundInfo} info Theme background information.
+ * @return {boolean} Whether the theme has dark background.
+ * @private
+ */
+function getIsBackgroundDark(info) {
+  if (info.imageUrl)
+    return true;
+  var rgba = info.backgroundColorRgba;
+  var luminance = 0.3 * rgba[0] + 0.59 * rgba[1] + 0.11 * rgba[2];
+  return luminance < 128;
+}
+
+
+/**
  * Updates the NTP based on the current theme.
  * @private
  */
-function onThemeChange() {
+function renderTheme() {
   var info = ntpApiHandle.themeBackgroundInfo;
-  if (!info)
+  if (!info) {
+    isBackgroundDark = false;
     return;
+  }
+
+  isBackgroundDark = getIsBackgroundDark(info);
+  ntpContents.classList.toggle(CLASSES.DARK, isBackgroundDark);
 
   var background = [convertToRGBAColor(info.backgroundColorRgba),
                     info.imageUrl,
@@ -305,7 +343,15 @@ function onThemeChange() {
   document.body.classList.toggle(CLASSES.ALTERNATE_LOGO, info.alternateLogo);
   updateThemeAttribution(info.attributionUrl);
   setCustomThemeStyle(info);
+}
 
+
+/**
+ * Updates the NTP based on the current theme, then rerenders all tiles.
+ * @private
+ */
+function onThemeChange() {
+  renderTheme();
   tilesContainer.innerHTML = '';
   renderAndShowTiles();
 }
@@ -322,6 +368,7 @@ function setCustomThemeStyle(opt_themeInfo) {
   var head = document.head;
 
   if (opt_themeInfo && !opt_themeInfo.usingDefaultTheme) {
+    ntpContents.classList.remove(CLASSES.DEFAULT_THEME);
     var themeStyle =
       '#attribution {' +
       '  color: ' + convertToRGBAColor(opt_themeInfo.textColorLightRgba) + ';' +
@@ -336,11 +383,11 @@ function setCustomThemeStyle(opt_themeInfo) {
       '  -webkit-filter: drop-shadow(0 0 0 ' +
           convertToRGBAColor(opt_themeInfo.textColorRgba) + ');' +
       '}' +
-      '.mv-page-ready {' +
+      '.mv-page-ready .mv-mask {' +
       '  border: 1px solid ' +
           convertToRGBAColor(opt_themeInfo.sectionBorderColorRgba) + ';' +
       '}' +
-      '.mv-page-ready:hover, .mv-page-ready:focus {' +
+      '.mv-page-ready:hover .mv-mask, .mv-page-ready:focus .mv-mask {' +
       '  border-color: ' +
           convertToRGBAColor(opt_themeInfo.headerColorRgba) + ';' +
       '}';
@@ -355,8 +402,10 @@ function setCustomThemeStyle(opt_themeInfo) {
       head.appendChild(customStyleElement);
     }
 
-  } else if (customStyleElement) {
-    head.removeChild(customStyleElement);
+  } else {
+    ntpContents.classList.add(CLASSES.DEFAULT_THEME);
+    if (customStyleElement)
+      head.removeChild(customStyleElement);
   }
 }
 
@@ -412,10 +461,10 @@ function convertToRGBAColor(color) {
 function onMostVisitedChange() {
   if (isBlacklisting) {
     // Trigger the blacklist animation, which then triggers reloadAllTiles().
-    var lastBlacklistedTileElement = lastBlacklistedTile.elem;
-    lastBlacklistedTileElement.addEventListener(
+    var lastBlacklistedTileElem = lastBlacklistedTile.elem;
+    lastBlacklistedTileElem.addEventListener(
         'webkitTransitionEnd', blacklistAnimationDone);
-    lastBlacklistedTileElement.classList.add(CLASSES.BLACKLIST);
+    lastBlacklistedTileElem.classList.add(CLASSES.BLACKLIST);
   } else {
     reloadAllTiles();
   }
@@ -457,22 +506,19 @@ function reloadAllTiles() {
 /**
  * Binds onload events for a tile's internal <iframe> elements.
  * @param {Tile} tile The main tile to bind events to.
- * @param {Barrier} tileVisibilityBarrier A barrier to make tile visible the
- *   moment all tiles are loaded.
+ * @param {Barrier} tileVisibilityBarrier A barrier to make all tiles visible
+ *   the moment all tiles are loaded.
  */
 function bindTileOnloadEvents(tile, tileVisibilityBarrier) {
   if (tile.titleElem) {
     tileVisibilityBarrier.add();
     tile.titleElem.onload = function() {
-      tile.titleElem.hidden = false;
       tileVisibilityBarrier.remove();
     };
   }
-
   if (tile.thumbnailElem) {
     tileVisibilityBarrier.add();
     tile.thumbnailElem.onload = function() {
-      tile.thumbnailElem.hidden = false;
       tile.elem.classList.add(CLASSES.PAGE_READY);
       tileVisibilityBarrier.remove();
     };
@@ -494,18 +540,21 @@ function renderAndShowTiles() {
   // If we need to render new tiles, manage the visibility to hide intermediate
   // load states of the <iframe>s.
   if (numExisting < numDesired) {
-    var tileVisibilityBarrier = new Barrier(function() {
-      tilesContainer.style.visibility = 'visible';
-    });
+    var showAll = function() {
+      for (var i = 0; i < numDesired; ++i) {
+        if (tiles[i].titleElem || tiles[i].thumbnailElem)
+          tiles[i].elem.classList.add(CLASSES.PAGE_READY);
+      }
+    };
+    var tileVisibilityBarrier = new Barrier(showAll);
 
     if (!userInitiatedMostVisitedChange) {
       // Make titleContainer invisible, but still taking up space.
       // titleContainer becomes visible again (1) on timeout, or (2) when all
       // tiles finish loading (using tileVisibilityBarrier).
-      tilesContainer.style.visibility = 'hidden';
       window.setTimeout(function() {
         tileVisibilityBarrier.cancel();
-        tilesContainer.style.visibility = 'visible';
+        showAll();
       }, MOST_VISITED_PAINT_TIMEOUT_MSEC);
     }
     userInitiatedMostVisitedChange = false;
@@ -516,8 +565,8 @@ function renderAndShowTiles() {
     }
   }
 
-  // Show only the desired tiles. Not using .hidden because it does not work for
-  // inline-block elements.
+  // Show only the desired tiles. Note that .hidden does not work for
+  // inline-block elements like tiles[i].elem.
   for (var i = 0; i < numDesired; ++i)
     tiles[i].elem.style.display = 'inline-block';
   // If |numDesired| < |numExisting| then hide extra tiles (e.g., this occurs
@@ -536,11 +585,13 @@ function renderAndShowTiles() {
 function getMostVisitedTitleIframeUrl(rid, position) {
   var url = 'chrome-search://most-visited/' +
       encodeURIComponent(MOST_VISITED_TITLE_IFRAME);
+  var titleColor = isBackgroundDark ? NTP_DESIGN.titleColorAgainstDark :
+      NTP_DESIGN.titleColor;
   var params = [
       'rid=' + encodeURIComponent(rid),
       'f=' + encodeURIComponent(NTP_DESIGN.fontFamily),
       'fs=' + encodeURIComponent(NTP_DESIGN.fontSize),
-      'c=' + encodeURIComponent(NTP_DESIGN.titleColor),
+      'c=' + encodeURIComponent(titleColor),
       'pos=' + encodeURIComponent(position)];
   if (NTP_DESIGN.titleTextAlign)
     params.push('ta=' + encodeURIComponent(NTP_DESIGN.titleTextAlign));
@@ -565,6 +616,8 @@ function getMostVisitedThumbnailIframeUrl(rid, position) {
       'fs=' + encodeURIComponent(NTP_DESIGN.fontSize),
       'c=' + encodeURIComponent(NTP_DESIGN.thumbnailTextColor),
       'pos=' + encodeURIComponent(position)];
+  if (NTP_DESIGN.thumbnailFallback)
+    params.push('etfb=1');
   return url + '?' + params.join('&');
 }
 
@@ -577,12 +630,13 @@ function getMostVisitedThumbnailIframeUrl(rid, position) {
  * @return {Tile} The new Tile.
  */
 function createTile(page, position) {
-  var tileElement = document.createElement('div');
-  tileElement.classList.add(CLASSES.TILE);
+  var tileElem = document.createElement('div');
+  tileElem.classList.add(CLASSES.TILE);
+  var innerElem = createAndAppendElement(tileElem, 'div', CLASSES.TILE_INNER);
 
   if (page) {
     var rid = page.rid;
-    tileElement.classList.add(CLASSES.PAGE);
+    tileElem.classList.add(CLASSES.PAGE);
 
     var navigateFunction = function(e) {
       e.preventDefault();
@@ -590,15 +644,15 @@ function createTile(page, position) {
     };
 
     // The click handler for navigating to the page identified by the RID.
-    tileElement.addEventListener('click', navigateFunction);
+    tileElem.addEventListener('click', navigateFunction);
 
     // Make thumbnails tab-accessible.
-    tileElement.setAttribute('tabindex', '1');
-    registerKeyHandler(tileElement, KEYCODE.ENTER, navigateFunction);
+    tileElem.setAttribute('tabindex', '1');
+    registerKeyHandler(tileElem, KEYCODE.ENTER, navigateFunction);
 
     // The iframe which renders the page title.
-    var titleElement = document.createElement('iframe');
-    titleElement.tabIndex = '-1';
+    var titleElem = document.createElement('iframe');
+    titleElem.tabIndex = '-1';
 
     // Why iframes have IDs:
     //
@@ -615,45 +669,53 @@ function createTile(page, position) {
     // TODO(jered): Find and fix the root (probably Blink) bug.
 
     // Keep this ID here. See comment above.
-    titleElement.id = 'title-' + rid;
-    titleElement.className = CLASSES.TITLE;
-    titleElement.hidden = true;
-    titleElement.src = getMostVisitedTitleIframeUrl(rid, position);
-    tileElement.appendChild(titleElement);
+    titleElem.id = 'title-' + rid;
+    titleElem.className = CLASSES.TITLE;
+    titleElem.src = getMostVisitedTitleIframeUrl(rid, position);
+    innerElem.appendChild(titleElem);
+
+    // A fallback element for missing thumbnails.
+    if (NTP_DESIGN.thumbnailFallback) {
+      var fallbackElem = createAndAppendElement(
+          innerElem, 'div', CLASSES.THUMBNAIL_FALLBACK);
+      if (NTP_DESIGN.thumbnailFallback === THUMBNAIL_FALLBACK.DOT)
+        createAndAppendElement(fallbackElem, 'div', CLASSES.DOT);
+    }
 
     // The iframe which renders either a thumbnail or domain element.
-    var thumbnailElement = document.createElement('iframe');
-    thumbnailElement.tabIndex = '-1';
+    var thumbnailElem = document.createElement('iframe');
+    thumbnailElem.tabIndex = '-1';
     // Keep this ID here. See comment above.
-    thumbnailElement.id = 'thumb-' + rid;
-    thumbnailElement.className = CLASSES.THUMBNAIL;
-    thumbnailElement.hidden = true;
-    thumbnailElement.src = getMostVisitedThumbnailIframeUrl(rid, position);
-    tileElement.appendChild(thumbnailElement);
-
-    // A mask to darken the thumbnail on focus.
-    var maskElement = createAndAppendElement(
-        tileElement, 'div', CLASSES.THUMBNAIL_MASK);
+    thumbnailElem.id = 'thumb-' + rid;
+    thumbnailElem.className = CLASSES.THUMBNAIL;
+    thumbnailElem.src = getMostVisitedThumbnailIframeUrl(rid, position);
+    innerElem.appendChild(thumbnailElem);
 
     // The button used to blacklist this page.
     var blacklistButton = createAndAppendElement(
-        tileElement, 'div', CLASSES.BLACKLIST_BUTTON);
+        innerElem, 'div', CLASSES.BLACKLIST_BUTTON);
     var blacklistFunction = generateBlacklistFunction(rid);
     blacklistButton.addEventListener('click', blacklistFunction);
     blacklistButton.title = configData.translatedStrings.removeThumbnailTooltip;
 
-    // When a tile is focused, have delete also blacklist the page.
-    registerKeyHandler(tileElement, KEYCODE.DELETE, blacklistFunction);
+    // A helper mask on top of the tile that is used to create hover border
+    // and/or to darken the thumbnail on focus.
+    var maskElement = createAndAppendElement(
+        innerElem, 'div', CLASSES.THUMBNAIL_MASK);
 
-    // The page favicon, if any.
-    var faviconUrl = page.faviconUrl;
-    if (faviconUrl) {
-      var favicon = createAndAppendElement(tileElement, 'div', CLASSES.FAVICON);
-      favicon.style.backgroundImage = 'url(' + faviconUrl + ')';
+    // When a tile is focused, have delete also blacklist the page.
+    registerKeyHandler(tileElem, KEYCODE.DELETE, blacklistFunction);
+
+    // The page favicon, or a fallback.
+    var favicon = createAndAppendElement(innerElem, 'div', CLASSES.FAVICON);
+    if (page.faviconUrl) {
+      favicon.style.backgroundImage = 'url(' + page.faviconUrl + ')';
+    } else {
+      favicon.classList.add(CLASSES.FAVICON_FALLBACK);
     }
-    return new Tile(tileElement, titleElement, thumbnailElement, rid);
+    return new Tile(tileElem, innerElem, titleElem, thumbnailElem, rid);
   } else {
-    return new Tile(tileElement);
+    return new Tile(tileElem);
   }
 }
 
@@ -747,8 +809,7 @@ function onResize() {
     var tilesContainerWidth = numColumnsShown * tileRequiredWidth;
     tilesContainer.style.width = tilesContainerWidth + 'px';
     if (fakebox) {
-      // -2 to account for border.
-      fakebox.style.width =
+      fakebox.style.width =  // -2 to account for border.
           (tilesContainerWidth - NTP_DESIGN.tileMargin - 2) + 'px';
     }
     // Render without clearing tiles.
@@ -936,10 +997,15 @@ function init() {
 
     fakebox = document.createElement('div');
     fakebox.id = IDS.FAKEBOX;
-    fakebox.innerHTML =
-        '<input id="' + IDS.FAKEBOX_INPUT +
-            '" autocomplete="off" tabindex="-1" aria-hidden="true">' +
-        '<div id="cursor"></div>';
+    var fakeboxHtml = [];
+    fakeboxHtml.push('<input id="' + IDS.FAKEBOX_INPUT +
+        '" autocomplete="off" tabindex="-1" aria-hidden="true">');
+    if (NTP_DESIGN.showFakeboxHint && configData.searchboxPlaceholder) {
+      fakeboxHtml.push('<div id="' + IDS.FAKEBOX_TEXT + '">' +
+          configData.searchboxPlaceholder + '</div>');
+    }
+    fakeboxHtml.push('<div id="cursor"></div>');
+    fakebox.innerHTML = fakeboxHtml.join('');
 
     ntpContents.insertBefore(fakebox, ntpContents.firstChild);
     ntpContents.insertBefore(logo, ntpContents.firstChild);
@@ -983,7 +1049,7 @@ function init() {
   if (ntpApiHandle.isInputInProgress)
     onInputStart();
 
-  onThemeChange();
+  renderTheme();
   onMostVisitedChange();
 
   searchboxApiHandle = topLevelHandle.searchBox;

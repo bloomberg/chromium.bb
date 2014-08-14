@@ -156,6 +156,9 @@ function createMostVisitedLink(params, href, title, text, direction, provider) {
     }
     // Else follow <a> normally, so transition type would be LINK.
   });
+  link.addEventListener('mousedown', function(e) {
+    e.preventDefault();  // Prevent drag-select.
+  });
 
   return link;
 }
@@ -163,11 +166,11 @@ function createMostVisitedLink(params, href, title, text, direction, provider) {
 
 /**
  * Decodes most visited styles from URL parameters.
+ * - c: A hexadecimal number interpreted as a hex color code.
  * - f: font-family.
  * - fs: font-size as a number in pixels.
  * - ta: text-align property, as a string.
  * - tf: specifying a text fade starting position, in pixels.
- * - c: A hexadecimal number interpreted as a hex color code.
  * @param {Object.<string, string>} params URL parameters specifying style.
  * @param {boolean} isTitle if the style is for the Most Visited Title.
  * @return {Object} Styles suitable for CSS interpolation.

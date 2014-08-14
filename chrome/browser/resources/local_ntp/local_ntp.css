@@ -17,7 +17,7 @@ body {
 
 .non-google-page #ntp-contents {
   position: absolute;
-  top: -webkit-calc(50% - 155px);
+  top: calc(50% - 155px);
   width: 100%;
 }
 
@@ -57,10 +57,10 @@ body.alternate-logo #logo {
   border: 1px solid rgb(185, 185, 185);
   border-radius: 1px;
   border-top-color: rgb(160, 160, 160);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
   cursor: text;
   font-size: 18px;
   height: 36px;
+  line-height: 36px;
   max-width: 620px;
   position: relative;
   /* #fakebox width (here and below) should be 2px less than #mv-tiles
@@ -71,6 +71,10 @@ body.alternate-logo #logo {
 #fakebox:hover {
   border: 1px solid rgb(169, 169, 169);
   border-top-color: rgb(144, 144, 144);
+}
+
+.classical #fakebox {
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 body.fakebox-focused #fakebox {
@@ -89,10 +93,27 @@ body.fakebox-focused #fakebox {
   width: 100%;
 }
 
-body.rtl #fakebox > input {
+body[dir=rtl] #fakebox > input {
   padding-left: 0;
   padding-right: 8px;
   right: 0;
+}
+
+#fakebox-text {
+  color: #bbb;
+  font-family: arial, sans-serif;
+  font-size: 16px;
+  height: 16px;
+  left: 9px;
+  margin-top: 1px;
+  position: absolute;
+  vertical-align: middle;
+  visibility: hidden;
+}
+
+body[dir=rtl] #fakebox-text {
+  left: auto;
+  right: 9px;
 }
 
 #cursor {
@@ -105,7 +126,7 @@ body.rtl #fakebox > input {
   width: 1px;
 }
 
-body.rtl #cursor {
+body[dir=rtl] #cursor {
   left: auto;
   right: 9px;
 }
@@ -119,6 +140,11 @@ body.rtl #cursor {
   }
 }
 
+body.fakebox-drag-focused #fakebox-text,
+body.fakebox-focused #fakebox-text {
+  visibility: inherit;
+}
+
 body.fakebox-drag-focused #cursor {
   visibility: inherit;
 }
@@ -130,80 +156,276 @@ body.fakebox-focused #cursor {
 
 #most-visited {
   -webkit-user-select: none;
-  margin-top: 51px;
   text-align: -webkit-center;
 }
 
+.classical #most-visited {
+  margin-top: 51px;
+}
+
+.md #most-visited {
+  margin-top: 50px;
+}
+
 #mv-tiles {
-  height: calc(2 * 138px);
-  line-height: 138px;
   margin: 0;
   position: relative;
+  text-align: left;
+}
+
+body[dir=rtl] #mv-tiles {
+  text-align: right;
+}
+
+.classical #mv-tiles {
+  height: calc(2 * 138px);
+  line-height: 138px;
+}
+
+.md #mv-tiles {
+  height: calc(2 * 126px);
+  line-height: 126px;
 }
 
 .mv-tile {
-  -webkit-transition-duration: 200ms;
-  -webkit-transition-property: -webkit-transform, margin, opacity, width;
-  background: -webkit-linear-gradient(#f2f2f2, #e8e8e8);
-  border: 1px solid transparent;
-  border-radius: 3px;
-  box-shadow: inset 0 2px 3px rgba(0, 0, 0, .09);
   display: inline-block;
-  height: 83px;
-  margin-left: 10px;
-  margin-right: 10px;  /* Total horizontal margins add to TILE_MARGIN. */
   position: relative;
   vertical-align: top;
-  width: 138px;
-}
-
-/* Class applied to tiles to trigger the blacklist animation. */
-.mv-tile.mv-blacklist {
-  -webkit-transform: scale(0.5);
-  opacity: 0;
 }
 
 .mv-page-ready {
-  border: 1px solid #c0c0c0;
   cursor: pointer;
   outline: none;
 }
 
-.mv-page-ready:hover,
-.mv-page-ready:focus {
-  border-color: #7f7f7f
+.classical .mv-tile {
+  background: linear-gradient(#f2f2f2, #e8e8e8);
+  border-radius: 3px;
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, .09);
+  height: 85px;
+  margin-left: 10px;
+  margin-right: 10px;  /* Total horizontal margins add to TILE_MARGIN. */
+  width: 140px;
 }
 
-.mv-thumb,
+.classical .mv-page-ready {
+  -webkit-transition-duration: 200ms;
+  -webkit-transition-property: -webkit-transform, margin, opacity, width;
+}
+
+.md .mv-tile {
+  background: #f2f2f2;
+  border-radius: 1px;
+  height: 114px;
+  margin-left: 6px;
+  margin-right: 6px;
+  width: 146px;
+}
+
+.md .mv-page-ready {
+  -webkit-transition-duration: 200ms;
+  -webkit-transition-property: -webkit-transform, margin, opacity, width;
+}
+
+.md.dark .mv-tile {
+  background: #333;
+}
+
+.mv-tile-inner {
+  visibility: hidden;
+}
+
+.mv-page-ready .mv-tile-inner {
+  visibility: visible;
+}
+
+/* Class applied to tiles to trigger the blacklist animation. */
+.mv-tile.mv-blacklist {
+  opacity: 0;
+}
+
+.classical .mv-tile.mv-blacklist {
+  -webkit-transform: scale(0.5);
+}
+
+.md .mv-tile.mv-blacklist {
+  -webkit-transform: scale(0, 0);
+  -webkit-transform-origin: 0 41px;
+  margin-left: 0;
+  margin-right: 0;
+  width: 0;
+}
+
+/* .mv-mask is used to alter tile appearance, including borders, shadows, */
+/* and backgrounds. */
 .mv-mask {
-  border: none;
+  background: transparent;
+  border-style: solid;
+  border-width: 1px;
   cursor: pointer;
-  height: 83px;
-  left: 0;
+  pointer-events: none;
   position: absolute;
-  top: 0;
-  width: 138px;
+}
+
+.classical .mv-mask {
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.09);
+}
+
+.md .mv-mask {
+  border-color: transparent;
+  border-radius: 2px;
+  height: 112px;
+  width: 144px;
+}
+
+/* Styling border. */
+.classical .mv-page-ready .mv-mask {
+  border-style: solid;
+}
+
+.default-theme.classical .mv-page-ready .mv-mask {
+  border-color: #c0c0c0;
+}
+
+.default-theme.classical .mv-page-ready:hover .mv-mask,
+.default-theme.classical .mv-page-ready:focus .mv-mask {
+  border-color: #7f7f7f;
+}
+
+.default-theme.md.old-hover .mv-page-ready:hover .mv-mask,
+.default-theme.md.old-hover .mv-page-ready:focus .mv-mask {
+  border-color: #999;
+}
+
+.default-theme.md.dark .mv-page-ready:hover .mv-mask,
+.default-theme.md.dark .mv-page-ready:focus .mv-mask,
+.default-theme.md.old-hover.dark .mv-page-ready:hover .mv-mask {
+  border-color: #888;
+}
+
+/* Styling shadow. */
+.md .mv-page-ready .mv-mask {
+  -webkit-transition: box-shadow 200ms, border 200ms;
+}
+.default-theme.md .mv-page-ready:hover .mv-mask {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.default-theme..md.dark .mv-page-ready:hover .mv-mask,
+.default-theme..md.old-hover .mv-page-ready:hover .mv-mask {
+  box-shadow: none;
+}
+
+/* Styling background. */
+.classical .mv-page:focus .mv-mask {
+  -webkit-transition: background-color 100ms ease-in-out;
+  background: linear-gradient(rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0) 80%, rgba(255, 255, 255, 0.9));
+  background-color: rgba(0, 0, 0, 0.35);
+}
+
+.md .mv-page:focus .mv-mask {
+  -webkit-transition: box-shadow 200ms, border 200ms,
+      background-color 100ms ease-in-out, ;
+  background: rgba(0, 0, 0, 0.3);
+  border-color: rgba(0, 0, 0, 0.3);
 }
 
 .mv-title {
   border: none;
-  bottom: -28px;
+  position: absolute;
+}
+
+.classical .mv-title {
+  bottom: -27px;
   height: 18px;
   left: 0;
-  position: absolute;
   width: 140px;
 }
 
-.mv-mask {
-  opacity: 0.35;
-  pointer-events: none;
+.md .mv-title {
+  bottom: auto;
+  height: 15px;
+  left: 28px;
+  top: 7px;
+  width: 112px;
 }
 
-.mv-page:focus .mv-mask {
-  -webkit-transition: background-color 100ms ease-in-out;
-  background: -webkit-linear-gradient(rgba(255, 255, 255, 0),
-    rgba(255, 255, 255, 0) 80%, rgba(255, 255, 255, 0.9));
-  background-color: black;
+@media (-webkit-min-device-pixel-ratio: 2) {
+  .md .mv-title {
+    top: 6px;
+  }
+}
+
+body[dir=rtl] .md .mv-title {
+  left: auto;
+  right: 28px;
+}
+
+.mv-thumb {
+  border: none;
+  cursor: pointer;
+  position: absolute;
+}
+
+.classical .mv-thumb,
+.classical .mv-mask {
+  height: 83px;
+  width: 138px;
+}
+
+.classical .mv-thumb {
+  border-radius: 2px;
+  left: 1px;
+  top: 1px;
+}
+
+.classical .mv-mask {
+  border-radius: 3px;
+  left: 0;
+  top: 0;
+}
+
+.md .mv-thumb,
+.md .mv-thumb-fallback {
+  border-radius: 0;
+  height: 82px;
+  left: 4px;
+  top: 28px;
+  width: 138px;
+}
+
+body[dir=rtl] .md .mv-thumb,
+body[dir=rtl] .md .mv-thumb-fallback {
+  left: auto;
+  right: 4px;
+}
+
+.md .mv-thumb-fallback {
+  background: #fff;
+  padding: none;
+  position: absolute;
+}
+
+.md.dark .mv-thumb-fallback {
+  background: #555;
+}
+
+.md .mv-thumb-fallback .dot {
+  background: #f2f2f2;
+  border-radius: 16px;
+  display: block;
+  height: 32px;
+  left: 50%;
+  margin-left: -16px;
+  margin-top: -16px;
+  position: absolute;
+  top: 50%;
+  width: 32px;
+}
+
+.md.dark .mv-thumb-fallback .dot {
+  background: #333;
 }
 
 .mv-x-hide .mv-x {
@@ -212,32 +434,55 @@ body.fakebox-focused #cursor {
 
 /* An X button to blacklist a tile or hide the notification. */
 .mv-x {
-  background: transparent url(images/close_2.png);
+  background-color: transparent;
+  background-image: url(images/close_2.png);
   border: none;
   cursor: default;
   height: 16px;
   width: 16px;
 }
 
-.mv-x:hover,
-#mv-notice-x:focus {
-  background: transparent url(images/close_2_hover.png);
-}
-
-.mv-x:active {
-  background: transparent url(images/close_2_active.png);
-}
-
 .mv-page .mv-x {
   -webkit-transition: opacity 150ms;
   opacity: 0;
   position: absolute;
+}
+
+.mv-x:hover,
+#mv-notice-x:focus {
+  background-image: url(images/close_2_hover.png);
+}
+
+.mv-x:active {
+  background-image: url(images/close_2_active.png);
+}
+
+.classical .mv-page .mv-x {
   right: 2px;
   top: 2px;
 }
 
-body.rtl .mv-page .mv-x {
+.md .mv-x {
+  background-color: rgba(187,187,187,0.8);
+  border-radius: 8px;
+}
+
+.md.dark .mv-x {
+  background-color: rgba(119,119,119,0.8);
+}
+
+.md .mv-page .mv-x {
+  right: 4px;
+  top: 5px;
+}
+
+body[dir=rtl] .classical .mv-page .mv-x {
   left: 2px;
+  right: auto;
+}
+
+body[dir=rtl] .md .mv-page .mv-x {
+  left: 4px;
   right: auto;
 }
 
@@ -252,12 +497,26 @@ body.rtl .mv-page .mv-x {
 
 .mv-favicon {
   background-size: 16px;
-  bottom: -8px;
   height: 16px;
-  left: 61px;
   pointer-events: none;
   position: absolute;
   width: 16px;
+}
+
+.classical .mv-favicon {
+  bottom: -7px;
+  left: 62px;
+}
+
+.md .mv-favicon {
+  left: 6px;
+  top: 6px;
+}
+
+body[dir=rtl] .md .mv-favicon {
+  left: auto;
+  right: 6px;
+  top: 6px;
 }
 
 /* The notification shown when a tile is blacklisted. */
@@ -285,6 +544,10 @@ body.rtl .mv-page .mv-x {
 #mv-notice-links span:focus,
 #recent-tabs:hover {
   text-decoration: underline;
+}
+
+.default-theme.dark #mv-msg {
+  color: #fff;
 }
 
 #mv-notice-links .mv-x {
@@ -316,7 +579,7 @@ body.rtl .mv-page .mv-x {
   z-index: -1;
 }
 
-body.rtl #attribution {
+body[dir=rtl] #attribution {
   text-align: right;
 }
 
@@ -335,7 +598,7 @@ body.rtl #attribution {
   right: 8px;
 }
 
-body.rtl #attribution,body.rtl #recent-tabs {
+body[dir=rtl] #attribution,body[dir=rtl] #recent-tabs {
   left: 8px;
   right: auto;
 }
