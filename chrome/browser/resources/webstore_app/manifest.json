@@ -17,6 +17,11 @@
   },
   "permissions": [
     "webstorePrivate",
-    "management"
+    "management",
+    "system.cpu",
+    "system.display",
+    "system.memory",
+    "system.network",
+    "system.storage"
   ]
 }

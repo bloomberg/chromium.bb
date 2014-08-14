@@ -961,26 +961,61 @@
       "34967F9FA3C399E1EC380B443D7331AA93AC445B"  // http://crbug.com/400436
     ]
   },
-  "system.cpu": {
-    "channel": "stable",
-    "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
-  },
-  "system.memory": {
-    "channel": "stable",
-    "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
-  },
-  "system.network": {
-    "channel": "stable",
-    "extension_types": ["platform_app"]
-  },
-  "system.storage": {
-    "channel": "stable",
-    "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
-  },
-  "system.display": {
-    "channel": "stable",
-    "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
-  },
+  "system.cpu": [
+    {
+      "channel": "stable",
+      "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["hosted_app"],
+      "whitelist": ["B44D08FD98F1523ED5837D78D0A606EA9D6206E5"]  // Web Store
+    }
+  ],
+  "system.memory": [
+    {
+      "channel": "stable",
+      "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["hosted_app"],
+      "whitelist": ["B44D08FD98F1523ED5837D78D0A606EA9D6206E5"]  // Web Store
+    }
+  ],
+  "system.network": [
+    {
+      "channel": "stable",
+      "extension_types": ["platform_app"]
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["hosted_app"],
+      "whitelist": ["B44D08FD98F1523ED5837D78D0A606EA9D6206E5"]  // Web Store
+    }
+  ],
+  "system.storage": [
+    {
+      "channel": "stable",
+      "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["hosted_app"],
+      "whitelist": ["B44D08FD98F1523ED5837D78D0A606EA9D6206E5"]  // Web Store
+    }
+  ],
+  "system.display": [
+    {
+      "channel": "stable",
+      "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["hosted_app"],
+      "whitelist": ["B44D08FD98F1523ED5837D78D0A606EA9D6206E5"]  // Web Store
+    }
+  ],
   "systemPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
