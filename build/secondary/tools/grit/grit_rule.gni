@@ -34,15 +34,24 @@
 #       List of strings containing extra command-line flags to pass to Grit.
 #
 #   resource_ids (optional)
-#     Path to a grit "firstidsfile". Default is
-#     //tools/gritsettings/resource_ids. Set to "" to use the value specified in
-#     the <grit> nodes of the processed files.
+#       Path to a grit "firstidsfile". Default is
+#       //tools/gritsettings/resource_ids. Set to "" to use the value specified
+#       in the <grit> nodes of the processed files.
 #
 #   output_dir (optional)
-#     Directory for generated files.
+#       Directory for generated files. If you specify this, you will often
+#       want to specify output_name if the target name is not particularly
+#       unique, since this can cause files from multiple grit targets to
+#       overwrite each other.
+#
+#   output_name (optiona)
+#       Provide an alternate base name for the generated files, like the .d
+#       files. Normally these are based on the target name and go in the
+#       output_dir, but if multiple targets with the same name end up in
+#       the same output_dir, they can collide.
 #
 #   use_qualified_include (optional)
-#     If set, output_dir is not added to include_dirs.
+#       If set, output_dir is not added to include_dirs.
 #
 #   deps  (optional)
 #   visibility  (optional)
@@ -207,6 +216,12 @@ template("grit") {
     output_dir = target_gen_dir
   }
 
+  if (defined(invoker.output_name)) {
+    grit_output_name = invoker.output_name
+  } else {
+    grit_output_name = target_name
+  }
+
   # These are all passed as arguments to the script so have to be relative to
   # the build directory.
   if (resource_ids != "") {
@@ -229,7 +244,8 @@ template("grit") {
   # writing. We write the list to a file (some of the output lists are long
   # enough to not fit on a Windows command line) and ask Grit to verify those
   # are the actual outputs at runtime.
-  asserted_list_file = "$target_out_dir/${target_name}_expected_outputs.txt"
+  asserted_list_file =
+      "$target_out_dir/${grit_output_name}_expected_outputs.txt"
   write_file(asserted_list_file,
              rebase_path(invoker.outputs, root_build_dir, output_dir))
   assert_files_flags += [
@@ -241,7 +257,7 @@ template("grit") {
 
   # The config and the action below get this visibility son only the generated
   # source set can depend on them. The variable "target_name" will get
-  # overwritten inside the innter classes so we need to compute it here.
+  # overwritten inside the inner classes so we need to compute it here.
   target_visibility = ":$target_name"
 
   # The current grit setup makes an file in $output_dir/grit/foo.h that
@@ -262,7 +278,7 @@ template("grit") {
     script = "//tools/grit/grit.py"
     inputs = grit_inputs
     outputs = grit_outputs
-    depfile = "$output_dir/${target_name}.d"
+    depfile = "$output_dir/${grit_output_name}.d"
 
     args = [
       "-i", source_path, "build",
@@ -304,8 +320,6 @@ template("grit") {
     if (defined(invoker.visibility)) {
       visibility = invoker.visibility
     }
-    if (defined(invoker.output_name)) {
-      output_name = invoker.output_name
-    }
+    output_name = grit_output_name
   }
 }
