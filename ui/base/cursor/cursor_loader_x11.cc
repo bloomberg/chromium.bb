@@ -9,7 +9,6 @@
 #include <X11/cursorfont.h>
 
 #include "base/logging.h"
-#include "grit/ui_resources.h"
 #include "skia/ext/image_operations.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_util.h"

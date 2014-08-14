@@ -13,7 +13,6 @@
 #include "ui/app_list/speech_ui_model.h"
 #include "ui/app_list/views/app_list_menu_views.h"
 #include "ui/app_list/views/search_box_view_delegate.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
 #include "ui/views/border.h"

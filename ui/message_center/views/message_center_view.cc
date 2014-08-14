@@ -13,7 +13,6 @@
 #include "grit/ui_resources.h"
 #include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/animation/multi_animation.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"

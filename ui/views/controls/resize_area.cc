@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/resize_area_delegate.h"
 #include "ui/views/native_cursor.h"
 

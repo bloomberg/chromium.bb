@@ -6,10 +6,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
-#include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/app_list/app_list_constants.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace app_list {

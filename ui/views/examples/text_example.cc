@@ -5,7 +5,6 @@
 #include "ui/views/examples/text_example.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/border.h"

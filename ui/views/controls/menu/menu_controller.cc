@@ -10,7 +10,6 @@
 #include "base/time/time.h"
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/canvas.h"

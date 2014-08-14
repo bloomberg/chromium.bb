@@ -5,7 +5,6 @@
 #include "ui/views/controls/menu/menu_model_adapter.h"
 
 #include "base/logging.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/menu/menu_item_view.h"

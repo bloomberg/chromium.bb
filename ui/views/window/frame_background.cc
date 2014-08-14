@@ -4,7 +4,6 @@
 
 #include "ui/views/window/frame_background.h"
 
-#include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/theme_provider.h"

@@ -19,7 +19,6 @@
 #include "ui/app_list/views/contents_switcher_view.h"
 #include "ui/app_list/views/search_result_list_view.h"
 #include "ui/app_list/views/start_page_view.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
 #include "ui/views/view_model.h"
 #include "ui/views/view_model_utils.h"

@@ -5,8 +5,6 @@
 #include "ui/views/controls/button/label_button.h"
 
 #include "base/logging.h"
-#include "grit/ui_resources.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"

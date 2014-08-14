@@ -10,7 +10,6 @@
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/formatter.h"
-#include "ui/base/resource/resource_bundle.h"
 
 using base::ASCIIToUTF16;
 

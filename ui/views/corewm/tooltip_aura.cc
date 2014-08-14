@@ -7,7 +7,6 @@
 #include "base/strings/string_split.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"

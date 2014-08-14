@@ -4,9 +4,7 @@
 
 #include "ui/app_list/views/app_list_menu_views.h"
 
-#include "grit/ui_resources.h"
 #include "ui/app_list/app_list_view_delegate.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"

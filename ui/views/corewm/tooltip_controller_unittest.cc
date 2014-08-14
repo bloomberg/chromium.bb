@@ -13,7 +13,6 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/point.h"
