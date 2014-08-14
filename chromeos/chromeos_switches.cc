@@ -21,6 +21,10 @@ const char kConsumerDeviceManagementUrl[] = "consumer-device-management-url";
 // Forces the stub implementation of dbus clients.
 const char kDbusStub[] = "dbus-stub";
 
+// Comma-spearated list of dbus clients that should be unstubbed.
+// See chromeos/dbus/dbus_client_bundle.cc for the names of the dbus clients.
+const char kDbusUnstubClients[] = "dbus-unstub-clients";
+
 // Time before a machine at OOBE is considered derelict.
 const char kDerelictDetectionTimeout[] = "derelict-detection-timeout";
 

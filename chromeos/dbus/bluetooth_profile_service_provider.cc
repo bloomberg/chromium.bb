@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/sys_info.h"
 #include "base/threading/platform_thread.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_bluetooth_profile_service_provider.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
@@ -252,7 +252,7 @@ BluetoothProfileServiceProvider* BluetoothProfileServiceProvider::Create(
     dbus::Bus* bus,
     const dbus::ObjectPath& object_path,
     Delegate* delegate) {
-  if (base::SysInfo::IsRunningOnChromeOS()) {
+  if (!DBusThreadManager::IsUsingStub(DBusClientBundle::BLUETOOTH)) {
     return new BluetoothProfileServiceProviderImpl(bus, object_path, delegate);
   } else {
     return new FakeBluetoothProfileServiceProvider(object_path, delegate);

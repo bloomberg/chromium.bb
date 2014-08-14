@@ -235,6 +235,10 @@ class BluetoothChromeOSTest : public testing::Test {
  public:
   virtual void SetUp() {
     FakeDBusThreadManager* fake_dbus_thread_manager = new FakeDBusThreadManager;
+    // We need to initialize DBusThreadManager early to prevent
+    // Bluetooth*::Create() methods from picking the real instead of fake
+    // implementations.
+    DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager);
     fake_bluetooth_adapter_client_ = new FakeBluetoothAdapterClient;
     fake_dbus_thread_manager->SetBluetoothAdapterClient(
         scoped_ptr<BluetoothAdapterClient>(fake_bluetooth_adapter_client_));
@@ -249,7 +253,6 @@ class BluetoothChromeOSTest : public testing::Test {
     fake_dbus_thread_manager->SetBluetoothGattServiceClient(
         scoped_ptr<BluetoothGattServiceClient>(
             new FakeBluetoothGattServiceClient));
-    DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager);
 
     fake_bluetooth_adapter_client_->SetSimulationIntervalMs(10);
 

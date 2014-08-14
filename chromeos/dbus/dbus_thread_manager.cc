@@ -21,6 +21,7 @@
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_client.h"
+#include "chromeos/dbus/dbus_client_bundle.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/dbus/easy_unlock_client.h"
 #include "chromeos/dbus/fake_dbus_thread_manager.h"
@@ -28,6 +29,7 @@
 #include "chromeos/dbus/image_burner_client.h"
 #include "chromeos/dbus/introspectable_client.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
+#include "chromeos/dbus/mixed_dbus_thread_manager.h"
 #include "chromeos/dbus/modem_messaging_client.h"
 #include "chromeos/dbus/nfc_adapter_client.h"
 #include "chromeos/dbus/nfc_device_client.h"
@@ -54,207 +56,8 @@ namespace chromeos {
 static DBusThreadManager* g_dbus_thread_manager = NULL;
 static DBusThreadManager* g_dbus_thread_manager_for_testing = NULL;
 
-// The bundle of all D-Bus clients used in DBusThreadManagerImpl. The bundle
-// is used to delete them at once in the right order before shutting down the
-// system bus. See also the comment in the destructor of DBusThreadManagerImpl.
-class DBusClientBundle {
- public:
-  DBusClientBundle() {
-    const DBusClientImplementationType type = REAL_DBUS_CLIENT_IMPLEMENTATION;
-
-    bluetooth_adapter_client_.reset(BluetoothAdapterClient::Create());
-    bluetooth_agent_manager_client_.reset(
-        BluetoothAgentManagerClient::Create());
-    bluetooth_device_client_.reset(BluetoothDeviceClient::Create());
-    bluetooth_gatt_characteristic_client_.reset(
-        BluetoothGattCharacteristicClient::Create());
-    bluetooth_gatt_descriptor_client_.reset(
-        BluetoothGattDescriptorClient::Create());
-    bluetooth_gatt_manager_client_.reset(BluetoothGattManagerClient::Create());
-    bluetooth_gatt_service_client_.reset(BluetoothGattServiceClient::Create());
-    bluetooth_input_client_.reset(BluetoothInputClient::Create());
-    bluetooth_profile_manager_client_.reset(
-        BluetoothProfileManagerClient::Create());
-    cras_audio_client_.reset(CrasAudioClient::Create());
-    cros_disks_client_.reset(CrosDisksClient::Create(type));
-    cryptohome_client_.reset(CryptohomeClient::Create());
-    debug_daemon_client_.reset(DebugDaemonClient::Create());
-    easy_unlock_client_.reset(EasyUnlockClient::Create());
-    lorgnette_manager_client_.reset(LorgnetteManagerClient::Create());
-    shill_manager_client_.reset(ShillManagerClient::Create());
-    shill_device_client_.reset(ShillDeviceClient::Create());
-    shill_ipconfig_client_.reset(ShillIPConfigClient::Create());
-    shill_service_client_.reset(ShillServiceClient::Create());
-    shill_profile_client_.reset(ShillProfileClient::Create());
-    gsm_sms_client_.reset(GsmSMSClient::Create());
-    image_burner_client_.reset(ImageBurnerClient::Create());
-    introspectable_client_.reset(IntrospectableClient::Create());
-    modem_messaging_client_.reset(ModemMessagingClient::Create());
-    // Create the NFC clients in the correct order based on their dependencies.
-    nfc_manager_client_.reset(NfcManagerClient::Create());
-    nfc_adapter_client_.reset(
-        NfcAdapterClient::Create(nfc_manager_client_.get()));
-    nfc_device_client_.reset(
-        NfcDeviceClient::Create(nfc_adapter_client_.get()));
-    nfc_tag_client_.reset(NfcTagClient::Create(nfc_adapter_client_.get()));
-    nfc_record_client_.reset(NfcRecordClient::Create(nfc_device_client_.get(),
-                                                    nfc_tag_client_.get()));
-    permission_broker_client_.reset(PermissionBrokerClient::Create());
-    power_manager_client_.reset(PowerManagerClient::Create(type));
-    session_manager_client_.reset(SessionManagerClient::Create(type));
-    sms_client_.reset(SMSClient::Create());
-    system_clock_client_.reset(SystemClockClient::Create());
-    update_engine_client_.reset(UpdateEngineClient::Create(type));
-  }
-
-  BluetoothAdapterClient* bluetooth_adapter_client() {
-    return bluetooth_adapter_client_.get();
-  }
-  BluetoothAgentManagerClient* bluetooth_agent_manager_client() {
-    return bluetooth_agent_manager_client_.get();
-  }
-  BluetoothDeviceClient* bluetooth_device_client() {
-    return bluetooth_device_client_.get();
-  }
-  BluetoothGattCharacteristicClient* bluetooth_gatt_characteristic_client() {
-    return bluetooth_gatt_characteristic_client_.get();
-  }
-  BluetoothGattDescriptorClient* bluetooth_gatt_descriptor_client() {
-    return bluetooth_gatt_descriptor_client_.get();
-  }
-  BluetoothGattManagerClient* bluetooth_gatt_manager_client() {
-    return bluetooth_gatt_manager_client_.get();
-  }
-  BluetoothGattServiceClient* bluetooth_gatt_service_client() {
-    return bluetooth_gatt_service_client_.get();
-  }
-  BluetoothInputClient* bluetooth_input_client() {
-    return bluetooth_input_client_.get();
-  }
-  BluetoothProfileManagerClient* bluetooth_profile_manager_client() {
-    return bluetooth_profile_manager_client_.get();
-  }
-  CrasAudioClient* cras_audio_client() {
-    return cras_audio_client_.get();
-  }
-  CrosDisksClient* cros_disks_client() {
-    return cros_disks_client_.get();
-  }
-  CryptohomeClient* cryptohome_client() {
-    return cryptohome_client_.get();
-  }
-  DebugDaemonClient* debug_daemon_client() {
-    return debug_daemon_client_.get();
-  }
-  EasyUnlockClient* easy_unlock_client() {
-    return easy_unlock_client_.get();
-  }
-  LorgnetteManagerClient* lorgnette_manager_client() {
-    return lorgnette_manager_client_.get();
-  }
-  ShillDeviceClient* shill_device_client() {
-    return shill_device_client_.get();
-  }
-  ShillIPConfigClient* shill_ipconfig_client() {
-    return shill_ipconfig_client_.get();
-  }
-  ShillManagerClient* shill_manager_client() {
-    return shill_manager_client_.get();
-  }
-  ShillServiceClient* shill_service_client() {
-    return shill_service_client_.get();
-  }
-  ShillProfileClient* shill_profile_client() {
-    return shill_profile_client_.get();
-  }
-  GsmSMSClient* gsm_sms_client() {
-    return gsm_sms_client_.get();
-  }
-  ImageBurnerClient* image_burner_client() {
-    return image_burner_client_.get();
-  }
-  IntrospectableClient* introspectable_client() {
-    return introspectable_client_.get();
-  }
-  ModemMessagingClient* modem_messaging_client() {
-    return modem_messaging_client_.get();
-  }
-  NfcManagerClient* nfc_manager_client() {
-    return nfc_manager_client_.get();
-  }
-  NfcAdapterClient* nfc_adapter_client() {
-    return nfc_adapter_client_.get();
-  }
-  NfcDeviceClient* nfc_device_client() {
-    return nfc_device_client_.get();
-  }
-  NfcTagClient* nfc_tag_client() {
-    return nfc_tag_client_.get();
-  }
-  NfcRecordClient* nfc_record_client() {
-    return nfc_record_client_.get();
-  }
-  PermissionBrokerClient* permission_broker_client() {
-    return permission_broker_client_.get();
-  }
-  SystemClockClient* system_clock_client() {
-    return system_clock_client_.get();
-  }
-  PowerManagerClient* power_manager_client() {
-    return power_manager_client_.get();
-  }
-  SessionManagerClient* session_manager_client() {
-    return session_manager_client_.get();
-  }
-  SMSClient* sms_client() {
-    return sms_client_.get();
-  }
-  UpdateEngineClient* update_engine_client() {
-    return update_engine_client_.get();
-  }
-
- private:
-  scoped_ptr<BluetoothAdapterClient> bluetooth_adapter_client_;
-  scoped_ptr<BluetoothAgentManagerClient> bluetooth_agent_manager_client_;
-  scoped_ptr<BluetoothDeviceClient> bluetooth_device_client_;
-  scoped_ptr<BluetoothGattCharacteristicClient>
-      bluetooth_gatt_characteristic_client_;
-  scoped_ptr<BluetoothGattDescriptorClient> bluetooth_gatt_descriptor_client_;
-  scoped_ptr<BluetoothGattManagerClient> bluetooth_gatt_manager_client_;
-  scoped_ptr<BluetoothGattServiceClient> bluetooth_gatt_service_client_;
-  scoped_ptr<BluetoothInputClient> bluetooth_input_client_;
-  scoped_ptr<BluetoothProfileManagerClient> bluetooth_profile_manager_client_;
-  scoped_ptr<CrasAudioClient> cras_audio_client_;
-  scoped_ptr<CrosDisksClient> cros_disks_client_;
-  scoped_ptr<CryptohomeClient> cryptohome_client_;
-  scoped_ptr<DebugDaemonClient> debug_daemon_client_;
-  scoped_ptr<EasyUnlockClient> easy_unlock_client_;
-  scoped_ptr<LorgnetteManagerClient> lorgnette_manager_client_;
-  scoped_ptr<ShillDeviceClient> shill_device_client_;
-  scoped_ptr<ShillIPConfigClient> shill_ipconfig_client_;
-  scoped_ptr<ShillManagerClient> shill_manager_client_;
-  scoped_ptr<ShillServiceClient> shill_service_client_;
-  scoped_ptr<ShillProfileClient> shill_profile_client_;
-  scoped_ptr<GsmSMSClient> gsm_sms_client_;
-  scoped_ptr<ImageBurnerClient> image_burner_client_;
-  scoped_ptr<IntrospectableClient> introspectable_client_;
-  scoped_ptr<ModemMessagingClient> modem_messaging_client_;
-  // The declaration order for NFC client objects is important. See
-  // DBusThreadManager::CreateDefaultClients for the dependencies.
-  scoped_ptr<NfcManagerClient> nfc_manager_client_;
-  scoped_ptr<NfcAdapterClient> nfc_adapter_client_;
-  scoped_ptr<NfcDeviceClient> nfc_device_client_;
-  scoped_ptr<NfcTagClient> nfc_tag_client_;
-  scoped_ptr<NfcRecordClient> nfc_record_client_;
-  scoped_ptr<PermissionBrokerClient> permission_broker_client_;
-  scoped_ptr<SystemClockClient> system_clock_client_;
-  scoped_ptr<PowerManagerClient> power_manager_client_;
-  scoped_ptr<SessionManagerClient> session_manager_client_;
-  scoped_ptr<SMSClient> sms_client_;
-  scoped_ptr<UpdateEngineClient> update_engine_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(DBusClientBundle);
-};
+DBusClientBundle::DBusClientTypeMask
+    DBusThreadManager::unstub_client_mask_ = DBusClientBundle::NO_CLIENTS;
 
 // The DBusThreadManager implementation used in production.
 class DBusThreadManagerImpl : public DBusThreadManager {
@@ -291,7 +94,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     dbus_thread_->Stop();
   }
 
-  // DBusThreadManager overrides:
   virtual dbus::Bus* GetSystemBus() OVERRIDE {
     return system_bus_.get();
   }
@@ -447,8 +249,11 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   // Constructs all clients and stores them in the respective *_client_ member
   // variable.
   void CreateDefaultClients() {
-    client_bundle_.reset(new DBusClientBundle);
-    power_policy_controller_.reset(new PowerPolicyController);
+    client_bundle_.reset(new DBusClientBundle());
+    // TODO(crbug.com/345586): Move PowerPolicyController out of
+    // DBusThreadManagerImpl.
+    if (!DBusThreadManager::IsUsingStub(DBusClientBundle::POWER_MANAGER))
+      power_policy_controller_.reset(new PowerPolicyController);
   }
 
   scoped_ptr<base::Thread> dbus_thread_;
@@ -458,6 +263,11 @@ class DBusThreadManagerImpl : public DBusThreadManager {
 
   DISALLOW_COPY_AND_ASSIGN(DBusThreadManagerImpl);
 };
+
+// static
+bool DBusThreadManager::IsUsingStub(DBusClientBundle::DBusClientType client) {
+  return !(unstub_client_mask_ & client);
+}
 
 // static
 void DBusThreadManager::Initialize() {
@@ -472,15 +282,20 @@ void DBusThreadManager::Initialize() {
     return;
   }
 
-  // Determine whether we use stub or real client implementations.
-  if (!base::SysInfo::IsRunningOnChromeOS() ||
+  bool use_dbus_stub = !base::SysInfo::IsRunningOnChromeOS() ||
       CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kDbusStub)) {
+          chromeos::switches::kDbusStub);
+  bool force_unstub_clients = CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kDbusUnstubClients);
+  // Determine whether we use stub or real client implementations.
+  if (force_unstub_clients) {
+    InitializeWithPartialStub(
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            chromeos::switches::kDbusUnstubClients));
+  } else if (use_dbus_stub) {
     InitializeWithStub();
   } else {
-    g_dbus_thread_manager = new DBusThreadManagerImpl;
-    InitializeClients();
-    VLOG(1) << "DBusThreadManager initialized for Chrome OS";
+    InitializeRegular();
   }
 }
 
@@ -495,12 +310,47 @@ void DBusThreadManager::SetInstanceForTesting(
 // static
 void DBusThreadManager::InitializeForTesting(
     DBusThreadManager* dbus_thread_manager) {
+  unstub_client_mask_ = DBusClientBundle::NO_CLIENTS;
   SetInstanceForTesting(dbus_thread_manager);
   Initialize();
 }
 
 // static
+void DBusThreadManager::InitializeRegular() {
+  unstub_client_mask_ = DBusClientBundle::ALL_CLIENTS;
+  g_dbus_thread_manager = new DBusThreadManagerImpl();
+  InitializeClients();
+  VLOG(1) << "DBusThreadManager initialized for Chrome OS";
+}
+
+// static
+void DBusThreadManager::InitializeWithPartialStub(
+    const std::string& unstub_clients) {
+  // If we initialize DBusThreadManager twice we may also be shutting it down
+  // early; do not allow that.
+  CHECK(g_dbus_thread_manager == NULL);
+
+  unstub_client_mask_ = DBusClientBundle::ParseUnstubList(unstub_clients);
+  // We should have something parsed correctly here.
+  if (unstub_client_mask_ == 0) {
+    LOG(FATAL) << "Switch values for --"
+               << chromeos::switches::kDbusUnstubClients
+               << " cannot be parsed: "
+               << unstub_clients;
+  }
+  DBusThreadManager* real_thread_manager = new DBusThreadManagerImpl();
+  FakeDBusThreadManager* fake_dbus_thread_manager = new FakeDBusThreadManager;
+  fake_dbus_thread_manager->SetFakeClients();
+  VLOG(1) << "DBusThreadManager initialized for mixed runtime environment";
+  g_dbus_thread_manager = new MixedDBusThreadManager(real_thread_manager,
+                                                     fake_dbus_thread_manager);
+  InitializeClients();
+  fake_dbus_thread_manager->SetupDefaultEnvironment();
+}
+
+// static
 void DBusThreadManager::InitializeWithStub() {
+  unstub_client_mask_ = DBusClientBundle::NO_CLIENTS;
   // If we initialize DBusThreadManager twice we may also be shutting it down
   // early; do not allow that.
   CHECK(g_dbus_thread_manager == NULL);

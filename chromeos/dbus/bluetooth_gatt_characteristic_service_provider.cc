@@ -8,8 +8,8 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_util.h"
-#include "base/sys_info.h"
 #include "base/threading/platform_thread.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_bluetooth_gatt_characteristic_service_provider.h"
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
@@ -464,7 +464,7 @@ BluetoothGattCharacteristicServiceProvider::Create(
       const std::vector<std::string>& flags,
       const std::vector<std::string>& permissions,
       const dbus::ObjectPath& service_path) {
-  if (base::SysInfo::IsRunningOnChromeOS()) {
+  if (!DBusThreadManager::IsUsingStub(DBusClientBundle::BLUETOOTH)) {
     return new BluetoothGattCharacteristicServiceProviderImpl(
         bus, object_path, delegate, uuid, flags, permissions, service_path);
   }
