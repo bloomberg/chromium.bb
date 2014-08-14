@@ -98,7 +98,7 @@ void HotwordServiceFactory::RegisterProfilePrefs(
                              false,
                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   // Although this is default true, users will not send back information to
-  // Google unless they have opted in to Hotwording at which point they must
+  // Google unless they have opted-in to Hotwording at which point they must
   // also confirm that they wish this preference to be true or opt out of it.
   prefs->RegisterBooleanPref(prefs::kHotwordAudioLoggingEnabled,
                              true,
@@ -106,6 +106,9 @@ void HotwordServiceFactory::RegisterProfilePrefs(
   prefs->RegisterStringPref(prefs::kHotwordPreviousLanguage,
                             std::string(),
                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kHotwordAlwaysOnSearchEnabled,
+                             false,
+                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 KeyedService* HotwordServiceFactory::BuildServiceInstanceFor(

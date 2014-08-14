@@ -276,6 +276,8 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "homePageShowHomeButton", IDS_OPTIONS_TOOLBAR_SHOW_HOME_BUTTON },
     { "homePageUseNewTab", IDS_OPTIONS_HOMEPAGE_USE_NEWTAB },
     { "homePageUseURL", IDS_OPTIONS_HOMEPAGE_USE_URL },
+    { "hotwordAlwaysOnSearchEnable", IDS_HOTWORD_ALWAYS_ON_SEARCH_PREF_CHKBOX },
+    { "hotwordAudioHistoryEnable", IDS_HOTWORD_AUDIO_HISTORY_PREF_CHKBOX },
     { "hotwordSearchEnable", IDS_HOTWORD_SEARCH_PREF_CHKBOX },
     { "hotwordConfirmEnable", IDS_HOTWORD_CONFIRM_BUBBLE_ENABLE },
     { "hotwordConfirmDisable", IDS_HOTWORD_CONFIRM_BUBBLE_DISABLE },
@@ -1585,16 +1587,17 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
     const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
   std::string group = base::FieldTrialList::FindFullName("VoiceTrigger");
+  base::FundamentalValue enabled(
+      profile->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled));
   if (group != "" && group != "Disabled" &&
       HotwordServiceFactory::IsHotwordAllowed(profile)) {
     // Update the current error value.
     HotwordServiceFactory::IsServiceAvailable(profile);
     int error = HotwordServiceFactory::GetCurrentError(profile);
     if (!error) {
-      web_ui()->CallJavascriptFunction("BrowserOptions.showHotwordSection");
+      web_ui()->CallJavascriptFunction("BrowserOptions.showHotwordSection",
+                                       enabled);
     } else {
-      base::FundamentalValue enabled(
-          profile->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled));
       base::string16 hotword_help_url =
           base::ASCIIToUTF16(chrome::kHotwordLearnMoreURL);
       base::StringValue error_message(l10n_util::GetStringUTF16(error));
@@ -1604,6 +1607,11 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
       }
       web_ui()->CallJavascriptFunction("BrowserOptions.showHotwordSection",
                                        enabled, error_message);
+    }
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableExperimentalHotwording)) {
+      web_ui()->CallJavascriptFunction(
+          "BrowserOptions.showHotwordAlwaysOnSection");
     }
   }
 }

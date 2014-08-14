@@ -1099,6 +1099,16 @@ cr.define('options', function() {
     },
 
     /**
+     * Activates the Audio History and Always-On Hotword sections from the
+     * System settings page.
+     * @private
+     */
+    showHotwordAlwaysOnSection_: function() {
+      $('hotword-always-on-search').hidden = false;
+      $('audio-logging').hidden = false;
+    },
+
+    /**
      * Event listener for the 'homepage is NTP' preference. Updates the label
      * next to the 'Change' button.
      * @param {Event} event The preference change event.
@@ -1926,6 +1936,7 @@ cr.define('options', function() {
     'showCreateProfileError',
     'showCreateProfileSuccess',
     'showCreateProfileWarning',
+    'showHotwordAlwaysOnSection',
     'showHotwordSection',
     'showMouseControls',
     'showSupervisedUserImportError',

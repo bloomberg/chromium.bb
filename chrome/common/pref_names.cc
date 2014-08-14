@@ -1788,6 +1788,10 @@ const char kVideoCaptureAllowedUrls[] = "hardware.video_capture_allowed_urls";
 // trigger.
 const char kHotwordSearchEnabled[] = "hotword.search_enabled_2";
 
+// A boolean pref that controls the enabled-state of hotword search voice
+// trigger from any screen.
+const char kHotwordAlwaysOnSearchEnabled[] = "hotword.always_on_search_enabled";
+
 // A boolean pref that controls whether the sound of "Ok, Google" plus a few
 // seconds of audio data before is sent back to improve voice search.
 const char kHotwordAudioLoggingEnabled[] = "hotword.audio_logging_enabled";

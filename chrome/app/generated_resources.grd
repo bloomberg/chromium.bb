@@ -6616,11 +6616,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Set which search engine is used when searching from the
         <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>omnibox<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
       </message>
-      <message name="IDS_HOTWORD_SEARCH_PREF_CHKBOX" desc="A checkbox under Search on the Settings page to allow audio capture devices to initiate searches.">
+      <message name="IDS_HOTWORD_SEARCH_PREF_CHKBOX" desc="A checkbox on the Settings page to allow audio capture devices to initiate searches.">
         Enable "Ok Google" to start a voice search
       </message>
-      <message name="IDS_HOTWORD_SEARCH_PREF_DESCRIPTION" desc="Description of the hotword  search preference">
+      <message name="IDS_HOTWORD_SEARCH_PREF_DESCRIPTION" desc="Description of the hotword search preference">
         When you say "Ok Google," Chrome will search for what you say next.
+      </message>
+      <message name="IDS_HOTWORD_ALWAYS_ON_SEARCH_PREF_CHKBOX" desc="A checkbox on the Settings page to allow audio capture devices to initiate searches from any screen.">
+        Enable "Ok Google" from any screen, when the screen is on and unlocked
+      </message>
+      <message name="IDS_HOTWORD_AUDIO_HISTORY_PREF_CHKBOX" desc="A checkbox on the Settings page that allows for sending audio of 'Ok, Google' plus a few seconds before back to Google to improve voice search.">
+        Enable audio history
       </message>
       <message name="IDS_HOTWORD_CONFIRM_BUBBLE_TITLE" desc="The title text for the bubble to enable the hotword voice search trigger.">
         Ok Google
