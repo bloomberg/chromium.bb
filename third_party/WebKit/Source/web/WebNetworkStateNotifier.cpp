@@ -33,8 +33,6 @@
 
 #include "core/page/NetworkStateNotifier.h"
 
-using namespace blink;
-
 namespace blink {
 
 void WebNetworkStateNotifier::setOnLine(bool onLine)

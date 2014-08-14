@@ -50,12 +50,12 @@ void WebUserGestureToken::setJavascriptPrompt()
     m_token->setJavascriptPrompt();
 }
 
-WebUserGestureToken::WebUserGestureToken(PassRefPtr<blink::UserGestureToken> token)
+WebUserGestureToken::WebUserGestureToken(PassRefPtr<UserGestureToken> token)
 {
     m_token = token;
 }
 
-WebUserGestureToken::operator PassRefPtr<blink::UserGestureToken>() const
+WebUserGestureToken::operator PassRefPtr<UserGestureToken>() const
 {
     return m_token.get();
 }

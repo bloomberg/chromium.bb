@@ -33,8 +33,6 @@
 
 #include "platform/text/TextCheckerClient.h"
 
-using namespace blink;
-
 namespace blink {
 
 WebTextCheckingResult::operator TextCheckingResult() const

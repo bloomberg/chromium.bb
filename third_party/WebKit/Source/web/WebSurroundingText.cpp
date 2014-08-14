@@ -35,8 +35,6 @@
 #include "public/platform/WebPoint.h"
 #include "public/web/WebHitTestResult.h"
 
-using namespace blink;
-
 namespace blink {
 
 void WebSurroundingText::initialize(const WebNode& webNode, const WebPoint& nodePoint, size_t maxLength)

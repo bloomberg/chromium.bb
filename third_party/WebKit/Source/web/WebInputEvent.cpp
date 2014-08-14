@@ -36,8 +36,6 @@
 #include "wtf/StringExtras.h"
 #include <ctype.h>
 
-using namespace blink;
-
 namespace blink {
 
 struct SameSizeAsWebInputEvent {

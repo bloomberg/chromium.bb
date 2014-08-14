@@ -72,8 +72,6 @@
 #include "wtf/Functional.h"
 #include "wtf/MainThread.h"
 
-using namespace blink;
-
 namespace blink {
 
 // A thin wrapper for one-off script loading.

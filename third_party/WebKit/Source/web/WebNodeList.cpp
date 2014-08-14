@@ -36,8 +36,6 @@
 #include "public/web/WebNode.h"
 #include "wtf/PassRefPtr.h"
 
-using namespace blink;
-
 namespace blink {
 
 void WebNodeList::reset()

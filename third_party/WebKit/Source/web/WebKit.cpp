@@ -64,8 +64,6 @@
 #include "wtf/text/TextEncoding.h"
 #include <v8.h>
 
-using blink::LayoutTestSupport;
-
 namespace blink {
 
 namespace {
@@ -74,12 +72,12 @@ class EndOfTaskRunner : public WebThread::TaskObserver {
 public:
     virtual void willProcessTask() OVERRIDE
     {
-        blink::AnimationClock::notifyTaskStart();
+        AnimationClock::notifyTaskStart();
     }
     virtual void didProcessTask() OVERRIDE
     {
-        blink::Microtask::performCheckpoint();
-        blink::V8GCController::reportDOMMemoryUsageToV8(mainThreadIsolate());
+        Microtask::performCheckpoint();
+        V8GCController::reportDOMMemoryUsageToV8(mainThreadIsolate());
     }
 };
 
@@ -87,8 +85,8 @@ public:
 
 static WebThread::TaskObserver* s_endOfTaskRunner = 0;
 static WebThread::TaskObserver* s_pendingGCRunner = 0;
-static blink::ThreadState::Interruptor* s_messageLoopInterruptor = 0;
-static blink::ThreadState::Interruptor* s_isolateInterruptor = 0;
+static ThreadState::Interruptor* s_messageLoopInterruptor = 0;
+static ThreadState::Interruptor* s_isolateInterruptor = 0;
 
 // Make sure we are not re-initialized in the same address space.
 // Doing so may cause hard to reproduce crashes.
@@ -110,14 +108,14 @@ void initialize(Platform* platform)
     v8::V8::InitializePlatform(gin::V8Platform::Get());
     v8::Isolate* isolate = v8::Isolate::New();
     isolate->Enter();
-    blink::V8Initializer::initializeMainThreadIfNeeded(isolate);
+    V8Initializer::initializeMainThreadIfNeeded(isolate);
     v8::V8::SetEntropySource(&generateEntropy);
-    v8::V8::SetArrayBufferAllocator(blink::v8ArrayBufferAllocator());
+    v8::V8::SetArrayBufferAllocator(v8ArrayBufferAllocator());
     v8::V8::Initialize();
-    blink::V8PerIsolateData::ensureInitialized(isolate);
+    V8PerIsolateData::ensureInitialized(isolate);
 
-    s_isolateInterruptor = new blink::V8IsolateInterruptor(v8::Isolate::GetCurrent());
-    blink::ThreadState::current()->addInterruptor(s_isolateInterruptor);
+    s_isolateInterruptor = new V8IsolateInterruptor(v8::Isolate::GetCurrent());
+    ThreadState::current()->addInterruptor(s_isolateInterruptor);
 
     // currentThread will always be non-null in production, but can be null in Chromium unit tests.
     if (WebThread* currentThread = platform->currentThread()) {
@@ -129,7 +127,7 @@ void initialize(Platform* platform)
 
 v8::Isolate* mainThreadIsolate()
 {
-    return blink::V8PerIsolateData::mainThreadIsolate();
+    return V8PerIsolateData::mainThreadIsolate();
 }
 
 static double currentTimeFunction()
@@ -149,7 +147,7 @@ static void cryptographicallyRandomValues(unsigned char* buffer, size_t length)
 
 static void callOnMainThreadFunction(WTF::MainThreadFunction function, void* context)
 {
-    blink::Scheduler::shared()->postTask(FROM_HERE, bind(function, context));
+    Scheduler::shared()->postTask(FROM_HERE, bind(function, context));
 }
 
 void initializeWithoutV8(Platform* platform)
@@ -163,22 +161,22 @@ void initializeWithoutV8(Platform* platform)
     WTF::setRandomSource(cryptographicallyRandomValues);
     WTF::initialize(currentTimeFunction, monotonicallyIncreasingTimeFunction);
     WTF::initializeMainThread(callOnMainThreadFunction);
-    blink::Heap::init();
-    blink::Scheduler::initializeOnMainThread();
+    Heap::init();
+    Scheduler::initializeOnMainThread();
 
-    blink::ThreadState::attachMainThread();
+    ThreadState::attachMainThread();
     // currentThread will always be non-null in production, but can be null in Chromium unit tests.
     if (WebThread* currentThread = platform->currentThread()) {
         ASSERT(!s_pendingGCRunner);
-        s_pendingGCRunner = new blink::PendingGCRunner;
+        s_pendingGCRunner = new PendingGCRunner;
         currentThread->addTaskObserver(s_pendingGCRunner);
 
         ASSERT(!s_messageLoopInterruptor);
-        s_messageLoopInterruptor = new blink::MessageLoopInterruptor(currentThread);
-        blink::ThreadState::current()->addInterruptor(s_messageLoopInterruptor);
+        s_messageLoopInterruptor = new MessageLoopInterruptor(currentThread);
+        ThreadState::current()->addInterruptor(s_messageLoopInterruptor);
     }
 
-    DEFINE_STATIC_LOCAL(blink::ModulesInitializer, initializer, ());
+    DEFINE_STATIC_LOCAL(ModulesInitializer, initializer, ());
     initializer.init();
 
     // There are some code paths (for example, running WebKit in the browser
@@ -190,9 +188,9 @@ void initializeWithoutV8(Platform* platform)
     // this, initializing this lazily probably doesn't buy us much.
     WTF::UTF8Encoding();
 
-    blink::setIndexedDBClientCreateFunction(blink::IndexedDBClientImpl::create);
+    setIndexedDBClientCreateFunction(IndexedDBClientImpl::create);
 
-    blink::MediaPlayer::setMediaEngineCreateFunction(blink::WebMediaPlayerClientImpl::create);
+    MediaPlayer::setMediaEngineCreateFunction(WebMediaPlayerClientImpl::create);
 }
 
 void shutdown()
@@ -206,7 +204,7 @@ void shutdown()
     }
 
     ASSERT(s_isolateInterruptor);
-    blink::ThreadState::current()->removeInterruptor(s_isolateInterruptor);
+    ThreadState::current()->removeInterruptor(s_isolateInterruptor);
 
     // currentThread will always be non-null in production, but can be null in Chromium unit tests.
     if (Platform::current()->currentThread()) {
@@ -215,17 +213,17 @@ void shutdown()
         s_pendingGCRunner = 0;
 
         ASSERT(s_messageLoopInterruptor);
-        blink::ThreadState::current()->removeInterruptor(s_messageLoopInterruptor);
+        ThreadState::current()->removeInterruptor(s_messageLoopInterruptor);
         delete s_messageLoopInterruptor;
         s_messageLoopInterruptor = 0;
     }
 
     // Detach the main thread before starting the shutdown sequence
     // so that the main thread won't get involved in a GC during the shutdown.
-    blink::ThreadState::detachMainThread();
+    ThreadState::detachMainThread();
 
-    v8::Isolate* isolate = blink::V8PerIsolateData::mainThreadIsolate();
-    blink::V8PerIsolateData::dispose(isolate);
+    v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
+    V8PerIsolateData::dispose(isolate);
     isolate->Exit();
     isolate->Dispose();
 
@@ -235,10 +233,10 @@ void shutdown()
 void shutdownWithoutV8()
 {
     ASSERT(!s_endOfTaskRunner);
-    blink::CoreInitializer::shutdown();
-    blink::Heap::shutdown();
+    CoreInitializer::shutdown();
+    Heap::shutdown();
     WTF::shutdown();
-    blink::Scheduler::shutdown();
+    Scheduler::shutdown();
     Platform::shutdown();
     WebPrerenderingSupport::shutdown();
 }
@@ -266,7 +264,7 @@ bool fontAntialiasingEnabledForTest()
 void enableLogChannel(const char* name)
 {
 #if !LOG_DISABLED
-    WTFLogChannel* channel = blink::getChannelFromName(name);
+    WTFLogChannel* channel = getChannelFromName(name);
     if (channel)
         channel->state = WTFLogChannelOn;
 #endif // !LOG_DISABLED
@@ -274,7 +272,7 @@ void enableLogChannel(const char* name)
 
 void resetPluginCache(bool reloadPages)
 {
-    blink::Page::refreshPlugins(reloadPages);
+    Page::refreshPlugins(reloadPages);
 }
 
 } // namespace blink

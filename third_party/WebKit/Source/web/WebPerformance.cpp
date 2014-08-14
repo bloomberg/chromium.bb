@@ -33,8 +33,6 @@
 
 #include "core/timing/Performance.h"
 
-using namespace blink;
-
 namespace blink {
 
 static double millisecondsToSeconds(unsigned long long milliseconds)

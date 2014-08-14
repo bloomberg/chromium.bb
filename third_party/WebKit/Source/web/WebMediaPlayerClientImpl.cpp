@@ -48,8 +48,6 @@
 #include "wtf/Assertions.h"
 #include "wtf/text/CString.h"
 
-using namespace blink;
-
 namespace blink {
 
 static PassOwnPtr<WebMediaPlayer> createWebMediaPlayer(WebMediaPlayerClient* client, const WebURL& url, LocalFrame* frame)
@@ -131,7 +129,7 @@ void WebMediaPlayerClientImpl::keyNeeded(const WebString& contentType, const uns
     HTMLMediaElementEncryptedMedia::keyNeeded(mediaElement(), contentType, initData, initDataLength);
 }
 
-void WebMediaPlayerClientImpl::setWebLayer(blink::WebLayer* layer)
+void WebMediaPlayerClientImpl::setWebLayer(WebLayer* layer)
 {
     m_client->mediaPlayerSetWebLayer(layer);
 }
@@ -235,7 +233,7 @@ WebMediaPlayerClientImpl::WebMediaPlayerClientImpl(MediaPlayerClient* client)
     ASSERT(m_client);
 }
 
-blink::HTMLMediaElement& WebMediaPlayerClientImpl::mediaElement() const
+HTMLMediaElement& WebMediaPlayerClientImpl::mediaElement() const
 {
     return *static_cast<HTMLMediaElement*>(m_client);
 }

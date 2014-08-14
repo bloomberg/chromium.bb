@@ -43,8 +43,6 @@
 #include "public/web/WebElementCollection.h"
 #include "wtf/PassRefPtr.h"
 
-using namespace blink;
-
 namespace blink {
 
 bool WebInputElement::isTextField() const

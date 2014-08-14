@@ -17,8 +17,6 @@
 #include "web/WebViewImpl.h"
 #include <v8/include/v8.h>
 
-using namespace blink;
-
 namespace blink {
 
 namespace {

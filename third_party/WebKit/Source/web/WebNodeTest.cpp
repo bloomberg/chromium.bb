@@ -12,10 +12,6 @@
 
 namespace blink {
 
-using blink::Document;
-using blink::DummyPageHolder;
-using blink::IntSize;
-
 class WebNodeTest : public testing::Test {
 protected:
     Document& document() { return m_pageHolder->document(); }
@@ -28,7 +24,7 @@ private:
 
 void WebNodeTest::SetUp()
 {
-    m_pageHolder = blink::DummyPageHolder::create(IntSize(800, 600));
+    m_pageHolder = DummyPageHolder::create(IntSize(800, 600));
 }
 
 TEST_F(WebNodeTest, GetElementsByHTMLTagName)

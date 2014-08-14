@@ -41,12 +41,12 @@ void WebSpeechGrammar::assign(const WebSpeechGrammar& other)
     m_private = other.m_private;
 }
 
-WebSpeechGrammar::WebSpeechGrammar(blink::SpeechGrammar* value)
+WebSpeechGrammar::WebSpeechGrammar(SpeechGrammar* value)
     : m_private(value)
 {
 }
 
-WebSpeechGrammar& WebSpeechGrammar::operator=(blink::SpeechGrammar* value)
+WebSpeechGrammar& WebSpeechGrammar::operator=(SpeechGrammar* value)
 {
     m_private = value;
     return *this;

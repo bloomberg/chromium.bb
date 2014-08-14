@@ -33,11 +33,9 @@
 
 #include "platform/text/TextRun.h"
 
-using namespace blink;
-
 namespace blink {
 
-WebTextRun::operator blink::TextRun() const
+WebTextRun::operator TextRun() const
 {
     return TextRun(text, 0, 0, TextRun::AllowTrailingExpansion, rtl ? RTL : LTR, directionalOverride);
 }

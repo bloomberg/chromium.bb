@@ -195,8 +195,6 @@
 #include "wtf/HashMap.h"
 #include <algorithm>
 
-using namespace blink;
-
 namespace blink {
 
 static int frameCount = 0;
@@ -274,7 +272,7 @@ WebPluginContainerImpl* WebLocalFrameImpl::pluginContainerFromFrame(LocalFrame* 
     return toWebPluginContainerImpl(pluginDocument->pluginWidget());
 }
 
-WebPluginContainerImpl* WebLocalFrameImpl::pluginContainerFromNode(blink::LocalFrame* frame, const WebNode& node)
+WebPluginContainerImpl* WebLocalFrameImpl::pluginContainerFromNode(LocalFrame* frame, const WebNode& node)
 {
     WebPluginContainerImpl* pluginContainer = pluginContainerFromFrame(frame);
     if (pluginContainer)
@@ -875,7 +873,7 @@ void WebLocalFrameImpl::loadHTMLString(const WebData& data, const WebURL& baseUR
 void WebLocalFrameImpl::sendPings(const WebNode& linkNode, const WebURL& destinationURL)
 {
     ASSERT(frame());
-    const blink::Node* node = linkNode.constUnwrap<Node>();
+    const Node* node = linkNode.constUnwrap<Node>();
     if (isHTMLAnchorElement(node))
         toHTMLAnchorElement(node)->sendPings(destinationURL);
 }
@@ -1165,7 +1163,7 @@ void WebLocalFrameImpl::selectRange(const WebPoint& base, const WebPoint& extent
 void WebLocalFrameImpl::selectRange(const WebRange& webRange)
 {
     if (RefPtrWillBeRawPtr<Range> range = static_cast<PassRefPtrWillBeRawPtr<Range> >(webRange))
-        frame()->selection().setSelectedRange(range.get(), blink::VP_DEFAULT_AFFINITY, FrameSelection::NonDirectional, NotUserTriggered);
+        frame()->selection().setSelectedRange(range.get(), VP_DEFAULT_AFFINITY, FrameSelection::NonDirectional, NotUserTriggered);
 }
 
 void WebLocalFrameImpl::moveRangeSelection(const WebPoint& base, const WebPoint& extent)
@@ -1533,19 +1531,19 @@ WebLocalFrameImpl::WebLocalFrameImpl(WebFrameClient* client)
     , m_userMediaClientImpl(this)
     , m_geolocationClientProxy(adoptPtr(new GeolocationClientProxy(client ? client->geolocationClient() : 0)))
 {
-    blink::Platform::current()->incrementStatsCounter(webFrameActiveCount);
+    Platform::current()->incrementStatsCounter(webFrameActiveCount);
     frameCount++;
 }
 
 WebLocalFrameImpl::~WebLocalFrameImpl()
 {
-    blink::Platform::current()->decrementStatsCounter(webFrameActiveCount);
+    Platform::current()->decrementStatsCounter(webFrameActiveCount);
     frameCount--;
 
     cancelPendingScopingEffort();
 }
 
-void WebLocalFrameImpl::setWebCoreFrame(PassRefPtr<blink::LocalFrame> frame)
+void WebLocalFrameImpl::setWebCoreFrame(PassRefPtr<LocalFrame> frame)
 {
     m_frame = frame;
 
@@ -1841,7 +1839,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::activeMatchFrame() const
     return 0;
 }
 
-blink::Range* WebLocalFrameImpl::activeMatch() const
+Range* WebLocalFrameImpl::activeMatch() const
 {
     if (m_textFinder)
         return m_textFinder->activeMatch();

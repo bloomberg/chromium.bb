@@ -34,8 +34,6 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "public/platform/WebString.h"
 
-using namespace blink;
-
 namespace blink {
 
 v8::Local<v8::String> WebScriptBindings::toV8String(const WebString& string, v8::Isolate* isolate)

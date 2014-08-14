@@ -47,8 +47,6 @@
 #include "web/WebLocalFrameImpl.h"
 #include "wtf/PassRefPtr.h"
 
-using namespace blink;
-
 namespace blink {
 
 void WebRange::reset()
@@ -107,18 +105,18 @@ WebRange WebRange::expandedToParagraph() const
 // static
 WebRange WebRange::fromDocumentRange(WebLocalFrame* frame, int start, int length)
 {
-    blink::LocalFrame* webFrame = toWebLocalFrameImpl(frame)->frame();
+    LocalFrame* webFrame = toWebLocalFrameImpl(frame)->frame();
     Element* selectionRoot = webFrame->selection().rootEditableElement();
     ContainerNode* scope = selectionRoot ? selectionRoot : webFrame->document()->documentElement();
     return PlainTextRange(start, start + length).createRange(*scope);
 }
 
-WebRange::WebRange(const PassRefPtrWillBeRawPtr<blink::Range>& range)
+WebRange::WebRange(const PassRefPtrWillBeRawPtr<Range>& range)
     : m_private(range)
 {
 }
 
-WebRange::operator PassRefPtrWillBeRawPtr<blink::Range>() const
+WebRange::operator PassRefPtrWillBeRawPtr<Range>() const
 {
     return m_private.get();
 }

@@ -37,7 +37,7 @@ namespace blink {
 
 void WebScopedWindowFocusAllowedIndicator::initialize()
 {
-    m_indicator.reset(new blink::WindowFocusAllowedIndicator());
+    m_indicator.reset(new WindowFocusAllowedIndicator());
 }
 
 void WebScopedWindowFocusAllowedIndicator::reset()

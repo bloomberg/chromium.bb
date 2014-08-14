@@ -34,8 +34,6 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "web/WebMediaPlayerClientImpl.h"
 
-using namespace blink;
-
 namespace blink {
 
 void WebRuntimeFeatures::enableExperimentalFeatures(bool enable)

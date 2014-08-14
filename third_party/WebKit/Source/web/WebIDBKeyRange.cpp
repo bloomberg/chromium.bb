@@ -30,8 +30,6 @@
 #include "modules/indexeddb/IDBKeyRange.h"
 #include "public/platform/WebIDBKey.h"
 
-using namespace blink;
-
 namespace blink {
 
 void WebIDBKeyRange::assign(const WebIDBKeyRange& other)

@@ -94,9 +94,6 @@
 #include "web/WebViewImpl.h"
 #include "wtf/Assertions.h"
 
-
-using namespace blink;
-
 namespace blink {
 
 // Public methods --------------------------------------------------------------
@@ -332,8 +329,7 @@ int WebPluginContainerImpl::printBegin(const WebPrintParams& printParams) const
     return m_webPlugin->printBegin(printParams);
 }
 
-bool WebPluginContainerImpl::printPage(int pageNumber,
-                                       blink::GraphicsContext* gc)
+bool WebPluginContainerImpl::printPage(int pageNumber, GraphicsContext* gc)
 {
     gc->save();
     WebCanvas* canvas = gc->canvas();
@@ -352,7 +348,7 @@ void WebPluginContainerImpl::copy()
     if (!m_webPlugin->hasSelection())
         return;
 
-    blink::Platform::current()->clipboard()->writeHTML(m_webPlugin->selectionAsMarkup(), WebURL(), m_webPlugin->selectionAsText(), false);
+    Platform::current()->clipboard()->writeHTML(m_webPlugin->selectionAsMarkup(), WebURL(), m_webPlugin->selectionAsText(), false);
 }
 
 bool WebPluginContainerImpl::executeEditCommand(const WebString& name)
@@ -593,14 +589,14 @@ v8::Local<v8::Object> WebPluginContainerImpl::scriptableObject(v8::Isolate* isol
 {
     v8::Local<v8::Object> object = m_webPlugin->v8ScriptableObject(isolate);
     if (!object.IsEmpty()) {
-        // blink::WebPlugin implementation can't provide the obsolete NPObject at the same time:
+        // WebPlugin implementation can't provide the obsolete NPObject at the same time:
         ASSERT(!m_webPlugin->scriptableObject());
         return object;
     }
 
     NPObject* npObject = m_webPlugin->scriptableObject();
     if (npObject)
-        return blink::createV8ObjectForNPObject(npObject, 0, isolate);
+        return createV8ObjectForNPObject(npObject, 0, isolate);
     return v8::Local<v8::Object>();
 }
 
@@ -673,8 +669,8 @@ bool WebPluginContainerImpl::paintCustomOverhangArea(GraphicsContext* context, c
 
 // Private methods -------------------------------------------------------------
 
-WebPluginContainerImpl::WebPluginContainerImpl(blink::HTMLPlugInElement* element, WebPlugin* webPlugin)
-    : blink::FrameDestructionObserver(element->document().frame())
+WebPluginContainerImpl::WebPluginContainerImpl(HTMLPlugInElement* element, WebPlugin* webPlugin)
+    : FrameDestructionObserver(element->document().frame())
     , m_element(element)
     , m_webPlugin(webPlugin)
     , m_webLayer(0)
@@ -940,7 +936,7 @@ void WebPluginContainerImpl::calculateGeometry(const IntRect& frameRect,
         cutOutRects[i].move(-frameRect.x(), -frameRect.y());
 }
 
-blink::IntRect WebPluginContainerImpl::windowClipRect() const
+IntRect WebPluginContainerImpl::windowClipRect() const
 {
     // Start by clipping to our bounds.
     IntRect clipRect =

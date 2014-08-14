@@ -38,8 +38,6 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 
-using namespace blink;
-
 namespace blink {
 
 void WebSecurityPolicy::registerURLSchemeAsLocal(const WebString& scheme)

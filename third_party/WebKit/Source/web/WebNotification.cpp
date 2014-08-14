@@ -36,8 +36,6 @@
 #include "public/platform/WebURL.h"
 #include "wtf/PassRefPtr.h"
 
-using blink::Notification;
-
 namespace blink {
 
 void WebNotification::reset()
@@ -67,7 +65,7 @@ WebString WebNotification::title() const
 
 WebTextDirection WebNotification::direction() const
 {
-    return (m_private->direction() == blink::RTL) ?
+    return (m_private->direction() == RTL) ?
         WebTextDirectionRightToLeft :
         WebTextDirectionLeftToRight;
 }

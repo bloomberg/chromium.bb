@@ -56,8 +56,6 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPluginContainerImpl.h"
 
-using namespace blink;
-
 namespace blink {
 
 void WebNode::reset()

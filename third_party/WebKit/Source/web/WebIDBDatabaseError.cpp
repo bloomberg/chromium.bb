@@ -34,8 +34,6 @@
 #include "core/dom/DOMError.h"
 #include "public/platform/WebString.h"
 
-using namespace blink;
-
 namespace blink {
 
 void WebIDBDatabaseError::assign(const WebIDBDatabaseError& value)

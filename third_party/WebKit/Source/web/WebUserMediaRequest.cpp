@@ -45,8 +45,6 @@
 #include "public/web/WebDocument.h"
 #include "public/web/WebSecurityOrigin.h"
 
-using namespace blink;
-
 namespace blink {
 
 WebUserMediaRequest::WebUserMediaRequest(UserMediaRequest* request)

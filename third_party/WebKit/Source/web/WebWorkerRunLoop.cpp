@@ -27,8 +27,6 @@
 
 #include "core/workers/WorkerThread.h"
 
-using namespace blink;
-
 namespace blink {
 
 namespace {
@@ -77,4 +75,4 @@ bool WebWorkerRunLoop::lessThan(const WebWorkerRunLoop& o) const
     return m_workerThread < o.m_workerThread;
 }
 
-}
+} // namespace blink

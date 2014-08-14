@@ -33,8 +33,6 @@
 
 #include "bindings/core/v8/ScriptController.h"
 
-using namespace blink;
-
 namespace blink {
 
 void WebScriptController::registerExtension(v8::Extension* extension)

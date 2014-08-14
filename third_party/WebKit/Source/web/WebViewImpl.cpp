@@ -169,8 +169,6 @@
 #undef pow
 #include <cmath> // for std::pow
 
-using namespace blink;
-
 // The following constants control parameters for automated scaling of webpages
 // (such as due to a double tap gesture or find in page etc.). These are
 // experimentally determined.
@@ -233,13 +231,13 @@ static int webInputEventKeyStateToPlatformEventKeyState(int webInputEventKeyStat
 {
     int platformEventKeyState = 0;
     if (webInputEventKeyState & WebInputEvent::ShiftKey)
-        platformEventKeyState = platformEventKeyState | blink::PlatformEvent::ShiftKey;
+        platformEventKeyState = platformEventKeyState | PlatformEvent::ShiftKey;
     if (webInputEventKeyState & WebInputEvent::ControlKey)
-        platformEventKeyState = platformEventKeyState | blink::PlatformEvent::CtrlKey;
+        platformEventKeyState = platformEventKeyState | PlatformEvent::CtrlKey;
     if (webInputEventKeyState & WebInputEvent::AltKey)
-        platformEventKeyState = platformEventKeyState | blink::PlatformEvent::AltKey;
+        platformEventKeyState = platformEventKeyState | PlatformEvent::AltKey;
     if (webInputEventKeyState & WebInputEvent::MetaKey)
-        platformEventKeyState = platformEventKeyState | blink::PlatformEvent::MetaKey;
+        platformEventKeyState = platformEventKeyState | PlatformEvent::MetaKey;
     return platformEventKeyState;
 }
 
@@ -590,7 +588,7 @@ bool WebViewImpl::scrollBy(const WebFloatSize& delta, const WebFloatSize& veloci
 {
     if (m_flingSourceDevice == WebGestureDeviceTouchpad) {
         WebMouseWheelEvent syntheticWheel;
-        const float tickDivisor = blink::WheelEvent::TickMultiplier;
+        const float tickDivisor = WheelEvent::TickMultiplier;
 
         syntheticWheel.deltaX = delta.width;
         syntheticWheel.deltaY = delta.height;
@@ -1450,9 +1448,10 @@ bool WebViewImpl::scrollViewWithKeyboard(int keyCode, int modifiers)
     return frame->eventHandler().bubblingScroll(scrollDirection, scrollGranularity);
 }
 
-bool WebViewImpl::mapKeyCodeForScroll(int keyCode,
-                                      blink::ScrollDirection* scrollDirection,
-                                      blink::ScrollGranularity* scrollGranularity)
+bool WebViewImpl::mapKeyCodeForScroll(
+    int keyCode,
+    ScrollDirection* scrollDirection,
+    ScrollGranularity* scrollGranularity)
 {
     switch (keyCode) {
     case VKEY_LEFT:
@@ -1615,7 +1614,7 @@ WebLocalFrameImpl* WebViewImpl::localFrameRootTemporary() const
     // separate WebWidgets to be created by RenderWidgets, which are associated with *all*
     // local frame roots, not just the first one in the tree. Until then, this limits us
     // to having only one functioning connected LocalFrame subtree per process.
-    for (blink::Frame* frame = page()->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+    for (Frame* frame = page()->mainFrame(); frame; frame = frame->tree().traverseNext()) {
         if (frame->isLocalRoot())
             return WebLocalFrameImpl::fromFrame(toLocalFrame(frame));
     }
@@ -1788,8 +1787,8 @@ void WebViewImpl::paint(WebCanvas* canvas, const WebRect& rect)
     PageWidgetDelegate::paint(m_page.get(), pageOverlays(), canvas, rect, isTransparent() ? PageWidgetDelegate::Translucent : PageWidgetDelegate::Opaque);
     double paintEnd = currentTime();
     double pixelsPerSec = (rect.width * rect.height) / (paintEnd - paintStart);
-    blink::Platform::current()->histogramCustomCounts("Renderer4.SoftwarePaintDurationMS", (paintEnd - paintStart) * 1000, 0, 120, 30);
-    blink::Platform::current()->histogramCustomCounts("Renderer4.SoftwarePaintMegapixPerSecond", pixelsPerSec / 1000000, 10, 210, 30);
+    Platform::current()->histogramCustomCounts("Renderer4.SoftwarePaintDurationMS", (paintEnd - paintStart) * 1000, 0, 120, 30);
+    Platform::current()->histogramCustomCounts("Renderer4.SoftwarePaintMegapixPerSecond", pixelsPerSec / 1000000, 10, 210, 30);
 }
 
 #if OS(ANDROID)
@@ -1838,12 +1837,12 @@ void WebViewImpl::themeChanged()
     view->invalidateRect(damagedRect);
 }
 
-void WebViewImpl::enterFullScreenForElement(blink::Element* element)
+void WebViewImpl::enterFullScreenForElement(Element* element)
 {
     m_fullscreenController->enterFullScreenForElement(element);
 }
 
-void WebViewImpl::exitFullScreenForElement(blink::Element* element)
+void WebViewImpl::exitFullScreenForElement(Element* element)
 {
     m_fullscreenController->exitFullScreenForElement(element);
 }
@@ -3303,7 +3302,7 @@ void WebViewImpl::saveImageAt(const WebPoint& point)
         return;
 
     ResourceRequest request(url);
-    request.setRequestContext(blink::WebURLRequest::RequestContextDownload);
+    request.setRequestContext(WebURLRequest::RequestContextDownload);
     m_page->deprecatedLocalMainFrame()->loader().client()->loadURLExternally(
         request, NavigationPolicyDownloadTo, WebString());
 }
@@ -3575,7 +3574,7 @@ void WebViewImpl::extractSmartClipData(WebRect rect, WebString& clipText, WebStr
     LocalFrame* localFrame = toLocalFrame(focusedWebCoreFrame());
     if (!localFrame)
         return;
-    SmartClipData clipData = blink::SmartClip(localFrame).dataForRect(rect);
+    SmartClipData clipData = SmartClip(localFrame).dataForRect(rect);
     clipText = clipData.clipData();
     clipRect = clipData.rect();
 
@@ -3826,7 +3825,7 @@ void WebViewImpl::removePageOverlay(WebPageOverlay* overlay)
         m_pageOverlays = nullptr;
 }
 
-void WebViewImpl::setOverlayLayer(blink::GraphicsLayer* layer)
+void WebViewImpl::setOverlayLayer(GraphicsLayer* layer)
 {
     if (!m_rootGraphicsLayer)
         return;
@@ -3956,12 +3955,12 @@ void WebViewImpl::invalidateRect(const IntRect& rect)
         m_client->didInvalidateRect(rect);
 }
 
-blink::GraphicsLayerFactory* WebViewImpl::graphicsLayerFactory() const
+GraphicsLayerFactory* WebViewImpl::graphicsLayerFactory() const
 {
     return m_graphicsLayerFactory.get();
 }
 
-blink::RenderLayerCompositor* WebViewImpl::compositor() const
+RenderLayerCompositor* WebViewImpl::compositor() const
 {
     if (!page() || !page()->mainFrame())
         return 0;
@@ -3981,7 +3980,7 @@ void WebViewImpl::registerForAnimations(WebLayer* layer)
         m_layerTreeView->registerForAnimations(layer);
 }
 
-blink::GraphicsLayer* WebViewImpl::rootGraphicsLayer()
+GraphicsLayer* WebViewImpl::rootGraphicsLayer()
 {
     return m_rootGraphicsLayer;
 }
@@ -4020,7 +4019,7 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
         return;
 
     ASSERT(!active || m_layerTreeView);
-    blink::Platform::current()->histogramEnumeration("GPU.setIsAcceleratedCompositingActive", active * 2 + m_isAcceleratedCompositingActive, 4);
+    Platform::current()->histogramEnumeration("GPU.setIsAcceleratedCompositingActive", active * 2 + m_isAcceleratedCompositingActive, 4);
 
     if (m_isAcceleratedCompositingActive == active)
         return;
@@ -4158,7 +4157,7 @@ void WebViewImpl::updateRootLayerTransform()
         m_rootTransformLayer = m_page->deprecatedLocalMainFrame()->view()->renderView()->compositor()->ensureRootTransformLayer();
 
     if (m_rootTransformLayer) {
-        blink::TransformationMatrix transform;
+        TransformationMatrix transform;
         transform.translate(m_rootLayerOffset.width, m_rootLayerOffset.height);
         transform = transform.scale(m_rootLayerScale);
         m_rootTransformLayer->setTransform(transform);

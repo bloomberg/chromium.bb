@@ -34,8 +34,6 @@
 #include "platform/UserGestureIndicator.h"
 #include "public/web/WebUserGestureToken.h"
 
-using namespace blink;
-
 namespace blink {
 
 bool WebUserGestureIndicator::isProcessingUserGesture()

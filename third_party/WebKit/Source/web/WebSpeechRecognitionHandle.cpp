@@ -28,8 +28,6 @@
 
 #include "modules/speech/SpeechRecognition.h"
 
-using namespace blink;
-
 namespace blink {
 
 void WebSpeechRecognitionHandle::reset()
@@ -52,12 +50,12 @@ bool WebSpeechRecognitionHandle::lessThan(const WebSpeechRecognitionHandle& othe
     return m_private.get() < other.m_private.get();
 }
 
-WebSpeechRecognitionHandle::WebSpeechRecognitionHandle(blink::SpeechRecognition* speechRecognition)
+WebSpeechRecognitionHandle::WebSpeechRecognitionHandle(SpeechRecognition* speechRecognition)
     : m_private(speechRecognition)
 {
 }
 
-WebSpeechRecognitionHandle& WebSpeechRecognitionHandle::operator=(blink::SpeechRecognition* speechRecognition)
+WebSpeechRecognitionHandle& WebSpeechRecognitionHandle::operator=(SpeechRecognition* speechRecognition)
 {
     m_private = speechRecognition;
     return *this;

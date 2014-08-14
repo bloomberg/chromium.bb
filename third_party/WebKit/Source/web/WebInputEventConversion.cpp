@@ -47,8 +47,6 @@
 #include "platform/Widget.h"
 #include "platform/scroll/ScrollView.h"
 
-using namespace blink;
-
 namespace blink {
 
 static const double millisPerSecond = 1000.0;
@@ -168,8 +166,8 @@ PlatformWheelEventBuilder::PlatformWheelEventBuilder(Widget* widget, const WebMo
 
     m_hasPreciseScrollingDeltas = e.hasPreciseScrollingDeltas;
 #if OS(MACOSX)
-    m_phase = static_cast<blink::PlatformWheelEventPhase>(e.phase);
-    m_momentumPhase = static_cast<blink::PlatformWheelEventPhase>(e.momentumPhase);
+    m_phase = static_cast<PlatformWheelEventPhase>(e.phase);
+    m_momentumPhase = static_cast<PlatformWheelEventPhase>(e.momentumPhase);
     m_timestamp = e.timeStampSeconds;
     m_scrollCount = 0;
     m_unacceleratedScrollingDeltaX = e.deltaX;
@@ -476,17 +474,17 @@ static int getWebInputModifiers(const UIEventWithKeyState& event)
     return modifiers;
 }
 
-static FloatPoint convertAbsoluteLocationForRenderObjectFloat(const LayoutPoint& location, const blink::RenderObject& renderObject)
+static FloatPoint convertAbsoluteLocationForRenderObjectFloat(const LayoutPoint& location, const RenderObject& renderObject)
 {
     return renderObject.absoluteToLocal(location, UseTransforms);
 }
 
-static IntPoint convertAbsoluteLocationForRenderObject(const LayoutPoint& location, const blink::RenderObject& renderObject)
+static IntPoint convertAbsoluteLocationForRenderObject(const LayoutPoint& location, const RenderObject& renderObject)
 {
     return roundedIntPoint(convertAbsoluteLocationForRenderObjectFloat(location, renderObject));
 }
 
-static void updateWebMouseEventFromWebCoreMouseEvent(const MouseRelatedEvent& event, const Widget& widget, const blink::RenderObject& renderObject, WebMouseEvent& webEvent)
+static void updateWebMouseEventFromWebCoreMouseEvent(const MouseRelatedEvent& event, const Widget& widget, const RenderObject& renderObject, WebMouseEvent& webEvent)
 {
     webEvent.timeStampSeconds = event.timeStamp() / millisPerSecond;
     webEvent.modifiers = getWebInputModifiers(event);
@@ -504,7 +502,7 @@ static void updateWebMouseEventFromWebCoreMouseEvent(const MouseRelatedEvent& ev
     webEvent.y = localPoint.y();
 }
 
-WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const blink::RenderObject* renderObject, const MouseEvent& event)
+WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const RenderObject* renderObject, const MouseEvent& event)
 {
     if (event.type() == EventTypeNames::mousemove)
         type = WebInputEvent::MouseMove;
@@ -555,7 +553,7 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const blink::Re
 
 // Generate a synthetic WebMouseEvent given a TouchEvent (eg. for emulating a mouse
 // with touch input for plugins that don't support touch input).
-WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const blink::RenderObject* renderObject, const TouchEvent& event)
+WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const RenderObject* renderObject, const TouchEvent& event)
 {
     if (!event.touches())
         return;
@@ -600,7 +598,7 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const blink::Re
     y = localPoint.y();
 }
 
-WebMouseEventBuilder::WebMouseEventBuilder(const blink::Widget* widget, const blink::PlatformMouseEvent& event)
+WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const PlatformMouseEvent& event)
 {
     switch (event.type()) {
     case PlatformEvent::MouseMoved:
@@ -646,7 +644,7 @@ WebMouseEventBuilder::WebMouseEventBuilder(const blink::Widget* widget, const bl
     clickCount = event.clickCount();
 }
 
-WebMouseWheelEventBuilder::WebMouseWheelEventBuilder(const Widget* widget, const blink::RenderObject* renderObject, const WheelEvent& event)
+WebMouseWheelEventBuilder::WebMouseWheelEventBuilder(const Widget* widget, const RenderObject* renderObject, const WheelEvent& event)
 {
     if (event.type() != EventTypeNames::wheel && event.type() != EventTypeNames::mousewheel)
         return;
@@ -724,7 +722,7 @@ int toWebKeyboardEventModifiers(int modifiers)
     return newModifiers;
 }
 
-WebKeyboardEventBuilder::WebKeyboardEventBuilder(const blink::PlatformKeyboardEvent& event)
+WebKeyboardEventBuilder::WebKeyboardEventBuilder(const PlatformKeyboardEvent& event)
 {
     type = toWebKeyboardEventType(event.type());
     modifiers = toWebKeyboardEventModifiers(event.modifiers());
@@ -743,7 +741,7 @@ WebKeyboardEventBuilder::WebKeyboardEventBuilder(const blink::PlatformKeyboardEv
     memcpy(keyIdentifier, event.keyIdentifier().ascii().data(), std::min(static_cast<unsigned>(keyIdentifierLengthCap), event.keyIdentifier().length()));
 }
 
-static void addTouchPoints(const Widget* widget, const AtomicString& touchType, TouchList* touches, WebTouchPoint* touchPoints, unsigned* touchPointsLength, const blink::RenderObject* renderObject)
+static void addTouchPoints(const Widget* widget, const AtomicString& touchType, TouchList* touches, WebTouchPoint* touchPoints, unsigned* touchPointsLength, const RenderObject* renderObject)
 {
     unsigned numberOfTouches = std::min(touches->length(), static_cast<unsigned>(WebTouchEvent::touchesLengthCap));
     for (unsigned i = 0; i < numberOfTouches; ++i) {
@@ -764,7 +762,7 @@ static void addTouchPoints(const Widget* widget, const AtomicString& touchType, 
     *touchPointsLength = numberOfTouches;
 }
 
-WebTouchEventBuilder::WebTouchEventBuilder(const Widget* widget, const blink::RenderObject* renderObject, const TouchEvent& event)
+WebTouchEventBuilder::WebTouchEventBuilder(const Widget* widget, const RenderObject* renderObject, const TouchEvent& event)
 {
     if (event.type() == EventTypeNames::touchstart)
         type = TouchStart;
@@ -789,7 +787,7 @@ WebTouchEventBuilder::WebTouchEventBuilder(const Widget* widget, const blink::Re
     addTouchPoints(widget, event.type(), event.targetTouches(), targetTouches, &targetTouchesLength, renderObject);
 }
 
-WebGestureEventBuilder::WebGestureEventBuilder(const Widget* widget, const blink::RenderObject* renderObject, const GestureEvent& event)
+WebGestureEventBuilder::WebGestureEventBuilder(const Widget* widget, const RenderObject* renderObject, const GestureEvent& event)
 {
     if (event.type() == EventTypeNames::gestureshowpress)
         type = GestureShowPress;

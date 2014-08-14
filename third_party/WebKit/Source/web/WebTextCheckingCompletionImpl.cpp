@@ -37,8 +37,6 @@
 #include "web/EditorClientImpl.h"
 #include "wtf/Assertions.h"
 
-using namespace blink;
-
 namespace blink {
 
 static Vector<TextCheckingResult> toCoreResults(const WebVector<WebTextCheckingResult>& results)

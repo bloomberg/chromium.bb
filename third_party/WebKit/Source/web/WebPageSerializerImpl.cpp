@@ -94,8 +94,6 @@
 #include "web/WebLocalFrameImpl.h"
 #include "wtf/text/TextEncoding.h"
 
-using namespace blink;
-
 namespace blink {
 
 // Maximum length of data buffer which is used to temporary save generated

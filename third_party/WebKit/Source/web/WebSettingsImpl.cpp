@@ -38,8 +38,6 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 
-using namespace blink;
-
 namespace blink {
 
 WebSettingsImpl::WebSettingsImpl(Settings* settings, InspectorController* inspectorController)
@@ -426,7 +424,7 @@ void WebSettingsImpl::setShowPaintRects(bool show)
 
 void WebSettingsImpl::setEditingBehavior(EditingBehavior behavior)
 {
-    m_settings->setEditingBehaviorType(static_cast<blink::EditingBehaviorType>(behavior));
+    m_settings->setEditingBehaviorType(static_cast<EditingBehaviorType>(behavior));
 }
 
 void WebSettingsImpl::setAcceleratedCompositingEnabled(bool enabled)

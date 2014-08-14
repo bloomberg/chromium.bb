@@ -42,8 +42,6 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 
-using namespace blink;
-
 namespace blink {
 
 void WebImageDecoder::reset()
@@ -53,7 +51,7 @@ void WebImageDecoder::reset()
 
 void WebImageDecoder::init(Type type)
 {
-    size_t maxDecodedBytes = blink::Platform::current()->maxDecodedImageBytes();
+    size_t maxDecodedBytes = Platform::current()->maxDecodedImageBytes();
 
     switch (type) {
     case TypeBMP:

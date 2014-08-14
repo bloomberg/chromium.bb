@@ -47,8 +47,6 @@
 
 #include <v8.h>
 
-using namespace blink;
-
 namespace blink {
 
 namespace {

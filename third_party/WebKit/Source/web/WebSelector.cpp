@@ -35,8 +35,6 @@
 #include "core/css/parser/BisonCSSParser.h"
 #include "public/platform/WebString.h"
 
-using namespace blink;
-
 namespace blink {
 
 WebString canonicalizeSelector(WebString webSelector, WebSelectorType restriction)

@@ -38,13 +38,13 @@ namespace blink {
 
 void WebScopedUserGesture::initialize()
 {
-    m_indicator.reset(new blink::UserGestureIndicator(blink::DefinitelyProcessingNewUserGesture));
+    m_indicator.reset(new UserGestureIndicator(DefinitelyProcessingNewUserGesture));
 }
 
 void WebScopedUserGesture::initializeWithToken(const WebUserGestureToken& token)
 {
     if (!token.isNull())
-        m_indicator.reset(new blink::UserGestureIndicator(token));
+        m_indicator.reset(new UserGestureIndicator(token));
 }
 
 void WebScopedUserGesture::reset()

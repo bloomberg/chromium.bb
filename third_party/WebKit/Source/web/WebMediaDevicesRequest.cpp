@@ -37,8 +37,6 @@
 #include "public/web/WebSecurityOrigin.h"
 #include "wtf/Vector.h"
 
-using namespace blink;
-
 namespace blink {
 
 WebMediaDevicesRequest::WebMediaDevicesRequest(MediaDevicesRequest* request)
