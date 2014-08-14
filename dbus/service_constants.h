@@ -817,8 +817,6 @@ const char kUninitializedTechnologiesProperty[] = "UninitializedTechnologies";
 const char kWakeOnLanEnabledProperty[] = "WakeOnLanEnabled";
 
 // Service property names.
-const char kActivateOverNonCellularNetworkProperty[] =
-    "Cellular.ActivateOverNonCellularNetwork";
 const char kActivationTypeProperty[] = "Cellular.ActivationType";
 const char kDiagnosticsDisconnectsProperty[] = "Diagnostics.Disconnects";
 const char kDiagnosticsMisconnectsProperty[] = "Diagnostics.Misconnects";
