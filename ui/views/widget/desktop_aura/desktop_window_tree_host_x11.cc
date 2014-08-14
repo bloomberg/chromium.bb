@@ -632,11 +632,13 @@ bool DesktopWindowTreeHostX11::SetWindowTitle(const base::string16& title) {
                   PropModeReplace,
                   reinterpret_cast<const unsigned char*>(utf8str.c_str()),
                   utf8str.size());
-  // TODO(erg): This is technically wrong. So XStoreName and friends expect
-  // this in Host Portable Character Encoding instead of UTF-8, which I believe
-  // is Compound Text. This shouldn't matter 90% of the time since this is the
-  // fallback to the UTF8 property above.
-  XStoreName(xdisplay_, xwindow_, utf8str.c_str());
+  XTextProperty xtp;
+  char *c_utf8_str = const_cast<char *>(utf8str.c_str());
+  if (Xutf8TextListToTextProperty(xdisplay_, &c_utf8_str, 1,
+                                  XUTF8StringStyle, &xtp) == Success) {
+    XSetWMName(xdisplay_, xwindow_, &xtp);
+    XFree(xtp.value);
+  }
   return true;
 }
 
