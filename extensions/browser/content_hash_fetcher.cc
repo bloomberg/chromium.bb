@@ -22,7 +22,6 @@
 #include "extensions/browser/computed_hashes.h"
 #include "extensions/browser/content_hash_tree.h"
 #include "extensions/browser/content_verifier_delegate.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/verified_contents.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -85,6 +84,13 @@ class ContentHashFetcherJob
   friend class base::RefCountedThreadSafe<ContentHashFetcherJob>;
   virtual ~ContentHashFetcherJob();
 
+  // Tries to load a verified_contents.json file at |path|. On successfully
+  // reading and validing the file, the verified_contents_ member variable will
+  // be set and this function will return true. If the file does not exist, or
+  // exists but is invalid, it will return false. Also, any invalid
+  // file will be removed from disk and
+  bool LoadVerifiedContents(const base::FilePath& path);
+
   // Callback for when we're done doing file I/O to see if we already have
   // a verified contents file. If we don't, this will kick off a network
   // request to get one.
@@ -133,6 +139,10 @@ class ContentHashFetcherJob
 
   // The key used to validate verified_contents.json.
   ContentVerifierKey key_;
+
+  // The parsed contents of the verified_contents.json file, either read from
+  // disk or fetched from the network and then written to disk.
+  scoped_ptr<VerifiedContents> verified_contents_;
 
   // Whether this job succeeded.
   bool success_;
@@ -184,7 +194,9 @@ void ContentHashFetcherJob::Start() {
   base::PostTaskAndReplyWithResult(
       content::BrowserThread::GetBlockingPool(),
       FROM_HERE,
-      base::Bind(&base::PathExists, verified_contents_path),
+      base::Bind(&ContentHashFetcherJob::LoadVerifiedContents,
+                 this,
+                 verified_contents_path),
       base::Bind(&ContentHashFetcherJob::DoneCheckingForVerifiedContents,
                  this));
 }
@@ -201,6 +213,19 @@ bool ContentHashFetcherJob::IsCancelled() {
 }
 
 ContentHashFetcherJob::~ContentHashFetcherJob() {
+}
+
+bool ContentHashFetcherJob::LoadVerifiedContents(const base::FilePath& path) {
+  if (!base::PathExists(path))
+    return false;
+  verified_contents_.reset(new VerifiedContents(key_.data, key_.size));
+  if (!verified_contents_->InitFrom(path, false)) {
+    verified_contents_.reset();
+    if (!base::DeleteFile(path, false))
+      LOG(WARNING) << "Failed to delete " << path.value();
+    return false;
+  }
+  return true;
 }
 
 void ContentHashFetcherJob::DoneCheckingForVerifiedContents(bool found) {
@@ -319,11 +344,14 @@ bool ContentHashFetcherJob::CreateHashes(const base::FilePath& hashes_file) {
   if (!base::CreateDirectoryAndGetError(hashes_file.DirName(), NULL))
     return false;
 
-  base::FilePath verified_contents_path =
-      file_util::GetVerifiedContentsPath(extension_path_);
-  VerifiedContents verified_contents(key_.data, key_.size);
-  if (!verified_contents.InitFrom(verified_contents_path, false))
-    return false;
+  if (!verified_contents_.get()) {
+    base::FilePath verified_contents_path =
+        file_util::GetVerifiedContentsPath(extension_path_);
+    verified_contents_.reset(new VerifiedContents(key_.data, key_.size));
+    if (!verified_contents_->InitFrom(verified_contents_path, false))
+      return false;
+    verified_contents_.reset();
+  }
 
   base::FileEnumerator enumerator(extension_path_,
                                   true, /* recursive */
@@ -352,7 +380,7 @@ bool ContentHashFetcherJob::CreateHashes(const base::FilePath& hashes_file) {
     relative_path = relative_path.NormalizePathSeparatorsTo('/');
 
     const std::string* expected_root =
-        verified_contents.GetTreeHashRoot(relative_path);
+        verified_contents_->GetTreeHashRoot(relative_path);
     if (!expected_root)
       continue;
 
