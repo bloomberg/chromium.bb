@@ -7,15 +7,12 @@
 #include "base/bind.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/scoped_user_pref_update.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/screens/user_image_screen.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_image/default_user_images.h"
@@ -36,15 +33,6 @@ bool IsIndexSupported(int index) {
          (index == user_manager::User::USER_IMAGE_PROFILE);
 }
 
-Profile* GetUserProfile() {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  if (!profile_manager || !profile_manager->IsLoggedIn())
-    return NULL;
-  base::FilePath profile_path = profile_manager->user_data_dir().Append(
-      profile_manager->GetInitialProfileDir());
-  return profile_manager->GetProfileByPath(profile_path);
-}
-
 }  // anonymous namespace
 
 UserImageSyncObserver::Observer::~Observer() {}
@@ -58,8 +46,7 @@ UserImageSyncObserver::UserImageSyncObserver(const user_manager::User* user)
   notification_registrar_->Add(this,
       chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
       content::NotificationService::AllSources());
-  Profile* profile = GetUserProfile();
-  if (profile) {
+  if (Profile* profile = ProfileHelper::Get()->GetProfileByUser(user)) {
     OnProfileGained(profile);
   } else {
     notification_registrar_->Add(this,
@@ -135,14 +122,13 @@ void UserImageSyncObserver::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED) {
-    Profile* profile = content::Details<Profile>(details).ptr();
-    if (GetUserProfile() != profile)
-      return;
-    notification_registrar_->Remove(
-        this,
-        chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
-        content::NotificationService::AllSources());
-    OnProfileGained(profile);
+    if (Profile* profile = ProfileHelper::Get()->GetProfileByUser(user_)) {
+      notification_registrar_->Remove(
+          this,
+          chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
+          content::NotificationService::AllSources());
+      OnProfileGained(profile);
+    }
   } else if (type == chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED) {
     if (is_synced_)
       UpdateSyncedImageFromLocal();
