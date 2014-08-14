@@ -178,6 +178,8 @@ PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDesc
 
         if (typeface)
             return adoptRef(typeface);
+        else
+            return nullptr;
     }
 #endif
 
