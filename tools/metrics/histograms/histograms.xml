@@ -34884,21 +34884,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.ASTOptimization">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>jochen@chromium.org</owner>
   <summary>TBD</summary>
 </histogram>
 
 <histogram name="V8.CodeCreation">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>jochen@chromium.org</owner>
   <summary>TBD</summary>
 </histogram>
 
 <histogram name="V8.CodeGeneration">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>jochen@chromium.org</owner>
   <summary>Time spent generating native code for functions.</summary>
 </histogram>
 
 <histogram name="V8.CodegenFractionCrankshaft" units="percent">
+  <owner>jochen@chromium.org</owner>
   <owner>rmcilroy@chromium.org</owner>
   <summary>
     Fraction of the total generated code which was generated using the
@@ -34907,33 +34908,34 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.Compile">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>jochen@chromium.org</owner>
   <summary>Time spent in V8 compiler.</summary>
 </histogram>
 
 <histogram name="V8.CompileEval">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>jochen@chromium.org</owner>
   <summary>Time spent in V8 compiler for eval.</summary>
 </histogram>
 
 <histogram name="V8.CompileLazy">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>jochen@chromium.org</owner>
   <summary>Time spent compiling functions lazily on first run.</summary>
 </histogram>
 
 <histogram name="V8.DeferredCodeGeneration">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>jochen@chromium.org</owner>
   <summary>Time spent generating deferred code stubs.</summary>
 </histogram>
 
 <histogram name="V8.ExecutableMemoryMax" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>jochen@chromium.org</owner>
   <summary>
     The maximum memory used to store V8 compiled code on a given process.
   </summary>
 </histogram>
 
 <histogram name="V8.GCCompactor">
+  <owner>jochen@chromium.org</owner>
   <owner>hajimehoshi@chromium.org</owner>
   <owner>hpayer@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
@@ -34941,6 +34943,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.GCContext">
+  <owner>jochen@chromium.org</owner>
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
   <summary>
@@ -34949,6 +34952,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.GCScavenger">
+  <owner>jochen@chromium.org</owner>
   <owner>hajimehoshi@chromium.org</owner>
   <owner>hpayer@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
@@ -34956,6 +34960,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.MemoryExternalFragmentationCellSpace" units="percent">
+  <owner>jochen@chromium.org</owner>
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
   <summary>
@@ -34964,6 +34969,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.MemoryExternalFragmentationCodeSpace" units="percent">
+  <owner>jochen@chromium.org</owner>
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
   <summary>
@@ -34972,6 +34978,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.MemoryExternalFragmentationLoSpace" units="percent">
+  <owner>jochen@chromium.org</owner>
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
   <summary>
@@ -34981,6 +34988,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.MemoryExternalFragmentationMapSpace" units="percent">
+  <owner>jochen@chromium.org</owner>
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
   <summary>
@@ -34989,6 +34997,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.MemoryExternalFragmentationOldDataSpace" units="percent">
+  <owner>jochen@chromium.org</owner>
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
   <summary>
@@ -34998,6 +35007,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.MemoryExternalFragmentationOldPointerSpace" units="percent">
+  <owner>jochen@chromium.org</owner>
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
   <summary>
@@ -35007,6 +35017,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.MemoryExternalFragmentationTotal" units="percent">
+  <owner>jochen@chromium.org</owner>
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
   <summary>
@@ -35015,6 +35026,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.MemoryHeapFractionCellSpace" units="percent">
+  <owner>jochen@chromium.org</owner>
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
   <owner>rmcilroy@chromium.org</owner>
@@ -35024,6 +35036,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.MemoryHeapFractionCodeSpace" units="percent">
+  <owner>jochen@chromium.org</owner>
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
   <owner>rmcilroy@chromium.org</owner>
@@ -35033,6 +35046,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.MemoryHeapFractionLoSpace" units="percent">
+  <owner>jochen@chromium.org</owner>
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
   <owner>rmcilroy@chromium.org</owner>
@@ -35042,6 +35056,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.MemoryHeapFractionMapSpace" units="percent">
+  <owner>jochen@chromium.org</owner>
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
   <owner>rmcilroy@chromium.org</owner>
@@ -35051,6 +35066,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.MemoryHeapFractionNewSpace" units="percent">
+  <owner>jochen@chromium.org</owner>
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
   <owner>rmcilroy@chromium.org</owner>
@@ -35060,6 +35076,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.MemoryHeapFractionOldDataSpace" units="percent">
+  <owner>jochen@chromium.org</owner>
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
   <owner>rmcilroy@chromium.org</owner>
@@ -35070,6 +35087,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.MemoryHeapFractionOldPointerSpace" units="percent">
+  <owner>jochen@chromium.org</owner>
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
   <owner>rmcilroy@chromium.org</owner>
@@ -35080,6 +35098,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.MemoryHeapSampleCellSpaceCommitted" units="KB">
+  <owner>jochen@chromium.org</owner>
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
   <summary>
@@ -35088,6 +35107,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.MemoryHeapSampleCodeSpaceCommitted" units="KB">
+  <owner>jochen@chromium.org</owner>
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
   <summary>
@@ -35096,6 +35116,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.MemoryHeapSampleMapSpaceCommitted" units="KB">
+  <owner>jochen@chromium.org</owner>
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
   <summary>
@@ -35104,6 +35125,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.MemoryHeapSampleTotalCommitted" units="KB">
+  <owner>jochen@chromium.org</owner>
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
   <owner>rmcilroy@chromium.org</owner>
@@ -35113,6 +35135,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.MemoryHeapSampleTotalUsed" units="KB">
+  <owner>jochen@chromium.org</owner>
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
   <owner>rmcilroy@chromium.org</owner>
@@ -35122,49 +35145,49 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="V8.Parse">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>jochen@chromium.org</owner>
   <summary>Time spent in V8 parser.</summary>
 </histogram>
 
 <histogram name="V8.ParseLazy">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>jochen@chromium.org</owner>
   <summary>
     Time spent parsing functions when they are lazily compiled on first run.
   </summary>
 </histogram>
 
 <histogram name="V8.PreParse">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>jochen@chromium.org</owner>
   <summary>Time spent preparsing source code.</summary>
 </histogram>
 
 <histogram name="V8.Rewriting">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>jochen@chromium.org</owner>
   <summary>Time spent on rewriting ASTs before compilation.</summary>
 </histogram>
 
 <histogram name="V8.RSetLO">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>jochen@chromium.org</owner>
   <summary>TBD</summary>
 </histogram>
 
 <histogram name="V8.RSetPaged">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>jochen@chromium.org</owner>
   <summary>TBD</summary>
 </histogram>
 
 <histogram name="V8.ScriptCache">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>jochen@chromium.org</owner>
   <summary>TBD</summary>
 </histogram>
 
 <histogram name="V8.UsageAnalysis">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>jochen@chromium.org</owner>
   <summary>Time spent analysing the usage of variables.</summary>
 </histogram>
 
 <histogram name="V8.VariableAllocation">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>jochen@chromium.org</owner>
   <summary>TBD</summary>
 </histogram>
 
