@@ -102,7 +102,6 @@ public:
     bool isLineBoxContainValue() const { return m_classType == LineBoxContainClass; }
     bool isCalcValue() const {return m_classType == CalculationClass; }
     bool isFilterValue() const { return m_classType == CSSFilterClass; }
-    bool isArrayFunctionValue() const { return m_classType == CSSArrayFunctionValueClass; }
     bool isGridTemplateAreasValue() const { return m_classType == GridTemplateAreasClass; }
     bool isSVGDocumentValue() const { return m_classType == CSSSVGDocumentClass; }
     bool isUnicodeRangeValue() const { return m_classType == UnicodeRangeClass; }
@@ -169,7 +168,6 @@ protected:
         ValueListClass,
         ImageSetClass,
         CSSFilterClass,
-        CSSArrayFunctionValueClass,
         CSSTransformClass,
         GridLineNamesClass,
         // Do not append non-list class types here.

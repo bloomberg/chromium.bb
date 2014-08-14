@@ -32,7 +32,7 @@
 #include "core/animation/animatable/AnimatableUnknown.h"
 
 #include "core/animation/animatable/AnimatableNeutral.h"
-#include "core/css/CSSArrayFunctionValue.h"
+#include "core/css/CSSValuePool.h"
 
 #include <gtest/gtest.h>
 
@@ -44,10 +44,10 @@ class AnimationAnimatableUnknownTest : public ::testing::Test {
 protected:
     virtual void SetUp()
     {
-        cssValue = CSSArrayFunctionValue::create();
+        cssValue = cssValuePool().createIdentifierValue(CSSValueYellow);
         animatableUnknown = AnimatableUnknown::create(cssValue);
 
-        otherCSSValue = CSSArrayFunctionValue::create();
+        otherCSSValue = cssValuePool().createIdentifierValue(CSSValueOrange);
         otherAnimatableUnknown = AnimatableUnknown::create(otherCSSValue);
     }
 

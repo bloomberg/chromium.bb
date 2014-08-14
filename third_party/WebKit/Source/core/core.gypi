@@ -717,8 +717,6 @@
             'css/BasicShapeFunctions.cpp',
             'css/BinaryDataFontFaceSource.cpp',
             'css/BinaryDataFontFaceSource.h',
-            'css/CSSArrayFunctionValue.cpp',
-            'css/CSSArrayFunctionValue.h',
             'css/CSSAspectRatioValue.cpp',
             'css/CSSAspectRatioValue.h',
             'css/CSSBasicShapes.cpp',

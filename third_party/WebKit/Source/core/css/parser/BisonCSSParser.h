@@ -48,7 +48,6 @@
 namespace blink {
 
 class AnimationParseContext;
-class CSSArrayFunctionValue;
 class CSSBorderImageSliceValue;
 class CSSPrimitiveValue;
 class CSSSelectorList;

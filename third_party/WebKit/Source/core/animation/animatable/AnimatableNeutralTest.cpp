@@ -31,9 +31,6 @@
 #include "config.h"
 #include "core/animation/animatable/AnimatableNeutral.h"
 
-#include "core/animation/animatable/AnimatableUnknown.h"
-#include "core/css/CSSArrayFunctionValue.h"
-
 #include <gtest/gtest.h>
 
 using namespace blink;

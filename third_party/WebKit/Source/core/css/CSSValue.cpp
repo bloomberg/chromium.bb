@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/css/CSSValue.h"
 
-#include "core/css/CSSArrayFunctionValue.h"
 #include "core/css/CSSAspectRatioValue.h"
 #include "core/css/CSSBorderImageSliceValue.h"
 #include "core/css/CSSCalculationValue.h"
@@ -211,8 +210,6 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<CSSImageSetValue>(*this, other);
         case CSSFilterClass:
             return compareCSSValues<CSSFilterValue>(*this, other);
-        case CSSArrayFunctionValueClass:
-            return compareCSSValues<CSSArrayFunctionValue>(*this, other);
         case CSSSVGDocumentClass:
             return compareCSSValues<CSSSVGDocumentValue>(*this, other);
         default:
@@ -291,8 +288,6 @@ String CSSValue::cssText() const
         return toCSSImageSetValue(this)->customCSSText();
     case CSSFilterClass:
         return toCSSFilterValue(this)->customCSSText();
-    case CSSArrayFunctionValueClass:
-        return toCSSArrayFunctionValue(this)->customCSSText();
     case CSSSVGDocumentClass:
         return toCSSSVGDocumentValue(this)->customCSSText();
     }
@@ -393,9 +388,6 @@ void CSSValue::destroy()
         return;
     case CSSFilterClass:
         delete toCSSFilterValue(this);
-        return;
-    case CSSArrayFunctionValueClass:
-        delete toCSSArrayFunctionValue(this);
         return;
     case CSSSVGDocumentClass:
         delete toCSSSVGDocumentValue(this);
@@ -498,9 +490,6 @@ void CSSValue::finalizeGarbageCollectedObject()
     case CSSFilterClass:
         toCSSFilterValue(this)->~CSSFilterValue();
         return;
-    case CSSArrayFunctionValueClass:
-        toCSSArrayFunctionValue(this)->~CSSArrayFunctionValue();
-        return;
     case CSSSVGDocumentClass:
         toCSSSVGDocumentValue(this)->~CSSSVGDocumentValue();
         return;
@@ -602,9 +591,6 @@ void CSSValue::trace(Visitor* visitor)
     case CSSFilterClass:
         toCSSFilterValue(this)->traceAfterDispatch(visitor);
         return;
-    case CSSArrayFunctionValueClass:
-        toCSSArrayFunctionValue(this)->traceAfterDispatch(visitor);
-        return;
     case CSSSVGDocumentClass:
         toCSSSVGDocumentValue(this)->traceAfterDispatch(visitor);
         return;
@@ -624,8 +610,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSValue::cloneForCSSOM() const
         return toCSSImageValue(this)->cloneForCSSOM();
     case CSSFilterClass:
         return toCSSFilterValue(this)->cloneForCSSOM();
-    case CSSArrayFunctionValueClass:
-        return toCSSArrayFunctionValue(this)->cloneForCSSOM();
     case CSSTransformClass:
         return toCSSTransformValue(this)->cloneForCSSOM();
     case ImageSetClass:
