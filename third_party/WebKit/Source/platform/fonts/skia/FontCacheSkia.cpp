@@ -167,13 +167,20 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescri
 #if OS(WIN)
 static inline SkFontStyle fontStyle(const FontDescription& fontDescription)
 {
-    int width = SkFontStyle::kNormal_Width;
+    int width = static_cast<int>(fontDescription.stretch());
     int weight = (fontDescription.weight() - FontWeight100 + 1) * 100;
     SkFontStyle::Slant slant = fontDescription.style() == FontStyleItalic
         ? SkFontStyle::kItalic_Slant
         : SkFontStyle::kUpright_Slant;
     return SkFontStyle(weight, width, slant);
 }
+
+COMPILE_ASSERT(FontStretchUltraCondensed == SkFontStyle::kUltraCondensed_Width,
+    FontStretchUltraCondensedMapsTokUltraCondensed_Width);
+COMPILE_ASSERT(FontStretchNormal == SkFontStyle::kNormal_Width,
+    FontStretchNormalMapsTokNormal_Width);
+COMPILE_ASSERT(FontStretchUltraExpanded == SkFontStyle::kUltaExpanded_Width,
+    FontStretchUltraExpandedMapsTokUltaExpanded_Width);
 #endif
 
 PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDescription, const FontFaceCreationParams& creationParams, CString& name)
