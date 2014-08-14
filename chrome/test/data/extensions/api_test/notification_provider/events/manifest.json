@@ -8,6 +8,6 @@
     }
   },
   "permissions": [
-    "notificationProvider"
+    "notificationProvider", "notifications"
   ]
 }
