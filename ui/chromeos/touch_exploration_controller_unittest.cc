@@ -75,21 +75,45 @@ int Factorial(int n) {
 class MockTouchExplorationControllerDelegate
     : public ui::TouchExplorationControllerDelegate {
  public:
-  virtual void PlayVolumeAdjustSound() OVERRIDE {
-    ++num_times_adjust_sound_played_;
-  }
   virtual void SetOutputLevel(int volume) OVERRIDE {
     volume_changes_.push_back(volume);
   }
   virtual void SilenceSpokenFeedback() OVERRIDE {
   }
+  virtual void PlayVolumeAdjustEarcon() OVERRIDE {
+    ++num_times_adjust_sound_played_;
+  }
+  virtual void PlayPassthroughEarcon() OVERRIDE {
+    ++num_times_passthrough_played_;
+  }
+  virtual void PlayExitScreenEarcon() OVERRIDE {
+    ++num_times_exit_screen_played_;
+  }
+  virtual void PlayEnterScreenEarcon() OVERRIDE {
+    ++num_times_enter_screen_played_;
+  }
 
   const std::vector<float> VolumeChanges() { return volume_changes_; }
   const size_t NumAdjustSounds() { return num_times_adjust_sound_played_; }
+  const size_t NumPassthroughSounds() { return num_times_passthrough_played_; }
+  const size_t NumExitScreenSounds() { return num_times_exit_screen_played_; }
+  const size_t NumEnterScreenSounds() {
+    return num_times_enter_screen_played_;
+  }
+
+  void ResetCountersToZero() {
+    num_times_adjust_sound_played_ = 0;
+    num_times_passthrough_played_ = 0;
+    num_times_exit_screen_played_ = 0;
+    num_times_enter_screen_played_ = 0;
+  }
 
  private:
   std::vector<float> volume_changes_;
   size_t num_times_adjust_sound_played_ = 0;
+  size_t num_times_passthrough_played_ = 0;
+  size_t num_times_exit_screen_played_ = 0;
+  size_t num_times_enter_screen_played_ = 0;
 };
 
 }  // namespace
@@ -105,6 +129,12 @@ class TouchExplorationControllerTestApi {
     DCHECK(touch_exploration_controller_->tap_timer_.IsRunning());
     touch_exploration_controller_->tap_timer_.Stop();
     touch_exploration_controller_->OnTapTimerFired();
+  }
+
+  void CallPassthroughTimerNowForTesting() {
+    DCHECK(touch_exploration_controller_->passthrough_timer_.IsRunning());
+    touch_exploration_controller_->passthrough_timer_.Stop();
+    touch_exploration_controller_->OnPassthroughTimerFired();
   }
 
   void CallTapTimerNowIfRunningForTesting() {
@@ -132,6 +162,10 @@ class TouchExplorationControllerTestApi {
   bool IsInTwoFingerTapStateForTesting() const {
     return touch_exploration_controller_->state_ ==
            touch_exploration_controller_->TWO_FINGER_TAP;
+  }
+  bool IsInCornerPassthroughStateForTesting() const {
+    return touch_exploration_controller_->state_ ==
+           touch_exploration_controller_->CORNER_PASSTHROUGH;
   }
 
   gfx::Rect BoundsOfRootWindowInDIPForTesting() const {
@@ -240,6 +274,11 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
     touch_exploration_controller_->CallTapTimerNowForTesting();
   }
 
+  void AdvanceSimulatedTimePastPassthroughDelay() {
+    simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(1000));
+    touch_exploration_controller_->CallPassthroughTimerNowForTesting();
+  }
+
   void AdvanceSimulatedTimePastPotentialTapDelay() {
     simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(1000));
     touch_exploration_controller_->CallTapTimerNowIfRunningForTesting();
@@ -273,6 +312,49 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
     EXPECT_TRUE(IsInTouchToMouseMode());
   }
 
+  // Checks that Corner Passthrough is working. Assumes that corner is the
+  // bottom left corner or the bottom right corner.
+  void AssertCornerPassthroughWorking(gfx::Point corner) {
+    ASSERT_EQ(0U, delegate_.NumPassthroughSounds());
+
+    ui::TouchEvent first_press(ui::ET_TOUCH_PRESSED, corner, 0, Now());
+    generator_->Dispatch(&first_press);
+
+    AdvanceSimulatedTimePastPassthroughDelay();
+    EXPECT_FALSE(IsInGestureInProgressState());
+    EXPECT_FALSE(IsInSlideGestureState());
+    EXPECT_FALSE(IsInTouchToMouseMode());
+    EXPECT_TRUE(IsInCornerPassthroughState());
+
+    gfx::Rect window = BoundsOfRootWindowInDIP();
+    // The following events should be passed through.
+    gfx::Point passthrough(window.right() / 2, window.bottom() / 2);
+    ui::TouchEvent passthrough_press(
+        ui::ET_TOUCH_PRESSED, passthrough, 1, Now());
+    ASSERT_EQ(1U, delegate_.NumPassthroughSounds());
+    generator_->Dispatch(&passthrough_press);
+    generator_->ReleaseTouchId(1);
+    generator_->PressTouchId(1);
+    EXPECT_FALSE(IsInGestureInProgressState());
+    EXPECT_FALSE(IsInSlideGestureState());
+    EXPECT_TRUE(IsInCornerPassthroughState());
+
+    std::vector<ui::LocatedEvent*> captured_events = GetCapturedLocatedEvents();
+    ASSERT_EQ(3U, captured_events.size());
+    EXPECT_EQ(ui::ET_TOUCH_PRESSED, captured_events[0]->type());
+    EXPECT_EQ(ui::ET_TOUCH_RELEASED, captured_events[1]->type());
+    EXPECT_EQ(ui::ET_TOUCH_PRESSED, captured_events[2]->type());
+    generator_->ReleaseTouchId(1);
+    ClearCapturedEvents();
+
+    generator_->ReleaseTouchId(0);
+    captured_events = GetCapturedLocatedEvents();
+    ASSERT_EQ(0U, captured_events.size());
+    EXPECT_FALSE(IsInTouchToMouseMode());
+    EXPECT_FALSE(IsInCornerPassthroughState());
+    ClearCapturedEvents();
+  }
+
   bool IsInTouchToMouseMode() {
     aura::client::CursorClient* cursor_client =
         aura::client::GetCursorClient(root_window());
@@ -298,15 +380,20 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
     return touch_exploration_controller_->IsInTwoFingerTapStateForTesting();
   }
 
+  bool IsInCornerPassthroughState() {
+    return touch_exploration_controller_
+        ->IsInCornerPassthroughStateForTesting();
+  }
+
   gfx::Rect BoundsOfRootWindowInDIP() {
     return touch_exploration_controller_->BoundsOfRootWindowInDIPForTesting();
   }
 
-  float GetMaxDistanceFromEdge() const{
+  float GetMaxDistanceFromEdge() const {
     return touch_exploration_controller_->GetMaxDistanceFromEdge();
   }
 
-  float GetSlopDistanceFromEdge() const{
+  float GetSlopDistanceFromEdge() const {
     return touch_exploration_controller_->GetSlopDistanceFromEdge();
   }
 
@@ -1694,6 +1781,106 @@ TEST_F(TouchExplorationTest, TwoFingerTapAndMoveSecondFinger) {
 
   generator_->Dispatch(&out_slop_id_2);
   EXPECT_FALSE(IsInTwoFingerTapState());
+}
+
+// Corner passthrough should turn on if the user first holds down on either the
+// right or left corner past a delay and then places a finger anywhere else on
+// the screen.
+TEST_F(TouchExplorationTest, ActivateLeftCornerPassthrough) {
+  SwitchTouchExplorationMode(true);
+
+  gfx::Rect window = BoundsOfRootWindowInDIP();
+  gfx::Point left_corner(10, window.bottom() - GetMaxDistanceFromEdge() / 2);
+  AssertCornerPassthroughWorking(left_corner);
+}
+
+TEST_F(TouchExplorationTest, ActivateRightCornerPassthrough) {
+  SwitchTouchExplorationMode(true);
+
+  gfx::Rect window = BoundsOfRootWindowInDIP();
+  gfx::Point right_corner(window.right() - GetMaxDistanceFromEdge() / 2,
+                          window.bottom() - GetMaxDistanceFromEdge() / 2);
+  AssertCornerPassthroughWorking(right_corner);
+}
+
+// Earcons should play if the user slides off the screen or enters the screen
+// from the edge.
+TEST_F(TouchExplorationTest, EnterEarconPlays) {
+  SwitchTouchExplorationMode(true);
+
+  gfx::Rect window = BoundsOfRootWindowInDIP();
+
+  gfx::Point upper_left_corner(0, 0);
+  gfx::Point upper_right_corner(window.right(), 0);
+  gfx::Point lower_left_corner(0, window.bottom());
+  gfx::Point lower_right_corner(window.right(), window.bottom());
+  gfx::Point left_edge(0, 30);
+  gfx::Point right_edge(window.right(), 30);
+  gfx::Point top_edge(30, 0);
+  gfx::Point bottom_edge(30, window.bottom());
+
+  std::vector<gfx::Point> locations;
+  locations.push_back(upper_left_corner);
+  locations.push_back(upper_right_corner);
+  locations.push_back(lower_left_corner);
+  locations.push_back(lower_right_corner);
+  locations.push_back(left_edge);
+  locations.push_back(right_edge);
+  locations.push_back(top_edge);
+  locations.push_back(bottom_edge);
+
+  for (std::vector<gfx::Point>::const_iterator point = locations.begin();
+       point != locations.end();
+       ++point) {
+    ui::TouchEvent touch_event(ui::ET_TOUCH_PRESSED, *point, 1, Now());
+
+    generator_->Dispatch(&touch_event);
+    ASSERT_EQ(1U, delegate_.NumEnterScreenSounds());
+    generator_->ReleaseTouchId(1);
+    delegate_.ResetCountersToZero();
+  }
+}
+
+TEST_F(TouchExplorationTest, ExitEarconPlays) {
+  SwitchTouchExplorationMode(true);
+
+  // On the device, it cannot actually tell if the finger has left the screen or
+  // not. If the finger has left the screen, it reads it as a release that
+  // occurred very close to the edge of the screen even if the finger is still
+  // technically touching the moniter. To simulate this, a release that occurs
+  // close to the edge is dispatched.
+  gfx::Point initial_press(100, 200);
+  gfx::Rect window = BoundsOfRootWindowInDIP();
+
+  gfx::Point upper_left_corner(0, 0);
+  gfx::Point upper_right_corner(window.right(), 0);
+  gfx::Point lower_left_corner(0, window.bottom());
+  gfx::Point lower_right_corner(window.right(), window.bottom());
+  gfx::Point left_edge(0, 30);
+  gfx::Point right_edge(window.right(), 30);
+  gfx::Point top_edge(30, 0);
+  gfx::Point bottom_edge(30, window.bottom());
+
+  std::vector<gfx::Point> locations;
+  locations.push_back(upper_left_corner);
+  locations.push_back(upper_right_corner);
+  locations.push_back(lower_left_corner);
+  locations.push_back(lower_right_corner);
+  locations.push_back(left_edge);
+  locations.push_back(right_edge);
+  locations.push_back(top_edge);
+  locations.push_back(bottom_edge);
+
+  for (std::vector<gfx::Point>::const_iterator point = locations.begin();
+       point != locations.end();
+       ++point) {
+    generator_->PressTouch();
+    generator_->MoveTouch(initial_press);
+    generator_->MoveTouch(*point);
+    generator_->ReleaseTouch();
+    ASSERT_EQ(1U, delegate_.NumExitScreenSounds());
+    delegate_.ResetCountersToZero();
+  }
 }
 
 }  // namespace ui

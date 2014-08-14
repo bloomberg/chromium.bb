@@ -26,6 +26,10 @@ namespace {
 // Delay between adjustment sounds.
 const base::TimeDelta kSoundDelay = base::TimeDelta::FromMilliseconds(150);
 
+// Delay before corner passthrough activates.
+const base::TimeDelta kCornerPassthroughDelay =
+    base::TimeDelta::FromMilliseconds(700);
+
 // In ChromeOS, VKEY_LWIN is synonymous for the search key.
 const ui::KeyboardCode kChromeOSSearchKey = ui::VKEY_LWIN;
 }  // namespace
@@ -77,6 +81,13 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
     // this event under this new state.
   }
 
+  if (passthrough_timer_.IsRunning() &&
+      event.time_stamp() - initial_press_->time_stamp() >
+          gesture_detector_config_.longpress_timeout) {
+    passthrough_timer_.Stop();
+    OnPassthroughTimerFired();
+  }
+
   const ui::EventType type = touch_event.type();
   const gfx::PointF& location = touch_event.location_f();
   const int touch_id = touch_event.touch_id();
@@ -116,6 +127,12 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
   if ((type == ui::ET_TOUCH_RELEASED || type == ui::ET_TOUCH_CANCELLED) &&
       FindEdgesWithinBounds(touch_event.location(), kLeavingScreenEdge) !=
           NO_EDGE) {
+    if (VLOG_on_)
+      VLOG(0) << "Leaving screen";
+
+    // Indicates to the user that they are leaving the screen.
+    delegate_->PlayExitScreenEarcon();
+
     if (current_touch_ids_.size() == 0) {
       SET_STATE(NO_FINGERS_DOWN);
       if (VLOG_on_) {
@@ -156,6 +173,8 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
       return InGestureInProgress(touch_event, rewritten_event);
     case TOUCH_EXPLORE_SECOND_PRESS:
       return InTouchExploreSecondPress(touch_event, rewritten_event);
+    case CORNER_PASSTHROUGH:
+      return InCornerPassthrough(touch_event, rewritten_event);
     case SLIDE_GESTURE:
       return InSlideGesture(touch_event, rewritten_event);
     case ONE_FINGER_PASSTHROUGH:
@@ -177,28 +196,66 @@ ui::EventRewriteStatus TouchExplorationController::NextDispatchEvent(
 
 ui::EventRewriteStatus TouchExplorationController::InNoFingersDown(
     const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event) {
-  ui::EventType type = event.type();
-  if (type == ui::ET_TOUCH_PRESSED) {
-    initial_press_.reset(new TouchEvent(event));
-    initial_presses_[event.touch_id()] = event.location();
-    last_unused_finger_event_.reset(new TouchEvent(event));
-    StartTapTimer();
-    SET_STATE(SINGLE_TAP_PRESSED);
-    return ui::EVENT_REWRITE_DISCARD;
+  const ui::EventType type = event.type();
+  if (type != ui::ET_TOUCH_PRESSED) {
+    NOTREACHED() << "Unexpected event type received: " << event.name();
+    return ui::EVENT_REWRITE_CONTINUE;
   }
-  NOTREACHED() << "Unexpected event type received: " << event.name();
-  return ui::EVENT_REWRITE_CONTINUE;
+
+  // If the user enters the screen from the edge then send an earcon.
+  int edge = FindEdgesWithinBounds(event.location(), kLeavingScreenEdge);
+  if (edge != NO_EDGE)
+    delegate_->PlayEnterScreenEarcon();
+
+  int location = FindEdgesWithinBounds(event.location(), kSlopDistanceFromEdge);
+  // If the press was at a corner, the user might go into corner passthrough
+  // instead.
+  bool in_a_bottom_corner =
+      (BOTTOM_LEFT_CORNER == location) || (BOTTOM_RIGHT_CORNER == location);
+  if (in_a_bottom_corner) {
+    passthrough_timer_.Start(
+        FROM_HERE,
+        gesture_detector_config_.longpress_timeout,
+        this,
+        &TouchExplorationController::OnPassthroughTimerFired);
+  }
+  initial_press_.reset(new TouchEvent(event));
+  initial_presses_[event.touch_id()] = event.location();
+  last_unused_finger_event_.reset(new TouchEvent(event));
+  StartTapTimer();
+  SET_STATE(SINGLE_TAP_PRESSED);
+  return ui::EVENT_REWRITE_DISCARD;
 }
 
 ui::EventRewriteStatus TouchExplorationController::InSingleTapPressed(
     const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event) {
   const ui::EventType type = event.type();
 
+  int location = FindEdgesWithinBounds(event.location(), kMaxDistanceFromEdge);
+  bool in_a_bottom_corner =
+      (location == BOTTOM_LEFT_CORNER) || (location == BOTTOM_RIGHT_CORNER);
+  // If the event is from the initial press and the location is no longer in the
+  // corner, then we are not waiting for a corner passthrough anymore.
+  if (event.touch_id() == initial_press_->touch_id() && !in_a_bottom_corner) {
+    if (passthrough_timer_.IsRunning()) {
+      passthrough_timer_.Stop();
+      // Since the long press timer has been running, it is possible that the
+      // tap timer has timed out before the long press timer has. If the tap
+      // timer timeout has elapsed, then fire the tap timer.
+      if (event.time_stamp() - initial_press_->time_stamp() >
+          gesture_detector_config_.double_tap_timeout) {
+        OnTapTimerFired();
+      }
+    }
+  }
+
   if (type == ui::ET_TOUCH_PRESSED) {
     initial_presses_[event.touch_id()] = event.location();
     SET_STATE(TWO_FINGER_TAP);
     return EVENT_REWRITE_DISCARD;
   } else if (type == ui::ET_TOUCH_RELEASED || type == ui::ET_TOUCH_CANCELLED) {
+    if (passthrough_timer_.IsRunning())
+      passthrough_timer_.Stop();
     if (current_touch_ids_.size() == 0 &&
         event.touch_id() == initial_press_->touch_id()) {
       SET_STATE(SINGLE_TAP_RELEASED);
@@ -225,7 +282,7 @@ ui::EventRewriteStatus TouchExplorationController::InSingleTapPressed(
     }
     // Change to slide gesture if the slide occurred at the right edge.
     int edge = FindEdgesWithinBounds(event.location(), kMaxDistanceFromEdge);
-    if (edge & RIGHT_EDGE) {
+    if (edge & RIGHT_EDGE && edge != BOTTOM_RIGHT_CORNER) {
       SET_STATE(SLIDE_GESTURE);
       return InSlideGesture(event, rewritten_event);
     }
@@ -394,6 +451,37 @@ ui::EventRewriteStatus TouchExplorationController::InGestureInProgress(
   return ui::EVENT_REWRITE_DISCARD;
 }
 
+ui::EventRewriteStatus TouchExplorationController::InCornerPassthrough(
+    const ui::TouchEvent& event,
+    scoped_ptr<ui::Event>* rewritten_event) {
+  ui::EventType type = event.type();
+
+  // If the first finger has left the corner, then exit passthrough.
+  if (event.touch_id() == initial_press_->touch_id()) {
+    int edges = FindEdgesWithinBounds(event.location(), kSlopDistanceFromEdge);
+    bool in_a_bottom_corner = (edges == BOTTOM_LEFT_CORNER) ||
+                              (edges == BOTTOM_RIGHT_CORNER);
+    if (type == ui::ET_TOUCH_MOVED && in_a_bottom_corner)
+      return ui::EVENT_REWRITE_DISCARD;
+
+    if (current_touch_ids_.size() == 0) {
+      SET_STATE(NO_FINGERS_DOWN);
+      return ui::EVENT_REWRITE_DISCARD;
+    }
+    SET_STATE(WAIT_FOR_NO_FINGERS);
+    return ui::EVENT_REWRITE_DISCARD;
+  }
+
+  rewritten_event->reset(new ui::TouchEvent(
+      type, event.location(), event.touch_id(), event.time_stamp()));
+  (*rewritten_event)->set_flags(event.flags());
+
+  if (current_touch_ids_.size() == 0)
+    SET_STATE(NO_FINGERS_DOWN);
+
+  return ui::EVENT_REWRITE_REWRITTEN;
+}
+
 ui::EventRewriteStatus TouchExplorationController::InOneFingerPassthrough(
     const ui::TouchEvent& event,
     scoped_ptr<ui::Event>* rewritten_event) {
@@ -465,7 +553,7 @@ ui::EventRewriteStatus TouchExplorationController::InWaitForNoFingers(
 }
 
 void TouchExplorationController::PlaySoundForTimer() {
-  delegate_->PlayVolumeAdjustSound();
+  delegate_->PlayVolumeAdjustEarcon();
 }
 
 ui::EventRewriteStatus TouchExplorationController::InSlideGesture(
@@ -505,7 +593,7 @@ ui::EventRewriteStatus TouchExplorationController::InSlideGesture(
                        kSoundDelay,
                        this,
                        &ui::TouchExplorationController::PlaySoundForTimer);
-    delegate_->PlayVolumeAdjustSound();
+    delegate_->PlayVolumeAdjustEarcon();
   }
 
   if (current_touch_ids_.size() == 0) {
@@ -592,13 +680,11 @@ void TouchExplorationController::OnTapTimerFired() {
       return;
     }
     case SINGLE_TAP_PRESSED:
-      EnterTouchToMouseMode();
-      SET_STATE(TOUCH_EXPLORATION);
-      break;
+      if (passthrough_timer_.IsRunning())
+        return;
     case GESTURE_IN_PROGRESS:
       // If only one finger is down, go into touch exploration.
       if (current_touch_ids_.size() == 1) {
-        EnterTouchToMouseMode();
         SET_STATE(TOUCH_EXPLORATION);
         break;
       }
@@ -616,6 +702,31 @@ void TouchExplorationController::OnTapTimerFired() {
       CreateMouseMoveEvent(initial_press_->location(), initial_press_->flags());
   DispatchEvent(mouse_move.get());
   last_touch_exploration_.reset(new TouchEvent(*initial_press_));
+}
+
+void TouchExplorationController::OnPassthroughTimerFired() {
+  // The passthrough timer will only fire if if the user has held a finger in
+  // one of the passthrough corners for the duration of the passthrough timeout.
+
+  // Check that initial press isn't null. Also a check that if the initial
+  // corner press was released, then it should not be in corner passthrough.
+  if (!initial_press_ ||
+      touch_locations_.find(initial_press_->touch_id()) !=
+          touch_locations_.end()) {
+    LOG(ERROR) << "No initial press or the initial press has been released.";
+  }
+
+  gfx::Point location =
+      ToRoundedPoint(touch_locations_[initial_press_->touch_id()]);
+  int corner = FindEdgesWithinBounds(location, kSlopDistanceFromEdge);
+  if (corner != BOTTOM_LEFT_CORNER && corner != BOTTOM_RIGHT_CORNER)
+    return;
+
+  if (sound_timer_.IsRunning())
+    sound_timer_.Stop();
+  delegate_->PlayPassthroughEarcon();
+  SET_STATE(CORNER_PASSTHROUGH);
+  return;
 }
 
 void TouchExplorationController::DispatchEvent(ui::Event* event) {
@@ -658,13 +769,13 @@ void TouchExplorationController::SideSlideControl(ui::GestureEvent* gesture) {
   ui::EventType type = gesture->type();
 
   if (type == ET_GESTURE_SCROLL_BEGIN) {
-    delegate_->PlayVolumeAdjustSound();
+    delegate_->PlayVolumeAdjustEarcon();
   }
 
   if (type == ET_GESTURE_SCROLL_END) {
     if (sound_timer_.IsRunning())
       sound_timer_.Stop();
-    delegate_->PlayVolumeAdjustSound();
+    delegate_->PlayVolumeAdjustEarcon();
   }
 
   // If the user is in the corner of the right side of the screen, the volume
@@ -863,6 +974,7 @@ void TouchExplorationController::SetState(State new_state,
     case TOUCH_EXPLORATION:
     case TOUCH_EXPLORE_SECOND_PRESS:
     case ONE_FINGER_PASSTHROUGH:
+    case CORNER_PASSTHROUGH:
     case WAIT_FOR_NO_FINGERS:
       if (gesture_provider_.get())
         gesture_provider_.reset(NULL);
@@ -942,6 +1054,8 @@ const char* TouchExplorationController::EnumStateToString(State state) {
       return "GESTURE_IN_PROGRESS";
     case TOUCH_EXPLORE_SECOND_PRESS:
       return "TOUCH_EXPLORE_SECOND_PRESS";
+    case CORNER_PASSTHROUGH:
+      return "CORNER_PASSTHROUGH";
     case SLIDE_GESTURE:
       return "SLIDE_GESTURE";
     case ONE_FINGER_PASSTHROUGH:

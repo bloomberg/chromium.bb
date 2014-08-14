@@ -33,9 +33,12 @@ class ASH_EXPORT AshTouchExplorationManager
       AccessibilityNotificationVisibility notify) OVERRIDE;
 
   // TouchExplorationControllerDelegate overrides:
-  virtual void PlayVolumeAdjustSound() OVERRIDE;
   virtual void SetOutputLevel(int volume) OVERRIDE;
   virtual void SilenceSpokenFeedback() OVERRIDE;
+  virtual void PlayVolumeAdjustEarcon() OVERRIDE;
+  virtual void PlayPassthroughEarcon() OVERRIDE;
+  virtual void PlayExitScreenEarcon() OVERRIDE;
+  virtual void PlayEnterScreenEarcon() OVERRIDE;
 
  private:
   void UpdateTouchExplorationState();

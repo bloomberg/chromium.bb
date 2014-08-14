@@ -153,6 +153,9 @@ class EmptyAccessibilityDelegate : public ash::AccessibilityDelegate {
     return ash::A11Y_ALERT_NONE;
   }
 
+  virtual void PlayEarcon(int sound_key) OVERRIDE {
+  }
+
   virtual base::TimeDelta PlayShutdownSound() const OVERRIDE {
     return base::TimeDelta();
   }

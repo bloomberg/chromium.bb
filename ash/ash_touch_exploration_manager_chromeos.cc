@@ -37,14 +37,6 @@ void AshTouchExplorationManager::OnAccessibilityModeChanged(
   UpdateTouchExplorationState();
 }
 
-void AshTouchExplorationManager::PlayVolumeAdjustSound() {
-  if (!VolumeAdjustSoundEnabled())
-    return;
-  if ((!audio_handler_->IsOutputMuted()) ||
-      !(audio_handler_->GetOutputVolumePercent() == 100))
-    PlaySystemSoundIfSpokenFeedback(chromeos::SOUND_VOLUME_ADJUST);
-}
-
 void AshTouchExplorationManager::SetOutputLevel(int volume) {
   if (volume > 0) {
     if (audio_handler_->IsOutputMuted()) {
@@ -63,6 +55,29 @@ void AshTouchExplorationManager::SilenceSpokenFeedback() {
   if (!delegate->IsSpokenFeedbackEnabled())
     return;
   delegate->SilenceSpokenFeedback();
+}
+
+void AshTouchExplorationManager::PlayVolumeAdjustEarcon() {
+  if (!VolumeAdjustSoundEnabled())
+    return;
+  if (!audio_handler_->IsOutputMuted() &&
+      audio_handler_->GetOutputVolumePercent() != 100)
+    PlaySystemSoundIfSpokenFeedback(chromeos::SOUND_VOLUME_ADJUST);
+}
+
+void AshTouchExplorationManager::PlayPassthroughEarcon() {
+  Shell::GetInstance()->accessibility_delegate()->PlayEarcon(
+      chromeos::SOUND_PASSTHROUGH);
+}
+
+void AshTouchExplorationManager::PlayExitScreenEarcon() {
+  Shell::GetInstance()->accessibility_delegate()->PlayEarcon(
+      chromeos::SOUND_EXIT_SCREEN);
+}
+
+void AshTouchExplorationManager::PlayEnterScreenEarcon() {
+  Shell::GetInstance()->accessibility_delegate()->PlayEarcon(
+      chromeos::SOUND_ENTER_SCREEN);
 }
 
 void AshTouchExplorationManager::UpdateTouchExplorationState() {

@@ -39,6 +39,7 @@ class ASH_EXPORT DefaultAccessibilityDelegate : public AccessibilityDelegate {
   virtual double GetSavedScreenMagnifierScale() OVERRIDE;
   virtual void TriggerAccessibilityAlert(AccessibilityAlert alert) OVERRIDE;
   virtual AccessibilityAlert GetLastAccessibilityAlert() OVERRIDE;
+  virtual void PlayEarcon(int sound_key) OVERRIDE;
   virtual base::TimeDelta PlayShutdownSound() const OVERRIDE;
 
  private:

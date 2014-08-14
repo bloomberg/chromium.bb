@@ -33,16 +33,28 @@ class TouchExplorationControllerDelegate {
  public:
   virtual ~TouchExplorationControllerDelegate() {}
 
-  // This function should be called whenever the delegate wants to play a sound
-  // when the volume adjusts.
-  virtual void PlayVolumeAdjustSound() = 0;
-
   // Takes an int from 0.0 to 100.0 that indicates the percent the volume
   // should be set to.
   virtual void SetOutputLevel(int volume) = 0;
 
   // Silences spoken feedback.
   virtual void SilenceSpokenFeedback() = 0;
+
+  // This function should be called when the volume adjust earcon should be
+  // played
+  virtual void PlayVolumeAdjustEarcon() = 0;
+
+  // This function should be called when the passthrough earcon should be
+  // played.
+  virtual void PlayPassthroughEarcon() = 0;
+
+  // This function should be called when the exit screen earcon should be
+  // played.
+  virtual void PlayExitScreenEarcon() = 0;
+
+  // This function should be called when the enter screen earcon should be
+  // played.
+  virtual void PlayEnterScreenEarcon() = 0;
 };
 
 // TouchExplorationController is used in tandem with "Spoken Feedback" to
@@ -142,6 +154,12 @@ class TouchExplorationControllerDelegate {
 // If the user taps the screen with two fingers and lifts both fingers before
 // the grace period has passed, spoken feedback is silenced.
 //
+// The user can also enter passthrough by placing a finger on one of the bottom
+// corners of the screen until an earcon sounds. After the earcon sounds, the
+// user is in passthrough so all subsequent fingers placed on the screen will be
+// passed through. Once the finger in the corner has been released, the state
+// will switch to wait for one finger.
+//
 // The caller is expected to retain ownership of instances of this class and
 // destroy them before |root_window| is destroyed.
 class UI_CHROMEOS_EXPORT TouchExplorationController
@@ -176,6 +194,8 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
   ui::EventRewriteStatus InTouchExploration(
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
+  ui::EventRewriteStatus InCornerPassthrough(
+      const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
   ui::EventRewriteStatus InOneFingerPassthrough(
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
   ui::EventRewriteStatus InGestureInProgress(
@@ -198,6 +218,13 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
   // we treat that as a single mouse move (touch exploration) event.
   void StartTapTimer();
   void OnTapTimerFired();
+
+  // This timer is started every timer we get the first press event and the
+  // finger is in the corner of the screen.
+  // It fires after the corner passthrough delay elapses. If the
+  // user is still in the corner by the time this timer fires, all subsequent
+  // fingers added on the screen will be passed through.
+  void OnPassthroughTimerFired();
 
   // Dispatch a new event outside of the event rewriting flow.
   void DispatchEvent(ui::Event* event);
@@ -312,6 +339,11 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
     // all fingers.
     ONE_FINGER_PASSTHROUGH,
 
+    // If the user has pressed and held down the left corner past long press,
+    // then as long as they are holding the corner, all subsequent fingers
+    // registered will be in passthrough.
+    CORNER_PASSTHROUGH,
+
     // If the user added another finger in SINGLE_TAP_PRESSED, or if the user
     // has multiple fingers fingers down in any other state between
     // passthrough, touch exploration, and gestures, they must release
@@ -337,6 +369,8 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
     TOP_EDGE = 1 << 1,
     LEFT_EDGE = 1 << 2,
     BOTTOM_EDGE = 1 << 3,
+    BOTTOM_LEFT_CORNER = LEFT_EDGE | BOTTOM_EDGE,
+    BOTTOM_RIGHT_CORNER = RIGHT_EDGE | BOTTOM_EDGE,
   };
 
   // Given a point, if it is within the given bounds of an edge, returns the
@@ -396,6 +430,9 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
 
   // A timer that fires after the double-tap delay.
   base::OneShotTimer<TouchExplorationController> tap_timer_;
+
+  // A timer that fires to enter passthrough.
+  base::OneShotTimer<TouchExplorationController> passthrough_timer_;
 
   // A timer to fire an indicating sound when sliding to change volume.
   base::RepeatingTimer<TouchExplorationController> sound_timer_;

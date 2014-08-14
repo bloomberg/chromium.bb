@@ -199,6 +199,11 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     return ash::A11Y_ALERT_NONE;
   }
 
+  virtual void PlayEarcon(int sound_key) OVERRIDE {
+    DCHECK(chromeos::AccessibilityManager::Get());
+    return chromeos::AccessibilityManager::Get()->PlayEarcon(sound_key);
+  }
+
   virtual base::TimeDelta PlayShutdownSound() const OVERRIDE {
     return chromeos::AccessibilityManager::Get()->PlayShutdownSound();
   }

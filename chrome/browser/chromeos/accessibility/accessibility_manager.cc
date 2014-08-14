@@ -222,7 +222,7 @@ void InjectChromeVoxContentScript(
   for (size_t i = 0; i < content_scripts.size(); i++) {
     const extensions::UserScript& script = content_scripts[i];
     for (size_t j = 0; j < script.js_scripts().size(); ++j) {
-      const extensions::UserScript::File &file = script.js_scripts()[j];
+      const extensions::UserScript::File& file = script.js_scripts()[j];
       extensions::ExtensionResource resource = extension->GetResource(
           file.relative_path());
       loader->AppendScript(resource);
@@ -373,6 +373,12 @@ AccessibilityManager::AccessibilityManager()
   manager->Initialize(
       SOUND_SPOKEN_FEEDBACK_DISABLED,
       bundle.GetRawDataResource(IDR_SOUND_SPOKEN_FEEDBACK_DISABLED_WAV));
+  manager->Initialize(SOUND_PASSTHROUGH,
+                      bundle.GetRawDataResource(IDR_SOUND_PASSTHROUGH_WAV));
+  manager->Initialize(SOUND_EXIT_SCREEN,
+                      bundle.GetRawDataResource(IDR_SOUND_EXIT_SCREEN_WAV));
+  manager->Initialize(SOUND_ENTER_SCREEN,
+                      bundle.GetRawDataResource(IDR_SOUND_ENTER_SCREEN_WAV));
 }
 
 AccessibilityManager::~AccessibilityManager() {
@@ -691,6 +697,11 @@ void AccessibilityManager::OnLocaleChanged() {
   // to the new language.
   EnableSpokenFeedback(false, ash::A11Y_NOTIFICATION_NONE);
   EnableSpokenFeedback(true, ash::A11Y_NOTIFICATION_NONE);
+}
+
+void AccessibilityManager::PlayEarcon(int sound_key) {
+  DCHECK(sound_key < chromeos::SOUND_COUNT);
+  ash::PlaySystemSoundIfSpokenFeedback(sound_key);
 }
 
 bool AccessibilityManager::IsHighContrastEnabled() {

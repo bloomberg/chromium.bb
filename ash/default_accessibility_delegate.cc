@@ -110,6 +110,9 @@ AccessibilityAlert DefaultAccessibilityDelegate::GetLastAccessibilityAlert() {
   return accessibility_alert_;
 }
 
+void DefaultAccessibilityDelegate::PlayEarcon(int sound_key) {
+}
+
 base::TimeDelta DefaultAccessibilityDelegate::PlayShutdownSound() const {
   return base::TimeDelta();
 }
