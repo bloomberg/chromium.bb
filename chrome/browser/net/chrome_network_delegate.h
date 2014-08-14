@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_metrics.h"
 #include "net/base/network_delegate.h"
+#include "net/proxy/proxy_retry_info.h"
 
 class ChromeExtensionsNetworkDelegate;
 class ClientHints;
@@ -50,8 +51,10 @@ class InfoMap;
 }
 
 namespace net {
+class ProxyConfig;
 class ProxyInfo;
 class ProxyServer;
+class ProxyService;
 class URLRequest;
 }
 
@@ -73,8 +76,14 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   typedef base::Callback<void(
       const GURL& url,
       int load_flags,
+      const net::ProxyConfig& data_reduction_proxy_config,
+      const net::ProxyRetryInfoMap& proxy_retry_info_map,
       const data_reduction_proxy::DataReductionProxyParams* params,
       net::ProxyInfo* result)> OnResolveProxyHandler;
+
+  // Provides an additional proxy configuration that can be consulted after
+  // proxy resolution.
+  typedef base::Callback<const net::ProxyConfig&()> ProxyConfigGetter;
 
   // |enable_referrers| (and all of the other optional PrefMembers) should be
   // initialized on the UI thread (see below) beforehand. This object's owner is
@@ -161,6 +170,10 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
     on_resolve_proxy_handler_ = handler;
   }
 
+  void set_proxy_config_getter(const ProxyConfigGetter& getter) {
+    proxy_config_getter_ = getter;
+  }
+
   // Adds the Client Hints header to HTTP requests.
   void SetEnableClientHints();
 
@@ -198,7 +211,10 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
                                  const net::CompletionCallback& callback,
                                  GURL* new_url) OVERRIDE;
   virtual void OnResolveProxy(
-      const GURL& url, int load_flags, net::ProxyInfo* result) OVERRIDE;
+      const GURL& url,
+      int load_flags,
+      const net::ProxyService& proxy_service,
+      net::ProxyInfo* result) OVERRIDE;
   virtual void OnProxyFallback(const net::ProxyServer& bad_proxy,
                                int net_error,
                                bool did_fallback) OVERRIDE;
@@ -306,6 +322,7 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   data_reduction_proxy_auth_request_handler_;
 
   OnResolveProxyHandler on_resolve_proxy_handler_;
+  ProxyConfigGetter proxy_config_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNetworkDelegate);
 };

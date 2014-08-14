@@ -28,6 +28,7 @@ class WebContents;
 }
 
 namespace data_reduction_proxy {
+class DataReductionProxyConfigurator;
 class DataReductionProxySettings;
 }
 
@@ -131,6 +132,8 @@ class AwBrowserContext : public content::BrowserContext,
 
   scoped_ptr<PrefService> user_pref_service_;
 
+  scoped_ptr<data_reduction_proxy::DataReductionProxyConfigurator>
+      data_reduction_proxy_configurator_;
   scoped_ptr<data_reduction_proxy::DataReductionProxySettings>
       data_reduction_proxy_settings_;
 

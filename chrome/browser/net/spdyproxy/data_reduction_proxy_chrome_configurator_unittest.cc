@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
+#include "base/test/test_simple_task_runner.h"
 #include "base/values.h"
 #include "chrome/common/pref_names.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -19,7 +20,9 @@ class DataReductionProxyConfigTest : public testing::Test {
   virtual void SetUp() {
     PrefRegistrySimple* registry = pref_service_.registry();
     registry->RegisterDictionaryPref(prefs::kProxy);
-    config_.reset(new DataReductionProxyChromeConfigurator(&pref_service_));
+    config_.reset(new DataReductionProxyChromeConfigurator(
+        &pref_service_,
+        new base::TestSimpleTaskRunner()));
   }
 
   void CheckProxyConfig(

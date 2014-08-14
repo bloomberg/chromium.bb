@@ -417,7 +417,7 @@ TEST_F(DataReductionProxySettingsTest, CheckInitMetricsWhenNotAllowed) {
 
   scoped_ptr<DataReductionProxyConfigurator> configurator(
       new TestDataReductionProxyConfig());
-  settings_->SetProxyConfigurator(configurator.Pass());
+  settings_->SetProxyConfigurator(configurator.get());
   scoped_refptr<net::TestURLRequestContextGetter> request_context =
       new net::TestURLRequestContextGetter(base::MessageLoopProxy::current());
   settings_->InitDataReductionProxySettings(

@@ -26,6 +26,7 @@
 #include "chrome/browser/net/cookie_store_util.h"
 #include "chrome/browser/net/http_server_properties_manager_factory.h"
 #include "chrome/browser/net/predictor.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_configurator.h"
 #include "chrome/browser/net/sqlite_channel_id_store.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
@@ -153,6 +154,8 @@ void ProfileImplIOData::Handle::Init(
       scoped_ptr<domain_reliability::DomainReliabilityMonitor>
           domain_reliability_monitor,
       const base::Callback<void(bool)>& data_reduction_proxy_unavailable,
+      scoped_ptr<DataReductionProxyChromeConfigurator>
+          data_reduction_proxy_chrome_configurator,
       scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
           data_reduction_proxy_params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -188,6 +191,8 @@ void ProfileImplIOData::Handle::Init(
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
   io_data_->data_reduction_proxy_unavailable_callback_ =
       data_reduction_proxy_unavailable;
+  io_data_->data_reduction_proxy_chrome_configurator_ =
+      data_reduction_proxy_chrome_configurator.Pass();
   io_data_->data_reduction_proxy_params_ =
       data_reduction_proxy_params.Pass();
 #endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
@@ -435,6 +440,10 @@ void ProfileImplIOData::InitializeInternal(
       data_reduction_proxy_auth_request_handler_.get());
   network_delegate()->set_on_resolve_proxy_handler(
       base::Bind(data_reduction_proxy::OnResolveProxyHandler));
+  network_delegate()->set_proxy_config_getter(
+      base::Bind(
+          &DataReductionProxyChromeConfigurator::GetProxyConfigOnIO,
+          base::Unretained(data_reduction_proxy_chrome_configurator_.get())));
 #endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 
   network_delegate()->set_predictor(predictor_.get());

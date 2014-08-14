@@ -47,7 +47,9 @@
 #include "net/cookies/cookie_options.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
+#include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_info.h"
+#include "net/proxy/proxy_retry_info.h"
 #include "net/proxy/proxy_server.h"
 #include "net/socket_stream/socket_stream.h"
 #include "net/url_request/url_request.h"
@@ -427,9 +429,15 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
 }
 
 void ChromeNetworkDelegate::OnResolveProxy(
-    const GURL& url, int load_flags, net::ProxyInfo* result) {
-  if (!on_resolve_proxy_handler_.is_null()) {
+    const GURL& url,
+    int load_flags,
+    const net::ProxyService& proxy_service,
+    net::ProxyInfo* result) {
+  if (!on_resolve_proxy_handler_.is_null() &&
+      !proxy_config_getter_.is_null()) {
     on_resolve_proxy_handler_.Run(url, load_flags,
+                                  proxy_config_getter_.Run(),
+                                  proxy_service.proxy_retry_info(),
                                   data_reduction_proxy_params_, result);
   }
 }

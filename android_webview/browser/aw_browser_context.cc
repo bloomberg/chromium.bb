@@ -113,14 +113,15 @@ void AwBrowserContext::PreMainMessageLoopRun() {
                       BrowserThread::GetMessageLoopProxyForThread(
                           BrowserThread::IO),
                           NULL /* Ignored on Android */)).Pass()));
-    if (data_reduction_proxy_settings_.get()) {
-    scoped_ptr<data_reduction_proxy::DataReductionProxyConfigurator>
-        configurator(new data_reduction_proxy::DataReductionProxyConfigTracker(
-            base::Bind(&DataReductionProxyConfigService::UpdateProxyConfig,
-                       base::Unretained(
-                           data_reduction_proxy_config_service.get())),
+  if (data_reduction_proxy_settings_.get()) {
+      data_reduction_proxy_configurator_.reset(
+          new data_reduction_proxy::DataReductionProxyConfigTracker(
+              base::Bind(&DataReductionProxyConfigService::UpdateProxyConfig,
+                         base::Unretained(
+                             data_reduction_proxy_config_service.get())),
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
-    data_reduction_proxy_settings_->SetProxyConfigurator(configurator.Pass());
+    data_reduction_proxy_settings_->SetProxyConfigurator(
+        data_reduction_proxy_configurator_.get());
   }
 
   url_request_context_getter_ =

@@ -161,12 +161,16 @@ class TestResolveProxyNetworkDelegate : public NetworkDelegate {
   TestResolveProxyNetworkDelegate()
       : on_resolve_proxy_called_(false),
         add_proxy_(false),
-        remove_proxy_(false) {
+        remove_proxy_(false),
+        proxy_service_(NULL) {
   }
 
-  virtual void OnResolveProxy(
-      const GURL& url, int load_flags, ProxyInfo* result) OVERRIDE {
+  virtual void OnResolveProxy(const GURL& url,
+                              int load_flags,
+                              const ProxyService& proxy_service,
+                              ProxyInfo* result) OVERRIDE {
     on_resolve_proxy_called_ = true;
+    proxy_service_ = &proxy_service;
     DCHECK(!add_proxy_ || !remove_proxy_);
     if (add_proxy_) {
       result->UseNamedProxy("delegate_proxy.com");
@@ -187,10 +191,15 @@ class TestResolveProxyNetworkDelegate : public NetworkDelegate {
     remove_proxy_ = remove_proxy;
   }
 
+  const ProxyService* proxy_service() const {
+    return proxy_service_;
+  }
+
  private:
   bool on_resolve_proxy_called_;
   bool add_proxy_;
   bool remove_proxy_;
+  const ProxyService* proxy_service_;
 };
 
 // A test network delegate that exercises the OnProxyFallback callback.
@@ -299,6 +308,7 @@ TEST_F(ProxyServiceTest, OnResolveProxyCallbackAddProxy) {
       url, net::LOAD_NORMAL, &info, callback.callback(), NULL, &delegate,
       log.bound());
   EXPECT_TRUE(delegate.on_resolve_proxy_called());
+  EXPECT_EQ(&service, delegate.proxy_service());
 
   // Verify that the NetworkDelegate's behavior is stateless across
   // invocations of ResolveProxy. Start by having the callback add a proxy

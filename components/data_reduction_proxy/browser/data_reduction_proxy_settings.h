@@ -115,7 +115,7 @@ class DataReductionProxySettings
       PrefService* prefs,
       PrefService* local_state_prefs,
       net::URLRequestContextGetter* url_request_context_getter,
-      scoped_ptr<DataReductionProxyConfigurator> configurator);
+      DataReductionProxyConfigurator* configurator);
 
   // Sets the |on_data_reduction_proxy_enabled_| callback and runs to register
   // the DataReductionProxyEnabled synthetic field trial.
@@ -125,7 +125,7 @@ class DataReductionProxySettings
   // Sets the logic the embedder uses to set the networking configuration that
   // causes traffic to be proxied.
   void SetProxyConfigurator(
-      scoped_ptr<DataReductionProxyConfigurator> configurator);
+      DataReductionProxyConfigurator* configurator);
 
   // Returns true if the proxy is enabled.
   bool IsDataReductionProxyEnabled();
@@ -227,7 +227,7 @@ class DataReductionProxySettings
                               int policy);
 
   DataReductionProxyConfigurator* configurator() {
-    return configurator_.get();
+    return configurator_;
   }
 
   // Reset params for tests.
@@ -313,7 +313,7 @@ class DataReductionProxySettings
 
   base::Callback<void(bool)> on_data_reduction_proxy_enabled_;
 
-  scoped_ptr<DataReductionProxyConfigurator> configurator_;
+  DataReductionProxyConfigurator* configurator_;
 
   base::ThreadChecker thread_checker_;
 

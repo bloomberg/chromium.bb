@@ -9,14 +9,27 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/task_runner.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_configurator.h"
+#include "net/proxy/proxy_config.h"
+
+namespace base {
+class SequencedTaskRunner;
+}
+
+namespace net {
+class ProxyInfo;
+class ProxyService;
+}
 
 class PrefService;
 
 class DataReductionProxyChromeConfigurator
     : public data_reduction_proxy::DataReductionProxyConfigurator {
  public:
-  explicit DataReductionProxyChromeConfigurator(PrefService* prefs);
+  explicit DataReductionProxyChromeConfigurator(
+      PrefService* prefs,
+      scoped_refptr<base::SequencedTaskRunner> network_task_runner);
   virtual ~DataReductionProxyChromeConfigurator();
 
   virtual void Enable(bool primary_restricted,
@@ -38,11 +51,21 @@ class DataReductionProxyChromeConfigurator
   // as a hostname pattern. Subclasses may implement other semantics.
   virtual void AddURLPatternToBypass(const std::string& pattern) OVERRIDE;
 
+  // Updates the config for use on the IO thread.
+  void UpdateProxyConfigOnIO(const net::ProxyConfig& config);
+
+  // Returns the current data reduction proxy config, even if it is not the
+  // effective configuration used by the proxy service.
+  const net::ProxyConfig& GetProxyConfigOnIO() const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest, TestBypassList);
 
   PrefService* prefs_;
+  scoped_refptr<base::SequencedTaskRunner> network_task_runner_;
+
   std::vector<std::string> bypass_rules_;
+  net::ProxyConfig config_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyChromeConfigurator);
 };

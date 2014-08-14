@@ -37,6 +37,7 @@ class HttpRequestHeaders;
 class HttpResponseHeaders;
 class ProxyInfo;
 class ProxyServer;
+class ProxyService;
 class SocketStream;
 class URLRequest;
 
@@ -62,7 +63,9 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
   int NotifyBeforeURLRequest(URLRequest* request,
                              const CompletionCallback& callback,
                              GURL* new_url);
-  void NotifyResolveProxy(const GURL& url, int load_flags,
+  void NotifyResolveProxy(const GURL& url,
+                          int load_flags,
+                          const ProxyService& proxy_service,
                           ProxyInfo* result);
   void NotifyProxyFallback(const ProxyServer& bad_proxy,
                            int net_error,
@@ -132,6 +135,7 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
   // may override the decision by modifying the ProxyInfo |result|.
   virtual void OnResolveProxy(const GURL& url,
                               int load_flags,
+                              const ProxyService& proxy_service,
                               ProxyInfo* result);
 
   // Called when use of |bad_proxy| fails due to |net_error|. |did_fallback| is

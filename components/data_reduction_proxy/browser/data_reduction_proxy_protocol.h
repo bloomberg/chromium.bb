@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "components/data_reduction_proxy/common/data_reduction_proxy_headers.h"
+#include "net/proxy/proxy_retry_info.h"
 
 namespace base {
 class TimeDelta;
@@ -14,6 +15,7 @@ class TimeDelta;
 
 namespace net {
 class HttpResponseHeaders;
+class ProxyConfig;
 class ProxyInfo;
 class ProxyServer;
 class URLRequest;
@@ -44,6 +46,8 @@ bool MaybeBypassProxyAndPrepareToRetry(
 // |ChromeNetworkDelegate.NotifyResolveProxy|.
 void OnResolveProxyHandler(const GURL& url,
                            int load_flags,
+                           const net::ProxyConfig& data_reduction_proxy_config,
+                           const net::ProxyRetryInfoMap& proxy_retry_info,
                            const DataReductionProxyParams* params,
                            net::ProxyInfo* result);
 

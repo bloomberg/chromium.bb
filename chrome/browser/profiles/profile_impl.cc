@@ -45,6 +45,7 @@
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
 #include "chrome/browser/net/proxy_service_factory.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_configurator.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
@@ -115,7 +116,6 @@
 #endif
 
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_configurator.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
@@ -632,6 +632,7 @@ void ProfileImpl::DoFinalInit() {
   base::Callback<void(bool)> data_reduction_proxy_unavailable;
   scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
       data_reduction_proxy_params;
+  scoped_ptr<DataReductionProxyChromeConfigurator> chrome_configurator;
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
   DataReductionProxyChromeSettings* data_reduction_proxy_chrome_settings =
       DataReductionProxyChromeSettingsFactory::GetForBrowserContext(this);
@@ -641,6 +642,18 @@ void ProfileImpl::DoFinalInit() {
       base::Bind(
           &data_reduction_proxy::DataReductionProxySettings::SetUnreachable,
           base::Unretained(data_reduction_proxy_chrome_settings));
+  // The configurator is used by DataReductionProxyChromeSettings and
+  // ProfileIOData. Ownership is passed to the latter via ProfileIOData::Handle,
+  // which is only destroyed after BrowserContextKeyedServices,
+  // including DataReductionProxyChromeSettings.
+  chrome_configurator.reset(
+      new DataReductionProxyChromeConfigurator(
+          prefs_.get(),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+  // Retain a raw pointer to use for initialization of data reduction proxy
+  // settings after ownership is passed.
+  DataReductionProxyChromeConfigurator*
+      data_reduction_proxy_chrome_configurator = chrome_configurator.get();
 #endif
 
   // Make sure we initialize the ProfileIOData after everything else has been
@@ -652,13 +665,12 @@ void ProfileImpl::DoFinalInit() {
                 predictor_, session_cookie_mode, GetSpecialStoragePolicy(),
                 CreateDomainReliabilityMonitor(),
                 data_reduction_proxy_unavailable,
+                chrome_configurator.Pass(),
                 data_reduction_proxy_params.Pass());
 
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
-  scoped_ptr<data_reduction_proxy::DataReductionProxyConfigurator>
-      configurator(new DataReductionProxyChromeConfigurator(prefs_.get()));
   data_reduction_proxy_chrome_settings->InitDataReductionProxySettings(
-      configurator.Pass(),
+      data_reduction_proxy_chrome_configurator,
       prefs_.get(),
       g_browser_process->local_state(),
       GetRequestContext());

@@ -162,6 +162,7 @@ class DataReductionProxySettingsTestBase : public testing::Test {
   }
 
   TestingPrefServiceSimple pref_service_;
+  scoped_ptr<DataReductionProxyConfigurator> configurator_;
   scoped_ptr<DataReductionProxySettings> settings_;
   scoped_ptr<TestDataReductionProxyParams> expected_params_;
   base::Time last_update_time_;

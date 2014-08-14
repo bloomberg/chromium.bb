@@ -94,7 +94,8 @@ DataReductionProxySettings::DataReductionProxySettings(
       unreachable_(false),
       prefs_(NULL),
       local_state_prefs_(NULL),
-      url_request_context_getter_(NULL) {
+      url_request_context_getter_(NULL),
+      configurator_(NULL) {
   DCHECK(params);
   params_.reset(params);
 }
@@ -149,11 +150,11 @@ void DataReductionProxySettings::InitDataReductionProxySettings(
     PrefService* prefs,
     PrefService* local_state_prefs,
     net::URLRequestContextGetter* url_request_context_getter,
-    scoped_ptr<DataReductionProxyConfigurator> configurator) {
+    DataReductionProxyConfigurator* configurator) {
   InitDataReductionProxySettings(prefs,
                                  local_state_prefs,
                                  url_request_context_getter);
-  SetProxyConfigurator(configurator.Pass());
+  SetProxyConfigurator(configurator);
 }
 
 void DataReductionProxySettings::SetOnDataReductionEnabledCallback(
@@ -163,9 +164,9 @@ void DataReductionProxySettings::SetOnDataReductionEnabledCallback(
 }
 
 void DataReductionProxySettings::SetProxyConfigurator(
-    scoped_ptr<DataReductionProxyConfigurator> configurator) {
+    DataReductionProxyConfigurator* configurator) {
   DCHECK(configurator);
-  configurator_ = configurator.Pass();
+  configurator_ = configurator;
 }
 
 bool DataReductionProxySettings::IsDataReductionProxyEnabled() {

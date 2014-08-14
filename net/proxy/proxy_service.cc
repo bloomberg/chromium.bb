@@ -1297,7 +1297,7 @@ int ProxyService::DidFinishResolvingProxy(const GURL& url,
     // Allow the network delegate to interpose on the resolution decision,
     // possibly modifying the ProxyInfo.
     if (network_delegate)
-      network_delegate->NotifyResolveProxy(url, load_flags, result);
+      network_delegate->NotifyResolveProxy(url, load_flags, *this, result);
 
     // When logging all events is enabled, dump the proxy list.
     if (net_log.IsLogging()) {
@@ -1324,7 +1324,7 @@ int ProxyService::DidFinishResolvingProxy(const GURL& url,
       // Allow the network delegate to interpose on the resolution decision,
       // possibly modifying the ProxyInfo.
       if (network_delegate)
-        network_delegate->NotifyResolveProxy(url, load_flags, result);
+        network_delegate->NotifyResolveProxy(url, load_flags, *this, result);
     } else {
       result_code = ERR_MANDATORY_PROXY_CONFIGURATION_FAILED;
     }

@@ -146,7 +146,8 @@ void DataReductionProxySettingsTestBase::ResetSettings(bool allowed,
   EXPECT_CALL(*settings, GetURLFetcherForWarmup()).Times(0);
   EXPECT_CALL(*settings, LogProxyState(_, _, _)).Times(0);
   settings_.reset(settings);
-  settings_->configurator_.reset(new TestDataReductionProxyConfig());
+  configurator_.reset(new TestDataReductionProxyConfig());
+  settings_->configurator_ = configurator_.get();
 }
 
 // Explicitly generate required instantiations.
@@ -210,8 +211,7 @@ void DataReductionProxySettingsTestBase::CheckProxyConfigs(
     bool expected_restricted,
     bool expected_fallback_restricted) {
   TestDataReductionProxyConfig* config =
-      static_cast<TestDataReductionProxyConfig*>(
-          settings_->configurator_.get());
+      static_cast<TestDataReductionProxyConfig*>(settings_->configurator_);
   ASSERT_EQ(expected_restricted, config->restricted_);
   ASSERT_EQ(expected_fallback_restricted, config->fallback_restricted_);
   ASSERT_EQ(expected_enabled, config->enabled_);
@@ -297,7 +297,7 @@ void DataReductionProxySettingsTestBase::CheckInitDataReductionProxy(
                  enabled_at_startup ? 1 : 0);
   scoped_ptr<DataReductionProxyConfigurator> configurator(
       new TestDataReductionProxyConfig());
-  settings_->SetProxyConfigurator(configurator.Pass());
+  settings_->SetProxyConfigurator(configurator.get());
   scoped_refptr<net::TestURLRequestContextGetter> request_context =
       new net::TestURLRequestContextGetter(base::MessageLoopProxy::current());
 

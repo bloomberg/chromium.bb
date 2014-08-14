@@ -30,12 +30,11 @@ DataReductionProxyChromeSettings::~DataReductionProxyChromeSettings() {
 }
 
 void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
-    scoped_ptr<data_reduction_proxy::DataReductionProxyConfigurator>
-        configurator,
+    data_reduction_proxy::DataReductionProxyConfigurator* configurator,
     PrefService* profile_prefs,
     PrefService* local_state_prefs,
     net::URLRequestContextGetter* request_context) {
-  SetProxyConfigurator(configurator.Pass());
+  SetProxyConfigurator(configurator);
   DataReductionProxySettings::InitDataReductionProxySettings(
       profile_prefs,
       local_state_prefs,

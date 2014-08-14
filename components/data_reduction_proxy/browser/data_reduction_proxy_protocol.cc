@@ -12,8 +12,10 @@
 #include "components/data_reduction_proxy/common/data_reduction_proxy_headers.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
+#include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_list.h"
+#include "net/proxy/proxy_retry_info.h"
 #include "net/proxy/proxy_server.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request.h"
@@ -109,8 +111,19 @@ bool MaybeBypassProxyAndPrepareToRetry(
 
 void OnResolveProxyHandler(const GURL& url,
                            int load_flags,
+                           const net::ProxyConfig& data_reduction_proxy_config,
+                           const net::ProxyRetryInfoMap& proxy_retry_info,
                            const DataReductionProxyParams* params,
                            net::ProxyInfo* result) {
+  if (data_reduction_proxy_config.is_valid() &&
+      result->proxy_server().is_direct()) {
+    net::ProxyInfo data_reduction_proxy_info;
+    data_reduction_proxy_config.proxy_rules().Apply(
+        url, &data_reduction_proxy_info);
+    data_reduction_proxy_info.DeprioritizeBadProxies(proxy_retry_info);
+    result->Use(data_reduction_proxy_info);
+  }
+
   if ((load_flags & net::LOAD_BYPASS_DATA_REDUCTION_PROXY) &&
       DataReductionProxyParams::IsIncludedInCriticalPathBypassFieldTrial() &&
       !result->is_empty() &&
