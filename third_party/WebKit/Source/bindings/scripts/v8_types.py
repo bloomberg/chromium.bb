@@ -39,7 +39,7 @@ Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 
 import posixpath
 
-from idl_types import IdlType, IdlUnionType
+from idl_types import IdlTypeBase, IdlType, IdlUnionType
 import v8_attributes  # for IdlType.constructor_type_name
 from v8_globals import includes
 
@@ -72,11 +72,12 @@ TYPED_ARRAYS = {
     'Uint32Array': ('unsigned int', 'v8::kExternalUnsignedIntArray'),
 }
 
+IdlTypeBase.is_typed_array_element_type = False
 IdlType.is_typed_array_element_type = property(
     lambda self: self.base_type in TYPED_ARRAYS)
-IdlUnionType.is_typed_array_element_type = False
 
 
+IdlTypeBase.is_wrapper_type = False
 IdlType.is_wrapper_type = property(
     lambda self: (self.is_interface_type and
                   self.base_type not in NON_WRAPPER_TYPES))
@@ -218,11 +219,11 @@ def cpp_type_initializer_union(idl_type):
 
 
 # Allow access as idl_type.cpp_type if no arguments
-IdlType.cpp_type = property(cpp_type)
-IdlType.cpp_type_initializer = property(cpp_type_initializer)
+IdlTypeBase.cpp_type = property(cpp_type)
+IdlTypeBase.cpp_type_initializer = property(cpp_type_initializer)
+IdlTypeBase.cpp_type_args = cpp_type
 IdlUnionType.cpp_type = property(cpp_type_union)
 IdlUnionType.cpp_type_initializer = property(cpp_type_initializer_union)
-IdlType.cpp_type_args = cpp_type
 IdlUnionType.cpp_type_args = cpp_type_union
 
 
@@ -277,6 +278,7 @@ IdlType.set_implemented_as_interfaces = classmethod(
 # [GarbageCollected]
 IdlType.garbage_collected_types = set()
 
+IdlTypeBase.is_garbage_collected = False
 IdlType.is_garbage_collected = property(
     lambda self: self.base_type in IdlType.garbage_collected_types)
 
@@ -288,6 +290,7 @@ IdlType.set_garbage_collected_types = classmethod(
 # [WillBeGarbageCollected]
 IdlType.will_be_garbage_collected_types = set()
 
+IdlTypeBase.is_will_be_garbage_collected = False
 IdlType.is_will_be_garbage_collected = property(
     lambda self: self.base_type in IdlType.will_be_garbage_collected_types)
 
@@ -303,7 +306,7 @@ def gc_type(idl_type):
         return 'WillBeGarbageCollectedObject'
     return 'RefCountedObject'
 
-IdlType.gc_type = property(gc_type)
+IdlTypeBase.gc_type = property(gc_type)
 
 
 ################################################################################
@@ -381,8 +384,7 @@ IdlUnionType.includes_for_type = property(
 def add_includes_for_type(idl_type):
     includes.update(idl_type.includes_for_type)
 
-IdlType.add_includes_for_type = add_includes_for_type
-IdlUnionType.add_includes_for_type = add_includes_for_type
+IdlTypeBase.add_includes_for_type = add_includes_for_type
 
 
 def includes_for_interface(interface_name):
@@ -396,7 +398,7 @@ def add_includes_for_interface(interface_name):
 def impl_should_use_nullable_container(idl_type):
     return idl_type.native_array_element_type or idl_type.is_primitive_type
 
-IdlType.impl_should_use_nullable_container = property(
+IdlTypeBase.impl_should_use_nullable_container = property(
     impl_should_use_nullable_container)
 
 
@@ -419,7 +421,7 @@ def impl_includes_for_type(idl_type, interfaces_info):
         includes_for_type.add(interface_info['include_path'])
     return includes_for_type
 
-IdlType.impl_includes_for_type = impl_includes_for_type
+IdlTypeBase.impl_includes_for_type = impl_includes_for_type
 
 
 component_dir = {}
@@ -563,9 +565,7 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
 
     return '%s(%s)' % (macro + suffix, ', '.join(args))
 
-
-IdlType.v8_value_to_local_cpp_value = v8_value_to_local_cpp_value
-IdlUnionType.v8_value_to_local_cpp_value = v8_value_to_local_cpp_value
+IdlTypeBase.v8_value_to_local_cpp_value = v8_value_to_local_cpp_value
 
 
 ################################################################################
@@ -580,8 +580,7 @@ def preprocess_idl_type(idl_type):
         return IdlType('ScriptValue')
     return idl_type
 
-IdlType.preprocessed_type = property(preprocess_idl_type)
-IdlUnionType.preprocessed_type = property(preprocess_idl_type)
+IdlTypeBase.preprocessed_type = property(preprocess_idl_type)
 
 
 def preprocess_idl_type_and_value(idl_type, cpp_value, extended_attributes):
@@ -651,7 +650,7 @@ def v8_conversion_type(idl_type, extended_attributes):
     # Pointer type
     return 'DOMWrapper'
 
-IdlType.v8_conversion_type = v8_conversion_type
+IdlTypeBase.v8_conversion_type = v8_conversion_type
 
 
 V8_SET_RETURN_VALUE = {
@@ -727,7 +726,7 @@ def v8_set_return_value_union(idl_type, cpp_value, extended_attributes=None, scr
             for i, member_type in
             enumerate(idl_type.member_types)]
 
-IdlType.v8_set_return_value = v8_set_return_value
+IdlTypeBase.v8_set_return_value = v8_set_return_value
 IdlUnionType.v8_set_return_value = v8_set_return_value_union
 
 IdlType.release = property(lambda self: self.is_interface_type)
@@ -772,7 +771,7 @@ def cpp_value_to_v8_value(idl_type, cpp_value, isolate='info.GetIsolate()', crea
     statement = format_string.format(cpp_value=cpp_value, isolate=isolate, creation_context=creation_context)
     return statement
 
-IdlType.cpp_value_to_v8_value = cpp_value_to_v8_value
+IdlTypeBase.cpp_value_to_v8_value = cpp_value_to_v8_value
 
 
 def literal_cpp_value(idl_type, idl_literal):
@@ -807,7 +806,6 @@ def is_explicit_nullable(idl_type):
     # we use Nullable<T> or similar explicit ways to represent a null value.
     return idl_type.is_nullable and not idl_type.is_implicit_nullable
 
-IdlType.is_implicit_nullable = property(is_implicit_nullable)
-IdlType.is_explicit_nullable = property(is_explicit_nullable)
+IdlTypeBase.is_implicit_nullable = property(is_implicit_nullable)
 IdlUnionType.is_implicit_nullable = False
-IdlUnionType.is_explicit_nullable = property(is_explicit_nullable)
+IdlTypeBase.is_explicit_nullable = property(is_explicit_nullable)

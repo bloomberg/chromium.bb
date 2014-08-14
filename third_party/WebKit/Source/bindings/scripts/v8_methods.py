@@ -28,13 +28,14 @@
 
 """Generate template values for methods.
 
-Extends IdlType and IdlUnionType with property |union_arguments|.
+Extends IdlArgument with property |default_cpp_value|.
+Extends IdlTypeBase and IdlUnionType with property |union_arguments|.
 
 Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 """
 
 from idl_definitions import IdlArgument
-from idl_types import IdlType, IdlUnionType, inherits_interface
+from idl_types import IdlTypeBase, IdlUnionType, inherits_interface
 from v8_globals import includes
 import v8_types
 import v8_utilities
@@ -412,6 +413,6 @@ def argument_default_cpp_value(argument):
         return None
     return argument.idl_type.literal_cpp_value(argument.default_value)
 
-IdlType.union_arguments = property(lambda self: None)
+IdlTypeBase.union_arguments = None
 IdlUnionType.union_arguments = property(union_arguments)
 IdlArgument.default_cpp_value = property(argument_default_cpp_value)

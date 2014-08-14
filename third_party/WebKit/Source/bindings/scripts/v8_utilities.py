@@ -28,14 +28,14 @@
 
 """Functions shared by various parts of the code generator.
 
-Extends IdlType and IdlUnion type with |enum_validation_expression| property.
+Extends IdlTypeBase type with |enum_validation_expression| property.
 
 Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 """
 
 import re
 
-from idl_types import IdlType, IdlUnionType
+from idl_types import IdlTypeBase
 import idl_types
 from v8_globals import includes
 import v8_types
@@ -122,7 +122,7 @@ def enum_validation_expression(idl_type):
         return None
     return ' || '.join(['string == "%s"' % enum_value
                         for enum_value in idl_type.enum_values])
-IdlType.enum_validation_expression = property(enum_validation_expression)
+IdlTypeBase.enum_validation_expression = property(enum_validation_expression)
 
 
 def scoped_name(interface, definition, base_name):

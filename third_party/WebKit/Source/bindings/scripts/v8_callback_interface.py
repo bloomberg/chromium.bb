@@ -28,12 +28,12 @@
 
 """Generate template values for a callback interface.
 
-Extends IdlType with property |callback_cpp_type|.
+Extends IdlTypeBase with property |callback_cpp_type|.
 
 Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 """
 
-from idl_types import IdlType
+from idl_types import IdlTypeBase
 from v8_globals import includes
 import v8_types
 import v8_utilities
@@ -67,7 +67,7 @@ def cpp_type(idl_type):
         return 'const %s&' % raw_cpp_type
     return raw_cpp_type
 
-IdlType.callback_cpp_type = property(cpp_type)
+IdlTypeBase.callback_cpp_type = property(cpp_type)
 
 
 def callback_interface_context(callback_interface):
