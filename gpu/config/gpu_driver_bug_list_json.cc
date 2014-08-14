@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "6.9",
+  "version": "6.10",
   "entries": [
     {
       "id": 1,
@@ -1082,6 +1082,22 @@ LONG_STRING_CONST(
         "type": "win"
       },
       "vendor_id": "0x102b",
+      "features": [
+        "disable_d3d11"
+      ]
+    },
+    {
+      "id": 87,
+      "description": "Disable use of Direct3D 11 on older AMD drivers",
+      "cr_bugs": [402134],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x1002",
+      "driver_date": {
+        "op": "<",
+        "value": "2011.1"
+      },
       "features": [
         "disable_d3d11"
       ]
