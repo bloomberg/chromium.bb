@@ -36,6 +36,10 @@ const char kInternalTouchpadName[] = "Elan Touchpad";
 // The name of the xinput device corresponding to the internal keyboard.
 const char kInternalKeyboardName[] = "AT Translated Set 2 keyboard";
 
+// Repeated key events have their source set to the core keyboard device.
+// These must be disabled also until http://crbug.com/402898 is resolved.
+const char kCoreKeyboardName[] = "Virtual core keyboard";
+
 // Device id used to indicate that a device has not been detected.
 const int kDeviceIdNone = -1;
 
@@ -64,6 +68,7 @@ ScopedDisableInternalMouseAndKeyboardX11::
     ScopedDisableInternalMouseAndKeyboardX11()
     : touchpad_device_id_(kDeviceIdNone),
       keyboard_device_id_(kDeviceIdNone),
+      core_keyboard_device_id_(kDeviceIdNone),
       last_mouse_location_(GetMouseLocationInScreen()) {
 
   ui::DeviceDataManagerX11* device_data_manager =
@@ -81,6 +86,9 @@ ScopedDisableInternalMouseAndKeyboardX11::
       } else if (device_name == kInternalKeyboardName) {
         keyboard_device_id_ = xi_dev_list[i].deviceid;
         device_data_manager->DisableDevice(keyboard_device_id_);
+      } else if (device_name == kCoreKeyboardName) {
+        core_keyboard_device_id_ = xi_dev_list[i].deviceid;
+        device_data_manager->DisableDevice(core_keyboard_device_id_);
       }
     }
   }
@@ -104,6 +112,8 @@ ScopedDisableInternalMouseAndKeyboardX11::
     device_data_manager->EnableDevice(touchpad_device_id_);
   if (keyboard_device_id_ != kDeviceIdNone)
     device_data_manager->EnableDevice(keyboard_device_id_);
+  if (core_keyboard_device_id_ != kDeviceIdNone)
+    device_data_manager->EnableDevice(core_keyboard_device_id_);
   device_data_manager->SetDisabledKeyboardAllowedKeys(
       scoped_ptr<std::set<ui::KeyboardCode> >());
   ui::PlatformEventSource::GetInstance()->RemovePlatformEventObserver(this);

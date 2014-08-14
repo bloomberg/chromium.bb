@@ -30,6 +30,7 @@ class ScopedDisableInternalMouseAndKeyboardX11
  private:
   int touchpad_device_id_;
   int keyboard_device_id_;
+  int core_keyboard_device_id_;
 
   // Tracks the last known mouse cursor location caused before blocking the
   // internal touchpad or caused by an external mouse.
