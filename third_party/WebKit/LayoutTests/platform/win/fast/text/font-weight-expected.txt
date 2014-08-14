@@ -1,0 +1,73 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x437
+  RenderBlock {HTML} at (0,0) size 800x437
+    RenderBody {BODY} at (8,8) size 784x421
+      RenderBlock {H1} at (0,0) size 784x23
+        RenderText {#text} at (0,0) size 250x22
+          text run at (0,0) width 250: "Tests support for font-weight"
+      RenderBlock {P} at (0,25) size 784x16
+        RenderText {#text} at (0,0) size 344x15
+          text run at (0,0) width 344: "Tests that CSS font-weight with numeric values is supported."
+      RenderBlock {SECTION} at (0,49) size 784x194
+        RenderBlock {H2} at (0,0) size 784x21
+          RenderText {#text} at (0,0) size 68x21
+            text run at (0,0) width 68: "Segoe UI"
+        RenderBlock {P} at (0,23) size 784x19
+          RenderText {#text} at (0,0) size 343x19
+            text run at (0,0) width 343: "font-weight: 100 - Fix problem quickly with galvanized jets."
+        RenderBlock {P} at (0,42) size 784x19
+          RenderText {#text} at (0,0) size 343x19
+            text run at (0,0) width 343: "font-weight: 200 - Fix problem quickly with galvanized jets."
+        RenderBlock {P} at (0,61) size 784x19
+          RenderText {#text} at (0,0) size 343x19
+            text run at (0,0) width 343: "font-weight: 300 - Fix problem quickly with galvanized jets."
+        RenderBlock {P} at (0,80) size 784x19
+          RenderText {#text} at (0,0) size 364x19
+            text run at (0,0) width 364: "font-weight: 400 - Fix problem quickly with galvanized jets."
+        RenderBlock {P} at (0,99) size 784x19
+          RenderText {#text} at (0,0) size 377x19
+            text run at (0,0) width 377: "font-weight: 500 - Fix problem quickly with galvanized jets."
+        RenderBlock {P} at (0,118) size 784x19
+          RenderText {#text} at (0,0) size 377x19
+            text run at (0,0) width 377: "font-weight: 600 - Fix problem quickly with galvanized jets."
+        RenderBlock {P} at (0,137) size 784x19
+          RenderText {#text} at (0,0) size 392x19
+            text run at (0,0) width 392: "font-weight: 700 - Fix problem quickly with galvanized jets."
+        RenderBlock {P} at (0,156) size 784x19
+          RenderText {#text} at (0,0) size 392x19
+            text run at (0,0) width 392: "font-weight: 800 - Fix problem quickly with galvanized jets."
+        RenderBlock {P} at (0,175) size 784x19
+          RenderText {#text} at (0,0) size 392x19
+            text run at (0,0) width 392: "font-weight: 900 - Fix problem quickly with galvanized jets."
+      RenderBlock {SECTION} at (0,251) size 784x170
+        RenderBlock {H2} at (0,0) size 784x18
+          RenderText {#text} at (0,0) size 36x17
+            text run at (0,0) width 36: "Arial"
+        RenderBlock {P} at (0,20) size 784x16
+          RenderText {#text} at (0,0) size 362x16
+            text run at (0,0) width 362: "font-weight: 100 - Fix problem quickly with galvanized jets."
+        RenderBlock {P} at (0,36) size 784x16
+          RenderText {#text} at (0,0) size 362x16
+            text run at (0,0) width 362: "font-weight: 200 - Fix problem quickly with galvanized jets."
+        RenderBlock {P} at (0,52) size 784x16
+          RenderText {#text} at (0,0) size 362x16
+            text run at (0,0) width 362: "font-weight: 300 - Fix problem quickly with galvanized jets."
+        RenderBlock {P} at (0,68) size 784x16
+          RenderText {#text} at (0,0) size 362x16
+            text run at (0,0) width 362: "font-weight: 400 - Fix problem quickly with galvanized jets."
+        RenderBlock {P} at (0,84) size 784x16
+          RenderText {#text} at (0,0) size 362x16
+            text run at (0,0) width 362: "font-weight: 500 - Fix problem quickly with galvanized jets."
+        RenderBlock {P} at (0,100) size 784x16
+          RenderText {#text} at (0,0) size 391x16
+            text run at (0,0) width 391: "font-weight: 600 - Fix problem quickly with galvanized jets."
+        RenderBlock {P} at (0,116) size 784x16
+          RenderText {#text} at (0,0) size 391x16
+            text run at (0,0) width 391: "font-weight: 700 - Fix problem quickly with galvanized jets."
+        RenderBlock {P} at (0,132) size 784x19
+          RenderText {#text} at (0,0) size 452x19
+            text run at (0,0) width 452: "font-weight: 800 - Fix problem quickly with galvanized jets."
+        RenderBlock {P} at (0,151) size 784x19
+          RenderText {#text} at (0,0) size 452x19
+            text run at (0,0) width 452: "font-weight: 900 - Fix problem quickly with galvanized jets."
