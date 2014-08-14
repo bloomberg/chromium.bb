@@ -747,8 +747,13 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, SyncEventHandled) {
   EXPECT_EQ(200, response.status_code);
 }
 
-// ServiceWorkerBrowserTest.Reload is flaky crbug.com/393486
-IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, DISABLED_Reload) {
+// ServiceWorkerBrowserTest.Reload is flaky on Android crbug.com/393486
+#if defined(OS_ANDROID)
+#define MAYBE_Reload DISABLED_Reload
+#else
+#define MAYBE_Reload Reload
+#endif
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, MAYBE_Reload) {
   const std::string kPageUrl = "/service_worker/reload.html";
   const std::string kWorkerUrl = "/service_worker/fetch_event_reload.js";
   {
