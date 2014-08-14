@@ -19,7 +19,7 @@
 ApplicationCache status=stable
 AudioVideoTracks depends_on=Media, status=experimental
 AuthorShadowDOMForAnyElement
-BatteryStatus status=experimental
+BatteryStatus status=stable
 Beacon status=experimental
 
 // This feature is deprecated and we are evangalizing affected sites.

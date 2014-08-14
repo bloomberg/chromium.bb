@@ -30,6 +30,7 @@ AudioParam
 AudioProcessingEvent
 AutocompleteErrorEvent
 BarProp
+BatteryManager
 BeforeUnloadEvent
 BiquadFilterNode
 Blob
