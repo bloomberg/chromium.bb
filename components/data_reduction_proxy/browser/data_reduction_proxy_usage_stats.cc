@@ -191,17 +191,19 @@ void DataReductionProxyUsageStats::RecordBypassedBytesHistograms(
                         DataReductionProxyUsageStats::TRIGGERING_REQUEST,
                         content_length);
     triggering_request_ = false;
-  }
 
-  std::string mime_type;
-  request.GetMimeType(&mime_type);
-  // MIME types are named by <media-type>/<subtype>. We check to see if the
-  // media type is audio or video.
-  if (mime_type.compare(0, 6, "audio/") == 0  ||
-      mime_type.compare(0, 6, "video/") == 0) {
-    RecordBypassedBytes(last_bypass_type_,
-                        DataReductionProxyUsageStats::AUDIO_VIDEO,
-                        content_length);
+    // We only record when audio or video triggers a bypass. We don't care
+    // about audio and video bypassed as collateral damage.
+    std::string mime_type;
+    request.GetMimeType(&mime_type);
+    // MIME types are named by <media-type>/<subtype>. We check to see if the
+    // media type is audio or video.
+    if (mime_type.compare(0, 6, "audio/") == 0  ||
+        mime_type.compare(0, 6, "video/") == 0) {
+      RecordBypassedBytes(last_bypass_type_,
+                          DataReductionProxyUsageStats::AUDIO_VIDEO,
+                          content_length);
+    }
   }
 
   if (last_bypass_type_ != BYPASS_EVENT_TYPE_MAX) {

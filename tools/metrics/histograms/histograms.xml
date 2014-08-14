@@ -50861,7 +50861,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <suffix name="ShortTriggeringRequest"
       label="Triggering request short bypass"/>
   <suffix name="ShortAudioVideo"
-      label="Audio/Video bypass due to short bypass"/>
+      label="Triggering request short bypass due to audio/video"/>
   <suffix name="MediumAll" label="Medium bypass"/>
   <suffix name="MediumTriggeringRequest"
       label="Triggering request medium bypass"/>
