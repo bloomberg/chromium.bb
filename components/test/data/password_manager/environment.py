@@ -172,13 +172,28 @@ class Environment:
     self.driver.switch_to_frame("settings")
     while True:
       try:
-        self.driver.execute_script("document.querySelector('"
-          "#saved-passwords-list .row-delete-button').click()")
+        self.driver.execute_script(
+            "document.querySelector('#saved-passwords-list .row-delete-button')"
+            ".click()")
         time.sleep(1)
       except NoSuchElementException:
         break
       except WebDriverException:
         break
+
+  def ClearAllCookies(self):
+    """Removes all the cookies."""
+    logging.info("\nClearAllCookies\n")
+    self.driver.get("chrome://settings/clearBrowserData")
+    self.driver.switch_to_frame("settings")
+    self.driver.execute_script(
+        "var checkboxes = document.querySelectorAll("
+        "    '#clear-data-checkboxes [type=\\\'checkbox\\\']');"
+        "for (var i in checkboxes)"
+        "    checkboxes[i].checked = false;"
+        "document.querySelector('#delete-cookies-checkbox').checked = true;"
+        "document.querySelector('#clear-browser-data-commit').click();")
+    time.sleep(2)
 
   def OpenTabAndGoToInternals(self, url):
     """If there is no |self.website_window|, opens a new tab and navigates to

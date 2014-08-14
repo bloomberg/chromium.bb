@@ -294,8 +294,8 @@ class WebsiteTest:
     self.Login()
 
   def Logout(self):
-    """Logout Method. Has to be overloaded by the Website test."""
-    raise NotImplementedError("Logout is not implemented.")
+    """Logout Method."""
+    self.environment.ClearAllCookies()
 
   # Tests
 
