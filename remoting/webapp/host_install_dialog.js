@@ -28,22 +28,16 @@ remoting.HostInstallDialog = function() {
   this.cancelInstallButton_.disabled = false;
 
   /** @private*/
-  this.onDoneHandler_ = function() {}
+  this.onDoneHandler_ = function() {};
 
   /** @param {remoting.Error} error @private */
-  this.onErrorHandler_ = function(error) {}
-};
+  this.onErrorHandler_ = function(error) {};
 
-/** @type {Object.<string,string>} */
-remoting.HostInstallDialog.hostDownloadUrls = {
-  'Win32' : 'http://dl.google.com/dl/edgedl/chrome-remote-desktop/' +
-      'chromeremotedesktophost.msi',
-  'MacIntel' : 'https://dl.google.com/chrome-remote-desktop/' +
-      'chromeremotedesktop.dmg',
-  'Linux x86_64' : 'https://dl.google.com/linux/direct/' +
-      'chrome-remote-desktop_current_amd64.deb',
-  'Linux i386' : 'https://dl.google.com/linux/direct/' +
-      'chrome-remote-desktop_current_i386.deb'
+  /**
+   * @type {remoting.HostInstaller}
+   * @private
+   */
+  this.hostInstaller_ = new remoting.HostInstaller();
 };
 
 /**
@@ -63,28 +57,26 @@ remoting.HostInstallDialog.prototype.show = function(onDone, onError) {
       'click', this.onCancelClickedHandler_, false);
   remoting.setMode(remoting.AppMode.HOST_INSTALL_PROMPT);
 
-  var hostPackageUrl =
-      remoting.HostInstallDialog.hostDownloadUrls[navigator.platform];
-  if (hostPackageUrl === undefined) {
-    this.onErrorHandler_(remoting.Error.CANCELLED);
-    return;
-  }
-
-  // Start downloading the package.
-  if (remoting.isAppsV2) {
-    // TODO(jamiewalch): Use chrome.downloads when it is available to
-    // apps v2 (http://crbug.com/174046)
-    window.open(hostPackageUrl);
-  } else {
-    window.location = hostPackageUrl;
-  }
-
   /** @type {function():void} */
   this.onDoneHandler_ = onDone;
 
   /** @type {function(remoting.Error):void} */
   this.onErrorHandler_ = onError;
-}
+
+  /** @type {remoting.HostInstaller} */
+  var hostInstaller = new remoting.HostInstaller();
+
+  /** @type {remoting.HostInstallDialog} */
+  var that = this;
+
+  this.hostInstaller_.downloadAndWaitForInstall().then(function() {
+    that.continueInstallButton_.click();
+    that.hostInstaller_.cancel();
+  }, function(){
+    that.onErrorHandler_(remoting.Error.CANCELLED);
+    that.hostInstaller_.cancel();
+  });
+};
 
 /**
  * In manual host installation, onDone handler must call this method if it
@@ -108,15 +100,16 @@ remoting.HostInstallDialog.prototype.onOkClicked_ = function() {
   this.cancelInstallButton_.disabled = true;
 
   this.onDoneHandler_();
-}
+};
 
 remoting.HostInstallDialog.prototype.onCancelClicked_ = function() {
   this.continueInstallButton_.removeEventListener(
       'click', this.onOkClickedHandler_, false);
   this.cancelInstallButton_.removeEventListener(
       'click', this.onCancelClickedHandler_, false);
+  this.hostInstaller_.cancel();
   this.onErrorHandler_(remoting.Error.CANCELLED);
-}
+};
 
 remoting.HostInstallDialog.prototype.onRetryClicked_ = function() {
   this.retryInstallButton_.removeEventListener(

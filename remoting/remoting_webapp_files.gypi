@@ -97,6 +97,7 @@
       'webapp/host_screen.js',
       'webapp/host_setup_dialog.js',
       'webapp/host_install_dialog.js',
+      'webapp/host_installer.js',
       'webapp/paired_client_manager.js',
     ],
     # UI files for displaying (in the client) info about available hosts.
