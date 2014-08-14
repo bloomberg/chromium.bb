@@ -64,6 +64,6 @@ private:
     Vector<FontFeature> m_list;
 };
 
-}
+} // namespace blink
 
 #endif // FontFeatureSettings_h

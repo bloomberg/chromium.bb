@@ -243,4 +243,4 @@ const FontData* FontFallbackList::fontDataAt(const FontDescription& fontDescript
     return result.get();
 }
 
-}
+} // namespace blink

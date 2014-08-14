@@ -402,7 +402,7 @@ void GlyphPageTreeNode::pruneFontData(const SimpleFontData* fontData, unsigned l
     }
 #endif
 
-}
+} // namespace blink
 
 #ifndef NDEBUG
 void showGlyphPageTrees()

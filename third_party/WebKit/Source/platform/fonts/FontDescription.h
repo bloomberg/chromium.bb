@@ -267,6 +267,6 @@ inline bool FontDescription::operator==(const FontDescription& other) const
         && m_subpixelTextPosition == other.m_subpixelTextPosition;
 }
 
-}
+} // namespace blink
 
 #endif

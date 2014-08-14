@@ -264,4 +264,4 @@ bool WidthIterator::advanceOneCharacter(float& width)
     return true;
 }
 
-}
+} // namespace blink

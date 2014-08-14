@@ -839,4 +839,4 @@ int Font::offsetForPositionForSimpleText(const TextRun& run, float x, bool inclu
     return offset;
 }
 
-}
+} // namespace blink

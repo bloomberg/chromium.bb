@@ -98,6 +98,6 @@ private:
     bool m_forTextEmphasis : 1;
 };
 
-}
+} // namespace blink
 
 #endif

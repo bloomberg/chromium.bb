@@ -131,6 +131,6 @@ private:
     mutable bool m_hasLoadingFallback : 1;
 };
 
-}
+} // namespace blink
 
 #endif

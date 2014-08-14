@@ -70,6 +70,6 @@ private:
     hb_script_t m_scriptForVerticalText;
 };
 
-}
+} // namespace blink
 
 #endif // HarfBuzzFace_h

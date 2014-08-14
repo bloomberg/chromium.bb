@@ -171,7 +171,7 @@ PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDesc
         // TODO(dro): crbug.com/381620 Use creationParams.ttcIndex() after
         // https://code.google.com/p/skia/issues/detail?id=1186 gets fixed.
         SkTypeface* typeface = nullptr;
-        if (blink::Platform::current()->sandboxSupport())
+        if (Platform::current()->sandboxSupport())
             typeface = SkTypeface::CreateFromStream(streamForFontconfigInterfaceId(creationParams.fontconfigInterfaceId()));
         else
             typeface = SkTypeface::CreateFromFile(creationParams.filename().data());

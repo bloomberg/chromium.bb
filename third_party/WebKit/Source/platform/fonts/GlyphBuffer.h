@@ -111,5 +111,6 @@ private:
     bool m_hasVerticalAdvances;
 };
 
-}
+} // namespace blink
+
 #endif

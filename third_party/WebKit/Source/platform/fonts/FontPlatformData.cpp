@@ -119,4 +119,4 @@ const FontPlatformData& FontPlatformData::operator=(const FontPlatformData& othe
     return platformDataAssign(other);
 }
 
-}
+} // namespace blink

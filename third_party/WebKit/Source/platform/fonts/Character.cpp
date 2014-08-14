@@ -372,4 +372,4 @@ String Character::normalizeSpaces(const UChar* characters, unsigned length)
     return normalizeSpacesInternal(characters, length);
 }
 
-}
+} // namespace blink

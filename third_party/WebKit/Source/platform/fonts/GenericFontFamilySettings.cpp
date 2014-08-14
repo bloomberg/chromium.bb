@@ -183,4 +183,4 @@ void GenericFontFamilySettings::reset()
     m_pictographFontFamilyMap.clear();
 }
 
-}
+} // namespace blink

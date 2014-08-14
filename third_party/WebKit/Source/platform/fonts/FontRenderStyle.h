@@ -72,6 +72,6 @@ struct FontRenderStyle {
     char useSubpixelPositioning; // use subpixel positioning (fractional X positions for glyphs)
 };
 
-}
+} // namespace blink
 
 #endif // FontRenderStyle_h

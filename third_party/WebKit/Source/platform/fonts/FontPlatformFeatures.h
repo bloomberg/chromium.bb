@@ -44,6 +44,6 @@ private:
     FontPlatformFeatures();
 };
 
-}
+} // namespace blink
 
 #endif

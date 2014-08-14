@@ -251,4 +251,4 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
     return result;
 }
 
-}
+} // namespace blink

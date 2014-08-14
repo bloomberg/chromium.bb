@@ -43,4 +43,4 @@ bool operator==(const FontFamily& a, const FontFamily& b)
     return true;
 }
 
-}
+} // namespace blink

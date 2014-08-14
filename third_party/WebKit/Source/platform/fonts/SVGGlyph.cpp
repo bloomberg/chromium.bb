@@ -186,6 +186,6 @@ bool isCompatibleGlyph(const SVGGlyph& identifier, bool isVerticalText, const St
     return isCompatibleArabicForm(identifier, chars, startPosition, endPosition);
 }
 
-}
+} // namespace blink
 
 #endif

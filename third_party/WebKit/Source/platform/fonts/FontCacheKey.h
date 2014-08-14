@@ -111,6 +111,6 @@ struct FontCacheKeyHash {
 
 struct FontCacheKeyTraits : WTF::SimpleClassHashTraits<FontCacheKey> { };
 
-}
+} // namespace blink
 
 #endif // FontCacheKey_h

@@ -90,6 +90,6 @@ inline PassRefPtr<SharedFontFamily> FontFamily::releaseNext()
     return m_next.release();
 }
 
-}
+} // namespace blink
 
 #endif

@@ -60,6 +60,6 @@ protected:
     template<typename T> inline thisType* to##thisType(const RefPtr<T>& customFontData) { return to##thisType(customFontData.get()); } \
     DEFINE_TYPE_CASTS(thisType, CustomFontData, customFontData, customFontData->predicate, customFontData.predicate)
 
-}
+} // namespace blink
 
 #endif // CustomFontData_h

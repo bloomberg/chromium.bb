@@ -180,6 +180,6 @@ public:
     ~FontCachePurgePreventer() { FontCache::fontCache()->enablePurging(); }
 };
 
-}
+} // namespace blink
 
 #endif

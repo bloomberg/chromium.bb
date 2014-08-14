@@ -12,6 +12,6 @@ enum FixedPitchFontType {
     NonFixedPitchFont
 };
 
-}
+} // namespace blink
 
 #endif // FixedPitchFontType_h

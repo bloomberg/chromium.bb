@@ -62,6 +62,6 @@ private:
     int m_lastCharacter;
 };
 
-}
+} // namespace blink
 
 #endif

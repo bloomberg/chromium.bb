@@ -80,4 +80,4 @@ bool FontCustomPlatformData::supportsFormat(const String& format)
     return equalIgnoringCase(format, "truetype") || equalIgnoringCase(format, "opentype") || OpenTypeSanitizer::supportsFormat(format);
 }
 
-}
+} // namespace blink

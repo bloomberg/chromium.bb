@@ -94,6 +94,6 @@ private:
     ListHashSet<RefPtr<SimpleFontData> > m_inactiveFontData;
 };
 
-}
+} // namespace blink
 
 #endif

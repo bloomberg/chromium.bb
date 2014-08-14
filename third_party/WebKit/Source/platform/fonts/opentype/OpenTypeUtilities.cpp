@@ -221,4 +221,4 @@ HANDLE renameAndActivateFont(SharedBuffer* fontData, const String& fontName)
     return fontHandle;
 }
 
-}
+} // namespace blink

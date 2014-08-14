@@ -222,6 +222,6 @@ inline float Font::tabWidth(const SimpleFontData& fontData, unsigned tabSize, fl
     return tabWidth - fmodf(position, tabWidth);
 }
 
-}
+} // namespace blink
 
 #endif

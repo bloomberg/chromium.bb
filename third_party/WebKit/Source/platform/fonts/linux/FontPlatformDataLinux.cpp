@@ -102,16 +102,16 @@ void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext* context)
 
 void FontPlatformData::querySystemForRenderStyle(bool useSkiaSubpixelPositioning)
 {
-    blink::WebFontRenderStyle style;
+    WebFontRenderStyle style;
 #if OS(ANDROID)
     style.setDefaults();
 #else
     // If the font name is missing (i.e. probably a web font) or the sandbox is disabled, use the system defaults.
-    if (!m_family.length() || !blink::Platform::current()->sandboxSupport()) {
+    if (!m_family.length() || !Platform::current()->sandboxSupport()) {
         style.setDefaults();
     } else {
         const int sizeAndStyle = (((int)m_textSize) << 2) | (m_typeface->style() & 3);
-        blink::Platform::current()->sandboxSupport()->getRenderStyleForStrike(m_family.data(), sizeAndStyle, &style);
+        Platform::current()->sandboxSupport()->getRenderStyleForStrike(m_family.data(), sizeAndStyle, &style);
     }
 #endif
     style.toFontRenderStyle(&m_style);

@@ -152,4 +152,4 @@ bool FontDataCache::purgeLeastRecentlyUsed(int count)
     return didWork;
 }
 
-}
+} // namespace blink

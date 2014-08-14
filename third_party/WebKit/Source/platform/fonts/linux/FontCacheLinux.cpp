@@ -36,11 +36,11 @@ namespace blink {
 
 void FontCache::getFontForCharacter(UChar32 c, const char* preferredLocale, FontCache::PlatformFallbackFont* fallbackFont)
 {
-    blink::WebFallbackFont webFallbackFont;
-    if (blink::Platform::current()->sandboxSupport())
-        blink::Platform::current()->sandboxSupport()->getFallbackFontForCharacter(c, preferredLocale, &webFallbackFont);
+    WebFallbackFont webFallbackFont;
+    if (Platform::current()->sandboxSupport())
+        Platform::current()->sandboxSupport()->getFallbackFontForCharacter(c, preferredLocale, &webFallbackFont);
     else
-        blink::WebFontInfo::fallbackFontForChar(c, preferredLocale, &webFallbackFont);
+        WebFontInfo::fallbackFontForChar(c, preferredLocale, &webFallbackFont);
     fallbackFont->name = String::fromUTF8(CString(webFallbackFont.name));
     fallbackFont->filename = webFallbackFont.filename;
     fallbackFont->fontconfigInterfaceId = webFallbackFont.fontconfigInterfaceId;
@@ -49,4 +49,4 @@ void FontCache::getFontForCharacter(UChar32 c, const char* preferredLocale, Font
     fallbackFont->isItalic = webFallbackFont.isItalic;
 }
 
-}
+} // namespace blink

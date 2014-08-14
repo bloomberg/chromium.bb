@@ -100,6 +100,6 @@ private:
     ScriptFontFamilyMap m_pictographFontFamilyMap;
 };
 
-}
+} // namespace blink
 
 #endif

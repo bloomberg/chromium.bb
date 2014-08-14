@@ -74,6 +74,6 @@ private:
     Character();
 };
 
-}
+} // namespace blink
 
 #endif
