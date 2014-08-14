@@ -7,13 +7,8 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/singleton_tabs.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/test/browser_test_utils.h"
-#include "extensions/browser/extension_host.h"
-#include "extensions/browser/extension_system.h"
-#include "extensions/browser/process_manager.h"
 #include "url/gurl.h"
 
 // TODO(yoshiki): move the following method to accessibility_manager.cc and
@@ -41,21 +36,6 @@ bool IsVirtualKeyboardEnabled() {
 
 void ShowAccessibilityHelp(Browser* browser) {
   chrome::ShowSingletonTab(browser, GURL(chrome::kChromeAccessibilityHelpURL));
-}
-
-
-void SimulateTouchScreenInChromeVoxForTest(content::BrowserContext* profile) {
-  // ChromeVox looks at whether 'ontouchstart' exists to know whether or not it
-  // should respond to hover events. Fake it so that touch exploration events
-  // get spoken.
-  extensions::ExtensionHost* host =
-      extensions::ExtensionSystem::Get(profile)
-          ->process_manager()
-          ->GetBackgroundHostForExtension(
-              extension_misc::kChromeVoxExtensionId);
-  CHECK(content::ExecuteScript(
-      host->host_contents(),
-      "if (!('ontouchstart' in window)) window.ontouchstart = function() {};"));
 }
 
 }  // namespace accessibility

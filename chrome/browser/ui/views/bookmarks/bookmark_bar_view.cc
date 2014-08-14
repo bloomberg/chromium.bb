@@ -626,12 +626,6 @@ views::MenuItemView* BookmarkBarView::GetDropMenu() {
   return bookmark_drop_menu_ ? bookmark_drop_menu_->menu() : NULL;
 }
 
-views::View* BookmarkBarView::GetBookmarkBarInstructionsView() {
-  if (instructions_->visible())
-    return instructions_;
-  return NULL;
-}
-
 void BookmarkBarView::StopThrobbing(bool immediate) {
   if (!throbbing_view_)
     return;

@@ -131,7 +131,7 @@
           "type": {
             "type": "string",
             "description": "The type of this object, which determines the contents of 'details'.",
-            "enum": ["alert", "button", "checkbox", "combobox", "link", "menu", "menuitem", "radiobutton", "slider", "statictext", "tab", "textbox", "tree", "treeitem", "window"]
+            "enum": ["alert", "button", "checkbox", "combobox", "link", "menu", "menuitem", "radiobutton", "slider", "tab", "textbox", "tree", "treeitem", "window"]
           },
           "name": {
             "type": "string",
