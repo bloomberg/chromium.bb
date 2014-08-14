@@ -587,16 +587,12 @@ void AudioNode::breakConnection()
 
 void AudioNode::breakConnectionWithLock()
 {
-#if ENABLE(OILPAN)
     atomicDecrement(&m_connectionRefCount);
-    if (m_connectionRefCount == 0)
-        disableOutputsIfNecessary();
-#else
+#if !ENABLE(OILPAN)
     ASSERT(m_normalRefCount > 0);
-    atomicDecrement(&m_connectionRefCount);
-    if (m_connectionRefCount == 0 && m_normalRefCount > 1)
-        disableOutputsIfNecessary();
 #endif
+    if (!m_connectionRefCount)
+        disableOutputsIfNecessary();
 }
 
 #if !ENABLE(OILPAN)
