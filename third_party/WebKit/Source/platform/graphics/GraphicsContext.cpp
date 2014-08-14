@@ -50,6 +50,8 @@
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "third_party/skia/include/effects/SkCornerPathEffect.h"
 #include "third_party/skia/include/effects/SkLumaColorFilter.h"
+#include "third_party/skia/include/effects/SkMatrixImageFilter.h"
+#include "third_party/skia/include/effects/SkPictureImageFilter.h"
 #include "third_party/skia/include/gpu/GrRenderTarget.h"
 #include "third_party/skia/include/gpu/GrTexture.h"
 #include "wtf/Assertions.h"
@@ -1109,15 +1111,25 @@ void GraphicsContext::drawPicture(PassRefPtr<SkPicture> picture, const FloatRect
     if (contextDisabled() || !picture)
         return;
 
+    SkMatrix ctm = m_canvas->getTotalMatrix();
+    SkRect deviceDest;
+    ctm.mapRect(&deviceDest, dest);
+    SkRect sourceBounds = WebCoreFloatRectToSKRect(src);
+
+    RefPtr<SkPictureImageFilter> pictureFilter = adoptRef(SkPictureImageFilter::Create(picture.get(), sourceBounds));
+    SkMatrix layerScale;
+    layerScale.setScale(deviceDest.width() / src.width(), deviceDest.height() / src.height());
+    RefPtr<SkMatrixImageFilter> matrixFilter = adoptRef(SkMatrixImageFilter::Create(layerScale, SkPaint::kLow_FilterLevel, pictureFilter.get()));
     SkPaint picturePaint;
     picturePaint.setXfermode(WebCoreCompositeToSkiaComposite(op, blendMode).get());
-    SkRect skBounds = WebCoreFloatRectToSKRect(dest);
-    saveLayer(&skBounds, &picturePaint);
-    SkMatrix pictureTransform;
-    pictureTransform.setRectToRect(WebCoreFloatRectToSKRect(src), skBounds, SkMatrix::kFill_ScaleToFit);
-    m_canvas->concat(pictureTransform);
-    picture->draw(m_canvas);
-    restoreLayer();
+    picturePaint.setImageFilter(matrixFilter.get());
+    SkRect layerBounds = SkRect::MakeWH(max(deviceDest.width(), sourceBounds.width()), max(deviceDest.height(), sourceBounds.height()));
+    m_canvas->save();
+    m_canvas->resetMatrix();
+    m_canvas->translate(deviceDest.x(), deviceDest.y());
+    m_canvas->saveLayer(&layerBounds, &picturePaint);
+    m_canvas->restore();
+    m_canvas->restore();
 }
 
 void GraphicsContext::writePixels(const SkImageInfo& info, const void* pixels, size_t rowBytes, int x, int y)
