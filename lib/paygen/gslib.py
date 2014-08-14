@@ -15,6 +15,7 @@ import fixup_path
 fixup_path.FixupPath()
 
 from chromite.lib import gs
+from chromite.lib import osutils
 from chromite.lib.paygen import filelib
 from chromite.lib.paygen import utils
 
@@ -140,15 +141,40 @@ def RetryGSLib(func):
         if i >= RETRY_ATTEMPTS:
           raise
 
-        # If the failure was because of AccessDenied then no sense in retry.
-        code = ex.GetCode()
-        if code and code == ex.GS_CODE_ACCESS_DENIED:
-          raise
-
-        # Errors other than GSResponseErrors generally do not benefit from
-        # retries.
-        if not code:
-          raise
+        error_msg = str(ex)
+        if (func.__name__ == 'Copy' and (
+                gs.GSContext.RESUMABLE_DOWNLOAD_ERROR in error_msg or
+                gs.GSContext.RESUMABLE_UPLOAD_ERROR in error_msg or
+                'ResumableUploadException' in error_msg or
+                'ResumableDownloadException' in error_msg)):
+          logging.info(
+              'Resumable download/upload exception occured for %s', args[1])
+          # Pass the dest_path to get the tracker filename.
+          tracker_filenames = gs.GSContext.GetTrackerFilenames(args[1])
+          # This part of the code is copied from chromite.lib.gs with
+          # slight modifications. This is a temporary solution until
+          # we can deprecate crostools.lib.gslib (crbug.com/322740).
+          logging.info('Potential list of tracker files: %s',
+                       tracker_filenames)
+          for tracker_filename in tracker_filenames:
+            tracker_file_path = os.path.join(
+                gs.GSContext.DEFAULT_GSUTIL_TRACKER_DIR,
+                tracker_filename)
+            if os.path.exists(tracker_file_path):
+              logging.info('Deleting gsutil tracker file %s before retrying.',
+                           tracker_file_path)
+              logging.info('The content of the tracker file: %s',
+                           osutils.ReadFile(tracker_file_path))
+              osutils.SafeUnlink(tracker_file_path)
+        else:
+          code = ex.GetCode()
+          RETRY_WONT_HELP = (ex.GS_CODE_ACCESS_DENIED, ex.GS_CODE_NO_SUCH_KEY)
+          if code and code in RETRY_WONT_HELP:
+            raise
+          elif not code:
+            # Errors other than GSResponseErrors generally do not benefit from
+            # retries.
+            raise
 
         # Record a warning message to be issued if a retry actually helps.
         warning_msgs.append('Try %d failed with error message:\n%s' %
