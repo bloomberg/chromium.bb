@@ -121,16 +121,16 @@ TEST_F(AudioDirectiveHandlerTest, Basic) {
   EXPECT_EQ(true, directive_handler_->recorder_->IsRecording());
 
   directive_handler_->RemoveInstructions("op_id1");
-  EXPECT_EQ(false, directive_handler_->player_audible_->IsPlaying());
+  EXPECT_FALSE(directive_handler_->player_audible_->IsPlaying());
   EXPECT_EQ(true, directive_handler_->player_inaudible_->IsPlaying());
   EXPECT_EQ(true, directive_handler_->recorder_->IsRecording());
 
   directive_handler_->RemoveInstructions("op_id2");
-  EXPECT_EQ(false, directive_handler_->player_inaudible_->IsPlaying());
+  EXPECT_FALSE(directive_handler_->player_inaudible_->IsPlaying());
   EXPECT_EQ(true, directive_handler_->recorder_->IsRecording());
 
   directive_handler_->RemoveInstructions("op_id3");
-  EXPECT_EQ(false, directive_handler_->recorder_->IsRecording());
+  EXPECT_FALSE(directive_handler_->recorder_->IsRecording());
 }
 
 // TODO(rkc): Write more tests that check more convoluted sequences of
