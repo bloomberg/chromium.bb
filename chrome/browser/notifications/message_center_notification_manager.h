@@ -181,9 +181,6 @@ class MessageCenterNotificationManager
     // empty string otherwise.
     std::string GetExtensionId();
 
-    // Route a new notification to an app/extension.
-    void AddToAlternateProvider(const std::string extension_id);
-
    private:
     // Weak, guaranteed not to be used after profile removal by parent class.
     Profile* profile_;
@@ -200,18 +197,14 @@ class MessageCenterNotificationManager
   typedef std::map<std::string, ProfileNotification*> NotificationMap;
   NotificationMap profile_notifications_;
 
-  // Helpers that add/remove the notification from local map.
-  // The local map takes ownership of profile_notification object.
+  // Helpers that add/remove the notification from local map and MessageCenter.
+  // They take ownership of profile_notification object.
   void AddProfileNotification(ProfileNotification* profile_notification);
   void RemoveProfileNotification(ProfileNotification* profile_notification);
 
   // Returns the ProfileNotification for the |id|, or NULL if no such
   // notification is found.
   ProfileNotification* FindProfileNotification(const std::string& id) const;
-
-  // Get the extension ID of the extension that the user chose to take over
-  // Chorme Notification Center.
-  std::string GetExtensionTakingOverNotifications(Profile* profile);
 
 #if defined(OS_WIN)
   // This function is run on update to ensure that the notification balloon is
