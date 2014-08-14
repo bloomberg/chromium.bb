@@ -211,8 +211,6 @@ deps_os = {
             None,
         'src/third_party/WebKit/LayoutTests/w3c/web-platform-tests':
             None,
-        'src/third_party/angle':
-            None,
         'src/third_party/bidichecker':
             None,
         'src/third_party/brotli/src':
