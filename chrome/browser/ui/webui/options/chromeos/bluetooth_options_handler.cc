@@ -556,7 +556,7 @@ void BluetoothOptionsHandler::ReportError(
     const std::string& error,
     const std::string& address) {
   base::DictionaryValue properties;
-  properties.SetString("label", error);
+  properties.SetString("message", error);
   properties.SetString("address", address);
   web_ui()->CallJavascriptFunction(
       "options.BluetoothPairing.showMessage",
