@@ -62,10 +62,11 @@ class TabSwitching(page_test.PageTest):
     # Measure power usage of tabs after quiescence.
     util.WaitFor(tab.HasReachedQuiescence, 60)
 
-    self._power_metric.Start(page, tab)
-    time.sleep(TabSwitching.SAMPLE_TIME)
-    self._power_metric.Stop(page, tab)
-    self._power_metric.AddResults(tab, results,)
+    if tab.browser.platform.CanMonitorPower():
+      self._power_metric.Start(page, tab)
+      time.sleep(TabSwitching.SAMPLE_TIME)
+      self._power_metric.Stop(page, tab)
+      self._power_metric.AddResults(tab, results,)
 
     histogram_name = 'MPArch.RWH_TabSwitchPaintDuration'
     histogram_type = histogram_util.BROWSER_HISTOGRAM
