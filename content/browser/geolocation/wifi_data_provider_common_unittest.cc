@@ -62,12 +62,12 @@ class MessageLoopQuitter {
  public:
   explicit MessageLoopQuitter(base::MessageLoop* message_loop)
       : message_loop_to_quit_(message_loop),
-        callback_(base::Bind(&MessageLoopQuitter::WifiDataUpdateAvailable,
+        callback_(base::Bind(&MessageLoopQuitter::OnWifiDataUpdate,
                              base::Unretained(this))) {
     CHECK(message_loop_to_quit_ != NULL);
   }
 
-  void WifiDataUpdateAvailable(WifiDataProvider* provider) {
+  void OnWifiDataUpdate(WifiDataProvider* provider) {
     // Provider should call back on client's thread.
     EXPECT_EQ(base::MessageLoop::current(), message_loop_to_quit_);
     message_loop_to_quit_->QuitNow();

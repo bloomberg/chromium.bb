@@ -70,9 +70,9 @@ class CONTENT_EXPORT LocationArbitratorImpl : public LocationArbitrator {
       net::URLRequestContextGetter* context_getter);
   void DoStartProviders();
 
-  // The providers call this function when a new position is available.
-  void LocationUpdateAvailable(const LocationProvider* provider,
-                               const Geoposition& new_position);
+  // Gets called when a provider has a new position.
+  void OnLocationUpdate(const LocationProvider* provider,
+                        const Geoposition& new_position);
 
   // Returns true if |new_position| is an improvement over |old_position|.
   // Set |from_same_provider| to true if both the positions came from the same
@@ -82,8 +82,8 @@ class CONTENT_EXPORT LocationArbitratorImpl : public LocationArbitrator {
                            bool from_same_provider) const;
 
   scoped_refptr<AccessTokenStore> access_token_store_;
-  LocationUpdateCallback callback_;
-  LocationProvider::LocationProviderUpdateCallback provider_callback_;
+  LocationUpdateCallback arbitrator_update_callback_;
+  LocationProvider::LocationProviderUpdateCallback provider_update_callback_;
   ScopedVector<LocationProvider> providers_;
   bool use_high_accuracy_;
   // The provider which supplied the current |position_|

@@ -57,17 +57,17 @@ class NetworkLocationRequest : private net::URLFetcherDelegate {
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   scoped_refptr<net::URLRequestContextGetter> url_context_;
-  LocationResponseCallback callback_;
+  LocationResponseCallback location_response_callback_;
   const GURL url_;
   scoped_ptr<net::URLFetcher> url_fetcher_;
 
   // Keep a copy of the data sent in the request, so we can refer back to it
   // when the response arrives.
   WifiData wifi_data_;
-  base::Time timestamp_;  // Timestamp of the above data, not of the request.
+  base::Time wifi_data_timestamp_;
 
   // The start time for the request.
-  base::TimeTicks start_time_;
+  base::TimeTicks request_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkLocationRequest);
 };

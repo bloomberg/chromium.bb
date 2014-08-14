@@ -82,18 +82,18 @@ class NetworkLocationProvider
   // Satisfies a position request from cache or network.
   void RequestPosition();
 
-  // Called from a callback when new wifi data is available.
-  void WifiDataUpdateAvailable(WifiDataProvider* provider);
+  // Gets called when new wifi data is available.
+  void OnWifiDataUpdate(WifiDataProvider* provider);
 
-  // Internal helper used by WifiDataUpdateAvailable.
+  // Internal helper used by OnWifiDataUpdate.
   void OnWifiDataUpdated();
 
   bool IsStarted() const;
 
-  void LocationResponseAvailable(const Geoposition& position,
-                                 bool server_error,
-                                 const base::string16& access_token,
-                                 const WifiData& wifi_data);
+  void OnLocationResponse(const Geoposition& position,
+                          bool server_error,
+                          const base::string16& access_token,
+                          const WifiData& wifi_data);
 
   scoped_refptr<AccessTokenStore> access_token_store_;
 

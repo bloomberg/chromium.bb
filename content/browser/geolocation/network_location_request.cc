@@ -103,9 +103,7 @@ NetworkLocationRequest::NetworkLocationRequest(
     net::URLRequestContextGetter* context,
     const GURL& url,
     LocationResponseCallback callback)
-        : url_context_(context),
-          callback_(callback),
-          url_(url) {
+    : url_context_(context), location_response_callback_(callback), url_(url) {
 }
 
 NetworkLocationRequest::~NetworkLocationRequest() {
@@ -122,7 +120,7 @@ bool NetworkLocationRequest::MakeRequest(const base::string16& access_token,
     url_fetcher_.reset();
   }
   wifi_data_ = wifi_data;
-  timestamp_ = timestamp;
+  wifi_data_timestamp_ = timestamp;
 
   GURL request_url = FormRequestURL(url_);
   url_fetcher_.reset(net::URLFetcher::Create(
@@ -136,7 +134,7 @@ bool NetworkLocationRequest::MakeRequest(const base::string16& access_token,
       net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES |
       net::LOAD_DO_NOT_SEND_AUTH_DATA);
 
-  start_time_ = base::TimeTicks::Now();
+  request_start_time_ = base::TimeTicks::Now();
   url_fetcher_->Start();
   return true;
 }
@@ -156,7 +154,7 @@ void NetworkLocationRequest::OnURLFetchComplete(
   GetLocationFromResponse(status.is_success(),
                           response_code,
                           data,
-                          timestamp_,
+                          wifi_data_timestamp_,
                           source->GetURL(),
                           &position,
                           &access_token);
@@ -165,7 +163,8 @@ void NetworkLocationRequest::OnURLFetchComplete(
   url_fetcher_.reset();
 
   if (!server_error) {
-    const base::TimeDelta request_time = base::TimeTicks::Now() - start_time_;
+    const base::TimeDelta request_time =
+        base::TimeTicks::Now() - request_start_time_;
 
     UMA_HISTOGRAM_CUSTOM_TIMES(
         "Net.Wifi.LbsLatency",
@@ -176,7 +175,8 @@ void NetworkLocationRequest::OnURLFetchComplete(
   }
 
   DVLOG(1) << "NetworkLocationRequest::OnURLFetchComplete() : run callback.";
-  callback_.Run(position, server_error, access_token, wifi_data_);
+  location_response_callback_.Run(
+      position, server_error, access_token, wifi_data_);
 }
 
 // Local functions.

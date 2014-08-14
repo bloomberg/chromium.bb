@@ -35,8 +35,8 @@ class MessageLoopQuitListener {
     CHECK(client_message_loop_);
   }
 
-  void LocationUpdateAvailable(const LocationProvider* provider,
-                               const Geoposition& position) {
+  void OnLocationUpdate(const LocationProvider* provider,
+                        const Geoposition& position) {
     EXPECT_EQ(client_message_loop_, base::MessageLoop::current());
     updated_provider_ = provider;
     client_message_loop_->Quit();
@@ -473,9 +473,8 @@ TEST_F(GeolocationNetworkProviderTest, NoRequestOnStartupUntilWifiData) {
   scoped_ptr<LocationProvider> provider(CreateProvider(true));
   EXPECT_TRUE(provider->StartProvider(false));
 
-  provider->SetUpdateCallback(
-      base::Bind(&MessageLoopQuitListener::LocationUpdateAvailable,
-                 base::Unretained(&listener)));
+  provider->SetUpdateCallback(base::Bind(
+      &MessageLoopQuitListener::OnLocationUpdate, base::Unretained(&listener)));
 
   main_message_loop_.RunUntilIdle();
   EXPECT_FALSE(get_url_fetcher_and_advance_id())

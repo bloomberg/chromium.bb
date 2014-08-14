@@ -110,7 +110,7 @@ NetworkLocationProvider::NetworkLocationProvider(
     : access_token_store_(access_token_store),
       wifi_data_provider_(NULL),
       wifi_data_update_callback_(
-          base::Bind(&NetworkLocationProvider::WifiDataUpdateAvailable,
+          base::Bind(&NetworkLocationProvider::OnWifiDataUpdate,
                      base::Unretained(this))),
       is_wifi_data_complete_(false),
       access_token_(access_token),
@@ -120,10 +120,11 @@ NetworkLocationProvider::NetworkLocationProvider(
   // Create the position cache.
   position_cache_.reset(new PositionCache());
 
-  NetworkLocationRequest::LocationResponseCallback callback =
-      base::Bind(&NetworkLocationProvider::LocationResponseAvailable,
-                 base::Unretained(this));
-  request_.reset(new NetworkLocationRequest(url_context_getter, url, callback));
+  request_.reset(new NetworkLocationRequest(
+      url_context_getter,
+      url,
+      base::Bind(&NetworkLocationProvider::OnLocationResponse,
+                 base::Unretained(this))));
 }
 
 NetworkLocationProvider::~NetworkLocationProvider() {
@@ -153,14 +154,13 @@ void NetworkLocationProvider::OnPermissionGranted() {
   }
 }
 
-void NetworkLocationProvider::WifiDataUpdateAvailable(
-    WifiDataProvider* provider) {
+void NetworkLocationProvider::OnWifiDataUpdate(WifiDataProvider* provider) {
   DCHECK(provider == wifi_data_provider_);
   is_wifi_data_complete_ = wifi_data_provider_->GetData(&wifi_data_);
   OnWifiDataUpdated();
 }
 
-void NetworkLocationProvider::LocationResponseAvailable(
+void NetworkLocationProvider::OnLocationResponse(
     const Geoposition& position,
     bool server_error,
     const base::string16& access_token,
