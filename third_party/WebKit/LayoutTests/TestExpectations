@@ -822,7 +822,7 @@ crbug.com/353790 [ Linux Win ] virtual/threaded/animations/import.html [ Pass Ti
 crbug.com/354785 [ Win Debug ] svg/as-background-image/animated-svg-animation-control.html [ ImageOnlyFailure ]
 crbug.com/354785 [ Linux Debug ] svg/as-background-image/animated-svg-animation-control.html [ ImageOnlyFailure Pass ]
 
-crbug.com/356957 [ Win Debug ] editing/spelling/spellcheck-editable-on-focus.html [ Pass Timeout ]
+crbug.com/356957 [ Win Mac Debug ] editing/spelling/spellcheck-editable-on-focus.html [ Timeout ]
 
 crbug.com/344238 [ Mac Win Debug ] virtual/deferred/inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
 
