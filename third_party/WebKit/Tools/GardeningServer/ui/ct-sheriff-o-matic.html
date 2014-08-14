@@ -29,12 +29,20 @@ found in the LICENSE file.
         display: flex;
         justify-content: space-between;
         font-size: 1.1em;
+        padding: 0 5px;
       }
       header a, header span {
         color: white;
         display: inline-block;
         padding: 0.25em 4px;
         text-decoration: none;
+      }
+      #right-toolbar {
+        display: flex;
+        align-items: center;
+      }
+      ct-last-updated {
+        margin: 0 5px;
       }
       core-animated-pages {
         flex: 1;
@@ -44,7 +52,7 @@ found in the LICENSE file.
     <header>
       <div>
         <template if="{{ selected == 0 }}">
-          <span><img src="../favicon.ico"> Auto-sheriff-o-maticon</span>
+          <img src="../favicon.ico"> <span>Sheriff-o-matic</span>
         </template>
         <template if="{{ selected == 1 }}">
           <a on-click="{{ onBack }}">
@@ -52,7 +60,7 @@ found in the LICENSE file.
           </a>
         </template>
       </div>
-      <div>
+      <div id="right-toolbar">
         <ct-last-updated date="{{ lastUpdateDate }}"></ct-last-updated>
         <!-- FIXME: Use a proper polymer component with data binding. -->
         <select id="tree" on-change="{{ _updateTree }}">

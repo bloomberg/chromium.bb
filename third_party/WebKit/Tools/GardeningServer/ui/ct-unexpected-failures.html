@@ -29,11 +29,21 @@ found in the LICENSE file.
         margin: 0;
         padding: 0;
       }
+
+      .toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        padding: 0 5px;
+      }
     </style>
     <ct-failure-analyzer id="analyzer" failures="{{ failures }}" builderLatestRevisions="{{ builderLatestRevisions }}" lastUpdateDate="{{ lastUpdateDate }}"></ct-failure-analyzer>
+    <div class="toolbar">
+      <ct-revision-details id="revisionDetails" builderLatestRevisions="{{ builderLatestRevisions }}" revisionLog="{{ revisionLog }}" tree="{{ tree }}"></ct-revision-details>
+      <a href="https://code.google.com/p/chromium/wiki/UsefulURLs">Useful URLs</a>
+    </div>
     <ct-tree-status status="{{ treeStatuses['chromium'] }}" state="{{ treeStatuses['chromium'].status }}"></ct-tree-status>
     <ct-tree-status status="{{ treeStatuses['blink'] }}" state="{{ treeStatuses['blink'].status }}"></ct-tree-status>
-    <ct-revision-details id="revisionDetails" builderLatestRevisions="{{ builderLatestRevisions }}" revisionLog="{{ revisionLog }}" tree="{{ tree }}"></ct-revision-details>
     <ct-party-time failures="{{ failures }}" tree="{{ tree }}"></ct-party-time>
     <ct-failure-stream groups="{{ failures[tree] }}" commits="{{ revisionLog }}" tree="{{ tree }}"></ct-failure-stream>
   </template>

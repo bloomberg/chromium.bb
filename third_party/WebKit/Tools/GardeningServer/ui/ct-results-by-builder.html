@@ -15,6 +15,17 @@ found in the LICENSE file.
       :host {
         display: block;
       }
+      paper-tabs::shadow #selectionBar {
+        background-color: #212121;
+        height: 4px;
+      }
+      paper-tab {
+        border: 1px solid #212121;
+        border-radius: 5px 5px 0 0;
+      }
+      paper-tab::shadow #ink {
+        color: #212121;
+      }
     </style>
     <paper-tabs selected="{{ selected }}">
       <template repeat="{{ builder in builders }}">

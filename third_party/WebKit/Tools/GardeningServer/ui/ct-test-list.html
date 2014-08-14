@@ -13,8 +13,18 @@ found in the LICENSE file.
         display: block;
       }
 
+      :host > div {
+        /* Be at least the height of a paper-icon-button.
+           So things line up nicely. */
+        min-height: 24px;
+      }
+
       paper-icon-button {
         vertical-align: middle;
+      }
+
+      paper-icon-button::shadow #icon {
+        margin: 0;
       }
     </style>
     <template repeat="{{ groups in testGroups_ }}">

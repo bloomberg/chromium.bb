@@ -24,6 +24,7 @@ found in the LICENSE file.
         border: 1px solid #dcdcdc;
         color: #444;
         padding: 0 16px;
+        margin-bottom: 5px;
         text-align: center;
       }
 
@@ -48,32 +49,35 @@ found in the LICENSE file.
         width: 250px;
       }
 
-      .failure {
+      #failure {
         flex: 1;
+      }
+
+      #buttons {
+        display: flex;
+        flex-direction: column;
       }
 
       .snoozed {
         opacity: 0.5;
       }
-
-      #examine, #snooze {
-        align-self: flex-start;
-      }
     </style>
     <ct-builder-grid failures="{{ group.failures }}"></ct-builder-grid>
-    <div class="{{ { failure: true, snoozed: group.isSnoozed } | tokenList }}">
+    <div id="failure" class="{{ { snoozed: group.isSnoozed } | tokenList }}">
       <ct-test-list tests="{{ group.failures }}" tree="{{ tree }}"></ct-test-list>
       <ct-commit-list first="{{ group.failures[0].lastPassingRevisions }}"
           last="{{ group.failures[0].firstFailingRevisions }}"
           commits="{{ commits }}"></ct-commit-list>
     </div>
-    <paper-button id="examine" on-tap="{{ examine }}">Examine</paper-button>
-    <template if="{{ !group.isSnoozed }}">
-      <paper-button id="snooze" on-tap="{{ snooze }}">Snooze</paper-button>
-    </template>
-    <template if="{{ group.isSnoozed }}">
-      <paper-button id="snooze" on-tap="{{ unsnooze }}">Unsnooze</paper-button>
-    </template>
+    <div id="buttons">
+      <paper-button id="examine" on-tap="{{ examine }}">Examine</paper-button>
+      <template if="{{ !group.isSnoozed }}">
+        <paper-button id="snooze" on-tap="{{ snooze }}">Snooze</paper-button>
+      </template>
+      <template if="{{ group.isSnoozed }}">
+        <paper-button id="snooze" on-tap="{{ unsnooze }}">Unsnooze</paper-button>
+      </template>
+    </div>
   </template>
   <script>
     Polymer({
