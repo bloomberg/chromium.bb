@@ -24,6 +24,12 @@ PackageInfo = collections.namedtuple('PackageInfo',
      'test_package'])
 
 PACKAGE_INFO = {
+    'chrome_document': PackageInfo(
+        'com.google.android.apps.chrome.document',
+        'com.google.android.apps.chrome.document.ChromeLauncherActivity',
+        '/data/local/chrome-command-line',
+        'chrome_devtools_remote',
+        'com.google.android.apps.chrome.tests'),
     'chrome': PackageInfo(
         'com.google.android.apps.chrome',
         'com.google.android.apps.chrome.Main',
