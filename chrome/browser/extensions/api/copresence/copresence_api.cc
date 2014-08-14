@@ -33,11 +33,9 @@ const char kShuttingDownMessage[] = "Shutting down.";
 // CopresenceService implementation:
 
 CopresenceService::CopresenceService(content::BrowserContext* context)
-    : is_shutting_down_(false), browser_context_(context) {
-}
+    : is_shutting_down_(false), browser_context_(context) {}
 
-CopresenceService::~CopresenceService() {
-}
+CopresenceService::~CopresenceService() {}
 
 copresence::CopresenceClient* CopresenceService::client() {
   if (!client_ && !is_shutting_down_)
@@ -109,6 +107,10 @@ const std::string CopresenceService::GetPlatformVersionString() const {
   return chrome::VersionInfo().CreateVersionString();
 }
 
+const std::string CopresenceService::GetAPIKey() const {
+  return api_key_;
+}
+
 copresence::WhispernetClient* CopresenceService::GetWhispernetClient() {
   return whispernet_client();
 }
@@ -163,8 +165,9 @@ ExtensionFunction::ResponseAction CopresenceSetApiKeyFunction::Run() {
       api::copresence::SetApiKey::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  // TODO(rkc): Use the API key set by this function for this app.
-  // http://crbug.com/400617.
+  // The api key may be set to empty, to clear it.
+  CopresenceService::GetFactoryInstance()->Get(browser_context())
+      ->set_api_key(params->api_key);
   return RespondNow(NoArguments());
 }
 

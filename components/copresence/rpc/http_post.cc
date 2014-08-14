@@ -14,41 +14,38 @@
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "url/gurl.h"
 
 namespace copresence {
 
-// TODO(ckehoe): Come up with a better fix for Chromium.
-#ifdef GOOGLE_CHROME_BUILD
-namespace {
-
-const char kApiKeyField[] = "key";
-
-}  // namespace
-#endif
-
+const char HttpPost::kApiKeyField[] = "key";
 const char HttpPost::kTracingTokenField[] = "trace";
 
 HttpPost::HttpPost(net::URLRequestContextGetter* url_context_getter,
                    const std::string& server_host,
                    const std::string& rpc_name,
                    const std::string& tracing_token,
+                   std::string api_key,
                    const google::protobuf::MessageLite& request_proto) {
   // Create the base URL to call.
   GURL url(server_host + "/" + rpc_name);
-
-  // Add the Chrome API key.
-  // TODO(ckehoe): Replace this with an app-specific key once the
-  //               server API supports it. Also fix the Chromium case.
-#ifdef GOOGLE_CHROME_BUILD
-  DCHECK(google_apis::HasKeysConfigured());
-  url = net::AppendQueryParameter(url, kApiKeyField, google_apis::GetAPIKey());
-#endif
 
   // Add the tracing token, if specified.
   if (!tracing_token.empty()) {
     url = net::AppendQueryParameter(
         url, kTracingTokenField, "token:" + tracing_token);
   }
+
+  // If no API key is specified, use the Chrome API key.
+  if (api_key.empty()) {
+#ifdef GOOGLE_CHROME_BUILD
+    DCHECK(google_apis::HasKeysConfigured());
+    api_key = google_apis::GetAPIKey();
+#else
+    LOG(ERROR) << "No Copresence API key provided";
+#endif
+  }
+  url = net::AppendQueryParameter(url, kApiKeyField, api_key);
 
   // Serialize the proto for transmission.
   std::string request_data;

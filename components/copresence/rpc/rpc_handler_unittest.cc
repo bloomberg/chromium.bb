@@ -25,6 +25,8 @@ namespace copresence {
 
 namespace {
 
+const char kChromeVersion[] = "Chrome Version String";
+
 void AddMessageWithStrategy(ReportRequest* report,
                             BroadcastScanConfiguration strategy) {
   report->mutable_manage_messages_request()->add_message_to_publish()
@@ -83,7 +85,7 @@ class FakeDirectiveHandler : public DirectiveHandler {
 
 class RpcHandlerTest : public testing::Test, public CopresenceClientDelegate {
  public:
-  RpcHandlerTest() : rpc_handler_(this), status_(SUCCESS) {
+  RpcHandlerTest() : rpc_handler_(this), status_(SUCCESS), api_key_("API key") {
     rpc_handler_.server_post_callback_ =
         base::Bind(&RpcHandlerTest::CaptureHttpPost, base::Unretained(this));
     rpc_handler_.device_id_ = "Device ID";
@@ -168,7 +170,11 @@ class RpcHandlerTest : public testing::Test, public CopresenceClientDelegate {
   }
 
   virtual const std::string GetPlatformVersionString() const OVERRIDE {
-    return "Version String";
+    return kChromeVersion;
+  }
+
+  virtual const std::string GetAPIKey() const OVERRIDE {
+    return api_key_;
   }
 
   virtual WhispernetClient* GetWhispernetClient() OVERRIDE {
@@ -180,10 +186,11 @@ class RpcHandlerTest : public testing::Test, public CopresenceClientDelegate {
   base::MessageLoop message_loop_;
 
   RpcHandler rpc_handler_;
+  CopresenceStatus status_;
+  std::string api_key_;
 
   std::string rpc_name_;
   scoped_ptr<MessageLite> request_proto_;
-  CopresenceStatus status_;
   std::map<std::string, std::vector<Message> > messages_by_subscription_;
 };
 
@@ -287,11 +294,14 @@ TEST_F(RpcHandlerTest, CreateRequestHeader) {
                                  StatusCallback());
   EXPECT_EQ(RpcHandler::kReportRequestRpcName, rpc_name_);
   ReportRequest* report = static_cast<ReportRequest*>(request_proto_.get());
-  EXPECT_TRUE(report->header().has_framework_version());
+  EXPECT_EQ(kChromeVersion,
+            report->header().framework_version().version_name());
   EXPECT_EQ("CreateRequestHeader App ID",
             report->header().client_version().client());
   EXPECT_EQ("CreateRequestHeader Device ID",
             report->header().registered_device_id());
+  EXPECT_EQ(CHROME_PLATFORM_TYPE,
+            report->header().device_fingerprint().type());
 }
 
 // TODO(ckehoe): Renable these after https://codereview.chromium.org/453203002/

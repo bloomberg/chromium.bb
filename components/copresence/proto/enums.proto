@@ -52,6 +52,13 @@ enum TokenInstructionType {
   TRANSMIT = 1;
   RECEIVE = 2;
 }
+enum PlatformType {
+  UNKNOWN_PLATFORM_TYPE = 0;
+  CHROMECAST_PLATFORM_TYPE = 5;
+  ANDROID_PLATFORM_TYPE = 6;
+  IOS_PLATFORM_TYPE = 7;
+  CHROME_PLATFORM_TYPE = 8;
+}
 enum InstructionType {
   UNKNOWN_INSTRUCTION_TYPE = 0;
   TOKEN = 1;

@@ -10,6 +10,7 @@ message RequestHeader {
   optional int64 current_time_millis = 6;
   optional string registered_device_id = 7;
   repeated string experiment_override = 8;
+  optional DeviceFingerprint device_fingerprint = 10;
   optional string configuration_etag = 11;
 }
 message ResponseHeader {

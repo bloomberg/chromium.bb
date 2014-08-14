@@ -521,14 +521,19 @@ RequestHeader* RpcHandler::CreateRequestHeader(
     const std::string& client_name) const {
   RequestHeader* header = new RequestHeader;
 
-  header->set_allocated_framework_version(
-      CreateVersion("Chrome", delegate_->GetPlatformVersionString()));
+  header->set_allocated_framework_version(CreateVersion(
+      "Chrome", delegate_->GetPlatformVersionString()));
   if (!client_name.empty()) {
     header->set_allocated_client_version(
         CreateVersion(client_name, std::string()));
   }
   header->set_current_time_millis(base::Time::Now().ToJsTime());
   header->set_registered_device_id(device_id_);
+
+  DeviceFingerprint* fingerprint = new DeviceFingerprint;
+  fingerprint->set_platform_version(delegate_->GetPlatformVersionString());
+  fingerprint->set_type(CHROME_PLATFORM_TYPE);
+  header->set_allocated_device_fingerprint(fingerprint);
 
   return header;
 }
@@ -558,13 +563,14 @@ void RpcHandler::SendHttpPost(net::URLRequestContextGetter* url_context_getter,
       kDefaultCopresenceServer;
 
   // Create the request and keep a pointer until it completes.
-  const std::string& tracing_token =
-      command_line->GetSwitchValueASCII(switches::kCopresenceTracingToken);
-  HttpPost* http_post = new HttpPost(url_context_getter,
-                                     copresence_server_host,
-                                     rpc_name,
-                                     tracing_token,
-                                     *request_proto);
+  HttpPost* http_post = new HttpPost(
+      url_context_getter,
+      copresence_server_host,
+      rpc_name,
+      command_line->GetSwitchValueASCII(switches::kCopresenceTracingToken),
+      delegate_->GetAPIKey(),
+      *request_proto);
+
   http_post->Start(base::Bind(callback, http_post));
   pending_posts_.insert(http_post);
 }

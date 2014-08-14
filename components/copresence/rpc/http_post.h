@@ -36,19 +36,14 @@ class HttpPost : public net::URLFetcherDelegate {
   typedef base::Callback<void(int, const std::string&)>
       ResponseCallback;
 
-  // An id for testing url fetching.
-  static const int kUrlFetcherId = 1;
-
-  // The query parameter to send Apiary tracing tokens.
-  static const char kTracingTokenField[];
-
-  // Create a request to the Copresence server. |url_context_getter|
-  // is owned by the caller, and the context it provides must be available
-  // until the request completes.
+  // Create a request to the Copresence server.
+  // |url_context_getter| is owned by the caller,
+  // and the context it provides must be available until the request completes.
   HttpPost(net::URLRequestContextGetter* url_context_getter,
            const std::string& server_host,
            const std::string& rpc_name,
            const std::string& tracing_token,
+           std::string api_key,  // If blank, we overwrite with a default.
            const google::protobuf::MessageLite& request_proto);
 
   // HTTP requests are cancelled on delete.
@@ -58,10 +53,17 @@ class HttpPost : public net::URLFetcherDelegate {
   void Start(const ResponseCallback& response_callback);
 
  private:
+  static const int kUrlFetcherId = 1;
+  static const char kApiKeyField[];
+  static const char kTracingTokenField[];
+
+  friend class HttpPostTest;
+
   // Overridden from net::URLFetcherDelegate.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   ResponseCallback response_callback_;
+
   scoped_ptr<net::URLFetcher> url_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpPost);

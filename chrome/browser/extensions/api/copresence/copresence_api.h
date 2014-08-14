@@ -43,6 +43,8 @@ class CopresenceService : public BrowserContextKeyedAPI,
     return apps_by_subscription_id_;
   }
 
+  void set_api_key(const std::string& api_key) { api_key_ = api_key; }
+
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<CopresenceService>* GetFactoryInstance();
 
@@ -56,6 +58,7 @@ class CopresenceService : public BrowserContextKeyedAPI,
       const std::vector<copresence::Message>& message) OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContext() const OVERRIDE;
   virtual const std::string GetPlatformVersionString() const OVERRIDE;
+  virtual const std::string GetAPIKey() const OVERRIDE;
   virtual copresence::WhispernetClient* GetWhispernetClient() OVERRIDE;
 
   // BrowserContextKeyedAPI implementation.
@@ -65,6 +68,8 @@ class CopresenceService : public BrowserContextKeyedAPI,
   std::map<std::string, std::string> apps_by_subscription_id_;
 
   content::BrowserContext* const browser_context_;
+  std::string api_key_;
+
   scoped_ptr<copresence::CopresenceClient> client_;
   scoped_ptr<copresence::WhispernetClient> whispernet_client_;
 

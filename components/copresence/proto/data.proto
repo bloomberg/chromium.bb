@@ -29,6 +29,12 @@ message Token {
   optional TokenStatus status = 3;
   optional Debug debug = 4;
 }
+message DeviceFingerprint {
+  optional string manufacturer = 1;
+  optional string model = 2;
+  optional PlatformType type = 3;
+  optional string platform_version = 4;
+}
 message TokenTechnology {
   optional TokenMedium medium = 1;
   repeated TokenInstructionType instruction_type = 2;

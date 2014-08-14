@@ -11,12 +11,14 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace {
 
 const char kFakeServerHost[] = "test.server.google.com";
 const char kRPCName[] = "testRpc";
 const char kTracingToken[] = "trace me!";
+const char kApiKey[] = "unlock ALL the APIz";
 
 }  // namespace
 
@@ -48,6 +50,7 @@ class HttpPostTest : public testing::Test {
                                  std::string("http://") + kFakeServerHost,
                                  kRPCName,
                                  "",
+                                 kApiKey,
                                  proto_);
     pending_post_->Start(base::Bind(&HttpPostTest::TestResponseCallback,
                                     base::Unretained(this)));
@@ -59,6 +62,26 @@ class HttpPostTest : public testing::Test {
     delete pending_post_;
     return received_response_code_ == response_code &&
            received_response_ == response;
+  }
+
+  net::TestURLFetcher* GetFetcher() {
+    return fetcher_factory_.GetFetcherByID(HttpPost::kUrlFetcherId);
+  }
+
+  const std::string GetApiKeySent() {
+    std::string api_key_sent;
+    net::GetValueForKeyInQuery(GetFetcher()->GetOriginalURL(),
+                               HttpPost::kApiKeyField,
+                               &api_key_sent);
+    return api_key_sent;
+  }
+
+  const std::string GetTracingTokenSent() {
+    std::string tracing_token_sent;
+    net::GetValueForKeyInQuery(GetFetcher()->GetOriginalURL(),
+                               HttpPost::kTracingTokenField,
+                               &tracing_token_sent);
+    return tracing_token_sent;
   }
 
   net::TestURLFetcherFactory fetcher_factory_;
@@ -79,28 +102,29 @@ TEST_F(HttpPostTest, OKResponse) {
                                 std::string("http://") + kFakeServerHost,
                                 kRPCName,
                                 kTracingToken,
+                                kApiKey,
                                 proto_);
   post->Start(base::Bind(&HttpPostTest::TestResponseCallback,
                          base::Unretained(this)));
 
-  // Verify that the right data got sent to the right place.
-  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(
-      HttpPost::kUrlFetcherId);
-  EXPECT_EQ(kFakeServerHost, fetcher->GetOriginalURL().host());
-  EXPECT_EQ(std::string("/") + kRPCName, fetcher->GetOriginalURL().path());
-  std::string tracing_token_sent;
-  EXPECT_TRUE(net::GetValueForKeyInQuery(fetcher->GetOriginalURL(),
-                                         HttpPost::kTracingTokenField,
-                                         &tracing_token_sent));
-  EXPECT_EQ(std::string("token:") + kTracingToken, tracing_token_sent);
+  // Verify that the data was sent to the right place.
+  GURL requested_url = GetFetcher()->GetOriginalURL();
+  EXPECT_EQ(kFakeServerHost, requested_url.host());
+  EXPECT_EQ(std::string("/") + kRPCName, requested_url.path());
+
+  // Check query parameters.
+  EXPECT_EQ(kApiKey, GetApiKeySent());
+  EXPECT_EQ(std::string("token:") + kTracingToken, GetTracingTokenSent());
+
+  // Verify that the right data was sent.
   std::string upload_data;
   ASSERT_TRUE(proto_.SerializeToString(&upload_data));
-  EXPECT_EQ(upload_data, fetcher->upload_data());
+  EXPECT_EQ(upload_data, GetFetcher()->upload_data());
 
   // Send a response and check that it's passed along correctly.
-  fetcher->set_response_code(net::HTTP_OK);
-  fetcher->SetResponseString("Hello World!");
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  GetFetcher()->set_response_code(net::HTTP_OK);
+  GetFetcher()->SetResponseString("Hello World!");
+  GetFetcher()->delegate()->OnURLFetchComplete(GetFetcher());
   EXPECT_EQ(net::HTTP_OK, received_response_code_);
   EXPECT_EQ("Hello World!", received_response_);
   delete post;
