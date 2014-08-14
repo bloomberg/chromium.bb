@@ -373,8 +373,10 @@ void npObjectPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info,
 
     // Verify that our wrapper wasn't using a NPObject which
     // has already been deleted.
-    if (!npObject || !_NPN_IsAlive(npObject))
+    if (!npObject || !_NPN_IsAlive(npObject)) {
         V8ThrowException::throwReferenceError("NPObject deleted", info.GetIsolate());
+        return;
+    }
 
     if (NP_CLASS_STRUCT_VERSION_HAS_ENUM(npObject->_class) && npObject->_class->enumerate) {
         uint32_t count;
