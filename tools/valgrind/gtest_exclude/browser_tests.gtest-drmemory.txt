@@ -6,3 +6,6 @@ CustomLauncherPageBrowserTest.LoadPageAndOpenLauncher
 
 # http://crbug.com/403627
 BrowserOptionsOverlayWebUITest.testNavigationInBackground
+
+# http://crbug.com/403628
+RangeHistoryWebUITest.monthViewGrouped
