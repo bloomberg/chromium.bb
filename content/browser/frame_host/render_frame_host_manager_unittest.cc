@@ -323,8 +323,21 @@ class RenderFrameHostManagerTest
   bool ShouldSwapProcesses(RenderFrameHostManager* manager,
                            const NavigationEntryImpl* current_entry,
                            const NavigationEntryImpl* new_entry) const {
-    return manager->ShouldSwapBrowsingInstancesForNavigation(current_entry,
-                                                             new_entry);
+    CHECK(new_entry);
+    BrowserContext* browser_context =
+        manager->delegate_->GetControllerForRenderManager().GetBrowserContext();
+    const GURL& current_effective_url = current_entry ?
+        SiteInstanceImpl::GetEffectiveURL(browser_context,
+                                          current_entry->GetURL()) :
+        manager->render_frame_host_->GetSiteInstance()->GetSiteURL();
+    bool current_is_view_source_mode = current_entry ?
+        current_entry->IsViewSourceMode() : new_entry->IsViewSourceMode();
+    return manager->ShouldSwapBrowsingInstancesForNavigation(
+        current_effective_url,
+        current_is_view_source_mode,
+        new_entry->site_instance(),
+        SiteInstanceImpl::GetEffectiveURL(browser_context, new_entry->GetURL()),
+        new_entry->IsViewSourceMode());
   }
 
   // Creates a test RenderViewHost that's swapped out.

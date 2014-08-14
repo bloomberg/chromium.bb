@@ -386,15 +386,25 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // switch.  Can be overridden in unit tests.
   bool ShouldTransitionCrossSite();
 
-  // Returns true if for the navigation from |current_entry| to |new_entry|,
-  // a new SiteInstance and BrowsingInstance should be created (even if we are
-  // in a process model that doesn't usually swap).  This forces a process swap
-  // and severs script connections with existing tabs.  Cases where this can
-  // happen include transitions between WebUI and regular web pages.
-  // Either of the entries may be NULL.
+  // Returns true if for the navigation from |current_effective_url| to
+  // |new_effective_url|, a new SiteInstance and BrowsingInstance should be
+  // created (even if we are in a process model that doesn't usually swap).
+  // This forces a process swap and severs script connections with existing
+  // tabs.  Cases where this can happen include transitions between WebUI and
+  // regular web pages. |new_site_instance| may be null.
+  // If there is no current NavigationEntry, then |current_is_view_source_mode|
+  // should be the same as |new_is_view_source_mode|.
+  //
+  // We use the effective URL here, since that's what is used in the
+  // SiteInstance's site and when we later call IsSameWebSite.  If there is no
+  // current NavigationEntry, check the current SiteInstance's site, which might
+  // already be committed to a Web UI URL (such as the NTP).
   bool ShouldSwapBrowsingInstancesForNavigation(
-      const NavigationEntry* current_entry,
-      const NavigationEntryImpl* new_entry) const;
+      const GURL& current_effective_url,
+      bool current_is_view_source_mode,
+      SiteInstance* new_site_instance,
+      const GURL& new_effective_url,
+      bool new_is_view_source_mode) const;
 
   // Returns true if it is safe to reuse the current WebUI when navigating from
   // |current_entry| to |new_entry|.
@@ -402,12 +412,16 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
       const NavigationEntry* current_entry,
       const NavigationEntryImpl* new_entry) const;
 
-  // Returns an appropriate SiteInstance object for the given NavigationEntry,
+  // Returns an appropriate SiteInstance object for the given |dest_url|,
   // possibly reusing the current SiteInstance.  If --process-per-tab is used,
   // this is only called when ShouldSwapBrowsingInstancesForNavigation returns
-  // true.
-  SiteInstance* GetSiteInstanceForEntry(
-      const NavigationEntryImpl& entry,
+  // true. |dest_instance| will be used if it is not null.
+  SiteInstance* GetSiteInstanceForURL(
+      const GURL& dest_url,
+      SiteInstance* dest_instance,
+      PageTransition dest_transition,
+      bool dest_is_restore,
+      bool dest_is_view_source_mode,
       SiteInstance* current_instance,
       bool force_browsing_instance_swap);
 
