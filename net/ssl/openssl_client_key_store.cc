@@ -15,17 +15,6 @@ namespace net {
 
 namespace {
 
-// Increment the reference count of a given EVP_PKEY. This function
-// is similar to EVP_PKEY_dup which is not available from the OpenSSL
-// version used by Chromium at the moment. Its name is distinct to
-// avoid compiler warnings about ambiguous function calls at caller
-// sites.
-EVP_PKEY* CopyEVP_PKEY(EVP_PKEY* key) {
-  if (key)
-    CRYPTO_add(&key->references, 1, CRYPTO_LOCK_EVP_PKEY);
-  return key;
-}
-
 // Return the EVP_PKEY holding the public key of a given certificate.
 // |cert| is a certificate.
 // Returns a scoped EVP_PKEY for it.
@@ -48,35 +37,35 @@ OpenSSLClientKeyStore::~OpenSSLClientKeyStore() {
 }
 
 OpenSSLClientKeyStore::KeyPair::KeyPair(EVP_PKEY* pub_key,
-                                        EVP_PKEY* priv_key) {
-  public_key = CopyEVP_PKEY(pub_key);
-  private_key = CopyEVP_PKEY(priv_key);
+                                        EVP_PKEY* priv_key)
+    : public_key(EVP_PKEY_dup(pub_key)),
+      private_key(EVP_PKEY_dup(priv_key)) {
 }
 
 OpenSSLClientKeyStore::KeyPair::~KeyPair() {
-  EVP_PKEY_free(public_key);
-  EVP_PKEY_free(private_key);
 }
 
-OpenSSLClientKeyStore::KeyPair::KeyPair(const KeyPair& other) {
-  public_key = CopyEVP_PKEY(other.public_key);
-  private_key = CopyEVP_PKEY(other.private_key);
+OpenSSLClientKeyStore::KeyPair::KeyPair(const KeyPair& other)
+    : public_key(EVP_PKEY_dup(other.public_key.get())),
+      private_key(EVP_PKEY_dup(other.private_key.get())) {
 }
 
 void OpenSSLClientKeyStore::KeyPair::operator=(const KeyPair& other) {
-  EVP_PKEY* old_public_key = public_key;
-  EVP_PKEY* old_private_key = private_key;
-  public_key = CopyEVP_PKEY(other.public_key);
-  private_key = CopyEVP_PKEY(other.private_key);
-  EVP_PKEY_free(old_private_key);
-  EVP_PKEY_free(old_public_key);
+  // Use a temporary ScopedEVP_PKEY because scoped_ptr does not allow resetting
+  // to the current value, even though it's safe here.
+  crypto::ScopedEVP_PKEY public_key_tmp(EVP_PKEY_dup(other.public_key.get()));
+  crypto::ScopedEVP_PKEY private_key_tmp(EVP_PKEY_dup(other.private_key.get()));
+  public_key.reset();
+  public_key = public_key_tmp.Pass();
+  private_key.reset();
+  private_key = private_key_tmp.Pass();
 }
 
 int OpenSSLClientKeyStore::FindKeyPairIndex(EVP_PKEY* public_key) {
   if (!public_key)
     return -1;
   for (size_t n = 0; n < pairs_.size(); ++n) {
-    if (EVP_PKEY_cmp(pairs_[n].public_key, public_key) == 1)
+    if (EVP_PKEY_cmp(pairs_[n].public_key.get(), public_key) == 1)
       return static_cast<int>(n);
   }
   return -1;
@@ -120,7 +109,7 @@ crypto::ScopedEVP_PKEY OpenSSLClientKeyStore::FetchClientCertPrivateKey(
   if (index < 0)
     return crypto::ScopedEVP_PKEY();
 
-  return crypto::ScopedEVP_PKEY(CopyEVP_PKEY(pairs_[index].private_key));
+  return crypto::ScopedEVP_PKEY(EVP_PKEY_dup(pairs_[index].private_key.get()));
 }
 
 void OpenSSLClientKeyStore::Flush() {

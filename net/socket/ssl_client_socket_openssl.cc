@@ -244,12 +244,8 @@ SSLClientSocketOpenSSL::PeerCertificateChain::operator=(
   // os_chain_ is reference counted by scoped_refptr;
   os_chain_ = other.os_chain_;
 
-  // Must increase the reference count manually for sk_X509_dup
-  openssl_chain_.reset(sk_X509_dup(other.openssl_chain_.get()));
-  for (size_t i = 0; i < sk_X509_num(openssl_chain_.get()); ++i) {
-    X509* x = sk_X509_value(openssl_chain_.get(), i);
-    CRYPTO_add(&x->references, 1, CRYPTO_LOCK_X509);
-  }
+  openssl_chain_.reset(X509_chain_up_ref(other.openssl_chain_.get()));
+
   return *this;
 }
 
@@ -271,15 +267,7 @@ void SSLClientSocketOpenSSL::PeerCertificateChain::Reset(
   os_chain_ =
       X509Certificate::CreateFromHandle(sk_X509_value(chain, 0), intermediates);
 
-  // sk_X509_dup does not increase reference count on the certs in the stack.
-  openssl_chain_.reset(sk_X509_dup(chain));
-
-  std::vector<base::StringPiece> der_chain;
-  for (size_t i = 0; i < sk_X509_num(openssl_chain_.get()); ++i) {
-    X509* x = sk_X509_value(openssl_chain_.get(), i);
-    // Increase the reference count for the certs in openssl_chain_.
-    CRYPTO_add(&x->references, 1, CRYPTO_LOCK_X509);
-  }
+  openssl_chain_.reset(X509_chain_up_ref(chain));
 }
 #else  // !defined(USE_OPENSSL_CERTS)
 void SSLClientSocketOpenSSL::PeerCertificateChain::Reset(
@@ -290,15 +278,11 @@ void SSLClientSocketOpenSSL::PeerCertificateChain::Reset(
   if (!chain)
     return;
 
-  // sk_X509_dup does not increase reference count on the certs in the stack.
-  openssl_chain_.reset(sk_X509_dup(chain));
+  openssl_chain_.reset(X509_chain_up_ref(chain));
 
   std::vector<base::StringPiece> der_chain;
   for (size_t i = 0; i < sk_X509_num(openssl_chain_.get()); ++i) {
     X509* x = sk_X509_value(openssl_chain_.get(), i);
-
-    // Increase the reference count for the certs in openssl_chain_.
-    CRYPTO_add(&x->references, 1, CRYPTO_LOCK_X509);
 
     unsigned char* cert_data = NULL;
     int cert_data_length = i2d_X509(x, &cert_data);

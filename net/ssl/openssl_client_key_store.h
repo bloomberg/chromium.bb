@@ -76,8 +76,8 @@ class NET_EXPORT OpenSSLClientKeyStore {
     void operator=(const KeyPair& other);
     ~KeyPair();
 
-    EVP_PKEY* public_key;
-    EVP_PKEY* private_key;
+    crypto::ScopedEVP_PKEY public_key;
+    crypto::ScopedEVP_PKEY private_key;
 
    private:
     KeyPair();  // intentionally not implemented.

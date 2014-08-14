@@ -36,7 +36,7 @@ class MemoryKeyPairStore {
   }
 
   bool StoreKeyPair(EVP_PKEY* pkey) {
-    CRYPTO_add(&pkey->references, 1, CRYPTO_LOCK_EVP_PKEY);
+    EVP_PKEY_dup(pkey);
     base::AutoLock lock(lock_);
     keys_.push_back(pkey);
     return true;
