@@ -4998,7 +4998,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DomDistiller.DistillationQuality" enum="BooleanSuccess">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>nyquist@chromium.org</owner>
   <summary>
     Whether the perceived quality of the distillation of a web page was good.
   </summary>
