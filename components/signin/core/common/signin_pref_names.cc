@@ -43,6 +43,10 @@ const char kReverseAutologinEnabled[] = "reverse_autologin.enabled";
 const char kReverseAutologinRejectedEmailList[] =
     "reverse_autologin.rejected_email_list";
 
+// Int64 which tracks, as time from epoch, when last time the user signed in
+// to the browser.
+const char kSignedInTime[] = "signin.signedin_time";
+
 // Boolean which stores if the user is allowed to signin to chrome.
 const char kSigninAllowed[] = "signin.allowed";
 

@@ -28697,6 +28697,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Signin.SignedInDurationBeforeSignout" units="minutes">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    Track how many minutes of real time (not browser active time) elapsed
+    between profile signin and signout.
+  </summary>
+</histogram>
+
 <histogram name="Signin.SignoutProfile" enum="SigninSignoutProfile">
   <owner>mlerman@chromium.org</owner>
   <summary>Track how a profile gets signed out.</summary>

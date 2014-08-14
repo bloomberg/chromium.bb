@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -201,12 +202,23 @@ void SigninManager::SignOut(
   ClearTransientSigninData();
 
   const std::string username = GetAuthenticatedUsername();
+  const base::Time signin_time =
+      base::Time::FromInternalValue(
+          client_->GetPrefs()->GetInt64(prefs::kSignedInTime));
   clear_authenticated_username();
   client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
+  client_->GetPrefs()->ClearPref(prefs::kSignedInTime);
   client_->ClearSigninScopedDeviceId();
 
   // Erase (now) stale information from AboutSigninInternals.
   NotifyDiagnosticsObservers(USERNAME, "");
+
+  // Determine the duration the user was logged in and log that to UMA.
+  if (!signin_time.is_null()) {
+    base::TimeDelta signed_in_duration = base::Time::Now() - signin_time;
+    UMA_HISTOGRAM_COUNTS("Signin.SignedInDurationBeforeSignout",
+                         signed_in_duration.InMinutes());
+  }
 
   // Revoke all tokens before sending signed_out notification, because there
   // may be components that don't listen for token service events when the
@@ -353,6 +365,8 @@ void SigninManager::OnExternalSigninCompleted(const std::string& username) {
 }
 
 void SigninManager::OnSignedIn(const std::string& username) {
+  client_->GetPrefs()->SetInt64(prefs::kSignedInTime,
+                                base::Time::Now().ToInternalValue());
   SetAuthenticatedUsername(username);
   possibly_invalid_username_.clear();
 
