@@ -3,3 +3,6 @@ InterstitialUITest.OpenInterstitial
 
 # http://crbug.com/400509
 CustomLauncherPageBrowserTest.LoadPageAndOpenLauncher
+
+# http://crbug.com/403627
+BrowserOptionsOverlayWebUITest.testNavigationInBackground
