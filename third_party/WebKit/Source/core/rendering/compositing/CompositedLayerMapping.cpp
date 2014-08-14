@@ -974,7 +974,7 @@ void CompositedLayerMapping::registerScrollingLayers()
     // layer as a container.
     bool isContainer = m_owningLayer.hasTransform() && !m_owningLayer.isRootLayer();
     // FIXME: we should make certain that childForSuperLayers will never be the m_squashingContainmentLayer here
-    scrollingCoordinator->setLayerIsContainerForFixedPositionLayers(localRootForOwningLayer(), isContainer);
+    scrollingCoordinator->setLayerIsContainerForFixedPositionLayers(childForSuperlayers(), isContainer);
 }
 
 void CompositedLayerMapping::updateInternalHierarchy()
@@ -1857,20 +1857,15 @@ GraphicsLayer* CompositedLayerMapping::parentForSublayers() const
     return m_graphicsLayer.get();
 }
 
-GraphicsLayer* CompositedLayerMapping::localRootForOwningLayer() const
-{
-    if (m_ancestorClippingLayer)
-        return m_ancestorClippingLayer.get();
-
-    return m_graphicsLayer.get();
-}
-
 GraphicsLayer* CompositedLayerMapping::childForSuperlayers() const
 {
     if (m_squashingContainmentLayer)
         return m_squashingContainmentLayer.get();
 
-    return localRootForOwningLayer();
+    if (m_ancestorClippingLayer)
+        return m_ancestorClippingLayer.get();
+
+    return m_graphicsLayer.get();
 }
 
 GraphicsLayer* CompositedLayerMapping::layerForChildrenTransform() const
@@ -1914,7 +1909,6 @@ bool CompositedLayerMapping::updateRequiresOwnBackingStoreForIntrinsicReasons()
 
     if (paintsIntoCompositedAncestor() != previousPaintsIntoCompositedAncestor)
         compositor()->paintInvalidationOnCompositingChange(&m_owningLayer);
-
 
     return m_requiresOwnBackingStoreForIntrinsicReasons != previousRequiresOwnBackingStoreForIntrinsicReasons;
 }

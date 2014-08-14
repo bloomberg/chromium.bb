@@ -109,8 +109,6 @@ public:
 
     GraphicsLayer* parentForSublayers() const;
     GraphicsLayer* childForSuperlayers() const;
-    // localRootForOwningLayer does not include the m_squashingContainmentLayer, which is technically not associated with this CLM's owning layer.
-    GraphicsLayer* localRootForOwningLayer() const;
 
     GraphicsLayer* childTransformLayer() const { return m_childTransformLayer.get(); }
 
