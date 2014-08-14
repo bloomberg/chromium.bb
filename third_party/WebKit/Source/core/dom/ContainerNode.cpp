@@ -29,7 +29,6 @@
 #include "core/dom/ClassCollection.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/FullscreenElementStack.h"
 #include "core/dom/NameNodeList.h"
 #include "core/dom/NodeChildRemovalTracker.h"
 #include "core/dom/NodeRareData.h"
@@ -544,9 +543,6 @@ PassRefPtrWillBeRawPtr<Node> ContainerNode::removeChild(PassRefPtrWillBeRawPtr<N
 
     document().removeFocusedElementOfSubtree(child.get());
 
-    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(document()))
-        fullscreen->removeFullScreenElementOfSubtree(child.get());
-
     // Events fired when blurring currently focused node might have moved this
     // child into a different parent.
     if (child->parentNode() != this) {
@@ -628,9 +624,6 @@ void ContainerNode::removeChildren()
 
     // The container node can be removed from event handlers.
     RefPtrWillBeRawPtr<ContainerNode> protect(this);
-
-    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(document()))
-        fullscreen->removeFullScreenElementOfSubtree(this, true);
 
     // Do any prep work needed before actually starting to detach
     // and remove... e.g. stop loading frames, fire unload events.

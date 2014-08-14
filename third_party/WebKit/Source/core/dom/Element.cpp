@@ -1279,6 +1279,9 @@ void Element::removedFrom(ContainerNode* insertionPoint)
     if (containsFullScreenElement())
         setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(false);
 
+    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(document()))
+        fullscreen->elementRemoved(*this);
+
     if (document().page())
         document().page()->pointerLockController().elementRemoved(this);
 

@@ -82,7 +82,7 @@ public:
     RenderFullScreen* fullScreenRenderer() const { return m_fullScreenRenderer; }
     void fullScreenRendererDestroyed();
 
-    void removeFullScreenElementOfSubtree(Node*, bool amongChildrenOnly = false);
+    void elementRemoved(Element&);
 
     // Mozilla API
     bool webkitIsFullScreen() const { return m_fullScreenElement.get(); }
@@ -112,8 +112,6 @@ private:
     void enqueueChangeEvent(Document&, RequestType);
     void enqueueErrorEvent(Element&, RequestType);
     void eventQueueTimerFired(Timer<FullscreenElementStack>*);
-
-    void fullScreenElementRemoved();
 
     bool m_areKeysEnabledInFullScreen;
     RefPtrWillBeMember<Element> m_fullScreenElement;

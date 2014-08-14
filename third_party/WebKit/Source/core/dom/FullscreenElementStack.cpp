@@ -556,29 +556,27 @@ void FullscreenElementStack::eventQueueTimerFired(Timer<FullscreenElementStack>*
     }
 }
 
-void FullscreenElementStack::fullScreenElementRemoved()
+void FullscreenElementStack::elementRemoved(Element& element)
 {
-    m_fullScreenElement->setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(false);
-    fullyExitFullscreen();
-}
+    // If an element |element| in a fullscreen element stack is removed from a document |document|,
+    // run these steps:
 
-void FullscreenElementStack::removeFullScreenElementOfSubtree(Node* node, bool amongChildrenOnly)
-{
-    if (!m_fullScreenElement)
+    // 1. If |element| was at the top of |document|'s fullscreen element stack, act as if the
+    // exitFullscreen() method was invoked on that document.
+    if (fullscreenElement() == &element) {
+        exitFullscreen();
         return;
+    }
 
-    // If the node isn't in a document it can't have a fullscreen'd child.
-    if (!node->inDocument())
-        return;
+    // 2. Otherwise, remove |element| from |document|'s fullscreen element stack.
+    for (size_t i = 0; i < m_fullScreenElementStack.size(); ++i) {
+        if (m_fullScreenElementStack[i].first.get() == &element) {
+            m_fullScreenElementStack.remove(i);
+            return;
+        }
+    }
 
-    bool elementInSubtree = false;
-    if (amongChildrenOnly)
-        elementInSubtree = m_fullScreenElement->isDescendantOf(node);
-    else
-        elementInSubtree = (m_fullScreenElement == node) || m_fullScreenElement->isDescendantOf(node);
-
-    if (elementInSubtree)
-        fullScreenElementRemoved();
+    // NOTE: |element| was not in the fullscreen element stack.
 }
 
 void FullscreenElementStack::clearFullscreenElementStack()
