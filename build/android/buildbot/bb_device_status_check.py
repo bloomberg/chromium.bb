@@ -81,8 +81,10 @@ def DeviceInfo(serial, options):
             '']
 
   errors = []
+  dev_good = True
   if battery_level < 15:
     errors += ['Device critically low in battery. Turning off device.']
+    dev_good = False
   if not options.no_provisioning_check:
     setup_wizard_disabled = (
         device_adb.GetProp('ro.setupwizard.mode') == 'DISABLED')
@@ -103,7 +105,7 @@ def DeviceInfo(serial, options):
       logging.error(str(e))
     device_adb.old_interface.Shutdown()
   full_report = '\n'.join(report)
-  return device_type, device_build, battery_level, full_report, errors, True
+  return device_type, device_build, battery_level, full_report, errors, dev_good
 
 
 def CheckForMissingDevices(options, adb_online_devs):
