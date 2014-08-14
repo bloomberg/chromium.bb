@@ -588,6 +588,8 @@
             '<(libjingle_source)/talk/media/webrtc/webrtcmediaengine.cc',
             '<(libjingle_source)/talk/media/webrtc/webrtcmediaengine.h',
             '<(libjingle_source)/talk/media/webrtc/webrtcvideoengine.cc',
+            '<(libjingle_source)/talk/media/webrtc/webrtcvideoframefactory.cc',
+            '<(libjingle_source)/talk/media/webrtc/webrtcvideoframefactory.h',
             '<(libjingle_source)/talk/media/webrtc/webrtcvideoengine.h',
             '<(libjingle_source)/talk/media/webrtc/webrtcvideoengine2.cc',
             '<(libjingle_source)/talk/media/webrtc/webrtcvideoengine2.h',
