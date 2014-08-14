@@ -3217,6 +3217,10 @@ void LayerTreeHostImpl::AsValueWithFrameInto(
     state->BeginArray("tiles");
     tile_manager_->AllTilesAsValueInto(state);
     state->EndArray();
+
+    state->BeginDictionary("tile_manager_basic_state");
+    tile_manager_->BasicStateAsValueInto(state);
+    state->EndDictionary();
   }
   state->BeginDictionary("active_tree");
   active_tree_->AsValueInto(state);
