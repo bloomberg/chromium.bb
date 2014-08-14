@@ -4,6 +4,7 @@
 
 package org.chromium.chromoting;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
@@ -14,6 +15,7 @@ import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 
+import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 
@@ -39,7 +41,19 @@ public class ThirdPartyTokenFetcher {
     private static final String RESPONSE_TYPE = "code token";
 
     /** This is used to securely generate an opaque 128 bit for the |mState| variable. */
-    private static SecureRandom sSecureRandom = new SecureRandom();
+    @SuppressLint("TrulyRandom")
+    private static SecureRandom sSecureRandom;
+
+    // TODO(lambroslambrou): Refactor this class to only initialize a PRNG when ThirdPartyAuth is
+    // actually used.
+    static {
+        sSecureRandom = new SecureRandom();
+        try {
+            SecureRandomInitializer.initialize(sSecureRandom);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to initialize PRNG: " + e);
+        }
+    }
 
     /** This is used to launch the third party login page in the browser. */
     private Activity mContext;
