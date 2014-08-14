@@ -352,7 +352,9 @@ if (cpu_arch == "x86" || cpu_arch == "x64") {
   source_set("media_mmx") {
     sources = [ "simd/filter_yuv_mmx.cc" ]
     configs += [ "//media:media_config" ]
-    cflags = [ "-mmmx" ]
+    if (!is_win) {
+      cflags = [ "-mmmx" ]
+    }
   }
 
   source_set("media_sse2") {
@@ -362,7 +364,9 @@ if (cpu_arch == "x86" || cpu_arch == "x64") {
       "simd/filter_yuv_sse2.cc",
     ]
     configs += [ "//media:media_config" ]
-    cflags = [ "-msse2" ]
+    if (!is_win) {
+      cflags = [ "-msse2" ]
+    }
   }
 
   import("//third_party/yasm/yasm_assemble.gni")
