@@ -208,7 +208,7 @@ class ServiceWorkerCacheStorage::SimpleCacheLoader
       base::DeleteFile(path, /* recursive */ true);
 
     // Jump straight into LoadCache on the same thread.
-    base::MessageLoopProxy::current()->PostTask(
+    cache_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&SimpleCacheLoader::LoadCreateDirectoryInPool,
                    this,
