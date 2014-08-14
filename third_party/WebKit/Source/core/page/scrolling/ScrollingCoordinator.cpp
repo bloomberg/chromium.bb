@@ -887,13 +887,23 @@ bool ScrollingCoordinator::hasVisibleSlowRepaintViewportConstrainedObjects(Frame
         return false;
 
     for (FrameView::ViewportConstrainedObjectSet::const_iterator it = viewportConstrainedObjects->begin(), end = viewportConstrainedObjects->end(); it != end; ++it) {
-        RenderObject* viewportConstrainedObject = *it;
-        if (!viewportConstrainedObject->isBoxModelObject() || !viewportConstrainedObject->hasLayer())
-            return true;
-        RenderLayer* layer = toRenderBoxModelObject(viewportConstrainedObject)->layer();
-        // Composited layers that actually paint into their enclosing ancestor
-        // must also force main thread scrolling.
-        if (layer->compositingState() == HasOwnBackingButPaintsIntoAncestor)
+        RenderObject* renderer = *it;
+        ASSERT(renderer->isBoxModelObject() && renderer->hasLayer());
+        ASSERT(renderer->style()->position() == FixedPosition);
+        RenderLayer* layer = toRenderBoxModelObject(renderer)->layer();
+
+        // Whether the RenderLayer scrolls with the viewport is a tree-depenent
+        // property and our viewportConstrainedObjects collection is maintained
+        // with only RenderObject-level information.
+        if (!layer->scrollsWithViewport())
+            continue;
+
+        // We're only smart enough to scroll viewport-constrainted objects
+        // in the compositor if they have their own backing or they paint
+        // into a grouped back (which necessarily all have the same viewport
+        // constraints).
+        CompositingState compositingState = layer->compositingState();
+        if (compositingState != PaintsIntoOwnBacking && compositingState != PaintsIntoGroupedBacking)
             return true;
     }
     return false;

@@ -656,6 +656,7 @@ public:
     // If paintInvalidationContainer and paintInvalidationContainerSkipped are not null, on return *paintInvalidationContainerSkipped
     // is true if the renderer returned is an ancestor of paintInvalidationContainer.
     RenderObject* container(const RenderLayerModelObject* paintInvalidationContainer = 0, bool* paintInvalidationContainerSkipped = 0) const;
+    RenderBlock* containerForFixedPosition(const RenderLayerModelObject* paintInvalidationContainer = 0, bool* paintInvalidationContainerSkipped = 0) const;
 
     virtual RenderObject* hoverAncestor() const { return parent(); }
 
@@ -1157,8 +1158,6 @@ protected:
 
 private:
     const RenderLayerModelObject* enclosingCompositedContainer() const;
-
-    RenderBlock* containerForFixedPosition(const RenderLayerModelObject* paintInvalidationContainer = 0, bool* paintInvalidationContainerSkipped = 0) const;
 
     RenderFlowThread* locateFlowThreadContainingBlock() const;
     void removeFromRenderFlowThread();

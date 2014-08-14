@@ -305,7 +305,7 @@ void RenderLayer::dirtyAncestorChainHasSelfPaintingLayerDescendantStatus()
 
 bool RenderLayer::scrollsWithViewport() const
 {
-    return renderer()->style()->position() == FixedPosition && renderer()->containingBlock()->enclosingLayer()->isRootLayer();
+    return renderer()->style()->position() == FixedPosition && renderer()->containerForFixedPosition() == renderer()->view();
 }
 
 bool RenderLayer::scrollsWithRespectTo(const RenderLayer* other) const

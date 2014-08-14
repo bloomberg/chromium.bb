@@ -34,7 +34,7 @@ private:
 
     bool requiresCompositingForTransform(RenderObject*) const;
     bool requiresCompositingForAnimation(RenderStyle*) const;
-    bool requiresCompositingForPositionFixed(RenderObject*) const;
+    bool requiresCompositingForPositionFixed(const RenderLayer*) const;
 
     RenderView& m_renderView;
     CompositingTriggerFlags m_compositingTriggers;

@@ -149,7 +149,7 @@ CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(cons
             directReasons |= CompositingReasonOverflowScrollingTouch;
     }
 
-    if (requiresCompositingForPositionFixed(renderer))
+    if (requiresCompositingForPositionFixed(layer))
         directReasons |= CompositingReasonPositionFixed;
 
     directReasons |= renderer->additionalCompositingReasons();
@@ -166,15 +166,13 @@ bool CompositingReasonFinder::requiresCompositingForAnimation(RenderStyle* style
     return style->shouldCompositeForCurrentAnimations();
 }
 
-bool CompositingReasonFinder::requiresCompositingForPositionFixed(RenderObject* renderer) const
+bool CompositingReasonFinder::requiresCompositingForPositionFixed(const RenderLayer* layer) const
 {
     if (!(m_compositingTriggers & ViewportConstrainedPositionedTrigger))
         return false;
     // Don't promote fixed position elements that are descendants of a non-view container, e.g. transformed elements.
     // They will stay fixed wrt the container rather than the enclosing frame.
-    return renderer->style()->position() == FixedPosition
-        && renderer->container() == &m_renderView
-        && m_renderView.frameView()->isScrollable();
+    return layer->scrollsWithViewport() && m_renderView.frameView()->isScrollable();
 }
 
 }
