@@ -242,7 +242,6 @@ PassOwnPtrWillBeRawPtr<MediaQueryExp> MediaQueryExp::createIfValid(const String&
                 expValue.value = value->fValue;
                 expValue.unit = (CSSPrimitiveValue::UnitType)value->unit;
                 expValue.isValue = true;
-                expValue.isInteger = value->isInt;
             } else if (featureWithPositiveInteger(lowerMediaFeature, value)
                 || featureWithPositiveNumber(lowerMediaFeature, value)
                 || featureWithZeroOrOne(lowerMediaFeature, value)) {
@@ -252,7 +251,6 @@ PassOwnPtrWillBeRawPtr<MediaQueryExp> MediaQueryExp::createIfValid(const String&
                 expValue.value = value->fValue;
                 expValue.unit = CSSPrimitiveValue::CSS_NUMBER;
                 expValue.isValue = true;
-                expValue.isInteger = value->isInt;
             }
 
             isValid = (expValue.isID || expValue.isValue);
