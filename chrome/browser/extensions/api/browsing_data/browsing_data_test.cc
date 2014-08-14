@@ -352,7 +352,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, BrowsingDataOriginSetMask) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest,
-                       FLAKY_BrowsingDataRemovalMask) {
+                       BrowsingDataRemovalMask) {
   RunBrowsingDataRemoveWithKeyAndCompareRemovalMask(
       "appcache", BrowsingDataRemover::REMOVE_APPCACHE);
   RunBrowsingDataRemoveWithKeyAndCompareRemovalMask(
