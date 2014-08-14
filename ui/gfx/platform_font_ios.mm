@@ -6,8 +6,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include <cmath>
-
 #include "base/basictypes.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -112,8 +110,7 @@ void PlatformFontIOS::CalculateMetrics() {
   height_ = font.lineHeight;
   ascent_ = font.ascender;
   cap_height_ = font.capHeight;
-  NSDictionary* attributes = @{ NSFontAttributeName : font };
-  average_width_ = std::ceil([@"x" sizeWithAttributes:attributes].width);
+  average_width_ = [@"x" sizeWithFont:font].width;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
