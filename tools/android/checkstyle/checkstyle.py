@@ -8,6 +8,13 @@ import os
 import subprocess
 
 
+CHROMIUM_SRC = os.path.normpath(
+    os.path.join(os.path.dirname(__file__),
+                 os.pardir, os.pardir, os.pardir))
+CHECKSTYLE_ROOT = os.path.join(CHROMIUM_SRC, 'third_party', 'checkstyle',
+                               'checkstyle-5.7-all.jar')
+
+
 def RunCheckstyle(input_api, output_api, style_file):
   if not os.path.exists(style_file):
     file_error = ('  Java checkstyle configuration file is missing: '
@@ -25,7 +32,7 @@ def RunCheckstyle(input_api, output_api, style_file):
   checkstyle_env['JAVA_CMD'] = 'java'
   try:
     check = subprocess.Popen(['java', '-cp',
-                              'third_party/checkstyle/checkstyle-5.7-all.jar',
+                              CHECKSTYLE_ROOT,
                               'com.puppycrawl.tools.checkstyle.Main', '-c',
                               style_file] + java_files,
                              stdout=subprocess.PIPE, env=checkstyle_env)
