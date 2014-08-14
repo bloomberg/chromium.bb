@@ -665,17 +665,11 @@ static void clearSelectionIfNeeded(LocalFrame* oldFocusedFrame, LocalFrame* newF
     if (selectionStartNode == newFocusedNode || selectionStartNode->isDescendantOf(newFocusedNode))
         return;
 
-    if (selectionStartNode->isInShadowTree() && selectionStartNode->shadowHost() == newFocusedNode)
+    if (!enclosingTextFormControl(selectionStartNode))
         return;
 
-    if (Node* mousePressNode = newFocusedFrame->eventHandler().mousePressNode()) {
-        if (mousePressNode->renderer() && !mousePressNode->canStartSelection()) {
-            // Don't clear the selection for contentEditable elements, but do
-            // clear it for input and textarea. See bug 38696.
-            if (!enclosingTextFormControl(selection.start()))
-                return;
-        }
-    }
+    if (selectionStartNode->isInShadowTree() && selectionStartNode->shadowHost() == newFocusedNode)
+        return;
 
     selection.clear();
 }

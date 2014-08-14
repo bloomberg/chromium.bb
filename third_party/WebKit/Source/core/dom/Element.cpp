@@ -2094,7 +2094,7 @@ void Element::updateFocusAppearance(bool /*restorePreviousSelection*/)
         VisibleSelection newSelection = VisibleSelection(firstPositionInOrBeforeNode(this), DOWNSTREAM);
         // Passing DoNotSetFocus as this function is called after FocusController::setFocusedElement()
         // and we don't want to change the focus to a new Element.
-        frame->selection().setSelection(newSelection, FrameSelection::DoNotSetFocus);
+        frame->selection().setSelection(newSelection,  FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle | FrameSelection::DoNotSetFocus);
         frame->selection().revealSelection();
     } else if (renderer() && !renderer()->isWidget())
         renderer()->scrollRectToVisible(boundingBox());
