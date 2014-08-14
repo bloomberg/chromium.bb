@@ -35,7 +35,11 @@ def SmokeTestGenerator(benchmark):
       def CreatePageSet(self, options):
         # pylint: disable=E1002
         ps = super(SinglePageBenchmark, self).CreatePageSet(options)
-        ps.pages = ps.pages[:1]
+        for p in ps.pages:
+          if not p.disabled:
+            p.skip_waits = True
+            ps.pages = [p]
+            break
         return ps
 
     # Set the benchmark's default arguments.
