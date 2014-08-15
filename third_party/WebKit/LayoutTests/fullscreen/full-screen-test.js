@@ -13,22 +13,14 @@ if (window.testRunner) {
 
 function runWithKeyDown(fn) 
 {
-    // FIXME: WKTR does not yet support the keyDown() message.  Do a mouseDown here
-    // instead until keyDown support is added.
-    var eventName = !window.testRunner || eventSender.keyDown ? 'keypress' : 'mousedown'
-
     function thunk() {
-        document.removeEventListener(eventName, thunk, false);
+        document.removeEventListener("keypress", thunk, false);
         fn();
     }
-    document.addEventListener(eventName, thunk, false);
+    document.addEventListener("keypress", thunk, false);
 
-    if (window.testRunner) {
-        if (eventSender.keyDown)
-            eventSender.keyDown(" ", []);
-        else
-            eventSender.mouseDown();
-    }
+    if (window.eventSender)
+        eventSender.keyDown(" ", []);
 }
 
 function logConsole()
