@@ -30,6 +30,7 @@
 #include "core/frame/Settings.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/TextAutosizer.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/text/LocaleToScriptMapping.h"
 
@@ -533,7 +534,12 @@ void FontBuilder::updateComputedSize(RenderStyle* style, const RenderStyle* pare
 {
     FontDescriptionChangeScope scope(this);
 
-    scope.fontDescription().setComputedSize(getComputedSizeFromSpecifiedSize(scope.fontDescription(), style->effectiveZoom(), scope.fontDescription().specifiedSize()));
+    float computedSize = getComputedSizeFromSpecifiedSize(scope.fontDescription(), style->effectiveZoom(), scope.fontDescription().specifiedSize());
+    float multiplier = style->textAutosizingMultiplier();
+    if (multiplier > 1)
+        computedSize = TextAutosizer::computeAutosizedFontSize(computedSize, multiplier);
+
+    scope.fontDescription().setComputedSize(computedSize);
 }
 
 // FIXME: style param should come first
