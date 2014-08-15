@@ -57,7 +57,8 @@ class ChromotingJniRuntime {
                      const char* host_id,
                      const char* host_pubkey,
                      const char* pairing_id,
-                     const char* pairing_secret);
+                     const char* pairing_secret,
+                     const char* capabilities);
 
   // Terminates any ongoing connection attempt and cleans up by nullifying
   // |session_|. This is a no-op unless |session| is currently non-null.
@@ -87,6 +88,14 @@ class ChromotingJniRuntime {
   void FetchThirdPartyToken(const GURL& token_url,
                             const std::string& client_id,
                             const std::string& scope);
+
+  // Pass on the set of negotiated capabilities to the client.
+  void SetCapabilities(const std::string& capabilities);
+
+  // Passes on the deconstructed ExtensionMessage to the client to handle
+  // appropriately.
+  void HandleExtensionMessage(const std::string& type,
+                              const std::string& message);
 
   // Creates a new Bitmap object to store a video frame.
   base::android::ScopedJavaLocalRef<jobject> NewBitmap(

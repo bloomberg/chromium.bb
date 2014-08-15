@@ -6,26 +6,31 @@
 -->
 
 <!--Action bar buttons for the Android app's remote desktop viewer-->
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/media_route_menu_item"
+            android:title="@string/cast_button_title"
+            app:actionProviderClass="android.support.v7.app.MediaRouteActionProvider"
+            app:showAsAction="always"/>
     <item android:id="@+id/actionbar_keyboard"
             android:title="@string/show_hide_keyboard"
             android:icon="@drawable/ic_action_keyboard"
-            android:showAsAction="ifRoom"/>
+            app:showAsAction="ifRoom"/>
     <item android:id="@+id/actionbar_hide"
             android:title="@string/full_screen"
             android:icon="@drawable/ic_action_full_screen"
-            android:showAsAction="ifRoom"/>
+            app:showAsAction="ifRoom"/>
     <item android:id="@+id/actionbar_send_ctrl_alt_del"
             android:title="@string/send_ctrl_alt_del"
-            android:showAsAction="withText"/>
+            app:showAsAction="withText"/>
     <item android:id="@+id/actionbar_disconnect"
             android:title="@string/disconnect_myself_button"
-            android:showAsAction="withText"/>
+            app:showAsAction="withText"/>
     <!--
         The Help option must be the final menu item and it must only appear in
         the action-bar overflow menu.
     -->
     <item android:id="@+id/actionbar_help"
             android:title="@string/actionbar_help"
-            android:showAsAction="never"/>
+            app:showAsAction="never"/>
 </menu>

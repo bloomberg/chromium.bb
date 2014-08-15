@@ -424,6 +424,15 @@
         <message desc="Text shown in tooltip when user touches an offline host on the device." name="IDS_HOST_OFFLINE_TOOLTIP" formatter_data="android_java">
           Host is offline.
         </message>
+        <message desc="Error that is shown in tooltip if the app loses its connection to the Cast device." name="IDS_CONNECTION_TO_CAST_FAILED" formatter_data="android_java">
+          Failed to connect to Cast device.
+        </message>
+         <message desc="Text shown in tooltip when the application has closed its connection to the Cast device." name="IDS_CONNECTION_TO_CAST_CLOSED" formatter_data="android_java">
+          Closed connection to Cast device.
+        </message>
+        <message desc="Title for Cast button in Android application menu." name="IDS_CAST_BUTTON_TITLE" formatter_data="android_java">
+          Cast
+        </message>
 
 <!-- Play Store listings text. These Android-specific strings are not marked
      with formatter_data="android_java" since they are used only for the Play

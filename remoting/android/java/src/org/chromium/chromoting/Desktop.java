@@ -5,10 +5,10 @@
 package org.chromium.chromoting;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -25,7 +25,7 @@ import java.util.TreeSet;
 /**
  * A simple screen that does nothing except display a DesktopView and notify it of rotations.
  */
-public class Desktop extends Activity implements View.OnSystemUiVisibilityChangeListener {
+public class Desktop extends ActionBarActivity implements View.OnSystemUiVisibilityChangeListener {
     /** Web page to be displayed in the Help screen when launched from this activity. */
     private static final String HELP_URL =
             "http://support.google.com/chrome/?p=mobile_crd_connecthost";
@@ -38,6 +38,9 @@ public class Desktop extends Activity implements View.OnSystemUiVisibilityChange
 
     /** Set of pressed keys for which we've sent TextEvent. */
     private Set<Integer> mPressedTextKeys = new TreeSet<Integer>();
+
+    private ActivityLifecycleListener mActivityLifecycleListener;
+
 
     /** Called when the activity is first created. */
     @Override
@@ -53,6 +56,36 @@ public class Desktop extends Activity implements View.OnSystemUiVisibilityChange
 
         View decorView = getWindow().getDecorView();
         decorView.setOnSystemUiVisibilityChangeListener(this);
+
+        mActivityLifecycleListener = CapabilityManager.getInstance()
+            .onActivityAcceptingListener(this, Capabilities.CAST_CAPABILITY);
+        mActivityLifecycleListener.onActivityCreated(this, savedInstanceState);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mActivityLifecycleListener.onActivityStarted(this);
+    }
+
+    @Override
+    protected void onPause() {
+      if (isFinishing()) {
+        mActivityLifecycleListener.onActivityPaused(this);
+      }
+      super.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mActivityLifecycleListener.onActivityResumed(this);
+    }
+
+    @Override
+    protected void onStop() {
+        mActivityLifecycleListener.onActivityStopped(this);
+        super.onStop();
     }
 
     /** Called when the activity is finally finished. */
@@ -73,6 +106,9 @@ public class Desktop extends Activity implements View.OnSystemUiVisibilityChange
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.desktop_actionbar, menu);
+
+        mActivityLifecycleListener.onActivityCreatedOptionsMenu(this, menu);
+
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -144,6 +180,9 @@ public class Desktop extends Activity implements View.OnSystemUiVisibilityChange
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
+
+        mActivityLifecycleListener.onActivityOptionsItemSelected(this, item);
+
         if (id == R.id.actionbar_keyboard) {
             ((InputMethodManager)getSystemService(INPUT_METHOD_SERVICE)).toggleSoftInput(0, 0);
             return true;

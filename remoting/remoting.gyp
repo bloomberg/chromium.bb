@@ -9,6 +9,9 @@
     # Set this to run the jscompile checks after building the webapp.
     'run_jscompile%': 0,
 
+    # Set this to enable cast mode on the android client.
+    'enable_cast%': 0,
+
     'variables': {
       'conditions': [
         # Enable the multi-process host on Windows by default.

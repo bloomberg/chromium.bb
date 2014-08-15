@@ -46,12 +46,14 @@ ChromotingJniInstance::ChromotingJniInstance(ChromotingJniRuntime* jni_runtime,
                                              const char* host_id,
                                              const char* host_pubkey,
                                              const char* pairing_id,
-                                             const char* pairing_secret)
+                                             const char* pairing_secret,
+                                             const char* capabilities)
     : jni_runtime_(jni_runtime),
       host_id_(host_id),
       host_jid_(host_jid),
       create_pairing_(false),
       stats_logging_enabled_(false),
+      capabilities_(capabilities),
       weak_factory_(this) {
   DCHECK(jni_runtime_->ui_task_runner()->BelongsToCurrentThread());
 
@@ -250,6 +252,22 @@ void ChromotingJniInstance::SendTextEvent(const std::string& text) {
   client_->input_stub()->InjectTextEvent(event);
 }
 
+void ChromotingJniInstance::SendClientMessage(const std::string& type,
+                                              const std::string& data) {
+  if (!jni_runtime_->network_task_runner()->BelongsToCurrentThread()) {
+    jni_runtime_->network_task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &ChromotingJniInstance::SendClientMessage, this, type, data));
+    return;
+  }
+
+  protocol::ExtensionMessage extension_message;
+  extension_message.set_type(type);
+  extension_message.set_data(data);
+  client_->host_stub()->DeliverClientMessage(extension_message);
+}
+
 void ChromotingJniInstance::RecordPaintTime(int64 paint_time_ms) {
   if (!jni_runtime_->network_task_runner()->BelongsToCurrentThread()) {
     jni_runtime_->network_task_runner()->PostTask(
@@ -299,7 +317,11 @@ void ChromotingJniInstance::OnRouteChanged(
 }
 
 void ChromotingJniInstance::SetCapabilities(const std::string& capabilities) {
-  NOTIMPLEMENTED();
+  jni_runtime_->ui_task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&ChromotingJniRuntime::SetCapabilities,
+                 base::Unretained(jni_runtime_),
+                 capabilities));
 }
 
 void ChromotingJniInstance::SetPairingResponse(
@@ -314,7 +336,12 @@ void ChromotingJniInstance::SetPairingResponse(
 
 void ChromotingJniInstance::DeliverHostMessage(
     const protocol::ExtensionMessage& message) {
-  NOTIMPLEMENTED();
+  jni_runtime_->ui_task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&ChromotingJniRuntime::HandleExtensionMessage,
+                 base::Unretained(jni_runtime_),
+                 message.type(),
+                 message.data()));
 }
 
 protocol::ClipboardStub* ChromotingJniInstance::GetClipboardStub() {
@@ -402,7 +429,7 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
           network_settings));
 
   client_->Start(signaling_.get(), authenticator_.Pass(),
-                 transport_factory.Pass(), host_jid_, std::string());
+                 transport_factory.Pass(), host_jid_, capabilities_);
 }
 
 void ChromotingJniInstance::DisconnectFromHostOnNetworkThread() {

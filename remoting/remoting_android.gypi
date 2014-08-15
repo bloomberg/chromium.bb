@@ -56,8 +56,16 @@
         {
           'target_name': 'remoting_apk_manifest',
           'type': 'none',
-          'sources': [
-            'android/java/AndroidManifest.xml.jinja2',
+          'conditions': [
+            ['enable_cast==1', {
+              'sources': [
+                'android/cast/AndroidManifest.xml.jinja2'
+              ],
+            }, { # 'enable_cast != 1'
+              'sources': [
+                'android/java/AndroidManifest.xml.jinja2',
+              ],
+            }],
           ],
           'rules': [{
             'rule_name': 'generate_manifest',
@@ -94,11 +102,26 @@
             ],
           },
           'dependencies': [
+            'android_support_v4_javalib_no_res',
             '../base/base.gyp:base_java',
             '../ui/android/ui_android.gyp:ui_java',
             'remoting_android_resources',
+            '../third_party/android_tools/android_tools.gyp:android_support_v7_appcompat_javalib',
+            '../third_party/android_tools/android_tools.gyp:android_support_v7_mediarouter_javalib',
           ],
           'includes': [ '../build/java.gypi' ],
+          'conditions' : [
+            ['enable_cast==1', {
+              'variables': {
+                'additional_src_dirs': [
+                  'android/cast',
+                ],
+              },
+              'dependencies': [
+                'google_play_services_javalib',
+              ],
+            }],
+          ],
         },
         {
           'target_name': 'remoting_apk',
@@ -132,7 +155,57 @@
           },
           'includes': [ '../build/java_apk.gypi' ],
         },  # end of target 'remoting_test_apk'
-      ],  # end of 'targets'
+        {
+          # This jar contains the Android support v4 libary. It does not have
+          # any associated resources.
+          'target_name': 'android_support_v4_javalib_no_res',
+          'type': 'none',
+          'variables': {
+            'jar_path': '../third_party/android_tools/sdk/extras/android/support/v4/android-support-v4.jar',
+          },
+          'includes': ['../build/java_prebuilt.gypi'],
+        }, # end of target 'android_support_v4_javalib_no_res'
+      ], # end of 'targets'
+      'conditions': [
+        ['enable_cast==1', {
+            'targets': [
+              {
+                # This jar contains the Google Play services library without the
+                # resources needed for the library to work. See crbug.com/274697 or
+                # ../third_party/android_tools/android_tools.gyp for more info.
+                # This target will fail to build unless you have a local version
+                # of the Google Play services jar.
+                'target_name': 'google_play_services_javalib_no_res',
+                'type': 'none',
+                'variables': {
+                  'jar_path': 'android/google-play-services_lib/libs/google-play-services.jar',
+                },
+                'includes': ['../build/java_prebuilt.gypi'],
+
+              }, # end of target 'google_play_services_javalib_no_res'
+              {
+                # This target contains the Google Play services library with the
+                # resources needed. It will fail to build unless you have a local
+                # version of the Google Play services libary project.
+                # TODO(aiguha): Solve issue of needing to use local version. Also,
+                # watch crbug.com/274697.
+                'target_name': 'google_play_services_javalib',
+                'type': 'none',
+                'variables': {
+                  'java_in_dir': 'android/google-play-services_lib/',
+                  'R_package': ['com.google.android.gms'],
+                  'R_package_relpath': ['com/google/android/gms'],
+                  'has_java_resources': 1,
+                  'res_v14_verify_only': 1,
+                },
+                'dependencies': [
+                  'google_play_services_javalib_no_res',
+                ],
+                'includes': ['../build/java.gypi'],
+              }, # end of target 'google_play_services_javalib'
+            ], # end of targets
+        }],
+      ],
     }],  # 'OS=="android"'
 
     ['OS=="android"', {

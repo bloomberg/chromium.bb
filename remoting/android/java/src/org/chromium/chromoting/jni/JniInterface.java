@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.chromoting.CapabilityManager;
 import org.chromium.chromoting.Chromoting;
 import org.chromium.chromoting.R;
 
@@ -143,6 +144,9 @@ public class JniInterface {
     /** Bitmap holding the cursor shape. Accessed on the graphics thread. */
     private static Bitmap sCursorBitmap = null;
 
+    /** Capability Manager through which capabilities and extensions are handled. */
+    private static CapabilityManager sCapabilityManager = CapabilityManager.getInstance();
+
     /**
      * To be called once from the main Activity. Any subsequent calls will update the application
      * context, but not reload the library. This is useful e.g. when the activity is closed and the
@@ -177,13 +181,15 @@ public class JniInterface {
         sConnectionListener = listener;
         SharedPreferences prefs = sContext.getPreferences(Activity.MODE_PRIVATE);
         nativeConnect(username, authToken, hostJid, hostId, hostPubkey,
-                prefs.getString(hostId + "_id", ""), prefs.getString(hostId + "_secret", ""));
+                prefs.getString(hostId + "_id", ""), prefs.getString(hostId + "_secret", ""),
+                sCapabilityManager.getLocalCapabilities());
         sConnected = true;
     }
 
     /** Performs the native portion of the connection. */
     private static native void nativeConnect(String username, String authToken, String hostJid,
-            String hostId, String hostPubkey, String pairId, String pairSecret);
+            String hostId, String hostPubkey, String pairId, String pairSecret,
+            String capabilities);
 
     /** Severs the connection and cleans up. Called on the UI thread. */
     public static void disconnectFromHost() {
@@ -490,4 +496,35 @@ public class JniInterface {
 
     /** Passes authentication data to the native handling code. */
     private static native void nativeOnThirdPartyTokenFetched(String token, String sharedSecret);
+
+    //
+    // Host and Client Capabilities
+    //
+
+    /** Set the list of negotiated capabilities between host and client. Called on the UI thread. */
+    @CalledByNative
+    public static void setCapabilities(String capabilities) {
+        sCapabilityManager.setNegotiatedCapabilities(capabilities);
+    }
+
+    //
+    // Extension Message Handling
+    //
+
+    /** Passes on the deconstructed ExtensionMessage to the app. Called on the UI thread. */
+    @CalledByNative
+    public static void handleExtensionMessage(String type, String data) {
+        sCapabilityManager.onExtensionMessage(type, data);
+    }
+
+    /** Sends an extension message to the Chromoting host. Called on the UI thread. */
+    public static void sendExtensionMessage(String type, String data) {
+        if (!sConnected) {
+            return;
+        }
+
+        nativeSendExtensionMessage(type, data);
+    }
+
+    private static native void nativeSendExtensionMessage(String type, String data);
 }

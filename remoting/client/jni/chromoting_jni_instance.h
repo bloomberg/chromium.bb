@@ -48,7 +48,8 @@ class ChromotingJniInstance
                         const char* host_id,
                         const char* host_pubkey,
                         const char* pairing_id,
-                        const char* pairing_secret);
+                        const char* pairing_secret,
+                        const char* capabilities);
 
   // Terminates the current connection (if it hasn't already failed) and cleans
   // up. Must be called before destruction.
@@ -85,6 +86,8 @@ class ChromotingJniInstance
   bool SendKeyEvent(int key_code, bool key_down);
 
   void SendTextEvent(const std::string& text);
+
+  void SendClientMessage(const std::string& type, const std::string& data);
 
   // Records paint time for statistics logging, if enabled. May be called from
   // any thread.
@@ -179,6 +182,11 @@ class ChromotingJniInstance
   // If this is true, performance statistics will be periodically written to
   // the Android log. Used on the network thread.
   bool stats_logging_enabled_;
+
+  // The set of capabilities supported by the client. Accessed on the network
+  // thread. Once SetCapabilities() is called, this will contain the negotiated
+  // set of capabilities for this remoting session.
+  std::string capabilities_;
 
   friend class base::RefCountedThreadSafe<ChromotingJniInstance>;
 
