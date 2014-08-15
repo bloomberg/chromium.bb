@@ -990,9 +990,12 @@ bool TabsGetFunction::RunSync() {
 bool TabsGetCurrentFunction::RunSync() {
   DCHECK(dispatcher());
 
-  WebContents* contents = dispatcher()->delegate()->GetAssociatedWebContents();
-  if (contents)
-    SetResult(ExtensionTabUtil::CreateTabValue(contents, extension()));
+  // Return the caller, if it's a tab. If not the result isn't an error but an
+  // empty tab (hence returning true).
+  WebContents* caller_contents =
+      WebContents::FromRenderViewHost(render_view_host());
+  if (caller_contents && ExtensionTabUtil::GetTabId(caller_contents) >= 0)
+    SetResult(ExtensionTabUtil::CreateTabValue(caller_contents, extension()));
 
   return true;
 }
