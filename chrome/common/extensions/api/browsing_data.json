@@ -96,15 +96,20 @@
             "optional": true,
             "description": "Server-bound certificates."
           },
+          "passwords": {
+            "type": "boolean",
+            "optional": true,
+            "description": "Stored passwords."
+          },
           "pluginData": {
             "type": "boolean",
             "optional": true,
             "description": "Plugins' data."
           },
-          "passwords": {
+          "serviceWorkers": {
             "type": "boolean",
             "optional": true,
-            "description": "Stored passwords."
+            "description": "Service Workers."
           },
           "webSQL": {
             "type": "boolean",
