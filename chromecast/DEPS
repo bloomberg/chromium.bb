@@ -3,6 +3,7 @@
 include_rules = [
   "+content/public/common",
   "+crypto",
+  "+grit/chromecast_settings.h",
   "+grit/shell_resources.h",
   "+net",
   "+ui",

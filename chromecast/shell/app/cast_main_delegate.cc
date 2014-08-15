@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "chromecast/common/cast_paths.h"
+#include "chromecast/common/cast_resource_delegate.h"
 #include "chromecast/shell/browser/cast_content_browser_client.h"
 #include "chromecast/shell/renderer/cast_content_renderer_client.h"
 #include "content/public/common/content_switches.h"
@@ -42,15 +43,20 @@ void CastMainDelegate::PreSandboxStartup() {
 void CastMainDelegate::ZygoteForked() {
 }
 
-// static
 void CastMainDelegate::InitializeResourceBundle() {
-  base::FilePath pak_file;
+  resource_delegate_.reset(new CastResourceDelegate());
+  // TODO(gunsch): Use LOAD_COMMON_RESOURCES once ResourceBundle no longer
+  // hardcodes resource file names.
+  ui::ResourceBundle::InitSharedInstanceWithLocale(
+      "en-US",
+      resource_delegate_.get(),
+      ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
+
   base::FilePath pak_dir;
-
   PathService::Get(base::DIR_MODULE, &pak_dir);
-
-  pak_file = pak_dir.Append(FILE_PATH_LITERAL("cast_shell.pak"));
-  ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_file);
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+      pak_dir.Append(FILE_PATH_LITERAL("cast_shell.pak")),
+      ui::SCALE_FACTOR_NONE);
 }
 
 content::ContentBrowserClient* CastMainDelegate::CreateContentBrowserClient() {

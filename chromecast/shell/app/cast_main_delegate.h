@@ -11,6 +11,9 @@
 #include "content/public/app/content_main_delegate.h"
 
 namespace chromecast {
+
+class CastResourceDelegate;
+
 namespace shell {
 
 class CastContentBrowserClient;
@@ -30,10 +33,11 @@ class CastMainDelegate : public content::ContentMainDelegate {
       CreateContentRendererClient() OVERRIDE;
 
  private:
-  static void InitializeResourceBundle();
+  void InitializeResourceBundle();
 
   scoped_ptr<CastContentBrowserClient> browser_client_;
   scoped_ptr<CastContentRendererClient> renderer_client_;
+  scoped_ptr<CastResourceDelegate> resource_delegate_;
   CastContentClient content_client_;
 
   DISALLOW_COPY_AND_ASSIGN(CastMainDelegate);

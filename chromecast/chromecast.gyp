@@ -22,6 +22,8 @@
       'sources': [
         'common/cast_paths.cc',
         'common/cast_paths.h',
+        'common/cast_resource_delegate.cc',
+        'common/cast_resource_delegate.h',
         'common/chromecast_config.cc',
         'common/chromecast_config.h',
         'common/pref_names.cc',
@@ -130,6 +132,8 @@
         'cast_shell_pak',
         'cast_shell_resources',
         'cast_version_header',
+        'chromecast_locales.gyp:chromecast_locales_pak',
+        'chromecast_locales.gyp:chromecast_settings',
         '../ui/aura/aura.gyp:aura_test_support',
         '../content/content.gyp:content',
         '../content/content.gyp:content_app_browser',
