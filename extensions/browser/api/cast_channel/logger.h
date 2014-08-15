@@ -70,12 +70,11 @@ class Logger : public base::RefCounted<Logger> {
                                 const std::string& message_namespace,
                                 const std::string& details);
 
-  // Assembles logs collected so far and return it as a serialized Log proto.
-  // |output|: Where serialized contents will be assigned to.
-  // Returns true if serialization is successful.
-  // Contents in |output| is valid only if function returns true.
-  // TODO(imcheng): Add compression.
-  bool LogToString(std::string* output) const;
+  // Assembles logs collected so far and return it as a serialized Log proto,
+  // compressed in gzip format.
+  // If serialization or compression failed, returns a NULL pointer.
+  // |length|: If successful, assigned with size of compressed content.
+  scoped_ptr<char[]> GetLogs(size_t* length) const;
 
   // Clears the internal map.
   void Reset();

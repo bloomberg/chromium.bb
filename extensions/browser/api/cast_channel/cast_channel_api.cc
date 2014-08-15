@@ -477,4 +477,35 @@ void CastChannelCloseFunction::OnClose(int result) {
   AsyncWorkCompleted();
 }
 
+CastChannelGetLogsFunction::CastChannelGetLogsFunction() {
+}
+
+CastChannelGetLogsFunction::~CastChannelGetLogsFunction() {
+}
+
+bool CastChannelGetLogsFunction::PrePrepare() {
+  api_ = CastChannelAPI::Get(browser_context());
+  return CastChannelAsyncApiFunction::PrePrepare();
+}
+
+bool CastChannelGetLogsFunction::Prepare() {
+  return true;
+}
+
+void CastChannelGetLogsFunction::AsyncWorkStart() {
+  DCHECK(api_);
+
+  size_t length = 0;
+  scoped_ptr<char[]> out = api_->GetLogger()->GetLogs(&length);
+  if (out.get()) {
+    SetResult(new base::BinaryValue(out.Pass(), length));
+  } else {
+    SetError("Unable to get logs.");
+  }
+
+  api_->GetLogger()->Reset();
+
+  AsyncWorkCompleted();
+}
+
 }  // namespace extensions

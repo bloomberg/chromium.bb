@@ -9,6 +9,7 @@
 #include "extensions/browser/api/cast_channel/cast_auth_util.h"
 #include "extensions/browser/api/cast_channel/logger_util.h"
 #include "net/base/net_errors.h"
+#include "third_party/zlib/zlib.h"
 
 namespace extensions {
 namespace core_api {
@@ -55,6 +56,46 @@ proto::ChallengeReplyErrorType ChallegeReplyErrorToProto(
       NOTREACHED();
       return proto::CHALLENGE_REPLY_ERROR_NONE;
   }
+}
+
+scoped_ptr<char[]> Compress(const std::string& input, size_t* length) {
+  *length = 0;
+  z_stream stream = {0};
+  int result = deflateInit2(&stream,
+                            Z_DEFAULT_COMPRESSION,
+                            Z_DEFLATED,
+                            // 16 is added to produce a gzip header + trailer.
+                            MAX_WBITS + 16,
+                            8,  // memLevel = 8 is default.
+                            Z_DEFAULT_STRATEGY);
+  DCHECK_EQ(Z_OK, result);
+
+  size_t out_size = deflateBound(&stream, input.size());
+  scoped_ptr<char[]> out(new char[out_size]);
+
+  COMPILE_ASSERT(sizeof(uint8) == sizeof(char), uint8_char_different_sizes);
+
+  stream.next_in = reinterpret_cast<uint8*>(const_cast<char*>(input.data()));
+  stream.avail_in = input.size();
+  stream.next_out = reinterpret_cast<uint8*>(out.get());
+  stream.avail_out = out_size;
+
+  // Do a one-shot compression. This will return Z_STREAM_END only if |output|
+  // is large enough to hold all compressed data.
+  result = deflate(&stream, Z_FINISH);
+
+  bool success = (result == Z_STREAM_END);
+
+  if (!success)
+    VLOG(2) << "deflate() failed. Result: " << result;
+
+  result = deflateEnd(&stream);
+  DCHECK(result == Z_OK || result == Z_DATA_ERROR);
+
+  if (success)
+    *length = out_size - stream.avail_out;
+
+  return out.Pass();
 }
 
 }  // namespace
@@ -204,7 +245,7 @@ void Logger::LogSocketChallengeReplyEvent(int channel_id,
 SocketEvent Logger::CreateEvent(EventType event_type) {
   SocketEvent event;
   event.set_type(event_type);
-  event.set_timestamp_micros(clock_->NowTicks().ToInternalValue() +
+  event.set_timestamp_micros(clock_->NowTicks().ToInternalValue() -
                              unix_epoch_time_ticks_.ToInternalValue());
   return event;
 }
@@ -250,8 +291,8 @@ void Logger::LogSocketEvent(int channel_id, const SocketEvent& socket_event) {
     it->second->last_errors.nss_error_code = socket_event.nss_error_code();
 }
 
-bool Logger::LogToString(std::string* output) const {
-  output->clear();
+scoped_ptr<char[]> Logger::GetLogs(size_t* length) const {
+  *length = 0;
 
   Log log;
   log.set_num_evicted_aggregated_socket_events(
@@ -277,7 +318,13 @@ bool Logger::LogToString(std::string* output) const {
     }
   }
 
-  return log.SerializeToString(output);
+  std::string serialized;
+  if (!log.SerializeToString(&serialized)) {
+    VLOG(2) << "Failed to serialized proto to string.";
+    return scoped_ptr<char[]>();
+  }
+
+  return Compress(serialized, length);
 }
 
 void Logger::Reset() {

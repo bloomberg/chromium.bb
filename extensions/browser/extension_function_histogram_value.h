@@ -935,8 +935,9 @@ enum HistogramValue {
   USBPRIVATE_GETDEVICES,
   USBPRIVATE_GETDEVICEINFO,
   EASYUNLOCKPRIVATE_UPDATESCREENLOCKSTATE,
+  CAST_CHANNEL_GETLOGS,
   // Last entry: Add new entries above and ensure to update
-  // tools/metrics/histograms/histograms/histograms.xml.
+  // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY
 };
 

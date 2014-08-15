@@ -220,6 +220,28 @@ class CastChannelCloseFunction : public CastChannelAsyncApiFunction {
   DISALLOW_COPY_AND_ASSIGN(CastChannelCloseFunction);
 };
 
+class CastChannelGetLogsFunction : public CastChannelAsyncApiFunction {
+ public:
+  CastChannelGetLogsFunction();
+
+ protected:
+  virtual ~CastChannelGetLogsFunction();
+
+  // AsyncApiFunction:
+  virtual bool PrePrepare() OVERRIDE;
+  virtual bool Prepare() OVERRIDE;
+  virtual void AsyncWorkStart() OVERRIDE;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION("cast.channel.getLogs", CAST_CHANNEL_GETLOGS)
+
+  void OnClose(int result);
+
+  CastChannelAPI* api_;
+
+  DISALLOW_COPY_AND_ASSIGN(CastChannelGetLogsFunction);
+};
+
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_CHANNEL_API_H_

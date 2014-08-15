@@ -7,6 +7,7 @@
 #include "extensions/browser/api/cast_channel/logger.h"
 #include "extensions/browser/api/cast_channel/logger_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/zlib/zlib.h"
 
 namespace extensions {
 namespace core_api {
@@ -27,6 +28,56 @@ class CastChannelLoggerTest : public testing::Test {
         logger_(new Logger(scoped_ptr<base::TickClock>(clock_),
                            base::TimeTicks())) {}
   virtual ~CastChannelLoggerTest() {}
+
+  bool Uncompress(const char* input, int length, std::string* output) {
+    z_stream stream = {0};
+
+    stream.next_in = reinterpret_cast<uint8*>(const_cast<char*>(input));
+    stream.avail_in = length;
+    stream.next_out = reinterpret_cast<uint8*>(&(*output)[0]);
+    stream.avail_out = output->size();
+
+    bool success = false;
+    while (stream.avail_in > 0 && stream.avail_out > 0) {
+      // 16 is added to read in gzip format.
+      int result = inflateInit2(&stream, MAX_WBITS + 16);
+      DCHECK_EQ(Z_OK, result);
+
+      result = inflate(&stream, Z_FINISH);
+      success = (result == Z_STREAM_END);
+      if (!success) {
+        DVLOG(2) << "inflate() failed. Result: " << result;
+        break;
+      }
+
+      result = inflateEnd(&stream);
+      DCHECK(result == Z_OK);
+    }
+
+    if (stream.avail_in == 0) {
+      success = true;
+      output->resize(output->size() - stream.avail_out);
+    }
+    return success;
+  }
+
+  scoped_ptr<Log> GetLog() {
+    size_t length = 0;
+    scoped_ptr<char[]> output = logger_->GetLogs(&length);
+    if (!output.get())
+      return scoped_ptr<Log>();
+
+    // 20kb should be enough for test purposes.
+    std::string uncompressed(20000, 0);
+    if (!Uncompress(output.get(), length, &uncompressed))
+      return scoped_ptr<Log>();
+
+    scoped_ptr<Log> log(new Log);
+    if (!log->ParseFromString(uncompressed))
+      return scoped_ptr<Log>();
+
+    return log.Pass();
+  }
 
  protected:
   base::SimpleTestTickClock* clock_;
@@ -59,14 +110,6 @@ TEST_F(CastChannelLoggerTest, BasicLogging) {
                                      kTestNssErrorCode);
   logger_->LogSocketChallengeReplyEvent(2, auth_result);
 
-  std::string output;
-  bool success = logger_->LogToString(&output);
-  ASSERT_TRUE(success);
-
-  Log log;
-  success = log.ParseFromString(output);
-  ASSERT_TRUE(success);
-
   LastErrors last_errors = logger_->GetLastErrors(2);
   EXPECT_EQ(last_errors.event_type, proto::AUTH_CHALLENGE_REPLY);
   EXPECT_EQ(last_errors.net_return_value, 0);
@@ -74,10 +117,13 @@ TEST_F(CastChannelLoggerTest, BasicLogging) {
             proto::CHALLENGE_REPLY_ERROR_NSS_CERT_PARSING_FAILED);
   EXPECT_EQ(last_errors.nss_error_code, kTestNssErrorCode);
 
-  ASSERT_EQ(2, log.aggregated_socket_event_size());
+  scoped_ptr<Log> log = GetLog();
+  ASSERT_TRUE(log.get() != NULL);
+
+  ASSERT_EQ(2, log->aggregated_socket_event_size());
   {
     const AggregatedSocketEvent& aggregated_socket_event =
-        log.aggregated_socket_event(0);
+        log->aggregated_socket_event(0);
     EXPECT_EQ(1, aggregated_socket_event.id());
     EXPECT_EQ(3, aggregated_socket_event.socket_event_size());
     {
@@ -100,7 +146,7 @@ TEST_F(CastChannelLoggerTest, BasicLogging) {
   }
   {
     const AggregatedSocketEvent& aggregated_socket_event =
-        log.aggregated_socket_event(1);
+        log->aggregated_socket_event(1);
     EXPECT_EQ(2, aggregated_socket_event.id());
     EXPECT_EQ(4, aggregated_socket_event.socket_event_size());
     {
@@ -141,20 +187,15 @@ TEST_F(CastChannelLoggerTest, TooManySockets) {
     logger_->LogSocketEvent(i, EventType::CAST_SOCKET_CREATED);
   }
 
-  std::string output;
-  bool success = logger_->LogToString(&output);
-  ASSERT_TRUE(success);
+  scoped_ptr<Log> log = GetLog();
+  ASSERT_TRUE(log.get() != NULL);
 
-  Log log;
-  success = log.ParseFromString(output);
-  ASSERT_TRUE(success);
-
-  ASSERT_EQ(kMaxSocketsToLog, log.aggregated_socket_event_size());
-  EXPECT_EQ(5, log.num_evicted_aggregated_socket_events());
-  EXPECT_EQ(5, log.num_evicted_socket_events());
+  ASSERT_EQ(kMaxSocketsToLog, log->aggregated_socket_event_size());
+  EXPECT_EQ(5, log->num_evicted_aggregated_socket_events());
+  EXPECT_EQ(5, log->num_evicted_socket_events());
 
   const AggregatedSocketEvent& aggregated_socket_event =
-      log.aggregated_socket_event(0);
+      log->aggregated_socket_event(0);
   EXPECT_EQ(5, aggregated_socket_event.id());
 }
 
@@ -164,20 +205,15 @@ TEST_F(CastChannelLoggerTest, TooManyEvents) {
     clock_->Advance(base::TimeDelta::FromMicroseconds(1));
   }
 
-  std::string output;
-  bool success = logger_->LogToString(&output);
-  ASSERT_TRUE(success);
+  scoped_ptr<Log> log = GetLog();
+  ASSERT_TRUE(log.get() != NULL);
 
-  Log log;
-  success = log.ParseFromString(output);
-  ASSERT_TRUE(success);
-
-  ASSERT_EQ(1, log.aggregated_socket_event_size());
-  EXPECT_EQ(0, log.num_evicted_aggregated_socket_events());
-  EXPECT_EQ(5, log.num_evicted_socket_events());
+  ASSERT_EQ(1, log->aggregated_socket_event_size());
+  EXPECT_EQ(0, log->num_evicted_aggregated_socket_events());
+  EXPECT_EQ(5, log->num_evicted_socket_events());
 
   const AggregatedSocketEvent& aggregated_socket_event =
-      log.aggregated_socket_event(0);
+      log->aggregated_socket_event(0);
   ASSERT_EQ(kMaxEventsPerSocket, aggregated_socket_event.socket_event_size());
   EXPECT_EQ(5, aggregated_socket_event.socket_event(0).timestamp_micros());
 }
@@ -185,24 +221,17 @@ TEST_F(CastChannelLoggerTest, TooManyEvents) {
 TEST_F(CastChannelLoggerTest, Reset) {
   logger_->LogSocketEvent(1, EventType::CAST_SOCKET_CREATED);
 
-  std::string output;
-  bool success = logger_->LogToString(&output);
-  ASSERT_TRUE(success);
+  scoped_ptr<Log> log = GetLog();
+  ASSERT_TRUE(log.get() != NULL);
 
-  Log log;
-  success = log.ParseFromString(output);
-  ASSERT_TRUE(success);
-
-  EXPECT_EQ(1, log.aggregated_socket_event_size());
+  EXPECT_EQ(1, log->aggregated_socket_event_size());
 
   logger_->Reset();
 
-  success = logger_->LogToString(&output);
-  ASSERT_TRUE(success);
-  success = log.ParseFromString(output);
-  ASSERT_TRUE(success);
+  log = GetLog();
+  ASSERT_TRUE(log.get() != NULL);
 
-  EXPECT_EQ(0, log.aggregated_socket_event_size());
+  EXPECT_EQ(0, log->aggregated_socket_event_size());
 }
 
 }  // namespace cast_channel
