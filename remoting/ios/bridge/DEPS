@@ -1,8 +1,0 @@
-include_rules = [
-  "+net/url_request",
-
-  "-remoting/host",
-  "+remoting/client",
-  "+remoting/protocol",
-  "+remoting/signaling",
-]
