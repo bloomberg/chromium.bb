@@ -283,6 +283,23 @@ class SchemaVersionedMySQLConnection(object):
     r = self._Execute(upd, values)
     return r.rowcount
 
+  def _UpdateWhere(self, table, where, values):
+    """Create and execute an update query with a custom where clause.
+
+    Args:
+      table: Table name to update.
+      where: Raw SQL for the where clause, in string form, e.g.
+             'build_id = 1 and board = "tomato"'
+      values: dictionary of column values to update.
+
+    Returns:
+      The number of rows that were updated.
+    """
+    self._ReflectToMetadata()
+    upd = self._meta.tables[table].update().where(where)
+    r = self._Execute(upd, values)
+    return r.rowcount
+
   def _Execute(self, query, *args, **kwargs):
     """Execute a query using engine, with retires.
 
@@ -306,8 +323,10 @@ class SchemaVersionedMySQLConnection(object):
       # Error coded 2006 'MySQL server has gone away' indicates that the
       # connection used was closed or dropped.
       if error_code == 2006:
-        logging.debug('Retrying a query on engine %s, due to dropped '
-                      'connection.', self._GetEngine())
+        e = self._GetEngine()
+        logging.debug('Retrying a query on engine %s@%s for pid %s due to '
+                      'dropped connection.', e.url.username, e.url.host,
+                      self._engine_pid)
         return self._GetEngine().execute(query, *args, **kwargs)
       else:
         raise
@@ -465,6 +484,28 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return self._InsertMany('buildStageTable',
                             stages)
 
+  @minimum_schema(6)
+  def InsertBoardPerBuild(self, build_id, board):
+    """Inserts a board-per-build entry into database.
+
+    Args:
+      build_id: primary key of the build in the buildTable
+      board: String board name.
+    """
+    self._Insert('boardPerBuildTable', {'build_id': build_id,
+                                        'board': board})
+
+  @minimum_schema(7)
+  def InsertChildConfigPerBuild(self, build_id, child_config):
+    """Insert a child-config-per-build entry into database.
+
+    Args:
+      build_id: primary key of the build in the buildTable
+      child_config: String child_config name.
+    """
+    self._Insert('childConfigPerBuildTable', {'build_id': build_id,
+                                              'child_config': child_config})
+
   @minimum_schema(2)
   def UpdateMetadata(self, build_id, metadata):
     """Update the given metadata row in database.
@@ -487,6 +528,24 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                          'toolchain_url': d.get('toolchain-url'),
                          'build_type': d.get('build_type'),
                          'metadata_json': metadata.GetJSON()})
+
+  @minimum_schema(6)
+  def UpdateBoardPerBuildMetadata(self, build_id, board, board_metadata):
+    """Update the given board-per-build metadata.
+
+    Args:
+      build_id: id of the build
+      board: board to update
+      board_metadata: per-board metadata dict for this board
+    """
+    update_dict = {
+        'main_firmware_version': board_metadata.get('main-firmware-version'),
+        'ec_firmware_version': board_metadata.get('ec-firmware-version')
+        }
+    return self._UpdateWhere('boardPerBuildTable',
+        'build_id = %s and board = "%s"' % (build_id, board),
+        update_dict)
+
 
   @minimum_schema(2)
   def FinishBuild(self, build_id, finish_time=None, status=None,

@@ -33,6 +33,9 @@ from chromite.lib import parallel
 SERIES_0_TEST_DATA_PATH = os.path.join(
     constants.CHROMITE_DIR, 'cidb', 'test_data', 'series_0')
 
+SERIES_1_TEST_DATA_PATH = os.path.join(
+    constants.CHROMITE_DIR, 'cidb', 'test_data', 'series_1')
+
 TEST_DB_CRED_ROOT = os.path.join(constants.SOURCE_ROOT,
                                  'crostools', 'cidb',
                                  'cidb_test_root')
@@ -218,12 +221,12 @@ class DataSeries0Test(CIDBIntegrationTest):
       master = next_master
       next_master = None
       assert is_master(master)
-      master_build_id = SimulateCQBuildStart(db, master)
+      master_build_id = _SimulateBuildStart(db, master)
 
       def simulate_slave(slave_metadata):
-        build_id = SimulateCQBuildStart(db, slave_metadata,
+        build_id = _SimulateBuildStart(db, slave_metadata,
                                         master_build_id)
-        SimulateCQBuildFinish(db, slave_metadata, build_id)
+        _SimulateCQBuildFinish(db, slave_metadata, build_id)
         logging.debug('Simulated slave build %s on pid %s', build_id,
                       os.getpid())
         return build_id
@@ -239,8 +242,75 @@ class DataSeries0Test(CIDBIntegrationTest):
         for slave in slave_metadatas:
           queue.put([slave])
 
-      SimulateCQBuildFinish(db, master, master_build_id)
+      _SimulateCQBuildFinish(db, master, master_build_id)
       logging.debug('Simulated master build %s', master_build_id)
+
+
+class DataSeries1Test(CIDBIntegrationTest):
+  """Simulate a single set of canary builds."""
+
+  def runTest(self):
+    """Simulate a single set of canary builds with database schema v7."""
+    metadatas = GetTestDataSeries(SERIES_1_TEST_DATA_PATH)
+    self.assertEqual(len(metadatas), 18, 'Did not load expected amount of '
+                                         'test data')
+
+    # Migrate db to specified version. As new schema versions are added,
+    # migrations to later version can be applied after the test builds are
+    # simulated, to test that db contents are correctly migrated.
+    self._PrepareFreshDatabase(7)
+
+    bot_db = cidb.CIDBConnection(TEST_DB_CRED_BOT)
+
+    def is_master(m):
+      return m.GetValue('bot-config') == 'master-release'
+
+    master_index = metadatas.index(next(m for m in metadatas if is_master(m)))
+    master_metadata = metadatas.pop(master_index)
+    self.assertEqual(master_metadata.GetValue('bot-config'), 'master-release')
+
+    master_id = self._simulate_canary(bot_db, master_metadata)
+
+    for m in metadatas:
+      self._simulate_canary(bot_db, m, master_id)
+
+    # Verify that expected data was inserted
+    num_boards = bot_db._GetEngine().execute(
+        'select count(*) from boardPerBuildTable'
+        ).fetchall()[0][0]
+    self.assertEqual(num_boards, 40)
+
+    main_firmware_versions = bot_db._GetEngine().execute(
+        'select count(distinct main_firmware_version) from boardPerBuildTable'
+        ).fetchall()[0][0]
+    self.assertEqual(main_firmware_versions, 29)
+
+  def _simulate_canary(self, db, metadata, master_build_id=None):
+    """Helper method to simulate an individual canary build.
+
+    Args:
+      db: cidb instance to use for simulation
+      metadata: CBuildbotMetadata instance of build to simulate.
+      master_build_id: Optional id of master build.
+
+    Returns:
+      build_id of build that was simulated.
+    """
+    build_id = _SimulateBuildStart(cidb, metadata, master_build_id)
+    metadata_dict = metadata.GetDict()
+
+    # Insert child configs and boards
+    for child_config_dict in metadata_dict['child-configs']:
+      db.InsertChildConfigPerBuild(build_id, child_config_dict['name'])
+
+    for board in metadata_dict['board-metadata'].keys():
+      db.InsertBoardPerBuild(build_id, board)
+
+    for board, bm in metadata_dict['board-metadata'].items():
+      db.UpdateBoardPerBuildMetadata(build_id, board, bm)
+
+    db.UpdateMetadata(build_id, metadata)
+    return build_id
 
 
 def _TranslateStatus(status):
@@ -255,7 +325,7 @@ def _TranslateStatus(status):
   return status
 
 
-def SimulateCQBuildStart(db, metadata, master_build_id=None):
+def _SimulateBuildStart(db, metadata, master_build_id=None):
   """Returns (build_id, metadata_id) tuple."""
   metadata_dict = metadata.GetDict()
   # TODO(akeshet): We are pretending that all these builds were on the internal
@@ -278,7 +348,7 @@ def SimulateCQBuildStart(db, metadata, master_build_id=None):
   return build_id
 
 
-def SimulateCQBuildFinish(db, metadata, build_id):
+def _SimulateCQBuildFinish(db, metadata, build_id):
 
   metadata_dict = metadata.GetDict()
 

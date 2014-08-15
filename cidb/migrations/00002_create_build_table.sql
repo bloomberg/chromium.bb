@@ -19,7 +19,6 @@ CREATE TABLE buildTable (
   status_pickle BLOB,
   build_type VARCHAR(80),
   chrome_version VARCHAR(80),
-  firmware_version VARCHAR(80),
   milestone_version VARCHAR(80),
   platform_version VARCHAR(80),
   full_version VARCHAR(80),
