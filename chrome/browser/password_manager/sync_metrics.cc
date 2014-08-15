@@ -14,19 +14,10 @@
 namespace password_manager_sync_metrics {
 
 std::string GetSyncUsername(Profile* profile) {
-  // If sync is set up, return early if we aren't syncing passwords.
-  if (ProfileSyncServiceFactory::HasProfileSyncService(profile)) {
-    ProfileSyncService* sync_service =
-        ProfileSyncServiceFactory::GetForProfile(profile);
-    if (!sync_service->GetPreferredDataTypes().Has(syncer::PASSWORDS))
-      return std::string();
-  }
-
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile);
-
   if (!signin_manager)
-    return std::string();
+    return "";
 
   return signin_manager->GetAuthenticatedUsername();
 }

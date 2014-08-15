@@ -40,11 +40,8 @@ class ChromePasswordManagerClient
   // PasswordManagerClient implementation.
   virtual bool IsAutomaticPasswordSavingEnabled() const OVERRIDE;
   virtual bool IsPasswordManagerEnabledForCurrentPage() const OVERRIDE;
-  virtual bool ShouldFilterAutofillResult(
-      const autofill::PasswordForm& form) OVERRIDE;
   virtual bool IsSyncAccountCredential(
       const std::string& username, const std::string& origin) const OVERRIDE;
-  virtual void AutofillResultsComputed() OVERRIDE;
   virtual void PromptUserToSavePassword(
       scoped_ptr<password_manager::PasswordFormManager> form_to_save) OVERRIDE;
   virtual void AutomaticPasswordSave(
@@ -93,18 +90,9 @@ class ChromePasswordManagerClient
   // Returns true if the password manager should be enabled during sync signin.
   static bool EnabledForSyncSignin();
 
- protected:
-  // Callable for tests.
+ private:
   ChromePasswordManagerClient(content::WebContents* web_contents,
                               autofill::AutofillClient* autofill_client);
-
- private:
-  enum AutofillForSyncCredentialsState {
-    ALLOW_SYNC_CREDENTIALS,
-    DISALLOW_SYNC_CREDENTIALS_FOR_REAUTH,
-    DISALLOW_SYNC_CREDENTIALS,
-  };
-
   friend class content::WebContentsUserData<ChromePasswordManagerClient>;
 
   // content::WebContentsObserver overrides.
@@ -134,13 +122,6 @@ class ChromePasswordManagerClient
   // |can_use_log_router_|.
   void NotifyRendererOfLoggingAvailability();
 
-  // Returns true if the last loaded page was for transactional re-auth on a
-  // Google property.
-  bool LastLoadWasTransactionalReauthPage() const;
-
-  // Sets |autofill_state_| based on experiment and flag values.
-  void SetUpAutofillSyncState();
-
   Profile* const profile_;
 
   password_manager::ContentPasswordManagerDriver driver_;
@@ -157,13 +138,6 @@ class ChromePasswordManagerClient
 
   // True if |this| is registered with some LogRouter which can accept logs.
   bool can_use_log_router_;
-
-  // How to handle the sync credential in ShouldFilterAutofillResult().
-  AutofillForSyncCredentialsState autofill_sync_state_;
-
-  // If the sync credential was filtered during autofill. Used for statistics
-  // reporting.
-  bool sync_credential_was_filtered_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePasswordManagerClient);
 };
