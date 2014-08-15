@@ -392,17 +392,19 @@ void AdjustDynamicSectionForHole(Elf_Scn* dynamic_section,
     if (!is_relocations_resize)
       continue;
 
-    // DT_RELSZ is the overall size of relocations.  Adjust by hole size.
-    if (tag == DT_RELSZ) {
+    // DT_RELSZ or DT_RELASZ indicate the overall size of relocations.
+    // Only one will be present.  Adjust by hole size.
+    if (tag == DT_RELSZ || tag == DT_RELASZ) {
       dynamic->d_un.d_val += hole_size;
       VLOG(1) << "dynamic[" << i << "] " << dynamic->d_tag
               << " d_val adjusted to " << dynamic->d_un.d_val;
     }
 
-    // DT_RELCOUNT is the count of relative relocations.  Packing reduces it
-    // to the alignment padding, if any; unpacking restores it to its former
-    // value.  The crazy linker does not use it, but we update it anyway.
-    if (tag == DT_RELCOUNT) {
+    // DT_RELCOUNT or DT_RELACOUNT hold the count of relative relocations.
+    // Only one will be present.  Packing reduces it to the alignment
+    // padding, if any; unpacking restores it to its former value.  The
+    // crazy linker does not use it, but we update it anyway.
+    if (tag == DT_RELCOUNT || tag == DT_RELACOUNT) {
       // Cast sizeof to a signed type to avoid the division result being
       // promoted into an unsigned size_t.
       const ssize_t sizeof_rel = static_cast<ssize_t>(sizeof(Rel));
@@ -411,8 +413,9 @@ void AdjustDynamicSectionForHole(Elf_Scn* dynamic_section,
               << " d_val adjusted to " << dynamic->d_un.d_val;
     }
 
-    // DT_RELENT doesn't change, but make sure it is what we expect.
-    if (tag == DT_RELENT) {
+    // DT_RELENT and DT_RELAENT don't change, but make sure they are what
+    // we expect.  Only one will be present.
+    if (tag == DT_RELENT || tag == DT_RELAENT) {
       CHECK(dynamic->d_un.d_val == sizeof(Rel));
     }
   }
@@ -519,8 +522,8 @@ void ResizeSection(Elf* elf, Elf_Scn* section, size_t new_size) {
     return;
 
   // Note if we are resizing the real dyn relocations.  If yes, then we have
-  // to massage d_un.d_val in the dynamic section where d_tag is DT_RELSZ and
-  // DT_RELCOUNT.
+  // to massage d_un.d_val in the dynamic section where d_tag is DT_RELSZ or
+  // DT_RELASZ and DT_RELCOUNT or DT_RELACOUNT.
   size_t string_index;
   elf_getshdrstrndx(elf, &string_index);
   const std::string section_name =
@@ -1082,7 +1085,7 @@ bool ElfFile::UnpackTypedRelocations(const std::vector<uint8_t>& packed,
   // Retrieve the current dynamic relocations section data.
   data = GetSectionData(relocations_section_);
 
-  // Interpret data as Elf32 relocations.
+  // Interpret data as relocations.
   const Rel* relocations_base = reinterpret_cast<Rel*>(data->d_buf);
   std::vector<Rel> relocations(
       relocations_base,
