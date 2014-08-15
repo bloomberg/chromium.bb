@@ -18,6 +18,9 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/media_stream_request.h"
 
+#define V4L2_CID_PAN_SPEED (V4L2_CID_CAMERA_CLASS_BASE+32)
+#define V4L2_CID_TILT_SPEED (V4L2_CID_CAMERA_CLASS_BASE+33)
+
 namespace content {
 class BrowserContext;
 }  // namespace content
@@ -104,7 +107,7 @@ bool WebcamPrivateSetFunction::RunSync() {
         direction = -1;
         break;
     }
-    SetWebcamParameter(fd.get(), V4L2_CID_PAN_RELATIVE, direction);
+    SetWebcamParameter(fd.get(), V4L2_CID_PAN_SPEED, direction);
   }
 
   if (params->config.tilt) {
@@ -128,7 +131,7 @@ bool WebcamPrivateSetFunction::RunSync() {
         direction = -1;
         break;
     }
-    SetWebcamParameter(fd.get(), V4L2_CID_TILT_RELATIVE, direction);
+    SetWebcamParameter(fd.get(), V4L2_CID_TILT_SPEED, direction);
   }
 
   if (params->config.zoom) {
