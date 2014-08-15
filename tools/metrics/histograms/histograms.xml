@@ -35788,6 +35788,38 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="WebCore.IndexedDB.LevelDB.OpenTime" units="milliseconds">
+  <owner>cmumford@chromium.org</owner>
+  <summary>
+    The time that it takes to open IndexedDB's LevelDB backing store.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.LevelDB.PutTime" units="milliseconds">
+  <owner>cmumford@chromium.org</owner>
+  <summary>
+    The time that it takes to write the data IndexedDB to the LevelDB backing
+    store for a put operation.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.LevelDB.Transaction.CommitTime"
+    units="milliseconds">
+  <owner>cmumford@chromium.org</owner>
+  <summary>
+    The time that it takes to commit an IndexedDB transaction to its LevelDB
+    backing store.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.LevelDB.WriteTime" units="milliseconds">
+  <owner>cmumford@chromium.org</owner>
+  <summary>
+    The time that it takes to write data to an IndexedDB's LevelDB backing
+    store.
+  </summary>
+</histogram>
+
 <histogram name="WebCore.IndexedDB.LevelDBOpenErrors" enum="LevelDBErrorTypes">
   <owner>dgrogan@chromium.org</owner>
   <summary>

@@ -5,6 +5,8 @@
 #include "content/browser/indexed_db/leveldb/leveldb_transaction.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
+#include "base/time/time.h"
 #include "content/browser/indexed_db/leveldb/leveldb_database.h"
 #include "content/browser/indexed_db/leveldb/leveldb_write_batch.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -93,6 +95,7 @@ leveldb::Status LevelDBTransaction::Commit() {
     return leveldb::Status::OK();
   }
 
+  base::TimeTicks begin_time = base::TimeTicks::Now();
   scoped_ptr<LevelDBWriteBatch> write_batch = LevelDBWriteBatch::Create();
 
   for (DataType::iterator iterator = data_.begin(); iterator != data_.end();
@@ -107,6 +110,8 @@ leveldb::Status LevelDBTransaction::Commit() {
   if (s.ok()) {
     Clear();
     finished_ = true;
+    UMA_HISTOGRAM_TIMES("WebCore.IndexedDB.LevelDB.Transaction.CommitTime",
+                         base::TimeTicks::Now() - begin_time);
   }
   return s;
 }

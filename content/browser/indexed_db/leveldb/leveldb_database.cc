@@ -264,6 +264,8 @@ leveldb::Status LevelDBDatabase::Open(const base::FilePath& file_name,
                                       const LevelDBComparator* comparator,
                                       scoped_ptr<LevelDBDatabase>* result,
                                       bool* is_disk_full) {
+  base::TimeTicks begin_time = base::TimeTicks::Now();
+
   scoped_ptr<ComparatorAdapter> comparator_adapter(
       new ComparatorAdapter(comparator));
 
@@ -283,6 +285,9 @@ leveldb::Status LevelDBDatabase::Open(const base::FilePath& file_name,
                << file_name.AsUTF8Unsafe() << "," << s.ToString();
     return s;
   }
+
+  UMA_HISTOGRAM_MEDIUM_TIMES("WebCore.IndexedDB.LevelDB.OpenTime",
+                             base::TimeTicks::Now() - begin_time);
 
   CheckFreeSpace("Success", file_name);
 
@@ -320,6 +325,8 @@ scoped_ptr<LevelDBDatabase> LevelDBDatabase::OpenInMemory(
 
 leveldb::Status LevelDBDatabase::Put(const StringPiece& key,
                                      std::string* value) {
+  base::TimeTicks begin_time = base::TimeTicks::Now();
+
   leveldb::WriteOptions write_options;
   write_options.sync = kSyncWrites;
 
@@ -327,6 +334,9 @@ leveldb::Status LevelDBDatabase::Put(const StringPiece& key,
       db_->Put(write_options, MakeSlice(key), MakeSlice(*value));
   if (!s.ok())
     LOG(ERROR) << "LevelDB put failed: " << s.ToString();
+  else
+    UMA_HISTOGRAM_TIMES("WebCore.IndexedDB.LevelDB.PutTime",
+                        base::TimeTicks::Now() - begin_time);
   return s;
 }
 
@@ -363,6 +373,7 @@ leveldb::Status LevelDBDatabase::Get(const StringPiece& key,
 }
 
 leveldb::Status LevelDBDatabase::Write(const LevelDBWriteBatch& write_batch) {
+  base::TimeTicks begin_time = base::TimeTicks::Now();
   leveldb::WriteOptions write_options;
   write_options.sync = kSyncWrites;
 
@@ -371,6 +382,9 @@ leveldb::Status LevelDBDatabase::Write(const LevelDBWriteBatch& write_batch) {
   if (!s.ok()) {
     HistogramLevelDBError("WebCore.IndexedDB.LevelDBWriteErrors", s);
     LOG(ERROR) << "LevelDB write failed: " << s.ToString();
+  } else {
+    UMA_HISTOGRAM_TIMES("WebCore.IndexedDB.LevelDB.WriteTime",
+                        base::TimeTicks::Now() - begin_time);
   }
   return s;
 }
