@@ -158,10 +158,7 @@ TEST_F(GpuDataManagerImplPrivateTest, GpuSideBlacklisting) {
           },
           {
             "id": 2,
-            "gl_renderer": {
-              "op": "contains",
-              "value": "GeForce"
-            },
+            "gl_renderer": ".*GeForce.*",
             "features": [
               "accelerated_2d_canvas"
             ]
@@ -205,10 +202,7 @@ TEST_F(GpuDataManagerImplPrivateTest, GpuSideExceptions) {
             "id": 1,
             "exceptions": [
               {
-                "gl_renderer": {
-                  "op": "contains",
-                  "value": "GeForce"
-                }
+                "gl_renderer": ".*GeForce.*"
               }
             ],
             "features": [

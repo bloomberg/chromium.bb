@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "6.10",
+  "version": "7.0",
   "entries": [
     {
       "id": 1,
@@ -27,10 +27,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "os": {
         "type": "android"
       },
-      "gl_vendor": {
-        "op": "beginwith",
-        "value": "Imagination"
-      },
+      "gl_vendor": "Imagination.*",
       "features": [
         "use_client_side_arrays_for_stream_buffers"
       ]
@@ -41,10 +38,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "os": {
         "type": "android"
       },
-      "gl_vendor": {
-        "op": "beginwith",
-        "value": "ARM"
-      },
+      "gl_vendor": "ARM.*",
       "features": [
         "use_client_side_arrays_for_stream_buffers"
       ]
@@ -112,10 +106,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
           "value": "4.3"
         }
       },
-      "gl_vendor": {
-        "op": "beginwith",
-        "value": "Qualcomm"
-      },
+      "gl_vendor": "Qualcomm.*",
       "features": [
         "restore_scissor_on_fbo_change"
       ]
@@ -256,10 +247,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "os": {
         "type": "android"
       },
-      "gl_vendor": {
-        "op": "beginwith",
-        "value": "Qualcomm"
-      },
+      "gl_vendor": "Qualcomm.*",
       "features": [
         "disable_depth_texture"
       ]
@@ -284,10 +272,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "os": {
         "type": "android"
       },
-      "gl_extensions": {
-        "op": "contains",
-        "value": "GL_VIV_shader_binary"
-      },
+      "gl_extensions": ".*GL_VIV_shader_binary.*",
       "features": [
         "unbind_fbo_on_context_switch"
       ]
@@ -299,10 +284,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "os": {
         "type": "android"
       },
-      "gl_vendor": {
-        "op": "beginwith",
-        "value": "Imagination"
-      },
+      "gl_vendor": "Imagination.*",
       "features": [
         "unbind_fbo_on_context_switch"
       ]
@@ -327,14 +309,8 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "os": {
         "type": "android"
       },
-      "gl_vendor": {
-        "op": "beginwith",
-        "value": "ARM"
-      },
-      "gl_renderer": {
-        "op": "contains",
-        "value": "Mali-400"
-      },
+      "gl_vendor": "ARM.*",
+      "gl_renderer": ".*Mali-400.*",
       "features": [
         "use_non_zero_size_for_client_side_stream_buffers"
       ]
@@ -397,14 +373,8 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "id": 31,
       "cr_bugs": [154715, 10068, 269829, 294779, 285292],
       "description": "The Mali-Txxx driver does not guarantee flush ordering",
-      "gl_vendor": {
-        "op": "beginwith",
-        "value": "ARM"
-      },
-      "gl_renderer": {
-        "op": "beginwith",
-        "value": "Mali-T"
-      },
+      "gl_vendor": "ARM.*",
+      "gl_renderer": "Mali-T.*",
       "features": [
         "use_virtualized_gl_contexts"
       ]
@@ -416,10 +386,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "os": {
         "type": "android"
       },
-      "gl_vendor": {
-        "op": "beginwith",
-        "value": "Broadcom"
-      },
+      "gl_vendor": "Broadcom.*",
       "features": [
         "use_virtualized_gl_contexts"
       ]
@@ -430,10 +397,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "os": {
         "type": "android"
       },
-      "gl_vendor": {
-        "op": "beginwith",
-        "value": "Imagination"
-      },
+      "gl_vendor": "Imagination.*",
       "features": [
         "use_virtualized_gl_contexts"
       ]
@@ -445,10 +409,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "os": {
         "type": "android"
       },
-      "gl_extensions": {
-        "op": "contains",
-        "value": "GL_VIV_shader_binary"
-      },
+      "gl_extensions": ".*GL_VIV_shader_binary.*",
       "features": [
         "use_virtualized_gl_contexts"
       ]
@@ -464,10 +425,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
           "value": "4.3"
         }
       },
-      "gl_vendor": {
-        "op": "beginwith",
-        "value": "NVIDIA"
-      },
+      "gl_vendor": "NVIDIA.*",
       "features": [
         "use_virtualized_gl_contexts"
       ]
@@ -483,10 +441,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
           "value": "4.3"
         }
       },
-      "gl_vendor": {
-        "op": "beginwith",
-        "value": "Qualcomm"
-      },
+      "gl_vendor": "Qualcomm.*",
       "features": [
         "use_virtualized_gl_contexts"
       ]
@@ -510,10 +465,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "os": {
         "type": "android"
       },
-      "gl_vendor": {
-        "op": "beginwith",
-        "value": "Qualcomm"
-      },
+      "gl_vendor": "Qualcomm.*",
       "features": [
         "use_virtualized_gl_contexts"
       ]
@@ -540,10 +492,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
           "value": "4.4"
         }
       },
-      "gl_vendor": {
-        "op": "beginwith",
-        "value": "ARM"
-      },
+      "gl_vendor": "ARM.*",
       "features": [
         "disable_ext_discard_framebuffer"
       ]
@@ -555,14 +504,8 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "os": {
         "type": "android"
       },
-      "gl_vendor": {
-        "op": "beginwith",
-        "value": "Imagination"
-      },
-      "gl_renderer": {
-        "op": "=",
-        "value": "PowerVR SGX 540"
-      },
+      "gl_vendor": "Imagination.*",
+      "gl_renderer": "PowerVR SGX 540",
       "features": [
         "disable_ext_discard_framebuffer"
       ]
@@ -574,10 +517,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "os": {
         "type": "android"
       },
-      "gl_extensions": {
-        "op": "contains",
-        "value": "GL_VIV_shader_binary"
-      },
+      "gl_extensions": ".*GL_VIV_shader_binary.*",
       "features": [
         "disable_ext_discard_framebuffer"
       ]
@@ -635,10 +575,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "os": {
         "type": "android"
       },
-      "gl_vendor": {
-        "op": "beginwith",
-        "value": "Qualcomm"
-      },
+      "gl_vendor": "Qualcomm.*",
       "features": [
         "wake_up_gpu_before_drawing"
       ]
@@ -654,10 +591,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
         "op": "<",
         "value": "3.1"
       },
-      "gl_vendor": {
-        "op": "beginwith",
-        "value": "NVIDIA"
-      },
+      "gl_vendor": "NVIDIA.*",
       "features": [
         "release_image_after_use"
       ]
@@ -668,10 +602,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "os": {
         "type": "win"
       },
-      "gl_renderer": {
-        "op": "beginwith",
-        "value": "ANGLE"
-      },
+      "gl_renderer": "ANGLE.*",
       "features": [
         "texsubimage2d_faster_than_teximage2d"
       ]
@@ -682,10 +613,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "os": {
         "type": "android"
       },
-      "gl_vendor": {
-        "op": "beginwith",
-        "value": "Qualcomm"
-      },
+      "gl_vendor": "Qualcomm.*",
       "features": [
         "disable_multisampling"
       ]
@@ -716,10 +644,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "os": {
         "type": "linux"
       },
-      "driver_vendor": {
-        "op": "=",
-        "value": "Mesa"
-      },
+      "driver_vendor": "Mesa",
       "features": [
         "count_all_in_varyings_packing"
       ]
@@ -731,10 +656,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "os": {
         "type": "chromeos"
       },
-      "driver_vendor": {
-        "op": "=",
-        "value": "Mesa"
-      },
+      "driver_vendor": "Mesa",
       "features": [
         "count_all_in_varyings_packing"
       ]
@@ -865,10 +787,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "id": 69,
       "description": "Some shaders in Skia need more than the min available vertex and fragment shader uniform vectors in case of OSMesa",
       "cr_bugs": [174845],
-      "driver_vendor": {
-        "op": "=",
-        "value": "osmesa"
-      },
+      "driver_vendor": "osmesa",
       "features": [
        "max_fragment_uniform_vectors_32",
        "max_varying_vectors_16",
@@ -898,10 +817,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "os": {
         "type": "android"
       },
-      "gl_extensions": {
-        "op": "contains",
-        "value": "GL_VIV_shader_binary"
-      },
+      "gl_extensions": ".*GL_VIV_shader_binary.*",
       "features": [
         "disable_oes_standard_derivatives"
       ]
@@ -918,10 +834,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
         "op": "=",
         "value": "3.1"
       },
-      "gl_vendor": {
-        "op": "beginwith",
-        "value": "NVidia"
-      },
+      "gl_vendor": "NVIDIA.*",
       "features": [
         "use_virtualized_gl_contexts"
       ]
@@ -952,10 +865,7 @@ LONG_STRING_CONST(
           "value": "4.4.4"
         }
       },
-      "gl_vendor": {
-        "op": "beginwith",
-        "value": "Qualcomm"
-      },
+      "gl_vendor": "Qualcomm.*",
       "features": [
         "disable_egl_khr_fence_sync"
       ]
@@ -971,14 +881,8 @@ LONG_STRING_CONST(
           "value": "4.3"
         }
       },
-      "gl_vendor": {
-        "op": "beginwith",
-        "value": "ARM"
-      },
-      "gl_renderer": {
-        "op": "contains",
-        "value": "Mali-400"
-      },
+      "gl_vendor": "ARM.*",
+      "gl_renderer": ".*Mali-400.*",
       "features": [
         "disable_multisampling"
       ]
@@ -994,10 +898,7 @@ LONG_STRING_CONST(
           "value": "4.4.4"
         }
       },
-      "gl_vendor": {
-        "op": "beginwith",
-        "value": "Imagination Technologies"
-      },
+      "gl_vendor": "Imagination Technologies.*",
       "features": [
         "disable_egl_khr_fence_sync"
       ]
@@ -1013,14 +914,8 @@ LONG_STRING_CONST(
           "value": "4.4.4"
         }
       },
-      "gl_vendor": {
-        "op": "beginwith",
-        "value": "ARM"
-      },
-      "gl_renderer": {
-        "op": "beginwith",
-        "value": "Mali-400 MP"
-      },
+      "gl_vendor": "ARM.*",
+      "gl_renderer": "Mali-400 MP.*",
       "features": [
         "disable_egl_khr_fence_sync"
       ]
@@ -1036,10 +931,7 @@ LONG_STRING_CONST(
           "value": "4.4.4"
         }
       },
-      "gl_vendor": {
-        "op": "beginwith",
-        "value": "Broadcom"
-      },
+      "gl_vendor": "Broadcom.*",
       "features": [
         "disable_egl_khr_fence_sync"
       ]
@@ -1066,10 +958,7 @@ LONG_STRING_CONST(
           "value": "4.3"
         }
       },
-      "gl_vendor": {
-        "op": "beginwith",
-        "value": "Qualcomm"
-      },
+      "gl_vendor": "Qualcomm.*",
       "features": [
         "disable_async_readpixels"
       ]

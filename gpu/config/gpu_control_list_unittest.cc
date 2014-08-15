@@ -303,10 +303,7 @@ TEST_F(GpuControlListTest, NeedsMoreInfoForExceptions) {
             "vendor_id": "0x8086",
             "exceptions": [
               {
-                "gl_renderer": {
-                  "op": "contains",
-                  "value": "mesa"
-                }
+                "gl_renderer": ".*mesa.*"
               }
             ],
             "features": [
