@@ -212,16 +212,21 @@
         }],
         ['OS=="mac"', {
           'sources!': [
-            # TODO(port)
+            # TODO(tapted): Enable toolkit-views tests on Mac when their
+            # respective implementations are ported.
             'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
             'browser/ui/views/constrained_window_views_browsertest.cc',
             'browser/ui/views/find_bar_host_interactive_uitest.cc',
             'browser/ui/views/keyboard_access_browsertest.cc',
-            'browser/ui/views/menu_item_view_test.cc',
-            'browser/ui/views/menu_model_adapter_test.cc',
+            'browser/ui/views/location_bar/star_view_browsertest.cc',
+            'browser/ui/views/message_center/web_notification_tray_browsertest.cc',
+            'browser/ui/views/omnibox/omnibox_view_views_browsertest.cc',
+            'browser/ui/views/panels/panel_view_browsertest.cc',
+            'browser/ui/views/passwords/manage_passwords_bubble_view_browsertest.cc',
+            'browser/ui/views/ssl_client_certificate_selector_browsertest.cc',
             'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc',
-            'test/base/view_event_test_base.cc',
-            'test/base/view_event_test_base.h',
+            'browser/ui/views/toolbar/toolbar_button_test.cc',
+            'browser/ui/views/toolbar/toolbar_view_interactive_uitest.cc',
           ],
           'dependencies': [
             'chrome'

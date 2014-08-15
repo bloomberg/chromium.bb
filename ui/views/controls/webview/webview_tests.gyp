@@ -18,7 +18,6 @@
         '../../../../ipc/ipc.gyp:test_support_ipc',
         '../../../../skia/skia.gyp:skia',
         '../../../../testing/gtest.gyp:gtest',
-        '../../../aura/aura.gyp:aura',
         '../../../base/ui_base.gyp:ui_base',
         '../../../events/events.gyp:events',
         '../../../gfx/gfx.gyp:gfx',
@@ -33,6 +32,13 @@
       'sources': [
         '../../test/webview_test_helper.cc',
         '../../test/webview_test_helper.h',
+      ],
+      'conditions': [
+        ['use_aura==1', {
+          'dependencies': [
+            '../../../aura/aura.gyp:aura',
+          ],
+        }],
       ],
     },
   ],

@@ -370,4 +370,9 @@ bool SendMouseClick(MouseButton type) {
   return SendMouseEventsNotifyWhenDone(type, UP|DOWN, base::Closure());
 }
 
+void RunClosureAfterAllPendingUIEvents(const base::Closure& closure) {
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&EventQueueWatcher, closure));
+}
+
 }  // namespace ui_controls
