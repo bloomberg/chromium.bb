@@ -38,7 +38,9 @@ class TestCase(auto_stub.TestCase):
 
     Arguments:
       request: list of tuple(url, kwargs, response, headers) for normal requests
-          and tuple(url, kwargs, response) for json requests.
+          and tuple(url, kwargs, response) for json requests. kwargs can be a
+          callable. In that case, it's called with the actual kwargs. It's
+          useful when the kwargs values are not deterministic.
     """
     requests = requests[:]
     for request in requests:
@@ -64,7 +66,10 @@ class TestCase(auto_stub.TestCase):
           if len(data) != 4:
             self.fail('Expected normal request, got json data; %s' % url)
           _, expected_kwargs, result, headers = data
-          self.assertEqual(expected_kwargs, kwargs)
+          if callable(expected_kwargs):
+            expected_kwargs(kwargs)
+          else:
+            self.assertEqual(expected_kwargs, kwargs)
           if result is not None:
             return net.HttpResponse.get_fake_response(result, url, headers)
           return None
@@ -83,7 +88,10 @@ class TestCase(auto_stub.TestCase):
           if len(data) != 3:
             self.fail('Expected json request, got normal data; %s' % url)
           _, expected_kwargs, result = data
-          self.assertEqual(expected_kwargs, kwargs)
+          if callable(expected_kwargs):
+            expected_kwargs(kwargs)
+          else:
+            self.assertEqual(expected_kwargs, kwargs)
           if result is not None:
             return result
           return None
