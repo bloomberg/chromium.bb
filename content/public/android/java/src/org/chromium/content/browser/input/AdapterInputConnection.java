@@ -65,18 +65,24 @@ public class AdapterInputConnection extends BaseInputConnection {
 
         int inputType = imeAdapter.getTextInputType();
         int inputFlags = imeAdapter.getTextInputFlags();
+        if ((inputFlags & imeAdapter.sTextInputFlagAutocompleteOff) != 0) {
+            outAttrs.inputType |= EditorInfo.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
+        }
+
         if (inputType == ImeAdapter.sTextInputTypeText) {
             // Normal text field
             outAttrs.imeOptions |= EditorInfo.IME_ACTION_GO;
-            if ((inputFlags & imeAdapter.sTextInputFlagAutocorrectOff) == 0)
+            if ((inputFlags & imeAdapter.sTextInputFlagAutocorrectOff) == 0) {
                 outAttrs.inputType |= EditorInfo.TYPE_TEXT_FLAG_AUTO_CORRECT;
+            }
         } else if (inputType == ImeAdapter.sTextInputTypeTextArea ||
                 inputType == ImeAdapter.sTextInputTypeContentEditable) {
             // TextArea or contenteditable.
             outAttrs.inputType |= EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE
                     | EditorInfo.TYPE_TEXT_FLAG_CAP_SENTENCES;
-            if ((inputFlags & imeAdapter.sTextInputFlagAutocorrectOff) == 0)
+            if ((inputFlags & imeAdapter.sTextInputFlagAutocorrectOff) == 0) {
                 outAttrs.inputType |= EditorInfo.TYPE_TEXT_FLAG_AUTO_CORRECT;
+            }
             outAttrs.imeOptions |= EditorInfo.IME_ACTION_NONE;
             mSingleLine = false;
         } else if (inputType == ImeAdapter.sTextInputTypePassword) {
