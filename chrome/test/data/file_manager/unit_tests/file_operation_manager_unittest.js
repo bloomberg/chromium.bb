@@ -120,7 +120,7 @@ function waitForEvents(fileOperationManager) {
       if (event.reason === 'SUCCESS')
         fulfill(events);
     });
-    fileOperationManager.addEventListener('entry-changed', function(event) {
+    fileOperationManager.addEventListener('entries-changed', function(event) {
       events.push(event);
     });
     fileOperationManager.addEventListener('delete', function(event) {
@@ -277,9 +277,9 @@ function testCopy(callback) {
     assertEquals(10, lastEvent.status.totalBytes);
 
     assertTrue(events.some(function(event) {
-      return event.type === 'entry-changed' &&
+      return event.type === 'entries-changed' &&
           event.kind === util.EntryChangedKind.CREATED &&
-          event.entry.fullPath === '/test (1).txt';
+          event.entries[0].fullPath === '/test (1).txt';
     }));
 
     assertFalse(events.some(function(event) {
@@ -326,15 +326,15 @@ function testMove(callback) {
     assertEquals(1, lastEvent.status.totalBytes);
 
     assertTrue(events.some(function(event) {
-      return event.type === 'entry-changed' &&
+      return event.type === 'entries-changed' &&
           event.kind === util.EntryChangedKind.DELETED &&
-          event.entry.fullPath === '/test.txt';
+          event.entries[0].fullPath === '/test.txt';
     }));
 
     assertTrue(events.some(function(event) {
-      return event.type === 'entry-changed' &&
+      return event.type === 'entries-changed' &&
           event.kind === util.EntryChangedKind.CREATED &&
-          event.entry.fullPath === '/directory/test.txt';
+          event.entries[0].fullPath === '/directory/test.txt';
     }));
 
     assertFalse(events.some(function(event) {
@@ -422,8 +422,8 @@ function testZip(callback) {
     }));
 
     assertTrue(events.some(function(event) {
-      return event.type === 'entry-changed' &&
-          event.entry.fullPath === '/test.zip';
+      return event.type === 'entries-changed' &&
+          event.entries[0].fullPath === '/test.zip';
     }));
   }), callback);
 

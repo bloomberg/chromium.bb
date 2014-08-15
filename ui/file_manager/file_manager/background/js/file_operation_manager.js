@@ -382,6 +382,10 @@ function FileOperationManager() {
  * @extends {cr.EventTarget}
  */
 FileOperationManager.EventRouter = function() {
+  this.pendingDeletedEntries_ = [];
+  this.pendingCreatedEntries_ = [];
+  this.entryChangedEventRateLimiter_ = new AsyncUtil.RateLimiter(
+      this.dispatchEntryChangedEvent_.bind(this), 500);
 };
 
 /**
@@ -403,6 +407,10 @@ FileOperationManager.EventRouter.prototype.__proto__ = cr.EventTarget.prototype;
  */
 FileOperationManager.EventRouter.prototype.sendProgressEvent = function(
     reason, status, taskId, opt_error) {
+  // Before finishing operation, dispatch pending entries-changed events.
+  if (reason === 'SUCCESS' || reason === 'CANCELED')
+    this.entryChangedEventRateLimiter_.runImmediately();
+
   var event = new Event('copy-progress');
   event.reason = reason;
   event.status = status;
@@ -413,17 +421,42 @@ FileOperationManager.EventRouter.prototype.sendProgressEvent = function(
 };
 
 /**
- * Dispatches an event to notify that an entry is changed (created or deleted).
+ * Stores changed (created or deleted) entry temporarily, and maybe dispatch
+ * entries-changed event with stored entries.
  * @param {util.EntryChangedKind} kind The enum to represent if the entry is
  *     created or deleted.
  * @param {Entry} entry The changed entry.
  */
 FileOperationManager.EventRouter.prototype.sendEntryChangedEvent = function(
     kind, entry) {
-  var event = new Event('entry-changed');
-  event.kind = kind;
-  event.entry = entry;
-  this.dispatchEvent(event);
+  if (kind === util.EntryChangedKind.DELETED)
+    this.pendingDeletedEntries_.push(entry);
+  if (kind === util.EntryChangedKind.CREATED)
+    this.pendingCreatedEntries_.push(entry);
+
+  this.entryChangedEventRateLimiter_.run();
+};
+
+/**
+ * Dispatches an event to notify that entries are changed (created or deleted).
+ * @private
+ */
+FileOperationManager.EventRouter.prototype.dispatchEntryChangedEvent_ =
+    function() {
+  if (this.pendingDeletedEntries_.length > 0) {
+    var event = new Event('entries-changed');
+    event.kind = util.EntryChangedKind.DELETED;
+    event.entries = this.pendingDeletedEntries_;
+    this.dispatchEvent(event);
+    this.pendingDeletedEntries_ = [];
+  }
+  if (this.pendingCreatedEntries_.length > 0) {
+    var event = new Event('entries-changed');
+    event.kind = util.EntryChangedKind.CREATED;
+    event.entries = this.pendingCreatedEntries_;
+    this.dispatchEvent(event);
+    this.pendingCreatedEntries_ = [];
+  }
 };
 
 /**

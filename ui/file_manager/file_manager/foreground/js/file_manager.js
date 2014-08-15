@@ -403,9 +403,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.fileOperationManager_.addEventListener(
         'copy-progress', this.onCopyProgressBound_);
 
-    this.onEntryChangedBound_ = this.onEntryChanged_.bind(this);
+    this.onEntriesChangedBound_ = this.onEntriesChanged_.bind(this);
     this.fileOperationManager_.addEventListener(
-        'entry-changed', this.onEntryChangedBound_);
+        'entries-changed', this.onEntriesChangedBound_);
 
     var controller = this.fileTransferController_ =
         new FileTransferController(this.document_,
@@ -1207,14 +1207,16 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @param {Event} event An event for the entry change.
    * @private
    */
-  FileManager.prototype.onEntryChanged_ = function(event) {
+  FileManager.prototype.onEntriesChanged_ = function(event) {
     var kind = event.kind;
-    var entry = event.entry;
-    this.directoryModel_.onEntryChanged(kind, entry);
+    var entries = event.entries;
+    this.directoryModel_.onEntriesChanged(kind, entries);
     this.selectionHandler_.onFileSelectionChanged();
 
-    if (kind === util.EntryChangedKind.CREATED && FileType.isImage(entry)) {
-      // Preload a thumbnail if the new copied entry an image.
+    if (kind !== util.EntryChangedKind.CREATED)
+      return;
+
+    var preloadThumbnail = function(entry) {
       var locationInfo = this.volumeManager_.getLocationInfo(entry);
       if (!locationInfo)
         return;
@@ -1230,6 +1232,12 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
             10);  // Very low priority.
         thumbnailLoader_.loadDetachedImage(function(success) {});
       });
+    }.bind(this);
+
+    for (var i = 0; i < entries.length; i++) {
+      // Preload a thumbnail if the new copied entry an image.
+      if (FileType.isImage(entries[i]))
+        preloadThumbnail(entries[i]);
     }
   };
 
@@ -2426,9 +2434,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.fileOperationManager_.removeEventListener(
             'copy-progress', this.onCopyProgressBound_);
       }
-      if (this.onEntryChangedBound_) {
+      if (this.onEntriesChangedBound_) {
         this.fileOperationManager_.removeEventListener(
-            'entry-changed', this.onEntryChangedBound_);
+            'entries-changed', this.onEntriesChangedBound_);
       }
     }
     window.closing = true;

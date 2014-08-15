@@ -561,9 +561,9 @@ DirectoryModel.prototype.replaceDirectoryContents_ = function(dirContents) {
 /**
  * Callback when an entry is changed.
  * @param {util.EntryChangedKind} kind How the entry is changed.
- * @param {Entry} entry The changed entry.
+ * @param {Array.<Entry>} entries The changed entries.
  */
-DirectoryModel.prototype.onEntryChanged = function(kind, entry) {
+DirectoryModel.prototype.onEntriesChanged = function(kind, entries) {
   // TODO(hidehiko): We should update directory model even the search result
   // is shown.
   var rootType = this.getCurrentRootType();
@@ -576,34 +576,38 @@ DirectoryModel.prototype.onEntryChanged = function(kind, entry) {
 
   switch (kind) {
     case util.EntryChangedKind.CREATED:
-      entry.getParent(function(parentEntry) {
-        if (!util.isSameEntry(this.getCurrentDirEntry(), parentEntry)) {
-          // Do nothing if current directory changed during async operations.
-          return;
-        }
-        // Refresh the cache.
-        this.currentDirContents_.prefetchMetadata([entry], true, function() {
-          if (!util.isSameEntry(this.getCurrentDirEntry(), parentEntry)) {
-            // Do nothing if current directory changed during async operations.
-            return;
-          }
-
-          var index = this.findIndexByEntry_(entry);
+      var parentPromises = [];
+      for (var i = 0; i < entries.length; i++) {
+        parentPromises.push(new Promise(function(resolve, reject) {
+          entries[i].getParent(resolve, reject);
+        }));
+      }
+      Promise.all(parentPromises).then(function(parents) {
+        var entriesToAdd = [];
+        for (var i = 0; i < parents.length; i++) {
+          if (!util.isSameEntry(parents[i], this.getCurrentDirEntry()))
+            continue;
+          var index = this.findIndexByEntry_(entries[i]);
           if (index >= 0) {
             this.getFileList().replaceItem(
-                this.getFileList().item(index), entry);
+                this.getFileList().item(index), entries[i]);
           } else {
-            this.getFileList().push(entry);
+            entriesToAdd.push(entries[i]);
           }
-        }.bind(this));
-      }.bind(this));
+        }
+        this.getFileList().push.apply(this.getFileList(), entriesToAdd);
+      }.bind(this)).catch(function(error) {
+        console.error(error.stack || error);
+      });
       break;
 
     case util.EntryChangedKind.DELETED:
       // This is the delete event.
-      var index = this.findIndexByEntry_(entry);
-      if (index >= 0)
-        this.getFileList().splice(index, 1);
+      for (var i = 0; i < entries.length; i++) {
+        var index = this.findIndexByEntry_(entries[i]);
+        if (index >= 0)
+          this.getFileList().splice(index, 1);
+      }
       break;
 
     default:
