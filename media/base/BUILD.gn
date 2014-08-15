@@ -412,7 +412,7 @@ if (cpu_arch == "x86" || cpu_arch == "x64") {
       ]
     }
 
-    if (is_mac) {
+    if (is_mac || is_ios) {
       yasm_flags += [
         "-DPREFIX",
         "-DMACHO",

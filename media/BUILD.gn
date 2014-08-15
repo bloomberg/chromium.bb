@@ -307,10 +307,6 @@ component("media") {
     }
   }
 
-  if (!is_ios) {
-    deps += [ "//third_party/libyuv" ]
-  }
-
   if (use_alsa) {
     libs += [ "asound" ]
     defines += [ "USE_ALSA" ]
@@ -422,6 +418,7 @@ component("media") {
     "//media/audio",
     "//media/base",
     "//skia",
+    "//third_party/libyuv",
     "//third_party/opus",
     "//ui/events:events_base",
     "//ui/gfx",
