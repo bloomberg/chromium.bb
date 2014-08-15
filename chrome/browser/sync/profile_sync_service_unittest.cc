@@ -28,7 +28,7 @@
 #include "components/invalidation/invalidation_service.h"
 #include "components/invalidation/profile_invalidation_provider.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/sync_driver/data_type_manager_impl.h"
+#include "components/sync_driver/data_type_manager.h"
 #include "components/sync_driver/pref_names.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -44,14 +44,32 @@ namespace browser_sync {
 
 namespace {
 
+class FakeDataTypeManager : public sync_driver::DataTypeManager {
+ public:
+  explicit FakeDataTypeManager(sync_driver::DataTypeManagerObserver* observer)
+     : observer_(observer) {}
+  virtual ~FakeDataTypeManager() {};
+
+  virtual void Configure(syncer::ModelTypeSet desired_types,
+                         syncer::ConfigureReason reason) OVERRIDE {
+    sync_driver::DataTypeManager::ConfigureResult result;
+    result.status = sync_driver::DataTypeManager::OK;
+    observer_->OnConfigureDone(result);
+  }
+
+  virtual void PurgeForMigration(syncer::ModelTypeSet undesired_types,
+                                 syncer::ConfigureReason reason) OVERRIDE {}
+  virtual void Stop() OVERRIDE {};
+  virtual State state() const OVERRIDE {
+    return sync_driver::DataTypeManager::CONFIGURED;
+  };
+
+ private:
+  sync_driver::DataTypeManagerObserver* observer_;
+};
+
 ACTION(ReturnNewDataTypeManager) {
-  return new sync_driver::DataTypeManagerImpl(base::Closure(),
-                                              arg0,
-                                              arg1,
-                                              arg2,
-                                              arg3,
-                                              arg4,
-                                              arg5);
+  return new FakeDataTypeManager(arg4);
 }
 
 using testing::Return;
@@ -208,11 +226,9 @@ class ProfileSyncServiceTest : public ::testing::Test {
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   void CreateServiceWithoutSignIn() {
-    CreateService(browser_sync::MANUAL_START);
+    CreateService(browser_sync::AUTO_START);
     SigninManagerFactory::GetForProfile(profile())->SignOut(
         signin_metrics::SIGNOUT_TEST);
-    service()->SetBackupStartDelayForTest(
-        base::TimeDelta::FromMilliseconds(100));
   }
 #endif
 
@@ -222,7 +238,14 @@ class ProfileSyncServiceTest : public ::testing::Test {
     service_.reset();
   }
 
-  void Initialize() {
+  void InitializeForNthSync() {
+    // Set first sync time before initialize to disable backup.
+    sync_driver::SyncPrefs sync_prefs(service()->profile()->GetPrefs());
+    sync_prefs.SetFirstSyncTime(base::Time::Now());
+    service_->Initialize();
+  }
+
+  void InitializeForFirstSync() {
     service_->Initialize();
   }
 
@@ -266,12 +289,19 @@ class ProfileSyncServiceTest : public ::testing::Test {
   void ClearBrowsingDataCallback(Profile* profile, base::Time start,
                                  base::Time end) {
     EXPECT_EQ(profile_, profile);
-    clear_browsing_data_start_ = start;
+    clear_browsing_date_start_ = start;
   }
 
  protected:
+  void PumpLoop() {
+    base::RunLoop run_loop;
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
   // The requested start time when ClearBrowsingDataCallback is called.
-  base::Time clear_browsing_data_start_;
+  base::Time clear_browsing_date_start_;
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
@@ -286,7 +316,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
 // Verify that the server URLs are sane.
 TEST_F(ProfileSyncServiceTest, InitialState) {
   CreateService(browser_sync::AUTO_START);
-  Initialize();
+  InitializeForNthSync();
   const std::string& url = service()->sync_service_url().spec();
   EXPECT_TRUE(url == ProfileSyncService::kSyncServerUrl ||
               url == ProfileSyncService::kDevServerUrl);
@@ -300,7 +330,7 @@ TEST_F(ProfileSyncServiceTest, SuccessfulInitialization) {
   CreateService(browser_sync::AUTO_START);
   ExpectDataTypeManagerCreation(1);
   ExpectSyncBackendHostCreation(1);
-  Initialize();
+  InitializeForNthSync();
   EXPECT_FALSE(service()->IsManaged());
   EXPECT_TRUE(service()->sync_initialized());
   EXPECT_EQ(ProfileSyncService::SYNC, service()->backend_mode());
@@ -311,7 +341,7 @@ TEST_F(ProfileSyncServiceTest, SuccessfulInitialization) {
 // and notifies observers.
 TEST_F(ProfileSyncServiceTest, SetupInProgress) {
   CreateService(browser_sync::AUTO_START);
-  Initialize();
+  InitializeForNthSync();
 
   TestProfileSyncServiceObserver observer(service());
   service()->AddObserver(&observer);
@@ -330,7 +360,7 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicyBeforeInit) {
       sync_driver::prefs::kSyncManaged, new base::FundamentalValue(true));
   IssueTestTokens();
   CreateService(browser_sync::AUTO_START);
-  Initialize();
+  InitializeForNthSync();
   EXPECT_TRUE(service()->IsManaged());
   EXPECT_FALSE(service()->sync_initialized());
 }
@@ -342,7 +372,7 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicyAfterInit) {
   CreateService(browser_sync::AUTO_START);
   ExpectDataTypeManagerCreation(1);
   ExpectSyncBackendHostCreation(1);
-  Initialize();
+  InitializeForNthSync();
 
   EXPECT_FALSE(service()->IsManaged());
   EXPECT_TRUE(service()->sync_initialized());
@@ -361,7 +391,7 @@ TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
   PrepareDelayedInitSyncBackendHost();
 
   IssueTestTokens();
-  Initialize();
+  InitializeForNthSync();
   EXPECT_FALSE(service()->sync_initialized());
 
   ShutdownAndDeleteService();
@@ -377,7 +407,7 @@ TEST_F(ProfileSyncServiceTest, EarlyStopAndSuppress) {
       sync_driver::prefs::kSyncSuppressStart));
 
   // Because of supression, this should fail.
-  Initialize();
+  InitializeForNthSync();
   EXPECT_FALSE(service()->sync_initialized());
 
   // Remove suppression.  This should be enough to allow init to happen.
@@ -395,7 +425,7 @@ TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
   IssueTestTokens();
   ExpectDataTypeManagerCreation(1);
   ExpectSyncBackendHostCreation(1);
-  Initialize();
+  InitializeForNthSync();
 
   EXPECT_TRUE(service()->sync_initialized());
   EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
@@ -419,31 +449,13 @@ TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
 
 // Certain ProfileSyncService tests don't apply to Chrome OS, for example
 // things that deal with concepts like "signing out" and policy.
-#if defined(ENABLE_PRE_SYNC_BACKUP)
-TEST_F(ProfileSyncServiceTest, EnableSyncAndSignOutDesktop) {
-  CreateService(browser_sync::AUTO_START);
-  ExpectDataTypeManagerCreation(2);
-  ExpectSyncBackendHostCreation(2);
-  IssueTestTokens();
-  Initialize();
-
-  EXPECT_TRUE(service()->sync_initialized());
-  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
-      sync_driver::prefs::kSyncSuppressStart));
-  EXPECT_EQ(ProfileSyncService::SYNC, service()->backend_mode());
-
-  SigninManagerFactory::GetForProfile(profile())->SignOut(
-      signin_metrics::SIGNOUT_TEST);
-  EXPECT_TRUE(service()->sync_initialized());
-  EXPECT_EQ(ProfileSyncService::BACKUP, service()->backend_mode());
-}
-#elif !defined (OS_CHROMEOS)
+#if !defined (OS_CHROMEOS)
 TEST_F(ProfileSyncServiceTest, EnableSyncAndSignOut) {
   CreateService(browser_sync::AUTO_START);
   ExpectDataTypeManagerCreation(1);
   ExpectSyncBackendHostCreation(1);
   IssueTestTokens();
-  Initialize();
+  InitializeForNthSync();
 
   EXPECT_TRUE(service()->sync_initialized());
   EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
@@ -460,7 +472,7 @@ TEST_F(ProfileSyncServiceTest, GetSyncTokenStatus) {
   IssueTestTokens();
   ExpectDataTypeManagerCreation(1);
   ExpectSyncBackendHostCreation(1);
-  Initialize();
+  InitializeForNthSync();
 
   // Initial status.
   ProfileSyncService::SyncTokenStatus token_status =
@@ -493,63 +505,70 @@ TEST_F(ProfileSyncServiceTest, GetSyncTokenStatus) {
 }
 
 #if defined(ENABLE_PRE_SYNC_BACKUP)
-TEST_F(ProfileSyncServiceTest, StartBackup) {
+TEST_F(ProfileSyncServiceTest, DontStartBackupOnBrowserStart) {
   CreateServiceWithoutSignIn();
-  ExpectDataTypeManagerCreation(1);
-  std::vector<bool> delete_dir_param;
-  ExpectSyncBackendHostCreationCollectDeleteDir(1, &delete_dir_param);
-  Initialize();
+  InitializeForFirstSync();
+  PumpLoop();
   EXPECT_EQ(ProfileSyncService::IDLE, service()->backend_mode());
-  base::RunLoop run_loop;
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(),
-      base::TimeDelta::FromMilliseconds(100));
-  run_loop.Run();
-  EXPECT_EQ(ProfileSyncService::BACKUP, service()->backend_mode());
-
-  EXPECT_EQ(1u, delete_dir_param.size());
-  EXPECT_FALSE(delete_dir_param[0]);
 }
 
-TEST_F(ProfileSyncServiceTest, BackupAfterSyncDisabled) {
+TEST_F(ProfileSyncServiceTest, BackupBeforeFirstSync) {
+  CreateServiceWithoutSignIn();
+  ExpectDataTypeManagerCreation(2);
+  std::vector<bool> delete_dir_param;
+  ExpectSyncBackendHostCreationCollectDeleteDir(2, &delete_dir_param);
+  InitializeForFirstSync();
+
+  SigninManagerFactory::GetForProfile(profile())
+      ->SetAuthenticatedUsername("test");
+  IssueTestTokens();
+  PumpLoop();
+
+  // At this time, backup is finished. Task is posted to start sync again.
+  EXPECT_EQ(ProfileSyncService::BACKUP, service()->backend_mode());
+  EXPECT_TRUE(service()->ShouldPushChanges());
+  EXPECT_EQ(1u, delete_dir_param.size());
+  EXPECT_TRUE(delete_dir_param[0]);
+
+  // Pump loop to start sync.
+  PumpLoop();
+  EXPECT_EQ(ProfileSyncService::SYNC, service()->backend_mode());
+  EXPECT_EQ(2u, delete_dir_param.size());
+  EXPECT_TRUE(delete_dir_param[0]);
+}
+
+// Test backup is done again on browser start if user signed in last session
+// but backup didn't finish when last session was closed.
+TEST_F(ProfileSyncServiceTest, ResumeBackupIfAborted) {
+  IssueTestTokens();
+  CreateService(AUTO_START);
+  ExpectDataTypeManagerCreation(2);
+  std::vector<bool> delete_dir_param;
+  ExpectSyncBackendHostCreationCollectDeleteDir(2, &delete_dir_param);
+  InitializeForFirstSync();
+  PumpLoop();
+
+  // At this time, backup is finished. Task is posted to start sync again.
+  EXPECT_EQ(ProfileSyncService::BACKUP, service()->backend_mode());
+  EXPECT_TRUE(service()->ShouldPushChanges());
+  EXPECT_EQ(1u, delete_dir_param.size());
+  EXPECT_TRUE(delete_dir_param[0]);
+
+  // Pump loop to start sync.
+  PumpLoop();
+  EXPECT_EQ(ProfileSyncService::SYNC, service()->backend_mode());
+  EXPECT_EQ(2u, delete_dir_param.size());
+  EXPECT_TRUE(delete_dir_param[0]);
+}
+
+TEST_F(ProfileSyncServiceTest, Rollback) {
   CreateService(browser_sync::MANUAL_START);
   service()->SetSyncSetupCompleted();
   ExpectDataTypeManagerCreation(2);
   std::vector<bool> delete_dir_param;
   ExpectSyncBackendHostCreationCollectDeleteDir(2, &delete_dir_param);
   IssueTestTokens();
-  Initialize();
-  EXPECT_TRUE(service()->sync_initialized());
-  EXPECT_EQ(ProfileSyncService::SYNC, service()->backend_mode());
-
-  // First sync time should be recorded.
-  sync_driver::SyncPrefs sync_prefs(service()->profile()->GetPrefs());
-  EXPECT_FALSE(sync_prefs.GetFirstSyncTime().is_null());
-
-  syncer::SyncProtocolError client_cmd;
-  client_cmd.action = syncer::DISABLE_SYNC_ON_CLIENT;
-  service()->OnActionableError(client_cmd);
-  EXPECT_EQ(ProfileSyncService::BACKUP, service()->backend_mode());
-
-  // Browsing data is not cleared because rollback is skipped.
-  EXPECT_TRUE(clear_browsing_data_start_.is_null());
-
-  // First sync time is erased once backup starts.
-  EXPECT_TRUE(sync_prefs.GetFirstSyncTime().is_null());
-
-  EXPECT_EQ(2u, delete_dir_param.size());
-  EXPECT_FALSE(delete_dir_param[0]);
-  EXPECT_TRUE(delete_dir_param[1]);
-}
-
-TEST_F(ProfileSyncServiceTest, RollbackThenBackup) {
-  CreateService(browser_sync::MANUAL_START);
-  service()->SetSyncSetupCompleted();
-  ExpectDataTypeManagerCreation(3);
-  std::vector<bool> delete_dir_param;
-  ExpectSyncBackendHostCreationCollectDeleteDir(3, &delete_dir_param);
-  IssueTestTokens();
-  Initialize();
+  InitializeForNthSync();
   EXPECT_TRUE(service()->sync_initialized());
   EXPECT_EQ(ProfileSyncService::SYNC, service()->backend_mode());
 
@@ -561,49 +580,25 @@ TEST_F(ProfileSyncServiceTest, RollbackThenBackup) {
   syncer::SyncProtocolError client_cmd;
   client_cmd.action = syncer::DISABLE_SYNC_AND_ROLLBACK;
   service()->OnActionableError(client_cmd);
-  EXPECT_TRUE(service()->sync_initialized());
+  EXPECT_EQ(ProfileSyncService::IDLE, service()->backend_mode());
+
+  // Pump loop to run rollback.
+  PumpLoop();
   EXPECT_EQ(ProfileSyncService::ROLLBACK, service()->backend_mode());
 
   // Browser data should be cleared during rollback.
-  EXPECT_EQ(first_sync_time, clear_browsing_data_start_);
+  EXPECT_EQ(first_sync_time, clear_browsing_date_start_);
 
   client_cmd.action = syncer::ROLLBACK_DONE;
   service()->OnActionableError(client_cmd);
-  EXPECT_TRUE(service()->sync_initialized());
-  EXPECT_EQ(ProfileSyncService::BACKUP, service()->backend_mode());
-
-  // First sync time is erased once backup starts.
-  EXPECT_TRUE(sync_prefs.GetFirstSyncTime().is_null());
-
-  EXPECT_EQ(3u, delete_dir_param.size());
-  EXPECT_FALSE(delete_dir_param[0]);
-  EXPECT_FALSE(delete_dir_param[1]);
-  EXPECT_TRUE(delete_dir_param[2]);
-}
-
-TEST_F(ProfileSyncServiceTest, StartNewBackupDbOnSettingsReset) {
-  CreateServiceWithoutSignIn();
-  ExpectDataTypeManagerCreation(1);
-  std::vector<bool> delete_dir_param;
-  ExpectSyncBackendHostCreationCollectDeleteDir(1, &delete_dir_param);
-  Initialize();
   EXPECT_EQ(ProfileSyncService::IDLE, service()->backend_mode());
 
-  // Set reset time to pretend settings reset happened.
-  profile()->GetPrefs()->SetString(
-      prefs::kPreferenceResetTime,
-      base::Int64ToString(base::Time::Now().ToInternalValue()));
+  // First sync time is erased after rollback is done.
+  EXPECT_TRUE(sync_prefs.GetFirstSyncTime().is_null());
 
-  base::RunLoop run_loop;
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(),
-      base::TimeDelta::FromMilliseconds(100));
-  run_loop.Run();
-
-  EXPECT_EQ(ProfileSyncService::BACKUP, service()->backend_mode());
-
-  EXPECT_EQ(1u, delete_dir_param.size());
-  EXPECT_TRUE(delete_dir_param[0]);
+  EXPECT_EQ(2u, delete_dir_param.size());
+  EXPECT_FALSE(delete_dir_param[0]);
+  EXPECT_FALSE(delete_dir_param[1]);
 }
 
 #endif

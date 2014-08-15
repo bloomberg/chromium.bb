@@ -121,6 +121,9 @@ class StartupController {
   // Used to compute preferred_types from SyncPrefs as-needed.
   syncer::ModelTypeSet registered_types_;
 
+  // True before calling |start_backend_| for the first time. False after that.
+  bool first_start_;
+
   base::WeakPtrFactory<StartupController> weak_factory_;
 };
 

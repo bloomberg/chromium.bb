@@ -49,6 +49,7 @@ StartupController::StartupController(
       start_backend_(start_backend),
       fallback_timeout_(
           base::TimeDelta::FromSeconds(kDeferredInitFallbackSeconds)),
+      first_start_(true),
       weak_factory_(this) {
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -101,6 +102,7 @@ bool StartupController::StartUp(StartUpDeferredOption deferred_option) {
   if (start_backend_time_.is_null()) {
     start_backend_time_ = base::Time::Now();
     start_backend_.Run();
+    first_start_ = false;
   }
 
   return true;
@@ -151,7 +153,12 @@ bool StartupController::TryStart() {
   // for performance reasons and maximizing parallelism at chrome startup, we
   // defer the heavy lifting for sync init until things have calmed down.
   if (sync_prefs_->HasSyncSetupCompleted()) {
-    if (!received_start_request_)
+    // For first time, defer start if data type hasn't requested sync to avoid
+    // stressing browser start. If |first_start_| is false, most likely the
+    // first attempt to start is intercepted by backup. When backup finishes,
+    // TryStart() is called again and we should start immediately to avoid
+    // unnecessary delay.
+    if (!received_start_request_ && first_start_)
       return StartUp(STARTUP_BACKEND_DEFERRED);
     else
       return StartUp(STARTUP_IMMEDIATE);

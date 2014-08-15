@@ -106,6 +106,8 @@ class TestProfileSyncService : public ProfileSyncService {
   virtual syncer::WeakHandle<syncer::JsEventHandler> GetJsEventHandler()
       OVERRIDE;
 
+  virtual bool NeedBackup() const OVERRIDE;
+
  private:
   syncer::TestIdFactory id_factory_;
 };

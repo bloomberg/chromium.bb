@@ -771,8 +771,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   virtual bool IsSessionsDataTypeControllerRunning() const;
 
-  void SetBackupStartDelayForTest(base::TimeDelta delay);
-
   BackendMode backend_mode() const {
     return backend_mode_;
   }
@@ -782,8 +780,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   // Return the base URL of the Sync Server.
   static GURL GetSyncServiceURL(const base::CommandLine& command_line);
-
-  void StartStopBackupForTesting();
 
   base::Time GetDeviceBackupTimeForTesting() const;
 
@@ -819,6 +815,8 @@ class ProfileSyncService : public ProfileSyncServiceBase,
       const tracked_objects::Location& from_here,
       const std::string& message,
       bool delete_sync_database);
+
+  virtual bool NeedBackup() const;
 
   // This is a cache of the last authentication response we received from the
   // sync server. The UI queries this to display appropriate messaging to the
@@ -970,6 +968,13 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   // Callback to receive backup DB check result.
   void CheckSyncBackupCallback(base::Time backup_time);
+
+  // Callback function to call |startup_controller_|.TryStart() after
+  // backup/rollback finishes;
+  void TryStartSyncAfterBackup();
+
+  // Clean up prefs and backup DB when rollback is not needed.
+  void CleanUpBackup();
 
  // Factory used to create various dependent objects.
   scoped_ptr<ProfileSyncComponentsFactory> factory_;
@@ -1136,9 +1141,13 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Mode of current backend.
   BackendMode backend_mode_;
 
-  // When browser starts, delay sync backup/rollback backend start for this
-  // time.
-  base::TimeDelta backup_start_delay_;
+  // Whether backup is needed before sync starts.
+  bool need_backup_;
+
+  // Whether backup is finished.
+  bool backup_finished_;
+
+  base::Time backup_start_time_;
 
   base::Callback<void(Profile*, base::Time, base::Time)> clear_browsing_data_;
 

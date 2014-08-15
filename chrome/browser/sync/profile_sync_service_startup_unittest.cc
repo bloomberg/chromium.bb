@@ -63,6 +63,23 @@ ACTION_P3(InvokeOnConfigureDone, pss, error_callback, result) {
   service->OnConfigureDone(configure_result);
 }
 
+class TestProfileSyncServiceNoBackup : public ProfileSyncService {
+ public:
+  TestProfileSyncServiceNoBackup(
+      scoped_ptr<ProfileSyncComponentsFactory> factory,
+      Profile* profile,
+      scoped_ptr<SupervisedUserSigninManagerWrapper> signin_wrapper,
+      ProfileOAuth2TokenService* oauth2_token_service,
+      browser_sync::ProfileSyncServiceStartBehavior start_behavior)
+     : ProfileSyncService(factory.Pass(), profile, signin_wrapper.Pass(),
+                          oauth2_token_service, start_behavior) {}
+
+ protected:
+  virtual bool NeedBackup() const OVERRIDE {
+    return false;
+  }
+};
+
 class ProfileSyncServiceStartupTest : public testing::Test {
  public:
   ProfileSyncServiceStartupTest()
@@ -102,7 +119,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
 
   static KeyedService* BuildService(content::BrowserContext* browser_context) {
     Profile* profile = static_cast<Profile*>(browser_context);
-    return new ProfileSyncService(
+    return new TestProfileSyncServiceNoBackup(
         scoped_ptr<ProfileSyncComponentsFactory>(
             new ProfileSyncComponentsFactoryMock()),
         profile,
@@ -199,7 +216,7 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
     ProfileOAuth2TokenService* oauth2_token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
     EXPECT_FALSE(signin->GetAuthenticatedUsername().empty());
-    return new ProfileSyncService(
+    return new TestProfileSyncServiceNoBackup(
         scoped_ptr<ProfileSyncComponentsFactory>(
             new ProfileSyncComponentsFactoryMock()),
         profile,

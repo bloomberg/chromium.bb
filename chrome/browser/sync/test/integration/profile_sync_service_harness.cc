@@ -55,6 +55,8 @@ class BackendInitializeChecker : public SingleClientStatusChangeChecker {
       : SingleClientStatusChangeChecker(service) {}
 
   virtual bool IsExitConditionSatisfied() OVERRIDE {
+    if (service()->backend_mode() != ProfileSyncService::SYNC)
+      return false;
     if (service()->sync_initialized())
       return true;
     // Backend initialization is blocked by an auth error.

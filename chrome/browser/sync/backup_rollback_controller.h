@@ -28,9 +28,13 @@ class BackupRollbackController {
                            base::Closure start_rollback);
   ~BackupRollbackController();
 
-  // Check to see whether to start backup/rollback. |delay| specifies the time
-  // to wait before checking.
-  void Start(base::TimeDelta delay);
+  // Post task to run |start_backup_| if conditions are met. Return true if
+  // task is posted, false otherwise.
+  bool StartBackup();
+
+  // Post task to run |start_rollback_| if conditions are met. Return true if
+  // task is posted, false otherwise.
+  bool StartRollback();
 
   // Update rollback preference to indicate rollback is needed.
   void OnRollbackReceived();
@@ -42,10 +46,6 @@ class BackupRollbackController {
   static bool IsBackupEnabled();
 
  private:
-  // Check signin status and rollback preference and start backup/rollback
-  // accordingly.
-  void TryStart();
-
   sync_driver::SyncPrefs* sync_prefs_;
 
   // Use SupervisedUserSigninManagerWrapper instead of SigninManagerBase because
@@ -55,7 +55,6 @@ class BackupRollbackController {
 
   base::Closure start_backup_;
   base::Closure start_rollback_;
-  base::WeakPtrFactory<BackupRollbackController> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BackupRollbackController);
 };

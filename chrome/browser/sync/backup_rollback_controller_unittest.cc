@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/sync_driver/sync_prefs.h"
@@ -49,16 +50,12 @@ class BackupRollbackControllerTest : public testing::Test {
       backup_started_ = true;
     else
       rollback_started_ = true;
-
-    if (need_loop_quit_)
-      base::MessageLoop::current()->Quit();
   }
 
  protected:
   virtual void SetUp() OVERRIDE {
     backup_started_ = false;
     rollback_started_ = false;
-    need_loop_quit_ = false;
 
     EXPECT_CALL(signin_wrapper_, GetEffectiveUsername())
         .WillRepeatedly(Return(""));
@@ -71,111 +68,76 @@ class BackupRollbackControllerTest : public testing::Test {
                    base::Unretained(this), false)));
   }
 
+  void PumpLoop() {
+    base::RunLoop run_loop;
+    loop_.PostTask(FROM_HERE, run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
   MockSigninManagerWrapper signin_wrapper_;
   FakeSyncPrefs fake_prefs_;
   scoped_ptr<browser_sync::BackupRollbackController> controller_;
   bool backup_started_;
   bool rollback_started_;
-  bool need_loop_quit_;
   base::MessageLoop loop_;
 };
 
-TEST_F(BackupRollbackControllerTest, DelayStart) {
-  controller_->Start(base::TimeDelta::FromMilliseconds(100));
-  EXPECT_FALSE(backup_started_);
-  need_loop_quit_ = true;
-  base::MessageLoop::current()->Run();
+TEST_F(BackupRollbackControllerTest, StartBackup) {
+  EXPECT_TRUE(controller_->StartBackup());
+  PumpLoop();
   EXPECT_TRUE(backup_started_);
 }
 
-TEST_F(BackupRollbackControllerTest, NoDelayStart) {
-  controller_->Start(base::TimeDelta());
-  EXPECT_TRUE(backup_started_);
-}
+TEST_F(BackupRollbackControllerTest, NoBackupIfDisabled) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kSyncDisableBackup);
 
-TEST_F(BackupRollbackControllerTest, NoStartWithUserSignedIn) {
-  EXPECT_CALL(signin_wrapper_, GetEffectiveUsername())
-      .Times(1)
-      .WillOnce(Return("test"));
-  controller_->Start(base::TimeDelta());
+  base::RunLoop run_loop;
+  EXPECT_FALSE(controller_->StartBackup());
+  loop_.PostTask(FROM_HERE, run_loop.QuitClosure());
+  run_loop.Run();
   EXPECT_FALSE(backup_started_);
-  EXPECT_FALSE(rollback_started_);
-}
-
-TEST_F(BackupRollbackControllerTest, StartOnUserSignedOut) {
-  EXPECT_CALL(signin_wrapper_, GetEffectiveUsername())
-      .Times(2)
-      .WillOnce(Return("test"))
-      .WillOnce(Return(""));
-  controller_->Start(base::TimeDelta());
-  EXPECT_FALSE(backup_started_);
-  EXPECT_FALSE(rollback_started_);
-
-  // 2nd time no signed-in user. Starts backup.
-  controller_->Start(base::TimeDelta());
-  EXPECT_TRUE(backup_started_);
 }
 
 TEST_F(BackupRollbackControllerTest, StartRollback) {
-  EXPECT_CALL(signin_wrapper_, GetEffectiveUsername())
-      .Times(2)
-      .WillOnce(Return("test"))
-      .WillOnce(Return(""));
-  controller_->Start(base::TimeDelta());
-  EXPECT_FALSE(backup_started_);
-  EXPECT_FALSE(rollback_started_);
-
-  controller_->OnRollbackReceived();
-  controller_->Start(base::TimeDelta());
-  EXPECT_TRUE(rollback_started_);
-}
-
-TEST_F(BackupRollbackControllerTest, RollbackOnBrowserStart) {
   fake_prefs_.SetRemainingRollbackTries(1);
-  controller_->Start(base::TimeDelta());
+
+  EXPECT_TRUE(controller_->StartRollback());
+  PumpLoop();
   EXPECT_TRUE(rollback_started_);
+  EXPECT_EQ(0, fake_prefs_.GetRemainingRollbackTries());
 }
 
-TEST_F(BackupRollbackControllerTest, BackupAfterRollbackDone) {
-  fake_prefs_.SetRemainingRollbackTries(3);
-  controller_->Start(base::TimeDelta());
-  EXPECT_TRUE(rollback_started_);
-  EXPECT_FALSE(backup_started_);
+TEST_F(BackupRollbackControllerTest, NoRollbackIfOutOfTries) {
+  fake_prefs_.SetRemainingRollbackTries(0);
 
-  controller_->OnRollbackDone();
-  controller_->Start(base::TimeDelta());
-  EXPECT_TRUE(backup_started_);
-}
-
-TEST_F(BackupRollbackControllerTest, GiveUpRollback) {
-  fake_prefs_.SetRemainingRollbackTries(3);
-  for (int i = 0; i < 3; ++i) {
-    controller_->Start(base::TimeDelta());
-    EXPECT_TRUE(rollback_started_);
-    EXPECT_FALSE(backup_started_);
-    rollback_started_ = false;
-  }
-
-  controller_->Start(base::TimeDelta());
+  EXPECT_FALSE(controller_->StartRollback());
+  PumpLoop();
   EXPECT_FALSE(rollback_started_);
-  EXPECT_TRUE(backup_started_);
 }
 
-TEST_F(BackupRollbackControllerTest, SkipRollbackIfNotEnabled) {
+TEST_F(BackupRollbackControllerTest, NoRollbackIfUserSignedIn) {
+  fake_prefs_.SetRemainingRollbackTries(1);
+  EXPECT_CALL(signin_wrapper_, GetEffectiveUsername())
+      .Times(1)
+      .WillOnce(Return("test"));
+  EXPECT_FALSE(controller_->StartRollback());
+  EXPECT_EQ(0, fake_prefs_.GetRemainingRollbackTries());
+
+  PumpLoop();
+  EXPECT_FALSE(backup_started_);
+  EXPECT_FALSE(rollback_started_);
+}
+
+TEST_F(BackupRollbackControllerTest, NoRollbackIfDisabled) {
+  fake_prefs_.SetRemainingRollbackTries(1);
+
   CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kSyncDisableRollback);
+  EXPECT_FALSE(controller_->StartRollback());
+  EXPECT_EQ(0, fake_prefs_.GetRemainingRollbackTries());
 
-  EXPECT_CALL(signin_wrapper_, GetEffectiveUsername())
-      .Times(2)
-      .WillOnce(Return("test"))
-      .WillOnce(Return(""));
-  controller_->Start(base::TimeDelta());
-  EXPECT_FALSE(backup_started_);
-  EXPECT_FALSE(rollback_started_);
-
-  controller_->OnRollbackReceived();
-  controller_->Start(base::TimeDelta());
-  EXPECT_TRUE(backup_started_);
+  PumpLoop();
   EXPECT_FALSE(rollback_started_);
 }
 

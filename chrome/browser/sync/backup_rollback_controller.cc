@@ -30,31 +30,42 @@ BackupRollbackController::BackupRollbackController(
     : sync_prefs_(sync_prefs),
       signin_(signin),
       start_backup_(start_backup),
-      start_rollback_(start_rollback),
-      weak_ptr_factory_(this) {
+      start_rollback_(start_rollback) {
 }
 
 BackupRollbackController::~BackupRollbackController() {
 }
 
-void BackupRollbackController::Start(base::TimeDelta delay) {
+bool BackupRollbackController::StartBackup() {
   if (!IsBackupEnabled())
-    return;
+    return false;
 
+  // Disable rollback to previous backup DB because it will be overwritten by
+  // new backup.
+  sync_prefs_->SetRemainingRollbackTries(0);
+  base::MessageLoop::current()->PostTask(FROM_HERE, start_backup_);
+  return true;
+}
+
+bool BackupRollbackController::StartRollback() {
+  if (!IsBackupEnabled())
+    return false;
+
+  // Don't roll back if disabled or user is signed in.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSyncDisableRollback)) {
+          switches::kSyncDisableRollback) ||
+      !signin_->GetEffectiveUsername().empty()) {
     sync_prefs_->SetRemainingRollbackTries(0);
+    return false;
   }
 
-  if (delay == base::TimeDelta()) {
-    TryStart();
-  } else {
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&BackupRollbackController::TryStart,
-                   weak_ptr_factory_.GetWeakPtr()),
-        delay);
-  }
+  int rollback_tries = sync_prefs_->GetRemainingRollbackTries();
+  if (rollback_tries <= 0)
+    return false;   // No pending rollback.
+
+  sync_prefs_->SetRemainingRollbackTries(rollback_tries - 1);
+  base::MessageLoop::current()->PostTask(FROM_HERE, start_rollback_);
+  return true;
 }
 
 void BackupRollbackController::OnRollbackReceived() {
@@ -67,23 +78,6 @@ void BackupRollbackController::OnRollbackDone() {
 #if defined(ENABLE_PRE_SYNC_BACKUP)
   sync_prefs_->SetRemainingRollbackTries(0);
 #endif
-}
-
-void BackupRollbackController::TryStart() {
-  if (!signin_->GetEffectiveUsername().empty()) {
-    DVLOG(1) << "Don't start backup/rollback when user is signed in.";
-    return;
-  }
-
-  int rollback_tries = sync_prefs_->GetRemainingRollbackTries();
-  if (rollback_tries > 0) {
-    DVLOG(1) << "Start rollback.";
-    sync_prefs_->SetRemainingRollbackTries(rollback_tries - 1);
-    start_rollback_.Run();
-  } else {
-    DVLOG(1) << "Start backup.";
-    start_backup_.Run();
-  }
 }
 
 // static

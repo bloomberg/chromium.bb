@@ -227,23 +227,21 @@ TEST_F(StartupControllerTest, FirstSetup) {
   }
 }
 
-// Test that the controller "forgets" that preconditions were met on reset.
 TEST_F(StartupControllerTest, Reset) {
   sync_prefs()->SetSyncSetupCompleted();
   signin()->set_account(kTestUser);
   token_service()->IssueRefreshTokenForUser(kTestUser, kTestToken);
   controller()->TryStart();
+  const bool deferred_start = !CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kSyncDisableDeferredStartup);
+  EXPECT_EQ(!deferred_start, started());
   controller()->OnDataTypeRequestsSyncStartup(syncer::SESSIONS);
   EXPECT_TRUE(started());
   clear_started();
   controller()->Reset(syncer::UserTypes());
-  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(started());
-  const bool deferred_start = !CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kSyncDisableDeferredStartup);
   controller()->TryStart();
-  EXPECT_EQ(!deferred_start, started());
-  controller()->OnDataTypeRequestsSyncStartup(syncer::SESSIONS);
+  // Restart is not deferred.
   EXPECT_TRUE(started());
 }
 

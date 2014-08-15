@@ -176,3 +176,7 @@ void TestProfileSyncService::OnConfigureDone(
 UserShare* TestProfileSyncService::GetUserShare() const {
   return backend_->GetUserShare();
 }
+
+bool TestProfileSyncService::NeedBackup() const {
+  return false;
+}
