@@ -72,7 +72,6 @@
 #include "chrome/browser/ui/android/tab_model/tab_model_base.h"
 #include "chrome/browser/ui/android/toolbar/toolbar_model_android.h"
 #include "chrome/browser/ui/android/website_settings_popup_android.h"
-#include "components/autofill/core/browser/android/component_jni_registrar.h"
 #include "components/bookmarks/common/android/component_jni_registrar.h"
 #include "components/dom_distiller/android/component_jni_registrar.h"
 #include "components/enhanced_bookmarks/android/component_jni_registrar.h"
@@ -101,7 +100,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     navigation_interception::RegisterNavigationInterceptionJni },
   { "WebContentsDelegateAndroid",
     web_contents_delegate_android::RegisterWebContentsDelegateAndroidJni },
-  { "RegisterAuxiliaryProfileLoader", autofill::RegisterAutofillAndroidJni },
   // Register JNI for chrome classes.
   { "AccessibilityUtils", AccessibilityUtil::Register },
   { "AccountManagementScreenHelper", AccountManagementScreenHelper::Register },

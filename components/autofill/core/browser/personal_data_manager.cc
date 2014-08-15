@@ -926,9 +926,9 @@ void PersonalDataManager::LoadProfiles() {
   pending_profiles_query_ = database_->GetAutofillProfiles(this);
 }
 
-// Win, Linux, and iOS implementations do nothing. Mac and Android
-// implementations fill in the contents of |auxiliary_profiles_|.
-#if defined(OS_IOS) || (!defined(OS_MACOSX) && !defined(OS_ANDROID))
+// Win, Linux, Android and iOS implementations do nothing. Mac implementation
+// fills in the contents of |auxiliary_profiles_|.
+#if defined(OS_IOS) || !defined(OS_MACOSX)
 void PersonalDataManager::LoadAuxiliaryProfiles(bool record_metrics) const {
 }
 #endif

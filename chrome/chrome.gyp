@@ -637,7 +637,6 @@
             'toolbar_model_security_levels_java',
             'tab_load_status_java',
             '../base/base.gyp:base',
-            '../components/components.gyp:autofill_java',
             '../components/components.gyp:bookmarks_java',
             '../components/components.gyp:dom_distiller_core_java',
             '../components/components.gyp:enhanced_bookmarks_java',

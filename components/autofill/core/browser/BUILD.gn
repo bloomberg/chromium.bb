@@ -177,8 +177,6 @@ static_library("browser") {
 
 static_library("test_support") {
   sources = [
-    "android/test_auxiliary_profile_loader_android.cc",
-    "android/test_auxiliary_profile_loader_android.h",
     "autofill_test_utils.cc",
     "autofill_test_utils.h",
     "data_driven_test.cc",
@@ -206,7 +204,6 @@ source_set("unit_tests") {
   sources = [
     "address_field_unittest.cc",
     "address_unittest.cc",
-    "android/auxiliary_profile_unittest_android.cc",
     "autocomplete_history_manager_unittest.cc",
     "autofill_country_unittest.cc",
     "autofill_data_model_unittest.cc",

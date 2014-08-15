@@ -34,24 +34,10 @@
         '../ui/gfx/gfx.gyp:gfx',
         '../url/url.gyp:url_lib',
       ],
-      'conditions': [
-        ['OS == "android"', {
-          'dependencies': [
-            'autofill_jni_headers',
-          ],
-        }],
-      ],
       'include_dirs': [
         '..',
       ],
       'sources': [
-        'autofill/core/browser/android/auxiliary_profile_loader_android.cc',
-        'autofill/core/browser/android/auxiliary_profile_loader_android.h',
-        'autofill/core/browser/android/auxiliary_profiles_android.cc',
-        'autofill/core/browser/android/auxiliary_profiles_android.h',
-        'autofill/core/browser/android/component_jni_registrar.cc',
-        'autofill/core/browser/android/component_jni_registrar.h',
-        'autofill/core/browser/android/personal_data_manager_android.cc',
         'autofill/core/common/autofill_constants.cc',
         'autofill/core/common/autofill_constants.h',
         'autofill/core/common/autofill_data_validation.cc',
@@ -258,8 +244,6 @@
         '../testing/gtest.gyp:gtest',
       ],
       'sources': [
-        'autofill/core/browser/android/test_auxiliary_profile_loader_android.cc',
-        'autofill/core/browser/android/test_auxiliary_profile_loader_android.h',
         'autofill/core/browser/autofill_test_utils.cc',
         'autofill/core/browser/autofill_test_utils.h',
         'autofill/core/browser/data_driven_test.cc',
@@ -449,33 +433,6 @@
           ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [4267, ],
-        },
-      ],
-    }],
-    ['OS == "android"', {
-      'targets': [
-        {
-          'target_name': 'autofill_java',
-          'type': 'none',
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../content/content.gyp:content_java',
-          ],
-          'variables': {
-            'java_in_dir': 'autofill/core/browser/android/java',
-          },
-          'includes': [ '../build/java.gypi' ],
-        },
-        {
-          'target_name': 'autofill_jni_headers',
-          'type': 'none',
-          'sources': [
-            'autofill/core/browser/android/java/src/org/chromium/components/browser/autofill/PersonalAutofillPopulator.java',
-          ],
-          'variables': {
-            'jni_gen_package': 'autofill',
-          },
-          'includes': [ '../build/jni_generator.gypi' ],
         },
       ],
     }],

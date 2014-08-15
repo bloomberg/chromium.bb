@@ -199,17 +199,17 @@ void AutofillManager::RegisterProfilePrefs(
       prefs::kAutofillEnabled,
       true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_MACOSX)
   registry->RegisterBooleanPref(
       prefs::kAutofillAuxiliaryProfilesEnabled,
       true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-#else  // defined(OS_MACOSX) || defined(OS_ANDROID)
+#else  // defined(OS_MACOSX)
   registry->RegisterBooleanPref(
       prefs::kAutofillAuxiliaryProfilesEnabled,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-#endif  // defined(OS_MACOSX) || defined(OS_ANDROID)
+#endif  // defined(OS_MACOSX)
 #if defined(OS_MACOSX)
   registry->RegisterBooleanPref(
       prefs::kAutofillMacAddressBookQueried,

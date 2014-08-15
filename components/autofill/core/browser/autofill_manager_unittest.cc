@@ -2425,10 +2425,9 @@ TEST_F(AutofillManagerTest, FormSubmittedWithDefaultValues) {
 // thing on all platforms.
 TEST_F(AutofillManagerTest, AuxiliaryProfilesReset) {
   PrefService* prefs = autofill_client_.GetPrefs();
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
-  // Auxiliary profiles is implemented on Mac and Android only.
+#if defined(OS_MACOSX)
+  // Auxiliary profiles is implemented on Mac only.
   // OSX: This preference exists for legacy reasons. It is no longer used.
-  // Android: enables integration with user's contact profile.
   ASSERT_TRUE(
       prefs->GetBoolean(::autofill::prefs::kAutofillAuxiliaryProfilesEnabled));
   prefs->SetBoolean(::autofill::prefs::kAutofillAuxiliaryProfilesEnabled,
@@ -2443,7 +2442,7 @@ TEST_F(AutofillManagerTest, AuxiliaryProfilesReset) {
   prefs->ClearPref(::autofill::prefs::kAutofillAuxiliaryProfilesEnabled);
   ASSERT_FALSE(
       prefs->GetBoolean(::autofill::prefs::kAutofillAuxiliaryProfilesEnabled));
-#endif  // defined(OS_MACOSX) || defined(OS_ANDROID)
+#endif  // defined(OS_MACOSX)
 }
 
 TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
