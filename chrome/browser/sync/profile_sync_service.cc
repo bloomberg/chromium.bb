@@ -31,6 +31,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
+#include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
@@ -67,6 +68,7 @@
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/invalidation/invalidation_service.h"
 #include "components/invalidation/profile_invalidation_provider.h"
+#include "components/password_manager/core/browser/password_store.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/about_signin_internals.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -178,6 +180,10 @@ void ClearBrowsingData(Profile* profile, base::Time start, base::Time end) {
       profile, start, end);
   remover->Remove(BrowsingDataRemover::REMOVE_ALL,
                   BrowsingDataHelper::ALL);
+
+  password_manager::PasswordStore* password =
+      PasswordStoreFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS);
+  password->RemoveLoginsSyncedBetween(start, end);
 }
 
 }  // anonymous namespace
