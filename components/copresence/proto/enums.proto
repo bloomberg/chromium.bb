@@ -65,12 +65,6 @@ enum InstructionType {
   SCAN_WIFI = 2;
   SCAN_BLE = 3;
 }
-enum TransmissionStrategy {
-  UNKNOWN_STRATEGY = 0;
-  AGGRESSIVE = 1;
-  OPPORTUNISTIC = 2;
-  PASSIVE = 3;
-}
 enum StatusCode {
   STATUS_CODE_UNKNOWN = -1;
   OK = 0;

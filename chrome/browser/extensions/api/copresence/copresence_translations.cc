@@ -9,6 +9,16 @@
 #include "components/copresence/proto/enums.pb.h"
 #include "components/copresence/proto/rpcs.pb.h"
 
+using copresence::BROADCAST_AND_SCAN;
+using copresence::BROADCAST_ONLY;
+using copresence::BROADCAST_SCAN_CONFIGURATION_UNKNOWN;
+using copresence::BroadcastScanConfiguration;
+using copresence::ReportRequest;
+using copresence::SCAN_ONLY;
+using copresence::TokenExchangeStrategy;
+
+using extensions::api::copresence::Strategy;
+
 namespace {
 
 const int kDefaultTimeToLiveMs = 5 * 60 * 1000;    // 5 minutes.
@@ -17,35 +27,50 @@ const int kMaxTimeToLiveMs = 24 * 60 * 60 * 1000;  // 24 hours.
 // Checks and returns the ttl provided by the user. If invalid, returns -1.
 int SanitizeTtl(int* user_ttl) {
   return !user_ttl
-             ? kDefaultTimeToLiveMs
-             : (*user_ttl <= 0 || *user_ttl > kMaxTimeToLiveMs ? -1
-                                                               : *user_ttl);
+      ? kDefaultTimeToLiveMs
+      : (*user_ttl <= 0 || *user_ttl > kMaxTimeToLiveMs ? -1 : *user_ttl);
 }
 
-copresence::BroadcastScanConfiguration TranslateStrategy(
-    const extensions::api::copresence::Strategy& strategy) {
+BroadcastScanConfiguration TranslateStrategy(const Strategy& strategy) {
   bool only_broadcast = strategy.only_broadcast && *strategy.only_broadcast;
   bool only_scan = strategy.only_scan && *strategy.only_scan;
 
   if (only_broadcast && only_scan)
-    return copresence::BROADCAST_AND_SCAN;
+    return BROADCAST_AND_SCAN;
   if (only_broadcast)
-    return copresence::BROADCAST_ONLY;
+    return BROADCAST_ONLY;
   if (only_scan)
-    return copresence::SCAN_ONLY;
+    return SCAN_ONLY;
 
-  return copresence::BROADCAST_SCAN_CONFIGURATION_UNKNOWN;
+  return BROADCAST_SCAN_CONFIGURATION_UNKNOWN;
+}
+
+// The strategy may be null (unspecified), so we pass it as a pointer.
+void SetTokenExchangeStrategy(const Strategy* strategy,
+                              BroadcastScanConfiguration default_config,
+                              TokenExchangeStrategy* strategy_proto) {
+  if (strategy) {
+    BroadcastScanConfiguration config = TranslateStrategy(*strategy);
+    strategy_proto->set_broadcast_scan_configuration(
+        config == BROADCAST_SCAN_CONFIGURATION_UNKNOWN ?
+        default_config : config);
+    strategy_proto->set_use_audible(strategy->audible && *strategy->audible);
+  } else {
+    strategy_proto->set_broadcast_scan_configuration(default_config);
+  }
 }
 
 }  // namespace
 
 namespace extensions {
 
+using api::copresence::Operation;
+
 // Adds a publish operation to the report request. Returns false if the
 // publish operation was invalid.
 bool AddPublishToRequest(const std::string& app_id,
                          const api::copresence::PublishOperation& publish,
-                         copresence::ReportRequest* request) {
+                         ReportRequest* request) {
   copresence::PublishedMessage* publish_proto =
       request->mutable_manage_messages_request()->add_message_to_publish();
   publish_proto->mutable_access_policy()->mutable_acl()->set_acl_type(
@@ -60,23 +85,9 @@ bool AddPublishToRequest(const std::string& app_id,
     return false;
   publish_proto->mutable_access_policy()->set_ttl_millis(ttl);
 
-  // TODO(rkc): This is a temporary hack; eventually namespaces will be
-  // completely gone. When that happens, remove this.
-  publish_proto->mutable_message()->mutable_type()->set_namespace_deprecated(
-      app_id);
-  publish_proto->set_strategy(copresence::AGGRESSIVE);
-
-  if (publish.strategies.get()) {
-    copresence::BroadcastScanConfiguration config =
-        TranslateStrategy(*publish.strategies);
-    if (config != copresence::BROADCAST_SCAN_CONFIGURATION_UNKNOWN) {
-      copresence::TokenExchangeStrategy* strategy_proto =
-          publish_proto->mutable_token_exchange_strategy();
-      strategy_proto->set_broadcast_scan_configuration(config);
-      if (publish.strategies->audible && *publish.strategies->audible)
-        strategy_proto->set_use_audible(true);
-    }
-  }
+  SetTokenExchangeStrategy(publish.strategies.get(),
+                           BROADCAST_ONLY,
+                           publish_proto->mutable_token_exchange_strategy());
 
   DVLOG(2) << "Publishing message of type " << publish.message.type << ":\n"
            << publish.message.payload;
@@ -87,7 +98,7 @@ bool AddPublishToRequest(const std::string& app_id,
 // Adds an unpublish operation to the report request. Returns false if the
 // publish id was invalid.
 bool AddUnpublishToRequest(const std::string& publish_id,
-                           copresence::ReportRequest* request) {
+                           ReportRequest* request) {
   if (publish_id.empty())
     return false;
 
@@ -102,7 +113,7 @@ bool AddSubscribeToRequest(
     const std::string& app_id,
     const api::copresence::SubscribeOperation& subscription,
     SubscriptionToAppMap* apps_by_subscription_id,
-    copresence::ReportRequest* request) {
+    ReportRequest* request) {
   // Associate the subscription id with the app id.
   SubscriptionToAppMap::iterator previous_subscription =
       apps_by_subscription_id->find(subscription.id);
@@ -128,23 +139,13 @@ bool AddSubscribeToRequest(
     return false;
   subscription_proto->set_ttl_millis(ttl);
 
-  // TODO(rkc): This is a temporary hack; eventually namespaces will be
-  // completely gone. When that happens, remove this.
-  subscription_proto->mutable_message_type()->set_namespace_deprecated(app_id);
-  subscription_proto->set_strategy(copresence::AGGRESSIVE);
-
   subscription_proto->mutable_message_type()->set_type(
       subscription.filter.type);
 
-  if (subscription.strategies.get()) {
-    copresence::BroadcastScanConfiguration config =
-        TranslateStrategy(*subscription.strategies);
-    if (config != copresence::BROADCAST_SCAN_CONFIGURATION_UNKNOWN) {
-      copresence::TokenExchangeStrategy* strategy_proto =
-          subscription_proto->mutable_token_exchange_strategy();
-      strategy_proto->set_broadcast_scan_configuration(config);
-    }
-  }
+  SetTokenExchangeStrategy(
+      subscription.strategies.get(),
+      SCAN_ONLY,
+      subscription_proto->mutable_token_exchange_strategy());
 
   DVLOG(2) << "Subscribing for messages of type " << subscription.filter.type;
   // TODO(ckehoe): Validate that required fields are non-empty, etc.
@@ -156,7 +157,7 @@ bool AddSubscribeToRequest(
 bool AddUnsubscribeToRequest(const std::string& app_id,
                              const std::string& subscription_id,
                              SubscriptionToAppMap* apps_by_subscription_id,
-                             copresence::ReportRequest* request) {
+                             ReportRequest* request) {
   if (subscription_id.empty())
     return false;
 
@@ -184,12 +185,12 @@ bool AddUnsubscribeToRequest(const std::string& app_id,
 }
 
 bool PrepareReportRequestProto(
-    const std::vector<linked_ptr<api::copresence::Operation> >& operations,
+    const std::vector<linked_ptr<Operation> >& operations,
     const std::string& app_id,
     SubscriptionToAppMap* apps_by_subscription_id,
-    copresence::ReportRequest* request) {
+    ReportRequest* request) {
   for (size_t i = 0; i < operations.size(); ++i) {
-    linked_ptr<api::copresence::Operation> op = operations[i];
+    linked_ptr<Operation> op = operations[i];
     DCHECK(op.get());
 
     // Verify our object has exactly one operation.

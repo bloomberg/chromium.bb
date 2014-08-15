@@ -86,7 +86,6 @@ message PublishedMessage {
   optional string id = 1;
   optional AccessPolicy access_policy = 2;
   optional Message message = 3;
-  optional TransmissionStrategy strategy = 4;
   optional TokenExchangeStrategy token_exchange_strategy = 5;
   optional OptInStateFilter opt_in_state_filter = 6;
 }
@@ -105,7 +104,6 @@ message SubscribedMessage {
     optional string publisher_device_id = 3;
     optional int64 creation_timestamp_millis = 4;
     optional int64 ttl_millis = 5;
-    optional TransmissionStrategy strategy = 6;
     optional TokenExchangeStrategy token_exchange_strategy = 7;
   }
   repeated string subscription_id = 1;
@@ -117,12 +115,10 @@ message Message {
   optional bytes payload = 3;
 }
 message MessageType {
-  optional string namespace_deprecated = 1 [deprecated = true];
   optional string type = 2;
 }
 message Subscription {
   optional string id = 1;
-  optional TransmissionStrategy strategy = 2;
   optional int64 ttl_millis = 3;
   optional MessageType message_type = 4;
   optional TokenExchangeStrategy token_exchange_strategy = 7;
