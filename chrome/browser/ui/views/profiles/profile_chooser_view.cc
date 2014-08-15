@@ -135,6 +135,7 @@ class BackgroundColorHoverButton : public views::LabelButton {
                              const base::string16& text,
                              const gfx::ImageSkia& icon)
       : views::LabelButton(listener, text) {
+    SetImageLabelSpacing(views::kItemLabelSpacing);
     SetBorder(views::Border::CreateEmptyBorder(
         0, views::kButtonHEdgeMarginNew, 0, views::kButtonHEdgeMarginNew));
     SetMinSize(gfx::Size(0,

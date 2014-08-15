@@ -21,7 +21,7 @@
 
 namespace {
 
-// The spacing between the icon and text.
+// The default spacing between the icon and text.
 const int kSpacing = 5;
 
 #if !(defined(OS_LINUX) && !defined(OS_CHROMEOS))
@@ -49,7 +49,8 @@ LabelButton::LabelButton(ButtonListener* listener, const base::string16& text)
       explicitly_set_colors_(),
       is_default_(false),
       style_(STYLE_TEXTBUTTON),
-      border_is_themed_border_(true) {
+      border_is_themed_border_(true),
+      image_label_spacing_(kSpacing) {
   SetAnimationDuration(kHoverAnimationDurationMs);
   SetText(text);
   SetFontList(gfx::FontList());
@@ -185,6 +186,14 @@ void LabelButton::SetStyle(ButtonStyle style) {
   ResetCachedPreferredSize();
 }
 
+void LabelButton::SetImageLabelSpacing(int spacing) {
+  if (spacing == image_label_spacing_)
+    return;
+  image_label_spacing_ = spacing;
+  ResetCachedPreferredSize();
+  InvalidateLayout();
+}
+
 void LabelButton::SetFocusPainter(scoped_ptr<Painter> focus_painter) {
   focus_painter_ = focus_painter.Pass();
 }
@@ -211,7 +220,7 @@ gfx::Size LabelButton::GetPreferredSize() const {
   const gfx::Size image_size(image_->GetPreferredSize());
   gfx::Size size(label.GetPreferredSize());
   if (image_size.width() > 0 && size.width() > 0)
-    size.Enlarge(kSpacing, 0);
+    size.Enlarge(image_label_spacing_, 0);
   size.SetToMax(gfx::Size(0, image_size.height()));
   const gfx::Insets insets(GetInsets());
   size.Enlarge(image_size.width() + insets.width(), insets.height());
@@ -240,7 +249,7 @@ int LabelButton::GetHeightForWidth(int w) const {
   const gfx::Size image_size(image_->GetPreferredSize());
   w -= image_size.width();
   if (image_size.width() > 0 && !GetText().empty())
-    w -= kSpacing;
+    w -= image_label_spacing_;
 
   int height = std::max(image_size.height(), label_->GetHeightForWidth(w));
   if (border())
@@ -269,9 +278,10 @@ void LabelButton::Layout() {
   // avoids wasted space within the label that would look like awkward padding.
   // Labels can paint over the full button height, including the border height.
   gfx::Size label_size(child_area.width(), height());
-  if (!image_size.IsEmpty() && !label_size.IsEmpty()) {
-    label_size.set_width(
-        std::max(child_area.width() - image_size.width() - kSpacing, 0));
+  const bool image_and_label = !image_size.IsEmpty() && !label_size.IsEmpty();
+  if (image_and_label) {
+    label_size.set_width(std::max(child_area.width() -
+        image_size.width() - image_label_spacing_, 0));
     if (adjusted_alignment == gfx::ALIGN_CENTER) {
       // Ensure multi-line labels paired with images use their available width.
       label_size.set_width(
@@ -283,15 +293,17 @@ void LabelButton::Layout() {
   image_origin.Offset(0, (child_area.height() - image_size.height()) / 2);
   if (adjusted_alignment == gfx::ALIGN_CENTER) {
     const int total_width = image_size.width() + label_size.width() +
-        ((image_size.width() > 0 && label_size.width() > 0) ? kSpacing : 0);
+        (image_and_label ? image_label_spacing_ : 0);
     image_origin.Offset((child_area.width() - total_width) / 2, 0);
   } else if (adjusted_alignment == gfx::ALIGN_RIGHT) {
     image_origin.Offset(child_area.width() - image_size.width(), 0);
   }
 
   gfx::Point label_origin(child_area.x(), 0);
-  if (!image_size.IsEmpty() && adjusted_alignment != gfx::ALIGN_RIGHT)
-    label_origin.set_x(image_origin.x() + image_size.width() + kSpacing);
+  if (!image_size.IsEmpty() && adjusted_alignment != gfx::ALIGN_RIGHT) {
+    label_origin.set_x(image_origin.x() + image_size.width() +
+        image_label_spacing_);
+  }
 
   image_->SetBoundsRect(gfx::Rect(image_origin, image_size));
   label_->SetBoundsRect(gfx::Rect(label_origin, label_size));

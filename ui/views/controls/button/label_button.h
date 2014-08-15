@@ -77,6 +77,11 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   ButtonStyle style() const { return style_; }
   void SetStyle(ButtonStyle style);
 
+  // Set the spacing between the image and the text. Shrinking the spacing
+  // will not shrink the overall button size, as it is monotonically increasing.
+  // Call SetMinSize(gfx::Size()) to clear the size if needed.
+  void SetImageLabelSpacing(int spacing);
+
   void SetFocusPainter(scoped_ptr<Painter> focus_painter);
   Painter* focus_painter() { return focus_painter_.get(); }
 
@@ -182,6 +187,9 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
 
   // True if current border was set by UpdateThemedBorder. Defaults to true.
   bool border_is_themed_border_;
+
+  // Spacing between the image and the text.
+  int image_label_spacing_;
 
   scoped_ptr<Painter> focus_painter_;
 

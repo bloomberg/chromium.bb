@@ -207,4 +207,22 @@ TEST_F(LabelButtonTest, ChangeTextSize) {
   EXPECT_EQ(original_width, button.GetPreferredSize().width());
 }
 
+TEST_F(LabelButtonTest, ChangeLabelImageSpacing) {
+  LabelButton button(NULL, ASCIIToUTF16("abc"));
+  button.SetImage(Button::STATE_NORMAL, CreateTestImage(50, 50));
+
+  const int kOriginalSpacing = 5;
+  button.SetImageLabelSpacing(kOriginalSpacing);
+  const int original_width = button.GetPreferredSize().width();
+
+  // Increasing the spacing between the text and label should increase the size.
+  button.SetImageLabelSpacing(2 * kOriginalSpacing);
+  EXPECT_GT(button.GetPreferredSize().width(), original_width);
+
+  // The button shrinks if the original spacing is restored.
+  button.SetMinSize(gfx::Size());
+  button.SetImageLabelSpacing(kOriginalSpacing);
+  EXPECT_EQ(original_width, button.GetPreferredSize().width());
+}
+
 }  // namespace views
