@@ -214,7 +214,8 @@ class CONTENT_EXPORT AppCacheStorage {
 
   // Helper used to manage multiple references to a 'delegate' and to
   // allow all pending callbacks to that delegate to be easily cancelled.
-  struct DelegateReference : public base::RefCounted<DelegateReference> {
+  struct CONTENT_EXPORT DelegateReference :
+      public base::RefCounted<DelegateReference> {
     Delegate* delegate;
     AppCacheStorage* storage;
 
