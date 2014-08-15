@@ -14,12 +14,12 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #endif
 
 namespace policy {
@@ -33,7 +33,7 @@ DeviceLocalAccountPolicyBroker* GetBroker(content::BrowserContext* context) {
   if (chromeos::ProfileHelper::IsSigninProfile(profile))
     return NULL;
 
-  if (!chromeos::UserManager::IsInitialized()) {
+  if (!user_manager::UserManager::IsInitialized()) {
     // Bail out in unit tests that don't have a UserManager.
     return NULL;
   }

@@ -37,7 +37,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/fake_user_manager.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
 #include "chromeos/chromeos_switches.h"
 #endif

@@ -12,7 +12,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -22,6 +21,7 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -111,7 +111,7 @@ void OAuth2LoginManager::RestoreSessionFromSavedTokens() {
     // and OnRefreshTokenAvailable is not called. Flagging it here would
     // cause user to go through Gaia in next login to obtain a new refresh
     // token.
-    UserManager::Get()->SaveUserOAuthStatus(
+    user_manager::UserManager::Get()->SaveUserOAuthStatus(
         primary_account_id, user_manager::User::OAUTH_TOKEN_STATUS_UNKNOWN);
 
     token_service->LoadCredentials(primary_account_id);
@@ -140,14 +140,14 @@ void OAuth2LoginManager::OnRefreshTokenAvailable(
 
   // Do not validate tokens for supervised users, as they don't actually have
   // oauth2 token.
-  if (UserManager::Get()->IsLoggedInAsSupervisedUser()) {
+  if (user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser()) {
     VLOG(1) << "Logged in as supervised user, skip token validation.";
     return;
   }
   // Only restore session cookies for the primary account in the profile.
   if (GetPrimaryAccountId() == account_id) {
     // Token is loaded. Undo the flagging before token loading.
-    UserManager::Get()->SaveUserOAuthStatus(
+    user_manager::UserManager::Get()->SaveUserOAuthStatus(
         account_id, user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
     VerifySessionCookies();
   }

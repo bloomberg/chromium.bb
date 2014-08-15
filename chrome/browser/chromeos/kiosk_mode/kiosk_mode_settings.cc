@@ -11,7 +11,6 @@
 #include "base/lazy_instance.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_screensaver.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"

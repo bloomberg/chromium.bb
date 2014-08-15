@@ -16,7 +16,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/login/users/fake_user_manager.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"

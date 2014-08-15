@@ -9,13 +9,14 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_flow.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/audio/chromeos_sounds.h"
+#include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "grit/browser_resources.h"
@@ -209,7 +210,8 @@ void SupervisedUserCreationScreenHandler::PrepareToShow() {}
 void SupervisedUserCreationScreenHandler::Show() {
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   scoped_ptr<base::ListValue> users_list(new base::ListValue());
-  const user_manager::UserList& users = UserManager::Get()->GetUsers();
+  const user_manager::UserList& users =
+      user_manager::UserManager::Get()->GetUsers();
   std::string owner;
   chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
 
@@ -301,8 +303,9 @@ void SupervisedUserCreationScreenHandler::HandleImportUserSelected(
 void SupervisedUserCreationScreenHandler::HandleCheckSupervisedUserName(
     const base::string16& name) {
   std::string user_id;
-  if (NULL != UserManager::Get()->GetSupervisedUserManager()->
-          FindByDisplayName(base::CollapseWhitespace(name, true))) {
+  if (NULL !=
+      ChromeUserManager::Get()->GetSupervisedUserManager()->FindByDisplayName(
+          base::CollapseWhitespace(name, true))) {
     CallJS("supervisedUserNameError", name,
            l10n_util::GetStringUTF16(
                IDS_CREATE_SUPERVISED_USER_CREATE_USERNAME_ALREADY_EXISTS));
@@ -325,8 +328,9 @@ void SupervisedUserCreationScreenHandler::HandleCreateSupervisedUser(
     return;
   const base::string16 new_user_name =
       base::CollapseWhitespace(new_raw_user_name, true);
-  if (NULL != UserManager::Get()->GetSupervisedUserManager()->
-          FindByDisplayName(new_user_name)) {
+  if (NULL !=
+      ChromeUserManager::Get()->GetSupervisedUserManager()->FindByDisplayName(
+          new_user_name)) {
     CallJS("supervisedUserNameError", new_user_name,
            l10n_util::GetStringFUTF16(
                IDS_CREATE_SUPERVISED_USER_CREATE_USERNAME_ALREADY_EXISTS,
@@ -384,7 +388,7 @@ void SupervisedUserCreationScreenHandler::HandleAuthenticateManager(
       gaia::SanitizeEmail(raw_manager_username);
 
   UserFlow* flow = new SupervisedUserCreationFlow(manager_username);
-  UserManager::Get()->SetUserFlow(manager_username, flow);
+  ChromeUserManager::Get()->SetUserFlow(manager_username, flow);
 
   delegate_->AuthenticateManager(manager_username, manager_password);
 }

@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-namespace chromeos {
+namespace user_manager {
 class UserManager;
 }
 
@@ -40,7 +40,7 @@ class PolicyCertService
  public:
   PolicyCertService(const std::string& user_id,
                     UserNetworkConfigurationUpdater* net_conf_updater,
-                    chromeos::UserManager* user_manager);
+                    user_manager::UserManager* user_manager);
   virtual ~PolicyCertService();
 
   // Creates an associated PolicyCertVerifier. The returned object must only be
@@ -64,17 +64,17 @@ class PolicyCertService
   static scoped_ptr<PolicyCertService> CreateForTesting(
       const std::string& user_id,
       PolicyCertVerifier* verifier,
-      chromeos::UserManager* user_manager);
+      user_manager::UserManager* user_manager);
 
  private:
   PolicyCertService(const std::string& user_id,
                     PolicyCertVerifier* verifier,
-                    chromeos::UserManager* user_manager);
+                    user_manager::UserManager* user_manager);
 
   PolicyCertVerifier* cert_verifier_;
   std::string user_id_;
   UserNetworkConfigurationUpdater* net_conf_updater_;
-  chromeos::UserManager* user_manager_;
+  user_manager::UserManager* user_manager_;
   bool has_trust_anchors_;
 
   // Weak pointers to handle callbacks from PolicyCertVerifier on the IO thread.

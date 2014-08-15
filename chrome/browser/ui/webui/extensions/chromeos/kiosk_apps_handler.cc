@@ -15,11 +15,11 @@
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "extensions/common/extension.h"
@@ -199,9 +199,8 @@ void KioskAppsHandler::OnKioskExtensionDownloadFailed(
 void KioskAppsHandler::OnGetConsumerKioskAutoLaunchStatus(
     chromeos::KioskAppManager::ConsumerKioskAutoLaunchStatus status) {
   initialized_ = true;
-  is_kiosk_enabled_ =
-      chromeos::UserManager::Get()->IsCurrentUserOwner() ||
-      !base::SysInfo::IsRunningOnChromeOS();
+  is_kiosk_enabled_ = user_manager::UserManager::Get()->IsCurrentUserOwner() ||
+                      !base::SysInfo::IsRunningOnChromeOS();
 
   is_auto_launch_enabled_ =
       status == KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_ENABLED ||

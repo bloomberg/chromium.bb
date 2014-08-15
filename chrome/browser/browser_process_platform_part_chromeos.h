@@ -15,6 +15,7 @@ class CommandLine;
 }
 
 namespace chromeos {
+class ChromeUserManager;
 class OomPriorityManager;
 class ProfileHelper;
 }
@@ -45,6 +46,9 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
   void InitializeAutomaticRebootManager();
   void ShutdownAutomaticRebootManager();
 
+  void InitializeChromeUserManager();
+  void DestroyChromeUserManager();
+
   void InitializeSessionManager(const base::CommandLine& parsed_command_line,
                                 Profile* profile,
                                 bool is_running_test);
@@ -69,6 +73,10 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
 
   policy::BrowserPolicyConnectorChromeOS* browser_policy_connector_chromeos();
 
+  chromeos::ChromeUserManager* user_manager() {
+    return chrome_user_manager_.get();
+  }
+
   // Overridden from BrowserProcessPlatformPartBase:
   virtual void StartTearDown() OVERRIDE;
 
@@ -87,6 +95,8 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
 
   scoped_ptr<chromeos::system::AutomaticRebootManager>
       automatic_reboot_manager_;
+
+  scoped_ptr<chromeos::ChromeUserManager> chrome_user_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessPlatformPart);
 };

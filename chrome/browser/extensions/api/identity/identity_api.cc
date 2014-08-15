@@ -40,10 +40,10 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
+#include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/gaia_constants.h"
 #endif
 
@@ -367,7 +367,7 @@ bool IdentityGetAuthTokenFunction::RunAsync() {
 #if defined(OS_CHROMEOS)
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  if (chromeos::UserManager::Get()->IsLoggedInAsKioskApp() &&
+  if (user_manager::UserManager::Get()->IsLoggedInAsKioskApp() &&
       connector->IsEnterpriseManaged()) {
     StartMintTokenFlow(IdentityMintRequestQueue::MINT_TYPE_NONINTERACTIVE);
     return true;
@@ -491,7 +491,7 @@ void IdentityGetAuthTokenFunction::StartMintToken(
       case IdentityTokenCacheValue::CACHE_STATUS_NOTFOUND:
 #if defined(OS_CHROMEOS)
         // Always force minting token for ChromeOS kiosk app.
-        if (chromeos::UserManager::Get()->IsLoggedInAsKioskApp()) {
+        if (user_manager::UserManager::Get()->IsLoggedInAsKioskApp()) {
           gaia_mint_token_mode_ = OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE;
           policy::BrowserPolicyConnectorChromeOS* connector =
               g_browser_process->platform_part()

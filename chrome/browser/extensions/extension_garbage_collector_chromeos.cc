@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_garbage_collector_chromeos.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
+#include "chrome/browser/extensions/extension_garbage_collector_chromeos.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "components/user_manager/user_manager.h"
 #include "extensions/browser/extension_system.h"
 
 namespace extensions {
@@ -49,7 +49,7 @@ void ExtensionGarbageCollectorChromeOS::GarbageCollectExtensions() {
 }
 
 bool ExtensionGarbageCollectorChromeOS::CanGarbageCollectSharedExtensions() {
-  chromeos::UserManager* user_manager = chromeos::UserManager::Get();
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (!user_manager) {
     NOTREACHED();
     return false;

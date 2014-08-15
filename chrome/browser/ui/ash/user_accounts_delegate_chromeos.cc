@@ -8,7 +8,6 @@
 #include <iterator>
 
 #include "base/logging.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/ui/inline_login_dialog.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -16,6 +15,7 @@
 #include "components/signin/core/browser/mutable_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/user_manager/user.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 namespace chromeos {

@@ -16,7 +16,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_cloud_external_data_manager.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
@@ -33,6 +32,7 @@
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -150,10 +150,11 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
       command_line->HasSwitch(chromeos::switches::kLoginUser);
   const bool wait_for_initial_policy =
       !is_browser_restart &&
-      (chromeos::UserManager::Get()->IsCurrentUserNew() || is_affiliated_user);
+      (user_manager::UserManager::Get()->IsCurrentUserNew() ||
+       is_affiliated_user);
 
   const base::TimeDelta initial_policy_fetch_timeout =
-      chromeos::UserManager::Get()->IsCurrentUserNew()
+      user_manager::UserManager::Get()->IsCurrentUserNew()
           ? base::TimeDelta::Max()
           : base::TimeDelta::FromSeconds(kInitialPolicyFetchTimeoutSeconds);
 

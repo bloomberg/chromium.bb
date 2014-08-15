@@ -37,7 +37,6 @@ class PrefRegistrySyncable;
 namespace chromeos {
 
 class CryptohomeClient;
-class UserManager;
 
 namespace attestation {
 

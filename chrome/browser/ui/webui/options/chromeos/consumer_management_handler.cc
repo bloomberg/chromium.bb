@@ -8,10 +8,10 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -77,7 +77,7 @@ void ConsumerManagementHandler::RegisterMessages() {
 
 void ConsumerManagementHandler::HandleEnrollConsumerManagement(
     const base::ListValue* args) {
-  if (!chromeos::UserManager::Get()->IsCurrentUserOwner()) {
+  if (!user_manager::UserManager::Get()->IsCurrentUserOwner()) {
     LOG(ERROR) << "Received enrollConsumerManagement, but the current user is "
                << "not the owner.";
     return;

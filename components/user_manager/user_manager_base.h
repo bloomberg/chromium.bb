@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_USERS_USER_MANAGER_BASE_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_USERS_USER_MANAGER_BASE_H_
+#ifndef COMPONENTS_USER_MANAGER_USER_MANAGER_BASE_H_
+#define COMPONENTS_USER_MANAGER_USER_MANAGER_BASE_H_
 
 #include <set>
 #include <string>
@@ -14,19 +14,27 @@
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
+#include "components/user_manager/user_manager_export.h"
 
 class PrefService;
 class PrefRegistrySimple;
 
-namespace chromeos {
+namespace base {
+class ListValue;
+class TaskRunner;
+}
+
+namespace user_manager {
 
 class RemoveUserDelegate;
 
 // Base implementation of the UserManager interface.
-class UserManagerBase : public UserManager {
+class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
  public:
+  UserManagerBase(scoped_refptr<base::TaskRunner> task_runner,
+                  scoped_refptr<base::TaskRunner> blocking_task_runner);
   virtual ~UserManagerBase();
 
   // Registers UserManagerBase preferences.
@@ -34,9 +42,9 @@ class UserManagerBase : public UserManager {
 
   // UserManager implementation:
   virtual void Shutdown() OVERRIDE;
-  virtual const user_manager::UserList& GetUsers() const OVERRIDE;
-  virtual const user_manager::UserList& GetLoggedInUsers() const OVERRIDE;
-  virtual const user_manager::UserList& GetLRULoggedInUsers() const OVERRIDE;
+  virtual const UserList& GetUsers() const OVERRIDE;
+  virtual const UserList& GetLoggedInUsers() const OVERRIDE;
+  virtual const UserList& GetLRULoggedInUsers() const OVERRIDE;
   virtual const std::string& GetOwnerEmail() const OVERRIDE;
   virtual void UserLoggedIn(const std::string& user_id,
                             const std::string& user_id_hash,
@@ -47,18 +55,16 @@ class UserManagerBase : public UserManager {
                           RemoveUserDelegate* delegate) OVERRIDE;
   virtual void RemoveUserFromList(const std::string& user_id) OVERRIDE;
   virtual bool IsKnownUser(const std::string& user_id) const OVERRIDE;
-  virtual const user_manager::User* FindUser(
-      const std::string& user_id) const OVERRIDE;
-  virtual user_manager::User* FindUserAndModify(
-      const std::string& user_id) OVERRIDE;
-  virtual const user_manager::User* GetLoggedInUser() const OVERRIDE;
-  virtual user_manager::User* GetLoggedInUser() OVERRIDE;
-  virtual const user_manager::User* GetActiveUser() const OVERRIDE;
-  virtual user_manager::User* GetActiveUser() OVERRIDE;
-  virtual const user_manager::User* GetPrimaryUser() const OVERRIDE;
+  virtual const User* FindUser(const std::string& user_id) const OVERRIDE;
+  virtual User* FindUserAndModify(const std::string& user_id) OVERRIDE;
+  virtual const User* GetLoggedInUser() const OVERRIDE;
+  virtual User* GetLoggedInUser() OVERRIDE;
+  virtual const User* GetActiveUser() const OVERRIDE;
+  virtual User* GetActiveUser() OVERRIDE;
+  virtual const User* GetPrimaryUser() const OVERRIDE;
   virtual void SaveUserOAuthStatus(
       const std::string& user_id,
-      user_manager::User::OAuthTokenStatus oauth_token_status) OVERRIDE;
+      User::OAuthTokenStatus oauth_token_status) OVERRIDE;
   virtual void SaveForceOnlineSignin(const std::string& user_id,
                                      bool force_online_signin) OVERRIDE;
   virtual void SaveUserDisplayName(const std::string& user_id,
@@ -108,18 +114,18 @@ class UserManagerBase : public UserManager {
 
   // Adds |user| to users list, and adds it to front of LRU list. It is assumed
   // that there is no user with same id.
-  virtual void AddUserRecord(user_manager::User* user);
+  virtual void AddUserRecord(User* user);
 
   // Returns true if trusted device policies have successfully been retrieved
   // and ephemeral users are enabled.
   virtual bool AreEphemeralUsersEnabled() const = 0;
 
   // Returns true if user may be removed.
-  virtual bool CanUserBeRemoved(const user_manager::User* user) const;
+  virtual bool CanUserBeRemoved(const User* user) const;
 
   // A wrapper around C++ delete operator. Deletes |user|, and when |user|
   // equals to active_user_, active_user_ is reset to NULL.
-  virtual void DeleteUser(user_manager::User* user);
+  virtual void DeleteUser(User* user);
 
   // Returns the locale used by the application.
   virtual const std::string& GetApplicationLocale() const = 0;
@@ -130,6 +136,11 @@ class UserManagerBase : public UserManager {
   // Loads |users_| from Local State if the list has not been loaded yet.
   // Subsequent calls have no effect. Must be called on the UI thread.
   void EnsureUsersLoaded();
+
+  // Handle OAuth token |status| change for |user_id|.
+  virtual void HandleUserOAuthTokenStatusChange(
+      const std::string& user_id,
+      User::OAuthTokenStatus status) const = 0;
 
   // Returns true if device is enterprise managed.
   virtual bool IsEnterpriseManaged() const = 0;
@@ -148,7 +159,7 @@ class UserManagerBase : public UserManager {
   // Notifies observers that another user was added to the session.
   // If |user_switch_pending| is true this means that user has not been fully
   // initialized yet like waiting for profile to be loaded.
-  virtual void NotifyUserAddedToSession(const user_manager::User* added_user,
+  virtual void NotifyUserAddedToSession(const User* added_user,
                                         bool user_switch_pending);
 
   // Performs any additional actions before user list is loaded.
@@ -171,8 +182,7 @@ class UserManagerBase : public UserManager {
   // Removes a regular or supervised user from the user list.
   // Returns the user if found or NULL otherwise.
   // Also removes the user from the persistent user list.
-  user_manager::User* RemoveRegularOrSupervisedUserFromList(
-      const std::string& user_id);
+  User* RemoveRegularOrSupervisedUserFromList(const std::string& user_id);
 
   // Implementation for RemoveUser method. This is an asynchronous part of the
   // method, that verifies that owner will not get deleted, and calls
@@ -209,7 +219,7 @@ class UserManagerBase : public UserManager {
   virtual void KioskAppLoggedIn(const std::string& app_id) = 0;
 
   // Indicates that a user just logged into a public session.
-  virtual void PublicAccountUserLoggedIn(user_manager::User* user) = 0;
+  virtual void PublicAccountUserLoggedIn(User* user) = 0;
 
   // Indicates that a regular user just logged in.
   virtual void RegularUserLoggedIn(const std::string& user_id);
@@ -241,16 +251,16 @@ class UserManagerBase : public UserManager {
   // NULL until a user has logged in, then points to one
   // of the User instances in |users_|, the |guest_user_| instance or an
   // ephemeral user instance.
-  user_manager::User* active_user_;
+  User* active_user_;
 
   // The primary user of the current session. It is recorded for the first
   // signed-in user and does not change thereafter.
-  user_manager::User* primary_user_;
+  User* primary_user_;
 
   // List of all known users. User instances are owned by |this|. Regular users
   // are removed by |RemoveUserFromList|, public accounts by
   // |UpdateAndCleanUpPublicAccounts|.
-  user_manager::UserList users_;
+  UserList users_;
 
  private:
   // Stages of loading user list from preferences. Some methods can have
@@ -259,22 +269,21 @@ class UserManagerBase : public UserManager {
 
   // Returns a list of users who have logged into this device previously.
   // Same as GetUsers but used if you need to modify User from that list.
-  user_manager::UserList& GetUsersAndModify();
+  UserList& GetUsersAndModify();
 
   // Returns the user with the given email address if found in the persistent
   // list. Returns |NULL| otherwise.
-  const user_manager::User* FindUserInList(const std::string& user_id) const;
+  const User* FindUserInList(const std::string& user_id) const;
 
   // Returns |true| if user with the given id is found in the persistent list.
   // Returns |false| otherwise. Does not trigger user loading.
   const bool UserExistsInList(const std::string& user_id) const;
 
   // Same as FindUserInList but returns non-const pointer to User object.
-  user_manager::User* FindUserInListAndModify(const std::string& user_id);
+  User* FindUserInListAndModify(const std::string& user_id);
 
   // Reads user's oauth token status from local state preferences.
-  user_manager::User::OAuthTokenStatus LoadUserOAuthStatus(
-      const std::string& user_id) const;
+  User::OAuthTokenStatus LoadUserOAuthStatus(const std::string& user_id) const;
 
   // Read a flag indicating whether online authentication against GAIA should
   // be enforced during the user's next sign-in from local state preferences.
@@ -284,7 +293,7 @@ class UserManagerBase : public UserManager {
   void NotifyMergeSessionStateChanged();
 
   // Notifies observers that active user has changed.
-  void NotifyActiveUserChanged(const user_manager::User* active_user);
+  void NotifyActiveUserChanged(const User* active_user);
 
   // Notifies observers that active user_id hash has changed.
   void NotifyActiveUserHashChanged(const std::string& hash);
@@ -293,7 +302,7 @@ class UserManagerBase : public UserManager {
   void UpdateLoginState();
 
   // Insert |user| at the front of the LRU user list.
-  void SetLRUUser(user_manager::User* user);
+  void SetLRUUser(User* user);
 
   // Sends metrics in response to a regular user logging in.
   void SendRegularUserLoginMetrics(const std::string& user_id);
@@ -301,6 +310,12 @@ class UserManagerBase : public UserManager {
   // Sets account locale for user with id |user_id|.
   virtual void UpdateUserAccountLocale(const std::string& user_id,
                                        const std::string& locale);
+
+  // Runs on SequencedWorkerPool thread. Passes resolved locale to
+  // |on_resolve_callback| on UI thread.
+  void ResolveLocale(
+      const std::string& raw_locale,
+      base::Callback<void(const std::string&)> on_resolve_callback);
 
   // Updates user account after locale was resolved.
   void DoUpdateAccountLocale(const std::string& user_id,
@@ -311,12 +326,12 @@ class UserManagerBase : public UserManager {
 
   // List of all users that are logged in current session. These point to User
   // instances in |users_|. Only one of them could be marked as active.
-  user_manager::UserList logged_in_users_;
+  UserList logged_in_users_;
 
   // A list of all users that are logged in the current session. In contrast to
   // |logged_in_users|, the order of this list is least recently used so that
   // the active user should always be the first one in the list.
-  user_manager::UserList lru_logged_in_users_;
+  UserList lru_logged_in_users_;
 
   // True if SessionStarted() has been called.
   bool session_started_;
@@ -359,11 +374,14 @@ class UserManagerBase : public UserManager {
   // as soon as user's profile is loaded.
   std::string pending_user_switch_;
 
+  scoped_refptr<base::TaskRunner> task_runner_;
+  scoped_refptr<base::TaskRunner> blocking_task_runner_;
+
   base::WeakPtrFactory<UserManagerBase> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManagerBase);
 };
 
-}  // namespace chromeos
+}  // namespace user_manager
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_USERS_USER_MANAGER_BASE_H_
+#endif  // COMPONENTS_USER_MANAGER_USER_MANAGER_BASE_H_

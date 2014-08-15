@@ -23,6 +23,7 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
+#include "components/user_manager/user_manager.h"
 #include "extensions/browser/extension_system.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -204,7 +205,7 @@ void ErrorScreenHandler::HandleDiagnoseButtonClicked() {
                                   NEW_WINDOW));
   InitAppSession(profile, extension_id);
 
-  UserManager::Get()->SessionStarted();
+  user_manager::UserManager::Get()->SessionStarted();
 
   LoginDisplayHostImpl::default_host()->Finalize();
 }

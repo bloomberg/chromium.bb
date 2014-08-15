@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/chromeos/login/users/fake_user_manager.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
 #include "chromeos/dbus/fake_bluetooth_adapter_client.h"
 #include "chromeos/dbus/fake_bluetooth_agent_manager_client.h"
@@ -21,6 +21,7 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/login/login_state.h"
 #include "components/metrics/proto/system_profile.pb.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"

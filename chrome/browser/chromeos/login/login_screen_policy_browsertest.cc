@@ -4,12 +4,12 @@
 
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,7 +31,7 @@ class LoginScreenPolicyTest : public policy::DevicePolicyCrosBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(LoginScreenPolicyTest, DisableSupervisedUsers) {
-  EXPECT_FALSE(chromeos::UserManager::Get()->AreSupervisedUsersAllowed());
+  EXPECT_FALSE(user_manager::UserManager::Get()->AreSupervisedUsersAllowed());
 
   scoped_refptr<content::MessageLoopRunner> runner(
       new content::MessageLoopRunner);
@@ -46,7 +46,7 @@ IN_PROC_BROWSER_TEST_F(LoginScreenPolicyTest, DisableSupervisedUsers) {
 
   runner->Run();
 
-  EXPECT_TRUE(chromeos::UserManager::Get()->AreSupervisedUsersAllowed());
+  EXPECT_TRUE(user_manager::UserManager::Get()->AreSupervisedUsersAllowed());
 }
 
 }  // namespace chromeos

@@ -34,7 +34,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/sys_info.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_factory.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -42,6 +41,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/user_manager/user_manager.h"
 #endif
 
 using content::WebContents;
@@ -75,7 +75,7 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
   source->AddLocalizedString("enable", IDS_FLAGS_ENABLE);
 
 #if defined(OS_CHROMEOS)
-  if (!chromeos::UserManager::Get()->IsCurrentUserOwner() &&
+  if (!user_manager::UserManager::Get()->IsCurrentUserOwner() &&
       base::SysInfo::IsRunningOnChromeOS()) {
     // Set the strings to show which user can actually change the flags.
     std::string owner;
@@ -231,9 +231,10 @@ void FlagsDOMHandler::HandleRestartBrowser(const base::ListValue* args) {
   // argv[0] is the program name |CommandLine::NO_PROGRAM|.
   flags.assign(user_flags.argv().begin() + 1, user_flags.argv().end());
   VLOG(1) << "Restarting to apply per-session flags...";
-  chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
-      SetFlagsForUser(chromeos::UserManager::Get()->GetActiveUser()->email(),
-                      flags);
+  chromeos::DBusThreadManager::Get()
+      ->GetSessionManagerClient()
+      ->SetFlagsForUser(
+          user_manager::UserManager::Get()->GetActiveUser()->email(), flags);
 #endif
   chrome::AttemptRestart();
 }

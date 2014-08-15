@@ -7,9 +7,10 @@
 #include "ash/multi_profile_uma.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "components/user_manager/user_manager.h"
 
 // static
 AvatarMenuActions* AvatarMenuActions::Create() {
@@ -38,7 +39,9 @@ void AvatarMenuActionsChromeOS::EditProfile(Profile* profile, size_t index) {
 bool AvatarMenuActionsChromeOS::ShouldShowAddNewProfileLink() const {
   // |browser_| can be NULL in unit_tests.
   return (!browser_ || !browser_->profile()->IsSupervised()) &&
-      UserManager::Get()->GetUsersAdmittedForMultiProfile().size();
+         user_manager::UserManager::Get()
+             ->GetUsersAdmittedForMultiProfile()
+             .size();
 }
 
 bool AvatarMenuActionsChromeOS::ShouldShowEditProfileLink() const {

@@ -30,8 +30,9 @@
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager_impl.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager_test_util.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/cloud_external_data_manager_base_test_util.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
@@ -53,6 +54,7 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_image/default_user_images.h"
 #include "components/user_manager/user_image/user_image.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_utils.h"
@@ -96,7 +98,7 @@ policy::CloudPolicyStore* GetStoreForUser(const user_manager::User* user) {
 }  // namespace
 
 class UserImageManagerTest : public LoginManagerTest,
-                             public UserManager::Observer {
+                             public user_manager::UserManager::Observer {
  protected:
   UserImageManagerTest() : LoginManagerTest(true) {
   }
@@ -112,23 +114,24 @@ class UserImageManagerTest : public LoginManagerTest,
   virtual void SetUpOnMainThread() OVERRIDE {
     LoginManagerTest::SetUpOnMainThread();
     local_state_ = g_browser_process->local_state();
-    UserManager::Get()->AddObserver(this);
+    user_manager::UserManager::Get()->AddObserver(this);
   }
 
   virtual void TearDownOnMainThread() OVERRIDE {
-    UserManager::Get()->RemoveObserver(this);
+    user_manager::UserManager::Get()->RemoveObserver(this);
     LoginManagerTest::TearDownOnMainThread();
   }
 
   // UserManager::Observer overrides:
-  virtual void LocalStateChanged(UserManager* user_manager) OVERRIDE {
+  virtual void LocalStateChanged(
+      user_manager::UserManager* user_manager) OVERRIDE {
     if (run_loop_)
       run_loop_->Quit();
   }
 
   // Logs in |username|.
   void LogIn(const std::string& username) {
-    UserManager::Get()->UserLoggedIn(username, username, false);
+    user_manager::UserManager::Get()->UserLoggedIn(username, username, false);
   }
 
   // Stores old (pre-migration) user image info.
@@ -225,8 +228,8 @@ class UserImageManagerTest : public LoginManagerTest,
       net::TestURLFetcherFactory* url_fetcher_factory) {
     ProfileDownloader* profile_downloader =
         reinterpret_cast<UserImageManagerImpl*>(
-            UserManager::Get()->GetUserImageManager(username))->
-                profile_downloader_.get();
+            ChromeUserManager::Get()->GetUserImageManager(username))
+            ->profile_downloader_.get();
     ASSERT_TRUE(profile_downloader);
 
     static_cast<OAuth2TokenService::Consumer*>(profile_downloader)->
@@ -274,10 +277,11 @@ class UserImageManagerTest : public LoginManagerTest,
     fetcher->delegate()->OnURLFetchComplete(fetcher);
     run_loop.Run();
 
-    const user_manager::User* user = UserManager::Get()->GetLoggedInUser();
+    const user_manager::User* user =
+        user_manager::UserManager::Get()->GetLoggedInUser();
     ASSERT_TRUE(user);
     UserImageManagerImpl* uim = reinterpret_cast<UserImageManagerImpl*>(
-        UserManager::Get()->GetUserImageManager(user->email()));
+        ChromeUserManager::Get()->GetUserImageManager(user->email()));
     if (uim->job_.get()) {
       run_loop_.reset(new base::RunLoop);
       run_loop_->Run();
@@ -305,7 +309,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_DefaultUserImagePreserved) {
 }
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, DefaultUserImagePreserved) {
-  UserManager::Get()->GetUsers();  // Load users.
+  user_manager::UserManager::Get()->GetUsers();  // Load users.
   // Old info preserved.
   ExpectOldUserImageInfo(
       kTestUser1, user_manager::kFirstDefaultImageIndex, base::FilePath());
@@ -325,7 +329,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_OtherUsersUnaffected) {
 }
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, OtherUsersUnaffected) {
-  UserManager::Get()->GetUsers();  // Load users.
+  user_manager::UserManager::Get()->GetUsers();  // Load users.
   // Old info preserved.
   ExpectOldUserImageInfo(
       kTestUser1, user_manager::kFirstDefaultImageIndex, base::FilePath());
@@ -348,12 +352,13 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_PRE_NonJPEGImageFromFile) {
 }
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_NonJPEGImageFromFile) {
-  UserManager::Get()->GetUsers();  // Load users.
+  user_manager::UserManager::Get()->GetUsers();  // Load users.
   // Old info preserved.
   ExpectOldUserImageInfo(kTestUser1,
                          user_manager::User::USER_IMAGE_EXTERNAL,
                          GetUserImagePath(kTestUser1, "png"));
-  const user_manager::User* user = UserManager::Get()->FindUser(kTestUser1);
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(kTestUser1);
   EXPECT_TRUE(user->image_is_stub());
 
   base::RunLoop run_loop;
@@ -369,7 +374,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_NonJPEGImageFromFile) {
   ExpectNewUserImageInfo(kTestUser1,
                          user_manager::User::USER_IMAGE_EXTERNAL,
                          GetUserImagePath(kTestUser1, "jpg"));
-  user = UserManager::Get()->GetLoggedInUser();
+  user = user_manager::UserManager::Get()->GetLoggedInUser();
   ASSERT_TRUE(user);
   EXPECT_FALSE(user->image_is_safe_format());
   // Check image dimensions.
@@ -380,8 +385,9 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_NonJPEGImageFromFile) {
 }
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, NonJPEGImageFromFile) {
-  UserManager::Get()->GetUsers();  // Load users.
-  const user_manager::User* user = UserManager::Get()->FindUser(kTestUser1);
+  user_manager::UserManager::Get()->GetUsers();  // Load users.
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(kTestUser1);
   ASSERT_TRUE(user);
   // Wait for image load.
   if (user->image_index() == user_manager::User::USER_IMAGE_INVALID) {
@@ -405,14 +411,15 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_SaveUserDefaultImageIndex) {
 // Verifies that SaveUserDefaultImageIndex() correctly sets and persists the
 // chosen user image.
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserDefaultImageIndex) {
-  const user_manager::User* user = UserManager::Get()->FindUser(kTestUser1);
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(kTestUser1);
   ASSERT_TRUE(user);
 
   const gfx::ImageSkia& default_image =
       user_manager::GetDefaultImage(user_manager::kFirstDefaultImageIndex);
 
   UserImageManager* user_image_manager =
-      UserManager::Get()->GetUserImageManager(kTestUser1);
+      ChromeUserManager::Get()->GetUserImageManager(kTestUser1);
   user_image_manager->SaveUserDefaultImageIndex(
       user_manager::kFirstDefaultImageIndex);
 
@@ -430,7 +437,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_SaveUserImage) {
 // Verifies that SaveUserImage() correctly sets and persists the chosen user
 // image.
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImage) {
-  const user_manager::User* user = UserManager::Get()->FindUser(kTestUser1);
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(kTestUser1);
   ASSERT_TRUE(user);
 
   SkBitmap custom_image_bitmap;
@@ -441,7 +449,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImage) {
 
   run_loop_.reset(new base::RunLoop);
   UserImageManager* user_image_manager =
-      UserManager::Get()->GetUserImageManager(kTestUser1);
+      ChromeUserManager::Get()->GetUserImageManager(kTestUser1);
   user_image_manager->SaveUserImage(
       user_manager::UserImage::CreateAndEncode(custom_image));
   run_loop_->Run();
@@ -469,7 +477,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_SaveUserImageFromFile) {
 // Verifies that SaveUserImageFromFile() correctly sets and persists the chosen
 // user image.
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImageFromFile) {
-  const user_manager::User* user = UserManager::Get()->FindUser(kTestUser1);
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(kTestUser1);
   ASSERT_TRUE(user);
 
   const base::FilePath custom_image_path =
@@ -480,7 +489,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImageFromFile) {
 
   run_loop_.reset(new base::RunLoop);
   UserImageManager* user_image_manager =
-      UserManager::Get()->GetUserImageManager(kTestUser1);
+      ChromeUserManager::Get()->GetUserImageManager(kTestUser1);
   user_image_manager->SaveUserImageFromFile(custom_image_path);
   run_loop_->Run();
 
@@ -509,7 +518,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest,
 // Verifies that SaveUserImageFromProfileImage() correctly downloads, sets and
 // persists the chosen user image.
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImageFromProfileImage) {
-  const user_manager::User* user = UserManager::Get()->FindUser(kTestUser1);
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(kTestUser1);
   ASSERT_TRUE(user);
 
   UserImageManagerImpl::IgnoreProfileDataDownloadDelayForTesting();
@@ -517,7 +527,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImageFromProfileImage) {
 
   run_loop_.reset(new base::RunLoop);
   UserImageManager* user_image_manager =
-      UserManager::Get()->GetUserImageManager(kTestUser1);
+      ChromeUserManager::Get()->GetUserImageManager(kTestUser1);
   user_image_manager->SaveUserImageFromProfileImage();
   run_loop_->Run();
 
@@ -556,7 +566,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest,
 // clobber the default image chosen in the meantime.
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest,
                        ProfileImageDownloadDoesNotClobber) {
-  const user_manager::User* user = UserManager::Get()->FindUser(kTestUser1);
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(kTestUser1);
   ASSERT_TRUE(user);
 
   const gfx::ImageSkia& default_image =
@@ -567,7 +578,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest,
 
   run_loop_.reset(new base::RunLoop);
   UserImageManager* user_image_manager =
-      UserManager::Get()->GetUserImageManager(kTestUser1);
+      ChromeUserManager::Get()->GetUserImageManager(kTestUser1);
   user_image_manager->SaveUserImageFromProfileImage();
   run_loop_->Run();
 
@@ -676,7 +687,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PRE_SetAndClear) {
 // image.
 // http://crbug.com/396352
 IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, DISABLED_SetAndClear) {
-  const user_manager::User* user = UserManager::Get()->FindUser(kTestUser1);
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(kTestUser1);
   ASSERT_TRUE(user);
 
   LoginUser(kTestUser1);
@@ -745,7 +757,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, DISABLED_SetAndClear) {
       user_manager::GetDefaultImage(user_image_index);
 
   UserImageManager* user_image_manager =
-      UserManager::Get()->GetUserImageManager(kTestUser1);
+      ChromeUserManager::Get()->GetUserImageManager(kTestUser1);
   user_image_manager->SaveUserDefaultImageIndex(user_image_index);
 
   EXPECT_TRUE(user->HasDefaultImage());
@@ -763,7 +775,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PRE_PolicyOverridesUser) {
 // then set through policy, the policy takes precedence, overriding the
 // previously chosen image.
 IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PolicyOverridesUser) {
-  const user_manager::User* user = UserManager::Get()->FindUser(kTestUser1);
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(kTestUser1);
   ASSERT_TRUE(user);
 
   LoginUser(kTestUser1);
@@ -778,7 +791,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PolicyOverridesUser) {
       user_manager::GetDefaultImage(user_manager::kFirstDefaultImageIndex);
 
   UserImageManager* user_image_manager =
-      UserManager::Get()->GetUserImageManager(kTestUser1);
+      ChromeUserManager::Get()->GetUserImageManager(kTestUser1);
   user_image_manager->SaveUserDefaultImageIndex(
       user_manager::kFirstDefaultImageIndex);
 
@@ -825,7 +838,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest,
 // chooses a different image, the policy takes precedence, preventing the user
 // from overriding the previously chosen image.
 IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, UserDoesNotOverridePolicy) {
-  const user_manager::User* user = UserManager::Get()->FindUser(kTestUser1);
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(kTestUser1);
   ASSERT_TRUE(user);
 
   LoginUser(kTestUser1);
@@ -863,7 +877,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, UserDoesNotOverridePolicy) {
   // Choose a different user image. Verify that the user image does not change
   // as policy takes precedence.
   UserImageManager* user_image_manager =
-      UserManager::Get()->GetUserImageManager(kTestUser1);
+      ChromeUserManager::Get()->GetUserImageManager(kTestUser1);
   user_image_manager->SaveUserDefaultImageIndex(
       user_manager::kFirstDefaultImageIndex);
 

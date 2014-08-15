@@ -18,18 +18,19 @@
 #include "ui/gfx/image/image_skia.h"
 
 namespace chromeos {
-class ChromeUserManager;
+class ChromeUserManagerImpl;
 class FakeLoginUtils;
 class FakeUserManager;
 class MockUserManager;
 class SupervisedUserManagerImpl;
 class UserAddingScreenTest;
 class UserImageManagerImpl;
-class UserManagerBase;
 class UserSessionManager;
 }
 
 namespace user_manager {
+
+class UserManagerBase;
 
 // A class representing information about a previously logged in user.
 // Each user has a canonical email (username), returned by |email()| and
@@ -148,10 +149,10 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   bool is_profile_created() const { return profile_is_created_; }
 
  protected:
-  friend class chromeos::ChromeUserManager;
+  friend class UserManagerBase;
+  friend class chromeos::ChromeUserManagerImpl;
   friend class chromeos::SupervisedUserManagerImpl;
   friend class chromeos::UserImageManagerImpl;
-  friend class chromeos::UserManagerBase;
   friend class chromeos::UserSessionManager;
 
   // For testing:

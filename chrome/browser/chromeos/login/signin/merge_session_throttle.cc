@@ -16,10 +16,9 @@
 #include "chrome/browser/chromeos/login/signin/merge_session_xhr_request_waiter.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/common/url_constants.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_controller.h"
@@ -163,9 +162,9 @@ bool MergeSessionThrottle::ShouldDelayRequest(
     int render_view_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!chromeos::UserManager::Get()->IsUserLoggedIn()) {
+  if (!user_manager::UserManager::Get()->IsUserLoggedIn()) {
     return false;
-  } else if (!chromeos::UserManager::Get()->IsLoggedInAsRegularUser()) {
+  } else if (!user_manager::UserManager::Get()->IsLoggedInAsRegularUser()) {
     // This is not a regular user session, let's remove the throttle
     // permanently.
     if (!AreAllSessionMergedAlready())
@@ -206,8 +205,8 @@ bool MergeSessionThrottle::ShouldDelayRequest(
       // In theory this should not happen since we should
       // kick off the session restore process for the newly added profile
       // before we attempt loading any page.
-      if (chromeos::UserManager::Get()->IsLoggedInAsRegularUser() &&
-          !chromeos::UserManager::Get()->IsLoggedInAsStub()) {
+      if (user_manager::UserManager::Get()->IsLoggedInAsRegularUser() &&
+          !user_manager::UserManager::Get()->IsLoggedInAsStub()) {
         LOG(WARNING) << "Loading content for a profile without "
                      << "session restore?";
       }

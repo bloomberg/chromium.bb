@@ -11,13 +11,14 @@
 #include "chrome/browser/signin/screenlock_bridge.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 
-UserManager* AppLaunchSigninScreen::test_user_manager_ = NULL;
+user_manager::UserManager* AppLaunchSigninScreen::test_user_manager_ = NULL;
 
 AppLaunchSigninScreen::AppLaunchSigninScreen(
     OobeUI* oobe_ui, Delegate* delegate)
@@ -39,7 +40,7 @@ void AppLaunchSigninScreen::Show() {
 }
 
 void AppLaunchSigninScreen::InitOwnerUserList() {
-  UserManager* user_manager = GetUserManager();
+  user_manager::UserManager* user_manager = GetUserManager();
   const std::string& owner_email = user_manager->GetOwnerEmail();
   const user_manager::UserList& all_users = user_manager->GetUsers();
 
@@ -57,12 +58,13 @@ void AppLaunchSigninScreen::InitOwnerUserList() {
 
 // static
 void AppLaunchSigninScreen::SetUserManagerForTesting(
-    UserManager* user_manager) {
+    user_manager::UserManager* user_manager) {
   test_user_manager_ = user_manager;
 }
 
-UserManager* AppLaunchSigninScreen::GetUserManager() {
-  return test_user_manager_ ? test_user_manager_ : UserManager::Get();
+user_manager::UserManager* AppLaunchSigninScreen::GetUserManager() {
+  return test_user_manager_ ? test_user_manager_
+                            : user_manager::UserManager::Get();
 }
 
 void AppLaunchSigninScreen::CancelPasswordChangedFlow() {

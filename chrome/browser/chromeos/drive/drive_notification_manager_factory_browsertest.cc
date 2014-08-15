@@ -6,13 +6,13 @@
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/user_names.h"
+#include "components/user_manager/user_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
@@ -52,7 +52,7 @@ class DriveNotificationManagerFactoryGuestBrowserTest
 // profile or the guest profile while a guest session is in progress.
 IN_PROC_BROWSER_TEST_F(DriveNotificationManagerFactoryGuestBrowserTest,
                        NoDriveNotificationManager) {
-  chromeos::UserManager* user_manager = chromeos::UserManager::Get();
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   EXPECT_TRUE(user_manager->IsLoggedInAsGuest());
   Profile* guest_profile =
       chromeos::ProfileHelper::Get()

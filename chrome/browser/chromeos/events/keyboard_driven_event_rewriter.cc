@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/events/keyboard_driven_event_rewriter.h"
 
 #include "chrome/browser/chromeos/events/event_rewriter.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
+#include "components/user_manager/user_manager.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 
@@ -19,8 +19,8 @@ const int kModifierMask = ui::EF_SHIFT_DOWN;
 // Returns true if and only if it is on login screen (i.e. user is not logged
 // in) and the keyboard driven flag in the OEM manifest is on.
 bool ShouldStripModifiersForArrowKeysAndEnter() {
-  if (UserManager::IsInitialized() &&
-      !UserManager::Get()->IsSessionStarted()) {
+  if (user_manager::UserManager::IsInitialized() &&
+      !user_manager::UserManager::Get()->IsSessionStarted()) {
     return system::InputDeviceSettings::Get()
         ->ForceKeyboardDrivenUINavigation();
   }

@@ -36,7 +36,6 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -66,6 +65,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -974,7 +974,7 @@ bool SigninScreenHandler::ShouldLoadGaia() const {
 
 // Update keyboard layout to least recently used by the user.
 void SigninScreenHandler::SetUserInputMethod(const std::string& username) {
-  UserManager* user_manager = UserManager::Get();
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (user_manager->IsUserLoggedIn()) {
     // We are on sign-in screen inside user session (adding new user to
     // the session or on lock screen), don't switch input methods in this case.
@@ -1059,7 +1059,7 @@ void SigninScreenHandler::HandleLaunchIncognito() {
 }
 
 void SigninScreenHandler::HandleShowSupervisedUserCreationScreen() {
-  if (!UserManager::Get()->AreSupervisedUsersAllowed()) {
+  if (!user_manager::UserManager::Get()->AreSupervisedUsersAllowed()) {
     LOG(ERROR) << "Managed users not allowed.";
     return;
   }
@@ -1284,7 +1284,7 @@ void SigninScreenHandler::HandleLoginUIStateChanged(const std::string& source,
 }
 
 void SigninScreenHandler::HandleUnlockOnLoginSuccess() {
-  DCHECK(UserManager::Get()->IsUserLoggedIn());
+  DCHECK(user_manager::UserManager::Get()->IsUserLoggedIn());
   if (ScreenLocker::default_screen_locker())
     ScreenLocker::default_screen_locker()->UnlockOnLoginSuccess();
 }
@@ -1360,7 +1360,7 @@ bool SigninScreenHandler::AllWhitelistedUsersPresent() {
   cros_settings->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
   if (allow_new_user)
     return false;
-  UserManager* user_manager = UserManager::Get();
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   const user_manager::UserList& users = user_manager->GetUsers();
   if (!delegate_ || users.size() > kMaxUsers) {
     return false;

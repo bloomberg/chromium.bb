@@ -7,6 +7,7 @@
 #include "chrome/browser/chromeos/login/users/fake_user_manager.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller_delegate.h"
+#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"

@@ -11,7 +11,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/login/auth/authentication_notification_details.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_factory.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -25,6 +24,7 @@
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/login/user_names.h"
+#include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -242,12 +242,13 @@ void ParallelAuthenticator::AuthenticateToLogin(
     Profile* profile,
     const UserContext& user_context) {
   authentication_profile_ = profile;
-  current_state_.reset(new AuthAttemptState(
-      user_context,
-      user_manager::USER_TYPE_REGULAR,
-      false,  // unlock
-      false,  // online_complete
-      !UserManager::Get()->IsKnownUser(user_context.GetUserID())));
+  current_state_.reset(
+      new AuthAttemptState(user_context,
+                           user_manager::USER_TYPE_REGULAR,
+                           false,  // unlock
+                           false,  // online_complete
+                           !user_manager::UserManager::Get()->IsKnownUser(
+                               user_context.GetUserID())));
   // Reset the verified flag.
   owner_is_verified_ = false;
 
@@ -261,12 +262,13 @@ void ParallelAuthenticator::AuthenticateToLogin(
 void ParallelAuthenticator::CompleteLogin(Profile* profile,
                                           const UserContext& user_context) {
   authentication_profile_ = profile;
-  current_state_.reset(new AuthAttemptState(
-      user_context,
-      user_manager::USER_TYPE_REGULAR,
-      true,   // unlock
-      false,  // online_complete
-      !UserManager::Get()->IsKnownUser(user_context.GetUserID())));
+  current_state_.reset(
+      new AuthAttemptState(user_context,
+                           user_manager::USER_TYPE_REGULAR,
+                           true,   // unlock
+                           false,  // online_complete
+                           !user_manager::UserManager::Get()->IsKnownUser(
+                               user_context.GetUserID())));
 
   // Reset the verified flag.
   owner_is_verified_ = false;

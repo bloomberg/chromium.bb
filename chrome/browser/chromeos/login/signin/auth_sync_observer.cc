@@ -7,12 +7,13 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
+#include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/user_metrics.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -44,8 +45,8 @@ void AuthSyncObserver::Shutdown() {
 }
 
 void AuthSyncObserver::OnStateChanged() {
-  DCHECK(UserManager::Get()->IsLoggedInAsRegularUser() ||
-         UserManager::Get()->IsLoggedInAsSupervisedUser());
+  DCHECK(user_manager::UserManager::Get()->IsLoggedInAsRegularUser() ||
+         user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser());
   ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile_);
@@ -65,15 +66,17 @@ void AuthSyncObserver::OnStateChanged() {
     // TODO(nkostyelv): Change observer after active user has changed.
     user_manager::User::OAuthTokenStatus old_status =
         user->oauth_token_status();
-    UserManager::Get()->SaveUserOAuthStatus(
+    user_manager::UserManager::Get()->SaveUserOAuthStatus(
         email, user_manager::User::OAUTH2_TOKEN_STATUS_INVALID);
     if (user->GetType() == user_manager::USER_TYPE_SUPERVISED &&
         old_status != user_manager::User::OAUTH2_TOKEN_STATUS_INVALID) {
        // Attempt to restore token from file.
-       UserManager::Get()->GetSupervisedUserManager()->LoadSupervisedUserToken(
-           profile_,
-           base::Bind(&AuthSyncObserver::OnSupervisedTokenLoaded,
-               base::Unretained(this)));
+      ChromeUserManager::Get()
+          ->GetSupervisedUserManager()
+          ->LoadSupervisedUserToken(
+              profile_,
+              base::Bind(&AuthSyncObserver::OnSupervisedTokenLoaded,
+                         base::Unretained(this)));
        content::RecordAction(
            base::UserMetricsAction("ManagedUsers_Chromeos_Sync_Invalidated"));
     }
@@ -83,7 +86,7 @@ void AuthSyncObserver::OnStateChanged() {
             user_manager::User::OAUTH2_TOKEN_STATUS_INVALID) {
       LOG(ERROR) <<
           "Got an incorrectly invalidated token case, restoring token status.";
-      UserManager::Get()->SaveUserOAuthStatus(
+      user_manager::UserManager::Get()->SaveUserOAuthStatus(
           user->email(), user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
        content::RecordAction(
            base::UserMetricsAction("ManagedUsers_Chromeos_Sync_Recovered"));
@@ -92,7 +95,7 @@ void AuthSyncObserver::OnStateChanged() {
 }
 
 void AuthSyncObserver::OnSupervisedTokenLoaded(const std::string& token) {
-  UserManager::Get()->GetSupervisedUserManager()->ConfigureSyncWithToken(
+  ChromeUserManager::Get()->GetSupervisedUserManager()->ConfigureSyncWithToken(
       profile_, token);
 }
 

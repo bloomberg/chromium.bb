@@ -71,7 +71,7 @@ Preferences::Preferences(input_method::InputMethodManager* input_method_manager)
 
 Preferences::~Preferences() {
   prefs_->RemoveObserver(this);
-  UserManager::Get()->RemoveSessionStateObserver(this);
+  user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
   // If shell instance is destoryed before this preferences instance, there is
   // no need to remove this shell observer.
   if (ash::Shell::HasInstance())
@@ -353,10 +353,11 @@ void Preferences::Init(PrefServiceSyncable* prefs,
                        const user_manager::User* user) {
   DCHECK(user);
   user_ = user;
-  user_is_primary_ = UserManager::Get()->GetPrimaryUser() == user_;
+  user_is_primary_ =
+      user_manager::UserManager::Get()->GetPrimaryUser() == user_;
   InitUserPrefs(prefs);
 
-  UserManager::Get()->AddSessionStateObserver(this);
+  user_manager::UserManager::Get()->AddSessionStateObserver(this);
 
   // This causes OnIsSyncingChanged to be called when the value of
   // PrefService::IsSyncing() changes.
@@ -390,7 +391,7 @@ void Preferences::ApplyPreferences(ApplyReason reason,
                                    const std::string& pref_name) {
   DCHECK(reason != REASON_PREF_CHANGED || !pref_name.empty());
   const bool user_is_owner =
-      UserManager::Get()->GetOwnerEmail() == user_->email();
+      user_manager::UserManager::Get()->GetOwnerEmail() == user_->email();
   const bool user_is_active = user_->is_active();
 
   system::TouchpadSettings touchpad_settings;

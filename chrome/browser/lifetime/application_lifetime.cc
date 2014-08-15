@@ -41,7 +41,6 @@
 #if defined(OS_CHROMEOS)
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/dbus/update_engine_client.h"

@@ -33,7 +33,8 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/login/user_flow.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -60,6 +61,7 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -211,7 +213,7 @@ void ExistingUserController::UpdateLoginDisplay(
     // TODO(xiyuan): Clean user profile whose email is not in whitelist.
     bool meets_supervised_requirements =
         (*it)->GetType() != user_manager::USER_TYPE_SUPERVISED ||
-        UserManager::Get()->AreSupervisedUsersAllowed();
+        user_manager::UserManager::Get()->AreSupervisedUsersAllowed();
     bool meets_whitelist_requirements =
         LoginUtils::IsWhitelisted((*it)->email(), NULL) ||
         (*it)->GetType() != user_manager::USER_TYPE_REGULAR;
@@ -444,8 +446,8 @@ void ExistingUserController::Login(const UserContext& user_context,
 void ExistingUserController::PerformLogin(
     const UserContext& user_context,
     LoginPerformer::AuthorizationMode auth_mode) {
-  UserManager::Get()->GetUserFlow(last_login_attempt_username_)->
-      set_host(host_);
+  ChromeUserManager::Get()->GetUserFlow(last_login_attempt_username_)->set_host(
+      host_);
 
   BootTimesLoader::Get()->RecordLoginAttempted();
 
@@ -490,8 +492,10 @@ void ExistingUserController::LoginAsRetailModeUser() {
 }
 
 void ExistingUserController::LoginAsGuest() {
-  if (is_login_in_progress_ || UserManager::Get()->IsUserLoggedIn())
+  if (is_login_in_progress_ ||
+      user_manager::UserManager::Get()->IsUserLoggedIn()) {
     return;
+  }
 
   // Stop the auto-login timer when attempting login.
   StopPublicSessionAutoLoginTimer();
@@ -550,8 +554,10 @@ void ExistingUserController::MigrateUserData(const std::string& old_password) {
 
 void ExistingUserController::LoginAsPublicSession(
     const UserContext& user_context) {
-  if (is_login_in_progress_ || UserManager::Get()->IsUserLoggedIn())
+  if (is_login_in_progress_ ||
+      user_manager::UserManager::Get()->IsUserLoggedIn()) {
     return;
+  }
 
   // Stop the auto-login timer when attempting login.
   StopPublicSessionAutoLoginTimer();
@@ -582,7 +588,7 @@ void ExistingUserController::LoginAsPublicSession(
   // If there is no public account with the given user ID, logging in is not
   // possible.
   const user_manager::User* user =
-      UserManager::Get()->FindUser(user_context.GetUserID());
+      user_manager::UserManager::Get()->FindUser(user_context.GetUserID());
   if (!user || user->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
     // Re-enable clicking on other windows.
     login_display_->SetUIEnabled(true);
@@ -767,8 +773,9 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
   guest_mode_url_ = GURL::EmptyGURL();
   std::string error = failure.GetErrorString();
 
-  if (UserManager::Get()->GetUserFlow(last_login_attempt_username_)->
-          HandleLoginFailure(failure)) {
+  if (ChromeUserManager::Get()
+          ->GetUserFlow(last_login_attempt_username_)
+          ->HandleLoginFailure(failure)) {
     login_display_->SetUIEnabled(true);
     return;
   }
@@ -788,8 +795,8 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
   } else {
     // Check networking after trying to login in case user is
     // cached locally or the local admin account.
-    bool is_known_user =
-        UserManager::Get()->IsKnownUser(last_login_attempt_username_);
+    bool is_known_user = user_manager::UserManager::Get()->IsKnownUser(
+        last_login_attempt_username_);
     if (!network_state_helper_->IsConnected()) {
       if (is_known_user)
         ShowError(IDS_LOGIN_ERROR_AUTHENTICATING, error);
@@ -816,7 +823,7 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
 
   // Reset user flow to default, so that special flow will not affect next
   // attempt.
-  UserManager::Get()->ResetUserFlow(last_login_attempt_username_);
+  ChromeUserManager::Get()->ResetUserFlow(last_login_attempt_username_);
 
   if (auth_status_consumer_)
     auth_status_consumer_->OnAuthFailure(failure);
@@ -835,8 +842,9 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
   password_changed_ = login_performer_->password_changed();
   auth_mode_ = login_performer_->auth_mode();
 
-  UserManager::Get()->GetUserFlow(user_context.GetUserID())->
-      HandleLoginSuccess(user_context);
+  ChromeUserManager::Get()
+      ->GetUserFlow(user_context.GetUserID())
+      ->HandleLoginSuccess(user_context);
 
   StopPublicSessionAutoLoginTimer();
 
@@ -854,8 +862,8 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
 
   // Update user's displayed email.
   if (!display_email_.empty()) {
-    UserManager::Get()->SaveUserDisplayEmail(user_context.GetUserID(),
-                                             display_email_);
+    user_manager::UserManager::Get()->SaveUserDisplayEmail(
+        user_context.GetUserID(), display_email_);
     display_email_.clear();
   }
 
@@ -870,7 +878,7 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
   // Reenable clicking on other windows and status area.
   login_display_->SetUIEnabled(true);
 
-  UserManager* user_manager = UserManager::Get();
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (user_manager->IsCurrentUserNew() &&
       user_manager->IsLoggedInAsSupervisedUser()) {
     // Supervised users should launch into empty desktop on first run.
@@ -878,7 +886,9 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
   }
 
   if (user_manager->IsCurrentUserNew() &&
-      !user_manager->GetCurrentUserFlow()->ShouldSkipPostLoginScreens() &&
+      !ChromeUserManager::Get()
+           ->GetCurrentUserFlow()
+           ->ShouldSkipPostLoginScreens() &&
       !WizardController::default_controller()->skip_post_login_screens()) {
     // Don't specify start URLs if the administrator has configured the start
     // URLs via policy.
@@ -933,8 +943,9 @@ void ExistingUserController::OnPasswordChangeDetected() {
     return;
   }
 
-  if (UserManager::Get()->GetUserFlow(last_login_attempt_username_)->
-          HandlePasswordChangeDetected()) {
+  if (ChromeUserManager::Get()
+          ->GetUserFlow(last_login_attempt_username_)
+          ->HandlePasswordChangeDetected()) {
     return;
   }
 
@@ -1005,7 +1016,7 @@ void ExistingUserController::OnOnlineChecked(const std::string& username,
 void ExistingUserController::DeviceSettingsChanged() {
   if (host_ != NULL) {
     // Signed settings or user list changed. Notify views and update them.
-    UpdateLoginDisplay(chromeos::UserManager::Get()->GetUsers());
+    UpdateLoginDisplay(user_manager::UserManager::Get()->GetUsers());
     ConfigurePublicSessionAutoLogin();
     return;
   }
@@ -1047,8 +1058,8 @@ void ExistingUserController::ConfigurePublicSessionAutoLogin() {
     }
   }
 
-  const user_manager::User* user =
-      UserManager::Get()->FindUser(public_session_auto_login_username_);
+  const user_manager::User* user = user_manager::UserManager::Get()->FindUser(
+      public_session_auto_login_username_);
   if (!user || user->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT)
     public_session_auto_login_username_.clear();
 
@@ -1114,7 +1125,7 @@ void ExistingUserController::InitializeStartUrls() const {
   std::vector<std::string> start_urls;
 
   const base::ListValue *urls;
-  UserManager* user_manager = UserManager::Get();
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   bool can_show_getstarted_guide =
       user_manager->GetActiveUser()->GetType() ==
           user_manager::USER_TYPE_REGULAR &&
@@ -1189,7 +1200,8 @@ void ExistingUserController::ShowError(int error_id,
   if (error_id == IDS_LOGIN_ERROR_AUTHENTICATING) {
     if (num_login_attempts_ > 1) {
       const user_manager::User* user =
-          UserManager::Get()->FindUser(last_login_attempt_username_);
+          user_manager::UserManager::Get()->FindUser(
+              last_login_attempt_username_);
       if (user && (user->GetType() == user_manager::USER_TYPE_SUPERVISED))
         error_id = IDS_LOGIN_ERROR_AUTHENTICATING_2ND_TIME_SUPERVISED;
     }
@@ -1202,7 +1214,7 @@ void ExistingUserController::ShowGaiaPasswordChanged(
     const std::string& username) {
   // Invalidate OAuth token, since it can't be correct after password is
   // changed.
-  UserManager::Get()->SaveUserOAuthStatus(
+  user_manager::UserManager::Get()->SaveUserOAuthStatus(
       username, user_manager::User::OAUTH2_TOKEN_STATUS_INVALID);
 
   login_display_->SetUIEnabled(true);

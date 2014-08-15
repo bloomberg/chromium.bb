@@ -12,8 +12,8 @@
 #include "base/compiler_specific.h"
 #include "base/prefs/pref_member.h"
 #include "chrome/browser/chromeos/language_preferences.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/prefs/pref_service_syncable_observer.h"
+#include "components/user_manager/user_manager.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -39,7 +39,7 @@ class InputMethodManager;
 // When the preferences change, we change the settings to reflect the new value.
 class Preferences : public PrefServiceSyncableObserver,
                     public ash::ShellObserver,
-                    public UserManager::UserSessionStateObserver {
+                    public user_manager::UserManager::UserSessionStateObserver {
  public:
   Preferences();
   explicit Preferences(
@@ -103,7 +103,7 @@ class Preferences : public PrefServiceSyncableObserver,
   // Overriden from ash::ShellObserver.
   virtual void OnTouchHudProjectionToggled(bool enabled) OVERRIDE;
 
-  // Overriden form UserManager::UserSessionStateObserver.
+  // Overriden form user_manager::UserManager::UserSessionStateObserver.
   virtual void ActiveUserChanged(
       const user_manager::User* active_user) OVERRIDE;
 

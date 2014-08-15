@@ -21,7 +21,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "components/user_manager/user_manager.h"
 #endif  // OS_CHROMEOS
 
 #if defined(USE_ASH)
@@ -177,10 +177,10 @@ bool VirtualKeyboardPrivateOpenSettingsFunction::RunSync() {
 #if defined(OS_CHROMEOS)
   // Do not try to open language options page if user is not logged in or
   // locked.
-  if (!chromeos::UserManager::Get()->IsUserLoggedIn() ||
+  if (!user_manager::UserManager::Get()->IsUserLoggedIn() ||
       chromeos::UserAddingScreen::Get()->IsRunning() ||
       (chromeos::ScreenLocker::default_screen_locker() &&
-          chromeos::ScreenLocker::default_screen_locker()->locked()))
+       chromeos::ScreenLocker::default_screen_locker()->locked()))
     return true;
 #endif  // OS_CHROMEOS
 

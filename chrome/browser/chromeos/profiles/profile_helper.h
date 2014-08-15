@@ -13,7 +13,7 @@
 #include "base/files/file_path.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "components/user_manager/user_manager.h"
 
 class Profile;
 class User;
@@ -39,9 +39,10 @@ namespace chromeos {
 // 2. Get profile dir of an active user, used by ProfileManager:
 //    GetActiveUserProfileDir()
 // 3. Get mapping from user_id_hash to Profile instance/profile path etc.
-class ProfileHelper : public BrowsingDataRemover::Observer,
-                      public OAuth2LoginManager::Observer,
-                      public UserManager::UserSessionStateObserver {
+class ProfileHelper
+    : public BrowsingDataRemover::Observer,
+      public OAuth2LoginManager::Observer,
+      public user_manager::UserManager::UserSessionStateObserver {
  public:
   ProfileHelper();
   virtual ~ProfileHelper();
@@ -139,12 +140,12 @@ class ProfileHelper : public BrowsingDataRemover::Observer,
   // BrowsingDataRemover::Observer implementation:
   virtual void OnBrowsingDataRemoverDone() OVERRIDE;
 
-  // UserManager::Observer overrides.
+  // OAuth2LoginManager::Observer overrides.
   virtual void OnSessionRestoreStateChanged(
       Profile* user_profile,
       OAuth2LoginManager::SessionRestoreState state) OVERRIDE;
 
-  // UserManager::UserSessionStateObserver implementation:
+  // user_manager::UserManager::UserSessionStateObserver implementation:
   virtual void ActiveUserHashChanged(const std::string& hash) OVERRIDE;
 
   // Associates |user| with profile with the same user_id,

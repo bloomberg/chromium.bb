@@ -4,8 +4,8 @@
 
 #include "apps/launcher.h"
 
-#include <utility>
 #include <set>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -40,7 +40,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "components/user_manager/user_manager.h"
 #endif
 
 namespace app_runtime = extensions::core_api::app_runtime;
@@ -318,7 +318,7 @@ void LaunchPlatformAppWithCommandLine(Profile* profile,
   if (extensions::KioskModeInfo::IsKioskOnly(extension)) {
     bool in_kiosk_mode = false;
 #if defined(OS_CHROMEOS)
-    chromeos::UserManager* user_manager = chromeos::UserManager::Get();
+    user_manager::UserManager* user_manager = user_manager::UserManager::Get();
     in_kiosk_mode = user_manager && user_manager->IsLoggedInAsKioskApp();
 #endif
     if (!in_kiosk_mode) {

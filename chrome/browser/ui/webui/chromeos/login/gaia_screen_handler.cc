@@ -12,7 +12,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -59,7 +59,7 @@ void UpdateAuthParams(base::DictionaryValue* params,
   // 3. New users are allowed by owner.
   // 4. Supervised users are allowed by owner.
   bool supervised_users_allowed =
-      UserManager::Get()->AreSupervisedUsersAllowed();
+      user_manager::UserManager::Get()->AreSupervisedUsersAllowed();
   bool supervised_users_can_create = true;
   int message_id = -1;
   if (!has_users) {
@@ -306,7 +306,8 @@ void GaiaScreenHandler::HandleCompleteLogin(const std::string& typed_email,
   }
 
   // Consumer management enrollment is in progress.
-  const std::string owner_email = UserManager::Get()->GetOwnerEmail();
+  const std::string owner_email =
+      user_manager::UserManager::Get()->GetOwnerEmail();
   if (typed_email != owner_email) {
     // Show Gaia sign-in screen again, since we only allow the owner to sign
     // in.

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/users/fake_user_manager.h"
 
+#include "base/task_runner.h"
 #include "chrome/browser/chromeos/login/users/fake_supervised_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/grit/theme_resources.h"
@@ -16,12 +17,27 @@ namespace {
 // As defined in /chromeos/dbus/cryptohome_client.cc.
 static const char kUserIdHashSuffix[] = "-hash";
 
+class FakeTaskRunner : public base::TaskRunner {
+ public:
+  virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
+                               const base::Closure& task,
+                               base::TimeDelta delay) OVERRIDE {
+    task.Run();
+    return true;
+  }
+  virtual bool RunsTasksOnCurrentThread() const OVERRIDE { return true; }
+
+ protected:
+  virtual ~FakeTaskRunner() {}
+};
+
 }  // namespace
 
 namespace chromeos {
 
 FakeUserManager::FakeUserManager()
-    : supervised_user_manager_(new FakeSupervisedUserManager),
+    : ChromeUserManager(new FakeTaskRunner(), new FakeTaskRunner()),
+      supervised_user_manager_(new FakeSupervisedUserManager),
       primary_user_(NULL),
       multi_profile_user_controller_(NULL) {
   ProfileHelper::SetProfileToUserForTestingEnabled(true);
@@ -302,6 +318,36 @@ UserFlow* FakeUserManager::GetUserFlow(const std::string& email) const {
 
 bool FakeUserManager::AreSupervisedUsersAllowed() const {
   return true;
+}
+
+bool FakeUserManager::AreEphemeralUsersEnabled() const {
+  return false;
+}
+
+const std::string& FakeUserManager::GetApplicationLocale() const {
+  static const std::string default_locale("en-US");
+  return default_locale;
+}
+
+PrefService* FakeUserManager::GetLocalState() const {
+  return NULL;
+}
+
+bool FakeUserManager::IsEnterpriseManaged() const {
+  return false;
+}
+
+bool FakeUserManager::IsDemoApp(const std::string& user_id) const {
+  return false;
+}
+
+bool FakeUserManager::IsKioskApp(const std::string& user_id) const {
+  return false;
+}
+
+bool FakeUserManager::IsPublicAccountMarkedForRemoval(
+    const std::string& user_id) const {
+  return false;
 }
 
 }  // namespace chromeos

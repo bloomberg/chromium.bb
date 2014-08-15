@@ -6,7 +6,6 @@
 
 #include "ash/shell.h"
 #include "base/command_line.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/first_run/first_run_handler.h"
 #include "chrome/common/url_constants.h"

@@ -66,6 +66,7 @@ include_rules = [
   "+components/translate/core/browser",
   "+components/translate/core/common",
   "+components/url_matcher",
+  "+components/user_manager",
   "+components/user_prefs",
   "+components/web_modal",
   "+components/webdata/common",

@@ -73,10 +73,10 @@
 #include "chrome/browser/chromeos/app_mode/app_launch_utils.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/user_manager/user_manager.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
@@ -359,7 +359,8 @@ SessionStartupPref StartupBrowserCreator::GetSessionStartupPref(
   // in a location shared by all users and the check is meaningless. Query the
   // UserManager instead to determine whether the user is new.
 #if defined(OS_CHROMEOS)
-  const bool is_first_run = chromeos::UserManager::Get()->IsCurrentUserNew();
+  const bool is_first_run =
+      user_manager::UserManager::Get()->IsCurrentUserNew();
 #else
   const bool is_first_run = first_run::IsChromeFirstRun();
 #endif

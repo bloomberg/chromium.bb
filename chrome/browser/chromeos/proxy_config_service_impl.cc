@@ -12,7 +12,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/net/proxy_config_handler.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
@@ -24,6 +23,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/user_manager/user_manager.h"
 
 namespace chromeos {
 
@@ -144,7 +144,7 @@ bool ProxyConfigServiceImpl::IgnoreProxy(const PrefService* profile_prefs,
     policy::BrowserPolicyConnectorChromeOS* connector =
         g_browser_process->platform_part()->browser_policy_connector_chromeos();
     const user_manager::User* logged_in_user =
-        UserManager::Get()->GetLoggedInUser();
+        user_manager::UserManager::Get()->GetLoggedInUser();
     if (connector->GetUserAffiliation(logged_in_user->email()) ==
         policy::USER_AFFILIATION_MANAGED) {
       VLOG(1) << "Respecting proxy for network, as logged-in user belongs to "

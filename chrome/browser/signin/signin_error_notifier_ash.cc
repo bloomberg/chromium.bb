@@ -35,7 +35,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_flow.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
+#include "components/user_manager/user_manager.h"
 #endif
 
 namespace {
@@ -168,9 +169,9 @@ void SigninErrorNotifier::OnErrorChanged() {
   }
 
 #if defined(OS_CHROMEOS)
-  if (chromeos::UserManager::IsInitialized()) {
+  if (user_manager::UserManager::IsInitialized()) {
     chromeos::UserFlow* user_flow =
-        chromeos::UserManager::Get()->GetCurrentUserFlow();
+        chromeos::ChromeUserManager::Get()->GetCurrentUserFlow();
 
     // Check whether Chrome OS user flow allows launching browser.
     // Example: Supervised user creation flow which handles token invalidation

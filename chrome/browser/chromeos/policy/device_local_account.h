@@ -43,7 +43,8 @@ struct DeviceLocalAccount {
   // The |account_id| is primarily used by policy code: If device policy defines
   // a device-local account with a certain |account_id|, the user policy for
   // that account has to be fetched by referencing the same |account_id|.
-  // The |user_id| is passed to the chromeos::UserManager where it becomes part
+  // The |user_id| is passed to the user_manager::UserManager where it becomes
+  // part
   // of the global user list on the device. The |account_id| would not be safe
   // to use here as it is a free-form identifier that could conflict with
   // another |user_id| on the device and cannot be easily identified as

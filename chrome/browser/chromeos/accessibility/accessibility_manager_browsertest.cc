@@ -13,7 +13,6 @@
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/api/braille_display_private/mock_braille_controller.h"
@@ -28,6 +27,7 @@
 #include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/login/user_names.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -272,7 +272,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, Login) {
   EXPECT_EQ(default_autoclick_delay(), GetAutoclickDelay());
 
   // Logs in.
-  UserManager::Get()->UserLoggedIn(kTestUserName, kTestUserName, true);
+  user_manager::UserManager::Get()->UserLoggedIn(
+      kTestUserName, kTestUserName, true);
 
   // Confirms that the features still disabled just after login.
   EXPECT_FALSE(IsLargeCursorEnabled());
@@ -282,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, Login) {
   EXPECT_FALSE(IsVirtualKeyboardEnabled());
   EXPECT_EQ(default_autoclick_delay(), GetAutoclickDelay());
 
-  UserManager::Get()->SessionStarted();
+  user_manager::UserManager::Get()->SessionStarted();
 
   // Confirms that the features are still disabled just after login.
   EXPECT_FALSE(IsLargeCursorEnabled());
@@ -333,8 +334,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, BrailleOnLoginScreen) {
 
 IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, TypePref) {
   // Logs in.
-  UserManager::Get()->UserLoggedIn(kTestUserName, kTestUserName, true);
-  UserManager::Get()->SessionStarted();
+  user_manager::UserManager::Get()->UserLoggedIn(
+      kTestUserName, kTestUserName, true);
+  user_manager::UserManager::Get()->SessionStarted();
 
   // Confirms that the features are disabled just after login.
   EXPECT_FALSE(IsLargeCursorEnabled());
@@ -392,7 +394,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, TypePref) {
 
 IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, ResumeSavedPref) {
   // Loads the profile of the user.
-  UserManager::Get()->UserLoggedIn(kTestUserName, kTestUserName, true);
+  user_manager::UserManager::Get()->UserLoggedIn(
+      kTestUserName, kTestUserName, true);
 
   // Sets the pref to enable large cursor before login.
   SetLargeCursorEnabledPref(true);
@@ -420,7 +423,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, ResumeSavedPref) {
   EXPECT_FALSE(IsVirtualKeyboardEnabled());
 
   // Logs in.
-  UserManager::Get()->SessionStarted();
+  user_manager::UserManager::Get()->SessionStarted();
 
   // Confirms that features are enabled by restoring from pref just after login.
   EXPECT_TRUE(IsLargeCursorEnabled());
@@ -436,8 +439,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
   MockAccessibilityObserver observer;
 
   // Logs in.
-  UserManager::Get()->UserLoggedIn(kTestUserName, kTestUserName, true);
-  UserManager::Get()->SessionStarted();
+  user_manager::UserManager::Get()->UserLoggedIn(
+      kTestUserName, kTestUserName, true);
+  user_manager::UserManager::Get()->SessionStarted();
 
   EXPECT_FALSE(observer.observed());
   observer.reset();
@@ -495,8 +499,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
   MockAccessibilityObserver observer;
 
   // Logs in.
-  UserManager::Get()->UserLoggedIn(kTestUserName, kTestUserName, true);
-  UserManager::Get()->SessionStarted();
+  user_manager::UserManager::Get()->UserLoggedIn(
+      kTestUserName, kTestUserName, true);
+  user_manager::UserManager::Get()->SessionStarted();
 
   EXPECT_FALSE(observer.observed());
   observer.reset();
@@ -588,7 +593,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest,
 
   // Logs in.
   const char* user_name = GetParam();
-  UserManager::Get()->UserLoggedIn(user_name, user_name, true);
+  user_manager::UserManager::Get()->UserLoggedIn(user_name, user_name, true);
 
   // Confirms that the features are still enabled just after login.
   EXPECT_TRUE(IsLargeCursorEnabled());
@@ -597,7 +602,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest,
   EXPECT_TRUE(IsAutoclickEnabled());
   EXPECT_EQ(kTestAutoclickDelayMs, GetAutoclickDelay());
 
-  UserManager::Get()->SessionStarted();
+  user_manager::UserManager::Get()->SessionStarted();
 
   // Confirms that the features keep enabled after session starts.
   EXPECT_TRUE(IsLargeCursorEnabled());
@@ -617,13 +622,14 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest,
 IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest, BrailleWhenLoggedIn) {
   // Logs in.
   const char* user_name = GetParam();
-  UserManager::Get()->UserLoggedIn(user_name, user_name, true);
-  UserManager::Get()->SessionStarted();
+  user_manager::UserManager::Get()->UserLoggedIn(user_name, user_name, true);
+  user_manager::UserManager::Get()->SessionStarted();
   // This object watches for IME preference changes and reflects those in
   // the IME framework state.
   chromeos::Preferences prefs;
-  prefs.InitUserPrefsForTesting(PrefServiceSyncable::FromProfile(GetProfile()),
-                                UserManager::Get()->GetActiveUser());
+  prefs.InitUserPrefsForTesting(
+      PrefServiceSyncable::FromProfile(GetProfile()),
+      user_manager::UserManager::Get()->GetActiveUser());
 
   // Make sure we start in the expected state.
   EXPECT_FALSE(IsBrailleImeActive());
@@ -660,8 +666,9 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest, BrailleWhenLoggedIn) {
 
 IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, AcessibilityMenuVisibility) {
   // Log in.
-  UserManager::Get()->UserLoggedIn(kTestUserName, kTestUserName, true);
-  UserManager::Get()->SessionStarted();
+  user_manager::UserManager::Get()->UserLoggedIn(
+      kTestUserName, kTestUserName, true);
+  user_manager::UserManager::Get()->SessionStarted();
 
   // Confirms that the features are disabled.
   EXPECT_FALSE(IsLargeCursorEnabled());

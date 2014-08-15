@@ -11,7 +11,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/login/test/app_window_waiter.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -19,6 +18,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_utils.h"
@@ -35,7 +35,7 @@ base::FilePath GetTestDemoAppPath() {
 }
 
 Profile* WaitForProfile() {
-  chromeos::UserManager* user_manager = chromeos::UserManager::Get();
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (!user_manager || !user_manager->IsUserLoggedIn()) {
     content::WindowedNotificationObserver(
         chrome::NOTIFICATION_SESSION_STARTED,

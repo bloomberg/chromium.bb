@@ -105,7 +105,6 @@
 #include "ash/shell.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/chromeos_utils.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -122,6 +121,7 @@
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "policy/policy_constants.h"
 #include "policy/proto/device_management_backend.pb.h"
 #include "ui/gfx/image/image_skia.h"
@@ -942,8 +942,8 @@ void BrowserOptionsHandler::InitializePage() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   if (!connector->IsEnterpriseManaged() &&
-      !chromeos::UserManager::Get()->IsLoggedInAsGuest() &&
-      !chromeos::UserManager::Get()->IsLoggedInAsSupervisedUser()) {
+      !user_manager::UserManager::Get()->IsLoggedInAsGuest() &&
+      !user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser()) {
     web_ui()->CallJavascriptFunction(
         "BrowserOptions.enableFactoryResetSection");
   }
@@ -958,7 +958,7 @@ void BrowserOptionsHandler::InitializePage() {
 
   OnWallpaperManagedChanged(
       chromeos::WallpaperManager::Get()->IsPolicyControlled(
-          chromeos::UserManager::Get()->GetActiveUser()->email()));
+          user_manager::UserManager::Get()->GetActiveUser()->email()));
 #endif
 }
 
@@ -1351,7 +1351,8 @@ void BrowserOptionsHandler::ThemesSetNative(const base::ListValue* args) {
 
 #if defined(OS_CHROMEOS)
 void BrowserOptionsHandler::UpdateAccountPicture() {
-  std::string email = chromeos::UserManager::Get()->GetLoggedInUser()->email();
+  std::string email =
+      user_manager::UserManager::Get()->GetLoggedInUser()->email();
   if (!email.empty()) {
     web_ui()->CallJavascriptFunction("BrowserOptions.updateAccountPicture");
     base::StringValue email_value(email);

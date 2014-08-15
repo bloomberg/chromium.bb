@@ -13,7 +13,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
@@ -23,6 +22,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/policy_switches.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -257,7 +257,7 @@ class BlockingLoginTest
 
 IN_PROC_BROWSER_TEST_P(BlockingLoginTest, LoginBlocksForUser) {
   // Verify that there isn't a logged in user when the test starts.
-  UserManager* user_manager = UserManager::Get();
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   EXPECT_FALSE(user_manager->IsUserLoggedIn());
   EXPECT_FALSE(browser_policy_connector()->IsEnterpriseManaged());
   EXPECT_FALSE(profile_added_);

@@ -25,8 +25,8 @@
 #include "grit/browser_resources.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "components/user_manager/user_manager.h"
 #endif
 
 namespace {
@@ -91,7 +91,7 @@ void EasyUnlockService::LaunchSetup() {
 
 bool EasyUnlockService::IsAllowed() {
 #if defined(OS_CHROMEOS)
-  if (!chromeos::UserManager::Get()->IsLoggedInAsRegularUser())
+  if (!user_manager::UserManager::Get()->IsLoggedInAsRegularUser())
     return false;
 
   if (!chromeos::ProfileHelper::IsPrimaryProfile(profile_))

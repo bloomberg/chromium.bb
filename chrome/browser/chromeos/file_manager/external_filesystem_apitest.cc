@@ -11,7 +11,6 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/file_manager/drive_test_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -511,9 +511,8 @@ class MultiProfileDriveFileSystemExtensionApiTest :
   virtual void SetUpOnMainThread() OVERRIDE {
     base::FilePath user_data_directory;
     PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
-    chromeos::UserManager::Get()->UserLoggedIn(kSecondProfileAccount,
-                                               kSecondProfileHash,
-                                               false);
+    user_manager::UserManager::Get()->UserLoggedIn(
+        kSecondProfileAccount, kSecondProfileHash, false);
     // Set up the secondary profile.
     base::FilePath profile_dir =
         user_data_directory.Append(

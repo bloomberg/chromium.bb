@@ -12,9 +12,9 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
-#include "chrome/browser/chromeos/login/users/remove_user_delegate.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "components/user_manager/remove_user_delegate.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
@@ -25,7 +25,7 @@ class UserContext;
 
 // TODO(nkostylev): Extract interface, create a BaseLoginDisplay class.
 // An abstract class that defines login UI implementation.
-class LoginDisplay : public RemoveUserDelegate {
+class LoginDisplay : public user_manager::RemoveUserDelegate {
  public:
   // Sign in error IDs that require detailed error screen and not just
   // a simple error bubble.

@@ -14,13 +14,14 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/pref_names.h"
+#include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "ui/wm/core/user_activity_detector.h"
 
@@ -136,7 +137,7 @@ void UserSelectionScreen::FillUserDictionary(
   // Fill in multi-profiles related fields.
   if (is_signin_to_add) {
     MultiProfileUserController* multi_profile_user_controller =
-        UserManager::Get()->GetMultiProfileUserController();
+        ChromeUserManager::Get()->GetMultiProfileUserController();
     MultiProfileUserController::UserAllowedInSessionReason isUserAllowedReason;
     bool isUserAllowed = multi_profile_user_controller->IsUserAllowedInSession(
         user_id, &isUserAllowedReason);
@@ -299,7 +300,7 @@ void UserSelectionScreen::SendUserList() {
   // http://crbug.com/230852
   bool single_user = users.size() == 1;
   bool is_signin_to_add = LoginDisplayHostImpl::default_host() &&
-                          UserManager::Get()->IsUserLoggedIn();
+                          user_manager::UserManager::Get()->IsUserLoggedIn();
   std::string owner;
   chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
 

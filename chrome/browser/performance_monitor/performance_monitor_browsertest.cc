@@ -45,9 +45,9 @@
 #include "extensions/common/extension.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/user_manager/user_manager.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -359,9 +359,8 @@ class PerformanceMonitorUncleanExitBrowserTest
   virtual void AddSecondUserAccount() {
     // Add second user account for multi-profile test.
     if (GetParam()) {
-      chromeos::UserManager::Get()->UserLoggedIn(kSecondProfileAccount,
-                                                 kSecondProfileHash,
-                                                 false);
+      user_manager::UserManager::Get()->UserLoggedIn(
+          kSecondProfileAccount, kSecondProfileHash, false);
     }
   }
 #endif

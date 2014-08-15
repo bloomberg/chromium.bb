@@ -7,11 +7,11 @@
 #include "base/command_line.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
 
 namespace chromeos {
@@ -48,7 +48,7 @@ void RestoreAfterCrashSessionManagerDelegate::Start() {
         content::Details<Profile>(profile()));
 
     // This call will set session state to SESSION_STATE_ACTIVE (same one).
-    UserManager::Get()->SessionStarted();
+    user_manager::UserManager::Get()->SessionStarted();
 
     // Now is the good time to retrieve other logged in users for this session.
     // First user has been already marked as logged in and active in

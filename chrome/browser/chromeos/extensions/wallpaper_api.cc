@@ -12,13 +12,13 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
@@ -100,9 +100,9 @@ bool WallpaperSetWallpaperFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(params_);
 
   // Gets email address and username hash while at UI thread.
-  user_id_ = chromeos::UserManager::Get()->GetLoggedInUser()->email();
+  user_id_ = user_manager::UserManager::Get()->GetLoggedInUser()->email();
   user_id_hash_ =
-      chromeos::UserManager::Get()->GetLoggedInUser()->username_hash();
+      user_manager::UserManager::Get()->GetLoggedInUser()->username_hash();
 
   if (params_->details.wallpaper_data) {
     StartDecode(*params_->details.wallpaper_data);
@@ -138,7 +138,7 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
   ash::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
       set_wallpaper::Params::Details::ToString(params_->details.layout));
   bool update_wallpaper =
-      user_id_ == chromeos::UserManager::Get()->GetActiveUser()->email();
+      user_id_ == user_manager::UserManager::Get()->GetActiveUser()->email();
   wallpaper_manager->SetCustomWallpaper(user_id_,
                                         user_id_hash_,
                                         params_->details.name,

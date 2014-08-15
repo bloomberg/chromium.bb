@@ -32,7 +32,6 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -48,6 +47,7 @@
 #include "chromeos/audio/chromeos_sounds.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/login/login_state.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -469,9 +469,8 @@ void AccessibilityManager::UpdateLargeCursorFromPref() {
 }
 
 bool AccessibilityManager::IsIncognitoAllowed() {
-  UserManager* user_manager = UserManager::Get();
   // Supervised users can't create incognito-mode windows.
-  return !(user_manager->IsLoggedInAsSupervisedUser());
+  return !(user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser());
 }
 
 bool AccessibilityManager::IsLargeCursorEnabled() {

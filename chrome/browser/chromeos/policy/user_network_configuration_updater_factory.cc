@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
 
 #include "base/memory/singleton.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -17,6 +16,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 
 namespace policy {
@@ -71,7 +71,7 @@ KeyedService* UserNetworkConfigurationUpdaterFactory::BuildServiceInstanceFor(
   DCHECK(user);
   // Currently, only the network policy of the primary user is supported. See
   // also http://crbug.com/310685 .
-  if (user != chromeos::UserManager::Get()->GetPrimaryUser())
+  if (user != user_manager::UserManager::Get()->GetPrimaryUser())
     return NULL;
 
   const bool allow_trusted_certs_from_policy =

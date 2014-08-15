@@ -7,10 +7,10 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "extensions/common/switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -188,7 +188,7 @@ class ExtensionNetworkingPrivateApiTest
   }
 
   void InitializeSanitizedUsername() {
-    chromeos::UserManager* user_manager = chromeos::UserManager::Get();
+    user_manager::UserManager* user_manager = user_manager::UserManager::Get();
     user_manager::User* user = user_manager->GetActiveUser();
     CHECK(user);
     std::string userhash;

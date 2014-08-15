@@ -51,8 +51,7 @@
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager_impl.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager_test_util.h"
-#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/cloud_external_data_manager_base_test_util.h"
@@ -104,6 +103,7 @@
 #include "components/policy/core/common/policy_switches.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -374,7 +374,7 @@ scoped_ptr<net::FakeURLFetcher> RunCallbackAndReturnFakeURLFetcher(
 }
 
 bool IsSessionStarted() {
-  return chromeos::UserManager::Get()->IsSessionStarted();
+  return user_manager::UserManager::Get()->IsSessionStarted();
 }
 
 // GetKeyboardLayoutsForLocale() posts a task to a background task runner. This
@@ -397,7 +397,7 @@ void WaitForGetKeyboardLayoutsForLocaleToFinish() {
 }  // namespace
 
 class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
-                               public chromeos::UserManager::Observer,
+                               public user_manager::UserManager::Observer,
                                public chrome::BrowserListObserver,
                                public apps::AppWindowRegistry::Observer {
  protected:
@@ -519,7 +519,8 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     base::RunLoop().RunUntilIdle();
   }
 
-  virtual void LocalStateChanged(chromeos::UserManager* user_manager) OVERRIDE {
+  virtual void LocalStateChanged(
+      user_manager::UserManager* user_manager) OVERRIDE {
     if (run_loop_)
       run_loop_->Quit();
   }
@@ -609,7 +610,8 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
   }
 
   void CheckPublicSessionPresent(const std::string& id) {
-    const user_manager::User* user = chromeos::UserManager::Get()->FindUser(id);
+    const user_manager::User* user =
+        user_manager::UserManager::Get()->FindUser(id);
     ASSERT_TRUE(user);
     EXPECT_EQ(id, user->email());
     EXPECT_EQ(user_manager::USER_TYPE_PUBLIC_ACCOUNT, user->GetType());
@@ -709,7 +711,7 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
 };
 
 static bool IsKnownUser(const std::string& account_id) {
-  return chromeos::UserManager::Get()->IsKnownUser(account_id);
+  return user_manager::UserManager::Get()->IsKnownUser(account_id);
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LoginScreen) {
@@ -1065,13 +1067,13 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsCached) {
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExternalData) {
-  // chromeos::UserManager requests an external data fetch whenever
+  // user_manager::UserManager requests an external data fetch whenever
   // the key::kUserAvatarImage policy is set. Since this test wants to
   // verify that the underlying policy subsystem will start a fetch
-  // without this request as well, the chromeos::UserManager must be
+  // without this request as well, the user_manager::UserManager must be
   // prevented from seeing the policy change.
-  reinterpret_cast<chromeos::ChromeUserManager*>(chromeos::UserManager::Get())
-      ->StopPolicyObserverForTesting();
+  reinterpret_cast<chromeos::ChromeUserManagerImpl*>(
+      user_manager::UserManager::Get())->StopPolicyObserverForTesting();
 
   UploadDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);
@@ -1194,17 +1196,17 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, UserAvatarImage) {
   ASSERT_TRUE(broker);
 
   run_loop_.reset(new base::RunLoop);
-  chromeos::UserManager::Get()->AddObserver(this);
+  user_manager::UserManager::Get()->AddObserver(this);
   broker->core()->store()->Load();
   run_loop_->Run();
-  chromeos::UserManager::Get()->RemoveObserver(this);
+  user_manager::UserManager::Get()->RemoveObserver(this);
 
   scoped_ptr<gfx::ImageSkia> policy_image = chromeos::test::ImageLoader(
       test_dir.Append(chromeos::test::kUserAvatarImage1RelativePath)).Load();
   ASSERT_TRUE(policy_image);
 
   const user_manager::User* user =
-      chromeos::UserManager::Get()->FindUser(user_id_1_);
+      user_manager::UserManager::Get()->FindUser(user_id_1_);
   ASSERT_TRUE(user);
 
   base::FilePath user_data_dir;

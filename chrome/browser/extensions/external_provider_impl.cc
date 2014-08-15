@@ -37,13 +37,13 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/extensions/device_local_account_external_policy_loader.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/app_pack_updater.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #else
 #include "chrome/browser/extensions/default_apps.h"
 #endif
@@ -437,7 +437,7 @@ void ExternalProviderImpl::CreateExternalProviders(
   bool is_chromeos_demo_session = false;
   int bundled_extension_creation_flags = Extension::NO_FLAGS;
 #if defined(OS_CHROMEOS)
-  chromeos::UserManager* user_manager = chromeos::UserManager::Get();
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   is_chromeos_demo_session =
       user_manager && user_manager->IsLoggedInAsDemoUser() &&
       connector->GetDeviceMode() == policy::DEVICE_MODE_RETAIL_KIOSK;

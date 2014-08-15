@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
@@ -20,6 +19,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/user_manager/user_manager.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -28,7 +28,7 @@
 using chromeos::CrosSettings;
 using chromeos::DBusThreadManager;
 using chromeos::UpdateEngineClient;
-using chromeos::UserManager;
+using user_manager::UserManager;
 using chromeos::WizardController;
 
 namespace {
@@ -128,7 +128,7 @@ void VersionUpdaterCros::RelaunchBrowser() const {
 
 void VersionUpdaterCros::SetChannel(const std::string& channel,
                                     bool is_powerwash_allowed) {
-  if (UserManager::Get()->IsCurrentUserOwner()) {
+  if (user_manager::UserManager::Get()->IsCurrentUserOwner()) {
     // For local owner set the field in the policy blob.
     CrosSettings::Get()->SetString(chromeos::kReleaseChannel, channel);
   }

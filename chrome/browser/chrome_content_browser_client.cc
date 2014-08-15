@@ -154,9 +154,9 @@
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/chromeos/fileapi/mtp_file_system_backend_delegate.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/user_manager/user_manager.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/chrome_browser_main_linux.h"
 #elif defined(OS_ANDROID)
@@ -390,7 +390,7 @@ bool HandleWebUI(GURL* url, content::BrowserContext* browser_context) {
   // Special case : in ChromeOS in Guest mode bookmarks and history are
   // disabled for security reasons. New tab page explains the reasons, so
   // we redirect user to new tab page.
-  if (chromeos::UserManager::Get()->IsLoggedInAsGuest()) {
+  if (user_manager::UserManager::Get()->IsLoggedInAsGuest()) {
     if (url->SchemeIs(content::kChromeUIScheme) &&
         (url->DomainIs(chrome::kChromeUIBookmarksHost) ||
          url->DomainIs(chrome::kChromeUIHistoryHost))) {

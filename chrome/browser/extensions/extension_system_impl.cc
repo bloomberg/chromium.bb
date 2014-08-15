@@ -71,12 +71,12 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chromeos/extensions/device_local_account_management_policy_provider.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/login_state.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #endif
 
 using content::BrowserThread;
@@ -126,7 +126,7 @@ void ExtensionSystemImpl::Shared::InitPrefs() {
 
 #if defined(OS_CHROMEOS)
   const user_manager::User* user =
-      chromeos::UserManager::Get()->GetActiveUser();
+      user_manager::UserManager::Get()->GetActiveUser();
   policy::DeviceLocalAccount::Type device_local_account_type;
   if (user && policy::IsDeviceLocalAccountUser(user->email(),
                                                &device_local_account_type)) {

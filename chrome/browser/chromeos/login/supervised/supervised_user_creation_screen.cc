@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_controller.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_controller_new.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
@@ -445,8 +446,8 @@ bool SupervisedUserCreationScreen::FindUserByDisplayName(
 
 void SupervisedUserCreationScreen::ApplyPicture() {
   std::string user_id = controller_->GetSupervisedUserId();
-  UserManager* user_manager = UserManager::Get();
-  UserImageManager* image_manager = user_manager->GetUserImageManager(user_id);
+  UserImageManager* image_manager =
+      ChromeUserManager::Get()->GetUserImageManager(user_id);
   switch (selected_image_) {
     case user_manager::User::USER_IMAGE_EXTERNAL:
       // Photo decoding may not have been finished yet.
@@ -485,7 +486,7 @@ void SupervisedUserCreationScreen::OnGetSupervisedUsers(
   // Copy for passing to WebUI, contains only id, name and avatar URL.
   scoped_ptr<base::ListValue> ui_users(new base::ListValue());
   SupervisedUserManager* supervised_user_manager =
-      UserManager::Get()->GetSupervisedUserManager();
+      ChromeUserManager::Get()->GetSupervisedUserManager();
 
   // Stored copy, contains all necessary information.
   existing_users_.reset(new base::DictionaryValue());

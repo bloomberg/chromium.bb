@@ -33,12 +33,12 @@
 #include "base/time/tick_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/system/automatic_reboot_manager_observer.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -171,7 +171,7 @@ AutomaticRebootManager::AutomaticRebootManager(
   // If no user is logged in, a reboot may be performed whenever the user is
   // idle. Start listening for user activity to determine whether the user is
   // idle or not.
-  if (!UserManager::Get()->IsUserLoggedIn()) {
+  if (!user_manager::UserManager::Get()->IsUserLoggedIn()) {
     if (ash::Shell::HasInstance())
       ash::Shell::GetInstance()->user_activity_detector()->AddObserver(this);
     notification_registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
@@ -262,7 +262,7 @@ void AutomaticRebootManager::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_APP_TERMINATING) {
-    if (UserManager::Get()->IsUserLoggedIn()) {
+    if (user_manager::UserManager::Get()->IsUserLoggedIn()) {
       // The browser is terminating during a session, either because the session
       // is ending or because the browser is being restarted.
       MaybeReboot(true);
@@ -395,7 +395,7 @@ void AutomaticRebootManager::MaybeReboot(bool ignore_session) {
   // * A session is in progress and |ignore_session| is not set.
   if (!reboot_requested_ ||
       (login_screen_idle_timer_ && login_screen_idle_timer_->IsRunning()) ||
-      (!ignore_session && UserManager::Get()->IsUserLoggedIn())) {
+      (!ignore_session && user_manager::UserManager::Get()->IsUserLoggedIn())) {
     return;
   }
 
@@ -404,8 +404,8 @@ void AutomaticRebootManager::MaybeReboot(bool ignore_session) {
 
 void AutomaticRebootManager::Reboot() {
   // If a non-kiosk-app session is in progress, do not reboot.
-  if (UserManager::Get()->IsUserLoggedIn() &&
-      !UserManager::Get()->IsLoggedInAsKioskApp()) {
+  if (user_manager::UserManager::Get()->IsUserLoggedIn() &&
+      !user_manager::UserManager::Get()->IsLoggedInAsKioskApp()) {
     return;
   }
 

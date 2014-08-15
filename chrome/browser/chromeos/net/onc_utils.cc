@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/ui_proxy_config.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/common/pref_names.h"
@@ -26,6 +25,7 @@
 #include "chromeos/network/onc/onc_translator.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "net/base/host_port_pair.h"
 #include "net/proxy/proxy_bypass_rules.h"
 #include "net/proxy/proxy_server.h"
@@ -266,7 +266,8 @@ void ImportNetworksForUser(const user_manager::User* user,
 const base::DictionaryValue* FindPolicyForActiveUser(
     const std::string& guid,
     ::onc::ONCSource* onc_source) {
-  const user_manager::User* user = UserManager::Get()->GetActiveUser();
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->GetActiveUser();
   std::string username_hash = user ? user->username_hash() : std::string();
   return NetworkHandler::Get()->managed_network_configuration_handler()->
       FindPolicyByGUID(username_hash, guid, onc_source);
@@ -275,7 +276,8 @@ const base::DictionaryValue* FindPolicyForActiveUser(
 const base::DictionaryValue* GetGlobalConfigFromPolicy(bool for_active_user) {
   std::string username_hash;
   if (for_active_user) {
-    const user_manager::User* user = UserManager::Get()->GetActiveUser();
+    const user_manager::User* user =
+        user_manager::UserManager::Get()->GetActiveUser();
     if (!user) {
       LOG(ERROR) << "No user logged in yet.";
       return NULL;

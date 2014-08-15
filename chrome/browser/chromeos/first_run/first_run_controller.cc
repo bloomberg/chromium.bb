@@ -13,9 +13,9 @@
 #include "chrome/browser/chromeos/first_run/steps/app_list_step.h"
 #include "chrome/browser/chromeos/first_run/steps/help_step.h"
 #include "chrome/browser/chromeos/first_run/steps/tray_step.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "components/user_manager/user_manager.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -71,7 +71,7 @@ FirstRunController::FirstRunController()
 
 void FirstRunController::Init() {
   start_time_ = base::Time::Now();
-  UserManager* user_manager = UserManager::Get();
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   user_profile_ = ProfileHelper::Get()->GetProfileByUserUnsafe(
       user_manager->GetActiveUser());
 

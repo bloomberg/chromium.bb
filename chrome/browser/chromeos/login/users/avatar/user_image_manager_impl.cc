@@ -25,7 +25,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_sync_observer.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_downloader.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -33,6 +32,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/user_manager/user_image/default_user_images.h"
 #include "components/user_manager/user_image/user_image.h"
+#include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -470,8 +470,9 @@ void UserImageManagerImpl::Job::NotifyJobDone() {
   parent_->OnJobDone();
 }
 
-UserImageManagerImpl::UserImageManagerImpl(const std::string& user_id,
-                                           UserManager* user_manager)
+UserImageManagerImpl::UserImageManagerImpl(
+    const std::string& user_id,
+    user_manager::UserManager* user_manager)
     : UserImageManager(user_id),
       user_manager_(user_manager),
       downloading_profile_image_(false),
@@ -763,9 +764,10 @@ void UserImageManagerImpl::OnProfileDownloadSuccess(
 
   user_manager_->UpdateUserAccountData(
       user_id(),
-      UserManager::UserAccountData(downloader->GetProfileFullName(),
-                                   downloader->GetProfileGivenName(),
-                                   downloader->GetProfileLocale()));
+      user_manager::UserManager::UserAccountData(
+          downloader->GetProfileFullName(),
+          downloader->GetProfileGivenName(),
+          downloader->GetProfileLocale()));
   if (!downloading_profile_image_)
     return;
 

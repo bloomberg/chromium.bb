@@ -25,6 +25,7 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/user_manager/user_manager.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "policy/policy_constants.h"
 #include "url/gurl.h"
@@ -63,7 +64,7 @@ void OnWildcardCheckCompleted(const std::string& username,
     // logged-in session is not possible. Fix this either by delaying the
     // cryptohome deletion operation or by getting rid of the in-session
     // wildcard check.
-    chromeos::UserManager::Get()->RemoveUserFromList(username);
+    user_manager::UserManager::Get()->RemoveUserFromList(username);
     chrome::AttemptUserExit();
   }
 }

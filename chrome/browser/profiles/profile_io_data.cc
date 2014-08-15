@@ -108,7 +108,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/drive/drive_protocol_handler.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/net/cert_verify_proc_chromeos.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
@@ -121,6 +120,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "crypto/nss_util.h"
 #include "crypto/nss_util_internal.h"
 #include "net/cert/multi_threaded_cert_verifier.h"
@@ -223,7 +223,8 @@ class DebugDevToolsInterceptor : public net::URLRequestInterceptor {
 // per-profile.
 //
 // Initialization basically follows these steps:
-// 1) Get some info from chromeos::UserManager about the User for this profile.
+// 1) Get some info from user_manager::UserManager about the User for this
+// profile.
 // 2) Tell nss_util to initialize the software slot for this profile.
 // 3) Wait for the TPM module to be loaded by nss_util if it isn't already.
 // 4) Ask CryptohomeClient which TPM slot id corresponds to this profile.
@@ -366,7 +367,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
       supervised_user_service->GetURLFilterForIOThread();
 #endif
 #if defined(OS_CHROMEOS)
-  chromeos::UserManager* user_manager = chromeos::UserManager::Get();
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (user_manager) {
     user_manager::User* user =
         chromeos::ProfileHelper::Get()->GetUserByProfile(profile);

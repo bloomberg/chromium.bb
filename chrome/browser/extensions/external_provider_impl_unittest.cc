@@ -32,6 +32,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/users/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chromeos/system/mock_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
 #endif

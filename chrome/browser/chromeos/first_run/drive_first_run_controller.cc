@@ -14,7 +14,6 @@
 #include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/tab_contents/background_contents.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_details.h"
@@ -364,7 +364,7 @@ void DriveFirstRunController::EnableOfflineMode() {
     return;
   }
 
-  if (!UserManager::Get()->IsLoggedInAsRegularUser()) {
+  if (!user_manager::UserManager::Get()->IsLoggedInAsRegularUser()) {
     LOG(ERROR) << "Attempting to enable offline access "
                   "but not logged in a regular user.";
     OnOfflineInit(false, OUTCOME_WRONG_USER_TYPE);

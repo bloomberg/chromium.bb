@@ -10,7 +10,6 @@
 #include "chrome/browser/chromeos/app_mode/app_session_lifetime.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -21,6 +20,7 @@
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
+#include "components/user_manager/user_manager.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "ui/base/window_open_disposition.h"
@@ -96,7 +96,7 @@ void DemoAppLauncher::OnProfileLoaded(Profile* profile) {
       profile, extension, extensions::LAUNCH_CONTAINER_WINDOW, NEW_WINDOW));
   InitAppSession(profile, extension_id);
 
-  UserManager::Get()->SessionStarted();
+  user_manager::UserManager::Get()->SessionStarted();
 
   LoginDisplayHostImpl::default_host()->Finalize();
 }

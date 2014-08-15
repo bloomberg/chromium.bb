@@ -12,8 +12,8 @@
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
+#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
@@ -27,6 +27,7 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -103,8 +104,9 @@ class UserManagerTest : public testing::Test {
     chromeos::DBusThreadManager::Shutdown();
   }
 
-  ChromeUserManager* GetChromeUserManager() const {
-    return static_cast<ChromeUserManager*>(UserManager::Get());
+  ChromeUserManagerImpl* GetChromeUserManager() const {
+    return static_cast<ChromeUserManagerImpl*>(
+        user_manager::UserManager::Get());
   }
 
   bool GetUserManagerEphemeralUsersEnabled() const {
@@ -126,12 +128,12 @@ class UserManagerTest : public testing::Test {
   void ResetUserManager() {
     // Reset the UserManager singleton.
     user_manager_enabler_.reset();
-    // Initialize the UserManager singleton to a fresh ChromeUserManager
+    // Initialize the UserManager singleton to a fresh ChromeUserManagerImpl
     // instance.
     user_manager_enabler_.reset(
-        new ScopedUserManagerEnabler(new ChromeUserManager));
+        new ScopedUserManagerEnabler(new ChromeUserManagerImpl));
 
-    // ChromeUserManager ctor posts a task to reload policies.
+    // ChromeUserManagerImpl ctor posts a task to reload policies.
     base::RunLoop().RunUntilIdle();
   }
 
@@ -179,17 +181,18 @@ TEST_F(UserManagerTest, RetrieveTrustedDevicePolicies) {
 }
 
 TEST_F(UserManagerTest, RemoveAllExceptOwnerFromList) {
-  UserManager::Get()->UserLoggedIn(
+  user_manager::UserManager::Get()->UserLoggedIn(
       "owner@invalid.domain", "owner@invalid.domain", false);
   ResetUserManager();
-  UserManager::Get()->UserLoggedIn(
+  user_manager::UserManager::Get()->UserLoggedIn(
       "user0@invalid.domain", "owner@invalid.domain", false);
   ResetUserManager();
-  UserManager::Get()->UserLoggedIn(
+  user_manager::UserManager::Get()->UserLoggedIn(
       "user1@invalid.domain", "owner@invalid.domain", false);
   ResetUserManager();
 
-  const user_manager::UserList* users = &UserManager::Get()->GetUsers();
+  const user_manager::UserList* users =
+      &user_manager::UserManager::Get()->GetUsers();
   ASSERT_EQ(3U, users->size());
   EXPECT_EQ((*users)[0]->email(), "user1@invalid.domain");
   EXPECT_EQ((*users)[1]->email(), "user0@invalid.domain");
@@ -198,7 +201,7 @@ TEST_F(UserManagerTest, RemoveAllExceptOwnerFromList) {
   SetDeviceSettings(true, "owner@invalid.domain", false);
   RetrieveTrustedDevicePolicies();
 
-  users = &UserManager::Get()->GetUsers();
+  users = &user_manager::UserManager::Get()->GetUsers();
   EXPECT_EQ(1U, users->size());
   EXPECT_EQ((*users)[0]->email(), "owner@invalid.domain");
 }
@@ -207,14 +210,15 @@ TEST_F(UserManagerTest, RegularUserLoggedInAsEphemeral) {
   SetDeviceSettings(true, "owner@invalid.domain", false);
   RetrieveTrustedDevicePolicies();
 
-  UserManager::Get()->UserLoggedIn(
+  user_manager::UserManager::Get()->UserLoggedIn(
       "owner@invalid.domain", "user0@invalid.domain", false);
   ResetUserManager();
-  UserManager::Get()->UserLoggedIn(
+  user_manager::UserManager::Get()->UserLoggedIn(
       "user0@invalid.domain", "user0@invalid.domain", false);
   ResetUserManager();
 
-  const user_manager::UserList* users = &UserManager::Get()->GetUsers();
+  const user_manager::UserList* users =
+      &user_manager::UserManager::Get()->GetUsers();
   EXPECT_EQ(1U, users->size());
   EXPECT_EQ((*users)[0]->email(), "owner@invalid.domain");
 }

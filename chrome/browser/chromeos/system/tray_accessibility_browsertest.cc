@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/extensions/api/braille_display_private/mock_braille_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -34,6 +33,7 @@
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/test/test_utils.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -271,9 +271,9 @@ class TrayAccessibilityTest
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, LoginStatus) {
   EXPECT_EQ(ash::user::LOGGED_IN_NONE, GetLoginStatus());
 
-  UserManager::Get()->UserLoggedIn(
+  user_manager::UserManager::Get()->UserLoggedIn(
       "owner@invalid.domain", "owner@invalid.domain", true);
-  UserManager::Get()->SessionStarted();
+  user_manager::UserManager::Get()->SessionStarted();
 
   EXPECT_EQ(ash::user::LOGGED_IN_USER, GetLoginStatus());
 }
@@ -285,9 +285,9 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, DISABLED_ShowTrayIcon) {
   // Confirms that the icon is invisible before login.
   EXPECT_FALSE(IsTrayIconVisible());
 
-  UserManager::Get()->UserLoggedIn(
+  user_manager::UserManager::Get()->UserLoggedIn(
       "owner@invalid.domain", "owner@invalid.domain", true);
-  UserManager::Get()->SessionStarted();
+  user_manager::UserManager::Get()->SessionStarted();
 
   // Confirms that the icon is invisible just after login.
   EXPECT_FALSE(IsTrayIconVisible());
@@ -351,9 +351,9 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, DISABLED_ShowTrayIcon) {
 // http://crbug.com/396342
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, DISABLED_ShowMenu) {
   // Login
-  UserManager::Get()->UserLoggedIn(
+  user_manager::UserManager::Get()->UserLoggedIn(
       "owner@invalid.domain", "owner@invalid.domain", true);
-  UserManager::Get()->SessionStarted();
+  user_manager::UserManager::Get()->SessionStarted();
 
   SetShowAccessibilityOptionsInSystemTrayMenu(false);
 
@@ -421,9 +421,9 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, DISABLED_ShowMenu) {
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest,
     DISABLED_ShowMenuWithShowMenuOption) {
   // Login
-  UserManager::Get()->UserLoggedIn(
+  user_manager::UserManager::Get()->UserLoggedIn(
       "owner@invalid.domain", "owner@invalid.domain", true);
-  UserManager::Get()->SessionStarted();
+  user_manager::UserManager::Get()->SessionStarted();
 
   SetShowAccessibilityOptionsInSystemTrayMenu(true);
 

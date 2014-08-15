@@ -24,7 +24,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager_test_utils.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -32,6 +31,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/user_names.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/test/test_utils.h"
 #include "ui/aura/env.h"
 #include "ui/gfx/image/image_skia.h"
@@ -111,7 +111,8 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest {
 
   // Logs in |username|.
   void LogIn(const std::string& username, const std::string& username_hash) {
-    UserManager::Get()->UserLoggedIn(username, username_hash, false);
+    user_manager::UserManager::Get()->UserLoggedIn(
+        username, username_hash, false);
     WaitAsyncWallpaperLoadStarted();
   }
 
@@ -733,7 +734,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, SmallGuestWallpaper) {
   if (!ash::test::AshTestHelper::SupportsMultipleDisplays())
     return;
   CreateCmdlineWallpapers();
-  UserManager::Get()->UserLoggedIn(
+  user_manager::UserManager::Get()->UserLoggedIn(
       chromeos::login::kGuestUserName, chromeos::login::kGuestUserName, false);
   UpdateDisplay("800x600");
   WallpaperManager::Get()->SetDefaultWallpaperNow(std::string());
@@ -748,7 +749,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, LargeGuestWallpaper) {
     return;
 
   CreateCmdlineWallpapers();
-  UserManager::Get()->UserLoggedIn(
+  user_manager::UserManager::Get()->UserLoggedIn(
       chromeos::login::kGuestUserName, chromeos::login::kGuestUserName, false);
   UpdateDisplay("1600x1200");
   WallpaperManager::Get()->SetDefaultWallpaperNow(std::string());
@@ -763,7 +764,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   // Start loading the default wallpaper.
   UpdateDisplay("640x480");
   CreateCmdlineWallpapers();
-  UserManager::Get()->UserLoggedIn(
+  user_manager::UserManager::Get()->UserLoggedIn(
       chromeos::login::kStubUser, "test_hash", false);
 
   WallpaperManager::Get()->SetDefaultWallpaperNow(std::string());

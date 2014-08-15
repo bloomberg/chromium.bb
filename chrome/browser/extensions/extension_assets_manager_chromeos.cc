@@ -16,13 +16,13 @@
 #include "base/sequenced_task_runner.h"
 #include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
@@ -281,7 +281,7 @@ void ExtensionAssetsManagerChromeOS::CheckSharedExtension(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const std::string& user_id = profile->GetProfileName();
-  chromeos::UserManager* user_manager = chromeos::UserManager::Get();
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (!user_manager) {
     NOTREACHED();
     return;
@@ -497,7 +497,7 @@ bool ExtensionAssetsManagerChromeOS::CleanUpExtension(
     const std::string& id,
     base::DictionaryValue* extension_info,
     std::multimap<std::string, base::FilePath>* live_extension_paths) {
-  chromeos::UserManager* user_manager = chromeos::UserManager::Get();
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (!user_manager) {
     NOTREACHED();
     return false;

@@ -36,6 +36,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/chromeos_constants.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
 #include "webkit/browser/fileapi/file_system_url.h"
@@ -121,7 +122,7 @@ base::FilePath GetDriveMountPointPath(Profile* profile) {
     // returns currently active users's hash in such a case.) I still try
     // ProfileHelper first because it works better in tests.
     user_manager::User* const user =
-        chromeos::UserManager::IsInitialized()
+        user_manager::UserManager::IsInitialized()
             ? chromeos::ProfileHelper::Get()->GetUserByProfile(
                   profile->GetOriginalProfile())
             : NULL;

@@ -32,12 +32,12 @@ class SequencedTaskRunner;
 
 namespace user_manager {
 class UserImage;
+class UserManager;
 }
 
 namespace chromeos {
 
 class UserImageSyncObserver;
-class UserManager;
 
 class UserImageManagerImpl
     : public UserImageManager,
@@ -45,7 +45,7 @@ class UserImageManagerImpl
  public:
   // UserImageManager:
   UserImageManagerImpl(const std::string& user_id,
-                       UserManager* user_manager);
+                       user_manager::UserManager* user_manager);
   virtual ~UserImageManagerImpl();
 
   virtual void LoadUserImage() OVERRIDE;
@@ -153,7 +153,7 @@ class UserImageManagerImpl
   bool IsUserLoggedInAndRegular() const;
 
   // The user manager.
-  UserManager* user_manager_;
+  user_manager::UserManager* user_manager_;
 
   // Loader for JPEG user images.
   scoped_refptr<UserImageLoader> image_loader_;

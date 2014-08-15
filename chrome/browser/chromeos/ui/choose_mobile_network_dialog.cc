@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/ui/choose_mobile_network_dialog.h"
 
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/url_constants.h"

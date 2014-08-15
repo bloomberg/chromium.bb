@@ -300,7 +300,7 @@ void SupervisedUserTestBase::StartFlowLoginAsManager() {
   login_observer.Wait();
 
   // OAuth token is valid.
-  UserManager::Get()->SaveUserOAuthStatus(
+  user_manager::UserManager::Get()->SaveUserOAuthStatus(
       kTestManager, user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
   base::RunLoop().RunUntilIdle();
 
@@ -357,11 +357,11 @@ void SupervisedUserTestBase::SigninAsSupervisedUser(
     EXPECT_CALL(*mock_homedir_methods_, MountEx(_, _, _, _)).Times(1);
 
   // Log in as supervised user, make sure that everything works.
-  ASSERT_EQ(3UL, UserManager::Get()->GetUsers().size());
+  ASSERT_EQ(3UL, user_manager::UserManager::Get()->GetUsers().size());
 
   // Created supervised user have to be first in a list.
   const user_manager::User* user =
-      UserManager::Get()->GetUsers().at(user_index);
+      user_manager::UserManager::Get()->GetUsers().at(user_index);
   ASSERT_EQ(base::UTF8ToUTF16(expected_display_name), user->display_name());
   LoginUser(user->email());
   if (check_homedir_calls)
@@ -377,11 +377,11 @@ void SupervisedUserTestBase::SigninAsSupervisedUser(
 
 void SupervisedUserTestBase::SigninAsManager(int user_index) {
   // Log in as supervised user, make sure that everything works.
-  ASSERT_EQ(3UL, UserManager::Get()->GetUsers().size());
+  ASSERT_EQ(3UL, user_manager::UserManager::Get()->GetUsers().size());
 
   // Created supervised user have to be first in a list.
   const user_manager::User* user =
-      UserManager::Get()->GetUsers().at(user_index);
+      user_manager::UserManager::Get()->GetUsers().at(user_index);
   LoginUser(user->email());
   Profile* profile = ProfileHelper::Get()->GetProfileByUserUnsafe(user);
   shared_settings_adapter_.reset(
@@ -394,11 +394,12 @@ void SupervisedUserTestBase::RemoveSupervisedUser(
     int user_index,
     const std::string& expected_display_name) {
   // Remove supervised user.
-  ASSERT_EQ(original_user_count, UserManager::Get()->GetUsers().size());
+  ASSERT_EQ(original_user_count,
+            user_manager::UserManager::Get()->GetUsers().size());
 
   // Created supervised user have to be first in a list.
   const user_manager::User* user =
-      UserManager::Get()->GetUsers().at(user_index);
+      user_manager::UserManager::Get()->GetUsers().at(user_index);
   ASSERT_EQ(base::UTF8ToUTF16(expected_display_name), user->display_name());
 
   // Open pod menu.
@@ -429,7 +430,8 @@ void SupervisedUserTestBase::RemoveSupervisedUser(
       user_index));
 
   // Make sure there is no supervised user in list.
-  ASSERT_EQ(original_user_count - 1, UserManager::Get()->GetUsers().size());
+  ASSERT_EQ(original_user_count - 1,
+            user_manager::UserManager::Get()->GetUsers().size());
 }
 
 }  // namespace chromeos

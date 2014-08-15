@@ -8,8 +8,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 
 namespace extensions {
 
@@ -41,7 +41,7 @@ FeedbackServiceImpl::~FeedbackServiceImpl() {
 }
 
 std::string FeedbackServiceImpl::GetUserEmail() {
-  const chromeos::UserManager* manager = chromeos::UserManager::Get();
+  const user_manager::UserManager* manager = user_manager::UserManager::Get();
   const user_manager::User* user = manager ? manager->GetActiveUser() : NULL;
   return user ? user->display_email() : std::string();
 }

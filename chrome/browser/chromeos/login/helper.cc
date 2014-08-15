@@ -7,7 +7,6 @@
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "chromeos/chromeos_switches.h"

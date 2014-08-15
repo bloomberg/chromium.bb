@@ -36,11 +36,11 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/files/file_path.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/device_identity_provider.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
+#include "components/user_manager/user_manager.h"
 #endif
 
 namespace invalidation {
@@ -53,9 +53,9 @@ ProfileInvalidationProvider* ProfileInvalidationProviderFactory::GetForProfile(
   // when this method is called during the creation of the sign-in profile
   // itself. Using ProfileHelper::GetSigninProfileDir() is safe because it does
   // not try to access the sign-in profile.
-  if (profile->GetPath() == chromeos::ProfileHelper::GetSigninProfileDir()||
-      (chromeos::UserManager::IsInitialized() &&
-       chromeos::UserManager::Get()->IsLoggedInAsGuest())) {
+  if (profile->GetPath() == chromeos::ProfileHelper::GetSigninProfileDir() ||
+      (user_manager::UserManager::IsInitialized() &&
+       user_manager::UserManager::Get()->IsLoggedInAsGuest())) {
     // The Chrome OS login and Chrome OS guest profiles do not have GAIA
     // credentials and do not support invalidation.
     return NULL;
@@ -110,8 +110,8 @@ KeyedService* ProfileInvalidationProviderFactory::BuildServiceInstanceFor(
 #if defined(OS_CHROMEOS)
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  if (chromeos::UserManager::IsInitialized() &&
-      chromeos::UserManager::Get()->IsLoggedInAsKioskApp() &&
+  if (user_manager::UserManager::IsInitialized() &&
+      user_manager::UserManager::Get()->IsLoggedInAsKioskApp() &&
       connector->IsEnterpriseManaged()) {
     identity_provider.reset(new chromeos::DeviceIdentityProvider(
         chromeos::DeviceOAuth2TokenServiceFactory::Get()));

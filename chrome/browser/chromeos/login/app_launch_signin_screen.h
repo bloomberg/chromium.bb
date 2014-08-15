@@ -8,12 +8,12 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/authenticator.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 
 namespace chromeos {
 
@@ -43,11 +43,11 @@ class AppLaunchSigninScreen : public SigninScreenHandlerDelegate,
 
   void Show();
 
-  static void SetUserManagerForTesting(UserManager* user_manager);
+  static void SetUserManagerForTesting(user_manager::UserManager* user_manager);
 
  private:
   void InitOwnerUserList();
-  UserManager* GetUserManager();
+  user_manager::UserManager* GetUserManager();
 
   // SigninScreenHandlerDelegate implementation:
   virtual void CancelPasswordChangedFlow() OVERRIDE;
@@ -96,7 +96,7 @@ class AppLaunchSigninScreen : public SigninScreenHandlerDelegate,
   // This list should have at most one user, and that user should be the owner.
   user_manager::UserList owner_user_list_;
 
-  static UserManager* test_user_manager_;
+  static user_manager::UserManager* test_user_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLaunchSigninScreen);
 };

@@ -2,26 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_USERS_USER_MANAGER_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_USERS_USER_MANAGER_H_
+#ifndef COMPONENTS_USER_MANAGER_USER_MANAGER_H_
+#define COMPONENTS_USER_MANAGER_USER_MANAGER_H_
 
 #include <string>
 
-#include "chrome/browser/chromeos/login/user_flow.h"
 #include "components/user_manager/user.h"
-
-class PrefRegistrySimple;
+#include "components/user_manager/user_manager_export.h"
 
 namespace chromeos {
+class ScopedUserManagerEnabler;
+}
 
-class MultiProfileUserController;
+namespace user_manager {
+
 class RemoveUserDelegate;
-class UserImageManager;
-class SupervisedUserManager;
 
-// Interface for UserManagerBase - provides a mechanism for discovering users
-// who have logged into this Chrome OS device before and updating that list.
-class UserManager {
+// Interface for UserManagerBase - that provides base implementation for
+// Chrome OS user management. Typical features:
+// * Get list of all know users (who have logged into this Chrome OS device)
+// * Keep track for logged in/LRU users, active user in multi-user session.
+// * Find/modify users, store user meta-data such as display name/email.
+class USER_MANAGER_EXPORT UserManager {
  public:
   // Interface that observers of UserManager must implement in order
   // to receive notification when local state preferences is changed
@@ -40,10 +42,10 @@ class UserManager {
   class UserSessionStateObserver {
    public:
     // Called when active user has changed.
-    virtual void ActiveUserChanged(const user_manager::User* active_user);
+    virtual void ActiveUserChanged(const User* active_user);
 
     // Called when another user got added to the existing session.
-    virtual void UserAddedToSession(const user_manager::User* added_user);
+    virtual void UserAddedToSession(const User* added_user);
 
     // Called right before notifying on user change so that those who rely
     // on user_id hash would be accessing up-to-date value.
@@ -72,12 +74,14 @@ class UserManager {
     DISALLOW_COPY_AND_ASSIGN(UserAccountData);
   };
 
-  // Creates the singleton instance. This method is not thread-safe and must be
-  // called from the main UI thread.
-  static void Initialize();
+  // Initializes UserManager instance to this. Normally should be called right
+  // after creation so that user_manager::UserManager::Get() doesn't fail.
+  // Tests could call this method if they are replacing existing UserManager
+  // instance with their own test instance.
+  void Initialize();
 
-  // Checks whether the singleton instance has been created already. This method
-  // is not thread-safe and must be called from the main UI thread.
+  // Checks whether the UserManager instance has been created already.
+  // This method is not thread-safe and must be called from the main UI thread.
   static bool IsInitialized();
 
   // Shuts down the UserManager. After this method has been called, the
@@ -86,27 +90,20 @@ class UserManager {
   // thread-safe and must be called from the main UI thread.
   virtual void Shutdown() = 0;
 
-  // Destroys the singleton instance. Always call Shutdown() first. This method
-  // is not thread-safe and must be called from the main UI thread.
-  static void Destroy();
+  // Sets UserManager instance to NULL. Always call Shutdown() first.
+  // This method is not thread-safe and must be called from the main UI thread.
+  void Destroy();
 
-  // Returns the singleton instance or |NULL| if the singleton has either not
-  // been created yet or is already destroyed. This method is not thread-safe
+  // Returns UserManager instance or will crash if it is |NULL| (has either not
+  // been created yet or is already destroyed). This method is not thread-safe
   // and must be called from the main UI thread.
   static UserManager* Get();
 
-  // Registers user manager preferences.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
-
   virtual ~UserManager();
-
-  virtual MultiProfileUserController* GetMultiProfileUserController() = 0;
-  virtual UserImageManager* GetUserImageManager(const std::string& user_id) = 0;
-  virtual SupervisedUserManager* GetSupervisedUserManager() = 0;
 
   // Returns a list of users who have logged into this device previously. This
   // is sorted by last login date with the most recent user at the beginning.
-  virtual const user_manager::UserList& GetUsers() const = 0;
+  virtual const UserList& GetUsers() const = 0;
 
   // Returns list of users admitted for logging in into multi-profile session.
   // Users that have a policy that prevents them from being added to the
@@ -114,15 +111,15 @@ class UserManager {
   // are regular users (i.e. not a public session/supervised etc.).
   // Returns an empty list in case when primary user is not a regular one or
   // has a policy that prohibids it to be part of multi-profile session.
-  virtual user_manager::UserList GetUsersAdmittedForMultiProfile() const = 0;
+  virtual UserList GetUsersAdmittedForMultiProfile() const = 0;
 
   // Returns a list of users who are currently logged in.
-  virtual const user_manager::UserList& GetLoggedInUsers() const = 0;
+  virtual const UserList& GetLoggedInUsers() const = 0;
 
   // Returns a list of users who are currently logged in in the LRU order -
   // so the active user is the first one in the list. If there is no user logged
   // in, the current user will be returned.
-  virtual const user_manager::UserList& GetLRULoggedInUsers() const = 0;
+  virtual const UserList& GetLRULoggedInUsers() const = 0;
 
   // Returns a list of users who can unlock the device.
   // This list is based on policy and whether user is able to do unlock.
@@ -130,7 +127,7 @@ class UserManager {
   // * If user has primary-only policy then it is the only user in unlock users.
   // * Otherwise all users with unrestricted policy are added to this list.
   // All users that are unable to perform unlock are excluded from this list.
-  virtual user_manager::UserList GetUnlockUsers() const = 0;
+  virtual UserList GetUnlockUsers() const = 0;
 
   // Returns the email of the owner user. Returns an empty string if there is
   // no owner for the device.
@@ -173,34 +170,33 @@ class UserManager {
 
   // Returns the user with the given user id if found in the persistent
   // list or currently logged in as ephemeral. Returns |NULL| otherwise.
-  virtual const user_manager::User* FindUser(
-      const std::string& user_id) const = 0;
+  virtual const User* FindUser(const std::string& user_id) const = 0;
 
   // Returns the user with the given user id if found in the persistent
   // list or currently logged in as ephemeral. Returns |NULL| otherwise.
   // Same as FindUser but returns non-const pointer to User object.
-  virtual user_manager::User* FindUserAndModify(const std::string& user_id) = 0;
+  virtual User* FindUserAndModify(const std::string& user_id) = 0;
 
   // Returns the logged-in user.
   // TODO(nkostylev): Deprecate this call, move clients to GetActiveUser().
   // http://crbug.com/230852
-  virtual const user_manager::User* GetLoggedInUser() const = 0;
-  virtual user_manager::User* GetLoggedInUser() = 0;
+  virtual const User* GetLoggedInUser() const = 0;
+  virtual User* GetLoggedInUser() = 0;
 
   // Returns the logged-in user that is currently active within this session.
   // There could be multiple users logged in at the the same but for now
   // we support only one of them being active.
-  virtual const user_manager::User* GetActiveUser() const = 0;
-  virtual user_manager::User* GetActiveUser() = 0;
+  virtual const User* GetActiveUser() const = 0;
+  virtual User* GetActiveUser() = 0;
 
   // Returns the primary user of the current session. It is recorded for the
   // first signed-in user and does not change thereafter.
-  virtual const user_manager::User* GetPrimaryUser() const = 0;
+  virtual const User* GetPrimaryUser() const = 0;
 
   // Saves user's oauth token status in local state preferences.
   virtual void SaveUserOAuthStatus(
       const std::string& user_id,
-      user_manager::User::OAuthTokenStatus oauth_token_status) = 0;
+      User::OAuthTokenStatus oauth_token_status) = 0;
 
   // Saves a flag indicating whether online authentication against GAIA should
   // be enforced during the user's next sign-in.
@@ -230,8 +226,7 @@ class UserManager {
   // Returns the display email for user |user_id| if it is known (was
   // previously set by a |SaveUserDisplayEmail| call).
   // Otherwise, returns |user_id| itself.
-  virtual std::string GetUserDisplayEmail(
-      const std::string& user_id) const = 0;
+  virtual std::string GetUserDisplayEmail(const std::string& user_id) const = 0;
 
   // Returns true if current user is an owner.
   virtual bool IsCurrentUserOwner() const = 0;
@@ -283,25 +278,6 @@ class UserManager {
   virtual bool IsUserNonCryptohomeDataEphemeral(
       const std::string& user_id) const = 0;
 
-  // Method that allows to set |flow| for user identified by |user_id|.
-  // Flow should be set before login attempt.
-  // Takes ownership of the |flow|, |flow| will be deleted in case of login
-  // failure.
-  virtual void SetUserFlow(const std::string& user_id, UserFlow* flow) = 0;
-
-  // Return user flow for current user. Returns instance of DefaultUserFlow if
-  // no flow was defined for current user, or user is not logged in.
-  // Returned value should not be cached.
-  virtual UserFlow* GetCurrentUserFlow() const = 0;
-
-  // Return user flow for user identified by |user_id|. Returns instance of
-  // DefaultUserFlow if no flow was defined for user.
-  // Returned value should not be cached.
-  virtual UserFlow* GetUserFlow(const std::string& user_id) const = 0;
-
-  // Resets user flow for user identified by |user_id|.
-  virtual void ResetUserFlow(const std::string& user_id) = 0;
-
   virtual void AddObserver(Observer* obs) = 0;
   virtual void RemoveObserver(Observer* obs) = 0;
 
@@ -313,41 +289,28 @@ class UserManager {
   // Returns true if supervised users allowed.
   virtual bool AreSupervisedUsersAllowed() const = 0;
 
- private:
-  friend class ScopedUserManagerEnabler;
+ protected:
+  // Sets UserManager instance.
+  static void SetInstance(UserManager* user_manager);
 
-  // Sets the singleton to the given |user_manager|, taking ownership. Returns
-  // the previous value of the singleton, passing ownership.
+  // Pointer to the existing UserManager instance (if any).
+  // Usually is set by calling Initialize(), reset by calling Destroy().
+  // Not owned since specific implementation of UserManager should decide on its
+  // own appropriate owner. For src/chrome implementation such place is
+  // g_browser_process->platform_part().
+  static UserManager* instance;
+
+ private:
+  friend class chromeos::ScopedUserManagerEnabler;
+
+  // Same as Get() but doesn't won't crash is current instance is NULL.
+  static UserManager* GetForTesting();
+
+  // Sets UserManager instance to the given |user_manager|.
+  // Returns the previous value of the instance.
   static UserManager* SetForTesting(UserManager* user_manager);
 };
 
-// Helper class for unit tests. Initializes the UserManager singleton to the
-// given |user_manager| and tears it down again on destruction. If the singleton
-// had already been initialized, its previous value is restored after tearing
-// down |user_manager|.
-class ScopedUserManagerEnabler {
- public:
-  // Takes ownership of |user_manager|.
-  explicit ScopedUserManagerEnabler(UserManager* user_manager);
-  ~ScopedUserManagerEnabler();
+}  // namespace user_manager
 
- private:
-  UserManager* previous_user_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedUserManagerEnabler);
-};
-
-// Helper class for unit tests. Initializes the UserManager singleton on
-// construction and tears it down again on destruction.
-class ScopedTestUserManager {
- public:
-  ScopedTestUserManager();
-  ~ScopedTestUserManager();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedTestUserManager);
-};
-
-}  // namespace chromeos
-
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_USERS_USER_MANAGER_H_
+#endif  // COMPONENTS_USER_MANAGER_USER_MANAGER_H_

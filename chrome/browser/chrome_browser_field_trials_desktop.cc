@@ -27,10 +27,6 @@
 #include "net/spdy/spdy_session.h"
 #include "ui/base/layout.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/users/user_manager.h"
-#endif
-
 namespace chrome {
 
 namespace {

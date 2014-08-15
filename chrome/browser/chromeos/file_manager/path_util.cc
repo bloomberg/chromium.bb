@@ -8,11 +8,11 @@
 #include "base/logging.h"
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "net/base/escape.h"
 
 namespace file_manager {
@@ -35,12 +35,12 @@ base::FilePath GetDownloadsFolderForProfile(Profile* profile) {
   // On non-ChromeOS system (test+development), the primary profile uses
   // $HOME/Downloads for ease for accessing local files for debugging.
   if (!base::SysInfo::IsRunningOnChromeOS() &&
-      chromeos::UserManager::IsInitialized()) {
+      user_manager::UserManager::IsInitialized()) {
     const user_manager::User* const user =
         chromeos::ProfileHelper::Get()->GetUserByProfile(
             profile->GetOriginalProfile());
     const user_manager::User* const primary_user =
-        chromeos::UserManager::Get()->GetPrimaryUser();
+        user_manager::UserManager::Get()->GetPrimaryUser();
     if (user == primary_user)
       return DownloadPrefs::GetDefaultDownloadDirectory();
   }
@@ -76,7 +76,7 @@ bool MigratePathFromOldFormat(Profile* profile,
   // no-op when multi-profile is enabled. This is necessary for (1) back
   // migration when multi-profile flag is enabled and then disabled, or (2) in
   // some edge cases (crbug.com/356322) that u-<hash> path is temporarily used.
-  if (chromeos::UserManager::IsInitialized()) {
+  if (user_manager::UserManager::IsInitialized()) {
     const user_manager::User* const user =
         chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
     if (user) {
@@ -107,7 +107,7 @@ std::string GetDownloadsMountPointName(Profile* profile) {
   // are not associated with an user account. In that case, no suffix is added
   // because such a profile never belongs to a multi-profile session.
   user_manager::User* const user =
-      chromeos::UserManager::IsInitialized()
+      user_manager::UserManager::IsInitialized()
           ? chromeos::ProfileHelper::Get()->GetUserByProfile(
                 profile->GetOriginalProfile())
           : NULL;

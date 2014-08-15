@@ -4,13 +4,33 @@
 
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 
+#include "base/task_runner.h"
 #include "chrome/browser/chromeos/login/users/fake_supervised_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+
+namespace {
+
+class FakeTaskRunner : public base::TaskRunner {
+ public:
+  virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
+                               const base::Closure& task,
+                               base::TimeDelta delay) OVERRIDE {
+    task.Run();
+    return true;
+  }
+  virtual bool RunsTasksOnCurrentThread() const OVERRIDE { return true; }
+
+ protected:
+  virtual ~FakeTaskRunner() {}
+};
+
+}  // namespace
 
 namespace chromeos {
 
 MockUserManager::MockUserManager()
-    : user_flow_(new DefaultUserFlow()),
+    : ChromeUserManager(new FakeTaskRunner(), new FakeTaskRunner()),
+      user_flow_(new DefaultUserFlow()),
       supervised_user_manager_(new FakeSupervisedUserManager()) {
   ProfileHelper::SetProfileToUserForTestingEnabled(true);
 }

@@ -31,6 +31,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "net/base/network_change_notifier.h"
 
@@ -296,7 +297,7 @@ bool AppLaunchController::CanConfigureNetwork() {
     return true;
   }
 
-  return !UserManager::Get()->GetOwnerEmail().empty();
+  return !user_manager::UserManager::Get()->GetOwnerEmail().empty();
 }
 
 bool AppLaunchController::NeedOwnerAuthToConfigureNetwork() {

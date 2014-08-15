@@ -1,5 +1,9 @@
 include_rules = [
+"+chromeos/chromeos_switches.h",
+"+chromeos/cryptohome/async_method_caller.h",
+"+chromeos/login/login_state.h",
 "+chromeos/login/user_names.h",
+"+components/session_manager/core/session_manager.h",
 "+google_apis/gaia/gaia_auth_util.h",
 "+grit/ui_chromeos_resources.h",
 "+grit/ui_chromeos_strings.h",

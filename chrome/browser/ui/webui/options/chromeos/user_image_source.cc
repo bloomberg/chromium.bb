@@ -7,9 +7,9 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_split.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/common/url_constants.h"
 #include "components/user_manager/user_image/default_user_images.h"
+#include "components/user_manager/user_manager.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_chromeos_resources.h"
 #include "net/base/escape.h"
@@ -39,7 +39,7 @@ base::RefCountedMemory* UserImageSource::GetUserImage(
     const std::string& email,
     ui::ScaleFactor scale_factor) const {
   const user_manager::User* user =
-      chromeos::UserManager::Get()->FindUser(email);
+      user_manager::UserManager::Get()->FindUser(email);
   if (user) {
     if (user->has_raw_image()) {
       return new base::RefCountedBytes(user->raw_image());

@@ -154,8 +154,8 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_sync_observer.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/net/proxy_config_handler.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
@@ -303,6 +303,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   ChromeOSMetricsProvider::RegisterPrefs(registry);
   chromeos::AudioDevicesPrefHandlerImpl::RegisterPrefs(registry);
   chromeos::ChargerReplacementHandler::RegisterPrefs(registry);
+  chromeos::ChromeUserManagerImpl::RegisterPrefs(registry);
   chromeos::DataPromoNotification::RegisterPrefs(registry);
   chromeos::DeviceOAuth2TokenService::RegisterPrefs(registry);
   chromeos::device_settings_cache::RegisterPrefs(registry);
@@ -321,7 +322,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   chromeos::StartupUtils::RegisterPrefs(registry);
   chromeos::system::AutomaticRebootManager::RegisterPrefs(registry);
   chromeos::UserImageManager::RegisterPrefs(registry);
-  chromeos::UserManager::RegisterPrefs(registry);
   chromeos::UserSessionManager::RegisterPrefs(registry);
   chromeos::WallpaperManager::RegisterPrefs(registry);
   chromeos::echo_offer::RegisterPrefs(registry);

@@ -30,8 +30,8 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/webui/chromeos/login/screenlock_icon_provider.h"
@@ -45,6 +45,7 @@
 #include "chromeos/login/auth/authenticator.h"
 #include "chromeos/login/auth/extended_authenticator.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -202,10 +203,11 @@ void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
   }
 
   const user_manager::User* user =
-      UserManager::Get()->FindUser(user_context.GetUserID());
+      user_manager::UserManager::Get()->FindUser(user_context.GetUserID());
   if (user) {
     if (!user->is_active())
-      UserManager::Get()->SwitchActiveUser(user_context.GetUserID());
+      user_manager::UserManager::Get()->SwitchActiveUser(
+          user_context.GetUserID());
   } else {
     NOTREACHED() << "Logged in user not found.";
   }
@@ -253,7 +255,7 @@ void ScreenLocker::Authenticate(const UserContext& user_context) {
   if (const user_manager::User* user =
           FindUnlockUser(user_context.GetUserID())) {
     if (user->GetType() == user_manager::USER_TYPE_SUPERVISED) {
-      UserContext updated_context = UserManager::Get()
+      UserContext updated_context = ChromeUserManager::Get()
                                         ->GetSupervisedUserManager()
                                         ->GetAuthentication()
                                         ->TransformKey(user_context);
@@ -348,7 +350,7 @@ void ScreenLocker::HandleLockScreenRequest() {
     return;
   }
   if (g_screen_lock_observer->session_started() &&
-      UserManager::Get()->CanCurrentUserLock()) {
+      user_manager::UserManager::Get()->CanCurrentUserLock()) {
     ScreenLocker::Show();
     ash::Shell::GetInstance()->lock_state_controller()->OnStartingLock();
   } else {
@@ -370,8 +372,8 @@ void ScreenLocker::Show() {
   // Check whether the currently logged in user is a guest account and if so,
   // refuse to lock the screen (crosbug.com/23764).
   // For a demo user, we should never show the lock screen (crosbug.com/27647).
-  if (UserManager::Get()->IsLoggedInAsGuest() ||
-      UserManager::Get()->IsLoggedInAsDemoUser()) {
+  if (user_manager::UserManager::Get()->IsLoggedInAsGuest() ||
+      user_manager::UserManager::Get()->IsLoggedInAsDemoUser()) {
     VLOG(1) << "Refusing to lock screen for guest/demo account";
     return;
   }
@@ -390,7 +392,7 @@ void ScreenLocker::Show() {
 
   if (!screen_locker_) {
     ScreenLocker* locker =
-        new ScreenLocker(UserManager::Get()->GetUnlockUsers());
+        new ScreenLocker(user_manager::UserManager::Get()->GetUnlockUsers());
     VLOG(1) << "Created ScreenLocker " << locker;
     locker->Init();
   } else {
@@ -405,8 +407,8 @@ void ScreenLocker::Show() {
 void ScreenLocker::Hide() {
   DCHECK(base::MessageLoopForUI::IsCurrent());
   // For a guest/demo user, screen_locker_ would have never been initialized.
-  if (UserManager::Get()->IsLoggedInAsGuest() ||
-      UserManager::Get()->IsLoggedInAsDemoUser()) {
+  if (user_manager::UserManager::Get()->IsLoggedInAsGuest() ||
+      user_manager::UserManager::Get()->IsLoggedInAsDemoUser()) {
     VLOG(1) << "Refusing to hide lock screen for guest/demo account";
     return;
   }

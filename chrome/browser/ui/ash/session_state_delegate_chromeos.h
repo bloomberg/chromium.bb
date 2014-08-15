@@ -10,8 +10,8 @@
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chromeos/login/login_state.h"
+#include "components/user_manager/user_manager.h"
 
 namespace ash {
 class SessionStateObserver;
@@ -20,7 +20,7 @@ class SessionStateObserver;
 class SessionStateDelegateChromeos
     : public ash::SessionStateDelegate,
       public chromeos::LoginState::Observer,
-      public chromeos::UserManager::UserSessionStateObserver,
+      public user_manager::UserManager::UserSessionStateObserver,
       public chromeos::UserAddingScreen::Observer {
  public:
   SessionStateDelegateChromeos();
@@ -57,7 +57,7 @@ class SessionStateDelegateChromeos
   // chromeos::LoginState::Observer overrides.
   virtual void LoggedInStateChanged() OVERRIDE;
 
-  // chromeos::UserManager::UserSessionStateObserver:
+  // user_manager::UserManager::UserSessionStateObserver:
   virtual void ActiveUserChanged(
       const user_manager::User* active_user) OVERRIDE;
   virtual void UserAddedToSession(

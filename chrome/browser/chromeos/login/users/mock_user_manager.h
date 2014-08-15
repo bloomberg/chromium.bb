@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/avatar/mock_user_image_manager.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -20,7 +20,7 @@ namespace chromeos {
 
 class FakeSupervisedUserManager;
 
-class MockUserManager : public UserManager {
+class MockUserManager : public ChromeUserManager {
  public:
   MockUserManager();
   virtual ~MockUserManager();
@@ -34,7 +34,8 @@ class MockUserManager : public UserManager {
       const std::string&, const std::string&, bool));
   MOCK_METHOD1(SwitchActiveUser, void(const std::string& email));
   MOCK_METHOD0(SessionStarted, void(void));
-  MOCK_METHOD2(RemoveUser, void(const std::string&, RemoveUserDelegate*));
+  MOCK_METHOD2(RemoveUser,
+               void(const std::string&, user_manager::RemoveUserDelegate*));
   MOCK_METHOD1(RemoveUserFromList, void(const std::string&));
   MOCK_CONST_METHOD1(IsKnownUser, bool(const std::string&));
   MOCK_CONST_METHOD1(FindUser, const user_manager::User*(const std::string&));
@@ -72,10 +73,28 @@ class MockUserManager : public UserManager {
   MOCK_METHOD1(RemoveSessionStateObserver,
                void(UserManager::UserSessionStateObserver*));
   MOCK_METHOD0(NotifyLocalStateChanged, void(void));
-  MOCK_METHOD2(SetUserFlow, void(const std::string&, UserFlow*));
-  MOCK_METHOD1(ResetUserFlow, void(const std::string&));
-
   MOCK_CONST_METHOD0(AreSupervisedUsersAllowed, bool(void));
+
+  // UserManagerBase overrides:
+  MOCK_CONST_METHOD0(AreEphemeralUsersEnabled, bool(void));
+  MOCK_CONST_METHOD0(GetApplicationLocale, const std::string&(void));
+  MOCK_CONST_METHOD0(GetLocalState, PrefService*(void));
+  MOCK_CONST_METHOD2(HandleUserOAuthTokenStatusChange,
+                     void(const std::string&,
+                          user_manager::User::OAuthTokenStatus status));
+  MOCK_CONST_METHOD0(IsEnterpriseManaged, bool(void));
+  MOCK_METHOD1(LoadPublicAccounts, void(std::set<std::string>*));
+  MOCK_METHOD0(PerformPreUserListLoadingActions, void(void));
+  MOCK_METHOD0(PerformPostUserListLoadingActions, void(void));
+  MOCK_METHOD1(PerformPostUserLoggedInActions, void(bool));
+  MOCK_CONST_METHOD1(IsDemoApp, bool(const std::string&));
+  MOCK_CONST_METHOD1(IsKioskApp, bool(const std::string&));
+  MOCK_CONST_METHOD1(IsPublicAccountMarkedForRemoval, bool(const std::string&));
+  MOCK_METHOD0(DemoAccountLoggedIn, void(void));
+  MOCK_METHOD1(KioskAppLoggedIn, void(const std::string&));
+  MOCK_METHOD1(PublicAccountUserLoggedIn, void(user_manager::User*));
+  MOCK_METHOD0(RetailModeUserLoggedIn, void(void));
+  MOCK_METHOD1(SupervisedUserLoggedIn, void(const std::string&));
 
   // You can't mock these functions easily because nobody can create
   // User objects but the ChromeUserManager and us.
@@ -88,11 +107,13 @@ class MockUserManager : public UserManager {
   virtual user_manager::User* GetActiveUser() OVERRIDE;
   virtual const user_manager::User* GetPrimaryUser() const OVERRIDE;
 
+  // ChromeUserManager overrides:
   virtual MultiProfileUserController* GetMultiProfileUserController() OVERRIDE;
   virtual UserImageManager* GetUserImageManager(
       const std::string& user_id) OVERRIDE;
   virtual SupervisedUserManager* GetSupervisedUserManager() OVERRIDE;
-
+  MOCK_METHOD2(SetUserFlow, void(const std::string&, UserFlow*));
+  MOCK_METHOD1(ResetUserFlow, void(const std::string&));
   virtual UserFlow* GetCurrentUserFlow() const OVERRIDE;
   virtual UserFlow* GetUserFlow(const std::string&) const OVERRIDE;
 

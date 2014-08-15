@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/login/supervised/supervised_user_test_base.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
@@ -78,9 +79,10 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
                        DISABLED_PRE_PasswordChangeFromUserTest) {
   SigninAsSupervisedUser(true, 0, kTestSupervisedUserDisplayName);
 
-  const user_manager::User* user = UserManager::Get()->GetUsers().at(0);
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->GetUsers().at(0);
   std::string sync_id =
-      UserManager::Get()->GetSupervisedUserManager()->GetUserSyncId(
+      ChromeUserManager::Get()->GetSupervisedUserManager()->GetUserSyncId(
           user->email());
   base::DictionaryValue password;
   password.SetIntegerWithoutPathExpansion(
@@ -124,14 +126,14 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
 IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
                        DISABLED_PRE_PasswordChangeFromManagerTest) {
   const user_manager::User* supervised_user =
-      UserManager::Get()->GetUsers().at(0);
+      user_manager::UserManager::Get()->GetUsers().at(0);
 
   SigninAsManager(1);
 
   EXPECT_CALL(*mock_homedir_methods_, AddKeyEx(_, _, _, _, _)).Times(1);
 
   std::string sync_id =
-      UserManager::Get()->GetSupervisedUserManager()->GetUserSyncId(
+      ChromeUserManager::Get()->GetSupervisedUserManager()->GetUserSyncId(
           supervised_user->email());
 
   ::sync_pb::ManagedUserSpecifics managed_user_proto;
@@ -190,9 +192,10 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
                        DISABLED_PRE_PRE_PasswordChangeUserAndManagerTest) {
   SigninAsSupervisedUser(true, 0, kTestSupervisedUserDisplayName);
 
-  const user_manager::User* user = UserManager::Get()->GetUsers().at(0);
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->GetUsers().at(0);
   std::string sync_id =
-      UserManager::Get()->GetSupervisedUserManager()->GetUserSyncId(
+      ChromeUserManager::Get()->GetSupervisedUserManager()->GetUserSyncId(
           user->email());
   base::DictionaryValue password;
   password.SetIntegerWithoutPathExpansion(
@@ -213,14 +216,14 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
 IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
                        DISABLED_PRE_PasswordChangeUserAndManagerTest) {
   const user_manager::User* supervised_user =
-      UserManager::Get()->GetUsers().at(0);
+      user_manager::UserManager::Get()->GetUsers().at(0);
 
   SigninAsManager(1);
 
   EXPECT_CALL(*mock_homedir_methods_, AddKeyEx(_, _, _, _, _)).Times(1);
 
   std::string sync_id =
-      UserManager::Get()->GetSupervisedUserManager()->GetUserSyncId(
+      ChromeUserManager::Get()->GetSupervisedUserManager()->GetUserSyncId(
           supervised_user->email());
 
   ::sync_pb::ManagedUserSpecifics managed_user_proto;

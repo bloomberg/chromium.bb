@@ -11,8 +11,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -64,7 +64,8 @@ TEST_F(KioskModeIdleLogoutTest, DISABLED_CheckObserversBeforeUserLogin) {
 TEST_F(KioskModeIdleLogoutTest, DISABLED_CheckObserversAfterUserLogin) {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_USER_CHANGED,
-      content::Source<UserManager>(UserManager::Get()),
+      content::Source<user_manager::UserManager>(
+          user_manager::UserManager::Get()),
       // Ideally this should be the user logged in, but since we won't really be
       // checking for the current logged in user in our observer anyway, giving
       // NoDetails here is fine.

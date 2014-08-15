@@ -159,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserTransactionCleanupTest,
   std::string user_id = registration_utility_stub_->supervised_user_id();
 
   // Make sure user is already in list.
-  ASSERT_EQ(3UL, UserManager::Get()->GetUsers().size());
+  ASSERT_EQ(3UL, user_manager::UserManager::Get()->GetUsers().size());
 
   // We wait for token now. Press cancel button at this point.
   JSEval("$('cancel-add-user-button').click()");
@@ -171,7 +171,7 @@ IN_PROC_BROWSER_TEST_(
     SupervisedUserTransactionCleanupTest2,
     testing::internal::GetTypeId<SupervisedUserTransactionCleanupTest>()) {
   // Make sure there is no supervised user in list.
-  ASSERT_EQ(2UL, UserManager::Get()->GetUsers().size());
+  ASSERT_EQ(2UL, user_manager::UserManager::Get()->GetUsers().size());
 }
 
 }  // namespace chromeos

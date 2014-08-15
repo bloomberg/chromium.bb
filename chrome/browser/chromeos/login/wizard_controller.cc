@@ -49,7 +49,6 @@
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/oobe_display.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
@@ -73,6 +72,7 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "components/breakpad/app/breakpad_linux.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_types.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -444,7 +444,8 @@ void WizardController::ShowUpdateScreen() {
 }
 
 void WizardController::ShowUserImageScreen() {
-  const chromeos::UserManager* user_manager = chromeos::UserManager::Get();
+  const user_manager::UserManager* user_manager =
+      user_manager::UserManager::Get();
   // Skip user image selection for public sessions and ephemeral logins.
   if (user_manager->IsLoggedInAsPublicAccount() ||
       user_manager->IsCurrentUserNonCryptohomeDataEphemeral()) {
@@ -518,9 +519,9 @@ void WizardController::ShowTermsOfServiceScreen() {
   // Only show the Terms of Service when logging into a public account and Terms
   // of Service have been specified through policy. In all other cases, advance
   // to the user image screen immediately.
-  if (!chromeos::UserManager::Get()->IsLoggedInAsPublicAccount() ||
-      !ProfileManager::GetActiveUserProfile()->GetPrefs()->
-          IsManagedPreference(prefs::kTermsOfServiceURL)) {
+  if (!user_manager::UserManager::Get()->IsLoggedInAsPublicAccount() ||
+      !ProfileManager::GetActiveUserProfile()->GetPrefs()->IsManagedPreference(
+          prefs::kTermsOfServiceURL)) {
     ShowUserImageScreen();
     return;
   }

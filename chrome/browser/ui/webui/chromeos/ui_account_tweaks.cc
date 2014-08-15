@@ -6,10 +6,10 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_ui_data_source.h"
 
 namespace chromeos {
@@ -23,20 +23,22 @@ void AddAccountUITweaksLocalizedValues(
   CrosSettings::Get()->GetString(kDeviceOwner, &owner_email);
   // Translate owner's email to the display email.
   std::string display_email =
-      UserManager::Get()->GetUserDisplayEmail(owner_email);
+      user_manager::UserManager::Get()->GetUserDisplayEmail(owner_email);
   localized_strings->SetString("ownerUserId", display_email);
 
   localized_strings->SetBoolean("currentUserIsOwner",
       ProfileHelper::IsOwnerProfile(profile));
 
-  localized_strings->SetBoolean("loggedInAsGuest",
-      UserManager::Get()->IsLoggedInAsGuest());
+  localized_strings->SetBoolean(
+      "loggedInAsGuest", user_manager::UserManager::Get()->IsLoggedInAsGuest());
 
-  localized_strings->SetBoolean("loggedInAsSupervisedUser",
-      UserManager::Get()->IsLoggedInAsSupervisedUser());
+  localized_strings->SetBoolean(
+      "loggedInAsSupervisedUser",
+      user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser());
 
-  localized_strings->SetBoolean("loggedInAsPublicAccount",
-      UserManager::Get()->IsLoggedInAsPublicAccount());
+  localized_strings->SetBoolean(
+      "loggedInAsPublicAccount",
+      user_manager::UserManager::Get()->IsLoggedInAsPublicAccount());
 }
 
 void AddAccountUITweaksLocalizedValues(

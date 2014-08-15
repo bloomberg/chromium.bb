@@ -11,7 +11,6 @@
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -25,6 +24,7 @@
 #include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/input_method_manager.h"
+#include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/user_metrics.h"
@@ -184,7 +184,7 @@ base::string16 CrosLanguageOptionsHandler::GetProductName() {
 void CrosLanguageOptionsHandler::SetApplicationLocale(
     const std::string& language_code) {
   Profile* profile = Profile::FromWebUI(web_ui());
-  UserManager* user_manager = UserManager::Get();
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
 
   // Secondary users and public session users cannot change the locale.
   user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);

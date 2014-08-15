@@ -31,7 +31,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "components/user_manager/user_manager.h"
 #endif
 
 using content::BrowserThread;
@@ -86,7 +86,8 @@ bool IsInKioskMode() {
     return true;
 
 #if defined(OS_CHROMEOS)
-  const chromeos::UserManager* user_manager = chromeos::UserManager::Get();
+  const user_manager::UserManager* user_manager =
+      user_manager::UserManager::Get();
   return user_manager && user_manager->IsLoggedInAsKioskApp();
 #else
   return false;

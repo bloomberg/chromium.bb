@@ -19,6 +19,7 @@
 #include "chromeos/ime/ime_keyboard.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/login/user_names.h"
+#include "components/user_manager/user_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/user_activity_detector.h"
@@ -122,7 +123,7 @@ void WebUILoginDisplay::SetUIEnabled(bool is_enabled) {
   // Allow this call only before user sign in or at lock screen.
   // If this call is made after new user signs in but login screen is still
   // around that would trigger a sign in extension refresh.
-  if (is_enabled && (!UserManager::Get()->IsUserLoggedIn() ||
+  if (is_enabled && (!user_manager::UserManager::Get()->IsUserLoggedIn() ||
                      ScreenLocker::default_screen_locker())) {
     ClearAndEnablePassword();
   }
@@ -277,7 +278,7 @@ void WebUILoginDisplay::OnSigninScreenReady() {
 }
 
 void WebUILoginDisplay::RemoveUser(const std::string& username) {
-  UserManager::Get()->RemoveUser(username, this);
+  user_manager::UserManager::Get()->RemoveUser(username, this);
 }
 
 void WebUILoginDisplay::ResyncUserData() {

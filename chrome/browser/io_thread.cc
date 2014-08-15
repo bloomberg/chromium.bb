@@ -104,7 +104,6 @@
 #endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/net/cert_verify_proc_chromeos.h"
 #include "chromeos/network/host_resolver_impl_chromeos.h"
 #endif

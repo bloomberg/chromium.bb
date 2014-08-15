@@ -9,7 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -17,6 +16,7 @@
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -59,7 +59,7 @@ class CrashRestoreSimpleTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(CrashRestoreSimpleTest, RestoreSessionForOneUser) {
-  UserManager* user_manager = UserManager::Get();
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   user_manager::User* user = user_manager->GetActiveUser();
   ASSERT_TRUE(user);
   EXPECT_EQ(kUserId1, user->email());
@@ -132,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(CrashRestoreComplexTest, RestoreSessionForThreeUsers) {
 
   // User that is last in the user sessions map becomes active. This behavior
   // will become better defined once each user gets a separate user desktop.
-  UserManager* user_manager = UserManager::Get();
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   user_manager::User* user = user_manager->GetActiveUser();
   ASSERT_TRUE(user);
   EXPECT_EQ(kUserId3, user->email());

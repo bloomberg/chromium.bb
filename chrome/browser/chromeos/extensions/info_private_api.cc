@@ -11,7 +11,6 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
@@ -23,6 +22,7 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/metrics/metrics_service.h"
+#include "components/user_manager/user_manager.h"
 #include "extensions/common/error_utils.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -182,7 +182,7 @@ base::Value* ChromeosInfoPrivateGetFunction::GetValue(
     return new base::StringValue(base::SysInfo::GetLsbReleaseBoard());
   } else if (property_name == kPropertyOwner) {
     return new base::FundamentalValue(
-        chromeos::UserManager::Get()->IsCurrentUserOwner());
+        user_manager::UserManager::Get()->IsCurrentUserOwner());
   } else if (property_name == kPropertyClientId) {
     return new base::StringValue(GetClientId());
   } else if (property_name == kPropertyTimezone) {

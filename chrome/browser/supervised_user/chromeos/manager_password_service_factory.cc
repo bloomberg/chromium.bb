@@ -4,6 +4,7 @@
 
 #include "chrome/browser/supervised_user/chromeos/manager_password_service_factory.h"
 
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -43,10 +44,9 @@ ManagerPasswordServiceFactory::
 KeyedService* ManagerPasswordServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile= static_cast<Profile*>(context);
-  user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
-  if (chromeos::UserManager::Get()->GetSupervisedUserManager()->
-      HasSupervisedUsers(user->email())) {
+  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
+  if (ChromeUserManager::Get()->GetSupervisedUserManager()->HasSupervisedUsers(
+          user->email())) {
     ManagerPasswordService* result = new ManagerPasswordService();
     result->Init(
         user->email(),

@@ -56,8 +56,9 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
+#include "chrome/browser/chromeos/login/user_flow.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
@@ -96,6 +97,7 @@
 #include "components/google/core/browser/google_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
@@ -375,16 +377,20 @@ const base::string16 SystemTrayDelegateChromeOS::GetEnterpriseMessage() const {
 const std::string SystemTrayDelegateChromeOS::GetSupervisedUserManager() const {
   if (GetUserLoginStatus() != ash::user::LOGGED_IN_SUPERVISED)
     return std::string();
-  return UserManager::Get()->GetSupervisedUserManager()->GetManagerDisplayEmail(
-      chromeos::UserManager::Get()->GetActiveUser()->email());
+  return ChromeUserManager::Get()
+      ->GetSupervisedUserManager()
+      ->GetManagerDisplayEmail(
+          user_manager::UserManager::Get()->GetActiveUser()->email());
 }
 
 const base::string16
 SystemTrayDelegateChromeOS::GetSupervisedUserManagerName() const {
   if (GetUserLoginStatus() != ash::user::LOGGED_IN_SUPERVISED)
     return base::string16();
-  return UserManager::Get()->GetSupervisedUserManager()->GetManagerDisplayName(
-      chromeos::UserManager::Get()->GetActiveUser()->email());
+  return ChromeUserManager::Get()
+      ->GetSupervisedUserManager()
+      ->GetManagerDisplayName(
+          user_manager::UserManager::Get()->GetActiveUser()->email());
 }
 
 const base::string16 SystemTrayDelegateChromeOS::GetSupervisedUserMessage()
@@ -409,7 +415,7 @@ void SystemTrayDelegateChromeOS::ShowSettings() {
 }
 
 bool SystemTrayDelegateChromeOS::ShouldShowSettings() {
-  return UserManager::Get()->GetCurrentUserFlow()->ShouldShowSettings() &&
+  return ChromeUserManager::Get()->GetCurrentUserFlow()->ShouldShowSettings() &&
          !ash::Shell::GetInstance()
               ->session_state_delegate()
               ->IsInSecondaryLoginScreen();
@@ -538,22 +544,25 @@ void SystemTrayDelegateChromeOS::ShowUserLogin() {
     return;
 
   // Only regular users could add other users to current session.
-  if (UserManager::Get()->GetActiveUser()->GetType() !=
+  if (user_manager::UserManager::Get()->GetActiveUser()->GetType() !=
       user_manager::USER_TYPE_REGULAR) {
     return;
   }
 
-  if (static_cast<int>(UserManager::Get()->GetLoggedInUsers().size()) >=
+  if (static_cast<int>(
+          user_manager::UserManager::Get()->GetLoggedInUsers().size()) >=
       shell->session_state_delegate()->GetMaximumNumberOfLoggedInUsers())
     return;
 
   // Launch sign in screen to add another user to current session.
-  if (UserManager::Get()->GetUsersAdmittedForMultiProfile().size()) {
+  if (user_manager::UserManager::Get()
+          ->GetUsersAdmittedForMultiProfile()
+          .size()) {
     // Don't show dialog if any logged in user in multi-profiles session
     // dismissed it.
     bool show_intro = true;
     const user_manager::UserList logged_in_users =
-        UserManager::Get()->GetLoggedInUsers();
+        user_manager::UserManager::Get()->GetLoggedInUsers();
     for (user_manager::UserList::const_iterator it = logged_in_users.begin();
          it != logged_in_users.end();
          ++it) {
@@ -830,7 +839,8 @@ ash::tray::UserAccountsDelegate*
 SystemTrayDelegateChromeOS::GetUserAccountsDelegate(
     const std::string& user_id) {
   if (!accounts_delegates_.contains(user_id)) {
-    const user_manager::User* user = UserManager::Get()->FindUser(user_id);
+    const user_manager::User* user =
+        user_manager::UserManager::Get()->FindUser(user_id);
     Profile* user_profile = ProfileHelper::Get()->GetProfileByUserUnsafe(user);
     CHECK(user_profile);
     accounts_delegates_.set(
@@ -949,7 +959,7 @@ void SystemTrayDelegateChromeOS::UpdateClockType() {
   GetSystemTrayNotifier()->NotifyDateFormatChanged();
   // This also works for enterprise-managed devices because they never have
   // local owner.
-  if (chromeos::UserManager::Get()->IsCurrentUserOwner())
+  if (user_manager::UserManager::Get()->IsCurrentUserOwner())
     CrosSettings::Get()->SetBoolean(kSystemUse24HourClock, use_24_hour_clock);
 }
 
@@ -1039,7 +1049,7 @@ void SystemTrayDelegateChromeOS::LoggedInStateChanged() {
   // method, as LoggedInStateChanged() is also called before the logged-in
   // user's profile has actually been loaded (http://crbug.com/317745). The
   // system tray's time format is updated at login via SetProfile().
-  if (chromeos::UserManager::Get()->IsCurrentUserOwner()) {
+  if (user_manager::UserManager::Get()->IsCurrentUserOwner()) {
     CrosSettings::Get()->SetBoolean(kSystemUse24HourClock,
                                     ShouldUse24HourClock());
   }

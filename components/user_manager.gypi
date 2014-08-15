@@ -16,12 +16,17 @@
     ],
     # Chrome OS user_manager sources.
     'user_manager_chromeos_sources': [
+      'user_manager/remove_user_delegate.h',
       'user_manager/user_image/default_user_images.cc',
       'user_manager/user_image/default_user_images.h',
       'user_manager/user_image/user_image.cc',
       'user_manager/user_image/user_image.h',
       'user_manager/user.cc',
       'user_manager/user.h',
+      'user_manager/user_manager.cc',
+      'user_manager/user_manager.h',
+      'user_manager/user_manager_base.cc',
+      'user_manager/user_manager_base.h',
       'user_manager/user_type.h',
     ],
   },
@@ -45,6 +50,8 @@
     'conditions': [
       ['chromeos == 1', {
         'dependencies': [
+          '<(DEPTH)/base/base.gyp:base_prefs',
+          '<(DEPTH)/components/components.gyp:session_manager_component',
           '<(DEPTH)/google_apis/google_apis.gyp:google_apis',
           '<(DEPTH)/ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',
           '<(DEPTH)/ui/chromeos/ui_chromeos.gyp:ui_chromeos_strings',

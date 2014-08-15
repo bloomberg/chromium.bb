@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_sync_service.h"
 
@@ -31,7 +31,7 @@ void SupervisedUserPasswordService::Init(
   // Force value check in case we have missed some notification.
 
   chromeos::SupervisedUserManager* supervised_user_manager =
-      chromeos::UserManager::Get()->GetSupervisedUserManager();
+      ChromeUserManager::Get()->GetSupervisedUserManager();
 
   OnSharedSettingsChange(supervised_user_manager->GetUserSyncId(user_id),
                          supervised_users::kChromeOSPasswordData);
@@ -43,7 +43,7 @@ void SupervisedUserPasswordService::OnSharedSettingsChange(
   if (key != supervised_users::kChromeOSPasswordData)
     return;
   chromeos::SupervisedUserManager* supervised_user_manager =
-      chromeos::UserManager::Get()->GetSupervisedUserManager();
+      ChromeUserManager::Get()->GetSupervisedUserManager();
   const user_manager::User* user = supervised_user_manager->FindBySyncId(su_id);
   if (user == NULL) {
     LOG(WARNING) << "Got notification for user not on device.";

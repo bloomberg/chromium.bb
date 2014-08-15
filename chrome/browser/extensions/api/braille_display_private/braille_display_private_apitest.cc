@@ -13,7 +13,6 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/api/braille_display_private/braille_controller_brlapi.h"
 #include "chrome/browser/extensions/api/braille_display_private/braille_display_private_api.h"
@@ -23,6 +22,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -30,7 +30,7 @@
 
 using chromeos::ProfileHelper;
 using chromeos::ScreenLocker;
-using chromeos::UserManager;
+using user_manager::UserManager;
 using chromeos::test::ScreenLockerTester;
 using content::BrowserThread;
 
@@ -327,8 +327,9 @@ IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateAPIUserTest,
                        KeyEventOnLockScreen) {
   scoped_ptr<ScreenLockerTester> tester(ScreenLocker::GetTester());
   // Log in.
-  UserManager::Get()->UserLoggedIn(kTestUserName, kTestUserName, true);
-  UserManager::Get()->SessionStarted();
+  user_manager::UserManager::Get()->UserLoggedIn(
+      kTestUserName, kTestUserName, true);
+  user_manager::UserManager::Get()->SessionStarted();
   Profile* profile = ProfileManager::GetActiveUserProfile();
   ASSERT_FALSE(
       ProfileHelper::GetSigninProfile()->IsSameProfile(profile))

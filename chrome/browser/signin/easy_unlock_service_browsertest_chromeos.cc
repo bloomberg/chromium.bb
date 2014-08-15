@@ -9,7 +9,6 @@
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,6 +20,7 @@
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/browser/extension_system.h"
 #include "policy/policy_constants.h"
@@ -30,7 +30,7 @@ using chromeos::ProfileHelper;
 using chromeos::LoginManagerTest;
 using chromeos::StartupUtils;
 using chromeos::UserAddingScreen;
-using chromeos::UserManager;
+using user_manager::UserManager;
 using testing::_;
 using testing::Return;
 
@@ -49,7 +49,7 @@ bool HasEasyUnlockAppForProfile(Profile* profile) {
 }
 #endif
 
-} //namespace
+}  // namespace
 
 class EasyUnlockServiceTest : public InProcessBrowserTest {
  public:
@@ -190,9 +190,9 @@ IN_PROC_BROWSER_TEST_F(EasyUnlockServiceMultiProfileTest,
   base::RunLoop().RunUntilIdle();
   AddUser(kTestUser2);
   const user_manager::User* primary_user =
-      UserManager::Get()->FindUser(kTestUser1);
+      user_manager::UserManager::Get()->FindUser(kTestUser1);
   const user_manager::User* secondary_user =
-      UserManager::Get()->FindUser(kTestUser2);
+      user_manager::UserManager::Get()->FindUser(kTestUser2);
 
   Profile* primary_profile = ProfileHelper::Get()->GetProfileByUserIdHash(
       primary_user->username_hash());

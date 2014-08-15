@@ -53,6 +53,7 @@
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "chrome/browser/chromeos/login/users/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/browser_status_monitor.h"
@@ -925,7 +926,7 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
 
   chromeos::FakeUserManager* GetFakeUserManager() {
     return static_cast<chromeos::FakeUserManager*>(
-        chromeos::UserManager::Get());
+        user_manager::UserManager::Get());
   }
 
   scoped_ptr<TestingProfileManager> profile_manager_;

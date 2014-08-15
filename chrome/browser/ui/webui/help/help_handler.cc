@@ -44,7 +44,6 @@
 #include "base/i18n/time_formatting.h"
 #include "base/prefs/pref_service.h"
 #include "base/sys_info.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/profiles/profile.h"
@@ -52,6 +51,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "components/user_manager/user_manager.h"
 #endif
 
 using base::ListValue;
@@ -92,14 +92,15 @@ bool CanChangeChannel() {
       return false;
     // Get the currently logged in user and strip the domain part only.
     std::string domain = "";
-    std::string user = chromeos::UserManager::Get()->GetLoggedInUser()->email();
+    std::string user =
+        user_manager::UserManager::Get()->GetLoggedInUser()->email();
     size_t at_pos = user.find('@');
     if (at_pos != std::string::npos && at_pos + 1 < user.length())
       domain = user.substr(user.find('@') + 1);
     policy::BrowserPolicyConnectorChromeOS* connector =
         g_browser_process->platform_part()->browser_policy_connector_chromeos();
     return domain == connector->GetEnterpriseDomain();
-  } else if (chromeos::UserManager::Get()->IsCurrentUserOwner()) {
+  } else if (user_manager::UserManager::Get()->IsCurrentUserOwner()) {
     // On non managed machines we have local owner who is the only one to change
     // anything. Ensure that ReleaseChannelDelegated is false.
     return !value;
@@ -430,7 +431,7 @@ void HelpHandler::SetChannel(const base::ListValue* args) {
 
   version_updater_->SetChannel(base::UTF16ToUTF8(channel),
                                is_powerwash_allowed);
-  if (chromeos::UserManager::Get()->IsCurrentUserOwner()) {
+  if (user_manager::UserManager::Get()->IsCurrentUserOwner()) {
     // Check for update after switching release channel.
     version_updater_->CheckForUpdate(base::Bind(&HelpHandler::SetUpdateStatus,
                                                 base::Unretained(this)));

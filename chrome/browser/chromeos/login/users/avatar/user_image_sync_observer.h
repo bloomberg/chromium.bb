@@ -9,21 +9,22 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/prefs/pref_service_syncable_observer.h"
 #include "content/public/browser/notification_observer.h"
 
 class PrefChangeRegistrar;
 class PrefServiceSyncable;
 class Profile;
-namespace chromeos {
-class User;
-}
+
 namespace content {
 class NotificationRegistrar;
 }
 namespace user_prefs {
 class PrefRegistrySyncable;
+}
+
+namespace user_manager {
+class User;
 }
 
 namespace chromeos {

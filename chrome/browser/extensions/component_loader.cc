@@ -17,6 +17,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "extensions/common/extension.h"
@@ -40,7 +41,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chromeos/chromeos_switches.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/login/auth/mount_manager.h"
 
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 
 namespace chromeos {

@@ -9,7 +9,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -17,6 +16,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
@@ -61,8 +61,8 @@ ProfileHelper::ProfileHelper()
 ProfileHelper::~ProfileHelper() {
   // Checking whether UserManager is initialized covers case
   // when ScopedTestUserManager is used.
-  if (UserManager::IsInitialized())
-    UserManager::Get()->RemoveSessionStateObserver(this);
+  if (user_manager::UserManager::IsInitialized())
+    user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
 }
 
 // static
@@ -151,7 +151,8 @@ base::FilePath ProfileHelper::GetUserProfileDirByUserId(
   // ProfileManager and use only this function to construct profile path.
   // TODO(nkostylev): Cleanup profile dir related code paths crbug.com/294233
   base::FilePath profile_dir;
-  const user_manager::User* user = UserManager::Get()->FindUser(user_id);
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(user_id);
   if (user && !user->username_hash().empty())
     profile_dir = ProfileHelper::GetUserProfileDir(user->username_hash());
 
@@ -174,7 +175,7 @@ bool ProfileHelper::IsOwnerProfile(Profile* profile) {
   if (!user)
     return false;
 
-  return user->email() == chromeos::UserManager::Get()->GetOwnerEmail();
+  return user->email() == user_manager::UserManager::Get()->GetOwnerEmail();
 }
 
 // static
@@ -184,7 +185,7 @@ bool ProfileHelper::IsPrimaryProfile(Profile* profile) {
   user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
   if (!user)
     return false;
-  return user == chromeos::UserManager::Get()->GetPrimaryUser();
+  return user == user_manager::UserManager::Get()->GetPrimaryUser();
 }
 
 void ProfileHelper::ProfileStartup(Profile* profile, bool process_startup) {
@@ -198,8 +199,8 @@ void ProfileHelper::ProfileStartup(Profile* profile, bool process_startup) {
   // Add observer so we can see when the first profile's session restore is
   // completed. After that, we won't need the default profile anymore.
   if (!IsSigninProfile(profile) &&
-      UserManager::Get()->IsLoggedInAsRegularUser() &&
-      !UserManager::Get()->IsLoggedInAsStub()) {
+      user_manager::UserManager::Get()->IsLoggedInAsRegularUser() &&
+      !user_manager::UserManager::Get()->IsLoggedInAsStub()) {
     chromeos::OAuth2LoginManager* login_manager =
         chromeos::OAuth2LoginManagerFactory::GetInstance()->GetForProfile(
             profile);
@@ -213,7 +214,7 @@ base::FilePath ProfileHelper::GetActiveUserProfileDir() {
 }
 
 void ProfileHelper::Initialize() {
-  UserManager::Get()->AddSessionStateObserver(this);
+  user_manager::UserManager::Get()->AddSessionStateObserver(this);
 }
 
 void ProfileHelper::ClearSigninProfile(const base::Closure& on_clear_callback) {
@@ -249,7 +250,7 @@ Profile* ProfileHelper::GetProfileByUser(const user_manager::User* user) {
 
   // GetActiveUserProfile() or GetProfileByUserIdHash() returns a new instance
   // of ProfileImpl(), but actually its OffTheRecordProfile() should be used.
-  if (UserManager::Get()->IsLoggedInAsGuest())
+  if (user_manager::UserManager::Get()->IsLoggedInAsGuest())
     profile = profile->GetOffTheRecordProfile();
 
   return profile;
@@ -276,7 +277,7 @@ Profile* ProfileHelper::GetProfileByUserUnsafe(const user_manager::User* user) {
 
   // GetActiveUserProfile() or GetProfileByUserIdHash() returns a new instance
   // of ProfileImpl(), but actually its OffTheRecordProfile() should be used.
-  if (profile && UserManager::Get()->IsLoggedInAsGuest())
+  if (profile && user_manager::UserManager::Get()->IsLoggedInAsGuest())
     profile = profile->GetOffTheRecordProfile();
   return profile;
 }
@@ -286,7 +287,7 @@ user_manager::User* ProfileHelper::GetUserByProfile(Profile* profile) {
   if (enable_profile_to_user_testing || !user_list_for_testing_.empty()) {
     if (always_return_primary_user_for_testing)
       return const_cast<user_manager::User*>(
-          UserManager::Get()->GetPrimaryUser());
+          user_manager::UserManager::Get()->GetPrimaryUser());
 
     const std::string& user_name = profile->GetProfileName();
     for (user_manager::UserList::const_iterator it =
@@ -299,14 +300,14 @@ user_manager::User* ProfileHelper::GetUserByProfile(Profile* profile) {
 
     // In case of test setup we should always default to primary user.
     return const_cast<user_manager::User*>(
-        UserManager::Get()->GetPrimaryUser());
+        user_manager::UserManager::Get()->GetPrimaryUser());
   }
 
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (ProfileHelper::IsSigninProfile(profile))
     return NULL;
 
-  UserManager* user_manager = UserManager::Get();
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
 
   // Special case for non-CrOS tests that do create several profiles
   // and don't really care about mapping to the real user.

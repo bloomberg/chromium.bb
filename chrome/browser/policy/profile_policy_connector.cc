@@ -20,12 +20,12 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_provider.h"
 #include "chrome/browser/chromeos/policy/login_profile_policy_provider.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #endif
 
 namespace policy {
@@ -106,7 +106,8 @@ void ProfilePolicyConnector::Init(
         new LoginProfilePolicyProvider(connector->GetPolicyService()));
   } else {
     // |user| should never be NULL except for the signin profile.
-    is_primary_user_ = user == chromeos::UserManager::Get()->GetPrimaryUser();
+    is_primary_user_ =
+        user == user_manager::UserManager::Get()->GetPrimaryUser();
     special_user_policy_provider_ = DeviceLocalAccountPolicyProvider::Create(
         user->email(),
         connector->GetDeviceLocalAccountPolicyService());

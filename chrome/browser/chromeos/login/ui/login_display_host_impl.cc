@@ -46,7 +46,6 @@
 #include "chrome/browser/chromeos/login/ui/oobe_display.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
@@ -70,6 +69,7 @@
 #include "chromeos/login/login_state.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "components/session_manager/core/session_manager.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
@@ -408,7 +408,7 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
 
   default_host_ = NULL;
   // TODO(tengs): This should be refactored. See crbug.com/314934.
-  if (UserManager::Get()->IsCurrentUserNew()) {
+  if (user_manager::UserManager::Get()->IsCurrentUserNew()) {
     // DriveOptInController will delete itself when finished.
     (new DriveFirstRunController(
         ProfileManager::GetActiveUserProfile()))->EnableOfflineMode();
@@ -568,7 +568,7 @@ void LoginDisplayHostImpl::StartUserAdding(
   SetOobeProgressBarVisible(oobe_progress_bar_visible_ = false);
   SetStatusAreaVisible(true);
   sign_in_controller_->Init(
-      chromeos::UserManager::Get()->GetUsersAdmittedForMultiProfile());
+      user_manager::UserManager::Get()->GetUsersAdmittedForMultiProfile());
   CHECK(webui_login_display_);
   GetOobeUI()->ShowSigninScreen(LoginScreenContext(),
                                 webui_login_display_,
@@ -605,7 +605,7 @@ void LoginDisplayHostImpl::StartSignInScreen(
 
   DVLOG(1) << "Starting sign in screen";
   const user_manager::UserList& users =
-      chromeos::UserManager::Get()->GetUsers();
+      user_manager::UserManager::Get()->GetUsers();
 
   // Fix for users who updated device and thus never passed register screen.
   // If we already have users, we assume that it is not a second part of
@@ -777,7 +777,7 @@ void LoginDisplayHostImpl::Observe(
                       chrome::NOTIFICATION_BROWSER_OPENED,
                       content::NotificationService::AllSources());
   } else if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED &&
-             chromeos::UserManager::Get()->IsCurrentUserNew()) {
+             user_manager::UserManager::Get()->IsCurrentUserNew()) {
     // For new user, move desktop to locker container so that windows created
     // during the user image picker step are below it.
     ash::Shell::GetInstance()->

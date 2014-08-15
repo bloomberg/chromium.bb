@@ -13,8 +13,8 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "components/user_manager/user_manager.h"
 #endif
 
 namespace multi_user_util {
@@ -63,7 +63,7 @@ Profile* GetProfileFromWindow(aura::Window* window) {
 bool IsProfileFromActiveUser(Profile* profile) {
 #if defined(OS_CHROMEOS)
   return GetUserIDFromProfile(profile) ==
-         chromeos::UserManager::Get()->GetActiveUser()->email();
+         user_manager::UserManager::Get()->GetActiveUser()->email();
 #else
   // In non Chrome OS configurations this will be always true since this only
   // makes sense in separate desktop mode.
@@ -73,7 +73,7 @@ bool IsProfileFromActiveUser(Profile* profile) {
 
 const std::string& GetCurrentUserId() {
 #if defined(OS_CHROMEOS)
-  return chromeos::UserManager::Get()->GetActiveUser()->email();
+  return user_manager::UserManager::Get()->GetActiveUser()->email();
 #else
   return base::EmptyString();
 #endif

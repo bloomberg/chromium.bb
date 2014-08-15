@@ -92,7 +92,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   desktop_controller_->CreateRootWindow();
 
   // NOTE: Much of this is culled from chrome/test/base/chrome_test_suite.cc
-  // TODO(jamescook): Initialize chromeos::UserManager.
+  // TODO(jamescook): Initialize user_manager::UserManager.
   net_log_.reset(new content::ShellNetLog("app_shell"));
 
   extensions_client_.reset(new ShellExtensionsClient());

@@ -8,12 +8,12 @@
 
 #include "ash/shell.h"
 #include "base/command_line.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "components/user_manager/user_manager.h"
 
 // static
 ProfileList* ProfileList::Create(ProfileInfoInterface* profile_cache) {
@@ -43,7 +43,8 @@ void ProfileListChromeOS::RebuildMenu() {
   ClearMenu();
 
   // Filter for profiles associated with logged-in users.
-  user_manager::UserList users = UserManager::Get()->GetLoggedInUsers();
+  user_manager::UserList users =
+      user_manager::UserManager::Get()->GetLoggedInUsers();
 
   // Add corresponding profiles.
   for (user_manager::UserList::const_iterator it = users.begin();

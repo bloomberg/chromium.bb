@@ -52,7 +52,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "components/user_manager/user_manager.h"
 #endif
 
 using base::UserMetricsAction;
@@ -1316,7 +1316,7 @@ void ContentSettingsHandler::SetContentFilter(const base::ListValue* args) {
 #if defined(OS_CHROMEOS)
   // ChromeOS special case : in Guest mode settings are opened in Incognito
   // mode, so we need original profile to actually modify settings.
-  if (chromeos::UserManager::Get()->IsLoggedInAsGuest())
+  if (user_manager::UserManager::Get()->IsLoggedInAsGuest())
     profile = profile->GetOriginalProfile();
 #endif
 

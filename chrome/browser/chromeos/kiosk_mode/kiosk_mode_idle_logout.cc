@@ -11,8 +11,8 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/ui/idle_logout_dialog_view.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -48,7 +48,7 @@ KioskModeIdleLogout::~KioskModeIdleLogout() {
 }
 
 void KioskModeIdleLogout::Setup() {
-  if (UserManager::Get()->IsLoggedInAsDemoUser()) {
+  if (user_manager::UserManager::Get()->IsLoggedInAsDemoUser()) {
     // This means that we're recovering from a crash.  The user is already
     // logged in, so go ahead and start the timer.
     Start();

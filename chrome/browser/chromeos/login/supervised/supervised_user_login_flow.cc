@@ -15,10 +15,11 @@
 #include "chrome/browser/chromeos/login/supervised/supervised_user_constants.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chromeos/login/auth/key.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -69,10 +70,10 @@ void SupervisedUserLoginFlow::ConfigureSync(const std::string& token) {
 
   // TODO(antrim): add error handling (no token loaded).
   // See also: http://crbug.com/312751
-  UserManager::Get()->GetSupervisedUserManager()->ConfigureSyncWithToken(
+  ChromeUserManager::Get()->GetSupervisedUserManager()->ConfigureSyncWithToken(
       profile_, token);
   SupervisedUserAuthentication* auth =
-      UserManager::Get()->GetSupervisedUserManager()->GetAuthentication();
+      ChromeUserManager::Get()->GetSupervisedUserManager()->GetAuthentication();
 
   if (auth->HasScheduledPasswordUpdate(user_id())) {
     auth->LoadPasswordUpdateData(
@@ -95,7 +96,7 @@ void SupervisedUserLoginFlow::OnPasswordChangeDataLoaded(
     const base::DictionaryValue* password_data) {
   // Edge case, when manager has signed in and already updated the password.
   SupervisedUserAuthentication* auth =
-      UserManager::Get()->GetSupervisedUserManager()->GetAuthentication();
+      ChromeUserManager::Get()->GetSupervisedUserManager()->GetAuthentication();
   if (!auth->NeedPasswordChange(user_id(), password_data)) {
     VLOG(1) << "Password already changed for " << user_id();
     auth->ClearScheduledPasswordUpdate(user_id());
@@ -179,7 +180,7 @@ void SupervisedUserLoginFlow::OnNewKeyAdded(
     scoped_ptr<base::DictionaryValue> password_data) {
   VLOG(1) << "New key added";
   SupervisedUserAuthentication* auth =
-      UserManager::Get()->GetSupervisedUserManager()->GetAuthentication();
+      ChromeUserManager::Get()->GetSupervisedUserManager()->GetAuthentication();
   auth->StorePasswordData(user_id(), *password_data.get());
   auth->MarkKeyIncomplete(user_id(), true /* incomplete */);
   authenticator_->RemoveKey(
@@ -224,7 +225,7 @@ void SupervisedUserLoginFlow::OnPasswordUpdated(
   VLOG(1) << "Updated password for supervised user";
 
   SupervisedUserAuthentication* auth =
-      UserManager::Get()->GetSupervisedUserManager()->GetAuthentication();
+      ChromeUserManager::Get()->GetSupervisedUserManager()->GetAuthentication();
 
   // Incomplete state is not there in password_data, carry it from old state.
   bool was_incomplete = auth->HasIncompleteKey(user_id());
@@ -248,11 +249,10 @@ void SupervisedUserLoginFlow::Finish() {
 void SupervisedUserLoginFlow::LaunchExtraSteps(
     Profile* profile) {
   profile_ = profile;
-  UserManager::Get()->GetSupervisedUserManager()->LoadSupervisedUserToken(
+  ChromeUserManager::Get()->GetSupervisedUserManager()->LoadSupervisedUserToken(
       profile,
-      base::Bind(
-           &SupervisedUserLoginFlow::OnSyncSetupDataLoaded,
-           weak_factory_.GetWeakPtr()));
+      base::Bind(&SupervisedUserLoginFlow::OnSyncSetupDataLoaded,
+                 weak_factory_.GetWeakPtr()));
 }
 
 }  // namespace chromeos

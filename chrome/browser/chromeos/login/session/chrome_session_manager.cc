@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/login/session/login_oobe_session_manager_delegate.h"
 #include "chrome/browser/chromeos/login/session/restore_after_crash_session_manager_delegate.h"
 #include "chrome/browser/chromeos/login/session/stub_login_session_manager_delegate.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/user_names.h"

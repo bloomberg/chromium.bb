@@ -22,9 +22,9 @@
 #include "extensions/common/api/runtime.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "components/user_manager/user_manager.h"
 #endif
 
 using extensions::Extension;
@@ -226,7 +226,7 @@ bool ChromeRuntimeAPIDelegate::GetPlatformInfo(PlatformInfo* info) {
 
 bool ChromeRuntimeAPIDelegate::RestartDevice(std::string* error_message) {
 #if defined(OS_CHROMEOS)
-  if (chromeos::UserManager::Get()->IsLoggedInAsKioskApp()) {
+  if (user_manager::UserManager::Get()->IsLoggedInAsKioskApp()) {
     chromeos::DBusThreadManager::Get()
         ->GetPowerManagerClient()
         ->RequestRestart();

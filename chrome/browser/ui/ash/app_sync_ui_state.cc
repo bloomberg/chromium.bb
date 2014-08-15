@@ -16,7 +16,7 @@
 #include "extensions/browser/extension_system.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "components/user_manager/user_manager.h"
 #endif
 
 namespace {
@@ -34,7 +34,7 @@ AppSyncUIState* AppSyncUIState::Get(Profile* profile) {
 // static
 bool AppSyncUIState::ShouldObserveAppSyncForProfile(Profile* profile) {
 #if defined(OS_CHROMEOS)
-  if (chromeos::UserManager::Get()->IsLoggedInAsGuest())
+  if (user_manager::UserManager::Get()->IsLoggedInAsGuest())
     return false;
 
   if (!profile || profile->IsOffTheRecord())

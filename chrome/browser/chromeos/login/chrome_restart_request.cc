@@ -22,7 +22,6 @@
 #include "cc/base/switches.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"

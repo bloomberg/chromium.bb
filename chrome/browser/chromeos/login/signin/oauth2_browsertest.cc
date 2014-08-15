@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -31,6 +30,7 @@
 #include "chromeos/login/auth/user_context.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/process_manager.h"
@@ -192,8 +192,9 @@ class OAuth2Test : public OobeBaseTest {
       return false;
 
     if (const user_manager::User* active_user =
-            UserManager::Get()->GetActiveUser())
+            user_manager::UserManager::Get()->GetActiveUser()) {
       return active_user->email() == username;
+    }
 
     return false;
   }
@@ -217,7 +218,7 @@ class OAuth2Test : public OobeBaseTest {
  protected:
   // OobeBaseTest overrides.
   virtual Profile* profile() OVERRIDE {
-    if (UserManager::Get()->GetActiveUser())
+    if (user_manager::UserManager::Get()->GetActiveUser())
       return ProfileManager::GetPrimaryUserProfile();
 
     return OobeBaseTest::profile();
@@ -239,7 +240,7 @@ class OAuth2Test : public OobeBaseTest {
         chrome::NOTIFICATION_SESSION_STARTED,
         content::NotificationService::AllSources()).Wait();
     const user_manager::UserList& logged_users =
-        UserManager::Get()->GetLoggedInUsers();
+        user_manager::UserManager::Get()->GetLoggedInUsers();
     for (user_manager::UserList::const_iterator it = logged_users.begin();
          it != logged_users.end();
          ++it) {

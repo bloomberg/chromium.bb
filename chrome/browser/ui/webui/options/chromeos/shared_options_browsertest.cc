@@ -9,7 +9,6 @@
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
@@ -19,6 +18,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -273,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(SharedOptionsTest, SharedOptions) {
   content::RunAllPendingInMessageLoop();
   AddUser(kTestNonOwner);
 
-  UserManager* manager = UserManager::Get();
+  user_manager::UserManager* manager = user_manager::UserManager::Get();
   ASSERT_EQ(2u, manager->GetLoggedInUsers().size());
   {
     SCOPED_TRACE("Checking settings for owner, primary user.");
@@ -304,7 +304,7 @@ IN_PROC_BROWSER_TEST_F(SharedOptionsTest, ScreenLockPreferencePrimary) {
   content::RunAllPendingInMessageLoop();
   AddUser(kTestNonOwner);
 
-  UserManager* manager = UserManager::Get();
+  user_manager::UserManager* manager = user_manager::UserManager::Get();
   const user_manager::User* user1 = manager->FindUser(kTestOwner);
   const user_manager::User* user2 = manager->FindUser(kTestNonOwner);
 
@@ -375,7 +375,7 @@ IN_PROC_BROWSER_TEST_F(SharedOptionsTest, ScreenLockPreferenceSecondary) {
   content::RunAllPendingInMessageLoop();
   AddUser(kTestNonOwner);
 
-  UserManager* manager = UserManager::Get();
+  user_manager::UserManager* manager = user_manager::UserManager::Get();
   const user_manager::User* user1 = manager->FindUser(kTestOwner);
   const user_manager::User* user2 = manager->FindUser(kTestNonOwner);
 

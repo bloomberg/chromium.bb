@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/users/fake_user_manager.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
+#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/policy_cert_verifier.h"
@@ -17,6 +18,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/cert/x509_certificate.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,7 +37,7 @@ KeyedService* CreateTestPolicyCertService(content::BrowserContext* context) {
   return policy::PolicyCertService::CreateForTesting(
              kUser,
              g_policy_cert_verifier_for_factory,
-             chromeos::UserManager::Get()).release();
+             user_manager::UserManager::Get()).release();
 }
 
 }  // namespace
@@ -85,7 +87,7 @@ class SessionStateDelegateChromeOSTest : public testing::Test {
 
   // Get the active user.
   const std::string& GetActiveUser() {
-    return chromeos::UserManager::Get()->GetActiveUser()->email();
+    return user_manager::UserManager::Get()->GetActiveUser()->email();
   }
 
   chromeos::FakeUserManager* user_manager() { return user_manager_; }

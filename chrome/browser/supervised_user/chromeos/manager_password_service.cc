@@ -10,13 +10,14 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_constants.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_sync_service.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 
 namespace chromeos {
@@ -38,12 +39,11 @@ void ManagerPasswordService::Init(
 
   authenticator_ = new ExtendedAuthenticator(this);
 
-  UserManager* user_manager = UserManager::Get();
-
   SupervisedUserManager* supervised_user_manager =
-      user_manager->GetSupervisedUserManager();
+      ChromeUserManager::Get()->GetSupervisedUserManager();
 
-  const user_manager::UserList& users = user_manager->GetUsers();
+  const user_manager::UserList& users =
+      user_manager::UserManager::Get()->GetUsers();
 
   for (user_manager::UserList::const_iterator it = users.begin();
        it != users.end();
@@ -65,7 +65,7 @@ void ManagerPasswordService::OnSharedSettingsChange(
     return;
 
   SupervisedUserManager* supervised_user_manager =
-      UserManager::Get()->GetSupervisedUserManager();
+      ChromeUserManager::Get()->GetSupervisedUserManager();
   const user_manager::User* user = supervised_user_manager->FindBySyncId(su_id);
   // No user on device.
   if (user == NULL)
@@ -198,7 +198,7 @@ void ManagerPasswordService::OnAddKeySuccess(
       SupervisedUserAuthentication::PASSWORD_CHANGE_RESULT_MAX_VALUE);
 
   SupervisedUserAuthentication* auth =
-      UserManager::Get()->GetSupervisedUserManager()->GetAuthentication();
+      ChromeUserManager::Get()->GetSupervisedUserManager()->GetAuthentication();
   int old_schema = auth->GetPasswordSchema(user_id);
   auth->StorePasswordData(user_id, *password_data.get());
 

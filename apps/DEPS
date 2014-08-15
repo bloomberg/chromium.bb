@@ -6,6 +6,7 @@ include_rules = [
   "+content/public/test",
   "+components/keyed_service",
   "+components/pref_registry/pref_registry_syncable.h",
+  "+components/user_manager",
   "+components/web_modal",
   "+extensions",
   "+net/base",

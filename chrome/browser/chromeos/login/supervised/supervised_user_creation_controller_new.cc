@@ -17,8 +17,8 @@
 #include "chrome/browser/chromeos/login/auth/mount_manager.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_constants.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -28,6 +28,7 @@
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
 #include "crypto/random.h"
@@ -148,7 +149,7 @@ void SupervisedUserCreationControllerNew::StartCreationImpl() {
   VLOG(1) << " Phase 1 : Prepare keys";
 
   SupervisedUserManager* manager =
-      UserManager::Get()->GetSupervisedUserManager();
+      ChromeUserManager::Get()->GetSupervisedUserManager();
   manager->StartCreationTransaction(creation_context_->display_name);
 
   creation_context_->local_user_id = manager->GenerateUserId();
@@ -167,7 +168,7 @@ void SupervisedUserCreationControllerNew::StartCreationImpl() {
                             creation_context_->display_name);
 
   SupervisedUserAuthentication* authentication =
-      UserManager::Get()->GetSupervisedUserManager()->GetAuthentication();
+      ChromeUserManager::Get()->GetSupervisedUserManager()->GetAuthentication();
 
   // When importing M35+ users we need only to store data, for all other cases
   // we need to create some keys.
@@ -368,14 +369,16 @@ void SupervisedUserCreationControllerNew::OnSupervisedUserFilesStored(
   }
   // Assume that new token is valid. It will be automatically invalidated if
   // sync service fails to use it.
-  UserManager::Get()->SaveUserOAuthStatus(
+  user_manager::UserManager::Get()->SaveUserOAuthStatus(
       creation_context_->local_user_id,
       user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
 
   stage_ = TOKEN_WRITTEN;
 
   timeout_timer_.Stop();
-  UserManager::Get()->GetSupervisedUserManager()->CommitCreationTransaction();
+  ChromeUserManager::Get()
+      ->GetSupervisedUserManager()
+      ->CommitCreationTransaction();
   content::RecordAction(
       base::UserMetricsAction("ManagedMode_LocallyManagedUserCreated"));
 

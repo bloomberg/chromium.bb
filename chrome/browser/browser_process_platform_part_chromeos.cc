@@ -10,6 +10,7 @@
 #include "base/time/tick_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/session/chrome_session_manager.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -33,6 +34,18 @@ void BrowserProcessPlatformPart::InitializeAutomaticRebootManager() {
 
 void BrowserProcessPlatformPart::ShutdownAutomaticRebootManager() {
   automatic_reboot_manager_.reset();
+}
+
+void BrowserProcessPlatformPart::InitializeChromeUserManager() {
+  DCHECK(!chrome_user_manager_);
+  chrome_user_manager_ =
+      chromeos::ChromeUserManagerImpl::CreateChromeUserManager();
+  chrome_user_manager_->Initialize();
+}
+
+void BrowserProcessPlatformPart::DestroyChromeUserManager() {
+  chrome_user_manager_->Destroy();
+  chrome_user_manager_.reset();
 }
 
 void BrowserProcessPlatformPart::InitializeSessionManager(

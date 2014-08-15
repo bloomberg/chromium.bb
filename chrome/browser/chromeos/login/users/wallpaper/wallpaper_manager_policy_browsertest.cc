@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/policy/cloud_external_data_manager_base_test_util.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
@@ -40,6 +39,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/test/browser_test_utils.h"
 #include "crypto/rsa_private_key.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -245,7 +245,8 @@ class WallpaperManagerPolicyTest
     }
     builder->Build();
     fake_session_manager_client_->set_user_policy(user_id, builder->GetBlob());
-    const user_manager::User* user = UserManager::Get()->FindUser(user_id);
+    const user_manager::User* user =
+        user_manager::UserManager::Get()->FindUser(user_id);
     ASSERT_TRUE(user);
     policy::CloudPolicyStore* store = GetStoreForUser(user);
     ASSERT_TRUE(store);

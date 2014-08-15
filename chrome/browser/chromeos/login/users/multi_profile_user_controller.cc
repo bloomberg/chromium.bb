@@ -11,7 +11,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller_delegate.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 namespace chromeos {
@@ -90,7 +90,7 @@ void MultiProfileUserController::RegisterProfilePrefs(
 // static
 MultiProfileUserController::UserAllowedInSessionReason
 MultiProfileUserController::GetPrimaryUserPolicy() {
-  UserManager* user_manager = UserManager::Get();
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   CHECK(user_manager);
 
   const user_manager::User* user = user_manager->GetPrimaryUser();
@@ -129,7 +129,7 @@ MultiProfileUserController::GetPrimaryUserPolicy() {
 bool MultiProfileUserController::IsUserAllowedInSession(
     const std::string& user_email,
     MultiProfileUserController::UserAllowedInSessionReason* reason) const {
-  UserManager* user_manager = UserManager::Get();
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   CHECK(user_manager);
 
   const user_manager::User* primary_user = user_manager->GetPrimaryUser();
@@ -208,7 +208,8 @@ void MultiProfileUserController::SetCachedValue(
 }
 
 void MultiProfileUserController::CheckSessionUsers() {
-  const user_manager::UserList& users = UserManager::Get()->GetLoggedInUsers();
+  const user_manager::UserList& users =
+      user_manager::UserManager::Get()->GetLoggedInUsers();
   for (user_manager::UserList::const_iterator it = users.begin();
        it != users.end();
        ++it) {

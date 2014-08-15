@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
 
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/url_constants.h"

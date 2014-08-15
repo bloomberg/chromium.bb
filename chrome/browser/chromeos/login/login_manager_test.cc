@@ -10,11 +10,11 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -68,7 +68,7 @@ bool LoginManagerTest::TryToLogin(const UserContext& user_context) {
   if (!AddUserToSession(user_context))
     return false;
   if (const user_manager::User* active_user =
-          UserManager::Get()->GetActiveUser())
+          user_manager::UserManager::Get()->GetActiveUser())
     return active_user->email() == user_context.GetUserID();
   return false;
 }
@@ -85,7 +85,7 @@ bool LoginManagerTest::AddUserToSession(const UserContext& user_context) {
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources()).Wait();
   const user_manager::UserList& logged_users =
-      UserManager::Get()->GetLoggedInUsers();
+      user_manager::UserManager::Get()->GetLoggedInUsers();
   for (user_manager::UserList::const_iterator it = logged_users.begin();
        it != logged_users.end();
        ++it) {

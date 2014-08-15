@@ -10,12 +10,14 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/screens/user_image_screen.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_image/default_user_images.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 
@@ -168,7 +170,7 @@ void UserImageSyncObserver::UpdateLocalImageFromSynced() {
   if ((synced_index == local_index) || !IsIndexSupported(synced_index))
     return;
   UserImageManager* image_manager =
-      UserManager::Get()->GetUserImageManager(user_->email());
+      ChromeUserManager::Get()->GetUserImageManager(user_->email());
   if (synced_index == user_manager::User::USER_IMAGE_PROFILE) {
     image_manager->SaveUserImageFromProfileImage();
   } else {

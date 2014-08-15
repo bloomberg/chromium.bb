@@ -47,8 +47,9 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "components/user_manager/user_manager.h"
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
@@ -255,9 +256,10 @@ void SupervisedUserService::GetCategoryNames(CategoryList* list) {
 
 std::string SupervisedUserService::GetCustodianEmailAddress() const {
 #if defined(OS_CHROMEOS)
-  return chromeos::UserManager::Get()->GetSupervisedUserManager()->
-      GetManagerDisplayEmail(
-          chromeos::UserManager::Get()->GetActiveUser()->email());
+  return chromeos::ChromeUserManager::Get()
+      ->GetSupervisedUserManager()
+      ->GetManagerDisplayEmail(
+          user_manager::UserManager::Get()->GetActiveUser()->email());
 #else
   return profile_->GetPrefs()->GetString(prefs::kSupervisedUserCustodianEmail);
 #endif
@@ -265,9 +267,11 @@ std::string SupervisedUserService::GetCustodianEmailAddress() const {
 
 std::string SupervisedUserService::GetCustodianName() const {
 #if defined(OS_CHROMEOS)
-  return base::UTF16ToUTF8(chromeos::UserManager::Get()->
-      GetSupervisedUserManager()->GetManagerDisplayName(
-          chromeos::UserManager::Get()->GetActiveUser()->email()));
+  return base::UTF16ToUTF8(
+      chromeos::ChromeUserManager::Get()
+          ->GetSupervisedUserManager()
+          ->GetManagerDisplayName(
+              user_manager::UserManager::Get()->GetActiveUser()->email()));
 #else
   std::string name = profile_->GetPrefs()->GetString(
       prefs::kSupervisedUserCustodianName);
@@ -817,9 +821,9 @@ void SupervisedUserService::OnBrowserSetLastActive(Browser* browser) {
 std::string SupervisedUserService::GetSupervisedUserName() const {
 #if defined(OS_CHROMEOS)
   // The active user can be NULL in unit tests.
-  if (chromeos::UserManager::Get()->GetActiveUser()) {
-    return UTF16ToUTF8(chromeos::UserManager::Get()->GetUserDisplayName(
-        chromeos::UserManager::Get()->GetActiveUser()->GetUserID()));
+  if (user_manager::UserManager::Get()->GetActiveUser()) {
+    return UTF16ToUTF8(user_manager::UserManager::Get()->GetUserDisplayName(
+        user_manager::UserManager::Get()->GetActiveUser()->GetUserID()));
   }
   return std::string();
 #else

@@ -46,11 +46,12 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/user_names.h"
+#include "components/user_manager/user_manager.h"
 #endif
 
 using base::ASCIIToUTF16;
@@ -404,9 +405,10 @@ class ProfileManagerGuestTest : public ProfileManagerTest  {
     cl->AppendSwitch(chromeos::switches::kGuestSession);
     cl->AppendSwitch(::switches::kIncognito);
 
-    chromeos::UserManager::Get()->UserLoggedIn(chromeos::login::kGuestUserName,
-                                               chromeos::login::kGuestUserName,
-                                               false);
+    user_manager::UserManager::Get()->UserLoggedIn(
+        chromeos::login::kGuestUserName,
+        chromeos::login::kGuestUserName,
+        false);
 #endif
   }
 };

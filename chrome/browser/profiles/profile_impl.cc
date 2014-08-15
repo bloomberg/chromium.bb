@@ -111,9 +111,9 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/locale_change_guard.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "components/user_manager/user_manager.h"
 #endif
 
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
@@ -1263,7 +1263,7 @@ void ProfileImpl::ChangeAppLocale(
   if (via != APP_LOCALE_CHANGED_VIA_PUBLIC_SESSION_LOGIN)
     local_state->SetString(prefs::kApplicationLocale, new_locale);
 
-  if (chromeos::UserManager::Get()->GetOwnerEmail() ==
+  if (user_manager::UserManager::Get()->GetOwnerEmail() ==
       chromeos::ProfileHelper::Get()->GetUserByProfile(this)->email())
     local_state->SetString(prefs::kOwnerLocale, new_locale);
 }

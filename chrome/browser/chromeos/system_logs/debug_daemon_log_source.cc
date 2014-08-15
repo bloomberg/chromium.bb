@@ -12,11 +12,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 
 const char kNotAvailable[] = "<not available>";
@@ -136,9 +136,8 @@ void DebugDaemonLogSource::OnGetUserLogFiles(
     SystemLogsResponse* response = new SystemLogsResponse;
     std::vector<Profile*> last_used = ProfileManager::GetLastOpenedProfiles();
 
-    if (last_used.empty() &&
-        chromeos::UserManager::IsInitialized() &&
-        chromeos::UserManager::Get()->IsLoggedInAsKioskApp()) {
+    if (last_used.empty() && user_manager::UserManager::IsInitialized() &&
+        user_manager::UserManager::Get()->IsLoggedInAsKioskApp()) {
       // Use the kiosk app profile explicitly because kiosk session does not
       // open any browsers thus ProfileManager::GetLastOpenedProfiles returns
       // an empty |last_used|.

@@ -24,7 +24,6 @@
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
@@ -49,6 +48,7 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -580,7 +580,8 @@ IN_PROC_BROWSER_TEST_F(SamlTest, UseAutenticatedUserEmailAddress) {
   content::WindowedNotificationObserver(
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources()).Wait();
-  const user_manager::User* user = UserManager::Get()->GetActiveUser();
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->GetActiveUser();
   ASSERT_TRUE(user);
   EXPECT_EQ(kFirstSAMLUserEmail, user->email());
 }
@@ -737,11 +738,11 @@ void SAMLPolicyTest::SetUpOnMainThread() {
   SamlTest::SetUpOnMainThread();
 
   // Pretend that the test users' OAuth tokens are valid.
-  UserManager::Get()->SaveUserOAuthStatus(
+  user_manager::UserManager::Get()->SaveUserOAuthStatus(
       kFirstSAMLUserEmail, user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
-  UserManager::Get()->SaveUserOAuthStatus(
+  user_manager::UserManager::Get()->SaveUserOAuthStatus(
       kNonSAMLUserEmail, user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
-  UserManager::Get()->SaveUserOAuthStatus(
+  user_manager::UserManager::Get()->SaveUserOAuthStatus(
       kDifferentDomainSAMLUserEmail,
       user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
 }
@@ -818,7 +819,7 @@ std::string SAMLPolicyTest::GetCookieValue(const std::string& name) {
 
 void SAMLPolicyTest::GetCookies() {
   Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUserUnsafe(
-      UserManager::Get()->GetActiveUser());
+      user_manager::UserManager::Get()->GetActiveUser());
   ASSERT_TRUE(profile);
   base::RunLoop run_loop;
   content::BrowserThread::PostTask(

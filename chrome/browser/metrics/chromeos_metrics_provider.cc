@@ -10,11 +10,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -128,10 +128,10 @@ void ChromeOSMetricsProvider::LogCrash(const std::string& crash_type) {
 
 void ChromeOSMetricsProvider::OnDidCreateMetricsLog() {
   registered_user_count_at_log_initialization_ = false;
-  if (chromeos::UserManager::IsInitialized()) {
+  if (user_manager::UserManager::IsInitialized()) {
     registered_user_count_at_log_initialization_ = true;
     user_count_at_log_initialization_ =
-        chromeos::UserManager::Get()->GetLoggedInUsers().size();
+        user_manager::UserManager::Get()->GetLoggedInUsers().size();
   }
 }
 
@@ -269,8 +269,9 @@ void ChromeOSMetricsProvider::WriteBluetoothProto(
 
 void ChromeOSMetricsProvider::UpdateMultiProfileUserCount(
     metrics::SystemProfileProto* system_profile_proto) {
-  if (chromeos::UserManager::IsInitialized()) {
-    size_t user_count = chromeos::UserManager::Get()->GetLoggedInUsers().size();
+  if (user_manager::UserManager::IsInitialized()) {
+    size_t user_count =
+        user_manager::UserManager::Get()->GetLoggedInUsers().size();
 
     // We invalidate the user count if it changed while the log was open.
     if (registered_user_count_at_log_initialization_ &&

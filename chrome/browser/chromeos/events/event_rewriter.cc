@@ -16,12 +16,12 @@
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/ime/ime_keyboard.h"
 #include "chromeos/ime/input_method_manager.h"
+#include "components/user_manager/user_manager.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
@@ -510,7 +510,7 @@ void EventRewriter::RewriteModifierKeys(const ui::KeyEvent& key_event,
   // TODO(glotov): remove the following condition when we do not restart chrome
   // when user logs in as guest.
   // TODO(kpschoedel): check whether this is still necessary.
-  if (UserManager::Get()->IsLoggedInAsGuest() &&
+  if (user_manager::UserManager::Get()->IsLoggedInAsGuest() &&
       LoginDisplayHostImpl::default_host())
     return;
 

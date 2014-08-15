@@ -3182,6 +3182,7 @@
           ],
           'dependencies': [
             'browser_chromeos',
+            '../components/components.gyp:user_manager',
             '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',
           ],
         }, {  # Non-ChromeOS.

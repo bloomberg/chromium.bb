@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_diagnosis_runner.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
@@ -30,6 +29,7 @@
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_system.h"
@@ -333,7 +333,7 @@ void StartupAppLauncher::LaunchApp() {
                                   NEW_WINDOW));
   InitAppSession(profile_, app_id_);
 
-  UserManager::Get()->SessionStarted();
+  user_manager::UserManager::Get()->SessionStarted();
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_KIOSK_APP_LAUNCHED,

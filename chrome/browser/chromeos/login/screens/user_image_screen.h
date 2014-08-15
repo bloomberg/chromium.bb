@@ -27,6 +27,8 @@ class PolicyChangeRegistrar;
 
 namespace chromeos {
 
+class UserImageManager;
+
 class UserImageScreen: public WizardScreen,
                        public UserImageScreenActor::Delegate,
                        public ImageDecoder::Delegate,

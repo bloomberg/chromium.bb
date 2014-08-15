@@ -91,10 +91,10 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/ash/launcher/multi_profile_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/multi_profile_browser_status_monitor.h"
+#include "components/user_manager/user_manager.h"
 #endif
 
 using extensions::Extension;
@@ -269,14 +269,14 @@ std::string GetSourceFromAppListSource(ash::LaunchSource source) {
 // A class to get events from ChromeOS when a user gets changed or added.
 class ChromeLauncherControllerUserSwitchObserverChromeOS
     : public ChromeLauncherControllerUserSwitchObserver,
-      public chromeos::UserManager::UserSessionStateObserver,
+      public user_manager::UserManager::UserSessionStateObserver,
       content::NotificationObserver {
  public:
   ChromeLauncherControllerUserSwitchObserverChromeOS(
       ChromeLauncherController* controller)
       : controller_(controller) {
-    DCHECK(chromeos::UserManager::IsInitialized());
-    chromeos::UserManager::Get()->AddSessionStateObserver(this);
+    DCHECK(user_manager::UserManager::IsInitialized());
+    user_manager::UserManager::Get()->AddSessionStateObserver(this);
     // A UserAddedToSession notification can be sent before a profile is loaded.
     // Since our observers require that we have already a profile, we might have
     // to postpone the notification until the ProfileManager lets us know that
@@ -285,10 +285,10 @@ class ChromeLauncherControllerUserSwitchObserverChromeOS
                    content::NotificationService::AllSources());
   }
   virtual ~ChromeLauncherControllerUserSwitchObserverChromeOS() {
-    chromeos::UserManager::Get()->RemoveSessionStateObserver(this);
+    user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
   }
 
-  // chromeos::UserManager::UserSessionStateObserver overrides:
+  // user_manager::UserManager::UserSessionStateObserver overrides:
   virtual void UserAddedToSession(
       const user_manager::User* added_user) OVERRIDE;
 

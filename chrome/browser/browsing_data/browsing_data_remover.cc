@@ -75,7 +75,6 @@
 #include "webkit/common/quota/quota_types.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/attestation/attestation_constants.h"
 #include "chromeos/dbus/cryptohome_client.h"

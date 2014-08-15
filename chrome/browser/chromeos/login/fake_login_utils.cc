@@ -10,8 +10,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,6 +21,7 @@
 #include "chromeos/login/auth/mock_authenticator.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,9 +38,8 @@ void FakeLoginUtils::RespectLocalePreference(Profile*,
 
 void FakeLoginUtils::DoBrowserLaunch(Profile* profile,
                                      LoginDisplayHost* login_host) {
-
-  if (!UserManager::Get()->GetCurrentUserFlow()->ShouldLaunchBrowser()) {
-      UserManager::Get()->GetCurrentUserFlow()->LaunchExtraSteps(profile);
+  if (!ChromeUserManager::Get()->GetCurrentUserFlow()->ShouldLaunchBrowser()) {
+    ChromeUserManager::Get()->GetCurrentUserFlow()->LaunchExtraSteps(profile);
       return;
   }
   login_host->BeforeSessionStart();
@@ -58,17 +58,18 @@ void FakeLoginUtils::DoBrowserLaunch(Profile* profile,
   }
   if (login_host)
     login_host->Finalize();
-  UserManager::Get()->SessionStarted();
+  user_manager::UserManager::Get()->SessionStarted();
 }
 
 void FakeLoginUtils::PrepareProfile(const UserContext& user_context,
                                     bool has_cookies,
                                     bool has_active_session,
                                     LoginUtils::Delegate* delegate) {
-  UserManager::Get()->UserLoggedIn(
+  user_manager::UserManager::Get()->UserLoggedIn(
       user_context.GetUserID(), user_context.GetUserIDHash(), false);
   user_manager::User* user =
-      UserManager::Get()->FindUserAndModify(user_context.GetUserID());
+      user_manager::UserManager::Get()->FindUserAndModify(
+          user_context.GetUserID());
   DCHECK(user);
 
   // Make sure that we get the real Profile instead of the login Profile.
@@ -77,11 +78,12 @@ void FakeLoginUtils::PrepareProfile(const UserContext& user_context,
   profile->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                  user_context.GetUserID());
 
-  if (UserManager::Get()->IsLoggedInAsSupervisedUser()) {
-    user_manager::User* active_user = UserManager::Get()->GetActiveUser();
+  if (user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser()) {
+    user_manager::User* active_user =
+        user_manager::UserManager::Get()->GetActiveUser();
     std::string supervised_user_sync_id =
-        UserManager::Get()->GetSupervisedUserManager()->
-            GetUserSyncId(active_user->email());
+        ChromeUserManager::Get()->GetSupervisedUserManager()->GetUserSyncId(
+            active_user->email());
     if (supervised_user_sync_id.empty())
       supervised_user_sync_id = "DUMMY ID";
     profile->GetPrefs()->SetString(prefs::kSupervisedUserId,

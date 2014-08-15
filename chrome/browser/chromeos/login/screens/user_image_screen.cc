@@ -21,7 +21,7 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -34,6 +34,7 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_image/default_user_images.h"
 #include "components/user_manager/user_image/user_image.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "policy/policy_constants.h"
@@ -219,11 +220,11 @@ void UserImageScreen::PrepareToShow() {
 }
 
 const user_manager::User* UserImageScreen::GetUser() {
-  return UserManager::Get()->GetLoggedInUser();
+  return user_manager::UserManager::Get()->GetLoggedInUser();
 }
 
 UserImageManager* UserImageScreen::GetUserImageManager() {
-  return UserManager::Get()->GetUserImageManager(GetUser()->email());
+  return ChromeUserManager::Get()->GetUserImageManager(GetUser()->email());
 }
 
 UserImageSyncObserver* UserImageScreen::GetSyncObserver() {

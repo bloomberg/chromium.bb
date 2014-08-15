@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_USERS_REMOVE_USER_DELEGATE_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_USERS_REMOVE_USER_DELEGATE_H_
+#ifndef COMPONENTS_USER_MANAGER_REMOVE_USER_DELEGATE_H_
+#define COMPONENTS_USER_MANAGER_REMOVE_USER_DELEGATE_H_
 
-namespace chromeos {
+#include "components/user_manager/user_manager_export.h"
+
+namespace user_manager {
 
 // Delegate to be used with |UserManager::RemoveUser|.
-class RemoveUserDelegate {
+class USER_MANAGER_EXPORT RemoveUserDelegate {
  public:
   // Called right before actual user removal process is initiated.
   virtual void OnBeforeUserRemoved(const std::string& username) = 0;
@@ -17,6 +19,6 @@ class RemoveUserDelegate {
   virtual void OnUserRemoved(const std::string& username) = 0;
 };
 
-}  // namespace chromeos
+}  // namespace user_manager
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_USERS_REMOVE_USER_DELEGATE_H_
+#endif  // COMPONENTS_USER_MANAGER_REMOVE_USER_DELEGATE_H_

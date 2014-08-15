@@ -49,7 +49,7 @@
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/users/user_manager.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
@@ -107,6 +107,7 @@
 #include "components/metrics/metrics_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/power_save_blocker.h"
@@ -341,7 +342,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- just before CreateProfile().
 
-  UserManager::Initialize();
+  g_browser_process->platform_part()->InitializeChromeUserManager();
 
   // Initialize the screen locker now so that it can receive
   // LOGIN_USER_CHANGED notification from UserManager.
@@ -415,7 +416,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   if (immediate_login) {
     const std::string user_id = login::CanonicalizeUserID(
         parsed_command_line().GetSwitchValueASCII(switches::kLoginUser));
-    UserManager* user_manager = UserManager::Get();
+    user_manager::UserManager* user_manager = user_manager::UserManager::Get();
 
     if (policy::IsDeviceLocalAccountUser(user_id, NULL) &&
         !user_manager->IsKnownUser(user_id)) {
@@ -530,7 +531,7 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
 
   // Guest user profile is never initialized with locale settings,
   // so we need special handling for Guest session.
-  if (UserManager::Get()->IsLoggedInAsGuest())
+  if (user_manager::UserManager::Get()->IsLoggedInAsGuest())
     SetGuestLocale(profile());
 
   // These observers must be initialized after the profile because
@@ -692,7 +693,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // of the CrosSettings singleton before it is destroyed. This also ensures
   // that the UserManager has no URLRequest pending (see
   // http://crbug.com/276659).
-  UserManager::Get()->Shutdown();
+  g_browser_process->platform_part()->user_manager()->Shutdown();
   WallpaperManager::Get()->Shutdown();
 
   // Let the AutomaticRebootManager unregister itself as an observer of several
@@ -724,7 +725,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // parts of WebUI depends on NetworkPortalDetector.
   NetworkPortalDetector::Shutdown();
 
-  UserManager::Destroy();
+  g_browser_process->platform_part()->DestroyChromeUserManager();
 
   g_browser_process->platform_part()->ShutdownSessionManager();
 }
