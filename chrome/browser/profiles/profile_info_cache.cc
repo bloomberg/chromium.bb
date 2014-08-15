@@ -832,6 +832,11 @@ void ProfileInfoCache::RegisterPrefs(PrefRegistrySimple* registry) {
 void ProfileInfoCache::DownloadHighResAvatar(
     size_t icon_index,
     const base::FilePath& profile_path) {
+  // Downloading is only supported on desktop.
+#if defined(OS_ANDROID) || defined(OS_IOS) || defined(OS_CHROMEOS)
+  return;
+#endif
+
   // TODO(noms): We should check whether the file already exists on disk
   // before trying to re-download it. For now, since this is behind a flag and
   // the resources are still changing, re-download it every time the profile
