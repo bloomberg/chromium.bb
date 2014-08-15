@@ -54,8 +54,7 @@ int PepperMediaDeviceManager::EnumerateDevices(
       request_id,
       AsWeakPtr(),
       PepperMediaDeviceManager::FromPepperDeviceType(type),
-      document_url.GetOrigin(),
-      false);
+      document_url.GetOrigin());
 #else
   base::MessageLoop::current()->PostTask(
       FROM_HERE,

@@ -31,8 +31,7 @@ class MockMediaStreamDispatcher : public MediaStreamDispatcher {
       int request_id,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
       MediaStreamType type,
-      const GURL& security_origin,
-      bool hide_labels_if_no_access) OVERRIDE;
+      const GURL& security_origin) OVERRIDE;
   virtual void StopStreamDevice(const StreamDeviceInfo& device_info) OVERRIDE;
   virtual bool IsStream(const std::string& label) OVERRIDE;
   virtual int video_session_id(const std::string& label, int index) OVERRIDE;

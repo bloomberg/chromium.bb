@@ -234,22 +234,19 @@ void MediaStreamImpl::requestMediaDevices(
       audio_input_request_id,
       weak_factory_.GetWeakPtr(),
       MEDIA_DEVICE_AUDIO_CAPTURE,
-      security_origin,
-      true);
+      security_origin);
 
   media_stream_dispatcher_->EnumerateDevices(
       video_input_request_id,
       weak_factory_.GetWeakPtr(),
       MEDIA_DEVICE_VIDEO_CAPTURE,
-      security_origin,
-      true);
+      security_origin);
 
   media_stream_dispatcher_->EnumerateDevices(
       audio_output_request_id,
       weak_factory_.GetWeakPtr(),
       MEDIA_DEVICE_AUDIO_OUTPUT,
-      security_origin,
-      true);
+      security_origin);
 }
 
 void MediaStreamImpl::cancelMediaDevicesRequest(

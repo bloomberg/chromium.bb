@@ -59,8 +59,7 @@ void MockMediaStreamDispatcher::EnumerateDevices(
     int request_id,
     const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
     MediaStreamType type,
-    const GURL& security_origin,
-    bool hide_labels_if_no_access) {
+    const GURL& security_origin) {
   if (type == MEDIA_DEVICE_AUDIO_CAPTURE) {
     audio_input_request_id_ = request_id;
     audio_input_array_.clear();

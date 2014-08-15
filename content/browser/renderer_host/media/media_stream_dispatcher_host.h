@@ -79,8 +79,7 @@ class CONTENT_EXPORT MediaStreamDispatcherHost : public BrowserMessageFilter,
   void OnEnumerateDevices(int render_frame_id,
                           int page_request_id,
                           MediaStreamType type,
-                          const GURL& security_origin,
-                          bool hide_labels_if_no_access);
+                          const GURL& security_origin);
 
   void OnCancelEnumerateDevices(int render_frame_id,
                                 int page_request_id);

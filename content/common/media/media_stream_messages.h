@@ -128,12 +128,11 @@ IPC_MESSAGE_CONTROL2(MediaStreamHostMsg_GetSources,
 
 // Request to enumerate devices.
 // Used by Pepper and WebRTC.
-IPC_MESSAGE_CONTROL5(MediaStreamHostMsg_EnumerateDevices,
+IPC_MESSAGE_CONTROL4(MediaStreamHostMsg_EnumerateDevices,
                      int /* render frame id */,
                      int /* request id */,
                      content::MediaStreamType /* type */,
-                     GURL /* security origin */,
-                     bool /* hide_labels_if_no_access */)
+                     GURL /* security origin */)
 
 // Request to stop enumerating devices.
 IPC_MESSAGE_CONTROL2(MediaStreamHostMsg_CancelEnumerateDevices,

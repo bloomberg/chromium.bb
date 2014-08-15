@@ -169,8 +169,7 @@ void MediaStreamDispatcherHost::OnEnumerateDevices(
     int render_frame_id,
     int page_request_id,
     MediaStreamType type,
-    const GURL& security_origin,
-    bool hide_labels_if_no_access) {
+    const GURL& security_origin) {
   DVLOG(1) << "MediaStreamDispatcherHost::OnEnumerateDevices("
            << render_frame_id << ", "
            << page_request_id << ", "
@@ -183,14 +182,10 @@ void MediaStreamDispatcherHost::OnEnumerateDevices(
   DCHECK(type == MEDIA_DEVICE_AUDIO_CAPTURE ||
          type == MEDIA_DEVICE_VIDEO_CAPTURE ||
          type == MEDIA_DEVICE_AUDIO_OUTPUT);
-  bool have_permission = true;
-  if (hide_labels_if_no_access) {
-    bool audio_type = type == MEDIA_DEVICE_AUDIO_CAPTURE ||
-                      type == MEDIA_DEVICE_AUDIO_OUTPUT;
-    have_permission = audio_type ?
-        resource_context_->AllowMicAccess(security_origin) :
-        resource_context_->AllowCameraAccess(security_origin);
-  }
+  bool have_permission =
+      type == MEDIA_DEVICE_AUDIO_CAPTURE || type == MEDIA_DEVICE_AUDIO_OUTPUT ?
+          resource_context_->AllowMicAccess(security_origin) :
+          resource_context_->AllowCameraAccess(security_origin);
 
   media_stream_manager_->EnumerateDevices(
       this, render_process_id_, render_frame_id, salt_callback_,

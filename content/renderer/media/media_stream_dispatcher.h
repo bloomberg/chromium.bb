@@ -55,15 +55,11 @@ class CONTENT_EXPORT MediaStreamDispatcher
   virtual void StopStreamDevice(const StreamDeviceInfo& device_info);
 
   // Request to enumerate devices.
-  // If |hide_labels_if_no_access| is true, labels will be empty in the
-  // response if permission has not been granted for the device type. This
-  // should normally be true.
   virtual void EnumerateDevices(
       int request_id,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
       MediaStreamType type,
-      const GURL& security_origin,
-      bool hide_labels_if_no_access);
+      const GURL& security_origin);
 
   // Request to stop enumerating devices.
   void StopEnumerateDevices(
