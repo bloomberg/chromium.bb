@@ -843,18 +843,13 @@ void TileManager::AssignGpuMemoryToTiles(
 
     // Tile is OOM.
     if (tile_bytes > tile_bytes_left || tile_resources > resources_left) {
-      bool was_ready_to_draw = tile->IsReadyToDraw();
-
-      FreeResourcesForTile(tile);
+      FreeResourcesForTileAndNotifyClientIfTileWasReadyToDraw(tile);
 
       // This tile was already on screen and now its resources have been
       // released. In order to prevent checkerboarding, set this tile as
       // rasterize on demand immediately.
       if (mts.visible_and_ready_to_draw)
         tile_version.set_rasterize_on_demand();
-
-      if (was_ready_to_draw)
-        client_->NotifyTileStateChanged(tile);
 
       oomed_soft = true;
       if (tile_uses_hard_limit) {
