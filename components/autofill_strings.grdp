@@ -99,9 +99,16 @@
     Privacy Policy
   </message>
 
-  <message name="IDS_AUTOFILL_OPTIONS_POPUP" desc="The value of the Autofill options menu entry.">
-    Chrome Autofill settings
-  </message>
+  <if expr="_google_chrome">
+    <message name="IDS_AUTOFILL_OPTIONS_POPUP" desc="The text displayed in the Autofill popup to direct the user to the Autofill settings UI.">
+      Chrome Autofill settings...
+    </message>
+  </if>
+  <if expr="not _google_chrome">
+    <message name="IDS_AUTOFILL_OPTIONS_POPUP" desc="The text displayed in the Autofill popup to direct the user to the Autofill settings UI.">
+      Chromium Autofill settings...
+    </message>
+  </if>
 
   <message name="IDS_AUTOFILL_CREDIT_CARD_NOT_SUPPORTED_BY_WALLET" desc="Message displayed to user when user entered a credit card number that is not supported by Google Wallet.">
     This type of card is not supported by Google Wallet. Please select a different card.
