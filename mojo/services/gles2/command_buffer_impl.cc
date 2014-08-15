@@ -21,7 +21,6 @@
 #include "ui/gl/gl_surface.h"
 
 namespace mojo {
-namespace services {
 
 namespace {
 
@@ -179,5 +178,4 @@ void CommandBufferImpl::OnResize(gfx::Size size, float scale_factor) {
   surface_->Resize(size);
 }
 
-}  // namespace services
 }  // namespace mojo

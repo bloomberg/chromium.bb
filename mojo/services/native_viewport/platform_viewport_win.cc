@@ -10,7 +10,6 @@
 #include "ui/platform_window/win/win_window.h"
 
 namespace mojo {
-namespace services {
 
 class PlatformViewportWin : public PlatformViewport,
                             public ui::PlatformWindowDelegate {
@@ -102,5 +101,4 @@ scoped_ptr<PlatformViewport> PlatformViewport::Create(Delegate* delegate) {
   return scoped_ptr<PlatformViewport>(new PlatformViewportWin(delegate)).Pass();
 }
 
-}  // namespace services
 }  // namespace mojo

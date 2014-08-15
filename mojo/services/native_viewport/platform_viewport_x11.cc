@@ -16,7 +16,6 @@
 #include "ui/platform_window/x11/x11_window.h"
 
 namespace mojo {
-namespace services {
 
 class PlatformViewportX11 : public PlatformViewport,
                             public ui::PlatformWindowDelegate {
@@ -116,5 +115,4 @@ scoped_ptr<PlatformViewport> PlatformViewport::Create(Delegate* delegate) {
   return scoped_ptr<PlatformViewport>(new PlatformViewportX11(delegate)).Pass();
 }
 
-}  // namespace services
 }  // namespace mojo

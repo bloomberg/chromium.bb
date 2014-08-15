@@ -8,7 +8,6 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/weak_ptr.h"
-#include "mojo/services/native_viewport/native_viewport_export.h"
 #include "mojo/services/native_viewport/platform_viewport.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/rect.h"
@@ -22,12 +21,10 @@ class GLInProcessContext;
 struct ANativeWindow;
 
 namespace mojo {
-namespace services {
 
-class MOJO_NATIVE_VIEWPORT_EXPORT PlatformViewportAndroid
-    : public PlatformViewport {
+class PlatformViewportAndroid : public PlatformViewport {
  public:
-  static MOJO_NATIVE_VIEWPORT_EXPORT bool Register(JNIEnv* env);
+  static bool Register(JNIEnv* env);
 
   explicit PlatformViewportAndroid(Delegate* delegate);
   virtual ~PlatformViewportAndroid();
@@ -63,7 +60,6 @@ class MOJO_NATIVE_VIEWPORT_EXPORT PlatformViewportAndroid
 };
 
 
-}  // namespace services
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_ANDROID_H_

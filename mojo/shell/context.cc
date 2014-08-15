@@ -15,8 +15,10 @@
 #include "mojo/application_manager/application_manager.h"
 #include "mojo/application_manager/background_shell_application_loader.h"
 #include "mojo/embedder/embedder.h"
+#include "mojo/public/cpp/application/application_connection.h"
+#include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
-#include "mojo/services/native_viewport/native_viewport_service.h"
+#include "mojo/services/native_viewport/native_viewport_impl.h"
 #include "mojo/shell/dynamic_application_loader.h"
 #include "mojo/shell/in_process_dynamic_service_runner.h"
 #include "mojo/shell/out_of_process_dynamic_service_runner.h"
@@ -90,22 +92,39 @@ void InitContentHandlers(DynamicApplicationLoader* loader,
 
 }  // namespace
 
-class Context::NativeViewportApplicationLoader : public ApplicationLoader {
+class Context::NativeViewportApplicationLoader
+    : public ApplicationLoader,
+      public ApplicationDelegate,
+      public InterfaceFactory<NativeViewport> {
  public:
   NativeViewportApplicationLoader() {}
   virtual ~NativeViewportApplicationLoader() {}
 
  private:
+  // ApplicationLoader implementation.
   virtual void Load(ApplicationManager* manager,
                     const GURL& url,
                     scoped_refptr<LoadCallbacks> callbacks) OVERRIDE {
     ScopedMessagePipeHandle shell_handle = callbacks->RegisterApplication();
     if (shell_handle.is_valid())
-      app_.reset(services::CreateNativeViewportService(shell_handle.Pass()));
+      app_.reset(new ApplicationImpl(this, shell_handle.Pass()));
   }
 
   virtual void OnServiceError(ApplicationManager* manager,
                               const GURL& url) OVERRIDE {}
+
+  // ApplicationDelegate implementation.
+  virtual bool ConfigureIncomingConnection(
+      mojo::ApplicationConnection* connection) OVERRIDE {
+    connection->AddService(this);
+    return true;
+  }
+
+  // InterfaceFactory<NativeViewport> implementation.
+  virtual void Create(ApplicationConnection* connection,
+                      InterfaceRequest<NativeViewport> request) OVERRIDE {
+    BindToRequest(new NativeViewportImpl, &request);
+  }
 
   scoped_ptr<ApplicationImpl> app_;
   DISALLOW_COPY_AND_ASSIGN(NativeViewportApplicationLoader);

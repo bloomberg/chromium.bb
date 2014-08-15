@@ -17,7 +17,7 @@ import org.chromium.base.JNINamespace;
 /**
  * Exposes SurfaceView to native code.
  */
-@JNINamespace("mojo::services")
+@JNINamespace("mojo")
 public class PlatformViewportAndroid extends SurfaceView {
 
     private long mNativeMojoViewport;

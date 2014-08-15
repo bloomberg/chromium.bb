@@ -15,7 +15,6 @@
 #include "ui/platform_window/platform_window_delegate.h"
 
 namespace mojo {
-namespace services {
 
 // TODO(spang): Deduplicate with PlatformViewportX11.. but there's a hack
 // in there that prevents this.
@@ -94,5 +93,4 @@ scoped_ptr<PlatformViewport> PlatformViewport::Create(Delegate* delegate) {
       new PlatformViewportOzone(delegate)).Pass();
 }
 
-}  // namespace services
 }  // namespace mojo

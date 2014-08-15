@@ -12,7 +12,6 @@
 #include "ui/gfx/rect.h"
 
 namespace mojo {
-namespace services {
 
 class PlatformViewportMac : public PlatformViewport {
  public:
@@ -82,5 +81,4 @@ scoped_ptr<PlatformViewport> PlatformViewport::Create(Delegate* delegate) {
   return scoped_ptr<PlatformViewport>(new PlatformViewportMac(delegate)).Pass();
 }
 
-}  // namespace services
 }  // namespace mojo

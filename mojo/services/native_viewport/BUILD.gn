@@ -5,7 +5,7 @@
 import("//build/config/ui.gni")
 import("//mojo/system.gni")
 
-component("native_viewport") {
+static_library("native_viewport") {
   output_name = "mojo_native_viewport"
 
   deps = [
@@ -22,13 +22,10 @@ component("native_viewport") {
     "//mojo/services/public/cpp/input_events",
     "//mojo/services/public/interfaces/native_viewport",
   ]
-  deps += mojo_system_for_component
-
-  defines = [ "MOJO_NATIVE_VIEWPORT_IMPLEMENTATION" ]
 
   sources = [
-    "native_viewport_service.cc",
-    "native_viewport_service.h",
+    "native_viewport_impl.cc",
+    "native_viewport_impl.h",
     "platform_viewport.h",
     "platform_viewport_android.cc",
     "platform_viewport_android.h",

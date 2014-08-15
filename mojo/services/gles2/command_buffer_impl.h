@@ -26,7 +26,6 @@ class GLSurface;
 }
 
 namespace mojo {
-namespace services {
 
 class CommandBufferImpl : public InterfaceImpl<CommandBuffer> {
  public:
@@ -65,7 +64,6 @@ class CommandBufferImpl : public InterfaceImpl<CommandBuffer> {
   DISALLOW_COPY_AND_ASSIGN(CommandBufferImpl);
 };
 
-}  // namespace services
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_GLES2_COMMAND_BUFFER_IMPL_H_

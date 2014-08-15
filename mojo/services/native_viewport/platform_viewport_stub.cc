@@ -7,7 +7,6 @@
 // Stub to build on platforms we don't fully support yet.
 
 namespace mojo {
-namespace services {
 
 class PlatformViewportStub : public PlatformViewport {
  public:
@@ -44,5 +43,4 @@ scoped_ptr<PlatformViewport> PlatformViewport::Create(Delegate* delegate) {
       new PlatformViewportStub(delegate)).Pass();
 }
 
-}  // namespace services
 }  // namespace mojo

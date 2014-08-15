@@ -236,9 +236,10 @@
     },
     {
       # GN version: //mojo/services/native_viewport
-      'target_name': 'mojo_native_viewport_service',
-      # This is linked directly into the embedder, so we make it a component.
-      'type': '<(component)',
+      'target_name': 'mojo_native_viewport_service_lib',
+      # This is linked directly into the embedder, so we make it a static_library.
+      # TODO(davemoore): Make this a true service.
+      'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
         '../ui/events/events.gyp:events',
@@ -252,15 +253,10 @@
         'mojo_gles2_service',
         'mojo_input_events_lib',
         'mojo_native_viewport_bindings',
-        '<(mojo_system_for_component)',
-      ],
-      'defines': [
-        'MOJO_NATIVE_VIEWPORT_IMPLEMENTATION',
       ],
       'sources': [
-        'services/native_viewport/native_viewport_export.h',
-        'services/native_viewport/native_viewport_service.cc',
-        'services/native_viewport/native_viewport_service.h',
+        'services/native_viewport/native_viewport_impl.cc',
+        'services/native_viewport/native_viewport_impl.h',
         'services/native_viewport/platform_viewport.h',
         'services/native_viewport/platform_viewport_android.cc',
         'services/native_viewport/platform_viewport_mac.mm',
@@ -288,6 +284,7 @@
         ['use_x11==1', {
           'dependencies': [
             '../ui/platform_window/x11/x11_window.gyp:x11_window',
+            '../ui/events/platform/x11/x11_events_platform.gyp:x11_events_platform',
           ],
         }],
       ],
@@ -727,7 +724,7 @@
             ['OS=="linux"', {
               'dependencies': [
                 '../third_party/mesa/mesa.gyp:osmesa',
-                'mojo_native_viewport_service',
+                'mojo_native_viewport_service_lib',
               ],
             }],
             ['use_x11==1', {
@@ -832,7 +829,7 @@
             ['OS=="linux"', {
               'dependencies': [
                 '../third_party/mesa/mesa.gyp:osmesa',
-                'mojo_native_viewport_service',
+                'mojo_native_viewport_service_lib',
               ],
             }],
             ['use_x11==1', {
