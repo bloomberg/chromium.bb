@@ -17,6 +17,7 @@
 
     <!-- Custom Menu dimensions -->
     <dimen name="menu_width">258dp</dimen>
+    <dimen name="menu_software_vertical_offset">0dp</dimen>
     <!-- The amount to fade the edges of the menu to indicate more content is available
          via scrolling. -->
     <dimen name="menu_vertical_fade_distance">15dp</dimen>
