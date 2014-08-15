@@ -7,8 +7,6 @@
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/profiles/incognito_helpers.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_factory.h"
@@ -27,12 +25,12 @@ const int kSyncTimeoutMilliseconds = 1000;
 namespace apps {
 
 AppWindowGeometryCache::AppWindowGeometryCache(
-    Profile* profile,
+    content::BrowserContext* context,
     extensions::ExtensionPrefs* prefs)
     : prefs_(prefs),
       sync_delay_(base::TimeDelta::FromMilliseconds(kSyncTimeoutMilliseconds)),
       extension_registry_observer_(this) {
-  extension_registry_observer_.Add(extensions::ExtensionRegistry::Get(profile));
+  extension_registry_observer_.Add(extensions::ExtensionRegistry::Get(context));
 }
 
 AppWindowGeometryCache::~AppWindowGeometryCache() {}
@@ -284,9 +282,8 @@ AppWindowGeometryCache::Factory::~Factory() {}
 
 KeyedService* AppWindowGeometryCache::Factory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  Profile* profile = Profile::FromBrowserContext(context);
-  return new AppWindowGeometryCache(profile,
-                                    extensions::ExtensionPrefs::Get(profile));
+  return new AppWindowGeometryCache(context,
+                                    extensions::ExtensionPrefs::Get(context));
 }
 
 bool AppWindowGeometryCache::Factory::ServiceIsNULLWhileTesting() const {

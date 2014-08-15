@@ -22,8 +22,6 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
 
-class Profile;
-
 namespace extensions {
 class ExtensionPrefs;
 class ExtensionRegistry;
@@ -69,7 +67,8 @@ class AppWindowGeometryCache : public KeyedService,
     virtual ~Observer() {}
   };
 
-  AppWindowGeometryCache(Profile* profile, extensions::ExtensionPrefs* prefs);
+  AppWindowGeometryCache(content::BrowserContext* context,
+                         extensions::ExtensionPrefs* prefs);
 
   virtual ~AppWindowGeometryCache();
 
