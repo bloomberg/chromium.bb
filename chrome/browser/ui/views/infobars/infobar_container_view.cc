@@ -6,7 +6,7 @@
 
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 

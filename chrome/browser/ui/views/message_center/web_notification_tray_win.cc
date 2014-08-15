@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/url_constants.h"
-#include "grit/chromium_strings.h"
+#include "chrome/grit/chromium_strings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_skia.h"

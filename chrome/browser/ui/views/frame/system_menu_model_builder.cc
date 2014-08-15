@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/common/chrome_switches.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/models/simple_menu_model.h"
 

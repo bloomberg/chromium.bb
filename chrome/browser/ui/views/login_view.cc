@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/login_view.h"
 
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"

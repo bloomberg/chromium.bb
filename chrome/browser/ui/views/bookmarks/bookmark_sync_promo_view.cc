@@ -6,7 +6,7 @@
 
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_delegate.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/font.h"

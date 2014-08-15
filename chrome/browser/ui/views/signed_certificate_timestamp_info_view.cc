@@ -11,7 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/net/x509_certificate_model.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "net/cert/signed_certificate_timestamp.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/native_theme/native_theme.h"

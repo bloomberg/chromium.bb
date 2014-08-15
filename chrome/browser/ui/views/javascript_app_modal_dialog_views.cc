@@ -7,7 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_app_modal_dialog.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/controls/message_box_view.h"
