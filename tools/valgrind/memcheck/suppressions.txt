@@ -6221,3 +6221,9 @@
    fun:_ZN28NotificationConversionHelper33NotificationToNotificationOptionsERK12NotificationPN10extensions3api13notifications19NotificationOptionsE
    fun:_ZN71NotificationConversionHelperTest_NotificationToNotificationOptions_Test8TestBodyEv
 }
+{
+   bug_404182
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8app_list4test12_GLOBAL__N_122AppListViewTestContext16RunStartPageTestEv
+}
