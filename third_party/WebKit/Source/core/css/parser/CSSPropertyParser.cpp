@@ -1150,24 +1150,21 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         addProperty(propId, list.release(), important);
         return true;
     }
-    case CSSPropertyWebkitTransformOrigin:
     case CSSPropertyWebkitTransformOriginX:
+        parsedValue = parseFillPositionX(m_valueList.get());
+        if (parsedValue)
+            m_valueList->next();
+        break;
     case CSSPropertyWebkitTransformOriginY:
-    case CSSPropertyWebkitTransformOriginZ: {
-        RefPtrWillBeRawPtr<CSSValue> val1 = nullptr;
-        RefPtrWillBeRawPtr<CSSValue> val2 = nullptr;
-        RefPtrWillBeRawPtr<CSSValue> val3 = nullptr;
-        CSSPropertyID propId1, propId2, propId3;
-        if (parseWebkitTransformOrigin(propId, propId1, propId2, propId3, val1, val2, val3)) {
-            addProperty(propId1, val1.release(), important);
-            if (val2)
-                addProperty(propId2, val2.release(), important);
-            if (val3)
-                addProperty(propId3, val3.release(), important);
-            return true;
-        }
-        return false;
-    }
+        parsedValue = parseFillPositionY(m_valueList.get());
+        if (parsedValue)
+            m_valueList->next();
+        break;
+    case CSSPropertyWebkitTransformOriginZ:
+        validPrimitive = validUnit(value, FLength);
+        break;
+    case CSSPropertyWebkitTransformOrigin:
+        return parseWebkitTransformOriginShorthand(important);
     case CSSPropertyPerspective:
         if (id == CSSValueNone) {
             validPrimitive = true;
@@ -3133,20 +3130,27 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationProperty()
     return createPrimitiveStringValue(value);
 }
 
-bool CSSPropertyParser::parseWebkitTransformOriginShorthand(RefPtrWillBeRawPtr<CSSValue>& value1, RefPtrWillBeRawPtr<CSSValue>& value2, RefPtrWillBeRawPtr<CSSValue>& value3)
+bool CSSPropertyParser::parseWebkitTransformOriginShorthand(bool important)
 {
-    parse2ValuesFillPosition(m_valueList.get(), value1, value2);
+    RefPtrWillBeRawPtr<CSSValue> originX;
+    RefPtrWillBeRawPtr<CSSValue> originY;
+    RefPtrWillBeRawPtr<CSSValue> originZ;
 
-    // now get z
+    parse2ValuesFillPosition(m_valueList.get(), originX, originY);
+
     if (m_valueList->current()) {
-        if (validUnit(m_valueList->current(), FLength)) {
-            value3 = createPrimitiveNumericValue(m_valueList->current());
-            m_valueList->next();
-            return true;
-        }
-        return false;
+        if (!validUnit(m_valueList->current(), FLength))
+            return false;
+        originZ = createPrimitiveNumericValue(m_valueList->current());
+        m_valueList->next();
+    } else {
+        originZ = cssValuePool().createImplicitInitialValue();
     }
-    value3 = cssValuePool().createImplicitInitialValue();
+
+    addProperty(CSSPropertyWebkitTransformOriginX, originX.release(), important);
+    addProperty(CSSPropertyWebkitTransformOriginY, originY.release(), important);
+    addProperty(CSSPropertyWebkitTransformOriginZ, originZ.release(), important);
+
     return true;
 }
 
@@ -7559,50 +7563,6 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseTransformOrigin()
     if (zValue)
         list->append(zValue.release());
     return list.release();
-}
-
-bool CSSPropertyParser::parseWebkitTransformOrigin(CSSPropertyID propId, CSSPropertyID& propId1, CSSPropertyID& propId2, CSSPropertyID& propId3, RefPtrWillBeRawPtr<CSSValue>& value, RefPtrWillBeRawPtr<CSSValue>& value2, RefPtrWillBeRawPtr<CSSValue>& value3)
-{
-    propId1 = propId;
-    propId2 = propId;
-    propId3 = propId;
-    if (propId == CSSPropertyWebkitTransformOrigin) {
-        propId1 = CSSPropertyWebkitTransformOriginX;
-        propId2 = CSSPropertyWebkitTransformOriginY;
-        propId3 = CSSPropertyWebkitTransformOriginZ;
-    }
-
-    switch (propId) {
-        case CSSPropertyWebkitTransformOrigin:
-            if (!parseWebkitTransformOriginShorthand(value, value2, value3))
-                return false;
-            // parseWebkitTransformOriginShorthand advances the m_valueList pointer
-            break;
-        case CSSPropertyWebkitTransformOriginX: {
-            value = parseFillPositionX(m_valueList.get());
-            if (value)
-                m_valueList->next();
-            break;
-        }
-        case CSSPropertyWebkitTransformOriginY: {
-            value = parseFillPositionY(m_valueList.get());
-            if (value)
-                m_valueList->next();
-            break;
-        }
-        case CSSPropertyWebkitTransformOriginZ: {
-            if (validUnit(m_valueList->current(), FLength))
-                value = createPrimitiveNumericValue(m_valueList->current());
-            if (value)
-                m_valueList->next();
-            break;
-        }
-        default:
-            ASSERT_NOT_REACHED();
-            return false;
-    }
-
-    return value;
 }
 
 bool CSSPropertyParser::parseWebkitPerspectiveOrigin(CSSPropertyID propId, CSSPropertyID& propId1, CSSPropertyID& propId2, RefPtrWillBeRawPtr<CSSValue>& value, RefPtrWillBeRawPtr<CSSValue>& value2)
