@@ -9,7 +9,9 @@ License File: NOT_SHIPPED
 Security Critical: no
 
 Description:
-Android Platform engineering tools, specifically stack symbolization scripts.
+Android Platform engineering tools, specifically stack symbolization scripts
+and a jar containing the AOSP framework to build the Android WebView
+glue layer against.
 
 Local Modifications:
 Only picked the few scripts needed by chrome.
