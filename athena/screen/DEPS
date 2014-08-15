@@ -1,5 +1,6 @@
 include_rules = [
   "+athena/input/public",
+  "+third_party/skia/include/core/SkColor.h",
   "+ui/aura",
   "+ui/compositor",
   "+ui/events",
@@ -7,3 +8,9 @@ include_rules = [
   "+ui/views",
   "+ui/wm",
 ]
+
+specific_include_rules = {
+  "background_controller.cc": [
+    "+extensions/shell/common/version.h",
+  ],
+}

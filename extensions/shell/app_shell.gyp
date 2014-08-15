@@ -181,8 +181,12 @@
         {
           'action_name': 'version_header',
           'message': 'Generating version header file: <@(_outputs)',
+          'variables': {
+            'lastchange_path': '<(DEPTH)/build/util/LASTCHANGE',
+          },
           'inputs': [
             '<(version_path)',
+            '<(lastchange_path)',
             'common/version.h.in',
           ],
           'outputs': [
@@ -192,6 +196,7 @@
             'python',
             '<(version_py_path)',
             '-e', 'VERSION_FULL="<(version_full)"',
+            '-f', '<(lastchange_path)',
             'common/version.h.in',
             '<@(_outputs)',
           ],

@@ -4,18 +4,54 @@
 
 #include "athena/screen/background_controller.h"
 
+#include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
+#include "extensions/shell/common/version.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
 namespace athena {
 
+namespace {
+
+const SkColor kVersionColor = SK_ColorWHITE;
+const SkColor kVersionBackground = SK_ColorTRANSPARENT;
+const SkColor kVersionShadow = 0xB0000000;
+const int kVersionShadowBlur = 10;
+
+class VersionView : public views::Label {
+ public:
+  VersionView() {
+    SetEnabledColor(kVersionColor);
+    SetBackgroundColor(kVersionBackground);
+    SetShadows(gfx::ShadowValues(1, gfx::ShadowValue(gfx::Point(0, 1),
+                                                     kVersionShadowBlur,
+                                                     kVersionShadow)));
+    SetText(base::UTF8ToUTF16(base::StringPrintf("%s (Build %s)",
+                                                 PRODUCT_VERSION,
+                                                 LAST_CHANGE)));
+    SetBoundsRect(gfx::Rect(gfx::Point(), GetPreferredSize()));
+  }
+  virtual ~VersionView() {
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(VersionView);
+};
+
+}  // namespace
+
 class BackgroundView : public views::View {
  public:
-  BackgroundView() {}
+  BackgroundView() {
+    AddChildView(new VersionView);
+  }
   virtual ~BackgroundView() {}
 
   void SetImage(const gfx::ImageSkia& image) {

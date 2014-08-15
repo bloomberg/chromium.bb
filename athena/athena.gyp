@@ -11,6 +11,7 @@
       'target_name': 'athena_lib',
       'type': '<(component)',
       'dependencies': [
+        '../extensions/shell/app_shell.gyp:app_shell_version_header',
         '../skia/skia.gyp:skia',
         '../ui/accessibility/accessibility.gyp:ax_gen',
         '../ui/app_list/app_list.gyp:app_list',
