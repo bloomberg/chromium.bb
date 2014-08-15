@@ -17,6 +17,11 @@ bool StubPasswordManagerClient::IsSyncAccountCredential(
   return false;
 }
 
+bool StubPasswordManagerClient::ShouldFilterAutofillResult(
+    const autofill::PasswordForm& form) {
+  return false;
+}
+
 void StubPasswordManagerClient::PromptUserToSavePassword(
     scoped_ptr<PasswordFormManager> form_to_save) {}
 

@@ -503,6 +503,16 @@ const Experiment::Choice kEnableAVFoundationChoices[] = {
 };
 #endif
 
+const Experiment::Choice kAutofillSyncCredentialChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
+  { IDS_ALLOW_AUTOFILL_SYNC_CREDENTIAL,
+    password_manager::switches::kAllowAutofillSyncCredential, ""},
+  { IDS_DISALLOW_AUTOFILL_SYNC_CREDENTIAL_FOR_REAUTH,
+    password_manager::switches::kDisallowAutofillSyncCredentialForReauth, ""},
+  { IDS_DISALLOW_AUTOFILL_SYNC_CREDENTIAL,
+    password_manager::switches::kDisallowAutofillSyncCredential, ""},
+};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -1938,6 +1948,13 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_EXTENSION_ACTION_REDESIGN_DESCRIPTION,
     kOsWin | kOsLinux | kOsCrOS,
     SINGLE_VALUE_TYPE(extensions::switches::kEnableExtensionActionRedesign)
+  },
+  {
+    "autofill-sync-credential",
+    IDS_FLAGS_AUTOFILL_SYNC_CREDENTIAL_NAME,
+    IDS_FLAGS_AUTOFILL_SYNC_CREDENTIAL_DESCRIPTION,
+    kOsAll,
+    MULTI_VALUE_TYPE(kAutofillSyncCredentialChoices)
   },
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in

@@ -60,6 +60,13 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
                                            true);
   }
 
+  virtual bool ShouldFilterAutofillResult(
+      const autofill::PasswordForm& form) OVERRIDE {
+    if (form == form_to_filter_)
+      return true;
+    return false;
+  }
+
   virtual void PromptUserToSavePassword(
       scoped_ptr<PasswordFormManager> form_to_save) OVERRIDE {}
   virtual PrefService* GetPrefs() OVERRIDE { return &prefs_; }
@@ -70,9 +77,15 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
     driver_.FillPasswordForm(*fill_data.get());
   }
 
+  void SetFormToFilter(const autofill::PasswordForm& form) {
+    form_to_filter_ = form;
+  }
+
   MockPasswordManagerDriver* GetMockDriver() { return &driver_; }
 
  private:
+  autofill::PasswordForm form_to_filter_;
+
   TestingPrefServiceSimple prefs_;
   PasswordStore* password_store_;
   MockPasswordManagerDriver driver_;
@@ -177,7 +190,7 @@ class PasswordFormManagerTest : public testing::Test {
   }
 
   bool IgnoredResult(PasswordFormManager* p, PasswordForm* form) {
-    return p->IgnoreResult(*form);
+    return p->ShouldIgnoreResult(*form);
   }
 
   PasswordForm* observed_form() { return &observed_form_; }
@@ -427,6 +440,10 @@ TEST_F(PasswordFormManagerTest, TestIgnoreResult) {
   saved_match()->action = GURL("http://www.google.com/b/Login");
   saved_match()->origin = GURL("http://www.google.com/foo");
   EXPECT_FALSE(IgnoredResult(&manager, saved_match()));
+
+  // Results should be ignored if the client requests it.
+  client()->SetFormToFilter(*saved_match());
+  EXPECT_TRUE(IgnoredResult(&manager, saved_match()));
 }
 
 TEST_F(PasswordFormManagerTest, TestEmptyAction) {

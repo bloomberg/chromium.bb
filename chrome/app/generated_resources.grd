@@ -6121,6 +6121,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_PASSWORD_MANAGER_ANDROID_LINK_DESCRIPTION" desc="Description of the flag to enable showing a link to account central on Android password settings page">
         Show a link in the password manager settings page to manage your synced passwords online.
       </message>
+      <message name="IDS_FLAGS_AUTOFILL_SYNC_CREDENTIAL_NAME" desc="Name of the flag specifying how the browser will handle autofilling the users sync credential.">
+        Autofill sync credential
+      </message>
+      <message name="IDS_FLAGS_AUTOFILL_SYNC_CREDENTIAL_DESCRIPTION" desc="Description of the flag specifying how the browser will handle autofilling the users sync credential.">
+        How the password manager handles autofill for the sync credential.
+      </message>
       <message name="IDS_FLAGS_PERFORMANCE_MONITOR_GATHERING_NAME" desc="Name for the flag to enable Performance Monitor.">
         Enable performance monitoring
       </message>
@@ -12929,6 +12935,16 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <message name="IDS_MANAGE_PASSWORDS_UNDO" desc="The text that is used in the manage passwords bubble when a password is de.">
     Undo
     </message>
+
+    <message name="IDS_ALLOW_AUTOFILL_SYNC_CREDENTIAL" desc="The text for the choice to allow autofilling in about:flags">
+      Allow
+    </message>
+    <message name="IDS_DISALLOW_AUTOFILL_SYNC_CREDENTIAL" desc="The text for the choice to not allow autofilling in about:flags">
+      Disallow
+    </message>
+    <message name="IDS_DISALLOW_AUTOFILL_SYNC_CREDENTIAL_FOR_REAUTH" desc="The text for the choice to not allow autofilling for reauth pages in about:flags">
+      Disallow for reauth
+    </message>    
 
     <!-- Update Recommended dialog -->
     <if expr="not chromeos">

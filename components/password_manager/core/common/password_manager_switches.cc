@@ -8,6 +8,10 @@ namespace password_manager {
 
 namespace switches {
 
+// Force the password manager to allow sync credentials to be autofilled.
+const char kAllowAutofillSyncCredential[] =
+    "allow-autofill-sync-credential";
+
 // Disable the link in the password manager settings page that points to account
 // central.
 const char kDisableAndroidPasswordLink[] = "disable-android-password-link";
@@ -19,6 +23,15 @@ const char kDisableDropSyncCredential[] =
 // Disable both saving and filling for the sync signin form.
 const char kDisableManagerForSyncSignin[] =
     "disable-manager-for-sync-signin";
+
+// Disallow autofilling of the sync credential.
+const char kDisallowAutofillSyncCredential[] =
+    "disallow-autofill-sync-credential";
+
+// Disallow autofilling of the sync credential only for transactional reauth
+// pages.
+const char kDisallowAutofillSyncCredentialForReauth[] =
+    "disallow-autofill-sync-credential-for-reauth";
 
 // Enable the link in the password manager settings page that points to account
 // central.

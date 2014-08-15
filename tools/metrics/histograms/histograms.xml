@@ -20592,6 +20592,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.SyncCredentialFiltered" enum="Boolean">
+  <owner>gcasto@chromium.org</owner>
+  <owner>vabr@chromium.org</owner>
+  <summary>
+    If the sync credential was removed from autofill consideration.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.SyncingAccountState"
     enum="PasswordManagerSyncingAccountState">
   <owner>gcasto@chromium.org</owner>

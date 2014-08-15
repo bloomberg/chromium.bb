@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_manager_util.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/password_manager/save_password_infobar_delegate.h"
@@ -33,6 +34,8 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "google_apis/gaia/gaia_urls.h"
+#include "net/base/url_util.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/password_authentication_manager.h"
@@ -63,11 +66,14 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
       driver_(web_contents, this, autofill_client),
       observer_(NULL),
       weak_factory_(this),
-      can_use_log_router_(false) {
+      can_use_log_router_(false),
+      autofill_sync_state_(ALLOW_SYNC_CREDENTIALS),
+      sync_credential_was_filtered_(false) {
   PasswordManagerInternalsService* service =
       PasswordManagerInternalsServiceFactory::GetForBrowserContext(profile_);
   if (service)
     can_use_log_router_ = service->RegisterClient(this);
+  SetUpAutofillSyncState();
 }
 
 ChromePasswordManagerClient::~ChromePasswordManagerClient() {
@@ -79,7 +85,7 @@ ChromePasswordManagerClient::~ChromePasswordManagerClient() {
 
 bool ChromePasswordManagerClient::IsAutomaticPasswordSavingEnabled() const {
   return CommandLine::ForCurrentProcess()->HasSwitch(
-             password_manager::switches::kEnableAutomaticPasswordSaving) &&
+      password_manager::switches::kEnableAutomaticPasswordSaving) &&
          chrome::VersionInfo::GetChannel() ==
              chrome::VersionInfo::CHANNEL_UNKNOWN;
 }
@@ -102,10 +108,36 @@ bool ChromePasswordManagerClient::IsPasswordManagerEnabledForCurrentPage()
   return entry->GetURL().host() != chrome::kChromeUIChromeSigninHost;
 }
 
+bool ChromePasswordManagerClient::ShouldFilterAutofillResult(
+    const autofill::PasswordForm& form) {
+  if (!IsSyncAccountCredential(base::UTF16ToUTF8(form.username_value),
+                               form.signon_realm))
+    return false;
+
+  if (autofill_sync_state_ == DISALLOW_SYNC_CREDENTIALS) {
+    sync_credential_was_filtered_ = true;
+    return true;
+  }
+
+  if (autofill_sync_state_ == DISALLOW_SYNC_CREDENTIALS_FOR_REAUTH &&
+      LastLoadWasTransactionalReauthPage()) {
+    sync_credential_was_filtered_ = true;
+    return true;
+  }
+
+  return false;
+}
+
 bool ChromePasswordManagerClient::IsSyncAccountCredential(
     const std::string& username, const std::string& origin) const {
   return password_manager_sync_metrics::IsSyncAccountCredential(
       profile_, username, origin);
+}
+
+void ChromePasswordManagerClient::AutofillResultsComputed() {
+  UMA_HISTOGRAM_BOOLEAN("PasswordManager.SyncCredentialFiltered",
+                        sync_credential_was_filtered_);
+  sync_credential_was_filtered_ = false;
 }
 
 void ChromePasswordManagerClient::PromptUserToSavePassword(
@@ -353,6 +385,24 @@ void ChromePasswordManagerClient::CommitFillPasswordForm(
   driver_.FillPasswordForm(*data);
 }
 
+bool ChromePasswordManagerClient::LastLoadWasTransactionalReauthPage() const {
+  DCHECK(web_contents());
+  content::NavigationEntry* entry =
+      web_contents()->GetController().GetLastCommittedEntry();
+  if (!entry)
+    return false;
+
+  if (entry->GetURL().GetOrigin() !=
+      GaiaUrls::GetInstance()->gaia_url().GetOrigin())
+    return false;
+
+  // "rart" is the transactional reauth paramter.
+  std::string ignored_value;
+  return net::GetValueForKeyInQuery(entry->GetURL(),
+                                    "rart",
+                                    &ignored_value);
+}
+
 bool ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled() {
 #if !defined(USE_AURA)
   return false;
@@ -385,4 +435,36 @@ bool ChromePasswordManagerClient::EnabledForSyncSignin() {
   std::string group_name =
       base::FieldTrialList::FindFullName("PasswordManagerStateForSyncSignin");
   return group_name != "Disabled";
+}
+
+void ChromePasswordManagerClient::SetUpAutofillSyncState() {
+  std::string group_name =
+      base::FieldTrialList::FindFullName("AutofillSyncCredential");
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(
+          password_manager::switches::kAllowAutofillSyncCredential)) {
+    autofill_sync_state_ = ALLOW_SYNC_CREDENTIALS;
+    return;
+  }
+  if (command_line->HasSwitch(
+          password_manager::switches::
+          kDisallowAutofillSyncCredentialForReauth)) {
+    autofill_sync_state_ = DISALLOW_SYNC_CREDENTIALS_FOR_REAUTH;
+    return;
+  }
+  if (command_line->HasSwitch(
+          password_manager::switches::kDisallowAutofillSyncCredential)) {
+    autofill_sync_state_ = DISALLOW_SYNC_CREDENTIALS;
+    return;
+  }
+
+  if (group_name == "DisallowSyncCredentialsForReauth") {
+    autofill_sync_state_ = DISALLOW_SYNC_CREDENTIALS_FOR_REAUTH;
+  } else if (group_name == "DisallowSyncCredentials") {
+      autofill_sync_state_ = DISALLOW_SYNC_CREDENTIALS;
+  } else {
+    // Allow by default.
+    autofill_sync_state_ = ALLOW_SYNC_CREDENTIALS;
+  }
 }
