@@ -223,6 +223,7 @@ TEST_F(RpcHandlerTest, GetDeviceCapabilities) {
   token_technology = &GetTokenTechnologyFromReport();
   EXPECT_EQ(1, token_technology->instruction_type_size());
   EXPECT_EQ(TRANSMIT, token_technology->instruction_type(0));
+  EXPECT_FALSE(GetReportSent()->has_manage_subscriptions_request());
 
   // Request with scan only.
   report.reset(new ReportRequest);
@@ -232,6 +233,7 @@ TEST_F(RpcHandlerTest, GetDeviceCapabilities) {
   token_technology = &GetTokenTechnologyFromReport();
   EXPECT_EQ(1, token_technology->instruction_type_size());
   EXPECT_EQ(RECEIVE, token_technology->instruction_type(0));
+  EXPECT_FALSE(GetReportSent()->has_manage_messages_request());
 
   // Request with both scan and broadcast only (conflict).
   report.reset(new ReportRequest);
@@ -304,11 +306,7 @@ TEST_F(RpcHandlerTest, CreateRequestHeader) {
             report->header().device_fingerprint().type());
 }
 
-// TODO(ckehoe): Renable these after https://codereview.chromium.org/453203002/
-// lands.
-#define MAYBE_ReportTokens DISABLED_ReportTokens
-
-TEST_F(RpcHandlerTest, MAYBE_ReportTokens) {
+TEST_F(RpcHandlerTest, ReportTokens) {
   std::vector<AudioToken> test_tokens;
   test_tokens.push_back(AudioToken("token 1", false));
   test_tokens.push_back(AudioToken("token 2", true));

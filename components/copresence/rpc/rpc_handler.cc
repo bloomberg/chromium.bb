@@ -217,21 +217,25 @@ void AllowOptedOutMessages(ReportRequest* request) {
   // TODO(ckehoe): Collapse this pattern into ProcessPublish()
   // and ProcessSubscribe() methods.
 
-  RepeatedPtrField<PublishedMessage>* messages =
-      request->mutable_manage_messages_request()->mutable_message_to_publish();
-  for (int i = 0; i < messages->size(); ++i) {
-    PublishedMessage* message = messages->Mutable(i);
-    if (!message->has_opt_in_state_filter())
-      message->set_allocated_opt_in_state_filter(CreateOptedInOrOutFilter());
+  if (request->has_manage_messages_request()) {
+    RepeatedPtrField<PublishedMessage>* messages = request
+        ->mutable_manage_messages_request()->mutable_message_to_publish();
+    for (int i = 0; i < messages->size(); ++i) {
+      PublishedMessage* message = messages->Mutable(i);
+      if (!message->has_opt_in_state_filter())
+        message->set_allocated_opt_in_state_filter(CreateOptedInOrOutFilter());
+    }
   }
 
-  RepeatedPtrField<Subscription>* subscriptions =
+  if (request->has_manage_subscriptions_request()) {
+    RepeatedPtrField<Subscription>* subscriptions =
         request->mutable_manage_subscriptions_request()->mutable_subscription();
-  for (int i = 0; i < subscriptions->size(); ++i) {
-    Subscription* subscription = subscriptions->Mutable(i);
-    if (!subscription->has_opt_in_state_filter()) {
-      subscription->set_allocated_opt_in_state_filter(
-          CreateOptedInOrOutFilter());
+    for (int i = 0; i < subscriptions->size(); ++i) {
+      Subscription* subscription = subscriptions->Mutable(i);
+      if (!subscription->has_opt_in_state_filter()) {
+        subscription->set_allocated_opt_in_state_filter(
+            CreateOptedInOrOutFilter());
+      }
     }
   }
 }
