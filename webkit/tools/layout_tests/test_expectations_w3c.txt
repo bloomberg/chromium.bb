@@ -7,10 +7,18 @@
 # Expectations to delete on the next W3C roll.
 #
 
-crbug.com/330083 w3c/web-platform-tests/shadow-dom/shadow-trees/distributed-pseudo-element/test-001.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/shadow-trees/distributed-pseudo-element/test-001.html [ Failure ]	
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/shadow-trees/distributed-pseudo-element/test-002.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/dom-tree-accessors-001.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/user-interaction/focus-navigation/test-003.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/user-interaction/focus-navigation/test-004.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/custom-elements/creating-and-passing-registries/share-registry-import-document.html [ Timeout ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-014.html [ Timeout Failure ]
+crbug.com/334152 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-001.html [ Failure ]
 
 #
 # Expectations to upstream into blink after the next W3C roll has rolled into Blink.
 # 
 
+# crbug.com/330083 w3c/web-platform-tests/shadow-dom/shadow-trees/content-pseudo-element/test-001.html [ Failure ]
+# crbug.com/330083 w3c/web-platform-tests/shadow-dom/shadow-trees/content-pseudo-element/test-002.html [ Failure ]
