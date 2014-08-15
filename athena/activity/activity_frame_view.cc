@@ -43,14 +43,16 @@ ActivityFrameView::~ActivityFrameView() {
 
 gfx::Rect ActivityFrameView::GetBoundsForClientView() const {
   gfx::Rect client_bounds = bounds();
-  client_bounds.Inset(0, NonClientTopBorderHeight(), 0, 0);
+  if (view_model_->UsesFrame())
+    client_bounds.Inset(0, NonClientTopBorderHeight(), 0, 0);
   return client_bounds;
 }
 
 gfx::Rect ActivityFrameView::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
   gfx::Rect window_bounds = client_bounds;
-  window_bounds.Inset(0, -NonClientTopBorderHeight(), 0, 0);
+  if (view_model_->UsesFrame())
+    window_bounds.Inset(0, -NonClientTopBorderHeight(), 0, 0);
   return window_bounds;
 }
 
@@ -73,6 +75,9 @@ void ActivityFrameView::UpdateWindowIcon() {
 }
 
 void ActivityFrameView::UpdateWindowTitle() {
+  if (!view_model_->UsesFrame())
+    return;
+
   SkColor bgcolor = view_model_->GetRepresentativeColor();
   title_->set_background(views::Background::CreateSolidBackground(bgcolor));
   title_->SetBackgroundColor(bgcolor);

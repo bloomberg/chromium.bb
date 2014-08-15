@@ -24,10 +24,7 @@ class ActivityWidget {
       : activity_(activity), widget_(NULL) {
     ActivityViewModel* view_model = activity->GetActivityViewModel();
     widget_ = new views::Widget;
-    views::Widget::InitParams params(
-        view_model->UsesFrame()
-            ? views::Widget::InitParams::TYPE_WINDOW
-            : views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+    views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
     params.context = ScreenManager::Get()->GetContext();
     params.delegate = new ActivityWidgetDelegate(view_model);
     params.activatable = views::Widget::InitParams::ACTIVATABLE_YES;
