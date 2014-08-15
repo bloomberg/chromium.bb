@@ -95,9 +95,6 @@ static inline bool isValidCSSUnitTypeForDoubleConversion(CSSPrimitiveValue::Unit
     case CSSPrimitiveValue::CSS_VALUE_ID:
     case CSSPrimitiveValue::CSS_PAIR:
     case CSSPrimitiveValue::CSS_PARSER_HEXCOLOR:
-    case CSSPrimitiveValue::CSS_PARSER_IDENTIFIER:
-    case CSSPrimitiveValue::CSS_PARSER_INTEGER:
-    case CSSPrimitiveValue::CSS_PARSER_OPERATOR:
     case CSSPrimitiveValue::CSS_RECT:
     case CSSPrimitiveValue::CSS_QUAD:
     case CSSPrimitiveValue::CSS_RGBCOLOR:
@@ -279,14 +276,6 @@ CSSPrimitiveValue::CSSPrimitiveValue(CSSPropertyID propertyID)
 {
     m_primitiveUnitType = CSS_PROPERTY_ID;
     m_value.propertyID = propertyID;
-}
-
-CSSPrimitiveValue::CSSPrimitiveValue(int parserOperator, UnitType type)
-    : CSSValue(PrimitiveClass)
-{
-    ASSERT(type == CSS_PARSER_OPERATOR);
-    m_primitiveUnitType = CSS_PARSER_OPERATOR;
-    m_value.parserOperator = parserOperator;
 }
 
 CSSPrimitiveValue::CSSPrimitiveValue(double num, UnitType type)
@@ -498,7 +487,6 @@ void CSSPrimitiveValue::cleanup()
 #endif
         break;
     case CSS_NUMBER:
-    case CSS_PARSER_INTEGER:
     case CSS_PERCENTAGE:
     case CSS_EMS:
     case CSS_EXS:
@@ -531,8 +519,6 @@ void CSSPrimitiveValue::cleanup()
     case CSS_DIMENSION:
     case CSS_UNKNOWN:
     case CSS_UNICODE_RANGE:
-    case CSS_PARSER_OPERATOR:
-    case CSS_PARSER_IDENTIFIER:
     case CSS_PROPERTY_ID:
     case CSS_VALUE_ID:
         break;
@@ -1059,7 +1045,6 @@ const char* CSSPrimitiveValue::unitTypeToString(UnitType type)
 {
     switch (type) {
     case CSS_NUMBER:
-    case CSS_PARSER_INTEGER:
         return "";
     case CSS_PERCENTAGE:
         return "%";
@@ -1129,8 +1114,6 @@ const char* CSSPrimitiveValue::unitTypeToString(UnitType type)
     case CSS_RGBCOLOR:
     case CSS_PARSER_HEXCOLOR:
     case CSS_PAIR:
-    case CSS_PARSER_OPERATOR:
-    case CSS_PARSER_IDENTIFIER:
     case CSS_CALC:
     case CSS_SHAPE:
     case CSS_IDENT:
@@ -1159,7 +1142,6 @@ String CSSPrimitiveValue::customCSSText(CSSTextFormattingFlags formattingFlag) c
             // FIXME
             break;
         case CSS_NUMBER:
-        case CSS_PARSER_INTEGER:
         case CSS_PERCENTAGE:
         case CSS_EMS:
         case CSS_EXS:
@@ -1258,14 +1240,6 @@ String CSSPrimitiveValue::customCSSText(CSSTextFormattingFlags formattingFlag) c
         case CSS_PAIR:
             text = getPairValue()->cssText();
             break;
-        case CSS_PARSER_OPERATOR: {
-            char c = static_cast<char>(m_value.parserOperator);
-            text = String(&c, 1U);
-            break;
-        }
-        case CSS_PARSER_IDENTIFIER:
-            text = quoteCSSStringIfNeeded(m_value.string);
-            break;
         case CSS_CALC:
             text = m_value.calc->cssText();
             break;
@@ -1313,7 +1287,6 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPrimitiveValue::cloneForCSSOM() con
         result = CSSPrimitiveValue::create(m_value.shape);
         break;
     case CSS_NUMBER:
-    case CSS_PARSER_INTEGER:
     case CSS_PERCENTAGE:
     case CSS_EMS:
     case CSS_EXS:
@@ -1354,8 +1327,6 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPrimitiveValue::cloneForCSSOM() con
         break;
     case CSS_DIMENSION:
     case CSS_UNKNOWN:
-    case CSS_PARSER_OPERATOR:
-    case CSS_PARSER_IDENTIFIER:
     case CSS_PARSER_HEXCOLOR:
         ASSERT_NOT_REACHED();
         break;
@@ -1375,7 +1346,6 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const
     case CSS_UNKNOWN:
         return false;
     case CSS_NUMBER:
-    case CSS_PARSER_INTEGER:
     case CSS_PERCENTAGE:
     case CSS_EMS:
     case CSS_EXS:
@@ -1412,7 +1382,6 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const
     case CSS_URI:
     case CSS_ATTR:
     case CSS_COUNTER_NAME:
-    case CSS_PARSER_IDENTIFIER:
     case CSS_PARSER_HEXCOLOR:
         return equal(m_value.string, other.m_value.string);
     case CSS_COUNTER:
@@ -1425,8 +1394,6 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const
         return m_value.rgbcolor == other.m_value.rgbcolor;
     case CSS_PAIR:
         return m_value.pair && other.m_value.pair && m_value.pair->equals(*other.m_value.pair);
-    case CSS_PARSER_OPERATOR:
-        return m_value.parserOperator == other.m_value.parserOperator;
     case CSS_CALC:
         return m_value.calc && other.m_value.calc && m_value.calc->equals(*other.m_value.calc);
     case CSS_SHAPE:

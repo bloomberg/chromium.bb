@@ -110,13 +110,8 @@ public:
         CSS_PAIR = 100, // We envision this being exposed as a means of getting computed style values for pairs (border-spacing/radius, background-position, etc.)
         CSS_UNICODE_RANGE = 102,
 
-        // These next types are just used internally to allow us to translate back and forth from CSSPrimitiveValues to CSSParserValues.
-        CSS_PARSER_OPERATOR = 103,
-        CSS_PARSER_INTEGER = 104,
+        // FIXME: This is only used in CSSParserValue, so it's probably better as part of the enum there
         CSS_PARSER_HEXCOLOR = 105,
-
-        // This is used internally for unknown identifiers
-        CSS_PARSER_IDENTIFIER = 106,
 
         // These are from CSS3 Values and Units, but that isn't a finished standard yet
         CSS_TURN = 107,
@@ -225,10 +220,6 @@ public:
     static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createIdentifier(CSSPropertyID propertyID)
     {
         return adoptRefWillBeNoop(new CSSPrimitiveValue(propertyID));
-    }
-    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createParserOperator(int parserOperator)
-    {
-        return adoptRefWillBeNoop(new CSSPrimitiveValue(parserOperator, CSS_PARSER_OPERATOR));
     }
     static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createColor(unsigned rgbValue)
     {

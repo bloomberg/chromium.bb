@@ -51,7 +51,6 @@ static CalculationCategory unitCategory(CSSPrimitiveValue::UnitType type)
 {
     switch (type) {
     case CSSPrimitiveValue::CSS_NUMBER:
-    case CSSPrimitiveValue::CSS_PARSER_INTEGER:
         return CalcNumber;
     case CSSPrimitiveValue::CSS_PERCENTAGE:
         return CalcPercent;
@@ -90,7 +89,6 @@ static bool hasDoubleValue(CSSPrimitiveValue::UnitType type)
 {
     switch (type) {
     case CSSPrimitiveValue::CSS_NUMBER:
-    case CSSPrimitiveValue::CSS_PARSER_INTEGER:
     case CSSPrimitiveValue::CSS_PERCENTAGE:
     case CSSPrimitiveValue::CSS_EMS:
     case CSSPrimitiveValue::CSS_EXS:
@@ -130,9 +128,7 @@ static bool hasDoubleValue(CSSPrimitiveValue::UnitType type)
     case CSSPrimitiveValue::CSS_RGBCOLOR:
     case CSSPrimitiveValue::CSS_PAIR:
     case CSSPrimitiveValue::CSS_UNICODE_RANGE:
-    case CSSPrimitiveValue::CSS_PARSER_OPERATOR:
     case CSSPrimitiveValue::CSS_PARSER_HEXCOLOR:
-    case CSSPrimitiveValue::CSS_PARSER_IDENTIFIER:
     case CSSPrimitiveValue::CSS_COUNTER_NAME:
     case CSSPrimitiveValue::CSS_SHAPE:
     case CSSPrimitiveValue::CSS_QUAD:
@@ -363,8 +359,7 @@ public:
 
         // Simplify numbers.
         if (leftCategory == CalcNumber && rightCategory == CalcNumber) {
-            CSSPrimitiveValue::UnitType evaluationType = isInteger ? CSSPrimitiveValue::CSS_PARSER_INTEGER : CSSPrimitiveValue::CSS_NUMBER;
-            return CSSCalcPrimitiveValue::create(evaluateOperator(leftSide->doubleValue(), rightSide->doubleValue(), op), evaluationType, isInteger);
+            return CSSCalcPrimitiveValue::create(evaluateOperator(leftSide->doubleValue(), rightSide->doubleValue(), op), CSSPrimitiveValue::CSS_NUMBER, isInteger);
         }
 
         // Simplify addition and subtraction between same types.
@@ -518,8 +513,6 @@ public:
         switch (m_category) {
         case CalcNumber:
             ASSERT(m_leftSide->category() == CalcNumber && m_rightSide->category() == CalcNumber);
-            if (m_isInteger)
-                return CSSPrimitiveValue::CSS_PARSER_INTEGER;
             return CSSPrimitiveValue::CSS_NUMBER;
         case CalcLength:
         case CalcPercent: {
@@ -650,9 +643,6 @@ private:
         CSSPrimitiveValue::UnitType type = static_cast<CSSPrimitiveValue::UnitType>(parserValue->unit);
         if (unitCategory(type) == CalcOther)
             return false;
-
-        if (type == CSSPrimitiveValue::CSS_NUMBER && parserValue->isInt)
-            type = CSSPrimitiveValue::CSS_PARSER_INTEGER;
 
         result->value = CSSCalcPrimitiveValue::create(
             CSSPrimitiveValue::create(parserValue->fValue, type), parserValue->isInt);
