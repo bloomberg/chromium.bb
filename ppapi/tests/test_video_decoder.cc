@@ -38,7 +38,7 @@ std::string TestVideoDecoder::TestCreate() {
     TestCompletionCallback callback(instance_->pp_instance(), callback_type());
     pp::Graphics3D null_graphics_3d;
     callback.WaitForResult(video_decoder.Initialize(null_graphics_3d,
-                                                    PP_VIDEOPROFILE_VP8MAIN,
+                                                    PP_VIDEOPROFILE_VP8_ANY,
                                                     kAllowSoftwareFallback,
                                                     callback.GetCallback()));
     ASSERT_EQ(PP_ERROR_BADRESOURCE, callback.result());
@@ -60,7 +60,7 @@ std::string TestVideoDecoder::TestCreate() {
     pp::VideoDecoder video_decoder(instance_);
     TestCompletionCallback callback(instance_->pp_instance(), callback_type());
     callback.WaitForResult(video_decoder.Initialize(graphics_3d_,
-                                                    PP_VIDEOPROFILE_VP8MAIN,
+                                                    PP_VIDEOPROFILE_VP8_ANY,
                                                     kAllowSoftwareFallback,
                                                     callback.GetCallback()));
     ASSERT_EQ(PP_OK, callback.result());

@@ -90,7 +90,7 @@ class LocalVideoEncodeAcceleratorClient
     VideoCodecProfile output_profile = media::VIDEO_CODEC_PROFILE_UNKNOWN;
     switch (video_config.codec) {
       case CODEC_VIDEO_VP8:
-        output_profile = media::VP8PROFILE_MAIN;
+        output_profile = media::VP8PROFILE_ANY;
         break;
       case CODEC_VIDEO_H264:
         output_profile = media::H264PROFILE_MAIN;

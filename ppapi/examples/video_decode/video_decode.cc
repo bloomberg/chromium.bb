@@ -247,7 +247,7 @@ Decoder::Decoder(MyInstance* instance,
       pp::Module::Get()->GetBrowserInterface(PPB_CORE_INTERFACE));
 
 #if defined USE_VP8_TESTDATA_INSTEAD_OF_H264
-  const PP_VideoProfile kBitstreamProfile = PP_VIDEOPROFILE_VP8MAIN;
+  const PP_VideoProfile kBitstreamProfile = PP_VIDEOPROFILE_VP8_ANY;
 #else
   const PP_VideoProfile kBitstreamProfile = PP_VIDEOPROFILE_H264MAIN;
 #endif

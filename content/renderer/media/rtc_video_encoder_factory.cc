@@ -48,7 +48,7 @@ media::VideoCodecProfile WebRTCCodecToVideoCodecProfile(
     webrtc::VideoCodecType type) {
   switch (type) {
     case webrtc::kVideoCodecVP8:
-      return media::VP8PROFILE_MAIN;
+      return media::VP8PROFILE_ANY;
     case webrtc::kVideoCodecGeneric:
       return media::H264PROFILE_MAIN;
     default:

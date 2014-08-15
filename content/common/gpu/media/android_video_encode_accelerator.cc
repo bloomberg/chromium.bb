@@ -100,7 +100,7 @@ AndroidVideoEncodeAccelerator::GetSupportedProfiles() {
       continue;
     }
     SupportedProfile profile;
-    profile.profile = media::VP8PROFILE_MAIN;
+    profile.profile = media::VP8PROFILE_ANY;
     // Wouldn't it be nice if MediaCodec exposed the maximum capabilities of the
     // encoder?  Sure would be.  Too bad it doesn't.  So we hard-code some
     // reasonable defaults.
@@ -129,7 +129,7 @@ bool AndroidVideoEncodeAccelerator::Initialize(
 
   if (!(media::MediaCodecBridge::SupportsSetParameters() &&
         format == VideoFrame::I420 &&
-        output_profile == media::VP8PROFILE_MAIN)) {
+        output_profile == media::VP8PROFILE_ANY)) {
     DLOG(ERROR) << "Unexpected combo: " << format << ", " << output_profile;
     return false;
   }

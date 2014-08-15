@@ -89,7 +89,7 @@ bool AndroidVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
 
   client_ = client;
 
-  if (profile == media::VP8PROFILE_MAIN) {
+  if (profile == media::VP8PROFILE_ANY) {
     codec_ = media::kCodecVP8;
   } else {
     // TODO(dwkang): enable H264 once b/8125974 is fixed.

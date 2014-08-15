@@ -288,7 +288,7 @@ V4L2VideoEncodeAccelerator::GetSupportedProfiles() {
 
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kEnableWebRtcHWVp8Encoding)) {
-    profile.profile = media::VP8PROFILE_MAIN;
+    profile.profile = media::VP8PROFILE_ANY;
     profile.max_resolution.SetSize(1920, 1088);
     profile.max_framerate.numerator = 30;
     profile.max_framerate.denominator = 1;

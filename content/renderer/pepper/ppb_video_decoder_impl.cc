@@ -65,8 +65,8 @@ media::VideoCodecProfile PPToMediaProfile(
       return media::H264PROFILE_STEREOHIGH;
     case PP_VIDEODECODER_H264PROFILE_MULTIVIEWHIGH:
       return media::H264PROFILE_MULTIVIEWHIGH;
-    case PP_VIDEODECODER_VP8PROFILE_MAIN:
-      return media::VP8PROFILE_MAIN;
+    case PP_VIDEODECODER_VP8PROFILE_ANY:
+      return media::VP8PROFILE_ANY;
     default:
       return media::VIDEO_CODEC_PROFILE_UNKNOWN;
   }

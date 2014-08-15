@@ -382,9 +382,9 @@ void AVStreamToVideoDecoderConfig(
 
   VideoCodecProfile profile = VIDEO_CODEC_PROFILE_UNKNOWN;
   if (codec == kCodecVP8)
-    profile = VP8PROFILE_MAIN;
+    profile = VP8PROFILE_ANY;
   else if (codec == kCodecVP9)
-    profile = VP9PROFILE_MAIN;
+    profile = VP9PROFILE_ANY;
   else
     profile = ProfileIDToVideoCodecProfile(stream->codec->profile);
 

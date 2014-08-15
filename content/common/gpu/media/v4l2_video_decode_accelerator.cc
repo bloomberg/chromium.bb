@@ -224,8 +224,8 @@ bool V4L2VideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
     case media::H264PROFILE_HIGH:
       DVLOG(2) << "Initialize(): profile H264PROFILE_HIGH";
       break;
-    case media::VP8PROFILE_MAIN:
-      DVLOG(2) << "Initialize(): profile VP8PROFILE_MAIN";
+    case media::VP8PROFILE_ANY:
+      DVLOG(2) << "Initialize(): profile VP8PROFILE_ANY";
       break;
     default:
       DLOG(ERROR) << "Initialize(): unsupported profile=" << profile;

@@ -38,7 +38,7 @@ bool FakeVideoEncodeAccelerator::Initialize(
     uint32 initial_bitrate,
     Client* client) {
   client_ = client;
-  if (output_profile != media::VP8PROFILE_MAIN &&
+  if (output_profile != media::VP8PROFILE_ANY &&
       output_profile != media::H264PROFILE_MAIN) {
     return false;
   }
