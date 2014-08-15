@@ -30,6 +30,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/NodeRareData.h"
 #include "core/html/HTMLFormElement.h"
+#include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLObjectElement.h"
 
@@ -114,7 +115,7 @@ bool RadioNodeList::elementMatches(const Element& element) const
         if (!isHTMLImageElement(element))
             return false;
 
-        if (toHTMLElement(element).formOwner() != ownerNode())
+        if (toHTMLImageElement(element).formOwner() != ownerNode())
             return false;
 
         return matchesByIdOrName(element);
