@@ -100,11 +100,9 @@ HTMLTableRowElement* HTMLTableRowsCollection::rowAfter(HTMLTableElement& table, 
 
 HTMLTableRowElement* HTMLTableRowsCollection::lastRow(HTMLTableElement& table)
 {
-    for (HTMLElement* child = Traversal<HTMLElement>::lastChild(table); child; child = Traversal<HTMLElement>::previousSibling(*child)) {
-        if (child->hasTagName(tfootTag)) {
-            if (HTMLTableRowElement* lastRow = Traversal<HTMLTableRowElement>::lastChild(*child))
+    for (HTMLElement* tfoot = Traversal<HTMLElement>::lastChild(table, HasHTMLTagName(tfootTag)); tfoot; tfoot = Traversal<HTMLElement>::previousSibling(*tfoot, HasHTMLTagName(tfootTag))) {
+        if (HTMLTableRowElement* lastRow = Traversal<HTMLTableRowElement>::lastChild(*tfoot))
                 return lastRow;
-        }
     }
 
     for (HTMLElement* child = Traversal<HTMLElement>::lastChild(table); child; child = Traversal<HTMLElement>::previousSibling(*child)) {
@@ -116,11 +114,9 @@ HTMLTableRowElement* HTMLTableRowsCollection::lastRow(HTMLTableElement& table)
         }
     }
 
-    for (HTMLElement* child = Traversal<HTMLElement>::lastChild(table); child; child = Traversal<HTMLElement>::previousSibling(*child)) {
-        if (child->hasTagName(theadTag)) {
-            if (HTMLTableRowElement* lastRow = Traversal<HTMLTableRowElement>::lastChild(*child))
-                return lastRow;
-        }
+    for (HTMLElement* thead = Traversal<HTMLElement>::lastChild(table, HasHTMLTagName(theadTag)); thead; thead = Traversal<HTMLElement>::previousSibling(*thead, HasHTMLTagName(theadTag))) {
+        if (HTMLTableRowElement* lastRow = Traversal<HTMLTableRowElement>::lastChild(*thead))
+            return lastRow;
     }
 
     return 0;

@@ -78,11 +78,7 @@ void HTMLTableElement::setCaption(PassRefPtrWillBeRawPtr<HTMLTableCaptionElement
 
 HTMLTableSectionElement* HTMLTableElement::tHead() const
 {
-    for (HTMLElement* child = Traversal<HTMLElement>::firstChild(*this); child; child = Traversal<HTMLElement>::nextSibling(*child)) {
-        if (child->hasTagName(theadTag))
-            return toHTMLTableSectionElement(child);
-    }
-    return 0;
+    return toHTMLTableSectionElement(Traversal<HTMLElement>::firstChild(*this, HasHTMLTagName(theadTag)));
 }
 
 void HTMLTableElement::setTHead(PassRefPtrWillBeRawPtr<HTMLTableSectionElement> newHead, ExceptionState& exceptionState)
@@ -100,11 +96,7 @@ void HTMLTableElement::setTHead(PassRefPtrWillBeRawPtr<HTMLTableSectionElement> 
 
 HTMLTableSectionElement* HTMLTableElement::tFoot() const
 {
-    for (HTMLElement* child = Traversal<HTMLElement>::firstChild(*this); child; child = Traversal<HTMLElement>::nextSibling(*child)) {
-        if (child->hasTagName(tfootTag))
-            return toHTMLTableSectionElement(child);
-    }
-    return 0;
+    return toHTMLTableSectionElement(Traversal<HTMLElement>::firstChild(*this, HasHTMLTagName(tfootTag)));
 }
 
 void HTMLTableElement::setTFoot(PassRefPtrWillBeRawPtr<HTMLTableSectionElement> newFoot, ExceptionState& exceptionState)
@@ -173,11 +165,7 @@ void HTMLTableElement::deleteCaption()
 
 HTMLTableSectionElement* HTMLTableElement::lastBody() const
 {
-    for (HTMLElement* child = Traversal<HTMLElement>::lastChild(*this); child; child = Traversal<HTMLElement>::previousSibling(*child)) {
-        if (child->hasTagName(tbodyTag))
-            return toHTMLTableSectionElement(child);
-    }
-    return 0;
+    return toHTMLTableSectionElement(Traversal<HTMLElement>::lastChild(*this, HasHTMLTagName(tbodyTag)));
 }
 
 PassRefPtrWillBeRawPtr<HTMLElement> HTMLTableElement::insertRow(ExceptionState& exceptionState)
