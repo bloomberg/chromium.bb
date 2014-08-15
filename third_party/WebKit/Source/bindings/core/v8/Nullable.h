@@ -33,10 +33,18 @@ public:
         return *this;
     }
 
+    void set(const T& value)
+    {
+        m_value = value;
+        m_isNull = false;
+    }
     const T& get() const { ASSERT(!m_isNull); return m_value; }
+    T& get() { ASSERT(!m_isNull); return m_value; }
     bool isNull() const { return m_isNull; }
 
-    operator bool() const { return !m_isNull && m_value; }
+    // See comment in RefPtr.h about what UnspecifiedBoolType is.
+    typedef const T* UnspecifiedBoolType;
+    operator UnspecifiedBoolType() const { return m_isNull ? 0 : &m_value; }
 
     bool operator==(const Nullable& other) const
     {

@@ -44,7 +44,7 @@ public:
     virtual ~HTMLFormControlsCollection();
 
     virtual Element* namedItem(const AtomicString& name) const OVERRIDE;
-    void namedGetter(const AtomicString& name, bool& radioNodeListEnabled, RefPtrWillBeRawPtr<RadioNodeList>&, bool& elementEnabled, RefPtrWillBeRawPtr<Element>&);
+    void namedGetter(const AtomicString& name, RefPtrWillBeRawPtr<RadioNodeList>&, RefPtrWillBeRawPtr<Element>&);
 
     virtual void trace(Visitor*) OVERRIDE;
 

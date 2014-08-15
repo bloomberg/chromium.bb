@@ -59,16 +59,14 @@ static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     {
         TOSTRING_VOID_INTERNAL(name, info[0]);
     }
-    bool result0Enabled = false;
     RefPtrWillBeRawPtr<Node> result0;
-    bool result1Enabled = false;
     RefPtrWillBeRawPtr<NodeList> result1;
-    impl->getItem(name, result0Enabled, result0, result1Enabled, result1);
-    if (result0Enabled) {
+    impl->getItem(name, result0, result1);
+    if (result0) {
         v8SetReturnValue(info, result0.release());
         return;
     }
-    if (result1Enabled) {
+    if (result1) {
         v8SetReturnValue(info, result1.release());
         return;
     }
@@ -86,22 +84,20 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
 {
     TestSpecialOperations* impl = V8TestSpecialOperations::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
-    bool result0Enabled = false;
     RefPtrWillBeRawPtr<Node> result0;
-    bool result1Enabled = false;
     RefPtrWillBeRawPtr<NodeList> result1;
-    impl->getItem(propertyName, result0Enabled, result0, result1Enabled, result1);
-    if (!result0Enabled && !result1Enabled)
+    impl->getItem(propertyName, result0, result1);
+    if (!(result0 || result1))
         return;
-    if (result0Enabled) {
-        v8SetReturnValueFast(info, WTF::getPtr(result0.release()), impl);
-        return;
-    }
-    if (result1Enabled) {
-        v8SetReturnValueFast(info, WTF::getPtr(result1.release()), impl);
+    if (result0) {
+        v8SetReturnValue(info, result0.release());
         return;
     }
-    v8SetReturnValueNull(info);
+    if (result1) {
+        v8SetReturnValue(info, result1.release());
+        return;
+    }
+    ASSERT_NOT_REACHED();
 }
 
 static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)

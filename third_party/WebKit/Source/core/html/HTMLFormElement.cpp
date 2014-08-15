@@ -817,7 +817,7 @@ void HTMLFormElement::copyNonAttributePropertiesFromElement(const Element& sourc
     HTMLElement::copyNonAttributePropertiesFromElement(source);
 }
 
-void HTMLFormElement::anonymousNamedGetter(const AtomicString& name, bool& returnValue0Enabled, RefPtrWillBeRawPtr<RadioNodeList>& returnValue0, bool& returnValue1Enabled, RefPtrWillBeRawPtr<Element>& returnValue1)
+void HTMLFormElement::anonymousNamedGetter(const AtomicString& name, RefPtrWillBeRawPtr<RadioNodeList>& returnValue0, RefPtrWillBeRawPtr<Element>& returnValue1)
 {
     // Call getNamedElements twice, first time check if it has a value
     // and let HTMLFormElement update its cache.
@@ -836,13 +836,11 @@ void HTMLFormElement::anonymousNamedGetter(const AtomicString& name, bool& retur
     ASSERT(!elements.isEmpty());
 
     if (elements.size() == 1) {
-        returnValue1Enabled = true;
         returnValue1 = elements.at(0);
         return;
     }
 
     bool onlyMatchImg = !elements.isEmpty() && isHTMLImageElement(*elements.first());
-    returnValue0Enabled = true;
     returnValue0 = radioNodeList(name, onlyMatchImg);
 }
 

@@ -296,23 +296,26 @@ if (info.Length() >= 2 && listener && !impl->toNode())
 
 {######################################}
 {% macro union_type_method_call_and_set_return_value(method) %}
-{% for cpp_type in method.cpp_type %}
-bool result{{loop.index0}}Enabled = false;
-{{cpp_type}} result{{loop.index0}};
+{% for argument in method.union_arguments %}
+{{argument.cpp_type}} {{argument.cpp_value}};
 {% endfor %}
 {{method.cpp_value}};
 {% if method.is_null_expression %}{# used by getters #}
 if ({{method.is_null_expression}})
     return;
 {% endif %}
-{% for v8_set_return_value in method.v8_set_return_value %}
-if (result{{loop.index0}}Enabled) {
-    {{v8_set_return_value}};
+{% for argument in method.union_arguments %}
+if ({{argument.null_check_value}}) {
+    {{argument.v8_set_return_value}};
     return;
 }
 {% endfor %}
 {# Fall back to null if none of the union members results are returned #}
+{% if method.is_null_expression %}
+ASSERT_NOT_REACHED();
+{% else %}
 v8SetReturnValueNull(info);
+{% endif %}
 {% endmacro %}
 
 

@@ -211,7 +211,9 @@ def cpp_type_initializer(idl_type):
 
 
 def cpp_type_union(idl_type, extended_attributes=None, raw_type=False):
-    return (member_type.cpp_type for member_type in idl_type.member_types)
+    # FIXME: Need to revisit the design of union support.
+    # http://crbug.com/240176
+    return None
 
 
 def cpp_type_initializer_union(idl_type):
@@ -718,19 +720,10 @@ def v8_set_return_value(idl_type, cpp_value, extended_attributes=None, script_wr
 
 
 def v8_set_return_value_union(idl_type, cpp_value, extended_attributes=None, script_wrappable='', release=False, for_main_world=False):
-    """
-    release: can be either False (False for all member types) or
-             a sequence (list or tuple) of booleans (if specified individually).
-    """
+    # FIXME: Need to revisit the design of union support.
+    # http://crbug.com/240176
+    return None
 
-    return [
-        member_type.v8_set_return_value(cpp_value + str(i),
-                                        extended_attributes,
-                                        script_wrappable,
-                                        release and release[i],
-                                        for_main_world)
-            for i, member_type in
-            enumerate(idl_type.member_types)]
 
 IdlTypeBase.v8_set_return_value = v8_set_return_value
 IdlUnionType.v8_set_return_value = v8_set_return_value_union

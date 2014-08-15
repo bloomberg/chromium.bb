@@ -44,7 +44,7 @@ public:
     void setSelectedIndex(int);
 
     void setLength(unsigned, ExceptionState&);
-    void namedGetter(const AtomicString& name, bool&, RefPtrWillBeRawPtr<NodeList>&, bool&, RefPtrWillBeRawPtr<Element>&);
+    void namedGetter(const AtomicString& name, RefPtrWillBeRawPtr<NodeList>&, RefPtrWillBeRawPtr<Element>&);
     bool anonymousIndexedSetter(unsigned, PassRefPtrWillBeRawPtr<HTMLOptionElement>, ExceptionState&);
 
 private:

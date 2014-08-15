@@ -5,6 +5,7 @@
 #ifndef AnimationNodeTiming_h
 #define AnimationNodeTiming_h
 
+#include "bindings/core/v8/Nullable.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/animation/AnimationNode.h"
 #include "wtf/RefCounted.h"
@@ -20,7 +21,7 @@ public:
     String fill();
     double iterationStart();
     double iterations();
-    void getDuration(String propertyName, bool& element0Enabled, double& element0, bool& element1Enabled, String& element1);
+    void getDuration(String propertyName, Nullable<double>& element0, String& element1);
     double playbackRate();
     String direction();
     String easing();

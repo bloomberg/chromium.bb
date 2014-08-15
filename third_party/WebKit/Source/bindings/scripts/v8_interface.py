@@ -934,8 +934,10 @@ def interface_length(interface, constructors):
 def property_getter(getter, cpp_arguments):
     def is_null_expression(idl_type):
         if idl_type.is_union_type:
-            return ' && '.join('!result%sEnabled' % i
-                               for i, _ in enumerate(idl_type.member_types))
+            notnull = ' || '.join([
+                    member_argument['null_check_value']
+                    for member_argument in idl_type.union_arguments])
+            return '!(%s)' % notnull
         if idl_type.name == 'String':
             return 'result.isNull()'
         if idl_type.is_interface_type:
@@ -953,7 +955,8 @@ def property_getter(getter, cpp_arguments):
         cpp_arguments.append('exceptionState')
     union_arguments = idl_type.union_arguments
     if union_arguments:
-        cpp_arguments.extend(union_arguments)
+        cpp_arguments.extend([member_argument['cpp_value']
+                              for member_argument in union_arguments])
 
     cpp_value = '%s(%s)' % (cpp_method_name, ', '.join(cpp_arguments))
 

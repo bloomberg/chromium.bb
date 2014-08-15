@@ -117,7 +117,7 @@ public:
     const FormAssociatedElement::List& associatedElements() const;
     const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> >& imageElements();
 
-    void anonymousNamedGetter(const AtomicString& name, bool&, RefPtrWillBeRawPtr<RadioNodeList>&, bool&, RefPtrWillBeRawPtr<Element>&);
+    void anonymousNamedGetter(const AtomicString& name, RefPtrWillBeRawPtr<RadioNodeList>&, RefPtrWillBeRawPtr<Element>&);
 
 private:
     explicit HTMLFormElement(Document&);

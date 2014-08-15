@@ -118,7 +118,7 @@ void HTMLOptionsCollection::setLength(unsigned length, ExceptionState& exception
     toHTMLSelectElement(ownerNode()).setLength(length, exceptionState);
 }
 
-void HTMLOptionsCollection::namedGetter(const AtomicString& name, bool& returnValue0Enabled, RefPtrWillBeRawPtr<NodeList>& returnValue0, bool& returnValue1Enabled, RefPtrWillBeRawPtr<Element>& returnValue1)
+void HTMLOptionsCollection::namedGetter(const AtomicString& name, RefPtrWillBeRawPtr<NodeList>& returnValue0, RefPtrWillBeRawPtr<Element>& returnValue1)
 {
     WillBeHeapVector<RefPtrWillBeMember<Element> > namedItems;
     this->namedItems(name, namedItems);
@@ -127,13 +127,11 @@ void HTMLOptionsCollection::namedGetter(const AtomicString& name, bool& returnVa
         return;
 
     if (namedItems.size() == 1) {
-        returnValue1Enabled = true;
         returnValue1 = namedItems.at(0);
         return;
     }
 
     // FIXME: The spec and Firefox do not return a NodeList. They always return the first matching Element.
-    returnValue0Enabled = true;
     returnValue0 = StaticElementList::adopt(namedItems);
 }
 

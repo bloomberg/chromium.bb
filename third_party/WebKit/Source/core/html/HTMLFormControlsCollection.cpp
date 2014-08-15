@@ -193,7 +193,7 @@ void HTMLFormControlsCollection::updateIdNameCache() const
     setNamedItemCache(cache.release());
 }
 
-void HTMLFormControlsCollection::namedGetter(const AtomicString& name, bool& radioNodeListEnabled, RefPtrWillBeRawPtr<RadioNodeList>& radioNodeList, bool& elementEnabled, RefPtrWillBeRawPtr<Element>& element)
+void HTMLFormControlsCollection::namedGetter(const AtomicString& name, RefPtrWillBeRawPtr<RadioNodeList>& radioNodeList, RefPtrWillBeRawPtr<Element>& element)
 {
     WillBeHeapVector<RefPtrWillBeMember<Element> > namedItems;
     this->namedItems(name, namedItems);
@@ -202,12 +202,10 @@ void HTMLFormControlsCollection::namedGetter(const AtomicString& name, bool& rad
         return;
 
     if (namedItems.size() == 1) {
-        elementEnabled = true;
         element = namedItems.at(0);
         return;
     }
 
-    radioNodeListEnabled = true;
     radioNodeList = ownerNode().radioNodeList(name);
 }
 
