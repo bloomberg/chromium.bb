@@ -26,6 +26,12 @@ CTFailureGroup.prototype.unsnooze = function() {
 
 CTFailureGroup.prototype._computeProperties = function() {
   this.isSnoozed = Date.now() < this.annotation.snoozeTime;
+  if (this.isSnoozed) {
+    this.category = 'snoozed';
+  } else {
+    // FIXME: crbug.com/400397 Split into: Whole step failure, Tree closer, Test failure, Flaky tests
+    this.category = 'default';
+  }
 };
 
 CTFailureGroup.prototype._annotate = function(newAnnotation) {

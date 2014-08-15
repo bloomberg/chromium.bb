@@ -1,0 +1,56 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../ct-failure-stream.html">
+
+<script>
+(function () {
+
+var assert = chai.assert;
+
+describe('ct-failure-stream', function() {
+
+  var stream;
+
+  beforeEach(function(done) {
+    stream = document.createElement('ct-failure-stream');
+    setTimeout(done);
+  });
+
+  describe('default ui', function() {
+    it('should show failure groups', function(done) {
+      // FIXME: We should use some more interesting test data, but
+      // ct-failure-stream will give these values to ct-commit-data,
+      // which will hit the network unless we figure out how to mock
+      // out ct-commit-data in a better way.
+      stream.groups = [new CTFailureGroup('a', []), new CTFailureGroup('b', [])];
+      stream.category = 'default';
+      setTimeout(function() {
+        var cards = stream.shadowRoot.querySelectorAll('ct-failure-card');
+        assert.equal(cards.length, 2);
+        assert.equal(cards[0].group.key, 'a');
+        assert.equal(cards[1].group.key, 'b');
+        done();
+      });
+    });
+  });
+
+  describe('category', function() {
+    it('should only show failure groups for the specified category', function(done) {
+      stream.groups = [new CTFailureGroup('a', []), new CTFailureGroup('b', [], {snoozeTime: Date.now() + 1000 * 1000})];
+      stream.category = 'snoozed';
+      setTimeout(function() {
+        var cards = stream.shadowRoot.querySelectorAll('ct-failure-card');
+        assert.equal(cards.length, 1);
+        assert.equal(cards[0].group.key, 'b');
+        done();
+      });
+    });
+  });
+});
+
+})();
+</script>

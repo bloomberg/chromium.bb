@@ -17,6 +17,18 @@ describe('ct-failure-group', function() {
     localStorage.removeItem('CTFailureGroupAnnotations');
   });
 
+  describe('category', function() {
+    it('should be "default" by default', function() {
+      var group = new CTFailureGroup('key', []);
+      assert.equal(group.category, 'default');
+    });
+
+    it('should be "snoozed" when snoozed', function() {
+      var group = new CTFailureGroup('key', [], {snoozeTime: Date.now() + 1000 * 1000});
+      assert.equal(group.category, 'snoozed');
+    });
+  });
+
   describe('snooze', function() {
     it('should set isSnoozed', function(done) {
       var group = new CTFailureGroup('key', []);

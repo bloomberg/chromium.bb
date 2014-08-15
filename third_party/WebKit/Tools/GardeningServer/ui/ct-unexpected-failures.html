@@ -45,7 +45,8 @@ found in the LICENSE file.
     <ct-tree-status status="{{ treeStatuses['chromium'] }}" state="{{ treeStatuses['chromium'].status }}"></ct-tree-status>
     <ct-tree-status status="{{ treeStatuses['blink'] }}" state="{{ treeStatuses['blink'].status }}"></ct-tree-status>
     <ct-party-time failures="{{ failures }}" tree="{{ tree }}"></ct-party-time>
-    <ct-failure-stream groups="{{ failures[tree] }}" commits="{{ revisionLog }}" tree="{{ tree }}"></ct-failure-stream>
+    <ct-failure-stream category="default" groups="{{ failures[tree] }}" commits="{{ revisionLog }}" tree="{{ tree }}"></ct-failure-stream>
+    <ct-failure-stream category="snoozed" groups="{{ failures[tree] }}" commits="{{ revisionLog }}" tree="{{ tree }}"></ct-failure-stream>
   </template>
   <script>
   (function() {
