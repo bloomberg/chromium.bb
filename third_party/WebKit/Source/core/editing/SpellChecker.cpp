@@ -824,6 +824,15 @@ void SpellChecker::removeSpellingMarkers()
     m_frame.document()->markers().removeMarkers(DocumentMarker::MisspellingMarkers());
 }
 
+void SpellChecker::removeSpellingMarkersUnderWords(const Vector<String>& words)
+{
+    MarkerRemoverPredicate removerPredicate(words);
+
+    DocumentMarkerController& markerController = m_frame.document()->markers();
+    markerController.removeMarkers(removerPredicate);
+    markerController.repaintMarkers();
+}
+
 void SpellChecker::spellCheckAfterBlur()
 {
     if (!m_frame.selection().selection().isContentEditable())

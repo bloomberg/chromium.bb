@@ -40,6 +40,16 @@ class LayoutRect;
 class Node;
 class Range;
 class RenderedDocumentMarker;
+class Text;
+
+class MarkerRemoverPredicate FINAL {
+public:
+    explicit MarkerRemoverPredicate(const Vector<String>& words);
+    bool operator()(const DocumentMarker&, const Text&) const;
+
+private:
+    Vector<String> m_words;
+};
 
 class DocumentMarkerController FINAL : public NoBaseWillBeGarbageCollected<DocumentMarkerController> {
     WTF_MAKE_NONCOPYABLE(DocumentMarkerController); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
@@ -67,6 +77,7 @@ public:
 
     void removeMarkers(DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
     void removeMarkers(Node*, DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
+    void removeMarkers(const MarkerRemoverPredicate& shouldRemoveMarker);
     void repaintMarkers(DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
     void invalidateRenderedRectsForMarkersInRect(const LayoutRect&);
     void shiftMarkers(Node*, unsigned startOffset, int delta);

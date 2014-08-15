@@ -4520,6 +4520,38 @@ TEST_F(WebFrameTest, RemoveSpellingMarkers)
     EXPECT_EQ(0U, document->markers().markersInRange(selectionRange.get(), DocumentMarker::Spelling).size());
 }
 
+TEST_F(WebFrameTest, RemoveSpellingMarkersUnderWords)
+{
+    registerMockedHttpURLLoad("spell.html");
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "spell.html");
+    SpellCheckClient spellcheck;
+    webViewHelper.webView()->setSpellCheckClient(&spellcheck);
+
+    LocalFrame* frame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame())->frame();
+    Document* document = frame->document();
+    Element* element = document->getElementById("data");
+
+    webViewHelper.webView()->settings()->setAsynchronousSpellCheckingEnabled(true);
+    webViewHelper.webView()->settings()->setUnifiedTextCheckerEnabled(true);
+    webViewHelper.webView()->settings()->setEditingBehavior(WebSettings::EditingBehaviorWin);
+
+    element->focus();
+    document->execCommand("InsertText", false, " wellcome ");
+
+    WebVector<uint32_t> documentMarkers1;
+    webViewHelper.webView()->spellingMarkers(&documentMarkers1);
+    EXPECT_EQ(1U, documentMarkers1.size());
+
+    Vector<String> words;
+    words.append("wellcome");
+    frame->removeSpellingMarkersUnderWords(words);
+
+    WebVector<uint32_t> documentMarkers2;
+    webViewHelper.webView()->spellingMarkers(&documentMarkers2);
+    EXPECT_EQ(0U, documentMarkers2.size());
+}
+
 TEST_F(WebFrameTest, MarkerHashIdentifiers) {
     registerMockedHttpURLLoad("spell.html");
     FrameTestHelpers::WebViewHelper webViewHelper;

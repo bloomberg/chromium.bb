@@ -546,6 +546,11 @@ bool LocalFrame::isURLAllowed(const KURL& url) const
     return true;
 }
 
+void LocalFrame::removeSpellingMarkersUnderWords(const Vector<String>& words)
+{
+    spellChecker().removeSpellingMarkersUnderWords(words);
+}
+
 struct ScopedFramePaintingState {
     ScopedFramePaintingState(LocalFrame* frame, Node* node)
         : frame(frame)

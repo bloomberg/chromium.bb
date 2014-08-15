@@ -31,6 +31,7 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Range.h"
 #include "core/dom/RenderedDocumentMarker.h"
+#include "core/dom/Text.h"
 #include "core/editing/TextIterator.h"
 #include "core/rendering/RenderObject.h"
 
@@ -39,6 +40,20 @@
 #endif
 
 namespace blink {
+
+MarkerRemoverPredicate::MarkerRemoverPredicate(const Vector<String>& words)
+    : m_words(words)
+{
+}
+
+bool MarkerRemoverPredicate::operator()(const DocumentMarker& documentMarker,
+    const Text& textNode) const {
+    unsigned start  = documentMarker.startOffset();
+    unsigned length = documentMarker.endOffset() - documentMarker.startOffset();
+
+    String markerText = textNode.data().substring(start, length);
+    return m_words.contains(markerText);
+}
 
 namespace {
 
@@ -492,6 +507,25 @@ void DocumentMarkerController::removeMarkers(Node* node, DocumentMarker::MarkerT
     MarkerMap::iterator iterator = m_markers.find(node);
     if (iterator != m_markers.end())
         removeMarkersFromList(iterator, markerTypes);
+}
+
+void DocumentMarkerController::removeMarkers(const MarkerRemoverPredicate& shouldRemoveMarker)
+{
+    for (MarkerMap::iterator i = m_markers.begin(); i != m_markers.end(); ++i) {
+        MarkerLists* markers = i->value.get();
+        for (size_t markerListIndex = 0; markerListIndex < DocumentMarker::MarkerTypeIndexesCount; ++markerListIndex) {
+            OwnPtrWillBeMember<MarkerList>& list = (*markers)[markerListIndex];
+
+            WillBeHeapVector<RawPtrWillBeMember<RenderedDocumentMarker> > markersToBeRemoved;
+            for (size_t j = 0; list.get() && j < list->size(); ++j) {
+                if (i->key->isTextNode() && shouldRemoveMarker(*list->at(j).get(), static_cast<const Text&>(*i->key)))
+                    markersToBeRemoved.append(list->at(j).get());
+            }
+
+            for (size_t j = 0; j < markersToBeRemoved.size(); ++j)
+                list->remove(list->find(markersToBeRemoved[j].get()));
+        }
+    }
 }
 
 void DocumentMarkerController::removeMarkers(DocumentMarker::MarkerTypes markerTypes)

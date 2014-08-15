@@ -229,6 +229,7 @@ public:
         const WebPoint& screenPoint,
         int keyModifiers) OVERRIDE;
     virtual void spellingMarkers(WebVector<uint32_t>* markers) OVERRIDE;
+    virtual void removeSpellingMarkersUnderWords(const WebVector<WebString>& words) OVERRIDE;
     virtual unsigned long createUniqueIdentifierForRequest() OVERRIDE;
     virtual void inspectElementAt(const WebPoint&) OVERRIDE;
     virtual void setCompositorDeviceScaleFactorOverride(float) OVERRIDE;

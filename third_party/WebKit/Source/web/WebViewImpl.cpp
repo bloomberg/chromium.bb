@@ -3420,6 +3420,19 @@ void WebViewImpl::spellingMarkers(WebVector<uint32_t>* markers)
     markers->assign(result);
 }
 
+void WebViewImpl::removeSpellingMarkersUnderWords(const WebVector<WebString>& words)
+{
+    for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+        if (!frame->isLocalFrame())
+            continue;
+
+        Vector<String> convertedWords;
+        convertedWords.append(words.data(), words.size());
+
+        toLocalFrame(frame)->removeSpellingMarkersUnderWords(convertedWords);
+    }
+}
+
 WebDragOperation WebViewImpl::dragTargetDragEnterOrOver(const WebPoint& clientPoint, const WebPoint& screenPoint, DragAction dragAction, int keyModifiers)
 {
     ASSERT(m_currentDragData);

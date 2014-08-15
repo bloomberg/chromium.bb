@@ -72,6 +72,7 @@ public:
     void respondToChangedSelection(const VisibleSelection& oldSelection, FrameSelection::SetSelectionOptions);
     void replaceMisspelledRange(const String&);
     void removeSpellingMarkers();
+    void removeSpellingMarkersUnderWords(const Vector<String>& words);
     void spellCheckAfterBlur();
     void spellCheckOldSelection(const VisibleSelection& oldSelection, const VisibleSelection& newAdjacentWords);
 

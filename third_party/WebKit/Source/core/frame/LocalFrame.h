@@ -150,6 +150,8 @@ namespace blink {
 
         bool isURLAllowed(const KURL&) const;
 
+        void removeSpellingMarkersUnderWords(const Vector<String>& words);
+
     // ========
 
     private:
