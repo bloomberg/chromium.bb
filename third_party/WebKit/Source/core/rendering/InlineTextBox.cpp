@@ -775,8 +775,6 @@ void InlineTextBox::paintSelection(GraphicsContext* context, const FloatPoint& b
     if (textColor == c)
         c = Color(0xff - c.red(), 0xff - c.green(), 0xff - c.blue());
 
-    GraphicsContextStateSaver stateSaver(*context);
-    updateGraphicsContext(context, c, c, 0); // Don't draw text at all!
 
     // If the text is truncated, let the thing being painted in the truncation
     // draw its own highlight.
@@ -800,8 +798,9 @@ void InlineTextBox::paintSelection(GraphicsContext* context, const FloatPoint& b
 
     FloatPoint localOrigin(boxOrigin.x(), boxOrigin.y() - deltaY);
     FloatRect clipRect(localOrigin, FloatSize(m_logicalWidth, selHeight));
-    context->clip(clipRect);
 
+    GraphicsContextStateSaver stateSaver(*context);
+    context->clip(clipRect);
     context->drawHighlightForText(font, textRun, localOrigin, selHeight, c, sPos, ePos);
 }
 
@@ -824,10 +823,6 @@ void InlineTextBox::paintSingleCompositionBackgroundRun(GraphicsContext* context
     int ePos = std::min(endPos - m_start, static_cast<int>(m_len));
     if (sPos >= ePos)
         return;
-
-    GraphicsContextStateSaver stateSaver(*context);
-
-    updateGraphicsContext(context, backgroundColor, backgroundColor, 0); // Don't draw text at all!
 
     int deltaY = renderer().style()->isFlippedLinesWritingMode() ? selectionBottom() - logicalBottom() : logicalTop() - selectionTop();
     int selHeight = selectionHeight();
@@ -1245,7 +1240,6 @@ void InlineTextBox::paintTextMatchMarker(GraphicsContext* pt, const FloatPoint& 
             RenderTheme::theme().platformActiveTextSearchHighlightColor() :
             RenderTheme::theme().platformInactiveTextSearchHighlightColor();
         GraphicsContextStateSaver stateSaver(*pt);
-        updateGraphicsContext(pt, color, color, 0); // Don't draw text at all!
         pt->clip(FloatRect(boxOrigin.x(), boxOrigin.y() - deltaY, m_logicalWidth, selHeight));
         pt->drawHighlightForText(font, run, FloatPoint(boxOrigin.x(), boxOrigin.y() - deltaY), selHeight, color, sPos, ePos);
     }
