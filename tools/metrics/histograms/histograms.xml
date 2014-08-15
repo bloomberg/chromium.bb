@@ -9996,7 +9996,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="InstantExtended.CacheableNTPLoad"
     enum="InstantExtended_CacheableNTPLoad">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>beaudoin@chromium.org</owner>
   <summary>
     Records a histogram for how often the Cacheable NTP fails to load.
   </summary>
@@ -19621,7 +19621,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="NewTabPage.URLState" enum="NewTabURLState">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>beaudoin@chromium.org</owner>
   <summary>
     Records the status of the New Tab page URL when an NTP is opened.
   </summary>
@@ -33486,6 +33486,42 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Tab.NewTab" enum="NewTabType">
+  <owner>lliabraa@chromium.org</owner>
+  <owner>beaudoin@chromium.org</owner>
+  <summary>
+    Tracks the different ways users are opening new tabs. Does not apply to
+    opening existing links or searches in a new tab, only to brand new empty
+    tabs. Note: Currently the &quot;Regular menu option&quot; includes some
+    programmatic actions in addition to user actions.
+  </summary>
+</histogram>
+
+<histogram name="Tab.NewTabDOMContentLoaded" units="milliseconds">
+  <owner>lliabraa@chromium.org</owner>
+  <owner>beaudoin@chromium.org</owner>
+  <summary>
+    The time for the new tab page to fire the &quot;DOMContentLoaded&quot;
+    event.
+  </summary>
+</histogram>
+
+<histogram name="Tab.NewTabOnload" units="milliseconds">
+  <owner>lliabraa@chromium.org</owner>
+  <owner>beaudoin@chromium.org</owner>
+  <summary>
+    The time for the new tab page to fire the &quot;load&quot; event.
+  </summary>
+</histogram>
+
+<histogram name="Tab.NewTabScriptStart" units="milliseconds">
+  <owner>lliabraa@chromium.org</owner>
+  <owner>beaudoin@chromium.org</owner>
+  <summary>
+    The time for the new tab page to start executing JavaScript.
+  </summary>
+</histogram>
+
 <histogram name="Tab.PerceivedRestoreTime" units="ms">
   <owner>lliabraa@chromium.org</owner>
   <summary>
@@ -45557,6 +45593,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="4" label="User dismissed the promo"/>
 </enum>
 
+<enum name="NewTabType" type="int">
+  <int value="0" label="New tab button"/>
+  <int value="1" label="Regular menu option"/>
+  <int value="2" label="Tab strip menu option"/>
+</enum>
+
 <enum name="NewTabURLState" type="int">
   <int value="0" label="Valid URL was used"/>
   <int value="1" label="Corrupt state"/>
@@ -54295,6 +54337,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="XP_PreRead_100"/>
   <affected-histogram name="Startup.BrowserMessageLoopStartTime"/>
   <affected-histogram name="Startup.BrowserOpenTabs"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="TabNewTabOnload" separator=".">
+  <suffix name="Local" label="Local New Tab page."/>
+  <suffix name="Google" label="New Tab page for Google."/>
+  <suffix name="Other" label="New Tab page for a non-Google provider."/>
+  <affected-histogram name="Tab.NewTabOnload"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="Tps65090Fets" separator=".">
