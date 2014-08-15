@@ -14,6 +14,7 @@
 #include "chromecast/shell/browser/devtools/remote_debugging_server.h"
 #include "chromecast/shell/browser/url_request_context_factory.h"
 #include "chromecast/shell/browser/webui/webui_cast.h"
+#include "content/public/common/content_switches.h"
 
 namespace chromecast {
 namespace shell {
@@ -26,9 +27,8 @@ struct DefaultCommandLineSwitch {
 };
 
 DefaultCommandLineSwitch g_default_switches[] = {
-  { "enable-webrtc-hw-decoding", "" },
-  { "disable-plugins", "" },
-  { "enable-threaded-compositing", "" },
+  { switches::kDisableApplicationCache, "" },
+  { switches::kDisablePlugins, "" },
   { NULL, NULL },  // Termination
 };
 
