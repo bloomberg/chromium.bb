@@ -66,7 +66,7 @@ class NET_EXPORT_PRIVATE WebSocketInflater {
 
  private:
   // Ring buffer with fixed capacity.
-  class OutputBuffer {
+  class NET_EXPORT_PRIVATE OutputBuffer {
    public:
     explicit OutputBuffer(size_t capacity);
     ~OutputBuffer();

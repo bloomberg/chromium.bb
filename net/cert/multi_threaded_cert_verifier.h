@@ -96,7 +96,7 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier
   };
 
   // CachedResult contains the result of a certificate verification.
-  struct CachedResult {
+  struct NET_EXPORT_PRIVATE CachedResult {
     CachedResult();
     ~CachedResult();
 
