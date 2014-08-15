@@ -4,6 +4,8 @@
 
 package org.chromium.net;
 
+import android.util.Log;
+
 import org.apache.http.conn.ConnectTimeoutException;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
@@ -401,41 +403,63 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
     // Private methods called by native library.
 
     /**
+     * If @CalledByNative method throws an exception, request gets cancelled
+     * and exception could be retrieved from request using getException().
+     */
+    private void onCalledByNativeException(Exception e) {
+        mSinkException = new IOException(
+                "CalledByNative method has thrown an exception", e);
+        Log.e(ChromiumUrlRequestContext.LOG_TAG,
+                "Exception in CalledByNative method", e);
+        try {
+            cancel();
+        } catch (Exception cancel_exception) {
+            Log.e(ChromiumUrlRequestContext.LOG_TAG,
+                    "Exception trying to cancel request", cancel_exception);
+        }
+    }
+
+    /**
      * A callback invoked when the first chunk of the response has arrived.
      */
     @CalledByNative
     private void onResponseStarted() {
-        mContentType = nativeGetContentType(mUrlRequestAdapter);
-        mContentLength = nativeGetContentLength(mUrlRequestAdapter);
-        mHeadersAvailable = true;
+        try {
+            mContentType = nativeGetContentType(mUrlRequestAdapter);
+            mContentLength = nativeGetContentLength(mUrlRequestAdapter);
+            mHeadersAvailable = true;
 
-        if (mContentLengthLimit > 0 && mContentLength > mContentLengthLimit
-                && mCancelIfContentLengthOverLimit) {
-            onContentLengthOverLimit();
-            return;
-        }
-
-        if (mBufferFullResponse && mContentLength != -1
-                && !mContentLengthOverLimit) {
-            ((ChunkedWritableByteChannel)getSink()).setCapacity(
-                    (int)mContentLength);
-        }
-
-        if (mOffset != 0) {
-            // The server may ignore the request for a byte range, in which case
-            // status code will be 200, instead of 206. Note that we cannot call
-            // getHttpStatusCode as it rewrites 206 into 200.
-            if (nativeGetHttpStatusCode(mUrlRequestAdapter) == 200) {
-                // TODO(mef): Revisit this logic.
-                if (mContentLength != -1) {
-                    mContentLength -= mOffset;
-                }
-                mSkippingToOffset = true;
-            } else {
-                mSize = mOffset;
+            if (mContentLengthLimit > 0 &&
+                    mContentLength > mContentLengthLimit &&
+                    mCancelIfContentLengthOverLimit) {
+                onContentLengthOverLimit();
+                    return;
             }
+
+            if (mBufferFullResponse && mContentLength != -1 &&
+                    !mContentLengthOverLimit) {
+                ((ChunkedWritableByteChannel)getSink()).setCapacity(
+                        (int)mContentLength);
+            }
+
+            if (mOffset != 0) {
+                // The server may ignore the request for a byte range, in which
+                // case status code will be 200, instead of 206. Note that we
+                // cannot call getHttpStatusCode as it rewrites 206 into 200.
+                if (nativeGetHttpStatusCode(mUrlRequestAdapter) == 200) {
+                    // TODO(mef): Revisit this logic.
+                    if (mContentLength != -1) {
+                        mContentLength -= mOffset;
+                    }
+                    mSkippingToOffset = true;
+                } else {
+                    mSize = mOffset;
+                }
+            }
+            mListener.onResponseStarted(this);
+        } catch (Exception e) {
+            onCalledByNativeException(e);
         }
-        mListener.onResponseStarted(this);
     }
 
     /**
@@ -447,37 +471,36 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
      */
     @CalledByNative
     private void onBytesRead(ByteBuffer buffer) {
-        if (mContentLengthOverLimit) {
-            return;
-        }
-
-        int size = buffer.remaining();
-        mSize += size;
-        if (mSkippingToOffset) {
-            if (mSize <= mOffset) {
-                return;
-            } else {
-                mSkippingToOffset = false;
-                buffer.position((int)(mOffset - (mSize - size)));
-            }
-        }
-
-        boolean contentLengthOverLimit =
-                (mContentLengthLimit != 0 && mSize > mContentLengthLimit);
-        if (contentLengthOverLimit) {
-            buffer.limit(size - (int)(mSize - mContentLengthLimit));
-        }
-
         try {
+            if (mContentLengthOverLimit) {
+                return;
+            }
+
+            int size = buffer.remaining();
+            mSize += size;
+            if (mSkippingToOffset) {
+                if (mSize <= mOffset) {
+                    return;
+                } else {
+                    mSkippingToOffset = false;
+                    buffer.position((int)(mOffset - (mSize - size)));
+                }
+            }
+
+            boolean contentLengthOverLimit =
+                    (mContentLengthLimit != 0 && mSize > mContentLengthLimit);
+            if (contentLengthOverLimit) {
+                buffer.limit(size - (int)(mSize - mContentLengthLimit));
+            }
+
             while (buffer.hasRemaining()) {
                 mSink.write(buffer);
             }
-        } catch (IOException e) {
-            mSinkException = e;
-            cancel();
-        }
-        if (contentLengthOverLimit) {
-            onContentLengthOverLimit();
+            if (contentLengthOverLimit) {
+                onContentLengthOverLimit();
+            }
+        } catch (Exception e) {
+            onCalledByNativeException(e);
         }
     }
 
@@ -487,21 +510,32 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
     @SuppressWarnings("unused")
     @CalledByNative
     private void finish() {
-        synchronized (mLock) {
-            mFinished = true;
+        try {
+            synchronized (mLock) {
+                mFinished = true;
 
-            if (mRecycled) {
-                return;
+                if (mRecycled) {
+                    return;
+                }
+                try {
+                    mSink.close();
+                } catch (IOException e) {
+                    // Ignore
+                }
+                try {
+                    if (mUploadChannel != null && mUploadChannel.isOpen()) {
+                        mUploadChannel.close();
+                    }
+                } catch (IOException e) {
+                    // Ignore
+                }
+                onRequestComplete();
+                nativeDestroyRequestAdapter(mUrlRequestAdapter);
+                mUrlRequestAdapter = 0;
+                mRecycled = true;
             }
-            try {
-                mSink.close();
-            } catch (IOException e) {
-                // Ignore
-            }
-            onRequestComplete();
-            nativeDestroyRequestAdapter(mUrlRequestAdapter);
-            mUrlRequestAdapter = 0;
-            mRecycled = true;
+        } catch (Exception e) {
+            mSinkException = new IOException("Exception in finish", e);
         }
     }
 
@@ -512,10 +546,14 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
     @CalledByNative
     private void onAppendResponseHeader(ResponseHeadersMap headersMap,
             String name, String value) {
-        if (!headersMap.containsKey(name)) {
-            headersMap.put(name, new ArrayList<String>());
+        try {
+            if (!headersMap.containsKey(name)) {
+                headersMap.put(name, new ArrayList<String>());
+            }
+            headersMap.get(name).add(value);
+        } catch (Exception e) {
+            onCalledByNativeException(e);
         }
-        headersMap.get(name).add(value);
     }
 
     /**
@@ -527,25 +565,19 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
     @SuppressWarnings("unused")
     @CalledByNative
     private int readFromUploadChannel(ByteBuffer dest) {
-        if (mUploadChannel == null || !mUploadChannel.isOpen())
-            return -1;
         try {
+            if (mUploadChannel == null || !mUploadChannel.isOpen())
+                return -1;
             int result = mUploadChannel.read(dest);
             if (result < 0) {
                 mUploadChannel.close();
                 return 0;
             }
             return result;
-        } catch (IOException e) {
-            mSinkException = e;
-            try {
-                mUploadChannel.close();
-            } catch (IOException ignored) {
-                // Ignore this exception.
-            }
-            cancel();
-            return -1;
+        } catch (Exception e) {
+            onCalledByNativeException(e);
         }
+        return -1;
     }
 
     // Native methods are implemented in chromium_url_request.cc.

@@ -4,12 +4,17 @@
 
 package org.chromium.cronet_sample_apk;
 
+import android.os.ConditionVariable;
+
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.HttpUrlRequest;
 import org.chromium.net.HttpUrlRequestFactoryConfig;
+import org.chromium.net.HttpUrlRequestListener;
 
 import java.io.File;
+import java.util.HashMap;
 
 /**
  * Example test that just starts the cronet sample.
@@ -87,6 +92,53 @@ public class CronetSampleUrlTest extends CronetSampleTestBase {
         assertTrue(file.length() != 0);
         assertTrue(file.delete());
         assertTrue(!file.exists());
+    }
+
+    class BadHttpUrlRequestListener implements HttpUrlRequestListener {
+        static final String THROW_TAG = "BadListener";
+        ConditionVariable mComplete = new ConditionVariable();
+
+        public BadHttpUrlRequestListener() {
+        }
+
+        @Override
+        public void onResponseStarted(HttpUrlRequest request) {
+            throw new NullPointerException(THROW_TAG);
+        }
+
+        @Override
+        public void onRequestComplete(HttpUrlRequest request) {
+            mComplete.open();
+            throw new NullPointerException(THROW_TAG);
+        }
+
+        public void blockForComplete() {
+            mComplete.block();
+        }
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testCalledByNativeException() throws Exception {
+        CronetSampleActivity activity = launchCronetSampleWithUrl(URL);
+
+        // Make sure the activity was created as expected.
+        assertNotNull(activity);
+
+        waitForActiveShellToBeDoneLoading();
+
+        HashMap<String, String> headers = new HashMap<String, String>();
+        BadHttpUrlRequestListener listener = new BadHttpUrlRequestListener();
+
+        // Create request with null listener to trigger an exception.
+        HttpUrlRequest request = activity.mChromiumRequestFactory.createRequest(
+                URL, HttpUrlRequest.REQUEST_PRIORITY_MEDIUM, headers, listener);
+        request.start();
+        listener.blockForComplete();
+        assertTrue(request.isCanceled());
+        assertNotNull(request.getException());
+        assertEquals(listener.THROW_TAG, request.getException().getCause().getMessage());
+
     }
 
     @SmallTest

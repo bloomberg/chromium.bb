@@ -20,7 +20,7 @@ public class ChromiumUrlRequestContext {
     private static final int LOG_NONE = 3;  // LOG(FATAL), no VLOG.
     private static final int LOG_DEBUG = -1;  // LOG(FATAL...INFO), VLOG(1)
     private static final int LOG_VERBOSE = -2;  // LOG(FATAL...INFO), VLOG(2)
-    private static final String LOG_TAG = "ChromiumNetwork";
+    static final String LOG_TAG = "ChromiumNetwork";
 
     /**
      * Native adapter object, owned by ChromiumUrlRequestContext.
