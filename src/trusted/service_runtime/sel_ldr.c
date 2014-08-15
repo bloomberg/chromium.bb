@@ -207,7 +207,7 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   nap->desc_quota_interface = NULL;
 
   nap->module_initialization_state = NACL_MODULE_UNINITIALIZED;
-  nap->module_load_status = LOAD_STATUS_UNKNOWN;
+  nap->module_load_status = LOAD_OK;
 
   nap->name_service = (struct NaClNameService *) malloc(
       sizeof *nap->name_service);
@@ -951,6 +951,24 @@ void NaClSetUpBootstrapChannel(struct NaClApp  *nap,
   }
 }
 
+enum NaClModuleInitializationState NaClGetInitState(struct NaClApp *nap) {
+  enum NaClModuleInitializationState state;
+  NaClXMutexLock(&nap->mu);
+  state = nap->module_initialization_state;
+  NaClXMutexUnlock(&nap->mu);
+  return state;
+}
+
+void NaClSetInitState(struct NaClApp *nap,
+                      enum NaClModuleInitializationState state) {
+  NaClXMutexLock(&nap->mu);
+  /* The initialization state should be increasing monotonically. */
+  CHECK(state > nap->module_initialization_state);
+  nap->module_initialization_state = state;
+  NaClXCondVarBroadcast(&nap->cv);
+  NaClXMutexUnlock(&nap->mu);
+}
+
 NaClErrorCode NaClWaitForLoadModuleCommand(struct NaClApp *nap) {
   NaClErrorCode status;
 
@@ -966,17 +984,21 @@ NaClErrorCode NaClWaitForLoadModuleCommand(struct NaClApp *nap) {
   return status;
 }
 
-NaClErrorCode NaClWaitForLoadModuleStatus(struct NaClApp *nap) {
-  NaClErrorCode status;
-
-  NaClLog(4, "NaClWaitForLoadModuleStatus started\n");
+void NaClRememberLoadStatus(struct NaClApp *nap, NaClErrorCode status) {
   NaClXMutexLock(&nap->mu);
-  while (LOAD_STATUS_UNKNOWN == (status = nap->module_load_status)) {
-    NaClXCondVarWait(&nap->cv, &nap->mu);
+  /* Remember the first error we encountered. */
+  if (nap->module_load_status == LOAD_OK) {
+    nap->module_load_status = status;
   }
   NaClXMutexUnlock(&nap->mu);
-  NaClLog(4, "NaClWaitForLoadModuleStatus finished\n");
+}
 
+
+NaClErrorCode NaClGetLoadStatus(struct NaClApp *nap) {
+  NaClErrorCode status;
+  NaClXMutexLock(&nap->mu);
+  status = nap->module_load_status;
+  NaClXMutexUnlock(&nap->mu);
   return status;
 }
 
@@ -1045,40 +1067,36 @@ void NaClAppLoadModule(struct NaClApp   *nap,
                                                    NaClErrorCode status),
                        void             *instance_data) {
   NaClErrorCode status = LOAD_OK;
+  int is_double_init = NaClGetInitState(nap) != NACL_MODULE_UNINITIALIZED;
 
   NaClLog(4,
           ("Entered NaClAppLoadModule: nap 0x%"NACL_PRIxPTR","
            " nexe 0x%"NACL_PRIxPTR"\n"),
           (uintptr_t) nap, (uintptr_t) nexe);
+
+  if (NULL != load_cb) {
+    NaClErrorCode cb_status;
+    if (is_double_init) {
+      cb_status = LOAD_DUP_LOAD_MODULE;
+    } else {
+      cb_status = LOAD_OK;
+    }
+    (*load_cb)(instance_data, cb_status);
+  }
+
+  if (is_double_init) {
+    NaClLog(LOG_ERROR, "NaClAppLoadModule: repeated invocation\n");
+    return;
+  }
+
+  NaClSetInitState(nap, NACL_MODULE_LOADING);
+
   /*
    * Ref was passed by value into |nexe| parameter, so up the refcount.
    * Be sure to unref when the parameter's copy goes out of scope
    * (when returning).
    */
   NaClDescRef(nexe);
-
-  /*
-   * TODO(bsy): consider doing the processing below after sending the
-   * RPC reply to increase parallelism.
-   */
-  NaClXMutexLock(&nap->mu);
-  if (nap->module_initialization_state != NACL_MODULE_UNINITIALIZED) {
-    NaClLog(LOG_ERROR, "NaClAppLoadModule: repeated invocation\n");
-    status = LOAD_DUP_LOAD_MODULE;
-    NaClXMutexUnlock(&nap->mu);
-    if (NULL != load_cb) {
-      (*load_cb)(instance_data, status);
-    }
-    NaClDescUnref(nexe);
-    return;
-  }
-  nap->module_initialization_state = NACL_MODULE_LOADING;
-  NaClXCondVarBroadcast(&nap->cv);
-  NaClXMutexUnlock(&nap->mu);
-
-  if (NULL != load_cb) {
-    (*load_cb)(instance_data, status);
-  }
 
   NaClXMutexLock(&nap->mu);
 
@@ -1102,14 +1120,14 @@ void NaClAppLoadModule(struct NaClApp   *nap,
                        NaClAppLoadFile(nap->main_nexe_desc, nap));
 
   if (LOAD_OK != status) {
-    nap->module_load_status = status;
-    nap->module_initialization_state = NACL_MODULE_ERROR;
-    NaClXCondVarBroadcast(&nap->cv);
-  }
-  NaClXMutexUnlock(&nap->mu);  /* NaClAppPrepareToLaunch takes mu */
-  if (LOAD_OK != status) {
     NaClDescUnref(nap->main_nexe_desc);
     nap->main_nexe_desc = NULL;
+  }
+  NaClXMutexUnlock(&nap->mu);  /* NaClAppPrepareToLaunch takes mu */
+
+  if (LOAD_OK != status) {
+    NaClRememberLoadStatus(nap, status);
+    NaClSetInitState(nap, NACL_MODULE_ERROR);
     return;
   }
 
@@ -1123,12 +1141,8 @@ void NaClAppLoadModule(struct NaClApp   *nap,
    * Finish setting up the NaCl App.
    */
   status = NaClAppPrepareToLaunch(nap);
-
-  NaClXMutexLock(&nap->mu);
-  nap->module_load_status = status;
-  nap->module_initialization_state = NACL_MODULE_LOADED;
-  NaClXCondVarBroadcast(&nap->cv);
-  NaClXMutexUnlock(&nap->mu);
+  NaClRememberLoadStatus(nap, status);
+  NaClSetInitState(nap, NACL_MODULE_LOADED);
 
   /* Give debuggers a well known point at which xlate_base is known.  */
   NaClGdbHook(nap);
@@ -1210,14 +1224,14 @@ void NaClAppStartModule(struct NaClApp  *nap,
    */
   NaClXMutexLock(&nap->mu);
   if (NACL_MODULE_LOADING == nap->module_initialization_state) {
-    while (NACL_MODULE_LOADED != nap->module_initialization_state) {
+    while (NACL_MODULE_LOADING == nap->module_initialization_state) {
       NaClXCondVarWait(&nap->cv, &nap->mu);
     }
   }
+  status = nap->module_load_status;
   if (nap->module_initialization_state != NACL_MODULE_LOADED) {
     if (NACL_MODULE_ERROR == nap->module_initialization_state) {
       NaClLog(LOG_ERROR, "NaClAppStartModule: error loading module\n");
-      status = nap->module_load_status;
     } else if (nap->module_initialization_state > NACL_MODULE_LOADED) {
       NaClLog(LOG_ERROR, "NaClAppStartModule: repeated invocation\n");
       status = LOAD_DUP_START_MODULE;
@@ -1231,10 +1245,9 @@ void NaClAppStartModule(struct NaClApp  *nap,
     }
     return;
   }
-  status = nap->module_load_status;
-  nap->module_initialization_state = NACL_MODULE_STARTING;
-  NaClXCondVarBroadcast(&nap->cv);
   NaClXMutexUnlock(&nap->mu);
+
+  NaClSetInitState(nap, NACL_MODULE_STARTING);
 
   NaClLog(4, "NaClSecureChannelStartModule: load status %d\n", status);
 
@@ -1251,10 +1264,7 @@ void NaClAppStartModule(struct NaClApp  *nap,
     (*start_cb)(instance_data, status);
   }
 
-  NaClXMutexLock(&nap->mu);
-  nap->module_initialization_state = NACL_MODULE_STARTED;
-  NaClXCondVarBroadcast(&nap->cv);
-  NaClXMutexUnlock(&nap->mu);
+  NaClSetInitState(nap, NACL_MODULE_STARTED);
 }
 
 void NaClAppShutdown(struct NaClApp     *nap,

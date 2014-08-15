@@ -756,7 +756,10 @@ int NaClSelLdrMain(int argc, char **argv) {
    */
 
   if (options->rpc_supplies_nexe) {
-    errcode = NaClWaitForLoadModuleCommand(nap);
+    NaClErrorCode load_error = NaClWaitForLoadModuleCommand(nap);
+    if (load_error != LOAD_OK) {
+      errcode = load_error;
+    }
     NaClPerfCounterMark(&time_all_main, "WaitForLoad");
     NaClPerfCounterIntervalLast(&time_all_main);
   }

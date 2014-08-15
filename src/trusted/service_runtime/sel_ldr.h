@@ -714,7 +714,7 @@ void NaClAppShutdown(struct NaClApp     *self,
 
 NaClErrorCode NaClWaitForLoadModuleCommand(struct NaClApp *nap) NACL_WUR;
 
-NaClErrorCode NaClWaitForLoadModuleStatus(struct NaClApp *nap) NACL_WUR;
+NaClErrorCode NaClGetLoadStatus(struct NaClApp *nap) NACL_WUR;
 
 NaClErrorCode NaClWaitForStartModuleCommand(struct NaClApp *nap) NACL_WUR;
 
