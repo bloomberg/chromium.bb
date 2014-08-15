@@ -61,9 +61,10 @@ void FileWriterDelegate::Cancel() {
   }
 }
 
-void FileWriterDelegate::OnReceivedRedirect(net::URLRequest* request,
-                                            const GURL& new_url,
-                                            bool* defer_redirect) {
+void FileWriterDelegate::OnReceivedRedirect(
+    net::URLRequest* request,
+    const net::RedirectInfo& redirect_info,
+    bool* defer_redirect) {
   NOTREACHED();
   OnError(base::File::FILE_ERROR_SECURITY);
 }

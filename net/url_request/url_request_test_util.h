@@ -175,7 +175,8 @@ class TestDelegate : public URLRequest::Delegate {
   void ClearFullRequestHeaders();
 
   // URLRequest::Delegate:
-  virtual void OnReceivedRedirect(URLRequest* request, const GURL& new_url,
+  virtual void OnReceivedRedirect(URLRequest* request,
+                                  const RedirectInfo& redirect_info,
                                   bool* defer_redirect) OVERRIDE;
   virtual void OnBeforeNetworkStart(URLRequest* request, bool* defer) OVERRIDE;
   virtual void OnAuthRequired(URLRequest* request,

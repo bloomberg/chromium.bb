@@ -59,8 +59,7 @@ class TestRequestPeer : public RequestPeer {
   virtual void OnUploadProgress(uint64 position, uint64 size) OVERRIDE {
   }
 
-  virtual bool OnReceivedRedirect(const GURL& new_url,
-                                  const GURL& new_first_party_for_cookies,
+  virtual bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
                                   const ResourceResponseInfo& info) OVERRIDE {
     ++seen_redirects_;
     if (defer_on_redirect_)
@@ -252,9 +251,13 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
     std::replace(raw_headers.begin(), raw_headers.end(), '\n', '\0');
     head.headers = new net::HttpResponseHeaders(raw_headers);
     head.error_code = net::OK;
+    net::RedirectInfo redirect_info;
+    redirect_info.status_code = 302;
+    redirect_info.new_method = "GET";
+    redirect_info.new_url = GURL(kTestPageUrl);
+    redirect_info.new_first_party_for_cookies = GURL(kTestPageUrl);
     EXPECT_EQ(true, dispatcher_.OnMessageReceived(
-        ResourceMsg_ReceivedRedirect(request_id, GURL(kTestPageUrl),
-                                     GURL(kTestPageUrl), head)));
+        ResourceMsg_ReceivedRedirect(request_id, redirect_info, head)));
   }
 
   void NotifyReceivedResponse(int request_id) {
@@ -722,8 +725,7 @@ class TimeConversionTest : public ResourceDispatcherTest,
   virtual void OnUploadProgress(uint64 position, uint64 size) OVERRIDE {
   }
 
-  virtual bool OnReceivedRedirect(const GURL& new_url,
-                                  const GURL& new_first_party_for_cookies,
+  virtual bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
                                   const ResourceResponseInfo& info) OVERRIDE {
     return true;
   }

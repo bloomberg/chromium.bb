@@ -34,8 +34,7 @@ class ExtensionLocalizationPeer : public content::RequestPeer {
   // content::RequestPeer methods.
   virtual void OnUploadProgress(uint64 position, uint64 size) OVERRIDE;
   virtual bool OnReceivedRedirect(
-      const GURL& new_url,
-      const GURL& new_first_party_for_cookies,
+      const net::RedirectInfo& redirect_info,
       const content::ResourceResponseInfo& info) OVERRIDE;
   virtual void OnReceivedResponse(
       const content::ResourceResponseInfo& info) OVERRIDE;

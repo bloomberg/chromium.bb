@@ -36,9 +36,10 @@ bool StreamResourceHandler::OnUploadProgress(uint64 position,
   return true;
 }
 
-bool StreamResourceHandler::OnRequestRedirected(const GURL& url,
-                                                ResourceResponse* resp,
-                                                bool* defer) {
+bool StreamResourceHandler::OnRequestRedirected(
+    const net::RedirectInfo& redirect_info,
+    ResourceResponse* resp,
+    bool* defer) {
   return true;
 }
 

@@ -141,12 +141,9 @@ bool DownloadResourceHandler::OnUploadProgress(uint64 position,
 }
 
 bool DownloadResourceHandler::OnRequestRedirected(
-    const GURL& url,
+    const net::RedirectInfo& redirect_info,
     ResourceResponse* response,
     bool* defer) {
-  // We treat a download as a main frame load, and thus update the policy URL
-  // on redirects.
-  request()->set_first_party_for_cookies(url);
   return true;
 }
 

@@ -499,8 +499,7 @@ void ResourceDispatcher::OnDownloadedData(int request_id,
 
 void ResourceDispatcher::OnReceivedRedirect(
     int request_id,
-    const GURL& new_url,
-    const GURL& new_first_party_for_cookies,
+    const net::RedirectInfo& redirect_info,
     const ResourceResponseHead& response_head) {
   TRACE_EVENT0("loader", "ResourceDispatcher::OnReceivedRedirect");
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
@@ -510,8 +509,8 @@ void ResourceDispatcher::OnReceivedRedirect(
 
   ResourceResponseInfo renderer_response_info;
   ToResourceResponseInfo(*request_info, response_head, &renderer_response_info);
-  if (request_info->peer->OnReceivedRedirect(
-          new_url, new_first_party_for_cookies, renderer_response_info)) {
+  if (request_info->peer->OnReceivedRedirect(redirect_info,
+                                             renderer_response_info)) {
     // Double-check if the request is still around. The call above could
     // potentially remove it.
     request_info = GetPendingRequestInfo(request_id);
@@ -519,7 +518,7 @@ void ResourceDispatcher::OnReceivedRedirect(
       return;
     // We update the response_url here so that we can send it to
     // SiteIsolationPolicy later when OnReceivedResponse is called.
-    request_info->response_url = new_url;
+    request_info->response_url = redirect_info.new_url;
     request_info->pending_redirect_message.reset(
         new ResourceHostMsg_FollowRedirect(request_id));
     if (!request_info->is_deferred) {

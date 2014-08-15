@@ -52,7 +52,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileWriterDelegate
   void Cancel();
 
   virtual void OnReceivedRedirect(net::URLRequest* request,
-                                  const GURL& new_url,
+                                  const net::RedirectInfo& redirect_info,
                                   bool* defer_redirect) OVERRIDE;
   virtual void OnAuthRequired(net::URLRequest* request,
                               net::AuthChallengeInfo* auth_info) OVERRIDE;

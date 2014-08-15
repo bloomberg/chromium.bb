@@ -34,7 +34,7 @@ class StreamResourceHandler : public StreamWriteObserver,
   virtual bool OnUploadProgress(uint64 position, uint64 size) OVERRIDE;
 
   // Not needed, as this event handler ought to be the final resource.
-  virtual bool OnRequestRedirected(const GURL& url,
+  virtual bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
                                    ResourceResponse* resp,
                                    bool* defer) OVERRIDE;
 

@@ -11,6 +11,7 @@
 #include "content/browser/download/save_file_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
+#include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_status.h"
 
 namespace content {
@@ -37,10 +38,10 @@ bool SaveFileResourceHandler::OnUploadProgress(uint64 position, uint64 size) {
 }
 
 bool SaveFileResourceHandler::OnRequestRedirected(
-    const GURL& url,
+    const net::RedirectInfo& redirect_info,
     ResourceResponse* response,
     bool* defer) {
-  final_url_ = url;
+  final_url_ = redirect_info.new_url;
   return true;
 }
 

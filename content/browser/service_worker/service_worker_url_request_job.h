@@ -64,7 +64,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   // net::URLRequest::Delegate overrides that read the blob from the
   // ServiceWorkerFetchResponse.
   virtual void OnReceivedRedirect(net::URLRequest* request,
-                                  const GURL& new_url,
+                                  const net::RedirectInfo& redirect_info,
                                   bool* defer_redirect) OVERRIDE;
   virtual void OnAuthRequired(net::URLRequest* request,
                               net::AuthChallengeInfo* auth_info) OVERRIDE;

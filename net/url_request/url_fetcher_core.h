@@ -123,7 +123,7 @@ class URLFetcherCore
 
   // Overridden from URLRequest::Delegate:
   virtual void OnReceivedRedirect(URLRequest* request,
-                                  const GURL& new_url,
+                                  const RedirectInfo& redirect_info,
                                   bool* defer_redirect) OVERRIDE;
   virtual void OnResponseStarted(URLRequest* request) OVERRIDE;
   virtual void OnReadCompleted(URLRequest* request,

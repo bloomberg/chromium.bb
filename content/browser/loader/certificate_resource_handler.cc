@@ -12,6 +12,7 @@
 #include "net/base/mime_sniffer.h"
 #include "net/base/mime_util.h"
 #include "net/http/http_response_headers.h"
+#include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
 
@@ -34,10 +35,10 @@ bool CertificateResourceHandler::OnUploadProgress(uint64 position,
   return true;
 }
 
-bool CertificateResourceHandler::OnRequestRedirected(const GURL& url,
-                                                     ResourceResponse* resp,
-                                                     bool* defer) {
-  url_ = url;
+bool CertificateResourceHandler::OnRequestRedirected(
+    const net::RedirectInfo& redirect_info,
+    ResourceResponse* resp,
+    bool* defer) {
   return true;
 }
 

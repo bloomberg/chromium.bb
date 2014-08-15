@@ -33,7 +33,7 @@ class SaveFileResourceHandler : public ResourceHandler {
 
   // Saves the redirected URL to final_url_, we need to use the original
   // URL to match original request.
-  virtual bool OnRequestRedirected(const GURL& url,
+  virtual bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
                                    ResourceResponse* response,
                                    bool* defer) OVERRIDE;
 

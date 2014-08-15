@@ -11,6 +11,7 @@
 #include "ipc/ipc_sender.h"
 #include "ipc/ipc_sync_message.h"
 #include "net/base/net_errors.h"
+#include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -55,9 +56,8 @@ class MockRequestPeer : public content::RequestPeer {
   virtual ~MockRequestPeer() {}
 
   MOCK_METHOD2(OnUploadProgress, void(uint64 position, uint64 size));
-  MOCK_METHOD3(OnReceivedRedirect,
-               bool(const GURL& new_url,
-                    const GURL& new_first_party_for_cookies,
+  MOCK_METHOD2(OnReceivedRedirect,
+               bool(const net::RedirectInfo& redirect_info,
                     const content::ResourceResponseInfo& info));
   MOCK_METHOD1(OnReceivedResponse,
                void(const content::ResourceResponseInfo& info));

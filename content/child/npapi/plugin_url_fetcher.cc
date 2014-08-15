@@ -23,7 +23,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
-#include "net/url_request/url_request.h"
+#include "net/url_request/redirect_info.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "webkit/child/resource_loader_bridge.h"
@@ -95,7 +95,6 @@ PluginURLFetcher::PluginURLFetcher(PluginStreamUrl* plugin_stream,
     : plugin_stream_(plugin_stream),
       url_(url),
       first_party_for_cookies_(first_party_for_cookies),
-      method_(method),
       referrer_(referrer),
       notify_redirects_(notify_redirects),
       is_plugin_src_load_(is_plugin_src_load),
@@ -191,8 +190,7 @@ void PluginURLFetcher::OnUploadProgress(uint64 position, uint64 size) {
 }
 
 bool PluginURLFetcher::OnReceivedRedirect(
-    const GURL& new_url,
-    const GURL& new_first_party_for_cookies,
+    const net::RedirectInfo& redirect_info,
     const ResourceResponseInfo& info) {
   if (!plugin_stream_)
     return false;
@@ -206,42 +204,28 @@ bool PluginURLFetcher::OnReceivedRedirect(
   // initiated by plug-ins.
   if (is_plugin_src_load_ &&
       !plugin_stream_->instance()->webplugin()->CheckIfRunInsecureContent(
-          new_url)) {
+          redirect_info.new_url)) {
     plugin_stream_->DidFail(resource_id_);  // That will delete |this|.
     return false;
   }
 
-  // It's unfortunate that this logic of when a redirect's method changes is
-  // in url_request.cc, but weburlloader_impl.cc and this file have to duplicate
-  // it instead of passing that information.
-  int response_code;
-  if (info.headers) {
-    response_code = info.headers->response_code();
-  } else {
-    // A redirect may have NULL headers if it came from URLRequestRedirectJob.
-    //
-    // TODO(davidben): Get the actual response code from the browser. Either
-    // fake enough of headers to have a response code or pass it down as part of
-    // https://crbug.com/384609.
-    response_code = 307;
-  }
-  method_ = net::URLRequest::ComputeMethodForRedirect(method_, response_code);
   GURL old_url = url_;
-  url_ = new_url;
-  first_party_for_cookies_ = new_first_party_for_cookies;
+  url_ = redirect_info.new_url;
+  first_party_for_cookies_ = redirect_info.new_first_party_for_cookies;
 
   // If the plugin does not participate in url redirect notifications then just
   // block cross origin 307 POST redirects.
   if (!notify_redirects_) {
-    if (response_code == 307 && method_ == "POST" &&
-        old_url.GetOrigin() != new_url.GetOrigin()) {
+    if (redirect_info.status_code == 307 &&
+        redirect_info.new_method == "POST" &&
+        old_url.GetOrigin() != url_.GetOrigin()) {
       plugin_stream_->DidFail(resource_id_);  // That will delete |this|.
       return false;
     }
   } else {
     // Pause the request while we ask the plugin what to do about the redirect.
     bridge_->SetDefersLoading(true);
-    plugin_stream_->WillSendRequest(url_, response_code);
+    plugin_stream_->WillSendRequest(url_, redirect_info.status_code);
   }
 
   return true;

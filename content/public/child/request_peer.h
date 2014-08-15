@@ -16,6 +16,10 @@ namespace base {
 class TimeTicks;
 }
 
+namespace net {
+struct RedirectInfo;
+}
+
 namespace content {
 
 struct ResourceResponseInfo;
@@ -34,12 +38,10 @@ class CONTENT_EXPORT RequestPeer {
   virtual void OnUploadProgress(uint64 position, uint64 size) = 0;
 
   // Called when a redirect occurs.  The implementation may return false to
-  // suppress the redirect.  The given ResponseInfo provides complete
-  // information about the redirect, and new_url is the URL that will be loaded
-  // if this method returns true. new_first_party_for_cookies is the new
-  // first-party URL for cookies should that have changed.
-  virtual bool OnReceivedRedirect(const GURL& new_url,
-                                  const GURL& new_first_party_for_cookies,
+  // suppress the redirect.  The ResourceResponseInfo provides information about
+  // the redirect response and the RedirectInfo includes information about the
+  // request to be made if the method returns true.
+  virtual bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
                                   const ResourceResponseInfo& info) = 0;
 
   // Called when response headers are available (after all redirects have

@@ -46,8 +46,7 @@ void ExtensionLocalizationPeer::OnUploadProgress(
 }
 
 bool ExtensionLocalizationPeer::OnReceivedRedirect(
-    const GURL& new_url,
-    const GURL& new_first_party_for_cookies,
+    const net::RedirectInfo& redirect_info,
     const content::ResourceResponseInfo& info) {
   NOTREACHED();
   return false;

@@ -35,11 +35,12 @@ bool LayeredResourceHandler::OnUploadProgress(uint64 position,
   return next_handler_->OnUploadProgress(position, size);
 }
 
-bool LayeredResourceHandler::OnRequestRedirected(const GURL& url,
-                                                 ResourceResponse* response,
-                                                 bool* defer) {
+bool LayeredResourceHandler::OnRequestRedirected(
+    const net::RedirectInfo& redirect_info,
+    ResourceResponse* response,
+    bool* defer) {
   DCHECK(next_handler_.get());
-  return next_handler_->OnRequestRedirected(url, response, defer);
+  return next_handler_->OnRequestRedirected(redirect_info, response, defer);
 }
 
 bool LayeredResourceHandler::OnResponseStarted(ResourceResponse* response,

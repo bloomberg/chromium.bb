@@ -37,6 +37,7 @@
 #include "net/base/upload_data_stream.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
+#include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "url/gurl.h"
@@ -283,12 +284,12 @@ class OCSPRequestSession
   }
 
   virtual void OnReceivedRedirect(URLRequest* request,
-                                  const GURL& new_url,
+                                  const RedirectInfo& redirect_info,
                                   bool* defer_redirect) OVERRIDE {
     DCHECK_EQ(request, request_);
     DCHECK_EQ(base::MessageLoopForIO::current(), io_loop_);
 
-    if (!new_url.SchemeIs("http")) {
+    if (!redirect_info.new_url.SchemeIs("http")) {
       // Prevent redirects to non-HTTP schemes, including HTTPS. This matches
       // the initial check in OCSPServerSession::CreateRequest().
       CancelURLRequest();

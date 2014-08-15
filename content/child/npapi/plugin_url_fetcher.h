@@ -56,8 +56,7 @@ class PluginURLFetcher : public RequestPeer {
  private:
   // RequestPeer implementation:
   virtual void OnUploadProgress(uint64 position, uint64 size) OVERRIDE;
-  virtual bool OnReceivedRedirect(const GURL& new_url,
-                                  const GURL& new_first_party_for_cookies,
+  virtual bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
                                   const ResourceResponseInfo& info) OVERRIDE;
   virtual void OnReceivedResponse(const ResourceResponseInfo& info) OVERRIDE;
   virtual void OnDownloadedData(int len, int encoded_data_length) OVERRIDE;
@@ -76,7 +75,6 @@ class PluginURLFetcher : public RequestPeer {
   PluginStreamUrl* plugin_stream_;
   GURL url_;
   GURL first_party_for_cookies_;
-  std::string method_;
   GURL referrer_;
   bool notify_redirects_;
   bool is_plugin_src_load_;

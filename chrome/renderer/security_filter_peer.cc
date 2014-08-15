@@ -69,8 +69,7 @@ void SecurityFilterPeer::OnUploadProgress(uint64 position, uint64 size) {
 }
 
 bool SecurityFilterPeer::OnReceivedRedirect(
-    const GURL& new_url,
-    const GURL& new_first_party_for_cookies,
+    const net::RedirectInfo& redirect_info,
     const content::ResourceResponseInfo& info) {
   NOTREACHED();
   return false;

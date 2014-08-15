@@ -14,6 +14,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_response_headers.h"
+#include "net/url_request/redirect_info.h"
 
 namespace content {
 
@@ -45,23 +46,24 @@ bool SyncResourceHandler::OnUploadProgress(uint64 position, uint64 size) {
 }
 
 bool SyncResourceHandler::OnRequestRedirected(
-    const GURL& new_url,
+    const net::RedirectInfo& redirect_info,
     ResourceResponse* response,
     bool* defer) {
   if (rdh_->delegate()) {
     rdh_->delegate()->OnRequestRedirected(
-        new_url, request(), GetRequestInfo()->GetContext(), response);
+        redirect_info.new_url, request(), GetRequestInfo()->GetContext(),
+        response);
   }
 
   DevToolsNetLogObserver::PopulateResponseInfo(request(), response);
   // TODO(darin): It would be much better if this could live in WebCore, but
   // doing so requires API changes at all levels.  Similar code exists in
   // WebCore/platform/network/cf/ResourceHandleCFNet.cpp :-(
-  if (new_url.GetOrigin() != result_.final_url.GetOrigin()) {
+  if (redirect_info.new_url.GetOrigin() != result_.final_url.GetOrigin()) {
     LOG(ERROR) << "Cross origin redirect denied";
     return false;
   }
-  result_.final_url = new_url;
+  result_.final_url = redirect_info.new_url;
 
   total_transfer_size_ += request()->GetTotalReceivedBytes();
   return true;

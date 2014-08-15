@@ -132,7 +132,7 @@ class ResourceHandlerStub : public ResourceHandler {
     return true;
   }
 
-  virtual bool OnRequestRedirected(const GURL& url,
+  virtual bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
                                    ResourceResponse* response,
                                    bool* defer) OVERRIDE {
     NOTREACHED();

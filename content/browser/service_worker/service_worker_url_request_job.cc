@@ -117,9 +117,10 @@ bool ServiceWorkerURLRequestJob::ReadRawData(
   return status.is_success();
 }
 
-void ServiceWorkerURLRequestJob::OnReceivedRedirect(net::URLRequest* request,
-                                                    const GURL& new_url,
-                                                    bool* defer_redirect) {
+void ServiceWorkerURLRequestJob::OnReceivedRedirect(
+    net::URLRequest* request,
+    const net::RedirectInfo& redirect_info,
+    bool* defer_redirect) {
   NOTREACHED();
 }
 

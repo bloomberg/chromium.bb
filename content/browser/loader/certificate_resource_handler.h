@@ -14,7 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/loader/resource_handler.h"
 #include "net/base/mime_util.h"
-#include "url/gurl.h"
 
 namespace net {
 class IOBuffer;
@@ -37,7 +36,7 @@ class CertificateResourceHandler : public ResourceHandler {
   virtual bool OnUploadProgress(uint64 position, uint64 size) OVERRIDE;
 
   // Not needed, as this event handler ought to be the final resource.
-  virtual bool OnRequestRedirected(const GURL& url,
+  virtual bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
                                    ResourceResponse* resp,
                                    bool* defer) OVERRIDE;
 
@@ -73,7 +72,6 @@ class CertificateResourceHandler : public ResourceHandler {
 
   void AssembleResource();
 
-  GURL url_;
   size_t content_length_;
   ContentVector buffer_;
   scoped_refptr<net::IOBuffer> read_buffer_;

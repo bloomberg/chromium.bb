@@ -83,7 +83,7 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
   // net::URLRequest::Delegate overrides that observe the net request.
   virtual void OnReceivedRedirect(
       net::URLRequest* request,
-      const GURL& new_url,
+      const net::RedirectInfo& redirect_info,
       bool* defer_redirect) OVERRIDE;
   virtual void OnAuthRequired(
       net::URLRequest* request,

@@ -38,7 +38,7 @@ class URLLoaderImpl : public InterfaceImpl<URLLoader>,
 
   // net::URLRequest::Delegate methods:
   virtual void OnReceivedRedirect(net::URLRequest* url_request,
-                                  const GURL& new_url,
+                                  const net::RedirectInfo& redirect_info,
                                   bool* defer_redirect) OVERRIDE;
   virtual void OnResponseStarted(net::URLRequest* url_request) OVERRIDE;
   virtual void OnReadCompleted(net::URLRequest* url_request, int bytes_read)

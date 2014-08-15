@@ -29,6 +29,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_log.h"
 #include "net/base/net_util.h"
+#include "net/url_request/redirect_info.h"
 
 using base::TimeTicks;
 
@@ -134,9 +135,10 @@ bool AsyncResourceHandler::OnUploadProgress(uint64 position,
       new ResourceMsg_UploadProgress(GetRequestID(), position, size));
 }
 
-bool AsyncResourceHandler::OnRequestRedirected(const GURL& new_url,
-                                               ResourceResponse* response,
-                                               bool* defer) {
+bool AsyncResourceHandler::OnRequestRedirected(
+    const net::RedirectInfo& redirect_info,
+    ResourceResponse* response,
+    bool* defer) {
   const ResourceRequestInfoImpl* info = GetRequestInfo();
   if (!info->filter())
     return false;
@@ -146,7 +148,7 @@ bool AsyncResourceHandler::OnRequestRedirected(const GURL& new_url,
 
   if (rdh_->delegate()) {
     rdh_->delegate()->OnRequestRedirected(
-        new_url, request(), info->GetContext(), response);
+        redirect_info.new_url, request(), info->GetContext(), response);
   }
 
   DevToolsNetLogObserver::PopulateResponseInfo(request(), response);
@@ -159,8 +161,7 @@ bool AsyncResourceHandler::OnRequestRedirected(const GURL& new_url,
   // and hopefully those will eventually all be owned by the browser. It's
   // possible this is still needed while renderer-owned ones exist.
   return info->filter()->Send(new ResourceMsg_ReceivedRedirect(
-      GetRequestID(), new_url, request()->first_party_for_cookies(),
-      response->head));
+      GetRequestID(), redirect_info, response->head));
 }
 
 bool AsyncResourceHandler::OnResponseStarted(ResourceResponse* response,

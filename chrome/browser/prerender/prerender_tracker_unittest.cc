@@ -22,6 +22,7 @@
 #include "content/test/net/url_request_mock_http_job.h"
 #include "ipc/ipc_message.h"
 #include "net/base/request_priority.h"
+#include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -119,13 +120,13 @@ class DeferredRedirectDelegate : public net::URLRequest::Delegate,
 
   // net::URLRequest::Delegate implementation:
   virtual void OnReceivedRedirect(net::URLRequest* request,
-                                  const GURL& new_url,
+                                  const net::RedirectInfo& redirect_info,
                                   bool* defer_redirect) OVERRIDE {
     // Defer the redirect either way.
     *defer_redirect = true;
 
     // Find out what the throttle would have done.
-    throttle_->WillRedirectRequest(new_url, &was_deferred_);
+    throttle_->WillRedirectRequest(redirect_info.new_url, &was_deferred_);
     run_loop_->Quit();
   }
   virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE { }

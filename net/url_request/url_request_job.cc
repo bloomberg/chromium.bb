@@ -33,7 +33,6 @@ URLRequestJob::URLRequestJob(URLRequest* request,
       filtered_read_buffer_len_(0),
       has_handled_response_(false),
       expected_content_size_(-1),
-      deferred_redirect_status_code_(-1),
       network_delegate_(network_delegate),
       weak_factory_(this) {
   base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
@@ -203,22 +202,18 @@ void URLRequestJob::ContinueDespiteLastError() {
 }
 
 void URLRequestJob::FollowDeferredRedirect() {
-  DCHECK(deferred_redirect_status_code_ != -1);
+  DCHECK_NE(-1, deferred_redirect_info_.status_code);
 
-  // NOTE: deferred_redirect_url_ may be invalid, and attempting to redirect to
-  // such an URL will fail inside FollowRedirect.  The DCHECK above asserts
-  // that we called OnReceivedRedirect.
+  // NOTE: deferred_redirect_info_ may be invalid, and attempting to follow it
+  // will fail inside FollowRedirect.  The DCHECK above asserts that we called
+  // OnReceivedRedirect.
 
   // It is also possible that FollowRedirect will drop the last reference to
   // this job, so we need to reset our members before calling it.
 
-  GURL redirect_url = deferred_redirect_url_;
-  int redirect_status_code = deferred_redirect_status_code_;
-
-  deferred_redirect_url_ = GURL();
-  deferred_redirect_status_code_ = -1;
-
-  FollowRedirect(redirect_url, redirect_status_code);
+  RedirectInfo redirect_info = deferred_redirect_info_;
+  deferred_redirect_info_ = RedirectInfo();
+  FollowRedirect(redirect_info);
 }
 
 void URLRequestJob::ResumeNetworkStart() {
@@ -335,22 +330,11 @@ void URLRequestJob::NotifyHeadersComplete() {
     // so it does not treat being stopped as an error.
     DoneReadingRedirectResponse();
 
-    const GURL& url = request_->url();
-
-    // Move the reference fragment of the old location to the new one if the
-    // new one has none. This duplicates mozilla's behavior.
-    if (url.is_valid() && url.has_ref() && !new_location.has_ref() &&
-        CopyFragmentOnRedirect(new_location)) {
-      GURL::Replacements replacements;
-      // Reference the |ref| directly out of the original URL to avoid a
-      // malloc.
-      replacements.SetRef(url.spec().data(),
-                          url.parsed_for_possibly_invalid_spec().ref);
-      new_location = new_location.ReplaceComponents(replacements);
-    }
+    RedirectInfo redirect_info =
+        ComputeRedirectInfo(new_location, http_status_code);
 
     bool defer_redirect = false;
-    request_->NotifyReceivedRedirect(new_location, &defer_redirect);
+    request_->NotifyReceivedRedirect(redirect_info, &defer_redirect);
 
     // Ensure that the request wasn't detached or destroyed in
     // NotifyReceivedRedirect
@@ -360,10 +344,9 @@ void URLRequestJob::NotifyHeadersComplete() {
     // If we were not cancelled, then maybe follow the redirect.
     if (request_->status().is_success()) {
       if (defer_redirect) {
-        deferred_redirect_url_ = new_location;
-        deferred_redirect_status_code_ = http_status_code;
+        deferred_redirect_info_ = redirect_info;
       } else {
-        FollowRedirect(new_location, http_status_code);
+        FollowRedirect(redirect_info);
       }
       return;
     }
@@ -726,8 +709,8 @@ bool URLRequestJob::ReadRawDataHelper(IOBuffer* buf, int buf_size,
   return rv;
 }
 
-void URLRequestJob::FollowRedirect(const GURL& location, int http_status_code) {
-  int rv = request_->Redirect(location, http_status_code);
+void URLRequestJob::FollowRedirect(const RedirectInfo& redirect_info) {
+  int rv = request_->Redirect(redirect_info);
   if (rv != OK)
     NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, rv));
 }
@@ -768,6 +751,54 @@ bool URLRequestJob::FilterHasData() {
 }
 
 void URLRequestJob::UpdatePacketReadTimes() {
+}
+
+RedirectInfo URLRequestJob::ComputeRedirectInfo(const GURL& location,
+                                                int http_status_code) {
+  const GURL& url = request_->url();
+
+  RedirectInfo redirect_info;
+
+  redirect_info.status_code = http_status_code;
+
+  // The request method may change, depending on the status code.
+  redirect_info.new_method = URLRequest::ComputeMethodForRedirect(
+      request_->method(), http_status_code);
+
+  // Move the reference fragment of the old location to the new one if the
+  // new one has none. This duplicates mozilla's behavior.
+  if (url.is_valid() && url.has_ref() && !location.has_ref() &&
+      CopyFragmentOnRedirect(location)) {
+    GURL::Replacements replacements;
+    // Reference the |ref| directly out of the original URL to avoid a
+    // malloc.
+    replacements.SetRef(url.spec().data(),
+                        url.parsed_for_possibly_invalid_spec().ref);
+    redirect_info.new_url = location.ReplaceComponents(replacements);
+  } else {
+    redirect_info.new_url = location;
+  }
+
+  // Update the first-party URL if appropriate.
+  if (request_->first_party_url_policy() ==
+          URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT) {
+    redirect_info.new_first_party_for_cookies = redirect_info.new_url;
+  } else {
+    redirect_info.new_first_party_for_cookies =
+        request_->first_party_for_cookies();
+  }
+
+  // Suppress the referrer if we're redirecting out of https.
+  if (request_->referrer_policy() ==
+          URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE &&
+      GURL(request_->referrer()).SchemeIsSecure() &&
+      !redirect_info.new_url.SchemeIsSecure()) {
+    redirect_info.new_referrer.clear();
+  } else {
+    redirect_info.new_referrer = request_->referrer();
+  }
+
+  return redirect_info;
 }
 
 }  // namespace net

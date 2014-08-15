@@ -19,6 +19,7 @@
 #include "net/base/request_priority.h"
 #include "net/base/upload_progress.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/url_request/redirect_info.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -364,7 +365,7 @@ class NET_EXPORT URLRequestJob
   // Called in response to a redirect that was not canceled to follow the
   // redirect. The current job will be replaced with a new job loading the
   // given redirect destination.
-  void FollowRedirect(const GURL& location, int http_status_code);
+  void FollowRedirect(const RedirectInfo& redirect_info);
 
   // Called after every raw read. If |bytes_read| is > 0, this indicates
   // a successful read of |bytes_read| unfiltered bytes. If |bytes_read|
@@ -383,6 +384,10 @@ class NET_EXPORT URLRequestJob
   // Subclasses may implement this method to record packet arrival times.
   // The default implementation does nothing.
   virtual void UpdatePacketReadTimes();
+
+  // Computes a new RedirectInfo based on receiving a redirect response of
+  // |location| and |http_status_code|.
+  RedirectInfo ComputeRedirectInfo(const GURL& location, int http_status_code);
 
   // Indicates that the job is done producing data, either it has completed
   // all the data or an error has been encountered. Set exclusively by
@@ -419,8 +424,7 @@ class NET_EXPORT URLRequestJob
   int64 expected_content_size_;
 
   // Set when a redirect is deferred.
-  GURL deferred_redirect_url_;
-  int deferred_redirect_status_code_;
+  RedirectInfo deferred_redirect_info_;
 
   // The network delegate to use with this request, if any.
   NetworkDelegate* network_delegate_;

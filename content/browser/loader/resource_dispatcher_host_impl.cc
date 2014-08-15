@@ -517,6 +517,15 @@ DownloadInterruptReason ResourceDispatcherHostImpl::BeginDownload(
   }
   request->SetLoadFlags(request->load_flags() | extra_load_flags);
 
+  // We treat a download as a main frame load, and thus update the policy URL on
+  // redirects.
+  //
+  // TODO(davidben): Is this correct? If this came from a
+  // ViewHostMsg_DownloadUrl in a frame, should it have first-party URL set
+  // appropriately?
+  request->set_first_party_url_policy(
+      net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT);
+
   // Check if the renderer is permitted to request the requested URL.
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->
           CanRequestURL(child_id, url)) {
@@ -1033,6 +1042,13 @@ void ResourceDispatcherHostImpl::BeginRequest(
   new_request->set_method(request_data.method);
   new_request->set_first_party_for_cookies(
       request_data.first_party_for_cookies);
+
+  // If the request is a MAIN_FRAME request, the first-party URL gets updated on
+  // redirects.
+  if (request_data.resource_type == RESOURCE_TYPE_MAIN_FRAME) {
+    new_request->set_first_party_url_policy(
+        net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT);
+  }
 
   const Referrer referrer(request_data.referrer, request_data.referrer_policy);
   SetReferrerForRequest(new_request.get(), referrer);

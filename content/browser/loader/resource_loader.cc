@@ -30,6 +30,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/ssl/client_cert_store.h"
+#include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_status.h"
 
 using base::TimeDelta;
@@ -199,7 +200,7 @@ void ResourceLoader::OnUploadProgressACK() {
 }
 
 void ResourceLoader::OnReceivedRedirect(net::URLRequest* unused,
-                                        const GURL& new_url,
+                                        const net::RedirectInfo& redirect_info,
                                         bool* defer) {
   DCHECK_EQ(request_.get(), unused);
 
@@ -210,18 +211,18 @@ void ResourceLoader::OnReceivedRedirect(net::URLRequest* unused,
 
   if (info->GetProcessType() != PROCESS_TYPE_PLUGIN &&
       !ChildProcessSecurityPolicyImpl::GetInstance()->
-          CanRequestURL(info->GetChildID(), new_url)) {
+          CanRequestURL(info->GetChildID(), redirect_info.new_url)) {
     VLOG(1) << "Denied unauthorized request for "
-            << new_url.possibly_invalid_spec();
+            << redirect_info.new_url.possibly_invalid_spec();
 
     // Tell the renderer that this request was disallowed.
     Cancel();
     return;
   }
 
-  delegate_->DidReceiveRedirect(this, new_url);
+  delegate_->DidReceiveRedirect(this, redirect_info.new_url);
 
-  if (delegate_->HandleExternalProtocol(this, new_url)) {
+  if (delegate_->HandleExternalProtocol(this, redirect_info.new_url)) {
     // The request is complete so we can remove it.
     CancelAndIgnore();
     return;
@@ -230,7 +231,7 @@ void ResourceLoader::OnReceivedRedirect(net::URLRequest* unused,
   scoped_refptr<ResourceResponse> response(new ResourceResponse());
   PopulateResourceResponse(info, request_.get(), response.get());
 
-  if (!handler_->OnRequestRedirected(new_url, response.get(), defer)) {
+  if (!handler_->OnRequestRedirected(redirect_info, response.get(), defer)) {
     Cancel();
   } else if (*defer) {
     deferred_stage_ = DEFERRED_REDIRECT;  // Follow redirect when resumed.

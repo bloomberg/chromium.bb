@@ -9,6 +9,7 @@
 #include "base/memory/scoped_vector.h"
 #include "content/browser/loader/layered_resource_handler.h"
 #include "content/public/browser/resource_controller.h"
+#include "net/url_request/redirect_info.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -31,7 +32,7 @@ class ThrottlingResourceHandler : public LayeredResourceHandler,
   virtual ~ThrottlingResourceHandler();
 
   // LayeredResourceHandler overrides:
-  virtual bool OnRequestRedirected(const GURL& url,
+  virtual bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
                                    ResourceResponse* response,
                                    bool* defer) OVERRIDE;
   virtual bool OnResponseStarted(ResourceResponse* response,
@@ -68,6 +69,7 @@ class ThrottlingResourceHandler : public LayeredResourceHandler,
   size_t next_index_;
 
   GURL deferred_url_;
+  net::RedirectInfo deferred_redirect_;
   scoped_refptr<ResourceResponse> deferred_response_;
 
   bool cancelled_by_resource_throttle_;

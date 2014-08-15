@@ -135,7 +135,7 @@ class CONTENT_EXPORT AppCacheUpdateJob
    private:
     // URLRequest::Delegate overrides
     virtual void OnReceivedRedirect(net::URLRequest* request,
-                                    const GURL& new_url,
+                                    const net::RedirectInfo& redirect_info,
                                     bool* defer_redirect) OVERRIDE;
     virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE;
     virtual void OnReadCompleted(net::URLRequest* request,

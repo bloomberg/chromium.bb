@@ -14,7 +14,7 @@
 // unsafe resources (such as mixed-content resource).
 // Call the factory method CreateSecurityFilterPeer() to obtain an instance of
 // SecurityFilterPeer based on the original Peer.
-// NOTE: subclasses should insure they delete themselves at the end of the
+// NOTE: subclasses should ensure they delete themselves at the end of the
 // OnReceiveComplete call.
 class SecurityFilterPeer : public content::RequestPeer {
  public:
@@ -32,8 +32,7 @@ class SecurityFilterPeer : public content::RequestPeer {
   // content::RequestPeer methods.
   virtual void OnUploadProgress(uint64 position, uint64 size) OVERRIDE;
   virtual bool OnReceivedRedirect(
-      const GURL& new_url,
-      const GURL& new_first_party_for_cookies,
+      const net::RedirectInfo& redirect_info,
       const content::ResourceResponseInfo& info) OVERRIDE;
   virtual void OnReceivedResponse(
       const content::ResourceResponseInfo& info) OVERRIDE;

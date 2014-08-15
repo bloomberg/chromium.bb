@@ -92,6 +92,8 @@ std::string InterceptNavigationResourceThrottle::GetMethodAfterRedirect() {
   net::HttpResponseHeaders* headers = request_->response_headers();
   if (!headers)
     return request_->method();
+  // TODO(davidben): Plumb net::RedirectInfo through content::ResourceThrottle
+  // and unexpose net::URLRequest::ComputeMethodForRedirect.
   return net::URLRequest::ComputeMethodForRedirect(
              request_->method(), headers->response_code());
 }

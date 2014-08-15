@@ -1122,6 +1122,8 @@
       'url_request/ftp_protocol_handler.cc',
       'url_request/ftp_protocol_handler.h',
       'url_request/http_user_agent_settings.h',
+      'url_request/redirect_info.cc',
+      'url_request/redirect_info.h',
       'url_request/static_http_user_agent_settings.cc',
       'url_request/static_http_user_agent_settings.h',
       'url_request/url_fetcher.cc',

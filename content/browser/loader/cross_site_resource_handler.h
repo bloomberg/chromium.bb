@@ -31,7 +31,7 @@ class CrossSiteResourceHandler : public LayeredResourceHandler {
   virtual ~CrossSiteResourceHandler();
 
   // ResourceHandler implementation:
-  virtual bool OnRequestRedirected(const GURL& new_url,
+  virtual bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
                                    ResourceResponse* response,
                                    bool* defer) OVERRIDE;
   virtual bool OnResponseStarted(ResourceResponse* response,

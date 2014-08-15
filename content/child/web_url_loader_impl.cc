@@ -29,7 +29,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
-#include "net/url_request/url_request.h"
+#include "net/url_request/redirect_info.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
 #include "third_party/WebKit/public/platform/WebHTTPLoadInfo.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -223,8 +223,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
 
   // RequestPeer methods:
   virtual void OnUploadProgress(uint64 position, uint64 size) OVERRIDE;
-  virtual bool OnReceivedRedirect(const GURL& new_url,
-                                  const GURL& new_first_party_for_cookies,
+  virtual bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
                                   const ResourceResponseInfo& info) OVERRIDE;
   virtual void OnReceivedResponse(const ResourceResponseInfo& info) OVERRIDE;
   virtual void OnDownloadedData(int len, int encoded_data_length) OVERRIDE;
@@ -470,8 +469,7 @@ void WebURLLoaderImpl::Context::OnUploadProgress(uint64 position, uint64 size) {
 }
 
 bool WebURLLoaderImpl::Context::OnReceivedRedirect(
-    const GURL& new_url,
-    const GURL& new_first_party_for_cookies,
+    const net::RedirectInfo& redirect_info,
     const ResourceResponseInfo& info) {
   if (!client_)
     return false;
@@ -482,23 +480,17 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
 
   // TODO(darin): We lack sufficient information to construct the actual
   // request that resulted from the redirect.
-  WebURLRequest new_request(new_url);
-  new_request.setFirstPartyForCookies(new_first_party_for_cookies);
+  WebURLRequest new_request(redirect_info.new_url);
+  new_request.setFirstPartyForCookies(
+      redirect_info.new_first_party_for_cookies);
   new_request.setDownloadToFile(request_.downloadToFile());
 
-  WebString referrer_string = WebString::fromUTF8("Referer");
-  WebString referrer = WebSecurityPolicy::generateReferrerHeader(
-      referrer_policy_,
-      new_url,
-      request_.httpHeaderField(referrer_string));
-  if (!referrer.isEmpty())
-    new_request.setHTTPReferrer(referrer, referrer_policy_);
+  new_request.setHTTPReferrer(WebString::fromUTF8(redirect_info.new_referrer),
+                              referrer_policy_);
 
-  std::string method = request_.httpMethod().utf8();
-  std::string new_method = net::URLRequest::ComputeMethodForRedirect(
-      method, response.httpStatusCode());
-  new_request.setHTTPMethod(WebString::fromUTF8(new_method));
-  if (new_method == method)
+  std::string old_method = request_.httpMethod().utf8();
+  new_request.setHTTPMethod(WebString::fromUTF8(redirect_info.new_method));
+  if (redirect_info.new_method == old_method)
     new_request.setHTTPBody(request_.httpBody());
 
   // Protect from deletion during call to willSendRequest.
@@ -508,11 +500,11 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
   request_ = new_request;
 
   // Only follow the redirect if WebKit left the URL unmodified.
-  if (new_url == GURL(new_request.url())) {
+  if (redirect_info.new_url == GURL(new_request.url())) {
     // First-party cookie logic moved from DocumentLoader in Blink to
-    // CrossSiteResourceHandler in the browser. Assert that Blink didn't try to
-    // change it to something else.
-    DCHECK_EQ(new_first_party_for_cookies.spec(),
+    // net::URLRequest in the browser. Assert that Blink didn't try to change it
+    // to something else.
+    DCHECK_EQ(redirect_info.new_first_party_for_cookies.spec(),
               request_.firstPartyForCookies().string().utf8());
     return true;
   }

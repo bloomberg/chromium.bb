@@ -25,6 +25,7 @@ namespace net {
 class IOBuffer;
 class URLRequest;
 class URLRequestStatus;
+struct RedirectInfo;
 }  // namespace net
 
 namespace content {
@@ -51,7 +52,7 @@ class CONTENT_EXPORT ResourceHandler
   // false.  Set |*defer| to true to defer the redirect.  The redirect may be
   // followed later on via ResourceDispatcherHost::FollowDeferredRedirect.  If
   // the handler returns false, then the request is cancelled.
-  virtual bool OnRequestRedirected(const GURL& url,
+  virtual bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
                                    ResourceResponse* response,
                                    bool* defer) = 0;
 

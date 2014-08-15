@@ -140,7 +140,9 @@ void AppCacheUpdateJob::URLFetcher::Start() {
 }
 
 void AppCacheUpdateJob::URLFetcher::OnReceivedRedirect(
-    net::URLRequest* request, const GURL& new_url,  bool* defer_redirect) {
+    net::URLRequest* request,
+    const net::RedirectInfo& redirect_info,
+    bool* defer_redirect) {
   DCHECK(request_ == request);
   // Redirect is not allowed by the update process.
   job_->MadeProgress();

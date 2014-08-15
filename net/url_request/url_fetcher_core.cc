@@ -20,6 +20,7 @@
 #include "net/base/upload_data_stream.h"
 #include "net/base/upload_file_element_reader.h"
 #include "net/http/http_response_headers.h"
+#include "net/url_request/redirect_info.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_fetcher_response_writer.h"
 #include "net/url_request/url_request_context.h"
@@ -371,13 +372,13 @@ bool URLFetcherCore::GetResponseAsFilePath(bool take_ownership,
 }
 
 void URLFetcherCore::OnReceivedRedirect(URLRequest* request,
-                                        const GURL& new_url,
+                                        const RedirectInfo& redirect_info,
                                         bool* defer_redirect) {
   DCHECK_EQ(request, request_.get());
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   if (stop_on_redirect_) {
     stopped_on_redirect_ = true;
-    url_ = new_url;
+    url_ = redirect_info.new_url;
     response_code_ = request_->GetResponseCode();
     was_fetched_via_proxy_ = request_->was_fetched_via_proxy();
     request->Cancel();

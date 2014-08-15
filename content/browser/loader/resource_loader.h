@@ -57,7 +57,7 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
 
   // net::URLRequest::Delegate implementation:
   virtual void OnReceivedRedirect(net::URLRequest* request,
-                                  const GURL& new_url,
+                                  const net::RedirectInfo& redirect_info,
                                   bool* defer) OVERRIDE;
   virtual void OnAuthRequired(net::URLRequest* request,
                               net::AuthChallengeInfo* info) OVERRIDE;

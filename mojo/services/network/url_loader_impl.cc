@@ -13,6 +13,7 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/http/http_response_headers.h"
+#include "net/url_request/redirect_info.h"
 
 namespace mojo {
 namespace {
@@ -240,7 +241,7 @@ void URLLoaderImpl::QueryStatus(
 }
 
 void URLLoaderImpl::OnReceivedRedirect(net::URLRequest* url_request,
-                                       const GURL& new_url,
+                                       const net::RedirectInfo& redirect_info,
                                        bool* defer_redirect) {
   DCHECK(url_request == url_request_.get());
   DCHECK(url_request->status().is_success());
@@ -253,10 +254,8 @@ void URLLoaderImpl::OnReceivedRedirect(net::URLRequest* url_request,
   *defer_redirect = true;
 
   URLResponsePtr response = MakeURLResponse(url_request);
-  response->redirect_method =
-      net::URLRequest::ComputeMethodForRedirect(url_request->method(),
-                                                response->status_code);
-  response->redirect_url = String::From(new_url);
+  response->redirect_method = redirect_info.new_method;
+  response->redirect_url = String::From(redirect_info.new_url);
 
   SendResponse(response.Pass());
 }

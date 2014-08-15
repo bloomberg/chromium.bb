@@ -24,6 +24,7 @@
 #include "net/base/request_priority.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_byte_range.h"
+#include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -81,10 +82,11 @@ class TestDelegate : public net::TestDelegate {
 
   // net::TestDelegate override.
   virtual void OnReceivedRedirect(net::URLRequest* request,
-                                  const GURL& new_url,
+                                  const net::RedirectInfo& redirect_info,
                                   bool* defer_redirect) OVERRIDE{
-    redirect_url_ = new_url;
-    net::TestDelegate::OnReceivedRedirect(request, new_url, defer_redirect);
+    redirect_url_ = redirect_info.new_url;
+    net::TestDelegate::OnReceivedRedirect(
+        request, redirect_info, defer_redirect);
   }
 
  private:

@@ -12,6 +12,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/websockets/websocket_errors.h"
@@ -46,7 +47,7 @@ class Delegate : public URLRequest::Delegate {
 
   // Implementation of URLRequest::Delegate methods.
   virtual void OnReceivedRedirect(URLRequest* request,
-                                  const GURL& new_url,
+                                  const RedirectInfo& redirect_info,
                                   bool* defer_redirect) OVERRIDE {
     // HTTP status codes returned by HttpStreamParser are filtered by
     // WebSocketBasicHandshakeStream, and only 101, 401 and 407 are permitted

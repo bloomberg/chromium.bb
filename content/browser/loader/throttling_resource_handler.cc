@@ -31,22 +31,23 @@ ThrottlingResourceHandler::ThrottlingResourceHandler(
 ThrottlingResourceHandler::~ThrottlingResourceHandler() {
 }
 
-bool ThrottlingResourceHandler::OnRequestRedirected(const GURL& new_url,
-                                                    ResourceResponse* response,
-                                                    bool* defer) {
+bool ThrottlingResourceHandler::OnRequestRedirected(
+    const net::RedirectInfo& redirect_info,
+    ResourceResponse* response,
+    bool* defer) {
   DCHECK(!cancelled_by_resource_throttle_);
 
   *defer = false;
   while (next_index_ < throttles_.size()) {
     int index = next_index_;
-    throttles_[index]->WillRedirectRequest(new_url, defer);
+    throttles_[index]->WillRedirectRequest(redirect_info.new_url, defer);
     next_index_++;
     if (cancelled_by_resource_throttle_)
       return false;
     if (*defer) {
       OnRequestDefered(index);
       deferred_stage_ = DEFERRED_REDIRECT;
-      deferred_url_ = new_url;
+      deferred_redirect_ = redirect_info;
       deferred_response_ = response;
       return true;  // Do not cancel.
     }
@@ -54,7 +55,7 @@ bool ThrottlingResourceHandler::OnRequestRedirected(const GURL& new_url,
 
   next_index_ = 0;  // Reset for next time.
 
-  return next_handler_->OnRequestRedirected(new_url, response, defer);
+  return next_handler_->OnRequestRedirected(redirect_info, response, defer);
 }
 
 bool ThrottlingResourceHandler::OnWillStart(const GURL& url, bool* defer) {
@@ -199,13 +200,13 @@ void ThrottlingResourceHandler::ResumeNetworkStart() {
 void ThrottlingResourceHandler::ResumeRedirect() {
   DCHECK(!cancelled_by_resource_throttle_);
 
-  GURL new_url = deferred_url_;
-  deferred_url_ = GURL();
+  net::RedirectInfo redirect_info = deferred_redirect_;
+  deferred_redirect_ = net::RedirectInfo();
   scoped_refptr<ResourceResponse> response;
   deferred_response_.swap(response);
 
   bool defer = false;
-  if (!OnRequestRedirected(new_url, response.get(), &defer)) {
+  if (!OnRequestRedirected(redirect_info, response.get(), &defer)) {
     controller()->Cancel();
   } else if (!defer) {
     controller()->Resume();

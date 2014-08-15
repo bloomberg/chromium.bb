@@ -246,7 +246,7 @@ void ServiceWorkerWriteToCacheJob::OnWriteDataComplete(int result) {
 
 void ServiceWorkerWriteToCacheJob::OnReceivedRedirect(
     net::URLRequest* request,
-    const GURL& new_url,
+    const net::RedirectInfo& redirect_info,
     bool* defer_redirect) {
   DCHECK_EQ(net_request_, request);
   // Script resources can't redirect.

@@ -195,7 +195,7 @@ void TestDelegate::ClearFullRequestHeaders() {
 }
 
 void TestDelegate::OnReceivedRedirect(URLRequest* request,
-                                      const GURL& new_url,
+                                      const RedirectInfo& redirect_info,
                                       bool* defer_redirect) {
   EXPECT_TRUE(request->is_redirecting());
 
@@ -366,7 +366,7 @@ void TestNetworkDelegate::InitRequestStatesIfNew(int request_id) {
 int TestNetworkDelegate::OnBeforeURLRequest(
     URLRequest* request,
     const CompletionCallback& callback,
-    GURL* new_url ) {
+    GURL* new_url) {
   int req_id = request->identifier();
   InitRequestStatesIfNew(req_id);
   event_order_[req_id] += "OnBeforeURLRequest\n";

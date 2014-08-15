@@ -89,15 +89,17 @@ bool DetachableResourceHandler::OnUploadProgress(uint64 position, uint64 size) {
   return next_handler_->OnUploadProgress(position, size);
 }
 
-bool DetachableResourceHandler::OnRequestRedirected(const GURL& url,
-                                                    ResourceResponse* response,
-                                                    bool* defer) {
+bool DetachableResourceHandler::OnRequestRedirected(
+    const net::RedirectInfo& redirect_info,
+    ResourceResponse* response,
+    bool* defer) {
   DCHECK(!is_deferred_);
 
   if (!next_handler_)
     return true;
 
-  bool ret = next_handler_->OnRequestRedirected(url, response, &is_deferred_);
+  bool ret = next_handler_->OnRequestRedirected(
+      redirect_info, response, &is_deferred_);
   *defer = is_deferred_;
   return ret;
 }
