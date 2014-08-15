@@ -46,11 +46,6 @@ bool DefaultAccessPolicy::CanDeleteNode(const Node* node) const {
   return WasCreatedByThisConnection(node);
 }
 
-bool DefaultAccessPolicy::CanSetFocus(const Node* node) const {
-  // TODO(beng): security.
-  return true;
-}
-
 bool DefaultAccessPolicy::CanGetNodeTree(const Node* node) const {
   return WasCreatedByThisConnection(node) || IsNodeInRoots(node);
 }

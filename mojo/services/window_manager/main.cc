@@ -21,7 +21,7 @@ class DefaultWindowManager : public ApplicationDelegate,
                              public WindowManagerDelegate {
  public:
   DefaultWindowManager()
-      : window_manager_app_(new WindowManagerApp(this)),
+      : window_manager_app_(new WindowManagerApp(this, this)),
         view_manager_(NULL),
         root_(NULL) {}
   virtual ~DefaultWindowManager() {}
@@ -59,7 +59,7 @@ class DefaultWindowManager : public ApplicationDelegate,
     view->Embed(url, scoped_ptr<mojo::ServiceProviderImpl>(
         new mojo::ServiceProviderImpl).Pass());
   }
-  virtual void DispatchEvent(View* target, EventPtr event) MOJO_OVERRIDE {}
+  virtual void DispatchEvent(EventPtr event) MOJO_OVERRIDE {}
 
   scoped_ptr<WindowManagerApp> window_manager_app_;
 

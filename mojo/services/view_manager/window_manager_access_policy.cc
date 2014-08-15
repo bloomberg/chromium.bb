@@ -43,11 +43,6 @@ bool WindowManagerAccessPolicy::CanDeleteNode(const Node* node) const {
   return node->id().connection_id == connection_id_;
 }
 
-bool WindowManagerAccessPolicy::CanSetFocus(const Node* node) const {
-  // TODO(beng): security.
-  return true;
-}
-
 bool WindowManagerAccessPolicy::CanGetNodeTree(const Node* node) const {
   return true;
 }

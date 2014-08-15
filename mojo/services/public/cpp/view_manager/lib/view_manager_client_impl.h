@@ -14,6 +14,7 @@
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
+#include "mojo/services/public/interfaces/window_manager/window_manager.mojom.h"
 
 class SkBitmap;
 
@@ -25,9 +26,11 @@ class ViewManagerTransaction;
 
 // Manages the connection with the View Manager service.
 class ViewManagerClientImpl : public ViewManager,
-                              public InterfaceImpl<ViewManagerClient> {
+                              public InterfaceImpl<ViewManagerClient>,
+                              public WindowManagerClient {
  public:
-  explicit ViewManagerClientImpl(ViewManagerDelegate* delegate);
+  ViewManagerClientImpl(ViewManagerDelegate* delegate,
+                        ApplicationConnection* app_connection);
   virtual ~ViewManagerClientImpl();
 
   bool connected() const { return connected_; }
@@ -106,11 +109,19 @@ class ViewManagerClientImpl : public ViewManager,
   virtual void OnViewInputEvent(Id view,
                                 EventPtr event,
                                 const Callback<void()>& callback) OVERRIDE;
-  virtual void OnFocusChanged(Id gained_focus_id, Id lost_focus_id) OVERRIDE;
   virtual void Embed(
       const String& url,
       InterfaceRequest<ServiceProvider> service_provider) OVERRIDE;
-  virtual void DispatchOnViewInputEvent(Id view_id, EventPtr event) OVERRIDE;
+  virtual void DispatchOnViewInputEvent(EventPtr event) OVERRIDE;
+
+    // Overridden from WindowManagerClient:
+  virtual void OnWindowManagerReady() OVERRIDE;
+  virtual void OnCaptureChanged(Id old_capture_view_id,
+                                Id new_capture_view_id) OVERRIDE;
+  virtual void OnFocusChanged(Id old_focused_view_id,
+                              Id new_focused_view_id) OVERRIDE;
+  virtual void OnActiveWindowChanged(Id old_focused_window,
+                                     Id new_focused_window) OVERRIDE;
 
   void RemoveRoot(View* root);
 
@@ -136,6 +147,8 @@ class ViewManagerClientImpl : public ViewManager,
   IdToViewMap views_;
 
   ViewManagerService* service_;
+
+  WindowManagerServicePtr window_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerClientImpl);
 };

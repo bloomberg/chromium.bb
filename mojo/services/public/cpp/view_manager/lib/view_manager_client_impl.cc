@@ -5,6 +5,7 @@
 #include "mojo/services/public/cpp/view_manager/lib/view_manager_client_impl.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "mojo/public/cpp/application/application_connection.h"
@@ -116,12 +117,24 @@ bool CreateMapAndDupSharedBuffer(size_t size,
   return true;
 }
 
-ViewManagerClientImpl::ViewManagerClientImpl(ViewManagerDelegate* delegate)
+ViewManagerClientImpl::ViewManagerClientImpl(
+    ViewManagerDelegate* delegate,
+    ApplicationConnection* app_connection)
     : connected_(false),
       connection_id_(0),
       next_id_(1),
       delegate_(delegate),
       window_manager_delegate_(NULL) {
+  // TODO(beng): Come up with a better way of establishing a configuration for
+  //             what the active window manager is.
+  std::string window_manager_url = "mojo:mojo_window_manager";
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch("window-manager")) {
+    window_manager_url =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            "window-manager");
+  }
+  app_connection->ConnectToService(window_manager_url, &window_manager_);
+  window_manager_.set_client(this);
 }
 
 ViewManagerClientImpl::~ViewManagerClientImpl() {
@@ -208,8 +221,7 @@ void ViewManagerClientImpl::SetViewContents(Id view_id,
 }
 
 void ViewManagerClientImpl::SetFocus(Id view_id) {
-  DCHECK(connected_);
-  service_->SetFocus(view_id, ActionCompletedCallback());
+  window_manager_->FocusWindow(view_id, ActionCompletedCallback());
 }
 
 void ViewManagerClientImpl::SetVisible(Id view_id, bool visible) {
@@ -249,6 +261,7 @@ void ViewManagerClientImpl::RemoveView(Id view_id) {
 void ViewManagerClientImpl::SetWindowManagerDelegate(
     WindowManagerDelegate* window_manager_delegate) {
   CHECK(NULL != GetViewById(1));
+  CHECK(!window_manager_delegate_);
   window_manager_delegate_ = window_manager_delegate;
 }
 
@@ -364,10 +377,29 @@ void ViewManagerClientImpl::OnViewInputEvent(
   ack_callback.Run();
 }
 
-void ViewManagerClientImpl::OnFocusChanged(Id gained_focus_id,
-                                           Id lost_focus_id) {
-  View* focused = GetViewById(gained_focus_id);
-  View* blurred = GetViewById(lost_focus_id);
+void ViewManagerClientImpl::Embed(
+    const String& url,
+    InterfaceRequest<ServiceProvider> service_provider) {
+  window_manager_delegate_->Embed(url, service_provider.Pass());
+}
+
+void ViewManagerClientImpl::DispatchOnViewInputEvent(EventPtr event) {
+  if (window_manager_delegate_)
+    window_manager_delegate_->DispatchEvent(event.Pass());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ViewManagerClientImpl, WindowManagerClient implementation:
+
+void ViewManagerClientImpl::OnWindowManagerReady() {}
+
+void ViewManagerClientImpl::OnCaptureChanged(Id old_capture_view_id,
+                                             Id new_capture_view_id) {}
+
+void ViewManagerClientImpl::OnFocusChanged(Id old_focused_view_id,
+                                           Id new_focused_view_id) {
+  View* focused = GetViewById(new_focused_view_id);
+  View* blurred = GetViewById(old_focused_view_id);
   if (blurred) {
     FOR_EACH_OBSERVER(ViewObserver,
                       *ViewPrivate(blurred).observers(),
@@ -380,17 +412,8 @@ void ViewManagerClientImpl::OnFocusChanged(Id gained_focus_id,
   }
 }
 
-void ViewManagerClientImpl::Embed(
-    const String& url,
-    InterfaceRequest<ServiceProvider> service_provider) {
-  window_manager_delegate_->Embed(url, service_provider.Pass());
-}
-
-void ViewManagerClientImpl::DispatchOnViewInputEvent(Id view_id,
-                                                     EventPtr event) {
-  if (window_manager_delegate_)
-    window_manager_delegate_->DispatchEvent(GetViewById(view_id), event.Pass());
-}
+void ViewManagerClientImpl::OnActiveWindowChanged(Id old_focused_window,
+                                                  Id new_focused_window) {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // ViewManagerClientImpl, private:

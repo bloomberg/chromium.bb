@@ -15,14 +15,15 @@
 #include "mojo/services/public/cpp/input_events/input_events_type_converters.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
-#include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "mojo/services/public/cpp/view_manager/window_manager_delegate.h"
 #include "mojo/services/public/interfaces/input_events/input_events.mojom.h"
 #include "mojo/services/public/interfaces/launcher/launcher.mojom.h"
 #include "mojo/services/public/interfaces/navigation/navigation.mojom.h"
+#include "mojo/services/window_manager/window_manager_app.h"
 #include "mojo/views/views_init.h"
+#include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -250,17 +251,20 @@ class WindowManager
     : public ApplicationDelegate,
       public DebugPanel::Delegate,
       public ViewManagerDelegate,
-      public WindowManagerDelegate {
+      public WindowManagerDelegate,
+      public ui::EventHandler {
  public:
   WindowManager()
       : window_manager_factory_(this),
         navigator_host_factory_(this),
         launcher_ui_(NULL),
         view_manager_(NULL),
-        view_manager_client_factory_(this),
+        window_manager_app_(new WindowManagerApp(this, this)),
         app_(NULL) {}
 
-  virtual ~WindowManager() {}
+  virtual ~WindowManager() {
+    window_manager_app_->host()->window()->RemovePreTargetHandler(this);
+  }
 
   void CloseWindow(Id view_id) {
     View* view = view_manager_->GetViewById(view_id);
@@ -325,13 +329,14 @@ class WindowManager
     app_ = app;
     app->ConnectToService("mojo:mojo_launcher", &launcher_);
     views_init_.reset(new ViewsInit);
+    window_manager_app_->Initialize(app);
   }
 
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       MOJO_OVERRIDE {
     connection->AddService(&window_manager_factory_);
     connection->AddService(&navigator_host_factory_);
-    connection->AddService(&view_manager_client_factory_);
+    window_manager_app_->ConfigureIncomingConnection(connection);
     return true;
   }
 
@@ -342,7 +347,6 @@ class WindowManager
                        scoped_ptr<ServiceProvider> imported_services) OVERRIDE {
     DCHECK(!view_manager_);
     view_manager_ = view_manager;
-    view_manager_->SetWindowManagerDelegate(this);
 
     View* view = View::Create(view_manager_);
     root->AddChild(view);
@@ -360,6 +364,8 @@ class WindowManager
                               launcher_ui_id,
                               control_panel_id));
     root->AddObserver(root_layout_manager_.get());
+
+    window_manager_app_->host()->window()->AddPreTargetHandler(this);
   }
   virtual void OnViewManagerDisconnected(ViewManager* view_manager) OVERRIDE {
     DCHECK_EQ(view_manager_, view_manager);
@@ -375,13 +381,16 @@ class WindowManager
                  NavigationDetailsPtr().Pass(),
                  ResponseDetailsPtr().Pass());
   }
-  virtual void DispatchEvent(View* target, EventPtr event) OVERRIDE {
-    // TODO(beng): More sophisticated focus handling than this is required!
-    if (event->action == EVENT_TYPE_MOUSE_PRESSED &&
-        !IsDescendantOfKeyboard(target)) {
-      target->SetFocus();
+  virtual void DispatchEvent(EventPtr event) MOJO_OVERRIDE {}
+
+  // Overridden from ui::EventHandler:
+  virtual void OnEvent(ui::Event* event) OVERRIDE {
+    View* view = WindowManagerApp::GetViewForWindow(
+        static_cast<aura::Window*>(event->target()));
+    if (event->type() == ui::ET_MOUSE_PRESSED &&
+        !IsDescendantOfKeyboard(view)) {
+      view->SetFocus();
     }
-    view_manager_->DispatchEvent(target, event.Pass());
   }
 
   void OnLaunch(
@@ -513,8 +522,9 @@ class WindowManager
   View* launcher_ui_;
   std::vector<View*> windows_;
   ViewManager* view_manager_;
-  ViewManagerClientFactory view_manager_client_factory_;
   scoped_ptr<RootLayoutManager> root_layout_manager_;
+
+  scoped_ptr<WindowManagerApp> window_manager_app_;
 
   // Id of the view most content is added to. The keyboard is NOT added here.
   Id content_view_id_;

@@ -69,10 +69,12 @@ WindowTreeHostImpl::WindowTreeHostImpl(
     NativeViewportPtr viewport,
     const gfx::Rect& bounds,
     const Callback<void()>& compositor_created_callback,
-    const Callback<void()>& native_viewport_closed_callback)
+    const Callback<void()>& native_viewport_closed_callback,
+    const Callback<void(EventPtr)>& event_received_callback)
     : native_viewport_(viewport.Pass()),
       compositor_created_callback_(compositor_created_callback),
       native_viewport_closed_callback_(native_viewport_closed_callback),
+      event_received_callback_(event_received_callback),
       bounds_(bounds) {
   native_viewport_.set_client(this);
   native_viewport_->Create(Rect::From(bounds));
@@ -185,10 +187,7 @@ void WindowTreeHostImpl::OnDestroyed(const mojo::Callback<void()>& callback) {
 
 void WindowTreeHostImpl::OnEvent(EventPtr event,
                                  const mojo::Callback<void()>& callback) {
-  scoped_ptr<ui::Event> ui_event =
-      TypeConverter<EventPtr, scoped_ptr<ui::Event> >::ConvertTo(event);
-  if (ui_event)
-    SendEventToProcessor(ui_event.get());
+  event_received_callback_.Run(event.Pass());
   callback.Run();
 };
 

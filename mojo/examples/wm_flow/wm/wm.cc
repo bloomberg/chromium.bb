@@ -16,7 +16,7 @@ class SimpleWM : public mojo::ApplicationDelegate,
                  public mojo::WindowManagerDelegate {
  public:
   SimpleWM()
-      : window_manager_app_(new mojo::WindowManagerApp(this)),
+      : window_manager_app_(new mojo::WindowManagerApp(this, this)),
         view_manager_(NULL),
         root_(NULL),
         window_container_(NULL),
@@ -42,7 +42,6 @@ class SimpleWM : public mojo::ApplicationDelegate,
       scoped_ptr<mojo::ServiceProvider> remote_service_provider) MOJO_OVERRIDE {
     view_manager_ = view_manager;
     root_ = root;
-    view_manager_->SetWindowManagerDelegate(this);
 
     window_container_ = mojo::View::Create(view_manager_);
     window_container_->SetBounds(root_->bounds());
@@ -72,10 +71,7 @@ class SimpleWM : public mojo::ApplicationDelegate,
         new mojo::ServiceProviderImpl).Pass());
     next_window_origin_.Offset(50, 50);
   }
-  virtual void DispatchEvent(mojo::View* target,
-                             mojo::EventPtr event) MOJO_OVERRIDE {
-    view_manager_->DispatchEvent(target, event.Pass());
-  }
+  virtual void DispatchEvent(mojo::EventPtr event) MOJO_OVERRIDE {}
 
   scoped_ptr<mojo::WindowManagerApp> window_manager_app_;
 

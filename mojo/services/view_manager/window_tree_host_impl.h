@@ -28,7 +28,8 @@ class WindowTreeHostImpl : public aura::WindowTreeHost,
       NativeViewportPtr viewport,
       const gfx::Rect& bounds,
       const Callback<void()>& compositor_created_callback,
-      const Callback<void()>& native_viewport_closed_callback);
+      const Callback<void()>& native_viewport_closed_callback,
+      const Callback<void(EventPtr)>& event_received_callback);
   virtual ~WindowTreeHostImpl();
 
   gfx::Rect bounds() const { return bounds_; }
@@ -64,6 +65,7 @@ class WindowTreeHostImpl : public aura::WindowTreeHost,
   NativeViewportPtr native_viewport_;
   Callback<void()> compositor_created_callback_;
   Callback<void()> native_viewport_closed_callback_;
+  Callback<void(EventPtr)> event_received_callback_;
 
   gfx::Rect bounds_;
 

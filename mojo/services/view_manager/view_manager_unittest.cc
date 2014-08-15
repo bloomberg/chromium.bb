@@ -325,15 +325,12 @@ class TestViewManagerClientConnection
                                 const Callback<void()>& callback) OVERRIDE {
     tracker_.OnNodeInputEvent(node_id, event.Pass());
   }
-  virtual void OnFocusChanged(Id gained_focus_id,
-                              Id lost_focus_id) OVERRIDE {}
   virtual void Embed(
       const String& url,
       InterfaceRequest<ServiceProvider> service_provider) OVERRIDE {
     tracker_.DelegateEmbed(url);
   }
-  virtual void DispatchOnViewInputEvent(Id node_id,
-                                        mojo::EventPtr event) OVERRIDE {
+  virtual void DispatchOnViewInputEvent(mojo::EventPtr event) OVERRIDE {
   }
 
  private:
@@ -1283,11 +1280,6 @@ TEST_F(ViewManagerTest, EmbedWithSameNodeId2) {
 // TODO(sky): need to better track changes to initial connection. For example,
 // that SetBounsdNodes/AddNode and the like don't result in messages to the
 // originating connection.
-
-// TODO(beng): Add tests for focus:
-// - focus between two nodes known to a connection
-// - focus between nodes unknown to one of the connections.
-// - focus between nodes unknown to either connection.
 
 }  // namespace service
 }  // namespace mojo

@@ -639,6 +639,7 @@
             'mojo_base.gyp:mojo_utility',
             'mojo_base.gyp:mojo_environment_chromium',
             'mojo_aura_support',
+            'mojo_core_window_manager_lib',
             'mojo_geometry_bindings',
             'mojo_geometry_lib',
             'mojo_input_events_lib',

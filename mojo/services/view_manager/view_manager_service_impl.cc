@@ -142,24 +142,6 @@ void ViewManagerServiceImpl::ProcessNodeDeleted(const NodeId& node,
   }
 }
 
-void ViewManagerServiceImpl::ProcessFocusChanged(const Node* focused_node,
-                                                 const Node* blurred_node,
-                                                 bool originated_change) {
-  if (originated_change)
-    return;
-
-  // TODO(sky): this should not notify all clients.
-  Id focused_id = 0;
-  Id blurred_id = 0;
-  if (focused_node && IsNodeKnown(focused_node))
-    focused_id = NodeIdToTransportId(focused_node->id());
-  if (blurred_node && IsNodeKnown(blurred_node))
-    blurred_id = NodeIdToTransportId(blurred_node->id());
-
-  if (focused_id != 0 || blurred_id != 0)
-    client()->OnFocusChanged(focused_id, blurred_id);
-}
-
 void ViewManagerServiceImpl::OnConnectionError() {
   if (delete_on_connection_error_)
     delete this;
@@ -437,17 +419,6 @@ void ViewManagerServiceImpl::SetViewContents(
   node->SetBitmap(bitmap);
   UnmapBuffer(handle_data);
   callback.Run(true);
-}
-
-void ViewManagerServiceImpl::SetFocus(Id view_id,
-                                      const Callback<void(bool)> & callback) {
-  bool success = false;
-  Node* node = GetNode(NodeIdFromTransportId(view_id));
-  if (node && access_policy_->CanSetFocus(node)) {
-    success = true;
-    node->window()->Focus();
-  }
-  callback.Run(success);
 }
 
 void ViewManagerServiceImpl::SetViewBounds(

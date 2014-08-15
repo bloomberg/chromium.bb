@@ -86,9 +86,6 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
                           OrderDirection direction,
                           bool originated_change);
   void ProcessNodeDeleted(const NodeId& node, bool originated_change);
-  void ProcessFocusChanged(const Node* focused_node,
-                           const Node* blurred_node,
-                           bool originated_change);
 
   // TODO(sky): move this to private section (currently can't because of
   // bindings).
@@ -162,8 +159,6 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
                                ScopedSharedBufferHandle buffer,
                                uint32_t buffer_size,
                                const Callback<void(bool)>& callback) OVERRIDE;
-  virtual void SetFocus(Id view_id,
-                        const Callback<void(bool)> & callback) OVERRIDE;
   virtual void SetViewBounds(Id view_id,
                              RectPtr bounds,
                              const Callback<void(bool)>& callback) OVERRIDE;

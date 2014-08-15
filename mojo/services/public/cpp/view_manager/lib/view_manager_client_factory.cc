@@ -20,7 +20,7 @@ ViewManagerClientFactory::~ViewManagerClientFactory() {
 void ViewManagerClientFactory::Create(
     ApplicationConnection* connection,
     InterfaceRequest<ViewManagerClient> request) {
-  BindToRequest(new ViewManagerClientImpl(delegate_), &request);
+  BindToRequest(new ViewManagerClientImpl(delegate_, connection), &request);
 }
 
 }  // namespace mojo

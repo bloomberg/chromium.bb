@@ -22,7 +22,7 @@ class WindowManagerDelegate {
 
   // Dispatch the supplied input event to the appropriate view (taking into
   // account focus, activation, modality, etc.).
-  virtual void DispatchEvent(View* target, EventPtr event) = 0;
+  virtual void DispatchEvent(EventPtr event) = 0;
 
  protected:
   virtual ~WindowManagerDelegate() {}

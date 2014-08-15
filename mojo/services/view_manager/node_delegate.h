@@ -7,10 +7,6 @@
 
 #include "mojo/services/view_manager/view_manager_export.h"
 
-namespace ui {
-class Event;
-}
-
 namespace gfx {
 class Rect;
 }
@@ -34,10 +30,6 @@ class MOJO_VIEW_MANAGER_EXPORT NodeDelegate {
   virtual void OnNodeBoundsChanged(const Node* node,
                                    const gfx::Rect& old_bounds,
                                    const gfx::Rect& new_bounds) = 0;
-
-  // Invoked when an input event is received by a node.
-  virtual void OnNodeInputEvent(const Node* node,
-                                const ui::Event* event) = 0;
 
  protected:
   virtual ~NodeDelegate() {}

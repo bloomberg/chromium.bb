@@ -184,9 +184,5 @@ bool Node::HasHitTestMask() const {
 void Node::GetHitTestMask(gfx::Path* mask) const {
 }
 
-void Node::OnEvent(ui::Event* event) {
-  delegate_->OnNodeInputEvent(this, event);
-}
-
 }  // namespace service
 }  // namespace mojo

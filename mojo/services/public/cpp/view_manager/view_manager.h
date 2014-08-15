@@ -24,7 +24,7 @@ class WindowManagerDelegate;
 class ViewManager {
  public:
   // Sets the window manager delegate. Can only be called by the app embedded at
-  // the service root view.
+  // the service root view. Can only be called once.
   virtual void SetWindowManagerDelegate(
       WindowManagerDelegate* window_manager_delegate) = 0;
 

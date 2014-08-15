@@ -29,7 +29,6 @@ class AccessPolicy {
                               const Node* relative_node,
                               OrderDirection direction) const = 0;
   virtual bool CanDeleteNode(const Node* node) const = 0;
-  virtual bool CanSetFocus(const Node* node) const = 0;
   virtual bool CanGetNodeTree(const Node* node) const = 0;
   // Used when building a node tree (GetNodeTree()) to decide if we should
   // descend into |node|.

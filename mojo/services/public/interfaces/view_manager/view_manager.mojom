@@ -105,9 +105,6 @@ interface ViewManagerService {
                   handle<shared_buffer> buffer,
                   uint32 buffer_size) => (bool success);
 
-  // Sets focus to the specified view.
-  SetFocus(uint32 view_id) => (bool success);
-
   // Embeds the app for |url| in the specified view. More specifically this
   // creates a new connection to the specified url, expecting to get a
   // ViewManagerClient and configures it with the root view |view|. Fails
@@ -184,15 +181,6 @@ interface ViewManagerClient {
   // Invoked when an event is targeted at the specified view.
   OnViewInputEvent(uint32 view, mojo.Event event) => ();
 
-  // Invoked when focus shifts from one View to another. |gained_focus_id| is
-  // the id of the view that gained focus, or 0 if the view that gained focus is
-  // not known to this connection. |lost_focus_id| is likewise the view that
-  // lost focus.
-  // TODO(beng): once aura is removed from the service, focus management should
-  //             entirely move to the window manager and this method can be
-  //             removed.
-  OnFocusChanged(uint32 gained_focus_id, uint32 lost_focus_id);
-
   // TODO(sky): The following methods represent an interface between the view
   //            manager and the application embedded at the service root view
   //            (i.e. the window manager). These methods are not called on
@@ -202,8 +190,8 @@ interface ViewManagerClient {
   // Requests the window manager create a "top level" view embedding |url|.
   Embed(string url, ServiceProvider& service_provider);
 
-  // Requests the view manager dispatch the event targeted at |view|.
-  DispatchOnViewInputEvent(uint32 view, mojo.Event event);
+  // Requests the view manager dispatch the event.
+  DispatchOnViewInputEvent(mojo.Event event);
 };
 
 }

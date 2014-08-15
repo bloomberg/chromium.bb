@@ -4,6 +4,8 @@ include_rules = [
   "+mojo/services/native_viewport",
   "+mojo/services/public",
   "+ui/aura",
+  "+ui/base",
+  "+ui/events",
   "+ui/gfx",
   "+ui/gl",
   "+ui/wm",

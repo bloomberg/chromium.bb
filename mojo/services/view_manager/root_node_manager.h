@@ -15,7 +15,6 @@
 #include "mojo/services/view_manager/node_delegate.h"
 #include "mojo/services/view_manager/root_view_manager.h"
 #include "mojo/services/view_manager/view_manager_export.h"
-#include "ui/aura/client/focus_change_observer.h"
 
 namespace ui {
 class Event;
@@ -32,9 +31,7 @@ class ViewManagerServiceImpl;
 
 // RootNodeManager is responsible for managing the set of
 // ViewManagerServiceImpls as well as providing the root of the node hierarchy.
-class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
-    : public NodeDelegate,
-      public aura::client::FocusChangeObserver {
+class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
  public:
   // Create when a ViewManagerServiceImpl is about to make a change. Ensures
   // clients are notified of the correct change id.
@@ -123,8 +120,7 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
   }
   const ViewManagerServiceImpl* GetConnectionWithRoot(const NodeId& id) const;
 
-  void DispatchNodeInputEventToWindowManager(const Node* node,
-                                             const ui::Event* event);
+  void DispatchNodeInputEventToWindowManager(EventPtr event);
 
   // These functions trivially delegate to all ViewManagerServiceImpls, which in
   // term notify their clients.
@@ -148,10 +144,6 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
   };
 
   typedef std::map<ConnectionSpecificId, ViewManagerServiceImpl*> ConnectionMap;
-
-  // Overridden from aura::client::FocusChangeObserver:
-  virtual void OnWindowFocused(aura::Window* gained_focus,
-                               aura::Window* lost_focus) OVERRIDE;
 
   // Invoked when a connection is about to make a change.  Subsequently followed
   // by FinishChange() once the change is done.
@@ -184,8 +176,6 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
   virtual void OnNodeBoundsChanged(const Node* node,
                                    const gfx::Rect& old_bounds,
                                    const gfx::Rect& new_bounds) OVERRIDE;
-  virtual void OnNodeInputEvent(const Node* node,
-                                const ui::Event* event) OVERRIDE;
 
   Context context_;
 

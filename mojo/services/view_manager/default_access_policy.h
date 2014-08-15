@@ -27,7 +27,6 @@ class DefaultAccessPolicy : public AccessPolicy {
                               const Node* relative_node,
                               OrderDirection direction) const OVERRIDE;
   virtual bool CanDeleteNode(const Node* node) const OVERRIDE;
-  virtual bool CanSetFocus(const Node* node) const OVERRIDE;
   virtual bool CanGetNodeTree(const Node* node) const OVERRIDE;
   virtual bool CanDescendIntoNodeForNodeTree(const Node* node) const OVERRIDE;
   virtual bool CanEmbed(const Node* node) const OVERRIDE;

@@ -481,6 +481,7 @@
         '../ui/gfx/gfx.gyp:gfx_geometry',
         'mojo_base.gyp:mojo_application_chromium',
         'mojo_base.gyp:mojo_application_bindings',
+        'mojo_core_window_manager_bindings',
         'mojo_geometry_bindings',
         'mojo_geometry_lib',
         'mojo_view_manager_bindings',
@@ -785,6 +786,7 @@
             'mojo_base.gyp:mojo_application_chromium',
             'mojo_aura_support',
             'mojo_core_window_manager_bindings',
+            'mojo_input_events_lib',
             'mojo_view_manager_lib',
           ],
           'sources': [

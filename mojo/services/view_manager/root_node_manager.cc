@@ -9,7 +9,6 @@
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
 #include "mojo/services/public/cpp/input_events/input_events_type_converters.h"
 #include "mojo/services/view_manager/view_manager_service_impl.h"
-#include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
 
 namespace mojo {
@@ -53,9 +52,6 @@ RootNodeManager::RootNodeManager(
 }
 
 RootNodeManager::~RootNodeManager() {
-  aura::client::FocusClient* focus_client =
-      aura::client::GetFocusClient(root_->window());
-  focus_client->RemoveObserver(this);
   while (!connections_created_by_connect_.empty())
     delete *(connections_created_by_connect_.begin());
   // All the connections should have been destroyed.
@@ -152,17 +148,13 @@ const ViewManagerServiceImpl* RootNodeManager::GetConnectionWithRoot(
   return NULL;
 }
 
-void RootNodeManager::DispatchNodeInputEventToWindowManager(
-    const Node* node,
-    const ui::Event* event) {
+void RootNodeManager::DispatchNodeInputEventToWindowManager(EventPtr event) {
   // Input events are forwarded to the WindowManager. The WindowManager
   // eventually calls back to us with DispatchOnViewInputEvent().
   ViewManagerServiceImpl* connection = GetConnection(kWindowManagerConnection);
   if (!connection)
     return;
-  connection->client()->DispatchOnViewInputEvent(
-      NodeIdToTransportId(node->id()),
-      TypeConverter<EventPtr, ui::Event>::ConvertFrom(*event));
+  connection->client()->DispatchOnViewInputEvent(event.Pass());
 }
 
 void RootNodeManager::ProcessNodeBoundsChanged(const Node* node,
@@ -199,17 +191,6 @@ void RootNodeManager::ProcessNodeDeleted(const NodeId& node) {
   for (ConnectionMap::iterator i = connection_map_.begin();
        i != connection_map_.end(); ++i) {
     i->second->ProcessNodeDeleted(node, IsChangeSource(i->first));
-  }
-}
-
-void RootNodeManager::OnWindowFocused(aura::Window* gained_focus,
-                                      aura::Window* lost_focus) {
-  Node* focused_node = gained_focus ? Node::NodeForWindow(gained_focus) : NULL;
-  Node* blurred_node = lost_focus ? Node::NodeForWindow(lost_focus) : NULL;
-  for (ConnectionMap::iterator i = connection_map_.begin();
-       i != connection_map_.end(); ++i) {
-    i->second->ProcessFocusChanged(focused_node, blurred_node,
-                                   IsChangeSource(i->first));
   }
 }
 
@@ -271,11 +252,6 @@ void RootNodeManager::OnNodeBoundsChanged(const Node* node,
                                           const gfx::Rect& old_bounds,
                                           const gfx::Rect& new_bounds) {
   ProcessNodeBoundsChanged(node, old_bounds, new_bounds);
-}
-
-void RootNodeManager::OnNodeInputEvent(const Node* node,
-                                       const ui::Event* event) {
-  DispatchNodeInputEventToWindowManager(node, event);
 }
 
 }  // namespace service
