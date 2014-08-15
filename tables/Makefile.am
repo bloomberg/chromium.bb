@@ -4,16 +4,16 @@ table_files = \
 	ar-ar-g1.utb \
 	ar-fa.utb \
 	as-in-g1.utb \
-	awa.ctb \
+	aw-in-g1.utb \
 	be-in-g1.utb \
 	bengali.cti \
 	bg.ctb \
 	bh.ctb \
 	bo.ctb \
 	boxes.ctb \
-	bra.ctb \
 	braille-patterns.cti \
 	braille-patternsin.cti \
+	br-in-g1.utb \
 	ca-chardefs.cti \
 	ca-g1.ctb \
 	chardefs.cti \
@@ -151,7 +151,7 @@ table_files = \
 	iu-ca-g1.ctb \
 	ka-in-g1.utb \
 	kannada.cti \
-	kha.ctb \
+	kh-in-g1.utb \
 	ko.cti \
 	ko-g1.ctb \
 	ko-g2.ctb \
