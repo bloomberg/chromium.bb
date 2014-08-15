@@ -16,6 +16,10 @@ class PageNavigator;
 class WebContents;
 }
 
+namespace extensions {
+class ExperienceSamplingEvent;
+}
+
 @class ExtensionInstallViewController;
 
 // Displays an extension install prompt as a tab modal dialog.
@@ -48,6 +52,7 @@ class ExtensionInstallDialogController :
   ExtensionInstallPrompt::Delegate* delegate_;
   base::scoped_nsobject<ExtensionInstallViewController> view_controller_;
   scoped_ptr<ConstrainedWindowMac> constrained_window_;
+  scoped_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
 };
 
 #endif  // CHROME_BROWSER_UI_COCOA_EXTENSIONS_EXTENSION_INSTALL_DIALOG_CONTROLLER_H_

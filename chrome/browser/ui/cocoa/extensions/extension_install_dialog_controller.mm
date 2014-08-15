@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "chrome/browser/extensions/api/experience_sampling_private/experience_sampling.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
@@ -16,6 +17,8 @@
 #import "chrome/browser/ui/cocoa/extensions/windowed_install_dialog_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/web_contents.h"
+
+using extensions::ExperienceSamplingEvent;
 
 namespace {
 
@@ -52,18 +55,26 @@ ExtensionInstallDialogController::ExtensionInstallDialogController(
       [[CustomConstrainedWindowSheet alloc] initWithCustomWindow:window]);
   constrained_window_.reset(new ConstrainedWindowMac(
       this, show_params.parent_web_contents, sheet));
+
+  std::string event_name = ExperienceSamplingEvent::kExtensionInstallDialog;
+  event_name.append(ExtensionInstallPrompt::PromptTypeToString(prompt->type()));
+  sampling_event_ = ExperienceSamplingEvent::Create(event_name);
 }
 
 ExtensionInstallDialogController::~ExtensionInstallDialogController() {
 }
 
 void ExtensionInstallDialogController::InstallUIProceed() {
+  if (sampling_event_.get())
+    sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kProceed);
   delegate_->InstallUIProceed();
   delegate_ = NULL;
   constrained_window_->CloseWebContentsModalDialog();
 }
 
 void ExtensionInstallDialogController::InstallUIAbort(bool user_initiated) {
+  if (sampling_event_.get())
+    sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kDeny);
   delegate_->InstallUIAbort(user_initiated);
   delegate_ = NULL;
   constrained_window_->CloseWebContentsModalDialog();
