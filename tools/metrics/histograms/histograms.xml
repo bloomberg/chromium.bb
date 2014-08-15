@@ -11487,6 +11487,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Metadata rotation in mp4 videos. Emitted during demuxing.</summary>
 </histogram>
 
+<histogram name="Media.VideoTrackAdapter.FramesReceived" enum="BooleanReceived">
+  <owner>grunell@chromium.org</owner>
+  <owner>mcasas@chromium.org</owner>
+  <summary>
+    If any frames were received during a video capture session. It's recorded
+    when a video source is stopped.
+  </summary>
+</histogram>
+
 <histogram name="Media.VideoVisibleAspectRatio">
   <owner>scherkus@chromium.org</owner>
   <summary>Visible aspect ratio of HTML5 video.</summary>
@@ -37671,6 +37680,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanRaced" type="int">
   <int value="0" label="Did Not Race"/>
   <int value="1" label="Raced"/>
+</enum>
+
+<enum name="BooleanReceived" type="int">
+  <int value="0" label="Not Received"/>
+  <int value="1" label="Received"/>
 </enum>
 
 <enum name="BooleanRegistered" type="int">

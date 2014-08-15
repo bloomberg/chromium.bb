@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/location.h"
+#include "base/metrics/histogram.h"
 #include "media/base/video_util.h"
 
 namespace content {
@@ -315,6 +316,8 @@ VideoTrackAdapter::VideoTrackAdapter(
 
 VideoTrackAdapter::~VideoTrackAdapter() {
   DCHECK(adapters_.empty());
+  UMA_HISTOGRAM_BOOLEAN("Media.VideoTrackAdapter.FramesReceived",
+                        frame_counter_ > 0);
 }
 
 void VideoTrackAdapter::AddTrack(
