@@ -263,6 +263,8 @@ SupervisedUserAuthenticator::ResolveState() {
 SupervisedUserAuthenticator::AuthState
     SupervisedUserAuthenticator::ResolveCryptohomeFailureState() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  LOG(ERROR) << "Failed to authenticate supervised user, code: "
+             << current_state_->cryptohome_code();
   if (current_state_->cryptohome_code() ==
       cryptohome::MOUNT_ERROR_TPM_NEEDS_REBOOT) {
     // Critical TPM error detected, reboot needed.

@@ -370,6 +370,8 @@ void SupervisedUserCreationScreen::OnActorDestroyed(
 
 void SupervisedUserCreationScreen::OnCreationError(
     SupervisedUserCreationController::ErrorCode code) {
+  LOG(ERROR) << "Supervised user creation failure, code: " << code;
+
   base::string16 title;
   base::string16 message;
   base::string16 button;

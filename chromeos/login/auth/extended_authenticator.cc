@@ -336,6 +336,8 @@ void ExtendedAuthenticator::OnOperationComplete(
     return;
   }
 
+  LOG(ERROR) << "Supervised user cryptohome error, code: " << return_code;
+
   AuthState state = FAILED_MOUNT;
 
   if (return_code == cryptohome::MOUNT_ERROR_TPM_COMM_ERROR ||
