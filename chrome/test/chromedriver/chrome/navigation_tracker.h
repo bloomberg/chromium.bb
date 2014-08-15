@@ -55,7 +55,7 @@ class NavigationTracker : public DevToolsEventListener {
   DevToolsClient* client_;
   LoadingState loading_state_;
   const BrowserInfo* browser_info_;
-  int num_frames_pending_;
+  std::set<std::string> pending_frame_set_;
   std::set<std::string> scheduled_frame_set_;
 
   void ResetLoadingState(LoadingState loading_state);

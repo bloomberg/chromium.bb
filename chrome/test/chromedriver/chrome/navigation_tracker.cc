@@ -14,8 +14,7 @@ NavigationTracker::NavigationTracker(DevToolsClient* client,
                                      const BrowserInfo* browser_info)
     : client_(client),
       loading_state_(kUnknown),
-      browser_info_(browser_info),
-      num_frames_pending_(0) {
+      browser_info_(browser_info) {
   client_->AddListener(this);
 }
 
@@ -24,8 +23,7 @@ NavigationTracker::NavigationTracker(DevToolsClient* client,
                                      const BrowserInfo* browser_info)
     : client_(client),
       loading_state_(known_state),
-      browser_info_(browser_info),
-      num_frames_pending_(0) {
+      browser_info_(browser_info) {
   client_->AddListener(this);
 }
 
@@ -87,8 +85,11 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
                                   const std::string& method,
                                   const base::DictionaryValue& params) {
   if (method == "Page.frameStartedLoading") {
+    std::string frame_id;
+    if (!params.GetString("frameId", &frame_id))
+      return Status(kUnknownError, "missing or invalid 'frameId'");
+    pending_frame_set_.insert(frame_id);
     loading_state_ = kLoading;
-    num_frames_pending_++;
   } else if (method == "Page.frameStoppedLoading") {
     // Versions of Blink before revision 170248 sent a single
     // Page.frameStoppedLoading event per page, but 170248 and newer revisions
@@ -111,10 +112,14 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
       expecting_single_stop_event = browser_info_->blink_revision < 170248;
     }
 
-    num_frames_pending_--;
+    std::string frame_id;
+    if (!params.GetString("frameId", &frame_id))
+      return Status(kUnknownError, "missing or invalid 'frameId'");
 
-    if (num_frames_pending_ <= 0 || expecting_single_stop_event) {
-      num_frames_pending_ = 0;
+    pending_frame_set_.erase(frame_id);
+
+    if (pending_frame_set_.empty() || expecting_single_stop_event) {
+      pending_frame_set_.clear();
       loading_state_ = kNotLoading;
     }
   } else if (method == "Page.frameScheduledNavigation") {
@@ -146,7 +151,7 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
     // See crbug.com/180742.
     const base::Value* unused_value;
     if (!params.Get("frame.parentId", &unused_value)) {
-      num_frames_pending_ = 0;
+      pending_frame_set_.clear();
       scheduled_frame_set_.clear();
     }
   } else if (method == "Inspector.targetCrashed") {
@@ -200,6 +205,6 @@ Status NavigationTracker::OnCommandSuccess(DevToolsClient* client,
 
 void NavigationTracker::ResetLoadingState(LoadingState loading_state) {
   loading_state_ = loading_state;
-  num_frames_pending_ = 0;
+  pending_frame_set_.clear();
   scheduled_frame_set_.clear();
 }
