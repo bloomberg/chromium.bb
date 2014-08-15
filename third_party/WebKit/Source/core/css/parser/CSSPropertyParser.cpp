@@ -3131,9 +3131,9 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationProperty()
 
 bool CSSPropertyParser::parseWebkitTransformOriginShorthand(bool important)
 {
-    RefPtrWillBeRawPtr<CSSValue> originX;
-    RefPtrWillBeRawPtr<CSSValue> originY;
-    RefPtrWillBeRawPtr<CSSValue> originZ;
+    RefPtrWillBeRawPtr<CSSValue> originX = nullptr;
+    RefPtrWillBeRawPtr<CSSValue> originY = nullptr;
+    RefPtrWillBeRawPtr<CSSValue> originZ = nullptr;
 
     parse2ValuesFillPosition(m_valueList.get(), originX, originY);
 
