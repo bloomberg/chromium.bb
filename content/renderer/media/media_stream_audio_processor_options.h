@@ -94,18 +94,12 @@ void EnableEchoCancellation(AudioProcessing* audio_processing);
 // Enables the noise suppression in |audio_processing|.
 void EnableNoiseSuppression(AudioProcessing* audio_processing);
 
-// Enables the experimental noise suppression in |audio_processing|.
-void EnableExperimentalNoiseSuppression(AudioProcessing* audio_processing);
-
 // Enables the high pass filter in |audio_processing|.
 void EnableHighPassFilter(AudioProcessing* audio_processing);
 
 // Enables the typing detection in |audio_processing|.
 void EnableTypingDetection(AudioProcessing* audio_processing,
                            webrtc::TypingDetection* typing_detector);
-
-// Enables the experimental echo cancellation in |audio_processing|.
-void EnableExperimentalEchoCancellation(AudioProcessing* audio_processing);
 
 // Starts the echo cancellation dump in |audio_processing|.
 void StartEchoCancellationDump(AudioProcessing* audio_processing,

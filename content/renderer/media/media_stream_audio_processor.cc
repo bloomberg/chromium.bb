@@ -408,15 +408,19 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     return;
   }
 
+  // Experimental options provided at creation.
+  webrtc::Config config;
+  if (goog_experimental_aec)
+    config.Set<webrtc::DelayCorrection>(new webrtc::DelayCorrection(true));
+  if (goog_experimental_ns)
+    config.Set<webrtc::ExperimentalNs>(new webrtc::ExperimentalNs(true));
+
   // Create and configure the webrtc::AudioProcessing.
-  audio_processing_.reset(webrtc::AudioProcessing::Create());
+  audio_processing_.reset(webrtc::AudioProcessing::Create(config));
 
   // Enable the audio processing components.
   if (echo_cancellation) {
     EnableEchoCancellation(audio_processing_.get());
-
-    if (goog_experimental_aec)
-      EnableExperimentalEchoCancellation(audio_processing_.get());
 
     if (playout_data_source_)
       playout_data_source_->AddPlayoutSink(this);
@@ -424,9 +428,6 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
 
   if (goog_ns)
     EnableNoiseSuppression(audio_processing_.get());
-
-  if (goog_experimental_ns)
-    EnableExperimentalNoiseSuppression(audio_processing_.get());
 
   if (goog_high_pass_filter)
     EnableHighPassFilter(audio_processing_.get());
