@@ -55,10 +55,26 @@ struct CHROMEOS_EXPORT ClientCertConfig {
 bool CertPrincipalMatches(const IssuerSubjectPattern& pattern,
                           const net::CertPrincipal& principal);
 
-// Returns the PKCS11 id part of |cert_id|, which is expected to be the value of
-// the Shill property kEapCertIdProperty or kEapKeyIdProperty.
-CHROMEOS_EXPORT std::string GetPkcs11IdFromEapCertId(
-    const std::string& cert_id);
+// Returns the PKCS11 and slot ID of |cert_id|, which is expected to be a
+// value of the Shill property kEapCertIdProperty or kEapKeyIdProperty, either
+// of format "<pkcs11_id>" or "<slot_id>:<pkcs11_id>".
+CHROMEOS_EXPORT std::string GetPkcs11AndSlotIdFromEapCertId(
+    const std::string& cert_id,
+    int* slot_id);
+
+// Reads the client certificate configuration from the Shill Service properties
+// |shill_properties|.
+// If such a configuration is found, the values |cert_config_type|, |tpm_slot|
+// and |pkcs11_id| are filled accordingly. In case of OpenVPN or because the
+// property was not set, |tpm_slot| will be set to -1.
+// If an error occurred or no client configuration is found, |cert_config_type|
+// will be set to CONFIG_TYPE_NONE, |tpm_slot| to -1 and |pkcs11_id| to the
+// empty string.
+CHROMEOS_EXPORT void GetClientCertFromShillProperties(
+    const base::DictionaryValue& shill_properties,
+    ConfigType* cert_config_type,
+    int* tpm_slot,
+    std::string* pkcs11_id);
 
 // Sets the properties of a client cert and the TPM slot that it's contained in.
 // |cert_config_type| determines which dictionary entries to set.

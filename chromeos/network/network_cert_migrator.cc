@@ -12,6 +12,7 @@
 #include "base/metrics/histogram.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/network/client_cert_util.h"
 #include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -44,12 +45,23 @@ std::string GetNickname(const net::X509Certificate& cert) {
 
 }  // namespace
 
-// Checks which of the given |networks| has one of the deprecated
-// CaCertNssProperties set. If such a network already has a CaCertPEM property,
-// then the NssProperty is cleared. Otherwise, the NssProperty is compared with
-// the nickname of each certificate of |certs|. If a match is found, then the
-// CaCertPemProperty is set and the NssProperty is cleared. Otherwise, the
-// network is not modified.
+// Migrates each network of |networks| with a deprecated CaCertNss property to
+// the respective CaCertPEM property and fixes an invalid or missing slot ID of
+// a client certificate configuration.
+//
+// If a network already has a CaCertPEM property, then the NssProperty is
+// cleared. Otherwise, the NssProperty is compared with
+// the nickname of each certificate of |certs|. If a match is found, the
+// CaCertPemProperty is set and the NssProperty is cleared.
+//
+// If a network with a client certificate configuration (i.e. a PKCS11 ID) is
+// found, the configured client certificate is looked up.
+// If the certificate is found, the currently configured slot ID (if any) is
+// compared with the actual slot ID of the certificate and if required updated.
+// If the certificate is not found, the client certificate configuration is
+// removed.
+//
+// Only if necessary, a network will be notified.
 class NetworkCertMigrator::MigrationTask
     : public base::RefCounted<MigrationTask> {
  public:
@@ -61,11 +73,15 @@ class NetworkCertMigrator::MigrationTask
 
   void Run(const NetworkStateHandler::NetworkStateList& networks) {
     // Request properties for each network that has a CaCertNssProperty set
-    // according to the NetworkStateHandler.
+    // or which could be configured with a client certificate.
     for (NetworkStateHandler::NetworkStateList::const_iterator it =
              networks.begin(); it != networks.end(); ++it) {
-      if (!(*it)->HasCACertNSS())
+      if (!(*it)->HasCACertNSS() &&
+          (*it)->security() != shill::kSecurity8021x &&
+          (*it)->type() != shill::kTypeVPN &&
+          (*it)->type() != shill::kTypeEthernetEap) {
         continue;
+      }
       const std::string& service_path = (*it)->path();
       DBusThreadManager::Get()->GetShillServiceClient()->GetProperties(
           dbus::ObjectPath(service_path),
@@ -83,6 +99,59 @@ class NetworkCertMigrator::MigrationTask
       return;
     }
 
+    base::DictionaryValue new_properties;
+    MigrateClientCertProperties(service_path, properties, &new_properties);
+    MigrateNssProperties(service_path, properties, &new_properties);
+
+    if (new_properties.empty())
+      return;
+    SendPropertiesToShill(service_path, new_properties);
+  }
+
+  void MigrateClientCertProperties(const std::string& service_path,
+                                   const base::DictionaryValue& properties,
+                                   base::DictionaryValue* new_properties) {
+    int configured_slot_id = -1;
+    std::string pkcs11_id;
+    chromeos::client_cert::ConfigType config_type =
+        chromeos::client_cert::CONFIG_TYPE_NONE;
+    chromeos::client_cert::GetClientCertFromShillProperties(
+        properties, &config_type, &configured_slot_id, &pkcs11_id);
+    if (config_type == chromeos::client_cert::CONFIG_TYPE_NONE ||
+        pkcs11_id.empty()) {
+      return;
+    }
+
+    // OpenVPN configuration doesn't have a slot id to migrate.
+    if (config_type == chromeos::client_cert::CONFIG_TYPE_OPENVPN)
+      return;
+
+    int real_slot_id = -1;
+    scoped_refptr<net::X509Certificate> cert =
+        FindCertificateWithPkcs11Id(pkcs11_id, &real_slot_id);
+    if (!cert) {
+      LOG(WARNING) << "No matching cert found, removing the certificate "
+                      "configuration from network " << service_path;
+      chromeos::client_cert::SetEmptyShillProperties(config_type,
+                                                     new_properties);
+      return;
+    }
+    if (real_slot_id == -1) {
+      LOG(WARNING) << "Found a certificate without slot id.";
+      return;
+    }
+
+    if (cert && real_slot_id != configured_slot_id) {
+      VLOG(1) << "Network " << service_path
+              << " is configured with no or an incorrect slot id.";
+      chromeos::client_cert::SetShillProperties(
+          config_type, real_slot_id, pkcs11_id, new_properties);
+    }
+  }
+
+  void MigrateNssProperties(const std::string& service_path,
+                            const base::DictionaryValue& properties,
+                            base::DictionaryValue* new_properties) {
     std::string nss_key, pem_key, nickname;
     const base::ListValue* pem_property = NULL;
     UMANetworkType uma_type = UMA_NETWORK_TYPE_SIZE;
@@ -99,7 +168,7 @@ class NetworkCertMigrator::MigrationTask
 
     if (pem_property && !pem_property->empty()) {
       VLOG(2) << "PEM already exists, clearing NSS property.";
-      ClearNssProperty(service_path, nss_key);
+      ClearNssProperty(nss_key, new_properties);
       return;
     }
 
@@ -117,7 +186,8 @@ class NetworkCertMigrator::MigrationTask
       return;
     }
 
-    SetNssAndPemProperties(service_path, nss_key, pem_key, pem_encoded);
+    ClearNssProperty(nss_key, new_properties);
+    SetPemProperty(pem_key, pem_encoded, new_properties);
   }
 
   void GetNssAndPemProperties(const base::DictionaryValue& shill_properties,
@@ -159,18 +229,25 @@ class NetworkCertMigrator::MigrationTask
     }
   }
 
-  void ClearNssProperty(const std::string& service_path,
-                        const std::string& nss_key) {
-    DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
-        dbus::ObjectPath(service_path),
-        nss_key,
-        base::StringValue(std::string()),
-        base::Bind(
-            &MigrationTask::NotifyNetworkStateHandler, this, service_path),
-        base::Bind(&network_handler::ShillErrorCallbackFunction,
-                   "MigrationTask.SetProperty failed",
-                   service_path,
-                   network_handler::ErrorCallback()));
+  void ClearNssProperty(const std::string& nss_key,
+                        base::DictionaryValue* new_properties) {
+    new_properties->SetStringWithoutPathExpansion(nss_key, std::string());
+  }
+
+  scoped_refptr<net::X509Certificate> FindCertificateWithPkcs11Id(
+      const std::string& pkcs11_id, int* slot_id) {
+    *slot_id = -1;
+    for (net::CertificateList::iterator it = certs_.begin(); it != certs_.end();
+         ++it) {
+      int current_slot_id = -1;
+      std::string current_pkcs11_id =
+          CertLoader::GetPkcs11IdAndSlotForCert(**it, &current_slot_id);
+      if (current_pkcs11_id == pkcs11_id) {
+        *slot_id = current_slot_id;
+        return *it;
+      }
+    }
+    return NULL;
   }
 
   scoped_refptr<net::X509Certificate> FindCertificateWithNickname(
@@ -183,19 +260,19 @@ class NetworkCertMigrator::MigrationTask
     return NULL;
   }
 
-  void SetNssAndPemProperties(const std::string& service_path,
-                              const std::string& nss_key,
-                              const std::string& pem_key,
-                              const std::string& pem_encoded_cert) {
-    base::DictionaryValue new_properties;
-    new_properties.SetStringWithoutPathExpansion(nss_key, std::string());
+  void SetPemProperty(const std::string& pem_key,
+                      const std::string& pem_encoded_cert,
+                      base::DictionaryValue* new_properties) {
     scoped_ptr<base::ListValue> ca_cert_pems(new base::ListValue);
     ca_cert_pems->AppendString(pem_encoded_cert);
-    new_properties.SetWithoutPathExpansion(pem_key, ca_cert_pems.release());
+    new_properties->SetWithoutPathExpansion(pem_key, ca_cert_pems.release());
+  }
 
+  void SendPropertiesToShill(const std::string& service_path,
+                             const base::DictionaryValue& properties) {
     DBusThreadManager::Get()->GetShillServiceClient()->SetProperties(
         dbus::ObjectPath(service_path),
-        new_properties,
+        properties,
         base::Bind(
             &MigrationTask::NotifyNetworkStateHandler, this, service_path),
         base::Bind(&MigrationTask::LogErrorAndNotifyNetworkStateHandler,
@@ -258,20 +335,26 @@ void NetworkCertMigrator::NetworkListChanged() {
     VLOG(2) << "Certs not loaded yet.";
     return;
   }
-  // Run the migration process from deprecated CaCertNssProperties to CaCertPem.
-  VLOG(2) << "Start NSS nickname to PEM migration.";
+  // Run the migration process from deprecated CaCertNssProperties to CaCertPem
+  // and to fix missing or incorrect slot ids of client certificates.
+  VLOG(2) << "Start certificate migration of network configurations.";
   scoped_refptr<MigrationTask> helper(new MigrationTask(
       CertLoader::Get()->cert_list(), weak_ptr_factory_.GetWeakPtr()));
   NetworkStateHandler::NetworkStateList networks;
-  network_state_handler_->GetVisibleNetworkList(&networks);
+  network_state_handler_->GetNetworkListByType(
+      NetworkTypePattern::Default(),
+      true,  // only configured networks
+      false, // visible and not visible networks
+      0,     // no count limit
+      &networks);
   helper->Run(networks);
 }
 
 void NetworkCertMigrator::OnCertificatesLoaded(
     const net::CertificateList& cert_list,
     bool initial_load) {
-  // Maybe there are networks referring to certs (by NSS nickname) that were not
-  // loaded before but are now.
+  // Maybe there are networks referring to certs that were not loaded before but
+  // are now.
   NetworkListChanged();
 }
 

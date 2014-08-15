@@ -9,8 +9,10 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "chromeos/cert_loader.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/tpm_token_loader.h"
@@ -30,9 +32,11 @@ namespace chromeos {
 namespace {
 
 const char* kWifiStub = "wifi_stub";
+const char* kEthernetEapStub = "ethernet_eap_stub";
 const char* kVPNStub = "vpn_stub";
 const char* kNSSNickname = "nss_nickname";
 const char* kFakePEM = "pem";
+const char* kProfile = "/profile/profile1";
 
 }  // namespace
 
@@ -57,6 +61,10 @@ class NetworkCertMigratorTest : public testing::Test {
     DBusThreadManager::InitializeWithStub();
     service_test_ =
         DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
+    DBusThreadManager::Get()
+        ->GetShillProfileClient()
+        ->GetTestInterface()
+        ->AddProfile(kProfile, "" /* userhash */);
     base::RunLoop().RunUntilIdle();
     service_test_->ClearServices();
     base::RunLoop().RunUntilIdle();
@@ -98,6 +106,30 @@ class NetworkCertMigratorTest : public testing::Test {
     ASSERT_TRUE(failures.empty()) << net::ErrorToString(failures[0].net_error);
   }
 
+  void SetupTestClientCert() {
+    std::string pkcs12_data;
+    ASSERT_TRUE(base::ReadFileToString(
+        net::GetTestCertsDirectory().Append("websocket_client_cert.p12"),
+        &pkcs12_data));
+
+    net::CertificateList client_cert_list;
+    scoped_refptr<net::CryptoModule> module(net::CryptoModule::CreateFromHandle(
+        test_nssdb_->GetPrivateSlot().get()));
+    ASSERT_EQ(
+        net::OK,
+        test_nssdb_->ImportFromPKCS12(
+            module, pkcs12_data, base::string16(), false, &client_cert_list));
+    ASSERT_TRUE(!client_cert_list.empty());
+    test_client_cert_ = client_cert_list[0];
+
+    int slot_id = -1;
+    test_client_cert_pkcs11_id_ = CertLoader::GetPkcs11IdAndSlotForCert(
+        *test_client_cert_, &slot_id);
+    ASSERT_FALSE(test_client_cert_pkcs11_id_.empty());
+    ASSERT_NE(-1, slot_id);
+    test_client_cert_slot_id_ = base::IntToString(slot_id);
+  }
+
   void SetupNetworkHandlers() {
     network_state_handler_.reset(NetworkStateHandler::InitializeForTest());
     network_cert_migrator_.reset(new NetworkCertMigrator);
@@ -113,6 +145,11 @@ class NetworkCertMigratorTest : public testing::Test {
                               type,
                               state,
                               true /* add_to_visible */);
+
+    // Ensure that the service appears as 'configured', i.e. is associated to a
+    // Shill profile.
+    service_test_->SetServiceProperty(
+        network_id, shill::kProfileProperty, base::StringValue(kProfile));
   }
 
   void SetupWifiWithNss() {
@@ -120,6 +157,80 @@ class NetworkCertMigratorTest : public testing::Test {
     service_test_->SetServiceProperty(kWifiStub,
                                       shill::kEapCaCertNssProperty,
                                       base::StringValue(kNSSNickname));
+  }
+
+  void SetupNetworkWithEapCertId(bool wifi, const std::string& cert_id) {
+    std::string type = wifi ? shill::kTypeWifi: shill::kTypeEthernetEap;
+    std::string name = wifi ? kWifiStub : kEthernetEapStub;
+    AddService(name, type, shill::kStateOnline);
+    service_test_->SetServiceProperty(
+        name, shill::kEapCertIdProperty, base::StringValue(cert_id));
+    service_test_->SetServiceProperty(
+        name, shill::kEapKeyIdProperty, base::StringValue(cert_id));
+
+    if (wifi) {
+      service_test_->SetServiceProperty(
+          name,
+          shill::kSecurityProperty,
+          base::StringValue(shill::kSecurity8021x));
+    }
+  }
+
+  void GetEapCertId(bool wifi, std::string* cert_id) {
+    cert_id->clear();
+
+    std::string name = wifi ? kWifiStub : kEthernetEapStub;
+    const base::DictionaryValue* properties =
+        service_test_->GetServiceProperties(name);
+    properties->GetStringWithoutPathExpansion(shill::kEapCertIdProperty,
+                                              cert_id);
+  }
+
+  void SetupVpnWithCertId(bool open_vpn,
+                          const std::string& slot_id,
+                          const std::string& pkcs11_id) {
+    AddService(kVPNStub, shill::kTypeVPN, shill::kStateIdle);
+    base::DictionaryValue provider;
+    if (open_vpn) {
+      provider.SetStringWithoutPathExpansion(shill::kTypeProperty,
+                                             shill::kProviderOpenVpn);
+      provider.SetStringWithoutPathExpansion(
+          shill::kOpenVPNClientCertIdProperty, pkcs11_id);
+    } else {
+      provider.SetStringWithoutPathExpansion(shill::kTypeProperty,
+                                             shill::kProviderL2tpIpsec);
+      provider.SetStringWithoutPathExpansion(
+          shill::kL2tpIpsecClientCertSlotProperty, slot_id);
+      provider.SetStringWithoutPathExpansion(
+          shill::kL2tpIpsecClientCertIdProperty, pkcs11_id);
+    }
+    service_test_->SetServiceProperty(
+        kVPNStub, shill::kProviderProperty, provider);
+  }
+
+  void GetVpnCertId(bool open_vpn,
+                    std::string* slot_id,
+                    std::string* pkcs11_id) {
+    slot_id->clear();
+    pkcs11_id->clear();
+
+    const base::DictionaryValue* properties =
+        service_test_->GetServiceProperties(kVPNStub);
+    ASSERT_TRUE(properties);
+    const base::DictionaryValue* provider = NULL;
+    properties->GetDictionaryWithoutPathExpansion(shill::kProviderProperty,
+                                                  &provider);
+    if (!provider)
+      return;
+    if (open_vpn) {
+      provider->GetStringWithoutPathExpansion(
+          shill::kOpenVPNClientCertIdProperty, pkcs11_id);
+    } else {
+      provider->GetStringWithoutPathExpansion(
+          shill::kL2tpIpsecClientCertSlotProperty, slot_id);
+      provider->GetStringWithoutPathExpansion(
+          shill::kL2tpIpsecClientCertIdProperty, pkcs11_id);
+    }
   }
 
   void GetEapCACertProperties(std::string* nss_nickname, std::string* ca_pem) {
@@ -171,12 +282,19 @@ class NetworkCertMigratorTest : public testing::Test {
 
   ShillServiceClient::TestInterface* service_test_;
   scoped_refptr<net::X509Certificate> test_ca_cert_;
+  scoped_refptr<net::X509Certificate> test_client_cert_;
+  std::string test_client_cert_pkcs11_id_;
+  std::string test_client_cert_slot_id_;
   std::string test_ca_cert_pem_;
   base::MessageLoop message_loop_;
 
  private:
   void CleanupTestCert() {
-    ASSERT_TRUE(test_nssdb_->DeleteCertAndKey(test_ca_cert_.get()));
+    if (test_ca_cert_)
+      ASSERT_TRUE(test_nssdb_->DeleteCertAndKey(test_ca_cert_.get()));
+
+    if (test_client_cert_)
+      ASSERT_TRUE(test_nssdb_->DeleteCertAndKey(test_client_cert_.get()));
   }
 
   scoped_ptr<NetworkStateHandler> network_state_handler_;
@@ -233,7 +351,7 @@ TEST_F(NetworkCertMigratorTest, DoNotMigrateNssIfPemSet) {
   EXPECT_EQ(kFakePEM, ca_pem);
 }
 
-TEST_F(NetworkCertMigratorTest, MigrateOpenVpn) {
+TEST_F(NetworkCertMigratorTest, MigrateNssOpenVpn) {
   // Add a new network for migration before the handlers are initialized.
   SetupVpnWithNss(true /* OpenVPN */);
 
@@ -247,7 +365,7 @@ TEST_F(NetworkCertMigratorTest, MigrateOpenVpn) {
   EXPECT_EQ(test_ca_cert_pem_, ca_pem);
 }
 
-TEST_F(NetworkCertMigratorTest, MigrateIpsecVpn) {
+TEST_F(NetworkCertMigratorTest, MigrateNssIpsecVpn) {
   // Add a new network for migration before the handlers are initialized.
   SetupVpnWithNss(false /* not OpenVPN */);
 
@@ -259,6 +377,129 @@ TEST_F(NetworkCertMigratorTest, MigrateIpsecVpn) {
   GetVpnCACertProperties(false /* not OpenVPN */, &nss_nickname, &ca_pem);
   EXPECT_TRUE(nss_nickname.empty());
   EXPECT_EQ(test_ca_cert_pem_, ca_pem);
+}
+
+TEST_F(NetworkCertMigratorTest, MigrateEapCertIdNoMatchingCert) {
+  SetupTestClientCert();
+  SetupNetworkHandlers();
+  base::RunLoop().RunUntilIdle();
+
+  // Add a new network for migration after the handlers are initialized.
+  SetupNetworkWithEapCertId(true /* wifi */, "unknown pkcs11 id");
+
+  base::RunLoop().RunUntilIdle();
+  // Since the PKCS11 ID is unknown, the certificate configuration will be
+  // cleared.
+  std::string cert_id;
+  GetEapCertId(true /* wifi */, &cert_id);
+  EXPECT_EQ(std::string(), cert_id);
+}
+
+TEST_F(NetworkCertMigratorTest, MigrateEapCertIdNoSlotId) {
+  SetupTestClientCert();
+  SetupNetworkHandlers();
+  base::RunLoop().RunUntilIdle();
+
+  // Add a new network for migration after the handlers are initialized.
+  SetupNetworkWithEapCertId(true /* wifi */, test_client_cert_pkcs11_id_);
+
+  base::RunLoop().RunUntilIdle();
+
+  std::string cert_id;
+  GetEapCertId(true /* wifi */, &cert_id);
+  std::string expected_cert_id =
+      test_client_cert_slot_id_ + ":" + test_client_cert_pkcs11_id_;
+  EXPECT_EQ(expected_cert_id, cert_id);
+}
+
+TEST_F(NetworkCertMigratorTest, MigrateWifiEapCertIdWrongSlotId) {
+  SetupTestClientCert();
+  SetupNetworkHandlers();
+  base::RunLoop().RunUntilIdle();
+
+  // Add a new network for migration after the handlers are initialized.
+  SetupNetworkWithEapCertId(true /* wifi */,
+                            "123:" + test_client_cert_pkcs11_id_);
+
+  base::RunLoop().RunUntilIdle();
+
+  std::string cert_id;
+  GetEapCertId(true /* wifi */, &cert_id);
+  std::string expected_cert_id =
+      test_client_cert_slot_id_ + ":" + test_client_cert_pkcs11_id_;
+  EXPECT_EQ(expected_cert_id, cert_id);
+}
+
+TEST_F(NetworkCertMigratorTest, DoNotChangeEapCertIdWithCorrectSlotId) {
+  SetupTestClientCert();
+  SetupNetworkHandlers();
+  base::RunLoop().RunUntilIdle();
+
+  std::string expected_cert_id =
+      test_client_cert_slot_id_ + ":" + test_client_cert_pkcs11_id_;
+
+  // Add a new network for migration after the handlers are initialized.
+  SetupNetworkWithEapCertId(true /* wifi */, expected_cert_id);
+
+  base::RunLoop().RunUntilIdle();
+
+  std::string cert_id;
+  GetEapCertId(true /* wifi */, &cert_id);
+  EXPECT_EQ(expected_cert_id, cert_id);
+}
+
+TEST_F(NetworkCertMigratorTest, IgnoreOpenVPNCertId) {
+  SetupTestClientCert();
+  SetupNetworkHandlers();
+  base::RunLoop().RunUntilIdle();
+
+  const char kPkcs11Id[] = "any slot id";
+
+  // Add a new network for migration after the handlers are initialized.
+  SetupVpnWithCertId(
+      true /* OpenVPN */, std::string() /* no slot id */, kPkcs11Id);
+
+  base::RunLoop().RunUntilIdle();
+
+  std::string pkcs11_id;
+  std::string unused_slot_id;
+  GetVpnCertId(true /* OpenVPN */, &unused_slot_id, &pkcs11_id);
+  EXPECT_EQ(kPkcs11Id, pkcs11_id);
+}
+
+TEST_F(NetworkCertMigratorTest, MigrateEthernetEapCertIdWrongSlotId) {
+  SetupTestClientCert();
+  SetupNetworkHandlers();
+  base::RunLoop().RunUntilIdle();
+
+  // Add a new network for migration after the handlers are initialized.
+  SetupNetworkWithEapCertId(
+      false /* ethernet */, "123:" + test_client_cert_pkcs11_id_);
+
+  base::RunLoop().RunUntilIdle();
+
+  std::string cert_id;
+  GetEapCertId(false /* ethernet */, &cert_id);
+  std::string expected_cert_id =
+      test_client_cert_slot_id_ + ":" + test_client_cert_pkcs11_id_;
+  EXPECT_EQ(expected_cert_id, cert_id);
+}
+
+TEST_F(NetworkCertMigratorTest, MigrateIpsecCertIdWrongSlotId) {
+  SetupTestClientCert();
+  SetupNetworkHandlers();
+  base::RunLoop().RunUntilIdle();
+
+  // Add a new network for migration after the handlers are initialized.
+  SetupVpnWithCertId(false /* IPsec */, "123", test_client_cert_pkcs11_id_);
+
+  base::RunLoop().RunUntilIdle();
+
+  std::string pkcs11_id;
+  std::string slot_id;
+  GetVpnCertId(false /* IPsec */, &slot_id, &pkcs11_id);
+  EXPECT_EQ(test_client_cert_pkcs11_id_, pkcs11_id);
+  EXPECT_EQ(test_client_cert_slot_id_, slot_id);
 }
 
 }  // namespace chromeos
