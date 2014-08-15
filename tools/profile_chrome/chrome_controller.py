@@ -26,6 +26,7 @@ class ChromeTracingController(controllers.BaseController):
     self._trace_file = None
     self._trace_interval = None
     self._trace_memory = trace_memory
+    self._is_tracing = False
     self._trace_start_re = \
        re.compile(r'Logging performance trace to file')
     self._trace_finish_re = \
@@ -81,15 +82,18 @@ class ChromeTracingController(controllers.BaseController):
     try:
       self._device.old_interface.WaitForLogMatch(
           self._trace_start_re, None, timeout=5)
+      self._is_tracing = True
     except pexpect.TIMEOUT:
       raise RuntimeError('Trace start marker not found. Is the correct version '
                          'of the browser running?')
 
   def StopTracing(self):
-    self._device.BroadcastIntent(intent.Intent(
-        action='%s.GPU_PROFILER_STOP' % self._package_info.package))
-    self._trace_file = self._device.old_interface.WaitForLogMatch(
-        self._trace_finish_re, None, timeout=120).group(1)
+    if self._is_tracing:
+      self._device.BroadcastIntent(intent.Intent(
+          action='%s.GPU_PROFILER_STOP' % self._package_info.package))
+      self._trace_file = self._device.old_interface.WaitForLogMatch(
+          self._trace_finish_re, None, timeout=120).group(1)
+      self._is_tracing = False
     if self._trace_memory:
       self._device.SetProp(_HEAP_PROFILE_MMAP_PROPERTY, 0)
 
