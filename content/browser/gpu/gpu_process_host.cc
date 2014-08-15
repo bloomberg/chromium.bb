@@ -40,6 +40,7 @@
 #include "ipc/ipc_switches.h"
 #include "ipc/message_filter.h"
 #include "media/base/media_switches.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/events/latency_info.h"
 #include "ui/gl/gl_switches.h"
 
@@ -859,6 +860,7 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
     switches::kV,
     switches::kVModule,
 #if defined(OS_MACOSX)
+    switches::kEnableRemoteCoreAnimation,
     switches::kEnableSandboxLogging,
 #endif
 #if defined(USE_AURA)

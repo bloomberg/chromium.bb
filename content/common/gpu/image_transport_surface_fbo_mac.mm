@@ -7,6 +7,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/image_transport_surface_calayer_mac.h"
 #include "content/common/gpu/image_transport_surface_iosurface_mac.h"
+#include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
@@ -29,9 +30,10 @@ ImageTransportSurfaceFBO::ImageTransportSurfaceFBO(
       made_current_(false),
       is_swap_buffers_pending_(false),
       did_unschedule_(false) {
-  // TODO(ccameron): If the remote layer API is supported on this system,
-  // use a CALayerStorageProvider instead of an IOSurfaceStorageProvider.
-  storage_provider_.reset(new IOSurfaceStorageProvider(this));
+  if (ui::RemoteLayerAPISupported())
+    storage_provider_.reset(new CALayerStorageProvider(this));
+  else
+    storage_provider_.reset(new IOSurfaceStorageProvider(this));
   helper_.reset(new ImageTransportHelper(this, manager, stub, handle));
 }
 

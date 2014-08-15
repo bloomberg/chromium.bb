@@ -9,6 +9,10 @@ namespace switches {
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 // Disable use of CoreAnimation to draw on the Mac.
 const char kDisableCoreAnimation[] = "disable-core-animation";
+
+// Enable use of cross-process CALayers to display content directly from the
+// GPU process on Mac.
+const char kEnableRemoteCoreAnimation[] = "enable-remote-core-animation";
 #endif
 
 // Disables use of DWM composition for top level windows.
