@@ -159,6 +159,7 @@
         'shell/browser/geolocation/cast_access_token_store.h',
         'shell/browser/url_request_context_factory.cc',
         'shell/browser/url_request_context_factory.h',
+        'shell/browser/webui/webui_cast.h',
         'shell/common/cast_content_client.cc',
         'shell/common/cast_content_client.h',
         'shell/renderer/cast_content_renderer_client.cc',
@@ -168,6 +169,7 @@
         ['chromecast_branding=="Chrome"', {
           'dependencies': [
             'internal/chromecast_internal.gyp:cast_gfx_internal',
+            'internal/chromecast_internal.gyp:cast_shell_internal',
           ],
         }, {
           'dependencies': [
@@ -175,6 +177,7 @@
           ],
           'sources': [
             'shell/browser/devtools/remote_debugging_server_simple.cc',
+            'shell/browser/webui/webui_cast_simple.cc',
           ],
         }],
       ],

@@ -13,6 +13,7 @@
 #include "chromecast/shell/browser/cast_browser_context.h"
 #include "chromecast/shell/browser/devtools/remote_debugging_server.h"
 #include "chromecast/shell/browser/url_request_context_factory.h"
+#include "chromecast/shell/browser/webui/webui_cast.h"
 
 namespace chromecast {
 namespace shell {
@@ -74,6 +75,8 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
 
   browser_context_.reset(new CastBrowserContext(url_request_context_factory_));
   dev_tools_.reset(new RemoteDebuggingServer());
+
+  InitializeWebUI();
 
   cast_service_.reset(CastService::Create(browser_context_.get()));
   cast_service_->Start();
