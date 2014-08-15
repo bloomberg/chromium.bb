@@ -60,12 +60,13 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     isCapabilityAvailable: function() {
-      var pdfToSaveAsPdf =
-          !this.getDocumentInfoInternal().isModifiable &&
+      var knownSizeToSaveAsPdf =
+          (!this.getDocumentInfoInternal().isModifiable ||
+           this.getDocumentInfoInternal().hasCssMediaStyles) &&
           this.getSelectedDestInternal() &&
           this.getSelectedDestInternal().id ==
               print_preview.Destination.GooglePromotedId.SAVE_AS_PDF;
-      return !pdfToSaveAsPdf && !!this.capability;
+      return !knownSizeToSaveAsPdf && !!this.capability;
     },
 
     /** @override */
