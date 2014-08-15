@@ -7,6 +7,7 @@ package org.chromium.content.browser;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.content_public.browser.JavaScriptCallback;
 
 /**
  * Part of the test suite for the WebView's Java Bridge.
@@ -103,7 +104,7 @@ public class JavaBridgeChildFrameTest extends JavaBridgeTestBase {
             final String script) throws Throwable {
         final String[] result = new String[1];
         class ResultCallback extends JavaBridgeTestBase.Controller
-                implements ContentViewCore.JavaScriptCallback {
+                implements JavaScriptCallback {
             @Override
             public void handleJavaScriptResult(String jsonResult) {
                 result[0] = jsonResult;

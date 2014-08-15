@@ -146,4 +146,18 @@ public interface WebContents {
      */
     public void beginExitTransition(String cssSelector);
 
+    /**
+     * Injects the passed Javascript code in the current page and evaluates it.
+     * If a result is required, pass in a callback.
+     *
+     * @param script The Javascript to execute.
+     * @param callback The callback to be fired off when a result is ready. The script's
+     *                 result will be json encoded and passed as the parameter, and the call
+     *                 will be made on the main thread.
+     *                 If no result is required, pass null.
+     * @param startRenderer Tells whether to start Renderer or not for initial empty document
+     */
+    public void evaluateJavaScript(String script, JavaScriptCallback callback,
+            boolean startRenderer);
+
 }

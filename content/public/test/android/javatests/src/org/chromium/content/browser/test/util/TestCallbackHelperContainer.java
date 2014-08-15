@@ -7,6 +7,7 @@ package org.chromium.content.browser.test.util;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content_public.browser.JavaScriptCallback;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -109,8 +110,8 @@ public class TestCallbackHelperContainer {
          * @param code A JavaScript code to be evaluated.
          */
         public void evaluateJavaScript(ContentViewCore contentViewCore, String code) {
-            ContentViewCore.JavaScriptCallback callback =
-                new ContentViewCore.JavaScriptCallback() {
+            JavaScriptCallback callback =
+                new JavaScriptCallback() {
                     @Override
                     public void handleJavaScriptResult(String jsonResult) {
                         notifyCalled(jsonResult);

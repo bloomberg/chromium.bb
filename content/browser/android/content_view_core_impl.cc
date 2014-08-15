@@ -9,7 +9,6 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/command_line.h"
-#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
@@ -67,7 +66,6 @@ using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
-using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
@@ -1307,53 +1305,6 @@ long ContentViewCoreImpl::GetNativeImeAdapter(JNIEnv* env, jobject obj) {
   if (!rwhva)
     return 0;
   return rwhva->GetNativeImeAdapter();
-}
-
-namespace {
-void JavaScriptResultCallback(const ScopedJavaGlobalRef<jobject>& callback,
-                              const base::Value* result) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  std::string json;
-  base::JSONWriter::Write(result, &json);
-  ScopedJavaLocalRef<jstring> j_json = ConvertUTF8ToJavaString(env, json);
-  Java_ContentViewCore_onEvaluateJavaScriptResult(env,
-                                                  j_json.obj(),
-                                                  callback.obj());
-}
-}  // namespace
-
-void ContentViewCoreImpl::EvaluateJavaScript(JNIEnv* env,
-                                             jobject obj,
-                                             jstring script,
-                                             jobject callback,
-                                             jboolean start_renderer) {
-  RenderViewHost* rvh = web_contents_->GetRenderViewHost();
-  DCHECK(rvh);
-
-  if (start_renderer && !rvh->IsRenderViewLive()) {
-    if (!web_contents_->CreateRenderViewForInitialEmptyDocument()) {
-      LOG(ERROR) << "Failed to create RenderView in EvaluateJavaScript";
-      return;
-    }
-  }
-
-  if (!callback) {
-    // No callback requested.
-    web_contents_->GetMainFrame()->ExecuteJavaScript(
-        ConvertJavaStringToUTF16(env, script));
-    return;
-  }
-
-  // Secure the Java callback in a scoped object and give ownership of it to the
-  // base::Callback.
-  ScopedJavaGlobalRef<jobject> j_callback;
-  j_callback.Reset(env, callback);
-  content::RenderFrameHost::JavaScriptResultCallback c_callback =
-      base::Bind(&JavaScriptResultCallback, j_callback);
-
-  web_contents_->GetMainFrame()->ExecuteJavaScript(
-      ConvertJavaStringToUTF16(env, script),
-      c_callback);
 }
 
 // TODO(sgurun) add support for posting a frame whose name is known (only

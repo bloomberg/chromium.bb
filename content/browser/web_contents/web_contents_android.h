@@ -83,6 +83,11 @@ class CONTENT_EXPORT WebContentsAndroid
   void SelectWordAroundCaret(JNIEnv* env, jobject obj);
 
   void InsertCSS(JNIEnv* env, jobject jobj, jstring jcss);
+  void EvaluateJavaScript(JNIEnv* env,
+                          jobject obj,
+                          jstring script,
+                          jobject callback,
+                          jboolean start_renderer);
 
  private:
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid();

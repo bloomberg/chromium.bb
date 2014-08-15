@@ -56,6 +56,7 @@ import org.chromium.content.browser.WebContentsObserverAndroid;
 import org.chromium.content.common.CleanupReference;
 import org.chromium.content_public.Referrer;
 import org.chromium.content_public.browser.GestureStateListener;
+import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
@@ -1676,12 +1677,12 @@ public class AwContents {
     }
 
     /**
-     * @see ContentViewCore.evaluateJavaScript(String, ContentViewCore.JavaScriptCallback)
+     * @see ContentViewCore.evaluateJavaScript(String, JavaScriptCallback)
      */
     public void evaluateJavaScript(String script, final ValueCallback<String> callback) {
-        ContentViewCore.JavaScriptCallback jsCallback = null;
+        JavaScriptCallback jsCallback = null;
         if (callback != null) {
-            jsCallback = new ContentViewCore.JavaScriptCallback() {
+            jsCallback = new JavaScriptCallback() {
                 @Override
                 public void handleJavaScriptResult(String jsonResult) {
                     callback.onReceiveValue(jsonResult);

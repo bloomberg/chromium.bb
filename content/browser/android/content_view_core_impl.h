@@ -159,11 +159,6 @@ class ContentViewCoreImpl : public ContentViewCore,
                                        jboolean enabled);
 
   void ClearHistory(JNIEnv* env, jobject obj);
-  void EvaluateJavaScript(JNIEnv* env,
-                          jobject obj,
-                          jstring script,
-                          jobject callback,
-                          jboolean start_renderer);
   void PostMessageToFrame(JNIEnv* env, jobject obj, jstring frame_id,
       jstring message, jstring source_origin, jstring target_origin);
   long GetNativeImeAdapter(JNIEnv* env, jobject obj);

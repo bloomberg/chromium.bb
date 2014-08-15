@@ -6,6 +6,7 @@ package org.chromium.content.browser.webcontents;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationTransitionDelegate;
 import org.chromium.content_public.browser.WebContents;
@@ -167,6 +168,7 @@ import org.chromium.content_public.browser.WebContents;
     /**
      * Inserts the provided markup sandboxed into the frame.
      */
+    @Override
     public void setupTransitionView(String markup) {
         nativeSetupTransitionView(mNativeWebContentsAndroid, markup);
     }
@@ -175,6 +177,7 @@ import org.chromium.content_public.browser.WebContents;
      * Hides transition elements specified by the selector, and activates any
      * exiting-transition stylesheets.
      */
+    @Override
     public void beginExitTransition(String cssSelector) {
         nativeBeginExitTransition(mNativeWebContentsAndroid, cssSelector);
     }
@@ -208,6 +211,18 @@ import org.chromium.content_public.browser.WebContents;
         }
     }
 
+    @Override
+    public void evaluateJavaScript(String script, JavaScriptCallback callback,
+            boolean startRenderer) {
+         nativeEvaluateJavaScript(mNativeWebContentsAndroid, script, callback, true);
+    }
+
+    @CalledByNative
+    private static void onEvaluateJavaScriptResult(
+            String jsonResult, JavaScriptCallback callback) {
+        callback.handleJavaScriptResult(jsonResult);
+    }
+
     private native String nativeGetTitle(long nativeWebContentsAndroid);
     private native String nativeGetVisibleURL(long nativeWebContentsAndroid);
     private native void nativeStop(long nativeWebContentsAndroid);
@@ -236,4 +251,6 @@ import org.chromium.content_public.browser.WebContents;
             String markup);
     private native void nativeBeginExitTransition(long nativeWebContentsAndroid,
             String cssSelector);
+    private native void nativeEvaluateJavaScript(long nativeWebContentsAndroid,
+            String script, JavaScriptCallback callback, boolean startRenderer);
 }

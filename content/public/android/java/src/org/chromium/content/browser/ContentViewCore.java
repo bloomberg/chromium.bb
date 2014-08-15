@@ -76,6 +76,7 @@ import org.chromium.content.browser.input.SelectPopupItem;
 import org.chromium.content.browser.input.SelectionEventType;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.GestureStateListener;
+import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.ViewAndroid;
@@ -1354,11 +1355,6 @@ public class ContentViewCore
         mWebContents.addStyleSheetByURL(url);
     }
 
-    /** Callback interface for evaluateJavaScript(). */
-    public interface JavaScriptCallback {
-        void handleJavaScriptResult(String jsonResult);
-    }
-
     /**
      * Injects the passed Javascript code in the current page and evaluates it.
      * If a result is required, pass in a callback.
@@ -1371,8 +1367,8 @@ public class ContentViewCore
      *                 If no result is required, pass null.
      */
     public void evaluateJavaScript(String script, JavaScriptCallback callback) {
-        if (mNativeContentViewCore == 0) return;
-        nativeEvaluateJavaScript(mNativeContentViewCore, script, callback, false);
+        assert mWebContents != null;
+        mWebContents.evaluateJavaScript(script, callback, false);
     }
 
     /**
@@ -1382,8 +1378,8 @@ public class ContentViewCore
      * @param script The Javascript to execute.
      */
     public void evaluateJavaScriptEvenIfNotYetNavigated(String script) {
-        if (mNativeContentViewCore == 0) return;
-        nativeEvaluateJavaScript(mNativeContentViewCore, script, null, true);
+        assert mWebContents != null;
+        mWebContents.evaluateJavaScript(script, null, true);
     }
 
     /**
@@ -2410,13 +2406,6 @@ public class ContentViewCore
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private static void onEvaluateJavaScriptResult(
-            String jsonResult, JavaScriptCallback callback) {
-        callback.handleJavaScriptResult(jsonResult);
-    }
-
-    @SuppressWarnings("unused")
-    @CalledByNative
     private void showPastePopup(int xDip, int yDip) {
         if (!mHasInsertion || !canPaste()) return;
         final float contentOffsetYPix = mRenderCoordinates.getContentOffsetYPix();
@@ -3174,9 +3163,6 @@ public class ContentViewCore
     private native void nativeSelectPopupMenuItems(long nativeContentViewCoreImpl, int[] indices);
 
     private native void nativeClearHistory(long nativeContentViewCoreImpl);
-
-    private native void nativeEvaluateJavaScript(long nativeContentViewCoreImpl,
-            String script, JavaScriptCallback callback, boolean startRenderer);
 
     private native void nativePostMessageToFrame(long nativeContentViewCoreImpl, String frameId,
             String message, String sourceOrigin, String targetOrigin);
