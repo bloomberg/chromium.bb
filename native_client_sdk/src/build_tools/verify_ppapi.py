@@ -19,6 +19,18 @@ from build_paths import PPAPI_DIR, SRC_DIR, SDK_LIBRARY_DIR
 import parse_dsc
 
 
+# Add a file to this list if it should not be added to a .dsc file; i.e. if it
+# should not be included in the Native Client SDK. This will silence the
+# presubmit warning.
+#
+# Some examples of files that should not be added to the SDK are: Dev and
+# Private interfaces that are either not available to NaCl plugins or are only
+# available to Flash or other privileged plugins.
+IGNORED_FILES = set([
+  'pp_video_dev.h'
+])
+
+
 class VerifyException(Exception):
   def __init__(self, lib_path, expected, unexpected):
     self.expected = expected
@@ -47,6 +59,10 @@ def PartitionFiles(filenames):
       continue
 
     parts = filename.split(os.sep)
+    basename = os.path.basename(filename)
+    if basename in IGNORED_FILES:
+      continue
+
     if 'private' in filename:
       if 'flash' in filename:
         continue

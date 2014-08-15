@@ -147,7 +147,9 @@ def CheckUpdatedNaClSDK(input_api, output_api):
   return RunCmdAndCheck(cmd,
                         'PPAPI Interface modified without updating NaCl SDK.\n'
                         '(note that some dev interfaces should not be added '
-                        'the NaCl SDK; when in doubt, ask a ppapi OWNER.)',
+                        'the NaCl SDK; when in doubt, ask a ppapi OWNER.\n'
+                        'To ignore a file, add it to IGNORED_FILES in '
+                        'native_client_sdk/src/build_tools/verify_ppapi.py)',
                         output_api,
                         warning=True)
 
