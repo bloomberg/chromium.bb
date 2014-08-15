@@ -1,4 +1,5 @@
 include_rules = [
+  "+athena/athena_export.h",
   "+athena/common",
   "+athena/input/public",
   "+athena/resources",

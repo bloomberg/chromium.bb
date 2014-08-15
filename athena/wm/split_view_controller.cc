@@ -32,11 +32,13 @@ SplitViewController::SplitViewController(
       right_window_(NULL),
       separator_position_(0),
       weak_factory_(this) {
-  window_manager->AddObserver(this);
+  if (window_manager_)
+    window_manager_->AddObserver(this);
 }
 
 SplitViewController::~SplitViewController() {
-  window_manager_->RemoveObserver(this);
+  if (window_manager_)
+    window_manager_->RemoveObserver(this);
 }
 
 bool SplitViewController::IsSplitViewModeActive() const {
@@ -48,6 +50,11 @@ void SplitViewController::ActivateSplitMode(aura::Window* left,
   aura::Window::Windows windows = window_list_provider_->GetWindowList();
   aura::Window::Windows::reverse_iterator iter = windows.rbegin();
   if (state_ == ACTIVE) {
+    if (left_window_ == right)
+      left_window_ = left;
+    if (right_window_ == left)
+      right_window_ = right;
+
     if (!left)
       left = left_window_;
     if (!right)
@@ -73,10 +80,14 @@ void SplitViewController::ActivateSplitMode(aura::Window* left,
   }
 
   state_ = ACTIVE;
-  left_window_ = left;
-  right_window_ = right;
-  container_->StackChildAtTop(right_window_);
-  container_->StackChildAtTop(left_window_);
+  if (right_window_ != right) {
+    right_window_ = right;
+    container_->StackChildAtTop(right_window_);
+  }
+  if (left_window_ != left) {
+    left_window_ = left;
+    container_->StackChildAtTop(left_window_);
+  }
   UpdateLayout(true);
 }
 
@@ -256,7 +267,7 @@ void SplitViewController::ScrollUpdate(float delta) {
 
 bool SplitViewController::CanScroll() {
   // TODO(mfomitchev): return false in vertical orientation, in full screen.
-  bool result = (!window_manager_->IsOverviewModeActive() &&
+  bool result = (window_manager_ && !window_manager_->IsOverviewModeActive() &&
                  !IsSplitViewModeActive() &&
                  window_list_provider_->GetWindowList().size() >= 2);
   return result;

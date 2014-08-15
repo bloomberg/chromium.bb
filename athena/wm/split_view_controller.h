@@ -5,6 +5,7 @@
 #ifndef ATHENA_WM_SPLIT_VIEW_CONTROLLER_H_
 #define ATHENA_WM_SPLIT_VIEW_CONTROLLER_H_
 
+#include "athena/athena_export.h"
 #include "athena/wm/bezel_controller.h"
 #include "athena/wm/public/window_manager_observer.h"
 #include "athena/wm/window_overview_mode.h"
@@ -22,8 +23,9 @@ class WindowOverviewModeDelegate;
 
 // Responsible for entering split view mode, exiting from split view mode, and
 // laying out the windows in split view mode.
-class SplitViewController : public BezelController::ScrollDelegate,
-                            public WindowManagerObserver {
+class ATHENA_EXPORT SplitViewController
+    : public BezelController::ScrollDelegate,
+    public WindowManagerObserver {
  public:
   SplitViewController(aura::Window* container,
                       WindowListProvider* window_list_provider,
@@ -37,6 +39,9 @@ class SplitViewController : public BezelController::ScrollDelegate,
   // |right| is NULL, then the first window in the window-list (which is neither
   // |left| nor |right|) is selected instead.
   void ActivateSplitMode(aura::Window* left, aura::Window* right);
+
+  aura::Window* left_window() { return left_window_; }
+  aura::Window* right_window() { return right_window_; }
 
  private:
   enum State {
@@ -81,8 +86,9 @@ class SplitViewController : public BezelController::ScrollDelegate,
 
   aura::Window* container_;
 
-  // Window Manager which owns this SplitViewController.
-  // Must be non NULL for the duration of the lifetime.
+  // Window Manager which owns this SplitViewController. The window manager must
+  // be alive for the duration of the lifetime of the SplitViewController.
+  // Can be NULL (in tests).
   WindowManager* window_manager_;
 
   // Provider of the list of windows to cycle through. Not owned.

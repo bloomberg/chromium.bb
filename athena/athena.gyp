@@ -175,6 +175,7 @@
         'home/home_card_unittest.cc',
         'input/accelerator_manager_unittest.cc',
         'screen/screen_manager_unittest.cc',
+        'wm/split_view_controller_unittest.cc',
         'wm/window_manager_unittest.cc',
       ],
     }
