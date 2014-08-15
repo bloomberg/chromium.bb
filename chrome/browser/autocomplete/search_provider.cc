@@ -401,10 +401,10 @@ void SearchProvider::UpdateMatches() {
     // These blocks attempt to repair undesirable behavior by suggested
     // relevances with minimal impact, preserving other suggested relevances.
 
-    if (!HasKeywordDefaultMatchInKeywordMode()) {
+    if ((providers_.GetKeywordProviderURL() != NULL) &&
+        (FindTopMatch() == matches_.end())) {
       // In keyword mode, disregard the keyword verbatim suggested relevance
-      // if necessary so there at least one keyword match that's allowed to
-      // be the default match.
+      // if necessary, so at least one match is allowed to be default.
       keyword_results_.verbatim_relevance = -1;
       ConvertResultsToAutocompleteMatches();
     }
@@ -426,24 +426,11 @@ void SearchProvider::UpdateMatches() {
       ApplyCalculatedRelevance();
       ConvertResultsToAutocompleteMatches();
     }
-    DCHECK(HasKeywordDefaultMatchInKeywordMode());
     DCHECK(!IsTopMatchSearchWithURLInput());
     DCHECK(FindTopMatch() != matches_.end());
   }
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "Omnibox.SearchProviderMatches", matches_.size(), 1, 6, 7);
-
-  const TemplateURL* keyword_url = providers_.GetKeywordProviderURL();
-  if ((keyword_url != NULL) && HasKeywordDefaultMatchInKeywordMode()) {
-    // If there is a keyword match that is allowed to be the default match,
-    // then prohibit default provider matches from being the default match lest
-    // such matches cause the user to break out of keyword mode.
-    for (ACMatches::iterator it = matches_.begin(); it != matches_.end();
-         ++it) {
-      if (it->keyword != keyword_url->keyword())
-        it->allowed_to_be_default_match = false;
-    }
-  }
   UpdateDone();
 }
 
@@ -730,6 +717,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
       default_results_.suggest_results.empty() ?
       TemplateURLRef::NO_SUGGESTIONS_AVAILABLE :
       TemplateURLRef::NO_SUGGESTION_CHOSEN;
+  const TemplateURL* keyword_url = providers_.GetKeywordProviderURL();
   if (verbatim_relevance > 0) {
     const base::string16& trimmed_verbatim =
         base::CollapseWhitespace(input_.text(), false);
@@ -755,10 +743,9 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
         answer_type, std::string(), std::string(), false, verbatim_relevance,
         relevance_from_server, false, trimmed_verbatim);
     AddMatchToMap(verbatim, std::string(), did_not_accept_default_suggestion,
-                  false, &map);
+                  false, keyword_url != NULL, &map);
   }
   if (!keyword_input_.text().empty()) {
-    const TemplateURL* keyword_url = providers_.GetKeywordProviderURL();
     // We only create the verbatim search query match for a keyword
     // if it's not an extension keyword.  Extension keywords are handled
     // in KeywordProvider::Start().  (Extensions are complicated...)
@@ -780,7 +767,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
             true, keyword_verbatim_relevance, keyword_relevance_from_server,
             false, trimmed_verbatim);
         AddMatchToMap(verbatim, std::string(),
-                      did_not_accept_keyword_suggestion, false, &map);
+                      did_not_accept_keyword_suggestion, false, true, &map);
       }
     }
   }
@@ -848,21 +835,6 @@ ACMatches::const_iterator SearchProvider::FindTopMatch() const {
   return it;
 }
 
-bool SearchProvider::HasKeywordDefaultMatchInKeywordMode() const {
-  const TemplateURL* keyword_url = providers_.GetKeywordProviderURL();
-  // If the user is not in keyword mode, return true to say that this
-  // constraint is not violated.
-  if (keyword_url == NULL)
-    return true;
-  for (ACMatches::const_iterator it = matches_.begin(); it != matches_.end();
-       ++it) {
-    if ((it->keyword == keyword_url->keyword()) &&
-        it->allowed_to_be_default_match)
-      return true;
-  }
-  return false;
-}
-
 bool SearchProvider::IsTopMatchSearchWithURLInput() const {
   ACMatches::const_iterator first_match = FindTopMatch();
   return (input_.type() == metrics::OmniboxInputType::URL) &&
@@ -922,7 +894,8 @@ void SearchProvider::AddHistoryResultsToMap(const HistoryResults& results,
                                          is_keyword);
   for (SearchSuggestionParser::SuggestResults::const_iterator i(
            scored_results.begin()); i != scored_results.end(); ++i) {
-    AddMatchToMap(*i, std::string(), did_not_accept_suggestion, true, map);
+    AddMatchToMap(*i, std::string(), did_not_accept_suggestion, true,
+                  providers_.GetKeywordProviderURL() != NULL, map);
   }
   UMA_HISTOGRAM_TIMES("Omnibox.SearchProvider.AddHistoryResultsTime",
                       base::TimeTicks::Now() - start_time);
@@ -1044,8 +1017,10 @@ void SearchProvider::AddSuggestResultsToMap(
     const SearchSuggestionParser::SuggestResults& results,
     const std::string& metadata,
     MatchMap* map) {
-  for (size_t i = 0; i < results.size(); ++i)
-    AddMatchToMap(results[i], metadata, i, false, map);
+  for (size_t i = 0; i < results.size(); ++i) {
+    AddMatchToMap(results[i], metadata, i, false,
+                  providers_.GetKeywordProviderURL() != NULL, map);
+  }
 }
 
 int SearchProvider::GetVerbatimRelevance(bool* relevance_from_server) const {

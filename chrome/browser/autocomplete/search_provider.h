@@ -229,9 +229,9 @@ class SearchProvider : public BaseSearchProvider,
   // be chosen as default.
   ACMatches::const_iterator FindTopMatch() const;
 
-  // Checks if suggested relevances violate certain expected constraints.
-  // See UpdateMatches() for the use and explanation of these constraints.
-  bool HasKeywordDefaultMatchInKeywordMode() const;
+  // Checks if suggested relevances violate an expected constraint.
+  // See UpdateMatches() for the use and explanation of this constraint
+  // and other constraints enforced without the use of helper functions.
   bool IsTopMatchSearchWithURLInput() const;
 
   // Converts an appropriate number of navigation results in

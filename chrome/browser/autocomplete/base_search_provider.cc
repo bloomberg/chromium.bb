@@ -116,8 +116,11 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
     bool from_keyword_provider,
     const TemplateURL* template_url,
     const SearchTermsData& search_terms_data) {
+  // This call uses a number of default values.  For instance, it assumes that
+  // if this match is from a keyword provider than the user is in keyword mode.
   return CreateSearchSuggestion(
-      NULL, AutocompleteInput(), SearchSuggestionParser::SuggestResult(
+      NULL, AutocompleteInput(), from_keyword_provider,
+      SearchSuggestionParser::SuggestResult(
           suggestion, type, suggestion, base::string16(), base::string16(),
           base::string16(), base::string16(), std::string(), std::string(),
           from_keyword_provider, 0, false, false, base::string16()),
@@ -208,6 +211,7 @@ void BaseSearchProvider::SetDeletionURL(const std::string& deletion_url,
 AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
     AutocompleteProvider* autocomplete_provider,
     const AutocompleteInput& input,
+    const bool in_keyword_mode,
     const SearchSuggestionParser::SuggestResult& suggestion,
     const TemplateURL* template_url,
     const SearchTermsData& search_terms_data,
@@ -240,6 +244,7 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
 
   // suggestion.match_contents() should have already been collapsed.
   match.allowed_to_be_default_match =
+      (!in_keyword_mode || suggestion.from_keyword_provider()) &&
       (base::CollapseWhitespace(input.text(), false) ==
        suggestion.match_contents());
 
@@ -251,6 +256,7 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   if (suggestion.from_keyword_provider())
     match.fill_into_edit.append(match.keyword + base::char16(' '));
   if (!input.prevent_inline_autocomplete() &&
+      (!in_keyword_mode || suggestion.from_keyword_provider()) &&
       StartsWith(suggestion.suggestion(), input.text(), false)) {
     match.inline_autocompletion =
         suggestion.suggestion().substr(input.text().length());
@@ -370,9 +376,10 @@ void BaseSearchProvider::AddMatchToMap(
     const std::string& metadata,
     int accepted_suggestion,
     bool mark_as_deletable,
+    bool in_keyword_mode,
     MatchMap* map) {
   AutocompleteMatch match = CreateSearchSuggestion(
-      this, GetInput(result.from_keyword_provider()), result,
+      this, GetInput(result.from_keyword_provider()), in_keyword_mode, result,
       GetTemplateURL(result.from_keyword_provider()),
       template_url_service_->search_terms_data(), accepted_suggestion,
       ShouldAppendExtraParams(result));

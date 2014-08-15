@@ -4,12 +4,7 @@
 //
 // This file contains the zero-suggest autocomplete provider. This experimental
 // provider is invoked when the user focuses in the omnibox prior to editing,
-// and generates search query suggestions based on the current URL. To enable
-// this provider, point --experimental-zero-suggest-url-prefix at an
-// appropriate suggestion service.
-//
-// HUGE DISCLAIMER: This is just here for experimenting and will probably be
-// deleted entirely as we revise how suggestions work with the omnibox.
+// and generates search query suggestions based on the current URL.
 
 #ifndef CHROME_BROWSER_AUTOCOMPLETE_ZERO_SUGGEST_PROVIDER_H_
 #define CHROME_BROWSER_AUTOCOMPLETE_ZERO_SUGGEST_PROVIDER_H_

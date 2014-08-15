@@ -57,7 +57,8 @@ class BaseSearchProvider : public AutocompleteProvider {
   static bool ShouldPrefetch(const AutocompleteMatch& match);
 
   // Returns a simpler AutocompleteMatch suitable for persistence like in
-  // ShortcutsDatabase.
+  // ShortcutsDatabase.  This wrapper function uses a number of default values
+  // that may or may not be appropriate for your needs.
   // NOTE: Use with care. Most likely you want the other CreateSearchSuggestion
   // with protected access.
   static AutocompleteMatch CreateSearchSuggestion(
@@ -113,6 +114,8 @@ class BaseSearchProvider : public AutocompleteProvider {
   //
   // |input| is also necessary for various other details, like whether we should
   // allow inline autocompletion and what the transition type should be.
+  // |in_keyword_mode| helps guarantee a non-keyword suggestion does not
+  // appear as the default match when the user is in keyword mode.
   // |accepted_suggestion| is used to generate Assisted Query Stats.
   // |append_extra_query_params| should be set if |template_url| is the default
   // search engine, so the destination URL will contain any
@@ -120,6 +123,7 @@ class BaseSearchProvider : public AutocompleteProvider {
   static AutocompleteMatch CreateSearchSuggestion(
       AutocompleteProvider* autocomplete_provider,
       const AutocompleteInput& input,
+      const bool in_keyword_mode,
       const SearchSuggestionParser::SuggestResult& suggestion,
       const TemplateURL* template_url,
       const SearchTermsData& search_terms_data,
@@ -180,11 +184,14 @@ class BaseSearchProvider : public AutocompleteProvider {
   // |metadata| and |accepted_suggestion| are used for generating an
   // AutocompleteMatch.
   // |mark_as_deletable| indicates whether the match should be marked deletable.
+  // |in_keyword_mode| helps guarantee a non-keyword suggestion does not
+  // appear as the default match when the user is in keyword mode.
   // NOTE: Any result containing a deletion URL is always marked deletable.
   void AddMatchToMap(const SearchSuggestionParser::SuggestResult& result,
                      const std::string& metadata,
                      int accepted_suggestion,
                      bool mark_as_deletable,
+                     bool in_keyword_mode,
                      MatchMap* map);
 
   // Parses results from the suggest server and updates the appropriate suggest
