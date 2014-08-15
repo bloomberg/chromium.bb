@@ -53,8 +53,8 @@ public:
 
     // CollectionIndexCache API.
     bool canTraverseBackward() const { return true; }
-    Node* traverseToFirstElement() const { return rootNode().firstChild(); }
-    Node* traverseToLastElement() const { return rootNode().lastChild(); }
+    Node* traverseToFirst() const { return rootNode().firstChild(); }
+    Node* traverseToLast() const { return rootNode().lastChild(); }
     Node* traverseForwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset) const;
     Node* traverseBackwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset) const;
 

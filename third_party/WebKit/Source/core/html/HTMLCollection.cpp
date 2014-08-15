@@ -328,7 +328,7 @@ static inline bool nameShouldBeVisibleInDocumentAll(const HTMLElement& element)
         || element.hasTagName(selectTag);
 }
 
-Element* HTMLCollection::traverseToFirstElement() const
+Element* HTMLCollection::traverseToFirst() const
 {
     switch (type()) {
     case HTMLTagCollectionType:
@@ -344,7 +344,7 @@ Element* HTMLCollection::traverseToFirstElement() const
     }
 }
 
-Element* HTMLCollection::traverseToLastElement() const
+Element* HTMLCollection::traverseToLast() const
 {
     ASSERT(canTraverseBackward());
     if (shouldOnlyIncludeDirectChildren())

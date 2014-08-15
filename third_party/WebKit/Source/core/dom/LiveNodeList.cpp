@@ -64,12 +64,12 @@ Element* LiveNodeList::item(unsigned offset) const
     return m_collectionIndexCache.nodeAt(*this, offset);
 }
 
-Element* LiveNodeList::traverseToFirstElement() const
+Element* LiveNodeList::traverseToFirst() const
 {
     return ElementTraversal::firstWithin(rootNode(), IsMatch(*this));
 }
 
-Element* LiveNodeList::traverseToLastElement() const
+Element* LiveNodeList::traverseToLast() const
 {
     return ElementTraversal::lastWithin(rootNode(), IsMatch(*this));
 }

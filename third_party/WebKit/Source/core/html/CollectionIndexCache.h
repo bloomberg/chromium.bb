@@ -138,7 +138,7 @@ inline NodeType* CollectionIndexCache<Collection, NodeType>::nodeAt(const Collec
 
     // No valid cache yet, let's find the first matching element.
     ASSERT(!isCachedNodeCountValid());
-    NodeType* firstNode = collection.traverseToFirstElement();
+    NodeType* firstNode = collection.traverseToFirst();
     if (!firstNode) {
         // The collection is empty.
         setCachedNodeCount(0);
@@ -158,7 +158,7 @@ inline NodeType* CollectionIndexCache<Collection, NodeType>::nodeBeforeCachedNod
     // Determine if we should traverse from the beginning of the collection instead of the cached node.
     bool firstIsCloser = index < currentIndex - index;
     if (firstIsCloser || !collection.canTraverseBackward()) {
-        NodeType* firstNode = collection.traverseToFirstElement();
+        NodeType* firstNode = collection.traverseToFirst();
         ASSERT(firstNode);
         setCachedNode(firstNode, 0);
         return index ? nodeAfterCachedNode(collection, index) : firstNode;
@@ -182,7 +182,7 @@ inline NodeType* CollectionIndexCache<Collection, NodeType>::nodeAfterCachedNode
     // Determine if we should traverse from the end of the collection instead of the cached node.
     bool lastIsCloser = isCachedNodeCountValid() && cachedNodeCount() - index < index - currentIndex;
     if (lastIsCloser && collection.canTraverseBackward()) {
-        NodeType* lastItem = collection.traverseToLastElement();
+        NodeType* lastItem = collection.traverseToLast();
         ASSERT(lastItem);
         setCachedNode(lastItem, cachedNodeCount() - 1);
         if (index < cachedNodeCount() - 1)

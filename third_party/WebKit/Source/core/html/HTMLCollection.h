@@ -59,8 +59,8 @@ public:
 
     // CollectionIndexCache API.
     bool canTraverseBackward() const { return !overridesItemAfter(); }
-    Element* traverseToFirstElement() const;
-    Element* traverseToLastElement() const;
+    Element* traverseToFirst() const;
+    Element* traverseToLast() const;
     Element* traverseForwardToOffset(unsigned offset, Element& currentElement, unsigned& currentOffset) const;
     Element* traverseBackwardToOffset(unsigned offset, Element& currentElement, unsigned& currentOffset) const;
 
