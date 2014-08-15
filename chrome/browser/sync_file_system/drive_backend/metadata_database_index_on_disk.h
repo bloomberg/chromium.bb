@@ -69,7 +69,12 @@ class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
   virtual std::vector<std::string> GetAllMetadataIDs() const OVERRIDE;
 
   // Builds on-disk indexes from FileTracker entries on disk.
-  void BuildTrackerIndexes();
+  // Returns the number of newly added entries for indexing.
+  int64 BuildTrackerIndexes();
+
+  // Deletes entries used for indexes on on-disk database.
+  // Returns the number of the deleted entries.
+  int64 DeleteTrackerIndexes();
 
   LevelDBWrapper* GetDBForTesting();
 
@@ -149,6 +154,9 @@ class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
   // Returns the number of entries starting with |prefix| in NumEntries format.
   // Entries for |ignored_id| are not counted in.
   NumEntries CountWithPrefix(const std::string& prefix, int64 ignored_id);
+
+  // Deletes entries whose keys start from |prefix|.
+  void DeleteKeyStartsWith(const std::string& prefix);
 
   LevelDBWrapper* db_;  // Not owned.
   scoped_ptr<ServiceMetadata> service_metadata_;

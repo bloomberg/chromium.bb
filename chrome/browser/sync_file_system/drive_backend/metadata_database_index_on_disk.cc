@@ -680,7 +680,9 @@ MetadataDatabaseIndexOnDisk::GetAllMetadataIDs() const {
   return file_ids;
 }
 
-void MetadataDatabaseIndexOnDisk::BuildTrackerIndexes() {
+int64 MetadataDatabaseIndexOnDisk::BuildTrackerIndexes() {
+  int64 num_puts_before = db_->num_puts();
+
   scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
   for (itr->Seek(kFileTrackerKeyPrefix); itr->Valid(); itr->Next()) {
     if (!RemovePrefix(itr->key().ToString(), kFileTrackerKeyPrefix, NULL))
@@ -698,6 +700,23 @@ void MetadataDatabaseIndexOnDisk::BuildTrackerIndexes() {
     AddToPathIndexes(tracker);
     AddToDirtyTrackerIndexes(tracker);
   }
+
+  return db_->num_puts() - num_puts_before;
+}
+
+int64 MetadataDatabaseIndexOnDisk::DeleteTrackerIndexes() {
+  const char* kIndexPrefixes[] = {
+    kAppRootIDByAppIDKeyPrefix, kActiveTrackerIDByFileIDKeyPrefix,
+    kTrackerIDByFileIDKeyPrefix, kMultiTrackerByFileIDKeyPrefix,
+    kActiveTrackerIDByParentAndTitleKeyPrefix,
+    kTrackerIDByParentAndTitleKeyPrefix, kMultiBackingParentAndTitleKeyPrefix,
+    kDirtyIDKeyPrefix, kDemotedDirtyIDKeyPrefix
+  };
+
+  int64 num_deletes_before = db_->num_deletes();
+  for (size_t i = 0; i < arraysize(kIndexPrefixes); ++i)
+    DeleteKeyStartsWith(kIndexPrefixes[i]);
+  return db_->num_deletes() - num_deletes_before;
 }
 
 LevelDBWrapper* MetadataDatabaseIndexOnDisk::GetDBForTesting() {
@@ -772,8 +791,7 @@ void MetadataDatabaseIndexOnDisk::AddToFileIDIndexes(
   DVLOG(1) << "  Add to trackers by file ID: " << file_id;
   const std::string prefix = GenerateTrackerIDByFileIDKeyPrefix(file_id);
   AddToTrackerIDSetWithPrefix(
-      GenerateActiveTrackerIDByFileIDKey(file_id),
-      prefix, new_tracker);
+      GenerateActiveTrackerIDByFileIDKey(file_id), prefix, new_tracker);
 
   const std::string multi_tracker_key = GenerateMultiTrackerKey(file_id);
   if (!DBHasKey(multi_tracker_key) &&
@@ -1123,6 +1141,17 @@ MetadataDatabaseIndexOnDisk::CountWithPrefix(
   if (count >= 2)
     return MULTIPLE;
   return count == 0 ? NONE : SINGLE;
+}
+
+void MetadataDatabaseIndexOnDisk::DeleteKeyStartsWith(
+    const std::string& prefix) {
+  scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
+  for (itr->Seek(prefix); itr->Valid();) {
+    const std::string key = itr->key().ToString();
+    if (!StartsWithASCII(key, prefix, true))
+      break;
+    itr->Delete();
+  }
 }
 
 }  // namespace drive_backend

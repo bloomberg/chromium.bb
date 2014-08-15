@@ -237,7 +237,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, BuildIndexTest) {
   EXPECT_TRUE(tracker_ids.empty());
   EXPECT_EQ(0U, index()->CountDirtyTracker());
 
-  index()->BuildTrackerIndexes();
+  EXPECT_EQ(16, index()->BuildTrackerIndexes());
   WriteToDB();
 
   // After building indexes, we should have correct indexes.
@@ -250,6 +250,17 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, BuildIndexTest) {
   EXPECT_EQ(1U, tracker_ids.size());
   EXPECT_EQ(kFileTrackerID, tracker_ids.active_tracker());
   EXPECT_EQ(1U, index()->CountDirtyTracker());
+}
+
+TEST_F(MetadataDatabaseIndexOnDiskTest, BuildAndDeleteIndexTest) {
+  CreateTestDatabase(false, NULL);
+  int64 answer = index()->BuildTrackerIndexes();
+  WriteToDB();
+  ASSERT_EQ(16, answer);
+  EXPECT_EQ(answer, index()->DeleteTrackerIndexes());
+  WriteToDB();
+  EXPECT_EQ(answer, index()->BuildTrackerIndexes());
+  WriteToDB();
 }
 
 TEST_F(MetadataDatabaseIndexOnDiskTest, AllEntriesTest) {
