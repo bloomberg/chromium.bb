@@ -60,10 +60,12 @@ class SigninStatusMetricsProvider : public metrics::MetricsProvider,
     ALL_PROFILES_SIGNED_IN,
     ALL_PROFILES_NOT_SIGNED_IN,
     MIXED_SIGNIN_STATUS,
+    UNKNOWN_SIGNIN_STATUS,
     SIGNIN_STATUS_MAX,
   };
 
   // chrome::BrowserListObserver:
+  // This will never be called on Android.
   virtual void OnBrowserAdded(Browser* browser) OVERRIDE;
 
   // SigninManagerFactory::Observer:

@@ -65,7 +65,7 @@
 #include "chrome/browser/metrics/google_update_metrics_provider_win.h"
 #endif
 
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_CHROMEOS) && !defined(OS_IOS)
 #include "chrome/browser/metrics/signin_status_metrics_provider.h"
 #endif
 
@@ -238,7 +238,7 @@ void ChromeMetricsServiceClient::CollectFinalMetrics(
   DCHECK(!waiting_for_collect_final_metrics_step_);
   waiting_for_collect_final_metrics_step_ = true;
 
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_CHROMEOS) && !defined(OS_IOS)
   // Record the signin status histogram value.
   signin_status_metrics_provider_->RecordSigninStatusHistogram();
 #endif
@@ -328,7 +328,7 @@ void ChromeMetricsServiceClient::Initialize() {
       scoped_ptr<metrics::MetricsProvider>(chromeos_metrics_provider));
 #endif  // defined(OS_CHROMEOS)
 
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_CHROMEOS) && !defined(OS_IOS)
   signin_status_metrics_provider_ =
       SigninStatusMetricsProvider::CreateInstance();
   metrics_service_->RegisterMetricsProvider(

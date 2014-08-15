@@ -18,8 +18,26 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "components/signin/core/browser/signin_manager.h"
 
+namespace {
+
+// The event of calling function ComputeCurrentSigninStatus and the errors
+// occurred during the function execution.
+enum ComputeSigninStatus {
+  ENTERED_COMPUTE_SIGNIN_STATUS,
+  ERROR_COMPUTE_SIGNIN_STATUS,
+  COMPUTE_SIGNIN_STATUS_MAX,
+};
+
+void RecordComputeSigninStatusHistogram(ComputeSigninStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("UMA.ComputeCurrentSigninStatus", status,
+                            COMPUTE_SIGNIN_STATUS_MAX);
+}
+
+}  // namespace
+
 SigninStatusMetricsProvider::SigninStatusMetricsProvider(bool is_test)
-    : scoped_observer_(this),
+    : signin_status_(UNKNOWN_SIGNIN_STATUS),
+      scoped_observer_(this),
       is_test_(is_test),
       weak_ptr_factory_(this) {
   if (is_test_)
@@ -36,7 +54,10 @@ SigninStatusMetricsProvider::~SigninStatusMetricsProvider() {
   if (is_test_)
     return;
 
+#if !defined(OS_ANDROID)
   BrowserList::RemoveObserver(this);
+#endif
+
   SigninManagerFactory* factory = SigninManagerFactory::GetInstance();
   if (factory)
     factory->RemoveObserver(this);
@@ -77,6 +98,15 @@ void SigninStatusMetricsProvider::SigninManagerCreated(
   // for it. This ensures that all sign-in or sign-out actions of all opened
   // profiles are being monitored.
   scoped_observer_.Add(manager);
+
+  // If the status is unknown, it means this is the first created
+  // SigninManagerBase and the corresponding profile should be the only opened
+  // profile.
+  if (signin_status_ == UNKNOWN_SIGNIN_STATUS) {
+    size_t signed_in_count =
+        manager->GetAuthenticatedUsername().empty() ? 0 : 1;
+    UpdateInitialSigninStatus(1, signed_in_count);
+  }
 }
 
 void SigninStatusMetricsProvider::SigninManagerShutdown(
@@ -98,9 +128,13 @@ void SigninStatusMetricsProvider::GoogleSignedOut(const std::string& username) {
 }
 
 void SigninStatusMetricsProvider::Initialize() {
-  ComputeCurrentSigninStatus();
   // Add observers.
+#if !defined(OS_ANDROID)
+  // On Android, there is always only one profile in any situation, opening new
+  // windows (which is possible with only some Android devices) will not change
+  // the opened profiles signin status.
   BrowserList::AddObserver(this);
+#endif
   SigninManagerFactory::GetInstance()->AddObserver(this);
 
   // Start observing all already-created SigninManagers.
@@ -114,12 +148,27 @@ void SigninStatusMetricsProvider::Initialize() {
       scoped_observer_.Add(manager);
     }
   }
+
+  // It is possible that when this object is created, no SigninManager is
+  // created yet, for example, when Chrome is opened for the first time after
+  // installation on desktop, or when Chrome on Android is loaded into memory.
+  if (profiles.empty()) {
+    signin_status_ = UNKNOWN_SIGNIN_STATUS;
+  } else {
+    ComputeCurrentSigninStatus();
+  }
 }
 
 void SigninStatusMetricsProvider::UpdateInitialSigninStatus(
     size_t total_count,
     size_t signed_in_profiles_count) {
-  if (signed_in_profiles_count == 0) {
+  RecordComputeSigninStatusHistogram(ENTERED_COMPUTE_SIGNIN_STATUS);
+
+  if (total_count == 0) {
+    // This should never happen. If it does, record it in histogram.
+    RecordComputeSigninStatusHistogram(ERROR_COMPUTE_SIGNIN_STATUS);
+    signin_status_ = UNKNOWN_SIGNIN_STATUS;
+  } else if (signed_in_profiles_count == 0) {
     signin_status_ = ALL_PROFILES_NOT_SIGNED_IN;
   } else if (total_count == signed_in_profiles_count) {
     signin_status_ = ALL_PROFILES_SIGNED_IN;
@@ -129,10 +178,12 @@ void SigninStatusMetricsProvider::UpdateInitialSigninStatus(
 }
 
 void SigninStatusMetricsProvider::UpdateStatusWhenBrowserAdded(bool signed_in) {
+#if !defined(OS_ANDROID)
   if ((signin_status_ == ALL_PROFILES_NOT_SIGNED_IN && signed_in) ||
       (signin_status_ == ALL_PROFILES_SIGNED_IN && !signed_in)) {
     signin_status_ = MIXED_SIGNIN_STATUS;
   }
+#endif
 }
 
 void SigninStatusMetricsProvider::ComputeCurrentSigninStatus() {

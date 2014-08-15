@@ -3058,7 +3058,7 @@
           ],
           'sources': [ '<@(chrome_browser_mac_sources)' ]
         }],
-        ['chromeos==1 or OS=="ios" or OS=="android"', {
+        ['chromeos==1 or OS=="ios"', {
           'sources!': [
             'browser/metrics/signin_status_metrics_provider.cc',
             'browser/metrics/signin_status_metrics_provider.h',

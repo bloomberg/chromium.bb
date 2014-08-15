@@ -20,8 +20,12 @@ TEST(SigninStatusMetricsProvider, UpdateInitialSigninStatus) {
   metrics_provider.UpdateInitialSigninStatus(2, 1);
   EXPECT_EQ(SigninStatusMetricsProvider::MIXED_SIGNIN_STATUS,
             metrics_provider.GetSigninStatusForTesting());
+  metrics_provider.UpdateInitialSigninStatus(0, 0);
+  EXPECT_EQ(SigninStatusMetricsProvider::UNKNOWN_SIGNIN_STATUS,
+            metrics_provider.GetSigninStatusForTesting());
 }
 
+#if !defined(OS_ANDROID)
 TEST(SigninStatusMetricsProvider, UpdateStatusWhenBrowserAdded) {
   SigninStatusMetricsProvider metrics_provider(true);
 
@@ -61,6 +65,7 @@ TEST(SigninStatusMetricsProvider, UpdateStatusWhenBrowserAdded) {
   EXPECT_EQ(SigninStatusMetricsProvider::MIXED_SIGNIN_STATUS,
             metrics_provider.GetSigninStatusForTesting());
 }
+#endif
 
 TEST(SigninStatusMetricsProvider, GoogleSigninSucceeded) {
   SigninStatusMetricsProvider metrics_provider(true);

@@ -34090,6 +34090,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="UMA.ComputeCurrentSigninStatus"
+    enum="ComputeCurrentSigninStatus">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>yiyaoliu@chromium.org</owner>
+  <summary>
+    Records attempts to compute the current the signin status and error
+    encountered when computing.
+  </summary>
+</histogram>
+
 <histogram name="UMA.Discarded Log Events">
   <owner>asvitkine@chromium.org</owner>
   <summary>
@@ -37961,6 +37971,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="CompositorType" type="int">
   <int value="0" label="Software compositor"/>
   <int value="1" label="GPU compositor"/>
+</enum>
+
+<enum name="ComputeCurrentSigninStatus" type="int">
+  <int value="0" label="Tried to compute current signin status."/>
+  <int value="1" label="No signin manager found."/>
 </enum>
 
 <enum name="ConnectionFailureReason" type="int">
@@ -47238,6 +47253,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="0" label="All profiles signed in"/>
   <int value="1" label="All profiles not signed in"/>
   <int value="2" label="Mixed signin status"/>
+  <int value="3" label="Unknown signin status"/>
 </enum>
 
 <enum name="ProfileSync" type="int">

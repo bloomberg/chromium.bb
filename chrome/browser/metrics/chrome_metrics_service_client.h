@@ -26,7 +26,7 @@ class PluginMetricsProvider;
 class PrefRegistrySimple;
 class ProfilerMetricsProvider;
 
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_CHROMEOS) && !defined(OS_IOS)
 class SigninStatusMetricsProvider;
 #endif
 
@@ -166,7 +166,7 @@ class ChromeMetricsServiceClient
   GoogleUpdateMetricsProviderWin* google_update_metrics_provider_;
 #endif
 
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_CHROMEOS) && !defined(OS_IOS)
   // The SigninStatusMetricsProvider instance that was registered with
   // MetricsService. Has the same lifetime as |metrics_service_|.
   SigninStatusMetricsProvider* signin_status_metrics_provider_;

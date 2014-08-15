@@ -2044,7 +2044,7 @@
           'includes': ['chrome_ios_bundle_resources.gypi'],
           'xcode_settings': {'OTHER_LDFLAGS': ['-ObjC']},
         }],
-        ['OS=="ios" or OS=="android" or chromeos==1', {
+        ['OS=="ios" or chromeos==1', {
           'sources!': [
             'browser/metrics/signin_status_metrics_provider_unittest.cc',
           ],
