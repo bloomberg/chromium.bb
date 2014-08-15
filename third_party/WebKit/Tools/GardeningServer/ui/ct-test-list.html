@@ -47,7 +47,7 @@ found in the LICENSE file.
         <template if="{{ group.name && group.tests.length > 1 && !group.expanded }}">
           <div>
             {{ groups.step }} {{ group.name }} ({{ group.tests.length }} Tests)
-            <paper-icon-button id="expand" icon="more-vert" step="{{ groups.step }}" group="{{ group.name }}" on-click="{{ _expand }}"></paper-icon-button>
+            <paper-icon-button id="expand" icon="unfold-more" step="{{ groups.step }}" group="{{ group.name }}" on-click="{{ _expand }}"></paper-icon-button>
           </div>
         </template>
       </template>
