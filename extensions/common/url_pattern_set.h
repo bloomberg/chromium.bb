@@ -69,6 +69,9 @@ class URLPatternSet {
 
   void ClearPatterns();
 
+  // Adds a pattern based on |origin| to the set.
+  bool AddOrigin(int valid_schemes, const GURL& origin);
+
   // Returns true if every URL that matches |set| is matched by this. In other
   // words, if every pattern in |set| is encompassed by a pattern in this.
   bool Contains(const URLPatternSet& set) const;

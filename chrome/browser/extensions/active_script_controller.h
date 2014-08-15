@@ -54,6 +54,13 @@ class ActiveScriptController : public LocationBarController::ActionProvider,
   // Notifies the ActiveScriptController of detected ad injection.
   void OnAdInjectionDetected(const std::set<std::string>& ad_injectors);
 
+  // Adds the visible origin to |extension|'s active permissions, granting
+  // |extension| permission to always run script injections on the origin.
+  void AlwaysRunOnVisibleOrigin(const Extension* extension);
+
+  // Returns true if there is an active script injection action for |extension|.
+  bool HasActiveScriptAction(const Extension* extension);
+
   // LocationBarControllerProvider implementation.
   virtual ExtensionAction* GetActionForExtension(
       const Extension* extension) OVERRIDE;

@@ -142,6 +142,18 @@ void URLPatternSet::ClearPatterns() {
   patterns_.clear();
 }
 
+bool URLPatternSet::AddOrigin(int valid_schemes, const GURL& origin) {
+  DCHECK_EQ(origin.GetOrigin(), origin);
+  URLPattern origin_pattern(valid_schemes);
+  // Origin adding could fail if |origin| does not match |valid_schemes|.
+  if (origin_pattern.Parse(origin.GetOrigin().spec()) !=
+      URLPattern::PARSE_SUCCESS) {
+    return false;
+  }
+  origin_pattern.SetPath("/*");
+  return AddPattern(origin_pattern);
+}
+
 bool URLPatternSet::Contains(const URLPatternSet& other) const {
   for (URLPatternSet::const_iterator it = other.begin();
        it != other.end(); ++it) {

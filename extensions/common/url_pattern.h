@@ -162,6 +162,10 @@ class URLPattern {
   // cached.
   bool ImpliesAllHosts() const;
 
+  // Returns true if the pattern only matches a single origin. The pattern may
+  // include a path.
+  bool MatchesSingleOrigin() const;
+
   // Sets the port. Returns false if the port is invalid.
   bool SetPort(const std::string& port);
   const std::string& port() const { return port_; }

@@ -7,6 +7,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/extensions/active_script_controller.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/extension_action.h"
@@ -120,8 +121,7 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
     // homepage, we just disable this menu item.
     return extensions::ManifestURL::GetHomepageURL(extension).is_valid();
   } else if (command_id == INSPECT_POPUP) {
-    WebContents* web_contents =
-        browser_->tab_strip_model()->GetActiveWebContents();
+    WebContents* web_contents = GetActiveWebContents();
     if (!web_contents)
       return false;
 
@@ -162,6 +162,14 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
                            Referrer(), NEW_FOREGROUND_TAB,
                            content::PAGE_TRANSITION_LINK, false);
       browser_->OpenURL(params);
+      break;
+    }
+    case ALWAYS_RUN: {
+      WebContents* web_contents = GetActiveWebContents();
+      if (web_contents) {
+        extensions::ActiveScriptController::GetForWebContents(web_contents)
+            ->AlwaysRunOnVisibleOrigin(extension);
+      }
       break;
     }
     case CONFIGURE:
@@ -237,6 +245,18 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension) {
   AddItem(NAME, base::UTF8ToUTF16(extension_name));
   AppendExtensionItems();
   AddSeparator(ui::NORMAL_SEPARATOR);
+
+  // Add the "Always Allow" item for adding persisted permissions for script
+  // injections if there is an active action for this extension. Note that this
+  // will add it to *all* extension action context menus, not just the one
+  // attached to the script injection request icon, but that's okay.
+  WebContents* web_contents = GetActiveWebContents();
+  if (web_contents &&
+      extensions::ActiveScriptController::GetForWebContents(web_contents)
+          ->HasActiveScriptAction(extension)) {
+    AddItemWithStringId(ALWAYS_RUN, IDS_EXTENSIONS_ALWAYS_RUN);
+  }
+
   AddItemWithStringId(CONFIGURE, IDS_EXTENSIONS_OPTIONS_MENU_ITEM);
   AddItem(UNINSTALL, l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNINSTALL));
   if (extension_action_manager->GetBrowserAction(*extension))
@@ -266,4 +286,8 @@ void ExtensionContextMenuModel::AppendExtensionItems() {
                                          base::string16(),
                                          &extension_items_count_,
                                          true);  // is_action_menu
+}
+
+content::WebContents* ExtensionContextMenuModel::GetActiveWebContents() const {
+  return browser_->tab_strip_model()->GetActiveWebContents();
 }

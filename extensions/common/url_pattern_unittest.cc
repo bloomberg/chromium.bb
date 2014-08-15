@@ -810,4 +810,35 @@ TEST(ExtensionURLPatternTest, Subset) {
   EXPECT_TRUE(StrictlyContains(pattern12, pattern13));
 }
 
+TEST(ExtensionURLPatternTest, MatchesSingleOrigin) {
+  EXPECT_FALSE(
+      URLPattern(URLPattern::SCHEME_ALL, "http://*/").MatchesSingleOrigin());
+  EXPECT_FALSE(URLPattern(URLPattern::SCHEME_ALL, "https://*.google.com/*")
+                   .MatchesSingleOrigin());
+  EXPECT_TRUE(URLPattern(URLPattern::SCHEME_ALL, "http://google.com/")
+                  .MatchesSingleOrigin());
+  EXPECT_TRUE(URLPattern(URLPattern::SCHEME_ALL, "http://google.com/*")
+                  .MatchesSingleOrigin());
+  EXPECT_TRUE(URLPattern(URLPattern::SCHEME_ALL, "http://www.google.com/")
+                  .MatchesSingleOrigin());
+  EXPECT_FALSE(URLPattern(URLPattern::SCHEME_ALL, "*://www.google.com/")
+                   .MatchesSingleOrigin());
+  EXPECT_FALSE(URLPattern(URLPattern::SCHEME_ALL, "http://*.com/")
+                   .MatchesSingleOrigin());
+  EXPECT_FALSE(URLPattern(URLPattern::SCHEME_ALL, "http://*.google.com/foo/bar")
+                   .MatchesSingleOrigin());
+  EXPECT_TRUE(
+      URLPattern(URLPattern::SCHEME_ALL, "http://www.google.com/foo/bar")
+          .MatchesSingleOrigin());
+  EXPECT_FALSE(URLPattern(URLPattern::SCHEME_HTTPS, "*://*.google.com/foo/bar")
+                   .MatchesSingleOrigin());
+  EXPECT_TRUE(URLPattern(URLPattern::SCHEME_HTTPS, "https://www.google.com/")
+                  .MatchesSingleOrigin());
+  EXPECT_FALSE(URLPattern(URLPattern::SCHEME_HTTP,
+                          "http://*.google.com/foo/bar").MatchesSingleOrigin());
+  EXPECT_TRUE(
+      URLPattern(URLPattern::SCHEME_HTTP, "http://www.google.com/foo/bar")
+          .MatchesSingleOrigin());
+}
+
 }  // namespace

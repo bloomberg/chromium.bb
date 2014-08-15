@@ -15,6 +15,10 @@ class Browser;
 class ExtensionAction;
 class Profile;
 
+namespace content {
+class WebContents;
+}
+
 namespace extensions {
 class Extension;
 class ContextMenuMatcher;
@@ -34,7 +38,8 @@ class ExtensionContextMenuModel
     HIDE,
     UNINSTALL,
     MANAGE,
-    INSPECT_POPUP
+    INSPECT_POPUP,
+    ALWAYS_RUN
   };
 
   // Type of action the extension icon represents.
@@ -88,6 +93,9 @@ class ExtensionContextMenuModel
   // Gets the extension we are displaying the menu for. Returns NULL if the
   // extension has been uninstalled and no longer exists.
   const extensions::Extension* GetExtension() const;
+
+  // Returns the active web contents.
+  content::WebContents* GetActiveWebContents() const;
 
   // Appends the extension's context menu items.
   void AppendExtensionItems();

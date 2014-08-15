@@ -47,12 +47,8 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
   // permission in the manifest.
   if (permissions_data->HasAPIPermission(APIPermission::kActiveTab) ||
       permissions_data->HasWithheldImpliedAllHosts()) {
-    URLPattern pattern(UserScript::ValidUserScriptSchemes());
-    // Pattern parsing could fail if this is an unsupported URL e.g. chrome://.
-    if (pattern.Parse(web_contents()->GetURL().spec()) ==
-            URLPattern::PARSE_SUCCESS) {
-      new_hosts.AddPattern(pattern);
-    }
+    new_hosts.AddOrigin(UserScript::ValidUserScriptSchemes(),
+                        web_contents()->GetVisibleURL().GetOrigin());
     new_apis.insert(APIPermission::kTab);
   }
 

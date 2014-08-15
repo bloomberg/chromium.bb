@@ -36,15 +36,35 @@ namespace permissions = api::permissions;
 
 namespace {
 
+// Returns a set of single origin permissions from |permissions| that match
+// |bounds|. This is necessary for two reasons:
+//   a) single origin active permissions can get filtered out in
+//      GetBoundedActivePermissions because they are not recognized as a subset
+//      of all-host permissions
+//   b) active permissions that do not match any manifest permissions can
+//      exist if a manifest permission is dropped
+URLPatternSet FilterSingleOriginPermissions(const URLPatternSet& permissions,
+                                            const URLPatternSet& bounds) {
+  URLPatternSet single_origin_permissions;
+  for (URLPatternSet::const_iterator iter = permissions.begin();
+       iter != permissions.end();
+       ++iter) {
+    if (iter->MatchesSingleOrigin() &&
+        bounds.MatchesURL(GURL(iter->GetAsString()))) {
+      single_origin_permissions.AddPattern(*iter);
+    }
+  }
+  return single_origin_permissions;
+}
+
 // Returns a PermissionSet that has the active permissions of the extension,
 // bounded to its current manifest.
 scoped_refptr<const PermissionSet> GetBoundedActivePermissions(
-    const Extension* extension, ExtensionPrefs* extension_prefs) {
+    const Extension* extension,
+    const scoped_refptr<const PermissionSet>& active_permissions) {
   // If the extension has used the optional permissions API, it will have a
   // custom set of active permissions defined in the extension prefs. Here,
   // we update the extension's active permissions based on the prefs.
-  scoped_refptr<const PermissionSet> active_permissions =
-      extension_prefs->GetActivePermissions(extension->id());
   if (!active_permissions)
     return extension->permissions_data()->active_permissions();
 
@@ -144,9 +164,11 @@ void PermissionsUpdater::GrantActivePermissions(const Extension* extension) {
 }
 
 void PermissionsUpdater::InitializePermissions(const Extension* extension) {
+  scoped_refptr<const PermissionSet> active_permissions =
+      ExtensionPrefs::Get(browser_context_)
+          ->GetActivePermissions(extension->id());
   scoped_refptr<const PermissionSet> bounded_active =
-      GetBoundedActivePermissions(extension,
-                                  ExtensionPrefs::Get(browser_context_));
+      GetBoundedActivePermissions(extension, active_permissions);
 
   // We withhold permissions iff the switch to do so is enabled, the extension
   // shows up in chrome:extensions (so the user can grant withheld permissions),
@@ -174,6 +196,20 @@ void PermissionsUpdater::InitializePermissions(const Extension* extension) {
                           should_withhold_permissions,
                           &granted_scriptable_hosts,
                           &withheld_scriptable_hosts);
+
+  // After withholding permissions, add back any origins to the active set that
+  // may have been lost during the set operations that would have dropped them.
+  // For example, the union of <all_urls> and "example.com" is <all_urls>, so
+  // we may lose "example.com". However, "example.com" is important once
+  // <all_urls> is stripped during withholding.
+  if (active_permissions) {
+    granted_explicit_hosts.AddPatterns(
+        FilterSingleOriginPermissions(active_permissions->explicit_hosts(),
+                                      bounded_active->explicit_hosts()));
+    granted_scriptable_hosts.AddPatterns(
+        FilterSingleOriginPermissions(active_permissions->scriptable_hosts(),
+                                      bounded_active->scriptable_hosts()));
+  }
 
   bounded_active = new PermissionSet(bounded_active->apis(),
                                      bounded_active->manifest_permissions(),

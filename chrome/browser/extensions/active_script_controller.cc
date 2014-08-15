@@ -13,6 +13,8 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/location_bar_controller.h"
+#include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
@@ -27,6 +29,7 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "ipc/ipc_message_macros.h"
 
@@ -99,6 +102,44 @@ void ActiveScriptController::OnAdInjectionDetected(
   UMA_HISTOGRAM_COUNTS_100(
       "Extensions.ActiveScriptController.UnpreventableAdInjectors",
       ad_injectors.size() - num_preventable_ad_injectors);
+}
+
+void ActiveScriptController::AlwaysRunOnVisibleOrigin(
+    const Extension* extension) {
+  const GURL& url = web_contents()->GetVisibleURL();
+  URLPatternSet new_explicit_hosts;
+  URLPatternSet new_scriptable_hosts;
+
+  scoped_refptr<const PermissionSet> withheld_permissions =
+      extension->permissions_data()->withheld_permissions();
+  if (withheld_permissions->explicit_hosts().MatchesURL(url)) {
+    new_explicit_hosts.AddOrigin(UserScript::ValidUserScriptSchemes(),
+                                 url.GetOrigin());
+  }
+  if (withheld_permissions->scriptable_hosts().MatchesURL(url)) {
+    new_scriptable_hosts.AddOrigin(UserScript::ValidUserScriptSchemes(),
+                                   url.GetOrigin());
+  }
+
+  scoped_refptr<PermissionSet> new_permissions =
+      new PermissionSet(APIPermissionSet(),
+                        ManifestPermissionSet(),
+                        new_explicit_hosts,
+                        new_scriptable_hosts);
+
+  // Update permissions for the session. This adds |new_permissions| to active
+  // permissions and granted permissions.
+  // TODO(devlin): Make sure that the permission is removed from
+  // withheld_permissions if appropriate.
+  PermissionsUpdater(web_contents()->GetBrowserContext())
+      .AddPermissions(extension, new_permissions.get());
+
+  // Allow current tab to run injection.
+  OnClicked(extension);
+}
+
+bool ActiveScriptController::HasActiveScriptAction(const Extension* extension) {
+  return enabled_ && active_script_actions_.count(extension->id()) > 0;
 }
 
 ExtensionAction* ActiveScriptController::GetActionForExtension(

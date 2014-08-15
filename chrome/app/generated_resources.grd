@@ -4844,6 +4844,9 @@ Make sure you do not expose any sensitive information.
           Show button
         </message>
         <if expr="not use_titlecase">
+          <message name="IDS_EXTENSIONS_ALWAYS_RUN" desc="The text for the 'always run' item in context menus (sentence case).">
+            Always run
+          </message>
           <message name="IDS_EXTENSIONS_OPTIONS_MENU_ITEM" desc="The text for the options menu item in context menus (sentence case).">
             Options
           </message>
@@ -4861,6 +4864,9 @@ Make sure you do not expose any sensitive information.
           </message>
         </if>
         <if expr="use_titlecase">
+          <message name="IDS_EXTENSIONS_ALWAYS_RUN" desc="The text for the 'always run' item in context menus (title case).">
+            Always Run
+          </message>
           <message name="IDS_EXTENSIONS_OPTIONS_MENU_ITEM" desc="The text for the options menu item in context menus (title case).">
             Options
           </message>

@@ -421,4 +421,22 @@ TEST(URLPatternSetTest, NwayUnion) {
   }
 }
 
+TEST(URLPatternSetTest, AddOrigin) {
+  URLPatternSet set;
+  EXPECT_TRUE(set.AddOrigin(
+      URLPattern::SCHEME_ALL, GURL("https://www.google.com/")));
+  EXPECT_TRUE(set.MatchesURL(GURL("https://www.google.com/foo/bar")));
+  EXPECT_FALSE(set.MatchesURL(GURL("http://www.google.com/foo/bar")));
+  EXPECT_FALSE(set.MatchesURL(GURL("https://en.google.com/foo/bar")));
+  set.ClearPatterns();
+
+  EXPECT_TRUE(set.AddOrigin(
+      URLPattern::SCHEME_ALL, GURL("https://google.com/")));
+  EXPECT_FALSE(set.MatchesURL(GURL("https://www.google.com/foo/bar")));
+  EXPECT_TRUE(set.MatchesURL(GURL("https://google.com/foo/bar")));
+
+  EXPECT_FALSE(set.AddOrigin(
+      URLPattern::SCHEME_HTTP, GURL("https://google.com/")));
+}
+
 }  // namespace extensions

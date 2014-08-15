@@ -466,6 +466,12 @@ bool URLPattern::ImpliesAllHosts() const {
   return registry_length > 0;
 }
 
+bool URLPattern::MatchesSingleOrigin() const {
+  // Strictly speaking, the port is part of the origin, but in URLPattern it
+  // defaults to *. It's not very interesting anyway, so leave it out.
+  return !ImpliesAllHosts() && scheme_ != "*" && !match_subdomains_;
+}
+
 bool URLPattern::MatchesPath(const std::string& test) const {
   // Make the behaviour of OverlapsWith consistent with MatchesURL, which is
   // need to match hosted apps on e.g. 'google.com' also run on 'google.com/'.

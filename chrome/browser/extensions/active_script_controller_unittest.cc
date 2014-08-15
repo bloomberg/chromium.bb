@@ -45,6 +45,9 @@ class ActiveScriptControllerUnitTest : public ChromeRenderViewHostTestHarness {
   // Creates an extension with all hosts permission and adds it to the registry.
   const Extension* AddExtension();
 
+  // Reloads |extension_| by removing it from the registry and recreating it.
+  const Extension* ReloadExtension();
+
   // Returns true if the |extension| requires user consent before injecting
   // a script.
   bool RequiresUserConsent(const Extension* extension) const;
@@ -78,6 +81,8 @@ class ActiveScriptControllerUnitTest : public ChromeRenderViewHostTestHarness {
 
   // The map of observed executions, keyed by extension id.
   std::map<std::string, int> extension_executions_;
+
+  scoped_refptr<const Extension> extension_;
 };
 
 ActiveScriptControllerUnitTest::ActiveScriptControllerUnitTest()
@@ -91,23 +96,27 @@ ActiveScriptControllerUnitTest::~ActiveScriptControllerUnitTest() {
 
 const Extension* ActiveScriptControllerUnitTest::AddExtension() {
   const std::string kId = id_util::GenerateId("all_hosts_extension");
-  scoped_refptr<const Extension> extension =
-      ExtensionBuilder()
-          .SetManifest(
-              DictionaryBuilder()
-                  .Set("name", "all_hosts_extension")
-                  .Set("description", "an extension")
-                  .Set("manifest_version", 2)
-                  .Set("version", "1.0.0")
-                  .Set("permissions",
-                       ListBuilder().Append(kAllHostsPermission)))
-          .SetLocation(Manifest::INTERNAL)
-          .SetID(kId)
-          .Build();
+  extension_ = ExtensionBuilder()
+                   .SetManifest(
+                       DictionaryBuilder()
+                           .Set("name", "all_hosts_extension")
+                           .Set("description", "an extension")
+                           .Set("manifest_version", 2)
+                           .Set("version", "1.0.0")
+                           .Set("permissions",
+                                ListBuilder().Append(kAllHostsPermission)))
+                   .SetLocation(Manifest::INTERNAL)
+                   .SetID(kId)
+                   .Build();
 
-  ExtensionRegistry::Get(profile())->AddEnabled(extension);
-  PermissionsUpdater(profile()).InitializePermissions(extension);
-  return extension;
+  ExtensionRegistry::Get(profile())->AddEnabled(extension_);
+  PermissionsUpdater(profile()).InitializePermissions(extension_);
+  return extension_;
+}
+
+const Extension* ActiveScriptControllerUnitTest::ReloadExtension() {
+  ExtensionRegistry::Get(profile())->RemoveEnabled(extension_->id());
+  return AddExtension();
 }
 
 bool ActiveScriptControllerUnitTest::RequiresUserConsent(
@@ -320,6 +329,63 @@ TEST_F(ActiveScriptControllerUnitTest, ActiveScriptsCanHaveAllUrlsPref) {
   // And should also persist across navigations and websites.
   NavigateAndCommit(GURL("http://www.bar.com"));
   EXPECT_TRUE(RequiresUserConsent(extension));
+}
+
+TEST_F(ActiveScriptControllerUnitTest, TestAlwaysRun) {
+  const Extension* extension = AddExtension();
+  ASSERT_TRUE(extension);
+
+  NavigateAndCommit(GURL("https://www.google.com/?gws_rd=ssl"));
+
+  // Ensure that there aren't any executions pending.
+  ASSERT_EQ(0u, GetExecutionCountForExtension(extension->id()));
+  ASSERT_FALSE(controller()->GetActionForExtension(extension));
+
+  // Since the extension requests all_hosts, we should require user consent.
+  EXPECT_TRUE(RequiresUserConsent(extension));
+
+  // Request an injection. There should be an action visible, but no executions.
+  RequestInjection(extension);
+  EXPECT_TRUE(controller()->GetActionForExtension(extension));
+  EXPECT_EQ(0u, GetExecutionCountForExtension(extension->id()));
+
+  // Allow the extension to always run on this origin.
+  controller()->AlwaysRunOnVisibleOrigin(extension);
+
+  // The extension should execute, and the action should go away.
+  EXPECT_EQ(1u, GetExecutionCountForExtension(extension->id()));
+  EXPECT_FALSE(controller()->GetActionForExtension(extension));
+
+  // Since we already executed on the given page, we shouldn't need permission
+  // for a second time.
+  EXPECT_FALSE(RequiresUserConsent(extension));
+
+  // Navigating to another site that hasn't been granted a persisted permission
+  // should necessitate user consent.
+  NavigateAndCommit(GURL("https://www.foo.com/bar"));
+  EXPECT_TRUE(RequiresUserConsent(extension));
+
+  // We shouldn't need user permission upon returning to the original origin.
+  NavigateAndCommit(GURL("https://www.google.com/foo/bar"));
+  EXPECT_FALSE(RequiresUserConsent(extension));
+
+  // Reloading the extension should not clear any granted host permissions.
+  extension = ReloadExtension();
+  Reload();
+  EXPECT_FALSE(RequiresUserConsent(extension));
+
+  // Different host...
+  NavigateAndCommit(GURL("https://www.foo.com/bar"));
+  EXPECT_TRUE(RequiresUserConsent(extension));
+  // Different scheme...
+  NavigateAndCommit(GURL("http://www.google.com/foo/bar"));
+  EXPECT_TRUE(RequiresUserConsent(extension));
+  // Different subdomain...
+  NavigateAndCommit(GURL("https://en.google.com/foo/bar"));
+  EXPECT_TRUE(RequiresUserConsent(extension));
+  // Only the "always run" origin should be allowed to run without user consent.
+  NavigateAndCommit(GURL("https://www.google.com/foo/bar"));
+  EXPECT_FALSE(RequiresUserConsent(extension));
 }
 
 }  // namespace extensions
