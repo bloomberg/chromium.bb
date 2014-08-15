@@ -20,6 +20,7 @@ const int64 kDatabaseOnDiskVersion = 4;
 const char kServiceMetadataKey[] = "SERVICE";
 const char kFileMetadataKeyPrefix[] = "FILE: ";
 const char kFileTrackerKeyPrefix[] = "TRACKER: ";
+const char kLastValidationTimeKey[] = "LAST_VALID";
 
 const char kAppRootIDByAppIDKeyPrefix[] = "APP_ROOT: ";
 const char kActiveTrackerIDByFileIDKeyPrefix[] = "ACTIVE_FILE: ";

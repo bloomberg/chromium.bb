@@ -78,6 +78,10 @@
 //   # Demoted dirty tracker IDs
 //   key: "DEMOTED_DIRTY: " + <int64 'demoted_dirty_tracker_id'>
 //   value: <empty>
+//
+//   # Timestamp when the last validation ran
+//   key: "LAST_VALID"
+//   value: <time_t 'last_valid_time'>
 
 namespace sync_file_system {
 namespace drive_backend {
@@ -251,18 +255,12 @@ scoped_ptr<MetadataDatabaseIndexOnDisk>
 MetadataDatabaseIndexOnDisk::Create(LevelDBWrapper* db) {
   DCHECK(db);
 
-  std::string version;
-  db->Get(kDatabaseVersionKey, &version);
-
   PutVersionToDB(kDatabaseOnDiskVersion, db);
   // TODO(peria): It is not good to call RemoveUnreachableItems on every
   // creation.
   RemoveUnreachableItems(db);
   scoped_ptr<MetadataDatabaseIndexOnDisk>
       index(new MetadataDatabaseIndexOnDisk(db));
-
-  if (version == "3")
-    index->BuildTrackerIndexes();
 
   return index.Pass();
 }
@@ -727,8 +725,27 @@ MetadataDatabaseIndexOnDisk::MetadataDatabaseIndexOnDisk(LevelDBWrapper* db)
     : db_(db) {
   // TODO(peria): Add UMA to measure the number of FileMetadata, FileTracker,
   //    and AppRootId.
-  // TODO(peria): If the DB version is 3, build up index lists.
   service_metadata_ = InitializeServiceMetadata(db_);
+
+  // Check if index is valid, if no validations run in 7 days.
+  const int64 kThresholdToValidateInDays = 7;
+
+  int64 last_check_time = 0;
+  std::string value;
+  if (db_->Get(kLastValidationTimeKey, &value).ok())
+    base::StringToInt64(value, &last_check_time);
+  base::TimeDelta since_last_check =
+      base::Time::Now() - base::Time::FromInternalValue(last_check_time);
+  int64 since_last_check_in_days = since_last_check.InDays();
+  if (since_last_check_in_days >= kThresholdToValidateInDays ||
+      since_last_check_in_days < 0) {
+    // TODO(peria): Add UMA to check if the number of deleted entries and the
+    // number of built entries are different or not.
+    DeleteTrackerIndexes();
+    BuildTrackerIndexes();
+    db_->Put(kLastValidationTimeKey,
+             base::Int64ToString(base::Time::Now().ToInternalValue()));
+  }
 }
 
 void MetadataDatabaseIndexOnDisk::AddToAppIDIndex(const FileTracker& tracker) {

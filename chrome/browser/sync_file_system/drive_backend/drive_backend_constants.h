@@ -22,6 +22,7 @@ extern const int64 kDatabaseOnDiskVersion;
 extern const char kServiceMetadataKey[];
 extern const char kFileMetadataKeyPrefix[];
 extern const char kFileTrackerKeyPrefix[];
+extern const char kLastValidationTimeKey[];
 
 extern const char kAppRootIDByAppIDKeyPrefix[];
 extern const char kActiveTrackerIDByFileIDKeyPrefix[];
