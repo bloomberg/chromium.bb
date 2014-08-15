@@ -15,8 +15,7 @@ AppListControllerDelegateAsh::~AppListControllerDelegateAsh() {}
 
 void AppListControllerDelegateAsh::DismissView() {
   DCHECK(ash::Shell::HasInstance());
-  if (ash::Shell::GetInstance()->GetAppListTargetVisibility())
-    ash::Shell::GetInstance()->ToggleAppList(NULL);
+  ash::Shell::GetInstance()->DismissAppList();
 }
 
 gfx::NativeWindow AppListControllerDelegateAsh::GetAppListWindow() {

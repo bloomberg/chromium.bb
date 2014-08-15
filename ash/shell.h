@@ -231,9 +231,15 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   void ShowContextMenu(const gfx::Point& location_in_screen,
                        ui::MenuSourceType source_type);
 
-  // Toggles the app list. |window| specifies in which display the app
+  // Shows the app list. |window| specifies in which display the app
   // list should be shown. If this is NULL, the active root window
   // will be used.
+  void ShowAppList(aura::Window* anchor);
+
+  // Dismisses the app list.
+  void DismissAppList();
+
+  // Shows the app list if it's not visible. Dismisses it otherwise.
   void ToggleAppList(aura::Window* anchor);
 
   // Returns app list target visibility.

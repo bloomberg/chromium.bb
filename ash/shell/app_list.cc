@@ -317,8 +317,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
 
   virtual void Dismiss() OVERRIDE {
     DCHECK(ash::Shell::HasInstance());
-    if (Shell::GetInstance()->GetAppListTargetVisibility())
-      Shell::GetInstance()->ToggleAppList(NULL);
+    Shell::GetInstance()->DismissAppList();
   }
 
   virtual void ViewClosing() OVERRIDE {

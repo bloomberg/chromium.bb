@@ -1301,7 +1301,7 @@ TEST_F(ShelfViewTest, ShouldHideTooltipTest) {
 }
 
 TEST_F(ShelfViewTest, ShouldHideTooltipWithAppListWindowTest) {
-  Shell::GetInstance()->ToggleAppList(NULL);
+  Shell::GetInstance()->ShowAppList(NULL);
   ASSERT_TRUE(Shell::GetInstance()->GetAppListWindow());
 
   // The tooltip shouldn't hide if the mouse is on normal buttons.

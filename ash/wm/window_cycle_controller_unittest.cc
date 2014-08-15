@@ -469,7 +469,7 @@ TEST_F(WindowCycleControllerTest, SelectingHidesAppList) {
 
   scoped_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
   scoped_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
-  Shell::GetInstance()->ToggleAppList(NULL);
+  Shell::GetInstance()->ShowAppList(NULL);
   EXPECT_TRUE(Shell::GetInstance()->GetAppListTargetVisibility());
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
   EXPECT_FALSE(Shell::GetInstance()->GetAppListTargetVisibility());

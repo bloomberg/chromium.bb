@@ -292,13 +292,28 @@ void Shell::ShowContextMenu(const gfx::Point& location_in_screen,
       ->ShowContextMenu(location_in_screen, source_type);
 }
 
-void Shell::ToggleAppList(aura::Window* window) {
+void Shell::ShowAppList(aura::Window* window) {
   // If the context window is not given, show it on the target root window.
   if (!window)
     window = GetTargetRootWindow();
   if (!app_list_controller_)
     app_list_controller_.reset(new AppListController);
-  app_list_controller_->SetVisible(!app_list_controller_->IsVisible(), window);
+  app_list_controller_->SetVisible(true, window);
+}
+
+void Shell::DismissAppList() {
+  if (!app_list_controller_)
+    return;
+  app_list_controller_->SetVisible(false, GetTargetRootWindow());
+}
+
+void Shell::ToggleAppList(aura::Window* window) {
+  if (GetAppListTargetVisibility()) {
+    DismissAppList();
+    return;
+  }
+
+  ShowAppList(window);
 }
 
 bool Shell::GetAppListTargetVisibility() const {
