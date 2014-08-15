@@ -1159,7 +1159,8 @@ scoped_ptr<cc::CompositorFrame> MakeDelegatedFrame(float scale_factor,
 }
 
 // Resizing in fullscreen mode should send the up-to-date screen info.
-TEST_F(RenderWidgetHostViewAuraTest, FullscreenResize) {
+// http://crbug.com/324350
+TEST_F(RenderWidgetHostViewAuraTest, DISABLED_FullscreenResize) {
   aura::Window* root_window = aura_test_helper_->root_window();
   root_window->SetLayoutManager(new FullscreenLayoutManager(root_window));
   view_->InitAsFullscreen(parent_view_);
