@@ -18,6 +18,10 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "components/signin/core/browser/signin_manager.h"
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/browser_finder.h"
+#endif
+
 namespace {
 
 // The event of calling function ComputeCurrentSigninStatus and the errors
@@ -190,15 +194,26 @@ void SigninStatusMetricsProvider::ComputeCurrentSigninStatus() {
   // Get the sign-in status of all currently open profiles. Sign-in status is
   // indicated by its username. When username is not empty, the profile is
   // signed-in.
-  std::vector<Profile*> profile_list = ProfileManager::GetLastOpenedProfiles();
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  std::vector<Profile*> profile_list = profile_manager->GetLoadedProfiles();
+
+  size_t opened_profiles_count = 0;
   size_t signed_in_profiles_count = 0;
+
   for (size_t i = 0; i < profile_list.size(); ++i) {
+#if !defined(OS_ANDROID)
+    if (chrome::GetTotalBrowserCountForProfile(profile_list[i]) == 0) {
+      // The profile is loaded, but there's no opened browser for this profile.
+      continue;
+    }
+#endif
+    opened_profiles_count++;
     SigninManager* manager = SigninManagerFactory::GetForProfile(
         profile_list[i]->GetOriginalProfile());
     if (manager && !manager->GetAuthenticatedUsername().empty())
       signed_in_profiles_count++;
   }
-  UpdateInitialSigninStatus(profile_list.size(), signed_in_profiles_count);
+  UpdateInitialSigninStatus(opened_profiles_count, signed_in_profiles_count);
 }
 
 SigninStatusMetricsProvider::ProfilesSigninStatus
