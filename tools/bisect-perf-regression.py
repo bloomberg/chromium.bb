@@ -52,6 +52,7 @@ import zipfile
 sys.path.append(os.path.join(os.path.dirname(__file__), 'telemetry'))
 
 from auto_bisect import bisect_utils
+from auto_bisect import builder
 from auto_bisect import math_utils
 from auto_bisect import post_perf_builder_job as bisect_builder
 from auto_bisect import source_control as source_control_module
@@ -151,13 +152,7 @@ DEPOT_DEPS_NAME = {
 
 DEPOT_NAMES = DEPOT_DEPS_NAME.keys()
 
-CROS_SDK_PATH = os.path.join('..', 'cros', 'chromite', 'bin', 'cros_sdk')
 CROS_CHROMEOS_PATTERN = 'chromeos-base/chromeos-chrome'
-CROS_TEST_KEY_PATH = os.path.join('..', 'cros', 'chromite', 'ssh_keys',
-                                  'testing_rsa')
-CROS_SCRIPT_KEY_PATH = os.path.join('..', 'cros', 'src', 'scripts',
-                                    'mod_for_test_scripts', 'ssh_keys',
-                                    'testing_rsa')
 
 # Possible return values from BisectPerformanceMetrics.SyncBuildAndRunRevision.
 BUILD_RESULT_SUCCEED = 0
@@ -444,81 +439,6 @@ def ExtractZip(filename, output_dir, verbose=True):
                  zf.getinfo(name).external_attr >> 16L)
 
 
-def SetBuildSystemDefault(build_system, use_goma, goma_dir):
-  """Sets up any environment variables needed to build with the specified build
-  system.
-
-  Args:
-    build_system: A string specifying build system. Currently only 'ninja' or
-        'make' are supported.
-  """
-  if build_system == 'ninja':
-    gyp_var = os.getenv('GYP_GENERATORS', default='')
-
-    if not gyp_var or not 'ninja' in gyp_var:
-      if gyp_var:
-        os.environ['GYP_GENERATORS'] = gyp_var + ',ninja'
-      else:
-        os.environ['GYP_GENERATORS'] = 'ninja'
-
-      if bisect_utils.IsWindowsHost():
-        os.environ['GYP_DEFINES'] = ('component=shared_library '
-                                     'incremental_chrome_dll=1 '
-                                     'disable_nacl=1 fastbuild=1 '
-                                     'chromium_win_pch=0')
-
-  elif build_system == 'make':
-    os.environ['GYP_GENERATORS'] = 'make'
-  else:
-    raise RuntimeError('%s build not supported.' % build_system)
-
-  if use_goma:
-    os.environ['GYP_DEFINES'] = '%s %s' % (os.getenv('GYP_DEFINES', default=''),
-                                           'use_goma=1')
-    if goma_dir:
-      os.environ['GYP_DEFINES'] += ' gomadir=%s' % goma_dir
-
-
-def BuildWithMake(threads, targets, build_type='Release'):
-  cmd = ['make', 'BUILDTYPE=%s' % build_type]
-
-  if threads:
-    cmd.append('-j%d' % threads)
-
-  cmd += targets
-
-  return_code = bisect_utils.RunProcess(cmd)
-
-  return not return_code
-
-
-def BuildWithNinja(threads, targets, build_type='Release'):
-  cmd = ['ninja', '-C', os.path.join('out', build_type)]
-
-  if threads:
-    cmd.append('-j%d' % threads)
-
-  cmd += targets
-
-  return_code = bisect_utils.RunProcess(cmd)
-
-  return not return_code
-
-
-def BuildWithVisualStudio(targets, build_type='Release'):
-  path_to_devenv = os.path.abspath(
-      os.path.join(os.environ['VS100COMNTOOLS'], '..', 'IDE', 'devenv.com'))
-  path_to_sln = os.path.join(os.getcwd(), 'chrome', 'chrome.sln')
-  cmd = [path_to_devenv, '/build', build_type, path_to_sln]
-
-  for t in targets:
-    cmd.extend(['/Project', t])
-
-  return_code = bisect_utils.RunProcess(cmd)
-
-  return not return_code
-
-
 def WriteStringToFile(text, file_name):
   try:
     with open(file_name, 'wb') as f:
@@ -545,245 +465,6 @@ def ChangeBackslashToSlashInPatch(diff_text):
         diff_lines[i] = diff_lines[i].replace('\\', '/')
     return '\n'.join(diff_lines)
   return None
-
-
-class Builder(object):
-  """Builder is used by the bisect script to build relevant targets and deploy.
-  """
-  def __init__(self, opts):
-    """Performs setup for building with target build system.
-
-    Args:
-        opts: Options parsed from command line.
-    """
-    if bisect_utils.IsWindowsHost():
-      if not opts.build_preference:
-        opts.build_preference = 'msvs'
-
-      if opts.build_preference == 'msvs':
-        if not os.getenv('VS100COMNTOOLS'):
-          raise RuntimeError(
-              'Path to visual studio could not be determined.')
-      else:
-        SetBuildSystemDefault(opts.build_preference, opts.use_goma,
-                              opts.goma_dir)
-    else:
-      if not opts.build_preference:
-        if 'ninja' in os.getenv('GYP_GENERATORS', default=''):
-          opts.build_preference = 'ninja'
-        else:
-          opts.build_preference = 'make'
-
-      SetBuildSystemDefault(opts.build_preference, opts.use_goma, opts.goma_dir)
-
-    if not bisect_utils.SetupPlatformBuildEnvironment(opts):
-      raise RuntimeError('Failed to set platform environment.')
-
-  @staticmethod
-  def FromOpts(opts):
-    builder = None
-    if opts.target_platform == 'cros':
-      builder = CrosBuilder(opts)
-    elif opts.target_platform == 'android':
-      builder = AndroidBuilder(opts)
-    elif opts.target_platform == 'android-chrome':
-      builder = AndroidChromeBuilder(opts)
-    else:
-      builder = DesktopBuilder(opts)
-    return builder
-
-  def Build(self, depot, opts):
-    raise NotImplementedError()
-
-  def GetBuildOutputDirectory(self, opts, src_dir=None):
-    """Returns the path to the build directory, relative to the checkout root.
-
-      Assumes that the current working directory is the checkout root.
-    """
-    src_dir = src_dir or 'src'
-    if opts.build_preference == 'ninja' or bisect_utils.IsLinuxHost():
-      return os.path.join(src_dir, 'out')
-    if bisect_utils.IsMacHost():
-      return os.path.join(src_dir, 'xcodebuild')
-    if bisect_utils.IsWindowsHost():
-      return os.path.join(src_dir, 'build')
-    raise NotImplementedError('Unexpected platform %s' % sys.platform)
-
-
-class DesktopBuilder(Builder):
-  """DesktopBuilder is used to build Chromium on linux/mac/windows."""
-  def __init__(self, opts):
-    super(DesktopBuilder, self).__init__(opts)
-
-  def Build(self, depot, opts):
-    """Builds chromium_builder_perf target using options passed into
-    the script.
-
-    Args:
-        depot: Current depot being bisected.
-        opts: The options parsed from the command line.
-
-    Returns:
-        True if build was successful.
-    """
-    targets = ['chromium_builder_perf']
-
-    threads = None
-    if opts.use_goma:
-      threads = 64
-
-    build_success = False
-    if opts.build_preference == 'make':
-      build_success = BuildWithMake(threads, targets, opts.target_build_type)
-    elif opts.build_preference == 'ninja':
-      build_success = BuildWithNinja(threads, targets, opts.target_build_type)
-    elif opts.build_preference == 'msvs':
-      assert bisect_utils.IsWindowsHost(), 'msvs is only supported on Windows.'
-      build_success = BuildWithVisualStudio(targets, opts.target_build_type)
-    else:
-      assert False, 'No build system defined.'
-    return build_success
-
-
-class AndroidBuilder(Builder):
-  """AndroidBuilder is used to build on android."""
-  def __init__(self, opts):
-    super(AndroidBuilder, self).__init__(opts)
-
-  def _GetTargets(self):
-    return ['chrome_shell_apk', 'cc_perftests_apk', 'android_tools']
-
-  def Build(self, depot, opts):
-    """Builds the android content shell and other necessary tools using options
-    passed into the script.
-
-    Args:
-        depot: Current depot being bisected.
-        opts: The options parsed from the command line.
-
-    Returns:
-        True if build was successful.
-    """
-    threads = None
-    if opts.use_goma:
-      threads = 64
-
-    build_success = False
-    if opts.build_preference == 'ninja':
-      build_success = BuildWithNinja(
-          threads, self._GetTargets(), opts.target_build_type)
-    else:
-      assert False, 'No build system defined.'
-
-    return build_success
-
-
-class AndroidChromeBuilder(AndroidBuilder):
-  """AndroidBuilder is used to build on android's chrome."""
-  def __init__(self, opts):
-    super(AndroidChromeBuilder, self).__init__(opts)
-
-  def _GetTargets(self):
-    return AndroidBuilder._GetTargets(self) + ['chrome_apk']
-
-
-class CrosBuilder(Builder):
-  """CrosBuilder is used to build and image ChromeOS/Chromium when cros is the
-  target platform."""
-  def __init__(self, opts):
-    super(CrosBuilder, self).__init__(opts)
-
-  def ImageToTarget(self, opts):
-    """Installs latest image to target specified by opts.cros_remote_ip.
-
-    Args:
-        opts: Program options containing cros_board and cros_remote_ip.
-
-    Returns:
-        True if successful.
-    """
-    try:
-      # Keys will most likely be set to 0640 after wiping the chroot.
-      os.chmod(CROS_SCRIPT_KEY_PATH, 0600)
-      os.chmod(CROS_TEST_KEY_PATH, 0600)
-      cmd = [CROS_SDK_PATH, '--', './bin/cros_image_to_target.py',
-             '--remote=%s' % opts.cros_remote_ip,
-             '--board=%s' % opts.cros_board, '--test', '--verbose']
-
-      return_code = bisect_utils.RunProcess(cmd)
-      return not return_code
-    except OSError:
-      return False
-
-  def BuildPackages(self, opts, depot):
-    """Builds packages for cros.
-
-    Args:
-        opts: Program options containing cros_board.
-        depot: The depot being bisected.
-
-    Returns:
-        True if successful.
-    """
-    cmd = [CROS_SDK_PATH]
-
-    if depot != 'cros':
-      path_to_chrome = os.path.join(os.getcwd(), '..')
-      cmd += ['--chrome_root=%s' % path_to_chrome]
-
-    cmd += ['--']
-
-    if depot != 'cros':
-      cmd += ['CHROME_ORIGIN=LOCAL_SOURCE']
-
-    cmd += ['BUILDTYPE=%s' % opts.target_build_type, './build_packages',
-        '--board=%s' % opts.cros_board]
-    return_code = bisect_utils.RunProcess(cmd)
-
-    return not return_code
-
-  def BuildImage(self, opts, depot):
-    """Builds test image for cros.
-
-    Args:
-        opts: Program options containing cros_board.
-        depot: The depot being bisected.
-
-    Returns:
-        True if successful.
-    """
-    cmd = [CROS_SDK_PATH]
-
-    if depot != 'cros':
-      path_to_chrome = os.path.join(os.getcwd(), '..')
-      cmd += ['--chrome_root=%s' % path_to_chrome]
-
-    cmd += ['--']
-
-    if depot != 'cros':
-      cmd += ['CHROME_ORIGIN=LOCAL_SOURCE']
-
-    cmd += ['BUILDTYPE=%s' % opts.target_build_type, '--', './build_image',
-        '--board=%s' % opts.cros_board, 'test']
-
-    return_code = bisect_utils.RunProcess(cmd)
-
-    return not return_code
-
-  def Build(self, depot, opts):
-    """Builds targets using options passed into the script.
-
-    Args:
-        depot: Current depot being bisected.
-        opts: The options parsed from the command line.
-
-    Returns:
-        True if build was successful.
-    """
-    if self.BuildPackages(opts, depot):
-      if self.BuildImage(opts, depot):
-        return self.ImageToTarget(opts)
-    return False
 
 
 def _ParseRevisionsFromDEPSFileManually(deps_file_contents):
@@ -1171,6 +852,7 @@ def _PrintStepTime(revision_data_sorted):
   print 'Average test time  : %s' % datetime.timedelta(
       seconds=int(step_perf_time_avg))
 
+
 def _FindOtherRegressions(revision_data_sorted, bad_greater_than_good):
   """Compiles a list of other possible regressions from the revision data.
 
@@ -1210,6 +892,7 @@ def _FindOtherRegressions(revision_data_sorted, bad_greater_than_good):
       previous_id = current_id
   return other_regressions
 
+
 class BisectPerformanceMetrics(object):
   """This class contains functionality to perform a bisection of a range of
   revisions to narrow down where performance regressions may have occurred.
@@ -1227,7 +910,7 @@ class BisectPerformanceMetrics(object):
     self.depot_cwd = {}
     self.cleanup_commands = []
     self.warnings = []
-    self.builder = Builder.FromOpts(opts)
+    self.builder = builder.Builder.FromOpts(opts)
 
     # This always starts true since the script grabs latest first.
     self.was_blink = True
@@ -1440,10 +1123,17 @@ class BisectPerformanceMetrics(object):
     if depot == 'chromium' or depot == 'android-chrome':
       results = self._ParseRevisionsFromDEPSFile(depot)
       os.chdir(cwd)
-    elif depot == 'cros':
-      cmd = [CROS_SDK_PATH, '--', 'portageq-%s' % self.opts.cros_board,
-             'best_visible', '/build/%s' % self.opts.cros_board, 'ebuild',
-             CROS_CHROMEOS_PATTERN]
+
+    if depot == 'cros':
+      cmd = [
+          bisect_utils.CROS_SDK_PATH,
+          '--',
+          'portageq-%s' % self.opts.cros_board,
+          'best_visible',
+          '/build/%s' % self.opts.cros_board,
+          'ebuild',
+          CROS_CHROMEOS_PATTERN
+      ]
       output, return_code = bisect_utils.RunProcessAndRetrieveOutput(cmd)
 
       assert not return_code, ('An error occurred while running '
@@ -1475,7 +1165,8 @@ class BisectPerformanceMetrics(object):
           os.chdir(cwd)
 
           results['chromium'] = output.strip()
-    elif depot == 'v8':
+
+    if depot == 'v8':
       # We can't try to map the trunk revision to bleeding edge yet, because
       # we don't know which direction to try to search in. Have to wait until
       # the bisect has narrowed the results down to 2 v8 rolls.
@@ -1494,7 +1185,7 @@ class BisectPerformanceMetrics(object):
       Path to backup or restored location as string. otherwise None if it fails.
     """
     build_dir = os.path.abspath(
-        self.builder.GetBuildOutputDirectory(self.opts, self.src_cwd))
+        builder.GetBuildOutputDirectory(self.opts, self.src_cwd))
     source_dir = os.path.join(build_dir, build_type)
     destination_dir = os.path.join(build_dir, '%s.bak' % build_type)
     if restore:
@@ -1558,7 +1249,7 @@ class BisectPerformanceMetrics(object):
 
     # Get Build output directory
     abs_build_dir = os.path.abspath(
-        self.builder.GetBuildOutputDirectory(self.opts, self.src_cwd))
+        builder.GetBuildOutputDirectory(self.opts, self.src_cwd))
 
     fetch_build_func = lambda: self.GetBuildArchiveForRevision(
       revision, self.opts.gs_bucket, self.opts.target_arch,
@@ -1916,7 +1607,7 @@ class BisectPerformanceMetrics(object):
     is_telemetry = bisect_utils.IsTelemetryCommand(command_to_run)
     if self.opts.target_platform == 'cros' and is_telemetry:
       args.append('--remote=%s' % self.opts.cros_remote_ip)
-      args.append('--identity=%s' % CROS_TEST_KEY_PATH)
+      args.append('--identity=%s' % bisect_utils.CROS_TEST_KEY_PATH)
 
     start_time = time.time()
 
@@ -2110,7 +1801,7 @@ class BisectPerformanceMetrics(object):
     """
     cwd = os.getcwd()
     self.ChangeToDepotWorkingDirectory('cros')
-    cmd = [CROS_SDK_PATH, '--delete']
+    cmd = [bisect_utils.CROS_SDK_PATH, '--delete']
     return_code = bisect_utils.RunProcess(cmd)
     os.chdir(cwd)
     return not return_code
@@ -2123,7 +1814,7 @@ class BisectPerformanceMetrics(object):
     """
     cwd = os.getcwd()
     self.ChangeToDepotWorkingDirectory('cros')
-    cmd = [CROS_SDK_PATH, '--create']
+    cmd = [bisect_utils.CROS_SDK_PATH, '--create']
     return_code = bisect_utils.RunProcess(cmd)
     os.chdir(cwd)
     return not return_code

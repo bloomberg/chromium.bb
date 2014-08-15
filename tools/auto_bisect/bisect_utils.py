@@ -65,16 +65,23 @@ GCLIENT_CUSTOM_DEPS_V8 = {'src/v8_bleeding_edge': 'git://github.com/v8/v8.git'}
 FILE_DEPS_GIT = '.DEPS.git'
 FILE_DEPS = 'DEPS'
 
+REPO_SYNC_COMMAND = ('git checkout -f $(git rev-list --max-count=1 '
+                     '--before=%d remotes/m/master)')
+
+# Paths to CrOS-related files.
+# WARNING(qyearsley, 2014-08-15): These haven't been tested recently.
+CROS_SDK_PATH = os.path.join('..', 'cros', 'chromite', 'bin', 'cros_sdk')
+CROS_TEST_KEY_PATH = os.path.join(
+    '..', 'cros', 'chromite', 'ssh_keys', 'testing_rsa')
+CROS_SCRIPT_KEY_PATH = os.path.join(
+    '..', 'cros', 'src', 'scripts', 'mod_for_test_scripts', 'ssh_keys',
+    'testing_rsa')
+
 REPO_PARAMS = [
     'https://chrome-internal.googlesource.com/chromeos/manifest-internal/',
     '--repo-url',
     'https://git.chromium.org/external/repo.git'
 ]
-
-REPO_SYNC_COMMAND = ('git checkout -f $(git rev-list --max-count=1 '
-                     '--before=%d remotes/m/master)')
-
-ORIGINAL_ENV = {}
 
 
 def OutputAnnotationStepStart(name):
@@ -195,6 +202,32 @@ def RunGClient(params, cwd=None):
   """
   cmd = ['gclient'] + params
   return _SubprocessCall(cmd, cwd=cwd)
+
+
+def SetupCrosRepo():
+  """Sets up CrOS repo for bisecting ChromeOS.
+
+  Returns:
+    True if successful, False otherwise.
+  """
+  cwd = os.getcwd()
+  try:
+    os.mkdir('cros')
+  except OSError as e:
+    if e.errno != errno.EEXIST:  # EEXIST means the directory already exists.
+      return False
+  os.chdir('cros')
+
+  cmd = ['init', '-u'] + REPO_PARAMS
+
+  passed = False
+
+  if not _RunRepo(cmd):
+    if not _RunRepo(['sync']):
+      passed = True
+  os.chdir(cwd)
+
+  return passed
 
 
 def _RunRepo(params):
@@ -381,119 +414,6 @@ def SetupGitDepot(opts, custom_deps):
     OutputAnnotationStepClosed()
 
   return passed
-
-
-def SetupCrosRepo():
-  """Sets up CrOS repo for bisecting ChromeOS.
-
-  Returns:
-    True if successful, False otherwise.
-  """
-  cwd = os.getcwd()
-  try:
-    os.mkdir('cros')
-  except OSError as e:
-    if e.errno != errno.EEXIST:  # EEXIST means the directory already exists.
-      return False
-  os.chdir('cros')
-
-  cmd = ['init', '-u'] + REPO_PARAMS
-
-  passed = False
-
-  if not _RunRepo(cmd):
-    if not _RunRepo(['sync']):
-      passed = True
-  os.chdir(cwd)
-
-  return passed
-
-
-def CopyAndSaveOriginalEnvironmentVars():
-  """Makes a copy of the current environment variables.
-
-  Before making a copy of the environment variables and setting a global
-  variable, this function unsets a certain set of environment variables.
-  """
-  # TODO: Waiting on crbug.com/255689, will remove this after.
-  vars_to_remove = [
-      'CHROME_SRC',
-      'CHROMIUM_GYP_FILE',
-      'GYP_CROSSCOMPILE',
-      'GYP_DEFINES',
-      'GYP_GENERATORS',
-      'GYP_GENERATOR_FLAGS',
-      'OBJCOPY',
-  ]
-  for key in os.environ:
-    if 'ANDROID' in key:
-      vars_to_remove.append(key)
-  for key in vars_to_remove:
-    if os.environ.has_key(key):
-      del os.environ[key]
-
-  global ORIGINAL_ENV
-  ORIGINAL_ENV = os.environ.copy()
-
-
-def SetupAndroidBuildEnvironment(opts, path_to_src=None):
-  """Sets up the android build environment.
-
-  Args:
-    opts: The options parsed from the command line through parse_args().
-    path_to_src: Path to the src checkout.
-
-  Returns:
-    True if successful.
-  """
-  # Revert the environment variables back to default before setting them up
-  # with envsetup.sh.
-  env_vars = os.environ.copy()
-  for k, _ in env_vars.iteritems():
-    del os.environ[k]
-  for k, v in ORIGINAL_ENV.iteritems():
-    os.environ[k] = v
-
-  envsetup_path = os.path.join('build', 'android', 'envsetup.sh')
-  proc = subprocess.Popen(['bash', '-c', 'source %s && env' % envsetup_path],
-                          stdout=subprocess.PIPE,
-                          stderr=subprocess.PIPE,
-                          cwd=path_to_src)
-  out, _ = proc.communicate()
-
-  for line in out.splitlines():
-    k, _, v = line.partition('=')
-    os.environ[k] = v
-
-  # envsetup.sh no longer sets OS=android in GYP_DEFINES environment variable.
-  # (See http://crrev.com/170273005). So, we set this variable explicitly here
-  # in order to build Chrome on Android.
-  if 'GYP_DEFINES' not in os.environ:
-    os.environ['GYP_DEFINES'] = 'OS=android'
-  else:
-    os.environ['GYP_DEFINES'] += ' OS=android'
-
-  if opts.use_goma:
-    os.environ['GYP_DEFINES'] += ' use_goma=1'
-  return not proc.returncode
-
-
-def SetupPlatformBuildEnvironment(opts):
-  """Performs any platform-specific setup.
-
-  Args:
-    opts: The options parsed from the command line through parse_args().
-
-  Returns:
-    True if successful.
-  """
-  if 'android' in opts.target_platform:
-    CopyAndSaveOriginalEnvironmentVars()
-    return SetupAndroidBuildEnvironment(opts)
-  elif opts.target_platform == 'cros':
-    return SetupCrosRepo()
-
-  return True
 
 
 def CheckIfBisectDepotExists(opts):
