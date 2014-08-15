@@ -8186,6 +8186,8 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
             validPrimitive = true;
         break;
 
+    case CSSPropertyClipPath:
+    case CSSPropertyFilter:
     case CSSPropertyMarkerStart:
     case CSSPropertyMarkerMid:
     case CSSPropertyMarkerEnd:
@@ -8353,19 +8355,8 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
             validPrimitive = true;
         else
             parsedValue = parseSVGStrokeDasharray();
-
         break;
 
-    case CSSPropertyClipPath: // <uri> | none | inherit
-    case CSSPropertyFilter:
-        if (id == CSSValueNone) {
-            validPrimitive = true;
-        } else if (value->unit == CSSPrimitiveValue::CSS_URI) {
-            parsedValue = CSSPrimitiveValue::create(value->string, (CSSPrimitiveValue::UnitType) value->unit);
-            if (parsedValue)
-                m_valueList->next();
-        }
-        break;
     case CSSPropertyMaskType: // luminance | alpha | inherit
         if (id == CSSValueLuminance || id == CSSValueAlpha)
             validPrimitive = true;
