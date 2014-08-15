@@ -139,7 +139,8 @@ void DeleteBitmap(const base::FilePath& image_path) {
 
 bool IsDefaultName(const base::string16& name) {
   // Check if it's a "First user" old-style name.
-  if (name == l10n_util::GetStringUTF16(IDS_DEFAULT_PROFILE_NAME))
+  if (name == l10n_util::GetStringUTF16(IDS_DEFAULT_PROFILE_NAME) ||
+      name == l10n_util::GetStringUTF16(IDS_LEGACY_DEFAULT_PROFILE_NAME))
     return true;
 
   // Check if it's one of the old-style profile names.
