@@ -42,6 +42,23 @@ class CachedNetworkParameters {
     bandwidth_estimate_bytes_per_second_ = bandwidth_estimate_bytes_per_second;
   }
 
+  int32 max_bandwidth_estimate_bytes_per_second() const {
+    return max_bandwidth_estimate_bytes_per_second_;
+  }
+  void set_max_bandwidth_estimate_bytes_per_second(
+      int32 max_bandwidth_estimate_bytes_per_second) {
+    max_bandwidth_estimate_bytes_per_second_ =
+        max_bandwidth_estimate_bytes_per_second;
+  }
+
+  int64 max_bandwidth_timestamp_seconds() const {
+    return max_bandwidth_timestamp_seconds_;
+  }
+  void set_max_bandwidth_timestamp_seconds(
+      int64 max_bandwidth_timestamp_seconds) {
+    max_bandwidth_timestamp_seconds_ = max_bandwidth_timestamp_seconds;
+  }
+
   int32 min_rtt_ms() const {
     return min_rtt_ms_;
   }
@@ -66,6 +83,11 @@ class CachedNetworkParameters {
   // The server can supply a bandwidth estimate (in bytes/s) which it may re-use
   // on receipt of a source-address token with this field set.
   int32 bandwidth_estimate_bytes_per_second_;
+  // The maximum bandwidth seen by the client, not necessarily the latest.
+  int32 max_bandwidth_estimate_bytes_per_second_;
+  // Timestamp (seconds since UNIX epoch) that indicates when the max bandwidth
+  // was seen by the server.
+  int64 max_bandwidth_timestamp_seconds_;
   // The min RTT seen on a previous connection can be used by the server to
   // inform initial connection parameters for new connections.
   int32 min_rtt_ms_;

@@ -18,13 +18,12 @@ using base::StringPiece;
 
 namespace net {
 
-#define ENDPOINT (is_server_ ? "Server: " : " Client: ")
+#define ENDPOINT (session()->is_server() ? "Server: " : " Client: ")
 
 QuicCryptoStream::QuicCryptoStream(QuicSession* session)
     : ReliableQuicStream(kCryptoStreamId, session),
       encryption_established_(false),
-      handshake_confirmed_(false),
-      is_server_(session->is_server()) {
+      handshake_confirmed_(false) {
   crypto_framer_.set_visitor(this);
   if (version() <= QUIC_VERSION_20) {
     // Prior to QUIC_VERSION_21 the crypto stream is not subject to any flow

@@ -646,9 +646,6 @@ bool QuicConfig::negotiated() {
 
 void QuicConfig::SetDefaults() {
   QuicTagVector congestion_feedback;
-  if (FLAGS_enable_quic_pacing) {
-    congestion_feedback.push_back(kPACE);
-  }
   congestion_feedback.push_back(kQBIC);
   congestion_feedback_.set(congestion_feedback, kQBIC);
   idle_connection_state_lifetime_seconds_.set(kDefaultTimeoutSecs,
@@ -663,15 +660,6 @@ void QuicConfig::SetDefaults() {
   SetInitialFlowControlWindowToSend(kDefaultFlowControlSendWindow);
   SetInitialStreamFlowControlWindowToSend(kDefaultFlowControlSendWindow);
   SetInitialSessionFlowControlWindowToSend(kDefaultFlowControlSendWindow);
-}
-
-void QuicConfig::EnablePacing(bool enable_pacing) {
-  QuicTagVector congestion_feedback;
-  if (enable_pacing) {
-    congestion_feedback.push_back(kPACE);
-  }
-  congestion_feedback.push_back(kQBIC);
-  congestion_feedback_.set(congestion_feedback, kQBIC);
 }
 
 void QuicConfig::ToHandshakeMessage(CryptoHandshakeMessage* out) const {

@@ -170,7 +170,7 @@ void QuicCryptoServerStream::SendServerConfigUpdate() {
     return;
   }
 
-  DVLOG(1) << "Server: Sending server config update (SCUP): "
+  DVLOG(1) << "Server: Sending server config update: "
            << server_config_update_message.DebugString();
   const QuicData& data = server_config_update_message.GetSerialized();
   WriteOrBufferData(string(data.data(), data.length()), false, NULL);

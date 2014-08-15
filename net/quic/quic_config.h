@@ -354,9 +354,6 @@ class NET_EXPORT_PRIVATE QuicConfig {
   // SetDefaults sets the members to sensible, default values.
   void SetDefaults();
 
-  // Enabled pacing.
-  void EnablePacing(bool enable_pacing);
-
   // ToHandshakeMessage serialises the settings in this object as a series of
   // tags /value pairs and adds them to |out|.
   void ToHandshakeMessage(CryptoHandshakeMessage* out) const;

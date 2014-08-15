@@ -73,8 +73,6 @@ class NET_EXPORT_PRIVATE QuicCryptoStream
  private:
   CryptoFramer crypto_framer_;
 
-  bool is_server_;
-
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoStream);
 };
 

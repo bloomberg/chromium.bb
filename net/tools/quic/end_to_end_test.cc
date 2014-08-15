@@ -292,6 +292,11 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
   bool Initialize() {
     QuicTagVector copt;
 
+    if (GetParam().use_pacing) {
+      copt.push_back(kPACE);
+    }
+    server_config_.SetConnectionOptionsToSend(copt);
+
     // TODO(nimia): Consider setting the congestion control algorithm for the
     // client as well according to the test parameter.
     copt.push_back(GetParam().congestion_control_tag);

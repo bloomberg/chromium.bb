@@ -57,7 +57,6 @@ const bool kEntropyFlag = true;
 const QuicPacketEntropyHash kTestEntropyHash = 76;
 
 const int kDefaultRetransmissionTimeMs = 500;
-const int kMinRetransmissionTimeMs = 200;
 
 class TestReceiveAlgorithm : public ReceiveAlgorithmInterface {
  public:
@@ -885,7 +884,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
   }
 
   QuicTime::Delta DefaultDelayedAckTime() {
-    return QuicTime::Delta::FromMilliseconds(kMinRetransmissionTimeMs/2);
+    return QuicTime::Delta::FromMilliseconds(kMaxDelayedAckTime);
   }
 
   // Initialize a frame acknowledging all packets up to largest_observed.
@@ -3962,7 +3961,7 @@ TEST_P(QuicConnectionTest, Pacing) {
                         writer_.get(), true, version());
   TestConnection client(connection_id_, IPEndPoint(), helper_.get(),
                         writer_.get(), false, version());
-  EXPECT_TRUE(client.sent_packet_manager().using_pacing());
+  EXPECT_FALSE(client.sent_packet_manager().using_pacing());
   EXPECT_FALSE(server.sent_packet_manager().using_pacing());
 }
 

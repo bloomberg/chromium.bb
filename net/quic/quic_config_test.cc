@@ -88,9 +88,8 @@ TEST_F(QuicConfigTest, ToHandshakeMessageWithPacing) {
   const QuicTag* out;
   size_t out_len;
   EXPECT_EQ(QUIC_NO_ERROR, msg.GetTaglist(kCGST, &out, &out_len));
-  EXPECT_EQ(2u, out_len);
-  EXPECT_EQ(kPACE, out[0]);
-  EXPECT_EQ(kQBIC, out[1]);
+  EXPECT_EQ(1u, out_len);
+  EXPECT_EQ(kQBIC, out[0]);
 }
 
 TEST_F(QuicConfigTest, ProcessClientHello) {

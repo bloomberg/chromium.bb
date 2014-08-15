@@ -20,6 +20,7 @@
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_clock.h"
 #include "net/quic/quic_crypto_client_stream_factory.h"
+#include "net/quic/quic_protocol.h"
 #include "net/quic/quic_stream_factory.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_pool_manager_impl.h"
@@ -87,7 +88,6 @@ HttpNetworkSession::Params::Params()
       enable_websocket_over_spdy(false),
       enable_quic(false),
       enable_quic_port_selection(true),
-      enable_quic_pacing(false),
       enable_quic_time_based_loss_detection(false),
       quic_clock(NULL),
       quic_random(NULL),
@@ -129,7 +129,6 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
                            params.quic_user_agent_id,
                            params.quic_supported_versions,
                            params.enable_quic_port_selection,
-                           params.enable_quic_pacing,
                            params.enable_quic_time_based_loss_detection,
                            params.quic_connection_options),
       spdy_session_pool_(params.host_resolver,
@@ -252,7 +251,7 @@ base::Value* HttpNetworkSession::QuicInfoToValue() const {
   dict->SetBoolean("enable_quic_port_selection",
                    params_.enable_quic_port_selection);
   dict->SetBoolean("enable_quic_pacing",
-                   params_.enable_quic_pacing);
+                   ContainsQuicTag(params_.quic_connection_options, kPACE));
   dict->SetBoolean("enable_quic_time_based_loss_detection",
                    params_.enable_quic_time_based_loss_detection);
   dict->SetString("origin_to_force_quic_on",

@@ -114,7 +114,7 @@ class NET_EXPORT_PRIVATE QuicReceivedPacketManager :
   // Checks if we're still waiting for the packet with |sequence_number|.
   bool IsAwaitingPacket(QuicPacketSequenceNumber sequence_number);
 
-  // Update the |received_info| for an outgoing ack.
+  // Update the |ack_frame| for an outgoing ack.
   void UpdateReceivedPacketInfo(QuicAckFrame* ack_frame,
                                 QuicTime approximate_now);
 
@@ -131,7 +131,7 @@ class NET_EXPORT_PRIVATE QuicReceivedPacketManager :
   virtual QuicPacketEntropyHash EntropyHash(
       QuicPacketSequenceNumber sequence_number) const OVERRIDE;
 
-  // Updates internal state based on |received_info|.
+  // Updates internal state based on |ack_frame|.
   void UpdatePacketInformationReceivedByPeer(const QuicAckFrame& ack_frame);
   // Updates internal state based on |stop_waiting|.
   void UpdatePacketInformationSentByPeer(

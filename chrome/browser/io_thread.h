@@ -185,7 +185,6 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<bool> enable_websocket_over_spdy;
 
     Optional<bool> enable_quic;
-    Optional<bool> enable_quic_pacing;
     Optional<bool> enable_quic_time_based_loss_detection;
     Optional<bool> enable_quic_port_selection;
     Optional<size_t> quic_max_packet_length;

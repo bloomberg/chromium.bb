@@ -100,8 +100,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
                  channel_id_service_.get(), &transport_security_state_,
                  &crypto_client_stream_factory_, &random_generator_, clock_,
                  kDefaultMaxPacketSize, std::string(),
-                 SupportedVersions(GetParam()), true, true, true,
-                 QuicTagVector()),
+                 SupportedVersions(GetParam()), true, true, QuicTagVector()),
         host_port_pair_(kDefaultServerHostName, kDefaultServerPort),
         is_https_(false),
         privacy_mode_(PRIVACY_MODE_DISABLED) {

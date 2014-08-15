@@ -70,7 +70,7 @@ const uint32 kDefaultFlowControlSendWindow = 16 * 1024;  // 16 KB
 const size_t kMaxTcpCongestionWindow = 200;
 
 // Size of the socket receive buffer in bytes.
-const QuicByteCount kDefaultSocketReceiveBuffer = 256000;
+const QuicByteCount kDefaultSocketReceiveBuffer = 256 * 1024;
 
 // Don't allow a client to suggest an RTT longer than 15 seconds.
 const uint32 kMaxInitialRoundTripTimeUs = 15 * kNumMicrosPerSecond;
@@ -103,6 +103,9 @@ const QuicStreamId kCryptoStreamId = 1;
 
 // Reserved ID for the headers stream.
 const QuicStreamId kHeadersStreamId = 3;
+
+// Maximum delayed ack time, in ms.
+const int kMaxDelayedAckTime = 25;
 
 // This is the default network timeout a for connection till the crypto
 // handshake succeeds and the negotiated timeout from the handshake is received.

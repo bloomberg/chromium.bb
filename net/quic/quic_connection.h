@@ -137,7 +137,7 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitor
                                 const IPEndPoint& peer_address,
                                 const QuicEncryptedPacket& packet) {}
 
-  // Called when a packet is recived with a connection id that does not
+  // Called when a packet is received with a connection id that does not
   // match the ID of this connection.
   virtual void OnIncorrectConnectionId(
       QuicConnectionId connection_id) {}
@@ -375,6 +375,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   void set_visitor(QuicConnectionVisitorInterface* visitor) {
     visitor_ = visitor;
   }
+  // This method takes ownership of |debug_visitor|.
   void set_debug_visitor(QuicConnectionDebugVisitor* debug_visitor) {
     debug_visitor_.reset(debug_visitor);
     packet_generator_.set_debug_delegate(debug_visitor);

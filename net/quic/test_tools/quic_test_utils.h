@@ -90,8 +90,8 @@ QuicConfig DefaultQuicConfig();
 // Returns a version vector consisting of |version|.
 QuicVersionVector SupportedVersions(QuicVersion version);
 
-// Testing convenience method to construct a QuicAckFrame with all packets
-// from least_unacked to largest_observed acked.
+// Testing convenience method to construct a QuicAckFrame with entropy_hash set
+// to 0 and largest_observed from peer set to |largest_observed|.
 QuicAckFrame MakeAckFrame(QuicPacketSequenceNumber largest_observed);
 
 // Testing convenience method to construct a QuicAckFrame with |num_nack_ranges|

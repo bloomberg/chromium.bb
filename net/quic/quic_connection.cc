@@ -237,10 +237,13 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       peer_port_changed_(false),
       self_ip_changed_(false),
       self_port_changed_(false) {
+#if 0
+  // TODO(rtenneti): Should we enable this code in chromium?
   if (!is_server_) {
     // Pacing will be enabled if the client negotiates it.
     sent_packet_manager_.MaybeEnablePacing();
   }
+#endif
   DVLOG(1) << ENDPOINT << "Created connection with connection_id: "
            << connection_id;
   timeout_alarm_->Set(clock_->ApproximateNow().Add(idle_network_timeout_));
@@ -1698,6 +1701,9 @@ void QuicConnection::MaybeProcessUndecryptablePackets() {
   // never be able to be decrypted.
   if (encryption_level_ == ENCRYPTION_FORWARD_SECURE) {
     if (debug_visitor_.get() != NULL) {
+      // TODO(rtenneti): perhaps more efficient to pass the number of
+      // undecryptable packets as the argument to OnUndecryptablePacket so that
+      // we just need to call OnUndecryptablePacket once?
       for (size_t i = 0; i < undecryptable_packets_.size(); ++i) {
         debug_visitor_->OnUndecryptablePacket();
       }

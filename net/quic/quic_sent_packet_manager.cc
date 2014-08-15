@@ -49,8 +49,6 @@ static const size_t kNumMinRttSamplesAfterQuiescence = 2;
 // Number of unpaced packets to send after quiescence.
 static const size_t kInitialUnpacedBurst = 10;
 
-// Use a 1 minute window for Recent Min RTT with BBR.
-
 bool HasCryptoHandshake(const TransmissionInfo& transmission_info) {
   if (transmission_info.retransmittable_frames == NULL) {
     return false;
@@ -115,9 +113,8 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
     send_algorithm_.reset(
         SendAlgorithmInterface::Create(clock_, &rtt_stats_, kReno, stats_));
   }
-  if (config.congestion_feedback() == kPACE ||
-      (config.HasReceivedConnectionOptions() &&
-       ContainsQuicTag(config.ReceivedConnectionOptions(), kPACE))) {
+  if (config.HasReceivedConnectionOptions() &&
+      ContainsQuicTag(config.ReceivedConnectionOptions(), kPACE)) {
     MaybeEnablePacing();
   }
   // TODO(ianswett): Remove the "HasReceivedLossDetection" branch once
@@ -740,6 +737,8 @@ QuicTime::Delta QuicSentPacketManager::TimeUntilSend(
       now, unacked_packets_.bytes_in_flight(), retransmittable);
 }
 
+// Uses a 25ms delayed ack timer. Also helps with better signaling
+// in low-bandwidth (< ~384 kbps), where an ack is sent per packet.
 // Ensures that the Delayed Ack timer is always set to a value lesser
 // than the retransmission timer's minimum value (MinRTO). We want the
 // delayed ack to get back to the QUIC peer before the sender's
@@ -753,7 +752,8 @@ QuicTime::Delta QuicSentPacketManager::TimeUntilSend(
 // any benefits, but if the delayed ack becomes a significant source
 // of (likely, tail) latency, then consider such a mechanism.
 const QuicTime::Delta QuicSentPacketManager::DelayedAckTime() const {
-  return QuicTime::Delta::FromMilliseconds(kMinRetransmissionTimeMs/2);
+  return QuicTime::Delta::FromMilliseconds(min(kMaxDelayedAckTime,
+                                               kMinRetransmissionTimeMs/2));
 }
 
 const QuicTime QuicSentPacketManager::GetRetransmissionTime() const {
@@ -805,7 +805,8 @@ const QuicTime::Delta QuicSentPacketManager::GetTailLossProbeDelay() const {
   QuicTime::Delta srtt = rtt_stats_.SmoothedRtt();
   if (!unacked_packets_.HasMultipleInFlightPackets()) {
     return QuicTime::Delta::Max(
-        srtt.Multiply(1.5).Add(DelayedAckTime()), srtt.Multiply(2));
+        srtt.Multiply(2), srtt.Multiply(1.5)
+          .Add(QuicTime::Delta::FromMilliseconds(kMinRetransmissionTimeMs/2)));
   }
   return QuicTime::Delta::FromMilliseconds(
       max(kMinTailLossProbeTimeoutMs,

@@ -70,7 +70,7 @@ class QuicDispatcher : public QuicBlockedWriterInterface,
 
   virtual ~QuicDispatcher();
 
-  // Takes ownership of the packet writer
+  // Takes ownership of the packet writer.
   virtual void Initialize(QuicServerPacketWriter* writer);
 
   // Process the incoming packet by creating a new session, passing it to

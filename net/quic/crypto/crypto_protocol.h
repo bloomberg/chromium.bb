@@ -49,13 +49,13 @@ const QuicTag kSRBF = TAG('S', 'R', 'B', 'F');   // Socket receive buffer
 
 // Congestion control feedback types
 const QuicTag kQBIC = TAG('Q', 'B', 'I', 'C');   // TCP cubic
-const QuicTag kPACE = TAG('P', 'A', 'C', 'E');   // Paced TCP cubic
 const QuicTag kTSTP = TAG('T', 'S', 'T', 'P');   // Timestamp
 
 // Congestion control options
 const QuicTag kTBBR = TAG('T', 'B', 'B', 'R');   // Reduced Buffer Bloat TCP
 const QuicTag kRENO = TAG('R', 'E', 'N', 'O');   // Reno Congestion Control
 const QuicTag kIW10 = TAG('I', 'W', '1', '0');   // Force ICWND to 10
+const QuicTag kPACE = TAG('P', 'A', 'C', 'E');   // Paced TCP cubic
 
 // Loss detection algorithm types
 const QuicTag kNACK = TAG('N', 'A', 'C', 'K');   // TCP style nack counting

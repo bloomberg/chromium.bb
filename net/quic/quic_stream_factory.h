@@ -102,7 +102,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       const std::string& user_agent_id,
       const QuicVersionVector& supported_versions,
       bool enable_port_selection,
-      bool enable_pacing,
       bool enable_time_based_loss_detection,
       const QuicTagVector& connection_options);
   virtual ~QuicStreamFactory();

@@ -463,8 +463,6 @@ class NET_EXPORT_PRIVATE QuicFramer {
                                  QuicDataWriter* builder);
   bool AppendCongestionFeedbackFrame(const QuicCongestionFeedbackFrame& frame,
                                      QuicDataWriter* builder);
-  bool AppendTimestampFrame(const QuicCongestionFeedbackFrame& frame,
-                            QuicDataWriter* builder);
   bool AppendStopWaitingFrame(const QuicPacketHeader& header,
                               const QuicStopWaitingFrame& frame,
                               QuicDataWriter* builder);
