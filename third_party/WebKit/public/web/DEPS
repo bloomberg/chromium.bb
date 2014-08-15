@@ -1,6 +1,7 @@
 include_rules = [
     "+../platform",
     "+core",
+    "+platform",
 
     # For subdirectories.
     "+../../platform",

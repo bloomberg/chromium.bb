@@ -200,10 +200,7 @@ void ExternalPopupMenu::getPopupMenuInfo(WebPopupMenuInfo* info)
             popupItem.type = WebMenuItemInfo::Option;
         popupItem.enabled = m_popupMenuClient->itemIsEnabled(i);
         popupItem.checked = m_popupMenuClient->itemIsSelected(i);
-        if (style.textDirection() == RTL)
-            popupItem.textDirection = WebTextDirectionRightToLeft;
-        else
-            popupItem.textDirection = WebTextDirectionLeftToRight;
+        popupItem.textDirection = toWebTextDirection(style.textDirection());
         popupItem.hasTextDirectionOverride = style.hasTextDirectionOverride();
     }
 

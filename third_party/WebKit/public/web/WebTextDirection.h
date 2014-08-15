@@ -31,6 +31,10 @@
 #ifndef WebTextDirection_h
 #define WebTextDirection_h
 
+#if BLINK_IMPLEMENTATION
+#include "platform/text/TextDirection.h"
+#endif
+
 namespace blink {
 
 // Represents text directions (or writing directions) of a DOM node.
@@ -40,6 +44,20 @@ enum WebTextDirection {
     WebTextDirectionRightToLeft,
     WebTextDirectionLast = WebTextDirectionRightToLeft
 };
+
+#if BLINK_IMPLEMENTATION
+inline WebTextDirection toWebTextDirection(TextDirection direction)
+{
+    switch (direction) {
+    case LTR:
+        return WebTextDirectionLeftToRight;
+    case RTL:
+        return WebTextDirectionRightToLeft;
+    }
+    ASSERT_NOT_REACHED();
+    return WebTextDirectionDefault;
+}
+#endif
 
 } // namespace blink
 

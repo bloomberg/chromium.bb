@@ -2430,8 +2430,8 @@ bool WebViewImpl::selectionTextDirection(WebTextDirection& start, WebTextDirecti
     FrameSelection& selection = frame->selection();
     if (!selection.toNormalizedRange())
         return false;
-    start = selection.start().primaryDirection() == RTL ? WebTextDirectionRightToLeft : WebTextDirectionLeftToRight;
-    end = selection.end().primaryDirection() == RTL ? WebTextDirectionRightToLeft : WebTextDirectionLeftToRight;
+    start = toWebTextDirection(selection.start().primaryDirection());
+    end = toWebTextDirection(selection.end().primaryDirection());
     return true;
 }
 

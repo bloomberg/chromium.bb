@@ -65,9 +65,7 @@ WebString WebNotification::title() const
 
 WebTextDirection WebNotification::direction() const
 {
-    return (m_private->direction() == RTL) ?
-        WebTextDirectionRightToLeft :
-        WebTextDirectionLeftToRight;
+    return toWebTextDirection(m_private->direction());
 }
 
 WebString WebNotification::lang() const

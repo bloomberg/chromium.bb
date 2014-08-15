@@ -119,7 +119,7 @@ void WebPopupMenuImpl::handleMouseMove(const WebMouseEvent& event)
 
         // We cannot call setToolTipText() in PopupContainer, because PopupContainer is in WebCore, and we cannot refer to WebKit from Webcore.
         PopupContainer* container = static_cast<PopupContainer*>(m_widget);
-        client()->setToolTipText(container->getSelectedItemToolTip(), container->menuStyle().textDirection() == RTL ? WebTextDirectionRightToLeft : WebTextDirectionLeftToRight);
+        client()->setToolTipText(container->getSelectedItemToolTip(), toWebTextDirection(container->menuStyle().textDirection()));
     }
 }
 
