@@ -33,6 +33,8 @@ class CrasAudioClientStubImpl : public CrasAudioClient {
   virtual void SetActiveInputNode(uint64 node_id) OVERRIDE;
   virtual void AddActiveInputNode(uint64 node_id) OVERRIDE;
   virtual void RemoveActiveInputNode(uint64 node_id) OVERRIDE;
+  virtual void AddActiveOutputNode(uint64 node_id) OVERRIDE;
+  virtual void RemoveActiveOutputNode(uint64 node_id) OVERRIDE;
 
  protected:
   // Helper functions for testing

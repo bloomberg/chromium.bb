@@ -137,9 +137,31 @@ void CrasAudioClientStubImpl::SetActiveInputNode(uint64 node_id) {
 }
 
 void CrasAudioClientStubImpl::AddActiveInputNode(uint64 node_id) {
+  for (size_t i = 0; i < node_list_.size(); ++i) {
+    if (node_list_[i].id == node_id)
+      node_list_[i].active = true;
+  }
 }
 
 void CrasAudioClientStubImpl::RemoveActiveInputNode(uint64 node_id) {
+  for (size_t i = 0; i < node_list_.size(); ++i) {
+    if (node_list_[i].id == node_id)
+      node_list_[i].active = false;
+  }
+}
+
+void CrasAudioClientStubImpl::AddActiveOutputNode(uint64 node_id) {
+  for (size_t i = 0; i < node_list_.size(); ++i) {
+    if (node_list_[i].id == node_id)
+      node_list_[i].active = true;
+  }
+}
+
+void CrasAudioClientStubImpl::RemoveActiveOutputNode(uint64 node_id) {
+  for (size_t i = 0; i < node_list_.size(); ++i) {
+    if (node_list_[i].id == node_id)
+      node_list_[i].active = false;
+  }
 }
 
 void CrasAudioClientStubImpl::SetAudioDevices(

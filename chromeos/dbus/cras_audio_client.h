@@ -105,6 +105,16 @@ class CHROMEOS_EXPORT CrasAudioClient : public DBusClient {
   // removing an active input node added by AddActiveInputNode.
   virtual void RemoveActiveInputNode(uint64 node_id) = 0;
 
+  // Adds input node |node_id| to the active outputs list. This is used to add
+  // an additional active output node besides the one set by SetActiveInputNode.
+  // Note that this action will not trigger an ActiveOutputNodeChanged event
+  // and nothing will happen if the |node_id| has already been set as active.
+  virtual void AddActiveOutputNode(uint64 node_id) = 0;
+
+  // Removes output node |node_id| from the active output list. This is used for
+  // removing an active output node added by AddActiveOutputNode.
+  virtual void RemoveActiveOutputNode(uint64 node_id) = 0;
+
   // Creates the instance.
   static CrasAudioClient* Create();
 
