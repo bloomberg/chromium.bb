@@ -45,7 +45,7 @@ def archive_tree(isolate_server):
   """
   cmd = [
       'isolateserver.py', 'archive', '--isolate-server', isolate_server,
-      ROOT_DIR,
+      ROOT_DIR, '--blacklist="\\.git"',
   ]
   if logging.getLogger().isEnabledFor(logging.INFO):
     cmd.append('--verbose')
@@ -99,8 +99,8 @@ def archive_isolated_triggers(isolate_server, tree_isolated, tests):
 def run_swarming_tests_on_swarming(
     swarming_server, isolate_server, priority, oses, tests, logs):
   """Archives, triggers swarming jobs and gets results."""
+  print('Archiving the whole tree.')
   start = time.time()
-  # First, archive the whole tree.
   tree_isolated = archive_tree(isolate_server)
 
   # Create and archive all the .isolated files.
@@ -124,7 +124,7 @@ def run_swarming_tests_on_swarming(
 
   extra_args = []
   if priority:
-    extra_args.extend(['--priority', priority])
+    extra_args.extend(['--priority', str(priority)])
     print('Using priority %s' % priority)
 
   result = 0

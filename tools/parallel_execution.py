@@ -43,6 +43,7 @@ def unique_task_to_name(name, dimensions, isolated_hash, now):
 
 
 def capture(cmd):
+  assert all(isinstance(i, str) for i in cmd), cmd
   start = time.time()
   p = subprocess.Popen(
       [sys.executable] + cmd, cwd=ROOT_DIR, stdout=subprocess.PIPE)
