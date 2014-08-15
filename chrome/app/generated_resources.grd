@@ -9334,6 +9334,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Automatically report details of possible security incidents to Google. <ph name="PRIVACY_PAGE_LINK">$1</ph>
       </message>
 
+      <!-- Social engineering interstitial V3 -->
+      <message name="IDS_SOCIAL_ENGR_V3_HEADING" desc="The large heading at the top of the social engineering interstitial.">
+        The site ahead contains harmful programs
+      </message>
+      <message name="IDS_SOCIAL_ENGR_V3_PRIMARY_PARAGRAPH" desc="Mobile: The primary explanatory paragraph for the social engineering interstitial.">
+        Attackers on <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="SITE">$1<ex>example.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> might attempt to trick you into installing programs that harm your browsing experience (for example, by changing your homepage or showing extra ads on sites you visit).
+      </message>
+      <message name="IDS_SOCIAL_ENGR_V3_EXPLANATION_PARAGRAPH" desc="The explanation of why Safe Browsing has blocked the page.">
+        Google Safe Browsing recently <ph name="BEGIN_LINK">&lt;a href="#" id="help-link"&gt;</ph>found harmful programs<ph name="END_LINK">&lt;/a&gt;</ph> on <ph name="SITE">$1<ex>example.com</ex></ph>.
+      </message>
+      <message name="IDS_SOCIAL_ENGR_V3_PROCEED_PARAGRAPH" desc="The paragraph that lets the user skip the warning.">
+        If you understand the risks to your security, you may <ph name="BEGIN_LINK">&lt;a href="#" id="proceed-link"&gt;</ph>visit this site<ph name="END_LINK">&lt;/a&gt;</ph> before the harmful programs have been removed.
+      </message>
+
       <!-- Phishing interstitial V3 -->
       <message name="IDS_PHISHING_V3_HEADING" desc="The large heading at the top of the phishing interstitial.">
         Phishing attack ahead
