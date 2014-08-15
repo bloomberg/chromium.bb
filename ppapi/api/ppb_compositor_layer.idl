@@ -6,7 +6,8 @@
 [generate_thunk]
 
 label Chrome {
-  [channel=dev] M37 = 0.1
+  [channel=dev] M37 = 0.1,
+  [channel=dev] M38 = 0.2
 };
 
 /**
@@ -103,6 +104,34 @@ interface PPB_CompositorLayer {
    */
   int32_t SetTexture([in] PP_Resource layer,
                      [in] PP_Resource context,
+                     [in] uint32_t texture,
+                     [in] PP_Size size,
+                     [in] PP_CompletionCallback cc);
+
+  /**
+   * Sets the texture of a texture layer. If the layer is uninitialized,
+   * it will initialize the layer first, and then set its texture.
+   * The source rect will be set to ((0, 0), (1, 1)). If the layer has been
+   * initialized to another kind of layer, the layer will not be changed,
+   * and <code>PP_ERROR_BADARGUMENT</code> will be returned.
+   *
+   * param[in] layer A <code>PP_Resource</code> corresponding to a compositor
+   * layer resource.
+   * param[in] context A <code>PP_Resource</code> corresponding to a graphics
+   * 3d resource which owns the GL texture.
+   * param[in] target GL texture target (GL_TEXTURE_2D, etc).
+   * param[in] texture A GL texture object id.
+   * param[in] size A <code>PP_Size</code> for the size of the layer before
+   * transform.
+   * param[in] cc A <code>PP_CompletionCallback</code> to be called when
+   * the texture is released by Chromium compositor.
+   *
+   * @return An int32_t containing a result code from <code>pp_errors.h</code>.
+   */
+  [version = 0.2]
+  int32_t SetTexture([in] PP_Resource layer,
+                     [in] PP_Resource context,
+                     [in] uint32_t target,
                      [in] uint32_t texture,
                      [in] PP_Size size,
                      [in] PP_CompletionCallback cc);

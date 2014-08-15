@@ -53,8 +53,14 @@ class PPAPI_PROXY_EXPORT CompositorLayerResource
                            float blue,
                            float alpha,
                            const PP_Size* size) OVERRIDE;
+  virtual int32_t SetTexture0_1(
+      PP_Resource context,
+      uint32_t texture,
+      const PP_Size* size,
+      const scoped_refptr<ppapi::TrackedCallback>& callback) OVERRIDE;
   virtual int32_t SetTexture(
       PP_Resource context,
+      uint32_t target,
       uint32_t texture,
       const PP_Size* size,
       const scoped_refptr<TrackedCallback>& callback) OVERRIDE;

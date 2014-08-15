@@ -5,6 +5,7 @@
 #include "ppapi/proxy/compositor_layer_resource.h"
 
 #include "base/logging.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "ppapi/proxy/compositor_resource.h"
@@ -121,8 +122,17 @@ int32_t CompositorLayerResource::SetColor(float red,
   return PP_OK;
 }
 
+int32_t CompositorLayerResource::SetTexture0_1(
+    PP_Resource context,
+    uint32_t texture,
+    const PP_Size* size,
+    const scoped_refptr<TrackedCallback>& release_callback) {
+  return SetTexture(context, GL_TEXTURE_2D, texture, size, release_callback);
+}
+
 int32_t CompositorLayerResource::SetTexture(
     PP_Resource context,
+    uint32_t target,
     uint32_t texture,
     const PP_Size* size,
     const scoped_refptr<TrackedCallback>& release_callback) {
@@ -134,6 +144,12 @@ int32_t CompositorLayerResource::SetTexture(
   EnterResourceNoLock<PPB_Graphics3D_API> enter(context, true);
   if (enter.failed())
     return PP_ERROR_BADRESOURCE;
+
+  if (target != GL_TEXTURE_2D &&
+      target != GL_TEXTURE_EXTERNAL_OES &&
+      target != GL_TEXTURE_RECTANGLE_ARB) {
+    return PP_ERROR_BADARGUMENT;
+  }
 
   if (!size || size->width <= 0 || size->height <= 0)
     return PP_ERROR_BADARGUMENT;
@@ -147,7 +163,7 @@ int32_t CompositorLayerResource::SetTexture(
   gl->GenMailboxCHROMIUM(
       reinterpret_cast<GLbyte*>(data_.texture->mailbox.name));
   gl->ProduceTextureDirectCHROMIUM(
-      texture, GL_TEXTURE_2D,
+      texture, target,
       reinterpret_cast<const GLbyte*>(data_.texture->mailbox.name));
 
   // Set the source size to (1, 1). It will be used to verify the source_rect
@@ -156,6 +172,7 @@ int32_t CompositorLayerResource::SetTexture(
 
   data_.common.size = *size;
   data_.common.resource_id = compositor_->GenerateResourceId();
+  data_.texture->target = target;
   data_.texture->sync_point = gl->InsertSyncPointCHROMIUM();
   data_.texture->source_rect.point = PP_MakeFloatPoint(0.0f, 0.0f);
   data_.texture->source_rect.size = source_size_;

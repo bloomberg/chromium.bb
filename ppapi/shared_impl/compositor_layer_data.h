@@ -78,11 +78,13 @@ struct PPAPI_SHARED_EXPORT CompositorLayerData {
 
   struct TextureLayer {
     TextureLayer()
-       : sync_point(0),
+       : target(0),
+         sync_point(0),
          source_rect(PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 1.0f, 1.0f)),
          premult_alpha(true) {}
 
     gpu::Mailbox mailbox;
+    uint32_t target;
     uint32_t sync_point;
     PP_FloatRect source_rect;
     bool premult_alpha;

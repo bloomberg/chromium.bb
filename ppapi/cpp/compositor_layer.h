@@ -70,6 +70,7 @@ class CompositorLayer : public Resource {
   ///
   /// param[in] context A <code>Graphics3D</code> corresponding to a graphics 3d
   /// resource which owns the GL texture.
+  /// param[in] target GL texture target (GL_TEXTURE_2D, etc).
   /// param[in] texture A GL texture object id.
   /// param[in] size A <code>Size</code> for the size of the layer before
   /// transform.
@@ -78,6 +79,7 @@ class CompositorLayer : public Resource {
   ///
   /// @return An int32_t containing a result code from <code>pp_errors.h</code>.
   int32_t SetTexture(const Graphics3D& context,
+                     uint32_t target,
                      uint32_t texture,
                      const Size& size,
                      const CompletionCallback& cc);

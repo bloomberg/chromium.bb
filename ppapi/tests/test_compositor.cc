@@ -122,7 +122,8 @@ std::string TestCompositor::TestBindUnbind() {
   TestCompletionCallback texture_release_callback(instance_->pp_instance(),
                                                   PP_REQUIRED);
   ASSERT_EQ(PP_OK_COMPLETIONPENDING,
-            texture_layer.SetTexture(graphics_3d, texture, pp::Size(100, 100),
+            texture_layer.SetTexture(graphics_3d, GL_TEXTURE_2D, texture,
+                                     pp::Size(100, 100),
                                      texture_release_callback.GetCallback()));
 
   pp::ImageData image;
@@ -201,7 +202,8 @@ std::string TestCompositor::TestReleaseInternal(bool bind) {
   TestCompletionCallback texture_release_callback(instance_->pp_instance(),
                                                   PP_REQUIRED);
   ASSERT_EQ(PP_OK_COMPLETIONPENDING,
-            texture_layer.SetTexture(graphics_3d, texture, pp::Size(100, 100),
+            texture_layer.SetTexture(graphics_3d, GL_TEXTURE_2D, texture,
+                                     pp::Size(100, 100),
                                      texture_release_callback.GetCallback()));
 
   pp::ImageData image;
@@ -265,7 +267,8 @@ std::string TestCompositor::TestReleaseWithoutCommitInternal(bool bind) {
   TestCompletionCallback texture_release_callback(instance_->pp_instance(),
                                                   PP_REQUIRED);
   ASSERT_EQ(PP_OK_COMPLETIONPENDING,
-            texture_layer.SetTexture(graphics_3d, texture, pp::Size(100, 100),
+            texture_layer.SetTexture(graphics_3d, GL_TEXTURE_2D, texture,
+                                     pp::Size(100, 100),
                                      texture_release_callback.GetCallback()));
 
   pp::ImageData image;
@@ -347,7 +350,8 @@ std::string TestCompositor::TestGeneralInternal(bool bind) {
   TestCompletionCallback texture_release_callback(instance_->pp_instance(),
                                                   PP_REQUIRED);
   ASSERT_EQ(PP_OK_COMPLETIONPENDING,
-            texture_layer.SetTexture(graphics_3d, texture, pp::Size(100, 100),
+            texture_layer.SetTexture(graphics_3d, texture, GL_TEXTURE_2D,
+                                     pp::Size(100, 100),
                                      texture_release_callback.GetCallback()));
 
   pp::ImageData image;

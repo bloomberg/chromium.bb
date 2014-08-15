@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_compositor_layer.idl modified Wed Jun  4 11:17:54 2014. */
+/* From ppb_compositor_layer.idl modified Thu Aug 14 18:06:33 2014. */
 
 #ifndef PPAPI_C_PPB_COMPOSITOR_LAYER_H_
 #define PPAPI_C_PPB_COMPOSITOR_LAYER_H_
@@ -18,6 +18,7 @@
 #include "ppapi/c/pp_stdint.h"
 
 #define PPB_COMPOSITORLAYER_INTERFACE_0_1 "PPB_CompositorLayer;0.1" /* dev */
+#define PPB_COMPOSITORLAYER_INTERFACE_0_2 "PPB_CompositorLayer;0.2" /* dev */
 /**
  * @file
  */
@@ -65,7 +66,7 @@ typedef enum {
  * Defines the <code>PPB_CompositorLayer</code> interface. It is used by
  * <code>PPB_Compositor</code>.
  */
-struct PPB_CompositorLayer_0_1 { /* dev */
+struct PPB_CompositorLayer_0_2 { /* dev */
   /**
    * Determines if a resource is a compositor layer resource.
    *
@@ -114,6 +115,7 @@ struct PPB_CompositorLayer_0_1 { /* dev */
    * layer resource.
    * param[in] context A <code>PP_Resource</code> corresponding to a graphics
    * 3d resource which owns the GL texture.
+   * param[in] target GL texture target (GL_TEXTURE_2D, etc).
    * param[in] texture A GL texture object id.
    * param[in] size A <code>PP_Size</code> for the size of the layer before
    * transform.
@@ -124,6 +126,7 @@ struct PPB_CompositorLayer_0_1 { /* dev */
    */
   int32_t (*SetTexture)(PP_Resource layer,
                         PP_Resource context,
+                        uint32_t target,
                         uint32_t texture,
                         const struct PP_Size* size,
                         struct PP_CompletionCallback cc);
@@ -226,6 +229,31 @@ struct PPB_CompositorLayer_0_1 { /* dev */
    *
    * @return An int32_t containing a result code from <code>pp_errors.h</code>.
    */
+  int32_t (*SetPremultipliedAlpha)(PP_Resource layer, PP_Bool premult);
+};
+
+struct PPB_CompositorLayer_0_1 { /* dev */
+  PP_Bool (*IsCompositorLayer)(PP_Resource resource);
+  int32_t (*SetColor)(PP_Resource layer,
+                      float red,
+                      float green,
+                      float blue,
+                      float alpha,
+                      const struct PP_Size* size);
+  int32_t (*SetTexture)(PP_Resource layer,
+                        PP_Resource context,
+                        uint32_t texture,
+                        const struct PP_Size* size,
+                        struct PP_CompletionCallback cc);
+  int32_t (*SetImage)(PP_Resource layer,
+                      PP_Resource image_data,
+                      const struct PP_Size* size,
+                      struct PP_CompletionCallback cc);
+  int32_t (*SetClipRect)(PP_Resource layer, const struct PP_Rect* rect);
+  int32_t (*SetTransform)(PP_Resource layer, const float matrix[16]);
+  int32_t (*SetOpacity)(PP_Resource layer, float opacity);
+  int32_t (*SetBlendMode)(PP_Resource layer, PP_BlendMode mode);
+  int32_t (*SetSourceRect)(PP_Resource layer, const struct PP_FloatRect* rect);
   int32_t (*SetPremultipliedAlpha)(PP_Resource layer, PP_Bool premult);
 };
 /**

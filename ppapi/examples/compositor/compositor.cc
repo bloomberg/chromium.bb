@@ -351,7 +351,9 @@ void DemoInstance::PrepareLayers(int32_t frame) {
       cube_->Draw();
       rv = stable_texture_layer_.SetTexture(
           *context_,
-          texture, pp::Size(600, 600),
+          GL_TEXTURE_2D,
+          texture,
+          pp::Size(600, 600),
           callback_factory_.NewCallback(&DemoInstance::OnTextureReleased,
                                         texture));
       assert(rv == PP_OK_COMPLETIONPENDING);
@@ -397,7 +399,11 @@ void DemoInstance::PrepareLayers(int32_t frame) {
     GLuint texture = PrepareFramebuffer();
     cube_->UpdateForTimeDelta(0.02f);
     cube_->Draw();
-    rv = texture_layer_.SetTexture(*context_, texture, pp::Size(400, 400),
+    rv = texture_layer_.SetTexture(
+        *context_,
+        GL_TEXTURE_2D,
+        texture,
+        pp::Size(400, 400),
         callback_factory_.NewCallback(&DemoInstance::OnTextureReleased,
                                       texture));
     assert(rv == PP_OK_COMPLETIONPENDING);

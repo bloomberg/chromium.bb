@@ -20,8 +20,14 @@ class PPAPI_THUNK_EXPORT PPB_CompositorLayer_API {
                            float blue,
                            float alpha,
                            const PP_Size* size) = 0;
+  virtual int32_t SetTexture0_1(
+      PP_Resource context,
+      uint32_t texture,
+      const PP_Size* size,
+      const scoped_refptr<ppapi::TrackedCallback>& callback) = 0;
   virtual int32_t SetTexture(
       PP_Resource context,
+      uint32_t target,
       uint32_t texture,
       const PP_Size* size,
       const scoped_refptr<ppapi::TrackedCallback>& callback) = 0;

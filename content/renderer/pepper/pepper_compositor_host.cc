@@ -252,7 +252,7 @@ void PepperCompositorHost::UpdateLayer(
     if (!old_layer ||
         new_layer->common.resource_id != old_layer->common.resource_id) {
       cc::TextureMailbox mailbox(new_layer->texture->mailbox,
-                                 GL_TEXTURE_2D,
+                                 new_layer->texture->target,
                                  new_layer->texture->sync_point);
       texture_layer->SetTextureMailbox(mailbox,
           cc::SingleReleaseCallback::Create(
