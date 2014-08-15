@@ -37,3 +37,5 @@ Local Modifications:
 - Add support for x86_64.
 
 - Speculative fix for crbug/397634.
+
+- Implement LEB128 decoding more efficiently.

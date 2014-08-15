@@ -370,17 +370,17 @@ class Leb128Decoder {
       : encoding_(encoding), cursor_(0) { }
 
   uint32_t Dequeue() {
-    size_t extent = cursor_;
-    while (encoding_[extent] >> 7)
-      extent++;
-
     uint32_t value = 0;
-    for (size_t i = extent; i > cursor_; --i) {
-      value = (value << 7) | (encoding_[i] & 127);
-    }
-    value = (value << 7) | (encoding_[cursor_] & 127);
 
-    cursor_ = extent + 1;
+    size_t shift = 0;
+    uint8_t byte;
+
+    do {
+      byte = encoding_[cursor_++];
+      value |= static_cast<uint32_t>(byte & 127) << shift;
+      shift += 7;
+    } while (byte & 128);
+
     return value;
   }
 
