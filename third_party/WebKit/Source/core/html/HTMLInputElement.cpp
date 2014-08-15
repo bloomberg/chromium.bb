@@ -444,9 +444,12 @@ void HTMLInputElement::updateType()
     }
     if (!didStoreValue && willStoreValue) {
         AtomicString valueString = fastGetAttribute(valueAttr);
+        m_inputType->warnIfValueIsInvalid(valueString);
         m_valueIfDirty = sanitizeValue(valueString);
-    } else
+    } else {
+        m_inputType->warnIfValueIsInvalid(hasDirtyValue() ? m_valueIfDirty : fastGetAttribute(valueAttr).string());
         updateValueIfNeeded();
+    }
 
     m_needsToUpdateViewValue = true;
     m_inputTypeView->updateView();
@@ -660,6 +663,7 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
         m_needsToUpdateViewValue = true;
         setNeedsValidityCheck();
         m_valueAttributeWasUpdatedAfterParsing = !m_parsingInProgress;
+        m_inputType->warnIfValueIsInvalid(value);
         m_inputTypeView->valueAttributeChanged();
     } else if (name == checkedAttr) {
         // Another radio button in the same group might be checked by state
@@ -1001,6 +1005,7 @@ void HTMLInputElement::setValue(const String& value, ExceptionState& exceptionSt
 
 void HTMLInputElement::setValue(const String& value, TextFieldEventBehavior eventBehavior)
 {
+    m_inputType->warnIfValueIsInvalid(value);
     if (!m_inputType->canSetValue(value))
         return;
 

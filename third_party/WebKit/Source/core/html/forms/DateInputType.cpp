@@ -33,6 +33,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
+#include "core/dom/Document.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/DateTimeFieldsState.h"
 #include "platform/DateComponents.h"
@@ -91,6 +92,14 @@ bool DateInputType::setMillisecondToDateComponents(double value, DateComponents*
 bool DateInputType::isDateField() const
 {
     return true;
+}
+
+void DateInputType::warnIfValueIsInvalid(const String& value) const
+{
+    if (value != element().sanitizeValue(value)) {
+        element().document().addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, ErrorMessageLevel,
+            String::format("The specified value '%s' does not conform to the required format, 'yyyy-MM-dd'.", value.utf8().data())));
+    }
 }
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
