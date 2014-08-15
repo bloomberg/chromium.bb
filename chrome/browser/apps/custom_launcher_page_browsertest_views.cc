@@ -7,8 +7,8 @@
 #include "base/command_line.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
-#include "chrome/common/chrome_switches.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/switches.h"
 #include "ui/app_list/app_list_switches.h"
 
 namespace {
@@ -16,9 +16,8 @@ namespace {
 // The path of the test application within the "platform_apps" directory.
 const char kCustomLauncherPagePath[] = "custom_launcher_page";
 
-// The app ID and URL of the test application.
-const char kCustomLauncherPageUrl[] =
-    "chrome-extension://lmadimbbgapmngbiclpjjngmdickadpl/main.html";
+// The app ID of the test application.
+const char kCustomLauncherPageID[] = "lmadimbbgapmngbiclpjjngmdickadpl";
 
 }  // namespace
 
@@ -36,8 +35,10 @@ class CustomLauncherPageBrowserTest
 
     // Custom launcher pages only work in the experimental app list.
     command_line->AppendSwitch(app_list::switches::kEnableExperimentalAppList);
-    command_line->AppendSwitchASCII(switches::kCustomLauncherPage,
-                                    kCustomLauncherPageUrl);
+
+    // The test app must be whitelisted to use launcher_page.
+    command_line->AppendSwitchASCII(
+        extensions::switches::kWhitelistedExtensionID, kCustomLauncherPageID);
   }
 
   // Open the launcher. Ignores the Extension argument (this will simply

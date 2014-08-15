@@ -224,6 +224,16 @@
     "channel": "stable",
     "extension_types": "all"
   },
+  "launcher_page": {
+    "channel": "stable",
+    "min_manifest_version": 2,
+    "extension_types": ["platform_app"],
+    "whitelist": [
+      "07BD6A765FFC289FF755D7CAB2893A40EC337FEC",  // http://crbug.com/404000
+      "896B85CC7E913E11C34892C1425A093C0701D386",  // http://crbug.com/404000
+      "11A01C82EF355E674E4F9728A801F5C3CB40D83F"   // http://crbug.com/404000
+    ]
+  },
   "manifest_version": {
     "channel": "stable",
     "extension_types": "all"

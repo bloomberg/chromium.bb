@@ -77,6 +77,8 @@ extern const char kKioskMode[];
 extern const char kLanguage[];
 extern const char kLaunch[];
 extern const char kLaunchContainer[];
+extern const char kLauncherPage[];
+extern const char kLauncherPagePage[];
 extern const char kLaunchHeight[];
 extern const char kLaunchLocalPath[];
 extern const char kLaunchWebURL[];
