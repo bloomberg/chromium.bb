@@ -29,7 +29,7 @@ PACKAGE_INFO = {
         'com.google.android.apps.chrome.document.ChromeLauncherActivity',
         '/data/local/chrome-command-line',
         'chrome_devtools_remote',
-        'com.google.android.apps.chrome.tests'),
+        None),
     'chrome': PackageInfo(
         'com.google.android.apps.chrome',
         'com.google.android.apps.chrome.Main',
