@@ -311,6 +311,11 @@ std::string GetCanonicalLocale(const std::string& locale) {
   return base::i18n::GetCanonicalLocale(locale.c_str());
 }
 
+std::string GetLanguage(const std::string& locale) {
+  const std::string::size_type hyphen_pos = locale.find('-');
+  return std::string(locale, 0, hyphen_pos);
+}
+
 bool CheckAndResolveLocale(const std::string& locale,
                            std::string* resolved_locale) {
 #if defined(OS_MACOSX)
@@ -334,10 +339,9 @@ bool CheckAndResolveLocale(const std::string& locale,
   // does not support but available on Windows. We fall
   // back to en-US in GetApplicationLocale so that it's a not critical,
   // but we can do better.
-  std::string::size_type hyphen_pos = locale.find('-');
-  std::string lang(locale, 0, hyphen_pos);
-  if (hyphen_pos != std::string::npos && hyphen_pos > 0) {
-    std::string region(locale, hyphen_pos + 1);
+  const std::string lang(GetLanguage(locale));
+  if (lang.size() < locale.size()) {
+    std::string region(locale, lang.size() + 1);
     std::string tmp_locale(lang);
     // Map es-RR other than es-ES to es-419 (Chrome's Latin American
     // Spanish locale).
@@ -875,6 +879,14 @@ int GetLocalizedContentsWidthInPixels(int pixel_resource_id) {
   base::StringToInt(l10n_util::GetStringUTF8(pixel_resource_id), &width);
   DCHECK_GT(width, 0);
   return width;
+}
+
+const char* const* GetAcceptLanguageListForTesting() {
+  return kAcceptLanguageList;
+}
+
+size_t GetAcceptLanguageListSizeForTesting() {
+  return arraysize(kAcceptLanguageList);
 }
 
 }  // namespace l10n_util

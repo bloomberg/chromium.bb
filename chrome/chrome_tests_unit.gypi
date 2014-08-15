@@ -737,6 +737,7 @@
         'browser/chromeos/input_method/input_method_util_unittest.cc',
         'browser/chromeos/kiosk_mode/kiosk_mode_idle_logout_unittest.cc',
         'browser/chromeos/kiosk_mode/kiosk_mode_settings_unittest.cc',
+        'browser/chromeos/locale_change_guard_unittest.cc',
         'browser/chromeos/login/auth/online_attempt_unittest.cc',
         'browser/chromeos/login/auth/parallel_authenticator_unittest.cc',
         'browser/chromeos/login/existing_user_controller_auto_login_unittest.cc',
