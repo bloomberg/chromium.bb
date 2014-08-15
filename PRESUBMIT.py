@@ -1528,7 +1528,7 @@ def GetDefaultTryConfigs(bots=None):
       'win_chromium_compile_dbg': ['defaulttests'],
       'win_chromium_dbg': ['defaulttests'],
       'win_chromium_rel_swarming': ['defaulttests'],
-      'win_chromium_x64_rel': ['defaulttests'],
+      'win_chromium_x64_rel_swarming': ['defaulttests'],
       'win_gpu': ['defaulttests'],
       'win_nacl_sdk_build': ['compile'],
   }
@@ -1609,7 +1609,7 @@ def GetPreferredTryMasters(project, change):
       'mac_gpu',
       'win_chromium_compile_dbg',
       'win_chromium_rel_swarming',
-      'win_chromium_x64_rel',
+      'win_chromium_x64_rel_swarming',
       'win_gpu',
   ]
 
