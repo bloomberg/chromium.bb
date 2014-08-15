@@ -319,7 +319,8 @@ public:
     void setNetworkStateNotifierTestOnly(bool);
     // Test must call setNetworkStateNotifierTestOnly(true) before calling setNetworkConnectionInfo.
     void setNetworkConnectionInfo(const String&, ExceptionState&);
-    String serializeNavigationMarkup(Document*);
+    String serializeNavigationMarkup();
+    void hideAllTransitionElements();
 
     unsigned countHitRegions(CanvasRenderingContext2D*);
 

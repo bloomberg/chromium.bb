@@ -9,18 +9,37 @@ jsTestIsAsync = true;
 
 window.onload = function() {
     if (window.internals) {
-        var serializedHTML = internals.serializeNavigationMarkup(document);
+        var serializedHTML = internals.serializeNavigationMarkup();
         var testiframe = document.getElementById('testiframe');
         testiframe.contentDocument.write(serializedHTML);
 
+        transitionElement = document.getElementById('transitionElement');
         sourceElement = document.getElementById('boxTransitionElement');
         destElement = testiframe.contentDocument.getElementById('boxTransitionElement');
 
         sourceElementRect = sourceElement.getBoundingClientRect();
+
+        bottomElement = document.getElementById('bottomElement');
+
+        preHidingBottomElementRect = bottomElement.getBoundingClientRect();
+        preHidingTransitionElementOpacity = window.getComputedStyle(transitionElement).opacity;
+
+        internals.hideAllTransitionElements();
+
+        postHidingTransitionElementOpacity = window.getComputedStyle(transitionElement).opacity;
+        postHidingBottomElementRect = bottomElement.getBoundingClientRect();
+
         shouldBe('sourceElementRect.top', 'destElement.offsetTop');
         shouldBe('sourceElementRect.left', 'destElement.offsetLeft');
         shouldBe('sourceElementRect.height', 'destElement.offsetHeight');
         shouldBe('sourceElementRect.width', 'destElement.offsetWidth');
+
+        shouldBeTrue('preHidingTransitionElementOpacity == 1');
+        shouldBeTrue('postHidingTransitionElementOpacity == 0');
+
+        // Hiding transition elements should not shift any other elements on the page.
+        shouldBe('preHidingBottomElementRect.top', 'postHidingBottomElementRect.top');
+        shouldBe('preHidingBottomElementRect.left', 'postHidingBottomElementRect.left');
 
         finishJSTest();
     }
@@ -70,11 +89,13 @@ body {
 </style>
 
 <div id="wrappingElement">
-    <div id="transitionElement">This text should appear twice.</div>
+    <div id="transitionElement">Header</div>
 
     <div id="boxTransitionElement">
         <img id="blueBox" src="resources/images/blue.png">
     </div>
+
+    <div id="bottomElement">Footer</div>
 </div>
 
 <iframe id="testiframe"></iframe>

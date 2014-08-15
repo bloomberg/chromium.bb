@@ -5646,7 +5646,7 @@ void Document::hideTransitionElements(const AtomicString& cssSelector)
 
         for (unsigned nodeIndex = 0; nodeIndex < nodeListLength; ++nodeIndex) {
             Element* element = elementList->item(nodeIndex);
-            element->setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+            element->setInlineStyleProperty(CSSPropertyOpacity, 0.0, CSSPrimitiveValue::CSS_NUMBER);
         }
     }
 }

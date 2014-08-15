@@ -286,5 +286,6 @@
     // This function is for testing HitRegions on Canvas2D.
     unsigned long countHitRegions(CanvasRenderingContext2D context);
 
-    DOMString serializeNavigationMarkup(Document document);
+    DOMString serializeNavigationMarkup();
+    void hideAllTransitionElements();
 };

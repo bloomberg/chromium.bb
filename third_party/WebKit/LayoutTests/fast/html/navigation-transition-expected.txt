@@ -7,9 +7,14 @@ PASS sourceElementRect.top is destElement.offsetTop
 PASS sourceElementRect.left is destElement.offsetLeft
 PASS sourceElementRect.height is destElement.offsetHeight
 PASS sourceElementRect.width is destElement.offsetWidth
+PASS preHidingTransitionElementOpacity == 1 is true
+PASS postHidingTransitionElementOpacity == 0 is true
+PASS preHidingBottomElementRect.top is postHidingBottomElementRect.top
+PASS preHidingBottomElementRect.left is postHidingBottomElementRect.left
 PASS successfullyParsed is true
 
 TEST COMPLETE
-This text should appear twice.
+Header
 
+Footer
 

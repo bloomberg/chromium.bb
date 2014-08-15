@@ -2263,7 +2263,7 @@ unsigned Internals::countHitRegions(CanvasRenderingContext2D* context)
     return context->hitRegionsCount();
 }
 
-String Internals::serializeNavigationMarkup(Document* document)
+String Internals::serializeNavigationMarkup()
 {
     Vector<Document::TransitionElementData> elementData;
     frame()->document()->getTransitionElementData(elementData);
@@ -2274,6 +2274,16 @@ String Internals::serializeNavigationMarkup(Document* document)
         markup.append(iter->markup);
 
     return markup.toString();
+}
+
+void Internals::hideAllTransitionElements()
+{
+    Vector<Document::TransitionElementData> elementData;
+    frame()->document()->getTransitionElementData(elementData);
+
+    Vector<Document::TransitionElementData>::iterator iter = elementData.begin();
+    for (; iter != elementData.end(); ++iter)
+        frame()->document()->hideTransitionElements(AtomicString(iter->selector));
 }
 
 } // namespace blink

@@ -98,7 +98,8 @@ TEST(WebDocumentTest, BeginExitTransition)
 
     // The element should now be hidden.
     transitionStyle = transitionElement->renderStyle();
-    ASSERT_FALSE(transitionStyle);
+    ASSERT_TRUE(transitionStyle);
+    ASSERT_EQ(transitionStyle->opacity(), 0);
 
     // The stylesheet should now have been applied.
     bodyStyle = bodyElement->renderStyle();
