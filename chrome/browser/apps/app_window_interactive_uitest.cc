@@ -330,7 +330,13 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
   EXPECT_TRUE(GetFirstAppWindow()->GetBaseWindow()->IsFullscreen());
 }
 
-IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, TestInnerBounds) {
+#if defined(OS_MACOSX)
+// http://crbug.com/404081
+#define MAYBE_TestInnerBounds DISABLED_TestInnerBounds
+#else
+#define MAYBE_TestInnerBounds TestInnerBounds
+#endif
+IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, MAYBE_TestInnerBounds) {
   ASSERT_TRUE(RunAppWindowInteractiveTest("testInnerBounds")) << message_;
 }
 
