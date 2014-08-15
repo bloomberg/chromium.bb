@@ -435,7 +435,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Apps.AppLaunch" enum="AppLaunch">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tapted@chromium.org</owner>
+  <owner>benwells@chromium.org</owner>
   <summary>
     The number of times v2 packaged apps are launched grouped by
     extension_misc::AppLaunchBuckets. See also Extensions.AppLaunch.
@@ -448,7 +449,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Apps.AppListHowEnabled" enum="AppListEnableSource">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tapted@chromium.org</owner>
   <summary>
     The trigger that caused the app list to be enabled. Recorded when the user
     first shows the app list. If not shown after one hour, will be recorded
@@ -458,7 +459,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Apps.AppListSearchCommenced" units="searches">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tapted@chromium.org</owner>
   <summary>
     The number of searches that are started in the app list. This is gathered
     each time the app list search box transitions from empty to non-empty.
@@ -466,7 +467,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Apps.AppListSearchResultOpenType" enum="AppListSearchResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tapted@chromium.org</owner>
   <summary>
     The type of app list search result that was opened by the user. This is
     gathered per click of a search result.
@@ -474,7 +475,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Apps.AppListTimeToDiscover" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tapted@chromium.org</owner>
   <summary>
     Time between enabling the app list, and a user explicitly choosing to show
     it. If the app list is not shown after one hour, an entry in the last bucket
@@ -7097,7 +7098,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.AppLaunch" enum="AppLaunch">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>benwells@chromium.org</owner>
+  <owner>tapted@chromium.org</owner>
   <summary>
     The number of times v1 apps are launched grouped by
     extension_misc::AppLaunchBuckets. See also Apps.AppLaunch for v2 apps.
@@ -7105,7 +7107,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.AppLaunchContainer" enum="AppLaunchContainer">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>benwells@chromium.org</owner>
+  <owner>tapted@chromium.org</owner>
   <summary>
     The number of times apps are launched grouped by
     extensions::LaunchContainer.
@@ -7113,14 +7116,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.AppLocation" enum="ExtensionLocation">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>benwells@chromium.org</owner>
+  <owner>tapted@chromium.org</owner>
   <summary>
     The number of apps loaded at startup time grouped by Extension::Location.
   </summary>
 </histogram>
 
 <histogram name="Extensions.AppsPromo" enum="AppPromoAction">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>benwells@chromium.org</owner>
+  <owner>tapted@chromium.org</owner>
   <summary>
     The actions taken in the NTP apps promo grouped by
     extension_misc::AppsPromoBuckets.
@@ -7128,7 +7133,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.AppTabLaunchType" enum="ExtensionLaunchType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>benwells@chromium.org</owner>
+  <owner>tapted@chromium.org</owner>
   <summary>
     The number of apps launched grouped by extensions::LaunchType.
   </summary>
@@ -32012,6 +32018,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Startup.ShowAppListColdStart" units="milliseconds">
   <owner>jeremy@chromium.org</owner>
+  <owner>tapted@chromium.org</owner>
   <summary>
     Time for a newly created browser process to reach the code that starts
     showing the app launcher, when started with the --show-app-list flag and
@@ -32021,6 +32028,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Startup.ShowAppListWarmStart" units="milliseconds">
   <owner>jeremy@chromium.org</owner>
+  <owner>tapted@chromium.org</owner>
   <summary>
     Time for a running browser process to reach the code that starts showing the
     app launcher. Measured from the time a second Chrome process started, which
