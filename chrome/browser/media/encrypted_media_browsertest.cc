@@ -518,11 +518,13 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_Playback_AudioOnly_WebM) {
   TestSimplePlayback("bear-a_enc-a.webm", kWebMAudioOnly);
 }
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioClearVideo_WebM) {
+// http://crbug.com/402766
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_Playback_AudioClearVideo_WebM) {
   TestSimplePlayback("bear-320x240-av_enc-a.webm", kWebMAudioVideo);
 }
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoAudio_WebM) {
+// http://crbug.com/402766
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_Playback_VideoAudio_WebM) {
   TestSimplePlayback("bear-320x240-av_enc-av.webm", kWebMAudioVideo);
 }
 
@@ -531,7 +533,8 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_Playback_VideoOnly_WebM) {
   TestSimplePlayback("bear-320x240-v_enc-v.webm", kWebMVideoOnly);
 }
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM) {
+// http://crbug.com/402766
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_Playback_VideoClearAudio_WebM) {
   TestSimplePlayback("bear-320x240-av_enc-v.webm", kWebMAudioVideo);
 }
 
@@ -540,7 +543,8 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_Playback_VP9Video_WebM) {
   TestSimplePlayback("bear-320x240-v-vp9_enc-v.webm", kWebMVP9VideoOnly);
 }
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, InvalidResponseKeyError) {
+// http://crbug.com/402766
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_InvalidResponseKeyError) {
   RunInvalidResponseTest();
 }
 
