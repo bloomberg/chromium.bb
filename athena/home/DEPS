@@ -5,6 +5,7 @@ include_rules = [
   "+third_party/skia/include",
   "+ui/aura",
   "+ui/app_list",
+  "+ui/compositor",
   "+ui/events",
   "+ui/gfx",
   "+ui/views",

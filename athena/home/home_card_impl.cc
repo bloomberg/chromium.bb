@@ -17,11 +17,14 @@
 #include "athena/wm/public/window_manager.h"
 #include "athena/wm/public/window_manager_observer.h"
 #include "base/bind.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/app_list/search_provider.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/closure_animation_observer.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
@@ -88,8 +91,13 @@ class HomeCardLayoutManager : public aura::LayoutManager {
     if (!home_card || !home_card->GetRootWindow())
       return;
 
-    SetChildBoundsDirect(home_card, GetBoundsForState(
-        home_card->GetRootWindow()->bounds(), delegate_->GetState()));
+    {
+      ui::ScopedLayerAnimationSettings settings(
+          home_card->layer()->GetAnimator());
+      settings.SetTweenType(gfx::Tween::EASE_IN_OUT);
+      SetChildBoundsDirect(home_card, GetBoundsForState(
+          home_card->GetRootWindow()->bounds(), delegate_->GetState()));
+    }
   }
 
  private:
@@ -267,7 +275,8 @@ class HomeCardView : public views::WidgetDelegateView {
   HomeCardView(app_list::AppListViewDelegate* view_delegate,
                aura::Window* container,
                HomeCardGestureManager::Delegate* gesture_delegate)
-      : gesture_delegate_(gesture_delegate) {
+      : gesture_delegate_(gesture_delegate),
+        weak_factory_(this) {
     bottom_view_ = new AthenaStartPageView(view_delegate);
     AddChildView(bottom_view_);
     bottom_view_->SetPaintToLayer(true);
@@ -323,6 +332,31 @@ class HomeCardView : public views::WidgetDelegateView {
                       wm::SHADOW_TYPE_RECTANGULAR);
   }
 
+  void SetStateWithAnimation(HomeCard::State from_state,
+                             HomeCard::State to_state) {
+    if ((from_state == HomeCard::VISIBLE_MINIMIZED &&
+         to_state == HomeCard::VISIBLE_BOTTOM) ||
+        (from_state == HomeCard::VISIBLE_BOTTOM &&
+         to_state == HomeCard::VISIBLE_MINIMIZED)) {
+      minimized_view_->SetVisible(true);
+      bottom_view_->SetVisible(true);
+      {
+        ui::ScopedLayerAnimationSettings settings(
+            minimized_view_->layer()->GetAnimator());
+        settings.SetTweenType(gfx::Tween::EASE_IN_OUT);
+        settings.AddObserver(new ui::ClosureAnimationObserver(
+            base::Bind(&HomeCardView::SetState,
+                       weak_factory_.GetWeakPtr(),
+                       to_state)));
+        minimized_view_->layer()->SetOpacity(
+            (to_state == HomeCard::VISIBLE_MINIMIZED) ? 1.0f : 0.0f);
+      }
+    } else {
+      // TODO(mukai): Take care of other transition.
+      SetState(to_state);
+    }
+  }
+
   void ClearGesture() {
     gesture_manager_.reset();
   }
@@ -357,6 +391,7 @@ class HomeCardView : public views::WidgetDelegateView {
   }
 
  private:
+  // views::WidgetDelegate:
   virtual views::View* GetContentsView() OVERRIDE {
     return this;
   }
@@ -366,6 +401,7 @@ class HomeCardView : public views::WidgetDelegateView {
   views::View* minimized_view_;
   scoped_ptr<HomeCardGestureManager> gesture_manager_;
   HomeCardGestureManager::Delegate* gesture_delegate_;
+  base::WeakPtrFactory<HomeCardView> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HomeCardView);
 };
@@ -507,6 +543,7 @@ void HomeCardImpl::SetState(HomeCard::State state) {
 
   // Update |state_| before changing the visibility of the widgets, so that
   // LayoutManager callbacks get the correct state.
+  HomeCard::State old_state = state_;
   state_ = state;
   original_state_ = state;
   if (state_ == HIDDEN) {
@@ -516,7 +553,7 @@ void HomeCardImpl::SetState(HomeCard::State state) {
       home_card_widget_->Show();
     else
       home_card_widget_->ShowInactive();
-    home_card_view_->SetState(state);
+    home_card_view_->SetStateWithAnimation(old_state, state);
     layout_manager_->Layout();
   }
 }
@@ -569,8 +606,9 @@ void HomeCardImpl::OnGestureEnded(State final_state) {
       (state_ == VISIBLE_MINIMIZED || final_state == VISIBLE_MINIMIZED)) {
     WindowManager::GetInstance()->ToggleOverview();
   } else {
+    HomeCard::State old_state = state_;
     state_ = final_state;
-    home_card_view_->SetState(final_state);
+    home_card_view_->SetStateWithAnimation(old_state, final_state);
     layout_manager_->Layout();
   }
 }
