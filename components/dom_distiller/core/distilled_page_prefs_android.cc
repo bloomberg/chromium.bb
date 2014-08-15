@@ -22,12 +22,24 @@ DistilledPagePrefsAndroid::DistilledPagePrefsAndroid(
 DistilledPagePrefsAndroid::~DistilledPagePrefsAndroid() {
 }
 
+void DistilledPagePrefsAndroid::SetFontFamily(JNIEnv* env,
+                                              jobject obj,
+                                              jint font_family) {
+  distilled_page_prefs_->SetFontFamily(
+      static_cast<DistilledPagePrefs::FontFamily>(font_family));
+}
+
+jint DistilledPagePrefsAndroid::GetFontFamily(JNIEnv* env, jobject obj) {
+  return (int) distilled_page_prefs_->GetFontFamily();
+}
+
 void DistilledPagePrefsAndroid::SetTheme(JNIEnv* env, jobject obj, jint theme) {
-  distilled_page_prefs_->SetTheme((DistilledPagePrefs::Theme)theme);
+  distilled_page_prefs_->SetTheme(
+      static_cast<DistilledPagePrefs::Theme>(theme));
 }
 
 jint DistilledPagePrefsAndroid::GetTheme(JNIEnv* env, jobject obj) {
-  return (int)distilled_page_prefs_->GetTheme();
+  return (int) distilled_page_prefs_->GetTheme();
 }
 
 jlong Init(JNIEnv* env, jobject obj, jlong distilled_page_prefs_ptr) {
@@ -69,6 +81,13 @@ DistilledPagePrefsObserverAndroid::~DistilledPagePrefsObserverAndroid() {}
 void DistilledPagePrefsObserverAndroid::DestroyObserverAndroid(JNIEnv* env,
                                                                jobject obj) {
   delete this;
+}
+
+void DistilledPagePrefsObserverAndroid::OnChangeFontFamily(
+    DistilledPagePrefs::FontFamily new_font_family) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_DistilledPagePrefsObserverWrapper_onChangeFontFamily(
+      env, java_ref_.obj(), (int)new_font_family);
 }
 
 void DistilledPagePrefsObserverAndroid::OnChangeTheme(

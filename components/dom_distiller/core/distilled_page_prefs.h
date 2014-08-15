@@ -20,6 +20,13 @@ namespace dom_distiller {
 // Interface for preferences used for distilled page.
 class DistilledPagePrefs {
  public:
+  // Possible font families for distilled page.
+  enum FontFamily {
+#define DEFINE_FONT_FAMILY(name, value) name = value,
+#include "components/dom_distiller/core/font_family_list.h"
+#undef DEFINE_FONT_FAMILY
+  };
+
   // Possible themes for distilled page.
   enum Theme {
 #define DEFINE_THEME(name, value) name = value,
@@ -29,6 +36,7 @@ class DistilledPagePrefs {
 
   class Observer {
    public:
+    virtual void OnChangeFontFamily(FontFamily font) = 0;
     virtual void OnChangeTheme(Theme theme) = 0;
   };
 
@@ -36,6 +44,11 @@ class DistilledPagePrefs {
   ~DistilledPagePrefs();
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
+  // Sets the user's preference for the font family of distilled pages.
+  void SetFontFamily(FontFamily new_font);
+  // Returns the user's preference for the font family of distilled pages.
+  FontFamily GetFontFamily();
 
   // Sets the user's preference for the theme of distilled pages.
   void SetTheme(Theme new_theme);
@@ -46,6 +59,8 @@ class DistilledPagePrefs {
   void RemoveObserver(Observer* obs);
 
  private:
+  // Notifies all Observers of new font family.
+  void NotifyOnChangeFontFamily(FontFamily font_family);
   // Notifies all Observers of new theme.
   void NotifyOnChangeTheme(Theme theme);
 

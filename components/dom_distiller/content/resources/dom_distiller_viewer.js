@@ -14,6 +14,23 @@ function showLoadingIndicator(isLastPage) {
   updateLoadingIndicator(isLastPage);
 }
 
+// Maps JS Font Family to CSS class and then changes body class name.
+// CSS classes must agree with distilledpage.css.
+function useFontFamily(fontFamily) {
+  var cssClass;
+  if (fontFamily == "serif") {
+    cssClass = "serif";
+  } else if (fontFamily == "monospace") {
+    cssClass = "monospace";
+  } else {
+    cssClass = "sans-serif";
+  }
+  // Relies on the classname order of the body being Theme class, then Font
+  // Family class.
+  var themeClass = document.body.className.split(" ")[0];
+  document.body.className = themeClass + " " + cssClass;
+}
+
 // Maps JS theme to CSS class and then changes body class name.
 // CSS classes must agree with distilledpage.css.
 function useTheme(theme) {
@@ -25,7 +42,10 @@ function useTheme(theme) {
   } else {
     cssClass = "light";
   }
-  document.body.className = cssClass;
+  // Relies on the classname order of the body being Theme class, then Font
+  // Family class.
+  var fontFamilyClass = document.body.className.split(" ")[1];
+  document.body.className = cssClass + " " + fontFamilyClass;
 }
 
 var updateLoadingIndicator = function() {

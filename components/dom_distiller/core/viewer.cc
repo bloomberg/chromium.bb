@@ -34,10 +34,20 @@ const char kDarkJsTheme[] = "dark";
 const char kLightJsTheme[] = "light";
 const char kSepiaJsTheme[] = "sepia";
 
-// CSS classes.  Must agree with classes in distilledpage.css.
+// CSS Theme classes.  Must agree with classes in distilledpage.css.
 const char kDarkCssClass[] = "dark";
 const char kLightCssClass[] = "light";
 const char kSepiaCssClass[] = "sepia";
+
+// JS FontFamilies. Must agree with useFontFamily() in dom_distiller_viewer.js.
+const char kSerifJsFontFamily[] = "serif";
+const char kSansSerifJsFontFamily[] = "sans-serif";
+const char kMonospaceJsFontFamily[] = "monospace";
+
+// CSS FontFamily classes.  Must agree with classes in distilledpage.css.
+const char kSerifCssClass[] = "serif";
+const char kSansSerifCssClass[] = "sans-serif";
+const char kMonospaceCssClass[] = "monospace";
 
 // Maps themes to JS themes.
 const std::string GetJsTheme(DistilledPagePrefs::Theme theme) {
@@ -50,7 +60,7 @@ const std::string GetJsTheme(DistilledPagePrefs::Theme theme) {
 }
 
 // Maps themes to CSS classes.
-const std::string GetCssClass(DistilledPagePrefs::Theme theme) {
+const std::string GetThemeCssClass(DistilledPagePrefs::Theme theme) {
   if (theme == DistilledPagePrefs::DARK) {
     return kDarkCssClass;
   } else if (theme == DistilledPagePrefs::SEPIA) {
@@ -59,12 +69,33 @@ const std::string GetCssClass(DistilledPagePrefs::Theme theme) {
   return kLightCssClass;
 }
 
+// Maps font families to JS font families.
+const std::string GetJsFontFamily(DistilledPagePrefs::FontFamily font_family) {
+  if (font_family == DistilledPagePrefs::SERIF) {
+    return kSerifJsFontFamily;
+  } else if (font_family == DistilledPagePrefs::MONOSPACE) {
+    return kMonospaceJsFontFamily;
+  }
+  return kSansSerifJsFontFamily;
+}
+
+// Maps fontFamilies to CSS fontFamily classes.
+const std::string GetFontCssClass(DistilledPagePrefs::FontFamily font_family) {
+  if (font_family == DistilledPagePrefs::SERIF) {
+    return kSerifCssClass;
+  } else if (font_family == DistilledPagePrefs::MONOSPACE) {
+    return kMonospaceCssClass;
+  }
+  return kSansSerifCssClass;
+}
+
 std::string ReplaceHtmlTemplateValues(
     const std::string& title,
     const std::string& content,
     const std::string& loading_indicator_class,
     const std::string& original_url,
-    const DistilledPagePrefs::Theme theme) {
+    const DistilledPagePrefs::Theme theme,
+    const DistilledPagePrefs::FontFamily font_family) {
   base::StringPiece html_template =
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_DOM_DISTILLER_VIEWER_HTML);
@@ -72,7 +103,8 @@ std::string ReplaceHtmlTemplateValues(
   substitutions.push_back(title);                                         // $1
   substitutions.push_back(kViewerCssPath);                                // $2
   substitutions.push_back(kViewerJsPath);                                 // $3
-  substitutions.push_back(GetCssClass(theme));                            // $4
+  substitutions.push_back(GetThemeCssClass(theme) + " " +
+                          GetFontCssClass(font_family));                  // $4
   substitutions.push_back(content);                                       // $5
   substitutions.push_back(loading_indicator_class);                       // $6
   substitutions.push_back(original_url);                                  // $7
@@ -107,23 +139,22 @@ const std::string GetToggleLoadingIndicatorJs(const bool is_last_page) {
 
 const std::string GetUnsafePartialArticleHtml(
     const DistilledPageProto* page_proto,
-    const DistilledPagePrefs::Theme theme) {
+    const DistilledPagePrefs::Theme theme,
+    const DistilledPagePrefs::FontFamily font_family) {
   DCHECK(page_proto);
   std::string title = net::EscapeForHTML(page_proto->title());
   std::ostringstream unsafe_output_stream;
   unsafe_output_stream << page_proto->html();
   std::string unsafe_article_html = unsafe_output_stream.str();
   std::string original_url = page_proto->url();
-  return ReplaceHtmlTemplateValues(title,
-                                   unsafe_article_html,
-                                   "visible",
-                                   original_url,
-                                   theme);
+  return ReplaceHtmlTemplateValues(
+      title, unsafe_article_html, "visible", original_url, theme, font_family);
 }
 
 const std::string GetUnsafeArticleHtml(
     const DistilledArticleProto* article_proto,
-    const DistilledPagePrefs::Theme theme) {
+    const DistilledPagePrefs::Theme theme,
+    const DistilledPagePrefs::FontFamily font_family) {
   DCHECK(article_proto);
   std::string title;
   std::string unsafe_article_html;
@@ -146,19 +177,19 @@ const std::string GetUnsafeArticleHtml(
     original_url = article_proto->pages(0).url();
   }
 
-  return ReplaceHtmlTemplateValues(title,
-                                   unsafe_article_html,
-                                   "hidden",
-                                   original_url,
-                                   theme);
+  return ReplaceHtmlTemplateValues(
+      title, unsafe_article_html, "hidden", original_url, theme, font_family);
 }
 
-const std::string GetErrorPageHtml(const DistilledPagePrefs::Theme theme) {
+const std::string GetErrorPageHtml(
+    const DistilledPagePrefs::Theme theme,
+    const DistilledPagePrefs::FontFamily font_family) {
   std::string title = l10n_util::GetStringUTF8(
       IDS_DOM_DISTILLER_VIEWER_FAILED_TO_FIND_ARTICLE_TITLE);
   std::string content = l10n_util::GetStringUTF8(
       IDS_DOM_DISTILLER_VIEWER_FAILED_TO_FIND_ARTICLE_CONTENT);
-  return ReplaceHtmlTemplateValues(title, content, "hidden", "", theme);
+  return ReplaceHtmlTemplateValues(
+      title, content, "hidden", "", theme, font_family);
 }
 
 const std::string GetCss() {
@@ -211,6 +242,11 @@ scoped_ptr<ViewerHandle> CreateViewRequest(
 
 const std::string GetDistilledPageThemeJs(DistilledPagePrefs::Theme theme) {
   return "useTheme('" + GetJsTheme(theme) + "');";
+}
+
+const std::string GetDistilledPageFontFamilyJs(
+    DistilledPagePrefs::FontFamily font_family) {
+  return "useFontFamily('" + GetJsFontFamily(font_family) + "');";
 }
 
 }  // namespace viewer

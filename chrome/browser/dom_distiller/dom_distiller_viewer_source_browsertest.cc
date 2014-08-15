@@ -342,9 +342,8 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, PrefChange) {
   std::string result;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       contents, kGetBodyClass, &result));
-  EXPECT_EQ("light", result);
+  EXPECT_EQ("light sans-serif", result);
 
-  // Getting DistilledPagePrefs instance.
   DistilledPagePrefs* distilled_page_prefs =
        DomDistillerServiceFactory::GetForBrowserContext(
             browser()->profile())->GetDistilledPagePrefs();
@@ -353,7 +352,13 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, PrefChange) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       contents, kGetBodyClass, &result));
-  EXPECT_EQ("dark", result);
+  EXPECT_EQ("dark sans-serif", result);
+
+  distilled_page_prefs->SetFontFamily(DistilledPagePrefs::SERIF);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(
+      content::ExecuteScriptAndExtractString(contents, kGetBodyClass, &result));
+  EXPECT_EQ("dark serif", result);
 }
 
 }  // namespace dom_distiller

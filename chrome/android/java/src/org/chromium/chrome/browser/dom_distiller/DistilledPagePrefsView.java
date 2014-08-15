@@ -20,6 +20,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.dom_distiller.core.DistilledPagePrefs;
+import org.chromium.components.dom_distiller.core.FontFamily;
 import org.chromium.components.dom_distiller.core.Theme;
 
 import java.text.NumberFormat;
@@ -142,6 +143,11 @@ public class DistilledPagePrefsView extends LinearLayout
     }
 
     // DistilledPagePrefs.Observer
+
+    @Override
+    public void onChangeFontFamily(FontFamily fontFamily) {
+         // TODO(smaslo): add GUI and front end implementation for FontFamily.
+    }
 
     /**
      * Changes which button is selected if the theme is changed in another tab.

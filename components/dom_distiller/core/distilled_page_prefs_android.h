@@ -20,8 +20,11 @@ class DistilledPagePrefsAndroid {
                             DistilledPagePrefs* distilled_page_prefs_ptr);
   virtual ~DistilledPagePrefsAndroid();
   static bool Register(JNIEnv* env);
+  void SetFontFamily(JNIEnv* env, jobject obj, jint font_family);
+  jint GetFontFamily(JNIEnv* env, jobject obj);
   void SetTheme(JNIEnv* env, jobject obj, jint theme);
   jint GetTheme(JNIEnv* env, jobject obj);
+
   void AddObserver(JNIEnv* env, jobject obj, jlong obs);
   void RemoveObserver(JNIEnv* env, jobject obj, jlong obs);
 
@@ -37,6 +40,8 @@ class DistilledPagePrefsObserverAndroid : public DistilledPagePrefs::Observer {
   virtual ~DistilledPagePrefsObserverAndroid();
 
   // DistilledPagePrefs::Observer implementation.
+  virtual void OnChangeFontFamily(
+      DistilledPagePrefs::FontFamily new_font_family) OVERRIDE;
   virtual void OnChangeTheme(DistilledPagePrefs::Theme new_theme) OVERRIDE;
 
   virtual void DestroyObserverAndroid(JNIEnv* env, jobject obj);

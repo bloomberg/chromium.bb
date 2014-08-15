@@ -153,4 +153,19 @@ TEST_F(DomDistillerViewerTest, TestGetDistilledPageThemeJsOutput) {
             0);
 }
 
+TEST_F(DomDistillerViewerTest, TestGetDistilledPageFontFamilyJsOutput) {
+  std::string kSerifJsFontFamily = "useFontFamily('serif');";
+  std::string kMonospaceJsFontFamily = "useFontFamily('monospace');";
+  std::string kSansSerifJsFontFamily = "useFontFamily('sans-serif');";
+  EXPECT_EQ(kSerifJsFontFamily.compare(viewer::GetDistilledPageFontFamilyJs(
+                DistilledPagePrefs::SERIF)),
+            0);
+  EXPECT_EQ(kMonospaceJsFontFamily.compare(viewer::GetDistilledPageFontFamilyJs(
+                DistilledPagePrefs::MONOSPACE)),
+            0);
+  EXPECT_EQ(kSansSerifJsFontFamily.compare(viewer::GetDistilledPageFontFamilyJs(
+                DistilledPagePrefs::SANS_SERIF)),
+            0);
+}
+
 }  // namespace dom_distiller

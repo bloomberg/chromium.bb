@@ -24,6 +24,7 @@ public final class DistilledPagePrefs {
      * Observer interface for observing DistilledPagePrefs changes.
      */
     public interface Observer {
+        void onChangeFontFamily(FontFamily font);
         void onChangeTheme(Theme theme);
     }
 
@@ -37,6 +38,12 @@ public final class DistilledPagePrefs {
         public DistilledPagePrefsObserverWrapper(Observer observer) {
             mNativeDistilledPagePrefsObserverAndroidPtr = nativeInitObserverAndroid();
             mDistilledPagePrefsObserver = observer;
+        }
+
+        @CalledByNative("DistilledPagePrefsObserverWrapper")
+        private void onChangeFontFamily(int fontFamily) {
+            mDistilledPagePrefsObserver.onChangeFontFamily(
+                    FontFamily.getFontFamilyForValue(fontFamily));
         }
 
         @CalledByNative("DistilledPagePrefsObserverWrapper")
@@ -90,6 +97,14 @@ public final class DistilledPagePrefs {
         return true;
     }
 
+    public void setFontFamily(FontFamily fontFamily) {
+        nativeSetFontFamily(mDistilledPagePrefsAndroid, fontFamily.asNativeEnum());
+    }
+
+    public FontFamily getFontFamily() {
+        return FontFamily.getFontFamilyForValue(nativeGetFontFamily(mDistilledPagePrefsAndroid));
+    }
+
     public void setTheme(Theme theme) {
         nativeSetTheme(mDistilledPagePrefsAndroid, theme.asNativeEnum());
     }
@@ -99,6 +114,10 @@ public final class DistilledPagePrefs {
     }
 
     private native long nativeInit(long distilledPagePrefPtr);
+
+    private native void nativeSetFontFamily(long nativeDistilledPagePrefsAndroid, int fontFamily);
+
+    private native int nativeGetFontFamily(long nativeDistilledPagePrefsAndroid);
 
     private native void nativeSetTheme(long nativeDistilledPagePrefsAndroid, int theme);
 

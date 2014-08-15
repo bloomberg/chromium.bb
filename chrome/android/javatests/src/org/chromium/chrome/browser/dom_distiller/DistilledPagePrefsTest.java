@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.components.dom_distiller.core.DistilledPagePrefs;
 import org.chromium.components.dom_distiller.core.DomDistillerService;
+import org.chromium.components.dom_distiller.core.FontFamily;
 import org.chromium.components.dom_distiller.core.Theme;
 import org.chromium.content.browser.test.util.UiUtils;
 
@@ -43,21 +44,21 @@ public class DistilledPagePrefsTest extends ChromeShellTestBase {
     @SmallTest
     @UiThreadTest
     @Feature({"DomDistiller"})
-    public void testGetAndSetPrefs() throws InterruptedException {
+    public void testGetAndSetTheme() throws InterruptedException {
         // Check the default theme.
-        assertEquals(mDistilledPagePrefs.getTheme(), Theme.LIGHT);
-        // Check that theme can be correctly set.
-        mDistilledPagePrefs.setTheme(Theme.DARK);
-        assertEquals(Theme.DARK, mDistilledPagePrefs.getTheme());
-        mDistilledPagePrefs.setTheme(Theme.LIGHT);
         assertEquals(Theme.LIGHT, mDistilledPagePrefs.getTheme());
-        mDistilledPagePrefs.setTheme(Theme.SEPIA);
+        // Check that theme can be correctly set.
+        setTheme(Theme.DARK);
+        assertEquals(Theme.DARK, mDistilledPagePrefs.getTheme());
+        setTheme(Theme.LIGHT);
+        assertEquals(Theme.LIGHT, mDistilledPagePrefs.getTheme());
+        setTheme(Theme.SEPIA);
         assertEquals(Theme.SEPIA, mDistilledPagePrefs.getTheme());
     }
 
     @SmallTest
     @Feature({"DomDistiller"})
-    public void testSingleObserver() throws InterruptedException {
+    public void testSingleObserverTheme() throws InterruptedException {
         TestingObserver testObserver = new TestingObserver();
         mDistilledPagePrefs.addObserver(testObserver);
 
@@ -72,7 +73,7 @@ public class DistilledPagePrefsTest extends ChromeShellTestBase {
 
     @SmallTest
     @Feature({"DomDistiller"})
-    public void testMultipleObservers() throws InterruptedException {
+    public void testMultipleObserversTheme() throws InterruptedException {
         TestingObserver testObserverOne = new TestingObserver();
         mDistilledPagePrefs.addObserver(testObserverOne);
         TestingObserver testObserverTwo = new TestingObserver();
@@ -93,6 +94,54 @@ public class DistilledPagePrefsTest extends ChromeShellTestBase {
     }
 
     @SmallTest
+    @UiThreadTest
+    @Feature({"DomDistiller"})
+    public void testGetAndSetFontFamily() throws InterruptedException {
+        // Check the default font family.
+        assertEquals(FontFamily.SANS_SERIF, mDistilledPagePrefs.getFontFamily());
+        // Check that font family can be correctly set.
+        setFontFamily(FontFamily.SERIF);
+        assertEquals(FontFamily.SERIF, mDistilledPagePrefs.getFontFamily());
+    }
+
+    @SmallTest
+    @Feature({"DomDistiller"})
+    public void testSingleObserverFontFamily() throws InterruptedException {
+        TestingObserver testObserver = new TestingObserver();
+        mDistilledPagePrefs.addObserver(testObserver);
+
+        setFontFamily(FontFamily.SERIF);
+        // Assumes that callback does not occur immediately.
+        assertNull(testObserver.getFontFamily());
+        UiUtils.settleDownUI(getInstrumentation());
+        // Check that testObserver's font family has been updated,
+        assertEquals(FontFamily.SERIF, testObserver.getFontFamily());
+        mDistilledPagePrefs.removeObserver(testObserver);
+    }
+
+    @SmallTest
+    @Feature({"DomDistiller"})
+    public void testMultipleObserversFontFamily() throws InterruptedException {
+        TestingObserver testObserverOne = new TestingObserver();
+        mDistilledPagePrefs.addObserver(testObserverOne);
+        TestingObserver testObserverTwo = new TestingObserver();
+        mDistilledPagePrefs.addObserver(testObserverTwo);
+
+        setFontFamily(FontFamily.MONOSPACE);
+        UiUtils.settleDownUI(getInstrumentation());
+        assertEquals(FontFamily.MONOSPACE, testObserverOne.getFontFamily());
+        assertEquals(FontFamily.MONOSPACE, testObserverTwo.getFontFamily());
+        mDistilledPagePrefs.removeObserver(testObserverOne);
+
+        setFontFamily(FontFamily.SERIF);
+        UiUtils.settleDownUI(getInstrumentation());
+        // Check that testObserverOne's font family is not changed but testObserverTwo's is.
+        assertEquals(FontFamily.MONOSPACE, testObserverOne.getFontFamily());
+        assertEquals(FontFamily.SERIF, testObserverTwo.getFontFamily());
+        mDistilledPagePrefs.removeObserver(testObserverTwo);
+    }
+
+    @SmallTest
     @Feature({"DomDistiller"})
     public void testRepeatedAddAndDeleteObserver() throws InterruptedException {
         TestingObserver test = new TestingObserver();
@@ -109,9 +158,18 @@ public class DistilledPagePrefsTest extends ChromeShellTestBase {
     }
 
     private static class TestingObserver implements DistilledPagePrefs.Observer {
+        private FontFamily mFontFamily;
         private Theme mTheme;
 
         public TestingObserver() {}
+
+        public FontFamily getFontFamily() {
+            return mFontFamily;
+        }
+
+        public void onChangeFontFamily(FontFamily font) {
+            mFontFamily = font;
+        }
 
         public Theme getTheme() {
             return mTheme;
@@ -120,6 +178,14 @@ public class DistilledPagePrefsTest extends ChromeShellTestBase {
         public void onChangeTheme(Theme theme) {
             mTheme = theme;
         }
+    }
+
+    private void setFontFamily(final FontFamily font) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            public void run() {
+                mDistilledPagePrefs.setFontFamily(font);
+            }
+        });
     }
 
     private void setTheme(final Theme theme) {

@@ -14,6 +14,8 @@
 namespace {
 
 // Path to the integer corresponding to user's preference theme.
+const char kFontPref[] = "dom_distiller.font_family";
+// Path to the integer corresponding to user's preference font family.
 const char kThemePref[] = "dom_distiller.theme";
 }
 
@@ -33,6 +35,31 @@ void DistilledPagePrefs::RegisterProfilePrefs(
       kThemePref,
       DistilledPagePrefs::LIGHT,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterIntegerPref(
+      kFontPref,
+      DistilledPagePrefs::SANS_SERIF,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+}
+
+void DistilledPagePrefs::SetFontFamily(
+    DistilledPagePrefs::FontFamily new_font_family) {
+  pref_service_->SetInteger(kFontPref, new_font_family);
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&DistilledPagePrefs::NotifyOnChangeFontFamily,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 new_font_family));
+}
+
+DistilledPagePrefs::FontFamily DistilledPagePrefs::GetFontFamily() {
+  int font_family = pref_service_->GetInteger(kFontPref);
+  if (font_family < 0 || font_family >= DistilledPagePrefs::FONT_FAMILY_COUNT) {
+    // Persisted data was incorrect, trying to clean it up by storing the
+    // default.
+    SetFontFamily(DistilledPagePrefs::SANS_SERIF);
+    return DistilledPagePrefs::SANS_SERIF;
+  }
+  return static_cast<FontFamily>(font_family);
 }
 
 void DistilledPagePrefs::SetTheme(DistilledPagePrefs::Theme new_theme) {
@@ -52,7 +79,7 @@ DistilledPagePrefs::Theme DistilledPagePrefs::GetTheme() {
     SetTheme(DistilledPagePrefs::LIGHT);
     return DistilledPagePrefs::LIGHT;
   }
-  return (Theme) theme;
+  return static_cast<Theme>(theme);
 }
 
 void DistilledPagePrefs::AddObserver(Observer* obs) {
@@ -61,6 +88,11 @@ void DistilledPagePrefs::AddObserver(Observer* obs) {
 
 void DistilledPagePrefs::RemoveObserver(Observer* obs) {
   observers_.RemoveObserver(obs);
+}
+
+void DistilledPagePrefs::NotifyOnChangeFontFamily(
+    DistilledPagePrefs::FontFamily new_font_family) {
+  FOR_EACH_OBSERVER(Observer, observers_, OnChangeFontFamily(new_font_family));
 }
 
 void DistilledPagePrefs::NotifyOnChangeTheme(

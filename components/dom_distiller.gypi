@@ -83,6 +83,7 @@
             'dom_distiller/core/dom_distiller_store.h',
             'dom_distiller/core/feedback_reporter.cc',
             'dom_distiller/core/feedback_reporter.h',
+            'dom_distiller/core/font_family_list.h',
             'dom_distiller/core/task_tracker.cc',
             'dom_distiller/core/task_tracker.h',
             'dom_distiller/core/theme_list.h',
@@ -176,6 +177,7 @@
               'target_name': 'dom_distiller_core_java',
               'type': 'none',
               'dependencies': [
+                'dom_distiller_core_font_family_java',
                 'dom_distiller_core_theme_java',
                 '../base/base.gyp:base',
               ],
@@ -183,6 +185,18 @@
                 'java_in_dir': 'dom_distiller/android/java',
               },
               'includes': [ '../build/java.gypi' ],
+            },
+            {
+              'target_name': 'dom_distiller_core_font_family_java',
+              'type': 'none',
+              'sources': [
+                'dom_distiller/android/java/src/org/chromium/components/dom_distiller/core/FontFamily.template',
+              ],
+              'variables': {
+                'package_name': 'org/chromium/components/dom_distiller/core',
+                'template_deps': ['dom_distiller/core/font_family_list.h'],
+              },
+              'includes': [ '../build/android/java_cpp_template.gypi' ],
             },
             {
               'target_name': 'dom_distiller_core_jni_headers',

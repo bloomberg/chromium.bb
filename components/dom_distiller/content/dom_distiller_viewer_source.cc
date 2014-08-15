@@ -73,6 +73,8 @@ class DomDistillerViewerSource::RequestViewerHandle
   void Cancel();
 
   // DistilledPagePrefs::Observer implementation:
+  virtual void OnChangeFontFamily(
+      DistilledPagePrefs::FontFamily new_font_family) OVERRIDE;
   virtual void OnChangeTheme(DistilledPagePrefs::Theme new_theme) OVERRIDE;
 
   // The handle to the view request towards the DomDistillerService. It
@@ -187,8 +189,11 @@ void DomDistillerViewerSource::RequestViewerHandle::OnArticleReady(
     const DistilledArticleProto* article_proto) {
   if (page_count_ == 0) {
     // This is a single-page article.
-    std::string unsafe_page_html = viewer::GetUnsafeArticleHtml(
-        article_proto, distilled_page_prefs_->GetTheme());
+    std::string unsafe_page_html =
+        viewer::GetUnsafeArticleHtml(
+            article_proto,
+            distilled_page_prefs_->GetTheme(),
+            distilled_page_prefs_->GetFontFamily());
     callback_.Run(base::RefCountedString::TakeString(&unsafe_page_html));
   } else if (page_count_ == article_proto->pages_size()) {
     // We may still be showing the "Loading" indicator.
@@ -217,7 +222,9 @@ void DomDistillerViewerSource::RequestViewerHandle::OnArticleUpdated(
     if (page_count_ == 0) {
       // This is the first page, so send Viewer page scaffolding too.
       std::string unsafe_page_html = viewer::GetUnsafePartialArticleHtml(
-          &page, distilled_page_prefs_->GetTheme());
+          &page,
+          distilled_page_prefs_->GetTheme(),
+          distilled_page_prefs_->GetFontFamily());
       callback_.Run(base::RefCountedString::TakeString(&unsafe_page_html));
     } else {
       SendJavaScript(
@@ -234,6 +241,11 @@ void DomDistillerViewerSource::RequestViewerHandle::TakeViewerHandle(
 void DomDistillerViewerSource::RequestViewerHandle::OnChangeTheme(
     DistilledPagePrefs::Theme new_theme) {
   SendJavaScript(viewer::GetDistilledPageThemeJs(new_theme));
+}
+
+void DomDistillerViewerSource::RequestViewerHandle::OnChangeFontFamily(
+    DistilledPagePrefs::FontFamily new_font) {
+  SendJavaScript(viewer::GetDistilledPageFontFamilyJs(new_font));
 }
 
 DomDistillerViewerSource::DomDistillerViewerSource(
@@ -300,7 +312,8 @@ void DomDistillerViewerSource::StartDataRequest(
     delete request_viewer_handle;
 
     std::string error_page_html = viewer::GetErrorPageHtml(
-        dom_distiller_service_->GetDistilledPagePrefs()->GetTheme());
+        dom_distiller_service_->GetDistilledPagePrefs()->GetTheme(),
+        dom_distiller_service_->GetDistilledPagePrefs()->GetFontFamily());
     callback.Run(base::RefCountedString::TakeString(&error_page_html));
   }
 };
