@@ -67,12 +67,6 @@ RUNNING TEST: extension_testAPI
             removeListener : <function>
         }
     }
-    timeline : {
-        onEventRecorded : {
-            addListener : <function>
-            removeListener : <function>
-        }
-    }
 }
 All tests done.
 
