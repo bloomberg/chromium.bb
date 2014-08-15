@@ -34,7 +34,8 @@ class ProfileManager : public ::ProfileManagerWithoutInit {
 TestingProfileManager::TestingProfileManager(TestingBrowserProcess* process)
     : called_set_up_(false),
       browser_process_(process),
-      local_state_(process) {
+      local_state_(process),
+      profile_manager_(NULL) {
 }
 
 TestingProfileManager::~TestingProfileManager() {
