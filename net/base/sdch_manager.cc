@@ -22,7 +22,7 @@ namespace net {
 #if defined(OS_ANDROID) || defined(OS_IOS)
 // static
 const size_t SdchManager::kMaxDictionaryCount = 1;
-const size_t SdchManager::kMaxDictionarySize = 150 * 1000;
+const size_t SdchManager::kMaxDictionarySize = 500 * 1000;
 #else
 // static
 const size_t SdchManager::kMaxDictionaryCount = 20;
