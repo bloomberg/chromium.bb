@@ -32,7 +32,9 @@ SearchResult::SearchResult()
       percent_downloaded_(0) {
 }
 
-SearchResult::~SearchResult() {}
+SearchResult::~SearchResult() {
+  FOR_EACH_OBSERVER(SearchResultObserver, observers_, OnResultDestroying());
+}
 
 void SearchResult::SetIcon(const gfx::ImageSkia& icon) {
   icon_ = icon;

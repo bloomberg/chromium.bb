@@ -10,7 +10,6 @@
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model_observer.h"
 #include "ui/app_list/search_box_model.h"
-#include "ui/app_list/search_result.h"
 
 namespace app_list {
 
@@ -283,6 +282,22 @@ void AppListModel::SetFoldersEnabled(bool folders_enabled) {
   // Delete folders.
   for (size_t i = 0; i < folder_ids.size(); ++i)
     DeleteItem(folder_ids[i]);
+}
+
+std::vector<SearchResult*> AppListModel::FilterSearchResultsByDisplayType(
+    SearchResults* results,
+    SearchResult::DisplayType display_type,
+    size_t max_results) {
+  std::vector<SearchResult*> matches;
+  for (size_t i = 0; i < results->item_count(); ++i) {
+    SearchResult* item = results->GetItemAt(i);
+    if (item->display_type() == display_type) {
+      matches.push_back(item);
+      if (matches.size() == max_results)
+        break;
+    }
+  }
+  return matches;
 }
 
 // Private methods

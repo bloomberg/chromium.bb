@@ -152,6 +152,8 @@ void AppListMainView::AddContentsViews() {
   contents_view_->SetPaintToLayer(true);
   contents_view_->SetFillsBoundsOpaquely(false);
   contents_view_->layer()->SetMasksToBounds(true);
+
+  delegate_->StartSearch();
 }
 
 AppListMainView::~AppListMainView() {
@@ -317,10 +319,7 @@ void AppListMainView::QueryChanged(SearchBoxView* sender) {
   contents_view_->ShowSearchResults(should_show_search);
   UpdateSearchBoxVisibility();
 
-  if (should_show_search)
-    delegate_->StartSearch();
-  else
-    delegate_->StopSearch();
+  delegate_->StartSearch();
 }
 
 void AppListMainView::OnResultInstalled(SearchResult* result) {

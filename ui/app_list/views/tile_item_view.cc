@@ -9,6 +9,7 @@
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_view_delegate.h"
+#include "ui/app_list/search_result.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_analysis.h"
@@ -92,7 +93,7 @@ TileItemView::TileItemView()
   title_->SetFontList(rb.GetFontList(kItemTextFontStyle));
   title_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
 
-  // When |item_| is NULL, the tile is invisible. Calling SetAppListItem with a
+  // When |item_| is NULL, the tile is invisible. Calling SetSearchResult with a
   // non-NULL item makes the tile visible.
   SetVisible(false);
 
@@ -101,29 +102,32 @@ TileItemView::TileItemView()
 }
 
 TileItemView::~TileItemView() {
+  if (item_)
+    item_->RemoveObserver(this);
 }
 
-void TileItemView::SetAppListItem(AppListItem* item) {
-  // TODO(calamity): This will not update if the contents of |item_| have
-  // changed since it was last assigned. Add an observer to refresh when the
-  // item changes.
-  if (item == item_)
-    return;
+void TileItemView::SetSearchResult(SearchResult* item) {
+  SetVisible(item != NULL);
+
+  SearchResult* old_item = item_;
+  if (old_item)
+    old_item->RemoveObserver(this);
 
   item_ = item;
-  if (!item) {
-    SetVisible(false);
-    icon_->SetImage(NULL);
-    title_->SetText(base::string16());
+
+  if (!item)
     return;
+
+  item_->AddObserver(this);
+
+  title_->SetText(item_->title());
+
+  // Only refresh the icon if it's different from the old one. This prevents
+  // flickering.
+  if (old_item == NULL ||
+      !item->icon().BackedBySameObjectAs(old_item->icon())) {
+    OnIconChanged();
   }
-
-  SetVisible(true);
-  icon_->SetImage(item_->icon());
-  title_->SetText(base::UTF8ToUTF16(item_->name()));
-
-  background_->set_strip_color(
-      color_utils::CalculateKMeanColorOfBitmap(*item_->icon().bitmap()));
 }
 
 gfx::Size TileItemView::GetPreferredSize() const {
@@ -132,7 +136,20 @@ gfx::Size TileItemView::GetPreferredSize() const {
 
 void TileItemView::ButtonPressed(views::Button* sender,
                                  const ui::Event& event) {
-  item_->Activate(event.flags());
+  item_->Open(event.flags());
+}
+
+void TileItemView::OnIconChanged() {
+  icon_->SetImage(item_->icon());
+  background_->set_strip_color(
+      color_utils::CalculateKMeanColorOfBitmap(*item_->icon().bitmap()));
+  SchedulePaint();
+}
+
+void TileItemView::OnResultDestroying() {
+  if (item_)
+    item_->RemoveObserver(this);
+  item_ = NULL;
 }
 
 }  // namespace app_list

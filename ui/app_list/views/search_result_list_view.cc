@@ -12,6 +12,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate.h"
+#include "ui/app_list/search_result.h"
 #include "ui/app_list/views/search_result_list_view_delegate.h"
 #include "ui/app_list/views/search_result_view.h"
 #include "ui/events/event.h"
@@ -163,14 +164,19 @@ SearchResultView* SearchResultListView::GetResultViewAt(int index) {
 }
 
 void SearchResultListView::Update() {
-  last_visible_index_ = 0;
+  std::vector<SearchResult*> display_results =
+      AppListModel::FilterSearchResultsByDisplayType(
+          results_,
+          SearchResult::DISPLAY_LIST,
+          results_container_->child_count());
+  last_visible_index_ = display_results.size() - 1;
+
   for (size_t i = 0; i < static_cast<size_t>(results_container_->child_count());
        ++i) {
     SearchResultView* result_view = GetResultViewAt(i);
-    if (i < results_->item_count()) {
-      result_view->SetResult(results_->GetItemAt(i));
+    if (i < display_results.size()) {
+      result_view->SetResult(display_results[i]);
       result_view->SetVisible(true);
-      last_visible_index_ = i;
     } else {
       result_view->SetResult(NULL);
       result_view->SetVisible(false);

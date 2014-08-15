@@ -12,22 +12,25 @@ namespace app_list {
 class APP_LIST_EXPORT SearchResultObserver {
  public:
   // Invoked when the SearchResult's icon has changed.
-  virtual void OnIconChanged() = 0;
+  virtual void OnIconChanged() {}
 
   // Invoked when the SearchResult's actions have changed.
-  virtual void OnActionsChanged() = 0;
+  virtual void OnActionsChanged() {}
 
   // Invoked when the SearchResult's is_installing flag has changed.
-  virtual void OnIsInstallingChanged() = 0;
+  virtual void OnIsInstallingChanged() {}
 
   // Invoked when the download percentage has changed.
-  virtual void OnPercentDownloadedChanged() = 0;
+  virtual void OnPercentDownloadedChanged() {}
 
   // Invoked when the item represented by the SearchResult is installed.
-  virtual void OnItemInstalled() = 0;
+  virtual void OnItemInstalled() {}
 
   // Invoked when the item represented by the SearchResult is uninstalled.
-  virtual void OnItemUninstalled() = 0;
+  virtual void OnItemUninstalled() {}
+
+  // Invoked just before the SearchResult is destroyed.
+  virtual void OnResultDestroying() {}
 
  protected:
   virtual ~SearchResultObserver() {}

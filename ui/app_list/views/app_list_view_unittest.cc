@@ -61,6 +61,15 @@ size_t GetVisibleTileItemViews(const std::vector<TileItemView*>& tiles) {
 // Choose a set that is 3 regular app list pages and 2 landscape app list pages.
 const int kInitialItems = 34;
 
+class TestTileSearchResult : public SearchResult {
+ public:
+  TestTileSearchResult() { set_display_type(DISPLAY_TILE); }
+  virtual ~TestTileSearchResult() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestTileSearchResult);
+};
+
 // Allows the same tests to run with different contexts: either an Ash-style
 // root window or a desktop window tree host.
 class AppListViewTestContext {
@@ -313,7 +322,6 @@ void AppListViewTestContext::RunStartPageTest() {
     ShowContentsViewPageAndVerify(contents_view->GetPageIndexForNamedPage(
         ContentsView::NAMED_PAGE_START));
     EXPECT_FALSE(main_view->search_box_view()->visible());
-    EXPECT_EQ(3u, GetVisibleTileItemViews(start_page_view->tile_views()));
 
     gfx::Size view_size(view_->GetPreferredSize());
     ShowContentsViewPageAndVerify(
@@ -325,10 +333,12 @@ void AppListViewTestContext::RunStartPageTest() {
     EXPECT_EQ(view_size.ToString(), view_->GetPreferredSize().ToString());
 
     // Check tiles hide and show on deletion and addition.
-    model->CreateAndAddItem("Test app");
-    EXPECT_EQ(4u, GetVisibleTileItemViews(start_page_view->tile_views()));
-    model->DeleteItem(model->GetItemName(0));
-    EXPECT_EQ(3u, GetVisibleTileItemViews(start_page_view->tile_views()));
+    model->results()->Add(new TestTileSearchResult());
+    start_page_view->UpdateForTesting();
+    EXPECT_EQ(1u, GetVisibleTileItemViews(start_page_view->tile_views()));
+    model->results()->RemoveAll();
+    start_page_view->UpdateForTesting();
+    EXPECT_EQ(0u, GetVisibleTileItemViews(start_page_view->tile_views()));
   } else {
     EXPECT_EQ(NULL, start_page_view);
   }
@@ -410,21 +420,25 @@ void AppListViewTestContext::RunProfileChangeTest() {
     EXPECT_EQ(view_->app_list_main_view()->contents_view(),
               contents_switcher_view->contents_view());
     EXPECT_NO_FATAL_FAILURE(CheckView(start_page_view));
-    EXPECT_EQ(1u, GetVisibleTileItemViews(start_page_view->tile_views()));
   } else {
     EXPECT_EQ(NULL, contents_switcher_view);
     EXPECT_EQ(NULL, start_page_view);
   }
 
   // New model updates should be processed by the start page view.
-  delegate_->GetTestModel()->CreateAndAddItem("Test App");
-  if (test_type_ == EXPERIMENTAL)
-    EXPECT_EQ(2u, GetVisibleTileItemViews(start_page_view->tile_views()));
+  delegate_->GetTestModel()->results()->Add(new TestTileSearchResult());
+  if (test_type_ == EXPERIMENTAL) {
+    start_page_view->UpdateForTesting();
+    EXPECT_EQ(1u, GetVisibleTileItemViews(start_page_view->tile_views()));
+  }
 
   // Old model updates should be ignored.
-  original_test_model->CreateAndAddItem("Test App 2");
-  if (test_type_ == EXPERIMENTAL)
-    EXPECT_EQ(2u, GetVisibleTileItemViews(start_page_view->tile_views()));
+  original_test_model->results()->Add(new TestTileSearchResult());
+  original_test_model->results()->Add(new TestTileSearchResult());
+  if (test_type_ == EXPERIMENTAL) {
+    start_page_view->UpdateForTesting();
+    EXPECT_EQ(1u, GetVisibleTileItemViews(start_page_view->tile_views()));
+  }
 
   Close();
 }
