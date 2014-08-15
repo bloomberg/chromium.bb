@@ -304,7 +304,7 @@ void VideoCaptureDeviceWin::AllocateAndStart(
   int count = 0, size = 0;
   hr = stream_config->GetNumberOfCapabilities(&count, &size);
   if (FAILED(hr)) {
-    DVLOG(2) << "Failed to GetNumberOfCapabilities";
+    SetErrorState("Failed to GetNumberOfCapabilities");
     return;
   }
 
