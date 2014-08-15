@@ -57,10 +57,13 @@ class CC_EXPORT PictureLayerTiling {
  public:
   enum EvictionCategory {
     EVENTUALLY,
+    EVENTUALLY_AND_REQUIRED_FOR_ACTIVATION,
     SOON,
+    SOON_AND_REQUIRED_FOR_ACTIVATION,
     NOW,
     NOW_AND_REQUIRED_FOR_ACTIVATION
   };
+
   class CC_EXPORT TilingRasterTileIterator {
    public:
     TilingRasterTileIterator();
@@ -336,10 +339,16 @@ class CC_EXPORT PictureLayerTiling {
   bool has_soon_border_rect_tiles_;
   bool has_eventually_rect_tiles_;
 
-  std::vector<Tile*> eventually_eviction_tiles_;
-  std::vector<Tile*> soon_eviction_tiles_;
-  std::vector<Tile*> now_eviction_tiles_;
-  std::vector<Tile*> now_and_required_for_activation_eviction_tiles_;
+  // TODO(reveman): Remove this in favour of an array of eviction_tiles_ when we
+  // change all enums to have a consistent way of getting the count/last
+  // element.
+  std::vector<Tile*> eviction_tiles_now_;
+  std::vector<Tile*> eviction_tiles_now_and_required_for_activation_;
+  std::vector<Tile*> eviction_tiles_soon_;
+  std::vector<Tile*> eviction_tiles_soon_and_required_for_activation_;
+  std::vector<Tile*> eviction_tiles_eventually_;
+  std::vector<Tile*> eviction_tiles_eventually_and_required_for_activation_;
+
   bool eviction_tiles_cache_valid_;
   TreePriority eviction_cache_tree_priority_;
 

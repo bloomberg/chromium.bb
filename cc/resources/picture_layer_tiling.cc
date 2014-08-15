@@ -36,14 +36,8 @@ class TileEvictionOrder {
     const TilePriority& b_priority =
         b->priority_for_tree_priority(tree_priority_);
 
-    // Evict a before b if their priority bins differ and a has the higher
-    // priority bin.
-    if (a_priority.priority_bin != b_priority.priority_bin)
-      return a_priority.priority_bin > b_priority.priority_bin;
-
-    // Or if a is not required and b is required.
-    if (a->required_for_activation() != b->required_for_activation())
-      return b->required_for_activation();
+    DCHECK(a_priority.priority_bin == b_priority.priority_bin);
+    DCHECK(a->required_for_activation() == b->required_for_activation());
 
     // Or if a is occluded and b is unoccluded.
     bool a_is_occluded = a->is_occluded_for_tree_priority(tree_priority_);
@@ -847,10 +841,12 @@ void PictureLayerTiling::UpdateEvictionCacheIfNeeded(
       eviction_cache_tree_priority_ == tree_priority)
     return;
 
-  eventually_eviction_tiles_.clear();
-  soon_eviction_tiles_.clear();
-  now_eviction_tiles_.clear();
-  now_and_required_for_activation_eviction_tiles_.clear();
+  eviction_tiles_now_.clear();
+  eviction_tiles_now_and_required_for_activation_.clear();
+  eviction_tiles_soon_.clear();
+  eviction_tiles_soon_and_required_for_activation_.clear();
+  eviction_tiles_eventually_.clear();
+  eviction_tiles_eventually_and_required_for_activation_.clear();
 
   for (TileMap::iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
     // TODO(vmpstr): This should update the priority if UpdateTilePriorities
@@ -860,16 +856,23 @@ void PictureLayerTiling::UpdateEvictionCacheIfNeeded(
         tile->priority_for_tree_priority(tree_priority);
     switch (priority.priority_bin) {
       case TilePriority::EVENTUALLY:
-        eventually_eviction_tiles_.push_back(tile);
+        if (tile->required_for_activation())
+          eviction_tiles_eventually_and_required_for_activation_.push_back(
+              tile);
+        else
+          eviction_tiles_eventually_.push_back(tile);
         break;
       case TilePriority::SOON:
-        soon_eviction_tiles_.push_back(tile);
+        if (tile->required_for_activation())
+          eviction_tiles_soon_and_required_for_activation_.push_back(tile);
+        else
+          eviction_tiles_soon_.push_back(tile);
         break;
       case TilePriority::NOW:
         if (tile->required_for_activation())
-          now_and_required_for_activation_eviction_tiles_.push_back(tile);
+          eviction_tiles_now_and_required_for_activation_.push_back(tile);
         else
-          now_eviction_tiles_.push_back(tile);
+          eviction_tiles_now_.push_back(tile);
         break;
     }
   }
@@ -877,14 +880,20 @@ void PictureLayerTiling::UpdateEvictionCacheIfNeeded(
   // TODO(vmpstr): Do this lazily. One option is to have a "sorted" flag that
   // can be updated for each of the queues.
   TileEvictionOrder sort_order(tree_priority);
-  std::sort(eventually_eviction_tiles_.begin(),
-            eventually_eviction_tiles_.end(),
+  std::sort(eviction_tiles_now_.begin(), eviction_tiles_now_.end(), sort_order);
+  std::sort(eviction_tiles_now_and_required_for_activation_.begin(),
+            eviction_tiles_now_and_required_for_activation_.end(),
             sort_order);
   std::sort(
-      soon_eviction_tiles_.begin(), soon_eviction_tiles_.end(), sort_order);
-  std::sort(now_eviction_tiles_.begin(), now_eviction_tiles_.end(), sort_order);
-  std::sort(now_and_required_for_activation_eviction_tiles_.begin(),
-            now_and_required_for_activation_eviction_tiles_.end(),
+      eviction_tiles_soon_.begin(), eviction_tiles_soon_.end(), sort_order);
+  std::sort(eviction_tiles_soon_and_required_for_activation_.begin(),
+            eviction_tiles_soon_and_required_for_activation_.end(),
+            sort_order);
+  std::sort(eviction_tiles_eventually_.begin(),
+            eviction_tiles_eventually_.end(),
+            sort_order);
+  std::sort(eviction_tiles_eventually_and_required_for_activation_.begin(),
+            eviction_tiles_eventually_and_required_for_activation_.end(),
             sort_order);
 
   eviction_tiles_cache_valid_ = true;
@@ -897,16 +906,20 @@ const std::vector<Tile*>* PictureLayerTiling::GetEvictionTiles(
   UpdateEvictionCacheIfNeeded(tree_priority);
   switch (category) {
     case EVENTUALLY:
-      return &eventually_eviction_tiles_;
+      return &eviction_tiles_eventually_;
+    case EVENTUALLY_AND_REQUIRED_FOR_ACTIVATION:
+      return &eviction_tiles_eventually_and_required_for_activation_;
     case SOON:
-      return &soon_eviction_tiles_;
+      return &eviction_tiles_soon_;
+    case SOON_AND_REQUIRED_FOR_ACTIVATION:
+      return &eviction_tiles_soon_and_required_for_activation_;
     case NOW:
-      return &now_eviction_tiles_;
+      return &eviction_tiles_now_;
     case NOW_AND_REQUIRED_FOR_ACTIVATION:
-      return &now_and_required_for_activation_eviction_tiles_;
+      return &eviction_tiles_now_and_required_for_activation_;
   }
   NOTREACHED();
-  return &eventually_eviction_tiles_;
+  return &eviction_tiles_eventually_;
 }
 
 PictureLayerTiling::TilingRasterTileIterator::TilingRasterTileIterator()

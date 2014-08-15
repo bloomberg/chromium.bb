@@ -898,6 +898,8 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
   tile_manager()->InitializeTilesWithResourcesForTesting(
       std::vector<Tile*>(all_tiles.begin(), all_tiles.end()));
 
+  pending_layer_->MarkVisibleResourcesAsRequired();
+
   Tile* last_tile = NULL;
   smoothness_tiles.clear();
   tile_count = 0;
@@ -916,8 +918,13 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
               tile->priority(ACTIVE_TREE).priority_bin);
     if (last_tile->priority(ACTIVE_TREE).priority_bin ==
         tile->priority(ACTIVE_TREE).priority_bin) {
-      EXPECT_GE(last_tile->priority(ACTIVE_TREE).distance_to_visible,
-                tile->priority(ACTIVE_TREE).distance_to_visible);
+      EXPECT_LE(last_tile->required_for_activation(),
+                tile->required_for_activation());
+      if (last_tile->required_for_activation() ==
+          tile->required_for_activation()) {
+        EXPECT_GE(last_tile->priority(ACTIVE_TREE).distance_to_visible,
+                  tile->priority(ACTIVE_TREE).distance_to_visible);
+      }
     }
 
     last_tile = tile;
@@ -945,8 +952,13 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
               tile->priority(PENDING_TREE).priority_bin);
     if (last_tile->priority(PENDING_TREE).priority_bin ==
         tile->priority(PENDING_TREE).priority_bin) {
-      EXPECT_GE(last_tile->priority(PENDING_TREE).distance_to_visible,
-                tile->priority(PENDING_TREE).distance_to_visible);
+      EXPECT_LE(last_tile->required_for_activation(),
+                tile->required_for_activation());
+      if (last_tile->required_for_activation() ==
+          tile->required_for_activation()) {
+        EXPECT_GE(last_tile->priority(PENDING_TREE).distance_to_visible,
+                  tile->priority(PENDING_TREE).distance_to_visible);
+      }
     }
 
     last_tile = tile;

@@ -1617,9 +1617,16 @@ PictureLayerImpl::LayerEvictionTileIterator::operator bool() const {
 bool PictureLayerImpl::LayerEvictionTileIterator::AdvanceToNextCategory() {
   switch (current_category_) {
     case PictureLayerTiling::EVENTUALLY:
+      current_category_ =
+          PictureLayerTiling::EVENTUALLY_AND_REQUIRED_FOR_ACTIVATION;
+      return true;
+    case PictureLayerTiling::EVENTUALLY_AND_REQUIRED_FOR_ACTIVATION:
       current_category_ = PictureLayerTiling::SOON;
       return true;
     case PictureLayerTiling::SOON:
+      current_category_ = PictureLayerTiling::SOON_AND_REQUIRED_FOR_ACTIVATION;
+      return true;
+    case PictureLayerTiling::SOON_AND_REQUIRED_FOR_ACTIVATION:
       current_category_ = PictureLayerTiling::NOW;
       return true;
     case PictureLayerTiling::NOW:
