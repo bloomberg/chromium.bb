@@ -1035,6 +1035,8 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
       manage_accounts_link_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
       layout->AddView(manage_accounts_link_);
     } else {
+      // Add a small padding between the email button and the profile name.
+      layout->StartRowWithPadding(1, 0, 0, 2);
       // Badge the email address if there's an authentication error.
       if (HasAuthError(browser_->profile())) {
         const gfx::ImageSkia warning_image = *rb->GetImageNamed(
@@ -1052,6 +1054,7 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
       } else {
         views::Label* email_label = new views::Label(avatar_item.sync_state);
         email_label->SetElideBehavior(gfx::ELIDE_EMAIL);
+        email_label->SetEnabled(false);
         layout->AddView(email_label);
       }
     }

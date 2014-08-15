@@ -1376,11 +1376,10 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                            frameOrigin:rect.origin
                                 action:linkSelector];
     } else {
-      NSString* email = base::SysUTF16ToNSString(item.sync_state);
+      link = [self linkButtonWithTitle:base::SysUTF16ToNSString(item.sync_state)
+                           frameOrigin:rect.origin
+                                action:nil];
       if (HasAuthError(browser_->profile())) {
-        link = [self linkButtonWithTitle:email
-                             frameOrigin:rect.origin
-                                  action:nil];
         [link setImage:ui::ResourceBundle::GetSharedInstance().
             GetNativeImageNamed(IDR_ICON_PROFILES_ACCOUNT_BUTTON_ERROR).
             ToNSImage()];
@@ -1389,19 +1388,14 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
         [link setAction:@selector(showAccountReauthenticationView:)];
         [link setTag:kPrimaryProfileTag];
       } else {
-        NSTextField* label = BuildLabel(email, rect.origin, nil);
-        [label setAlignment:NSCenterTextAlignment];
-        [label setFrame:rect];
-        [container addSubview:label];
+        [link setEnabled:NO];
       }
     }
     // -linkButtonWithTitle sizeToFit's the link, so re-stretch it so that it
     // can be centered correctly in the view.
-    if (link) {
-      [link setAlignment:NSCenterTextAlignment];
-      [link setFrame:rect];
-      [container addSubview:link];
-    }
+    [link setAlignment:NSCenterTextAlignment];
+    [link setFrame:rect];
+    [container addSubview:link];
     [container setFrameSize:rect.size];
   } else {
     rect.size.height = kBlueButtonHeight;

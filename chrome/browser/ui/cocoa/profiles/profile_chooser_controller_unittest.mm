@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/profiles/profile_chooser_controller.h"
 
 #include "base/command_line.h"
+#import "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
@@ -113,7 +114,7 @@ TEST_F(ProfileChooserControllerTest, InitialLayoutWithNewMenu) {
 
   // There should be an incognito button.
   NSButton* incognitoButton =
-      static_cast<NSButton*>([buttonSubviews objectAtIndex:0]);
+      base::mac::ObjCCast<NSButton>([buttonSubviews objectAtIndex:0]);
   EXPECT_EQ(@selector(goIncognito:), [incognitoButton action]);
   EXPECT_EQ(controller(), [incognitoButton target]);
 
@@ -122,7 +123,7 @@ TEST_F(ProfileChooserControllerTest, InitialLayoutWithNewMenu) {
 
   // There should be a user switcher button.
   NSButton* userSwitcherButton =
-      static_cast<NSButton*>([buttonSubviews objectAtIndex:2]);
+      base::mac::ObjCCast<NSButton>([buttonSubviews objectAtIndex:2]);
   EXPECT_EQ(@selector(showUserManager:), [userSwitcherButton action]);
   EXPECT_EQ(controller(), [userSwitcherButton target]);
 
@@ -142,17 +143,18 @@ TEST_F(ProfileChooserControllerTest, InitialLayoutWithNewMenu) {
   NSView* activeProfileName = [activeCardSubviews objectAtIndex:1];
   EXPECT_TRUE([activeProfileName isKindOfClass:[NSButton class]]);
   EXPECT_EQ(menu()->GetItemAt(0).name, base::SysNSStringToUTF16(
-      [static_cast<NSButton*>(activeProfileName) title]));
+      [base::mac::ObjCCast<NSButton>(activeProfileName) title]));
 
   // Profile links. This is a local profile, so there should be a signin button
   // and a signin promo.
   NSArray* linksSubviews = [[activeCardSubviews objectAtIndex:0] subviews];
   ASSERT_EQ(2U, [linksSubviews count]);
-  NSButton* link = static_cast<NSButton*>([linksSubviews objectAtIndex:0]);
+  NSButton* link = base::mac::ObjCCast<NSButton>(
+      [linksSubviews objectAtIndex:0]);
   EXPECT_EQ(@selector(showInlineSigninPage:), [link action]);
   EXPECT_EQ(controller(), [link target]);
 
-  NSTextField* promo = static_cast<NSTextField*>(
+  NSTextField* promo = base::mac::ObjCCast<NSTextField>(
       [linksSubviews objectAtIndex:1]);
   EXPECT_GT([[promo stringValue] length], 0U);
 }
@@ -189,7 +191,8 @@ TEST_F(ProfileChooserControllerTest, InitialLayoutWithFastUserSwitcher) {
     // Each profile button has a separator.
     EXPECT_TRUE([[subviews objectAtIndex:i] isKindOfClass:[NSBox class]]);
 
-    NSButton* button = static_cast<NSButton*>([subviews objectAtIndex:i-1]);
+    NSButton* button = base::mac::ObjCCast<NSButton>(
+        [subviews objectAtIndex:i-1]);
     EXPECT_EQ(menu()->GetItemAt(profileIndex).name,
               base::SysNSStringToUTF16([button title]));
     EXPECT_EQ(profileIndex, [button tag]);
@@ -211,7 +214,7 @@ TEST_F(ProfileChooserControllerTest, InitialLayoutWithFastUserSwitcher) {
   NSView* activeProfileName = [activeCardSubviews objectAtIndex:1];
   EXPECT_TRUE([activeProfileName isKindOfClass:[NSButton class]]);
   EXPECT_EQ(menu()->GetItemAt(0).name, base::SysNSStringToUTF16(
-      [static_cast<NSButton*>(activeProfileName) title]));
+      [base::mac::ObjCCast<NSButton>(activeProfileName) title]));
 
   // Profile links. This is a local profile, so there should be a signin button
   // and a signin promo. These are also tested in InitialLayoutWithNewMenu.
@@ -256,7 +259,8 @@ TEST_F(ProfileChooserControllerTest, OtherProfilesSortedAlphabetically) {
   int sortedNameIndex = 0;
   for (int i = 9; i >= 2; i -= 2) {
     // The item at index i is the separator.
-    NSButton* button = static_cast<NSButton*>([subviews objectAtIndex:i-1]);
+    NSButton* button = base::mac::ObjCCast<NSButton>(
+        [subviews objectAtIndex:i-1]);
     EXPECT_TRUE(
         [[button title] isEqualToString:sortedNames[sortedNameIndex++]]);
   }
@@ -275,12 +279,13 @@ TEST_F(ProfileChooserControllerTest,
   ASSERT_EQ(2U, [activeCardLinks count]);
 
   // There should be a sign in button.
-  NSButton* link = static_cast<NSButton*>([activeCardLinks objectAtIndex:0]);
+  NSButton* link = base::mac::ObjCCast<NSButton>(
+      [activeCardLinks objectAtIndex:0]);
   EXPECT_EQ(@selector(showInlineSigninPage:), [link action]);
   EXPECT_EQ(controller(), [link target]);
 
   // Local profiles have a signin promo.
-  NSTextField* promo = static_cast<NSTextField*>(
+  NSTextField* promo = base::mac::ObjCCast<NSTextField>(
       [activeCardLinks objectAtIndex:1]);
   EXPECT_GT([[promo stringValue] length], 0U);
 }
@@ -303,7 +308,7 @@ TEST_F(ProfileChooserControllerTest,
   // There is one link: manage accounts.
   ASSERT_EQ(1U, [activeCardLinks count]);
   NSButton* manageAccountsLink =
-      static_cast<NSButton*>([activeCardLinks objectAtIndex:0]);
+      base::mac::ObjCCast<NSButton>([activeCardLinks objectAtIndex:0]);
   EXPECT_EQ(@selector(showAccountManagement:), [manageAccountsLink action]);
   EXPECT_EQ(controller(), [manageAccountsLink target]);
 }
@@ -322,11 +327,13 @@ TEST_F(ProfileChooserControllerTest,
   NSArray* activeCardSubviews = [[subviews objectAtIndex:2] subviews];
   NSArray* activeCardLinks = [[activeCardSubviews objectAtIndex:0] subviews];
 
-  // There is one label with the user's email.
+  // There is one disabled button with the user's email.
   ASSERT_EQ(1U, [activeCardLinks count]);
-  NSTextField* emailLabel =
-      static_cast<NSTextField*>([activeCardLinks objectAtIndex:0]);
-  EXPECT_EQ(kEmail, base::SysNSStringToUTF8([emailLabel stringValue]));
+  NSButton* emailButton =
+      base::mac::ObjCCast<NSButton>([activeCardLinks objectAtIndex:0]);
+  EXPECT_EQ(kEmail, base::SysNSStringToUTF8([emailButton title]));
+  EXPECT_EQ(nil, [emailButton action]);
+  EXPECT_FALSE([emailButton isEnabled]);
 }
 
 TEST_F(ProfileChooserControllerTest, AccountManagementLayout) {
@@ -364,7 +371,7 @@ TEST_F(ProfileChooserControllerTest, AccountManagementLayout) {
 
   // There should be a lock button.
   NSButton* lockButton =
-      static_cast<NSButton*>([buttonSubviews objectAtIndex:0]);
+      base::mac::ObjCCast<NSButton>([buttonSubviews objectAtIndex:0]);
   EXPECT_EQ(@selector(lockProfile:), [lockButton action]);
   EXPECT_EQ(controller(), [lockButton target]);
 
@@ -373,7 +380,7 @@ TEST_F(ProfileChooserControllerTest, AccountManagementLayout) {
 
   // There should be an incognito button.
   NSButton* incognitoButton =
-      static_cast<NSButton*>([buttonSubviews objectAtIndex:2]);
+      base::mac::ObjCCast<NSButton>([buttonSubviews objectAtIndex:2]);
   EXPECT_EQ(@selector(goIncognito:), [incognitoButton action]);
   EXPECT_EQ(controller(), [incognitoButton target]);
 
@@ -382,7 +389,7 @@ TEST_F(ProfileChooserControllerTest, AccountManagementLayout) {
 
   // There should be a user switcher button.
   NSButton* userSwitcherButton =
-      static_cast<NSButton*>([buttonSubviews objectAtIndex:4]);
+      base::mac::ObjCCast<NSButton>([buttonSubviews objectAtIndex:4]);
   EXPECT_EQ(@selector(showUserManager:), [userSwitcherButton action]);
   EXPECT_EQ(controller(), [userSwitcherButton target]);
 
@@ -392,7 +399,7 @@ TEST_F(ProfileChooserControllerTest, AccountManagementLayout) {
   ASSERT_EQ(2U, [accountsSubviews count]);
 
   NSButton* addAccountsButton =
-      static_cast<NSButton*>([accountsSubviews objectAtIndex:0]);
+      base::mac::ObjCCast<NSButton>([accountsSubviews objectAtIndex:0]);
   EXPECT_EQ(@selector(addAccount:), [addAccountsButton action]);
   EXPECT_EQ(controller(), [addAccountsButton target]);
 
@@ -401,18 +408,18 @@ TEST_F(ProfileChooserControllerTest, AccountManagementLayout) {
   ASSERT_EQ(2U, [accountsListSubviews count]);
 
   NSButton* genericAccount =
-      static_cast<NSButton*>([accountsListSubviews objectAtIndex:0]);
-  NSButton* genericAccountDelete =
-      static_cast<NSButton*>([[genericAccount subviews] objectAtIndex:0]);
+      base::mac::ObjCCast<NSButton>([accountsListSubviews objectAtIndex:0]);
+  NSButton* genericAccountDelete = base::mac::ObjCCast<NSButton>(
+  [[genericAccount subviews] objectAtIndex:0]);
   EXPECT_EQ(@selector(showAccountRemovalView:), [genericAccountDelete action]);
   EXPECT_EQ(controller(), [genericAccountDelete target]);
   EXPECT_NE(-1, [genericAccountDelete tag]);
 
   // Primary accounts are always last.
   NSButton* primaryAccount =
-      static_cast<NSButton*>([accountsListSubviews objectAtIndex:1]);
-  NSButton* primaryAccountDelete =
-      static_cast<NSButton*>([[primaryAccount subviews] objectAtIndex:0]);
+      base::mac::ObjCCast<NSButton>([accountsListSubviews objectAtIndex:1]);
+  NSButton* primaryAccountDelete = base::mac::ObjCCast<NSButton>(
+      [[primaryAccount subviews] objectAtIndex:0]);
   EXPECT_EQ(@selector(showAccountRemovalView:), [primaryAccountDelete action]);
   EXPECT_EQ(controller(), [primaryAccountDelete target]);
   EXPECT_EQ(-1, [primaryAccountDelete tag]);
@@ -433,12 +440,13 @@ TEST_F(ProfileChooserControllerTest, AccountManagementLayout) {
   NSView* activeProfileName = [activeCardSubviews objectAtIndex:1];
   EXPECT_TRUE([activeProfileName isKindOfClass:[NSButton class]]);
   EXPECT_EQ(menu()->GetItemAt(0).name, base::SysNSStringToUTF16(
-      [static_cast<NSButton*>(activeProfileName) title]));
+      [base::mac::ObjCCast<NSButton>(activeProfileName) title]));
 
   // Profile links. This is a local profile, so there should be a signin button.
   NSArray* linksSubviews = [[activeCardSubviews objectAtIndex:0] subviews];
   ASSERT_EQ(1U, [linksSubviews count]);
-  NSButton* link = static_cast<NSButton*>([linksSubviews objectAtIndex:0]);
+  NSButton* link = base::mac::ObjCCast<NSButton>(
+      [linksSubviews objectAtIndex:0]);
   EXPECT_EQ(@selector(hideAccountManagement:), [link action]);
   EXPECT_EQ(controller(), [link target]);
 }
