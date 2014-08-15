@@ -1778,7 +1778,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       [self hoverButtonWithRect:viewRect
                            text:l10n_util::GetNSString(
                                     IDS_PROFILES_DISCONNECT_BUTTON)
-                imageResourceId:IDR_ICON_PROFILES_MENU_AVATAR
+                imageResourceId:IDR_ICON_PROFILES_MENU_DISCONNECT
                          action:@selector(disconnectProfile:)];
   [container addSubview:disconnectButton];
   yOffset = NSMaxY([disconnectButton frame]);

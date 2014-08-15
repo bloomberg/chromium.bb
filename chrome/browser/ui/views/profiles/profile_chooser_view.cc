@@ -1481,7 +1481,7 @@ views::View* ProfileChooserView::CreateSwitchUserView() {
   disconnect_button_ = new BackgroundColorHoverButton(
       this,
       l10n_util::GetStringUTF16(IDS_PROFILES_DISCONNECT_BUTTON),
-      *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_MENU_AVATAR));
+      *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_MENU_DISCONNECT));
   layout->StartRow(1, 0);
   layout->AddView(disconnect_button_);
 
