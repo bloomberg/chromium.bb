@@ -10,6 +10,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
+#include "chrome/browser/content_settings/content_settings_mock_observer.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/mock_settings_observer.h"
@@ -981,4 +982,32 @@ TEST_F(HostContentSettingsMapTest, MigrateClearOnExit) {
                 GURL("http://third.com"),
                 CONTENT_SETTINGS_TYPE_COOKIES,
                 std::string()));
+}
+
+TEST_F(HostContentSettingsMapTest, AddContentSettingsObserver) {
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      profile.GetHostContentSettingsMap();
+  content_settings::MockObserver mock_observer;
+
+  GURL host("http://example.com/");
+  ContentSettingsPattern pattern =
+      ContentSettingsPattern::FromString("[*.]example.com");
+  EXPECT_CALL(mock_observer,
+              OnContentSettingChanged(pattern,
+                                      ContentSettingsPattern::Wildcard(),
+                                      CONTENT_SETTINGS_TYPE_IMAGES,
+                                      ""));
+
+  host_content_settings_map->AddObserver(&mock_observer);
+
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
+  host_content_settings_map->SetContentSetting(
+      pattern,
+      ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_IMAGES,
+      std::string(),
+      CONTENT_SETTING_DEFAULT);
 }

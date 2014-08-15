@@ -374,6 +374,15 @@ base::Time HostContentSettingsMap::GetLastUsageByPattern(
       primary_pattern, secondary_pattern, content_type);
 }
 
+void HostContentSettingsMap::AddObserver(content_settings::Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void HostContentSettingsMap::RemoveObserver(
+    content_settings::Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void HostContentSettingsMap::SetPrefClockForTesting(
     scoped_ptr<base::Clock> clock) {
   UsedContentSettingsProviders();
@@ -501,10 +510,18 @@ void HostContentSettingsMap::OnContentSettingChanged(
                                        secondary_pattern,
                                        content_type,
                                        resource_identifier);
+  // TODO(dhnishi): Remove usage of this notification.
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
       content::Source<HostContentSettingsMap>(this),
       content::Details<const ContentSettingsDetails>(&details));
+
+  FOR_EACH_OBSERVER(content_settings::Observer,
+                    observers_,
+                    OnContentSettingChanged(primary_pattern,
+                                            secondary_pattern,
+                                            content_type,
+                                            resource_identifier));
 }
 
 HostContentSettingsMap::~HostContentSettingsMap() {
