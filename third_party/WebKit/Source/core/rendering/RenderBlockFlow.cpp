@@ -369,7 +369,7 @@ void RenderBlockFlow::layoutBlock(bool relayoutChildren)
     // we overflow or not.
     updateScrollInfoAfterLayout();
 
-    if (m_repaintLogicalTop != m_repaintLogicalBottom) {
+    if (m_paintInvalidationLogicalTop != m_paintInvalidationLogicalBottom) {
         bool hasVisibleContent = style()->visibility() == VISIBLE;
         if (!hasVisibleContent) {
             RenderLayer* layer = enclosingLayer();
@@ -421,15 +421,15 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     LayoutUnit previousHeight = logicalHeight();
     setLogicalHeight(beforeEdge);
 
-    m_repaintLogicalTop = 0;
-    m_repaintLogicalBottom = 0;
+    m_paintInvalidationLogicalTop = 0;
+    m_paintInvalidationLogicalBottom = 0;
     if (!firstChild() && !isAnonymousBlock())
         setChildrenInline(true);
 
     TextAutosizer::LayoutScope textAutosizerLayoutScope(this);
 
     if (childrenInline())
-        layoutInlineChildren(relayoutChildren, m_repaintLogicalTop, m_repaintLogicalBottom, afterEdge);
+        layoutInlineChildren(relayoutChildren, m_paintInvalidationLogicalTop, m_paintInvalidationLogicalBottom, afterEdge);
     else
         layoutBlockChildren(relayoutChildren, layoutScope, beforeEdge, afterEdge);
 
@@ -548,7 +548,7 @@ void RenderBlockFlow::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo,
     LayoutUnit estimateWithoutPagination;
     LayoutUnit logicalTopEstimate = estimateLogicalTopPosition(child, marginInfo, estimateWithoutPagination);
 
-    // Cache our old rect so that we can dirty the proper repaint rects if the child moves.
+    // Cache our old rect so that we can dirty the proper paint invalidation rects if the child moves.
     LayoutRect oldRect = child->frameRect();
     LayoutUnit oldLogicalTop = logicalTopForChild(child);
 
@@ -2048,7 +2048,7 @@ void RenderBlockFlow::moveAllChildrenIncludingFloatsTo(RenderBlock* toBlock, boo
 
 void RenderBlockFlow::invalidatePaintForOverhangingFloats(bool paintAllDescendants)
 {
-    // Repaint any overhanging floats (if we know we're the one to paint them).
+    // Invalidate paint of any overhanging floats (if we know we're the one to paint them).
     // Otherwise, bail out.
     if (!hasOverhangingFloats())
         return;
@@ -2057,7 +2057,7 @@ void RenderBlockFlow::invalidatePaintForOverhangingFloats(bool paintAllDescendan
     FloatingObjectSetIterator end = floatingObjectSet.end();
     for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
         FloatingObject* floatingObject = it->get();
-        // Only repaint the object if it is overhanging, is not in its own layer, and
+        // Only issue paint invaldiations for the object if it is overhanging, is not in its own layer, and
         // is our responsibility to paint (m_shouldPaint is set). When paintAllDescendants is true, the latter
         // condition is replaced with being a descendant of us.
         if (logicalBottomForFloat(floatingObject) > logicalHeight()
@@ -2075,45 +2075,45 @@ void RenderBlockFlow::invalidatePaintForOverflow()
 {
     // FIXME: We could tighten up the left and right invalidation points if we let layoutInlineChildren fill them in based off the particular lines
     // it had to lay out. We wouldn't need the hasOverflowClip() hack in that case either.
-    LayoutUnit repaintLogicalLeft = logicalLeftVisualOverflow();
-    LayoutUnit repaintLogicalRight = logicalRightVisualOverflow();
+    LayoutUnit paintInvalidationLogicalLeft = logicalLeftVisualOverflow();
+    LayoutUnit paintInvalidationLogicalRight = logicalRightVisualOverflow();
     if (hasOverflowClip()) {
         // If we have clipped overflow, we should use layout overflow as well, since visual overflow from lines didn't propagate to our block's overflow.
         // Note the old code did this as well but even for overflow:visible. The addition of hasOverflowClip() at least tightens up the hack a bit.
-        // layoutInlineChildren should be patched to compute the entire repaint rect.
-        repaintLogicalLeft = std::min(repaintLogicalLeft, logicalLeftLayoutOverflow());
-        repaintLogicalRight = std::max(repaintLogicalRight, logicalRightLayoutOverflow());
+        // layoutInlineChildren should be patched to compute the entire paint invalidation rect.
+        paintInvalidationLogicalLeft = std::min(paintInvalidationLogicalLeft, logicalLeftLayoutOverflow());
+        paintInvalidationLogicalRight = std::max(paintInvalidationLogicalRight, logicalRightLayoutOverflow());
     }
 
-    LayoutRect repaintRect;
+    LayoutRect paintInvalidationRect;
     if (isHorizontalWritingMode())
-        repaintRect = LayoutRect(repaintLogicalLeft, m_repaintLogicalTop, repaintLogicalRight - repaintLogicalLeft, m_repaintLogicalBottom - m_repaintLogicalTop);
+        paintInvalidationRect = LayoutRect(paintInvalidationLogicalLeft, m_paintInvalidationLogicalTop, paintInvalidationLogicalRight - paintInvalidationLogicalLeft, m_paintInvalidationLogicalBottom - m_paintInvalidationLogicalTop);
     else
-        repaintRect = LayoutRect(m_repaintLogicalTop, repaintLogicalLeft, m_repaintLogicalBottom - m_repaintLogicalTop, repaintLogicalRight - repaintLogicalLeft);
+        paintInvalidationRect = LayoutRect(m_paintInvalidationLogicalTop, paintInvalidationLogicalLeft, m_paintInvalidationLogicalBottom - m_paintInvalidationLogicalTop, paintInvalidationLogicalRight - paintInvalidationLogicalLeft);
 
-    // The repaint rect may be split across columns, in which case adjustRectForColumns() will return the union.
-    adjustRectForColumns(repaintRect);
+    // The paint invalidation rect may be split across columns, in which case adjustRectForColumns() will return the union.
+    adjustRectForColumns(paintInvalidationRect);
 
     if (hasOverflowClip()) {
-        // Adjust repaint rect for scroll offset
-        repaintRect.move(-scrolledContentOffset());
+        // Adjust the paint invalidation rect for scroll offset
+        paintInvalidationRect.move(-scrolledContentOffset());
 
         // Don't allow this rect to spill out of our overflow box.
-        repaintRect.intersect(LayoutRect(LayoutPoint(), size()));
+        paintInvalidationRect.intersect(LayoutRect(LayoutPoint(), size()));
     }
 
     // Make sure the rect is still non-empty after intersecting for overflow above
-    if (!repaintRect.isEmpty()) {
+    if (!paintInvalidationRect.isEmpty()) {
         // Hits in media/event-attributes.html
         DisableCompositingQueryAsserts disabler;
 
-        invalidatePaintRectangle(repaintRect); // We need to do a partial repaint of our content.
+        invalidatePaintRectangle(paintInvalidationRect); // We need to do a partial paint invalidation of our content.
         if (hasReflection())
-            invalidatePaintRectangle(reflectedRect(repaintRect));
+            invalidatePaintRectangle(reflectedRect(paintInvalidationRect));
     }
 
-    m_repaintLogicalTop = 0;
-    m_repaintLogicalBottom = 0;
+    m_paintInvalidationLogicalTop = 0;
+    m_paintInvalidationLogicalBottom = 0;
 }
 
 void RenderBlockFlow::paintFloats(PaintInfo& paintInfo, const LayoutPoint& paintOffset, bool preservePhase)

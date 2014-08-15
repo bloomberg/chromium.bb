@@ -146,7 +146,7 @@ PassRefPtr<RenderStyle> RenderScrollbar::getScrollbarPseudoStyle(ScrollbarPart p
     // Scrollbars for root frames should always have background color
     // unless explicitly specified as transparent. So we force it.
     // This is because WebKit assumes scrollbar to be always painted and missing background
-    // causes visual artifact like non-repainted dirty region.
+    // causes visual artifact like non-paint invalidated dirty region.
     if (result && m_owningFrame && m_owningFrame->view() && !m_owningFrame->view()->isTransparent() && !result->hasBackground())
         result->setBackgroundColor(StyleColor(Color::white));
 

@@ -529,7 +529,7 @@ bool RenderThemeChromiumMac::isControlStyled(const RenderStyle* style, const Cac
 
 const int sliderThumbShadowBlur = 1;
 
-void RenderThemeChromiumMac::adjustRepaintRect(const RenderObject* o, IntRect& r)
+void RenderThemeChromiumMac::adjustPaintInvalidationRect(const RenderObject* o, IntRect& r)
 {
     ControlPart part = o->style()->appearance();
 
@@ -541,7 +541,7 @@ void RenderThemeChromiumMac::adjustRepaintRect(const RenderObject* o, IntRect& r
         case SquareButtonPart:
         case ButtonPart:
         case InnerSpinButtonPart:
-            return RenderTheme::adjustRepaintRect(o, r);
+            return RenderTheme::adjustPaintInvalidationRect(o, r);
         default:
             break;
     }
@@ -1787,7 +1787,7 @@ NSView* RenderThemeChromiumMac::documentViewFor(RenderObject*) const
 // NSCell(s) lack a parent NSView. Therefore controls don't have their tint
 // color updated correctly when the application is activated/deactivated.
 // FocusController's setActive() is called when the application is
-// activated/deactivated, which causes a repaint at which time this code is
+// activated/deactivated, which causes a paint invalidation at which time this code is
 // called.
 // This function should be called before drawing any NSCell-derived controls,
 // unless you're sure it isn't needed.

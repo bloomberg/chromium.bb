@@ -393,16 +393,16 @@ void RenderBlock::invalidateTreeIfNeeded(const PaintInvalidationState& paintInva
         for (TrackedRendererListHashSet::iterator it = positionedObjects->begin(); it != end; ++it) {
             RenderBox* box = *it;
 
-            // One of the renderers we're skipping over here may be the child's repaint container,
-            // so we can't pass our own repaint container along.
-            const RenderLayerModelObject& repaintContainerForChild = *box->containerForPaintInvalidation();
+            // One of the renderers we're skipping over here may be the child's paint invalidation container,
+            // so we can't pass our own paint invalidation container along.
+            const RenderLayerModelObject& paintInvalidationContainerForChild = *box->containerForPaintInvalidation();
 
             // If it's a new paint invalidation container, we won't have properly accumulated the offset into the
             // PaintInvalidationState.
             // FIXME: Teach PaintInvalidationState to handle this case. crbug.com/371485
-            if (&repaintContainerForChild != newPaintInvalidationContainer) {
+            if (&paintInvalidationContainerForChild != newPaintInvalidationContainer) {
                 ForceHorriblySlowRectMapping slowRectMapping(&childPaintInvalidationState);
-                PaintInvalidationState disabledPaintInvalidationState(childPaintInvalidationState, *this, repaintContainerForChild);
+                PaintInvalidationState disabledPaintInvalidationState(childPaintInvalidationState, *this, paintInvalidationContainerForChild);
                 box->invalidateTreeIfNeeded(disabledPaintInvalidationState);
                 continue;
             }
@@ -411,13 +411,13 @@ void RenderBlock::invalidateTreeIfNeeded(const PaintInvalidationState& paintInva
             // a relatively positioned inline element, we need to account for
             // the inline elements position in PaintInvalidationState.
             if (box->style()->position() == AbsolutePosition) {
-                RenderObject* container = box->container(&repaintContainerForChild, 0);
+                RenderObject* container = box->container(&paintInvalidationContainerForChild, 0);
                 if (container->isRelPositioned() && container->isRenderInline()) {
                     // FIXME: We should be able to use PaintInvalidationState for this.
                     // Currently, we will place absolutely positioned elements inside
                     // relatively positioned inline blocks in the wrong location. crbug.com/371485
                     ForceHorriblySlowRectMapping slowRectMapping(&childPaintInvalidationState);
-                    PaintInvalidationState disabledPaintInvalidationState(childPaintInvalidationState, *this, repaintContainerForChild);
+                    PaintInvalidationState disabledPaintInvalidationState(childPaintInvalidationState, *this, paintInvalidationContainerForChild);
                     box->invalidateTreeIfNeeded(disabledPaintInvalidationState);
                     continue;
                 }
@@ -1518,7 +1518,7 @@ void RenderBlock::addVisualOverflowFromTheme()
         return;
 
     IntRect inflatedRect = pixelSnappedBorderBoxRect();
-    RenderTheme::theme().adjustRepaintRect(this, inflatedRect);
+    RenderTheme::theme().adjustPaintInvalidationRect(this, inflatedRect);
     addVisualOverflow(inflatedRect);
 }
 
@@ -1583,7 +1583,7 @@ bool RenderBlock::simplifiedLayout()
 
 
     {
-        // LayoutState needs this deliberate scope to pop before repaint
+        // LayoutState needs this deliberate scope to pop before paint invalidation.
         LayoutState state(*this, locationOffset());
 
         if (needsPositionedMovementLayout() && !tryLayoutDoingPositionedMovementOnly())
@@ -1963,7 +1963,7 @@ void RenderBlock::paintContents(PaintInfo& paintInfo, const LayoutPoint& paintOf
 {
     // Avoid painting descendants of the root element when stylesheets haven't loaded.  This eliminates FOUC.
     // It's ok not to draw, because later on, when all the stylesheets do load, styleResolverChanged() on the Document
-    // will do a full repaint.
+    // will do a full paint invalidation.
     if (document().didLayoutWithPendingStylesheets() && !isRenderView())
         return;
 
@@ -2261,7 +2261,7 @@ bool RenderBlock::isSelectionRoot() const
     return false;
 }
 
-GapRects RenderBlock::selectionGapRectsForRepaint(const RenderLayerModelObject* repaintContainer)
+GapRects RenderBlock::selectionGapRectsForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer)
 {
     ASSERT(!needsLayout());
 
@@ -2269,17 +2269,17 @@ GapRects RenderBlock::selectionGapRectsForRepaint(const RenderLayerModelObject* 
         return GapRects();
 
     TransformState transformState(TransformState::ApplyTransformDirection, FloatPoint());
-    mapLocalToContainer(repaintContainer, transformState, ApplyContainerFlip | UseTransforms);
-    LayoutPoint offsetFromRepaintContainer = roundedLayoutPoint(transformState.mappedPoint());
+    mapLocalToContainer(paintInvalidationContainer, transformState, ApplyContainerFlip | UseTransforms);
+    LayoutPoint offsetFromPaintInvalidationContainer = roundedLayoutPoint(transformState.mappedPoint());
 
     if (hasOverflowClip())
-        offsetFromRepaintContainer -= scrolledContentOffset();
+        offsetFromPaintInvalidationContainer -= scrolledContentOffset();
 
     LayoutUnit lastTop = 0;
     LayoutUnit lastLeft = logicalLeftSelectionOffset(this, lastTop);
     LayoutUnit lastRight = logicalRightSelectionOffset(this, lastTop);
 
-    return selectionGaps(this, offsetFromRepaintContainer, IntSize(), lastTop, lastLeft, lastRight);
+    return selectionGaps(this, offsetFromPaintInvalidationContainer, IntSize(), lastTop, lastLeft, lastRight);
 }
 
 void RenderBlock::paintSelection(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
@@ -3496,27 +3496,27 @@ void RenderBlock::adjustRectForColumns(LayoutRect& r) const
 
     if (startColumn == endColumn) {
         // The rect is fully contained within one column. Adjust for our offsets
-        // and repaint only that portion.
+        // and issue paint invalidations only that portion.
         LayoutUnit logicalLeftOffset = logicalLeftOffsetForContent();
         LayoutRect colRect = columnRectAt(colInfo, startColumn);
-        LayoutRect repaintRect = r;
+        LayoutRect paintInvalidationRect = r;
 
         if (colInfo->progressionAxis() == ColumnInfo::InlineAxis) {
             if (isHorizontal)
-                repaintRect.move(colRect.x() - logicalLeftOffset, - static_cast<int>(startColumn) * colHeight);
+                paintInvalidationRect.move(colRect.x() - logicalLeftOffset, - static_cast<int>(startColumn) * colHeight);
             else
-                repaintRect.move(- static_cast<int>(startColumn) * colHeight, colRect.y() - logicalLeftOffset);
+                paintInvalidationRect.move(- static_cast<int>(startColumn) * colHeight, colRect.y() - logicalLeftOffset);
         } else {
             if (isHorizontal)
-                repaintRect.move(0, colRect.y() - startColumn * colHeight - beforeBorderPadding);
+                paintInvalidationRect.move(0, colRect.y() - startColumn * colHeight - beforeBorderPadding);
             else
-                repaintRect.move(colRect.x() - startColumn * colHeight - beforeBorderPadding, 0);
+                paintInvalidationRect.move(colRect.x() - startColumn * colHeight - beforeBorderPadding, 0);
         }
-        repaintRect.intersect(colRect);
-        result.unite(repaintRect);
+        paintInvalidationRect.intersect(colRect);
+        result.unite(paintInvalidationRect);
     } else {
         // We span multiple columns. We can just unite the start and end column to get the final
-        // repaint rect.
+        // paint invalidation rect.
         result.unite(columnRectAt(colInfo, startColumn));
         result.unite(columnRectAt(colInfo, endColumn));
     }

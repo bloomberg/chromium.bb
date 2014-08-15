@@ -137,7 +137,7 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer, LayerType type)
     , m_potentialCompositingReasonsFromStyle(CompositingReasonNone)
     , m_compositingReasons(CompositingReasonNone)
     , m_groupedMapping(0)
-    , m_repainter(*renderer)
+    , m_paintInvalidator(*renderer)
     , m_clipper(*renderer)
 {
     updateStackingNode();
@@ -556,7 +556,7 @@ void RenderLayer::mapRectToPaintBackingCoordinates(const RenderLayerModelObject*
     if (!transformedAncestor)
         return;
 
-    // |repaintContainer| may have a local 2D transform on it, so take that into account when mapping into the space of the
+    // |paintInvalidationContainer| may have a local 2D transform on it, so take that into account when mapping into the space of the
     // transformed ancestor.
     rect = LayoutRect(paintInvalidationContainer->localToContainerQuad(FloatRect(rect), transformedAncestor).boundingBox());
 
@@ -570,10 +570,10 @@ void RenderLayer::mapRectToPaintInvalidationBacking(const RenderObject* renderOb
         return;
     }
 
-    // This code adjusts the repaint rectangle to be in the space of the transformed ancestor of the grouped (i.e. squashed)
-    // layer. This is because all layers that squash together need to repaint w.r.t. a single container that is
+    // This code adjusts the paint invalidation rectangle to be in the space of the transformed ancestor of the grouped (i.e. squashed)
+    // layer. This is because all layers that squash together need to issue paint invalidations w.r.t. a single container that is
     // an ancestor of all of them, in order to properly take into account any local transforms etc.
-    // FIXME: remove this special-case code that works around the repainting code structure.
+    // FIXME: remove this special-case code that works around the paint invalidation code structure.
     renderObject->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
 
     RenderLayer::mapRectToPaintBackingCoordinates(paintInvalidationContainer, rect);
@@ -1582,7 +1582,7 @@ static inline bool shouldSuppressPaintingLayer(RenderLayer* layer)
 {
     // Avoid painting descendants of the root layer when stylesheets haven't loaded. This eliminates FOUC.
     // It's ok not to draw, because later on, when all the stylesheets do load, updateStyleSelector on the Document
-    // will do a full repaint().
+    // will do a full paintInvalidationForWholeRenderer().
     if (layer->renderer()->document().didLayoutWithPendingStylesheets() && !layer->isRootLayer() && !layer->renderer()->isDocumentElement())
         return true;
 
@@ -1702,7 +1702,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
     // the outline is painted in the background phase during composited scrolling.
     // If it were painted in the foreground phase, it would move with the scrolled
     // content. When not composited scrolling, the outline is painted in the
-    // foreground phase. Since scrolled contents are moved by repainting in this
+    // foreground phase. Since scrolled contents are moved by paint invalidation in this
     // case, the outline won't get 'dragged along'.
     bool shouldPaintOutline = isSelfPaintingLayer && !isPaintingOverlayScrollbars
         && ((isPaintingScrollingContent && isPaintingCompositedBackground)
@@ -1800,7 +1800,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
 
             // Check that we didn't fail to allocate the graphics context for the offscreen buffer.
             if (filterPainter.hasStartedFilterEffect()) {
-                localPaintingInfo.paintDirtyRect = filterPainter.repaintRect();
+                localPaintingInfo.paintDirtyRect = filterPainter.paintInvalidationRect();
                 // If the filter needs the full source image, we need to avoid using the clip rectangles.
                 // Otherwise, if for example this layer has overflow:hidden, a drop shadow will not compute correctly.
                 // Note that we will still apply the clipping on the final rendering of the filter.
@@ -2146,7 +2146,7 @@ void RenderLayer::paintForegroundForFragments(const LayerFragments& layerFragmen
     if (shouldClip)
         clipToRect(localPaintingInfo, context, layerFragments[0].foregroundRect, paintFlags);
 
-    // We have to loop through every fragment multiple times, since we have to repaint in each specific phase in order for
+    // We have to loop through every fragment multiple times, since we have to issue paint invalidations in each specific phase in order for
     // interleaving of the fragments to work properly.
     paintForegroundForFragmentsWithPhase(selectionOnly ? PaintPhaseSelection : PaintPhaseChildBlockBackgrounds, layerFragments,
         context, localPaintingInfo, paintBehavior, paintingRootForRenderer, paintFlags);
@@ -2264,7 +2264,7 @@ void RenderLayer::paintPaginatedChildLayer(RenderLayer* childLayer, GraphicsCont
 
     // It is possible for paintLayer() to be called after the child layer ceases to be paginated but before
     // updatePaginationRecusive() is called and resets the isPaginated() flag, see <rdar://problem/10098679>.
-    // If this is the case, just bail out, since the upcoming call to updatePaginationRecusive() will repaint the layer.
+    // If this is the case, just bail out, since the upcoming call to updatePaginationRecusive() will paint invalidate the layer.
     // FIXME: Is this true anymore? This seems very suspicious.
     if (!columnLayers.size())
         return;
@@ -2983,7 +2983,7 @@ IntRect RenderLayer::blockSelectionGapsBounds() const
         return IntRect();
 
     RenderBlock* renderBlock = toRenderBlock(renderer());
-    LayoutRect gapRects = renderBlock->selectionGapRectsForRepaint(renderBlock);
+    LayoutRect gapRects = renderBlock->selectionGapRectsForPaintInvalidation(renderBlock);
 
     return pixelSnappedIntRect(gapRects);
 }

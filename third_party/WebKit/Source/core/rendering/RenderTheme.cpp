@@ -593,7 +593,7 @@ bool RenderTheme::isControlStyled(const RenderStyle* style, const CachedUAStyle*
     }
 }
 
-void RenderTheme::adjustRepaintRect(const RenderObject* o, IntRect& r)
+void RenderTheme::adjustPaintInvalidationRect(const RenderObject* o, IntRect& r)
 {
 #if USE(NEW_THEME)
     m_platformTheme->inflateControlPaintRect(o->style()->appearance(), controlStatesForRenderer(o), r, o->style()->effectiveZoom());
@@ -631,7 +631,6 @@ bool RenderTheme::stateChanged(RenderObject* o, ControlState state) const
     if (state == PressedControlState && !isEnabled(o))
         return false;
 
-    // Repaint the control.
     o->paintInvalidationForWholeRenderer();
     return true;
 }

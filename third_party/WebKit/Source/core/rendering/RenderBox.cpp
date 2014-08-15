@@ -874,7 +874,7 @@ IntSize RenderBox::scrolledContentOffset() const
     return layer()->scrollableArea()->scrollOffset();
 }
 
-void RenderBox::applyCachedClipAndScrollOffsetForRepaint(LayoutRect& paintRect) const
+void RenderBox::applyCachedClipAndScrollOffsetForPaintInvalidation(LayoutRect& paintRect) const
 {
     ASSERT(hasLayer());
     ASSERT(hasOverflowClip());
@@ -882,14 +882,14 @@ void RenderBox::applyCachedClipAndScrollOffsetForRepaint(LayoutRect& paintRect) 
     flipForWritingMode(paintRect);
     paintRect.move(-scrolledContentOffset()); // For overflow:auto/scroll/hidden.
 
-    // Do not clip scroll layer contents to reduce the number of repaints while scrolling.
+    // Do not clip scroll layer contents to reduce the number of paint invalidations while scrolling.
     if (usesCompositedScrolling()) {
         flipForWritingMode(paintRect);
         return;
     }
 
     // height() is inaccurate if we're in the middle of a layout of this RenderBox, so use the
-    // layer's size instead. Even if the layer's size is wrong, the layer itself will repaint
+    // layer's size instead. Even if the layer's size is wrong, the layer itself will issue paint invalidations
     // anyway if its size does change.
     LayoutRect clipRect(LayoutPoint(), layer()->size());
     paintRect = intersection(paintRect, clipRect);
@@ -1485,12 +1485,11 @@ void RenderBox::imageChanged(WrappedImagePtr image, const IntRect*)
         markShapeOutsideDependentsForLayout();
     }
 
-    bool didFullRepaint = repaintLayerRectsForImage(image, style()->backgroundLayers(), true);
-    if (!didFullRepaint)
-        repaintLayerRectsForImage(image, style()->maskLayers(), false);
+    if (!paintInvalidationLayerRectsForImage(image, style()->backgroundLayers(), true))
+        paintInvalidationLayerRectsForImage(image, style()->maskLayers(), false);
 }
 
-bool RenderBox::repaintLayerRectsForImage(WrappedImagePtr image, const FillLayer& layers, bool drawingBackground)
+bool RenderBox::paintInvalidationLayerRectsForImage(WrappedImagePtr image, const FillLayer& layers, bool drawingBackground)
 {
     LayoutRect rendererRect;
     RenderBox* layerRenderer = 0;
@@ -1527,7 +1526,7 @@ bool RenderBox::repaintLayerRectsForImage(WrappedImagePtr image, const FillLayer
             layerRenderer->calculateBackgroundImageGeometry(0, *curLayer, rendererRect, geometry);
             if (geometry.hasNonLocalGeometry()) {
                 // Rather than incur the costs of computing the paintContainer for renderers with fixed backgrounds
-                // in order to get the right destRect, just repaint the entire renderer.
+                // in order to get the right destRect, just issue paint invalidations for the entire renderer.
                 layerRenderer->paintInvalidationForWholeRenderer();
                 return true;
             }
@@ -1775,12 +1774,12 @@ LayoutUnit RenderBox::perpendicularContainingBlockLogicalHeight() const
     return cb->adjustContentBoxLogicalHeightForBoxSizing(logicalHeightLength.value());
 }
 
-void RenderBox::mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
+void RenderBox::mapLocalToContainer(const RenderLayerModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
-    if (repaintContainer == this)
+    if (paintInvalidationContainer == this)
         return;
 
-    if (paintInvalidationState && paintInvalidationState->canMapToContainer(repaintContainer)) {
+    if (paintInvalidationState && paintInvalidationState->canMapToContainer(paintInvalidationContainer)) {
         LayoutSize offset = paintInvalidationState->paintOffset() + locationOffset();
         if (style()->hasInFlowPosition() && layer())
             offset += layer()->offsetForInFlowPosition();
@@ -1789,7 +1788,7 @@ void RenderBox::mapLocalToContainer(const RenderLayerModelObject* repaintContain
     }
 
     bool containerSkipped;
-    RenderObject* o = container(repaintContainer, &containerSkipped);
+    RenderObject* o = container(paintInvalidationContainer, &containerSkipped);
     if (!o)
         return;
 
@@ -1816,16 +1815,16 @@ void RenderBox::mapLocalToContainer(const RenderLayerModelObject* repaintContain
         transformState.move(containerOffset.width(), containerOffset.height(), preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
 
     if (containerSkipped) {
-        // There can't be a transform between repaintContainer and o, because transforms create containers, so it should be safe
-        // to just subtract the delta between the repaintContainer and o.
-        LayoutSize containerOffset = repaintContainer->offsetFromAncestorContainer(o);
+        // There can't be a transform between paintInvalidationContainer and o, because transforms create containers, so it should be safe
+        // to just subtract the delta between the paintInvalidationContainer and o.
+        LayoutSize containerOffset = paintInvalidationContainer->offsetFromAncestorContainer(o);
         transformState.move(-containerOffset.width(), -containerOffset.height(), preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
         return;
     }
 
     mode &= ~ApplyContainerFlip;
 
-    o->mapLocalToContainer(repaintContainer, transformState, mode, wasFixed);
+    o->mapLocalToContainer(paintInvalidationContainer, transformState, mode, wasFixed);
 }
 
 void RenderBox::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, TransformState& transformState) const
@@ -1979,10 +1978,10 @@ void RenderBox::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* 
 {
     // The rect we compute at each step is shifted by our x/y offset in the parent container's coordinate space.
     // Only when we cross a writing mode boundary will we have to possibly flipForWritingMode (to convert into a more appropriate
-    // offset corner for the enclosing container).  This allows for a fully RL or BT document to repaint
+    // offset corner for the enclosing container). This allows for a fully RL or BT document to issue paint invalidations
     // properly even during layout, since the rect remains flipped all the way until the end.
     //
-    // RenderView::computeRectForRepaint then converts the rect to physical coordinates.  We also convert to
+    // RenderView::computeRectForPaintInvalidation then converts the rect to physical coordinates. We also convert to
     // physical when we hit a paintInvalidationContainer boundary. Therefore the final rect returned is always in the
     // physical coordinate space of the paintInvalidationContainer.
     RenderStyle* styleToUse = style();
@@ -2045,10 +2044,10 @@ void RenderBox::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* 
     }
 
     if (position != AbsolutePosition && position != FixedPosition && o->hasColumns() && o->isRenderBlockFlow()) {
-        LayoutRect repaintRect(topLeft, rect.size());
-        toRenderBlock(o)->adjustRectForColumns(repaintRect);
-        topLeft = repaintRect.location();
-        rect = repaintRect;
+        LayoutRect paintInvalidationRect(topLeft, rect.size());
+        toRenderBlock(o)->adjustRectForColumns(paintInvalidationRect);
+        topLeft = paintInvalidationRect.location();
+        rect = paintInvalidationRect;
     }
 
     // FIXME: We ignore the lightweight clipping rect that controls use, since if |o| is in mid-layout,
@@ -2056,7 +2055,7 @@ void RenderBox::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* 
     rect.setLocation(topLeft);
     if (o->hasOverflowClip() && !shouldDoFullPaintInvalidationIfSelfPaintingLayer()) {
         RenderBox* containerBox = toRenderBox(o);
-        containerBox->applyCachedClipAndScrollOffsetForRepaint(rect);
+        containerBox->applyCachedClipAndScrollOffsetForPaintInvalidation(rect);
         if (rect.isEmpty())
             return;
     }
@@ -4095,7 +4094,7 @@ InvalidationReason RenderBox::getPaintInvalidationReason(const RenderLayerModelO
     if (oldBorderBoxSize.height() != newBorderBoxSize.height() && mustInvalidateBackgroundOrBorderPaintOnHeightChange())
         return InvalidationBorderBoxChange;
 
-    // If size of repaint rect equals to size of border box, RenderObject::incrementallyInvalidatePaint()
+    // If size of the paint invalidation rect equals to size of border box, RenderObject::incrementallyInvalidatePaint()
     // is good for boxes having background without box decorations.
     if (oldBorderBoxSize == oldBounds.size() && newBorderBoxSize == newBounds.size() && !style()->hasBoxDecorations())
         return invalidationReason;
@@ -4638,7 +4637,7 @@ RenderObject* RenderBox::splitAnonymousBoxesAroundChild(RenderObject* beforeChil
             postBox->setChildrenInline(boxToSplit->childrenInline());
             RenderBox* parentBox = toRenderBox(boxToSplit->parent());
             // We need to invalidate the |parentBox| before inserting the new node
-            // so that the table repainting logic knows the structure is dirty.
+            // so that the table paint invalidation logic knows the structure is dirty.
             // See for example RenderTableCell:clippedOverflowRectForPaintInvalidation.
             markBoxForRelayoutAfterSplit(parentBox);
             parentBox->virtualChildren()->insertChildNode(parentBox, postBox, boxToSplit->nextSibling());

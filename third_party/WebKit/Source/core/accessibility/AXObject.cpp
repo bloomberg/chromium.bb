@@ -468,7 +468,7 @@ IntRect AXObject::boundingBoxForQuads(RenderObject* obj, const Vector<FloatQuad>
         IntRect r = quads[i].enclosingBoundingBox();
         if (!r.isEmpty()) {
             if (obj->style()->hasAppearance())
-                RenderTheme::theme().adjustRepaintRect(obj, r);
+                RenderTheme::theme().adjustPaintInvalidationRect(obj, r);
             result.unite(r);
         }
     }

@@ -35,14 +35,14 @@ class RenderSelectionInfoBase : public NoBaseWillBeGarbageCollected<RenderSelect
 public:
     RenderSelectionInfoBase()
         : m_object(nullptr)
-        , m_repaintContainer(nullptr)
+        , m_paintInvalidationContainer(nullptr)
         , m_state(RenderObject::SelectionNone)
     {
     }
 
     RenderSelectionInfoBase(RenderObject* o)
         : m_object(o)
-        , m_repaintContainer(o->containerForPaintInvalidation())
+        , m_paintInvalidationContainer(o->containerForPaintInvalidation())
         , m_state(o->selectionState())
     {
     }
@@ -50,16 +50,16 @@ public:
     void trace(Visitor* visitor)
     {
         visitor->trace(m_object);
-        visitor->trace(m_repaintContainer);
+        visitor->trace(m_paintInvalidationContainer);
     }
 
     RenderObject* object() const { return m_object; }
-    const RenderLayerModelObject* repaintContainer() const { return m_repaintContainer; }
+    const RenderLayerModelObject* paintInvalidationContainer() const { return m_paintInvalidationContainer; }
     RenderObject::SelectionState state() const { return m_state; }
 
 protected:
     RawPtrWillBeMember<RenderObject> m_object;
-    RawPtrWillBeMember<const RenderLayerModelObject> m_repaintContainer;
+    RawPtrWillBeMember<const RenderLayerModelObject> m_paintInvalidationContainer;
     RenderObject::SelectionState m_state;
 };
 
@@ -70,24 +70,24 @@ public:
         : RenderSelectionInfoBase(o)
     {
         if (o->canUpdateSelectionOnRootLineBoxes()) {
-            m_rect = o->selectionRectForPaintInvalidation(m_repaintContainer, clipToVisibleContent);
+            m_rect = o->selectionRectForPaintInvalidation(m_paintInvalidationContainer, clipToVisibleContent);
             // FIXME: groupedMapping() leaks the squashing abstraction. See RenderBlockSelectionInfo for more details.
-            if (m_repaintContainer && m_repaintContainer->layer()->groupedMapping())
-                RenderLayer::mapRectToPaintInvalidationBacking(m_repaintContainer, m_repaintContainer, m_rect);
+            if (m_paintInvalidationContainer && m_paintInvalidationContainer->layer()->groupedMapping())
+                RenderLayer::mapRectToPaintInvalidationBacking(m_paintInvalidationContainer, m_paintInvalidationContainer, m_rect);
         } else {
             m_rect = LayoutRect();
         }
     }
 
-    void repaint()
+    void invalidatePaint()
     {
-        m_object->invalidatePaintUsingContainer(m_repaintContainer, m_rect, InvalidationSelection);
+        m_object->invalidatePaintUsingContainer(m_paintInvalidationContainer, m_rect, InvalidationSelection);
     }
 
     LayoutRect rect() const { return m_rect; }
 
 private:
-    LayoutRect m_rect; // relative to repaint container
+    LayoutRect m_rect; // relative to paint invalidation container
 };
 
 
@@ -98,27 +98,27 @@ public:
         : RenderSelectionInfoBase(b)
     {
         if (b->canUpdateSelectionOnRootLineBoxes())
-            m_rects = block()->selectionGapRectsForRepaint(m_repaintContainer);
+            m_rects = block()->selectionGapRectsForPaintInvalidation(m_paintInvalidationContainer);
         else
             m_rects = GapRects();
     }
 
-    void repaint()
+    void invalidatePaint()
     {
-        LayoutRect repaintRect = m_rects;
+        LayoutRect paintInvalidationRect = m_rects;
         // FIXME: this is leaking the squashing abstraction. However, removing the groupedMapping() condiitional causes
         // RenderBox::mapRectToPaintInvalidationBacking to get called, which makes rect adjustments even if you pass the same
-        // repaintContainer as the render object. Find out why it does that and fix.
-        if (m_repaintContainer && m_repaintContainer->layer()->groupedMapping())
-            RenderLayer::mapRectToPaintInvalidationBacking(m_repaintContainer, m_repaintContainer, repaintRect);
-        m_object->invalidatePaintUsingContainer(m_repaintContainer, repaintRect, InvalidationSelection);
+        // paintInvalidationContainer as the render object. Find out why it does that and fix.
+        if (m_paintInvalidationContainer && m_paintInvalidationContainer->layer()->groupedMapping())
+            RenderLayer::mapRectToPaintInvalidationBacking(m_paintInvalidationContainer, m_paintInvalidationContainer, paintInvalidationRect);
+        m_object->invalidatePaintUsingContainer(m_paintInvalidationContainer, paintInvalidationRect, InvalidationSelection);
     }
 
     RenderBlock* block() const { return toRenderBlock(m_object); }
     GapRects rects() const { return m_rects; }
 
 private:
-    GapRects m_rects; // relative to repaint container
+    GapRects m_rects; // relative to paint invalidation container
 };
 
 } // namespace blink

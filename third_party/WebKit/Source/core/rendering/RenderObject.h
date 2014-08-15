@@ -790,7 +790,7 @@ public:
 
     virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint&) const { }
 
-    // Computes the position of the given render object in the space of |repaintContainer|.
+    // Computes the position of the given render object in the space of |paintInvalidationContainer|.
     LayoutPoint positionFromPaintInvalidationContainer(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const;
 
     IntRect absoluteBoundingBoxRect() const;

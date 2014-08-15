@@ -717,7 +717,7 @@ static void deleteLineRange(LineLayoutState& layoutState, RootInlineBox* startLi
 {
     RootInlineBox* boxToDelete = startLine;
     while (boxToDelete && boxToDelete != stopLine) {
-        layoutState.updateRepaintRangeFromBox(boxToDelete);
+        layoutState.updatePaintInvalidationRangeFromBox(boxToDelete);
         // Note: deleteLineRange(firstRootBox()) is not identical to deleteLineBoxTree().
         // deleteLineBoxTree uses nextLineBox() instead of nextRootBox() when traversing.
         RootInlineBox* next = boxToDelete->nextRootBox();
@@ -743,8 +743,8 @@ void RenderBlockFlow::layoutRunsAndFloats(LineLayoutState& layoutState)
         determineEndPosition(layoutState, startLine, cleanLineStart, cleanLineBidiStatus);
 
     if (startLine) {
-        if (!layoutState.usesRepaintBounds())
-            layoutState.setRepaintRange(logicalHeight());
+        if (!layoutState.usesPaintInvalidationBounds())
+            layoutState.setPaintInvalidationRange(logicalHeight());
         deleteLineRange(layoutState, startLine);
     }
 
@@ -766,7 +766,7 @@ void RenderBlockFlow::layoutRunsAndFloats(LineLayoutState& layoutState)
 
     layoutRunsAndFloatsInRange(layoutState, resolver, cleanLineStart, cleanLineBidiStatus);
     linkToEndLineIfNeeded(layoutState);
-    repaintDirtyFloats(layoutState.floats());
+    markDirtyFloatsForPaintInvalidation(layoutState.floats());
 }
 
 // Before restarting the layout loop with a new logicalHeight, remove all floats that were added and reset the resolver.
@@ -859,8 +859,8 @@ void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
 
             if (lineBox) {
                 lineBox->setLineBreakInfo(endOfLine.object(), endOfLine.offset(), resolver.status());
-                if (layoutState.usesRepaintBounds())
-                    layoutState.updateRepaintRangeFromBox(lineBox);
+                if (layoutState.usesPaintInvalidationBounds())
+                    layoutState.updatePaintInvalidationRangeFromBox(lineBox);
 
                 if (paginated) {
                     LayoutUnit adjustment = 0;
@@ -868,8 +868,8 @@ void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
                     if (adjustment) {
                         LayoutUnit oldLineWidth = availableLogicalWidthForLine(oldLogicalHeight, layoutState.lineInfo().isFirstLine());
                         lineBox->adjustBlockDirectionPosition(adjustment.toFloat());
-                        if (layoutState.usesRepaintBounds())
-                            layoutState.updateRepaintRangeFromBox(lineBox);
+                        if (layoutState.usesPaintInvalidationBounds())
+                            layoutState.updatePaintInvalidationRangeFromBox(lineBox);
 
                         if (availableLogicalWidthForLine(oldLogicalHeight + adjustment, layoutState.lineInfo().isFirstLine()) != oldLineWidth) {
                             // We have to delete this line, remove all floats that got added, and let line layout re-run.
@@ -995,7 +995,7 @@ void RenderBlockFlow::linkToEndLineIfNeeded(LineLayoutState& layoutState)
                     adjustLinePositionForPagination(line, delta, layoutState.flowThread());
                 }
                 if (delta) {
-                    layoutState.updateRepaintRangeFromBox(line, delta);
+                    layoutState.updatePaintInvalidationRangeFromBox(line, delta);
                     line->adjustBlockDirectionPosition(delta.toFloat());
                 }
                 if (Vector<RenderBox*>* cleanLineFloats = line->floatsPtr()) {
@@ -1052,7 +1052,7 @@ void RenderBlockFlow::linkToEndLineIfNeeded(LineLayoutState& layoutState)
     }
 }
 
-void RenderBlockFlow::repaintDirtyFloats(Vector<FloatWithRect>& floats)
+void RenderBlockFlow::markDirtyFloatsForPaintInvalidation(Vector<FloatWithRect>& floats)
 {
     size_t floatCount = floats.size();
     // Floats that did not have layout did not paint invalidations when we laid them out. They would have
@@ -1496,7 +1496,7 @@ void RenderBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
     updatePreferredWidth(maxLogicalWidth, inlineMax);
 }
 
-void RenderBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& repaintLogicalTop, LayoutUnit& repaintLogicalBottom, LayoutUnit afterEdge)
+void RenderBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& paintInvalidationLogicalTop, LayoutUnit& paintInvalidationLogicalBottom, LayoutUnit afterEdge)
 {
     RenderFlowThread* flowThread = flowThreadContainingBlock();
     bool clearLinesForPagination = firstLineBox() && flowThread && !flowThread->hasRegions();
@@ -1504,7 +1504,7 @@ void RenderBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& re
     // Figure out if we should clear out our line boxes.
     // FIXME: Handle resize eventually!
     bool isFullLayout = !firstLineBox() || selfNeedsLayout() || relayoutChildren || clearLinesForPagination;
-    LineLayoutState layoutState(isFullLayout, repaintLogicalTop, repaintLogicalBottom, flowThread);
+    LineLayoutState layoutState(isFullLayout, paintInvalidationLogicalTop, paintInvalidationLogicalBottom, flowThread);
 
     if (isFullLayout) {
         // Ensure the old line boxes will be erased.
@@ -1653,7 +1653,7 @@ RootInlineBox* RenderBlockFlow::determineStartPosition(LineLayoutState& layoutSt
                         break;
                     }
 
-                    layoutState.updateRepaintRangeFromBox(curr, paginationDelta);
+                    layoutState.updatePaintInvalidationRangeFromBox(curr, paginationDelta);
                     curr->adjustBlockDirectionPosition(paginationDelta.toFloat());
                 }
             }

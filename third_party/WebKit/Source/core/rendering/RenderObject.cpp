@@ -1518,12 +1518,12 @@ void RenderObject::invalidatePaintUsingContainer(const RenderLayerModelObject* p
     DisableCompositingQueryAsserts disabler;
 
     if (paintInvalidationContainer->isRenderFlowThread()) {
-        toRenderFlowThread(paintInvalidationContainer)->repaintRectangleInRegions(r);
+        toRenderFlowThread(paintInvalidationContainer)->paintInvalidationRectangleInRegions(r);
         return;
     }
 
     if (paintInvalidationContainer->hasFilter() && paintInvalidationContainer->layer()->requiresFullLayerImageForFilters()) {
-        paintInvalidationContainer->layer()->paintInvalidator().setFilterBackendNeedsRepaintingInRect(r);
+        paintInvalidationContainer->layer()->paintInvalidator().setFilterBackendNeedsPaintInvalidationInRect(r);
         return;
     }
 
@@ -1536,7 +1536,7 @@ void RenderObject::invalidatePaintUsingContainer(const RenderLayerModelObject* p
 
     if (v->usesCompositing()) {
         ASSERT(paintInvalidationContainer->hasLayer() && (paintInvalidationContainer->layer()->compositingState() == PaintsIntoOwnBacking || paintInvalidationContainer->layer()->compositingState() == PaintsIntoGroupedBacking));
-        paintInvalidationContainer->layer()->paintInvalidator().setBackingNeedsRepaintInRect(r);
+        paintInvalidationContainer->layer()->paintInvalidator().setBackingNeedsPaintInvalidationInRect(r);
     }
 }
 
@@ -1785,7 +1785,7 @@ void RenderObject::mapRectToPaintInvalidationBacking(const RenderLayerModelObjec
 
         if (o->hasOverflowClip()) {
             RenderBox* boxParent = toRenderBox(o);
-            boxParent->applyCachedClipAndScrollOffsetForRepaint(rect);
+            boxParent->applyCachedClipAndScrollOffsetForPaintInvalidation(rect);
             if (rect.isEmpty())
                 return;
         }

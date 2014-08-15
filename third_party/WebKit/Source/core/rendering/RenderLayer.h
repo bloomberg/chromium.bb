@@ -382,7 +382,7 @@ public:
 
     // FIXME: This should probably return a ScrollableArea but a lot of internal methods are mistakenly exposed.
     RenderLayerScrollableArea* scrollableArea() const { return m_scrollableArea.get(); }
-    RenderLayerRepainter& paintInvalidator() { return m_repainter; }
+    RenderLayerRepainter& paintInvalidator() { return m_paintInvalidator; }
     RenderLayerClipper& clipper() { return m_clipper; }
     const RenderLayerClipper& clipper() const { return m_clipper; }
 
@@ -734,7 +734,7 @@ private:
 
     CompositedLayerMapping* m_groupedMapping;
 
-    RenderLayerRepainter m_repainter;
+    RenderLayerRepainter m_paintInvalidator;
     RenderLayerClipper m_clipper; // FIXME: Lazily allocate?
     OwnPtr<RenderLayerStackingNode> m_stackingNode;
     OwnPtrWillBePersistent<RenderLayerReflectionInfo> m_reflectionInfo;

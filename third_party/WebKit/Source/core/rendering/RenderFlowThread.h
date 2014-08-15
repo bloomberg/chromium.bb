@@ -80,7 +80,7 @@ public:
     void invalidateRegions();
     bool hasValidRegionInfo() const { return !m_regionsInvalidated && !m_multiColumnSetList.isEmpty(); }
 
-    void repaintRectangleInRegions(const LayoutRect&) const;
+    void paintInvalidationRectangleInRegions(const LayoutRect&) const;
 
     LayoutUnit pageLogicalHeightForOffset(LayoutUnit);
     LayoutUnit pageRemainingLogicalHeightForOffset(LayoutUnit, PageBoundaryRule = IncludePageBoundary);
@@ -115,7 +115,7 @@ protected:
     virtual const char* renderName() const = 0;
 
     void updateRegionsFlowThreadPortionRect();
-    bool shouldRepaint(const LayoutRect&) const;
+    bool shouldIssuePaintInvalidations(const LayoutRect&) const;
 
     void getRegionRangeForBox(const RenderBox*, RenderMultiColumnSet*& startColumnSet, RenderMultiColumnSet*& endColumnSet) const;
 

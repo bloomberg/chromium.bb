@@ -33,7 +33,7 @@ namespace blink {
 // during an entire linebox tree layout pass (aka layoutInlineChildren).
 class LineLayoutState {
 public:
-    LineLayoutState(bool fullLayout, LayoutUnit& repaintLogicalTop, LayoutUnit& repaintLogicalBottom, RenderFlowThread* flowThread)
+    LineLayoutState(bool fullLayout, LayoutUnit& paintInvalidationLogicalTop, LayoutUnit& paintInvalidationLogicalBottom, RenderFlowThread* flowThread)
         : m_lastFloat(0)
         , m_endLine(0)
         , m_floatIndex(0)
@@ -42,29 +42,29 @@ public:
         , m_checkForFloatsFromLastLine(false)
         , m_hasInlineChild(false)
         , m_isFullLayout(fullLayout)
-        , m_repaintLogicalTop(repaintLogicalTop)
-        , m_repaintLogicalBottom(repaintLogicalBottom)
+        , m_paintInvalidationLogicalTop(paintInvalidationLogicalTop)
+        , m_paintInvalidationLogicalBottom(paintInvalidationLogicalBottom)
         , m_adjustedLogicalLineTop(0)
-        , m_usesRepaintBounds(false)
+        , m_usesPaintInvalidationBounds(false)
         , m_flowThread(flowThread)
     { }
 
     void markForFullLayout() { m_isFullLayout = true; }
     bool isFullLayout() const { return m_isFullLayout; }
 
-    bool usesRepaintBounds() const { return m_usesRepaintBounds; }
+    bool usesPaintInvalidationBounds() const { return m_usesPaintInvalidationBounds; }
 
-    void setRepaintRange(LayoutUnit logicalHeight)
+    void setPaintInvalidationRange(LayoutUnit logicalHeight)
     {
-        m_usesRepaintBounds = true;
-        m_repaintLogicalTop = m_repaintLogicalBottom = logicalHeight;
+        m_usesPaintInvalidationBounds = true;
+        m_paintInvalidationLogicalTop = m_paintInvalidationLogicalBottom = logicalHeight;
     }
 
-    void updateRepaintRangeFromBox(RootInlineBox* box, LayoutUnit paginationDelta = 0)
+    void updatePaintInvalidationRangeFromBox(RootInlineBox* box, LayoutUnit paginationDelta = 0)
     {
-        m_usesRepaintBounds = true;
-        m_repaintLogicalTop = std::min(m_repaintLogicalTop, box->logicalTopVisualOverflow() + std::min<LayoutUnit>(paginationDelta, 0));
-        m_repaintLogicalBottom = std::max(m_repaintLogicalBottom, box->logicalBottomVisualOverflow() + std::max<LayoutUnit>(paginationDelta, 0));
+        m_usesPaintInvalidationBounds = true;
+        m_paintInvalidationLogicalTop = std::min(m_paintInvalidationLogicalTop, box->logicalTopVisualOverflow() + std::min<LayoutUnit>(paginationDelta, 0));
+        m_paintInvalidationLogicalBottom = std::max(m_paintInvalidationLogicalBottom, box->logicalBottomVisualOverflow() + std::max<LayoutUnit>(paginationDelta, 0));
     }
 
     bool endLineMatched() const { return m_endLineMatched; }
@@ -108,19 +108,19 @@ private:
     LayoutUnit m_endLineLogicalTop;
     bool m_endLineMatched;
     bool m_checkForFloatsFromLastLine;
-    // Used as a performance optimization to avoid doing a full repaint when our floats
+    // Used as a performance optimization to avoid doing a full paint invalidation when our floats
     // change but we don't have any inline children.
     bool m_hasInlineChild;
 
     bool m_isFullLayout;
 
     // FIXME: Should this be a range object instead of two ints?
-    LayoutUnit& m_repaintLogicalTop;
-    LayoutUnit& m_repaintLogicalBottom;
+    LayoutUnit& m_paintInvalidationLogicalTop;
+    LayoutUnit& m_paintInvalidationLogicalBottom;
 
     LayoutUnit m_adjustedLogicalLineTop;
 
-    bool m_usesRepaintBounds;
+    bool m_usesPaintInvalidationBounds;
 
     RenderFlowThread* m_flowThread;
 };

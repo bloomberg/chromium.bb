@@ -1021,8 +1021,8 @@ LayoutRect RenderInline::clippedOverflowRectForPaintInvalidation(const RenderLay
     if ((!firstLineBoxIncludingCulling() && !continuation()) || style()->visibility() != VISIBLE)
         return LayoutRect();
 
-    LayoutRect repaintRect(linesVisualOverflowBoundingBox());
-    bool hitRepaintContainer = false;
+    LayoutRect paintInvalidationRect(linesVisualOverflowBoundingBox());
+    bool hitPaintInvalidationContainer = false;
 
     // We need to add in the in-flow position offsets of any inlines (including us) up to our
     // containing block.
@@ -1030,38 +1030,38 @@ LayoutRect RenderInline::clippedOverflowRectForPaintInvalidation(const RenderLay
     for (const RenderObject* inlineFlow = this; inlineFlow && inlineFlow->isRenderInline() && inlineFlow != cb;
          inlineFlow = inlineFlow->parent()) {
         if (inlineFlow == paintInvalidationContainer) {
-            hitRepaintContainer = true;
+            hitPaintInvalidationContainer = true;
             break;
         }
         if (inlineFlow->style()->hasInFlowPosition() && inlineFlow->hasLayer())
-            repaintRect.move(toRenderInline(inlineFlow)->layer()->offsetForInFlowPosition());
+            paintInvalidationRect.move(toRenderInline(inlineFlow)->layer()->offsetForInFlowPosition());
     }
 
     LayoutUnit outlineSize = style()->outlineSize();
-    repaintRect.inflate(outlineSize);
+    paintInvalidationRect.inflate(outlineSize);
 
-    if (hitRepaintContainer || !cb)
-        return repaintRect;
+    if (hitPaintInvalidationContainer || !cb)
+        return paintInvalidationRect;
 
     if (cb->hasColumns())
-        cb->adjustRectForColumns(repaintRect);
+        cb->adjustRectForColumns(paintInvalidationRect);
 
     if (cb->hasOverflowClip())
-        cb->applyCachedClipAndScrollOffsetForRepaint(repaintRect);
+        cb->applyCachedClipAndScrollOffsetForPaintInvalidation(paintInvalidationRect);
 
-    cb->mapRectToPaintInvalidationBacking(paintInvalidationContainer, repaintRect, paintInvalidationState);
+    cb->mapRectToPaintInvalidationBacking(paintInvalidationContainer, paintInvalidationRect, paintInvalidationState);
 
     if (outlineSize) {
         for (RenderObject* curr = firstChild(); curr; curr = curr->nextSibling()) {
             if (!curr->isText())
-                repaintRect.unite(curr->rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineSize));
+                paintInvalidationRect.unite(curr->rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineSize));
         }
 
         if (continuation() && !continuation()->isInline() && continuation()->parent())
-            repaintRect.unite(continuation()->rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineSize));
+            paintInvalidationRect.unite(continuation()->rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineSize));
     }
 
-    return repaintRect;
+    return paintInvalidationRect;
 }
 
 LayoutRect RenderInline::rectWithOutlineForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, LayoutUnit outlineWidth, const PaintInvalidationState* paintInvalidationState) const
@@ -1098,10 +1098,10 @@ void RenderInline::mapRectToPaintInvalidationBacking(const RenderLayerModelObjec
     if (o->isRenderBlockFlow() && !style()->hasOutOfFlowPosition()) {
         RenderBlock* cb = toRenderBlock(o);
         if (cb->hasColumns()) {
-            LayoutRect repaintRect(topLeft, rect.size());
-            cb->adjustRectForColumns(repaintRect);
-            topLeft = repaintRect.location();
-            rect = repaintRect;
+            LayoutRect paintInvalidationRect(topLeft, rect.size());
+            cb->adjustRectForColumns(paintInvalidationRect);
+            topLeft = paintInvalidationRect.location();
+            rect = paintInvalidationRect;
         }
     }
 
@@ -1118,7 +1118,7 @@ void RenderInline::mapRectToPaintInvalidationBacking(const RenderLayerModelObjec
     rect.setLocation(topLeft);
     if (o->hasOverflowClip()) {
         RenderBox* containerBox = toRenderBox(o);
-        containerBox->applyCachedClipAndScrollOffsetForRepaint(rect);
+        containerBox->applyCachedClipAndScrollOffsetForPaintInvalidation(rect);
         if (rect.isEmpty())
             return;
     }
@@ -1155,12 +1155,12 @@ LayoutSize RenderInline::offsetFromContainer(const RenderObject* container, cons
     return offset;
 }
 
-void RenderInline::mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
+void RenderInline::mapLocalToContainer(const RenderLayerModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
-    if (repaintContainer == this)
+    if (paintInvalidationContainer == this)
         return;
 
-    if (paintInvalidationState && paintInvalidationState->canMapToContainer(repaintContainer)) {
+    if (paintInvalidationState && paintInvalidationState->canMapToContainer(paintInvalidationContainer)) {
         LayoutSize offset = paintInvalidationState->paintOffset();
         if (style()->hasInFlowPosition() && layer())
             offset += layer()->offsetForInFlowPosition();
@@ -1169,7 +1169,7 @@ void RenderInline::mapLocalToContainer(const RenderLayerModelObject* repaintCont
     }
 
     bool containerSkipped;
-    RenderObject* o = container(repaintContainer, &containerSkipped);
+    RenderObject* o = container(paintInvalidationContainer, &containerSkipped);
     if (!o)
         return;
 
@@ -1192,14 +1192,14 @@ void RenderInline::mapLocalToContainer(const RenderLayerModelObject* repaintCont
         transformState.move(containerOffset.width(), containerOffset.height(), preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
 
     if (containerSkipped) {
-        // There can't be a transform between repaintContainer and o, because transforms create containers, so it should be safe
-        // to just subtract the delta between the repaintContainer and o.
-        LayoutSize containerOffset = repaintContainer->offsetFromAncestorContainer(o);
+        // There can't be a transform between paintInvalidationContainer and o, because transforms create containers, so it should be safe
+        // to just subtract the delta between the paintInvalidationContainer and o.
+        LayoutSize containerOffset = paintInvalidationContainer->offsetFromAncestorContainer(o);
         transformState.move(-containerOffset.width(), -containerOffset.height(), preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
         return;
     }
 
-    o->mapLocalToContainer(repaintContainer, transformState, mode, wasFixed, paintInvalidationState);
+    o->mapLocalToContainer(paintInvalidationContainer, transformState, mode, wasFixed, paintInvalidationState);
 }
 
 void RenderInline::updateDragState(bool dragOn)
@@ -1370,7 +1370,7 @@ void RenderInline::addFocusRingRects(Vector<IntRect>& rects, const LayoutPoint& 
     addChildFocusRingRects(rects, additionalOffset, paintContainer);
 
     if (continuation()) {
-        // If the continuation doesn't paint into the same container, let its repaint container handle it.
+        // If the continuation doesn't paint into the same container, let its paint invalidation container handle it.
         if (paintContainer != continuation()->containerForPaintInvalidation())
             return;
         if (continuation()->isInline())

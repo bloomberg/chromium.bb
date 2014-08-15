@@ -44,7 +44,7 @@ public:
 
     int size() const;
 
-    void repaintScrollbarIfNeeded();
+    void paintInvalidationOfScrollbarIfNeeded();
 
 private:
     HTMLSelectElement* selectElement() const;

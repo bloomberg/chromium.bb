@@ -190,7 +190,7 @@ bool RenderText::isWordBreak() const
 
 void RenderText::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
-    // There is no need to ever schedule repaints from a style change of a text run, since
+    // There is no need to ever schedule paint invalidations from a style change of a text run, since
     // we already did this for the parent of the text run.
     // We do have to schedule layouts, though, since a style change can force us to
     // need to relayout.
@@ -1575,18 +1575,18 @@ LayoutRect RenderText::linesVisualOverflowBoundingBox() const
 
 LayoutRect RenderText::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
-    RenderObject* rendererToRepaint = containingBlock();
+    RenderObject* rendererToIssuePaintInvalidations = containingBlock();
 
     // Do not cross self-painting layer boundaries.
     RenderObject* enclosingLayerRenderer = enclosingLayer()->renderer();
-    if (enclosingLayerRenderer != rendererToRepaint && !rendererToRepaint->isDescendantOf(enclosingLayerRenderer))
-        rendererToRepaint = enclosingLayerRenderer;
+    if (enclosingLayerRenderer != rendererToIssuePaintInvalidations && !rendererToIssuePaintInvalidations->isDescendantOf(enclosingLayerRenderer))
+        rendererToIssuePaintInvalidations = enclosingLayerRenderer;
 
-    // The renderer we chose to repaint may be an ancestor of paintInvalidationContainer, but we need to do a paintInvalidationContainer-relative repaint.
-    if (paintInvalidationContainer && paintInvalidationContainer != rendererToRepaint && !rendererToRepaint->isDescendantOf(paintInvalidationContainer))
+    // The renderer we chose to issue paint invalidations may be an ancestor of paintInvalidationContainer, but we need to do a paintInvalidationContainer-relative paint invalidation.
+    if (paintInvalidationContainer && paintInvalidationContainer != rendererToIssuePaintInvalidations && !rendererToIssuePaintInvalidations->isDescendantOf(paintInvalidationContainer))
         return paintInvalidationContainer->clippedOverflowRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationState);
 
-    return rendererToRepaint->clippedOverflowRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationState);
+    return rendererToIssuePaintInvalidations->clippedOverflowRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationState);
 }
 
 LayoutRect RenderText::selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, bool clipToVisibleContent)

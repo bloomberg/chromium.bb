@@ -36,7 +36,7 @@ class RenderThemeChromiumMac FINAL : public RenderTheme {
 public:
     static PassRefPtr<RenderTheme> create();
 
-    virtual void adjustRepaintRect(const RenderObject*, IntRect&) OVERRIDE;
+    virtual void adjustPaintInvalidationRect(const RenderObject*, IntRect&) OVERRIDE;
 
     virtual bool isControlStyled(const RenderStyle*, const CachedUAStyle*) const OVERRIDE;
 

@@ -1378,11 +1378,11 @@ void RenderGrid::paintChildren(PaintInfo& paintInfo, const LayoutPoint& paintOff
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!gridIsDirty());
 
-    LayoutRect localRepaintRect = paintInfo.rect;
-    localRepaintRect.moveBy(-paintOffset);
+    LayoutRect localPaintInvalidationRect = paintInfo.rect;
+    localPaintInvalidationRect.moveBy(-paintOffset);
 
-    GridSpan dirtiedColumns = dirtiedGridAreas(m_columnPositions, localRepaintRect.x(), localRepaintRect.maxX());
-    GridSpan dirtiedRows = dirtiedGridAreas(m_rowPositions, localRepaintRect.y(), localRepaintRect.maxY());
+    GridSpan dirtiedColumns = dirtiedGridAreas(m_columnPositions, localPaintInvalidationRect.x(), localPaintInvalidationRect.maxX());
+    GridSpan dirtiedRows = dirtiedGridAreas(m_rowPositions, localPaintInvalidationRect.y(), localPaintInvalidationRect.maxY());
 
     Vector<std::pair<RenderBox*, size_t> > gridItemsToBePainted;
 
@@ -1395,7 +1395,7 @@ void RenderGrid::paintChildren(PaintInfo& paintInfo, const LayoutPoint& paintOff
     }
 
     for (Vector<RenderBox*>::const_iterator it = m_gridItemsOverflowingGridArea.begin(); it != m_gridItemsOverflowingGridArea.end(); ++it) {
-        if ((*it)->frameRect().intersects(localRepaintRect))
+        if ((*it)->frameRect().intersects(localPaintInvalidationRect))
             gridItemsToBePainted.append(std::make_pair(*it, m_gridItemsIndexesMap.get(*it)));
     }
 

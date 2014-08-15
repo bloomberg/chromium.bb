@@ -63,15 +63,15 @@ RenderObject* RenderObjectChildList::removeChildNode(RenderObject* owner, Render
         toRenderBox(oldChild)->removeFloatingOrPositionedChildFromBlockLists();
 
     {
-        // FIXME: We should not be allowing repaint during layout. crbug.com/336250
+        // FIXME: We should not be allowing paint invalidation during layout. crbug.com/336250
         AllowPaintInvalidationScope scoper(owner->frameView());
 
         // So that we'll get the appropriate dirty bit set (either that a normal flow child got yanked or
-        // that a positioned child got yanked). We also repaint, so that the area exposed when the child
-        // disappears gets repainted properly.
+        // that a positioned child got yanked). We also issue paint invalidations, so that the area exposed when the child
+        // disappears gets paint invalidated properly.
         if (!owner->documentBeingDestroyed() && notifyRenderer && oldChild->everHadLayout()) {
             oldChild->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
-            // We only repaint |oldChild| if we have a RenderLayer as its visual overflow may not be tracked by its parent.
+            // We only issue paint invalidations for |oldChild| if we have a RenderLayer as its visual overflow may not be tracked by its parent.
             if (oldChild->isBody())
                 owner->view()->paintInvalidationForWholeRenderer();
             else

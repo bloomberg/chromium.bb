@@ -2676,7 +2676,7 @@ const RenderObject* RenderBoxModelObject::pushMappingToContainer(const RenderLay
 
     LayoutSize adjustmentForSkippedAncestor;
     if (ancestorSkipped) {
-        // There can't be a transform between repaintContainer and o, because transforms create containers, so it should be safe
+        // There can't be a transform between paintInvalidationContainer and o, because transforms create containers, so it should be safe
         // to just subtract the delta between the ancestor and o.
         adjustmentForSkippedAncestor = -ancestorToStopAt->offsetFromAncestorContainer(container);
     }

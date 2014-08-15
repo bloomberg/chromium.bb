@@ -269,7 +269,7 @@ void RenderWidget::updateOnWidgetChange()
         widget->hide();
     } else {
         widget->show();
-        // FIXME: Why do we repaint in this case, but not the other?
+        // FIXME: Why do we issue a full paint invalidation in this case, but not the other?
         paintInvalidationForWholeRenderer();
     }
 }

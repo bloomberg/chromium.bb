@@ -252,7 +252,7 @@ void RenderDeprecatedFlexibleBox::layoutBlock(bool relayoutChildren)
         return;
 
     {
-        // LayoutState needs this deliberate scope to pop before repaint
+        // LayoutState needs this deliberate scope to pop before paint invalidation.
         LayoutState state(*this, locationOffset());
 
         LayoutSize previousSize = size();

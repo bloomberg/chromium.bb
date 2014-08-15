@@ -129,7 +129,7 @@ void RenderLayerFilterInfo::updateReferenceFilterClients(const FilterOperations&
             m_externalSVGReferences.append(cachedSVGDocument);
         } else {
             // Reference is internal; add layer as a client so we can trigger
-            // filter repaint on SVG attribute change.
+            // filter paint invalidation on SVG attribute change.
             Element* filter = m_layer->renderer()->node()->document().getElementById(referenceFilterOperation->fragment());
             if (!isSVGFilterElement(filter))
                 continue;

@@ -102,8 +102,8 @@ bool RenderTableCol::canHaveChildren() const
 
 LayoutRect RenderTableCol::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
-    // For now, just repaint the whole table.
-    // FIXME: Find a better way to do this, e.g., need to repaint all the cells that we
+    // For now, just paint invalidate the whole table.
+    // FIXME: Find a better way to do this, e.g., need to paint invalidate all the cells that we
     // might have propagated a background color or borders into.
     // FIXME: check for paintInvalidationContainer each time here?
 
@@ -115,7 +115,7 @@ LayoutRect RenderTableCol::clippedOverflowRectForPaintInvalidation(const RenderL
 
 void RenderTableCol::imageChanged(WrappedImagePtr, const IntRect*)
 {
-    // FIXME: Repaint only the rect the image paints in.
+    // FIXME: Issue paint invalidation of only the rect the image paints in.
     paintInvalidationForWholeRenderer();
 }
 

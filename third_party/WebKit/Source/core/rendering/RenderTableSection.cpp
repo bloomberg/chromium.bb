@@ -41,7 +41,7 @@ namespace blink {
 
 using namespace HTMLNames;
 
-// Those 2 variables are used to balance the memory consumption vs the repaint time on big tables.
+// Those 2 variables are used to balance the memory consumption vs the paint invalidation time on big tables.
 static unsigned gMinTableSizeToUseFastPaintPathWithOverflowingCell = 75 * 75;
 static float gMaxAllowedOverflowingCellRatioForFastPaintPath = 0.1f;
 
@@ -1013,9 +1013,9 @@ void RenderTableSection::layoutRows()
 
             LayoutSize childOffset(cell->location() - oldCellRect.location());
             if (childOffset.width() || childOffset.height()) {
-                // If the child moved, we have to repaint it as well as any floating/positioned
+                // If the child moved, we have to issue paint invalidations to it as well as any floating/positioned
                 // descendants. An exception is if we need a layout. In this case, we know we're going to
-                // repaint ourselves (and the child) anyway.
+                // issue paint invalidations ourselves (and the child) anyway.
                 if (!table()->selfNeedsLayout() && cell->checkForPaintInvalidation())
                     cell->setMayNeedPaintInvalidation(true);
             }
@@ -1250,7 +1250,7 @@ static inline bool compareCellPositions(RenderTableCell* elem1, RenderTableCell*
 }
 
 // This comparison is used only when we have overflowing cells as we have an unsorted array to sort. We thus need
-// to sort both on rows and columns to properly repaint.
+// to sort both on rows and columns to properly issue paint invalidations.
 static inline bool compareCellPositionsWithOverflowingCells(RenderTableCell* elem1, RenderTableCell* elem2)
 {
     if (elem1->rowIndex() != elem2->rowIndex())
@@ -1315,7 +1315,7 @@ CellSpan RenderTableSection::dirtiedRows(const LayoutRect& damageRect) const
 
     CellSpan coveredRows = spannedRows(damageRect);
 
-    // To repaint the border we might need to repaint first or last row even if they are not spanned themselves.
+    // To issue paint invalidations for the border we might need to paint invalidate the first or last row even if they are not spanned themselves.
     if (coveredRows.start() >= m_rowPos.size() - 1 && m_rowPos[m_rowPos.size() - 1] + table()->outerBorderAfter() >= damageRect.y())
         --coveredRows.start();
 
@@ -1333,7 +1333,7 @@ CellSpan RenderTableSection::dirtiedColumns(const LayoutRect& damageRect) const
     CellSpan coveredColumns = spannedColumns(damageRect);
 
     const Vector<int>& columnPos = table()->columnPositions();
-    // To repaint the border we might need to repaint first or last column even if they are not spanned themselves.
+    // To issue paint invalidations for the border we might need to paint invalidate the first or last column even if they are not spanned themselves.
     if (coveredColumns.start() >= columnPos.size() - 1 && columnPos[columnPos.size() - 1] + table()->outerBorderEnd() >= damageRect.x())
         --coveredColumns.start();
 
@@ -1398,10 +1398,10 @@ CellSpan RenderTableSection::spannedColumns(const LayoutRect& flippedRect) const
 
 void RenderTableSection::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    LayoutRect localRepaintRect = paintInfo.rect;
-    localRepaintRect.moveBy(-paintOffset);
+    LayoutRect localPaintInvalidationRect = paintInfo.rect;
+    localPaintInvalidationRect.moveBy(-paintOffset);
 
-    LayoutRect tableAlignedRect = logicalRectForWritingModeAndDirection(localRepaintRect);
+    LayoutRect tableAlignedRect = logicalRectForWritingModeAndDirection(localPaintInvalidationRect);
 
     CellSpan dirtiedRows = this->dirtiedRows(tableAlignedRect);
     CellSpan dirtiedColumns = this->dirtiedColumns(tableAlignedRect);
@@ -1446,7 +1446,7 @@ void RenderTableSection::paintObject(PaintInfo& paintInfo, const LayoutPoint& pa
             ASSERT(m_overflowingCells.size() < totalRows * totalCols * gMaxAllowedOverflowingCellRatioForFastPaintPath);
 #endif
 
-            // To make sure we properly repaint the section, we repaint all the overflowing cells that we collected.
+            // To make sure we properly paint invalidate the section, we paint invalidated all the overflowing cells that we collected.
             Vector<RenderTableCell*> cells;
             copyToVector(m_overflowingCells, cells);
 
@@ -1495,7 +1495,7 @@ void RenderTableSection::paintObject(PaintInfo& paintInfo, const LayoutPoint& pa
 
 void RenderTableSection::imageChanged(WrappedImagePtr, const IntRect*)
 {
-    // FIXME: Examine cells and repaint only the rect the image paints in.
+    // FIXME: Examine cells and issue paint invalidations of only the rect the image paints in.
     paintInvalidationForWholeRenderer();
 }
 

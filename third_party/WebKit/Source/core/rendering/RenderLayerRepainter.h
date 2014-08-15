@@ -58,7 +58,7 @@ class RenderLayerRepainter {
 public:
     RenderLayerRepainter(RenderLayerModelObject&);
 
-    LayoutRect repaintRectIncludingNonCompositingDescendants() const;
+    LayoutRect paintInvalidationRectIncludingNonCompositingDescendants() const;
 
     void paintInvalidationIncludingNonCompositingDescendants();
 
@@ -66,14 +66,14 @@ public:
 
     // Indicate that the layer contents need to be repainted. Only has an effect
     // if layer compositing is being used,
-    void setBackingNeedsRepaintInRect(const LayoutRect&); // r is in the coordinate space of the layer's render object
+    void setBackingNeedsPaintInvalidationInRect(const LayoutRect&); // r is in the coordinate space of the layer's render object
 
-    void setFilterBackendNeedsRepaintingInRect(const LayoutRect&);
+    void setFilterBackendNeedsPaintInvalidationInRect(const LayoutRect&);
 
 private:
-    void repaintIncludingNonCompositingDescendantsInternal(const RenderLayerModelObject* repaintContainer);
+    void paintInvalidationIncludingNonCompositingDescendantsInternal(const RenderLayerModelObject* repaintContainer);
 
-    RenderLayer* enclosingFilterRepaintLayer() const;
+    RenderLayer* enclosingFilterPaintInvalidationLayer() const;
 
     RenderLayerModelObject& m_renderer;
 };

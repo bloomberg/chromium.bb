@@ -292,20 +292,20 @@ void FilterEffectRenderer::apply()
 
 LayoutRect FilterEffectRenderer::computeSourceImageRectForDirtyRect(const LayoutRect& filterBoxRect, const LayoutRect& dirtyRect)
 {
-    // The result of this function is the area in the "filterBoxRect" that needs to be repainted, so that we fully cover the "dirtyRect".
-    FloatRect rectForRepaint = dirtyRect;
+    // The result of this function is the area in the "filterBoxRect" that needs paint invalidation, so that we fully cover the "dirtyRect".
+    FloatRect rectForPaintInvalidation = dirtyRect;
     float inf = std::numeric_limits<float>::infinity();
     FloatRect clipRect = FloatRect(FloatPoint(-inf, -inf), FloatSize(inf, inf));
-    rectForRepaint = lastEffect()->getSourceRect(rectForRepaint, clipRect);
-    rectForRepaint.intersect(filterBoxRect);
-    return LayoutRect(rectForRepaint);
+    rectForPaintInvalidation = lastEffect()->getSourceRect(rectForPaintInvalidation, clipRect);
+    rectForPaintInvalidation.intersect(filterBoxRect);
+    return LayoutRect(rectForPaintInvalidation);
 }
 
 bool FilterEffectRendererHelper::prepareFilterEffect(RenderLayer* renderLayer, const LayoutRect& filterBoxRect, const LayoutRect& dirtyRect)
 {
     ASSERT(m_haveFilterEffect && renderLayer->filterRenderer());
     m_renderLayer = renderLayer;
-    m_repaintRect = dirtyRect;
+    m_paintInvalidationRect = dirtyRect;
 
     // Get the zoom factor to scale the filterSourceRect input
     const RenderLayerModelObject* renderer = renderLayer->renderer();
@@ -336,9 +336,9 @@ bool FilterEffectRendererHelper::prepareFilterEffect(RenderLayer* renderLayer, c
     bool hasUpdatedBackingStore = filter->updateBackingStoreRect(filterSourceRect);
     if (filter->hasFilterThatMovesPixels()) {
         if (hasUpdatedBackingStore)
-            m_repaintRect = filterSourceRect;
+            m_paintInvalidationRect = filterSourceRect;
         else
-            m_repaintRect.intersect(filterSourceRect);
+            m_paintInvalidationRect.intersect(filterSourceRect);
     }
     return true;
 }
@@ -362,11 +362,11 @@ GraphicsContext* FilterEffectRendererHelper::beginFilterEffect(GraphicsContext* 
     // Translate the context so that the contents of the layer is captuterd in the offscreen memory buffer.
     sourceGraphicsContext->save();
     // FIXME: can we just use sourceImageRect for everything, and get rid of
-    // m_repaintRect?
+    // m_paintInvalidationRect?
     FloatPoint offset = filter->sourceImageRect().location();
     sourceGraphicsContext->translate(-offset.x(), -offset.y());
-    sourceGraphicsContext->clearRect(m_repaintRect);
-    sourceGraphicsContext->clip(m_repaintRect);
+    sourceGraphicsContext->clearRect(m_paintInvalidationRect);
+    sourceGraphicsContext->clip(m_paintInvalidationRect);
 
     return sourceGraphicsContext;
 }

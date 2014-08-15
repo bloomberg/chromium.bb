@@ -1289,7 +1289,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
             return false;
         }
 
-        IntRect updateRect = pixelSnappedIntRect(layer->paintInvalidator().repaintRectIncludingNonCompositingDescendants());
+        IntRect updateRect = pixelSnappedIntRect(layer->paintInvalidator().paintInvalidationRectIncludingNonCompositingDescendants());
 
         const RenderLayerModelObject* repaintContainer = layer->renderer()->containerForPaintInvalidation();
         if (repaintContainer && !repaintContainer->isRenderView()) {
@@ -1319,7 +1319,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
         scrolledRect.move(-scrollDelta);
         updateRect.unite(scrolledRect);
         // FIXME: We should be able to issue these invalidations separately and before we actually scroll.
-        renderView()->layer()->paintInvalidator().setBackingNeedsRepaintInRect(rootViewToContents(updateRect));
+        renderView()->layer()->paintInvalidator().setBackingNeedsPaintInvalidationInRect(rootViewToContents(updateRect));
     }
 
     return true;
@@ -1330,7 +1330,7 @@ void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
     if (contentsInCompositedLayer()) {
         IntRect updateRect = visibleContentRect();
         ASSERT(renderView());
-        renderView()->layer()->paintInvalidator().setBackingNeedsRepaintInRect(updateRect);
+        renderView()->layer()->paintInvalidator().setBackingNeedsPaintInvalidationInRect(updateRect);
     }
     if (RenderPart* frameRenderer = m_frame->ownerRenderer()) {
         if (isEnclosedInCompositingLayer()) {

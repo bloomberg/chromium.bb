@@ -190,7 +190,7 @@ public:
 
 protected:
     void rebuildFloatsFromIntruding();
-    void layoutInlineChildren(bool relayoutChildren, LayoutUnit& repaintLogicalTop, LayoutUnit& repaintLogicalBottom, LayoutUnit afterEdge);
+    void layoutInlineChildren(bool relayoutChildren, LayoutUnit& paintInvalidationLogicalTop, LayoutUnit& paintInvalidationLogicalBottom, LayoutUnit afterEdge);
 
     void createFloatingObjects();
 
@@ -450,8 +450,8 @@ private:
 
     RenderBlockFlowRareData& ensureRareData();
 
-    LayoutUnit m_repaintLogicalTop;
-    LayoutUnit m_repaintLogicalBottom;
+    LayoutUnit m_paintInvalidationLogicalTop;
+    LayoutUnit m_paintInvalidationLogicalBottom;
 
     virtual bool isSelfCollapsingBlock() const OVERRIDE;
 
@@ -485,7 +485,7 @@ private:
     void layoutRunsAndFloatsInRange(LineLayoutState&, InlineBidiResolver&,
         const InlineIterator& cleanLineStart, const BidiStatus& cleanLineBidiStatus);
     void linkToEndLineIfNeeded(LineLayoutState&);
-    static void repaintDirtyFloats(Vector<FloatWithRect>& floats);
+    static void markDirtyFloatsForPaintInvalidation(Vector<FloatWithRect>& floats);
     void checkFloatsInCleanLine(RootInlineBox*, Vector<FloatWithRect>&, size_t& floatIndex, bool& encounteredNewFloat, bool& dirtiedByFloat);
     RootInlineBox* determineStartPosition(LineLayoutState&, InlineBidiResolver&);
     void determineEndPosition(LineLayoutState&, RootInlineBox* startBox, InlineIterator& cleanLineStart, BidiStatus& cleanLineBidiStatus);

@@ -142,7 +142,7 @@ void RenderSliderContainer::layout()
 
     // We need one-off invalidation code here because painting of the timeline element does not go through style.
     // Instead it has a custom implementation in C++ code.
-    // Therefore the style system cannot understand when it needs to be repainted.
+    // Therefore the style system cannot understand when it needs to be paint invalidated.
     setShouldDoFullPaintInvalidation(true);
 }
 

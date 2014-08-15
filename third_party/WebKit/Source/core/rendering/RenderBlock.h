@@ -156,7 +156,7 @@ public:
     LayoutUnit inlineDirectionOffset(const LayoutSize& offsetFromBlock) const;
 
     virtual bool shouldPaintSelectionGaps() const OVERRIDE FINAL;
-    GapRects selectionGapRectsForRepaint(const RenderLayerModelObject* repaintContainer);
+    GapRects selectionGapRectsForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer);
     LayoutRect logicalLeftSelectionGap(RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
                                        RenderObject* selObj, LayoutUnit logicalLeft, LayoutUnit logicalTop, LayoutUnit logicalHeight, const PaintInfo*);
     LayoutRect logicalRightSelectionGap(RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
@@ -293,10 +293,10 @@ protected:
 
     virtual void updateHitTestResult(HitTestResult&, const LayoutPoint&) OVERRIDE;
 
-    // Delay update scrollbar until finishDelayRepaint() will be
+    // Delay update scrollbar until finishDelayUpdateScrollInfo() will be
     // called. This function is used when a flexbox is laying out its
-    // descendant. If multiple calls are made to startDelayRepaint(),
-    // finishDelayRepaint() will do nothing until finishDelayRepaint()
+    // descendant. If multiple calls are made to startDelayUpdateScrollInfo(),
+    // finishDelayUpdateScrollInfo() will do nothing until finishDelayUpdateScrollInfo()
     // is called the same number of times.
     static void startDelayUpdateScrollInfo();
     static void finishDelayUpdateScrollInfo();
@@ -398,7 +398,7 @@ private:
 
     virtual LayoutRect selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, bool /*clipToVisibleContent*/) OVERRIDE FINAL
     {
-        return selectionGapRectsForRepaint(paintInvalidationContainer);
+        return selectionGapRectsForPaintInvalidation(paintInvalidationContainer);
     }
     bool isSelectionRoot() const;
     GapRects selectionGaps(RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,

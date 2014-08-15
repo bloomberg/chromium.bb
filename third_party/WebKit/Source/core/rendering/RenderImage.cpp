@@ -178,7 +178,7 @@ void RenderImage::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
     if (m_imageResource->errorOccurred() || !newImage)
         imageSizeChanged = setImageSizeForAltText(m_imageResource->cachedImage());
 
-    repaintOrMarkForLayout(imageSizeChanged, rect);
+    paintInvalidationOrMarkForLayout(imageSizeChanged, rect);
 }
 
 void RenderImage::updateIntrinsicSizeIfNeeded(const LayoutSize& newSize)
@@ -197,7 +197,7 @@ void RenderImage::updateInnerContentRect()
         m_imageResource->setContainerSizeForRenderer(containerSize);
 }
 
-void RenderImage::repaintOrMarkForLayout(bool imageSizeChangedToAccomodateAltText, const IntRect* rect)
+void RenderImage::paintInvalidationOrMarkForLayout(bool imageSizeChangedToAccomodateAltText, const IntRect* rect)
 {
     LayoutSize oldIntrinsicSize = intrinsicSize();
     LayoutSize newIntrinsicSize = m_imageResource->intrinsicSize(style()->effectiveZoom());
@@ -227,7 +227,7 @@ void RenderImage::repaintOrMarkForLayout(bool imageSizeChangedToAccomodateAltTex
         return;
     }
 
-    // The image hasn't changed in size or its style constrains its size, so a repaint will suffice.
+    // The image hasn't changed in size or its style constrains its size, so a paint invalidation will suffice.
     if (everHadLayout() && !selfNeedsLayout()) {
         // The inner content rectangle is calculated during layout, but may need an update now
         // (unless the box has already been scheduled for layout). In order to calculate it, we
@@ -236,22 +236,22 @@ void RenderImage::repaintOrMarkForLayout(bool imageSizeChangedToAccomodateAltTex
         updateInnerContentRect();
     }
 
-    LayoutRect repaintRect;
+    LayoutRect paintInvalidationRect;
     if (rect) {
         // The image changed rect is in source image coordinates (without zoom),
         // so map from the bounds of the image to the contentsBox.
         const LayoutSize imageSizeWithoutZoom = m_imageResource->imageSize(1 / style()->effectiveZoom());
-        repaintRect = enclosingIntRect(mapRect(*rect, FloatRect(FloatPoint(), imageSizeWithoutZoom), contentBoxRect()));
+        paintInvalidationRect = enclosingIntRect(mapRect(*rect, FloatRect(FloatPoint(), imageSizeWithoutZoom), contentBoxRect()));
         // Guard against too-large changed rects.
-        repaintRect.intersect(contentBoxRect());
+        paintInvalidationRect.intersect(contentBoxRect());
     } else {
-        repaintRect = contentBoxRect();
+        paintInvalidationRect = contentBoxRect();
     }
 
     {
-        // FIXME: We should not be allowing repaint during layout. crbug.com/339584
+        // FIXME: We should not be allowing paint invalidations during layout. crbug.com/339584
         AllowPaintInvalidationScope scoper(frameView());
-        invalidatePaintRectangle(repaintRect);
+        invalidatePaintRectangle(paintInvalidationRect);
     }
 
     // Tell any potential compositing layers that the image needs updating.
@@ -431,11 +431,11 @@ void RenderImage::areaElementFocusChanged(HTMLAreaElement* areaElement)
     RenderStyle* areaElementStyle = areaElement->computedStyle();
     unsigned short outlineWidth = areaElementStyle->outlineWidth();
 
-    IntRect repaintRect = enclosingIntRect(path.boundingRect());
-    repaintRect.moveBy(-absoluteContentBox().location());
-    repaintRect.inflate(outlineWidth);
+    IntRect paintInvalidationRect = enclosingIntRect(path.boundingRect());
+    paintInvalidationRect.moveBy(-absoluteContentBox().location());
+    paintInvalidationRect.inflate(outlineWidth);
 
-    invalidatePaintRectangle(repaintRect);
+    invalidatePaintRectangle(paintInvalidationRect);
 }
 
 void RenderImage::paintIntoRect(GraphicsContext* context, const LayoutRect& rect)

@@ -319,7 +319,7 @@ LayoutRect RenderTableCell::clippedOverflowRectForPaintInvalidation(const Render
 {
     // If the table grid is dirty, we cannot get reliable information about adjoining cells,
     // so we ignore outside borders. This should not be a problem because it means that
-    // the table is going to recalculate the grid, relayout and repaint its current rect, which
+    // the table is going to recalculate the grid, relayout and issue a paint invalidation of its current rect, which
     // includes any outside borders of this cell.
     if (!table()->collapseBorders() || table()->needsSectionRecalc())
         return RenderBlockFlow::clippedOverflowRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationState);

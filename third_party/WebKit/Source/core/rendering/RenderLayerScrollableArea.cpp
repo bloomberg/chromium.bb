@@ -188,7 +188,7 @@ void RenderLayerScrollableArea::invalidateScrollbarRect(Scrollbar* scrollbar, co
     }
 
     IntRect scrollRect = rect;
-    // If we are not yet inserted into the tree, there is no need to repaint.
+    // If we are not yet inserted into the tree, there is no need to issue paint invaldiations.
     if (!box().parent())
         return;
 
@@ -200,10 +200,10 @@ void RenderLayerScrollableArea::invalidateScrollbarRect(Scrollbar* scrollbar, co
     if (scrollRect.isEmpty())
         return;
 
-    LayoutRect repaintRect = scrollRect;
-    box().flipForWritingMode(repaintRect);
+    LayoutRect paintInvalidationRect = scrollRect;
+    box().flipForWritingMode(paintInvalidationRect);
 
-    IntRect intRect = pixelSnappedIntRect(repaintRect);
+    IntRect intRect = pixelSnappedIntRect(paintInvalidationRect);
 
     if (box().frameView()->isInPerformLayout())
         addScrollbarDamage(scrollbar, intRect);
@@ -355,14 +355,14 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::willScrollLayer(&box());
 
-    const RenderLayerModelObject* repaintContainer = box().containerForPaintInvalidation();
+    const RenderLayerModelObject* paintInvalidationContainer = box().containerForPaintInvalidation();
 
     // Update the positions of our child layers (if needed as only fixed layers should be impacted by a scroll).
     // We don't update compositing layers, because we need to do a deep update from the compositing ancestor.
     if (!frameView->isInPerformLayout()) {
         // If we're in the middle of layout, we'll just update layers once layout has finished.
         layer()->clipper().clearClipRectsIncludingDescendants();
-        box().setPreviousPaintInvalidationRect(box().boundsRectForPaintInvalidation(repaintContainer));
+        box().setPreviousPaintInvalidationRect(box().boundsRectForPaintInvalidation(paintInvalidationContainer));
         // Update regions, scrolling may change the clip of a particular region.
         frameView->updateAnnotatedRegions();
         // FIXME: We shouldn't call updateWidgetPositions() here since it might tear down the render tree,
@@ -377,10 +377,10 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
 
     FloatQuad quadForFakeMouseMoveEvent = FloatQuad(layer()->renderer()->previousPaintInvalidationRect());
 
-    quadForFakeMouseMoveEvent = repaintContainer->localToAbsoluteQuad(quadForFakeMouseMoveEvent);
+    quadForFakeMouseMoveEvent = paintInvalidationContainer->localToAbsoluteQuad(quadForFakeMouseMoveEvent);
     frame->eventHandler().dispatchFakeMouseMoveEventSoonInQuad(quadForFakeMouseMoveEvent);
 
-    bool requiresRepaint = true;
+    bool requiresPaintInvalidation = true;
 
     if (!box().isMarquee() && box().view()->compositor()->inCompositingMode()) {
         // Hits in virtual/gpu/fast/canvas/canvas-scroll-path-into-view.html.
@@ -392,15 +392,15 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
             && box().style()->backgroundLayers().attachment() != LocalBackgroundAttachment;
 
         if (usesCompositedScrolling() || onlyScrolledCompositedLayers)
-            requiresRepaint = false;
+            requiresPaintInvalidation = false;
     }
 
-    // Just schedule a full repaint of our object.
-    if (requiresRepaint) {
+    // Just schedule a full paint invalidation of our object.
+    if (requiresPaintInvalidation) {
         if (box().frameView()->isInPerformLayout())
             box().setShouldDoFullPaintInvalidation(true);
         else
-            box().invalidatePaintUsingContainer(repaintContainer, layer()->renderer()->previousPaintInvalidationRect(), InvalidationScroll);
+            box().invalidatePaintUsingContainer(paintInvalidationContainer, layer()->renderer()->previousPaintInvalidationRect(), InvalidationScroll);
     }
 
     // Schedule the scroll DOM event.

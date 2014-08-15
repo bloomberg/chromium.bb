@@ -580,7 +580,7 @@ public:
     virtual void computeIntrinsicRatioInformation(FloatSize& /* intrinsicSize */, double& /* intrinsicRatio */) const { }
 
     IntSize scrolledContentOffset() const;
-    void applyCachedClipAndScrollOffsetForRepaint(LayoutRect& paintRect) const;
+    void applyCachedClipAndScrollOffsetForPaintInvalidation(LayoutRect& paintRect) const;
 
     virtual bool hasRelativeLogicalHeight() const;
 
@@ -664,7 +664,7 @@ protected:
 
     virtual bool shouldComputeSizeAsReplaced() const { return isReplaced() && !isInlineBlockOrInlineTable(); }
 
-    virtual void mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const OVERRIDE;
+    virtual void mapLocalToContainer(const RenderLayerModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const OVERRIDE;
     virtual void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const OVERRIDE;
 
     void paintRootBoxFillLayers(const PaintInfo&);
@@ -692,8 +692,8 @@ private:
     bool autoWidthShouldFitContent() const;
     void shrinkToFitWidth(const LayoutUnit availableSpace, const LayoutUnit logicalLeftValue, const LayoutUnit bordersPlusPadding, LogicalExtentComputedValues&) const;
 
-    // Returns true if we did a full repaint
-    bool repaintLayerRectsForImage(WrappedImagePtr, const FillLayer&, bool drawingBackground);
+    // Returns true if we did a full paint invalidation
+    bool paintInvalidationLayerRectsForImage(WrappedImagePtr, const FillLayer&, bool drawingBackground);
 
     bool skipContainingBlockForPercentHeightCalculation(const RenderBox* containingBlock) const;
 
