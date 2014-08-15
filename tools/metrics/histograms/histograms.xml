@@ -8847,7 +8847,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Number of messages in a received GCM data message burst.</summary>
 </histogram>
 
-<histogram name="GCM.ReceivedDataMessageIntervalWithinBurstMs"
+<histogram name="GCM.ReceivedDataMessageIntervalWithinBurst"
     units="milliseconds">
   <owner>juyik@chromium.org</owner>
   <summary>
