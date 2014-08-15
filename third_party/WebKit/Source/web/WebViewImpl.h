@@ -277,7 +277,7 @@ public:
         return m_lastMouseDownPoint;
     }
 
-    Frame* focusedWebCoreFrame() const;
+    Frame* focusedCoreFrame() const;
 
     // Returns the currently focused Element or null if no element has focus.
     Element* focusedElement() const;

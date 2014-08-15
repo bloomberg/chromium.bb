@@ -235,7 +235,7 @@ public:
     static WebLocalFrameImpl* create(WebFrameClient*);
     virtual ~WebLocalFrameImpl();
 
-    PassRefPtr<LocalFrame> initializeWebCoreFrame(FrameHost*, FrameOwner*, const AtomicString& name, const AtomicString& fallbackName);
+    PassRefPtr<LocalFrame> initializeCoreFrame(FrameHost*, FrameOwner*, const AtomicString& name, const AtomicString& fallbackName);
 
     PassRefPtr<LocalFrame> createChildFrame(
         const FrameLoadRequest&, HTMLFrameOwnerElement*);
@@ -319,8 +319,8 @@ private:
 
     explicit WebLocalFrameImpl(WebFrameClient*);
 
-    // Sets the local WebCore frame and registers destruction observers.
-    void setWebCoreFrame(PassRefPtr<LocalFrame>);
+    // Sets the local core frame and registers destruction observers.
+    void setCoreFrame(PassRefPtr<LocalFrame>);
 
     void loadJavaScriptURL(const KURL&);
 

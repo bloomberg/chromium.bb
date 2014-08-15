@@ -319,9 +319,9 @@ void WebView::didExitModalLoop()
 void WebViewImpl::setMainFrame(WebFrame* frame)
 {
     if (frame->isWebLocalFrame())
-        toWebLocalFrameImpl(frame)->initializeWebCoreFrame(&page()->frameHost(), 0, nullAtom, nullAtom);
+        toWebLocalFrameImpl(frame)->initializeCoreFrame(&page()->frameHost(), 0, nullAtom, nullAtom);
     else
-        toWebRemoteFrameImpl(frame)->initializeWebCoreFrame(&page()->frameHost(), 0, nullAtom);
+        toWebRemoteFrameImpl(frame)->initializeCoreFrame(&page()->frameHost(), 0, nullAtom);
 }
 
 void WebViewImpl::setAutofillClient(WebAutofillClient* autofillClient)
@@ -877,7 +877,7 @@ void WebViewImpl::setShowScrollBottleneckRects(bool show)
 
 void WebViewImpl::getSelectionRootBounds(WebRect& bounds) const
 {
-    const Frame* frame = focusedWebCoreFrame();
+    const Frame* frame = focusedCoreFrame();
     if (!frame || !frame->isLocalFrame())
         return;
 
@@ -943,7 +943,7 @@ bool WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
         return true;
     }
 
-    RefPtr<Frame> focusedFrame = focusedWebCoreFrame();
+    RefPtr<Frame> focusedFrame = focusedCoreFrame();
     if (focusedFrame && focusedFrame->isRemoteFrameTemporary()) {
         WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(toLocalFrameTemporary(focusedFrame.get()));
         webFrame->client()->forwardInputEvent(&event);
@@ -1006,7 +1006,7 @@ bool WebViewImpl::handleCharEvent(const WebKeyboardEvent& event)
     if (m_pagePopup)
         return m_pagePopup->handleKeyEvent(PlatformKeyboardEventBuilder(event));
 
-    LocalFrame* frame = toLocalFrame(focusedWebCoreFrame());
+    LocalFrame* frame = toLocalFrame(focusedCoreFrame());
     if (!frame)
         return suppress;
 
@@ -1383,7 +1383,7 @@ void WebViewImpl::showContextMenuAtPoint(float x, float y, PassRefPtr<ContextMen
 
 bool WebViewImpl::keyEventDefault(const WebKeyboardEvent& event)
 {
-    LocalFrame* frame = toLocalFrame(focusedWebCoreFrame());
+    LocalFrame* frame = toLocalFrame(focusedCoreFrame());
     if (!frame)
         return false;
 
@@ -1442,10 +1442,9 @@ bool WebViewImpl::scrollViewWithKeyboard(int keyCode, int modifiers)
     if (!mapKeyCodeForScroll(keyCode, &scrollDirection, &scrollGranularity))
         return false;
 
-    LocalFrame* frame = toLocalFrame(focusedWebCoreFrame());
-    if (!frame)
-        return false;
-    return frame->eventHandler().bubblingScroll(scrollDirection, scrollGranularity);
+    if (LocalFrame* frame = toLocalFrame(focusedCoreFrame()))
+        return frame->eventHandler().bubblingScroll(scrollDirection, scrollGranularity);
+    return false;
 }
 
 bool WebViewImpl::mapKeyCodeForScroll(
@@ -1549,7 +1548,7 @@ void WebViewImpl::closePagePopup(PagePopup* popup)
     m_pagePopup = nullptr;
 }
 
-Frame* WebViewImpl::focusedWebCoreFrame() const
+Frame* WebViewImpl::focusedCoreFrame() const
 {
     return m_page ? m_page->focusController().focusedOrMainFrame() : 0;
 }
@@ -2064,7 +2063,7 @@ bool WebViewImpl::setComposition(
     int selectionStart,
     int selectionEnd)
 {
-    LocalFrame* focused = toLocalFrame(focusedWebCoreFrame());
+    LocalFrame* focused = toLocalFrame(focusedCoreFrame());
     if (!focused || !m_imeAcceptEvents)
         return false;
 
@@ -2130,7 +2129,7 @@ bool WebViewImpl::confirmComposition(const WebString& text)
 
 bool WebViewImpl::confirmComposition(const WebString& text, ConfirmCompositionBehavior selectionBehavior)
 {
-    LocalFrame* focused = toLocalFrame(focusedWebCoreFrame());
+    LocalFrame* focused = toLocalFrame(focusedCoreFrame());
     if (!focused || !m_imeAcceptEvents)
         return false;
 
@@ -2142,7 +2141,7 @@ bool WebViewImpl::confirmComposition(const WebString& text, ConfirmCompositionBe
 
 bool WebViewImpl::compositionRange(size_t* location, size_t* length)
 {
-    LocalFrame* focused = toLocalFrame(focusedWebCoreFrame());
+    LocalFrame* focused = toLocalFrame(focusedCoreFrame());
     if (!focused || !m_imeAcceptEvents)
         return false;
 
@@ -2164,7 +2163,7 @@ WebTextInputInfo WebViewImpl::textInputInfo()
 {
     WebTextInputInfo info;
 
-    Frame* focusedFrame = focusedWebCoreFrame();
+    Frame* focusedFrame = focusedCoreFrame();
     if (!focusedFrame->isLocalFrame())
         return info;
 
@@ -2326,7 +2325,7 @@ WebString WebViewImpl::inputModeOfFocusedElement()
 
 bool WebViewImpl::selectionBounds(WebRect& anchor, WebRect& focus) const
 {
-    const Frame* frame = focusedWebCoreFrame();
+    const Frame* frame = focusedCoreFrame();
     if (!frame || !frame->isLocalFrame())
         return false;
 
@@ -2385,7 +2384,7 @@ InputMethodContext* WebViewImpl::inputMethodContext()
     if (!m_imeAcceptEvents)
         return 0;
 
-    LocalFrame* focusedFrame = toLocalFrame(focusedWebCoreFrame());
+    LocalFrame* focusedFrame = toLocalFrame(focusedCoreFrame());
     if (!focusedFrame)
         return 0;
 
@@ -2424,7 +2423,7 @@ void WebViewImpl::didHideCandidateWindow()
 
 bool WebViewImpl::selectionTextDirection(WebTextDirection& start, WebTextDirection& end) const
 {
-    const LocalFrame* frame = toLocalFrame(focusedWebCoreFrame());
+    const LocalFrame* frame = toLocalFrame(focusedCoreFrame());
     if (!frame)
         return false;
     FrameSelection& selection = frame->selection();
@@ -2437,14 +2436,14 @@ bool WebViewImpl::selectionTextDirection(WebTextDirection& start, WebTextDirecti
 
 bool WebViewImpl::isSelectionAnchorFirst() const
 {
-    if (const LocalFrame* frame = toLocalFrame(focusedWebCoreFrame()))
+    if (const LocalFrame* frame = toLocalFrame(focusedCoreFrame()))
         return frame->selection().selection().isBaseFirst();
     return false;
 }
 
 WebVector<WebCompositionUnderline> WebViewImpl::compositionUnderlines() const
 {
-    const LocalFrame* focused = toLocalFrame(focusedWebCoreFrame());
+    const LocalFrame* focused = toLocalFrame(focusedCoreFrame());
     if (!focused)
         return WebVector<WebCompositionUnderline>();
     const Vector<CompositionUnderline>& underlines = focused->inputMethodController().customCompositionUnderlines();
@@ -2472,7 +2471,7 @@ WebColor WebViewImpl::backgroundColor() const
 
 bool WebViewImpl::caretOrSelectionRange(size_t* location, size_t* length)
 {
-    const LocalFrame* focused = toLocalFrame(focusedWebCoreFrame());
+    const LocalFrame* focused = toLocalFrame(focusedCoreFrame());
     if (!focused)
         return false;
 
@@ -2491,7 +2490,7 @@ void WebViewImpl::setTextDirection(WebTextDirection direction)
     // the text direction of the selected node and updates its DOM "dir"
     // attribute and its CSS "direction" property.
     // So, we just call the function as Safari does.
-    const LocalFrame* focused = toLocalFrame(focusedWebCoreFrame());
+    const LocalFrame* focused = toLocalFrame(focusedCoreFrame());
     if (!focused)
         return;
 
@@ -2620,20 +2619,20 @@ WebFrame* WebViewImpl::findFrameByName(
 
 WebFrame* WebViewImpl::focusedFrame()
 {
-    return WebFrame::fromFrame(focusedWebCoreFrame());
+    return WebFrame::fromFrame(focusedCoreFrame());
 }
 
 void WebViewImpl::setFocusedFrame(WebFrame* frame)
 {
     if (!frame) {
         // Clears the focused frame if any.
-        Frame* focusedFrame = focusedWebCoreFrame();
+        Frame* focusedFrame = focusedCoreFrame();
         if (focusedFrame && focusedFrame->isLocalFrame())
             toLocalFrame(focusedFrame)->selection().setFocused(false);
         return;
     }
-    LocalFrame* webcoreFrame = toWebLocalFrameImpl(frame)->frame();
-    webcoreFrame->page()->focusController().setFocusedFrame(webcoreFrame);
+    LocalFrame* coreFrame = toWebLocalFrameImpl(frame)->frame();
+    coreFrame->page()->focusController().setFocusedFrame(coreFrame);
 }
 
 void WebViewImpl::setInitialFocus(bool reverse)
@@ -2650,7 +2649,7 @@ void WebViewImpl::setInitialFocus(bool reverse)
 
 void WebViewImpl::clearFocusedElement()
 {
-    RefPtr<Frame> frame = focusedWebCoreFrame();
+    RefPtr<Frame> frame = focusedCoreFrame();
     if (!frame || !frame->isLocalFrame())
         return;
 
@@ -3571,7 +3570,7 @@ void WebViewImpl::showContextMenu()
 
 void WebViewImpl::extractSmartClipData(WebRect rect, WebString& clipText, WebString& clipHtml, WebRect& clipRect)
 {
-    LocalFrame* localFrame = toLocalFrame(focusedWebCoreFrame());
+    LocalFrame* localFrame = toLocalFrame(focusedCoreFrame());
     if (!localFrame)
         return;
     SmartClipData clipData = SmartClip(localFrame).dataForRect(rect);

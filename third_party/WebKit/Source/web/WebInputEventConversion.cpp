@@ -484,7 +484,7 @@ static IntPoint convertAbsoluteLocationForRenderObject(const LayoutPoint& locati
     return roundedIntPoint(convertAbsoluteLocationForRenderObjectFloat(location, renderObject));
 }
 
-static void updateWebMouseEventFromWebCoreMouseEvent(const MouseRelatedEvent& event, const Widget& widget, const RenderObject& renderObject, WebMouseEvent& webEvent)
+static void updateWebMouseEventFromCoreMouseEvent(const MouseRelatedEvent& event, const Widget& widget, const RenderObject& renderObject, WebMouseEvent& webEvent)
 {
     webEvent.timeStampSeconds = event.timeStamp() / millisPerSecond;
     webEvent.modifiers = getWebInputModifiers(event);
@@ -519,7 +519,7 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const RenderObj
     else
         return; // Skip all other mouse events.
 
-    updateWebMouseEventFromWebCoreMouseEvent(event, *widget, *renderObject, *this);
+    updateWebMouseEventFromCoreMouseEvent(event, *widget, *renderObject, *this);
 
     switch (event.button()) {
     case LeftButton:
@@ -649,7 +649,7 @@ WebMouseWheelEventBuilder::WebMouseWheelEventBuilder(const Widget* widget, const
     if (event.type() != EventTypeNames::wheel && event.type() != EventTypeNames::mousewheel)
         return;
     type = WebInputEvent::MouseWheel;
-    updateWebMouseEventFromWebCoreMouseEvent(event, *widget, *renderObject, *this);
+    updateWebMouseEventFromCoreMouseEvent(event, *widget, *renderObject, *this);
     deltaX = -event.deltaX();
     deltaY = -event.deltaY();
     wheelTicksX = event.ticksX();

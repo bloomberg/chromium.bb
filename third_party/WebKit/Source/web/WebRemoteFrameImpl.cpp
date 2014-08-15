@@ -798,16 +798,16 @@ WebLocalFrame* WebRemoteFrameImpl::createLocalChild(const WebString& name, WebFr
     // result in the browser observing two navigations to about:blank (one from the initial
     // frame creation, and one from swapping it into the remote process). FrameLoader might
     // need a special initialization function for this case to avoid that duplicate navigation.
-    child->initializeWebCoreFrame(frame()->host(), result.storedValue->value.get(), name, nullAtom);
+    child->initializeCoreFrame(frame()->host(), result.storedValue->value.get(), name, nullAtom);
     // Partially related with the above FIXME--the init() call may trigger JS dispatch. However,
     // if the parent is remote, it should never be detached synchronously...
     ASSERT(child->frame());
     return child;
 }
 
-void WebRemoteFrameImpl::initializeWebCoreFrame(FrameHost* host, FrameOwner* owner, const AtomicString& name)
+void WebRemoteFrameImpl::initializeCoreFrame(FrameHost* host, FrameOwner* owner, const AtomicString& name)
 {
-    setWebCoreFrame(RemoteFrame::create(&m_frameClient, host, owner));
+    setCoreFrame(RemoteFrame::create(&m_frameClient, host, owner));
     m_frame->tree().setName(name, nullAtom);
 }
 
@@ -817,11 +817,11 @@ WebRemoteFrame* WebRemoteFrameImpl::createRemoteChild(const WebString& name, Web
     HashMap<WebFrame*, OwnPtr<FrameOwner> >::AddResult result =
         m_ownersForChildren.add(child, adoptPtr(new PlaceholderFrameOwner));
     appendChild(child);
-    child->initializeWebCoreFrame(frame()->host(), result.storedValue->value.get(), name);
+    child->initializeCoreFrame(frame()->host(), result.storedValue->value.get(), name);
     return child;
 }
 
-void WebRemoteFrameImpl::setWebCoreFrame(PassRefPtr<RemoteFrame> frame)
+void WebRemoteFrameImpl::setCoreFrame(PassRefPtr<RemoteFrame> frame)
 {
     m_frame = frame;
 }

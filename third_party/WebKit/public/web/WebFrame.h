@@ -695,7 +695,7 @@ private:
 };
 
 #if BLINK_IMPLEMENTATION
-Frame* toWebCoreFrame(const WebFrame*);
+Frame* toCoreFrame(const WebFrame*);
 #endif
 
 } // namespace blink

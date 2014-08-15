@@ -205,17 +205,17 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
 
     // Compute edit flags.
     data.editFlags = WebContextMenuData::CanDoNone;
-    if (toLocalFrame(m_webView->focusedWebCoreFrame())->editor().canUndo())
+    if (toLocalFrame(m_webView->focusedCoreFrame())->editor().canUndo())
         data.editFlags |= WebContextMenuData::CanUndo;
-    if (toLocalFrame(m_webView->focusedWebCoreFrame())->editor().canRedo())
+    if (toLocalFrame(m_webView->focusedCoreFrame())->editor().canRedo())
         data.editFlags |= WebContextMenuData::CanRedo;
-    if (toLocalFrame(m_webView->focusedWebCoreFrame())->editor().canCut())
+    if (toLocalFrame(m_webView->focusedCoreFrame())->editor().canCut())
         data.editFlags |= WebContextMenuData::CanCut;
-    if (toLocalFrame(m_webView->focusedWebCoreFrame())->editor().canCopy())
+    if (toLocalFrame(m_webView->focusedCoreFrame())->editor().canCopy())
         data.editFlags |= WebContextMenuData::CanCopy;
-    if (toLocalFrame(m_webView->focusedWebCoreFrame())->editor().canPaste())
+    if (toLocalFrame(m_webView->focusedCoreFrame())->editor().canPaste())
         data.editFlags |= WebContextMenuData::CanPaste;
-    if (toLocalFrame(m_webView->focusedWebCoreFrame())->editor().canDelete())
+    if (toLocalFrame(m_webView->focusedCoreFrame())->editor().canDelete())
         data.editFlags |= WebContextMenuData::CanDelete;
     if (isHTMLTextFormControlElement(r.innerNonSharedNode())) {
         if (!toHTMLTextFormControlElement(r.innerNonSharedNode())->value().isEmpty())
@@ -337,9 +337,9 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
             }
         } else {
             data.isSpellCheckingEnabled =
-                toLocalFrame(m_webView->focusedWebCoreFrame())->spellChecker().isContinuousSpellCheckingEnabled();
+                toLocalFrame(m_webView->focusedCoreFrame())->spellChecker().isContinuousSpellCheckingEnabled();
             // Spellchecking might be enabled for the field, but could be disabled on the node.
-            if (toLocalFrame(m_webView->focusedWebCoreFrame())->spellChecker().isSpellCheckingEnabledInFocusedNode()) {
+            if (toLocalFrame(m_webView->focusedCoreFrame())->spellChecker().isSpellCheckingEnabledInFocusedNode()) {
                 data.misspelledWord = selectMisspelledWord(selectedFrame);
                 if (m_webView->spellCheckClient()) {
                     int misspelledOffset, misspelledLength;

@@ -252,7 +252,7 @@ bool FrameLoaderClientImpl::hasWebView() const
 
 Frame* FrameLoaderClientImpl::opener() const
 {
-    return toWebCoreFrame(m_webFrame->opener());
+    return toCoreFrame(m_webFrame->opener());
 }
 
 void FrameLoaderClientImpl::setOpener(Frame* opener)
@@ -263,32 +263,32 @@ void FrameLoaderClientImpl::setOpener(Frame* opener)
 
 Frame* FrameLoaderClientImpl::parent() const
 {
-    return toWebCoreFrame(m_webFrame->parent());
+    return toCoreFrame(m_webFrame->parent());
 }
 
 Frame* FrameLoaderClientImpl::top() const
 {
-    return toWebCoreFrame(m_webFrame->top());
+    return toCoreFrame(m_webFrame->top());
 }
 
 Frame* FrameLoaderClientImpl::previousSibling() const
 {
-    return toWebCoreFrame(m_webFrame->previousSibling());
+    return toCoreFrame(m_webFrame->previousSibling());
 }
 
 Frame* FrameLoaderClientImpl::nextSibling() const
 {
-    return toWebCoreFrame(m_webFrame->nextSibling());
+    return toCoreFrame(m_webFrame->nextSibling());
 }
 
 Frame* FrameLoaderClientImpl::firstChild() const
 {
-    return toWebCoreFrame(m_webFrame->firstChild());
+    return toCoreFrame(m_webFrame->firstChild());
 }
 
 Frame* FrameLoaderClientImpl::lastChild() const
 {
-    return toWebCoreFrame(m_webFrame->lastChild());
+    return toCoreFrame(m_webFrame->lastChild());
 }
 
 void FrameLoaderClientImpl::detachedFromParent()
@@ -310,7 +310,7 @@ void FrameLoaderClientImpl::detachedFromParent()
     client->frameDetached(m_webFrame);
     // Clear our reference to LocalFrame at the very end, in case the client
     // refers to it.
-    m_webFrame->setWebCoreFrame(nullptr);
+    m_webFrame->setCoreFrame(nullptr);
 }
 
 void FrameLoaderClientImpl::dispatchWillSendRequest(

@@ -175,9 +175,9 @@ public:
     virtual WebLocalFrame* createLocalChild(const WebString& name, WebFrameClient*) OVERRIDE;
     virtual WebRemoteFrame* createRemoteChild(const WebString& name, WebFrameClient*) OVERRIDE;
 
-    void initializeWebCoreFrame(FrameHost*, FrameOwner*, const AtomicString& name);
+    void initializeCoreFrame(FrameHost*, FrameOwner*, const AtomicString& name);
 
-    void setWebCoreFrame(PassRefPtr<RemoteFrame>);
+    void setCoreFrame(PassRefPtr<RemoteFrame>);
     RemoteFrame* frame() const { return m_frame.get(); }
 
     static WebRemoteFrameImpl* fromFrame(RemoteFrame&);

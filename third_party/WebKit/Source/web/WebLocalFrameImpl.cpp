@@ -1543,7 +1543,7 @@ WebLocalFrameImpl::~WebLocalFrameImpl()
     cancelPendingScopingEffort();
 }
 
-void WebLocalFrameImpl::setWebCoreFrame(PassRefPtr<LocalFrame> frame)
+void WebLocalFrameImpl::setCoreFrame(PassRefPtr<LocalFrame> frame)
 {
     m_frame = frame;
 
@@ -1566,10 +1566,10 @@ void WebLocalFrameImpl::setWebCoreFrame(PassRefPtr<LocalFrame> frame)
     }
 }
 
-PassRefPtr<LocalFrame> WebLocalFrameImpl::initializeWebCoreFrame(FrameHost* host, FrameOwner* owner, const AtomicString& name, const AtomicString& fallbackName)
+PassRefPtr<LocalFrame> WebLocalFrameImpl::initializeCoreFrame(FrameHost* host, FrameOwner* owner, const AtomicString& name, const AtomicString& fallbackName)
 {
     RefPtr<LocalFrame> frame = LocalFrame::create(&m_frameLoaderClientImpl, host, owner);
-    setWebCoreFrame(frame);
+    setCoreFrame(frame);
     frame->tree().setName(name, fallbackName);
     // We must call init() after m_frame is assigned because it is referenced
     // during init(). Note that this may dispatch JS events; the frame may be
@@ -1589,8 +1589,9 @@ PassRefPtr<LocalFrame> WebLocalFrameImpl::createChildFrame(const FrameLoadReques
     // solution. subResourceAttributeName returns just one attribute name. The
     // element might not have the attribute, and there might be other attributes
     // which can identify the element.
-    RefPtr<LocalFrame> child = webframeChild->initializeWebCoreFrame(frame()->host(), ownerElement, request.frameName(), ownerElement->getAttribute(ownerElement->subResourceAttributeName()));
-    // Initializing the WebCore frame may cause the new child to be detached, since it may dispatch a load event in the parent.
+    RefPtr<LocalFrame> child = webframeChild->initializeCoreFrame(frame()->host(), ownerElement, request.frameName(), ownerElement->getAttribute(ownerElement->subResourceAttributeName()));
+    // Initializing the core frame may cause the new child to be detached, since
+    // it may dispatch a load event in the parent.
     if (!child->tree().parent())
         return nullptr;
 

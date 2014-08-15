@@ -16,7 +16,7 @@ RemoteFrameClient::RemoteFrameClient(WebRemoteFrameImpl* webFrame)
 
 Frame* RemoteFrameClient::opener() const
 {
-    return toWebCoreFrame(m_webFrame->opener());
+    return toCoreFrame(m_webFrame->opener());
 }
 
 void RemoteFrameClient::setOpener(Frame*)
@@ -26,32 +26,32 @@ void RemoteFrameClient::setOpener(Frame*)
 
 Frame* RemoteFrameClient::parent() const
 {
-    return toWebCoreFrame(m_webFrame->parent());
+    return toCoreFrame(m_webFrame->parent());
 }
 
 Frame* RemoteFrameClient::top() const
 {
-    return toWebCoreFrame(m_webFrame->top());
+    return toCoreFrame(m_webFrame->top());
 }
 
 Frame* RemoteFrameClient::previousSibling() const
 {
-    return toWebCoreFrame(m_webFrame->previousSibling());
+    return toCoreFrame(m_webFrame->previousSibling());
 }
 
 Frame* RemoteFrameClient::nextSibling() const
 {
-    return toWebCoreFrame(m_webFrame->nextSibling());
+    return toCoreFrame(m_webFrame->nextSibling());
 }
 
 Frame* RemoteFrameClient::firstChild() const
 {
-    return toWebCoreFrame(m_webFrame->firstChild());
+    return toCoreFrame(m_webFrame->firstChild());
 }
 
 Frame* RemoteFrameClient::lastChild() const
 {
-    return toWebCoreFrame(m_webFrame->lastChild());
+    return toCoreFrame(m_webFrame->lastChild());
 }
 
 } // namespace blink
