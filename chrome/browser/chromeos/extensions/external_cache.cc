@@ -16,6 +16,7 @@
 #include "base/version.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
+#include "chrome/browser/extensions/updater/chrome_extension_downloader_factory.h"
 #include "chrome/browser/extensions/updater/extension_downloader.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/notification_details.h"
@@ -209,8 +210,8 @@ void ExternalCache::CheckCache() {
 
   // If request_context_ is missing we can't download anything.
   if (!downloader_ && request_context_) {
-    downloader_.reset(
-        new extensions::ExtensionDownloader(this, request_context_));
+    downloader_ = ChromeExtensionDownloaderFactory::CreateForRequestContext(
+        request_context_, this);
   }
 
   cached_extensions_->Clear();
