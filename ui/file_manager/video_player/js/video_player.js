@@ -47,7 +47,6 @@ function FullWindowVideoControls(
         // TODO: Define "Stop" behavior.
         break;
     }
-    e.preventDefault();
   }.wrap(this));
 
   // TODO(mtomasz): Simplify. crbug.com/254318.
