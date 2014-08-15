@@ -1790,6 +1790,7 @@
         'use_system_fontconfig%': 1,
       }],
       ['chromecast==1', {
+        'enable_mpeg2ts_stream_parser%': 1,
         'ffmpeg_branding%': 'Chrome',
         'ozone_platform_ozonex%': 1,
         'conditions': [
@@ -1797,7 +1798,6 @@
             'arm_arch%': '',
             'arm_tune%': 'cortex-a9',
             'arm_thumb%': 1,
-            'enable_mpeg2ts_stream_parser%': 1,
             'video_hole%': 1,
           }],
         ],
