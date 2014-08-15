@@ -982,9 +982,11 @@ void XMLHttpRequest::handleNetworkError()
     long long expectedLength = m_response.expectedContentLength();
     long long receivedLength = m_receivedLength;
 
+    if (!internalAbort())
+        return;
+
     handleDidFailGeneric();
     handleRequestError(NetworkError, EventTypeNames::error, receivedLength, expectedLength);
-    internalAbort();
 }
 
 void XMLHttpRequest::handleDidCancel()
