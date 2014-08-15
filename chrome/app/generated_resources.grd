@@ -14571,6 +14571,9 @@ Do you accept?
     <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_INSTRUCTIONS" desc="Tooltip for an icon on user's lock screen pod shown by Easy Unlock when a phone eligible to unlock the Chromebook is detected and authenticated. The tooltip shows instructions for hard-locking the Chromebook.">
       If you click this icon, you can manually lock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. Next time, you'll need to enter your password to unlock it.
     </message>
+    <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_UNSUPPORTED_ANDROID_VERSION" desc="Tooltip for the icon on user's lock screen pod shown by Easy Unlock when a phone set up to unlock the Chromebook is detected, but has an unsupported Android version. The user is asked to update the phone.">
+      Please update your phone to a newer version of Android to unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
+    </message>
     <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_TUTORIAL" desc="Tooltip text shown on lock screen when Easy Unlock is first setup.">
       The open lock indicates that your Android phone is unlocked and with you. Click your profile picture to enter without typing your password. If your Android phone is locked or away, a locked icon will show, and you'll need to type your password.
     </message>
