@@ -6,6 +6,16 @@ cr.define('options', function() {
   var Page = cr.ui.pageManager.Page;
   var PageManager = cr.ui.pageManager.PageManager;
 
+  // UI state of the turn off overlay.
+  // @enum {string}
+  var UIState = {
+    UNKNOWN: 'unknown',
+    OFFLINE: 'offline',
+    IDLE: 'idle',
+    PENDING: 'pending',
+    SERVER_ERROR: 'server-error',
+  };
+
   /**
    * EasyUnlockTurnOffOverlay class
    * Encapsulated handling of the Factory Reset confirmation overlay page.
@@ -23,6 +33,37 @@ cr.define('options', function() {
     // Inherit EasyUnlockTurnOffOverlay from Page.
     __proto__: Page.prototype,
 
+    /** Current UI state */
+    uiState_: UIState.UNKNKOWN,
+    get uiState() {
+      return this.uiState_;
+    },
+    set uiState(newUiState) {
+      if (newUiState == this.uiState_)
+        return;
+
+      this.uiState_ = newUiState;
+      switch (this.uiState_) {
+        case UIState.OFFLINE:
+          this.setUpOfflineUI_();
+          break;
+        case UIState.IDLE:
+          this.setUpTurnOffUI_(false);
+          break;
+        case UIState.PENDING:
+          this.setUpTurnOffUI_(true);
+          break;
+        case UIState.SERVER_ERROR:
+          this.setUpServerErrorUI_();
+          break;
+        default:
+          console.error('Unknow Easy unlock turn off UI state: ' +
+                        this.uiState_);
+          this.setUpTurnOffUI_(false);
+          break;
+      }
+    },
+
     /** @override */
     initializePage: function() {
       Page.prototype.initializePage.call(this);
@@ -31,21 +72,24 @@ cr.define('options', function() {
         EasyUnlockTurnOffOverlay.dismiss();
       };
       $('easy-unlock-turn-off-confirm').onclick = function(event) {
-        $('easy-unlock-turn-off-confirm').disabled = true;
-        this.setSpinnerVisible_(true);
-
-        // TODO(xiyuan): Wire this up.
-        // chrome.send('turnOffEasyUnlock');
+        this.uiState = UIState.PENDING;
+        chrome.send('easyUnlockRequestTurnOff');
       }.bind(this);
     },
 
     /** @override */
     didShowPage: function() {
       if (navigator.onLine) {
-        this.setUpTurnOffUI_();
+        this.uiState = UIState.IDLE;
+        chrome.send('easyUnlockGetTurnOffFlowStatus');
       } else {
-        this.setUpOfflineUI_();
+        this.uiState = UIState.OFFLINE;
       }
+    },
+
+    /** @override */
+    didClosePage: function() {
+      chrome.send('easyUnlockTurnOffOverlayDismissed');
     },
 
     /**
@@ -91,9 +135,10 @@ cr.define('options', function() {
 
     /**
      * Set up UI for turning off Easy Unlock.
+     * @param {boolean} pending Whether there is a pending turn-off call.
      * @private
      */
-    setUpTurnOffUI_: function() {
+    setUpTurnOffUI_: function(pending) {
       $('easy-unlock-turn-off-title').textContent =
           loadTimeData.getString('easyUnlockTurnOffTitle');
       $('easy-unlock-turn-off-messagee').textContent =
@@ -102,8 +147,8 @@ cr.define('options', function() {
           loadTimeData.getString('easyUnlockTurnOffButton');
 
       this.setActionButtonsVisible_(true);
-      this.setSpinnerVisible_(false);
-      $('easy-unlock-turn-off-confirm').disabled = false;
+      this.setSpinnerVisible_(pending);
+      $('easy-unlock-turn-off-confirm').disabled = pending;
       $('easy-unlock-turn-off-dismiss').hidden = false;
     },
 
@@ -126,8 +171,19 @@ cr.define('options', function() {
     },
   };
 
+  /**
+   * Closes the Easy unlock turn off overlay.
+   */
   EasyUnlockTurnOffOverlay.dismiss = function() {
     PageManager.closeOverlay();
+  };
+
+  /**
+   * Update UI to reflect the turn off operation status.
+   * @param {string} newState The UIState string representing the new state.
+   */
+  EasyUnlockTurnOffOverlay.updateUIState = function(newState) {
+    EasyUnlockTurnOffOverlay.getInstance().uiState = newState;
   };
 
   // Export

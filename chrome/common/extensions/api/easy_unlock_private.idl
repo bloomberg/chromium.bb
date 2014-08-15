@@ -44,6 +44,9 @@
     AUTHENTICATED
   };
 
+  // Type of a permit. All lower case to match permit.PermitRecord.Type.
+  enum PermitType {access, license};
+
   // Options that can be passed to |unwrapSecureMessage| method.
   dictionary UnwrapSecureMessageOptions {
     // The data associated with the message. For the message to be succesfully
@@ -86,6 +89,39 @@
     SignatureType? signType;
   };
 
+  // A permit record contains the credentials used to request or grant
+  // authorization of a permit.
+  dictionary PermitRecord {
+    // ID of the permit, which identifies the service/application that these
+    // permit records are used in.
+    DOMString permitId;
+
+    // An identifier for this record that should be unique among all other
+    // records of the same permit.
+    DOMString id;
+
+    // Type of the record.
+    PermitType type;
+
+    // Websafe base64 encoded payload data of the record.
+    DOMString data;
+  };
+
+  // Device information that can be authenticated for Easy unlock.
+  dictionary Device {
+    // The Bluetooth address of the device.
+    DOMString bluetoothAddress;
+
+    // The name of the device.
+    DOMString? name;
+
+    // The permit record of the device.
+    PermitRecord? permitRecord;
+
+    // Websafe base64 encoded persistent symmetric key.
+    DOMString? psk;
+  };
+
   // Callback for crypto methods that return a single array buffer.
   callback DataCallback = void(optional ArrayBuffer data);
 
@@ -98,6 +134,12 @@
   // Callback for method that generates an encryption key pair.
   callback KeyPairCallback = void(optional ArrayBuffer public_key,
                                   optional ArrayBuffer private_key);
+
+  // Callback for the getPermitAccess() method.
+  callback GetPermitAccessCallback = void(optional PermitRecord permitAccess);
+
+  // Callback for the getRemoteDevices() method.
+  callback GetRemoteDevicesCallback = void(Device[] devices);
 
   interface Functions {
     // Gets localized strings required to render the API.
@@ -175,5 +217,26 @@
     // Updates the screenlock state to reflect the Easy Unlock app state.
     static void updateScreenlockState(State state,
                                       optional EmptyCallback callback);
+
+    // Saves the permit record for the local device.
+    // |permitAccess|: The permit record to be saved.
+    // |callback|: Called to indicate success or failure.
+    static void setPermitAccess(PermitRecord permitAccess,
+                                optional EmptyCallback callback);
+
+    // Gets the permit record for the local device.
+    static void getPermitAccess(GetPermitAccessCallback callback);
+
+    // Clears the permit record for the local device.
+    static void clearPermitAccess(optional EmptyCallback callback);
+
+    // Saves the remote device list.
+    // |devices|: The list of remote devices to be saved.
+    // |callback|: Called to indicate success or failure.
+    static void setRemoteDevices(Device[] devices,
+                                 optional EmptyCallback callback);
+
+    // Gets the remote device list.
+    static void getRemoteDevices(GetRemoteDevicesCallback callback);
   };
 };

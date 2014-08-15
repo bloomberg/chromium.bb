@@ -250,20 +250,6 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "easyUnlockSectionTitle", IDS_OPTIONS_EASY_UNLOCK_SECTION_TITLE },
     { "easyUnlockSetupButton", IDS_OPTIONS_EASY_UNLOCK_SETUP_BUTTON },
     { "easyUnlockSetupIntro", IDS_OPTIONS_EASY_UNLOCK_SETUP_INTRO },
-    { "easyUnlockTurnOffButton", IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_BUTTON },
-    { "easyUnlockTurnOffTitle", IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_TITLE },
-    { "easyUnlockTurnOffDescription",
-      IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_DESCRIPTION },
-    { "easyUnlockTurnOffOfflineTitle",
-      IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_OFFLINE_TITLE },
-    { "easyUnlockTurnOffOfflineMessage",
-      IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_OFFLINE_MESSAGE },
-    { "easyUnlockTurnOffErrorTitle",
-      IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_ERROR_TITLE },
-    { "easyUnlockTurnOffErrorMessage",
-      IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_ERROR_MESSAGE },
-    { "easyUnlockTurnOffRetryButton",
-      IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_RETRY_BUTTON },
     { "extensionControlled", IDS_OPTIONS_TAB_EXTENSION_CONTROLLED },
     { "extensionDisable", IDS_OPTIONS_TAB_EXTENSION_CONTROLLED_DISABLE },
     { "fontSettingsCustomizeFontsButton",
@@ -1838,8 +1824,9 @@ void BrowserOptionsHandler::SetupManagingSupervisedUsers() {
 
 void BrowserOptionsHandler::SetupEasyUnlock() {
   // TODO(xiyuan): Update when pairing data is really availble.
-  bool has_pairing = !Profile::FromWebUI(web_ui())->GetPrefs()
-      ->GetDictionary(prefs::kEasyUnlockPairing)->empty();
+  const base::ListValue* devices =
+      EasyUnlockService::Get(Profile::FromWebUI(web_ui()))->GetRemoteDevices();
+  bool has_pairing = devices && !devices->empty();
   base::FundamentalValue has_pairing_value(has_pairing);
   web_ui()->CallJavascriptFunction(
       "BrowserOptions.updateEasyUnlock",

@@ -1544,6 +1544,8 @@
       'browser/signin/easy_unlock_service.h',
       'browser/signin/easy_unlock_service_factory.cc',
       'browser/signin/easy_unlock_service_factory.h',
+      'browser/signin/easy_unlock_toggle_flow.cc',
+      'browser/signin/easy_unlock_toggle_flow.h',
       'browser/speech/extension_api/tts_engine_extension_api.cc',
       'browser/speech/extension_api/tts_engine_extension_api.h',
       'browser/speech/extension_api/tts_engine_extension_observer.cc',

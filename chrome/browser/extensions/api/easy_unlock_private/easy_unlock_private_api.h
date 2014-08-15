@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
 
@@ -178,6 +179,82 @@ class EasyUnlockPrivateUpdateScreenlockStateFunction
                              EASYUNLOCKPRIVATE_UPDATESCREENLOCKSTATE)
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateUpdateScreenlockStateFunction);
+};
+
+class EasyUnlockPrivateSetPermitAccessFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.setPermitAccess",
+                             EASYUNLOCKPRIVATE_SETPERMITACCESS)
+  EasyUnlockPrivateSetPermitAccessFunction();
+
+ private:
+  virtual ~EasyUnlockPrivateSetPermitAccessFunction();
+
+  // SyncExtensionFunction:
+  virtual bool RunSync() OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateSetPermitAccessFunction);
+};
+
+class EasyUnlockPrivateGetPermitAccessFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.getPermitAccess",
+                             EASYUNLOCKPRIVATE_GETPERMITACCESS)
+  EasyUnlockPrivateGetPermitAccessFunction();
+
+ private:
+  virtual ~EasyUnlockPrivateGetPermitAccessFunction();
+
+  // SyncExtensionFunction:
+  virtual bool RunSync() OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateGetPermitAccessFunction);
+};
+
+class EasyUnlockPrivateClearPermitAccessFunction
+    : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.clearPermitAccess",
+                             EASYUNLOCKPRIVATE_CLEARPERMITACCESS)
+  EasyUnlockPrivateClearPermitAccessFunction();
+
+ private:
+  virtual ~EasyUnlockPrivateClearPermitAccessFunction();
+
+  // SyncExtensionFunction:
+  virtual bool RunSync() OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateClearPermitAccessFunction);
+};
+
+class EasyUnlockPrivateSetRemoteDevicesFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.setRemoteDevices",
+                             EASYUNLOCKPRIVATE_SETREMOTEDEVICES)
+  EasyUnlockPrivateSetRemoteDevicesFunction();
+
+ private:
+  virtual ~EasyUnlockPrivateSetRemoteDevicesFunction();
+
+  // SyncExtensionFunction:
+  virtual bool RunSync() OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateSetRemoteDevicesFunction);
+};
+
+class EasyUnlockPrivateGetRemoteDevicesFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.getRemoteDevices",
+                             EASYUNLOCKPRIVATE_GETREMOTEDEVICES)
+  EasyUnlockPrivateGetRemoteDevicesFunction();
+
+ private:
+  virtual ~EasyUnlockPrivateGetRemoteDevicesFunction();
+
+  // SyncExtensionFunction:
+  virtual bool RunSync() OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateGetRemoteDevicesFunction);
 };
 
 }  // namespace api

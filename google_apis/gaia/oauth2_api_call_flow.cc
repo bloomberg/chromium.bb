@@ -90,7 +90,8 @@ void OAuth2ApiCallFlow::EndApiCall(const net::URLFetcher* source) {
     return;
   }
 
-  if (source->GetResponseCode() != net::HTTP_OK) {
+  if (source->GetResponseCode() != net::HTTP_OK &&
+      source->GetResponseCode() != net::HTTP_NO_CONTENT) {
     state_ = ERROR_STATE;
     ProcessApiCallFailure(source);
     return;
@@ -123,6 +124,10 @@ void OAuth2ApiCallFlow::EndMintAccessToken(
     state_ = ERROR_STATE;
     ProcessMintAccessTokenFailure(*error);
   }
+}
+
+std::string OAuth2ApiCallFlow::CreateApiCallBodyContentType() {
+  return "application/x-www-form-urlencoded";
 }
 
 OAuth2AccessTokenFetcher* OAuth2ApiCallFlow::CreateAccessTokenFetcher() {
@@ -166,7 +171,7 @@ URLFetcher* OAuth2ApiCallFlow::CreateURLFetcher() {
   result->SetAutomaticallyRetryOnNetworkChanges(3);
 
   if (!empty_body)
-    result->SetUploadData("application/x-www-form-urlencoded", body);
+    result->SetUploadData(CreateApiCallBodyContentType(), body);
 
   return result;
 }

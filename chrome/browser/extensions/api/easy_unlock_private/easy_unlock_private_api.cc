@@ -424,5 +424,103 @@ bool EasyUnlockPrivateUpdateScreenlockStateFunction::RunSync() {
   return false;
 }
 
+EasyUnlockPrivateSetPermitAccessFunction::
+    EasyUnlockPrivateSetPermitAccessFunction() {
+}
+
+EasyUnlockPrivateSetPermitAccessFunction::
+    ~EasyUnlockPrivateSetPermitAccessFunction() {
+}
+
+bool EasyUnlockPrivateSetPermitAccessFunction::RunSync() {
+  scoped_ptr<easy_unlock_private::SetPermitAccess::Params> params(
+      easy_unlock_private::SetPermitAccess::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  EasyUnlockService::Get(profile)
+      ->SetPermitAccess(*params->permit_access.ToValue());
+
+  return true;
+}
+
+EasyUnlockPrivateGetPermitAccessFunction::
+    EasyUnlockPrivateGetPermitAccessFunction() {
+}
+
+EasyUnlockPrivateGetPermitAccessFunction::
+    ~EasyUnlockPrivateGetPermitAccessFunction() {
+}
+
+bool EasyUnlockPrivateGetPermitAccessFunction::RunSync() {
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  const base::DictionaryValue* permit_value =
+      EasyUnlockService::Get(profile)->GetPermitAccess();
+  if (permit_value) {
+    scoped_ptr<easy_unlock_private::PermitRecord> permit =
+        easy_unlock_private::PermitRecord::FromValue(*permit_value);
+    results_ = easy_unlock_private::GetPermitAccess::Results::Create(*permit);
+  }
+
+  return true;
+}
+
+EasyUnlockPrivateClearPermitAccessFunction::
+    EasyUnlockPrivateClearPermitAccessFunction() {
+}
+
+EasyUnlockPrivateClearPermitAccessFunction::
+    ~EasyUnlockPrivateClearPermitAccessFunction() {
+}
+
+bool EasyUnlockPrivateClearPermitAccessFunction::RunSync() {
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  EasyUnlockService::Get(profile)->ClearPermitAccess();
+  return true;
+}
+
+EasyUnlockPrivateSetRemoteDevicesFunction::
+    EasyUnlockPrivateSetRemoteDevicesFunction() {
+}
+
+EasyUnlockPrivateSetRemoteDevicesFunction::
+    ~EasyUnlockPrivateSetRemoteDevicesFunction() {
+}
+
+bool EasyUnlockPrivateSetRemoteDevicesFunction::RunSync() {
+  scoped_ptr<easy_unlock_private::SetRemoteDevices::Params> params(
+      easy_unlock_private::SetRemoteDevices::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  if (params->devices.empty()) {
+    EasyUnlockService::Get(profile)->ClearRemoteDevices();
+  } else {
+    base::ListValue devices;
+    for (size_t i = 0; i < params->devices.size(); ++i) {
+      devices.Append(params->devices[i]->ToValue().release());
+    }
+    EasyUnlockService::Get(profile)->SetRemoteDevices(devices);
+  }
+
+  return true;
+}
+
+EasyUnlockPrivateGetRemoteDevicesFunction::
+    EasyUnlockPrivateGetRemoteDevicesFunction() {
+}
+
+EasyUnlockPrivateGetRemoteDevicesFunction::
+    ~EasyUnlockPrivateGetRemoteDevicesFunction() {
+}
+
+bool EasyUnlockPrivateGetRemoteDevicesFunction::RunSync() {
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  const base::ListValue* devices =
+      EasyUnlockService::Get(profile)->GetRemoteDevices();
+  SetResult(devices ? devices->DeepCopy() : new base::ListValue());
+  return true;
+}
+
 }  // namespace api
 }  // namespace extensions

@@ -66,6 +66,7 @@ class OAuth2ApiCallFlow
   // Methods to help create HTTP request.
   virtual GURL CreateApiCallUrl() = 0;
   virtual std::string CreateApiCallBody() = 0;
+  virtual std::string CreateApiCallBodyContentType();
 
   // Sub-classes can expose an appropriate observer interface by implementing
   // these template methods.

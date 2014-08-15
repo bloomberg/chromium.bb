@@ -1706,6 +1706,8 @@
       'browser/ui/webui/options/core_options_handler.h',
       'browser/ui/webui/options/create_profile_handler.cc',
       'browser/ui/webui/options/create_profile_handler.h',
+      'browser/ui/webui/options/easy_unlock_handler.cc',
+      'browser/ui/webui/options/easy_unlock_handler.h',
       'browser/ui/webui/options/font_settings_handler.cc',
       'browser/ui/webui/options/font_settings_handler.h',
       'browser/ui/webui/options/font_settings_utils.h',

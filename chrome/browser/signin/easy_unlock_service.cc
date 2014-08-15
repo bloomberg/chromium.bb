@@ -9,12 +9,15 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
+#include "base/prefs/scoped_user_pref_update.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/easy_unlock_screenlock_state_handler.h"
 #include "chrome/browser/signin/easy_unlock_service_factory.h"
+#include "chrome/browser/signin/easy_unlock_service_observer.h"
+#include "chrome/browser/signin/easy_unlock_toggle_flow.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_switches.h"
@@ -30,6 +33,15 @@
 #endif
 
 namespace {
+
+// Key name of the local device permit record dictonary in kEasyUnlockPairing.
+const char kKeyPermitAccess[] = "permitAccess";
+
+// Key name of the remote device list in kEasyUnlockPairing.
+const char kKeyDevices[] = "devices";
+
+// Key name of the phone public key in a device dictionary.
+const char kKeyPhoneId[] = "permitRecord.id";
 
 extensions::ComponentLoader* GetComponentLoader(
     content::BrowserContext* context) {
@@ -48,6 +60,7 @@ EasyUnlockService* EasyUnlockService::Get(Profile* profile) {
 
 EasyUnlockService::EasyUnlockService(Profile* profile)
     : profile_(profile),
+      turn_off_flow_status_(IDLE),
       weak_ptr_factory_(this) {
   extensions::ExtensionSystem::Get(profile_)->ready().Post(
       FROM_HERE,
@@ -108,7 +121,6 @@ bool EasyUnlockService::IsAllowed() {
 #endif
 }
 
-
 EasyUnlockScreenlockStateHandler*
     EasyUnlockService::GetScreenlockStateHandler() {
   if (!IsAllowed())
@@ -120,6 +132,98 @@ EasyUnlockScreenlockStateHandler*
         ScreenlockBridge::Get()));
   }
   return screenlock_state_handler_.get();
+}
+
+const base::DictionaryValue* EasyUnlockService::GetPermitAccess() const {
+  const base::DictionaryValue* pairing_dict =
+      profile_->GetPrefs()->GetDictionary(prefs::kEasyUnlockPairing);
+  const base::DictionaryValue* permit_dict = NULL;
+  if (pairing_dict &&
+      pairing_dict->GetDictionary(kKeyPermitAccess, &permit_dict)) {
+    return permit_dict;
+  }
+
+  return NULL;
+}
+
+void EasyUnlockService::SetPermitAccess(const base::DictionaryValue& permit) {
+  DictionaryPrefUpdate pairing_update(profile_->GetPrefs(),
+                                      prefs::kEasyUnlockPairing);
+  pairing_update->SetWithoutPathExpansion(kKeyPermitAccess, permit.DeepCopy());
+}
+
+void EasyUnlockService::ClearPermitAccess() {
+  DictionaryPrefUpdate pairing_update(profile_->GetPrefs(),
+                                      prefs::kEasyUnlockPairing);
+  pairing_update->RemoveWithoutPathExpansion(kKeyPermitAccess, NULL);
+}
+
+const base::ListValue* EasyUnlockService::GetRemoteDevices() const {
+  const base::DictionaryValue* pairing_dict =
+      profile_->GetPrefs()->GetDictionary(prefs::kEasyUnlockPairing);
+  const base::ListValue* devices = NULL;
+  if (pairing_dict && pairing_dict->GetList(kKeyDevices, &devices)) {
+    return devices;
+  }
+
+  return NULL;
+}
+
+void EasyUnlockService::SetRemoteDevices(const base::ListValue& devices) {
+  DictionaryPrefUpdate pairing_update(profile_->GetPrefs(),
+                                      prefs::kEasyUnlockPairing);
+  pairing_update->SetWithoutPathExpansion(kKeyDevices, devices.DeepCopy());
+}
+
+void EasyUnlockService::ClearRemoteDevices() {
+  DictionaryPrefUpdate pairing_update(profile_->GetPrefs(),
+                                      prefs::kEasyUnlockPairing);
+  pairing_update->RemoveWithoutPathExpansion(kKeyDevices, NULL);
+}
+
+void EasyUnlockService::AddObserver(EasyUnlockServiceObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void EasyUnlockService::RemoveObserver(EasyUnlockServiceObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void EasyUnlockService::RunTurnOffFlow() {
+  if (turn_off_flow_status_ == PENDING)
+    return;
+
+  SetTurnOffFlowStatus(PENDING);
+
+  // Currently there should only be one registered phone.
+  // TODO(xiyuan): Revisit this when server supports toggle for all or
+  // there are multiple phones.
+  const base::DictionaryValue* pairing_dict =
+      profile_->GetPrefs()->GetDictionary(prefs::kEasyUnlockPairing);
+  const base::ListValue* devices_list = NULL;
+  const base::DictionaryValue* first_device = NULL;
+  std::string phone_public_key;
+  if (!pairing_dict || !pairing_dict->GetList(kKeyDevices, &devices_list) ||
+      !devices_list || !devices_list->GetDictionary(0, &first_device) ||
+      !first_device ||
+      !first_device->GetString(kKeyPhoneId, &phone_public_key)) {
+    LOG(WARNING) << "Bad easy unlock pairing data, wiping out local data";
+    OnTurnOffFlowFinished(true);
+    return;
+  }
+
+  turn_off_flow_.reset(new EasyUnlockToggleFlow(
+      profile_,
+      phone_public_key,
+      false,
+      base::Bind(&EasyUnlockService::OnTurnOffFlowFinished,
+                 base::Unretained(this))));
+  turn_off_flow_->Start();
+}
+
+void EasyUnlockService::ResetTurnOffFlow() {
+  turn_off_flow_.reset();
+  SetTurnOffFlowStatus(IDLE);
 }
 
 void EasyUnlockService::Initialize() {
@@ -167,5 +271,30 @@ void EasyUnlockService::OnPrefsChanged() {
     // Reset the screenlock state handler to make sure Screenlock state set
     // by Easy Unlock app is reset.
     screenlock_state_handler_.reset();
+  }
+}
+
+void EasyUnlockService::SetTurnOffFlowStatus(TurnOffFlowStatus status) {
+  turn_off_flow_status_ = status;
+  FOR_EACH_OBSERVER(
+      EasyUnlockServiceObserver, observers_, OnTurnOffOperationStatusChanged());
+}
+
+void EasyUnlockService::OnTurnOffFlowFinished(bool success) {
+  turn_off_flow_.reset();
+
+  if (!success) {
+    SetTurnOffFlowStatus(FAIL);
+    return;
+  }
+
+  ClearRemoteDevices();
+  SetTurnOffFlowStatus(IDLE);
+
+  if (GetComponentLoader(profile_)->Exists(extension_misc::kEasyUnlockAppId)) {
+    extensions::ExtensionSystem* extension_system =
+        extensions::ExtensionSystem::Get(profile_);
+    extension_system->extension_service()->ReloadExtension(
+        extension_misc::kEasyUnlockAppId);
   }
 }

@@ -1051,6 +1051,9 @@ cr.define('options', function() {
     updateEasyUnlock_: function(hasPairing) {
       $('easy-unlock-setup').hidden = hasPairing;
       $('easy-unlock-enable').hidden = !hasPairing;
+      if (!hasPairing && EasyUnlockTurnOffOverlay.getInstance().visible) {
+        EasyUnlockTurnOffOverlay.dismiss();
+      }
     },
 
     /**
