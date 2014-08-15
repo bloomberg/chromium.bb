@@ -23,6 +23,7 @@
 
 .header-bar-item {
   display: inline-block;
+  font-size: 12px;
 }
 
 html[dir=rtl] .header-bar-item {
@@ -59,9 +60,9 @@ html[dir=rtl] #login-header-bar #guest-user-button {
   background-position: left center;
   background-repeat: no-repeat;
   border: none;
+  border-radius: 0;
   box-shadow: none;
   cursor: pointer;
-  font-size: 12px;
   opacity: 0.8;
 }
 
