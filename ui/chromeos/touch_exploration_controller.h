@@ -186,7 +186,9 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
   ui::EventRewriteStatus InSingleTapPressed(
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
-  ui::EventRewriteStatus InSingleTapOrTouchExploreReleased(
+  ui::EventRewriteStatus InSingleTapReleased(
+      const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
+  ui::EventRewriteStatus InTouchExploreReleased(
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
   ui::EventRewriteStatus InDoubleTapPending(
       const ui::TouchEvent& event, scoped_ptr<ui::Event>* rewritten_event);
