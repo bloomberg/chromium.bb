@@ -271,3 +271,6 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
   }
 });
 
+chrome.alarms.onAlarm.addListener(function() {
+  SurpriseWallpaper.getInstance().next();
+});
