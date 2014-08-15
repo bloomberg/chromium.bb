@@ -690,8 +690,8 @@ void ProfileSyncService::StartUpSlowBackendComponents(
     backup_start_time_ = base::Time::Now();
 
   if (backend_mode_ == SYNC && !backup_start_time_.is_null()) {
-    UMA_HISTOGRAM_TIMES("first-sync-delay-by-backup",
-                        base::Time::Now() - backup_start_time_);
+    UMA_HISTOGRAM_MEDIUM_TIMES("Sync.FirstSyncDelayByBackup",
+                               base::Time::Now() - backup_start_time_);
     backup_start_time_ = base::Time();
   }
 

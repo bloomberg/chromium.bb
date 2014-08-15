@@ -32825,6 +32825,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Sync.FirstSyncDelayByBackup" units="milliseconds">
+  <owner>haitaol@chromium.org</owner>
+  <summary>First sync delay casued by backing up user data.</summary>
+</histogram>
+
 <histogram name="Sync.FreqApps" units="milliseconds">
   <owner>zea@chromium.org</owner>
   <summary>
