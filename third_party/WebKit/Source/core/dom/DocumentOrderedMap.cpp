@@ -71,7 +71,7 @@ void DocumentOrderedMap::add(const AtomicString& key, Element* element)
     ASSERT(key);
     ASSERT(element);
 
-    Map::AddResult addResult = m_map.add(key.impl(), adoptPtrWillBeNoop(new MapEntry(element)));
+    Map::AddResult addResult = m_map.add(key, adoptPtrWillBeNoop(new MapEntry(element)));
     if (addResult.isNewEntry)
         return;
 
@@ -87,7 +87,7 @@ void DocumentOrderedMap::remove(const AtomicString& key, Element* element)
     ASSERT(key);
     ASSERT(element);
 
-    Map::iterator it = m_map.find(key.impl());
+    Map::iterator it = m_map.find(key);
     if (it == m_map.end())
         return;
 
@@ -112,7 +112,7 @@ inline Element* DocumentOrderedMap::get(const AtomicString& key, const TreeScope
     ASSERT(key);
     ASSERT(scope);
 
-    MapEntry* entry = m_map.get(key.impl());
+    MapEntry* entry = m_map.get(key);
     if (!entry)
         return 0;
 
@@ -142,7 +142,7 @@ const WillBeHeapVector<RawPtrWillBeMember<Element> >& DocumentOrderedMap::getAll
     ASSERT(scope);
     DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WillBeHeapVector<RawPtrWillBeMember<Element> > >, emptyVector, (adoptPtrWillBeNoop(new WillBeHeapVector<RawPtrWillBeMember<Element> >())));
 
-    Map::iterator it = m_map.find(key.impl());
+    Map::iterator it = m_map.find(key);
     if (it == m_map.end())
         return *emptyVector;
 

@@ -35,6 +35,7 @@
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/AtomicString.h"
+#include "wtf/text/AtomicStringHash.h"
 #include "wtf/text/StringImpl.h"
 
 namespace blink {
@@ -78,19 +79,19 @@ private:
         WillBeHeapVector<RawPtrWillBeMember<Element> > orderedList;
     };
 
-    typedef WillBeHeapHashMap<StringImpl*, OwnPtrWillBeMember<MapEntry> > Map;
+    typedef WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<MapEntry> > Map;
 
     mutable Map m_map;
 };
 
 inline bool DocumentOrderedMap::contains(const AtomicString& id) const
 {
-    return m_map.contains(id.impl());
+    return m_map.contains(id);
 }
 
 inline bool DocumentOrderedMap::containsMultiple(const AtomicString& id) const
 {
-    Map::const_iterator it = m_map.find(id.impl());
+    Map::const_iterator it = m_map.find(id);
     return it != m_map.end() && it->value->count > 1;
 }
 
