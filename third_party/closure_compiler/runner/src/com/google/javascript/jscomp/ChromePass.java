@@ -12,9 +12,12 @@ import com.google.javascript.rhino.Node;
 import com.google.javascript.rhino.Token;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Compiler pass for Chrome-specific needs. It handles the following Chrome JS features:
@@ -28,10 +31,11 @@ import java.util.Map;
 public class ChromePass extends AbstractPostOrderCallback implements CompilerPass {
     final AbstractCompiler compiler;
 
+    private Set<String> createdObjects;
+
     private static final String CR_DEFINE = "cr.define";
-
+    private static final String CR_EXPORT_PATH = "cr.exportPath";
     private static final String OBJECT_DEFINE_PROPERTY = "Object.defineProperty";
-
     private static final String CR_DEFINE_PROPERTY = "cr.defineProperty";
 
     private static final String CR_DEFINE_COMMON_EXPLANATION = "It should be called like this:"
@@ -40,6 +44,10 @@ public class ChromePass extends AbstractPostOrderCallback implements CompilerPas
     static final DiagnosticType CR_DEFINE_WRONG_NUMBER_OF_ARGUMENTS =
             DiagnosticType.error("JSC_CR_DEFINE_WRONG_NUMBER_OF_ARGUMENTS",
                     "cr.define() should have exactly 2 arguments. " + CR_DEFINE_COMMON_EXPLANATION);
+
+    static final DiagnosticType CR_EXPORT_PATH_WRONG_NUMBER_OF_ARGUMENTS =
+            DiagnosticType.error("JSC_CR_EXPORT_PATH_WRONG_NUMBER_OF_ARGUMENTS",
+                    "cr.exportPath() should have exactly 1 argument: namespace name.");
 
     static final DiagnosticType CR_DEFINE_INVALID_FIRST_ARGUMENT =
             DiagnosticType.error("JSC_CR_DEFINE_INVALID_FIRST_ARGUMENT",
@@ -61,6 +69,8 @@ public class ChromePass extends AbstractPostOrderCallback implements CompilerPas
 
     public ChromePass(AbstractCompiler compiler) {
         this.compiler = compiler;
+        // The global variable "cr" is declared in ui/webui/resources/js/cr.js.
+        this.createdObjects = new HashSet<>(Arrays.asList("cr"));
     }
 
     @Override
@@ -74,6 +84,9 @@ public class ChromePass extends AbstractPostOrderCallback implements CompilerPas
             Node callee = node.getFirstChild();
             if (callee.matchesQualifiedName(CR_DEFINE)) {
                 visitNamespaceDefinition(node, parent);
+                compiler.reportCodeChange();
+            } else if (callee.matchesQualifiedName(CR_EXPORT_PATH)) {
+                visitExportPath(node, parent);
                 compiler.reportCodeChange();
             } else if (callee.matchesQualifiedName(OBJECT_DEFINE_PROPERTY) ||
                     callee.matchesQualifiedName(CR_DEFINE_PROPERTY)) {
@@ -127,6 +140,24 @@ public class ChromePass extends AbstractPostOrderCallback implements CompilerPas
         target.setJSDocInfo(builder.build(target));
     }
 
+    private void visitExportPath(Node crExportPathNode, Node parent) {
+        if (crExportPathNode.getChildCount() != 2) {
+            compiler.report(JSError.make(crExportPathNode,
+                    CR_EXPORT_PATH_WRONG_NUMBER_OF_ARGUMENTS));
+            return;
+        }
+
+        createAndInsertObjectsForQualifiedName(parent,
+                crExportPathNode.getChildAtIndex(1).getString());
+    }
+
+    private void createAndInsertObjectsForQualifiedName(Node scriptChild, String namespace) {
+        List<Node> objectsForQualifiedName = createObjectsForQualifiedName(namespace);
+        for (Node n : objectsForQualifiedName) {
+            scriptChild.getParent().addChildBefore(n, scriptChild);
+        }
+    }
+
     private void visitNamespaceDefinition(Node crDefineCallNode, Node parent) {
         if (crDefineCallNode.getChildCount() != 3) {
             compiler.report(JSError.make(crDefineCallNode, CR_DEFINE_WRONG_NUMBER_OF_ARGUMENTS));
@@ -144,10 +175,7 @@ public class ChromePass extends AbstractPostOrderCallback implements CompilerPas
         // identifiers.
         String namespace = namespaceArg.getString();
 
-        List<Node> objectsForQualifiedName = createObjectsForQualifiedName(namespace);
-        for (Node n : objectsForQualifiedName) {
-            parent.getParent().addChildBefore(n, parent);
-        }
+        createAndInsertObjectsForQualifiedName(parent, namespace);
 
         if (!function.isFunction()) {
             compiler.report(JSError.make(namespaceArg, CR_DEFINE_INVALID_SECOND_ARGUMENT));
@@ -198,18 +226,24 @@ public class ChromePass extends AbstractPostOrderCallback implements CompilerPas
         List<Node> objects = new ArrayList<>();
         String[] parts = namespace.split("\\.");
 
-        objects.add(createJsNode("var " + parts[0] + " = " + parts[0] + " || {};"));
+        createObjectIfNew(objects, parts[0], true);
 
         if (parts.length >= 2) {
             StringBuilder currPrefix = new StringBuilder().append(parts[0]);
             for (int i = 1; i < parts.length; ++i) {
                 currPrefix.append(".").append(parts[i]);
-                String code = currPrefix + " = " + currPrefix + " || {};";
-                objects.add(createJsNode(code));
+                createObjectIfNew(objects, currPrefix.toString(), false);
             }
         }
 
         return objects;
+    }
+
+    private void createObjectIfNew(List<Node> objects, String name, boolean needVar) {
+        if (!createdObjects.contains(name)) {
+            objects.add(createJsNode((needVar ? "var " : "") + name + " = " + name + " || {};"));
+            createdObjects.add(name);
+        }
     }
 
     private Node createJsNode(String code) {

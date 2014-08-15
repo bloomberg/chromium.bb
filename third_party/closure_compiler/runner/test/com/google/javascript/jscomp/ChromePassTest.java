@@ -244,4 +244,68 @@ public class ChromePassTest extends CompilerTestCase {
             null, ChromePass.CR_DEFINE_PROPERTY_INVALID_PROPERTY_KIND);
     }
 
+    public void testCrExportPath() throws Exception {
+        test(
+            "cr.exportPath('a.b.c');",
+            "var a = a || {};\n" +
+            "a.b = a.b || {};\n" +
+            "a.b.c = a.b.c || {};\n" +
+            "cr.exportPath('a.b.c');");
+    }
+
+    public void testCrDefineCreatesEveryObjectOnlyOnce() throws Exception {
+        test(
+            "cr.define('a.b.c.d', function() {\n" +
+            "  return {};\n" +
+            "});" +
+            "cr.define('a.b.e.f', function() {\n" +
+            "  return {};\n" +
+            "});",
+            "var a = a || {};\n" +
+            "a.b = a.b || {};\n" +
+            "a.b.c = a.b.c || {};\n" +
+            "a.b.c.d = a.b.c.d || {};\n" +
+            "cr.define('a.b.c.d', function() {\n" +
+            "  return {};\n" +
+            "});" +
+            "a.b.e = a.b.e || {};\n" +
+            "a.b.e.f = a.b.e.f || {};\n" +
+            "cr.define('a.b.e.f', function() {\n" +
+            "  return {};\n" +
+            "});");
+    }
+
+    public void testCrDefineAndCrExportPathCreateEveryObjectOnlyOnce() throws Exception {
+        test(
+            "cr.exportPath('a.b.c.d');\n" +
+            "cr.define('a.b.e.f', function() {\n" +
+            "  return {};\n" +
+            "});",
+            "var a = a || {};\n" +
+            "a.b = a.b || {};\n" +
+            "a.b.c = a.b.c || {};\n" +
+            "a.b.c.d = a.b.c.d || {};\n" +
+            "cr.exportPath('a.b.c.d');\n" +
+            "a.b.e = a.b.e || {};\n" +
+            "a.b.e.f = a.b.e.f || {};\n" +
+            "cr.define('a.b.e.f', function() {\n" +
+            "  return {};\n" +
+            "});");
+    }
+
+    public void testCrDefineDoesntRedefineCrVar() throws Exception {
+        test(
+            "cr.define('cr.ui', function() {\n" +
+            "  return {};\n" +
+            "});",
+            "cr.ui = cr.ui || {};\n" +
+            "cr.define('cr.ui', function() {\n" +
+            "  return {};\n" +
+            "});");
+    }
+
+    public void testCrExportPathInvalidNumberOfArguments() throws Exception {
+        test("cr.exportPath();", null, ChromePass.CR_EXPORT_PATH_WRONG_NUMBER_OF_ARGUMENTS);
+    }
+
 }

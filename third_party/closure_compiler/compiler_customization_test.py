@@ -187,6 +187,13 @@ needsNumber(new Class().booleanProp);
 """, "ERROR - actual parameter 1 of needsNumber does not match formal "
         "parameter")
 
+  def testCrDefineOnCrWorks(self):
+    self._runCheckerTestExpectSuccess(self._CR_DEFINE_DEFINITION + """
+cr.define('cr', function() {
+  return {};
+});
+""")
+
 
 if __name__ == "__main__":
   unittest.main()
