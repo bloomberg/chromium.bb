@@ -2085,6 +2085,38 @@ TEST(LayerAnimationControllerTest, ActivationBetweenAnimateAndUpdateState) {
   EXPECT_EQ(0.75f, dummy_impl.opacity());
 }
 
+TEST(LayerAnimationControllerTest, ClippedOpacityValues) {
+  FakeLayerAnimationValueObserver dummy;
+  scoped_refptr<LayerAnimationController> controller(
+      LayerAnimationController::Create(0));
+  controller->AddValueObserver(&dummy);
+
+  AddOpacityTransitionToController(controller.get(), 1, 1.f, 2.f, true);
+
+  controller->Animate(kInitialTickTime);
+  EXPECT_EQ(1.f, dummy.opacity());
+
+  // Opacity values are clipped [0,1]
+  controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
+  EXPECT_EQ(1.f, dummy.opacity());
+}
+
+TEST(LayerAnimationControllerTest, ClippedNegativeOpacityValues) {
+  FakeLayerAnimationValueObserver dummy;
+  scoped_refptr<LayerAnimationController> controller(
+      LayerAnimationController::Create(0));
+  controller->AddValueObserver(&dummy);
+
+  AddOpacityTransitionToController(controller.get(), 1, 0.f, -2.f, true);
+
+  controller->Animate(kInitialTickTime);
+  EXPECT_EQ(0.f, dummy.opacity());
+
+  // Opacity values are clipped [0,1]
+  controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
+  EXPECT_EQ(0.f, dummy.opacity());
+}
+
 TEST(LayerAnimationControllerTest, PushedDeletedAnimationWaitsForActivation) {
   scoped_ptr<AnimationEventsVector> events(
       make_scoped_ptr(new AnimationEventsVector));

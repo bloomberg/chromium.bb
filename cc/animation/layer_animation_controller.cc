@@ -854,7 +854,8 @@ void LayerAnimationController::TickAnimations(base::TimeTicks monotonic_time) {
         case Animation::Opacity: {
           const FloatAnimationCurve* float_animation_curve =
               animations_[i]->curve()->ToFloatAnimationCurve();
-          const float opacity = float_animation_curve->GetValue(trimmed);
+          const float opacity = std::max(
+              std::min(float_animation_curve->GetValue(trimmed), 1.0f), 0.f);
           NotifyObserversOpacityAnimated(
               opacity,
               animations_[i]->affects_active_observers(),
