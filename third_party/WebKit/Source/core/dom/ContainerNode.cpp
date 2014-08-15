@@ -670,7 +670,11 @@ void ContainerNode::removeChildren()
         childrenChanged(change);
     }
 
-    dispatchSubtreeModifiedEvent();
+    // We don't fire the DOMSubtreeModified event for Attr Nodes. This matches the behavior
+    // of IE and Firefox. This event is fired synchronously and is a source of trouble for
+    // attributes as the JS callback could alter the attributes and leave us in a bad state.
+    if (!isAttributeNode())
+        dispatchSubtreeModifiedEvent();
 }
 
 PassRefPtrWillBeRawPtr<Node> ContainerNode::appendChild(PassRefPtrWillBeRawPtr<Node> newChild, ExceptionState& exceptionState)
