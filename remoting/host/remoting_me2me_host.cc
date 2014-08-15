@@ -65,6 +65,7 @@
 #include "remoting/host/policy_hack/policy_watcher.h"
 #include "remoting/host/session_manager_factory.h"
 #include "remoting/host/signaling_connector.h"
+#include "remoting/host/single_window_desktop_environment.h"
 #include "remoting/host/token_validator_factory_impl.h"
 #include "remoting/host/usage_stats_consent.h"
 #include "remoting/host/username.h"
@@ -132,6 +133,8 @@ const char kFrameRecorderBufferKbName[] = "frame-recorder-buffer-kb";
 // Value used for --host-config option to indicate that the path must be read
 // from stdin.
 const char kStdinConfigPath[] = "-";
+
+const char kWindowIdSwitchName[] = "window-id";
 
 }  // namespace
 
@@ -309,6 +312,13 @@ class HostProcess
   ThirdPartyAuthConfig third_party_auth_config_;
   bool enable_gnubby_auth_;
 
+  // Boolean to change flow, where ncessary, if we're
+  // capturing a window instead of the entire desktop.
+  bool enable_window_capture_;
+
+  // Used to specify which window to stream, if enabled.
+  webrtc::WindowId window_id_;
+
   scoped_ptr<OAuthTokenGetter> oauth_token_getter_;
   scoped_ptr<XmppSignalStrategy> signal_strategy_;
   scoped_ptr<SignalingConnector> signaling_connector_;
@@ -348,6 +358,8 @@ HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
       allow_pairing_(true),
       curtain_required_(false),
       enable_gnubby_auth_(false),
+      enable_window_capture_(false),
+      window_id_(0),
 #if defined(REMOTING_MULTI_PROCESS)
       desktop_session_connector_(NULL),
 #endif  // defined(REMOTING_MULTI_PROCESS)
@@ -454,6 +466,26 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
 
   signal_parent_ = cmd_line->HasSwitch(kSignalParentSwitchName);
 
+  enable_window_capture_ = cmd_line->HasSwitch(kWindowIdSwitchName);
+  if (enable_window_capture_) {
+
+#if defined(OS_LINUX) || defined(OS_WIN)
+    LOG(WARNING) << "Window capturing is not fully supported on Linux or "
+                    "Windows.";
+#endif  // defined(OS_LINUX) || defined(OS_WIN)
+
+    // uint32_t is large enough to hold window IDs on all platforms.
+    uint32_t window_id;
+    if (base::StringToUint(
+            cmd_line->GetSwitchValueASCII(kWindowIdSwitchName),
+            &window_id)) {
+      window_id_ = static_cast<webrtc::WindowId>(window_id);
+    } else {
+      LOG(ERROR) << "Window with window id: " << window_id_
+                 << " not found. Shutting down host.";
+      return false;
+    }
+  }
   return true;
 }
 
@@ -684,11 +716,21 @@ void HostProcess::StartOnUiThread() {
           daemon_channel_.get());
   desktop_session_connector_ = desktop_environment_factory;
 #else  // !defined(OS_WIN)
-  DesktopEnvironmentFactory* desktop_environment_factory =
+  DesktopEnvironmentFactory* desktop_environment_factory;
+  if (enable_window_capture_) {
+    desktop_environment_factory =
+      new SingleWindowDesktopEnvironmentFactory(
+          context_->network_task_runner(),
+          context_->input_task_runner(),
+          context_->ui_task_runner(),
+          window_id_);
+  } else {
+    desktop_environment_factory =
       new Me2MeDesktopEnvironmentFactory(
           context_->network_task_runner(),
           context_->input_task_runner(),
           context_->ui_task_runner());
+  }
 #endif  // !defined(OS_WIN)
 
   desktop_environment_factory_.reset(desktop_environment_factory);
