@@ -7642,9 +7642,6 @@ bool CSSPropertyParser::parseWebkitPerspectiveOrigin(CSSPropertyID propId, CSSPr
 
 bool CSSPropertyParser::parseTouchAction(bool important)
 {
-    if (!RuntimeEnabledFeatures::cssTouchActionEnabled())
-        return false;
-
     CSSParserValue* value = m_valueList->current();
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     if (m_valueList->size() == 1 && value && (value->id == CSSValueAuto || value->id == CSSValueNone || value->id == CSSValueManipulation)) {

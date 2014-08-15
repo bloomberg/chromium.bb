@@ -41,7 +41,6 @@ CSSCompositing status=experimental
 CSSGridLayout status=experimental
 CSSMaskSourceType status=experimental
 CSSOMSmoothScroll status=experimental
-CSSTouchAction status=stable
 CSSTouchActionDelay status=test
 CSSViewport status=experimental
 CSSWillChange status=stable

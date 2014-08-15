@@ -98,7 +98,6 @@ static void setPropertySwitchesFromRuntimeFeatures()
 
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyMixBlendMode, RuntimeEnabledFeatures::cssCompositingEnabled());
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyIsolation, RuntimeEnabledFeatures::cssCompositingEnabled());
-    RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyTouchAction, RuntimeEnabledFeatures::cssTouchActionEnabled());
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyTouchActionDelay, RuntimeEnabledFeatures::cssTouchActionDelayEnabled());
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyMaskSourceType, RuntimeEnabledFeatures::cssMaskSourceTypeEnabled());
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyColumnFill, RuntimeEnabledFeatures::regionBasedColumnsEnabled());

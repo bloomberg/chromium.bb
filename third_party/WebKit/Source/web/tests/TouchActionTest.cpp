@@ -109,7 +109,6 @@ public:
     {
         URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL), "touch-action-tests.css");
         URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL), "touch-action-tests.js");
-        blink::RuntimeEnabledFeatures::setCSSTouchActionEnabled(true);
     }
 
     virtual void TearDown()
