@@ -4,35 +4,38 @@
 <script src="../resources/testharnessreport.js"></script>
 <script src="resources/test-helpers.js"></script>
 <script>
-var test = async_test('Verify fetch() in a Service Worker');
-test.step(function() {
+async_test(function(t) {
     var scope = 'resources/blank.html';
     service_worker_unregister_and_register(
-        test, 'resources/fetch-worker.js', scope).then(test.step_func(onRegister));
-
-    function onRegister(worker) {
-        var messageChannel = new MessageChannel();
-        messageChannel.port1.onmessage = test.step_func(onMessage);
-        worker.postMessage({port: messageChannel.port2}, [messageChannel.port2]);
-    }
+        t, 'resources/fetch-worker.js', scope)
+      .then(function(registration) {
+          return wait_for_update(t, registration);
+        })
+      .then(function(sw) {
+          var messageChannel = new MessageChannel();
+          messageChannel.port1.onmessage = t.step_func(onMessage);
+          sw.postMessage({port: messageChannel.port2}, [messageChannel.port2]);
+        })
+      .catch(unreached_rejection(t));
 
     var result = [];
     var expected = [
-        'Resolved: other.html [200]OK',
-        'Rejected: http:// : Invalid URL',
-        'Rejected: http://www.example.com/foo : Failed to fetch',
-        'Resolved: fetch-status.php?status=200 [200]OK',
-        'Resolved: fetch-status.php?status=404 [404]Not Found',
+      'Resolved: other.html [200]OK',
+      'Rejected: http:// : Invalid URL',
+      'Rejected: http://www.example.com/foo : Failed to fetch',
+      'Resolved: fetch-status.php?status=200 [200]OK',
+      'Resolved: fetch-status.php?status=404 [404]Not Found',
     ];
 
     function onMessage(e) {
-        var message = e.data;
-        if (message == 'quit') {
-            assert_array_equals(result, expected, 'Worker should post back expected values.');
-            service_worker_unregister_and_done(test, scope);
-        } else {
-            result.push(message);
-        }
+      var message = e.data;
+      if (message == 'quit') {
+        assert_array_equals(result, expected,
+                            'Worker should post back expected values.');
+        service_worker_unregister_and_done(t, scope);
+      } else {
+        result.push(message);
+      }
     }
-});
+  }, 'Verify fetch() in a Service Worker');
 </script>

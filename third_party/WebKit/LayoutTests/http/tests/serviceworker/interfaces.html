@@ -7,30 +7,39 @@
 <script>
 
 test(function() {
-  verifyInterface(
-    'ServiceWorkerContainer', navigator.serviceWorker,
-    {
-      register: 'function',
-      unregister: 'function'
-    });
-
-}, 'Interfaces and attributes of ServiceWorkerContainer');
+    verifyInterface(
+      'ServiceWorkerContainer', navigator.serviceWorker,
+      {
+        register: 'function',
+        unregister: 'function'
+      });
+  }, 'Interfaces and attributes of ServiceWorkerContainer');
 
 async_test(function(t) {
-  service_worker_unregister_and_register(t, 'resources/empty-worker.js')
-    .then(t.step_func(function(worker) {
-      var EVENT_HANDLER = 'object';
-      verifyInterface(
-        'ServiceWorker', worker,
-        {
-          scriptURL: 'string',
-          state: 'string',
-
-          onstatechange: EVENT_HANDLER
-        });
-      t.done();
-    }));
-}, 'Interfaces and attributes of ServiceWorker');
+    var EVENT_HANDLER = 'object';
+    service_worker_unregister_and_register(t, 'resources/empty-worker.js')
+      .then(function(registration) {
+          verifyInterface(
+            'ServiceWorkerRegistration', registration,
+            {
+              scope: 'string',
+              unregister: 'function',
+              onupdatefound: EVENT_HANDLER
+            });
+          return wait_for_update(t, registration);
+        })
+      .then(function(worker) {
+          verifyInterface(
+            'ServiceWorker', worker,
+            {
+              scriptURL: 'string',
+              state: 'string',
+              onstatechange: EVENT_HANDLER
+            });
+          t.done();
+        })
+      .catch(unreached_rejection(t));
+  }, 'Interfaces and attributes of ServiceWorker');
 
 service_worker_test(
   'resources/interfaces-worker.js',

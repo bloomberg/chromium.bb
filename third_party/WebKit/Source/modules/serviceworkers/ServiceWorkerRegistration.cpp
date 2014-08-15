@@ -22,11 +22,7 @@ namespace blink {
 
 class UndefinedValue {
 public:
-#ifdef DISABLE_SERVICE_WORKER_REGISTRATION
-    typedef WebServiceWorker WebType;
-#else
     typedef WebServiceWorkerRegistration WebType;
-#endif
     static V8UndefinedType take(ScriptPromiseResolver* resolver, WebType* registration)
     {
         ASSERT(!registration); // Anything passed here will be leaked.

@@ -8,10 +8,14 @@ var worker_url = 'resources/empty-worker.js';
 async_test(function(t) {
     var scope = 'scope/re-register-resolves-to-new-value';
     var iframe;
+    var previous_registration;
 
     service_worker_unregister_and_register(t, worker_url, scope)
-      .then(function(registered_worker) {
-          worker = registered_worker;
+      .then(function(registration) {
+          previous_registration = registration;
+          return wait_for_update(t, registration);
+        })
+      .then(function(worker) {
           return wait_for_state(t, worker, 'activated');
         })
       .then(function() {
@@ -20,8 +24,8 @@ async_test(function(t) {
       .then(function() {
           return navigator.serviceWorker.register(worker_url, { scope: scope });
         })
-      .then(function(registered_worker) {
-          assert_not_equals(registered_worker, worker,
+      .then(function(registration) {
+          assert_not_equals(previous_registration, registration,
                             'register should resolve to a new value');
           service_worker_unregister_and_done(t, scope);
         })
@@ -30,11 +34,14 @@ async_test(function(t) {
 
 async_test(function(t) {
     var scope = 'scope/re-register-while-old-registration-in-use';
-    var worker;
+    var previous_registration;
 
     service_worker_unregister_and_register(t, worker_url, scope)
-      .then(function(registered_worker) {
-          worker = registered_worker;
+      .then(function(registration) {
+          previous_registration = registration;
+          return wait_for_update(t, registration);
+        })
+      .then(function(worker) {
           return wait_for_state(t, worker, 'activated');
         })
       .then(function() {
@@ -46,8 +53,8 @@ async_test(function(t) {
       .then(function() {
           return navigator.serviceWorker.register(worker_url, { scope: scope });
         })
-      .then(function(registered_worker) {
-          assert_equals(registered_worker, worker,
+      .then(function(registration) {
+          assert_equals(previous_registration, registration,
                         'register should resolve to the same value');
           service_worker_unregister_and_done(t, scope);
         })
@@ -60,6 +67,9 @@ async_test(function(t) {
     var iframe;
 
     service_worker_unregister_and_register(t, worker_url, scope)
+      .then(function(registration) {
+          return wait_for_update(t, registration);
+        })
       .then(function(registered_worker) {
           return wait_for_state(t, registered_worker, 'activated');
         })
@@ -74,14 +84,13 @@ async_test(function(t) {
       .then(function() {
           return navigator.serviceWorker.register(worker_url, { scope: scope });
         })
-      .then(function() {
-          var sw_container = iframe.contentWindow.navigator.serviceWorker;
-          assert_equals(sw_container.installing, null,
+      .then(function(registration) {
+          assert_equals(registration.installing, null,
                         'installing version is null');
-          assert_equals(sw_container.waiting, null, 'waiting version is null');
-          assert_equals(sw_container.controller, worker,
-                        'the worker from the first registration is the ' +
-                            'controller');
+          assert_equals(registration.waiting, null, 'waiting version is null');
+          assert_equals(
+              iframe.contentWindow.navigator.serviceWorker.controller, worker,
+              'the worker from the first registration is the controller');
           service_worker_unregister_and_done(t, scope);
         })
       .catch(unreached_rejection(t));
@@ -93,6 +102,9 @@ async_test(function(t) {
     var worker;
 
     service_worker_unregister_and_register(t, worker_url, scope)
+      .then(function(registration) {
+          return wait_for_update(t, registration);
+        })
       .then(function(registered_worker) {
           return wait_for_state(t, registered_worker, 'activated');
         })
@@ -130,6 +142,9 @@ async_test(function(t) {
     var iframe;
 
     service_worker_unregister_and_register(t, worker_url, scope)
+      .then(function(registration) {
+          return wait_for_update(t, registration);
+        })
       .then(function(worker) {
           return wait_for_state(t, worker, 'activated');
         })
@@ -144,6 +159,9 @@ async_test(function(t) {
           // FIXME: Register should not resolve until controllees are unloaded.
           return navigator.serviceWorker.register(new_worker_url,
                                                   { scope: scope });
+        })
+      .then(function(registration) {
+          return wait_for_update(t, registration);
         })
       .then(function(worker) {
           return wait_for_state(t, worker, 'activated');
@@ -165,6 +183,9 @@ async_test(function(t) {
     var iframe;
 
     service_worker_unregister_and_register(t, worker_url, scope)
+      .then(function(registration) {
+          return wait_for_update(t, registration);
+        })
       .then(function(worker) {
           return wait_for_state(t, worker, 'activated');
         })
@@ -205,6 +226,9 @@ async_test(function(t) {
     var iframe;
 
     service_worker_unregister_and_register(t, worker_url, scope)
+      .then(function(registration) {
+          return wait_for_update(t, registration);
+        })
       .then(function(worker) {
           return wait_for_state(t, worker, 'activated');
         })
@@ -219,6 +243,9 @@ async_test(function(t) {
           // FIXME: Register should not resolve until controllees are unloaded.
           return navigator.serviceWorker.register(
               'resources/reject-install-worker.js', { scope: scope });
+        })
+      .then(function(registration) {
+          return wait_for_update(t, registration);
         })
       .then(function(worker) {
           return wait_for_state(t, worker, 'redundant');

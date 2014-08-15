@@ -51,18 +51,9 @@ public:
     // events. Must be cleared before the client becomes invalid.
     virtual void setClient(WebServiceWorkerProviderClient*) { }
 
-    // FIXME: Remove this macro after two-side patches are landed
-    // (http://crbug.com/396400).
-#define DISABLE_SERVICE_WORKER_REGISTRATION
-#ifdef DISABLE_SERVICE_WORKER_REGISTRATION
-    // The WebServiceWorker and WebServiceWorkerError ownership are passed to
-    // the WebServiceWorkerCallbacks implementation.
-    typedef WebCallbacks<WebServiceWorker, WebServiceWorkerError> WebServiceWorkerRegistrationCallbacks;
-#else
     // The WebServiceWorkerRegistration and WebServiceWorkerError ownership are
     // passed to the WebServiceWorkerRegistrationCallbacks implementation.
     typedef WebCallbacks<WebServiceWorkerRegistration, WebServiceWorkerError> WebServiceWorkerRegistrationCallbacks;
-#endif
 
     virtual void registerServiceWorker(const WebURL& pattern, const WebURL& scriptUrl, WebServiceWorkerRegistrationCallbacks*) { }
 

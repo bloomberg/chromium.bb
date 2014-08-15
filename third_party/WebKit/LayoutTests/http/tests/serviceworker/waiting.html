@@ -11,30 +11,34 @@ async_test(function(t) {
     var url = 'resources/worker-no-op.js';
     var scope = 'resources/blank.html';
     var frame;
+    var registration;
 
     navigator.serviceWorker.unregister(scope)
-    .then(step(function() { return with_iframe(scope); }),
-          unreached_rejection(t, 'Unregister should not fail'))
-    .then(step(function(f) {
+    .then(function() { return with_iframe(scope); })
+    .then(function(f) {
         frame = f;
         return navigator.serviceWorker.register(url, {scope: scope});
-    }))
-    .then(step(function(serviceWorker) {
+      })
+    .then(function(r) {
+        registration = r;
+        return wait_for_update(t, registration);
+      })
+    .then(function(serviceWorker) {
         return wait_for_state(t, serviceWorker, 'installed');
-    }), unreached_rejection(t, 'Registration should not fail'))
-    .then(step(function() {
-        var container = frame.contentWindow.navigator.serviceWorker;
-        assert_equals(container.controller, null);
-        assert_equals(container.active, null);
-        assert_equals(container.waiting.scriptURL, normalizeURL(url));
-        assert_equals(container.installing, null);
+      }, unreached_rejection(t, 'Registration should not fail'))
+    .then(function() {
+        var controller = frame.contentWindow.navigator.serviceWorker.controller;
+        assert_equals(controller, null);
+        assert_equals(registration.active, null);
+        assert_equals(registration.waiting.scriptURL, normalizeURL(url));
+        assert_equals(registration.installing, null);
 
         // FIXME: Add a test for a frame created after installation.
         // Should the existing frame ("frame") block activation?
-    }))
-    .then(step(function() {
+      })
+    .then(function() {
         frame.remove();
         return service_worker_unregister_and_done(t, scope);
-    }));
+      });
 }, 'waiting is set');
 </script>

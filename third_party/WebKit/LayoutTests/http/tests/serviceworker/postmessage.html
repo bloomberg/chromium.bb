@@ -4,37 +4,38 @@
 <script src="../resources/testharnessreport.js"></script>
 <script src="resources/test-helpers.js"></script>
 <script>
-var test = async_test('postMessage to a ServiceWorker (and back via MessagePort)');
-test.step(function() {
+async_test(function(t) {
     var scope = 'resources/blank.html';
     service_worker_unregister_and_register(
-        test, 'resources/postmessage-worker.js', scope).then(test.step_func(onRegister));
-
-    function onRegister(worker) {
-        var messageChannel = new MessageChannel();
-        messageChannel.port1.onmessage = test.step_func(onMessage);
-
-        worker.postMessage({port: messageChannel.port2}, [messageChannel.port2]);
-
-        worker.postMessage({value: 1});
-        worker.postMessage({value: 2});
-        worker.postMessage({done: true});
-    };
+        t, 'resources/postmessage-worker.js', scope)
+      .then(function(registration) {
+          return wait_for_update(t, registration);
+        })
+      .then(function(sw) {
+          var messageChannel = new MessageChannel();
+          messageChannel.port1.onmessage = t.step_func(onMessage);
+          sw.postMessage({port: messageChannel.port2}, [messageChannel.port2]);
+          sw.postMessage({value: 1});
+          sw.postMessage({value: 2});
+          sw.postMessage({done: true});
+        })
+      .catch(unreached_rejection(t));
 
     var result = [];
     var expected = [
-        'Acking value: 1',
-        'Acking value: 2',
+      'Acking value: 1',
+      'Acking value: 2',
     ];
 
     function onMessage(e) {
-        var message = e.data;
-        if (message === 'quit') {
-            assert_array_equals(result, expected, 'Worker should post back expected values.');
-            service_worker_unregister_and_done(test, scope);
-        } else {
-            result.push(message);
-        }
+      var message = e.data;
+      if (message === 'quit') {
+        assert_array_equals(result, expected,
+                            'Worker should post back expected values.');
+        service_worker_unregister_and_done(t, scope);
+      } else {
+        result.push(message);
+      }
     };
-});
+  }, 'postMessage to a ServiceWorker (and back via MessagePort)');
 </script>

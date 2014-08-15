@@ -2,7 +2,8 @@
 <script src="/js-test-resources/js-test.js"></script>
 <script>
 window.jsTestIsAsync = true;
-description('Test that a registered Service Worker with an event handler is not garbage collected prematurely');
+description('Test that ServiceWorker and ServiceWorkerRegistration are not garbage collected prematurely');
+var registrationObservation = null;
 var swObservation = null;
 var scope = 'gc';
 
@@ -27,7 +28,14 @@ function unregisterAndRegister(url, scope) {
     });
 }
 
-function onRegister(sw) {
+function onRegister(registration) {
+    registrationObservation = internals.observeGC(registration);
+    registration.addEventListener('updatefound', (function() {
+        onUpdate(registration.installing);
+    }));
+}
+
+function onUpdate(sw) {
     swObservation = internals.observeGC(sw);
     sw.addEventListener('statechange', onStateChange);
 }
@@ -48,6 +56,7 @@ function unregister() {
     // The worker has an event handler that can still receive the state change
     // to 'redundant', so it shouldn't be collected yet.
     gc();
+    shouldBeFalse('registrationObservation.wasCollected');
     shouldBeFalse('swObservation.wasCollected');
     navigator.serviceWorker.unregister(scope).catch(function(error) {
         testFailed('Could not unregister worker: ' + error);
@@ -57,8 +66,13 @@ function unregister() {
 
 function finish()
 {
+    // The worker is 'redundant' but the registration holds a reference to it,
+    // so it shouldn't be collected yet.
+    // FIXME: When crbug.com/398355 is fixed, register a new script URL and
+    // once the new worker is activated, check that the old worker is gc'd.
     gc();
-    shouldBeTrue('swObservation.wasCollected');
+    shouldBeFalse('registrationObservation.wasCollected');
+    shouldBeFalse('swObservation.wasCollected');
     finishJSTest();
 }
 </script>

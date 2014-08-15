@@ -119,22 +119,14 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptS
         return promise;
     }
 
-#ifdef DISABLE_SERVICE_WORKER_REGISTRATION
-    m_provider->registerServiceWorker(patternURL, scriptURL, new CallbackPromiseAdapter<ServiceWorker, ServiceWorkerError>(resolver));
-#else
     m_provider->registerServiceWorker(patternURL, scriptURL, new CallbackPromiseAdapter<ServiceWorkerRegistration, ServiceWorkerError>(resolver));
-#endif
 
     return promise;
 }
 
 class UndefinedValue {
 public:
-#ifdef DISABLE_SERVICE_WORKER_REGISTRATION
-    typedef WebServiceWorker WebType;
-#else
     typedef WebServiceWorkerRegistration WebType;
-#endif
     static V8UndefinedType take(ScriptPromiseResolver* resolver, WebType* registration)
     {
         ASSERT(!registration); // Anything passed here will be leaked.

@@ -11,12 +11,17 @@ async_test(function(t) {
     var url = 'resources/worker-no-op.js';
     var scope = 'resources/blank.html';
     var frame;
+    var registration;
 
     navigator.serviceWorker.unregister(scope)
       .then(step(function() { return with_iframe(scope); }))
       .then(step(function(f) {
           frame = f;
           return navigator.serviceWorker.register(url, {scope: scope});
+        }))
+      .then(step(function(r) {
+          registration = r;
+          return wait_for_update(t, registration);
         }))
       .then(step(function(serviceWorker) {
           return wait_for_state(t, serviceWorker, 'activating');
@@ -28,15 +33,15 @@ async_test(function(t) {
             null,
             'On activating state a document should not have a controller');
           assert_equals(
-            container.active.scriptURL,
+            registration.active.scriptURL,
             normalizeURL(url),
             'On activating state a document should have an active worker ');
           assert_equals(
-            container.waiting,
+            registration.waiting,
             null,
             'On activating state a document should not have a waiting worker');
           assert_equals(
-            container.installing,
+            registration.installing,
             null,
             'On activating state a document should not have an installing ' +
                 'worker');

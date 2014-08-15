@@ -11,6 +11,13 @@ navigator.serviceWorker.unregister(SCOPE)
   .then(function() {
       return navigator.serviceWorker.register(URL, {scope: SCOPE});
     })
+  .then(function(registration) {
+      return new Promise(function(resolve) {
+          registration.addEventListener('updatefound', function() {
+              resolve(registration.installing);
+            });
+        });
+    })
   .then(function(worker) {
       worker.addEventListener('statechange', on_state_change);
     });

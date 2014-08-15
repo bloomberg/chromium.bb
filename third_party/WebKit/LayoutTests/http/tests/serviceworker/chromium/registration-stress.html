@@ -11,10 +11,10 @@ async_test(function(t) {
     var url = '../resources/worker-no-op.js';
     var frames = [];
 
-    var number_of_workers = 50;
+    var number_of_registrations = 50;
     var register_promises = [];
 
-    for (var i = 0; i < number_of_workers; i++) {
+    for (var i = 0; i < number_of_registrations; i++) {
       var scope = i;
       register_promises.push(with_iframe(scope)
         .then(step(function(f) {
@@ -24,9 +24,9 @@ async_test(function(t) {
     }
 
     Promise.all(register_promises)
-      .then(step(function(workers) {
+      .then(step(function(registrations) {
           var unregister_promises = [];
-          for (var i = 0; i < number_of_workers; i++) {
+          for (var i = 0; i < number_of_registrations; i++) {
             var scope = i;
             frames[i].remove();
             unregister_promises.push(

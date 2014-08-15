@@ -5,25 +5,26 @@
 <script src="resources/test-helpers.js"></script>
 <script>
 function runTest(test, scope, onRegister) {
-    var script = 'resources/install-phase-event-waituntil.js';
-    test.step(function() {
-        service_worker_unregister_and_register(
-            test, script, scope
-        ).then(
-            test.step_func(onRegister)
-        );
+  var script = 'resources/install-phase-event-waituntil.js';
+  test.step(function() {
+      service_worker_unregister_and_register(test, script, scope)
+        .then(function(registration) {
+            return wait_for_update(test, registration);
+          })
+        .then(test.step_func(onRegister));
     });
 }
 
 function syncWorker(test, worker, obj) {
-    var channel = new MessageChannel();
-    channel.port1.onmessage = test.step_func(function(e) {
-        var message = e.data;
-        assert_equals(message, 'SYNC', 'Should receive sync message from worker.');
-        obj.synced = true;
-        channel.port1.postMessage('ACK');
+  var channel = new MessageChannel();
+  channel.port1.onmessage = test.step_func(function(e) {
+      var message = e.data;
+      assert_equals(message, 'SYNC',
+                    'Should receive sync message from worker.');
+      obj.synced = true;
+      channel.port1.postMessage('ACK');
     });
-    worker.postMessage({port: channel.port2}, [channel.port2]);
+  worker.postMessage({port: channel.port2}, [channel.port2]);
 }
 
 async_test(function(t) {
@@ -33,16 +34,18 @@ async_test(function(t) {
         var obj = {};
         worker.onstatechange = t.step_func(function() {
             if (worker.state == 'installing') {
-                syncWorker(t, worker, obj);
+              syncWorker(t, worker, obj);
             } else if (worker.state == 'installed') {
-                assert_true(obj.synced,
-                            'state should be "installed" after the waitUntil promise for "oninstall" is fulfilled.');
-                service_worker_unregister_and_done(t, scope);
+              assert_true(
+                  obj.synced,
+                  'state should be "installed" after the waitUntil promise ' +
+                      'for "oninstall" is fulfilled.');
+              service_worker_unregister_and_done(t, scope);
             }
-        });
-    };
+          });
+      };
     runTest(t, scope, onRegister);
-}, 'Test install event waitUntil fulfilled');
+  }, 'Test install event waitUntil fulfilled');
 
 async_test(function(t) {
     var scope = 'activate-fulfilled';
@@ -50,39 +53,40 @@ async_test(function(t) {
         var obj = {};
         worker.onstatechange = t.step_func(function() {
             if (worker.state == 'activating') {
-                syncWorker(t, worker, obj);
+              syncWorker(t, worker, obj);
             } else if (worker.state == 'activated') {
-                assert_true(obj.synced,
-                            'state should be "activated" after the waitUntil promise for "onactivate" is fulfilled.');
-                service_worker_unregister_and_done(t, scope);
+              assert_true(
+                  obj.synced,
+                  'state should be "activated" after the waitUntil promise ' +
+                      'for "onactivate" is fulfilled.');
+              service_worker_unregister_and_done(t, scope);
             }
-        });
-    };
+          });
+      };
     runTest(t, scope, onRegister);
-}, 'Test activate event waitUntil fulfilled');
+  }, 'Test activate event waitUntil fulfilled');
 
 async_test(function(t) {
     var scope = 'install-rejected';
     var onRegister = function(worker) {
         worker.onstatechange = t.step_func(function() {
-        console.log(worker.state);
             if (worker.state == 'redundant')
-                service_worker_unregister_and_done(t, scope);
-        });
-    };
+              service_worker_unregister_and_done(t, scope);
+          });
+      };
     runTest(t, scope, onRegister);
-}, 'Test install event waitUntil rejected');
+  }, 'Test install event waitUntil rejected');
 
 async_test(function(t) {
     var scope = 'activate-rejected';
     var onRegister = function(worker) {
         worker.onstatechange = t.step_func(function() {
             if (worker.state == 'redundant')
-                service_worker_unregister_and_done(t, scope);
-        });
-    };
+              service_worker_unregister_and_done(t, scope);
+          });
+      };
     runTest(t, scope, onRegister);
-}, 'Test activate event waitUntil rejected.');
+  }, 'Test activate event waitUntil rejected.');
 
 async_test(function(t) {
     var scope = 'activate-multiple-fulfilled';
@@ -91,26 +95,28 @@ async_test(function(t) {
         var obj2 = {};
         worker.onstatechange = t.step_func(function() {
             if (worker.state == 'activating') {
-                syncWorker(t, worker, obj1);
-                syncWorker(t, worker, obj2);
+              syncWorker(t, worker, obj1);
+              syncWorker(t, worker, obj2);
             } else if (worker.state == 'activated') {
-                assert_true(obj1.synced && obj2.synced,
-                            'state should be "activated" after all waitUnitl promises for "onactivate" are fulfilled.');
-                service_worker_unregister_and_done(t, scope);
+              assert_true(
+                  obj1.synced && obj2.synced,
+                  'state should be "activated" after all waitUnitl promises ' +
+                      'for "onactivate" are fulfilled.');
+              service_worker_unregister_and_done(t, scope);
             }
-        });
-    };
+          });
+      };
     runTest(t, scope, onRegister);
-}, 'Test InstallPhaseEvent multiple waitUntil fulfilled.');
+  }, 'Test InstallPhaseEvent multiple waitUntil fulfilled.');
 
 async_test(function(t) {
     var scope = 'activate-reject-precedence';
     var onRegister = function(worker) {
         worker.onstatechange = t.step_func(function() {
             if (worker.state == 'redundant')
-                service_worker_unregister_and_done(t, scope);
-        });
-    };
+              service_worker_unregister_and_done(t, scope);
+          });
+      };
     runTest(t, scope, onRegister);
-}, 'Test InstallPhaseEvent waitUntil reject precedence.');
+  }, 'Test InstallPhaseEvent waitUntil reject precedence.');
 </script>

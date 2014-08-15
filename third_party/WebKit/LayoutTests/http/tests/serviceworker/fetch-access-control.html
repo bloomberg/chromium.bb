@@ -518,6 +518,9 @@ test.step(function() {
                                                         workerScript,
                                                         SCOPE);
         })
+      .then(function(registration) {
+          return wait_for_update(test, registration);
+        })
       .then(function(sw) {
           worker = sw;
           var messageChannel = new MessageChannel();

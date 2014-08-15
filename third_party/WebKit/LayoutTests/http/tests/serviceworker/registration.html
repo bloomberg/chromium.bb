@@ -12,8 +12,8 @@
             'resources/registration-worker.js',
             {scope: scope}
         ).then(
-            t.step_func(function(worker) {
-                assert_true(worker instanceof ServiceWorker,
+            t.step_func(function(registration) {
+                assert_true(registration instanceof ServiceWorkerRegistration,
                             'Successfully registered.');
                 service_worker_unregister_and_done(t, scope);
             }),
@@ -31,7 +31,7 @@
             'resources/registration-worker.js',
             {scope: 'http://example.com/'}
         ).then(
-            t.step_func(function(worker) {
+            t.step_func(function(registration) {
                 assert_unreached('Registration scope outside domain should fail.');
             }),
             t.step_func(function(reason) {
@@ -49,7 +49,7 @@
         navigator.serviceWorker.register(
             'http://example.com/worker.js'
         ).then(
-            t.step_func(function(worker) {
+            t.step_func(function(registration) {
                 assert_unreached('Registration script outside domain should fail.');
             }),
             t.step_func(function(reason) {
@@ -67,7 +67,7 @@
         navigator.serviceWorker.register(
             'resources/no-such-worker.js'
         ).then(
-            t.step_func(function(worker) {
+            t.step_func(function(registration) {
                 assert_unreached('Registration of non-existent script should fail.');
             }),
             t.step_func(function(reason) {

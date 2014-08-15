@@ -9,15 +9,19 @@
     var currentState = 'test-is-starting';
     var scope = '/state/';
 
-    service_worker_unregister_and_register(t, 'resources/worker-no-op.js', scope).then(t.step_func(onRegister));
-
-    function onRegister(sw) {
-        sw.addEventListener('statechange', t.step_func(onStateChange(sw)));
-        assert_in_array(sw.state, ['parsed', 'installing'],
-                        'the service worker should be in a state up to ' +
-                        '"installing".');
-        checkStateTransition(sw.state);
-    }
+    service_worker_unregister_and_register(
+        t, 'resources/worker-no-op.js', scope)
+      .then(t.step_func(function(registration) {
+          return wait_for_update(t, registration);
+        }))
+      .then(t.step_func(function(sw) {
+          sw.addEventListener('statechange', t.step_func(onStateChange(sw)));
+          assert_in_array(sw.state, ['parsed', 'installing'],
+                          'the service worker should be in a state up to ' +
+                          '"installing".');
+          checkStateTransition(sw.state);
+        }))
+      .catch(unreached_rejection(t));
 
     function checkStateTransition(newState) {
         switch (currentState) {

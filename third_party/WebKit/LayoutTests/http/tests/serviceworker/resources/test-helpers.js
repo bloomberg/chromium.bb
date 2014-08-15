@@ -59,8 +59,16 @@ function normalizeURL(url) {
   return new URL(url, document.location).toString().replace(/#.*$/, '');
 }
 
+function wait_for_update(test, registration) {
+    return new Promise(test.step_func(function(resolve) {
+        registration.addEventListener('updatefound', test.step_func(function() {
+            resolve(registration.installing);
+        }));
+    }));
+}
+
 function wait_for_state(test, worker, state) {
-    return new Promise(test.step_func(function(resolve, reject) {
+    return new Promise(test.step_func(function(resolve) {
         worker.addEventListener('statechange', test.step_func(function() {
             if (worker.state === state)
                 resolve(state);
@@ -112,6 +120,9 @@ function wait_for_state(test, worker, state) {
 
     var test = async_test(description);
     service_worker_unregister_and_register(test, url, scope)
+      .then(function(registration) {
+          return wait_for_update(test, registration);
+        })
       .then(function(worker) { return fetch_tests_from_worker(worker); })
       .then(function() { return navigator.serviceWorker.unregister(scope); })
       .then(function() { test.done(); })

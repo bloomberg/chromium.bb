@@ -20,21 +20,6 @@ t.step(function() {
 
     function onIframeLoad(frame) {
         var w = frame.contentWindow;
-
-        function onActive(event) {
-           assert_equals(w.navigator.serviceWorker.controller, null,
-                         'controller should be null until the document is reloaded');
-           reloaded = true;
-           w.location.reload();
-        }
-
-        function onRegister(worker) {
-            worker.addEventListener('statechange', t.step_func(function(event) {
-                if (event.target.state == 'activated')
-                    onActive();
-            }));
-        }
-
         if (reloaded) {
             assert_true(w.navigator.serviceWorker.controller instanceof w.ServiceWorker,
                         'controller should be a ServiceWorker object upon reload');
@@ -42,12 +27,21 @@ t.step(function() {
             return;
         }
 
-        w.navigator.serviceWorker.register(
-            'worker-no-op.js', {scope: 'blank.html'}
-        ).then(
-            t.step_func(onRegister),
-            unreached_rejection(t, 'Registration should succeed, but failed')
-        );
+        w.navigator.serviceWorker.register('worker-no-op.js',
+                                           {scope: 'blank.html'})
+        .then(function(registration) {
+            return wait_for_update(t, registration);
+          })
+        .then(function(worker) {
+            return wait_for_state(t, worker, 'activated');
+          })
+        .then(function() {
+            assert_equals(w.navigator.serviceWorker.controller, null,
+                          'controller should be null until the document is reloaded');
+            reloaded = true;
+            w.location.reload();
+          })
+        .catch(unreached_rejection(t));
     }
 });
 </script>

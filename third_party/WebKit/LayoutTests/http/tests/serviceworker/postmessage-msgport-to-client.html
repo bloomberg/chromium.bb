@@ -8,22 +8,20 @@ var t = async_test('postMessage MessagePorts from ServiceWorker to ServiceWorker
 t.step(function() {
     var scope = 'resources/blank.html'
     service_worker_unregister_and_register(
-        t, 'resources/postmessage-msgport-to-client-worker.js', scope).then(t.step_func(onRegister));
-
-    function onRegister(worker) {
-        worker.addEventListener('statechange', t.step_func(function(event) {
-            if (event.target.state == 'activated')
-                onActive();
-        }));
-    }
-
-    function onActive() {
-        with_iframe(scope, t.step_func(function(frame) {
-            var w = frame.contentWindow;
-            w.onmessage = t.step_func(onMessage);
-            w.navigator.serviceWorker.controller.postMessage('ping');
-        }));
-    }
+        t, 'resources/postmessage-msgport-to-client-worker.js', scope)
+      .then(function(registration) {
+          return wait_for_update(t, registration);
+        })
+      .then(function(sw) {
+          return wait_for_state(t, sw, 'activated');
+        })
+      .then(function() { return with_iframe(scope); })
+      .then(function(frame) {
+          var w = frame.contentWindow;
+          w.onmessage = t.step_func(onMessage);
+          w.navigator.serviceWorker.controller.postMessage('ping');
+        })
+      .catch(unreached_rejection(t));
 
     var result = [];
     var expected = [
@@ -32,20 +30,22 @@ t.step(function() {
     ];
 
     function onMessage(e) {
-        var message = e.data;
-        if ('port' in message) {
-            var port = message.port;
-            port.postMessage({value: 1});
-            port.postMessage({value: 2});
-            port.postMessage({done: true});
-        } else if ('ack' in message) {
-            result.push(message.ack);
-        } else if ('done' in message) {
-            assert_array_equals(result, expected, 'Worker should post back expected values via MessagePort.');
-            service_worker_unregister_and_done(t, scope);
-        } else {
-            assert_unreached('Got unexpected message from ServiceWorker');
-        }
+      var message = e.data;
+      if ('port' in message) {
+        var port = message.port;
+        port.postMessage({value: 1});
+        port.postMessage({value: 2});
+        port.postMessage({done: true});
+      } else if ('ack' in message) {
+        result.push(message.ack);
+      } else if ('done' in message) {
+        assert_array_equals(
+            result, expected,
+            'Worker should post back expected values via MessagePort.');
+        service_worker_unregister_and_done(t, scope);
+      } else {
+        assert_unreached('Got unexpected message from ServiceWorker');
+      }
     }
-});
+  });
 </script>
