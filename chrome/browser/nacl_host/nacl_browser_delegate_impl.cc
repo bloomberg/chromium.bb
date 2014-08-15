@@ -6,7 +6,6 @@
 
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -27,11 +26,8 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/url_pattern.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
-
-using extensions::SharedModuleInfo;
 
 namespace {
 
@@ -223,60 +219,8 @@ bool NaClBrowserDelegateImpl::MapUrlToLocalFilePath(
     base::FilePath* file_path) {
   scoped_refptr<extensions::InfoMap> extension_info_map =
       GetExtensionInfoMap(profile_directory);
-  // Check that the URL is recognized by the extension system.
-  const extensions::Extension* extension =
-      extension_info_map->extensions().GetExtensionOrAppByURL(file_url);
-  if (!extension)
-    return false;
-
-  // This is a short-cut which avoids calling a blocking file operation
-  // (GetFilePath()), so that this can be called on the IO thread. It only
-  // handles a subset of the urls.
-  if (!use_blocking_api) {
-    if (file_url.SchemeIs(extensions::kExtensionScheme)) {
-      std::string path = file_url.path();
-      base::TrimString(path, "/", &path);  // Remove first slash
-      *file_path = extension->path().AppendASCII(path);
-      return true;
-    }
-    return false;
-  }
-
-  std::string path = file_url.path();
-  extensions::ExtensionResource resource;
-
-  if (SharedModuleInfo::IsImportedPath(path)) {
-    // Check if this is a valid path that is imported for this extension.
-    std::string new_extension_id;
-    std::string new_relative_path;
-    SharedModuleInfo::ParseImportedPath(path, &new_extension_id,
-                                        &new_relative_path);
-    const extensions::Extension* new_extension =
-        extension_info_map->extensions().GetByID(new_extension_id);
-    if (!new_extension)
-      return false;
-
-    if (!SharedModuleInfo::ImportsExtensionById(extension, new_extension_id) ||
-        !SharedModuleInfo::IsExportAllowed(new_extension, new_relative_path)) {
-      return false;
-    }
-
-    resource = new_extension->GetResource(new_relative_path);
-  } else {
-    // Check that the URL references a resource in the extension.
-    resource = extension->GetResource(path);
-  }
-
-  if (resource.empty())
-    return false;
-
-  // GetFilePath is a blocking function call.
-  const base::FilePath resource_file_path = resource.GetFilePath();
-  if (resource_file_path.empty())
-    return false;
-
-  *file_path = resource_file_path;
-  return true;
+  return extension_info_map->MapUrlToLocalFilePath(
+      file_url, use_blocking_api, file_path);
 }
 
 content::BrowserPpapiHost::OnKeepaliveCallback

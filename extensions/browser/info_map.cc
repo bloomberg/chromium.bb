@@ -4,13 +4,17 @@
 
 #include "extensions/browser/info_map.h"
 
+#include "base/strings/string_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/content_verifier.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_resource.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
+#include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "url/gurl.h"
 
 using content::BrowserThread;
 
@@ -36,16 +40,13 @@ struct InfoMap::ExtraData {
   ~ExtraData();
 };
 
-InfoMap::ExtraData::ExtraData() : incognito_enabled(false) {}
+InfoMap::ExtraData::ExtraData()
+    : incognito_enabled(false), notifications_disabled(false) {
+}
 
 InfoMap::ExtraData::~ExtraData() {}
 
-InfoMap::InfoMap() : signin_process_id_(-1) {}
-
-const ProcessMap& InfoMap::process_map() const { return process_map_; }
-
-const ProcessMap& InfoMap::worker_process_map() const {
-  return worker_process_map_;
+InfoMap::InfoMap() : signin_process_id_(-1) {
 }
 
 void InfoMap::AddExtension(const Extension* extension,
@@ -177,6 +178,66 @@ bool InfoMap::SecurityOriginHasAPIPermission(const GURL& origin,
   GetExtensionsWithAPIPermissionForSecurityOrigin(
       origin, process_id, permission, &extensions);
   return !extensions.is_empty();
+}
+
+// This function is security sensitive. Bugs could cause problems that break
+// restrictions on local file access or NaCl's validation caching. If you modify
+// this function, please get a security review from a NaCl person.
+bool InfoMap::MapUrlToLocalFilePath(const GURL& file_url,
+                                    bool use_blocking_api,
+                                    base::FilePath* file_path) {
+  // Check that the URL is recognized by the extension system.
+  const Extension* extension = extensions_.GetExtensionOrAppByURL(file_url);
+  if (!extension)
+    return false;
+
+  // This is a short-cut which avoids calling a blocking file operation
+  // (GetFilePath()), so that this can be called on the IO thread. It only
+  // handles a subset of the urls.
+  if (!use_blocking_api) {
+    if (file_url.SchemeIs(extensions::kExtensionScheme)) {
+      std::string path = file_url.path();
+      base::TrimString(path, "/", &path);  // Remove first slash
+      *file_path = extension->path().AppendASCII(path);
+      return true;
+    }
+    return false;
+  }
+
+  std::string path = file_url.path();
+  ExtensionResource resource;
+
+  if (SharedModuleInfo::IsImportedPath(path)) {
+    // Check if this is a valid path that is imported for this extension.
+    std::string new_extension_id;
+    std::string new_relative_path;
+    SharedModuleInfo::ParseImportedPath(
+        path, &new_extension_id, &new_relative_path);
+    const Extension* new_extension = extensions_.GetByID(new_extension_id);
+    if (!new_extension)
+      return false;
+
+    if (!SharedModuleInfo::ImportsExtensionById(extension, new_extension_id) ||
+        !SharedModuleInfo::IsExportAllowed(new_extension, new_relative_path)) {
+      return false;
+    }
+
+    resource = new_extension->GetResource(new_relative_path);
+  } else {
+    // Check that the URL references a resource in the extension.
+    resource = extension->GetResource(path);
+  }
+
+  if (resource.empty())
+    return false;
+
+  // GetFilePath is a blocking function call.
+  const base::FilePath resource_file_path = resource.GetFilePath();
+  if (resource_file_path.empty())
+    return false;
+
+  *file_path = resource_file_path;
+  return true;
 }
 
 QuotaService* InfoMap::GetQuotaService() {

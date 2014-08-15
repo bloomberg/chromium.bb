@@ -16,6 +16,10 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/permissions/api_permission.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace extensions {
 class ContentVerifier;
 class Extension;
@@ -33,9 +37,9 @@ class InfoMap : public base::RefCountedThreadSafe<InfoMap> {
   }
 
   // Information about which extensions are assigned to which render processes.
-  const extensions::ProcessMap& process_map() const;
+  const ProcessMap& process_map() const { return process_map_; }
   // Information about which extensions are assigned to which worker processes.
-  const extensions::ProcessMap& worker_process_map() const;
+  const ProcessMap& worker_process_map() const { return worker_process_map_; }
 
   // Callback for when new extensions are loaded.
   void AddExtension(const extensions::Extension* extension,
@@ -91,6 +95,13 @@ class InfoMap : public base::RefCountedThreadSafe<InfoMap> {
                                       int process_id,
                                       extensions::APIPermission::ID permission)
       const;
+
+  // Maps a |file_url| to a |file_path| on the local filesystem, including
+  // resources in extensions. Returns true on success. See NaClBrowserDelegate
+  // for full details.
+  bool MapUrlToLocalFilePath(const GURL& file_url,
+                             bool use_blocking_api,
+                             base::FilePath* file_path);
 
   // Returns the IO thread QuotaService. Creates the instance on first call.
   QuotaService* GetQuotaService();

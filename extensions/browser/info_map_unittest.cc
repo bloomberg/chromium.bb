@@ -33,11 +33,9 @@ class InfoMapTest : public testing::Test {
 
 // Returns a barebones test Extension object with the given name.
 static scoped_refptr<Extension> CreateExtension(const std::string& name) {
-#if defined(OS_WIN)
-  base::FilePath path(FILE_PATH_LITERAL("c:\\foo"));
-#elif defined(OS_POSIX)
-  base::FilePath path(FILE_PATH_LITERAL("/foo"));
-#endif
+  base::FilePath path;
+  PathService::Get(chrome::DIR_TEST_DATA, &path);
+  path = path.AppendASCII("extensions");
 
   base::DictionaryValue manifest;
   manifest.SetString(keys::kVersion, "1.0.0.0");
@@ -181,6 +179,40 @@ TEST_F(InfoMapTest, TestNotificationsDisabled) {
   info_map->SetNotificationsDisabled(app->id(), true);
   EXPECT_TRUE(info_map->AreNotificationsDisabled(app->id()));
   info_map->SetNotificationsDisabled(app->id(), false);
+}
+
+// Tests that extension URLs are properly mapped to local file paths.
+TEST_F(InfoMapTest, MapUrlToLocalFilePath) {
+  scoped_refptr<InfoMap> info_map(new InfoMap());
+  scoped_refptr<Extension> app(CreateExtension("app"));
+  info_map->AddExtension(app.get(), base::Time(), false, false);
+
+  // Non-extension URLs don't map to anything.
+  base::FilePath non_extension_path;
+  GURL non_extension_url("http://not-an-extension.com/");
+  EXPECT_FALSE(info_map->MapUrlToLocalFilePath(
+      non_extension_url, false, &non_extension_path));
+  EXPECT_TRUE(non_extension_path.empty());
+
+  // Valid resources return a valid path.
+  base::FilePath valid_path;
+  GURL valid_url = app->GetResourceURL("manifest.json");
+  EXPECT_TRUE(info_map->MapUrlToLocalFilePath(
+      valid_url, true /* use_blocking_api */, &valid_path));
+  EXPECT_FALSE(valid_path.empty());
+
+  // A file must exist to be mapped to a path using the blocking API.
+  base::FilePath does_not_exist_path;
+  GURL does_not_exist_url = app->GetResourceURL("does-not-exist.html");
+  EXPECT_FALSE(info_map->MapUrlToLocalFilePath(
+      does_not_exist_url, true /* use_blocking_api */, &does_not_exist_path));
+  EXPECT_TRUE(does_not_exist_path.empty());
+
+  // A file does not need to exist to be mapped to a path with the non-blocking
+  // API. This avoids hitting the disk to see if it exists.
+  EXPECT_TRUE(info_map->MapUrlToLocalFilePath(
+      does_not_exist_url, false /* use_blocking_api */, &does_not_exist_path));
+  EXPECT_FALSE(does_not_exist_path.empty());
 }
 
 }  // namespace extensions
