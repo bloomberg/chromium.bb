@@ -23,8 +23,13 @@ static void dumpV8Message(v8::Handle<v8::Message> message)
     if (message.IsEmpty())
         return;
 
-    // FIXME: How can we get a resource name when an exception is thrown by DOM attributes/methods
-    // implemented in private scripts? In that case, currently ResourceName() returns an empty handle.
+    // FIXME: GetScriptOrigin() and GetLineNumber() return empty handles
+    // when they are called at the first time if V8 has a pending exception.
+    // So we need to call twice to get a correct ScriptOrigin and line number.
+    // This is a bug of V8.
+    message->GetScriptOrigin();
+    message->GetLineNumber();
+
     v8::Handle<v8::Value> resourceName = message->GetScriptOrigin().ResourceName();
     String fileName = "Unknown JavaScript file";
     if (!resourceName.IsEmpty() && resourceName->IsString())
