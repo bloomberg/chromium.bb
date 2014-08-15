@@ -218,11 +218,6 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   // Loads the |continue_url_| in the current tab.
   void LoadContinueUrl();
 
-  // Sets/gets the start sync mode. Called by SigninDialogDelegate to override
-  // the start sync mode if needed.
-  void SetStartSyncMode(StartSyncMode start_mode);
-  StartSyncMode GetStartSyncMode();
-
   Profile* profile_;
   Browser* browser_;
   scoped_ptr<SigninTracker> signin_tracker_;

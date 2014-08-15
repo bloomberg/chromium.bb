@@ -53,6 +53,7 @@ class ProfileChooserView : public views::BubbleDelegateView,
   // the existing bubble will auto-close due to focus loss.
   static void ShowBubble(
       profiles::BubbleViewMode view_mode,
+      profiles::TutorialMode tutorial_mode,
       const signin::ManageAccountsParams& manage_accounts_params,
       views::View* anchor_view,
       views::BubbleBorder::Arrow arrow,
@@ -80,6 +81,7 @@ class ProfileChooserView : public views::BubbleDelegateView,
                      views::BubbleBorder::Arrow arrow,
                      Browser* browser,
                      profiles::BubbleViewMode view_mode,
+                     profiles::TutorialMode tutorial_mode,
                      signin::GAIAServiceType service_type);
   virtual ~ProfileChooserView();
 
@@ -118,10 +120,8 @@ class ProfileChooserView : public views::BubbleDelegateView,
   void ShowView(profiles::BubbleViewMode view_to_display,
                 AvatarMenu* avatar_menu);
 
-  // Creates the profile chooser view. |tutorial_shown| indicates if a tutorial
-  // was shown in the last active view.
-  views::View* CreateProfileChooserView(AvatarMenu* avatar_menu,
-      profiles::TutorialMode last_tutorial_mode);
+  // Creates the profile chooser view.
+  views::View* CreateProfileChooserView(AvatarMenu* avatar_menu);
 
   // Creates the main profile card for the profile |avatar_item|. |is_guest|
   // is used to determine whether to show any Sign in/Sign out/Manage accounts

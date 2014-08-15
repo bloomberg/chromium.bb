@@ -138,10 +138,7 @@ void InlineSigninHelper::OnSigninOAuthInformationAvailable(
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
             signin_error_controller();
 
-    std::string is_constrained;
-    net::GetValueForKeyInQuery(current_url_, "constrained", &is_constrained);
-    bool show_inline_confirmation_for_sync =
-        switches::IsNewAvatarMenu() && is_constrained == "1";
+    bool is_new_avatar_menu = switches::IsNewAvatarMenu();
 
     OneClickSigninSyncStarter::StartSyncMode start_mode;
     if (source == signin::SOURCE_SETTINGS || choose_what_to_sync_) {
@@ -153,7 +150,7 @@ void InlineSigninHelper::OnSigninOAuthInformationAvailable(
           OneClickSigninSyncStarter::SHOW_SETTINGS_WITHOUT_CONFIGURE :
           OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST;
     } else {
-      start_mode = show_inline_confirmation_for_sync ?
+      start_mode = is_new_avatar_menu ?
           OneClickSigninSyncStarter::CONFIRM_SYNC_SETTINGS_FIRST :
           OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS;
     }
@@ -162,12 +159,13 @@ void InlineSigninHelper::OnSigninOAuthInformationAvailable(
     if (confirm_untrusted_signin_) {
       confirmation_required =
           OneClickSigninSyncStarter::CONFIRM_UNTRUSTED_SIGNIN;
+    } else if (is_new_avatar_menu) {
+      confirmation_required = OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN;
     } else {
       confirmation_required =
           source == signin::SOURCE_SETTINGS ||
           source == signin::SOURCE_WEBSTORE_INSTALL ||
-          choose_what_to_sync_ ||
-          show_inline_confirmation_for_sync ?
+          choose_what_to_sync_ ?
               OneClickSigninSyncStarter::NO_CONFIRMATION :
               OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN;
     }

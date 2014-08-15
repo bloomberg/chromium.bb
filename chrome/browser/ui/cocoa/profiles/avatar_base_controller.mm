@@ -165,13 +165,16 @@ class ProfileInfoUpdateObserver : public ProfileInfoCacheObserver,
 
   // |menuController_| will automatically release itself on close.
   if (switches::IsNewAvatarMenu()) {
-    profiles::BubbleViewMode viewMode =
-        profiles::BubbleViewModeFromAvatarBubbleMode(mode);
+    profiles::BubbleViewMode viewMode;
+    profiles::TutorialMode tutorialMode;
+    profiles::BubbleViewModeFromAvatarBubbleMode(
+        mode, &viewMode, &tutorialMode);
     menuController_ =
         [[ProfileChooserController alloc] initWithBrowser:browser_
                                                anchoredAt:point
-                                                 withMode:viewMode
-                                          withServiceType:serviceType];
+                                                 viewMode:viewMode
+                                             tutorialMode:tutorialMode
+                                              serviceType:serviceType];
   } else {
     menuController_ =
       [[AvatarMenuBubbleController alloc] initWithBrowser:browser_

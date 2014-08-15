@@ -951,8 +951,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
 - (id)initWithBrowser:(Browser*)browser
            anchoredAt:(NSPoint)point
-             withMode:(profiles::BubbleViewMode)mode
-      withServiceType:(signin::GAIAServiceType)serviceType {
+             viewMode:(profiles::BubbleViewMode)viewMode
+         tutorialMode:(profiles::TutorialMode)tutorialMode
+          serviceType:(signin::GAIAServiceType)serviceType {
   base::scoped_nsobject<InfoBubbleWindow> window([[InfoBubbleWindow alloc]
       initWithContentRect:ui::kWindowSizeDeterminedLater
                 styleMask:NSBorderlessWindowMask
@@ -963,8 +964,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                        parentWindow:browser->window()->GetNativeWindow()
                          anchoredAt:point])) {
     browser_ = browser;
-    viewMode_ = mode;
-    tutorialMode_ = profiles::TUTORIAL_MODE_NONE;
+    viewMode_ = viewMode;
+    tutorialMode_ = tutorialMode;
     observer_.reset(new ActiveProfileObserverBridge(self, browser_));
     serviceType_ = serviceType;
 

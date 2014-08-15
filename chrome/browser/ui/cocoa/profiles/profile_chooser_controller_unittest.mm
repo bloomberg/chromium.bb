@@ -71,8 +71,9 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
     controller_.reset([[ProfileChooserController alloc]
         initWithBrowser:browser()
              anchoredAt:point
-               withMode:profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER
-        withServiceType:signin::GAIA_SERVICE_TYPE_NONE]);
+               viewMode:profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER
+           tutorialMode:profiles::TUTORIAL_MODE_NONE
+            serviceType:signin::GAIA_SERVICE_TYPE_NONE]);
     [controller_ showWindow:nil];
   }
 

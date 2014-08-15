@@ -84,6 +84,7 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
     const GURL& continue_url,
     Callback sync_setup_completed_callback)
     : content::WebContentsObserver(web_contents),
+      profile_(NULL),
       start_mode_(start_mode),
       desktop_type_(chrome::HOST_DESKTOP_TYPE_NATIVE),
       confirmation_required_(confirmation_required),
@@ -93,7 +94,6 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
   DCHECK(profile);
   DCHECK(web_contents || continue_url.is_empty());
   BrowserList::AddObserver(this);
-  LoginUIServiceFactory::GetForProfile(profile)->AddObserver(this);
   Initialize(profile, browser);
 
   // Policy is enabled, so pass in a callback to do extra policy-related UI
@@ -117,8 +117,14 @@ OneClickSigninSyncStarter::~OneClickSigninSyncStarter() {
 
 void OneClickSigninSyncStarter::Initialize(Profile* profile, Browser* browser) {
   DCHECK(profile);
+
+  if (profile_)
+    LoginUIServiceFactory::GetForProfile(profile_)->RemoveObserver(this);
+
   profile_ = profile;
   browser_ = browser;
+
+  LoginUIServiceFactory::GetForProfile(profile_)->AddObserver(this);
 
   // Cache the parent desktop for the browser, so we can reuse that same
   // desktop for any UI we want to display.
@@ -185,40 +191,15 @@ void OneClickSigninSyncStarter::SigninDialogDelegate::OnCancelSignin() {
 void OneClickSigninSyncStarter::SigninDialogDelegate::OnContinueSignin() {
   SetUserChoiceHistogram(SIGNIN_CHOICE_CONTINUE);
 
-  if (sync_starter_ != NULL) {
-    // If the user signs in from the new avatar bubble, the enterprise
-    // confirmation dialog would dismiss the avatar bubble, thus it won't show
-    // any confirmation upon sign in completes. This cofirmation dialog already
-    // mentions that user data would be synced, thus we just start sync
-    // immediately.
-
-    // TODO(guohui): add a sync settings link to allow user to configure sync
-    // settings before sync starts.
-    if (sync_starter_->GetStartSyncMode() == CONFIRM_SYNC_SETTINGS_FIRST)
-      sync_starter_->SetStartSyncMode(SYNC_WITH_DEFAULT_SETTINGS);
+  if (sync_starter_ != NULL)
     sync_starter_->LoadPolicyWithCachedCredentials();
-  }
 }
 
 void OneClickSigninSyncStarter::SigninDialogDelegate::OnSigninWithNewProfile() {
   SetUserChoiceHistogram(SIGNIN_CHOICE_NEW_PROFILE);
 
-  if (sync_starter_ != NULL) {
-    // TODO(guohui): add a sync settings link to allow user to configure sync
-    // settings before sync starts.
-    if (sync_starter_->GetStartSyncMode() == CONFIRM_SYNC_SETTINGS_FIRST)
-      sync_starter_->SetStartSyncMode(SYNC_WITH_DEFAULT_SETTINGS);
+  if (sync_starter_ != NULL)
     sync_starter_->CreateNewSignedInProfile();
-  }
-}
-
-void OneClickSigninSyncStarter::SetStartSyncMode(StartSyncMode start_mode) {
-  start_mode_ = start_mode;
-}
-
-OneClickSigninSyncStarter::StartSyncMode
-    OneClickSigninSyncStarter::GetStartSyncMode() {
-  return start_mode_;
 }
 
 void OneClickSigninSyncStarter::OnRegisteredForPolicy(
@@ -482,6 +463,7 @@ void OneClickSigninSyncStarter::MergeSessionComplete(
     }
     case CONFIRM_SYNC_SETTINGS_FIRST:
       // Blocks sync until the sync settings confirmation UI is closed.
+      DisplayFinalConfirmationBubble(base::string16());
       return;
     case CONFIGURE_SYNC_FIRST:
       ShowSettingsPage(true);  // Show sync config UI.
@@ -506,6 +488,16 @@ void OneClickSigninSyncStarter::MergeSessionComplete(
 void OneClickSigninSyncStarter::DisplayFinalConfirmationBubble(
     const base::string16& custom_message) {
   browser_ = EnsureBrowser(browser_, profile_, desktop_type_);
+  // Show the success confirmation message in the new avatar menu if it is
+  // enabled.
+  // TODO(guohui): needs to handle custom messages.
+  if (custom_message.empty() && switches::IsNewAvatarMenu()) {
+    browser_->window()->ShowAvatarBubbleFromAvatarButton(
+        BrowserWindow::AVATAR_BUBBLE_MODE_CONFIRM_SIGNIN,
+        signin::ManageAccountsParams());
+    return;
+  }
+
   browser_->window()->ShowOneClickSigninBubble(
       BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE,
       base::string16(),  // No email required - this is not a SAML confirmation.

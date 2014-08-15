@@ -2410,8 +2410,12 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
       alignment = views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE;
     }
 
+    profiles::BubbleViewMode bubble_view_mode;
+    profiles::TutorialMode tutorial_mode;
+    profiles::BubbleViewModeFromAvatarBubbleMode(
+        mode, &bubble_view_mode, &tutorial_mode);
     ProfileChooserView::ShowBubble(
-        profiles::BubbleViewModeFromAvatarBubbleMode(mode),
+        bubble_view_mode, tutorial_mode,
         manage_accounts_params, anchor_view, arrow, alignment, browser());
   } else {
     gfx::Point origin;

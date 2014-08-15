@@ -457,16 +457,22 @@ bool ProfileChooserView::close_on_deactivate_for_testing_ = true;
 // static
 void ProfileChooserView::ShowBubble(
     profiles::BubbleViewMode view_mode,
+    profiles::TutorialMode tutorial_mode,
     const signin::ManageAccountsParams& manage_accounts_params,
     views::View* anchor_view,
     views::BubbleBorder::Arrow arrow,
     views::BubbleBorder::BubbleAlignment border_alignment,
     Browser* browser) {
-  if (IsShowing())
+  if (IsShowing()) {
+    if (tutorial_mode != profiles::TUTORIAL_MODE_NONE) {
+      profile_bubble_->tutorial_mode_ = tutorial_mode;
+      profile_bubble_->ShowView(view_mode, profile_bubble_->avatar_menu_.get());
+    }
     return;
+  }
 
   profile_bubble_ = new ProfileChooserView(anchor_view, arrow, browser,
-      view_mode, manage_accounts_params.service_type);
+      view_mode, tutorial_mode, manage_accounts_params.service_type);
   views::BubbleDelegateView::CreateBubble(profile_bubble_);
   profile_bubble_->set_close_on_deactivate(close_on_deactivate_for_testing_);
   profile_bubble_->SetAlignment(border_alignment);
@@ -489,11 +495,12 @@ ProfileChooserView::ProfileChooserView(views::View* anchor_view,
                                        views::BubbleBorder::Arrow arrow,
                                        Browser* browser,
                                        profiles::BubbleViewMode view_mode,
+                                       profiles::TutorialMode tutorial_mode,
                                        signin::GAIAServiceType service_type)
     : BubbleDelegateView(anchor_view, arrow),
       browser_(browser),
       view_mode_(view_mode),
-      tutorial_mode_(profiles::TUTORIAL_MODE_NONE),
+      tutorial_mode_(tutorial_mode),
       gaia_service_type_(service_type) {
   // Reset the default margins inherited from the BubbleDelegateView.
   // Add a small bottom inset so that the bubble's rounded corners show up.
@@ -545,7 +552,6 @@ void ProfileChooserView::ResetView() {
   tutorial_sync_settings_link_ = NULL;
   tutorial_see_whats_new_button_ = NULL;
   tutorial_not_you_link_ = NULL;
-  tutorial_mode_ = profiles::TUTORIAL_MODE_NONE;
 }
 
 void ProfileChooserView::Init() {
@@ -580,11 +586,8 @@ void ProfileChooserView::OnAvatarMenuChanged(
 void ProfileChooserView::OnRefreshTokenAvailable(
     const std::string& account_id) {
   if (view_mode_ == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT ||
-      view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN ||
       view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT ||
       view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH) {
-    if (view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN)
-      tutorial_mode_ = profiles::TUTORIAL_MODE_CONFIRM_SIGNIN;
     // The account management UI is only available through the
     // --enable-account-consistency flag.
     ShowView(switches::IsEnableAccountConsistency() ?
@@ -618,8 +621,6 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
     return;
   }
 
-  // Records the last tutorial mode.
-  profiles::TutorialMode last_tutorial_mode = tutorial_mode_;
   ResetView();
   RemoveAllChildViews(true);
   view_mode_ = view_to_display;
@@ -645,7 +646,7 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
       break;
     default:
       layout = CreateSingleColumnLayout(this, kFixedMenuWidth);
-      sub_view = CreateProfileChooserView(avatar_menu, last_tutorial_mode);
+      sub_view = CreateProfileChooserView(avatar_menu);
   }
   layout->StartRow(1, 0);
   layout->AddView(sub_view);
@@ -839,8 +840,7 @@ bool ProfileChooserView::HandleKeyEvent(views::Textfield* sender,
 }
 
 views::View* ProfileChooserView::CreateProfileChooserView(
-    AvatarMenu* avatar_menu,
-    profiles::TutorialMode last_tutorial_mode) {
+    AvatarMenu* avatar_menu) {
   // TODO(guohui, noms): the view should be customized based on whether new
   // profile management preview is enabled or not.
 
@@ -859,11 +859,11 @@ views::View* ProfileChooserView::CreateProfileChooserView(
           switches::IsNewProfileManagement() && item.signed_in);
       current_profile_view = CreateCurrentProfileView(item, false);
       if (view_mode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
-        switch (last_tutorial_mode) {
+        switch (tutorial_mode_) {
           case profiles::TUTORIAL_MODE_NONE:
           case profiles::TUTORIAL_MODE_WELCOME_UPGRADE:
             tutorial_view = CreateWelcomeUpgradeTutorialViewIfNeeded(
-                last_tutorial_mode == profiles::TUTORIAL_MODE_WELCOME_UPGRADE,
+                tutorial_mode_ == profiles::TUTORIAL_MODE_WELCOME_UPGRADE,
                 item);
             break;
           case profiles::TUTORIAL_MODE_CONFIRM_SIGNIN:
@@ -885,6 +885,8 @@ views::View* ProfileChooserView::CreateProfileChooserView(
     // TODO(mlerman): update UMA stats for the new tutorial.
     layout->StartRow(1, 0);
     layout->AddView(tutorial_view);
+  } else {
+    tutorial_mode_ = profiles::TUTORIAL_MODE_NONE;
   }
 
   if (!current_profile_view) {

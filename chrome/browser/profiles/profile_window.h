@@ -92,8 +92,10 @@ void DisableNewProfileManagementPreview(Profile* profile);
 
 // Converts from modes in the avatar menu to modes understood by
 // ProfileChooserView.
-BubbleViewMode BubbleViewModeFromAvatarBubbleMode(
-    BrowserWindow::AvatarBubbleMode mode);
+void BubbleViewModeFromAvatarBubbleMode(
+    BrowserWindow::AvatarBubbleMode mode,
+    BubbleViewMode* bubble_view_mode,
+    TutorialMode* tutorial_mode);
 
 }  // namespace profiles
 

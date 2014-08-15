@@ -1187,15 +1187,6 @@ bool OneClickSigninHelper::HandleCrossAccountError(
     content::WebContents* contents =
         browser->tab_strip_model()->GetActiveWebContents();
 
-    // If the user signs in from the new avatar bubble, the confirm email dialog
-    // would dismiss the avatar bubble, thus it won't show any confirmation upon
-    // sign in completes. This confirmation dialog already mentions that user
-    // data would be synced, thus we just start sync immediately.
-    // TODO(guohui): add a sync settings link to allow user to configure sync
-    // settings before sync starts.
-    if (start_mode == OneClickSigninSyncStarter::CONFIRM_SYNC_SETTINGS_FIRST)
-      start_mode = OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS;
-
     ConfirmEmailDialogDelegate::AskForConfirmation(
         contents,
         last_email,

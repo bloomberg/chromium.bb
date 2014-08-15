@@ -66,8 +66,9 @@ class WebContents;
 
 - (id)initWithBrowser:(Browser*)browser
            anchoredAt:(NSPoint)point
-             withMode:(profiles::BubbleViewMode)mode
-      withServiceType:(signin::GAIAServiceType)GAIAServiceType;
+             viewMode:(profiles::BubbleViewMode)viewMode
+         tutorialMode:(profiles::TutorialMode)tutorialMode
+          serviceType:(signin::GAIAServiceType)GAIAServiceType;
 
 // Creates all the subviews of the avatar bubble for |viewToDisplay|.
 - (void)initMenuContentsWithView:(profiles::BubbleViewMode)viewToDisplay;
@@ -125,8 +126,9 @@ class WebContents;
 @interface ProfileChooserController (ExposedForTesting)
 - (id)initWithBrowser:(Browser*)browser
            anchoredAt:(NSPoint)point
-             withMode:(profiles::BubbleViewMode)mode
-      withServiceType:(signin::GAIAServiceType)serviceType;
+             viewMode:(profiles::BubbleViewMode)viewMode
+         tutorialMode:(profiles::TutorialMode)tutorialMode
+          serviceType:(signin::GAIAServiceType)GAIAServiceType;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_PROFILES_PROFILE_CHOOSER_CONTROLLER_H_
