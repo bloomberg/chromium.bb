@@ -1255,7 +1255,7 @@ void FrameView::scrollContentsIfNeeded()
         updateFixedElementPaintInvalidationRectsAfterScroll();
 }
 
-bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll)
+bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta)
 {
     if (!contentsInCompositedLayer() || hasSlowRepaintObjects())
         return false;
@@ -1265,7 +1265,6 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
         return true;
     }
 
-    // Get the rects of the fixed objects visible in the rectToScroll
     Region regionToUpdate;
     ViewportConstrainedObjectSet::const_iterator end = m_viewportConstrainedObjects->end();
     for (ViewportConstrainedObjectSet::const_iterator it = m_viewportConstrainedObjects->begin(); it != end; ++it) {

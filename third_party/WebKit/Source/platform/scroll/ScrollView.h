@@ -273,8 +273,8 @@ protected:
     virtual void invalidateScrollCornerRect(const IntRect&) OVERRIDE;
 
     virtual void scrollContentsIfNeeded();
-    // Scroll the content by blitting the pixels.
-    virtual bool scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll);
+    // Scroll the content by via the compositor.
+    virtual bool scrollContentsFastPath(const IntSize& scrollDelta);
     // Scroll the content by invalidating everything.
     virtual void scrollContentsSlowPath(const IntRect& updateRect);
 
