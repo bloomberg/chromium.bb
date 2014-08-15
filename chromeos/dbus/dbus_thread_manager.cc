@@ -29,7 +29,6 @@
 #include "chromeos/dbus/image_burner_client.h"
 #include "chromeos/dbus/introspectable_client.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
-#include "chromeos/dbus/mixed_dbus_thread_manager.h"
 #include "chromeos/dbus/modem_messaging_client.h"
 #include "chromeos/dbus/nfc_adapter_client.h"
 #include "chromeos/dbus/nfc_device_client.h"
@@ -92,6 +91,10 @@ class DBusThreadManagerImpl : public DBusThreadManager {
 
     // Stop the D-Bus thread.
     dbus_thread_->Stop();
+  }
+
+  void SetupDefaultEnvironment() {
+    return client_bundle_->SetupDefaultEnvironment();
   }
 
   virtual dbus::Bus* GetSystemBus() OVERRIDE {
@@ -252,8 +255,7 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     client_bundle_.reset(new DBusClientBundle());
     // TODO(crbug.com/345586): Move PowerPolicyController out of
     // DBusThreadManagerImpl.
-    if (!DBusThreadManager::IsUsingStub(DBusClientBundle::POWER_MANAGER))
-      power_policy_controller_.reset(new PowerPolicyController);
+    power_policy_controller_.reset(new PowerPolicyController);
   }
 
   scoped_ptr<base::Thread> dbus_thread_;
@@ -338,14 +340,11 @@ void DBusThreadManager::InitializeWithPartialStub(
                << " cannot be parsed: "
                << unstub_clients;
   }
-  DBusThreadManager* real_thread_manager = new DBusThreadManagerImpl();
-  FakeDBusThreadManager* fake_dbus_thread_manager = new FakeDBusThreadManager;
-  fake_dbus_thread_manager->SetFakeClients();
+  DBusThreadManagerImpl* dbus_thread_manager = new DBusThreadManagerImpl();
   VLOG(1) << "DBusThreadManager initialized for mixed runtime environment";
-  g_dbus_thread_manager = new MixedDBusThreadManager(real_thread_manager,
-                                                     fake_dbus_thread_manager);
+  g_dbus_thread_manager = dbus_thread_manager;
   InitializeClients();
-  fake_dbus_thread_manager->SetupDefaultEnvironment();
+  dbus_thread_manager->SetupDefaultEnvironment();
 }
 
 // static

@@ -205,8 +205,6 @@
         'dbus/introspectable_client.h',
         'dbus/lorgnette_manager_client.cc',
         'dbus/lorgnette_manager_client.h',
-        'dbus/mixed_dbus_thread_manager.cc',
-        'dbus/mixed_dbus_thread_manager.h',
         'dbus/modem_messaging_client.cc',
         'dbus/modem_messaging_client.h',
         'dbus/nfc_adapter_client.cc',

@@ -82,6 +82,9 @@ class CHROMEOS_EXPORT DBusClientBundle {
   DBusClientBundle();
   virtual ~DBusClientBundle();
 
+  // Initialize proper runtime environment for its dbus clients.
+  void SetupDefaultEnvironment();
+
   // Parses command line param values for dbus subsystem that should be
   // un-stubbed.
   static DBusClientTypeMask ParseUnstubList(const std::string& unstub_list);
