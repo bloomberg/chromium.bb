@@ -401,7 +401,7 @@
       'supported_on': ['chrome.*:12-', 'chrome_os:12-'],
       'features': {
         'dynamic_refresh': True,
-        'per_profile': False,
+        'per_profile': True,
       },
       'deprecated': True,
       'example_value': ['file', 'https'],
@@ -3822,7 +3822,6 @@
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
-        'per_profile': False,
       },
       'deprecated': True,
       'example_value': 'remove-lru',
@@ -6139,7 +6138,6 @@
       'supported_on': ['chrome_os:28-'],
       'features': {
         'dynamic_refresh': False,
-        'per_profile': False,
       },
       'device_only': True,
       'example_value': 'restricted',
@@ -6165,7 +6163,6 @@
           'supported_on': ['chrome_os:28-'],
           'features': {
             'dynamic_refresh': True,
-            'per_profile': False,
           },
           'device_only': True,
           'example_value': True,
