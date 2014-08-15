@@ -164,12 +164,35 @@ class CdmWrapperImpl : public CdmWrapper {
     cdm_->Destroy();
   }
 
+  // Returns true if |data| is prefixed with |header| and has data after the
+  // |header|.
+  bool HasHeader(const uint8* data,
+                 int data_length,
+                 const std::string& header) {
+    return static_cast<size_t>(data_length) > header.length() &&
+           std::equal(data, data + header.length(), header.begin());
+  }
+
   virtual void CreateSession(uint32_t promise_id,
                              const char* init_data_type,
                              uint32_t init_data_type_size,
                              const uint8_t* init_data,
                              uint32_t init_data_size,
                              cdm::SessionType session_type) OVERRIDE {
+    // TODO(jrummell): Remove this code once |session_type| is passed through
+    // Pepper. When removing, add the header back in for CDM4.
+    PP_DCHECK(session_type == cdm::kTemporary);
+    const char kPersistentSessionHeader[] = "PERSISTENT|";
+    if (HasHeader(init_data, init_data_size, kPersistentSessionHeader)) {
+      cdm_->CreateSession(promise_id,
+                          init_data_type,
+                          init_data_type_size,
+                          init_data + strlen(kPersistentSessionHeader),
+                          init_data_size - strlen(kPersistentSessionHeader),
+                          cdm::kPersistent);
+      return;
+    }
+
     cdm_->CreateSession(promise_id,
                         init_data_type,
                         init_data_type_size,
@@ -495,6 +518,20 @@ void CdmWrapperImpl<cdm::ContentDecryptionModule_5>::CreateSession(
     const uint8_t* init_data,
     uint32_t init_data_size,
     cdm::SessionType session_type) {
+  // TODO(jrummell): Remove this code once |session_type| is passed through
+  // Pepper. When removing, add the header back in for CDM4.
+  PP_DCHECK(session_type == cdm::kTemporary);
+  const char kPersistentSessionHeader[] = "PERSISTENT|";
+  if (HasHeader(init_data, init_data_size, kPersistentSessionHeader)) {
+    cdm_->CreateSession(promise_id,
+                        ConvertInitDataTypeToContentType(init_data_type),
+                        init_data_type_size,
+                        init_data + strlen(kPersistentSessionHeader),
+                        init_data_size - strlen(kPersistentSessionHeader),
+                        cdm::kPersistent);
+    return;
+  }
+
   cdm_->CreateSession(promise_id,
                       ConvertInitDataTypeToContentType(init_data_type),
                       init_data_type_size,
