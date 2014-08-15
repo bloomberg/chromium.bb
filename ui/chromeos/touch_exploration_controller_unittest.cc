@@ -1138,7 +1138,7 @@ TEST_F(TouchExplorationTest, SplitTapReleaseLongPress) {
             released_time - pressed_time);
  }
 
-TEST_F(TouchExplorationTest, SplitTapLongPressMultiFinger) {
+TEST_F(TouchExplorationTest, SplitTapMultiFinger) {
   SwitchTouchExplorationMode(true);
   gfx::Point initial_touch_location(11, 12);
   gfx::Point second_touch_location(33, 34);
@@ -1162,14 +1162,14 @@ TEST_F(TouchExplorationTest, SplitTapLongPressMultiFinger) {
   generator_->Dispatch(&split_tap_press);
   simulated_clock_->Advance(gesture_detector_config_.longpress_timeout);
 
-  // Placing a third finger on the screen should be discarded and not affect
-  // the events passed through.
+  // Placing a third finger on the screen should cancel the initial press and
+  // enter the wait state.
   ui::TouchEvent third_press(
       ui::ET_TOUCH_PRESSED, third_touch_location, 2, Now());
   generator_->Dispatch(&third_press);
 
-  // When all three fingers are released, there should be only two captured
-  // events: touch press and touch release. All fingers should then be up.
+  // When all three fingers are released, the only events captured should be a
+  // press and touch cancel. All fingers should then be up.
   ui::TouchEvent touch_explore_release(
       ui::ET_TOUCH_RELEASED, initial_touch_location, 0, Now());
   generator_->Dispatch(&touch_explore_release);
@@ -1184,12 +1184,79 @@ TEST_F(TouchExplorationTest, SplitTapLongPressMultiFinger) {
   ASSERT_EQ(2U, captured_events.size());
   EXPECT_EQ(ui::ET_TOUCH_PRESSED, captured_events[0]->type());
   EXPECT_EQ(initial_touch_location, captured_events[0]->location());
-  base::TimeDelta pressed_time = captured_events[0]->time_stamp();
-  EXPECT_EQ(ui::ET_TOUCH_RELEASED, captured_events[1]->type());
+  EXPECT_EQ(ui::ET_TOUCH_CANCELLED, captured_events[1]->type());
   EXPECT_EQ(initial_touch_location, captured_events[1]->location());
-  base::TimeDelta released_time = captured_events[1]->time_stamp();
-  EXPECT_EQ(gesture_detector_config_.longpress_timeout,
-            released_time - pressed_time);
+  EXPECT_TRUE(IsInNoFingersDownState());
+}
+
+
+TEST_F(TouchExplorationTest, SplitTapLeaveSlop) {
+  SwitchTouchExplorationMode(true);
+  gfx::Point first_touch_location(11, 12);
+  gfx::Point second_touch_location(33, 34);
+  gfx::Point first_move_location(
+      first_touch_location.x() + gesture_detector_config_.touch_slop * 3 + 1,
+      first_touch_location.y());
+  gfx::Point second_move_location(
+      second_touch_location.x() + gesture_detector_config_.touch_slop * 3 + 1,
+      second_touch_location.y());
+
+  // Tap and hold at one location, and get a mouse move event in touch explore.
+  EnterTouchExplorationModeAtLocation(first_touch_location);
+  ClearCapturedEvents();
+
+  // Now tap at a different location for split tap.
+  ui::TouchEvent split_tap_press(
+      ui::ET_TOUCH_PRESSED, second_touch_location, 1, Now());
+  generator_->Dispatch(&split_tap_press);
+
+  // Move the first finger out of slop and release both fingers. The split
+  // tap should have been cancelled, so a touch press and touch cancel event
+  // should go through at the last touch exploration location (the first press).
+  ui::TouchEvent first_touch_move(
+      ui::ET_TOUCH_MOVED, first_move_location, 0, Now());
+  generator_->Dispatch(&first_touch_move);
+  ui::TouchEvent first_touch_release(
+      ui::ET_TOUCH_RELEASED, first_move_location, 0, Now());
+  generator_->Dispatch(&first_touch_release);
+  ui::TouchEvent second_touch_release(
+      ui::ET_TOUCH_RELEASED, second_touch_location, 1, Now());
+  generator_->Dispatch(&second_touch_release);
+
+  std::vector<ui::LocatedEvent*> captured_events = GetCapturedLocatedEvents();
+  ASSERT_EQ(2U, captured_events.size());
+  EXPECT_EQ(ui::ET_TOUCH_PRESSED, captured_events[0]->type());
+  EXPECT_EQ(first_touch_location, captured_events[0]->location());
+  EXPECT_EQ(ui::ET_TOUCH_CANCELLED, captured_events[1]->type());
+  EXPECT_EQ(first_touch_location, captured_events[1]->location());
+  EXPECT_TRUE(IsInNoFingersDownState());
+
+  // Now do the same, but moving the split tap finger out of slop
+  EnterTouchExplorationModeAtLocation(first_touch_location);
+  ClearCapturedEvents();
+  ui::TouchEvent split_tap_press2(
+      ui::ET_TOUCH_PRESSED, second_touch_location, 1, Now());
+  generator_->Dispatch(&split_tap_press2);
+
+  // Move the second finger out of slop and release both fingers. The split
+  // tap should have been cancelled, so a touch press and touch cancel event
+  // should go through at the last touch exploration location (the first press).
+  ui::TouchEvent second_touch_move2(
+      ui::ET_TOUCH_MOVED, second_move_location, 1, Now());
+  generator_->Dispatch(&second_touch_move2);
+  ui::TouchEvent first_touch_release2(
+      ui::ET_TOUCH_RELEASED, first_touch_location, 0, Now());
+  generator_->Dispatch(&first_touch_release2);
+  ui::TouchEvent second_touch_release2(
+      ui::ET_TOUCH_RELEASED, second_move_location, 1, Now());
+  generator_->Dispatch(&second_touch_release2);
+
+  captured_events = GetCapturedLocatedEvents();
+  ASSERT_EQ(2U, captured_events.size());
+  EXPECT_EQ(ui::ET_TOUCH_PRESSED, captured_events[0]->type());
+  EXPECT_EQ(first_touch_location, captured_events[0]->location());
+  EXPECT_EQ(ui::ET_TOUCH_CANCELLED, captured_events[1]->type());
+  EXPECT_EQ(first_touch_location, captured_events[1]->location());
   EXPECT_TRUE(IsInNoFingersDownState());
 }
 
@@ -1253,7 +1320,7 @@ TEST_F(TouchExplorationTest, GestureSwipe) {
   // There are gestures supported with up to four fingers.
   for (int num_fingers = 1; num_fingers <= 4; num_fingers++) {
     std::vector<gfx::Point> start_points;
-    for(int j = 0; j < num_fingers; j++){
+    for (int j = 0; j < num_fingers; j++) {
       start_points.push_back(gfx::Point(j * 10 + 100, j * 10 + 200));
     }
     gfx::Point* start_points_array = &start_points[0];

@@ -173,12 +173,12 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
       return InGestureInProgress(touch_event, rewritten_event);
     case TOUCH_EXPLORE_SECOND_PRESS:
       return InTouchExploreSecondPress(touch_event, rewritten_event);
-    case CORNER_PASSTHROUGH:
-      return InCornerPassthrough(touch_event, rewritten_event);
     case SLIDE_GESTURE:
       return InSlideGesture(touch_event, rewritten_event);
     case ONE_FINGER_PASSTHROUGH:
       return InOneFingerPassthrough(touch_event, rewritten_event);
+    case CORNER_PASSTHROUGH:
+      return InCornerPassthrough(touch_event, rewritten_event);
     case WAIT_FOR_NO_FINGERS:
       return InWaitForNoFingers(touch_event, rewritten_event);
     case TWO_FINGER_TAP:
@@ -510,10 +510,47 @@ ui::EventRewriteStatus TouchExplorationController::InTouchExploreSecondPress(
   ui::EventType type = event.type();
   gfx::PointF location = event.location_f();
   if (type == ui::ET_TOUCH_PRESSED) {
-    return ui::EVENT_REWRITE_DISCARD;
+    // A third finger being pressed means that a split tap can no longer go
+    // through. The user enters the wait state, Since there has already been
+    // a press dispatched when split tap began, the touch needs to be
+    // cancelled.
+    rewritten_event->reset(
+        new ui::TouchEvent(ui::ET_TOUCH_CANCELLED,
+                           last_touch_exploration_->location(),
+                           initial_press_->touch_id(),
+                           event.time_stamp()));
+    (*rewritten_event)->set_flags(event.flags());
+    SET_STATE(WAIT_FOR_NO_FINGERS);
+    return ui::EVENT_REWRITE_REWRITTEN;
   } else if (type == ui::ET_TOUCH_MOVED) {
-    // Currently this is a discard, but could be something like rotor
-    // in the future.
+    // If the fingers have moved too far from their original locations,
+    // the user can no longer split tap.
+    ui::TouchEvent* original_touch;
+    if (event.touch_id() == last_touch_exploration_->touch_id())
+      original_touch = last_touch_exploration_.get();
+    else if (event.touch_id() == initial_press_->touch_id())
+      original_touch = initial_press_.get();
+    else {
+      NOTREACHED();
+      SET_STATE(WAIT_FOR_NO_FINGERS);
+      return ui::EVENT_REWRITE_DISCARD;
+    }
+    // Check the distance between the current finger location and the original
+    // location. The slop for this is a bit more generous since keeping two
+    // fingers in place is a bit harder. If the user has left the slop, the
+    // split tap press (which was previous dispatched) is lifted with a touch
+    // cancelled, and the user enters the wait state.
+    if ((event.location() - original_touch->location()).Length() >
+        GetSplitTapTouchSlop()) {
+      rewritten_event->reset(
+          new ui::TouchEvent(ui::ET_TOUCH_CANCELLED,
+                             last_touch_exploration_->location(),
+                             initial_press_->touch_id(),
+                             event.time_stamp()));
+      (*rewritten_event)->set_flags(event.flags());
+      SET_STATE(WAIT_FOR_NO_FINGERS);
+      return ui::EVENT_REWRITE_REWRITTEN;
+    }
     return ui::EVENT_REWRITE_DISCARD;
   } else if (type == ui::ET_TOUCH_RELEASED || type == ui::ET_TOUCH_CANCELLED) {
     // If the touch exploration finger is lifted, there is no option to return
@@ -685,6 +722,7 @@ void TouchExplorationController::OnTapTimerFired() {
     case GESTURE_IN_PROGRESS:
       // If only one finger is down, go into touch exploration.
       if (current_touch_ids_.size() == 1) {
+        EnterTouchToMouseMode();
         SET_STATE(TOUCH_EXPLORATION);
         break;
       }
@@ -882,7 +920,7 @@ void TouchExplorationController::DispatchShiftSearchKeyEvent(
   ui::KeyEvent third_key_up(ui::ET_KEY_RELEASED, third_key, ui::EF_SHIFT_DOWN);
   ui::KeyEvent search_up(
       ui::ET_KEY_RELEASED, kChromeOSSearchKey, ui::EF_SHIFT_DOWN);
-  ui::KeyEvent shift_up(ui::ET_KEY_RELEASED, ui::VKEY_SHIFT, ui::EF_NONE);
+  ui ::KeyEvent shift_up(ui::ET_KEY_RELEASED, ui::VKEY_SHIFT, ui::EF_NONE);
 
   DispatchEvent(&shift_down);
   DispatchEvent(&search_down);
@@ -1109,6 +1147,10 @@ void TouchExplorationController::InitializeSwipeGestureMaps() {
   up_swipe_gestures_[4] = BindKeyEventWithFlags(VKEY_BROWSER_HOME, ui::EF_NONE);
   down_swipe_gestures_[4] =
       BindKeyEventWithFlags(VKEY_BROWSER_REFRESH, ui::EF_NONE);
+}
+
+const float TouchExplorationController::GetSplitTapTouchSlop() {
+  return gesture_detector_config_.touch_slop * 3;
 }
 
 }  // namespace ui

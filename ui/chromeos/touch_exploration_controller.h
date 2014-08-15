@@ -158,7 +158,7 @@ class TouchExplorationControllerDelegate {
 // corners of the screen until an earcon sounds. After the earcon sounds, the
 // user is in passthrough so all subsequent fingers placed on the screen will be
 // passed through. Once the finger in the corner has been released, the state
-// will switch to wait for one finger.
+// will switch to wait for no fingers.
 //
 // The caller is expected to retain ownership of instances of this class and
 // destroy them before |root_window| is destroyed.
@@ -278,6 +278,10 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
   // these bounds (in DIPs), the preset settings will still change.
   const float kSlopDistanceFromEdge = kMaxDistanceFromEdge + 40;
 
+  // The split tap slop  is a bit more generous since keeping two
+  // fingers in place is a bit harder.
+  const float GetSplitTapTouchSlop();
+
   enum State {
     // No fingers are down and no events are pending.
     NO_FINGERS_DOWN,
@@ -329,8 +333,10 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
     // The user was in touch exploration, but has placed down another finger.
     // If the user releases the second finger, a touch press and release
     // will go through at the last touch explore location. If the user
-    // releases the touch explore finger, the other finger will continue with
-    // touch explore. Any fingers pressed past the first two are ignored.
+    // releases the touch explore finger, the touch press and release will
+    // still go through once the split tap finger is also lifted. If any
+    // fingers pressed past the first two, the touch press is cancelled and
+    // the user enters the wait state for the fingers to be removed.
     TOUCH_EXPLORE_SECOND_PRESS,
 
     // After the user double taps and holds with a single finger, all events
