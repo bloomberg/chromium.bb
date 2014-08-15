@@ -3,6 +3,7 @@
 include_rules = [
   "+content/public/common",
   "+crypto",
+  "+grit/shell_resources.h",
   "+net",
   "+ui",
 ]

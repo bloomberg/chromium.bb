@@ -5,10 +5,13 @@
 #include "chromecast/shell/browser/cast_browser_main_parts.h"
 
 #include "base/command_line.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "chromecast/common/chromecast_config.h"
 #include "chromecast/net/network_change_notifier_cast.h"
 #include "chromecast/net/network_change_notifier_factory_cast.h"
 #include "chromecast/service/cast_service.h"
 #include "chromecast/shell/browser/cast_browser_context.h"
+#include "chromecast/shell/browser/devtools/remote_debugging_server.h"
 #include "chromecast/shell/browser/url_request_context_factory.h"
 
 namespace chromecast {
@@ -62,6 +65,7 @@ void CastBrowserMainParts::PostMainMessageLoopStart() {
 }
 
 int CastBrowserMainParts::PreCreateThreads() {
+  ChromecastConfig::Create(new PrefRegistrySimple());
   return 0;
 }
 
@@ -69,6 +73,7 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   url_request_context_factory_->InitializeOnUIThread();
 
   browser_context_.reset(new CastBrowserContext(url_request_context_factory_));
+  dev_tools_.reset(new RemoteDebuggingServer());
 
   cast_service_.reset(CastService::Create(browser_context_.get()));
   cast_service_->Start();
@@ -81,6 +86,9 @@ bool CastBrowserMainParts::MainMessageLoopRun(int* result_code) {
 
 void CastBrowserMainParts::PostMainMessageLoopRun() {
   cast_service_->Stop();
+
+  cast_service_.reset();
+  dev_tools_.reset();
   browser_context_.reset();
 }
 

@@ -24,6 +24,8 @@
         'common/cast_paths.h',
         'common/chromecast_config.cc',
         'common/chromecast_config.h',
+        'common/pref_names.cc',
+        'common/pref_names.h',
       ],
       'conditions': [
         ['chromecast_branding=="Chrome"', {
@@ -67,7 +69,20 @@
     {
       'target_name': 'cast_shell_resources',
       'type': 'none',
-      # Place holder for cast_shell specific resources.
+      'variables': {
+        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chromecast',
+      },
+      'actions': [
+        {
+          'action_name': 'cast_shell_resources',
+          'variables': {
+            'grit_grd_file': 'shell/browser/resources/shell_resources.grd',
+            'grit_resource_ids': 'shell/browser/resources/resource_ids',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+      ],
+      'includes': [ '../build/grit_target.gypi' ],
     },
     {
       'target_name': 'cast_shell_pak',
@@ -89,6 +104,7 @@
           'variables': {
             'pak_inputs': [
               '<(SHARED_INTERMEDIATE_DIR)/blink/public/resources/blink_resources.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/chromecast/shell_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/content/app/strings/content_strings_en-US.pak',
               '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
@@ -112,6 +128,7 @@
         'cast_common',
         'cast_service',
         'cast_shell_pak',
+        'cast_shell_resources',
         'cast_version_header',
         '../ui/aura/aura.gyp:aura_test_support',
         '../content/content.gyp:content',
@@ -134,6 +151,10 @@
         'shell/browser/cast_content_browser_client.h',
         'shell/browser/cast_http_user_agent_settings.cc',
         'shell/browser/cast_http_user_agent_settings.h',
+        'shell/browser/devtools/cast_dev_tools_delegate.cc',
+        'shell/browser/devtools/cast_dev_tools_delegate.h',
+        'shell/browser/devtools/remote_debugging_server.cc',
+        'shell/browser/devtools/remote_debugging_server.h',
         'shell/browser/geolocation/cast_access_token_store.cc',
         'shell/browser/geolocation/cast_access_token_store.h',
         'shell/browser/url_request_context_factory.cc',
@@ -151,6 +172,9 @@
         }, {
           'dependencies': [
             '../ui/ozone/ozone.gyp:eglplatform_shim_x11',
+          ],
+          'sources': [
+            'shell/browser/devtools/remote_debugging_server_simple.cc',
           ],
         }],
       ],

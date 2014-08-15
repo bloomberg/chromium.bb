@@ -16,6 +16,7 @@
 #include "base/prefs/pref_store.h"
 #include "base/strings/string_number_conversions.h"
 #include "chromecast/common/cast_paths.h"
+#include "chromecast/common/pref_names.h"
 
 namespace chromecast {
 
@@ -71,6 +72,7 @@ ChromecastConfig::~ChromecastConfig() {
 bool ChromecastConfig::Load(PrefRegistrySimple* registry) {
   DCHECK(thread_checker_.CalledOnValidThread());
   VLOG(1) << "Loading config from " << config_path_.value();
+  registry->RegisterIntegerPref(prefs::kRemoteDebuggingPort, 0);
 
   RegisterPlatformPrefs(registry);
 

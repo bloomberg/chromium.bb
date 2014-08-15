@@ -21,6 +21,7 @@ class CastService;
 namespace shell {
 
 class CastBrowserContext;
+class RemoteDebuggingServer;
 class URLRequestContextFactory;
 
 class CastBrowserMainParts : public content::BrowserMainParts {
@@ -45,8 +46,8 @@ class CastBrowserMainParts : public content::BrowserMainParts {
  private:
   scoped_ptr<CastBrowserContext> browser_context_;
   scoped_ptr<CastService> cast_service_;
+  scoped_ptr<RemoteDebuggingServer> dev_tools_;
   URLRequestContextFactory* const url_request_context_factory_;
-
 
   DISALLOW_COPY_AND_ASSIGN(CastBrowserMainParts);
 };
