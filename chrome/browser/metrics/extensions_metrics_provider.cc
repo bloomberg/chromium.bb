@@ -193,6 +193,8 @@ void ExtensionsMetricsProvider::ProvideOffStoreMetric(
 
     scoped_ptr<extensions::ExtensionSet> extensions(
         GetInstalledExtensions(profiles[i]));
+    if (!extensions)
+      continue;
 
     // Combine the state from each profile, always favoring the higher state as
     // defined by the order of ExtensionState.
@@ -212,6 +214,8 @@ void ExtensionsMetricsProvider::ProvideOccupiedBucketMetric(
 
   scoped_ptr<extensions::ExtensionSet> extensions(
       GetInstalledExtensions(profile));
+  if (!extensions)
+    return;
 
   const int client_key = GetClientID() % kExtensionListClientKeys;
 
