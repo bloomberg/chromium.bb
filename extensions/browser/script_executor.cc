@@ -1,18 +1,18 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/script_executor.h"
+#include "extensions/browser/script_executor.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/pickle.h"
-#include "chrome/browser/extensions/tab_helper.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/script_execution_observer.h"
 #include "extensions/common/extension_messages.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
@@ -32,15 +32,15 @@ const char* kRendererDestroyed = "The tab was closed.";
 // corresponding response comes from the renderer, or the renderer is destroyed.
 class Handler : public content::WebContentsObserver {
  public:
-  Handler(ObserverList<TabHelper::ScriptExecutionObserver>* script_observers,
+  Handler(ObserverList<ScriptExecutionObserver>* script_observers,
           content::WebContents* web_contents,
           const ExtensionMsg_ExecuteCode_Params& params,
           const ScriptExecutor::ExecuteScriptCallback& callback)
-          : content::WebContentsObserver(web_contents),
-            script_observers_(AsWeakPtr(script_observers)),
-            extension_id_(params.extension_id),
-            request_id_(params.request_id),
-            callback_(callback) {
+      : content::WebContentsObserver(web_contents),
+        script_observers_(AsWeakPtr(script_observers)),
+        extension_id_(params.extension_id),
+        request_id_(params.request_id),
+        callback_(callback) {
     content::RenderViewHost* rvh = web_contents->GetRenderViewHost();
     rvh->Send(new ExtensionMsg_ExecuteCode(rvh->GetRoutingID(), params));
   }
@@ -79,20 +79,18 @@ class Handler : public content::WebContentsObserver {
                              const GURL& on_url,
                              const base::ListValue& script_result) {
     if (script_observers_.get() && error.empty()) {
-      TabHelper::ScriptExecutionObserver::ExecutingScriptsMap id_map;
+      ScriptExecutionObserver::ExecutingScriptsMap id_map;
       id_map[extension_id_] = std::set<std::string>();
-      FOR_EACH_OBSERVER(TabHelper::ScriptExecutionObserver, *script_observers_,
-                        OnScriptsExecuted(web_contents(),
-                                          id_map,
-                                          on_url));
+      FOR_EACH_OBSERVER(ScriptExecutionObserver,
+                        *script_observers_,
+                        OnScriptsExecuted(web_contents(), id_map, on_url));
     }
 
     callback_.Run(error, on_url, script_result);
     delete this;
   }
 
-  base::WeakPtr<ObserverList<TabHelper::ScriptExecutionObserver> >
-      script_observers_;
+  base::WeakPtr<ObserverList<ScriptExecutionObserver> > script_observers_;
   std::string extension_id_;
   int request_id_;
   ScriptExecutor::ExecuteScriptCallback callback_;
@@ -100,16 +98,20 @@ class Handler : public content::WebContentsObserver {
 
 }  // namespace
 
+ScriptExecutionObserver::~ScriptExecutionObserver() {
+}
+
 ScriptExecutor::ScriptExecutor(
     content::WebContents* web_contents,
-    ObserverList<TabHelper::ScriptExecutionObserver>* script_observers)
+    ObserverList<ScriptExecutionObserver>* script_observers)
     : next_request_id_(0),
       web_contents_(web_contents),
       script_observers_(script_observers) {
   CHECK(web_contents_);
 }
 
-ScriptExecutor::~ScriptExecutor() {}
+ScriptExecutor::~ScriptExecutor() {
+}
 
 void ScriptExecutor::ExecuteScript(const std::string& extension_id,
                                    ScriptExecutor::ScriptType script_type,

@@ -8,15 +8,16 @@
 #include <vector>
 
 #include "base/observer_list.h"
-#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/guest_view/web_view/javascript_dialog_helper.h"
 #include "chrome/browser/guest_view/web_view/web_view_find_helper.h"
 #include "chrome/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "chrome/browser/guest_view/web_view/web_view_permission_types.h"
 #include "chrome/common/extensions/api/web_view_internal.h"
 #include "content/public/browser/javascript_dialog_manager.h"
+#include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/guest_view/guest_view.h"
+#include "extensions/browser/script_executor.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 
 #if defined(OS_CHROMEOS)
@@ -33,7 +34,6 @@ namespace extensions {
 
 namespace webview_api = api::web_view_internal;
 
-class ScriptExecutor;
 class WebViewInternalFindFunction;
 
 // A WebViewGuest provides the browser-side implementation of the <webview> API
@@ -335,7 +335,7 @@ class WebViewGuest : public GuestView<WebViewGuest>,
 
   void SetUpAutoSize();
 
-  ObserverList<TabHelper::ScriptExecutionObserver> script_observers_;
+  ObserverList<ScriptExecutionObserver> script_observers_;
   scoped_ptr<ScriptExecutor> script_executor_;
 
   content::NotificationRegistrar notification_registrar_;

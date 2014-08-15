@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_EXTENSIONS_API_EXECUTE_CODE_FUNCTION_H_
 
 #include "chrome/browser/extensions/chrome_extension_function.h"
-#include "chrome/browser/extensions/script_executor.h"
 #include "chrome/common/extensions/api/tabs.h"
+#include "extensions/browser/script_executor.h"
 
 namespace extensions {
 

@@ -836,8 +836,6 @@
       'browser/extensions/requirements_checker.h',
       'browser/extensions/sandboxed_unpacker.cc',
       'browser/extensions/sandboxed_unpacker.h',
-      'browser/extensions/script_executor.cc',
-      'browser/extensions/script_executor.h',
       'browser/extensions/settings_api_bubble_controller.cc',
       'browser/extensions/settings_api_bubble_controller.h',
       'browser/extensions/settings_api_helpers.cc',

@@ -1,15 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_EXTENSIONS_SCRIPT_EXECUTOR_H_
 #define CHROME_BROWSER_EXTENSIONS_SCRIPT_EXECUTOR_H_
 
-#include <string>
-
 #include "base/callback_forward.h"
 #include "base/observer_list.h"
-#include "chrome/browser/extensions/tab_helper.h"
 #include "extensions/common/user_script.h"
 
 class GURL;
@@ -24,6 +21,7 @@ class WebContents;
 }
 
 namespace extensions {
+class ScriptExecutionObserver;
 
 // Interface for executing extension content scripts (e.g. executeScript) as
 // described by the ExtensionMsg_ExecuteCode_Params IPC, and notifying the
@@ -34,7 +32,7 @@ class ScriptExecutor {
       content::WebContents* web_contents,
       // |script_observers| is assumed to be owned by |this|'s owner, and in
       // such a way that |this| is destroyed first.
-      ObserverList<TabHelper::ScriptExecutionObserver>* script_observers);
+      ObserverList<ScriptExecutionObserver>* script_observers);
 
   ~ScriptExecutor();
 
@@ -77,9 +75,8 @@ class ScriptExecutor {
 
   // Callback from ExecuteScript. The arguments are (error, on_url, result).
   // Success is implied by an empty error.
-  typedef base::Callback<void(const std::string&,
-                              const GURL&,
-                              const base::ListValue&)>
+  typedef base::Callback<
+      void(const std::string&, const GURL&, const base::ListValue&)>
       ExecuteScriptCallback;
 
   // Executes a script. The arguments match ExtensionMsg_ExecuteCode_Params in
@@ -108,7 +105,7 @@ class ScriptExecutor {
 
   content::WebContents* web_contents_;
 
-  ObserverList<TabHelper::ScriptExecutionObserver>* script_observers_;
+  ObserverList<ScriptExecutionObserver>* script_observers_;
 };
 
 }  // namespace extensions

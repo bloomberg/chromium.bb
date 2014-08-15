@@ -21,7 +21,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
-#include "chrome/browser/extensions/script_executor.h"
 #include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/browser/extensions/webstore_inline_installer_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -81,21 +80,6 @@ using content::WebContents;
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(extensions::TabHelper);
 
 namespace extensions {
-
-TabHelper::ScriptExecutionObserver::ScriptExecutionObserver(
-    TabHelper* tab_helper)
-    : tab_helper_(tab_helper) {
-  tab_helper_->AddScriptExecutionObserver(this);
-}
-
-TabHelper::ScriptExecutionObserver::ScriptExecutionObserver()
-    : tab_helper_(NULL) {
-}
-
-TabHelper::ScriptExecutionObserver::~ScriptExecutionObserver() {
-  if (tab_helper_)
-    tab_helper_->RemoveScriptExecutionObserver(this);
-}
 
 TabHelper::TabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
@@ -167,6 +151,15 @@ bool TabHelper::CanCreateBookmarkApp() const {
   return IsValidBookmarkAppUrl(web_contents()->GetURL()) &&
          pending_web_app_action_ == NONE;
 #endif
+}
+
+void TabHelper::AddScriptExecutionObserver(ScriptExecutionObserver* observer) {
+  script_execution_observers_.AddObserver(observer);
+}
+
+void TabHelper::RemoveScriptExecutionObserver(
+    ScriptExecutionObserver* observer) {
+  script_execution_observers_.RemoveObserver(observer);
 }
 
 void TabHelper::SetExtensionApp(const Extension* extension) {
@@ -426,10 +419,10 @@ void TabHelper::OnRequest(const ExtensionHostMsg_Request_Params& request) {
 void TabHelper::OnContentScriptsExecuting(
     const ScriptExecutionObserver::ExecutingScriptsMap& executing_scripts_map,
     const GURL& on_url) {
-  FOR_EACH_OBSERVER(ScriptExecutionObserver, script_execution_observers_,
-                    OnScriptsExecuted(web_contents(),
-                                      executing_scripts_map,
-                                      on_url));
+  FOR_EACH_OBSERVER(
+      ScriptExecutionObserver,
+      script_execution_observers_,
+      OnScriptsExecuted(web_contents(), executing_scripts_map, on_url));
 }
 
 void TabHelper::OnWatchedPageChange(

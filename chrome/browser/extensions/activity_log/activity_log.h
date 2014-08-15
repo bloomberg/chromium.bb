@@ -16,10 +16,10 @@
 #include "base/threading/thread.h"
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
 #include "chrome/browser/extensions/activity_log/activity_log_policy.h"
-#include "chrome/browser/extensions/tab_helper.h"
 #include "extensions/browser/api_activity_monitor.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/browser/script_execution_observer.h"
 #include "extensions/common/dom_action_types.h"
 
 class Profile;
@@ -43,7 +43,7 @@ class ExtensionRegistry;
 //
 class ActivityLog : public BrowserContextKeyedAPI,
                     public ApiActivityMonitor,
-                    public TabHelper::ScriptExecutionObserver,
+                    public ScriptExecutionObserver,
                     public ExtensionRegistryObserver {
  public:
   // Observers can listen for activity events. There is probably only one
@@ -147,7 +147,7 @@ class ActivityLog : public BrowserContextKeyedAPI,
   // ExtensionSystem/ExtensionService are done with their own setup.
   void StartObserving();
 
-  // TabHelper::ScriptExecutionObserver implementation.
+  // ScriptExecutionObserver implementation.
   // Fires when a ContentScript is executed.
   virtual void OnScriptsExecuted(
       const content::WebContents* web_contents,

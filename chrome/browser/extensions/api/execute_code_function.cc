@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/api/execute_code_function.h"
 
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
-#include "chrome/browser/extensions/script_executor.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "extensions/browser/component_extension_resource_manager.h"
 #include "extensions/browser/extensions_browser_client.h"

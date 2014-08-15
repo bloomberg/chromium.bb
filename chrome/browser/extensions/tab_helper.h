@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_TAB_HELPER_H_
 #define CHROME_BROWSER_EXTENSIONS_TAB_HELPER_H_
 
-#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -22,6 +21,8 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "extensions/browser/extension_function_dispatcher.h"
+#include "extensions/browser/script_execution_observer.h"
+#include "extensions/browser/script_executor.h"
 #include "extensions/common/stack_frame.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -40,7 +41,6 @@ namespace extensions {
 class BookmarkAppHelper;
 class Extension;
 class LocationBarController;
-class ScriptExecutor;
 class WebstoreInlineInstallerFactory;
 
 // Per-tab extension helper. Also handles non-extension apps.
@@ -50,44 +50,7 @@ class TabHelper : public content::WebContentsObserver,
                   public content::NotificationObserver,
                   public content::WebContentsUserData<TabHelper> {
  public:
-  // Observer base class for classes that need to be notified when content
-  // scripts and/or tabs.executeScript calls run on a page.
-  class ScriptExecutionObserver {
-   public:
-    // Map of extensions IDs to the executing script paths.
-    typedef std::map<std::string, std::set<std::string> > ExecutingScriptsMap;
-
-    // Automatically observes and unobserves |tab_helper| on construction
-    // and destruction. |tab_helper| must outlive |this|.
-    explicit ScriptExecutionObserver(TabHelper* tab_helper);
-    ScriptExecutionObserver();
-
-    // Called when script(s) have executed on a page.
-    //
-    // |executing_scripts_map| contains all extensions that are executing
-    // scripts, mapped to the paths for those scripts. This may be an empty set
-    // if the script has no path associated with it (e.g. in the case of
-    // tabs.executeScript).
-    virtual void OnScriptsExecuted(
-        const content::WebContents* web_contents,
-        const ExecutingScriptsMap& executing_scripts_map,
-        const GURL& on_url) = 0;
-
-   protected:
-    virtual ~ScriptExecutionObserver();
-
-    TabHelper* tab_helper_;
-  };
-
   virtual ~TabHelper();
-
-  void AddScriptExecutionObserver(ScriptExecutionObserver* observer) {
-    script_execution_observers_.AddObserver(observer);
-  }
-
-  void RemoveScriptExecutionObserver(ScriptExecutionObserver* observer) {
-    script_execution_observers_.RemoveObserver(observer);
-  }
 
   void CreateApplicationShortcuts();
   void CreateHostedAppFromWebContents();
@@ -97,6 +60,10 @@ class TabHelper : public content::WebContentsObserver,
   void UpdateShortcutOnLoadComplete() {
     update_shortcut_on_load_complete_ = true;
   }
+
+  // ScriptExecutionObserver::Delegate
+  virtual void AddScriptExecutionObserver(ScriptExecutionObserver* observer);
+  virtual void RemoveScriptExecutionObserver(ScriptExecutionObserver* observer);
 
   // App extensions ------------------------------------------------------------
 
