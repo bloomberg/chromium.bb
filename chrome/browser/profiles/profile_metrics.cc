@@ -365,6 +365,27 @@ void ProfileMetrics::LogProfileDelete(bool profile_was_signed_in) {
   UMA_HISTOGRAM_BOOLEAN("Profile.Delete", profile_was_signed_in);
 }
 
+void ProfileMetrics::LogProfileNewAvatarMenuNotYou(
+    ProfileNewAvatarMenuNotYou metric) {
+  DCHECK_LT(metric, NUM_PROFILE_AVATAR_MENU_NOT_YOU_METRICS);
+  UMA_HISTOGRAM_ENUMERATION("Profile.NewAvatarMenu.NotYou", metric,
+                            NUM_PROFILE_AVATAR_MENU_NOT_YOU_METRICS);
+}
+
+void ProfileMetrics::LogProfileNewAvatarMenuSignin(
+    ProfileNewAvatarMenuSignin metric) {
+  DCHECK_LT(metric, NUM_PROFILE_AVATAR_MENU_SIGNIN_METRICS);
+  UMA_HISTOGRAM_ENUMERATION("Profile.NewAvatarMenu.Signin", metric,
+                            NUM_PROFILE_AVATAR_MENU_SIGNIN_METRICS);
+}
+
+void ProfileMetrics::LogProfileNewAvatarMenuUpgrade(
+    ProfileNewAvatarMenuUpgrade metric) {
+  DCHECK_LT(metric, NUM_PROFILE_AVATAR_MENU_UPGRADE_METRICS);
+  UMA_HISTOGRAM_ENUMERATION("Profile.NewAvatarMenu.Upgrade", metric,
+                            NUM_PROFILE_AVATAR_MENU_UPGRADE_METRICS);
+}
+
 #if defined(OS_ANDROID)
 void ProfileMetrics::LogProfileAndroidAccountManagementMenu(
     ProfileAndroidAccountManagementMenu metric,

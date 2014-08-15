@@ -898,35 +898,49 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 - (IBAction)seeWhatsNew:(id)sender {
   chrome::ShowUserManagerWithTutorial(
       profiles::USER_MANAGER_TUTORIAL_OVERVIEW);
+  ProfileMetrics::LogProfileNewAvatarMenuUpgrade(
+      ProfileMetrics::PROFILE_AVATAR_MENU_UPGRADE_WHATS_NEW);
 }
 
 - (IBAction)showSwitchUserView:(id)sender {
   [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_SWITCH_USER];
+  ProfileMetrics::LogProfileNewAvatarMenuUpgrade(
+      ProfileMetrics::PROFILE_AVATAR_MENU_UPGRADE_NOT_YOU);
 }
 
 - (IBAction)configureSyncSettings:(id)sender {
   tutorialMode_ = profiles::TUTORIAL_MODE_NONE;
   LoginUIServiceFactory::GetForProfile(browser_->profile())->
       SyncConfirmationUIClosed(true);
+  ProfileMetrics::LogProfileNewAvatarMenuSignin(
+      ProfileMetrics::PROFILE_AVATAR_MENU_SIGNIN_SETTINGS);
 }
 
 - (IBAction)syncSettingsConfirmed:(id)sender {
   tutorialMode_ = profiles::TUTORIAL_MODE_NONE;
   LoginUIServiceFactory::GetForProfile(browser_->profile())->
       SyncConfirmationUIClosed(false);
+  ProfileMetrics::LogProfileNewAvatarMenuSignin(
+      ProfileMetrics::PROFILE_AVATAR_MENU_SIGNIN_OK);
   [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER];
 }
 
 - (IBAction)addPerson:(id)sender {
   profiles::ShowUserManagerMaybeWithTutorial(browser_->profile());
+  ProfileMetrics::LogProfileNewAvatarMenuNotYou(
+      ProfileMetrics::PROFILE_AVATAR_MENU_NOT_YOU_ADD_PERSON);
 }
 
 - (IBAction)disconnectProfile:(id)sender {
   chrome::ShowSettings(browser_);
+  ProfileMetrics::LogProfileNewAvatarMenuNotYou(
+      ProfileMetrics::PROFILE_AVATAR_MENU_NOT_YOU_DISCONNECT);
 }
 
 - (IBAction)navigateBackFromSwitchUserView:(id)sender {
   [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER];
+  ProfileMetrics::LogProfileNewAvatarMenuNotYou(
+      ProfileMetrics::PROFILE_AVATAR_MENU_NOT_YOU_BACK);
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
@@ -1145,6 +1159,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 
 - (NSView*)buildSigninConfirmationView {
+  ProfileMetrics::LogProfileNewAvatarMenuSignin(
+      ProfileMetrics::PROFILE_AVATAR_MENU_SIGNIN_VIEW);
+
   NSString* titleMessage = l10n_util::GetNSString(
       IDS_PROFILES_CONFIRM_SIGNIN_TUTORIAL_TITLE);
   NSString* contentMessage = l10n_util::GetNSString(
@@ -1185,6 +1202,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     profile->GetPrefs()->SetInteger(
         prefs::kProfileAvatarTutorialShown, showCount + 1);
   }
+
+  ProfileMetrics::LogProfileNewAvatarMenuUpgrade(
+      ProfileMetrics::PROFILE_AVATAR_MENU_UPGRADE_VIEW);
 
   NSString* titleMessage = l10n_util::GetNSString(
       IDS_PROFILES_WELCOME_UPGRADE_TUTORIAL_TITLE);
@@ -1761,6 +1781,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
 
 - (NSView*)buildSwitchUserView {
+  ProfileMetrics::LogProfileNewAvatarMenuNotYou(
+      ProfileMetrics::PROFILE_AVATAR_MENU_NOT_YOU_VIEW);
   base::scoped_nsobject<NSView> container(
       [[NSView alloc] initWithFrame:NSZeroRect]);
   CGFloat availableWidth =

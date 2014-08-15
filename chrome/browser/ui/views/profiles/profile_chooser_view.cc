@@ -640,6 +640,8 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
     case profiles::BUBBLE_VIEW_MODE_SWITCH_USER:
       layout = CreateSingleColumnLayout(this, kFixedSwitchUserViewWidth);
       sub_view = CreateSwitchUserView();
+      ProfileMetrics::LogProfileNewAvatarMenuNotYou(
+          ProfileMetrics::PROFILE_AVATAR_MENU_NOT_YOU_VIEW);
       break;
     default:
       layout = CreateSingleColumnLayout(this, kFixedMenuWidth);
@@ -689,7 +691,11 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
         SyncConfirmationUIClosed(false /* configure_sync_first */);
     tutorial_mode_ = profiles::TUTORIAL_MODE_NONE;
     ShowView(profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER, avatar_menu_.get());
+    ProfileMetrics::LogProfileNewAvatarMenuSignin(
+        ProfileMetrics::PROFILE_AVATAR_MENU_SIGNIN_OK);
   } else if (sender == tutorial_see_whats_new_button_) {
+    ProfileMetrics::LogProfileNewAvatarMenuUpgrade(
+        ProfileMetrics::PROFILE_AVATAR_MENU_UPGRADE_WHATS_NEW);
     chrome::ShowUserManagerWithTutorial(
         profiles::USER_MANAGER_TUTORIAL_OVERVIEW);
   } else if (sender == remove_account_button_) {
@@ -715,11 +721,17 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
   } else if (sender == signin_current_profile_link_) {
     ShowView(profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN, avatar_menu_.get());
   } else if (sender == add_person_button_) {
+    ProfileMetrics::LogProfileNewAvatarMenuNotYou(
+        ProfileMetrics::PROFILE_AVATAR_MENU_NOT_YOU_ADD_PERSON);
     profiles::ShowUserManagerMaybeWithTutorial(browser_->profile());
   } else if (sender == disconnect_button_) {
+    ProfileMetrics::LogProfileNewAvatarMenuNotYou(
+        ProfileMetrics::PROFILE_AVATAR_MENU_NOT_YOU_DISCONNECT);
     chrome::ShowSettings(browser_);
   } else if (sender == switch_user_cancel_button_) {
     ShowView(profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER, avatar_menu_.get());
+    ProfileMetrics::LogProfileNewAvatarMenuNotYou(
+        ProfileMetrics::PROFILE_AVATAR_MENU_NOT_YOU_BACK);
   } else {
     // Either one of the "other profiles", or one of the profile accounts
     // buttons was pressed.
@@ -778,8 +790,12 @@ void ProfileChooserView::LinkClicked(views::Link* sender, int event_flags) {
     LoginUIServiceFactory::GetForProfile(browser_->profile())->
         SyncConfirmationUIClosed(true /* configure_sync_first */);
     tutorial_mode_ = profiles::TUTORIAL_MODE_NONE;
+    ProfileMetrics::LogProfileNewAvatarMenuSignin(
+        ProfileMetrics::PROFILE_AVATAR_MENU_SIGNIN_SETTINGS);
   } else {
     DCHECK(sender == tutorial_not_you_link_);
+    ProfileMetrics::LogProfileNewAvatarMenuUpgrade(
+        ProfileMetrics::PROFILE_AVATAR_MENU_UPGRADE_NOT_YOU);
     ShowView(profiles::BUBBLE_VIEW_MODE_SWITCH_USER, avatar_menu_.get());
   }
 }
@@ -1412,6 +1428,9 @@ views::View* ProfileChooserView::CreateWelcomeUpgradeTutorialViewIfNeeded(
         prefs::kProfileAvatarTutorialShown, show_count + 1);
   }
 
+  ProfileMetrics::LogProfileNewAvatarMenuUpgrade(
+      ProfileMetrics::PROFILE_AVATAR_MENU_UPGRADE_VIEW);
+
   return CreateTutorialView(
       profiles::TUTORIAL_MODE_WELCOME_UPGRADE,
       l10n_util::GetStringUTF16(
@@ -1426,6 +1445,9 @@ views::View* ProfileChooserView::CreateWelcomeUpgradeTutorialViewIfNeeded(
 }
 
 views::View* ProfileChooserView::CreateSigninConfirmationView(){
+  ProfileMetrics::LogProfileNewAvatarMenuSignin(
+      ProfileMetrics::PROFILE_AVATAR_MENU_SIGNIN_VIEW);
+
   return CreateTutorialView(
       profiles::TUTORIAL_MODE_CONFIRM_SIGNIN,
       l10n_util::GetStringUTF16(IDS_PROFILES_CONFIRM_SIGNIN_TUTORIAL_TITLE),

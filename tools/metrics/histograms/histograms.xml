@@ -24806,7 +24806,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Profile.DeleteProfileAction" enum="ProfileDeleteAction">
   <owner>mlerman@chromium.org</owner>
   <summary>
-    Thie histogram tracks which UI screen was used to delete a profile. This
+    This histogram tracks which UI screen was used to delete a profile. This
     does not track when the profile is actually deleted, which is an
     asycnhronous process that happens later.
   </summary>
@@ -24862,6 +24862,34 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Counts of users added and deleted. Percentages are not meaningful. Please
     look at the ratio of the counts/percentages.
+  </summary>
+</histogram>
+
+<histogram name="Profile.NewAvatarMenu.NotYou"
+    enum="ProfileNewAvatarMenuNotYou">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    Tracks user interactions with the 'Not You?' bubble that users can navigate
+    to from the Upgrade bubble after upgrade to the New Avatar Menu.
+  </summary>
+</histogram>
+
+<histogram name="Profile.NewAvatarMenu.Signin"
+    enum="ProfileNewAvatarMenuSignin">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    Tracks user interactions with the signin bubble that appears in the New
+    Avatar Menu upon signin. This bubble appears after the user signs in using
+    the Inline Signin flow.
+  </summary>
+</histogram>
+
+<histogram name="Profile.NewAvatarMenu.Upgrade"
+    enum="ProfileNewAvatarMenuUpgrade">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    Tracks user interactions with the bubble that appears for users in the new
+    avatar menu after upgrade.
   </summary>
 </histogram>
 
@@ -47547,6 +47575,46 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="ProfileNetUserCount" type="int">
   <int value="0" label="Added new user"/>
   <int value="1" label="Deleted a profile"/>
+</enum>
+
+<enum name="ProfileNewAvatarMenuNotYou" type="int">
+  <int value="0" label="View 'Not You?' Bubble">
+    User views the 'Not You?' bubble.
+  </int>
+  <int value="1" label="Back">
+    User selects back from within the 'Not You?' bubble.
+  </int>
+  <int value="2" label="Add Person">
+    User adds a person from within the 'Not You?' bubble.
+  </int>
+  <int value="3" label="Disconnect">
+    User chooses to disconnect (sign out) from within the 'Not You?' bubble.
+  </int>
+</enum>
+
+<enum name="ProfileNewAvatarMenuSignin" type="int">
+  <int value="0" label="View Signin Bubble">
+    User viewed the signin bubble after successfully using the inline signin.
+  </int>
+  <int value="1" label="Dismiss">
+    User selected ok to dismiss the signin bubble.
+  </int>
+  <int value="2" label="Settings">
+    User opened the settings from the signin bubble.
+  </int>
+</enum>
+
+<enum name="ProfileNewAvatarMenuUpgrade" type="int">
+  <int value="0" label="View Upgrade Bubble">
+    User views the upgrade bubble.
+  </int>
+  <int value="1" label="Dismiss">User dismissed the upgrade bubble.</int>
+  <int value="2" label="What's New">
+    User selects 'What's New' in the upgrade bubble.
+  </int>
+  <int value="3" label="Not You?">
+    User selects 'Not You?' in the upgrade bubble.
+  </int>
 </enum>
 
 <enum name="ProfileOpen" type="int">
