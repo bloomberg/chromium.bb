@@ -23,6 +23,8 @@
     'GetTouchInputInfo@16',
     'IsTouchWindow@8',
     'RegisterTouchWindow@8',
+    'RegisterPowerSettingNotification@12',
     'UnregisterTouchWindow@4',
+    'UnregisterPowerSettingNotification@4',
   ],
 }
