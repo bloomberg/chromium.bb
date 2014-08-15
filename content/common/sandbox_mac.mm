@@ -114,12 +114,14 @@ NSString* Sandbox::AllowMetadataForPath(const base::FilePath& allowed_path) {
   // Collect a list of all parent directories.
   base::FilePath last_path = allowed_path;
   std::vector<base::FilePath> subpaths;
-  for (base::FilePath path = allowed_path;
-       path.value() != last_path.value();
-       path = path.DirName()) {
+
+  base::FilePath path = allowed_path;
+  do {
     subpaths.push_back(path);
+
     last_path = path;
-  }
+    path = path.DirName();
+  } while (path.value() != last_path.value());
 
   // Iterate through all parents and allow stat() on them explicitly.
   NSString* sandbox_command = @"(allow file-read-metadata ";
@@ -570,6 +572,22 @@ bool Sandbox::EnableSandbox(int sandbox_type,
         [base::mac::MainBundle() executablePath]);
     NSString* sandbox_command = AllowMetadataForPath(
         GetCanonicalSandboxPath(bundle_executable));
+
+    // In addition to the workaround above, for OS X <= 10.6 we also need to
+    // allow reading file metadata for all the dylibs under the same directory
+    // containing the Chrome bundle. It requires to go 5 levels up from main
+    // bundle path because the main bundle here is the Helper.app bundle.
+    base::FilePath product_path = base::mac::MainBundlePath()
+                                      .DirName()
+                                      .DirName()
+                                      .DirName()
+                                      .DirName()
+                                      .DirName();
+    sandbox_command = [sandbox_command
+        stringByAppendingFormat:
+            @"(allow file-read-metadata (regex #\"^%@/.*\\.dylib$\"))",
+            base::mac::FilePathToNSString(product_path)];
+
     substitutions["COMPONENT_BUILD_WORKAROUND"] =
         SandboxSubstring(base::SysNSStringToUTF8(sandbox_command));
   }
