@@ -1964,6 +1964,8 @@ std::string PDFiumEngine::GetPageAsJSON(int index) {
   if (index < 0 || static_cast<size_t>(index) > pages_.size() - 1)
     return "{}";
 
+  // TODO(thestig) Remove after debugging http://crbug.com/402035
+  CHECK(pages_[index]);
   scoped_ptr<base::Value> node(
       pages_[index]->GetAccessibleContentAsValue(current_rotation_));
   std::string page_json;
@@ -2021,6 +2023,8 @@ void PDFiumEngine::AppendBlankPages(int num_pages) {
         page_rect.height() * kPointsPerInch / kPixelsPerInch;
     FPDFPage_New(doc_, i, width_in_points, height_in_points);
     pages_.push_back(new PDFiumPage(this, i, page_rect, true));
+    // TODO(thestig) Remove after debugging http://crbug.com/402035
+    CHECK(pages_.back());
   }
 
   CalculateVisiblePages();
@@ -2188,6 +2192,8 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
       pages_[i]->set_rect(page_rect);
     } else {
       pages_.push_back(new PDFiumPage(this, i, page_rect, doc_complete));
+      // TODO(thestig) Remove after debugging http://crbug.com/402035
+      CHECK(pages_.back());
     }
   }
 
