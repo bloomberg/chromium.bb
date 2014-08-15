@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_label_button.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -60,7 +59,7 @@ const CGFloat kAvatarLabelRightSpacing = 2;
     base::scoped_nsobject<NSView> container(
         [[NSView alloc] initWithFrame:NSMakeRect(
             0, 0, profiles::kAvatarIconWidth, profiles::kAvatarIconHeight)]);
-    [container cr_setWantsLayer:YES];
+    [container setWantsLayer:YES];
     [self setView:container];
 
     button_.reset([[NSButton alloc] initWithFrame:NSMakeRect(

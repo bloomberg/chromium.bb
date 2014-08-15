@@ -32,10 +32,6 @@
 // Set needsDisplay for this view and all descendants.
 - (void)cr_recursivelySetNeedsDisplay:(BOOL)flag;
 
-// Set the specified view to have a CoreAnimation layer if CoreAnimation is
-// enabled at the command line.
-- (void)cr_setWantsLayer:(BOOL)wantsLayer;
-
 // Draw using ancestorView's drawRect function into this view's rect. Do any
 // required translating or flipping to transform between the two coordinate
 // systems.

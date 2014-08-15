@@ -20,9 +20,9 @@ CGFloat kCurveSize = 8;
 - (id)initWithFrame:(NSRect)frame {
   if ((self = [super initWithFrame:frame])) {
     // Give this view its own layer so that it can appear over the web contents
-    // view's layer. Layer squashing is not necessary for this view because
+    // view's layer. Layer squashing is not helpful for this view because
     // NSTextField will correctly anti-alias text on 10.8 and beyond.
-    [self cr_setWantsLayer:YES];
+    [self setWantsLayer:YES];
   }
   return self;
 }

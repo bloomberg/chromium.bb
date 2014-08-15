@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/command_line.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/devtools/devtools_window.h"
@@ -18,7 +17,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/base/cocoa/animation_utils.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/geometry/rect.h"
 
 using content::WebContents;
@@ -86,16 +84,11 @@ class FullscreenObserver : public WebContentsObserver {
 - (id)initWithDelegate:(TabContentsController*)delegate {
   if ((self = [super initWithFrame:NSZeroRect])) {
     delegate_ = delegate;
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableCoreAnimation)) {
-      // TODO(ccameron): Remove the -drawRect: method once the
-      // kDisableCoreAnimation switch is removed.
-      ScopedCAActionDisabler disabler;
-      base::scoped_nsobject<CALayer> layer([[CALayer alloc] init]);
-      [layer setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
-      [self setLayer:layer];
-      [self setWantsLayer:YES];
-    }
+    ScopedCAActionDisabler disabler;
+    base::scoped_nsobject<CALayer> layer([[CALayer alloc] init]);
+    [layer setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
+    [self setLayer:layer];
+    [self setWantsLayer:YES];
   }
   return self;
 }

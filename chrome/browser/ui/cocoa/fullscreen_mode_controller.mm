@@ -139,10 +139,6 @@ const CGFloat kTrackingAreaMaxYEpsilon = 15;
 
   destinationState_ = state;
 
-  // Turn on fast resize mode to ensure a smooth web contents animation.
-  // TODO(rsesek): This makes the animation jump at the end.
-  [[controller_ tabContentArea] setFastResizeMode:YES];
-
   animation_.reset([[FullscreenModeDropDownAnimation alloc]
       initWithFullscreenModeController:self]);
   [animation_ startAnimation];
@@ -172,8 +168,6 @@ const CGFloat kTrackingAreaMaxYEpsilon = 15;
 
   [animation_ setDelegate:nil];
   animation_.reset();
-
-  [[controller_ tabContentArea] setFastResizeMode:NO];
 }
 
 @end

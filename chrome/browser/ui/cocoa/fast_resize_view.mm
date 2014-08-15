@@ -7,10 +7,8 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/logging.h"
-#include "base/command_line.h"
 #include "base/mac/scoped_nsobject.h"
 #include "ui/base/cocoa/animation_utils.h"
-#include "ui/base/ui_base_switches.h"
 
 namespace {
 
@@ -20,17 +18,12 @@ const CGFloat kRoundedCornerRadius = 4;
 }  // namespace
 
 @interface FastResizeView (PrivateMethods)
-// Lays out this views subviews.  If fast resize mode is on, does not resize any
-// subviews and instead pegs them to the top left.  If fast resize mode is off,
-// sets the subviews' frame to be equal to this view's bounds.
-- (void)layoutSubviews;
-
 // Creates a path whose bottom two corners are rounded.
 // Caller takes ownership of the path.
 - (CGPathRef)createRoundedBottomCornersPath:(NSSize)size;
 
 // Updates the path of the layer mask to reflect the current value of
-// roundedBottomCorners_ and fastResizeMode_.
+// roundedBottomCorners_.
 - (void)updateLayerMask;
 @end
 
@@ -38,17 +31,14 @@ const CGFloat kRoundedCornerRadius = 4;
 
 - (id)initWithFrame:(NSRect)frameRect {
   if ((self = [super initWithFrame:frameRect])) {
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableCoreAnimation)) {
-      ScopedCAActionDisabler disabler;
-      base::scoped_nsobject<CALayer> layer([[CALayer alloc] init]);
-      [layer setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
-      [self setLayer:layer];
-      [self setWantsLayer:YES];
+    ScopedCAActionDisabler disabler;
+    base::scoped_nsobject<CALayer> layer([[CALayer alloc] init]);
+    [layer setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
+    [self setLayer:layer];
+    [self setWantsLayer:YES];
 
-      roundedBottomCorners_ = YES;
-      [self updateLayerMask];
-    }
+    roundedBottomCorners_ = YES;
+    [self updateLayerMask];
   }
   return self;
 }
@@ -57,41 +47,12 @@ const CGFloat kRoundedCornerRadius = 4;
   return YES;
 }
 
-- (void)setFastResizeMode:(BOOL)fastResizeMode {
-  if (fastResizeMode_ == fastResizeMode)
-    return;
-
-  fastResizeMode_ = fastResizeMode;
-  [self updateLayerMask];
-
-  // Force a relayout when coming out of fast resize mode.
-  if (!fastResizeMode_)
-    [self layoutSubviews];
-
-  [self setNeedsDisplay:YES];
-}
-
 - (void)setRoundedBottomCorners:(BOOL)roundedBottomCorners {
   if (roundedBottomCorners == roundedBottomCorners_)
     return;
 
   roundedBottomCorners_ = roundedBottomCorners;
   [self updateLayerMask];
-}
-
-- (void)resizeSubviewsWithOldSize:(NSSize)oldSize {
-  [self layoutSubviews];
-}
-
-- (void)drawRect:(NSRect)dirtyRect {
-  // If we are in fast resize mode, our subviews may not completely cover our
-  // bounds, so we fill with white.  If we are not in fast resize mode, we do
-  // not need to draw anything.
-  if (!fastResizeMode_)
-    return;
-
-  [[NSColor whiteColor] set];
-  NSRectFill(dirtyRect);
 }
 
 // Every time the frame's size changes, the layer mask needs to be updated.
@@ -103,28 +64,6 @@ const CGFloat kRoundedCornerRadius = 4;
 @end
 
 @implementation FastResizeView (PrivateMethods)
-
-- (void)layoutSubviews {
-  // There should never be more than one subview.  There can be zero, if we are
-  // in the process of switching tabs or closing the window.  In those cases, no
-  // layout is needed.
-  NSArray* subviews = [self subviews];
-  DCHECK([subviews count] <= 1);
-  if ([subviews count] < 1)
-    return;
-
-  NSView* subview = [subviews objectAtIndex:0];
-  NSRect bounds = [self bounds];
-
-  if (fastResizeMode_) {
-    NSRect frame = [subview frame];
-    frame.origin.x = 0;
-    frame.origin.y = NSHeight(bounds) - NSHeight(frame);
-    [subview setFrame:frame];
-  } else {
-    [subview setFrame:bounds];
-  }
-}
 
 - (CGPathRef)createRoundedBottomCornersPath:(NSSize)size {
   CGMutablePathRef path = CGPathCreateMutable();
@@ -165,7 +104,7 @@ const CGFloat kRoundedCornerRadius = 4;
 }
 
 - (void)updateLayerMask {
-  if (fastResizeMode_ || !roundedBottomCorners_) {
+  if (!roundedBottomCorners_) {
     [self layer].mask = nil;
     layerMask_ = nil;
     return;

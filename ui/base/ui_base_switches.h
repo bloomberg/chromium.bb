@@ -13,7 +13,6 @@
 namespace switches {
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-UI_BASE_EXPORT extern const char kDisableCoreAnimation[];
 UI_BASE_EXPORT extern const char kEnableRemoteCoreAnimation[];
 #endif
 

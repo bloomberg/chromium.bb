@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #include "chrome/common/chrome_switches.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 #include "base/logging.h"
@@ -68,20 +66,6 @@
   [self setNeedsDisplay:YES];
   for (NSView* child in [self subviews])
     [child cr_recursivelySetNeedsDisplay:flag];
-}
-
-- (void)cr_setWantsLayer:(BOOL)wantsLayer {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableCoreAnimation))
-    return;
-
-  // Dynamically removing layers on SnowLeopard will sometimes result in
-  // crashes. Once a view has a layer on SnowLeopard, it is stuck with it.
-  // http://crbug.com/348328
-  if (!wantsLayer && base::mac::IsOSSnowLeopard())
-    return;
-
-  [self setWantsLayer:wantsLayer];
 }
 
 static NSView* g_ancestorBeingDrawnFrom = nil;

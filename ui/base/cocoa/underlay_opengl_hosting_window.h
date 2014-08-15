@@ -10,8 +10,8 @@
 #include "ui/base/ui_base_export.h"
 
 // Common base class for windows that host a OpenGL surface that renders under
-// the window. Contains methods relating to hole punching so that the OpenGL
-// surface is visible through the window.
+// the window. Previously contained methods related to hole punching, now just
+// contains common asserts.
 UI_BASE_EXPORT
 @interface UnderlayOpenGLHostingWindow : NSWindow
 @end

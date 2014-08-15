@@ -16,7 +16,6 @@
 #import "chrome/browser/ui/cocoa/custom_frame_view.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_keybinding_registry_cocoa.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
-#import "chrome/browser/ui/cocoa/nsview_additions.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -366,7 +365,7 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
   if (extension)
     name = extension->name();
   [window setTitle:base::SysUTF8ToNSString(name)];
-  [[window contentView] cr_setWantsLayer:YES];
+  [[window contentView] setWantsLayer:YES];
   if (has_frame_ && has_frame_color_) {
     [base::mac::ObjCCastStrict<ShellCustomFrameNSWindow>(window)
              setColor:gfx::SkColorToSRGBNSColor(active_frame_color_)
