@@ -563,15 +563,6 @@ grit("net_resources") {
   ]
 }
 
-static_library("net_extras") {
-  sources = gypi_values.net_extras_sources
-  configs += [ "//build/config/compiler:wexit_time_destructors" ]
-  deps = [
-    ":net",
-    "//sql:sql",
-  ]
-}
-
 static_library("http_server") {
   sources = [
     "server/http_connection.cc",
@@ -1103,7 +1094,6 @@ test("net_unittests") {
   deps = [
     ":http_server",
     ":net",
-    ":net_extras",
     ":quic_tools",
     ":test_support",
     "//base",
