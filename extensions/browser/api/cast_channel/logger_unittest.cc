@@ -182,6 +182,45 @@ TEST_F(CastChannelLoggerTest, BasicLogging) {
   }
 }
 
+TEST_F(CastChannelLoggerTest, LogSocketReadWrite) {
+  logger_->LogSocketEventWithRv(1, EventType::SOCKET_READ, 50);
+  clock_->Advance(base::TimeDelta::FromMicroseconds(1));
+  logger_->LogSocketEventWithRv(1, EventType::SOCKET_READ, 30);
+  clock_->Advance(base::TimeDelta::FromMicroseconds(1));
+  logger_->LogSocketEventWithRv(1, EventType::SOCKET_READ, -1);
+  clock_->Advance(base::TimeDelta::FromMicroseconds(1));
+  logger_->LogSocketEventWithRv(1, EventType::SOCKET_WRITE, 20);
+  clock_->Advance(base::TimeDelta::FromMicroseconds(1));
+
+  logger_->LogSocketEventWithRv(2, EventType::SOCKET_READ, 100);
+  clock_->Advance(base::TimeDelta::FromMicroseconds(1));
+  logger_->LogSocketEventWithRv(2, EventType::SOCKET_WRITE, 100);
+  clock_->Advance(base::TimeDelta::FromMicroseconds(1));
+  logger_->LogSocketEventWithRv(2, EventType::SOCKET_WRITE, -5);
+  clock_->Advance(base::TimeDelta::FromMicroseconds(1));
+
+  scoped_ptr<Log> log = GetLog();
+  ASSERT_TRUE(log.get() != NULL);
+
+  ASSERT_EQ(2, log->aggregated_socket_event_size());
+  {
+    const AggregatedSocketEvent& aggregated_socket_event =
+        log->aggregated_socket_event(0);
+    EXPECT_EQ(1, aggregated_socket_event.id());
+    EXPECT_EQ(4, aggregated_socket_event.socket_event_size());
+    EXPECT_EQ(80, aggregated_socket_event.bytes_read());
+    EXPECT_EQ(20, aggregated_socket_event.bytes_written());
+  }
+  {
+    const AggregatedSocketEvent& aggregated_socket_event =
+        log->aggregated_socket_event(1);
+    EXPECT_EQ(2, aggregated_socket_event.id());
+    EXPECT_EQ(3, aggregated_socket_event.socket_event_size());
+    EXPECT_EQ(100, aggregated_socket_event.bytes_read());
+    EXPECT_EQ(100, aggregated_socket_event.bytes_written());
+  }
+}
+
 TEST_F(CastChannelLoggerTest, TooManySockets) {
   for (int i = 0; i < kMaxSocketsToLog + 5; i++) {
     logger_->LogSocketEvent(i, EventType::CAST_SOCKET_CREATED);

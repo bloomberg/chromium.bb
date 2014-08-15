@@ -715,8 +715,9 @@ int CastSocket::DoWriteComplete(int result) {
 
 int CastSocket::DoWriteCallback() {
   DCHECK(!write_queue_.empty());
-  write_state_ = WRITE_STATE_WRITE;
-  logger_->LogSocketWriteState(channel_id_, WriteStateToProto(write_state_));
+
+  SetWriteState(WRITE_STATE_WRITE);
+
   WriteRequest& request = write_queue_.front();
   int bytes_consumed = request.io_buffer->BytesConsumed();
   logger_->LogSocketEventForMessage(

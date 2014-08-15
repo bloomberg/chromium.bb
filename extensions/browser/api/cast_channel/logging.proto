@@ -133,6 +133,8 @@ message AggregatedSocketEvent {
   optional int32 endpoint_id = 2;
   optional ChannelAuth channel_auth_type = 3;
   repeated SocketEvent socket_event = 4;
+  optional int64 bytes_read = 5;
+  optional int64 bytes_written = 6;
 }
 
 message Log {
@@ -144,6 +146,4 @@ message Log {
 
   // Number of event log entries evicted by the logger due to size constraints.
   optional int32 num_evicted_socket_events = 3;
-
-  // TODO(imcheng): Add other stats, such as bytes read/written across sockets.
 }

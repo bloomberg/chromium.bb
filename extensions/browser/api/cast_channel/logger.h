@@ -117,18 +117,17 @@ class Logger : public base::RefCounted<Logger> {
   // Records |event| associated with |channel_id|.
   // If the internal map is already logging maximum number of sockets and this
   // is a new socket, the socket with the smallest channel id will be discarded.
-  // Returns a pointer to the Event proto with |event_type| and
-  // timestamp populated.
-  void LogSocketEvent(int channel_id, const proto::SocketEvent& socket_event);
+  // Returns a reference to the AggregatedSocketEvent proto created/modified.
+  proto::AggregatedSocketEvent& LogSocketEvent(
+      int channel_id,
+      const proto::SocketEvent& socket_event);
 
   scoped_ptr<base::TickClock> clock_;
   AggregatedSocketEventLogMap aggregated_socket_events_;
   base::TimeTicks unix_epoch_time_ticks_;
 
-  // Number of socket / event entries evicted by the logger due to size
-  // constraints.
-  int num_evicted_aggregated_socket_events_;
-  int num_evicted_socket_events_;
+  // Log proto holding global statistics.
+  proto::Log log_;
 
   base::ThreadChecker thread_checker_;
 

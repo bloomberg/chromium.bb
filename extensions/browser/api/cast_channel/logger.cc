@@ -108,10 +108,7 @@ Logger::AggregatedSocketEventLog::~AggregatedSocketEventLog() {
 
 Logger::Logger(scoped_ptr<base::TickClock> clock,
                base::TimeTicks unix_epoch_time_ticks)
-    : clock_(clock.Pass()),
-      unix_epoch_time_ticks_(unix_epoch_time_ticks),
-      num_evicted_aggregated_socket_events_(0),
-      num_evicted_socket_events_(0) {
+    : clock_(clock.Pass()), unix_epoch_time_ticks_(unix_epoch_time_ticks) {
   DCHECK(clock_);
 
   // Logger may not be necessarily be created on the IO thread, but logging
@@ -127,11 +124,9 @@ void Logger::LogNewSocketEvent(const CastSocket& cast_socket) {
 
   int channel_id = cast_socket.id();
   SocketEvent event = CreateEvent(proto::CAST_SOCKET_CREATED);
-  LogSocketEvent(channel_id, event);
-
   AggregatedSocketEvent& aggregated_socket_event =
-      aggregated_socket_events_.find(channel_id)
-          ->second->aggregated_socket_event;
+      LogSocketEvent(channel_id, event);
+
   const net::IPAddressNumber& ip = cast_socket.ip_endpoint().address();
   aggregated_socket_event.set_endpoint_id(ip.back());
   aggregated_socket_event.set_channel_auth_type(cast_socket.channel_auth() ==
@@ -166,7 +161,19 @@ void Logger::LogSocketEventWithRv(int channel_id,
   SocketEvent event = CreateEvent(event_type);
   event.set_net_return_value(rv);
 
-  LogSocketEvent(channel_id, event);
+  AggregatedSocketEvent& aggregated_socket_event =
+      LogSocketEvent(channel_id, event);
+
+  if ((event_type == proto::SOCKET_READ || event_type == proto::SOCKET_WRITE) &&
+      rv > 0) {
+    if (event_type == proto::SOCKET_READ) {
+      aggregated_socket_event.set_bytes_read(
+          aggregated_socket_event.bytes_read() + rv);
+    } else {
+      aggregated_socket_event.set_bytes_written(
+          aggregated_socket_event.bytes_written() + rv);
+    }
+  }
 }
 
 void Logger::LogSocketReadyState(int channel_id, proto::ReadyState new_state) {
@@ -250,7 +257,8 @@ SocketEvent Logger::CreateEvent(EventType event_type) {
   return event;
 }
 
-void Logger::LogSocketEvent(int channel_id, const SocketEvent& socket_event) {
+AggregatedSocketEvent& Logger::LogSocketEvent(int channel_id,
+                                              const SocketEvent& socket_event) {
   AggregatedSocketEventLogMap::iterator it =
       aggregated_socket_events_.find(channel_id);
   if (it == aggregated_socket_events_.end()) {
@@ -258,8 +266,11 @@ void Logger::LogSocketEvent(int channel_id, const SocketEvent& socket_event) {
       AggregatedSocketEventLogMap::iterator erase_it =
           aggregated_socket_events_.begin();
 
-      num_evicted_aggregated_socket_events_++;
-      num_evicted_socket_events_ += erase_it->second->socket_events.size();
+      log_.set_num_evicted_aggregated_socket_events(
+          log_.num_evicted_aggregated_socket_events() + 1);
+      log_.set_num_evicted_socket_events(
+          log_.num_evicted_socket_events() +
+          erase_it->second->socket_events.size());
 
       aggregated_socket_events_.erase(erase_it);
     }
@@ -274,7 +285,7 @@ void Logger::LogSocketEvent(int channel_id, const SocketEvent& socket_event) {
   std::deque<proto::SocketEvent>& socket_events = it->second->socket_events;
   if (socket_events.size() >= kMaxEventsPerSocket) {
     socket_events.pop_front();
-    num_evicted_socket_events_++;
+    log_.set_num_evicted_socket_events(log_.num_evicted_socket_events() + 1);
   }
 
   socket_events.push_back(socket_event);
@@ -289,15 +300,17 @@ void Logger::LogSocketEvent(int channel_id, const SocketEvent& socket_event) {
   }
   if (socket_event.has_nss_error_code())
     it->second->last_errors.nss_error_code = socket_event.nss_error_code();
+
+  return it->second->aggregated_socket_event;
 }
 
 scoped_ptr<char[]> Logger::GetLogs(size_t* length) const {
   *length = 0;
 
   Log log;
-  log.set_num_evicted_aggregated_socket_events(
-      num_evicted_aggregated_socket_events_);
-  log.set_num_evicted_socket_events(num_evicted_socket_events_);
+  // Copy "global" values from |log_|. Don't use |log_| directly since this
+  // function is const.
+  log.CopyFrom(log_);
 
   for (AggregatedSocketEventLogMap::const_iterator it =
            aggregated_socket_events_.begin();
@@ -329,8 +342,7 @@ scoped_ptr<char[]> Logger::GetLogs(size_t* length) const {
 
 void Logger::Reset() {
   aggregated_socket_events_.clear();
-  num_evicted_aggregated_socket_events_ = 0;
-  num_evicted_socket_events_ = 0;
+  log_.Clear();
 }
 
 LastErrors Logger::GetLastErrors(int channel_id) const {
