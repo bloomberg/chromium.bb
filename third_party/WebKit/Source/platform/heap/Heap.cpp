@@ -1421,7 +1421,8 @@ void HeapPage<Header>::snapshot(TracedValue* json, ThreadState::SnapshotInfo* in
             continue;
         }
 
-        size_t tag = info->getClassTag(header->gcInfo());
+        const GCInfo* gcinfo = header->gcInfo() ? header->gcInfo() : gcInfo();
+        size_t tag = info->getClassTag(gcinfo);
         size_t age = header->age();
         if (json)
             json->pushInteger(tag);
