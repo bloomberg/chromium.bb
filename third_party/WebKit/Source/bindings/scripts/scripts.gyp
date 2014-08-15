@@ -32,7 +32,6 @@
       ],
       'outputs': [
         '<(bindings_scripts_output_dir)/lextab.py',
-        '<(bindings_scripts_output_dir)/lextab.pyc',
         '<(bindings_scripts_output_dir)/parsetab.pickle',
       ],
       'action': [
