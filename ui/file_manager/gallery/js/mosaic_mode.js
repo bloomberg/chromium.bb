@@ -437,6 +437,7 @@ Mosaic.prototype.onSplice_ = function(event) {
 
     this.tiles_.splice.apply(this.tiles_, [index, 0].concat(newTiles));
     this.initTiles_(newTiles);
+    this.scheduleLayout(Mosaic.LAYOUT_DELAY);
   }
 
   if (this.tiles_.length !== this.dataModel_.length)
@@ -776,7 +777,7 @@ Mosaic.Layout.prototype.getHeight = function() {
  */
 Mosaic.Layout.prototype.getTiles = function() {
   return Array.prototype.concat.apply([],
-      this.columns_.map(function(c) { return c.getTiles() }));
+      this.columns_.map(function(c) { return c.getTiles(); }));
 };
 
 /**
@@ -852,8 +853,8 @@ Mosaic.Layout.prototype.add = function(tile, isLast) {
     this.columns_.push(this.newColumn_);
     this.newColumn_ = null;
 
-    if (this.mode_ === Mosaic.Layout.MODE_FINAL) {
-      this.getLastColumn_().layout();
+    if (this.mode_ === Mosaic.Layout.MODE_FINAL && isFinalColumn) {
+      this.commit_();
       continue;
     }
 
@@ -893,8 +894,6 @@ Mosaic.Layout.prototype.add = function(tile, isLast) {
  * @private
  */
 Mosaic.Layout.prototype.commit_ = function(opt_offsetX, opt_offsetY) {
-  console.assert(this.mode_ !== Mosaic.Layout.MODE_FINAL,
-      'Did not expect final layout');
   for (var i = 0; i !== this.columns_.length; i++) {
     this.columns_[i].layout(opt_offsetX, opt_offsetY);
   }
@@ -925,7 +924,7 @@ Mosaic.Layout.prototype.findHorizontalLayout_ = function() {
   if (tiles.length === 1)
     return null;  // Single tile layout is always the same.
 
-  var tileHeights = tiles.map(function(t) { return t.getMaxContentHeight() });
+  var tileHeights = tiles.map(function(t) { return t.getMaxContentHeight(); });
   var minTileHeight = Math.min.apply(null, tileHeights);
 
   for (var h = minTileHeight; h < this.viewportHeight_; h += minTileHeight) {
