@@ -482,7 +482,8 @@ IN_PROC_BROWSER_TEST_F(PluginTest, DISABLED_Java) {
   TestPlugin("Java.html");
 }
 
-IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(Silverlight)) {
+// Flaky: http://crbug.com/55915
+IN_PROC_BROWSER_TEST_F(PluginTest, DISABLED_Silverlight) {
   TestPlugin("silverlight.html");
 }
 #endif  // defined(OS_WIN)
