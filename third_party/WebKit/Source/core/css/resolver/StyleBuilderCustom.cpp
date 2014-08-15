@@ -1178,20 +1178,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyPerspective(StyleResolverState&
         state.style()->setPerspective(perspectiveValue);
 }
 
-void StyleBuilderFunctions::applyInitialCSSPropertyInternalCallback(StyleResolverState& state)
-{
-}
-
-void StyleBuilderFunctions::applyInheritCSSPropertyInternalCallback(StyleResolverState& state)
-{
-}
-
-void StyleBuilderFunctions::applyValueCSSPropertyInternalCallback(StyleResolverState& state, CSSValue* value)
-{
-    if (value->isPrimitiveValue() && toCSSPrimitiveValue(value)->getValueID() == CSSValueInternalPresence)
-        state.style()->addCallbackSelector(state.currentRule()->selectorList().selectorsText());
-}
-
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitWritingMode(StyleResolverState& state, CSSValue* value)
 {
     if (value->isPrimitiveValue())

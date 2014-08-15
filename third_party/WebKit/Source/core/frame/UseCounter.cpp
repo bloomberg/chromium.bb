@@ -483,7 +483,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyMaskSourceType: return 435;
     case CSSPropertyIsolation: return 436;
     case CSSPropertyObjectPosition: return 437;
-    case CSSPropertyInternalCallback: return 438;
+    // case CSSPropertyInternalCallback: return 438;
     case CSSPropertyShapeImageThreshold: return 439;
     case CSSPropertyColumnFill: return 440;
     case CSSPropertyTextJustify: return 441;

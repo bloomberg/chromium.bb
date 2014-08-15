@@ -32,7 +32,6 @@
 namespace blink {
 
 class StylePropertySet;
-class StyleRule;
 
 struct RuleRange {
     RuleRange(int& firstRuleIndex, int& lastRuleIndex): firstRuleIndex(firstRuleIndex), lastRuleIndex(lastRuleIndex) { }
@@ -41,16 +40,13 @@ struct RuleRange {
 };
 
 struct MatchRanges {
-    MatchRanges() : firstUARule(-1), lastUARule(-1), firstAuthorRule(-1), lastAuthorRule(-1), firstUserRule(-1), lastUserRule(-1) { }
+    MatchRanges() : firstUARule(-1), lastUARule(-1), firstAuthorRule(-1), lastAuthorRule(-1) { }
     int firstUARule;
     int lastUARule;
     int firstAuthorRule;
     int lastAuthorRule;
-    int firstUserRule;
-    int lastUserRule;
     RuleRange UARuleRange() { return RuleRange(firstUARule, lastUARule); }
     RuleRange authorRuleRange() { return RuleRange(firstAuthorRule, lastAuthorRule); }
-    RuleRange userRuleRange() { return RuleRange(firstUserRule, lastUserRule); }
 };
 
 struct MatchedProperties {
@@ -84,11 +80,10 @@ class MatchResult {
 public:
     MatchResult() : isCacheable(true) { }
     WillBeHeapVector<MatchedProperties, 64> matchedProperties;
-    WillBeHeapVector<RawPtrWillBeMember<StyleRule>, 64> matchedRules;
     MatchRanges ranges;
     bool isCacheable;
 
-    void addMatchedProperties(const StylePropertySet* properties, StyleRule* = 0, unsigned linkMatchType = SelectorChecker::MatchAll, PropertyWhitelistType = PropertyWhitelistNone);
+    void addMatchedProperties(const StylePropertySet* properties, unsigned linkMatchType = SelectorChecker::MatchAll, PropertyWhitelistType = PropertyWhitelistNone);
 };
 
 inline bool operator==(const MatchRanges& a, const MatchRanges& b)
@@ -96,9 +91,7 @@ inline bool operator==(const MatchRanges& a, const MatchRanges& b)
     return a.firstUARule == b.firstUARule
         && a.lastUARule == b.lastUARule
         && a.firstAuthorRule == b.firstAuthorRule
-        && a.lastAuthorRule == b.lastAuthorRule
-        && a.firstUserRule == b.firstUserRule
-        && a.lastUserRule == b.lastUserRule;
+        && a.lastAuthorRule == b.lastAuthorRule;
 }
 
 inline bool operator!=(const MatchRanges& a, const MatchRanges& b)

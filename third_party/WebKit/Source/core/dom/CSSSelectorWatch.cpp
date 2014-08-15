@@ -143,8 +143,7 @@ void CSSSelectorWatch::watchCSSSelectors(const Vector<String>& selectors)
     m_watchedCallbackSelectors.clear();
     BisonCSSParser parser(CSSParserContext(UASheetMode, 0));
 
-    const CSSProperty callbackProperty(CSSPropertyInternalCallback, CSSPrimitiveValue::createIdentifier(CSSValueInternalPresence));
-    const RefPtrWillBeRawPtr<StylePropertySet> callbackPropertySet = ImmutableStylePropertySet::create(&callbackProperty, 1, UASheetMode);
+    const RefPtrWillBeRawPtr<StylePropertySet> callbackPropertySet = ImmutableStylePropertySet::create(nullptr, 0, UASheetMode);
 
     CSSSelectorList selectorList;
     for (unsigned i = 0; i < selectors.size(); ++i) {

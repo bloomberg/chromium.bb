@@ -39,7 +39,6 @@ StyleResolverState::StyleResolverState(Document& document, Element* element, Ren
     , m_applyPropertyToVisitedLinkStyle(false)
     , m_lineHeightValue(nullptr)
     , m_styleMap(*this, m_elementStyleResources)
-    , m_currentRule(nullptr)
 {
     if (!parentStyle && m_elementContext.parentNode())
         m_parentStyle = m_elementContext.parentNode()->renderStyle();

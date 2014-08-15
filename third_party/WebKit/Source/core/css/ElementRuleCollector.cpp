@@ -253,7 +253,7 @@ void ElementRuleCollector::sortAndTransferMatchedRules()
         const RuleData* ruleData = matchedRules[i].ruleData();
         if (m_style && ruleData->containsUncommonAttributeSelector())
             m_style->setUnique();
-        m_result.addMatchedProperties(&ruleData->rule()->properties(), ruleData->rule(), ruleData->linkMatchType(), ruleData->propertyWhitelistType(m_matchingUARules));
+        m_result.addMatchedProperties(&ruleData->rule()->properties(), ruleData->linkMatchType(), ruleData->propertyWhitelistType(m_matchingUARules));
     }
 }
 

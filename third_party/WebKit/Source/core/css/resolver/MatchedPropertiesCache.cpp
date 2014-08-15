@@ -191,9 +191,6 @@ bool MatchedPropertiesCache::isCacheable(const Element* element, const RenderSty
         return false;
     if (style->hasCurrentColor())
         return false;
-    // CSSPropertyInternalCallback sets the rule's selector name into the RenderStyle, and that's not recalculated if the RenderStyle is loaded from the cache, so don't cache it.
-    if (!style->callbackSelectors().isEmpty())
-        return false;
     // The cache assumes static knowledge about which properties are inherited.
     if (parentStyle->hasExplicitlyInheritedProperties())
         return false;

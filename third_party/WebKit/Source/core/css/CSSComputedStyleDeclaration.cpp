@@ -2689,9 +2689,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         case CSSPropertyBackgroundRepeatX:
         case CSSPropertyBackgroundRepeatY:
             break;
-        case CSSPropertyInternalCallback:
-            // This property is hidden from the web.
-            return nullptr;
 
         /* Unimplemented CSS 3 properties (including CSS3 shorthand properties) */
         case CSSPropertyWebkitTextEmphasis:

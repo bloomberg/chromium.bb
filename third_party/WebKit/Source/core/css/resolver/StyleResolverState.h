@@ -76,9 +76,6 @@ public:
     const RenderStyle* parentStyle() const { return m_parentStyle.get(); }
     RenderStyle* parentStyle() { return m_parentStyle.get(); }
 
-    void setCurrentRule(StyleRule* currentRule) { m_currentRule = currentRule; }
-    const StyleRule* currentRule() const { return m_currentRule; }
-
     // FIXME: These are effectively side-channel "out parameters" for the various
     // map functions. When we map from CSS to style objects we use this state object
     // to track various meta-data about that mapping (e.g. if it's cache-able).
@@ -163,8 +160,6 @@ private:
     // a back-pointer to this object.
     CSSToStyleMap m_styleMap;
     Vector<AtomicString> m_contentAttrValues;
-
-    RawPtrWillBeMember<StyleRule> m_currentRule;
 };
 
 } // namespace blink

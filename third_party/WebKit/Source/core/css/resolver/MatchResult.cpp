@@ -48,14 +48,13 @@ void MatchedProperties::trace(Visitor* visitor)
     visitor->trace(properties);
 }
 
-void MatchResult::addMatchedProperties(const StylePropertySet* properties, StyleRule* rule, unsigned linkMatchType, PropertyWhitelistType propertyWhitelistType)
+void MatchResult::addMatchedProperties(const StylePropertySet* properties, unsigned linkMatchType, PropertyWhitelistType propertyWhitelistType)
 {
     matchedProperties.grow(matchedProperties.size() + 1);
     MatchedProperties& newProperties = matchedProperties.last();
     newProperties.properties = const_cast<StylePropertySet*>(properties);
     newProperties.m_types.linkMatchType = linkMatchType;
     newProperties.m_types.whitelistType = propertyWhitelistType;
-    matchedRules.append(rule);
 }
 
 } // namespace blink

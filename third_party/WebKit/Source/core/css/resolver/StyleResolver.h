@@ -231,8 +231,6 @@ private:
     void matchAuthorRulesForShadowHost(Element*, ElementRuleCollector&, bool includeEmptyRules, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>& resolvers, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>& resolversInShadowTree);
     void matchAllRules(StyleResolverState&, ElementRuleCollector&, bool includeSMILProperties);
     void matchUARules(ElementRuleCollector&);
-    // FIXME: watched selectors should be implemented using injected author stylesheets: http://crbug.com/316960
-    void matchWatchSelectorRules(ElementRuleCollector&);
     void collectFeatures();
     void resetRuleFeatures();
 
@@ -240,6 +238,7 @@ private:
 
     void applyMatchedProperties(StyleResolverState&, const MatchResult&);
     bool applyAnimatedProperties(StyleResolverState&, Element* animatingElement);
+    void applyCallbackSelectors(StyleResolverState&);
 
     void resolveScopedStyles(const Element*, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>&);
     void collectScopedResolversForHostedShadowTrees(const Element*, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>&);
@@ -257,7 +256,7 @@ private:
     template <StyleApplicationPass pass>
     void applyMatchedProperties(StyleResolverState&, const MatchResult&, bool important, int startIndex, int endIndex, bool inheritedOnly);
     template <StyleApplicationPass pass>
-    void applyProperties(StyleResolverState&, const StylePropertySet* properties, StyleRule*, bool isImportant, bool inheritedOnly, PropertyWhitelistType = PropertyWhitelistNone);
+    void applyProperties(StyleResolverState&, const StylePropertySet* properties, bool isImportant, bool inheritedOnly, PropertyWhitelistType = PropertyWhitelistNone);
     template <StyleApplicationPass pass>
     void applyAnimatedProperties(StyleResolverState&, const WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >&);
     template <StyleResolver::StyleApplicationPass pass>
@@ -299,8 +298,6 @@ private:
     RuleFeatureSet m_features;
     OwnPtrWillBeMember<RuleSet> m_siblingRuleSet;
     OwnPtrWillBeMember<RuleSet> m_uncommonAttributeRuleSet;
-
-    // FIXME: watched selectors should be implemented using injected author stylesheets: http://crbug.com/316960
     OwnPtrWillBeMember<RuleSet> m_watchedSelectorsRules;
     TreeBoundaryCrossingRules m_treeBoundaryCrossingRules;
 

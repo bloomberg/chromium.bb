@@ -440,21 +440,6 @@ void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& col
     collector.sortAndTransferMatchedRules();
 }
 
-void StyleResolver::matchWatchSelectorRules(ElementRuleCollector& collector)
-{
-    if (!m_watchedSelectorsRules)
-        return;
-
-    collector.clearMatchedRules();
-    collector.matchedResult().ranges.lastUserRule = collector.matchedResult().matchedProperties.size() - 1;
-
-    MatchRequest matchRequest(m_watchedSelectorsRules.get());
-    RuleRange ruleRange = collector.matchedResult().ranges.userRuleRange();
-    collector.collectMatchingRules(matchRequest, ruleRange);
-
-    collector.sortAndTransferMatchedRules();
-}
-
 void StyleResolver::matchUARules(ElementRuleCollector& collector)
 {
     collector.setMatchingUARules(true);
@@ -475,8 +460,6 @@ void StyleResolver::matchUARules(ElementRuleCollector& collector)
         matchUARules(collector, defaultStyleSheets.defaultTransitionStyle());
 
     collector.setMatchingUARules(false);
-
-    matchWatchSelectorRules(collector);
 }
 
 void StyleResolver::matchUARules(ElementRuleCollector& collector, RuleSet* rules)
@@ -653,6 +636,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
         matchAllRules(state, collector, matchingBehavior != MatchAllRulesExcludingSMIL);
 
         applyMatchedProperties(state, collector.matchedResult());
+        applyCallbackSelectors(state);
 
         addContentAttrValuesToFeatures(state.contentAttrValues(), m_features);
     }
@@ -823,6 +807,7 @@ bool StyleResolver::pseudoStyleForElementInternal(Element& element, const Pseudo
         state.style()->setStyleType(pseudoStyleRequest.pseudoId);
 
         applyMatchedProperties(state, collector.matchedResult());
+        applyCallbackSelectors(state);
 
         addContentAttrValuesToFeatures(state.contentAttrValues(), m_features);
     }
@@ -1346,10 +1331,8 @@ void StyleResolver::applyAllProperty(StyleResolverState& state, CSSValue* allVal
 }
 
 template <StyleResolver::StyleApplicationPass pass>
-void StyleResolver::applyProperties(StyleResolverState& state, const StylePropertySet* properties, StyleRule* rule, bool isImportant, bool inheritedOnly, PropertyWhitelistType propertyWhitelistType)
+void StyleResolver::applyProperties(StyleResolverState& state, const StylePropertySet* properties, bool isImportant, bool inheritedOnly, PropertyWhitelistType propertyWhitelistType)
 {
-    state.setCurrentRule(rule);
-
     unsigned propertyCount = properties->propertyCount();
     for (unsigned i = 0; i < propertyCount; ++i) {
         StylePropertySet::PropertyReference current = properties->propertyAt(i);
@@ -1397,7 +1380,7 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
             state.setApplyPropertyToRegularStyle(linkMatchType & SelectorChecker::MatchLink);
             state.setApplyPropertyToVisitedLinkStyle(linkMatchType & SelectorChecker::MatchVisited);
 
-            applyProperties<pass>(state, matchedProperties.properties.get(), matchResult.matchedRules[i], isImportant, inheritedOnly, static_cast<PropertyWhitelistType>(matchedProperties.m_types.whitelistType));
+            applyProperties<pass>(state, matchedProperties.properties.get(), isImportant, inheritedOnly, static_cast<PropertyWhitelistType>(matchedProperties.m_types.whitelistType));
         }
         state.setApplyPropertyToRegularStyle(true);
         state.setApplyPropertyToVisitedLinkStyle(false);
@@ -1405,7 +1388,7 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     }
     for (int i = startIndex; i <= endIndex; ++i) {
         const MatchedProperties& matchedProperties = matchResult.matchedProperties[i];
-        applyProperties<pass>(state, matchedProperties.properties.get(), matchResult.matchedRules[i], isImportant, inheritedOnly, static_cast<PropertyWhitelistType>(matchedProperties.m_types.whitelistType));
+        applyProperties<pass>(state, matchedProperties.properties.get(), isImportant, inheritedOnly, static_cast<PropertyWhitelistType>(matchedProperties.m_types.whitelistType));
     }
 }
 
@@ -1465,7 +1448,6 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     state.setLineHeightValue(0);
     applyMatchedProperties<HighPriorityProperties>(state, matchResult, false, 0, matchResult.matchedProperties.size() - 1, applyInheritedOnly);
     applyMatchedProperties<HighPriorityProperties>(state, matchResult, true, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
-    applyMatchedProperties<HighPriorityProperties>(state, matchResult, true, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
     applyMatchedProperties<HighPriorityProperties>(state, matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
 
     if (UNLIKELY(isSVGForeignObjectElement(element))) {
@@ -1504,7 +1486,6 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     // Now do the author and user normal priority properties and all the !important properties.
     applyMatchedProperties<LowPriorityProperties>(state, matchResult, false, matchResult.ranges.lastUARule + 1, matchResult.matchedProperties.size() - 1, applyInheritedOnly);
     applyMatchedProperties<LowPriorityProperties>(state, matchResult, true, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
-    applyMatchedProperties<LowPriorityProperties>(state, matchResult, true, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
     applyMatchedProperties<LowPriorityProperties>(state, matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
 
     loadPendingResources(state);
@@ -1515,6 +1496,26 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     }
 
     ASSERT(!state.fontBuilder().fontDirty());
+}
+
+void StyleResolver::applyCallbackSelectors(StyleResolverState& state)
+{
+    if (!m_watchedSelectorsRules)
+        return;
+
+    ElementRuleCollector collector(state.elementContext(), m_selectorFilter, state.style());
+    collector.setMode(SelectorChecker::CollectingStyleRules);
+
+    MatchRequest matchRequest(m_watchedSelectorsRules.get(), true);
+    RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
+    collector.collectMatchingRules(matchRequest, ruleRange);
+    collector.sortAndTransferMatchedRules();
+
+    RefPtrWillBeRawPtr<StyleRuleList> rules = collector.matchedStyleRuleList();
+    if (!rules)
+        return;
+    for (size_t i = 0; i < rules->m_list.size(); i++)
+        state.style()->addCallbackSelector(rules->m_list[i]->selectorList().selectorsText());
 }
 
 CSSPropertyValue::CSSPropertyValue(CSSPropertyID id, const StylePropertySet& propertySet)

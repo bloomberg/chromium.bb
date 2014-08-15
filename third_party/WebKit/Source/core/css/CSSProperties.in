@@ -391,7 +391,6 @@ z-index animatable, type_name=int, custom_all
 -internal-marquee-repetition type_name=int, name_for_methods=MarqueeLoopCount, custom_value
 -internal-marquee-speed name_for_methods=MarqueeSpeed, converter=convertNumberOrPercentage
 -internal-marquee-style name_for_methods=MarqueeBehavior
--internal-callback custom_all
 
 // Non-standard direction aware properties
 
