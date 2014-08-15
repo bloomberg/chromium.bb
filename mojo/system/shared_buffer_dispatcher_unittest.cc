@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/embedder/platform_shared_buffer.h"
+#include "mojo/embedder/simple_platform_support.h"
 #include "mojo/system/dispatcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -39,8 +40,21 @@ void RevalidateCreateOptions(
   EXPECT_EQ(validated_options.flags, revalidated_options.flags);
 }
 
+class SharedBufferDispatcherTest : public testing::Test {
+ public:
+  SharedBufferDispatcherTest() {}
+  virtual ~SharedBufferDispatcherTest() {}
+
+  embedder::PlatformSupport* platform_support() { return &platform_support_; }
+
+ private:
+  embedder::SimplePlatformSupport platform_support_;
+
+  DISALLOW_COPY_AND_ASSIGN(SharedBufferDispatcherTest);
+};
+
 // Tests valid inputs to |ValidateCreateOptions()|.
-TEST(SharedBufferDispatcherTest, ValidateCreateOptionsValid) {
+TEST_F(SharedBufferDispatcherTest, ValidateCreateOptionsValid) {
   // Default options.
   {
     MojoCreateSharedBufferOptions validated_options = {};
@@ -73,7 +87,7 @@ TEST(SharedBufferDispatcherTest, ValidateCreateOptionsValid) {
   }
 }
 
-TEST(SharedBufferDispatcherTest, ValidateCreateOptionsInvalid) {
+TEST_F(SharedBufferDispatcherTest, ValidateCreateOptionsInvalid) {
   // Invalid |struct_size|.
   {
     MojoCreateSharedBufferOptions options = {
@@ -99,12 +113,14 @@ TEST(SharedBufferDispatcherTest, ValidateCreateOptionsInvalid) {
   }
 }
 
-TEST(SharedBufferDispatcherTest, CreateAndMapBuffer) {
+TEST_F(SharedBufferDispatcherTest, CreateAndMapBuffer) {
   scoped_refptr<SharedBufferDispatcher> dispatcher;
-  EXPECT_EQ(
-      MOJO_RESULT_OK,
-      SharedBufferDispatcher::Create(
-          SharedBufferDispatcher::kDefaultCreateOptions, 100, &dispatcher));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            SharedBufferDispatcher::Create(
+                platform_support(),
+                SharedBufferDispatcher::kDefaultCreateOptions,
+                100,
+                &dispatcher));
   ASSERT_TRUE(dispatcher);
   EXPECT_EQ(Dispatcher::kTypeSharedBuffer, dispatcher->GetType());
 
@@ -136,12 +152,14 @@ TEST(SharedBufferDispatcherTest, CreateAndMapBuffer) {
   EXPECT_EQ('y', static_cast<char*>(mapping1->GetBase())[51]);
 }
 
-TEST(SharedBufferDispatcher, DuplicateBufferHandle) {
+TEST_F(SharedBufferDispatcherTest, DuplicateBufferHandle) {
   scoped_refptr<SharedBufferDispatcher> dispatcher1;
-  EXPECT_EQ(
-      MOJO_RESULT_OK,
-      SharedBufferDispatcher::Create(
-          SharedBufferDispatcher::kDefaultCreateOptions, 100, &dispatcher1));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            SharedBufferDispatcher::Create(
+                platform_support(),
+                SharedBufferDispatcher::kDefaultCreateOptions,
+                100,
+                &dispatcher1));
 
   // Map and write something.
   scoped_ptr<embedder::PlatformSharedBufferMapping> mapping;
@@ -170,12 +188,14 @@ TEST(SharedBufferDispatcher, DuplicateBufferHandle) {
   EXPECT_EQ(MOJO_RESULT_OK, dispatcher2->Close());
 }
 
-TEST(SharedBufferDispatcherTest, DuplicateBufferHandleOptionsValid) {
+TEST_F(SharedBufferDispatcherTest, DuplicateBufferHandleOptionsValid) {
   scoped_refptr<SharedBufferDispatcher> dispatcher1;
-  EXPECT_EQ(
-      MOJO_RESULT_OK,
-      SharedBufferDispatcher::Create(
-          SharedBufferDispatcher::kDefaultCreateOptions, 100, &dispatcher1));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            SharedBufferDispatcher::Create(
+                platform_support(),
+                SharedBufferDispatcher::kDefaultCreateOptions,
+                100,
+                &dispatcher1));
 
   MojoDuplicateBufferHandleOptions options[] = {
       {sizeof(MojoDuplicateBufferHandleOptions),
@@ -194,12 +214,14 @@ TEST(SharedBufferDispatcherTest, DuplicateBufferHandleOptionsValid) {
   EXPECT_EQ(MOJO_RESULT_OK, dispatcher1->Close());
 }
 
-TEST(SharedBufferDispatcherTest, DuplicateBufferHandleOptionsInvalid) {
+TEST_F(SharedBufferDispatcherTest, DuplicateBufferHandleOptionsInvalid) {
   scoped_refptr<SharedBufferDispatcher> dispatcher1;
-  EXPECT_EQ(
-      MOJO_RESULT_OK,
-      SharedBufferDispatcher::Create(
-          SharedBufferDispatcher::kDefaultCreateOptions, 100, &dispatcher1));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            SharedBufferDispatcher::Create(
+                platform_support(),
+                SharedBufferDispatcher::kDefaultCreateOptions,
+                100,
+                &dispatcher1));
 
   // Invalid |struct_size|.
   {
@@ -226,11 +248,12 @@ TEST(SharedBufferDispatcherTest, DuplicateBufferHandleOptionsInvalid) {
   EXPECT_EQ(MOJO_RESULT_OK, dispatcher1->Close());
 }
 
-TEST(SharedBufferDispatcherTest, CreateInvalidNumBytes) {
+TEST_F(SharedBufferDispatcherTest, CreateInvalidNumBytes) {
   // Size too big.
   scoped_refptr<SharedBufferDispatcher> dispatcher;
   EXPECT_EQ(MOJO_RESULT_RESOURCE_EXHAUSTED,
             SharedBufferDispatcher::Create(
+                platform_support(),
                 SharedBufferDispatcher::kDefaultCreateOptions,
                 std::numeric_limits<uint64_t>::max(),
                 &dispatcher));
@@ -239,16 +262,21 @@ TEST(SharedBufferDispatcherTest, CreateInvalidNumBytes) {
   // Zero size.
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             SharedBufferDispatcher::Create(
-                SharedBufferDispatcher::kDefaultCreateOptions, 0, &dispatcher));
+                platform_support(),
+                SharedBufferDispatcher::kDefaultCreateOptions,
+                0,
+                &dispatcher));
   EXPECT_FALSE(dispatcher);
 }
 
-TEST(SharedBufferDispatcherTest, MapBufferInvalidArguments) {
+TEST_F(SharedBufferDispatcherTest, MapBufferInvalidArguments) {
   scoped_refptr<SharedBufferDispatcher> dispatcher;
-  EXPECT_EQ(
-      MOJO_RESULT_OK,
-      SharedBufferDispatcher::Create(
-          SharedBufferDispatcher::kDefaultCreateOptions, 100, &dispatcher));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            SharedBufferDispatcher::Create(
+                platform_support(),
+                SharedBufferDispatcher::kDefaultCreateOptions,
+                100,
+                &dispatcher));
 
   scoped_ptr<embedder::PlatformSharedBufferMapping> mapping;
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,

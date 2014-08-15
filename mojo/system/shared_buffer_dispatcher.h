@@ -12,6 +12,11 @@
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {
+
+namespace embedder {
+class PlatformSupport;
+}
+
 namespace system {
 
 // TODO(vtl): We derive from SimpleDispatcher, even though we don't currently
@@ -36,6 +41,7 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher : public SimpleDispatcher {
   // Static factory method: |validated_options| must be validated (obviously).
   // On failure, |*result| will be left as-is.
   static MojoResult Create(
+      embedder::PlatformSupport* platform_support,
       const MojoCreateSharedBufferOptions& validated_options,
       uint64_t num_bytes,
       scoped_refptr<SharedBufferDispatcher>* result);

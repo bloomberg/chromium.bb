@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "mojo/embedder/platform_shared_buffer.h"
+#include "mojo/embedder/simple_platform_support.h"  // TODO(vtl): Remove this.
 #include "mojo/public/c/system/macros.h"
 #include "mojo/system/constants.h"
 #include "mojo/system/data_pipe.h"
@@ -462,9 +463,12 @@ MojoResult Core::CreateSharedBuffer(
   if (result != MOJO_RESULT_OK)
     return result;
 
+  // TODO(vtl): |Core| should have a |PlatformSupport| passed in at creation
+  // time, and we should use that instead.
+  embedder::SimplePlatformSupport platform_support;
   scoped_refptr<SharedBufferDispatcher> dispatcher;
-  result =
-      SharedBufferDispatcher::Create(validated_options, num_bytes, &dispatcher);
+  result = SharedBufferDispatcher::Create(
+      &platform_support, validated_options, num_bytes, &dispatcher);
   if (result != MOJO_RESULT_OK) {
     DCHECK(!dispatcher);
     return result;

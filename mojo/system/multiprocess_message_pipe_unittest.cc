@@ -23,6 +23,7 @@
 #include "mojo/common/test/test_utils.h"
 #include "mojo/embedder/platform_shared_buffer.h"
 #include "mojo/embedder/scoped_platform_handle.h"
+#include "mojo/embedder/simple_platform_support.h"
 #include "mojo/system/channel.h"
 #include "mojo/system/dispatcher.h"
 #include "mojo/system/local_message_pipe_endpoint.h"
@@ -427,11 +428,14 @@ TEST_F(MultiprocessMessagePipeTest, MAYBE_SharedBufferPassing) {
   Init(mp);
 
   // Make a shared buffer.
+  embedder::SimplePlatformSupport platform_support;
   scoped_refptr<SharedBufferDispatcher> dispatcher;
-  EXPECT_EQ(
-      MOJO_RESULT_OK,
-      SharedBufferDispatcher::Create(
-          SharedBufferDispatcher::kDefaultCreateOptions, 100, &dispatcher));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            SharedBufferDispatcher::Create(
+                &platform_support,
+                SharedBufferDispatcher::kDefaultCreateOptions,
+                100,
+                &dispatcher));
   ASSERT_TRUE(dispatcher);
 
   // Make a mapping.

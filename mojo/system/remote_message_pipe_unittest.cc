@@ -23,6 +23,7 @@
 #include "mojo/embedder/platform_channel_pair.h"
 #include "mojo/embedder/platform_shared_buffer.h"
 #include "mojo/embedder/scoped_platform_handle.h"
+#include "mojo/embedder/simple_platform_support.h"
 #include "mojo/system/channel.h"
 #include "mojo/system/local_message_pipe_endpoint.h"
 #include "mojo/system/message_pipe.h"
@@ -701,11 +702,14 @@ TEST_F(RemoteMessagePipeTest, MAYBE_SharedBufferPassing) {
   ConnectMessagePipes(mp0, mp1);
 
   // We'll try to pass this dispatcher.
+  embedder::SimplePlatformSupport platform_support;
   scoped_refptr<SharedBufferDispatcher> dispatcher;
-  EXPECT_EQ(
-      MOJO_RESULT_OK,
-      SharedBufferDispatcher::Create(
-          SharedBufferDispatcher::kDefaultCreateOptions, 100, &dispatcher));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            SharedBufferDispatcher::Create(
+                &platform_support,
+                SharedBufferDispatcher::kDefaultCreateOptions,
+                100,
+                &dispatcher));
   ASSERT_TRUE(dispatcher);
 
   // Make a mapping.

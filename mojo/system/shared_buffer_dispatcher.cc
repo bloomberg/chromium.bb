@@ -8,7 +8,8 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "mojo/embedder/simple_platform_shared_buffer.h"
+#include "mojo/embedder/platform_support.h"
+#include "mojo/embedder/simple_platform_shared_buffer.h"  // TODO(vtl): Remove.
 #include "mojo/public/c/system/macros.h"
 #include "mojo/system/constants.h"
 #include "mojo/system/memory.h"
@@ -62,6 +63,7 @@ MojoResult SharedBufferDispatcher::ValidateCreateOptions(
 
 // static
 MojoResult SharedBufferDispatcher::Create(
+    embedder::PlatformSupport* platform_support,
     const MojoCreateSharedBufferOptions& /*validated_options*/,
     uint64_t num_bytes,
     scoped_refptr<SharedBufferDispatcher>* result) {
@@ -70,10 +72,8 @@ MojoResult SharedBufferDispatcher::Create(
   if (num_bytes > kMaxSharedMemoryNumBytes)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
-  // TODO(vtl): Call out to "platform support" for this.
   scoped_refptr<embedder::PlatformSharedBuffer> shared_buffer(
-      embedder::SimplePlatformSharedBuffer::Create(
-          static_cast<size_t>(num_bytes)));
+      platform_support->CreateSharedBuffer(static_cast<size_t>(num_bytes)));
   if (!shared_buffer)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
@@ -121,6 +121,9 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
 
   // Wrapping |platform_handle| in a |ScopedPlatformHandle| means that it'll be
   // closed even if creation fails.
+  // TODO(vtl): This is obviously wrong -- but we need to have a
+  // |PlatformSupport| plumbed through (probably via the |Channel|), and use its
+  // |CreateSharedBufferFromHandle()|.
   scoped_refptr<embedder::PlatformSharedBuffer> shared_buffer(
       embedder::SimplePlatformSharedBuffer::CreateFromPlatformHandle(
           num_bytes, embedder::ScopedPlatformHandle(platform_handle)));
