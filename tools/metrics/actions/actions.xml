@@ -2460,6 +2460,18 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="DomDistiller_DistilledPageOpened">
+  <owner>smaslo@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <description>User opens a distilled page.</description>
+</action>
+
+<action name="DomDistiller_DistilledPagePrefsOpened">
+  <owner>smaslo@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <description>User opens distilled page preferences.</description>
+</action>
+
 <action name="Duplicate">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
