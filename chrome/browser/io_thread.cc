@@ -1260,9 +1260,13 @@ net::QuicTagVector IOThread::GetQuicConnectionOptions(
   }
 
   VariationParameters::const_iterator it =
-      quic_trial_params.find("congestion_options");
-  if (it == quic_trial_params.end())
-    return net::QuicTagVector();
+      quic_trial_params.find("connection_options");
+  if (it == quic_trial_params.end()) {
+    // TODO(rch): remove support for deprecated congestion_options.
+    it = quic_trial_params.find("congestion_options");
+    if (it == quic_trial_params.end())
+      return net::QuicTagVector();
+  }
 
   return ParseQuicConnectionOptions(it->second);
 }

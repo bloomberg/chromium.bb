@@ -285,6 +285,22 @@ TEST_F(IOThreadTest, QuicConnectionOptionsFromCommandLine) {
 
 TEST_F(IOThreadTest, QuicConnectionOptionsFromFieldTrialParams) {
   field_trial_group_ = "Enabled";
+  field_trial_params_["connection_options"] = "PACE,TIME,TBBR,REJ";
+
+  ConfigureQuicGlobals();
+  net::HttpNetworkSession::Params params;
+  InitializeNetworkSessionParams(&params);
+
+  net::QuicTagVector options;
+  options.push_back(net::kPACE);
+  options.push_back(net::kTIME);
+  options.push_back(net::kTBBR);
+  options.push_back(net::kREJ);
+  EXPECT_EQ(options, params.quic_connection_options);
+}
+
+TEST_F(IOThreadTest, QuicConnectionOptionsFromDeprecatedFieldTrialParams) {
+  field_trial_group_ = "Enabled";
   field_trial_params_["congestion_options"] = "PACE,TIME,TBBR,REJ";
 
   ConfigureQuicGlobals();
