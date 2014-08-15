@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cronet/android/org_chromium_net_UrlRequest.h"
+#include "components/cronet/android/chromium_url_request.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/macros.h"
 #include "components/cronet/android/url_request_adapter.h"
 #include "components/cronet/android/url_request_context_adapter.h"
-#include "jni/UrlRequest_jni.h"
+#include "jni/ChromiumUrlRequest_jni.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
@@ -63,7 +63,7 @@ class JniURLRequestAdapterDelegate
 
   virtual void OnResponseStarted(URLRequestAdapter* request) OVERRIDE {
     JNIEnv* env = base::android::AttachCurrentThread();
-    cronet::Java_UrlRequest_onResponseStarted(env, owner_);
+    cronet::Java_ChromiumUrlRequest_onResponseStarted(env, owner_);
   }
 
   virtual void OnBytesRead(URLRequestAdapter* request) OVERRIDE {
@@ -72,13 +72,14 @@ class JniURLRequestAdapterDelegate
       JNIEnv* env = base::android::AttachCurrentThread();
       base::android::ScopedJavaLocalRef<jobject> java_buffer(
           env, env->NewDirectByteBuffer(request->Data(), bytes_read));
-      cronet::Java_UrlRequest_onBytesRead(env, owner_, java_buffer.obj());
+      cronet::Java_ChromiumUrlRequest_onBytesRead(
+          env, owner_, java_buffer.obj());
     }
   }
 
   virtual void OnRequestFinished(URLRequestAdapter* request) OVERRIDE {
     JNIEnv* env = base::android::AttachCurrentThread();
-    cronet::Java_UrlRequest_finish(env, owner_);
+    cronet::Java_ChromiumUrlRequest_finish(env, owner_);
   }
 
   virtual int ReadFromUploadChannel(net::IOBuffer* buf,
@@ -86,7 +87,7 @@ class JniURLRequestAdapterDelegate
     JNIEnv* env = base::android::AttachCurrentThread();
     base::android::ScopedJavaLocalRef<jobject> java_buffer(
         env, env->NewDirectByteBuffer(buf->data(), buf_length));
-    jint bytes_read = cronet::Java_UrlRequest_readFromUploadChannel(
+    jint bytes_read = cronet::Java_ChromiumUrlRequest_readFromUploadChannel(
         env, owner_, java_buffer.obj());
     return bytes_read;
   }
@@ -106,7 +107,9 @@ class JniURLRequestAdapterDelegate
 }  // namespace
 
 // Explicitly register static JNI functions.
-bool UrlRequestRegisterJni(JNIEnv* env) { return RegisterNativesImpl(env); }
+bool ChromiumUrlRequestRegisterJni(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
 
 static jlong CreateRequestAdapter(JNIEnv* env,
                                   jobject object,
@@ -195,7 +198,6 @@ static void SetUploadChannel(JNIEnv* env,
 
   request->SetUploadChannel(env, content_length);
 }
-
 
 /* synchronized */
 static void Start(JNIEnv* env, jobject object, jlong urlRequestAdapter) {
@@ -353,7 +355,7 @@ static void GetAllHeaders(JNIEnv* env,
         ConvertUTF8ToJavaString(env, header_name);
     ScopedJavaLocalRef<jstring> value =
         ConvertUTF8ToJavaString(env, header_value);
-    Java_UrlRequest_onAppendResponseHeader(
+    Java_ChromiumUrlRequest_onAppendResponseHeader(
         env, object, headersMap, name.Release(), value.Release());
   }
 
@@ -361,7 +363,7 @@ static void GetAllHeaders(JNIEnv* env,
   // null key; in HTTP's case, this maps to the HTTP status line.
   ScopedJavaLocalRef<jstring> status_line =
       ConvertUTF8ToJavaString(env, headers->GetStatusLine());
-  Java_UrlRequest_onAppendResponseHeader(
+  Java_ChromiumUrlRequest_onAppendResponseHeader(
       env, object, headersMap, NULL, status_line.Release());
 }
 

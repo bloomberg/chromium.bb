@@ -9,7 +9,7 @@
 
 namespace cronet {
 
-bool UrlRequestContextRegisterJni(JNIEnv* env);
+bool ChromiumUrlRequestContextRegisterJni(JNIEnv* env);
 
 }  // namespace cronet
 

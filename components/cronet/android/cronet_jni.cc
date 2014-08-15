@@ -6,8 +6,8 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/at_exit.h"
-#include "components/cronet/android/org_chromium_net_UrlRequest.h"
-#include "components/cronet/android/org_chromium_net_UrlRequestContext.h"
+#include "components/cronet/android/chromium_url_request.h"
+#include "components/cronet/android/chromium_url_request_context.h"
 #include "net/android/net_jni_registrar.h"
 #include "url/android/url_jni_registrar.h"
 
@@ -18,11 +18,11 @@
 namespace {
 
 const base::android::RegistrationMethod kCronetRegisteredMethods[] = {
-  {"BaseAndroid", base::android::RegisterJni},
-  {"NetAndroid", net::android::RegisterJni},
-  {"UrlAndroid", url::android::RegisterJni},
-  {"UrlRequest", cronet::UrlRequestRegisterJni},
-  {"UrlRequestContext", cronet::UrlRequestContextRegisterJni},
+    {"BaseAndroid", base::android::RegisterJni},
+    {"ChromiumUrlRequest", cronet::ChromiumUrlRequestRegisterJni},
+    {"ChromiumUrlRequestContext", cronet::ChromiumUrlRequestContextRegisterJni},
+    {"NetAndroid", net::android::RegisterJni},
+    {"UrlAndroid", url::android::RegisterJni},
 };
 
 base::AtExitManager* g_at_exit_manager = NULL;

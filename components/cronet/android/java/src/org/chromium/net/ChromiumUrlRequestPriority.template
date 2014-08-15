@@ -5,10 +5,10 @@
 package org.chromium.net;
 
 // A simple auto-generated interface used to list request priorities as used by
-// both org.chromium.net.UrlRequest and
-// net/cronet/android/org_chromium_net_UrlRequest.h
-public interface UrlRequestPriority {
+// both org.chromium.net.ChromiumUrlRequest and
+// net/cronet/android/chromium_url_request_priority_list.h
+public interface ChromiumUrlRequestPriority {
 #define DEFINE_REQUEST_PRIORITY(x,y) public static final int x = y;
-#include "components/cronet/android/org_chromium_net_UrlRequest_priority_list.h"
+#include "components/cronet/android/chromium_url_request_priority_list.h"
 #undef DEFINE_REQUEST_PRIORITY
 }

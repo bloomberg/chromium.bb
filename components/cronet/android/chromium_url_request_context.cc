@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cronet/android/org_chromium_net_UrlRequestContext.h"
+#include "components/cronet/android/chromium_url_request_context.h"
 
 #include <string>
 
@@ -13,11 +13,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/values.h"
-#include "components/cronet/android/org_chromium_net_UrlRequest.h"
+#include "components/cronet/android/chromium_url_request.h"
 #include "components/cronet/android/url_request_adapter.h"
 #include "components/cronet/android/url_request_context_adapter.h"
 #include "components/cronet/url_request_context_config.h"
-#include "jni/UrlRequestContext_jni.h"
+#include "jni/ChromiumUrlRequestContext_jni.h"
 
 namespace {
 
@@ -33,7 +33,7 @@ class JniURLRequestContextAdapterDelegate
   virtual void OnContextInitialized(
       cronet::URLRequestContextAdapter* context) OVERRIDE {
     JNIEnv* env = base::android::AttachCurrentThread();
-    cronet::Java_UrlRequestContext_initNetworkThread(env, owner_);
+    cronet::Java_ChromiumUrlRequestContext_initNetworkThread(env, owner_);
     // TODO(dplotnikov): figure out if we need to detach from the thread.
     // The documentation says we should detach just before the thread exits.
   }
@@ -53,7 +53,7 @@ class JniURLRequestContextAdapterDelegate
 namespace cronet {
 
 // Explicitly register static JNI functions.
-bool UrlRequestContextRegisterJni(JNIEnv* env) {
+bool ChromiumUrlRequestContextRegisterJni(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 

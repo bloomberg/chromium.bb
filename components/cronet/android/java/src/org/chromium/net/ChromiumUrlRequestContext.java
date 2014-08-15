@@ -16,16 +16,16 @@ import org.chromium.base.JNINamespace;
  * Provides context for the native HTTP operations.
  */
 @JNINamespace("cronet")
-public class UrlRequestContext {
+public class ChromiumUrlRequestContext {
     private static final int LOG_NONE = 3;  // LOG(FATAL), no VLOG.
     private static final int LOG_DEBUG = -1;  // LOG(FATAL...INFO), VLOG(1)
     private static final int LOG_VERBOSE = -2;  // LOG(FATAL...INFO), VLOG(2)
     private static final String LOG_TAG = "ChromiumNetwork";
 
     /**
-     * Native adapter object, owned by UrlRequestContext.
+     * Native adapter object, owned by ChromiumUrlRequestContext.
      */
-    private long mUrlRequestContextAdapter;
+    private long mChromiumUrlRequestContextAdapter;
 
     private final ConditionVariable mStarted = new ConditionVariable();
 
@@ -33,11 +33,11 @@ public class UrlRequestContext {
      * Constructor.
      *
      */
-    protected UrlRequestContext(Context context, String userAgent,
+    protected ChromiumUrlRequestContext(Context context, String userAgent,
             String config) {
-        mUrlRequestContextAdapter = nativeCreateRequestContextAdapter(context,
-                userAgent, getLoggingLevel(), config);
-        if (mUrlRequestContextAdapter == 0)
+        mChromiumUrlRequestContextAdapter = nativeCreateRequestContextAdapter(
+                context, userAgent, getLoggingLevel(), config);
+        if (mChromiumUrlRequestContextAdapter == 0)
             throw new NullPointerException("Context Adapter creation failed");
 
         // TODO(mef): Revisit the need of block here.
@@ -75,7 +75,7 @@ public class UrlRequestContext {
      * If actively logging the call is ignored.
      */
     public void startNetLogToFile(String fileName) {
-        nativeStartNetLogToFile(mUrlRequestContextAdapter, fileName);
+        nativeStartNetLogToFile(mChromiumUrlRequestContextAdapter, fileName);
     }
 
     /**
@@ -83,7 +83,7 @@ public class UrlRequestContext {
      * not in progress this call is ignored.
      */
     public void stopNetLog() {
-        nativeStopNetLog(mUrlRequestContextAdapter);
+        nativeStopNetLog(mChromiumUrlRequestContextAdapter);
     }
 
     @CalledByNative
@@ -95,12 +95,12 @@ public class UrlRequestContext {
 
     @Override
     protected void finalize() throws Throwable {
-        nativeReleaseRequestContextAdapter(mUrlRequestContextAdapter);
+        nativeReleaseRequestContextAdapter(mChromiumUrlRequestContextAdapter);
         super.finalize();
     }
 
-    protected long getUrlRequestContextAdapter() {
-        return mUrlRequestContextAdapter;
+    protected long getChromiumUrlRequestContextAdapter() {
+        return mChromiumUrlRequestContextAdapter;
     }
 
     /**
@@ -119,20 +119,20 @@ public class UrlRequestContext {
         return loggingLevel;
     }
 
-    // Returns an instance URLRequestContextAdapter to be stored in
-    // mUrlRequestContextAdapter.
+    // Returns an instance ChromiumUrlRequestContextAdapter to be stored in
+    // mChromiumUrlRequestContextAdapter.
     private native long nativeCreateRequestContextAdapter(Context context,
             String userAgent, int loggingLevel, String config);
 
     private native void nativeReleaseRequestContextAdapter(
-            long urlRequestContextAdapter);
+            long ChromiumUrlRequestContextAdapter);
 
     private native void nativeInitializeStatistics();
 
     private native String nativeGetStatisticsJSON(String filter);
 
-    private native void nativeStartNetLogToFile(long urlRequestContextAdapter,
-            String fileName);
+    private native void nativeStartNetLogToFile(
+            long ChromiumUrlRequestContextAdapter, String fileName);
 
-    private native void nativeStopNetLog(long urlRequestContextAdapter);
+    private native void nativeStopNetLog(long ChromiumUrlRequestContextAdapter);
 }
