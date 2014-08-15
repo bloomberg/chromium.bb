@@ -11,7 +11,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/browser/ui/webui/signin/inline_login_ui.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -37,6 +37,9 @@ namespace chromeos {
 namespace {
 
 const char kJsScreenPath[] = "login.GaiaSigninScreen";
+const char kAuthIframeParentName[] = "signin-frame";
+const char kAuthIframeParentOrigin[] =
+    "chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/";
 
 void UpdateAuthParams(base::DictionaryValue* params,
                       bool has_users,
@@ -348,8 +351,10 @@ void GaiaScreenHandler::HandleGaiaUIReady() {
     focus_stolen_ = false;
     const char code[] =
         "if (typeof gWindowOnLoad != 'undefined') gWindowOnLoad();";
-    content::RenderFrameHost* frame =
-        LoginDisplayHostImpl::GetGaiaAuthIframe(web_ui()->GetWebContents());
+    content::RenderFrameHost* frame = InlineLoginUI::GetAuthIframe(
+        web_ui()->GetWebContents(),
+        GURL(kAuthIframeParentOrigin),
+        kAuthIframeParentName);
     frame->ExecuteJavaScript(base::ASCIIToUTF16(code));
   }
   if (gaia_silent_load_) {
@@ -360,8 +365,10 @@ void GaiaScreenHandler::HandleGaiaUIReady() {
     const char code[] =
         "var gWindowOnLoad = window.onload; "
         "window.onload=function() {};";
-    content::RenderFrameHost* frame =
-        LoginDisplayHostImpl::GetGaiaAuthIframe(web_ui()->GetWebContents());
+    content::RenderFrameHost* frame = InlineLoginUI::GetAuthIframe(
+        web_ui()->GetWebContents(),
+        GURL(kAuthIframeParentOrigin),
+        kAuthIframeParentName);
     frame->ExecuteJavaScript(base::ASCIIToUTF16(code));
 
     // As we could miss and window.onload could already be called, restore
@@ -493,8 +500,10 @@ void GaiaScreenHandler::SubmitLoginFormForTest() {
   code += "document.getElementById('Passwd').value = '" + test_pass_ + "';";
   code += "document.getElementById('signIn').click();";
 
-  content::RenderFrameHost* frame =
-      LoginDisplayHostImpl::GetGaiaAuthIframe(web_ui()->GetWebContents());
+  content::RenderFrameHost* frame = InlineLoginUI::GetAuthIframe(
+      web_ui()->GetWebContents(),
+      GURL(kAuthIframeParentOrigin),
+      kAuthIframeParentName);
   frame->ExecuteJavaScript(base::ASCIIToUTF16(code));
 
   // Test properties are cleared in HandleCompleteLogin because the form

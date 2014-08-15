@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
@@ -33,7 +34,19 @@ content::WebUIDataSource* CreateWebUIDataSource() {
 
   source->AddLocalizedString("title", IDS_CHROME_SIGNIN_TITLE);
   return source;
-};
+}
+
+void AddToSetIfIsAuthIframe(std::set<content::RenderFrameHost*>* frame_set,
+                            const GURL& parent_origin,
+                            const std::string& parent_frame_name,
+                            content::RenderFrameHost* frame) {
+  content::RenderFrameHost* parent = frame->GetParent();
+  if (parent && parent->GetFrameName() == parent_frame_name &&
+      (parent_origin.is_empty() ||
+       parent->GetLastCommittedURL().GetOrigin() == parent_origin)) {
+    frame_set->insert(frame);
+  }
+}
 
 } // empty namespace
 
@@ -61,3 +74,19 @@ InlineLoginUI::InlineLoginUI(content::WebUI* web_ui)
 }
 
 InlineLoginUI::~InlineLoginUI() {}
+
+// Gets the Gaia iframe within a WebContents.
+content::RenderFrameHost* InlineLoginUI::GetAuthIframe(
+    content::WebContents* web_contents,
+    const GURL& parent_origin,
+    const std::string& parent_frame_name) {
+  std::set<content::RenderFrameHost*> frame_set;
+  web_contents->ForEachFrame(
+      base::Bind(&AddToSetIfIsAuthIframe, &frame_set,
+                 parent_origin, parent_frame_name));
+  DCHECK_GE(1U, frame_set.size());
+  if (!frame_set.empty())
+    return *frame_set.begin();
+
+  return NULL;
+}

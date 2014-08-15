@@ -65,10 +65,6 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
     return default_host_;
   }
 
-  // Gets the Gaia auth iframe within a WebContents.
-  static content::RenderFrameHost* GetGaiaAuthIframe(
-      content::WebContents* web_contents);
-
   // LoginDisplayHost implementation:
   virtual LoginDisplay* CreateLoginDisplay(
       LoginDisplay::Delegate* delegate) OVERRIDE;

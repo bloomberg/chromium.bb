@@ -33,6 +33,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/signin/inline_login_ui.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
@@ -436,8 +437,8 @@ class SamlTest : public InProcessBrowserTest {
 
   // Executes JavaScript code in the auth iframe hosted by gaia_auth extension.
   void ExecuteJsInSigninFrame(const std::string& js) {
-    content::RenderFrameHost* frame =
-        LoginDisplayHostImpl::GetGaiaAuthIframe(GetLoginUI()->GetWebContents());
+    content::RenderFrameHost* frame = InlineLoginUI::GetAuthIframe(
+        GetLoginUI()->GetWebContents(), GURL(), "signin-frame");
     ASSERT_TRUE(content::ExecuteScript(frame, js));
   }
 

@@ -19,7 +19,8 @@ class GaiaAuthFetcher;
 // CrOS migrates to the same webview approach as desktop Chrome, much of the
 // code in this class should move to its base class |InlineLoginHandler|.
 class InlineLoginHandlerImpl : public InlineLoginHandler,
-                               public content::WebContentsDelegate {
+                               public content::WebContentsDelegate,
+                               public content::WebContentsObserver {
  public:
   InlineLoginHandlerImpl();
   virtual ~InlineLoginHandlerImpl();
@@ -46,11 +47,16 @@ class InlineLoginHandlerImpl : public InlineLoginHandler,
   virtual bool HandleContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;
 
+  // Overridden from content::WebContentsObserver overrides.
+  virtual void DidCommitProvisionalLoadForFrame(
+      content::RenderFrameHost* render_frame_host,
+      const GURL& url,
+      content::PageTransition transition_type) OVERRIDE;
+
   base::WeakPtrFactory<InlineLoginHandlerImpl> weak_factory_;
-  std::string email_;
-  std::string password_;
-  std::string session_index_;
-  bool choose_what_to_sync_;
+  // True if the user has navigated to untrusted domains during the signin
+  // process.
+  bool confirm_untrusted_signin_;
 
   DISALLOW_COPY_AND_ASSIGN(InlineLoginHandlerImpl);
 };

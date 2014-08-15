@@ -72,7 +72,6 @@
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "media/audio/sounds/sounds_manager.h"
@@ -208,13 +207,6 @@ void EnableSystemSoundsForAccessibility() {
   chromeos::AccessibilityManager::Get()->EnableSystemSounds(true);
 }
 
-void AddToSetIfIsGaiaAuthIframe(std::set<content::RenderFrameHost*>* frame_set,
-                                content::RenderFrameHost* frame) {
-  content::RenderFrameHost* parent = frame->GetParent();
-  if (parent && parent->GetFrameName() == "signin-frame")
-    frame_set->insert(frame);
-}
-
 // A login implementation of WidgetDelegate.
 class LoginWidgetDelegate : public views::WidgetDelegate {
  public:
@@ -266,16 +258,6 @@ LoginDisplayHost* LoginDisplayHostImpl::default_host_ = NULL;
 
 // static
 const int LoginDisplayHostImpl::kShowLoginWebUIid = 0x1111;
-
-// static
-content::RenderFrameHost* LoginDisplayHostImpl::GetGaiaAuthIframe(
-    content::WebContents* web_contents) {
-  std::set<content::RenderFrameHost*> frame_set;
-  web_contents->ForEachFrame(
-      base::Bind(&AddToSetIfIsGaiaAuthIframe, &frame_set));
-  DCHECK_EQ(1U, frame_set.size());
-  return *frame_set.begin();
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // LoginDisplayHostImpl, public
