@@ -107,14 +107,14 @@ public class ChromePass extends AbstractPostOrderCallback implements CompilerPas
     }
 
     private Node getTypeByCrPropertyKind(Node propertyKind) {
+        if (propertyKind == null || propertyKind.matchesQualifiedName("cr.PropertyKind.JS")) {
+            return new Node(Token.QMARK);
+        }
         if (propertyKind.matchesQualifiedName("cr.PropertyKind.ATTR")) {
             return IR.string("string");
         }
         if (propertyKind.matchesQualifiedName("cr.PropertyKind.BOOL_ATTR")) {
             return IR.string("boolean");
-        }
-        if (propertyKind.matchesQualifiedName("cr.PropertyKind.JS")) {
-            return new Node(Token.QMARK);
         }
         compiler.report(JSError.make(propertyKind, CR_DEFINE_PROPERTY_INVALID_PROPERTY_KIND,
                 propertyKind.getQualifiedName()));

@@ -219,6 +219,15 @@ public class ChromePassTest extends CompilerTestCase {
             "a.prototype.c;");
     }
 
+    public void testCrDefinePropertyCalledWithouthThirdArgumentMeansCrPropertyKindJs()
+            throws Exception {
+        test(
+            "cr.defineProperty(a.prototype, 'c');",
+            "cr.defineProperty(a.prototype, 'c');\n" +
+            "/** @type {?} */\n" +
+            "a.prototype.c;");
+    }
+
     public void testCrDefinePropertyDefinesUnquotedPropertyOnPrototypeWhenFunctionIsPassed()
             throws Exception {
         test(
