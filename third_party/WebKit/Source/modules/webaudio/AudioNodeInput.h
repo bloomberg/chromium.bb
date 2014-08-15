@@ -45,9 +45,7 @@ public:
 
     // AudioSummingJunction
     virtual void trace(Visitor*) OVERRIDE;
-#if !ENABLE(OILPAN)
-    virtual bool canUpdateState() OVERRIDE { return !node().isMarkedForDeletion(); }
-#endif
+    virtual bool canUpdateState() OVERRIDE { return !node().isDisposeCalled(); }
     virtual void didUpdate() OVERRIDE;
 
     // Can be called from any thread.

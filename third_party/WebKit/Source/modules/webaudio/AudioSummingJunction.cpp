@@ -60,11 +60,7 @@ void AudioSummingJunction::trace(Visitor* visitor)
 void AudioSummingJunction::changedOutputs()
 {
     ASSERT(context()->isGraphOwner());
-#if ENABLE(OILPAN)
-    if (!m_renderingStateNeedUpdating) {
-#else
     if (!m_renderingStateNeedUpdating && canUpdateState()) {
-#endif
         context()->markSummingJunctionDirty(this);
         m_renderingStateNeedUpdating = true;
     }
@@ -73,11 +69,7 @@ void AudioSummingJunction::changedOutputs()
 void AudioSummingJunction::updateRenderingState()
 {
     ASSERT(context()->isAudioThread() && context()->isGraphOwner());
-#if ENABLE(OILPAN)
-    if (m_renderingStateNeedUpdating) {
-#else
     if (m_renderingStateNeedUpdating && canUpdateState()) {
-#endif
         // Copy from m_outputs to m_renderingOutputs.
         m_renderingOutputs.resize(m_outputs.size());
         unsigned j = 0;

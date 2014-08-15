@@ -56,13 +56,8 @@ AudioNode::AudioNode(AudioContext* context, float sampleRate)
     , m_normalRefCount(1) // start out with normal refCount == 1 (like WTF::RefCounted class)
 #endif
     , m_connectionRefCount(0)
-#if !ENABLE(OILPAN)
-    , m_isMarkedForDeletion(false)
-#endif
     , m_isDisabled(false)
-#if ENABLE(ASSERT)
-    , m_didCallDispose(false)
-#endif
+    , m_isDisposeCalled(false)
     , m_channelCount(2)
     , m_channelCountMode(Max)
     , m_channelInterpretation(AudioBus::Speakers)
@@ -82,7 +77,7 @@ AudioNode::AudioNode(AudioContext* context, float sampleRate)
 
 AudioNode::~AudioNode()
 {
-    ASSERT(m_didCallDispose);
+    ASSERT(m_isDisposeCalled);
     --s_instanceCount;
 #if DEBUG_AUDIONODE_REFERENCES
     --s_nodeCount[nodeType()];
@@ -109,13 +104,17 @@ void AudioNode::dispose()
     ASSERT(isMainThread());
     ASSERT(context()->isGraphOwner());
 
+    // This flag prevents:
+    //   - the following disconnectAll() from re-registering this AudioNode into
+    //     the m_outputs.
+    //   - this AudioNode from getting marked as dirty after calling
+    //     unmarkDirtyNode.
+    m_isDisposeCalled = true;
+
     context()->removeAutomaticPullNode(this);
     for (unsigned i = 0; i < m_outputs.size(); ++i)
         output(i)->disconnectAll();
     context()->unmarkDirtyNode(*this);
-#if ENABLE(ASSERT)
-    m_didCallDispose = true;
-#endif
 }
 
 String AudioNode::nodeTypeName() const
@@ -605,11 +604,10 @@ void AudioNode::finishDeref()
     fprintf(stderr, "%p: %d: AudioNode::deref() %d %d\n", this, nodeType(), m_normalRefCount, m_connectionRefCount);
 #endif
 
-    if (!m_normalRefCount && !m_isMarkedForDeletion) {
+    if (!m_normalRefCount) {
         // Mark for deletion at end of each render quantum or when context shuts
         // down.
         context()->markForDeletion(this);
-        m_isMarkedForDeletion = true;
     }
 }
 #endif

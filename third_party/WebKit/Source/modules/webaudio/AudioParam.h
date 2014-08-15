@@ -59,9 +59,7 @@ public:
     }
 
     // AudioSummingJunction
-#if !ENABLE(OILPAN)
     virtual bool canUpdateState() OVERRIDE { return true; }
-#endif
     virtual void didUpdate() OVERRIDE { }
 
     // Intrinsic value.
