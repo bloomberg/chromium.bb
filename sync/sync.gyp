@@ -353,6 +353,8 @@
         'sessions/sync_session_context.cc',
         'sessions/sync_session_context.h',
         'syncable/blob.h',
+        'syncable/deferred_on_disk_directory_backing_store.cc',
+        'syncable/deferred_on_disk_directory_backing_store.h',
         'syncable/dir_open_result.h',
         'syncable/directory.cc',
         'syncable/directory.h',

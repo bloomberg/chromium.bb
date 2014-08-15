@@ -24,6 +24,7 @@ class SYNC_EXPORT_PRIVATE SyncBackupManager : public SyncRollbackManagerBase {
   virtual void Init(InitArgs* args) OVERRIDE;
   virtual void SaveChanges() OVERRIDE;
   virtual SyncStatus GetDetailedStatus() const OVERRIDE;
+  virtual void ShutdownOnSyncThread(ShutdownReason reason) OVERRIDE;
 
   // DirectoryChangeDelegate implementation.
   virtual ModelTypeSet HandleTransactionEndingChangeEvent(

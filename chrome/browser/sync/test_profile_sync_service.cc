@@ -61,8 +61,9 @@ void SyncBackendHostForProfileSyncTest::InitCore(
   InternalComponentsFactory::Switches factory_switches =
       options->internal_components_factory->GetSwitches();
   options->internal_components_factory.reset(
-      new TestInternalComponentsFactory(factory_switches,
-                                        syncer::STORAGE_IN_MEMORY));
+      new TestInternalComponentsFactory(
+          factory_switches, InternalComponentsFactory::STORAGE_IN_MEMORY,
+          NULL));
 
   SyncBackendHostImpl::InitCore(options.Pass());
 }

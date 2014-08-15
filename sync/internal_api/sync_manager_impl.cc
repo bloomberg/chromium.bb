@@ -345,8 +345,8 @@ void SyncManagerImpl::Init(InitArgs* args) {
 
   scoped_ptr<syncable::DirectoryBackingStore> backing_store =
       args->internal_components_factory->BuildDirectoryBackingStore(
-                                             args->credentials.email,
-                                             absolute_db_path).Pass();
+          InternalComponentsFactory::STORAGE_ON_DISK,
+          args->credentials.email, absolute_db_path).Pass();
 
   DCHECK(backing_store.get());
   share_.directory.reset(

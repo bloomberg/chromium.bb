@@ -10,6 +10,7 @@
 
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/http_post_provider_factory.h"
+#include "sync/internal_api/public/internal_components_factory.h"
 #include "sync/internal_api/public/sync_manager.h"
 #include "sync/internal_api/public/user_share.h"
 #include "sync/syncable/directory_change_delegate.h"
@@ -99,6 +100,7 @@ class SYNC_EXPORT_PRIVATE SyncRollbackManagerBase :
   bool InitInternal(
       const base::FilePath& database_location,
       InternalComponentsFactory* internal_components_factory,
+      InternalComponentsFactory::StorageOption storage,
       scoped_ptr<UnrecoverableErrorHandler> unrecoverable_error_handler,
       ReportUnrecoverableErrorFunction report_unrecoverable_error_function);
 
@@ -118,9 +120,9 @@ class SYNC_EXPORT_PRIVATE SyncRollbackManagerBase :
   void NotifyInitializationSuccess();
   void NotifyInitializationFailure();
 
-  bool InitBackupDB(
-      const base::FilePath& sync_folder,
-      InternalComponentsFactory* internal_components_factory);
+  bool InitBackupDB(const base::FilePath& sync_folder,
+                    InternalComponentsFactory* internal_components_factory,
+                    InternalComponentsFactory::StorageOption storage);
 
   bool InitTypeRootNode(ModelType type);
   void InitBookmarkFolder(const std::string& folder);
