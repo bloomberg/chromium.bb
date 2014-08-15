@@ -60,8 +60,8 @@ public:
 
     static PassRefPtr<ShadowList> blend(const ShadowList* from, const ShadowList* to, double progress);
 
-    void adjustRectForShadow(LayoutRect&, float additionalOutlineSize = 0) const;
-    void adjustRectForShadow(FloatRect&, float additionalOutlineSize = 0) const;
+    void adjustRectForShadow(LayoutRect&) const;
+    void adjustRectForShadow(FloatRect&) const;
 
     PassOwnPtr<DrawLooperBuilder> createDrawLooper(DrawLooperBuilder::ShadowAlphaMode, bool isHorizontal = true) const;
 

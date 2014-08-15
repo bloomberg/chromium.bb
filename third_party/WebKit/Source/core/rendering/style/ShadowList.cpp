@@ -36,7 +36,7 @@
 
 namespace blink {
 
-static inline void calculateShadowExtent(const ShadowList* shadowList, float additionalOutlineSize, float& shadowLeft, float& shadowRight, float& shadowTop, float& shadowBottom)
+static inline void calculateShadowExtent(const ShadowList* shadowList, float& shadowLeft, float& shadowRight, float& shadowTop, float& shadowBottom)
 {
     ASSERT(shadowList);
     size_t shadowCount = shadowList->shadows().size();
@@ -44,7 +44,7 @@ static inline void calculateShadowExtent(const ShadowList* shadowList, float add
         const ShadowData& shadow = shadowList->shadows()[i];
         if (shadow.style() == Inset)
             continue;
-        float blurAndSpread = shadow.blur() + shadow.spread() + additionalOutlineSize;
+        float blurAndSpread = shadow.blur() + shadow.spread();
         shadowLeft = std::min(shadow.x() - blurAndSpread, shadowLeft);
         shadowRight = std::max(shadow.x() + blurAndSpread, shadowRight);
         shadowTop = std::min(shadow.y() - blurAndSpread, shadowTop);
@@ -52,20 +52,20 @@ static inline void calculateShadowExtent(const ShadowList* shadowList, float add
     }
 }
 
-void ShadowList::adjustRectForShadow(LayoutRect& rect, float additionalOutlineSize) const
+void ShadowList::adjustRectForShadow(LayoutRect& rect) const
 {
     FloatRect floatRect(rect);
     adjustRectForShadow(floatRect);
     rect = LayoutRect(floatRect);
 }
 
-void ShadowList::adjustRectForShadow(FloatRect& rect, float additionalOutlineSize) const
+void ShadowList::adjustRectForShadow(FloatRect& rect) const
 {
     float shadowLeft = 0;
     float shadowRight = 0;
     float shadowTop = 0;
     float shadowBottom = 0;
-    calculateShadowExtent(this, additionalOutlineSize, shadowLeft, shadowRight, shadowTop, shadowBottom);
+    calculateShadowExtent(this, shadowLeft, shadowRight, shadowTop, shadowBottom);
 
     rect.move(shadowLeft, shadowTop);
     rect.setWidth(rect.width() - shadowLeft + shadowRight);
