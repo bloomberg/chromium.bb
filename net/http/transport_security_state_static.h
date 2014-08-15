@@ -1253,6 +1253,21 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {21, true, "\020" "unterfrankenclan" "\002" "de", true, kNoPins, DOMAIN_NOT_PINNED },
   {15, true, "\012" "webandmore" "\002" "de", true, kNoPins, DOMAIN_NOT_PINNED },
   {26, true, "\025" "welches-kinderfahrrad" "\002" "de", true, kNoPins, DOMAIN_NOT_PINNED },
+  {17, true, "\013" "apadvantage" "\003" "com", true, kNoPins, DOMAIN_NOT_PINNED },
+  {22, true, "\021" "apn-einstellungen" "\002" "de", true, kNoPins, DOMAIN_NOT_PINNED },
+  {19, true, "\015" "barcodeberlin" "\003" "com", true, kNoPins, DOMAIN_NOT_PINNED },
+  {14, true, "\010" "certible" "\003" "com", true, kNoPins, DOMAIN_NOT_PINNED },
+  {20, true, "\016" "data-abundance" "\003" "com", true, kNoPins, DOMAIN_NOT_PINNED },
+  {12, true, "\007" "dedimax" "\002" "de", true, kNoPins, DOMAIN_NOT_PINNED },
+  {11, true, "\006" "hostix" "\002" "de", true, kNoPins, DOMAIN_NOT_PINNED },
+  {15, true, "\011" "janoberst" "\003" "com", true, kNoPins, DOMAIN_NOT_PINNED },
+  {14, true, "\006" "jelmer" "\002" "co" "\002" "uk", true, kNoPins, DOMAIN_NOT_PINNED },
+  {11, true, "\006" "jelmer" "\002" "uk", true, kNoPins, DOMAIN_NOT_PINNED },
+  {16, true, "\013" "munich-rage" "\002" "de", true, kNoPins, DOMAIN_NOT_PINNED },
+  {11, true, "\006" "posteo" "\002" "de", true, kNoPins, DOMAIN_NOT_PINNED },
+  {25, true, "\024" "stationary-traveller" "\002" "eu", true, kNoPins, DOMAIN_NOT_PINNED },
+  {24, true, "\022" "thepaymentscompany" "\003" "com", true, kNoPins, DOMAIN_NOT_PINNED },
+  {15, true, "\007" "xps2pdf" "\002" "co" "\002" "uk", true, kNoPins, DOMAIN_NOT_PINNED },
 };
 static const size_t kNumPreloadedSTS = ARRAYSIZE_UNSAFE(kPreloadedSTS);
 
