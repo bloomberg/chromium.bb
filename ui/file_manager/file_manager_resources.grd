@@ -83,6 +83,7 @@
       <include name="IDR_VIDEO_PLAYER_BKGND_JS" file="video_player/js/background.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_VIDEO_PLAYER_TEST_UTIL_JS" file="video_player/js/test_util.js" flattenhtml="false" type="BINDATA" />
       <include name="IDR_VIDEO_PLAYER_ERROR_UTIL_JS" file="video_player/js/error_util.js" flattenhtml="false" type="BINDATA" />
+      <include name="IDR_VIDEO_PLAYER_ICON_FAVICON_16" file="video_player/images/icon/video-player-favicon-16.png" type="BINDATA" />
       <include name="IDR_VIDEO_PLAYER_ICON_32" file="video_player/images/icon/video-player-32.png" type="BINDATA" />
       <include name="IDR_VIDEO_PLAYER_ICON_48" file="video_player/images/icon/video-player-48.png" type="BINDATA" />
       <include name="IDR_VIDEO_PLAYER_ICON_64" file="video_player/images/icon/video-player-64.png" type="BINDATA" />

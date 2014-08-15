@@ -8,6 +8,7 @@
   "display_in_launcher": false,
   "incognito" : "split",
   "icons": {
+    "16": "images/icon/video-player-favicon-16.png",
     "32": "images/icon/video-player-32.png",
     "48": "images/icon/video-player-48.png",
     "64": "images/icon/video-player-64.png",
