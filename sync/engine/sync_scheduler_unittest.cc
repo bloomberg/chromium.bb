@@ -94,8 +94,18 @@ ModelSafeRoutingInfo TypesToRoutingInfo(ModelTypeSet types) {
   return routes;
 }
 
-// Convenient to use in tests wishing to analyze SyncShare calls over time.
+
 static const size_t kMinNumSamples = 5;
+
+// Test harness for the SyncScheduler.  Test the delays and backoff timers used
+// in response to various events.
+//
+// These tests execute in real time with real timers.  We try to keep the
+// delays short, but there is a limit to how short we can make them.  The
+// timers on some platforms (ie. Windows) have a timer resolution greater than
+// 1ms.  Using 1ms delays may result in test flakiness.
+//
+// See crbug.com/402212 for more info.
 class SyncSchedulerTest : public testing::Test {
  public:
   SyncSchedulerTest() : syncer_(NULL), delay_(NULL), weak_ptr_factory_(this) {}
@@ -343,7 +353,7 @@ TEST_F(SyncSchedulerTest, Config) {
 TEST_F(SyncSchedulerTest, ConfigWithBackingOff) {
   UseMockDelayProvider();
   EXPECT_CALL(*delay(), GetDelay(_))
-      .WillRepeatedly(Return(TimeDelta::FromMilliseconds(1)));
+      .WillRepeatedly(Return(TimeDelta::FromMilliseconds(20)));
   SyncShareTimes times;
   const ModelTypeSet model_types(BOOKMARKS);
 
@@ -389,7 +399,7 @@ TEST_F(SyncSchedulerTest, ConfigWithBackingOff) {
 TEST_F(SyncSchedulerTest, ConfigWithStop) {
   UseMockDelayProvider();
   EXPECT_CALL(*delay(), GetDelay(_))
-      .WillRepeatedly(Return(TimeDelta::FromMilliseconds(1)));
+      .WillRepeatedly(Return(TimeDelta::FromMilliseconds(20)));
   SyncShareTimes times;
   const ModelTypeSet model_types(BOOKMARKS);
 
@@ -652,7 +662,7 @@ TEST_F(SyncSchedulerTest, SessionsCommitDelay) {
 // Test that no syncing occurs when throttled.
 TEST_F(SyncSchedulerTest, ThrottlingDoesThrottle) {
   const ModelTypeSet types(BOOKMARKS);
-  TimeDelta poll(TimeDelta::FromMilliseconds(5));
+  TimeDelta poll(TimeDelta::FromMilliseconds(20));
   TimeDelta throttle(TimeDelta::FromMinutes(10));
   scheduler()->OnReceivedLongPollIntervalUpdate(poll);
 
@@ -916,7 +926,7 @@ class BackoffTriggersSyncSchedulerTest : public SyncSchedulerTest {
     SyncSchedulerTest::SetUp();
     UseMockDelayProvider();
     EXPECT_CALL(*delay(), GetDelay(_))
-        .WillRepeatedly(Return(TimeDelta::FromMilliseconds(1)));
+        .WillRepeatedly(Return(TimeDelta::FromMilliseconds(10)));
   }
 
   virtual void TearDown() {
@@ -1001,7 +1011,7 @@ TEST_F(BackoffTriggersSyncSchedulerTest, FailGetEncryptionKey) {
 // Test that no polls or extraneous nudges occur when in backoff.
 TEST_F(SyncSchedulerTest, BackoffDropsJobs) {
   SyncShareTimes times;
-  TimeDelta poll(TimeDelta::FromMilliseconds(5));
+  TimeDelta poll(TimeDelta::FromMilliseconds(10));
   const ModelTypeSet types(BOOKMARKS);
   scheduler()->OnReceivedLongPollIntervalUpdate(poll);
   UseMockDelayProvider();
@@ -1027,7 +1037,7 @@ TEST_F(SyncSchedulerTest, BackoffDropsJobs) {
 
   // Try (and fail) to schedule a nudge.
   scheduler()->ScheduleLocalNudge(
-      base::TimeDelta::FromMilliseconds(1),
+      base::TimeDelta::FromMilliseconds(10),
       types,
       FROM_HERE);
 
@@ -1063,10 +1073,10 @@ TEST_F(SyncSchedulerTest, BackoffElevation) {
           RecordSyncShareMultiple(&times, kMinNumSamples)));
 
   const TimeDelta first = TimeDelta::FromSeconds(kInitialBackoffRetrySeconds);
-  const TimeDelta second = TimeDelta::FromMilliseconds(2);
-  const TimeDelta third = TimeDelta::FromMilliseconds(3);
-  const TimeDelta fourth = TimeDelta::FromMilliseconds(4);
-  const TimeDelta fifth = TimeDelta::FromMilliseconds(5);
+  const TimeDelta second = TimeDelta::FromMilliseconds(20);
+  const TimeDelta third = TimeDelta::FromMilliseconds(30);
+  const TimeDelta fourth = TimeDelta::FromMilliseconds(40);
+  const TimeDelta fifth = TimeDelta::FromMilliseconds(50);
   const TimeDelta sixth = TimeDelta::FromDays(1);
 
   EXPECT_CALL(*delay(), GetDelay(first)).WillOnce(Return(second))
@@ -1099,7 +1109,7 @@ TEST_F(SyncSchedulerTest, BackoffRelief) {
   scheduler()->OnReceivedLongPollIntervalUpdate(poll);
   UseMockDelayProvider();
 
-  const TimeDelta backoff = TimeDelta::FromMilliseconds(5);
+  const TimeDelta backoff = TimeDelta::FromMilliseconds(10);
   EXPECT_CALL(*delay(), GetDelay(_)).WillOnce(Return(backoff));
 
   // Optimal start for the post-backoff poll party.
@@ -1149,7 +1159,7 @@ TEST_F(SyncSchedulerTest, BackoffRelief) {
 // subsequent poll attempts, nor should they trigger a backoff/retry.
 TEST_F(SyncSchedulerTest, TransientPollFailure) {
   SyncShareTimes times;
-  const TimeDelta poll_interval(TimeDelta::FromMilliseconds(1));
+  const TimeDelta poll_interval(TimeDelta::FromMilliseconds(10));
   scheduler()->OnReceivedLongPollIntervalUpdate(poll_interval);
   UseMockDelayProvider(); // Will cause test failure if backoff is initiated.
 
@@ -1311,17 +1321,11 @@ TEST_F(SyncSchedulerTest, PollFromCanaryAfterAuthError) {
   StopSyncScheduler();
 }
 
-#if defined(OS_WIN)
-// Times out: http://crbug.com/402212
-#define MAYBE_SuccessfulRetry DISABLED_SuccessfulRetry
-#else
-#define MAYBE_SuccessfulRetry SuccessfulRetry
-#endif
-TEST_F(SyncSchedulerTest, MAYBE_SuccessfulRetry) {
+TEST_F(SyncSchedulerTest, SuccessfulRetry) {
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
 
   SyncShareTimes times;
-  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(1);
+  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(10);
   scheduler()->OnReceivedGuRetryDelay(delay);
   EXPECT_EQ(delay, GetRetryTimerDelay());
 
@@ -1336,20 +1340,14 @@ TEST_F(SyncSchedulerTest, MAYBE_SuccessfulRetry) {
   StopSyncScheduler();
 }
 
-#if defined(OS_WIN)
-// Times out: http://crbug.com/402212
-#define MAYBE_FailedRetry DISABLED_FailedRetry
-#else
-#define MAYBE_FailedRetry FailedRetry
-#endif
-TEST_F(SyncSchedulerTest, MAYBE_FailedRetry) {
+TEST_F(SyncSchedulerTest, FailedRetry) {
   UseMockDelayProvider();
   EXPECT_CALL(*delay(), GetDelay(_))
-      .WillRepeatedly(Return(TimeDelta::FromMilliseconds(1)));
+      .WillRepeatedly(Return(TimeDelta::FromMilliseconds(10)));
 
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
 
-  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(1);
+  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(10);
   scheduler()->OnReceivedGuRetryDelay(delay);
 
   EXPECT_CALL(*syncer(), NormalSyncShare(_,_,_))
@@ -1376,13 +1374,7 @@ ACTION_P2(VerifyRetryTimerDelay, scheduler_test, expected_delay) {
   EXPECT_EQ(expected_delay, scheduler_test->GetRetryTimerDelay());
 }
 
-#if defined(OS_WIN)
-// Times out: http://crbug.com/402212
-#define MAYBE_ReceiveNewRetryDelay DISABLED_ReceiveNewRetryDelay
-#else
-#define MAYBE_ReceiveNewRetryDelay ReceiveNewRetryDelay
-#endif
-TEST_F(SyncSchedulerTest, MAYBE_ReceiveNewRetryDelay) {
+TEST_F(SyncSchedulerTest, ReceiveNewRetryDelay) {
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
 
   SyncShareTimes times;

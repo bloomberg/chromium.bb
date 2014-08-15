@@ -63,7 +63,7 @@ bool NudgeTracker::IsRetryRequired() const {
   if (current_retry_time_.is_null())
     return false;
 
-  return current_retry_time_ < sync_cycle_start_time_;
+  return current_retry_time_ <= sync_cycle_start_time_;
 }
 
 void NudgeTracker::RecordSuccessfulSyncCycle() {
@@ -300,7 +300,7 @@ void NudgeTracker::SetSyncCycleStartTime(base::TimeTicks now) {
   // it is ready to go, then we set it as the current_retry_time_.  It will stay
   // there until a GU retry has succeeded.
   if (!next_retry_time_.is_null() &&
-      next_retry_time_ < sync_cycle_start_time_) {
+      next_retry_time_ <= sync_cycle_start_time_) {
     current_retry_time_ = next_retry_time_;
     next_retry_time_ = base::TimeTicks();
   }
