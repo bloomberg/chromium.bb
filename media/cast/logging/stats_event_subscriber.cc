@@ -19,7 +19,6 @@ namespace {
 using media::cast::CastLoggingEvent;
 using media::cast::EventMediaType;
 
-const size_t kMaxFrameEventTimeMapSize = 100;
 const size_t kMaxPacketEventTimeMapSize = 1000;
 
 bool IsReceiverEvent(CastLoggingEvent event) {
@@ -39,7 +38,9 @@ StatsEventSubscriber::StatsEventSubscriber(
       clock_(clock),
       offset_estimator_(offset_estimator),
       network_latency_datapoints_(0),
-      e2e_latency_datapoints_(0) {
+      e2e_latency_datapoints_(0),
+      num_frames_dropped_by_encoder_(0),
+      num_frames_late_(0) {
   DCHECK(event_media_type == AUDIO_EVENT || event_media_type == VIDEO_EVENT);
   base::TimeTicks now = clock_->NowTicks();
   start_time_ = now;
@@ -71,9 +72,13 @@ void StatsEventSubscriber::OnReceiveFrameEvent(const FrameEvent& frame_event) {
   }
 
   if (type == FRAME_CAPTURE_BEGIN) {
-    RecordFrameCapturedTime(frame_event);
+    RecordFrameCaptureTime(frame_event);
+  } else if (type == FRAME_ENCODED) {
+    MarkAsEncoded(frame_event.rtp_timestamp);
   } else if (type == FRAME_PLAYOUT) {
     RecordE2ELatency(frame_event);
+    if (frame_event.delay_delta <= base::TimeDelta())
+      num_frames_late_++;
   }
 
   if (IsReceiverEvent(type))
@@ -138,7 +143,9 @@ void StatsEventSubscriber::Reset() {
   network_latency_datapoints_ = 0;
   total_e2e_latency_ = base::TimeDelta();
   e2e_latency_datapoints_ = 0;
-  frame_captured_times_.clear();
+  num_frames_dropped_by_encoder_ = 0;
+  num_frames_late_ = 0;
+  recent_captured_frames_.clear();
   packet_sent_times_.clear();
   start_time_ = clock_->NowTicks();
   last_response_received_time_ = base::TimeTicks();
@@ -159,6 +166,12 @@ const char* StatsEventSubscriber::CastStatToString(CastStat stat) {
     STAT_ENUM_TO_STRING(RETRANSMISSION_KBPS);
     STAT_ENUM_TO_STRING(PACKET_LOSS_FRACTION);
     STAT_ENUM_TO_STRING(MS_SINCE_LAST_RECEIVER_RESPONSE);
+    STAT_ENUM_TO_STRING(NUM_FRAMES_CAPTURED);
+    STAT_ENUM_TO_STRING(NUM_FRAMES_DROPPED_BY_ENCODER);
+    STAT_ENUM_TO_STRING(NUM_FRAMES_LATE);
+    STAT_ENUM_TO_STRING(NUM_PACKETS_SENT);
+    STAT_ENUM_TO_STRING(NUM_PACKETS_RETRANSMITTED);
+    STAT_ENUM_TO_STRING(NUM_PACKETS_RTX_REJECTED);
   }
   NOTREACHED();
   return "";
@@ -188,6 +201,12 @@ void StatsEventSubscriber::GetStatsInternal(StatsMap* stats_map) const {
                             RETRANSMISSION_KBPS,
                             stats_map);
   PopulatePacketLossPercentageStat(stats_map);
+  PopulateFrameCountStat(FRAME_CAPTURE_END, NUM_FRAMES_CAPTURED, stats_map);
+  PopulatePacketCountStat(PACKET_SENT_TO_NETWORK, NUM_PACKETS_SENT, stats_map);
+  PopulatePacketCountStat(
+      PACKET_RETRANSMITTED, NUM_PACKETS_RETRANSMITTED, stats_map);
+  PopulatePacketCountStat(
+      PACKET_RTX_REJECTED, NUM_PACKETS_RTX_REJECTED, stats_map);
 
   if (network_latency_datapoints_ > 0) {
     double avg_network_latency_ms =
@@ -208,6 +227,10 @@ void StatsEventSubscriber::GetStatsInternal(StatsMap* stats_map) const {
         std::make_pair(MS_SINCE_LAST_RECEIVER_RESPONSE,
         (end_time - last_response_received_time_).InMillisecondsF()));
   }
+
+  stats_map->insert(std::make_pair(NUM_FRAMES_DROPPED_BY_ENCODER,
+                                   num_frames_dropped_by_encoder_));
+  stats_map->insert(std::make_pair(NUM_FRAMES_LATE, num_frames_late_));
 }
 
 bool StatsEventSubscriber::GetReceiverOffset(base::TimeDelta* offset) {
@@ -222,12 +245,22 @@ bool StatsEventSubscriber::GetReceiverOffset(base::TimeDelta* offset) {
   return true;
 }
 
-void StatsEventSubscriber::RecordFrameCapturedTime(
+void StatsEventSubscriber::RecordFrameCaptureTime(
     const FrameEvent& frame_event) {
-  frame_captured_times_.insert(
-      std::make_pair(frame_event.rtp_timestamp, frame_event.timestamp));
-  if (frame_captured_times_.size() > kMaxFrameEventTimeMapSize)
-    frame_captured_times_.erase(frame_captured_times_.begin());
+  recent_captured_frames_.insert(std::make_pair(
+      frame_event.rtp_timestamp, FrameInfo(frame_event.timestamp)));
+  if (recent_captured_frames_.size() > kMaxFrameInfoMapSize) {
+    FrameInfoMap::iterator erase_it = recent_captured_frames_.begin();
+    if (!erase_it->second.encoded)
+      num_frames_dropped_by_encoder_++;
+    recent_captured_frames_.erase(erase_it);
+  }
+}
+
+void StatsEventSubscriber::MarkAsEncoded(RtpTimestamp rtp_timestamp) {
+  FrameInfoMap::iterator it = recent_captured_frames_.find(rtp_timestamp);
+  if (it != recent_captured_frames_.end())
+    it->second.encoded = true;
 }
 
 void StatsEventSubscriber::RecordE2ELatency(const FrameEvent& frame_event) {
@@ -235,15 +268,15 @@ void StatsEventSubscriber::RecordE2ELatency(const FrameEvent& frame_event) {
   if (!GetReceiverOffset(&receiver_offset))
     return;
 
-  FrameEventTimeMap::iterator it =
-      frame_captured_times_.find(frame_event.rtp_timestamp);
-  if (it == frame_captured_times_.end())
+  FrameInfoMap::iterator it =
+      recent_captured_frames_.find(frame_event.rtp_timestamp);
+  if (it == recent_captured_frames_.end())
     return;
 
   // Playout time is event time + playout delay.
   base::TimeTicks playout_time =
       frame_event.timestamp + frame_event.delay_delta - receiver_offset;
-  total_e2e_latency_ += playout_time - it->second;
+  total_e2e_latency_ += playout_time - it->second.capture_time;
   e2e_latency_datapoints_++;
 }
 
@@ -323,6 +356,24 @@ void StatsEventSubscriber::PopulateFpsStat(base::TimeTicks end_time,
   }
 }
 
+void StatsEventSubscriber::PopulateFrameCountStat(CastLoggingEvent event,
+                                                  CastStat stat,
+                                                  StatsMap* stats_map) const {
+  FrameStatsMap::const_iterator it = frame_stats_.find(event);
+  if (it != frame_stats_.end()) {
+    stats_map->insert(std::make_pair(stat, it->second.event_counter));
+  }
+}
+
+void StatsEventSubscriber::PopulatePacketCountStat(CastLoggingEvent event,
+                                                   CastStat stat,
+                                                   StatsMap* stats_map) const {
+  PacketStatsMap::const_iterator it = packet_stats_.find(event);
+  if (it != packet_stats_.end()) {
+    stats_map->insert(std::make_pair(stat, it->second.event_counter));
+  }
+}
+
 void StatsEventSubscriber::PopulatePlayoutDelayStat(StatsMap* stats_map) const {
   FrameStatsMap::const_iterator it = frame_stats_.find(FRAME_PLAYOUT);
   if (it != frame_stats_.end()) {
@@ -395,6 +446,12 @@ StatsEventSubscriber::FrameLogStats::~FrameLogStats() {}
 StatsEventSubscriber::PacketLogStats::PacketLogStats()
     : event_counter(0), sum_size(0) {}
 StatsEventSubscriber::PacketLogStats::~PacketLogStats() {}
+
+StatsEventSubscriber::FrameInfo::FrameInfo(base::TimeTicks capture_time)
+    : capture_time(capture_time), encoded(false) {
+}
+StatsEventSubscriber::FrameInfo::~FrameInfo() {
+}
 
 }  // namespace cast
 }  // namespace media

@@ -49,12 +49,14 @@ class StatsEventSubscriber : public RawEventSubscriber {
  private:
   friend class StatsEventSubscriberTest;
   FRIEND_TEST_ALL_PREFIXES(StatsEventSubscriberTest, EmptyStats);
-  FRIEND_TEST_ALL_PREFIXES(StatsEventSubscriberTest, Capture);
+  FRIEND_TEST_ALL_PREFIXES(StatsEventSubscriberTest, CaptureEncode);
   FRIEND_TEST_ALL_PREFIXES(StatsEventSubscriberTest, Encode);
   FRIEND_TEST_ALL_PREFIXES(StatsEventSubscriberTest, Decode);
   FRIEND_TEST_ALL_PREFIXES(StatsEventSubscriberTest, PlayoutDelay);
   FRIEND_TEST_ALL_PREFIXES(StatsEventSubscriberTest, E2ELatency);
   FRIEND_TEST_ALL_PREFIXES(StatsEventSubscriberTest, Packets);
+
+  static const size_t kMaxFrameInfoMapSize = 100;
 
   // Generic statistics given the raw data. More specific data (e.g. frame rate
   // and bit rate) can be computed given the basic metrics.
@@ -85,8 +87,7 @@ class StatsEventSubscriber : public RawEventSubscriber {
     // TODO(imcheng): This stat is not populated yet because we do not have
     // the time when encode started. Record it in FRAME_ENCODED event.
     AVG_ENCODE_TIME_MS,
-    // Average playout delay in milliseconds, with target delay already
-    // accounted for. Ideally, every frame should have a playout delay of 0.
+    // Average playout delay in milliseconds.
     AVG_PLAYOUT_DELAY_MS,
     // Duration from when a packet is transmitted to when it is received.
     // This measures latency from sender to receiver.
@@ -102,11 +103,31 @@ class StatsEventSubscriber : public RawEventSubscriber {
     // Fraction of packet loss.
     PACKET_LOSS_FRACTION,
     // Duration in milliseconds since last receiver response.
-    MS_SINCE_LAST_RECEIVER_RESPONSE
+    MS_SINCE_LAST_RECEIVER_RESPONSE,
+    // Number of frames captured.
+    NUM_FRAMES_CAPTURED,
+    // Number of frames dropped by encoder.
+    NUM_FRAMES_DROPPED_BY_ENCODER,
+    // Number of late frames.
+    NUM_FRAMES_LATE,
+    // Number of packets that were sent (not retransmitted).
+    NUM_PACKETS_SENT,
+    // Number of packets that were retransmitted.
+    NUM_PACKETS_RETRANSMITTED,
+    // Number of packets that had their retransmission cancelled.
+    NUM_PACKETS_RTX_REJECTED,
+  };
+
+  struct FrameInfo {
+    explicit FrameInfo(base::TimeTicks capture_time);
+    ~FrameInfo();
+
+    base::TimeTicks capture_time;
+    bool encoded;
   };
 
   typedef std::map<CastStat, double> StatsMap;
-  typedef std::map<RtpTimestamp, base::TimeTicks> FrameEventTimeMap;
+  typedef std::map<RtpTimestamp, FrameInfo> FrameInfoMap;
   typedef std::map<
       std::pair<RtpTimestamp, uint16>,
       std::pair<base::TimeTicks, CastLoggingEvent> >
@@ -120,7 +141,8 @@ class StatsEventSubscriber : public RawEventSubscriber {
   void GetStatsInternal(StatsMap* stats_map) const;
 
   bool GetReceiverOffset(base::TimeDelta* offset);
-  void RecordFrameCapturedTime(const FrameEvent& frame_event);
+  void RecordFrameCaptureTime(const FrameEvent& frame_event);
+  void MarkAsEncoded(RtpTimestamp rtp_timestamp);
   void RecordE2ELatency(const FrameEvent& frame_event);
   void RecordPacketSentTime(const PacketEvent& packet_event);
   void ErasePacketSentTime(const PacketEvent& packet_event);
@@ -131,6 +153,12 @@ class StatsEventSubscriber : public RawEventSubscriber {
                        CastLoggingEvent event,
                        CastStat stat,
                        StatsMap* stats_map) const;
+  void PopulateFrameCountStat(CastLoggingEvent event,
+                              CastStat stat,
+                              StatsMap* stats_map) const;
+  void PopulatePacketCountStat(CastLoggingEvent event,
+                               CastStat stat,
+                               StatsMap* stats_map) const;
   void PopulatePlayoutDelayStat(StatsMap* stats_map) const;
   void PopulateFrameBitrateStat(base::TimeTicks now, StatsMap* stats_map) const;
   void PopulatePacketBitrateStat(base::TimeTicks now,
@@ -157,8 +185,11 @@ class StatsEventSubscriber : public RawEventSubscriber {
 
   base::TimeTicks last_response_received_time_;
 
-  // Fixed size map to record when recent frames were captured.
-  FrameEventTimeMap frame_captured_times_;
+  int num_frames_dropped_by_encoder_;
+  int num_frames_late_;
+
+  // Fixed size map to record when recent frames were captured and other info.
+  FrameInfoMap recent_captured_frames_;
 
   // Fixed size map to record when recent packets were sent.
   PacketEventTimeMap packet_sent_times_;
