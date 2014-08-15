@@ -440,6 +440,46 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
     }
 
     @SmallTest
+    public void testConfigure_Blob_Disallow_Null_Cache() {
+        final String path = "/data/data/" + null + "/cache/";
+        final String url = path;
+        mFakeMRG.mFileExists = true;
+        mFakeMRG.mThrowExceptionInConfigure = true;
+        assertFalse(mFakeMRG.configure(mMockContext, url, "", null));
+        assertNull(mFakeMRG.mPath);
+    }
+
+    @SmallTest
+    public void testConfigure_Blob_Disallowed_Incomplete_Path() {
+        final String path = "/data/data/";
+        final String url = path;
+        mFakeMRG.mFileExists = true;
+        mFakeMRG.mThrowExceptionInConfigure = true;
+        assertFalse(mFakeMRG.configure(mMockContext, url, "", null));
+        assertNull(mFakeMRG.mPath);
+    }
+
+    @SmallTest
+    public void testConfigure_Blob_Disallowed_Unknown_Path() {
+        final String path = "/unknown/path/";
+        final String url = path;
+        mFakeMRG.mFileExists = true;
+        mFakeMRG.mThrowExceptionInConfigure = true;
+        assertFalse(mFakeMRG.configure(mMockContext, url, "", null));
+        assertNull(mFakeMRG.mPath);
+    }
+
+    @SmallTest
+    public void testConfigure_Blob_Disallowed_Other_Application() {
+        final String path = "/data/data/org.some.other.app/cache/";
+        final String url = path;
+        mFakeMRG.mFileExists = true;
+        mFakeMRG.mThrowExceptionInConfigure = true;
+        assertFalse(mFakeMRG.configure(mMockContext, url, "", null));
+        assertNull(mFakeMRG.mPath);
+    }
+
+    @SmallTest
     public void testExtract_NoMetadata() {
         mFakeMRG.mFileExists = true;
         assertEquals(sEmptyMetadata, mFakeMRG.extract(

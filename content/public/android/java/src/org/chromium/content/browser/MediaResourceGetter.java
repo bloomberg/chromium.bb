@@ -38,6 +38,8 @@ class MediaResourceGetter {
 
     private final MediaMetadataRetriever mRetriever = new MediaMetadataRetriever();
 
+    private static String PACKAGE_NAME = null;
+
     @VisibleForTesting
     static class MediaMetadata {
         private final int mDurationInMilliseconds;
@@ -114,6 +116,7 @@ class MediaResourceGetter {
                                                       final String url,
                                                       final String cookies,
                                                       final String userAgent) {
+        PACKAGE_NAME = context.getPackageName();
         return new MediaResourceGetter().extract(
                 context, url, cookies, userAgent);
     }
@@ -365,6 +368,8 @@ class MediaResourceGetter {
         List<String> result = new ArrayList<String>();
         result.add("/mnt/sdcard/");
         result.add("/sdcard/");
+        if (PACKAGE_NAME != null)
+            result.add("/data/data/" + PACKAGE_NAME + "/cache/");
         return result;
     }
 
