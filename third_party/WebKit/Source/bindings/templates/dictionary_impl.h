@@ -23,7 +23,7 @@ public:
     {% for member in members %}
     bool {{member.has_method_name}}() const { return {{member.has_method_expression}}; }
     {{member.rvalue_cpp_type}} {{member.name}}() const { return {{member.getter_expression}}; }
-    void {{member.setter_name}}({{member.rvalue_cpp_type}} value) { m_{{member.name}} = value;}
+    void {{member.setter_name}}({{member.rvalue_cpp_type}} value) { m_{{member.name}} = value; }
     {% endfor %}
 
     void trace(Visitor*);

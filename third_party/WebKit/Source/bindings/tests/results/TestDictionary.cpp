@@ -12,6 +12,8 @@ namespace blink {
 
 TestDictionary::TestDictionary()
 {
+    setLongMember(1);
+    setStringOrNullMember(String("default string value"));
 }
 
 void TestDictionary::trace(Visitor* visitor)

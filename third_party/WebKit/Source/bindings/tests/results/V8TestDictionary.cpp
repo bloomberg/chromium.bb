@@ -29,8 +29,6 @@ TestDictionary* V8TestDictionary::toNative(v8::Isolate* isolate, v8::Handle<v8::
     int longMember;
     if (DictionaryHelper::get(dictionary, "longMember", longMember))
         impl->setLongMember(longMember);
-    else
-        impl->setLongMember(1);
     Vector<String> stringArrayMember;
     if (DictionaryHelper::get(dictionary, "stringArrayMember", stringArrayMember))
         impl->setStringArrayMember(stringArrayMember);
@@ -40,8 +38,6 @@ TestDictionary* V8TestDictionary::toNative(v8::Isolate* isolate, v8::Handle<v8::
     String stringOrNullMember;
     if (DictionaryHelper::get(dictionary, "stringOrNullMember", stringOrNullMember))
         impl->setStringOrNullMember(stringOrNullMember);
-    else
-        impl->setStringOrNullMember(String("default string value"));
     Vector<String> stringSequenceMember;
     if (DictionaryHelper::get(dictionary, "stringSequenceMember", stringSequenceMember))
         impl->setStringSequenceMember(stringSequenceMember);

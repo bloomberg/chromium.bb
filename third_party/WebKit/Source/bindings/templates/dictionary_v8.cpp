@@ -23,10 +23,6 @@ namespace blink {
     {{member.cpp_type}} {{member.name}};
     if (DictionaryHelper::get(dictionary, "{{member.name}}", {{member.name}}))
         impl->{{member.setter_name}}({{member.name}});
-    {% if member.cpp_default_value %}
-    else
-        impl->{{member.setter_name}}({{member.cpp_default_value}});
-    {% endif %}
     {% endfor %}
     return impl;
 }

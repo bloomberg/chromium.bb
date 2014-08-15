@@ -16,6 +16,9 @@ namespace blink {
 {# Constructor #}
 {{cpp_class}}::{{cpp_class}}()
 {
+    {% for member in members if member.cpp_default_value %}
+    {{member.setter_name}}({{member.cpp_default_value}});
+    {% endfor %}
 }
 
 void {{cpp_class}}::trace(Visitor* visitor)

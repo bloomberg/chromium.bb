@@ -121,8 +121,13 @@ def member_impl_context(member, interfaces_info, header_includes):
             return v8_types.cpp_template_type('Nullable', member_cpp_type)
         return member_cpp_type
 
+    cpp_default_value = None
+    if member.default_value and not member.default_value.is_null:
+        cpp_default_value = str(member.default_value)
+
     header_includes.update(idl_type.impl_includes_for_type(interfaces_info))
     return {
+        'cpp_default_value': cpp_default_value,
         'getter_expression': getter_expression(),
         'has_method_expression': has_method_expression(),
         'has_method_name': has_method_name_for_dictionary_member(member),
