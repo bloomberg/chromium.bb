@@ -39,6 +39,7 @@ VideoRendererImpl::VideoRendererImpl(
       buffering_state_(BUFFERING_HAVE_NOTHING),
       paint_cb_(paint_cb),
       last_timestamp_(kNoTimestamp()),
+      last_painted_timestamp_(kNoTimestamp()),
       frames_decoded_(0),
       frames_dropped_(0),
       is_shutting_down_(false),
@@ -184,6 +185,11 @@ void VideoRendererImpl::ThreadMain() {
   const base::TimeDelta kIdleTimeDelta =
       base::TimeDelta::FromMilliseconds(10);
 
+  // If we have no frames and haven't painted any frame for certain amount of
+  // time, declare BUFFERING_HAVE_NOTHING.
+  const base::TimeDelta kTimeToDeclareHaveNothing =
+      base::TimeDelta::FromSeconds(3);
+
   for (;;) {
     base::AutoLock auto_lock(lock_);
 
@@ -197,6 +203,8 @@ void VideoRendererImpl::ThreadMain() {
       continue;
     }
 
+    base::TimeDelta now = get_time_cb_.Run();
+
     // Remain idle until we have the next frame ready for rendering.
     if (ready_frames_.empty()) {
       if (received_end_of_stream_) {
@@ -204,7 +212,8 @@ void VideoRendererImpl::ThreadMain() {
           rendered_end_of_stream_ = true;
           task_runner_->PostTask(FROM_HERE, ended_cb_);
         }
-      } else {
+      } else if (last_painted_timestamp_ != kNoTimestamp() &&
+                 now - last_painted_timestamp_ >= kTimeToDeclareHaveNothing) {
         buffering_state_ = BUFFERING_HAVE_NOTHING;
         task_runner_->PostTask(
             FROM_HERE, base::Bind(buffering_state_cb_, BUFFERING_HAVE_NOTHING));
@@ -214,7 +223,6 @@ void VideoRendererImpl::ThreadMain() {
       continue;
     }
 
-    base::TimeDelta now = get_time_cb_.Run();
     base::TimeDelta target_paint_timestamp = ready_frames_.front()->timestamp();
     base::TimeDelta latest_paint_timestamp;
 
@@ -258,6 +266,7 @@ void VideoRendererImpl::PaintNextReadyFrame_Locked() {
   frames_decoded_++;
 
   last_timestamp_ = next_frame->timestamp();
+  last_painted_timestamp_ = next_frame->timestamp();
 
   paint_cb_.Run(next_frame);
 
@@ -443,6 +452,7 @@ void VideoRendererImpl::OnVideoFrameStreamResetDone() {
 
   state_ = kFlushed;
   last_timestamp_ = kNoTimestamp();
+  last_painted_timestamp_ = kNoTimestamp();
   base::ResetAndReturn(&flush_cb_).Run();
 }
 

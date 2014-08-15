@@ -198,6 +198,10 @@ class MEDIA_EXPORT VideoRendererImpl
   // during flushing.
   base::TimeDelta last_timestamp_;
 
+  // The timestamp of the last successfully painted frame. Set to kNoTimestamp()
+  // during flushing.
+  base::TimeDelta last_painted_timestamp_;
+
   // Keeps track of the number of frames decoded and dropped since the
   // last call to |statistics_cb_|. These must be accessed under lock.
   int frames_decoded_;

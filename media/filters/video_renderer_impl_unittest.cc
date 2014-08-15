@@ -43,8 +43,9 @@ MATCHER_P(HasTimestamp, ms, "") {
   return arg->timestamp().InMilliseconds() == ms;
 }
 
-// Arbitrary value. Has to be larger to cover any timestamp value used in tests.
-static const int kVideoDurationInMs = 1000;
+// Arbitrary value. Has to be larger to cover any timestamp value used in tests
+// and kTimeToDeclareHaveNothing.
+static const int kVideoDurationInMs = 10000;
 
 class VideoRendererImplTest : public ::testing::Test {
  public:
@@ -530,13 +531,17 @@ TEST_F(VideoRendererImplTest, Underflow) {
   EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH));
   StartPlaying();
 
-  // Frames should be dropped and we should signal having nothing.
+  // Advance time slightly. Frames should be dropped and we should NOT signal
+  // having nothing.
+  AdvanceTimeInMs(100);
+
+  // Advance time more. Now we should signal having nothing.
   {
     SCOPED_TRACE("Waiting for BUFFERING_HAVE_NOTHING");
     WaitableMessageLoopEvent event;
     EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_NOTHING))
         .WillOnce(RunClosure(event.GetClosure()));
-    AdvanceTimeInMs(100);
+    AdvanceTimeInMs(3000); // Must match kTimeToDeclareHaveNothing.
     event.RunAndWait();
   }
 
