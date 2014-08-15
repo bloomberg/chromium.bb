@@ -34,7 +34,6 @@ class ClientSocketHandle;
 class HostResolver;
 class HttpServerProperties;
 class SpdySession;
-class TransportSecurityState;
 
 // This is a very simple pool for open SpdySessions.
 class NET_EXPORT SpdySessionPool
@@ -51,7 +50,6 @@ class NET_EXPORT SpdySessionPool
       HostResolver* host_resolver,
       SSLConfigService* ssl_config_service,
       const base::WeakPtr<HttpServerProperties>& http_server_properties,
-      TransportSecurityState* transport_security_state,
       bool force_single_domain,
       bool enable_compression,
       bool enable_ping_based_connection_checking,
@@ -192,8 +190,6 @@ class NET_EXPORT SpdySessionPool
       bool idle_only);
 
   const base::WeakPtr<HttpServerProperties> http_server_properties_;
-
-  TransportSecurityState* transport_security_state_;
 
   // The set of all sessions. This is a superset of the sessions in
   // |available_sessions_|.

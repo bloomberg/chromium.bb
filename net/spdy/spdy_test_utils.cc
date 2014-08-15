@@ -7,13 +7,10 @@
 #include <cstring>
 #include <vector>
 
-#include "base/base64.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
-#include "net/http/transport_security_state.h"
-#include "net/ssl/ssl_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -140,36 +137,6 @@ std::string a2b_hex(const char* hex_data) {
   if (base::HexStringToBytes(hex_data, &output))
     result.assign(reinterpret_cast<const char*>(&output[0]), output.size());
   return result;
-}
-
-HashValue GetTestHashValue(uint8_t label) {
-  HashValue hash_value(HASH_VALUE_SHA256);
-  memset(hash_value.data(), label, hash_value.size());
-  return hash_value;
-}
-
-std::string GetTestPin(uint8_t label) {
-  HashValue hash_value = GetTestHashValue(label);
-  std::string base64;
-  base::Base64Encode(base::StringPiece(
-      reinterpret_cast<char*>(hash_value.data()), hash_value.size()), &base64);
-
-  return std::string("pin-sha256=\"") + base64 + "\"";
-}
-
-void AddPin(TransportSecurityState* state,
-            const std::string& host,
-            uint8_t primary_label,
-            uint8_t backup_label) {
-  std::string primary_pin = GetTestPin(primary_label);
-  std::string backup_pin = GetTestPin(backup_label);
-  std::string header = "max-age = 10000; " + primary_pin + "; " + backup_pin;
-
-  // Construct a fake SSLInfo that will pass AddHPKPHeader's checks.
-  SSLInfo ssl_info;
-  ssl_info.is_issued_by_known_root = true;
-  ssl_info.public_key_hashes.push_back(GetTestHashValue(primary_label));
-  EXPECT_TRUE(state->AddHPKPHeader(host, header, ssl_info));
 }
 
 }  // namespace test

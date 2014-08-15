@@ -861,8 +861,8 @@ int QuicStreamFactory::CreateSession(
 
   *session = new QuicClientSession(
       connection, socket.Pass(), writer.Pass(), this,
-      quic_crypto_client_stream_factory_, transport_security_state_,
-      server_info.Pass(), server_id, config, &crypto_config_,
+      quic_crypto_client_stream_factory_, server_info.Pass(), server_id,
+      config, &crypto_config_,
       base::MessageLoop::current()->message_loop_proxy().get(),
       net_log.net_log());
   (*session)->InitializeSession();

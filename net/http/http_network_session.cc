@@ -135,7 +135,6 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
       spdy_session_pool_(params.host_resolver,
                          params.ssl_config_service,
                          params.http_server_properties,
-                         params.transport_security_state,
                          params.force_spdy_single_domain,
                          params.enable_spdy_compression,
                          params.enable_spdy_ping_based_connection_checking,
