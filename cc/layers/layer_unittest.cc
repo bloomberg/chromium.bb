@@ -56,7 +56,6 @@ class MockLayerPainter : public LayerPainter {
                      gfx::RectF* opaque) OVERRIDE {}
 };
 
-
 class LayerTest : public testing::Test {
  public:
   LayerTest()
@@ -1150,6 +1149,51 @@ TEST_F(LayerTest, SafeOpaqueBackgroundColor) {
       }
     }
   }
+}
+
+class DrawsContentChangeLayer : public Layer {
+ public:
+  static scoped_refptr<DrawsContentChangeLayer> Create() {
+    return make_scoped_refptr(new DrawsContentChangeLayer());
+  }
+
+  virtual void SetLayerTreeHost(LayerTreeHost* host) OVERRIDE {
+    Layer::SetLayerTreeHost(host);
+    SetFakeDrawsContent(!fake_draws_content_);
+  }
+
+  virtual bool HasDrawableContent() const OVERRIDE {
+    return fake_draws_content_ && Layer::HasDrawableContent();
+  }
+
+  void SetFakeDrawsContent(bool fake_draws_content) {
+    fake_draws_content_ = fake_draws_content;
+    UpdateDrawsContent(HasDrawableContent());
+  }
+
+ private:
+  DrawsContentChangeLayer() : Layer(), fake_draws_content_(false) {}
+  virtual ~DrawsContentChangeLayer() OVERRIDE {}
+
+  bool fake_draws_content_;
+};
+
+TEST_F(LayerTest, DrawsContentChangedInSetLayerTreeHost) {
+  scoped_refptr<Layer> root_layer = Layer::Create();
+  scoped_refptr<DrawsContentChangeLayer> becomes_not_draws_content =
+      DrawsContentChangeLayer::Create();
+  scoped_refptr<DrawsContentChangeLayer> becomes_draws_content =
+      DrawsContentChangeLayer::Create();
+  root_layer->SetIsDrawable(true);
+  becomes_not_draws_content->SetIsDrawable(true);
+  becomes_not_draws_content->SetFakeDrawsContent(true);
+  EXPECT_EQ(0, root_layer->NumDescendantsThatDrawContent());
+  root_layer->AddChild(becomes_not_draws_content);
+  EXPECT_EQ(0, root_layer->NumDescendantsThatDrawContent());
+
+  becomes_draws_content->SetIsDrawable(true);
+  root_layer->AddChild(becomes_draws_content);
+  EXPECT_EQ(1, root_layer->NumDescendantsThatDrawContent());
 }
 
 }  // namespace

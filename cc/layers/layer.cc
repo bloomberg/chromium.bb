@@ -247,13 +247,13 @@ void Layer::AddChild(scoped_refptr<Layer> child) {
 void Layer::InsertChild(scoped_refptr<Layer> child, size_t index) {
   DCHECK(IsPropertyChangeAllowed());
   child->RemoveFromParent();
+  AddDrawableDescendants(child->NumDescendantsThatDrawContent() +
+                         (child->DrawsContent() ? 1 : 0));
   child->SetParent(this);
   child->stacking_order_changed_ = true;
 
   index = std::min(index, children_.size());
   children_.insert(children_.begin() + index, child);
-  AddDrawableDescendants(child->NumDescendantsThatDrawContent() +
-                         (child->DrawsContent() ? 1 : 0));
   SetNeedsFullTreeSync();
 }
 
