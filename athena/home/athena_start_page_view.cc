@@ -24,8 +24,11 @@ const size_t kMaxIconNum = 3;
 const int kIconSize = 50;
 const int kIconMargin = 25;
 
-const int kBorderWidth = 1;
-const int kCornerRadius = 1;
+// Copied from ui/app_list/views/start_page_view.cc
+const int kSearchBoxBorderWidth = 1;
+const int kSearchBoxCornerRadius = 2;
+const int kSearchBoxWidth = 490;
+const int kSearchBoxHeight = 40;
 
 // The preferred height for VISIBLE_BOTTOM state.
 const int kPreferredHeightBottom = 100;
@@ -104,6 +107,37 @@ class RoundRectBackground : public views::Background {
   DISALLOW_COPY_AND_ASSIGN(RoundRectBackground);
 };
 
+class SearchBoxContainer : public views::View {
+ public:
+  explicit SearchBoxContainer(app_list::SearchBoxView* search_box)
+      : search_box_(search_box) {
+    search_box->set_background(
+        new RoundRectBackground(SK_ColorWHITE, kSearchBoxCornerRadius));
+    search_box->SetBorder(views::Border::CreateBorderPainter(
+        new views::RoundRectPainter(SK_ColorGRAY, kSearchBoxCornerRadius),
+        gfx::Insets(kSearchBoxBorderWidth, kSearchBoxBorderWidth,
+                    kSearchBoxBorderWidth, kSearchBoxBorderWidth)));
+    AddChildView(search_box_);
+  }
+  virtual ~SearchBoxContainer() {}
+
+ private:
+  // views::View:
+  virtual void Layout() OVERRIDE {
+    gfx::Rect search_box_bounds = GetContentsBounds();
+    search_box_bounds.ClampToCenteredSize(GetPreferredSize());
+    search_box_->SetBoundsRect(search_box_bounds);
+  }
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+    return gfx::Size(kSearchBoxWidth, kSearchBoxHeight);
+  }
+
+  // Owned by the views hierarchy.
+  app_list::SearchBoxView* search_box_;
+
+  DISALLOW_COPY_AND_ASSIGN(SearchBoxContainer);
+};
+
 }  // namespace
 
 namespace athena {
@@ -126,14 +160,7 @@ AthenaStartPageView::AthenaStartPageView(
   for (size_t i = 0; i < std::min(top_level->item_count(), kMaxIconNum); ++i)
     container_->AddChildView(new AppIconButton(top_level->item_at(i)));
 
-  views::View* search_box_container = new views::View();
-  search_box_container->set_background(
-      new RoundRectBackground(SK_ColorWHITE, kCornerRadius));
-  search_box_container->SetBorder(views::Border::CreateBorderPainter(
-      new views::RoundRectPainter(SK_ColorGRAY, kCornerRadius),
-      gfx::Insets(kBorderWidth, kBorderWidth, kBorderWidth, kBorderWidth)));
-  search_box_container->SetLayoutManager(new views::FillLayout());
-  search_box_container->AddChildView(
+  views::View* search_box_container = new SearchBoxContainer(
       new app_list::SearchBoxView(this, view_delegate));
   container_->AddChildView(search_box_container);
   box_layout->SetFlexForView(search_box_container, 1);
