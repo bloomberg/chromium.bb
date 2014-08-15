@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright (c) 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -13,17 +13,19 @@ class StackFrame(object):
 
   Attributes:
     index: An index of the stack frame.
-    component: A component this line represents, such as blink, chrome, etc.
+    component_path: The path of the component this frame represents.
+    component_name: The name of the component this frame represents.
     file_name: The name of the file that crashed.
     function: The function that caused the crash.
     file_path: The path of the crashed file.
     crashed_line_number: The line of the file that caused the crash.
   """
 
-  def __init__(self, stack_frame_index, component, file_name,
-               function, file_path, crashed_line_number):
+  def __init__(self, stack_frame_index, component_path, component_name,
+               file_name, function, file_path, crashed_line_number):
     self.index = stack_frame_index
-    self.component = component
+    self.component_path = component_path
+    self.component_name = component_name
     self.file_name = file_name
     self.function = function
     self.file_path = file_path
@@ -55,8 +57,9 @@ class Stacktrace(object):
   one callstacks.
   """
 
-  def __init__(self, stacktrace, build_type):
-    self.stack_list = []
+  def __init__(self, stacktrace, build_type, parsed_deps):
+    self.stack_list = None
+    self.parsed_deps = parsed_deps
     self.ParseStacktrace(stacktrace, build_type)
 
   def ParseStacktrace(self, stacktrace, build_type):
@@ -72,7 +75,6 @@ class Stacktrace(object):
     """
     # If the passed in string is empty, the object does not represent anything.
     if not stacktrace:
-      self.stack_list = None
       return
 
     # Reset the stack list.
@@ -256,21 +258,29 @@ class Stacktrace(object):
 
     # Normalize the file path so that it can be compared to repository path.
     file_name = os.path.basename(file_path)
-    (component, file_path) = crash_utils.NormalizePathLinux(file_path)
+    (component_path, component_name, file_path) = (
+        crash_utils.NormalizePathLinux(file_path, self.parsed_deps))
 
-    # FIXME(jeun): Add other components.
-    if not (component == 'blink' or component == 'chromium'):
+    # If this component is not supported, ignore this line.
+    if not component_path:
       return None
 
     # Return a new stack frame object with the parsed information.
-    return StackFrame(stack_frame_index, component, file_name, function,
-                      file_path, crashed_line_number)
+    return StackFrame(stack_frame_index, component_path, component_name,
+                      file_name, function, file_path, crashed_line_number)
 
   def __getitem__(self, index):
     return self.stack_list[index]
 
   def GetCrashStack(self):
-    for callstack in self.stack_list:
-      # Only the crash stack has the priority 0.
-      if callstack.priority == 0:
-        return callstack
+    """Returns the callstack with the highest priority.
+
+    Crash stack has priority 0, and allocation/freed/other thread stacks
+    get priority 1.
+
+    Returns:
+      The highest priority callstack in the stacktrace.
+    """
+    sorted_stacklist = sorted(self.stack_list,
+                              key=lambda callstack: callstack.priority)
+    return sorted_stacklist[0]

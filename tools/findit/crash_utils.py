@@ -1,48 +1,144 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright (c) 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import cgi
+import ConfigParser
 import json
+import logging
 import os
 import time
-import urllib
+import urllib2
+
+from result import Result
 
 
 INFINITY = float('inf')
 
 
-def NormalizePathLinux(path):
+def ParseURLsFromConfig(file_name):
+  """Parses URLS from the config file.
+
+  The file should be in python config format, where svn section is in the
+  format "svn:component_path", except for git URLs and codereview URL.
+  Each of the section for svn should contain changelog_url, revision_url,
+  diff_url and blame_url.
+
+  Args:
+    file_name: The name of the file that contains URL information.
+
+  Returns:
+    A dictionary that maps repository type to list of URLs. For svn, it maps
+    key 'svn' to another dictionary, which maps component path to the URLs
+    as explained above. For git, it maps to the URLs as explained above.
+    Codereview maps to codereview API url.
+  """
+  config = ConfigParser.ConfigParser()
+
+  # Get the absolute path of the config file, and read the file. If it fails,
+  # return none.
+  config_file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)),
+                                  file_name)
+  config.read(config_file_path)
+  if not config:
+    logging.error('Config file with URLs does not exist.')
+    return None
+
+  # Iterate through the config file, check for sections.
+  repository_type_to_url_map = {}
+  for section in config.sections():
+    # These two do not need another layer of dictionary, so add it and go
+    # to next section.
+    if section == 'git' or section == 'codereview':
+      for option in config.options(section):
+        if section not in repository_type_to_url_map:
+          repository_type_to_url_map[section] = {}
+
+        url = config.get(section, option)
+        repository_type_to_url_map[section][option] = url
+
+      continue
+
+    # Get repository type and component name from the section name.
+    repository_type_and_component = section.split(':')
+    repository_type = repository_type_and_component[0]
+    component_path = repository_type_and_component[1]
+
+    # Add 'svn' as the key, if it is not already there.
+    if repository_type not in repository_type_to_url_map:
+      repository_type_to_url_map[repository_type] = {}
+    url_map_for_repository = repository_type_to_url_map[repository_type]
+
+    # Add the path to the 'svn', if it is not already there.
+    if component_path not in url_map_for_repository:
+      url_map_for_repository[component_path] = {}
+    type_to_url = url_map_for_repository[component_path]
+
+    # Add all URLs to this map.
+    for option in config.options(section):
+      url = config.get(section, option)
+      type_to_url[option] = url
+
+  return repository_type_to_url_map
+
+
+def NormalizePathLinux(path, parsed_deps):
   """Normalizes linux path.
 
   Args:
     path: A string representing a path.
+    parsed_deps: A map from component path to its component name, repository,
+                 etc.
 
   Returns:
     A tuple containing a component this path is in (e.g blink, skia, etc)
     and a path in that component's repository.
   """
+  # First normalize the path by retreiving the absolute path.
   normalized_path = os.path.abspath(path)
 
-  if 'src/v8/' in normalized_path:
-    component = 'v8'
-    normalized_path = normalized_path.split('src/v8/')[1]
+  # Iterate through all component paths in the parsed DEPS, in the decreasing
+  # order of the length of the file path.
+  for component_path in sorted(parsed_deps,
+                               key=(lambda path: -len(path))):
+    # New_path is the component path with 'src/' removed.
+    new_path = component_path
+    if new_path.startswith('src/') and new_path != 'src/':
+      new_path = new_path[len('src/'):]
 
-  # TODO(jeun): Integrate with parsing DEPS file.
-  if 'WebKit/' in normalized_path:
-    component = 'blink'
-    normalized_path = ''.join(path.split('WebKit/')[1:])
-  else:
-    component = 'chromium'
+    # If this path is the part of file path, this file must be from this
+    # component.
+    if new_path in normalized_path:
 
-  if '/build/' in normalized_path:
-    normalized_path = normalized_path.split('/build/')[-1]
+      # Currently does not support googlecode.
+      if 'googlecode' in parsed_deps[component_path]['repository']:
+        return (None, '', '')
 
-  if not (normalized_path.startswith('src/') or
-      normalized_path.startswith('Source/')):
-    normalized_path = 'src/' + normalized_path
+      # Normalize the path by stripping everything off the component's relative
+      # path.
+      normalized_path = normalized_path.split(new_path,1)[1]
 
-  return (component, normalized_path)
+      # Add 'src/' or 'Source/' at the front of the normalized path, depending
+      # on what prefix the component path uses. For example, blink uses
+      # 'Source' but chromium uses 'src/', and blink component path is
+      # 'src/third_party/WebKit/Source', so add 'Source/' in front of the
+      # normalized path.
+      if not normalized_path.startswith('src/') or \
+          normalized_path.startswith('Source/'):
+
+        if (new_path.lower().endswith('src/') or
+            new_path.lower().endswith('source/')):
+          normalized_path = new_path.split('/')[-2] + '/' + normalized_path
+
+        else:
+          normalized_path = 'src/' + normalized_path
+
+      component_name = parsed_deps[component_path]['name']
+
+      return (component_path, component_name, normalized_path)
+
+  # If the path does not match any component, default to chromium.
+  return ('src/', 'chromium', normalized_path)
 
 
 def SplitRange(regression):
@@ -55,6 +151,9 @@ def SplitRange(regression):
     A list containing two numbers represented in string, for example
     ['1234','5678'].
   """
+  if not regression:
+    return None
+
   revisions = regression.split(':')
 
   # If regression information is not available, return none.
@@ -62,10 +161,10 @@ def SplitRange(regression):
     return None
 
   # Strip 'r' from both start and end range.
-  start_range = revisions[0].lstrip('r')
-  end_range = revisions[1].lstrip('r')
+  range_start = revisions[0].lstrip('r')
+  range_end = revisions[1].lstrip('r')
 
-  return [start_range, end_range]
+  return [range_start, range_end]
 
 
 def LoadJSON(json_string):
@@ -85,13 +184,14 @@ def LoadJSON(json_string):
   return data
 
 
-def GetDataFromURL(url, retries=10, sleep_time=0.1):
+def GetDataFromURL(url, retries=10, sleep_time=0.1, timeout=10):
   """Retrieves raw data from URL, tries 10 times.
 
   Args:
     url: URL to get data from.
     retries: Number of times to retry connection.
     sleep_time: Time in seconds to wait before retrying connection.
+    timeout: Time in seconds to wait before time out.
 
   Returns:
     None if the data retrieval fails, or the raw data.
@@ -100,13 +200,16 @@ def GetDataFromURL(url, retries=10, sleep_time=0.1):
   for i in range(retries):
     # Retrieves data from URL.
     try:
-      data = urllib.urlopen(url)
+      data = urllib2.urlopen(url, timeout=timeout)
 
       # If retrieval is successful, return the data.
       if data:
         return data.read()
 
     # If retrieval fails, try after sleep_time second.
+    except urllib2.URLError:
+      time.sleep(sleep_time)
+      continue
     except IOError:
       time.sleep(sleep_time)
       continue
@@ -205,7 +308,7 @@ def AddHyperlink(text, link):
     A string with hyperlink added.
   """
   sanitized_link = cgi.escape(link, quote=True)
-  sanitized_text = cgi.escape(text)
+  sanitized_text = cgi.escape(str(text))
   return '<a href="%s">%s</a>' % (sanitized_link, sanitized_text)
 
 
@@ -283,3 +386,77 @@ def Intersection(crashed_line_list, stack_frame_index, changed_line_numbers,
       break
 
   return (line_intersection, stack_frame_index_intersection)
+
+
+def MatchListToResultList(matches):
+  """Convert list of matches to the list of result objects.
+
+  Args:
+    matches: A list of match objects along with its stack priority and revision
+             number/git hash
+  Returns:
+    A list of result object.
+
+  """
+  result_list = []
+
+  for _, cl, match in matches:
+    suspected_cl = cl
+    revision_url = match.revision_url
+    component_name = match.component_name
+    author = match.author
+    reason = match.reason
+    review_url = match.review_url
+    reviewers = match.reviewers
+    # For matches, line content do not exist.
+    line_content = None
+
+    result = Result(suspected_cl, revision_url, component_name, author, reason,
+                    review_url, reviewers, line_content)
+    result_list.append(result)
+
+  return result_list
+
+
+def BlameListToResultList(blame_list):
+  """Convert blame list to the list of result objects.
+
+  Args:
+    blame_list: A list of blame objects.
+
+  Returns:
+    A list of result objects.
+  """
+  result_list = []
+
+  for blame in blame_list:
+    suspected_cl = blame.revision
+    revision_url = blame.url
+    component_name = blame.component_name
+    author = blame.author
+    reason = (
+        'The CL changes line %s of file %s from stack %d.' %
+        (blame.line_number, blame.file, blame.stack_frame_index))
+    # Blame object does not have review url and reviewers.
+    review_url = None
+    reviewers = None
+    line_content = blame.content
+
+    result = Result(suspected_cl, revision_url, component_name, author, reason,
+                    review_url, reviewers, line_content)
+    result_list.append(result)
+
+  return result_list
+
+
+def ResultListToJSON(result_list):
+  """Converts result list to JSON format.
+
+  Args:
+    result_list: A list of result objects
+
+  Returns:
+    A string, JSON format of the result_list.
+
+  """
+  return json.dumps([result.ToDictionary() for result in result_list])
