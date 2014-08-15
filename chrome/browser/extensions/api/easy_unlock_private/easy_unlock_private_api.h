@@ -81,6 +81,8 @@ class EasyUnlockPrivatePerformECDHKeyAgreementFunction
 
   DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.performECDHKeyAgreement",
                              EASYUNLOCKPRIVATE_PERFORMECDHKEYAGREEMENT)
+
+  DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivatePerformECDHKeyAgreementFunction);
 };
 
 class EasyUnlockPrivateGenerateEcP256KeyPairFunction
@@ -99,6 +101,8 @@ class EasyUnlockPrivateGenerateEcP256KeyPairFunction
 
   DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.generateEcP256KeyPair",
                              EASYUNLOCKPRIVATE_GENERATEECP256KEYPAIR)
+
+  DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateGenerateEcP256KeyPairFunction);
 };
 
 class EasyUnlockPrivateCreateSecureMessageFunction
@@ -116,6 +120,8 @@ class EasyUnlockPrivateCreateSecureMessageFunction
 
   DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.createSecureMessage",
                              EASYUNLOCKPRIVATE_CREATESECUREMESSAGE)
+
+  DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateCreateSecureMessageFunction);
 };
 
 class EasyUnlockPrivateUnwrapSecureMessageFunction
@@ -133,6 +139,8 @@ class EasyUnlockPrivateUnwrapSecureMessageFunction
 
   DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.unwrapSecureMessage",
                              EASYUNLOCKPRIVATE_UNWRAPSECUREMESSAGE)
+
+  DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateUnwrapSecureMessageFunction);
 };
 
 class EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction
@@ -153,6 +161,23 @@ class EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction
 
   DISALLOW_COPY_AND_ASSIGN(
       EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction);
+};
+
+class EasyUnlockPrivateUpdateScreenlockStateFunction
+    : public SyncExtensionFunction {
+ public:
+  EasyUnlockPrivateUpdateScreenlockStateFunction();
+
+ protected:
+  virtual ~EasyUnlockPrivateUpdateScreenlockStateFunction();
+
+  virtual bool RunSync() OVERRIDE;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.updateScreenlockState",
+                             EASYUNLOCKPRIVATE_UPDATESCREENLOCKSTATE)
+
+  DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateUpdateScreenlockStateFunction);
 };
 
 }  // namespace api

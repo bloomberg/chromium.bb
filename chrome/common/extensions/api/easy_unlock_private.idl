@@ -18,6 +18,32 @@
     AES_256_CBC
   };
 
+  // Available states for the Easy Unlock app.
+  enum State {
+    // Screen is either not locked, or the Easy Unlock is not enabled.
+    INACTIVE,
+    // The Bluetooth is not enabled.
+    NO_BLUETOOTH,
+    // Bluetooth is being activated.
+    BLUETOOTH_CONNECTING,
+    // There are no phones eligible to unlock the device.
+    NO_PHONE,
+    // A phone eligible to unlock the device is detected, but can't be
+    // authenticated.
+    PHONE_NOT_AUTHENTICATED,
+    // A phone eligible to unlock the device is detected, but it's locked and
+    // thus unable to unlock the device.
+    PHONE_LOCKED,
+    // A phone eligible to unlock the device is detected, but it is not allowed
+    // to unlock the device because it doesn't have lock screen enabled.
+    PHONE_UNLOCKABLE,
+    // A phone eligible to unlock the device is detected, but it's not close
+    // enough to be allowed to unlock the device.
+    PHONE_NOT_NEARBY,
+    // The devie can be unlocked using Easy Unlock.
+    AUTHENTICATED
+  };
+
   // Options that can be passed to |unwrapSecureMessage| method.
   dictionary UnwrapSecureMessageOptions {
     // The data associated with the message. For the message to be succesfully
@@ -145,5 +171,9 @@
     // |callback|: Called to indicate success or failure.
     static void seekBluetoothDeviceByAddress(DOMString deviceAddress,
                                              optional EmptyCallback callback);
+
+    // Updates the screenlock state to reflect the Easy Unlock app state.
+    static void updateScreenlockState(State state,
+                                      optional EmptyCallback callback);
   };
 };

@@ -14,6 +14,7 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
+class EasyUnlockScreenlockStateHandler;
 class Profile;
 
 class EasyUnlockService : public KeyedService {
@@ -35,6 +36,12 @@ class EasyUnlockService : public KeyedService {
   // permitted either the flag is enabled or its field trial is enabled.
   bool IsAllowed();
 
+  // Gets |screenlock_state_handler_|. Returns NULL if Easy Unlock is not
+  // allowed. Otherwise, if |screenlock_state_handler_| is not set, an instance
+  // is created. Do not cache the returned value, as it may go away if Easy
+  // Unlock gets disabled.
+  EasyUnlockScreenlockStateHandler* GetScreenlockStateHandler();
+
  private:
   void Initialize();
   void LoadApp();
@@ -43,6 +50,8 @@ class EasyUnlockService : public KeyedService {
 
   Profile* profile_;
   PrefChangeRegistrar registrar_;
+  // Created lazily in |GetScreenlockStateHandler|.
+  scoped_ptr<EasyUnlockScreenlockStateHandler> screenlock_state_handler_;
   base::WeakPtrFactory<EasyUnlockService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockService);

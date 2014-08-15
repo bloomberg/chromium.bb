@@ -1536,6 +1536,8 @@
       'browser/search/hotword_service.h',
       'browser/search/hotword_service_factory.cc',
       'browser/search/hotword_service_factory.h',
+      'browser/signin/easy_unlock_screenlock_state_handler.cc',
+      'browser/signin/easy_unlock_screenlock_state_handler.h',
       'browser/signin/easy_unlock_service.cc',
       'browser/signin/easy_unlock_service.h',
       'browser/signin/easy_unlock_service_factory.cc',

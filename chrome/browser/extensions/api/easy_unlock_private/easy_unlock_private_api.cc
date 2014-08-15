@@ -10,6 +10,9 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_bluetooth_util.h"
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_crypto_delegate.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/easy_unlock_screenlock_state_handler.h"
+#include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "grit/generated_resources.h"
@@ -32,6 +35,36 @@ EasyUnlockPrivateCryptoDelegate* GetCryptoDelegate(
     content::BrowserContext* context) {
   return BrowserContextKeyedAPIFactory<EasyUnlockPrivateAPI>::Get(context)
              ->crypto_delegate();
+}
+
+EasyUnlockScreenlockStateHandler* GetScreenlockStateHandler(
+    content::BrowserContext* context) {
+  return EasyUnlockService::Get(Profile::FromBrowserContext(context))
+      ->GetScreenlockStateHandler();
+}
+
+EasyUnlockScreenlockStateHandler::State ToScreenlockStateHandlerState(
+    easy_unlock_private::State state) {
+  switch (state) {
+    case easy_unlock_private::STATE_NO_BLUETOOTH:
+      return EasyUnlockScreenlockStateHandler::STATE_NO_BLUETOOTH;
+    case easy_unlock_private::STATE_BLUETOOTH_CONNECTING:
+      return EasyUnlockScreenlockStateHandler::STATE_BLUETOOTH_CONNECTING;
+    case easy_unlock_private::STATE_NO_PHONE:
+      return EasyUnlockScreenlockStateHandler::STATE_NO_PHONE;
+    case easy_unlock_private::STATE_PHONE_NOT_AUTHENTICATED:
+      return EasyUnlockScreenlockStateHandler::STATE_PHONE_NOT_AUTHENTICATED;
+    case easy_unlock_private::STATE_PHONE_LOCKED:
+      return EasyUnlockScreenlockStateHandler::STATE_PHONE_LOCKED;
+    case easy_unlock_private::STATE_PHONE_UNLOCKABLE:
+      return EasyUnlockScreenlockStateHandler::STATE_PHONE_UNLOCKABLE;
+    case easy_unlock_private::STATE_PHONE_NOT_NEARBY:
+      return EasyUnlockScreenlockStateHandler::STATE_PHONE_NOT_NEARBY;
+    case easy_unlock_private::STATE_AUTHENTICATED:
+      return EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED;
+    default:
+      return EasyUnlockScreenlockStateHandler::STATE_INACTIVE;
+  }
 }
 
 }  // namespace
@@ -366,6 +399,29 @@ void EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction::OnSeekCompleted(
     SetError(seek_result.error_message);
     SendResponse(false);
   }
+}
+
+EasyUnlockPrivateUpdateScreenlockStateFunction::
+    EasyUnlockPrivateUpdateScreenlockStateFunction() {}
+
+EasyUnlockPrivateUpdateScreenlockStateFunction::
+    ~EasyUnlockPrivateUpdateScreenlockStateFunction() {}
+
+bool EasyUnlockPrivateUpdateScreenlockStateFunction::RunSync() {
+  scoped_ptr<easy_unlock_private::UpdateScreenlockState::Params> params(
+      easy_unlock_private::UpdateScreenlockState::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  EasyUnlockScreenlockStateHandler* screenlock_state_handler =
+      GetScreenlockStateHandler(browser_context());
+  if (screenlock_state_handler) {
+    screenlock_state_handler->ChangeState(
+        ToScreenlockStateHandlerState(params->state));
+    return true;
+  }
+
+  SetError("Not allowed");
+  return false;
 }
 
 }  // namespace api

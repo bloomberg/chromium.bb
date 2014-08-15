@@ -38,14 +38,15 @@ class UserManagerScreenHandler : public content::WebUIMessageHandler,
   void GetLocalizedValues(base::DictionaryValue* localized_strings);
 
   // ScreenlockBridge::LockHandler implementation.
-  virtual void ShowBannerMessage(const std::string& message) OVERRIDE;
-  virtual void ShowUserPodCustomIcon(const std::string& user_email,
-                                     const gfx::Image& icon) OVERRIDE;
+  virtual void ShowBannerMessage(const base::string16& message) OVERRIDE;
+  virtual void ShowUserPodCustomIcon(
+      const std::string& user_email,
+      const ScreenlockBridge::UserPodCustomIconOptions& icon_options) OVERRIDE;
   virtual void HideUserPodCustomIcon(const std::string& user_email) OVERRIDE;
   virtual void EnableInput() OVERRIDE;
   virtual void SetAuthType(const std::string& user_email,
                            ScreenlockBridge::LockHandler::AuthType auth_type,
-                           const std::string& auth_value) OVERRIDE;
+                           const base::string16& auth_value) OVERRIDE;
   virtual ScreenlockBridge::LockHandler::AuthType GetAuthType(
       const std::string& user_email) const OVERRIDE;
   virtual void Unlock(const std::string& user_email) OVERRIDE;

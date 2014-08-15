@@ -7,9 +7,13 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/strings/string16.h"
+#include "base/values.h"
 
 namespace gfx {
 class Image;
@@ -32,6 +36,68 @@ class ScreenlockBridge {
     virtual ~Observer() {}
   };
 
+  // Class containing parameters describing the custom icon that should be
+  // shown on a user's screen lock pod next to the input field.
+  class UserPodCustomIconOptions {
+   public:
+    UserPodCustomIconOptions();
+    ~UserPodCustomIconOptions();
+
+    // Converts parameters to a dictionary values that can be sent to the
+    // screenlock web UI.
+    scoped_ptr<base::DictionaryValue> ToDictionaryValue() const;
+
+    // Sets the icon as chrome://theme resource URL.
+    void SetIconAsResourceURL(const std::string& url);
+
+    // Sets the icon as a gfx::Image. The image will be converted to set of data
+    // URLs for each icon representation. Use |SetIconAsResourceURL| instead of
+    // this.
+    // TODO(tbarzic): Remove this one once easy unlock app stops using
+    // screenlockPrivate.showCustomIcon.
+    void SetIconAsImage(const gfx::Image& image);
+
+    // Sets the icon size. Has to be called if |SetIconAsResourceURL| was used
+    // to set the icon. For animated icon, this should be set to a single frame
+    // size, not the animation resource size.
+    void SetSize(size_t icon_width, size_t icon_height);
+
+    // If the icon is supposed to be animated, sets the animation parameters.
+    // If set, it expects that the resource set using |SetIcon*| methods
+    // contains horizontally arranged ordered list of animation frames.
+    // Note that the icon size set in |SetSize| should be a single frame size.
+    // |resource_width|: Total animation resource width.
+    // |frame_length_ms|: Time for which a single animation frame is shown.
+    void SetAnimation(size_t resource_width, size_t frame_length_ms);
+
+    // Sets the icon opacity. The values should be in <0, 100] interval, which
+    // will get scaled into <0, 1] interval. The default value is 100.
+    void SetOpacity(size_t opacity);
+
+    // Sets the icon tooltip. If |autoshow| is set the tooltip is automatically
+    // shown with the icon.
+    void SetTooltip(const base::string16& tooltip, bool autoshow);
+
+   private:
+    std::string icon_resource_url_;
+    scoped_ptr<gfx::Image> icon_image_;
+
+    size_t width_;
+    size_t height_;
+
+    bool animation_set_;
+    size_t animation_resource_width_;
+    size_t animation_frame_length_ms_;
+
+    // The opacity should be in <0, 100] range.
+    size_t opacity_;
+
+    base::string16 tooltip_;
+    bool autoshow_tooltip_;
+
+    DISALLOW_COPY_AND_ASSIGN(UserPodCustomIconOptions);
+  };
+
   class LockHandler {
    public:
     // Supported authentication types. Keep in sync with the enum in
@@ -45,11 +111,12 @@ class ScreenlockBridge {
     };
 
     // Displays |message| in a banner on the lock screen.
-    virtual void ShowBannerMessage(const std::string& message) = 0;
+    virtual void ShowBannerMessage(const base::string16& message) = 0;
 
     // Shows a custom icon in the user pod on the lock screen.
-    virtual void ShowUserPodCustomIcon(const std::string& user_email,
-                                       const gfx::Image& icon) = 0;
+    virtual void ShowUserPodCustomIcon(
+        const std::string& user_email,
+        const UserPodCustomIconOptions& icon) = 0;
 
     // Hides the custom icon in user pod for a user.
     virtual void HideUserPodCustomIcon(const std::string& user_email) = 0;
@@ -60,7 +127,7 @@ class ScreenlockBridge {
     // Set the authentication type to be used on the lock screen.
     virtual void SetAuthType(const std::string& user_email,
                              AuthType auth_type,
-                             const std::string& auth_value) = 0;
+                             const base::string16& auth_value) = 0;
 
     // Returns the authentication type used for a user.
     virtual AuthType GetAuthType(const std::string& user_email) const = 0;

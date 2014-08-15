@@ -55,6 +55,7 @@ cr.define('login', function() {
   var DESKTOP_POD_HEIGHT = 226;
   var POD_ROW_PADDING = 10;
   var DESKTOP_ROW_PADDING = 15;
+  var CUSTOM_ICON_CONTAINER_SIZE = 40;
 
   /**
    * Minimal padding between user pod and virtual keyboard.
@@ -159,6 +160,330 @@ cr.define('login', function() {
   }
 
   /**
+   * Creates an element for custom icon shown in a user pod next to the input
+   * field.
+   * @constructor
+   * @extends {HTMLDivElement}
+   */
+  var UserPodCustomIcon = cr.ui.define(function() {
+    var node = document.createElement('div');
+    node.classList.add('custom-icon-container');
+    node.hidden = true;
+
+    // Create the actual icon element and add it as a child to the container.
+    var iconNode = document.createElement('div');
+    iconNode.classList.add('custom-icon');
+    node.appendChild(iconNode);
+    return node;
+  });
+
+  UserPodCustomIcon.prototype = {
+    __proto__: HTMLDivElement.prototype,
+
+    /**
+     * The icon height.
+     * @type {number}
+     * @private
+     */
+    height_: 0,
+
+    /**
+     * The icon width.
+     * @type {number}
+     * @private
+     */
+    width_: 0,
+
+    /**
+     * Tooltip to be shown when the user hovers over the icon. The icon
+     * properties may be set so the tooltip is shown automatically when the icon
+     * is updated. The tooltip is shown in a bubble attached to the icon
+     * element.
+     * @type {string}
+     * @private
+     */
+    tooltip_: '',
+
+    /**
+     * Whether the tooltip is shown and the user is hovering over the icon.
+     * @type {boolean}
+     * @private
+     */
+    tooltipActive_: false,
+
+    /**
+     * Whether the icon has been shown as a result of |autoshow| parameter begin
+     * set rather than user hovering over the icon.
+     * If this is set, the tooltip will not be removed when the mouse leaves the
+     * icon.
+     * @type {boolean}
+     * @private
+     */
+    tooltipAutoshown_: false,
+
+    /**
+     * A reference to the timeout for showing tooltip after mouse enters the
+     * icon.
+     * @type {?number}
+     * @private
+     */
+    showTooltipTimeout_: null,
+
+    /**
+     * If animation is set, the current horizontal background offset for the
+     * icon resource.
+     * @type {number}
+     * @private
+     */
+    lastAnimationOffset_: 0,
+
+    /**
+     * The reference to interval for progressing the animation.
+     * @type {?number}
+     * @private
+     */
+    animationInterval_: null,
+
+    /**
+     * The width of the resource that contains representations for different
+     * animation stages.
+     * @type {number}
+     * @private
+     */
+    animationResourceSize_: 0,
+
+    /** @override */
+    decorate: function() {
+      this.iconElement.addEventListener('mouseover',
+                                        this.showTooltipSoon_.bind(this));
+      this.iconElement.addEventListener('mouseout',
+                                         this.hideTooltip_.bind(this, false));
+      this.iconElement.addEventListener('mousedown',
+                                         this.hideTooltip_.bind(this, false));
+    },
+
+    /**
+     * Getter for the icon element's div.
+     * @return {HTMLDivElement}
+     */
+    get iconElement() {
+      return this.querySelector('.custom-icon');
+    },
+
+    /**
+     * Set the icon's background image as image set with different
+     * representations for available screen scale factors.
+     * @param {!{scale1x: string, scale2x: string}} icon The icon
+     *     representations.
+     */
+    setIconAsImageSet: function(icon) {
+      this.iconElement.style.backgroundImage =
+          '-webkit-image-set(' +
+              'url(' + icon.scale1x + ') 1x,' +
+              'url(' + icon.scale2x + ') 2x)';
+    },
+
+    /**
+     * Sets the icon background image to a chrome://theme URL.
+     * @param {!string} iconUrl The icon's background image URL.
+     */
+    setIconAsResourceUrl: function(iconUrl) {
+      this.iconElement.style.backgroundImage =
+          '-webkit-image-set(' +
+              'url(' + iconUrl + '@1x) 1x,' +
+              'url(' + iconUrl + '@2x) 2x)';
+    },
+
+    /**
+     * Shows the icon.
+     */
+    show: function() {
+      this.hidden = false;
+    },
+
+    /**
+     * Hides the icon.  Makes sure the tooltip is hidden and animation reset.
+     */
+    hide: function() {
+      this.hideTooltip_(true);
+      this.setAnimation(null);
+      this.hidden = true;
+    },
+
+    /**
+     * Sets the icon size element size.
+     * @param {!{width: number, height: number}} size The icon size.
+     */
+    setSize: function(size) {
+      this.height_ = size.height < CUSTOM_ICON_CONTAINER_SIZE ?
+          size.height : CUSTOM_ICON_COTAINER_SIZE;
+      this.iconElement.style.height = this.height_ + 'px';
+
+      this.width_ = size.width < CUSTOM_ICON_CONTAINER_SIZE ?
+          size.width : CUSTOM_ICON_COTAINER_SIZE;
+      this.iconElement.style.width = this.width_ + 'px';
+      this.style.width = this.width_ + 'px';
+    },
+
+    /**
+     * Sets the icon opacity.
+     * @param {number} opacity The icon opacity in [0-100] scale.
+     */
+    setOpacity: function(opacity) {
+      if (opacity > 100) {
+        this.style.opacity = 1;
+      } else if (opacity < 0) {
+        this.style.opacity = 0;
+      } else {
+        this.style.opacity = opacity / 100;
+      }
+    },
+
+    /**
+     * Updates the icon tooltip. If {@code autoshow} parameter is set the
+     * tooltip is immediatelly shown. If tooltip text is not set, the method
+     * ensures the tooltip gets hidden. If tooltip is shown prior to this call,
+     * it remains shown, but the tooltip text is updated.
+     * @param {!{text: string, autoshow: boolean}} tooltip The tooltip
+     *    parameters.
+     */
+    setTooltip: function(tooltip) {
+      if (this.tooltip_ == tooltip.text && !tooltip.autoshow)
+        return;
+      this.tooltip_ = tooltip.text;
+
+      // If tooltip is already shown, just update the text.
+      if (tooltip.text && this.tooltipActive_ && !$('bubble').hidden) {
+        // If both previous and the new tooltip are supposed to be shown
+        // automatically, keep the autoshown flag.
+        var markAutoshown = this.tooltipAutoshown_ && tooltip.autoshow;
+        this.hideTooltip_(true);
+        this.showTooltip_();
+        this.tooltipAutoshown_ = markAutoshown;
+        return;
+      }
+
+      // If autoshow flag is set, make sure the tooltip gets shown.
+      if (tooltip.text && tooltip.autoshow) {
+        this.hideTooltip_(true);
+        this.showTooltip_();
+        this.tooltipAutoshown_ = true;
+        // Reset the tooltip active flag, which gets set in |showTooltip_|.
+        this.tooltipActive_ = false;
+        return;
+      }
+
+      this.hideTooltip_(true);
+
+      if (this.tooltip_)
+        this.iconElement.setAttribute('aria-lablel', this.tooltip_);
+    },
+
+    /**
+     * Sets the icon animation parameter and starts the animation.
+     * The animation is set using the resource containing all animation frames
+     * concatenated horizontally. The animator offsets the background image in
+     * regural intervals.
+     * @param {?{resourceWidth: number, frameLengthMs: number}} animation
+     *     |resourceWidth|: Total width for the resource containing the
+     *                      animation frames.
+     *     |frameLengthMs|: Time interval for which a single animation frame is
+     *                      shown.
+     */
+    setAnimation: function(animation) {
+      if (this.animationInterval_)
+        clearInterval(this.animationInterval_);
+      this.iconElement.style.backgroundPosition = 'center';
+      if (!animation)
+        return;
+      this.lastAnimationOffset_ = 0;
+      this.animationResourceSize_ = animation.resourceWidth;
+      this.animationInterval_ = setInterval(this.progressAnimation_.bind(this),
+                                            animation.frameLengthMs);
+    },
+
+    /**
+     * Called when mouse enters the icon. It sets timeout for showing the
+     * tooltip.
+     * @private
+     */
+    showTooltipSoon_: function() {
+      if (this.showTooltipTimeout_ || this.tooltipActive_)
+        return;
+      this.showTooltipTimeout_ =
+          setTimeout(this.showTooltip_.bind(this), 1000);
+    },
+
+    /**
+     * Shows the current tooltip, if one is set.
+     * @private
+     */
+    showTooltip_: function() {
+      if (this.hidden || !this.tooltip_ || this.tooltipActive_)
+        return;
+
+      // If autoshown bubble got hidden, clear the autoshown flag.
+      if ($('bubble').hidden && this.tooltipAutoshown_)
+        this.tooltipAutoshown_ = false;
+
+      // Show the tooltip bubble.
+      var bubbleContent = document.createElement('div');
+      bubbleContent.textContent = this.tooltip_;
+
+      /** @const */ var BUBBLE_OFFSET = CUSTOM_ICON_CONTAINER_SIZE / 2;
+      /** @const */ var BUBBLE_PADDING = 8;
+      $('bubble').showContentForElement(this,
+                                        cr.ui.Bubble.Attachment.RIGHT,
+                                        bubbleContent,
+                                        BUBBLE_OFFSET,
+                                        BUBBLE_PADDING);
+      this.ensureTooltipTimeoutCleared_();
+      this.tooltipActive_ = true;
+    },
+
+    /**
+     * Hides the tooltip. If the current tooltip was automatically shown, it
+     * will be hidden only if |force| is set.
+     * @param {boolean} Whether the tooltip should be hidden if it got shown
+     *     because autoshow flag was set.
+     * @private
+     */
+    hideTooltip_: function(force) {
+      this.tooltipActive_ = false;
+      this.ensureTooltipTimeoutCleared_();
+      if (!force && this.tooltipAutoshown_)
+        return;
+      $('bubble').hideForElement(this);
+      this.tooltipAutoshown_ = false;
+      this.iconElement.removeAttribute('aria-label');
+    },
+
+    /**
+     * Clears timaout for showing the tooltip if it's set.
+     * @private
+     */
+    ensureTooltipTimeoutCleared_: function() {
+      if (this.showTooltipTimeout_) {
+        clearTimeout(this.showTooltipTimeout_);
+        this.showTooltipTimeout_ = null;
+      }
+    },
+
+    /**
+     * Horizontally offsets the animated icon's background for a single icon
+     * size width.
+     * @private
+     */
+    progressAnimation_: function() {
+      this.lastAnimationOffset_ += this.width_;
+      if (this.lastAnimationOffset_ >= this.animationResourceSize_)
+        this.lastAnimationOffset_ = 0;
+      this.iconElement.style.backgroundPosition =
+          '-' + this.lastAnimationOffset_ + 'px center';
+    }
+  };
+
+  /**
    * Unique salt added to user image URLs to prevent caching. Dictionary with
    * user names as keys.
    * @type {Object}
@@ -198,6 +523,9 @@ cr.define('login', function() {
         this.actionBoxRemoveUserWarningButtonElement.addEventListener(
             'keydown',
             this.handleRemoveUserConfirmationKeyDown_.bind(this));
+
+      var customIcon = this.customIconElement;
+      customIcon.parentNode.replaceChild(new UserPodCustomIcon(), customIcon);
     },
 
     /**
@@ -445,7 +773,7 @@ cr.define('login', function() {
      * @type {!HTMLDivElement}
      */
     get customIconElement() {
-      return this.querySelector('.custom-icon');
+      return this.querySelector('.custom-icon-container');
     },
 
     /**
@@ -1843,8 +2171,14 @@ cr.define('login', function() {
     /**
      * Shows a custom icon on a user pod besides the input field.
      * @param {string} username Username of pod to add button
-     * @param {{scale1x: string, scale2x: string}} icon Dictionary of URLs of
-     *     the custom icon's representations for 1x and 2x scale factors.
+     * @param {!{resourceUrl: (string | undefined),
+     *           data: ({scale1x: string, scale2x: string} | undefined),
+     *           size: ({width: number, height: number} | undefined),
+     *           animation: ({resourceWidth: number, frameLength: number} |
+     *                       undefined),
+     *           opacity: (number | undefined),
+     *           tooltip: ({text: string, autoshow: boolean} | undefined)}} icon
+     *     The icon parameters.
      */
     showUserPodCustomIcon: function(username, icon) {
       var pod = this.getPodWithUsername_(username);
@@ -1854,11 +2188,22 @@ cr.define('login', function() {
         return;
       }
 
-      pod.customIconElement.hidden = false;
-      pod.customIconElement.style.backgroundImage =
-          '-webkit-image-set(' +
-              'url(' + icon.scale1x + ') 1x,' +
-              'url(' + icon.scale2x + ') 2x)';
+      if (icon.resourceUrl) {
+        pod.customIconElement.setIconAsResourceUrl(icon.resourceUrl);
+      } else if (icon.data) {
+        pod.customIconElement.setIconAsImageSet(icon.data);
+      } else {
+        return;
+      }
+
+      pod.customIconElement.setSize(icon.size || {width: 0, height: 0});
+      pod.customIconElement.setAnimation(icon.animation || null);
+      pod.customIconElement.setOpacity(icon.opacity || 100);
+      pod.customIconElement.show();
+      // This has to be called after |show| in case the tooltip should be shown
+      // immediatelly.
+      pod.customIconElement.setTooltip(
+          icon.tooltip || {text: '', autoshow: false});
     },
 
     /**
@@ -1873,7 +2218,7 @@ cr.define('login', function() {
         return;
       }
 
-      pod.customIconElement.hidden = true;
+      pod.customIconElement.hide();
     },
 
     /**
@@ -1891,29 +2236,6 @@ cr.define('login', function() {
         return;
       }
       pod.setAuthType(authType, value);
-    },
-
-    /**
-     * Shows a tooltip bubble explaining Easy Unlock for the focused pod.
-     */
-    showEasyUnlockBubble: function() {
-      if (!this.focusedPod_) {
-        console.error('No focused pod to show Easy Unlock bubble.');
-        return;
-      }
-
-      var bubbleContent = document.createElement('div');
-      bubbleContent.classList.add('easy-unlock-button-content');
-      bubbleContent.textContent = loadTimeData.getString('easyUnlockTooltip');
-
-      var attachElement = this.focusedPod_.customIconElement;
-      /** @const */ var BUBBLE_OFFSET = 20;
-      /** @const */ var BUBBLE_PADDING = 8;
-      $('bubble').showContentForElement(attachElement,
-                                        cr.ui.Bubble.Attachment.RIGHT,
-                                        bubbleContent,
-                                        BUBBLE_OFFSET,
-                                        BUBBLE_PADDING);
     },
 
     /**

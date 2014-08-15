@@ -219,10 +219,19 @@ html[dir=rtl] .main-pane {
 }
 
 .custom-icon {
+  -webkit-margin-end: 0;
+  -webkit-margin-start: auto;
   background-position: center;
   background-repeat: no-repeat;
   flex: none;
+}
+
+.custom-icon-container {
+  display: flex;
+  flex: none;
+  flex-direction: column;
   height: 40px;
+  justify-content: center;
   width: 40px;
 }
 
@@ -421,10 +430,6 @@ html[dir=rtl] .user-type-bubble {
 .user-type-bubble-header {
   font-weight: bold;
   margin-bottom: 14px;
-}
-
-.easy-unlock-button-content {
-  width: 145px;
 }
 
 /**** Public account user pod rules *******************************************/

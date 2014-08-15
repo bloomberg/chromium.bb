@@ -13,7 +13,9 @@
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/easy_unlock_screenlock_state_handler.h"
 #include "chrome/browser/signin/easy_unlock_service_factory.h"
+#include "chrome/browser/signin/screenlock_bridge.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -45,7 +47,8 @@ EasyUnlockService* EasyUnlockService::Get(Profile* profile) {
 }
 
 EasyUnlockService::EasyUnlockService(Profile* profile)
-    : profile_(profile), weak_ptr_factory_(this) {
+    : profile_(profile),
+      weak_ptr_factory_(this) {
   extensions::ExtensionSystem::Get(profile_)->ready().Post(
       FROM_HERE,
       base::Bind(&EasyUnlockService::Initialize,
@@ -88,7 +91,7 @@ void EasyUnlockService::LaunchSetup() {
 
 bool EasyUnlockService::IsAllowed() {
 #if defined(OS_CHROMEOS)
-  if (chromeos::UserManager::Get()->IsLoggedInAsGuest())
+  if (!chromeos::UserManager::Get()->IsLoggedInAsRegularUser())
     return false;
 
   if (!chromeos::ProfileHelper::IsPrimaryProfile(profile_))
@@ -103,6 +106,20 @@ bool EasyUnlockService::IsAllowed() {
   // TODO(xiyuan): Revisit when non-chromeos platforms are supported.
   return false;
 #endif
+}
+
+
+EasyUnlockScreenlockStateHandler*
+    EasyUnlockService::GetScreenlockStateHandler() {
+  if (!IsAllowed())
+    return NULL;
+  if (!screenlock_state_handler_) {
+    screenlock_state_handler_.reset(new EasyUnlockScreenlockStateHandler(
+        ScreenlockBridge::GetAuthenticatedUserEmail(profile_),
+        profile_->GetPrefs(),
+        ScreenlockBridge::Get()));
+  }
+  return screenlock_state_handler_.get();
 }
 
 void EasyUnlockService::Initialize() {
@@ -143,8 +160,12 @@ void EasyUnlockService::UnloadApp() {
 }
 
 void EasyUnlockService::OnPrefsChanged() {
-  if (IsAllowed())
+  if (IsAllowed()) {
     LoadApp();
-  else
+  } else {
     UnloadApp();
+    // Reset the screenlock state handler to make sure Screenlock state set
+    // by Easy Unlock app is reset.
+    screenlock_state_handler_.reset();
+  }
 }

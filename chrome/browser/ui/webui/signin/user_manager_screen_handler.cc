@@ -217,7 +217,8 @@ UserManagerScreenHandler::~UserManagerScreenHandler() {
   ScreenlockBridge::Get()->SetLockHandler(NULL);
 }
 
-void UserManagerScreenHandler::ShowBannerMessage(const std::string& message) {
+void UserManagerScreenHandler::ShowBannerMessage(
+    const base::string16& message) {
   web_ui()->CallJavascriptFunction(
       "login.AccountPickerScreen.showBannerMessage",
       base::StringValue(message));
@@ -225,19 +226,14 @@ void UserManagerScreenHandler::ShowBannerMessage(const std::string& message) {
 
 void UserManagerScreenHandler::ShowUserPodCustomIcon(
     const std::string& user_email,
-    const gfx::Image& icon) {
-  gfx::ImageSkia icon_skia = icon.AsImageSkia();
-  base::DictionaryValue icon_representations;
-  icon_representations.SetString(
-      "scale1x",
-      webui::GetBitmapDataUrl(icon_skia.GetRepresentation(1.0f).sk_bitmap()));
-  icon_representations.SetString(
-      "scale2x",
-      webui::GetBitmapDataUrl(icon_skia.GetRepresentation(2.0f).sk_bitmap()));
+    const ScreenlockBridge::UserPodCustomIconOptions& icon_options) {
+  scoped_ptr<base::DictionaryValue> icon = icon_options.ToDictionaryValue();
+  if (!icon || icon->empty())
+    return;
   web_ui()->CallJavascriptFunction(
       "login.AccountPickerScreen.showUserPodCustomIcon",
       base::StringValue(user_email),
-      icon_representations);
+      *icon);
 }
 
 void UserManagerScreenHandler::HideUserPodCustomIcon(
@@ -254,7 +250,7 @@ void UserManagerScreenHandler::EnableInput() {
 void UserManagerScreenHandler::SetAuthType(
     const std::string& user_email,
     ScreenlockBridge::LockHandler::AuthType auth_type,
-    const std::string& auth_value) {
+    const base::string16& auth_value) {
   user_auth_type_map_[user_email] = auth_type;
   web_ui()->CallJavascriptFunction(
       "login.AccountPickerScreen.setAuthType",
