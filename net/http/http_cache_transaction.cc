@@ -52,7 +52,7 @@ using base::TimeTicks;
 namespace {
 
 // TODO(ricea): Move this to HttpResponseHeaders once it is standardised.
-static const char kFreshnessHeader[] = "Chromium-Resource-Freshness";
+static const char kFreshnessHeader[] = "Resource-Freshness";
 
 // Stores data relevant to the statistics of writing and reading entire
 // certificate chains using DiskBasedCertCache. |num_pending_ops| is the number
