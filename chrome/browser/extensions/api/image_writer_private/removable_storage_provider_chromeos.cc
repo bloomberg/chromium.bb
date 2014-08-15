@@ -33,6 +33,7 @@ bool RemovableStorageProvider::PopulateDeviceList(
           new api::image_writer_private::RemovableStorageDevice());
       device->storage_unit_id = disk.device_path();
       device->capacity = disk.total_size_in_bytes();
+      device->removable = disk.on_removable_device();
       device->vendor = disk.vendor_name();
       device->model = disk.product_name();
 

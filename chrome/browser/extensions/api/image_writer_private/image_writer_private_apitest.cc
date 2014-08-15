@@ -35,6 +35,7 @@ class ImageWriterPrivateApiTest : public ExtensionApiTest {
     expected1->vendor = "Vendor 1";
     expected1->model = "Model 1";
     expected1->capacity = image_writer::kTestFileSize;
+    expected1->removable = true;
 #if defined(OS_WIN)
     expected1->storage_unit_id = test_utils_.GetDevicePath().AsUTF8Unsafe();
 #else
@@ -45,6 +46,7 @@ class ImageWriterPrivateApiTest : public ExtensionApiTest {
     expected2->vendor = "Vendor 2";
     expected2->model = "Model 2";
     expected2->capacity = image_writer::kTestFileSize << 2;
+    expected2->removable = false;
 #if defined(OS_WIN)
     expected2->storage_unit_id = test_utils_.GetDevicePath().AsUTF8Unsafe();
 #else

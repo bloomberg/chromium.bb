@@ -96,6 +96,7 @@ bool RemovableStorageProvider::PopulateDeviceList(
     device->capacity = size_in_bytes;
     device->vendor = vendor;
     device->model = model;
+    device->removable = removable;
     device_list->data.push_back(device);
   }
 

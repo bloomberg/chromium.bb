@@ -35,7 +35,6 @@ bool AddDeviceInfo(HANDLE interface_enumerator,
     return false;
   }
 
-
   scoped_ptr<char[]> interface_detail_data_buffer(
       new char[interface_detail_data_size]);
 
@@ -153,6 +152,7 @@ bool AddDeviceInfo(HANDLE interface_enumerator,
     new api::image_writer_private::RemovableStorageDevice());
   device->capacity = disk_capacity;
   device->storage_unit_id = drive_id;
+  device->removable = device_descriptor->RemovableMedia == TRUE;
 
   if (device_descriptor->VendorIdOffset &&
       output_buf[device_descriptor->VendorIdOffset]) {

@@ -58,6 +58,7 @@
     double capacity;
     DOMString vendor;
     DOMString model;
+    boolean removable;
   };
 
   callback WriteImageCallback = void ();
