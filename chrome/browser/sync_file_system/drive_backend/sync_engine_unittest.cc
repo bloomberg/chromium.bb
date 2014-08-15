@@ -55,6 +55,7 @@ class SyncEngineTest : public testing::Test,
         NULL /* signin_manager */,
         NULL /* token_service */,
         NULL /* request_context */,
+        scoped_ptr<SyncEngine::DriveServiceFactory>(),
         NULL /* in_memory_env */));
 
     sync_engine_->InitializeForTesting(

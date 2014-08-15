@@ -63,6 +63,23 @@ class RemoteChangeProcessor;
 
 namespace drive_backend {
 
+scoped_ptr<drive::DriveServiceInterface>
+SyncEngine::DriveServiceFactory::CreateDriveService(
+    OAuth2TokenService* oauth2_token_service,
+    net::URLRequestContextGetter* url_request_context_getter,
+    base::SequencedTaskRunner* blocking_task_runner) {
+  return scoped_ptr<drive::DriveServiceInterface>(
+      new drive::DriveAPIService(
+          oauth2_token_service,
+          url_request_context_getter,
+          blocking_task_runner,
+          GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
+          GURL(google_apis::DriveApiUrlGenerator::
+               kBaseDownloadUrlForProduction),
+          GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
+          std::string() /* custom_user_agent */));
+}
+
 class SyncEngine::WorkerObserver : public SyncWorkerInterface::Observer {
  public:
   WorkerObserver(base::SequencedTaskRunner* ui_task_runner,
@@ -193,7 +210,7 @@ scoped_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
       extensions::ExtensionSystem::Get(context)->extension_service();
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile);
-  ProfileOAuth2TokenService* token_service =
+  OAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   scoped_refptr<net::URLRequestContextGetter> request_context =
       context->GetRequestContext();
@@ -209,6 +226,7 @@ scoped_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
                      signin_manager,
                      token_service,
                      request_context,
+                     make_scoped_ptr(new DriveServiceFactory()),
                      NULL  /* env_override */));
 
   sync_engine->Initialize();
@@ -259,16 +277,10 @@ void SyncEngine::Initialize() {
       signin_manager_->GetAuthenticatedAccountId().empty())
     return;
 
-  scoped_ptr<drive::DriveServiceInterface> drive_service(
-      new drive::DriveAPIService(
-          token_service_,
-          request_context_,
-          drive_task_runner_,
-          GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
-          GURL(google_apis::DriveApiUrlGenerator::
-               kBaseDownloadUrlForProduction),
-          GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
-          std::string() /* custom_user_agent */));
+  DCHECK(drive_service_factory_);
+  scoped_ptr<drive::DriveServiceInterface> drive_service =
+      drive_service_factory_->CreateDriveService(
+          token_service_, request_context_, drive_task_runner_);
   scoped_ptr<drive::DriveUploaderInterface> drive_uploader(
       new drive::DriveUploader(drive_service.get(), drive_task_runner_));
 
@@ -713,8 +725,9 @@ SyncEngine::SyncEngine(
     drive::DriveNotificationManager* notification_manager,
     ExtensionServiceInterface* extension_service,
     SigninManagerBase* signin_manager,
-    ProfileOAuth2TokenService* token_service,
+    OAuth2TokenService* token_service,
     net::URLRequestContextGetter* request_context,
+    scoped_ptr<DriveServiceFactory> drive_service_factory,
     leveldb::Env* env_override)
     : ui_task_runner_(ui_task_runner),
       worker_task_runner_(worker_task_runner),
@@ -726,6 +739,7 @@ SyncEngine::SyncEngine(
       signin_manager_(signin_manager),
       token_service_(token_service),
       request_context_(request_context),
+      drive_service_factory_(drive_service_factory.Pass()),
       remote_change_processor_(NULL),
       service_state_(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE),
       has_refresh_token_(false),

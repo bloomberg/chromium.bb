@@ -123,6 +123,7 @@ class DriveBackendSyncTest : public testing::Test,
         NULL,  // signin_manager
         NULL,  // token_service
         NULL,  // request_context
+        scoped_ptr<SyncEngine::DriveServiceFactory>(),
         in_memory_env_.get()));
     remote_sync_service_->AddServiceObserver(this);
     remote_sync_service_->InitializeForTesting(
