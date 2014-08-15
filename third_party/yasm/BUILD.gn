@@ -121,6 +121,8 @@ if (current_toolchain == host_toolchain) {
     # re2c is missing CLOSEVOP from one switch.
     if (is_posix) {
       cflags = [ "-Wno-switch" ]
+    } else if (is_win) {
+      cflags = [ "/wd4267" ]  # size_t to int conversion.
     }
   }
 
@@ -254,7 +256,7 @@ if (current_toolchain == host_toolchain) {
     outputs = [ "$target_gen_dir/{{source_name_part}}.c" ]
     args = [
       "{{source}}",
-      rebase_path(target_gen_dir, ".") + "/{{source_name_part}}.c",
+      rebase_path(target_gen_dir, root_build_dir) + "/{{source_name_part}}.c",
     ]
     deps = [
       ":generate_x86_insn"
@@ -278,7 +280,8 @@ if (current_toolchain == host_toolchain) {
     outputs = [ "$yasm_gen_include_dir/{{source_name_part}}.c" ]
     args = [
       "{{source}}",
-      rebase_path(yasm_gen_include_dir, ".") + "/{{source_name_part}}.c",
+      rebase_path(yasm_gen_include_dir, root_build_dir) +
+          "/{{source_name_part}}.c",
     ]
     deps = [
       ":generate_x86_insn"
@@ -343,7 +346,7 @@ if (current_toolchain == host_toolchain) {
     args = [
       "-b",
       "-o",
-      rebase_path(target_gen_dir, ".") + "/{{source_name_part}}.c",
+      rebase_path(target_gen_dir, root_build_dir) + "/{{source_name_part}}.c",
       "{{source}}",
     ]
   }
