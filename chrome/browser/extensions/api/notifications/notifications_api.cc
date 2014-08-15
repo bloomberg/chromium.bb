@@ -14,6 +14,7 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_conversion_helper.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_version_info.h"
@@ -52,68 +53,6 @@ const char kExtraListItemsProvided[] =
     "List items provided for notification type != list";
 const char kExtraImageProvided[] =
     "Image resource provided for notification type != image";
-
-// Converts an object with width, height, and data in RGBA format into an
-// gfx::Image (in ARGB format).
-bool NotificationBitmapToGfxImage(
-    float max_scale,
-    const gfx::Size& target_size_dips,
-    api::notifications::NotificationBitmap* notification_bitmap,
-    gfx::Image* return_image) {
-  if (!notification_bitmap)
-    return false;
-
-  const int max_device_pixel_width = target_size_dips.width() * max_scale;
-  const int max_device_pixel_height = target_size_dips.height() * max_scale;
-
-  const int BYTES_PER_PIXEL = 4;
-
-  const int width = notification_bitmap->width;
-  const int height = notification_bitmap->height;
-
-  if (width < 0 || height < 0 || width > max_device_pixel_width ||
-      height > max_device_pixel_height)
-    return false;
-
-  // Ensure we have rgba data.
-  std::string* rgba_data = notification_bitmap->data.get();
-  if (!rgba_data)
-    return false;
-
-  const size_t rgba_data_length = rgba_data->length();
-  const size_t rgba_area = width * height;
-
-  if (rgba_data_length != rgba_area * BYTES_PER_PIXEL)
-    return false;
-
-  SkBitmap bitmap;
-  // Allocate the actual backing store with the sanitized dimensions.
-  if (!bitmap.allocN32Pixels(width, height))
-    return false;
-
-  // Ensure that our bitmap and our data now refer to the same number of pixels.
-  if (rgba_data_length != bitmap.getSafeSize())
-    return false;
-
-  uint32_t* pixels = bitmap.getAddr32(0, 0);
-  const char* c_rgba_data = rgba_data->data();
-
-  for (size_t t = 0; t < rgba_area; ++t) {
-    // |c_rgba_data| is RGBA, pixels is ARGB.
-    size_t rgba_index = t * BYTES_PER_PIXEL;
-    pixels[t] = SkPreMultiplyColor(
-        ((c_rgba_data[rgba_index + 3] & 0xFF) << 24) |
-        ((c_rgba_data[rgba_index + 0] & 0xFF) << 16) |
-        ((c_rgba_data[rgba_index + 1] & 0xFF) << 8) |
-        ((c_rgba_data[rgba_index + 2] & 0xFF) << 0));
-  }
-
-  // TODO(dewittj): Handle HiDPI images with more than one scale factor
-  // representation.
-  gfx::ImageSkia skia(gfx::ImageSkiaRep(bitmap, 1.0f));
-  *return_image = gfx::Image(skia);
-  return true;
-}
 
 // Given an extension id and another id, returns an id that is unique
 // relative to other extensions.
@@ -275,10 +214,11 @@ bool NotificationsApiFunction::CreateNotification(
   const base::string16 message(base::UTF8ToUTF16(*options->message));
   gfx::Image icon;
 
-  if (!NotificationBitmapToGfxImage(image_scale,
-                                    bitmap_sizes.icon_size,
-                                    options->icon_bitmap.get(),
-                                    &icon)) {
+  if (!NotificationConversionHelper::NotificationBitmapToGfxImage(
+          image_scale,
+          bitmap_sizes.icon_size,
+          options->icon_bitmap.get(),
+          &icon)) {
     SetError(kUnableToDecodeIconError);
     return false;
   }
@@ -286,10 +226,11 @@ bool NotificationsApiFunction::CreateNotification(
   // Then, handle any optional data that's been provided.
   message_center::RichNotificationData optional_fields;
   if (options->app_icon_mask_url.get()) {
-    if (!NotificationBitmapToGfxImage(image_scale,
-                                      bitmap_sizes.app_icon_mask_size,
-                                      options->app_icon_mask_bitmap.get(),
-                                      &optional_fields.small_image)) {
+    if (!NotificationConversionHelper::NotificationBitmapToGfxImage(
+            image_scale,
+            bitmap_sizes.app_icon_mask_size,
+            options->app_icon_mask_bitmap.get(),
+            &optional_fields.small_image)) {
       SetError(kUnableToDecodeIconError);
       return false;
     }
@@ -309,10 +250,11 @@ bool NotificationsApiFunction::CreateNotification(
     for (size_t i = 0; i < number_of_buttons; i++) {
       message_center::ButtonInfo info(
           base::UTF8ToUTF16((*options->buttons)[i]->title));
-      NotificationBitmapToGfxImage(image_scale,
-                                   bitmap_sizes.button_icon_size,
-                                   (*options->buttons)[i]->icon_bitmap.get(),
-                                   &info.icon);
+      NotificationConversionHelper::NotificationBitmapToGfxImage(
+          image_scale,
+          bitmap_sizes.button_icon_size,
+          (*options->buttons)[i]->icon_bitmap.get(),
+          &info.icon);
       optional_fields.buttons.push_back(info);
     }
   }
@@ -322,10 +264,11 @@ bool NotificationsApiFunction::CreateNotification(
         base::UTF8ToUTF16(*options->context_message);
   }
 
-  bool has_image = NotificationBitmapToGfxImage(image_scale,
-                                                bitmap_sizes.image_size,
-                                                options->image_bitmap.get(),
-                                                &optional_fields.image);
+  bool has_image = NotificationConversionHelper::NotificationBitmapToGfxImage(
+      image_scale,
+      bitmap_sizes.image_size,
+      options->image_bitmap.get(),
+      &optional_fields.image);
   // We should have an image if and only if the type is an image type.
   if (has_image != (type == message_center::NOTIFICATION_TYPE_IMAGE)) {
     SetError(kExtraImageProvided);
@@ -407,16 +350,17 @@ bool NotificationsApiFunction::UpdateNotification(
   // TODO(dewittj): Return error if this fails.
   if (options->icon_bitmap) {
     gfx::Image icon;
-    NotificationBitmapToGfxImage(
+    NotificationConversionHelper::NotificationBitmapToGfxImage(
         image_scale, bitmap_sizes.icon_size, options->icon_bitmap.get(), &icon);
     notification->set_icon(icon);
   }
 
   gfx::Image app_icon_mask;
-  if (NotificationBitmapToGfxImage(image_scale,
-                                   bitmap_sizes.app_icon_mask_size,
-                                   options->app_icon_mask_bitmap.get(),
-                                   &app_icon_mask)) {
+  if (NotificationConversionHelper::NotificationBitmapToGfxImage(
+          image_scale,
+          bitmap_sizes.app_icon_mask_size,
+          options->app_icon_mask_bitmap.get(),
+          &app_icon_mask)) {
     notification->set_small_image(app_icon_mask);
   }
 
@@ -435,10 +379,11 @@ bool NotificationsApiFunction::UpdateNotification(
     for (size_t i = 0; i < number_of_buttons; i++) {
       message_center::ButtonInfo button(
           base::UTF8ToUTF16((*options->buttons)[i]->title));
-      NotificationBitmapToGfxImage(image_scale,
-                                   bitmap_sizes.button_icon_size,
-                                   (*options->buttons)[i]->icon_bitmap.get(),
-                                   &button.icon);
+      NotificationConversionHelper::NotificationBitmapToGfxImage(
+          image_scale,
+          bitmap_sizes.button_icon_size,
+          (*options->buttons)[i]->icon_bitmap.get(),
+          &button.icon);
       buttons.push_back(button);
     }
     notification->set_buttons(buttons);
@@ -450,10 +395,11 @@ bool NotificationsApiFunction::UpdateNotification(
   }
 
   gfx::Image image;
-  bool has_image = NotificationBitmapToGfxImage(image_scale,
-                                                bitmap_sizes.image_size,
-                                                options->image_bitmap.get(),
-                                                &image);
+  bool has_image = NotificationConversionHelper::NotificationBitmapToGfxImage(
+      image_scale,
+      bitmap_sizes.image_size,
+      options->image_bitmap.get(),
+      &image);
   if (has_image) {
     // We should have an image if and only if the type is an image type.
     if (notification->type() != message_center::NOTIFICATION_TYPE_IMAGE) {

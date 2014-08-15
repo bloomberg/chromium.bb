@@ -1879,6 +1879,8 @@
       'browser/notifications/message_center_settings_controller.h',
       'browser/notifications/message_center_stats_collector.cc',
       'browser/notifications/message_center_stats_collector.h',
+      'browser/notifications/notification_conversion_helper.h',
+      'browser/notifications/notification_conversion_helper.cc',
       'browser/notifications/notification_ui_manager_desktop.cc',
       'browser/notifications/sync_notifier/chrome_notifier_service.cc',
       'browser/notifications/sync_notifier/chrome_notifier_service_factory.cc',
