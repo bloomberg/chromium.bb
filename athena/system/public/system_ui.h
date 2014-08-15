@@ -6,13 +6,18 @@
 #define ATHENA_SYSTEM_PUBLIC_SYSTEM_UI_H_
 
 #include "athena/athena_export.h"
+#include "base/memory/ref_counted.h"
+
+namespace base {
+class TaskRunner;
+}
 
 namespace athena {
 
 class ATHENA_EXPORT SystemUI {
  public:
   // Creates and deletes the singleton object of the SystemUI implementation.
-  static SystemUI* Create();
+  static SystemUI* Create(scoped_refptr<base::TaskRunner> io_task_runner);
   static void Shutdown();
 
   virtual ~SystemUI() {}
