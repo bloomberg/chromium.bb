@@ -44,7 +44,7 @@ class ExampleServiceTest : public testing::Test {
 TEST_F(ExampleServiceTest, Ping) {
   EXPECT_EQ(0, example_client_.last_pong_value());
   example_service_->Ping(1);
-  mojo::RunLoop::current()->Run();
+  RunLoop::current()->Run();
   EXPECT_EQ(1, example_client_.last_pong_value());
 }
 
@@ -54,7 +54,7 @@ struct SetAndQuit : public Callback<void()>::Runnable {
   virtual ~SetAndQuit() {}
   virtual void Run() const MOJO_OVERRIDE{
     *val_ = result_;
-    mojo::RunLoop::current()->Quit();
+    RunLoop::current()->Quit();
   }
   T* val_;
   T result_;
@@ -63,7 +63,7 @@ struct SetAndQuit : public Callback<void()>::Runnable {
 TEST_F(ExampleServiceTest, RunCallback) {
   bool was_run = false;
   example_service_->RunCallback(SetAndQuit<bool>(&was_run, true));
-  mojo::RunLoop::current()->Run();
+  RunLoop::current()->Run();
   EXPECT_TRUE(was_run);
 }
 
