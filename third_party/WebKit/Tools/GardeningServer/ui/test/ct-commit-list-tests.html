@@ -18,27 +18,42 @@ describe('ct-commit-list', function() {
 
   beforeEach(function(done) {
     list = document.createElement('ct-commit-list');
-
     setTimeout(done);
   });
 
   describe('commit list UI', function() {
     beforeEach(function(done) {
+      var repos = [
+          { commits: [ new CTCommitMock(), new CTCommitMock() ],
+            expanded: false },
+          { commits: [ new CTCommitMock(), new CTCommitMock() ],
+            expanded: false }
+      ];
+
       var CommitList = Object.create(Object);
       CommitList.prototype.repositories = function() {
-        return [
-          { commits: [ new CTCommitMock(), new CTCommitMock() ] },
-          { commits: [ new CTCommitMock(), new CTCommitMock() ] }
-        ]
+        return repos;
       };
       list.commitList = CommitList;
 
       setTimeout(done);
     });
 
-    it('should show all commits in revision range', function() {
+    it('should show no commits by default', function() {
       var commits = list.shadowRoot.querySelectorAll('ct-commit');
-      assert.lengthOf(commits, 4);
+      assert.lengthOf(commits, 0);
+    });
+
+    describe('expanded test', function() {
+      beforeEach(function(done) {
+        list.commitList.repositories().first().expanded = true;
+        list.commitList.repositories().last().expanded = true;
+        setTimeout(done);
+      });
+
+      it('should show commits when expanded', function() {
+        assert.lengthOf(list.shadowRoot.querySelectorAll('ct-commit'), 4);
+      });
     });
   });
 });
