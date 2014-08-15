@@ -31,12 +31,12 @@
 #ifndef InspectorWorkerAgent_h
 #define InspectorWorkerAgent_h
 
+#include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 
 namespace blink {
-class InspectorFrontend;
 class InstrumentingAgents;
 class JSONObject;
 class KURL;
@@ -76,7 +76,7 @@ private:
     void createWorkerFrontendChannel(WorkerGlobalScopeProxy*, const String& url);
     void destroyWorkerFrontendChannels();
 
-    InspectorFrontend* m_inspectorFrontend;
+    InspectorFrontend::Worker* m_frontend;
 
     class WorkerFrontendChannel;
     typedef HashMap<int, WorkerFrontendChannel*> WorkerChannels;

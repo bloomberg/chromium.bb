@@ -86,7 +86,7 @@ void InspectorDOMStorageAgent::trace(Visitor* visitor)
 
 void InspectorDOMStorageAgent::setFrontend(InspectorFrontend* frontend)
 {
-    m_frontend = frontend;
+    m_frontend = frontend->domstorage();
 }
 
 void InspectorDOMStorageAgent::clearFrontend()
@@ -193,13 +193,13 @@ void InspectorDOMStorageAgent::didDispatchDOMStorageEvent(const String& key, con
     RefPtr<TypeBuilder::DOMStorage::StorageId> id = storageId(securityOrigin, storageType == LocalStorage);
 
     if (key.isNull())
-        m_frontend->domstorage()->domStorageItemsCleared(id);
+        m_frontend->domStorageItemsCleared(id);
     else if (newValue.isNull())
-        m_frontend->domstorage()->domStorageItemRemoved(id, key);
+        m_frontend->domStorageItemRemoved(id, key);
     else if (oldValue.isNull())
-        m_frontend->domstorage()->domStorageItemAdded(id, key, newValue);
+        m_frontend->domStorageItemAdded(id, key, newValue);
     else
-        m_frontend->domstorage()->domStorageItemUpdated(id, key, oldValue, newValue);
+        m_frontend->domStorageItemUpdated(id, key, oldValue, newValue);
 }
 
 PassOwnPtrWillBeRawPtr<StorageArea> InspectorDOMStorageAgent::findStorageArea(ErrorString* errorString, const RefPtr<JSONObject>& storageId, LocalFrame*& targetFrame)

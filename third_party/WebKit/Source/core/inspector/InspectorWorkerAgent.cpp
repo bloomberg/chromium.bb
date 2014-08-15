@@ -52,7 +52,7 @@ static const char autoconnectToWorkers[] = "autoconnectToWorkers";
 class InspectorWorkerAgent::WorkerFrontendChannel FINAL : public WorkerGlobalScopeProxy::PageInspector {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    explicit WorkerFrontendChannel(InspectorFrontend* frontend, WorkerGlobalScopeProxy* proxy)
+    explicit WorkerFrontendChannel(InspectorFrontend::Worker* frontend, WorkerGlobalScopeProxy* proxy)
         : m_frontend(frontend)
         , m_proxy(proxy)
         , m_id(s_nextId++)
@@ -93,10 +93,10 @@ private:
         RefPtr<JSONObject> messageObject = value->asObject();
         if (!messageObject)
             return;
-        m_frontend->worker()->dispatchMessageFromWorker(m_id, messageObject);
+        m_frontend->dispatchMessageFromWorker(m_id, messageObject);
     }
 
-    InspectorFrontend* m_frontend;
+    InspectorFrontend::Worker* m_frontend;
     WorkerGlobalScopeProxy* m_proxy;
     int m_id;
     bool m_connected;
@@ -112,7 +112,7 @@ PassOwnPtrWillBeRawPtr<InspectorWorkerAgent> InspectorWorkerAgent::create()
 
 InspectorWorkerAgent::InspectorWorkerAgent()
     : InspectorBaseAgent<InspectorWorkerAgent>("Worker")
-    , m_inspectorFrontend(0)
+    , m_frontend(0)
 {
 }
 
@@ -130,7 +130,7 @@ void InspectorWorkerAgent::init()
 
 void InspectorWorkerAgent::setFrontend(InspectorFrontend* frontend)
 {
-    m_inspectorFrontend = frontend;
+    m_frontend = frontend->worker();
 }
 
 void InspectorWorkerAgent::restore()
@@ -143,13 +143,13 @@ void InspectorWorkerAgent::clearFrontend()
 {
     m_state->setBoolean(WorkerAgentState::autoconnectToWorkers, false);
     disable(0);
-    m_inspectorFrontend = 0;
+    m_frontend = 0;
 }
 
 void InspectorWorkerAgent::enable(ErrorString*)
 {
     m_state->setBoolean(WorkerAgentState::workerInspectionEnabled, true);
-    if (!m_inspectorFrontend)
+    if (!m_frontend)
         return;
     createWorkerFrontendChannelsForExistingWorkers();
 }
@@ -157,7 +157,7 @@ void InspectorWorkerAgent::enable(ErrorString*)
 void InspectorWorkerAgent::disable(ErrorString*)
 {
     m_state->setBoolean(WorkerAgentState::workerInspectionEnabled, false);
-    if (!m_inspectorFrontend)
+    if (!m_frontend)
         return;
     destroyWorkerFrontendChannels();
 }
@@ -216,7 +216,7 @@ bool InspectorWorkerAgent::shouldPauseDedicatedWorkerOnStart()
 void InspectorWorkerAgent::didStartWorkerGlobalScope(WorkerGlobalScopeProxy* workerGlobalScopeProxy, const KURL& url)
 {
     m_dedicatedWorkers.set(workerGlobalScopeProxy, url.string());
-    if (m_inspectorFrontend && m_state->getBoolean(WorkerAgentState::workerInspectionEnabled))
+    if (m_frontend && m_state->getBoolean(WorkerAgentState::workerInspectionEnabled))
         createWorkerFrontendChannel(workerGlobalScopeProxy, url.string());
     if (!m_tracingSessionId.isEmpty())
         workerGlobalScopeProxy->writeTimelineStartedEvent(m_tracingSessionId);
@@ -227,7 +227,7 @@ void InspectorWorkerAgent::workerGlobalScopeTerminated(WorkerGlobalScopeProxy* p
     m_dedicatedWorkers.remove(proxy);
     for (WorkerChannels::iterator it = m_idToChannel.begin(); it != m_idToChannel.end(); ++it) {
         if (proxy == it->value->proxy()) {
-            m_inspectorFrontend->worker()->workerTerminated(it->key);
+            m_frontend->workerTerminated(it->key);
             delete it->value;
             m_idToChannel.remove(it);
             return;
@@ -252,14 +252,14 @@ void InspectorWorkerAgent::destroyWorkerFrontendChannels()
 
 void InspectorWorkerAgent::createWorkerFrontendChannel(WorkerGlobalScopeProxy* workerGlobalScopeProxy, const String& url)
 {
-    WorkerFrontendChannel* channel = new WorkerFrontendChannel(m_inspectorFrontend, workerGlobalScopeProxy);
+    WorkerFrontendChannel* channel = new WorkerFrontendChannel(m_frontend, workerGlobalScopeProxy);
     m_idToChannel.set(channel->id(), channel);
 
-    ASSERT(m_inspectorFrontend);
+    ASSERT(m_frontend);
     bool autoconnectToWorkers = m_state->getBoolean(WorkerAgentState::autoconnectToWorkers);
     if (autoconnectToWorkers)
         channel->connectToWorkerGlobalScope();
-    m_inspectorFrontend->worker()->workerCreated(channel->id(), url, autoconnectToWorkers);
+    m_frontend->workerCreated(channel->id(), url, autoconnectToWorkers);
 }
 
 } // namespace blink

@@ -29,6 +29,7 @@
 #ifndef InspectorDOMStorageAgent_h
 #define InspectorDOMStorageAgent_h
 
+#include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/storage/StorageArea.h"
 #include "wtf/PassOwnPtr.h"
@@ -37,7 +38,6 @@
 namespace blink {
 
 class LocalFrame;
-class InspectorFrontend;
 class InspectorPageAgent;
 class InstrumentingAgents;
 class JSONObject;
@@ -78,7 +78,7 @@ private:
     PassRefPtr<TypeBuilder::DOMStorage::StorageId> storageId(SecurityOrigin*, bool isLocalStorage);
 
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
-    InspectorFrontend* m_frontend;
+    InspectorFrontend::DOMStorage* m_frontend;
 };
 
 } // namespace blink

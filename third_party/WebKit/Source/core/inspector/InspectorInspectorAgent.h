@@ -30,6 +30,7 @@
 #ifndef InspectorInspectorAgent_h
 #define InspectorInspectorAgent_h
 
+#include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
@@ -41,7 +42,6 @@ class DOMWrapperWorld;
 class DocumentLoader;
 class LocalFrame;
 class InjectedScriptManager;
-class InspectorFrontend;
 class InstrumentingAgents;
 class JSONObject;
 class Page;
@@ -85,7 +85,7 @@ private:
     InspectorInspectorAgent(Page*, InjectedScriptManager*);
 
     RawPtrWillBeMember<Page> m_inspectedPage;
-    InspectorFrontend* m_frontend;
+    InspectorFrontend::Inspector* m_frontend;
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
 
     Vector<pair<long, String> > m_pendingEvaluateTestCommands;
