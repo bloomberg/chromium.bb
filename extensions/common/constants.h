@@ -110,13 +110,6 @@ const int kUnknownWindowId = -1;
 // Matches chrome.windows.WINDOW_ID_CURRENT.
 const int kCurrentWindowId = -2;
 
-// Note: this structure is an ASN.1 which encodes the algorithm used
-// with its parameters. This is defined in PKCS #1 v2.1 (RFC 3447).
-// It is encoding: { OID sha1WithRSAEncryption      PARAMETERS NULL }
-const uint8 kSignatureAlgorithm[15] = {0x30, 0x0d, 0x06, 0x09, 0x2a,
-                                       0x86, 0x48, 0x86, 0xf7, 0x0d,
-                                       0x01, 0x01, 0x05, 0x05, 0x00};
-
 // NOTE: If you change this list, you should also change kExtensionIconSizes
 // in cc file.
 enum ExtensionIcons {

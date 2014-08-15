@@ -18,7 +18,6 @@
 #include "chrome/browser/component_updater/component_updater_configurator.h"
 #include "chrome/browser/component_updater/crx_update_item.h"
 #include "components/omaha_query_params/omaha_query_params.h"
-#include "extensions/common/extension.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -181,7 +180,10 @@ std::string HexStringToID(const std::string& hexstr) {
       id.append(1, 'a');
     }
   }
-  DCHECK(extensions::Extension::IdIsValid(id));
+
+  // TODO(tommycli): Add back the DCHECK validating the generated id. This
+  // requires moving the extension id_util functions into components/crx_file.
+
   return id;
 }
 

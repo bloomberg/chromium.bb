@@ -1,10 +1,10 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/common/crx_file.h"
+#include "components/crx_file/crx_file.h"
 
-namespace extensions {
+namespace crx_file {
 
 namespace {
 
@@ -78,4 +78,4 @@ bool CrxFile::HeaderIsValid(const CrxFile::Header& header,
   return valid;
 }
 
-}  // namespace extensions
+}  // namespace crx_file

@@ -20,10 +20,10 @@
 #include "chrome/browser/component_updater/component_patcher.h"
 #include "chrome/browser/component_updater/component_patcher_operation.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
+#include "components/crx_file/constants.h"
+#include "components/crx_file/crx_file.h"
 #include "crypto/secure_hash.h"
 #include "crypto/signature_verifier.h"
-#include "extensions/common/constants.h"
-#include "extensions/common/crx_file.h"
 #include "third_party/zlib/google/zip.h"
 
 using crypto::SecureHash;
@@ -37,17 +37,17 @@ namespace {
 class CRXValidator {
  public:
   explicit CRXValidator(FILE* crx_file) : valid_(false), is_delta_(false) {
-    extensions::CrxFile::Header header;
+    crx_file::CrxFile::Header header;
     size_t len = fread(&header, 1, sizeof(header), crx_file);
     if (len < sizeof(header))
       return;
 
-    extensions::CrxFile::Error error;
-    scoped_ptr<extensions::CrxFile> crx(
-        extensions::CrxFile::Parse(header, &error));
+    crx_file::CrxFile::Error error;
+    scoped_ptr<crx_file::CrxFile> crx(
+        crx_file::CrxFile::Parse(header, &error));
     if (!crx.get())
       return;
-    is_delta_ = extensions::CrxFile::HeaderIsDelta(header);
+    is_delta_ = crx_file::CrxFile::HeaderIsDelta(header);
 
     std::vector<uint8> key(header.key_size);
     len = fread(&key[0], sizeof(uint8), header.key_size, crx_file);
@@ -60,8 +60,8 @@ class CRXValidator {
       return;
 
     crypto::SignatureVerifier verifier;
-    if (!verifier.VerifyInit(extension_misc::kSignatureAlgorithm,
-                             sizeof(extension_misc::kSignatureAlgorithm),
+    if (!verifier.VerifyInit(crx_file::kSignatureAlgorithm,
+                             sizeof(crx_file::kSignatureAlgorithm),
                              &signature[0],
                              signature.size(),
                              &key[0],

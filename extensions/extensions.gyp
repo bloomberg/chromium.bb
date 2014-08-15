@@ -16,6 +16,7 @@
         # api resources compiled into the chrome resource bundle.
         # http://crbug.com/162530
         '../chrome/chrome_resources.gyp:chrome_resources',
+        '../components/components.gyp:crx_file',
         '../components/components.gyp:url_matcher',
         '../content/content.gyp:content_common',
         '../crypto/crypto.gyp:crypto',
@@ -48,8 +49,6 @@
         'common/common_manifest_handlers.h',
         'common/constants.cc',
         'common/constants.h',
-        'common/crx_file.cc',
-        'common/crx_file.h',
         'common/csp_validator.cc',
         'common/csp_validator.h',
         'common/dom_action_types.h',

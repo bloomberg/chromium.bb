@@ -14,9 +14,9 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/extensions/extension_creator_filter.h"
+#include "components/crx_file/crx_file.h"
 #include "crypto/rsa_private_key.h"
 #include "crypto/signature_creator.h"
-#include "extensions/common/crx_file.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/id_util.h"
@@ -249,13 +249,13 @@ bool ExtensionCreator::WriteCRX(const base::FilePath& zip_path,
   std::vector<uint8> public_key;
   CHECK(private_key->ExportPublicKey(&public_key));
 
-  CrxFile::Error error;
-  scoped_ptr<CrxFile> crx(
-      CrxFile::Create(public_key.size(), signature.size(), &error));
+  crx_file::CrxFile::Error error;
+  scoped_ptr<crx_file::CrxFile> crx(
+      crx_file::CrxFile::Create(public_key.size(), signature.size(), &error));
   if (!crx) {
     LOG(ERROR) << "cannot create CrxFileHeader: " << error;
   }
-  const CrxFile::Header header = crx->header();
+  const crx_file::CrxFile::Header header = crx->header();
 
   if (fwrite(&header, sizeof(header), 1, crx_handle.get()) != 1) {
     PLOG(ERROR) << "fwrite failed to write header";

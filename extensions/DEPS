@@ -1,5 +1,6 @@
 include_rules = [
   # Do not add Chrome dependencies. Much work went into removing them.
+  "+components/crx_file",
   "+components/url_matcher",
   "-content",
   "+content/public/common",

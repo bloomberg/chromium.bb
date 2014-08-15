@@ -7,6 +7,7 @@ include_rules = [
   "+apps/app_window.h",
   "+apps/app_window_registry.h",
   "-chrome/browser/apps",
+  "+components/crx_file",
   "+components/user_manager",
 
   # For access to testing command line switches.

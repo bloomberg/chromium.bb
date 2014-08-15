@@ -18,8 +18,6 @@ source_set("common") {
     "common_manifest_handlers.h",
     "constants.cc",
     "constants.h",
-    "crx_file.cc",
-    "crx_file.h",
     "csp_validator.cc",
     "csp_validator.h",
     "dom_action_types.h",

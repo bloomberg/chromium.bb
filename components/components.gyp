@@ -19,6 +19,7 @@
     'component_updater.gypi',
     'content_settings.gypi',
     'cronet.gypi',
+    'crx_file.gypi',
     'data_reduction_proxy.gypi',
     'dom_distiller.gypi',
     'domain_reliability.gypi',

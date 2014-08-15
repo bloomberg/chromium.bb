@@ -21,11 +21,11 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/crx_file/constants.h"
 #include "crypto/random.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
 #include "crypto/signature_verifier.h"
-#include "extensions/common/constants.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -253,8 +253,8 @@ bool InstallSigner::VerifySignature(const InstallSignature& signature) {
     return false;
 
   crypto::SignatureVerifier verifier;
-  if (!verifier.VerifyInit(extension_misc::kSignatureAlgorithm,
-                           sizeof(extension_misc::kSignatureAlgorithm),
+  if (!verifier.VerifyInit(crx_file::kSignatureAlgorithm,
+                           sizeof(crx_file::kSignatureAlgorithm),
                            reinterpret_cast<const uint8*>(
                                signature.signature.data()),
                            signature.signature.size(),
