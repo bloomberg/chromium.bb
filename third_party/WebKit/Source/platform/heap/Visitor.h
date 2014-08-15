@@ -289,6 +289,11 @@ public:
     template<typename T>
     void trace(const T& t)
     {
+        if (WTF::IsPolymorphic<T>::value) {
+            intptr_t vtable = *reinterpret_cast<const intptr_t*>(&t);
+            if (!vtable)
+                return;
+        }
         const_cast<T&>(t).trace(this);
     }
 
@@ -329,8 +334,6 @@ public:
     // Used to mark objects during conservative scanning.
     virtual void mark(HeapObjectHeader*, TraceCallback) = 0;
     virtual void mark(FinalizedHeapObjectHeader*, TraceCallback) = 0;
-    virtual void markConservatively(HeapObjectHeader*) = 0;
-    virtual void markConservatively(FinalizedHeapObjectHeader*) = 0;
 
     // If the object calls this during the regular trace callback, then the
     // WeakPointerCallback argument may be called later, when the strong roots

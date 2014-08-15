@@ -521,23 +521,42 @@ void LargeHeapObject<Header>::checkAndMarkPointer(Visitor* visitor, Address addr
     mark(visitor);
 }
 
+#if ENABLE(ASSERT)
+static bool isUninitializedMemory(void* objectPointer, size_t objectSize)
+{
+    // Scan through the object's fields and check that they are all zero.
+    Address* objectFields = reinterpret_cast<Address*>(objectPointer);
+    for (size_t i = 0; i < objectSize / sizeof(Address); ++i) {
+        if (objectFields[i] != 0)
+            return false;
+    }
+    return true;
+}
+#endif
+
 template<>
 void LargeHeapObject<FinalizedHeapObjectHeader>::mark(Visitor* visitor)
 {
-    if (heapObjectHeader()->hasVTable() && !vTableInitialized(payload()))
-        visitor->markConservatively(heapObjectHeader());
-    else
+    if (heapObjectHeader()->hasVTable() && !vTableInitialized(payload())) {
+        FinalizedHeapObjectHeader* header = heapObjectHeader();
+        visitor->markNoTracing(header);
+        ASSERT(isUninitializedMemory(header->payload(), header->payloadSize()));
+    } else {
         visitor->mark(heapObjectHeader(), heapObjectHeader()->traceCallback());
+    }
 }
 
 template<>
 void LargeHeapObject<HeapObjectHeader>::mark(Visitor* visitor)
 {
     ASSERT(gcInfo());
-    if (gcInfo()->hasVTable() && !vTableInitialized(payload()))
-        visitor->markConservatively(heapObjectHeader());
-    else
+    if (gcInfo()->hasVTable() && !vTableInitialized(payload())) {
+        HeapObjectHeader* header = heapObjectHeader();
+        visitor->markNoTracing(header);
+        ASSERT(isUninitializedMemory(header->payload(), header->payloadSize()));
+    } else {
         visitor->mark(heapObjectHeader(), gcInfo()->m_trace);
+    }
 }
 
 template<>
@@ -1362,10 +1381,12 @@ void HeapPage<Header>::checkAndMarkPointer(Visitor* visitor, Address address)
 #if ENABLE(GC_PROFILE_MARKING)
     visitor->setHostInfo(&address, "stack");
 #endif
-    if (hasVTable(header) && !vTableInitialized(header->payload()))
-        visitor->markConservatively(header);
-    else
+    if (hasVTable(header) && !vTableInitialized(header->payload())) {
+        visitor->markNoTracing(header);
+        ASSERT(isUninitializedMemory(header->payload(), header->payloadSize()));
+    } else {
         visitor->mark(header, traceCallback(header));
+    }
 }
 
 #if ENABLE(GC_PROFILE_MARKING)
@@ -1778,35 +1799,6 @@ public:
             return;
         FinalizedHeapObjectHeader* header = FinalizedHeapObjectHeader::fromPayload(objectPointer);
         visitHeader(header, header->payload(), callback);
-    }
-
-
-    inline void visitConservatively(HeapObjectHeader* header, void* objectPointer, size_t objectSize)
-    {
-        ASSERT(header);
-        ASSERT(objectPointer);
-        if (header->isMarked())
-            return;
-        header->mark();
-
-        // Scan through the object's fields and visit them conservatively.
-        Address* objectFields = reinterpret_cast<Address*>(objectPointer);
-        for (size_t i = 0; i < objectSize / sizeof(Address); ++i)
-            Heap::checkAndMarkPointer(this, objectFields[i]);
-    }
-
-    virtual void markConservatively(HeapObjectHeader* header)
-    {
-        // We need both the HeapObjectHeader and FinalizedHeapObjectHeader
-        // version to correctly find the payload.
-        visitConservatively(header, header->payload(), header->payloadSize());
-    }
-
-    virtual void markConservatively(FinalizedHeapObjectHeader* header)
-    {
-        // We need both the HeapObjectHeader and FinalizedHeapObjectHeader
-        // version to correctly find the payload.
-        visitConservatively(header, header->payload(), header->payloadSize());
     }
 
     virtual void registerWeakMembers(const void* closure, const void* containingObject, WeakPointerCallback callback) OVERRIDE

@@ -264,16 +264,6 @@ public:
         m_count++;
     }
 
-    virtual void markConservatively(HeapObjectHeader* header) OVERRIDE
-    {
-        ASSERT_NOT_REACHED();
-    }
-
-    virtual void markConservatively(FinalizedHeapObjectHeader* header) OVERRIDE
-    {
-        ASSERT_NOT_REACHED();
-    }
-
     virtual void registerWeakMembers(const void*, const void*, WeakPointerCallback) OVERRIDE { }
     virtual void registerWeakTable(const void*, EphemeronCallback, EphemeronCallback) OVERRIDE { }
 #if ENABLE(ASSERT)
@@ -4849,12 +4839,19 @@ TEST(HeapTest, ObjectDeadBit)
     DeadBitTester::test();
 }
 
+static bool allocateAndReturnBool()
+{
+    Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+    return true;
+}
+
 class MixinWithGarbageCollectionInConstructor : public GarbageCollectedMixin {
 public:
-    MixinWithGarbageCollectionInConstructor()
+    MixinWithGarbageCollectionInConstructor() : m_dummy(allocateAndReturnBool())
     {
-        Heap::collectGarbage(ThreadState::HeapPointersOnStack);
     }
+private:
+    bool m_dummy;
 };
 
 class ClassWithGarbageCollectingMixinConstructor
@@ -5047,6 +5044,26 @@ TEST(HeapTest, TraceIfNeeded)
         m_vec->trace(&visitor);
         EXPECT_EQ(2u, visitor.count());
     }
+}
+
+class PartObjectWithVirtualMethod {
+public:
+    virtual void trace(Visitor*) { }
+};
+
+class ObjectWithVirtualPartObject : public GarbageCollected<ObjectWithVirtualPartObject> {
+public:
+    ObjectWithVirtualPartObject() : m_dummy(allocateAndReturnBool()) { }
+    void trace(Visitor* visitor) { visitor->trace(m_part); }
+private:
+    bool m_dummy;
+    PartObjectWithVirtualMethod m_part;
+};
+
+TEST(HeapTest, PartObjectWithVirtualMethod)
+{
+    ObjectWithVirtualPartObject* object = new ObjectWithVirtualPartObject();
+    EXPECT_TRUE(object);
 }
 
 } // namespace blink
