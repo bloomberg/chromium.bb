@@ -235,18 +235,24 @@ bool IpcPacketSocket::Init(P2PSocketType type,
   }
 
   net::IPEndPoint remote_endpoint;
-  if (!remote_address.IsNil() && !jingle_glue::SocketAddressToIPEndPoint(
-      remote_address, &remote_endpoint) && !IsTcpClientSocket(type_)) {
-    // Non TCP sockets must have a resolved remote address.
-    return false;
+  if (!remote_address.IsNil()) {
+    DCHECK(IsTcpClientSocket(type_));
+
+    if (remote_address.IsUnresolvedIP()) {
+      remote_endpoint =
+          net::IPEndPoint(net::IPAddressNumber(), remote_address.port());
+    } else {
+      if (!jingle_glue::SocketAddressToIPEndPoint(remote_address,
+                                                  &remote_endpoint)) {
+        return false;
+      }
+    }
   }
 
   // We need to send both resolved and unresolved address in Init. Unresolved
   // address will be used in case of TLS for certificate hostname matching.
   // Certificate will be tied to domain name not to IP address.
-  std::string remote_hostname = remote_address.hostname() + ":" +
-      remote_address.PortAsString();
-  P2PHostAndIPEndPoint remote_info(remote_hostname, remote_endpoint);
+  P2PHostAndIPEndPoint remote_info(remote_address.hostname(), remote_endpoint);
 
   client->Init(type, local_endpoint, remote_info, this);
 

@@ -186,16 +186,16 @@ void P2PSocketHostTcpBase::StartTls() {
   // Default ssl config.
   const net::SSLConfig ssl_config;
   net::HostPortPair dest_host_port_pair;
-  if (remote_address_.ip_address.address().empty()) {
-    DCHECK(!remote_address_.hostname.empty());
-    dest_host_port_pair = net::HostPortPair::FromString(
-        remote_address_.hostname);
+
+  // Calling net::HostPortPair::FromIPEndPoint will crash if the IP address is
+  // empty.
+  if (!remote_address_.ip_address.address().empty()) {
+      net::HostPortPair::FromIPEndPoint(remote_address_.ip_address);
   } else {
-    dest_host_port_pair = net::HostPortPair::FromIPEndPoint(
-        remote_address_.ip_address);
-    if (!remote_address_.hostname.empty())
-      dest_host_port_pair.set_host(remote_address_.hostname);
+    dest_host_port_pair.set_port(remote_address_.ip_address.port());
   }
+  if (!remote_address_.hostname.empty())
+    dest_host_port_pair.set_host(remote_address_.hostname);
 
   net::ClientSocketFactory* socket_factory =
       net::ClientSocketFactory::GetDefaultFactory();
