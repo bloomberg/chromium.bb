@@ -404,8 +404,16 @@ TEST_F(WebRtcLocalAudioTrackTest, StartAndStopAudioTracks) {
   capturer_->Stop();
 }
 
+// Contains data races reported by tsan: crbug.com/404133
+#if defined(THREAD_SANITIZER)
+  #define DISABLE_ON_TSAN(function) DISABLED_##function
+#else
+  #define DISABLE_ON_TSAN(function) function
+#endif
+
 // Create a new capturer with new source, connect it to a new audio track.
-TEST_F(WebRtcLocalAudioTrackTest, ConnectTracksToDifferentCapturers) {
+TEST_F(WebRtcLocalAudioTrackTest,
+       DISABLE_ON_TSAN(ConnectTracksToDifferentCapturers)) {
   // Setup the first audio track and start it.
   scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter_1(
       WebRtcLocalAudioTrackAdapter::Create(std::string(), NULL));
