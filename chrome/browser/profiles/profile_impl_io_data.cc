@@ -26,8 +26,8 @@
 #include "chrome/browser/net/cookie_store_util.h"
 #include "chrome/browser/net/http_server_properties_manager_factory.h"
 #include "chrome/browser/net/predictor.h"
+#include "chrome/browser/net/quota_policy_channel_id_store.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_configurator.h"
-#include "chrome/browser/net/sqlite_channel_id_store.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -515,8 +515,8 @@ void ProfileImplIOData::InitializeInternal(
   if (!channel_id_service) {
     DCHECK(!lazy_params_->channel_id_path.empty());
 
-    scoped_refptr<SQLiteChannelIDStore> channel_id_db =
-        new SQLiteChannelIDStore(
+    scoped_refptr<QuotaPolicyChannelIDStore> channel_id_db =
+        new QuotaPolicyChannelIDStore(
             lazy_params_->channel_id_path,
             BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
                 BrowserThread::GetBlockingPool()->GetSequenceToken()),

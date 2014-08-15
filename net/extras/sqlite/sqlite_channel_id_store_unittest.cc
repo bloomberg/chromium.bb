@@ -10,20 +10,21 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "chrome/browser/net/sqlite_channel_id_store.h"
-#include "chrome/common/chrome_constants.h"
-#include "content/public/test/mock_special_storage_policy.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/test_data_directory.h"
+#include "net/extras/sqlite/sqlite_channel_id_store.h"
 #include "net/ssl/ssl_client_cert_type.h"
 #include "net/test/cert_test_util.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace net {
+
+const base::FilePath::CharType kTestChannelIDFilename[] =
+    FILE_PATH_LITERAL("ChannelID");
+
 class SQLiteChannelIDStoreTest : public testing::Test {
  public:
-  void Load(
-      ScopedVector<net::DefaultChannelIDStore::ChannelID>* channel_ids) {
+  void Load(ScopedVector<DefaultChannelIDStore::ChannelID>* channel_ids) {
     base::RunLoop run_loop;
     store_->Load(base::Bind(&SQLiteChannelIDStoreTest::OnLoaded,
                             base::Unretained(this),
@@ -35,18 +36,17 @@ class SQLiteChannelIDStoreTest : public testing::Test {
 
   void OnLoaded(
       base::RunLoop* run_loop,
-      scoped_ptr<ScopedVector<
-          net::DefaultChannelIDStore::ChannelID> > channel_ids) {
+      scoped_ptr<ScopedVector<DefaultChannelIDStore::ChannelID> > channel_ids) {
     channel_ids_.swap(*channel_ids);
     run_loop->Quit();
   }
 
  protected:
   static void ReadTestKeyAndCert(std::string* key, std::string* cert) {
-    base::FilePath key_path = net::GetTestCertsDirectory().AppendASCII(
-        "unittest.originbound.key.der");
-    base::FilePath cert_path = net::GetTestCertsDirectory().AppendASCII(
-        "unittest.originbound.der");
+    base::FilePath key_path =
+        GetTestCertsDirectory().AppendASCII("unittest.originbound.key.der");
+    base::FilePath cert_path =
+        GetTestCertsDirectory().AppendASCII("unittest.originbound.der");
     ASSERT_TRUE(base::ReadFileToString(key_path, key));
     ASSERT_TRUE(base::ReadFileToString(cert_path, cert));
   }
@@ -76,53 +76,50 @@ class SQLiteChannelIDStoreTest : public testing::Test {
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     store_ = new SQLiteChannelIDStore(
-        temp_dir_.path().Append(chrome::kChannelIDFilename),
-        base::MessageLoopProxy::current(),
-        NULL);
-    ScopedVector<net::DefaultChannelIDStore::ChannelID> channel_ids;
+        temp_dir_.path().Append(kTestChannelIDFilename),
+        base::MessageLoopProxy::current());
+    ScopedVector<DefaultChannelIDStore::ChannelID> channel_ids;
     Load(&channel_ids);
     ASSERT_EQ(0u, channel_ids.size());
     // Make sure the store gets written at least once.
     store_->AddChannelID(
-        net::DefaultChannelIDStore::ChannelID(
-            "google.com",
-            base::Time::FromInternalValue(1),
-            base::Time::FromInternalValue(2),
-            "a", "b"));
+        DefaultChannelIDStore::ChannelID("google.com",
+                                         base::Time::FromInternalValue(1),
+                                         base::Time::FromInternalValue(2),
+                                         "a",
+                                         "b"));
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
   scoped_refptr<SQLiteChannelIDStore> store_;
-  ScopedVector<net::DefaultChannelIDStore::ChannelID> channel_ids_;
+  ScopedVector<DefaultChannelIDStore::ChannelID> channel_ids_;
 };
 
 // Test if data is stored as expected in the SQLite database.
 TEST_F(SQLiteChannelIDStoreTest, TestPersistence) {
   store_->AddChannelID(
-      net::DefaultChannelIDStore::ChannelID(
-          "foo.com",
-          base::Time::FromInternalValue(3),
-          base::Time::FromInternalValue(4),
-          "c", "d"));
+      DefaultChannelIDStore::ChannelID("foo.com",
+                                       base::Time::FromInternalValue(3),
+                                       base::Time::FromInternalValue(4),
+                                       "c",
+                                       "d"));
 
-  ScopedVector<net::DefaultChannelIDStore::ChannelID> channel_ids;
+  ScopedVector<DefaultChannelIDStore::ChannelID> channel_ids;
   // Replace the store effectively destroying the current one and forcing it
   // to write its data to disk. Then we can see if after loading it again it
   // is still there.
   store_ = NULL;
   // Make sure we wait until the destructor has run.
   base::RunLoop().RunUntilIdle();
-  store_ = new SQLiteChannelIDStore(
-      temp_dir_.path().Append(chrome::kChannelIDFilename),
-      base::MessageLoopProxy::current(),
-      NULL);
+  store_ =
+      new SQLiteChannelIDStore(temp_dir_.path().Append(kTestChannelIDFilename),
+                               base::MessageLoopProxy::current());
 
   // Reload and test for persistence
   Load(&channel_ids);
   ASSERT_EQ(2U, channel_ids.size());
-  net::DefaultChannelIDStore::ChannelID* goog_channel_id;
-  net::DefaultChannelIDStore::ChannelID* foo_channel_id;
+  DefaultChannelIDStore::ChannelID* goog_channel_id;
+  DefaultChannelIDStore::ChannelID* foo_channel_id;
   if (channel_ids[0]->server_identifier() == "google.com") {
     goog_channel_id = channel_ids[0];
     foo_channel_id = channel_ids[1];
@@ -148,14 +145,61 @@ TEST_F(SQLiteChannelIDStoreTest, TestPersistence) {
   // Make sure we wait until the destructor has run.
   base::RunLoop().RunUntilIdle();
   channel_ids.clear();
-  store_ = new SQLiteChannelIDStore(
-      temp_dir_.path().Append(chrome::kChannelIDFilename),
-      base::MessageLoopProxy::current(),
-      NULL);
+  store_ =
+      new SQLiteChannelIDStore(temp_dir_.path().Append(kTestChannelIDFilename),
+                               base::MessageLoopProxy::current());
 
   // Reload and check if the cert has been removed.
   Load(&channel_ids);
   ASSERT_EQ(0U, channel_ids.size());
+  // Close the store.
+  store_ = NULL;
+  // Make sure we wait until the destructor has run.
+  base::RunLoop().RunUntilIdle();
+}
+
+// Test if data is stored as expected in the SQLite database.
+TEST_F(SQLiteChannelIDStoreTest, TestDeleteAll) {
+  store_->AddChannelID(
+      DefaultChannelIDStore::ChannelID("foo.com",
+                                       base::Time::FromInternalValue(3),
+                                       base::Time::FromInternalValue(4),
+                                       "c",
+                                       "d"));
+
+  ScopedVector<DefaultChannelIDStore::ChannelID> channel_ids;
+  // Replace the store effectively destroying the current one and forcing it
+  // to write its data to disk. Then we can see if after loading it again it
+  // is still there.
+  store_ = NULL;
+  // Make sure we wait until the destructor has run.
+  base::RunLoop().RunUntilIdle();
+  store_ =
+      new SQLiteChannelIDStore(temp_dir_.path().Append(kTestChannelIDFilename),
+                               base::MessageLoopProxy::current());
+
+  // Reload and test for persistence
+  Load(&channel_ids);
+  ASSERT_EQ(2U, channel_ids.size());
+  // DeleteAll except foo.com (shouldn't fail if one is missing either).
+  std::list<std::string> delete_server_identifiers;
+  delete_server_identifiers.push_back("google.com");
+  delete_server_identifiers.push_back("missing.com");
+  store_->DeleteAllInList(delete_server_identifiers);
+
+  // Now check persistence again.
+  store_ = NULL;
+  // Make sure we wait until the destructor has run.
+  base::RunLoop().RunUntilIdle();
+  channel_ids.clear();
+  store_ =
+      new SQLiteChannelIDStore(temp_dir_.path().Append(kTestChannelIDFilename),
+                               base::MessageLoopProxy::current());
+
+  // Reload and check that only foo.com persisted in store.
+  Load(&channel_ids);
+  ASSERT_EQ(1U, channel_ids.size());
+  ASSERT_EQ("foo.com", channel_ids[0]->server_identifier());
 }
 
 TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV1) {
@@ -174,12 +218,12 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV1) {
     ASSERT_TRUE(db.Open(v1_db_path));
     ASSERT_TRUE(db.Execute(
         "CREATE TABLE meta(key LONGVARCHAR NOT NULL UNIQUE PRIMARY KEY,"
-            "value LONGVARCHAR);"
+        "value LONGVARCHAR);"
         "INSERT INTO \"meta\" VALUES('version','1');"
         "INSERT INTO \"meta\" VALUES('last_compatible_version','1');"
         "CREATE TABLE origin_bound_certs ("
-            "origin TEXT NOT NULL UNIQUE PRIMARY KEY,"
-            "private_key BLOB NOT NULL,cert BLOB NOT NULL);"));
+        "origin TEXT NOT NULL UNIQUE PRIMARY KEY,"
+        "private_key BLOB NOT NULL,cert BLOB NOT NULL);"));
 
     sql::Statement add_smt(db.GetUniqueStatement(
         "INSERT INTO origin_bound_certs (origin, private_key, cert) "
@@ -191,8 +235,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV1) {
 
     ASSERT_TRUE(db.Execute(
         "INSERT INTO \"origin_bound_certs\" VALUES("
-            "'foo.com',X'AA',X'BB');"
-        ));
+        "'foo.com',X'AA',X'BB');"));
   }
 
   // Load and test the DB contents twice.  First time ensures that we can use
@@ -201,9 +244,9 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV1) {
   for (int i = 0; i < 2; ++i) {
     SCOPED_TRACE(i);
 
-    ScopedVector<net::DefaultChannelIDStore::ChannelID> channel_ids;
-    store_ = new SQLiteChannelIDStore(
-        v1_db_path, base::MessageLoopProxy::current(), NULL);
+    ScopedVector<DefaultChannelIDStore::ChannelID> channel_ids;
+    store_ =
+        new SQLiteChannelIDStore(v1_db_path, base::MessageLoopProxy::current());
 
     // Load the database. Because the existing v1 certs are implicitly of type
     // RSA, which is unsupported, they're discarded.
@@ -242,15 +285,14 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV2) {
     ASSERT_TRUE(db.Open(v2_db_path));
     ASSERT_TRUE(db.Execute(
         "CREATE TABLE meta(key LONGVARCHAR NOT NULL UNIQUE PRIMARY KEY,"
-            "value LONGVARCHAR);"
+        "value LONGVARCHAR);"
         "INSERT INTO \"meta\" VALUES('version','2');"
         "INSERT INTO \"meta\" VALUES('last_compatible_version','1');"
         "CREATE TABLE origin_bound_certs ("
-            "origin TEXT NOT NULL UNIQUE PRIMARY KEY,"
-            "private_key BLOB NOT NULL,"
-            "cert BLOB NOT NULL,"
-            "cert_type INTEGER);"
-        ));
+        "origin TEXT NOT NULL UNIQUE PRIMARY KEY,"
+        "private_key BLOB NOT NULL,"
+        "cert BLOB NOT NULL,"
+        "cert_type INTEGER);"));
 
     sql::Statement add_smt(db.GetUniqueStatement(
         "INSERT INTO origin_bound_certs (origin, private_key, cert, cert_type) "
@@ -263,8 +305,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV2) {
 
     ASSERT_TRUE(db.Execute(
         "INSERT INTO \"origin_bound_certs\" VALUES("
-            "'foo.com',X'AA',X'BB',64);"
-        ));
+        "'foo.com',X'AA',X'BB',64);"));
   }
 
   // Load and test the DB contents twice.  First time ensures that we can use
@@ -273,17 +314,16 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV2) {
   for (int i = 0; i < 2; ++i) {
     SCOPED_TRACE(i);
 
-    ScopedVector<net::DefaultChannelIDStore::ChannelID> channel_ids;
-    store_ = new SQLiteChannelIDStore(
-        v2_db_path, base::MessageLoopProxy::current(), NULL);
+    ScopedVector<DefaultChannelIDStore::ChannelID> channel_ids;
+    store_ =
+        new SQLiteChannelIDStore(v2_db_path, base::MessageLoopProxy::current());
 
     // Load the database and ensure the certs can be read.
     Load(&channel_ids);
     ASSERT_EQ(2U, channel_ids.size());
 
     ASSERT_EQ("google.com", channel_ids[0]->server_identifier());
-    ASSERT_EQ(GetTestCertExpirationTime(),
-              channel_ids[0]->expiration_time());
+    ASSERT_EQ(GetTestCertExpirationTime(), channel_ids[0]->expiration_time());
     ASSERT_EQ(key_data, channel_ids[0]->private_key());
     ASSERT_EQ(cert_data, channel_ids[0]->cert());
 
@@ -326,16 +366,15 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV3) {
     ASSERT_TRUE(db.Open(v3_db_path));
     ASSERT_TRUE(db.Execute(
         "CREATE TABLE meta(key LONGVARCHAR NOT NULL UNIQUE PRIMARY KEY,"
-            "value LONGVARCHAR);"
+        "value LONGVARCHAR);"
         "INSERT INTO \"meta\" VALUES('version','3');"
         "INSERT INTO \"meta\" VALUES('last_compatible_version','1');"
         "CREATE TABLE origin_bound_certs ("
-            "origin TEXT NOT NULL UNIQUE PRIMARY KEY,"
-            "private_key BLOB NOT NULL,"
-            "cert BLOB NOT NULL,"
-            "cert_type INTEGER,"
-            "expiration_time INTEGER);"
-        ));
+        "origin TEXT NOT NULL UNIQUE PRIMARY KEY,"
+        "private_key BLOB NOT NULL,"
+        "cert BLOB NOT NULL,"
+        "cert_type INTEGER,"
+        "expiration_time INTEGER);"));
 
     sql::Statement add_smt(db.GetUniqueStatement(
         "INSERT INTO origin_bound_certs (origin, private_key, cert, cert_type, "
@@ -349,8 +388,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV3) {
 
     ASSERT_TRUE(db.Execute(
         "INSERT INTO \"origin_bound_certs\" VALUES("
-            "'foo.com',X'AA',X'BB',64,2000);"
-        ));
+        "'foo.com',X'AA',X'BB',64,2000);"));
   }
 
   // Load and test the DB contents twice.  First time ensures that we can use
@@ -359,9 +397,9 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV3) {
   for (int i = 0; i < 2; ++i) {
     SCOPED_TRACE(i);
 
-    ScopedVector<net::DefaultChannelIDStore::ChannelID> channel_ids;
-    store_ = new SQLiteChannelIDStore(
-        v3_db_path, base::MessageLoopProxy::current(), NULL);
+    ScopedVector<DefaultChannelIDStore::ChannelID> channel_ids;
+    store_ =
+        new SQLiteChannelIDStore(v3_db_path, base::MessageLoopProxy::current());
 
     // Load the database and ensure the certs can be read.
     Load(&channel_ids);
@@ -369,8 +407,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV3) {
 
     ASSERT_EQ("google.com", channel_ids[0]->server_identifier());
     ASSERT_EQ(1000, channel_ids[0]->expiration_time().ToInternalValue());
-    ASSERT_EQ(GetTestCertCreationTime(),
-              channel_ids[0]->creation_time());
+    ASSERT_EQ(GetTestCertCreationTime(), channel_ids[0]->creation_time());
     ASSERT_EQ(key_data, channel_ids[0]->private_key());
     ASSERT_EQ(cert_data, channel_ids[0]->cert());
 
@@ -414,17 +451,16 @@ TEST_F(SQLiteChannelIDStoreTest, TestRSADiscarded) {
     ASSERT_TRUE(db.Open(v4_db_path));
     ASSERT_TRUE(db.Execute(
         "CREATE TABLE meta(key LONGVARCHAR NOT NULL UNIQUE PRIMARY KEY,"
-            "value LONGVARCHAR);"
+        "value LONGVARCHAR);"
         "INSERT INTO \"meta\" VALUES('version','4');"
         "INSERT INTO \"meta\" VALUES('last_compatible_version','1');"
         "CREATE TABLE origin_bound_certs ("
-            "origin TEXT NOT NULL UNIQUE PRIMARY KEY,"
-            "private_key BLOB NOT NULL,"
-            "cert BLOB NOT NULL,"
-            "cert_type INTEGER,"
-            "expiration_time INTEGER,"
-            "creation_time INTEGER);"
-        ));
+        "origin TEXT NOT NULL UNIQUE PRIMARY KEY,"
+        "private_key BLOB NOT NULL,"
+        "cert BLOB NOT NULL,"
+        "cert_type INTEGER,"
+        "expiration_time INTEGER,"
+        "creation_time INTEGER);"));
 
     sql::Statement add_smt(db.GetUniqueStatement(
         "INSERT INTO origin_bound_certs "
@@ -452,9 +488,9 @@ TEST_F(SQLiteChannelIDStoreTest, TestRSADiscarded) {
     ASSERT_TRUE(add_smt.Run());
   }
 
-  ScopedVector<net::DefaultChannelIDStore::ChannelID> channel_ids;
-  store_ = new SQLiteChannelIDStore(
-      v4_db_path, base::MessageLoopProxy::current(), NULL);
+  ScopedVector<DefaultChannelIDStore::ChannelID> channel_ids;
+  store_ =
+      new SQLiteChannelIDStore(v4_db_path, base::MessageLoopProxy::current());
 
   // Load the database and ensure the certs can be read.
   Load(&channel_ids);
@@ -462,8 +498,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestRSADiscarded) {
   ASSERT_EQ(1U, channel_ids.size());
 
   ASSERT_EQ("google.com", channel_ids[0]->server_identifier());
-  ASSERT_EQ(GetTestCertExpirationTime(),
-            channel_ids[0]->expiration_time());
+  ASSERT_EQ(GetTestCertExpirationTime(), channel_ids[0]->expiration_time());
   ASSERT_EQ(key_data, channel_ids[0]->private_key());
   ASSERT_EQ(cert_data, channel_ids[0]->cert());
 
@@ -471,3 +506,5 @@ TEST_F(SQLiteChannelIDStoreTest, TestRSADiscarded) {
   // Make sure we wait until the destructor has run.
   base::RunLoop().RunUntilIdle();
 }
+
+}  // namespace net
