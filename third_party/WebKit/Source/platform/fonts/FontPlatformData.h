@@ -35,7 +35,6 @@
 #include "platform/fonts/FontOrientation.h"
 #include "platform/fonts/FontWidthVariant.h"
 
-#if OS(MACOSX)
 OBJC_CLASS NSFont;
 
 typedef struct CGFont* CGFontRef;
@@ -43,7 +42,6 @@ typedef const struct __CTFont* CTFontRef;
 
 #include <CoreFoundation/CFBase.h>
 #include <objc/objc-auto.h>
-#endif
 
 #include "wtf/Forward.h"
 #include "wtf/HashTableDeletedValueType.h"
@@ -52,31 +50,23 @@ typedef const struct __CTFont* CTFontRef;
 #include "wtf/RetainPtr.h"
 #include "wtf/text/StringImpl.h"
 
-#if OS(MACOSX)
 #include "platform/fonts/mac/MemoryActivatedFont.h"
 #include "third_party/skia/include/core/SkTypeface.h"
-#endif
 
-#if OS(MACOSX)
 typedef struct CGFont* CGFontRef;
 typedef const struct __CTFont* CTFontRef;
 typedef UInt32 FMFont;
 typedef FMFont ATSUFontID;
 typedef UInt32 ATSFontRef;
-#endif
 
 namespace blink {
 
 class FontDescription;
 class SharedBuffer;
 
-#if OS(MACOSX)
 class HarfBuzzFace;
-#endif
 
-#if OS(MACOSX)
 inline CTFontRef toCTFontRef(NSFont *nsFont) { return reinterpret_cast<CTFontRef>(nsFont); }
-#endif
 
 class PLATFORM_EXPORT FontPlatformData {
 public:
@@ -84,28 +74,21 @@ public:
     FontPlatformData();
     FontPlatformData(const FontPlatformData&);
     FontPlatformData(float size, bool syntheticBold, bool syntheticOblique, FontOrientation = Horizontal, FontWidthVariant = RegularWidth);
-
-#if OS(MACOSX)
     FontPlatformData(NSFont*, float size, bool syntheticBold = false, bool syntheticOblique = false,
                      FontOrientation = Horizontal, FontWidthVariant = RegularWidth);
     FontPlatformData(CGFontRef, float size, bool syntheticBold, bool syntheticOblique, FontOrientation, FontWidthVariant);
-#endif
 
     ~FontPlatformData();
 
-#if OS(MACOSX)
     NSFont* font() const { return m_font; }
     void setFont(NSFont*);
-#endif
 
-#if OS(MACOSX)
     CGFontRef cgFont() const { return m_cgFont.get(); }
     CTFontRef ctFont() const;
     SkTypeface* typeface() const;
 
     bool roundsGlyphAdvances() const;
     bool allowsLigatures() const;
-#endif
 
     String fontFamilyName() const;
     bool isFixedPitch() const;
@@ -121,17 +104,13 @@ public:
 
     void setOrientation(FontOrientation orientation) { m_orientation = orientation; }
 
-#if OS(MACOSX)
     HarfBuzzFace* harfBuzzFace();
-#endif
 
     unsigned hash() const
     {
-#if OS(MACOSX)
         ASSERT(m_font || !m_cgFont);
         uintptr_t hashCodes[3] = { (uintptr_t)m_font, m_widthVariant, static_cast<uintptr_t>(m_orientation << 2 | m_syntheticBold << 1 | m_syntheticOblique) };
         return StringHasher::hashMemory<sizeof(hashCodes)>(hashCodes);
-#endif
     }
 
     const FontPlatformData& operator=(const FontPlatformData&);
@@ -150,9 +129,7 @@ public:
 
     bool isHashTableDeletedValue() const
     {
-#if OS(MACOSX)
         return m_font == hashTableDeletedFontValue();
-#endif
     }
 
 #ifndef NDEBUG
@@ -182,18 +159,13 @@ public:
     FontWidthVariant m_widthVariant;
 
 private:
-#if OS(MACOSX)
     NSFont* m_font;
-#endif
-
-#if OS(MACOSX)
     RetainPtr<CGFontRef> m_cgFont;
     mutable RetainPtr<CTFontRef> m_CTFont;
 
     RefPtr<MemoryActivatedFont> m_inMemoryFont;
     RefPtr<HarfBuzzFace> m_harfBuzzFace;
     mutable RefPtr<SkTypeface> m_typeface;
-#endif
 
     bool m_isColorBitmapFont;
     bool m_isCompositeFontReference;
