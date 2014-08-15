@@ -22,10 +22,10 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/extensions/updater/extension_downloader.h"
 #include "chrome/browser/extensions/updater/extension_downloader_delegate.h"
+#include "chrome/browser/extensions/updater/manifest_fetch_data.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_registry_observer.h"
-#include "extensions/browser/updater/manifest_fetch_data.h"
 #include "url/gurl.h"
 
 class ExtensionServiceInterface;

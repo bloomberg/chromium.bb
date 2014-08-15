@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_UPDATER_MANIFEST_FETCH_DATA_H_
-#define EXTENSIONS_BROWSER_UPDATER_MANIFEST_FETCH_DATA_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_UPDATER_MANIFEST_FETCH_DATA_H_
+#define CHROME_BROWSER_EXTENSIONS_UPDATER_MANIFEST_FETCH_DATA_H_
 
 #include <map>
 #include <set>
@@ -21,18 +21,6 @@ namespace extensions {
 class ManifestFetchData {
  public:
   static const int kNeverPinged = -1;
-
-  // What ping mode this fetch should use.
-  enum PingMode {
-    // No ping, no extra metrics.
-    NO_PING,
-
-    // Ping without extra metrics.
-    PING,
-
-    // Ping with extra metrics.
-    PING_WITH_METRICS,
-  };
 
   // Each ping type is sent at most once per day.
   enum PingType {
@@ -58,11 +46,7 @@ class ManifestFetchData {
         : rollcall_days(rollcall), active_days(active), is_enabled(enabled) {}
   };
 
-  ManifestFetchData(const GURL& update_url,
-                    int request_id,
-                    const std::string& brand_code,
-                    const std::string& base_query_params,
-                    PingMode ping_mode);
+  ManifestFetchData(const GURL& update_url, int request_id);
   ~ManifestFetchData();
 
   // Returns true if this extension information was successfully added. If the
@@ -112,17 +96,9 @@ class ManifestFetchData {
   // one ManifestFetchData.
   std::set<int> request_ids_;
 
-  // The brand code to include with manifest fetch queries, if non-empty and
-  // |ping_mode_| >= PING.
-  const std::string brand_code_;
-
-  // The ping mode for this fetch. This determines whether or not ping data
-  // (and possibly extra metrics) will be included in the fetch query.
-  const PingMode ping_mode_;
-
   DISALLOW_COPY_AND_ASSIGN(ManifestFetchData);
 };
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_UPDATER_MANIFEST_FETCH_DATA_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_UPDATER_MANIFEST_FETCH_DATA_H_

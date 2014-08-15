@@ -19,8 +19,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/updater/extension_downloader_delegate.h"
+#include "chrome/browser/extensions/updater/manifest_fetch_data.h"
 #include "chrome/browser/extensions/updater/request_queue.h"
-#include "extensions/browser/updater/manifest_fetch_data.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/update_manifest.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -99,22 +99,6 @@ class ExtensionDownloader
   // Webstore downloads.
   void SetWebstoreIdentityProvider(
       scoped_ptr<IdentityProvider> identity_provider);
-
-  void set_brand_code(const std::string& brand_code) {
-    brand_code_ = brand_code;
-  }
-
-  void set_manifest_query_params(const std::string& params) {
-    manifest_query_params_ = params;
-  }
-
-  void set_ping_enabled_domain(const std::string& domain) {
-    ping_enabled_domain_ = domain;
-  }
-
-  void set_enable_extra_update_metrics(bool enable) {
-    enable_extra_update_metrics_ = enable;
-  }
 
   // These are needed for unit testing, to help identify the correct mock
   // URLFetcher objects.
@@ -260,9 +244,6 @@ class ExtensionDownloader
   virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                                  const GoogleServiceAuthError& error) OVERRIDE;
 
-  ManifestFetchData* CreateManifestFetchData(const GURL& update_url,
-                                             int request_id);
-
   // The delegate that receives the crx files downloaded by the
   // ExtensionDownloader, and that fills in optional ping and update url data.
   ExtensionDownloaderDelegate* delegate_;
@@ -309,20 +290,6 @@ class ExtensionDownloader
 
   // A pending token fetch request.
   scoped_ptr<OAuth2TokenService::Request> access_token_request_;
-
-  // Brand code to include with manifest fetch queries if sending ping data.
-  std::string brand_code_;
-
-  // Baseline parameters to include with manifest fetch queries.
-  std::string manifest_query_params_;
-
-  // Domain to enable ping data. Ping data will be sent with manifest fetches
-  // to update URLs which match this domain. Defaults to empty (no domain).
-  std::string ping_enabled_domain_;
-
-  // Indicates whether or not extra metrics should be included with ping data.
-  // Defaults to |false|.
-  bool enable_extra_update_metrics_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDownloader);
 };

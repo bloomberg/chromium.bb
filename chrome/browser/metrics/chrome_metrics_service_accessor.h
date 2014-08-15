@@ -13,7 +13,6 @@
 #include "chrome/browser/metrics/metrics_service_accessor.h"
 
 class ChromeBrowserMetricsServiceObserver;
-class ChromeExtensionDownloaderFactory;
 class Profile;
 
 namespace {
@@ -22,6 +21,8 @@ class FlashDOMHandler;
 }
 
 namespace extensions {
+class ExtensionDownloader;
+class ManifestFetchData;
 class MetricsPrivateGetIsCrashReportingEnabledFunction;
 }
 
@@ -40,10 +41,11 @@ class ChromeMetricsServiceAccessor : public MetricsServiceAccessor {
  private:
   friend bool prerender::IsOmniboxEnabled(Profile* profile);
   friend class ::ChromeBrowserMetricsServiceObserver;
-  friend class ChromeExtensionDownloaderFactory;
   friend class ChromeRenderMessageFilter;
   friend class ::CrashesDOMHandler;
   friend class DataReductionProxyChromeSettings;
+  friend class extensions::ExtensionDownloader;
+  friend class extensions::ManifestFetchData;
   friend class extensions::MetricsPrivateGetIsCrashReportingEnabledFunction;
   friend class ::FlashDOMHandler;
   friend class system_logs::ChromeInternalLogSource;

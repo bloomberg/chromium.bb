@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/updater/manifest_fetch_data.h"
+#include "chrome/browser/extensions/updater/manifest_fetch_data.h"
 
 #include <vector>
 
@@ -10,7 +10,9 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
+#include "chrome/browser/google/google_brand.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "components/omaha_query_params/omaha_query_params.h"
 #include "net/base/escape.h"
 
 namespace {
@@ -23,18 +25,13 @@ const int kExtensionsManifestMaxURLSize = 2000;
 
 namespace extensions {
 
-ManifestFetchData::ManifestFetchData(const GURL& update_url,
-                                     int request_id,
-                                     const std::string& brand_code,
-                                     const std::string& base_query_params,
-                                     PingMode ping_mode)
+ManifestFetchData::ManifestFetchData(const GURL& update_url, int request_id)
     : base_url_(update_url),
-      full_url_(update_url),
-      brand_code_(brand_code),
-      ping_mode_(ping_mode) {
-  std::string query =
-      full_url_.has_query() ? full_url_.query() + "&" : std::string();
-  query += base_query_params;
+      full_url_(update_url) {
+  std::string query = full_url_.has_query() ?
+      full_url_.query() + "&" : std::string();
+  query += omaha_query_params::OmahaQueryParams::Get(
+      omaha_query_params::OmahaQueryParams::CRX);
   GURL::Replacements replacements;
   replacements.SetQueryStr(query);
   full_url_ = full_url_.ReplaceComponents(replacements);
@@ -42,8 +39,7 @@ ManifestFetchData::ManifestFetchData(const GURL& update_url,
   request_ids_.insert(request_id);
 }
 
-ManifestFetchData::~ManifestFetchData() {
-}
+ManifestFetchData::~ManifestFetchData() {}
 
 // The format for request parameters in update checks is:
 //
@@ -53,7 +49,7 @@ ManifestFetchData::~ManifestFetchData() {
 //
 //   id=EXTENSION_ID&v=VERSION&uc
 //
-// Provide ping data with the parameter ping=PING_DATA where PING_DATA
+// Additionally, we may include the parameter ping=PING_DATA where PING_DATA
 // looks like r=DAYS or a=DAYS for extensions in the Chrome extensions gallery.
 // ('r' refers to 'roll call' ie installation, and 'a' refers to 'active').
 // These values will each be present at most once every 24 hours, and indicate
@@ -93,17 +89,22 @@ bool ManifestFetchData::AddExtension(const std::string& id,
   }
 
   // Append brand code, rollcall and active ping parameters.
-  if (ping_mode_ != NO_PING) {
-    if (!brand_code_.empty())
-      parts.push_back(base::StringPrintf("brand=%s", brand_code_.c_str()));
+  if (base_url_.DomainIs("google.com")) {
+#if defined(GOOGLE_CHROME_BUILD)
+    std::string brand;
+    google_brand::GetBrand(&brand);
+    if (!brand.empty() && !google_brand::IsOrganic(brand))
+      parts.push_back("brand=" + brand);
+#endif
 
     std::string ping_value;
     pings_[id] = PingData(0, 0, false);
+
     if (ping_data) {
       if (ping_data->rollcall_days == kNeverPinged ||
           ping_data->rollcall_days > 0) {
         ping_value += "r=" + base::IntToString(ping_data->rollcall_days);
-        if (ping_mode_ == PING_WITH_METRICS) {
+        if (ChromeMetricsServiceAccessor::IsMetricsReportingEnabled()) {
           ping_value += "&e=" + std::string(ping_data->is_enabled ? "1" : "0");
         }
         pings_[id].rollcall_days = ping_data->rollcall_days;

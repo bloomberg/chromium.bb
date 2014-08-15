@@ -37,15 +37,17 @@
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
-#include "chrome/browser/extensions/updater/chrome_extension_downloader_factory.h"
 #include "chrome/browser/extensions/updater/extension_cache.h"
 #include "chrome/browser/extensions/updater/extension_downloader.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
-#include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/profile_identity_provider.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
@@ -54,6 +56,7 @@
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/notification_service.h"
@@ -89,6 +92,8 @@ using content::BrowserThread;
 using content::DevToolsAgentHost;
 using extensions::CrxInstaller;
 using extensions::Extension;
+using extensions::ExtensionDownloader;
+using extensions::ExtensionDownloaderDelegate;
 using extensions::ExtensionIdSet;
 using extensions::ExtensionInfo;
 using extensions::ExtensionRegistry;
@@ -110,6 +115,15 @@ namespace {
 
 // Wait this many seconds after an extensions becomes idle before updating it.
 const int kUpdateIdleDelay = 5;
+
+#if defined(ENABLE_EXTENSIONS)
+scoped_ptr<IdentityProvider> CreateWebstoreIdentityProvider(Profile* profile) {
+  return make_scoped_ptr<IdentityProvider>(new ProfileIdentityProvider(
+      SigninManagerFactory::GetForProfile(profile),
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+      LoginUIServiceFactory::GetForProfile(profile)));
+}
+#endif  // defined(ENABLE_EXTENSIONS)
 
 }  // namespace
 
@@ -310,8 +324,8 @@ ExtensionService::ExtensionService(Profile* profile,
         profile,
         update_frequency,
         extensions::ExtensionCache::GetInstance(),
-        base::Bind(ChromeExtensionDownloaderFactory::CreateForProfile,
-                   profile)));
+        base::Bind(&ExtensionService::CreateExtensionDownloader,
+                   base::Unretained(this))));
   }
 
   component_loader_.reset(
@@ -570,6 +584,20 @@ bool ExtensionService::UpdateExtension(const std::string& id,
     *out_crx_installer = installer.get();
 
   return true;
+}
+
+scoped_ptr<ExtensionDownloader> ExtensionService::CreateExtensionDownloader(
+    ExtensionDownloaderDelegate* delegate) {
+  scoped_ptr<ExtensionDownloader> downloader;
+#if defined(ENABLE_EXTENSIONS)
+  scoped_ptr<IdentityProvider> identity_provider =
+      CreateWebstoreIdentityProvider(profile_);
+  downloader.reset(new ExtensionDownloader(
+      delegate,
+      profile_->GetRequestContext()));
+  downloader->SetWebstoreIdentityProvider(identity_provider.Pass());
+#endif
+  return downloader.Pass();
 }
 
 void ExtensionService::ReloadExtensionImpl(
