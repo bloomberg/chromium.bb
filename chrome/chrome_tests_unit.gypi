@@ -986,7 +986,7 @@
         'browser/extensions/updater/extension_cache_fake.cc',
         'browser/extensions/updater/extension_updater_unittest.cc',
         'browser/extensions/user_script_listener_unittest.cc',
-        'browser/extensions/user_script_master_unittest.cc',
+        'browser/extensions/user_script_loader_unittest.cc',
         'browser/extensions/webstore_inline_installer_unittest.cc',
         'browser/extensions/webstore_installer_unittest.cc',
         'browser/extensions/zipfile_installer_unittest.cc',

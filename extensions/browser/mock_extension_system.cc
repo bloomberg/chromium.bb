@@ -34,7 +34,7 @@ ManagementPolicy* MockExtensionSystem::management_policy() {
   return NULL;
 }
 
-UserScriptMaster* MockExtensionSystem::user_script_master() {
+SharedUserScriptMaster* MockExtensionSystem::shared_user_script_master() {
   return NULL;
 }
 
@@ -87,6 +87,12 @@ const OneShotEvent& MockExtensionSystem::ready() const {
 }
 
 ContentVerifier* MockExtensionSystem::content_verifier() {
+  return NULL;
+}
+
+DeclarativeUserScriptMaster*
+      MockExtensionSystem::GetDeclarativeUserScriptMasterByExtension(
+          const ExtensionId& extension_id) {
   return NULL;
 }
 

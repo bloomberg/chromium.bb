@@ -287,6 +287,9 @@ class UserScript {
   bool incognito_enabled_;
 };
 
+// For storing UserScripts with unique IDs in sets.
+bool operator<(const UserScript& script1, const UserScript& script2);
+
 typedef std::vector<UserScript> UserScriptList;
 
 }  // namespace extensions

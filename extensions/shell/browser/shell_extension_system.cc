@@ -112,7 +112,7 @@ ManagementPolicy* ShellExtensionSystem::management_policy() {
   return NULL;
 }
 
-UserScriptMaster* ShellExtensionSystem::user_script_master() {
+SharedUserScriptMaster* ShellExtensionSystem::shared_user_script_master() {
   return NULL;
 }
 
@@ -191,6 +191,12 @@ scoped_ptr<ExtensionSet> ShellExtensionSystem::GetDependentExtensions(
     const Extension* extension) {
   scoped_ptr<ExtensionSet> empty(new ExtensionSet());
   return empty.PassAs<ExtensionSet>();
+}
+
+DeclarativeUserScriptMaster*
+ShellExtensionSystem::GetDeclarativeUserScriptMasterByExtension(
+    const ExtensionId& extension_id) {
+  return NULL;
 }
 
 }  // namespace extensions

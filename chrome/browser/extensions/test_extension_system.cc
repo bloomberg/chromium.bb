@@ -12,7 +12,6 @@
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/standard_management_policy_provider.h"
-#include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
@@ -131,7 +130,7 @@ void TestExtensionSystem::SetExtensionService(ExtensionService* service) {
   extension_service_.reset(service);
 }
 
-UserScriptMaster* TestExtensionSystem::user_script_master() {
+SharedUserScriptMaster* TestExtensionSystem::shared_user_script_master() {
   return NULL;
 }
 
@@ -192,6 +191,12 @@ scoped_ptr<ExtensionSet> TestExtensionSystem::GetDependentExtensions(
     const Extension* extension) {
   return extension_service()->shared_module_service()->GetDependentExtensions(
       extension);
+}
+
+DeclarativeUserScriptMaster*
+TestExtensionSystem::GetDeclarativeUserScriptMasterByExtension(
+    const ExtensionId& extension_id) {
+  return NULL;
 }
 
 // static

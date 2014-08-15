@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_SYSTEM_IMPL_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_SYSTEM_IMPL_H_
 
+#include "base/memory/scoped_vector.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/one_shot_event.h"
 
@@ -13,9 +14,11 @@ class Profile;
 namespace extensions {
 
 class ContentVerifier;
+class DeclarativeUserScriptMaster;
 class ExtensionSystemSharedFactory;
 class ExtensionWarningBadgeService;
 class NavigationObserver;
+class SharedUserScriptMaster;
 class StandardManagementPolicyProvider;
 class StateStoreNotificationObserver;
 
@@ -37,7 +40,8 @@ class ExtensionSystemImpl : public ExtensionSystem {
   virtual ExtensionService* extension_service() OVERRIDE;  // shared
   virtual RuntimeData* runtime_data() OVERRIDE;  // shared
   virtual ManagementPolicy* management_policy() OVERRIDE;  // shared
-  virtual UserScriptMaster* user_script_master() OVERRIDE;  // shared
+  // shared
+  virtual SharedUserScriptMaster* shared_user_script_master() OVERRIDE;
   virtual ProcessManager* process_manager() OVERRIDE;
   virtual StateStore* state_store() OVERRIDE;  // shared
   virtual StateStore* rules_store() OVERRIDE;  // shared
@@ -63,6 +67,10 @@ class ExtensionSystemImpl : public ExtensionSystem {
   virtual scoped_ptr<ExtensionSet> GetDependentExtensions(
       const Extension* extension) OVERRIDE;
 
+  virtual DeclarativeUserScriptMaster*
+      GetDeclarativeUserScriptMasterByExtension(
+          const ExtensionId& extension_id) OVERRIDE;  // shared
+
  private:
   friend class ExtensionSystemSharedFactory;
 
@@ -87,7 +95,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     ExtensionService* extension_service();
     RuntimeData* runtime_data();
     ManagementPolicy* management_policy();
-    UserScriptMaster* user_script_master();
+    SharedUserScriptMaster* shared_user_script_master();
     Blacklist* blacklist();
     InfoMap* info_map();
     LazyBackgroundTaskQueue* lazy_background_task_queue();
@@ -98,6 +106,9 @@ class ExtensionSystemImpl : public ExtensionSystem {
     QuotaService* quota_service();
     const OneShotEvent& ready() const { return ready_; }
     ContentVerifier* content_verifier();
+
+    DeclarativeUserScriptMaster* GetDeclarativeUserScriptMasterByExtension(
+        const ExtensionId& extension_id);
 
    private:
     Profile* profile_;
@@ -113,7 +124,13 @@ class ExtensionSystemImpl : public ExtensionSystem {
     scoped_ptr<LazyBackgroundTaskQueue> lazy_background_task_queue_;
     scoped_ptr<EventRouter> event_router_;
     scoped_ptr<NavigationObserver> navigation_observer_;
-    scoped_ptr<UserScriptMaster> user_script_master_;
+    // Shared memory region manager for scripts statically declared in extension
+    // manifests. This region is shared between all extensions.
+    scoped_ptr<SharedUserScriptMaster> shared_user_script_master_;
+    // Shared memory region manager for programmatically declared scripts, one
+    // per extension. Managers are instantiated the first time the declarative
+    // API is used by an extension to request content scripts.
+    ScopedVector<DeclarativeUserScriptMaster> declarative_user_script_masters_;
     scoped_ptr<Blacklist> blacklist_;
     // StandardManagementPolicyProvider depends on Blacklist.
     scoped_ptr<StandardManagementPolicyProvider>

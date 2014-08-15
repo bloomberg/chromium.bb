@@ -240,4 +240,11 @@ void UserScript::UnpickleScripts(const ::Pickle& pickle, PickleIterator* iter,
   }
 }
 
+bool operator<(const UserScript& script1, const UserScript& script2) {
+  // The only kind of script that should be compared is the kind that has its
+  // IDs initialized to a meaningful value.
+  DCHECK(script1.id() != -1 && script2.id() != -1);
+  return script1.id() < script2.id();
+}
+
 }  // namespace extensions

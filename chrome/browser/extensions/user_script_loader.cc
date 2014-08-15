@@ -1,9 +1,10 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/user_script_master.h"
+#include "chrome/browser/extensions/user_script_loader.h"
 
+#include <set>
 #include <string>
 
 #include "base/bind.h"
@@ -13,10 +14,9 @@
 #include "base/memory/shared_memory.h"
 #include "base/version.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
-#include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/component_extension_resource_manager.h"
@@ -24,9 +24,10 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/common/extension_messages.h"
 #include "extensions/common/file_util.h"
-#include "extensions/common/one_shot_event.h"
 #include "extensions/common/message_bundle.h"
+#include "extensions/common/one_shot_event.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
@@ -36,12 +37,12 @@ namespace extensions {
 
 namespace {
 
-typedef base::Callback<void(scoped_ptr<UserScriptList>,
-                            scoped_ptr<base::SharedMemory>)>
-                                LoadScriptsCallback;
+typedef base::Callback<
+    void(scoped_ptr<UserScriptList>, scoped_ptr<base::SharedMemory>)>
+    LoadScriptsCallback;
 
 void VerifyContent(scoped_refptr<ContentVerifier> verifier,
-                   const std::string& extension_id,
+                   const ExtensionId& extension_id,
                    const base::FilePath& extension_root,
                    const base::FilePath& relative_path,
                    const std::string& content) {
@@ -55,20 +56,21 @@ void VerifyContent(scoped_refptr<ContentVerifier> verifier,
   }
 }
 
-bool LoadScriptContent(const std::string& extension_id,
+bool LoadScriptContent(const ExtensionId& extension_id,
                        UserScript::File* script_file,
                        const SubstitutionMap* localization_messages,
                        scoped_refptr<ContentVerifier> verifier) {
   std::string content;
   const base::FilePath& path = ExtensionResource::GetFilePath(
-      script_file->extension_root(), script_file->relative_path(),
+      script_file->extension_root(),
+      script_file->relative_path(),
       ExtensionResource::SYMLINKS_MUST_RESOLVE_WITHIN_ROOT);
   if (path.empty()) {
     int resource_id;
     if (ExtensionsBrowserClient::Get()->GetComponentExtensionResourceManager()->
-        IsComponentExtensionResource(
-            script_file->extension_root(), script_file->relative_path(),
-            &resource_id)) {
+        IsComponentExtensionResource(script_file->extension_root(),
+                                     script_file->relative_path(),
+                                     &resource_id)) {
       const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
       content = rb.GetRawDataResource(resource_id).as_string();
     } else {
@@ -116,35 +118,34 @@ bool LoadScriptContent(const std::string& extension_id,
 }
 
 SubstitutionMap* GetLocalizationMessages(const ExtensionsInfo& extensions_info,
-                                         const std::string& extension_id) {
+                                         const ExtensionId& extension_id) {
   ExtensionsInfo::const_iterator iter = extensions_info.find(extension_id);
   if (iter == extensions_info.end())
     return NULL;
-  return file_util::LoadMessageBundleSubstitutionMap(iter->second.first,
-                                                     extension_id,
-                                                     iter->second.second);
+  return file_util::LoadMessageBundleSubstitutionMap(
+      iter->second.first, extension_id, iter->second.second);
 }
 
 void LoadUserScripts(UserScriptList* user_scripts,
                      const ExtensionsInfo& extensions_info,
-                     const std::set<std::string>& new_extensions,
+                     const std::set<int64>& added_script_ids,
                      ContentVerifier* verifier) {
-  for (size_t i = 0; i < user_scripts->size(); ++i) {
-    UserScript& script = user_scripts->at(i);
-    if (new_extensions.count(script.extension_id()) == 0)
+  for (UserScriptList::iterator script = user_scripts->begin();
+       script != user_scripts->end();
+       ++script) {
+    if (added_script_ids.count(script->id()) == 0)
       continue;
     scoped_ptr<SubstitutionMap> localization_messages(
-        GetLocalizationMessages(extensions_info, script.extension_id()));
-    for (size_t k = 0; k < script.js_scripts().size(); ++k) {
-      UserScript::File& script_file = script.js_scripts()[k];
+        GetLocalizationMessages(extensions_info, script->extension_id()));
+    for (size_t k = 0; k < script->js_scripts().size(); ++k) {
+      UserScript::File& script_file = script->js_scripts()[k];
       if (script_file.GetContent().empty())
-        LoadScriptContent(
-            script.extension_id(), &script_file, NULL, verifier);
+        LoadScriptContent(script->extension_id(), &script_file, NULL, verifier);
     }
-    for (size_t k = 0; k < script.css_scripts().size(); ++k) {
-      UserScript::File& script_file = script.css_scripts()[k];
+    for (size_t k = 0; k < script->css_scripts().size(); ++k) {
+      UserScript::File& script_file = script->css_scripts()[k];
       if (script_file.GetContent().empty())
-        LoadScriptContent(script.extension_id(),
+        LoadScriptContent(script->extension_id(),
                           &script_file,
                           localization_messages.get(),
                           verifier);
@@ -156,20 +157,21 @@ void LoadUserScripts(UserScriptList* user_scripts,
 scoped_ptr<base::SharedMemory> Serialize(const UserScriptList& scripts) {
   Pickle pickle;
   pickle.WriteUInt64(scripts.size());
-  for (size_t i = 0; i < scripts.size(); i++) {
-    const UserScript& script = scripts[i];
+  for (UserScriptList::const_iterator script = scripts.begin();
+       script != scripts.end();
+       ++script) {
     // TODO(aa): This can be replaced by sending content script metadata to
     // renderers along with other extension data in ExtensionMsg_Loaded.
     // See crbug.com/70516.
-    script.Pickle(&pickle);
+    script->Pickle(&pickle);
     // Write scripts as 'data' so that we can read it out in the slave without
     // allocating a new string.
-    for (size_t j = 0; j < script.js_scripts().size(); j++) {
-      base::StringPiece contents = script.js_scripts()[j].GetContent();
+    for (size_t j = 0; j < script->js_scripts().size(); j++) {
+      base::StringPiece contents = script->js_scripts()[j].GetContent();
       pickle.WriteData(contents.data(), contents.length());
     }
-    for (size_t j = 0; j < script.css_scripts().size(); j++) {
-      base::StringPiece contents = script.css_scripts()[j].GetContent();
+    for (size_t j = 0; j < script->css_scripts().size(); j++) {
+      base::StringPiece contents = script->css_scripts()[j].GetContent();
       pickle.WriteData(contents.data(), contents.length());
     }
   }
@@ -200,19 +202,17 @@ scoped_ptr<base::SharedMemory> Serialize(const UserScriptList& scripts) {
 
 void LoadScriptsOnFileThread(scoped_ptr<UserScriptList> user_scripts,
                              const ExtensionsInfo& extensions_info,
-                             const std::set<std::string>& new_extensions,
+                             const std::set<int64>& added_script_ids,
                              scoped_refptr<ContentVerifier> verifier,
                              LoadScriptsCallback callback) {
   DCHECK(user_scripts.get());
   LoadUserScripts(
-      user_scripts.get(), extensions_info, new_extensions, verifier);
+      user_scripts.get(), extensions_info, added_script_ids, verifier);
   scoped_ptr<base::SharedMemory> memory = Serialize(*user_scripts);
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(callback,
-                 base::Passed(&user_scripts),
-                 base::Passed(&memory)));
+      base::Bind(callback, base::Passed(&user_scripts), base::Passed(&memory)));
 }
 
 // Helper function to parse greasesmonkey headers
@@ -236,8 +236,8 @@ bool GetDeclarationValue(const base::StringPiece& line,
 }  // namespace
 
 // static
-bool UserScriptMaster::ParseMetadataHeader(
-      const base::StringPiece& script_text, UserScript* script) {
+bool UserScriptLoader::ParseMetadataHeader(const base::StringPiece& script_text,
+                                           UserScript* script) {
   // http://wiki.greasespot.net/Metadata_block
   base::StringPiece line;
   size_t line_start = 0;
@@ -331,38 +331,179 @@ bool UserScriptMaster::ParseMetadataHeader(
 }
 
 // static
-void UserScriptMaster::LoadScriptsForTest(UserScriptList* user_scripts) {
+void UserScriptLoader::LoadScriptsForTest(UserScriptList* user_scripts) {
   ExtensionsInfo info;
-  std::set<std::string> new_extensions;
-  for (UserScriptList::const_iterator iter = user_scripts->begin();
-       iter != user_scripts->end();
-       ++iter) {
-    new_extensions.insert(iter->extension_id());
+  std::set<int64> added_script_ids;
+  for (UserScriptList::iterator it = user_scripts->begin();
+       it != user_scripts->end();
+       ++it) {
+    added_script_ids.insert(it->id());
   }
   LoadUserScripts(
-      user_scripts, info, new_extensions, NULL /* no verifier for testing */);
+      user_scripts, info, added_script_ids, NULL /* no verifier for testing */);
 }
 
-UserScriptMaster::UserScriptMaster(Profile* profile)
+UserScriptLoader::UserScriptLoader(Profile* profile,
+                                   const ExtensionId& owner_extension_id,
+                                   bool listen_for_extension_system_loaded)
     : user_scripts_(new UserScriptList()),
-      extensions_service_ready_(false),
+      extension_system_ready_(false),
       pending_load_(false),
       profile_(profile),
-      extension_registry_observer_(this),
-      weak_factory_(this) {
-  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
-  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
+      owner_extension_id_(owner_extension_id),
+      weak_factory_(this),
+      extension_registry_observer_(this) {
+  extension_registry_observer_.Add(ExtensionRegistry::Get(profile));
+  if (listen_for_extension_system_loaded) {
+    ExtensionSystem::Get(profile_)->ready().Post(
+        FROM_HERE,
+        base::Bind(&UserScriptLoader::OnExtensionSystemReady,
+                   weak_factory_.GetWeakPtr()));
+  } else {
+    extension_system_ready_ = true;
+  }
+  registrar_.Add(this,
+                 content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());
-  ExtensionSystem::Get(profile)->ready().Post(
+}
+
+UserScriptLoader::~UserScriptLoader() {
+}
+
+void UserScriptLoader::AddScripts(const std::set<UserScript>& scripts) {
+  for (std::set<UserScript>::const_iterator it = scripts.begin();
+       it != scripts.end();
+       ++it) {
+    removed_scripts_.erase(*it);
+    added_scripts_.insert(*it);
+  }
+  AttemptLoad();
+}
+
+void UserScriptLoader::RemoveScripts(const std::set<UserScript>& scripts) {
+  for (std::set<UserScript>::const_iterator it = scripts.begin();
+       it != scripts.end();
+       ++it) {
+    added_scripts_.erase(*it);
+    removed_scripts_.insert(*it);
+  }
+  AttemptLoad();
+}
+
+void UserScriptLoader::ClearScripts() {
+  clear_scripts_ = true;
+  added_scripts_.clear();
+  removed_scripts_.clear();
+  AttemptLoad();
+}
+
+void UserScriptLoader::Observe(int type,
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
+  DCHECK_EQ(type, content::NOTIFICATION_RENDERER_PROCESS_CREATED);
+  content::RenderProcessHost* process =
+      content::Source<content::RenderProcessHost>(source).ptr();
+  Profile* profile = Profile::FromBrowserContext(process->GetBrowserContext());
+  if (!profile_->IsSameProfile(profile))
+    return;
+  if (scripts_ready()) {
+    SendUpdate(process,
+               shared_memory_.get(),
+               std::set<ExtensionId>());  // Include all extensions.
+  }
+}
+
+void UserScriptLoader::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
+  extensions_info_.erase(extension->id());
+}
+
+void UserScriptLoader::OnExtensionSystemReady() {
+  extension_system_ready_ = true;
+  AttemptLoad();
+}
+
+bool UserScriptLoader::ScriptsMayHaveChanged() const {
+  // Scripts may have changed if there are scripts added, scripts removed, or
+  // if scripts were cleared and either:
+  // (1) A load is in progress (which may result in a non-zero number of
+  //     scripts that need to be cleared), or
+  // (2) The current set of scripts is non-empty (so they need to be cleared).
+  return (added_scripts_.size() ||
+          removed_scripts_.size() ||
+          (clear_scripts_ &&
+           (is_loading() || user_scripts_->size())));
+}
+
+void UserScriptLoader::AttemptLoad() {
+  if (extension_system_ready_ && ScriptsMayHaveChanged()) {
+    if (is_loading())
+      pending_load_ = true;
+    else
+      StartLoad();
+  }
+}
+
+void UserScriptLoader::StartLoad() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!is_loading());
+
+  // If scripts were marked for clearing before adding and removing, then clear
+  // them.
+  if (clear_scripts_) {
+    user_scripts_->clear();
+  } else {
+    for (UserScriptList::iterator it = user_scripts_->begin();
+         it != user_scripts_->end();) {
+      if (removed_scripts_.count(*it))
+        it = user_scripts_->erase(it);
+      else
+        ++it;
+    }
+  }
+
+  user_scripts_->insert(
+      user_scripts_->end(), added_scripts_.begin(), added_scripts_.end());
+
+  std::set<int64> added_script_ids;
+  for (std::set<UserScript>::const_iterator it = added_scripts_.begin();
+       it != added_scripts_.end();
+       ++it) {
+    added_script_ids.insert(it->id());
+  }
+
+  // Expand |changed_extensions_| for OnScriptsLoaded, which will use it in
+  // its IPC message. This must be done before we clear |added_scripts_| and
+  // |removed_scripts_| below.
+  std::set<UserScript> changed_scripts(added_scripts_);
+  changed_scripts.insert(removed_scripts_.begin(), removed_scripts_.end());
+  ExpandChangedExtensions(changed_scripts);
+
+  // Update |extensions_info_| to contain info from every extension in
+  // |changed_extensions_| before passing it to LoadScriptsOnFileThread.
+  UpdateExtensionsInfo();
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(&UserScriptMaster::OnExtensionsReady,
-        weak_factory_.GetWeakPtr()));
+      base::Bind(&LoadScriptsOnFileThread,
+                 base::Passed(&user_scripts_),
+                 extensions_info_,
+                 added_script_ids,
+                 make_scoped_refptr(
+                     ExtensionSystem::Get(profile_)->content_verifier()),
+                 base::Bind(&UserScriptLoader::OnScriptsLoaded,
+                            weak_factory_.GetWeakPtr())));
+
+  clear_scripts_ = false;
+  added_scripts_.clear();
+  removed_scripts_.clear();
+  user_scripts_.reset(NULL);
 }
 
-UserScriptMaster::~UserScriptMaster() {
-}
-
-void UserScriptMaster::OnScriptsLoaded(
+void UserScriptLoader::OnScriptsLoaded(
     scoped_ptr<UserScriptList> user_scripts,
     scoped_ptr<base::SharedMemory> shared_memory) {
   user_scripts_.reset(user_scripts.release());
@@ -390,11 +531,10 @@ void UserScriptMaster::OnScriptsLoaded(
   shared_memory_.reset(shared_memory.release());
 
   for (content::RenderProcessHost::iterator i(
-          content::RenderProcessHost::AllHostsIterator());
-       !i.IsAtEnd(); i.Advance()) {
-    SendUpdate(i.GetCurrentValue(),
-               shared_memory_.get(),
-               changed_extensions_);
+           content::RenderProcessHost::AllHostsIterator());
+       !i.IsAtEnd();
+       i.Advance()) {
+    SendUpdate(i.GetCurrentValue(), shared_memory_.get(), changed_extensions_);
   }
   changed_extensions_.clear();
 
@@ -404,119 +544,10 @@ void UserScriptMaster::OnScriptsLoaded(
       content::Details<base::SharedMemory>(shared_memory_.get()));
 }
 
-void UserScriptMaster::OnExtensionLoaded(
-    content::BrowserContext* browser_context,
-    const Extension* extension) {
-  added_extensions_.insert(extension->id());
-  removed_extensions_.erase(extension->id());
-  extensions_info_[extension->id()] =
-      ExtensionSet::ExtensionPathAndDefaultLocale(
-          extension->path(), LocaleInfo::GetDefaultLocale(extension));
-  if (extensions_service_ready_) {
-    changed_extensions_.insert(extension->id());
-    if (is_loading())
-      pending_load_ = true;
-    else
-      StartLoad();
-  }
-}
-
-void UserScriptMaster::OnExtensionUnloaded(
-    content::BrowserContext* browser_context,
-    const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
-  removed_extensions_.insert(extension->id());
-  added_extensions_.erase(extension->id());
-  // Remove any content scripts.
-  extensions_info_.erase(extension->id());
-  changed_extensions_.insert(extension->id());
-  if (is_loading())
-    pending_load_ = true;
-  else
-    StartLoad();
-}
-
-void UserScriptMaster::Observe(int type,
-                               const content::NotificationSource& source,
-                               const content::NotificationDetails& details) {
-  DCHECK_EQ(type, content::NOTIFICATION_RENDERER_PROCESS_CREATED);
-  content::RenderProcessHost* process =
-      content::Source<content::RenderProcessHost>(source).ptr();
-  Profile* profile = Profile::FromBrowserContext(
-      process->GetBrowserContext());
-  if (!profile_->IsSameProfile(profile))
-    return;
-  if (ScriptsReady()) {
-    SendUpdate(process,
-               GetSharedMemory(),
-               std::set<std::string>());  // Include all extensions.
-  }
-}
-
-void UserScriptMaster::OnExtensionsReady() {
-  extensions_service_ready_ = true;
-  if (is_loading())
-    pending_load_ = true;
-  else
-    StartLoad();
-}
-
-void UserScriptMaster::StartLoad() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!is_loading());
-
-  // Remove any user scripts belonging to any extension that was updated or
-  // removed.
-  for (UserScriptList::iterator iter = user_scripts_->begin();
-       iter != user_scripts_->end();) {
-    if (removed_extensions_.count(iter->extension_id()) > 0 ||
-        added_extensions_.count(iter->extension_id()) > 0) {
-      iter = user_scripts_->erase(iter);
-    } else {
-      ++iter;
-    }
-  }
-
-  // Add any content scripts for extensions that were recently loaded.
-  const ExtensionSet& enabled_extensions =
-      ExtensionRegistry::Get(profile_)->enabled_extensions();
-  for (std::set<std::string>::const_iterator iter = added_extensions_.begin();
-       iter != added_extensions_.end(); ++iter) {
-    const Extension* extension = enabled_extensions.GetByID(*iter);
-    if (!extension)
-      continue;
-    bool incognito_enabled =
-        util::IsIncognitoEnabled(extension->id(), profile_);
-    const UserScriptList& scripts =
-        ContentScriptsInfo::GetContentScripts(extension);
-    for (UserScriptList::const_iterator script = scripts.begin();
-         script != scripts.end();
-         ++script) {
-      user_scripts_->push_back(*script);
-      user_scripts_->back().set_incognito_enabled(incognito_enabled);
-    }
-  }
-
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&LoadScriptsOnFileThread,
-                 base::Passed(&user_scripts_),
-                 extensions_info_,
-                 added_extensions_,
-                 make_scoped_refptr(
-                     ExtensionSystem::Get(profile_)->content_verifier()),
-                 base::Bind(&UserScriptMaster::OnScriptsLoaded,
-                            weak_factory_.GetWeakPtr())));
-  added_extensions_.clear();
-  removed_extensions_.clear();
-  user_scripts_.reset(NULL);
-}
-
-void UserScriptMaster::SendUpdate(
+void UserScriptLoader::SendUpdate(
     content::RenderProcessHost* process,
     base::SharedMemory* shared_memory,
-    const std::set<std::string>& changed_extensions) {
+    const std::set<ExtensionId>& changed_extensions) {
   // Don't allow injection of content scripts into <webview>.
   if (process->IsIsolatedGuest())
     return;
@@ -539,6 +570,33 @@ void UserScriptMaster::SendUpdate(
   if (base::SharedMemory::IsHandleValid(handle_for_process)) {
     process->Send(new ExtensionMsg_UpdateUserScripts(
         handle_for_process, "" /* owner */, changed_extensions));
+  }
+}
+
+void UserScriptLoader::ExpandChangedExtensions(
+    const std::set<UserScript>& scripts) {
+  for (std::set<UserScript>::const_iterator it = scripts.begin();
+       it != scripts.end();
+       ++it) {
+    changed_extensions_.insert(it->extension_id());
+  }
+}
+
+void UserScriptLoader::UpdateExtensionsInfo() {
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
+  for (std::set<ExtensionId>::const_iterator it = changed_extensions_.begin();
+       it != changed_extensions_.end();
+       ++it) {
+    if (extensions_info_.find(*it) == extensions_info_.end()) {
+      const Extension* extension =
+          registry->GetExtensionById(*it, ExtensionRegistry::EVERYTHING);
+      // |changed_extensions_| may include extensions that have been removed,
+      // which leads to the above lookup failing. In this case, just continue.
+      if (!extension)
+        continue;
+      extensions_info_[*it] = ExtensionSet::ExtensionPathAndDefaultLocale(
+          extension->path(), LocaleInfo::GetDefaultLocale(extension));
+    }
   }
 }
 

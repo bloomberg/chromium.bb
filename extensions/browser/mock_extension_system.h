@@ -30,7 +30,7 @@ class MockExtensionSystem : public ExtensionSystem {
   virtual ExtensionService* extension_service() OVERRIDE;
   virtual RuntimeData* runtime_data() OVERRIDE;
   virtual ManagementPolicy* management_policy() OVERRIDE;
-  virtual UserScriptMaster* user_script_master() OVERRIDE;
+  virtual SharedUserScriptMaster* shared_user_script_master() OVERRIDE;
   virtual ProcessManager* process_manager() OVERRIDE;
   virtual StateStore* state_store() OVERRIDE;
   virtual StateStore* rules_store() OVERRIDE;
@@ -46,6 +46,9 @@ class MockExtensionSystem : public ExtensionSystem {
   virtual ContentVerifier* content_verifier() OVERRIDE;
   virtual scoped_ptr<ExtensionSet> GetDependentExtensions(
       const Extension* extension) OVERRIDE;
+  virtual DeclarativeUserScriptMaster*
+      GetDeclarativeUserScriptMasterByExtension(
+          const ExtensionId& extension_id) OVERRIDE;
 
  private:
   content::BrowserContext* browser_context_;

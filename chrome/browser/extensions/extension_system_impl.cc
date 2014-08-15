@@ -12,10 +12,12 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/component_loader.h"
+#include "chrome/browser/extensions/declarative_user_script_master.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -26,11 +28,11 @@
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/navigation_observer.h"
 #include "chrome/browser/extensions/shared_module_service.h"
+#include "chrome/browser/extensions/shared_user_script_master.h"
 #include "chrome/browser/extensions/standard_management_policy_provider.h"
 #include "chrome/browser/extensions/state_store_notification_observer.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/manifest_fetch_data.h"
-#include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
@@ -305,7 +307,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   bool allow_noisy_errors = !command_line->HasSwitch(switches::kNoErrorDialogs);
   ExtensionErrorReporter::Init(allow_noisy_errors);
 
-  user_script_master_.reset(new UserScriptMaster(profile_));
+  shared_user_script_master_.reset(new SharedUserScriptMaster(profile_));
 
   // ExtensionService depends on RuntimeData.
   runtime_data_.reset(new RuntimeData(ExtensionRegistry::Get(profile_)));
@@ -439,8 +441,9 @@ ManagementPolicy* ExtensionSystemImpl::Shared::management_policy() {
   return management_policy_.get();
 }
 
-UserScriptMaster* ExtensionSystemImpl::Shared::user_script_master() {
-  return user_script_master_.get();
+SharedUserScriptMaster*
+ExtensionSystemImpl::Shared::shared_user_script_master() {
+  return shared_user_script_master_.get();
 }
 
 InfoMap* ExtensionSystemImpl::Shared::info_map() {
@@ -482,6 +485,27 @@ ContentVerifier* ExtensionSystemImpl::Shared::content_verifier() {
   return content_verifier_.get();
 }
 
+DeclarativeUserScriptMaster*
+ExtensionSystemImpl::Shared::GetDeclarativeUserScriptMasterByExtension(
+    const ExtensionId& extension_id) {
+  DCHECK(ready().is_signaled());
+  DeclarativeUserScriptMaster* master = NULL;
+  for (ScopedVector<DeclarativeUserScriptMaster>::iterator it =
+           declarative_user_script_masters_.begin();
+       it != declarative_user_script_masters_.end();
+       ++it) {
+    if ((*it)->extension_id() == extension_id) {
+      master = *it;
+      break;
+    }
+  }
+  if (!master) {
+    master = new DeclarativeUserScriptMaster(profile_, extension_id);
+    declarative_user_script_masters_.push_back(master);
+  }
+  return master;
+}
+
 //
 // ExtensionSystemImpl
 //
@@ -506,7 +530,7 @@ void ExtensionSystemImpl::Shutdown() {
 
 void ExtensionSystemImpl::InitForRegularProfile(bool extensions_enabled) {
   DCHECK(!profile_->IsOffTheRecord());
-  if (user_script_master() || extension_service())
+  if (shared_user_script_master() || extension_service())
     return;  // Already initialized.
 
   // The InfoMap needs to be created before the ProcessManager.
@@ -529,8 +553,8 @@ ManagementPolicy* ExtensionSystemImpl::management_policy() {
   return shared_->management_policy();
 }
 
-UserScriptMaster* ExtensionSystemImpl::user_script_master() {
-  return shared_->user_script_master();
+SharedUserScriptMaster* ExtensionSystemImpl::shared_user_script_master() {
+  return shared_->shared_user_script_master();
 }
 
 ProcessManager* ExtensionSystemImpl::process_manager() {
@@ -587,6 +611,12 @@ scoped_ptr<ExtensionSet> ExtensionSystemImpl::GetDependentExtensions(
     const Extension* extension) {
   return extension_service()->shared_module_service()->GetDependentExtensions(
       extension);
+}
+
+DeclarativeUserScriptMaster*
+ExtensionSystemImpl::GetDeclarativeUserScriptMasterByExtension(
+    const ExtensionId& extension_id) {
+  return shared_->GetDeclarativeUserScriptMasterByExtension(extension_id);
 }
 
 void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(

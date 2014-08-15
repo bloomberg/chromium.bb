@@ -15,7 +15,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/user_script_master.h"
+#include "chrome/browser/extensions/user_script_loader.h"
 #include "chrome/common/chrome_paths.h"
 #include "crypto/sha2.h"
 #include "extensions/common/constants.h"
@@ -45,7 +45,7 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
   }
 
   UserScript script;
-  if (!UserScriptMaster::ParseMetadataHeader(content, &script)) {
+  if (!UserScriptLoader::ParseMetadataHeader(content, &script)) {
     *error = base::ASCIIToUTF16("Invalid script header.");
     return NULL;
   }

@@ -23,11 +23,13 @@ class BrowserContext;
 
 namespace extensions {
 
+class DeclarativeUserScriptMaster;
 class EventRouter;
 class InfoMap;
 class LazyBackgroundTaskQueue;
 class ProcessManager;
 class RendererStartupHelper;
+class SharedUserScriptMaster;
 
 // A simplified version of ExtensionSystem for app_shell. Allows
 // app_shell to skip initialization of services it doesn't need.
@@ -52,7 +54,7 @@ class ShellExtensionSystem : public ExtensionSystem {
   virtual ExtensionService* extension_service() OVERRIDE;
   virtual RuntimeData* runtime_data() OVERRIDE;
   virtual ManagementPolicy* management_policy() OVERRIDE;
-  virtual UserScriptMaster* user_script_master() OVERRIDE;
+  virtual SharedUserScriptMaster* shared_user_script_master() OVERRIDE;
   virtual ProcessManager* process_manager() OVERRIDE;
   virtual StateStore* state_store() OVERRIDE;
   virtual StateStore* rules_store() OVERRIDE;
@@ -73,6 +75,9 @@ class ShellExtensionSystem : public ExtensionSystem {
   virtual ContentVerifier* content_verifier() OVERRIDE;
   virtual scoped_ptr<ExtensionSet> GetDependentExtensions(
       const Extension* extension) OVERRIDE;
+  virtual DeclarativeUserScriptMaster*
+      GetDeclarativeUserScriptMasterByExtension(
+          const ExtensionId& extension_id) OVERRIDE;
 
  private:
   content::BrowserContext* browser_context_;  // Not owned.

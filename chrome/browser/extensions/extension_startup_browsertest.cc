@@ -13,7 +13,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/extensions/user_script_master.h"
+#include "chrome/browser/extensions/shared_user_script_master.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -131,12 +131,12 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     content::WindowedNotificationObserver user_scripts_observer(
         extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
         content::NotificationService::AllSources());
-    extensions::UserScriptMaster* master =
+    extensions::SharedUserScriptMaster* master =
         extensions::ExtensionSystem::Get(browser()->profile())->
-            user_script_master();
-    if (!master->ScriptsReady())
+            shared_user_script_master();
+    if (!master->scripts_ready())
       user_scripts_observer.Wait();
-    ASSERT_TRUE(master->ScriptsReady());
+    ASSERT_TRUE(master->scripts_ready());
   }
 
   void TestInjection(bool expect_css, bool expect_script) {
