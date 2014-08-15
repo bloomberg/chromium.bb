@@ -75,7 +75,7 @@ int nacl_irt_code_data_allocate(uintptr_t hint, size_t code_size,
   CHECK(0 == pthread_mutex_lock(&g_code_mutex));
   try_code_addr = g_next_available_code;
 
-  if (try_code_addr == -1)
+  if (try_code_addr == (uintptr_t) -1)
     try_code_addr = g_dynamic_text_start;
 
   /*

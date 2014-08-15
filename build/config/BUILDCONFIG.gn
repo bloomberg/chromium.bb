@@ -372,7 +372,8 @@ if (is_nacl) {
 #
 _nacl_compiler_configs = [
   "//native_client/build/config/nacl:nacl_defines",
-  "//native_client/build/config/nacl:nexe_defines"
+  "//native_client/build/config/nacl:nexe_defines",
+  "//native_client/build/config/compiler:chromium_code",
 ]
 
 # Holds all configs used for making native executables and libraries, to avoid

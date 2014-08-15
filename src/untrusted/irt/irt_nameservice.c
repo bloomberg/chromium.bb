@@ -17,6 +17,14 @@
 
 
 /*
+ * The newlib toolchain does not define dprintf.
+ * https://code.google.com/p/chromium/issues/detail?id=403825
+ */
+#if !defined(__GLIBC__)
+int dprintf(int, const char*, ...);
+#endif
+
+/*
  * Lock to guard name service channel.  Both the local data structure and
  * the channel itself can only be used for one request at a time.  So we
  * serialize requests.  We could revisit this and do something that scales
