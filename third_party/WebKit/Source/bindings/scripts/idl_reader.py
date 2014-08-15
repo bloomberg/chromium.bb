@@ -69,8 +69,8 @@ class IdlReader(object):
         ast = blink_idl_parser.parse_file(self.parser, idl_filename)
         if not ast:
             raise Exception('Failed to parse %s' % idl_filename)
-        idl_name = os.path.basename(idl_filename)
-        definitions = IdlDefinitions(idl_name, ast)
+        idl_file_basename, _ = os.path.splitext(os.path.basename(idl_filename))
+        definitions = IdlDefinitions(idl_file_basename, ast)
 
         # Validate file contents with filename convention
         # The Blink IDL filenaming convention is that the file
@@ -86,7 +86,6 @@ class IdlReader(object):
                 'Expected exactly 1 definition in file {0}, but found {1}'
                 .format(idl_filename, number_of_targets))
         target = targets[0]
-        idl_file_basename, _ = os.path.splitext(os.path.basename(idl_filename))
         if not target.is_partial and target.name != idl_file_basename:
             raise Exception(
                 'Definition name "{0}" disagrees with IDL file basename "{1}".'
