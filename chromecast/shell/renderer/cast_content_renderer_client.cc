@@ -9,10 +9,20 @@
 #include "base/command_line.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/renderer/render_view.h"
 #include "crypto/nss_util.h"
+#include "third_party/WebKit/public/platform/WebColor.h"
+#include "third_party/WebKit/public/web/WebView.h"
 
 namespace chromecast {
 namespace shell {
+
+namespace {
+
+// Default background color to set for WebViews
+const blink::WebColor kColorBlack = 0x000000FF;
+
+}  // namespace
 
 void CastContentRendererClient::RenderThreadStarted() {
 #if defined(USE_NSS)
@@ -24,6 +34,14 @@ void CastContentRendererClient::RenderThreadStarted() {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     crypto::InitNSSSafely();
 #endif
+}
+
+void CastContentRendererClient::RenderViewCreated(
+    content::RenderView* render_view) {
+  blink::WebView* webview = render_view->GetWebView();
+  if (webview) {
+    webview->setBaseBackgroundColor(kColorBlack);
+  }
 }
 
 void CastContentRendererClient::AddKeySystems(
