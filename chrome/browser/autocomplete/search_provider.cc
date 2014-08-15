@@ -733,12 +733,27 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   if (verbatim_relevance > 0) {
     const base::string16& trimmed_verbatim =
         base::CollapseWhitespace(input_.text(), false);
+
+    // Verbatim results don't get suggestions and hence, answers.
+    // Scan previous matches if the last answer-bearing suggestion matches
+    // verbatim, and if so, copy over answer contents.
+    base::string16 answer_contents;
+    base::string16 answer_type;
+    for (ACMatches::iterator it = matches_.begin(); it != matches_.end();
+         ++it) {
+      if (!it->answer_contents.empty() &&
+          it->fill_into_edit == trimmed_verbatim) {
+        answer_contents = it->answer_contents;
+        answer_type = it->answer_type;
+        break;
+      }
+    }
+
     SearchSuggestionParser::SuggestResult verbatim(
         trimmed_verbatim, AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
-        trimmed_verbatim, base::string16(), base::string16(), base::string16(),
-        base::string16(), std::string(), std::string(), false,
-        verbatim_relevance, relevance_from_server, false,
-        trimmed_verbatim);
+        trimmed_verbatim, base::string16(), base::string16(), answer_contents,
+        answer_type, std::string(), std::string(), false, verbatim_relevance,
+        relevance_from_server, false, trimmed_verbatim);
     AddMatchToMap(verbatim, std::string(), did_not_accept_default_suggestion,
                   false, &map);
   }
