@@ -70,7 +70,7 @@ public:
 private:
     static WebCString fontName(FcPattern* pattern)
     {
-        FcChar8* familyName;
+        FcChar8* familyName = nullptr;
         if (FcPatternGetString(pattern, FC_FAMILY, 0, &familyName) != FcResultMatch)
             return WebCString();
 
@@ -81,7 +81,7 @@ private:
 
     static WebCString fontFilename(FcPattern* pattern)
     {
-        FcChar8* cFilename;
+        FcChar8* cFilename = nullptr;
         if (FcPatternGetString(pattern, FC_FILE, 0, &cFilename) != FcResultMatch)
             return WebCString();
         const char* fontFilename = reinterpret_cast<char*>(cFilename);
@@ -90,15 +90,15 @@ private:
 
     static int fontTtcIndex(FcPattern* pattern)
     {
-        int ttcIndex;
-        if (FcPatternGetInteger(pattern, FC_INDEX, 0, &ttcIndex) != FcResultMatch && ttcIndex < 0)
+        int ttcIndex = -1;
+        if (FcPatternGetInteger(pattern, FC_INDEX, 0, &ttcIndex) != FcResultMatch || ttcIndex < 0)
             return 0;
         return ttcIndex;
     }
 
     static bool fontIsBold(FcPattern* pattern)
     {
-        int weight;
+        int weight = 0;
         if (FcPatternGetInteger(pattern, FC_WEIGHT, 0, &weight) != FcResultMatch)
             return false;
         return weight >= FC_WEIGHT_BOLD;
@@ -106,7 +106,7 @@ private:
 
     static bool fontIsItalic(FcPattern* pattern)
     {
-        int slant;
+        int slant = 0;
         if (FcPatternGetInteger(pattern, FC_SLANT, 0, &slant) != FcResultMatch)
             return false;
         return slant != FC_SLANT_ROMAN;
