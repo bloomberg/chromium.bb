@@ -17,6 +17,8 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature.h"
 #include "ui/base/layout.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/notifier_settings.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -191,9 +193,7 @@ NotificationProviderNotifyOnPermissionLevelChangedFunction::Run() {
   scoped_ptr<api::notification_provider::NotifyOnPermissionLevelChanged::Params>
       params = api::notification_provider::NotifyOnPermissionLevelChanged::
           Params::Create(*args_);
-
   EXTENSION_FUNCTION_VALIDATE(params.get());
-
   return RespondNow(
       ArgumentList(api::notification_provider::NotifyOnPermissionLevelChanged::
                        Results::Create(true)));
@@ -213,8 +213,30 @@ NotificationProviderNotifyOnShowSettingsFunction::Run() {
       api::notification_provider::NotifyOnShowSettings::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
+  bool has_advanced_settings;
+  // Only application type notifiers have advanced settings.
+  if (params->notifier_type ==
+      api::notification_provider::NotifierType::NOTIFIER_TYPE_APPLICATION) {
+    // TODO(dewittj): Refactor NotificationUIManage API to have a getter of
+    // NotifierSettingsProvider, since it holds the settings provider.
+    message_center::NotifierSettingsProvider* settings_provider =
+        message_center::MessageCenter::Get()->GetNotifierSettingsProvider();
+
+    message_center::NotifierId notifier_id(
+        message_center::NotifierId::NotifierType::APPLICATION,
+        params->notifier_id);
+
+    has_advanced_settings =
+        settings_provider->NotifierHasAdvancedSettings(notifier_id);
+    if (has_advanced_settings)
+      settings_provider->OnNotifierAdvancedSettingsRequested(notifier_id, NULL);
+  } else {
+    has_advanced_settings = false;
+  }
+
   return RespondNow(ArgumentList(
-      api::notification_provider::NotifyOnShowSettings::Results::Create(true)));
+      api::notification_provider::NotifyOnShowSettings::Results::Create(
+          has_advanced_settings)));
 }
 
 NotificationProviderGetNotifierFunction::

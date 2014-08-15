@@ -21,7 +21,21 @@ namespace notificationProvider {
     denied
   };
 
+  enum NotifierType {
+    // Notifiers that are extensions or applications.
+    application,
+
+    // Notifiers that are webistes.
+    web
+  };
+
   dictionary Notifier {
+    // Id of the notifier.
+    DOMString notifierId;
+
+    // Type of the notifier.
+    NotifierType type;
+
     // Name of the notifier.
     DOMString name;
 
@@ -41,10 +55,9 @@ namespace notificationProvider {
 
   callback NotifyOnButtonClickedCallback = void (boolean matchExists);
 
-  callback NotifyOnPermissionLevelChangedCallback = 
-                                          void (boolean notifierExists);
+  callback NotifyOnPermissionLevelChangedCallback = void (boolean wasChanged);
 
-  callback NotifyOnShowSettingsCallback = void (boolean notifierExists);
+  callback NotifyOnShowSettingsCallback = void (boolean hasSettings);
 
   callback GetNotifierCallback = void (Notifier notifier);
 
@@ -84,18 +97,22 @@ namespace notificationProvider {
     // Inform the notifier that the user changed the permission level of that
     // notifier.
     // |notifierId|: The id of the notifier that sent the notification.
+    // |notifierType|: The type of the notifier that sent the notification.
     // |level|: The perission level of the notifier
-    // |callback|: Called to indicate whether the notifier existed.
+    // |callback|: Called to indicate whether the permission level was changed.
     static void notifyOnPermissionLevelChanged(
                               DOMString notifierId,
+                              NotifierType notifierType,
                               NotifierPermissionLevel level,
                               NotifyOnPermissionLevelChangedCallback callback);
 
     // Inform the notifier that the user chose to see advanced settings of that
     // notifier.
     // |notifierId|: The id of the notifier that sent the notification.
-    // |callback|: Called to indicate whether a matching notifier existed.
+    // |notifierType|: The type of the notifier that sent the notification.
+    // |callback|: Called to indicate whether the notifier has extra settings.
     static void notifyOnShowSettings(DOMString notifierId,
+                                     NotifierType notifierType,
                                      NotifyOnShowSettingsCallback callback);
 
     // To get a notifier from it's notifier ID.
