@@ -24,24 +24,8 @@ var remoting = remoting || {};
  * @constructor
  */
 remoting.ClientPlugin = function(container, onExtensionMessage) {
-  this.plugin_ = /** @type {remoting.ViewerPlugin} */
-      document.createElement('embed');
-
+  this.plugin_ = remoting.ClientPlugin.createPluginElement_();
   this.plugin_.id = 'session-client-plugin';
-  if (remoting.settings.CLIENT_PLUGIN_TYPE == 'pnacl') {
-    this.plugin_.src = 'remoting_client_pnacl.nmf';
-    this.plugin_.type = 'application/x-pnacl';
-  } else if (remoting.settings.CLIENT_PLUGIN_TYPE == 'nacl') {
-    this.plugin_.src = 'remoting_client_nacl.nmf';
-    this.plugin_.type = 'application/x-nacl';
-  } else {
-    this.plugin_.src = 'about://none';
-    this.plugin_.type = 'application/vnd.chromium.remoting-viewer';
-  }
-
-  this.plugin_.width = 0;
-  this.plugin_.height = 0;
-  this.plugin_.tabIndex = 0;  // Required, otherwise focus() doesn't work.
   container.appendChild(this.plugin_);
 
   this.onExtensionMessage_ = onExtensionMessage;
@@ -114,6 +98,45 @@ remoting.ClientPlugin = function(container, onExtensionMessage) {
     window.setTimeout(this.showPluginForClickToPlay_.bind(this), 500);
   }
 };
+
+/**
+ * Creates plugin element without adding it to a container.
+ *
+ * @return {remoting.ViewerPlugin} Plugin element
+ */
+remoting.ClientPlugin.createPluginElement_ = function() {
+  var plugin = /** @type {remoting.ViewerPlugin} */
+      document.createElement('embed');
+  if (remoting.settings.CLIENT_PLUGIN_TYPE == 'pnacl') {
+    plugin.src = 'remoting_client_pnacl.nmf';
+    plugin.type = 'application/x-pnacl';
+  } else if (remoting.settings.CLIENT_PLUGIN_TYPE == 'nacl') {
+    plugin.src = 'remoting_client_nacl.nmf';
+    plugin.type = 'application/x-nacl';
+  } else {
+    plugin.src = 'about://none';
+    plugin.type = 'application/vnd.chromium.remoting-viewer';
+  }
+  plugin.width = 0;
+  plugin.height = 0;
+  plugin.tabIndex = 0;  // Required, otherwise focus() doesn't work.
+  return plugin;
+}
+
+/**
+ * Preloads the plugin to make instantiation faster when the user tries
+ * to connect.
+ */
+remoting.ClientPlugin.preload = function() {
+  if (remoting.settings.CLIENT_PLUGIN_TYPE != 'pnacl') {
+    return;
+  }
+
+  var plugin = remoting.ClientPlugin.createPluginElement_();
+  plugin.addEventListener(
+      'loadend', function() { document.body.removeChild(plugin); }, false);
+  document.body.appendChild(plugin);
+}
 
 /**
  * Set of features for which hasFeature() can be used to test.

@@ -207,6 +207,8 @@ remoting.init = function() {
     uiModeChanged: 'uiModeChanged'
   };
   remoting.testEvents.defineEvents(base.values(remoting.testEvents.Names));
+
+  remoting.ClientPlugin.preload();
 };
 
 /**
