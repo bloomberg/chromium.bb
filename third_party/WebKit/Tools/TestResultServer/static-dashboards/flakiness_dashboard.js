@@ -48,7 +48,6 @@ var VIRTUAL_SUITES = {
     'virtual/threaded/compositing/visibility': 'compositing/visibility',
     'virtual/threaded/compositing/webgl': 'compositing/webgl',
     'virtual/gpu/fast/hidpi': 'fast/hidpi',
-    'virtual/softwarecompositing': 'compositing',
     'virtual/deferred/fast/images': 'fast/images',
     'virtual/gpu/compositedscrolling/overflow': 'compositing/overflow',
     'virtual/gpu/compositedscrolling/scrollbars': 'scrollbars',
@@ -330,7 +329,7 @@ function individualTestsForSubstringList()
     //
     // Also, when showChrome is false, we're embedding the dashboard elsewhere and
     // an explicit test list is passed in. In that case, we don't want
-    // a search for compositing/foo.html to also show virtual/softwarecompositing/foo.html.
+    // a search for fast/canvas/foo.html to also show virtual/gpu/fast/canvas/foo.html.
     if (testList.length > 10 || !g_history.dashboardSpecificState.showChrome)
         return testList;
 

@@ -47,7 +47,6 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 # that is not supported on other platforms.
 [ Win Linux ] rubberbanding [ WontFix ]
 [ Win Linux ] compositing/rubberbanding [ WontFix ]
-[ Win Linux ] virtual/softwarecompositing/rubberbanding [ WontFix ]
 
 # This requires usp10.dll version 1.600 or greater on Windows and
 # it isn't installed on XP by default.
@@ -59,10 +58,6 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 [ Win Linux ] compositing/plugins/composited-plugin.html [ WontFix ]
 [ Win Linux ] compositing/plugins/large-to-small-composited-plugin.html [ WontFix ]
 [ Win Linux ] compositing/plugins/small-to-large-composited-plugin.html [ WontFix ]
-[ Win Linux ] virtual/softwarecompositing/plugins/1x1-composited-plugin.html [ WontFix ]
-[ Win Linux ] virtual/softwarecompositing/plugins/composited-plugin.html [ WontFix ]
-[ Win Linux ] virtual/softwarecompositing/plugins/large-to-small-composited-plugin.html [ WontFix ]
-[ Win Linux ] virtual/softwarecompositing/plugins/small-to-large-composited-plugin.html [ WontFix ]
 
 # Mac's popup behavior is different.
 [ Mac ] fast/forms/select/menulist-onchange-fired-with-key-up-down.html [ WontFix ]
@@ -70,7 +65,6 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 
 # Chromium does not support PDF content in <img> tags.
 [ Win Linux ] compositing/images/direct-pdf-image.html [ WontFix ]
-[ Win Linux ] virtual/softwarecompositing/images/direct-pdf-image.html [ WontFix ]
 
 # Pan-scroll tests are Windows-specific.
 [ Linux Mac ] fast/events/panScroll-click.html [ WontFix ]
@@ -104,9 +98,6 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 [ Mac Win ] fast/text/international/draw-complex-text-from-to.html [ WontFix ]
 [ Mac Win ] svg/text/text-with-geometric-precision.svg [ WontFix ]
 
-# These tests are not intended to be run in the virtual suite.
-virtual/softwarecompositing/gestures [ WontFix ]
-
 # This test crashes occasionally on Windows and we can't seem to repro locally.
 # See comments in crbug.com/239077
 [ Win ] fast/canvas/webgl/index-validation-with-resized-buffer.html [ WontFix ]
@@ -127,14 +118,6 @@ fast/canvas/canvas-lost-gpu-context.html [ WontFix ]
 
 # Missing Chrome Mac support, will start working when we move to harfbuzz on mac.
 [ Mac ] fast/text/international/zerowidthjoiner.html [ WontFix ]
-
-# Software compositing can't use WebGL. (There's no SwiftShader available on Windows either.)
-virtual/softwarecompositing/backface-visibility/backface-visibility-webgl.html [ WontFix ]
-virtual/softwarecompositing/draws-content/webgl-background-layer.html [ WontFix ]
-virtual/softwarecompositing/draws-content/webgl-simple-background.html [ WontFix ]
-virtual/softwarecompositing/layer-creation/stacking-context-overlap-nested.html [ WontFix ]
-virtual/softwarecompositing/visibility/visibility-simple-webgl-layer.html [ WontFix ]
-virtual/softwarecompositing/webgl [ WontFix ]
 
 # Hits an assert on Snow-leopard Debug but not on any other platforms.
 [ Snowleopard Debug ] inspector/sources/debugger/async-callstack-mutation-observer.html [ WontFix ]

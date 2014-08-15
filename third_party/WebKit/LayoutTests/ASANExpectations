@@ -54,7 +54,6 @@ crbug.com/173366 [ Linux ] fast/js/string-replacement-outofmemory.html [ Skip ]
 crbug.com/250520 [ Linux ] fast/speechsynthesis/speech-synthesis-cancel.html [ Timeout ]
 
 # These tests consistently fail on slow bots.
-crbug.com/231357 [ Linux ] virtual/softwarecompositing/video-page-visibility.html [ ImageOnlyFailure ]
 crbug.com/231357 [ Linux ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
 
 # These have been failing since at least chrome r203901, blink r151723 (no memory errors, just text failure):
@@ -64,11 +63,8 @@ crbug.com/231357 [ Linux ] perf/mouse-event.html [ Crash ]
 crbug.com/333791 [ Linux ] svg/animations/repeatn-event-1b.svg [ Pass ImageOnlyFailure ]
 crbug.com/333791 [ Linux ] svg/animations/repeatn-event-1d.svg [ Pass ImageOnlyFailure ]
 crbug.com/192172 [ Linux ] compositing/rtl/rtl-iframe-absolute-overflow.html [ Failure Pass ]
-crbug.com/192172 [ Linux ] virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow.html [ Failure Pass ]
 crbug.com/192172 [ Linux ] compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Failure Pass ]
-crbug.com/192172 [ Linux ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Failure Pass ]
 crbug.com/192172 [ Linux ] compositing/rtl/rtl-iframe-fixed-overflow.html [ Failure Pass ]
-crbug.com/192172 [ Linux ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow.html [ Failure Pass ]
 
 crbug.com/248938 [ Linux ] virtual/threaded/transitions/transition-end-event-set-none.html [ Failure Pass ]
 crbug.com/290411 [ Linux ] fast/text/sub-pixel/text-scaling-pixel.html [ Failure Pass ]

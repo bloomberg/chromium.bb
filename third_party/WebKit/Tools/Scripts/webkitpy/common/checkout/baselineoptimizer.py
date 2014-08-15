@@ -80,8 +80,8 @@ class BaselineOptimizer(object):
     def _join_directory(self, directory, baseline_name):
         # This code is complicated because both the directory name and the baseline_name have the virtual
         # test suite in the name and the virtual baseline name is not a strict superset of the non-virtual name.
-        # For example, virtual/softwarecompositing/foo-expected.png corresponds to compostiting/foo-expected.png and
-        # the baseline directories are like platform/mac/virtual/softwarecompositing. So, to get the path
+        # For example, virtual/gpu/fast/canvas/foo-expected.png corresponds to fast/canvas/foo-expected.png and
+        # the baseline directories are like platform/mac/virtual/gpu/fast/canvas. So, to get the path
         # to the baseline in the platform directory, we need to append jsut foo-expected.png to the directory.
         virtual_suite = self._port_factory.get().lookup_virtual_suite(baseline_name)
         if virtual_suite:

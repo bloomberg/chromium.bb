@@ -48,7 +48,6 @@ crbug.com/331566 fast/preloader/document-write-noscript.html [ Failure Pass ]
 crbug.com/86340 fast/filesystem/workers/file-writer-write-overlapped.html [ Failure Pass ]
 
 crbug.com/240374 compositing/overlap-blending/reflection-opacity-huge.html [ ImageOnlyFailure ]
-crbug.com/240374 virtual/softwarecompositing/overlap-blending/reflection-opacity-huge.html [ ImageOnlyFailure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-huge.html [ ImageOnlyFailure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-no-overlap.html [ ImageOnlyFailure ]
 
@@ -72,9 +71,6 @@ crbug.com/310679 [ Mac ] fast/events/scale-and-scroll-iframe-window.html [ Image
 crbug.com/310679 [ Mac ] fast/frames/frame-set-rotation-hit.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] fast/frames/frame-set-scaling-hit.html [ Failure ImageOnlyFailure Pass ]
 
-# Test image output sometimes has imperceptible differences around the edges of the box causing flakes.
-crbug.com/383205 virtual/softwarecompositing/culling/tile-occlusion-boundaries.html [ Failure ImageOnlyFailure Pass ]
-
 # Tests failing since applyPageScaleFactorInCompositor enabled
 crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
 
@@ -82,11 +78,7 @@ crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOn
 crbug.com/338794 crbug.com/192172 compositing/rtl/rtl-iframe-absolute-overflow.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/338794 compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/338794 crbug.com/192172 compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Failure ImageOnlyFailure Pass ]
-crbug.com/338794 virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/338794 crbug.com/192172 compositing/rtl/rtl-iframe-fixed-overflow.html [ Failure ImageOnlyFailure Pass ]
-crbug.com/338794 crbug.com/192172 virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow.html [ Failure ImageOnlyFailure Pass ]
-crbug.com/338794 crbug.com/192172 virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Failure ImageOnlyFailure Pass ]
-crbug.com/338794 crbug.com/192172 virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow.html [ Failure ImageOnlyFailure Pass ]
 
 crbug.com/239811 crbug.com/229113 http/tests/history/redirect-js-location-assign-0-seconds.html [ Failure Pass ]
 
@@ -176,7 +168,6 @@ crbug.com/318978 [ Linux ] http/tests/security/contentSecurityPolicy/object-src-
 crbug.com/318978 [ Linux ] http/tests/security/frameNavigation/xss-DENIED-plugin-navigation.html [ Skip ]
 crbug.com/318978 [ Linux ] permissionclient/plugin-permission.html [ Skip ]
 crbug.com/318978 [ Linux ] plugins/ [ Skip ]
-crbug.com/318978 [ Linux ] virtual/softwarecompositing/plugins/invalidate_rect.html [ Skip ]
 
 crbug.com/380217 virtual/regionbasedmulticol/fast/multicol/newmulticol/layers-in-multicol.html [ Skip ]
 crbug.com/380217 [ Linux Win ] fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-large-radius.html [ Skip ]
@@ -185,7 +176,6 @@ crbug.com/380217 [ Linux Win ] fast/shapes/shape-outside-floats/shape-outside-fl
 crbug.com/389648 fast/text-autosizing/table-inflation-crash.html [ Pass Crash ]
 
 crbug.com/396775 compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ ImageOnlyFailure ]
-crbug.com/396775 virtual/softwarecompositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ ImageOnlyFailure ]
 crbug.com/396775 virtual/gpu/compositedscrolling/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ ImageOnlyFailure ]
 
 # Flaky:
@@ -350,7 +340,6 @@ crbug.com/364640 animations/compositor-start-event-timing.html [ Pass Failure ]
 crbug.com/320477 [ Debug ] inspector/sources/debugger/debugger-pause-in-internal.html [ Pass Crash ]
 
 crbug.com/403819 compositing/ancestor-painted-layer-should-appear.html [ ImageOnlyFailure ]
-crbug.com/403819 virtual/softwarecompositing/ancestor-painted-layer-should-appear.html [ ImageOnlyFailure ]
 
 # Printing Layout broken in these tests.
 crbug.com/377696 printing/setPrinting.html [ Skip ]
@@ -419,7 +408,6 @@ crbug.com/254332 [ SnowLeopard Debug ] fast/forms/checkbox/checkbox-focus-by-mou
 crbug.com/254332 [ XP ] fast/forms/submit/submit-focus-by-mouse.html [ ImageOnlyFailure Pass ]
 
 crbug.com/265650 compositing/repaint/transform-style-change.html [ Pass ImageOnlyFailure ]
-crbug.com/265650 virtual/softwarecompositing/repaint/transform-style-change.html [ Pass ImageOnlyFailure ]
 
 crbug.com/266754 fast/ruby/ruby-svg-crash.html [ ImageOnlyFailure Pass ]
 
@@ -515,7 +503,6 @@ crbug.com/307777 [ Android ] storage/quota/storagequota-query-usage.html [ Failu
 crbug.com/307777 [ Android ] svg/foreignObject/absolute-position-foreign-object-child-crash.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] svg/in-html/svg-assert-failure-percentage.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] tables/hittesting/filltable-levels.html [ Timeout Pass ]
-crbug.com/307777 [ Android ] virtual/softwarecompositing/overflow/get-transform-from-non-box-container.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] webaudio/stereo2mono-down-mixing.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] webexposed/custom-elements.html [ Timeout Pass ]
 
@@ -633,7 +620,6 @@ crbug.com/320099 webaudio/oscillator-triangle.html [ NeedsManualRebaseline ]
 crbug.com/326139 media/video-frame-accurate-seek.html [ Pass ImageOnlyFailure ]
 
 crbug.com/245556 compositing/transitions/transform-on-large-layer.html [ ImageOnlyFailure ]
-crbug.com/245556 virtual/softwarecompositing/transitions/transform-on-large-layer.html [ ImageOnlyFailure ]
 
 crbug.com/369008 [ Mac ] fast/writing-mode/flipped-blocks-inline-map-local-to-container.html [ Crash Pass ]
 
@@ -658,7 +644,6 @@ crbug.com/335710 canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ Pass
 
 # Started failing after r162705.
 crbug.com/324369 compositing/video/video-reflection.html [ Failure ]
-crbug.com/324369 virtual/softwarecompositing/video/video-reflection.html [ Failure ]
 
 crbug.com/328234 fast/css/mask-missing-image-crash.html [ Pass Failure ]
 
@@ -796,10 +781,7 @@ crbug.com/357427 http/tests/workers/terminate-during-sync-operation-filesystem.h
 crbug.com/357427 http/tests/workers/terminate-during-sync-operation-websql.html [ Crash Pass Timeout Failure ]
 crbug.com/357437 web-animations-api/change-in-animation-frame.html [ Failure Pass ]
 crbug.com/357438 [ Mac Win ] compositing/plugins/invalidate_rect.html [ Failure Pass ]
-crbug.com/357438 [ Mac Win ] virtual/softwarecompositing/plugins/invalidate_rect.html [ Failure Pass ]
 crbug.com/357459 [ Linux Win ] virtual/threaded/animations/3d/matrix-transform-type-animation.html [ Pass Timeout ]
-crbug.com/357464 [ Linux ] virtual/softwarecompositing/visibility/visibility-composited-incremental-update.html [ Pass Timeout ]
-crbug.com/357464 [ Win Debug ] virtual/softwarecompositing/visibility/visibility-composited-incremental-update.html [ Pass Timeout ]
 crbug.com/357465 [ Debug ] virtual/threaded/animations/keyframe-timing-functions-multiple-animations.html [ Pass Timeout ]
 crbug.com/357465 [ Linux Release ] virtual/threaded/animations/keyframe-timing-functions-multiple-animations.html [ Pass Timeout ]
 
@@ -818,7 +800,6 @@ crbug.com/356957 [ Win Mac Debug ] editing/spelling/spellcheck-editable-on-focus
 crbug.com/344238 [ Mac Win Debug ] virtual/deferred/inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
 
 crbug.com/359960 compositing/iframes/scrolling-iframe.html [ Pass Failure ]
-crbug.com/359960 virtual/softwarecompositing/iframes/scrolling-iframe.html [ Pass Failure ]
 crbug.com/359961 inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
 
 crbug.com/361133 fast/frames/remove-frame-during-load-event.html [ Pass Crash ]
@@ -1272,7 +1253,6 @@ crbug.com/401381 [ XP ] http/tests/serviceworker/fetch-event.html [ Pass Timeout
 crbug.com/397321 compositing/repaint/should-not-repaint-composited-opacity.html [ Crash Pass ]
 crbug.com/397321 svg/custom/pattern-3-step-cycle.html [ Crash Pass ]
 crbug.com/397321 svg/filters/filter-refresh.svg [ Crash Pass ]
-crbug.com/397321 virtual/softwarecompositing/repaint/repaint-into-ancestor-after-layout.html [ Crash Pass ]
 crbug.com/399507 inspector/timeline/tracing/update-layer-tree.html [ Failure Pass ]
 crbug.com/399507 virtual/deferred/inspector/timeline/tracing/update-layer-tree.html [ Failure Pass ]
 crbug.com/399507 virtual/implsidepainting/inspector/timeline/tracing/update-layer-tree.html [ Failure Pass ]

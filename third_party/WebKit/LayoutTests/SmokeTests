@@ -217,7 +217,6 @@ userstyles/mixed-case-stylesheet.html
 userstyles/simple-stylesheet.html
 virtual/deferred/fast/images/link-body-content-imageDimensionChanged-crash.html
 virtual/gpu/compositedscrolling/scrollbars/scrollbar-large-overflow-rectangle.html
-virtual/softwarecompositing/overflow/get-transform-from-non-box-container.html
 virtual/stable/webexposed/internal-properties-should-not-be-exposed.html
 webaudio/stereo2mono-down-mixing.html
 webexposed/custom-elements.html

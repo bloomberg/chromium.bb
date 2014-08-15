@@ -128,7 +128,7 @@ class BaselineOptimizerTest(unittest.TestCase):
                 self.assertTrue(not fs.exists(path) or path in baseline_optimizer._files_to_delete)
 
         if expected_files_to_delete:
-            self.assertEqual(baseline_optimizer._files_to_delete, expected_files_to_delete)
+            self.assertEqual(sorted(baseline_optimizer._files_to_delete), sorted(expected_files_to_delete))
 
     def test_linux_redundant_with_win(self):
         self._assertOptimization({
@@ -221,60 +221,60 @@ class BaselineOptimizerTest(unittest.TestCase):
 
     def test_virtual_root_redundant_with_actual_root(self):
         self._assertOptimization({
-            'virtual/softwarecompositing': '2',
-            'compositing': '2',
+            'virtual/gpu/fast/canvas': '2',
+            'fast/canvas': '2',
         }, {
-            'virtual/softwarecompositing': None,
-            'compositing': '2',
-        }, baseline_dirname='virtual/softwarecompositing')
+            'virtual/gpu/fast/canvas': None,
+            'fast/canvas': '2',
+        }, baseline_dirname='virtual/gpu/fast/canvas')
 
     def test_virtual_root_redundant_with_ancestors(self):
         self._assertOptimization({
-            'virtual/softwarecompositing': '2',
-            'platform/mac/compositing': '2',
-            'platform/win/compositing': '2',
+            'virtual/gpu/fast/canvas': '2',
+            'platform/mac/fast/canvas': '2',
+            'platform/win/fast/canvas': '2',
         }, {
-            'virtual/softwarecompositing': None,
-            'compositing': '2',
-        }, baseline_dirname='virtual/softwarecompositing')
+            'virtual/gpu/fast/canvas': None,
+            'fast/canvas': '2',
+        }, baseline_dirname='virtual/gpu/fast/canvas')
 
     def test_virtual_root_redundant_with_ancestors_skip_scm_commands(self):
         self._assertOptimization({
-            'virtual/softwarecompositing': '2',
-            'platform/mac/compositing': '2',
-            'platform/win/compositing': '2',
+            'virtual/gpu/fast/canvas': '2',
+            'platform/mac/fast/canvas': '2',
+            'platform/win/fast/canvas': '2',
         }, {
-            'virtual/softwarecompositing': None,
-            'compositing': '2',
+            'virtual/gpu/fast/canvas': None,
+            'fast/canvas': '2',
         },
-        baseline_dirname='virtual/softwarecompositing',
+        baseline_dirname='virtual/gpu/fast/canvas',
         expected_files_to_delete=[
-            '/mock-checkout/third_party/WebKit/LayoutTests/virtual/softwarecompositing/mock-baseline-expected.txt',
-            '/mock-checkout/third_party/WebKit/LayoutTests/platform/mac/compositing/mock-baseline-expected.txt',
-            '/mock-checkout/third_party/WebKit/LayoutTests/platform/win/compositing/mock-baseline-expected.txt',
+            '/mock-checkout/third_party/WebKit/LayoutTests/virtual/gpu/fast/canvas/mock-baseline-expected.txt',
+            '/mock-checkout/third_party/WebKit/LayoutTests/platform/mac/fast/canvas/mock-baseline-expected.txt',
+            '/mock-checkout/third_party/WebKit/LayoutTests/platform/win/fast/canvas/mock-baseline-expected.txt',
         ])
 
     def test_virtual_root_redundant_with_ancestors_skip_scm_commands_with_file_not_in_scm(self):
         self._assertOptimization({
-            'virtual/softwarecompositing': '2',
-            'platform/mac/compositing': '2',
-            'platform/win/compositing': '2',
+            'virtual/gpu/fast/canvas': '2',
+            'platform/mac/fast/canvas': '2',
+            'platform/win/fast/canvas': '2',
         }, {
-            'virtual/softwarecompositing': None,
-            'compositing': '2',
+            'virtual/gpu/fast/canvas': None,
+            'fast/canvas': '2',
         },
-        baseline_dirname='virtual/softwarecompositing',
+        baseline_dirname='virtual/gpu/fast/canvas',
         expected_files_to_delete=[
-            '/mock-checkout/third_party/WebKit/LayoutTests/platform/mac/compositing/mock-baseline-expected.txt',
-            '/mock-checkout/third_party/WebKit/LayoutTests/platform/win/compositing/mock-baseline-expected.txt',
+            '/mock-checkout/third_party/WebKit/LayoutTests/platform/mac/fast/canvas/mock-baseline-expected.txt',
+            '/mock-checkout/third_party/WebKit/LayoutTests/platform/win/fast/canvas/mock-baseline-expected.txt',
         ],
-        host=MockHost(scm=ExcludingMockSCM(['/mock-checkout/third_party/WebKit/LayoutTests/virtual/softwarecompositing/mock-baseline-expected.txt'])))
+        host=MockHost(scm=ExcludingMockSCM(['/mock-checkout/third_party/WebKit/LayoutTests/virtual/gpu/fast/canvas/mock-baseline-expected.txt'])))
 
     def test_virtual_root_not_redundant_with_ancestors(self):
         self._assertOptimization({
-            'virtual/softwarecompositing': '2',
-            'platform/mac/compositing': '1',
+            'virtual/gpu/fast/canvas': '2',
+            'platform/mac/fast/canvas': '1',
         }, {
-            'virtual/softwarecompositing': '2',
-            'platform/mac/compositing': '1',
-        }, baseline_dirname='virtual/softwarecompositing')
+            'virtual/gpu/fast/canvas': '2',
+            'platform/mac/fast/canvas': '1',
+        }, baseline_dirname='virtual/gpu/fast/canvas')

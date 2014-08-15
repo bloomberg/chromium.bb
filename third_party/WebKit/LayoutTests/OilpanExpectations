@@ -21,7 +21,6 @@ crbug.com/342574 [ Mac Debug ] fast/css-generated-content/crash-selection-editin
 # While moving object onto the oilpan heap the timing changed such that the order in which
 # scrollbars are added to an iframe has changed.
 crbug.com/345655 compositing/iframes/scrolling-iframe.html [ Failure ]
-crbug.com/345655 virtual/softwarecompositing/iframes/scrolling-iframe.html [ Failure ]
 
 # These tests crashes due to an assertion in debug, but is consistently timing in mac oilpan debug instead.
 crbug.com/366387 [ Mac Debug ] svg/as-object/deep-nested-embedded-svg-size-changes-no-layout-triggers-1.html [ Timeout ]

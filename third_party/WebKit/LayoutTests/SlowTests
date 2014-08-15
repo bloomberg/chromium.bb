@@ -9,7 +9,6 @@
 
 crbug.com/24182 [ Debug ] fast/js/toString-and-valueOf-override.html [ Slow ]
 crbug.com/24182 [ Debug ] storage/indexeddb/objectstore-cursor.html [ Slow ]
-crbug.com/24182 [ Linux Debug ] virtual/softwarecompositing/lots-of-img-layers.html [ Slow ]
 crbug.com/24182 [ Linux Win Debug ] editing/selection/move-by-word-visually-mac.html [ Slow ]
 crbug.com/24182 [ Win Debug ] editing/selection/move-by-word-visually-multi-line.html [ Slow ]
 crbug.com/24182 [ Win ] virtual/gpu/fast/canvas/webgl/canvas-test.html [ Slow ]

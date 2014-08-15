@@ -127,7 +127,6 @@ CompositingReasons CompositingLayerAssigner::getReasonsPreventingSquashing(const
     // video to share a backing with other layers.
     //
     // compositing/video/video-controls-layer-creation.html
-    // virtual/softwarecompositing/video/video-controls-layer-creation.html
     if (layer->renderer()->isVideo())
         return CompositingReasonSquashingVideoIsDisallowed;
 
