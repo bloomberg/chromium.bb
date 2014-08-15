@@ -902,6 +902,8 @@
         'browser/chromeos/power/power_data_collector.h',
         'browser/chromeos/power/power_prefs.cc',
         'browser/chromeos/power/power_prefs.h',
+        'browser/chromeos/power/renderer_freezer.cc',
+        'browser/chromeos/power/renderer_freezer.h',
         'browser/chromeos/power/session_state_controller_delegate_chromeos.cc',
         'browser/chromeos/power/session_state_controller_delegate_chromeos.h',
         'browser/chromeos/preferences.cc',
