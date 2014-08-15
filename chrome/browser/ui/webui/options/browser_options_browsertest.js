@@ -41,12 +41,29 @@ BrowserOptionsOverlayWebUITest.prototype = {
 
   /** @override */
   browsePreload: 'chrome://chrome/settings/autofill',
+
+  /** @override */
+  isAsync: true,
 };
 
 TEST_F('BrowserOptionsOverlayWebUITest', 'testNavigationInBackground',
     function() {
   assertEquals(this.browsePreload, document.location.href);
-  expectTrue($('navigation').classList.contains('background'));
+
+  if ($('navigation').classList.contains('background')) {
+    testDone();
+    return;
+  }
+
+  // Wait for the message to be posted to the Uber page.
+  window.addEventListener('message', function(e) {
+    if (e.data.method == 'beginInterceptingEvents') {
+      window.setTimeout(function() {
+        assertTrue($('navigation').classList.contains('background'));
+        testDone();
+      });
+    }
+  });
 });
 
 /**
