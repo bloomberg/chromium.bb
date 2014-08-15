@@ -59,6 +59,8 @@ const char kAlphaEnabledWrongChannel[] =
     "The alphaEnabled option requires dev channel or newer.";
 const char kAlphaEnabledMissingPermission[] =
     "The alphaEnabled option requires app.window.alpha permission.";
+const char kAlphaEnabledNeedsFrameNone[] =
+    "The alphaEnabled option can only be used with \"frame: 'none'\".";
 }  // namespace app_window_constants
 
 const char kNoneFrameOption[] = "none";
@@ -258,6 +260,10 @@ bool AppWindowCreateFunction::RunAsync() {
       if (!extension()->permissions_data()->HasAPIPermission(
               APIPermission::kAlphaEnabled)) {
         error_ = app_window_constants::kAlphaEnabledMissingPermission;
+        return false;
+      }
+      if (create_params.frame != AppWindow::FRAME_NONE) {
+        error_ = app_window_constants::kAlphaEnabledNeedsFrameNone;
         return false;
       }
 #if defined(USE_AURA)

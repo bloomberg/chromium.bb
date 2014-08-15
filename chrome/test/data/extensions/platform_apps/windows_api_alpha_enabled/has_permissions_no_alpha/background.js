@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 function testAlphaEnabled(testId, setOption, setValue, expectedValue) {
-  var createOptions = { };
+  var createOptions = { frame: 'none' };
   if (setOption)
     createOptions.alphaEnabled = setValue;
 

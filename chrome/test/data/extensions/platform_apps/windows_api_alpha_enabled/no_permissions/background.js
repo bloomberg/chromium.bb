@@ -5,7 +5,7 @@
 var error = "The alphaEnabled option requires app.window.alpha permission.";
 
 function testAlphaEnabled(testId, setValue) {
-  var createOptions = { };
+  var createOptions = { frame: 'none' };
   createOptions.alphaEnabled = setValue;
 
   chrome.app.window.create('index.html',

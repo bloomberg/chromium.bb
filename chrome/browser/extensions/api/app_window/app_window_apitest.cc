@@ -155,4 +155,11 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiAlphaEnabledInStable) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+                       WindowsApiAlphaEnabledWrongFrameType) {
+  EXPECT_TRUE(RunPlatformAppTest(
+      "platform_apps/windows_api_alpha_enabled/wrong_frame_type"))
+      << message_;
+}
+
 }  // namespace extensions
