@@ -1208,17 +1208,20 @@ TEST_F(InputHandlerProxyTest, GestureFlingStopsAtContentEdge) {
   // Simulate hitting the bottom content edge.
   gfx::Vector2dF accumulated_overscroll(0, 100);
   gfx::Vector2dF latest_overscroll_delta(0, 10);
-  EXPECT_CALL(mock_client_,
-              DidOverscroll(testing::AllOf(
-                  testing::Field(&DidOverscrollParams::accumulated_overscroll,
-                                 testing::Eq(accumulated_overscroll)),
-                  testing::Field(&DidOverscrollParams::latest_overscroll_delta,
-                                 testing::Eq(latest_overscroll_delta)),
-                  testing::Field(
-                      &DidOverscrollParams::current_fling_velocity,
-                      testing::Property(&gfx::Vector2dF::y, testing::Lt(0))))));
-  input_handler_->DidOverscroll(accumulated_overscroll,
-                                latest_overscroll_delta);
+  gfx::PointF scroll_point(10, 0);
+  EXPECT_CALL(
+      mock_client_,
+      DidOverscroll(testing::AllOf(
+          testing::Field(&DidOverscrollParams::accumulated_overscroll,
+                         testing::Eq(accumulated_overscroll)),
+          testing::Field(&DidOverscrollParams::latest_overscroll_delta,
+                         testing::Eq(latest_overscroll_delta)),
+          testing::Field(&DidOverscrollParams::current_fling_velocity,
+                         testing::Property(&gfx::Vector2dF::y, testing::Lt(0))),
+          testing::Field(&DidOverscrollParams::causal_event_viewport_point,
+                         testing::Eq(scroll_point)))));
+  input_handler_->DidOverscroll(
+      scroll_point, accumulated_overscroll, latest_overscroll_delta);
 
   // The next call to animate will no longer scroll vertically.
   EXPECT_CALL(mock_input_handler_, SetNeedsAnimate());
@@ -1354,17 +1357,20 @@ TEST_F(InputHandlerProxyTest, GestureFlingCancelledAfterBothAxesStopScrolling) {
   // Simulate hitting the bottom content edge.
   gfx::Vector2dF accumulated_overscroll(0, 100);
   gfx::Vector2dF latest_overscroll_delta(0, 100);
-  EXPECT_CALL(mock_client_,
-              DidOverscroll(testing::AllOf(
-                  testing::Field(&DidOverscrollParams::accumulated_overscroll,
-                                 testing::Eq(accumulated_overscroll)),
-                  testing::Field(&DidOverscrollParams::latest_overscroll_delta,
-                                 testing::Eq(latest_overscroll_delta)),
-                  testing::Field(
-                      &DidOverscrollParams::current_fling_velocity,
-                      testing::Property(&gfx::Vector2dF::y, testing::Lt(0))))));
-  input_handler_->DidOverscroll(accumulated_overscroll,
-                                latest_overscroll_delta);
+  gfx::PointF scroll_point(10, -50);
+  EXPECT_CALL(
+      mock_client_,
+      DidOverscroll(testing::AllOf(
+          testing::Field(&DidOverscrollParams::accumulated_overscroll,
+                         testing::Eq(accumulated_overscroll)),
+          testing::Field(&DidOverscrollParams::latest_overscroll_delta,
+                         testing::Eq(latest_overscroll_delta)),
+          testing::Field(&DidOverscrollParams::current_fling_velocity,
+                         testing::Property(&gfx::Vector2dF::y, testing::Lt(0))),
+          testing::Field(&DidOverscrollParams::causal_event_viewport_point,
+                         testing::Eq(scroll_point)))));
+  input_handler_->DidOverscroll(
+      scroll_point, accumulated_overscroll, latest_overscroll_delta);
 
   // The next call to animate will no longer scroll vertically.
   EXPECT_CALL(mock_input_handler_, SetNeedsAnimate());
@@ -1379,17 +1385,20 @@ TEST_F(InputHandlerProxyTest, GestureFlingCancelledAfterBothAxesStopScrolling) {
   // Simulate hitting the right content edge.
   accumulated_overscroll = gfx::Vector2dF(100, 100);
   latest_overscroll_delta = gfx::Vector2dF(100, 0);
-  EXPECT_CALL(mock_client_,
-              DidOverscroll(testing::AllOf(
-                  testing::Field(&DidOverscrollParams::accumulated_overscroll,
-                                 testing::Eq(accumulated_overscroll)),
-                  testing::Field(&DidOverscrollParams::latest_overscroll_delta,
-                                 testing::Eq(latest_overscroll_delta)),
-                  testing::Field(
-                      &DidOverscrollParams::current_fling_velocity,
-                      testing::Property(&gfx::Vector2dF::x, testing::Lt(0))))));
-  input_handler_->DidOverscroll(accumulated_overscroll,
-                                latest_overscroll_delta);
+  scroll_point = gfx::PointF(50, 0);
+  EXPECT_CALL(
+      mock_client_,
+      DidOverscroll(testing::AllOf(
+          testing::Field(&DidOverscrollParams::accumulated_overscroll,
+                         testing::Eq(accumulated_overscroll)),
+          testing::Field(&DidOverscrollParams::latest_overscroll_delta,
+                         testing::Eq(latest_overscroll_delta)),
+          testing::Field(&DidOverscrollParams::current_fling_velocity,
+                         testing::Property(&gfx::Vector2dF::x, testing::Lt(0))),
+          testing::Field(&DidOverscrollParams::causal_event_viewport_point,
+                         testing::Eq(scroll_point)))));
+  input_handler_->DidOverscroll(
+      scroll_point, accumulated_overscroll, latest_overscroll_delta);
   // The next call to animate will no longer scroll horizontally or vertically,
   // and the fling should be cancelled.
   EXPECT_CALL(mock_input_handler_, SetNeedsAnimate()).Times(0);

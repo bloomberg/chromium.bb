@@ -16,8 +16,9 @@ class UI_BASE_EXPORT SystemUIResourceManager {
   enum ResourceType {
     OVERSCROLL_EDGE = 0,
     OVERSCROLL_GLOW,
+    OVERSCROLL_GLOW_L,
     RESOURCE_TYPE_FIRST = OVERSCROLL_EDGE,
-    RESOURCE_TYPE_LAST = OVERSCROLL_GLOW
+    RESOURCE_TYPE_LAST = OVERSCROLL_GLOW_L
   };
 
   virtual ~SystemUIResourceManager() {}

@@ -59,6 +59,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::DidOverscrollParams)
   IPC_STRUCT_TRAITS_MEMBER(accumulated_overscroll)
   IPC_STRUCT_TRAITS_MEMBER(latest_overscroll_delta)
   IPC_STRUCT_TRAITS_MEMBER(current_fling_velocity)
+  IPC_STRUCT_TRAITS_MEMBER(causal_event_viewport_point)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::EditCommand)

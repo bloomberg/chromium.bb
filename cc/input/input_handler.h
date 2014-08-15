@@ -35,7 +35,8 @@ class CC_EXPORT InputHandlerClient {
   // Called when scroll deltas reaching the root scrolling layer go unused.
   // The accumulated overscroll is scoped by the most recent call to
   // InputHandler::ScrollBegin.
-  virtual void DidOverscroll(const gfx::Vector2dF& accumulated_overscroll,
+  virtual void DidOverscroll(const gfx::PointF& causal_event_viewport_point,
+                             const gfx::Vector2dF& accumulated_overscroll,
                              const gfx::Vector2dF& latest_overscroll_delta) = 0;
 
  protected:

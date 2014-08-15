@@ -45,9 +45,10 @@ class CONTENT_EXPORT InputHandlerProxy
   virtual void WillShutdown() OVERRIDE;
   virtual void Animate(base::TimeTicks time) OVERRIDE;
   virtual void MainThreadHasStoppedFlinging() OVERRIDE;
-  virtual void DidOverscroll(const gfx::Vector2dF& accumulated_overscroll,
-                             const gfx::Vector2dF& latest_overscroll_delta)
-      OVERRIDE;
+  virtual void DidOverscroll(
+      const gfx::PointF& causal_event_viewport_point,
+      const gfx::Vector2dF& accumulated_overscroll,
+      const gfx::Vector2dF& latest_overscroll_delta) OVERRIDE;
 
   // blink::WebGestureCurveTarget implementation.
   virtual bool scrollBy(const blink::WebFloatSize& offset,

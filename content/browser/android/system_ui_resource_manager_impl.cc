@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/debug/trace_event.h"
 #include "base/location.h"
 #include "base/observer_list.h"
 #include "base/threading/worker_pool.h"
@@ -13,9 +14,68 @@
 #include "content/public/browser/android/ui_resource_client_android.h"
 #include "content/public/browser/android/ui_resource_provider.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/effects/SkPorterDuff.h"
 #include "ui/gfx/android/java_bitmap.h"
+#include "ui/gfx/screen.h"
 
 namespace content {
+namespace {
+
+SkBitmap CreateOverscrollGlowLBitmap(const gfx::Size& screen_size) {
+  const float kSin = 0.5f;    // sin(PI / 6)
+  const float kCos = 0.866f;  // cos(PI / 6);
+
+  SkPaint paint;
+  paint.setAntiAlias(true);
+  paint.setAlpha(0x33);
+  paint.setStyle(SkPaint::kFill_Style);
+
+  const float arc_width =
+      std::min(screen_size.width(), screen_size.height()) * 0.5f / kSin;
+  const float y = kCos * arc_width;
+  const float height = arc_width - y;
+  gfx::Size bounds(arc_width, height);
+  SkRect arc_rect = SkRect::MakeXYWH(
+      -arc_width / 2.f, -arc_width - y, arc_width * 2.f, arc_width * 2.f);
+  SkBitmap glow_bitmap;
+  if (!glow_bitmap.allocPixels(
+          SkImageInfo::MakeA8(bounds.width(), bounds.height()))) {
+    LOG(FATAL) << " Failed to allocate bitmap of size " << bounds.width() << "x"
+               << bounds.height();
+  }
+
+  SkCanvas canvas(glow_bitmap);
+  canvas.clipRect(SkRect::MakeXYWH(0, 0, bounds.width(), bounds.height()));
+  canvas.drawArc(arc_rect, 45, 90, true, paint);
+  return glow_bitmap;
+}
+
+void LoadBitmap(ui::SystemUIResourceManager::ResourceType type,
+                SkBitmap* bitmap_holder,
+                const gfx::Size& screen_size) {
+  TRACE_EVENT1(
+      "browser", "SystemUIResourceManagerImpl::LoadBitmap", "type", type);
+  SkBitmap bitmap;
+  switch (type) {
+    case ui::SystemUIResourceManager::OVERSCROLL_EDGE:
+      bitmap = gfx::CreateSkBitmapFromAndroidResource(
+          "android:drawable/overscroll_edge", gfx::Size(128, 12));
+      break;
+    case ui::SystemUIResourceManager::OVERSCROLL_GLOW:
+      bitmap = gfx::CreateSkBitmapFromAndroidResource(
+          "android:drawable/overscroll_glow", gfx::Size(128, 64));
+      break;
+    case ui::SystemUIResourceManager::OVERSCROLL_GLOW_L:
+      bitmap = CreateOverscrollGlowLBitmap(screen_size);
+      break;
+  }
+  bitmap.setImmutable();
+  *bitmap_holder = bitmap;
+}
+
+}  // namespace
 
 class SystemUIResourceManagerImpl::Entry
     : public content::UIResourceClientAndroid {
@@ -31,8 +91,7 @@ class SystemUIResourceManagerImpl::Entry
   }
 
   void SetBitmap(const SkBitmap& bitmap) {
-    // TODO(jdduke): Verify validity of |bitmap| after resolving resource
-    // loading issues on Android L, crbug.com/389744.
+    DCHECK(!bitmap.empty());
     DCHECK(bitmap_.empty());
     DCHECK(!id_);
     bitmap_ = bitmap;
@@ -100,8 +159,10 @@ void SystemUIResourceManagerImpl::BuildResource(ResourceType type) {
 
   // Instead of blocking the main thread, we post a task to load the bitmap.
   SkBitmap* bitmap = new SkBitmap();
+  gfx::Size screen_size =
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().GetSizeInPixel();
   base::Closure load_bitmap =
-      base::Bind(&SystemUIResourceManagerImpl::LoadBitmap, type, bitmap);
+      base::Bind(&LoadBitmap, type, bitmap, screen_size);
   base::Closure finished_load =
       base::Bind(&SystemUIResourceManagerImpl::OnFinishedLoadBitmap,
                  weak_factory_.GetWeakPtr(),
@@ -109,23 +170,6 @@ void SystemUIResourceManagerImpl::BuildResource(ResourceType type) {
                  base::Owned(bitmap));
   base::WorkerPool::PostTaskAndReply(
       FROM_HERE, load_bitmap, finished_load, true);
-}
-
-void SystemUIResourceManagerImpl::LoadBitmap(ResourceType type,
-                                             SkBitmap* bitmap_holder) {
-  SkBitmap bitmap;
-  switch (type) {
-    case ui::SystemUIResourceManager::OVERSCROLL_EDGE:
-      bitmap = gfx::CreateSkBitmapFromAndroidResource(
-          "android:drawable/overscroll_edge", gfx::Size(128, 12));
-      break;
-    case ui::SystemUIResourceManager::OVERSCROLL_GLOW:
-      bitmap = gfx::CreateSkBitmapFromAndroidResource(
-          "android:drawable/overscroll_glow", gfx::Size(128, 64));
-      break;
-  }
-  bitmap.setImmutable();
-  *bitmap_holder = bitmap;
 }
 
 void SystemUIResourceManagerImpl::OnFinishedLoadBitmap(

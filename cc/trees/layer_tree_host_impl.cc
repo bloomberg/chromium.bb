@@ -2672,8 +2672,8 @@ bool LayerTreeHostImpl::ScrollBy(const gfx::Point& viewport_point,
   accumulated_root_overscroll_ += unused_root_delta;
   bool did_overscroll = !unused_root_delta.IsZero();
   if (did_overscroll && input_handler_client_) {
-    input_handler_client_->DidOverscroll(accumulated_root_overscroll_,
-                                         unused_root_delta);
+    input_handler_client_->DidOverscroll(
+        viewport_point, accumulated_root_overscroll_, unused_root_delta);
   }
 
   return did_scroll_content || did_scroll_top_controls;
@@ -3297,7 +3297,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
     case UIResourceBitmap::ETC1:
       format = ETC1;
       break;
-  };
+  }
   id = resource_provider_->CreateResource(
       bitmap.GetSize(),
       wrap_mode,

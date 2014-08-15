@@ -643,6 +643,7 @@ void InputHandlerProxy::MainThreadHasStoppedFlinging() {
 }
 
 void InputHandlerProxy::DidOverscroll(
+    const gfx::PointF& causal_event_viewport_point,
     const gfx::Vector2dF& accumulated_overscroll,
     const gfx::Vector2dF& latest_overscroll_delta) {
   DCHECK(client_);
@@ -659,6 +660,7 @@ void InputHandlerProxy::DidOverscroll(
   params.latest_overscroll_delta = latest_overscroll_delta;
   params.current_fling_velocity =
       ToClientScrollIncrement(current_fling_velocity_);
+  params.causal_event_viewport_point = causal_event_viewport_point;
 
   if (fling_curve_) {
     static const int kFlingOverscrollThreshold = 1;

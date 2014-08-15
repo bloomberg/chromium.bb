@@ -343,9 +343,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // The most recent content size that was pushed to the texture layer.
   gfx::Size content_size_in_layer_;
 
-  // The device scale of the last received frame.
-  float device_scale_factor_;
-
   // The output surface id of the last received frame.
   uint32_t last_output_surface_id_;
 

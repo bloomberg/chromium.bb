@@ -164,12 +164,14 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
   bool is_keyboard_shortcut = params.c;
   DCHECK(event);
 
+  const bool send_ack = !WebInputEventTraits::IgnoresAckDisposition(*event);
+
   // Intercept |DidOverscroll| notifications, bundling any triggered overscroll
   // response with the input event ack.
   scoped_ptr<DidOverscrollParams> overscroll_params;
   base::AutoReset<scoped_ptr<DidOverscrollParams>*>
-      auto_reset_current_overscroll_params(&current_overscroll_params_,
-                                           &overscroll_params);
+      auto_reset_current_overscroll_params(
+          &current_overscroll_params_, send_ack ? &overscroll_params : NULL);
 
   InputEventAckState ack_state = handler_.Run(routing_id, event, &latency_info);
 
@@ -188,7 +190,7 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
     return;
   }
 
-  if (WebInputEventTraits::IgnoresAckDisposition(*event))
+  if (!send_ack)
     return;
 
   InputHostMsg_HandleInputEvent_ACK_Params ack;

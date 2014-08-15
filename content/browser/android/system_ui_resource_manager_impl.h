@@ -39,7 +39,6 @@ class CONTENT_EXPORT SystemUIResourceManagerImpl
   virtual void BuildResource(ResourceType type);
 
   Entry* GetEntry(ResourceType type);
-  static void LoadBitmap(ResourceType, SkBitmap* bitmap_holder);
   void OnFinishedLoadBitmap(ResourceType, SkBitmap* bitmap_holder);
 
   scoped_ptr<Entry> resource_map_[RESOURCE_TYPE_LAST + 1];
