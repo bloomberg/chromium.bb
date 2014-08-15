@@ -27,7 +27,7 @@ class MockInputApi(object):
     self.files = []
     self.is_committing = False
 
-  def AffectedFiles(self):
+  def AffectedFiles(self, file_filter=None):
     return self.files
 
   def PresubmitLocalPath(self):

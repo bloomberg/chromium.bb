@@ -718,9 +718,12 @@ def _CheckIncludeOrder(input_api, output_api):
   Each region separated by #if, #elif, #else, #endif, #define and #undef follows
   these rules separately.
   """
+  def FileFilterIncludeOrder(affected_file):
+    black_list = (_EXCLUDED_PATHS + input_api.DEFAULT_BLACK_LIST)
+    return input_api.FilterSourceFile(affected_file, black_list=black_list)
 
   warnings = []
-  for f in input_api.AffectedFiles():
+  for f in input_api.AffectedFiles(file_filter=FileFilterIncludeOrder):
     if f.LocalPath().endswith(('.cc', '.h')):
       changed_linenums = set(line_num for line_num, _ in f.ChangedContents())
       warnings.extend(_CheckIncludeOrderInFile(input_api, f, changed_linenums))
