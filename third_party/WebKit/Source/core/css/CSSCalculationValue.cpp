@@ -644,18 +644,18 @@ private:
     bool parseValue(CSSParserValueList* tokens, unsigned* index, Value* result)
     {
         CSSParserValue* parserValue = tokens->valueAt(*index);
-        if (parserValue->unit == CSSParserValue::Operator)
+        if (parserValue->unit >= CSSParserValue::Operator)
             return false;
 
-        RefPtrWillBeRawPtr<CSSValue> value = parserValue->createCSSValue();
-        if (!value || !value->isPrimitiveValue())
+        CSSPrimitiveValue::UnitType type = static_cast<CSSPrimitiveValue::UnitType>(parserValue->unit);
+        if (unitCategory(type) == CalcOther)
             return false;
 
-        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value.get());
-        if (unitCategory(primitiveValue->primitiveType()) == CalcOther)
-            return false;
+        if (type == CSSPrimitiveValue::CSS_NUMBER && parserValue->isInt)
+            type = CSSPrimitiveValue::CSS_PARSER_INTEGER;
 
-        result->value = CSSCalcPrimitiveValue::create(primitiveValue, parserValue->isInt);
+        result->value = CSSCalcPrimitiveValue::create(
+            CSSPrimitiveValue::create(parserValue->fValue, type), parserValue->isInt);
 
         ++*index;
         return true;

@@ -31,15 +31,9 @@
 namespace blink {
 
 class CSSValueList;
-struct CSSParserFunction;
 
 class CSSFunctionValue : public CSSValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSFunctionValue> create(CSSParserFunction* function)
-    {
-        return adoptRefWillBeNoop(new CSSFunctionValue(function));
-    }
-
     static PassRefPtrWillBeRawPtr<CSSFunctionValue> create(String name, PassRefPtrWillBeRawPtr<CSSValueList> args)
     {
         return adoptRefWillBeNoop(new CSSFunctionValue(name, args));
@@ -54,7 +48,6 @@ public:
     void traceAfterDispatch(Visitor*);
 
 private:
-    explicit CSSFunctionValue(CSSParserFunction*);
     CSSFunctionValue(String, PassRefPtrWillBeRawPtr<CSSValueList>);
 
     String m_name;

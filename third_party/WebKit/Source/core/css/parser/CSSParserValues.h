@@ -136,6 +136,7 @@ template <>
 inline const UChar* CSSParserString::characters<UChar>() const { return characters16(); }
 
 struct CSSParserFunction;
+class CSSParserValueList;
 
 struct CSSParserValue {
     CSSValueID id;
@@ -158,8 +159,6 @@ struct CSSParserValue {
     inline void setFromNumber(double value, int unit = CSSPrimitiveValue::CSS_NUMBER);
     inline void setFromFunction(CSSParserFunction*);
     inline void setFromValueList(PassOwnPtr<CSSParserValueList>);
-
-    PassRefPtrWillBeRawPtr<CSSValue> createCSSValue();
 };
 
 class CSSParserValueList {

@@ -27,8 +27,6 @@
 
 namespace blink {
 
-class CSSParserValueList;
-
 class CSSValueList : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSValueList> createCommaSeparated()
@@ -42,10 +40,6 @@ public:
     static PassRefPtrWillBeRawPtr<CSSValueList> createSlashSeparated()
     {
         return adoptRefWillBeNoop(new CSSValueList(SlashSeparator));
-    }
-    static PassRefPtrWillBeRawPtr<CSSValueList> createFromParserValueList(CSSParserValueList* list)
-    {
-        return adoptRefWillBeNoop(new CSSValueList(list));
     }
 
     size_t length() const { return m_values.size(); }
@@ -75,7 +69,6 @@ protected:
 
 private:
     explicit CSSValueList(ValueListSeparator);
-    explicit CSSValueList(CSSParserValueList*);
 
     WillBeHeapVector<RefPtrWillBeMember<CSSValue>, 4> m_values;
 };
