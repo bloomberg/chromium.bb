@@ -50,7 +50,10 @@ class ContentSettings(dict):
           key = v
         elif k == 'value':
           value = v
-      assert key, value
+      if not key:
+        continue
+      if not value:
+        value = ''
       yield key, value
 
   def __getitem__(self, key):
