@@ -151,7 +151,6 @@ def _ValidatePerfConfigFile(config_contents):
   """
   valid_parameters = [
       'command',
-      'metric',
       'repeat_count',
       'truncate_percent',
       'max_time_minutes',
@@ -195,7 +194,7 @@ def _CreateBisectOptionsFromConfig(config):
   print config['command']
   opts_dict = {}
   opts_dict['command'] = config['command']
-  opts_dict['metric'] = config['metric']
+  opts_dict['metric'] = config.get('metric')
 
   if config['repeat_count']:
     opts_dict['repeat_test_count'] = int(config['repeat_count'])
@@ -312,25 +311,32 @@ def _RunPerformanceTest(config, path_to_file):
     cloud_file_link = ''
 
   # Calculate the % difference in the means of the 2 runs.
-  percent_diff_in_means = (results_with_patch[0]['mean'] /
-      max(0.0001, results_without_patch[0]['mean'])) * 100.0 - 100.0
-  std_err = math_utils.PooledStandardError(
-      [results_with_patch[0]['values'], results_without_patch[0]['values']])
+  percent_diff_in_means = None
+  std_err = None
+  if (results_with_patch[0].has_key('mean') and
+      results_with_patch[0].has_key('values')):
+    percent_diff_in_means = (results_with_patch[0]['mean'] /
+        max(0.0001, results_without_patch[0]['mean'])) * 100.0 - 100.0
+    std_err = math_utils.PooledStandardError(
+        [results_with_patch[0]['values'], results_without_patch[0]['values']])
 
   bisect_utils.OutputAnnotationStepClosed()
-  bisect_utils.OutputAnnotationStepStart('Results - %.02f +- %0.02f delta' %
-      (percent_diff_in_means, std_err))
-  print ' %s %s %s' % (''.center(10, ' '), 'Mean'.center(20, ' '),
-      'Std. Error'.center(20, ' '))
-  print ' %s %s %s' % ('Patch'.center(10, ' '),
-      ('%.02f' % results_with_patch[0]['mean']).center(20, ' '),
-      ('%.02f' % results_with_patch[0]['std_err']).center(20, ' '))
-  print ' %s %s %s' % ('No Patch'.center(10, ' '),
-      ('%.02f' % results_without_patch[0]['mean']).center(20, ' '),
-      ('%.02f' % results_without_patch[0]['std_err']).center(20, ' '))
-  if cloud_file_link:
+  if percent_diff_in_means is not None and std_err is not None:
+    bisect_utils.OutputAnnotationStepStart('Results - %.02f +- %0.02f delta' %
+        (percent_diff_in_means, std_err))
+    print ' %s %s %s' % (''.center(10, ' '), 'Mean'.center(20, ' '),
+        'Std. Error'.center(20, ' '))
+    print ' %s %s %s' % ('Patch'.center(10, ' '),
+        ('%.02f' % results_with_patch[0]['mean']).center(20, ' '),
+        ('%.02f' % results_with_patch[0]['std_err']).center(20, ' '))
+    print ' %s %s %s' % ('No Patch'.center(10, ' '),
+        ('%.02f' % results_without_patch[0]['mean']).center(20, ' '),
+        ('%.02f' % results_without_patch[0]['std_err']).center(20, ' '))
+    if cloud_file_link:
+      bisect_utils.OutputAnnotationStepLink('HTML Results', cloud_file_link)
+    bisect_utils.OutputAnnotationStepClosed()
+  elif cloud_file_link:
     bisect_utils.OutputAnnotationStepLink('HTML Results', cloud_file_link)
-  bisect_utils.OutputAnnotationStepClosed()
 
 
 def _SetupAndRunPerformanceTest(config, path_to_file, path_to_goma):
@@ -384,6 +390,9 @@ def _RunBisectionScript(
          '-m', config['metric'],
          '--working_directory', working_directory,
          '--output_buildbot_annotations']
+
+  if config.get('metric'):
+    cmd.extend(['-m', config['metric']])
 
   if config['repeat_count']:
     cmd.extend(['-r', config['repeat_count']])

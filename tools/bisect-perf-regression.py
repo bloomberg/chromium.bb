@@ -1878,6 +1878,7 @@ class BisectPerformanceMetrics(object):
       command_to_run: The command to be run to execute the performance test.
       metric: The metric to parse out from the results of the performance test.
           This is the result chart name and trace name, separated by slash.
+          May be None for perf try jobs.
       reset_on_first_run: If True, pass the flag --reset-results on first run.
       upload_on_last_run: If True, pass the flag --upload-results on last run.
       results_label: A value for the option flag --results-label.
@@ -1951,7 +1952,7 @@ class BisectPerformanceMetrics(object):
       if self.opts.output_buildbot_annotations:
         print output
 
-      if self._IsBisectModeUsingMetric():
+      if metric and self._IsBisectModeUsingMetric():
         metric_values += _ParseMetricValuesFromOutput(metric, output)
         # If we're bisecting on a metric (ie, changes in the mean or
         # standard deviation) and no metric values are produced, bail out.
@@ -1964,7 +1965,7 @@ class BisectPerformanceMetrics(object):
       if elapsed_minutes >= self.opts.max_time_minutes:
         break
 
-    if len(metric_values) == 0:
+    if metric and len(metric_values) == 0:
       err_text = 'Metric %s was not found in the test output.' % metric
       # TODO(qyearsley): Consider also getting and displaying a list of metrics
       # that were found in the output here.
@@ -1972,6 +1973,7 @@ class BisectPerformanceMetrics(object):
 
     # If we're bisecting on return codes, we're really just looking for zero vs
     # non-zero.
+    values = {}
     if self._IsBisectModeReturnCode():
       # If any of the return codes is non-zero, output 1.
       overall_return_code = 0 if (
@@ -1987,7 +1989,7 @@ class BisectPerformanceMetrics(object):
       print 'Results of performance test: Command returned with %d' % (
           overall_return_code)
       print
-    else:
+    elif metric:
       # Need to get the average value if there were multiple values.
       truncated_mean = math_utils.TruncatedMean(
           metric_values, self.opts.truncate_percent)
@@ -3592,11 +3594,12 @@ class BisectOptions(object):
       assert hasattr(opts, k), 'Invalid %s attribute in BisectOptions.' % k
       setattr(opts, k, v)
 
-    metric_values = opts.metric.split('/')
-    if len(metric_values) != 2:
-      raise RuntimeError('Invalid metric specified: [%s]' % opts.metric)
+    if opts.metric:
+      metric_values = opts.metric.split('/')
+      if len(metric_values) != 2:
+        raise RuntimeError('Invalid metric specified: [%s]' % opts.metric)
+      opts.metric = metric_values
 
-    opts.metric = metric_values
     opts.repeat_test_count = min(max(opts.repeat_test_count, 1), 100)
     opts.max_time_minutes = min(max(opts.max_time_minutes, 1), 60)
     opts.truncate_percent = min(max(opts.truncate_percent, 0), 25)
