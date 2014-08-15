@@ -67,6 +67,9 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys, public Decryptor {
   virtual void ResetDecoder(StreamType stream_type) OVERRIDE;
   virtual void DeinitializeDecoder(StreamType stream_type) OVERRIDE;
 
+  void GetUsableKeyIds(const std::string& web_session_id,
+                       scoped_ptr<KeyIdsPromise> promise);
+
  private:
   // TODO(fgalligan): Remove this and change KeyMap to use crypto::SymmetricKey
   // as there are no decryptors that are performing an integrity check.

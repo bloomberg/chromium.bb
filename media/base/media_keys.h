@@ -23,6 +23,8 @@ class CdmPromiseTemplate;
 
 typedef CdmPromiseTemplate<std::string> NewSessionCdmPromise;
 typedef CdmPromiseTemplate<void> SimpleCdmPromise;
+typedef std::vector<std::vector<uint8> > KeyIdsVector;
+typedef CdmPromiseTemplate<KeyIdsVector> KeyIdsPromise;
 
 // Performs media key operations.
 //

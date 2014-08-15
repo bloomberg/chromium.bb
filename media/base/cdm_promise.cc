@@ -81,6 +81,10 @@ CdmPromiseTemplate<T>::CdmPromiseTemplate(
 }
 
 template <typename T>
+CdmPromiseTemplate<T>::CdmPromiseTemplate() {
+}
+
+template <typename T>
 CdmPromiseTemplate<T>::~CdmPromiseTemplate() {
   DCHECK(!is_pending_);
 }
@@ -131,5 +135,6 @@ void CdmPromiseTemplate<void>::resolve() {
 
 // Explicit template instantiation for the Promises needed.
 template class MEDIA_EXPORT CdmPromiseTemplate<std::string>;
+template class MEDIA_EXPORT CdmPromiseTemplate<KeyIdsVector>;
 
 }  // namespace media

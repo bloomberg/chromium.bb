@@ -81,6 +81,12 @@ class MEDIA_EXPORT CdmPromiseTemplate : public CdmPromise {
   virtual ~CdmPromiseTemplate();
   virtual void resolve(const T& result);
 
+ protected:
+  // Allow subclasses to completely override the implementation.
+  // TODO(jrummell): Remove when derived class SessionLoadedPromise
+  // (in ppapi_decryptor.cc) is no longer needed.
+  CdmPromiseTemplate();
+
  private:
   base::Callback<void(const T&)> resolve_cb_;
 

@@ -49,15 +49,21 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
                              uint32_t web_session_id_length,
                              const uint8* response,
                              uint32 response_size) OVERRIDE;
-  virtual void ReleaseSession(uint32 promise_id,
-                              const char* web_session_id,
-                              uint32_t web_session_id_length) OVERRIDE;
+  virtual void CloseSession(uint32 promise_id,
+                            const char* web_session_id,
+                            uint32_t web_session_id_length) OVERRIDE;
+  virtual void RemoveSession(uint32 promise_id,
+                             const char* web_session_id,
+                             uint32_t web_session_id_length) OVERRIDE;
+  virtual void GetUsableKeyIds(uint32_t promise_id,
+                               const char* web_session_id,
+                               uint32_t web_session_id_length) OVERRIDE;
   virtual void SetServerCertificate(
       uint32 promise_id,
       const uint8_t* server_certificate_data,
       uint32_t server_certificate_data_size) OVERRIDE;
   virtual void TimerExpired(void* context) OVERRIDE;
-  virtual cdm::Status Decrypt(const cdm::InputBuffer_1& encrypted_buffer,
+  virtual cdm::Status Decrypt(const cdm::InputBuffer& encrypted_buffer,
                               cdm::DecryptedBlock* decrypted_block) OVERRIDE;
   virtual cdm::Status InitializeAudioDecoder(
       const cdm::AudioDecoderConfig& audio_decoder_config) OVERRIDE;
@@ -66,10 +72,10 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   virtual void DeinitializeDecoder(cdm::StreamType decoder_type) OVERRIDE;
   virtual void ResetDecoder(cdm::StreamType decoder_type) OVERRIDE;
   virtual cdm::Status DecryptAndDecodeFrame(
-      const cdm::InputBuffer_1& encrypted_buffer,
+      const cdm::InputBuffer& encrypted_buffer,
       cdm::VideoFrame* video_frame) OVERRIDE;
   virtual cdm::Status DecryptAndDecodeSamples(
-      const cdm::InputBuffer_1& encrypted_buffer,
+      const cdm::InputBuffer& encrypted_buffer,
       cdm::AudioFrames* audio_frames) OVERRIDE;
   virtual void Destroy() OVERRIDE;
   virtual void OnPlatformChallengeResponse(
@@ -94,6 +100,7 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   void OnSessionLoaded(uint32 promise_id, const std::string& web_session_id);
   void OnSessionUpdated(uint32 promise_id, const std::string& web_session_id);
   void OnSessionReleased(uint32 promise_id, const std::string& web_session_id);
+  void OnUsableKeyIdsObtained(uint32 promise_id, const KeyIdsVector& key_ids);
   void OnPromiseFailed(uint32 promise_id,
                        MediaKeys::Exception exception_code,
                        uint32 system_code,
@@ -111,7 +118,7 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   // Returns cdm::kDecryptError if any decryption error occurred. In this case
   // |decrypted_buffer| should be ignored by the caller.
   cdm::Status DecryptToMediaDecoderBuffer(
-      const cdm::InputBuffer_1& encrypted_buffer,
+      const cdm::InputBuffer& encrypted_buffer,
       scoped_refptr<DecoderBuffer>* decrypted_buffer);
 
 #if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
@@ -145,6 +152,16 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   std::string last_session_id_;
   std::string next_heartbeat_message_;
 
+  // In order to simulate LoadSession(), CreateSession() and then
+  // UpdateSession() will be called to create a session with known keys.
+  // |session_id_for_emulated_loadsession_| is used to keep track of the
+  // session_id allocated by aes_decryptor, as the session_id will be returned
+  // as |kLoadableWebSessionId|. Future requests for this simulated session
+  // need to use |session_id_for_emulated_loadsession_| for all calls
+  // to aes_decryptor.
+  // |promise_id_for_emulated_loadsession_| is used to keep track of the
+  // original LoadSession() promise, as it is not resolved until the
+  // UpdateSession() call succeeds.
   // TODO(xhwang): Extract testing code from main implementation.
   // See http://crbug.com/341751
   std::string session_id_for_emulated_loadsession_;

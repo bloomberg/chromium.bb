@@ -55,6 +55,37 @@ class SessionUpdatedPromise : public media::SimpleCdmPromise {
   base::Closure additional_resolve_cb_;
 };
 
+// This class is needed so that resolving a SessionLoaded() promise triggers
+// playback of the stream. It intercepts the resolve() call to invoke an
+// additional callback. This is only needed until KeysChange event gets passed
+// through Pepper.
+class SessionLoadedPromise : public media::NewSessionCdmPromise {
+ public:
+  SessionLoadedPromise(scoped_ptr<media::NewSessionCdmPromise> caller_promise,
+                       base::Closure additional_resolve_cb)
+      : caller_promise_(caller_promise.Pass()),
+        additional_resolve_cb_(additional_resolve_cb) {}
+
+  virtual void resolve(const std::string& web_session_id) OVERRIDE {
+    DCHECK(is_pending_);
+    is_pending_ = false;
+    additional_resolve_cb_.Run();
+    caller_promise_->resolve(web_session_id);
+  }
+
+  virtual void reject(media::MediaKeys::Exception exception_code,
+                      uint32 system_code,
+                      const std::string& error_message) OVERRIDE {
+    DCHECK(is_pending_);
+    is_pending_ = false;
+    caller_promise_->reject(exception_code, system_code, error_message);
+  }
+
+ protected:
+  scoped_ptr<media::NewSessionCdmPromise> caller_promise_;
+  base::Closure additional_resolve_cb_;
+};
+
 scoped_ptr<PpapiDecryptor> PpapiDecryptor::Create(
     const std::string& key_system,
     const GURL& security_origin,
@@ -147,7 +178,14 @@ void PpapiDecryptor::LoadSession(
     return;
   }
 
-  CdmDelegate()->LoadSession(web_session_id, promise.Pass());
+  scoped_ptr<SessionLoadedPromise> session_loaded_promise(
+      new SessionLoadedPromise(promise.Pass(),
+                               base::Bind(&PpapiDecryptor::ResumePlayback,
+                                          weak_ptr_factory_.GetWeakPtr())));
+
+  CdmDelegate()->LoadSession(
+      web_session_id,
+      session_loaded_promise.PassAs<media::NewSessionCdmPromise>());
 }
 
 void PpapiDecryptor::UpdateSession(

@@ -95,7 +95,7 @@ const char kFileIOTestResultHeader[] = "FILEIOTESTRESULT";
 // Copies |input_buffer| into a media::DecoderBuffer. If the |input_buffer| is
 // empty, an empty (end-of-stream) media::DecoderBuffer is returned.
 static scoped_refptr<media::DecoderBuffer> CopyDecoderBufferFrom(
-    const cdm::InputBuffer_1& input_buffer) {
+    const cdm::InputBuffer& input_buffer) {
   if (!input_buffer.data) {
     DCHECK(!input_buffer.data_size);
     return media::DecoderBuffer::CreateEOSBuffer();
@@ -113,7 +113,6 @@ static scoped_refptr<media::DecoderBuffer> CopyDecoderBufferFrom(
     subsamples.push_back(subsample);
   }
 
-  DCHECK_EQ(input_buffer.data_offset, 0u);
   scoped_ptr<media::DecryptConfig> decrypt_config(new media::DecryptConfig(
       std::string(reinterpret_cast<const char*>(input_buffer.key_id),
                   input_buffer.key_id_size),
@@ -273,6 +272,7 @@ void ClearKeyCdm::LoadSession(uint32 promise_id,
 
   if (std::string(kLoadableWebSessionId) !=
       std::string(web_session_id, web_session_id_length)) {
+    // TODO(jrummell): This should be resolved with undefined, not rejected.
     std::string message("Incorrect session id specified for LoadSession().");
     host_->OnRejectPromise(promise_id,
                            cdm::kInvalidAccessError,
@@ -298,11 +298,11 @@ void ClearKeyCdm::LoadSession(uint32 promise_id,
 
 void ClearKeyCdm::UpdateSession(uint32 promise_id,
                                 const char* web_session_id,
-                                uint32_t web_session_id_size,
+                                uint32_t web_session_id_length,
                                 const uint8* response,
                                 uint32 response_size) {
   DVLOG(1) << __FUNCTION__;
-  std::string web_session_str(web_session_id, web_session_id_size);
+  std::string web_session_str(web_session_id, web_session_id_length);
 
   scoped_ptr<media::SimpleCdmPromise> promise(new media::SimpleCdmPromise(
       base::Bind(&ClearKeyCdm::OnSessionUpdated,
@@ -320,11 +320,11 @@ void ClearKeyCdm::UpdateSession(uint32 promise_id,
   }
 }
 
-void ClearKeyCdm::ReleaseSession(uint32 promise_id,
-                                 const char* web_session_id,
-                                 uint32_t web_session_id_size) {
+void ClearKeyCdm::CloseSession(uint32 promise_id,
+                               const char* web_session_id,
+                               uint32_t web_session_id_length) {
   DVLOG(1) << __FUNCTION__;
-  std::string web_session_str(web_session_id, web_session_id_size);
+  std::string web_session_str(web_session_id, web_session_id_length);
 
   scoped_ptr<media::SimpleCdmPromise> promise(new media::SimpleCdmPromise(
       base::Bind(&ClearKeyCdm::OnSessionReleased,
@@ -336,11 +336,44 @@ void ClearKeyCdm::ReleaseSession(uint32 promise_id,
   decryptor_.ReleaseSession(web_session_str, promise.Pass());
 }
 
+void ClearKeyCdm::RemoveSession(uint32 promise_id,
+                                const char* web_session_id,
+                                uint32_t web_session_id_length) {
+  DVLOG(1) << __FUNCTION__;
+  // RemoveSession only allowed for persistent sessions.
+  bool is_persistent_session =
+      std::string(kLoadableWebSessionId) ==
+      std::string(web_session_id, web_session_id_length);
+  if (is_persistent_session) {
+    host_->OnResolvePromise(promise_id);
+  } else {
+    std::string message("Not supported for non-persistent sessions.");
+    host_->OnRejectPromise(promise_id,
+                           cdm::kInvalidAccessError,
+                           0,
+                           message.data(),
+                           message.length());
+  }
+}
+
 void ClearKeyCdm::SetServerCertificate(uint32 promise_id,
                                        const uint8_t* server_certificate_data,
                                        uint32_t server_certificate_data_size) {
   // ClearKey doesn't use a server certificate.
   host_->OnResolvePromise(promise_id);
+}
+
+void ClearKeyCdm::GetUsableKeyIds(uint32_t promise_id,
+                                  const char* web_session_id,
+                                  uint32_t web_session_id_length) {
+  std::string web_session_str(web_session_id, web_session_id_length);
+  scoped_ptr<media::KeyIdsPromise> promise(new media::KeyIdsPromise(
+      base::Bind(&ClearKeyCdm::OnUsableKeyIdsObtained,
+                 base::Unretained(this),
+                 promise_id),
+      base::Bind(
+          &ClearKeyCdm::OnPromiseFailed, base::Unretained(this), promise_id)));
+  decryptor_.GetUsableKeyIds(web_session_str, promise.Pass());
 }
 
 void ClearKeyCdm::TimerExpired(void* context) {
@@ -381,7 +414,7 @@ static void CopyDecryptResults(
   *buffer_copy = buffer;
 }
 
-cdm::Status ClearKeyCdm::Decrypt(const cdm::InputBuffer_1& encrypted_buffer,
+cdm::Status ClearKeyCdm::Decrypt(const cdm::InputBuffer& encrypted_buffer,
                                  cdm::DecryptedBlock* decrypted_block) {
   DVLOG(1) << "Decrypt()";
   DCHECK(encrypted_buffer.data);
@@ -487,7 +520,7 @@ void ClearKeyCdm::DeinitializeDecoder(cdm::StreamType decoder_type) {
 }
 
 cdm::Status ClearKeyCdm::DecryptAndDecodeFrame(
-    const cdm::InputBuffer_1& encrypted_buffer,
+    const cdm::InputBuffer& encrypted_buffer,
     cdm::VideoFrame* decoded_frame) {
   DVLOG(1) << "DecryptAndDecodeFrame()";
   TRACE_EVENT0("media", "ClearKeyCdm::DecryptAndDecodeFrame");
@@ -511,7 +544,7 @@ cdm::Status ClearKeyCdm::DecryptAndDecodeFrame(
 }
 
 cdm::Status ClearKeyCdm::DecryptAndDecodeSamples(
-    const cdm::InputBuffer_1& encrypted_buffer,
+    const cdm::InputBuffer& encrypted_buffer,
     cdm::AudioFrames* audio_frames) {
   DVLOG(1) << "DecryptAndDecodeSamples()";
 
@@ -557,7 +590,7 @@ void ClearKeyCdm::ScheduleNextHeartBeat() {
   // Prepare the next heartbeat message and set timer.
   std::ostringstream msg_stream;
   msg_stream << kHeartBeatHeader << " from ClearKey CDM set at time "
-             << host_->GetCurrentTime() << ".";
+             << host_->GetCurrentWallTime() << ".";
   next_heartbeat_message_ = msg_stream.str();
 
   host_->SetTimer(timer_delay_ms_, &next_heartbeat_message_[0]);
@@ -569,7 +602,7 @@ void ClearKeyCdm::ScheduleNextHeartBeat() {
 }
 
 cdm::Status ClearKeyCdm::DecryptToMediaDecoderBuffer(
-    const cdm::InputBuffer_1& encrypted_buffer,
+    const cdm::InputBuffer& encrypted_buffer,
     scoped_refptr<media::DecoderBuffer>* decrypted_buffer) {
   DCHECK(decrypted_buffer);
   scoped_refptr<media::DecoderBuffer> buffer =
@@ -687,15 +720,13 @@ void ClearKeyCdm::OnSessionLoaded(uint32 promise_id,
 
 void ClearKeyCdm::OnSessionUpdated(uint32 promise_id,
                                    const std::string& web_session_id) {
-  // OnSessionReady() only called as success for UpdateSession(). However,
-  // UpdateSession() also called to finish loading sessions, so handle
+  // UpdateSession() may be called to finish loading sessions, so handle
   // appropriately.
   if (web_session_id == session_id_for_emulated_loadsession_) {
     session_id_for_emulated_loadsession_ = std::string();
     // |promise_id| is the LoadSession() promise, so resolve appropriately.
     host_->OnResolveNewSessionPromise(
         promise_id, kLoadableWebSessionId, strlen(kLoadableWebSessionId));
-    host_->OnSessionReady(kLoadableWebSessionId, strlen(kLoadableWebSessionId));
     return;
   }
 
@@ -705,6 +736,16 @@ void ClearKeyCdm::OnSessionUpdated(uint32 promise_id,
 void ClearKeyCdm::OnSessionReleased(uint32 promise_id,
                                     const std::string& web_session_id) {
   host_->OnResolvePromise(promise_id);
+}
+
+void ClearKeyCdm::OnUsableKeyIdsObtained(uint32 promise_id,
+                                         const KeyIdsVector& key_ids) {
+  scoped_ptr<cdm::BinaryData[]> result(new cdm::BinaryData[key_ids.size()]);
+  for (uint32 i = 0; i < key_ids.size(); ++i) {
+    result[i].data = key_ids[i].data();
+    result[i].length = key_ids[i].size();
+  }
+  host_->OnResolveKeyIdsPromise(promise_id, result.get(), key_ids.size());
 }
 
 void ClearKeyCdm::OnPromiseFailed(uint32 promise_id,

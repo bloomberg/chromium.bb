@@ -53,6 +53,10 @@ class AesDecryptor::SessionIdDecryptionKeyMap {
     return key_list_.begin()->second;
   }
 
+  bool Contains(const std::string& web_session_id) {
+    return Find(web_session_id) != key_list_.end();
+  }
+
  private:
   // Searches the list for an element with |web_session_id|.
   KeyList::iterator Find(const std::string& web_session_id);
@@ -313,6 +317,23 @@ void AesDecryptor::UpdateSession(const std::string& web_session_id,
   }
 
   promise->resolve();
+}
+
+void AesDecryptor::GetUsableKeyIds(const std::string& web_session_id,
+                                   scoped_ptr<KeyIdsPromise> promise) {
+  // Since |web_session_id| is not provided by the user, this should never
+  // happen.
+  DCHECK(valid_sessions_.find(web_session_id) != valid_sessions_.end());
+
+  KeyIdsVector keyids;
+  base::AutoLock auto_lock(key_map_lock_);
+  for (KeyIdToSessionKeysMap::iterator it = key_map_.begin();
+       it != key_map_.end();
+       ++it) {
+    if (it->second->Contains(web_session_id))
+      keyids.push_back(std::vector<uint8>(it->first.begin(), it->first.end()));
+  }
+  promise->resolve(keyids);
 }
 
 void AesDecryptor::ReleaseSession(const std::string& web_session_id,

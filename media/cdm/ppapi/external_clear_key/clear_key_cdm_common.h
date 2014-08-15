@@ -10,7 +10,7 @@
 namespace media {
 
 // Aliases for the version of the interfaces that this CDM implements.
-typedef cdm::ContentDecryptionModule_5 ClearKeyCdmInterface;
+typedef cdm::ContentDecryptionModule_6 ClearKeyCdmInterface;
 typedef ClearKeyCdmInterface::Host ClearKeyCdmHost;
 
 }  // namespace media

@@ -96,8 +96,15 @@ class ProxyDecryptor {
                       uint32 system_code,
                       const std::string& error_message);
 
+  enum SessionCreationType {
+    TemporarySession,
+    PersistentSession,
+    LoadSession
+  };
+
   // Called when a session is actually created or loaded.
-  void SetSessionId(bool persistent, const std::string& web_session_id);
+  void SetSessionId(SessionCreationType session_type,
+                    const std::string& web_session_id);
 
 #if defined(ENABLE_PEPPER_CDMS)
   // Callback to create the Pepper plugin.
