@@ -96,7 +96,7 @@ const int kFontSize = 11;
                           font:font
                   messageColor:gfx::SkColorToDeviceNSColor(kTextColor)
                      linkColor:linkColor];
-  [textView_ setAcceptsFirstResponder:NO];
+  [textView_ setRefusesFirstResponder:YES];
   [[textView_ textContainer] setLineFragmentPadding:0.0];
   RemoveUnderlining(textView_, offset, linkText.size());
   [textView_ setDelegate:self];

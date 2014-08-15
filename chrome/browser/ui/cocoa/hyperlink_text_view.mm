@@ -35,7 +35,7 @@ const float kTextBaselineShift = -1.0;
 }
 
 - (BOOL)acceptsFirstResponder {
-  return acceptsFirstResponder_;
+  return !refusesFirstResponder_;
 }
 
 - (void)drawViewBackgroundInRect:(NSRect)rect {
@@ -92,7 +92,7 @@ const float kTextBaselineShift = -1.0;
   [self setLinkTextAttributes:nil];
   [self setDisplaysLinkToolTips:NO];
 
-  acceptsFirstResponder_ = YES;
+  refusesFirstResponder_ = NO;
   drawsBackgroundUsingSuperview_ = NO;
 }
 
@@ -151,8 +151,8 @@ const float kTextBaselineShift = -1.0;
   [[self textStorage] addAttributes:attributes range:range];
 }
 
-- (void)setAcceptsFirstResponder:(BOOL)acceptsFirstResponder {
-  acceptsFirstResponder_ = acceptsFirstResponder;
+- (void)setRefusesFirstResponder:(BOOL)refusesFirstResponder {
+  refusesFirstResponder_ = refusesFirstResponder;
 }
 
 @end

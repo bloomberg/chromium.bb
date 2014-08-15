@@ -186,4 +186,12 @@ TEST_F(HyperlinkTextViewTest, TestAddLinkRange) {
   EXPECT_NSEQ(linkAttributes, attributes);
 }
 
+TEST_F(HyperlinkTextViewTest, FirstResponderBehavior) {
+  // By default, accept.
+  EXPECT_TRUE([view_ acceptsFirstResponder]);
+
+  [view_ setRefusesFirstResponder:YES];
+  EXPECT_FALSE([view_ acceptsFirstResponder]);
+}
+
 }  // namespace

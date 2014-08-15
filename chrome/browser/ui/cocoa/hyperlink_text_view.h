@@ -11,7 +11,7 @@
 // class NSTextView displays both with full keyboard accessibility enabled.
 @interface HyperlinkTextView : NSTextView {
  @private
-  BOOL acceptsFirstResponder_;
+  BOOL refusesFirstResponder_;
   BOOL drawsBackgroundUsingSuperview_;
 }
 
@@ -39,7 +39,7 @@
             withName:(id)name
            linkColor:(NSColor*)linkColor;
 
-// This is YES (by default) if the view accepts first responder status.
-- (void)setAcceptsFirstResponder:(BOOL)acceptsFirstResponder;
+// This is NO (by default) if the view rejects first responder status.
+- (void)setRefusesFirstResponder:(BOOL)refusesFirstResponder;
 
 @end
