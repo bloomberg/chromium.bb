@@ -558,8 +558,9 @@ void RenderFrameHostImpl::OnDidRedirectProvisionalLoad(
     int32 page_id,
     const GURL& source_url,
     const GURL& target_url) {
+  CHECK_EQ(render_view_host_->page_id_, page_id);
   frame_tree_node_->navigator()->DidRedirectProvisionalLoad(
-      this, page_id, source_url, target_url);
+      this, render_view_host_->page_id_, source_url, target_url);
 }
 
 // Called when the renderer navigates.  For every frame loaded, we'll get this
@@ -578,6 +579,10 @@ void RenderFrameHostImpl::OnNavigate(const IPC::Message& msg) {
   if (!IPC::ParamTraits<FrameHostMsg_DidCommitProvisionalLoad_Params>::
       Read(&msg, &iter, &validated_params))
     return;
+
+  // Update the RVH's current page ID so that future IPCs from the renderer
+  // correspond to the new page.
+  render_view_host_->page_id_ = validated_params.page_id;
 
   // If we're waiting for a cross-site beforeunload ack from this renderer and
   // we receive a Navigate message from the main frame, then the renderer was
@@ -890,6 +895,7 @@ void RenderFrameHostImpl::OnUpdateTitle(
     int32 page_id,
     const base::string16& title,
     blink::WebTextDirection title_direction) {
+  CHECK_EQ(render_view_host_->page_id_, page_id);
   // This message is only sent for top-level frames. TODO(avi): when frame tree
   // mirroring works correctly, add a check here to enforce it.
   if (title.length() > kMaxTitleChars) {
@@ -897,7 +903,7 @@ void RenderFrameHostImpl::OnUpdateTitle(
     return;
   }
 
-  delegate_->UpdateTitle(this, page_id, title,
+  delegate_->UpdateTitle(this, render_view_host_->page_id_, title,
                          WebTextDirectionToChromeTextDirection(
                              title_direction));
 }

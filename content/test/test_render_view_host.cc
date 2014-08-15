@@ -345,9 +345,9 @@ void TestRenderViewHost::TestOnStartDragging(
 }
 
 void TestRenderViewHost::TestOnUpdateStateWithFile(
-    int process_id,
+    int page_id,
     const base::FilePath& file_path) {
-  OnUpdateState(process_id,
+  OnUpdateState(page_id,
                 PageState::CreateForTesting(GURL("http://www.google.com"),
                                             false,
                                             "data",
