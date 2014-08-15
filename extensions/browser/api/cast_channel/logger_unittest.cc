@@ -5,11 +5,14 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "extensions/browser/api/cast_channel/cast_auth_util.h"
 #include "extensions/browser/api/cast_channel/logger.h"
+#include "extensions/browser/api/cast_channel/logger_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
 namespace core_api {
 namespace cast_channel {
+
+const int kTestNssErrorCode = -8164;
 
 using proto::AggregatedSocketEvent;
 using proto::EventType;
@@ -50,8 +53,10 @@ TEST_F(CastChannelLoggerTest, BasicLogging) {
   logger_->LogSocketChallengeReplyEvent(2, auth_result);
   clock_->Advance(base::TimeDelta::FromMicroseconds(1));
 
-  auth_result = AuthResult::CreateWithNSSError(
-      "Parsing failed", AuthResult::ERROR_NSS_CERT_PARSING_FAILED, 4);
+  auth_result =
+      AuthResult::CreateWithNSSError("Parsing failed",
+                                     AuthResult::ERROR_NSS_CERT_PARSING_FAILED,
+                                     kTestNssErrorCode);
   logger_->LogSocketChallengeReplyEvent(2, auth_result);
 
   std::string output;
@@ -61,6 +66,13 @@ TEST_F(CastChannelLoggerTest, BasicLogging) {
   Log log;
   success = log.ParseFromString(output);
   ASSERT_TRUE(success);
+
+  LastErrors last_errors = logger_->GetLastErrors(2);
+  EXPECT_EQ(last_errors.event_type, proto::AUTH_CHALLENGE_REPLY);
+  EXPECT_EQ(last_errors.net_return_value, 0);
+  EXPECT_EQ(last_errors.challenge_reply_error_type,
+            proto::CHALLENGE_REPLY_ERROR_NSS_CERT_PARSING_FAILED);
+  EXPECT_EQ(last_errors.nss_error_code, kTestNssErrorCode);
 
   ASSERT_EQ(2, log.aggregated_socket_event_size());
   {
@@ -83,7 +95,7 @@ TEST_F(CastChannelLoggerTest, BasicLogging) {
       const SocketEvent& event = aggregated_socket_event.socket_event(2);
       EXPECT_EQ(EventType::SSL_SOCKET_CONNECT, event.type());
       EXPECT_EQ(3, event.timestamp_micros());
-      EXPECT_EQ(-1, event.return_value());
+      EXPECT_EQ(-1, event.net_return_value());
     }
   }
   {
@@ -109,7 +121,8 @@ TEST_F(CastChannelLoggerTest, BasicLogging) {
       EXPECT_EQ(5, event.timestamp_micros());
       EXPECT_EQ(proto::CHALLENGE_REPLY_ERROR_NO_RESPONSE,
                 event.challenge_reply_error_type());
-      EXPECT_FALSE(event.has_return_value());
+      EXPECT_FALSE(event.has_net_return_value());
+      EXPECT_FALSE(event.has_nss_error_code());
     }
     {
       const SocketEvent& event = aggregated_socket_event.socket_event(3);
@@ -117,7 +130,8 @@ TEST_F(CastChannelLoggerTest, BasicLogging) {
       EXPECT_EQ(6, event.timestamp_micros());
       EXPECT_EQ(proto::CHALLENGE_REPLY_ERROR_NSS_CERT_PARSING_FAILED,
                 event.challenge_reply_error_type());
-      EXPECT_EQ(4, event.return_value());
+      EXPECT_FALSE(event.has_net_return_value());
+      EXPECT_EQ(kTestNssErrorCode, event.nss_error_code());
     }
   }
 }

@@ -124,6 +124,30 @@ namespace cast.channel {
     any data;
   };
 
+  // Describes a terminal error encountered by the channel with details of the
+  // error that caused the channel to be closed.  One or more of the optional
+  // fields may be set with specific error codes from the underlying
+  // implementation.
+  dictionary ErrorInfo {
+    // The type of error encountered by the channel.
+    ChannelError errorState;
+
+    // The event that was occurring when the error happened.  Values are defined
+    // in the enum EventType in logging.proto.
+    long? eventType;
+
+    // An error encountered when processing the authentication handshake.
+    // Values are defined in the enum ChallengeReplyErrorType in logging.proto.
+    long? challengeReplyErrorType;
+
+    // A return value from the underlying net:: socket libraries. Values are
+    // defined in net/base/net_error_list.h.
+    long? netReturnValue;
+
+    // An error code returned by NSS. Values are defined in secerr.h.
+    long? nssErrorCode;
+  };
+
   // Callback holding the result of a channel operation.
   callback ChannelInfoCallback = void (ChannelInfo result);
 
@@ -133,7 +157,8 @@ namespace cast.channel {
     // a time.  If the open request is successful, the callback will be invoked
     // with a ChannelInfo with readyState == 'connecting'.  If unsuccessful, the
     // callback will be invoked with a ChannelInfo with channel.readyState ==
-    // 'closed' and channel.errorState will be set to the error condition.
+    // 'closed', channel.errorState will be set to the error condition, and
+    // onError will be fired with error details.
     //
     // TODO(mfoltz): Convert 'any' to ConnectInfo once all clients are updated
     // to not send URLs.
@@ -143,7 +168,8 @@ namespace cast.channel {
     // Sends a message on the channel and invokes callback with the resulting
     // channel status.  The channel must be in readyState == 'open'.  If
     // unsuccessful, channel.readyState will be set to 'closed',
-    // channel.errorState will be set to the error condition.
+    // channel.errorState will be set to the error condition, and onError will
+    // be fired with error details.
     static void send(ChannelInfo channel,
                      MessageInfo message,
                      ChannelInfoCallback callback);
@@ -163,8 +189,8 @@ namespace cast.channel {
     static void onMessage(ChannelInfo channel,
                           MessageInfo message);
 
-    // Fired when an error occurs as a result of a channel method or a network
-    // event.
-    static void onError(ChannelInfo channel);
+    // Fired when an error occurs as a result of a channel operation or a
+    // network event. |error| contains details of the error.
+    static void onError(ChannelInfo channel, ErrorInfo error);
   };
 };

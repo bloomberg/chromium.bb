@@ -298,6 +298,8 @@
         'browser/api/cast_channel/cast_socket.h',
         'browser/api/cast_channel/logger.cc',
         'browser/api/cast_channel/logger.h',
+        'browser/api/cast_channel/logger_util.cc',
+        'browser/api/cast_channel/logger_util.h',
         'browser/api/dns/dns_api.cc',
         'browser/api/dns/dns_api.h',
         'browser/api/dns/host_resolver_wrapper.cc',

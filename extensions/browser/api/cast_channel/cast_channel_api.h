@@ -75,7 +75,8 @@ class CastChannelAPI : public BrowserContextKeyedAPI,
 
   // CastSocket::Delegate.  Called on IO thread.
   virtual void OnError(const cast_channel::CastSocket* socket,
-                       cast_channel::ChannelError error) OVERRIDE;
+                       cast_channel::ChannelError error_state,
+                       const cast_channel::LastErrors& last_errors) OVERRIDE;
   virtual void OnMessage(const cast_channel::CastSocket* socket,
                          const cast_channel::MessageInfo& message) OVERRIDE;
 

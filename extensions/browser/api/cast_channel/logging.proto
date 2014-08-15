@@ -9,6 +9,7 @@ option optimize_for = LITE_RUNTIME;
 package extensions.core_api.cast_channel.proto;
 
 enum EventType {
+  EVENT_TYPE_UNKNOWN = 0;
   CAST_SOCKET_CREATED = 1;
   READY_STATE_CHANGED = 2;
   CONNECTION_STATE_CHANGED = 3;
@@ -113,7 +114,7 @@ message SocketEvent {
 
   optional string details = 3;
 
-  optional int32 return_value = 4;
+  optional int32 net_return_value = 4;
 
   optional string message_namespace = 5;
 
@@ -124,6 +125,7 @@ message SocketEvent {
   optional ErrorState error_state = 10;
 
   optional ChallengeReplyErrorType challenge_reply_error_type = 11;
+  optional int32 nss_error_code = 12;
 }
 
 message AggregatedSocketEvent {

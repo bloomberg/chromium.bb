@@ -7,6 +7,8 @@
 #include "base/strings/string_util.h"
 #include "base/time/tick_clock.h"
 #include "extensions/browser/api/cast_channel/cast_auth_util.h"
+#include "extensions/browser/api/cast_channel/logger_util.h"
+#include "net/base/net_errors.h"
 
 namespace extensions {
 namespace core_api {
@@ -22,7 +24,7 @@ namespace {
 
 const char* kInternalNamespacePrefix = "com.google.cast";
 
-proto::ChallengeReplyErrorType ChannegeReplyErrorToProto(
+proto::ChallengeReplyErrorType ChallegeReplyErrorToProto(
     AuthResult::ErrorType error_type) {
   switch (error_type) {
     case AuthResult::ERROR_NONE:
@@ -59,6 +61,7 @@ proto::ChallengeReplyErrorType ChannegeReplyErrorToProto(
 
 Logger::AggregatedSocketEventLog::AggregatedSocketEventLog() {
 }
+
 Logger::AggregatedSocketEventLog::~AggregatedSocketEventLog() {
 }
 
@@ -120,7 +123,7 @@ void Logger::LogSocketEventWithRv(int channel_id,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   SocketEvent event = CreateEvent(event_type);
-  event.set_return_value(rv);
+  event.set_net_return_value(rv);
 
   LogSocketEvent(channel_id, event);
 }
@@ -191,9 +194,9 @@ void Logger::LogSocketChallengeReplyEvent(int channel_id,
 
   SocketEvent event = CreateEvent(proto::AUTH_CHALLENGE_REPLY);
   event.set_challenge_reply_error_type(
-      ChannegeReplyErrorToProto(auth_result.error_type));
+      ChallegeReplyErrorToProto(auth_result.error_type));
   if (auth_result.nss_error_code != 0)
-    event.set_return_value(auth_result.nss_error_code);
+    event.set_nss_error_code(auth_result.nss_error_code);
 
   LogSocketEvent(channel_id, event);
 }
@@ -234,6 +237,17 @@ void Logger::LogSocketEvent(int channel_id, const SocketEvent& socket_event) {
   }
 
   socket_events.push_back(socket_event);
+
+  it->second->last_errors.event_type = socket_event.type();
+  if (socket_event.has_net_return_value()) {
+    it->second->last_errors.net_return_value = socket_event.net_return_value();
+  }
+  if (socket_event.has_challenge_reply_error_type()) {
+    it->second->last_errors.challenge_reply_error_type =
+        socket_event.challenge_reply_error_type();
+  }
+  if (socket_event.has_nss_error_code())
+    it->second->last_errors.nss_error_code = socket_event.nss_error_code();
 }
 
 bool Logger::LogToString(std::string* output) const {
@@ -270,6 +284,16 @@ void Logger::Reset() {
   aggregated_socket_events_.clear();
   num_evicted_aggregated_socket_events_ = 0;
   num_evicted_socket_events_ = 0;
+}
+
+LastErrors Logger::GetLastErrors(int channel_id) const {
+  AggregatedSocketEventLogMap::const_iterator it =
+      aggregated_socket_events_.find(channel_id);
+  if (it != aggregated_socket_events_.end()) {
+    return it->second->last_errors;
+  } else {
+    return LastErrors();
+  }
 }
 
 }  // namespace cast_channel

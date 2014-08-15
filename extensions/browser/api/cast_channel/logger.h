@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "extensions/browser/api/cast_channel/cast_socket.h"
+#include "extensions/browser/api/cast_channel/logger_util.h"
 #include "extensions/browser/api/cast_channel/logging.pb.h"
 #include "net/base/ip_endpoint.h"
 
@@ -79,6 +80,12 @@ class Logger : public base::RefCounted<Logger> {
   // Clears the internal map.
   void Reset();
 
+  // Returns the last errors logged for |channel_id|.  If the the logs for
+  // |channel_id| are evicted before this is called, returns a LastErrors with
+  // no errors.  This may happen if errors are logged and retrieved in different
+  // tasks.
+  LastErrors GetLastErrors(int channel_id) const;
+
  private:
   friend class base::RefCounted<Logger>;
   ~Logger();
@@ -96,6 +103,9 @@ class Logger : public base::RefCounted<Logger> {
     // most recent |kMaxEventsPerSocket| entries. The oldest events are
     // evicted as new events are logged.
     std::deque<proto::SocketEvent> socket_events;
+
+    // The most recent errors logged for the socket.
+    LastErrors last_errors;
   };
 
   typedef std::map<int, linked_ptr<AggregatedSocketEventLog> >

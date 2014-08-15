@@ -27,6 +27,7 @@
 namespace cast_channel = extensions::core_api::cast_channel;
 using cast_channel::CastSocket;
 using cast_channel::ChannelError;
+using cast_channel::ErrorInfo;
 using cast_channel::Logger;
 using cast_channel::MessageInfo;
 using cast_channel::ReadyState;
@@ -110,10 +111,6 @@ class CastChannelAPITest : public ExtensionApiTest {
     // Transfers ownership of the socket.
     api->SetSocketForTest(
         make_scoped_ptr<CastSocket>(mock_cast_socket_).Pass());
-
-    // Set expectations on error_state().
-    EXPECT_CALL(*mock_cast_socket_, error_state())
-      .WillRepeatedly(Return(cast_channel::CHANNEL_ERROR_NONE));
   }
 
   extensions::CastChannelAPI* GetApi() {
@@ -121,8 +118,13 @@ class CastChannelAPITest : public ExtensionApiTest {
   }
 
   void CallOnError(extensions::CastChannelAPI* api) {
+    cast_channel::LastErrors last_errors;
+    last_errors.challenge_reply_error_type =
+        cast_channel::proto::CHALLENGE_REPLY_ERROR_NSS_CERT_PARSING_FAILED;
+    last_errors.nss_error_code = -8164;
     api->OnError(mock_cast_socket_,
-                 cast_channel::CHANNEL_ERROR_CONNECT_ERROR);
+                 cast_channel::CHANNEL_ERROR_CONNECT_ERROR,
+                 last_errors);
   }
 
  protected:
@@ -173,6 +175,8 @@ class CastChannelAPITest : public ExtensionApiTest {
 // listener, writing, reading, and closing.
 IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestOpenSendClose) {
   SetUpMockCastSocket();
+  EXPECT_CALL(*mock_cast_socket_, error_state())
+      .WillRepeatedly(Return(cast_channel::CHANNEL_ERROR_NONE));
 
   {
     InSequence dummy;
@@ -205,6 +209,8 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestOpenSendClose) {
 // writing, reading, and closing.
 IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestOpenSendCloseWithUrl) {
   SetUpMockCastSocket();
+  EXPECT_CALL(*mock_cast_socket_, error_state())
+      .WillRepeatedly(Return(cast_channel::CHANNEL_ERROR_NONE));
 
   {
     InSequence dummy;
@@ -237,6 +243,8 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestOpenSendCloseWithUrl) {
 // writing, reading, and closing.
 IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestOpenReceiveClose) {
   SetUpMockCastSocket();
+  EXPECT_CALL(*mock_cast_socket_, error_state())
+      .WillRepeatedly(Return(cast_channel::CHANNEL_ERROR_NONE));
 
   {
     InSequence dummy;
@@ -273,12 +281,14 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestOpenError) {
   SetUpMockCastSocket();
 
   EXPECT_CALL(*mock_cast_socket_, Connect(_))
-      .WillOnce(DoAll(
-          InvokeDelegateOnError(this, GetApi()),
-          InvokeCompletionCallback<0>(net::ERR_FAILED)));
+      .WillOnce(DoAll(InvokeDelegateOnError(this, GetApi()),
+                      InvokeCompletionCallback<0>(net::ERR_CONNECTION_FAILED)));
+  EXPECT_CALL(*mock_cast_socket_, error_state())
+      .WillRepeatedly(Return(cast_channel::CHANNEL_ERROR_CONNECT_ERROR));
   EXPECT_CALL(*mock_cast_socket_, ready_state())
       .WillRepeatedly(Return(cast_channel::READY_STATE_CLOSED));
-  EXPECT_CALL(*mock_cast_socket_, Close(_));
+  EXPECT_CALL(*mock_cast_socket_, Close(_))
+      .WillOnce(InvokeCompletionCallback<0>(net::OK));
 
   EXPECT_TRUE(RunExtensionSubtest("cast_channel/api",
                                   "test_open_error.html"));

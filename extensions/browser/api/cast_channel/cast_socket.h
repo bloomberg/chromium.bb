@@ -37,6 +37,7 @@ namespace cast_channel {
 
 class CastMessage;
 class Logger;
+struct LastErrors;
 
 // This class implements a channel between Chrome and a Cast device using a TCP
 // socket with SSL.  The channel may authenticate that the receiver is a genuine
@@ -51,8 +52,11 @@ class CastSocket : public ApiResource {
   // or in the callback to Close().
   class Delegate {
    public:
-    // An error occurred on the channel.
-    virtual void OnError(const CastSocket* socket, ChannelError error) = 0;
+    // An error occurred on the channel. |last_errors| contains the last errors
+    // logged for the channel from the implementation.
+    virtual void OnError(const CastSocket* socket,
+                         ChannelError error_state,
+                         const LastErrors& last_errors) = 0;
     // A message was received on the channel.
     virtual void OnMessage(const CastSocket* socket,
                            const MessageInfo& message) = 0;
