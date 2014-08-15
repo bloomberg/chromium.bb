@@ -5,7 +5,7 @@
 {
   'targets': [
     {
-      'target_name': 'linker_script_copy',
+      'target_name': 'android_exports',
       'type': 'none',
       'inputs': [
         '<(DEPTH)/build/android/android_exports.lst',
@@ -20,6 +20,19 @@
             '<@(_inputs)',
          ],
         },
+      ],
+      'conditions': [
+        ['component=="static_library"', {
+          'link_settings': {
+            'ldflags': [
+              # Only export symbols that are specified in version script.
+              '-Wl,--version-script=<(android_linker_script)',
+            ],
+            'ldflags!': [
+              '-Wl,--exclude-libs=ALL',
+            ],
+          },
+        }],
       ],
     },
   ],

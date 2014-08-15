@@ -38,9 +38,6 @@
     ),
     'native_exports%': '',
   },
-  'dependencies': [
-    '<(DEPTH)/build/linker_script_copy.gyp:linker_script_copy',
-  ],
   'rules': [
     {
       'rule_name': 'generate_jni_headers',
@@ -92,20 +89,7 @@
         'native_exports%': '--native_exports',
       },
       'dependencies': [
-        '<(DEPTH)/build/linker_script_copy.gyp:linker_script_copy',
-      ],
-      'conditions': [
-        ['component=="static_library"', {
-          'link_settings': {
-            'ldflags': [
-              # Only export symbols that are specified in version script.
-              '-Wl,--version-script=<(android_linker_script)',
-            ],
-            'ldflags!': [
-              '-Wl,--exclude-libs=ALL',
-            ],
-          },
-        }],
+        '<(DEPTH)/build/android/android_exports.gyp:android_exports',
       ],
     }],
   ],
