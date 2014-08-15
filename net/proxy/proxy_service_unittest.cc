@@ -207,17 +207,13 @@ class TestProxyFallbackNetworkDelegate : public NetworkDelegate {
  public:
   TestProxyFallbackNetworkDelegate()
       : on_proxy_fallback_called_(false),
-        proxy_fallback_net_error_(0),
-        proxy_did_fallback_(false) {
+        proxy_fallback_net_error_(OK) {
   }
 
-  virtual void OnProxyFallback(
-      const ProxyServer& proxy_server,
-      int net_error,
-      bool did_fallback) OVERRIDE {
+  virtual void OnProxyFallback(const ProxyServer& proxy_server,
+                               int net_error) OVERRIDE {
     proxy_server_ = proxy_server;
     proxy_fallback_net_error_ = net_error;
-    proxy_did_fallback_ = did_fallback;
     on_proxy_fallback_called_ = true;
   }
 
@@ -233,15 +229,10 @@ class TestProxyFallbackNetworkDelegate : public NetworkDelegate {
     return proxy_fallback_net_error_;
   }
 
-  bool proxy_did_fallback() const {
-    return proxy_did_fallback_;
-  }
-
  private:
   bool on_proxy_fallback_called_;
   ProxyServer proxy_server_;
   int proxy_fallback_net_error_;
-  bool proxy_did_fallback_;
 };
 
 }  // namespace
@@ -514,7 +505,7 @@ TEST_F(ProxyServiceTest, PAC_FailoverWithoutDirect) {
   // Now, imagine that connecting to foopy:8080 fails: there is nothing
   // left to fallback to, since our proxy list was NOT terminated by
   // DIRECT.
-  TestProxyFallbackNetworkDelegate network_delegate;
+  NetworkDelegate network_delegate;
   TestCompletionCallback callback2;
   ProxyServer expected_proxy_server = info.proxy_server();
   rv = service.ReconsiderProxyAfterError(
@@ -523,11 +514,6 @@ TEST_F(ProxyServiceTest, PAC_FailoverWithoutDirect) {
   // ReconsiderProxyAfterError returns error indicating nothing left.
   EXPECT_EQ(ERR_FAILED, rv);
   EXPECT_TRUE(info.is_empty());
-  EXPECT_TRUE(network_delegate.on_proxy_fallback_called());
-  EXPECT_EQ(expected_proxy_server, network_delegate.proxy_server());
-  EXPECT_EQ(net::ERR_PROXY_CONNECTION_FAILED,
-            network_delegate.proxy_fallback_net_error());
-  EXPECT_FALSE(network_delegate.proxy_did_fallback());
 }
 
 // Test that if the execution of the PAC script fails (i.e. javascript runtime
@@ -620,7 +606,6 @@ TEST_F(ProxyServiceTest, PAC_FailoverAfterDirect) {
   EXPECT_TRUE(info.is_direct());
 
   // Fallback 1.
-  TestProxyFallbackNetworkDelegate network_delegate2;
   TestCompletionCallback callback2;
   rv = service.ReconsiderProxyAfterError(url, net::LOAD_NORMAL,
                                          net::ERR_PROXY_CONNECTION_FAILED,
@@ -629,57 +614,38 @@ TEST_F(ProxyServiceTest, PAC_FailoverAfterDirect) {
   EXPECT_EQ(OK, rv);
   EXPECT_FALSE(info.is_direct());
   EXPECT_EQ("foobar:10", info.proxy_server().ToURI());
-  // No network delegate provided.
-  EXPECT_FALSE(network_delegate2.on_proxy_fallback_called());
 
   // Fallback 2.
-  TestProxyFallbackNetworkDelegate network_delegate3;
+  NetworkDelegate network_delegate;
   ProxyServer expected_proxy_server3 = info.proxy_server();
   TestCompletionCallback callback3;
   rv = service.ReconsiderProxyAfterError(url, net::LOAD_NORMAL,
                                          net::ERR_PROXY_CONNECTION_FAILED,
                                          &info, callback3.callback(), NULL,
-                                         &network_delegate3, BoundNetLog());
+                                         &network_delegate, BoundNetLog());
   EXPECT_EQ(OK, rv);
   EXPECT_TRUE(info.is_direct());
-  EXPECT_TRUE(network_delegate3.on_proxy_fallback_called());
-  EXPECT_EQ(expected_proxy_server3, network_delegate3.proxy_server());
-  EXPECT_EQ(net::ERR_PROXY_CONNECTION_FAILED,
-            network_delegate3.proxy_fallback_net_error());
-  EXPECT_TRUE(network_delegate3.proxy_did_fallback());
 
   // Fallback 3.
-  TestProxyFallbackNetworkDelegate network_delegate4;
   ProxyServer expected_proxy_server4 = info.proxy_server();
   TestCompletionCallback callback4;
   rv = service.ReconsiderProxyAfterError(url, net::LOAD_NORMAL,
                                          net::ERR_PROXY_CONNECTION_FAILED,
                                          &info, callback4.callback(), NULL,
-                                         &network_delegate4, BoundNetLog());
+                                         &network_delegate, BoundNetLog());
   EXPECT_EQ(OK, rv);
   EXPECT_FALSE(info.is_direct());
   EXPECT_EQ("foobar:20", info.proxy_server().ToURI());
-  EXPECT_TRUE(network_delegate4.on_proxy_fallback_called());
-  EXPECT_EQ(expected_proxy_server4, network_delegate4.proxy_server());
-  EXPECT_EQ(net::ERR_PROXY_CONNECTION_FAILED,
-            network_delegate4.proxy_fallback_net_error());
-  EXPECT_TRUE(network_delegate4.proxy_did_fallback());
 
   // Fallback 4 -- Nothing to fall back to!
-  TestProxyFallbackNetworkDelegate network_delegate5;
   ProxyServer expected_proxy_server5 = info.proxy_server();
   TestCompletionCallback callback5;
   rv = service.ReconsiderProxyAfterError(url, net::LOAD_NORMAL,
                                          net::ERR_PROXY_CONNECTION_FAILED,
                                          &info, callback5.callback(), NULL,
-                                         &network_delegate5, BoundNetLog());
+                                         &network_delegate, BoundNetLog());
   EXPECT_EQ(ERR_FAILED, rv);
   EXPECT_TRUE(info.is_empty());
-  EXPECT_TRUE(network_delegate5.on_proxy_fallback_called());
-  EXPECT_EQ(expected_proxy_server5, network_delegate5.proxy_server());
-  EXPECT_EQ(net::ERR_PROXY_CONNECTION_FAILED,
-            network_delegate5.proxy_fallback_net_error());
-  EXPECT_FALSE(network_delegate5.proxy_did_fallback());
 }
 
 TEST_F(ProxyServiceTest, PAC_ConfigSourcePropagates) {
@@ -994,7 +960,11 @@ TEST_F(ProxyServiceTest, ProxyFallback) {
   EXPECT_EQ("foopy2:9090", info.proxy_server().ToURI());
   // Report back that the second proxy worked.  This will globally mark the
   // first proxy as bad.
-  service.ReportSuccess(info);
+  TestProxyFallbackNetworkDelegate test_delegate;
+  service.ReportSuccess(info, &test_delegate);
+  EXPECT_EQ(info.proxy_server(), test_delegate.proxy_server());
+  EXPECT_EQ(net::ERR_PROXY_CONNECTION_FAILED,
+            test_delegate.proxy_fallback_net_error());
 
   TestCompletionCallback callback3;
   rv = service.ResolveProxy(

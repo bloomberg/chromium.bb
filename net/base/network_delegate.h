@@ -68,8 +68,7 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
                           const ProxyService& proxy_service,
                           ProxyInfo* result);
   void NotifyProxyFallback(const ProxyServer& bad_proxy,
-                           int net_error,
-                           bool did_fallback);
+                           int net_error);
   int NotifyBeforeSendHeaders(URLRequest* request,
                               const CompletionCallback& callback,
                               HttpRequestHeaders* headers);
@@ -138,12 +137,12 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
                               const ProxyService& proxy_service,
                               ProxyInfo* result);
 
-  // Called when use of |bad_proxy| fails due to |net_error|. |did_fallback| is
-  // true if the proxy service was able to fallback to another proxy
-  // configuration.
+  // Called when use of |bad_proxy| fails due to |net_error|. |net_error| is
+  // the network error encountered, if any, and OK if the fallback was
+  // for a reason other than a network error (e.g. the proxy service was
+  // explicitly directed to skip a proxy).
   virtual void OnProxyFallback(const ProxyServer& bad_proxy,
-                               int net_error,
-                               bool did_fallback);
+                               int net_error);
 
   // Called right before the HTTP headers are sent. Allows the delegate to
   // read/write |headers| before they get sent out. |callback| and |headers| are

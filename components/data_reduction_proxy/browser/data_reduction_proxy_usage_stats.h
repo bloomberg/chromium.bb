@@ -64,8 +64,7 @@ class DataReductionProxyUsageStats
       const BooleanPrefMember& data_reduction_proxy_enabled);
 
   void RecordBypassEventHistograms(const net::ProxyServer& bypassed_proxy,
-                                   int net_error,
-                                   bool did_fallback) const;
+                                   int net_error) const;
 
  private:
   enum BypassedBytesType {

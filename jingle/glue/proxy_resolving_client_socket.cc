@@ -309,7 +309,7 @@ int ProxyResolvingClientSocket::ReconsiderProxyAfterError(int error) {
 }
 
 void ProxyResolvingClientSocket::ReportSuccessfulProxyConnection() {
-  network_session_->proxy_service()->ReportSuccess(proxy_info_);
+  network_session_->proxy_service()->ReportSuccess(proxy_info_, NULL);
 }
 
 void ProxyResolvingClientSocket::Disconnect() {

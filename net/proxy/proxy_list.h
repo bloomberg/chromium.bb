@@ -78,10 +78,14 @@ class NET_EXPORT_PRIVATE ProxyList {
   // Returns a serialized value for the list. The caller takes ownership of it.
   base::ListValue* ToValue() const;
 
-  // Marks the current proxy server as bad and deletes it from the list.  The
-  // list of known bad proxies is given by proxy_retry_info.  Returns true if
-  // there is another server available in the list.
+  // Marks the current proxy server as bad and deletes it from the list. The
+  // list of known bad proxies is given by |proxy_retry_info|. |net_error|
+  // should contain the network error encountered when this proxy was tried, if
+  // any. If this fallback is not because of a network error, then |OK| should
+  // be passed in (eg. for reasons such as local policy). Returns true if there
+  // is another server available in the list.
   bool Fallback(ProxyRetryInfoMap* proxy_retry_info,
+                int net_error,
                 const BoundNetLog& net_log);
 
   // Updates |proxy_retry_info| to indicate that the first proxy in the list
@@ -90,22 +94,28 @@ class NET_EXPORT_PRIVATE ProxyList {
   // retry after |retry_delay| if positive, and will use the default proxy retry
   // duration otherwise. It may reconsider the proxy beforehand if |reconsider|
   // is true. Additionally updates |proxy_retry_info| with
-  // |another_proxy_to_bypass| if non-empty.
+  // |another_proxy_to_bypass| if non-empty. |net_error| should contain the
+  // network error countered when this proxy was tried, or OK if the proxy retry
+  // info is being updated for a non-network related reason (e.g. local policy).
   void UpdateRetryInfoOnFallback(
       ProxyRetryInfoMap* proxy_retry_info,
       base::TimeDelta retry_delay,
       bool reconsider,
       const ProxyServer& another_proxy_to_bypass,
+      int net_error,
       const BoundNetLog& net_log) const;
 
  private:
   // Updates |proxy_retry_info| to indicate that the |proxy_to_retry| in
   // |proxies_| is bad for |retry_delay|, but may be reconsidered earlier if
-  // |try_while_bad| is true.
+  // |try_while_bad| is true. |net_error| should contain the network error
+  // countered when this proxy was tried, or OK if the proxy retry info is
+  // being updated for a non-network related reason (e.g. local policy).
   void AddProxyToRetryList(ProxyRetryInfoMap* proxy_retry_info,
                            base::TimeDelta retry_delay,
                            bool try_while_bad,
                            const ProxyServer& proxy_to_retry,
+                           int net_error,
                            const BoundNetLog& net_log) const;
 
   // List of proxies.

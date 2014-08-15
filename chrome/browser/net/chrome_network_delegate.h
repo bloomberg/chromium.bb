@@ -216,8 +216,7 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
       const net::ProxyService& proxy_service,
       net::ProxyInfo* result) OVERRIDE;
   virtual void OnProxyFallback(const net::ProxyServer& bad_proxy,
-                               int net_error,
-                               bool did_fallback) OVERRIDE;
+                               int net_error) OVERRIDE;
   virtual int OnBeforeSendHeaders(net::URLRequest* request,
                                   const net::CompletionCallback& callback,
                                   net::HttpRequestHeaders* headers) OVERRIDE;

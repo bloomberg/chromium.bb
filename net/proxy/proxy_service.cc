@@ -1211,11 +1211,7 @@ int ProxyService::ReconsiderProxyAfterError(const GURL& url,
 
   // We don't have new proxy settings to try, try to fallback to the next proxy
   // in the list.
-  bool did_fallback = result->Fallback(net_log);
-
-  if (network_delegate) {
-      network_delegate->NotifyProxyFallback(bad_proxy, net_error, did_fallback);
-  }
+  bool did_fallback = result->Fallback(net_error, net_log);
 
   // Return synchronous failure if there is nothing left to fall-back to.
   // TODO(eroman): This is a yucky API, clean it up.
@@ -1227,9 +1223,11 @@ bool ProxyService::MarkProxiesAsBadUntil(
     base::TimeDelta retry_delay,
     const ProxyServer& another_bad_proxy,
     const BoundNetLog& net_log) {
-  result.proxy_list_.UpdateRetryInfoOnFallback(&proxy_retry_info_, retry_delay,
+  result.proxy_list_.UpdateRetryInfoOnFallback(&proxy_retry_info_,
+                                               retry_delay,
                                                false,
                                                another_bad_proxy,
+                                               OK,
                                                net_log);
   if (another_bad_proxy.is_valid())
     return result.proxy_list_.size() > 2;
@@ -1237,7 +1235,8 @@ bool ProxyService::MarkProxiesAsBadUntil(
     return result.proxy_list_.size() > 1;
 }
 
-void ProxyService::ReportSuccess(const ProxyInfo& result) {
+void ProxyService::ReportSuccess(const ProxyInfo& result,
+                                 NetworkDelegate* network_delegate) {
   DCHECK(CalledOnValidThread());
 
   const ProxyRetryInfoMap& new_retry_info = result.proxy_retry_info();
@@ -1247,8 +1246,14 @@ void ProxyService::ReportSuccess(const ProxyInfo& result) {
   for (ProxyRetryInfoMap::const_iterator iter = new_retry_info.begin();
        iter != new_retry_info.end(); ++iter) {
     ProxyRetryInfoMap::iterator existing = proxy_retry_info_.find(iter->first);
-    if (existing == proxy_retry_info_.end())
+    if (existing == proxy_retry_info_.end()) {
       proxy_retry_info_[iter->first] = iter->second;
+      if (network_delegate) {
+        const ProxyRetryInfo& proxy_retry_info = iter->second;
+        network_delegate->NotifyProxyFallback(result.proxy_server(),
+                                              proxy_retry_info.net_error);
+      }
+    }
     else if (existing->second.bad_until < iter->second.bad_until)
       existing->second.bad_until = iter->second.bad_until;
   }

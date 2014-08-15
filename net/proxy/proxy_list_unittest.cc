@@ -4,6 +4,7 @@
 
 #include "net/proxy/proxy_list.h"
 
+#include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 #include "net/proxy/proxy_retry_info.h"
 #include "net/proxy/proxy_server.h"
@@ -172,13 +173,38 @@ TEST(ProxyListTest, UpdateRetryInfoOnFallback) {
     ProxyList list;
     ProxyRetryInfoMap retry_info_map;
     BoundNetLog net_log;
+    ProxyServer proxy_server(
+        ProxyServer::FromURI("foopy1:80", ProxyServer::SCHEME_HTTP));
     list.SetFromPacString("PROXY foopy1:80;PROXY foopy2:80;PROXY foopy3:80");
     list.UpdateRetryInfoOnFallback(&retry_info_map,
                                    base::TimeDelta::FromSeconds(60),
                                    true,
-                                   ProxyServer(),
+                                   proxy_server,
+                                   ERR_PROXY_CONNECTION_FAILED,
                                    net_log);
     EXPECT_TRUE(retry_info_map.end() != retry_info_map.find("foopy1:80"));
+    EXPECT_EQ(ERR_PROXY_CONNECTION_FAILED,
+              retry_info_map[proxy_server.ToURI()].net_error);
+    EXPECT_TRUE(retry_info_map.end() == retry_info_map.find("foopy2:80"));
+    EXPECT_TRUE(retry_info_map.end() == retry_info_map.find("foopy3:80"));
+  }
+  // Retrying should put the first proxy on the retry list, even if there
+  // was no network error.
+  {
+    ProxyList list;
+    ProxyRetryInfoMap retry_info_map;
+    BoundNetLog net_log;
+    ProxyServer proxy_server(
+        ProxyServer::FromURI("foopy1:80", ProxyServer::SCHEME_HTTP));
+    list.SetFromPacString("PROXY foopy1:80;PROXY foopy2:80;PROXY foopy3:80");
+    list.UpdateRetryInfoOnFallback(&retry_info_map,
+                                   base::TimeDelta::FromSeconds(60),
+                                   true,
+                                   proxy_server,
+                                   OK,
+                                   net_log);
+    EXPECT_TRUE(retry_info_map.end() != retry_info_map.find("foopy1:80"));
+    EXPECT_EQ(OK, retry_info_map[proxy_server.ToURI()].net_error);
     EXPECT_TRUE(retry_info_map.end() == retry_info_map.find("foopy2:80"));
     EXPECT_TRUE(retry_info_map.end() == retry_info_map.find("foopy3:80"));
   }
@@ -195,8 +221,11 @@ TEST(ProxyListTest, UpdateRetryInfoOnFallback) {
                                    base::TimeDelta::FromSeconds(60),
                                    true,
                                    proxy_server,
+                                   ERR_NAME_RESOLUTION_FAILED,
                                    net_log);
     EXPECT_TRUE(retry_info_map.end() != retry_info_map.find("foopy1:80"));
+    EXPECT_EQ(ERR_NAME_RESOLUTION_FAILED,
+              retry_info_map[proxy_server.ToURI()].net_error);
     EXPECT_TRUE(retry_info_map.end() == retry_info_map.find("foopy2:80"));
     EXPECT_TRUE(retry_info_map.end() != retry_info_map.find("foopy3:80"));
   }
@@ -213,6 +242,7 @@ TEST(ProxyListTest, UpdateRetryInfoOnFallback) {
                                    base::TimeDelta::FromSeconds(60),
                                    true,
                                    proxy_server,
+                                   OK,
                                    net_log);
     EXPECT_TRUE(retry_info_map.end() == retry_info_map.find("foopy2:80"));
     EXPECT_TRUE(retry_info_map.end() == retry_info_map.find("foopy3:80"));

@@ -24,6 +24,11 @@ struct ProxyRetryInfo {
 
   // True if this proxy should be considered even if still bad.
   bool try_while_bad;
+
+  // The network error received when this proxy failed, or |OK| if the proxy
+  // was added to the retry list for a non-network related reason. (e.g. local
+  // policy).
+  int net_error;
 };
 
 // Map of proxy servers with the associated RetryInfo structures.

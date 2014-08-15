@@ -63,8 +63,8 @@ std::string ProxyInfo::ToPacString() const {
   return proxy_list_.ToPacString();
 }
 
-bool ProxyInfo::Fallback(const BoundNetLog& net_log) {
-  return proxy_list_.Fallback(&proxy_retry_info_, net_log);
+bool ProxyInfo::Fallback(int net_error, const BoundNetLog& net_log) {
+  return proxy_list_.Fallback(&proxy_retry_info_, net_error, net_log);
 }
 
 void ProxyInfo::DeprioritizeBadProxies(

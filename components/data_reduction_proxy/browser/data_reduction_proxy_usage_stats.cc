@@ -223,8 +223,7 @@ void DataReductionProxyUsageStats::RecordBypassedBytesHistograms(
 
 void DataReductionProxyUsageStats::RecordBypassEventHistograms(
     const net::ProxyServer& bypassed_proxy,
-    int net_error,
-    bool did_fallback) const {
+    int net_error) const {
   DataReductionProxyTypeInfo data_reduction_proxy_info;
   if (bypassed_proxy.is_valid() && !bypassed_proxy.is_direct() &&
       data_reduction_proxy_params_->IsDataReductionProxy(

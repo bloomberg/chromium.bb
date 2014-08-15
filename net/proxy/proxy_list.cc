@@ -146,6 +146,7 @@ base::ListValue* ProxyList::ToValue() const {
 }
 
 bool ProxyList::Fallback(ProxyRetryInfoMap* proxy_retry_info,
+                         int net_error,
                          const BoundNetLog& net_log) {
 
   // TODO(eroman): It would be good if instead of removing failed proxies
@@ -171,6 +172,7 @@ bool ProxyList::Fallback(ProxyRetryInfoMap* proxy_retry_info,
                             TimeDelta::FromMinutes(5),
                             true,
                             ProxyServer(),
+                            net_error,
                             net_log);
 
   // Remove this proxy from our list.
@@ -182,6 +184,7 @@ void ProxyList::AddProxyToRetryList(ProxyRetryInfoMap* proxy_retry_info,
                                     base::TimeDelta retry_delay,
                                     bool try_while_bad,
                                     const ProxyServer& proxy_to_retry,
+                                    int net_error,
                                     const BoundNetLog& net_log) const {
   // Mark this proxy as bad.
   std::string proxy_key = proxy_to_retry.ToURI();
@@ -195,6 +198,7 @@ void ProxyList::AddProxyToRetryList(ProxyRetryInfoMap* proxy_retry_info,
     retry_info.current_delay = retry_delay;
     retry_info.bad_until = TimeTicks().Now() + retry_info.current_delay;
     retry_info.try_while_bad = try_while_bad;
+    retry_info.net_error = net_error;
     (*proxy_retry_info)[proxy_key] = retry_info;
   }
   net_log.AddEvent(NetLog::TYPE_PROXY_LIST_FALLBACK,
@@ -206,6 +210,7 @@ void ProxyList::UpdateRetryInfoOnFallback(
     base::TimeDelta retry_delay,
     bool reconsider,
     const ProxyServer& another_proxy_to_bypass,
+    int net_error,
     const BoundNetLog& net_log) const {
   DCHECK(retry_delay != base::TimeDelta());
 
@@ -215,14 +220,22 @@ void ProxyList::UpdateRetryInfoOnFallback(
   }
 
   if (!proxies_[0].is_direct()) {
-    AddProxyToRetryList(proxy_retry_info, retry_delay, reconsider, proxies_[0],
+    AddProxyToRetryList(proxy_retry_info,
+                        retry_delay,
+                        reconsider,
+                        proxies_[0],
+                        net_error,
                         net_log);
 
     // If an additional proxy to bypass is specified, add it to the retry map
     // as well.
     if (another_proxy_to_bypass.is_valid()) {
-      AddProxyToRetryList(proxy_retry_info, retry_delay, reconsider,
-                          another_proxy_to_bypass, net_log);
+      AddProxyToRetryList(proxy_retry_info,
+                          retry_delay,
+                          reconsider,
+                          another_proxy_to_bypass,
+                          net_error,
+                          net_log);
     }
   }
 }

@@ -443,11 +443,10 @@ void ChromeNetworkDelegate::OnResolveProxy(
 }
 
 void ChromeNetworkDelegate::OnProxyFallback(const net::ProxyServer& bad_proxy,
-                                            int net_error,
-                                            bool did_fallback) {
+                                            int net_error) {
   if (data_reduction_proxy_usage_stats_) {
     data_reduction_proxy_usage_stats_->RecordBypassEventHistograms(
-        bad_proxy, net_error, did_fallback);
+        bad_proxy, net_error);
   }
 }
 

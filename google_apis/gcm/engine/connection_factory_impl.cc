@@ -536,7 +536,7 @@ int ConnectionFactoryImpl::ReconsiderProxyAfterError(int error) {
 
 void ConnectionFactoryImpl::ReportSuccessfulProxyConnection() {
   if (gcm_network_session_ && gcm_network_session_->proxy_service())
-    gcm_network_session_->proxy_service()->ReportSuccess(proxy_info_);
+    gcm_network_session_->proxy_service()->ReportSuccess(proxy_info_, NULL);
 }
 
 void ConnectionFactoryImpl::CloseSocket() {

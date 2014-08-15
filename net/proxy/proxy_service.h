@@ -160,7 +160,10 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
   // and will use the default proxy retry duration otherwise. Proxies marked as
   // bad will not be retried until |retry_delay| has passed. Returns true if
   // there will be at least one proxy remaining in the list after fallback and
-  // false otherwise.
+  // false otherwise. This method should be used to add proxies to the bad
+  // proxy list only for reasons other than a network error. If a proxy needs
+  // to be added to the bad proxy list because a network error was encountered
+  // when trying to connect to it, use |ReconsiderProxyAfterError|.
   bool MarkProxiesAsBadUntil(const ProxyInfo& results,
                              base::TimeDelta retry_delay,
                              const ProxyServer& another_bad_proxy,
@@ -168,8 +171,10 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
 
   // Called to report that the last proxy connection succeeded.  If |proxy_info|
   // has a non empty proxy_retry_info map, the proxies that have been tried (and
-  // failed) for this request will be marked as bad.
-  void ReportSuccess(const ProxyInfo& proxy_info);
+  // failed) for this request will be marked as bad. |network_delegate| will
+  // be notified of any proxy fallbacks.
+  void ReportSuccess(const ProxyInfo& proxy_info,
+                     NetworkDelegate* network_delegate);
 
   // Call this method with a non-null |pac_request| to cancel the PAC request.
   void CancelPacRequest(PacRequest* pac_request);

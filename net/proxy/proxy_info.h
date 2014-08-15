@@ -115,9 +115,12 @@ class NET_EXPORT ProxyInfo {
   // See description in ProxyList::ToPacString().
   std::string ToPacString() const;
 
-  // Marks the current proxy as bad. Returns true if there is another proxy
+  // Marks the current proxy as bad. |net_error| should contain the network
+  // error encountered when this proxy was tried, if any. If this fallback
+  // is not because of a network error, then |OK| should be passed in (eg. for
+  // reasons such as local policy). Returns true if there is another proxy is
   // available to try in proxy list_.
-  bool Fallback(const BoundNetLog& net_log);
+  bool Fallback(int net_error, const BoundNetLog& net_log);
 
   // De-prioritizes the proxies that we have cached as not working, by moving
   // them to the end of the proxy list.

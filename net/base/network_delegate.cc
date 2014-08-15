@@ -33,10 +33,9 @@ void NetworkDelegate::NotifyResolveProxy(
 
 void NetworkDelegate::NotifyProxyFallback(
     const ProxyServer& bad_proxy,
-    int net_error,
-    bool did_fallback) {
+    int net_error) {
   DCHECK(CalledOnValidThread());
-  OnProxyFallback(bad_proxy, net_error, did_fallback);
+  OnProxyFallback(bad_proxy, net_error);
 }
 
 int NetworkDelegate::NotifyBeforeSendHeaders(
@@ -181,8 +180,7 @@ void NetworkDelegate::OnResolveProxy(
 }
 
 void NetworkDelegate::OnProxyFallback(const ProxyServer& bad_proxy,
-                                      int net_error,
-                                      bool did_fallback) {
+                                      int net_error) {
 }
 
 int NetworkDelegate::OnBeforeSendHeaders(URLRequest* request,
