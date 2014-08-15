@@ -11430,6 +11430,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Measures the time taken for VideoCaptureManager::</summary>
 </histogram>
 
+<histogram name="Media.VideoCaptureManager.Event" enum="VideoCaptureEvent">
+  <owner>grunell@chromium.org</owner>
+  <owner>mcasas@chromium.org</owner>
+  <summary>Counts video capture event, such as start and stop capture.</summary>
+</histogram>
+
 <histogram name="Media.VideoCodec" enum="VideoCodec">
   <owner>scherkus@chromium.org</owner>
   <summary>Video codec used in HTML5 media.</summary>
@@ -50148,6 +50154,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <enum name="VAVEAEncoderFailure" type="int">
   <int value="0" label="VAAPI_ERROR"/>
+</enum>
+
+<enum name="VideoCaptureEvent" type="int">
+  <int value="0" label="Starting video capture"/>
+  <int value="1" label="Stopping video capture normally"/>
+  <int value="2" label="Stopping video capture due to error"/>
 </enum>
 
 <enum name="VideoCodec" type="int">

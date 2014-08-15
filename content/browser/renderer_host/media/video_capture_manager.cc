@@ -75,6 +75,22 @@ void ConsolidateCaptureFormats(media::VideoCaptureFormats* formats) {
 const int kMaxNumberOfBuffers = 3;
 const int kMaxNumberOfBuffersForTabCapture = 5;
 
+// Used for logging capture events.
+// Elements in this enum should not be deleted or rearranged; the only
+// permitted operation is to add new elements before NUM_VIDEO_CAPTURE_EVENT.
+enum VideoCaptureEvent {
+  VIDEO_CAPTURE_EVENT_START_CAPTURE = 0,
+  VIDEO_CAPTURE_EVENT_STOP_CAPTURE_NORMAL = 1,
+  VIDEO_CAPTURE_EVENT_STOP_CAPTURE_DUE_TO_ERROR = 2,
+  NUM_VIDEO_CAPTURE_EVENT
+};
+
+void LogVideoCaptureEvent(VideoCaptureEvent event) {
+  UMA_HISTOGRAM_ENUMERATION("Media.VideoCaptureManager.Event",
+                            event,
+                            NUM_VIDEO_CAPTURE_EVENT);
+}
+
 }  // namespace
 
 namespace content {
@@ -287,6 +303,8 @@ void VideoCaptureManager::StartCaptureForClient(
 
   DCHECK(entry->video_capture_controller);
 
+  LogVideoCaptureEvent(VIDEO_CAPTURE_EVENT_START_CAPTURE);
+
   // First client starts the device.
   if (entry->video_capture_controller->GetClientCount() == 0) {
     DVLOG(1) << "VideoCaptureManager starting device (type = "
@@ -316,6 +334,10 @@ void VideoCaptureManager::StopCaptureForClient(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(controller);
   DCHECK(client_handler);
+
+  LogVideoCaptureEvent(aborted_due_to_error ?
+      VIDEO_CAPTURE_EVENT_STOP_CAPTURE_DUE_TO_ERROR :
+      VIDEO_CAPTURE_EVENT_STOP_CAPTURE_NORMAL);
 
   DeviceEntry* entry = GetDeviceEntryForController(controller);
   if (!entry) {
