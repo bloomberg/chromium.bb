@@ -2266,8 +2266,10 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
 
     bool swallowClickEvent = false;
     if (m_clickNode) {
-        Node* clickTargetNode = newHitTest.targetNode()->commonAncestor(*m_clickNode, parentForClickEvent);
-        swallowClickEvent = !dispatchMouseEvent(EventTypeNames::click, clickTargetNode, gestureEvent.tapCount(), fakeMouseUp, true);
+        if (newHitTest.targetNode()) {
+            Node* clickTargetNode = newHitTest.targetNode()->commonAncestor(*m_clickNode, parentForClickEvent);
+            swallowClickEvent = !dispatchMouseEvent(EventTypeNames::click, clickTargetNode, gestureEvent.tapCount(), fakeMouseUp, true);
+        }
         m_clickNode = nullptr;
     }
 

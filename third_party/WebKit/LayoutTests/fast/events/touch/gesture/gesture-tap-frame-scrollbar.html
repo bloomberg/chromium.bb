@@ -9,14 +9,13 @@
 <iframe id="target" src="resources/event-delegator.html"></iframe>
 <div id=console></div>
 <script>
-var removalEventType;
+var scrollbarEventType;
 
 function onEventInFrame(e) {
     debug("Received " + e.type + " in child frame");
-    if (e.type == removalEventType) {
-        debug('Removing iframe');
-        target.parentNode.removeChild(target);
-        internals.gc();
+    if (e.type == scrollbarEventType) {
+        debug('Adding scrollbars to iframe');
+        target.contentDocument.body.style.height = "500px";
     }
 }
 
@@ -29,42 +28,34 @@ document.addEventListener('mousedown', eventLogger);
 document.addEventListener('mouseup', eventLogger);
 document.addEventListener('click', eventLogger);
 
-description("Verifies that a tap occuring on an iframe that gets removed during tap handling doesn't cause a crash.");
+description("Taps at a point that becomes a scrollbar (i.e. hit test with innerNode=null) during the tap and verifies we don't crash.");
 
+// Tap at the right edge of the frame, where its scrollbar would live.
 var rect = target.getBoundingClientRect();
 var point = {
-    x: rect.left + rect.width / 2,
+    x: rect.right - 4,
     y: rect.top + rect.height / 2
 };
 
-function doTapAndRemove(type)
+function doTap(type)
 {
     return new Promise(function(resolve, reject) {
-
-        var clone = target.cloneNode();
-        var insertionPoint = target.nextSibling;
-
-        debug('Test case: Remove during ' + type);
-        removalEventType = type;
+        if (type) {
+            debug('Test case: Add scrollbars during ' + type);
+            scrollbarEventType = type;
+            target.contentDocument.body.style.height = "0";
+        } else {
+            debug('Test case: Tap on consistent scrollbar');
+        }
 
         eventSender.gestureTapDown(point.x, point.y);
         eventSender.gestureShowPress(point.x, point.y);
         debug("Sending GestureTap");
         eventSender.gestureTap(point.x, point.y);
 
-        // Verify that the iframe was removed.
-        shouldBeNull("document.getElementById('target')");
-
-        // Ensure the event is done being processed.
         setTimeout(function() {
-            // Reinsert the target node for the next run.
-            insertionPoint.parentNode.insertBefore(clone, insertionPoint);
-            clone.addEventListener('load', function() {
-                debug('iframe loaded');
-                debug('');
-                setTimeout(resolve, 0);
-            });
-            window.target = clone;
+            debug('');
+            resolve();
         }, 0);
     });
 }
@@ -72,9 +63,10 @@ function doTapAndRemove(type)
 if (window.eventSender) {
     jsTestIsAsync = true;
     target.onload = function() {
-        doTapAndRemove('mousemove')
-        .then(function() { return doTapAndRemove('mousedown'); })
-        .then(function() { return doTapAndRemove('mouseup'); })
+        doTap()
+        .then(function() { return doTap('mousemove'); })
+        .then(function() { return doTap('mousedown'); })
+        .then(function() { return doTap('mouseup'); })
         .catch(function(err) {
             testFailed("Promise rejected: " + err.message);
         }).then(finishJSTest);
