@@ -987,9 +987,6 @@ crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-rl/rule-styl
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-rl/rules-with-border-before.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-rl/unsplittable-inline-block.html [ Skip ]
 
-Bug(eae) fast/text/font-stretch.html [ NeedsRebaseline ]
-Bug(eae) virtual/antialiasedtext/fast/text/font-stretch.html [ NeedsRebaseline ]
-
 # Fails on Mac in region based multicol implementation.
 crbug.com/391223 [ Mac ] virtual/regionbasedmulticol/fast/multicol/multicol-with-child-renderLayer-for-input.html [ ImageOnlyFailure ]
 
