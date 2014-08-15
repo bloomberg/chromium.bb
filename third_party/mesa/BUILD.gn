@@ -690,6 +690,14 @@ shared_library("osmesa") {
     ":mesa",
     ":mesa_libglslcommon",
   ]
+
+  if (is_win) {
+    defines = [
+      "BUILD_GL32",
+      "KEYWORD1=GLAPI",
+      "KEYWORD2=GLAPIENTRY",
+    ]
+  }
 }
 
 }  # !is_android
