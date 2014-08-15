@@ -358,36 +358,6 @@ bool SaveFileAsWithFilter(HWND owner,
   return true;
 }
 
-// Prompt the user for location to save a file. 'suggested_name' is a full path
-// that gives the dialog box a hint as to how to initialize itself.
-// For example, a 'suggested_name' of:
-//   "C:\Documents and Settings\jojo\My Documents\picture.png"
-// will start the dialog in the "C:\Documents and Settings\jojo\My Documents\"
-// directory, and filter for .png file types.
-// 'owner' is the window to which the dialog box is modal, NULL for a modeless
-// dialog box.
-// On success,  returns true and 'final_name' contains the full path of the file
-// that the user chose. On error, returns false, and 'final_name' is not
-// modified.
-bool SaveFileAs(HWND owner,
-                const std::wstring& suggested_name,
-                std::wstring* final_name) {
-  std::wstring file_ext =
-      base::FilePath(suggested_name).Extension().insert(0, L"*");
-  std::wstring filter = FormatFilterForExtensions(
-      std::vector<std::wstring>(1, file_ext),
-      std::vector<std::wstring>(),
-      true);
-  unsigned index = 1;
-  return SaveFileAsWithFilter(owner,
-                              suggested_name,
-                              filter,
-                              L"",
-                              false,
-                              &index,
-                              final_name);
-}
-
 // Implementation of SelectFileDialog that shows a Windows common dialog for
 // choosing a file or folder.
 class SelectFileDialogImpl : public ui::SelectFileDialog,
