@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <gtest/gtest.h>
+#include "media/cast/cast_defines.h"
 #include "media/cast/net/cast_transport_defines.h"
 
 namespace media {
@@ -12,6 +13,25 @@ class FrameIdWrapHelperTest : public ::testing::Test {
  protected:
   FrameIdWrapHelperTest() {}
   virtual ~FrameIdWrapHelperTest() {}
+
+  void RunOneTest(uint32 starting_point, int iterations) {
+    const int window_size = 127;
+    uint32 window_base = starting_point;
+    frame_id_wrap_helper_.largest_frame_id_seen_ = starting_point;
+    for (int i = 0; i < iterations; i++) {
+      uint32 largest_frame_id_seen =
+          frame_id_wrap_helper_.largest_frame_id_seen_;
+      int offset = rand() % window_size;
+      uint32 frame_id = window_base + offset;
+      uint32 mapped_frame_id =
+          frame_id_wrap_helper_.MapTo32bitsFrameId(frame_id & 0xff);
+      EXPECT_EQ(frame_id, mapped_frame_id)
+          << " Largest ID seen: " << largest_frame_id_seen
+          << " Window base: " << window_base
+          << " Offset: " << offset;
+      window_base = frame_id;
+    }
+  }
 
   FrameIdWrapHelper frame_id_wrap_helper_;
 
@@ -44,6 +64,16 @@ TEST_F(FrameIdWrapHelperTest, OutOfOrder) {
   EXPECT_EQ(255u, new_frame_id);
   new_frame_id = frame_id_wrap_helper_.MapTo32bitsFrameId(1u);
   EXPECT_EQ(257u, new_frame_id);
+}
+
+TEST_F(FrameIdWrapHelperTest, Windowed) {
+  srand(0);
+  for (int i = 0; i < 50000 && !HasFailure(); i++) {
+    RunOneTest(i * 4711, 20);
+    // Test wrap-around scenarios.
+    RunOneTest(0x7fffff00ul, 20);
+    RunOneTest(0xffffff00ul, 20);
+  }
 }
 
 }  // namespace cast

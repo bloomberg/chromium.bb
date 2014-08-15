@@ -82,6 +82,7 @@
         'logging/simple_event_subscriber_unittest.cc',
         'logging/stats_event_subscriber_unittest.cc',
         'net/cast_transport_sender_impl_unittest.cc',
+        'net/frame_id_wrap_helper_test.cc',
         'net/pacing/mock_paced_packet_sender.cc',
         'net/pacing/mock_paced_packet_sender.h',
         'net/pacing/paced_sender_unittest.cc',

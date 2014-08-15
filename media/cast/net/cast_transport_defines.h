@@ -61,64 +61,34 @@ typedef std::set<uint16> PacketIdSet;
 // Each uint8 represents one cast frame.
 typedef std::map<uint8, PacketIdSet> MissingFramesAndPacketsMap;
 
+class FrameIdWrapHelperTest;
+
 // TODO(miu): UGLY IN-LINE DEFINITION IN HEADER FILE!  Move to appropriate
 // location, separated into .h and .cc files.
 class FrameIdWrapHelper {
  public:
   FrameIdWrapHelper()
-      : first_(true), frame_id_wrap_count_(0), range_(kLowRange) {}
+      : largest_frame_id_seen_(kStartFrameId) {}
 
   uint32 MapTo32bitsFrameId(const uint8 over_the_wire_frame_id) {
-    if (first_) {
-      first_ = false;
-      if (over_the_wire_frame_id == 0xff) {
-        // Special case for startup.
-        return kStartFrameId;
-      }
+    uint32 ret = (largest_frame_id_seen_ & ~0xff) | over_the_wire_frame_id;
+    // Add 1000 to both sides to avoid underflows.
+    if (1000 + ret - largest_frame_id_seen_ > 1000 + 127) {
+      ret -= 0x100;
+    } else if (1000 + ret - largest_frame_id_seen_ < 1000 - 128) {
+      ret += 0x100;
     }
-
-    uint32 wrap_count = frame_id_wrap_count_;
-    switch (range_) {
-      case kLowRange:
-        if (over_the_wire_frame_id > kLowRangeThreshold &&
-            over_the_wire_frame_id < kHighRangeThreshold) {
-          range_ = kMiddleRange;
-        }
-        if (over_the_wire_frame_id >= kHighRangeThreshold) {
-          // Wrap count was incremented in High->Low transition, but this frame
-          // is 'old', actually from before the wrap count got incremented.
-          --wrap_count;
-        }
-        break;
-      case kMiddleRange:
-        if (over_the_wire_frame_id >= kHighRangeThreshold) {
-          range_ = kHighRange;
-        }
-        break;
-      case kHighRange:
-        if (over_the_wire_frame_id <= kLowRangeThreshold) {
-          // Wrap-around detected.
-          range_ = kLowRange;
-          ++frame_id_wrap_count_;
-          // Frame triggering wrap-around so wrap count should be incremented as
-          // as well to match |frame_id_wrap_count_|.
-          ++wrap_count;
-        }
-        break;
+    if (1000 + ret - largest_frame_id_seen_ > 1000) {
+      largest_frame_id_seen_ = ret;
     }
-    return (wrap_count << 8) + over_the_wire_frame_id;
+    return ret;
   }
 
  private:
-  enum Range { kLowRange, kMiddleRange, kHighRange, };
-
-  static const uint8 kLowRangeThreshold = 63;
-  static const uint8 kHighRangeThreshold = 192;
+  friend class FrameIdWrapHelperTest;
   static const uint32 kStartFrameId = UINT32_C(0xffffffff);
 
-  bool first_;
-  uint32 frame_id_wrap_count_;
-  Range range_;
+  uint32 largest_frame_id_seen_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameIdWrapHelper);
 };
