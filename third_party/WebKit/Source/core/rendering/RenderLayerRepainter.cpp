@@ -110,6 +110,22 @@ void RenderLayerRepainter::setBackingNeedsRepaintInRect(const LayoutRect& r)
     // https://bugs.webkit.org/show_bug.cgi?id=61159 describes an unreproducible crash here,
     // so assert but check that the layer is composited.
     ASSERT(m_renderer.compositingState() != NotComposited);
+    if (m_renderer.compositingState() == NotComposited) {
+        // If we're trying to repaint the placeholder document layer, propagate the
+        // repaint to the native view system.
+        LayoutRect absRect(r);
+        LayoutPoint delta;
+        m_renderer.layer()->convertToLayerCoords(m_renderer.layer()->root(), delta);
+        absRect.moveBy(delta);
+
+        if (absRect.isEmpty())
+            return;
+
+        RenderView* view = m_renderer.view();
+        if (view)
+            view->invalidatePaintForRectangle(absRect);
+        return;
+    }
     // FIXME: generalize accessors to backing GraphicsLayers so that this code is squasphing-agnostic.
     if (m_renderer.layer()->groupedMapping()) {
         LayoutRect repaintRect = r;
