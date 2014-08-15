@@ -9,3 +9,8 @@ per-file easy_unlock_*=isherman@chromium.org
 per-file easy_unlock_*=tbarzic@chromium.org
 per-file easy_unlock_*=tengs@chromium.org
 per-file easy_unlock_*=xiyuan@chromium.org
+
+per-file screenlock_bridge*=isherman@chromium.org
+per-file screenlock_bridge*=tbarzic@chromium.org
+per-file screenlock_bridge*=tengs@chromium.org
+per-file screenlock_bridge*=xiyuan@chromium.org
