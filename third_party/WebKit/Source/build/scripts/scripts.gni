@@ -91,7 +91,7 @@ make_core_generated_deps = [
 #                 from the GYP build.
 #   outputs: expected results. Note that the directory of the 0th item in this
 #            list will be taken to be the output path.
-#   other_args: (optional) other arguements to pass to the script.
+#   other_args: (optional) other arguments to pass to the script.
 template("process_in_files") {
   action(target_name) {
     script = invoker.script
@@ -129,6 +129,9 @@ template("css_properties") {
     if (defined(invoker.other_inputs)) {
       other_inputs += invoker.other_inputs
     }
+    other_args = [
+      "--gperf", gperf_exe,
+    ]
     outputs = invoker.outputs
   }
 }
