@@ -76,6 +76,7 @@ void TestMediaStreamAudioTrack::RunTests(const std::string& filter) {
   RUN_TEST(Create, filter);
   RUN_TEST(GetBuffer, filter);
   RUN_TEST(Configure, filter);
+  RUN_TEST(ConfigureClose, filter);
 }
 
 void TestMediaStreamAudioTrack::HandleMessage(const pp::Var& message) {
@@ -204,6 +205,17 @@ std::string TestMediaStreamAudioTrack::TestConfigure() {
   ASSERT_FALSE(audio_track_.HasEnded());
   ASSERT_FALSE(audio_track_.GetId().empty());
 
+  // Perform a |Configure()| with no attributes. This ends up making an IPC
+  // call, but the host implementation has a fast-path when there are no changes
+  // to the configuration. This test is intended to hit that fast-path and make
+  // sure it works correctly.
+  {
+    int32_t attrib_list[] = {
+      PP_MEDIASTREAMAUDIOTRACK_ATTRIB_NONE,
+    };
+    ASSERT_SUBTEST_SUCCESS(CheckConfigure(attrib_list, PP_OK));
+  }
+
   // Configure number of buffers.
   struct {
     int32_t buffers;
@@ -291,5 +303,35 @@ std::string TestMediaStreamAudioTrack::TestConfigure() {
   audio_track_.Close();
   ASSERT_TRUE(audio_track_.HasEnded());
   audio_track_ = pp::MediaStreamAudioTrack();
+  PASS();
+}
+
+std::string TestMediaStreamAudioTrack::TestConfigureClose() {
+  // Create a track.
+  instance_->EvalScript(kJSCode);
+  event_.Wait();
+  event_.Reset();
+
+  ASSERT_FALSE(audio_track_.is_null());
+  ASSERT_FALSE(audio_track_.HasEnded());
+  ASSERT_FALSE(audio_track_.GetId().empty());
+
+  // Configure the audio track and close it immediately. The Configure() call
+  // should complete.
+  int32_t attrib_list[] = {
+    PP_MEDIASTREAMAUDIOTRACK_ATTRIB_BUFFERS, 10,
+    PP_MEDIASTREAMAUDIOTRACK_ATTRIB_NONE,
+  };
+  TestCompletionCallback cc_configure(instance_->pp_instance(), false);
+  int32_t result = audio_track_.Configure(attrib_list,
+                                          cc_configure.GetCallback());
+  ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+  audio_track_.Close();
+  cc_configure.WaitForResult(result);
+  result = cc_configure.result();
+  // Unfortunately, we can't control whether the configure succeeds or is
+  // aborted.
+  ASSERT_TRUE(result == PP_OK || result == PP_ERROR_ABORTED);
+
   PASS();
 }

@@ -16,6 +16,7 @@
 #include "ppapi/c/ppb_audio_buffer.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/host_message_context.h"
+#include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/media_stream_audio_track_shared.h"
 #include "ppapi/shared_impl/media_stream_buffer.h"
@@ -88,9 +89,16 @@ void PepperMediaStreamAudioTrackHost::AudioSink::EnqueueBuffer(int32_t index) {
   buffers_.push_back(index);
 }
 
-void PepperMediaStreamAudioTrackHost::AudioSink::Configure(
-    int32_t number_of_buffers, int32_t duration) {
+int32_t PepperMediaStreamAudioTrackHost::AudioSink::Configure(
+    int32_t number_of_buffers, int32_t duration,
+    const ppapi::host::ReplyMessageContext& context) {
   DCHECK_EQ(main_message_loop_proxy_, base::MessageLoopProxy::current());
+
+  if (pending_configure_reply_.is_valid()) {
+    return PP_ERROR_INPROGRESS;
+  }
+  pending_configure_reply_ = context;
+
   bool changed = false;
   if (number_of_buffers != number_of_buffers_)
     changed = true;
@@ -100,9 +108,25 @@ void PepperMediaStreamAudioTrackHost::AudioSink::Configure(
   }
   number_of_buffers_ = number_of_buffers;
 
-  // Initialize later in OnSetFormat if bytes_per_second_ is not know yet.
-  if (changed && bytes_per_second_ > 0 && bytes_per_frame_ > 0)
-    InitBuffers();
+  if (changed) {
+    // Initialize later in OnSetFormat if bytes_per_second_ is not known yet.
+    if (bytes_per_second_ > 0 && bytes_per_frame_ > 0)
+      InitBuffers();
+  } else {
+    SendConfigureReply(PP_OK);
+  }
+  return PP_OK_COMPLETIONPENDING;
+}
+
+void PepperMediaStreamAudioTrackHost::AudioSink::SendConfigureReply(
+    int32_t result) {
+  if (pending_configure_reply_.is_valid()) {
+    pending_configure_reply_.params.set_result(result);
+    host_->host()->SendReply(
+        pending_configure_reply_,
+        PpapiPluginMsg_MediaStreamAudioTrack_ConfigureReply());
+    pending_configure_reply_ = ppapi::host::ReplyMessageContext();
+  }
 }
 
 void PepperMediaStreamAudioTrackHost::AudioSink::SetFormatOnMainThread(
@@ -140,8 +164,10 @@ void PepperMediaStreamAudioTrackHost::AudioSink::InitBuffers() {
   bool result = host_->InitBuffers(number_of_buffers_,
                                    buffer_size.ValueOrDie(),
                                    kRead);
-  // TODO(penghuang): Send PP_ERROR_NOMEMORY to plugin.
-  CHECK(result);
+  if (!result) {
+    SendConfigureReply(PP_ERROR_NOMEMORY);
+    return;
+  }
 
   // Fill the |buffers_|, so the audio thread can continue receiving audio data.
   base::AutoLock lock(lock_);
@@ -151,6 +177,8 @@ void PepperMediaStreamAudioTrackHost::AudioSink::InitBuffers() {
     DCHECK_GE(index, 0);
     buffers_.push_back(index);
   }
+
+  SendConfigureReply(PP_OK);
 }
 
 void PepperMediaStreamAudioTrackHost::AudioSink::
@@ -320,10 +348,8 @@ int32_t PepperMediaStreamAudioTrackHost::OnHostMsgConfigure(
   int32_t buffers = attributes.buffers
                         ? std::min(kMaxNumberOfBuffers, attributes.buffers)
                         : kDefaultNumberOfBuffers;
-  audio_sink_.Configure(buffers, attributes.duration);
-
-  context->reply_msg = PpapiPluginMsg_MediaStreamAudioTrack_ConfigureReply();
-  return PP_OK;
+  return audio_sink_.Configure(buffers, attributes.duration,
+                               context->MakeReplyMessageContext());
 }
 
 void PepperMediaStreamAudioTrackHost::OnClose() {
@@ -331,6 +357,7 @@ void PepperMediaStreamAudioTrackHost::OnClose() {
     MediaStreamAudioSink::RemoveFromAudioTrack(&audio_sink_, track_);
     connected_ = false;
   }
+  audio_sink_.SendConfigureReply(PP_ERROR_ABORTED);
 }
 
 void PepperMediaStreamAudioTrackHost::OnNewBufferEnqueued() {

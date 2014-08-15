@@ -15,6 +15,7 @@
 #include "content/public/renderer/media_stream_audio_sink.h"
 #include "content/renderer/pepper/pepper_media_stream_track_host_base.h"
 #include "media/audio/audio_parameters.h"
+#include "ppapi/host/host_message_context.h"
 #include "ppapi/shared_impl/media_stream_audio_track_shared.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 
@@ -45,7 +46,11 @@ class PepperMediaStreamAudioTrackHost : public PepperMediaStreamTrackHostBase {
     void EnqueueBuffer(int32_t index);
 
     // This function is called on the main thread.
-    void Configure(int32_t number_of_buffers, int32_t duration);
+    int32_t Configure(int32_t number_of_buffers, int32_t duration,
+                      const ppapi::host::ReplyMessageContext& context);
+
+    // Send a reply to the currently pending |Configure()| request.
+    void SendConfigureReply(int32_t result);
 
    private:
     // Initializes buffers on the main thread.
@@ -136,6 +141,9 @@ class PepperMediaStreamAudioTrackHost : public PepperMediaStreamTrackHostBase {
 
     // User-configured buffer duration, in milliseconds.
     int32_t user_buffer_duration_;
+
+    // Pending |Configure()| reply context.
+    ppapi::host::ReplyMessageContext pending_configure_reply_;
 
     DISALLOW_COPY_AND_ASSIGN(AudioSink);
   };
