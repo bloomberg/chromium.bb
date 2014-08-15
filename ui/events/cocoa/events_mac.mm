@@ -201,13 +201,6 @@ bool GetFlingData(const base::NativeEvent& native_event,
   return false;
 }
 
-bool GetGestureTimes(const base::NativeEvent& native_event,
-                     double* start_time,
-                     double* end_time) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 KeyboardCode KeyboardCodeFromNative(const base::NativeEvent& native_event) {
   return KeyboardCodeFromNSEvent(native_event);
 }

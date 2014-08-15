@@ -148,10 +148,6 @@ EVENTS_EXPORT bool GetScrollOffsets(const base::NativeEvent& native_event,
                                 float* y_offset_ordinal,
                                 int* finger_count);
 
-EVENTS_EXPORT bool GetGestureTimes(const base::NativeEvent& native_event,
-                               double* start_time,
-                               double* end_time);
-
 // Returns whether natural scrolling should be used for touchpad.
 EVENTS_EXPORT bool ShouldDefaultToNaturalScroll();
 

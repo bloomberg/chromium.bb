@@ -334,6 +334,23 @@ unsigned int UpdateX11EventButton(int ui_flag, unsigned int old_x_button) {
   NOTREACHED();
 }
 
+bool GetGestureTimes(const base::NativeEvent& native_event,
+                     double* start_time,
+                     double* end_time) {
+  if (!ui::DeviceDataManagerX11::GetInstance()->HasGestureTimes(native_event))
+    return false;
+
+  double start_time_, end_time_;
+  if (!start_time)
+    start_time = &start_time_;
+  if (!end_time)
+    end_time = &end_time_;
+
+  ui::DeviceDataManagerX11::GetInstance()->GetGestureTimes(
+      native_event, start_time, end_time);
+  return true;
+}
+
 }  // namespace
 
 namespace ui {
@@ -856,23 +873,6 @@ bool GetFlingData(const base::NativeEvent& native_event,
 
   DeviceDataManagerX11::GetInstance()->GetFlingData(
       native_event, vx, vy, vx_ordinal, vy_ordinal, is_cancel);
-  return true;
-}
-
-bool GetGestureTimes(const base::NativeEvent& native_event,
-                     double* start_time,
-                     double* end_time) {
-  if (!DeviceDataManagerX11::GetInstance()->HasGestureTimes(native_event))
-    return false;
-
-  double start_time_, end_time_;
-  if (!start_time)
-    start_time = &start_time_;
-  if (!end_time)
-    end_time = &end_time_;
-
-  DeviceDataManagerX11::GetInstance()->GetGestureTimes(
-      native_event, start_time, end_time);
   return true;
 }
 
