@@ -77,8 +77,9 @@ class OAuth2TokenServiceRequest::Core
   scoped_refptr<base::SingleThreadTaskRunner> token_service_task_runner_;
   OAuth2TokenServiceRequest* owner_;
 
-  // It is important that provider_ is destroyed on the owner thread, not the
-  // token_service_task_runner_ thread.
+  // Clear on owner thread.  OAuth2TokenServiceRequest promises to clear its
+  // last reference to TokenServiceProvider on the owner thread so the caller
+  // can ensure it is destroyed on the owner thread if desired.
   scoped_refptr<TokenServiceProvider> provider_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
