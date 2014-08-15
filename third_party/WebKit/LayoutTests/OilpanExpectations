@@ -46,9 +46,3 @@ crbug.com/377567 [ Debug ] fast/css/large-list-of-rules-crash.html [ Timeout Pas
 
 # Allocation performance issue
 crbug.com/397425 [ Debug ] fast/forms/select/menulist-appearance-basic.html [ Timeout Pass ]
-
-# FIXME:
-crbug.com/398472 [ Debug ] inspector-protocol/debugger/debugger-pause-dedicated-worker-loop.html [ Crash ]
-crbug.com/398472 [ Debug ] inspector-protocol/debugger/debugger-pause-in-tight-loop.html [ Crash ]
-crbug.com/398472 [ Debug ] inspector-protocol/debugger/getStepInPositions.html [ Crash ]
-crbug.com/398472 [ Debug ] inspector-protocol/debugger/updateCallFrameScopes.html	[ Crash ]
