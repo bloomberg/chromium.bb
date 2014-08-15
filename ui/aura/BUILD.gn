@@ -206,101 +206,95 @@ source_set("test_support") {
   }
 }
 
-#TODO(GYP): Enable this when everything it depends links.
-#executable("aura_demo") {
-#  sources = [
-#    "demo/demo_main.cc",
-#  ]
-#
-#  deps = [
-#    ":aura",
-#    ":test_support",
-#    "//base",
-#    "//base:i18n",
-#    "//skia",
-#    "//third_party/icu",
-#    "//ui/base",
-#    "//ui/compositor",
-#    "//ui/compositor:test_support",
-#    "//ui/events",
-#    "//ui/gfx",
-#    "//ui/gfx/geometry",
-#  ]
-#
-#  if (use_x11) {
-#    deps += [
-#      "//ui/gfx/x",
-#    ]
-#  }
-#}
+executable("demo") {
+  output_name = "aura_demo"
+  sources = [
+    "demo/demo_main.cc",
+  ]
 
-#TODO(GYP): Enable this when everything it depends links.
-#executable("aura_bench") {
-#  sources = [
-#    "bench/bench_main.cc",
-#  ]
-#
-#  deps = [
-#    ":aura",
-#    ":test_support",
-#    "//base",
-#    "//base:i18n",
-#    "//cc",
-#    "//skia",
-#    "//third_party/icu",
-#    "//ui/base",
-#    "//ui/compositor",
-#    "//ui/compositor:test_support",
-#    "//ui/events",
-#    "//ui/gfx",
-#    "//ui/gfx/geometry",
-#  ]
-#
-#  if (use_x11) {
-#    deps += [
-#      "//ui/gfx/x",
-#    ]
-#  }
-#}
+  deps = [
+    ":aura",
+    ":test_support",
+    "//base",
+    "//base:i18n",
+    "//skia",
+    "//third_party/icu",
+    "//ui/base",
+    "//ui/compositor",
+    "//ui/compositor:test_support",
+    "//ui/events",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+  ]
 
-#TODO(GYP): Enable this when everything it depends links.
-#test("aura_unittests") {
-#  sources = [
-#    "gestures/gesture_recognizer_unittest.cc",
-#    "test/run_all_unittests.cc",
-#    "window_event_dispatcher_unittest.cc",
-#    "window_targeter_unittest.cc",
-#    "window_unittest.cc",
-#  ]
-#
-#  deps = [
-#    ":aura",
-#    ":test_support",
-#    "//base/test:test_support",
-#    "//skia",
-#    "//testing/gtest",
-#    "//ui/base",
-#    "//ui/base:test_support",
-#    "//ui/compositor",
-#    "//ui/compositor:test_support",
-#    "//ui/events",
-#    "//ui/events:events_base",
-#    "//ui/events:gesture_detection",
-#    "//ui/gfx",
-#    "//ui/gfx/geometry",
-#    "//ui/gl",
-#  ]
-#
-#  if (is_linux) {
-#    deps += [
-#      "<(DEPTH)/third_party/mesa/mesa.gyp:osmesa",
-#    ]
-#  }
-#
-#  if (is_linux) { # && use_allocator != "none") {
-#    deps += [
-#      # See http://crbug.com/162998#c4 for why this is needed.
-#      "//base/allocator",
-#    ]
-#  }
-#}
+  if (use_x11) {
+    deps += [
+      "//ui/gfx/x",
+    ]
+  }
+}
+
+executable("bench") {
+  output_name = "aura_bench"
+  sources = [
+    "bench/bench_main.cc",
+  ]
+
+  deps = [
+    ":aura",
+    ":test_support",
+    "//base",
+    "//base:i18n",
+    "//cc",
+    "//skia",
+    "//third_party/icu",
+    "//ui/base",
+    "//ui/compositor",
+    "//ui/compositor:test_support",
+    "//ui/events",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+  ]
+
+  if (use_x11) {
+    deps += [
+      "//ui/gfx/x",
+    ]
+  }
+}
+
+test("unittests") {
+  output_name = "aura_unittests"
+  sources = [
+    "gestures/gesture_recognizer_unittest.cc",
+    "test/run_all_unittests.cc",
+    "window_event_dispatcher_unittest.cc",
+    "window_targeter_unittest.cc",
+    "window_unittest.cc",
+  ]
+
+  deps = [
+    ":aura",
+    ":test_support",
+    "//base/allocator",
+    "//base/test:test_support",
+    "//skia",
+    "//testing/gtest",
+    "//ui/base",
+    "//ui/base:test_support",
+    "//ui/compositor",
+    "//ui/compositor:test_support",
+    "//ui/events",
+    "//ui/events:events_base",
+    "//ui/events:gesture_detection",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+  ]
+
+  if (is_linux) {
+    deps += [
+      "//third_party/mesa",
+    ]
+  }
+}
