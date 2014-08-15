@@ -1162,5 +1162,14 @@ class JsonResultsTest(unittest.TestCase):
 
         tb.deactivate()
 
+    def test_normalize_results_with_top_level_results_key_does_not_crash(self):
+        aggregated_json = {
+            'Linux Tests': {
+                'results': {'foo': {'results': [(1, 'P')],
+                                    'times': [(1, 1)]}},
+            }
+        }
+        JsonResults._normalize_results(aggregated_json, 1, 2)
+
 if __name__ == '__main__':
     unittest.main()

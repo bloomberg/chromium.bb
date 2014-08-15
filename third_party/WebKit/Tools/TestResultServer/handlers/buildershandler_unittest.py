@@ -99,7 +99,7 @@ class BuildersHandlerTest(unittest.TestCase):
                         'layout-tests': {'builders': ['WebKit Linux', 'WebKit Win']}},
                     'name': 'ChromiumWebkit',
                     'url_name': 'chromium.webkit',
-                    'groups': ['@ToT Chromium'],
+                    'groups': ['@ToT Chromium', '@ToT Blink'],
                 }],
                 "no_upload_test_types": buildershandler.TEST_STEPS_THAT_DO_NOT_UPLOAD_YET,
             }

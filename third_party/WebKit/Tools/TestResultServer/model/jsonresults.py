@@ -26,6 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import collections
 import json
 import logging
 import re
@@ -110,7 +111,7 @@ FAILURE_TO_CHAR = {
 CHAR_TO_FAILURE = dict((value, key) for key, value in FAILURE_TO_CHAR.items())
 
 def _is_directory(subtree):
-    return RESULTS_KEY not in subtree
+    return RESULTS_KEY not in subtree or not isinstance(subtree[RESULTS_KEY], collections.Sequence)
 
 
 class JsonResults(object):
