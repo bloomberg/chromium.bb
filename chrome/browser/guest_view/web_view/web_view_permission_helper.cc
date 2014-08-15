@@ -4,18 +4,14 @@
 
 #include "chrome/browser/guest_view/web_view/web_view_permission_helper.h"
 
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/geolocation/geolocation_permission_context.h"
-#include "chrome/browser/geolocation/geolocation_permission_context_factory.h"
+#include "chrome/browser/guest_view/web_view/chrome_web_view_permission_helper_delegate.h"
 #include "chrome/browser/guest_view/web_view/web_view_constants.h"
 #include "chrome/browser/guest_view/web_view/web_view_guest.h"
 #include "chrome/browser/guest_view/web_view/web_view_permission_types.h"
-#include "chrome/browser/plugins/chrome_plugin_service_filter.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/render_messages.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
+#include "extensions/browser/guest_view/web_view/web_view_permission_helper_delegate.h"
 
 using content::BrowserPluginGuestDelegate;
 using content::RenderViewHost;
@@ -138,6 +134,10 @@ WebViewPermissionHelper::WebViewPermissionHelper(WebViewGuest* web_view_guest)
     next_permission_request_id_(guestview::kInstanceIDNone),
     web_view_guest_(web_view_guest),
     weak_factory_(this) {
+      // TODO(hanxi) : Create the delegate through ExtensionsAPIClient after
+      // moving WebViewPermissionHelper to extensions.
+      web_view_permission_helper_delegate_.reset(
+          new ChromeWebViewPermissionHelperDelegate(this));
 }
 
 WebViewPermissionHelper::~WebViewPermissionHelper() {
@@ -168,133 +168,21 @@ WebViewPermissionHelper* WebViewPermissionHelper::FromWebContents(
 bool WebViewPermissionHelper::OnMessageReceived(
     const IPC::Message& message,
     content::RenderFrameHost* render_frame_host) {
-  IPC_BEGIN_MESSAGE_MAP(WebViewPermissionHelper, message)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_BlockedOutdatedPlugin,
-                        OnBlockedOutdatedPlugin)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_BlockedUnauthorizedPlugin,
-                        OnBlockedUnauthorizedPlugin)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_NPAPINotSupported,
-                        OnNPAPINotSupported)
-#if defined(ENABLE_PLUGIN_INSTALLATION)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FindMissingPlugin,
-                        OnFindMissingPlugin)
-#endif
-    IPC_MESSAGE_UNHANDLED(return false)
-  IPC_END_MESSAGE_MAP()
-
-  return true;
+  return web_view_permission_helper_delegate_->OnMessageReceived(
+      message, render_frame_host);
 }
 
 bool WebViewPermissionHelper::OnMessageReceived(const IPC::Message& message) {
-  IPC_BEGIN_MESSAGE_MAP(WebViewPermissionHelper, message)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CouldNotLoadPlugin,
-                        OnCouldNotLoadPlugin)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_OpenAboutPlugins,
-                        OnOpenAboutPlugins)
-#if defined(ENABLE_PLUGIN_INSTALLATION)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RemovePluginPlaceholderHost,
-                        OnRemovePluginPlaceholderHost)
-#endif
-    IPC_MESSAGE_UNHANDLED(return false)
-  IPC_END_MESSAGE_MAP()
-
-  return true;
+  return web_view_permission_helper_delegate_->OnMessageReceived(message);
 }
-
-void WebViewPermissionHelper::OnBlockedUnauthorizedPlugin(
-    const base::string16& name,
-    const std::string& identifier) {
-  const char kPluginName[] = "name";
-  const char kPluginIdentifier[] = "identifier";
-
-  base::DictionaryValue info;
-  info.SetString(std::string(kPluginName), name);
-  info.SetString(std::string(kPluginIdentifier), identifier);
-  RequestPermission(
-      WEB_VIEW_PERMISSION_TYPE_LOAD_PLUGIN,
-      info,
-      base::Bind(&WebViewPermissionHelper::OnPermissionResponse,
-                 weak_factory_.GetWeakPtr(),
-                 identifier),
-      true /* allowed_by_default */);
-  content::RecordAction(
-      base::UserMetricsAction("WebView.Guest.PluginLoadRequest"));
-}
-
-void WebViewPermissionHelper::OnCouldNotLoadPlugin(
-    const base::FilePath& plugin_path) {
-}
-
-void WebViewPermissionHelper::OnBlockedOutdatedPlugin(
-    int placeholder_id,
-    const std::string& identifier) {
-}
-
-void WebViewPermissionHelper::OnNPAPINotSupported(const std::string& id) {
-}
-
-void WebViewPermissionHelper::OnOpenAboutPlugins() {
-}
-
-#if defined(ENABLE_PLUGIN_INSTALLATION)
-void WebViewPermissionHelper::OnFindMissingPlugin(
-    int placeholder_id,
-    const std::string& mime_type) {
-  Send(new ChromeViewMsg_DidNotFindMissingPlugin(placeholder_id));
-}
-
-void WebViewPermissionHelper::OnRemovePluginPlaceholderHost(
-    int placeholder_id) {
-}
-#endif  // defined(ENABLE_PLUGIN_INSTALLATION)
-
-void WebViewPermissionHelper::OnPermissionResponse(
-    const std::string& identifier,
-    bool allow,
-    const std::string& input) {
-  if (allow) {
-    ChromePluginServiceFilter::GetInstance()->AuthorizeAllPlugins(
-        web_contents(), true, identifier);
-  }
-}
-
 #endif  // defined(ENABLE_PLUGINS)
 
 void WebViewPermissionHelper::RequestMediaAccessPermission(
     content::WebContents* source,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
-  base::DictionaryValue request_info;
-  request_info.SetString(guestview::kUrl, request.security_origin.spec());
-  RequestPermission(WEB_VIEW_PERMISSION_TYPE_MEDIA,
-                    request_info,
-                    base::Bind(&WebViewPermissionHelper::
-                               OnMediaPermissionResponse,
-                               base::Unretained(this),
-                               request,
-                               callback),
-                    false /* allowed_by_default */);
-}
-
- void WebViewPermissionHelper::OnMediaPermissionResponse(
-    const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback,
-    bool allow,
-    const std::string& user_input) {
-  if (!allow || !web_view_guest_->attached()) {
-    // Deny the request.
-    callback.Run(content::MediaStreamDevices(),
-                 content::MEDIA_DEVICE_INVALID_STATE,
-                 scoped_ptr<content::MediaStreamUI>());
-    return;
-  }
-  if (!web_view_guest_->embedder_web_contents()->GetDelegate())
-    return;
-
-  web_view_guest_->embedder_web_contents()->GetDelegate()->
-      RequestMediaAccessPermission(web_view_guest_->embedder_web_contents(),
-                                   request,
-                                   callback);
+  web_view_permission_helper_delegate_-> RequestMediaAccessPermission(
+      source, request, callback);
 }
 
 void WebViewPermissionHelper::CanDownload(
@@ -302,50 +190,16 @@ void WebViewPermissionHelper::CanDownload(
     const GURL& url,
     const std::string& request_method,
     const base::Callback<void(bool)>& callback) {
-  base::DictionaryValue request_info;
-  request_info.SetString(guestview::kUrl, url.spec());
-  RequestPermission(
-      WEB_VIEW_PERMISSION_TYPE_DOWNLOAD,
-      request_info,
-      base::Bind(&WebViewPermissionHelper::OnDownloadPermissionResponse,
-                 base::Unretained(this),
-                 callback),
-      false /* allowed_by_default */);
-}
-
-void WebViewPermissionHelper::OnDownloadPermissionResponse(
-    const base::Callback<void(bool)>& callback,
-    bool allow,
-    const std::string& user_input) {
-  callback.Run(allow && web_view_guest_->attached());
+  web_view_permission_helper_delegate_->CanDownload(
+      render_view_host, url, request_method, callback);
 }
 
 void WebViewPermissionHelper::RequestPointerLockPermission(
     bool user_gesture,
     bool last_unlocked_by_target,
     const base::Callback<void(bool)>& callback) {
-  base::DictionaryValue request_info;
-  request_info.SetBoolean(guestview::kUserGesture, user_gesture);
-  request_info.SetBoolean(webview::kLastUnlockedBySelf,
-                          last_unlocked_by_target);
-  request_info.SetString(guestview::kUrl,
-                         web_contents()->GetLastCommittedURL().spec());
-
-  RequestPermission(
-      WEB_VIEW_PERMISSION_TYPE_POINTER_LOCK,
-      request_info,
-      base::Bind(
-          &WebViewPermissionHelper::OnPointerLockPermissionResponse,
-          base::Unretained(this),
-          callback),
-      false /* allowed_by_default */);
-}
-
-void WebViewPermissionHelper::OnPointerLockPermissionResponse(
-    const base::Callback<void(bool)>& callback,
-    bool allow,
-    const std::string& user_input) {
-  callback.Run(allow && web_view_guest_->attached());
+  web_view_permission_helper_delegate_->RequestPointerLockPermission(
+      user_gesture, last_unlocked_by_target, callback);
 }
 
 void WebViewPermissionHelper::RequestGeolocationPermission(
@@ -353,102 +207,22 @@ void WebViewPermissionHelper::RequestGeolocationPermission(
     const GURL& requesting_frame,
     bool user_gesture,
     const base::Callback<void(bool)>& callback) {
-  base::DictionaryValue request_info;
-  request_info.SetString(guestview::kUrl, requesting_frame.spec());
-  request_info.SetBoolean(guestview::kUserGesture, user_gesture);
-
-  // It is safe to hold an unretained pointer to WebViewPermissionHelper because
-  // this callback is called from WebViewPermissionHelper::SetPermission.
-  const PermissionResponseCallback permission_callback =
-      base::Bind(
-          &WebViewPermissionHelper::OnGeolocationPermissionResponse,
-          base::Unretained(this),
-          bridge_id,
-          user_gesture,
-          callback);
-  int request_id = RequestPermission(
-      WEB_VIEW_PERMISSION_TYPE_GEOLOCATION,
-      request_info,
-      permission_callback,
-      false /* allowed_by_default */);
-  bridge_id_to_request_id_map_[bridge_id] = request_id;
-}
-
-void WebViewPermissionHelper::OnGeolocationPermissionResponse(
-    int bridge_id,
-    bool user_gesture,
-    const base::Callback<void(bool)>& callback,
-    bool allow,
-    const std::string& user_input) {
-  // The <webview> embedder has allowed the permission. We now need to make sure
-  // that the embedder has geolocation permission.
-  RemoveBridgeID(bridge_id);
-
-  if (!allow || !web_view_guest_->attached()) {
-    callback.Run(false);
-    return;
-  }
-
-  Profile* profile = Profile::FromBrowserContext(
-      web_view_guest_->browser_context());
-  GeolocationPermissionContextFactory::GetForProfile(profile)->
-      RequestGeolocationPermission(
-          web_view_guest_->embedder_web_contents(),
-          // The geolocation permission request here is not initiated
-          // through WebGeolocationPermissionRequest. We are only interested
-          // in the fact whether the embedder/app has geolocation
-          // permission. Therefore we use an invalid |bridge_id|.
-          -1,
-          web_view_guest_->embedder_web_contents()->GetLastCommittedURL(),
-          user_gesture,
-          callback,
-          NULL);
+  web_view_permission_helper_delegate_->RequestGeolocationPermission(
+      bridge_id, requesting_frame, user_gesture, callback);
 }
 
 void WebViewPermissionHelper::CancelGeolocationPermissionRequest(
     int bridge_id) {
-  int request_id = RemoveBridgeID(bridge_id);
-  RequestMap::iterator request_itr =
-      pending_permission_requests_.find(request_id);
-
-  if (request_itr == pending_permission_requests_.end())
-    return;
-
-  pending_permission_requests_.erase(request_itr);
-}
-
-int WebViewPermissionHelper::RemoveBridgeID(int bridge_id) {
-  std::map<int, int>::iterator bridge_itr =
-      bridge_id_to_request_id_map_.find(bridge_id);
-  if (bridge_itr == bridge_id_to_request_id_map_.end())
-    return webview::kInvalidPermissionRequestID;
-
-  int request_id = bridge_itr->second;
-  bridge_id_to_request_id_map_.erase(bridge_itr);
-  return request_id;
+  web_view_permission_helper_delegate_->CancelGeolocationPermissionRequest(
+      bridge_id);
 }
 
 void WebViewPermissionHelper::RequestFileSystemPermission(
     const GURL& url,
     bool allowed_by_default,
     const base::Callback<void(bool)>& callback) {
-  base::DictionaryValue request_info;
-  request_info.SetString(guestview::kUrl, url.spec());
-  RequestPermission(
-      WEB_VIEW_PERMISSION_TYPE_FILESYSTEM,
-      request_info,
-      base::Bind(
-          &WebViewPermissionHelper::OnFileSystemPermissionResponse,
-          base::Unretained(this),
-          callback),
-      allowed_by_default);
-}
-
-void WebViewPermissionHelper::OnFileSystemPermissionResponse(
-    const base::Callback<void(bool)>& callback,
-    bool allow,
-    const std::string& user_input) {
-  callback.Run(allow && web_view_guest_->attached());
+  web_view_permission_helper_delegate_->RequestFileSystemPermission(
+      url, allowed_by_default, callback);
 }
 
 void WebViewPermissionHelper::FileSystemAccessedAsync(int render_process_id,
@@ -456,27 +230,8 @@ void WebViewPermissionHelper::FileSystemAccessedAsync(int render_process_id,
                                                       int request_id,
                                                       const GURL& url,
                                                       bool blocked_by_policy) {
-  RequestFileSystemPermission(
-      url,
-      !blocked_by_policy,
-      base::Bind(&WebViewPermissionHelper::FileSystemAccessedAsyncResponse,
-                 base::Unretained(this),
-                 render_process_id,
-                 render_frame_id,
-                 request_id,
-                 url));
-}
-
-void WebViewPermissionHelper::FileSystemAccessedAsyncResponse(
-    int render_process_id,
-    int render_frame_id,
-    int request_id,
-    const GURL& url,
-    bool allowed) {
-  TabSpecificContentSettings::FileSystemAccessed(
-      render_process_id, render_frame_id, url, !allowed);
-  Send(new ChromeViewMsg_RequestFileSystemAccessAsyncResponse(
-      render_frame_id, request_id, allowed));
+  web_view_permission_helper_delegate_->FileSystemAccessedAsync(
+      render_process_id, render_frame_id, request_id, url, blocked_by_policy);
 }
 
 void WebViewPermissionHelper::FileSystemAccessedSync(int render_process_id,
@@ -484,28 +239,8 @@ void WebViewPermissionHelper::FileSystemAccessedSync(int render_process_id,
                                                      const GURL& url,
                                                      bool blocked_by_policy,
                                                      IPC::Message* reply_msg) {
-  RequestFileSystemPermission(
-      url,
-      !blocked_by_policy,
-      base::Bind(&WebViewPermissionHelper::FileSystemAccessedSyncResponse,
-                 base::Unretained(this),
-                 render_process_id,
-                 render_frame_id,
-                 url,
-                 reply_msg));
-}
-
-void WebViewPermissionHelper::FileSystemAccessedSyncResponse(
-    int render_process_id,
-    int render_frame_id,
-    const GURL& url,
-    IPC::Message* reply_msg,
-    bool allowed) {
-  TabSpecificContentSettings::FileSystemAccessed(
-      render_process_id, render_frame_id, url, !allowed);
-  ChromeViewHostMsg_RequestFileSystemAccessSync::WriteReplyParams(reply_msg,
-                                                                  allowed);
-  Send(reply_msg);
+  web_view_permission_helper_delegate_->FileSystemAccessedSync(
+      render_process_id, render_frame_id, url, blocked_by_policy, reply_msg);
 }
 
 int WebViewPermissionHelper::RequestPermission(
@@ -581,6 +316,16 @@ WebViewPermissionHelper::SetPermission(
   pending_permission_requests_.erase(request_itr);
 
   return allow ? SET_PERMISSION_ALLOWED : SET_PERMISSION_DENIED;
+}
+
+void WebViewPermissionHelper::CancelPendingPermissionRequest(int request_id) {
+  RequestMap::iterator request_itr =
+      pending_permission_requests_.find(request_id);
+
+  if (request_itr == pending_permission_requests_.end())
+    return;
+
+  pending_permission_requests_.erase(request_itr);
 }
 
 WebViewPermissionHelper::PermissionResponseInfo::PermissionResponseInfo()

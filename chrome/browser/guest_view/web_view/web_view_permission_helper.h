@@ -18,6 +18,7 @@ using base::UserMetricsAction;
 namespace extensions {
 
 class WebViewGuest;
+class WebViewPermissionHelperDelegate;
 
 // WebViewPermissionHelper manages <webview> permission requests. This helper
 // class is owned by WebViewGuest. Its purpose is to request permission for
@@ -126,6 +127,10 @@ class WebViewPermissionHelper
                                     PermissionResponseAction action,
                                     const std::string& user_input);
 
+  void CancelPendingPermissionRequest(int request_id);
+
+  WebViewGuest* web_view_guest() { return web_view_guest_; }
+
  private:
 #if defined(ENABLE_PLUGINS)
   // content::WebContentsObserver implementation.
@@ -133,70 +138,7 @@ class WebViewPermissionHelper
       const IPC::Message& message,
       content::RenderFrameHost* render_frame_host) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-
-  // Message handlers:
-  void OnBlockedUnauthorizedPlugin(const base::string16& name,
-                                   const std::string& identifier);
-  void OnCouldNotLoadPlugin(const base::FilePath& plugin_path);
-  void OnBlockedOutdatedPlugin(int placeholder_id,
-                               const std::string& identifier);
-  void OnNPAPINotSupported(const std::string& identifier);
-  void OnOpenAboutPlugins();
-#if defined(ENABLE_PLUGIN_INSTALLATION)
-  void OnFindMissingPlugin(int placeholder_id, const std::string& mime_type);
-
-  void OnRemovePluginPlaceholderHost(int placeholder_id);
-#endif  // defined(ENABLE_PLUGIN_INSTALLATION)
-
-  void OnPermissionResponse(const std::string& identifier,
-                            bool allow,
-                            const std::string& user_input);
-#endif  // defiend(ENABLE_PLUGINS)
-
-  void OnGeolocationPermissionResponse(
-      int bridge_id,
-      bool user_gesture,
-      const base::Callback<void(bool)>& callback,
-      bool allow,
-      const std::string& user_input);
-
-  void OnFileSystemPermissionResponse(
-      const base::Callback<void(bool)>& callback,
-      bool allow,
-      const std::string& user_input);
-
-  void OnMediaPermissionResponse(
-      const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback,
-      bool allow,
-      const std::string& user_input);
-
-  void OnDownloadPermissionResponse(
-      const base::Callback<void(bool)>& callback,
-      bool allow,
-      const std::string& user_input);
-
-  void OnPointerLockPermissionResponse(
-      const base::Callback<void(bool)>& callback,
-      bool allow,
-      const std::string& user_input);
-
-  // Bridge IDs correspond to a geolocation request. This method will remove
-  // the bookkeeping for a particular geolocation request associated with the
-  // provided |bridge_id|. It returns the request ID of the geolocation request.
-  int RemoveBridgeID(int bridge_id);
-
-  void FileSystemAccessedAsyncResponse(int render_process_id,
-                                       int render_frame_id,
-                                       int request_id,
-                                       const GURL& url,
-                                       bool allowed);
-
-  void FileSystemAccessedSyncResponse(int render_process_id,
-                                      int render_frame_id,
-                                      const GURL& url,
-                                      IPC::Message* reply_msg,
-                                      bool allowed);
+#endif  // defined(ENABLE_PLUGINS)
 
   // A counter to generate a unique request id for a permission request.
   // We only need the ids to be unique for a given WebViewGuest.
@@ -204,7 +146,8 @@ class WebViewPermissionHelper
 
   WebViewPermissionHelper::RequestMap pending_permission_requests_;
 
-  std::map<int, int> bridge_id_to_request_id_map_;
+  scoped_ptr<extensions::WebViewPermissionHelperDelegate>
+      web_view_permission_helper_delegate_;
 
   WebViewGuest* web_view_guest_;
 

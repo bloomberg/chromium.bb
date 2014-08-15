@@ -462,6 +462,8 @@
         'browser/guest_view/guest_view_manager.cc',
         'browser/guest_view/guest_view_manager.h',
         'browser/guest_view/guest_view.h',
+        'browser/guest_view/web_view/web_view_permission_helper_delegate.cc',
+        'browser/guest_view/web_view/web_view_permission_helper_delegate.h',
         'browser/image_loader.cc',
         'browser/image_loader.h',
         'browser/image_loader_factory.cc',
