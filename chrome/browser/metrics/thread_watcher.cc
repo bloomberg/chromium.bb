@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
+#include "base/debug/debugger.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/field_trial.h"
@@ -41,57 +42,51 @@ namespace {
 MSVC_DISABLE_OPTIMIZE()
 MSVC_PUSH_DISABLE_WARNING(4748)
 
-#ifndef NDEBUG
-int* NullPointer() {
-  return reinterpret_cast<int*>(NULL);
-}
-#endif
-
-void NullPointerCrash(int line_number) {
-#ifndef NDEBUG
-  *NullPointer() = line_number;  // Crash.
-#else
+void ReportThreadHang() {
+#if defined(NDEBUG)
   base::debug::DumpWithoutCrashing();
+#else
+  base::debug::BreakDebugger();
 #endif
 }
 
 #if !defined(OS_ANDROID) || !defined(NDEBUG)
 // TODO(rtenneti): Enabled crashing, after getting data.
-NOINLINE void StartupCrash() {
-  NullPointerCrash(__LINE__);
+NOINLINE void StartupHang() {
+  ReportThreadHang();
 }
 #endif  // OS_ANDROID
 
-NOINLINE void ShutdownCrash() {
-  NullPointerCrash(__LINE__);
+NOINLINE void ShutdownHang() {
+  ReportThreadHang();
 }
 
 NOINLINE void ThreadUnresponsive_UI() {
-  NullPointerCrash(__LINE__);
+  ReportThreadHang();
 }
 
 NOINLINE void ThreadUnresponsive_DB() {
-  NullPointerCrash(__LINE__);
+  ReportThreadHang();
 }
 
 NOINLINE void ThreadUnresponsive_FILE() {
-  NullPointerCrash(__LINE__);
+  ReportThreadHang();
 }
 
 NOINLINE void ThreadUnresponsive_FILE_USER_BLOCKING() {
-  NullPointerCrash(__LINE__);
+  ReportThreadHang();
 }
 
 NOINLINE void ThreadUnresponsive_PROCESS_LAUNCHER() {
-  NullPointerCrash(__LINE__);
+  ReportThreadHang();
 }
 
 NOINLINE void ThreadUnresponsive_CACHE() {
-  NullPointerCrash(__LINE__);
+  ReportThreadHang();
 }
 
 NOINLINE void ThreadUnresponsive_IO() {
-  NullPointerCrash(__LINE__);
+  ReportThreadHang();
 }
 
 MSVC_POP_WARNING()
@@ -933,10 +928,10 @@ class StartupWatchDogThread : public base::Watchdog {
   // without crashing and in debug mode we break into the debugger.
   virtual void Alarm() OVERRIDE {
 #if !defined(NDEBUG)
-    StartupCrash();
+    StartupHang();
     return;
 #elif !defined(OS_ANDROID)
-    WatchDogThread::PostTask(FROM_HERE, base::Bind(&StartupCrash));
+    WatchDogThread::PostTask(FROM_HERE, base::Bind(&StartupHang));
     return;
 #else  // Android release: gather stats to figure out when to crash.
     // TODO(rtenneti): Delete this code, after getting data.
@@ -978,7 +973,7 @@ class ShutdownWatchDogThread : public base::Watchdog {
   // Alarm is called if the time expires after an Arm() without someone calling
   // Disarm(). We crash the browser if this method is called.
   virtual void Alarm() OVERRIDE {
-    ShutdownCrash();
+    ShutdownHang();
   }
 
  private:
