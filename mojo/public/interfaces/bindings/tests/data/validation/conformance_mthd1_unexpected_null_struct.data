@@ -6,5 +6,5 @@
 
 [dist4]method1_params  // num_bytes
 [u4]1                  // num_fields
-[u8]0                  // param0: A null pointer.
+[u8]0                  // param0: An unexpected null pointer.
 [anchr]method1_params

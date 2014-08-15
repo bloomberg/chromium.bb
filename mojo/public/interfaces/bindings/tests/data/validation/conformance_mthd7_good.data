@@ -8,14 +8,14 @@
 [u4]2                  // num_fields
 [dist8]param0_ptr      // param0
 [dist8]param1_ptr      // param1
-[u8]0                  // padding
+[u8]0                  // unknown
 [anchr]method7_params
 
 [anchr]param0_ptr
-[dist4]struct_c        // num_bytes
+[dist4]struct_f        // num_bytes
 [u4]1                  // num_fields
-[dist8]array_ptr       // array
-[anchr]struct_c
+[dist8]array_ptr       // fixed_size_array
+[anchr]struct_f
 
 [anchr]array_ptr
 [dist4]array_member    // num_bytes

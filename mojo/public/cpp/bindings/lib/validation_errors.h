@@ -28,11 +28,17 @@ enum ValidationError {
   // An array header doesn't make sense, for example:
   // - |num_bytes| is smaller than the size of the header plus the size required
   // to store |num_elements| elements.
+  // - For fixed-size arrays, |num_elements| is different than the specified
+  // size.
   VALIDATION_ERROR_UNEXPECTED_ARRAY_HEADER,
   // An encoded handle is illegal.
   VALIDATION_ERROR_ILLEGAL_HANDLE,
+  // A non-nullable handle field is set to invalid handle.
+  VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE,
   // An encoded pointer is illegal.
   VALIDATION_ERROR_ILLEGAL_POINTER,
+  // A non-nullable pointer field is set to null.
+  VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
   // |flags| in the message header is an invalid flag combination.
   VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAG_COMBINATION,
   // |flags| in the message header indicates that a request ID is required but
@@ -59,6 +65,14 @@ class ValidationErrorObserverForTesting {
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ValidationErrorObserverForTesting);
 };
+
+// Currently it only returns true when there is a
+// ValidationErrorObserverForTesting object alive. In other words, non-nullable
+// validation is only turned on during validation tests.
+//
+// TODO(yzshen): Remove this function and enable non-nullable validation by
+// default.
+bool IsNonNullableValidationEnabled();
 
 }  // namespace internal
 }  // namespace mojo

@@ -243,6 +243,24 @@ def ShouldInlineStruct(struct):
       return False
   return True
 
+def GetArrayValidateParams(kind):
+  if not mojom.IsAnyArrayKind(kind) and not mojom.IsStringKind(kind):
+    return "mojo::internal::NoValidateParams"
+
+  if mojom.IsStringKind(kind):
+    expected_num_elements = 0
+    element_nullable = False
+    element_validate_params = "mojo::internal::NoValidateParams"
+  else:
+    expected_num_elements = generator.ExpectedArraySize(kind)
+    element_nullable = mojom.IsNullableKind(kind.kind)
+    element_validate_params = GetArrayValidateParams(kind.kind)
+
+  return "mojo::internal::ArrayValidateParams<%d, %s,\n%s> " % (
+      expected_num_elements,
+      'true' if element_nullable else 'false',
+      element_validate_params)
+
 _HEADER_SIZE = 8
 
 class Generator(generator.Generator):
@@ -258,6 +276,7 @@ class Generator(generator.Generator):
     "default_value": DefaultValue,
     "expected_array_size": generator.ExpectedArraySize,
     "expression_to_text": ExpressionToText,
+    "get_array_validate_params": GetArrayValidateParams,
     "get_name_for_kind": GetNameForKind,
     "get_pad": pack.GetPad,
     "has_callbacks": HasCallbacks,
@@ -268,6 +287,7 @@ class Generator(generator.Generator):
     "is_any_handle_kind": mojom.IsAnyHandleKind,
     "is_interface_kind": mojom.IsInterfaceKind,
     "is_interface_request_kind": mojom.IsInterfaceRequestKind,
+    "is_nullable_kind": mojom.IsNullableKind,
     "is_object_kind": mojom.IsObjectKind,
     "is_string_kind": mojom.IsStringKind,
     "is_struct_with_handles": IsStructWithHandles,

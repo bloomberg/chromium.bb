@@ -13,16 +13,8 @@
 [anchr]param0_ptr
 [dist4]struct_f        // num_bytes
 [u4]1                  // num_fields
-[dist8]array_ptr       // fixed_size_array
+[u8]0                  // fixed_size_array: An unexpected null pointer.
 [anchr]struct_f
-
-[anchr]array_ptr
-[dist4]array_member    // num_bytes
-[u4]2                  // num_elements: Too few elements.
-0 1
-[anchr]array_member
-
-[u4]0 [u1]0 [u1]0      // Padding for alignment of next array.
 
 [anchr]param1_ptr
 [dist4]array_param     // num_bytes

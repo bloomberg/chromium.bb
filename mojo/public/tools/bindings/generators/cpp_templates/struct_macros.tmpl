@@ -13,22 +13,42 @@
 
 {%-   for packed_field in struct.packed.packed_fields %}
 {%-     set name = packed_field.field.name %}
-{%-     if packed_field.field.kind|is_object_kind %}
-{%-       set wrapper_type = packed_field.field.kind|cpp_wrapper_type %}
+{%-     set kind = packed_field.field.kind %}
+{%-     if kind|is_object_kind %}
+{%-       set wrapper_type = kind|cpp_wrapper_type %}
+{%-       if not kind|is_nullable_kind %}
+  if (mojo::internal::IsNonNullableValidationEnabled() &&
+      !object->{{name}}.offset) {
+    ReportValidationError(
+        mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
+    return false;
+  }
+{%-       endif %}
   if (!mojo::internal::ValidateEncodedPointer(&object->{{name}}.offset)) {
     ReportValidationError(mojo::internal::VALIDATION_ERROR_ILLEGAL_POINTER);
     return false;
   }
+{%-       if kind|is_any_array_kind or kind|is_string_kind %}
+  if (!{{wrapper_type}}::Data_::Validate<
+          {{kind|get_array_validate_params|indent(10)}}>(
+              mojo::internal::DecodePointerRaw(&object->{{name}}.offset),
+              bounds_checker)) {
+{%-       else %}
   if (!{{wrapper_type}}::Data_::Validate(
           mojo::internal::DecodePointerRaw(&object->{{name}}.offset),
-          bounds_checker
-{%-     if packed_field.field.kind|is_any_array_kind -%}
-          , {{packed_field.field.kind|expected_array_size}}
-{%-     endif -%}
-          )) {
+          bounds_checker)) {
+{%-       endif %}
     return false;
   }
-{%-     elif packed_field.field.kind|is_any_handle_kind %}
+{%-     elif kind|is_any_handle_kind %}
+{%-       if not kind|is_nullable_kind %}
+  if (mojo::internal::IsNonNullableValidationEnabled() &&
+      object->{{name}}.value() == mojo::internal::kEncodedInvalidHandleValue) {
+    ReportValidationError(
+        mojo::internal::VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE);
+    return false;
+  }
+{%-       endif %}
   if (!bounds_checker->ClaimHandle(object->{{name}})) {
     ReportValidationError(mojo::internal::VALIDATION_ERROR_ILLEGAL_HANDLE);
     return false;

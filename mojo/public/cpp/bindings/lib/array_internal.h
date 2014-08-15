@@ -8,10 +8,12 @@
 #include <new>
 #include <vector>
 
+#include "mojo/public/c/system/macros.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
 #include "mojo/public/cpp/bindings/lib/bounds_checker.h"
 #include "mojo/public/cpp/bindings/lib/buffer.h"
+#include "mojo/public/cpp/bindings/lib/template_util.h"
 #include "mojo/public/cpp/bindings/lib/validation_errors.h"
 #include "mojo/public/cpp/environment/logging.h"
 
@@ -110,11 +112,32 @@ struct ArrayDataTraits<bool> {
   }
 };
 
+// Array type information needed for valdiation.
+template <uint32_t in_expected_num_elements,
+          bool in_element_nullable,
+          typename InElementValidateParams>
+class ArrayValidateParams {
+ public:
+  // Validation information for elements. It is either another specialization of
+  // ArrayValidateParams (if elements are arrays) or NoValidateParams.
+  typedef InElementValidateParams ElementValidateParams;
+
+  // If |expected_num_elements| is not 0, the array is expected to have exactly
+  // that number of elements.
+  static const uint32_t expected_num_elements = in_expected_num_elements;
+  // Whether the elements are nullable.
+  static const bool element_nullable = in_element_nullable;
+};
+
+// NoValidateParams is used to indicate the end of an ArrayValidateParams chain.
+class NoValidateParams {
+};
+
 // What follows is code to support the serialization of Array_Data<T>. There
 // are two interesting cases: arrays of primitives and arrays of objects.
 // Arrays of objects are represented as arrays of pointers to objects.
 
-template <typename T, bool kIsHandle> struct ArraySerializationHelper;
+template <typename T, bool is_handle> struct ArraySerializationHelper;
 
 template <typename T>
 struct ArraySerializationHelper<T, false> {
@@ -130,9 +153,15 @@ struct ArraySerializationHelper<T, false> {
                                        std::vector<Handle>* handles) {
   }
 
+  template <bool element_nullable, typename ElementValidateParams>
   static bool ValidateElements(const ArrayHeader* header,
                                const ElementType* elements,
                                BoundsChecker* bounds_checker) {
+    MOJO_COMPILE_ASSERT(!element_nullable,
+                        Primitive_type_should_be_non_nullable);
+    MOJO_COMPILE_ASSERT(
+        (IsSame<ElementValidateParams, NoValidateParams>::value),
+        Primitive_type_should_not_have_array_validate_params);
     return true;
   }
 };
@@ -149,9 +178,27 @@ struct ArraySerializationHelper<Handle, true> {
                                        ElementType* elements,
                                        std::vector<Handle>* handles);
 
+  template <bool element_nullable, typename ElementValidateParams>
   static bool ValidateElements(const ArrayHeader* header,
                                const ElementType* elements,
-                               BoundsChecker* bounds_checker);
+                               BoundsChecker* bounds_checker) {
+    MOJO_COMPILE_ASSERT(
+        (IsSame<ElementValidateParams, NoValidateParams>::value),
+        Handle_type_should_not_have_array_validate_params);
+
+    for (uint32_t i = 0; i < header->num_elements; ++i) {
+      if (IsNonNullableValidationEnabled() && !element_nullable &&
+          elements[i].value() == kEncodedInvalidHandleValue) {
+        ReportValidationError(VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE);
+        return false;
+      }
+      if (!bounds_checker->ClaimHandle(elements[i])) {
+        ReportValidationError(VALIDATION_ERROR_ILLEGAL_HANDLE);
+        return false;
+      }
+    }
+    return true;
+  }
 };
 
 template <typename H>
@@ -172,11 +219,13 @@ struct ArraySerializationHelper<H, true> {
         header, elements, handles);
   }
 
+  template <bool element_nullable, typename ElementValidateParams>
   static bool ValidateElements(const ArrayHeader* header,
                                const ElementType* elements,
                                BoundsChecker* bounds_checker) {
-    return ArraySerializationHelper<Handle, true>::ValidateElements(
-        header, elements, bounds_checker);
+    return ArraySerializationHelper<Handle, true>::
+        ValidateElements<element_nullable, ElementValidateParams>(
+            header, elements, bounds_checker);
   }
 };
 
@@ -198,19 +247,46 @@ struct ArraySerializationHelper<P*, false> {
       Decode(&elements[i], handles);
   }
 
+  template <bool element_nullable, typename ElementValidateParams>
   static bool ValidateElements(const ArrayHeader* header,
                                const ElementType* elements,
                                BoundsChecker* bounds_checker) {
     for (uint32_t i = 0; i < header->num_elements; ++i) {
+      if (IsNonNullableValidationEnabled() && !element_nullable &&
+          !elements[i].offset) {
+        ReportValidationError(VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
+        return false;
+      }
       if (!ValidateEncodedPointer(&elements[i].offset)) {
         ReportValidationError(VALIDATION_ERROR_ILLEGAL_POINTER);
         return false;
       }
-      if (!P::Validate(DecodePointerRaw(&elements[i].offset), bounds_checker))
+      if (!ValidateCaller<P, ElementValidateParams>::Run(
+              DecodePointerRaw(&elements[i].offset), bounds_checker)) {
         return false;
+      }
     }
     return true;
   }
+
+ private:
+  template <typename T, typename Params>
+  struct ValidateCaller {
+    static bool Run(const void* data, BoundsChecker* bounds_checker) {
+      MOJO_COMPILE_ASSERT(
+          (IsSame<Params, NoValidateParams>::value),
+          Struct_type_should_not_have_array_validate_params);
+
+      return T::Validate(data, bounds_checker);
+    }
+  };
+
+  template <typename T, typename Params>
+  struct ValidateCaller<Array_Data<T>, Params> {
+    static bool Run(const void* data, BoundsChecker* bounds_checker) {
+      return Array_Data<T>::template Validate<Params>(data, bounds_checker);
+    }
+  };
 };
 
 template <typename T>
@@ -229,11 +305,8 @@ class Array_Data {
                                                         num_elements);
   }
 
-  // If expected_num_elements is not zero, the actual number of elements in the
-  // header must match that value or the message is rejected.
-  static bool Validate(const void* data,
-                       BoundsChecker* bounds_checker,
-                       uint32_t expected_num_elements = 0) {
+  template <typename Params>
+  static bool Validate(const void* data, BoundsChecker* bounds_checker) {
     if (!data)
       return true;
     if (!IsAligned(data)) {
@@ -250,8 +323,8 @@ class Array_Data {
       ReportValidationError(VALIDATION_ERROR_UNEXPECTED_ARRAY_HEADER);
       return false;
     }
-    if (expected_num_elements != 0 &&
-        header->num_elements != expected_num_elements) {
+    if (Params::expected_num_elements != 0 &&
+        header->num_elements != Params::expected_num_elements) {
       ReportValidationError(VALIDATION_ERROR_UNEXPECTED_ARRAY_HEADER);
       return false;
     }
@@ -261,8 +334,9 @@ class Array_Data {
     }
 
     const Array_Data<T>* object = static_cast<const Array_Data<T>*>(data);
-    return Helper::ValidateElements(&object->header_, object->storage(),
-                                    bounds_checker);
+    return Helper::template ValidateElements<
+        Params::element_nullable, typename Params::ElementValidateParams>(
+            &object->header_, object->storage(), bounds_checker);
   }
 
   size_t size() const { return header_.num_elements; }

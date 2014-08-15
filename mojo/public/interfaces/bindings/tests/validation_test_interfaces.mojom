@@ -40,6 +40,8 @@ interface ConformanceTestInterface {
   Method5(StructE param0, handle<data_pipe_producer> param1);
   Method6(uint8[][] param0);
   Method7(StructF param0, uint8[5] param1);
+  Method8(string[]?[] param0);
+  Method9(handle?[][]? param0);
 };
 
 struct BasicStruct {

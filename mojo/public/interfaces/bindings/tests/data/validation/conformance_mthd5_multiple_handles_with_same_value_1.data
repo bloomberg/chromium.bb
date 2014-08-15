@@ -16,7 +16,20 @@
 [anchr]param0_ptr
 [dist4]struct_e      // num_bytes
 [u4]2                // num_fields
-[u8]0                // struct_d
+[dist8]struct_d_ptr  // struct_d
 [u4]4                // data_pipe_consumer: The same value as |param1| above.
 [u4]0                // padding
 [anchr]struct_e
+
+[anchr]struct_d_ptr
+[dist4]struct_d           // num_bytes
+[u4]1                     // num_fields
+[dist8]message_pipes_ptr  // message_pipes
+[anchr]struct_d
+
+[anchr]message_pipes_ptr
+[dist4]message_pipe_array  // num_bytes
+[u4]2                      // num_elements
+[u4]0
+[u4]1
+[anchr]message_pipe_array
