@@ -47,7 +47,7 @@ body {
 if (window.testRunner) {
     testRunner.dumpAsText();
     window.internals.settings.setLayerSquashingEnabled(true);
-    window.internals.settings.setAcceleratedCompositingForFixedPositionEnabled(true);
+    window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
 } else {
     alert('This test requires testRunner');
 }

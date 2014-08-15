@@ -7,7 +7,7 @@
     testRunner.waitUntilDone();
   }
   if (window.internals && window.eventSender) {
-    window.internals.settings.setAcceleratedCompositingForFixedPositionEnabled(true);
+    window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
 
     addEventListener("load", function() {
       window.eventSender.setPageScaleFactor(0.5, 0, 0);

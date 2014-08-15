@@ -168,7 +168,7 @@ protected:
     static void configueCompositingWebView(WebSettings* settings)
     {
         settings->setAcceleratedCompositingEnabled(true);
-        settings->setAcceleratedCompositingForFixedPositionEnabled(true);
+        settings->setPreferCompositingToLCDTextEnabled(true);
         settings->setAcceleratedCompositingForOverflowScrollEnabled(true);
         settings->setCompositedScrollingForFramesEnabled(true);
     }

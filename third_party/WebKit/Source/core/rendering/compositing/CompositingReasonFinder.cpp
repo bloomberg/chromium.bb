@@ -35,7 +35,7 @@ void CompositingReasonFinder::updateTriggers()
     if (settings.acceleratedCompositingForOverflowScrollEnabled() || settings.compositorDrivenAcceleratedScrollingEnabled())
         m_compositingTriggers |= OverflowScrollTrigger;
 
-    if (settings.acceleratedCompositingForFixedPositionEnabled())
+    if (settings.preferCompositingToLCDTextEnabled())
         m_compositingTriggers |= ViewportConstrainedPositionedTrigger;
 }
 

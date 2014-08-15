@@ -488,9 +488,15 @@ void WebSettingsImpl::setDeferredFiltersEnabled(bool enabled)
     m_settings->setDeferredFiltersEnabled(enabled);
 }
 
+void WebSettingsImpl::setPreferCompositingToLCDTextEnabled(bool enabled)
+{
+    m_settings->setPreferCompositingToLCDTextEnabled(enabled);
+}
+
+// TODO(danakj): Remove this method.
 void WebSettingsImpl::setAcceleratedCompositingForFixedPositionEnabled(bool enabled)
 {
-    m_settings->setAcceleratedCompositingForFixedPositionEnabled(enabled);
+    m_settings->setPreferCompositingToLCDTextEnabled(enabled);
 }
 
 void WebSettingsImpl::setMinimumAccelerated2dCanvasSize(int numPixels)

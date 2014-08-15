@@ -19,7 +19,7 @@
     testRunner.waitUntilDone();
   }
   if (window.internals && window.eventSender) {
-    window.internals.settings.setAcceleratedCompositingForFixedPositionEnabled(true);
+    window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
 
     addEventListener("load", function() {
       document.getElementById("layerTree").innerText = internals.layerTreeAsText(document);

@@ -64,6 +64,7 @@ public:
     virtual void setAccelerated2dCanvasEnabled(bool) = 0;
     virtual void setAccelerated2dCanvasMSAASampleCount(int) = 0;
     virtual void setAcceleratedCompositingEnabled(bool) = 0;
+    virtual void setPreferCompositingToLCDTextEnabled(bool) = 0;
     virtual void setAcceleratedCompositingForFixedPositionEnabled(bool) = 0;
     virtual void setAcceleratedCompositingForFixedRootBackgroundEnabled(bool) = 0;
     virtual void setAcceleratedCompositingForOverflowScrollEnabled(bool) = 0;

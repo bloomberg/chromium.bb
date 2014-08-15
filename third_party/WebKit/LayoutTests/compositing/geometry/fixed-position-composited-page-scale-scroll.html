@@ -15,7 +15,7 @@
 </style>
 <script>
   if (window.internals && window.eventSender) {
-    window.internals.settings.setAcceleratedCompositingForFixedPositionEnabled(true);
+    window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
     window.eventSender.setPageScaleFactor(2, 0, 0);
   }
   function test() {

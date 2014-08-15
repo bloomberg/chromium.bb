@@ -10,7 +10,7 @@
   <script type="text/javascript">
     if (window.testRunner && window.internals) {
       testRunner.dumpAsText();
-      internals.settings.setAcceleratedCompositingForFixedPositionEnabled(true);
+      internals.settings.setPreferCompositingToLCDTextEnabled(true);
 
       addEventListener("load", function() {
         document.getElementById("layerTree1").innerText = internals.layerTreeAsText(document);

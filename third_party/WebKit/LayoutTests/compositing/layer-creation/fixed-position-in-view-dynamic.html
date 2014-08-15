@@ -15,7 +15,7 @@
   <script type="text/javascript">
     if (window.testRunner && window.internals) {
       testRunner.dumpAsText();
-      internals.settings.setAcceleratedCompositingForFixedPositionEnabled(true);
+      internals.settings.setPreferCompositingToLCDTextEnabled(true);
 
       addEventListener("load", function() {
         var fixed = document.createElement("div");
