@@ -349,13 +349,18 @@ bool AddPolicyForSandboxedProcess(sandbox::TargetPolicy* policy) {
 
   // Win8+ adds a device DeviceApi that we don't need.
   if (base::win::GetVersion() > base::win::VERSION_WIN7)
-    policy->AddKernelObjectToClose(L"File", L"\\Device\\DeviceApi");
+    result = policy->AddKernelObjectToClose(L"File", L"\\Device\\DeviceApi");
+  if (result != sandbox::SBOX_ALL_OK)
+    return false;
 
   // Close the proxy settings on XP.
   if (base::win::GetVersion() <= base::win::VERSION_SERVER_2003)
-    policy->AddKernelObjectToClose(L"Key",
-        L"HKCU\\Software\\Microsoft\\Windows\\" \
-            L"CurrentVersion\\Internet Settings");
+    result = policy->AddKernelObjectToClose(L"Key",
+                 L"HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\" \
+                     L"CurrentVersion\\Internet Settings");
+  if (result != sandbox::SBOX_ALL_OK)
+    return false;
+
 
   sandbox::TokenLevel initial_token = sandbox::USER_UNPROTECTED;
   if (base::win::GetVersion() > base::win::VERSION_XP) {
