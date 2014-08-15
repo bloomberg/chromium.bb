@@ -983,8 +983,7 @@ void CertificateManagerHandler::Export(const base::ListValue* args) {
   net::X509Certificate* cert = cert_id_map_->CallbackArgsToCert(args);
   if (!cert)
     return;
-  ShowCertExportDialog(web_ui()->GetWebContents(), GetParentWindow(),
-                       cert->os_cert_handle());
+  ShowCertExportDialog(web_ui()->GetWebContents(), GetParentWindow(), cert);
 }
 
 void CertificateManagerHandler::Delete(const base::ListValue* args) {

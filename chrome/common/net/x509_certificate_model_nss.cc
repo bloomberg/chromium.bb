@@ -223,26 +223,6 @@ string HashCertSHA1(X509Certificate::OSCertHandle cert_handle) {
   return HashCert(cert_handle, HASH_AlgSHA1, SHA1_LENGTH);
 }
 
-void GetCertChainFromCert(X509Certificate::OSCertHandle cert_handle,
-                          X509Certificate::OSCertHandles* cert_handles) {
-  CERTCertList* cert_list =
-      CERT_GetCertChainFromCert(cert_handle, PR_Now(), certUsageSSLServer);
-  CERTCertListNode* node;
-  for (node = CERT_LIST_HEAD(cert_list);
-       !CERT_LIST_END(node, cert_list);
-       node = CERT_LIST_NEXT(node)) {
-    cert_handles->push_back(CERT_DupCertificate(node->cert));
-  }
-  CERT_DestroyCertList(cert_list);
-}
-
-void DestroyCertChain(X509Certificate::OSCertHandles* cert_handles) {
-  for (X509Certificate::OSCertHandles::iterator i(cert_handles->begin());
-       i != cert_handles->end(); ++i)
-    CERT_DestroyCertificate(*i);
-  cert_handles->clear();
-}
-
 string GetCMSString(const X509Certificate::OSCertHandles& cert_chain,
                     size_t start, size_t end) {
   crypto::ScopedPLArenaPool arena(PORT_NewArena(1024));

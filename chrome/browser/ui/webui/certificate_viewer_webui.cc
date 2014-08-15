@@ -42,11 +42,10 @@ CertificateViewerModalDialog::CertificateViewerModalDialog(
     net::X509Certificate* cert)
     : cert_(cert), webui_(NULL), window_(NULL) {
   // Construct the dialog title from the certificate.
-  net::X509Certificate::OSCertHandles cert_chain;
-  x509_certificate_model::GetCertChainFromCert(cert_->os_cert_handle(),
-      &cert_chain);
-  title_ = l10n_util::GetStringFUTF16(IDS_CERT_INFO_DIALOG_TITLE,
-      base::UTF8ToUTF16(x509_certificate_model::GetTitle(cert_chain.front())));
+  title_ = l10n_util::GetStringFUTF16(
+      IDS_CERT_INFO_DIALOG_TITLE,
+      base::UTF8ToUTF16(
+          x509_certificate_model::GetTitle(cert_->os_cert_handle())));
 }
 
 CertificateViewerModalDialog::~CertificateViewerModalDialog() {
@@ -103,7 +102,10 @@ std::string CertificateViewerModalDialog::GetDialogArgs() const {
 
   // Get the certificate chain.
   net::X509Certificate::OSCertHandles cert_chain;
-  x509_certificate_model::GetCertChainFromCert(cert_hnd, &cert_chain);
+  cert_chain.push_back(cert_->os_cert_handle());
+  const net::X509Certificate::OSCertHandles& certs =
+      cert_->GetIntermediateCertificates();
+  cert_chain.insert(cert_chain.end(), certs.begin(), certs.end());
 
   // Certificate usage.
   std::vector<std::string> usages;
@@ -251,9 +253,12 @@ ui::ModalType CertificateViewerDialog::GetDialogModalType() const {
 
 CertificateViewerDialogHandler::CertificateViewerDialogHandler(
     CertificateViewerModalDialog* dialog,
-    net::X509Certificate* cert) : cert_(cert), dialog_(dialog) {
-  x509_certificate_model::GetCertChainFromCert(cert_->os_cert_handle(),
-      &cert_chain_);
+    net::X509Certificate* cert)
+    : cert_(cert), dialog_(dialog) {
+  cert_chain_.push_back(cert_->os_cert_handle());
+  const net::X509Certificate::OSCertHandles& certs =
+      cert_->GetIntermediateCertificates();
+  cert_chain_.insert(cert_chain_.end(), certs.begin(), certs.end());
 }
 
 CertificateViewerDialogHandler::~CertificateViewerDialogHandler() {
@@ -278,7 +283,8 @@ void CertificateViewerDialogHandler::ExportCertificate(
       platform_util::GetTopLevel(dialog_->GetNativeWebContentsModalDialog());
   ShowCertExportDialog(web_ui()->GetWebContents(),
                        window,
-                       cert_chain_[cert_index]);
+                       cert_chain_.begin() + cert_index,
+                       cert_chain_.end());
 }
 
 void CertificateViewerDialogHandler::RequestCertificateFields(

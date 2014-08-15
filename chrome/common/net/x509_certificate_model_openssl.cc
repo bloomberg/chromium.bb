@@ -1136,19 +1136,6 @@ std::string HashCertSHA1(net::X509Certificate::OSCertHandle cert_handle) {
   return ProcessRawBytes(sha1_data, sha1_size);
 }
 
-void GetCertChainFromCert(net::X509Certificate::OSCertHandle cert_handle,
-                          net::X509Certificate::OSCertHandles* cert_handles) {
-  // TODO(bulach): how to get the chain out of a certificate?
-  cert_handles->push_back(net::X509Certificate::DupOSCertHandle(cert_handle));
-}
-
-void DestroyCertChain(net::X509Certificate::OSCertHandles* cert_handles) {
-  for (net::X509Certificate::OSCertHandles::iterator i = cert_handles->begin();
-       i != cert_handles->end(); ++i)
-    X509_free(*i);
-  cert_handles->clear();
-}
-
 std::string GetCMSString(const net::X509Certificate::OSCertHandles& cert_chain,
                          size_t start, size_t end) {
   STACK_OF(X509)* certs = sk_X509_new_null();

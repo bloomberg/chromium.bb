@@ -133,7 +133,8 @@ class CertificateViewerDialogHandler : public content::WebUIMessageHandler {
   // The dialog.
   CertificateViewerModalDialog* dialog_;
 
-  // The certificate chain.
+  // The certificate chain. Does not take references, so only valid as long as
+  // |cert_| is.
   net::X509Certificate::OSCertHandles cert_chain_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateViewerDialogHandler);

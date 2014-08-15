@@ -86,10 +86,6 @@ std::string HashCertSHA1(net::X509Certificate::OSCertHandle cert_handle);
 // decoded U-label form.  Otherwise, the string will be returned as is.
 std::string ProcessIDN(const std::string& input);
 
-void GetCertChainFromCert(net::X509Certificate::OSCertHandle cert_handle,
-                          net::X509Certificate::OSCertHandles* cert_handles);
-void DestroyCertChain(net::X509Certificate::OSCertHandles* cert_handles);
-
 std::string GetCMSString(const net::X509Certificate::OSCertHandles& cert_chain,
                          size_t start, size_t end);
 

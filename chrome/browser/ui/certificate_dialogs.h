@@ -18,8 +18,17 @@ void ShowCertSelectFileDialog(ui::SelectFileDialog* select_file_dialog,
                               gfx::NativeWindow parent,
                               void* params);
 
+// Show a dialog to save |cert| alone or the cert + its chain.
 void ShowCertExportDialog(content::WebContents* web_contents,
                           gfx::NativeWindow parent,
-                          net::X509Certificate::OSCertHandle cert);
+                          const scoped_refptr<net::X509Certificate>& cert);
+
+// Show a dialog to save the first certificate or the whole chain encompassed by
+// the iterators.
+void ShowCertExportDialog(
+    content::WebContents* web_contents,
+    gfx::NativeWindow parent,
+    net::X509Certificate::OSCertHandles::iterator certs_begin,
+    net::X509Certificate::OSCertHandles::iterator certs_end);
 
 #endif  // CHROME_BROWSER_UI_CERTIFICATE_DIALOGS_H_
