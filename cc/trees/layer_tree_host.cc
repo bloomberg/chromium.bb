@@ -161,6 +161,8 @@ void LayerTreeHost::InitializeProxy(scoped_ptr<Proxy> proxy) {
 LayerTreeHost::~LayerTreeHost() {
   TRACE_EVENT0("cc", "LayerTreeHost::~LayerTreeHost");
 
+  CHECK(swap_promise_monitor_.empty());
+
   BreakSwapPromises(SwapPromise::COMMIT_FAILS);
 
   overhang_ui_resource_.reset();
