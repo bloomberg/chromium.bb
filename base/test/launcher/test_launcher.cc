@@ -340,20 +340,6 @@ TestLauncher::TestLauncher(TestLauncherDelegate* launcher_delegate,
                       this,
                       &TestLauncher::OnOutputTimeout),
       parallel_jobs_(parallel_jobs) {
-  if (BotModeEnabled()) {
-    fprintf(stdout,
-            "Enabling defaults optimized for continuous integration bots.\n");
-    fflush(stdout);
-
-    // Enable test retries by default for bots. This can be still overridden
-    // from command line using --test-launcher-retry-limit flag.
-    retry_limit_ = 3;
-  } else {
-    // Default to serial test execution if not running on a bot. This makes it
-    // possible to disable stdio redirection and can still be overridden with
-    // --test-launcher-jobs flag.
-    parallel_jobs_ = 1;
-  }
 }
 
 TestLauncher::~TestLauncher() {
@@ -654,6 +640,9 @@ bool TestLauncher::Init() {
     }
 
     retry_limit_ = retry_limit;
+  } else if (!CommandLine::ForCurrentProcess()->HasSwitch(kGTestFilterFlag)) {
+    // Retry failures 3 times by default if we are running all of the tests.
+    retry_limit_ = 3;
   }
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -667,7 +656,12 @@ bool TestLauncher::Init() {
     }
 
     parallel_jobs_ = jobs;
+  } else if (CommandLine::ForCurrentProcess()->HasSwitch(kGTestFilterFlag)) {
+    // Do not run jobs in parallel by default if we are running a subset of
+    // the tests.
+    parallel_jobs_ = 1;
   }
+
   fprintf(stdout, "Using %" PRIuS " parallel jobs.\n", parallel_jobs_);
   fflush(stdout);
   worker_pool_owner_.reset(
