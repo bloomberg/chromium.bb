@@ -13,14 +13,9 @@
 
 """Test tracing and isolation infrastructure.
 
-See googletest/*.py for scripts specifically managing GTest executables. More
-information about googletest can be found at
-http://code.google.com/p/googletest/wiki/Primer
-
 A few scripts have strict dependency rules:
 - The pure tracing scripts (trace_*.py) do not know about isolate
   infrastructure.
-- Scripts outside googletest/ do not know about GTest.
 """
 
 import os

@@ -32,19 +32,12 @@ def CommonChecks(input_api, output_api):
     r'.*isolateserver_smoke_test\.py$',
     r'.*swarming_smoke_test\.py$',
   ]
-  blacklist_googletest = []
   if not input_api.is_committing:
     # Remove all slow tests, e.g. the ones that take >1s to complete.
     blacklist.extend([
       r'.*isolate_smoke_test\.py$',
       r'.*trace_inputs_smoke_test\.py$',
       r'.*url_open_timeout_test\.py$',
-    ])
-    blacklist_googletest.extend([
-      r'.*fix_test_cases_smoke_test\.py$',
-      r'.*isolate_test_cases_smoke_test\.py$',
-      r'.*run_test_cases_smoke_test\.py$',
-      r'.*run_test_cases_test\.py$',
     ])
 
   output.extend(
@@ -53,13 +46,6 @@ def CommonChecks(input_api, output_api):
           input_api.os_path.join(input_api.PresubmitLocalPath(), 'tests'),
           whitelist=[r'.+_test\.py$'],
           blacklist=blacklist))
-  output.extend(
-      input_api.canned_checks.RunUnitTestsInDirectory(
-          input_api, output_api,
-          input_api.os_path.join(
-              input_api.PresubmitLocalPath(), 'googletest', 'tests'),
-          whitelist=[r'.+_test\.py$'],
-          blacklist=blacklist_googletest))
   return output
 
 
