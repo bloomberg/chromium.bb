@@ -118,12 +118,4 @@ void TearDownBlinkTestEnvironment() {
   test_environment = NULL;
 }
 
-void SetUpTestEnvironmentForUnitTests() {
-  SetUpBlinkTestEnvironment();
-}
-
-void TearDownTestEnvironment() {
-  TearDownBlinkTestEnvironment();
-}
-
 }  // namespace content

@@ -14,11 +14,6 @@ void SetUpBlinkTestEnvironment();
 // Terminates Blink test environment for unit tests.
 void TearDownBlinkTestEnvironment();
 
-// TODO(tfarina): Remove these when Blink is updated to call the above
-// functions. DEPRECATED!
-void SetUpTestEnvironmentForUnitTests();
-void TearDownTestEnvironment();
-
 }  // namespace content
 
 #endif  // CONTENT_TEST_BLINK_TEST_ENVIRONMENT_H_
