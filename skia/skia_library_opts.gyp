@@ -177,6 +177,13 @@
             'GCC_ENABLE_SUPPLEMENTAL_SSE3_INSTRUCTIONS': 'YES',
           },
         }],
+        [ 'OS == "win" and clang == 1', {
+          # cl.exe's /arch flag doesn't have a setting for SSSE3, and cl.exe
+          # doesn't need it for intrinsics. clang-cl does need it, though.
+          'msvs_settings': {
+            'VCCLCompilerTool': { 'AdditionalOptions': [ '-mssse3' ] },
+          },
+        }],
         [ 'OS == "win"', {
           'include_dirs': [
             'config/win',
@@ -224,6 +231,13 @@
         [ 'OS == "mac"', {
           'xcode_settings': {
             'GCC_ENABLE_SSE41_EXTENSIONS': 'YES',
+          },
+        }],
+        [ 'OS == "win" and clang == 1', {
+          # cl.exe's /arch flag doesn't have a setting for SSE4.1, and cl.exe
+          # doesn't need it for intrinsics. clang-cl does need it, though.
+          'msvs_settings': {
+            'VCCLCompilerTool': { 'AdditionalOptions': [ '-msse4.1' ] },
           },
         }],
         [ 'OS == "win"', {
