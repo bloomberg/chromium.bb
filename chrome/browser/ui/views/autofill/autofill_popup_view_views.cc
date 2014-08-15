@@ -52,7 +52,7 @@ void AutofillPopupViewViews::OnPaint(gfx::Canvas* canvas) {
     gfx::Rect line_rect = controller_->GetRowBounds(i);
 
     if (controller_->identifiers()[i] == POPUP_ITEM_ID_SEPARATOR) {
-      canvas->DrawRect(line_rect, kItemTextColor);
+      canvas->FillRect(line_rect, kItemTextColor);
     } else {
       DrawAutofillEntry(canvas, i, line_rect);
     }
