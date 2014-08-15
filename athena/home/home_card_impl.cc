@@ -336,6 +336,7 @@ class HomeCardView : public views::WidgetDelegateView {
           gfx::Rect minimized_bounds = bounds();
           minimized_bounds.set_y(
               minimized_bounds.bottom() - kHomeCardMinimizedHeight);
+          minimized_bounds.set_height(kHomeCardMinimizedHeight);
           child->SetBoundsRect(minimized_bounds);
         } else {
           child->SetBoundsRect(bounds());
