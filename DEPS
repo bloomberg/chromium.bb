@@ -90,20 +90,20 @@ vars = {
 
 deps = {
   "src/breakpad/src":
-    (Var("googlecode_url") % "google-breakpad") + "/trunk/src@1359",
+    Var("chromium_git") + "/external/google-breakpad/src.git@17f614cd8365f5b78577ffcc237300a970db9813", # from svn revision 1359
 
   "src/buildtools":
     Var("chromium_git") + "/chromium/buildtools.git@" +
      Var("buildtools_revision"),
 
   "src/sdch/open-vcdiff":
-    (Var("googlecode_url") % "open-vcdiff") + "/trunk@42",
+    Var("chromium_git") + "/external/open-vcdiff.git@438f2a5be6d809bc21611a94cd37bfc8c28ceb33", # from svn revision 41
 
   "src/testing/gtest":
-    (Var("googlecode_url") % "googletest") + "/trunk@692",
+    Var("chromium_git") + "/external/googletest.git@4650552ff637bb44ecf7784060091cbed3252211", # from svn revision 692
 
   "src/testing/gmock":
-    (Var("googlecode_url") % "googlemock") + "/trunk@485",
+    Var("chromium_git") + "/external/googlemock.git@896ba0e03f520fb9b6ed582bde2bd00847e3c3f2", # from svn revision 485
 
   "src/third_party/angle":
     Var("chromium_git") + "/angle/angle.git@" + Var("angle_revision"),
@@ -112,7 +112,7 @@ deps = {
     Var("chromium_git") + "/external/colorama.git@799604a1041e9b3bc5d2789ecbd7e8db2e18e6b8",
 
   "src/third_party/trace-viewer":
-    (Var("googlecode_url") % "trace-viewer") + "/trunk@1471",
+    Var("chromium_git") + "/external/trace-viewer.git@5f89b7cd5732ddf7e783bb6c9fe57bb8a7cf74e2", # from svn revision 1471
 
   "src/third_party/WebKit":
     Var("webkit_trunk") + "@" + Var("webkit_revision"),
@@ -354,8 +354,8 @@ deps_os = {
 
     # Parses Windows PE/COFF executable format.
     "src/third_party/pefile":
-      Var("chromium_git") + '/external/pefile.git@' +
-      '72c6ae42396cb913bcab63c15585dc3b5c3f92f1',
+      Var("chromium_git") + "/external/pefile.git@" +
+      "72c6ae42396cb913bcab63c15585dc3b5c3f92f1",
 
     # NSS, for SSLClientSocketNSS.
     "src/third_party/nss":
