@@ -16,29 +16,23 @@
 #include "ui/events/event_handler.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
+#include "ui/wm/core/window_util.h"
 
 namespace athena {
 
 SplitViewController::SplitViewController(
     aura::Window* container,
-    WindowListProvider* window_list_provider,
-    WindowManager* window_manager)
+    WindowListProvider* window_list_provider)
     : state_(INACTIVE),
       container_(container),
-      window_manager_(window_manager),
       window_list_provider_(window_list_provider),
-      current_activity_window_(NULL),
       left_window_(NULL),
       right_window_(NULL),
       separator_position_(0),
       weak_factory_(this) {
-  if (window_manager_)
-    window_manager_->AddObserver(this);
 }
 
 SplitViewController::~SplitViewController() {
-  if (window_manager_)
-    window_manager_->RemoveObserver(this);
 }
 
 bool SplitViewController::IsSplitViewModeActive() const {
@@ -89,6 +83,12 @@ void SplitViewController::ActivateSplitMode(aura::Window* left,
     container_->StackChildAtTop(left_window_);
   }
   UpdateLayout(true);
+}
+
+void SplitViewController::DeactivateSplitMode() {
+  CHECK_NE(SCROLLING, state_);
+  state_ = INACTIVE;
+  left_window_ = right_window_ = NULL;
 }
 
 void SplitViewController::UpdateLayout(bool animate) {
@@ -180,67 +180,43 @@ void SplitViewController::UpdateSeparatorPositionFromScrollDelta(float delta) {
                 : display_bounds.right() - container_bounds.x() + delta;
 }
 
-aura::Window* SplitViewController::GetCurrentActivityWindow() {
-  if (!current_activity_window_) {
-    aura::Window::Windows windows = window_list_provider_->GetWindowList();
-    if (windows.empty())
-      return NULL;
-    current_activity_window_ = windows.back();
-  }
-  return current_activity_window_;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
-// Begin BezelController::ScrollDelegate overrides.
+// BezelController::ScrollDelegate:
+
 void SplitViewController::ScrollBegin(BezelController::Bezel bezel,
                                       float delta) {
   if (!CanScroll())
     return;
   state_ = SCROLLING;
-  aura::Window* current_window = GetCurrentActivityWindow();
-  CHECK(current_window);
 
   aura::Window::Windows windows = window_list_provider_->GetWindowList();
   CHECK(windows.size() >= 2);
-  aura::Window::Windows::const_iterator it =
-      std::find(windows.begin(), windows.end(), current_window);
-  CHECK(it != windows.end());
+  aura::Window::Windows::const_reverse_iterator iter = windows.rbegin();
+  aura::Window* current_window = *(iter);
+  CHECK(wm::IsActiveWindow(current_window));
 
   if (delta > 0) {
     right_window_ = current_window;
-    // reverse iterator points to the position before normal iterator |it|
-    aura::Window::Windows::const_reverse_iterator rev_it(it);
-    // circle to end if needed.
-    left_window_ = rev_it == windows.rend() ? windows.back() : *(rev_it);
+    left_window_ = *(iter + 1);
   } else {
     left_window_ = current_window;
-    ++it;
-    // circle to front if needed.
-    right_window_ = it == windows.end() ? windows.front() : *it;
+    right_window_ = *(iter + 1);
   }
 
   CHECK(left_window_);
   CHECK(right_window_);
 
-  // TODO(oshima|mfomitchev): crbug.com/388362
-  // Until we are properly hiding off-screen windows in window manager:
-  // Loop through all windows and hide them
-  for (it = windows.begin(); it != windows.end(); ++it) {
-    if (*it != left_window_ && *it != right_window_)
-      (*it)->Hide();
-  }
-
   UpdateSeparatorPositionFromScrollDelta(delta);
   UpdateLayout(false);
 }
 
-// Max distance from the scroll end position to the middle of the screen where
-// we would go into the split view mode.
-const int kMaxDistanceFromMiddle = 120;
 void SplitViewController::ScrollEnd() {
   if (state_ != SCROLLING)
     return;
 
+  // Max distance from the scroll end position to the middle of the screen where
+  // we would go into the split view mode.
+  const int kMaxDistanceFromMiddle = 120;
   int container_width = container_->GetBoundsInScreen().width();
   if (std::abs(container_width / 2 - separator_position_) <=
       kMaxDistanceFromMiddle) {
@@ -248,12 +224,12 @@ void SplitViewController::ScrollEnd() {
     separator_position_ = container_width / 2;
   } else if (separator_position_ < container_width / 2) {
     separator_position_ = 0;
-    current_activity_window_ = right_window_;
     state_ = INACTIVE;
+    wm::ActivateWindow(right_window_);
   } else {
     separator_position_ = container_width;
-    current_activity_window_ = left_window_;
     state_ = INACTIVE;
+    wm::ActivateWindow(left_window_);
   }
   UpdateLayout(true);
 }
@@ -267,34 +243,9 @@ void SplitViewController::ScrollUpdate(float delta) {
 
 bool SplitViewController::CanScroll() {
   // TODO(mfomitchev): return false in vertical orientation, in full screen.
-  bool result = (window_manager_ && !window_manager_->IsOverviewModeActive() &&
-                 !IsSplitViewModeActive() &&
+  bool result = (!IsSplitViewModeActive() &&
                  window_list_provider_->GetWindowList().size() >= 2);
   return result;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// WindowManagerObserver overrides
-void SplitViewController::OnOverviewModeEnter() {
-  if (state_ == ACTIVE) {
-    CHECK(left_window_);
-    CHECK(right_window_);
-    window_list_provider_->MoveToFront(right_window_);
-    window_list_provider_->MoveToFront(left_window_);
-    // TODO(mfomitchev): This shouldn't be done here, but the overview mode's
-    // transition animation currently looks bad if the starting transform of
-    // any window is not gfx::Transform().
-    right_window_->SetTransform(gfx::Transform());
-  } else if (current_activity_window_) {
-    window_list_provider_->MoveToFront(current_activity_window_);
-  }
-  state_ = INACTIVE;
-  left_window_ = NULL;
-  right_window_ = NULL;
-  current_activity_window_ = NULL;
-}
-
-void SplitViewController::OnOverviewModeExit() {
 }
 
 }  // namespace athena

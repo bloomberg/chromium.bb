@@ -17,9 +17,6 @@ class ATHENA_EXPORT WindowListProvider {
 
   // Returns an ordered list of windows.
   virtual aura::Window::Windows GetWindowList() const = 0;
-
-  // Moves the window to the front of the list.
-  virtual void MoveToFront(aura::Window* window) = 0;
 };
 
 }  // namespace athena
