@@ -2022,6 +2022,7 @@ PassRefPtr<RenderStyle> Document::styleForElementIgnoringPendingStylesheets(Elem
 
 PassRefPtr<RenderStyle> Document::styleForPage(int pageIndex)
 {
+    updateDistributionIfNeeded();
     return ensureStyleResolver().styleForPage(pageIndex);
 }
 

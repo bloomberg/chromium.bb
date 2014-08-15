@@ -54,10 +54,8 @@ void ParentDetails::didTraverseInsertionPoint(const InsertionPoint* insertionPoi
 
 ContainerNode* parent(const Node* node, ParentDetails* details)
 {
-    // FIXME: We should probably ASSERT(!node->document().childNeedsDistributionRecalc()) here, but
-    // a bunch of things use NodeRenderingTraversal::parent in places where that looks like it could
-    // be false.
     ASSERT(node);
+    ASSERT(!node->document().childNeedsDistributionRecalc());
     if (isActiveInsertionPoint(*node))
         return 0;
     ComposedTreeWalker walker(node, ComposedTreeWalker::CanStartFromShadowBoundary);
