@@ -239,6 +239,47 @@ bool ShouldInitializeBrowserGpuChannelAndTransportSurface() {
 }
 #endif
 
+// Disable optimizations for this block of functions so the compiler doesn't
+// merge them all together. This makes it possible to tell what thread was
+// unresponsive by inspecting the callstack.
+MSVC_DISABLE_OPTIMIZE()
+MSVC_PUSH_DISABLE_WARNING(4748)
+
+NOINLINE void ResetThread_DB(scoped_ptr<BrowserProcessSubThread> thread) {
+  thread.reset();
+}
+
+NOINLINE void ResetThread_FILE(scoped_ptr<BrowserProcessSubThread> thread) {
+  thread.reset();
+}
+
+NOINLINE void ResetThread_FILE_USER_BLOCKING(
+    scoped_ptr<BrowserProcessSubThread> thread) {
+  thread.reset();
+}
+
+NOINLINE void ResetThread_PROCESS_LAUNCHER(
+    scoped_ptr<BrowserProcessSubThread> thread) {
+  thread.reset();
+}
+
+NOINLINE void ResetThread_CACHE(scoped_ptr<BrowserProcessSubThread> thread) {
+  thread.reset();
+}
+
+NOINLINE void ResetThread_IO(scoped_ptr<BrowserProcessSubThread> thread) {
+  thread.reset();
+}
+
+#if !defined(OS_IOS)
+NOINLINE void ResetThread_IndexedDb(scoped_ptr<base::Thread> thread) {
+  thread.reset();
+}
+#endif
+
+MSVC_POP_WARNING()
+MSVC_ENABLE_OPTIMIZE();
+
 }  // namespace
 
 // The currently-running BrowserMainLoop.  There can be one or zero.
@@ -807,42 +848,42 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
     // - (Not sure why DB stops last.)
     switch (thread_id) {
       case BrowserThread::DB: {
-          TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:DBThread");
-          db_thread_.reset();
-        }
+        TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:DBThread");
+        ResetThread_DB(db_thread_.Pass());
         break;
-      case BrowserThread::FILE_USER_BLOCKING: {
-          TRACE_EVENT0("shutdown",
-                       "BrowserMainLoop::Subsystem:FileUserBlockingThread");
-          file_user_blocking_thread_.reset();
-        }
-        break;
+      }
       case BrowserThread::FILE: {
-          TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:FileThread");
+        TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:FileThread");
 #if !defined(OS_IOS)
-          // Clean up state that lives on or uses the file_thread_ before
-          // it goes away.
-          if (resource_dispatcher_host_)
-            resource_dispatcher_host_.get()->save_file_manager()->Shutdown();
+        // Clean up state that lives on or uses the file_thread_ before
+        // it goes away.
+        if (resource_dispatcher_host_)
+          resource_dispatcher_host_.get()->save_file_manager()->Shutdown();
 #endif  // !defined(OS_IOS)
-          file_thread_.reset();
-        }
+        ResetThread_FILE(file_thread_.Pass());
         break;
+      }
+      case BrowserThread::FILE_USER_BLOCKING: {
+        TRACE_EVENT0("shutdown",
+                      "BrowserMainLoop::Subsystem:FileUserBlockingThread");
+        ResetThread_FILE_USER_BLOCKING(file_user_blocking_thread_.Pass());
+        break;
+      }
       case BrowserThread::PROCESS_LAUNCHER: {
-          TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:LauncherThread");
-          process_launcher_thread_.reset();
-        }
+        TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:LauncherThread");
+        ResetThread_PROCESS_LAUNCHER(process_launcher_thread_.Pass());
         break;
+      }
       case BrowserThread::CACHE: {
-          TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:CacheThread");
-          cache_thread_.reset();
-        }
+        TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:CacheThread");
+        ResetThread_CACHE(cache_thread_.Pass());
         break;
+      }
       case BrowserThread::IO: {
-          TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:IOThread");
-          io_thread_.reset();
-        }
+        TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:IOThread");
+        ResetThread_IO(io_thread_.Pass());
         break;
+      }
       case BrowserThread::UI:
       case BrowserThread::ID_COUNT:
       default:
@@ -854,7 +895,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 #if !defined(OS_IOS)
   {
     TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:IndexedDBThread");
-    indexed_db_thread_.reset();
+    ResetThread_IndexedDb(indexed_db_thread_.Pass());
   }
 #endif
 
