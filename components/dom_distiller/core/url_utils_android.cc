@@ -68,6 +68,18 @@ jstring GetIsDistillableJs(JNIEnv* env, jclass clazz) {
       env, dom_distiller::url_utils::GetIsDistillableJs()).Release();
 }
 
+jstring GetValueForKeyInUrl(JNIEnv* env,
+                            jclass clazz,
+                            jstring j_url,
+                            jstring j_key) {
+  GURL url(base::android::ConvertJavaStringToUTF8(env, j_url));
+  std::string key = base::android::ConvertJavaStringToUTF8(env, j_key);
+  return base::android::
+      ConvertUTF8ToJavaString(
+          env, dom_distiller::url_utils::GetValueForKeyInUrl(url, key))
+      .Release();
+}
+
 bool RegisterUrlUtils(JNIEnv* env) { return RegisterNativesImpl(env); }
 
 }  // namespace android

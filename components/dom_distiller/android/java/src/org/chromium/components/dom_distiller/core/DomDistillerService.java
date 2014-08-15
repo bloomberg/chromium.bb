@@ -27,12 +27,23 @@ public final class DomDistillerService {
         return mDistilledPagePrefs;
     }
 
+    public boolean hasEntry(String entryId) {
+        return nativeHasEntry(mDomDistillerServiceAndroid, entryId);
+    }
+
+    public String getUrlForEntry(String entryId) {
+        return nativeGetUrlForEntry(mDomDistillerServiceAndroid, entryId);
+    }
+
     @CalledByNative
     private static DomDistillerService create(long nativeDomDistillerServiceAndroid) {
         ThreadUtils.assertOnUiThread();
         return new DomDistillerService(nativeDomDistillerServiceAndroid);
     }
 
+    private native boolean nativeHasEntry(long nativeDomDistillerServiceAndroid, String entryId);
+    private native String nativeGetUrlForEntry(
+        long nativeDomDistillerServiceAndroid, String entryId);
     private static native long nativeGetDistilledPagePrefsPtr(
         long nativeDomDistillerServiceAndroid);
 }

@@ -38,6 +38,8 @@ class LazyDomDistillerService : public DomDistillerServiceInterface,
       const GURL& url,
       scoped_ptr<DistillerPage> distiller_page,
       const ArticleAvailableCallback& article_cb) OVERRIDE;
+  virtual bool HasEntry(const std::string& entry_id) OVERRIDE;
+  virtual std::string GetUrlForEntry(const std::string& entry_id) OVERRIDE;
   virtual std::vector<ArticleEntry> GetEntries() const OVERRIDE;
   virtual scoped_ptr<ArticleEntry> RemoveEntry(
       const std::string& entry_id) OVERRIDE;

@@ -458,5 +458,117 @@ TEST_F(DomDistillerServiceTest, TestMultiplePageArticle) {
   EXPECT_EQ(0u, store_->GetEntries().size());
 }
 
+TEST_F(DomDistillerServiceTest, TestHasEntry) {
+  FakeDistiller* distiller = new FakeDistiller(false);
+  EXPECT_CALL(*distiller_factory_, CreateDistillerImpl())
+      .WillOnce(Return(distiller));
+
+  GURL url("http://www.example.com/p1");
+
+  MockArticleAvailableCallback article_cb;
+  EXPECT_CALL(article_cb, DistillationCompleted(true));
+
+  std::string entry_id = service_->AddToList(
+      url,
+      service_->CreateDefaultDistillerPage(gfx::Size()).Pass(),
+      ArticleCallback(&article_cb));
+
+  ASSERT_FALSE(distiller->GetArticleCallback().is_null());
+  EXPECT_EQ(url, distiller->GetUrl());
+
+  scoped_ptr<DistilledArticleProto> proto = CreateArticleWithURL(url.spec());
+  RunDistillerCallback(distiller, proto.Pass());
+
+  // Check that HasEntry returns true for the article just added.
+  EXPECT_TRUE(service_->HasEntry(entry_id));
+
+  // Remove article and check that there is no longer an entry for the given
+  // entry id.
+  service_->RemoveEntry(entry_id);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0u, store_->GetEntries().size());
+  EXPECT_FALSE(service_->HasEntry(entry_id));
+}
+
+TEST_F(DomDistillerServiceTest, TestGetUrlForOnePageEntry) {
+  FakeDistiller* distiller = new FakeDistiller(false);
+  EXPECT_CALL(*distiller_factory_, CreateDistillerImpl())
+      .WillOnce(Return(distiller));
+
+  GURL url("http://www.example.com/p1");
+
+  MockArticleAvailableCallback article_cb;
+  EXPECT_CALL(article_cb, DistillationCompleted(true));
+
+  std::string entry_id = service_->AddToList(
+      url,
+      service_->CreateDefaultDistillerPage(gfx::Size()).Pass(),
+      ArticleCallback(&article_cb));
+
+  ASSERT_FALSE(distiller->GetArticleCallback().is_null());
+  EXPECT_EQ(url, distiller->GetUrl());
+
+  scoped_ptr<DistilledArticleProto> proto = CreateArticleWithURL(url.spec());
+  RunDistillerCallback(distiller, proto.Pass());
+
+  // Check if retrieved URL is same as given URL.
+  GURL retrieved_url(service_->GetUrlForEntry(entry_id));
+  EXPECT_EQ(url, retrieved_url);
+
+  // Remove article and check that there is no longer an entry for the given
+  // entry id.
+  service_->RemoveEntry(entry_id);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0u, store_->GetEntries().size());
+  EXPECT_EQ("", service_->GetUrlForEntry(entry_id));
+}
+
+TEST_F(DomDistillerServiceTest, TestGetUrlForMultiPageEntry) {
+  FakeDistiller* distiller = new FakeDistiller(false);
+  EXPECT_CALL(*distiller_factory_, CreateDistillerImpl())
+      .WillOnce(Return(distiller));
+
+  const int kPageCount = 8;
+
+  std::string base_url("http://www.example.com/p");
+  GURL pages_url[kPageCount];
+  for (int page_num = 0; page_num < kPageCount; ++page_num) {
+    pages_url[page_num] = GURL(base_url + base::IntToString(page_num));
+  }
+
+  MockArticleAvailableCallback article_cb;
+  EXPECT_CALL(article_cb, DistillationCompleted(true));
+
+  std::string entry_id = service_->AddToList(
+      pages_url[0],
+      service_->CreateDefaultDistillerPage(gfx::Size()).Pass(),
+      ArticleCallback(&article_cb));
+
+  ArticleEntry entry;
+  ASSERT_FALSE(distiller->GetArticleCallback().is_null());
+  EXPECT_EQ(pages_url[0], distiller->GetUrl());
+
+  // Create the article with pages to pass to the distiller.
+  scoped_ptr<DistilledArticleProto> proto =
+      CreateArticleWithURL(pages_url[0].spec());
+  for (int page_num = 1; page_num < kPageCount; ++page_num) {
+    DistilledPageProto* distilled_page = proto->add_pages();
+    distilled_page->set_url(pages_url[page_num].spec());
+  }
+
+  RunDistillerCallback(distiller, proto.Pass());
+  EXPECT_TRUE(store_->GetEntryByUrl(pages_url[0], &entry));
+
+  // Check if retrieved URL is same as given URL for the first page.
+  GURL retrieved_url(service_->GetUrlForEntry(entry_id));
+  EXPECT_EQ(pages_url[0], retrieved_url);
+
+  // Remove the article and check that no URL can be retrieved for the entry.
+  service_->RemoveEntry(entry_id);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0u, store_->GetEntries().size());
+  EXPECT_EQ("", service_->GetUrlForEntry(entry_id));
+}
+
 }  // namespace test
 }  // namespace dom_distiller

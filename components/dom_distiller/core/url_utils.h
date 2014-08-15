@@ -21,6 +21,12 @@ const GURL GetDistillerViewUrlFromEntryId(const std::string& scheme,
 const GURL GetDistillerViewUrlFromUrl(const std::string& scheme,
                                       const GURL& view_url);
 
+// Returns the value of the query parameter for the given |key| for a given URL.
+// If the URL is invalid or if the key is not found, returns an empty string.
+// If there are multiple keys found in the URL, returns the value for the first
+// key.
+std::string GetValueForKeyInUrl(const GURL& url, const std::string& key);
+
 // Returns the value of the query parameter for the given path.
 std::string GetValueForKeyInUrlPathQuery(const std::string& path,
                                          const std::string& key);

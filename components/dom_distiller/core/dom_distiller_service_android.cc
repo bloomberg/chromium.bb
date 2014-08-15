@@ -5,10 +5,15 @@
 #include "components/dom_distiller/core/dom_distiller_service_android.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
+#include "base/android/scoped_java_ref.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/distilled_page_prefs_android.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "jni/DomDistillerService_jni.h"
+
+using base::android::ConvertUTF8ToJavaString;
+using base::android::ScopedJavaLocalRef;
 
 namespace dom_distiller {
 namespace android {
@@ -23,6 +28,23 @@ DomDistillerServiceAndroid::DomDistillerServiceAndroid(
 }
 
 DomDistillerServiceAndroid::~DomDistillerServiceAndroid() {
+}
+
+bool DomDistillerServiceAndroid::HasEntry(JNIEnv* env,
+                                          jobject obj,
+                                          jstring j_entry_id) {
+  const std::string entry_id =
+      base::android::ConvertJavaStringToUTF8(env, j_entry_id);
+  return service_->HasEntry(entry_id);
+}
+
+ScopedJavaLocalRef<jstring> DomDistillerServiceAndroid::GetUrlForEntry(
+    JNIEnv* env,
+    jobject obj,
+    jstring j_entry_id) {
+  const std::string entry_id =
+      base::android::ConvertJavaStringToUTF8(env, j_entry_id);
+  return ConvertUTF8ToJavaString(env, service_->GetUrlForEntry(entry_id));
 }
 
 jlong DomDistillerServiceAndroid::GetDistilledPagePrefsPtr(JNIEnv* env,

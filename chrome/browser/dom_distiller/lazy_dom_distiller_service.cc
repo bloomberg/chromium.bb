@@ -45,6 +45,15 @@ syncer::SyncableService* LazyDomDistillerService::GetSyncableService() const {
   return instance()->GetSyncableService();
 }
 
+bool LazyDomDistillerService::HasEntry(const std::string& entry_id) {
+  return instance()->HasEntry(entry_id);
+}
+
+std::string LazyDomDistillerService::GetUrlForEntry(
+    const std::string& entry_id) {
+  return instance()->GetUrlForEntry(entry_id);
+}
+
 const std::string LazyDomDistillerService::AddToList(
     const GURL& url,
     scoped_ptr<DistillerPage> distiller_page,

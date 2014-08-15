@@ -55,6 +55,14 @@ class DomDistillerServiceInterface {
       scoped_ptr<DistillerPage> distiller_page,
       const ArticleAvailableCallback& article_cb) = 0;
 
+  // Returns whether an article stored has the given entry id.
+  virtual bool HasEntry(const std::string& entry_id) = 0;
+
+  // Returns the source URL given an entry ID. If the entry ID article has
+  // multiple pages, this will return the URL of the first page. Returns an
+  // empty string if there is no entry associated with the given entry ID.
+  virtual std::string GetUrlForEntry(const std::string& entry_id) = 0;
+
   // Gets the full list of entries.
   virtual std::vector<ArticleEntry> GetEntries() const = 0;
 
@@ -118,6 +126,8 @@ class DomDistillerService : public DomDistillerServiceInterface {
       const GURL& url,
       scoped_ptr<DistillerPage> distiller_page,
       const ArticleAvailableCallback& article_cb) OVERRIDE;
+  virtual bool HasEntry(const std::string& entry_id) OVERRIDE;
+  virtual std::string GetUrlForEntry(const std::string& entry_id) OVERRIDE;
   virtual std::vector<ArticleEntry> GetEntries() const OVERRIDE;
   virtual scoped_ptr<ArticleEntry> RemoveEntry(
       const std::string& entry_id) OVERRIDE;

@@ -108,6 +108,18 @@ const std::string DomDistillerService::AddToList(
   return task_tracker->GetEntryId();
 }
 
+bool DomDistillerService::HasEntry(const std::string& entry_id) {
+  return store_->GetEntryById(entry_id, NULL);
+}
+
+std::string DomDistillerService::GetUrlForEntry(const std::string& entry_id) {
+  ArticleEntry entry;
+  if (store_->GetEntryById(entry_id, &entry)) {
+    return entry.pages().Get(0).url();
+  }
+  return "";
+}
+
 std::vector<ArticleEntry> DomDistillerService::GetEntries() const {
   return store_->GetEntries();
 }
