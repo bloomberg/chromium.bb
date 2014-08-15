@@ -1187,7 +1187,10 @@ void ExtensionSettingsHandler::HandleShowPath(const base::ListValue* args) {
       extension_id,
       ExtensionRegistry::EVERYTHING);
   CHECK(extension);
-  platform_util::OpenItem(profile, extension->path());
+  // We explicitly show manifest.json in order to work around an issue in OSX
+  // where opening the directory doesn't focus the Finder.
+  platform_util::ShowItemInFolder(profile,
+                                  extension->path().Append(kManifestFilename));
 }
 
 void ExtensionSettingsHandler::ShowAlert(const std::string& message) {
