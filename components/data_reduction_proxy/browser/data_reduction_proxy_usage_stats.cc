@@ -226,7 +226,8 @@ void DataReductionProxyUsageStats::RecordBypassEventHistograms(
     int net_error,
     bool did_fallback) const {
   DataReductionProxyTypeInfo data_reduction_proxy_info;
-  if (data_reduction_proxy_params_->IsDataReductionProxy(
+  if (bypassed_proxy.is_valid() && !bypassed_proxy.is_direct() &&
+      data_reduction_proxy_params_->IsDataReductionProxy(
       bypassed_proxy.host_port_pair(), &data_reduction_proxy_info)) {
     if (data_reduction_proxy_info.is_ssl)
       return;
