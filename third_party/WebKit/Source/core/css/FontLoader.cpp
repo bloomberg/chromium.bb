@@ -26,20 +26,20 @@ FontLoader::~FontLoader()
         return;
     }
     m_beginLoadingTimer.stop();
-
-    // When the m_fontsToBeginLoading vector is destroyed it will decrement the
-    // request counts on the ResourceFetcher for all the fonts that were pending
-    // at the time the FontLoader dies.
+    // This will decrement the request counts on the ResourceFetcher for all the
+    // fonts that were pending at the time the FontLoader dies.
+    clearPendingFonts();
 #endif
 }
 
 void FontLoader::addFontToBeginLoading(FontResource* fontResource)
 {
-    if (!m_resourceFetcher || !fontResource->stillNeedsLoad())
+    if (!m_resourceFetcher || !fontResource->stillNeedsLoad() || fontResource->loadScheduled())
         return;
 
     m_fontsToBeginLoading.append(
         std::make_pair(fontResource, ResourceLoader::RequestCountTracker(m_resourceFetcher, fontResource)));
+    fontResource->didScheduleLoad();
     if (!m_beginLoadingTimer.isActive())
         m_beginLoadingTimer.startOneShot(0, FROM_HERE);
 }
@@ -80,11 +80,18 @@ void FontLoader::clearResourceFetcherAndFontSelector()
     }
 
     m_beginLoadingTimer.stop();
-    m_fontsToBeginLoading.clear();
+    clearPendingFonts();
     m_resourceFetcher = nullptr;
     m_fontSelector = nullptr;
 }
 #endif
+
+void FontLoader::clearPendingFonts()
+{
+    for (FontsToLoadVector::iterator it = m_fontsToBeginLoading.begin(); it != m_fontsToBeginLoading.end(); ++it)
+        it->first->didUnscheduleLoad();
+    m_fontsToBeginLoading.clear();
+}
 
 void FontLoader::trace(Visitor* visitor)
 {

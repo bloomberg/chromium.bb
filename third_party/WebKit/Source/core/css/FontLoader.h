@@ -37,6 +37,7 @@ public:
 private:
     FontLoader(CSSFontSelector*, ResourceFetcher*);
     void beginLoadTimerFired(Timer<FontLoader>*);
+    void clearPendingFonts();
 
     Timer<FontLoader> m_beginLoadingTimer;
 

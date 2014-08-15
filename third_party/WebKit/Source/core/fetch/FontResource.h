@@ -55,8 +55,12 @@ public:
 
     virtual void allClientsRemoved() OVERRIDE;
     void beginLoadIfNeeded(ResourceFetcher* dl);
-    virtual bool stillNeedsLoad() const OVERRIDE { return !m_loadInitiated; }
+    virtual bool stillNeedsLoad() const OVERRIDE { return m_state != LoadInitiated; }
     bool exceedsFontLoadWaitLimit() const { return m_exceedsFontLoadWaitLimit; }
+
+    bool loadScheduled() const { return m_state != Unloaded; }
+    void didScheduleLoad();
+    void didUnscheduleLoad();
 
     void setCORSFailed() { m_corsFailed = true; }
     bool isCORSFailed() const { return m_corsFailed; }
@@ -76,8 +80,10 @@ private:
     virtual void checkNotify() OVERRIDE;
     void fontLoadWaitLimitCallback(Timer<FontResource>*);
 
+    enum State { Unloaded, LoadScheduled, LoadInitiated };
+
     OwnPtr<FontCustomPlatformData> m_fontData;
-    bool m_loadInitiated;
+    State m_state;
     bool m_exceedsFontLoadWaitLimit;
     bool m_corsFailed;
     Timer<FontResource> m_fontLoadWaitLimitTimer;

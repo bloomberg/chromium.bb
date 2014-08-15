@@ -76,7 +76,7 @@ static void recordPackageFormatHistogram(FontPackageFormat format)
 
 FontResource::FontResource(const ResourceRequest& resourceRequest)
     : Resource(resourceRequest, Font)
-    , m_loadInitiated(false)
+    , m_state(Unloaded)
     , m_exceedsFontLoadWaitLimit(false)
     , m_corsFailed(false)
     , m_fontLoadWaitLimitTimer(this, &FontResource::fontLoadWaitLimitCallback)
@@ -93,6 +93,18 @@ void FontResource::trace(Visitor* visitor)
     visitor->trace(m_externalSVGDocument);
 #endif
     Resource::trace(visitor);
+}
+
+void FontResource::didScheduleLoad()
+{
+    if (m_state == Unloaded)
+        m_state = LoadScheduled;
+}
+
+void FontResource::didUnscheduleLoad()
+{
+    if (m_state == LoadScheduled)
+        m_state = Unloaded;
 }
 
 void FontResource::load(ResourceFetcher*, const ResourceLoaderOptions& options)
@@ -112,8 +124,8 @@ void FontResource::didAddClient(ResourceClient* c)
 
 void FontResource::beginLoadIfNeeded(ResourceFetcher* dl)
 {
-    if (!m_loadInitiated) {
-        m_loadInitiated = true;
+    if (m_state != LoadInitiated) {
+        m_state = LoadInitiated;
         Resource::load(dl, m_options);
         m_fontLoadWaitLimitTimer.startOneShot(fontLoadWaitLimitSec, FROM_HERE);
 
