@@ -241,22 +241,27 @@ PreviewPanel.prototype.updatePreviewArea_ = function() {
     return;
   var selection = this.selection_;
 
-  // Update thumbnails.
-  this.thumbnails.selection = selection.totalCount !== 0 ?
-      selection : {entries: [this.currentEntry_]};
-
-  // Check if the breadcrumb list should show instead on the preview text.
-  var entry;
-  if (this.selection_.totalCount == 1)
-    entry = this.selection_.entries[0];
-  if (this.selection_.totalCount <= 1)
+  // If no item is selected, no information is displayed on the footer.
+  if (selection.totalCount === 0) {
+    this.thumbnails.hidden = true;
     this.calculatingSizeLabel_.hidden = true;
-
-  if (entry) {
-    this.previewText_.textContent = util.getEntryLabel(
-        this.volumeManager_, entry);
+    this.previewText_.textContent = '';
     return;
   }
+
+  // If one item is selected, show thumbnail and entry name of the item.
+  if (selection.totalCount === 1) {
+    this.thumbnails.hidden = false;
+    this.thumbnails.selection = selection;
+    this.calculatingSizeLabel_.hidden = true;
+    this.previewText_.textContent = util.getEntryLabel(
+        this.volumeManager_, selection.entries[0]);
+    return;
+  }
+
+  // Update thumbnails.
+  this.thumbnails.hidden = false;
+  this.thumbnails.selection = selection;
 
   // Obtains the preview text.
   var text;
@@ -403,6 +408,14 @@ PreviewPanel.Thumbnails.prototype = {
   set selection(value) {
     this.sequence_++;
     this.loadThumbnails_(value);
+  },
+
+  /**
+   * Set visibility of the thumbnails.
+   * @param {boolean} hidden Whether to hide the thumbnails or not.
+   */
+  set hidden(value) {
+    this.element_.hidden = value;
   }
 };
 
