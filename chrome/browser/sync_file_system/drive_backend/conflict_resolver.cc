@@ -43,7 +43,6 @@ void ConflictResolver::RunPreflight(scoped_ptr<SyncTaskToken> token) {
 
 void ConflictResolver::RunExclusive(scoped_ptr<SyncTaskToken> token) {
   if (!IsContextReady()) {
-    NOTREACHED();
     SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_FAILED);
     return;
   }

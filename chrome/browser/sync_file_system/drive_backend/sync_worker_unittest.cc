@@ -300,7 +300,7 @@ TEST_F(SyncWorkerTest, UpdateServiceState) {
       base::Bind(&SyncWorkerTest::CheckServiceState,
                  AsWeakPtr(),
                  SYNC_STATUS_ACCESS_FORBIDDEN,
-                 REMOTE_SERVICE_AUTHENTICATION_REQUIRED));
+                 REMOTE_SERVICE_ACCESS_FORBIDDEN));
 
   GetSyncTaskManager()->ScheduleTask(
       FROM_HERE,

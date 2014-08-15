@@ -143,8 +143,7 @@ void SyncWorker::UninstallOrigin(
       callback);
 }
 
-void SyncWorker::ProcessRemoteChange(
-    const SyncFileCallback& callback) {
+void SyncWorker::ProcessRemoteChange(const SyncFileCallback& callback) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
   RemoteToLocalSyncer* syncer = new RemoteToLocalSyncer(context_.get());
@@ -382,6 +381,10 @@ void SyncWorker::DidInitialize(SyncEngineInitializer* initializer,
                                SyncStatusCode status) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
+  if (status == SYNC_STATUS_ACCESS_FORBIDDEN) {
+    UpdateServiceState(REMOTE_SERVICE_ACCESS_FORBIDDEN, "Access forbidden");
+    return;
+  }
   if (status != SYNC_STATUS_OK) {
     UpdateServiceState(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE,
                        "Could not initialize remote service");
@@ -638,7 +641,7 @@ void SyncWorker::UpdateServiceStateFromSyncStatusCode(
 
     // OAuth token error.
     case SYNC_STATUS_ACCESS_FORBIDDEN:
-      UpdateServiceState(REMOTE_SERVICE_AUTHENTICATION_REQUIRED,
+      UpdateServiceState(REMOTE_SERVICE_ACCESS_FORBIDDEN,
                          "Access forbidden");
       break;
 

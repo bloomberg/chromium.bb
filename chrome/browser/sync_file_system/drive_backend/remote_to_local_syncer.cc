@@ -119,7 +119,6 @@ void RemoteToLocalSyncer::RunPreflight(scoped_ptr<SyncTaskToken> token) {
 void RemoteToLocalSyncer::RunExclusive(scoped_ptr<SyncTaskToken> token) {
   if (!drive_service() || !metadata_database() || !remote_change_processor()) {
     token->RecordLog("Context not ready.");
-    NOTREACHED();
     SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_FAILED);
     return;
   }

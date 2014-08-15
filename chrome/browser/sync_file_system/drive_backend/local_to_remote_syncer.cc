@@ -99,7 +99,6 @@ void LocalToRemoteSyncer::RunPreflight(scoped_ptr<SyncTaskToken> token) {
 
   if (!IsContextReady()) {
     token->RecordLog("Context not ready.");
-    NOTREACHED();
     SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_FAILED);
     return;
   }
