@@ -109,6 +109,7 @@ void CastContentBrowserClient::AllowCertificateError(
     content::ResourceType resource_type,
     bool overridable,
     bool strict_enforcement,
+    bool expired_previous_decision,
     const base::Callback<void(bool)>& callback,
     content::CertificateRequestResultType* result) {
   // Allow developers to override certificate errors.

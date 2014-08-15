@@ -117,24 +117,61 @@ enum SSLBlockingPageEvent {
   UNUSED_BLOCKING_PAGE_EVENT,
 };
 
+// Events for UMA. Do not reorder or change!
+enum SSLExpirationAndDecision {
+  EXPIRED_AND_PROCEED,
+  EXPIRED_AND_DO_NOT_PROCEED,
+  NOT_EXPIRED_AND_PROCEED,
+  NOT_EXPIRED_AND_DO_NOT_PROCEED,
+  END_OF_SSL_EXPIRATION_AND_DECISION,
+};
+
 void RecordSSLBlockingPageEventStats(SSLBlockingPageEvent event) {
   UMA_HISTOGRAM_ENUMERATION("interstitial.ssl",
                             event,
                             UNUSED_BLOCKING_PAGE_EVENT);
 }
 
-void RecordSSLBlockingPageDetailedStats(
-    bool proceed,
-    int cert_error,
-    bool overridable,
-    bool internal,
-    int num_visits,
-    bool captive_portal_detection_enabled,
-    bool captive_portal_probe_completed,
-    bool captive_portal_no_response,
-    bool captive_portal_detected) {
+void RecordSSLExpirationPageEventState(bool expired_but_previously_allowed,
+                                       bool proceed,
+                                       bool overridable) {
+  SSLExpirationAndDecision event;
+  if (expired_but_previously_allowed && proceed)
+    event = EXPIRED_AND_PROCEED;
+  else if (expired_but_previously_allowed && !proceed)
+    event = EXPIRED_AND_DO_NOT_PROCEED;
+  else if (!expired_but_previously_allowed && proceed)
+    event = NOT_EXPIRED_AND_PROCEED;
+  else
+    event = NOT_EXPIRED_AND_DO_NOT_PROCEED;
+
+  if (overridable) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "interstitial.ssl.expiration_and_decision.overridable",
+        event,
+        END_OF_SSL_EXPIRATION_AND_DECISION);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(
+        "interstitial.ssl.expiration_and_decision.nonoverridable",
+        event,
+        END_OF_SSL_EXPIRATION_AND_DECISION);
+  }
+}
+
+void RecordSSLBlockingPageDetailedStats(bool proceed,
+                                        int cert_error,
+                                        bool overridable,
+                                        bool internal,
+                                        int num_visits,
+                                        bool captive_portal_detection_enabled,
+                                        bool captive_portal_probe_completed,
+                                        bool captive_portal_no_response,
+                                        bool captive_portal_detected,
+                                        bool expired_but_previously_allowed) {
   UMA_HISTOGRAM_ENUMERATION("interstitial.ssl_error_type",
       SSLErrorInfo::NetErrorToErrorType(cert_error), SSLErrorInfo::END_OF_ENUM);
+  RecordSSLExpirationPageEventState(
+      expired_but_previously_allowed, proceed, overridable);
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
   if (captive_portal_detection_enabled)
     RecordSSLBlockingPageEventStats(
@@ -284,31 +321,31 @@ void LaunchDateAndTimeSettings() {
 
 // Note that we always create a navigation entry with SSL errors.
 // No error happening loading a sub-resource triggers an interstitial so far.
-SSLBlockingPage::SSLBlockingPage(
-    content::WebContents* web_contents,
-    int cert_error,
-    const net::SSLInfo& ssl_info,
-    const GURL& request_url,
-    bool overridable,
-    bool strict_enforcement,
-    const base::Callback<void(bool)>& callback)
+SSLBlockingPage::SSLBlockingPage(content::WebContents* web_contents,
+                                 int cert_error,
+                                 const net::SSLInfo& ssl_info,
+                                 const GURL& request_url,
+                                 int options_mask,
+                                 const base::Callback<void(bool)>& callback)
     : callback_(callback),
       web_contents_(web_contents),
       cert_error_(cert_error),
       ssl_info_(ssl_info),
       request_url_(request_url),
-      overridable_(overridable),
-      strict_enforcement_(strict_enforcement),
+      overridable_(options_mask & OVERRIDABLE &&
+                   !(options_mask & STRICT_ENFORCEMENT)),
+      strict_enforcement_((options_mask & STRICT_ENFORCEMENT) != 0),
       interstitial_page_(NULL),
       internal_(false),
       num_visits_(-1),
       captive_portal_detection_enabled_(false),
       captive_portal_probe_completed_(false),
       captive_portal_no_response_(false),
-      captive_portal_detected_(false) {
+      captive_portal_detected_(false),
+      expired_but_previously_allowed_(
+          (options_mask & EXPIRED_BUT_PREVIOUSLY_ALLOWED) != 0) {
   Profile* profile = Profile::FromBrowserContext(
       web_contents->GetBrowserContext());
-  if (strict_enforcement_) overridable_ = false;
   // For UMA stats.
   if (net::IsHostnameNonUnique(request_url_.HostNoBrackets()))
     internal_ = true;
@@ -373,7 +410,8 @@ SSLBlockingPage::~SSLBlockingPage() {
                                        captive_portal_detection_enabled_,
                                        captive_portal_probe_completed_,
                                        captive_portal_no_response_,
-                                       captive_portal_detected_);
+                                       captive_portal_detected_,
+                                       expired_but_previously_allowed_);
     // The page is closed without the user having chosen what to do, default to
     // deny.
     NotifyDenyCertificate();
@@ -562,7 +600,8 @@ void SSLBlockingPage::OnProceed() {
                                      captive_portal_detection_enabled_,
                                      captive_portal_probe_completed_,
                                      captive_portal_no_response_,
-                                     captive_portal_detected_);
+                                     captive_portal_detected_,
+                                     expired_but_previously_allowed_);
 #if defined(ENABLE_EXTENSIONS)
   // ExperienceSampling: Notify that user decided to proceed.
   if (sampling_event_.get())
@@ -581,7 +620,8 @@ void SSLBlockingPage::OnDontProceed() {
                                      captive_portal_detection_enabled_,
                                      captive_portal_probe_completed_,
                                      captive_portal_no_response_,
-                                     captive_portal_detected_);
+                                     captive_portal_detected_,
+                                     expired_but_previously_allowed_);
 #if defined(ENABLE_EXTENSIONS)
   // ExperienceSampling: Notify that user decided to not proceed.
   // This also occurs if the user navigates away or closes the tab.

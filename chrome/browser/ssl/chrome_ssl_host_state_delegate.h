@@ -35,9 +35,11 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
                          net::X509Certificate* cert,
                          net::CertStatus error) OVERRIDE;
   virtual void Clear() OVERRIDE;
-  virtual net::CertPolicy::Judgment QueryPolicy(const std::string& host,
-                                                net::X509Certificate* cert,
-                                                net::CertStatus error) OVERRIDE;
+  virtual net::CertPolicy::Judgment QueryPolicy(
+      const std::string& host,
+      net::X509Certificate* cert,
+      net::CertStatus error,
+      bool* expired_previous_decision) OVERRIDE;
   virtual void HostRanInsecureContent(const std::string& host,
                                       int pid) OVERRIDE;
   virtual bool DidHostRunInsecureContent(const std::string& host,
@@ -66,6 +68,8 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
   FRIEND_TEST_ALL_PREFIXES(ForgetInstantlySSLHostStateDelegateTest,
                            MakeAndForgetException);
   FRIEND_TEST_ALL_PREFIXES(RememberSSLHostStateDelegateTest, AfterRestart);
+  FRIEND_TEST_ALL_PREFIXES(RememberSSLHostStateDelegateTest,
+                           QueryPolicyExpired);
 
   // Used to specify whether new content setting entries should be created if
   // they don't already exist when querying the user's settings.
@@ -105,9 +109,13 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
   // GetValidCertDecisionsDict will create a new set of entries within the
   // dictionary if they do not already exist. Otherwise will fail and return if
   // NULL if they do not exist.
+  //
+  // |expired_previous_decision| is set to true if there had been a previous
+  // decision made by the user but it has expired. Otherwise it is set to false.
   base::DictionaryValue* GetValidCertDecisionsDict(
       base::DictionaryValue* dict,
-      CreateDictionaryEntriesDisposition create_entries);
+      CreateDictionaryEntriesDisposition create_entries,
+      bool* expired_previous_decision);
 
   scoped_ptr<base::Clock> clock_;
   RememberSSLExceptionDecisionsDisposition should_remember_ssl_decisions_;

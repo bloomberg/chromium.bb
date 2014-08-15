@@ -44,20 +44,27 @@ class SSLPolicy {
   SSLPolicyBackend* backend() const { return backend_; }
 
  private:
+  enum OnCertErrorInternalOptionsMask {
+    OVERRIDABLE = 1 << 0,
+    STRICT_ENFORCEMENT = 1 << 1,
+    EXPIRED_PREVIOUS_DECISION = 1 << 2
+  };
+
   // Callback that the user chose to accept or deny the certificate.
   void OnAllowCertificate(scoped_refptr<SSLCertErrorHandler> handler,
                           bool allow);
 
   // Helper method for derived classes handling certificate errors.
   //
-  // |overridable| indicates whether or not the user could (assuming perfect
+  // Options should be a bitmask combination of OnCertErrorInternalOptionsMask.
+  // OVERRIDABLE indicates whether or not the user could (assuming perfect
   // knowledge) successfully override the error and still get the security
-  // guarantees of TLS. |strict_enforcement| indicates whether or not the
-  // site the user is trying to connect to has requested strict enforcement
-  // of certificate validation (e.g. with HTTP Strict-Transport-Security).
-  void OnCertErrorInternal(SSLCertErrorHandler* handler,
-                           bool overridable,
-                           bool strict_enforcement);
+  // guarantees of TLS. STRICT_ENFORCEMENT indicates whether or not the site the
+  // user is trying to connect to has requested strict enforcement of
+  // certificate validation (e.g. with HTTP Strict-Transport-Security).
+  // EXPIRED_PREVIOUS_DECISION indicates whether a user decision had been
+  // previously made but the decision has expired.
+  void OnCertErrorInternal(SSLCertErrorHandler* handler, int options_mask);
 
   // If the security style of |entry| has not been initialized, then initialize
   // it with the default style for its URL.

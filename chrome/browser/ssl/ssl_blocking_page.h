@@ -54,6 +54,12 @@ class SSLBlockingPage : public content::InterstitialPageDelegate,
     CMD_CLOCK = 5
   };
 
+  enum SSLBlockingPageOptionsMask {
+    OVERRIDABLE = 1 << 0,
+    STRICT_ENFORCEMENT = 1 << 1,
+    EXPIRED_BUT_PREVIOUSLY_ALLOWED = 1 << 2
+  };
+
   virtual ~SSLBlockingPage();
 
   // Create an interstitial and show it.
@@ -61,15 +67,14 @@ class SSLBlockingPage : public content::InterstitialPageDelegate,
 
   // Creates an SSL blocking page. If the blocking page isn't shown, the caller
   // is responsible for cleaning up the blocking page, otherwise the
-  // interstitial takes ownership when shown.
-  SSLBlockingPage(
-      content::WebContents* web_contents,
-      int cert_error,
-      const net::SSLInfo& ssl_info,
-      const GURL& request_url,
-      bool overridable,
-      bool strict_enforcement,
-      const base::Callback<void(bool)>& callback);
+  // interstitial takes ownership when shown. |options_mask| must be a bitwise
+  // mask of SSLBlockingPageOptionsMask values.
+  SSLBlockingPage(content::WebContents* web_contents,
+                  int cert_error,
+                  const net::SSLInfo& ssl_info,
+                  const GURL& request_url,
+                  int options_mask,
+                  const base::Callback<void(bool)>& callback);
 
   // A method that sets strings in the specified dictionary from the passed
   // vector so that they can be used to resource the ssl_roadblock.html/
@@ -104,14 +109,14 @@ class SSLBlockingPage : public content::InterstitialPageDelegate,
   base::Callback<void(bool)> callback_;
 
   content::WebContents* web_contents_;
-  int cert_error_;
+  const int cert_error_;
   const net::SSLInfo ssl_info_;
-  GURL request_url_;
+  const GURL request_url_;
   // Could the user successfully override the error?
   // overridable_ will be set to false if strict_enforcement_ is true.
-  bool overridable_;
+  const bool overridable_;
   // Has the site requested strict enforcement of certificate errors?
-  bool strict_enforcement_;
+  const bool strict_enforcement_;
   content::InterstitialPage* interstitial_page_;  // Owns us.
   // Is the hostname for an internal network?
   bool internal_;
@@ -127,6 +132,9 @@ class SSLBlockingPage : public content::InterstitialPageDelegate,
   bool captive_portal_no_response_;
   // Was a captive portal detected?
   bool captive_portal_detected_;
+  // Did the user previously allow a bad certificate but the decision has now
+  // expired?
+  const bool expired_but_previously_allowed_;
 
   // For the FieldTrial: this contains the name of the condition.
   std::string trial_condition_;

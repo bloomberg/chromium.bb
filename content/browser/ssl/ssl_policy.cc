@@ -32,11 +32,13 @@ SSLPolicy::SSLPolicy(SSLPolicyBackend* backend)
 }
 
 void SSLPolicy::OnCertError(SSLCertErrorHandler* handler) {
+  bool expired_previous_decision;
   // First we check if we know the policy for this error.
   net::CertPolicy::Judgment judgment =
       backend_->QueryPolicy(handler->ssl_info().cert.get(),
                             handler->request_url().host(),
-                            handler->cert_error());
+                            handler->cert_error(),
+                            &expired_previous_decision);
 
   if (judgment == net::CertPolicy::ALLOWED) {
     handler->ContinueRequest();
@@ -47,6 +49,7 @@ void SSLPolicy::OnCertError(SSLCertErrorHandler* handler) {
   // For now we handle the DENIED as the UNKNOWN, which means a blocking
   // page is shown to the user every time he comes back to the page.
 
+  int options_mask = 0;
   switch (handler->cert_error()) {
     case net::ERR_CERT_COMMON_NAME_INVALID:
     case net::ERR_CERT_DATE_INVALID:
@@ -54,7 +57,13 @@ void SSLPolicy::OnCertError(SSLCertErrorHandler* handler) {
     case net::ERR_CERT_WEAK_SIGNATURE_ALGORITHM:
     case net::ERR_CERT_WEAK_KEY:
     case net::ERR_CERT_NAME_CONSTRAINT_VIOLATION:
-      OnCertErrorInternal(handler, !handler->fatal(), handler->fatal());
+      if (!handler->fatal())
+        options_mask |= OVERRIDABLE;
+      else
+        options_mask |= STRICT_ENFORCEMENT;
+      if (expired_previous_decision)
+        options_mask |= EXPIRED_PREVIOUS_DECISION;
+      OnCertErrorInternal(handler, options_mask);
       break;
     case net::ERR_CERT_NO_REVOCATION_MECHANISM:
       // Ignore this error.
@@ -70,7 +79,11 @@ void SSLPolicy::OnCertError(SSLCertErrorHandler* handler) {
     case net::ERR_CERT_INVALID:
     case net::ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY:
     case net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN:
-      OnCertErrorInternal(handler, false, handler->fatal());
+      if (handler->fatal())
+        options_mask |= STRICT_ENFORCEMENT;
+      if (expired_previous_decision)
+        options_mask |= EXPIRED_PREVIOUS_DECISION;
+      OnCertErrorInternal(handler, options_mask);
       break;
     default:
       NOTREACHED();
@@ -182,8 +195,11 @@ void SSLPolicy::OnAllowCertificate(scoped_refptr<SSLCertErrorHandler> handler,
 // Certificate Error Routines
 
 void SSLPolicy::OnCertErrorInternal(SSLCertErrorHandler* handler,
-                                    bool overridable,
-                                    bool strict_enforcement) {
+                                    int options_mask) {
+  bool overridable = (options_mask & OVERRIDABLE) != 0;
+  bool strict_enforcement = (options_mask & STRICT_ENFORCEMENT) != 0;
+  bool expired_previous_decision =
+      (options_mask & EXPIRED_PREVIOUS_DECISION) != 0;
   CertificateRequestResultType result =
       CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE;
   GetContentClient()->browser()->AllowCertificateError(
@@ -195,7 +211,9 @@ void SSLPolicy::OnCertErrorInternal(SSLCertErrorHandler* handler,
       handler->resource_type(),
       overridable,
       strict_enforcement,
-      base::Bind(&SSLPolicy::OnAllowCertificate, base::Unretained(this),
+      expired_previous_decision,
+      base::Bind(&SSLPolicy::OnAllowCertificate,
+                 base::Unretained(this),
                  make_scoped_refptr(handler)),
       &result);
   switch (result) {

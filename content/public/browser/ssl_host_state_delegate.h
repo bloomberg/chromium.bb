@@ -39,10 +39,14 @@ class SSLHostStateDelegate {
   // Clear all allow/deny preferences.
   virtual void Clear() = 0;
 
-  // Queries whether |cert| is allowed or denied for |host| and |error|.
-  virtual net::CertPolicy::Judgment QueryPolicy(const std::string& host,
-                                                net::X509Certificate* cert,
-                                                net::CertStatus error) = 0;
+  // Queries whether |cert| is allowed or denied for |host| and |error|. Returns
+  // true in |expired_previous_decision| if a previous user decision expired
+  // immediately prior to this query, otherwise false.
+  virtual net::CertPolicy::Judgment QueryPolicy(
+      const std::string& host,
+      net::X509Certificate* cert,
+      net::CertStatus error,
+      bool* expired_previous_decision) = 0;
 
   // Records that a host has run insecure content.
   virtual void HostRanInsecureContent(const std::string& host, int pid) = 0;

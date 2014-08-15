@@ -147,7 +147,12 @@ std::string GetKey(net::X509Certificate* cert, net::CertStatus error) {
 // expired, a new dictionary will be created
 base::DictionaryValue* ChromeSSLHostStateDelegate::GetValidCertDecisionsDict(
     base::DictionaryValue* dict,
-    CreateDictionaryEntriesDisposition create_entries) {
+    CreateDictionaryEntriesDisposition create_entries,
+    bool* expired_previous_decision) {
+  // This needs to be done first in case the method is short circuited by an
+  // early failure.
+  *expired_previous_decision = false;
+
   // Extract the version of the certificate decision structure from the content
   // setting.
   int version;
@@ -202,11 +207,12 @@ base::DictionaryValue* ChromeSSLHostStateDelegate::GetValidCertDecisionsDict(
   if (should_remember_ssl_decisions_ !=
           ForgetSSLExceptionDecisionsAtSessionEnd &&
       decision_expiration.ToInternalValue() <= now.ToInternalValue()) {
+    *expired_previous_decision = true;
+
     if (create_entries == DoNotCreateDictionaryEntries)
       return NULL;
 
     expired = true;
-
     base::Time expiration_time =
         now + default_ssl_cert_decision_expiration_delta_;
     // Unfortunately, JSON (and thus content settings) doesn't support int64
@@ -276,12 +282,16 @@ void ChromeSSLHostStateDelegate::Clear() {
 net::CertPolicy::Judgment ChromeSSLHostStateDelegate::QueryPolicy(
     const std::string& host,
     net::X509Certificate* cert,
-    net::CertStatus error) {
+    net::CertStatus error,
+    bool* expired_previous_decision) {
   HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
   GURL url = GetSecureGURLForHost(host);
   scoped_ptr<base::Value> value(map->GetWebsiteSetting(
       url, url, CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS, std::string(), NULL));
 
+  // Set a default value in case this method is short circuited and doesn't do a
+  // full query.
+  *expired_previous_decision = false;
   if (!value.get() || !value->IsType(base::Value::TYPE_DICTIONARY))
     return net::CertPolicy::UNKNOWN;
 
@@ -291,10 +301,14 @@ net::CertPolicy::Judgment ChromeSSLHostStateDelegate::QueryPolicy(
   DCHECK(success);
 
   base::DictionaryValue* cert_error_dict;  // Owned by value
-  cert_error_dict =
-      GetValidCertDecisionsDict(dict, DoNotCreateDictionaryEntries);
-  if (!cert_error_dict)
+  cert_error_dict = GetValidCertDecisionsDict(
+      dict, DoNotCreateDictionaryEntries, expired_previous_decision);
+  if (!cert_error_dict) {
+    // This revoke is necessary to clear any old expired setting that may
+    // lingering in the case that an old decision expried.
+    RevokeUserDecisions(host);
     return net::CertPolicy::UNKNOWN;
+  }
 
   success = cert_error_dict->GetIntegerWithoutPathExpansion(GetKey(cert, error),
                                                             &policy_decision);
@@ -406,8 +420,9 @@ void ChromeSSLHostStateDelegate::ChangeCertPolicy(
   bool success = value->GetAsDictionary(&dict);
   DCHECK(success);
 
-  base::DictionaryValue* cert_dict =
-      GetValidCertDecisionsDict(dict, CreateDictionaryEntries);
+  bool expired_previous_decision;  // unused value in this function
+  base::DictionaryValue* cert_dict = GetValidCertDecisionsDict(
+      dict, CreateDictionaryEntries, &expired_previous_decision);
   // If a a valid certificate dictionary cannot be extracted from the content
   // setting, that means it's in an unknown format. Unfortunately, there's
   // nothing to be done in that case, so a silent fail is the only option.

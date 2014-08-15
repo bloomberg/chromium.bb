@@ -10264,6 +10264,26 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="interstitial.ssl.expiration_and_decision.nonoverridable"
+    enum="SSLIsExpiredAndDecision">
+  <owner>jww@chromium.org</owner>
+  <summary>
+    Records when a user has made a decision to proceed on a nonoverridable SSL
+    interstitial. Also records whether a prior decision had been made but the
+    decision expired.
+  </summary>
+</histogram>
+
+<histogram name="interstitial.ssl.expiration_and_decision.overridable"
+    enum="SSLIsExpiredAndDecision">
+  <owner>jww@chromium.org</owner>
+  <summary>
+    Records when a user has made a decision to proceed on an overridable SSL
+    interstitial. Also records whether a prior decision had been made but the
+    decision expired.
+  </summary>
+</histogram>
+
 <histogram name="interstitial.ssl_accept_time" units="milliseconds">
   <obsolete>
     Removed on 8/1/13.
@@ -49253,6 +49273,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="7" label="CERT_WEAK_SIGNATURE_ALGORITHM"/>
   <int value="8" label="CERT_WEAK_KEY"/>
   <int value="9" label="UNKNOWN"/>
+</enum>
+
+<enum name="SSLIsExpiredAndDecision" type="int">
+  <int value="0" label="EXPIRED_AND_PROCEED"/>
+  <int value="1" label="EXPIRED_AND_DO_NOT_PROCEED"/>
+  <int value="2" label="NOT_EXPIRED_AND_PROCEED"/>
+  <int value="3" label="NOT_EXPIRED_AND_DO_NOT_PROCEED"/>
 </enum>
 
 <enum name="SSLNonAttackCauses" type="int">

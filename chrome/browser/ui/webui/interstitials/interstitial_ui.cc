@@ -74,9 +74,16 @@ SSLBlockingPage* CreateSSLBlockingPage(content::WebContents* web_contents) {
   ssl_info.cert = new net::X509Certificate(
       request_url.host(), "CA", base::Time::Max(), base::Time::Max());
   // This delegate doesn't create an interstitial.
-  return new SSLBlockingPage(web_contents, cert_error, ssl_info,
-                             request_url, overridable,
-                             strict_enforcement,
+  int options_mask = 0;
+  if (overridable)
+    options_mask = SSLBlockingPage::OVERRIDABLE;
+  if (strict_enforcement)
+    options_mask = SSLBlockingPage::STRICT_ENFORCEMENT;
+  return new SSLBlockingPage(web_contents,
+                             cert_error,
+                             ssl_info,
+                             request_url,
+                             options_mask,
                              base::Callback<void(bool)>());
 }
 

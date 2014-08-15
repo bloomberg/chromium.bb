@@ -48,11 +48,13 @@ void SSLPolicyBackend::AllowCertForHost(net::X509Certificate* cert,
 net::CertPolicy::Judgment SSLPolicyBackend::QueryPolicy(
     net::X509Certificate* cert,
     const std::string& host,
-    net::CertStatus error) {
+    net::CertStatus error,
+    bool* expired_previous_decision) {
   if (!ssl_host_state_delegate_)
     return net::CertPolicy::UNKNOWN;
 
-  return ssl_host_state_delegate_->QueryPolicy(host, cert, error);
+  return ssl_host_state_delegate_->QueryPolicy(
+      host, cert, error, expired_previous_decision);
 }
 
 }  // namespace content
