@@ -486,6 +486,32 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       // Hide the button until the image is hovered over.
       [changePhotoButton_ setHidden:YES];
     }
+
+    // Set the image cell's accessibility strings to be the same as the
+    // button's strings.
+    [[self cell] accessibilitySetOverrideValue:l10n_util::GetNSString(
+        editingAllowed ?
+        IDS_PROFILES_NEW_AVATAR_MENU_CHANGE_PHOTO_ACCESSIBLE_NAME :
+        IDS_PROFILES_NEW_AVATAR_MENU_PHOTO_ACCESSIBLE_NAME)
+                                  forAttribute:NSAccessibilityTitleAttribute];
+    [[self cell] accessibilitySetOverrideValue:
+        editingAllowed ? NSAccessibilityButtonRole : NSAccessibilityImageRole
+                                  forAttribute:NSAccessibilityRoleAttribute];
+    [[self cell] accessibilitySetOverrideValue:
+        NSAccessibilityRoleDescription(NSAccessibilityButtonRole, nil)
+            forAttribute:NSAccessibilityRoleDescriptionAttribute];
+
+    // The button and the cell should read the same thing.
+    [self accessibilitySetOverrideValue:l10n_util::GetNSString(
+        editingAllowed ?
+        IDS_PROFILES_NEW_AVATAR_MENU_CHANGE_PHOTO_ACCESSIBLE_NAME :
+        IDS_PROFILES_NEW_AVATAR_MENU_PHOTO_ACCESSIBLE_NAME)
+                                  forAttribute:NSAccessibilityTitleAttribute];
+    [self accessibilitySetOverrideValue:NSAccessibilityButtonRole
+                                  forAttribute:NSAccessibilityRoleAttribute];
+    [self accessibilitySetOverrideValue:
+        NSAccessibilityRoleDescription(NSAccessibilityButtonRole, nil)
+            forAttribute:NSAccessibilityRoleDescriptionAttribute];
   }
   return self;
 }
@@ -515,6 +541,28 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
 - (void)mouseExited:(NSEvent*)event {
   [changePhotoButton_ setHidden:YES];
+}
+
+// Make sure the element is focusable for accessibility.
+- (BOOL)canBecomeKeyView {
+  return YES;
+}
+
+- (BOOL)accessibilityIsIgnored {
+  return NO;
+}
+
+- (NSArray*)accessibilityActionNames {
+  NSArray* parentActions = [super accessibilityActionNames];
+  return [parentActions arrayByAddingObject:NSAccessibilityPressAction];
+}
+
+- (void)accessibilityPerformAction:(NSString*)action {
+  if ([action isEqualToString:NSAccessibilityPressAction]) {
+    avatarMenu_->EditProfile(avatarMenu_->GetActiveProfileIndex());
+  }
+
+  [super accessibilityPerformAction:action];
 }
 
 - (TransparentBackgroundButton*)changePhotoButtonWithRect:(NSRect)rect {
@@ -608,6 +656,12 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       // Hide the textfield until the user clicks on the button.
       [profileNameTextField_ setHidden:YES];
     }
+
+    [[self cell] accessibilitySetOverrideValue:NSAccessibilityButtonRole
+                           forAttribute:NSAccessibilityRoleAttribute];
+    [[self cell] accessibilitySetOverrideValue:
+        NSAccessibilityRoleDescription(NSAccessibilityButtonRole, nil)
+          forAttribute:NSAccessibilityRoleDescriptionAttribute];
 
     [self setBordered:NO];
     [self setFont:[NSFont labelFontOfSize:kTitleFontSize]];
@@ -987,6 +1041,13 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
             signed_in) {
       viewMode_ = profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT;
     }
+
+    [window accessibilitySetOverrideValue:
+        l10n_util::GetNSString(IDS_PROFILES_NEW_AVATAR_MENU_ACCESSIBLE_NAME)
+                             forAttribute:NSAccessibilityTitleAttribute];
+    [window accessibilitySetOverrideValue:
+        l10n_util::GetNSString(IDS_PROFILES_NEW_AVATAR_MENU_ACCESSIBLE_NAME)
+                             forAttribute:NSAccessibilityHelpAttribute];
 
     [[self bubble] setAlignment:info_bubble::kAlignRightEdgeToAnchorEdge];
     [[self bubble] setArrowLocation:info_bubble::kNoArrow];
@@ -1401,6 +1462,11 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
         [link setTarget:self];
         [link setAction:@selector(showAccountReauthenticationView:)];
         [link setTag:kPrimaryProfileTag];
+        [[link cell]
+            accessibilitySetOverrideValue:l10n_util::GetNSStringF(
+            IDS_PROFILES_ACCOUNT_BUTTON_AUTH_ERROR_ACCESSIBLE_NAME,
+            item.sync_state)
+                             forAttribute:NSAccessibilityTitleAttribute];
       } else {
         [link setEnabled:NO];
       }

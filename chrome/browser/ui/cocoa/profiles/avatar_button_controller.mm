@@ -13,9 +13,11 @@
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "components/signin/core/browser/signin_error_controller.h"
+#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #import "ui/base/cocoa/appkit_utils.h"
 #import "ui/base/cocoa/hover_image_button.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/nine_image_painter_factory.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -51,7 +53,7 @@ NSImage* GetImageFromResourceID(int resourceId) {
    base::scoped_nsobject<NSImage> authenticationErrorImage_;
 }
 - (void)setIsThemedWindow:(BOOL)isThemedWindow;
-- (void)setHasError:(BOOL)hasError;
+- (void)setHasError:(BOOL)hasError withTitle:(NSString*)title;
 
 @end
 
@@ -131,13 +133,19 @@ NSImage* GetImageFromResourceID(int resourceId) {
   isThemedWindow_ = isThemedWindow;
 }
 
-- (void)setHasError:(BOOL)hasError {
+- (void)setHasError:(BOOL)hasError withTitle:(NSString*)title {
   if (hasError) {
     authenticationErrorImage_.reset(
         [ui::ResourceBundle::GetSharedInstance().GetImageNamed(
             IDR_ICON_PROFILES_AVATAR_BUTTON_ERROR).ToNSImage() retain]);
+    [self accessibilitySetOverrideValue:l10n_util::GetNSStringF(
+        IDS_PROFILES_ACCOUNT_BUTTON_AUTH_ERROR_ACCESSIBLE_NAME,
+        base::SysNSStringToUTF16(title))
+                           forAttribute:NSAccessibilityTitleAttribute];
   } else {
     authenticationErrorImage_.reset();
+    [self accessibilitySetOverrideValue:title
+                          forAttribute:NSAccessibilityTitleAttribute];
   }
 }
 
@@ -172,8 +180,7 @@ NSImage* GetImageFromResourceID(int resourceId) {
         [[CustomThemeButtonCell alloc] initWithThemedWindow:isThemedWindow_]);
     SigninErrorController* errorController =
         profiles::GetSigninErrorController(browser->profile());
-    if (errorController)
-      [cell setHasError:errorController->HasError()];
+
     [button_ setCell:cell.get()];
     [self setView:button_];
 
@@ -189,6 +196,8 @@ NSImage* GetImageFromResourceID(int resourceId) {
     [button_ setAction:@selector(buttonClicked:)];
 
     [self updateAvatarButtonAndLayoutParent:NO];
+    if (errorController)
+      [cell setHasError:errorController->HasError() withTitle:[button_ title]];
 
     NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
     [center addObserver:self
@@ -262,7 +271,7 @@ NSImage* GetImageFromResourceID(int resourceId) {
 }
 
 - (void)updateErrorStatus:(BOOL)hasError {
-  [[button_ cell] setHasError:hasError];
+  [[button_ cell] setHasError:hasError withTitle:[button_ title]];
   [self updateAvatarButtonAndLayoutParent:YES];
 }
 
