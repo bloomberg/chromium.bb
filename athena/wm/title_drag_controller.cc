@@ -4,11 +4,11 @@
 
 #include "athena/wm/title_drag_controller.h"
 
-#include "athena/common/closure_animation_observer.h"
 #include "base/bind.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
+#include "ui/compositor/closure_animation_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/wm/core/shadow.h"
@@ -46,7 +46,7 @@ void TitleDragController::EndTransition(aura::Window* window, bool complete) {
   ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
   settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  settings.AddObserver(new ClosureAnimationObserver(
+  settings.AddObserver(new ui::ClosureAnimationObserver(
       base::Bind(&TitleDragController::OnTransitionEnd,
                  weak_ptr_.GetWeakPtr(),
                  window,

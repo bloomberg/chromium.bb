@@ -8,7 +8,6 @@
 #include <functional>
 #include <vector>
 
-#include "athena/common/closure_animation_observer.h"
 #include "athena/wm/overview_toolbar.h"
 #include "athena/wm/public/window_list_provider.h"
 #include "base/bind.h"
@@ -19,6 +18,7 @@
 #include "ui/aura/window_property.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/compositor/closure_animation_observer.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -367,7 +367,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
         dragged_window_->layer()->GetAnimator());
     settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    settings.AddObserver(new ClosureAnimationObserver(
+    settings.AddObserver(new ui::ClosureAnimationObserver(
         base::Bind(&base::DeletePointer<aura::Window>, dragged_window_)));
 
     WindowOverviewState* dragged_state =

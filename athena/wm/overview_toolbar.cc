@@ -4,13 +4,13 @@
 
 #include "athena/wm/overview_toolbar.h"
 
-#include "athena/common/closure_animation_observer.h"
 #include "athena/resources/grit/athena_resources.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/closure_animation_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_delegate.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -43,7 +43,7 @@ class ActionButton : public ui::LayerDelegate {
   static void DestroyAfterFadeout(scoped_ptr<ActionButton> button) {
     ui::Layer* layer = button->layer();
     ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
-    settings.AddObserver(new ClosureAnimationObserver(
+    settings.AddObserver(new ui::ClosureAnimationObserver(
         base::Bind(&ActionButton::DestroyImmediately, base::Passed(&button))));
     layer->SetOpacity(0);
   }

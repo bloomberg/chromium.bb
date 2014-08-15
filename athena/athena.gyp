@@ -39,8 +39,6 @@
         'activity/public/activity_view_manager.h',
         'activity/public/activity_view_model.h',
         'athena_export.h',
-        'common/closure_animation_observer.cc',
-        'common/closure_animation_observer.h',
         'common/container_priorities.h',
         'common/fill_layout_manager.cc',
         'common/fill_layout_manager.h',

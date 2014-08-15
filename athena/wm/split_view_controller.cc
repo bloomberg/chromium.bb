@@ -10,6 +10,7 @@
 #include "athena/wm/public/window_manager.h"
 #include "base/bind.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/closure_animation_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event_handler.h"
@@ -17,31 +18,6 @@
 #include "ui/gfx/screen.h"
 
 namespace athena {
-namespace {
-
-// An animation observer that runs a callback at the end of the animation, and
-// destroys itself.
-class CallbackAnimationObserver : public ui::ImplicitAnimationObserver {
- public:
-  explicit CallbackAnimationObserver(const base::Closure& closure)
-      : closure_(closure) {}
-
-  virtual ~CallbackAnimationObserver() {}
-
- private:
-  // Overridden from ui::ImplicitAnimationObserver:
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE {
-    if (!closure_.is_null())
-      closure_.Run();
-    delete this;
-  }
-
-  const base::Closure closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(CallbackAnimationObserver);
-};
-
-}  // namespace
 
 SplitViewController::SplitViewController(
     aura::Window* container,
@@ -143,7 +119,7 @@ void SplitViewController::SetWindowTransform(aura::Window* window,
     ui::ScopedLayerAnimationSettings settings(animator);
     settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    settings.AddObserver(new CallbackAnimationObserver(
+    settings.AddObserver(new ui::ClosureAnimationObserver(
         base::Bind(&SplitViewController::OnAnimationCompleted,
                    weak_factory_.GetWeakPtr(),
                    window)));

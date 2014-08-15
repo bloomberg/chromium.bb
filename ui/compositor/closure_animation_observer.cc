@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "athena/common/closure_animation_observer.h"
+#include "ui/compositor/closure_animation_observer.h"
 
-namespace athena {
+namespace ui {
 
 ClosureAnimationObserver::ClosureAnimationObserver(const base::Closure& closure)
     : closure_(closure) {
@@ -19,4 +19,4 @@ void ClosureAnimationObserver::OnImplicitAnimationsCompleted() {
   delete this;
 }
 
-}  // namespace athena
+}  // namespace ui

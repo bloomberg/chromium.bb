@@ -24,6 +24,8 @@
         'COMPOSITOR_IMPLEMENTATION',
       ],
       'sources': [
+        'closure_animation_observer.cc',
+        'closure_animation_observer.h',
         'compositor.cc',
         'compositor.h',
         'compositor_animation_observer.h',
