@@ -51,11 +51,11 @@ private:
     bool checkElementMatchesRadioNodeListFilter(const Element&) const;
 
     bool matchesByIdOrName(const Element&) const;
+    bool shouldOnlyMatchImgElements() const { return type() == RadioImgNodeListType; }
 
     virtual bool elementMatches(const Element&) const OVERRIDE;
 
     AtomicString m_name;
-    const bool m_onlyMatchImgElements;
 };
 
 } // namespace
