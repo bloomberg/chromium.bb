@@ -629,7 +629,7 @@ void RenderLayer::updateScrollingStateAfterCompositingChange()
 
     m_hasNonCompositedChild = false;
     for (RenderLayer* child = firstChild(); child; child = child->nextSibling()) {
-        if (child->compositingState() == NotComposited) {
+        if (child->compositingState() == NotComposited || child->compositingState() == HasOwnBackingButPaintsIntoAncestor) {
             m_hasNonCompositedChild = true;
             return;
         }

@@ -388,7 +388,8 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
         bool onlyScrolledCompositedLayers = scrollsOverflow()
             && !layer()->hasVisibleNonLayerContent()
             && !layer()->hasNonCompositedChild()
-            && !layer()->hasBlockSelectionGapBounds();
+            && !layer()->hasBlockSelectionGapBounds()
+            && box().style()->backgroundLayers().attachment() != LocalBackgroundAttachment;
 
         if (usesCompositedScrolling() || onlyScrolledCompositedLayers)
             requiresRepaint = false;
