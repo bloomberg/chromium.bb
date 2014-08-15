@@ -179,10 +179,10 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, VerifyLoadedModules) {
         base::FilePath(safe_browsing::kTestDllNames[i]), NULL));
   }
 
-  // Edit the first byte of the function exported by the first module.
-  HMODULE module_handle = NULL;
-  EXPECT_TRUE(
-      GetModuleHandleEx(0, safe_browsing::kTestDllNames[0], &module_handle));
+  // Edit the first byte of the function exported by the first module. Calling
+  // GetModuleHandle so we do not increment the library ref count.
+  HMODULE module_handle = GetModuleHandle(safe_browsing::kTestDllNames[0]);
+  EXPECT_NE(reinterpret_cast<HANDLE>(NULL), module_handle);
   uint8_t* export_addr = reinterpret_cast<uint8_t*>(
       GetProcAddress(module_handle, safe_browsing::kTestExportName));
   EXPECT_NE(reinterpret_cast<uint8_t*>(NULL), export_addr);
