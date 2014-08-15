@@ -358,7 +358,8 @@ void GCMStoreImpl::Backend::RemoveRegistration(const std::string& app_id,
   leveldb::WriteOptions write_options;
   write_options.sync = true;
 
-  leveldb::Status status = db_->Delete(write_options, MakeSlice(app_id));
+  leveldb::Status status =
+      db_->Delete(write_options, MakeSlice(MakeRegistrationKey(app_id)));
   if (status.ok()) {
     foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, true));
     return;
