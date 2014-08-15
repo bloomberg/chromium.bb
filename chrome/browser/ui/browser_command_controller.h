@@ -98,6 +98,7 @@ class BrowserCommandController : public CommandUpdaterDelegate,
   // Overridden from TabRestoreServiceObserver:
   virtual void TabRestoreServiceChanged(TabRestoreService* service) OVERRIDE;
   virtual void TabRestoreServiceDestroyed(TabRestoreService* service) OVERRIDE;
+  virtual void TabRestoreServiceLoaded(TabRestoreService* service) OVERRIDE;
 
   // Returns true if the regular Chrome UI (not the fullscreen one and
   // not the single-tab one) is shown. Used for updating window command states
@@ -156,6 +157,8 @@ class BrowserCommandController : public CommandUpdaterDelegate,
 
   // Updates commands for find.
   void UpdateCommandsForFind();
+
+  void UpdateTabRestoreCommandState();
 
   // Add/remove observers for interstitial attachment/detachment from
   // |contents|.

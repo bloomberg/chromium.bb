@@ -145,6 +145,7 @@
       'browser/ui/browser_navigator.cc',
       'browser/ui/browser_navigator.h',
       'browser/ui/browser_otr_state_android.cc',
+      'browser/ui/browser_tab_restorer.cc',
       'browser/ui/browser_ui_prefs.cc',
       'browser/ui/browser_ui_prefs.h',
       'browser/ui/browser_win.cc',

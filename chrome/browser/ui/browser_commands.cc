@@ -603,15 +603,6 @@ bool ActualSize(content::WebContents* contents) {
   return zoom_controller->GetZoomPercent() != 100.0f;
 }
 
-void RestoreTab(Browser* browser) {
-  content::RecordAction(UserMetricsAction("RestoreTab"));
-  TabRestoreService* service =
-      TabRestoreServiceFactory::GetForProfile(browser->profile());
-  if (service)
-    service->RestoreMostRecentEntry(browser->tab_restore_service_delegate(),
-                                    browser->host_desktop_type());
-}
-
 TabStripModelDelegate::RestoreTabType GetRestoreTabType(
     const Browser* browser) {
   TabRestoreService* service =

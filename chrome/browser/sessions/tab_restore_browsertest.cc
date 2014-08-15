@@ -5,10 +5,14 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/sessions/tab_restore_service.h"
+#include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -32,6 +36,45 @@
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "url/gurl.h"
 
+// Class used to run a message loop waiting for the TabRestoreService to finish
+// loading. Does nothing if the TabRestoreService was already loaded.
+class WaitForLoadObserver : public TabRestoreServiceObserver {
+ public:
+  explicit WaitForLoadObserver(Browser* browser)
+      : tab_restore_service_(
+          TabRestoreServiceFactory::GetForProfile(browser->profile())),
+        do_wait_(!tab_restore_service_->IsLoaded()) {
+    if (do_wait_)
+      tab_restore_service_->AddObserver(this);
+  }
+
+  virtual ~WaitForLoadObserver() {
+    if (do_wait_)
+      tab_restore_service_->RemoveObserver(this);
+  }
+
+  void Wait() {
+    if (do_wait_)
+      run_loop_.Run();
+  }
+
+ private:
+  // Overridden from TabRestoreServiceObserver:
+  virtual void TabRestoreServiceChanged(TabRestoreService* service) OVERRIDE {}
+  virtual void TabRestoreServiceDestroyed(TabRestoreService* service) OVERRIDE {
+  }
+  virtual void TabRestoreServiceLoaded(TabRestoreService* service) OVERRIDE {
+    DCHECK(do_wait_);
+    run_loop_.Quit();
+  }
+
+  TabRestoreService* tab_restore_service_;
+  const bool do_wait_;
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(WaitForLoadObserver);
+};
+
 class TabRestoreTest : public InProcessBrowserTest {
  public:
   TabRestoreTest() : active_browser_list_(NULL) {
@@ -50,7 +93,6 @@ class TabRestoreTest : public InProcessBrowserTest {
   }
 
   Browser* GetBrowser(int index) {
-
     CHECK(static_cast<int>(active_browser_list_->size()) > index);
     return active_browser_list_->get(index);
   }
@@ -84,8 +126,7 @@ class TabRestoreTest : public InProcessBrowserTest {
   // and to be active. If |expected_window_index| is equal to the number of
   // current windows, the restored tab is expected to be created in a new
   // window (since the index is 0-based).
-  void RestoreTab(int expected_window_index,
-                  int expected_tabstrip_index) {
+  void RestoreTab(int expected_window_index, int expected_tabstrip_index) {
     int window_count = static_cast<int>(active_browser_list_->size());
     ASSERT_GT(window_count, 0);
 
@@ -107,7 +148,11 @@ class TabRestoreTest : public InProcessBrowserTest {
     content::WindowedNotificationObserver tab_loaded_observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    chrome::RestoreTab(browser);
+    {
+      WaitForLoadObserver waiter(browser);
+      chrome::RestoreTab(browser);
+      waiter.Wait();
+    }
     tab_added_observer.Wait();
     tab_loaded_observer.Wait();
 
@@ -581,4 +626,19 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreTabWithSpecialURLOnBack) {
       ui_test_utils::FindInPage(tab, base::ASCIIToUTF16("webkit"), true, false,
                                 NULL, NULL),
       0);
+}
+
+IN_PROC_BROWSER_TEST_F(TabRestoreTest, PRE_RestoreOnStartup) {
+  // This results in a new tab at the end with url1.
+  AddSomeTabs(browser(), 1);
+
+  while (browser()->tab_strip_model()->count())
+    CloseTab(0);
+}
+
+// Verifies restoring a tab works on startup.
+IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreOnStartup) {
+  ASSERT_NO_FATAL_FAILURE(RestoreTab(0, 1));
+  EXPECT_EQ(url1_,
+            browser()->tab_strip_model()->GetWebContentsAt(1)->GetURL());
 }

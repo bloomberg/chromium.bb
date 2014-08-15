@@ -816,14 +816,17 @@ void BrowserCommandController::TabBlockedStateChanged(
 
 void BrowserCommandController::TabRestoreServiceChanged(
     TabRestoreService* service) {
-  command_updater_.UpdateCommandEnabled(
-      IDC_RESTORE_TAB,
-      GetRestoreTabType(browser_) != TabStripModelDelegate::RESTORE_NONE);
+  UpdateTabRestoreCommandState();
 }
 
 void BrowserCommandController::TabRestoreServiceDestroyed(
     TabRestoreService* service) {
   service->RemoveObserver(this);
+}
+
+void BrowserCommandController::TabRestoreServiceLoaded(
+    TabRestoreService* service) {
+  UpdateTabRestoreCommandState();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -874,7 +877,7 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_NEW_TAB, true);
   command_updater_.UpdateCommandEnabled(IDC_CLOSE_TAB, true);
   command_updater_.UpdateCommandEnabled(IDC_DUPLICATE_TAB, true);
-  command_updater_.UpdateCommandEnabled(IDC_RESTORE_TAB, false);
+  UpdateTabRestoreCommandState();
 #if defined(OS_WIN) && defined(USE_ASH)
   if (browser_->host_desktop_type() != chrome::HOST_DESKTOP_TYPE_ASH)
     command_updater_.UpdateCommandEnabled(IDC_EXIT, true);
@@ -1310,6 +1313,18 @@ void BrowserCommandController::UpdateReloadStopState(bool is_loading,
                                                      bool force) {
   window()->UpdateReloadStopState(is_loading, force);
   command_updater_.UpdateCommandEnabled(IDC_STOP, is_loading);
+}
+
+void BrowserCommandController::UpdateTabRestoreCommandState() {
+  TabRestoreService* tab_restore_service =
+      TabRestoreServiceFactory::GetForProfile(profile());
+  // The command is enabled if the service hasn't loaded yet to trigger loading.
+  // The command is updated once the load completes.
+  command_updater_.UpdateCommandEnabled(
+      IDC_RESTORE_TAB,
+      tab_restore_service &&
+      (!tab_restore_service->IsLoaded() ||
+       GetRestoreTabType(browser_) != TabStripModelDelegate::RESTORE_NONE));
 }
 
 void BrowserCommandController::UpdateCommandsForFind() {
