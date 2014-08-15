@@ -11942,6 +11942,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_SYNC_ACCOUNT_SYNCING_TO_USER_WITH_MANAGE_LINK" desc="The message that appears in the options dialog indicating that account is syncing to a user with the given email address, together with a link to manage their data (where supported, or not possible through the application)">
           Signed in as <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>. Manage your synced data on <ph name="BEGIN_LINK">&lt;a href="$2" target=&quot;_blank&quot;&gt;<ex>&lt;a href="$2" target=&quot;_blank&quot;&gt;</ex></ph>Google Dashboard<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
         </message>
+        <message name="IDS_SYNC_ACCOUNT_SYNCING_TO_USER_WITH_MANAGE_LINK_NEW" desc="The message that appears in the options dialog indicating that account is syncing to a user with the given email address, together with a link to manage their data (where supported, or not possible through the application)">
+          Signed in as <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>. Manage your synced data and devices on <ph name="BEGIN_LINK">&lt;a href="$2" target=&quot;_blank&quot;&gt;<ex>&lt;a href="$2" target=&quot;_blank&quot;&gt;</ex></ph>chrome.com/sync<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+        </message>
         <message name="IDS_SYNC_AUTHENTICATING_LABEL" desc="Label to display while the user is being authenticated to use sync.">
           Authenticating...
         </message>
