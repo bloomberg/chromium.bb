@@ -20,6 +20,10 @@ namespace content {
 class PageNavigator;
 }
 
+namespace extensions {
+class ExperienceSamplingEvent;
+}
+
 namespace views {
 class GridLayout;
 class ImageButton;
@@ -141,6 +145,9 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   // Experimental: Number of unchecked checkboxes in the permission list.
   // If this becomes zero, the accept button is enabled, otherwise disabled.
   int unchecked_boxes_;
+
+  // ExperienceSampling: Track this UI event.
+  scoped_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallDialogView);
 };

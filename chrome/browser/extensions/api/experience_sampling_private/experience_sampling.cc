@@ -14,11 +14,15 @@
 
 namespace extensions {
 
-// String constants for SamplingEvent.
+// static
 const char ExperienceSamplingEvent::kProceed[] = "proceed";
 const char ExperienceSamplingEvent::kDeny[] = "deny";
 const char ExperienceSamplingEvent::kCancel[] = "cancel";
 const char ExperienceSamplingEvent::kReload[] = "reload";
+
+// static
+const char ExperienceSamplingEvent::kExtensionInstallDialog[] =
+    "extension_install_dialog_";
 
 // static
 scoped_ptr<ExperienceSamplingEvent> ExperienceSamplingEvent::Create(

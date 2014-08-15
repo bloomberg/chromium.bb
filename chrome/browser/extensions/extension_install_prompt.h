@@ -83,6 +83,8 @@ class ExtensionInstallPrompt
     RETAINED_FILES_DETAILS,
   };
 
+  static std::string PromptTypeToString(PromptType type);
+
   // Extra information needed to display an installation or uninstallation
   // prompt. Gets populated with raw data and exposes getters for formatted
   // strings so that the GTK/views/Cocoa install dialogs don't have to repeat

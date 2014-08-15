@@ -13,9 +13,12 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/api/experience_sampling_private/experience_sampling.h"
 #include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/extensions/extension_install_prompt_experiment.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -49,6 +52,7 @@
 using content::OpenURLParams;
 using content::Referrer;
 using extensions::BundleInstaller;
+using extensions::ExperienceSamplingEvent;
 
 namespace {
 
@@ -579,6 +583,11 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     dialog_size_ = gfx::Size(
         dialog_width, std::min(header_only_size.height(), kDialogMaxHeight));
   }
+
+  std::string event_name = ExperienceSamplingEvent::kExtensionInstallDialog;
+  event_name.append(
+      ExtensionInstallPrompt::PromptTypeToString(prompt_->type()));
+  sampling_event_ = ExperienceSamplingEvent::Create(event_name);
 }
 
 ExtensionInstallDialogView::~ExtensionInstallDialogView() {}
@@ -708,12 +717,16 @@ int ExtensionInstallDialogView::GetDefaultDialogButton() const {
 
 bool ExtensionInstallDialogView::Cancel() {
   UpdateInstallResultHistogram(false);
+  if (sampling_event_.get())
+    sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kDeny);
   delegate_->InstallUIAbort(true);
   return true;
 }
 
 bool ExtensionInstallDialogView::Accept() {
   UpdateInstallResultHistogram(true);
+  if (sampling_event_.get())
+    sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kProceed);
   delegate_->InstallUIProceed();
   return true;
 }

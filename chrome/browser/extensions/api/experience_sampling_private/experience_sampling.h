@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_EXPERIENCE_SAMPLING_PRIVATE_EXPERIENCE_SAMPLING_H_
 #define CHROME_BROWSER_EXTENSIONS_API_EXPERIENCE_SAMPLING_PRIVATE_EXPERIENCE_SAMPLING_H_
 
-#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/experience_sampling_private.h"
 
 namespace content {
@@ -20,11 +19,18 @@ using api::experience_sampling_private::UIElement;
 
 class ExperienceSamplingEvent {
  public:
+  // String constants for user decision events.
   static const char kProceed[];
   static const char kDeny[];
   static const char kCancel[];
   static const char kReload[];
 
+  // String constants for event names.
+  static const char kExtensionInstallDialog[];
+
+  // The Create() functions can return an empty scoped_ptr if they cannot find
+  // the BrowserContext. Code using them should check the scoped pointer using
+  // scoped_ptr::get().
   static scoped_ptr<ExperienceSamplingEvent> Create(
       const std::string& element_name,
       const GURL& destination,
@@ -39,7 +45,10 @@ class ExperienceSamplingEvent {
                           content::BrowserContext* browser_context);
   ~ExperienceSamplingEvent();
 
+  // Sends an extension API event for the user seeing this event.
   void CreateOnDisplayedEvent();
+  // Sends an extension API event for the user making a decision about this
+  // event.
   void CreateUserDecisionEvent(const std::string& decision_name);
 
   bool has_viewed_details() const { return has_viewed_details_; }

@@ -176,6 +176,34 @@ gfx::NativeWindow NativeWindowForWebContents(content::WebContents* contents) {
 ExtensionInstallPrompt::AutoConfirmForTests
 ExtensionInstallPrompt::g_auto_confirm_for_tests = ExtensionInstallPrompt::NONE;
 
+// This should match the PromptType enum.
+std::string ExtensionInstallPrompt::PromptTypeToString(PromptType type) {
+  switch (type) {
+    case ExtensionInstallPrompt::INSTALL_PROMPT:
+      return "INSTALL_PROMPT";
+    case ExtensionInstallPrompt::INLINE_INSTALL_PROMPT:
+      return "INLINE_INSTALL_PROMPT";
+    case ExtensionInstallPrompt::BUNDLE_INSTALL_PROMPT:
+      return "BUNDLE_INSTALL_PROMPT";
+    case ExtensionInstallPrompt::RE_ENABLE_PROMPT:
+      return "RE_ENABLE_PROMPT";
+    case ExtensionInstallPrompt::PERMISSIONS_PROMPT:
+      return "PERMISSIONS_PROMPT";
+    case ExtensionInstallPrompt::EXTERNAL_INSTALL_PROMPT:
+      return "EXTERNAL_INSTALL_PROMPT";
+    case ExtensionInstallPrompt::POST_INSTALL_PERMISSIONS_PROMPT:
+      return "POST_INSTALL_PERMISSIONS_PROMPT";
+    case ExtensionInstallPrompt::LAUNCH_PROMPT:
+      return "LAUNCH_PROMPT";
+    case ExtensionInstallPrompt::REMOTE_INSTALL_PROMPT:
+      return "REMOTE_INSTALL_PROMPT";
+    case ExtensionInstallPrompt::UNSET_PROMPT_TYPE:
+    case ExtensionInstallPrompt::NUM_PROMPT_TYPES:
+      break;
+  }
+  return "OTHER";
+}
+
 ExtensionInstallPrompt::Prompt::Prompt(PromptType type)
     : type_(type),
       is_showing_details_for_retained_files_(false),
