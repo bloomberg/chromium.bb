@@ -59,6 +59,7 @@
         'geometry/vector3d_unittest.cc',
         'image/image_mac_unittest.mm',
         'image/image_util_unittest.cc',
+        'mac/coordinate_conversion_unittest.mm',
         'platform_font_mac_unittest.mm',
         'range/range_mac_unittest.mm',
         'range/range_unittest.cc',
