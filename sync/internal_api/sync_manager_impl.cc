@@ -271,6 +271,7 @@ void SyncManagerImpl::ConfigureSyncer(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!ready_task.is_null());
   DCHECK(!retry_task.is_null());
+  DCHECK(initialized_);
 
   DVLOG(1) << "Configuring -"
            << "\n\t" << "current types: "

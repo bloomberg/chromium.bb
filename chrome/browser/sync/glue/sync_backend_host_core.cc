@@ -609,20 +609,25 @@ void SyncBackendHostCore::DoConfigureSyncer(
                               syncer::ModelTypeSet)>& ready_task,
     const base::Closure& retry_callback) {
   DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
-  sync_manager_->ConfigureSyncer(
-      reason,
-      config_types.to_download,
-      config_types.to_purge,
-      config_types.to_journal,
-      config_types.to_unapply,
-      routing_info,
+  DCHECK(!ready_task.is_null());
+  DCHECK(!retry_callback.is_null());
+  base::Closure chained_ready_task(
       base::Bind(&SyncBackendHostCore::DoFinishConfigureDataTypes,
                  weak_ptr_factory_.GetWeakPtr(),
                  config_types.to_download,
-                 ready_task),
+                 ready_task));
+  base::Closure chained_retry_task(
       base::Bind(&SyncBackendHostCore::DoRetryConfiguration,
                  weak_ptr_factory_.GetWeakPtr(),
                  retry_callback));
+  sync_manager_->ConfigureSyncer(reason,
+                                 config_types.to_download,
+                                 config_types.to_purge,
+                                 config_types.to_journal,
+                                 config_types.to_unapply,
+                                 routing_info,
+                                 chained_ready_task,
+                                 chained_retry_task);
 }
 
 void SyncBackendHostCore::DoFinishConfigureDataTypes(
