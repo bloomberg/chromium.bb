@@ -237,9 +237,6 @@ PassRefPtrWillBeRawPtr<StaticNodeList> Event::path() const
     if (!m_currentTarget->toNode())
         return StaticNodeList::createEmpty();
     Node* node = m_currentTarget->toNode();
-    // FIXME: Support SVG Elements.
-    if (node->isSVGElement())
-        return StaticNodeList::createEmpty();
     size_t eventPathSize = m_eventPath->size();
     for (size_t i = 0; i < eventPathSize; ++i) {
         if (node == (*m_eventPath)[i].node()) {
