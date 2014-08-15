@@ -448,8 +448,10 @@ void MenuViewDragAndDropTestNestedDrag::Step4() {
 // Test that a nested drag (i.e. one via a child view, and not entirely
 // implemented in menu code) will consult the delegate before closing the view
 // after the drag.
+#if !defined(OS_WIN)  // http://crbug.com/401226
 VIEW_TEST(MenuViewDragAndDropTestNestedDrag,
           MAYBE(MenuViewDragAndDropNestedDrag))
+#endif
 
 class MenuViewDragAndDropForDropStayOpen : public MenuViewDragAndDropTest {
  public:
