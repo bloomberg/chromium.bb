@@ -1888,6 +1888,7 @@ bool CompositedLayerMapping::updateRequiresOwnBackingStoreForAncestorReasons(con
     if (paintsIntoCompositedAncestor() != previousPaintsIntoCompositedAncestor)
         compositor()->paintInvalidationOnCompositingChange(&m_owningLayer);
 
+    // FIXME: this is bogus. We need to make this assignment before the check above.
     m_requiresOwnBackingStoreForAncestorReasons = !canPaintIntoAncestor;
 
     return m_requiresOwnBackingStoreForAncestorReasons != previousRequiresOwnBackingStoreForAncestorReasons;
@@ -2015,10 +2016,7 @@ IntRect CompositedLayerMapping::localClipRectForSquashedLayer(const RenderLayer&
 void CompositedLayerMapping::doPaintTask(const GraphicsLayerPaintInfo& paintInfo, const PaintLayerFlags& paintLayerFlags, GraphicsContext* context,
     const IntRect& clip) // In the coords of rootLayer.
 {
-    if (paintsIntoCompositedAncestor()) {
-        ASSERT_NOT_REACHED();
-        return;
-    }
+    RELEASE_ASSERT(paintInfo.renderLayer->compositingState() == PaintsIntoGroupedBacking || !paintsIntoCompositedAncestor());
 
     FontCachePurgePreventer fontCachePurgePreventer;
 
