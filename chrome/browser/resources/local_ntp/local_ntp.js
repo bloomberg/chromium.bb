@@ -1000,9 +1000,10 @@ function init() {
     var fakeboxHtml = [];
     fakeboxHtml.push('<input id="' + IDS.FAKEBOX_INPUT +
         '" autocomplete="off" tabindex="-1" aria-hidden="true">');
-    if (NTP_DESIGN.showFakeboxHint && configData.searchboxPlaceholder) {
+    if (NTP_DESIGN.showFakeboxHint &&
+        configData.translatedStrings.searchboxPlaceholder) {
       fakeboxHtml.push('<div id="' + IDS.FAKEBOX_TEXT + '">' +
-          configData.searchboxPlaceholder + '</div>');
+          configData.translatedStrings.searchboxPlaceholder + '</div>');
     }
     fakeboxHtml.push('<div id="cursor"></div>');
     fakebox.innerHTML = fakeboxHtml.join('');
