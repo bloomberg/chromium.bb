@@ -9,7 +9,6 @@
 
 #include "ash/system/locale/locale_observer.h"
 #include "base/compiler_specific.h"
-#include "base/gtest_prod_util.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -48,11 +47,6 @@ class LocaleChangeGuard : public content::NotificationObserver,
   void OnLogin();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(LocaleChangeGuardTest,
-                           ShowNotificationLocaleChanged);
-  FRIEND_TEST_ALL_PREFIXES(LocaleChangeGuardTest,
-                           ShowNotificationLocaleChangedList);
-
   void RevertLocaleChangeCallback(const base::ListValue* list);
   void Check();
 
@@ -60,13 +54,6 @@ class LocaleChangeGuard : public content::NotificationObserver,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // Returns true if we should notify user about automatic locale change.
-  static bool ShouldShowLocaleChangeNotification(const std::string& from_locale,
-                                                 const std::string& to_locale);
-
-  static const char* const* GetSkipShowNotificationLanguagesForTesting();
-  static size_t GetSkipShowNotificationLanguagesSizeForTesting();
 
   std::string from_locale_;
   std::string to_locale_;

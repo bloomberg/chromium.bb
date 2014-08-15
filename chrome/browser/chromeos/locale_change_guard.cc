@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/locale_change_guard.h"
 
-#include <algorithm>
-
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -34,17 +32,6 @@ using base::UserMetricsAction;
 using content::WebContents;
 
 namespace chromeos {
-
-namespace {
-
-// This is the list of languages that do not require user notification when
-// locale is switched automatically between regions within the same language.
-//
-// New language in kAcceptLanguageList should be added either here or to
-// to the exception list in unit test.
-const char* const kSkipShowNotificationLanguages[4] = {"en", "de", "fr", "it"};
-
-}  // anonymous namespace
 
 LocaleChangeGuard::LocaleChangeGuard(Profile* profile)
     : profile_(profile),
@@ -166,11 +153,7 @@ void LocaleChangeGuard::Check() {
   if (prefs->GetString(prefs::kApplicationLocaleAccepted) == to_locale)
     return;  // Already accepted.
 
-  // Locale change detected.
-  if (!ShouldShowLocaleChangeNotification(from_locale, to_locale))
-    return;
-
-  // Showing notification.
+  // Locale change detected, showing notification.
   if (from_locale_ != from_locale || to_locale_ != to_locale) {
     // Falling back to showing message in current locale.
     LOG(ERROR) <<
@@ -227,37 +210,6 @@ void LocaleChangeGuard::PrepareChangingLocale(
     revert_link_text_ = l10n_util::GetStringFUTF16(
         IDS_LOCALE_CHANGE_REVERT_MESSAGE, from);
   }
-}
-
-// static
-bool LocaleChangeGuard::ShouldShowLocaleChangeNotification(
-    const std::string& from_locale,
-    const std::string& to_locale) {
-  const std::string from_lang = l10n_util::GetLanguage(from_locale);
-  const std::string to_lang = l10n_util::GetLanguage(to_locale);
-
-  if (from_locale == to_locale)
-    return false;
-
-  if (from_lang != to_lang)
-    return true;
-
-  const char* const* begin = kSkipShowNotificationLanguages;
-  const char* const* end = kSkipShowNotificationLanguages +
-                           arraysize(kSkipShowNotificationLanguages);
-
-  return std::find(begin, end, from_lang) == end;
-}
-
-// static
-const char* const*
-LocaleChangeGuard::GetSkipShowNotificationLanguagesForTesting() {
-  return kSkipShowNotificationLanguages;
-}
-
-// static
-size_t LocaleChangeGuard::GetSkipShowNotificationLanguagesSizeForTesting() {
-  return arraysize(kSkipShowNotificationLanguages);
 }
 
 }  // namespace chromeos
