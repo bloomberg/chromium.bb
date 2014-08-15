@@ -560,6 +560,10 @@
         '../extensions/common/url_pattern_unittest.cc',
         '../extensions/renderer/activity_log_converter_strategy_unittest.cc',
         '../extensions/renderer/script_context_set_unittest.cc',
+        # histograms.xml is analyzed by AboutFlagsHistogramTest, so this
+        # dependency is needed to make commit bots run unit_tests on
+        # histograms.xml changes.
+        '../tools/metrics/histograms/histograms.xml',
         'app/chrome_dll.rc',
         # All unittests in browser, common, renderer and service.
         'browser/about_flags_unittest.cc',

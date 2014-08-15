@@ -2,9 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
+#include "base/files/file_path.h"
+#include "base/memory/scoped_vector.h"
+#include "base/path_service.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/about_flags.h"
@@ -13,6 +19,9 @@
 #include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/libxml/chromium/libxml_utils.h"
+
+namespace {
 
 const char kFlags1[] = "flag1";
 const char kFlags2[] = "flag2";
@@ -31,6 +40,171 @@ const char kValueForMultiSwitch2[] = "value_for_multi_switch2";
 
 const char kEnableDisableValue1[] = "value1";
 const char kEnableDisableValue2[] = "value2";
+
+typedef std::map<std::string, uint32_t> SwitchToIdMap;
+
+// This is a helper function to the ReadEnumFromHistogramsXml().
+// Extracts single enum (with integer values) from histograms.xml.
+// Expects |reader| to point at given enum.
+// Returns map { value => label }.
+// Returns empty map on error.
+std::map<uint32_t, std::string> ParseEnumFromHistogramsXml(
+    const std::string& enum_name,
+    XmlReader* reader) {
+  int entries_index = -1;
+
+  std::map<uint32_t, std::string> result;
+  bool success = true;
+
+  while (true) {
+    const std::string node_name = reader->NodeName();
+    if (node_name == "enum" && reader->IsClosingElement())
+      break;
+
+    if (node_name == "int") {
+      ++entries_index;
+      std::string value_str;
+      std::string label;
+      const bool has_value = reader->NodeAttribute("value", &value_str);
+      const bool has_label = reader->NodeAttribute("label", &label);
+      if (!has_value) {
+        ADD_FAILURE() << "Bad " << enum_name << " enum entry (at index "
+                      << entries_index << ", label='" << label
+                      << "'): No 'value' attribute.";
+        success = false;
+      }
+      if (!has_label) {
+        ADD_FAILURE() << "Bad " << enum_name << " enum entry (at index "
+                      << entries_index << ", value_str='" << value_str
+                      << "'): No 'label' attribute.";
+        success = false;
+      }
+
+      uint32_t value;
+      if (has_value && !base::StringToUint(value_str, &value)) {
+        ADD_FAILURE() << "Bad " << enum_name << " enum entry (at index "
+                      << entries_index << ", label='" << label
+                      << "', value_str='" << value_str
+                      << "'): 'value' attribute is not integer.";
+        success = false;
+      }
+      if (result.count(value)) {
+        ADD_FAILURE() << "Bad " << enum_name << " enum entry (at index "
+                      << entries_index << ", label='" << label
+                      << "', value_str='" << value_str
+                      << "'): duplicate value '" << value_str
+                      << "' found in enum. The previous one has label='"
+                      << result[value] << "'.";
+        success = false;
+      }
+      if (success) {
+        result[value] = label;
+      }
+    }
+    // All enum entries are on the same level, so it is enough to iterate
+    // until possible.
+    reader->Next();
+  }
+  return (success ? result : std::map<uint32_t, std::string>());
+}
+
+// Find and read given enum (with integer values) from histograms.xml.
+// |enum_name| - enum name.
+// |histograms_xml| - must be loaded histograms.xml file.
+//
+// Returns map { value => label } so that:
+//   <int value="9" label="enable-pinch-virtual-viewport"/>
+// becomes:
+//   { 9 => "enable-pinch-virtual-viewport" }
+// Returns empty map on error.
+std::map<uint32_t, std::string> ReadEnumFromHistogramsXml(
+    const std::string& enum_name,
+    XmlReader* histograms_xml) {
+  std::map<uint32_t, std::string> login_custom_flags;
+
+  // Implement simple depth first search.
+  while (true) {
+    const std::string node_name = histograms_xml->NodeName();
+    if (node_name == "enum") {
+      std::string name;
+      if (histograms_xml->NodeAttribute("name", &name) && name == enum_name) {
+        if (!login_custom_flags.empty()) {
+          EXPECT_TRUE(login_custom_flags.empty())
+              << "Duplicate enum '" << enum_name << "' found in histograms.xml";
+          return std::map<uint32_t, std::string>();
+        }
+
+        const bool got_into_enum = histograms_xml->Read();
+        if (got_into_enum) {
+          login_custom_flags =
+              ParseEnumFromHistogramsXml(enum_name, histograms_xml);
+          EXPECT_FALSE(login_custom_flags.empty())
+              << "Bad enum '" << enum_name
+              << "' found in histograms.xml (format error).";
+        } else {
+          EXPECT_TRUE(got_into_enum)
+              << "Bad enum '" << enum_name
+              << "' (looks empty) found in histograms.xml.";
+        }
+        if (login_custom_flags.empty())
+          return std::map<uint32_t, std::string>();
+      }
+    }
+    // Go deeper if possible (stops at the closing tag of the deepest node).
+    if (histograms_xml->Read())
+      continue;
+
+    // Try next node on the same level (skips closing tag).
+    if (histograms_xml->Next())
+      continue;
+
+    // Go up until next node on the same level exists.
+    while (histograms_xml->Depth() && !histograms_xml->SkipToElement()) {
+    }
+
+    // Reached top. histograms.xml consists of the single top level node
+    // 'histogram-configuration', so this is the end.
+    if (!histograms_xml->Depth())
+      break;
+  }
+  EXPECT_FALSE(login_custom_flags.empty())
+      << "Enum '" << enum_name << "' is not found in histograms.xml.";
+  return login_custom_flags;
+}
+
+std::string FilePathStringTypeToString(const base::FilePath::StringType& path) {
+#if defined(OS_WIN)
+  return base::UTF16ToUTF8(path);
+#else
+  return path;
+#endif
+}
+
+std::set<std::string> GetAllSwitchesForTesting() {
+  std::set<std::string> result;
+
+  size_t num_experiments = 0;
+  const about_flags::Experiment* experiments =
+      about_flags::testing::GetExperiments(&num_experiments);
+
+  for (size_t i = 0; i < num_experiments; ++i) {
+    const about_flags::Experiment& experiment = experiments[i];
+    if (experiment.type == about_flags::Experiment::SINGLE_VALUE) {
+      result.insert(experiment.command_line_switch);
+    } else if (experiment.type == about_flags::Experiment::MULTI_VALUE) {
+      for (int j = 0; j < experiment.num_choices; ++j) {
+        result.insert(experiment.choices[j].command_line_switch);
+      }
+    } else {
+      DCHECK_EQ(experiment.type, about_flags::Experiment::ENABLE_DISABLE_VALUE);
+      result.insert(experiment.command_line_switch);
+      result.insert(experiment.disable_command_line_switch);
+    }
+  }
+  return result;
+}
+
+}  // anonymous namespace
 
 namespace about_flags {
 
@@ -233,8 +407,18 @@ TEST_F(AboutFlagsTest, ConvertFlagsToSwitches) {
   EXPECT_FALSE(command_line2.HasSwitch(switches::kFlagSwitchesEnd));
 }
 
+CommandLine::StringType CreateSwitch(const std::string& value) {
+#if defined(OS_WIN)
+  return base::ASCIIToUTF16(value);
+#else
+  return value;
+#endif
+}
+
 TEST_F(AboutFlagsTest, CompareSwitchesToCurrentCommandLine) {
   SetExperimentEnabled(&flags_storage_, kFlags1, true);
+
+  const std::string kDoubleDash("--");
 
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitch("foo");
@@ -242,13 +426,26 @@ TEST_F(AboutFlagsTest, CompareSwitchesToCurrentCommandLine) {
   CommandLine new_command_line(CommandLine::NO_PROGRAM);
   ConvertFlagsToSwitches(&flags_storage_, &new_command_line, kAddSentinels);
 
-  EXPECT_FALSE(AreSwitchesIdenticalToCurrentCommandLine(new_command_line,
-                                                        command_line));
+  EXPECT_FALSE(AreSwitchesIdenticalToCurrentCommandLine(
+      new_command_line, command_line, NULL));
+  {
+    std::set<CommandLine::StringType> difference;
+    EXPECT_FALSE(AreSwitchesIdenticalToCurrentCommandLine(
+        new_command_line, command_line, &difference));
+    EXPECT_EQ(1U, difference.size());
+    EXPECT_EQ(1U, difference.count(CreateSwitch(kDoubleDash + kSwitch1)));
+  }
 
   ConvertFlagsToSwitches(&flags_storage_, &command_line, kAddSentinels);
 
-  EXPECT_TRUE(AreSwitchesIdenticalToCurrentCommandLine(new_command_line,
-                                                       command_line));
+  EXPECT_TRUE(AreSwitchesIdenticalToCurrentCommandLine(
+      new_command_line, command_line, NULL));
+  {
+    std::set<CommandLine::StringType> difference;
+    EXPECT_TRUE(AreSwitchesIdenticalToCurrentCommandLine(
+        new_command_line, command_line, &difference));
+    EXPECT_TRUE(difference.empty());
+  }
 
   // Now both have flags but different.
   SetExperimentEnabled(&flags_storage_, kFlags1, false);
@@ -257,8 +454,18 @@ TEST_F(AboutFlagsTest, CompareSwitchesToCurrentCommandLine) {
   CommandLine another_command_line(CommandLine::NO_PROGRAM);
   ConvertFlagsToSwitches(&flags_storage_, &another_command_line, kAddSentinels);
 
-  EXPECT_FALSE(AreSwitchesIdenticalToCurrentCommandLine(new_command_line,
-                                                        another_command_line));
+  EXPECT_FALSE(AreSwitchesIdenticalToCurrentCommandLine(
+      new_command_line, another_command_line, NULL));
+  {
+    std::set<CommandLine::StringType> difference;
+    EXPECT_FALSE(AreSwitchesIdenticalToCurrentCommandLine(
+        new_command_line, another_command_line, &difference));
+    EXPECT_EQ(2U, difference.size());
+    EXPECT_EQ(1U, difference.count(CreateSwitch(kDoubleDash + kSwitch1)));
+    EXPECT_EQ(1U,
+              difference.count(CreateSwitch(kDoubleDash + kSwitch2 + "=" +
+                                            kValueForSwitch2)));
+  }
 }
 
 TEST_F(AboutFlagsTest, RemoveFlagSwitches) {
@@ -461,6 +668,105 @@ TEST_F(AboutFlagsTest, NoSeparators) {
     for (size_t i = 0; i < count; ++i) {
     std::string name = experiments->internal_name;
     EXPECT_EQ(std::string::npos, name.find(testing::kMultiSeparator)) << i;
+  }
+}
+
+class AboutFlagsHistogramTest : public ::testing::Test {
+ protected:
+  // This is a helper function to check that all IDs in enum LoginCustomFlags in
+  // histograms.xml are unique.
+  void SetSwitchToHistogramIdMapping(const std::string& switch_name,
+                                     const uint32_t switch_histogram_id,
+                                     std::map<std::string, uint32_t>* out_map) {
+    const std::pair<std::map<std::string, uint32_t>::iterator, bool> status =
+        out_map->insert(std::make_pair(switch_name, switch_histogram_id));
+    if (!status.second) {
+      EXPECT_TRUE(status.first->second == switch_histogram_id)
+          << "Duplicate switch '" << switch_name
+          << "' found in enum 'LoginCustomFlags' in histograms.xml.";
+    }
+  }
+
+  // This method generates a hint for the user for what string should be added
+  // to the enum LoginCustomFlags to make in consistent.
+  std::string GetHistogramEnumEntryText(const std::string& switch_name,
+                                        uint32_t value) {
+    return base::StringPrintf(
+        "<int value=\"%u\" label=\"%s\"/>", value, switch_name.c_str());
+  }
+};
+
+TEST_F(AboutFlagsHistogramTest, CheckHistograms) {
+  base::FilePath histograms_xml_file_path;
+  ASSERT_TRUE(
+      PathService::Get(base::DIR_SOURCE_ROOT, &histograms_xml_file_path));
+  histograms_xml_file_path = histograms_xml_file_path.AppendASCII("tools")
+      .AppendASCII("metrics")
+      .AppendASCII("histograms")
+      .AppendASCII("histograms.xml");
+
+  XmlReader histograms_xml;
+  ASSERT_TRUE(histograms_xml.LoadFile(
+      FilePathStringTypeToString(histograms_xml_file_path.value())));
+  std::map<uint32_t, std::string> login_custom_flags =
+      ReadEnumFromHistogramsXml("LoginCustomFlags", &histograms_xml);
+  ASSERT_TRUE(login_custom_flags.size())
+      << "Error reading enum 'LoginCustomFlags' from histograms.xml.";
+
+  // Build reverse map {switch_name => id} from login_custom_flags.
+  SwitchToIdMap histograms_xml_switches_ids;
+
+  EXPECT_TRUE(login_custom_flags.count(kBadSwitchFormatHistogramId))
+      << "Entry for UMA ID of incorrect command-line flag is not found in "
+         "histograms.xml enum LoginCustomFlags. "
+         "Consider adding entry:\n"
+      << "  " << GetHistogramEnumEntryText("BAD_FLAG_FORMAT", 0);
+  // Check that all LoginCustomFlags entries have correct values.
+  for (std::map<uint32_t, std::string>::const_iterator it =
+           login_custom_flags.begin();
+       it != login_custom_flags.end();
+       ++it) {
+    if (it->first == kBadSwitchFormatHistogramId) {
+      // Add eror value with empty name.
+      SetSwitchToHistogramIdMapping(
+          "", it->first, &histograms_xml_switches_ids);
+      continue;
+    }
+    const uint32_t uma_id = GetSwitchUMAId(it->second);
+    EXPECT_EQ(uma_id, it->first)
+        << "histograms.xml enum LoginCustomFlags "
+           "entry '" << it->second << "' has incorrect value=" << it->first
+        << ", but " << uma_id << " is expected. Consider changing entry to:\n"
+        << "  " << GetHistogramEnumEntryText(it->second, uma_id);
+    SetSwitchToHistogramIdMapping(
+        it->second, it->first, &histograms_xml_switches_ids);
+  }
+
+  // Check that all flags in about_flags.cc have entries in login_custom_flags.
+  std::set<std::string> all_switches = GetAllSwitchesForTesting();
+  for (std::set<std::string>::const_iterator it = all_switches.begin();
+       it != all_switches.end();
+       ++it) {
+    // Skip empty placeholders.
+    if (it->empty())
+      continue;
+    const uint32_t uma_id = GetSwitchUMAId(*it);
+    EXPECT_NE(kBadSwitchFormatHistogramId, uma_id)
+        << "Command-line switch '" << *it
+        << "' from about_flags.cc has UMA ID equal to reserved value "
+           "kBadSwitchFormatHistogramId=" << kBadSwitchFormatHistogramId
+        << ". Please modify switch name.";
+    SwitchToIdMap::iterator enum_entry =
+        histograms_xml_switches_ids.lower_bound(*it);
+
+    // Ignore case here when switch ID is incorrect - it has already been
+    // reported in the previous loop.
+    EXPECT_TRUE(enum_entry != histograms_xml_switches_ids.end() &&
+                enum_entry->first == *it)
+        << "histograms.xml enum LoginCustomFlags doesn't contain switch '"
+        << *it << "' (value=" << uma_id
+        << " expected). Consider adding entry:\n"
+        << "  " << GetHistogramEnumEntryText(*it, uma_id);
   }
 }
 

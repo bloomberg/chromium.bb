@@ -92,6 +92,20 @@
 
 using content::BrowserThread;
 
+namespace {
+
+void LogCustomSwitches(const std::set<std::string>& switches) {
+  if (!VLOG_IS_ON(1))
+    return;
+  for (std::set<std::string>::const_iterator it = switches.begin();
+       it != switches.end();
+       ++it) {
+    VLOG(1) << "Switch leading to restart: '" << *it << "'";
+  }
+}
+
+}  // anonymous namespace
+
 namespace chromeos {
 
 namespace {
@@ -106,7 +120,9 @@ CommandLine CreatePerSessionCommandLine(Profile* profile) {
 }
 
 // Returns true if restart is needed to apply per-session flags.
-bool NeedRestartToApplyPerSessionFlags(const CommandLine& user_flags) {
+bool NeedRestartToApplyPerSessionFlags(
+    const CommandLine& user_flags,
+    std::set<CommandLine::StringType>* out_command_line_difference) {
   // Don't restart browser if it is not first profile in session.
   if (user_manager::UserManager::Get()->GetLoggedInUsers().size() != 1)
     return false;
@@ -116,7 +132,9 @@ bool NeedRestartToApplyPerSessionFlags(const CommandLine& user_flags) {
     return false;
 
   if (about_flags::AreSwitchesIdenticalToCurrentCommandLine(
-          user_flags, *CommandLine::ForCurrentProcess())) {
+          user_flags,
+          *CommandLine::ForCurrentProcess(),
+          out_command_line_difference)) {
     return false;
   }
 
@@ -359,8 +377,13 @@ bool LoginUtilsImpl::RestartToApplyPerSessionFlagsIfNeed(Profile* profile,
     return false;
 
   const CommandLine user_flags(CreatePerSessionCommandLine(profile));
-  if (!NeedRestartToApplyPerSessionFlags(user_flags))
+  std::set<CommandLine::StringType> command_line_difference;
+  if (!NeedRestartToApplyPerSessionFlags(user_flags, &command_line_difference))
     return false;
+
+  LogCustomSwitches(command_line_difference);
+
+  about_flags::ReportCustomFlags("Login.CustomFlags", command_line_difference);
 
   CommandLine::StringVector flags;
   // argv[0] is the program name |CommandLine::NO_PROGRAM|.

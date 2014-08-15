@@ -14,6 +14,7 @@
       'variables': {
         'isolate_dependency_tracked': [
           '../third_party/accessibility-audit/axs_testing.js',
+          '../tools/metrics/histograms/histograms.xml',
           '<(PRODUCT_DIR)/resources.pak',
         ],
         'isolate_dependency_untracked': [

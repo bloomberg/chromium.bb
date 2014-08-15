@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_ABOUT_FLAGS_H_
 #define CHROME_BROWSER_ABOUT_FLAGS_H_
 
+#include <stdint.h>
+
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/command_line.h"
@@ -20,6 +23,10 @@ class ListValue;
 namespace about_flags {
 
 class FlagsStorage;
+
+// This value is reported as switch histogram ID if switch name has unknown
+// format.
+extern const uint32_t kBadSwitchFormatHistogramId;
 
 // Enumeration of OSs.
 // This is exposed only for testing.
@@ -117,9 +124,12 @@ void ConvertFlagsToSwitches(FlagsStorage* flags_storage,
 
 // Compares a set of switches of the two provided command line objects and
 // returns true if they are the same and false otherwise.
+// If |out_difference| is not NULL, it's filled with set_symmetric_difference
+// between sets.
 bool AreSwitchesIdenticalToCurrentCommandLine(
     const base::CommandLine& new_cmdline,
-    const base::CommandLine& active_cmdline);
+    const base::CommandLine& active_cmdline,
+    std::set<CommandLine::StringType>* out_difference);
 
 // Differentiate between generic flags available on a per session base and flags
 // that influence the whole machine and can be said by the admin only. This flag
@@ -159,6 +169,16 @@ int GetCurrentPlatform();
 // Sends UMA stats about experimental flag usage. This should be called once per
 // startup.
 void RecordUMAStatistics(FlagsStorage* flags_storage);
+
+// Returns the UMA id for the specified switch name.
+uint32_t GetSwitchUMAId(const std::string& switch_name);
+
+// Sends stats (as UMA histogram) about command_line_difference.
+// This is used on ChromeOS to report flags that lead to browser restart.
+// |command_line_difference| is the result of
+// AreSwitchesIdenticalToCurrentCommandLine().
+void ReportCustomFlags(const std::string& uma_histogram_hame,
+                       const std::set<std::string>& command_line_difference);
 
 namespace testing {
 

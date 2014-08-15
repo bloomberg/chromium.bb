@@ -13,6 +13,7 @@
     "tools/clang/scripts/plugin_flags.sh",
     "tools/clang/scripts/update.py",
     "tools/clang/scripts/update.sh",
+    "tools/metrics/histograms/histograms.xml",
     "tools/perf/.*",
     "tools/telemetry/.*",
     "tools/whitespace.txt"

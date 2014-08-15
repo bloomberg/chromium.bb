@@ -10652,6 +10652,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Login.CustomFlags" enum="LoginCustomFlags">
+  <owner>alemate@chromium.org</owner>
+  <summary>
+    A set of chrome flags that required browser restart on Chrome OS user sign
+    in.
+  </summary>
+</histogram>
+
 <histogram name="Login.FailureReason" enum="LoginFailureReason">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Chrome OS login failure reason.</summary>
@@ -43487,6 +43495,286 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="LoginConsumerWhitelist" type="int">
   <int value="0" label="ANY_USER_ALLOWED">Any user can sign in</int>
   <int value="1" label="ONLY_WHITELISTED_ALLOWED">Whitelisted users only</int>
+</enum>
+
+<enum name="LoginCustomFlags" type="int">
+<!--
+Values in LoginCustomFlags are:  value=(uint32_t)MD5(label).
+This enum is verified by AboutFlagsHistogramTest unit test.
+To add a new entry, add it with any value and run test to compute valid value.
+-->
+
+  <summary>Chrome flags that lead to chrome restart on ChromeOS.</summary>
+  <int value="0" label="BAD_FLAG_FORMAT">
+    Command-line flag doesn't start with two dashes.
+  </int>
+  <int value="27507364" label="apps-keep-chrome-alive"/>
+  <int value="61205887" label="enable-text-input-focus-manager"/>
+  <int value="79503461" label="disable-account-consistency"/>
+  <int value="91938915" label="enable-suggestions-service"/>
+  <int value="103932290" label="show-autofill-type-predictions"/>
+  <int value="118991027" label="enable-accelerated-fixed-root-background"/>
+  <int value="120429808" label="disable-new-profile-management"/>
+  <int value="147373243" label="enable-deferred-image-decoding"/>
+  <int value="203776499" label="enable-virtual-keyboard-overscroll"/>
+  <int value="242267133" label="enable-zero-suggest-ether-serp"/>
+  <int value="270267831" label="enable-scripts-require-action"/>
+  <int value="278756320" label="disable-app-list-app-info"/>
+  <int value="346711293" label="enable-save-password-bubble"/>
+  <int value="358399482" label="enable-high-dpi-fixed-position-compositing"/>
+  <int value="360599302" label="enable-gpu-rasterization"/>
+  <int value="365467768" label="prefetch-search-results"/>
+  <int value="370486304" label="enable-origin-chip-on-srp"/>
+  <int value="401983950" label="enable-spdy4"/>
+  <int value="402143634" label="enable-search-button-in-omnibox-always"/>
+  <int value="446316019" label="enable-threaded-compositing"/>
+  <int value="451196246" label="disable-impl-side-painting"/>
+  <int value="455698038"
+      label="disable-gesture-requirement-for-media-playback"/>
+  <int value="458410433" label="disable-views-rect-based-targeting"/>
+  <int value="494733611" label="disable-drop-sync-credential"/>
+  <int value="550378029" label="reset-app-list-install-state"/>
+  <int value="567368307" label="enable-experimental-canvas-features"/>
+  <int value="593707592" label="disable-network-portal-notification"/>
+  <int value="606288133" label="enable-print-preview-register-promos"/>
+  <int value="625273056" label="disable-boot-animation"/>
+  <int value="630947363" label="touch-events"/>
+  <int value="689489984" label="disable-zero-suggest"/>
+  <int value="709850261" label="disable-touch-editing"/>
+  <int value="711424932" label="enable-cloud-print-xps"/>
+  <int value="732703958" label="enable-gesture-tap-highlight"/>
+  <int value="773919225" label="disable-office-editing-component-extension"/>
+  <int value="821192723" label="show-fps-counter"/>
+  <int value="824961931" label="use-simple-cache-backend"/>
+  <int value="834326277" label="enable-answers-in-suggest"/>
+  <int value="835018878" label="disable-quic"/>
+  <int value="838887742" label="manual-enhanced-bookmarks"/>
+  <int value="851085848" label="enable-settings-window"/>
+  <int value="869531646" label="enable-session-crashed-bubble"/>
+  <int value="879699575" label="disable-gesture-tap-highlight"/>
+  <int value="880510010" label="enable-permissions-bubbles"/>
+  <int value="887011602" label="enable-spelling-auto-correct"/>
+  <int value="909439558" label="disable-device-discovery"/>
+  <int value="1022992701" label="enable-origin-chip-always"/>
+  <int value="1033597574" label="disable-layer-squashing"/>
+  <int value="1050321458" label="new-profile-management"/>
+  <int value="1062357243" label="remember-cert-error-decisions"/>
+  <int value="1067618884" label="enable-experimental-input-view-features"/>
+  <int value="1070300488" label="disable-webgl"/>
+  <int value="1087235172" label="file-manager-enable-new-audio-player"/>
+  <int value="1090377940" label="enable-quic-https"/>
+  <int value="1095061640" label="enable-prominent-url-app-flow"/>
+  <int value="1104948452" label="manual-enhanced-bookmarks-optout"/>
+  <int value="1105439588" label="enable-swipe-selection"/>
+  <int value="1107543566" label="enable-one-copy"/>
+  <int value="1108663108" label="disable-device-discovery-notifications"/>
+  <int value="1129888794" label="ash-touch-hud"/>
+  <int value="1133635187" label="force-gpu-rasterization"/>
+  <int value="1139226452" label="enable-nacl-debug"/>
+  <int value="1142515376" label="enable-nacl"/>
+  <int value="1150622273" label="enable-apps-file-associations"/>
+  <int value="1196644408" label="performance-monitor-gathering"/>
+  <int value="1205849612" label="enable-sync-synced-notifications"/>
+  <int value="1210343926" label="enable-drop-sync-credential"/>
+  <int value="1220464509" label="enable-first-run-ui-transitions"/>
+  <int value="1221559505" label="enable-spelling-feedback-field-trial"/>
+  <int value="1237297772" label="no-pings"/>
+  <int value="1257980502" label="disable-accelerated-video-decode"/>
+  <int value="1268470658" label="disable-android-password-link"/>
+  <int value="1279584261" label="enable-carrier-switching"/>
+  <int value="1283960113" label="disable-fixed-position-compositing"/>
+  <int value="1319725131" label="enable-distance-field-text"/>
+  <int value="1320201920" label="enable-touchpad-three-finger-click"/>
+  <int value="1351830811" label="do-not-ignore-autocomplete-off"/>
+  <int value="1352447982" label="enable-lcd-text"/>
+  <int value="1361047396" label="disable-click-delay"/>
+  <int value="1378310092" label="disable-suggestions-service"/>
+  <int value="1381746642" label="enable-automatic-password-saving"/>
+  <int value="1405459667" label="enable-fast-text-autosizing"/>
+  <int value="1407625309"
+      label="disable-minimize-on-second-launcher-item-click"/>
+  <int value="1408331660" label="enhanced-bookmarks-experiment"/>
+  <int value="1410697724" label="mediadrm-enable-non-compositing"/>
+  <int value="1442798825" label="enable-quic"/>
+  <int value="1459529277" label="disable-text-input-focus-manager"/>
+  <int value="1465624446" label="disable-zero-copy"/>
+  <int value="1466380480" label="enable-device-discovery-notifications"/>
+  <int value="1469407485" label="disable-accelerated-2d-canvas"/>
+  <int value="1490255042" label="enable-overlay-scrollbar"/>
+  <int value="1497924954" label="js-flags"/>
+  <int value="1505194447" label="disable-transition-compositing"/>
+  <int value="1510476448" label="disable-prefixed-encrypted-media"/>
+  <int value="1515196403" label="fast-user-switching"/>
+  <int value="1636962093" label="disable-material-design-ntp"/>
+  <int value="1657713458" label="disable-virtual-keyboard-overscroll"/>
+  <int value="1658644418" label="disable-app-list-voice-search"/>
+  <int value="1661925474" label="silent-debugger-extension-api"/>
+  <int value="1668611601" label="enable-encrypted-media"/>
+  <int value="1694854500" label="disable-save-password-bubble"/>
+  <int value="1723601083" label="enable-app-window-controls"/>
+  <int value="1730236697" label="force-device-scale-factor"/>
+  <int value="1747279677" label="disable-delegated-renderer"/>
+  <int value="1775475563" label="malware-interstitial-v3"/>
+  <int value="1776475705" label="show-composited-layer-borders"/>
+  <int value="1803465156" label="enable-zero-suggest-most-visited"/>
+  <int value="1814671708" label="disable-password-manager-reauthentication"/>
+  <int value="1817312143" label="num-raster-threads"/>
+  <int value="1819256299" label="disable-webrtc-hw-decoding"/>
+  <int value="1820451991" label="enable-offline-auto-reload"/>
+  <int value="1821723343" label="disable-saml-signin"/>
+  <int value="1844110073" label="enable-app-view"/>
+  <int value="1855524566" label="allow-insecure-websocket-from-https-origin"/>
+  <int value="1900529524" label="disable-touch-drag-drop"/>
+  <int value="1906942630" label="enable-easy-unlock"/>
+  <int value="1930901873" label="disable-sync-app-list"/>
+  <int value="1961425320" label="force-qtkit"/>
+  <int value="1966730288" label="disable-threaded-compositing"/>
+  <int value="1969604362" label="enable-pinch-virtual-viewport"/>
+  <int value="1980011075" label="debug-packed-apps"/>
+  <int value="2004829262" label="enable-webgl-draft-extensions"/>
+  <int value="2037756154" label="enable-impl-side-painting"/>
+  <int value="2059322877" label="new-avatar-menu"/>
+  <int value="2093235103" label="default-tile-width"/>
+  <int value="2101151142" label="disable-direct-write"/>
+  <int value="2119964154" label="enable-download-resumption"/>
+  <int value="2122876605" label="enable-bleeding-edge-rendering-fast-paths"/>
+  <int value="2137347307" label="enable-drive-apps-in-app-list"/>
+  <int value="2162375654" label="enable-input-view"/>
+  <int value="2177765570" label="disable-gpu-rasterization"/>
+  <int value="2180136048" label="disable-new-ntp"/>
+  <int value="2196356887" label="disable-lcd-text"/>
+  <int value="2197451627" label="disable-cast"/>
+  <int value="2217698653" label="disable-device-enumeration"/>
+  <int value="2242551072" label="enable-zero-suggest-ether-noserp"/>
+  <int value="2247145038" label="enable-avfoundation"/>
+  <int value="2269600192" label="enable-material-design-ntp"/>
+  <int value="2274942856" label="scroll-end-effect"/>
+  <int value="2286694617" label="disable-webrtc-hw-encoding"/>
+  <int value="2291612959"
+      label="enable-search-button-in-omnibox-for-str-or-iip"/>
+  <int value="2309941703" label="file-manager-enable-new-gallery"/>
+  <int value="2322583845" label="disable-pinch"/>
+  <int value="2354160738" label="enable-syncfs-directory-operation"/>
+  <int value="2364247010" label="nacl-debug-mask"/>
+  <int value="2366768533" label="enable-async-dns"/>
+  <int value="2369850017" label="disable-quic-https"/>
+  <int value="2406693327" label="tab-capture-upscale-quality"/>
+  <int value="2418085388"
+      label="disable-infobar-for-protected-media-identifier"/>
+  <int value="2420058470" label="enable-instant-search-clicks"/>
+  <int value="2424005326" label="enable-filemanager-mtp"/>
+  <int value="2447131774" label="disable-touch-adjustment"/>
+  <int value="2456484852" label="disable-settings-window"/>
+  <int value="2458991492" label="disable-offline-auto-reload"/>
+  <int value="2461817486" label="enable-accessibility-tab-switcher"/>
+  <int value="2527496644" label="out-of-process-pdf"/>
+  <int value="2548199462" label="ssl-interstitial-v2-gray"/>
+  <int value="2554448079" label="disable-software-rasterizer"/>
+  <int value="2559324043" label="enable-display-list-2d-canvas"/>
+  <int value="2569459691" label="enable-web-midi"/>
+  <int value="2575133370" label="disable-answers-in-suggest"/>
+  <int value="2578313196" label="tab-capture-downscale-quality"/>
+  <int value="2591257384" label="enable-new-ntp"/>
+  <int value="2591658756" label="disable-webaudio"/>
+  <int value="2598600847" label="disable-permissions-bubbles"/>
+  <int value="2675209982" label="touch-scrolling-mode"/>
+  <int value="2689399668" label="disable-overlay-scrollbar"/>
+  <int value="2698407646" label="max-tiles-for-interest-area"/>
+  <int value="2723125783" label="enable-devtools-experiments"/>
+  <int value="2741489393" label="ash-disable-text-filtering-in-overview-mode"/>
+  <int value="2748064125" label="enable-touch-drag-drop"/>
+  <int value="2784127722" label="disable-sync-synced-notifications"/>
+  <int value="2797628315" label="disable-accelerated-overflow-scroll"/>
+  <int value="2812281433" label="enable-request-tablet-site"/>
+  <int value="2834504864" label="disable-media-source"/>
+  <int value="2861879748" label="enable-app-install-alerts"/>
+  <int value="2875179039" label="enable-experimental-hotwording"/>
+  <int value="2886679120" label="enable-account-consistency"/>
+  <int value="2895213816" label="disable-harfbuzz-rendertext"/>
+  <int value="2895547724" label="enable-app-list"/>
+  <int value="2902404798" label="disable-origin-chip"/>
+  <int value="2919856272" label="enable-fixed-position-compositing"/>
+  <int value="2953874362" label="enable-accelerated-overflow-scroll"/>
+  <int value="2954911336" label="enable-streamlined-hosted-apps"/>
+  <int value="2960639886" label="ash-enable-touch-view-testing"/>
+  <int value="2975278357" label="ignore-gpu-blacklist"/>
+  <int value="3009945823" label="save-page-as-mhtml"/>
+  <int value="3049508255" label="enable-zero-suggest-personalized"/>
+  <int value="3053219579" label="enable-android-password-link"/>
+  <int value="3076358656" label="disable-offline-load-stale-cache"/>
+  <int value="3082693868" label="enable-experimental-app-list"/>
+  <int value="3093784143" label="enable-centered-app-list"/>
+  <int value="3122763291" label="enable-offline-auto-reload-visible-only"/>
+  <int value="3135403522" label="enable-accessibility-script-injection"/>
+  <int value="3158457665" label="ssl-interstitial-v1"/>
+  <int value="3192754771" label="enable-tcp-fastopen"/>
+  <int value="3216874090" label="ash-debug-shortcuts"/>
+  <int value="3217214353" label="enable-password-generation"/>
+  <int value="3242184822" label="enable-cloud-devices"/>
+  <int value="3242552185" label="malware-interstitial-v2"/>
+  <int value="3271995776" label="enable-search-button-in-omnibox-for-str"/>
+  <int value="3315933038" label="disable-ntp-other-sessions-menu"/>
+  <int value="3345788435" label="enable-new-avatar-menu"/>
+  <int value="3368544828" label="disable-embedded-shared-worker"/>
+  <int value="3376349221" label="enable-service-worker"/>
+  <int value="3380757150" label="enable-web-based-signin"/>
+  <int value="3395633193" label="disable-fast-text-autosizing"/>
+  <int value="3396961358" label="disable-pinch-virtual-viewport"/>
+  <int value="3409365514" label="enable-contextual-search"/>
+  <int value="3427880015" label="enable-virtual-keyboard"/>
+  <int value="3430761667" label="enable-offline-load-stale-cache"/>
+  <int value="3441373076" label="disable-new-avatar-menu"/>
+  <int value="3458843442" label="wallet-service-use-sandbox"/>
+  <int value="3474925941" label="enable-transition-compositing"/>
+  <int value="3480870282" label="disable-session-crashed-bubble"/>
+  <int value="3499367108" label="disable-async-dns"/>
+  <int value="3524648257" label="enable-touch-editing"/>
+  <int value="3545919136" label="enable-panels"/>
+  <int value="3550808115" label="disable-spdy-proxy-dev-auth-origin"/>
+  <int value="3551864046" label="enable-linkable-ephemeral-apps"/>
+  <int value="3583076401" label="enable-website-settings-manager"/>
+  <int value="3595200189" label="enable-sync-app-list"/>
+  <int value="3597215873" label="disable-quickoffice-component-app"/>
+  <int value="3627449890" label="overscroll-history-navigation"/>
+  <int value="3634807004" label="enable-apps-show-on-first-paint"/>
+  <int value="3645010306" label="enable-harfbuzz-rendertext"/>
+  <int value="3653247839" label="disable-compositor-touch-hit-testing"/>
+  <int value="3690152983" label="enable-pinch"/>
+  <int value="3693583010" label="disable-contextual-search"/>
+  <int value="3715774896" label="disable-input-view"/>
+  <int value="3730986509" label="disable-webrtc"/>
+  <int value="3732693055" label="enable-extension-action-redesign"/>
+  <int value="3758678062" label="ssl-interstitial-v2-colorful"/>
+  <int value="3778121345" label="enable-embedded-extension-options"/>
+  <int value="3784478846" label="disable-pnacl"/>
+  <int value="3786823558" label="disable-accelerated-fixed-root-background"/>
+  <int value="3799381411" label="enable-spdy-proxy-dev-auth-origin"/>
+  <int value="3816504351" label="enable-ephemeral-apps"/>
+  <int value="3832761546" label="enable-service-worker-sync"/>
+  <int value="3864606865" label="disable-password-generation"/>
+  <int value="3876099168" label="enable-experimental-web-platform-features"/>
+  <int value="3909629823" label="enable-fast-unload"/>
+  <int value="3945909553" label="extensions-on-chrome-urls"/>
+  <int value="3954712251" label="allow-nacl-socket-api"/>
+  <int value="3966605306" label="enable-experimental-extension-apis"/>
+  <int value="3974147245" label="enable-zero-copy"/>
+  <int value="3980056916" label="disable-distance-field-text"/>
+  <int value="4006650468" label="enable-delegated-renderer"/>
+  <int value="4016619629" label="default-tile-height"/>
+  <int value="4017822400" label="enable-viewport-meta"/>
+  <int value="4040079697" label="google-profile-info"/>
+  <int value="4063045296" label="enable-renderer-mojo-channel"/>
+  <int value="4088573933" label="enable-scroll-prediction"/>
+  <int value="4136418019" label="enable-embeddedsearch-api"/>
+  <int value="4147683810" label="enable-network-portal-notification"/>
+  <int value="4192430026" label="extension-content-verification"/>
+  <int value="4214614109" label="disable-display-color-calibration"/>
+  <int value="4218336248" label="disable-offline-auto-reload-visible-only"/>
+  <int value="4226741844" label="enable-translate-new-ux"/>
+  <int value="4246046559" label="enable-smooth-scrolling"/>
+  <int value="4271876776" label="disable-search-button-in-omnibox"/>
+  <int value="4272422888" label="enable-video-player-chromecast-support"/>
+  <int value="4289914356" label="enable-simplified-fullscreen"/>
 </enum>
 
 <enum name="LoginFailureReason" type="int">
