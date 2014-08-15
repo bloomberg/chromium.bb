@@ -1313,16 +1313,18 @@ cr.define('options', function() {
      * @private
      */
     setProfileViewSingle_: function(numProfiles) {
-      var hasSingleProfile = numProfiles == 1;
-      $('profiles-list').hidden = hasSingleProfile;
-      $('profiles-single-message').hidden = !hasSingleProfile;
+      // Always show the profiles list when using the new Profiles UI.
+      var usingNewProfilesUI = loadTimeData.getBoolean('usingNewProfilesUI');
+      var showSingleProfileView = !usingNewProfilesUI && numProfiles == 1;
+      $('profiles-list').hidden = showSingleProfileView;
+      $('profiles-single-message').hidden = !showSingleProfileView;
       $('profiles-manage').hidden =
-          hasSingleProfile || OptionsPage.isSettingsApp();
-      $('profiles-delete').textContent = hasSingleProfile ?
+          showSingleProfileView || OptionsPage.isSettingsApp();
+      $('profiles-delete').textContent = showSingleProfileView ?
           loadTimeData.getString('profilesDeleteSingle') :
           loadTimeData.getString('profilesDelete');
       if (OptionsPage.isSettingsApp())
-        $('profiles-app-list-switch').hidden = hasSingleProfile;
+        $('profiles-app-list-switch').hidden = showSingleProfileView;
     },
 
     /**

@@ -11239,6 +11239,9 @@ Chrome ran out of memory.
       <message name="IDS_PROFILES_OPTIONS_GROUP_NAME" desc="The name of the sync group in the options dialog.">
         Users
       </message>
+      <message name="IDS_NEW_PROFILES_OPTIONS_GROUP_NAME" desc="The name of the sync group in the options dialog when using the new Profiles UI.">
+        People
+      </message>
       <if expr="is_macosx">
         <message name="IDS_PROFILES_BUBBLE_ACCESSIBLE_NAME" desc="Title of the avatar bubble menu for accessibility">
           Switch Users
@@ -11248,6 +11251,9 @@ Chrome ran out of memory.
         </message>
         <message name="IDS_PROFILES_CREATE_NEW_PROFILE_OPTION" desc="In Title Case. Create new profile menu item and button title.">
           Add New User
+        </message>
+        <message name="IDS_NEW_PROFILES_CREATE_NEW_PROFILE_OPTION" desc="In Title Case. Create new profile menu item and button title when using the new Profiles UI.">
+          Add Person...
         </message>
       </if>
       <if expr="not use_titlecase">
@@ -11459,17 +11465,26 @@ Chrome ran out of memory.
       <message name="IDS_PROFILES_CREATE_BUTTON_LABEL" desc="The label that appears on the profile create button in the options dialog to allow a user to create a new profile.">
         Add new user...
       </message>
+      <message name="IDS_NEW_PROFILES_CREATE_BUTTON_LABEL" desc="The label that appears on the profile create button in the options dialog to allow a user to create a new profile when using the new Profiles UI.">
+        Add person...
+      </message>
       <message name="IDS_PROFILES_MANAGE_BUTTON_LABEL" desc="The label that appears on the profile manage button in the options dialog to allow a user to manage their profile.">
         Edit...
       </message>
       <message name="IDS_PROFILES_DELETE_BUTTON_LABEL" desc="The label that appears on the profile delete button in the options dialog to allow a user to delete their profile.">
         Delete...
       </message>
+      <message name="IDS_NEW_PROFILES_DELETE_BUTTON_LABEL" desc="The label that appears on the profile delete button in the options dialog to allow a user to delete their profile using the new Profiles UI.">
+        Remove...
+      </message>
       <message name="IDS_PROFILES_SUPERVISED_USER_DASHBOARD_TIP" desc="A message that appears below the Users section on the Settings page when the current user manages supervised users on the machine, providing a link to the external management dashboard page.">
         Manage your supervised users via the <ph name="BEGIN_LINK">&lt;a target="_blank" href="https://chrome.com/manage"&gt;</ph>Supervised Users Dashboard<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
       </message>
       <message name="IDS_PROFILES_DELETE_SINGLE_BUTTON_LABEL" desc="The label that appears on the profile delete button in the options dialog to allow a user with only one profile to delete it.">
         Delete this user
+      </message>
+      <message name="IDS_NEW_PROFILES_DELETE_SINGLE_BUTTON_LABEL" desc="The label that appears on the profile delete button in the options dialog to allow a user with only one profile to delete it when using the new Profiles UI.">
+        Delete this person
       </message>
       <message name="IDS_PROFILES_DEFAULT_NAME" desc="The name to display for a profile when the user is not signed in.">
         Default
@@ -13218,6 +13233,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_PROFILES_MANAGE_TITLE" desc="Title of the manage profile dialog">
         Edit user
       </message>
+      <message name="IDS_NEW_PROFILES_MANAGE_TITLE" desc="Title of the manage profile dialog when using the new Profiles UI">
+        Edit
+      </message>
       <message name="IDS_PROFILES_MANAGE_NAME_LABEL" desc="Label next to the profile name text field.">
         Name:
       </message>
@@ -13232,11 +13250,20 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_PROFILES_DELETE_TITLE" desc="Title of the delete profile dialog">
         Delete user
       </message>
+      <message name="IDS_NEW_PROFILES_DELETE_TITLE" desc="Title of the delete profile dialog when using the new Profiles UI">
+        Remove person?
+      </message>
       <message name="IDS_PROFILES_DELETE_OK_BUTTON_LABEL" desc="The text to display on the button to confirm deleting the profile.">
         Delete
       </message>
+      <message name="IDS_NEW_PROFILES_DELETE_OK_BUTTON_LABEL" desc="The text to display on the button to confirm deleting the profile using the new Profiles UI.">
+        Remove
+      </message>
       <message name="IDS_PROFILES_DELETE_MESSAGE" desc="Message explaining to the user what will happen if they delete this profile">
         Are you sure you want to delete "<ph name="PROFILE_NAME">$1<ex>New User</ex></ph>" and all the data associated with it from this computer? This cannot be undone!
+      </message>
+      <message name="IDS_NEW_PROFILES_DELETE_MESSAGE" desc="Message explaining to the user what will happen if they delete this profile">
+        Are you sure you want to remove "<ph name="PROFILE_NAME">$1<ex>New User</ex></ph>" and all associated Chrome data from this computer? This cannot be undone.
       </message>
       <message name="IDS_PROFILES_DELETE_SUPERVISED_ADDENDUM" desc="Additional message shown in the same dialog following the IDS_PROFILES_DELETE_MESSAGE, explaining to the user what will happen if they delete the profile of a supervised user.">
         Settings and browsing history for this supervised user may still be visible by the manager at <ph name="BEGIN_LINK">&lt;a target="_blank" href="https://www.chrome.com/manage"&gt;</ph>www.chrome.com/manage<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
@@ -13263,6 +13290,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <!-- Create Profile Dialog -->
       <message name="IDS_PROFILES_CREATE_TITLE" desc="Title of the create profile dialog">
         Create user
+      </message>
+      <message name="IDS_NEW_PROFILES_CREATE_TITLE" desc="Title of the create profile dialog when using the new Profiles UI">
+        Add person
       </message>
       <message name="IDS_PROFILES_CREATE_INSTRUCTIONS" desc="Instructions for the create profile dialog">
         Choose a picture and name

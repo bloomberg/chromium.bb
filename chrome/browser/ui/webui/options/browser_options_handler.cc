@@ -70,6 +70,7 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
@@ -196,6 +197,8 @@ BrowserOptionsHandler::~BrowserOptionsHandler() {
 void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   DCHECK(values);
 
+  const bool using_new_profiles_ui = switches::IsNewAvatarMenu();
+
   static OptionsStringResource resources[] = {
     { "advancedSectionTitleCloudPrint", IDS_GOOGLE_CLOUD_PRINT },
     { "currentUserOnly", IDS_OPTIONS_CURRENT_USER_ONLY },
@@ -299,9 +302,15 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "privacyClearDataButton", IDS_OPTIONS_PRIVACY_CLEAR_DATA_BUTTON },
     { "privacyContentSettingsButton",
       IDS_OPTIONS_PRIVACY_CONTENT_SETTINGS_BUTTON },
-    { "profilesCreate", IDS_PROFILES_CREATE_BUTTON_LABEL },
-    { "profilesDelete", IDS_PROFILES_DELETE_BUTTON_LABEL },
-    { "profilesDeleteSingle", IDS_PROFILES_DELETE_SINGLE_BUTTON_LABEL },
+    { "profilesCreate", using_new_profiles_ui ?
+          IDS_NEW_PROFILES_CREATE_BUTTON_LABEL :
+          IDS_PROFILES_CREATE_BUTTON_LABEL },
+    { "profilesDelete", using_new_profiles_ui ?
+          IDS_NEW_PROFILES_DELETE_BUTTON_LABEL :
+          IDS_PROFILES_DELETE_BUTTON_LABEL },
+    { "profilesDeleteSingle", using_new_profiles_ui ?
+          IDS_NEW_PROFILES_DELETE_SINGLE_BUTTON_LABEL :
+          IDS_PROFILES_DELETE_SINGLE_BUTTON_LABEL },
     { "profilesListItemCurrent", IDS_PROFILES_LIST_ITEM_CURRENT },
     { "profilesManage", IDS_PROFILES_MANAGE_BUTTON_LABEL },
     { "profilesSupervisedDashboardTip",
@@ -323,7 +332,9 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       IDS_OPTIONS_SAFEBROWSING_ENABLE_EXTENDED_REPORTING },
     { "sectionTitleAppearance", IDS_APPEARANCE_GROUP_NAME },
     { "sectionTitleDefaultBrowser", IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME },
-    { "sectionTitleUsers", IDS_PROFILES_OPTIONS_GROUP_NAME },
+    { "sectionTitleUsers", using_new_profiles_ui ?
+          IDS_NEW_PROFILES_OPTIONS_GROUP_NAME :
+          IDS_PROFILES_OPTIONS_GROUP_NAME },
     { "sectionTitleProxy", IDS_OPTIONS_PROXY_GROUP_NAME },
     { "sectionTitleSearch", IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME },
     { "sectionTitleStartup", IDS_OPTIONS_STARTUP_GROUP_NAME },
@@ -646,6 +657,8 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   values->SetBoolean("websiteSettingsManagerEnabled",
                      CommandLine::ForCurrentProcess()->HasSwitch(
                          switches::kEnableWebsiteSettingsManager));
+
+  values->SetBoolean("usingNewProfilesUI", using_new_profiles_ui);
 }
 
 #if defined(ENABLE_FULL_PRINTING)
