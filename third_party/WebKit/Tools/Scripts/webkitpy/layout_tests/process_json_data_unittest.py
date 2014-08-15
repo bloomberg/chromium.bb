@@ -27,7 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import json
-import webkitpy.thirdparty.unittest2 as unittest
+import unittest
 
 from webkitpy.layout_tests.generate_results_dashboard import ProcessJsonData
 

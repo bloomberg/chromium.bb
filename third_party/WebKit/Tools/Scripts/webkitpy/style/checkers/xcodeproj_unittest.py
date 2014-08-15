@@ -22,9 +22,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """Unit test for xcodeproj.py."""
+import unittest
 
 import xcodeproj
-import webkitpy.thirdparty.unittest2 as unittest
 
 
 class TestErrorHandler(object):

@@ -23,7 +23,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import webkitpy.thirdparty.unittest2 as unittest
+import unittest
 
 from webkitpy.tool.bot.commitannouncer import CommitAnnouncer
 from webkitpy.tool.mocktool import MockTool

@@ -35,7 +35,7 @@ import os
 import stat
 import sys
 import tempfile
-import webkitpy.thirdparty.unittest2 as unittest
+import unittest
 
 from webkitpy.common.system.filesystem import FileSystem
 

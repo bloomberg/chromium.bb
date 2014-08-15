@@ -27,7 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import json
-import webkitpy.thirdparty.unittest2 as unittest
+import unittest
 
 from webkitpy.common.net import layouttestresults_unittest
 from webkitpy.common.host_mock import MockHost

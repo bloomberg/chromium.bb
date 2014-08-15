@@ -22,7 +22,7 @@
 
 """Unit test for jsonchecker.py."""
 
-import webkitpy.thirdparty.unittest2 as unittest
+import unittest
 
 import jsonchecker
 

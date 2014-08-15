@@ -28,7 +28,8 @@
 
 """Unit tests for update_webgl_conformance_tests."""
 
-import webkitpy.thirdparty.unittest2 as unittest
+import unittest
+
 from webkitpy.webgl import update_webgl_conformance_tests as webgl
 
 

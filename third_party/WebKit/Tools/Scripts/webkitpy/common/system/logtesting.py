@@ -32,7 +32,7 @@ see the TestLogStream class, and perhaps also the LogTesting class.
 """
 
 import logging
-import webkitpy.thirdparty.unittest2 as unittest
+import unittest
 
 
 class TestLogStream(object):

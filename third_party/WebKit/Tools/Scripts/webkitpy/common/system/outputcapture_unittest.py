@@ -21,7 +21,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import logging
-import webkitpy.thirdparty.unittest2 as unittest
+import unittest
 
 from webkitpy.common.system.outputcapture import OutputCapture
 

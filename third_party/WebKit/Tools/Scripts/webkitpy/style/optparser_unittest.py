@@ -22,7 +22,7 @@
 
 """Unit tests for parser.py."""
 
-import webkitpy.thirdparty.unittest2 as unittest
+import unittest
 
 from webkitpy.common.system.logtesting import LoggingTestCase
 from webkitpy.style.optparser import ArgumentParser

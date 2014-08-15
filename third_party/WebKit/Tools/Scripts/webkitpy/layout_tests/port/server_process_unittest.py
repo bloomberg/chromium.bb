@@ -28,7 +28,7 @@
 
 import sys
 import time
-import webkitpy.thirdparty.unittest2 as unittest
+import unittest
 
 from webkitpy.layout_tests.port.factory import PortFactory
 from webkitpy.layout_tests.port import server_process

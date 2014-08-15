@@ -72,7 +72,7 @@ class _Worker(object):
         self._caller = caller
         self._loader = loader
 
-        # FIXME: unittest2 and coverage need to be in sys.path for their internal imports to work.
+        # FIXME: coverage needs to be in sys.path for its internal imports to work.
         thirdparty_path = webkit_finder.path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'thirdparty')
         if not thirdparty_path in sys.path:
             sys.path.append(thirdparty_path)

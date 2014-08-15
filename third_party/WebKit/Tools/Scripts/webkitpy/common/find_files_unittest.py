@@ -27,7 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import sys
-import webkitpy.thirdparty.unittest2 as unittest
+import unittest
 
 from webkitpy.common.system.filesystem import FileSystem
 import find_files

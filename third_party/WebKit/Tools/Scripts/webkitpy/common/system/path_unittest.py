@@ -26,8 +26,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import webkitpy.thirdparty.unittest2 as unittest
 import sys
+import unittest
 
 from webkitpy.common.system.systemhost import SystemHost
 from webkitpy.common.system.platforminfo import PlatformInfo

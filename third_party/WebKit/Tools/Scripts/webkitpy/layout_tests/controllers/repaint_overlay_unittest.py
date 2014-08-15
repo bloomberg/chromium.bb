@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import optparse
-import webkitpy.thirdparty.unittest2 as unittest
+import unittest
 
 from webkitpy.layout_tests.controllers import repaint_overlay
 

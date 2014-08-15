@@ -28,7 +28,7 @@
 
 import re
 import sys
-import webkitpy.thirdparty.unittest2 as unittest
+import unittest
 
 from webkitpy.common.host_mock import MockHost
 from webkitpy.layout_tests.port import test

@@ -38,7 +38,8 @@
 import os
 import random
 import re
-import webkitpy.thirdparty.unittest2 as unittest
+import unittest
+
 import cpp as cpp_style
 from cpp import CppChecker
 from ..filter import FilterConfiguration

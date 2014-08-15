@@ -30,9 +30,9 @@
 
 import logging
 import sys
-from StringIO import StringIO
+import unittest
 
-import webkitpy.thirdparty.unittest2 as unittest
+from StringIO import StringIO
 
 
 class OutputCapture(object):

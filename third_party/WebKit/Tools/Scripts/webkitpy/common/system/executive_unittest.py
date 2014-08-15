@@ -33,6 +33,7 @@ import signal
 import subprocess
 import sys
 import time
+import unittest
 
 # Since we execute this script directly as part of the unit tests, we need to ensure
 # that Tools/Scripts and Tools/Scripts/thirdparty are in sys.path for the next imports to work correctly.
@@ -43,7 +44,6 @@ third_party_py = os.path.join(script_dir, "webkitpy", "thirdparty")
 if third_party_py not in sys.path:
     sys.path.append(third_party_py)
 
-import webkitpy.thirdparty.unittest2 as unittest
 
 from webkitpy.common.system.executive import Executive, ScriptError
 from webkitpy.common.system.filesystem_mock import MockFileSystem

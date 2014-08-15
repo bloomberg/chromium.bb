@@ -23,11 +23,11 @@
 
 """unit testing code for webkitpy."""
 
+import StringIO
 import logging
 import multiprocessing
 import optparse
 import os
-import StringIO
 import sys
 import time
 import traceback
@@ -117,7 +117,7 @@ class Tester(object):
         # Make sure PYTHONPATH is set up properly.
         sys.path = self.finder.additional_paths(sys.path) + sys.path
 
-        # FIXME: unittest2 needs to be in sys.path for its internal imports to work.
+        # FIXME: coverage needs to be in sys.path for its internal imports to work.
         thirdparty_path = self.webkit_finder.path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'thirdparty')
         if not thirdparty_path in sys.path:
             sys.path.append(thirdparty_path)

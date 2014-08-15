@@ -26,11 +26,11 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import optparse
 import StringIO
-import time
-import webkitpy.thirdparty.unittest2 as unittest
+import optparse
 import sys
+import time
+import unittest
 
 from webkitpy.common.system import executive_mock
 from webkitpy.common.system.executive_mock import MockExecutive2

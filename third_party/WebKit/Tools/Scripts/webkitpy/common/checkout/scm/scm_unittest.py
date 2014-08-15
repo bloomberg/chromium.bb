@@ -31,6 +31,7 @@
 import atexit
 import os
 import shutil
+import unittest
 
 from webkitpy.common.system.executive import Executive, ScriptError
 from webkitpy.common.system.executive_mock import MockExecutive
@@ -40,7 +41,6 @@ from webkitpy.common.checkout.scm.detection import detect_scm_system
 from webkitpy.common.checkout.scm.git import Git, AmbiguousCommitError
 from webkitpy.common.checkout.scm.scm import SCM
 from webkitpy.common.checkout.scm.svn import SVN
-import webkitpy.thirdparty.unittest2 as unittest
 
 
 # We cache the mock SVN repo so that we don't create it again for each call to an SVNTest or GitTest test_ method.
