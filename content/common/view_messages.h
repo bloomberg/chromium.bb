@@ -885,6 +885,9 @@ IPC_MESSAGE_ROUTED3(ViewMsg_WindowSnapshotCompleted,
                     gfx::Size /* size */,
                     std::vector<unsigned char> /* png */)
 
+// Fetches complete rendered content of a web page as plain text.
+IPC_MESSAGE_ROUTED0(ViewMsg_GetRenderedText)
+
 #if defined(OS_MACOSX)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::ScrollerStyle, blink::ScrollerStyleOverlay)
 
@@ -1661,6 +1664,9 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_PluginFocusChanged,
 
 // Instructs the browser to start plugin IME.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_StartPluginIme)
+
+// Receives content of a web page as plain text.
+IPC_MESSAGE_ROUTED1(ViewMsg_GetRenderedTextCompleted, std::string);
 
 #elif defined(OS_WIN)
 // Request that the given font characters be loaded by the browser so it's

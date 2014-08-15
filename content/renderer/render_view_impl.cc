@@ -1305,6 +1305,20 @@ void RenderViewImpl::PluginFocusChanged(bool focused, int plugin_id) {
   Send(new ViewHostMsg_PluginFocusChanged(routing_id(), focused, plugin_id));
 }
 
+void RenderViewImpl::OnGetRenderedText() {
+  if (!webview())
+    return;
+  // Get rendered text from WebLocalFrame.
+  // TODO: Currently IPC truncates any data that has a
+  // size > kMaximumMessageSize. May be split the text into smaller chunks and
+  // send back using multiple IPC. See http://crbug.com/393444.
+  static const size_t kMaximumMessageSize = 8 * 1024 * 1024;
+  std::string text = webview()->mainFrame()->contentAsText(
+      kMaximumMessageSize).utf8();
+
+  Send(new ViewMsg_GetRenderedTextCompleted(routing_id(), text));
+}
+
 void RenderViewImpl::StartPluginIme() {
   IPC::Message* msg = new ViewHostMsg_StartPluginIme(routing_id());
   // This message can be sent during event-handling, and needs to be delivered
@@ -1416,6 +1430,8 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnUpdateTopControlsState)
     IPC_MESSAGE_HANDLER(ViewMsg_ExtractSmartClipData, OnExtractSmartClipData)
 #elif defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER(ViewMsg_GetRenderedText,
+                        OnGetRenderedText)
     IPC_MESSAGE_HANDLER(ViewMsg_PluginImeCompositionCompleted,
                         OnPluginImeCompositionCompleted)
     IPC_MESSAGE_HANDLER(ViewMsg_SelectPopupMenuItem, OnSelectPopupMenuItem)

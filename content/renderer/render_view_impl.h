@@ -748,6 +748,7 @@ class CONTENT_EXPORT RenderViewImpl
                                 bool animate);
   void OnExtractSmartClipData(const gfx::Rect& rect);
 #elif defined(OS_MACOSX)
+  void OnGetRenderedText();
   void OnPluginImeCompositionCompleted(const base::string16& text,
                                        int plugin_id);
   void OnSelectPopupMenuItem(int selected_index);

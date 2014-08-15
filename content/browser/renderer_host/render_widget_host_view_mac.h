@@ -582,6 +582,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // IPC message handlers.
   void OnPluginFocusChanged(bool focused, int plugin_id);
   void OnStartPluginIme();
+  void OnGetRenderedTextCompleted(const std::string& text);
 
   // Convert |rect| from the views coordinate (upper-left origin) into
   // the OpenGL coordinate (lower-left origin) and scale for HiDPI displays.
@@ -589,6 +590,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // Send updated vsync parameters to the renderer.
   void SendVSyncParametersToRenderer();
+
+  // Dispatches a TTS session.
+  void SpeakText(const std::string& text);
 
   // The associated view. This is weak and is inserted into the view hierarchy
   // to own this RenderWidgetHostViewMac object. Set to nil at the start of the

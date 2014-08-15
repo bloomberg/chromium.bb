@@ -739,6 +739,8 @@ bool RenderWidgetHostViewMac::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostViewMac, message)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PluginFocusChanged, OnPluginFocusChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_StartPluginIme, OnStartPluginIme)
+    IPC_MESSAGE_HANDLER(ViewMsg_GetRenderedTextCompleted,
+        OnGetRenderedTextCompleted)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -878,6 +880,10 @@ void RenderWidgetHostViewMac::SendVSyncParametersToRenderer() {
   }
 
   render_widget_host_->UpdateVSyncParameters(vsync_timebase_, vsync_interval_);
+}
+
+void RenderWidgetHostViewMac::SpeakText(const std::string& text) {
+  [NSApp speakString:base::SysUTF8ToNSString(text)];
 }
 
 void RenderWidgetHostViewMac::UpdateBackingStoreScaleFactor() {
@@ -1185,8 +1191,19 @@ bool RenderWidgetHostViewMac::SupportsSpeech() const {
 }
 
 void RenderWidgetHostViewMac::SpeakSelection() {
-  if ([NSApp respondsToSelector:@selector(speakString:)])
-    [NSApp speakString:base::SysUTF8ToNSString(selected_text_)];
+  if (![NSApp respondsToSelector:@selector(speakString:)])
+    return;
+
+  if (selected_text_.empty() && render_widget_host_) {
+    // If there's no selection, speak all text. Send an asynchronous IPC
+    // request for fetching all the text for a webcontent.
+    // ViewMsg_GetRenderedTextCompleted is sent back to IPC Message receiver.
+    render_widget_host_->Send(new ViewMsg_GetRenderedText(
+        render_widget_host_->GetRoutingID()));
+    return;
+  }
+
+  SpeakText(selected_text_);
 }
 
 bool RenderWidgetHostViewMac::IsSpeaking() const {
@@ -2167,6 +2184,11 @@ void RenderWidgetHostViewMac::OnPluginFocusChanged(bool focused,
 
 void RenderWidgetHostViewMac::OnStartPluginIme() {
   [cocoa_view_ setPluginImeActive:YES];
+}
+
+void RenderWidgetHostViewMac::OnGetRenderedTextCompleted(
+    const std::string& text) {
+  SpeakText(text);
 }
 
 gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
