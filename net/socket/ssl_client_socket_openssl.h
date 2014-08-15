@@ -142,7 +142,7 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
 
   // Callback from the SSL layer that indicates the remote server is requesting
   // a certificate for this client.
-  int ClientCertRequestCallback(SSL* ssl, X509** x509, EVP_PKEY** pkey);
+  int ClientCertRequestCallback(SSL* ssl);
 
   // CertVerifyCallback is called to verify the server's certificates. We do
   // verification after the handshake so this function only enforces that the
