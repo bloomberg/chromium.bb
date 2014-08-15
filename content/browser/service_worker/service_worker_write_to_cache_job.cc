@@ -24,6 +24,7 @@ ServiceWorkerWriteToCacheJob::ServiceWorkerWriteToCacheJob(
     ResourceType resource_type,
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerVersion* version,
+    int extra_load_flags,
     int64 response_id)
     : net::URLRequestJob(request, network_delegate),
       resource_type_(resource_type),
@@ -35,7 +36,7 @@ ServiceWorkerWriteToCacheJob::ServiceWorkerWriteToCacheJob(
       did_notify_started_(false),
       did_notify_finished_(false),
       weak_factory_(this) {
-  InitNetRequest();
+  InitNetRequest(extra_load_flags);
 }
 
 ServiceWorkerWriteToCacheJob::~ServiceWorkerWriteToCacheJob() {
@@ -131,7 +132,8 @@ const net::HttpResponseInfo* ServiceWorkerWriteToCacheJob::http_info() const {
   return http_info_.get();
 }
 
-void ServiceWorkerWriteToCacheJob::InitNetRequest() {
+void ServiceWorkerWriteToCacheJob::InitNetRequest(
+    int extra_load_flags) {
   DCHECK(request());
   net_request_ = request()->context()->CreateRequest(
       request()->url(),
@@ -141,6 +143,8 @@ void ServiceWorkerWriteToCacheJob::InitNetRequest() {
   net_request_->set_first_party_for_cookies(
       request()->first_party_for_cookies());
   net_request_->SetReferrer(request()->referrer());
+  if (extra_load_flags)
+    net_request_->SetLoadFlags(net_request_->load_flags() | extra_load_flags);
 
   if (resource_type_ == RESOURCE_TYPE_SERVICE_WORKER) {
     // This will get copied into net_request_ when URLRequest::StartJob calls

@@ -40,9 +40,15 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
       ResourceType resource_type,
       base::WeakPtr<ServiceWorkerContextCore> context,
       ServiceWorkerVersion* version,
+      int extra_load_flags,
       int64 response_id);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
+                           UpdateBefore24Hours);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
+                           UpdateAfter24Hours);
+
   virtual ~ServiceWorkerWriteToCacheJob();
 
   // net::URLRequestJob overrides
@@ -63,7 +69,7 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
 
   // Methods to drive the net request forward and
   // write data to the disk cache.
-  void InitNetRequest();
+  void InitNetRequest(int extra_load_flags);
   void StartNetRequest();
   net::URLRequestStatus ReadNetData(
       net::IOBuffer* buf,

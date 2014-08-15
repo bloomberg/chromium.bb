@@ -433,7 +433,7 @@ void ServiceWorkerStorage::StoreRegistration(
   data.script = registration->script_url();
   data.has_fetch_handler = true;
   data.version_id = version->version_id();
-  data.last_update_check = base::Time::Now();
+  data.last_update_check = registration->last_update_check();
   data.is_active = (version == registration->active_version());
 
   ResourceList resources;
@@ -476,6 +476,24 @@ void ServiceWorkerStorage::UpdateToActiveState(
       base::Bind(&ServiceWorkerStorage::DidUpdateToActiveState,
                  weak_factory_.GetWeakPtr(),
                  callback));
+}
+
+void ServiceWorkerStorage::UpdateLastUpdateCheckTime(
+    ServiceWorkerRegistration* registration) {
+  DCHECK(registration);
+
+  DCHECK(state_ == INITIALIZED || state_ == DISABLED) << state_;
+  if (IsDisabled() || !context_)
+    return;
+
+  database_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(
+          base::IgnoreResult(&ServiceWorkerDatabase::UpdateLastCheckTime),
+          base::Unretained(database_.get()),
+          registration->id(),
+          registration->script_url().GetOrigin(),
+          registration->last_update_check()));
 }
 
 void ServiceWorkerStorage::DeleteRegistration(
@@ -954,6 +972,7 @@ ServiceWorkerStorage::GetOrCreateRegistration(
 
   registration = new ServiceWorkerRegistration(
       data.scope, data.script, data.registration_id, context_);
+  registration->set_last_update_check(data.last_update_check);
   if (pending_deletions_.find(data.registration_id) !=
       pending_deletions_.end()) {
     registration->set_is_deleted(true);

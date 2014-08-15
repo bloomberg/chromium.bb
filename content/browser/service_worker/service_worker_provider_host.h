@@ -107,6 +107,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
  private:
   friend class ServiceWorkerProviderHostTest;
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
+                           UpdateBefore24Hours);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
+                           UpdateAfter24Hours);
 
   // ServiceWorkerRegistration::Listener overrides.
   virtual void OnVersionAttributesChanged(

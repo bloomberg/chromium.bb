@@ -9,13 +9,13 @@
 #include "content/browser/fileapi/mock_url_request_delegate.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
-#include "content/browser/service_worker/service_worker_controllee_request_handler.h"
+#include "content/browser/service_worker/service_worker_context_request_handler.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
-#include "content/browser/service_worker/service_worker_registration.h"
-#include "content/browser/service_worker/service_worker_url_request_job.h"
 #include "content/browser/service_worker/service_worker_utils.h"
+#include "content/browser/service_worker/service_worker_write_to_cache_job.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/base/load_flags.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,9 +29,9 @@ void EmptyCallback() {}
 
 }
 
-class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
+class ServiceWorkerContextRequestHandlerTest : public testing::Test {
  public:
-  ServiceWorkerControlleeRequestHandlerTest()
+  ServiceWorkerContextRequestHandlerTest()
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   virtual void SetUp() OVERRIDE {
@@ -77,48 +77,65 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
   GURL script_url_;
 };
 
-TEST_F(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
-  // Store a registration that is installed but not activated yet.
-  version_->SetStatus(ServiceWorkerVersion::INSTALLED);
-  registration_->SetWaitingVersion(version_);
-  context()->storage()->StoreRegistration(
-      registration_, version_,
-      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
-  base::RunLoop().RunUntilIdle();
+TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateBefore24Hours) {
+  // Give the registration a very recent last update time and pretend
+  // we're installing a new version.
+  registration_->set_last_update_check(base::Time::Now());
+  version_->SetStatus(ServiceWorkerVersion::NEW);
+  provider_host_->running_hosted_version_ = version_;
 
-  // Conduct a main resource load.
-  const GURL kDocUrl("http://host/scope/doc");
+  // Conduct a resource fetch for the main script.
+  const GURL kScriptUrl("http://host/script.js");
   scoped_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
-      kDocUrl,
+      kScriptUrl,
       net::DEFAULT_PRIORITY,
       &url_request_delegate_,
       NULL);
-  scoped_ptr<ServiceWorkerControlleeRequestHandler> handler(
-      new ServiceWorkerControlleeRequestHandler(
+  scoped_ptr<ServiceWorkerContextRequestHandler> handler(
+      new ServiceWorkerContextRequestHandler(
           context()->AsWeakPtr(),
           provider_host_,
           base::WeakPtr<webkit_blob::BlobStorageContext>(),
-          RESOURCE_TYPE_MAIN_FRAME));
+          RESOURCE_TYPE_SERVICE_WORKER));
   scoped_refptr<net::URLRequestJob> job =
       handler->MaybeCreateJob(request.get(), NULL);
-  ServiceWorkerURLRequestJob* sw_job =
-      static_cast<ServiceWorkerURLRequestJob*>(job.get());
+  ASSERT_TRUE(job);
+  ServiceWorkerWriteToCacheJob* sw_job =
+      static_cast<ServiceWorkerWriteToCacheJob*>(job.get());
 
-  EXPECT_FALSE(sw_job->ShouldFallbackToNetwork());
-  EXPECT_FALSE(sw_job->ShouldForwardToServiceWorker());
-  EXPECT_FALSE(version_->HasControllee());
+  // Verify the net request is not initialized to bypass the browser cache.
+  EXPECT_FALSE(sw_job->net_request_->load_flags() & net::LOAD_BYPASS_CACHE);
+}
 
-  base::RunLoop().RunUntilIdle();
+TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateAfter24Hours) {
+  // Give the registration a old update time and pretend
+  // we're installing a new version.
+  registration_->set_last_update_check(
+      base::Time::Now() - base::TimeDelta::FromDays(7));
+  version_->SetStatus(ServiceWorkerVersion::NEW);
+  provider_host_->running_hosted_version_ = version_;
 
-  EXPECT_EQ(ServiceWorkerVersion::ACTIVATED,
-            version_->status());
-  EXPECT_FALSE(sw_job->ShouldFallbackToNetwork());
-  EXPECT_TRUE(sw_job->ShouldForwardToServiceWorker());
-  EXPECT_TRUE(version_->HasControllee());
+  // Conduct a resource fetch for the main script.
+  const GURL kScriptUrl("http://host/script.js");
+  scoped_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
+      kScriptUrl,
+      net::DEFAULT_PRIORITY,
+      &url_request_delegate_,
+      NULL);
+  scoped_ptr<ServiceWorkerContextRequestHandler> handler(
+      new ServiceWorkerContextRequestHandler(
+          context()->AsWeakPtr(),
+          provider_host_,
+          base::WeakPtr<webkit_blob::BlobStorageContext>(),
+          RESOURCE_TYPE_SERVICE_WORKER));
+  scoped_refptr<net::URLRequestJob> job =
+      handler->MaybeCreateJob(request.get(), NULL);
+  ASSERT_TRUE(job);
+  ServiceWorkerWriteToCacheJob* sw_job =
+      static_cast<ServiceWorkerWriteToCacheJob*>(job.get());
 
-  // Navigations should trigger an update too.
-  handler.reset(NULL);
-  EXPECT_TRUE(version_->update_timer_.IsRunning());
+  // Verify the net request is initialized to bypass the browser cache.
+  EXPECT_TRUE(sw_job->net_request_->load_flags() & net::LOAD_BYPASS_CACHE);
 }
 
 }  // namespace content

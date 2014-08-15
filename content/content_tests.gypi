@@ -596,6 +596,7 @@
         'browser/service_worker/service_worker_cache_storage_manager_unittest.cc',
         'browser/service_worker/service_worker_context_unittest.cc',
         'browser/service_worker/service_worker_controllee_request_handler_unittest.cc',
+        'browser/service_worker/service_worker_context_request_handler_unittest.cc',
         'browser/service_worker/service_worker_database_unittest.cc',
         'browser/service_worker/service_worker_dispatcher_host_unittest.cc',
         'browser/service_worker/service_worker_handle_unittest.cc',

@@ -106,6 +106,10 @@ class CONTENT_EXPORT ServiceWorkerStorage
       ServiceWorkerRegistration* registration,
       const StatusCallback& callback);
 
+  // Updates the stored time to match the value of
+  // registration->last_update_check().
+  void UpdateLastUpdateCheckTime(ServiceWorkerRegistration* registration);
+
   // Deletes the registration data for |registration_id|. If the registration's
   // version is live, its script resources will remain available.
   // PurgeResources should be called when it's OK to delete them.
@@ -159,6 +163,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
  private:
   friend class ServiceWorkerResourceStorageTest;
   friend class ServiceWorkerControlleeRequestHandlerTest;
+  friend class ServiceWorkerContextRequestHandlerTest;
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerResourceStorageTest,
                            DeleteRegistration_NoLiveVersion);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerResourceStorageTest,

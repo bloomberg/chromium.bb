@@ -100,6 +100,10 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   // does nothing.
   void AbortPendingClear();
 
+  // The time of the most recent update check.
+  base::Time last_update_check() const { return last_update_check_; }
+  void set_last_update_check(base::Time last) { last_update_check_ = last; }
+
  private:
   friend class base::RefCounted<ServiceWorkerRegistration>;
 
@@ -134,6 +138,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   bool is_deleted_;
   bool is_uninstalling_;
   bool should_activate_when_ready_;
+  base::Time last_update_check_;
   scoped_refptr<ServiceWorkerVersion> active_version_;
   scoped_refptr<ServiceWorkerVersion> waiting_version_;
   scoped_refptr<ServiceWorkerVersion> installing_version_;

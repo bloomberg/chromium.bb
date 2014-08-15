@@ -273,6 +273,11 @@ class ServiceWorkerStorageTest : public testing::Test {
     return result;
   }
 
+  void UpdateLastUpdateCheckTime(ServiceWorkerRegistration* registration) {
+    storage()->UpdateLastUpdateCheckTime(registration);
+    base::RunLoop().RunUntilIdle();
+  }
+
   ServiceWorkerStatusCode FindRegistrationForDocument(
       const GURL& document_url,
       scoped_refptr<ServiceWorkerRegistration>* registration) {
@@ -323,6 +328,8 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   const GURL kDocumentUrl("http://www.test.not/scope/document.html");
   const int64 kRegistrationId = 0;
   const int64 kVersionId = 0;
+  const base::Time kToday = base::Time::Now();
+  const base::Time kYesterday = kToday - base::TimeDelta::FromDays(1);
 
   scoped_refptr<ServiceWorkerRegistration> found_registration;
 
@@ -349,6 +356,7 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
           live_registration, kVersionId, context_ptr_);
   live_version->SetStatus(ServiceWorkerVersion::INSTALLED);
   live_registration->SetWaitingVersion(live_version);
+  live_registration->set_last_update_check(kYesterday);
   EXPECT_EQ(SERVICE_WORKER_OK,
             StoreRegistration(live_registration, live_version));
 
@@ -396,16 +404,20 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   EXPECT_TRUE(found_registration->HasOneRef());
   EXPECT_FALSE(found_registration->active_version());
   ASSERT_TRUE(found_registration->waiting_version());
+  EXPECT_EQ(kYesterday, found_registration->last_update_check());
   EXPECT_EQ(ServiceWorkerVersion::INSTALLED,
             found_registration->waiting_version()->status());
 
-  // Update to active.
+  // Update to active and update the last check time.
   scoped_refptr<ServiceWorkerVersion> temp_version =
       found_registration->waiting_version();
   temp_version->SetStatus(ServiceWorkerVersion::ACTIVATED);
   found_registration->SetActiveVersion(temp_version);
   temp_version = NULL;
   EXPECT_EQ(SERVICE_WORKER_OK, UpdateToActiveState(found_registration));
+  found_registration->set_last_update_check(kToday);
+  UpdateLastUpdateCheckTime(found_registration);
+
   found_registration = NULL;
 
   // Trying to update a unstored registration to active should fail.
@@ -416,7 +428,8 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
             UpdateToActiveState(unstored_registration));
   unstored_registration = NULL;
 
-  // The Find methods should return a registration with an active version.
+  // The Find methods should return a registration with an active version
+  // and the expected update time.
   EXPECT_EQ(SERVICE_WORKER_OK,
             FindRegistrationForDocument(kDocumentUrl, &found_registration));
   ASSERT_TRUE(found_registration);
@@ -426,6 +439,7 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   ASSERT_TRUE(found_registration->active_version());
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATED,
             found_registration->active_version()->status());
+  EXPECT_EQ(kToday, found_registration->last_update_check());
 
   // Delete from storage but with a instance still live.
   EXPECT_TRUE(context_->GetLiveVersion(kRegistrationId));

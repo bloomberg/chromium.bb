@@ -128,7 +128,7 @@ class ServiceWorkerRegisterJob
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   void OnCompareScriptResourcesComplete(
-      ServiceWorkerVersion* current_version,
+      ServiceWorkerVersion* most_recent_version,
       ServiceWorkerStatusCode status,
       bool are_equal);
 

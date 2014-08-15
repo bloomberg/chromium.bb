@@ -232,6 +232,10 @@ void ServiceWorkerRegisterJob::ContinueWithUpdate(
     return;
   }
 
+  // TODO(michaeln): If the last update check was less than 24 hours
+  // ago, depending on the freshness of the cached worker script we
+  // may be able to complete the update job right here.
+
   UpdateAndContinue();
 }
 
@@ -323,6 +327,7 @@ void ServiceWorkerRegisterJob::OnInstallFinished(
   }
 
   SetPhase(STORE);
+  registration()->set_last_update_check(base::Time::Now());
   context_->storage()->StoreRegistration(
       registration(),
       new_version(),
@@ -416,11 +421,13 @@ void ServiceWorkerRegisterJob::ResolvePromise(
 
 void ServiceWorkerRegisterJob::OnPausedAfterDownload() {
   // This happens prior to OnStartWorkerFinished time.
-  scoped_refptr<ServiceWorkerVersion> current_version =
-      registration()->active_version();
-  DCHECK(current_version);
-  int64 current_script_id =
-      current_version->script_cache_map()->Lookup(script_url_);
+  scoped_refptr<ServiceWorkerVersion> most_recent_version =
+      registration()->waiting_version() ?
+          registration()->waiting_version() :
+          registration()->active_version();
+  DCHECK(most_recent_version);
+  int64 most_recent_script_id =
+      most_recent_version->script_cache_map()->Lookup(script_url_);
   int64 new_script_id =
       new_version()->script_cache_map()->Lookup(script_url_);
 
@@ -428,10 +435,10 @@ void ServiceWorkerRegisterJob::OnPausedAfterDownload() {
   // is being downloaded and to avoid writing it to disk until we know
   // its needed.
   context_->storage()->CompareScriptResources(
-      current_script_id, new_script_id,
+      most_recent_script_id, new_script_id,
       base::Bind(&ServiceWorkerRegisterJob::OnCompareScriptResourcesComplete,
                  weak_factory_.GetWeakPtr(),
-                 current_version));
+                 most_recent_version));
 }
 
 bool ServiceWorkerRegisterJob::OnMessageReceived(const IPC::Message& message) {
@@ -439,11 +446,19 @@ bool ServiceWorkerRegisterJob::OnMessageReceived(const IPC::Message& message) {
 }
 
 void ServiceWorkerRegisterJob::OnCompareScriptResourcesComplete(
-    ServiceWorkerVersion* current_version,
+    ServiceWorkerVersion* most_recent_version,
     ServiceWorkerStatusCode status,
     bool are_equal) {
   if (are_equal) {
-    ResolvePromise(SERVICE_WORKER_OK, registration(), current_version);
+    // Only bump the last check time when we've bypassed the browser cache.
+    base::TimeDelta time_since_last_check =
+        base::Time::Now() - registration()->last_update_check();
+    if (time_since_last_check > base::TimeDelta::FromHours(24)) {
+      registration()->set_last_update_check(base::Time::Now());
+      context_->storage()->UpdateLastUpdateCheckTime(registration());
+    }
+
+    ResolvePromise(SERVICE_WORKER_OK, registration(), most_recent_version);
     Complete(SERVICE_WORKER_ERROR_EXISTS);
     return;
   }
