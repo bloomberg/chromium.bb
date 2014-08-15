@@ -9,12 +9,12 @@
 #include "base/debug/leak_annotations.h"
 #include "base/logging.h"  // DCHECK
 #include "grit/ash_resources.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
@@ -35,12 +35,15 @@ const SkColor kHeaderContentSeparatorColor = SkColorSetRGB(150, 150, 152);
 // Color of the inactive window header/content separator line.
 const SkColor kHeaderContentSeparatorInactiveColor =
     SkColorSetRGB(180, 180, 182);
+// The color of the frame.
+const SkColor kFrameColor = SkColorSetRGB(242, 242, 242);
+// The alpha of the inactive frame.
+const SkAlpha kInactiveFrameAlpha = 204;
 // Duration of crossfade animation for activating and deactivating frame.
 const int kActivationCrossfadeDurationMs = 200;
 
 // Tiles an image into an area, rounding the top corners.
 void TileRoundRect(gfx::Canvas* canvas,
-                   const gfx::ImageSkia& image,
                    const SkPaint& paint,
                    const gfx::Rect& bounds,
                    int corner_radius) {
@@ -53,7 +56,7 @@ void TileRoundRect(gfx::Canvas* canvas,
       0, 0};  // bottom-left
   SkPath path;
   path.addRoundRect(rect, radii, SkPath::kCW_Direction);
-  canvas->DrawImageInPath(image, 0, 0, path, paint);
+  canvas->DrawPath(path, paint);
 }
 
 // Returns the FontList to use for the title.
@@ -166,26 +169,12 @@ void DefaultHeaderPainter::PaintHeader(gfx::Canvas* canvas, Mode mode) {
   int corner_radius = (frame_->IsMaximized() || frame_->IsFullscreen()) ?
       0 : HeaderPainterUtil::GetTopCornerRadiusWhenRestored();
 
-  int active_alpha = activation_animation_->CurrentValueBetween(0, 255);
-  int inactive_alpha = 255 - active_alpha;
-
   SkPaint paint;
-  if (inactive_alpha > 0) {
-    if (active_alpha > 0)
-      paint.setXfermodeMode(SkXfermode::kPlus_Mode);
+  int active_alpha = activation_animation_->CurrentValueBetween(0, 255);
+  paint.setColor(color_utils::AlphaBlend(
+      kFrameColor, GetInactiveFrameColor(), active_alpha));
 
-    paint.setAlpha(inactive_alpha);
-    gfx::ImageSkia inactive_frame = *GetInactiveFrameImage();
-    TileRoundRect(canvas, inactive_frame, paint, GetLocalBounds(),
-        corner_radius);
-  }
-
-  if (active_alpha > 0) {
-    paint.setAlpha(active_alpha);
-    gfx::ImageSkia active_frame = *GetActiveFrameImage();
-    TileRoundRect(canvas, active_frame, paint, GetLocalBounds(),
-        corner_radius);
-  }
+  TileRoundRect(canvas, paint, GetLocalBounds(), corner_radius);
 
   if (!frame_->IsMaximized() &&
       !frame_->IsFullscreen() &&
@@ -322,17 +311,15 @@ gfx::Rect DefaultHeaderPainter::GetTitleBounds() const {
       window_icon_, caption_button_container_, GetTitleFontList());
 }
 
-gfx::ImageSkia* DefaultHeaderPainter::GetActiveFrameImage() const {
-  return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      IDR_AURA_WINDOW_HEADER_BASE);
-}
-
-gfx::ImageSkia* DefaultHeaderPainter::GetInactiveFrameImage() const {
-  int frame_image_id = (frame_->IsMaximized() || frame_->IsFullscreen()) ?
-      IDR_AURA_WINDOW_HEADER_BASE :
-      IDR_AURA_WINDOW_HEADER_BASE_RESTORED_INACTIVE;
-  return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      frame_image_id);
+SkColor DefaultHeaderPainter::GetInactiveFrameColor() const {
+  SkColor color = kFrameColor;
+  if (!frame_->IsMaximized() && !frame_->IsFullscreen()) {
+    color = SkColorSetARGB(kInactiveFrameAlpha,
+                           SkColorGetR(color),
+                           SkColorGetG(color),
+                           SkColorGetB(color));
+  }
+  return color;
 }
 
 }  // namespace ash

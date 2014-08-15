@@ -198,8 +198,6 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_SIZE" file="common/window_control_icon_size.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_SIZE_I" file="common/window_control_icon_size_inactive.png" />
 
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_BASE" file="common/window_header_base_active.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_BASE_RESTORED_INACTIVE" file="common/window_header_base_inactive.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_BOTTOM" file="common/window_header_shade_bottom_inactive.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_LEFT" file="common/window_header_shade_left_inactive.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_RIGHT" file="common/window_header_shade_right_inactive.png" />

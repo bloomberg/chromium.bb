@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"  // OVERRIDE
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/animation/animation_delegate.h"
 
 namespace gfx {
@@ -74,11 +75,8 @@ class ASH_EXPORT DefaultHeaderPainter : public HeaderPainter,
   // Returns the bounds for the title.
   gfx::Rect GetTitleBounds() const;
 
-  // Returns the frame image to use when |frame_| is active.
-  gfx::ImageSkia* GetActiveFrameImage() const;
-
-  // Returns the frame image to use when |frame_| is inactive.
-  gfx::ImageSkia* GetInactiveFrameImage() const;
+  // Returns the frame color to use when |frame_| is inactive.
+  SkColor GetInactiveFrameColor() const;
 
   views::Widget* frame_;
   views::View* view_;
