@@ -13,6 +13,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_frame_host_factory.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_render_view_host_factory.h"
@@ -99,12 +100,13 @@ WebContents* RenderViewHostTestHarness::web_contents() {
 }
 
 RenderViewHost* RenderViewHostTestHarness::rvh() {
-  return web_contents()->GetRenderViewHost();
+  RenderViewHost* result = web_contents()->GetRenderViewHost();
+  CHECK_EQ(result, web_contents()->GetMainFrame()->GetRenderViewHost());
+  return result;
 }
 
 RenderViewHost* RenderViewHostTestHarness::pending_rvh() {
-  return static_cast<TestWebContents*>(web_contents())->
-      GetRenderManagerForTesting()->pending_render_view_host();
+  return pending_main_rfh() ? pending_main_rfh()->GetRenderViewHost() : NULL;
 }
 
 RenderViewHost* RenderViewHostTestHarness::active_rvh() {
@@ -112,19 +114,11 @@ RenderViewHost* RenderViewHostTestHarness::active_rvh() {
 }
 
 RenderFrameHost* RenderViewHostTestHarness::main_rfh() {
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(this->web_contents());
-  RenderFrameHostManager* main_frame_render_manager =
-      web_contents->GetFrameTree()->root()->render_manager();
-  return main_frame_render_manager->current_frame_host();
+  return web_contents()->GetMainFrame();
 }
 
 RenderFrameHost* RenderViewHostTestHarness::pending_main_rfh() {
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(this->web_contents());
-  RenderFrameHostManager* main_frame_render_manager =
-      web_contents->GetFrameTree()->root()->render_manager();
-  return main_frame_render_manager->pending_frame_host();
+  return WebContentsTester::For(web_contents())->GetPendingMainFrame();
 }
 
 BrowserContext* RenderViewHostTestHarness::browser_context() {

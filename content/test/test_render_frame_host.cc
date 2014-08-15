@@ -51,10 +51,16 @@ TestRenderFrameHost::TestRenderFrameHost(RenderViewHostImpl* render_view_host,
 
 TestRenderFrameHost::~TestRenderFrameHost() {}
 
-RenderFrameHost* TestRenderFrameHost::AppendChild(
+TestRenderViewHost* TestRenderFrameHost::GetRenderViewHost() {
+  return static_cast<TestRenderViewHost*>(
+      RenderFrameHostImpl::GetRenderViewHost());
+}
+
+TestRenderFrameHost* TestRenderFrameHost::AppendChild(
     const std::string& frame_name) {
   OnCreateChildFrame(GetProcess()->GetNextRoutingID(), frame_name);
-  return child_creation_observer_.last_created_frame();
+  return static_cast<TestRenderFrameHost*>(
+      child_creation_observer_.last_created_frame());
 }
 
 void TestRenderFrameHost::SendNavigateWithTransition(

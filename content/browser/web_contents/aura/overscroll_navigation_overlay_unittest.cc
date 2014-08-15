@@ -10,6 +10,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/test/mock_render_process_host.h"
+#include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "ui/aura/test/test_windows.h"

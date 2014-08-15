@@ -12,6 +12,7 @@ class GURL;
 namespace content {
 
 class BrowserContext;
+class RenderFrameHost;
 class RenderViewHost;
 class SiteInstance;
 class WebContents;
@@ -59,7 +60,9 @@ class WebContentsTester {
   // sending a navigate notification for the NavigationController pending entry.
   virtual void CommitPendingNavigation() = 0;
 
-  virtual RenderViewHost* GetPendingRenderViewHost() const = 0;
+  // Gets the pending RenderFrameHost, if any, for the main frame. For the
+  // current RenderFrameHost of the main frame, use WebContents::GetMainFrame().
+  virtual RenderFrameHost* GetPendingMainFrame() const = 0;
 
   // Creates a pending navigation to the given URL with the default parameters
   // and then commits the load with a page ID one larger than any seen. This
@@ -74,13 +77,13 @@ class WebContentsTester {
   // Does nothing if no cross-navigation is pending.
   virtual void ProceedWithCrossSiteNavigation() = 0;
 
-  virtual void TestDidNavigate(RenderViewHost* render_view_host,
+  virtual void TestDidNavigate(RenderFrameHost* render_frame_host,
                                int page_id,
                                const GURL& url,
                                PageTransition transition) = 0;
 
   virtual void TestDidNavigateWithReferrer(
-      RenderViewHost* render_view_host,
+      RenderFrameHost* render_frame_host,
       int page_id,
       const GURL& url,
       const Referrer& referrer,

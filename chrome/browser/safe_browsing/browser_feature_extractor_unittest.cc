@@ -134,14 +134,14 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
         type, std::string());
 
     static int page_id = 0;
-    content::RenderViewHost* rvh =
-        WebContentsTester::For(web_contents())->GetPendingRenderViewHost();
-    if (!rvh) {
-      rvh = web_contents()->GetRenderViewHost();
+    content::RenderFrameHost* rfh =
+        WebContentsTester::For(web_contents())->GetPendingMainFrame();
+    if (!rfh) {
+      rfh = web_contents()->GetMainFrame();
     }
     WebContentsTester::For(web_contents())->ProceedWithCrossSiteNavigation();
     WebContentsTester::For(web_contents())->TestDidNavigateWithReferrer(
-        rvh, ++page_id, url,
+        rfh, ++page_id, url,
         content::Referrer(referrer, blink::WebReferrerPolicyDefault), type);
   }
 

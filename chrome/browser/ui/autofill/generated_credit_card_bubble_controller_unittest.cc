@@ -78,7 +78,7 @@ class GeneratedCreditCardBubbleControllerTest : public testing::Test {
 
   void NavigateWithTransition(content::PageTransition trans) {
     content::WebContentsTester::For(test_web_contents_.get())->TestDidNavigate(
-        test_web_contents_->GetRenderViewHost(), 1, GURL("about:blank"), trans);
+        test_web_contents_->GetMainFrame(), 1, GURL("about:blank"), trans);
   }
 
  private:

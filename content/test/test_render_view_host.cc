@@ -17,6 +17,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/web_preferences.h"
+#include "content/test/test_render_frame_host.h"
 #include "content/test/test_web_contents.h"
 #include "media/base/video_frame.h"
 #include "ui/gfx/rect.h"
@@ -374,11 +375,13 @@ RenderViewHostImplTestHarness::~RenderViewHostImplTestHarness() {
 }
 
 TestRenderViewHost* RenderViewHostImplTestHarness::test_rvh() {
-  return static_cast<TestRenderViewHost*>(rvh());
+  return contents()->GetRenderViewHost();
 }
 
 TestRenderViewHost* RenderViewHostImplTestHarness::pending_test_rvh() {
-  return static_cast<TestRenderViewHost*>(pending_rvh());
+  return contents()->GetPendingMainFrame() ?
+      contents()->GetPendingMainFrame()->GetRenderViewHost() :
+      NULL;
 }
 
 TestRenderViewHost* RenderViewHostImplTestHarness::active_test_rvh() {
@@ -386,11 +389,7 @@ TestRenderViewHost* RenderViewHostImplTestHarness::active_test_rvh() {
 }
 
 TestRenderFrameHost* RenderViewHostImplTestHarness::main_test_rfh() {
-  return static_cast<TestRenderFrameHost*>(main_rfh());
-}
-
-TestRenderFrameHost* RenderViewHostImplTestHarness::pending_main_test_rfh() {
-  return static_cast<TestRenderFrameHost*>(pending_main_rfh());
+  return contents()->GetMainFrame();
 }
 
 TestWebContents* RenderViewHostImplTestHarness::contents() {

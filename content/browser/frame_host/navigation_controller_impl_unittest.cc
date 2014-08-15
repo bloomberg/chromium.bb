@@ -31,6 +31,7 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_notification_tracker.h"
 #include "content/public/test/test_utils.h"
+#include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "net/base/net_util.h"
@@ -415,8 +416,7 @@ TEST_F(NavigationControllerTest, LoadURL) {
   // Simulate the beforeunload ack for the cross-site transition, and then the
   // commit.
   test_rvh()->SendBeforeUnloadACK(true);
-  static_cast<TestRenderViewHost*>(
-      contents()->GetPendingRenderViewHost())->SendNavigate(1, url2);
+  contents()->GetPendingMainFrame()->SendNavigate(1, url2);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 
@@ -747,8 +747,7 @@ TEST_F(NavigationControllerTest, LoadURL_NewPending) {
   // After the beforeunload but before it commits, do a new navigation.
   test_rvh()->SendBeforeUnloadACK(true);
   const GURL kNewURL("http://see");
-  static_cast<TestRenderViewHost*>(
-      contents()->GetPendingRenderViewHost())->SendNavigate(3, kNewURL);
+  contents()->GetPendingMainFrame()->SendNavigate(3, kNewURL);
 
   // There should no longer be any pending entry, and the third navigation we
   // just made should be committed.
@@ -826,16 +825,15 @@ TEST_F(NavigationControllerTest, LoadURL_PrivilegedPending) {
   controller.LoadURL(
       kExistingURL2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   test_rvh()->SendBeforeUnloadACK(true);
-  TestRenderViewHost* foo_rvh = static_cast<TestRenderViewHost*>(
-      contents()->GetPendingRenderViewHost());
-  foo_rvh->SendNavigate(1, kExistingURL2);
+  TestRenderFrameHost* foo_rfh = contents()->GetPendingMainFrame();
+  foo_rfh->SendNavigate(1, kExistingURL2);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 
   // Now make a pending back/forward navigation to a privileged entry.
   // The zeroth entry should be pending.
   controller.GoBack();
-  foo_rvh->SendBeforeUnloadACK(true);
+  foo_rfh->GetRenderViewHost()->SendBeforeUnloadACK(true);
   EXPECT_EQ(0U, notifications.size());
   EXPECT_EQ(0, controller.GetPendingEntryIndex());
   EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
@@ -845,7 +843,7 @@ TEST_F(NavigationControllerTest, LoadURL_PrivilegedPending) {
   // Before that commits, do a new navigation.
   const GURL kNewURL("http://foo/bee");
   LoadCommittedDetails details;
-  foo_rvh->SendNavigate(3, kNewURL);
+  foo_rfh->SendNavigate(3, kNewURL);
 
   // There should no longer be any pending entry, and the third navigation we
   // just made should be committed.
@@ -1083,33 +1081,32 @@ TEST_F(NavigationControllerTest, LoadURL_WithBindings) {
                 controller.GetPendingEntry())->bindings());
 
   // Commit.
-  TestRenderViewHost* orig_rvh = static_cast<TestRenderViewHost*>(test_rvh());
-  orig_rvh->SendNavigate(0, url1);
+  TestRenderFrameHost* orig_rfh = contents()->GetMainFrame();
+  orig_rfh->SendNavigate(0, url1);
   EXPECT_EQ(controller.GetEntryCount(), 1);
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(0, NavigationEntryImpl::FromNavigationEntry(
       controller.GetLastCommittedEntry())->bindings());
 
   // Manually increase the number of active views in the SiteInstance
-  // that orig_rvh belongs to, to prevent it from being destroyed when
-  // it gets swapped out, so that we can reuse orig_rvh when the
+  // that orig_rfh belongs to, to prevent it from being destroyed when
+  // it gets swapped out, so that we can reuse orig_rfh when the
   // controller goes back.
-  static_cast<SiteInstanceImpl*>(orig_rvh->GetSiteInstance())->
+  static_cast<SiteInstanceImpl*>(orig_rfh->GetSiteInstance())->
       increment_active_view_count();
 
   // Navigate to a second URL, simulate the beforeunload ack for the cross-site
   // transition, run the unload handler, and set bindings on the pending
   // RenderViewHost to simulate a privileged url.
   controller.LoadURL(url2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
-  orig_rvh->SendBeforeUnloadACK(true);
+  orig_rfh->GetRenderViewHost()->SendBeforeUnloadACK(true);
   contents()->GetRenderManagerForTesting()->OnCrossSiteResponse(
-      contents()->GetRenderManagerForTesting()->pending_frame_host(),
+      contents()->GetPendingMainFrame(),
       GlobalRequestID(0, 0), scoped_ptr<CrossSiteTransferringRequest>(),
       url_chain, Referrer(), PAGE_TRANSITION_TYPED, false);
-  TestRenderViewHost* new_rvh =
-      static_cast<TestRenderViewHost*>(contents()->GetPendingRenderViewHost());
-  new_rvh->AllowBindings(1);
-  new_rvh->SendNavigate(1, url2);
+  TestRenderFrameHost* new_rfh = contents()->GetPendingMainFrame();
+  new_rfh->GetRenderViewHost()->AllowBindings(1);
+  new_rfh->SendNavigate(1, url2);
 
   // The second load should be committed, and bindings should be remembered.
   EXPECT_EQ(controller.GetEntryCount(), 2);
@@ -1120,12 +1117,12 @@ TEST_F(NavigationControllerTest, LoadURL_WithBindings) {
 
   // Going back, the first entry should still appear unprivileged.
   controller.GoBack();
-  new_rvh->SendBeforeUnloadACK(true);
+  new_rfh->GetRenderViewHost()->SendBeforeUnloadACK(true);
   contents()->GetRenderManagerForTesting()->OnCrossSiteResponse(
-      contents()->GetRenderManagerForTesting()->pending_frame_host(),
+      contents()->GetPendingMainFrame(),
       GlobalRequestID(0, 0), scoped_ptr<CrossSiteTransferringRequest>(),
       url_chain, Referrer(), PAGE_TRANSITION_TYPED, false);
-  orig_rvh->SendNavigate(0, url1);
+  orig_rfh->SendNavigate(0, url1);
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(0, NavigationEntryImpl::FromNavigationEntry(
       controller.GetLastCommittedEntry())->bindings());
@@ -4300,7 +4297,7 @@ TEST_F(NavigationControllerTest, ClearHistoryList) {
   EXPECT_TRUE(entry->should_clear_history_list());
 
   // Assume that the RV correctly cleared its history and commit the navigation.
-  static_cast<TestRenderViewHost*>(contents()->GetPendingRenderViewHost())->
+  contents()->GetPendingMainFrame()->GetRenderViewHost()->
       set_simulate_history_list_was_cleared(true);
   contents()->CommitPendingNavigation();
 

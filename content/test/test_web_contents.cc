@@ -44,19 +44,25 @@ TestWebContents::~TestWebContents() {
   EXPECT_FALSE(expect_set_history_length_and_prune_);
 }
 
-RenderViewHost* TestWebContents::GetPendingRenderViewHost() const {
-  return GetRenderManager()->pending_render_view_host();
+TestRenderFrameHost* TestWebContents::GetMainFrame() {
+  return static_cast<TestRenderFrameHost*>(WebContentsImpl::GetMainFrame());
 }
 
-TestRenderViewHost* TestWebContents::pending_test_rvh() const {
-  return static_cast<TestRenderViewHost*>(GetPendingRenderViewHost());
+TestRenderViewHost* TestWebContents::GetRenderViewHost() const {
+    return static_cast<TestRenderViewHost*>(
+        WebContentsImpl::GetRenderViewHost());
 }
 
-void TestWebContents::TestDidNavigate(RenderViewHost* render_view_host,
+TestRenderFrameHost* TestWebContents::GetPendingMainFrame() const {
+  return static_cast<TestRenderFrameHost*>(
+      GetRenderManager()->pending_frame_host());
+}
+
+void TestWebContents::TestDidNavigate(RenderFrameHost* render_frame_host,
                                       int page_id,
                                       const GURL& url,
                                       PageTransition transition) {
-  TestDidNavigateWithReferrer(render_view_host,
+  TestDidNavigateWithReferrer(render_frame_host,
                               page_id,
                               url,
                               Referrer(),
@@ -64,7 +70,7 @@ void TestWebContents::TestDidNavigate(RenderViewHost* render_view_host,
 }
 
 void TestWebContents::TestDidNavigateWithReferrer(
-    RenderViewHost* render_view_host,
+    RenderFrameHost* render_frame_host,
     int page_id,
     const GURL& url,
     const Referrer& referrer,
@@ -85,10 +91,9 @@ void TestWebContents::TestDidNavigateWithReferrer(
   params.is_post = false;
   params.page_state = PageState::CreateFromURL(url);
 
-  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(render_view_host);
-  RenderFrameHostImpl* rfh = RenderFrameHostImpl::FromID(
-      rvh->GetProcess()->GetID(), rvh->main_frame_routing_id());
-  frame_tree_.root()->navigator()->DidNavigate(rfh, params);
+  RenderFrameHostImpl* rfhi =
+      static_cast<RenderFrameHostImpl*>(render_frame_host);
+  rfhi->frame_tree_node()->navigator()->DidNavigate(rfhi, params);
 }
 
 WebPreferences TestWebContents::TestComputeWebkitPrefs() {
@@ -139,33 +144,30 @@ void TestWebContents::CommitPendingNavigation() {
   // notifying that it has unloaded so the pending RVH is resumed and can
   // navigate.
   ProceedWithCrossSiteNavigation();
-  RenderViewHost* old_rvh = GetRenderViewHost();
-  TestRenderViewHost* rvh =
-      static_cast<TestRenderViewHost*>(GetPendingRenderViewHost());
-  if (!rvh)
-    rvh = static_cast<TestRenderViewHost*>(old_rvh);
+  TestRenderFrameHost* old_rfh = GetMainFrame();
+  TestRenderFrameHost* rfh = GetPendingMainFrame();
+  if (!rfh)
+    rfh = old_rfh;
 
   const NavigationEntry* entry = GetController().GetPendingEntry();
   DCHECK(entry);
   int page_id = entry->GetPageID();
   if (page_id == -1) {
     // It's a new navigation, assign a never-seen page id to it.
-    page_id = GetMaxPageIDForSiteInstance(rvh->GetSiteInstance()) + 1;
+    page_id = GetMaxPageIDForSiteInstance(rfh->GetSiteInstance()) + 1;
   }
 
-  rvh->SendNavigate(page_id, entry->GetURL());
+  rfh->SendNavigate(page_id, entry->GetURL());
   // Simulate the SwapOut_ACK. This is needed when cross-site navigation happens
-  // (old_rvh != rvh).
-  if (old_rvh != rvh)
-    static_cast<RenderViewHostImpl*>(old_rvh)->OnSwappedOut(false);
+  // (old_rfh != rfh).
+  if (old_rfh != rfh)
+    old_rfh->OnSwappedOut(false);
 }
 
 void TestWebContents::ProceedWithCrossSiteNavigation() {
-  if (!GetPendingRenderViewHost())
+  if (!GetPendingMainFrame())
     return;
-  TestRenderViewHost* rvh = static_cast<TestRenderViewHost*>(
-      GetRenderViewHost());
-  rvh->SendBeforeUnloadACK(true);
+  GetMainFrame()->GetRenderViewHost()->SendBeforeUnloadACK(true);
 }
 
 RenderViewHostDelegateView* TestWebContents::GetDelegateView() {

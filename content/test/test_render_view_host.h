@@ -15,7 +15,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/test/test_renderer_host.h"
-#include "content/test/test_render_frame_host.h"
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/vector2d_f.h"
@@ -364,12 +363,38 @@ class RenderViewHostImplTestHarness : public RenderViewHostTestHarness {
   RenderViewHostImplTestHarness();
   virtual ~RenderViewHostImplTestHarness();
 
-  TestRenderViewHost* test_rvh();
-  TestRenderViewHost* pending_test_rvh();
-  TestRenderViewHost* active_test_rvh();
-  TestRenderFrameHost* main_test_rfh();
-  TestRenderFrameHost* pending_main_test_rfh();
+  // contents() is equivalent to static_cast<TestWebContents*>(web_contents())
   TestWebContents* contents();
+
+  // RVH/RFH getters are shorthand for oft-used bits of web_contents().
+
+  // test_rvh() is equivalent to any of the following:
+  //   contents()->GetMainFrame()->GetRenderViewHost()
+  //   contents()->GetRenderViewHost()
+  //   static_cast<TestRenderViewHost*>(rvh())
+  //
+  // Since most functionality will eventually shift from RVH to RFH, you may
+  // prefer to use the GetMainFrame() method in tests.
+  TestRenderViewHost* test_rvh();
+
+  // pending_test_rvh() is equivalent to all of the following:
+  //   contents()->GetPendingMainFrame()->GetRenderViewHost() [if frame exists]
+  //   contents()->GetPendingRenderViewHost()
+  //   static_cast<TestRenderViewHost*>(pending_rvh())
+  //
+  // Since most functionality will eventually shift from RVH to RFH, you may
+  // prefer to use the GetPendingMainFrame() method in tests.
+  TestRenderViewHost* pending_test_rvh();
+
+  // active_test_rvh() is equivalent to:
+  //   contents()->GetPendingRenderViewHost() ?
+  //        contents()->GetPendingRenderViewHost() :
+  //        contents()->GetRenderViewHost();
+  TestRenderViewHost* active_test_rvh();
+
+  // main_test_rfh() is equivalent to contents()->GetMainFrame()
+  // TODO(nick): Replace all uses with contents()->GetMainFrame()
+  TestRenderFrameHost* main_test_rfh();
 
  private:
   typedef scoped_ptr<ui::test::ScopedSetSupportedScaleFactors>
