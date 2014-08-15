@@ -2894,7 +2894,7 @@ Pastikan Anda tidak mengekspos informasi penting apa pun.</translation>
 <translation id="7347751611463936647">Untuk menggunakan ekstensi ini, ketik &quot;<ph name="EXTENSION_KEYWORD"/>&quot;, lalu TAB, kemudian perintah atau penelusuran Anda.</translation>
 <translation id="878431691778285679">Tampaknya Anda telah mengelola pengguna dengan nama tersebut.<ph name="LINE_BREAK"/>Apakah Anda ingin <ph name="BEGIN_LINK"/>mengimpor <ph name="PROFILE_NAME"/> ke perangkat ini<ph name="END_LINK"/>?</translation>
 <translation id="2912905526406334195"><ph name="HOST"/> ingin menggunakan mikrofon Anda.</translation>
-<translation id="2805756323405976993">Apps</translation>
+<translation id="2805756323405976993">Apl</translation>
 <translation id="5151511998946489774">Identitas situs web ini telah diverifikasi oleh <ph name="ISSUER"/> dan dapat diaudit secara publik.</translation>
 <translation id="1608626060424371292">Hapus pengguna ini</translation>
 <translation id="2779552785085366231">Laman ini dapat ditambahkan ke Peluncur Aplikasi</translation>
@@ -3459,7 +3459,7 @@ dan tidak biasa. Bisa jadi penyerang berpura-pura menjadi <ph name="SITE"/>, ata
 <translation id="8353683614194668312">Aplikasi/ekstensi dapat:</translation>
 <translation id="1047956942837015229">Menghapus <ph name="COUNT"/> item...</translation>
 <translation id="1531961661616401172">Aktifkan Pemberitahuan Tersinkron eksperimental.</translation>
-<translation id="7361039089383199231">$1 byte</translation>
+<translation id="7361039089383199231">$1 bita</translation>
 <translation id="191688485499383649">Terjadi kesalahan tidak dikenal saat mencoba menyambung ke &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
 <translation id="7208594729785140450">Google Wallet tidak mendukung versi Chrome ini atau tidak mengenali kunci API Google Anda.</translation>
 <translation id="6874681241562738119">Kesalahan Masuk</translation>
@@ -4812,7 +4812,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="4084682180776658562">Bookmark</translation>
 <translation id="8859057652521303089">Pilih bahasa Anda:</translation>
 <translation id="2632795170092344386">Hapus cookies serta data situs dan plugin lainnya saat Anda menutup browser</translation>
-<translation id="5941864346249299673">Jumlah byte yang terbaca di seluruh jaringan</translation>
+<translation id="5941864346249299673">Jumlah bita yang terbaca di seluruh jaringan</translation>
 <translation id="3030138564564344289">Coba ulang unduhan</translation>
 <translation id="2603463522847370204">Buka di &amp;jendela penyamaran</translation>
 <translation id="2951236788251446349">Ubur-ubur</translation>

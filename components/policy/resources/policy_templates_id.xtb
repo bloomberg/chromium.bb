@@ -545,7 +545,7 @@
 <translation id="6786747875388722282">Ekstensi</translation>
 <translation id="7132877481099023201">URL yang akan diberi akses ke perangkat perekam video tanpa peringatan</translation>
 <translation id="8947415621777543415">Laporkan lokasi perangkat</translation>
-<translation id="1655229863189977773">Setel ukuran cache disk dalam byte</translation>
+<translation id="1655229863189977773">Setel ukuran cache disk dalam bita</translation>
 <translation id="3358275192586364144">Mengaktifkan pengoptimalan WPAD pada <ph name="PRODUCT_NAME"/> dan mencegah pengguna mengubah setelan ini.
 
       Menyetel kebijakan ini menjadi aktif akan menyebabkan Chrome menunggu dalam interval yang lebih pendek bagi server WPAD berbasis DNS.
@@ -1353,7 +1353,7 @@
       Jika kebijakan ini tidak disetel, keyboard di layar akan dinonaktifkan pada awalnya namun dapat diaktifkan oleh pengguna kapan saja. Aturan heuristis juga dapat digunakan untuk menentukan waktu untuk menampilkan keyboard.</translation>
 <translation id="6774533686631353488">Izinkan host Native Messaging tingkat pengguna (dipasang tanpa izin admin).</translation>
 <translation id="868187325500643455">Izinkan semua situs menjalankan plugin secara otomatis</translation>
-<translation id="7421483919690710988">Setel ukuran cache disk media dalam byte</translation>
+<translation id="7421483919690710988">Setel ukuran cache disk media dalam bita</translation>
 <translation id="5226033722357981948">Menentukan apakah pencari plugin harus dinonaktifkan</translation>
 <translation id="7234280155140786597">Nama hosting perpesanan asli yang dilarang (atau * untuk semua)</translation>
 <translation id="4890209226533226410">Menyetel jenis lup yang diaktifkan.
