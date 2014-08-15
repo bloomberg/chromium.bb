@@ -99,22 +99,6 @@
               },
               'includes': [ '../build/grit_action.gypi' ],
             },
-            {
-              # GN version: //chrome/browser/resources:quota_internals_resources
-              'action_name': 'generate_quota_internals_resources',
-              'variables': {
-                'grit_grd_file': 'browser/resources/quota_internals_resources.grd',
-              },
-              'includes': [ '../build/grit_action.gypi' ],
-            },
-            {
-              # GN version: //chrome/browser/resources:sync_file_system_internals_resources
-              'action_name': 'generate_sync_file_system_internals_resources',
-              'variables': {
-                'grit_grd_file': 'browser/resources/sync_file_system_internals_resources.grd',
-              },
-              'includes': [ '../build/grit_action.gypi' ],
-            },
           ],
           'copies': [
             {
@@ -138,6 +122,26 @@
                 'browser/resources/chromeos/chromevox/chromevox.gyp:chromevox',
               ],
             }],
+          ],
+        }],
+        ['enable_extensions==1', {
+          'actions': [
+            {
+              # GN version: //chrome/browser/resources:quota_internals_resources
+              'action_name': 'generate_quota_internals_resources',
+              'variables': {
+                'grit_grd_file': 'browser/resources/quota_internals_resources.grd',
+              },
+              'includes': [ '../build/grit_action.gypi' ],
+            },
+            {
+              # GN version: //chrome/browser/resources:sync_file_system_internals_resources
+              'action_name': 'generate_sync_file_system_internals_resources',
+              'variables': {
+                'grit_grd_file': 'browser/resources/sync_file_system_internals_resources.grd',
+              },
+              'includes': [ '../build/grit_action.gypi' ],
+            },
           ],
         }],
       ],

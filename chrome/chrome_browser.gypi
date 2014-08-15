@@ -706,9 +706,6 @@
       # TODO(brettw) should this go with the webrtc sources?
       'browser/media/webrtc_log_list.cc',
       'browser/media/webrtc_log_list.h',
-      'browser/media_galleries/gallery_watch_manager.cc',
-      'browser/media_galleries/gallery_watch_manager.h',
-      'browser/media_galleries/gallery_watch_manager_observer.h',
       'browser/memory_details.cc',
       'browser/memory_details.h',
       'browser/memory_details_android.cc',
@@ -1912,8 +1909,6 @@
     ],
     # Used both when enable_printing == 1 (full) and == 2 (basic)
     'chrome_browser_basic_printing_sources': [
-      'browser/printing/print_dialog_cloud.cc',
-      'browser/printing/print_dialog_cloud.h',
       'browser/printing/print_job.cc',
       'browser/printing/print_job.h',
       'browser/printing/print_job_manager.cc',
@@ -1942,6 +1937,8 @@
       'browser/printing/cloud_print/cloud_print_proxy_service_factory.cc',
       'browser/printing/cloud_print/cloud_print_proxy_service_factory.h',
       'browser/printing/cloud_print/cloud_print_proxy_service.h',
+      'browser/printing/print_dialog_cloud.cc',
+      'browser/printing/print_dialog_cloud.h',
       'browser/printing/printer_manager_dialog.h',
       'browser/printing/printer_manager_dialog_linux.cc',
       'browser/printing/printer_manager_dialog_mac.mm',
@@ -2130,6 +2127,9 @@
       'browser/media_galleries/fileapi/supported_audio_video_checker.h',
       'browser/media_galleries/fileapi/supported_image_type_validator.cc',
       'browser/media_galleries/fileapi/supported_image_type_validator.h',
+      'browser/media_galleries/gallery_watch_manager.cc',
+      'browser/media_galleries/gallery_watch_manager.h',
+      'browser/media_galleries/gallery_watch_manager_observer.h',
       'browser/media_galleries/imported_media_gallery_registry.cc',
       'browser/media_galleries/imported_media_gallery_registry.h',
       'browser/media_galleries/linux/mtp_device_delegate_impl_linux.cc',
@@ -3520,34 +3520,6 @@
       },
       'includes': [ '../build/protoc.gypi' ]
     },
-    {
-      # Protobuf compiler / generator for Sync FileSystem protocol buffer.
-      # GN version: //chrome/browser/sync_file_system:sync_file_system_proto
-      'target_name': 'sync_file_system_proto',
-      'type': 'static_library',
-      'sources': [
-        'browser/sync_file_system/sync_file_system.proto',
-      ],
-      'variables': {
-        'proto_in_dir': 'browser/sync_file_system',
-        'proto_out_dir': 'chrome/browser/sync_file_system',
-      },
-      'includes': [ '../build/protoc.gypi' ]
-    },
-    {
-      # Protobuf compiler / generator for Sync FileSystem protocol buffer.
-      # GN version: //chrome/browser/sync_file_system/drive_backend:sync_file_system_drive_proto
-      'target_name': 'sync_file_system_drive_proto',
-      'type': 'static_library',
-      'sources': [
-        'browser/sync_file_system/drive_backend/metadata_database.proto',
-      ],
-      'variables': {
-        'proto_in_dir': 'browser/sync_file_system/drive_backend',
-        'proto_out_dir': 'chrome/browser/sync_file_system/drive_backend',
-      },
-      'includes': [ '../build/protoc.gypi' ]
-    },
   ],
   'conditions': [
     ['OS=="android"', {
@@ -3634,7 +3606,38 @@
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },
       ],
-     },
-    ],
+    },],
+    ['enable_extensions==1', {
+      'targets': [
+        {
+          # Protobuf compiler / generator for Sync FileSystem protocol buffer.
+          # GN version: //chrome/browser/sync_file_system:sync_file_system_proto
+          'target_name': 'sync_file_system_proto',
+          'type': 'static_library',
+          'sources': [
+            'browser/sync_file_system/sync_file_system.proto',
+          ],
+          'variables': {
+            'proto_in_dir': 'browser/sync_file_system',
+            'proto_out_dir': 'chrome/browser/sync_file_system',
+          },
+          'includes': [ '../build/protoc.gypi' ]
+        },
+        {
+          # Protobuf compiler / generator for Sync FileSystem protocol buffer.
+          # GN version: //chrome/browser/sync_file_system/drive_backend:sync_file_system_drive_proto
+          'target_name': 'sync_file_system_drive_proto',
+          'type': 'static_library',
+          'sources': [
+            'browser/sync_file_system/drive_backend/metadata_database.proto',
+          ],
+          'variables': {
+            'proto_in_dir': 'browser/sync_file_system/drive_backend',
+            'proto_out_dir': 'chrome/browser/sync_file_system/drive_backend',
+          },
+          'includes': [ '../build/protoc.gypi' ]
+        },
+      ],
+    },],
   ],
 }

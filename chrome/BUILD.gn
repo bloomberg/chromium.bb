@@ -35,8 +35,6 @@ group("extra_resources") {
     deps += [
       "//chrome/browser/resources:component_extension_resources",
       "//chrome/browser/resources:options_resources",
-      "//chrome/browser/resources:quota_internals_resources",
-      "//chrome/browser/resources:sync_file_system_internals_resources",
     ]
   }
 
@@ -47,6 +45,13 @@ group("extra_resources") {
   } else {
     deps += [
       #'browser/resources/chromeos/chromevox/chromevox.gyp:chromevox',  TODO(GYP)
+    ]
+  }
+
+  if (enable_extensions) {
+    deps += [
+      "//chrome/browser/resources:quota_internals_resources",
+      "//chrome/browser/resources:sync_file_system_internals_resources",
     ]
   }
 }
