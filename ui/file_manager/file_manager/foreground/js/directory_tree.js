@@ -279,9 +279,7 @@ DirectoryItem.prototype.updateSubDirectories = function(
   }
 
   var sortEntries = function(fileFilter, entries) {
-    entries.sort(function(a, b) {
-      return (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : -1;
-    });
+    entries.sort(util.compareName);
     return entries.filter(fileFilter.filter.bind(fileFilter));
   };
 
@@ -514,6 +512,7 @@ VolumeItem.prototype.updateSubDirectories = function(recursive) {
       for (var key in this.volumeInfo.fakeEntries)
         entries.push(this.volumeInfo.fakeEntries[key]);
     }
+    // This list is sorted by URL on purpose.
     entries.sort(function(a, b) { return a.toURL() < b.toURL(); });
 
     for (var i = 0; i < entries.length; i++) {

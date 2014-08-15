@@ -1006,6 +1006,34 @@ util.isSameFileSystem = function(fileSystem1, fileSystem2) {
 };
 
 /**
+ * Collator for sorting.
+ * @type {Intl.Collator}
+ */
+util.collator = new Intl.Collator([], {usage: 'sort',
+                                       numeric: true,
+                                       sensitivity: 'base'});
+
+/**
+ * Compare by name. The 2 entries must be in same directory.
+ * @param {Entry} entry1 First entry.
+ * @param {Entry} entry2 Second entry.
+ * @return {number} Compare result.
+ */
+util.compareName = function(entry1, entry2) {
+  return util.collator.compare(entry1.name, entry2.name);
+};
+
+/**
+ * Compare by path.
+ * @param {Entry} entry1 First entry.
+ * @param {Entry} entry2 Second entry.
+ * @return {number} Compare result.
+ */
+util.comparePath = function(entry1, entry2) {
+  return util.collator.compare(entry1.fullPath, entry2.fullPath);
+};
+
+/**
  * Checks if the child entry is a descendant of another entry. If the entries
  * point to the same file or directory, then returns false.
  *

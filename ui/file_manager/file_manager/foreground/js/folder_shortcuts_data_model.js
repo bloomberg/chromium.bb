@@ -275,10 +275,7 @@ FolderShortcutsDataModel.prototype = {
    *     Otherwise, returns 1.
    */
   compare: function(a, b) {
-    return a.toURL().localeCompare(
-        b.toURL(),
-        undefined,  // locale parameter, use default locale.
-        {usage: 'sort', numeric: true});
+    return util.comparePath(a, b);
   },
 
   /**

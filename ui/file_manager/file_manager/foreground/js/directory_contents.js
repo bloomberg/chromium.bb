@@ -415,14 +415,8 @@ function FileListModel(metadataCache) {
    */
   this.metadataCache_ = metadataCache;
 
-  /**
-   * Collator for sorting.
-   * @type {Intl.Collator}
-   */
-  this.collator_ = new Intl.Collator([], {numeric: true, sensitivity: 'base'});
-
   // Initialize compare functions.
-  this.setCompareFunction('name', this.compareName_.bind(this));
+  this.setCompareFunction('name', util.compareName);
   this.setCompareFunction('modificationTime', this.compareMtime_.bind(this));
   this.setCompareFunction('size', this.compareSize_.bind(this));
   this.setCompareFunction('type', this.compareType_.bind(this));
@@ -430,18 +424,6 @@ function FileListModel(metadataCache) {
 
 FileListModel.prototype = {
   __proto__: cr.ui.ArrayDataModel.prototype
-};
-
-/**
- * Compare by mtime first, then by name.
- * @param {Entry} a First entry.
- * @param {Entry} b Second entry.
- * @return {number} Compare result.
- * @private
- */
-FileListModel.prototype.compareName_ = function(a, b) {
-  var result = this.collator_.compare(a.name, b.name);
-  return result !== 0 ? result : a.toURL().localeCompare(b.toURL());
 };
 
 /**
@@ -464,7 +446,7 @@ FileListModel.prototype.compareMtime_ = function(a, b) {
   if (aTime < bTime)
     return -1;
 
-  return this.compareName_(a, b);
+  return util.compareName(a, b);
 };
 
 /**
@@ -481,7 +463,7 @@ FileListModel.prototype.compareSize_ = function(a, b) {
   var bCachedFilesystem = this.metadataCache_.getCached(b, 'filesystem');
   var bSize = bCachedFilesystem ? bCachedFilesystem.size : 0;
 
-  return aSize !== bSize ? aSize - bSize : this.compareName_(a, b);
+  return aSize !== bSize ? aSize - bSize : util.compareName(a, b);
 };
 
 /**
@@ -499,8 +481,8 @@ FileListModel.prototype.compareType_ = function(a, b) {
   var aType = FileType.typeToString(FileType.getType(a));
   var bType = FileType.typeToString(FileType.getType(b));
 
-  var result = this.collator_.compare(aType, bType);
-  return result !== 0 ? result : this.compareName_(a, b);
+  var result = util.collator.compare(aType, bType);
+  return result !== 0 ? result : util.compareName(a, b);
 };
 
 /**
