@@ -6,7 +6,6 @@
 
 #include "athena/common/fill_layout_manager.h"
 #include "athena/test/athena_test_base.h"
-#include "athena/wm/public/window_list_provider.h"
 #include "athena/wm/window_list_provider_impl.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/aura/test/test_window_delegate.h"

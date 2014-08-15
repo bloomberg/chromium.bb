@@ -39,6 +39,9 @@ class ATHENA_EXPORT SplitViewController
   // making any necessary changes.
   void DeactivateSplitMode();
 
+  void ReplaceWindow(aura::Window* window,
+                     aura::Window* replace_with);
+
   aura::Window* left_window() { return left_window_; }
   aura::Window* right_window() { return right_window_; }
 

@@ -247,23 +247,58 @@ bool WindowManagerImpl::OnAcceleratorFired(int command_id,
 }
 
 aura::Window* WindowManagerImpl::GetWindowBehind(aura::Window* window) {
-  const aura::Window::Windows& windows = container_->children();
-  aura::Window::Windows::const_iterator iter =
-      std::find(windows.begin(), windows.end(), window);
-  CHECK(iter != windows.end());
-  return (iter == windows.begin()) ? NULL : *(iter - 1);
+  const aura::Window::Windows& windows = window_list_provider_->GetWindowList();
+  aura::Window::Windows::const_reverse_iterator iter =
+      std::find(windows.rbegin(), windows.rend(), window);
+  CHECK(iter != windows.rend());
+  ++iter;
+  aura::Window* behind = NULL;
+  if (iter != windows.rend())
+    behind = *iter++;
+
+  if (split_view_controller_->IsSplitViewModeActive()) {
+    aura::Window* left = split_view_controller_->left_window();
+    aura::Window* right = split_view_controller_->right_window();
+    CHECK(window == left || window == right);
+    if (behind == left || behind == right)
+      behind = (iter == windows.rend()) ? NULL : *iter;
+  }
+
+  return behind;
 }
 
 void WindowManagerImpl::OnTitleDragStarted(aura::Window* window) {
+  aura::Window* next_window = GetWindowBehind(window);
+  if (!next_window)
+    return;
+  // Make sure |window| is active. Also make sure that |next_window| is visible,
+  // and positioned to match the top-left edge of |window|.
+  wm::ActivateWindow(window);
+  next_window->Show();
+  int dx = window->bounds().x() - next_window->bounds().x();
+  if (dx) {
+    gfx::Transform transform;
+    transform.Translate(dx, 0);
+    next_window->SetTransform(transform);
+  }
 }
 
 void WindowManagerImpl::OnTitleDragCompleted(aura::Window* window) {
   aura::Window* next_window = GetWindowBehind(window);
-  if (next_window)
+  if (!next_window)
+    return;
+  if (split_view_controller_->IsSplitViewModeActive())
+    split_view_controller_->ReplaceWindow(window, next_window);
+  else
     OnSelectWindow(next_window);
+  wm::ActivateWindow(next_window);
 }
 
 void WindowManagerImpl::OnTitleDragCanceled(aura::Window* window) {
+  aura::Window* next_window = GetWindowBehind(window);
+  if (!next_window)
+    return;
+  next_window->SetTransform(gfx::Transform());
 }
 
 AthenaContainerLayoutManager::AthenaContainerLayoutManager() {

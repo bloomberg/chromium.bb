@@ -85,6 +85,28 @@ void SplitViewController::ActivateSplitMode(aura::Window* left,
   UpdateLayout(true);
 }
 
+void SplitViewController::ReplaceWindow(aura::Window* window,
+                                        aura::Window* replace_with) {
+  CHECK(IsSplitViewModeActive());
+  CHECK(replace_with);
+  CHECK(window == left_window_ || window == right_window_);
+  CHECK(replace_with != left_window_ && replace_with != right_window_);
+#if !defined(NDEBUG)
+  aura::Window::Windows windows = window_list_provider_->GetWindowList();
+  DCHECK(std::find(windows.begin(), windows.end(), replace_with) !=
+         windows.end());
+#endif
+
+  replace_with->SetBounds(window->bounds());
+  replace_with->SetTransform(gfx::Transform());
+  if (window == left_window_)
+    left_window_ = replace_with;
+  else
+    right_window_ = replace_with;
+  wm::ActivateWindow(replace_with);
+  window->SetTransform(gfx::Transform());
+}
+
 void SplitViewController::DeactivateSplitMode() {
   CHECK_NE(SCROLLING, state_);
   state_ = INACTIVE;

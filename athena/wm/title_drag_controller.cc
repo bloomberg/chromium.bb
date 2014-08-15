@@ -60,15 +60,15 @@ void TitleDragController::OnTransitionEnd(aura::Window* window, bool complete) {
   weak_ptr_.InvalidateWeakPtrs();
   if (!tracker_.Contains(window))
     window = NULL;
-  if (complete && window && wm::IsActiveWindow(window))
-    delegate_->OnTitleDragCompleted(window);
-  else
-    delegate_->OnTitleDragCanceled(window);
   shadow_.reset();
   if (window) {
     window->SetTransform(gfx::Transform());
     tracker_.Remove(window);
   }
+  if (complete && window && wm::IsActiveWindow(window))
+    delegate_->OnTitleDragCompleted(window);
+  else
+    delegate_->OnTitleDragCanceled(window);
 }
 
 void TitleDragController::OnGestureEvent(ui::GestureEvent* gesture) {
