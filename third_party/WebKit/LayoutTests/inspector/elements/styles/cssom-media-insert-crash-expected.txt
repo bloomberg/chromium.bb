@@ -5,7 +5,7 @@ element.style  { ()
 
 [expanded] 
 @media all (cssom-media-insert-crash.html)
-#box  { (cssom-media-ins…t-crash.html:1 -> cssom-media-insert-crash.html:1:1)
+#box  { ()
 background: red;
 color: white;
 
