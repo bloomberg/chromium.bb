@@ -7,6 +7,8 @@ package org.chromium.chrome.browser;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -25,6 +27,8 @@ import android.util.Log;
 import android.util.TypedValue;
 
 import org.chromium.chrome.R;
+
+import java.util.List;
 
 /**
  * Util class for bookmarks.
@@ -90,6 +94,19 @@ public class BookmarkUtils {
         Intent shortcutIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         shortcutIntent.putExtra(REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, true);
         return shortcutIntent;
+    }
+
+    /**
+     * Utility method to check if a shortcut can be added to the homescreen.
+     * @param context Context used to get the package manager.
+     * @return if a shortcut can be added to the homescreen under the current profile.
+     */
+    public static boolean isAddToHomeIntentSupported(Context context) {
+        PackageManager pm = context.getPackageManager();
+        Intent i = new Intent(INSTALL_SHORTCUT);
+        List<ResolveInfo> receivers = pm.queryBroadcastReceivers(
+                i, PackageManager.GET_INTENT_FILTERS);
+        return !receivers.isEmpty();
     }
 
     /**
