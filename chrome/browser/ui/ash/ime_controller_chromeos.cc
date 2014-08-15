@@ -10,19 +10,19 @@
 void ImeController::HandleNextIme() {
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::Get();
-  manager->SwitchToNextInputMethod();
+  manager->GetActiveIMEState()->SwitchToNextInputMethod();
 }
 
 bool ImeController::HandlePreviousIme(const ui::Accelerator& accelerator) {
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::Get();
-  return manager->SwitchToPreviousInputMethod(accelerator);
+  return manager->GetActiveIMEState()->SwitchToPreviousInputMethod(accelerator);
 }
 
 bool ImeController::HandleSwitchIme(const ui::Accelerator& accelerator) {
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::Get();
-  return manager->SwitchInputMethod(accelerator);
+  return manager->GetActiveIMEState()->SwitchInputMethod(accelerator);
 }
 
 ui::Accelerator ImeController::RemapAccelerator(
@@ -50,7 +50,7 @@ bool ImeController::UsingFrenchInputMethod() const {
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::Get();
   const chromeos::input_method::InputMethodDescriptor& descriptor =
-      manager->GetCurrentInputMethod();
+      manager->GetActiveIMEState()->GetCurrentInputMethod();
   const std::string& layout = descriptor.id();
   return (layout == "xkb:fr::fra" || layout == "xkb:be::fra");
 }

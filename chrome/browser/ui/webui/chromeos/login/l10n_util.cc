@@ -382,7 +382,7 @@ scoped_ptr<base::ListValue> GetAcceptLanguageList() {
       false);
 }
 
-scoped_ptr<base::ListValue> GetLoginKeyboardLayouts(
+scoped_ptr<base::ListValue> GetAndActivateLoginKeyboardLayouts(
     const std::string& locale,
     const std::string& selected) {
   scoped_ptr<base::ListValue> input_methods_list(new base::ListValue);
@@ -392,10 +392,12 @@ scoped_ptr<base::ListValue> GetLoginKeyboardLayouts(
 
   const std::vector<std::string>& hardware_login_input_methods =
       util->GetHardwareLoginInputMethodIds();
-  manager->EnableLoginLayouts(locale, hardware_login_input_methods);
+
+  manager->GetActiveIMEState()->EnableLoginLayouts(
+      locale, hardware_login_input_methods);
 
   scoped_ptr<input_method::InputMethodDescriptors> input_methods(
-      manager->GetActiveInputMethods());
+      manager->GetActiveIMEState()->GetActiveInputMethods());
   std::set<std::string> input_methods_added;
 
   for (std::vector<std::string>::const_iterator i =
@@ -468,7 +470,9 @@ void GetKeyboardLayoutsForLocale(
 
 scoped_ptr<base::DictionaryValue> GetCurrentKeyboardLayout() {
   const input_method::InputMethodDescriptor current_input_method =
-      input_method::InputMethodManager::Get()->GetCurrentInputMethod();
+      input_method::InputMethodManager::Get()
+          ->GetActiveIMEState()
+          ->GetCurrentInputMethod();
   return CreateInputMethodsEntry(current_input_method,
                                  current_input_method.id());
 }

@@ -74,9 +74,11 @@ namespace chromeos {
 namespace {
 
 void InitLocaleAndInputMethodsForNewUser(
-    PrefService* prefs,
+    UserSessionManager* session_manager,
+    Profile* profile,
     const std::string& public_session_locale,
     const std::string& public_session_input_method) {
+  PrefService* prefs = profile->GetPrefs();
   std::string locale;
   if (!public_session_locale.empty()) {
     // If this is a public session and the user chose a |public_session_locale|,
@@ -105,7 +107,9 @@ void InitLocaleAndInputMethodsForNewUser(
     // Otherwise, set kLanguagePreloadEngines to a list of input methods derived
     // from the |locale| and the currently active input method.
     manager->GetInputMethodUtil()->GetFirstLoginInputMethodIds(
-        locale, manager->GetCurrentInputMethod(), &input_method_ids);
+        locale,
+        session_manager->GetDefaultIMEState(profile)->GetCurrentInputMethod(),
+        &input_method_ids);
   }
 
   // Save the input methods in the user's preferences.
@@ -219,9 +223,16 @@ UserSessionManager::UserSessionManager()
       session_restore_strategy_(
           OAuth2LoginManager::RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN) {
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
+  user_manager::UserManager::Get()->AddSessionStateObserver(this);
 }
 
 UserSessionManager::~UserSessionManager() {
+  // UserManager is destroyed before singletons, so we need to check if it
+  // still exists.
+  // TODO(nkostylev): fix order of destruction of UserManager
+  // / UserSessionManager objects.
+  if (user_manager::UserManager::IsInitialized())
+    user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
   net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
 }
 
@@ -324,15 +335,13 @@ UserSessionManager::GetSigninSessionRestoreStrategy() {
   return session_restore_strategy_;
 }
 
-// static
 void UserSessionManager::SetFirstLoginPrefs(
-    PrefService* prefs,
+    Profile* profile,
     const std::string& public_session_locale,
     const std::string& public_session_input_method) {
   VLOG(1) << "Setting first login prefs";
-  InitLocaleAndInputMethodsForNewUser(prefs,
-                                      public_session_locale,
-                                      public_session_input_method);
+  InitLocaleAndInputMethodsForNewUser(
+      this, profile, public_session_locale, public_session_input_method);
 }
 
 bool UserSessionManager::GetAppModeChromeClientOAuthInfo(
@@ -438,13 +447,13 @@ bool UserSessionManager::RespectLocalePreference(
 }
 
 void UserSessionManager::AddSessionStateObserver(
-    UserSessionStateObserver* observer) {
+    chromeos::UserSessionStateObserver* observer) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   session_state_observer_list_.AddObserver(observer);
 }
 
 void UserSessionManager::RemoveSessionStateObserver(
-    UserSessionStateObserver* observer) {
+    chromeos::UserSessionStateObserver* observer) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   session_state_observer_list_.RemoveObserver(observer);
 }
@@ -643,7 +652,7 @@ void UserSessionManager::InitProfilePreferences(
     Profile* profile,
     const UserContext& user_context) {
   if (user_manager::UserManager::Get()->IsCurrentUserNew()) {
-    SetFirstLoginPrefs(profile->GetPrefs(),
+    SetFirstLoginPrefs(profile,
                        user_context.GetPublicSessionLocale(),
                        user_context.GetPublicSessionInputMethod());
   }
@@ -977,9 +986,29 @@ void UserSessionManager::RestorePendingUserSessions() {
 void UserSessionManager::NotifyPendingUserSessionsRestoreFinished() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   user_sessions_restored_ = true;
-  FOR_EACH_OBSERVER(UserSessionStateObserver,
+  FOR_EACH_OBSERVER(chromeos::UserSessionStateObserver,
                     session_state_observer_list_,
                     PendingUserSessionsRestoreFinished());
+}
+
+void UserSessionManager::ActiveUserChanged(
+    const user_manager::User* active_user) {
+  input_method::InputMethodManager* manager =
+      input_method::InputMethodManager::Get();
+  manager->SetState(
+      GetDefaultIMEState(ProfileHelper::Get()->GetProfileByUser(active_user)));
+}
+
+scoped_refptr<input_method::InputMethodManager::State>
+UserSessionManager::GetDefaultIMEState(Profile* profile) {
+  scoped_refptr<input_method::InputMethodManager::State> state =
+      default_ime_states_[profile];
+  if (!state) {
+    // Profile can be NULL in tests.
+    state = input_method::InputMethodManager::Get()->CreateNewState(profile);
+    default_ime_states_[profile] = state;
+  }
+  return state;
 }
 
 }  // namespace chromeos

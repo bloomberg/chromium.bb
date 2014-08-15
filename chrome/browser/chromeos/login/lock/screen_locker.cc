@@ -205,12 +205,17 @@ void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(user_context.GetUserID());
   if (user) {
-    if (!user->is_active())
+    if (user->is_active()) {
+      DCHECK(saved_ime_state_);
+      input_method::InputMethodManager::Get()->SetState(saved_ime_state_);
+    } else {
       user_manager::UserManager::Get()->SwitchActiveUser(
           user_context.GetUserID());
+    }
   } else {
     NOTREACHED() << "Logged in user not found.";
   }
+  saved_ime_state_ = NULL;
 
   authentication_capture_.reset(new AuthenticationParametersCapture());
   authentication_capture_->user_context = user_context;
@@ -474,6 +479,12 @@ void ScreenLocker::ScreenLockReady() {
   VLOG(1) << "Moving desktop background to locked container";
   ash::Shell::GetInstance()->
       desktop_background_controller()->MoveDesktopToLockedContainer();
+
+  input_method::InputMethodManager* imm =
+      input_method::InputMethodManager::Get();
+  saved_ime_state_ = imm->GetActiveIMEState();
+  imm->SetState(saved_ime_state_->Clone());
+  imm->GetActiveIMEState()->EnableLockScreenLayouts();
 
   bool state = true;
   VLOG(1) << "Emitting SCREEN_LOCK_STATE_CHANGED with state=" << state;

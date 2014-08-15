@@ -31,8 +31,8 @@ ExtensionFunction::ResponseAction GetCurrentInputMethodFunction::Run() {
 #else
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::Get();
-  return RespondNow(OneArgument(
-      new base::StringValue(manager->GetCurrentInputMethod().id())));
+  return RespondNow(OneArgument(new base::StringValue(
+      manager->GetActiveIMEState()->GetCurrentInputMethod().id())));
 #endif
 }
 
@@ -42,14 +42,14 @@ ExtensionFunction::ResponseAction SetCurrentInputMethodFunction::Run() {
 #else
   std::string new_input_method;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &new_input_method));
-  chromeos::input_method::InputMethodManager* manager =
-      chromeos::input_method::InputMethodManager::Get();
+  scoped_refptr<chromeos::input_method::InputMethodManager::State> ime_state =
+      chromeos::input_method::InputMethodManager::Get()->GetActiveIMEState();
   const std::vector<std::string>& input_methods =
-      manager->GetActiveInputMethodIds();
+      ime_state->GetActiveInputMethodIds();
   for (size_t i = 0; i < input_methods.size(); ++i) {
     const std::string& input_method = input_methods[i];
     if (input_method == new_input_method) {
-      manager->ChangeInputMethod(new_input_method);
+      ime_state->ChangeInputMethod(new_input_method, false /* show_message */);
       return RespondNow(NoArguments());
     }
   }
@@ -65,8 +65,10 @@ ExtensionFunction::ResponseAction GetInputMethodsFunction::Run() {
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::Get();
   chromeos::input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
+  scoped_refptr<chromeos::input_method::InputMethodManager::State> ime_state =
+      manager->GetActiveIMEState();
   scoped_ptr<chromeos::input_method::InputMethodDescriptors> input_methods =
-      manager->GetActiveInputMethods();
+      ime_state->GetActiveInputMethods();
   for (size_t i = 0; i < input_methods->size(); ++i) {
     const chromeos::input_method::InputMethodDescriptor& input_method =
         (*input_methods)[i];

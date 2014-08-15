@@ -214,14 +214,16 @@ static bool SetUserInputMethodImpl(
     return false;
   }
 
-  if (!Contains(manager->GetActiveInputMethodIds(), input_method)) {
-    if (!manager->EnableInputMethod(input_method)) {
+  if (!Contains(manager->GetActiveIMEState()->GetActiveInputMethodIds(),
+                input_method)) {
+    if (!manager->GetActiveIMEState()->EnableInputMethod(input_method)) {
       DLOG(ERROR) << "SigninScreenHandler::SetUserInputMethod('" << username
                   << "'): user input method '" << input_method
                   << "' is not enabled and enabling failed (ignored!).";
     }
   }
-  manager->ChangeInputMethod(input_method);
+  manager->GetActiveIMEState()->ChangeInputMethod(input_method,
+                                                  false /* show_message */);
 
   return true;
 }
@@ -995,7 +997,7 @@ void SigninScreenHandler::SetUserInputMethod(const std::string& username) {
     DVLOG(0) << "SetUserInputMethod('" << username
                << "'): failed to set user layout. Switching to default.";
 
-    manager->SetInputMethodLoginDefault();
+    manager->GetActiveIMEState()->SetInputMethodLoginDefault();
   }
 }
 

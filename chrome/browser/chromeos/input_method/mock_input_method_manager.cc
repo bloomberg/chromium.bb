@@ -7,18 +7,26 @@
 namespace chromeos {
 namespace input_method {
 
+MockInputMethodManager::State::State(MockInputMethodManager* manager)
+    : manager_(manager) {
+  active_input_method_ids.push_back("xkb:us::eng");
+}
+
+MockInputMethodManager::State::~State() {
+}
+
 MockInputMethodManager::MockInputMethodManager()
     : add_observer_count_(0),
       remove_observer_count_(0),
+      state_(new State(this)),
       util_(&delegate_),
       mod3_used_(false) {
-  active_input_method_ids_.push_back("xkb:us::eng");
 }
 
 MockInputMethodManager::~MockInputMethodManager() {
 }
 
-InputMethodManager::State MockInputMethodManager::GetState() {
+InputMethodManager::UISessionState MockInputMethodManager::GetUISessionState() {
   return InputMethodManager::STATE_BROWSER_SCREEN;
 }
 
@@ -49,7 +57,7 @@ MockInputMethodManager::GetSupportedInputMethods() const {
 }
 
 scoped_ptr<InputMethodDescriptors>
-MockInputMethodManager::GetActiveInputMethods() const {
+MockInputMethodManager::State::GetActiveInputMethods() const {
   scoped_ptr<InputMethodDescriptors> result(new InputMethodDescriptors);
   result->push_back(
       InputMethodUtil::GetFallbackInputMethodDescriptor());
@@ -57,99 +65,106 @@ MockInputMethodManager::GetActiveInputMethods() const {
 }
 
 const std::vector<std::string>&
-MockInputMethodManager::GetActiveInputMethodIds() const {
-  return active_input_method_ids_;
+MockInputMethodManager::State::GetActiveInputMethodIds() const {
+  return active_input_method_ids;
 }
 
-size_t MockInputMethodManager::GetNumActiveInputMethods() const {
+size_t MockInputMethodManager::State::GetNumActiveInputMethods() const {
   return 1;
 }
 
-const InputMethodDescriptor* MockInputMethodManager::GetInputMethodFromId(
+const InputMethodDescriptor*
+MockInputMethodManager::State::GetInputMethodFromId(
     const std::string& input_method_id) const {
   static const InputMethodDescriptor defaultInputMethod =
       InputMethodUtil::GetFallbackInputMethodDescriptor();
-  for (size_t i = 0; i < active_input_method_ids_.size(); i++) {
-    if (input_method_id == active_input_method_ids_[i]) {
+  for (size_t i = 0; i < active_input_method_ids.size(); i++) {
+    if (input_method_id == active_input_method_ids[i]) {
       return &defaultInputMethod;
     }
   }
   return NULL;
 }
 
-void MockInputMethodManager::EnableLoginLayouts(
+void MockInputMethodManager::State::EnableLoginLayouts(
     const std::string& language_code,
     const std::vector<std::string>& initial_layout) {
 }
 
-bool MockInputMethodManager::ReplaceEnabledInputMethods(
+void MockInputMethodManager::State::EnableLockScreenLayouts() {
+}
+
+bool MockInputMethodManager::State::ReplaceEnabledInputMethods(
     const std::vector<std::string>& new_active_input_method_ids) {
   return true;
 }
 
-bool MockInputMethodManager::EnableInputMethod(
+bool MockInputMethodManager::State::EnableInputMethod(
     const std::string& new_active_input_method_id) {
   return true;
 }
 
-void MockInputMethodManager::ChangeInputMethod(
-    const std::string& input_method_id) {
+void MockInputMethodManager::State::ChangeInputMethod(
+    const std::string& input_method_id,
+    bool show_message) {
 }
 
 void MockInputMethodManager::ActivateInputMethodMenuItem(
     const std::string& key) {
 }
 
-void MockInputMethodManager::AddInputMethodExtension(
+void MockInputMethodManager::State::AddInputMethodExtension(
     const std::string& extension_id,
     const InputMethodDescriptors& descriptors,
     InputMethodEngineInterface* instance) {
 }
 
-void MockInputMethodManager::RemoveInputMethodExtension(
+void MockInputMethodManager::State::RemoveInputMethodExtension(
     const std::string& extension_id) {
 }
 
-void MockInputMethodManager::GetInputMethodExtensions(
+void MockInputMethodManager::State::GetInputMethodExtensions(
     InputMethodDescriptors* result) {
 }
 
-void MockInputMethodManager::SetEnabledExtensionImes(
+void MockInputMethodManager::State::SetEnabledExtensionImes(
     std::vector<std::string>* ids) {
 }
 
-void MockInputMethodManager::SetInputMethodLoginDefault() {
+void MockInputMethodManager::State::SetInputMethodLoginDefault() {
 }
 
-void MockInputMethodManager::SetInputMethodLoginDefaultFromVPD(
-    const std::string& locale, const std::string& layout) {
+void MockInputMethodManager::State::SetInputMethodLoginDefaultFromVPD(
+    const std::string& locale,
+    const std::string& layout) {
 }
 
-bool MockInputMethodManager::SwitchToNextInputMethod() {
+bool MockInputMethodManager::State::SwitchToNextInputMethod() {
   return true;
 }
 
-bool MockInputMethodManager::SwitchToPreviousInputMethod(
+bool MockInputMethodManager::State::SwitchToPreviousInputMethod(
     const ui::Accelerator& accelerator) {
   return true;
 }
 
-bool MockInputMethodManager::SwitchInputMethod(
+bool MockInputMethodManager::State::SwitchInputMethod(
     const ui::Accelerator& accelerator) {
   return true;
 }
 
-InputMethodDescriptor MockInputMethodManager::GetCurrentInputMethod() const {
+InputMethodDescriptor MockInputMethodManager::State::GetCurrentInputMethod()
+    const {
   InputMethodDescriptor descriptor =
       InputMethodUtil::GetFallbackInputMethodDescriptor();
-  if (!current_input_method_id_.empty()) {
-    return InputMethodDescriptor(current_input_method_id_,
+  if (!current_input_method_id.empty()) {
+    return InputMethodDescriptor(current_input_method_id,
                                  descriptor.name(),
                                  descriptor.indicator(),
                                  descriptor.keyboard_layouts(),
                                  descriptor.language_codes(),
                                  true,
-                                 GURL(),  // options page url.
+                                 GURL(),   // options page url.
                                  GURL());  // input view page url.
   }
   return descriptor;
@@ -191,6 +206,33 @@ bool MockInputMethodManager::IsLoginKeyboard(
 bool MockInputMethodManager::MigrateInputMethods(
     std::vector<std::string>* input_method_ids) {
   return false;
+}
+scoped_refptr<InputMethodManager::State> MockInputMethodManager::CreateNewState(
+    Profile* profile) {
+  NOTIMPLEMENTED();
+  return state_;
+}
+
+scoped_refptr<InputMethodManager::State>
+MockInputMethodManager::GetActiveIMEState() {
+  return scoped_refptr<InputMethodManager::State>(state_.get());
+}
+
+scoped_refptr<InputMethodManager::State> MockInputMethodManager::State::Clone()
+    const {
+  NOTIMPLEMENTED();
+  return manager_->GetActiveIMEState();
+}
+
+void MockInputMethodManager::SetState(
+    scoped_refptr<InputMethodManager::State> state) {
+  state_ = scoped_refptr<MockInputMethodManager::State>(
+      static_cast<MockInputMethodManager::State*>(state.get()));
+}
+
+void MockInputMethodManager::SetCurrentInputMethodId(
+    const std::string& input_method_id) {
+  state_->current_input_method_id = input_method_id;
 }
 
 }  // namespace input_method

@@ -193,13 +193,16 @@ void NetworkScreenHandler::GetAdditionalParameters(
   const std::string selected_language = selected_language_code_.empty() ?
       application_locale : selected_language_code_;
   const std::string selected_input_method =
-      input_method::InputMethodManager::Get()->GetCurrentInputMethod().id();
+      input_method::InputMethodManager::Get()
+          ->GetActiveIMEState()
+          ->GetCurrentInputMethod()
+          .id();
 
   dict->Set("languageList",
             GetUILanguageList(NULL, selected_language).release());
   dict->Set("inputMethodsList",
-            GetLoginKeyboardLayouts(application_locale,
-                                    selected_input_method).release());
+            GetAndActivateLoginKeyboardLayouts(
+                application_locale, selected_input_method).release());
   dict->Set("timezoneList", GetTimezoneList());
 }
 
@@ -303,7 +306,9 @@ void NetworkScreenHandler::HandleOnLanguageChanged(const std::string& locale) {
 }
 
 void NetworkScreenHandler::HandleOnInputMethodChanged(const std::string& id) {
-  input_method::InputMethodManager::Get()->ChangeInputMethod(id);
+  input_method::InputMethodManager::Get()
+      ->GetActiveIMEState()
+      ->ChangeInputMethod(id, false /* show_message */);
 }
 
 void NetworkScreenHandler::HandleOnTimezoneChanged(
@@ -324,7 +329,8 @@ void NetworkScreenHandler::OnSystemTimezoneChanged() {
 
 void NetworkScreenHandler::InputMethodChanged(
     input_method::InputMethodManager* manager, bool show_message) {
-  CallJS("setInputMethod", manager->GetCurrentInputMethod().id());
+  CallJS("setInputMethod",
+         manager->GetActiveIMEState()->GetCurrentInputMethod().id());
 }
 
 void NetworkScreenHandler::ReloadLocalizedContent() {

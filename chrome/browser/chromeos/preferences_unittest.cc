@@ -19,23 +19,38 @@ namespace {
 
 class MyMockInputMethodManager : public input_method::MockInputMethodManager {
  public:
+  class State : public MockInputMethodManager::State {
+   public:
+    explicit State(MyMockInputMethodManager* manager)
+        : MockInputMethodManager::State(manager), manager_(manager) {};
+
+    virtual void ChangeInputMethod(const std::string& input_method_id,
+                                   bool show_message) OVERRIDE {
+      manager_->last_input_method_id_ = input_method_id;
+      // Do the same thing as BrowserStateMonitor::UpdateUserPreferences.
+      const std::string current_input_method_on_pref =
+          manager_->current_->GetValue();
+      if (current_input_method_on_pref == input_method_id)
+        return;
+      manager_->previous_->SetValue(current_input_method_on_pref);
+      manager_->current_->SetValue(input_method_id);
+    }
+
+   protected:
+    virtual ~State() {};
+
+   private:
+    MyMockInputMethodManager* const manager_;
+  };
+
   MyMockInputMethodManager(StringPrefMember* previous,
                            StringPrefMember* current)
       : previous_(previous),
         current_(current) {
-  }
-  virtual ~MyMockInputMethodManager() {
+    state_ = new State(this);
   }
 
-  virtual void ChangeInputMethod(const std::string& input_method_id) OVERRIDE {
-    last_input_method_id_ = input_method_id;
-    // Do the same thing as BrowserStateMonitor::UpdateUserPreferences.
-    const std::string current_input_method_on_pref = current_->GetValue();
-    if (current_input_method_on_pref == input_method_id)
-      return;
-    previous_->SetValue(current_input_method_on_pref);
-    current_->SetValue(input_method_id);
-  }
+  virtual ~MyMockInputMethodManager() {}
 
   std::string last_input_method_id_;
 
@@ -72,7 +87,8 @@ TEST(PreferencesTest, TestUpdatePrefOnBrowserScreenDetails) {
 
   MyMockInputMethodManager mock_manager(&previous, &current);
   Preferences testee(&mock_manager);
-  testee.InitUserPrefsForTesting(&prefs, test_user);
+  testee.InitUserPrefsForTesting(
+      &prefs, test_user, mock_manager.GetActiveIMEState());
   testee.SetInputMethodListForTesting();
 
   // Confirm they're unchanged.

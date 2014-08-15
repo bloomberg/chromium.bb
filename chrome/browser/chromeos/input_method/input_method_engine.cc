@@ -471,6 +471,7 @@ void InputMethodEngine::HideInputView() {
 
 void InputMethodEngine::EnableInputView() {
   keyboard::SetOverrideContentUrl(input_method::InputMethodManager::Get()
+                                      ->GetActiveIMEState()
                                       ->GetCurrentInputMethod()
                                       .input_view_url());
   keyboard::KeyboardController* keyboard_controller =

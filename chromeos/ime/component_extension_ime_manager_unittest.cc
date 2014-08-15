@@ -136,7 +136,8 @@ TEST_F(ComponentExtensionIMEManagerTest, LoadComponentExtensionIMETest) {
           extension_ime_util::GetComponentInputMethodID(
               ime_list_[i].id,
               ime_list_[i].engines[j].engine_id);
-      component_ext_mgr_->LoadComponentExtensionIME(input_method_id);
+      component_ext_mgr_->LoadComponentExtensionIME(NULL /* profile */,
+                                                    input_method_id);
       EXPECT_EQ(ime_list_[i].id, mock_delegate_->last_loaded_extension_id());
     }
   }
@@ -150,7 +151,8 @@ TEST_F(ComponentExtensionIMEManagerTest, UnloadComponentExtensionIMETest) {
           extension_ime_util::GetComponentInputMethodID(
               ime_list_[i].id,
               ime_list_[i].engines[j].engine_id);
-      component_ext_mgr_->UnloadComponentExtensionIME(input_method_id);
+      component_ext_mgr_->UnloadComponentExtensionIME(NULL /* profile */,
+                                                      input_method_id);
       EXPECT_EQ(ime_list_[i].id, mock_delegate_->last_unloaded_extension_id());
     }
   }

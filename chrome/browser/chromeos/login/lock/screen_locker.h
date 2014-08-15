@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker_delegate.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
+#include "chromeos/ime/input_method_manager.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/user_manager/user.h"
@@ -185,6 +186,8 @@ class ScreenLocker : public AuthStatusConsumer {
 
   // Provider for button icon set by the screenlockPrivate API.
   scoped_ptr<ScreenlockIconProvider> screenlock_icon_provider_;
+
+  scoped_refptr<input_method::InputMethodManager::State> saved_ime_state_;
 
   base::WeakPtrFactory<ScreenLocker> weak_factory_;
 

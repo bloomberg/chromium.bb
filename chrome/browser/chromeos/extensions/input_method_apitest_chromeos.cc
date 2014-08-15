@@ -30,7 +30,7 @@ const char kBackgroundReady[] = "ready";
 // Class that listens for the JS message.
 class TestListener : public content::NotificationObserver {
  public:
-  explicit TestListener() {
+  TestListener() {
     registrar_.Add(this,
                    extensions::NOTIFICATION_EXTENSION_TEST_MESSAGE,
                    content::NotificationService::AllSources());
@@ -54,7 +54,8 @@ class TestListener : public content::NotificationObserver {
       keyboard_layouts.push_back(
           chromeos::extension_ime_util::GetInputMethodIDByEngineID(
               kInitialInputMethodOnLoginScreen));
-      manager->EnableLoginLayouts(kLoginScreenUILanguage, keyboard_layouts);
+      manager->GetActiveIMEState()->EnableLoginLayouts(kLoginScreenUILanguage,
+                                                       keyboard_layouts);
     }
   }
 

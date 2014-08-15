@@ -90,7 +90,7 @@ void CrosLanguageOptionsHandler::GetLocalizedValues(
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
   input_method::InputMethodDescriptors ext_ime_descriptors;
-  manager->GetInputMethodExtensions(&ext_ime_descriptors);
+  manager->GetActiveIMEState()->GetInputMethodExtensions(&ext_ime_descriptors);
 
   base::ListValue* ext_ime_list = ConvertInputMethodDescriptorsToIMEList(
       ext_ime_descriptors);
@@ -229,8 +229,9 @@ void CrosLanguageOptionsHandler::InputMethodOptionsOpenCallback(
     return;
 
   const input_method::InputMethodDescriptor* ime =
-      input_method::InputMethodManager::Get()->GetInputMethodFromId(
-          input_method_id);
+      input_method::InputMethodManager::Get()
+          ->GetActiveIMEState()
+          ->GetInputMethodFromId(input_method_id);
   if (!ime)
     return;
 

@@ -692,7 +692,9 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
             &layouts_from_locale);
     ASSERT_FALSE(layouts_from_locale.empty());
     EXPECT_EQ(layouts_from_locale.front(),
-              input_method_manager->GetCurrentInputMethod().id());
+              input_method_manager->GetActiveIMEState()
+                  ->GetCurrentInputMethod()
+                  .id());
   }
 
   const std::string user_id_1_;
@@ -1499,8 +1501,10 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, NoRecommendedLocaleSwitch) {
   // Verify that the locale and keyboard layout have been applied.
   EXPECT_EQ(kPublicSessionLocale, g_browser_process->GetApplicationLocale());
   EXPECT_EQ(public_session_input_method_id_,
-            chromeos::input_method::InputMethodManager::Get()->
-                GetCurrentInputMethod().id());
+            chromeos::input_method::InputMethodManager::Get()
+                ->GetActiveIMEState()
+                ->GetCurrentInputMethod()
+                .id());
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, OneRecommendedLocale) {
@@ -1748,8 +1752,10 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
   // Verify that the locale and keyboard layout have been applied.
   EXPECT_EQ(kPublicSessionLocale, g_browser_process->GetApplicationLocale());
   EXPECT_EQ(public_session_input_method_id_,
-            chromeos::input_method::InputMethodManager::Get()->
-                GetCurrentInputMethod().id());
+            chromeos::input_method::InputMethodManager::Get()
+                ->GetActiveIMEState()
+                ->GetCurrentInputMethod()
+                .id());
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest,
@@ -1873,8 +1879,10 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfServiceWithLocaleSwitch) {
   // Verify that the locale and keyboard layout have been applied.
   EXPECT_EQ(kPublicSessionLocale, g_browser_process->GetApplicationLocale());
   EXPECT_EQ(public_session_input_method_id_,
-            chromeos::input_method::InputMethodManager::Get()->
-                GetCurrentInputMethod().id());
+            chromeos::input_method::InputMethodManager::Get()
+                ->GetActiveIMEState()
+                ->GetCurrentInputMethod()
+                .id());
 
   // Click the accept button.
   ASSERT_TRUE(content::ExecuteScript(contents_,
@@ -1885,8 +1893,10 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfServiceWithLocaleSwitch) {
   // Verify that the locale and keyboard layout are still in force.
   EXPECT_EQ(kPublicSessionLocale, g_browser_process->GetApplicationLocale());
   EXPECT_EQ(public_session_input_method_id_,
-            chromeos::input_method::InputMethodManager::Get()->
-                GetCurrentInputMethod().id());
+            chromeos::input_method::InputMethodManager::Get()
+                ->GetActiveIMEState()
+                ->GetCurrentInputMethod()
+                .id());
 }
 
 class TermsOfServiceDownloadTest : public DeviceLocalAccountTest,

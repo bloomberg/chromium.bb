@@ -694,7 +694,8 @@ void SystemTrayDelegateChromeOS::GetCurrentIME(ash::IMEInfo* info) {
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
   input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
-  input_method::InputMethodDescriptor ime = manager->GetCurrentInputMethod();
+  input_method::InputMethodDescriptor ime =
+      manager->GetActiveIMEState()->GetCurrentInputMethod();
   ExtractIMEInfo(ime, *util, info);
   info->selected = true;
 }
@@ -704,8 +705,9 @@ void SystemTrayDelegateChromeOS::GetAvailableIMEList(ash::IMEInfoList* list) {
       input_method::InputMethodManager::Get();
   input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
   scoped_ptr<input_method::InputMethodDescriptors> ime_descriptors(
-      manager->GetActiveInputMethods());
-  std::string current = manager->GetCurrentInputMethod().id();
+      manager->GetActiveIMEState()->GetActiveInputMethods());
+  std::string current =
+      manager->GetActiveIMEState()->GetCurrentInputMethod().id();
   for (size_t i = 0; i < ime_descriptors->size(); i++) {
     input_method::InputMethodDescriptor& ime = ime_descriptors->at(i);
     ash::IMEInfo info;
@@ -730,7 +732,9 @@ void SystemTrayDelegateChromeOS::GetCurrentIMEProperties(
 }
 
 void SystemTrayDelegateChromeOS::SwitchIME(const std::string& ime_id) {
-  input_method::InputMethodManager::Get()->ChangeInputMethod(ime_id);
+  input_method::InputMethodManager::Get()
+      ->GetActiveIMEState()
+      ->ChangeInputMethod(ime_id, false /* show_message */);
 }
 
 void SystemTrayDelegateChromeOS::ActivateIMEProperty(const std::string& key) {

@@ -867,7 +867,7 @@ void AccessibilityManager::InputMethodChanged(
       manager->IsAltGrUsedByCurrentInputMethod());
 #endif
   const chromeos::input_method::InputMethodDescriptor descriptor =
-      manager->GetCurrentInputMethod();
+      manager->GetActiveIMEState()->GetCurrentInputMethod();
   braille_ime_current_ =
       (descriptor.id() == extension_misc::kBrailleImeEngineId);
 }
@@ -1095,8 +1095,10 @@ void AccessibilityManager::OnBrailleKeyEvent(const KeyEvent& event) {
   if ((event.command ==
        extensions::api::braille_display_private::KEY_COMMAND_DOTS) &&
       !braille_ime_current_) {
-    input_method::InputMethodManager::Get()->ChangeInputMethod(
-        extension_misc::kBrailleImeEngineId);
+    input_method::InputMethodManager::Get()
+        ->GetActiveIMEState()
+        ->ChangeInputMethod(extension_misc::kBrailleImeEngineId,
+                            false /* show_message */);
   }
 }
 

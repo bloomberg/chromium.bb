@@ -14,14 +14,22 @@
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/ime/input_method_manager.h"
 #include "chromeos/login/auth/authenticator.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "net/base/network_change_notifier.h"
 
 class PrefRegistrySimple;
 class PrefService;
 class Profile;
+
+namespace user_manager {
+
+class User;
+
+}  // namespace user_manager
 
 namespace chromeos {
 
@@ -58,7 +66,8 @@ class UserSessionManager
     : public OAuth2LoginManager::Observer,
       public net::NetworkChangeNotifier::ConnectionTypeObserver,
       public base::SupportsWeakPtr<UserSessionManager>,
-      public UserSessionManagerDelegate {
+      public UserSessionManagerDelegate,
+      public user_manager::UserManager::UserSessionStateObserver {
  public:
   // Returns UserSessionManager instance.
   static UserSessionManager* GetInstance();
@@ -112,10 +121,9 @@ class UserSessionManager
 
   // Invoked when the user is logging in for the first time, or is logging in to
   // an ephemeral session type, such as guest or a public session.
-  static void SetFirstLoginPrefs(
-      PrefService* prefs,
-      const std::string& public_session_locale,
-      const std::string& public_session_input_method);
+  void SetFirstLoginPrefs(Profile* profile,
+                          const std::string& public_session_locale,
+                          const std::string& public_session_input_method);
 
   // Gets/sets Chrome OAuth client id and secret for kiosk app mode. The default
   // values can be overridden with kiosk auth file.
@@ -134,8 +142,15 @@ class UserSessionManager
       const user_manager::User* user,
       scoped_ptr<locale_util::SwitchLanguageCallback> callback) const;
 
-  void AddSessionStateObserver(UserSessionStateObserver* observer);
-  void RemoveSessionStateObserver(UserSessionStateObserver* observer);
+  void AddSessionStateObserver(chromeos::UserSessionStateObserver* observer);
+  void RemoveSessionStateObserver(chromeos::UserSessionStateObserver* observer);
+
+  virtual void ActiveUserChanged(
+      const user_manager::User* active_user) OVERRIDE;
+
+  // Returns default IME state for user session.
+  scoped_refptr<input_method::InputMethodManager::State> GetDefaultIMEState(
+      Profile* profile);
 
  private:
   friend struct DefaultSingletonTraits<UserSessionManager>;
@@ -240,7 +255,7 @@ class UserSessionManager
   // [user_id] > [user_id_hash]
   SessionManagerClient::ActiveSessionsMap pending_user_sessions_;
 
-  ObserverList<UserSessionStateObserver> session_state_observer_list_;
+  ObserverList<chromeos::UserSessionStateObserver> session_state_observer_list_;
 
   // OAuth2 session related members.
 
@@ -261,6 +276,10 @@ class UserSessionManager
   // Chrome oauth client id and secret - override values for kiosk mode.
   std::string chrome_client_id_;
   std::string chrome_client_secret_;
+
+  // Per-user-session Input Methods states.
+  std::map<Profile*, scoped_refptr<input_method::InputMethodManager::State> >
+      default_ime_states_;
 
   DISALLOW_COPY_AND_ASSIGN(UserSessionManager);
 };

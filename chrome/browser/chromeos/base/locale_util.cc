@@ -59,18 +59,20 @@ void FinishSwitchLanguage(scoped_ptr<SwitchLanguageData> data) {
     if (data->enable_locale_keyboard_layouts) {
       input_method::InputMethodManager* manager =
           input_method::InputMethodManager::Get();
+      scoped_refptr<input_method::InputMethodManager::State> ime_state =
+          manager->GetActiveIMEState();
       if (data->login_layouts_only) {
         // Enable the hardware keyboard layouts and locale-specific layouts
         // suitable for use on the login screen. This will also switch to the
         // first hardware keyboard layout since the input method currently in
         // use may not be supported by the new locale.
-        manager->EnableLoginLayouts(
+        ime_state->EnableLoginLayouts(
             data->loaded_locale,
             manager->GetInputMethodUtil()->GetHardwareLoginInputMethodIds());
       } else {
         // Enable all hardware keyboard layouts. This will also switch to the
         // first hardware keyboard layout.
-        manager->ReplaceEnabledInputMethods(
+        ime_state->ReplaceEnabledInputMethods(
             manager->GetInputMethodUtil()->GetHardwareInputMethodIds());
 
         // Enable all locale-specific layouts.
@@ -81,7 +83,7 @@ void FinishSwitchLanguage(scoped_ptr<SwitchLanguageData> data) {
             &input_methods);
         for (std::vector<std::string>::const_iterator it =
                 input_methods.begin(); it != input_methods.end(); ++it) {
-          manager->EnableInputMethod(*it);
+          ime_state->EnableInputMethod(*it);
         }
       }
     }

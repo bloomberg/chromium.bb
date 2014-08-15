@@ -100,7 +100,8 @@ void ModeIndicatorController::ShowModeIndicator() {
     return;
 
   // Get the short name of the changed input method (e.g. US, JA, etc.)
-  const InputMethodDescriptor descriptor = imm_->GetCurrentInputMethod();
+  const InputMethodDescriptor descriptor =
+      imm_->GetActiveIMEState()->GetCurrentInputMethod();
   const base::string16 short_name =
       imm_->GetInputMethodUtil()->GetInputMethodShortName(descriptor);
 

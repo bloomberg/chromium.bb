@@ -18,17 +18,17 @@ namespace chromeos {
 namespace input_method {
 
 // Translates notifications from the browser (not logged in, logged in, etc.),
-// into InputMethodManager::State transitions.
+// into InputMethodManager::UISessionState transitions.
 class BrowserStateMonitor : public content::NotificationObserver {
  public:
   // Constructs a monitor that will invoke the given observer callback whenever
-  // the InputMethodManager::State changes. Assumes that the current state is
-  // STATE_LOGIN_SCREEN. |observer| may be null.
+  // the InputMethodManager::UISessionState changes. Assumes that the current
+  // ui_session_ is STATE_LOGIN_SCREEN. |observer| may be null.
   explicit BrowserStateMonitor(
-      const base::Callback<void(InputMethodManager::State)>& observer);
+      const base::Callback<void(InputMethodManager::UISessionState)>& observer);
   virtual ~BrowserStateMonitor();
 
-  InputMethodManager::State state() const { return state_; }
+  InputMethodManager::UISessionState ui_session() const { return ui_session_; }
 
   // content::NotificationObserver overrides:
   virtual void Observe(int type,
@@ -36,8 +36,8 @@ class BrowserStateMonitor : public content::NotificationObserver {
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
-  base::Callback<void(InputMethodManager::State)> observer_;
-  InputMethodManager::State state_;
+  base::Callback<void(InputMethodManager::UISessionState)> observer_;
+  InputMethodManager::UISessionState ui_session_;
   content::NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserStateMonitor);

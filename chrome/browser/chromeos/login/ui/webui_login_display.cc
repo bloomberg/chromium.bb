@@ -175,7 +175,7 @@ void WebUILoginDisplay::ShowError(int error_msg_id,
 
     // Display a hint to switch keyboards if there are other active input
     // methods.
-    if (ime_manager->GetNumActiveInputMethods() > 1) {
+    if (ime_manager->GetActiveIMEState()->GetNumActiveInputMethods() > 1) {
       error_text += "\n" +
           l10n_util::GetStringUTF8(IDS_LOGIN_ERROR_KEYBOARD_SWITCH_HINT);
     }

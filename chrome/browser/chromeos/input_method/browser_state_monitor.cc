@@ -14,9 +14,8 @@ namespace chromeos {
 namespace input_method {
 
 BrowserStateMonitor::BrowserStateMonitor(
-    const base::Callback<void(InputMethodManager::State)>& observer)
-    : observer_(observer),
-      state_(InputMethodManager::STATE_LOGIN_SCREEN) {
+    const base::Callback<void(InputMethodManager::UISessionState)>& observer)
+    : observer_(observer), ui_session_(InputMethodManager::STATE_LOGIN_SCREEN) {
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                               content::NotificationService::AllSources());
@@ -33,7 +32,7 @@ BrowserStateMonitor::BrowserStateMonitor(
                               content::NotificationService::AllSources());
 
   if (!observer_.is_null())
-    observer_.Run(state_);
+    observer_.Run(ui_session_);
 }
 
 BrowserStateMonitor::~BrowserStateMonitor() {
@@ -43,10 +42,10 @@ void BrowserStateMonitor::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  const InputMethodManager::State old_state = state_;
+  const InputMethodManager::UISessionState old_ui_session = ui_session_;
   switch (type) {
     case chrome::NOTIFICATION_APP_TERMINATING: {
-      state_ = InputMethodManager::STATE_TERMINATING;
+      ui_session_ = InputMethodManager::STATE_TERMINATING;
       break;
     }
     case chrome::NOTIFICATION_LOGIN_USER_CHANGED: {
@@ -56,7 +55,7 @@ void BrowserStateMonitor::Observe(
       // as of writing, but it might be changed in the future (therefore we need
       // to listen to NOTIFICATION_SESSION_STARTED as well.)
       DVLOG(1) << "Received chrome::NOTIFICATION_LOGIN_USER_CHANGED";
-      state_ = InputMethodManager::STATE_BROWSER_SCREEN;
+      ui_session_ = InputMethodManager::STATE_BROWSER_SCREEN;
       break;
     }
     case chrome::NOTIFICATION_SESSION_STARTED: {
@@ -66,13 +65,13 @@ void BrowserStateMonitor::Observe(
       // is sent in the PreProfileInit phase in case when Chrome crashes and
       // restarts.
       DVLOG(1) << "Received chrome::NOTIFICATION_SESSION_STARTED";
-      state_ = InputMethodManager::STATE_BROWSER_SCREEN;
+      ui_session_ = InputMethodManager::STATE_BROWSER_SCREEN;
       break;
     }
     case chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED: {
       const bool is_screen_locked = *content::Details<bool>(details).ptr();
-      state_ = is_screen_locked ? InputMethodManager::STATE_LOCK_SCREEN :
-          InputMethodManager::STATE_BROWSER_SCREEN;
+      ui_session_ = is_screen_locked ? InputMethodManager::STATE_LOCK_SCREEN
+                                     : InputMethodManager::STATE_BROWSER_SCREEN;
       break;
     }
     default: {
@@ -81,8 +80,8 @@ void BrowserStateMonitor::Observe(
     }
   }
 
-  if (old_state != state_ && !observer_.is_null())
-    observer_.Run(state_);
+  if (old_ui_session != ui_session_ && !observer_.is_null())
+    observer_.Run(ui_session_);
 
   // Note: browser notifications are sent in the following order.
   //

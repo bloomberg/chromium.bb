@@ -71,10 +71,12 @@ class InputMethodEngineBrowserTest
     extension_ime_ids.push_back(kIdentityIMEID);
     extension_ime_ids.push_back(kToUpperIMEID);
     extension_ime_ids.push_back(kAPIArgumentIMEID);
-    InputMethodManager::Get()->SetEnabledExtensionImes(&extension_ime_ids);
+    InputMethodManager::Get()->GetActiveIMEState()->SetEnabledExtensionImes(
+        &extension_ime_ids);
 
     InputMethodDescriptors extension_imes;
-    InputMethodManager::Get()->GetInputMethodExtensions(&extension_imes);
+    InputMethodManager::Get()->GetActiveIMEState()->GetInputMethodExtensions(
+        &extension_imes);
 
     // Test IME has two input methods, thus InputMethodManager should have two
     // extension IME.
@@ -145,7 +147,8 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
                        BasicScenarioTest) {
   LoadTestInputMethod();
 
-  InputMethodManager::Get()->ChangeInputMethod(kIdentityIMEID);
+  InputMethodManager::Get()->GetActiveIMEState()->ChangeInputMethod(
+      kIdentityIMEID, false /* show_message */);
 
   scoped_ptr<MockIMEInputContextHandler> mock_input_context(
       new MockIMEInputContextHandler());
@@ -225,7 +228,8 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
                        APIArgumentTest) {
   LoadTestInputMethod();
 
-  InputMethodManager::Get()->ChangeInputMethod(kAPIArgumentIMEID);
+  InputMethodManager::Get()->GetActiveIMEState()->ChangeInputMethod(
+      kAPIArgumentIMEID, false /* show_message */);
 
   scoped_ptr<MockIMEInputContextHandler> mock_input_context(
       new MockIMEInputContextHandler());

@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/api/braille_display_private/mock_braille_controller.h"
@@ -203,7 +204,7 @@ int GetAutoclickDelayFromPref() {
 bool IsBrailleImeActive() {
   InputMethodManager* imm = InputMethodManager::Get();
   scoped_ptr<InputMethodDescriptors> descriptors =
-      imm->GetActiveInputMethods();
+      imm->GetActiveIMEState()->GetActiveInputMethods();
   for (InputMethodDescriptors::const_iterator i = descriptors->begin();
        i != descriptors->end();
        ++i) {
@@ -215,7 +216,7 @@ bool IsBrailleImeActive() {
 
 bool IsBrailleImeCurrent() {
   InputMethodManager* imm = InputMethodManager::Get();
-  return imm->GetCurrentInputMethod().id() ==
+  return imm->GetActiveIMEState()->GetCurrentInputMethod().id() ==
          extension_misc::kBrailleImeEngineId;
 }
 }  // anonymous namespace
@@ -629,7 +630,8 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest, BrailleWhenLoggedIn) {
   chromeos::Preferences prefs;
   prefs.InitUserPrefsForTesting(
       PrefServiceSyncable::FromProfile(GetProfile()),
-      user_manager::UserManager::Get()->GetActiveUser());
+      user_manager::UserManager::Get()->GetActiveUser(),
+      UserSessionManager::GetInstance()->GetDefaultIMEState(GetProfile()));
 
   // Make sure we start in the expected state.
   EXPECT_FALSE(IsBrailleImeActive());

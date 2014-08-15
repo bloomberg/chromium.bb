@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
@@ -349,9 +350,10 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
       prefs::kLanguageXkbAutoRepeatInterval, prefs, callback);
 }
 
-void Preferences::Init(PrefServiceSyncable* prefs,
-                       const user_manager::User* user) {
+void Preferences::Init(Profile* profile, const user_manager::User* user) {
+  DCHECK(profile);
   DCHECK(user);
+  PrefServiceSyncable* prefs = PrefServiceSyncable::FromProfile(profile);
   user_ = user;
   user_is_primary_ =
       user_manager::UserManager::Get()->GetPrimaryUser() == user_;
@@ -363,6 +365,12 @@ void Preferences::Init(PrefServiceSyncable* prefs,
   // PrefService::IsSyncing() changes.
   prefs->AddObserver(this);
 
+  UserSessionManager* session_manager = UserSessionManager::GetInstance();
+  DCHECK(session_manager);
+  ime_state_ = session_manager->GetDefaultIMEState(
+      ProfileHelper::Get()->GetProfileByUser(user_));
+  input_method_manager_->SetState(ime_state_);
+
   // Initialize preferences to currently saved state.
   ApplyPreferences(REASON_INITIALIZATION, "");
 
@@ -370,12 +378,19 @@ void Preferences::Init(PrefServiceSyncable* prefs,
   // login. For a regular user this is done in
   // UserSessionManager::InitProfilePreferences().
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession))
-    UserSessionManager::SetFirstLoginPrefs(prefs, std::string(), std::string());
+    session_manager->SetFirstLoginPrefs(profile, std::string(), std::string());
 }
 
-void Preferences::InitUserPrefsForTesting(PrefServiceSyncable* prefs,
-                                          const user_manager::User* user) {
+void Preferences::InitUserPrefsForTesting(
+    PrefServiceSyncable* prefs,
+    const user_manager::User* user,
+    scoped_refptr<input_method::InputMethodManager::State> ime_state) {
   user_ = user;
+  ime_state_ = ime_state;
+
+  if (ime_state)
+    input_method_manager_->SetState(ime_state);
+
   InitUserPrefs(prefs);
 }
 
@@ -537,25 +552,26 @@ void Preferences::ApplyPreferences(ApplyReason reason,
       UpdateAutoRepeatRate();
   }
 
-  if (reason != REASON_PREF_CHANGED && user_is_active) {
+  if (reason == REASON_INITIALIZATION)
     SetInputMethodList();
-  } else if (pref_name == prefs::kLanguagePreloadEngines && user_is_active) {
+
+  if (pref_name == prefs::kLanguagePreloadEngines &&
+      reason == REASON_PREF_CHANGED) {
     SetLanguageConfigStringListAsCSV(language_prefs::kGeneralSectionName,
                                      language_prefs::kPreloadEnginesConfigName,
                                      preload_engines_.GetValue());
   }
 
-  if (reason != REASON_PREF_CHANGED ||
-      pref_name == prefs::kLanguageEnabledExtensionImes) {
-    if (user_is_active) {
-      std::string value(enabled_extension_imes_.GetValue());
+  if ((reason == REASON_INITIALIZATION) ||
+      (pref_name == prefs::kLanguageEnabledExtensionImes &&
+       reason == REASON_PREF_CHANGED)) {
+    std::string value(enabled_extension_imes_.GetValue());
 
-      std::vector<std::string> split_values;
-      if (!value.empty())
-        base::SplitString(value, ',', &split_values);
+    std::vector<std::string> split_values;
+    if (!value.empty())
+      base::SplitString(value, ',', &split_values);
 
-      input_method_manager_->SetEnabledExtensionImes(&split_values);
-    }
+    ime_state_->SetEnabledExtensionImes(&split_values);
   }
 
   if (user_is_active) {
@@ -597,7 +613,7 @@ void Preferences::SetLanguageConfigStringListAsCSV(const char* section,
 
   if (section == std::string(language_prefs::kGeneralSectionName) &&
       name == std::string(language_prefs::kPreloadEnginesConfigName)) {
-    input_method_manager_->ReplaceEnabledInputMethods(split_values);
+    ime_state_->ReplaceEnabledInputMethods(split_values);
     return;
   }
 }
@@ -622,9 +638,11 @@ void Preferences::SetInputMethodList() {
   // which could have been modified by the SetLanguageConfigStringListAsCSV call
   // above to the original state.
   if (!previous_input_method_id.empty())
-    input_method_manager_->ChangeInputMethod(previous_input_method_id);
+    ime_state_->ChangeInputMethod(previous_input_method_id,
+                                  false /* show_message */);
   if (!current_input_method_id.empty())
-    input_method_manager_->ChangeInputMethod(current_input_method_id);
+    ime_state_->ChangeInputMethod(current_input_method_id,
+                                  false /* show_message */);
 }
 
 void Preferences::UpdateAutoRepeatRate() {

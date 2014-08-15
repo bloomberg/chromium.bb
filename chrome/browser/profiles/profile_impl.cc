@@ -1277,8 +1277,7 @@ void ProfileImpl::OnLogin() {
 void ProfileImpl::InitChromeOSPreferences() {
   chromeos_preferences_.reset(new chromeos::Preferences());
   chromeos_preferences_->Init(
-      PrefServiceSyncable::FromProfile(this),
-      chromeos::ProfileHelper::Get()->GetUserByProfile(this));
+      this, chromeos::ProfileHelper::Get()->GetUserByProfile(this));
 }
 
 #endif  // defined(OS_CHROMEOS)

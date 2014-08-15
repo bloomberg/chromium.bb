@@ -232,12 +232,7 @@ const struct InputMethodNameMap {
 
 const char kImePathKeyName[] = "ime_path";
 
-extensions::ComponentLoader* GetComponentLoader() {
-  // TODO(skuhne, nkostylev): At this time the only thing which makes sense here
-  // is to use the active profile. Nkostylev is working on getting IME settings
-  // to work for multi user by collecting all settings from all users. Once that
-  // is done we might have to re-visit this decision.
-  Profile* profile = ProfileManager::GetActiveUserProfile();
+extensions::ComponentLoader* GetComponentLoader(Profile* profile) {
   extensions::ExtensionSystem* extension_system =
       extensions::ExtensionSystem::Get(profile);
   ExtensionService* extension_service = extension_system->extension_service();
@@ -257,26 +252,27 @@ std::vector<ComponentExtensionIME> ComponentExtensionIMEManagerImpl::ListIME() {
   return component_extension_list_;
 }
 
-bool ComponentExtensionIMEManagerImpl::Load(const std::string& extension_id,
+bool ComponentExtensionIMEManagerImpl::Load(Profile* profile,
+                                            const std::string& extension_id,
                                             const std::string& manifest,
                                             const base::FilePath& file_path) {
-  Profile* profile = ProfileManager::GetActiveUserProfile();
   extensions::ExtensionSystem* extension_system =
       extensions::ExtensionSystem::Get(profile);
   ExtensionService* extension_service = extension_system->extension_service();
   if (extension_service->GetExtensionById(extension_id, false))
     return false;
   const std::string loaded_extension_id =
-      GetComponentLoader()->Add(manifest, file_path);
+      GetComponentLoader(profile)->Add(manifest, file_path);
   DCHECK_EQ(loaded_extension_id, extension_id);
   return true;
 }
 
-void ComponentExtensionIMEManagerImpl::Unload(const std::string& extension_id,
+void ComponentExtensionIMEManagerImpl::Unload(Profile* profile,
+                                              const std::string& extension_id,
                                               const base::FilePath& file_path) {
   // Remove(extension_id) does nothing when the extension has already been
   // removed or not been registered.
-  GetComponentLoader()->Remove(extension_id);
+  GetComponentLoader(profile)->Remove(extension_id);
 }
 
 scoped_ptr<base::DictionaryValue> ComponentExtensionIMEManagerImpl::GetManifest(

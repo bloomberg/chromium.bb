@@ -21,12 +21,13 @@ class InputMethodPersistence : public InputMethodManager::Observer {
  public:
   // Constructs an instance that will observe input method changes on the
   // provided InputMethodManager. The client is responsible for calling
-  // OnSessionStateChange whenever the InputMethodManager::State changes.
+  // OnSessionStateChange whenever the InputMethodManager::UISessionState
+  // changes.
   explicit InputMethodPersistence(InputMethodManager* input_method_manager);
   virtual ~InputMethodPersistence();
 
   // Receives notification of session state changes.
-  void OnSessionStateChange(InputMethodManager::State new_state);
+  void OnSessionStateChange(InputMethodManager::UISessionState new_session);
 
   // InputMethodManager::Observer overrides.
   virtual void InputMethodChanged(InputMethodManager* manager,
@@ -34,7 +35,7 @@ class InputMethodPersistence : public InputMethodManager::Observer {
 
  private:
   InputMethodManager* input_method_manager_;
-  InputMethodManager::State state_;
+  InputMethodManager::UISessionState ui_session_;
   DISALLOW_COPY_AND_ASSIGN(InputMethodPersistence);
 };
 

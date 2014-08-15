@@ -13,6 +13,9 @@ namespace {
 InputMethodManager* g_input_method_manager = NULL;
 }
 
+InputMethodManager::State::~State() {
+}
+
 // static
 InputMethodManager* InputMethodManager::Get() {
   return g_input_method_manager;

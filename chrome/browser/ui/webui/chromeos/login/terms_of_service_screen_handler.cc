@@ -165,8 +165,10 @@ void TermsOfServiceScreenHandler::DoShow() {
     // If the user has a preferred input method, enable it and switch to it.
     chromeos::input_method::InputMethodManager* input_method_manager =
         chromeos::input_method::InputMethodManager::Get();
-    input_method_manager->EnableInputMethod(input_methods.front());
-    input_method_manager->ChangeInputMethod(input_methods.front());
+    input_method_manager->GetActiveIMEState()->EnableInputMethod(
+        input_methods.front());
+    input_method_manager->GetActiveIMEState()->ChangeInputMethod(
+        input_methods.front(), false /* show_message */);
   }
 
   // Updates the domain name shown in the UI.

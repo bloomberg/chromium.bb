@@ -20,9 +20,9 @@ namespace input_method {
 namespace {
 void OnSessionStateChange(InputMethodManagerImpl* input_method_manager_impl,
                           InputMethodPersistence* input_method_persistence,
-                          InputMethodManager::State new_state) {
-  input_method_persistence->OnSessionStateChange(new_state);
-  input_method_manager_impl->SetState(new_state);
+                          InputMethodManager::UISessionState new_ui_session) {
+  input_method_persistence->OnSessionStateChange(new_ui_session);
+  input_method_manager_impl->SetUISessionState(new_ui_session);
 }
 
 bool g_disable_extension_loading = false;

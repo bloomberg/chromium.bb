@@ -103,9 +103,11 @@ class PreferencesTest : public LoginManagerTest {
               (int)rate.initial_delay_in_ms);
     EXPECT_EQ(prefs->GetInteger(prefs::kLanguageXkbAutoRepeatInterval),
               (int)rate.repeat_interval_in_ms);
-    EXPECT_EQ(
-        prefs->GetString(prefs::kLanguageCurrentInputMethod),
-        input_method::InputMethodManager::Get()->GetCurrentInputMethod().id());
+    EXPECT_EQ(prefs->GetString(prefs::kLanguageCurrentInputMethod),
+              input_method::InputMethodManager::Get()
+                  ->GetActiveIMEState()
+                  ->GetCurrentInputMethod()
+                  .id());
   }
 
   void CheckLocalStateCorrespondsToPrefs(PrefService* prefs) {

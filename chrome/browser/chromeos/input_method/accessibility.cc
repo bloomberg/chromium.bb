@@ -31,7 +31,8 @@ void Accessibility::InputMethodChanged(InputMethodManager* imm,
     return;
 
   // Get the medium name of the changed input method (e.g. US, INTL, etc.)
-  const InputMethodDescriptor descriptor = imm_->GetCurrentInputMethod();
+  const InputMethodDescriptor descriptor =
+      imm_->GetActiveIMEState()->GetCurrentInputMethod();
   const std::string medium_name = base::UTF16ToUTF8(
       imm_->GetInputMethodUtil()->GetInputMethodMediumName(descriptor));
 

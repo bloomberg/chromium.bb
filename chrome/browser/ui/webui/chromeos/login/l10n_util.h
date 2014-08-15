@@ -53,7 +53,7 @@ scoped_ptr<base::ListValue> GetAcceptLanguageList();
 // In addition to returning the list of keyboard layouts, this function also
 // activates them so that they can be selected by the user (e.g. by cycling
 // through keyboard layouts via keyboard shortcuts).
-scoped_ptr<base::ListValue> GetLoginKeyboardLayouts(
+scoped_ptr<base::ListValue> GetAndActivateLoginKeyboardLayouts(
     const std::string& locale,
     const std::string& selected);
 
