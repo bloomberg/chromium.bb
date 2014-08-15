@@ -65,9 +65,7 @@ found in the LICENSE file.
     <ct-builder-grid failures="{{ group.failures }}"></ct-builder-grid>
     <div id="failure" class="{{ { snoozed: group.isSnoozed } | tokenList }}">
       <ct-test-list tests="{{ group.failures }}" tree="{{ tree }}"></ct-test-list>
-      <ct-commit-list first="{{ group.failures[0].lastPassingRevisions }}"
-          last="{{ group.failures[0].firstFailingRevisions }}"
-          commits="{{ commits }}"></ct-commit-list>
+      <ct-commit-list commitList="{{ _commits() }}"></ct-commit-list>
     </div>
     <div id="buttons">
       <paper-button id="examine" on-tap="{{ examine }}" label="Examine"></paper-button>
@@ -82,7 +80,7 @@ found in the LICENSE file.
   <script>
     Polymer({
       group: null,
-      commits: {},
+      commits: null,
       tree: '',
 
       examine: function() {
@@ -96,6 +94,12 @@ found in the LICENSE file.
       unsnooze: function() {
         this.group.unsnooze();
       },
+
+      _commits: function() {
+        if (!this.group)
+          return undefined;
+        return this.group.commitList(this.commits);
+      }
     });
   </script>
 </polymer-element>

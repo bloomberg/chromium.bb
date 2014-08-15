@@ -4,6 +4,8 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
+<link rel="import" href="ct-commit-list.html">
+
 <script>
 function CTFailureGroup(key, failures, annotation) {
   this.key = key;
@@ -22,6 +24,10 @@ CTFailureGroup.prototype.unsnooze = function() {
   return this._annotate({
     snoozeTime: undefined,
   });
+};
+
+CTFailureGroup.prototype.commitList = function(commits) {
+  return new CTCommitList(this, commits);
 };
 
 CTFailureGroup.prototype._computeProperties = function() {

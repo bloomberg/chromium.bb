@@ -6,48 +6,26 @@ found in the LICENSE file.
 
 <link rel="import" href="ct-commit.html">
 
-<polymer-element name="ct-commit-list" attributes="first last commits" noscript>
+<polymer-element name="ct-commit-list" attributes="commitList">
   <template>
     <style>
       :host {
         display: block;
       }
     </style>
-    <template repeat="{{ repository in commits.commits | _repositories }}">
-      <template repeat="{{ commit in repository | _commits }}">
+    <template repeat="{{ repository in commitList | _repositories }}">
+      <template repeat="{{ commit in repository.commits }}">
         <ct-commit data="{{ commit }}"></ct-commit>
       </template>
     </template>
   </template>
   <script>
-    Polymer({
-      commits: null,
-      first: null,
-      last: null,
-
-      _repositories: function(commits) {
-        if (!commits)
-          return [];
-        return Object.keys(commits).sort();
-      },
-
-      _commits: function(repository) {
-        var commits = [];
-        if (!this.first || !this.last)
-          return commits;
-
-        var first = Number(this.first[repository]);
-        var last = Number(this.last[repository]);
-        if (first == last)
-          return commits;
-
-        if (first > last) {
-          console.warn('Revision range is backwards, which is invalid:', first, last);
-          return commits;
-        }
-
-        return this.commits.range(repository, first + 1, last);
-      },
-    });
+  Polymer({
+    _repositories: function() {
+      if (!this.commitList)
+        return [];
+      return this.commitList.repositories();
+    }
+  });
   </script>
 </polymer-element>

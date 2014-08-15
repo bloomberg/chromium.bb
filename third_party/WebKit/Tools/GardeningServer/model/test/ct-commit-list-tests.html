@@ -1,0 +1,77 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../ct-commit-list.html">
+
+<script>
+(function () {
+
+var assert = chai.assert;
+
+describe('ct-commit-list', function() {
+  describe('commit list Model', function() {
+    it('returns commits', function() {
+      var group = {
+        failures: [
+          {
+            firstFailingRevisions: {
+              'blink': 158545
+            },
+            lastPassingRevisions: {
+              'blink': 158544
+            }
+          }
+        ]
+      };
+
+      var cl = new CTCommitList(group, new CTCommitLogMock());
+      assert.lengthOf(cl._commits('blink'), 1);
+    });
+
+    it('handles a backwards revision range', function() {
+      var group = {
+        failures: [
+          {
+            firstFailingRevisions: {
+              'blink': 158544
+            },
+            lastPassingRevisions: {
+              'blink': 158545
+            }
+          }
+        ]
+      };
+
+      var cl = new CTCommitList(group, new CTCommitLogMock());
+      assert.lengthOf(cl._commits('blink'), 0);
+    });
+
+    it ('returns repositories', function() {
+      var group = {
+        failures: [
+          {
+            firstFailingRevisions: {
+              'blink': 158545
+            },
+            lastPassingRevisions: {
+              'blink': 158544
+            }
+          }
+        ]
+      };
+
+      var cl = new CTCommitList(group, new CTCommitLogMock());
+      var repos = cl.repositories();
+      assert.lengthOf(repos, 1);
+      assert.equal(repos[0].name, 'blink');
+      assert.lengthOf(repos[0].commits, 1);
+      assert.equal(repos[0].range, '158545 : 158545')
+    });
+  });
+});
+
+})();
+</script>

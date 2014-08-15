@@ -1,0 +1,64 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="ct-commit-log.html">
+
+<script>
+function CTCommitList(group, commits) {
+  this.revisionLog = commits;
+  if (group.failures && group.failures.first()) {
+    this.firstFailing = group.failures.first().firstFailingRevisions;
+    this.lastPassing = group.failures.first().lastPassingRevisions;
+  }
+}
+
+CTCommitList.prototype.repositories = function() {
+  var ret = [];
+  if (!this.revisionLog || !this.lastPassing || !this.firstFailing)
+    return ret;
+
+  var allRepositories = Object.keys(this.revisionLog.commits).sort();
+  for (var i = 0; i < allRepositories.length; i++) {
+    var repository = allRepositories[i];
+
+    var commits = this._commits(repository);
+    if (!commits.length)
+      continue;
+
+    ret.push({
+      name: repository,
+      range: this._range(commits),
+      commits: commits,
+      expanded: false
+    });
+  }
+  return ret;
+};
+
+CTCommitList.prototype._commits = function(repository) {
+  var commits = [];
+
+  if (!this.firstFailing || !this.lastPassing)
+    return [];
+
+  var firstFailing = Number(this.firstFailing[repository]);
+  var lastPassing = Number(this.lastPassing[repository]);
+  if (firstFailing == lastPassing)
+    return commits;
+
+  if (lastPassing > firstFailing) {
+    console.warn('Revision range is backwards, which is invalid:', lastPassing, firstFailing);
+    return commits;
+  }
+
+  return this.revisionLog.range(repository, lastPassing + 1, firstFailing);
+};
+
+CTCommitList.prototype._range = function(commits) {
+  return commits.first().revision + " : " + commits.last().revision;
+};
+
+</script>

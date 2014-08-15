@@ -15,46 +15,30 @@ var assert = chai.assert;
 
 describe('ct-commit-list', function() {
   var list;
-  var numCommits;
 
   beforeEach(function(done) {
     list = document.createElement('ct-commit-list');
-    list.commits = new CTCommitLogMock();
-
-    // FIXME: This test shouldn't rely on firstRevision being empty to pass.
-    if (numCommits > 0)
-      list.commits.firstRevision = {};
-
-    var blinkCommits = list.commits.commits.blink;
-    var revision;
-    for (revision in blinkCommits)
-      break;
-
-    list.first = {blink: revision};
-    list.last = {blink: Number(revision) + numCommits};
 
     setTimeout(done);
   });
 
   describe('commit list UI', function() {
-    before(function() {
-      numCommits = 2;
+    beforeEach(function(done) {
+      var CommitList = Object.create(Object);
+      CommitList.prototype.repositories = function() {
+        return [
+          { commits: [ new CTCommitMock(), new CTCommitMock() ] },
+          { commits: [ new CTCommitMock(), new CTCommitMock() ] }
+        ]
+      };
+      list.commitList = CommitList;
+
+      setTimeout(done);
     });
 
     it('should show all commits in revision range', function() {
       var commits = list.shadowRoot.querySelectorAll('ct-commit');
-      assert.lengthOf(commits, numCommits);
-    });
-  });
-
-  describe('empty commit list UI', function() {
-    before(function() {
-      numCommits = 0;
-    });
-
-    it('should show no commits for backwards revision range', function() {
-      var commits = list.shadowRoot.querySelectorAll('ct-commit');
-      assert.lengthOf(commits, numCommits);
+      assert.lengthOf(commits, 4);
     });
   });
 });
