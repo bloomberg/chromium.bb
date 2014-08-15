@@ -688,7 +688,8 @@ def ListBlockDevices(device_path=None, in_bytes=False):
     cmd.append(device_path)
 
   cmd += ['--output', ','.join(keys)]
-  output = cros_build_lib.RunCommand(cmd, capture_output=True).output.strip()
+  output = cros_build_lib.RunCommand(
+      cmd, debug_level=logging.DEBUG, capture_output=True).output.strip()
   devices = []
   for line in output.splitlines():
     d = {}
