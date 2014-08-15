@@ -151,6 +151,10 @@ bool EsParserAdts::Parse(const uint8* buf, int size,
       pts_list_.pop_front();
     }
 
+    if (audio_timestamp_helper_->base_timestamp() == kNoTimestamp()) {
+      DVLOG(1) << "Audio frame with unknown timestamp";
+      return false;
+    }
     base::TimeDelta current_pts = audio_timestamp_helper_->GetTimestamp();
     base::TimeDelta frame_duration =
         audio_timestamp_helper_->GetFrameDuration(kSamplesPerAACFrame);
@@ -246,7 +250,8 @@ bool EsParserAdts::UpdateAudioConfiguration(const uint8* adts_header) {
     DVLOG(1) << "Channel config: " << channel_configuration;
     DVLOG(1) << "Adts profile: " << adts_profile;
     // Reset the timestamp helper to use a new time scale.
-    if (audio_timestamp_helper_) {
+    if (audio_timestamp_helper_ &&
+        audio_timestamp_helper_->base_timestamp() != kNoTimestamp()) {
       base::TimeDelta base_timestamp = audio_timestamp_helper_->GetTimestamp();
       audio_timestamp_helper_.reset(
         new AudioTimestampHelper(samples_per_second));

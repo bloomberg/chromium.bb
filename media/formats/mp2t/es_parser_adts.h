@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "media/base/audio_decoder_config.h"
+#include "media/base/media_export.h"
 #include "media/formats/mp2t/es_parser.h"
 
 namespace media {
@@ -25,7 +26,7 @@ class StreamParserBuffer;
 namespace media {
 namespace mp2t {
 
-class EsParserAdts : public EsParser {
+class MEDIA_EXPORT EsParserAdts : public EsParser {
  public:
   typedef base::Callback<void(const AudioDecoderConfig&)> NewAudioConfigCB;
 
