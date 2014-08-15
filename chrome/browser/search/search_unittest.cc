@@ -478,6 +478,15 @@ TEST_F(SearchTest, GetInstantURL) {
             GetInstantURL(profile(), false));
 }
 
+TEST_F(SearchTest, UseSearchPathForInstant) {
+  // Use alternate Instant search base URL path.
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch",
+      "Group1 use_alternate_instant_url:1 use_search_path_for_instant:1"));
+  EXPECT_EQ(GURL("https://foo.com/search?foo=foo&qbp=1#foo=foo&strk"),
+            GetInstantURL(profile(), false));
+}
+
 TEST_F(SearchTest, InstantSearchEnabledCGI) {
   // Disable Instant Search.
   // Make sure {google:forceInstantResults} is not set in the Instant URL.
@@ -588,6 +597,20 @@ TEST_F(SearchTest, ShouldUseAltInstantURL_EnabledViaFieldTrial) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch", "Group1 espv:8 use_alternate_instant_url:1"));
   EXPECT_TRUE(ShouldUseAltInstantURL());
+}
+
+TEST_F(SearchTest, ShouldUseSearchPathForInstant_DisabledViaFieldTrial) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch",
+      "Group1 use_alternate_instant_url:1 use_search_path_for_instant:0"));
+  EXPECT_FALSE(ShouldUseSearchPathForInstant());
+}
+
+TEST_F(SearchTest, ShouldUseSearchPathForInstant_EnabledViaFieldTrial) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch",
+      "Group1 use_alternate_instant_url:1 use_search_path_for_instant:1"));
+  EXPECT_TRUE(ShouldUseSearchPathForInstant());
 }
 
 TEST_F(SearchTest,

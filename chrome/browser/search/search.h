@@ -251,6 +251,12 @@ GURL GetNewTabPageURL(Profile* profile);
 // search results. This allows experimentation of Instant search.
 bool ShouldUseAltInstantURL();
 
+// Returns true if 'use_search_path_for_instant' flag is set to true in field
+// trials to use an '/search' path in an alternate Instant search base page URL
+// for prefetching search results. This allows experimentation of Instant
+// search.
+bool ShouldUseSearchPathForInstant();
+
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_SEARCH_SEARCH_H_

@@ -61,6 +61,8 @@ const char kReuseInstantSearchBasePage[] = "reuse_instant_search_base_page";
 // Controls whether to use the alternate Instant search base URL. This allows
 // experimentation of Instant search.
 const char kUseAltInstantURL[] = "use_alternate_instant_url";
+const char kUseSearchPathForInstant[] = "use_search_path_for_instant";
+const char kAltInstantURLPath[] = "search";
 const char kAltInstantURLQueryParams[] = "&qbp=1";
 
 const char kDisplaySearchButtonFlagName[] = "display_search_button";
@@ -493,6 +495,10 @@ GURL GetInstantURL(Profile* profile, bool force_instant_results) {
 
   if (ShouldUseAltInstantURL()) {
     GURL::Replacements replacements;
+      const std::string path(
+          ShouldUseSearchPathForInstant() ? kAltInstantURLPath : std::string());
+    if (!path.empty())
+      replacements.SetPathStr(path);
     const std::string query(
         instant_url.query() + std::string(kAltInstantURLQueryParams));
     replacements.SetQueryStr(query);
@@ -733,6 +739,12 @@ bool ShouldUseAltInstantURL() {
   FieldTrialFlags flags;
   return GetFieldTrialInfo(&flags) && GetBoolValueForFlagWithDefault(
       kUseAltInstantURL, false, flags);
+}
+
+bool ShouldUseSearchPathForInstant() {
+  FieldTrialFlags flags;
+  return GetFieldTrialInfo(&flags) && GetBoolValueForFlagWithDefault(
+      kUseSearchPathForInstant, false, flags);
 }
 
 }  // namespace chrome
