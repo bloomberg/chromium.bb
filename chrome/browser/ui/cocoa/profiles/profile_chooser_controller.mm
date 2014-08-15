@@ -815,6 +815,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
 - (IBAction)showUserManager:(id)sender {
   profiles::ShowUserManagerMaybeWithTutorial(browser_->profile());
+  [self postActionPerformed:
+      ProfileMetrics::PROFILE_DESKTOP_MENU_OPEN_USER_MANAGER];
 }
 
 - (IBAction)exitGuest:(id)sender {

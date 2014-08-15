@@ -671,6 +671,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
 
   if (sender == users_button_) {
     profiles::ShowUserManagerMaybeWithTutorial(browser_->profile());
+    PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_OPEN_USER_MANAGER);
     // If this is a guest session, also close all the guest browser windows.
     if (browser_->profile()->IsGuestSession())
       profiles::CloseGuestProfileWindows();

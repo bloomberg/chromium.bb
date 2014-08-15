@@ -47140,6 +47140,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="4" label="Edit Profile Image in Menu">
     User opened the user menu, and started selecting a new profile image.
   </int>
+  <int value="5" label="Open User Manager in Menu">
+    User opened the user menu, and opened the User Manager.
+  </int>
 </enum>
 
 <enum name="ProfileErrorType" type="int">

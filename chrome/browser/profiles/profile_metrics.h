@@ -114,6 +114,8 @@ class ProfileMetrics {
     PROFILE_DESKTOP_MENU_EDIT_NAME,
     // User opened the user menu, and started selecting a new profile image.
     PROFILE_DESKTOP_MENU_EDIT_IMAGE,
+    // User opened the user menu, and opened the user manager.
+    PROFILE_DESKTOP_MENU_OPEN_USER_MANAGER,
     NUM_PROFILE_DESKTOP_MENU_METRICS,
   };
 
