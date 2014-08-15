@@ -6,7 +6,7 @@
 
 // If directory files changes too often, don't rescan directory more than once
 // per specified interval
-var SIMULTANEOUS_RESCAN_INTERVAL = 1000;
+var SIMULTANEOUS_RESCAN_INTERVAL = 500;
 // Used for operations that require almost instant rescan.
 var SHORT_RESCAN_INTERVAL = 100;
 
@@ -193,7 +193,9 @@ DirectoryModel.prototype.onWatcherDirectoryChanged_ = function(event) {
     }.bind(this));
   } else {
     // Invokes force refresh if the detailed information isn't provided.
-    this.rescanSoon(true);
+    // This can occur very frequently (e.g. when copying files into Downlaods)
+    // and rescan is heavy operation, so we keep some interval for each rescan.
+    this.rescanLater(true);
   }
 };
 
