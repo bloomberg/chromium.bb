@@ -29,6 +29,11 @@ const char kEnableEmbeddedExtensionOptions[] =
 const char kEnableExperimentalExtensionApis[] =
     "enable-experimental-extension-apis";
 
+// Hack so that feature switch can work with about_flags. See
+// kEnableScriptsRequireAction.
+const char kEnableExtensionActionRedesign[] =
+    "enable-extension-action-redesign";
+
 // Enables extensions to hide bookmarks UI elements.
 const char kEnableOverrideBookmarksUI[] = "enable-override-bookmarks-ui";
 

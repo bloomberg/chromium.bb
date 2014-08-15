@@ -1921,7 +1921,14 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_DROP_SYNC_CREDENTIAL_DESCRIPTION,
     kOsAll,
     MULTI_VALUE_TYPE(kEnableDropSyncCredentialChoices)
-  }
+  },
+  {
+    "enable-extension-action-redesign",
+    IDS_FLAGS_ENABLE_EXTENSION_ACTION_REDESIGN_NAME,
+    IDS_FLAGS_ENABLE_EXTENSION_ACTION_REDESIGN_DESCRIPTION,
+    kOsWin | kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(extensions::switches::kEnableExtensionActionRedesign)
+  },
 };
 
 const Experiment* experiments = kExperiments;

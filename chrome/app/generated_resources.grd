@@ -6529,6 +6529,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_EMBEDDED_EXTENSION_OPTIONS_DESCRIPTION" desc="Description of the flag that enables embedding extension options in chrome://extensions.">
         Display extension options as an embedded element in chrome://extensions rather than opening a new tab.
       </message>
+      <message name="IDS_FLAGS_ENABLE_EXTENSION_ACTION_REDESIGN_NAME" desc="Name of the flag to enable the extension toolbar redesign">
+        Enable extension toolbar redesign.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_EXTENSION_ACTION_REDESIGN_DESCRIPTION" desc="Description for the flag to enable the extension toolbar redesign">
+        Enables the (in development) new extension toolbar toolbar design.
+      </message>
       <message name="IDS_FLAGS_ENABLE_WEBSITE_SETTINGS_NAME" desc="Name of the flag that enables the website settings manager in chrome://settings.">
         Enables the website settings manager.
       </message>
