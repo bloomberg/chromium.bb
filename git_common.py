@@ -30,8 +30,9 @@ import threading
 
 import subprocess2
 
+ROOT = os.path.abspath(os.path.dirname(__file__))
 
-GIT_EXE = 'git.bat' if sys.platform.startswith('win') else 'git'
+GIT_EXE = ROOT+'\\git.bat' if sys.platform.startswith('win') else 'git'
 TEST_MODE = False
 
 FREEZE = 'FREEZE'
