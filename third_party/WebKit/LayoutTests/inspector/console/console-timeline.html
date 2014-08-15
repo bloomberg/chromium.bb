@@ -78,24 +78,38 @@ function startTimeline()
 function test()
 {
     WebInspector.inspectorView.showPanel("timeline");
-    WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded, eventRecorded);
     var panel = WebInspector.inspectorView.panel("timeline");
     panel._model._currentTarget = WebInspector.targetManager.mainTarget();
+    panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, eventRecorded, this);
 
     InspectorTest.runTestSuite([
         function testStartStopTimeline(next)
         {
-            InspectorTest.evaluateInPage("startStopTimeline()", next);
+            InspectorTest.evaluateInPage("startStopTimeline()");
+            panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, allEventsReceived, this);
+
+            function allEventsReceived()
+            {
+                panel._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStopped, allEventsReceived, this);
+                next();
+            }
         },
 
         function testStartStopMultiple(next)
         {
-            InspectorTest.evaluateInPage("startStopMultiple()", next);
+            InspectorTest.evaluateInPage("startStopMultiple()");
+            panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, allEventsReceived, this);
+
+            function allEventsReceived()
+            {
+                panel._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStopped, allEventsReceived, this);
+                next();
+            }
         },
 
         function testStartMultipleStopInsideEvals(next)
         {
-            WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineAllEventsReceived, finish);
+            panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, finish, this);
 
             InspectorTest.evaluateInPage("startMultiple()", step2);
 
@@ -111,7 +125,7 @@ function test()
 
             function finish()
             {
-                WebInspector.timelineManager.removeEventListener(WebInspector.TimelineManager.EventTypes.TimelineAllEventsReceived, finish);
+                panel._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStopped, finish, this);
                 next();
             }
         },
@@ -124,7 +138,7 @@ function test()
         function testStartFromPanel(next)
         {
             panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, recordingStarted);
-            WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineAllEventsReceived, finish);
+            panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, finish, this);
             panel._toggleTimelineButtonClicked();
 
             function recordingStarted()
@@ -140,14 +154,14 @@ function test()
 
             function finish()
             {
-                WebInspector.timelineManager.removeEventListener(WebInspector.TimelineManager.EventTypes.TimelineAllEventsReceived, finish);
+                panel._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStopped, finish, this);
                 next();
             }
         },
 
         function testStopFromPanel(next)
         {
-            WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineAllEventsReceived, finish);
+            panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, finish, this);
 
             InspectorTest.evaluateInPage("startTimeline()", step2);
 
@@ -158,50 +172,50 @@ function test()
 
             function finish()
             {
-                WebInspector.timelineManager.removeEventListener(WebInspector.TimelineManager.EventTypes.TimelineAllEventsReceived, finish);
+                panel._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStopped, finish, this);
                 next();
             }
-        },
+       },
 
         function testRacyStart(next)
         {
-            WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineStarted, timelineStarted);
-            WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineAllEventsReceived, finish);
+            panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, timelineStarted);
+            panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, finish, this);
 
             InspectorTest.evaluateInPage("startTimeline()");
             panel._toggleTimelineButtonClicked();
 
             function timelineStarted()
             {
-                WebInspector.timelineManager.removeEventListener(WebInspector.TimelineManager.EventTypes.TimelineStarted, timelineStarted);
+                panel._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStarted, timelineStarted);
                 panel._toggleTimelineButtonClicked();
             }
 
             function finish()
             {
-                WebInspector.timelineManager.removeEventListener(WebInspector.TimelineManager.EventTypes.TimelineAllEventsReceived, finish);
+                panel._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStopped, finish, this);
                 next();
             }
         },
 
         function testRacyStart2(next)
         {
-            WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineStarted, timelineStarted);
-            WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineAllEventsReceived, finish);
+            panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, timelineStarted);
+            panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, finish, this);
 
             panel._toggleTimelineButtonClicked();
             InspectorTest.evaluateInPage("startTimeline()");
 
             function timelineStarted()
             {
-                WebInspector.timelineManager.removeEventListener(WebInspector.TimelineManager.EventTypes.TimelineStarted, timelineStarted);
+                panel._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStarted, timelineStarted);
                 // Fool listener order execution.
                 setTimeout(panel._toggleTimelineButtonClicked.bind(panel));
             }
 
             function finish()
             {
-                WebInspector.timelineManager.removeEventListener(WebInspector.TimelineManager.EventTypes.TimelineAllEventsReceived, finish);
+                panel._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStopped, finish, this);
                 next();
             }
         }
@@ -211,11 +225,11 @@ function test()
     {
         function print(record)
         {
-            if (record.type === "TimeStamp")
-                InspectorTest.addResult(record.data.message);
+            if (record.type() === "TimeStamp")
+                InspectorTest.addResult(record.data().message);
 
-            for (var i = 0; record.children && i < record.children.length; ++i)
-                print(record.children[i]);
+            for (var i = 0; i < record.children().length; ++i)
+                print(record.children()[i]);
         }
         print(event.data);
     }

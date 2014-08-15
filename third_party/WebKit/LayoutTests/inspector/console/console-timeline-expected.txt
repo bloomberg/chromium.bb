@@ -88,6 +88,7 @@ Timeline 'two' started.
 timestamp 2
 
 Running: testRacyStart2
+timestamp 0
 Timeline 'one' started.
 timestamp 1
 Timeline 'two' started.
