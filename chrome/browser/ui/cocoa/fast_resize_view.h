@@ -7,6 +7,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+@class CAShapeLayer;
+
 // A Cocoa view that supports an alternate resizing mode, normally used when
 // animations are in progress.  In normal resizing mode, subviews are sized to
 // completely fill this view's bounds.  In fast resizing mode, the subviews'
@@ -16,6 +18,12 @@
 @interface FastResizeView : NSView {
  @private
   BOOL fastResizeMode_;
+
+  // Whether the bottom corners should be rounded.
+  BOOL roundedBottomCorners_;
+
+  // Weak reference to the mask of the hosted layer.
+  CAShapeLayer* layerMask_;
 }
 
 // Turns fast resizing mode on or off, which determines how this view resizes
@@ -23,6 +31,9 @@
 // resizing subviews to fit; callers do not need to explictly call |setFrame:|
 // to trigger a resize.
 - (void)setFastResizeMode:(BOOL)fastResizeMode;
+
+// Changes whether the bottom two corners are rounded.
+- (void)setRoundedBottomCorners:(BOOL)roundedBottomCorners;
 
 @end
 

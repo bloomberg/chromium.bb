@@ -91,6 +91,9 @@
 // sends a message to the renderer to resize.
 - (void)layoutTabContentArea:(NSRect)frame;
 
+// Updates whether the bottom two corners are rounded.
+- (void)updateRoundedBottomCorners;
+
 // Sets the toolbar's height to a value appropriate for the given compression.
 // Also adjusts the bookmark bar's height by the opposite amount in order to
 // keep the total height of the two views constant.
