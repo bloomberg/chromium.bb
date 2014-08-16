@@ -65,7 +65,7 @@ using media::cast::proto::NetworkSimulationModelType;
 namespace media {
 namespace cast {
 namespace {
-const int kTargetDelay = 300;
+const int kTargetDelay = 400;
 const char kSourcePath[] = "source";
 const char kModelPath[] = "model";
 const char kOutputPath[] = "output";
@@ -230,9 +230,9 @@ void RunSimulation(const base::FilePath& source_path,
 
   // Video sender config.
   VideoSenderConfig video_sender_config = GetDefaultVideoSenderConfig();
-  video_sender_config.max_bitrate = 4000000;
+  video_sender_config.max_bitrate = 2500000;
   video_sender_config.min_bitrate = 2000000;
-  video_sender_config.start_bitrate = 4000000;
+  video_sender_config.start_bitrate = 2000000;
   video_sender_config.target_playout_delay =
       base::TimeDelta::FromMilliseconds(kTargetDelay);
 
