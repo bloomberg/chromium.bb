@@ -22,10 +22,14 @@ class ExperienceSamplingEvent {
   // String constants for user decision events.
   static const char kProceed[];
   static const char kDeny[];
+  static const char kIgnore[];
   static const char kCancel[];
   static const char kReload[];
 
   // String constants for event names.
+  static const char kMaliciousDownload[];
+  static const char kDangerousDownload[];
+  static const char kDownloadDangerPrompt[];
   static const char kExtensionInstallDialog[];
 
   // The Create() functions can return an empty scoped_ptr if they cannot find

@@ -17,10 +17,17 @@ namespace extensions {
 // static
 const char ExperienceSamplingEvent::kProceed[] = "proceed";
 const char ExperienceSamplingEvent::kDeny[] = "deny";
+const char ExperienceSamplingEvent::kIgnore[] = "ignore";
 const char ExperienceSamplingEvent::kCancel[] = "cancel";
 const char ExperienceSamplingEvent::kReload[] = "reload";
 
 // static
+const char ExperienceSamplingEvent::kMaliciousDownload[] =
+    "download_warning_malicious";
+const char ExperienceSamplingEvent::kDangerousDownload[] =
+    "download_warning_dangerous";
+const char ExperienceSamplingEvent::kDownloadDangerPrompt[] =
+    "download_danger_prompt";
 const char ExperienceSamplingEvent::kExtensionInstallDialog[] =
     "extension_install_dialog_";
 

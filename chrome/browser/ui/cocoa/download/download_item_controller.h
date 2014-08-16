@@ -21,6 +21,10 @@ class DownloadItem;
 class PageNavigator;
 }
 
+namespace extensions {
+class ExperienceSamplingEvent;
+}
+
 namespace gfx {
 class FontList;
 }
@@ -71,6 +75,10 @@ class MenuModel;
     kNormal,
     kDangerous
   } state_;
+
+  // ExperienceSampling: This tracks dangerous/malicious downloads warning UI
+  // and the user's decisions about it.
+  scoped_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
 };
 
 // Initialize controller for |downloadItem|.

@@ -5,6 +5,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/download/download_danger_prompt.h"
 #include "chrome/browser/download/download_stats.h"
+#include "chrome/browser/extensions/api/experience_sampling_private/experience_sampling.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -20,6 +21,8 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
+
+using extensions::ExperienceSamplingEvent;
 
 namespace {
 
@@ -69,6 +72,8 @@ class DownloadDangerPromptViews : public DownloadDangerPrompt,
   bool show_context_;
   OnDone done_;
 
+  scoped_ptr<ExperienceSamplingEvent> sampling_event_;
+
   views::View* contents_view_;
 };
 
@@ -117,6 +122,14 @@ DownloadDangerPromptViews::DownloadDangerPromptViews(
   layout->AddView(message_body_label);
 
   RecordOpenedDangerousConfirmDialog(download_->GetDangerType());
+
+  // ExperienceSampling: A malicious download warning is being shown to the
+  // user, so we start a new SamplingEvent and track it.
+  sampling_event_.reset(new ExperienceSamplingEvent(
+      ExperienceSamplingEvent::kDownloadDangerPrompt,
+      item->GetURL(),
+      item->GetReferrerUrl(),
+      item->GetBrowserContext()));
 }
 
 // DownloadDangerPrompt methods:
@@ -170,18 +183,24 @@ ui::ModalType DownloadDangerPromptViews::GetModalType() const {
 
 bool DownloadDangerPromptViews::Cancel() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // ExperienceSampling: User canceled the warning.
+  sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kDeny);
   RunDone(CANCEL);
   return true;
 }
 
 bool DownloadDangerPromptViews::Accept() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // ExperienceSampling: User proceeded through the warning.
+  sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kProceed);
   RunDone(ACCEPT);
   return true;
 }
 
 bool DownloadDangerPromptViews::Close() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // ExperienceSampling: User canceled the warning.
+  sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kDeny);
   RunDone(DISMISS);
   return true;
 }
