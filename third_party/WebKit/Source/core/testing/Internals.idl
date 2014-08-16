@@ -36,12 +36,6 @@
     boolean isPreloaded(DOMString url);
     boolean isLoadingFromMemoryCache(DOMString url);
 
-    void crash();
-
-    void setStyleResolverStatsEnabled(boolean enabled);
-    [RaisesException] DOMString styleResolverStatsReport();
-    [RaisesException] DOMString styleResolverStatsTotalsReport();
-
     [TypeChecking=Interface] boolean isSharingStyle(Element element1, Element element2);
 
     [TypeChecking=Interface] CSSStyleDeclaration computedStyleIncludingVisitedInfo(Node node);
@@ -88,8 +82,6 @@
     [RaisesException] void setFormControlStateOfHistoryItem(sequence<DOMString> values);
     [RaisesException] void setEnableMockPagePopup(boolean enabled);
     readonly attribute PagePopupController pagePopupController;
-
-    [RaisesException] ClientRect unscaledViewportRect();
 
     [RaisesException] ClientRect absoluteCaretBounds();
 
@@ -239,8 +231,6 @@
     [RaisesException, TypeChecking=Interface] DOMString getCurrentCursorInfo(Document document);
 
     [TypeChecking=Interface] DOMString markerTextForListItem(Element element);
-
-    [TypeChecking=Interface] DOMString baseURL(Document document);
 
     SerializedScriptValue deserializeBuffer(ArrayBuffer buffer);
     ArrayBuffer serializeObject(SerializedScriptValue obj);

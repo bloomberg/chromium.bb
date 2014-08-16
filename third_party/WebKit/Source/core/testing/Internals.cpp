@@ -322,48 +322,6 @@ bool Internals::isLoadingFromMemoryCache(const String& url)
     return resource && resource->status() == Resource::Cached;
 }
 
-void Internals::crash()
-{
-    CRASH();
-}
-
-void Internals::setStyleResolverStatsEnabled(bool enabled)
-{
-    Document* document = contextDocument();
-    if (enabled)
-        document->ensureStyleResolver().enableStats(StyleResolver::ReportSlowStats);
-    else
-        document->ensureStyleResolver().disableStats();
-}
-
-String Internals::styleResolverStatsReport(ExceptionState& exceptionState) const
-{
-    Document* document = contextDocument();
-    if (!document) {
-        exceptionState.throwDOMException(InvalidAccessError, "No context document is available.");
-        return String();
-    }
-    if (!document->ensureStyleResolver().stats()) {
-        exceptionState.throwDOMException(InvalidStateError, "Style resolver stats not enabled");
-        return String();
-    }
-    return document->ensureStyleResolver().stats()->report();
-}
-
-String Internals::styleResolverStatsTotalsReport(ExceptionState& exceptionState) const
-{
-    Document* document = contextDocument();
-    if (!document) {
-        exceptionState.throwDOMException(InvalidAccessError, "No context document is available.");
-        return String();
-    }
-    if (!document->ensureStyleResolver().statsTotals()) {
-        exceptionState.throwDOMException(InvalidStateError, "Style resolver stats not enabled");
-        return String();
-    }
-    return document->ensureStyleResolver().statsTotals()->report();
-}
-
 bool Internals::isSharingStyle(Element* element1, Element* element2) const
 {
     ASSERT(element1 && element2);
@@ -706,17 +664,6 @@ void Internals::setEnableMockPagePopup(bool enabled, ExceptionState& exceptionSt
 PassRefPtrWillBeRawPtr<PagePopupController> Internals::pagePopupController()
 {
     return s_pagePopupDriver ? s_pagePopupDriver->pagePopupController() : 0;
-}
-
-PassRefPtrWillBeRawPtr<ClientRect> Internals::unscaledViewportRect(ExceptionState& exceptionState)
-{
-    Document* document = contextDocument();
-    if (!document || !document->view()) {
-        exceptionState.throwDOMException(InvalidAccessError, document ? "The document's viewport cannot be retrieved." : "No context document can be obtained.");
-        return ClientRect::create();
-    }
-
-    return ClientRect::create(document->view()->visibleContentRect());
 }
 
 PassRefPtrWillBeRawPtr<ClientRect> Internals::absoluteCaretBounds(ExceptionState& exceptionState)
@@ -2035,12 +1982,6 @@ String Internals::getImageSourceURL(Element* element)
 {
     ASSERT(element);
     return element->imageSourceURL();
-}
-
-String Internals::baseURL(Document* document)
-{
-    ASSERT(document);
-    return document->baseURL().string();
 }
 
 bool Internals::isSelectPopupVisible(Node* node)

@@ -87,12 +87,6 @@ public:
     bool isPreloaded(const String& url);
     bool isLoadingFromMemoryCache(const String& url);
 
-    void crash();
-
-    void setStyleResolverStatsEnabled(bool);
-    String styleResolverStatsReport(ExceptionState&) const;
-    String styleResolverStatsTotalsReport(ExceptionState&) const;
-
     bool isSharingStyle(Element*, Element*) const;
 
     PassRefPtrWillBeRawPtr<CSSStyleDeclaration> computedStyleIncludingVisitedInfo(Node*) const;
@@ -139,8 +133,6 @@ public:
     void setFormControlStateOfHistoryItem(const Vector<String>&, ExceptionState&);
     void setEnableMockPagePopup(bool, ExceptionState&);
     PassRefPtrWillBeRawPtr<PagePopupController> pagePopupController();
-
-    PassRefPtrWillBeRawPtr<ClientRect> unscaledViewportRect(ExceptionState&);
 
     PassRefPtrWillBeRawPtr<ClientRect> absoluteCaretBounds(ExceptionState&);
 
@@ -289,7 +281,6 @@ public:
     int selectPopupItemStyleFontHeight(Node*, int);
 
     PassRefPtrWillBeRawPtr<ClientRect> selectionBounds(ExceptionState&);
-    String baseURL(Document*);
 
     bool loseSharedGraphicsContext3D();
 
