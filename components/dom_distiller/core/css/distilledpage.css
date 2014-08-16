@@ -158,6 +158,11 @@ h6 {
 
 /* Main margins. */
 
+body {
+  max-width: 800px;
+  margin: 0px auto;
+}
+
 #mainContent {
   margin: 1.296rem 1.296rem auto;
 }
