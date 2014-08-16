@@ -22,6 +22,8 @@
 #include "components/policy/core/common/policy_types.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/common/content_switches.h"
+#include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "extensions/browser/extension_system.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -31,6 +33,7 @@ using chromeos::LoginManagerTest;
 using chromeos::StartupUtils;
 using chromeos::UserAddingScreen;
 using user_manager::UserManager;
+using device::MockBluetoothAdapter;
 using testing::_;
 using testing::Return;
 
@@ -49,11 +52,27 @@ bool HasEasyUnlockAppForProfile(Profile* profile) {
 }
 #endif
 
+void SetUpBluetoothMock(
+    scoped_refptr<testing::NiceMock<MockBluetoothAdapter> > mock_adapter,
+    bool is_present) {
+  device::BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
+
+  EXPECT_CALL(*mock_adapter, IsPresent())
+      .WillRepeatedly(testing::Return(is_present));
+
+  // These functions are called from ash system tray. They are speculations of
+  // why flaky gmock errors are seen on bots.
+  EXPECT_CALL(*mock_adapter, IsPowered())
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(*mock_adapter, GetDevices()).WillRepeatedly(
+      testing::Return(device::BluetoothAdapter::ConstDeviceList()));
+}
+
 }  // namespace
 
 class EasyUnlockServiceTest : public InProcessBrowserTest {
  public:
-  EasyUnlockServiceTest() {}
+  EasyUnlockServiceTest() : is_bluetooth_adapter_present_(true) {}
   virtual ~EasyUnlockServiceTest() {}
 
   void SetEasyUnlockAllowedPolicy(bool allowed) {
@@ -78,6 +97,9 @@ class EasyUnlockServiceTest : public InProcessBrowserTest {
     EXPECT_CALL(provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
+
+    mock_adapter_ = new testing::NiceMock<MockBluetoothAdapter>();
+    SetUpBluetoothMock(mock_adapter_, is_bluetooth_adapter_present_);
   }
 
   Profile* profile() const { return browser()->profile(); }
@@ -86,8 +108,14 @@ class EasyUnlockServiceTest : public InProcessBrowserTest {
     return EasyUnlockService::Get(profile());
   }
 
+  void set_is_bluetooth_adapter_present(bool is_present) {
+    is_bluetooth_adapter_present_ = is_present;
+  }
+
  private:
   policy::MockConfigurationPolicyProvider provider_;
+  scoped_refptr<testing::NiceMock<MockBluetoothAdapter> > mock_adapter_;
+  bool is_bluetooth_adapter_present_;
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockServiceTest);
 };
@@ -97,6 +125,28 @@ IN_PROC_BROWSER_TEST_F(EasyUnlockServiceTest, DefaultOn) {
   EXPECT_TRUE(service()->IsAllowed());
 #if defined(GOOGLE_CHROME_BUILD)
   EXPECT_TRUE(HasEasyUnlockApp());
+#endif
+}
+
+class EasyUnlockServiceNoBluetoothTest : public EasyUnlockServiceTest {
+ public:
+  EasyUnlockServiceNoBluetoothTest() {}
+  virtual ~EasyUnlockServiceNoBluetoothTest() {}
+
+  // InProcessBrowserTest:
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    set_is_bluetooth_adapter_present(false);
+    EasyUnlockServiceTest::SetUpInProcessBrowserTestFixture();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EasyUnlockServiceNoBluetoothTest);
+};
+
+IN_PROC_BROWSER_TEST_F(EasyUnlockServiceNoBluetoothTest, NoService) {
+  EXPECT_FALSE(service()->IsAllowed());
+#if defined(GOOGLE_CHROME_BUILD)
+  EXPECT_FALSE(HasEasyUnlockApp());
 #endif
 }
 
@@ -172,7 +222,16 @@ class EasyUnlockServiceMultiProfileTest : public LoginManagerTest {
   EasyUnlockServiceMultiProfileTest() : LoginManagerTest(false) {}
   virtual ~EasyUnlockServiceMultiProfileTest() {}
 
+  // InProcessBrowserTest:
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    LoginManagerTest::SetUpInProcessBrowserTestFixture();
+
+    mock_adapter_ = new testing::NiceMock<MockBluetoothAdapter>();
+    SetUpBluetoothMock(mock_adapter_, true);
+  }
+
  private:
+  scoped_refptr<testing::NiceMock<MockBluetoothAdapter> > mock_adapter_;
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockServiceMultiProfileTest);
 };
 

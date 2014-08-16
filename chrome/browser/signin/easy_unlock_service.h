@@ -78,16 +78,36 @@ class EasyUnlockService : public KeyedService {
   }
 
  private:
+  // A class to detect whether a bluetooth adapter is present.
+  class BluetoothDetector;
+
+  // Initializes the service after ExtensionService is ready.
   void Initialize();
+
+  // Loads the Easy unlock component app.
   void LoadApp();
+
+  // Unloads the Easy unlock component app.
   void UnloadApp();
+
+  // Checks whether Easy unlock should be running and updates app state.
+  void UpdateAppState();
+
+  // Callback when the controlling pref changes.
   void OnPrefsChanged();
 
+  // Callback when Bluetooth adapter present state changes.
+  void OnBluetoothAdapterPresentChanged();
+
+  // Sets the new turn-off flow status.
   void SetTurnOffFlowStatus(TurnOffFlowStatus status);
+
+  // Callback invoked when turn off flow has finished.
   void OnTurnOffFlowFinished(bool success);
 
   Profile* profile_;
   PrefChangeRegistrar registrar_;
+  scoped_ptr<BluetoothDetector> bluetooth_detector_;
   // Created lazily in |GetScreenlockStateHandler|.
   scoped_ptr<EasyUnlockScreenlockStateHandler> screenlock_state_handler_;
 

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
@@ -23,6 +24,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "device/bluetooth/bluetooth_adapter.h"
+#include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/one_shot_event.h"
 #include "grit/browser_resources.h"
@@ -58,8 +61,56 @@ EasyUnlockService* EasyUnlockService::Get(Profile* profile) {
   return EasyUnlockServiceFactory::GetForProfile(profile);
 }
 
+class EasyUnlockService::BluetoothDetector
+    : public device::BluetoothAdapter::Observer {
+ public:
+  explicit BluetoothDetector(EasyUnlockService* service)
+      : service_(service),
+        weak_ptr_factory_(this) {
+  }
+
+  virtual ~BluetoothDetector() {
+    if (adapter_)
+      adapter_->RemoveObserver(this);
+  }
+
+  void Initialize() {
+    if (!device::BluetoothAdapterFactory::IsBluetoothAdapterAvailable())
+      return;
+
+    device::BluetoothAdapterFactory::GetAdapter(
+        base::Bind(&BluetoothDetector::OnAdapterInitialized,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  bool IsPresent() const {
+    return adapter_ && adapter_->IsPresent();
+  }
+
+  // device::BluetoothAdapter::Observer:
+  virtual void AdapterPresentChanged(device::BluetoothAdapter* adapter,
+                                     bool present) OVERRIDE {
+    service_->OnBluetoothAdapterPresentChanged();
+  }
+
+ private:
+  void OnAdapterInitialized(scoped_refptr<device::BluetoothAdapter> adapter) {
+    adapter_ = adapter;
+    adapter_->AddObserver(this);
+    service_->OnBluetoothAdapterPresentChanged();
+  }
+
+  // Owner of this class and should out-live this class.
+  EasyUnlockService* service_;
+  scoped_refptr<device::BluetoothAdapter> adapter_;
+  base::WeakPtrFactory<BluetoothDetector> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(BluetoothDetector);
+};
+
 EasyUnlockService::EasyUnlockService(Profile* profile)
     : profile_(profile),
+      bluetooth_detector_(new BluetoothDetector(this)),
       turn_off_flow_status_(IDLE),
       weak_ptr_factory_(this) {
   extensions::ExtensionSystem::Get(profile_)->ready().Post(
@@ -113,8 +164,14 @@ bool EasyUnlockService::IsAllowed() {
   if (!profile_->GetPrefs()->GetBoolean(prefs::kEasyUnlockAllowed))
     return false;
 
-  // It is only disabled when the trial exists and is in "Disable" group.
-  return base::FieldTrialList::FindFullName("EasyUnlock") != "Disable";
+  // It is disabled when the trial exists and is in "Disable" group.
+  if (base::FieldTrialList::FindFullName("EasyUnlock") == "Disable")
+    return false;
+
+  if (!bluetooth_detector_->IsPresent())
+    return false;
+
+  return true;
 #else
   // TODO(xiyuan): Revisit when non-chromeos platforms are supported.
   return false;
@@ -232,6 +289,8 @@ void EasyUnlockService::Initialize() {
       prefs::kEasyUnlockAllowed,
       base::Bind(&EasyUnlockService::OnPrefsChanged, base::Unretained(this)));
   OnPrefsChanged();
+
+  bluetooth_detector_->Initialize();
 }
 
 void EasyUnlockService::LoadApp() {
@@ -253,17 +312,20 @@ void EasyUnlockService::LoadApp() {
 #endif  // !defined(NDEBUG)
 
   if (!easy_unlock_path.empty()) {
-    GetComponentLoader(profile_)
-        ->Add(IDR_EASY_UNLOCK_MANIFEST, easy_unlock_path);
+    extensions::ComponentLoader* loader = GetComponentLoader(profile_);
+    if (!loader->Exists(extension_misc::kEasyUnlockAppId))
+      loader->Add(IDR_EASY_UNLOCK_MANIFEST, easy_unlock_path);
   }
 #endif  // defined(GOOGLE_CHROME_BUILD)
 }
 
 void EasyUnlockService::UnloadApp() {
-  GetComponentLoader(profile_)->Remove(extension_misc::kEasyUnlockAppId);
+  extensions::ComponentLoader* loader = GetComponentLoader(profile_);
+  if (loader->Exists(extension_misc::kEasyUnlockAppId))
+    loader->Remove(extension_misc::kEasyUnlockAppId);
 }
 
-void EasyUnlockService::OnPrefsChanged() {
+void EasyUnlockService::UpdateAppState() {
   if (IsAllowed()) {
     LoadApp();
   } else {
@@ -272,6 +334,14 @@ void EasyUnlockService::OnPrefsChanged() {
     // by Easy Unlock app is reset.
     screenlock_state_handler_.reset();
   }
+}
+
+void EasyUnlockService::OnPrefsChanged() {
+  UpdateAppState();
+}
+
+void EasyUnlockService::OnBluetoothAdapterPresentChanged() {
+  UpdateAppState();
 }
 
 void EasyUnlockService::SetTurnOffFlowStatus(TurnOffFlowStatus status) {
