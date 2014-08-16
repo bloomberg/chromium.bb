@@ -10,13 +10,20 @@
  * assistance).
  *
  * It runs in the background page and contains two chrome.runtime.Port objects,
- * respresenting connections to the webapp and hangout, respectively.
+ * representing connections to the webapp and hangout, respectively.
  *
- * Connection is always initiated from Hangouts.
+ * Connection is always initiated from Hangouts by calling
+ *   var port = chrome.runtime.connect({name:'it2me.helper.hangout'}, extId).
+ *   port.postMessage('hello')
+ * If the webapp is not installed, |port.onDisconnect| will fire.
+ * If the webapp is installed, Hangouts will receive a hello response with the
+ * list of supported features.
  *
  *   Hangout                     It2MeHelperChannel        Chrome Remote Desktop
  *      |-----runtime.connect() ------>|                                |
- *      |------connect message-------->|                                |
+ *      |--------hello message-------->|                                |
+ *      |                              |<-----helloResponse message-----|
+ *      |-------connect message------->|                                |
  *      |                              |-------appLauncher.launch()---->|
  *      |                              |<------runtime.connect()------- |
  *      |                              |<-----sessionStateChanged------ |
@@ -109,8 +116,15 @@ remoting.It2MeHelperChannel =
 
 /** @enum {string} */
 remoting.It2MeHelperChannel.HangoutMessageTypes = {
+  HELLO: 'hello',
+  HELLO_RESPONSE: 'helloResponse',
   CONNECT: 'connect',
   DISCONNECT: 'disconnect'
+};
+
+/** @enum {string} */
+remoting.It2MeHelperChannel.Features = {
+  REMOTE_ASSISTANCE: 'remoteAssistance'
 };
 
 /** @enum {string} */
@@ -143,7 +157,14 @@ remoting.It2MeHelperChannel.prototype.onHangoutMessage_ = function(message) {
       case MessageTypes.DISCONNECT:
         this.closeWebapp_(message);
         return true;
+      case MessageTypes.HELLO:
+        this.hangoutPort_.postMessage({
+          method: MessageTypes.HELLO_RESPONSE,
+          supportedFeatures: base.values(remoting.It2MeHelperChannel.Features)
+        });
+        return true;
     }
+    throw new Error('Unknown message method=' + message.method);
   } catch(e) {
     var error = /** @type {Error} */ e;
     console.error(error);

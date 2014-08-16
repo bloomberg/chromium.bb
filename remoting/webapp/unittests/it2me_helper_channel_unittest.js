@@ -61,6 +61,16 @@ function promiseResolveSynchronous(value) {
   };
 }
 
+test('onHangoutMessage_("hello") should return supportedFeatures', function() {
+  hangoutPort.onMessage.mock$fire(
+      { method: remoting.It2MeHelperChannel.HangoutMessageTypes.HELLO });
+
+  sinon.assert.calledWith(hangoutPort.postMessage, {
+    method: remoting.It2MeHelperChannel.HangoutMessageTypes.HELLO_RESPONSE,
+    supportedFeatures: base.values(remoting.It2MeHelperChannel.Features)
+  });
+});
+
 test('onHangoutMessage_(|connect|) should launch the webapp',
     function() {
   sinon.assert.called(appLauncher.launch);

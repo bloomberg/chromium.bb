@@ -35,7 +35,6 @@ remoting.It2MeService = function(appLauncher) {
   this.helpee_ = null;
 
   this.onWebappConnectRef_ = this.onWebappConnect_.bind(this);
-  this.onMessageExternalRef_ = this.onMessageExternal_.bind(this);
   this.onConnectExternalRef_ = this.onConnectExternal_.bind(this);
 };
 
@@ -51,50 +50,13 @@ remoting.It2MeService.ConnectionTypes = {
  */
 remoting.It2MeService.prototype.init = function() {
   chrome.runtime.onConnect.addListener(this.onWebappConnectRef_);
-  chrome.runtime.onMessageExternal.addListener(this.onMessageExternalRef_);
   chrome.runtime.onConnectExternal.addListener(this.onConnectExternalRef_);
 };
 
 remoting.It2MeService.prototype.dispose = function() {
   chrome.runtime.onConnect.removeListener(this.onWebappConnectRef_);
-  chrome.runtime.onMessageExternal.removeListener(
-      this.onMessageExternalRef_);
   chrome.runtime.onConnectExternal.removeListener(
       this.onConnectExternalRef_);
-};
-
-/**
- * This function is called when a runtime message is received from an external
- * web page (hangout) or extension.
- *
- * @param {{method:string, data:Object.<string,*>}} message
- * @param {chrome.runtime.MessageSender} sender
- * @param {function(*):void} sendResponse
- * @private
- */
-remoting.It2MeService.prototype.onMessageExternal_ =
-    function(message, sender, sendResponse) {
-  try {
-    var method = message.method;
-    if (method == 'hello') {
-      // The hello message is used by hangouts to detect whether the app is
-      // installed and what features are supported.
-      sendResponse({
-        method: 'helloResponse',
-        supportedFeatures: ['it2me']
-      });
-      return true;
-    }
-    throw new Error('Unknown method: ' + method);
-  } catch (e) {
-    var error = /** @type {Error} */ e;
-    console.error(error);
-    sendResponse({
-      method: message.method + 'Response',
-      error: error.message
-    });
-  }
-  return false;
 };
 
 /**

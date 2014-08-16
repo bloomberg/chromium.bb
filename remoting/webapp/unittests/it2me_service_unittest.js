@@ -129,17 +129,4 @@ test('should reject unknown connection', function() {
   sinon.assert.called(randomPort.disconnect);
 });
 
-test('messageExternal("hello") should return supportedFeatures', function() {
-  var response = null;
-  function callback(msg) {
-    response = msg;
-  }
-
-  it2meService.onMessageExternal_({
-    method: 'hello'
-  }, null, callback);
-
-  QUnit.ok(response.supportedFeatures instanceof Array);
-});
-
 })();
