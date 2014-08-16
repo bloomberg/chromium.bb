@@ -22,13 +22,13 @@ ModelTypeSyncWorkerImpl::ModelTypeSyncWorkerImpl(
     ModelType type,
     const DataTypeState& initial_state,
     const UpdateResponseDataList& saved_pending_updates,
-    CryptographerProvider* cryptographer_provider,
+    scoped_ptr<Cryptographer> cryptographer,
     NudgeHandler* nudge_handler,
     scoped_ptr<ModelTypeSyncProxy> type_sync_proxy)
     : type_(type),
       data_type_state_(initial_state),
       type_sync_proxy_(type_sync_proxy.Pass()),
-      cryptographer_provider_(cryptographer_provider),
+      cryptographer_(cryptographer.Pass()),
       nudge_handler_(nudge_handler),
       entities_deleter_(&entities_),
       weak_ptr_factory_(this) {
@@ -47,7 +47,11 @@ ModelTypeSyncWorkerImpl::ModelTypeSyncWorkerImpl(
     entities_.insert(std::make_pair(it->client_tag_hash, entity_tracker));
   }
 
-  TryDecryptPendingUpdates();
+  if (cryptographer_) {
+    DVLOG(1) << ModelTypeToString(type_) << ": Starting with encryption key "
+             << cryptographer_->GetDefaultNigoriKeyName();
+    OnCryptographerUpdated();
+  }
 }
 
 ModelTypeSyncWorkerImpl::~ModelTypeSyncWorkerImpl() {
@@ -59,29 +63,19 @@ ModelType ModelTypeSyncWorkerImpl::GetModelType() const {
 }
 
 bool ModelTypeSyncWorkerImpl::IsEncryptionRequired() const {
-  return !data_type_state_.encryption_key_name.empty();
+  return !!cryptographer_;
 }
 
-void ModelTypeSyncWorkerImpl::SetEncryptionKeyName(const std::string& name) {
-  if (data_type_state_.encryption_key_name == name)
-    return;
+void ModelTypeSyncWorkerImpl::UpdateCryptographer(
+    scoped_ptr<Cryptographer> cryptographer) {
+  DCHECK(cryptographer);
+  cryptographer_ = cryptographer.Pass();
 
-  data_type_state_.encryption_key_name = name;
+  // Update our state and that of the proxy.
+  OnCryptographerUpdated();
 
-  // Pretend to send an update.  This will cause the TypeSyncProxy to notice
-  // the new encryption key and take appropriate action.
-  type_sync_proxy_->OnUpdateReceived(
-      data_type_state_, UpdateResponseDataList(), UpdateResponseDataList());
-}
-
-void ModelTypeSyncWorkerImpl::OnCryptographerStateChanged() {
-  TryDecryptPendingUpdates();
-
-  ScopedCryptographerRef scoped_cryptographer_ref;
-  cryptographer_provider_->InitScopedCryptographerRef(
-      &scoped_cryptographer_ref);
-  Cryptographer* cryptographer = scoped_cryptographer_ref.Get();
-  if (CanCommitItems(cryptographer))
+  // Nudge the scheduler if we're now allowed to commit.
+  if (CanCommitItems())
     nudge_handler_->NudgeForCommit(type_);
 }
 
@@ -108,12 +102,6 @@ SyncerError ModelTypeSyncWorkerImpl::ProcessGetUpdatesResponse(
   // TODO(rlarocque): Handle data type context conflicts.
   data_type_state_.type_context = mutated_context;
   data_type_state_.progress_marker = progress_marker;
-
-  ScopedCryptographerRef scoped_cryptographer_ref;
-  cryptographer_provider_->InitScopedCryptographerRef(
-      &scoped_cryptographer_ref);
-  Cryptographer* cryptographer = scoped_cryptographer_ref.Get();
-  DCHECK(cryptographer);
 
   UpdateResponseDataList response_datas;
   UpdateResponseDataList pending_updates;
@@ -166,17 +154,18 @@ SyncerError ModelTypeSyncWorkerImpl::ProcessGetUpdatesResponse(
         entity_tracker->ReceiveUpdate(update_entity->version());
         response_data.specifics = specifics;
         response_datas.push_back(response_data);
-      } else if (specifics.has_encrypted() &&
-                 cryptographer->CanDecrypt(specifics.encrypted())) {
+      } else if (specifics.has_encrypted() && cryptographer_ &&
+                 cryptographer_->CanDecrypt(specifics.encrypted())) {
         // Encrypted, but we know the key.
         if (DecryptSpecifics(
-                cryptographer, specifics, &response_data.specifics)) {
+                cryptographer_.get(), specifics, &response_data.specifics)) {
           entity_tracker->ReceiveUpdate(update_entity->version());
           response_data.encryption_key_name = specifics.encrypted().key_name();
           response_datas.push_back(response_data);
         }
       } else if (specifics.has_encrypted() &&
-                 !cryptographer->CanDecrypt(specifics.encrypted())) {
+                 (!cryptographer_ ||
+                  !cryptographer_->CanDecrypt(specifics.encrypted()))) {
         // Can't decrypt right now.  Ask the entity tracker to handle it.
         response_data.specifics = specifics;
         if (entity_tracker->ReceivePendingUpdate(response_data)) {
@@ -187,6 +176,12 @@ SyncerError ModelTypeSyncWorkerImpl::ProcessGetUpdatesResponse(
       }
     }
   }
+
+  DVLOG(1) << ModelTypeToString(type_) << ": "
+           << base::StringPrintf(
+                  "Delivering %zd applicable and %zd pending updates.",
+                  response_datas.size(),
+                  pending_updates.size());
 
   // Forward these updates to the model thread so it can do the rest.
   type_sync_proxy_->OnUpdateReceived(
@@ -202,6 +197,8 @@ void ModelTypeSyncWorkerImpl::ApplyUpdates(sessions::StatusController* status) {
   // cycle, we should update our state so the ModelTypeSyncProxy knows that
   // it's safe to commit items now.
   if (!data_type_state_.initial_sync_done) {
+    DVLOG(1) << "Delivering 'initial sync done' ping.";
+
     data_type_state_.initial_sync_done = true;
 
     type_sync_proxy_->OnUpdateReceived(
@@ -230,11 +227,7 @@ void ModelTypeSyncWorkerImpl::EnqueueForCommit(
     StorePendingCommit(*it);
   }
 
-  ScopedCryptographerRef scoped_cryptographer_ref;
-  cryptographer_provider_->InitScopedCryptographerRef(
-      &scoped_cryptographer_ref);
-  Cryptographer* cryptographer = scoped_cryptographer_ref.Get();
-  if (CanCommitItems(cryptographer))
+  if (CanCommitItems())
     nudge_handler_->NudgeForCommit(type_);
 }
 
@@ -247,12 +240,7 @@ scoped_ptr<CommitContribution> ModelTypeSyncWorkerImpl::GetContribution(
   std::vector<int64> sequence_numbers;
   google::protobuf::RepeatedPtrField<sync_pb::SyncEntity> commit_entities;
 
-  ScopedCryptographerRef scoped_cryptographer_ref;
-  cryptographer_provider_->InitScopedCryptographerRef(
-      &scoped_cryptographer_ref);
-  Cryptographer* cryptographer = scoped_cryptographer_ref.Get();
-
-  if (!CanCommitItems(cryptographer))
+  if (!CanCommitItems())
     return scoped_ptr<CommitContribution>();
 
   // TODO(rlarocque): Avoid iterating here.
@@ -265,7 +253,7 @@ scoped_ptr<CommitContribution> ModelTypeSyncWorkerImpl::GetContribution(
       int64 sequence_number = -1;
 
       entity->PrepareCommitProto(commit_entity, &sequence_number);
-      HelpInitializeCommitEntity(cryptographer, commit_entity);
+      HelpInitializeCommitEntity(commit_entity);
       sequence_numbers.push_back(sequence_number);
 
       space_remaining--;
@@ -350,17 +338,15 @@ bool ModelTypeSyncWorkerImpl::IsTypeInitialized() const {
          data_type_state_.initial_sync_done;
 }
 
-bool ModelTypeSyncWorkerImpl::CanCommitItems(
-    Cryptographer* cryptographer) const {
+bool ModelTypeSyncWorkerImpl::CanCommitItems() const {
   // We can't commit anything until we know the type's parent node.
   // We'll get it in the first update response.
   if (!IsTypeInitialized())
     return false;
 
   // Don't commit if we should be encrypting but don't have the required keys.
-  if (IsEncryptionRequired() && (!cryptographer || !cryptographer->is_ready() ||
-                                 cryptographer->GetDefaultNigoriKeyName() !=
-                                     data_type_state_.encryption_key_name)) {
+  if (IsEncryptionRequired() &&
+      (!cryptographer_ || !cryptographer_->is_ready())) {
     return false;
   }
 
@@ -368,8 +354,9 @@ bool ModelTypeSyncWorkerImpl::CanCommitItems(
 }
 
 void ModelTypeSyncWorkerImpl::HelpInitializeCommitEntity(
-    Cryptographer* cryptographer,
     sync_pb::SyncEntity* sync_entity) {
+  DCHECK(CanCommitItems());
+
   // Initial commits need our help to generate a client ID.
   if (!sync_entity->has_id_string()) {
     DCHECK_EQ(kUncommittedVersion, sync_entity->version());
@@ -380,9 +367,12 @@ void ModelTypeSyncWorkerImpl::HelpInitializeCommitEntity(
 
   // Encrypt the specifics and hide the title if necessary.
   if (IsEncryptionRequired()) {
+    // IsEncryptionRequired() && CanCommitItems() implies
+    // that the cryptographer is valid and ready to encrypt.
     sync_pb::EntitySpecifics encrypted_specifics;
-    cryptographer->Encrypt(sync_entity->specifics(),
-                           encrypted_specifics.mutable_encrypted());
+    bool result = cryptographer_->Encrypt(
+        sync_entity->specifics(), encrypted_specifics.mutable_encrypted());
+    DCHECK(result);
     sync_entity->mutable_specifics()->CopyFrom(encrypted_specifics);
     sync_entity->set_name("encrypted");
   }
@@ -395,14 +385,21 @@ void ModelTypeSyncWorkerImpl::HelpInitializeCommitEntity(
   sync_entity->set_parent_id_string(data_type_state_.type_root_id);
 }
 
-void ModelTypeSyncWorkerImpl::TryDecryptPendingUpdates() {
+void ModelTypeSyncWorkerImpl::OnCryptographerUpdated() {
+  DCHECK(cryptographer_);
+
+  bool new_encryption_key = false;
   UpdateResponseDataList response_datas;
 
-  ScopedCryptographerRef scoped_cryptographer_ref;
-  cryptographer_provider_->InitScopedCryptographerRef(
-      &scoped_cryptographer_ref);
-  Cryptographer* cryptographer = scoped_cryptographer_ref.Get();
-  DCHECK(cryptographer);
+  const std::string& new_key_name = cryptographer_->GetDefaultNigoriKeyName();
+
+  // Handle a change in encryption key.
+  if (data_type_state_.encryption_key_name != new_key_name) {
+    DVLOG(1) << ModelTypeToString(type_) << ": Updating encryption key "
+             << data_type_state_.encryption_key_name << " -> " << new_key_name;
+    data_type_state_.encryption_key_name = new_key_name;
+    new_encryption_key = true;
+  }
 
   for (EntityMap::const_iterator it = entities_.begin(); it != entities_.end();
        ++it) {
@@ -413,9 +410,9 @@ void ModelTypeSyncWorkerImpl::TryDecryptPendingUpdates() {
       // don't have the key.
       DCHECK(saved_pending.specifics.has_encrypted());
 
-      if (cryptographer->CanDecrypt(saved_pending.specifics.encrypted())) {
+      if (cryptographer_->CanDecrypt(saved_pending.specifics.encrypted())) {
         UpdateResponseData decrypted_response = saved_pending;
-        if (DecryptSpecifics(cryptographer,
+        if (DecryptSpecifics(cryptographer_.get(),
                              saved_pending.specifics,
                              &decrypted_response.specifics)) {
           decrypted_response.encryption_key_name =
@@ -428,7 +425,11 @@ void ModelTypeSyncWorkerImpl::TryDecryptPendingUpdates() {
     }
   }
 
-  if (!response_datas.empty()) {
+  if (new_encryption_key || response_datas.size() > 0) {
+    DVLOG(1) << ModelTypeToString(type_) << ": "
+             << base::StringPrintf(
+                    "Delivering encryption key and %zd decrypted updates.",
+                    response_datas.size());
     type_sync_proxy_->OnUpdateReceived(
         data_type_state_, response_datas, UpdateResponseDataList());
   }

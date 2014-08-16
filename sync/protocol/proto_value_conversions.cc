@@ -897,7 +897,6 @@ base::DictionaryValue* GetUpdateTriggersToValue(
   SET_BOOL(invalidations_out_of_sync);
   SET_INT64(local_modification_nudges);
   SET_INT64(datatype_refresh_nudges);
-  SET_BOOL(initial_sync_in_progress);
   return value;
 }
 

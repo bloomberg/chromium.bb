@@ -12,13 +12,13 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "sync/base/sync_export.h"
-#include "sync/engine/directory_cryptographer_provider.h"
 #include "sync/engine/nudge_handler.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/internal_api/public/sessions/type_debug_info_observer.h"
 #include "sync/internal_api/public/sync_context.h"
+#include "sync/internal_api/public/sync_encryption_handler.h"
 
 namespace syncer {
 
@@ -40,7 +40,9 @@ typedef std::map<ModelType, DirectoryTypeDebugInfoEmitter*>
     DirectoryTypeDebugInfoEmitterMap;
 
 // Keeps track of the sets of active update handlers and commit contributors.
-class SYNC_EXPORT_PRIVATE ModelTypeRegistry : public SyncContext {
+class SYNC_EXPORT_PRIVATE ModelTypeRegistry
+    : public SyncContext,
+      public SyncEncryptionHandler::Observer {
  public:
   // Constructs a ModelTypeRegistry that supports directory types.
   ModelTypeRegistry(const std::vector<scoped_refptr<ModelSafeWorker> >& workers,
@@ -68,6 +70,21 @@ class SYNC_EXPORT_PRIVATE ModelTypeRegistry : public SyncContext {
   // Deletes the worker associated with the type.
   virtual void DisconnectSyncWorker(syncer::ModelType type) OVERRIDE;
 
+  // Implementation of SyncEncryptionHandler::Observer.
+  virtual void OnPassphraseRequired(
+      PassphraseRequiredReason reason,
+      const sync_pb::EncryptedData& pending_keys) OVERRIDE;
+  virtual void OnPassphraseAccepted() OVERRIDE;
+  virtual void OnBootstrapTokenUpdated(const std::string& bootstrap_token,
+                                       BootstrapTokenType type) OVERRIDE;
+  virtual void OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
+                                       bool encrypt_everything) OVERRIDE;
+  virtual void OnEncryptionComplete() OVERRIDE;
+  virtual void OnCryptographerStateChanged(
+      Cryptographer* cryptographer) OVERRIDE;
+  virtual void OnPassphraseTypeChanged(PassphraseType type,
+                                       base::Time passphrase_time) OVERRIDE;
+
   // Gets the set of enabled types.
   ModelTypeSet GetEnabledTypes() const;
 
@@ -87,6 +104,8 @@ class SYNC_EXPORT_PRIVATE ModelTypeRegistry : public SyncContext {
   base::WeakPtr<SyncContext> AsWeakPtr();
 
  private:
+  void OnEncryptionStateChanged();
+
   ModelTypeSet GetEnabledNonBlockingTypes() const;
   ModelTypeSet GetEnabledDirectoryTypes() const;
 
@@ -114,8 +133,14 @@ class SYNC_EXPORT_PRIVATE ModelTypeRegistry : public SyncContext {
   // The directory.  Not owned.
   syncable::Directory* directory_;
 
-  // Provides access to the Directory's cryptographer.
-  DirectoryCryptographerProvider cryptographer_provider_;
+  // A copy of the directory's most recent cryptographer.
+  scoped_ptr<Cryptographer> cryptographer_;
+
+  // The set of encrypted types.
+  ModelTypeSet encrypted_types_;
+
+  // A helper that manages cryptography state and preferences.
+  SyncEncryptionHandler* encryption_handler_;
 
   // The NudgeHandler.  Not owned.
   NudgeHandler* nudge_handler_;

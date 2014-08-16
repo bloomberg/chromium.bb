@@ -27,6 +27,24 @@ Cryptographer::Cryptographer(Encryptor* encryptor)
   DCHECK(encryptor);
 }
 
+Cryptographer::Cryptographer(const Cryptographer& other)
+    : encryptor_(other.encryptor_),
+      default_nigori_name_(other.default_nigori_name_) {
+  for (NigoriMap::const_iterator it = other.nigoris_.begin();
+       it != other.nigoris_.end();
+       ++it) {
+    std::string user_key, encryption_key, mac_key;
+    it->second->ExportKeys(&user_key, &encryption_key, &mac_key);
+    linked_ptr<Nigori> nigori_copy(new Nigori());
+    nigori_copy->InitByImport(user_key, encryption_key, mac_key);
+    nigoris_.insert(std::make_pair(it->first, nigori_copy));
+  }
+
+  if (other.pending_keys_) {
+    pending_keys_.reset(new sync_pb::EncryptedData(*(other.pending_keys_)));
+  }
+}
+
 Cryptographer::~Cryptographer() {}
 
 

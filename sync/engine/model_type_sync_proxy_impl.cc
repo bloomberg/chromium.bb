@@ -240,6 +240,9 @@ void ModelTypeSyncProxyImpl::OnUpdateReceived(
     // commit to fix it.
     if (data_type_state_.encryption_key_name !=
         response_data.encryption_key_name) {
+      DVLOG(2) << ModelTypeToString(type_) << ": Requesting re-encrypt commit "
+               << response_data.encryption_key_name << " -> "
+               << data_type_state_.encryption_key_name;
       EntityMap::iterator it2 = entities_.find(client_tag_hash);
       it2->second->UpdateDesiredEncryptionKey(
           data_type_state_.encryption_key_name);

@@ -373,8 +373,6 @@ void ProfileSyncService::TrySyncDatatypePrefRecovery() {
   UMA_HISTOGRAM_COUNTS("Sync.DatatypePrefRecovery", 1);
   sync_prefs_.SetKeepEverythingSynced(true);
   syncer::ModelTypeSet registered_types = GetRegisteredDataTypes();
-  sync_prefs_.SetPreferredDataTypes(registered_types,
-                                    registered_types);
 }
 
 void ProfileSyncService::StartSyncingWithServer() {
@@ -1139,6 +1137,9 @@ void ProfileSyncService::OnBackendInitialized(
 
   // Initialize local device info.
   local_device_->Initialize(cache_guid, signin_scoped_device_id);
+
+  DVLOG(1) << "Setting preferred types for non-blocking DTM";
+  non_blocking_data_type_manager_.SetPreferredTypes(GetPreferredDataTypes());
 
   // Give the DataTypeControllers a handle to the now initialized backend
   // as a UserShare.

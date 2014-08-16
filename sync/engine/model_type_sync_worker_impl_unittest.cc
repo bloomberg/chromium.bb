@@ -14,7 +14,6 @@
 #include "sync/syncable/syncable_util.h"
 #include "sync/test/engine/mock_model_type_sync_proxy.h"
 #include "sync/test/engine/mock_nudge_handler.h"
-#include "sync/test/engine/simple_cryptographer_provider.h"
 #include "sync/test/engine/single_type_mock_server.h"
 #include "sync/test/fake_encryptor.h"
 
@@ -40,6 +39,7 @@ namespace syncer {
 // - Commit requests from the model thread.
 // - Update responses from the server.
 // - Commit responses from the server.
+// - The cryptographer, if encryption is enabled.
 //
 // Outputs:
 // - Commit requests to the server.
@@ -168,6 +168,11 @@ class ModelTypeSyncWorkerImplTest : public ::testing::Test {
   // Returns the number of initial sync nudges sent to the mock nudge handler.
   int GetNumInitialDownloadNudges() const;
 
+  // Returns the name of the encryption key in the cryptographer last passed to
+  // the ModelTypeSyncWorker.  Returns an empty string if no crypgorapher is
+  // in use.  See also: UpdateLocalCryptographer().
+  std::string GetLocalCryptographerKeyName() const;
+
   // Helpers for building various messages and structures.
   static std::string GenerateTagHash(const std::string& tag);
   static sync_pb::EntitySpecifics GenerateSpecifics(const std::string& tag,
@@ -192,11 +197,8 @@ class ModelTypeSyncWorkerImplTest : public ::testing::Test {
   // An encryptor for our cryptographer.
   FakeEncryptor fake_encryptor_;
 
-  // The cryptographer itself.
-  Cryptographer cryptographer_;
-
-  // A CryptographerProvider for the ModelTypeSyncWorkerImpl.
-  SimpleCryptographerProvider cryptographer_provider_;
+  // The cryptographer itself.  NULL if we're not encrypting the type.
+  scoped_ptr<Cryptographer> cryptographer_;
 
   // The number of the most recent foreign encryption key known to our
   // cryptographer.  Note that not all of these will be decryptable.
@@ -224,9 +226,7 @@ class ModelTypeSyncWorkerImplTest : public ::testing::Test {
 };
 
 ModelTypeSyncWorkerImplTest::ModelTypeSyncWorkerImplTest()
-    : cryptographer_(&fake_encryptor_),
-      cryptographer_provider_(&cryptographer_),
-      foreign_encryption_key_index_(0),
+    : foreign_encryption_key_index_(0),
       update_encryption_filter_index_(0),
       mock_type_sync_proxy_(NULL),
       mock_server_(kModelType) {
@@ -273,15 +273,24 @@ void ModelTypeSyncWorkerImplTest::InitializeWithState(
   mock_type_sync_proxy_ = new MockModelTypeSyncProxy();
   scoped_ptr<ModelTypeSyncProxy> proxy(mock_type_sync_proxy_);
 
+  scoped_ptr<Cryptographer> cryptographer_copy;
+  if (cryptographer_) {
+    cryptographer_copy.reset(new Cryptographer(*cryptographer_));
+  }
+
   worker_.reset(new ModelTypeSyncWorkerImpl(kModelType,
                                             state,
                                             initial_pending_updates,
-                                            &cryptographer_provider_,
+                                            cryptographer_copy.Pass(),
                                             &mock_nudge_handler_,
                                             proxy.Pass()));
 }
 
 void ModelTypeSyncWorkerImplTest::NewForeignEncryptionKey() {
+  if (!cryptographer_) {
+    cryptographer_.reset(new Cryptographer(&fake_encryptor_));
+  }
+
   foreign_encryption_key_index_++;
 
   sync_pb::NigoriKeyBag bag;
@@ -314,20 +323,29 @@ void ModelTypeSyncWorkerImplTest::NewForeignEncryptionKey() {
   last_nigori.Encrypt(serialized_bag, encrypted.mutable_blob());
 
   // Update the cryptographer with new pending keys.
-  cryptographer_.SetPendingKeys(encrypted);
+  cryptographer_->SetPendingKeys(encrypted);
 
-  // Update the worker with the latest encryption key name.
-  if (worker_)
-    worker_->SetEncryptionKeyName(encrypted.key_name());
+  // Update the worker with the latest cryptographer.
+  if (worker_) {
+    worker_->UpdateCryptographer(
+        make_scoped_ptr<Cryptographer>(new Cryptographer(*cryptographer_)));
+  }
 }
 
 void ModelTypeSyncWorkerImplTest::UpdateLocalCryptographer() {
+  if (!cryptographer_) {
+    cryptographer_.reset(new Cryptographer(&fake_encryptor_));
+  }
+
   KeyParams params = GetNthKeyParams(foreign_encryption_key_index_);
-  bool success = cryptographer_.DecryptPendingKeys(params);
+  bool success = cryptographer_->DecryptPendingKeys(params);
   DCHECK(success);
 
-  if (worker_)
-    worker_->OnCryptographerStateChanged();
+  // Update the worker with the latest cryptographer.
+  if (worker_) {
+    worker_->UpdateCryptographer(
+        make_scoped_ptr<Cryptographer>(new Cryptographer(*cryptographer_)));
+  }
 }
 
 void ModelTypeSyncWorkerImplTest::SetUpdateEncryptionFilter(int n) {
@@ -556,6 +574,14 @@ int ModelTypeSyncWorkerImplTest::GetNumCommitNudges() const {
 
 int ModelTypeSyncWorkerImplTest::GetNumInitialDownloadNudges() const {
   return mock_nudge_handler_.GetNumInitialDownloadNudges();
+}
+
+std::string ModelTypeSyncWorkerImplTest::GetLocalCryptographerKeyName() const {
+  if (!cryptographer_) {
+    return std::string();
+  }
+
+  return cryptographer_->GetDefaultNigoriKeyName();
 }
 
 // static.
@@ -829,8 +855,14 @@ TEST_F(ModelTypeSyncWorkerImplTest, ReceiveUpdates) {
 TEST_F(ModelTypeSyncWorkerImplTest, EncryptedCommit) {
   NormalInitialize();
 
+  ASSERT_EQ(0U, GetNumModelThreadUpdateResponses());
+
   NewForeignEncryptionKey();
   UpdateLocalCryptographer();
+
+  ASSERT_EQ(1U, GetNumModelThreadUpdateResponses());
+  EXPECT_EQ(GetLocalCryptographerKeyName(),
+            GetNthModelThreadUpdateState(0).encryption_key_name);
 
   // Normal commit request stuff.
   CommitRequest("tag1", "value1");
@@ -917,27 +949,42 @@ TEST_F(ModelTypeSyncWorkerImplTest, ReceiveDecryptableEntities) {
   EXPECT_FALSE(update2.encryption_key_name.empty());
 }
 
+// Test initializing a ModelTypeSyncWorker with a cryptographer at startup.
+TEST_F(ModelTypeSyncWorkerImplTest, InitializeWithCryptographer) {
+  // Set up some encryption state.
+  NewForeignEncryptionKey();
+  UpdateLocalCryptographer();
+
+  // Then initialize.
+  NormalInitialize();
+
+  // The worker should tell the model thread about encryption as soon as
+  // possible, so that it will have the chance to re-encrypt local data if
+  // necessary.
+  ASSERT_EQ(1U, GetNumModelThreadUpdateResponses());
+  EXPECT_EQ(GetLocalCryptographerKeyName(),
+            GetNthModelThreadUpdateState(0).encryption_key_name);
+}
+
 // Receive updates that are initially undecryptable, then ensure they get
 // delivered to the model thread when decryption becomes possible.
 TEST_F(ModelTypeSyncWorkerImplTest, ReceiveUndecryptableEntries) {
   NormalInitialize();
 
-  // Set a new encryption key.  The model thread will be notified of the new
-  // encryption key through a faked update response.
+  // Receive a new foreign encryption key that we can't decrypt.
   NewForeignEncryptionKey();
-  EXPECT_EQ(1U, GetNumModelThreadUpdateResponses());
 
-  // Send an update using that new key.
+  // Receive an encrypted with that new key, which we can't access.
   SetUpdateEncryptionFilter(1);
   TriggerUpdateFromServer(10, "tag1", "value1");
 
   // At this point, the cryptographer does not have access to the key, so the
   // updates will be undecryptable.  They'll be transfered to the model thread
   // for safe-keeping as pending updates.
-  ASSERT_EQ(2U, GetNumModelThreadUpdateResponses());
-  UpdateResponseDataList updates_list = GetNthModelThreadUpdateResponse(1);
+  ASSERT_EQ(1U, GetNumModelThreadUpdateResponses());
+  UpdateResponseDataList updates_list = GetNthModelThreadUpdateResponse(0);
   EXPECT_EQ(0U, updates_list.size());
-  UpdateResponseDataList pending_updates = GetNthModelThreadPendingUpdates(1);
+  UpdateResponseDataList pending_updates = GetNthModelThreadPendingUpdates(0);
   EXPECT_EQ(1U, pending_updates.size());
 
   // The update will be delivered as soon as decryption becomes possible.

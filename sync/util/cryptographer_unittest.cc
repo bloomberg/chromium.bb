@@ -201,4 +201,67 @@ TEST_F(CryptographerTest, Bootstrap) {
   EXPECT_TRUE(cryptographer_.CanDecryptUsingDefaultKey(encrypted));
 }
 
+// Verifies that copied cryptographers are just as good as the original.
+//
+// Encrypt an item using the original cryptographer and two different sets of
+// keys.  Verify that it can decrypt them.
+//
+// Then copy the original cryptographer and ensure it can also decrypt these
+// items and encrypt them with the most recent key.
+TEST_F(CryptographerTest, CopyConstructor) {
+  sync_pb::PasswordSpecificsData original;
+  original.set_origin("http://example.com");
+  original.set_username_value("luser");
+  original.set_password_value("p4ssw0rd");
+
+  // Start by testing the original cryptogprapher.
+  KeyParams params1 = {"localhost", "dummy", "dummy"};
+  EXPECT_TRUE(cryptographer_.AddKey(params1));
+  EXPECT_TRUE(cryptographer_.is_ready());
+
+  sync_pb::EncryptedData encrypted_k1;
+  EXPECT_TRUE(cryptographer_.Encrypt(original, &encrypted_k1));
+
+  KeyParams params2 = {"localhost", "fatuous", "fatuous"};
+  EXPECT_TRUE(cryptographer_.AddKey(params2));
+  EXPECT_TRUE(cryptographer_.is_ready());
+
+  sync_pb::EncryptedData encrypted_k2;
+  EXPECT_TRUE(cryptographer_.Encrypt(original, &encrypted_k2));
+
+  sync_pb::PasswordSpecificsData decrypted_k1;
+  sync_pb::PasswordSpecificsData decrypted_k2;
+  EXPECT_TRUE(cryptographer_.Decrypt(encrypted_k1, &decrypted_k1));
+  EXPECT_TRUE(cryptographer_.Decrypt(encrypted_k2, &decrypted_k2));
+
+  EXPECT_EQ(original.SerializeAsString(), decrypted_k1.SerializeAsString());
+  EXPECT_EQ(original.SerializeAsString(), decrypted_k2.SerializeAsString());
+
+  // Clone the cryptographer and test that it behaves the same.
+  Cryptographer cryptographer_clone(cryptographer_);
+
+  // The clone should be able to decrypt with old and new keys.
+  sync_pb::PasswordSpecificsData decrypted_k1_clone;
+  sync_pb::PasswordSpecificsData decrypted_k2_clone;
+  EXPECT_TRUE(cryptographer_clone.Decrypt(encrypted_k1, &decrypted_k1_clone));
+  EXPECT_TRUE(cryptographer_clone.Decrypt(encrypted_k2, &decrypted_k2_clone));
+
+  EXPECT_EQ(original.SerializeAsString(),
+            decrypted_k1_clone.SerializeAsString());
+  EXPECT_EQ(original.SerializeAsString(),
+            decrypted_k2_clone.SerializeAsString());
+
+  // The old cryptographer should be able to decrypt things encrypted by the
+  // new.
+  sync_pb::EncryptedData encrypted_c;
+  EXPECT_TRUE(cryptographer_clone.Encrypt(original, &encrypted_c));
+
+  sync_pb::PasswordSpecificsData decrypted_c;
+  EXPECT_TRUE(cryptographer_.Decrypt(encrypted_c, &decrypted_c));
+  EXPECT_EQ(original.SerializeAsString(), decrypted_c.SerializeAsString());
+
+  // The cloned cryptographer should be using the latest key.
+  EXPECT_EQ(encrypted_c.key_name(), encrypted_k2.key_name());
+}
+
 }  // namespace syncer

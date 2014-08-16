@@ -131,6 +131,9 @@ void ModelTypeEntity::UpdateDesiredEncryptionKey(const std::string& name) {
   if (encryption_key_name_ == name)
     return;
 
+  DVLOG(2) << id_ << ": Encryption triggered commit: " << encryption_key_name_
+           << " -> " << name;
+
   // Schedule commit with the expectation that the worker will re-encrypt with
   // the latest encryption key as it does.
   sequence_number_++;

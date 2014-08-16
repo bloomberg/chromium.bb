@@ -111,7 +111,6 @@ ModelTypeRegistry::ModelTypeRegistry(
     syncable::Directory* directory,
     NudgeHandler* nudge_handler)
     : directory_(directory),
-      cryptographer_provider_(directory_),
       nudge_handler_(nudge_handler),
       weak_ptr_factory_(this) {
   for (size_t i = 0u; i < workers.size(); ++i) {
@@ -120,7 +119,8 @@ ModelTypeRegistry::ModelTypeRegistry(
   }
 }
 
-ModelTypeRegistry::~ModelTypeRegistry() {}
+ModelTypeRegistry::~ModelTypeRegistry() {
+}
 
 void ModelTypeRegistry::SetEnabledDirectoryTypes(
     const ModelSafeRoutingInfo& routing_info) {
@@ -198,11 +198,15 @@ void ModelTypeRegistry::ConnectSyncTypeToWorker(
   // Initialize Worker -> Proxy communication channel.
   scoped_ptr<ModelTypeSyncProxy> proxy(
       new ModelTypeSyncProxyWrapper(proxy_impl, type_task_runner));
+  scoped_ptr<Cryptographer> cryptographer_copy;
+  if (encrypted_types_.Has(type))
+    cryptographer_copy.reset(new Cryptographer(*cryptographer_));
+
   scoped_ptr<ModelTypeSyncWorkerImpl> worker(
       new ModelTypeSyncWorkerImpl(type,
                                   data_type_state,
                                   saved_pending_updates,
-                                  &cryptographer_provider_,
+                                  cryptographer_copy.Pass(),
                                   nudge_handler_,
                                   proxy.Pass()));
 
@@ -299,8 +303,52 @@ base::WeakPtr<SyncContext> ModelTypeRegistry::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
+void ModelTypeRegistry::OnPassphraseRequired(
+    PassphraseRequiredReason reason,
+    const sync_pb::EncryptedData& pending_keys) {
+}
+
+void ModelTypeRegistry::OnPassphraseAccepted() {
+}
+
+void ModelTypeRegistry::OnBootstrapTokenUpdated(
+    const std::string& bootstrap_token,
+    BootstrapTokenType type) {
+}
+
+void ModelTypeRegistry::OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
+                                                bool encrypt_everything) {
+  encrypted_types_ = encrypted_types;
+  OnEncryptionStateChanged();
+}
+
+void ModelTypeRegistry::OnEncryptionComplete() {
+}
+
+void ModelTypeRegistry::OnCryptographerStateChanged(
+    Cryptographer* cryptographer) {
+  cryptographer_.reset(new Cryptographer(*cryptographer));
+  OnEncryptionStateChanged();
+}
+
+void ModelTypeRegistry::OnPassphraseTypeChanged(PassphraseType type,
+                                                base::Time passphrase_time) {
+}
+
 ModelTypeSet ModelTypeRegistry::GetEnabledDirectoryTypes() const {
   return enabled_directory_types_;
+}
+
+void ModelTypeRegistry::OnEncryptionStateChanged() {
+  for (ScopedVector<ModelTypeSyncWorkerImpl>::iterator it =
+           model_type_sync_workers_.begin();
+       it != model_type_sync_workers_.end();
+       ++it) {
+    if (encrypted_types_.Has((*it)->GetModelType())) {
+      (*it)->UpdateCryptographer(
+          make_scoped_ptr(new Cryptographer(*cryptographer_)));
+    }
+  }
 }
 
 ModelTypeSet ModelTypeRegistry::GetEnabledNonBlockingTypes() const {

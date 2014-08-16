@@ -10,7 +10,6 @@
 #include "base/threading/non_thread_safe.h"
 #include "sync/base/sync_export.h"
 #include "sync/engine/commit_contributor.h"
-#include "sync/engine/cryptographer_provider.h"
 #include "sync/engine/model_type_sync_worker.h"
 #include "sync/engine/nudge_handler.h"
 #include "sync/engine/update_handler.h"
@@ -18,6 +17,7 @@
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
 #include "sync/protocol/sync.pb.h"
+#include "sync/util/cryptographer.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -56,7 +56,7 @@ class SYNC_EXPORT ModelTypeSyncWorkerImpl : public UpdateHandler,
   ModelTypeSyncWorkerImpl(ModelType type,
                           const DataTypeState& initial_state,
                           const UpdateResponseDataList& saved_pending_updates,
-                          CryptographerProvider* cryptographer_provider,
+                          scoped_ptr<Cryptographer> cryptographer,
                           NudgeHandler* nudge_handler,
                           scoped_ptr<ModelTypeSyncProxy> type_sync_proxy);
   virtual ~ModelTypeSyncWorkerImpl();
@@ -64,9 +64,7 @@ class SYNC_EXPORT ModelTypeSyncWorkerImpl : public UpdateHandler,
   ModelType GetModelType() const;
 
   bool IsEncryptionRequired() const;
-  void SetEncryptionKeyName(const std::string& name);
-
-  void OnCryptographerStateChanged();
+  void UpdateCryptographer(scoped_ptr<Cryptographer> cryptographer);
 
   // UpdateHandler implementation.
   virtual void GetDownloadProgress(
@@ -109,19 +107,19 @@ class SYNC_EXPORT ModelTypeSyncWorkerImpl : public UpdateHandler,
   // Returns true if this type is prepared to commit items.  Currently, this
   // depends on having downloaded the initial data and having the encryption
   // settings in a good state.
-  bool CanCommitItems(Cryptographer* cryptographer) const;
+  bool CanCommitItems() const;
 
   // Initializes the parts of a commit entity that are the responsibility of
   // this class, and not the EntityTracker.  Some fields, like the
   // client-assigned ID, can only be set by an entity with knowledge of the
   // entire data type's state.
-  void HelpInitializeCommitEntity(Cryptographer* cryptographer,
-                                  sync_pb::SyncEntity* commit_entity);
+  void HelpInitializeCommitEntity(sync_pb::SyncEntity* commit_entity);
 
   // Attempts to decrypt pending updates stored in the EntityMap.  If
   // successful, will remove the update from the its EntityTracker and forward
-  // it to the proxy thread for application.
-  void TryDecryptPendingUpdates();
+  // it to the proxy thread for application.  Will forward any new encryption
+  // keys to the proxy to trigger re-encryption if necessary.
+  void OnCryptographerUpdated();
 
   // Attempts to decrypt the given specifics and return them in the |out|
   // parameter.  Assumes cryptographer->CanDecrypt(specifics) returned true.
@@ -145,9 +143,10 @@ class SYNC_EXPORT ModelTypeSyncWorkerImpl : public UpdateHandler,
   // This is NULL when no proxy is connected..
   scoped_ptr<ModelTypeSyncProxy> type_sync_proxy_;
 
-  // A helper to provide access to the syncable::Directory's cryptographer.
-  // Not owned.
-  CryptographerProvider* cryptographer_provider_;
+  // A private copy of the most recent cryptographer known to sync.
+  // Initialized at construction time and updated with UpdateCryptographer().
+  // NULL if encryption is not enabled for this type.
+  scoped_ptr<Cryptographer> cryptographer_;
 
   // Interface used to access and send nudges to the sync scheduler.  Not owned.
   NudgeHandler* nudge_handler_;

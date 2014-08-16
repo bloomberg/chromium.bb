@@ -388,6 +388,7 @@ void SyncManagerImpl::Init(InitArgs* args) {
 
   model_type_registry_.reset(
       new ModelTypeRegistry(args->workers, directory(), this));
+  sync_encryption_handler_->AddObserver(model_type_registry_.get());
 
   // Bind the SyncContext WeakPtr to this thread.  This helps us crash earlier
   // if the pointer is misused in debug mode.
@@ -608,6 +609,10 @@ void SyncManagerImpl::ShutdownOnSyncThread(ShutdownReason reason) {
 
   scheduler_.reset();
   session_context_.reset();
+
+  if (model_type_registry_)
+    sync_encryption_handler_->RemoveObserver(model_type_registry_.get());
+
   model_type_registry_.reset();
 
   if (sync_encryption_handler_) {
