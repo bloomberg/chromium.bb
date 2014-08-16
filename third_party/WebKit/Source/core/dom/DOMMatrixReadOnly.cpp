@@ -14,10 +14,7 @@ bool DOMMatrixReadOnly::is2D() const
 
 bool DOMMatrixReadOnly::isIdentity() const
 {
-    return m11() == 1 && m21() == 0 && m31() == 0 && m41() == 0
-        && m12() == 0 && m22() == 1 && m32() == 0 && m42() == 0
-        && m13() == 0 && m23() == 0 && m33() == 1 && m43() == 0
-        && m14() == 0 && m24() == 0 && m34() == 0 && m44() == 1;
+    return m_matrix.isIdentity();
 }
 
 } // namespace blink

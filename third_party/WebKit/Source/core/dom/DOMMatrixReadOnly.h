@@ -7,42 +7,45 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
+#include "platform/transforms/TransformationMatrix.h"
 
 namespace blink {
 
 class DOMMatrixReadOnly : public GarbageCollected<DOMMatrixReadOnly>, public ScriptWrappableBase {
 public:
-    double a() const { return m11(); }
-    double b() const { return m12(); }
-    double c() const { return m21(); }
-    double d() const { return m22(); }
-    double e() const { return m41(); }
-    double f() const { return m42(); }
+    double a() const { return m_matrix.m11(); }
+    double b() const { return m_matrix.m12(); }
+    double c() const { return m_matrix.m21(); }
+    double d() const { return m_matrix.m22(); }
+    double e() const { return m_matrix.m41(); }
+    double f() const { return m_matrix.m42(); }
 
-    double m11() const { return m_matrix[0][0]; }
-    double m12() const { return m_matrix[0][1]; }
-    double m13() const { return m_matrix[0][2]; }
-    double m14() const { return m_matrix[0][3]; }
-    double m21() const { return m_matrix[1][0]; }
-    double m22() const { return m_matrix[1][1]; }
-    double m23() const { return m_matrix[1][2]; }
-    double m24() const { return m_matrix[1][3]; }
-    double m31() const { return m_matrix[2][0]; }
-    double m32() const { return m_matrix[2][1]; }
-    double m33() const { return m_matrix[2][2]; }
-    double m34() const { return m_matrix[2][3]; }
-    double m41() const { return m_matrix[3][0]; }
-    double m42() const { return m_matrix[3][1]; }
-    double m43() const { return m_matrix[3][2]; }
-    double m44() const { return m_matrix[3][3]; }
+    double m11() const { return m_matrix.m11(); }
+    double m12() const { return m_matrix.m12(); }
+    double m13() const { return m_matrix.m13(); }
+    double m14() const { return m_matrix.m14(); }
+    double m21() const { return m_matrix.m21(); }
+    double m22() const { return m_matrix.m22(); }
+    double m23() const { return m_matrix.m23(); }
+    double m24() const { return m_matrix.m24(); }
+    double m31() const { return m_matrix.m31(); }
+    double m32() const { return m_matrix.m32(); }
+    double m33() const { return m_matrix.m33(); }
+    double m34() const { return m_matrix.m34(); }
+    double m41() const { return m_matrix.m41(); }
+    double m42() const { return m_matrix.m42(); }
+    double m43() const { return m_matrix.m43(); }
+    double m44() const { return m_matrix.m44(); }
 
     bool is2D() const;
     bool isIdentity() const;
 
+    const TransformationMatrix& matrix() const { return m_matrix; }
+
     void trace(Visitor*) { }
 
 protected:
-    double m_matrix[4][4];
+    TransformationMatrix m_matrix;
     bool m_is2D;
 };
 
