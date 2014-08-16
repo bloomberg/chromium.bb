@@ -87,7 +87,7 @@ class HTMLViewer : public ApplicationDelegate, public ViewManagerDelegate {
   }
 
   void MaybeLoad() {
-    if (document_view_ && response_details_)
+    if (document_view_ && response_details_ && response_details_->response)
       document_view_->Load(response_details_->response.Pass());
   }
 

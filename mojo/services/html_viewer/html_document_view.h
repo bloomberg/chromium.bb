@@ -41,6 +41,9 @@ class HTMLDocumentView : public blink::WebViewClient,
   virtual bool allowsBrokenNullLayerTreeView() const;
 
   // WebFrameClient methods:
+  virtual blink::WebFrame* createChildFrame(blink::WebLocalFrame* parent,
+                                            const blink::WebString& frameName);
+  virtual void frameDetached(blink::WebFrame*);
   virtual blink::WebCookieJar* cookieJar(blink::WebLocalFrame* frame);
   virtual blink::WebNavigationPolicy decidePolicyForNavigation(
       blink::WebLocalFrame* frame, blink::WebDataSource::ExtraData* data,
@@ -66,11 +69,10 @@ class HTMLDocumentView : public blink::WebViewClient,
   void Repaint();
 
   ViewManager* view_manager_;
-  View* view_;
+  LazyInterfacePtr<NavigatorHost> navigator_host_;
   blink::WebView* web_view_;
   View* root_;
   bool repaint_pending_;
-  LazyInterfacePtr<NavigatorHost> navigator_host_;
 
   base::WeakPtrFactory<HTMLDocumentView> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(HTMLDocumentView);

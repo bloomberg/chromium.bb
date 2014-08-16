@@ -81,10 +81,10 @@ bool CanNavigateLocally(blink::WebFrame* frame,
 HTMLDocumentView::HTMLDocumentView(ServiceProvider* service_provider,
                                    ViewManager* view_manager)
     : view_manager_(view_manager),
+      navigator_host_(service_provider),
       web_view_(NULL),
       root_(NULL),
       repaint_pending_(false),
-      navigator_host_(service_provider),
       weak_factory_(this) {
 }
 
@@ -143,6 +143,22 @@ bool HTMLDocumentView::allowsBrokenNullLayerTreeView() const {
   // last NOT using compositor bindings and you want to delete this code path.
   //
   return true;
+}
+
+blink::WebFrame* HTMLDocumentView::createChildFrame(
+    blink::WebLocalFrame* parent,
+    const blink::WebString& frameName) {
+  blink::WebLocalFrame* web_frame = blink::WebLocalFrame::create(this);
+  parent->appendChild(web_frame);
+  return web_frame;
+}
+
+void HTMLDocumentView::frameDetached(blink::WebFrame* frame) {
+  if (frame->parent())
+    frame->parent()->removeChild(frame);
+
+  // |frame| is invalid after here.
+  frame->close();
 }
 
 blink::WebCookieJar* HTMLDocumentView::cookieJar(blink::WebLocalFrame* frame) {
