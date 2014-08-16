@@ -259,11 +259,6 @@ bool ContentBrowserClient::CanCreateWindow(
   return true;
 }
 
-std::string ContentBrowserClient::GetWorkerProcessTitle(
-    const GURL& url, ResourceContext* context) {
-  return std::string();
-}
-
 SpeechRecognitionManagerDelegate*
     ContentBrowserClient::GetSpeechRecognitionManagerDelegate() {
   return NULL;

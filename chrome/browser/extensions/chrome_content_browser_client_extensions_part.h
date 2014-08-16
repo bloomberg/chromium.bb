@@ -43,8 +43,6 @@ class ChromeContentBrowserClientExtensionsPart
       content::ResourceContext* resource_context,
       const GURL& current_url,
       const GURL& new_url);
-  static std::string GetWorkerProcessTitle(const GURL& url,
-                                           content::ResourceContext* context);
 
   // Similiar to ChromeContentBrowserClient::ShouldAllowOpenURL(), but the
   // return value indicates whether to use |result| or not.
@@ -64,10 +62,6 @@ class ChromeContentBrowserClientExtensionsPart
       content::SiteInstance* site_instance) OVERRIDE;
   virtual void SiteInstanceDeleting(
       content::SiteInstance* site_instance) OVERRIDE;
-  virtual void WorkerProcessCreated(content::SiteInstance* site_instance,
-                                    int worker_process_id) OVERRIDE;
-  virtual void WorkerProcessTerminated(content::SiteInstance* site_instance,
-                                       int worker_process_id) OVERRIDE;
   virtual void OverrideWebkitPrefs(content::RenderViewHost* rvh,
                                    const GURL& url,
                                    content::WebPreferences* web_prefs) OVERRIDE;

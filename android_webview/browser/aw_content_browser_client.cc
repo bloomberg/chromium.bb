@@ -503,13 +503,6 @@ bool AwContentBrowserClient::CanCreateWindow(
   return true;
 }
 
-std::string AwContentBrowserClient::GetWorkerProcessTitle(const GURL& url,
-                                          content::ResourceContext* context) {
-  NOTREACHED() << "Android WebView does not yet support web workers.";
-  return std::string();
-}
-
-
 void AwContentBrowserClient::ResourceDispatcherHostCreated() {
   AwResourceDispatcherHostDelegate::ResourceDispatcherHostCreated();
 }

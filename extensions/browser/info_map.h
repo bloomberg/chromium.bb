@@ -38,8 +38,6 @@ class InfoMap : public base::RefCountedThreadSafe<InfoMap> {
 
   // Information about which extensions are assigned to which render processes.
   const ProcessMap& process_map() const { return process_map_; }
-  // Information about which extensions are assigned to which worker processes.
-  const ProcessMap& worker_process_map() const { return worker_process_map_; }
 
   // Callback for when new extensions are loaded.
   void AddExtension(const extensions::Extension* extension,
@@ -72,14 +70,6 @@ class InfoMap : public base::RefCountedThreadSafe<InfoMap> {
                                   int process_id,
                                   int site_instance_id);
   void UnregisterAllExtensionsInProcess(int process_id);
-
-  // Adds an entry to worker_process_map_.
-  void RegisterExtensionWorkerProcess(const std::string& extension_id,
-                                      int process_id,
-                                      int site_instance_id);
-
-  // Removes an entry from worker_process_map_.
-  void UnregisterExtensionWorkerProcess(int process_id);
 
   // Returns the subset of extensions which has the same |origin| in
   // |process_id| with the specified |permission|.
@@ -142,9 +132,6 @@ class InfoMap : public base::RefCountedThreadSafe<InfoMap> {
 
   // Assignment of extensions to renderer processes.
   extensions::ProcessMap process_map_;
-
-  // Assignment of extensions to worker processes.
-  extensions::ProcessMap worker_process_map_;
 
   int signin_process_id_;
 

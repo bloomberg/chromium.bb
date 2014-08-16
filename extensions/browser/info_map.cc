@@ -129,19 +129,6 @@ void InfoMap::UnregisterAllExtensionsInProcess(int process_id) {
   process_map_.RemoveAllFromProcess(process_id);
 }
 
-void InfoMap::RegisterExtensionWorkerProcess(const std::string& extension_id,
-                                             int process_id,
-                                             int site_instance_id) {
-  if (!worker_process_map_.Insert(extension_id, process_id, site_instance_id)) {
-    NOTREACHED() << "Duplicate extension worker process registration for: "
-                 << extension_id << "," << process_id << ".";
-  }
-}
-
-void InfoMap::UnregisterExtensionWorkerProcess(int process_id) {
-  worker_process_map_.RemoveAllFromProcess(process_id);
-}
-
 void InfoMap::GetExtensionsWithAPIPermissionForSecurityOrigin(
     const GURL& origin,
     int process_id,

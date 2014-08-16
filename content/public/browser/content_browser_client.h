@@ -226,14 +226,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Called from a site instance's destructor.
   virtual void SiteInstanceDeleting(SiteInstance* site_instance) {}
 
-  // Called when a worker process is created.
-  virtual void WorkerProcessCreated(SiteInstance* site_instance,
-                                    int worker_process_id) {}
-
-  // Called when a worker process is terminated.
-  virtual void WorkerProcessTerminated(SiteInstance* site_instance,
-                                       int worker_process_id) {}
-
   // Returns true if for the navigation from |current_url| to |new_url|
   // in |site_instance|, a new SiteInstance and BrowsingInstance should be
   // created (even if we are in a process model that doesn't usually swap.)
@@ -498,12 +490,6 @@ class CONTENT_EXPORT ContentBrowserClient {
                                int render_process_id,
                                int opener_id,
                                bool* no_javascript_access);
-
-  // Returns a title string to use in the task manager for a process host with
-  // the given URL, or the empty string to fall back to the default logic.
-  // This is called on the IO thread.
-  virtual std::string GetWorkerProcessTitle(const GURL& url,
-                                            ResourceContext* context);
 
   // Notifies the embedder that the ResourceDispatcherHost has been created.
   // This is when it can optionally add a delegate.

@@ -1111,20 +1111,6 @@ void ChromeContentBrowserClient::SiteInstanceDeleting(
     extra_parts_[i]->SiteInstanceDeleting(site_instance);
 }
 
-void ChromeContentBrowserClient::WorkerProcessCreated(
-    SiteInstance* site_instance,
-    int worker_process_id) {
-  for (size_t i = 0; i < extra_parts_.size(); ++i)
-    extra_parts_[i]->WorkerProcessCreated(site_instance, worker_process_id);
-}
-
-void ChromeContentBrowserClient::WorkerProcessTerminated(
-    SiteInstance* site_instance,
-    int worker_process_id) {
-  for (size_t i = 0; i < extra_parts_.size(); ++i)
-    extra_parts_[i]->WorkerProcessTerminated(site_instance, worker_process_id);
-}
-
 bool ChromeContentBrowserClient::ShouldSwapBrowsingInstancesForNavigation(
     SiteInstance* site_instance,
     const GURL& current_url,
@@ -2084,17 +2070,6 @@ bool ChromeContentBrowserClient::CanCreateWindow(
 #endif
 
   return true;
-}
-
-std::string ChromeContentBrowserClient::GetWorkerProcessTitle(
-    const GURL& url, content::ResourceContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-#if defined(ENABLE_EXTENSIONS)
-  return ChromeContentBrowserClientExtensionsPart::GetWorkerProcessTitle(
-      url, context);
-#else
-  return std::string();
-#endif
 }
 
 void ChromeContentBrowserClient::ResourceDispatcherHostCreated() {

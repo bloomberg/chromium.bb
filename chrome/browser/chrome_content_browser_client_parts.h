@@ -42,10 +42,6 @@ class ChromeContentBrowserClientParts {
   virtual void RenderProcessWillLaunch(content::RenderProcessHost* host) {}
   virtual void SiteInstanceGotProcess(content::SiteInstance* site_instance) {}
   virtual void SiteInstanceDeleting(content::SiteInstance* site_instance) {}
-  virtual void WorkerProcessCreated(content::SiteInstance* site_instance,
-                                    int worker_process_id) {}
-  virtual void WorkerProcessTerminated(content::SiteInstance* site_instance,
-                                       int worker_process_id) {}
   virtual void OverrideWebkitPrefs(content::RenderViewHost* rvh,
                                    const GURL& url,
                                    content::WebPreferences* web_prefs) {}

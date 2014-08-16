@@ -152,9 +152,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
                                int render_process_id,
                                int opener_id,
                                bool* no_javascript_access) OVERRIDE;
-  virtual std::string GetWorkerProcessTitle(
-      const GURL& url,
-      content::ResourceContext* context) OVERRIDE;
   virtual void ResourceDispatcherHostCreated() OVERRIDE;
   virtual net::NetLog* GetNetLog() OVERRIDE;
   virtual content::AccessTokenStore* CreateAccessTokenStore() OVERRIDE;
