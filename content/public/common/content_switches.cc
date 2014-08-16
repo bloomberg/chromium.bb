@@ -105,9 +105,9 @@ const char kDisableApplicationCache[]       = "disable-application-cache";
 // users with many windows/tabs and lots of memory.
 const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";
 
-// Disable the creation of compositing layers when it would prevent LCD text.
-const char kDisablePreferCompositingToLCDText[] =
-    "disable-prefer-compositing-to-lcd-text";
+// See comment for kEnableCompositingForFixedPosition.
+const char kDisableCompositingForFixedPosition[] =
+     "disable-fixed-position-compositing";
 
 // See comment for kEnableCompositingForTransition.
 const char kDisableCompositingForTransition[] =
@@ -311,9 +311,18 @@ const char kEnableContainerCulling[]        = "enable-container-culling";
 // Use a BeginFrame signal from browser to renderer to schedule rendering.
 const char kEnableBeginFrameScheduling[]    = "enable-begin-frame-scheduling";
 
-// Enable the creation of compositing layers when it would prevent LCD text.
-const char kEnablePreferCompositingToLCDText[] =
-    "enable-prefer-compositing-to-lcd-text";
+// Enable the creation of compositing layers for fixed position
+// elements. Three options are needed to support four possible scenarios:
+//  1. Default (disabled)
+//  2. Enabled always (to allow dogfooding)
+//  3. Disabled always (to give safety fallback for users)
+//  4. Enabled only if we detect a highDPI display
+//
+// Option #4 may soon be the default, because the feature is needed soon for
+// high DPI, but cannot be used (yet) for low DPI. Options #2 and #3 will
+// override Option #4.
+const char kEnableCompositingForFixedPosition[] =
+     "enable-fixed-position-compositing";
 
 // Enable/Disable the creation of compositing layers for RenderLayers with a
 // transition on a property that supports accelerated animation (that is,
@@ -363,6 +372,10 @@ const char kEnableGpuRasterization[]        = "enable-gpu-rasterization";
 // When using CPU rasterizing generate low resolution tiling. Low res
 // tiles may be displayed during fast scrolls especially on slower devices.
 const char kEnableLowResTiling[] = "enable-low-res-tiling";
+
+// See comment for kEnableCompositingForFixedPosition.
+const char kEnableHighDpiCompositingForFixedPosition[] =
+     "enable-high-dpi-fixed-position-compositing";
 
 // Paint content on the compositor thread instead of the main thread.
 const char kEnableImplSidePainting[]        = "enable-impl-side-painting";

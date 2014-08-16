@@ -139,6 +139,16 @@ std::set<CommandLine::StringType> ExtractFlagsFromCommandLine(
   return flags;
 }
 
+const Experiment::Choice kEnableCompositingForFixedPositionChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    switches::kEnableCompositingForFixedPosition, ""},
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    switches::kDisableCompositingForFixedPosition, ""},
+  { IDS_FLAGS_COMPOSITING_FOR_FIXED_POSITION_HIGH_DPI,
+    switches::kEnableHighDpiCompositingForFixedPosition, ""}
+};
+
 const Experiment::Choice kEnableCompositingForTransitionChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
@@ -651,6 +661,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableWebAudio)
   },
 #endif
+  {
+    "enable-compositing-for-fixed-position",
+    IDS_FLAGS_COMPOSITING_FOR_FIXED_POSITION_NAME,
+    IDS_FLAGS_COMPOSITING_FOR_FIXED_POSITION_DESCRIPTION,
+    kOsAll,
+    MULTI_VALUE_TYPE(kEnableCompositingForFixedPositionChoices)
+  },
   {
     "enable-compositing-for-transition",
     IDS_FLAGS_COMPOSITING_FOR_TRANSITION_NAME,

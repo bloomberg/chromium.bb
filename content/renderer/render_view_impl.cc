@@ -399,12 +399,17 @@ static bool DeviceScaleEnsuresTextQuality(float device_scale_factor) {
 
 }
 
-static bool PreferCompositingToLCDText(float device_scale_factor) {
+static bool ShouldUseFixedPositionCompositing(float device_scale_factor) {
+  // Compositing for fixed-position elements is dependent on
+  // device_scale_factor if no flag is set. http://crbug.com/172738
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kDisablePreferCompositingToLCDText))
+
+  if (command_line.HasSwitch(switches::kDisableCompositingForFixedPosition))
     return false;
-  if (command_line.HasSwitch(switches::kEnablePreferCompositingToLCDText))
+
+  if (command_line.HasSwitch(switches::kEnableCompositingForFixedPosition))
     return true;
+
   return DeviceScaleEnsuresTextQuality(device_scale_factor);
 }
 
@@ -791,8 +796,8 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
   g_view_map.Get().insert(std::make_pair(webview(), this));
   g_routing_id_view_map.Get().insert(std::make_pair(routing_id_, this));
   webview()->setDeviceScaleFactor(device_scale_factor_);
-  webview()->settings()->setPreferCompositingToLCDTextEnabled(
-      PreferCompositingToLCDText(device_scale_factor_));
+  webview()->settings()->setAcceleratedCompositingForFixedPositionEnabled(
+      ShouldUseFixedPositionCompositing(device_scale_factor_));
   webview()->settings()->setAcceleratedCompositingForOverflowScrollEnabled(
       ShouldUseAcceleratedCompositingForOverflowScroll(device_scale_factor_));
   webview()->settings()->setAcceleratedCompositingForTransitionEnabled(
@@ -3763,8 +3768,8 @@ void RenderViewImpl::SetDeviceScaleFactor(float device_scale_factor) {
   RenderWidget::SetDeviceScaleFactor(device_scale_factor);
   if (webview()) {
     webview()->setDeviceScaleFactor(device_scale_factor);
-    webview()->settings()->setPreferCompositingToLCDTextEnabled(
-        PreferCompositingToLCDText(device_scale_factor_));
+    webview()->settings()->setAcceleratedCompositingForFixedPositionEnabled(
+        ShouldUseFixedPositionCompositing(device_scale_factor_));
     webview()->settings()->setAcceleratedCompositingForOverflowScrollEnabled(
         ShouldUseAcceleratedCompositingForOverflowScroll(device_scale_factor_));
     webview()->settings()->setAcceleratedCompositingForTransitionEnabled(
