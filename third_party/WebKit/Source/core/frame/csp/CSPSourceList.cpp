@@ -212,7 +212,7 @@ bool CSPSourceList::parseSource(const UChar* begin, const UChar* end, String& sc
                 || !skipExactly<UChar>(position, end, '/'))
                 return false;
             if (position == end)
-                return true;
+                return false;
             beginHost = position;
             skipWhile<UChar, isNotColonOrSlash>(position, end);
         }
