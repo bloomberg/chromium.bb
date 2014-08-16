@@ -19,8 +19,8 @@ def GetParser():
   version = parser.add_mutually_exclusive_group()
   version.add_argument('--tag', help='Sync to specified Chrome release',
                        dest='version')
-  version.add_argument('--revision', help='Sync to specified SVN revision',
-                       type=int, dest='version')
+  version.add_argument('--revision', help='Sync to specified git revision',
+                       dest='version')
 
   parser.add_argument('--internal', help='Sync internal version of Chrome',
                       action='store_true', default=False)
