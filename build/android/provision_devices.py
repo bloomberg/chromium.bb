@@ -24,6 +24,7 @@ from pylib import device_settings
 from pylib.device import device_blacklist
 from pylib.device import device_errors
 from pylib.device import device_utils
+from pylib.utils import run_tests_helper
 
 sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT,
                              'third_party', 'android_testrunner'))
@@ -255,7 +256,10 @@ def ProvisionDevices(options):
 
 
 def main(argv):
-  logging.basicConfig(level=logging.INFO)
+  custom_handler = logging.StreamHandler(sys.stdout)
+  custom_handler.setFormatter(run_tests_helper.CustomFormatter())
+  logging.getLogger().addHandler(custom_handler)
+  logging.getLogger().setLevel(logging.INFO)
 
   parser = optparse.OptionParser()
   parser.add_option('--skip-wipe', action='store_true', default=False,
