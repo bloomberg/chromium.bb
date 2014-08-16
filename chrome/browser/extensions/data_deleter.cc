@@ -75,7 +75,7 @@ void OnNeedsToGarbageCollectIsolatedStorage(WeakPtr<ExtensionService> es,
   callback.Run();
 }
 
-} // namespace
+}  // namespace
 
 // static
 void DataDeleter::StartDeleting(Profile* profile,
@@ -111,13 +111,11 @@ void DataDeleter::StartDeleting(Profile* profile,
     DeleteOrigin(profile, partition, extension->url(), callback);
   }
 
-#if defined(ENABLE_EXTENSIONS)
   // Begin removal of the settings for the current extension.
   // StorageFrontend may not exist in unit tests.
   StorageFrontend* frontend = StorageFrontend::Get(profile);
   if (frontend)
     frontend->DeleteStorageSoon(extension->id());
-#endif  // defined(ENABLE_EXTENSIONS)
 }
 
 }  // namespace extensions

@@ -9,15 +9,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/bookmarks/enhanced_bookmarks_features.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/signin/core/browser/signin_manager.h"
-
-// TODO(thestig): Remove after extensions are disabled on mobile.
-#if defined(ENABLE_EXTENSIONS)
-#include "chrome/browser/search/hotword_service_factory.h"
-#endif
 
 namespace {
 
@@ -37,9 +33,8 @@ ExternalComponentLoader::ExternalComponentLoader(Profile* profile)
 ExternalComponentLoader::~ExternalComponentLoader() {}
 
 // static
-bool ExternalComponentLoader::IsModifiable(
-    const extensions::Extension* extension) {
-  if (extension->location() == extensions::Manifest::EXTERNAL_COMPONENT) {
+bool ExternalComponentLoader::IsModifiable(const Extension* extension) {
+  if (extension->location() == Manifest::EXTERNAL_COMPONENT) {
     static const char* enhanced_extension_hashes[] = {
         "D5736E4B5CF695CB93A2FB57E4FDC6E5AFAB6FE2",  // http://crbug.com/312900
         "D57DE394F36DC1C3220E7604C575D29C51A6C495",  // http://crbug.com/319444
@@ -60,7 +55,6 @@ void ExternalComponentLoader::StartLoading() {
   prefs_->SetString(appId + ".external_update_url",
                     extension_urls::GetWebstoreUpdateUrl().spec());
 
-#if defined(ENABLE_EXTENSIONS)
   if (HotwordServiceFactory::IsHotwordAllowed(profile_)) {
     std::string hotwordId = extension_misc::kHotwordExtensionId;
     CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -71,7 +65,6 @@ void ExternalComponentLoader::StartLoading() {
                         extension_urls::GetWebstoreUpdateUrl().spec());
     }
   }
-#endif
 
   UpdateBookmarksExperimentState(
       profile_->GetPrefs(),

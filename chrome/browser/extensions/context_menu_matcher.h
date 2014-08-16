@@ -72,7 +72,7 @@ class ContextMenuMatcher {
       const MenuItem::ExtensionKey& extension_key,
       const Extension** extension,
       bool* can_cross_incognito,
-      MenuItem::List& items);
+      MenuItem::List* items);
 
   MenuItem::List GetRelevantExtensionItems(
       const MenuItem::List& items,

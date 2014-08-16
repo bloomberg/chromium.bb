@@ -116,14 +116,12 @@ namespace {
 // Wait this many seconds after an extensions becomes idle before updating it.
 const int kUpdateIdleDelay = 5;
 
-#if defined(ENABLE_EXTENSIONS)
 scoped_ptr<IdentityProvider> CreateWebstoreIdentityProvider(Profile* profile) {
   return make_scoped_ptr<IdentityProvider>(new ProfileIdentityProvider(
       SigninManagerFactory::GetForProfile(profile),
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
       LoginUIServiceFactory::GetForProfile(profile)));
 }
-#endif  // defined(ENABLE_EXTENSIONS)
 
 }  // namespace
 
@@ -589,14 +587,12 @@ bool ExtensionService::UpdateExtension(const std::string& id,
 scoped_ptr<ExtensionDownloader> ExtensionService::CreateExtensionDownloader(
     ExtensionDownloaderDelegate* delegate) {
   scoped_ptr<ExtensionDownloader> downloader;
-#if defined(ENABLE_EXTENSIONS)
   scoped_ptr<IdentityProvider> identity_provider =
       CreateWebstoreIdentityProvider(profile_);
   downloader.reset(new ExtensionDownloader(
       delegate,
       profile_->GetRequestContext()));
   downloader->SetWebstoreIdentityProvider(identity_provider.Pass());
-#endif
   return downloader.Pass();
 }
 

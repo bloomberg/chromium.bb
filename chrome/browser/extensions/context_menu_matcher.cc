@@ -6,29 +6,17 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/common/extensions/api/context_menus.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/common/context_menu_params.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image.h"
-
-#if defined(ENABLE_EXTENSIONS)
-#include "chrome/common/extensions/api/context_menus.h"
-#endif
 
 namespace extensions {
 
 namespace {
-
-int GetActionMenuTopLevelLimit() {
-#if defined(ENABLE_EXTENSIONS)
-  return api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT;
-#else
-  return 0;
-#endif
-}
 
 // The range of command IDs reserved for extension's custom menus.
 // TODO(oshima): These values will be injected by embedders.
@@ -77,7 +65,7 @@ void ContextMenuMatcher::AppendExtensionItems(
   MenuItem::List items;
   bool can_cross_incognito;
   if (!GetRelevantExtensionTopLevelItems(
-          extension_key, &extension, &can_cross_incognito, items))
+          extension_key, &extension, &can_cross_incognito, &items))
     return;
 
   if (items.empty())
@@ -151,7 +139,7 @@ base::string16 ContextMenuMatcher::GetTopLevelContextMenuTitle(
   MenuItem::List items;
   bool can_cross_incognito;
   GetRelevantExtensionTopLevelItems(
-      extension_key, &extension, &can_cross_incognito, items);
+      extension_key, &extension, &can_cross_incognito, &items);
 
   base::string16 title;
 
@@ -196,11 +184,10 @@ bool ContextMenuMatcher::GetRelevantExtensionTopLevelItems(
     const MenuItem::ExtensionKey& extension_key,
     const Extension** extension,
     bool* can_cross_incognito,
-    MenuItem::List& items) {
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(browser_context_)->extension_service();
-  *extension = service->GetExtensionById(extension_key.extension_id, false);
-
+    MenuItem::List* items) {
+  *extension = ExtensionRegistry::Get(
+      browser_context_)->enabled_extensions().GetByID(
+          extension_key.extension_id);
   if (!*extension)
     return false;
 
@@ -211,8 +198,7 @@ bool ContextMenuMatcher::GetRelevantExtensionTopLevelItems(
     return false;
 
   *can_cross_incognito = util::CanCrossIncognito(*extension, browser_context_);
-  items = GetRelevantExtensionItems(*all_items,
-                                    *can_cross_incognito);
+  *items = GetRelevantExtensionItems(*all_items, *can_cross_incognito);
 
   return true;
 }
@@ -264,8 +250,9 @@ void ContextMenuMatcher::RecursivelyAppendExtensionItems(
     // Action context menus have a limit for top level extension items to
     // prevent control items from being pushed off the screen, since extension
     // items will not be placed in a submenu.
+    const int top_level_limit = api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT;
     if (menu_id >= extensions_context_custom_last ||
-        (is_action_menu_top_level && num_items >= GetActionMenuTopLevelLimit()))
+        (is_action_menu_top_level && num_items >= top_level_limit))
       return;
 
     extension_item_map_[menu_id] = item->id();
