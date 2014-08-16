@@ -243,7 +243,8 @@ static const MimeInfo secondary_mappings[] = {
   { "application/vnd.mozilla.xul+xml", "xul" },
   { "application/x-shockwave-flash", "swf,swl" },
   { "application/pkcs7-mime", "p7m,p7c,p7z" },
-  { "application/pkcs7-signature", "p7s" }
+  { "application/pkcs7-signature", "p7s" },
+  { "application/x-mpegurl", "m3u8" },
 };
 
 static const char* FindMimeType(const MimeInfo* mappings,

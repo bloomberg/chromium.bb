@@ -24,6 +24,9 @@ TEST(MimeUtilTest, ExtensionTest) {
     { FILE_PATH_LITERAL("css"), "text/css", true },
     { FILE_PATH_LITERAL("pjp"), "image/jpeg", true },
     { FILE_PATH_LITERAL("pjpeg"), "image/jpeg", true },
+#if defined(OS_ANDROID)
+    { FILE_PATH_LITERAL("m3u8"), "application/x-mpegurl", true },
+#endif
     { FILE_PATH_LITERAL("not an extension / for sure"), "", false },
   };
 
