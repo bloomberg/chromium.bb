@@ -242,6 +242,16 @@ bool RunFunction(UIThreadExtensionFunction* function,
                  const std::string& args,
                  Browser* browser,
                  RunFunctionFlags flags) {
+  scoped_ptr<base::ListValue> parsed_args(ParseList(args));
+  EXPECT_TRUE(parsed_args.get())
+      << "Could not parse extension function arguments: " << args;
+  return RunFunction(function, parsed_args.Pass(), browser, flags);
+}
+
+bool RunFunction(UIThreadExtensionFunction* function,
+                 scoped_ptr<base::ListValue> args,
+                 Browser* browser,
+                 RunFunctionFlags flags) {
   TestFunctionDispatcherDelegate dispatcher_delegate(browser);
   scoped_ptr<extensions::ExtensionFunctionDispatcher> dispatcher(
       new extensions::ExtensionFunctionDispatcher(browser->profile(),
@@ -250,7 +260,7 @@ bool RunFunction(UIThreadExtensionFunction* function,
   // only one place.  See crbug.com/394840.
   return extensions::api_test_utils::RunFunction(
       function,
-      args,
+      args.Pass(),
       browser->profile(),
       dispatcher.Pass(),
       static_cast<extensions::api_test_utils::RunFunctionFlags>(flags));

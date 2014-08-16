@@ -137,12 +137,21 @@ bool RunFunction(UIThreadExtensionFunction* function,
                  content::BrowserContext* context,
                  scoped_ptr<extensions::ExtensionFunctionDispatcher> dispatcher,
                  RunFunctionFlags flags) {
-  SendResponseDelegate response_delegate;
-  function->set_test_delegate(&response_delegate);
   scoped_ptr<base::ListValue> parsed_args(ParseList(args));
   EXPECT_TRUE(parsed_args.get())
       << "Could not parse extension function arguments: " << args;
-  function->SetArgs(parsed_args.get());
+  return RunFunction(
+      function, parsed_args.Pass(), context, dispatcher.Pass(), flags);
+}
+
+bool RunFunction(UIThreadExtensionFunction* function,
+                 scoped_ptr<base::ListValue> args,
+                 content::BrowserContext* context,
+                 scoped_ptr<extensions::ExtensionFunctionDispatcher> dispatcher,
+                 RunFunctionFlags flags) {
+  SendResponseDelegate response_delegate;
+  function->set_test_delegate(&response_delegate);
+  function->SetArgs(args.get());
 
   CHECK(dispatcher);
   function->set_dispatcher(dispatcher->AsWeakPtr());

@@ -12,6 +12,7 @@
 class UIThreadExtensionFunction;
 
 namespace base {
+class ListValue;
 class Value;
 }
 
@@ -24,6 +25,9 @@ class ExtensionFunctionDispatcher;
 
 // TODO(yoz): crbug.com/394840: Remove duplicate functionality in
 // chrome/browser/extensions/extension_function_test_utils.h.
+//
+// TODO(ckehoe): Accept args as scoped_ptr<base::Value>,
+// and migrate existing users to the new API.
 namespace api_test_utils {
 
 enum RunFunctionFlags { NONE = 0, INCLUDE_INCOGNITO = 1 << 0 };
@@ -67,6 +71,11 @@ base::Value* RunFunctionAndReturnSingleResult(
 // we can refactor when we see what is needed.
 bool RunFunction(UIThreadExtensionFunction* function,
                  const std::string& args,
+                 content::BrowserContext* context,
+                 scoped_ptr<ExtensionFunctionDispatcher> dispatcher,
+                 RunFunctionFlags flags);
+bool RunFunction(UIThreadExtensionFunction* function,
+                 scoped_ptr<base::ListValue> args,
                  content::BrowserContext* context,
                  scoped_ptr<ExtensionFunctionDispatcher> dispatcher,
                  RunFunctionFlags flags);

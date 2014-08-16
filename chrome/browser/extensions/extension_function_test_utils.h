@@ -23,6 +23,8 @@ namespace extensions {
 class Extension;
 }
 
+// TODO(ckehoe): Accept args as scoped_ptr<base::Value>,
+// and migrate existing users to the new API.
 namespace extension_function_test_utils {
 
 // Parse JSON and return as the specified type, or NULL if the JSON is invalid
@@ -117,6 +119,10 @@ base::Value* RunFunctionAndReturnSingleResult(
 // we can refactor when we see what is needed.
 bool RunFunction(UIThreadExtensionFunction* function,
                  const std::string& args,
+                 Browser* browser,
+                 RunFunctionFlags flags);
+bool RunFunction(UIThreadExtensionFunction* function,
+                 scoped_ptr<base::ListValue> args,
                  Browser* browser,
                  RunFunctionFlags flags);
 
