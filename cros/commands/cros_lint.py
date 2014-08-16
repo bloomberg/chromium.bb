@@ -88,9 +88,10 @@ def _CpplintFiles(files, debug):
 def _PylintFiles(files, debug):
   """Returns true if pylint ran successfully on all files."""
   errors = False
+  pylint = os.path.join(constants.DEPOT_TOOLS_DIR, 'pylint')
   for pylintrc, paths in sorted(_GetPylintGroups(files).items()):
     paths = sorted(list(set([os.path.realpath(x) for x in paths])))
-    cmd = ['pylint', '--rcfile=%s' % pylintrc] + paths
+    cmd = [pylint, '--rcfile=%s' % pylintrc] + paths
     extra_env = {'PYTHONPATH': ':'.join(_GetPythonPath(paths))}
     res = cros_build_lib.RunCommand(cmd, extra_env=extra_env,
                                     error_code_ok=True,
