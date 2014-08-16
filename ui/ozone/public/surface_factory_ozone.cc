@@ -45,7 +45,7 @@ scoped_ptr<SurfaceOzoneEGL>
 SurfaceFactoryOzone::CreateSurfacelessEGLSurfaceForWidget(
     gfx::AcceleratedWidget widget) {
   NOTIMPLEMENTED();
-  return scoped_ptr<SurfaceOzoneCanvas>();
+  return scoped_ptr<SurfaceOzoneEGL>();
 }
 
 scoped_ptr<SurfaceOzoneCanvas> SurfaceFactoryOzone::CreateCanvasForWidget(
