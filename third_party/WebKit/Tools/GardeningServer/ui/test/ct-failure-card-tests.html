@@ -1,0 +1,91 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../ct-failure-card.html">
+
+<link rel="import" href="../../model/ct-failure-group.html">
+
+<script>
+(function () {
+
+var assert = chai.assert;
+
+describe('ct-failure-group', function() {
+  var group;
+  var card;
+
+  beforeEach(function(done) {
+    card = document.createElement('ct-failure-card');
+    group = new CTFailureGroup('key', []);
+    card.group = group;
+    setTimeout(done);
+  });
+
+  describe('failure group UI', function(done) {
+    it('examine should dispatch event', function() {
+      card.addEventListener('ct-examine-failures', function(event) {
+        assert.deepEqual(event.detail.failures, []);
+        setTimeout(done);
+      });
+
+      card.shadowRoot.getElementById('examine').dispatchEvent(new CustomEvent('tap'));
+    });
+
+    it('adding a bug number should show link', function(done) {
+      group.setBug(123);
+
+      setTimeout(function() {
+        var links = card.shadowRoot.querySelectorAll('a');
+        assert.lengthOf(links, 1);
+        assert.match(links[0].href, /crbug.com\/123/);
+        setTimeout(done);
+      });
+    });
+
+    it('should not show link without a bug number', function() {
+      var links = card.shadowRoot.querySelectorAll('a');
+      assert.lengthOf(links, 0);
+    });
+
+    it('clicking link bug should show dialog', function(done) {
+      card.shadowRoot.getElementById('link-bug').dispatchEvent(new CustomEvent('tap'));
+      setTimeout(function() {
+        var dialog = card.shadowRoot.getElementById('bugDialog');
+        assert.isTrue(dialog.opened);
+        var bugField = card.shadowRoot.getElementById('bug');
+        bugField.value = '999';
+        card.shadowRoot.getElementById('dialogOk').dispatchEvent(new CustomEvent('tap'));
+        setTimeout(function() {
+          assert.equal(group.bug, 'http://crbug.com/999');
+          assert.equal(group.bugLabel, 'Bug 999');
+          assert.equal(group._annotation.bug, 'http://crbug.com/999');
+          setTimeout(done);
+        });
+      });
+    });
+
+    it('entering URLs should work for bugs', function(done) {
+      card.shadowRoot.getElementById('link-bug').dispatchEvent(new CustomEvent('tap'));
+      setTimeout(function() {
+        var dialog = card.shadowRoot.getElementById('bugDialog');
+        assert.isTrue(dialog.opened);
+        var bugField = card.shadowRoot.getElementById('bug');
+        bugField.value = 'http://foo.com/?id=888';
+        card.shadowRoot.getElementById('dialogOk').dispatchEvent(new CustomEvent('tap'));
+        setTimeout(function() {
+          assert.equal(group.bug, 'http://foo.com/?id=888');
+          assert.equal(group.bugLabel, 'Bug 888');
+          assert.equal(group._annotation.bug, 'http://foo.com/?id=888');
+          setTimeout(done);
+        });
+      });
+    });
+  });
+
+});
+
+})()
+</script>

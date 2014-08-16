@@ -51,24 +51,51 @@ describe('ct-failure-group', function() {
     });
   });
 
+  describe('setBug', function() {
+    it('should store the bug', function(done) {
+      var group = new CTFailureGroup('key', []);
+      group.setBug('123').then(function() {
+        assert.equal(group.bug, 'http://crbug.com/123');
+        assert.equal(group._annotation.bug, 'http://crbug.com/123');
+        assert.equal(group.bugLabel, 'Bug 123');
+        done();
+      });
+    });
+
+    it('should support URLs', function(done) {
+      var group = new CTFailureGroup('key', []);
+      group.setBug('http://foobar.com/?id=876&x=y').then(function() {
+        assert.equal(group.bug, 'http://foobar.com/?id=876&x=y');
+        assert.equal(group._annotation.bug, 'http://foobar.com/?id=876&x=y');
+        assert.equal(group.bugLabel, 'Bug 876');
+        done();
+      });
+    });
+  });
+
   describe('annotations', function() {
     it('should have sensible defaults', function() {
       var group = new CTFailureGroup('key', []);
-      assert.deepEqual(group.annotation, {});
+      assert.deepEqual(group._annotation, {});
       assert.isFalse(group.isSnoozed);
+      assert.isUndefined(group.bug);
+      assert.isUndefined(group.bugLabel);
     });
 
     it('should compute properties', function() {
-      var group = new CTFailureGroup('key', [], {snoozeTime: Date.now() + 1000 * 1000});
+      var group = new CTFailureGroup('key', [], {snoozeTime: Date.now() + 1000 * 1000, bug: 'http://crbug.com/123'});
       assert.isTrue(group.isSnoozed);
+      assert.equal(group.bug, 'http://crbug.com/123');
     });
 
     it('should be persisted', function(done) {
       var group = new CTFailureGroup('key', []);
       group.snoozeUntil(123).then(function() {
-        CTFailureGroup.fetchAnnotations().then(function(annotations) {
-          assert.deepEqual(annotations['key'], {snoozeTime: 123});
-          done();
+        group.setBug('456').then(function() {
+          CTFailureGroup.fetchAnnotations().then(function(annotations) {
+            assert.deepEqual(annotations['key'], {snoozeTime: 123, bug: 'http://crbug.com/456'});
+            done();
+          });
         });
       });
     });

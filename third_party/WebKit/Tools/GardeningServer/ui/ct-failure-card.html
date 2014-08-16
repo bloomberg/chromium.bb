@@ -7,8 +7,11 @@ found in the LICENSE file.
 <link rel="import" href="ct-builder-grid.html">
 <link rel="import" href="ct-commit-list.html">
 <link rel="import" href="ct-test-list.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog-transition.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
 
-<polymer-element name="ct-failure-card" attributes="group commits tree">
+<polymer-element name="ct-failure-card" attributes="group commits tree bug">
   <template>
     <style>
       :host {
@@ -75,7 +78,19 @@ found in the LICENSE file.
       <template if="{{ group.isSnoozed }}">
         <paper-button id="snooze" on-tap="{{ unsnooze }}" label="Unsnooze"></paper-button>
       </template>
+      <paper-button id="link-bug" on-tap="{{ linkBug }}" label="Link Bug"></paper-button>
+      <template if="{{ group.bug !== undefined }}">
+        <div>
+          <a href="{{ group.bug }}">
+            {{ group.bugLabel }}</a>
+        </div>
+      </template>
     </div>
+
+    <paper-dialog heading="Enter bug number" transition="paper-transition-center" id="bugDialog">
+      <paper-input label="Bug# or URL" floatingLabel id="bug"></paper-input>
+      <paper-button label="OK" on-tap="{{ saveBug }}" affirmative autofocus id="dialogOk"></paper-button>
+    </paper-dialog>
   </template>
   <script>
     Polymer({
@@ -99,7 +114,16 @@ found in the LICENSE file.
         if (!this.group)
           return undefined;
         return this.group.commitList(this.commits);
-      }
+      },
+
+      linkBug: function() {
+        this.$.bug.value = this.group.bug;
+        this.$.bugDialog.toggle();
+      },
+
+      saveBug: function() {
+        this.group.setBug(this.$.bug.value);
+      },
     });
   </script>
 </polymer-element>

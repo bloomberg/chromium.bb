@@ -10,7 +10,7 @@ found in the LICENSE file.
 function CTFailureGroup(key, failures, annotation) {
   this.key = key;
   this.failures = failures;
-  this.annotation = annotation || {};
+  this._annotation = annotation || {};
   this._computeProperties();
 }
 
@@ -30,14 +30,28 @@ CTFailureGroup.prototype.commitList = function(commits) {
   return new CTCommitList(this, commits);
 };
 
+CTFailureGroup.prototype.setBug = function(bug) {
+  if (/^[0-9]+$/.test(bug))
+    bug = 'http://crbug.com/' + bug;
+  return this._annotate({
+    bug: bug,
+  });
+};
+
 CTFailureGroup.prototype._computeProperties = function() {
-  this.isSnoozed = Date.now() < this.annotation.snoozeTime;
+  this.isSnoozed = Date.now() < this._annotation.snoozeTime;
   if (this.isSnoozed) {
     this.category = 'snoozed';
   } else {
     // FIXME: crbug.com/400397 Split into: Whole step failure, Tree closer, Test failure, Flaky tests
     this.category = 'default';
   }
+
+  this.bug = this._annotation.bug;
+  if (this.bug !== undefined)
+    this.bugLabel = 'Bug ' + /([0-9]{3,})/.exec(this.bug)[0];
+  else
+    this.bugLabel = undefined;
 };
 
 CTFailureGroup.prototype._annotate = function(newAnnotation) {
@@ -61,7 +75,7 @@ CTFailureGroup.prototype._annotate = function(newAnnotation) {
 
     localStorage.CTFailureGroupAnnotations = JSON.stringify(annotations);
 
-    this.annotation = annotation;
+    this._annotation = annotation;
     this._computeProperties();
   }.bind(this));
 };
