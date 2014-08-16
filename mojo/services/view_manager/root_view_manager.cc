@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/scoped_observer.h"
 #include "mojo/public/cpp/application/application_connection.h"
+#include "mojo/services/public/interfaces/gpu/gpu.mojom.h"
 #include "mojo/services/view_manager/root_node_manager.h"
 #include "mojo/services/view_manager/root_view_manager_delegate.h"
 #include "mojo/services/view_manager/screen_impl.h"
@@ -81,14 +82,18 @@ RootViewManager::RootViewManager(
   NativeViewportPtr viewport;
   app_connection->ConnectToService(
       "mojo:mojo_native_viewport_service", &viewport);
+  GpuPtr gpu_service;
+  // TODO(jamesr): Should be mojo:mojo_gpu_service
+  app_connection->ConnectToService("mojo:mojo_native_viewport_service",
+                                   &gpu_service);
   window_tree_host_.reset(new WindowTreeHostImpl(
-        viewport.Pass(),
-        gfx::Rect(800, 600),
-        base::Bind(&RootViewManager::OnCompositorCreated,
-                   base::Unretained(this)),
-        native_viewport_closed_callback,
-        base::Bind(&RootNodeManager::DispatchNodeInputEventToWindowManager,
-                   base::Unretained(root_node_manager_))));
+      viewport.Pass(),
+      gpu_service.Pass(),
+      gfx::Rect(800, 600),
+      base::Bind(&RootViewManager::OnCompositorCreated, base::Unretained(this)),
+      native_viewport_closed_callback,
+      base::Bind(&RootNodeManager::DispatchNodeInputEventToWindowManager,
+                 base::Unretained(root_node_manager_))));
 }
 
 RootViewManager::~RootViewManager() {

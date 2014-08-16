@@ -45,9 +45,25 @@ class MemoryTrackerStub : public gpu::gles2::MemoryTracker {
 
 }  // anonymous namespace
 
-CommandBufferImpl::CommandBufferImpl(gfx::AcceleratedWidget widget,
-                                     const gfx::Size& size)
-    : widget_(widget), size_(size) {}
+CommandBufferImpl::CommandBufferImpl(
+    gfx::GLShareGroup* share_group,
+    gpu::gles2::MailboxManager* mailbox_manager)
+    : widget_(gfx::kNullAcceleratedWidget),
+      size_(1, 1),
+      share_group_(share_group),
+      mailbox_manager_(mailbox_manager) {
+}
+
+CommandBufferImpl::CommandBufferImpl(
+    gfx::AcceleratedWidget widget,
+    const gfx::Size& size,
+    gfx::GLShareGroup* share_group,
+    gpu::gles2::MailboxManager* mailbox_manager)
+    : widget_(widget),
+      size_(size),
+      share_group_(share_group),
+      mailbox_manager_(mailbox_manager) {
+}
 
 CommandBufferImpl::~CommandBufferImpl() {
   client()->DidDestroy();
@@ -66,24 +82,26 @@ void CommandBufferImpl::Initialize(
 
 bool CommandBufferImpl::DoInitialize(
     mojo::ScopedSharedBufferHandle shared_state) {
-  // TODO(piman): offscreen surface.
-  surface_ = gfx::GLSurface::CreateViewGLSurface(widget_);
+  if (widget_ == gfx::kNullAcceleratedWidget)
+    surface_ = gfx::GLSurface::CreateOffscreenGLSurface(size_);
+  else
+    surface_ = gfx::GLSurface::CreateViewGLSurface(widget_);
   if (!surface_.get())
     return false;
 
-  // TODO(piman): context sharing, virtual contexts, gpu preference.
-  scoped_refptr<gfx::GLContext> context = gfx::GLContext::CreateGLContext(
-      NULL, surface_.get(), gfx::PreferIntegratedGpu);
-  if (!context.get())
+  // TODO(piman): virtual contexts, gpu preference.
+  context_ = gfx::GLContext::CreateGLContext(
+      share_group_, surface_.get(), gfx::PreferIntegratedGpu);
+  if (!context_.get())
     return false;
 
-  if (!context->MakeCurrent(surface_.get()))
+  if (!context_->MakeCurrent(surface_.get()))
     return false;
 
   // TODO(piman): ShaderTranslatorCache is currently per-ContextGroup but
   // only needs to be per-thread.
   scoped_refptr<gpu::gles2::ContextGroup> context_group =
-      new gpu::gles2::ContextGroup(NULL,
+      new gpu::gles2::ContextGroup(mailbox_manager_,
                                    new MemoryTrackerStub,
                                    new gpu::gles2::ShaderTranslatorCache,
                                    NULL,
@@ -106,7 +124,7 @@ bool CommandBufferImpl::DoInitialize(
   // TODO(piman): attributes.
   std::vector<int32> attrib_vector;
   if (!decoder_->Initialize(surface_,
-                            context,
+                            context_,
                             false /* offscreen */,
                             size_,
                             disallowed_features,
@@ -137,6 +155,11 @@ void CommandBufferImpl::SetGetBuffer(int32_t buffer) {
 }
 
 void CommandBufferImpl::Flush(int32_t put_offset) {
+  if (!context_->MakeCurrent(surface_.get())) {
+    DLOG(WARNING) << "Context lost";
+    client()->LostContext(gpu::error::kUnknown);
+    return;
+  }
   command_buffer_->Flush(put_offset);
 }
 

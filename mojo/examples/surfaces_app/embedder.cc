@@ -36,7 +36,7 @@ void Embedder::ProduceFrame(cc::SurfaceId child_one,
                             cc::SurfaceId child_two,
                             const gfx::Size& child_size,
                             const gfx::Size& size,
-                            double rotation_degrees) {
+                            int offset) {
   gfx::Rect rect(size);
   RenderPass::Id pass_id(1, 1);
   scoped_ptr<RenderPass> pass = RenderPass::Create();
@@ -45,7 +45,7 @@ void Embedder::ProduceFrame(cc::SurfaceId child_one,
   gfx::Transform one_transform;
   one_transform.Translate(10 + child_size.width() / 2,
                           50 + child_size.height() / 2);
-  one_transform.Rotate(rotation_degrees);
+  one_transform.Translate(0, offset);
   one_transform.Translate(-child_size.width() / 2, -child_size.height() / 2);
   CreateAndAppendSimpleSharedQuadState(pass.get(), one_transform, size);
 
@@ -58,7 +58,7 @@ void Embedder::ProduceFrame(cc::SurfaceId child_one,
   gfx::Transform two_transform;
   two_transform.Translate(10 + size.width() / 2 + child_size.width() / 2,
                           50 + child_size.height() / 2);
-  two_transform.Rotate(-rotation_degrees * 0.76);
+  two_transform.Translate(0, 200 - offset);
   two_transform.Translate(-child_size.width() / 2, -child_size.height() / 2);
   CreateAndAppendSimpleSharedQuadState(pass.get(), two_transform, size);
 
