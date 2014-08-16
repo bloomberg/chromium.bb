@@ -171,7 +171,8 @@ html[dir=rtl] .main-pane {
   display: none;
 }
 
-.pod[auth-type='offlinePassword'].focused .password-entry-container {
+.pod[auth-type='offlinePassword'].focused .password-entry-container,
+.pod[auth-type='forceOfflinePassword'].focused .password-entry-container {
   display: flex;
   flex: auto;
 }
@@ -224,6 +225,11 @@ html[dir=rtl] .main-pane {
   background-position: center;
   background-repeat: no-repeat;
   flex: none;
+}
+
+.custom-icon.faded {
+  -webkit-transition: opacity 200ms ease-in-out,
+                      visibility 200ms ease-in-out;
 }
 
 .custom-icon-container {

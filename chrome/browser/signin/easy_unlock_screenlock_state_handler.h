@@ -61,17 +61,20 @@ class EasyUnlockScreenlockStateHandler : public ScreenlockBridge::Observer {
   virtual void OnScreenDidLock() OVERRIDE;
   virtual void OnScreenDidUnlock() OVERRIDE;
 
+  // Updates icon's tooltip options.
+  // |trial_run|: Whether the trial Easy Unlock run is in progress.
   void UpdateTooltipOptions(
+      bool trial_run,
       ScreenlockBridge::UserPodCustomIconOptions* icon_options);
 
-  // Whether the tutorial message should be shown to the user. The message is
-  // shown only once, when the user encounters STATE_AUTHENTICATED for the first
-  // time (across sessions). After the tutorial message is shown,
-  // |MarkTutorialShown| should be called to prevent further tutorial message.
-  bool ShouldShowTutorial();
+  // Whether this is the first, trial Easy Unlock run. If this is the case, a
+  // tutorial message should be shown and hard-locking be disabled in
+  // Authenticated state. The trial run will be active if Easy Unlock never
+  // entered Authenticated state (across sessions).
+  bool IsTrialRun();
 
-  // Sets user preference that prevents showing of tutorial messages.
-  void MarkTutorialShown();
+  // Sets user preference that marks trial run completed.
+  void MarkTrialRunComplete();
 
   // Gets the name to be used for the device. The name depends on the device
   // type (example values: Chromebook and Chromebox).

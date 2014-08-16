@@ -85,10 +85,11 @@ cr.define('login', function() {
    * @const
    */
   var UserPodTabOrder = {
-    POD_INPUT: 1,     // Password input fields (and whole pods themselves).
-    HEADER_BAR: 2,    // Buttons on the header bar (Shutdown, Add User).
-    ACTION_BOX: 3,    // Action box buttons.
-    PAD_MENU_ITEM: 4  // User pad menu items (Remove this user).
+    POD_INPUT: 1,        // Password input fields (and whole pods themselves).
+    POD_CUSTOM_ICON: 2,  // Pod custom icon next to passwrod input field.
+    HEADER_BAR: 3,       // Buttons on the header bar (Shutdown, Add User).
+    ACTION_BOX: 4,       // Action box buttons.
+    PAD_MENU_ITEM: 5     // User pad menu items (Remove this user).
   };
 
   /**
@@ -103,6 +104,7 @@ cr.define('login', function() {
     NUMERIC_PIN: 2,
     USER_CLICK: 3,
     EXPAND_THEN_USER_CLICK: 4,
+    FORCE_OFFLINE_PASSWORD: 5
   };
 
   /**
@@ -114,6 +116,7 @@ cr.define('login', function() {
     2: 'numericPin',
     3: 'userClick',
     4: 'expandThenUserClick',
+    5: 'forceOfflinePassword'
   };
 
   // Focus and tab order are organized as follows:
@@ -121,9 +124,12 @@ cr.define('login', function() {
   // (1) all user pods have tab index 1 so they are traversed first;
   // (2) when a user pod is activated, its tab index is set to -1 and its
   // main input field gets focus and tab index 1;
-  // (3) buttons on the header bar have tab index 2 so they follow user pods;
-  // (4) Action box buttons have tab index 3 and follow header bar buttons;
-  // (5) lastly, focus jumps to the Status Area and back to user pods.
+  // (3) if user pod custom icon is interactive, it has tab index 2 so it
+  // follows the input.
+  // (4) buttons on the header bar have tab index 3 so they follow the custom
+  // icon, or user pod if custom icon is not interactive;
+  // (5) Action box buttons have tab index 4 and follow header bar buttons;
+  // (6) lastly, focus jumps to the Status Area and back to user pods.
   //
   // 'Focus' event is handled by a capture handler for the whole document
   // and in some cases 'mousedown' event handlers are used instead of 'click'
@@ -252,6 +258,23 @@ cr.define('login', function() {
      */
     animationResourceSize_: 0,
 
+    /**
+     * When {@code fadeOut} is called, the element gets hidden using fadeout
+     * animation. This is reference to the listener for transition end added to
+     * the icon element while it's fading out.
+     * @type {?function(Event)}
+     * @private
+     */
+    hideTransitionListener_: null,
+
+    /**
+     * Callback for click and 'Enter' key events that gets set if the icon is
+     * interactive.
+     * @type {?function()}
+     * @private
+     */
+    actionHandler_: null,
+
     /** @override */
     decorate: function() {
       this.iconElement.addEventListener('mouseover',
@@ -260,6 +283,16 @@ cr.define('login', function() {
                                          this.hideTooltip_.bind(this, false));
       this.iconElement.addEventListener('mousedown',
                                          this.hideTooltip_.bind(this, false));
+      this.iconElement.addEventListener('click',
+                                        this.handleClick_.bind(this));
+      this.iconElement.addEventListener('keydown',
+                                        this.handleKeyDown_.bind(this));
+
+      // When the icon is focused using mouse, there should be no outline shown.
+      // Preventing default mousedown event accomplishes this.
+      this.iconElement.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+      });
     },
 
     /**
@@ -298,16 +331,24 @@ cr.define('login', function() {
      * Shows the icon.
      */
     show: function() {
+      this.resetHideTransitionState_();
       this.hidden = false;
     },
 
     /**
-     * Hides the icon.  Makes sure the tooltip is hidden and animation reset.
+     * Hides the icon using a fade-out animation.
      */
-    hide: function() {
+    fadeOut: function() {
+      // The icon is already being hidden.
+      if (this.iconElement.classList.contains('faded'))
+        return;
+
       this.hideTooltip_(true);
-      this.setAnimation(null);
-      this.hidden = true;
+      this.iconElement.classList.add('faded');
+      this.hideTransitionListener_ = this.hide_.bind(this);
+      this.iconElement.addEventListener('webkitTransitionEnd',
+                                        this.hideTransitionListener_);
+      ensureTransitionEndEvent(this.iconElement, 200);
     },
 
     /**
@@ -403,6 +444,80 @@ cr.define('login', function() {
     },
 
     /**
+     * Sets up icon tabIndex attribute and handler for click and 'Enter' key
+     * down events.
+     * @param {?function()} callback If icon should be interactive, the
+     *     function to get called on click and 'Enter' key down events. Should
+     *     be null to make the icon  non interactive.
+     */
+    setInteractive: function(callback) {
+      // Update tabIndex property if needed.
+      if (!!this.actionHandler_ != !!callback) {
+        if (callback) {
+          this.iconElement.setAttribute('tabIndex',
+                                         UserPodTabOrder.POD_CUSTOM_ICON);
+        } else {
+          this.iconElement.removeAttribute('tabIndex');
+        }
+      }
+
+      // Set the new action handler.
+      this.actionHandler_ = callback;
+    },
+
+    /**
+     * Hides the icon. Makes sure the tooltip is hidden and animation reset.
+     * @private
+     */
+    hide_: function() {
+      this.hideTooltip_(true);
+      this.hidden = true;
+      this.setAnimation(null);
+      this.setInteractive(null);
+      this.resetHideTransitionState_();
+    },
+
+    /**
+     * Ensures the icon's transition state potentially set by a call to
+     * {@code fadeOut} is cleared.
+     * @private
+     */
+    resetHideTransitionState_: function() {
+      if (this.hideTransitionListener_) {
+        this.iconElement.removeEventListener('webkitTransitionEnd',
+                                             this.hideTransitionListener_);
+        this.hideTransitionListener_ = null;
+      }
+      this.iconElement.classList.toggle('faded', false);
+    },
+
+    /**
+     * Handles click event on the icon element. No-op if
+     * {@code this.actionHandler_} is not set.
+     * @param {Event} e The click event.
+     * @private
+     */
+    handleClick_: function(e) {
+      if (!this.actionHandler_)
+        return;
+      this.actionHandler_();
+      stopEventPropagation(e);
+    },
+
+    /**
+     * Handles key down event on the icon element. Only 'Enter' key is handled.
+     * No-op if {@code this.actionHandler_} is not set.
+     * @param {Event} e The key down event.
+     * @private
+     */
+    handleKeyDown_: function(e) {
+      if (!this.actionHandler_ || e.keyIdentifier != 'Enter')
+        return;
+      this.actionHandler_(e);
+      stopEventPropagation(e);
+    },
+
+    /**
      * Called when mouse enters the icon. It sets timeout for showing the
      * tooltip.
      * @private
@@ -415,7 +530,7 @@ cr.define('login', function() {
     },
 
     /**
-     * Shows the current tooltip, if one is set.
+     * Shows the current tooltip if one is set.
      * @private
      */
     showTooltip_: function() {
@@ -973,7 +1088,8 @@ cr.define('login', function() {
      * @type {bool}
      */
     get isAuthTypePassword() {
-      return this.authType_ == AUTH_TYPE.OFFLINE_PASSWORD;
+      return this.authType_ == AUTH_TYPE.OFFLINE_PASSWORD ||
+             this.authType_ == AUTH_TYPE.FORCE_OFFLINE_PASSWORD;
     },
 
     /**
@@ -2199,11 +2315,28 @@ cr.define('login', function() {
       pod.customIconElement.setSize(icon.size || {width: 0, height: 0});
       pod.customIconElement.setAnimation(icon.animation || null);
       pod.customIconElement.setOpacity(icon.opacity || 100);
+      if (icon.hardlockOnClick) {
+        pod.customIconElement.setInteractive(
+            this.hardlockUserPod_.bind(this, username));
+      } else {
+        pod.customIconElement.setInteractive(null);
+      }
       pod.customIconElement.show();
       // This has to be called after |show| in case the tooltip should be shown
       // immediatelly.
       pod.customIconElement.setTooltip(
           icon.tooltip || {text: '', autoshow: false});
+    },
+
+    /**
+     * Hard-locks user pod for the user. If user pod is hard-locked, it can be
+     * only unlocked using password, and the authentication type cannot be
+     * changed.
+     * @param {!string} username The user's username.
+     * @private
+     */
+    hardlockUserPod_: function(username) {
+      chrome.send('hardlockPod', [username]);
     },
 
     /**
@@ -2218,7 +2351,7 @@ cr.define('login', function() {
         return;
       }
 
-      pod.customIconElement.hide();
+      pod.customIconElement.fadeOut();
     },
 
     /**

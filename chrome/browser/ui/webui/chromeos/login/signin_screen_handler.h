@@ -370,6 +370,7 @@ class SigninScreenHandler
   void HandleUpdateOfflineLogin(bool offline_login_active);
   void HandleShowSupervisedUserCreationScreen();
   void HandleFocusPod(const std::string& user_id);
+  void HandleHardlockPod(const std::string& user_id);
   void HandleLaunchKioskApp(const std::string& app_id, bool diagnostic_mode);
   void HandleRetrieveAuthenticatedUserEmail(double attempt_token);
   void HandleGetPublicSessionKeyboardLayouts(const std::string& user_id,

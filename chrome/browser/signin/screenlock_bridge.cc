@@ -37,7 +37,8 @@ ScreenlockBridge::UserPodCustomIconOptions::UserPodCustomIconOptions()
       animation_resource_width_(0u),
       animation_frame_length_ms_(0u),
       opacity_(100u),
-      autoshow_tooltip_(false) {
+      autoshow_tooltip_(false),
+      hardlock_on_click_(false) {
 }
 
 ScreenlockBridge::UserPodCustomIconOptions::~UserPodCustomIconOptions() {}
@@ -86,6 +87,10 @@ ScreenlockBridge::UserPodCustomIconOptions::ToDictionaryValue() const {
                           animation_frame_length_ms_);
     result->Set("animation", animation);
   }
+
+  if (hardlock_on_click_)
+    result->SetBoolean("hardlockOnClick", true);
+
   return result.Pass();
 }
 
@@ -128,6 +133,10 @@ void ScreenlockBridge::UserPodCustomIconOptions::SetTooltip(
     bool autoshow) {
   tooltip_ = tooltip;
   autoshow_tooltip_ = autoshow;
+}
+
+void ScreenlockBridge::UserPodCustomIconOptions::SetHardlockOnClick() {
+  hardlock_on_click_ = true;
 }
 
 // static

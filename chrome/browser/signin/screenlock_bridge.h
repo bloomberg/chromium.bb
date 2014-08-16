@@ -78,6 +78,10 @@ class ScreenlockBridge {
     // shown with the icon.
     void SetTooltip(const base::string16& tooltip, bool autoshow);
 
+    // If hardlock on click is set, clicking the icon in the screenlock will
+    // go to state where password is required for unlock.
+    void SetHardlockOnClick();
+
    private:
     std::string icon_resource_url_;
     scoped_ptr<gfx::Image> icon_image_;
@@ -95,6 +99,8 @@ class ScreenlockBridge {
     base::string16 tooltip_;
     bool autoshow_tooltip_;
 
+    bool hardlock_on_click_;
+
     DISALLOW_COPY_AND_ASSIGN(UserPodCustomIconOptions);
   };
 
@@ -108,6 +114,7 @@ class ScreenlockBridge {
       NUMERIC_PIN = 2,
       USER_CLICK = 3,
       EXPAND_THEN_USER_CLICK = 4,
+      FORCE_OFFLINE_PASSWORD = 5
     };
 
     // Displays |message| in a banner on the lock screen.

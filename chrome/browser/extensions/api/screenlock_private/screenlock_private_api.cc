@@ -57,6 +57,8 @@ screenlock::AuthType FromLockHandlerAuthType(
       // locking.
       NOTREACHED();
       return screenlock::AUTH_TYPE_NONE;
+    case ScreenlockBridge::LockHandler::FORCE_OFFLINE_PASSWORD:
+      return screenlock::AUTH_TYPE_OFFLINEPASSWORD;
   }
   NOTREACHED();
   return screenlock::AUTH_TYPE_OFFLINEPASSWORD;

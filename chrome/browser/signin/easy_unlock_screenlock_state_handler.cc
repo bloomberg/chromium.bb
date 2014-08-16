@@ -49,6 +49,10 @@ bool HasAnimation(EasyUnlockScreenlockStateHandler::State state) {
   return state == EasyUnlockScreenlockStateHandler::STATE_BLUETOOTH_CONNECTING;
 }
 
+bool HardlockOnClick(EasyUnlockScreenlockStateHandler::State state) {
+  return state == EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED;
+}
+
 size_t GetTooltipResourceId(EasyUnlockScreenlockStateHandler::State state) {
   switch (state) {
     case EasyUnlockScreenlockStateHandler::STATE_NO_BLUETOOTH:
@@ -64,9 +68,7 @@ size_t GetTooltipResourceId(EasyUnlockScreenlockStateHandler::State state) {
     case EasyUnlockScreenlockStateHandler::STATE_PHONE_NOT_NEARBY:
       return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PHONE_NOT_NEARBY;
     case EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED:
-      // TODO(tbarzic): When hard lock is enabled change this to
-      // IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_INSTRUCTIONS.
-      return 0;
+      return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_INSTRUCTIONS;
     default:
       return 0;
   }
@@ -99,10 +101,13 @@ void EasyUnlockScreenlockStateHandler::ChangeState(State new_state) {
 
   state_ = new_state;
 
-  // If lock screen is not active, just cache the current state.
-  // The screenlock state will get refreshed in |ScreenDidLock|.
-  if (!screenlock_bridge_->IsLocked())
+  // If lock screen is not active or it forces offline password, just cache the
+  // current state. The screenlock state will get refreshed in |ScreenDidLock|.
+  if (!screenlock_bridge_->IsLocked() ||
+      screenlock_bridge_->lock_handler()->GetAuthType(user_email_) ==
+          ScreenlockBridge::LockHandler::FORCE_OFFLINE_PASSWORD) {
     return;
+  }
 
   UpdateScreenlockAuthType();
 
@@ -115,7 +120,9 @@ void EasyUnlockScreenlockStateHandler::ChangeState(State new_state) {
   }
   icon_options.SetIconAsResourceURL(icon_url);
 
-  UpdateTooltipOptions(&icon_options);
+  bool trial_run = IsTrialRun();
+
+  UpdateTooltipOptions(trial_run, &icon_options);
 
   if (UseOpaqueIcon(state_))
     icon_options.SetOpacity(kOpaqueIconOpacity);
@@ -124,6 +131,13 @@ void EasyUnlockScreenlockStateHandler::ChangeState(State new_state) {
 
   if (HasAnimation(state_))
     icon_options.SetAnimation(kSpinnerResourceWidth, kSpinnerIntervalMs);
+
+  // Hardlocking is disabled in trial run.
+  if (!trial_run && HardlockOnClick(state_))
+    icon_options.SetHardlockOnClick();
+
+  if (trial_run && state_ == STATE_AUTHENTICATED)
+    MarkTrialRunComplete();
 
   screenlock_bridge_->lock_handler()->ShowUserPodCustomIcon(user_email_,
                                                             icon_options);
@@ -140,12 +154,11 @@ void EasyUnlockScreenlockStateHandler::OnScreenDidUnlock() {
 }
 
 void EasyUnlockScreenlockStateHandler::UpdateTooltipOptions(
+    bool trial_run,
     ScreenlockBridge::UserPodCustomIconOptions* icon_options) {
-  bool show_tutorial = ShouldShowTutorial();
-
   size_t resource_id = 0;
   base::string16 device_name;
-  if (show_tutorial) {
+  if (trial_run && state_ == STATE_AUTHENTICATED) {
     resource_id = IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_TUTORIAL;
   } else {
     resource_id = GetTooltipResourceId(state_);
@@ -166,20 +179,17 @@ void EasyUnlockScreenlockStateHandler::UpdateTooltipOptions(
   if (tooltip.empty())
     return;
 
-  if (show_tutorial)
-    MarkTutorialShown();
-
-  icon_options->SetTooltip(tooltip, show_tutorial /* autoshow tooltip */);
+  icon_options->SetTooltip(
+      tooltip,
+      state_ == STATE_AUTHENTICATED && trial_run /* autoshow tooltip */);
 }
 
-bool EasyUnlockScreenlockStateHandler::ShouldShowTutorial() {
-  if (state_ != STATE_AUTHENTICATED)
-    return false;
+bool EasyUnlockScreenlockStateHandler::IsTrialRun() {
   return pref_service_ &&
          pref_service_->GetBoolean(prefs::kEasyUnlockShowTutorial);
 }
 
-void EasyUnlockScreenlockStateHandler::MarkTutorialShown() {
+void EasyUnlockScreenlockStateHandler::MarkTrialRunComplete() {
   if (!pref_service_)
     return;
   pref_service_->SetBoolean(prefs::kEasyUnlockShowTutorial, false);
@@ -195,6 +205,10 @@ base::string16 EasyUnlockScreenlockStateHandler::GetDeviceName() {
 }
 
 void EasyUnlockScreenlockStateHandler::UpdateScreenlockAuthType() {
+  if (screenlock_bridge_->lock_handler()->GetAuthType(user_email_) ==
+          ScreenlockBridge::LockHandler::FORCE_OFFLINE_PASSWORD)
+    return;
+
   if (state_ == STATE_AUTHENTICATED) {
     screenlock_bridge_->lock_handler()->SetAuthType(
         user_email_,

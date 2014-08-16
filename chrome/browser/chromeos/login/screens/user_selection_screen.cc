@@ -362,6 +362,9 @@ void UserSelectionScreen::HandleGetUsers() {
 void UserSelectionScreen::SetAuthType(
     const std::string& username,
     ScreenlockBridge::LockHandler::AuthType auth_type) {
+  DCHECK(GetAuthType(username) !=
+             ScreenlockBridge::LockHandler::FORCE_OFFLINE_PASSWORD ||
+         auth_type == ScreenlockBridge::LockHandler::FORCE_OFFLINE_PASSWORD);
   user_auth_type_map_[username] = auth_type;
 }
 

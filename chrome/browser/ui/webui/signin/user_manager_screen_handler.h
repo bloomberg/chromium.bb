@@ -63,6 +63,7 @@ class UserManagerScreenHandler : public content::WebUIMessageHandler,
   void HandleLaunchUser(const base::ListValue* args);
   void HandleRemoveUser(const base::ListValue* args);
   void HandleAttemptUnlock(const base::ListValue* args);
+  void HandleHardlockUserPod(const base::ListValue* args);
 
   // Handle GAIA auth results.
   virtual void OnClientLoginSuccess(const ClientLoginResult& result) OVERRIDE;

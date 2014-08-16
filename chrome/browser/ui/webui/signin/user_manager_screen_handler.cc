@@ -257,6 +257,10 @@ void UserManagerScreenHandler::SetAuthType(
     const std::string& user_email,
     ScreenlockBridge::LockHandler::AuthType auth_type,
     const base::string16& auth_value) {
+  if (GetAuthType(user_email) ==
+          ScreenlockBridge::LockHandler::FORCE_OFFLINE_PASSWORD)
+    return;
+
   user_auth_type_map_[user_email] = auth_type;
   web_ui()->CallJavascriptFunction(
       "login.AccountPickerScreen.setAuthType",
@@ -428,6 +432,16 @@ void UserManagerScreenHandler::HandleAttemptUnlock(
   std::string email;
   CHECK(args->GetString(0, &email));
   GetScreenlockRouter(email)->OnAuthAttempted(GetAuthType(email), "");
+}
+
+void UserManagerScreenHandler::HandleHardlockUserPod(
+    const base::ListValue* args) {
+  std::string email;
+  CHECK(args->GetString(0, &email));
+  SetAuthType(email,
+              ScreenlockBridge::LockHandler::FORCE_OFFLINE_PASSWORD,
+              base::string16());
+  HideUserPodCustomIcon(email);
 }
 
 void UserManagerScreenHandler::OnClientLoginSuccess(
