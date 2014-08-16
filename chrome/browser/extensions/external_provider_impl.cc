@@ -66,6 +66,7 @@ const char ExternalProviderImpl::kIsFromWebstore[] = "is_from_webstore";
 const char ExternalProviderImpl::kKeepIfPresent[] = "keep_if_present";
 const char ExternalProviderImpl::kWasInstalledByOem[] = "was_installed_by_oem";
 const char ExternalProviderImpl::kSupportedLocales[] = "supported_locales";
+const char ExternalProviderImpl::kMayBeUntrusted[] = "may_be_untrusted";
 
 ExternalProviderImpl::ExternalProviderImpl(
     VisitorInterface* service,
@@ -204,12 +205,12 @@ void ExternalProviderImpl::SetPrefs(base::DictionaryValue* prefs) {
         is_bookmark_app) {
       creation_flags |= Extension::FROM_BOOKMARK;
     }
-    bool is_from_webstore;
+    bool is_from_webstore = false;
     if (extension->GetBoolean(kIsFromWebstore, &is_from_webstore) &&
         is_from_webstore) {
       creation_flags |= Extension::FROM_WEBSTORE;
     }
-    bool keep_if_present;
+    bool keep_if_present = false;
     if (extension->GetBoolean(kKeepIfPresent, &keep_if_present) &&
         keep_if_present && profile_) {
       ExtensionServiceInterface* extension_service =
@@ -223,10 +224,15 @@ void ExternalProviderImpl::SetPrefs(base::DictionaryValue* prefs) {
         continue;
       }
     }
-    bool was_installed_by_oem;
+    bool was_installed_by_oem = false;
     if (extension->GetBoolean(kWasInstalledByOem, &was_installed_by_oem) &&
         was_installed_by_oem) {
       creation_flags |= Extension::WAS_INSTALLED_BY_OEM;
+    }
+    bool may_be_untrusted = false;
+    if (extension->GetBoolean(kMayBeUntrusted, &may_be_untrusted) &&
+        may_be_untrusted) {
+      creation_flags |= Extension::MAY_BE_UNTRUSTED;
     }
 
     std::string install_parameter;

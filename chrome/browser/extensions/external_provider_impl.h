@@ -73,6 +73,7 @@ class ExternalProviderImpl : public ExternalProviderInterface {
   static const char kKeepIfPresent[];
   static const char kSupportedLocales[];
   static const char kWasInstalledByOem[];
+  static const char kMayBeUntrusted[];
 
   void set_auto_acknowledge(bool auto_acknowledge) {
     auto_acknowledge_ = auto_acknowledge;
