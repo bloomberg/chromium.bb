@@ -7,7 +7,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "mojo/services/public/interfaces/input_events/input_events.mojom.h"
-#include "ui/events/event.h"
 
 namespace blink {
 class WebInputEvent;

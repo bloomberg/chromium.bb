@@ -4,9 +4,10 @@
 
 #include "mojo/services/html_viewer/blink_input_events_type_converters.h"
 
+#include "base/logging.h"
 #include "base/time/time.h"
+#include "mojo/services/public/interfaces/input_events/input_event_constants.mojom.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "ui/events/event_constants.h"
 
 namespace mojo {
 namespace {
@@ -17,48 +18,54 @@ const int kPixelsPerTick = 53;
 int EventFlagsToWebEventModifiers(int flags) {
   int modifiers = 0;
 
-  if (flags & ui::EF_SHIFT_DOWN)
+  if (flags & mojo::EVENT_FLAGS_SHIFT_DOWN)
     modifiers |= blink::WebInputEvent::ShiftKey;
-  if (flags & ui::EF_CONTROL_DOWN)
+  if (flags & mojo::EVENT_FLAGS_CONTROL_DOWN)
     modifiers |= blink::WebInputEvent::ControlKey;
-  if (flags & ui::EF_ALT_DOWN)
+  if (flags & mojo::EVENT_FLAGS_ALT_DOWN)
     modifiers |= blink::WebInputEvent::AltKey;
   // TODO(beng): MetaKey/META_MASK
-  if (flags & ui::EF_LEFT_MOUSE_BUTTON)
+  if (flags & mojo::EVENT_FLAGS_LEFT_MOUSE_BUTTON)
     modifiers |= blink::WebInputEvent::LeftButtonDown;
-  if (flags & ui::EF_MIDDLE_MOUSE_BUTTON)
+  if (flags & mojo::EVENT_FLAGS_MIDDLE_MOUSE_BUTTON)
     modifiers |= blink::WebInputEvent::MiddleButtonDown;
-  if (flags & ui::EF_RIGHT_MOUSE_BUTTON)
+  if (flags & mojo::EVENT_FLAGS_RIGHT_MOUSE_BUTTON)
     modifiers |= blink::WebInputEvent::RightButtonDown;
-  if (flags & ui::EF_CAPS_LOCK_DOWN)
+  if (flags & mojo::EVENT_FLAGS_CAPS_LOCK_DOWN)
     modifiers |= blink::WebInputEvent::CapsLockOn;
   return modifiers;
 }
 
 int EventFlagsToWebInputEventModifiers(int flags) {
   return
-      (flags & ui::EF_SHIFT_DOWN ? blink::WebInputEvent::ShiftKey : 0) |
-      (flags & ui::EF_CONTROL_DOWN ? blink::WebInputEvent::ControlKey : 0) |
-      (flags & ui::EF_CAPS_LOCK_DOWN ? blink::WebInputEvent::CapsLockOn : 0) |
-      (flags & ui::EF_ALT_DOWN ? blink::WebInputEvent::AltKey : 0);
+      (flags & mojo::EVENT_FLAGS_SHIFT_DOWN ?
+       blink::WebInputEvent::ShiftKey : 0) |
+      (flags & mojo::EVENT_FLAGS_CONTROL_DOWN ?
+       blink::WebInputEvent::ControlKey : 0) |
+      (flags & mojo::EVENT_FLAGS_CAPS_LOCK_DOWN ?
+       blink::WebInputEvent::CapsLockOn : 0) |
+      (flags & mojo::EVENT_FLAGS_ALT_DOWN ?
+       blink::WebInputEvent::AltKey : 0);
 }
 
 // TODO(erg): This function is extremely hacky and should only be accepted
 // since this is demo code which won't live very long. Actually calculating
 // this accurately would require the native X11 event so we could get accurate
-// key codes via XKeyEventToWindowsKeyCode() and ui::GetCharacterFromXEvent().
+// key codes via XKeyEventToWindowsKeyCode() and mojo::GetCharacterFromXEvent().
 // That option is closed to us, and thus, hack.
 int32_t MakeHackyText(int32_t key_code, int flags) {
-  if (!(flags & ui::EF_SHIFT_DOWN) && key_code >= 'A' && key_code <= 'Z')
+  if (!(flags & mojo::EVENT_FLAGS_SHIFT_DOWN) && key_code >= 'A' &&
+      key_code <= 'Z') {
     key_code = key_code + ('a' - 'A');
+  }
 
   return key_code;
 }
 
 int GetClickCount(int flags) {
-  if (flags & ui::EF_IS_TRIPLE_CLICK)
+  if (flags & mojo::MOUSE_EVENT_FLAGS_IS_TRIPLE_CLICK)
     return 3;
-  else if (flags & ui::EF_IS_DOUBLE_CLICK)
+  else if (flags & mojo::MOUSE_EVENT_FLAGS_IS_DOUBLE_CLICK)
     return 2;
 
   return 1;
@@ -78,31 +85,42 @@ TypeConverter<EventPtr, scoped_ptr<blink::WebInputEvent> >::ConvertTo(
       event->action == EVENT_TYPE_MOUSE_MOVED ||
       event->action == EVENT_TYPE_MOUSE_DRAGGED) {
     scoped_ptr<blink::WebMouseEvent> web_event(new blink::WebMouseEvent);
-    web_event->x = event->location->x;
-    web_event->y = event->location->y;
+    web_event->x = event->location_data->in_view_location->x;
+    web_event->y = event->location_data->in_view_location->y;
+
+    // TODO(erg): Remove this if check once we can rely on screen_location
+    // actually being passed to us. As written today, getting the screen
+    // location from ui::Event objects can only be done by querying the
+    // underlying native events, so all synthesized events don't have screen
+    // locations.
+    if (!event->location_data->screen_location.is_null()) {
+      web_event->globalX = event->location_data->screen_location->x;
+      web_event->globalY = event->location_data->screen_location->y;
+    }
 
     web_event->modifiers = EventFlagsToWebEventModifiers(event->flags);
     web_event->timeStampSeconds =
         base::TimeDelta::FromInternalValue(event->time_stamp).InSecondsF();
 
     web_event->button = blink::WebMouseEvent::ButtonNone;
-    if (event->flags & ui::EF_LEFT_MOUSE_BUTTON)
+    if (event->flags & mojo::EVENT_FLAGS_LEFT_MOUSE_BUTTON)
       web_event->button = blink::WebMouseEvent::ButtonLeft;
-    if (event->flags & ui::EF_MIDDLE_MOUSE_BUTTON)
+    if (event->flags & mojo::EVENT_FLAGS_MIDDLE_MOUSE_BUTTON)
       web_event->button = blink::WebMouseEvent::ButtonMiddle;
-    if (event->flags & ui::EF_RIGHT_MOUSE_BUTTON)
+    if (event->flags & mojo::EVENT_FLAGS_RIGHT_MOUSE_BUTTON)
       web_event->button = blink::WebMouseEvent::ButtonRight;
 
     switch (event->action) {
       case EVENT_TYPE_MOUSE_PRESSED:
         web_event->type = blink::WebInputEvent::MouseDown;
-        web_event->clickCount = GetClickCount(event->flags);
         break;
       case EVENT_TYPE_MOUSE_RELEASED:
         web_event->type = blink::WebInputEvent::MouseUp;
-        web_event->clickCount = GetClickCount(event->flags);
         break;
       case EVENT_TYPE_MOUSE_ENTERED:
+        web_event->type = blink::WebInputEvent::MouseLeave;
+        web_event->button = blink::WebMouseEvent::ButtonNone;
+        break;
       case EVENT_TYPE_MOUSE_EXITED:
       case EVENT_TYPE_MOUSE_MOVED:
       case EVENT_TYPE_MOUSE_DRAGGED:
@@ -112,6 +130,8 @@ TypeConverter<EventPtr, scoped_ptr<blink::WebInputEvent> >::ConvertTo(
         NOTIMPLEMENTED() << "Received unexpected event: " << event->action;
         break;
     }
+
+    web_event->clickCount = GetClickCount(event->flags);
 
     return web_event.PassAs<blink::WebInputEvent>();
   } else if ((event->action == EVENT_TYPE_KEY_PRESSED ||
@@ -163,10 +183,16 @@ TypeConverter<EventPtr, scoped_ptr<blink::WebInputEvent> >::ConvertTo(
     web_event->timeStampSeconds =
         base::TimeDelta::FromInternalValue(event->time_stamp).InSecondsF();
 
-    web_event->x = event->location->x;
-    web_event->y = event->location->y;
+    web_event->x = event->location_data->in_view_location->x;
+    web_event->y = event->location_data->in_view_location->y;
 
-    if ((event->flags & ui::EF_SHIFT_DOWN) != 0 &&
+    // TODO(erg): Remove this null check as parallel to above.
+    if (!event->location_data->screen_location.is_null()) {
+      web_event->globalX = event->location_data->screen_location->x;
+      web_event->globalY = event->location_data->screen_location->y;
+    }
+
+    if ((event->flags & mojo::EVENT_FLAGS_SHIFT_DOWN) != 0 &&
         event->wheel_data->x_offset == 0) {
       web_event->deltaX = event->wheel_data->y_offset;
       web_event->deltaY = 0;

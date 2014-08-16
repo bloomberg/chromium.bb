@@ -63,7 +63,7 @@ class SampleApp : public mojo::ApplicationDelegate,
   virtual void OnEvent(mojo::EventPtr event,
                        const mojo::Callback<void()>& callback) MOJO_OVERRIDE {
     assert(event);
-    if (event->location)
+    if (event->location_data && event->location_data->in_view_location)
       gles2_client_->HandleInputEvent(*event);
     callback.Run();
   }

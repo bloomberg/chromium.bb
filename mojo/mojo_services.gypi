@@ -95,6 +95,7 @@
       'target_name': 'mojo_input_events_bindings',
       'type': 'static_library',
       'sources': [
+        'services/public/interfaces/input_events/input_event_constants.mojom',
         'services/public/interfaces/input_events/input_events.mojom',
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],

@@ -74,7 +74,7 @@ class PepperContainerApp: public ApplicationDelegate,
 
   virtual void OnEvent(EventPtr event,
                        const mojo::Callback<void()>& callback) OVERRIDE {
-    if (!event->location.is_null()) {
+    if (!event->location_data.is_null()) {
       ppapi::ProxyAutoLock lock;
 
       // TODO(yzshen): Handle events.

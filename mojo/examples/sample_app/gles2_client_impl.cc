@@ -55,7 +55,7 @@ void GLES2ClientImpl::HandleInputEvent(const mojo::Event& event) {
   case mojo::EVENT_TYPE_TOUCH_PRESSED:
     if (event.flags & mojo::EVENT_FLAGS_RIGHT_MOUSE_BUTTON)
       break;
-    capture_point_ = *event.location;
+    capture_point_ = *event.location_data->in_view_location;
     last_drag_point_ = capture_point_;
     drag_start_time_ = mojo::GetTimeTicksNow();
     break;
@@ -63,16 +63,16 @@ void GLES2ClientImpl::HandleInputEvent(const mojo::Event& event) {
   case mojo::EVENT_TYPE_TOUCH_MOVED: {
     if (event.flags & mojo::EVENT_FLAGS_RIGHT_MOUSE_BUTTON)
       break;
-    int direction = event.location->y < last_drag_point_.y ||
-                            event.location->x > last_drag_point_.x
-                        ? 1
-                        : -1;
+    int direction =
+        (event.location_data->in_view_location->y < last_drag_point_.y ||
+         event.location_data->in_view_location->x > last_drag_point_.x)
+        ? 1 : -1;
     cube_.set_direction(direction);
-    cube_.UpdateForDragDistance(
-        CalculateDragDistance(last_drag_point_, *event.location));
+    cube_.UpdateForDragDistance(CalculateDragDistance(
+        last_drag_point_, *event.location_data->in_view_location));
     WantToDraw();
 
-    last_drag_point_ = *event.location;
+    last_drag_point_ = *event.location_data->in_view_location;
     break;
   }
   case mojo::EVENT_TYPE_MOUSE_RELEASED:
@@ -83,9 +83,8 @@ void GLES2ClientImpl::HandleInputEvent(const mojo::Event& event) {
     }
     MojoTimeTicks offset = mojo::GetTimeTicksNow() - drag_start_time_;
     float delta = static_cast<float>(offset) / 1000000.;
-    cube_.SetFlingMultiplier(
-        CalculateDragDistance(capture_point_, *event.location),
-        delta);
+    cube_.SetFlingMultiplier(CalculateDragDistance(
+        capture_point_, *event.location_data->in_view_location), delta);
 
     capture_point_ = last_drag_point_ = mojo::Point();
     WantToDraw();

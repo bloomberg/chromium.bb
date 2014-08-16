@@ -6,6 +6,7 @@
 
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/public/interfaces/input_events/input_events.mojom.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace mojo {
@@ -99,9 +100,18 @@ EventPtr TypeConverter<EventPtr, ui::Event>::ConvertFrom(
   if (input.IsMouseEvent() || input.IsTouchEvent()) {
     const ui::LocatedEvent* located_event =
         static_cast<const ui::LocatedEvent*>(&input);
-    event->location =
+
+    LocationDataPtr location_data(LocationData::New());
+    location_data->in_view_location =
         TypeConverter<PointPtr, gfx::Point>::ConvertFrom(
             located_event->location());
+    if (input.HasNativeEvent()) {
+      location_data->screen_location =
+          TypeConverter<PointPtr, gfx::Point>::ConvertFrom(
+              ui::EventSystemLocationFromNative(input.native_event()));
+    }
+
+    event->location_data = location_data.Pass();
   }
 
   if (input.IsTouchEvent()) {
@@ -140,6 +150,14 @@ TypeConverter<EventPtr, scoped_ptr<ui::Event> >::ConvertTo(
   scoped_ptr<ui::Event> ui_event;
   ui::EventType ui_event_type =
       TypeConverter<EventType, ui::EventType>::ConvertTo(input->action);
+
+  gfx::Point location;
+  if (!input->location_data.is_null() &&
+      !input->location_data->in_view_location.is_null()) {
+    location = TypeConverter<PointPtr, gfx::Point>::ConvertTo(
+        input->location_data->in_view_location);
+  }
+
   switch (input->action) {
     case ui::ET_KEY_PRESSED:
     case ui::ET_KEY_RELEASED:
@@ -163,8 +181,6 @@ TypeConverter<EventPtr, scoped_ptr<ui::Event> >::ConvertTo(
     case EVENT_TYPE_MOUSE_MOVED:
     case EVENT_TYPE_MOUSE_ENTERED:
     case EVENT_TYPE_MOUSE_EXITED: {
-      const gfx::PointF location(TypeConverter<PointPtr, gfx::Point>::ConvertTo(
-                                     input->location));
       // TODO: last flags isn't right. Need to send changed_flags.
       ui_event.reset(new ui::MouseEvent(
                          ui_event_type,
@@ -175,8 +191,6 @@ TypeConverter<EventPtr, scoped_ptr<ui::Event> >::ConvertTo(
       break;
     }
     case EVENT_TYPE_MOUSEWHEEL: {
-      const gfx::PointF location(TypeConverter<PointPtr, gfx::Point>::ConvertTo(
-                                     input->location));
       const gfx::Vector2d offset(input->wheel_data->x_offset,
                                  input->wheel_data->y_offset);
       ui_event.reset(new ui::MouseWheelEvent(offset,
@@ -190,7 +204,6 @@ TypeConverter<EventPtr, scoped_ptr<ui::Event> >::ConvertTo(
     case EVENT_TYPE_TOUCH_PRESSED:
     case EVENT_TYPE_TOUCH_CANCELLED:
     case EVENT_TYPE_TOUCH_RELEASED: {
-      gfx::Point location(input->location->x, input->location->y);
       ui_event.reset(new ui::TouchEvent(
                          ui_event_type,
                          location,
