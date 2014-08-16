@@ -682,13 +682,19 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 
 - (void)saveProfileName:(id)sender {
-  NSString* text = [profileNameTextField_ stringValue];
+  base::string16 newProfileName =
+      base::SysNSStringToUTF16([profileNameTextField_ stringValue]);
+
   // Empty profile names are not allowed, and are treated as a cancel.
-  if ([text length] > 0) {
-    profiles::UpdateProfileName(profile_, base::SysNSStringToUTF16(text));
+  base::TrimWhitespace(newProfileName, base::TRIM_ALL, &newProfileName);
+  if (!newProfileName.empty()) {
+    profiles::UpdateProfileName(profile_, newProfileName);
     [controller_
         postActionPerformed:ProfileMetrics::PROFILE_DESKTOP_MENU_EDIT_NAME];
-    [self setTitle:text];
+    [self setTitle:base::SysUTF16ToNSString(newProfileName)];
+  } else {
+    // Since the text is empty and not allowed, revert it from the textbox.
+    [profileNameTextField_ setStringValue:[self title]];
   }
   [profileNameTextField_ setHidden:YES];
 }

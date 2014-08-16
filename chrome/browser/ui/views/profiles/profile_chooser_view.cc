@@ -830,6 +830,7 @@ bool ProfileChooserView::HandleKeyEvent(views::Textfield* sender,
       key_event.key_code() == ui::VKEY_TAB) {
     // Pressing Tab/Enter commits the new profile name, unless it's empty.
     base::string16 new_profile_name = name_textfield->text();
+    base::TrimWhitespace(new_profile_name, base::TRIM_ALL, &new_profile_name);
     if (new_profile_name.empty())
       return true;
 
