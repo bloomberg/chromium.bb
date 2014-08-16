@@ -7,9 +7,6 @@
     {
       'target_name': 'extensions_resources',
       'type': 'none',
-      'dependencies': [
-        '../device/serial/serial.gyp:device_serial_mojo',
-      ],
       'variables': {
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/extensions',
       },
@@ -33,6 +30,13 @@
         },
       ],
       'includes': [ '../build/grit_target.gypi' ],
+      'conditions': [
+        ['enable_extensions==1', {
+          'dependencies': [
+            '../device/serial/serial.gyp:device_serial_mojo',
+          ],
+        }],
+      ],
     }
   ]
 }

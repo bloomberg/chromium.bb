@@ -20,8 +20,6 @@
         '../components/components.gyp:url_matcher',
         '../content/content.gyp:content_common',
         '../crypto/crypto.gyp:crypto',
-        # For Mojo generated headers for generated_api.cc.
-        '../device/serial/serial.gyp:device_serial_mojo',
         '../ipc/ipc.gyp:ipc',
         '../net/net.gyp:net',
         '../third_party/re2/re2.gyp:re2',
@@ -216,6 +214,8 @@
       'conditions': [
         ['enable_extensions==1', {
           'dependencies': [
+            # For Mojo generated headers for generated_api.cc.
+            '../device/serial/serial.gyp:device_serial_mojo',
             '../device/usb/usb.gyp:device_usb',
           ],
           'sources!': [
