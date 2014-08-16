@@ -20,7 +20,7 @@ def ParseURLsFromConfig(file_name):
   """Parses URLS from the config file.
 
   The file should be in python config format, where svn section is in the
-  format "svn:component_path", except for git URLs and codereview URL.
+  format "svn:component_path".
   Each of the section for svn should contain changelog_url, revision_url,
   diff_url and blame_url.
 
@@ -31,7 +31,6 @@ def ParseURLsFromConfig(file_name):
     A dictionary that maps repository type to list of URLs. For svn, it maps
     key 'svn' to another dictionary, which maps component path to the URLs
     as explained above. For git, it maps to the URLs as explained above.
-    Codereview maps to codereview API url.
   """
   config = ConfigParser.ConfigParser()
 
@@ -45,17 +44,17 @@ def ParseURLsFromConfig(file_name):
     return None
 
   # Iterate through the config file, check for sections.
-  repository_type_to_url_map = {}
+  parsed_config = {}
   for section in config.sections():
     # These two do not need another layer of dictionary, so add it and go
     # to next section.
-    if section == 'git' or section == 'codereview':
+    if ':' not in section:
       for option in config.options(section):
-        if section not in repository_type_to_url_map:
-          repository_type_to_url_map[section] = {}
+        if section not in parsed_config:
+          parsed_config[section] = {}
 
         url = config.get(section, option)
-        repository_type_to_url_map[section][option] = url
+        parsed_config[section][option] = url
 
       continue
 
@@ -65,9 +64,9 @@ def ParseURLsFromConfig(file_name):
     component_path = repository_type_and_component[1]
 
     # Add 'svn' as the key, if it is not already there.
-    if repository_type not in repository_type_to_url_map:
-      repository_type_to_url_map[repository_type] = {}
-    url_map_for_repository = repository_type_to_url_map[repository_type]
+    if repository_type not in parsed_config:
+      parsed_config[repository_type] = {}
+    url_map_for_repository = parsed_config[repository_type]
 
     # Add the path to the 'svn', if it is not already there.
     if component_path not in url_map_for_repository:
@@ -79,7 +78,7 @@ def ParseURLsFromConfig(file_name):
       url = config.get(section, option)
       type_to_url[option] = url
 
-  return repository_type_to_url_map
+  return parsed_config
 
 
 def NormalizePathLinux(path, parsed_deps):
@@ -123,8 +122,8 @@ def NormalizePathLinux(path, parsed_deps):
       # 'Source' but chromium uses 'src/', and blink component path is
       # 'src/third_party/WebKit/Source', so add 'Source/' in front of the
       # normalized path.
-      if not normalized_path.startswith('src/') or \
-          normalized_path.startswith('Source/'):
+      if not (normalized_path.startswith('src/') or
+          normalized_path.startswith('Source/')):
 
         if (new_path.lower().endswith('src/') or
             new_path.lower().endswith('source/')):
@@ -184,7 +183,7 @@ def LoadJSON(json_string):
   return data
 
 
-def GetDataFromURL(url, retries=10, sleep_time=0.1, timeout=10):
+def GetDataFromURL(url, retries=10, sleep_time=0.1, timeout=5):
   """Retrieves raw data from URL, tries 10 times.
 
   Args:
@@ -440,23 +439,10 @@ def BlameListToResultList(blame_list):
     # Blame object does not have review url and reviewers.
     review_url = None
     reviewers = None
-    line_content = blame.content
+    line_content = blame.line_content
 
     result = Result(suspected_cl, revision_url, component_name, author, reason,
                     review_url, reviewers, line_content)
     result_list.append(result)
 
   return result_list
-
-
-def ResultListToJSON(result_list):
-  """Converts result list to JSON format.
-
-  Args:
-    result_list: A list of result objects
-
-  Returns:
-    A string, JSON format of the result_list.
-
-  """
-  return json.dumps([result.ToDictionary() for result in result_list])

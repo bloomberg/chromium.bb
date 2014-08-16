@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright (c) 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -74,7 +74,6 @@ class BlameList(object):
     """
     # Only return blame information for first 'top_n_frames' frames.
     stack_frames = callstack.GetTopNFrames(top_n_frames)
-
     threads = []
     # Iterate through frames in stack.
     for stack_frame in stack_frames:
@@ -154,7 +153,7 @@ class BlameList(object):
 
         # Discards results that are after the end of regression.
         if not utils.IsGitHash(blame.revision) and (
-            int(blame.revision) < int(blame.range_end)):
+            int(blame.range_end) <= int(blame.revision)):
           continue
 
       filtered_blame_list.append(blame)
