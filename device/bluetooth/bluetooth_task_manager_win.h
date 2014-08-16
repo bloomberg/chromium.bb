@@ -179,6 +179,14 @@ class BluetoothTaskManagerWin
       bool search_cached_services_only,
       ScopedVector<ServiceRecordState>* service_record_states);
 
+  // Discover Bluetooth Classic services for the given |device_address|.
+  // Returns a Win32 error code.
+  int DiscoverClassicDeviceServicesWorker(
+      const std::string& device_address,
+      const GUID& protocol_uuid,
+      bool search_cached_services_only,
+      ScopedVector<ServiceRecordState>* service_record_states);
+
   // Discover Bluetooth Low Energy services for the given |device_path|.
   bool DiscoverLowEnergyDeviceServices(
       const base::FilePath& device_path,
