@@ -208,7 +208,7 @@
       <!-- The default value for |WebPreference::standard_font_family_map| for
            Japanese script. -->
       <message name="IDS_STANDARD_FONT_FAMILY_JAPANESE" use_name_for_id="true">
-        MotoyaG04Gothic
+        Noto Sans CJK Japanese
       </message>
 
       <!-- The default value for |WebPreference::fixed_font_family_map| for
@@ -226,13 +226,13 @@
       <!-- The default value for |WebPreference::sans_serif_font_family_map| for
            Japanese script.  -->
       <message name="IDS_SANS_SERIF_FONT_FAMILY_JAPANESE" use_name_for_id="true">
-        MotoyaG04Gothic
+        Noto Sans CJK Japanese
       </message>
 
      <!-- The default value for |WebPreference::standard_font_family_map| for
            Korean script. -->
       <message name="IDS_STANDARD_FONT_FAMILY_KOREAN" use_name_for_id="true">
-        NanumGothic
+        Noto Sans CJK Korean
       </message>
 
       <!-- The default value for |WebPreference::fixed_font_family_map| for
@@ -250,19 +250,19 @@
       <!-- The default value for |WebPreference::sans_serif_font_family_map| for
            Korean script.  -->
       <message name="IDS_SANS_SERIF_FONT_FAMILY_KOREAN" use_name_for_id="true">
-        NanumGothic
+        Noto Sans CJK Korean
       </message>
 
       <!-- The default value for |WebPreference::standard_font_family_map| for
            Simplified Chinese script. -->
       <message name="IDS_STANDARD_FONT_FAMILY_SIMPLIFIED_HAN" use_name_for_id="true">
-        MYingHeiGB18030
+        Noto Sans CJK Simplified Chinese
       </message>
 
       <!-- The default value for |WebPreference::fixed_font_family_map| for
            Simplified Chinese script. -->
       <message name="IDS_FIXED_FONT_FAMILY_SIMPLIFIED_HAN" use_name_for_id="true">
-        MYingHeiGB18030
+        Noto Sans CJK Simplified Chinese
       </message>
 
       <!-- The default value for |WebPreference::serif_font_family_map| for
@@ -274,19 +274,19 @@
       <!-- The default value for |WebPreference::sans_serif_font_family_map| for
            Simplified Chinese script.  -->
       <message name="IDS_SANS_SERIF_FONT_FAMILY_SIMPLIFIED_HAN" use_name_for_id="true">
-        MYingHeiGB18030
+        Noto Sans CJK Simplified Chinese
       </message>
 
       <!-- The default value for |WebPreference::standard_font_family_map| for
            Traditional Chinese script. -->
       <message name="IDS_STANDARD_FONT_FAMILY_TRADITIONAL_HAN" use_name_for_id="true">
-        MYingHeiB5HK
+        Noto Sans CJK Traditional  Chinese
       </message>
 
       <!-- The default value for |WebPreference::fixed_font_family_map| for
            Traditional Chinese script. -->
       <message name="IDS_FIXED_FONT_FAMILY_TRADITIONAL_HAN" use_name_for_id="true">
-        MYingHeiB5HK
+        Noto Sans CJK Traditional  Chinese
       </message>
 
       <!-- The default value for |WebPreference::serif_font_family_map| for
@@ -298,7 +298,7 @@
       <!-- The default value for |WebPreference::sans_serif_font_family_map| for
            Traditional Chinese script.  -->
       <message name="IDS_SANS_SERIF_FONT_FAMILY_TRADITIONAL_HAN" use_name_for_id="true">
-        MYingHeiB5HK
+        Noto Sans CJK Traditional  Chinese
       </message>
 
       <!-- The default value for |WebPreference::default_font_size| -->

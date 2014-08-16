@@ -26,7 +26,7 @@ div.audio-player {
   color: #3d3d3d;
   cursor: default;
   flex: 1 1 auto;
-  font-family: Open Sans, Droid Sans Fallback, sans-serif;
+  font-family: Noto Sans UI, sans-serif;
   font-size: 10pt;
   position: relative;
 }
