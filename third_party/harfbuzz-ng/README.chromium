@@ -14,5 +14,6 @@ API from the old one.
 This copy of harfbuzz is updated by downloading the release tarball
 from http://www.freedesktop.org/software/harfbuzz/release/ , removing
 files in src, copying *.h *.hh *.cc from the tarball's src folder
-over to src, then checking for removed or added files and updating
-our build recipes in BUILD.gn and harfbuzz.gyp accordingly.
+over to src, apply google.patch, then checking for removed or added
+files and update our build recipes in BUILD.gn and harfbuzz.gyp
+accordingly.

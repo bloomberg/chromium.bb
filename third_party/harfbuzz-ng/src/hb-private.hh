@@ -131,7 +131,9 @@
 #  ifndef WIN32_LEAN_AND_MEAN
 #    define WIN32_LEAN_AND_MEAN
 #  endif
-#  define STRICT
+#  ifndef STRICT
+#    define STRICT
+#  endif
 #endif
 
 #ifdef _WIN32_WCE
