@@ -27,7 +27,6 @@ from webkitpy.common.system.crashlogs import CrashLogs
 from webkitpy.common.system.filesystem_mock import MockFileSystem
 from webkitpy.common.system.systemhost import SystemHost
 from webkitpy.common.system.systemhost_mock import MockSystemHost
-from webkitpy.thirdparty.mock import Mock
 
 
 def make_mock_crash_report_darwin(process_name, pid):

@@ -37,16 +37,20 @@ from webkitpy.common.host_mock import MockHost
 from webkitpy.layout_tests.controllers.manager import Manager
 from webkitpy.layout_tests.models import test_expectations
 from webkitpy.layout_tests.models.test_run_results import TestRunResults
-from webkitpy.thirdparty.mock import Mock
 from webkitpy.tool.mocktool import MockOptions
+
+
+class FakePrinter(object):
+    def write_update(self, s):
+        pass
 
 
 class ManagerTest(unittest.TestCase):
     def test_needs_servers(self):
         def get_manager():
-            port = Mock()  # FIXME: Use a tighter mock.
-            port.TEST_PATH_SEPARATOR = '/'
-            manager = Manager(port, options=MockOptions(http=True, max_locked_shards=1), printer=Mock())
+            host = MockHost()
+            port = host.port_factory.get('test-mac-leopard')
+            manager = Manager(port, options=MockOptions(http=True, max_locked_shards=1), printer=FakePrinter())
             return manager
 
         manager = get_manager()
@@ -57,7 +61,7 @@ class ManagerTest(unittest.TestCase):
 
     def test_servers_started(self):
         def get_manager(port):
-            manager = Manager(port, options=MockOptions(http=True, max_locked_shards=1), printer=Mock())
+            manager = Manager(port, options=MockOptions(http=True, max_locked_shards=1), printer=FakePrinter())
             return manager
 
         def start_http_server(additional_dirs, number_of_drivers):
@@ -109,7 +113,7 @@ class ManagerTest(unittest.TestCase):
         def get_manager():
             host = MockHost()
             port = host.port_factory.get('test-mac-leopard')
-            manager = Manager(port, options=MockOptions(test_list=None, http=True, max_locked_shards=1), printer=Mock())
+            manager = Manager(port, options=MockOptions(test_list=None, http=True, max_locked_shards=1), printer=FakePrinter())
             return manager
         host = MockHost()
         port = host.port_factory.get('test-mac-leopard')

@@ -26,12 +26,13 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import unittest
+
 from webkitpy.common.system.outputcapture import OutputCapture
-from webkitpy.common.webkitunittest import TestCase
 from webkitpy.tool.mocktool import MockOptions, MockTool
 
 
-class CommandsTest(TestCase):
+class CommandsTest(unittest.TestCase):
     def assert_execute_outputs(self, command, args=[], expected_stdout="", expected_stderr="", expected_exception=None, expected_logs=None, options=MockOptions(), tool=MockTool()):
         options.blocks = None
         options.cc = 'MOCK cc'
