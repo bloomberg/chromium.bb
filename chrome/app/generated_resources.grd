@@ -5175,6 +5175,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSIONS_CORRUPTED_EXTENSION" desc="The warning for the user that an extension may have been tampered with on disk.">
         This extension may have been corrupted by malware.
       </message>
+      <message name="IDS_EXTENSIONS_CORRUPTED_EXTENSION_2" desc="The warning for the user that an extension may have been tampered with on disk.">
+        This extension may have been corrupted. Try re-installing.
+      </message>
+      <message name="IDS_EXTENSIONS_CORRUPTED_EXTENSION_3" desc="The warning for the user that an extension may have been tampered with on disk.">
+        This extension may have been incorrectly updated. Try re-installing.
+      </message>
+      <message name="IDS_EXTENSIONS_CORRUPTED_EXTENSION_4" desc="The warning for the user that an extension may have been tampered with on disk.">
+        Extension corrupted. Try re-installing.
+      </message>
 
       <!-- Settings API bubble -->
       <if expr="use_titlecase">
