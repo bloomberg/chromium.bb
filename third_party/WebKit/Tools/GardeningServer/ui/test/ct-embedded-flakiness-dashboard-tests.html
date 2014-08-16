@@ -12,17 +12,33 @@ found in the LICENSE file.
 var assert = chai.assert;
 
 describe('ct-embedded-flakiness-dashboard', function() {
-  it('should point the iframe to the dashboard', function(done) {
-    var failure = new CTFailure('foo_tests', 'foo/bar.html');
-    var tree = "blink";
-    var embeddedFlakinessDashboard = document.createElement('ct-embedded-flakiness-dashboard');
-    embeddedFlakinessDashboard.test = failure;
-    embeddedFlakinessDashboard.tree = tree;
 
-    setTimeout(function() {
+  describe('iframe location', function() {
+    var embeddedFlakinessDashboard;
+
+    after(function() {
+      document.body.removeChild(embeddedFlakinessDashboard);
+    });
+
+    it('should point the iframe to the dashboard', function(done) {
+      var failure = new CTFailure('foo_tests', 'foo/bar.html');
+      failure.embeddedFlakinessDashboardURL = function(tree) {
+        return 'placeholder.html?' + this.flakinessDashboardURL(tree) + '&showChrome=false';
+      }
+
+      var tree = "blink";
+      embeddedFlakinessDashboard = document.createElement('ct-embedded-flakiness-dashboard');
+      embeddedFlakinessDashboard.hidden = true;
+      embeddedFlakinessDashboard.test = failure;
+      embeddedFlakinessDashboard.tree = tree;
+      document.body.appendChild(embeddedFlakinessDashboard);
+
       var iframe = embeddedFlakinessDashboard.shadowRoot.querySelector('#iframe');
-      assert.equal(iframe.src, failure.embeddedFlakinessDashboardURL(tree));
-      done();
+      iframe.addEventListener('load', function() {
+        assert.include(iframe.contentWindow.location.href,
+                       failure.embeddedFlakinessDashboardURL(tree));
+        done();
+      });
     });
   });
 

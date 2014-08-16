@@ -32,7 +32,8 @@ found in the LICENSE file.
       },
 
       testChanged: function() {
-        this.$.iframe.src = this.test.embeddedFlakinessDashboardURL(this.tree);
+        // Use location.replace so we don't create extraneous history events.
+        this.$.iframe.contentWindow.location.replace(this.test.embeddedFlakinessDashboardURL(this.tree));
       },
 
     });
