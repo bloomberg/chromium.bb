@@ -28760,6 +28760,23 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Signin.DuringFirstRun">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    Track if the profile sign in took place during First Run or not. Logged at
+    signin time. True means signin took place during First Run, False means
+    anytime after.
+  </summary>
+</histogram>
+
+<histogram name="Signin.ElapsedTimeFromInstallToSignin" units="minutes">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    Track how many minutes of local system time elapsed from when Chrome was
+    installed to when Signin occured for this profile.
+  </summary>
+</histogram>
+
 <histogram name="Signin.OneClickConfirmation" enum="SigninFlowConfirmations">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>

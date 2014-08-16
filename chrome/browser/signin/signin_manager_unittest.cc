@@ -21,11 +21,13 @@
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/test_signin_client_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/test_signin_client.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -99,9 +101,15 @@ class SigninManagerTest : public testing::Test {
     TestingProfile::Builder builder;
     builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
                               BuildFakeProfileOAuth2TokenService);
+    builder.AddTestingFactory(ChromeSigninClientFactory::GetInstance(),
+                              signin::BuildTestSigninClient);
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
                               SigninManagerBuild);
     profile_ = builder.Build();
+
+    static_cast<TestSigninClient*>(
+        ChromeSigninClientFactory::GetInstance()->GetForProfile(profile()))->
+            SetURLRequestContext(profile_->GetRequestContext());
   }
 
   virtual void TearDown() OVERRIDE {

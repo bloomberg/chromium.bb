@@ -7,10 +7,13 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile_downloader.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_info_cache_unittest.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/test_signin_client_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -68,7 +71,13 @@ class GAIAInfoUpdateServiceTest : public ProfileInfoCacheTest {
   NiceMock<ProfileDownloaderMock>* downloader() { return downloader_.get(); }
 
   Profile* CreateProfile(const std::string& name) {
-    Profile* profile = testing_profile_manager_.CreateTestingProfile(name);
+    TestingProfile::TestingFactories testing_factories;
+    testing_factories.push_back(std::make_pair(
+        ChromeSigninClientFactory::GetInstance(),
+        signin::BuildTestSigninClient));
+    Profile* profile = testing_profile_manager_.CreateTestingProfile(name,
+        scoped_ptr<PrefServiceSyncable>(), base::UTF8ToUTF16(name), 0,
+        std::string(), testing_factories);
     // The testing manager sets the profile name manually, which counts as
     // a user-customized profile name. Reset this to match the default name
     // we are actually using.

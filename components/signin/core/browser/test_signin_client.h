@@ -50,8 +50,13 @@ class TestSigninClient : public SigninClient {
   // Returns the empty string.
   virtual std::string GetProductVersion() OVERRIDE;
 
-  // Returns a TestURLRequestContextGetter.
+  // Returns a TestURLRequestContextGetter or an manually provided
+  // URLRequestContextGetter.
   virtual net::URLRequestContextGetter* GetURLRequestContext() OVERRIDE;
+
+  // For testing purposes, can override the TestURLRequestContextGetter created
+  // in the default constructor.
+  void SetURLRequestContext(net::URLRequestContextGetter* request_context);
 
 #if defined(OS_IOS)
   virtual ios::ProfileOAuth2TokenServiceIOSProvider* GetIOSProvider() OVERRIDE;
@@ -73,13 +78,15 @@ class TestSigninClient : public SigninClient {
   virtual void ClearSigninProcess() OVERRIDE;
   virtual bool IsSigninProcess(int host_id) const OVERRIDE;
   virtual bool HasSigninProcess() const OVERRIDE;
+  virtual bool IsFirstRun() const OVERRIDE;
+  virtual base::Time GetInstallDate() OVERRIDE;
 
  private:
   // Loads the token database.
   void LoadDatabase();
 
   base::ScopedTempDir temp_dir_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
   scoped_refptr<TokenWebData> database_;
   int signin_host_id_;
   CookieChangedCallbackList cookie_callbacks_;

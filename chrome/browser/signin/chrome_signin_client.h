@@ -51,6 +51,8 @@ class ChromeSigninClient : public SigninClient,
   virtual void ClearSigninScopedDeviceId() OVERRIDE;
   virtual net::URLRequestContextGetter* GetURLRequestContext() OVERRIDE;
   virtual bool ShouldMergeSigninCredentialsIntoCookieJar() OVERRIDE;
+  virtual bool IsFirstRun() const OVERRIDE;
+  virtual base::Time GetInstallDate() OVERRIDE;
 
   // Returns a string describing the chrome version environment. Version format:
   // <Build Info> <OS> <Version number> (<Last change>)<channel or "-devel">

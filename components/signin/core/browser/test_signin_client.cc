@@ -52,6 +52,11 @@ net::URLRequestContextGetter* TestSigninClient::GetURLRequestContext() {
   return request_context_;
 }
 
+void TestSigninClient::SetURLRequestContext(
+    net::URLRequestContextGetter* request_context) {
+  request_context_ = request_context;
+}
+
 std::string TestSigninClient::GetProductVersion() { return ""; }
 
 void TestSigninClient::LoadDatabase() {
@@ -112,4 +117,12 @@ bool TestSigninClient::IsSigninProcess(int process_id) const {
 
 bool TestSigninClient::HasSigninProcess() const {
   return signin_host_id_ != kInvalidProcessId;
+}
+
+bool TestSigninClient::IsFirstRun() const {
+  return false;
+}
+
+base::Time TestSigninClient::GetInstallDate() {
+  return base::Time::Now();
 }

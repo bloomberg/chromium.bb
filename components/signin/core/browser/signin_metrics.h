@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_METRICS_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_METRICS_H_
 
+#include "base/time/time.h"
+
 namespace signin_metrics {
 
 // Enum for the ways in which primary account detection is done.
@@ -69,6 +71,9 @@ void LogSigninAccountReconciliation(int total_number_accounts,
 
 // Track a successful signin.
 void LogSigninAddAccount();
+
+// Track a successful signin of a profile.
+void LogSigninProfile(bool is_first_run, base::Time install_date);
 
 // Track a profile signout.
 void LogSignout(ProfileSignout metric);

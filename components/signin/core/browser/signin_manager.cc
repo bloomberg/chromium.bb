@@ -377,6 +377,9 @@ void SigninManager::OnSignedIn(const std::string& username) {
 
   client_->GoogleSigninSucceeded(GetAuthenticatedUsername(), password_);
 
+  signin_metrics::LogSigninProfile(client_->IsFirstRun(),
+                                   client_->GetInstallDate());
+
   password_.clear();                           // Don't need it anymore.
   DisableOneClickSignIn(client_->GetPrefs());  // Don't ever offer again.
 }

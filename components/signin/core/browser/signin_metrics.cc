@@ -51,6 +51,17 @@ void LogSigninAccountReconciliation(int total_number_accounts,
   }
 }
 
+void LogSigninProfile(bool is_first_run, base::Time install_date) {
+  // Track whether or not the user signed in during the first run of Chrome.
+  UMA_HISTOGRAM_BOOLEAN("Signin.DuringFirstRun", is_first_run);
+
+  // Determine how much time passed since install when this profile was signed
+  // in.
+  base::TimeDelta elapsed_time = base::Time::Now() - install_date;
+  UMA_HISTOGRAM_COUNTS("Signin.ElapsedTimeFromInstallToSignin",
+                       elapsed_time.InMinutes());
+}
+
 void LogSigninAddAccount() {
   // Account signin may fail for a wide variety of reasons. There is no
   // explicit false, but one can compare this value with the various UI

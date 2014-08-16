@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/callback_list.h"
+#include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
 
@@ -85,6 +86,8 @@ class SigninClient : public KeyedService {
   virtual bool IsSigninProcess(int host_id) const = 0;
   virtual bool HasSigninProcess() const = 0;
 
+  virtual bool IsFirstRun() const = 0;
+  virtual base::Time GetInstallDate() = 0;
 
 #if defined(OS_IOS)
   // TODO(msarda): http://crbug.com/358544 Remove this iOS specific code from
