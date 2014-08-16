@@ -9,9 +9,12 @@
 # run with:
 #    cros_sdk ../../chromite.cbuildbot/cros_mark_chrome_as_stable_unittest.py
 
+import base64
+import cStringIO
 import mox
 import os
 import sys
+from textwrap import dedent
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
@@ -19,8 +22,8 @@ from chromite.cbuildbot import constants
 from chromite.cbuildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
-from chromite.lib import gclient
 from chromite.lib import git
+from chromite.lib import gob_util
 from chromite.scripts import cros_mark_chrome_as_stable
 
 # pylint: disable=W0212,R0904
@@ -135,127 +138,105 @@ class CrosMarkChromeAsStable(cros_test_lib.MoxTempDirTestCase):
 
     self.assertEqual(candidate.ebuild_path, self.sticky_rc)
 
-  def testGetTipOfTrunkSvnRevision(self):
+  def testGetTipOfTrunkRevision(self):
     """Tests if we can get the latest svn revision from TOT."""
     A_URL = 'dorf://mink/delaane/forkat/sertiunu.ortg./desk'
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-    cros_build_lib.RunCommand(
-        ['svn', 'info', A_URL],
-        redirect_stdout=True).AndReturn(
-          _StubCommandResult(
-            'Some Junk 2134\nRevision: %s\nOtherInfo: test_data' %
-            fake_svn_rev))
+    self.mox.StubOutWithMock(gob_util, 'FetchUrlJson')
+    gob_util.FetchUrlJson(
+        'mink',
+        '/delaane/forkat/sertiunu.ortg./desk/+log/master?n=1&format=JSON',
+        ignore_404=False).AndReturn(
+            { 'log': [ { 'commit': 'deadbeef' * 5 } ] })
     self.mox.ReplayAll()
-    revision = gclient.GetTipOfTrunkSvnRevision(A_URL)
+    revision = gob_util.GetTipOfTrunkRevision(A_URL)
     self.mox.VerifyAll()
-    self.assertEquals(revision, fake_svn_rev)
+    self.assertEquals(revision, 'deadbeef' * 5)
 
   def testGetTipOfTrunkVersion(self):
     """Tests if we get the latest version from TOT."""
-    ARBITRARY_URL = 'Pratooey'
-    path = os.path.join(cros_mark_chrome_as_stable._GetSvnUrl(ARBITRARY_URL),
-                        'src', 'chrome', 'VERSION')
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-    cros_build_lib.RunCommand(
-        ['svn', 'info', ARBITRARY_URL],
-        redirect_stdout=True).AndReturn(
-          _StubCommandResult(
-            'Some Junk 2134\nRevision: %s\nOtherInfo: test_data' %
-            fake_svn_rev))
-    cros_build_lib.RunCommand(
-        ['svn', 'cat', '-r', fake_svn_rev, path], redirect_stdout=True,
-        error_message=mox.IsA(str)).AndReturn(
-          _StubCommandResult('A=8\nB=0\nC=256\nD=0'))
-
+    TEST_URL = 'proto://host.org/path/to/repo'
+    TEST_VERSION_CONTENTS = dedent('''\
+        A=8
+        B=0
+        C=256
+        D=0''')
+    self.mox.StubOutWithMock(gob_util, 'FetchUrl')
+    gob_util.FetchUrl(
+        'host.org',
+        '/path/to/repo/+/test-revision/chrome/VERSION?format=text',
+        ignore_404=True).AndReturn(
+            cStringIO.StringIO(base64.b64encode(TEST_VERSION_CONTENTS)))
     self.mox.ReplayAll()
-    version = cros_mark_chrome_as_stable._GetSpecificVersionUrl(ARBITRARY_URL,
-                                                                fake_svn_rev)
+    version = cros_mark_chrome_as_stable._GetSpecificVersionUrl(
+        TEST_URL, 'test-revision')
     self.mox.VerifyAll()
     self.assertEquals(version, '8.0.256.0')
 
   def testCheckIfChromeRightForOS(self):
     """Tests if we can find the chromeos build from our mock DEPS."""
-    ARBITRARY_URL = 'phthp://sores.chromium.org/tqs/7.0.224.1/DEPS'
     test_data1 = "buildspec_platforms:\n    'chromeos,',\n"
     test_data2 = "buildspec_platforms:\n    'android,',\n"
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-    cros_build_lib.RunCommand(
-        ['svn', 'cat', ARBITRARY_URL],
-        redirect_stdout=True).AndReturn(_StubCommandResult(test_data1))
-    cros_build_lib.RunCommand(
-        ['svn', 'cat', ARBITRARY_URL],
-        redirect_stdout=True).AndReturn(_StubCommandResult(test_data2))
-    self.mox.ReplayAll()
     expected_deps = cros_mark_chrome_as_stable.CheckIfChromeRightForOS(
-        ARBITRARY_URL)
+        test_data1)
     unexpected_deps = cros_mark_chrome_as_stable.CheckIfChromeRightForOS(
-        ARBITRARY_URL)
-    self.mox.VerifyAll()
+        test_data2)
     self.assertTrue(expected_deps)
     self.assertFalse(unexpected_deps)
 
   def testGetLatestRelease(self):
     """Tests if we can find the latest release from our mock url data."""
-    ARBITRARY_URL = 'phthp://sores.chromium.org/tqs'
-    input_data = ['7.0.224.1/', '7.0.224.2/', '8.0.365.5/', 'LATEST.txt']
-    test_data = '\n'.join(input_data)
-    sorted_data = '\n'.join(reversed(input_data))
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-    cros_build_lib.RunCommand(
-        ['svn', 'ls', ARBITRARY_URL + '/releases'],
-        redirect_stdout=True).AndReturn(_StubCommandResult(test_data))
-    cros_build_lib.RunCommand(
-        ['sort', '--version-sort', '-r'], input=test_data,
-        redirect_stdout=True).AndReturn(_StubCommandResult(sorted_data))
-    # pretend this one is missing to test the skipping logic.
-    cros_build_lib.RunCommand(
-        ['svn', 'ls', ARBITRARY_URL + '/releases/8.0.365.5/DEPS'],
-        error_code_ok=True, redirect_stdout=True).AndReturn(
-          _StubCommandResult('BAH BAH BAH'))
-    cros_build_lib.RunCommand(
-        ['svn', 'ls', ARBITRARY_URL + '/releases/7.0.224.2/DEPS'],
-        error_code_ok=True, redirect_stdout=True).AndReturn(
-          _StubCommandResult('DEPS\n'))
+    TEST_HOST = 'sores.chromium.org'
+    TEST_URL = 'phthp://%s/tqs' % TEST_HOST
+    TEST_TAGS = ['7.0.224.1', '7.0.224', '8.0.365.5', 'foo', 'bar-12.13.14.15']
+    TEST_REFS_JSON = dict((tag, None) for tag in TEST_TAGS)
+    TEST_BAD_DEPS_CONTENT = dedent('''\
+        buildspec_platforms: 'TRS-80,',
+        ''')
+    TEST_GOOD_DEPS_CONTENT = dedent('''\
+        buildspec_platforms: 'chromeos,',
+        ''')
+
+    self.mox.StubOutWithMock(gob_util, 'FetchUrl')
+    self.mox.StubOutWithMock(gob_util, 'FetchUrlJson')
+    gob_util.FetchUrlJson(
+        TEST_HOST, '/tqs/+refs/tags?format=JSON', ignore_404=False).AndReturn(
+            TEST_REFS_JSON)
+    gob_util.FetchUrl(
+        TEST_HOST, '/tqs/+/refs/tags/8.0.365.5/DEPS?format=text',
+        ignore_404=False).AndReturn(
+            cStringIO.StringIO(base64.b64encode(TEST_BAD_DEPS_CONTENT)))
+    gob_util.FetchUrl(
+        TEST_HOST, '/tqs/+/refs/tags/7.0.224.1/DEPS?format=text',
+        ignore_404=False).AndReturn(
+            cStringIO.StringIO(base64.b64encode(TEST_GOOD_DEPS_CONTENT)))
     self.mox.ReplayAll()
-    self.mox.StubOutWithMock(cros_mark_chrome_as_stable,
-                             'CheckIfChromeRightForOS')
-    cros_mark_chrome_as_stable.CheckIfChromeRightForOS(
-        ARBITRARY_URL + '/releases/7.0.224.2/DEPS').AndReturn(
-            _StubCommandResult('True'))
-    self.mox.ReplayAll()
-    release = cros_mark_chrome_as_stable.GetLatestRelease(ARBITRARY_URL)
+    release = cros_mark_chrome_as_stable.GetLatestRelease(TEST_URL)
     self.mox.VerifyAll()
-    self.assertEqual('7.0.224.2', release)
+    self.assertEqual('7.0.224.1', release)
 
   def testGetLatestStickyRelease(self):
     """Tests if we can find the latest sticky release from our mock url data."""
-    ARBITRARY_URL = 'http://src.chromium.org/svn'
-    test_data = '\n'.join(['7.0.222.1/',
-                           '8.0.224.2/',
-                           '8.0.365.5/',
-                           'LATEST.txt'])
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-    cros_build_lib.RunCommand(
-        ['svn', 'ls', ARBITRARY_URL + '/releases'],
-        redirect_stdout=True).AndReturn(_StubCommandResult('some_data'))
-    cros_build_lib.RunCommand(
-        ['sort', '--version-sort', '-r'], input='some_data',
-        redirect_stdout=True).AndReturn(_StubCommandResult(test_data))
-    cros_build_lib.RunCommand(
-        ['svn', 'ls', ARBITRARY_URL + '/releases/8.0.224.2/DEPS'],
-        error_code_ok=True, redirect_stdout=True).AndReturn(
-          _StubCommandResult('DEPS\n'))
+    TEST_HOST = 'sores.chromium.org'
+    TEST_URL = 'phthp://%s/tqs' % TEST_HOST
+    TEST_TAGS = ['7.0.224.2', '7.0.224', '7.0.365.5', 'foo', 'bar-12.13.14.15']
+    TEST_REFS_JSON = dict((tag, None) for tag in TEST_TAGS)
+    TEST_DEPS_CONTENT = dedent('''\
+        buildspec_platforms: 'chromeos,',
+        ''')
+
+    self.mox.StubOutWithMock(gob_util, 'FetchUrl')
+    self.mox.StubOutWithMock(gob_util, 'FetchUrlJson')
+    gob_util.FetchUrlJson(
+        TEST_HOST, '/tqs/+refs/tags?format=JSON', ignore_404=False).AndReturn(
+            TEST_REFS_JSON)
+    gob_util.FetchUrl(
+        TEST_HOST, '/tqs/+/refs/tags/7.0.224.2/DEPS?format=text',
+        ignore_404=False).AndReturn(
+            cStringIO.StringIO(base64.b64encode(TEST_DEPS_CONTENT)))
     self.mox.ReplayAll()
-    self.mox.StubOutWithMock(cros_mark_chrome_as_stable,
-                             'CheckIfChromeRightForOS')
-    cros_mark_chrome_as_stable.CheckIfChromeRightForOS(
-        ARBITRARY_URL + '/releases/8.0.224.2/DEPS').AndReturn(
-            _StubCommandResult(True))
-    self.mox.ReplayAll()
-    release = cros_mark_chrome_as_stable.GetLatestRelease(ARBITRARY_URL,
-                                                          '8.0.224')
+    release = cros_mark_chrome_as_stable.GetLatestRelease(TEST_URL, '7.0.224')
     self.mox.VerifyAll()
-    self.assertEqual('8.0.224.2', release)
+    self.assertEqual('7.0.224.2', release)
 
   def testLatestChromeRevisionListLink(self):
     """Tests link generation to rev lists.

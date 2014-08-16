@@ -6,6 +6,7 @@
 
 """Unittests for commands."""
 
+import base64
 import os
 import sys
 
@@ -17,6 +18,7 @@ from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
 from chromite.lib import git
+from chromite.lib import gob_util
 from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.scripts import pushimage
@@ -371,15 +373,17 @@ f6b0b80d5f2d9a2fb41ebb6e2cee7ad8 *./updater4.sh
     self.assertCommandContains(['./build_image'])
 
   def _TestChromeLKGM(self, chrome_revision):
-    """Helper method for testing the GetChromeLKGM method.
-
-    Args:
-      chrome_revision: either a number or None.
-    """
+    """Helper method for testing the GetChromeLKGM method."""
     chrome_lkgm = '3322.0.0'
-    output = '\n\n%s\n' % chrome_lkgm
-    self.rc.AddCmdResult(partial_mock.In('svn'), output=output)
-    self.assertEqual(chrome_lkgm, commands.GetChromeLKGM(chrome_revision))
+    url = '%s/+/%s/%s?format=text' % (
+        constants.CHROMIUM_SRC_PROJECT,
+        chrome_revision or 'refs/heads/master',
+        constants.PATH_TO_CHROME_LKGM)
+    with mock.patch.object(
+        gob_util, 'FetchUrl',
+        return_value=base64.b64encode(chrome_lkgm)) as patcher:
+      self.assertEqual(chrome_lkgm, commands.GetChromeLKGM(chrome_revision))
+      patcher.assert_called_with(constants.EXTERNAL_GOB_HOST, url)
 
   def testChromeLKGM(self):
     """Verifies that we can get the chrome lkgm without a chrome revision."""
@@ -387,8 +391,7 @@ f6b0b80d5f2d9a2fb41ebb6e2cee7ad8 *./updater4.sh
 
   def testChromeLKGMWithRevision(self):
     """Verifies that we can get the chrome lkgm with a chrome revision."""
-    self._TestChromeLKGM(1234)
-    self.assertCommandContains(['svn', 'cat', '-r', '1234'])
+    self._TestChromeLKGM('deadbeef' * 5)
 
   def testAbortCQHWTests(self):
     commands.AbortCQHWTests('my-version', debug=False)

@@ -25,7 +25,6 @@ from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import build_stages
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
-from chromite.lib import gclient
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
@@ -644,7 +643,8 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
 
   def GetLatestChromeVersion(self):
     """Returns the version of Chrome to uprev."""
-    return cros_mark_chrome_as_stable.GetLatestRelease(gclient.GetBaseURLs()[0])
+    return cros_mark_chrome_as_stable.GetLatestRelease(
+        constants.CHROMIUM_GOB_URL)
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
