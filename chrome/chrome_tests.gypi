@@ -2911,21 +2911,6 @@
             'sync_integration_tests.isolate',
           ],
         },
-        {
-          'target_name': 'tab_capture_performance_tests_run',
-          'type': 'none',
-          'dependencies': [
-            'performance_browser_tests',
-            'chrome_run',
-          ],
-          'includes': [
-            '../build/isolate.gypi',
-            'tab_capture_performance_tests.isolate',
-          ],
-          'sources': [
-            'tab_capture_performance_tests.isolate',
-          ],
-        },
       ],
       'conditions': [
         ['archive_gpu_tests==1', {
