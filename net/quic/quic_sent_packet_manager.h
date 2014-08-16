@@ -230,6 +230,14 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
     network_change_visitor_ = visitor;
   }
 
+  size_t consecutive_rto_count() const {
+    return consecutive_rto_count_;
+  }
+
+  size_t consecutive_tlp_count() const {
+    return consecutive_tlp_count_;
+  }
+
  private:
   friend class test::QuicConnectionPeer;
   friend class test::QuicSentPacketManagerPeer;

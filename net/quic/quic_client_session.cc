@@ -602,7 +602,19 @@ void QuicClientSession::OnConnectionClosed(QuicErrorCode error,
     UMA_HISTOGRAM_COUNTS(
         "Net.QuicSession.ConnectionClose.NumOpenStreams.TimedOut",
         GetNumOpenStreams());
-    if (!IsCryptoHandshakeConfirmed()) {
+    if (IsCryptoHandshakeConfirmed()) {
+      if (GetNumOpenStreams() > 0) {
+        UMA_HISTOGRAM_BOOLEAN(
+            "Net.QuicSession.TimedOutWithOpenStreams.HasUnackedPackets",
+            connection()->sent_packet_manager().HasUnackedPackets());
+        UMA_HISTOGRAM_COUNTS(
+            "Net.QuicSession.TimedOutWithOpenStreams.ConsecutiveRTOCount",
+            connection()->sent_packet_manager().consecutive_rto_count());
+        UMA_HISTOGRAM_COUNTS(
+            "Net.QuicSession.TimedOutWithOpenStreams.ConsecutiveTLPCount",
+            connection()->sent_packet_manager().consecutive_tlp_count());
+      }
+    } else {
       UMA_HISTOGRAM_COUNTS(
           "Net.QuicSession.ConnectionClose.NumOpenStreams.HandshakeTimedOut",
           GetNumOpenStreams());

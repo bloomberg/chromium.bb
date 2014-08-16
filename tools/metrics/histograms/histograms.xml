@@ -16364,6 +16364,30 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.TimedOutWithOpenStreams.ConsecutiveRTOCount">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    If a QUIC connection timed out with open streams, this contains a count of
+    consecutive RTOs.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicSession.TimedOutWithOpenStreams.ConsecutiveTLPCount">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    If a QUIC connection timed out with open streams, this contains a count of
+    consecutive TLPs.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicSession.TimedOutWithOpenStreams.HasUnackedPackets">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    If a QUIC connection timed out with open streams, this will be true when the
+    connection has unacked packets.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.TruncatedAcksReceived">
   <owner>rch@chromium.org</owner>
   <summary>The number of truncated ACK frames received.</summary>
