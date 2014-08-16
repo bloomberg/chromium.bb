@@ -510,8 +510,17 @@ void LoginDialogCallback(const GURL& request_url,
     return;
   }
 
+  // Check if the request is cross origin. There are two different ways the
+  // navigation can occur:
+  // 1- The user enters the resource URL in the omnibox.
+  // 2- The page redirects to the resource.
+  // In both cases, the last committed URL is different than the resource URL,
+  // so checking it is sufficient.
+  // Note that (1) will not be true once site isolation is enabled, as any
+  // navigation could cause a cross-process swap, including link clicks.
   if (is_main_frame &&
-      parent_contents->GetVisibleURL().GetOrigin() != request_url.GetOrigin()) {
+      parent_contents->GetLastCommittedURL().GetOrigin() !=
+          request_url.GetOrigin()) {
     // Show a blank interstitial for main-frame, cross origin requests
     // so that the correct URL is shown in the omnibox.
     base::Closure callback = base::Bind(&ShowLoginPrompt,

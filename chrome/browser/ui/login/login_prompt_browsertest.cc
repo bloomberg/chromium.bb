@@ -61,6 +61,9 @@ class LoginPromptBrowserTest : public InProcessBrowserTest {
 
   void SetAuthFor(LoginHandler* handler);
 
+  void TestCrossOriginPrompt(const GURL& visit_url,
+                             const std::string& landing_host) const;
+
   AuthMap auth_map_;
   std::string bad_password_;
   std::string bad_username_;
@@ -783,7 +786,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
       // When a cross origin iframe displays a login prompt, the blank
       // interstitial shouldn't be displayed and the omnibox should show the
       // main frame's url, not the iframe's.
-      EXPECT_EQ(new_host, contents->GetURL().host());
+      EXPECT_EQ(new_host, contents->GetVisibleURL().host());
 
       handler->CancelAuth();
       auth_cancelled_waiter.Wait();
@@ -791,7 +794,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   }
 
   // Should stay on the main frame's url once the prompt the iframe is closed.
-  EXPECT_EQ("www.a.com", contents->GetURL().host());
+  EXPECT_EQ("www.a.com", contents->GetVisibleURL().host());
 
   EXPECT_EQ(1, observer.auth_needed_count());
   EXPECT_TRUE(test_server()->Stop());
@@ -1179,12 +1182,9 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
 
 // If a cross origin navigation triggers a login prompt, the destination URL
 // should be shown in the omnibox.
-IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
-                       ShowCorrectUrlForCrossOriginMainFrameRequests) {
-  const char* kTestPage = "files/login/cross_origin.html";
-  host_resolver()->AddRule("www.a.com", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
-
+void LoginPromptBrowserTest::TestCrossOriginPrompt(
+    const GURL& visit_url,
+    const std::string& auth_host) const {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   NavigationController* controller = &contents->GetController();
@@ -1192,23 +1192,20 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
 
   observer.Register(content::Source<NavigationController>(controller));
 
-  // Load a page which navigates to a cross origin page with a login prompt.
+  // Load a page which will trigger a login prompt.
   {
-    GURL test_page = test_server()->GetURL(kTestPage);
-    ASSERT_EQ("127.0.0.1", test_page.host());
-
     WindowedAuthNeededObserver auth_needed_waiter(controller);
     browser()->OpenURL(OpenURLParams(
-        test_page, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED,
+        visit_url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED,
         false));
-    ASSERT_EQ("127.0.0.1", contents->GetURL().host());
+    ASSERT_EQ(visit_url.host(), contents->GetVisibleURL().host());
     auth_needed_waiter.Wait();
     ASSERT_EQ(1u, observer.handlers().size());
     WaitForInterstitialAttach(contents);
 
     // The omnibox should show the correct origin for the new page when the
     // login prompt is shown.
-    EXPECT_EQ("www.a.com", contents->GetURL().host());
+    EXPECT_EQ(auth_host, contents->GetVisibleURL().host());
     EXPECT_TRUE(contents->ShowingInterstitialPage());
 
     // Cancel and wait for the interstitial to detach.
@@ -1221,9 +1218,35 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
     handler->CancelAuth();
     if (content::InterstitialPage::GetInterstitialPage(contents))
       loop_runner->Run();
-    EXPECT_EQ("www.a.com", contents->GetURL().host());
+    EXPECT_EQ(auth_host, contents->GetVisibleURL().host());
     EXPECT_FALSE(contents->ShowingInterstitialPage());
   }
+}
+
+// If a cross origin direct navigation triggers a login prompt, the login
+// interstitial should be shown.
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
+                       ShowCorrectUrlForCrossOriginMainFrameRequests) {
+  ASSERT_TRUE(test_server()->Start());
+
+  GURL test_page = test_server()->GetURL(kAuthBasicPage);
+  ASSERT_EQ("127.0.0.1", test_page.host());
+  std::string auth_host("127.0.0.1");
+  TestCrossOriginPrompt(test_page, auth_host);
+}
+
+// If a cross origin redirect triggers a login prompt, the destination URL
+// should be shown in the omnibox when the auth dialog is displayed.
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
+                       ShowCorrectUrlForCrossOriginMainFrameRedirects) {
+  host_resolver()->AddRule("www.a.com", "127.0.0.1");
+  ASSERT_TRUE(test_server()->Start());
+
+  const char* kTestPage = "files/login/cross_origin.html";
+  GURL test_page = test_server()->GetURL(kTestPage);
+  ASSERT_EQ("127.0.0.1", test_page.host());
+  std::string auth_host("www.a.com");
+  TestCrossOriginPrompt(test_page, auth_host);
 }
 
 }  // namespace
