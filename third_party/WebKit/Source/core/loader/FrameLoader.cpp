@@ -498,10 +498,9 @@ void FrameLoader::scheduleCheckCompleted()
         m_checkTimer.startOneShot(0, FROM_HERE);
 }
 
-LocalFrame* FrameLoader::opener()
+Frame* FrameLoader::opener()
 {
-    // FIXME: Temporary hack to stage converting locations that really should be Frame.
-    return client() ? toLocalFrame(client()->opener()) : 0;
+    return client() ? client()->opener() : 0;
 }
 
 void FrameLoader::setOpener(LocalFrame* opener)

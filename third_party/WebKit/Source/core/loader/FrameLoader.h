@@ -48,7 +48,6 @@
 
 namespace blink {
 
-class Resource;
 class Chrome;
 class DOMWrapperWorld;
 class DocumentLoader;
@@ -56,6 +55,7 @@ class Event;
 class FetchContext;
 class FormState;
 class FormSubmission;
+class Frame;
 class FrameLoaderClient;
 class IconController;
 class NavigationAction;
@@ -155,7 +155,7 @@ public:
     void forceSandboxFlags(SandboxFlags flags) { m_forcedSandboxFlags |= flags; }
     SandboxFlags effectiveSandboxFlags() const;
 
-    LocalFrame* opener();
+    Frame* opener();
     void setOpener(LocalFrame*);
 
     void detachFromParent();

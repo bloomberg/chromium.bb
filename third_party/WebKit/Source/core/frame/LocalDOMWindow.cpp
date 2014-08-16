@@ -1276,7 +1276,7 @@ LocalDOMWindow* LocalDOMWindow::opener() const
     if (!m_frame)
         return 0;
 
-    LocalFrame* opener = m_frame->loader().opener();
+    Frame* opener = m_frame->loader().opener();
     if (!opener)
         return 0;
 
