@@ -389,6 +389,7 @@ bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
                         OnCloseRemainingWindows)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_ResetDone, OnResetDone)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_LeakDetectionDone, OnLeakDetectionDone)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_EchoPing, OnEchoPing)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -692,5 +693,15 @@ void WebKitTestController::OnLeakDetectionDone(
 
   DiscardMainWindow();
 }
+
+void WebKitTestController::OnEchoPing(int id, const std::string& body) {
+  if (main_window_ && main_window_->web_contents()) {
+    RenderViewHost* render_view_host =
+        main_window_->web_contents()->GetRenderViewHost();
+    render_view_host->Send(
+        new ShellViewMsg_EchoPong(render_view_host->GetRoutingID(), id, body));
+  }
+}
+
 
 }  // namespace content

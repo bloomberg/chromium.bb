@@ -168,6 +168,11 @@ public:
     // Returns a text dump the back/forward history for the WebView associated
     // with the given WebTestProxyBase.
     virtual std::string dumpHistoryForWindow(WebTestProxyBase*) = 0;
+
+    // Send an IPC message will will be echoed back.
+    virtual void requestEcho(int id, int size) = 0;
+    virtual int lastEchoId() = 0;
+    virtual int lastEchoSize() = 0;
 };
 
 }  // namespace content

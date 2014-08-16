@@ -290,6 +290,9 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetMockPushClientSuccess(const std::string& endpoint,
                                 const std::string& registration_id);
   void SetMockPushClientError(const std::string& message);
+  void RequestEcho(int id, int size);
+  int GetLastEchoId() const;
+  int GetLastEchoSize() const;
 
   bool GlobalFlag();
   void SetGlobalFlag(bool value);
@@ -544,6 +547,13 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetMockPushClientSuccess)
       .SetMethod("setMockPushClientError",
                  &TestRunnerBindings::SetMockPushClientError)
+      // IPCEcho API
+      .SetMethod("requestEcho",
+                 &TestRunnerBindings::RequestEcho)
+      .SetProperty("lastEchoId",
+                   &TestRunnerBindings::GetLastEchoId)
+      .SetProperty("lastEchoSize",
+                   &TestRunnerBindings::GetLastEchoSize)
 
       // Properties.
       .SetProperty("globalFlag",
@@ -1396,6 +1406,24 @@ void TestRunnerBindings::SetMockPushClientError(const std::string& message) {
   if (!runner_)
     return;
   runner_->SetMockPushClientError(message);
+}
+
+void TestRunnerBindings::RequestEcho(int id, int size) {
+  if (!runner_)
+    return;
+  runner_->RequestEcho(id, size);
+}
+
+int TestRunnerBindings::GetLastEchoId() const {
+  if (!runner_)
+    return 0;
+  return runner_->GetLastEchoId();
+}
+
+int TestRunnerBindings::GetLastEchoSize() const {
+  if (!runner_)
+    return 0;
+  return runner_->GetLastEchoSize();
 }
 
 bool TestRunnerBindings::GlobalFlag() {
@@ -2874,6 +2902,18 @@ void TestRunner::SetMockPushClientSuccess(const std::string& endpoint,
 
 void TestRunner::SetMockPushClientError(const std::string& message) {
   proxy_->GetPushClientMock()->SetMockErrorValues(message);
+}
+
+void TestRunner::RequestEcho(int id, int size) {
+  delegate_->requestEcho(id, size);
+}
+
+int TestRunner::GetLastEchoId() const {
+  return delegate_->lastEchoId();
+}
+
+int TestRunner::GetLastEchoSize() const {
+  return delegate_->lastEchoSize();
 }
 
 void TestRunner::LocationChangeDone() {

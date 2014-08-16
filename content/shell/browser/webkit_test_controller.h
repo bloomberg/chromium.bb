@@ -177,6 +177,7 @@ class WebKitTestController : public base::NonThreadSafe,
   void OnCloseRemainingWindows();
   void OnResetDone();
   void OnLeakDetectionDone(const content::LeakDetectionResult& result);
+  void OnEchoPing(int id, const std::string& body);
 
   scoped_ptr<WebKitTestResultPrinter> printer_;
 

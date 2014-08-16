@@ -558,6 +558,10 @@ class TestRunner : public WebTestRunner,
                                 const std::string& registration_id);
   void SetMockPushClientError(const std::string& message);
 
+  void RequestEcho(int id, int size);
+  int GetLastEchoId() const;
+  int GetLastEchoSize() const;
+
   ///////////////////////////////////////////////////////////////////////////
   // Internal helpers
 
