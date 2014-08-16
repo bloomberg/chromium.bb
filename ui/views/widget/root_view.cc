@@ -639,16 +639,27 @@ View::DragInfo* RootView::GetDragInfo() {
 
 void RootView::DispatchGestureEvent(ui::GestureEvent* event) {
   if (gesture_handler_) {
-    // |gesture_handler_| can be deleted during processing. In particular, it
-    // will be set to NULL if the view is deleted or removed from the tree as
-    // a result of an event dispatch.
-    ui::GestureEvent handler_event(*event,
-                                   static_cast<View*>(this),
-                                   gesture_handler_);
-    ui::EventDispatchDetails dispatch_details =
-        DispatchEvent(gesture_handler_, &handler_event);
-    if (dispatch_details.dispatcher_destroyed)
-      return;
+    if (gesture_handler_->enabled()) {
+      // |gesture_handler_| can be deleted during processing. In particular, it
+      // will be set to NULL if the view is deleted or removed from the tree as
+      // a result of an event dispatch.
+      ui::GestureEvent handler_event(*event,
+                                     static_cast<View*>(this),
+                                     gesture_handler_);
+      ui::EventDispatchDetails dispatch_details =
+          DispatchEvent(gesture_handler_, &handler_event);
+      if (dispatch_details.dispatcher_destroyed)
+        return;
+
+      if (handler_event.stopped_propagation())
+        event->StopPropagation();
+      else if (handler_event.handled())
+        event->SetHandled();
+    } else {
+      // Disabled views are permitted to be targets of gesture events, but
+      // gesture events should never actually be dispatched to them.
+      event->SetHandled();
+    }
 
     if (event->type() == ui::ET_GESTURE_END) {
       DCHECK_EQ(1, event->details().touch_points());
@@ -660,13 +671,8 @@ void RootView::DispatchGestureEvent(ui::GestureEvent* event) {
         gesture_handler_ = NULL;
     }
 
-    if (handler_event.stopped_propagation()) {
-      event->StopPropagation();
+    if (event->handled())
       return;
-    } else if (handler_event.handled()) {
-      event->SetHandled();
-      return;
-    }
 
     if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN) {
       // Some view started processing gesture events, however it does not
@@ -715,9 +721,19 @@ void RootView::DispatchGestureEvent(ui::GestureEvent* event) {
   for (gesture_handler_ = gesture_handler;
        gesture_handler_ && (gesture_handler_ != this);
        gesture_handler_ = gesture_handler_->parent()) {
-    // Disabled views eat events but are treated as not handled.
-    if (!gesture_handler_->enabled())
+    // Disabled views are permitted to be targets of gesture events, but
+    // gesture events should never actually be dispatched to them.
+    if (!gesture_handler_->enabled()) {
+      event->SetHandled();
+
+      // Last ui::ET_GESTURE_END should not set the gesture_handler_.
+      if (event->type() == ui::ET_GESTURE_END) {
+        DCHECK_EQ(1, event->details().touch_points());
+        gesture_handler_ = NULL;
+      }
+
       return;
+    }
 
     // See if this view wants to handle the Gesture.
     ui::GestureEvent gesture_event(*event,

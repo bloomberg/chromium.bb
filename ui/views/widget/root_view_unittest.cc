@@ -179,7 +179,7 @@ TEST_F(RootViewTest, ContextMenuFromLongPress) {
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_POPUP);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  init_params.bounds = gfx::Rect(100,100);
+  init_params.bounds = gfx::Rect(100, 100);
   widget.Init(init_params);
   internal::RootView* root_view =
       static_cast<internal::RootView*>(widget.GetRootView());
@@ -192,11 +192,11 @@ TEST_F(RootViewTest, ContextMenuFromLongPress) {
   widget.SetContentsView(parent_view);
 
   View* gesture_handling_child_view = new GestureHandlingView;
-  gesture_handling_child_view->SetBoundsRect(gfx::Rect(10,10));
+  gesture_handling_child_view->SetBoundsRect(gfx::Rect(10, 10));
   parent_view->AddChildView(gesture_handling_child_view);
 
   View* other_child_view = new View;
-  other_child_view->SetBoundsRect(gfx::Rect(20, 0, 10,10));
+  other_child_view->SetBoundsRect(gfx::Rect(20, 0, 10, 10));
   parent_view->AddChildView(other_child_view);
 
   // |parent_view| should not show a context menu as a result of a long press on
@@ -219,6 +219,7 @@ TEST_F(RootViewTest, ContextMenuFromLongPress) {
   EXPECT_FALSE(details.target_destroyed);
   EXPECT_FALSE(details.dispatcher_destroyed);
   EXPECT_EQ(0, controller.show_context_menu_calls());
+  controller.Reset();
 
   // |parent_view| should show a context menu as a result of a long press on
   // |other_child_view|.
@@ -240,6 +241,122 @@ TEST_F(RootViewTest, ContextMenuFromLongPress) {
   EXPECT_FALSE(details.target_destroyed);
   EXPECT_FALSE(details.dispatcher_destroyed);
   EXPECT_EQ(1, controller.show_context_menu_calls());
+  controller.Reset();
+
+  // |parent_view| should show a context menu as a result of a long press on
+  // itself.
+  ui::GestureEvent long_press3(
+      50,
+      50,
+      0,
+      base::TimeDelta(),
+      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS, 0, 0));
+  details = root_view->OnEventFromSource(&long_press3);
+
+  ui::GestureEvent end3(25,
+                        5,
+                        0,
+                        base::TimeDelta(),
+                        ui::GestureEventDetails(ui::ET_GESTURE_END, 0, 0));
+  details = root_view->OnEventFromSource(&end3);
+
+  EXPECT_FALSE(details.target_destroyed);
+  EXPECT_FALSE(details.dispatcher_destroyed);
+  EXPECT_EQ(1, controller.show_context_menu_calls());
+}
+
+// Tests that context menus are not shown for disabled views on a long press.
+TEST_F(RootViewTest, ContextMenuFromLongPressOnDisabledView) {
+  Widget widget;
+  Widget::InitParams init_params =
+      CreateParams(Widget::InitParams::TYPE_POPUP);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  init_params.bounds = gfx::Rect(100, 100);
+  widget.Init(init_params);
+  internal::RootView* root_view =
+      static_cast<internal::RootView*>(widget.GetRootView());
+
+  // Create a view capable of showing the context menu with two children one of
+  // which handles all gesture events (e.g. a button). Also mark this view
+  // as disabled.
+  TestContextMenuController controller;
+  View* parent_view = new View;
+  parent_view->set_context_menu_controller(&controller);
+  parent_view->SetEnabled(false);
+  widget.SetContentsView(parent_view);
+
+  View* gesture_handling_child_view = new GestureHandlingView;
+  gesture_handling_child_view->SetBoundsRect(gfx::Rect(10, 10));
+  parent_view->AddChildView(gesture_handling_child_view);
+
+  View* other_child_view = new View;
+  other_child_view->SetBoundsRect(gfx::Rect(20, 0, 10, 10));
+  parent_view->AddChildView(other_child_view);
+
+  // |parent_view| should not show a context menu as a result of a long press on
+  // |gesture_handling_child_view|.
+  ui::GestureEvent long_press1(
+      5,
+      5,
+      0,
+      base::TimeDelta(),
+      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS, 0, 0));
+  ui::EventDispatchDetails details = root_view->OnEventFromSource(&long_press1);
+
+  ui::GestureEvent end1(5,
+                        5,
+                        0,
+                        base::TimeDelta(),
+                        ui::GestureEventDetails(ui::ET_GESTURE_END, 0, 0));
+  details = root_view->OnEventFromSource(&end1);
+
+  EXPECT_FALSE(details.target_destroyed);
+  EXPECT_FALSE(details.dispatcher_destroyed);
+  EXPECT_EQ(0, controller.show_context_menu_calls());
+  controller.Reset();
+
+  // |parent_view| should not show a context menu as a result of a long press on
+  // |other_child_view|.
+  ui::GestureEvent long_press2(
+      25,
+      5,
+      0,
+      base::TimeDelta(),
+      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS, 0, 0));
+  details = root_view->OnEventFromSource(&long_press2);
+
+  ui::GestureEvent end2(25,
+                        5,
+                        0,
+                        base::TimeDelta(),
+                        ui::GestureEventDetails(ui::ET_GESTURE_END, 0, 0));
+  details = root_view->OnEventFromSource(&end2);
+
+  EXPECT_FALSE(details.target_destroyed);
+  EXPECT_FALSE(details.dispatcher_destroyed);
+  EXPECT_EQ(0, controller.show_context_menu_calls());
+  controller.Reset();
+
+  // |parent_view| should not show a context menu as a result of a long press on
+  // itself.
+  ui::GestureEvent long_press3(
+      50,
+      50,
+      0,
+      base::TimeDelta(),
+      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS, 0, 0));
+  details = root_view->OnEventFromSource(&long_press3);
+
+  ui::GestureEvent end3(25,
+                        5,
+                        0,
+                        base::TimeDelta(),
+                        ui::GestureEventDetails(ui::ET_GESTURE_END, 0, 0));
+  details = root_view->OnEventFromSource(&end3);
+
+  EXPECT_FALSE(details.target_destroyed);
+  EXPECT_FALSE(details.dispatcher_destroyed);
+  EXPECT_EQ(0, controller.show_context_menu_calls());
 }
 
 }  // namespace test
