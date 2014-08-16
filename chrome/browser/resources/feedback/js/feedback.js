@@ -244,23 +244,15 @@ function resizeAppWindow() {
  * .) Screenshot taken         -> . Show Feedback window.
  */
 function initialize() {
-  // TODO(rkc):  Remove logging once crbug.com/284662 is closed.
-  console.log('FEEDBACK_DEBUG: feedback.js: initialize()');
-
   // Add listener to receive the feedback info object.
   chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if (request.sentFromEventPage) {
-      // TODO(rkc):  Remove logging once crbug.com/284662 is closed.
-      console.log('FEEDBACK_DEBUG: Received feedbackInfo.');
       feedbackInfo = request.data;
       $('description-text').textContent = feedbackInfo.description;
       if (feedbackInfo.pageUrl)
         $('page-url-text').value = feedbackInfo.pageUrl;
 
       takeScreenshot(function(screenshotCanvas) {
-        // TODO(rkc):  Remove logging once crbug.com/284662 is closed.
-        console.log('FEEDBACK_DEBUG: Taken screenshot. Showing window.');
-
         // We've taken our screenshot, show the feedback page without any
         // further delay.
         window.webkitRequestAnimationFrame(function() {
@@ -320,8 +312,6 @@ function initialize() {
   });
 
   window.addEventListener('DOMContentLoaded', function() {
-    // TODO(rkc):  Remove logging once crbug.com/284662 is closed.
-    console.log('FEEDBACK_DEBUG: feedback.js: DOMContentLoaded');
     // Ready to receive the feedback object.
     chrome.runtime.sendMessage({ready: true});
 

@@ -68,8 +68,6 @@ void FeedbackPrivateAPI::RequestFeedback(
     const std::string& description_template,
     const std::string& category_tag,
     const GURL& page_url) {
-  // TODO(rkc): Remove logging once crbug.com/284662 is closed.
-  LOG(WARNING) << "FEEDBACK_DEBUG: Feedback requested.";
   if (browser_context_ && EventRouter::Get(browser_context_)) {
     FeedbackInfo info;
     info.description = description_template;
@@ -88,8 +86,6 @@ void FeedbackPrivateAPI::RequestFeedback(
         feedback_private::OnFeedbackRequested::kEventName, args.Pass()));
     event->restrict_to_browser_context = browser_context_;
 
-    // TODO(rkc): Remove logging once crbug.com/284662 is closed.
-    LOG(WARNING) << "FEEDBACK_DEBUG: Dispatching onFeedbackRequested event.";
     EventRouter::Get(browser_context_)
         ->DispatchEventToExtension(kFeedbackExtensionId, event.Pass());
   }
@@ -135,8 +131,6 @@ bool FeedbackPrivateGetStringsFunction::RunSync() {
 }
 
 bool FeedbackPrivateGetUserEmailFunction::RunSync() {
-  // TODO(rkc): Remove logging once crbug.com/284662 is closed.
-  LOG(WARNING) << "FEEDBACK_DEBUG: User e-mail requested.";
   FeedbackService* service =
       FeedbackPrivateAPI::GetFactoryInstance()->Get(GetProfile())->GetService();
   DCHECK(service);
@@ -145,8 +139,6 @@ bool FeedbackPrivateGetUserEmailFunction::RunSync() {
 }
 
 bool FeedbackPrivateGetSystemInformationFunction::RunAsync() {
-  // TODO(rkc): Remove logging once crbug.com/284662 is closed.
-  LOG(WARNING) << "FEEDBACK_DEBUG: System information requested.";
   FeedbackService* service =
       FeedbackPrivateAPI::GetFactoryInstance()->Get(GetProfile())->GetService();
   DCHECK(service);

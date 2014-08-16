@@ -67,8 +67,6 @@ function senderWhitelisted(id) {
  */
 function feedbackReadyHandler(request, sender, sendResponse) {
   if (request.ready) {
-    // TODO(rkc):  Remove logging once crbug.com/284662 is closed.
-    console.log('FEEDBACK_DEBUG: FeedbackUI Ready. Sending feedbackInfo.');
     chrome.runtime.sendMessage(
         {sentFromEventPage: true, data: initialFeedbackInfo});
   }
@@ -92,8 +90,6 @@ function requestFeedbackHandler(request, sender, sendResponse) {
  */
 function startFeedbackUI(feedbackInfo) {
   initialFeedbackInfo = feedbackInfo;
-  // TODO(rkc):  Remove logging once crbug.com/284662 is closed.
-  console.log('FEEDBACK_DEBUG: Received onFeedbackRequested. Creating Window.');
   chrome.app.window.create('html/default.html', {
       frame: 'none',
       id: 'default_window',
