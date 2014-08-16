@@ -133,7 +133,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
   """Stage that records whether we passed or failed to build/test manifest."""
 
   # Max wait time for results from slaves.
-  SLAVE_STATUS_TIMEOUT_SECONDS = 3 * 60 * 60
+  SLAVE_STATUS_TIMEOUT_SECONDS = 4 * 60 * 60
   # Max wait time for results for Canary type builders. Canaries are
   # scheduled to run every 8 hours, so this timeout must be smaller
   # than that.
