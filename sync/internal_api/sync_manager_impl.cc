@@ -975,7 +975,7 @@ scoped_ptr<base::ListValue> SyncManagerImpl::GetAllNodesForType(
     // when it doesn't really know which types are enabled or disabled.
     DLOG(WARNING) << "Asked to return debug info for invalid type "
                   << ModelTypeToString(type);
-    return scoped_ptr<base::ListValue>();
+    return scoped_ptr<base::ListValue>(new base::ListValue());
   }
 
   return it->second->GetAllNodes();
