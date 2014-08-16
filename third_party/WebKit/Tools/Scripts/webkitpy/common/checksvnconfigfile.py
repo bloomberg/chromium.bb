@@ -22,7 +22,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # This file is used by:
-# webkitpy/tool/steps/addsvnmimetypeforpng.py
 # webkitpy/style/checkers/png.py
 
 import os

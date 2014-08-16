@@ -28,10 +28,10 @@
 
 """Unit tests for MockDRT."""
 
+import io
 import sys
 import unittest
 
-from webkitpy.common import newstringio
 from webkitpy.common.system.systemhost_mock import MockSystemHost
 from webkitpy.layout_tests.port import mock_drt
 from webkitpy.layout_tests.port import port_testcase
@@ -127,9 +127,9 @@ class MockDRTTest(unittest.TestCase):
             pixel_tests, expected_checksum, drt_output, drt_input=None, expected_text=expected_text)
 
         args = ['--dump-render-tree', '--platform', port_name, '-']
-        stdin = newstringio.StringIO(drt_input)
-        stdout = newstringio.StringIO()
-        stderr = newstringio.StringIO()
+        stdin = io.BytesIO(drt_input)
+        stdout = io.BytesIO()
+        stderr = io.BytesIO()
         options, args = mock_drt.parse_options(args)
 
         drt = self.make_drt(options, args, host, stdin, stdout, stderr)
@@ -137,17 +137,15 @@ class MockDRTTest(unittest.TestCase):
 
         self.assertEqual(res, 0)
 
-        # We use the StringIO.buflist here instead of getvalue() because
-        # the StringIO might be a mix of unicode/ascii and 8-bit strings.
-        self.assertEqual(stdout.buflist, drt_output)
+        self.assertEqual(stdout.getvalue(), ''.join(drt_output))
         self.assertEqual(stderr.getvalue(), '#EOF\n')
 
     def test_main(self):
         host = MockSystemHost()
         test.add_unit_tests_to_mock_filesystem(host.filesystem)
-        stdin = newstringio.StringIO()
-        stdout = newstringio.StringIO()
-        stderr = newstringio.StringIO()
+        stdin = io.BytesIO()
+        stdout = io.BytesIO()
+        stderr = io.BytesIO()
         res = mock_drt.main(['--dump-render-tree', '--platform', 'test', '-'],
                             host, stdin, stdout, stderr)
         self.assertEqual(res, 0)
