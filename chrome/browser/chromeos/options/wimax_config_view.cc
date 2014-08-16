@@ -13,7 +13,6 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/net/onc_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
 #include "chrome/grit/theme_resources.h"

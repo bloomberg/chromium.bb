@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)

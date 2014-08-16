@@ -15,7 +15,6 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
-#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 

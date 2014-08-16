@@ -11,7 +11,6 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/external_protocol_dialog_delegate.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
-#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"

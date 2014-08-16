@@ -24,7 +24,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/result_codes.h"
-#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"

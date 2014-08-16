@@ -34,7 +34,6 @@
 #include "chrome/installer/util/wmi.h"
 #include "content/public/common/result_codes.h"
 #include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/win/hwnd_util.h"

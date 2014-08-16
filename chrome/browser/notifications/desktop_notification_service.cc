@@ -34,8 +34,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/show_desktop_notification_params.h"
 #include "grit/browser_resources.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/escape.h"
 #include "ui/base/resource/resource_bundle.h"

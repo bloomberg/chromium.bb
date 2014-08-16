@@ -29,7 +29,6 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
-#include "grit/generated_resources.h"
 
 #ifdef USE_SOURCE_FILES_DIRECTLY
 #include "base/base_paths.h"

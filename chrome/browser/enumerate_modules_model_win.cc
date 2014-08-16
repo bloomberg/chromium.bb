@@ -30,7 +30,6 @@
 #include "content/public/browser/notification_service.h"
 #include "crypto/sha2.h"
 #include "grit/generated_resources.h"
-#include "grit/google_chrome_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;

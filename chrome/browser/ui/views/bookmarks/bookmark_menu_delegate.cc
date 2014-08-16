@@ -20,7 +20,6 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
-#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "ui/base/dragdrop/os_exchange_data.h"

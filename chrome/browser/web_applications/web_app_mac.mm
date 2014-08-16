@@ -42,7 +42,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "grit/chrome_unscaled_resources.h"
-#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #import "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkBitmap.h"

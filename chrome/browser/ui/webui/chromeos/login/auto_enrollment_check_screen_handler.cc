@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/auto_enrollment_check_screen_handler.h"
 
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
 namespace {

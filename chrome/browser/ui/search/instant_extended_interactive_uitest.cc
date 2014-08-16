@@ -71,7 +71,6 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
-#include "grit/generated_resources.h"
 #include "net/base/network_change_notifier.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"

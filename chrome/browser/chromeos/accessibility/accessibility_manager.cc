@@ -43,7 +43,6 @@
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/browser_resources.h"
-#include "chrome/grit/generated_resources.h"
 #include "chromeos/audio/chromeos_sounds.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/login/login_state.h"

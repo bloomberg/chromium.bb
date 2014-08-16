@@ -11,7 +11,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/common/chrome_paths.h"
-#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkPaint.h"

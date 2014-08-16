@@ -125,7 +125,6 @@
 #include "extensions/browser/extension_protocols.h"
 #include "grit/app_locale_settings.h"
 #include "grit/browser_resources.h"
-#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/platform_locale_settings.h"
 #include "net/base/net_module.h"

@@ -21,7 +21,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/notification_service.h"
-#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle_win.h"

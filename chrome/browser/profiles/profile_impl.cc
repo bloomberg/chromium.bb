@@ -101,7 +101,6 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/page_zoom.h"
 #include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_ANDROID)

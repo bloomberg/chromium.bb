@@ -14,7 +14,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chromeos/chromeos_constants.h"
 #include "content/public/browser/web_ui.h"
-#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"

@@ -42,8 +42,6 @@
 #include "components/history/core/browser/history_client.h"
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/history/core/browser/page_usage_data.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "sql/error_delegate_util.h"
 #include "url/gurl.h"

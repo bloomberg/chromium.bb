@@ -13,7 +13,6 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_authorizationref.h"
 #include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace password_manager_util {
