@@ -87,7 +87,7 @@
 #endif
 
 #ifndef HB_INTERNAL
-# ifndef __MINGW32__
+# if !defined(__MINGW32__) && !defined(__CYGWIN__)
 #  define HB_INTERNAL __attribute__((__visibility__("hidden")))
 # else
 #  define HB_INTERNAL
@@ -96,6 +96,8 @@
 
 #if (defined(__WIN32__) && !defined(__WINE__)) || defined(_MSC_VER)
 #define snprintf _snprintf
+/* Windows CE only has _strdup, while rest of Windows has both. */
+#define strdup _strdup
 #endif
 
 #ifdef _MSC_VER
@@ -116,7 +118,55 @@
 #define HB_FUNC __func__
 #endif
 
+#if defined(_WIN32) || defined(__CYGWIN__)
+   /* We need Windows Vista for both Uniscribe backend and for
+    * MemoryBarrier.  We don't support compiling on Windows XP,
+    * though we run on it fine. */
+#  if defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0600
+#    undef _WIN32_WINNT
+#  endif
+#  ifndef _WIN32_WINNT
+#    define _WIN32_WINNT 0x0600
+#  endif
+#  ifndef WIN32_LEAN_AND_MEAN
+#    define WIN32_LEAN_AND_MEAN
+#  endif
+#  define STRICT
+#endif
 
+#ifdef _WIN32_WCE
+/* Some things not defined on Windows CE. */
+#define MemoryBarrier()
+#define getenv(Name) NULL
+#define setlocale(Category, Locale) "C"
+static int errno = 0; /* Use something better? */
+#endif
+
+#if HAVE_ATEXIT
+/* atexit() is only safe to be called from shared libraries on certain
+ * platforms.  Whitelist.
+ * https://bugs.freedesktop.org/show_bug.cgi?id=82246 */
+#  if defined(__linux) && defined(__GLIBC_PREREQ)
+#    if __GLIBC_PREREQ(2,3)
+/* From atexit() manpage, it's safe with glibc 2.2.3 on Linux. */
+#      define HB_USE_ATEXIT 1
+#    endif
+#  elif defined(_MSC_VER) || defined(__MINGW32__)
+/* For MSVC:
+ * http://msdn.microsoft.com/en-ca/library/tze57ck3.aspx
+ * http://msdn.microsoft.com/en-ca/library/zk17ww08.aspx
+ * mingw32 headers say atexit is safe to use in shared libraries.
+ */
+#    define HB_USE_ATEXIT 1
+#  elif defined(__ANDROID__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+/* This was fixed in Android NKD r8 or r8b:
+ * https://code.google.com/p/android/issues/detail?id=6455
+ * which introduced GCC 4.6:
+ * https://developer.android.com/tools/sdk/ndk/index.html
+ */
+#    define HB_USE_ATEXIT 1
+#  endif
+#endif
 
 /* Basics */
 
@@ -271,7 +321,7 @@ typedef int (*hb_compare_func_t) (const void *, const void *);
 /* arrays and maps */
 
 
-#define HB_PREALLOCED_ARRAY_INIT {0}
+#define HB_PREALLOCED_ARRAY_INIT {0, 0, NULL}
 template <typename Type, unsigned int StaticSize=16>
 struct hb_prealloced_array_t
 {
@@ -580,6 +630,15 @@ _hb_debug_msg_va (const char *what,
 		  unsigned int level,
 		  int level_dir,
 		  const char *message,
+		  va_list ap) HB_PRINTF_FUNC(7, 0);
+template <int max_level> static inline void
+_hb_debug_msg_va (const char *what,
+		  const void *obj,
+		  const char *func,
+		  bool indented,
+		  unsigned int level,
+		  int level_dir,
+		  const char *message,
 		  va_list ap)
 {
   if (!_hb_debug (level, max_level))
@@ -802,7 +861,9 @@ hb_in_range (T u, T lo, T hi)
    * to generate a warning than unused variables. */
   ASSERT_STATIC (sizeof (hb_assert_unsigned_t<T>) >= 0);
 
-  return (u - lo) <= (hi - lo);
+  /* The casts below are important as if T is smaller than int,
+   * the subtract results will become a signed int! */
+  return (T)(u - lo) <= (T)(hi - lo);
 }
 
 template <typename T> static inline bool

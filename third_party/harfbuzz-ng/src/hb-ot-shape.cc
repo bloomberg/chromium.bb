@@ -29,23 +29,20 @@
 #define HB_SHAPER ot
 #define hb_ot_shaper_face_data_t hb_ot_layout_t
 #define hb_ot_shaper_shape_plan_data_t hb_ot_shape_plan_t
-
-#include "hb-ot-layout-private.hh"
+#include "hb-shaper-impl-private.hh"
 
 #include "hb-ot-shape-private.hh"
 #include "hb-ot-shape-complex-private.hh"
 #include "hb-ot-shape-fallback-private.hh"
 #include "hb-ot-shape-normalize-private.hh"
 
-#include "hb-set-private.hh"
-#include "hb-shaper-impl-private.hh"
-
+#include "hb-ot-layout-private.hh"
 #include "hb-unicode-private.hh"
+#include "hb-set-private.hh"
 
 
 static hb_tag_t common_features[] = {
   HB_TAG('c','c','m','p'),
-  HB_TAG('l','i','g','a'),
   HB_TAG('l','o','c','l'),
   HB_TAG('m','a','r','k'),
   HB_TAG('m','k','m','k'),
@@ -58,6 +55,7 @@ static hb_tag_t horizontal_features[] = {
   HB_TAG('c','l','i','g'),
   HB_TAG('c','u','r','s'),
   HB_TAG('k','e','r','n'),
+  HB_TAG('l','i','g','a'),
   HB_TAG('r','c','l','t'),
 };
 
@@ -238,6 +236,7 @@ static void
 hb_insert_dotted_circle (hb_buffer_t *buffer, hb_font_t *font)
 {
   if (!(buffer->flags & HB_BUFFER_FLAG_BOT) ||
+      buffer->context_len[0] ||
       _hb_glyph_info_get_general_category (&buffer->info[0]) !=
       HB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK)
     return;
@@ -245,7 +244,7 @@ hb_insert_dotted_circle (hb_buffer_t *buffer, hb_font_t *font)
   if (!font->has_glyph (0x25CCu))
     return;
 
-  hb_glyph_info_t dottedcircle;
+  hb_glyph_info_t dottedcircle = {0};
   dottedcircle.codepoint = 0x25CCu;
   _hb_glyph_info_set_unicode_props (&dottedcircle, buffer->unicode);
 
@@ -449,6 +448,7 @@ hb_ot_substitute_complex (hb_ot_shape_context_t *c)
 {
   hb_buffer_t *buffer = c->buffer;
 
+  _hb_buffer_allocate_gsubgpos_vars (buffer);
   hb_ot_layout_substitute_start (c->font, buffer);
 
   if (!hb_ot_layout_has_glyph_classes (c->face))
@@ -637,6 +637,8 @@ hb_ot_position (hb_ot_shape_context_t *c)
 
   if (fallback)
     _hb_ot_shape_fallback_kern (c->plan, c->font, c->buffer);
+
+  _hb_buffer_deallocate_gsubgpos_vars (c->buffer);
 }
 
 
