@@ -566,8 +566,7 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
     if (isRoot) {
         isOpaqueRoot = true;
         if (!bgLayer.next() && bgColor.hasAlpha() && view()->frameView()) {
-            Element* ownerElement = document().ownerElement();
-            if (ownerElement) {
+            if (HTMLFrameOwnerElement* ownerElement = document().ownerElement()) {
                 if (!isHTMLFrameElement(*ownerElement)) {
                     // Locate the <body> element using the DOM.  This is easier than trying
                     // to crawl around a render tree with potential :before/:after content and

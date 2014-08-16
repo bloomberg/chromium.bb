@@ -468,14 +468,10 @@ void RenderBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignmen
         newRect = layer()->scrollableArea()->exposeRect(rect, alignX, alignY);
     } else if (!parentBox && canBeProgramaticallyScrolled()) {
         if (FrameView* frameView = this->frameView()) {
-            Element* ownerElement = document().ownerElement();
+            HTMLFrameOwnerElement* ownerElement = document().ownerElement();
 
             if (ownerElement && ownerElement->renderer()) {
-                HTMLFrameElementBase* frameElementBase = 0;
-
-                if (isHTMLFrameElement(*ownerElement) || isHTMLIFrameElement(*ownerElement))
-                    frameElementBase = toHTMLFrameElementBase(ownerElement);
-
+                HTMLFrameElementBase* frameElementBase = isHTMLFrameElementBase(*ownerElement) ? toHTMLFrameElementBase(ownerElement) : 0;
                 if (frameElementAndViewPermitScroll(frameElementBase, frameView)) {
                     LayoutRect viewRect = frameView->visibleContentRect();
                     LayoutRect exposeRect = ScrollAlignment::getRectToExpose(viewRect, rect, alignX, alignY);

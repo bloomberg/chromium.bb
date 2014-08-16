@@ -1942,8 +1942,8 @@ void Document::updateLayout()
         return;
     }
 
-    if (Element* oe = ownerElement())
-        oe->document().updateLayout();
+    if (HTMLFrameOwnerElement* owner = ownerElement())
+        owner->document().updateLayout();
 
     updateRenderTreeIfNeeded();
 
@@ -4501,7 +4501,7 @@ Document& Document::topDocument() const
     // FIXME: Not clear what topDocument() should do in the OOPI case--should it return the topmost
     // available Document, or something else?
     Document* doc = const_cast<Document*>(this);
-    for (Element* element = doc->ownerElement(); element; element = doc->ownerElement())
+    for (HTMLFrameOwnerElement* element = doc->ownerElement(); element; element = doc->ownerElement())
         doc = &element->document();
 
     ASSERT(doc);

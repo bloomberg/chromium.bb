@@ -1831,7 +1831,7 @@ void InspectorDOMAgent::domContentLoadedEventFired(LocalFrame* frame)
 
 void InspectorDOMAgent::invalidateFrameOwnerElement(LocalFrame* frame)
 {
-    Element* frameOwner = frame->document()->ownerElement();
+    HTMLFrameOwnerElement* frameOwner = frame->document()->ownerElement();
     if (!frameOwner)
         return;
 

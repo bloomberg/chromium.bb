@@ -453,7 +453,7 @@ void RenderView::invalidatePaintForRectangle(const LayoutRect& paintInvalidation
 
     // We always just invalidate the root view, since we could be an iframe that is clipped out
     // or even invisible.
-    Element* owner = document().ownerElement();
+    HTMLFrameOwnerElement* owner = document().ownerElement();
     if (layer()->compositingState() == PaintsIntoOwnBacking) {
         layer()->paintInvalidator().setBackingNeedsPaintInvalidationInRect(paintInvalidationRect);
     } else if (!owner) {

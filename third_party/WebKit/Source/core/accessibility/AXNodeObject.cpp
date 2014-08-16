@@ -1632,25 +1632,21 @@ String AXNodeObject::alternativeTextForWebArea() const
             return ariaLabel;
     }
 
-    Node* owner = document->ownerElement();
-    if (owner) {
+    if (HTMLFrameOwnerElement* owner = document->ownerElement()) {
         if (isHTMLFrameElementBase(*owner)) {
-            const AtomicString& title = toElement(owner)->getAttribute(titleAttr);
+            const AtomicString& title = owner->getAttribute(titleAttr);
             if (!title.isEmpty())
                 return title;
-            return toElement(owner)->getNameAttribute();
         }
-        if (owner->isHTMLElement())
-            return toHTMLElement(owner)->getNameAttribute();
+        return owner->getNameAttribute();
     }
 
     String documentTitle = document->title();
     if (!documentTitle.isEmpty())
         return documentTitle;
 
-    owner = document->body();
-    if (owner && owner->isHTMLElement())
-        return toHTMLElement(owner)->getNameAttribute();
+    if (HTMLElement* body = document->body())
+        return body->getNameAttribute();
 
     return String();
 }

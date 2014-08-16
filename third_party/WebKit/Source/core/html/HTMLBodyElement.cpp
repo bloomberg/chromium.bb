@@ -166,7 +166,7 @@ void HTMLBodyElement::didNotifySubtreeInsertionsToDocument()
     // FIXME: It's surprising this is web compatible since it means a
     // marginwidth and marginheight attribute can magically appear on the <body>
     // of all documents embedded through <iframe> or <frame>.
-    Element* ownerElement = document().ownerElement();
+    HTMLFrameOwnerElement* ownerElement = document().ownerElement();
     if (!isHTMLFrameElementBase(ownerElement))
         return;
     HTMLFrameElementBase& ownerFrameElement = toHTMLFrameElementBase(*ownerElement);
