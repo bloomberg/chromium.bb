@@ -117,7 +117,7 @@
               '<(SHARED_INTERMEDIATE_DIR)/webkit/devtools_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources_100_percent.pak',
             ],
-            'pak_output': '<(PRODUCT_DIR)/cast_shell.pak',
+            'pak_output': '<(PRODUCT_DIR)/assets/cast_shell.pak',
           },
           'includes': [ '../build/repack_action.gypi' ],
         },

@@ -4,7 +4,6 @@
 
 #include "chromecast/shell/app/cast_main_delegate.h"
 
-#include "base/base_paths.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "chromecast/common/cast_paths.h"
@@ -52,10 +51,10 @@ void CastMainDelegate::InitializeResourceBundle() {
       resource_delegate_.get(),
       ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
 
-  base::FilePath pak_dir;
-  PathService::Get(base::DIR_MODULE, &pak_dir);
+  base::FilePath pak_file;
+  CHECK(PathService::Get(FILE_CAST_PAK, &pak_file));
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-      pak_dir.Append(FILE_PATH_LITERAL("cast_shell.pak")),
+      pak_file,
       ui::SCALE_FACTOR_NONE);
 }
 

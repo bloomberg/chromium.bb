@@ -17,6 +17,7 @@ enum {
                     // development use and the actual device.
 
   FILE_CAST_CONFIG, // Config/preferences file path.
+  FILE_CAST_PAK,    // cast_shell.pak file path.
   PATH_END
 };
 

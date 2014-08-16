@@ -4,6 +4,7 @@
 
 #include "chromecast/common/cast_paths.h"
 
+#include "base/base_paths.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
@@ -34,6 +35,17 @@ bool PathProvider(int key, base::FilePath* result) {
 #else
       CHECK(PathService::Get(DIR_CAST_HOME, &data_dir));
       *result = data_dir.Append(".eureka.conf");
+#endif  // defined(OS_ANDROID)
+      return true;
+    }
+    case FILE_CAST_PAK: {
+      base::FilePath base_dir;
+#if defined(OS_ANDROID)
+      CHECK(PathService::Get(base::DIR_ANDROID_APP_DATA, &base_dir));
+      *result = base_dir.Append("paks/cast_shell.pak");
+#else
+      CHECK(PathService::Get(base::DIR_MODULE, &base_dir));
+      *result = base_dir.Append("assets/cast_shell.pak");
 #endif  // defined(OS_ANDROID)
       return true;
     }
