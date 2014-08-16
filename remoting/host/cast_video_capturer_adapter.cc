@@ -12,9 +12,9 @@ namespace remoting {
 const int kFramesPerSec = 10;
 
 CastVideoCapturerAdapter::CastVideoCapturerAdapter(
-    scoped_ptr<webrtc::ScreenCapturer> capturer)
-    : screen_capturer_(capturer.Pass()) {
-  DCHECK(screen_capturer_);
+    scoped_ptr<webrtc::DesktopCapturer> capturer)
+    : desktop_capturer_(capturer.Pass()) {
+  DCHECK(desktop_capturer_);
 
   thread_checker_.DetachFromThread();
 
@@ -80,7 +80,7 @@ cricket::CaptureState CastVideoCapturerAdapter::Start(
   DCHECK(!capture_timer_);
   DCHECK_EQ(capture_format.fourcc, (static_cast<uint32>(cricket::FOURCC_ARGB)));
 
-  if (!screen_capturer_) {
+  if (!desktop_capturer_) {
     VLOG(1) << "CastVideoCapturerAdapter failed to start.";
     return cricket::CS_FAILED;
   }
@@ -89,9 +89,9 @@ cricket::CaptureState CastVideoCapturerAdapter::Start(
   // capture format will be.
   SetCaptureFormat(&capture_format);
 
-  screen_capturer_->Start(this);
+  desktop_capturer_->Start(this);
 
-  // Save the Start() time of |screen_capturer_|. This will be used
+  // Save the Start() time of |desktop_capturer_|. This will be used
   // to estimate the creation time of the frame source, to set the elapsed_time
   // of future CapturedFrames in OnCaptureCompleted().
   start_time_ = base::TimeTicks::Now();
@@ -108,7 +108,7 @@ cricket::CaptureState CastVideoCapturerAdapter::Start(
 
 // Similar to the base class implementation with some important differences:
 // 1. Does not call either Stop() or Start(), as those would affect the state of
-// |screen_capturer_|.
+// |desktop_capturer_|.
 // 2. Does not support unpausing after stopping the capturer. It is unclear
 // if that flow needs to be supported.
 bool CastVideoCapturerAdapter::Pause(bool pause) {
@@ -194,7 +194,7 @@ void CastVideoCapturerAdapter::CaptureNextFrame() {
   if (!IsRunning())
     return;
 
-  screen_capturer_->Capture(webrtc::DesktopRegion());
+  desktop_capturer_->Capture(webrtc::DesktopRegion());
 }
 
 }  // namespace remoting

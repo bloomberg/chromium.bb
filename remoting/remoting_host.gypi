@@ -369,8 +369,12 @@
                 '../third_party/libjingle/libjingle.gyp:libpeerconnection',
               ],
               'sources': [
+                'host/cast_extension.cc',
+                'host/cast_extension.h',
+                'host/cast_extension_session.cc',
+                'host/cast_extension_session.h',
                 'host/cast_video_capturer_adapter.cc',
-                'host/cast_video_capturer_adapter.h'
+                'host/cast_video_capturer_adapter.h',
               ],
             }],
           ],

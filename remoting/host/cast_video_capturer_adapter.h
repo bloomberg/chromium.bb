@@ -25,7 +25,7 @@ namespace remoting {
 
 // This class controls the capture of video frames from the desktop and is used
 // to construct a VideoSource as part of the webrtc PeerConnection API.
-// CastVideoCapturerAdapter acts as an adapter between webrtc::ScreenCapturer
+// CastVideoCapturerAdapter acts as an adapter between webrtc::DesktopCapturer
 // and the cricket::VideoCapturer interface, which it implements. It is used
 // to construct a cricket::VideoSource for a PeerConnection, to capture frames
 // of the desktop. As indicated in the base implementation, Start() and Stop()
@@ -34,7 +34,7 @@ class CastVideoCapturerAdapter : public cricket::VideoCapturer,
                                  public webrtc::DesktopCapturer::Callback {
  public:
   explicit CastVideoCapturerAdapter(
-      scoped_ptr<webrtc::ScreenCapturer> capturer);
+      scoped_ptr<webrtc::DesktopCapturer> capturer);
 
   virtual ~CastVideoCapturerAdapter();
 
@@ -56,7 +56,7 @@ class CastVideoCapturerAdapter : public cricket::VideoCapturer,
   virtual bool GetPreferredFourccs(std::vector<uint32>* fourccs) OVERRIDE;
 
  private:
-  // Kicks off the next frame capture using |screen_capturer_|.
+  // Kicks off the next frame capture using |desktop_capturer_|.
   // The captured frame will be passed to OnCaptureCompleted().
   void CaptureNextFrame();
 
@@ -64,7 +64,7 @@ class CastVideoCapturerAdapter : public cricket::VideoCapturer,
   base::ThreadChecker thread_checker_;
 
   // Used to capture frames.
-  scoped_ptr<webrtc::ScreenCapturer> screen_capturer_;
+  scoped_ptr<webrtc::DesktopCapturer> desktop_capturer_;
 
   // Used to schedule periodic screen captures.
   scoped_ptr<base::RepeatingTimer<CastVideoCapturerAdapter> > capture_timer_;
