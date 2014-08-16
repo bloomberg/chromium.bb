@@ -497,8 +497,7 @@ void PictureLayerTiling::UpdateTilePriorities(
   eviction_tiles_cache_valid_ = false;
 
   TilePriority now_priority(resolution_, TilePriority::NOW, 0);
-  float content_to_screen_scale =
-      1.0f / (contents_scale_ * ideal_contents_scale);
+  float content_to_screen_scale = ideal_contents_scale / contents_scale_;
 
   // Assign now priority to all visible tiles.
   bool include_borders = true;

@@ -622,13 +622,39 @@ TEST(PictureLayerTilingTest, ViewportDistanceWithScale) {
       ACTIVE_TREE, viewport, 2.0f, 3.0, NULL, NULL, gfx::Transform());
 
   priority = tiling->TileAt(5, 1)->priority(ACTIVE_TREE);
-  EXPECT_FLOAT_EQ(34.f, priority.distance_to_visible);
+  EXPECT_FLOAT_EQ(136.f, priority.distance_to_visible);
 
   priority = tiling->TileAt(2, 5)->priority(ACTIVE_TREE);
-  EXPECT_FLOAT_EQ(14.f, priority.distance_to_visible);
+  EXPECT_FLOAT_EQ(56.f, priority.distance_to_visible);
 
   priority = tiling->TileAt(3, 4)->priority(ACTIVE_TREE);
   EXPECT_FLOAT_EQ(0.f, priority.distance_to_visible);
+
+  // Test additional scales.
+  tiling = TestablePictureLayerTiling::Create(0.2f, layer_bounds, &client);
+  tiling->UpdateTilePriorities(
+      ACTIVE_TREE, viewport, 1.0f, 4.0, NULL, NULL, gfx::Transform());
+
+  priority = tiling->TileAt(5, 1)->priority(ACTIVE_TREE);
+  EXPECT_FLOAT_EQ(110.f, priority.distance_to_visible);
+
+  priority = tiling->TileAt(2, 5)->priority(ACTIVE_TREE);
+  EXPECT_FLOAT_EQ(70.f, priority.distance_to_visible);
+
+  priority = tiling->TileAt(3, 4)->priority(ACTIVE_TREE);
+  EXPECT_FLOAT_EQ(60.f, priority.distance_to_visible);
+
+  tiling->UpdateTilePriorities(
+      ACTIVE_TREE, viewport, 0.5f, 5.0, NULL, NULL, gfx::Transform());
+
+  priority = tiling->TileAt(5, 1)->priority(ACTIVE_TREE);
+  EXPECT_FLOAT_EQ(55.f, priority.distance_to_visible);
+
+  priority = tiling->TileAt(2, 5)->priority(ACTIVE_TREE);
+  EXPECT_FLOAT_EQ(35.f, priority.distance_to_visible);
+
+  priority = tiling->TileAt(3, 4)->priority(ACTIVE_TREE);
+  EXPECT_FLOAT_EQ(30.f, priority.distance_to_visible);
 }
 
 TEST(PictureLayerTilingTest, ExpandRectEqual) {
