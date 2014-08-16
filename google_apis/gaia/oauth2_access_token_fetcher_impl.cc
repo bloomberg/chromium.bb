@@ -183,9 +183,8 @@ void OAuth2AccessTokenFetcherImpl::EndGetAccessToken(
     case net::HTTP_OK:
       break;
     case net::HTTP_FORBIDDEN:
-    case net::HTTP_INTERNAL_SERVER_ERROR:
       // HTTP_FORBIDDEN (403) is treated as temporary error, because it may be
-      // '403 Rate Limit Exeeded.' 500 is always treated as transient.
+      // '403 Rate Limit Exeeded.'
       OnGetTokenFailure(
           GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
       return;
@@ -212,11 +211,20 @@ void OAuth2AccessTokenFetcherImpl::EndGetAccessToken(
               : GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_ERROR));
       return;
     }
-    default:
-      // The other errors are treated as permanent error.
-      OnGetTokenFailure(GoogleServiceAuthError(
-          GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+    default: {
+      if (source->GetResponseCode() >= net::HTTP_INTERNAL_SERVER_ERROR) {
+        // 5xx is always treated as transient.
+        OnGetTokenFailure(GoogleServiceAuthError(
+            GoogleServiceAuthError::SERVICE_UNAVAILABLE));
+      } else {
+        // The other errors are treated as permanent error.
+        DLOG(ERROR) << "Unexpected persistent error: http_status="
+                    << source->GetResponseCode();
+        OnGetTokenFailure(GoogleServiceAuthError(
+            GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+      }
       return;
+    }
   }
 
   // The request was successfully fetched and it returned OK.

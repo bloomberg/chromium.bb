@@ -759,6 +759,8 @@ void ProfileSyncService::OnGetTokenFailure(
   last_get_token_error_ = error;
   switch (error.state()) {
     case GoogleServiceAuthError::CONNECTION_FAILED:
+    case GoogleServiceAuthError::REQUEST_CANCELED:
+    case GoogleServiceAuthError::SERVICE_ERROR:
     case GoogleServiceAuthError::SERVICE_UNAVAILABLE: {
       // Transient error. Retry after some time.
       request_access_token_backoff_.InformOfRequest(false);
@@ -772,7 +774,6 @@ void ProfileSyncService::OnGetTokenFailure(
       NotifyObservers();
       break;
     }
-    case GoogleServiceAuthError::SERVICE_ERROR:
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS: {
       if (!sync_prefs_.SyncHasAuthError()) {
         sync_prefs_.SetSyncAuthError(true);
@@ -783,6 +784,9 @@ void ProfileSyncService::OnGetTokenFailure(
       // Fallthrough.
     }
     default: {
+      if (error.state() != GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS) {
+        LOG(ERROR) << "Unexpected persistent error: " << error.ToString();
+      }
       // Show error to user.
       UpdateAuthErrorState(error);
     }

@@ -206,10 +206,10 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, InvalidGrant) {
             GetSyncService((0))->GetAuthError().state());
 }
 
-// Verify that ProfileSyncService ends up with an SERVICE_ERROR auth error when
+// Verify that ProfileSyncService retries after SERVICE_ERROR auth error when
 // an invalid_client error is returned by OAuth2TokenService with an
 // HTTP_BAD_REQUEST (400) response code.
-IN_PROC_BROWSER_TEST_F(SyncAuthTest, InvalidClient) {
+IN_PROC_BROWSER_TEST_F(SyncAuthTest, RetryInvalidClient) {
   ASSERT_TRUE(SetupSync());
   ASSERT_FALSE(AttemptToTriggerAuthError());
   GetFakeServer()->SetUnauthenticated();
@@ -218,13 +218,12 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, InvalidClient) {
                          net::HTTP_BAD_REQUEST,
                          net::URLRequestStatus::SUCCESS);
   ASSERT_TRUE(AttemptToTriggerAuthError());
-  ASSERT_EQ(GoogleServiceAuthError::SERVICE_ERROR,
-            GetSyncService((0))->GetAuthError().state());
+  ASSERT_TRUE(GetSyncService((0))->IsRetryingAccessTokenFetchForTest());
 }
 
-// Verify that ProfileSyncService ends up with a REQUEST_CANCELED auth error
-// when when OAuth2TokenService has encountered a URLRequestStatus of CANCELED.
-IN_PROC_BROWSER_TEST_F(SyncAuthTest, RequestCanceled) {
+// Verify that ProfileSyncService retries after REQUEST_CANCELED auth error
+// when OAuth2TokenService has encountered a URLRequestStatus of CANCELED.
+IN_PROC_BROWSER_TEST_F(SyncAuthTest, RetryRequestCanceled) {
   ASSERT_TRUE(SetupSync());
   ASSERT_FALSE(AttemptToTriggerAuthError());
   GetFakeServer()->SetUnauthenticated();
@@ -233,8 +232,7 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, RequestCanceled) {
                          net::HTTP_INTERNAL_SERVER_ERROR,
                          net::URLRequestStatus::CANCELED);
   ASSERT_TRUE(AttemptToTriggerAuthError());
-  ASSERT_EQ(GoogleServiceAuthError::REQUEST_CANCELED,
-            GetSyncService((0))->GetAuthError().state());
+  ASSERT_TRUE(GetSyncService((0))->IsRetryingAccessTokenFetchForTest());
 }
 
 // Verify that ProfileSyncService fails initial sync setup during backend
