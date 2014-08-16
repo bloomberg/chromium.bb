@@ -161,6 +161,9 @@ class CONTENT_EXPORT PeerConnectionTracker : public RenderProcessObserver {
   // IPC Message handler for getting all stats.
   void OnGetAllStats();
 
+  // Called when the browser process reports a suspend event from the OS.
+  void OnSuspend();
+
   void SendPeerConnectionUpdate(RTCPeerConnectionHandler* pc_handler,
                                 const std::string& callback_type,
                                 const std::string& value);
