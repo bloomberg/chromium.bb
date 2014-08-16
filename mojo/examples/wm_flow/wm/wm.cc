@@ -6,14 +6,17 @@
 #include "mojo/public/cpp/application/service_provider_impl.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
+#include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "mojo/services/public/cpp/view_manager/window_manager_delegate.h"
+#include "mojo/services/public/interfaces/input_events/input_events.mojom.h"
 #include "mojo/services/window_manager/window_manager_app.h"
 
 namespace examples {
 
 class SimpleWM : public mojo::ApplicationDelegate,
                  public mojo::ViewManagerDelegate,
-                 public mojo::WindowManagerDelegate {
+                 public mojo::WindowManagerDelegate,
+                 public mojo::ViewObserver {
  public:
   SimpleWM()
       : window_manager_app_(new mojo::WindowManagerApp(this, this)),
@@ -59,9 +62,17 @@ class SimpleWM : public mojo::ApplicationDelegate,
       const mojo::String& url,
       mojo::InterfaceRequest<mojo::ServiceProvider> service_provider)
           MOJO_OVERRIDE {
+    mojo::View* frame_view = mojo::View::Create(view_manager_);
+    window_container_->AddChild(frame_view);
+    frame_view->SetBounds(gfx::Rect(next_window_origin_, gfx::Size(400, 400)));
+    frame_view->SetColor(SK_ColorBLUE);
+    frame_view->AddObserver(this);
+
     mojo::View* embed_view = mojo::View::Create(view_manager_);
-    embed_view->SetBounds(gfx::Rect(next_window_origin_, gfx::Size(400, 400)));
-    window_container_->AddChild(embed_view);
+    gfx::Rect client_bounds(frame_view->bounds().size());
+    client_bounds.Inset(10, 30, 10, 10);
+    embed_view->SetBounds(client_bounds);
+    frame_view->AddChild(embed_view);
 
     // TODO(beng): We're dropping the |service_provider| passed from the client
     //             on the floor here and passing our own. Seems like we should
@@ -72,6 +83,26 @@ class SimpleWM : public mojo::ApplicationDelegate,
     next_window_origin_.Offset(50, 50);
   }
   virtual void DispatchEvent(mojo::EventPtr event) MOJO_OVERRIDE {}
+
+  // Overridden from mojo::ViewObserver:
+  virtual void OnViewInputEvent(mojo::View* view,
+                                const mojo::EventPtr& event) MOJO_OVERRIDE {
+    if (event->action == mojo::EVENT_TYPE_MOUSE_RELEASED &&
+        event->flags & mojo::EVENT_FLAGS_RIGHT_MOUSE_BUTTON &&
+        view->parent() == window_container_) {
+      CloseWindow(view);
+    }
+  }
+  virtual void OnViewDestroyed(mojo::View* view) MOJO_OVERRIDE {
+    view->RemoveObserver(this);
+  }
+
+  void CloseWindow(mojo::View* view) {
+    mojo::View* first_child = view->children().front();
+    first_child->Destroy();
+    view->Destroy();
+    next_window_origin_.Offset(-50, -50);
+  }
 
   scoped_ptr<mojo::WindowManagerApp> window_manager_app_;
 

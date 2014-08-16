@@ -16,6 +16,7 @@
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
+#include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 
 namespace examples {
@@ -45,21 +46,22 @@ class EmbedderImpl : public mojo::InterfaceImpl<Embedder> {
 // connection by connecting to the ViewManagerInit service and asking to be
 // embed without a view context.
 class WMFlowApp : public mojo::ApplicationDelegate,
-                  public mojo::ViewManagerDelegate {
+                  public mojo::ViewManagerDelegate,
+                  public mojo::ViewObserver {
  public:
   WMFlowApp()
       : embed_count_(0),
-        view_manager_client_factory_(this) {}
+        view_manager_client_factory_(this),
+        app_(NULL) {}
   virtual ~WMFlowApp() {}
 
  private:
   // Overridden from Application:
   virtual void Initialize(mojo::ApplicationImpl* app) MOJO_OVERRIDE {
-    mojo::ServiceProviderPtr sp;
-    mojo::ViewManagerInitServicePtr init_svc;
-    app->ConnectToService("mojo:mojo_view_manager", &init_svc);
-    init_svc->Embed("mojo:mojo_wm_flow_app", sp.Pass(),
-                    base::Bind(&ConnectCallback));
+    app_ = app;
+    OpenNewWindow();
+    OpenNewWindow();
+    OpenNewWindow();
   }
   virtual bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) MOJO_OVERRIDE {
@@ -75,11 +77,12 @@ class WMFlowApp : public mojo::ApplicationDelegate,
       mojo::View* root,
       mojo::ServiceProviderImpl* exported_services,
       scoped_ptr<mojo::ServiceProvider> imported_services) MOJO_OVERRIDE {
+    root->AddObserver(this);
     root->SetColor(kColors[embed_count_++ % arraysize(kColors)]);
 
     mojo::View* embed = mojo::View::Create(view_manager);
     root->AddChild(embed);
-    gfx::Rect bounds = root->bounds();
+    gfx::Rect bounds = gfx::Rect(root->bounds().size());
     bounds.Inset(25, 25);
     embed->SetBounds(bounds);
 
@@ -96,14 +99,36 @@ class WMFlowApp : public mojo::ApplicationDelegate,
   virtual void OnViewManagerDisconnected(
       mojo::ViewManager* view_manager) MOJO_OVERRIDE {}
 
+  // Overridden from mojo::ViewObserver:
+  virtual void OnViewInputEvent(mojo::View* view,
+                                const mojo::EventPtr& event) MOJO_OVERRIDE {
+    if (event->action == mojo::EVENT_TYPE_MOUSE_RELEASED &&
+        event->flags & mojo::EVENT_FLAGS_LEFT_MOUSE_BUTTON) {
+      OpenNewWindow();
+    }
+  }
+  virtual void OnViewDestroyed(mojo::View* view) MOJO_OVERRIDE {
+    --embed_count_;
+    view->RemoveObserver(this);
+  }
+
   void HelloBackAck() {
     printf("HelloBack() ack'ed\n");
+  }
+
+  void OpenNewWindow() {
+    mojo::ViewManagerInitServicePtr init_svc;
+    app_->ConnectToService("mojo:mojo_view_manager", &init_svc);
+    mojo::ServiceProviderPtr sp;
+    init_svc->Embed("mojo:mojo_wm_flow_app", sp.Pass(),
+                    base::Bind(&ConnectCallback));
   }
 
   int embed_count_;
   mojo::ViewManagerClientFactory view_manager_client_factory_;
   mojo::InterfaceFactoryImpl<EmbedderImpl> embedder_factory_;
   EmbeddeePtr embeddee_;
+  mojo::ApplicationImpl* app_;
 
   DISALLOW_COPY_AND_ASSIGN(WMFlowApp);
 };

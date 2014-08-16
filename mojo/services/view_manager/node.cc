@@ -8,6 +8,7 @@
 #include "ui/aura/window_property.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/hit_test.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
