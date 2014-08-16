@@ -458,6 +458,13 @@ void GLRenderer::ClearFramebuffer(DrawingFrame* frame,
   }
 }
 
+static ResourceProvider::ResourceId WaitOnResourceSyncPoints(
+    ResourceProvider* resource_provider,
+    ResourceProvider::ResourceId resource_id) {
+  resource_provider->WaitSyncPointIfNeeded(resource_id);
+  return resource_id;
+}
+
 void GLRenderer::BeginDrawingFrame(DrawingFrame* frame) {
   if (frame->device_viewport_rect.IsEmpty())
     return;
@@ -491,6 +498,19 @@ void GLRenderer::BeginDrawingFrame(DrawingFrame* frame) {
     read_lock_fence = make_scoped_refptr(new FallbackFence(gl_));
   }
   resource_provider_->SetReadLockFence(read_lock_fence.get());
+
+  // Insert WaitSyncPointCHROMIUM on quad resources prior to drawing the frame,
+  // so that drawing can proceed without GL context switching interruptions.
+  DrawQuad::ResourceIteratorCallback wait_on_resource_syncpoints_callback =
+      base::Bind(&WaitOnResourceSyncPoints, resource_provider_);
+
+  for (size_t i = 0; i < frame->render_passes_in_draw_order->size(); ++i) {
+    RenderPass* pass = frame->render_passes_in_draw_order->at(i);
+    for (size_t j = 0; j < pass->quad_list.size(); ++j) {
+      DrawQuad* quad = pass->quad_list[j];
+      quad->IterateResources(wait_on_resource_syncpoints_callback);
+    }
+  }
 
   // TODO(enne): Do we need to reinitialize all of this state per frame?
   ReinitializeGLState();

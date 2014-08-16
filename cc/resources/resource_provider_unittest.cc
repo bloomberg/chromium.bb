@@ -339,6 +339,7 @@ void GetResourcePixels(ResourceProvider* resource_provider,
                        const gfx::Size& size,
                        ResourceFormat format,
                        uint8_t* pixels) {
+  resource_provider->WaitSyncPointIfNeeded(id);
   switch (resource_provider->default_resource_type()) {
     case ResourceProvider::GLTexture: {
       ResourceProvider::ScopedReadLockGL lock_gl(resource_provider, id);
@@ -664,6 +665,7 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
     EXPECT_NE(list[0].mailbox_holder.sync_point,
               context3d_->last_waited_sync_point());
     {
+      resource_provider_->WaitSyncPointIfNeeded(list[0].id);
       ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
                                               list[0].id);
     }
@@ -753,6 +755,7 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
   EXPECT_FALSE(child_resource_provider_->InUseByConsumer(id4));
 
   {
+    child_resource_provider_->WaitSyncPointIfNeeded(id1);
     ResourceProvider::ScopedReadLockGL lock(child_resource_provider_.get(),
                                             id1);
     ASSERT_NE(0U, lock.texture_id());
@@ -761,6 +764,7 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
     EXPECT_EQ(0, memcmp(data1, result, pixel_size));
   }
   {
+    child_resource_provider_->WaitSyncPointIfNeeded(id2);
     ResourceProvider::ScopedReadLockGL lock(child_resource_provider_.get(),
                                             id2);
     ASSERT_NE(0U, lock.texture_id());
@@ -769,6 +773,7 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
     EXPECT_EQ(0, memcmp(data2, result, pixel_size));
   }
   {
+    child_resource_provider_->WaitSyncPointIfNeeded(id3);
     ResourceProvider::ScopedReadLockGL lock(child_resource_provider_.get(),
                                             id3);
     ASSERT_NE(0U, lock.texture_id());
@@ -854,6 +859,7 @@ TEST_P(ResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
 
     resource_provider_->ReceiveFromChild(child_id, list);
 
+    resource_provider_->WaitSyncPointIfNeeded(list[0].id);
     ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
                                             list[0].id);
 
@@ -866,6 +872,7 @@ TEST_P(ResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
   child_resource_provider_->ReceiveReturnsFromParent(returned_to_child);
 
   {
+    child_resource_provider_->WaitSyncPointIfNeeded(id1);
     ResourceProvider::ScopedReadLockGL lock(child_resource_provider_.get(),
                                             id1);
     child_resource_provider_->DeleteResource(id1);
@@ -1742,6 +1749,7 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
       EXPECT_CALL(*parent_context, consumeTextureCHROMIUM(GL_TEXTURE_2D, _));
       parent_resource_provider->ReceiveFromChild(child_id, list);
       {
+        parent_resource_provider->WaitSyncPointIfNeeded(list[0].id);
         ResourceProvider::ScopedReadLockGL lock(parent_resource_provider.get(),
                                                 list[0].id);
       }
@@ -2518,9 +2526,13 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTexture2D) {
   Mock::VerifyAndClearExpectations(context);
 
   {
+    // Mailbox sync point WaitSyncPoint before using the texture.
+    EXPECT_CALL(*context, waitSyncPoint(sync_point));
+    resource_provider->WaitSyncPointIfNeeded(id);
+    Mock::VerifyAndClearExpectations(context);
+
     // Using the texture does a consume of the mailbox.
     EXPECT_CALL(*context, bindTexture(target, texture_id));
-    EXPECT_CALL(*context, waitSyncPoint(sync_point));
     EXPECT_CALL(*context, consumeTextureCHROMIUM(target, _));
 
     EXPECT_CALL(*context, insertSyncPoint()).Times(0);
@@ -2582,9 +2594,13 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTextureExternalOES) {
   Mock::VerifyAndClearExpectations(context);
 
   {
+    // Mailbox sync point WaitSyncPoint before using the texture.
+    EXPECT_CALL(*context, waitSyncPoint(sync_point));
+    resource_provider->WaitSyncPointIfNeeded(id);
+    Mock::VerifyAndClearExpectations(context);
+
     // Using the texture does a consume of the mailbox.
     EXPECT_CALL(*context, bindTexture(target, texture_id));
-    EXPECT_CALL(*context, waitSyncPoint(sync_point));
     EXPECT_CALL(*context, consumeTextureCHROMIUM(target, _));
 
     EXPECT_CALL(*context, insertSyncPoint()).Times(0);
@@ -2601,6 +2617,108 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTextureExternalOES) {
 
     EXPECT_CALL(*context, waitSyncPoint(_)).Times(0);
     EXPECT_CALL(*context, consumeTextureCHROMIUM(_, _)).Times(0);
+  }
+}
+
+TEST_P(ResourceProviderTest,
+       TextureMailbox_WaitSyncPointIfNeeded_WithSyncPoint) {
+  // Mailboxing is only supported for GL textures.
+  if (GetParam() != ResourceProvider::GLTexture)
+    return;
+
+  scoped_ptr<TextureStateTrackingContext> context_owned(
+      new TextureStateTrackingContext);
+  TextureStateTrackingContext* context = context_owned.get();
+
+  FakeOutputSurfaceClient output_surface_client;
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      context_owned.PassAs<TestWebGraphicsContext3D>()));
+  CHECK(output_surface->BindToClient(&output_surface_client));
+
+  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
+      output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
+
+  uint32 sync_point = 30;
+  unsigned target = GL_TEXTURE_2D;
+
+  EXPECT_CALL(*context, bindTexture(_, _)).Times(0);
+  EXPECT_CALL(*context, waitSyncPoint(_)).Times(0);
+  EXPECT_CALL(*context, insertSyncPoint()).Times(0);
+  EXPECT_CALL(*context, produceTextureCHROMIUM(_, _)).Times(0);
+  EXPECT_CALL(*context, consumeTextureCHROMIUM(_, _)).Times(0);
+
+  gpu::Mailbox gpu_mailbox;
+  memcpy(gpu_mailbox.name, "Hello world", strlen("Hello world") + 1);
+  scoped_ptr<SingleReleaseCallback> callback =
+      SingleReleaseCallback::Create(base::Bind(&EmptyReleaseCallback));
+
+  TextureMailbox mailbox(gpu_mailbox, target, sync_point);
+
+  ResourceProvider::ResourceId id =
+      resource_provider->CreateResourceFromTextureMailbox(mailbox,
+                                                          callback.Pass());
+  EXPECT_NE(0u, id);
+
+  Mock::VerifyAndClearExpectations(context);
+
+  {
+    // First call to WaitSyncPointIfNeeded should call waitSyncPoint.
+    EXPECT_CALL(*context, waitSyncPoint(sync_point));
+    resource_provider->WaitSyncPointIfNeeded(id);
+    Mock::VerifyAndClearExpectations(context);
+
+    // Subsequent calls to WaitSyncPointIfNeeded shouldn't call waitSyncPoint.
+    EXPECT_CALL(*context, waitSyncPoint(_)).Times(0);
+    resource_provider->WaitSyncPointIfNeeded(id);
+    Mock::VerifyAndClearExpectations(context);
+  }
+}
+
+TEST_P(ResourceProviderTest, TextureMailbox_WaitSyncPointIfNeeded_NoSyncPoint) {
+  // Mailboxing is only supported for GL textures.
+  if (GetParam() != ResourceProvider::GLTexture)
+    return;
+
+  scoped_ptr<TextureStateTrackingContext> context_owned(
+      new TextureStateTrackingContext);
+  TextureStateTrackingContext* context = context_owned.get();
+
+  FakeOutputSurfaceClient output_surface_client;
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      context_owned.PassAs<TestWebGraphicsContext3D>()));
+  CHECK(output_surface->BindToClient(&output_surface_client));
+
+  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
+      output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
+
+  uint32 sync_point = 0;
+  unsigned target = GL_TEXTURE_2D;
+
+  EXPECT_CALL(*context, bindTexture(_, _)).Times(0);
+  EXPECT_CALL(*context, waitSyncPoint(_)).Times(0);
+  EXPECT_CALL(*context, insertSyncPoint()).Times(0);
+  EXPECT_CALL(*context, produceTextureCHROMIUM(_, _)).Times(0);
+  EXPECT_CALL(*context, consumeTextureCHROMIUM(_, _)).Times(0);
+
+  gpu::Mailbox gpu_mailbox;
+  memcpy(gpu_mailbox.name, "Hello world", strlen("Hello world") + 1);
+  scoped_ptr<SingleReleaseCallback> callback =
+      SingleReleaseCallback::Create(base::Bind(&EmptyReleaseCallback));
+
+  TextureMailbox mailbox(gpu_mailbox, target, sync_point);
+
+  ResourceProvider::ResourceId id =
+      resource_provider->CreateResourceFromTextureMailbox(mailbox,
+                                                          callback.Pass());
+  EXPECT_NE(0u, id);
+
+  Mock::VerifyAndClearExpectations(context);
+
+  {
+    // WaitSyncPointIfNeeded with sync_point == 0 shouldn't call waitSyncPoint.
+    EXPECT_CALL(*context, waitSyncPoint(_)).Times(0);
+    resource_provider->WaitSyncPointIfNeeded(id);
+    Mock::VerifyAndClearExpectations(context);
   }
 }
 

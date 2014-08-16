@@ -4,6 +4,7 @@
 
 #include "cc/test/render_pass_test_common.h"
 
+#include "base/bind.h"
 #include "cc/quads/checkerboard_draw_quad.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/io_surface_draw_quad.h"
@@ -19,6 +20,9 @@
 
 namespace cc {
 
+static void EmptyReleaseCallback(uint32 sync_point, bool lost_resource) {
+}
+
 void TestRenderPass::AppendOneOfEveryQuadType(
     ResourceProvider* resource_provider,
     RenderPass::Id child_pass) {
@@ -26,6 +30,7 @@ void TestRenderPass::AppendOneOfEveryQuadType(
   gfx::Rect opaque_rect(10, 10, 80, 80);
   gfx::Rect visible_rect(0, 0, 100, 100);
   const float vertex_opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
+
   ResourceProvider::ResourceId resource1 = resource_provider->CreateResource(
       gfx::Size(45, 5),
       GL_CLAMP_TO_EDGE,
@@ -68,6 +73,17 @@ void TestRenderPass::AppendOneOfEveryQuadType(
       ResourceProvider::TextureUsageAny,
       resource_provider->best_texture_format());
   resource_provider->AllocateForTesting(resource7);
+
+  unsigned target = GL_TEXTURE_2D;
+  gpu::Mailbox gpu_mailbox;
+  memcpy(gpu_mailbox.name, "Hello world", strlen("Hello world") + 1);
+  scoped_ptr<SingleReleaseCallback> callback =
+      SingleReleaseCallback::Create(base::Bind(&EmptyReleaseCallback));
+  TextureMailbox mailbox(gpu_mailbox, target, kSyncPointForMailboxTextureQuad);
+  ResourceProvider::ResourceId resource8 =
+      resource_provider->CreateResourceFromTextureMailbox(mailbox,
+                                                          callback.Pass());
+  resource_provider->AllocateForTesting(resource8);
 
   SharedQuadState* shared_state = this->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(),
@@ -150,6 +166,20 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                        SK_ColorTRANSPARENT,
                        vertex_opacity,
                        false);
+
+  TextureDrawQuad* mailbox_texture_quad =
+      this->CreateAndAppendDrawQuad<TextureDrawQuad>();
+  mailbox_texture_quad->SetNew(shared_state,
+                               rect,
+                               opaque_rect,
+                               visible_rect,
+                               resource8,
+                               false,
+                               gfx::PointF(0.f, 0.f),
+                               gfx::PointF(1.f, 1.f),
+                               SK_ColorTRANSPARENT,
+                               vertex_opacity,
+                               false);
 
   TileDrawQuad* scaled_tile_quad =
       this->CreateAndAppendDrawQuad<TileDrawQuad>();

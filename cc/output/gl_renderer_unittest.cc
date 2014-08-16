@@ -747,6 +747,7 @@ class TextureStateTrackingContext : public TestWebGraphicsContext3D {
     test_capabilities_.gpu.egl_image_external = true;
   }
 
+  MOCK_METHOD1(waitSyncPoint, void(unsigned sync_point));
   MOCK_METHOD3(texParameteri, void(GLenum target, GLenum pname, GLint param));
   MOCK_METHOD4(drawElements,
                void(GLenum mode, GLsizei count, GLenum type, GLintptr offset));
@@ -801,6 +802,12 @@ TEST_F(GLRendererTest, ActiveTextureState) {
   {
     InSequence sequence;
 
+    // The sync points for all quads are waited on first. This sync point is
+    // for a texture quad drawn later in the frame.
+    EXPECT_CALL(*context,
+                waitSyncPoint(TestRenderPass::kSyncPointForMailboxTextureQuad))
+        .Times(1);
+
     // yuv_quad is drawn with the default linear filter.
     EXPECT_CALL(*context, drawElements(_, _, _, _));
 
@@ -822,7 +829,7 @@ TEST_F(GLRendererTest, ActiveTextureState) {
 
     // The remaining quads also use GL_LINEAR because nearest neighbor
     // filtering is currently only used with tile quads.
-    EXPECT_CALL(*context, drawElements(_, _, _, _)).Times(6);
+    EXPECT_CALL(*context, drawElements(_, _, _, _)).Times(7);
   }
 
   gfx::Rect viewport_rect(100, 100);

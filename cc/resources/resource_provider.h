@@ -366,6 +366,8 @@ class CC_EXPORT ResourceProvider {
   // Copy pixels from source to destination.
   void CopyResource(ResourceId source_id, ResourceId dest_id);
 
+  void WaitSyncPointIfNeeded(ResourceId id);
+
   static GLint GetActiveTextureUnit(gpu::gles2::GLES2Interface* gl);
 
  private:

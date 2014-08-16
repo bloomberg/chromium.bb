@@ -40,6 +40,7 @@ class CC_EXPORT DirectRenderer : public Renderer {
     DrawingFrame();
     ~DrawingFrame();
 
+    const RenderPassList* render_passes_in_draw_order;
     const RenderPass* root_render_pass;
     const RenderPass* current_render_pass;
     const ScopedResource* current_texture;

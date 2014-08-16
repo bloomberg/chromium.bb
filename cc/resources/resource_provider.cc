@@ -1042,12 +1042,13 @@ const ResourceProvider::Resource* ResourceProvider::LockForRead(ResourceId id) {
   if (resource->type == GLTexture && !resource->gl_id) {
     DCHECK(resource->origin != Resource::Internal);
     DCHECK(resource->mailbox.IsTexture());
+
+    // Mailbox sync_points must be processed by a call to
+    // WaitSyncPointIfNeeded() prior to calling LockForRead().
+    DCHECK(!resource->mailbox.sync_point());
+
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);
-    if (resource->mailbox.sync_point()) {
-      GLC(gl, gl->WaitSyncPointCHROMIUM(resource->mailbox.sync_point()));
-      resource->mailbox.set_sync_point(0);
-    }
     resource->gl_id = texture_id_allocator_->NextId();
     GLC(gl, gl->BindTexture(resource->target, resource->gl_id));
     GLC(gl,
@@ -2243,6 +2244,21 @@ void ResourceProvider::CopyResource(ResourceId source_id, ResourceId dest_id) {
     size_t bytes = SharedBitmap::CheckedSizeInBytes(source_resource->size);
     memcpy(dest_resource->pixels, source_resource->pixels, bytes);
   }
+}
+
+void ResourceProvider::WaitSyncPointIfNeeded(ResourceId id) {
+  Resource* resource = GetResource(id);
+  DCHECK_EQ(resource->exported_count, 0);
+  DCHECK(resource->allocated);
+  if (resource->type != GLTexture || resource->gl_id)
+    return;
+  if (!resource->mailbox.sync_point())
+    return;
+  DCHECK(resource->mailbox.IsValid());
+  GLES2Interface* gl = ContextGL();
+  DCHECK(gl);
+  GLC(gl, gl->WaitSyncPointCHROMIUM(resource->mailbox.sync_point()));
+  resource->mailbox.set_sync_point(0);
 }
 
 GLint ResourceProvider::GetActiveTextureUnit(GLES2Interface* gl) {

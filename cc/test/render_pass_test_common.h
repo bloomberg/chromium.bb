@@ -19,6 +19,8 @@ class TestRenderPass : public RenderPass {
     return make_scoped_ptr(new TestRenderPass);
   }
 
+  static const unsigned int kSyncPointForMailboxTextureQuad = 30;
+
   void AppendOneOfEveryQuadType(ResourceProvider* resource_provider,
                                 RenderPass::Id child_pass);
 

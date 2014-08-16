@@ -205,6 +205,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   DCHECK(root_render_pass);
 
   DrawingFrame frame;
+  frame.render_passes_in_draw_order = render_passes_in_draw_order;
   frame.root_render_pass = root_render_pass;
   frame.root_damage_rect = Capabilities().using_partial_swap
                                ? root_render_pass->damage_rect
