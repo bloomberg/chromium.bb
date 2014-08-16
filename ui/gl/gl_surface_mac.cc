@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "third_party/mesa/src/include/GL/osmesa.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
@@ -130,8 +129,8 @@ scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
   TRACE_EVENT0("gpu", "GLSurface::CreateOffscreenGLSurface");
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL: {
-      scoped_refptr<GLSurface> surface(new GLSurfaceOSMesa(OSMESA_RGBA,
-                                                           size));
+      scoped_refptr<GLSurface> surface(
+          new GLSurfaceOSMesa(OSMesaSurfaceFormatRGBA, size));
       if (!surface->Initialize())
         return NULL;
 

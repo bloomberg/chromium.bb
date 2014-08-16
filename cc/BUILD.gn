@@ -474,7 +474,6 @@ component("cc") {
     "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    "//ui/gl",
   ]
   forward_dependent_configs_from = [
     "//skia",

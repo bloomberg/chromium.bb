@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This include must be here so that the includes provided transitively
-// by gl_surface_egl.h don't make it impossible to compile this code.
-#include "third_party/mesa/src/include/GL/osmesa.h"
-
 #include "ui/gl/gl_surface_egl.h"
 
 #if defined(OS_ANDROID)
@@ -21,7 +17,6 @@
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
-#include "ui/gl/gl_surface_osmesa.h"
 #include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/scoped_make_current.h"

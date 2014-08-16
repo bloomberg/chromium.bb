@@ -11,12 +11,14 @@
 
 namespace gfx {
 
+enum OSMesaSurfaceFormat { OSMesaSurfaceFormatBGRA, OSMesaSurfaceFormatRGBA };
+
 // A surface that the Mesa software renderer draws to. This is actually just a
 // buffer in system memory. GetHandle returns a pointer to the buffer. These
 // surfaces can be resized and resizing preserves the contents.
 class GL_EXPORT GLSurfaceOSMesa : public GLSurface {
  public:
-  GLSurfaceOSMesa(unsigned format, const gfx::Size& size);
+  GLSurfaceOSMesa(OSMesaSurfaceFormat format, const gfx::Size& size);
 
   // Implement GLSurface.
   virtual bool Initialize() OVERRIDE;

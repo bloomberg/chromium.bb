@@ -6,7 +6,6 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "third_party/mesa/src/include/GL/osmesa.h"
 #include "ui/gl/gl_context_cgl.h"
 #include "ui/gl/gl_context_osmesa.h"
 #include "ui/gl/gl_context_stub.h"

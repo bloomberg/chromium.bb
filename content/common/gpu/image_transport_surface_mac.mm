@@ -18,7 +18,8 @@ namespace {
 class DRTSurfaceOSMesa : public gfx::GLSurfaceOSMesa {
  public:
   // Size doesn't matter, the surface is resized to the right size later.
-  DRTSurfaceOSMesa() : GLSurfaceOSMesa(GL_RGBA, gfx::Size(1, 1)) {}
+  DRTSurfaceOSMesa()
+      : GLSurfaceOSMesa(gfx::OSMesaSurfaceFormatRGBA, gfx::Size(1, 1)) {}
 
   // Implement a subset of GLSurface.
   virtual bool SwapBuffers() OVERRIDE;

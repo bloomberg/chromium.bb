@@ -30,7 +30,6 @@
       'include_dirs': [
         '<(DEPTH)/third_party/swiftshader/include',
         '<(DEPTH)/third_party/khronos',
-        '<(DEPTH)/third_party/mesa/src/include',
         '<(gl_binding_output_dir)',
       ],
       'direct_dependent_settings': {

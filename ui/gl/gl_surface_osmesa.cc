@@ -11,9 +11,17 @@
 
 namespace gfx {
 
-GLSurfaceOSMesa::GLSurfaceOSMesa(unsigned format, const gfx::Size& size)
-    : format_(format),
-      size_(size) {
+GLSurfaceOSMesa::GLSurfaceOSMesa(OSMesaSurfaceFormat format,
+                                 const gfx::Size& size)
+    : size_(size) {
+  switch (format) {
+    case OSMesaSurfaceFormatBGRA:
+      format_ = OSMESA_BGRA;
+      break;
+    case OSMesaSurfaceFormatRGBA:
+      format_ = OSMESA_RGBA;
+      break;
+  }
   // Implementations of OSMesa surface do not support having a 0 size. In such
   // cases use a (1, 1) surface.
   if (size_.GetArea() == 0)
@@ -92,7 +100,8 @@ bool GLSurfaceOSMesaHeadless::IsOffscreen() { return false; }
 bool GLSurfaceOSMesaHeadless::SwapBuffers() { return true; }
 
 GLSurfaceOSMesaHeadless::GLSurfaceOSMesaHeadless()
-    : GLSurfaceOSMesa(OSMESA_BGRA, gfx::Size(1, 1)) {}
+    : GLSurfaceOSMesa(OSMesaSurfaceFormatBGRA, gfx::Size(1, 1)) {
+}
 
 GLSurfaceOSMesaHeadless::~GLSurfaceOSMesaHeadless() { Destroy(); }
 

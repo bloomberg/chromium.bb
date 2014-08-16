@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "third_party/mesa/src/include/GL/osmesa.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/gl/gl_bindings.h"
@@ -79,7 +78,7 @@ bool GLSurface::InitializeOneOffInternal() {
 
 NativeViewGLSurfaceOSMesa::NativeViewGLSurfaceOSMesa(
     gfx::AcceleratedWidget window)
-    : GLSurfaceOSMesa(OSMESA_BGRA, gfx::Size(1, 1)),
+    : GLSurfaceOSMesa(OSMesaSurfaceFormatBGRA, gfx::Size(1, 1)),
       xdisplay_(gfx::GetXDisplay()),
       window_graphics_context_(0),
       window_(window),
@@ -312,8 +311,8 @@ scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
   TRACE_EVENT0("gpu", "GLSurface::CreateOffscreenGLSurface");
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL: {
-      scoped_refptr<GLSurface> surface(new GLSurfaceOSMesa(OSMESA_RGBA,
-                                                           size));
+      scoped_refptr<GLSurface> surface(
+          new GLSurfaceOSMesa(OSMesaSurfaceFormatRGBA, size));
       if (!surface->Initialize())
         return NULL;
 
