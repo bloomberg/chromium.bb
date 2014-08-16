@@ -141,8 +141,15 @@ bool GetFlingData(const base::NativeEvent& native_event,
                   float* vx_ordinal,
                   float* vy_ordinal,
                   bool* is_cancel) {
-  NOTIMPLEMENTED();
-  return false;
+  const ui::ScrollEvent* event =
+      static_cast<const ui::ScrollEvent*>(native_event);
+  DCHECK(event->IsScrollEvent());
+  *vx = event->x_offset();
+  *vy = event->y_offset();
+  *vx_ordinal = event->x_offset_ordinal();
+  *vy_ordinal = event->y_offset_ordinal();
+  *is_cancel = event->type() == ET_SCROLL_FLING_CANCEL;
+  return true;
 }
 
 int GetModifiersFromKeyState() {
