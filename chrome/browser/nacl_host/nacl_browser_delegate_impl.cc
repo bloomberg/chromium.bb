@@ -19,8 +19,6 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pepper_permission_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/site_instance.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/process_manager.h"
@@ -28,6 +26,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/url_pattern.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -63,36 +62,10 @@ void OnKeepaliveOnUIThread(
   if (instance_data.size() < 1)
     return;
 
-  content::RenderFrameHost* render_frame_host =
-      content::RenderFrameHost::FromID(
-          instance_data[0].render_process_id, instance_data[0].render_frame_id);
-  if (!render_frame_host)
-    return;
-
-  content::SiteInstance* site_instance = render_frame_host->GetSiteInstance();
-  if (!site_instance)
-    return;
-
-  extensions::ExtensionSystem* extension_system =
-      extensions::ExtensionSystem::Get(site_instance->GetBrowserContext());
-  if (!extension_system)
-    return;
-
-  const ExtensionService* extension_service =
-      extension_system->extension_service();
-  if (!extension_service)
-    return;
-
-  const extensions::Extension* extension = extension_service->GetExtensionById(
-      instance_data[0].document_url.host(), false);
-  if (!extension)
-    return;
-
-  extensions::ProcessManager* pm = extension_system->process_manager();
-  if (!pm)
-    return;
-
-  pm->KeepaliveImpulse(extension);
+  extensions::ProcessManager::OnKeepaliveFromPlugin(
+      instance_data[0].render_process_id,
+      instance_data[0].render_frame_id,
+      instance_data[0].document_url.host());
 }
 
 // Calls OnKeepaliveOnUIThread on UI thread.

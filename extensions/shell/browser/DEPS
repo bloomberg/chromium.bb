@@ -1,11 +1,12 @@
 include_rules = [
   "+chromeos",
   "+components/keyed_service",
+  "+components/nacl/browser",
+  "+components/nacl/common",
   "+components/omaha_query_params",
   "+components/pref_registry",
   "+components/user_prefs",
   "+content/public/browser",
-  "+third_party/cros_system_api",
 
   # Pieces of content_shell reused in app_shell.
   "+content/shell/browser/shell_browser_context.h",
@@ -18,10 +19,13 @@ include_rules = [
   # Only used in API tests that should be moved to extensions/browser/api/...
   "+net",
 
+  "+ppapi",
   "+sync/api",
 
   # Disallow views to keep the binary size down.
   "-ui/views",
+
+  "+third_party/cros_system_api",
 
   "-webkit",
   "+webkit/browser/quota",

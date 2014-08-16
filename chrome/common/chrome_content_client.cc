@@ -50,6 +50,7 @@
 #endif
 
 #if !defined(DISABLE_NACL)
+#include "components/nacl/common/nacl_constants.h"
 #include "ppapi/native_client/src/trusted/plugin/ppapi_entrypoints.h"
 #endif
 
@@ -73,18 +74,6 @@ const char kPDFPluginOutOfProcessMimeType[] =
    "application/x-google-chrome-pdf";
 const uint32 kPDFPluginPermissions = ppapi::PERMISSION_PRIVATE |
                                      ppapi::PERMISSION_DEV;
-
-#if !defined(DISABLE_NACL)
-const char kNaClPluginMimeType[] = "application/x-nacl";
-const char kNaClPluginExtension[] = "";
-const char kNaClPluginDescription[] = "Native Client Executable";
-const uint32 kNaClPluginPermissions = ppapi::PERMISSION_PRIVATE |
-                                      ppapi::PERMISSION_DEV;
-
-const char kPnaclPluginMimeType[] = "application/x-pnacl";
-const char kPnaclPluginExtension[] = "";
-const char kPnaclPluginDescription[] = "Portable Native Client Executable";
-#endif  // !defined(DISABLE_NACL)
 
 const char kO1DPluginName[] = "Google Talk Plugin Video Renderer";
 const char kO1DPluginMimeType[] ="application/o1d";
@@ -182,21 +171,21 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
     // The nacl plugin is now built into the Chromium binary.
     nacl.is_internal = true;
     nacl.path = path;
-    nacl.name = ChromeContentClient::kNaClPluginName;
-    content::WebPluginMimeType nacl_mime_type(kNaClPluginMimeType,
-                                              kNaClPluginExtension,
-                                              kNaClPluginDescription);
+    nacl.name = nacl::kNaClPluginName;
+    content::WebPluginMimeType nacl_mime_type(nacl::kNaClPluginMimeType,
+                                              nacl::kNaClPluginExtension,
+                                              nacl::kNaClPluginDescription);
     nacl.mime_types.push_back(nacl_mime_type);
-    content::WebPluginMimeType pnacl_mime_type(kPnaclPluginMimeType,
-                                               kPnaclPluginExtension,
-                                               kPnaclPluginDescription);
+    content::WebPluginMimeType pnacl_mime_type(nacl::kPnaclPluginMimeType,
+                                               nacl::kPnaclPluginExtension,
+                                               nacl::kPnaclPluginDescription);
     nacl.mime_types.push_back(pnacl_mime_type);
     nacl.internal_entry_points.get_interface = nacl_plugin::PPP_GetInterface;
     nacl.internal_entry_points.initialize_module =
         nacl_plugin::PPP_InitializeModule;
     nacl.internal_entry_points.shutdown_module =
         nacl_plugin::PPP_ShutdownModule;
-    nacl.permissions = kNaClPluginPermissions;
+    nacl.permissions = ppapi::PERMISSION_PRIVATE | ppapi::PERMISSION_DEV;
     plugins->push_back(nacl);
   }
 #endif  // !defined(DISABLE_NACL)

@@ -406,6 +406,8 @@
               'sources': [
                 'nacl/common/nacl_cmd_line.cc',
                 'nacl/common/nacl_cmd_line.h',
+                'nacl/common/nacl_constants.cc',
+                'nacl/common/nacl_constants.h',
                 'nacl/common/nacl_messages.cc',
                 'nacl/common/nacl_messages.h',
                 'nacl/common/nacl_types.cc',
@@ -485,6 +487,8 @@
       'sources': [
         'nacl/common/nacl_cmd_line.cc',
         'nacl/common/nacl_cmd_line.h',
+        'nacl/common/nacl_constants.cc',
+        'nacl/common/nacl_constants.h',
         'nacl/common/nacl_host_messages.h',
         'nacl/common/nacl_host_messages.cc',
         'nacl/common/nacl_messages.cc',

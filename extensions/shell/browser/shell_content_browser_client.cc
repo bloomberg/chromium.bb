@@ -24,6 +24,18 @@
 #include "extensions/shell/browser/shell_extension_system.h"
 #include "url/gurl.h"
 
+#if !defined(DISABLE_NACL)
+#include "components/nacl/browser/nacl_browser.h"
+#include "components/nacl/browser/nacl_host_message_filter.h"
+#include "components/nacl/browser/nacl_process_host.h"
+#include "components/nacl/common/nacl_process_type.h"
+#include "components/nacl/common/nacl_switches.h"
+#include "content/public/browser/browser_child_process_host.h"
+#include "content/public/browser/child_process_data.h"
+#endif
+
+using base::CommandLine;
+using content::BrowserContext;
 using content::BrowserThread;
 
 namespace extensions {
@@ -63,8 +75,18 @@ content::BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
 void ShellContentBrowserClient::RenderProcessWillLaunch(
     content::RenderProcessHost* host) {
   int render_process_id = host->GetID();
-  host->AddFilter(new ExtensionMessageFilter(
-      render_process_id, browser_main_parts_->browser_context()));
+  BrowserContext* browser_context = browser_main_parts_->browser_context();
+  host->AddFilter(
+      new ExtensionMessageFilter(render_process_id, browser_context));
+  // PluginInfoMessageFilter is not required because app_shell does not have
+  // the concept of disabled plugins.
+#if !defined(DISABLE_NACL)
+  host->AddFilter(new nacl::NaClHostMessageFilter(
+      render_process_id,
+      browser_context->IsOffTheRecord(),
+      browser_context->GetPath(),
+      browser_context->GetRequestContextForRenderProcess(render_process_id)));
+#endif
 }
 
 bool ShellContentBrowserClient::ShouldUseProcessPerSite(
@@ -166,12 +188,26 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
     int child_process_id) {
   std::string process_type =
       command_line->GetSwitchValueASCII(::switches::kProcessType);
-  if (process_type == ::switches::kRendererProcess) {
-    // TODO(jamescook): Should we check here if the process is in the extension
-    // service process map, or can we assume all renderers are extension
-    // renderers?
-    command_line->AppendSwitch(switches::kExtensionProcess);
+  if (process_type == ::switches::kRendererProcess)
+    AppendRendererSwitches(command_line);
+}
+
+content::BrowserPpapiHost*
+ShellContentBrowserClient::GetExternalBrowserPpapiHost(int plugin_process_id) {
+#if !defined(DISABLE_NACL)
+  content::BrowserChildProcessHostIterator iter(PROCESS_TYPE_NACL_LOADER);
+  while (!iter.Done()) {
+    nacl::NaClProcessHost* host = static_cast<nacl::NaClProcessHost*>(
+        iter.GetDelegate());
+    if (host->process() &&
+        host->process()->GetData().id == plugin_process_id) {
+      // Found the plugin.
+      return host->browser_ppapi_host();
+    }
+    ++iter;
   }
+#endif
+  return NULL;
 }
 
 void ShellContentBrowserClient::GetAdditionalAllowedSchemesForFileSystem(
@@ -179,6 +215,25 @@ void ShellContentBrowserClient::GetAdditionalAllowedSchemesForFileSystem(
   ContentBrowserClient::GetAdditionalAllowedSchemesForFileSystem(
       additional_allowed_schemes);
   additional_allowed_schemes->push_back(kExtensionScheme);
+}
+
+void ShellContentBrowserClient::AppendRendererSwitches(
+    CommandLine* command_line) {
+  // TODO(jamescook): Should we check here if the process is in the extension
+  // service process map, or can we assume all renderers are extension
+  // renderers?
+  command_line->AppendSwitch(switches::kExtensionProcess);
+
+#if !defined(DISABLE_NACL)
+  // NOTE: app_shell does not support non-SFI mode, so it does not pass through
+  // SFI switches either here or for the zygote process.
+  static const char* const kSwitchNames[] = {
+    ::switches::kEnableNaClDebug,
+  };
+  command_line->CopySwitchesFrom(*CommandLine::ForCurrentProcess(),
+                                 kSwitchNames,
+                                 arraysize(kSwitchNames));
+#endif  // !defined(DISABLE_NACL)
 }
 
 const Extension* ShellContentBrowserClient::GetExtension(

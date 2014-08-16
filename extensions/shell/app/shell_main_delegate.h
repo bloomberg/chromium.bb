@@ -31,6 +31,8 @@ class ShellMainDelegate : public content::ContentMainDelegate {
   virtual content::ContentBrowserClient* CreateContentBrowserClient() OVERRIDE;
   virtual content::ContentRendererClient* CreateContentRendererClient()
       OVERRIDE;
+  virtual void ZygoteStarting(
+      ScopedVector<content::ZygoteForkDelegate>* delegates) OVERRIDE;
 
  protected:
   // The created object is owned by this object.

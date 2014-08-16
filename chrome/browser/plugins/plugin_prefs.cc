@@ -23,7 +23,6 @@
 #include "chrome/browser/plugins/plugin_prefs_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -32,6 +31,10 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/webplugininfo.h"
+
+#if !defined(DISABLE_NACL)
+#include "components/nacl/common/nacl_constants.h"
+#endif
 
 using content::BrowserThread;
 using content::PluginService;
@@ -241,15 +244,16 @@ bool PluginPrefs::IsPluginEnabled(const content::WebPluginInfo& plugin) const {
   if (plugin_status == POLICY_DISABLED || group_status == POLICY_DISABLED)
     return false;
 
+#if !defined(DISABLE_NACL)
   // If enabling NaCl, make sure the plugin is also enabled. See bug
   // http://code.google.com/p/chromium/issues/detail?id=81010 for more
   // information.
   // TODO(dspringer): When NaCl is on by default, remove this code.
-  if ((plugin.name ==
-       base::ASCIIToUTF16(ChromeContentClient::kNaClPluginName)) &&
+  if ((plugin.name == base::ASCIIToUTF16(nacl::kNaClPluginName)) &&
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNaCl)) {
     return true;
   }
+#endif
 
   base::AutoLock auto_lock(lock_);
   // Check user preferences for the plug-in.

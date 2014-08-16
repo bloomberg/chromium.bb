@@ -31,6 +31,13 @@
 #include "extensions/shell/browser/shell_network_controller_chromeos.h"
 #endif
 
+#if !defined(DISABLE_NACL)
+#include "components/nacl/browser/nacl_browser.h"
+#include "components/nacl/browser/nacl_process_host.h"
+#include "content/public/browser/browser_thread.h"
+#include "extensions/shell/browser/shell_nacl_browser_delegate.h"
+#endif
+
 using content::BrowserContext;
 
 namespace {
@@ -114,6 +121,16 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   ::EnsureBrowserContextKeyedServiceFactoriesBuilt();
   BrowserContextDependencyManager::GetInstance()->CreateBrowserContextServices(
       browser_context_.get());
+
+#if !defined(DISABLE_NACL)
+  // Takes ownership.
+  nacl::NaClBrowser::SetDelegate(
+      new ShellNaClBrowserDelegate(browser_context_.get()));
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(nacl::NaClProcessHost::EarlyStartup));
+#endif
 
   devtools_delegate_.reset(
       new content::ShellDevToolsDelegate(browser_context_.get()));

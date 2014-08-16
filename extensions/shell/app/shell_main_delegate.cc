@@ -22,6 +22,12 @@
 #include "chromeos/chromeos_paths.h"
 #endif
 
+#if !defined(DISABLE_NACL)
+#include "components/nacl/common/nacl_paths.h"
+#include "components/nacl/common/nacl_switches.h"
+#include "components/nacl/zygote/nacl_fork_delegate_linux.h"
+#endif
+
 namespace {
 
 void InitLogging() {
@@ -54,6 +60,9 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 #if defined(OS_CHROMEOS)
   chromeos::RegisterPathProvider();
 #endif
+#if !defined(DISABLE_NACL)
+  nacl::RegisterPathProvider();
+#endif
   extensions::RegisterPathProvider();
   return false;
 }
@@ -83,6 +92,13 @@ ShellMainDelegate::CreateContentRendererClient() {
   return renderer_client_.get();
 }
 
+void ShellMainDelegate::ZygoteStarting(
+    ScopedVector<content::ZygoteForkDelegate>* delegates) {
+#if !defined(DISABLE_NACL)
+  nacl::AddNaClZygoteForkDelegates(delegates);
+#endif
+}
+
 scoped_ptr<ShellRendererMainDelegate>
 ShellMainDelegate::CreateShellRendererMainDelegate() {
   return scoped_ptr<ShellRendererMainDelegate>();
@@ -104,6 +120,9 @@ bool ShellMainDelegate::ProcessNeedsResourceBundle(
   return process_type.empty() ||
          process_type == switches::kZygoteProcess ||
          process_type == switches::kRendererProcess ||
+#if !defined(DISABLE_NACL)
+         process_type == switches::kNaClLoaderProcess ||
+#endif
          process_type == switches::kUtilityProcess;
 }
 

@@ -509,6 +509,33 @@ void ProcessManager::KeepaliveImpulse(const Extension* extension) {
   }
 }
 
+// static
+void ProcessManager::OnKeepaliveFromPlugin(int render_process_id,
+                                           int render_frame_id,
+                                           const std::string& extension_id) {
+  content::RenderFrameHost* render_frame_host =
+      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+  if (!render_frame_host)
+    return;
+
+  content::SiteInstance* site_instance = render_frame_host->GetSiteInstance();
+  if (!site_instance)
+    return;
+
+  BrowserContext* browser_context = site_instance->GetBrowserContext();
+  const Extension* extension =
+      ExtensionRegistry::Get(browser_context)->enabled_extensions().GetByID(
+          extension_id);
+  if (!extension)
+    return;
+
+  ProcessManager* pm = ExtensionSystem::Get(browser_context)->process_manager();
+  if (!pm)
+    return;
+
+  pm->KeepaliveImpulse(extension);
+}
+
 // DecrementLazyKeepaliveCount is called when no calls to KeepaliveImpulse
 // have been made for at least event_page_idle_time_. In the best case an
 // impulse was made just before being cleared, and the decrement will occur

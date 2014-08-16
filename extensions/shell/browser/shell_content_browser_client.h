@@ -10,6 +10,10 @@
 
 class GURL;
 
+namespace base {
+class CommandLine;
+}
+
 namespace content {
 class BrowserContext;
 }
@@ -52,10 +56,15 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       content::SiteInstance* site_instance) OVERRIDE;
   virtual void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                               int child_process_id) OVERRIDE;
+  virtual content::BrowserPpapiHost* GetExternalBrowserPpapiHost(
+      int plugin_process_id) OVERRIDE;
   virtual void GetAdditionalAllowedSchemesForFileSystem(
       std::vector<std::string>* additional_schemes) OVERRIDE;
 
  private:
+  // Appends command line switches for a renderer process.
+  void AppendRendererSwitches(base::CommandLine* command_line);
+
   // Returns the extension or app associated with |site_instance| or NULL.
   const Extension* GetExtension(content::SiteInstance* site_instance);
 

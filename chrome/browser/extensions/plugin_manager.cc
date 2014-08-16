@@ -19,11 +19,11 @@
 #include "extensions/common/extension.h"
 #include "url/gurl.h"
 
-using content::PluginService;
-
 #if !defined(DISABLE_NACL)
-static const char kNaClPluginMimeType[] = "application/x-nacl";
+#include "components/nacl/common/nacl_constants.h"
 #endif
+
+using content::PluginService;
 
 namespace extensions {
 
@@ -184,7 +184,7 @@ void PluginManager::UpdatePluginListWithNaClModules() {
   // Check each MIME type the plugins handle for the NaCl MIME type.
   for (mime_iter = pepper_info->mime_types.begin();
        mime_iter != pepper_info->mime_types.end(); ++mime_iter) {
-    if (mime_iter->mime_type == kNaClPluginMimeType) {
+    if (mime_iter->mime_type == nacl::kNaClPluginMimeType) {
       // This plugin handles "application/x-nacl".
 
       PluginService::GetInstance()->UnregisterInternalPlugin(pepper_info->path);

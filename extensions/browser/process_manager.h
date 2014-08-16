@@ -108,6 +108,11 @@ class ProcessManager : public content::NotificationObserver {
   // called regularly.
   void KeepaliveImpulse(const Extension* extension);
 
+  // Triggers a keepalive impulse for a plug-in (e.g NaCl).
+  static void OnKeepaliveFromPlugin(int render_process_id,
+                                    int render_frame_id,
+                                    const std::string& extension_id);
+
   // Handles a response to the ShouldSuspend message, used for lazy background
   // pages.
   void OnShouldSuspendAck(const std::string& extension_id, uint64 sequence_id);

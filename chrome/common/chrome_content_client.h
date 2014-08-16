@@ -18,8 +18,6 @@ std::string GetUserAgent();
 class ChromeContentClient : public content::ContentClient {
  public:
   static const char* const kPDFPluginName;
-  static const char* const kNaClPluginName;
-  static const char* const kNaClOldPluginName;
   static const char* const kRemotingViewerPluginPath;
 
   virtual void SetActiveURL(const GURL& url) OVERRIDE;

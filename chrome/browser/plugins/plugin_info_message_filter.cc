@@ -16,7 +16,6 @@
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -35,6 +34,10 @@
 #include "base/win/metro.h"
 #endif
 
+#if !defined(DISABLE_NACL)
+#include "components/nacl/common/nacl_constants.h"
+#endif
+
 using content::PluginService;
 using content::WebPluginInfo;
 
@@ -47,9 +50,11 @@ bool ShouldUseJavaScriptSettingForPlugin(const WebPluginInfo& plugin) {
     return false;
   }
 
+#if !defined(DISABLE_NACL)
   // Treat Native Client invocations like JavaScript.
-  if (plugin.name == base::ASCIIToUTF16(ChromeContentClient::kNaClPluginName))
+  if (plugin.name == base::ASCIIToUTF16(nacl::kNaClPluginName))
     return true;
+#endif
 
 #if defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS)
   // Treat CDM invocations like JavaScript.

@@ -8,6 +8,7 @@ include_rules = [
   "+components/content_settings/core/common",
   "+components/data_reduction_proxy/common",
   "+components/dom_distiller/core",
+  "+components/nacl/common",
   "+components/nacl/renderer",
   "+components/plugins/renderer",
   "+components/signin/core/common",
