@@ -17,10 +17,10 @@ FrameSender::FrameSender(scoped_refptr<CastEnvironment> cast_environment,
                          uint32 ssrc)
     : cast_environment_(cast_environment),
       transport_sender_(transport_sender),
+      ssrc_(ssrc),
       rtp_timestamp_helper_(frequency),
       rtt_available_(false),
       rtcp_interval_(rtcp_interval),
-      ssrc_(ssrc),
       weak_factory_(this) {
 }
 

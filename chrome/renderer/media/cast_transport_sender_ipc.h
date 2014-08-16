@@ -44,12 +44,10 @@ class CastTransportSenderIPC
       uint32 ssrc,
       base::TimeTicks current_time,
       uint32 current_time_as_rtp_timestamp) OVERRIDE;
-  virtual void ResendPackets(
-      bool is_audio,
-      const media::cast::MissingFramesAndPacketsMap& missing_packets,
-      bool cancel_rtx_if_not_in_list,
-      base::TimeDelta dedupe_window)
-      OVERRIDE;
+  virtual void CancelSendingFrames(
+      uint32 ssrc,
+      const std::vector<uint32>& frame_ids) OVERRIDE;
+  virtual void ResendFrameForKickstart(uint32 ssrc, uint32 frame_id) OVERRIDE;
 
   void OnNotifyStatusChange(
       media::cast::CastTransportStatus status);

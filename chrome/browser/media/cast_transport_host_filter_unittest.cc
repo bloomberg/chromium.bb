@@ -125,12 +125,13 @@ TEST_F(CastTransportHostFilterTest, SimpleMessages) {
       kChannelId, 1, base::TimeTicks(), 2);
   FakeSend(rtcp_msg);
 
-  media::cast::MissingFramesAndPacketsMap missing_packets;
-  missing_packets[1].insert(4);
-  missing_packets[1].insert(7);
-  CastHostMsg_ResendPackets resend_msg(
-      kChannelId, false, missing_packets, true, base::TimeDelta());
-  FakeSend(resend_msg);
+  std::vector<uint32> frame_ids;
+  frame_ids.push_back(1);
+  CastHostMsg_CancelSendingFrames cancel_msg(kChannelId, 1, frame_ids);
+  FakeSend(cancel_msg);
+
+  CastHostMsg_ResendFrameForKickstart kickstart_msg(kChannelId, 1, 1);
+  FakeSend(kickstart_msg);
 
   CastHostMsg_Delete delete_msg(kChannelId);
   FakeSend(delete_msg);

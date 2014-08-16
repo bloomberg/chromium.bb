@@ -25,6 +25,7 @@
 #define MEDIA_CAST_NET_CAST_TRANSPORT_IMPL_H_
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -79,15 +80,28 @@ class CastTransportSenderImpl : public CastTransportSender {
       base::TimeTicks current_time,
       uint32 current_time_as_rtp_timestamp) OVERRIDE;
 
-  virtual void ResendPackets(bool is_audio,
-                             const MissingFramesAndPacketsMap& missing_packets,
-                             bool cancel_rtx_if_not_in_list,
-                             base::TimeDelta dedupe_window)
-      OVERRIDE;
+  virtual void CancelSendingFrames(
+      uint32 ssrc,
+      const std::vector<uint32>& frame_ids) OVERRIDE;
+
+  virtual void ResendFrameForKickstart(uint32 ssrc, uint32 frame_id) OVERRIDE;
 
   virtual PacketReceiverCallback PacketReceiverForTesting() OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(CastTransportSenderImplTest, NacksCancelRetransmits);
+  FRIEND_TEST_ALL_PREFIXES(CastTransportSenderImplTest, CancelRetransmits);
+  FRIEND_TEST_ALL_PREFIXES(CastTransportSenderImplTest, Kickstart);
+
+  // Resend packets for the stream identified by |ssrc|.
+  // If |cancel_rtx_if_not_in_list| is true then transmission of packets for the
+  // frames but not in the list will be dropped.
+  // If packet was sent after |now - dedupe_window| then it will not be sent.
+  void ResendPackets(uint32 ssrc,
+                     const MissingFramesAndPacketsMap& missing_packets,
+                     bool cancel_rtx_if_not_in_list,
+                     base::TimeDelta dedupe_window);
+
   // If |raw_events_callback_| is non-null, calls it with events collected
   // by |event_subscriber_| since last call.
   void SendRawEvents();
@@ -98,6 +112,11 @@ class CastTransportSenderImpl : public CastTransportSender {
   // Called when a log message is received.
   void OnReceivedLogMessage(EventMediaType media_type,
                             const RtcpReceiverLogMessage& log);
+
+  // Called when a RTCP Cast message is received.
+  void OnReceivedCastMessage(uint32 ssrc,
+                             const RtcpCastMessageCallback& cast_message_cb,
+                             const RtcpCastMessage& cast_message);
 
   base::TickClock* clock_;  // Not owned by this class.
   CastTransportStatusCallback status_callback_;

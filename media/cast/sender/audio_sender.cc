@@ -221,10 +221,6 @@ void AudioSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
     // Only count duplicated ACKs if there is no NACK request in between.
     // This is to avoid aggresive resend.
     duplicate_ack_counter_ = 0;
-
-    // A NACK is also used to cancel pending re-transmissions.
-    transport_sender_->ResendPackets(
-        true, cast_feedback.missing_frames_and_packets, false, min_rtt_);
   }
 
   const base::TimeTicks now = cast_environment_->Clock()->NowTicks();
@@ -244,14 +240,12 @@ void AudioSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
           << " for frame " << cast_feedback.ack_frame_id;
   if (!is_acked_out_of_order) {
     // Cancel resends of acked frames.
-    MissingFramesAndPacketsMap missing_frames_and_packets;
-    PacketIdSet missing;
+    std::vector<uint32> cancel_sending_frames;
     while (latest_acked_frame_id_ != cast_feedback.ack_frame_id) {
       latest_acked_frame_id_++;
-      missing_frames_and_packets[latest_acked_frame_id_] = missing;
+      cancel_sending_frames.push_back(latest_acked_frame_id_);
     }
-    transport_sender_->ResendPackets(
-        true, missing_frames_and_packets, true, base::TimeDelta());
+    transport_sender_->CancelSendingFrames(ssrc_, cancel_sending_frames);
     latest_acked_frame_id_ = cast_feedback.ack_frame_id;
   }
 }
@@ -274,20 +268,8 @@ void AudioSender::ResendForKickstart() {
   DCHECK(!last_send_time_.is_null());
   VLOG(1) << "Resending last packet of frame " << last_sent_frame_id_
           << " to kick-start.";
-  // Send the first packet of the last encoded frame to kick start
-  // retransmission. This gives enough information to the receiver what
-  // packets and frames are missing.
-  MissingFramesAndPacketsMap missing_frames_and_packets;
-  PacketIdSet missing;
-  missing.insert(kRtcpCastLastPacket);
-  missing_frames_and_packets.insert(
-      std::make_pair(last_sent_frame_id_, missing));
   last_send_time_ = cast_environment_->Clock()->NowTicks();
-
-  // Sending this extra packet is to kick-start the session. There is
-  // no need to optimize re-transmission for this case.
-  transport_sender_->ResendPackets(
-      true, missing_frames_and_packets, false, min_rtt_);
+  transport_sender_->ResendFrameForKickstart(ssrc_, last_sent_frame_id_);
 }
 
 }  // namespace cast

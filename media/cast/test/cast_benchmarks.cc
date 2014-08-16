@@ -143,14 +143,15 @@ class CastTransportSenderWrapper : public CastTransportSender {
                                  current_time_as_rtp_timestamp);
   }
 
-  // Retransmission request.
-  virtual void ResendPackets(
-      bool is_audio,
-      const MissingFramesAndPacketsMap& missing_packets,
-      bool cancel_rtx_if_not_in_list,
-      base::TimeDelta dedupe_window) OVERRIDE {
-    transport_->ResendPackets(
-        is_audio, missing_packets, cancel_rtx_if_not_in_list, dedupe_window);
+  virtual void CancelSendingFrames(
+      uint32 ssrc,
+      const std::vector<uint32>& frame_ids) OVERRIDE {
+    transport_->CancelSendingFrames(ssrc, frame_ids);
+  }
+
+  virtual void ResendFrameForKickstart(uint32 ssrc,
+                                       uint32 frame_id) OVERRIDE {
+    transport_->ResendFrameForKickstart(ssrc, frame_id);
   }
 
   virtual PacketReceiverCallback PacketReceiverForTesting() OVERRIDE {

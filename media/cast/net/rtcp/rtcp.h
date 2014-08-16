@@ -107,6 +107,8 @@ class Rtcp {
 
   void OnReceivedReceiverLog(const RtcpReceiverLogMessage& receiver_log);
 
+  const base::TimeDelta& rtt() const { return rtt_; }
+
  protected:
   void OnReceivedNtp(uint32 ntp_seconds, uint32 ntp_fraction);
   void OnReceivedLipSyncInfo(uint32 rtp_timestamp,

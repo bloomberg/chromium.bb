@@ -65,12 +65,10 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
       uint32 ssrc,
       base::TimeTicks current_time,
       uint32 current_time_as_rtp_timestamp);
-  void OnResendPackets(
-      int32 channel_id,
-      bool is_audio,
-      const media::cast::MissingFramesAndPacketsMap& missing_packets,
-      bool cancel_rtx_if_not_in_list,
-      base::TimeDelta dedupe_window);
+  void OnCancelSendingFrames(int32 channel_id, uint32 ssrc,
+                             const std::vector<uint32>& frame_ids);
+  void OnResendFrameForKickstart(int32 channel_id, uint32 ssrc,
+                                 uint32 frame_id);
   void OnNew(
       int32 channel_id,
       const net::IPEndPoint& remote_end_point);

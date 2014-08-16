@@ -48,6 +48,10 @@ class RtpSender {
                      bool cancel_rtx_if_not_in_list,
                      base::TimeDelta dedupe_window);
 
+  void CancelSendingFrames(const std::vector<uint32>& frame_ids);
+
+  void ResendFrameForKickstart(uint32 frame_id, base::TimeDelta dedupe_window);
+
   size_t send_packet_count() const {
     return packetizer_ ? packetizer_->send_packet_count() : 0;
   }

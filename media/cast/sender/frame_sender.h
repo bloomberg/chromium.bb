@@ -50,6 +50,8 @@ class FrameSender {
   // network layer.
   CastTransportSender* const transport_sender_;
 
+  const uint32 ssrc_;
+
   // Records lip-sync (i.e., mapping of RTP <--> NTP timestamps), and
   // extrapolates this mapping to any other point in time.
   RtpTimestampHelper rtp_timestamp_helper_;
@@ -63,7 +65,6 @@ class FrameSender {
 
  private:
   const base::TimeDelta rtcp_interval_;
-  const uint32 ssrc_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<FrameSender> weak_factory_;

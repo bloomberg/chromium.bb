@@ -70,16 +70,18 @@ void CastTransportSenderIPC::SendSenderReport(
                                         current_time_as_rtp_timestamp));
 }
 
-void CastTransportSenderIPC::ResendPackets(
-    bool is_audio,
-    const media::cast::MissingFramesAndPacketsMap& missing_packets,
-    bool cancel_rtx_if_not_in_list,
-    base::TimeDelta dedupe_window) {
-  Send(new CastHostMsg_ResendPackets(channel_id_,
-                                     is_audio,
-                                     missing_packets,
-                                     cancel_rtx_if_not_in_list,
-                                     dedupe_window));
+void CastTransportSenderIPC::CancelSendingFrames(
+    uint32 ssrc, const std::vector<uint32>& frame_ids) {
+  Send(new CastHostMsg_CancelSendingFrames(channel_id_,
+                                           ssrc,
+                                           frame_ids));
+}
+
+void CastTransportSenderIPC::ResendFrameForKickstart(
+    uint32 ssrc, uint32 frame_id) {
+  Send(new CastHostMsg_ResendFrameForKickstart(channel_id_,
+                                               ssrc,
+                                               frame_id));
 }
 
 void CastTransportSenderIPC::OnNotifyStatusChange(

@@ -117,6 +117,34 @@ void RtpSender::ResendPackets(
   }
 }
 
+void RtpSender::CancelSendingFrames(const std::vector<uint32>& frame_ids) {
+  for (std::vector<uint32>::const_iterator i = frame_ids.begin();
+       i != frame_ids.end(); ++i) {
+    const SendPacketVector* stored_packets = storage_->GetFrame8(*i & 0xFF);
+    if (!stored_packets)
+      continue;
+    for (SendPacketVector::const_iterator j = stored_packets->begin();
+         j != stored_packets->end(); ++j) {
+      transport_->CancelSendingPacket(j->first);
+    }
+  }
+}
+
+void RtpSender::ResendFrameForKickstart(uint32 frame_id,
+                                        base::TimeDelta dedupe_window) {
+  // Send the last packet of the encoded frame to kick start
+  // retransmission. This gives enough information to the receiver what
+  // packets and frames are missing.
+  MissingFramesAndPacketsMap missing_frames_and_packets;
+  PacketIdSet missing;
+  missing.insert(kRtcpCastLastPacket);
+  missing_frames_and_packets.insert(std::make_pair(frame_id, missing));
+
+  // Sending this extra packet is to kick-start the session. There is
+  // no need to optimize re-transmission for this case.
+  ResendPackets(missing_frames_and_packets, false, dedupe_window);
+}
+
 void RtpSender::UpdateSequenceNumber(Packet* packet) {
   // TODO(miu): This is an abstraction violation.  This needs to be a part of
   // the overall packet (de)serialization consolidation.

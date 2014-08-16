@@ -111,7 +111,9 @@ void CastTransportSenderImpl::InitializeAudio(
   }
 
   audio_rtcp_session_.reset(
-      new Rtcp(cast_message_cb,
+      new Rtcp(base::Bind(&CastTransportSenderImpl::OnReceivedCastMessage,
+                          weak_factory_.GetWeakPtr(), config.ssrc,
+                          cast_message_cb),
                rtt_cb,
                base::Bind(&CastTransportSenderImpl::OnReceivedLogMessage,
                           weak_factory_.GetWeakPtr(), AUDIO_EVENT),
@@ -142,7 +144,9 @@ void CastTransportSenderImpl::InitializeVideo(
   }
 
   video_rtcp_session_.reset(
-      new Rtcp(cast_message_cb,
+      new Rtcp(base::Bind(&CastTransportSenderImpl::OnReceivedCastMessage,
+                          weak_factory_.GetWeakPtr(), config.ssrc,
+                          cast_message_cb),
                rtt_cb,
                base::Bind(&CastTransportSenderImpl::OnReceivedLogMessage,
                           weak_factory_.GetWeakPtr(), VIDEO_EVENT),
@@ -202,21 +206,48 @@ void CastTransportSenderImpl::SendSenderReport(
   }
 }
 
+void CastTransportSenderImpl::CancelSendingFrames(
+    uint32 ssrc,
+    const std::vector<uint32>& frame_ids) {
+  if (audio_sender_ && ssrc == audio_sender_->ssrc()) {
+    audio_sender_->CancelSendingFrames(frame_ids);
+  } else if (video_sender_ && ssrc == video_sender_->ssrc()) {
+    video_sender_->CancelSendingFrames(frame_ids);
+  } else {
+    NOTREACHED() << "Invalid request for cancel sending.";
+  }
+}
+
+void CastTransportSenderImpl::ResendFrameForKickstart(uint32 ssrc,
+                                                      uint32 frame_id) {
+  if (audio_sender_ && ssrc == audio_sender_->ssrc()) {
+    DCHECK(audio_rtcp_session_);
+    audio_sender_->ResendFrameForKickstart(frame_id,
+                                           audio_rtcp_session_->rtt());
+  } else if (video_sender_ && ssrc == video_sender_->ssrc()) {
+    DCHECK(video_rtcp_session_);
+    video_sender_->ResendFrameForKickstart(frame_id,
+                                           video_rtcp_session_->rtt());
+  } else {
+    NOTREACHED() << "Invalid request for kickstart.";
+  }
+}
+
 void CastTransportSenderImpl::ResendPackets(
-    bool is_audio,
+    uint32 ssrc,
     const MissingFramesAndPacketsMap& missing_packets,
     bool cancel_rtx_if_not_in_list,
     base::TimeDelta dedupe_window) {
-  if (is_audio) {
-    DCHECK(audio_sender_) << "Audio sender uninitialized";
+  if (audio_sender_ && ssrc == audio_sender_->ssrc()) {
     audio_sender_->ResendPackets(missing_packets,
                                  cancel_rtx_if_not_in_list,
                                  dedupe_window);
-  } else {
-    DCHECK(video_sender_) << "Video sender uninitialized";
+  } else if (video_sender_ && ssrc == video_sender_->ssrc()) {
     video_sender_->ResendPackets(missing_packets,
                                  cancel_rtx_if_not_in_list,
                                  dedupe_window);
+  } else {
+    NOTREACHED() << "Invalid request for retransmission.";
   }
 }
 
@@ -291,6 +322,32 @@ void CastTransportSenderImpl::OnReceivedLogMessage(
       }
     }
   }
+}
+
+void CastTransportSenderImpl::OnReceivedCastMessage(
+    uint32 ssrc,
+    const RtcpCastMessageCallback& cast_message_cb,
+    const RtcpCastMessage& cast_message) {
+  if (!cast_message_cb.is_null())
+    cast_message_cb.Run(cast_message);
+
+  if (cast_message.missing_frames_and_packets.empty())
+    return;
+
+  base::TimeDelta rtt;
+  if (video_sender_ && video_sender_->ssrc() == ssrc) {
+    rtt = video_rtcp_session_->rtt();
+  }
+
+  // This call does two things.
+  // 1. Specifies that retransmissions for packets not listed in the set are
+  //    cancelled.
+  // 2. Specifies a deduplication window. For video this would be the most
+  //    recent RTT. For audio there is no deduplication.
+  ResendPackets(ssrc,
+                cast_message.missing_frames_and_packets,
+                true,
+                rtt);
 }
 
 }  // namespace cast
