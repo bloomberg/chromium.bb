@@ -334,6 +334,8 @@ TEST_F(ProfileInfoCacheTest, GAIAName) {
   // Don't use GAIA name as profile name. This re-sorts the cache.
   base::string16 custom_name(ASCIIToUTF16("Custom name"));
   GetCache()->SetNameOfProfileAtIndex(index2, custom_name);
+  GetCache()->SetProfileIsUsingDefaultNameAtIndex(index2, false);
+
   index1 = GetCache()->GetIndexOfProfileWithPath(GetProfilePath("path_1"));
   index2 = GetCache()->GetIndexOfProfileWithPath(GetProfilePath("path_2"));
 
@@ -382,8 +384,9 @@ TEST_F(ProfileInfoCacheTest, GAIAPicture) {
   EXPECT_TRUE(gfx::test::IsEqual(
       gaia_image, GetCache()->GetAvatarIconOfProfileAtIndex(1)));
 
-  // Set another avatar. This should make it preferred over the GAIA image.
+  // Set a non-default avatar. This should be preferred over the GAIA image.
   GetCache()->SetAvatarIconOfProfileAtIndex(1, kOtherAvatarIndex);
+  GetCache()->SetProfileIsUsingDefaultAvatarAtIndex(1, false);
   EXPECT_FALSE(GetCache()->ProfileIsUsingDefaultAvatarAtIndex(1));
   EXPECT_FALSE(GetCache()->IsUsingGAIAPictureOfProfileAtIndex(1));
   int other_avatar_id =

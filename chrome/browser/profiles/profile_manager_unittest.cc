@@ -1042,6 +1042,7 @@ TEST_F(ProfileManagerTest, ProfileDisplayNamePreservesCustomName) {
   // We should display custom names for local profiles.
   const base::string16 custom_profile_name = ASCIIToUTF16("Batman");
   cache.SetNameOfProfileAtIndex(0, custom_profile_name);
+  cache.SetProfileIsUsingDefaultNameAtIndex(0, false);
   EXPECT_EQ(custom_profile_name, cache.GetNameOfProfileAtIndex(0));
   EXPECT_EQ(custom_profile_name,
             profiles::GetAvatarNameForProfile(profile1->GetPath()));

@@ -1137,6 +1137,13 @@ const char kImportSavedPasswords[] = "import_saved_passwords";
 // Profile avatar and name
 const char kProfileAvatarIndex[] = "profile.avatar_index";
 const char kProfileName[] = "profile.name";
+// Whether a profile is using a default avatar name (eg. Pickles or Person 1)
+// because it was randomly assigned at profile creation time.
+const char kProfileUsingDefaultName[] = "profile.using_default_name";
+// Whether a profile is using an avatar without having explicitely chosen it
+// (i.e. was assigned by default by legacy profile creation).
+const char kProfileUsingDefaultAvatar[] = "profile.using_default_avatar";
+const char kProfileUsingGAIAAvatar[] = "profile.using_gaia_avatar";
 
 // The supervised user ID.
 const char kSupervisedUserId[] = "profile.managed_user_id";

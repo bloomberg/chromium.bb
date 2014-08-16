@@ -41,6 +41,9 @@ base::string16 GetAvatarButtonTextForProfile(Profile* profile);
 
 // Update the name of |profile| to |new_profile_name|. This updates the
 // profile preferences, which triggers an update in the ProfileInfoCache.
+// This method should be called when the user is explicitely changing
+// the profile name, as it will always set |prefs::kProfileUsingDefaultName|
+// to false.
 void UpdateProfileName(Profile* profile,
                        const base::string16& new_profile_name);
 

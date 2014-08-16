@@ -340,12 +340,6 @@ void ManageProfileHandler::SetProfileIconAndName(const base::ListValue* args) {
   if (!GetProfilePathFromArgs(args, &profile_file_path))
     return;
 
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  size_t profile_index = cache.GetIndexOfProfileWithPath(profile_file_path);
-  if (profile_index == std::string::npos)
-    return;
-
   Profile* profile =
       g_browser_process->profile_manager()->GetProfile(profile_file_path);
   if (!profile)
@@ -355,13 +349,17 @@ void ManageProfileHandler::SetProfileIconAndName(const base::ListValue* args) {
   if (!args->GetString(1, &icon_url))
     return;
 
+  PrefService* pref_service = profile->GetPrefs();
+  // Updating the profile preferences will cause the cache to be updated.
+
   // Metrics logging variable.
   bool previously_using_gaia_icon =
-      cache.IsUsingGAIAPictureOfProfileAtIndex(profile_index);
+      pref_service->GetBoolean(prefs::kProfileUsingGAIAAvatar);
 
   size_t new_icon_index;
   if (icon_url == gaia_picture_url_) {
-    cache.SetIsUsingGAIAPictureOfProfileAtIndex(profile_index, true);
+    pref_service->SetBoolean(prefs::kProfileUsingDefaultAvatar, false);
+    pref_service->SetBoolean(prefs::kProfileUsingGAIAAvatar, true);
     if (!previously_using_gaia_icon) {
       // Only log if they changed to the GAIA photo.
       // Selection of GAIA photo as avatar is logged as part of the function
@@ -370,11 +368,9 @@ void ManageProfileHandler::SetProfileIconAndName(const base::ListValue* args) {
     }
   } else if (profiles::IsDefaultAvatarIconUrl(icon_url, &new_icon_index)) {
     ProfileMetrics::LogProfileAvatarSelection(new_icon_index);
-    PrefService* pref_service = profile->GetPrefs();
-    // Updating the profile preference will cause the cache to be updated for
-    // this preference.
     pref_service->SetInteger(prefs::kProfileAvatarIndex, new_icon_index);
-    cache.SetIsUsingGAIAPictureOfProfileAtIndex(profile_index, false);
+    pref_service->SetBoolean(prefs::kProfileUsingDefaultAvatar, false);
+    pref_service->SetBoolean(prefs::kProfileUsingGAIAAvatar, false);
   }
   ProfileMetrics::LogProfileUpdate(profile_file_path);
 

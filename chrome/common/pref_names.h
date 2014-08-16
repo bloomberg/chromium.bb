@@ -356,7 +356,10 @@ extern const char kImportSearchEngine[];
 extern const char kImportSavedPasswords[];
 
 extern const char kProfileAvatarIndex[];
+extern const char kProfileUsingDefaultName[];
 extern const char kProfileName[];
+extern const char kProfileUsingDefaultAvatar[];
+extern const char kProfileUsingGAIAAvatar[];
 extern const char kSupervisedUserId[];
 
 extern const char kProfileGAIAInfoUpdateTime[];

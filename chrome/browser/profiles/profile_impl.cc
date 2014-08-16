@@ -359,6 +359,21 @@ void ProfileImpl::RegisterProfilePrefs(
       prefs::kProfileAvatarIndex,
       -1,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  // Whether a profile is using an avatar without having explicitely chosen it
+  // (i.e. was assigned by default by legacy profile creation).
+  registry->RegisterBooleanPref(
+      prefs::kProfileUsingDefaultAvatar,
+      true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kProfileUsingGAIAAvatar,
+      false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  // Whether a profile is using a default avatar name (eg. Pickles or Person 1).
+  registry->RegisterBooleanPref(
+      prefs::kProfileUsingDefaultName,
+      true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterStringPref(
       prefs::kSupervisedUserId,
       std::string(),
@@ -541,14 +556,31 @@ void ProfileImpl::DoFinalInit() {
       prefs::kDefaultZoomLevel,
       base::Bind(&ProfileImpl::OnDefaultZoomLevelChanged,
                  base::Unretained(this)));
+
+  // Changes in the profile avatar.
   pref_change_registrar_.Add(
       prefs::kProfileAvatarIndex,
       base::Bind(&ProfileImpl::UpdateProfileAvatarCache,
                  base::Unretained(this)));
   pref_change_registrar_.Add(
+      prefs::kProfileUsingDefaultAvatar,
+      base::Bind(&ProfileImpl::UpdateProfileAvatarCache,
+                 base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kProfileUsingGAIAAvatar,
+      base::Bind(&ProfileImpl::UpdateProfileAvatarCache,
+                 base::Unretained(this)));
+
+  // Changes in the profile name.
+  pref_change_registrar_.Add(
+      prefs::kProfileUsingDefaultName,
+      base::Bind(&ProfileImpl::UpdateProfileNameCache,
+                 base::Unretained(this)));
+  pref_change_registrar_.Add(
       prefs::kProfileName,
       base::Bind(&ProfileImpl::UpdateProfileNameCache,
                  base::Unretained(this)));
+
   pref_change_registrar_.Add(
       prefs::kForceEphemeralProfiles,
       base::Bind(&ProfileImpl::UpdateProfileIsEphemeralCache,
@@ -1361,6 +1393,9 @@ void ProfileImpl::UpdateProfileNameCache() {
     std::string profile_name =
         GetPrefs()->GetString(prefs::kProfileName);
     cache.SetNameOfProfileAtIndex(index, base::UTF8ToUTF16(profile_name));
+    bool default_name =
+        GetPrefs()->GetBoolean(prefs::kProfileUsingDefaultName);
+    cache.SetProfileIsUsingDefaultNameAtIndex(index, default_name);
   }
 }
 
@@ -1372,6 +1407,12 @@ void ProfileImpl::UpdateProfileAvatarCache() {
     size_t avatar_index =
         GetPrefs()->GetInteger(prefs::kProfileAvatarIndex);
     cache.SetAvatarIconOfProfileAtIndex(index, avatar_index);
+    bool default_avatar =
+        GetPrefs()->GetBoolean(prefs::kProfileUsingDefaultAvatar);
+    cache.SetProfileIsUsingDefaultAvatarAtIndex(index, default_avatar);
+    bool gaia_avatar =
+        GetPrefs()->GetBoolean(prefs::kProfileUsingGAIAAvatar);
+    cache.SetIsUsingGAIAPictureOfProfileAtIndex(index, gaia_avatar);
   }
 }
 
