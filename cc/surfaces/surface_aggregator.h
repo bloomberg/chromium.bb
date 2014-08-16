@@ -29,7 +29,9 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
   SurfaceAggregator(SurfaceManager* manager, ResourceProvider* provider);
   ~SurfaceAggregator();
 
-  scoped_ptr<CompositorFrame> Aggregate(SurfaceId surface_id);
+  scoped_ptr<CompositorFrame> Aggregate(
+      SurfaceId surface_id,
+      std::set<SurfaceId>* contained_surfaces);
 
  private:
   RenderPass::Id RemapPassId(RenderPass::Id surface_local_pass_id,
@@ -71,6 +73,9 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
   // detect cycles.
   typedef std::set<SurfaceId> SurfaceSet;
   SurfaceSet referenced_surfaces_;
+
+  // This is the set of surfaces that were used in the last draw.
+  SurfaceSet* contained_surfaces_;
 
   // This is the pass list for the aggregated frame.
   RenderPassList* dest_pass_list_;

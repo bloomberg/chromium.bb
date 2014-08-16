@@ -11,6 +11,7 @@
 #include "cc/resources/returned_resource.h"
 #include "cc/surfaces/surface_aggregator.h"
 #include "cc/surfaces/surface_id.h"
+#include "cc/surfaces/surface_manager.h"
 #include "cc/surfaces/surfaces_export.h"
 
 namespace gfx {
@@ -28,13 +29,13 @@ class Surface;
 class SurfaceAggregator;
 class SurfaceIdAllocator;
 class SurfaceFactory;
-class SurfaceManager;
 
 // A Display produces a surface that can be used to draw to a physical display
 // (OutputSurface). The client is responsible for creating and sizing the
 // surface IDs used to draw into the display and deciding when to draw.
 class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
-                                   public RendererClient {
+                                   public RendererClient,
+                                   public SurfaceDamageObserver {
  public:
   Display(DisplayClient* client,
           SurfaceManager* manager,
@@ -72,6 +73,9 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
   virtual void SetFullRootLayerDamage() OVERRIDE {}
   virtual void RunOnDemandRasterTask(Task* on_demand_raster_task) OVERRIDE {}
 
+  // SurfaceDamageObserver implementation.
+  virtual void OnSurfaceDamaged(SurfaceId surface) OVERRIDE;
+
  private:
   void InitializeOutputSurface();
 
@@ -85,6 +89,8 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
   scoped_ptr<ResourceProvider> resource_provider_;
   scoped_ptr<SurfaceAggregator> aggregator_;
   scoped_ptr<DirectRenderer> renderer_;
+
+  std::set<SurfaceId> contained_surfaces_;
 
   DISALLOW_COPY_AND_ASSIGN(Display);
 };

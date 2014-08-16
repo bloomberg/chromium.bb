@@ -50,9 +50,6 @@ void SurfaceDisplayOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   frame->AssignTo(frame_copy.get());
   factory_.SubmitFrame(surface_id_, frame_copy.Pass());
 
-  if (!display_->Draw())
-    return;
-
   client_->DidSwapBuffers();
   client_->DidSwapBuffersComplete();
 }

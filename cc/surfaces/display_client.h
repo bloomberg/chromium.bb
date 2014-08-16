@@ -14,6 +14,7 @@ class OutputSurface;
 class DisplayClient {
  public:
   virtual scoped_ptr<OutputSurface> CreateOutputSurface() = 0;
+  virtual void DisplayDamaged() = 0;
 
  protected:
   virtual ~DisplayClient() {}

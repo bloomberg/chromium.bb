@@ -35,4 +35,9 @@ Surface* SurfaceManager::GetSurfaceForId(SurfaceId surface_id) {
   return it->second;
 }
 
+void SurfaceManager::SurfaceModified(SurfaceId surface_id) {
+  FOR_EACH_OBSERVER(
+      SurfaceDamageObserver, observer_list_, OnSurfaceDamaged(surface_id));
+}
+
 }  // namespace cc

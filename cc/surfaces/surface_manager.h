@@ -7,6 +7,8 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
+#include "cc/surfaces/surface_damage_observer.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surfaces_export.h"
 
@@ -24,9 +26,20 @@ class CC_SURFACES_EXPORT SurfaceManager {
 
   Surface* GetSurfaceForId(SurfaceId surface_id);
 
+  void AddObserver(SurfaceDamageObserver* obs) {
+    observer_list_.AddObserver(obs);
+  }
+
+  void RemoveObserver(SurfaceDamageObserver* obs) {
+    observer_list_.RemoveObserver(obs);
+  }
+
+  void SurfaceModified(SurfaceId surface_id);
+
  private:
   typedef base::hash_map<SurfaceId, Surface*> SurfaceMap;
   SurfaceMap surface_map_;
+  ObserverList<SurfaceDamageObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceManager);
 };

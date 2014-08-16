@@ -192,6 +192,12 @@ class COMPOSITOR_EXPORT Compositor
   // Returns the vsync manager for this compositor.
   scoped_refptr<CompositorVSyncManager> vsync_manager() const;
 
+  // Returns the main thread task runner this compositor uses. Users of the
+  // compositor generally shouldn't use this.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner() const {
+    return task_runner_;
+  }
+
   // Compositor does not own observers. It is the responsibility of the
   // observer to remove itself when it is done observing.
   void AddObserver(CompositorObserver* observer);

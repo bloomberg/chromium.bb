@@ -135,6 +135,7 @@ bool SurfaceAggregator::TakeResources(Surface* surface,
 void SurfaceAggregator::HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
                                           RenderPass* dest_pass) {
   SurfaceId surface_id = surface_quad->surface_id;
+  contained_surfaces_->insert(surface_id);
   // If this surface's id is already in our referenced set then it creates
   // a cycle in the graph and should be dropped.
   if (referenced_surfaces_.count(surface_id))
@@ -287,7 +288,11 @@ void SurfaceAggregator::CopyPasses(const RenderPassList& source_pass_list,
   }
 }
 
-scoped_ptr<CompositorFrame> SurfaceAggregator::Aggregate(SurfaceId surface_id) {
+scoped_ptr<CompositorFrame> SurfaceAggregator::Aggregate(
+    SurfaceId surface_id,
+    std::set<SurfaceId>* contained_surfaces) {
+  contained_surfaces_ = contained_surfaces;
+  contained_surfaces_->insert(surface_id);
   Surface* surface = manager_->GetSurfaceForId(surface_id);
   DCHECK(surface);
   const CompositorFrame* root_surface_frame = surface->GetEligibleFrame();

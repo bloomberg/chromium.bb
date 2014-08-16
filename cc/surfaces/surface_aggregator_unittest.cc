@@ -61,7 +61,9 @@ class SurfaceAggregatorTest : public testing::Test {
 TEST_F(SurfaceAggregatorTest, ValidSurfaceNoFrame) {
   SurfaceId one_id(7);
   factory_.Create(one_id, SurfaceSize());
-  scoped_ptr<CompositorFrame> frame = aggregator_.Aggregate(one_id);
+  std::set<SurfaceId> surface_set;
+  scoped_ptr<CompositorFrame> frame =
+      aggregator_.Aggregate(one_id, &surface_set);
   EXPECT_FALSE(frame);
   factory_.Destroy(one_id);
 }
@@ -82,9 +84,12 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
   }
 
   void AggregateAndVerify(test::Pass* expected_passes,
-                          size_t expected_pass_count) {
+                          size_t expected_pass_count,
+                          SurfaceId* surface_ids,
+                          size_t expected_surface_count) {
+    std::set<SurfaceId> surface_set;
     scoped_ptr<CompositorFrame> aggregated_frame =
-        aggregator_.Aggregate(root_surface_id_);
+        aggregator_.Aggregate(root_surface_id_, &surface_set);
 
     ASSERT_TRUE(aggregated_frame);
     ASSERT_TRUE(aggregated_frame->delegated_frame_data);
@@ -94,6 +99,11 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
 
     TestPassesMatchExpectations(
         expected_passes, expected_pass_count, &frame_data->render_pass_list);
+
+    EXPECT_EQ(expected_surface_count, surface_set.size());
+    for (size_t i = 0; i < expected_surface_count; i++) {
+      EXPECT_TRUE(surface_set.find(surface_ids[i]) != surface_set.end());
+    }
   }
 
   void SubmitFrame(test::Pass* passes,
@@ -135,7 +145,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, SimpleFrame) {
 
   SubmitFrame(passes, arraysize(passes), root_surface_id_);
 
-  AggregateAndVerify(passes, arraysize(passes));
+  SurfaceId ids[] = {root_surface_id_};
+  AggregateAndVerify(passes, arraysize(passes), ids, arraysize(ids));
 }
 
 TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSimpleFrame) {
@@ -148,7 +159,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSimpleFrame) {
 
   SubmitFrame(passes, arraysize(passes), root_surface_id_);
 
-  AggregateAndVerify(passes, arraysize(passes));
+  SurfaceId ids[] = {root_surface_id_};
+  AggregateAndVerify(passes, arraysize(passes), ids, arraysize(ids));
 }
 
 // This tests very simple embedding. root_surface has a frame containing a few
@@ -177,7 +189,9 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, SimpleSurfaceReference) {
                                  test::Quad::SolidColorQuad(SK_ColorBLACK)};
   test::Pass expected_passes[] = {
       test::Pass(expected_quads, arraysize(expected_quads))};
-  AggregateAndVerify(expected_passes, arraysize(expected_passes));
+  SurfaceId ids[] = {root_surface_id_, embedded_surface_id};
+  AggregateAndVerify(
+      expected_passes, arraysize(expected_passes), ids, arraysize(ids));
 
   factory_.Destroy(embedded_surface_id);
 }
@@ -213,8 +227,9 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSurfaceReference) {
 
   SubmitFrame(root_passes, arraysize(root_passes), root_surface_id_);
 
+  std::set<SurfaceId> surface_set;
   scoped_ptr<CompositorFrame> aggregated_frame =
-      aggregator_.Aggregate(root_surface_id_);
+      aggregator_.Aggregate(root_surface_id_, &surface_set);
 
   ASSERT_TRUE(aggregated_frame);
   ASSERT_TRUE(aggregated_frame->delegated_frame_data);
@@ -329,7 +344,9 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, InvalidSurfaceReference) {
                                  test::Quad::SolidColorQuad(SK_ColorBLUE)};
   test::Pass expected_passes[] = {
       test::Pass(expected_quads, arraysize(expected_quads))};
-  AggregateAndVerify(expected_passes, arraysize(expected_passes));
+  SurfaceId ids[] = {root_surface_id_, InvalidSurfaceId()};
+  AggregateAndVerify(
+      expected_passes, arraysize(expected_passes), ids, arraysize(ids));
 }
 
 // Tests a reference to a valid surface with no submitted frame. This quad
@@ -348,7 +365,9 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ValidSurfaceReferenceWithNoFrame) {
                                  test::Quad::SolidColorQuad(SK_ColorBLUE)};
   test::Pass expected_passes[] = {
       test::Pass(expected_quads, arraysize(expected_quads))};
-  AggregateAndVerify(expected_passes, arraysize(expected_passes));
+  SurfaceId ids[] = {root_surface_id_, surface_with_no_frame_id};
+  AggregateAndVerify(
+      expected_passes, arraysize(expected_passes), ids, arraysize(ids));
   factory_.Destroy(surface_with_no_frame_id);
 }
 
@@ -364,7 +383,9 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, SimpleCyclicalReference) {
   test::Quad expected_quads[] = {test::Quad::SolidColorQuad(SK_ColorYELLOW)};
   test::Pass expected_passes[] = {
       test::Pass(expected_quads, arraysize(expected_quads))};
-  AggregateAndVerify(expected_passes, arraysize(expected_passes));
+  SurfaceId ids[] = {root_surface_id_};
+  AggregateAndVerify(
+      expected_passes, arraysize(expected_passes), ids, arraysize(ids));
 }
 
 // Tests a more complex cycle with one intermediate surface.
@@ -399,7 +420,9 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, TwoSurfaceCyclicalReference) {
                                  test::Quad::SolidColorQuad(SK_ColorCYAN)};
   test::Pass expected_passes[] = {
       test::Pass(expected_quads, arraysize(expected_quads))};
-  AggregateAndVerify(expected_passes, arraysize(expected_passes));
+  SurfaceId ids[] = {root_surface_id_, child_surface_id};
+  AggregateAndVerify(
+      expected_passes, arraysize(expected_passes), ids, arraysize(ids));
   factory_.Destroy(child_surface_id);
 }
 
@@ -429,8 +452,9 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, RenderPassIdMapping) {
       test::Pass(parent_quad[1], arraysize(parent_quad[1]), parent_pass_id[1])};
 
   SubmitFrame(parent_passes, arraysize(parent_passes), root_surface_id_);
+  std::set<SurfaceId> surface_set;
   scoped_ptr<CompositorFrame> aggregated_frame =
-      aggregator_.Aggregate(root_surface_id_);
+      aggregator_.Aggregate(root_surface_id_, &surface_set);
 
   ASSERT_TRUE(aggregated_frame);
   ASSERT_TRUE(aggregated_frame->delegated_frame_data);
@@ -600,8 +624,9 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
 
   QueuePassAsFrame(root_pass.Pass(), root_surface_id_);
 
+  std::set<SurfaceId> surface_set;
   scoped_ptr<CompositorFrame> aggregated_frame =
-      aggregator_.Aggregate(root_surface_id_);
+      aggregator_.Aggregate(root_surface_id_, &surface_set);
 
   ASSERT_TRUE(aggregated_frame);
   ASSERT_TRUE(aggregated_frame->delegated_frame_data);
@@ -701,8 +726,9 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateMultiplePassWithTransform) {
 
   factory_.SubmitFrame(root_surface_id_, root_frame.Pass());
 
+  std::set<SurfaceId> surface_set;
   scoped_ptr<CompositorFrame> aggregated_frame =
-      aggregator_.Aggregate(root_surface_id_);
+      aggregator_.Aggregate(root_surface_id_, &surface_set);
 
   ASSERT_TRUE(aggregated_frame);
   ASSERT_TRUE(aggregated_frame->delegated_frame_data);
@@ -862,14 +888,17 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TakeResourcesOneSurface) {
   ResourceProvider::ResourceId ids[] = {11, 12, 13};
   SubmitFrameWithResources(ids, arraysize(ids), &factory, surface_id);
 
-  scoped_ptr<CompositorFrame> frame = aggregator_->Aggregate(surface_id);
+  std::set<SurfaceId> surface_set;
+  scoped_ptr<CompositorFrame> frame =
+      aggregator_->Aggregate(surface_id, &surface_set);
 
   // Nothing should be available to be returned yet.
   EXPECT_TRUE(client.returned_resources().empty());
 
   SubmitFrameWithResources(NULL, 0u, &factory, surface_id);
 
-  frame = aggregator_->Aggregate(surface_id);
+  surface_set.clear();
+  frame = aggregator_->Aggregate(surface_id, &surface_set);
 
   ASSERT_EQ(3u, client.returned_resources().size());
   ResourceProvider::ResourceId returned_ids[3];

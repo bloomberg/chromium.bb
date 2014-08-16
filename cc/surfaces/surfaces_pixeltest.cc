@@ -90,8 +90,9 @@ TEST_F(SurfacesPixelTest, DrawSimpleFrame) {
   factory_.SubmitFrame(root_surface_id, root_frame.Pass());
 
   SurfaceAggregator aggregator(&manager_, resource_provider_.get());
+  std::set<SurfaceId> surface_set;
   scoped_ptr<CompositorFrame> aggregated_frame =
-      aggregator.Aggregate(root_surface_id);
+      aggregator.Aggregate(root_surface_id, &surface_set);
   factory_.Destroy(root_surface_id);
 
   bool discard_alpha = false;
@@ -172,8 +173,9 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
   }
 
   SurfaceAggregator aggregator(&manager_, resource_provider_.get());
+  std::set<SurfaceId> surface_set;
   scoped_ptr<CompositorFrame> aggregated_frame =
-      aggregator.Aggregate(root_surface_id);
+      aggregator.Aggregate(root_surface_id, &surface_set);
 
   bool discard_alpha = false;
   ExactPixelComparator pixel_comparator(discard_alpha);
@@ -312,8 +314,9 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
   }
 
   SurfaceAggregator aggregator(&manager_, resource_provider_.get());
+  std::set<SurfaceId> surface_set;
   scoped_ptr<CompositorFrame> aggregated_frame =
-      aggregator.Aggregate(root_surface_id);
+      aggregator.Aggregate(root_surface_id, &surface_set);
 
   bool discard_alpha = false;
   ExactPixelComparator pixel_comparator(discard_alpha);

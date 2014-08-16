@@ -190,8 +190,11 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
               &output_surface_map_,
               compositor->vsync_manager()));
     }
-    scoped_ptr<OnscreenDisplayClient> display_client(new OnscreenDisplayClient(
-        context_provider, software_surface.Pass(), manager));
+    scoped_ptr<OnscreenDisplayClient> display_client(
+        new OnscreenDisplayClient(context_provider,
+                                  software_surface.Pass(),
+                                  manager,
+                                  compositor->task_runner()));
     // TODO(jamesr): Need to set up filtering for the
     // GpuHostMsg_UpdateVSyncParameters message.
 

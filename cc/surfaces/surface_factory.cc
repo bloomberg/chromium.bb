@@ -40,6 +40,7 @@ void SurfaceFactory::SubmitFrame(SurfaceId surface_id,
   DCHECK(it != surface_map_.end());
   DCHECK(it->second->factory() == this);
   it->second->QueueFrame(frame.Pass());
+  manager_->SurfaceModified(surface_id);
 }
 
 void SurfaceFactory::ReceiveFromChild(

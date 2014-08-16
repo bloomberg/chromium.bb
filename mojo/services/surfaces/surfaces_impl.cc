@@ -93,4 +93,7 @@ scoped_ptr<cc::OutputSurface> SurfacesImpl::CreateOutputSurface() {
       new ContextProviderMojo(command_buffer_handle_.Pass())));
 }
 
+void SurfacesImpl::DisplayDamaged() {
+}
+
 }  // namespace mojo

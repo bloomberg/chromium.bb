@@ -350,9 +350,11 @@ void DelegatedFrameHost::SwapDelegatedFrame(
     }
     last_output_surface_id_ = output_surface_id;
   }
+  bool modified_layers = false;
   if (frame_size.IsEmpty()) {
     DCHECK(frame_data->resource_list.empty());
     EvictDelegatedFrame();
+    modified_layers = true;
   } else {
     if (use_surfaces_) {
       if (!surface_factory_) {
@@ -364,12 +366,15 @@ void DelegatedFrameHost::SwapDelegatedFrame(
       }
       if (surface_id_.is_null() || frame_size != current_surface_size_ ||
           frame_size_in_dip != current_frame_size_in_dip_) {
+        // TODO(jbauman): Wait to destroy this surface until the parent has
+        // finished using it.
         if (!surface_id_.is_null())
           surface_factory_->Destroy(surface_id_);
         surface_id_ = id_allocator_->GenerateId();
         surface_factory_->Create(surface_id_, frame_size);
         client_->GetLayer()->SetShowSurface(surface_id_, frame_size_in_dip);
         current_surface_size_ = frame_size;
+        modified_layers = true;
       }
       scoped_ptr<cc::CompositorFrame> compositor_frame =
           make_scoped_ptr(new cc::CompositorFrame());
@@ -395,18 +400,23 @@ void DelegatedFrameHost::SwapDelegatedFrame(
       } else {
         frame_provider_->SetFrameData(frame_data.Pass());
       }
+      modified_layers = true;
     }
   }
   released_front_lock_ = NULL;
   current_frame_size_in_dip_ = frame_size_in_dip;
   CheckResizeLock();
 
-  client_->SchedulePaintInRect(damage_rect_in_dip);
+  if (modified_layers) {
+    // TODO(jbauman): Need to always tell the window observer about the
+    // damage.
+    client_->SchedulePaintInRect(damage_rect_in_dip);
+  }
 
   pending_delegated_ack_count_++;
 
   ui::Compositor* compositor = client_->GetCompositor();
-  if (!compositor) {
+  if (!compositor || !modified_layers) {
     SendDelegatedFrameAck(output_surface_id);
   } else {
     std::vector<ui::LatencyInfo>::const_iterator it;
