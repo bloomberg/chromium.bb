@@ -4,10 +4,11 @@
 
 define("{{module.path}}", [
     "mojo/public/js/bindings/codec",
+    "mojo/public/js/bindings/validator",
 {%- for import in imports %}
     "{{import.module.path}}",
 {%- endfor %}
-  ], function(codec
+  ], function(codec, validator
 {%- for import in imports -%}
     , {{import.unique_name}}
 {%- endfor -%}
@@ -47,6 +48,8 @@ define("{{module.path}}", [
 {%- for interface in interfaces %}
   exports.{{interface.name}}Proxy = {{interface.name}}Proxy;
   exports.{{interface.name}}Stub = {{interface.name}}Stub;
+  exports.validate{{interface.name}}Request = validate{{interface.name}}Request;
+  exports.validate{{interface.name}}Response = validate{{interface.name}}Response;
 {%- endfor %}
   return exports;
 });

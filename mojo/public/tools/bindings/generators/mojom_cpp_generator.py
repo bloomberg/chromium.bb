@@ -228,12 +228,6 @@ def TranslateConstants(token, kind):
 def ExpressionToText(value, kind=None):
   return TranslateConstants(value, kind)
 
-def HasCallbacks(interface):
-  for method in interface.methods:
-    if method.response_parameters != None:
-      return True
-  return False
-
 def ShouldInlineStruct(struct):
   # TODO(darin): Base this on the size of the wrapper class.
   if len(struct.fields) > 4:
@@ -279,7 +273,7 @@ class Generator(generator.Generator):
     "get_array_validate_params": GetArrayValidateParams,
     "get_name_for_kind": GetNameForKind,
     "get_pad": pack.GetPad,
-    "has_callbacks": HasCallbacks,
+    "has_callbacks": mojom.HasCallbacks,
     "should_inline": ShouldInlineStruct,
     "is_any_array_kind": mojom.IsAnyArrayKind,
     "is_enum_kind": mojom.IsEnumKind,

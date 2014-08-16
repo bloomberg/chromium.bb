@@ -46,7 +46,7 @@ def JavaScriptDefaultValue(field):
     return _kind_to_javascript_default_value[field.kind]
   if mojom.IsStructKind(field.kind):
     return "null"
-  if mojom.IsArrayKind(field.kind):
+  if mojom.IsAnyArrayKind(field.kind):
     return "null"
   if mojom.IsInterfaceKind(field.kind) or \
      mojom.IsInterfaceRequestKind(field.kind):
@@ -97,9 +97,9 @@ def CodecType(kind):
     return _kind_to_codec_type[kind]
   if mojom.IsStructKind(kind):
     return "new codec.PointerTo(%s)" % CodecType(kind.name)
-  if mojom.IsArrayKind(kind) and mojom.IsBoolKind(kind.kind):
-    return "new codec.ArrayOf(new codec.ArrayOf(codec.PackedBool))"
-  if mojom.IsArrayKind(kind):
+  if mojom.IsAnyArrayKind(kind) and mojom.IsBoolKind(kind.kind):
+    return "new codec.ArrayOf(codec.PackedBool)"
+  if mojom.IsAnyArrayKind(kind):
     return "new codec.ArrayOf(%s)" % CodecType(kind.kind)
   if mojom.IsInterfaceKind(kind) or mojom.IsInterfaceRequestKind(kind):
     return CodecType(mojom.MSGPIPE)
@@ -113,9 +113,9 @@ def JavaScriptDecodeSnippet(kind):
     return "decodeStruct(%s)" % CodecType(kind)
   if mojom.IsStructKind(kind):
     return "decodeStructPointer(%s)" % CodecType(kind.name)
-  if mojom.IsArrayKind(kind) and mojom.IsBoolKind(kind.kind):
-    return "decodeArrayPointer(new codec.ArrayOf(codec.PackedBool))"
-  if mojom.IsArrayKind(kind):
+  if mojom.IsAnyArrayKind(kind) and mojom.IsBoolKind(kind.kind):
+    return "decodeArrayPointer(codec.PackedBool)"
+  if mojom.IsAnyArrayKind(kind):
     return "decodeArrayPointer(%s)" % CodecType(kind.kind)
   if mojom.IsInterfaceKind(kind) or mojom.IsInterfaceRequestKind(kind):
     return JavaScriptDecodeSnippet(mojom.MSGPIPE)
@@ -128,14 +128,30 @@ def JavaScriptEncodeSnippet(kind):
     return "encodeStruct(%s, " % CodecType(kind)
   if mojom.IsStructKind(kind):
     return "encodeStructPointer(%s, " % CodecType(kind.name)
-  if mojom.IsArrayKind(kind) and mojom.IsBoolKind(kind.kind):
-    return "encodeArrayPointer(new codec.ArrayOf(codec.PackedBool), ";
+  if mojom.IsAnyArrayKind(kind) and mojom.IsBoolKind(kind.kind):
+    return "encodeArrayPointer(codec.PackedBool, ";
   if mojom.IsAnyArrayKind(kind):
     return "encodeArrayPointer(%s, " % CodecType(kind.kind)
   if mojom.IsInterfaceKind(kind) or mojom.IsInterfaceRequestKind(kind):
     return JavaScriptEncodeSnippet(mojom.MSGPIPE)
   if mojom.IsEnumKind(kind):
     return JavaScriptEncodeSnippet(mojom.INT32)
+
+
+def JavaScriptFieldOffset(packed_field):
+  return "offset + codec.kStructHeaderSize + %s" % packed_field.offset
+
+def JavaScriptValidateArrayParams(pf):
+  elementKind = pf.field.kind.kind
+  elementSize = pack.PackedField.GetSizeForKind(elementKind)
+  elementCount = generator.ExpectedArraySize(pf.field.kind)
+  elementType = "codec.PackedBool" if mojom.IsBoolKind(elementKind) \
+      else CodecType(elementKind)
+  return "%s, %s, %s, %s" % \
+    (JavaScriptFieldOffset(pf), elementSize, elementCount, elementType)
+
+def JavaScriptValidateStructParams(pf):
+  return "%s, %s" % (JavaScriptFieldOffset(pf), pf.field.kind.name)
 
 
 def TranslateConstants(token):
@@ -163,6 +179,18 @@ def JavascriptType(kind):
     return kind.imported_from["unique_name"] + "." + kind.name
   return kind.name
 
+def IsArrayPointerField(field):
+  return mojom.IsAnyArrayKind(field.kind)
+
+def IsStringPointerField(field):
+  return mojom.IsStringKind(field.kind)
+
+def IsStructPointerField(field):
+  return mojom.IsStructKind(field.kind)
+
+def IsHandleField(field):
+  return mojom.IsAnyHandleKind(field.kind)
+
 
 class Generator(generator.Generator):
 
@@ -172,8 +200,16 @@ class Generator(generator.Generator):
     "decode_snippet": JavaScriptDecodeSnippet,
     "encode_snippet": JavaScriptEncodeSnippet,
     "expression_to_text": ExpressionToText,
+    "field_offset": JavaScriptFieldOffset,
+    "has_callbacks": mojom.HasCallbacks,
+    "is_array_pointer_field": IsArrayPointerField,
+    "is_struct_pointer_field": IsStructPointerField,
+    "is_string_pointer_field": IsStringPointerField,
+    "is_handle_field": IsHandleField,
     "js_type": JavascriptType,
     "stylize_method": generator.StudlyCapsToCamel,
+    "validate_array_params": JavaScriptValidateArrayParams,
+    "validate_struct_params": JavaScriptValidateStructParams,
   }
 
   @UseJinja("js_templates/module.js.tmpl", filters=js_filters)

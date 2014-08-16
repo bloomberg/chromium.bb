@@ -400,3 +400,11 @@ def IsAnyHandleKind(kind):
 
 def IsMoveOnlyKind(kind):
   return IsObjectKind(kind) or IsAnyHandleKind(kind)
+
+
+def HasCallbacks(interface):
+  for method in interface.methods:
+    if method.response_parameters != None:
+      return True
+  return False
+

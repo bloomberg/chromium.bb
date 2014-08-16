@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 define([
+    "console",
     "file",
     "gin/test/expect",
     "mojo/public/interfaces/bindings/tests/validation_test_interfaces.mojom",
@@ -10,7 +11,8 @@ define([
     "mojo/public/js/bindings/codec",
     "mojo/public/js/bindings/tests/validation_test_input_parser",
     "mojo/public/js/bindings/validator",
-  ], function(file, expect, testInterface, buffer, codec, parser, validator) {
+  ], function(
+    console, file, expect, testInterface, buffer, codec, parser, validator) {
 
   function checkTestMessageParser() {
     function TestMessageParserFailure(message, input) {
@@ -162,7 +164,7 @@ define([
     return null;
   }
 
-  function getMessageTestFiles() {
+  function getMessageTestFiles(key) {
     var sourceRoot = file.getSourceRootDirectory();
     expect(sourceRoot).not.toBeNull();
 
@@ -172,17 +174,14 @@ define([
     expect(testFiles).not.toBeNull();
     expect(testFiles.length).toBeGreaterThan(0);
 
-   // The ".data" pathnames with the extension removed.
-   var testPathNames = testFiles.filter(function(s) {
-     return s.substr(-5) == ".data";
-   }).map(function(s) {
-     return testDir + s.slice(0, -5);
-   });
-
-   // For now, just checking the message header tests.
-   return testPathNames.filter(function(s) {
-     return s.indexOf("_msghdr_") != -1;
-   });
+    // The matching ".data" pathnames with the extension removed.
+    return testFiles.filter(function(s) {
+      return s.substr(-5) == ".data";
+    }).map(function(s) {
+      return testDir + s.slice(0, -5);
+    }).filter(function(s) {
+      return s.indexOf(key) != -1;
+    });
   }
 
   function readTestMessage(filename) {
@@ -197,21 +196,57 @@ define([
     return contents.trim();
   }
 
-  function testValidateMessageHeader() {
-    var testFiles = getMessageTestFiles();
+  function testMessageValidation(key, filters) {
+    var testFiles = getMessageTestFiles(key);
     expect(testFiles.length).toBeGreaterThan(0);
 
+    var noError = validator.validationError.NONE;
     for (var i = 0; i < testFiles.length; i++) {
+      // TODO(hansmuller): Temporarily skipping array pointer overflow tests.
+      if (testFiles[i].indexOf("overflow") != -1) {
+        console.log("[Skipping " + testFiles[i] + "]");
+        continue;
+      }
+
+      // TODO(hansmuller): Temporarily skipping array unexpected null tests.
+      if (testFiles[i].indexOf("unexpected_null") != -1 ||
+          testFiles[i].indexOf("unexpected_invalid") != -1) {
+        console.log("[Skipping " + testFiles[i] + "]");
+        continue;
+      }
+
       var testMessage = readTestMessage(testFiles[i]);
-      // TODO(hansmuller): add the message handles.
-      var message = new codec.Message(testMessage.buffer);
-      var actualResult = new validator.Validator(message).validateMessage();
+      var handles = new Array(testMessage.handleCount);
+      var message = new codec.Message(testMessage.buffer, handles);
+      var messageValidator = new validator.Validator(message);
+
+      var err = messageValidator.validateMessageHeader();
+      for (var j = 0; err === noError && j < filters.length; ++j)
+        err = filters[j](messageValidator);
+
+      var actualResult = (err === noError) ? "PASS" : err;
       var expectedResult = readTestExpected(testFiles[i]);
+      if (actualResult != expectedResult)
+        console.log("[Test message validation failed: " + testFiles[i] + " ]");
       expect(actualResult).toEqual(expectedResult);
     }
   }
 
-  testValidateMessageHeader();
+  function testConformanceMessageValidation() {
+    testMessageValidation("conformance_", [
+      testInterface.validateConformanceTestInterfaceRequest,
+    ]);
+  }
+
+  function testIntegrationMessageValidation() {
+    testMessageValidation("integration_", [
+      testInterface.validateIntegrationTestInterface1Request,
+      testInterface.validateIntegrationTestInterface2Response
+    ]);
+  }
+
+  testConformanceMessageValidation();
+  testIntegrationMessageValidation();
   expect(checkTestMessageParser()).toBeNull();
   this.result = "PASS";
 });

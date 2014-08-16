@@ -62,7 +62,7 @@ define("mojo/public/js/bindings/router", [
 
   Router.prototype.handleIncomingMessage_ = function(message) {
     var v = new validator.Validator(message);
-    if (v.validateMessage() !== validator.validationError.NONE)
+    if (v.validateMessageHeader() !== validator.validationError.NONE)
       this.close();
 
     if (message.expectsResponse()) {

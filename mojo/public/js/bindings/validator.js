@@ -4,7 +4,7 @@
 
 define("mojo/public/js/bindings/validator", [
   "mojo/public/js/bindings/codec",
-  ], function(codec) {
+], function(codec) {
 
   var validationError = {
     NONE: 'VALIDATION_ERROR_NONE',
@@ -20,13 +20,20 @@ define("mojo/public/js/bindings/validator", [
         'VALIDATION_ERROR_MESSAGE_HEADER_MISSING_REQUEST_ID'
   };
 
+  var NULL_MOJO_POINTER = "NULL_MOJO_POINTER";
+
   function Validator(message) {
     this.message = message;
     this.offset = 0;
+    this.handleIndex = 0;
   }
 
   Object.defineProperty(Validator.prototype, "offsetLimit", {
     get: function() { return this.message.buffer.byteLength; }
+  });
+
+  Object.defineProperty(Validator.prototype, "handleIndexLimit", {
+    get: function() { return this.message.handles.length; }
   });
 
   // True if we can safely allocate a block of bytes from start to
@@ -54,6 +61,25 @@ define("mojo/public/js/bindings/validator", [
     return false;
   }
 
+  Validator.prototype.claimHandle = function(index) {
+    if (index === codec.kEncodedInvalidHandleValue)
+      return true;
+
+    if (index < this.handleIndex || index >= this.handleIndexLimit)
+      return false;
+
+    // This is safe because handle indices are uint32.
+    this.handleIndex = index + 1;
+    return true;
+  }
+
+  Validator.prototype.validateHandle = function(offset) {
+    var index = this.message.buffer.getUint32(offset);
+    if (!this.claimHandle(index))
+      return validationError.ILLEGAL_HANDLE;
+    return validationError.NONE;
+  }
+
   Validator.prototype.validateStructHeader =
       function(offset, minNumBytes, minNumFields) {
     if (!codec.isAligned(offset))
@@ -75,6 +101,10 @@ define("mojo/public/js/bindings/validator", [
   }
 
   Validator.prototype.validateMessageHeader = function() {
+    var err = this.validateStructHeader(0, codec.kMessageHeaderSize, 2);
+    if (err != validationError.NONE)
+      return err;
+
     var numBytes = this.message.getHeaderNumBytes();
     var numFields = this.message.getHeaderNumFields();
 
@@ -99,12 +129,126 @@ define("mojo/public/js/bindings/validator", [
     return validationError.NONE;
   }
 
-  Validator.prototype.validateMessage = function() {
-    var err = this.validateStructHeader(0, codec.kStructHeaderSize, 2);
-    if (err != validationError.NONE)
-      return err;
+  // Returns the message.buffer relative offset this pointer "points to",
+  // NULL_MOJO_POINTER if the pointer represents a null, or JS null if the
+  // pointer's value is not valid.
+  Validator.prototype.decodePointer = function(offset) {
+    var pointerValue = this.message.buffer.getUint64(offset);
+    if (pointerValue === 0)
+      return NULL_MOJO_POINTER;
+    var bufferOffset = offset + pointerValue;
+    return Number.isSafeInteger(bufferOffset) ? bufferOffset : null;
+  }
 
-    return this.validateMessageHeader();
+  Validator.prototype.validateArrayPointer =
+      function(offset, elementSize, expectedElementCount, elementType) {
+    var arrayOffset = this.decodePointer(offset);
+    if (arrayOffset === null)
+      return validationError.ILLEGAL_POINTER;
+    if (arrayOffset === NULL_MOJO_POINTER)
+      return validationError.NONE;
+    return this.validateArray(
+        arrayOffset, elementSize, expectedElementCount, elementType);
+  }
+
+  Validator.prototype.validateStructPointer = function(offset, structClass) {
+    var structOffset = this.decodePointer(offset);
+    if (structOffset === null)
+      return validationError.ILLEGAL_POINTER;
+    if (structOffset === NULL_MOJO_POINTER)
+      return validationError.NONE;
+    return structClass.validate(this, structOffset);
+  }
+
+  Validator.prototype.validateStringPointer = function(offset) {
+    return this.validateArrayPointer(
+        offset, codec.Uint8.encodedSize, 0, codec.Uint8);
+  }
+
+  // Similar to Array_Data<T>::Validate()
+  // mojo/public/cpp/bindings/lib/array_internal.h
+
+  Validator.prototype.validateArray =
+      function (offset, elementSize, expectedElementCount, elementType) {
+    if (!codec.isAligned(offset))
+      return validationError.MISALIGNED_OBJECT;
+
+    if (!this.isValidRange(offset, codec.kArrayHeaderSize))
+      return validationError.ILLEGAL_MEMORY_RANGE;
+
+    var numBytes = this.message.buffer.getUint32(offset);
+    var numElements = this.message.buffer.getUint32(offset + 4);
+
+    // Note: this computation is "safe" because elementSize <= 8 and
+    // numElements is a uint32.
+    var elementsTotalSize = (elementType === codec.PackedBool) ?
+        Math.ceil(numElements / 8) : (elementSize * numElements);
+
+    if (numBytes < codec.kArrayHeaderSize + elementsTotalSize)
+      return validationError.UNEXPECTED_ARRAY_HEADER;
+
+    if (expectedElementCount != 0 && numElements != expectedElementCount)
+      return validationError.UNEXPECTED_ARRAY_HEADER;
+
+    if (!this.claimRange(offset, numBytes))
+      return validationError.ILLEGAL_MEMORY_RANGE;
+
+    // Validate the array's elements if they are pointers or handles.
+
+    var elementsOffset = offset + codec.kArrayHeaderSize;
+    if (elementType === codec.Handle)
+      return this.validateHandleElements(elementsOffset, numElements);
+    if (elementType instanceof codec.PointerTo)
+      return this.validateStructElements(
+          elementsOffset, numElements, elementType.cls);
+    if (elementType instanceof codec.String)
+      return this.validateArrayElements(
+          elementsOffset, numElements, codec.Uint8);
+    if (elementType instanceof codec.ArrayOf)
+      return this.validateArrayElements(
+          elementsOffset, numElements, elementType.cls);
+
+    return validationError.NONE;
+  }
+
+  // Note: the |offset + i * elementSize| computation in the validateFooElements
+  // methods below is "safe" because elementSize <= 8, offset and
+  // numElements are uint32, and 0 <= i < numElements.
+
+  Validator.prototype.validateHandleElements = function(offset, numElements) {
+    var elementSize = codec.Handle.encodedSize;
+    for (var i = 0; i < numElements; i++) {
+      var index = this.message.buffer.getUint32(offset + i * elementSize);
+      if (!this.claimHandle(index))
+        return validationError.ILLEGAL_HANDLE;
+    }
+    return validationError.NONE;
+  }
+
+  // The elementClass parameter is the element type of the element arrays.
+  Validator.prototype.validateArrayElements =
+      function(offset, numElements, elementClass) {
+    var elementSize = codec.PointerTo.prototype.encodedSize;
+    for (var i = 0; i < numElements; i++) {
+      var elementOffset = offset + i * elementSize;
+      var err = this.validateArrayPointer(
+          elementOffset, elementClass.encodedSize, 0, elementClass);
+      if (err != validationError.NONE)
+        return err;
+    }
+    return validationError.NONE;
+  }
+
+  Validator.prototype.validateStructElements =
+      function(offset, numElements, structClass) {
+    var elementSize = codec.PointerTo.prototype.encodedSize;
+    for (var i = 0; i < numElements; i++) {
+      var elementOffset = offset + i * elementSize;
+      var err = this.validateStructPointer(elementOffset, structClass);
+      if (err != validationError.NONE)
+        return err;
+    }
+    return validationError.NONE;
   }
 
   var exports = {};

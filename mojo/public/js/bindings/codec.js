@@ -31,6 +31,8 @@ define("mojo/public/js/bindings/codec", [
   var kStructHeaderNumBytesOffset = 0;
   var kStructHeaderNumFieldsOffset = 4;
 
+  var kEncodedInvalidHandleValue = 0xFFFFFFFF;
+
   // Decoder ------------------------------------------------------------------
 
   function Decoder(buffer, handles, base) {
@@ -135,7 +137,7 @@ define("mojo/public/js/bindings/codec", [
     var numberOfBytes = this.readUint32();
     var numberOfElements = this.readUint32();
     var val = new Array(numberOfElements);
-    if (cls.cls === PackedBool) {
+    if (cls === PackedBool) {
       var byte;
       for (var i = 0; i < numberOfElements; ++i) {
         if (i % 8 === 0)
@@ -293,7 +295,7 @@ define("mojo/public/js/bindings/codec", [
     this.writeUint32(encodedSize);
     this.writeUint32(numberOfElements);
 
-    if (cls.cls === PackedBool) {
+    if (cls === PackedBool) {
       var byte = 0;
       for (i = 0; i < numberOfElements; ++i) {
         if (val[i])
@@ -328,7 +330,7 @@ define("mojo/public/js/bindings/codec", [
       return;
     }
     var numberOfElements = val.length;
-    var encodedSize = kArrayHeaderSize + ((cls.cls === PackedBool) ?
+    var encodedSize = kArrayHeaderSize + ((cls === PackedBool) ?
         Math.ceil(numberOfElements / 8) : cls.encodedSize * numberOfElements);
     var encoder = this.createAndEncodeEncoder(encodedSize);
     encoder.encodeArray(cls, val, numberOfElements, encodedSize);
@@ -364,6 +366,10 @@ define("mojo/public/js/bindings/codec", [
 
   Message.prototype.getHeaderNumFields = function() {
     return this.buffer.getUint32(kStructHeaderNumFieldsOffset);
+  };
+
+  Message.prototype.getName = function() {
+    return this.buffer.getUint32(kMessageNameOffset);
   };
 
   Message.prototype.getFlags = function() {
@@ -673,6 +679,7 @@ define("mojo/public/js/bindings/codec", [
   exports.MessageReader = MessageReader;
   exports.kArrayHeaderSize = kArrayHeaderSize;
   exports.kStructHeaderSize = kStructHeaderSize;
+  exports.kEncodedInvalidHandleValue = kEncodedInvalidHandleValue;
   exports.kMessageHeaderSize = kMessageHeaderSize;
   exports.kMessageWithRequestIDHeaderSize = kMessageWithRequestIDHeaderSize;
   exports.kMessageExpectsResponse = kMessageExpectsResponse;
