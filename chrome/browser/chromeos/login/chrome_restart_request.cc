@@ -157,6 +157,7 @@ std::string DeriveCommandLine(const GURL& start_url,
     ::switches::kDisableVaapiAcceleratedVideoEncode,
 #if defined(USE_OZONE)
     ::switches::kOzonePlatform,
+    ::switches::kOzoneUseSurfaceless,
 #endif
     app_list::switches::kDisableSyncAppList,
     app_list::switches::kEnableSyncAppList,

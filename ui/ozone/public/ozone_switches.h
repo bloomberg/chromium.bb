@@ -14,6 +14,8 @@ OZONE_EXPORT extern const char kOzonePlatform[];
 
 OZONE_EXPORT extern const char kOzoneDumpFile[];
 
+OZONE_EXPORT extern const char kOzoneUseSurfaceless[];
+
 }  // namespace switches
 
 #endif  // UI_OZONE_PUBLIC_OZONE_SWITCHES_H_

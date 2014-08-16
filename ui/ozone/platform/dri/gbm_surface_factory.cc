@@ -97,19 +97,21 @@ scoped_ptr<SurfaceOzoneEGL> GbmSurfaceFactory::CreateEGLSurfaceForWidget(
   DCHECK(state_ == INITIALIZED);
   ResetCursor(widget);
 
-  if (allow_surfaceless_) {
-    return scoped_ptr<SurfaceOzoneEGL>(
-        new GbmSurfaceless(screen_manager_->GetDisplayController(widget)));
-  } else {
-    scoped_ptr<GbmSurface> surface(
-        new GbmSurface(screen_manager_->GetDisplayController(widget),
-                       device_,
-                       drm_));
-    if (!surface->Initialize())
-      return scoped_ptr<SurfaceOzoneEGL>();
+  scoped_ptr<GbmSurface> surface(new GbmSurface(
+      screen_manager_->GetDisplayController(widget), device_, drm_));
+  if (!surface->Initialize())
+    return scoped_ptr<SurfaceOzoneEGL>();
 
-    return surface.PassAs<SurfaceOzoneEGL>();
-  }
+  return surface.PassAs<SurfaceOzoneEGL>();
+}
+
+scoped_ptr<SurfaceOzoneEGL>
+GbmSurfaceFactory::CreateSurfacelessEGLSurfaceForWidget(
+    gfx::AcceleratedWidget widget) {
+  if (!allow_surfaceless_)
+    return scoped_ptr<SurfaceOzoneEGL>();
+  return scoped_ptr<SurfaceOzoneEGL>(
+      new GbmSurfaceless(screen_manager_->GetDisplayController(widget)));
 }
 
 scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(

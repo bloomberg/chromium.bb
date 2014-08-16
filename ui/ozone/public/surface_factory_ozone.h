@@ -90,6 +90,12 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
   virtual scoped_ptr<SurfaceOzoneEGL> CreateEGLSurfaceForWidget(
       gfx::AcceleratedWidget widget);
 
+  // Create an EGL surface that isn't backed by any buffers, and is used
+  // for overlay-only displays. This will return NULL if this mode is
+  // not supported.
+  virtual scoped_ptr<SurfaceOzoneEGL> CreateSurfacelessEGLSurfaceForWidget(
+      gfx::AcceleratedWidget widget);
+
   // Create SurfaceOzoneCanvas for the specified gfx::AcceleratedWidget.
   //
   // Note: The platform must support creation of SurfaceOzoneCanvas from the

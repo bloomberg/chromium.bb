@@ -9,6 +9,7 @@
 #include <stdlib.h>
 
 #include "base/at_exit.h"
+#include "base/command_line.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/ozone/platform/dri/cursor_factory_evdev_dri.h"
@@ -26,6 +27,7 @@
 #include "ui/ozone/public/gpu_platform_support.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/ozone_switches.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/ozone/common/chromeos/touchscreen_device_manager_ozone.h"
@@ -173,10 +175,8 @@ class OzonePlatformGbm : public OzonePlatform {
 }  // namespace
 
 OzonePlatform* CreateOzonePlatformGbm() {
-  return new OzonePlatformGbm(false);
-}
-OzonePlatform* CreateOzonePlatformGbmEglImage() {
-  return new OzonePlatformGbm(true);
+  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  return new OzonePlatformGbm(cmd->HasSwitch(switches::kOzoneUseSurfaceless));
 }
 
 }  // namespace ui
