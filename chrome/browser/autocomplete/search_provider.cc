@@ -170,34 +170,6 @@ int SearchProvider::CalculateRelevanceForKeywordVerbatim(
   return (type == metrics::OmniboxInputType::QUERY) ? 1450 : 1100;
 }
 
-// static
-void SearchProvider::UpdateOldResults(
-    bool minimal_changes,
-    SearchSuggestionParser::Results* results) {
-  // When called without |minimal_changes|, it likely means the user has
-  // pressed a key.  Revise the cached results appropriately.
-  if (!minimal_changes) {
-    for (SearchSuggestionParser::SuggestResults::iterator sug_it =
-             results->suggest_results.begin();
-         sug_it != results->suggest_results.end(); ++sug_it) {
-      sug_it->set_received_after_last_keystroke(false);
-    }
-    for (SearchSuggestionParser::NavigationResults::iterator nav_it =
-             results->navigation_results.begin();
-         nav_it != results->navigation_results.end(); ++nav_it) {
-      nav_it->set_received_after_last_keystroke(false);
-    }
-  }
-}
-
-// static
-ACMatches::iterator SearchProvider::FindTopMatch(ACMatches* matches) {
-  ACMatches::iterator it = matches->begin();
-  while ((it != matches->end()) && !it->allowed_to_be_default_match)
-    ++it;
-  return it;
-}
-
 void SearchProvider::Start(const AutocompleteInput& input,
                            bool minimal_changes) {
   // Do our best to load the model as early as possible.  This will reduce
@@ -420,8 +392,6 @@ void SearchProvider::LogFetchComplete(bool success, bool is_keyword) {
 }
 
 void SearchProvider::UpdateMatches() {
-  PersistTopSuggestions(&default_results_);
-  PersistTopSuggestions(&keyword_results_);
   ConvertResultsToAutocompleteMatches();
 
   // Check constraints that may be violated by suggested relevances.
@@ -434,12 +404,8 @@ void SearchProvider::UpdateMatches() {
     if ((providers_.GetKeywordProviderURL() != NULL) &&
         (FindTopMatch() == matches_.end())) {
       // In keyword mode, disregard the keyword verbatim suggested relevance
-      // if necessary, so at least one match is allowed to be default.  (This
-      // is only necessary if we were told to suppress keyword verbatim and
-      // hence have no default keyword match.)  Give keyword verbatim the
-      // lowest non-zero score to best reflect what the server desired.
-      DCHECK_EQ(0, keyword_results_.verbatim_relevance);
-      keyword_results_.verbatim_relevance = 1;
+      // if necessary, so at least one match is allowed to be default.
+      keyword_results_.verbatim_relevance = -1;
       ConvertResultsToAutocompleteMatches();
     }
     if (IsTopMatchSearchWithURLInput()) {
@@ -456,13 +422,8 @@ void SearchProvider::UpdateMatches() {
     if (FindTopMatch() == matches_.end()) {
       // Guarantee that SearchProvider returns a legal default match.  (The
       // omnibox always needs at least one legal default match, and it relies
-      // on SearchProvider to always return one.)  Give the verbatim suggestion
-      // the lowest non-zero scores to best reflect what the server desired.
-      DCHECK_EQ(0, default_results_.verbatim_relevance);
-      default_results_.verbatim_relevance = 1;
-      // We do not have to alter keyword_results_.verbatim_relevance here.
-      // If the user is in keyword mode, we already reverted (earlier in this
-      // function) the instructions to suppress keyword verbatim.
+      // on SearchProvider to always return one.)
+      ApplyCalculatedRelevance();
       ConvertResultsToAutocompleteMatches();
     }
     DCHECK(!IsTopMatchSearchWithURLInput());
@@ -470,22 +431,6 @@ void SearchProvider::UpdateMatches() {
   }
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "Omnibox.SearchProviderMatches", matches_.size(), 1, 6, 7);
-
-  // Record the top suggestion (if any) for future use.
-  top_query_suggestion_match_contents_ = base::string16();
-  top_navigation_suggestion_ = GURL();
-  ACMatches::const_iterator first_match = FindTopMatch();
-  if ((first_match != matches_.end()) &&
-      !first_match->inline_autocompletion.empty()) {
-    // Identify if this match came from a query suggestion or a navsuggestion.
-    // In either case, extracts the identifying feature of the suggestion
-    // (query string or navigation url).
-    if (AutocompleteMatch::IsSearchType(first_match->type))
-      top_query_suggestion_match_contents_ = first_match->contents;
-    else
-      top_navigation_suggestion_ = first_match->destination_url;
-  }
-
   UpdateDone();
 }
 
@@ -576,7 +521,8 @@ void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
   // We can't keep running any previous query, so halt it.
   StopSuggest();
 
-  UpdateAllOldResults(minimal_changes);
+  // Remove existing results that cannot inline autocomplete the new input.
+  RemoveAllStaleResults();
 
   // Update the content classifications of remaining results so they look good
   // against the current input.
@@ -660,39 +606,21 @@ bool SearchProvider::IsQuerySuitableForSuggest() const {
   return true;
 }
 
-void SearchProvider::UpdateAllOldResults(bool minimal_changes) {
+void SearchProvider::RemoveAllStaleResults() {
   if (keyword_input_.text().empty()) {
     // User is either in keyword mode with a blank input or out of
     // keyword mode entirely.
     keyword_results_.Clear();
   }
-  UpdateOldResults(minimal_changes, &default_results_);
-  UpdateOldResults(minimal_changes, &keyword_results_);
 }
 
-void SearchProvider::PersistTopSuggestions(
-    SearchSuggestionParser::Results* results) {
-  // Mark any results matching the current top results as having been received
-  // prior to the last keystroke.  That prevents asynchronous updates from
-  // clobbering top results, which may be used for inline autocompletion.
-  // Other results don't need similar changes, because they shouldn't be
-  // displayed asynchronously anyway.
-  if (!top_query_suggestion_match_contents_.empty()) {
-    for (SearchSuggestionParser::SuggestResults::iterator sug_it =
-             results->suggest_results.begin();
-         sug_it != results->suggest_results.end(); ++sug_it) {
-      if (sug_it->match_contents() == top_query_suggestion_match_contents_)
-        sug_it->set_received_after_last_keystroke(false);
-    }
-  }
-  if (top_navigation_suggestion_.is_valid()) {
-    for (SearchSuggestionParser::NavigationResults::iterator nav_it =
-             results->navigation_results.begin();
-         nav_it != results->navigation_results.end(); ++nav_it) {
-      if (nav_it->url() == top_navigation_suggestion_)
-        nav_it->set_received_after_last_keystroke(false);
-    }
-  }
+void SearchProvider::ApplyCalculatedRelevance() {
+  ApplyCalculatedSuggestRelevance(&keyword_results_.suggest_results);
+  ApplyCalculatedSuggestRelevance(&default_results_.suggest_results);
+  ApplyCalculatedNavigationRelevance(&keyword_results_.navigation_results);
+  ApplyCalculatedNavigationRelevance(&default_results_.navigation_results);
+  default_results_.verbatim_relevance = -1;
+  keyword_results_.verbatim_relevance = -1;
 }
 
 void SearchProvider::ApplyCalculatedSuggestRelevance(
@@ -861,10 +789,9 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   AddNavigationResultsToMatches(default_results_.navigation_results, &matches);
 
   // Now add the most relevant matches to |matches_|.  We take up to kMaxMatches
-  // suggest/navsuggest matches, regardless of origin.  We always include in
-  // that set a legal default match if possible.  If Instant Extended is enabled
-  // and we have server-provided (and thus hopefully more accurate) scores for
-  // some suggestions, we allow more of those, until we reach
+  // suggest/navsuggest matches, regardless of origin.  If Instant Extended is
+  // enabled and we have server-provided (and thus hopefully more accurate)
+  // scores for some suggestions, we allow more of those, until we reach
   // AutocompleteResult::kMaxMatches total matches (that is, enough to fill the
   // whole popup).
   //
@@ -873,12 +800,6 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   // higher-scoring matches under the conditions above.
   std::sort(matches.begin(), matches.end(), &AutocompleteMatch::MoreRelevant);
   matches_.clear();
-  // Guarantee that if there's a legal default match anywhere in the result
-  // set that it'll get returned.  The rotate() call does this by moving the
-  // default match to the front of the list.
-  ACMatches::iterator default_match = FindTopMatch(&matches);
-  if (default_match != matches.end())
-    std::rotate(matches.begin(), default_match, default_match + 1);
 
   size_t num_suggestions = 0;
   for (ACMatches::const_iterator i(matches.begin());
@@ -1017,15 +938,13 @@ SearchSuggestionParser::SuggestResults SearchProvider::ScoreHistoryResults(
       found_what_you_typed_match = true;
       insertion_position = scored_results.begin();
     }
-    SearchSuggestionParser::SuggestResult history_suggestion(
-        trimmed_suggestion, AutocompleteMatchType::SEARCH_HISTORY,
-        trimmed_suggestion, base::string16(), base::string16(),
-        base::string16(), base::string16(), std::string(), std::string(),
-        is_keyword, relevance, false, false, trimmed_input);
-    // History results are synchronous; they are received upon the last
-    // keystroke.
-    history_suggestion.set_received_after_last_keystroke(false);
-    scored_results.insert(insertion_position, history_suggestion);
+    scored_results.insert(
+        insertion_position,
+        SearchSuggestionParser::SuggestResult(
+            trimmed_suggestion, AutocompleteMatchType::SEARCH_HISTORY,
+            trimmed_suggestion, base::string16(), base::string16(),
+            base::string16(), base::string16(), std::string(), std::string(),
+            is_keyword, relevance, false, false, trimmed_input));
   }
 
   // History returns results sorted for us.  However, we may have docked some
@@ -1260,18 +1179,14 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   }
   // An inlineable navsuggestion can only be the default match when there
   // is no keyword provider active, lest it appear first and break the user
-  // out of keyword mode.  We also must have received the navsuggestion before
-  // the last keystroke, to prevent asynchronous inline autocompletions changes.
-  // The navsuggestion can also only be default if either the inline
+  // out of keyword mode.  It can also only be default if either the inline
   // autocompletion is empty or we're not preventing inline autocompletion.
   // Finally, if we have an inlineable navsuggestion with an inline completion
   // that we're not preventing, make sure we didn't trim any whitespace.
   // We don't want to claim http://foo.com/bar is inlineable against the
   // input "foo.com/b ".
-  match.allowed_to_be_default_match =
-      (prefix != NULL) &&
+  match.allowed_to_be_default_match = (prefix != NULL) &&
       (providers_.GetKeywordProviderURL() == NULL) &&
-      !navigation.received_after_last_keystroke() &&
       (match.inline_autocompletion.empty() ||
       (!input_.prevent_inline_autocomplete() && !trimmed_whitespace));
   match.EnsureUWYTIsAllowedToBeDefault(
