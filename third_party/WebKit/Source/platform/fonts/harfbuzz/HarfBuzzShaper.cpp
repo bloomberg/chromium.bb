@@ -78,138 +78,6 @@ private:
     DestroyFunction m_destroy;
 };
 
-
-static const unsigned cHarfBuzzCacheMaxSize = 256;
-
-struct CachedShapingResultsLRUNode;
-struct CachedShapingResults;
-typedef std::map<std::wstring, CachedShapingResults*> CachedShapingResultsMap;
-typedef std::list<CachedShapingResultsLRUNode*> CachedShapingResultsLRU;
-
-struct CachedShapingResults {
-    CachedShapingResults(hb_buffer_t* harfBuzzBuffer, const Font* runFont, hb_direction_t runDir, const String& newLocale);
-    ~CachedShapingResults();
-
-    hb_buffer_t* buffer;
-    Font font;
-    hb_direction_t dir;
-    String locale;
-    CachedShapingResultsLRU::iterator lru;
-};
-
-struct CachedShapingResultsLRUNode {
-    CachedShapingResultsLRUNode(const CachedShapingResultsMap::iterator& cacheEntry);
-    ~CachedShapingResultsLRUNode();
-
-    CachedShapingResultsMap::iterator entry;
-};
-
-CachedShapingResults::CachedShapingResults(hb_buffer_t* harfBuzzBuffer, const Font* fontData, hb_direction_t dirData, const String& newLocale)
-    : buffer(harfBuzzBuffer)
-    , font(*fontData)
-    , dir(dirData)
-    , locale(newLocale)
-{
-}
-
-CachedShapingResults::~CachedShapingResults()
-{
-    hb_buffer_destroy(buffer);
-}
-
-CachedShapingResultsLRUNode::CachedShapingResultsLRUNode(const CachedShapingResultsMap::iterator& cacheEntry)
-    : entry(cacheEntry)
-{
-}
-
-CachedShapingResultsLRUNode::~CachedShapingResultsLRUNode()
-{
-}
-
-class HarfBuzzRunCache {
-public:
-    HarfBuzzRunCache();
-    ~HarfBuzzRunCache();
-
-    CachedShapingResults* find(const std::wstring& key) const;
-    void remove(CachedShapingResults* node);
-    void moveToBack(CachedShapingResults* node);
-    bool insert(const std::wstring& key, CachedShapingResults* run);
-
-private:
-    CachedShapingResultsMap m_harfBuzzRunMap;
-    CachedShapingResultsLRU m_harfBuzzRunLRU;
-};
-
-
-HarfBuzzRunCache::HarfBuzzRunCache()
-{
-}
-
-HarfBuzzRunCache::~HarfBuzzRunCache()
-{
-    for (CachedShapingResultsMap::iterator it = m_harfBuzzRunMap.begin(); it != m_harfBuzzRunMap.end(); ++it)
-        delete it->second;
-    for (CachedShapingResultsLRU::iterator it = m_harfBuzzRunLRU.begin(); it != m_harfBuzzRunLRU.end(); ++it)
-        delete *it;
-}
-
-bool HarfBuzzRunCache::insert(const std::wstring& key, CachedShapingResults* data)
-{
-    std::pair<CachedShapingResultsMap::iterator, bool> results =
-        m_harfBuzzRunMap.insert(CachedShapingResultsMap::value_type(key, data));
-
-    if (!results.second)
-        return false;
-
-    CachedShapingResultsLRUNode* node = new CachedShapingResultsLRUNode(results.first);
-
-    m_harfBuzzRunLRU.push_back(node);
-    data->lru = --m_harfBuzzRunLRU.end();
-
-    if (m_harfBuzzRunMap.size() > cHarfBuzzCacheMaxSize) {
-        CachedShapingResultsLRUNode* lru = m_harfBuzzRunLRU.front();
-        CachedShapingResults* foo = lru->entry->second;
-        m_harfBuzzRunMap.erase(lru->entry);
-        m_harfBuzzRunLRU.pop_front();
-        delete foo;
-        delete lru;
-    }
-
-    return true;
-}
-
-inline CachedShapingResults* HarfBuzzRunCache::find(const std::wstring& key) const
-{
-    CachedShapingResultsMap::const_iterator it = m_harfBuzzRunMap.find(key);
-
-    return it != m_harfBuzzRunMap.end() ? it->second : 0;
-}
-
-inline void HarfBuzzRunCache::remove(CachedShapingResults* node)
-{
-    CachedShapingResultsLRUNode* lruNode = *node->lru;
-
-    m_harfBuzzRunLRU.erase(node->lru);
-    m_harfBuzzRunMap.erase(lruNode->entry);
-    delete lruNode;
-    delete node;
-}
-
-inline void HarfBuzzRunCache::moveToBack(CachedShapingResults* node)
-{
-    CachedShapingResultsLRUNode* lruNode = *node->lru;
-    m_harfBuzzRunLRU.erase(node->lru);
-    m_harfBuzzRunLRU.push_back(lruNode);
-    node->lru = --m_harfBuzzRunLRU.end();
-}
-
-HarfBuzzRunCache& harfBuzzRunCache()
-{
-    DEFINE_STATIC_LOCAL(HarfBuzzRunCache, globalHarfBuzzRunCache, ());
-    return globalHarfBuzzRunCache;
-}
-
 static inline float harfBuzzPositionToFloat(hb_position_t value)
 {
     return static_cast<float>(value) / (1 << 16);
@@ -812,7 +680,6 @@ bool HarfBuzzShaper::shapeHarfBuzzRuns()
 {
     HarfBuzzScopedPtr<hb_buffer_t> harfBuzzBuffer(hb_buffer_create(), hb_buffer_destroy);
 
-    HarfBuzzRunCache& runCache = harfBuzzRunCache();
     const FontDescription& fontDescription = m_font->fontDescription();
     const String& localeString = fontDescription.locale();
     CString locale = localeString.latin1();
@@ -839,22 +706,6 @@ bool HarfBuzzShaper::shapeHarfBuzzRuns()
         const UChar* src = m_normalizedBuffer.get() + currentRun->startIndex();
         std::wstring key(src, src + currentRun->numCharacters());
 
-        CachedShapingResults* cachedResults = runCache.find(key);
-        if (cachedResults) {
-            if (cachedResults->dir == props.direction && cachedResults->font == *m_font && cachedResults->locale == localeString) {
-                currentRun->applyShapeResult(cachedResults->buffer);
-                setGlyphPositionsForHarfBuzzRun(currentRun, cachedResults->buffer);
-
-                hb_buffer_clear_contents(harfBuzzBuffer.get());
-
-                runCache.moveToBack(cachedResults);
-
-                continue;
-            }
-
-            runCache.remove(cachedResults);
-        }
-
         // Add a space as pre-context to the buffer. This prevents showing dotted-circle
         // for combining marks at the beginning of runs.
         static const uint16_t preContext = ' ';
@@ -876,8 +727,6 @@ bool HarfBuzzShaper::shapeHarfBuzzRuns()
         hb_shape(harfBuzzFont.get(), harfBuzzBuffer.get(), m_features.isEmpty() ? 0 : m_features.data(), m_features.size());
         currentRun->applyShapeResult(harfBuzzBuffer.get());
         setGlyphPositionsForHarfBuzzRun(currentRun, harfBuzzBuffer.get());
-
-        runCache.insert(key, new CachedShapingResults(harfBuzzBuffer.get(), m_font, props.direction, localeString));
 
         harfBuzzBuffer.set(hb_buffer_create());
     }
