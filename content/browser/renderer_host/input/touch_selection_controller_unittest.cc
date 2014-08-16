@@ -478,6 +478,25 @@ TEST_F(TouchSelectionControllerTest, SelectionBasic) {
   EXPECT_EQ(gfx::PointF(), GetLastEventAnchor());
 }
 
+TEST_F(TouchSelectionControllerTest, SelectionRepeatedLongPress) {
+  gfx::RectF start_rect(5, 5, 0, 10);
+  gfx::RectF end_rect(50, 5, 0, 10);
+  bool visible = true;
+
+  controller().OnLongPressEvent();
+  ChangeSelection(start_rect, visible, end_rect, visible);
+  EXPECT_EQ(SELECTION_SHOWN, GetLastEventType());
+  EXPECT_EQ(start_rect.bottom_left(), GetLastEventAnchor());
+
+  // A long press triggering a new selection should re-send the SELECTION_SHOWN
+  // event notification.
+  start_rect.Offset(10, 10);
+  controller().OnLongPressEvent();
+  ChangeSelection(start_rect, visible, end_rect, visible);
+  EXPECT_EQ(SELECTION_SHOWN, GetLastEventType());
+  EXPECT_EQ(start_rect.bottom_left(), GetLastEventAnchor());
+}
+
 TEST_F(TouchSelectionControllerTest, SelectionDragged) {
   base::TimeTicks event_time = base::TimeTicks::Now();
   controller().OnLongPressEvent();

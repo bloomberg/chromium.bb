@@ -2406,12 +2406,21 @@ public class ContentViewCore
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private void showPastePopup(int xDip, int yDip) {
-        if (!mHasInsertion || !canPaste()) return;
+    private void showPastePopupWithFeedback(int xDip, int yDip) {
+        // TODO(jdduke): Remove this when there is a better signal that long press caused
+        // showing of the paste popup. See http://crbug.com/150151.
+        if (showPastePopup(xDip, yDip)) {
+            mContainerView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+        }
+    }
+
+    private boolean showPastePopup(int xDip, int yDip) {
+        if (!mHasInsertion || !canPaste()) return false;
         final float contentOffsetYPix = mRenderCoordinates.getContentOffsetYPix();
         getPastePopup().showAt(
             (int) mRenderCoordinates.fromDipToPix(xDip),
             (int) (mRenderCoordinates.fromDipToPix(yDip) + contentOffsetYPix));
+        return true;
     }
 
     private PastePopupMenu getPastePopup() {

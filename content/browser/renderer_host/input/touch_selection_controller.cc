@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/input/touch_selection_controller.h"
 
+#include "base/auto_reset.h"
 #include "base/logging.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
@@ -12,7 +13,7 @@ namespace content {
 TouchSelectionController::TouchSelectionController(
     TouchSelectionControllerClient* client)
     : client_(client),
-      last_input_event_type_(INPUT_EVENT_TYPE_NONE),
+      response_pending_input_event_(INPUT_EVENT_TYPE_NONE),
       start_orientation_(TOUCH_HANDLE_ORIENTATION_UNDEFINED),
       start_visible_(false),
       end_orientation_(TOUCH_HANDLE_ORIENTATION_UNDEFINED),
@@ -38,8 +39,11 @@ void TouchSelectionController::OnSelectionBoundsChanged(
     const gfx::RectF& end_rect,
     TouchHandleOrientation end_orientation,
     bool end_visible) {
-  if (!activate_selection_automatically_ && !activate_insertion_automatically_)
+  if (!activate_selection_automatically_ &&
+      !activate_insertion_automatically_) {
+    DCHECK_EQ(INPUT_EVENT_TYPE_NONE, response_pending_input_event_);
     return;
+  }
 
   if (start_rect_ == start_rect && end_rect_ == end_rect &&
       start_orientation_ == start_orientation &&
@@ -53,6 +57,14 @@ void TouchSelectionController::OnSelectionBoundsChanged(
   end_rect_ = end_rect;
   end_orientation_ = end_orientation;
   end_visible_ = end_visible;
+
+  // Ensure that |response_pending_input_event_| is cleared after the method
+  // completes, while also making its current value available for the duration
+  // of the call.
+  InputEventType causal_input_event = response_pending_input_event_;
+  response_pending_input_event_ = INPUT_EVENT_TYPE_NONE;
+  base::AutoReset<InputEventType> auto_reset_response_pending_input_event(
+      &response_pending_input_event_, causal_input_event);
 
   const bool is_selection_dragging =
       is_selection_active_ && (start_selection_handle_->is_dragging() ||
@@ -117,14 +129,14 @@ bool TouchSelectionController::WillHandleTouchEvent(
 }
 
 void TouchSelectionController::OnLongPressEvent() {
-  last_input_event_type_ = LONG_PRESS;
+  response_pending_input_event_ = LONG_PRESS;
   ShowSelectionHandlesAutomatically();
   ShowInsertionHandleAutomatically();
   ResetCachedValuesIfInactive();
 }
 
 void TouchSelectionController::OnTapEvent() {
-  last_input_event_type_ = TAP;
+  response_pending_input_event_ = TAP;
   activate_selection_automatically_ = false;
   DeactivateSelection();
   ShowInsertionHandleAutomatically();
@@ -132,7 +144,7 @@ void TouchSelectionController::OnTapEvent() {
 }
 
 void TouchSelectionController::HideAndDisallowShowingAutomatically() {
-  last_input_event_type_ = INPUT_EVENT_TYPE_NONE;
+  response_pending_input_event_ = INPUT_EVENT_TYPE_NONE;
   DeactivateInsertion();
   DeactivateSelection();
   activate_insertion_automatically_ = false;
@@ -248,7 +260,7 @@ void TouchSelectionController::ShowSelectionHandlesAutomatically() {
 void TouchSelectionController::OnInsertionChanged() {
   DeactivateSelection();
 
-  if (last_input_event_type_ == TAP && selection_empty_) {
+  if (response_pending_input_event_ == TAP && selection_empty_) {
     HideAndDisallowShowingAutomatically();
     return;
   }
@@ -324,8 +336,12 @@ void TouchSelectionController::ActivateSelection() {
     end_selection_handle_->SetOrientation(end_orientation_);
   }
 
-  if (!is_selection_active_) {
+  // As a long press received while a selection is already active may trigger
+  // an entirely new selection, notify the client but avoid sending an
+  // intervening SELECTION_CLEARED update to avoid unnecessary state changes.
+  if (!is_selection_active_ || response_pending_input_event_ == LONG_PRESS) {
     is_selection_active_ = true;
+    response_pending_input_event_ = INPUT_EVENT_TYPE_NONE;
     client_->OnSelectionEvent(SELECTION_SHOWN, GetStartPosition());
   }
 }

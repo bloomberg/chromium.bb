@@ -117,7 +117,7 @@ class CONTENT_EXPORT TouchSelectionController : public TouchHandleClient {
 
   TouchSelectionControllerClient* const client_;
 
-  InputEventType last_input_event_type_;
+  InputEventType response_pending_input_event_;
 
   gfx::RectF start_rect_;
   TouchHandleOrientation start_orientation_;

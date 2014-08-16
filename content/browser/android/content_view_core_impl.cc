@@ -620,9 +620,9 @@ void ContentViewCoreImpl::ShowPastePopup(int x_dip, int y_dip) {
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
-  Java_ContentViewCore_showPastePopup(env, obj.obj(),
-                                      static_cast<jint>(x_dip),
-                                      static_cast<jint>(y_dip));
+  Java_ContentViewCore_showPastePopupWithFeedback(env, obj.obj(),
+                                                  static_cast<jint>(x_dip),
+                                                  static_cast<jint>(y_dip));
 }
 
 void ContentViewCoreImpl::GetScaledContentBitmap(
