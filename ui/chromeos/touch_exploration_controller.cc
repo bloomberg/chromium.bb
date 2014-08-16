@@ -161,9 +161,8 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
     case SINGLE_TAP_PRESSED:
       return InSingleTapPressed(touch_event, rewritten_event);
     case SINGLE_TAP_RELEASED:
-      return InSingleTapReleased(touch_event, rewritten_event);
     case TOUCH_EXPLORE_RELEASED:
-      return InTouchExploreReleased(touch_event, rewritten_event);
+      return InSingleTapOrTouchExploreReleased(touch_event, rewritten_event);
     case DOUBLE_TAP_PENDING:
       return InDoubleTapPending(touch_event, rewritten_event);
     case TOUCH_RELEASE_PENDING:
@@ -303,7 +302,7 @@ ui::EventRewriteStatus TouchExplorationController::InSingleTapPressed(
 }
 
 ui::EventRewriteStatus
-TouchExplorationController::InSingleTapReleased(
+TouchExplorationController::InSingleTapOrTouchExploreReleased(
     const ui::TouchEvent& event,
     scoped_ptr<ui::Event>* rewritten_event) {
   const ui::EventType type = event.type();
@@ -314,62 +313,31 @@ TouchExplorationController::InSingleTapReleased(
     return ui::EVENT_REWRITE_DISCARD;
   }
   if (type == ui::ET_TOUCH_PRESSED) {
-    // If there is no touch exploration yet, we can't send a click, so discard
-    // and wait for no fingers.
+    // If there is no touch exploration yet, we can't send a click, so discard.
     if (!last_touch_exploration_) {
       tap_timer_.Stop();
-      SET_STATE(WAIT_FOR_NO_FINGERS);
       return ui::EVENT_REWRITE_DISCARD;
     }
     // This is the second tap in a double-tap (or double tap-hold).
-    // We set the passthrough timer. If it fires before the user lifts their
-    // finger, one-finger passthrough begins. Otherwise, there is a touch
-    // press and release at the location of the last touch exploration.
+    // We set the tap timer. If it fires before the user lifts their finger,
+    // one-finger passthrough begins. Otherwise, there is a touch press and
+    // release at the location of the last touch exploration.
     SET_STATE(DOUBLE_TAP_PENDING);
-    // Initial press now holds the intial double tap press - this event.
-    initial_press_.reset(new ui::TouchEvent(event));
     // The old tap timer (from the initial click) is stopped if it is still
-    // going, and the passthrough timer is set.
+    // going, and the new one is set.
     tap_timer_.Stop();
-    passthrough_timer_.Start(
-        FROM_HERE,
-        gesture_detector_config_.longpress_timeout,
-        this,
-        &TouchExplorationController::OnPassthroughTimerFired);
+    StartTapTimer();
     // This will update as the finger moves before a possible passthrough, and
     // will determine the offset.
     last_unused_finger_event_.reset(new ui::TouchEvent(event));
     return ui::EVENT_REWRITE_DISCARD;
-  } else if (type == ui::ET_TOUCH_MOVED) {
+  } else if (type == ui::ET_TOUCH_RELEASED && !last_touch_exploration_) {
+    // If the previous press was discarded, we need to also handle its
+    // release.
+    if (current_touch_ids_.size() == 0) {
+      SET_STATE(NO_FINGERS_DOWN);
+    }
     return ui::EVENT_REWRITE_DISCARD;
-  }
-  NOTREACHED();
-  return ui::EVENT_REWRITE_CONTINUE;
-}
-
-ui::EventRewriteStatus
-TouchExplorationController::InTouchExploreReleased(
-    const ui::TouchEvent& event,
-    scoped_ptr<ui::Event>* rewritten_event) {
-  const ui::EventType type = event.type();
-  // If there is more than one finger down, then discard to wait until no
-  // fingers are down.
-  if (current_touch_ids_.size() > 1) {
-    SET_STATE(WAIT_FOR_NO_FINGERS);
-    return ui::EVENT_REWRITE_DISCARD;
-  }
-  if (type == ui::ET_TOUCH_PRESSED) {
-    // This is the initial "press" (location, time, and touch id) of a single
-    // tap click.
-    initial_press_.reset(new ui::TouchEvent(event));
-    rewritten_event->reset(
-        new ui::TouchEvent(ui::ET_TOUCH_PRESSED,
-                           last_touch_exploration_->location(),
-                           initial_press_->touch_id(),
-                           event.time_stamp()));
-    (*rewritten_event)->set_flags(event.flags());
-    SET_STATE(TOUCH_RELEASE_PENDING);
-    return ui::EVENT_REWRITE_REWRITTEN;
   } else if (type == ui::ET_TOUCH_MOVED) {
     return ui::EVENT_REWRITE_DISCARD;
   }
@@ -388,20 +356,13 @@ ui::EventRewriteStatus TouchExplorationController::InDoubleTapPending(
     // the "slop" region, jump to passthrough mode early.
     float delta = (event.location() - initial_press_->location()).Length();
     if (delta > gesture_detector_config_.touch_slop) {
-      passthrough_timer_.Stop();
-      if (VLOG_on_)
-        VLOG(0) << "Finger left slop and is entering passthrough";
-      OnPassthroughTimerFired();
+      tap_timer_.Stop();
+      OnTapTimerFired();
     }
     return EVENT_REWRITE_DISCARD;
   } else if (type == ui::ET_TOUCH_RELEASED || type == ui::ET_TOUCH_CANCELLED) {
     if (current_touch_ids_.size() != 0)
       return EVENT_REWRITE_DISCARD;
-
-    // Now it is recognized that the user was doing a double tap to click.
-    // The passthrough timer is stopped and a touch press and release are
-    // dispatched.
-    passthrough_timer_.Stop();
 
     scoped_ptr<ui::TouchEvent> touch_press;
     touch_press.reset(new ui::TouchEvent(ui::ET_TOUCH_PRESSED,
@@ -743,6 +704,18 @@ void TouchExplorationController::OnTapTimerFired() {
       SET_STATE(NO_FINGERS_DOWN);
       last_touch_exploration_.reset(new TouchEvent(*initial_press_));
       return;
+    case DOUBLE_TAP_PENDING: {
+      SET_STATE(ONE_FINGER_PASSTHROUGH);
+      passthrough_offset_ = last_unused_finger_event_->location() -
+                            last_touch_exploration_->location();
+      scoped_ptr<ui::TouchEvent> passthrough_press(
+          new ui::TouchEvent(ui::ET_TOUCH_PRESSED,
+                             last_touch_exploration_->location(),
+                             last_unused_finger_event_->touch_id(),
+                             Now()));
+      DispatchEvent(passthrough_press.get());
+      return;
+    }
     case SINGLE_TAP_PRESSED:
       if (passthrough_timer_.IsRunning())
         return;
@@ -760,8 +733,6 @@ void TouchExplorationController::OnTapTimerFired() {
       SET_STATE(WAIT_FOR_NO_FINGERS);
       break;
     default:
-      NOTREACHED() << "tap timer fired in unrecognized state: "
-                   << EnumStateToString(state_);
       return;
   }
   EnterTouchToMouseMode();
@@ -772,53 +743,28 @@ void TouchExplorationController::OnTapTimerFired() {
 }
 
 void TouchExplorationController::OnPassthroughTimerFired() {
-  switch (state_) {
-    case SINGLE_TAP_PRESSED:
-    case TOUCH_EXPLORATION:
-    case GESTURE_IN_PROGRESS: {
-      // The timer will only fire in this state if if the user has held a finger
-      // in one of the passthrough corners for the duration of the passthrough
-      // timeout.
+  // The passthrough timer will only fire if if the user has held a finger in
+  // one of the passthrough corners for the duration of the passthrough timeout.
 
-      // Check that initial press isn't null. Also a check that if the initial
-      // corner press was released, then it should not be in corner passthrough.
-      if (!initial_press_ ||
-          touch_locations_.find(initial_press_->touch_id()) !=
-              touch_locations_.end()) {
-        LOG(ERROR)
-            << "No initial press or the initial press has been released.";
-      }
-
-      gfx::Point location =
-          ToRoundedPoint(touch_locations_[initial_press_->touch_id()]);
-      int corner = FindEdgesWithinBounds(location, kSlopDistanceFromEdge);
-      if (corner != BOTTOM_LEFT_CORNER && corner != BOTTOM_RIGHT_CORNER)
-        return;
-
-      SET_STATE(CORNER_PASSTHROUGH);
-      break;
-    }
-    case DOUBLE_TAP_PENDING: {
-      // Enter one finger passthrough mode.
-      SET_STATE(ONE_FINGER_PASSTHROUGH);
-      passthrough_offset_ = last_unused_finger_event_->location() -
-                            last_touch_exploration_->location();
-      scoped_ptr<ui::TouchEvent> passthrough_press(
-          new ui::TouchEvent(ui::ET_TOUCH_PRESSED,
-                             last_touch_exploration_->location(),
-                             last_unused_finger_event_->touch_id(),
-                             Now()));
-      DispatchEvent(passthrough_press.get());
-      break;
-    }
-    default:
-      NOTREACHED() << "passthrough timer fired in unrecognized state"
-                   << EnumStateToString(state_);
-      return;
+  // Check that initial press isn't null. Also a check that if the initial
+  // corner press was released, then it should not be in corner passthrough.
+  if (!initial_press_ ||
+      touch_locations_.find(initial_press_->touch_id()) !=
+          touch_locations_.end()) {
+    LOG(ERROR) << "No initial press or the initial press has been released.";
   }
+
+  gfx::Point location =
+      ToRoundedPoint(touch_locations_[initial_press_->touch_id()]);
+  int corner = FindEdgesWithinBounds(location, kSlopDistanceFromEdge);
+  if (corner != BOTTOM_LEFT_CORNER && corner != BOTTOM_RIGHT_CORNER)
+    return;
+
   if (sound_timer_.IsRunning())
     sound_timer_.Stop();
   delegate_->PlayPassthroughEarcon();
+  SET_STATE(CORNER_PASSTHROUGH);
+  return;
 }
 
 void TouchExplorationController::DispatchEvent(ui::Event* event) {
