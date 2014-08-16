@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/gl_surface_osmesa.h"
@@ -43,6 +44,14 @@ class GL_EXPORT GLSurfaceOzoneEGL : public NativeViewGLSurfaceEGL {
       return false;
 
     return ozone_surface_->OnSwapBuffers();
+  }
+  virtual bool ScheduleOverlayPlane(int z_order,
+                                    OverlayTransform transform,
+                                    GLImage* image,
+                                    const Rect& bounds_rect,
+                                    const RectF& crop_rect) OVERRIDE {
+    return image->ScheduleOverlayPlane(
+        widget_, z_order, transform, bounds_rect, crop_rect);
   }
 
  private:
