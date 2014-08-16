@@ -34,12 +34,16 @@ cr.define('cr.ui', function() {
    * Shows the given screen.
    * @param {Object} screen Screen params dict, e.g. {id: screenId, data: data}
    */
-  Oobe.showUserManagerScreen = function() {
+  Oobe.showUserManagerScreen = function(showGuest) {
     Oobe.getInstance().showScreen({id: 'account-picker',
                                    data: {disableAddUser: false}});
     // The ChromeOS account-picker will hide the AddUser button if a user is
     // logged in and the screen is "locked", so we must re-enabled it
     $('add-user-header-bar-item').hidden = false;
+
+    // Hide the Guest Mode option if the user is not permitted to select it.
+    $('guest-user-button').hidden = !showGuest;
+    $('login-header-bar').hidden = false;
 
     // Disable the context menu, as the Print/Inspect element items don't
     // make sense when displayed as a widget.
@@ -130,6 +134,10 @@ cr.define('UserManager', function() {
     login.AccountPickerScreen.register();
     cr.ui.Bubble.decorate($('bubble'));
     login.HeaderBar.decorate($('login-header-bar'));
+
+    // Hide the header bar until the showUserManagerMethod can apply function
+    // parameters that affect widget visiblity.
+    $('login-header-bar').hidden = true;
     chrome.send('userManagerInitialize');
   }
 
