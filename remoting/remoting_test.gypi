@@ -40,6 +40,16 @@
         'signaling/fake_signal_strategy.h',
         'signaling/mock_signal_strategy.cc',
         'signaling/mock_signal_strategy.h',
+        'test/fake_network_dispatcher.cc',
+        'test/fake_network_dispatcher.h',
+        'test/fake_network_manager.cc',
+        'test/fake_network_manager.h',
+        'test/fake_port_allocator.cc',
+        'test/fake_port_allocator.h',
+        'test/fake_socket_factory.cc',
+        'test/fake_socket_factory.h',
+        'test/leaky_bucket.cc',
+        'test/leaky_bucket.h',
       ],
       'conditions': [
         ['enable_remoting_host == 0', {

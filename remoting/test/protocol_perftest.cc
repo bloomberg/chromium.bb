@@ -5,6 +5,7 @@
 #include "base/base64.h"
 #include "base/file_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
@@ -22,13 +23,15 @@
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/fake_desktop_environment.h"
 #include "remoting/host/video_scheduler.h"
-#include "remoting/protocol/chromium_port_allocator.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/libjingle_transport_factory.h"
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
 #include "remoting/protocol/negotiating_client_authenticator.h"
 #include "remoting/protocol/session_config.h"
 #include "remoting/signaling/fake_signal_strategy.h"
+#include "remoting/test/fake_network_dispatcher.h"
+#include "remoting/test/fake_port_allocator.h"
+#include "remoting/test/fake_socket_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
@@ -39,10 +42,31 @@ const char kHostJid[] = "host_jid@example.com/host";
 const char kHostOwner[] = "jane.doe@example.com";
 const char kClientJid[] = "jane.doe@example.com/client";
 
-class ProtocolPerfTest : public testing::Test,
-                         public ClientUserInterface,
-                         public VideoRenderer,
-                         public HostStatusObserver {
+struct NetworkPerformanceParams {
+  NetworkPerformanceParams(int bandwidth,
+                           int max_buffers,
+                           double latency_average_ms,
+                           double latency_stddev_ms,
+                           double out_of_order_rate)
+      : bandwidth(bandwidth),
+        max_buffers(max_buffers),
+        latency_average(base::TimeDelta::FromMillisecondsD(latency_average_ms)),
+        latency_stddev(base::TimeDelta::FromMillisecondsD(latency_stddev_ms)),
+        out_of_order_rate(out_of_order_rate) {}
+
+  int bandwidth;
+  int max_buffers;
+  base::TimeDelta latency_average;
+  base::TimeDelta latency_stddev;
+  double out_of_order_rate;
+};
+
+class ProtocolPerfTest
+    : public testing::Test,
+      public testing::WithParamInterface<NetworkPerformanceParams>,
+      public ClientUserInterface,
+      public VideoRenderer,
+      public HostStatusObserver {
  public:
   ProtocolPerfTest()
       : host_thread_("host"),
@@ -54,6 +78,7 @@ class ProtocolPerfTest : public testing::Test,
     capture_thread_.Start();
     encode_thread_.Start();
   }
+
   virtual ~ProtocolPerfTest() {
     host_thread_.message_loop_proxy()->DeleteSoon(FROM_HERE, host_.release());
     host_thread_.message_loop_proxy()->DeleteSoon(FROM_HERE,
@@ -162,6 +187,8 @@ class ProtocolPerfTest : public testing::Test,
   // host is started on |host_thread_| while the client works on the main
   // thread.
   void StartHostAndClient(protocol::ChannelConfig::Codec video_codec) {
+    fake_network_dispatcher_ =  new FakeNetworkDispatcher();
+
     client_signaling_.reset(new FakeSignalStrategy(kClientJid));
 
     jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
@@ -189,15 +216,18 @@ class ProtocolPerfTest : public testing::Test,
     protocol::NetworkSettings network_settings(
         protocol::NetworkSettings::NAT_TRAVERSAL_OUTGOING);
 
-    // TODO(sergeyu): Replace with a fake port allocator.
-    scoped_ptr<cricket::HttpPortAllocatorBase> host_port_allocator =
-        protocol::ChromiumPortAllocator::Create(NULL, network_settings)
-            .PassAs<cricket::HttpPortAllocatorBase>();
-
+    scoped_ptr<FakePortAllocator> port_allocator(
+        FakePortAllocator::Create(fake_network_dispatcher_));
+    port_allocator->socket_factory()->SetBandwidth(GetParam().bandwidth,
+                                                   GetParam().max_buffers);
+    port_allocator->socket_factory()->SetLatency(GetParam().latency_average,
+                                                 GetParam().latency_stddev);
+    port_allocator->socket_factory()->set_out_of_order_rate(
+        GetParam().out_of_order_rate);
     scoped_ptr<protocol::TransportFactory> host_transport_factory(
         new protocol::LibjingleTransportFactory(
             host_signaling_.get(),
-            host_port_allocator.Pass(),
+            port_allocator.PassAs<cricket::HttpPortAllocatorBase>(),
             network_settings));
 
     scoped_ptr<protocol::SessionManager> session_manager(
@@ -257,15 +287,19 @@ class ProtocolPerfTest : public testing::Test,
     client_context_.reset(
         new ClientContext(base::ThreadTaskRunnerHandle::Get()));
 
-    // TODO(sergeyu): Replace with a fake port allocator
-    scoped_ptr<cricket::HttpPortAllocatorBase> client_port_allocator =
-        protocol::ChromiumPortAllocator::Create(NULL, network_settings)
-            .PassAs<cricket::HttpPortAllocatorBase>();
-
+    scoped_ptr<FakePortAllocator> port_allocator(
+        FakePortAllocator::Create(fake_network_dispatcher_));
+    port_allocator->socket_factory()->SetBandwidth(GetParam().bandwidth,
+                                                   GetParam().max_buffers);
+    port_allocator->socket_factory()->SetLatency(GetParam().latency_average,
+                                                 GetParam().latency_stddev);
+    port_allocator->socket_factory()->set_out_of_order_rate(
+        GetParam().out_of_order_rate);
     scoped_ptr<protocol::TransportFactory> client_transport_factory(
-        new protocol::LibjingleTransportFactory(client_signaling_.get(),
-                                                client_port_allocator.Pass(),
-                                                network_settings));
+        new protocol::LibjingleTransportFactory(
+            client_signaling_.get(),
+            port_allocator.PassAs<cricket::HttpPortAllocatorBase>(),
+            network_settings));
 
     std::vector<protocol::AuthenticationMethod> auth_methods;
     auth_methods.push_back(protocol::AuthenticationMethod::Spake2(
@@ -294,6 +328,8 @@ class ProtocolPerfTest : public testing::Test,
 
   base::MessageLoopForIO message_loop_;
 
+  scoped_refptr<FakeNetworkDispatcher> fake_network_dispatcher_;
+
   base::Thread host_thread_;
   base::Thread capture_thread_;
   base::Thread encode_thread_;
@@ -321,7 +357,40 @@ class ProtocolPerfTest : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(ProtocolPerfTest);
 };
 
-TEST_F(ProtocolPerfTest, StreamFrameRate) {
+INSTANTIATE_TEST_CASE_P(
+    NoDelay,
+    ProtocolPerfTest,
+    ::testing::Values(NetworkPerformanceParams(0, 0, 0, 0, 0.0)));
+
+INSTANTIATE_TEST_CASE_P(
+    HighLatency,
+    ProtocolPerfTest,
+    ::testing::Values(NetworkPerformanceParams(0, 0, 300, 30, 0.0),
+                      NetworkPerformanceParams(0, 0, 30, 10, 0.0)));
+
+INSTANTIATE_TEST_CASE_P(
+    OutOfOrder,
+    ProtocolPerfTest,
+    ::testing::Values(NetworkPerformanceParams(0, 0, 2, 0, 0.01),
+                      NetworkPerformanceParams(0, 0, 30, 1, 0.01),
+                      NetworkPerformanceParams(0, 0, 30, 1, 0.1),
+                      NetworkPerformanceParams(0, 0, 300, 20, 0.01),
+                      NetworkPerformanceParams(0, 0, 300, 20, 0.1)));
+
+INSTANTIATE_TEST_CASE_P(
+    LimitedBandwidth,
+    ProtocolPerfTest,
+    ::testing::Values(
+        // 100 MBps
+        NetworkPerformanceParams(800000000, 800000000, 2, 1, 0.0),
+        // 8 MBps
+        NetworkPerformanceParams(1000000, 300000, 30, 5, 0.01),
+        NetworkPerformanceParams(1000000, 2000000, 30, 5, 0.01),
+        // 800 kBps
+        NetworkPerformanceParams(100000, 30000, 130, 5, 0.01),
+        NetworkPerformanceParams(100000, 200000, 130, 5, 0.01)));
+
+TEST_P(ProtocolPerfTest, StreamFrameRate) {
   StartHostAndClient(protocol::ChannelConfig::CODEC_VP8);
   ASSERT_NO_FATAL_FAILURE(WaitConnected());
 
@@ -338,6 +407,8 @@ TEST_F(ProtocolPerfTest, StreamFrameRate) {
   LOG(INFO) << "Maximum latency: " << latency.InMillisecondsF() << "ms";
 }
 
+const int kIntermittentFrameSize = 100 * 1000;
+
 // Frame generator that rewrites the whole screen every 60th frame. Should only
 // be used with the VERBATIM codec as the allocated frame may contain arbitrary
 // data.
@@ -349,8 +420,8 @@ class IntermittentChangeFrameGenerator
 
   scoped_ptr<webrtc::DesktopFrame> GenerateFrame(
       webrtc::DesktopCapturer::Callback* callback) {
-    const int kWidth = 800;
-    const int kHeight = 600;
+    const int kWidth = 1000;
+    const int kHeight = kIntermittentFrameSize / kWidth / 4;
 
     bool fresh_frame = false;
     if (frame_index_ % 60 == 0 || !current_frame_) {
@@ -379,7 +450,7 @@ class IntermittentChangeFrameGenerator
   DISALLOW_COPY_AND_ASSIGN(IntermittentChangeFrameGenerator);
 };
 
-TEST_F(ProtocolPerfTest, IntermittentChanges) {
+TEST_P(ProtocolPerfTest, IntermittentChanges) {
   desktop_environment_factory_.set_frame_generator(
       base::Bind(&IntermittentChangeFrameGenerator::GenerateFrame,
                  new IntermittentChangeFrameGenerator()));
@@ -389,14 +460,27 @@ TEST_F(ProtocolPerfTest, IntermittentChanges) {
 
   ReceiveFrame(NULL);
 
-  for (int i = 0; i < 5; ++i) {
+  base::TimeDelta expected = GetParam().latency_average;
+  if (GetParam().bandwidth > 0) {
+    expected += base::TimeDelta::FromSecondsD(kIntermittentFrameSize /
+                                              GetParam().bandwidth);
+  }
+  LOG(INFO) << "Expected: " << expected.InMillisecondsF() << "ms";
+
+  base::TimeDelta sum;
+
+  const int kFrames = 5;
+  for (int i = 0; i < kFrames; ++i) {
     base::TimeDelta latency;
     ReceiveFrame(&latency);
     LOG(INFO) << "Latency: " << latency.InMillisecondsF()
               << "ms Encode: " << last_video_packet_->encode_time_ms()
               << "ms Capture: " << last_video_packet_->capture_time_ms()
               << "ms";
+    sum += latency;
   }
+
+  LOG(INFO) << "Average: " << (sum / kFrames).InMillisecondsF();
 }
 
 }  // namespace remoting
