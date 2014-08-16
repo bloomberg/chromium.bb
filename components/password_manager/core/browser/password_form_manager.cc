@@ -379,7 +379,7 @@ void PasswordFormManager::OnRequestDone(
   // These credentials will be in the final result regardless of score.
   std::vector<PasswordForm> credentials_to_keep;
   for (size_t i = 0; i < logins_result.size(); i++) {
-    if (IgnoreResult(*logins_result[i])) {
+    if (ShouldIgnoreResult(*logins_result[i])) {
       delete logins_result[i];
       continue;
     }
@@ -438,6 +438,8 @@ void PasswordFormManager::OnRequestDone(
   }
   // We're done matching now.
   state_ = POST_MATCHING_PHASE;
+
+  client_->AutofillResultsComputed();
 
   if (best_score <= 0) {
     return;
@@ -507,7 +509,7 @@ void PasswordFormManager::OnGetPasswordStoreResults(
   OnRequestDone(results);
 }
 
-bool PasswordFormManager::IgnoreResult(const PasswordForm& form) const {
+bool PasswordFormManager::ShouldIgnoreResult(const PasswordForm& form) const {
   // Do not autofill on sign-up or change password forms (until we have some
   // working change password functionality).
   if (!observed_form_.new_password_element.empty())
@@ -515,6 +517,10 @@ bool PasswordFormManager::IgnoreResult(const PasswordForm& form) const {
   // Don't match an invalid SSL form with one saved under secure circumstances.
   if (form.ssl_valid && !observed_form_.ssl_valid)
     return true;
+
+  if (client_->ShouldFilterAutofillResult(form))
+    return true;
+
   return false;
 }
 

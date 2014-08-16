@@ -219,7 +219,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Helper for OnGetPasswordStoreResults to determine whether or not
   // the given result form is worth scoring.
-  bool IgnoreResult(const autofill::PasswordForm& form) const;
+  bool ShouldIgnoreResult(const autofill::PasswordForm& form) const;
 
   // Helper for Save in the case that best_matches.size() == 0, meaning
   // we have no prior record of this form/username/password and the user

@@ -12,9 +12,9 @@ class Profile;
 namespace password_manager_sync_metrics {
 
 // Returns the sync username for |profile|. Returns an empty string if the
-// |profile| isn't syncing. It would be preferable to only return the username
-// if the user is syncing passwords, but that is not currently possible since
-// this function can be called during sync setup (http://crbug.com/393626).
+// |profile| isn't syncing. This function tries to return an empty string if
+// the user isn't syncing passwords, but it is not always possibly to determine
+// since this code can be called during sync setup (http://crbug.com/393626).
 std::string GetSyncUsername(Profile* profile);
 
 // Returns true if |username| and |origin| correspond to the account which is

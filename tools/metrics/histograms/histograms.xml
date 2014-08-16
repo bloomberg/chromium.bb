@@ -20592,6 +20592,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.SyncCredentialFiltered" enum="Boolean">
+  <owner>gcasto@chromium.org</owner>
+  <owner>vabr@chromium.org</owner>
+  <summary>
+    If the sync credential was removed from autofill consideration.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.SyncingAccountState"
     enum="PasswordManagerSyncingAccountState">
   <owner>gcasto@chromium.org</owner>
@@ -43737,6 +43745,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1747279677" label="disable-delegated-renderer"/>
   <int value="1775475563" label="malware-interstitial-v3"/>
   <int value="1776475705" label="show-composited-layer-borders"/>
+  <int value="1783293530" label="disallow-autofill-sync-credential"/>
   <int value="1803465156" label="enable-zero-suggest-most-visited"/>
   <int value="1814671708" label="disable-password-manager-reauthentication"/>
   <int value="1817312143" label="num-raster-threads"/>
@@ -43815,6 +43824,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2895547724" label="enable-app-list"/>
   <int value="2902404798" label="disable-origin-chip"/>
   <int value="2919856272" label="enable-fixed-position-compositing"/>
+  <int value="2945094390" label="disallow-autofill-sync-credential-for-reauth"/>
   <int value="2953874362" label="enable-accelerated-overflow-scroll"/>
   <int value="2954911336" label="enable-streamlined-hosted-apps"/>
   <int value="2960639886" label="ash-enable-touch-view-testing"/>
@@ -43889,6 +43899,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="4136418019" label="enable-embeddedsearch-api"/>
   <int value="4147683810" label="enable-network-portal-notification"/>
   <int value="4192430026" label="extension-content-verification"/>
+  <int value="4208178709" label="allow-autofill-sync-credential"/>
   <int value="4214614109" label="disable-display-color-calibration"/>
   <int value="4218336248" label="disable-offline-auto-reload-visible-only"/>
   <int value="4226741844" label="enable-translate-new-ux"/>

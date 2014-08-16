@@ -35,10 +35,18 @@ class PasswordManagerClient {
   // always returns true.
   virtual bool IsPasswordManagerEnabledForCurrentPage() const;
 
+  // Return true if |form| should not be available for autofill.
+  virtual bool ShouldFilterAutofillResult(
+      const autofill::PasswordForm& form) = 0;
+
   // Returns true if |username| and |origin| correspond to the account which is
   // syncing.
   virtual bool IsSyncAccountCredential(
       const std::string& username, const std::string& origin) const = 0;
+
+  // Called when all autofill results have been computed. Client can use
+  // this signal to report statistics. Default implementation is a noop.
+  virtual void AutofillResultsComputed() {}
 
   // Informs the embedder of a password form that can be saved if the user
   // allows it. The embedder is not required to prompt the user if it decides
