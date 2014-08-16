@@ -23,6 +23,13 @@
 var remoting = remoting || {};
 
 /**
+ * True if Cast capability is supported.
+ *
+ * @type {boolean}
+ */
+remoting.enableCast = false;
+
+/**
  * @param {HTMLElement} container Container element for the client view.
  * @param {string} hostDisplayName A human-readable name for the host.
  * @param {string} accessCode The IT2Me access code. Blank for Me2Me.
@@ -165,6 +172,9 @@ remoting.ClientSession = function(container, hostDisplayName, accessCode,
 
   /** @type {remoting.GnubbyAuthHandler} @private */
   this.gnubbyAuthHandler_ = null;
+
+  /** @type {remoting.CastExtensionHandler} @private */
+  this.castExtensionHandler_ = null;
 
   if (this.mode_ == remoting.ClientSession.Mode.IT2ME) {
     // Resize-to-client is not supported for IT2Me hosts.
@@ -366,7 +376,8 @@ remoting.ClientSession.Capability = {
   // this.plugin_.notifyClientResolution().
   SEND_INITIAL_RESOLUTION: 'sendInitialResolution',
   RATE_LIMIT_RESIZE_REQUESTS: 'rateLimitResizeRequests',
-  VIDEO_RECORDER: 'videoRecorder'
+  VIDEO_RECORDER: 'videoRecorder',
+  CAST: 'casting'
 };
 
 /**
@@ -548,6 +559,8 @@ remoting.ClientSession.prototype.onPluginInitialized_ = function(initialized) {
   this.plugin_.onSetCapabilitiesHandler = this.onSetCapabilities_.bind(this);
   this.plugin_.onGnubbyAuthHandler = this.processGnubbyAuthMessage_.bind(this);
   this.plugin_.updateMouseCursorImage = this.updateMouseCursorImage_.bind(this);
+  this.plugin_.onCastExtensionHandler =
+      this.processCastExtensionMessage_.bind(this);
   this.initiateConnection_();
 };
 
@@ -1070,6 +1083,7 @@ remoting.ClientSession.prototype.setState_ = function(newState) {
   this.logToServer.logClientSessionStateChange(state, this.error_, this.mode_);
   if (this.state_ == remoting.ClientSession.State.CONNECTED) {
     this.createGnubbyAuthHandler_();
+    this.createCastExtensionHandler_();
   }
 
   this.raiseEvent(remoting.ClientSession.Events.stateChanged,
@@ -1539,3 +1553,43 @@ remoting.ClientSession.prototype.getPluginPositionForTesting = function() {
     left: parseFloat(style.marginLeft)
   };
 };
+
+/**
+ * Send a Cast extension message to the host.
+ * @param {Object} data The cast message data.
+ */
+remoting.ClientSession.prototype.sendCastExtensionMessage = function(data) {
+  if (!this.plugin_)
+    return;
+  this.plugin_.sendClientMessage('cast_message', JSON.stringify(data));
+};
+
+/**
+ * Process a remote Cast extension message from the host.
+ * @param {string} data Remote cast extension data message.
+ * @private
+ */
+remoting.ClientSession.prototype.processCastExtensionMessage_ = function(data) {
+  if (this.castExtensionHandler_) {
+    try {
+      this.castExtensionHandler_.onMessage(data);
+    } catch (err) {
+      console.error('Failed to process cast message: ',
+          /** @type {*} */ (err));
+    }
+  } else {
+    console.error('Received unexpected cast message');
+  }
+};
+
+/**
+ * Create a CastExtensionHandler and inform the host that cast extension
+ * is supported.
+ * @private
+ */
+remoting.ClientSession.prototype.createCastExtensionHandler_ = function() {
+  if (remoting.enableCast && this.mode_ == remoting.ClientSession.Mode.ME2ME) {
+    this.castExtensionHandler_ = new remoting.CastExtensionHandler(this);
+  }
+};
+

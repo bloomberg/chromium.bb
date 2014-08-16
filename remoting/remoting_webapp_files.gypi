@@ -122,6 +122,10 @@
     'remoting_webapp_js_gnubby_auth_files': [
       'webapp/gnubby_auth_handler.js',
     ],
+    # cast extension handler JavaScript files.
+    'remoting_webapp_js_cast_extension_files': [
+      'webapp/cast_extension_handler.js',
+    ],
     # browser test JavaScript files.
     'remoting_webapp_js_browser_test_files': [
       'webapp/browser_test/browser_test.js',
@@ -164,6 +168,7 @@
       '<@(remoting_webapp_js_auth_google_files)',
       '<@(remoting_webapp_js_client_files)',
       '<@(remoting_webapp_js_gnubby_auth_files)',
+      '<@(remoting_webapp_js_cast_extension_files)',
       '<@(remoting_webapp_js_host_files)',
       '<@(remoting_webapp_js_logging_files)',
       '<@(remoting_webapp_js_ui_files)',

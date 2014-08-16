@@ -67,6 +67,9 @@ remoting.ClientPlugin = function(container, onExtensionMessage) {
    */
   this.updateMouseCursorImage = function(url, hotspotX, hotspotY) {};
 
+  /** @param {string} data Remote cast extension message. */
+  this.onCastExtensionHandler = function(data) {};
+
   /** @type {remoting.MediaSourceRenderer} */
   this.mediaSourceRenderer_ = null;
 
@@ -263,6 +266,13 @@ remoting.ClientPlugin.prototype.handleMessageMethod_ = function(message) {
       // Let the host know that we can use the video framerecording extension.
       this.capabilities_.push(
           remoting.ClientSession.Capability.VIDEO_RECORDER);
+
+      // Let the host know that we can support casting of the screen.
+      // TODO(aiguha): Add this capability based on a gyp/command-line flag,
+      // rather than by default.
+      this.capabilities_.push(
+          remoting.ClientSession.Capability.CAST);
+
     } else if (this.pluginApiVersion_ >= 6) {
       this.pluginApiFeatures_ = ['highQualityScaling', 'injectKeyEvent'];
     } else {
@@ -356,6 +366,9 @@ remoting.ClientPlugin.prototype.handleMessageMethod_ = function(message) {
         break;
       case 'test-echo-reply':
         console.log('Got echo reply: ' + extMsgData);
+        break;
+      case 'cast_message':
+        this.onCastExtensionHandler(extMsgData);
         break;
       default:
         if (!this.onExtensionMessage_(extMsgType, extMsgData)) {
