@@ -203,11 +203,21 @@ def cpp_type_initializer(idl_type):
     |idl_type| argument is of type IdlType.
     """
 
-    if (idl_type.is_numeric_type):
+    base_idl_type = idl_type.base_type
+
+    if idl_type.native_array_element_type:
+        return ''
+    if idl_type.is_numeric_type:
         return ' = 0'
-    if idl_type.base_type == 'boolean':
+    if base_idl_type == 'boolean':
         return ' = false'
-    return ''
+    if (base_idl_type in NON_WRAPPER_TYPES or
+        base_idl_type in CPP_SPECIAL_CONVERSION_RULES or
+        base_idl_type == 'any' or
+        idl_type.is_string_type or
+        idl_type.is_enum):
+        return ''
+    return ' = nullptr'
 
 
 def cpp_type_union(idl_type, extended_attributes=None, raw_type=False):

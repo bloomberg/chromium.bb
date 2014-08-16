@@ -297,7 +297,7 @@ if (info.Length() >= 2 && listener && !impl->toNode())
 {######################################}
 {% macro union_type_method_call_and_set_return_value(method) %}
 {% for argument in method.union_arguments %}
-{{argument.cpp_type}} {{argument.cpp_value}};
+{{argument.cpp_type}} {{argument.cpp_value}}{{argument.cpp_type_initializer}};
 {% endfor %}
 {{method.cpp_value}};
 {% if method.is_null_expression %}{# used by getters #}

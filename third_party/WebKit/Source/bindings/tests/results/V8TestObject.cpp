@@ -4972,7 +4972,7 @@ static void nodeAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Valu
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    RefPtrWillBeRawPtr<Node> result;
+    RefPtrWillBeRawPtr<Node> result = nullptr;
     if (!V8TestObject::PrivateScript::nodeAttributeAttributeGetter(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl, &result))
         return;
     v8SetReturnValueFast(info, WTF::getPtr(result.release()), impl);
@@ -10079,7 +10079,7 @@ static void nodeMethodWithNodeArgumentImplementedInPrivateScriptMethod(const v8:
         V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_INTERNAL(value, V8Node::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     }
-    RefPtrWillBeRawPtr<Node> result;
+    RefPtrWillBeRawPtr<Node> result = nullptr;
     if (!V8TestObject::PrivateScript::nodeMethodWithNodeArgumentImplementedInPrivateScriptMethod(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl, value, &result))
         return;
     v8SetReturnValue(info, result.release());
@@ -10115,7 +10115,7 @@ static void nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethod(const
         TONATIVE_VOID_INTERNAL(value2, static_cast<double>(info[3]->NumberValue()));
         TOSTRING_VOID_INTERNAL(string, info[4]);
     }
-    RefPtrWillBeRawPtr<Node> result;
+    RefPtrWillBeRawPtr<Node> result = nullptr;
     if (!V8TestObject::PrivateScript::nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethod(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext()), impl, document, node, value1, value2, string, &result))
         return;
     v8SetReturnValue(info, result.release());

@@ -406,10 +406,12 @@ def union_member_argument_context(idl_type, index):
     """Returns a context of union member for argument."""
     this_cpp_value = 'result%d' % index
     this_cpp_type = idl_type.cpp_type
+    this_cpp_type_initializer = idl_type.cpp_type_initializer
     cpp_return_value = this_cpp_value
 
     if not idl_type.cpp_type_has_null_value:
         this_cpp_type = v8_types.cpp_template_type('Nullable', this_cpp_type)
+        this_cpp_type_initializer = ''
         cpp_return_value = '%s.get()' % this_cpp_value
 
     if idl_type.is_string_type:
@@ -419,6 +421,7 @@ def union_member_argument_context(idl_type, index):
 
     return {
         'cpp_type': this_cpp_type,
+        'cpp_type_initializer': this_cpp_type_initializer,
         'cpp_value': this_cpp_value,
         'null_check_value': null_check_value,
         'v8_set_return_value': idl_type.v8_set_return_value(
