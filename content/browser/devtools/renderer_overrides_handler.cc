@@ -67,9 +67,8 @@ static int kCaptureRetryLimit = 2;
 
 }  // namespace
 
-RendererOverridesHandler::RendererOverridesHandler(DevToolsAgentHost* agent)
-    : agent_(agent),
-      has_last_compositor_frame_metadata_(false),
+RendererOverridesHandler::RendererOverridesHandler()
+    : has_last_compositor_frame_metadata_(false),
       capture_retry_count_(0),
       weak_factory_(this) {
   RegisterCommandHandler(
@@ -151,9 +150,8 @@ RendererOverridesHandler::RendererOverridesHandler(DevToolsAgentHost* agent)
 RendererOverridesHandler::~RendererOverridesHandler() {}
 
 void RendererOverridesHandler::OnClientDetached() {
-  RenderViewHostImpl* host = GetRenderViewHostImpl();
-  if (screencast_command_ && host)
-    host->SetTouchEventEmulationEnabled(false, false);
+  if (screencast_command_ && host_)
+    host_->SetTouchEventEmulationEnabled(false, false);
   screencast_command_ = NULL;
 }
 
@@ -172,10 +170,15 @@ void RendererOverridesHandler::OnVisibilityChanged(bool visible) {
   NotifyScreencastVisibility(visible);
 }
 
-void RendererOverridesHandler::OnRenderViewHostChanged() {
-  RenderViewHostImpl* host = GetRenderViewHostImpl();
+void RendererOverridesHandler::SetRenderViewHost(
+    RenderViewHostImpl* host) {
+  host_ = host;
   if (screencast_command_ && host)
     host->SetTouchEventEmulationEnabled(true, true);
+}
+
+void RendererOverridesHandler::ClearRenderViewHost() {
+  host_ = NULL;
 }
 
 bool RendererOverridesHandler::OnSetTouchEventEmulationEnabled() {
@@ -188,14 +191,13 @@ void RendererOverridesHandler::InnerSwapCompositorFrame() {
     return;
   }
 
-  RenderViewHost* host = GetRenderViewHostImpl();
-  if (!host->GetView())
+  if (!host_ || !host_->GetView())
     return;
 
   last_frame_time_ = base::TimeTicks::Now();
 
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-      host->GetView());
+      host_->GetView());
   // TODO(vkuzkokov): do not use previous frame metadata.
   cc::CompositorFrameMetadata& metadata = last_compositor_frame_metadata_;
 
@@ -270,8 +272,7 @@ RendererOverridesHandler::GrantPermissionsForSetFileInputFiles(
       devtools::DOM::setFileInputFiles::kParamFiles;
   if (!params || !params->GetList(param, &file_list))
     return command->InvalidParamResponse(param);
-  RenderViewHost* host = GetRenderViewHostImpl();
-  if (!host)
+  if (!host_)
     return NULL;
 
   for (size_t i = 0; i < file_list->GetSize(); ++i) {
@@ -279,7 +280,7 @@ RendererOverridesHandler::GrantPermissionsForSetFileInputFiles(
     if (!file_list->GetString(i, &file))
       return command->InvalidParamResponse(param);
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
-        host->GetProcess()->GetID(), base::FilePath(file));
+        host_->GetProcess()->GetID(), base::FilePath(file));
   }
   return NULL;
 }
@@ -290,14 +291,14 @@ RendererOverridesHandler::GrantPermissionsForSetFileInputFiles(
 scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::ClearBrowserCache(
     scoped_refptr<DevToolsProtocol::Command> command) {
-  GetContentClient()->browser()->ClearCache(GetRenderViewHostImpl());
+  GetContentClient()->browser()->ClearCache(host_);
   return command->SuccessResponse(NULL);
 }
 
 scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::ClearBrowserCookies(
     scoped_refptr<DevToolsProtocol::Command> command) {
-  GetContentClient()->browser()->ClearCookies(GetRenderViewHostImpl());
+  GetContentClient()->browser()->ClearCookies(host_);
   return command->SuccessResponse(NULL);
 }
 
@@ -307,9 +308,8 @@ RendererOverridesHandler::ClearBrowserCookies(
 scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::PageDisable(
     scoped_refptr<DevToolsProtocol::Command> command) {
-  RenderViewHostImpl* host = GetRenderViewHostImpl();
-  if (screencast_command_ && host)
-    host->SetTouchEventEmulationEnabled(false, false);
+  if (screencast_command_ && host_)
+    host_->SetTouchEventEmulationEnabled(false, false);
   screencast_command_ = NULL;
   return NULL;
 }
@@ -331,7 +331,10 @@ RendererOverridesHandler::PageHandleJavaScriptDialog(
     prompt_override_ptr = NULL;
   }
 
-  WebContents* web_contents = agent_->GetWebContents();
+  if (!host_)
+    return command->InternalErrorResponse("Could not connect to view");
+
+  WebContents* web_contents = WebContents::FromRenderViewHost(host_);
   if (web_contents) {
     JavaScriptDialogManager* manager =
         web_contents->GetDelegate()->GetJavaScriptDialogManager();
@@ -356,7 +359,10 @@ RendererOverridesHandler::PageNavigate(
   if (!gurl.is_valid())
     return command->InternalErrorResponse("Cannot navigate to invalid URL");
 
-  WebContents* web_contents = agent_->GetWebContents();
+  if (!host_)
+    return command->InternalErrorResponse("Could not connect to view");
+
+  WebContents* web_contents = WebContents::FromRenderViewHost(host_);
   if (web_contents) {
     web_contents->GetController()
         .LoadURL(gurl, Referrer(), PAGE_TRANSITION_TYPED, std::string());
@@ -370,7 +376,10 @@ RendererOverridesHandler::PageNavigate(
 scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::PageReload(
     scoped_refptr<DevToolsProtocol::Command> command) {
-  WebContents* web_contents = agent_->GetWebContents();
+  if (!host_)
+    return command->InternalErrorResponse("Could not connect to view");
+
+  WebContents* web_contents = WebContents::FromRenderViewHost(host_);
   if (web_contents) {
     // Override only if it is crashed.
     if (!web_contents->IsCrashed())
@@ -385,7 +394,9 @@ RendererOverridesHandler::PageReload(
 scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::PageGetNavigationHistory(
     scoped_refptr<DevToolsProtocol::Command> command) {
-  WebContents* web_contents = agent_->GetWebContents();
+  if (!host_)
+    return command->InternalErrorResponse("Could not connect to view");
+  WebContents* web_contents = WebContents::FromRenderViewHost(host_);
   if (web_contents) {
     base::DictionaryValue* result = new base::DictionaryValue();
     NavigationController& controller = web_contents->GetController();
@@ -425,7 +436,10 @@ RendererOverridesHandler::PageNavigateToHistoryEntry(
     return command->InvalidParamResponse(param);
   }
 
-  WebContents* web_contents = agent_->GetWebContents();
+  if (!host_)
+    return command->InternalErrorResponse("Could not connect to view");
+
+  WebContents* web_contents = WebContents::FromRenderViewHost(host_);
   if (web_contents) {
     NavigationController& controller = web_contents->GetController();
     for (int i = 0; i != controller.GetEntryCount(); ++i) {
@@ -442,11 +456,10 @@ RendererOverridesHandler::PageNavigateToHistoryEntry(
 scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::PageCaptureScreenshot(
     scoped_refptr<DevToolsProtocol::Command> command) {
-  RenderViewHostImpl* host = GetRenderViewHostImpl();
-  if (!host->GetView())
-    return command->InternalErrorResponse("Unable to access the view");
+  if (!host_ || !host_->GetView())
+    return command->InternalErrorResponse("Could not connect to view");
 
-  host->GetSnapshotFromBrowser(
+  host_->GetSnapshotFromBrowser(
       base::Bind(&RendererOverridesHandler::ScreenshotCaptured,
           weak_factory_.GetWeakPtr(), command));
   return command->AsyncResponsePromise();
@@ -490,15 +503,16 @@ scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::PageStartScreencast(
     scoped_refptr<DevToolsProtocol::Command> command) {
   screencast_command_ = command;
-  RenderViewHostImpl* host = GetRenderViewHostImpl();
-  host->SetTouchEventEmulationEnabled(true, true);
-  bool visible = !host->is_hidden();
+  if (!host_)
+    return command->InternalErrorResponse("Could not connect to view");
+  host_->SetTouchEventEmulationEnabled(true, true);
+  bool visible = !host_->is_hidden();
   NotifyScreencastVisibility(visible);
   if (visible) {
     if (has_last_compositor_frame_metadata_)
       InnerSwapCompositorFrame();
     else
-      host->Send(new ViewMsg_ForceRedraw(host->GetRoutingID(), 0));
+      host_->Send(new ViewMsg_ForceRedraw(host_->GetRoutingID(), 0));
   }
   return command->SuccessResponse(NULL);
 }
@@ -508,9 +522,8 @@ RendererOverridesHandler::PageStopScreencast(
     scoped_refptr<DevToolsProtocol::Command> command) {
   last_frame_time_ = base::TimeTicks();
   screencast_command_ = NULL;
-  RenderViewHostImpl* host = GetRenderViewHostImpl();
-  if (host)
-    host->SetTouchEventEmulationEnabled(false, false);
+  if (host_)
+    host_->SetTouchEventEmulationEnabled(false, false);
   return command->SuccessResponse(NULL);
 }
 
@@ -801,10 +814,11 @@ RendererOverridesHandler::PageQueryUsageAndQuota(
       weak_factory_.GetWeakPtr(),
       command);
 
-  scoped_refptr<quota::QuotaManager> quota_manager = GetRenderViewHostImpl()
-                                                         ->GetProcess()
-                                                         ->GetStoragePartition()
-                                                         ->GetQuotaManager();
+  if (!host_)
+    return command->InternalErrorResponse("Could not connect to view");
+
+  scoped_refptr<quota::QuotaManager> quota_manager =
+      host_->GetProcess()->GetStoragePartition()->GetQuotaManager();
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -954,17 +968,14 @@ RendererOverridesHandler::InputEmulateTouchFromMouseEvent(
         devtools::Input::emulateTouchFromMouseEvent::kParamButton);
   }
 
-  RenderViewHost* host = GetRenderViewHostImpl();
-  if (event->type == WebInputEvent::MouseWheel)
-    host->ForwardWheelEvent(wheel_event);
-  else
-    host->ForwardMouseEvent(mouse_event);
-  return command->SuccessResponse(NULL);
-}
+  if (!host_)
+    return command->InternalErrorResponse("Could not connect to view");
 
-RenderViewHostImpl* RendererOverridesHandler::GetRenderViewHostImpl() {
-  return static_cast<RenderViewHostImpl*>(
-      agent_->GetWebContents()->GetRenderViewHost());
+  if (event->type == WebInputEvent::MouseWheel)
+    host_->ForwardWheelEvent(wheel_event);
+  else
+    host_->ForwardMouseEvent(mouse_event);
+  return command->SuccessResponse(NULL);
 }
 
 }  // namespace content

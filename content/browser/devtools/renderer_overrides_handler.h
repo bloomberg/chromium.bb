@@ -23,7 +23,6 @@ class Message;
 
 namespace content {
 
-class DevToolsAgentHost;
 class DevToolsTracingHandler;
 class RenderViewHostImpl;
 
@@ -33,13 +32,14 @@ class RenderViewHostImpl;
 class CONTENT_EXPORT RendererOverridesHandler
     : public DevToolsProtocol::Handler {
  public:
-  explicit RendererOverridesHandler(DevToolsAgentHost* agent);
+  RendererOverridesHandler();
   virtual ~RendererOverridesHandler();
 
   void OnClientDetached();
   void OnSwapCompositorFrame(const cc::CompositorFrameMetadata& frame_metadata);
   void OnVisibilityChanged(bool visible);
-  void OnRenderViewHostChanged();
+  void SetRenderViewHost(RenderViewHostImpl* host);
+  void ClearRenderViewHost();
   bool OnSetTouchEventEmulationEnabled();
 
  private:
@@ -102,9 +102,7 @@ class CONTENT_EXPORT RendererOverridesHandler
   scoped_refptr<DevToolsProtocol::Response> InputEmulateTouchFromMouseEvent(
       scoped_refptr<DevToolsProtocol::Command> command);
 
-  RenderViewHostImpl* GetRenderViewHostImpl();
-
-  DevToolsAgentHost* agent_;
+  RenderViewHostImpl* host_;
   scoped_refptr<DevToolsProtocol::Command> screencast_command_;
   bool has_last_compositor_frame_metadata_;
   cc::CompositorFrameMetadata last_compositor_frame_metadata_;

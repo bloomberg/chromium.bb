@@ -107,7 +107,7 @@ void RenderViewDevToolsAgentHost::OnCancelPendingNavigation(
 
 RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderViewHost* rvh)
     : render_view_host_(NULL),
-      overrides_handler_(new RendererOverridesHandler(this)),
+      overrides_handler_(new RendererOverridesHandler()),
       tracing_handler_(
           new DevToolsTracingHandler(DevToolsTracingHandler::Renderer)),
       power_handler_(new DevToolsPowerHandler()),
@@ -254,8 +254,8 @@ void RenderViewDevToolsAgentHost::AboutToNavigateRenderView(
   if (!render_view_host_)
     return;
 
-  if (render_view_host_ == dest_rvh && static_cast<RenderViewHostImpl*>(
-          render_view_host_)->render_view_termination_status() ==
+  if (render_view_host_ == dest_rvh &&
+          render_view_host_->render_view_termination_status() ==
               base::TERMINATION_STATUS_STILL_RUNNING)
     return;
   ReattachToRenderViewHost(dest_rvh);
@@ -342,10 +342,10 @@ void RenderViewDevToolsAgentHost::Observe(int type,
 
 void RenderViewDevToolsAgentHost::SetRenderViewHost(RenderViewHost* rvh) {
   DCHECK(!render_view_host_);
-  render_view_host_ = rvh;
+  render_view_host_ = static_cast<RenderViewHostImpl*>(rvh);
 
   WebContentsObserver::Observe(WebContents::FromRenderViewHost(rvh));
-  overrides_handler_->OnRenderViewHostChanged();
+  overrides_handler_->SetRenderViewHost(render_view_host_);
 
   registrar_.Add(
       this,
@@ -360,6 +360,7 @@ void RenderViewDevToolsAgentHost::ClearRenderViewHost() {
       content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
       content::Source<RenderWidgetHost>(render_view_host_));
   render_view_host_ = NULL;
+  overrides_handler_->ClearRenderViewHost();
 }
 
 void RenderViewDevToolsAgentHost::DisconnectWebContents() {

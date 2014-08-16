@@ -26,6 +26,7 @@ class DevToolsPowerHandler;
 class DevToolsTracingHandler;
 class RendererOverridesHandler;
 class RenderViewHost;
+class RenderViewHostImpl;
 
 #if defined(OS_ANDROID)
 class PowerSaveBlockerImpl;
@@ -96,7 +97,7 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   void InnerOnClientAttached();
   void InnerClientDetachedFromRenderer();
 
-  RenderViewHost* render_view_host_;
+  RenderViewHostImpl* render_view_host_;
   scoped_ptr<RendererOverridesHandler> overrides_handler_;
   scoped_ptr<DevToolsTracingHandler> tracing_handler_;
   scoped_ptr<DevToolsPowerHandler> power_handler_;
