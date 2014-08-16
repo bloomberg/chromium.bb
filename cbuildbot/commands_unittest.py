@@ -294,10 +294,11 @@ b9270e726180af1ed59077d1ab2fc688 *./crosfw.sh
 f6b0b80d5f2d9a2fb41ebb6e2cee7ad8 *./updater4.sh
 4363fcfd6849b2ab1a7320b1c98a11f2 *./crosutil.sh
 ''')
-    build_sbin = os.path.join(self._buildroot, 'usr', 'sbin')
+    build_sbin = os.path.join(self._buildroot, constants.DEFAULT_CHROOT_DIR,
+                              'build', self._board, 'usr', 'sbin')
     osutils.Touch(os.path.join(build_sbin, 'chromeos-firmwareupdate'),
                   makedirs=True)
-    result = commands.GetFirmwareVersions(self._buildroot)
+    result = commands.GetFirmwareVersions(self._buildroot, self._board)
     versions = ('Google_Nyan.5771.10.0', 'nyan_v1.1.1782-23f1337')
     self.assertEquals(result, versions)
 

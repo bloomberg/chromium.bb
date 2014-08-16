@@ -253,9 +253,8 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
       # things to do after build_packages.
 
       # Extract firmware version information from the newly created updater.
-      board_dir = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR,
-                               'build', self._current_board)
-      main, ec = commands.GetFirmwareVersions(board_dir)
+      main, ec = commands.GetFirmwareVersions(self._build_root,
+                                              self._current_board)
       self._run.attrs.metadata.UpdateBoardDictWithDict(
           self._current_board,
           {'main-firmware-version': main, 'ec-firmware-version': ec})

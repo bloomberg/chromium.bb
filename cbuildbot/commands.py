@@ -427,24 +427,28 @@ FirmwareVersions = collections.namedtuple(
 )
 
 
-def GetFirmwareVersions(buildroot):
+def GetFirmwareVersions(buildroot, board):
   """Extract version information from the firmware updater, if one exists.
 
   Args:
     buildroot: The buildroot of the current build.
+    board: The board the firmware is for.
 
   Returns:
     (main fw version, ec fw version)
     Each element will either be set to the string output by the firmware
     updater shellball, or None if there is no firmware updater.
   """
-  updater = os.path.join(buildroot, 'usr', 'sbin', 'chromeos-firmwareupdate')
+  updater = os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR,
+                         cros_build_lib.GetSysroot(board).lstrip(os.path.sep),
+                         'usr', 'sbin', 'chromeos-firmwareupdate')
   if not os.path.isfile(updater):
     return FirmwareVersions(None, None)
   updater = git.ReinterpretPathForChroot(updater)
 
   result = cros_build_lib.RunCommand([updater, '-V'], enter_chroot=True,
-                                     capture_output=True, log_output=True)
+                                     capture_output=True, log_output=True,
+                                     cwd=buildroot)
   main = re.search(r'BIOS version:\s*(?P<version>.*)', result.output)
   ec = re.search(r'EC version:\s*(?P<version>.*)', result.output)
   return (main.group('version') if main else None,
