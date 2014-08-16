@@ -38,3 +38,6 @@ bool FLAGS_enable_quic_fec = false;
 
 // If true, a QUIC connection with too many unfinished streams will be closed.
 bool FLAGS_close_quic_connection_unfinished_streams = false;
+
+// When true, defaults to BBR congestion control instead of Cubic.
+bool FLAGS_quic_use_bbr_congestion_control = false;

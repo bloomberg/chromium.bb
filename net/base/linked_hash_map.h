@@ -79,6 +79,28 @@ class linked_hash_map {
     return list_.rend();
   }
 
+  // Front and back accessors common to many stl containers.
+
+  // Returns the earliest-inserted element
+  const value_type& front() const {
+    return list_.front();
+  }
+
+  // Returns the earliest-inserted element.
+  value_type& front() {
+    return list_.front();
+  }
+
+  // Returns the most-recently-inserted element.
+  const value_type& back() const {
+    return list_.back();
+  }
+
+  // Returns the most-recently-inserted element.
+  value_type& back() {
+    return list_.back();
+  }
+
   // Clears the map of all values.
   void clear() {
     map_.clear();

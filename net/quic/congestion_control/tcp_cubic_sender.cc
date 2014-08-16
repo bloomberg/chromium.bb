@@ -170,11 +170,8 @@ bool TcpCubicSender::OnPacketSent(QuicTime /*sent_time*/,
   }
 
   prr_out_ += bytes;
-  if (largest_sent_sequence_number_ < sequence_number) {
-    // TODO(rch): Ensure that packets are really sent in order.
-    // DCHECK_LT(largest_sent_sequence_number_, sequence_number);
-    largest_sent_sequence_number_ = sequence_number;
-  }
+  DCHECK_LT(largest_sent_sequence_number_, sequence_number);
+  largest_sent_sequence_number_ = sequence_number;
   hybrid_slow_start_.OnPacketSent(sequence_number);
   return true;
 }

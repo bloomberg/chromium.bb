@@ -904,15 +904,12 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
     frame.least_unacked = least_unacked;
     return frame;
   }
+
   // Explicitly nack a packet.
   void NackPacket(QuicPacketSequenceNumber missing, QuicAckFrame* frame) {
     frame->missing_packets.insert(missing);
     frame->entropy_hash ^=
-        QuicConnectionPeer::GetSentEntropyHash(&connection_, missing);
-    if (missing > 1) {
-      frame->entropy_hash ^=
-          QuicConnectionPeer::GetSentEntropyHash(&connection_, missing - 1);
-    }
+        QuicConnectionPeer::PacketEntropy(&connection_, missing);
   }
 
   // Undo nacking a packet within the frame.
@@ -920,11 +917,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
     EXPECT_THAT(frame->missing_packets, Contains(arrived));
     frame->missing_packets.erase(arrived);
     frame->entropy_hash ^=
-        QuicConnectionPeer::GetSentEntropyHash(&connection_, arrived);
-    if (arrived > 1) {
-      frame->entropy_hash ^=
-          QuicConnectionPeer::GetSentEntropyHash(&connection_, arrived - 1);
-    }
+        QuicConnectionPeer::PacketEntropy(&connection_, arrived);
   }
 
   void TriggerConnectionClose() {
@@ -2639,7 +2632,10 @@ TEST_P(QuicConnectionTest, PingAfterSend) {
   EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
   ProcessAckPacket(&frame);
   EXPECT_TRUE(connection_.GetPingAlarm()->IsSet());
-  EXPECT_EQ(clock_.ApproximateNow().Add(QuicTime::Delta::FromSeconds(15)),
+  // The ping timer is set slightly less than 15 seconds in the future, because
+  // of the 1s ping timer alarm granularity.
+  EXPECT_EQ(clock_.ApproximateNow().Add(QuicTime::Delta::FromSeconds(15))
+                .Subtract(QuicTime::Delta::FromMilliseconds(5)),
             connection_.GetPingAlarm()->deadline());
 
   writer_->Reset();
@@ -3244,35 +3240,6 @@ TEST_P(QuicConnectionTest, EntropyCalculationForTruncatedAck) {
     EXPECT_EQ(entropy[i], QuicConnectionPeer::ReceivedEntropyHash(
         &connection_, i));
   }
-}
-
-TEST_P(QuicConnectionTest, CheckSentEntropyHash) {
-  peer_creator_.set_sequence_number(1);
-  SequenceNumberSet missing_packets;
-  QuicPacketEntropyHash entropy_hash = 0;
-  QuicPacketSequenceNumber max_sequence_number = 51;
-  for (QuicPacketSequenceNumber i = 1; i <= max_sequence_number; ++i) {
-    bool is_missing = i % 10 != 0;
-    bool entropy_flag = (i & (i - 1)) != 0;
-    QuicPacketEntropyHash packet_entropy_hash = 0;
-    if (entropy_flag) {
-      packet_entropy_hash = 1 << (i % 8);
-    }
-    QuicPacket* packet = ConstructDataPacket(i, 0, entropy_flag);
-    connection_.SendPacket(
-        ENCRYPTION_NONE, i, packet, packet_entropy_hash,
-        HAS_RETRANSMITTABLE_DATA);
-
-    if (is_missing)  {
-      missing_packets.insert(i);
-      continue;
-    }
-
-    entropy_hash ^= packet_entropy_hash;
-  }
-  EXPECT_TRUE(QuicConnectionPeer::IsValidEntropy(
-      &connection_, max_sequence_number, missing_packets, entropy_hash))
-      << "";
 }
 
 TEST_P(QuicConnectionTest, ServerSendsVersionNegotiationPacket) {

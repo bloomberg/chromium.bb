@@ -68,6 +68,38 @@ TEST_F(QuicSentEntropyManagerTest, IsValidEntropy) {
                                               entropy_hash));
 }
 
+TEST_F(QuicSentEntropyManagerTest, ClearEntropiesBefore) {
+  QuicPacketEntropyHash entropies[10] =
+      {12, 1, 33, 3, 32, 100, 28, 42, 22, 255};
+
+  for (size_t i = 0; i < 10; ++i) {
+    entropy_manager_.RecordPacketEntropyHash(i + 1, entropies[i]);
+  }
+
+  // Discard the first 5 entropies and ensure IsValidEntropy and EntropyHash
+  // still return correct results.
+  entropy_manager_.ClearEntropyBefore(5);
+
+  SequenceNumberSet missing_packets;
+  missing_packets.insert(7);
+  missing_packets.insert(8);
+
+  QuicPacketEntropyHash entropy_hash = 0;
+  for (size_t i = 0; i < 10; ++i) {
+    if (missing_packets.find(i + 1) == missing_packets.end()) {
+      entropy_hash ^= entropies[i];
+    }
+  }
+  EXPECT_TRUE(entropy_manager_.IsValidEntropy(10, missing_packets,
+                                              entropy_hash));
+
+  entropy_hash = 0;
+  for (size_t i = 0; i < 10; ++i) {
+    entropy_hash ^= entropies[i];
+  }
+  EXPECT_EQ(entropy_hash, entropy_manager_.EntropyHash(10));
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

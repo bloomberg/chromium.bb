@@ -21,8 +21,12 @@ QuicSentEntropyManager::~QuicSentEntropyManager() {}
 void QuicSentEntropyManager::RecordPacketEntropyHash(
     QuicPacketSequenceNumber sequence_number,
     QuicPacketEntropyHash entropy_hash) {
-  // TODO(satyamshekhar): Check this logic again when/if we enable packet
-  // reordering.
+  if (!packets_entropy_.empty()) {
+    // Ensure packets always are recorded in order.
+    // Every packet's entropy is recorded, even if it's not sent, so there
+    // are not sequence number gaps.
+    DCHECK_LT(packets_entropy_.back().first, sequence_number);
+  }
   packets_entropy_hash_ ^= entropy_hash;
   packets_entropy_.insert(
       make_pair(sequence_number,

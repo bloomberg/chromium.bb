@@ -42,6 +42,11 @@ class NET_EXPORT_PRIVATE QuicAlarm {
   // delegates OnAlarm method will not be called.
   void Cancel();
 
+  // Cancels and sets the alarm if the |deadline| is farther from the current
+  // deadline than |granularity|, and otherwise does nothing.  If |deadline| is
+  // not initialized, the alarm is cancelled.
+  void Update(QuicTime deadline, QuicTime::Delta granularity);
+
   bool IsSet() const;
 
   QuicTime deadline() const { return deadline_; }

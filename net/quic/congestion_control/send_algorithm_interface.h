@@ -97,6 +97,9 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   // BandwidthEstimate is expected to be too low.
   virtual bool InSlowStart() const = 0;
 
+  // Whether the send algorithm is currently in recovery.
+  virtual bool InRecovery() const = 0;
+
   // Returns the size of the slow start congestion window in bytes,
   // aka ssthresh.  Some send algorithms do not define a slow start
   // threshold and will return 0.

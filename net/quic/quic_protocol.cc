@@ -622,7 +622,8 @@ StringPiece QuicPacket::Plaintext() const {
 }
 
 RetransmittableFrames::RetransmittableFrames()
-    : encryption_level_(NUM_ENCRYPTION_LEVELS) {
+    : encryption_level_(NUM_ENCRYPTION_LEVELS),
+      has_crypto_handshake_(NOT_HANDSHAKE) {
 }
 
 RetransmittableFrames::~RetransmittableFrames() {
@@ -677,6 +678,9 @@ const QuicFrame& RetransmittableFrames::AddStreamFrame(
   stream_frame->data.Append(const_cast<char*>(stream_data_.back()->data()),
                             stream_data_.back()->size());
   frames_.push_back(QuicFrame(stream_frame));
+  if (stream_frame->stream_id == kCryptoStreamId) {
+    has_crypto_handshake_ = IS_HANDSHAKE;
+  }
   return frames_.back();
 }
 
@@ -685,16 +689,6 @@ const QuicFrame& RetransmittableFrames::AddNonStreamFrame(
   DCHECK_NE(frame.type, STREAM_FRAME);
   frames_.push_back(frame);
   return frames_.back();
-}
-
-IsHandshake RetransmittableFrames::HasCryptoHandshake() const {
-  for (size_t i = 0; i < frames().size(); ++i) {
-    if (frames()[i].type == STREAM_FRAME &&
-        frames()[i].stream_frame->stream_id == kCryptoStreamId) {
-      return IS_HANDSHAKE;
-    }
-  }
-  return NOT_HANDSHAKE;
 }
 
 void RetransmittableFrames::set_encryption_level(EncryptionLevel level) {

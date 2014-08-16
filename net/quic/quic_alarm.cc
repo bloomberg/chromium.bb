@@ -27,6 +27,19 @@ void QuicAlarm::Cancel() {
   CancelImpl();
 }
 
+void QuicAlarm::Update(QuicTime deadline, QuicTime::Delta granularity) {
+  if (!deadline.IsInitialized()) {
+    Cancel();
+    return;
+  }
+  if (std::abs(deadline.Subtract(deadline_).ToMicroseconds()) <
+          granularity.ToMicroseconds()) {
+    return;
+  }
+  Cancel();
+  Set(deadline);
+}
+
 bool QuicAlarm::IsSet() const {
   return deadline_.IsInitialized();
 }

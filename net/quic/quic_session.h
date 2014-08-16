@@ -12,7 +12,6 @@
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "net/base/ip_endpoint.h"
-#include "net/base/linked_hash_map.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_crypto_stream.h"
 #include "net/quic/quic_data_stream.h"

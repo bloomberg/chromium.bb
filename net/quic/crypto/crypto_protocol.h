@@ -51,7 +51,7 @@ const QuicTag kSRBF = TAG('S', 'R', 'B', 'F');   // Socket receive buffer
 const QuicTag kQBIC = TAG('Q', 'B', 'I', 'C');   // TCP cubic
 const QuicTag kTSTP = TAG('T', 'S', 'T', 'P');   // Timestamp
 
-// Congestion control options
+// Connection options (COPT) values
 const QuicTag kTBBR = TAG('T', 'B', 'B', 'R');   // Reduced Buffer Bloat TCP
 const QuicTag kRENO = TAG('R', 'E', 'N', 'O');   // Reno Congestion Control
 const QuicTag kIW10 = TAG('I', 'W', '1', '0');   // Force ICWND to 10
@@ -81,7 +81,7 @@ const QuicTag kAEAD = TAG('A', 'E', 'A', 'D');   // Authenticated
                                                  // encryption algorithms
 const QuicTag kCGST = TAG('C', 'G', 'S', 'T');   // Congestion control
                                                  // feedback types
-const QuicTag kCOPT = TAG('C', 'O', 'P', 'T');   // Congestion control options
+const QuicTag kCOPT = TAG('C', 'O', 'P', 'T');   // Connection options
 // kLOSS was 'L', 'O', 'S', 'S', but was changed from a tag vector to a tag.
 const QuicTag kLOSS = TAG('L', 'O', 'S', 'A');   // Loss detection algorithms
 const QuicTag kICSL = TAG('I', 'C', 'S', 'L');   // Idle connection state

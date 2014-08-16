@@ -170,6 +170,10 @@ bool PacingSender::InSlowStart() const {
   return sender_->InSlowStart();
 }
 
+bool PacingSender::InRecovery() const {
+  return sender_->InRecovery();
+}
+
 QuicByteCount PacingSender::GetSlowStartThreshold() const {
   return sender_->GetSlowStartThreshold();
 }

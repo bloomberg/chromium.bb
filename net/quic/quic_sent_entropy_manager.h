@@ -14,6 +14,10 @@
 
 namespace net {
 
+namespace test {
+class QuicConnectionPeer;
+}  // namespace test
+
 // Records all sent packets by a connection to track the cumulative entropy of
 // sent packets.  It is used by the connection to validate an ack
 // frame sent by the peer as a preventive measure against the optimistic ack
@@ -41,6 +45,8 @@ class NET_EXPORT_PRIVATE QuicSentEntropyManager {
   void ClearEntropyBefore(QuicPacketSequenceNumber sequence_number);
 
  private:
+  friend class test::QuicConnectionPeer;
+
   typedef linked_hash_map<QuicPacketSequenceNumber,
                           std::pair<QuicPacketEntropyHash,
                                QuicPacketEntropyHash> > SentEntropyMap;

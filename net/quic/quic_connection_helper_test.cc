@@ -141,6 +141,51 @@ TEST_F(QuicConnectionHelperTest, CreateAlarmAndResetEarlier) {
   EXPECT_FALSE(delegate->fired());
 }
 
+TEST_F(QuicConnectionHelperTest, CreateAlarmAndUpdate) {
+  TestDelegate* delegate = new TestDelegate();
+  scoped_ptr<QuicAlarm> alarm(helper_.CreateAlarm(delegate));
+
+  const QuicClock* clock = helper_.GetClock();
+  QuicTime start = clock->Now();
+  QuicTime::Delta delta = QuicTime::Delta::FromMicroseconds(1);
+  alarm->Set(clock->Now().Add(delta));
+  QuicTime::Delta new_delta = QuicTime::Delta::FromMicroseconds(3);
+  alarm->Update(clock->Now().Add(new_delta),
+                QuicTime::Delta::FromMicroseconds(1));
+
+  // The alarm task should still be posted.
+  ASSERT_EQ(1u, runner_->GetPostedTasks().size());
+  EXPECT_EQ(base::TimeDelta::FromMicroseconds(delta.ToMicroseconds()),
+            runner_->GetPostedTasks()[0].delay);
+
+  runner_->RunNextTask();
+  EXPECT_EQ(QuicTime::Zero().Add(delta), clock->Now());
+  EXPECT_FALSE(delegate->fired());
+
+  // Move the alarm forward 1us and ensure it doesn't move forward.
+  alarm->Update(clock->Now().Add(new_delta),
+                QuicTime::Delta::FromMicroseconds(2));
+
+  ASSERT_EQ(1u, runner_->GetPostedTasks().size());
+  EXPECT_EQ(
+      base::TimeDelta::FromMicroseconds(
+          new_delta.Subtract(delta).ToMicroseconds()),
+      runner_->GetPostedTasks()[0].delay);
+  runner_->RunNextTask();
+  EXPECT_EQ(start.Add(new_delta), clock->Now());
+  EXPECT_TRUE(delegate->fired());
+
+  // Set the alarm via an update call.
+  new_delta = QuicTime::Delta::FromMicroseconds(5);
+  alarm->Update(clock->Now().Add(new_delta),
+                QuicTime::Delta::FromMicroseconds(1));
+  EXPECT_TRUE(alarm->IsSet());
+
+  // Update it with an uninitialized time and ensure it's cancelled.
+  alarm->Update(QuicTime::Zero(), QuicTime::Delta::FromMicroseconds(1));
+  EXPECT_FALSE(alarm->IsSet());
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

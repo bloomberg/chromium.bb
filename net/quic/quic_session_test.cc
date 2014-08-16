@@ -578,11 +578,12 @@ TEST_P(QuicSessionTest, DoNotSendGoAwayTwice) {
 }
 
 TEST_P(QuicSessionTest, IncreasedTimeoutAfterCryptoHandshake) {
-  EXPECT_EQ(kDefaultInitialTimeoutSecs,
+  // Add 1 to the connection timeout on the server side.
+  EXPECT_EQ(kDefaultInitialTimeoutSecs + 1,
             QuicConnectionPeer::GetNetworkTimeout(connection_).ToSeconds());
   CryptoHandshakeMessage msg;
   session_.GetCryptoStream()->OnHandshakeMessage(msg);
-  EXPECT_EQ(kDefaultTimeoutSecs,
+  EXPECT_EQ(kDefaultTimeoutSecs + 1,
             QuicConnectionPeer::GetNetworkTimeout(connection_).ToSeconds());
 }
 

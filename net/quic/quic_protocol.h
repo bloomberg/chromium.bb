@@ -999,7 +999,9 @@ class NET_EXPORT_PRIVATE RetransmittableFrames {
   const QuicFrame& AddNonStreamFrame(const QuicFrame& frame);
   const QuicFrames& frames() const { return frames_; }
 
-  IsHandshake HasCryptoHandshake() const;
+  IsHandshake HasCryptoHandshake() const {
+    return has_crypto_handshake_;
+  }
 
   void set_encryption_level(EncryptionLevel level);
   EncryptionLevel encryption_level() const {
@@ -1009,6 +1011,7 @@ class NET_EXPORT_PRIVATE RetransmittableFrames {
  private:
   QuicFrames frames_;
   EncryptionLevel encryption_level_;
+  IsHandshake has_crypto_handshake_;
   // Data referenced by the StringPiece of a QuicStreamFrame.
   std::vector<std::string*> stream_data_;
 

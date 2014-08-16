@@ -59,6 +59,7 @@ class NET_EXPORT_PRIVATE PacingSender : public SendAlgorithmInterface {
   virtual QuicTime::Delta RetransmissionDelay() const OVERRIDE;
   virtual QuicByteCount GetCongestionWindow() const OVERRIDE;
   virtual bool InSlowStart() const OVERRIDE;
+  virtual bool InRecovery() const OVERRIDE;
   virtual QuicByteCount GetSlowStartThreshold() const OVERRIDE;
   virtual CongestionControlType GetCongestionControlType() const OVERRIDE;
 

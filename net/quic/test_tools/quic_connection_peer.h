@@ -73,10 +73,9 @@ class QuicConnectionPeer {
       QuicConnection* connection,
       QuicPacketSequenceNumber sequence_number);
 
-  static bool IsValidEntropy(QuicConnection* connection,
-                             QuicPacketSequenceNumber largest_observed,
-                             const SequenceNumberSet& missing_packets,
-                             QuicPacketEntropyHash entropy_hash);
+  static QuicPacketEntropyHash PacketEntropy(
+      QuicConnection* connection,
+      QuicPacketSequenceNumber sequence_number);
 
   static QuicPacketEntropyHash ReceivedEntropyHash(
       QuicConnection* connection,

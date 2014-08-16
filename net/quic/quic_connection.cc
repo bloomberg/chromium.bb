@@ -228,7 +228,8 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       time_of_last_sent_new_packet_(clock_->ApproximateNow()),
       sequence_number_of_last_sent_packet_(0),
       sent_packet_manager_(
-          is_server, clock_, &stats_, kCubic,
+          is_server, clock_, &stats_,
+          FLAGS_quic_use_bbr_congestion_control ? kBBR : kCubic,
           FLAGS_quic_use_time_loss_detection ? kTime : kNack),
       version_negotiation_state_(START_NEGOTIATION),
       is_server_(is_server),
@@ -408,7 +409,8 @@ void QuicConnection::OnVersionNegotiationPacket(
     return;
   }
 
-  DVLOG(1) << ENDPOINT << "negotiating version " << version();
+  DVLOG(1) << ENDPOINT
+           << "Negotiated version: " << QuicVersionToString(version());
   server_supported_versions_ = packet.versions;
   version_negotiation_state_ = NEGOTIATION_IN_PROGRESS;
   RetransmitUnackedPackets(ALL_PACKETS);
@@ -569,12 +571,10 @@ void QuicConnection::ProcessAckFrame(const QuicAckFrame& incoming_ack) {
 
   // Always reset the retransmission alarm when an ack comes in, since we now
   // have a better estimate of the current rtt than when it was set.
-  retransmission_alarm_->Cancel();
   QuicTime retransmission_time =
       sent_packet_manager_.GetRetransmissionTime();
-  if (retransmission_time != QuicTime::Zero()) {
-    retransmission_alarm_->Set(retransmission_time);
-  }
+  retransmission_alarm_->Update(retransmission_time,
+                                QuicTime::Delta::FromMilliseconds(1));
 }
 
 void QuicConnection::ProcessStopWaitingFrame(
@@ -970,6 +970,8 @@ void QuicConnection::SendVersionNegotiationPacket() {
     visitor_->OnWriteBlocked();
     return;
   }
+  DVLOG(1) << ENDPOINT << "Sending version negotiation packet: {"
+           << QuicVersionVectorToString(framer_.supported_versions()) << "}";
   scoped_ptr<QuicEncryptedPacket> version_packet(
       packet_generator_.SerializeVersionNegotiationPacket(
           framer_.supported_versions()));
@@ -1278,11 +1280,9 @@ void QuicConnection::RetransmitUnackedPackets(
 void QuicConnection::NeuterUnencryptedPackets() {
   sent_packet_manager_.NeuterUnencryptedPackets();
   // This may have changed the retransmission timer, so re-arm it.
-  retransmission_alarm_->Cancel();
   QuicTime retransmission_time = sent_packet_manager_.GetRetransmissionTime();
-  if (retransmission_time != QuicTime::Zero()) {
-    retransmission_alarm_->Set(retransmission_time);
-  }
+  retransmission_alarm_->Update(retransmission_time,
+                                QuicTime::Delta::FromMilliseconds(1));
 }
 
 bool QuicConnection::ShouldGeneratePacket(
@@ -1304,20 +1304,21 @@ bool QuicConnection::CanWrite(HasRetransmittableData retransmittable) {
     return false;
   }
 
-  send_alarm_->Cancel();
   QuicTime now = clock_->Now();
   QuicTime::Delta delay = sent_packet_manager_.TimeUntilSend(
       now, retransmittable);
   if (delay.IsInfinite()) {
+    send_alarm_->Cancel();
     return false;
   }
 
   // If the scheduler requires a delay, then we can not send this packet now.
   if (!delay.IsZero()) {
-    send_alarm_->Set(now.Add(delay));
+    send_alarm_->Update(now.Add(delay), QuicTime::Delta::FromMilliseconds(1));
     DVLOG(1) << "Delaying sending.";
     return false;
   }
+  send_alarm_->Cancel();
   return true;
 }
 
@@ -1511,11 +1512,9 @@ bool QuicConnection::OnPacketSent(WriteResult result) {
                                         transmission_type, retransmittable);
 
   if (reset_retransmission_alarm || !retransmission_alarm_->IsSet()) {
-    retransmission_alarm_->Cancel();
     QuicTime retransmission_time = sent_packet_manager_.GetRetransmissionTime();
-    if (retransmission_time != QuicTime::Zero()) {
-      retransmission_alarm_->Set(retransmission_time);
-    }
+    retransmission_alarm_->Update(retransmission_time,
+                                  QuicTime::Delta::FromMilliseconds(1));
   }
 
   stats_.bytes_sent += result.bytes_written;
@@ -1632,7 +1631,7 @@ void QuicConnection::OnRetransmissionTimeout() {
   // and nothing waiting to be sent.
   if (!HasQueuedData() && !retransmission_alarm_->IsSet()) {
     QuicTime rto_timeout = sent_packet_manager_.GetRetransmissionTime();
-    if (rto_timeout != QuicTime::Zero()) {
+    if (rto_timeout.IsInitialized()) {
       retransmission_alarm_->Set(rto_timeout);
     }
   }
@@ -1882,6 +1881,14 @@ bool QuicConnection::CanWriteStreamData() {
 }
 
 void QuicConnection::SetIdleNetworkTimeout(QuicTime::Delta timeout) {
+  // Adjust the idle timeout on client and server to prevent clients from
+  // sending requests to servers which have already closed the connection.
+  if (is_server_) {
+    timeout = timeout.Add(QuicTime::Delta::FromSeconds(1));
+  } else if (timeout > QuicTime::Delta::FromSeconds(1)) {
+    timeout = timeout.Subtract(QuicTime::Delta::FromSeconds(1));
+  }
+
   if (timeout < idle_network_timeout_) {
     idle_network_timeout_ = timeout;
     CheckForTimeout();
@@ -1944,7 +1951,7 @@ bool QuicConnection::CheckForTimeout() {
   }
 
   timeout_alarm_->Cancel();
-  timeout_alarm_->Set(clock_->ApproximateNow().Add(timeout));
+  timeout_alarm_->Set(now.Add(timeout));
   return false;
 }
 
@@ -1953,13 +1960,14 @@ void QuicConnection::SetPingAlarm() {
     // Only clients send pings.
     return;
   }
-  ping_alarm_->Cancel();
   if (!visitor_->HasOpenDataStreams()) {
+    ping_alarm_->Cancel();
     // Don't send a ping unless there are open streams.
     return;
   }
   QuicTime::Delta ping_timeout = QuicTime::Delta::FromSeconds(kPingTimeoutSecs);
-  ping_alarm_->Set(clock_->ApproximateNow().Add(ping_timeout));
+  ping_alarm_->Update(clock_->ApproximateNow().Add(ping_timeout),
+                      QuicTime::Delta::FromSeconds(1));
 }
 
 QuicConnection::ScopedPacketBundler::ScopedPacketBundler(

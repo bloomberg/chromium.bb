@@ -111,13 +111,11 @@ QuicPacketEntropyHash QuicConnectionPeer::GetSentEntropyHash(
 }
 
 // static
-bool QuicConnectionPeer::IsValidEntropy(
+QuicPacketEntropyHash QuicConnectionPeer::PacketEntropy(
     QuicConnection* connection,
-    QuicPacketSequenceNumber largest_observed,
-    const SequenceNumberSet& missing_packets,
-    QuicPacketEntropyHash entropy_hash) {
-  return connection->sent_entropy_manager_.IsValidEntropy(
-      largest_observed, missing_packets, entropy_hash);
+    QuicPacketSequenceNumber sequence_number) {
+  return
+      connection->sent_entropy_manager_.packets_entropy_[sequence_number].first;
 }
 
 // static

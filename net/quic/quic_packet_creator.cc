@@ -502,25 +502,16 @@ bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
 }
 
 void QuicPacketCreator::MaybeAddPadding() {
+  if (queued_retransmittable_frames_.get() == NULL) {
+    return;
+  }
+  if (!queued_retransmittable_frames_->HasCryptoHandshake()) {
+    return;
+  }
   if (BytesFree() == 0) {
     // Don't pad full packets.
     return;
   }
-
-  // If any of the frames in the current packet are on the crypto stream
-  // then they contain handshake messagses, and we should pad them.
-  bool is_handshake = false;
-  for (size_t i = 0; i < queued_frames_.size(); ++i) {
-    if (queued_frames_[i].type == STREAM_FRAME &&
-        queued_frames_[i].stream_frame->stream_id == kCryptoStreamId) {
-      is_handshake = true;
-      break;
-    }
-  }
-  if (!is_handshake) {
-    return;
-  }
-
   QuicPaddingFrame padding;
   bool success = AddFrame(QuicFrame(&padding), false);
   DCHECK(success);
