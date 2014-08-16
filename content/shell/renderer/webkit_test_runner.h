@@ -30,7 +30,6 @@ struct WebRect;
 
 namespace content {
 
-class IPCEcho;
 class LeakDetector;
 class WebTestProxyBase;
 struct LeakDetectionResult;
@@ -115,9 +114,6 @@ class WebKitTestRunner : public RenderViewObserver,
                                const std::string& frame_name) OVERRIDE;
   virtual bool allowExternalPages() OVERRIDE;
   virtual std::string dumpHistoryForWindow(WebTestProxyBase* proxy) OVERRIDE;
-  virtual void requestEcho(int id, int size) OVERRIDE;
-  virtual int lastEchoId() OVERRIDE;
-  virtual int lastEchoSize() OVERRIDE;
 
   void Reset();
 
@@ -128,7 +124,6 @@ class WebKitTestRunner : public RenderViewObserver,
 
  private:
   // Message handlers.
-  void OnEchoPong(int id, const std::string& body);
   void OnSetTestConfiguration(const ShellTestConfiguration& params);
   void OnSessionHistory(
       const std::vector<int>& routing_ids,
@@ -161,7 +156,6 @@ class WebKitTestRunner : public RenderViewObserver,
   bool focus_on_next_commit_;
 
   scoped_ptr<LeakDetector> leak_detector_;
-  scoped_ptr<IPCEcho> ipc_echo_;
   bool needs_leak_detector_;
 
   DISALLOW_COPY_AND_ASSIGN(WebKitTestRunner);

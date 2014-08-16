@@ -115,8 +115,6 @@ static_library("content_shell_lib") {
     "geolocation/shell_access_token_store.h",
     "renderer/gc_controller.cc",
     "renderer/gc_controller.h",
-    "renderer/ipc_echo.cc",
-    "renderer/ipc_echo.h",
     "renderer/leak_detector.cc",
     "renderer/leak_detector.h",
     "renderer/shell_content_renderer_client.cc",

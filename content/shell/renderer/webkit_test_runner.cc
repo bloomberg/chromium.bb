@@ -30,7 +30,6 @@
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/common/webkit_test_helpers.h"
 #include "content/shell/renderer/gc_controller.h"
-#include "content/shell/renderer/ipc_echo.h"
 #include "content/shell/renderer/leak_detector.h"
 #include "content/shell/renderer/shell_render_process_observer.h"
 #include "content/shell/renderer/test_runner/WebTask.h"
@@ -563,26 +562,6 @@ std::string WebKitTestRunner::dumpHistoryForWindow(WebTestProxyBase* proxy) {
                              current_entry_indexes_[pos]);
 }
 
-void WebKitTestRunner::requestEcho(int id, int size) {
-  if (!ipc_echo_) {
-    RenderView* view = render_view();
-    ipc_echo_.reset(new IPCEcho(view->GetWebView()->mainFrame()->document(),
-                                view, view->GetRoutingID()));
-  }
-
-  ipc_echo_->RequestEcho(id, size);
-}
-
-int WebKitTestRunner::lastEchoId() {
-  DCHECK(ipc_echo_);
-  return ipc_echo_->last_echo_id();
-}
-
-int WebKitTestRunner::lastEchoSize() {
-  DCHECK(ipc_echo_);
-  return ipc_echo_->last_echo_size();
-}
-
 // RenderViewObserver  --------------------------------------------------------
 
 void WebKitTestRunner::DidClearWindowObject(WebLocalFrame* frame) {
@@ -594,7 +573,6 @@ void WebKitTestRunner::DidClearWindowObject(WebLocalFrame* frame) {
 bool WebKitTestRunner::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebKitTestRunner, message)
-    IPC_MESSAGE_HANDLER(ShellViewMsg_EchoPong, OnEchoPong)
     IPC_MESSAGE_HANDLER(ShellViewMsg_SetTestConfiguration,
                         OnSetTestConfiguration)
     IPC_MESSAGE_HANDLER(ShellViewMsg_SessionHistory, OnSessionHistory)
@@ -712,10 +690,6 @@ void WebKitTestRunner::CaptureDumpComplete() {
       base::Bind(base::IgnoreResult(&WebKitTestRunner::Send),
                  base::Unretained(this),
                  new ShellViewHostMsg_TestFinished(routing_id())));
-}
-
-void WebKitTestRunner::OnEchoPong(int id, const std::string& body) {
-  ipc_echo_->DidRespondEcho(id, body.size());
 }
 
 void WebKitTestRunner::OnSetTestConfiguration(

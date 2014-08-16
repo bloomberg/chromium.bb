@@ -166,8 +166,6 @@
         'shell/geolocation/shell_access_token_store.h',
         'shell/renderer/gc_controller.cc',
         'shell/renderer/gc_controller.h',
-        'shell/renderer/ipc_echo.cc',
-        'shell/renderer/ipc_echo.h',
         'shell/renderer/leak_detector.cc',
         'shell/renderer/leak_detector.h',
         'shell/renderer/shell_content_renderer_client.cc',
