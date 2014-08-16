@@ -21,7 +21,7 @@
   'conditions': [
     ['run_jscompile != 0', {
       'variables': {
-        'success_stamp': '<(PRODUCT_DIR)/remoting_webapp_jscompile.stamp',
+        'success_stamp': '<(PRODUCT_DIR)/<(_target_name)_jscompile.stamp',
       },
       'actions': [
         {
