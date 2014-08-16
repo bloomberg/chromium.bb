@@ -14552,7 +14552,7 @@ Do you accept?
     <!-- Strings for the Easy Unlock setup dialog -->
     <!-- Step 1: Intro -->
     <message name="IDS_EASY_UNLOCK_SETUP_INTRO_HEADER_TITLE" desc="The text to show as the header title of the Easy Unlock dialog during the first, introductory step.">
-      Your Android phone can securely unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+      Your phone can securely unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
     </message>
     <message name="IDS_EASY_UNLOCK_SETUP_INTRO_HEADER_TEXT" desc="The text to show as the header body text of the Easy Unlock dialog during the first, introductory step.">
       Instantly unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> when your Android phone is unlocked and with you — no password needed.
@@ -14574,7 +14574,7 @@ Do you accept?
     </message>
     <!-- Step 2: Phone Found -->
     <message name="IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_HEADER_TITLE" desc="The text to show as the header title of the Easy Unlock dialog during the second step, after a suitable phone has been found.">
-      Use your Android phone to unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>?
+      Use your phone to unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>?
     </message>
     <message name="IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_HEADER_TEXT" desc="The text to show as the header body text of the Easy Unlock dialog during the second step, after a suitable phone has been found..">
       We sent a notification to your Android phone.
