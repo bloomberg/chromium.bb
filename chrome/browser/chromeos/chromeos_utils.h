@@ -9,8 +9,12 @@
 
 namespace chromeos {
 
-// Returns the name of the Chrome device type (eg. Chromebook, Chromebox).
+// Returns the name of the Chrome device type (e.g. Chromebook, Chromebox).
 base::string16 GetChromeDeviceType();
+
+// Returns the string resource ID for the name of the Chrome device type
+// (e.g. IDS_CHROMEBOOK, IDS_CHROMEBOX).
+int GetChromeDeviceTypeResourceId();
 
 }  // namespace chromeos
 

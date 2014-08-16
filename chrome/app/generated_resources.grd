@@ -9909,13 +9909,13 @@ Chrome ran out of memory.
           Easy unlock (Beta)
         </message>
         <message name="IDS_OPTIONS_EASY_UNLOCK_SETUP_INTRO" desc="The text to show in Easy Unlock section to introduce the feature.">
-          Use your Android phone to securely unlock your Chrome device. No need to type your password again.
+          Use your Android phone to securely unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. No need to type your password again.
         </message>
         <message name="IDS_OPTIONS_EASY_UNLOCK_SETUP_BUTTON" desc="The label of the button to set up Easy Unlock section on the settings page.">
           Set up
         </message>
         <message name="IDS_OPTIONS_EASY_UNLOCK_DESCRIPTION" desc="The text that describs what Easy Unlock does.">
-          Your Android phone can securely unlock your Chrome devices.
+          Your Android phone can securely unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
         </message>
         <message name="IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_BUTTON" desc="The label of the button to disable Easy unlock on the settings page and the turn off Easy unlock dialog.">
           Turn off Easy unlock
@@ -14654,6 +14654,10 @@ Do you accept?
     </message>
     <message name="IDS_EASY_UNLOCK_SCREENLOCK_USER_POD_AUTH_VALUE" desc="Message on lock screen user pod shown in place of password field when Easy Unlock is enabled and a phone that can unlock the Chromebook is detected in proximity.">
       Click to enter
+    </message>
+    <!-- Device types -->
+    <message name="IDS_EASY_UNLOCK_GENERIC_DEVICE_TYPE" desc="String for an unknown device type. Currently used to cover all non-ChromeOS devices.">
+      Chrome device
     </message>
 
     <!-- Invalid SSL certificate memory strategy strings -->
