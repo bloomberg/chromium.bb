@@ -13,7 +13,6 @@
 #include "athena/system/public/system_ui.h"
 #include "athena/wm/public/window_manager.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/public/browser/browser_thread.h"
 #include "ui/aura/window_property.h"
 #include "ui/views/views_delegate.h"
 #include "ui/wm/core/visibility_controller.h"
@@ -70,9 +69,7 @@ void StartAthena(aura::Window* root_window,
   aura::client::SetVisibilityClient(root_window,
                                     root_window_state->visibility_client.get());
 
-  athena::SystemUI::Create(
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::FILE));
+  athena::SystemUI::Create();
   athena::InputManager::Create()->OnRootWindowCreated(root_window);
   athena::ScreenManager::Create(root_window);
   athena::WindowManager::Create();
