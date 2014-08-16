@@ -152,6 +152,9 @@ class ProfileChooserView : public views::BubbleDelegateView,
   // Removes the currently selected account and attempts to restart Chrome.
   void RemoveAccount();
 
+  // Close the tutorial card.
+  void DismissTutorial();
+
   // Creates a tutorial card to introduce an upgrade user to the new avatar
   // menu if needed. |tutorial_shown| indicates if the tutorial has already been
   // shown in the previous active view. |avatar_item| refers to the current
@@ -167,19 +170,21 @@ class ProfileChooserView : public views::BubbleDelegateView,
   // Creates a a tutorial card to show the errors in the last Chrome signin.
   views::View* CreateSigninErrorView();
 
-  // Creates a tutorial card with the specified |title_text|, |context_text|,
-  // and a bottom row with a right-aligned link using the specified |link_text|,
-  // and a left aligned button using the specified |button_text|. The method
-  // sets |link| to point to the newly created link, |button| to the newly
-  // created button, and |tutorial_mode_| to the given |tutorial_mode|.
+  // Creates a tutorial card. If |stack_button| is true, places the button above
+  // the link otherwise places both on the same row with the link left aligned
+  // and button right aligned. The method sets |link| to point to the newly
+  // create link, |button| to the newly created button, and |tutorial_mode_| to
+  // the given |tutorial_mode|.
   views::View*  CreateTutorialView(
       profiles::TutorialMode tutorial_mode,
       const base::string16& title_text,
       const base::string16& content_text,
       const base::string16& link_text,
       const base::string16& button_text,
+      bool stack_button,
       views::Link** link,
-      views::LabelButton** button);
+      views::LabelButton** button,
+      views::ImageButton** close_button);
 
   // Create a view that shows various options for an upgrade user who is not
   // the same person as the currently signed in user.
@@ -205,6 +210,7 @@ class ProfileChooserView : public views::BubbleDelegateView,
   views::Link* tutorial_sync_settings_link_;
   views::LabelButton* tutorial_see_whats_new_button_;
   views::Link* tutorial_not_you_link_;
+  views::ImageButton* tutorial_close_button_;
 
   // Links and buttons displayed in the active profile card.
   views::Link* manage_accounts_link_;

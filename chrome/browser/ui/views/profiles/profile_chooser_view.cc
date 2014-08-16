@@ -68,7 +68,7 @@ namespace {
 
 const int kFixedMenuWidth = 250;
 const int kButtonHeight = 32;
-const int kFixedGaiaViewHeight = 400;
+const int kFixedGaiaViewHeight = 440;
 const int kFixedGaiaViewWidth = 360;
 const int kFixedAccountRemovalViewWidth = 280;
 const int kFixedSwitchUserViewWidth = 280;
@@ -431,9 +431,12 @@ class TitleCard : public views::View {
 
  private:
   virtual void Layout() OVERRIDE{
-    back_button_->SetBounds(
-        0, 0, back_button_->GetPreferredSize().width(), height());
-    title_label_->SetBoundsRect(GetContentsBounds());
+    int back_button_width = back_button_->GetPreferredSize().width();
+    back_button_->SetBounds(0, 0, back_button_width, height());
+    int label_padding = back_button_width + views::kButtonHEdgeMarginNew;
+    int label_width = width() - 2 * label_padding;
+    DCHECK_GT(label_width, 0);
+    title_label_->SetBounds(label_padding, 0, label_width, height());
   }
 
   virtual gfx::Size GetPreferredSize() const OVERRIDE{
@@ -549,6 +552,7 @@ void ProfileChooserView::ResetView() {
   disconnect_button_ = NULL;
   switch_user_cancel_button_ = NULL;
   tutorial_sync_settings_ok_button_ = NULL;
+  tutorial_close_button_ = NULL;
   tutorial_sync_settings_link_ = NULL;
   tutorial_see_whats_new_button_ = NULL;
   tutorial_not_you_link_ = NULL;
@@ -648,6 +652,10 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
       layout = CreateSingleColumnLayout(this, kFixedMenuWidth);
       sub_view = CreateProfileChooserView(avatar_menu);
   }
+  // Clears tutorial mode for all non-profile-chooser views.
+  if (view_mode_ != profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER)
+    tutorial_mode_ = profiles::TUTORIAL_MODE_NONE;
+
   layout->StartRow(1, 0);
   layout->AddView(sub_view);
   Layout();
@@ -693,10 +701,13 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
   } else if (sender == tutorial_sync_settings_ok_button_) {
     LoginUIServiceFactory::GetForProfile(browser_->profile())->
         SyncConfirmationUIClosed(false /* configure_sync_first */);
-    tutorial_mode_ = profiles::TUTORIAL_MODE_NONE;
-    ShowView(profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER, avatar_menu_.get());
+    DismissTutorial();
     ProfileMetrics::LogProfileNewAvatarMenuSignin(
         ProfileMetrics::PROFILE_AVATAR_MENU_SIGNIN_OK);
+  } else if (sender == tutorial_close_button_) {
+    DCHECK(tutorial_mode_ != profiles::TUTORIAL_MODE_NONE &&
+           tutorial_mode_ != profiles::TUTORIAL_MODE_CONFIRM_SIGNIN);
+    DismissTutorial();
   } else if (sender == tutorial_see_whats_new_button_) {
     ProfileMetrics::LogProfileNewAvatarMenuUpgrade(
         ProfileMetrics::PROFILE_AVATAR_MENU_UPGRADE_WHATS_NEW);
@@ -841,9 +852,6 @@ bool ProfileChooserView::HandleKeyEvent(views::Textfield* sender,
 
 views::View* ProfileChooserView::CreateProfileChooserView(
     AvatarMenu* avatar_menu) {
-  // TODO(guohui, noms): the view should be customized based on whether new
-  // profile management preview is enabled or not.
-
   views::View* view = new views::View();
   views::GridLayout* layout = CreateSingleColumnLayout(view, kFixedMenuWidth);
   // Separate items into active and alternatives.
@@ -930,14 +938,28 @@ views::View* ProfileChooserView::CreateProfileChooserView(
   return view;
 }
 
+void ProfileChooserView::DismissTutorial() {
+  // Never shows the upgrade tutorial again if manually closed.
+  if (tutorial_mode_ == profiles::TUTORIAL_MODE_WELCOME_UPGRADE) {
+    browser_->profile()->GetPrefs()->SetInteger(
+        prefs::kProfileAvatarTutorialShown,
+        signin_ui_util::kUpgradeWelcomeTutorialShowMax + 1);
+  }
+
+  tutorial_mode_ = profiles::TUTORIAL_MODE_NONE;
+  ShowView(profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER, avatar_menu_.get());
+}
+
 views::View* ProfileChooserView::CreateTutorialView(
     profiles::TutorialMode tutorial_mode,
     const base::string16& title_text,
     const base::string16& content_text,
     const base::string16& link_text,
     const base::string16& button_text,
+    bool stack_button,
     views::Link** link,
-    views::LabelButton** button) {
+    views::LabelButton** button,
+    views::ImageButton** close_button) {
   tutorial_mode_ = tutorial_mode;
 
   views::View* view = new views::View();
@@ -945,12 +967,20 @@ views::View* ProfileChooserView::CreateTutorialView(
       profiles::kAvatarTutorialBackgroundColor));
   views::GridLayout* layout = CreateSingleColumnLayout(view,
       kFixedMenuWidth - 2 * views::kButtonHEdgeMarginNew);
+  // Creates a second column set for buttons and links.
+  views::ColumnSet* button_columns = layout->AddColumnSet(1);
+  button_columns->AddColumn(views::GridLayout::LEADING,
+      views::GridLayout::CENTER, 0, views::GridLayout::USE_PREF, 0, 0);
+  button_columns->AddPaddingColumn(
+      1, views::kUnrelatedControlHorizontalSpacing);
+  button_columns->AddColumn(views::GridLayout::TRAILING,
+      views::GridLayout::CENTER, 0, views::GridLayout::USE_PREF, 0, 0);
   layout->SetInsets(views::kButtonVEdgeMarginNew,
                     views::kButtonHEdgeMarginNew,
                     views::kButtonVEdgeMarginNew,
                     views::kButtonHEdgeMarginNew);
 
-  // Adds title.
+  // Adds title and close button if needed.
   views::Label* title_label = new views::Label(title_text);
   title_label->SetMultiLine(true);
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -958,8 +988,25 @@ views::View* ProfileChooserView::CreateTutorialView(
   title_label->SetEnabledColor(SK_ColorWHITE);
   title_label->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
       ui::ResourceBundle::MediumFont));
-  layout->StartRow(1, 0);
-  layout->AddView(title_label);
+
+  if (close_button) {
+    layout->StartRow(1, 1);
+    layout->AddView(title_label);
+    *close_button = new views::ImageButton(this);
+    (*close_button)->SetImageAlignment(views::ImageButton::ALIGN_RIGHT,
+                                       views::ImageButton::ALIGN_MIDDLE);
+    ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+    (*close_button)->SetImage(views::ImageButton::STATE_NORMAL,
+                              rb->GetImageSkiaNamed(IDR_CLOSE_1));
+    (*close_button)->SetImage(views::ImageButton::STATE_HOVERED,
+                              rb->GetImageSkiaNamed(IDR_CLOSE_1_H));
+    (*close_button)->SetImage(views::ImageButton::STATE_PRESSED,
+                              rb->GetImageSkiaNamed(IDR_CLOSE_1_P));
+    layout->AddView(*close_button);
+  } else {
+    layout->StartRow(1, 0);
+    layout->AddView(title_label);
+  }
 
   // Adds body content.
   views::Label* content_label = new views::Label(content_text);
@@ -971,29 +1018,37 @@ views::View* ProfileChooserView::CreateTutorialView(
   layout->AddView(content_label);
 
   // Adds links and buttons.
-  views::ColumnSet* button_columns = layout->AddColumnSet(1);
-  button_columns->AddColumn(views::GridLayout::LEADING,
-      views::GridLayout::CENTER, 0, views::GridLayout::USE_PREF, 0, 0);
-  button_columns->AddPaddingColumn(
-      1, views::kUnrelatedControlHorizontalSpacing);
-  button_columns->AddColumn(views::GridLayout::TRAILING,
-      views::GridLayout::CENTER, 0, views::GridLayout::USE_PREF, 0, 0);
+  *button = new views::LabelButton(this, button_text);
+  (*button)->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  (*button)->SetStyle(views::Button::STYLE_BUTTON);
 
-  layout->StartRowWithPadding(1, 1, 0, views::kUnrelatedControlVerticalSpacing);
-  if (!link_text.empty()) {
+  bool has_link = !link_text.empty();
+  if (has_link) {
     *link = CreateLink(link_text, this);
     (*link)->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     (*link)->SetAutoColorReadabilityEnabled(false);
     (*link)->SetEnabledColor(SK_ColorWHITE);
-    layout->AddView(*link);
-  } else {
-    layout->SkipColumns(1);
   }
 
-  *button = new views::LabelButton(this, button_text);
-  (*button)->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  (*button)->SetStyle(views::Button::STYLE_BUTTON);
-  layout->AddView(*button);
+  if (stack_button) {
+    layout->StartRowWithPadding(
+        1, 0, 0, views::kUnrelatedControlVerticalSpacing);
+    layout->AddView(*button);
+    if (has_link) {
+      layout->StartRowWithPadding(
+          1, 0, 0, views::kRelatedControlVerticalSpacing);
+      (*link)->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+      layout->AddView(*link);
+    }
+  } else {
+    layout->StartRowWithPadding(
+        1, 1, 0, views::kUnrelatedControlVerticalSpacing);
+    if (has_link)
+      layout->AddView(*link);
+    else
+      layout->SkipColumns(1);
+    layout->AddView(*button);
+  }
 
   return view;
 }
@@ -1446,8 +1501,10 @@ views::View* ProfileChooserView::CreateWelcomeUpgradeTutorialViewIfNeeded(
           IDS_PROFILES_WELCOME_UPGRADE_TUTORIAL_CONTENT_TEXT),
       link_message,
       l10n_util::GetStringUTF16(IDS_PROFILES_TUTORIAL_WHATS_NEW_BUTTON),
+      true /* stack_button */,
       &tutorial_not_you_link_,
-      &tutorial_see_whats_new_button_);
+      &tutorial_see_whats_new_button_,
+      &tutorial_close_button_);
 }
 
 views::View* ProfileChooserView::CreateSigninConfirmationView(){
@@ -1461,8 +1518,10 @@ views::View* ProfileChooserView::CreateSigninConfirmationView(){
           IDS_PROFILES_CONFIRM_SIGNIN_TUTORIAL_CONTENT_TEXT),
       l10n_util::GetStringUTF16(IDS_PROFILES_SYNC_SETTINGS_LINK),
       l10n_util::GetStringUTF16(IDS_PROFILES_TUTORIAL_OK_BUTTON),
+      false /* stack_button */,
       &tutorial_sync_settings_link_,
-      &tutorial_sync_settings_ok_button_);
+      &tutorial_sync_settings_ok_button_,
+      NULL /* close_button*/);
 }
 
 views::View* ProfileChooserView::CreateSwitchUserView() {
