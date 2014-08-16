@@ -25,8 +25,10 @@
 
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/html/HTMLHeadElement.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -448,11 +450,7 @@ static bool inDocumentHead(HTMLMetaElement* element)
     if (!element->inDocument())
         return false;
 
-    for (Element* current = element; current; current = current->parentElement()) {
-        if (isHTMLHeadElement(*current))
-            return true;
-    }
-    return false;
+    return Traversal<HTMLHeadElement>::firstAncestor(*element);
 }
 
 void HTMLMetaElement::process()

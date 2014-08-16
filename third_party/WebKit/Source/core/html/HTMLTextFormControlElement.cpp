@@ -700,19 +700,9 @@ HTMLTextFormControlElement* enclosingTextFormControl(Node* container)
     return ancestor && isHTMLTextFormControlElement(*ancestor) && container->containingShadowRoot()->type() == ShadowRoot::UserAgentShadowRoot ? toHTMLTextFormControlElement(ancestor) : 0;
 }
 
-static const HTMLElement* parentHTMLElement(const Element* element)
-{
-    while (element) {
-        element = element->parentElement();
-        if (element && element->isHTMLElement())
-            return toHTMLElement(element);
-    }
-    return 0;
-}
-
 String HTMLTextFormControlElement::directionForFormData() const
 {
-    for (const HTMLElement* element = this; element; element = parentHTMLElement(element)) {
+    for (const HTMLElement* element = this; element; element = Traversal<HTMLElement>::firstAncestor(*element)) {
         const AtomicString& dirAttributeValue = element->fastGetAttribute(dirAttr);
         if (dirAttributeValue.isNull())
             continue;

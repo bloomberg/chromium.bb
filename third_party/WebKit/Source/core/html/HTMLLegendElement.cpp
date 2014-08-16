@@ -46,9 +46,7 @@ DEFINE_NODE_FACTORY(HTMLLegendElement)
 HTMLFormControlElement* HTMLLegendElement::associatedControl()
 {
     // Check if there's a fieldset belonging to this legend.
-    Element* fieldset = parentElement();
-    while (fieldset && !isHTMLFieldSetElement(*fieldset))
-        fieldset = fieldset->parentElement();
+    HTMLFieldSetElement* fieldset = Traversal<HTMLFieldSetElement>::firstAncestor(*this);
     if (!fieldset)
         return 0;
 

@@ -175,14 +175,9 @@ Path HTMLAreaElement::getRegion(const LayoutSize& size) const
 
 HTMLImageElement* HTMLAreaElement::imageElement() const
 {
-    Element* mapElement = parentElement();
-    while (mapElement && !isHTMLMapElement(*mapElement))
-        mapElement = mapElement->parentElement();
-
-    if (!mapElement)
-        return 0;
-
-    return toHTMLMapElement(*mapElement).imageElement();
+    if (HTMLMapElement* mapElement = Traversal<HTMLMapElement>::firstAncestor(*this))
+        return mapElement->imageElement();
+    return 0;
 }
 
 bool HTMLAreaElement::isKeyboardFocusable() const

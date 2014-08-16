@@ -135,11 +135,7 @@ bool InsertionPoint::canBeActive() const
 {
     if (!isInShadowTree())
         return false;
-    for (Node* node = parentNode(); node; node = node->parentNode()) {
-        if (node->isInsertionPoint())
-            return false;
-    }
-    return true;
+    return !Traversal<InsertionPoint>::firstAncestor(*this);
 }
 
 bool InsertionPoint::isActive() const

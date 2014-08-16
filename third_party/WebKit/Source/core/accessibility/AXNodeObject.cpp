@@ -351,12 +351,7 @@ HTMLLabelElement* AXNodeObject::labelForElement(Element* element) const
             return label;
     }
 
-    for (Element* parent = element->parentElement(); parent; parent = parent->parentElement()) {
-        if (isHTMLLabelElement(*parent))
-            return toHTMLLabelElement(parent);
-    }
-
-    return 0;
+    return Traversal<HTMLLabelElement>::firstAncestor(*element);
 }
 
 AXObject* AXNodeObject::menuButtonForMenu() const
