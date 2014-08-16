@@ -160,6 +160,26 @@ function testNotifyOnClosed() {
       .catch(function() { failTest("NotifyOnCleared"); });
 }
 
+function testNotifyOnPermissionLevelChanged() {
+  chrome.notifications.onPermissionLevelChanged.addListener(function(level) {
+    chrome.test.succeed();
+  });
+
+  // Create a notification, so there will be one existing notification.
+  createNotification(id1, content)
+      .catch(function() { failTest("notifications.create"); })
+      // Try to notify a web type notifier its permissional level is changed.
+      .then(function() { return notifyOnPermissionLevelChanged("SomeURL",
+                                                               "web",
+                                                               "granted"); })
+      .then(function() { failTest("NotifyOnPermissionLevelChanged"); })
+      // Notify that the permission level of current notifier is changed.
+      .catch(function () { return notifyOnPermissionLevelChanged(myId,
+                                                                 "application",
+                                                                 "granted"); })
+      .catch(function() { failTest("NotifyOnPermissionLevelChanged"); });
+}
+
 function testNotifyOnShowSettings() {
   chrome.notifications.onShowSettings.addListener(function() {
     chrome.test.succeed();
@@ -175,10 +195,11 @@ function testNotifyOnShowSettings() {
       .then(function() { failTest("NotifyOnShowSettings"); })
       // Notify current notifier that a user checked its settings.
       .catch(function () { return notifyOnShowSettings(myId, "application"); })
-      .catch(function() { failTest("NotifyOnShowSettings"); })
+      .catch(function() { failTest("NotifyOnShowSettings"); });
 }
 
 chrome.test.runTests([ testNotifyOnClicked,
                        testNotifyOnButtonClicked,
                        testNotifyOnClosed,
+                       testNotifyOnPermissionLevelChanged,
                        testNotifyOnShowSettings ]);
