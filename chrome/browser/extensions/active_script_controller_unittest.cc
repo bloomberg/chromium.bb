@@ -203,9 +203,17 @@ TEST_F(ActiveScriptControllerUnitTest, RequestPermissionAndExecute) {
   // for a second time.
   EXPECT_FALSE(RequiresUserConsent(extension));
 
-  // Reloading should clear those permissions, and we should again require user
-  // consent.
+  // Reloading and same-origin navigations shouldn't clear those permissions,
+  // and we shouldn't require user constent again.
   Reload();
+  EXPECT_FALSE(RequiresUserConsent(extension));
+  NavigateAndCommit(GURL("https://www.google.com/foo"));
+  EXPECT_FALSE(RequiresUserConsent(extension));
+  NavigateAndCommit(GURL("https://www.google.com/bar"));
+  EXPECT_FALSE(RequiresUserConsent(extension));
+
+  // Cross-origin navigations should clear permissions.
+  NavigateAndCommit(GURL("https://otherdomain.google.com"));
   EXPECT_TRUE(RequiresUserConsent(extension));
 
   // Grant access.
@@ -289,9 +297,21 @@ TEST_F(ActiveScriptControllerUnitTest, ActiveScriptsUseActiveTabPermissions) {
   // anymore.
   EXPECT_FALSE(RequiresUserConsent(extension));
 
-  // Also test that granting active tab runs any pending tasks.
+  // Reloading and other same-origin navigations maintain the permission to
+  // execute.
   Reload();
-  // Navigating should mean we need permission again.
+  EXPECT_FALSE(RequiresUserConsent(extension));
+  NavigateAndCommit(GURL("https://www.google.com/foo"));
+  EXPECT_FALSE(RequiresUserConsent(extension));
+  NavigateAndCommit(GURL("https://www.google.com/bar"));
+  EXPECT_FALSE(RequiresUserConsent(extension));
+
+  // Navigating to a different origin will require user consent again.
+  NavigateAndCommit(GURL("https://yahoo.com"));
+  EXPECT_TRUE(RequiresUserConsent(extension));
+
+  // Back to the original origin should also re-require constent.
+  NavigateAndCommit(GURL("https://www.google.com"));
   EXPECT_TRUE(RequiresUserConsent(extension));
 
   RequestInjection(extension);
