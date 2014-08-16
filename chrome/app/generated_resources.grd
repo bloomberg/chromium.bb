@@ -11368,6 +11368,9 @@ Chrome ran out of memory.
       <message name="IDS_PROFILES_TUTORIAL_OK_BUTTON" desc="Button in the avatar menu tutorial card for dismissing the signin confirmation bubble">
         Ok, got it!
       </message>
+      <message name="IDS_PROFILES_ERROR_TUTORIAL_TITLE" desc="Title in the tutorial card for showing signin errors">
+        Uh-oh!
+      </message>
       <message name="IDS_PROFILES_NOT_YOU" desc="Title or link text in the avatar menu bubble for switching user">
         Not <ph name="PROFILE_NAME">$1<ex>Claire</ex></ph>?
       </message>
