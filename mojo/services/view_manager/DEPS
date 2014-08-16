@@ -1,6 +1,5 @@
 include_rules = [
   "+cc",
-  "+gpu/command_buffer/service/mailbox_manager.h",
   "+mojo/aura",
   "+mojo/cc",
   "+mojo/geometry",

@@ -49,7 +49,6 @@
         'mojo_surfaces_app',
         'mojo_surfaces_app',
         'mojo_surfaces_child_app',
-        'mojo_surfaces_child_gl_app',
         'mojo_surfaces_lib',
         'mojo_surfaces_lib_unittests',
         'mojo_surfaces_service',

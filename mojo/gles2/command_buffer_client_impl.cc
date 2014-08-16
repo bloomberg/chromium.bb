@@ -208,14 +208,14 @@ void CommandBufferClientImpl::DestroyGpuMemoryBuffer(int32 id) {
 }
 
 uint32 CommandBufferClientImpl::InsertSyncPoint() {
-  // TODO(jamesr): Optimize this.
-  WaitForGetOffsetInRange(last_put_offset_, last_put_offset_);
+  // TODO(piman)
+  NOTIMPLEMENTED();
   return 0;
 }
 
 uint32 CommandBufferClientImpl::InsertFutureSyncPoint() {
-  // TODO(jamesr): Optimize this.
-  WaitForGetOffsetInRange(last_put_offset_, last_put_offset_);
+  // TODO(piman)
+  NOTIMPLEMENTED();
   return 0;
 }
 
