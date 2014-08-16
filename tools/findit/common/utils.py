@@ -5,6 +5,8 @@
 import re
 import sys
 
+from http_client_local import HttpClientLocal
+
 
 GIT_HASH_PATTERN = re.compile(r'^[0-9a-fA-F]{40}$')
 
@@ -22,3 +24,8 @@ def GetOSName(platform_name=sys.platform):
 
 def IsGitHash(revision):
   return GIT_HASH_PATTERN.match(str(revision))
+
+
+def GetHttpClient():
+  # TODO(stgao): return implementation for appengine when running on appengine.
+  return HttpClientLocal

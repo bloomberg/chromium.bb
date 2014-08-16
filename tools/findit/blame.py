@@ -4,7 +4,7 @@
 
 from threading import Lock, Thread
 
-import utils
+from common import utils
 
 
 class Blame(object):

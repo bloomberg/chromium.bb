@@ -10,6 +10,7 @@ import os
 import time
 import urllib2
 
+from common import utils
 from result import Result
 
 
@@ -195,23 +196,19 @@ def GetDataFromURL(url, retries=10, sleep_time=0.1, timeout=5):
   Returns:
     None if the data retrieval fails, or the raw data.
   """
-  data = None
-  for i in range(retries):
+  count = 0
+  while True:
+    count += 1
     # Retrieves data from URL.
     try:
-      data = urllib2.urlopen(url, timeout=timeout)
-
-      # If retrieval is successful, return the data.
-      if data:
-        return data.read()
-
-    # If retrieval fails, try after sleep_time second.
-    except urllib2.URLError:
-      time.sleep(sleep_time)
-      continue
+      _, data = utils.GetHttpClient().Get(url)
+      return data
     except IOError:
-      time.sleep(sleep_time)
-      continue
+      if count < retries:
+        # If retrieval fails, try after sleep_time second.
+        time.sleep(sleep_time)
+      else:
+        break
 
   # Return None if it fails to read data from URL 'retries' times.
   return None

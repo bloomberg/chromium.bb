@@ -7,6 +7,7 @@ import sys
 import unittest
 
 from chromium_deps_unittest import ChromiumDEPSTest
+from common.http_client_local_unittest import HttpClientLocalTest
 
 
 if __name__ == '__main__':

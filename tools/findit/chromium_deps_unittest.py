@@ -84,13 +84,13 @@ deps_os = {
     self.assertEqual(expected_results, components)
 
   def testGetChromiumComponentRange(self):
-    chromium_revision1 = '283296'
-    webkit_revision1 = '178200'
+    chromium_revision1 = '283200'
+    webkit_revision1 = '178084'
     breakpad_revision1 = '1345'
     liblouis_commit_hashcode1 = '3c2daee56250162e5a75830871601d74328d39f5'
 
-    chromium_revision2 = '283200'
-    webkit_revision2 = '178084'
+    chromium_revision2 = '283296'
+    webkit_revision2 = '178200'
     breakpad_revision2 = '1345'
     liblouis_commit_hashcode2 = '3c2daee56250162e5a75830871601d74328d39f5'
 
@@ -106,39 +106,39 @@ deps_os = {
 
     expected_results = {
         'src/breakpad/src/': {
-            'old_revision': breakpad_revision2,
+            'old_revision': breakpad_revision1,
             'name': 'breakpad',
             'repository': 'http://google-breakpad.googlecode.com/svn/trunk/src',
             'rolled': False,
-            'new_revision': breakpad_revision1,
+            'new_revision': breakpad_revision2,
             'path': 'src/breakpad/src/',
             'repository_type': 'svn'
         },
         'src/third_party/liblouis/src/': {
-            'old_revision': liblouis_commit_hashcode2,
+            'old_revision': liblouis_commit_hashcode1,
             'name': 'liblouis',
             'repository':
                 'https://chromium.googlesource.com/external/liblouis.git',
             'rolled': False,
-            'new_revision': liblouis_commit_hashcode1,
+            'new_revision': liblouis_commit_hashcode2,
             'path': 'src/third_party/liblouis/src/',
             'repository_type': 'git'
         },
         'src/': {
-            'old_revision': chromium_revision2,
+            'old_revision': chromium_revision1,
             'name': 'chromium',
             'repository': 'https://src.chromium.org/chrome/trunk',
             'rolled': True,
-            'new_revision': chromium_revision1,
+            'new_revision': chromium_revision2,
             'path': 'src/',
             'repository_type': 'svn'
         },
         'src/third_party/WebKit/': {
-            'old_revision': webkit_revision2,
+            'old_revision': webkit_revision1,
             'name': 'blink',
             'repository': 'http://src.chromium.org/blink/trunk',
             'rolled': True,
-            'new_revision': webkit_revision1,
+            'new_revision': webkit_revision2,
             'path': 'src/third_party/WebKit/',
             'repository_type': 'svn'
         }
@@ -148,3 +148,7 @@ deps_os = {
         chromium_revision1, chromium_revision2,
         deps_file_downloader=_GetContentOfDEPS)
     self.assertEqual(expected_results, components)
+
+  def testGetSvnRevision(self):
+    deps = chromium_deps.GetChromiumComponents(284750)
+    self.assertTrue(isinstance(deps, dict))

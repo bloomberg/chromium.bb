@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 import base64
-import https
-import utils
+
+from common import utils
 
 
 DEPS_FILE_URL_SVN = 'https://src.chromium.org/chrome/trunk/src/DEPS?p=%s'
@@ -78,7 +78,8 @@ def _GetContentOfDEPS(chromium_revision):
     url = DEPS_FILE_URL_GIT
   else:
     url = DEPS_FILE_URL_SVN
-  return https.SendRequest(url % chromium_revision)
+  _, content = utils.GetHttpClient().Get(url % chromium_revision, timeout=60)
+  return content
 
 
 def GetChromiumComponents(chromium_revision,
@@ -202,9 +203,3 @@ def GetChromiumComponentRange(old_revision,
     }
 
   return components
-
-
-if __name__ == '__main__':
-  import json
-  print json.dumps(GetChromiumComponents(
-      'b4b1aea80b25a3b2f7952c9d95585e880421ef2b'), sort_keys=True, indent=2)

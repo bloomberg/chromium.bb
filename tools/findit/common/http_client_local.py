@@ -1,8 +1,9 @@
 # Copyright (c) 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 """
-Provides a utility function for https connections with certificate verification.
+A http client with support for https connections with certificate verification.
 
 The verification is based on http://tools.ietf.org/html/rfc6125#section-6.4.3
 and the code is from Lib/ssl.py in python3:
@@ -14,12 +15,16 @@ One use case is to download Chromium DEPS file in a secure way:
 Notice: python 2.7 or newer is required.
 """
 
+import cookielib
 import httplib
 import os
 import re
 import socket
 import ssl
+import urllib
 import urllib2
+
+import http_client
 
 
 _SCRIPT_DIR = os.path.dirname(__file__)
@@ -171,25 +176,47 @@ class HTTPSHandler(urllib2.HTTPSHandler):
     return HTTPSConnection(host, **params)
 
 
-def SendRequest(https_url):
+def _SendRequest(url, timeout=None):
   """Send request to the given https url, and return the server response.
 
   Args:
-    https_url: The https url to send request to.
+    url: The https url to send request to.
 
   Returns:
-    A string that is the response from the server.
+    An integer: http code of the response.
+    A string: content of the response.
 
   Raises:
-    ValueError: Unexpected value is received during certificate verification.
     CertificateError: Certificate verification fails.
   """
-  if not https_url or not https_url.startswith('https://'):
-    raise ValueError('Not a https request for url %s.' % str(https_url))
+  if not url:
+    return None, None
 
-  url_opener = urllib2.build_opener(HTTPSHandler)
-  return url_opener.open(https_url).read()
+  handlers = []
+  if url.startswith('https://'):
+    # HTTPSHandler has to go first, because we don't want to send secure cookies
+    # to a man in the middle.
+    handlers.append(HTTPSHandler())
 
 
-if __name__ == '__main__':
-  print SendRequest('https://src.chromium.org/chrome/trunk/src/DEPS')
+  cookie_file = os.environ.get('COOKIE_FILE')
+  if cookie_file and os.path.exists(cookie_file):
+    handlers.append(
+        urllib2.HTTPCookieProcessor(cookielib.MozillaCookieJar(cookie_file)))
+
+  url_opener = urllib2.build_opener(*handlers)
+  if timeout is not None:
+    response = url_opener.open(url, timeout=timeout)
+  else:
+    response = url_opener.open(url)
+  return response.code, response.read()
+
+
+class HttpClientLocal(http_client.HttpClient):
+  """This http client is used locally in a workstation, GCE VMs, etc."""
+
+  @staticmethod
+  def Get(url, params={}, timeout=None):
+    if params:
+      url = '%s?%s' % (url, urllib.urlencode(params))
+    return _SendRequest(url, timeout=timeout)
