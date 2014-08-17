@@ -22,6 +22,8 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/cursors/webcursor.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -40,8 +42,10 @@
 #include "content/public/common/referrer.h"
 #include "ipc/ipc_sender.h"
 #include "net/base/net_util.h"
+#include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/display.h"
@@ -70,6 +74,7 @@ static int kCaptureRetryLimit = 2;
 RendererOverridesHandler::RendererOverridesHandler()
     : has_last_compositor_frame_metadata_(false),
       capture_retry_count_(0),
+      color_picker_enabled_(false),
       weak_factory_(this) {
   RegisterCommandHandler(
       devtools::DOM::setFileInputFiles::kName,
@@ -141,10 +146,18 @@ RendererOverridesHandler::RendererOverridesHandler()
           &RendererOverridesHandler::PageQueryUsageAndQuota,
           base::Unretained(this)));
   RegisterCommandHandler(
+      devtools::Page::setColorPickerEnabled::kName,
+      base::Bind(
+          &RendererOverridesHandler::PageSetColorPickerEnabled,
+          base::Unretained(this)));
+  RegisterCommandHandler(
       devtools::Input::emulateTouchFromMouseEvent::kName,
       base::Bind(
           &RendererOverridesHandler::InputEmulateTouchFromMouseEvent,
           base::Unretained(this)));
+  mouse_event_callback_ = base::Bind(
+      &RendererOverridesHandler::HandleMouseEvent,
+      base::Unretained(this));
 }
 
 RendererOverridesHandler::~RendererOverridesHandler() {}
@@ -153,6 +166,7 @@ void RendererOverridesHandler::OnClientDetached() {
   if (screencast_command_ && host_)
     host_->SetTouchEventEmulationEnabled(false, false);
   screencast_command_ = NULL;
+  SetColorPickerEnabled(false);
 }
 
 void RendererOverridesHandler::OnSwapCompositorFrame(
@@ -162,6 +176,8 @@ void RendererOverridesHandler::OnSwapCompositorFrame(
 
   if (screencast_command_)
     InnerSwapCompositorFrame();
+  if (color_picker_enabled_)
+    UpdateColorPickerFrame();
 }
 
 void RendererOverridesHandler::OnVisibilityChanged(bool visible) {
@@ -175,9 +191,13 @@ void RendererOverridesHandler::SetRenderViewHost(
   host_ = host;
   if (screencast_command_ && host)
     host->SetTouchEventEmulationEnabled(true, true);
+  if (color_picker_enabled_)
+    host->AddMouseEventCallback(mouse_event_callback_);
 }
 
 void RendererOverridesHandler::ClearRenderViewHost() {
+  if (host_)
+    host_->RemoveMouseEventCallback(mouse_event_callback_);
   host_ = NULL;
 }
 
@@ -845,6 +865,204 @@ void RendererOverridesHandler::NotifyScreencastVisibility(bool visible) {
       devtools::Page::screencastVisibilityChanged::kParamVisible, visible);
   SendNotification(
       devtools::Page::screencastVisibilityChanged::kName, params);
+}
+
+scoped_refptr<DevToolsProtocol::Response>
+RendererOverridesHandler::PageSetColorPickerEnabled(
+    scoped_refptr<DevToolsProtocol::Command> command) {
+  base::DictionaryValue* params = command->params();
+  bool color_picker_enabled = false;
+  if (!params || !params->GetBoolean(
+      devtools::Page::setColorPickerEnabled::kParamEnabled,
+      &color_picker_enabled)) {
+    return command->InvalidParamResponse(
+        devtools::Page::setColorPickerEnabled::kParamEnabled);
+  }
+
+  SetColorPickerEnabled(color_picker_enabled);
+  return command->SuccessResponse(NULL);
+}
+
+void RendererOverridesHandler::SetColorPickerEnabled(bool enabled) {
+  if (color_picker_enabled_ == enabled)
+    return;
+
+  color_picker_enabled_ = enabled;
+
+  if (!host_)
+    return;
+
+  if (enabled) {
+    host_->AddMouseEventCallback(mouse_event_callback_);
+    UpdateColorPickerFrame();
+  } else {
+    host_->RemoveMouseEventCallback(mouse_event_callback_);
+    color_picker_frame_.reset();
+
+    WebCursor pointer_cursor;
+    WebCursor::CursorInfo cursor_info;
+    cursor_info.type = blink::WebCursorInfo::TypePointer;
+    pointer_cursor.InitFromCursorInfo(cursor_info);
+    host_->SetCursor(pointer_cursor);
+  }
+}
+
+void RendererOverridesHandler::UpdateColorPickerFrame() {
+  if (!host_)
+    return;
+  RenderWidgetHostViewBase* view =
+      static_cast<RenderWidgetHostViewBase*>(host_->GetView());
+  if (!view)
+    return;
+
+  gfx::Size size = view->GetViewBounds().size();
+  view->CopyFromCompositingSurface(
+      gfx::Rect(size), size,
+      base::Bind(&RendererOverridesHandler::ColorPickerFrameUpdated,
+                 weak_factory_.GetWeakPtr()),
+      kN32_SkColorType);
+}
+
+void RendererOverridesHandler::ColorPickerFrameUpdated(
+    bool succeeded,
+    const SkBitmap& bitmap) {
+  if (succeeded)
+    color_picker_frame_ = bitmap;
+}
+
+bool RendererOverridesHandler::HandleMouseEvent(
+    const blink::WebMouseEvent& event) {
+  if (color_picker_frame_.drawsNothing())
+    return true;
+
+  if (event.button == blink::WebMouseEvent::ButtonLeft) {
+    color_picker_frame_.lockPixels();
+    SkColor color = color_picker_frame_.getColor(event.x, event.y);
+    color_picker_frame_.unlockPixels();
+    base::DictionaryValue* color_dict = new base::DictionaryValue();
+    color_dict->SetInteger("r", SkColorGetR(color));
+    color_dict->SetInteger("g", SkColorGetG(color));
+    color_dict->SetInteger("b", SkColorGetB(color));
+    color_dict->SetInteger("a", SkColorGetA(color));
+    base::DictionaryValue* response = new base::DictionaryValue();
+    response->Set(devtools::Page::colorPicked::kParamColor, color_dict);
+    SendNotification(devtools::Page::colorPicked::kName, response);
+  }
+
+  if (!host_)
+    return true;
+  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
+      host_->GetView());
+  if (!view)
+    return true;
+
+  // Due to platform limitations, we are using two different cursors
+  // depending on the platform. Mac and Win have large cursors with two circles
+  // for original spot and its magnified projection; Linux gets smaller (64 px)
+  // magnified projection only with centered hotspot.
+  // Mac Retina requires cursor to be > 120px in order to render smoothly.
+
+#if defined(OS_LINUX)
+  const float kCursorSize = 63;
+  const float kDiameter = 63;
+  const float kHotspotOffset = 32;
+  const float kHotspotRadius = 0;
+  const float kPixelSize = 9;
+#else
+  const float kCursorSize = 150;
+  const float kDiameter = 110;
+  const float kHotspotOffset = 25;
+  const float kHotspotRadius = 5;
+  const float kPixelSize = 10;
+#endif
+
+  const float kSqrt2 = 1.41f;
+
+  blink::WebScreenInfo screen_info;
+  view->GetScreenInfo(&screen_info);
+  double device_scale_factor = screen_info.deviceScaleFactor;
+
+  skia::RefPtr<SkCanvas> canvas = skia::AdoptRef(SkCanvas::NewRasterN32(
+      kCursorSize * device_scale_factor,
+      kCursorSize * device_scale_factor));
+  canvas->scale(device_scale_factor, device_scale_factor);
+
+  SkPaint paint;
+
+  // Paint original spot.
+  if (kHotspotRadius) {
+    paint.setStrokeWidth(2);
+    paint.setColor(SK_ColorDKGRAY);
+    paint.setStyle(SkPaint::kStroke_Style);
+    paint.setAntiAlias(true);
+    canvas->drawCircle(kHotspotOffset, kHotspotOffset, kHotspotRadius, paint);
+    canvas->drawLine(kHotspotOffset + kHotspotRadius / kSqrt2,
+                     kHotspotOffset + kHotspotRadius / kSqrt2,
+                     kCursorSize / 2, kCursorSize / 2,
+                     paint);
+  }
+
+  // Clip circle for magnified projection.
+  float padding = (kCursorSize - kDiameter) / 2;
+  SkPath clip_path;
+  clip_path.addOval(SkRect::MakeXYWH(padding, padding, kDiameter, kDiameter));
+  clip_path.close();
+  canvas->clipPath(clip_path, SkRegion::kIntersect_Op, true);
+
+  // Project pixels.
+  int pixel_count = kDiameter / kPixelSize;
+  SkRect src_rect = SkRect::MakeXYWH(event.x - pixel_count / 2,
+                                     event.y - pixel_count / 2,
+                                     pixel_count, pixel_count);
+  SkRect dst_rect = SkRect::MakeXYWH(padding, padding, kDiameter, kDiameter);
+  canvas->drawBitmapRectToRect(color_picker_frame_, &src_rect, dst_rect);
+
+  // Paint grid.
+  paint.setStrokeWidth(1);
+  paint.setAntiAlias(false);
+  paint.setColor(SK_ColorGRAY);
+  for (int i = 0; i < pixel_count; ++i) {
+    canvas->drawLine(padding + i * kPixelSize, padding,
+                     padding + i * kPixelSize, kCursorSize - padding, paint);
+    canvas->drawLine(padding, padding + i * kPixelSize,
+                     kCursorSize - padding, padding + i * kPixelSize, paint);
+  }
+
+  // Paint central pixel in red.
+  SkRect pixel = SkRect::MakeXYWH((kCursorSize - kPixelSize) / 2,
+                                  (kCursorSize - kPixelSize) / 2,
+                                  kPixelSize, kPixelSize);
+  paint.setColor(SK_ColorRED);
+  canvas->drawRect(pixel, paint);
+
+  // Paint outline.
+  paint.setStrokeWidth(2);
+  paint.setColor(SK_ColorDKGRAY);
+  paint.setAntiAlias(true);
+  paint.setStyle(SkPaint::kStroke_Style);
+  canvas->drawCircle(kCursorSize / 2, kCursorSize / 2, kDiameter / 2, paint);
+
+  SkBitmap result;
+  result.allocN32Pixels(kCursorSize * device_scale_factor,
+                        kCursorSize * device_scale_factor);
+  canvas->readPixels(&result, 0, 0);
+
+  WebCursor cursor;
+  WebCursor::CursorInfo cursor_info;
+  cursor_info.type = blink::WebCursorInfo::TypeCustom;
+  cursor_info.image_scale_factor = device_scale_factor;
+  cursor_info.custom_image = result;
+  cursor_info.hotspot =
+      gfx::Point(kHotspotOffset * device_scale_factor,
+                 kHotspotOffset * device_scale_factor);
+#if defined(OS_WIN)
+  cursor_info.external_handle = 0;
+#endif
+
+  cursor.InitFromCursorInfo(cursor_info);
+  DCHECK(host_);
+  host_->SetCursor(cursor);
+  return true;
 }
 
 // Input agent handlers  ------------------------------------------------------

@@ -14,11 +14,17 @@
 #include "cc/output/compositor_frame_metadata.h"
 #include "content/browser/devtools/devtools_protocol.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/render_widget_host.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 class SkBitmap;
 
 namespace IPC {
 class Message;
+}
+
+namespace blink {
+class WebMouseEvent;
 }
 
 namespace content {
@@ -79,6 +85,8 @@ class CONTENT_EXPORT RendererOverridesHandler
       scoped_refptr<DevToolsProtocol::Command> command);
   scoped_refptr<DevToolsProtocol::Response> PageQueryUsageAndQuota(
       scoped_refptr<DevToolsProtocol::Command>);
+  scoped_refptr<DevToolsProtocol::Response> PageSetColorPickerEnabled(
+      scoped_refptr<DevToolsProtocol::Command>);
 
   void ScreenshotCaptured(
       scoped_refptr<DevToolsProtocol::Command> command,
@@ -97,6 +105,10 @@ class CONTENT_EXPORT RendererOverridesHandler
      scoped_ptr<base::DictionaryValue> response_data);
 
   void NotifyScreencastVisibility(bool visible);
+  void SetColorPickerEnabled(bool enabled);
+  void UpdateColorPickerFrame();
+  void ColorPickerFrameUpdated(bool succeeded, const SkBitmap& bitmap);
+  bool HandleMouseEvent(const blink::WebMouseEvent& event);
 
   // Input domain.
   scoped_refptr<DevToolsProtocol::Response> InputEmulateTouchFromMouseEvent(
@@ -108,6 +120,9 @@ class CONTENT_EXPORT RendererOverridesHandler
   cc::CompositorFrameMetadata last_compositor_frame_metadata_;
   base::TimeTicks last_frame_time_;
   int capture_retry_count_;
+  bool color_picker_enabled_;
+  SkBitmap color_picker_frame_;
+  RenderWidgetHost::MouseEventCallback mouse_event_callback_;
   base::WeakPtrFactory<RendererOverridesHandler> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(RendererOverridesHandler);
 };
