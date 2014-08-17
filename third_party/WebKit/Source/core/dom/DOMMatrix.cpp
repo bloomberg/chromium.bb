@@ -29,4 +29,20 @@ void DOMMatrix::setIs2D(bool value)
         m_is2D = value;
 }
 
+DOMMatrix* DOMMatrix::translateSelf(double tx, double ty, double tz)
+{
+    if (!tx && !ty && !tz)
+        return this;
+
+    if (tz)
+        m_is2D = false;
+
+    if (m_is2D)
+        m_matrix.translate(tx, ty);
+    else
+        m_matrix.translate3d(tx, ty, tz);
+
+    return this;
+}
+
 } // namespace blink

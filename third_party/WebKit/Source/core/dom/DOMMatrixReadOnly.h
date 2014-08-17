@@ -11,6 +11,8 @@
 
 namespace blink {
 
+class DOMMatrix;
+
 class DOMMatrixReadOnly : public GarbageCollected<DOMMatrixReadOnly>, public ScriptWrappableBase {
 public:
     double a() const { return m_matrix.m11(); }
@@ -39,6 +41,8 @@ public:
 
     bool is2D() const;
     bool isIdentity() const;
+
+    DOMMatrix* translate(double tx, double ty, double tz = 0);
 
     const TransformationMatrix& matrix() const { return m_matrix; }
 

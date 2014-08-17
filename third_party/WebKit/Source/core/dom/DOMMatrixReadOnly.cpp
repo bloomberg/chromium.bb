@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/dom/DOMMatrixReadOnly.h"
+#include "core/dom/DOMMatrix.h"
 
 namespace blink {
 
@@ -15,6 +15,11 @@ bool DOMMatrixReadOnly::is2D() const
 bool DOMMatrixReadOnly::isIdentity() const
 {
     return m_matrix.isIdentity();
+}
+
+DOMMatrix* DOMMatrixReadOnly::translate(double tx, double ty, double tz)
+{
+    return DOMMatrix::create(this)->translateSelf(tx, ty, tz);
 }
 
 } // namespace blink

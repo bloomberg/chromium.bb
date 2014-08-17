@@ -38,6 +38,8 @@ public:
     void setM43(double value) { m_matrix.setM43(value); setIs2D(!value); }
     void setM44(double value) { m_matrix.setM44(value); setIs2D(value != 1); }
 
+    DOMMatrix* translateSelf(double tx, double ty, double tz = 0);
+
 private:
     DOMMatrix(const TransformationMatrix&, bool is2D = true);
 

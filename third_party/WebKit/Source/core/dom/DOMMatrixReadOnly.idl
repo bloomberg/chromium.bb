@@ -35,4 +35,8 @@
     readonly attribute boolean isIdentity;
 
     // FIXME: Should implement some methods (See: crbug.com/388780)
+    // Immutable transform methods
+    DOMMatrix translate(unrestricted double tx,
+                        unrestricted double ty,
+                        optional unrestricted double tz = 0);
 };
