@@ -65,10 +65,6 @@ inline bool ClassCollection::elementMatches(const Element& testElement) const
         return false;
     if (!m_classNames.size())
         return false;
-    // FIXME: DOM4 allows getElementsByClassName to return non StyledElement.
-    // https://bugs.webkit.org/show_bug.cgi?id=94718
-    if (!testElement.isStyledElement())
-        return false;
     return testElement.classNames().containsAll(m_classNames);
 }
 
