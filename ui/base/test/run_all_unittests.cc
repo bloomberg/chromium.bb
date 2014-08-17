@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
-#include "ui/gfx/gfx_paths.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -58,7 +57,6 @@ void UIBaseTestSuite::Initialize() {
 #endif
 
   ui::RegisterPathProvider();
-  gfx::RegisterPathProvider();
 
   base::FilePath exe_path;
   PathService::Get(base::DIR_EXE, &exe_path);

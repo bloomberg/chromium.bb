@@ -146,6 +146,35 @@
             'screen_unittest.cc',
           ],
         }],
+        ['OS == "win"', {
+          'sources': [
+            'color_profile_win_unittest.cc',
+            'font_fallback_win_unittest.cc',
+            'icon_util_unittest.cc',
+            'icon_util_unittests.rc',
+            'platform_font_win_unittest.cc',
+          ],
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'DelayLoadDLLs': [
+                'd2d1.dll',
+                'd3d10_1.dll',
+              ],
+              'AdditionalDependencies': [
+                'd2d1.lib',
+                'd3d10_1.lib',
+              ],
+            },
+          },
+          'link_settings': {
+            'libraries': [
+              '-limm32.lib',
+              '-loleacc.lib',
+            ],
+          },
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [ 4267, ],
+        }],
       ],
     }
   ],

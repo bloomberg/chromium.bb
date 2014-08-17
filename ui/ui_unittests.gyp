@@ -110,15 +110,6 @@
             'base/dragdrop/os_exchange_data_win_unittest.cc',
             'base/win/hwnd_subclass_unittest.cc',
             'base/win/open_file_name_win_unittest.cc',
-            'gfx/color_profile_win_unittest.cc',
-            'gfx/font_fallback_win_unittest.cc',
-            'gfx/icon_util_unittest.cc',
-            'gfx/icon_util_unittests.rc',
-            'gfx/platform_font_win_unittest.cc',
-          ],
-          'include_dirs': [
-            '../..',
-            '../third_party/wtl/include',
           ],
           'msvs_settings': {
             'VCLinkerTool': {
