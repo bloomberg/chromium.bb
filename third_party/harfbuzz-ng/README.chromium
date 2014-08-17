@@ -1,7 +1,7 @@
 Name: harfbuzz-ng
 Short Name: harfbuzz-ng
 URL: http://harfbuzz.org
-Version: 0.9.35
+Version: 0d2c2f238bf0a847ecd55a70cc0f081f18a053ac
 Date: 20140813
 Security Critical: yes
 License: MIT
@@ -11,9 +11,12 @@ Description:
 This is harfbuzz-ng, a new implementation of harfbuzz with a different
 API from the old one.
 
-This copy of harfbuzz is updated by downloading the release tarball
+This copy of harfbuzz is usually updated by downloading the release tarball
 from http://www.freedesktop.org/software/harfbuzz/release/ , removing
 files in src, copying *.h *.hh *.cc from the tarball's src folder
 over to src, apply google.patch, then checking for removed or added
 files and update our build recipes in BUILD.gn and harfbuzz.gyp
 accordingly.
+
+Right now, it uses revision 0d2c2f238bf0a847ecd55a70cc0f081f18a053ac from
+https://github.com/behdad/harfbuzz
