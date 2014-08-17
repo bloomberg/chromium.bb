@@ -558,8 +558,6 @@
         '../extensions/common/permissions/permissions_data_unittest.cc',
         '../extensions/common/url_pattern_set_unittest.cc',
         '../extensions/common/url_pattern_unittest.cc',
-        '../extensions/renderer/activity_log_converter_strategy_unittest.cc',
-        '../extensions/renderer/script_context_set_unittest.cc',
         # histograms.xml is analyzed by AboutFlagsHistogramTest, so this
         # dependency is needed to make commit bots run unit_tests on
         # histograms.xml changes.
@@ -2106,7 +2104,6 @@
             ['exclude', '^utility/media_galleries/'],
           ],
           'sources!': [
-            '../extensions/renderer/activity_log_converter_strategy_unittest.cc',
             'browser/extensions/active_script_controller_unittest.cc',
             'browser/extensions/active_tab_unittest.cc',
             'browser/extensions/extension_context_menu_model_unittest.cc',
