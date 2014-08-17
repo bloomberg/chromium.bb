@@ -39,6 +39,10 @@ public:
     void setM44(double value) { m_matrix.setM44(value); setIs2D(value != 1); }
 
     DOMMatrix* translateSelf(double tx, double ty, double tz = 0);
+    DOMMatrix* scaleSelf(double scale, double ox = 0, double oy = 0);
+    DOMMatrix* scale3dSelf(double scale, double ox = 0, double oy = 0, double oz = 0);
+    DOMMatrix* scaleNonUniformSelf(double sx, double sy = 1, double sz = 1,
+        double ox = 0, double oy = 0, double oz = 0);
 
 private:
     DOMMatrix(const TransformationMatrix&, bool is2D = true);

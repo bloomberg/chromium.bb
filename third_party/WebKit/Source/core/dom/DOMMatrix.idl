@@ -38,4 +38,17 @@
     DOMMatrix translateSelf(unrestricted double tx,
                             unrestricted double ty,
                             optional unrestricted double tz = 0);
+    DOMMatrix scaleSelf(unrestricted double scale,
+                        optional unrestricted double ox = 0,
+                        optional unrestricted double oy = 0);
+    DOMMatrix scale3dSelf(unrestricted double scale,
+                          optional unrestricted double ox = 0,
+                          optional unrestricted double oy = 0,
+                          optional unrestricted double oz = 0);
+    DOMMatrix scaleNonUniformSelf(unrestricted double sx,
+                                  optional unrestricted double sy = 1,
+                                  optional unrestricted double sz = 1,
+                                  optional unrestricted double ox = 0,
+                                  optional unrestricted double oy = 0,
+                                  optional unrestricted double oz = 0);
 };

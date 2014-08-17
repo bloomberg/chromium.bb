@@ -43,6 +43,10 @@ public:
     bool isIdentity() const;
 
     DOMMatrix* translate(double tx, double ty, double tz = 0);
+    DOMMatrix* scale(double scale, double ox = 0, double oy = 0);
+    DOMMatrix* scale3d(double scale, double ox = 0, double oy = 0, double oz = 0);
+    DOMMatrix* scaleNonUniform(double sx, double sy = 1, double sz = 1,
+        double ox = 0, double oy = 0, double oz = 0);
 
     const TransformationMatrix& matrix() const { return m_matrix; }
 
