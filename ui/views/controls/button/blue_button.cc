@@ -4,9 +4,9 @@
 
 #include "ui/views/controls/button/blue_button.h"
 
-#include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/sys_color_change_listener.h"
+#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/button/label_button_border.h"
 
 namespace views {

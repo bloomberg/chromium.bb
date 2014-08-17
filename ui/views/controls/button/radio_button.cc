@@ -5,9 +5,9 @@
 #include "ui/views/controls/button/radio_button.h"
 
 #include "base/logging.h"
-#include "grit/ui_resources.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {

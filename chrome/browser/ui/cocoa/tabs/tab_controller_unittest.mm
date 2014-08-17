@@ -13,11 +13,11 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_drag_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #include "grit/theme_resources.h"
-#include "grit/ui_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/resources/grit/ui_resources.h"
 
 // Implements the target interface for the tab, which gets sent messages when
 // the tab is clicked on by the user and when its close box is clicked.

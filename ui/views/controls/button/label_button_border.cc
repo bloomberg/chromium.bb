@@ -5,7 +5,6 @@
 #include "ui/views/controls/button/label_button_border.h"
 
 #include "base/logging.h"
-#include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/effects/SkLerpXfermode.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -15,6 +14,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/sys_color_change_listener.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/native_theme_delegate.h"

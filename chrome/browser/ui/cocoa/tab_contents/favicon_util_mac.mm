@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/cocoa/tab_contents/favicon_util_mac.h"
 
 #include "chrome/browser/favicon/favicon_tab_helper.h"
-#include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/resources/grit/ui_resources.h"
 
 namespace mac {
 

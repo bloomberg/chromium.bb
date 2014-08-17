@@ -23,8 +23,8 @@
 #endif
 
 #if defined(USE_X11)
-#include "grit/ui_resources.h"
 #include "ui/base/cursor/cursor_loader_x11.h"
+#include "ui/resources/grit/ui_resources.h"
 #endif
 
 namespace ash {

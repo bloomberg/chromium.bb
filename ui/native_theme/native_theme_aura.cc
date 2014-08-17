@@ -7,7 +7,6 @@
 #include <limits>
 
 #include "base/logging.h"
-#include "grit/ui_resources.h"
 #include "ui/base/layout.h"
 #include "ui/base/nine_image_painter_factory.h"
 #include "ui/gfx/canvas.h"
@@ -20,6 +19,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme_switches.h"
+#include "ui/resources/grit/ui_resources.h"
 
 using gfx::NineImagePainter;
 

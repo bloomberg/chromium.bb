@@ -7,8 +7,8 @@
 #include <cmath>
 
 #include "base/format_macros.h"
-#include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/resources/grit/ui_resources.h"
 
 // The width of the status bar item when it's just the icon.
 const CGFloat kStatusItemLength = 26;

@@ -14,11 +14,11 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/views/tab_icon_view_model.h"
 #include "grit/theme_resources.h"
-#include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/favicon_size.h"
+#include "ui/resources/grit/ui_resources.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/app_icon_win.h"

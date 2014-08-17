@@ -31,7 +31,7 @@ include_rules = [
 
   # Temporary until we bundle our own favicon. See
   # AwContentBrowserClient::GetDefaultFavicon
-  "!grit/ui_resources.h",
+  "!ui/resources/grit/ui_resources.h",
 
   # POD structure required by the find-in-page IPC messages.
   "+third_party/WebKit/public/web/WebFindOptions.h",

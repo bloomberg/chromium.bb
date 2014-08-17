@@ -9,7 +9,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/themes/browser_theme_pack.h"
 #include "grit/theme_resources.h"
-#include "grit/ui_resources.h"
+#include "ui/resources/grit/ui_resources.h"
 
 namespace {
 

@@ -1,5 +1,4 @@
 include_rules = [
-  "+grit/ui_resources.h",
   "+grit/ui_strings.h",
   "+skia/ext",
   "+third_party/iaccessible2",
@@ -14,6 +13,7 @@ include_rules = [
   "+ui/gl/gl_surface.h",  # To initialize GL for tests.
   "+ui/native_theme",
   "+ui/ozone/public",
+  "+ui/resources/grit/ui_resources.h",
   "+ui/wm/core",
   "+ui/wm/public",
 

@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/chrome_style.h"
 
 #include "chrome/browser/themes/theme_properties.h"
-#include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
+#include "ui/resources/grit/ui_resources.h"
 
 namespace chrome_style {
 

@@ -4,13 +4,13 @@
 
 #include "ash/drag_drop/drag_image_view.h"
 
-#include "grit/ui_resources.h"
 #include "skia/ext/image_operations.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/size_conversions.h"
+#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow_types.h"
 

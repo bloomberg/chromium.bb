@@ -4,9 +4,9 @@
 
 #include "ui/views/controls/button/checkbox.h"
 
-#include "grit/ui_resources.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/painter.h"
 

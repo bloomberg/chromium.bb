@@ -4,12 +4,12 @@
 
 #include "ui/app_list/app_list_menu.h"
 
-#include "grit/ui_resources.h"
 #include "grit/ui_strings.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_separator_types.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/resources/grit/ui_resources.h"
 
 namespace app_list {
 

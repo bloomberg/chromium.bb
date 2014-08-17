@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -16,6 +15,7 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
+#include "ui/resources/grit/ui_resources.h"
 
 namespace {
 

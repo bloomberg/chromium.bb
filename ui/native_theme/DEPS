@@ -1,7 +1,7 @@
 include_rules = [
-  "+grit/ui_resources.h",
   "+skia/ext",
   "+third_party/skia",
   "+ui/base",
   "+ui/gfx",
+  "+ui/resources/grit/ui_resources.h",
 ]

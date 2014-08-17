@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
-#include "grit/ui_resources.h"
 #include "grit/ui_strings.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -18,6 +17,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/rect.h"
+#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/color_constants.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/views_delegate.h"

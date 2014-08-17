@@ -5,7 +5,6 @@
 #include "ui/native_theme/common_theme.h"
 
 #include "base/logging.h"
-#include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -14,6 +13,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/sys_color_change_listener.h"
+#include "ui/resources/grit/ui_resources.h"
 
 namespace {
 

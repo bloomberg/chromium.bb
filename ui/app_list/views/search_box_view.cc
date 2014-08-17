@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "grit/ui_resources.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/search_box_model.h"
@@ -15,6 +14,7 @@
 #include "ui/app_list/views/search_box_view_delegate.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
+#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/menu_button.h"

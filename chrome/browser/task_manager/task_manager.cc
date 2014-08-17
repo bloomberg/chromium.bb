@@ -41,12 +41,12 @@
 #include "content/public/common/result_codes.h"
 #include "extensions/browser/extension_system.h"
 #include "grit/generated_resources.h"
-#include "grit/ui_resources.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/resources/grit/ui_resources.h"
 
 #if defined(OS_MACOSX)
 #include "content/public/browser/browser_child_process_host.h"

@@ -18,8 +18,8 @@
 #import "chrome/browser/ui/cocoa/infobars/infobar_gradient_view.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "grit/theme_resources.h"
-#include "grit/ui_resources.h"
 #include "ui/gfx/image/image.h"
+#include "ui/resources/grit/ui_resources.h"
 
 @interface InfoBarController ()
 // Sets |label_| based on |labelPlaceholder_|, sets |labelPlaceholder_| to nil.

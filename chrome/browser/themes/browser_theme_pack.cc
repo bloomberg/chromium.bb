@@ -21,7 +21,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/id_util.h"
 #include "grit/theme_resources.h"
-#include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/resource/data_pack.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -34,6 +33,7 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/resources/grit/ui_resources.h"
 
 using content::BrowserThread;
 using extensions::Extension;

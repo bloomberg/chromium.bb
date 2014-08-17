@@ -6,10 +6,10 @@
 
 #include <algorithm>
 
-#include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/insets.h"
+#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/painter.h"
 
 namespace app_list {

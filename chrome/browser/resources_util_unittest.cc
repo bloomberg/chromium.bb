@@ -5,8 +5,8 @@
 #include "chrome/browser/resources_util.h"
 
 #include "grit/theme_resources.h"
-#include "grit/ui_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/resources/grit/ui_resources.h"
 
 #if defined(OS_CHROMEOS)
 #include "grit/ui_chromeos_resources.h"

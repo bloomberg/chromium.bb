@@ -11,9 +11,9 @@
 #import "components/bookmarks/browser/bookmark_model.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
-#include "grit/ui_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/resources/grit/ui_resources.h"
 
 using base::UserMetricsAction;
 

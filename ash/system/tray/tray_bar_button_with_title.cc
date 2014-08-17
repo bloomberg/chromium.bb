@@ -6,9 +6,9 @@
 
 #include "ash/system/tray/tray_constants.h"
 #include "base/memory/scoped_ptr.h"
-#include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/painter.h"
 

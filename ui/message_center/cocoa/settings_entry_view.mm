@@ -7,11 +7,11 @@
 #include <algorithm>
 
 #include "base/strings/sys_string_conversions.h"
-#include "grit/ui_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #import "ui/message_center/cocoa/settings_controller.h"
 #include "ui/message_center/message_center_style.h"
+#include "ui/resources/grit/ui_resources.h"
 
 using message_center::settings::kEntryIconSize;
 using message_center::settings::kInternalHorizontalSpacing;
