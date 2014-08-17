@@ -14,18 +14,18 @@
 #include "chrome/browser/extensions/api/copresence/copresence_translations.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/copresence.h"
-#include "components/copresence/public/copresence_client_delegate.h"
+#include "components/copresence/public/copresence_delegate.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 
 namespace copresence {
-class CopresenceClient;
+class CopresenceManager;
 class WhispernetClient;
 }
 
 namespace extensions {
 
 class CopresenceService : public BrowserContextKeyedAPI,
-                          public copresence::CopresenceClientDelegate {
+                          public copresence::CopresenceDelegate {
  public:
   explicit CopresenceService(content::BrowserContext* context);
   virtual ~CopresenceService();
@@ -33,9 +33,9 @@ class CopresenceService : public BrowserContextKeyedAPI,
   // BrowserContextKeyedAPI implementation.
   virtual void Shutdown() OVERRIDE;
 
-  // These accessors will always return an object. If the object doesn't exist,
-  // they will create one first.
-  copresence::CopresenceClient* client();
+  // These accessors will always return an object (except during shutdown).
+  // If the object doesn't exist, they will create one first.
+  copresence::CopresenceManager* manager();
   copresence::WhispernetClient* whispernet_client();
 
   // A registry containing the app id's associated with every subscription.
@@ -45,13 +45,17 @@ class CopresenceService : public BrowserContextKeyedAPI,
 
   void set_api_key(const std::string& api_key) { api_key_ = api_key; }
 
+  // Manager override for testing.
+  void set_manager_for_testing(
+      scoped_ptr<copresence::CopresenceManager> manager);
+
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<CopresenceService>* GetFactoryInstance();
 
  private:
   friend class BrowserContextKeyedAPIFactory<CopresenceService>;
 
-  // CopresenceClientDelegate overrides:
+  // CopresenceDelegate implementation
   virtual void HandleMessages(
       const std::string& app_id,
       const std::string& subscription_id,
@@ -70,7 +74,7 @@ class CopresenceService : public BrowserContextKeyedAPI,
   content::BrowserContext* const browser_context_;
   std::string api_key_;
 
-  scoped_ptr<copresence::CopresenceClient> client_;
+  scoped_ptr<copresence::CopresenceManager> manager_;
   scoped_ptr<copresence::WhispernetClient> whispernet_client_;
 
   DISALLOW_COPY_AND_ASSIGN(CopresenceService);

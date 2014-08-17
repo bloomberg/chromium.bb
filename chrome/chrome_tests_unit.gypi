@@ -863,6 +863,7 @@
         'browser/extensions/api/content_settings/content_settings_store_unittest.cc',
         'browser/extensions/api/content_settings/content_settings_unittest.cc',
         'browser/extensions/api/cookies/cookies_unittest.cc',
+        'browser/extensions/api/copresence/copresence_api_unittest.cc',
         'browser/extensions/api/declarative/declarative_rule_unittest.cc',
         'browser/extensions/api/declarative/deduping_factory_unittest.cc',
         'browser/extensions/api/declarative/rules_registry_service_unittest.cc',

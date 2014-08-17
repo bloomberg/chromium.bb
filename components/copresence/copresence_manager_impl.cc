@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/copresence/public/copresence_client.h"
+#include "components/copresence/copresence_manager_impl.h"
 
 #include "base/bind.h"
-#include "components/copresence/public/copresence_client_delegate.h"
+#include "components/copresence/public/copresence_delegate.h"
 #include "components/copresence/public/whispernet_client.h"
 #include "components/copresence/rpc/rpc_handler.h"
 
@@ -22,37 +22,20 @@ PendingRequest::~PendingRequest() {
 
 // Public methods
 
-CopresenceClient::CopresenceClient(CopresenceClientDelegate* delegate)
-    : delegate_(delegate), init_failed_(false), pending_init_operations_(0) {
-  DVLOG(3) << "Initializing client.";
-  pending_init_operations_++;
-  rpc_handler_.reset(new RpcHandler(delegate));
-  // We own the RpcHandler, so it won't outlive us.
-  rpc_handler_->Initialize(base::Bind(&CopresenceClient::InitStepComplete,
-                                      base::Unretained(this),
-                                      "Copresence device registration"));
-
-  pending_init_operations_++;
-  delegate_->GetWhispernetClient()->Initialize(
-      base::Bind(&CopresenceClient::InitStepComplete,
-                 // We cannot cancel WhispernetClient initialization.
-                 // TODO(ckehoe): Get rid of this.
-                 AsWeakPtr(),
-                 "Whispernet proxy initialization"));
-}
-
-CopresenceClient::~CopresenceClient() {}
+CopresenceManagerImpl::~CopresenceManagerImpl() {}
 
 // Returns false if any operations were malformed.
-void CopresenceClient::ExecuteReportRequest(copresence::ReportRequest request,
-                                            const std::string& app_id,
-                                            const StatusCallback& callback) {
-  // Don't take on any more requests, we can't execute any, init failed.
+void CopresenceManagerImpl::ExecuteReportRequest(
+    ReportRequest request,
+    const std::string& app_id,
+    const StatusCallback& callback) {
+  // Don't take on any more requests. We can't execute them since init failed.
   if (init_failed_) {
     callback.Run(FAIL);
     return;
   }
 
+  DCHECK(rpc_handler_.get());
   if (pending_init_operations_) {
     pending_requests_queue_.push_back(
         PendingRequest(request, app_id, callback));
@@ -66,10 +49,18 @@ void CopresenceClient::ExecuteReportRequest(copresence::ReportRequest request,
 
 // Private methods
 
-void CopresenceClient::CompleteInitialization() {
+CopresenceManagerImpl::CopresenceManagerImpl(CopresenceDelegate* delegate)
+    : init_failed_(false),
+      pending_init_operations_(0),
+      delegate_(delegate) {
+  DCHECK(delegate);
+}
+
+void CopresenceManagerImpl::CompleteInitialization() {
   if (pending_init_operations_)
     return;
 
+  DCHECK(rpc_handler_.get());
   if (!init_failed_)
     rpc_handler_->ConnectToWhispernet();
 
@@ -89,7 +80,8 @@ void CopresenceClient::CompleteInitialization() {
   pending_requests_queue_.clear();
 }
 
-void CopresenceClient::InitStepComplete(const std::string& step, bool success) {
+void CopresenceManagerImpl::InitStepComplete(
+    const std::string& step, bool success) {
   if (!success) {
     LOG(ERROR) << step << " failed!";
     init_failed_ = true;

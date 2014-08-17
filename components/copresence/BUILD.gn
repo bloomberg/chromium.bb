@@ -4,8 +4,9 @@
 
 static_library("copresence") {
   sources = [
-    "copresence_client.cc",
     "copresence_constants.cc",
+    "copresence_manager.cc",
+    "copresence_manager_impl.cc",
     "handlers/audio/audio_directive_handler.cc",
     "handlers/audio/audio_directive_handler.h",
     "handlers/audio/audio_directive_list.cc",
@@ -16,9 +17,9 @@ static_library("copresence") {
     "mediums/audio/audio_player.h",
     "mediums/audio/audio_recorder.cc",
     "mediums/audio/audio_recorder.h",
-    "public/copresence_client_delegate.h",
-    "public/copresence_client.h",
     "public/copresence_constants.h",
+    "public/copresence_delegate.h",
+    "public/copresence_manager.h",
     "public/whispernet_client.h",
     "rpc/http_post.cc",
     "rpc/http_post.h",

@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/copresence/proto/enums.pb.h"
-#include "components/copresence/public/copresence_client_delegate.h"
+#include "components/copresence/public/copresence_delegate.h"
 #include "components/copresence/public/whispernet_client.h"
 #include "components/copresence/rpc/http_post.h"
 #include "components/copresence/timed_map.h"
@@ -35,7 +35,7 @@ class RpcHandler {
 
   // Constructor. |delegate| is owned by the caller,
   // and must be valid as long as the RpcHandler exists.
-  explicit RpcHandler(CopresenceClientDelegate* delegate);
+  explicit RpcHandler(CopresenceDelegate* delegate);
 
   virtual ~RpcHandler();
 
@@ -43,7 +43,7 @@ class RpcHandler {
   // to be called before invoking any other methods.
   void Initialize(const SuccessCallback& init_done_callback);
 
-  // Send a report request
+  // Send a report request.
   void SendReportRequest(scoped_ptr<ReportRequest> request);
   void SendReportRequest(scoped_ptr<ReportRequest> request,
                          const std::string& app_id,
@@ -120,7 +120,7 @@ class RpcHandler {
       bool audible,
       const WhispernetClient::SamplesCallback& samples_callback);
 
-  CopresenceClientDelegate* delegate_;  // Belongs to the caller.
+  CopresenceDelegate* delegate_;  // Belongs to the caller.
   TimedMap<std::string, bool> invalid_audio_token_cache_;
   PostCallback server_post_callback_;
 

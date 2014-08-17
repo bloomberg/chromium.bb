@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_COPRESENCE_PUBLIC_COPRESENCE_CLIENT_DELEGATE_H_
-#define COMPONENTS_COPRESENCE_PUBLIC_COPRESENCE_CLIENT_DELEGATE_H_
+#ifndef COMPONENTS_COPRESENCE_PUBLIC_COPRESENCE_DELEGATE_H_
+#define COMPONENTS_COPRESENCE_PUBLIC_COPRESENCE_DELEGATE_H_
 
 #include <string>
 #include <vector>
@@ -25,7 +25,7 @@ enum CopresenceStatus { SUCCESS, FAIL };
 typedef base::Callback<void(CopresenceStatus)> StatusCallback;
 
 // A delegate interface for users of Copresence.
-class CopresenceClientDelegate {
+class CopresenceDelegate {
  public:
   // This method will be called when we have subscribed messages that need to
   // be sent to their respective apps.
@@ -45,4 +45,4 @@ class CopresenceClientDelegate {
 
 }  // namespace copresence
 
-#endif  // COMPONENTS_COPRESENCE_PUBLIC_COPRESENCE_CLIENT_DELEGATE_H_
+#endif  // COMPONENTS_COPRESENCE_PUBLIC_COPRESENCE_DELEGATE_H_

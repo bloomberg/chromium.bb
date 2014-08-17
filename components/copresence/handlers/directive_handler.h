@@ -18,7 +18,7 @@ namespace copresence {
 class Directive;
 
 // The directive handler manages transmit and receive directives
-// given to it by the client.
+// given to it by the manager.
 class DirectiveHandler {
  public:
   DirectiveHandler();

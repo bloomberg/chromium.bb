@@ -17,7 +17,7 @@
 #include "components/copresence/proto/codes.pb.h"
 #include "components/copresence/proto/data.pb.h"
 #include "components/copresence/proto/rpcs.pb.h"
-#include "components/copresence/public/copresence_client_delegate.h"
+#include "components/copresence/public/copresence_delegate.h"
 #include "net/http/http_status_code.h"
 
 // TODO(ckehoe): Return error messages for bad requests.
@@ -244,7 +244,7 @@ void AllowOptedOutMessages(ReportRequest* request) {
 
 // Public methods
 
-RpcHandler::RpcHandler(CopresenceClientDelegate* delegate)
+RpcHandler::RpcHandler(CopresenceDelegate* delegate)
     : delegate_(delegate),
       invalid_audio_token_cache_(
           base::TimeDelta::FromMilliseconds(kInvalidTokenExpiryTimeMs),

@@ -83,7 +83,7 @@ class FakeDirectiveHandler : public DirectiveHandler {
 
 }  // namespace
 
-class RpcHandlerTest : public testing::Test, public CopresenceClientDelegate {
+class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
  public:
   RpcHandlerTest() : rpc_handler_(this), status_(SUCCESS), api_key_("API key") {
     rpc_handler_.server_post_callback_ =
@@ -155,7 +155,7 @@ class RpcHandlerTest : public testing::Test, public CopresenceClientDelegate {
         response);
   }
 
-  // CopresenceClientDelegate implementation
+  // CopresenceDelegate implementation
 
   virtual void HandleMessages(
       const std::string& app_id,

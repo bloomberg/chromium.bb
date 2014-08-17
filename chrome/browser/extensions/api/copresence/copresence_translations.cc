@@ -130,7 +130,7 @@ bool AddSubscribeToRequest(
     return false;
   }
 
-  // Convert from client to server subscription format.
+  // Convert from IDL to server subscription format.
   copresence::Subscription* subscription_proto =
       request->mutable_manage_subscriptions_request()->add_subscription();
   subscription_proto->set_id(subscription.id);

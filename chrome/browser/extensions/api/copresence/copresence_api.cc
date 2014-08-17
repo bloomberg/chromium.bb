@@ -12,7 +12,7 @@
 #include "components/copresence/proto/data.pb.h"
 #include "components/copresence/proto/enums.pb.h"
 #include "components/copresence/proto/rpcs.pb.h"
-#include "components/copresence/public/copresence_client.h"
+#include "components/copresence/public/copresence_manager.h"
 #include "components/copresence/public/whispernet_client.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/event_router.h"
@@ -37,10 +37,10 @@ CopresenceService::CopresenceService(content::BrowserContext* context)
 
 CopresenceService::~CopresenceService() {}
 
-copresence::CopresenceClient* CopresenceService::client() {
-  if (!client_ && !is_shutting_down_)
-    client_.reset(new copresence::CopresenceClient(this));
-  return client_.get();
+copresence::CopresenceManager* CopresenceService::manager() {
+  if (!manager_ && !is_shutting_down_)
+    manager_ = copresence::CopresenceManager::Create(this);
+  return manager_.get();
 }
 
 copresence::WhispernetClient* CopresenceService::whispernet_client() {
@@ -51,8 +51,13 @@ copresence::WhispernetClient* CopresenceService::whispernet_client() {
 
 void CopresenceService::Shutdown() {
   is_shutting_down_ = true;
-  client_.reset();
+  manager_.reset();
   whispernet_client_.reset();
+}
+
+void CopresenceService::set_manager_for_testing(
+    scoped_ptr<copresence::CopresenceManager> manager) {
+  manager_ = manager.Pass();
 }
 
 // static
@@ -131,8 +136,8 @@ ExtensionFunction::ResponseAction CopresenceExecuteFunction::Run() {
       CopresenceService::GetFactoryInstance()->Get(browser_context());
 
   // This can only happen if we're shutting down. In all other cases, if we
-  // don't have a client, we'll create one.
-  if (!service->client())
+  // don't have a manager, we'll create one.
+  if (!service->manager())
     return RespondNow(Error(kShuttingDownMessage));
 
   // Each execute will correspond to one ReportRequest protocol buffer.
@@ -144,7 +149,7 @@ ExtensionFunction::ResponseAction CopresenceExecuteFunction::Run() {
     return RespondNow(Error(kInvalidOperationsMessage));
   }
 
-  service->client()->ExecuteReportRequest(
+  service->manager()->ExecuteReportRequest(
       request,
       extension_id(),
       base::Bind(&CopresenceExecuteFunction::SendResult, this));
