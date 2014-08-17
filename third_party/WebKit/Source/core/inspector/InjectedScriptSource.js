@@ -140,6 +140,15 @@ function nullifyObjectProto(obj)
 }
 
 /**
+ * @param {*} obj
+ * @return {boolean}
+ */
+function isUInt32(obj)
+{
+    return typeof obj === "number" && obj >>> 0 === obj && (obj > 0 || 1 / obj > 0);
+}
+
+/**
  * FireBug's array detection.
  * @param {*} obj
  * @return {boolean}
@@ -150,10 +159,10 @@ function isArrayLike(obj)
         if (typeof obj !== "object")
             return false;
         if (typeof obj.splice === "function")
-            return isFinite(obj.length);
+            return isUInt32(obj.length);
         var str = InjectedScriptHost.callFunction(Object.prototype.toString, obj);
         if (str === "[object Arguments]")
-            return isFinite(obj.length);
+            return isUInt32(obj.length);
     } catch (e) {
     }
     return false;

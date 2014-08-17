@@ -7,9 +7,11 @@ Running: testRuntimeAgentCallFunctionOn
 
 Running: dumpConsoleMessages
 testOverriddenArrayPushAndMathMax()
-testOverriddenConstructorName()
-testThrowConstructorName()
 [1, 2, 3]
+testOverriddenConstructorName()
 Object {constructor: Object}
+testThrowConstructorName()
 Object {constructor: (...)}
+testOverriddenIsFinite()
+["arg1", "arg2"]
 

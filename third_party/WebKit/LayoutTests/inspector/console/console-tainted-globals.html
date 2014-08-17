@@ -72,15 +72,38 @@ function testThrowConstructorName()
     return obj;
 }
 
+function testOverriddenIsFinite()
+{
+    window.isFinite = throwGetter;
+    var out;
+    (function() {
+        out = arguments;
+    })("arg1", "arg2");
+    return out;
+}
+
 function test()
 {
     InspectorTest.runTestSuite([
         function evaluateInConsole(next)
         {
-            InspectorTest.evaluateInConsole("testOverriddenArrayPushAndMathMax()");
-            InspectorTest.evaluateInConsole("testOverriddenConstructorName()");
-            InspectorTest.evaluateInConsole("testThrowConstructorName()");
-            InspectorTest.runAfterPendingDispatches(next);
+            var expressions = [
+                "testOverriddenArrayPushAndMathMax()",
+                "testOverriddenConstructorName()",
+                "testThrowConstructorName()",
+                "testOverriddenIsFinite()"
+            ];
+
+            function iterate()
+            {
+                var expr = expressions.shift();
+                if (!expr) {
+                    InspectorTest.runAfterPendingDispatches(next);
+                    return;
+                }
+                InspectorTest.evaluateInConsole(expr, iterate);
+            }
+            iterate();
         },
 
         function testRuntimeAgentCallFunctionOn(next)

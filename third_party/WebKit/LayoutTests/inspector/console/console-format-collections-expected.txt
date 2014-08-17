@@ -8,6 +8,14 @@ CONSOLE MESSAGE: line 41: 1,2,
 CONSOLE MESSAGE: line 44: [object Object]
 CONSOLE MESSAGE: line 51: [object Object]
 CONSOLE MESSAGE: line 55: [object DOMTokenList]
+CONSOLE MESSAGE: line 58: [object Object]
+CONSOLE MESSAGE: line 59: [object Object]
+CONSOLE MESSAGE: line 61: [object Object]
+CONSOLE MESSAGE: line 62: [object Object]
+CONSOLE MESSAGE: line 63: [object Object]
+CONSOLE MESSAGE: line 64: [object Object]
+CONSOLE MESSAGE: line 65: [object Object]
+CONSOLE MESSAGE: line 66: [object Object]
 CONSOLE MESSAGE: line 15: [object HTMLCollection]
 CONSOLE MESSAGE: line 19: [object HTMLCollection]
 CONSOLE MESSAGE: line 23: [object HTMLOptionsCollection]
@@ -18,6 +26,14 @@ CONSOLE MESSAGE: line 41: 1,2,
 CONSOLE MESSAGE: line 44: [object Object]
 CONSOLE MESSAGE: line 51: [object Object]
 CONSOLE MESSAGE: line 55: [object DOMTokenList]
+CONSOLE MESSAGE: line 58: [object Object]
+CONSOLE MESSAGE: line 59: [object Object]
+CONSOLE MESSAGE: line 61: [object Object]
+CONSOLE MESSAGE: line 62: [object Object]
+CONSOLE MESSAGE: line 63: [object Object]
+CONSOLE MESSAGE: line 64: [object Object]
+CONSOLE MESSAGE: line 65: [object Object]
+CONSOLE MESSAGE: line 66: [object Object]
 Tests that console nicely formats HTML Collections, NodeLists and DOMTokenLists.
 
 HTMLCollection[1] console-format-collections.html:15
@@ -30,6 +46,14 @@ Array[2] console-format-collections.html:41
 NonArrayWithLength console-format-collections.html:44
 Arguments[2] console-format-collections.html:51
 DOMTokenList[3] console-format-collections.html:55
+ArrayLike[5] console-format-collections.html:58
+ArrayLike[4294967295] console-format-collections.html:59
+ArrayLike console-format-collections.html:61
+ArrayLike console-format-collections.html:62
+ArrayLike console-format-collections.html:63
+ArrayLike console-format-collections.html:64
+ArrayLike console-format-collections.html:65
+ArrayLike console-format-collections.html:66
 [select#sel, sel: select#sel, item: function, namedItem: function] console-format-collections.html:15
 [script, script, script, item: function, namedItem: function] console-format-collections.html:19
 [option, option, selectedIndex: 0, namedItem: function, add: function, remove: function, item: function] console-format-collections.html:23
@@ -40,4 +64,12 @@ DOMTokenList[3] console-format-collections.html:55
 NonArrayWithLength {keys: Array[0], length: (...)} console-format-collections.html:44
 [1, "2"] console-format-collections.html:51
 ["c1", "c2", "c3", item: function, contains: function, add: function, remove: function, toggle: function] console-format-collections.html:55
+[splice: function] console-format-collections.html:58
+[splice: function] console-format-collections.html:59
+ArrayLike {length: -5, splice: function} console-format-collections.html:61
+ArrayLike {length: 5.6, splice: function} console-format-collections.html:62
+ArrayLike {length: NaN, splice: function} console-format-collections.html:63
+ArrayLike {length: Infinity, splice: function} console-format-collections.html:64
+ArrayLike {length: -0, splice: function} console-format-collections.html:65
+ArrayLike {length: 4294967296, splice: function} console-format-collections.html:66
 
