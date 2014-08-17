@@ -59,7 +59,7 @@ w3c/csswg-test/.htaccess [ Skip ]
 w3c/web-platform-tests/2dcontext [ Skip ]
 w3c/web-platform-tests/DOMEvents [ Skip ]
 w3c/web-platform-tests/FileAPI [ Skip ]
-w3c/web-platform-tests/IndexedDB [ Skip ]
+# w3c/web-platform-tests/IndexedDB [ Pass ]
 w3c/web-platform-tests/WebCryptoAPI [ Skip ]
 w3c/web-platform-tests/WebIDL [ Skip ]
 w3c/web-platform-tests/XMLHttpRequest [ Skip ]
@@ -72,6 +72,7 @@ w3c/web-platform-tests/config.default.json [ Skip ]
 w3c/web-platform-tests/conformance-checkers [ Skip ]
 w3c/web-platform-tests/content-security-policy [ Skip ]
 w3c/web-platform-tests/cors [ Skip ]
+# w3c/web-platform-tests/custom-elements [ Pass ]
 w3c/web-platform-tests/dom [ Skip ]
 w3c/web-platform-tests/domparsing [ Skip ]
 w3c/web-platform-tests/domxpath [ Skip ]
@@ -81,6 +82,7 @@ w3c/web-platform-tests/fonts [ Skip ]
 w3c/web-platform-tests/geolocation-API [ Skip ]
 w3c/web-platform-tests/hr-time [ Skip ]
 w3c/web-platform-tests/html [ Skip ]
+# w3c/web-platform-tests/html-imports [ Pass ]
 w3c/web-platform-tests/html-longdesc [ Skip ]
 w3c/web-platform-tests/html-media-capture [ Skip ]
 w3c/web-platform-tests/http [ Skip ]
@@ -88,7 +90,7 @@ w3c/web-platform-tests/images [ Skip ]
 w3c/web-platform-tests/js [ Skip ]
 w3c/web-platform-tests/media [ Skip ]
 w3c/web-platform-tests/media-source [ Skip ]
-w3c/web-platform-tests/mediacapture-streams [ Skip ]
+# w3c/web-platform-tests/mediacapture-streams [ Pass ]
 w3c/web-platform-tests/microdata [ Skip ]
 w3c/web-platform-tests/navigation-timing [ Skip ]
 w3c/web-platform-tests/notifications [ Skip ]
@@ -107,6 +109,7 @@ w3c/web-platform-tests/selectors-api [ Skip ]
 w3c/web-platform-tests/serve.py [ Skip ]
 w3c/web-platform-tests/server-side.md [ Skip ]
 w3c/web-platform-tests/service-workers [ Skip ]
+# w3c/web-platform-tests/shadow-dom [ Pass ]
 w3c/web-platform-tests/tools [ Skip ]
 w3c/web-platform-tests/touch-events [ Skip ]
 w3c/web-platform-tests/typedarrays [ Skip ]
@@ -118,6 +121,7 @@ w3c/web-platform-tests/webaudio [ Skip ]
 w3c/web-platform-tests/webdriver [ Skip ]
 w3c/web-platform-tests/webgl [ Skip ]
 w3c/web-platform-tests/webmessaging [ Skip ]
+# w3c/web-platform-tests/webrtc [ Pass ]
 w3c/web-platform-tests/websockets [ Skip ]
 w3c/web-platform-tests/webstorage [ Skip ]
 w3c/web-platform-tests/webvtt [ Skip ]
@@ -125,6 +129,25 @@ w3c/web-platform-tests/workers [ Skip ]
 
 # Exceptions for individual files that fail due to bugs in the upstream tests
 # that we shouldn't bother importing until they are fixed.
+
+# Depends on spec bug: https://www.w3.org/Bugs/Public/show_bug.cgi?id=26492
+w3c/web-platform-tests/IndexedDB/key_invalid.htm [ Skip ]
+
+# Many failures due to http://crbug.com/43394
+w3c/web-platform-tests/IndexedDB/interfaces.html [ Skip ]
+
+# these contain an extraneous debug log div ..
+w3c/web-platform-tests/html-imports/link-import-null.html [ Skip ]
+w3c/web-platform-tests/html-imports/link-import.html [ Skip ]
+w3c/web-platform-tests/html-imports/loading-import.html [ Skip ]
+
+# We'll never be able to test WebRTC deny tests since we always auto-allow
+# user media.
+w3c/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/deny.html [ Skip ]
+
+# crbug.com/404303: Was broken as of 2014-07-06.
+w3c/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/unknownkey-option-param.html
+w3c/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/empty-option-param.html
 
 # uses link="reference" rather than link="match"
 w3c/web-platform-tests/shadow-dom/shadow-trees/hosting-multiple-shadow-trees-002.html [ Skip ]
