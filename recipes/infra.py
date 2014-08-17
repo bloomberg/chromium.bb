@@ -13,16 +13,21 @@ class Infra(recipe_util.Recipe):
   """Basic Recipe class for the Infrastructure repositories."""
 
   @staticmethod
-  def fetch_spec(props):
-    url = 'https://chromium.googlesource.com/infra/infra.git'
-    solution = {
-        'name'     : 'infra',
-        'url'      : url,
-        'deps_file': 'DEPS',
-        'managed'  : False,
+  def fetch_spec(_props):
+    solution = lambda name, path_infix = None: {
+      'name'     : name,
+      'url'      : 'https://chromium.googlesource.com/infra/%s%s.git' % (
+        path_infix + '/' if path_infix else '', name
+      ),
+      'deps_file': 'DEPS',
+      'managed'  : False,
     }
     spec = {
-        'solutions': [solution],
+        'solutions': [
+          solution('infra'),
+          solution('expect_tests', 'testing'),
+          solution('testing_support', 'testing'),
+        ],
     }
     return {
         'type': 'gclient_git',
