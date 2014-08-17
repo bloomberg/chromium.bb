@@ -119,11 +119,11 @@ deps = {
 
   "src/third_party/WebKit/LayoutTests/w3c/web-platform-tests":
     Var("chromium_git") +
-    "/external/w3c/web-platform-tests.git@6c7bd34e408ff69687a95d75b7e562fa84148997",
+    "/external/w3c/web-platform-tests.git@fd608375f09b02b54ccba4e99be8365769be43c5",
 
   "src/third_party/WebKit/LayoutTests/w3c/csswg-test":
     Var("chromium_git") +
-    "/external/w3c/csswg-test.git@f9b9daa33eac525923e941333d389fcb42f9b19f",
+    "/external/w3c/csswg-test.git@0b12ea22689ee2179f3e9bff389db22f4efd6ed5",
 
   "src/third_party/icu":
     "/trunk/deps/third_party/icu52@287122",

@@ -11,3 +11,20 @@
 # Expectations to upstream into blink after the next W3C roll has rolled into Blink.
 # 
 
+crbug.com/387740 w3c/web-platform-tests/mediacapture-streams/stream-api/introduction/disabled-audio-silence.html [ Skip ]
+crbug.com/387740 w3c/web-platform-tests/mediacapture-streams/stream-api/introduction/disabled-video-black.html [ Skip ]
+crbug.com/387740 w3c/web-platform-tests/mediacapture-streams/stream-api/mediastream/mediastream-id-manual.html [ Skip ]
+crbug.com/387740 w3c/web-platform-tests/mediacapture-streams/stream-api/mediastreamtrack/mediastreamtrack-end.html [ Skip ]
+crbug.com/387740 w3c/web-platform-tests/mediacapture-streams/stream-api/mediastreamtrack/mediastreamtrack-init.html [ Skip ]
+crbug.com/387740 w3c/web-platform-tests/mediacapture-streams/stream-api/video-and-audio-tracks/audiostreamtrack.html [ Skip ]
+crbug.com/387740 w3c/web-platform-tests/mediacapture-streams/stream-api/video-and-audio-tracks/videostreamtrack.html [ Skip ]
+crbug.com/387740 w3c/web-platform-tests/mediacapture-streams/mediastreams-as-media-elements/video-assignment-manual.html [ Skip ]
+crbug.com/387740 w3c/web-platform-tests/mediacapture-streams/stream-api/mediastream/audio.html [ Skip ]
+crbug.com/387740 w3c/web-platform-tests/mediacapture-streams/stream-api/mediastream/mediastream-finished-add.html [ Skip ]
+crbug.com/387740 w3c/web-platform-tests/mediacapture-streams/stream-api/mediastream/mediastream-idl.html [ Skip ]
+crbug.com/387740 w3c/web-platform-tests/mediacapture-streams/stream-api/mediastream/mediastream-removetrack.html [ Skip ]
+
+crbug.com/404303 w3c/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/empty-option-param.html [ Failure ]
+crbug.com/404303 w3c/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/getusermedia-optional-constraint.html [ Failure ]
+crbug.com/404303 w3c/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/getusermedia-trivial-constraint.html [ Failure ]
+crbug.com/404303 w3c/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/unknownkey-option-param.html [ Failure ]
