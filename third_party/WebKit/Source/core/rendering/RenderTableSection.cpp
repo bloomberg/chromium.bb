@@ -357,6 +357,42 @@ static void updatePositionIncreasedWithRowHeight(long long extraHeight, long lon
     remainder += (extraHeight * rowHeight) % totalHeight;
 }
 
+// This is mainly used to distribute whole extra rowspanning height in percent rows when all spanning rows are
+// percent rows.
+// Distributing whole extra rowspanning height in percent rows based on the ratios of percent because this method works
+// same as percent distribution when only percent rows are present and percent is 100. Also works perfectly fine when
+// percent is not equal to 100.
+void RenderTableSection::distributeWholeExtraRowSpanHeightToPercentRows(RenderTableCell* cell, int totalPercent, int& extraRowSpanningHeight, Vector<int>& rowsHeight)
+{
+    if (!extraRowSpanningHeight || !totalPercent)
+        return;
+
+    const unsigned rowSpan = cell->rowSpan();
+    const unsigned rowIndex = cell->rowIndex();
+    int remainder = 0;
+
+    int accumulatedPositionIncrease = 0;
+    for (unsigned row = rowIndex; row < (rowIndex + rowSpan); row++) {
+        if (m_grid[row].logicalHeight.isPercent()) {
+            updatePositionIncreasedWithRowHeight(extraRowSpanningHeight, m_grid[row].logicalHeight.percent(), totalPercent, accumulatedPositionIncrease, remainder);
+
+            // While whole extra spanning height is distributing in percent spanning rows, rational parts remains
+            // in every integer division. So accumulating all remainder part in integer division and when total remainder
+            // is equvalent to divisor then 1 unit increased in row position.
+            // Note that this algorithm is biased towards adding more space towards the lower rows.
+            if (remainder >= totalPercent) {
+                remainder -= totalPercent;
+                accumulatedPositionIncrease++;
+            }
+        }
+        m_rowPos[row + 1] += accumulatedPositionIncrease;
+    }
+
+    ASSERT(!remainder);
+
+    extraRowSpanningHeight -= accumulatedPositionIncrease;
+}
+
 void RenderTableSection::distributeExtraRowSpanHeightToAutoRows(RenderTableCell* cell, int totalAutoRowsHeight, int& extraRowSpanningHeight, Vector<int>& rowsHeight)
 {
     if (!extraRowSpanningHeight || !totalAutoRowsHeight)
@@ -613,9 +649,14 @@ void RenderTableSection::distributeRowSpanHeightToRows(SpanningRenderTableCells&
 
         int extraRowSpanningHeight = spanningRowsHeight.spanningCellHeightIgnoringBorderSpacing - spanningRowsHeight.totalRowsHeight;
 
-        distributeExtraRowSpanHeightToPercentRows(cell, totalPercent, extraRowSpanningHeight, spanningRowsHeight.rowHeight);
-        distributeExtraRowSpanHeightToAutoRows(cell, totalAutoRowsHeight, extraRowSpanningHeight, spanningRowsHeight.rowHeight);
-        distributeExtraRowSpanHeightToRemainingRows(cell, totalRemainingRowsHeight, extraRowSpanningHeight, spanningRowsHeight.rowHeight);
+        if (totalPercent < 100 && !totalAutoRowsHeight && !totalRemainingRowsHeight) {
+            // Distributing whole extra rowspanning height in percent row when only non-percent rows height is 0.
+            distributeWholeExtraRowSpanHeightToPercentRows(cell, totalPercent, extraRowSpanningHeight, spanningRowsHeight.rowHeight);
+        } else {
+            distributeExtraRowSpanHeightToPercentRows(cell, totalPercent, extraRowSpanningHeight, spanningRowsHeight.rowHeight);
+            distributeExtraRowSpanHeightToAutoRows(cell, totalAutoRowsHeight, extraRowSpanningHeight, spanningRowsHeight.rowHeight);
+            distributeExtraRowSpanHeightToRemainingRows(cell, totalRemainingRowsHeight, extraRowSpanningHeight, spanningRowsHeight.rowHeight);
+        }
 
         ASSERT(!extraRowSpanningHeight);
 
