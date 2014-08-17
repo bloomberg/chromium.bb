@@ -334,8 +334,6 @@ class CONTENT_EXPORT WebContentsImpl
       OVERRIDE;
   virtual WebContentsAndroid* GetWebContentsAndroid();
 #elif defined(OS_MACOSX)
-  virtual void SetAllowOverlappingViews(bool overlapping) OVERRIDE;
-  virtual bool GetAllowOverlappingViews() OVERRIDE;
   virtual void SetAllowOtherViews(bool allow) OVERRIDE;
   virtual bool GetAllowOtherViews() OVERRIDE;
 #endif

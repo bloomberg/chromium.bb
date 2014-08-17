@@ -26,15 +26,11 @@
 }
 
 - (void)loadView {
-  [[BrowserWindowController
-      browserWindowControllerForView:parent_] onOverlappedViewShown];
   [self setView:[[[ConfirmBubbleCocoa alloc] initWithParent:parent_
                                                  controller:self] autorelease]];
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
-  [[BrowserWindowController
-      browserWindowControllerForView:parent_] onOverlappedViewHidden];
   [self autorelease];
 }
 

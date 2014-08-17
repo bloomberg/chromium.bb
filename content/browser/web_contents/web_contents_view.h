@@ -104,15 +104,6 @@ class WebContentsView {
   virtual void SetOverscrollControllerEnabled(bool enabled) = 0;
 
 #if defined(OS_MACOSX)
-  // The web contents view assumes that its view will never be overlapped by
-  // another view (either partially or fully). This allows it to perform
-  // optimizations. If the view is in a view hierarchy where it might be
-  // overlapped by another view, notify the view by calling this with |true|.
-  virtual void SetAllowOverlappingViews(bool overlapping) = 0;
-
-  // Returns true if overlapping views are allowed, false otherwise.
-  virtual bool GetAllowOverlappingViews() const = 0;
-
   // Allowing other views disables optimizations which assume that only a single
   // WebContents is present.
   virtual void SetAllowOtherViews(bool allow) = 0;

@@ -65,8 +65,6 @@ class WebContentsViewGuest : public WebContentsView,
   virtual void RenderViewSwappedIn(RenderViewHost* host) OVERRIDE;
   virtual void SetOverscrollControllerEnabled(bool enabled) OVERRIDE;
 #if defined(OS_MACOSX)
-  virtual void SetAllowOverlappingViews(bool overlapping) OVERRIDE;
-  virtual bool GetAllowOverlappingViews() const OVERRIDE;
   virtual void SetAllowOtherViews(bool allow) OVERRIDE;
   virtual bool GetAllowOtherViews() const OVERRIDE;
   virtual bool IsEventTracking() const OVERRIDE;

@@ -151,8 +151,6 @@
 // Ensures the z-order of subviews is correct.
 - (void)updateSubviewZOrder:(BOOL)inPresentationMode;
 
-- (void)updateAllowOverlappingViews:(BOOL)inPresentationMode;
-
 // Update visibility of the infobar tip, depending on the state of the window.
 - (void)updateInfoBarTipVisibility;
 

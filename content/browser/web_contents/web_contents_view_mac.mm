@@ -81,7 +81,6 @@ WebContentsViewMac::WebContentsViewMac(WebContentsImpl* web_contents,
                                        WebContentsViewDelegate* delegate)
     : web_contents_(web_contents),
       delegate_(delegate),
-      allow_overlapping_views_(false),
       allow_other_views_(false) {
 }
 
@@ -262,21 +261,6 @@ gfx::Rect WebContentsViewMac::GetViewBounds() const {
   return gfx::Rect();
 }
 
-void WebContentsViewMac::SetAllowOverlappingViews(bool overlapping) {
-  if (allow_overlapping_views_ == overlapping)
-    return;
-
-  allow_overlapping_views_ = overlapping;
-  RenderWidgetHostViewMac* view = static_cast<RenderWidgetHostViewMac*>(
-      web_contents_->GetRenderWidgetHostView());
-  if (view)
-    view->SetAllowOverlappingViews(allow_overlapping_views_);
-}
-
-bool WebContentsViewMac::GetAllowOverlappingViews() const {
-  return allow_overlapping_views_;
-}
-
 void WebContentsViewMac::SetAllowOtherViews(bool allow) {
   if (allow_other_views_ == allow)
     return;
@@ -321,7 +305,6 @@ RenderWidgetHostViewBase* WebContentsViewMac::CreateViewForWidget(
 
     view->SetDelegate(rw_delegate.get());
   }
-  view->SetAllowOverlappingViews(allow_overlapping_views_);
   view->SetAllowPauseForResizeOrRepaint(!allow_other_views_);
 
   // Fancy layout comes later; for now just make it our size and resize it

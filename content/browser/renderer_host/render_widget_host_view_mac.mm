@@ -577,10 +577,6 @@ void RenderWidgetHostViewMac::SetDelegate(
   [cocoa_view_ setResponderDelegate:delegate];
 }
 
-void RenderWidgetHostViewMac::SetAllowOverlappingViews(bool overlapping) {
-  // TODO(ccameron): Remove callers of this function.
-}
-
 void RenderWidgetHostViewMac::SetAllowPauseForResizeOrRepaint(bool allow) {
   allow_pause_for_resize_or_repaint_ = allow;
 }

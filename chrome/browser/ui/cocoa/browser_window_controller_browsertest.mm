@@ -339,23 +339,6 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
           shouldSuppressTopInfoBarTip]);
 }
 
-// Verify that AllowOverlappingViews is set while the history overlay is
-// visible.
-IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
-                       AllowOverlappingViewsHistoryOverlay) {
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(web_contents->GetAllowOverlappingViews());
-
-  base::scoped_nsobject<HistoryOverlayController> overlay(
-      [[HistoryOverlayController alloc] initForMode:kHistoryOverlayModeBack]);
-  [overlay showPanelForView:web_contents->GetNativeView()];
-  EXPECT_TRUE(web_contents->GetAllowOverlappingViews());
-
-  overlay.reset();
-  EXPECT_TRUE(web_contents->GetAllowOverlappingViews());
-}
-
 // Tests that status bubble's base frame does move when devTools are docked.
 IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
                        StatusBubblePositioning) {

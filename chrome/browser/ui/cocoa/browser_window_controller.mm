@@ -557,7 +557,6 @@ using content::WebContents;
 - (void)updateDevToolsForContents:(WebContents*)contents {
   [devToolsController_ updateDevToolsForWebContents:contents
                                         withProfile:browser_->profile()];
-  [self updateAllowOverlappingViews:[self inPresentationMode]];
 }
 
 // Called when the user wants to close a window or from the shutdown process.
@@ -1637,8 +1636,6 @@ using content::WebContents;
   // unnecesary resize in contents.
   [devToolsController_ updateDevToolsForWebContents:contents
                                         withProfile:browser_->profile()];
-
-  [self updateAllowOverlappingViews:[self inPresentationMode]];
 }
 
 - (void)onTabChanged:(TabStripModelObserver::TabChangeType)change
@@ -2018,20 +2015,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
          returnCode:(NSInteger)code
             context:(void*)context {
   [sheet orderOut:self];
-}
-
-- (void)onFindBarVisibilityChanged {
-  [self updateAllowOverlappingViews:[self inPresentationMode]];
-}
-
-- (void)onOverlappedViewShown {
-  ++overlappedViewCount_;
-  [self updateAllowOverlappingViews:[self inPresentationMode]];
-}
-
-- (void)onOverlappedViewHidden {
-  --overlappedViewCount_;
-  [self updateAllowOverlappingViews:[self inPresentationMode]];
 }
 
 - (void)executeExtensionCommand:(const std::string&)extension_id

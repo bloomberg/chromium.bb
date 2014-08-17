@@ -168,9 +168,6 @@ class Command;
   // The Extension Command Registry used to determine which keyboard events to
   // handle.
   scoped_ptr<ExtensionKeybindingRegistryCocoa> extension_keybinding_registry_;
-
-  // The number of overlapped views being shown.
-  NSUInteger overlappedViewCount_;
 }
 
 // A convenience class method which gets the |BrowserWindowController| for a
@@ -351,20 +348,6 @@ class Command;
 - (void)sheetDidEnd:(NSWindow*)sheet
          returnCode:(NSInteger)code
             context:(void*)context;
-
-// Called when the find bar visibility changes. This is used to update the
-// allowOverlappingViews state.
-- (void)onFindBarVisibilityChanged;
-
-// Called when an overlapped view is shown. This is used to update the
-// allowOverlappingViews state. Currently used for history overlay and
-// confirm bubble.
-- (void)onOverlappedViewShown;
-
-// Called when a history overlay is hidden. This is used to update the
-// allowOverlappingViews state. Currently used for history overlay and
-// confirm bubble.
-- (void)onOverlappedViewHidden;
 
 // Executes the command registered by the extension that has the given id.
 - (void)executeExtensionCommand:(const std::string&)extension_id

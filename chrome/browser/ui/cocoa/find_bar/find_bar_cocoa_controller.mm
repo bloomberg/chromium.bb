@@ -451,7 +451,6 @@ const float kRightEdgeOffset = 25;
   // If the find bar is not visible, make it actually hidden, so it'll no longer
   // respond to key events.
   [[self view] setHidden:![self isFindBarVisible]];
-  [[self browserWindowController] onFindBarVisibilityChanged];
 }
 
 - (gfx::Point)findBarWindowPosition {
@@ -507,7 +506,6 @@ const float kRightEdgeOffset = 25;
   if (!animate) {
     [findBarView_ setFrame:endFrame];
     [[self view] setHidden:![self isFindBarVisible]];
-    [[self browserWindowController] onFindBarVisibilityChanged];
     showHideAnimation_.reset(nil);
     return;
   }
@@ -515,12 +513,9 @@ const float kRightEdgeOffset = 25;
   // If animating, ensure that the find bar is not hidden. Hidden status will be
   // updated at the end of the animation.
   [[self view] setHidden:NO];
-  //[[self browserWindowController] onFindBarVisibilityChanged];
 
   // Reset the frame to what was saved above.
   [findBarView_ setFrame:startFrame];
-
-  [[self browserWindowController] onFindBarVisibilityChanged];
 
   showHideAnimation_.reset([self createAnimationForView:findBarView_
                                                 toFrame:endFrame

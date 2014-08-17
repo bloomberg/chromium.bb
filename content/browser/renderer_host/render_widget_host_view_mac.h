@@ -236,7 +236,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // |delegate| should be set at most once.
   CONTENT_EXPORT void SetDelegate(
     NSObject<RenderWidgetHostViewMacDelegate>* delegate);
-  void SetAllowOverlappingViews(bool overlapping);
   void SetAllowPauseForResizeOrRepaint(bool allow);
 
   // RenderWidgetHostView implementation.

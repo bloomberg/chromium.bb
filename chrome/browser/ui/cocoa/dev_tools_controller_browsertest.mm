@@ -46,24 +46,6 @@ class DevToolsControllerTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(DevToolsControllerTest);
 };
 
-// Verify that AllowOverlappingViews is set while the find bar is visible.
-IN_PROC_BROWSER_TEST_F(DevToolsControllerTest, AllowOverlappingViews) {
-  OpenDevToolsWindow();
-
-  // Without the find bar.
-  EXPECT_TRUE(devtools_web_contents()->GetAllowOverlappingViews());
-
-  // With the find bar.
-  browser()->GetFindBarController()->find_bar()->Show(false);
-  EXPECT_TRUE(devtools_web_contents()->GetAllowOverlappingViews());
-
-  // Without the find bar.
-  browser()->GetFindBarController()->find_bar()->Hide(false);
-  EXPECT_TRUE(devtools_web_contents()->GetAllowOverlappingViews());
-
-  CloseDevToolsWindow();
-}
-
 // Verify that AllowOtherViews is set when and only when DevTools is visible.
 IN_PROC_BROWSER_TEST_F(DevToolsControllerTest, AllowOtherViews) {
   EXPECT_FALSE(web_contents()->GetAllowOtherViews());

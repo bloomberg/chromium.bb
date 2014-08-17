@@ -4118,14 +4118,6 @@ bool WebContentsImpl::CreateRenderViewForInitialEmptyDocument() {
 
 #elif defined(OS_MACOSX)
 
-void WebContentsImpl::SetAllowOverlappingViews(bool overlapping) {
-  view_->SetAllowOverlappingViews(overlapping);
-}
-
-bool WebContentsImpl::GetAllowOverlappingViews() {
-  return view_->GetAllowOverlappingViews();
-}
-
 void WebContentsImpl::SetAllowOtherViews(bool allow) {
   view_->SetAllowOtherViews(allow);
 }

@@ -136,8 +136,6 @@ const CGFloat kShieldHeightCompletionAdjust = 10;
   parent_.reset([view retain]);
   [self setProgress:0 finished:NO];  // Set initial view position.
   [parent_  addSubview:self.view];
-  [[BrowserWindowController
-      browserWindowControllerForView:[self view]] onOverlappedViewShown];
 }
 
 - (void)dismiss {
@@ -160,8 +158,6 @@ const CGFloat kShieldHeightCompletionAdjust = 10;
 }
 
 - (void)animationDidStop:(CAAnimation*)theAnimation finished:(BOOL)finished {
-  [[BrowserWindowController
-      browserWindowControllerForView:[self view]] onOverlappedViewHidden];
   [self.view removeFromSuperview];
   // Destroy the CAAnimation and its strong reference to its delegate (this
   // class).

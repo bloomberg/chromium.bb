@@ -793,7 +793,6 @@ willPositionSheet:(NSWindow*)sheet
   // Force the bookmark bar z-order to update.
   [[bookmarkBarController_ view] removeFromSuperview];
   [self updateSubviewZOrder:fullscreen];
-  [self updateAllowOverlappingViews:fullscreen];
 }
 
 - (void)showFullscreenExitBubbleIfNecessary {
@@ -1029,40 +1028,6 @@ willPositionSheet:(NSWindow*)sheet
                          relativeTo:[bookmarkBarController_ view]];
     }
   }
-}
-
-- (BOOL)shouldAllowOverlappingViews:(BOOL)inPresentationMode {
-  if (inPresentationMode)
-    return YES;
-
-  if (findBarCocoaController_ &&
-      ![[findBarCocoaController_ findBarView] isHidden]) {
-    return YES;
-  }
-
-  if (overlappedViewCount_)
-    return YES;
-
-  return NO;
-}
-
-- (void)updateAllowOverlappingViews:(BOOL)inPresentationMode {
-  WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();
-  if (!contents)
-    return;
-
-  BOOL allowOverlappingViews =
-      [self shouldAllowOverlappingViews:inPresentationMode];
-
-  // The rendering path with overlapping views disabled causes bugs when
-  // transitioning between composited and non-composited mode.
-  // http://crbug.com/279472
-  allowOverlappingViews = YES;
-  contents->SetAllowOverlappingViews(allowOverlappingViews);
-
-  WebContents* devTools = DevToolsWindow::GetInTabWebContents(contents, NULL);
-  if (devTools)
-    devTools->SetAllowOverlappingViews(allowOverlappingViews);
 }
 
 - (void)updateInfoBarTipVisibility {

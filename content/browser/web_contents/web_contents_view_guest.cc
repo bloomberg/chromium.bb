@@ -119,14 +119,6 @@ gfx::Rect WebContentsViewGuest::GetViewBounds() const {
 }
 
 #if defined(OS_MACOSX)
-void WebContentsViewGuest::SetAllowOverlappingViews(bool overlapping) {
-  platform_view_->SetAllowOverlappingViews(overlapping);
-}
-
-bool WebContentsViewGuest::GetAllowOverlappingViews() const {
-  return platform_view_->GetAllowOverlappingViews();
-}
-
 void WebContentsViewGuest::SetAllowOtherViews(bool allow) {
   platform_view_->SetAllowOtherViews(allow);
 }
