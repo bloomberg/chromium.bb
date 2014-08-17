@@ -2236,3 +2236,11 @@ content.dll!content::WebContentsImpl::CreateRenderViewForRenderManager
 content.dll!content::NavigationControllerImpl::LoadEntry
 ...
 *!extensions::ExtensionHost::LoadInitialURL
+
+UNINITIALIZED READ
+name=bug_404419_a
+*!extensions::UserScriptLoader::StartLoad
+
+UNINITIALIZED READ
+name=bug_404419_b
+*!extensions::UserScriptLoader::ScriptsMayHaveChanged

@@ -6227,3 +6227,8 @@
    fun:_Znw*
    fun:_ZN8app_list4test12_GLOBAL__N_122AppListViewTestContext16RunStartPageTestEv
 }
+{
+   bug_404419
+   Memcheck:Uninitialized
+   fun:_ZN10extensions16UserScriptLoader9StartLoadEv
+}
