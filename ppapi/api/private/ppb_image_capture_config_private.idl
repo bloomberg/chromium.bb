@@ -1,0 +1,101 @@
+/* Copyright 2014 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/**
+ * This file defines the PPB_ImageCaptureConfig_Private interface for
+ * establishing an image capture configuration resource within the browser.
+ */
+
+[generate_thunk]
+
+label Chrome {
+  M39 = 0.1
+};
+
+/**
+ * The <code>PPB_ImageCaptureConfig_Private</code> interface contains pointers
+ * to several functions for establishing image capture configuration within the
+ * browser. The new configuration will take effect after <code>
+ * PPB_ImageCapture_Private.SetConfig</code> is called.
+ */
+[version=0.1]
+interface PPB_ImageCaptureConfig_Private {
+  /**
+   * Creates a PPB_ImageCaptureConfig_Private resource.
+   *
+   * @param[in] instance A <code>PP_Instance</code> identifying one instance of
+   * a module.
+   *
+   * @return A <code>PP_Resource</code> corresponding to a
+   * PPB_ImageCaptureConfig_Private resource if successful, 0 if failed.
+   */
+  PP_Resource Create([in] PP_Instance instance);
+
+  /**
+   * IsImageCaptureConfig() determines if the given resource is a
+   * <code>PPB_ImageCaptureConfig_Private</code>.
+   *
+   * @param[in] resource A <code>PP_Resource</code> corresponding to an image
+   * capture config resource.
+   *
+   * @return A <code>PP_Bool</code> containing <code>PP_TRUE</code> if the given
+   * resource is an <code>ImageCaptureConfig_Private</code> resource, otherwise
+   * <code>PP_FALSE</code>.
+   */
+  PP_Bool IsImageCaptureConfig(
+      [in] PP_Resource resource);
+
+  /**
+   * GetPreviewSize() returns the preview image size in pixels for the given
+   * <code>PPB_ImageCaptureConfig_Private</code>.
+   *
+   * @param[in] config A <code>PP_Resource</code> corresponding to an image
+   * capture config resource.
+   * @param[out] preview_size A <code>PP_Size</code> that indicates the
+   * requested preview image size.
+   */
+  void GetPreviewSize(
+      [in] PP_Resource config,
+      [out] PP_Size preview_size);
+
+  /**
+   * SetPreviewSize() sets the preview image size for the given <code>
+   * PPB_ImageCaptureConfig_Private</code>.
+   *
+   * @param[in] config A <code>PP_Resource</code> corresponding to a
+   * <code>PPB_ImageCaptureConfig_Private</code>.
+   * @param[in] preview_size A <code>PP_Size</code> that indicates the requested
+   * preview image size.
+   */
+  void SetPreviewSize(
+      [in] PP_Resource config,
+      [in] PP_Size preview_size);
+
+  /**
+   * GetJpegSize() returns the JPEG image size in pixels for the given
+   * <code>PPB_ImageCaptureConfig_Private</code>.
+   *
+   * @param[in] config A <code>PP_Resource</code> corresponding to an image
+   * capture config resource.
+   * @param[out] jpeg_size A <code>PP_Size</code> that indicates the current
+   * JPEG image size.
+   */
+  void GetJpegSize(
+      [in] PP_Resource config,
+      [out] PP_Size jpeg_size);
+
+  /**
+   * SetJpegSize() sets the JPEG image size for the given
+   * <code>PPB_ImageCaptureConfig_Private</code>.
+   *
+   * @param[in] config A <code>PP_Resource</code> corresponding to a
+   * <code>PPB_ImageCaptureConfig_Private</code>.
+   * @param[in] jpeg_size A <code>PP_Size</code> that indicates the requested
+   * JPEG image size.
+   */
+  void SetJpegSize(
+      [in] PP_Resource config,
+      [in] PP_Size jpeg_size);
+};
