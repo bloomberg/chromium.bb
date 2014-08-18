@@ -169,7 +169,6 @@
 	@ Define the function and make it external.
 	.arm
 	.global	\name
-	.func	\name
 	.section	.text.\name,"ax",%progbits
 	.align	2
 \name :		
@@ -201,7 +200,6 @@
 	@ Restore any saved R or D registers.
 	_M_RET
 	.fnend	
-	.endfunc
         @ Reset the global stack tracking variables back to their
 	@ initial values.
 	.set _SBytes, 0
@@ -456,4 +454,3 @@
 	.set	_Offset, _Workspace + \a0\()_F
 	\i\a1	\r0, \r1, [sp, #_Offset]	
 	.endm
-	

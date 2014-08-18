@@ -106,7 +106,6 @@
 
 	// Define the function and make it external.
 	.global	\name
-	.func	\name
 	.section	.text.\name,"ax",%progbits
 	.align	4
 \name :		
@@ -137,7 +136,6 @@
 	// Restore any saved R or D registers.
 	_M_RET
 	//.fnend	
-	.endfunc
         // Reset the global stack tracking variables back to their
 	// initial values.
 	.set _SBytes, 0
