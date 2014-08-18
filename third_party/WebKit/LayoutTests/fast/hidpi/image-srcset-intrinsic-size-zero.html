@@ -11,7 +11,7 @@
     addEventListener("load", function() {
         // FIXME: clientWidth might be zero because of crbug.com/379155
         imgWidth = document.getElementById("foo").clientWidth;
-        shouldBeTrue('imgWidth == 33554432 || imgWidth == 0');
+        shouldBe('imgWidth', '33554431' /* blink::intMaxForLayoutUnit */);
     }, false);
 </script>
 </head>
@@ -19,8 +19,6 @@
 <body id="body">
     <div>
         This test passes if the image is displayed with infinite dimensions.
-        Because of a <a href="http://crbug.com/379155">flaky bug</a> with infinite intrinsic dimensions,
-        It also accepts zero width.
     </div>
     <img id="foo" srcset="resources/blue-100-px-square.png 0x">
 </body>

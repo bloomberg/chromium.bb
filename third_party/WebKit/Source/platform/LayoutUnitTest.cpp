@@ -250,4 +250,13 @@ TEST(WebCoreLayoutUnit, LayoutUnitFloor)
     ASSERT_EQ((LayoutUnit(intMinForLayoutUnit) + LayoutUnit(1)).floor(), intMinForLayoutUnit + 1);
 }
 
+TEST(WebCoreLayoutUnit, LayoutUnitFloatOverflow)
+{
+    // These should overflow to the max/min according to their sign.
+    ASSERT_EQ(intMaxForLayoutUnit, LayoutUnit(176972000.0f).toInt());
+    ASSERT_EQ(intMinForLayoutUnit, LayoutUnit(-176972000.0f).toInt());
+    ASSERT_EQ(intMaxForLayoutUnit, LayoutUnit(176972000.0).toInt());
+    ASSERT_EQ(intMinForLayoutUnit, LayoutUnit(-176972000.0).toInt());
+}
+
 } // namespace

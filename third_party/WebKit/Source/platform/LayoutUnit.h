@@ -68,8 +68,8 @@ public:
     LayoutUnit(unsigned value) { setValue(value); }
     LayoutUnit(unsigned long value) { m_value = clampTo<int>(value * kFixedPointDenominator); }
     LayoutUnit(unsigned long long value) { m_value = clampTo<int>(value * kFixedPointDenominator); }
-    LayoutUnit(float value) { m_value = clampTo<float>(value * kFixedPointDenominator, static_cast<float>(INT_MIN), static_cast<float>(INT_MAX)); }
-    LayoutUnit(double value) { m_value = clampTo<double>(value * kFixedPointDenominator, static_cast<double>(INT_MIN), static_cast<double>(INT_MAX)); }
+    LayoutUnit(float value) { m_value = clampTo<int>(value * kFixedPointDenominator); }
+    LayoutUnit(double value) { m_value = clampTo<int>(value * kFixedPointDenominator); }
 
     static LayoutUnit fromFloatCeil(float value)
     {

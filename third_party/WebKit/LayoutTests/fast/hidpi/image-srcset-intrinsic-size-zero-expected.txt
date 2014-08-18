@@ -1,6 +1,6 @@
 PASS successfullyParsed is true
 
 TEST COMPLETE
-PASS imgWidth == 33554432 || imgWidth == 0 is true
-This test passes if the image is displayed with infinite dimensions. Because of a flaky bug with infinite intrinsic dimensions, It also accepts zero width.
+PASS imgWidth is 33554431
+This test passes if the image is displayed with infinite dimensions.
 
