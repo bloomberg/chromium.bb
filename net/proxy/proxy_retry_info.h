@@ -13,7 +13,7 @@ namespace net {
 
 // Contains the information about when to retry a proxy server.
 struct ProxyRetryInfo {
-  ProxyRetryInfo() : try_while_bad(true) {}
+  ProxyRetryInfo() : try_while_bad(true), net_error(0) {}
 
   // We should not retry until this time.
   base::TimeTicks bad_until;
