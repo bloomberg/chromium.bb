@@ -30,6 +30,16 @@ class FileSystemProviderUnmountFunction : public ChromeSyncExtensionFunction {
   virtual bool RunSync() OVERRIDE;
 };
 
+class FileSystemProviderGetAllFunction : public ChromeSyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileSystemProvider.getAll",
+                             FILESYSTEMPROVIDER_GETALL)
+
+ protected:
+  virtual ~FileSystemProviderGetAllFunction() {}
+  virtual bool RunSync() OVERRIDE;
+};
+
 class FileSystemProviderInternalUnmountRequestedSuccessFunction
     : public FileSystemProviderInternalFunction {
  public:

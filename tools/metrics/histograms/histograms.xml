@@ -40847,6 +40847,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="880" label="EASYUNLOCKPRIVATE_CLEARPERMITACCESS"/>
   <int value="881" label="EASYUNLOCKPRIVATE_SETREMOTEDEVICES"/>
   <int value="882" label="EASYUNLOCKPRIVATE_GETREMOTEDEVICES"/>
+  <int value="883" label="FILESYSTEMPROVIDER_GETALL"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

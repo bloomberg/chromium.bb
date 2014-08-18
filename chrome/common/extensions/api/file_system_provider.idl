@@ -52,6 +52,13 @@ namespace fileSystemProvider {
     DOMString? mimeType; 
   };
 
+  // Represents a mounted file system.
+  dictionary FileSystemInfo {
+    DOMString fileSystemId;
+    DOMString displayName;
+    [nodoc] boolean writable;
+  };
+
   // Options for the <code>mount()</code> method.
   dictionary MountOptions {
     DOMString fileSystemId;
@@ -179,6 +186,9 @@ namespace fileSystemProvider {
   // Callback to receive the result of unmount() function.
   callback UnmountCallback = void([nodoc, instanceOf=DOMError] object error);
 
+  // Callback to receive the result of getAll() function.
+  callback GetAllCallback = void(FileSystemInfo[] fileSystems);
+
   // Callback to handle an error raised from the browser.
   [nocompile] callback ErrorCallback = void([instanceOf=DOMError] object error);
 
@@ -228,6 +238,9 @@ namespace fileSystemProvider {
     static void unmount(UnmountOptions options,
                         UnmountCallback successCallback,
                         [nocompile] ErrorCallback errorCallback);
+
+    // Returns all file systems mounted by the extension.
+    static void getAll(GetAllCallback callback);
   };
 
   interface Events {

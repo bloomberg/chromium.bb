@@ -38,6 +38,12 @@ IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Unmount) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, GetAll) {
+  ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/get_all",
+                                          kFlagLoadAsComponent))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, GetMetadata) {
   ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/get_metadata",
                                           kFlagLoadAsComponent))

@@ -941,6 +941,7 @@ enum HistogramValue {
   EASYUNLOCKPRIVATE_CLEARPERMITACCESS,
   EASYUNLOCKPRIVATE_SETREMOTEDEVICES,
   EASYUNLOCKPRIVATE_GETREMOTEDEVICES,
+  FILESYSTEMPROVIDER_GETALL,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY
