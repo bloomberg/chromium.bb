@@ -347,6 +347,7 @@ UserScriptLoader::UserScriptLoader(Profile* profile,
                                    const ExtensionId& owner_extension_id,
                                    bool listen_for_extension_system_loaded)
     : user_scripts_(new UserScriptList()),
+      clear_scripts_(false),
       extension_system_ready_(false),
       pending_load_(false),
       profile_(profile),
