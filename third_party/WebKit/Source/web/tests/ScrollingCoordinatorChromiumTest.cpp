@@ -103,7 +103,6 @@ private:
         settings->setAcceleratedCompositingEnabled(true);
         settings->setPreferCompositingToLCDTextEnabled(true);
         settings->setAcceleratedCompositingForOverflowScrollEnabled(true);
-        settings->setCompositedScrollingForFramesEnabled(true);
     }
 
     FrameTestHelpers::WebViewHelper m_helper;

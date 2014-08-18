@@ -9,21 +9,19 @@ iframe {
 </style>
 
 <script>
-description('This test makes sure hiding and showing a scrollable iframe correctly updates the set of non-fast scrollable rects.');
+  description('This test makes sure hiding and showing a scrollable iframe ' +
+              'correctly updates the set of non-fast scrollable rects.');
 
-if (window.internals)
-  internals.settings.setCompositedScrollingForFramesEnabled(false);
-
-onload = function() {
-  if (window.internals) {
-    var frame = document.getElementById('scrollable-iframe');
-    shouldBe('internals.nonFastScrollableRects(document).length', '1');
-    frame.style.display = 'none';
-    shouldBe('internals.nonFastScrollableRects(document).length', '0');
-    frame.style.display = '';
-    shouldBe('internals.nonFastScrollableRects(document).length', '1');
+  onload = function() {
+    if (window.internals) {
+      var frame = document.getElementById('scrollable-iframe');
+      shouldBe('internals.nonFastScrollableRects(document).length', '1');
+      frame.style.display = 'none';
+      shouldBe('internals.nonFastScrollableRects(document).length', '0');
+      frame.style.display = '';
+      shouldBe('internals.nonFastScrollableRects(document).length', '1');
+    }
   }
-}
 </script>
 
 <iframe id="scrollable-iframe" src="resources/subframe.html"></iframe>

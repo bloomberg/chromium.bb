@@ -649,9 +649,9 @@ void WebSettingsImpl::setAllowCustomScrollbarInMainFrame(bool enabled)
     m_settings->setAllowCustomScrollbarInMainFrame(enabled);
 }
 
+// TODO(danakj): Remove this method.
 void WebSettingsImpl::setCompositedScrollingForFramesEnabled(bool enabled)
 {
-    m_settings->setCompositedScrollingForFramesEnabled(enabled);
 }
 
 void WebSettingsImpl::setSelectTrailingWhitespaceEnabled(bool enabled)

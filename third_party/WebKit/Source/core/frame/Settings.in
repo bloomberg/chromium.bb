@@ -96,7 +96,6 @@ preferCompositingToLCDTextEnabled initial=false, invalidate=AcceleratedCompositi
 
 acceleratedCompositingForOverflowScrollEnabled initial=false, invalidate=AcceleratedCompositing
 acceleratedCompositingForFixedRootBackgroundEnabled initial=false
-compositedScrollingForFramesEnabled initial=false, invalidate=AcceleratedCompositing
 
 # 3D canvas (WebGL) support.
 webGLEnabled initial=false
