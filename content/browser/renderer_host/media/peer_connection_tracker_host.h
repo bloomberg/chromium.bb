@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_PEER_CONNECTION_TRACKER_HOST_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_PEER_CONNECTION_TRACKER_HOST_H_
 
-#include "base/power_monitor/power_observer.h"
 #include "content/public/browser/browser_message_filter.h"
 
 struct PeerConnectionInfo;
@@ -17,11 +16,9 @@ class ListValue;
 namespace content {
 
 // This class is the host for PeerConnectionTracker in the browser process
-// managed by RenderProcessHostImpl. It receives PeerConnection events from
-// PeerConnectionTracker as IPC messages that it forwards to WebRTCInternals.
-// It also forwards browser process events to PeerConnectionTracker via IPC.
-class PeerConnectionTrackerHost : public BrowserMessageFilter,
-                                  public base::PowerObserver {
+// managed by RenderProcessHostImpl. It passes IPC messages between
+// WebRTCInternals and PeerConnectionTracker.
+class PeerConnectionTrackerHost : public BrowserMessageFilter {
  public:
   PeerConnectionTrackerHost(int render_process_id);
 
@@ -29,9 +26,6 @@ class PeerConnectionTrackerHost : public BrowserMessageFilter,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OverrideThreadForMessage(const IPC::Message& message,
                                         BrowserThread::ID* thread) OVERRIDE;
-
-  // base::PowerObserver override.
-  virtual void OnSuspend() OVERRIDE;
 
  protected:
   virtual ~PeerConnectionTrackerHost();
