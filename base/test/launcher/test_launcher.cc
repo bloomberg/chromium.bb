@@ -629,10 +629,9 @@ bool TestLauncher::Init() {
     return false;
   }
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kTestLauncherRetryLimit)) {
+  if (command_line->HasSwitch(switches::kTestLauncherRetryLimit)) {
     int retry_limit = -1;
-    if (!StringToInt(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+    if (!StringToInt(command_line->GetSwitchValueASCII(
                          switches::kTestLauncherRetryLimit), &retry_limit) ||
         retry_limit < 0) {
       LOG(ERROR) << "Invalid value for " << switches::kTestLauncherRetryLimit;
@@ -640,15 +639,15 @@ bool TestLauncher::Init() {
     }
 
     retry_limit_ = retry_limit;
-  } else if (!CommandLine::ForCurrentProcess()->HasSwitch(kGTestFilterFlag)) {
-    // Retry failures 3 times by default if we are running all of the tests.
+  } else if (!command_line->HasSwitch(kGTestFilterFlag) || BotModeEnabled()) {
+    // Retry failures 3 times by default if we are running all of the tests or
+    // in bot mode.
     retry_limit_ = 3;
   }
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kTestLauncherJobs)) {
+  if (command_line->HasSwitch(switches::kTestLauncherJobs)) {
     int jobs = -1;
-    if (!StringToInt(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+    if (!StringToInt(command_line->GetSwitchValueASCII(
                          switches::kTestLauncherJobs), &jobs) ||
         jobs < 0) {
       LOG(ERROR) << "Invalid value for " << switches::kTestLauncherJobs;
@@ -656,9 +655,9 @@ bool TestLauncher::Init() {
     }
 
     parallel_jobs_ = jobs;
-  } else if (CommandLine::ForCurrentProcess()->HasSwitch(kGTestFilterFlag)) {
+  } else if (command_line->HasSwitch(kGTestFilterFlag) && !BotModeEnabled()) {
     // Do not run jobs in parallel by default if we are running a subset of
-    // the tests.
+    // the tests and if bot mode is off.
     parallel_jobs_ = 1;
   }
 
