@@ -51,8 +51,12 @@ class DesktopMediaListView : public views::View,
   virtual void OnSourceNameChanged(int index) OVERRIDE;
   virtual void OnSourceThumbnailChanged(int index) OVERRIDE;
 
+  // Accepts whatever happens to be selected right now.
+  void AcceptSelection();
+
   DesktopMediaPickerDialogView* parent_;
   scoped_ptr<DesktopMediaList> media_list_;
+  base::WeakPtrFactory<DesktopMediaListView> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopMediaListView);
 };

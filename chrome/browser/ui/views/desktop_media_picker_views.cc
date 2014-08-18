@@ -5,11 +5,15 @@
 #include "chrome/browser/ui/views/desktop_media_picker_views.h"
 
 #include "base/callback.h"
+#include "base/command_line.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/desktop_media_list.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/web_modal/popup_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -199,7 +203,8 @@ DesktopMediaListView::DesktopMediaListView(
     DesktopMediaPickerDialogView* parent,
     scoped_ptr<DesktopMediaList> media_list)
     : parent_(parent),
-      media_list_(media_list.Pass()) {
+      media_list_(media_list.Pass()),
+      weak_factory_(this) {
   media_list_->SetThumbnailSize(gfx::Size(kThumbnailWidth, kThumbnailHeight));
 }
 
@@ -314,6 +319,19 @@ void DesktopMediaListView::OnSourceAdded(int index) {
 
   if (child_count() % kListColumns == 1)
     parent_->OnMediaListRowsChanged();
+
+  std::string autoselect_source =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kAutoSelectDesktopCaptureSource);
+  if (!autoselect_source.empty() &&
+      base::ASCIIToUTF16(autoselect_source) == source.name) {
+    // Select, then accept and close the dialog when we're done adding sources.
+    source_view->OnFocus();
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&DesktopMediaListView::AcceptSelection,
+                   weak_factory_.GetWeakPtr()));
+  }
 }
 
 void DesktopMediaListView::OnSourceRemoved(int index) {
@@ -353,6 +371,11 @@ void DesktopMediaListView::OnSourceThumbnailChanged(int index) {
   DesktopMediaSourceView* source_view =
       static_cast<DesktopMediaSourceView*>(child_at(index));
   source_view->SetThumbnail(source.thumbnail);
+}
+
+void DesktopMediaListView::AcceptSelection() {
+  OnSelectionChanged();
+  OnDoubleClick();
 }
 
 DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(

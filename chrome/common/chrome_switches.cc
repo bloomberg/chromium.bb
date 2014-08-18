@@ -117,6 +117,13 @@ const char kAuthServerWhitelist[]           = "auth-server-whitelist";
 // computer startup and not by some user action.
 const char kAutoLaunchAtStartup[]           = "auto-launch-at-startup";
 
+// This flag makes Chrome auto-select the provided choice when an extension asks
+// permission to start desktop capture. Should only be used for tests. For
+// instance, --auto-select-desktop-capture-source="Entire screen" will
+// automatically select to share the entire screen in English locales.
+const char kAutoSelectDesktopCaptureSource[] =
+    "auto-select-desktop-capture-source";
+
 // Certificate Transparency: Uses the provided log(s) for checking Signed
 // Certificate Timestamps provided with certificates.
 // The switch's value is:
