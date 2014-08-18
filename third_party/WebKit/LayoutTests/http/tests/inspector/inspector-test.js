@@ -189,7 +189,7 @@ InspectorTest.addObject = function(object, customFormatters, prefix, firstLinePr
     propertyNames.sort();
     for (var i = 0; i < propertyNames.length; ++i) {
         var prop = propertyNames[i];
-        if (typeof object.hasOwnProperty === "function" && !object.hasOwnProperty(prop))
+        if (!object.hasOwnProperty(prop))
             continue;
         var prefixWithName = "    " + prefix + prop + " : ";
         var propValue = object[prop];
