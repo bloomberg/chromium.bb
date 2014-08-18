@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_DRI_GPU_PLATFORM_SUPPORT_HOST_GBM_H_
 #define UI_OZONE_PLATFORM_DRI_GPU_PLATFORM_SUPPORT_HOST_GBM_H_
 
+#include <queue>
 #include <vector>
 
 #include "ui/gfx/native_widget_types.h"
@@ -50,6 +51,10 @@ class GpuPlatformSupportHostGbm : public GpuPlatformSupportHost,
   int host_id_;
   IPC::Sender* sender_;
   std::vector<GpuPlatformSupportHost*> handlers_;
+  // If messages are sent before the channel is created, store the messages and
+  // delay sending them until the channel is created. These messages are stored
+  // in |queued_messaged_|.
+  std::queue<IPC::Message*> queued_messages_;
 };
 
 }  // namespace ui
