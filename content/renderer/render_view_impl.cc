@@ -408,19 +408,6 @@ static bool PreferCompositingToLCDText(float device_scale_factor) {
   return DeviceScaleEnsuresTextQuality(device_scale_factor);
 }
 
-static bool ShouldUseAcceleratedCompositingForOverflowScroll(
-    float device_scale_factor) {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-
-  if (command_line.HasSwitch(switches::kDisableAcceleratedOverflowScroll))
-    return false;
-
-  if (command_line.HasSwitch(switches::kEnableAcceleratedOverflowScroll))
-    return true;
-
-  return DeviceScaleEnsuresTextQuality(device_scale_factor);
-}
-
 static bool ShouldUseCompositedScrollingForFrames(
     float device_scale_factor) {
   if (RenderThreadImpl::current() &&
@@ -443,18 +430,6 @@ static bool ShouldUseTransitionCompositing(float device_scale_factor) {
   // of excessive layer promotion caused by overlap has been addressed.
   // http://crbug.com/178119.
   return false;
-}
-
-static bool ShouldUseAcceleratedFixedRootBackground(float device_scale_factor) {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-
-  if (command_line.HasSwitch(switches::kDisableAcceleratedFixedRootBackground))
-    return false;
-
-  if (command_line.HasSwitch(switches::kEnableAcceleratedFixedRootBackground))
-    return true;
-
-  return DeviceScaleEnsuresTextQuality(device_scale_factor);
 }
 
 static FaviconURL::IconType ToFaviconType(blink::WebIconURL::Type type) {
@@ -794,11 +769,11 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
   webview()->settings()->setPreferCompositingToLCDTextEnabled(
       PreferCompositingToLCDText(device_scale_factor_));
   webview()->settings()->setAcceleratedCompositingForOverflowScrollEnabled(
-      ShouldUseAcceleratedCompositingForOverflowScroll(device_scale_factor_));
+      PreferCompositingToLCDText(device_scale_factor_));
   webview()->settings()->setAcceleratedCompositingForTransitionEnabled(
       ShouldUseTransitionCompositing(device_scale_factor_));
   webview()->settings()->setAcceleratedCompositingForFixedRootBackgroundEnabled(
-      ShouldUseAcceleratedFixedRootBackground(device_scale_factor_));
+      PreferCompositingToLCDText(device_scale_factor_));
   webview()->settings()->setCompositedScrollingForFramesEnabled(
       ShouldUseCompositedScrollingForFrames(device_scale_factor_));
 
@@ -3766,12 +3741,13 @@ void RenderViewImpl::SetDeviceScaleFactor(float device_scale_factor) {
     webview()->settings()->setPreferCompositingToLCDTextEnabled(
         PreferCompositingToLCDText(device_scale_factor_));
     webview()->settings()->setAcceleratedCompositingForOverflowScrollEnabled(
-        ShouldUseAcceleratedCompositingForOverflowScroll(device_scale_factor_));
+        PreferCompositingToLCDText(device_scale_factor_));
     webview()->settings()->setAcceleratedCompositingForTransitionEnabled(
         ShouldUseTransitionCompositing(device_scale_factor_));
-    webview()->settings()->
-        setAcceleratedCompositingForFixedRootBackgroundEnabled(
-            ShouldUseAcceleratedFixedRootBackground(device_scale_factor_));
+    webview()
+        ->settings()
+        ->setAcceleratedCompositingForFixedRootBackgroundEnabled(
+            PreferCompositingToLCDText(device_scale_factor_));
     webview()->settings()->setCompositedScrollingForFramesEnabled(
         ShouldUseCompositedScrollingForFrames(device_scale_factor_));
   }
