@@ -13,8 +13,10 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
+#include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -66,6 +68,16 @@ void ProfileSigninConfirmationDialogViews::ShowDialog(
     Profile* profile,
     const std::string& username,
     ui::ProfileSigninConfirmationDelegate* delegate) {
+  // Hides the new avatar bubble if it is currently shown. The new avatar bubble
+  // should be automatically closed when it loses focus. However on windows the
+  // profile signin confirmation dialog is not modal yet thus it does not take
+  // away focus, thus as a temporary workaround we need to manually close the
+  // bubble.
+  // TODO(guohui): removes the workaround once the profile confirmation dialog
+  // is fixed.
+  if (switches::IsNewAvatarMenu() && ProfileChooserView::IsShowing())
+    ProfileChooserView::Hide();
+
   ProfileSigninConfirmationDialogViews* dialog =
       new ProfileSigninConfirmationDialogViews(
           browser, username, delegate);
