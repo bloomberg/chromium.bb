@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -202,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
       service->GetExtensionById(last_loaded_extension_id(), false)
           ->permissions_data()
           ->HasAPIPermissionForTab(
-              SessionID::IdForTab(
+              SessionTabHelper::IdForTab(
                   browser()->tab_strip_model()->GetActiveWebContents()),
               APIPermission::kTab));
 }

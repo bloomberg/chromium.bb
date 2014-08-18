@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/sessions/session_id.h"
+#include "components/sessions/session_id.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 

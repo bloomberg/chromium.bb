@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "chrome/browser/sessions/session_id.h"
+#include "components/sessions/session_id.h"
 #include "sync/api/sync_change_processor.h"
 
 namespace syncer {

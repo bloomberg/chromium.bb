@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_SYNC_GLUE_SYNCED_WINDOW_DELEGATE_ANDROID_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
+#include "components/sessions/session_id.h"
 
 class TabModel;
 

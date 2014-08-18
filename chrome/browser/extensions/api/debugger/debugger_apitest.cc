@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/api/debugger/debugger_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -71,7 +72,7 @@ testing::AssertionResult DebuggerApiTest::RunAttachFunction(
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  int tab_id = SessionID::IdForTab(web_contents);
+  int tab_id = SessionTabHelper::IdForTab(web_contents);
   scoped_refptr<DebuggerAttachFunction> attach_function =
       new DebuggerAttachFunction();
   attach_function->set_extension(extension_);

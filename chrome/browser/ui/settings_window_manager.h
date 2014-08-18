@@ -10,7 +10,7 @@
 
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
-#include "chrome/browser/sessions/session_id.h"
+#include "components/sessions/session_id.h"
 
 class Browser;
 class GURL;

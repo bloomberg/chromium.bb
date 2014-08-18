@@ -11,10 +11,10 @@
 #include "base/basictypes.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "components/sessions/session_id.h"
 
 class Profile;
 class TabRestoreService;

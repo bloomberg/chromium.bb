@@ -8,7 +8,7 @@
 
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/window_controller_list_observer.h"
-#include "chrome/browser/sessions/session_id.h"
+#include "components/sessions/session_id.h"
 #include "ui/base/base_window.h"
 
 namespace extensions {

@@ -15,7 +15,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/sync/glue/favicon_cache.h"
@@ -23,6 +22,7 @@
 #include "chrome/browser/sync/glue/synced_session_tracker.h"
 #include "chrome/browser/sync/open_tabs_ui_delegate.h"
 #include "chrome/browser/sync/sessions/tab_node_pool.h"
+#include "components/sessions/session_id.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "sync/api/syncable_service.h"
 

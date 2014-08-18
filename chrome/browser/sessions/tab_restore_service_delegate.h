@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "components/sessions/session_id.h"
 
 class Profile;
 

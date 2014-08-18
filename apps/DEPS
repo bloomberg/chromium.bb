@@ -6,6 +6,7 @@ include_rules = [
   "+content/public/test",
   "+components/keyed_service",
   "+components/pref_registry/pref_registry_syncable.h",
+  "+components/sessions",
   "+components/user_manager",
   "+components/web_modal",
   "+extensions",
@@ -21,7 +22,6 @@ include_rules = [
   "+chrome/browser/chromeos/login/users/user_manager.h",
   "+chrome/browser/lifetime/application_lifetime.h",
   "+chrome/browser/profiles",
-  "+chrome/browser/sessions/session_id.h",
   "+chrome/common/chrome_switches.h",
 
   # For default app icon.

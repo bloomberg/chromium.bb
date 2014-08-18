@@ -26,7 +26,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/sessions/session_id.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/search/instant_search_prerenderer.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/common/instant_types.h"
@@ -221,7 +221,7 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
       true,
       selected_index,
       false,
-      SessionID::IdForTab(web_contents),
+      SessionTabHelper::IdForTab(web_contents),
       current_page_classification,
       base::TimeDelta::FromMilliseconds(elapsed_time_since_first_modified),
       base::string16::npos,

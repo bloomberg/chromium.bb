@@ -102,7 +102,7 @@ base::DictionaryValue* AshPanelWindowController::CreateTabValue(
 
   base::DictionaryValue* tab_value = new base::DictionaryValue();
   tab_value->SetInteger(extensions::tabs_constants::kIdKey,
-                        SessionID::IdForTab(web_contents));
+                        SessionTabHelper::IdForTab(web_contents));
   tab_value->SetInteger(extensions::tabs_constants::kIndexKey, 0);
   const int window_id = GetWindowId();
   tab_value->SetInteger(extensions::tabs_constants::kWindowIdKey, window_id);

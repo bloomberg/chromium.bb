@@ -8,10 +8,10 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/window_controller_list.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "components/sessions/session_id.h"
 #include "extensions/common/extension.h"
 
 BrowserExtensionWindowController::BrowserExtensionWindowController(

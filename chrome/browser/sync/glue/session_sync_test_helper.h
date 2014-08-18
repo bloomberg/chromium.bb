@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/sessions/session_id.h"
+#include "components/sessions/session_id.h"
 
 namespace sync_pb {
 class SessionSpecifics;

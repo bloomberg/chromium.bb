@@ -10,6 +10,8 @@ component("sessions") {
   sources = [
     "serialized_navigation_entry.cc",
     "serialized_navigation_entry.h",
+    "session_id.cc",
+    "session_id.h",
   ]
 
   defines = [ "SESSIONS_IMPLEMENTATION" ]

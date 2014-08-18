@@ -32,6 +32,21 @@ void SessionTabHelper::SetWindowID(const SessionID& id) {
           web_contents()->GetRenderViewHost()->GetRoutingID(), id.id()));
 }
 
+// static
+SessionID::id_type SessionTabHelper::IdForTab(const content::WebContents* tab) {
+  const SessionTabHelper* session_tab_helper =
+      tab ? SessionTabHelper::FromWebContents(tab) : NULL;
+  return session_tab_helper ? session_tab_helper->session_id().id() : -1;
+}
+
+// static
+SessionID::id_type SessionTabHelper::IdForWindowContainingTab(
+    const content::WebContents* tab) {
+  const SessionTabHelper* session_tab_helper =
+      tab ? SessionTabHelper::FromWebContents(tab) : NULL;
+  return session_tab_helper ? session_tab_helper->window_id().id() : -1;
+}
+
 void SessionTabHelper::RenderViewCreated(
     content::RenderViewHost* render_view_host) {
   render_view_host->Send(

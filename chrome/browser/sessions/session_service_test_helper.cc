@@ -6,10 +6,10 @@
 
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/sessions/session_backend.h"
-#include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "components/sessions/serialized_navigation_entry_test_helper.h"
+#include "components/sessions/session_id.h"
 #include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -6,7 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/values.h"
-#include "chrome/browser/sessions/session_id.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -93,7 +93,7 @@ class TabCaptureRegistry::LiveRequest : public content::WebContentsObserver {
   }
 
   void GetCaptureInfo(tab_capture::CaptureInfo* info) const {
-    info->tab_id = SessionID::IdForTab(web_contents());
+    info->tab_id = SessionTabHelper::IdForTab(web_contents());
     info->status = capture_state_;
     info->fullscreen = is_fullscreened_;
   }

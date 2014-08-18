@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -126,7 +127,7 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
       return false;
 
     return extension_action_ &&
-        extension_action_->HasPopup(SessionID::IdForTab(web_contents));
+        extension_action_->HasPopup(SessionTabHelper::IdForTab(web_contents));
   } else if (command_id == UNINSTALL) {
     // Some extension types can not be uninstalled.
     return extensions::ExtensionSystem::Get(

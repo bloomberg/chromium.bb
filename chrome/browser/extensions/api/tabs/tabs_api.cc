@@ -30,6 +30,7 @@
 #include "chrome/browser/extensions/window_controller_list.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
 #include "chrome/browser/ui/browser.h"
@@ -1087,7 +1088,7 @@ bool TabsUpdateFunction::RunAsync() {
       error_ = keys::kNoSelectedTabError;
       return false;
     }
-    tab_id = SessionID::IdForTab(contents);
+    tab_id = SessionTabHelper::IdForTab(contents);
   } else {
     tab_id = *params->tab_id;
   }
@@ -1517,7 +1518,7 @@ WebContents* TabsCaptureVisibleTabFunction::GetWebContentsForID(int window_id) {
   }
 
   if (!extension()->permissions_data()->CanCaptureVisiblePage(
-          SessionID::IdForTab(contents), &error_)) {
+          SessionTabHelper::IdForTab(contents), &error_)) {
     return NULL;
   }
   return contents;

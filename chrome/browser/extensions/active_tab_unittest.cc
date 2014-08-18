@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_id.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/browser_thread.h"
@@ -84,7 +84,7 @@ class ActiveTabTest : public ChromeRenderViewHostTestHarness {
   }
 
   int tab_id() {
-    return SessionID::IdForTab(web_contents());
+    return SessionTabHelper::IdForTab(web_contents());
   }
 
   ActiveTabPermissionGranter* active_tab_permission_granter() {
@@ -150,7 +150,7 @@ class ActiveTabTest : public ChromeRenderViewHostTestHarness {
   bool IsGrantedForTab(const Extension* extension,
                        const content::WebContents* web_contents) {
     return extension->permissions_data()->HasAPIPermissionForTab(
-        SessionID::IdForTab(web_contents), APIPermission::kTab);
+        SessionTabHelper::IdForTab(web_contents), APIPermission::kTab);
   }
 
   // TODO(justinlin): Remove when tabCapture is moved to stable.

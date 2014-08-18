@@ -25,6 +25,8 @@
         # Note: sources list duplicated in GN build.
         'sessions/serialized_navigation_entry.cc',
         'sessions/serialized_navigation_entry.h',
+        'sessions/session_id.cc',
+        'sessions/session_id.h',
       ],
       'conditions': [
         ['android_webview_build == 0', {

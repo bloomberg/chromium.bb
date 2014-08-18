@@ -1174,8 +1174,6 @@
       'browser/sessions/base_session_service.h',
       'browser/sessions/session_data_deleter.cc',
       'browser/sessions/session_data_deleter.h',
-      'browser/sessions/session_id.cc',
-      'browser/sessions/session_id.h',
       'browser/sessions/session_restore_android.cc',
       'browser/sessions/session_tab_helper.cc',
       'browser/sessions/session_tab_helper.h',

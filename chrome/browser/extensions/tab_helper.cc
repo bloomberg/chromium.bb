@@ -24,7 +24,6 @@
 #include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/browser/extensions/webstore_inline_installer_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -102,7 +101,7 @@ TabHelper::TabHelper(content::WebContents* web_contents)
     SetTabId(web_contents->GetRenderViewHost());
   active_tab_permission_granter_.reset(new ActiveTabPermissionGranter(
       web_contents,
-      SessionID::IdForTab(web_contents),
+      SessionTabHelper::IdForTab(web_contents),
       Profile::FromBrowserContext(web_contents->GetBrowserContext())));
 
   // If more classes need to listen to global content script activity, then
@@ -259,7 +258,8 @@ void TabHelper::DidNavigateMainFrame(
     ExtensionAction* browser_action =
         extension_action_manager->GetBrowserAction(*it->get());
     if (browser_action) {
-      browser_action->ClearAllValuesForTab(SessionID::IdForTab(web_contents()));
+      browser_action->ClearAllValuesForTab(
+          SessionTabHelper::IdForTab(web_contents()));
       content::NotificationService::current()->Notify(
           extensions::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
           content::Source<ExtensionAction>(browser_action),
@@ -559,7 +559,7 @@ void TabHelper::Observe(int type,
 void TabHelper::SetTabId(RenderViewHost* render_view_host) {
   render_view_host->Send(
       new ExtensionMsg_SetTabId(render_view_host->GetRoutingID(),
-                                SessionID::IdForTab(web_contents())));
+                                SessionTabHelper::IdForTab(web_contents())));
 }
 
 }  // namespace extensions

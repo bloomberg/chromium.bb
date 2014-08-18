@@ -11,7 +11,7 @@
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_id.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/accelerator_priority.h"
 #include "chrome/browser/ui/views/extensions/extension_action_view_delegate.h"
@@ -115,7 +115,7 @@ gfx::Image ExtensionActionViewController::GetIcon(int tab_id) {
 
 int ExtensionActionViewController::GetCurrentTabId() const {
   content::WebContents* web_contents = delegate_->GetCurrentWebContents();
-  return web_contents ? SessionID::IdForTab(web_contents) : -1;
+  return web_contents ? SessionTabHelper::IdForTab(web_contents) : -1;
 }
 
 void ExtensionActionViewController::RegisterCommand() {

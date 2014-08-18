@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "chrome/browser/sessions/session_id.h"
+#include "components/sessions/session_id.h"
 
 class Profile;
 class TabModel;

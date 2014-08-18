@@ -13,7 +13,7 @@
 #include "chrome/browser/extensions/page_action_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/extensions/test_extension_system.h"
-#include "chrome/browser/sessions/session_id.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "extensions/common/extension.h"
@@ -55,7 +55,7 @@ class PageActionControllerTest : public ChromeRenderViewHostTestHarness {
   }
 
   int tab_id() {
-    return SessionID::IdForTab(web_contents());
+    return SessionTabHelper::IdForTab(web_contents());
   }
 
   ExtensionService* extension_service_;

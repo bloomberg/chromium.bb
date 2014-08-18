@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/sessions/session_id.h"
+#include "components/sessions/session_id.h"
 #include "url/gurl.h"
 
 class Profile;

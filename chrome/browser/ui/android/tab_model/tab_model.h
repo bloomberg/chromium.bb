@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_UI_ANDROID_TAB_MODEL_TAB_MODEL_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
+#include "components/sessions/session_id.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 

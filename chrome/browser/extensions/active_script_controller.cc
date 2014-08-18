@@ -17,7 +17,7 @@
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_id.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -196,7 +196,7 @@ ActiveScriptController::RequiresUserConsentForScriptInjection(
     return PermissionsData::ACCESS_ALLOWED;
 
   GURL url = web_contents()->GetVisibleURL();
-  int tab_id = SessionID::IdForTab(web_contents());
+  int tab_id = SessionTabHelper::IdForTab(web_contents());
   switch (type) {
     case UserScript::CONTENT_SCRIPT:
       return extension->permissions_data()->GetContentScriptAccess(

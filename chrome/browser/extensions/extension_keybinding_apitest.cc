@@ -51,7 +51,7 @@ class CommandsApiTest : public ExtensionApiTest {
   bool IsGrantedForTab(const Extension* extension,
                        const content::WebContents* web_contents) {
     return extension->permissions_data()->HasAPIPermissionForTab(
-        SessionID::IdForTab(web_contents), APIPermission::kTab);
+        SessionTabHelper::IdForTab(web_contents), APIPermission::kTab);
   }
 };
 

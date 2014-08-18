@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/window_controller_list.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/panels/native_panel.h"
@@ -115,10 +116,11 @@ base::DictionaryValue* PanelExtensionWindowController::CreateTabValue(
   DCHECK(IsVisibleToExtension(extension));
   base::DictionaryValue* tab_value = new base::DictionaryValue();
   tab_value->SetInteger(extensions::tabs_constants::kIdKey,
-                        SessionID::IdForTab(web_contents));
+                        SessionTabHelper::IdForTab(web_contents));
   tab_value->SetInteger(extensions::tabs_constants::kIndexKey, 0);
-  tab_value->SetInteger(extensions::tabs_constants::kWindowIdKey,
-                        SessionID::IdForWindowContainingTab(web_contents));
+  tab_value->SetInteger(
+      extensions::tabs_constants::kWindowIdKey,
+      SessionTabHelper::IdForWindowContainingTab(web_contents));
   tab_value->SetString(
       extensions::tabs_constants::kUrlKey, web_contents->GetURL().spec());
   tab_value->SetString(extensions::tabs_constants::kStatusKey,

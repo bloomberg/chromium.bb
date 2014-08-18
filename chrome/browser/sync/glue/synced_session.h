@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/time/time.h"
-#include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_types.h"
+#include "components/sessions/session_id.h"
 #include "sync/protocol/session_specifics.pb.h"
 
 namespace content {

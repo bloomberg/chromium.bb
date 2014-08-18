@@ -6,7 +6,6 @@
 
 #include "base/strings/string_util.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sync/glue/device_info.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/sessions/serialized_navigation_entry_test_helper.h"
+#include "components/sessions/session_id.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"

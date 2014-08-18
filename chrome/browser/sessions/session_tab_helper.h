@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_SESSIONS_SESSION_TAB_HELPER_H_
 
 #include "base/basictypes.h"
-#include "chrome/browser/sessions/session_id.h"
+#include "components/sessions/session_id.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -23,6 +23,24 @@ class SessionTabHelper : public content::WebContentsObserver,
   // Identifier of the window the tab is in.
   void SetWindowID(const SessionID& id);
   const SessionID& window_id() const { return window_id_; }
+
+  // If the specified WebContents has a SessionTabHelper (probably because it
+  // was used as the contents of a tab), returns a tab id. This value is
+  // immutable for a given tab. It will be unique across Chrome within the
+  // current session, but may be re-used across sessions. Returns -1
+  // for a NULL WebContents or if the WebContents has no SessionTabHelper.
+  static SessionID::id_type IdForTab(const content::WebContents* tab);
+
+  // If the specified WebContents has a SessionTabHelper (probably because it
+  // was used as the contents of a tab), and has ever been attached to a Browser
+  // window, returns Browser::session_id().id() for that Browser. If the tab is
+  // being dragged between Browser windows, returns the old window's id value.
+  // If the WebContents has a SessionTabHelper but has never been attached to a
+  // Browser window, returns an id value that is different from that of any
+  // Browser. Returns -1 for a NULL WebContents or if the WebContents has no
+  // SessionTabHelper.
+  static SessionID::id_type IdForWindowContainingTab(
+      const content::WebContents* tab);
 
   // content::WebContentsObserver:
   virtual void RenderViewCreated(

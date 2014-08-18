@@ -13,7 +13,7 @@
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_id.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
@@ -43,7 +43,7 @@ ExtensionAction::ShowAction PageActionController::OnClicked(
       ExtensionActionManager::Get(GetProfile())->GetPageAction(*extension);
   CHECK(page_action);
 
-  int tab_id = SessionID::IdForTab(web_contents_);
+  int tab_id = SessionTabHelper::IdForTab(web_contents_);
   TabHelper::FromWebContents(web_contents_)->
       active_tab_permission_granter()->GrantIfRequested(extension);
 
@@ -64,7 +64,7 @@ void PageActionController::OnNavigated() {
   const ExtensionSet& extensions =
       ExtensionRegistry::Get(web_contents_->GetBrowserContext())
           ->enabled_extensions();
-  int tab_id = SessionID::IdForTab(web_contents_);
+  int tab_id = SessionTabHelper::IdForTab(web_contents_);
   size_t num_current_actions = 0u;
   for (ExtensionSet::const_iterator iter = extensions.begin();
        iter != extensions.end();

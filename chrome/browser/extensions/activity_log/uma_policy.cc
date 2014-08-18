@@ -10,7 +10,7 @@
 #include "chrome/browser/extensions/active_script_controller.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
 #include "chrome/browser/extensions/activity_log/ad_network_database.h"
-#include "chrome/browser/sessions/session_id.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -316,7 +316,7 @@ void UmaPolicy::OnBrowserRemoved(Browser* browser) {
   browser->tab_strip_model()->RemoveObserver(this);
 }
 
-// Use the value from SessionID::IdForTab, *not* |index|. |index| will be
+// Use the value from SessionTabHelper::IdForTab, *not* |index|. |index| will be
 // duplicated across tabs in a session, whereas IdForTab uniquely identifies
 // each tab.
 void UmaPolicy::TabChangedAt(content::WebContents* contents,
@@ -328,7 +328,7 @@ void UmaPolicy::TabChangedAt(content::WebContents* contents,
     return;
 
   std::string url = CleanURL(contents->GetLastCommittedURL());
-  int32 tab_id = SessionID::IdForTab(contents);
+  int32 tab_id = SessionTabHelper::IdForTab(contents);
 
   std::map<int32, std::string>::iterator tab_it = tab_list_.find(tab_id);
 
@@ -351,7 +351,7 @@ void UmaPolicy::TabChangedAt(content::WebContents* contents,
   SetupOpenedPage(url);
 }
 
-// Use the value from SessionID::IdForTab, *not* |index|. |index| will be
+// Use the value from SessionTabHelper::IdForTab, *not* |index|. |index| will be
 // duplicated across tabs in a session, whereas IdForTab uniquely identifies
 // each tab.
 void UmaPolicy::TabClosingAt(TabStripModel* tab_strip_model,
@@ -360,7 +360,7 @@ void UmaPolicy::TabClosingAt(TabStripModel* tab_strip_model,
   if (!contents)
     return;
   std::string url = CleanURL(contents->GetLastCommittedURL());
-  int32 tab_id = SessionID::IdForTab(contents);
+  int32 tab_id = SessionTabHelper::IdForTab(contents);
   std::map<int, std::string>::iterator tab_it = tab_list_.find(tab_id);
   if (tab_it != tab_list_.end())
     tab_list_.erase(tab_id);

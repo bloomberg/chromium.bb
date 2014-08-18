@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/sessions/session_id.h"
+#include "components/sessions/session_id.h"
 
 class SessionBackend;
 class SessionCommand;
@@ -26,7 +26,7 @@ class SerializedNavigationEntry;
 
 class SessionServiceTestHelper {
  public:
-  explicit SessionServiceTestHelper();
+  SessionServiceTestHelper();
   explicit SessionServiceTestHelper(SessionService* service);
   ~SessionServiceTestHelper();
 

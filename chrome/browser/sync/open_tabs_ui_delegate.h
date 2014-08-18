@@ -11,9 +11,9 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
-#include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sync/glue/synced_session.h"
+#include "components/sessions/session_id.h"
 
 namespace browser_sync {
 

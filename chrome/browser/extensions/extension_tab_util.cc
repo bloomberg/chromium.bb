@@ -13,7 +13,7 @@
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/extensions/window_controller_list.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_id.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_iterator.h"
@@ -289,7 +289,7 @@ int ExtensionTabUtil::GetWindowIdOfTabStripModel(
 }
 
 int ExtensionTabUtil::GetTabId(const WebContents* web_contents) {
-  return SessionID::IdForTab(web_contents);
+  return SessionTabHelper::IdForTab(web_contents);
 }
 
 std::string ExtensionTabUtil::GetTabStatusText(bool is_loading) {
@@ -297,7 +297,7 @@ std::string ExtensionTabUtil::GetTabStatusText(bool is_loading) {
 }
 
 int ExtensionTabUtil::GetWindowIdOfTab(const WebContents* web_contents) {
-  return SessionID::IdForWindowContainingTab(web_contents);
+  return SessionTabHelper::IdForWindowContainingTab(web_contents);
 }
 
 base::DictionaryValue* ExtensionTabUtil::CreateTabValue(
@@ -467,7 +467,7 @@ bool ExtensionTabUtil::GetTabById(int tab_id,
       TabStripModel* target_tab_strip = target_browser->tab_strip_model();
       for (int i = 0; i < target_tab_strip->count(); ++i) {
         WebContents* target_contents = target_tab_strip->GetWebContentsAt(i);
-        if (SessionID::IdForTab(target_contents) == tab_id) {
+        if (SessionTabHelper::IdForTab(target_contents) == tab_id) {
           if (browser)
             *browser = target_browser;
           if (tab_strip)

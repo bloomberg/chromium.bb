@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_SYNC_TAB_CONTENTS_SYNCED_TAB_DELEGATE_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
+#include "components/sessions/session_id.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace content {
