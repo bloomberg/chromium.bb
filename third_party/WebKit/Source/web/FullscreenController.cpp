@@ -134,7 +134,7 @@ void FullscreenController::didExitFullScreen()
 
     if (Document* doc = m_fullScreenFrame->document()) {
         if (Fullscreen* fullscreen = Fullscreen::fromIfExists(*doc)) {
-            if (fullscreen->webkitIsFullScreen()) {
+            if (fullscreen->webkitCurrentFullScreenElement()) {
                 if (m_exitFullscreenPageScaleFactor) {
                     m_webViewImpl->setPageScaleFactor(m_exitFullscreenPageScaleFactor);
                     m_webViewImpl->setMainFrameScrollOffset(IntPoint(m_exitFullscreenScrollOffset));

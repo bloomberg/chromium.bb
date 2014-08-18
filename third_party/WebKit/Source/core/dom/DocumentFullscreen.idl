@@ -29,7 +29,7 @@ partial interface Document {
     [RuntimeEnabled=FullscreenUnprefixed] attribute EventHandler onfullscreenerror;
 
     // Mozilla version
-    [MeasureAs=PrefixedDocumentIsFullscreen] readonly attribute boolean webkitIsFullScreen;
+    [MeasureAs=PrefixedDocumentIsFullscreen, ImplementedAs=webkitCurrentFullScreenElement] readonly attribute boolean webkitIsFullScreen;
     [MeasureAs=PrefixedDocumentFullScreenKeyboardInputAllowed] readonly attribute boolean webkitFullScreenKeyboardInputAllowed;
     [MeasureAs=PrefixedDocumentCurrentFullScreenElement] readonly attribute Element webkitCurrentFullScreenElement;
     [MeasureAs=PrefixedDocumentCancelFullScreen, ImplementedAs=exitFullscreen] void webkitCancelFullScreen();

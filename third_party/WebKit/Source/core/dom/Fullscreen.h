@@ -85,7 +85,6 @@ public:
     void elementRemoved(Element&);
 
     // Mozilla API
-    bool webkitIsFullScreen() const { return m_fullScreenElement.get(); }
     bool webkitFullScreenKeyboardInputAllowed() const { return m_fullScreenElement.get() && m_areKeysEnabledInFullScreen; }
     Element* webkitCurrentFullScreenElement() const { return m_fullScreenElement.get(); }
 

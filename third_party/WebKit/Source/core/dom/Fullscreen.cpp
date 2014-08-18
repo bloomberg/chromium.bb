@@ -122,9 +122,7 @@ Element* Fullscreen::currentFullScreenElementFrom(Document& document)
 
 bool Fullscreen::isFullScreen(Document& document)
 {
-    if (Fullscreen* found = fromIfExists(document))
-        return found->webkitIsFullScreen();
-    return false;
+    return currentFullScreenElementFrom(document);
 }
 
 Fullscreen::Fullscreen(Document& document)
