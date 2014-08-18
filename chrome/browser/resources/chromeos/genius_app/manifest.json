@@ -25,7 +25,9 @@
   "permissions": [
     "alarms",
     "identity",
+    "identity.email",
     "chromeosInfoPrivate",
+    "fileSystem",
     "firstRunPrivate",
     "management",
     "metricsPrivate",
@@ -45,7 +47,6 @@
   "oauth2": {
     "client_id": "929143421683.apps.googleusercontent.com",
     "scopes": [
-        "https://www.googleapis.com/auth/userinfo.email",
         "https://www.googleapis.com/auth/supportcontent",
         "https://www.google.com/accounts/OAuthLogin"
     ]
@@ -57,6 +58,13 @@
         "https://support.google.com/chromeos-gethelp/answer/*"
       ],
       "title": "Open Help Article"
+    },
+    "hts": {
+        "matches": [
+          "https://support.google.com/chromeos-gethelp/rts",
+          "https://support.google.com/chromeos-gethelp/helpouts"
+        ],
+        "title": "Open HTS"
     },
     "home": {
       "matches": [
