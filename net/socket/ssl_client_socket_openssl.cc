@@ -1015,7 +1015,9 @@ int SSLClientSocketOpenSSL::DoVerifyCert(int result) {
       server_cert_.get(),
       host_and_port_.host(),
       flags,
-      NULL /* no CRL set */,
+      // TODO(davidben): Route the CRLSet through SSLConfig so
+      // SSLClientSocket doesn't depend on SSLConfigService.
+      SSLConfigService::GetCRLSet().get(),
       &server_cert_verify_result_,
       base::Bind(&SSLClientSocketOpenSSL::OnHandshakeIOComplete,
                  base::Unretained(this)),

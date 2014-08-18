@@ -7806,7 +7806,7 @@ TEST_F(HTTPSCRLSetTest, ExpiredCRLSet) {
 }
 
 TEST_F(HTTPSCRLSetTest, CRLSetRevoked) {
-#if defined(USE_OPENSSL)
+#if defined(OS_ANDROID)
   LOG(WARNING) << "Skipping test because system doesn't support CRLSets";
   return;
 #endif

@@ -147,14 +147,7 @@ class NegotiatingAuthenticatorTest : public AuthenticatorTestBase {
   DISALLOW_COPY_AND_ASSIGN(NegotiatingAuthenticatorTest);
 };
 
-// These tests use net::SSLServerSocket which is not implemented for OpenSSL.
-#if defined(USE_OPENSSL)
-#define MAYBE(x) DISABLED_##x
-#else
-#define MAYBE(x) x
-#endif
-
-TEST_F(NegotiatingAuthenticatorTest, MAYBE(SuccessfulAuthHmac)) {
+TEST_F(NegotiatingAuthenticatorTest, SuccessfulAuthHmac) {
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators(
       kNoClientId, kNoPairedSecret, kTestPin, kTestPin,
       AuthenticationMethod::HMAC_SHA256, false));
@@ -162,14 +155,14 @@ TEST_F(NegotiatingAuthenticatorTest, MAYBE(SuccessfulAuthHmac)) {
       AuthenticationMethod::Spake2(AuthenticationMethod::HMAC_SHA256));
 }
 
-TEST_F(NegotiatingAuthenticatorTest, MAYBE(SuccessfulAuthPlain)) {
+TEST_F(NegotiatingAuthenticatorTest, SuccessfulAuthPlain) {
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators(
       kNoClientId, kNoPairedSecret, kTestPin, kTestPin,
       AuthenticationMethod::NONE, false));
   VerifyAccepted(AuthenticationMethod::Spake2(AuthenticationMethod::NONE));
 }
 
-TEST_F(NegotiatingAuthenticatorTest, MAYBE(InvalidSecretHmac)) {
+TEST_F(NegotiatingAuthenticatorTest, InvalidSecretHmac) {
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators(
       kNoClientId, kNoPairedSecret, kTestPinBad, kTestPin,
       AuthenticationMethod::HMAC_SHA256, false));
@@ -178,7 +171,7 @@ TEST_F(NegotiatingAuthenticatorTest, MAYBE(InvalidSecretHmac)) {
   VerifyRejected(Authenticator::INVALID_CREDENTIALS);
 }
 
-TEST_F(NegotiatingAuthenticatorTest, MAYBE(InvalidSecretPlain)) {
+TEST_F(NegotiatingAuthenticatorTest, InvalidSecretPlain) {
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators(
       kNoClientId, kNoPairedSecret, kTestPin, kTestPinBad,
       AuthenticationMethod::NONE, false));
@@ -187,7 +180,7 @@ TEST_F(NegotiatingAuthenticatorTest, MAYBE(InvalidSecretPlain)) {
   VerifyRejected(Authenticator::INVALID_CREDENTIALS);
 }
 
-TEST_F(NegotiatingAuthenticatorTest, MAYBE(IncompatibleMethods)) {
+TEST_F(NegotiatingAuthenticatorTest, IncompatibleMethods) {
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators(
       kNoClientId, kNoPairedSecret, kTestPin, kTestPinBad,
       AuthenticationMethod::NONE, true));
@@ -196,7 +189,7 @@ TEST_F(NegotiatingAuthenticatorTest, MAYBE(IncompatibleMethods)) {
   VerifyRejected(Authenticator::PROTOCOL_ERROR);
 }
 
-TEST_F(NegotiatingAuthenticatorTest, MAYBE(PairingNotSupported)) {
+TEST_F(NegotiatingAuthenticatorTest, PairingNotSupported) {
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators(
       kTestClientId, kTestPairedSecret, kTestPin, kTestPin,
       AuthenticationMethod::HMAC_SHA256, false));
@@ -205,7 +198,7 @@ TEST_F(NegotiatingAuthenticatorTest, MAYBE(PairingNotSupported)) {
       AuthenticationMethod::Spake2(AuthenticationMethod::HMAC_SHA256));
 }
 
-TEST_F(NegotiatingAuthenticatorTest, MAYBE(PairingSupportedButNotPaired)) {
+TEST_F(NegotiatingAuthenticatorTest, PairingSupportedButNotPaired) {
   CreatePairingRegistry(false);
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators(
       kNoClientId, kNoPairedSecret, kTestPin, kTestPin,
@@ -214,7 +207,7 @@ TEST_F(NegotiatingAuthenticatorTest, MAYBE(PairingSupportedButNotPaired)) {
   VerifyAccepted(AuthenticationMethod::Spake2Pair());
 }
 
-TEST_F(NegotiatingAuthenticatorTest, MAYBE(PairingRevokedPinOkay)) {
+TEST_F(NegotiatingAuthenticatorTest, PairingRevokedPinOkay) {
   CreatePairingRegistry(false);
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators(
       kTestClientId, kTestPairedSecret, kTestPin, kTestPin,
@@ -223,7 +216,7 @@ TEST_F(NegotiatingAuthenticatorTest, MAYBE(PairingRevokedPinOkay)) {
   VerifyAccepted(AuthenticationMethod::Spake2Pair());
 }
 
-TEST_F(NegotiatingAuthenticatorTest, MAYBE(PairingRevokedPinBad)) {
+TEST_F(NegotiatingAuthenticatorTest, PairingRevokedPinBad) {
   CreatePairingRegistry(false);
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators(
       kTestClientId, kTestPairedSecret, kTestPinBad, kTestPin,
@@ -232,7 +225,7 @@ TEST_F(NegotiatingAuthenticatorTest, MAYBE(PairingRevokedPinBad)) {
   VerifyRejected(Authenticator::INVALID_CREDENTIALS);
 }
 
-TEST_F(NegotiatingAuthenticatorTest, MAYBE(PairingSucceeded)) {
+TEST_F(NegotiatingAuthenticatorTest, PairingSucceeded) {
   CreatePairingRegistry(true);
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators(
       kTestClientId, kTestPairedSecret, kTestPinBad, kTestPin,
@@ -242,7 +235,7 @@ TEST_F(NegotiatingAuthenticatorTest, MAYBE(PairingSucceeded)) {
 }
 
 TEST_F(NegotiatingAuthenticatorTest,
-       MAYBE(PairingSucceededInvalidSecretButPinOkay)) {
+       PairingSucceededInvalidSecretButPinOkay) {
   CreatePairingRegistry(true);
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators(
       kTestClientId, kTestPairedSecretBad, kTestPin, kTestPin,
@@ -251,7 +244,7 @@ TEST_F(NegotiatingAuthenticatorTest,
   VerifyAccepted(AuthenticationMethod::Spake2Pair());
 }
 
-TEST_F(NegotiatingAuthenticatorTest, MAYBE(PairingFailedInvalidSecretAndPin)) {
+TEST_F(NegotiatingAuthenticatorTest, PairingFailedInvalidSecretAndPin) {
   CreatePairingRegistry(true);
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators(
       kTestClientId, kTestPairedSecretBad, kTestPinBad, kTestPin,

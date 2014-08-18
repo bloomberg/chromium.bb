@@ -51,14 +51,7 @@ class V2AuthenticatorTest : public AuthenticatorTestBase {
   DISALLOW_COPY_AND_ASSIGN(V2AuthenticatorTest);
 };
 
-// These tests use net::SSLServerSocket which is not implemented for OpenSSL.
-#if defined(USE_OPENSSL)
-#define MAYBE(x) DISABLED_##x
-#else
-#define MAYBE(x) x
-#endif
-
-TEST_F(V2AuthenticatorTest, MAYBE(SuccessfulAuth)) {
+TEST_F(V2AuthenticatorTest, SuccessfulAuth) {
   ASSERT_NO_FATAL_FAILURE(
       InitAuthenticators(kTestSharedSecret, kTestSharedSecret));
   ASSERT_NO_FATAL_FAILURE(RunAuthExchange());
@@ -79,7 +72,7 @@ TEST_F(V2AuthenticatorTest, MAYBE(SuccessfulAuth)) {
 }
 
 // Verify that connection is rejected when secrets don't match.
-TEST_F(V2AuthenticatorTest, MAYBE(InvalidSecret)) {
+TEST_F(V2AuthenticatorTest, InvalidSecret) {
   ASSERT_NO_FATAL_FAILURE(
       InitAuthenticators(kTestSharedSecretBad, kTestSharedSecret));
   ASSERT_NO_FATAL_FAILURE(RunAuthExchange());
