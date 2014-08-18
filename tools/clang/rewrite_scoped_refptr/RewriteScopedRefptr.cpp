@@ -61,6 +61,24 @@ bool NeedsParens(const clang::Expr* expr) {
   return false;
 }
 
+Replacement RewriteRawPtrToScopedRefptr(const MatchFinder::MatchResult& result,
+                                        clang::SourceLocation begin,
+                                        clang::SourceLocation end) {
+  clang::CharSourceRange range = clang::CharSourceRange::getTokenRange(
+      result.SourceManager->getSpellingLoc(begin),
+      result.SourceManager->getSpellingLoc(end));
+
+  std::string text = clang::Lexer::getSourceText(
+      range, *result.SourceManager, result.Context->getLangOpts());
+  text.erase(text.rfind('*'));
+
+  std::string replacement_text("scoped_refptr<");
+  replacement_text += text;
+  replacement_text += ">";
+
+  return Replacement(*result.SourceManager, range, replacement_text);
+}
+
 class GetRewriterCallback : public MatchFinder::MatchCallback {
  public:
   explicit GetRewriterCallback(Replacements* replacements)
@@ -166,34 +184,62 @@ class VarRewriterCallback : public MatchFinder::MatchCallback {
 };
 
 void VarRewriterCallback::run(const MatchFinder::MatchResult& result) {
-  const clang::CXXMemberCallExpr* const implicit_call =
-      result.Nodes.getNodeAs<clang::CXXMemberCallExpr>("call");
   const clang::DeclaratorDecl* const var_decl =
       result.Nodes.getNodeAs<clang::DeclaratorDecl>("var");
 
-  if (!implicit_call || !var_decl)
+  if (!var_decl)
     return;
 
   const clang::TypeSourceInfo* tsi = var_decl->getTypeSourceInfo();
 
-  clang::CharSourceRange range = clang::CharSourceRange::getTokenRange(
-      result.SourceManager->getSpellingLoc(tsi->getTypeLoc().getBeginLoc()),
-      result.SourceManager->getSpellingLoc(tsi->getTypeLoc().getEndLoc()));
-  if (!range.isValid())
+  // TODO(dcheng): This mishandles a case where a variable has multiple
+  // declarations, e.g.:
+  //
+  // in .h:
+  // Foo* my_global_magical_foo;
+  //
+  // in .cc:
+  // Foo* my_global_magical_foo = CreateFoo();
+  //
+  // In this case, it will only rewrite the .cc definition. Oh well. This should
+  // be rare enough that these cases can be manually handled, since the style
+  // guide prohibits globals of non-POD type.
+  replacements_->insert(RewriteRawPtrToScopedRefptr(
+      result, tsi->getTypeLoc().getBeginLoc(), tsi->getTypeLoc().getEndLoc()));
+}
+
+class FunctionRewriterCallback : public MatchFinder::MatchCallback {
+ public:
+  explicit FunctionRewriterCallback(Replacements* replacements)
+      : replacements_(replacements) {}
+  virtual void run(const MatchFinder::MatchResult& result) override;
+
+ private:
+  Replacements* const replacements_;
+};
+
+void FunctionRewriterCallback::run(const MatchFinder::MatchResult& result) {
+  const clang::FunctionDecl* const function_decl =
+      result.Nodes.getNodeAs<clang::FunctionDecl>("fn");
+
+  if (!function_decl)
     return;
 
-  std::string text = clang::Lexer::getSourceText(
-      range, *result.SourceManager, result.Context->getLangOpts());
-  if (text.empty())
+  // If matched against an implicit conversion to a DeclRefExpr, make sure the
+  // referenced declaration is of class type, e.g. the tool skips trying to
+  // chase pointers/references to determine if the pointee is a scoped_refptr<T>
+  // with local storage. Instead, let a human manually handle those cases.
+  const clang::VarDecl* const var_decl =
+      result.Nodes.getNodeAs<clang::VarDecl>("var");
+  if (var_decl && !var_decl->getTypeSourceInfo()->getType()->isClassType()) {
     return;
-  text.erase(text.rfind('*'));
+  }
 
-  std::string replacement_text("scoped_refptr<");
-  replacement_text += text;
-  replacement_text += ">";
-
-  replacements_->insert(
-      Replacement(*result.SourceManager, range, replacement_text));
+  for (clang::FunctionDecl* f : function_decl->redecls()) {
+    clang::SourceRange range = f->getReturnTypeSourceRange();
+    replacements_->insert(
+        RewriteRawPtrToScopedRefptr(result, range.getBegin(), range.getEnd()));
+  }
 }
 
 }  // namespace
@@ -211,26 +257,44 @@ int main(int argc, const char* argv[]) {
 
   // Finds all calls to conversion operator member function. This catches calls
   // to "operator T*", "operator Testable", and "operator bool" equally.
-  auto base_matcher = memberCallExpr(
-      thisPointerType(recordDecl(isSameOrDerivedFrom("::scoped_refptr"),
-                                 isTemplateInstantiation())),
-      callee(conversionDecl()));
+  auto base_matcher =
+      id("call",
+         memberCallExpr(
+             thisPointerType(recordDecl(isSameOrDerivedFrom("::scoped_refptr"),
+                                        isTemplateInstantiation())),
+             callee(conversionDecl()),
+             on(id("arg", expr()))));
 
-  // The heuristic for whether or not a conversion is 'unsafe'. An unsafe
-  // conversion is one where a temporary scoped_refptr<T> is converted to
+  // The heuristic for whether or not converting a temporary is 'unsafe'. An
+  // unsafe conversion is one where a temporary scoped_refptr<T> is converted to
   // another type. The matcher provides an exception for a temporary
   // scoped_refptr that is the result of an operator call. In this case, assume
   // that it's the result of an iterator dereference, and the container itself
   // retains the necessary reference, since this is a common idiom to see in
   // loop bodies.
-  auto is_unsafe_conversion =
-      bindTemporaryExpr(unless(has(operatorCallExpr())));
+  auto is_unsafe_temporary_conversion =
+      on(bindTemporaryExpr(unless(has(operatorCallExpr()))));
 
-  auto safe_conversion_matcher = memberCallExpr(
-      base_matcher, on(id("arg", expr(unless(is_unsafe_conversion)))));
-
-  auto unsafe_conversion_matcher =
-      memberCallExpr(base_matcher, on(id("arg", is_unsafe_conversion)));
+  // Returning a scoped_refptr<T> as a T* is considered unsafe if either are
+  // true:
+  // - The scoped_refptr<T> is a temporary.
+  // - The scoped_refptr<T> has local lifetime.
+  auto returned_as_raw_ptr = hasParent(
+      returnStmt(hasAncestor(id("fn", functionDecl(returns(pointerType()))))));
+  // This matcher intentionally matches more than it should. For example, this
+  // will match:
+  //   scoped_refptr<Foo>& foo = some_other_foo;
+  //   return foo;
+  // The matcher callback filters out VarDecls that aren't a scoped_refptr<T>,
+  // so those cases can be manually handled.
+  auto is_local_variable =
+      on(declRefExpr(to(id("var", varDecl(hasLocalStorage())))));
+  auto is_unsafe_return =
+      anyOf(allOf(hasParent(implicitCastExpr(returned_as_raw_ptr)),
+                  is_local_variable),
+            allOf(hasParent(implicitCastExpr(
+                      hasParent(exprWithCleanups(returned_as_raw_ptr)))),
+                  is_unsafe_temporary_conversion));
 
   // This catches both user-defined conversions (eg: "operator bool") and
   // standard conversion sequence (C++03 13.3.3.1.1), such as converting a
@@ -243,30 +307,37 @@ int main(int argc, const char* argv[]) {
   auto bool_conversion_matcher = hasParent(
       expr(anyOf(implicit_to_bool, expr(hasParent(implicit_to_bool)))));
 
-  // Find all calls to an operator overload that do NOT (ultimately) result in
-  // being cast to a bool - eg: where it's being converted to T* and rewrite
-  // them to add a call to get().
+  // Find all calls to an operator overload that are 'safe'.
   //
   // All bool conversions will be handled with the Testable trick, but that
   // can only be used once "operator T*" is removed, since otherwise it leaves
   // the call ambiguous.
   GetRewriterCallback get_callback(&replacements);
-  match_finder.addMatcher(id("call", safe_conversion_matcher), &get_callback);
+  match_finder.addMatcher(
+      memberCallExpr(
+          base_matcher,
+          unless(anyOf(is_unsafe_temporary_conversion, is_unsafe_return))),
+      &get_callback);
 
   // Find temporary scoped_refptr<T>'s being unsafely assigned to a T*.
   VarRewriterCallback var_callback(&replacements);
+  auto initialized_with_temporary = ignoringImpCasts(exprWithCleanups(
+      has(memberCallExpr(base_matcher, is_unsafe_temporary_conversion))));
+  match_finder.addMatcher(id("var",
+                             varDecl(hasInitializer(initialized_with_temporary),
+                                     hasType(pointerType()))),
+                          &var_callback);
   match_finder.addMatcher(
-      id("var",
-         varDecl(hasInitializer(ignoringImpCasts(exprWithCleanups(
-                     has(id("call", unsafe_conversion_matcher))))),
-                 hasType(pointerType()))),
+      constructorDecl(forEachConstructorInitializer(
+          allOf(withInitializer(initialized_with_temporary),
+                forField(id("var", fieldDecl(hasType(pointerType()))))))),
       &var_callback);
-  match_finder.addMatcher(
-      constructorDecl(forEachConstructorInitializer(allOf(
-          withInitializer(ignoringImpCasts(
-              exprWithCleanups(has(id("call", unsafe_conversion_matcher))))),
-          forField(id("var", fieldDecl(hasType(pointerType()))))))),
-      &var_callback);
+
+  // Rewrite functions that unsafely turn a scoped_refptr<T> into a T* when
+  // returning a value.
+  FunctionRewriterCallback fn_callback(&replacements);
+  match_finder.addMatcher(memberCallExpr(base_matcher, is_unsafe_return),
+                          &fn_callback);
 
   std::unique_ptr<clang::tooling::FrontendActionFactory> factory =
       clang::tooling::newFrontendActionFactory(&match_finder);

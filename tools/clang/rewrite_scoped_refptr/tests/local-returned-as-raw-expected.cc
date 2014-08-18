@@ -8,10 +8,11 @@ struct Foo {
   int dummy;
 };
 
-// Case 1: An example of an unsafe conversion, where the object is freed by
-// the time the function returns.
-Foo* GetBuggyFoo() {
+// An example of an unsafe conversion, where the object is freed by the time the
+// function returns.
+scoped_refptr<Foo> GetBuggyFoo();
+
+scoped_refptr<Foo> GetBuggyFoo() {
   scoped_refptr<Foo> unsafe(new Foo);
-  // FIXME: The tool should rewrite the return type of the function.
-  return unsafe.get();
+  return unsafe;
 }
