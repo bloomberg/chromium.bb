@@ -111,25 +111,16 @@ GrPixelConfig ToGrPixelConfig(ResourceFormat format) {
   return kSkia8888_GrPixelConfig;
 }
 
-class IdentityAllocator : public SkBitmap::Allocator {
- public:
-  explicit IdentityAllocator(void* buffer) : buffer_(buffer) {}
-  virtual bool allocPixelRef(SkBitmap* dst, SkColorTable*) OVERRIDE {
-    dst->setPixels(buffer_);
-    return true;
-  }
-
- private:
-  void* buffer_;
-};
-
-void CopyBitmap(const SkBitmap& src, uint8_t* dst, SkColorType dst_colorType) {
-  SkBitmap dst_bitmap;
-  IdentityAllocator allocator(dst);
-  src.copyTo(&dst_bitmap, dst_colorType, &allocator);
+void CopyBitmap(const SkBitmap& src, uint8_t* dst, SkColorType dst_color_type) {
+  SkImageInfo dst_info = src.info();
+  dst_info.fColorType = dst_color_type;
   // TODO(kaanb): The GL pipeline assumes a 4-byte alignment for the
-  // bitmap data. This check will be removed once crbug.com/293728 is fixed.
-  CHECK_EQ(0u, dst_bitmap.rowBytes() % 4);
+  // bitmap data. There will be no need to call SkAlign4 once crbug.com/293728
+  // is fixed.
+  const size_t dst_row_bytes = SkAlign4(dst_info.minRowBytes());
+  CHECK_EQ(0u, dst_row_bytes % 4);
+  bool success = src.readPixels(dst_info, dst, dst_row_bytes, 0, 0);
+  CHECK_EQ(true, success);
 }
 
 class ScopedSetActiveTexture {
