@@ -34,14 +34,13 @@ class WindowManagerImpl : public WindowManager,
   WindowManagerImpl();
   virtual ~WindowManagerImpl();
 
-  void Layout();
-
   // WindowManager:
   virtual void ToggleOverview() OVERRIDE;
   virtual bool IsOverviewModeActive() OVERRIDE;
 
  private:
   friend class WindowManagerImplTestApi;
+  friend class AthenaContainerLayoutManager;
 
   enum Command {
     CMD_TOGGLE_OVERVIEW,

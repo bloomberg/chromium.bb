@@ -244,4 +244,42 @@ TEST_F(WindowManagerTest, TitleDragSwitchBetweenWindowsInSplitViewMode) {
   EXPECT_EQ(third.get(), wm_api.split_view_controller()->right_window());
 }
 
+TEST_F(WindowManagerTest, NewWindowBounds) {
+  aura::test::TestWindowDelegate delegate;
+  scoped_ptr<aura::Window> first(CreateWindow(&delegate));
+
+  WindowManagerImplTestApi wm_api;
+  aura::client::ParentWindowWithContext(
+      first.get(), ScreenManager::Get()->GetContext(), gfx::Rect());
+  // The window should have the same size as the container.
+  const gfx::Size work_area =
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().work_area().size();
+  EXPECT_EQ(work_area.ToString(),
+            first->bounds().size().ToString());
+  EXPECT_TRUE(first->bounds().origin().IsOrigin());
+
+  // A second window should have the same bounds as the first one.
+  scoped_ptr<aura::Window> second(CreateWindow(&delegate));
+  aura::client::ParentWindowWithContext(
+      second.get(), ScreenManager::Get()->GetContext(), gfx::Rect());
+  EXPECT_EQ(first->bounds().ToString(), second->bounds().ToString());
+
+  // Get into split view.
+  wm_api.split_view_controller()->ActivateSplitMode(NULL, NULL);
+  const gfx::Rect left_bounds =
+      wm_api.split_view_controller()->left_window()->bounds();
+  EXPECT_NE(work_area.ToString(),
+            left_bounds.size().ToString());
+
+  scoped_ptr<aura::Window> third(CreateWindow(&delegate));
+  aura::client::ParentWindowWithContext(
+      third.get(), ScreenManager::Get()->GetContext(), gfx::Rect());
+  EXPECT_NE(wm_api.split_view_controller()->left_window(), third.get());
+  EXPECT_EQ(left_bounds.ToString(), third->bounds().ToString());
+
+  third->Hide();
+  EXPECT_EQ(left_bounds.ToString(),
+            wm_api.split_view_controller()->left_window()->bounds().ToString());
+}
+
 }  // namespace athena

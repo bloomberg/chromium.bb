@@ -17,6 +17,8 @@
 #include "base/logging.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
+#include "ui/gfx/display.h"
+#include "ui/gfx/screen.h"
 #include "ui/wm/core/shadow_controller.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/core/wm_state.h"
@@ -25,8 +27,8 @@
 
 namespace athena {
 namespace {
-
 class WindowManagerImpl* instance = NULL;
+}  // namespace
 
 class AthenaContainerLayoutManager : public aura::LayoutManager {
  public:
@@ -54,11 +56,47 @@ AthenaContainerLayoutManager::~AthenaContainerLayoutManager() {
 }
 
 void AthenaContainerLayoutManager::OnWindowResized() {
-  instance->Layout();
+  // Resize all the existing windows.
+  aura::Window::Windows list = instance->window_list_provider_->GetWindowList();
+  const gfx::Size work_area =
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().work_area().size();
+  bool is_splitview = instance->split_view_controller_->IsSplitViewModeActive();
+  gfx::Size split_size;
+  if (is_splitview) {
+    CHECK(instance->split_view_controller_->left_window());
+    split_size =
+        instance->split_view_controller_->left_window()->bounds().size();
+  }
+
+  for (aura::Window::Windows::const_iterator iter = list.begin();
+       iter != list.end();
+       ++iter) {
+    aura::Window* window = *iter;
+    if (is_splitview) {
+      if (window == instance->split_view_controller_->left_window())
+        window->SetBounds(gfx::Rect(split_size));
+      else if (window == instance->split_view_controller_->right_window())
+        window->SetBounds(
+            gfx::Rect(gfx::Point(split_size.width(), 0), split_size));
+      else
+        window->SetBounds(gfx::Rect(work_area));
+    } else {
+      window->SetBounds(gfx::Rect(work_area));
+    }
+  }
 }
 
 void AthenaContainerLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
-  instance->Layout();
+  aura::Window::Windows list = instance->window_list_provider_->GetWindowList();
+  if (std::find(list.begin(), list.end(), child) == list.end())
+    return;
+  aura::Window* window = NULL;
+  if (instance->split_view_controller_->IsSplitViewModeActive())
+    window = instance->split_view_controller_->left_window();
+  else
+    window = instance->container_.get();
+  CHECK(window);
+  child->SetBounds(gfx::Rect(window->bounds().size()));
 }
 
 void AthenaContainerLayoutManager::OnWillRemoveWindowFromLayout(
@@ -67,13 +105,11 @@ void AthenaContainerLayoutManager::OnWillRemoveWindowFromLayout(
 
 void AthenaContainerLayoutManager::OnWindowRemovedFromLayout(
     aura::Window* child) {
-  instance->Layout();
 }
 
 void AthenaContainerLayoutManager::OnChildWindowVisibilityChanged(
     aura::Window* child,
     bool visible) {
-  instance->Layout();
 }
 
 void AthenaContainerLayoutManager::SetChildBounds(
@@ -82,8 +118,6 @@ void AthenaContainerLayoutManager::SetChildBounds(
   if (!requested_bounds.IsEmpty())
     SetChildBoundsDirect(child, requested_bounds);
 }
-
-}  // namespace
 
 WindowManagerImpl::WindowManagerImpl() {
   ScreenManager::ContainerParams params("DefaultContainer", CP_DEFAULT);
@@ -118,19 +152,6 @@ WindowManagerImpl::~WindowManagerImpl() {
   title_drag_controller_.reset();
   container_.reset();
   instance = NULL;
-}
-
-void WindowManagerImpl::Layout() {
-  if (!container_)
-    return;
-  gfx::Rect bounds = gfx::Rect(container_->bounds().size());
-  const aura::Window::Windows& children = container_->children();
-  for (aura::Window::Windows::const_iterator iter = children.begin();
-       iter != children.end();
-       ++iter) {
-    if ((*iter)->type() == ui::wm::WINDOW_TYPE_NORMAL)
-      (*iter)->SetBounds(bounds);
-  }
 }
 
 void WindowManagerImpl::ToggleOverview() {
