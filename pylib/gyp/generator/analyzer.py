@@ -14,7 +14,13 @@ error: only supplied if there is an error.
 warning: only supplied if there is a warning.
 targets: the set of targets passed in via targets that either directly or
   indirectly depend upon the set of paths supplied in files.
-status: indicates if any of the supplied files matched at least one target.
+build_targets: minimal set of targets that directly depend on the changed
+  files and need to be built. The expectation is this set of targets is passed
+  into a build step.
+status: outputs one of three values: none of the supplied files were found,
+  one of the include files changed so that it should be assumed everything
+  changed (in this case targets and build_targets are not output) or at
+  least one file was found.
 
 If the generator flag analyzer_output_path is specified, output is written
 there. Otherwise output is written to stdout.
@@ -31,6 +37,8 @@ debug = False
 
 found_dependency_string = 'Found dependency'
 no_dependency_string = 'No dependencies'
+# Status when it should be assumed that everything has changed.
+all_changed_string = 'Found dependency (all)'
 
 # MatchStatus is used indicate if and how a target depends upon the supplied
 # sources.
@@ -143,7 +151,7 @@ def _ExtractSources(target, target_dict, toplevel_dir):
   if 'sources' in target_dict:
     _AddSources(target_dict['sources'], base_path, base_path_components,
                 results)
-  # Include the inputs from any actions. Any changes to these effect the
+  # Include the inputs from any actions. Any changes to these affect the
   # resulting output.
   if 'actions' in target_dict:
     for action in target_dict['actions']:
@@ -158,20 +166,39 @@ def _ExtractSources(target, target_dict, toplevel_dir):
 
 class Target(object):
   """Holds information about a particular target:
-  deps: set of the names of direct dependent targets.
-  match_staus: one of the MatchStatus values"""
-  def __init__(self):
+  deps: set of Targets this Target depends upon. This is not recursive, only the
+    direct dependent Targets.
+  match_status: one of the MatchStatus values.
+  back_deps: set of Targets that have a dependency on this Target.
+  visited: used during iteration to indicate whether we've visited this target.
+    This is used for two iterations, once in building the set of Targets and
+    again in _GetBuildTargets().
+  name: fully qualified name of the target.
+  requires_build: True if the target type is such that it needs to be built.
+    See _DoesTargetTypeRequireBuild for details.
+  added_to_compile_targets: used when determining if the target was added to the
+    set of targets that needs to be built.
+  in_roots: true if this target is a descendant of one of the root nodes."""
+  def __init__(self, name):
     self.deps = set()
     self.match_status = MATCH_STATUS_TBD
+    self.back_deps = set()
+    self.name = name
+    # TODO(sky): I don't like hanging this off Target. This state is specific
+    # to certain functions and should be isolated there.
+    self.visited = False
+    self.requires_build = False
+    self.added_to_compile_targets = False
+    self.in_roots = False
 
 
 class Config(object):
   """Details what we're looking for
   files: set of files to search for
-  targets: see file description for details"""
+  targets: see file description for details."""
   def __init__(self):
     self.files = []
-    self.targets = []
+    self.targets = set()
 
   def Init(self, params):
     """Initializes Config. This is a separate method as it raises an exception
@@ -191,8 +218,7 @@ class Config(object):
     if not isinstance(config, dict):
       raise Exception('config_path must be a JSON file containing a dictionary')
     self.files = config.get('files', [])
-    # Coalesce duplicates
-    self.targets = list(set(config.get('targets', [])))
+    self.targets = set(config.get('targets', []))
 
 
 def _WasBuildFileModified(build_file, data, files):
@@ -219,60 +245,105 @@ def _WasBuildFileModified(build_file, data, files):
   return False
 
 
-def _GenerateTargets(data, target_list, target_dicts, toplevel_dir, files):
-  """Generates a dictionary with the key the name of a target and the value a
-  Target. |toplevel_dir| is the root of the source tree. If the sources of
-  a target match that of |files|, then |target.matched| is set to True.
-  This returns a tuple of the dictionary and whether at least one target's
-  sources listed one of the paths in |files|."""
+def _GetOrCreateTargetByName(targets, target_name):
+  """Creates or returns the Target at targets[target_name]. If there is no
+  Target for |target_name| one is created. Returns a tuple of whether a new
+  Target was created and the Target."""
+  if target_name in targets:
+    return False, targets[target_name]
+  target = Target(target_name)
+  targets[target_name] = target
+  return True, target
+
+
+def _DoesTargetTypeRequireBuild(target_dict):
+  """Returns true if the target type is such that it needs to be built."""
+  # If a 'none' target has rules or actions we assume it requires a build.
+  return target_dict['type'] != 'none' or \
+      target_dict.get('actions') or target_dict.get('rules')
+
+
+def _GenerateTargets(data, target_list, target_dicts, toplevel_dir, files,
+                     build_files):
+  """Returns a tuple of the following:
+  . A dictionary mapping from fully qualified name to Target.
+  . A list of the targets that have a source file in |files|.
+  . Set of root Targets reachable from the the files |build_files|.
+  This sets the |match_status| of the targets that contain any of the source
+  files in |files| to MATCH_STATUS_MATCHES.
+  |toplevel_dir| is the root of the source tree."""
+  # Maps from target name to Target.
   targets = {}
+
+  # Targets that matched.
+  matching_targets = []
 
   # Queue of targets to visit.
   targets_to_visit = target_list[:]
-
-  matched = False
 
   # Maps from build file to a boolean indicating whether the build file is in
   # |files|.
   build_file_in_files = {}
 
+  # Root targets across all files.
+  roots = set()
+
+  # Set of Targets in |build_files|.
+  build_file_targets = set()
+
   while len(targets_to_visit) > 0:
     target_name = targets_to_visit.pop()
-    if target_name in targets:
+    created_target, target = _GetOrCreateTargetByName(targets, target_name)
+    if created_target:
+      roots.add(target)
+    elif target.visited:
       continue
 
-    target = Target()
-    targets[target_name] = target
+    target.visited = True
+    target.requires_build = _DoesTargetTypeRequireBuild(
+        target_dicts[target_name])
 
     build_file = gyp.common.ParseQualifiedTarget(target_name)[0]
     if not build_file in build_file_in_files:
       build_file_in_files[build_file] = \
           _WasBuildFileModified(build_file, data, files)
 
+    if build_file in build_files:
+      build_file_targets.add(target)
+
     # If a build file (or any of its included files) is modified we assume all
     # targets in the file are modified.
     if build_file_in_files[build_file]:
+      print 'matching target from modified build file', target_name
       target.match_status = MATCH_STATUS_MATCHES
-      matched = True
+      matching_targets.append(target)
     else:
       sources = _ExtractSources(target_name, target_dicts[target_name],
                                 toplevel_dir)
       for source in sources:
         if source in files:
+          print 'target', target_name, 'matches', source
           target.match_status = MATCH_STATUS_MATCHES
-          matched = True
+          matching_targets.append(target)
           break
 
+    # Add dependencies to visit as well as updating back pointers for deps.
     for dep in target_dicts[target_name].get('dependencies', []):
-      targets[target_name].deps.add(dep)
       targets_to_visit.append(dep)
 
-  return targets, matched
+      created_dep_target, dep_target = _GetOrCreateTargetByName(targets, dep)
+      if not created_dep_target:
+        roots.discard(dep_target)
+
+      target.deps.add(dep_target)
+      dep_target.back_deps.add(target)
+
+  return targets, matching_targets, roots & build_file_targets
 
 
-def _GetUnqualifiedToQualifiedMapping(all_targets, to_find):
-  """Returns a mapping (dictionary) from unqualified name to qualified name for
-  all the targets in |to_find|."""
+def _GetUnqualifiedToTargetMapping(all_targets, to_find):
+  """Returns a mapping (dictionary) from unqualified name to Target for all the
+  Targets in |to_find|."""
   result = {}
   if not to_find:
     return result
@@ -281,47 +352,91 @@ def _GetUnqualifiedToQualifiedMapping(all_targets, to_find):
     extracted = gyp.common.ParseQualifiedTarget(target_name)
     if len(extracted) > 1 and extracted[1] in to_find:
       to_find.remove(extracted[1])
-      result[extracted[1]] = target_name
+      result[extracted[1]] = all_targets[target_name]
       if not to_find:
         return result
   return result
 
 
-def _DoesTargetDependOn(target, all_targets):
+def _DoesTargetDependOn(target):
   """Returns true if |target| or any of its dependencies matches the supplied
   set of paths. This updates |matches| of the Targets as it recurses.
-  target: the Target to look for.
-  all_targets: mapping from target name to Target.
-  matching_targets: set of targets looking for."""
+  target: the Target to look for."""
   if target.match_status == MATCH_STATUS_DOESNT_MATCH:
     return False
   if target.match_status == MATCH_STATUS_MATCHES or \
       target.match_status == MATCH_STATUS_MATCHES_BY_DEPENDENCY:
     return True
-  for dep_name in target.deps:
-    dep_target = all_targets[dep_name]
-    if _DoesTargetDependOn(dep_target, all_targets):
-      dep_target.match_status = MATCH_STATUS_MATCHES_BY_DEPENDENCY
+  for dep in target.deps:
+    if _DoesTargetDependOn(dep):
+      target.match_status = MATCH_STATUS_MATCHES_BY_DEPENDENCY
       return True
-    dep_target.match_status = MATCH_STATUS_DOESNT_MATCH
+  target.match_status = MATCH_STATUS_DOESNT_MATCH
   return False
 
 
-def _GetTargetsDependingOn(all_targets, possible_targets):
-  """Returns the list of targets in |possible_targets| that depend (either
-  directly on indirectly) on the matched files.
-  all_targets: mapping from target name to Target.
+def _GetTargetsDependingOn(possible_targets):
+  """Returns the list of Targets in |possible_targets| that depend (either
+  directly on indirectly) on the matched targets.
   possible_targets: targets to search from."""
   found = []
   for target in possible_targets:
-    if _DoesTargetDependOn(all_targets[target], all_targets):
-      # possible_targets was initially unqualified, keep it unqualified.
-      found.append(gyp.common.ParseQualifiedTarget(target)[1])
+    if _DoesTargetDependOn(target):
+      found.append(target)
   return found
+
+
+def _AddBuildTargets(target, roots, add_if_no_ancestor, result):
+  """Recurses through all targets that depend on |target|, adding all targets
+  that need to be built (and are in |roots|) to |result|.
+  roots: set of root targets.
+  add_if_no_ancestor: If true and there are no ancestors of |target| then add
+  |target| to |result|. |target| must still be in |roots|.
+  result: targets that need to be built are added here."""
+  if target.visited:
+    return
+
+  target.visited = True
+  target.in_roots = not target.back_deps and target in roots
+
+  for back_dep_target in target.back_deps:
+    _AddBuildTargets(back_dep_target, roots, False, result)
+    target.added_to_compile_targets |= back_dep_target.added_to_compile_targets
+    target.in_roots |= back_dep_target.in_roots
+
+  if not target.added_to_compile_targets and target.in_roots and \
+        (add_if_no_ancestor or target.requires_build):
+    result.add(target)
+    target.added_to_compile_targets = True
+
+
+def _GetBuildTargets(matching_targets, roots):
+  """Returns the set of Targets that require a build.
+  matching_targets: targets that changed and need to be built.
+  roots: set of root targets in the build files to search from."""
+  result = set()
+  for target in matching_targets:
+    _AddBuildTargets(target, roots, True, result)
+  return result
 
 
 def _WriteOutput(params, **values):
   """Writes the output, either to stdout or a file is specified."""
+  if 'error' in values:
+    print 'Error:', values['error']
+  if 'status' in values:
+    print values['status']
+  if 'targets' in values:
+    values['targets'].sort()
+    print 'Supplied targets that depend on changed files:'
+    for target in values['targets']:
+      print '\t', target
+  if 'build_targets' in values:
+    values['build_targets'].sort()
+    print 'Targets that require a build:'
+    for target in values['build_targets']:
+      print '\t', target
+
   output_path = params.get('generator_flags', {}).get(
       'analyzer_output_path', None)
   if not output_path:
@@ -333,6 +448,28 @@ def _WriteOutput(params, **values):
     f.close()
   except IOError as e:
     print 'Error writing to output file', output_path, str(e)
+
+
+def _WasGypIncludeFileModified(params, files):
+  """Returns true if one of the files in |files| is in the set of included
+  files."""
+  if params['options'].includes:
+    for include in params['options'].includes:
+      if _ToGypPath(include) in files:
+        print 'Include file modified, assuming all changed', include
+        return True
+  return False
+
+
+def _NamesNotIn(names, mapping):
+  """Returns a list of the values in |names| that are not in |mapping|."""
+  return [name for name in names if name not in mapping]
+
+
+def _LookupTargets(names, mapping):
+  """Returns a list of the mapping[name] for each value in |names| that is in
+  |mapping|."""
+  return [mapping[name] for name in names if name in mapping]
 
 
 def CalculateVariables(default_variables, params):
@@ -371,48 +508,42 @@ def GenerateOutput(target_list, target_dicts, data, params):
     if debug:
       print 'toplevel_dir', toplevel_dir
 
-    matched = False
-    matched_include = False
+    if _WasGypIncludeFileModified(params, config.files):
+      result_dict = { 'status': all_changed_string,
+                      'targets': list(config.targets) }
+      _WriteOutput(params, **result_dict)
+      return
 
-    # If one of the modified files is an include file then everything is
-    # affected.
-    if params['options'].includes:
-      for include in params['options'].includes:
-        if _ToGypPath(include) in config.files:
-          if debug:
-            print 'include path modified', include
-          matched_include = True
-          matched = True
-          break
-
-    if not matched:
-      all_targets, matched = _GenerateTargets(data, target_list, target_dicts,
-                                              toplevel_dir,
-                                              frozenset(config.files))
+    all_targets, matching_targets, roots = _GenerateTargets(
+      data, target_list, target_dicts, toplevel_dir, frozenset(config.files),
+      params['build_files'])
 
     warning = None
-    if matched_include:
-      output_targets = config.targets
-    elif matched:
-      unqualified_mapping = _GetUnqualifiedToQualifiedMapping(
-          all_targets, config.targets)
-      if len(unqualified_mapping) != len(config.targets):
-        not_found = []
-        for target in config.targets:
-          if not target in unqualified_mapping:
-            not_found.append(target)
-        warning = 'Unable to find all targets: ' + str(not_found)
-      qualified_targets = []
-      for target in config.targets:
-        if target in unqualified_mapping:
-          qualified_targets.append(unqualified_mapping[target])
-      output_targets = _GetTargetsDependingOn(all_targets, qualified_targets)
-    else:
-      output_targets = []
+    unqualified_mapping = _GetUnqualifiedToTargetMapping(all_targets,
+                                                         config.targets)
+    if len(unqualified_mapping) != len(config.targets):
+      not_found = _NamesNotIn(config.targets, unqualified_mapping)
+      warning = 'Unable to find all targets: ' + str(not_found)
 
-    result_dict = { 'targets': output_targets,
-                    'status': found_dependency_string if matched else
-                              no_dependency_string }
+    if matching_targets:
+      search_targets = _LookupTargets(config.targets, unqualified_mapping)
+      matched_search_targets = _GetTargetsDependingOn(search_targets)
+      # Reset the visited status for _GetBuildTargets.
+      for target in all_targets.itervalues():
+        target.visited = False
+      build_targets = _GetBuildTargets(matching_targets, roots)
+      matched_search_targets = [gyp.common.ParseQualifiedTarget(target.name)[1]
+                                for target in matched_search_targets]
+      build_targets = [gyp.common.ParseQualifiedTarget(target.name)[1]
+                       for target in build_targets]
+    else:
+      matched_search_targets = []
+      build_targets = []
+
+    result_dict = { 'targets': matched_search_targets,
+                    'status': found_dependency_string if matching_targets else
+                              no_dependency_string,
+                    'build_targets': build_targets}
     if warning:
       result_dict['warning'] = warning
     _WriteOutput(params, **result_dict)

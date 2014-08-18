@@ -10,17 +10,20 @@ import json
 import TestGyp
 
 found = 'Found dependency'
+found_all = 'Found dependency (all)'
 not_found = 'No dependencies'
 
 
-def _CreateTestFile(files, targets):
+def _CreateConfigFile(files, targets):
+  """Creates the analyzer conflig file, which is used as the input to analyzer.
+  See description of analyzer.py for description of the arguments."""
   f = open('test_file', 'w')
   to_write = {'files': files, 'targets': targets }
   json.dump(to_write, f)
   f.close()
 
 
-def _CreateBogusTestFile():
+def _CreateBogusConfigFile():
   f = open('test_file','w')
   f.write('bogus')
   f.close()
@@ -37,22 +40,36 @@ def _ReadOutputFileContents():
 # over a bug in pylint (E1002).
 test = TestGyp.TestGypCustom(format='analyzer')
 
+def CommonArgs():
+  return ('-Gconfig_path=test_file',
+           '-Ganalyzer_output_path=analyzer_output')
+
 
 def run_analyzer(*args, **kw):
   """Runs the test specifying a particular config and output path."""
-  args += ('-Gconfig_path=test_file',
-           '-Ganalyzer_output_path=analyzer_output')
+  args += CommonArgs()
   test.run_gyp('test.gyp', *args, **kw)
 
 
 def run_analyzer2(*args, **kw):
-  """Runs the test specifying a particular config and output path."""
-  args += ('-Gconfig_path=test_file',
-           '-Ganalyzer_output_path=analyzer_output')
+  """Same as run_analyzer(), but passes in test2.gyp instead of test.gyp."""
+  args += CommonArgs()
   test.run_gyp('test2.gyp', *args, **kw)
 
 
-def EnsureContains(targets=set(), matched=False):
+def run_analyzer3(*args, **kw):
+  """Same as run_analyzer(), but passes in test3.gyp instead of test.gyp."""
+  args += CommonArgs()
+  test.run_gyp('test3.gyp', *args, **kw)
+
+
+def run_analyzer4(*args, **kw):
+  """Same as run_analyzer(), but passes in test3.gyp instead of test.gyp."""
+  args += CommonArgs()
+  test.run_gyp('test4.gyp', *args, **kw)
+
+
+def EnsureContains(targets=set(), matched=False, build_targets=set()):
   """Verifies output contains |targets|."""
   result = _ReadOutputFileContents()
   if result.get('error', None):
@@ -68,11 +85,37 @@ def EnsureContains(targets=set(), matched=False):
     print 'actual targets:', actual_targets, '\nexpected targets:', targets
     test.fail_test()
 
+  actual_build_targets = set(result['build_targets'])
+  if actual_build_targets != build_targets:
+    print 'actual build_targets:', actual_build_targets, \
+           '\nexpected build_targets:', build_targets
+    test.fail_test()
+
   if matched and result['status'] != found:
     print 'expected', found, 'got', result['status']
     test.fail_test()
   elif not matched and result['status'] != not_found:
     print 'expected', not_found, 'got', result['status']
+    test.fail_test()
+
+
+def EnsureMatchedAll(targets):
+  result = _ReadOutputFileContents()
+  if result.get('error', None):
+    print 'unexpected error', result.get('error')
+    test.fail_test()
+
+  if result.get('warning', None):
+    print 'unexpected warning', result.get('warning')
+    test.fail_test()
+
+  if result['status'] != found_all:
+    print 'expected', found_all, 'got', result['status']
+    test.fail_test()
+
+  actual_targets = set(result['targets'])
+  if actual_targets != targets:
+    print 'actual targets:', actual_targets, '\nexpected targets:', targets
     test.fail_test()
 
 
@@ -100,7 +143,6 @@ def EnsureWarning(expected_warning_string):
         '\nexpected warning:', expected_warning_string
     test.fail_test()
 
-
 # Verifies config_path must be specified.
 test.run_gyp('test.gyp')
 EnsureStdoutContains('Must specify files to analyze via config_path')
@@ -110,133 +152,204 @@ test.run_gyp('test.gyp', '-Gconfig_path=bogus_file',
              '-Ganalyzer_output_path=analyzer_output')
 EnsureError('Unable to open file bogus_file')
 
-# Verify get error when bad target is specified.
-_CreateTestFile(['exe2.c'], ['bad_target'])
+# Verify get warning when bad target is specified.
+_CreateConfigFile(['exe2.c'], ['bad_target'])
 run_analyzer()
 EnsureWarning('Unable to find all targets')
 
 # Verifies config_path must point to a valid json file.
-_CreateBogusTestFile()
+_CreateBogusConfigFile()
 run_analyzer()
 EnsureError('Unable to parse config file test_file')
 
 # Trivial test of a source.
-_CreateTestFile(['foo.c'], [])
+_CreateConfigFile(['foo.c'], [])
 run_analyzer()
-EnsureContains(matched=True)
+EnsureContains(matched=True, build_targets={'exe'})
 
 # Conditional source that is excluded.
-_CreateTestFile(['conditional_source.c'], [])
+_CreateConfigFile(['conditional_source.c'], [])
 run_analyzer()
 EnsureContains(matched=False)
 
 # Conditional source that is included by way of argument.
-_CreateTestFile(['conditional_source.c'], [])
+_CreateConfigFile(['conditional_source.c'], [])
 run_analyzer('-Dtest_variable=1')
-EnsureContains(matched=True)
+EnsureContains(matched=True, build_targets={'exe'})
 
 # Two unknown files.
-_CreateTestFile(['unknown1.c', 'unoknow2.cc'], [])
+_CreateConfigFile(['unknown1.c', 'unoknow2.cc'], [])
 run_analyzer()
 EnsureContains()
 
 # Two unknown files.
-_CreateTestFile(['unknown1.c', 'subdir/subdir_sourcex.c'], [])
+_CreateConfigFile(['unknown1.c', 'subdir/subdir_sourcex.c'], [])
 run_analyzer()
 EnsureContains()
 
 # Included dependency
-_CreateTestFile(['unknown1.c', 'subdir/subdir_source.c'], [])
+_CreateConfigFile(['unknown1.c', 'subdir/subdir_source.c'], [])
 run_analyzer()
-EnsureContains(matched=True)
+EnsureContains(matched=True, build_targets={'exe', 'exe3'})
 
 # Included inputs to actions.
-_CreateTestFile(['action_input.c'], [])
+_CreateConfigFile(['action_input.c'], [])
 run_analyzer()
-EnsureContains(matched=True)
+EnsureContains(matched=True, build_targets={'exe'})
 
 # Don't consider outputs.
-_CreateTestFile(['action_output.c'], [])
+_CreateConfigFile(['action_output.c'], [])
 run_analyzer()
 EnsureContains(matched=False)
 
 # Rule inputs.
-_CreateTestFile(['rule_input.c'], [])
+_CreateConfigFile(['rule_input.c'], [])
 run_analyzer()
-EnsureContains(matched=True)
+EnsureContains(matched=True, build_targets={'exe'})
 
 # Ignore path specified with PRODUCT_DIR.
-_CreateTestFile(['product_dir_input.c'], [])
+_CreateConfigFile(['product_dir_input.c'], [])
 run_analyzer()
 EnsureContains(matched=False)
 
 # Path specified via a variable.
-_CreateTestFile(['subdir/subdir_source2.c'], [])
+_CreateConfigFile(['subdir/subdir_source2.c'], [])
 run_analyzer()
-EnsureContains(matched=True)
+EnsureContains(matched=True, build_targets={'exe'})
 
 # Verifies paths with // are fixed up correctly.
-_CreateTestFile(['parent_source.c'], [])
+_CreateConfigFile(['parent_source.c'], [])
 run_analyzer()
-EnsureContains(matched=True)
+EnsureContains(matched=True, build_targets={'exe', 'exe3'})
 
 # Verifies relative paths are resolved correctly.
-_CreateTestFile(['subdir/subdir_source.h'], [])
+_CreateConfigFile(['subdir/subdir_source.h'], [])
 run_analyzer()
-EnsureContains(matched=True)
+EnsureContains(matched=True, build_targets={'exe'})
 
 # Various permutations when passing in targets.
-_CreateTestFile(['exe2.c', 'subdir/subdir2b_source.c'], ['exe', 'exe3'])
+_CreateConfigFile(['exe2.c', 'subdir/subdir2b_source.c'], ['exe', 'exe3'])
 run_analyzer()
-EnsureContains(matched=True, targets={'exe3'})
+EnsureContains(matched=True, targets={'exe3'}, build_targets={'exe2', 'exe3'})
 
-_CreateTestFile(['exe2.c', 'subdir/subdir2b_source.c'], ['exe'])
+_CreateConfigFile(['exe2.c', 'subdir/subdir2b_source.c'], ['exe'])
 run_analyzer()
-EnsureContains(matched=True)
+EnsureContains(matched=True, build_targets={'exe2', 'exe3'})
 
 # Verifies duplicates are ignored.
-_CreateTestFile(['exe2.c', 'subdir/subdir2b_source.c'], ['exe', 'exe'])
+_CreateConfigFile(['exe2.c', 'subdir/subdir2b_source.c'], ['exe', 'exe'])
 run_analyzer()
-EnsureContains(matched=True)
+EnsureContains(matched=True, build_targets={'exe2', 'exe3'})
 
-_CreateTestFile(['exe2.c'], ['exe'])
+_CreateConfigFile(['exe2.c'], ['exe'])
 run_analyzer()
-EnsureContains(matched=True)
+EnsureContains(matched=True, build_targets={'exe2'})
 
-_CreateTestFile(['exe2.c'], [])
+_CreateConfigFile(['exe2.c'], [])
 run_analyzer()
-EnsureContains(matched=True)
+EnsureContains(matched=True, build_targets={'exe2'})
 
-_CreateTestFile(['subdir/subdir2b_source.c', 'exe2.c'], [])
+_CreateConfigFile(['subdir/subdir2b_source.c', 'exe2.c'], [])
 run_analyzer()
-EnsureContains(matched=True)
+EnsureContains(matched=True, build_targets={'exe2', 'exe3'})
 
-_CreateTestFile(['exe2.c'], [])
+_CreateConfigFile(['subdir/subdir2b_source.c'], ['exe3'])
 run_analyzer()
-EnsureContains(matched=True)
+EnsureContains(matched=True, targets={'exe3'}, build_targets={'exe3'})
+
+_CreateConfigFile(['exe2.c'], [])
+run_analyzer()
+EnsureContains(matched=True, build_targets={'exe2'})
+
+_CreateConfigFile(['foo.c'], [])
+run_analyzer()
+EnsureContains(matched=True, build_targets={'exe'})
 
 # Assertions when modifying build (gyp/gypi) files, especially when said files
 # are included.
-_CreateTestFile(['subdir2/d.cc'], ['exe', 'exe2', 'foo', 'exe3'])
+_CreateConfigFile(['subdir2/d.cc'], ['exe', 'exe2', 'foo', 'exe3'])
 run_analyzer2()
-EnsureContains(matched=True, targets={'exe', 'foo'})
+EnsureContains(matched=True, targets={'exe', 'foo'}, build_targets={'exe'})
 
-_CreateTestFile(['subdir2/subdir.includes.gypi'],
+_CreateConfigFile(['subdir2/subdir.includes.gypi'],
                 ['exe', 'exe2', 'foo', 'exe3'])
 run_analyzer2()
-EnsureContains(matched=True, targets={'exe', 'foo'})
+EnsureContains(matched=True, targets={'exe', 'foo'}, build_targets={'exe'})
 
-_CreateTestFile(['subdir2/subdir.gyp'], ['exe', 'exe2', 'foo', 'exe3'])
+_CreateConfigFile(['subdir2/subdir.gyp'], ['exe', 'exe2', 'foo', 'exe3'])
 run_analyzer2()
-EnsureContains(matched=True, targets={'exe', 'foo'})
+EnsureContains(matched=True, targets={'exe', 'foo'}, build_targets={'exe'})
 
-_CreateTestFile(['test2.includes.gypi'], ['exe', 'exe2', 'foo', 'exe3'])
+_CreateConfigFile(['test2.includes.gypi'], ['exe', 'exe2', 'foo', 'exe3'])
 run_analyzer2()
-EnsureContains(matched=True, targets={'exe', 'exe2', 'exe3'})
+EnsureContains(matched=True, targets={'exe', 'exe2', 'exe3'},
+               build_targets={'exe', 'exe2', 'exe3'})
 
 # Verify modifying a file included makes all targets dirty.
-_CreateTestFile(['common.gypi'], ['exe', 'exe2', 'foo', 'exe3'])
+_CreateConfigFile(['common.gypi'], ['exe', 'exe2', 'foo', 'exe3'])
 run_analyzer2('-Icommon.gypi')
-EnsureContains(matched=True, targets={'exe', 'foo', 'exe2', 'exe3'})
+EnsureMatchedAll({'exe', 'exe2', 'foo', 'exe3'})
+
+# Assertions from test3.gyp.
+_CreateConfigFile(['d.c', 'f.c'], ['a'])
+run_analyzer3()
+EnsureContains(matched=True, targets={'a'}, build_targets={'a', 'b'})
+
+_CreateConfigFile(['f.c'], ['a'])
+run_analyzer3()
+EnsureContains(matched=True, targets={'a'}, build_targets={'a', 'b'})
+
+_CreateConfigFile(['f.c'], [])
+run_analyzer3()
+EnsureContains(matched=True, build_targets={'a', 'b'})
+
+_CreateConfigFile(['c.c', 'e.c'], [])
+run_analyzer3()
+EnsureContains(matched=True, build_targets={'a', 'b'})
+
+_CreateConfigFile(['d.c'], ['a'])
+run_analyzer3()
+EnsureContains(matched=True, targets={'a'}, build_targets={'a', 'b'})
+
+_CreateConfigFile(['a.c'], ['a', 'b'])
+run_analyzer3()
+EnsureContains(matched=True, targets={'a'}, build_targets={'a'})
+
+_CreateConfigFile(['a.c'], ['a', 'b'])
+run_analyzer3()
+EnsureContains(matched=True, targets={'a'}, build_targets={'a'})
+
+_CreateConfigFile(['d.c'], ['a', 'b'])
+run_analyzer3()
+EnsureContains(matched=True, targets={'a', 'b'}, build_targets={'a', 'b'})
+
+_CreateConfigFile(['f.c'], ['a'])
+run_analyzer3()
+EnsureContains(matched=True, targets={'a'}, build_targets={'a', 'b'})
+
+_CreateConfigFile(['a.c'], ['a'])
+run_analyzer3()
+EnsureContains(matched=True, targets={'a'}, build_targets={'a'})
+
+_CreateConfigFile(['a.c'], [])
+run_analyzer3()
+EnsureContains(matched=True, build_targets={'a'})
+
+_CreateConfigFile(['d.c'], [])
+run_analyzer3()
+EnsureContains(matched=True, build_targets={'a', 'b'})
+
+# Assertions around test4.gyp.
+_CreateConfigFile(['f.c'], [])
+run_analyzer4()
+EnsureContains(matched=True, build_targets={'e'})
+
+_CreateConfigFile(['d.c'], [])
+run_analyzer4()
+EnsureContains(matched=True, build_targets={'a'})
+
+_CreateConfigFile(['i.c'], [])
+run_analyzer4()
+EnsureContains(matched=True, build_targets={'h'})
 
 test.pass_test()

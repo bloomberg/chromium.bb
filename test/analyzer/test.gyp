@@ -2,6 +2,36 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# These gyp files create the following dependencies:
+#
+# test.gyp:
+#   #exe -> subdir/subdir.gyp#foo, subdir/subdir2/subdir2.gyp#subdir2
+#     foo.c
+#     subdir/subdir_source2.c
+#     conditional_source.c (if test_variable==1)
+#     action_input.c
+#     action_output.c
+#     rule_input.c
+#     rule_output.pdf
+#   #exe2
+#     exe2.c
+#   #exe3 -> subdir/subdir.gyp#foo, subdir/subdir.gyp#subdir2a
+#     exe3.c
+#   #all (type none) -> exe, exe3
+# 
+# subdir/subdir.gyp
+#   #foo
+#     subdir/subdir_source.c
+#     parent_source.c
+#   #subdir2a -> subdir2b
+#     subdir/subdir2_source.c
+#   #subdir2b
+#     subdir/subdir2b_source.c
+# 
+# subdir/subdir2/subdir2.gyp
+#   #subdir2
+#     subdir/subdir_source.h
+
 {
   'variables': {
     'test_variable%': 0,
@@ -73,7 +103,7 @@
     },
     {
       'target_name': 'all',
-      'type': 'executable',
+      'type': 'none',
       'dependencies': [
         'exe',
         'exe3',
