@@ -3718,7 +3718,7 @@
                       '-Wno-abi',
                     ],
                   }],
-                  ['clang==1 and arm_arch!=""', {
+                  ['clang==1 and arm_arch!="" and OS!="android"', {
                     'cflags': [
                       '-target arm-linux-gnueabihf',
                       # TODO(sbc): Remove this once the warning in libvpx is fixed:
@@ -3734,10 +3734,10 @@
                       '-march=<(arm_arch)',
                     ],
                   }],
-                  ['clang==1', {
+                  ['clang==1 and OS!="android"', {
                     'cflags': [
-                      # We need to disable clang's builtin assember as it can't
-                      # handle a several of asm files.
+                      # We need to disable clang's builtin assembler as it can't
+                      # handle several asm files, crbug.com/124610
                       '-no-integrated-as',
                     ],
                   }],
