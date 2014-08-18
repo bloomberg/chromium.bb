@@ -14,8 +14,11 @@
 #include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "extensions/common/switches.h"
 
 namespace {
+
+const char kHotwordTestExtensionId[] = "cpfhkdbjfdgdebcjlifoldbijinjfifp";
 
 class MockHotwordService : public HotwordService {
  public:
@@ -76,6 +79,15 @@ class HotwordPrivateApiTest : public ExtensionApiTest {
  public:
   HotwordPrivateApiTest() {}
   virtual ~HotwordPrivateApiTest() {}
+
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+
+    // Whitelist the test extensions (which all share a common ID) to use
+    // private APIs.
+    command_line->AppendSwitchASCII(
+        extensions::switches::kWhitelistedExtensionID, kHotwordTestExtensionId);
+  }
 
   virtual void SetUpOnMainThread() OVERRIDE {
     ExtensionApiTest::SetUpOnMainThread();
