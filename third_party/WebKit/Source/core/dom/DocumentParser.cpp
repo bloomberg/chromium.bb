@@ -65,11 +65,6 @@ TextResourceDecoder* DocumentParser::decoder()
     return 0;
 }
 
-void DocumentParser::startParsing()
-{
-    m_state = ParsingState;
-}
-
 void DocumentParser::prepareToStopParsing()
 {
     ASSERT(m_state == ParsingState);

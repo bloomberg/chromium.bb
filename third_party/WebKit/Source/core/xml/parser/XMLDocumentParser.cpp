@@ -1434,7 +1434,6 @@ void XMLDocumentParser::initializeParserContext(const CString& chunk)
     sax.ignorableWhitespace = ignorableWhitespaceHandler;
     sax.entityDecl = xmlSAX2EntityDecl;
     sax.initialized = XML_SAX2_MAGIC;
-    DocumentParser::startParsing();
     m_sawError = false;
     m_sawCSS = false;
     m_sawXSLTransform = false;

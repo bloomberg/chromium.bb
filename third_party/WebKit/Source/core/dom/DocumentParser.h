@@ -79,9 +79,6 @@ public:
     bool isStopped() const { return m_state >= StoppedState; }
     bool isDetached() const { return m_state == DetachedState; }
 
-    // FIXME: Is this necessary? Does XMLDocumentParserLibxml2 really need to set this?
-    virtual void startParsing();
-
     // prepareToStop() is used when the EOF token is encountered and parsing is to be
     // stopped normally.
     virtual void prepareToStopParsing();
