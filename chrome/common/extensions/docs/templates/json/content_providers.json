@@ -41,6 +41,14 @@
 //    this to true. Otherwise, it's safer and more efficient to omit it.
 
 {
+  "cr-chrome-docs-home-gitiles": {
+    "gitiles": {
+      "dir": "chrome/docs"
+    },
+    "defaultExtensions": [".html", ".md"],
+    "serveFrom": "home-gitiles",
+    "supportsTemplates": true
+  },
   "cr-chrome-docs-home": {
     "chromium": {
       "dir": "chrome/docs"
