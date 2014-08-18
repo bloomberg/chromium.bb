@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/browsing_data/canonical_cookie_hash.h"
 #include "net/cookies/cookie_monster.h"
 
 class GURL;
@@ -90,7 +91,7 @@ class BrowsingDataCookieHelper
 // cookies.
 class CannedBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
  public:
-  typedef std::map<GURL, net::CookieList*> OriginCookieListMap;
+  typedef std::map<GURL, canonical_cookie::CookieHashSet*> OriginCookieSetMap;
 
   explicit CannedBrowsingDataCookieHelper(
       net::URLRequestContextGetter* request_context);
@@ -138,28 +139,28 @@ class CannedBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
   size_t GetCookieCount() const;
 
   // Returns the map that contains the cookie lists for all frame urls.
-  const OriginCookieListMap& origin_cookie_list_map() {
-    return origin_cookie_list_map_;
+  const OriginCookieSetMap& origin_cookie_set_map() {
+    return origin_cookie_set_map_;
   }
 
  private:
-  // Check if the cookie list contains a cookie with the same name,
+  // Check if the cookie set contains a cookie with the same name,
   // domain, and path as the newly created cookie. Delete the old cookie
   // if does.
   bool DeleteMatchingCookie(const net::CanonicalCookie& add_cookie,
-                            net::CookieList* cookie_list);
+                            canonical_cookie::CookieHashSet* cookie_set);
 
   virtual ~CannedBrowsingDataCookieHelper();
 
-  // Returns the |CookieList| for the given |origin|.
-  net::CookieList* GetCookiesFor(const GURL& origin);
+  // Returns the |CookieSet| for the given |origin|.
+  canonical_cookie::CookieHashSet* GetCookiesFor(const GURL& origin);
 
-  // Adds the |cookie| to the cookie list for the given |frame_url|.
+  // Adds the |cookie| to the cookie set for the given |frame_url|.
   void AddCookie(const GURL& frame_url,
                  const net::CanonicalCookie& cookie);
 
-  // Map that contains the cookie lists for all frame origins.
-  OriginCookieListMap origin_cookie_list_map_;
+  // Map that contains the cookie sets for all frame origins.
+  OriginCookieSetMap origin_cookie_set_map_;
 
   DISALLOW_COPY_AND_ASSIGN(CannedBrowsingDataCookieHelper);
 };

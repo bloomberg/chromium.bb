@@ -225,6 +225,8 @@
       'browser/browsing_data/browsing_data_quota_helper_impl.h',
       'browser/browsing_data/browsing_data_remover.cc',
       'browser/browsing_data/browsing_data_remover.h',
+      'browser/browsing_data/canonical_cookie_hash.cc',
+      'browser/browsing_data/canonical_cookie_hash.h',
       'browser/browsing_data/cookies_tree_model.cc',
       'browser/browsing_data/cookies_tree_model.h',
       'browser/browsing_data/local_data_container.cc',

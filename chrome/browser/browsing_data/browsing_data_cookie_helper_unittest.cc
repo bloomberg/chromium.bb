@@ -15,10 +15,100 @@
 
 namespace {
 
+// Test expectations for a given cookie.
+class CookieExpectation {
+ public:
+  CookieExpectation() : matched_(false) {}
+
+  bool MatchesCookie(const net::CanonicalCookie& cookie) const {
+    if (!source_.empty() && source_ != cookie.Source())
+      return false;
+    if (!domain_.empty() && domain_ != cookie.Domain())
+      return false;
+    if (!path_.empty() && path_ != cookie.Path())
+      return false;
+    if (!name_.empty() && name_ != cookie.Name())
+      return false;
+    if (!value_.empty() && value_ != cookie.Value())
+      return false;
+    return true;
+  }
+
+  std::string source_;
+  std::string domain_;
+  std::string path_;
+  std::string name_;
+  std::string value_;
+  bool matched_;
+};
+
+// Matches a CookieExpectation against a Cookie.
+class CookieMatcher {
+ public:
+  explicit CookieMatcher(const net::CanonicalCookie& cookie)
+      : cookie_(cookie) {}
+  bool operator()(const CookieExpectation& expectation) {
+    return expectation.MatchesCookie(cookie_);
+  }
+  net::CanonicalCookie cookie_;
+};
+
+// Unary predicate to determine whether an expectation has been matched.
+bool ExpectationIsMatched(const CookieExpectation& expectation) {
+  return expectation.matched_;
+}
+
 class BrowsingDataCookieHelperTest : public testing::Test {
  public:
   BrowsingDataCookieHelperTest()
       : testing_profile_(new TestingProfile()) {
+  }
+
+  virtual void SetUp() OVERRIDE { cookie_expectations_.clear(); }
+
+  // Adds an expectation for a cookie that satisfies the given parameters.
+  void AddCookieExpectation(const char* source,
+                            const char* domain,
+                            const char* path,
+                            const char* name,
+                            const char* value) {
+    CookieExpectation matcher;
+    if (source)
+      matcher.source_ = source;
+    if (domain)
+      matcher.domain_ = domain;
+    if (path)
+      matcher.path_ = path;
+    if (name)
+      matcher.name_ = name;
+    if (value)
+      matcher.value_ = value;
+    cookie_expectations_.push_back(matcher);
+  }
+
+  // Checks the existing expectations, and then clears all existing
+  // expectations.
+  void CheckCookieExpectations() {
+    ASSERT_EQ(cookie_expectations_.size(), cookie_list_.size());
+
+    // For each cookie, look for a matching expectation.
+    for (net::CookieList::iterator it = cookie_list_.begin();
+         it != cookie_list_.end();
+         ++it) {
+      CookieMatcher matcher(*it);
+      std::vector<CookieExpectation>::iterator match = std::find_if(
+          cookie_expectations_.begin(), cookie_expectations_.end(), matcher);
+      if (match != cookie_expectations_.end())
+        match->matched_ = true;
+    }
+
+    // Check that each expectation has been matched.
+    unsigned long match_count = std::count_if(cookie_expectations_.begin(),
+                                              cookie_expectations_.end(),
+                                              ExpectationIsMatched);
+    EXPECT_EQ(cookie_expectations_.size(), match_count);
+
+    cookie_expectations_.clear();
   }
 
   void CreateCookiesForTest() {
@@ -44,135 +134,76 @@ class BrowsingDataCookieHelperTest : public testing::Test {
   }
 
   void FetchCallback(const net::CookieList& cookies) {
-    ASSERT_EQ(2UL, cookies.size());
     cookie_list_ = cookies;
-    net::CookieList::const_iterator it = cookies.begin();
 
-    // Correct because fetching cookies will get a sorted cookie list.
-    ASSERT_TRUE(it != cookies.end());
-    EXPECT_EQ("www.google.com", it->Domain());
-    EXPECT_EQ("A", it->Name());
-
-    ASSERT_TRUE(++it != cookies.end());
-    EXPECT_EQ("www.gmail.google.com", it->Domain());
-    EXPECT_EQ("B", it->Name());
-
-    ASSERT_TRUE(++it == cookies.end());
+    AddCookieExpectation(NULL, "www.google.com", NULL, "A", NULL);
+    AddCookieExpectation(NULL, "www.gmail.google.com", NULL, "B", NULL);
+    CheckCookieExpectations();
   }
 
   void DomainCookieCallback(const net::CookieList& cookies) {
-    ASSERT_EQ(2UL, cookies.size());
     cookie_list_ = cookies;
-    net::CookieList::const_iterator it = cookies.begin();
 
-    // Correct because fetching cookies will get a sorted cookie list.
-    ASSERT_TRUE(it != cookies.end());
-    EXPECT_EQ("www.google.com", it->Domain());
-    EXPECT_EQ("A", it->Name());
-    EXPECT_EQ("1", it->Value());
-
-    ASSERT_TRUE(++it != cookies.end());
-    EXPECT_EQ(".www.google.com", it->Domain());
-    EXPECT_EQ("A", it->Name());
-    EXPECT_EQ("2", it->Value());
-
-    ASSERT_TRUE(++it == cookies.end());
+    AddCookieExpectation(NULL, "www.google.com", NULL, "A", "1");
+    AddCookieExpectation(NULL, ".www.google.com", NULL, "A", "2");
+    CheckCookieExpectations();
   }
 
   void DeleteCallback(const net::CookieList& cookies) {
-    ASSERT_EQ(1UL, cookies.size());
-    net::CookieList::const_iterator it = cookies.begin();
-
-    ASSERT_TRUE(it != cookies.end());
-    EXPECT_EQ("www.gmail.google.com", it->Domain());
-    EXPECT_EQ("B", it->Name());
-
-    ASSERT_TRUE(++it == cookies.end());
+    cookie_list_ = cookies;
+    AddCookieExpectation(NULL, "www.gmail.google.com", NULL, "B", NULL);
+    CheckCookieExpectations();
   }
 
   void CannedUniqueCallback(const net::CookieList& cookies) {
-    EXPECT_EQ(1UL, cookies.size());
     cookie_list_ = cookies;
-    net::CookieList::const_iterator it = cookies.begin();
-
-    ASSERT_TRUE(it != cookies.end());
-    EXPECT_EQ("http://www.google.com/", it->Source());
-    EXPECT_EQ("www.google.com", it->Domain());
-    EXPECT_EQ("/", it->Path());
-    EXPECT_EQ("A", it->Name());
-
-    ASSERT_TRUE(++it == cookies.end());
+    AddCookieExpectation(
+        "http://www.google.com/", "www.google.com", "/", "A", NULL);
+    CheckCookieExpectations();
   }
 
   void CannedReplaceCookieCallback(const net::CookieList& cookies) {
-    EXPECT_EQ(5UL, cookies.size());
     cookie_list_ = cookies;
-    net::CookieList::const_iterator it = cookies.begin();
-
-    ASSERT_TRUE(it != cookies.end());
-    EXPECT_EQ("http://www.google.com/", it->Source());
-    EXPECT_EQ("www.google.com", it->Domain());
-    EXPECT_EQ("/", it->Path());
-    EXPECT_EQ("A", it->Name());
-    EXPECT_EQ("2", it->Value());
-
-    ASSERT_TRUE(++it != cookies.end());
-    EXPECT_EQ("http://www.google.com/", it->Source());
-    EXPECT_EQ("www.google.com", it->Domain());
-    EXPECT_EQ("/example/0", it->Path());
-    EXPECT_EQ("A", it->Name());
-    EXPECT_EQ("4", it->Value());
-
-    ASSERT_TRUE(++it != cookies.end());
-    EXPECT_EQ("http://www.google.com/", it->Source());
-    EXPECT_EQ(".google.com", it->Domain());
-    EXPECT_EQ("/", it->Path());
-    EXPECT_EQ("A", it->Name());
-    EXPECT_EQ("6", it->Value());
-
-    ASSERT_TRUE(++it != cookies.end());
-    EXPECT_EQ("http://www.google.com/", it->Source());
-    EXPECT_EQ(".google.com", it->Domain());
-    EXPECT_EQ("/example/1", it->Path());
-    EXPECT_EQ("A", it->Name());
-    EXPECT_EQ("8", it->Value());
-
-    ASSERT_TRUE(++it != cookies.end());
-    EXPECT_EQ("http://www.google.com/", it->Source());
-    EXPECT_EQ(".www.google.com", it->Domain());
-    EXPECT_EQ("/", it->Path());
-    EXPECT_EQ("A", it->Name());
-    EXPECT_EQ("10", it->Value());
-
-    ASSERT_TRUE(++it == cookies.end());
+    AddCookieExpectation(
+        "http://www.google.com/", "www.google.com", "/", "A", "2");
+    AddCookieExpectation(
+        "http://www.google.com/", "www.google.com", "/example/0", "A", "4");
+    AddCookieExpectation(
+        "http://www.google.com/", ".google.com", "/", "A", "6");
+    AddCookieExpectation(
+        "http://www.google.com/", ".google.com", "/example/1", "A", "8");
+    AddCookieExpectation(
+        "http://www.google.com/", ".www.google.com", "/", "A", "10");
+    CheckCookieExpectations();
   }
 
   void CannedDomainCookieCallback(const net::CookieList& cookies) {
-    ASSERT_EQ(2UL, cookies.size());
     cookie_list_ = cookies;
-    net::CookieList::const_iterator it = cookies.begin();
-
-    ASSERT_TRUE(it != cookies.end());
-    EXPECT_EQ("http://www.google.com/", it->Source());
-    EXPECT_EQ("A", it->Name());
-    EXPECT_EQ("www.google.com", it->Domain());
-
-    ASSERT_TRUE(++it != cookies.end());
-    EXPECT_EQ("http://www.google.com/", it->Source());
-    EXPECT_EQ("A", it->Name());
-    EXPECT_EQ(".www.google.com", it->Domain());
-
-    ASSERT_TRUE(++it == cookies.end());
+    AddCookieExpectation(
+        "http://www.google.com/", "www.google.com", NULL, "A", NULL);
+    AddCookieExpectation(
+        "http://www.google.com/", ".www.google.com", NULL, "A", NULL);
+    CheckCookieExpectations();
   }
 
   void CannedDifferentFramesCallback(const net::CookieList& cookie_list) {
     ASSERT_EQ(3U, cookie_list.size());
   }
 
+  void DeleteCookie(BrowsingDataCookieHelper* helper, const GURL origin) {
+    for (net::CookieList::iterator it = cookie_list_.begin();
+         it != cookie_list_.end();
+         ++it) {
+      if (it->Source() == net::CanonicalCookie::GetCookieSourceFromURL(origin))
+        helper->DeleteCookie(*it);
+    }
+  }
+
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> testing_profile_;
 
+  std::vector<CookieExpectation> cookie_expectations_;
   net::CookieList cookie_list_;
 };
 
@@ -237,7 +268,7 @@ TEST_F(BrowsingDataCookieHelperTest, CannedDeleteCookie) {
 
   EXPECT_EQ(2u, helper->GetCookieCount());
 
-  helper->DeleteCookie(cookie_list_[0]);
+  DeleteCookie(helper.get(), origin1);
 
   EXPECT_EQ(1u, helper->GetCookieCount());
   helper->StartFetching(

@@ -23,7 +23,7 @@
 using content::BrowserThread;
 
 namespace {
-const char kGlobalCookieListURL[] = "chrome://cookielist";
+const char kGlobalCookieSetURL[] = "chrome://cookieset";
 }
 
 BrowsingDataCookieHelper::BrowsingDataCookieHelper(
@@ -113,11 +113,11 @@ CannedBrowsingDataCookieHelper* CannedBrowsingDataCookieHelper::Clone() {
   CannedBrowsingDataCookieHelper* clone =
       new CannedBrowsingDataCookieHelper(request_context_getter());
 
-  for (OriginCookieListMap::iterator it = origin_cookie_list_map_.begin();
-       it != origin_cookie_list_map_.end();
+  for (OriginCookieSetMap::iterator it = origin_cookie_set_map_.begin();
+       it != origin_cookie_set_map_.end();
        ++it) {
-    net::CookieList* cookies = clone->GetCookiesFor(it->first);
-    cookies->insert(cookies->begin(), it->second->begin(), it->second->end());
+    canonical_cookie::CookieHashSet* cookies = clone->GetCookiesFor(it->first);
+    cookies->insert(it->second->begin(), it->second->end());
   }
   return clone;
 }
@@ -145,15 +145,14 @@ void CannedBrowsingDataCookieHelper::AddChangedCookie(
 }
 
 void CannedBrowsingDataCookieHelper::Reset() {
-  STLDeleteContainerPairSecondPointers(origin_cookie_list_map_.begin(),
-                                       origin_cookie_list_map_.end());
-  origin_cookie_list_map_.clear();
+  STLDeleteContainerPairSecondPointers(origin_cookie_set_map_.begin(),
+                                       origin_cookie_set_map_.end());
+  origin_cookie_set_map_.clear();
 }
 
 bool CannedBrowsingDataCookieHelper::empty() const {
-  for (OriginCookieListMap::const_iterator it =
-           origin_cookie_list_map_.begin();
-       it != origin_cookie_list_map_.end();
+  for (OriginCookieSetMap::const_iterator it = origin_cookie_set_map_.begin();
+       it != origin_cookie_set_map_.end();
        ++it) {
     if (!it->second->empty())
       return false;
@@ -164,8 +163,8 @@ bool CannedBrowsingDataCookieHelper::empty() const {
 
 size_t CannedBrowsingDataCookieHelper::GetCookieCount() const {
   size_t count = 0;
-  for (OriginCookieListMap::const_iterator it = origin_cookie_list_map_.begin();
-       it != origin_cookie_list_map_.end();
+  for (OriginCookieSetMap::const_iterator it = origin_cookie_set_map_.begin();
+       it != origin_cookie_set_map_.end();
        ++it) {
     count += it->second->size();
   }
@@ -177,8 +176,8 @@ void CannedBrowsingDataCookieHelper::StartFetching(
     const net::CookieMonster::GetCookieListCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   net::CookieList cookie_list;
-  for (OriginCookieListMap::iterator it = origin_cookie_list_map_.begin();
-       it != origin_cookie_list_map_.end();
+  for (OriginCookieSetMap::iterator it = origin_cookie_set_map_.begin();
+       it != origin_cookie_set_map_.end();
        ++it) {
     cookie_list.insert(cookie_list.begin(),
                        it->second->begin(),
@@ -189,8 +188,8 @@ void CannedBrowsingDataCookieHelper::StartFetching(
 
 void CannedBrowsingDataCookieHelper::DeleteCookie(
     const net::CanonicalCookie& cookie) {
-  for (OriginCookieListMap::iterator it = origin_cookie_list_map_.begin();
-       it != origin_cookie_list_map_.end();
+  for (OriginCookieSetMap::iterator it = origin_cookie_set_map_.begin();
+       it != origin_cookie_set_map_.end();
        ++it) {
     DeleteMatchingCookie(cookie, it->second);
   }
@@ -199,28 +198,20 @@ void CannedBrowsingDataCookieHelper::DeleteCookie(
 
 bool CannedBrowsingDataCookieHelper::DeleteMatchingCookie(
     const net::CanonicalCookie& add_cookie,
-    net::CookieList* cookie_list) {
-  typedef net::CookieList::iterator cookie_iterator;
-  for (cookie_iterator cookie = cookie_list->begin();
-      cookie != cookie_list->end(); ++cookie) {
-    if (cookie->Name() == add_cookie.Name() &&
-        cookie->Domain() == add_cookie.Domain() &&
-        cookie->Path() == add_cookie.Path()) {
-      cookie_list->erase(cookie);
-      return true;
-    }
-  }
-  return false;
+    canonical_cookie::CookieHashSet* cookie_set) {
+  return cookie_set->erase(add_cookie) > 0;
 }
 
-net::CookieList* CannedBrowsingDataCookieHelper::GetCookiesFor(
+canonical_cookie::CookieHashSet* CannedBrowsingDataCookieHelper::GetCookiesFor(
     const GURL& first_party_origin) {
-  OriginCookieListMap::iterator it =
-      origin_cookie_list_map_.find(first_party_origin);
-  if (it == origin_cookie_list_map_.end()) {
-    net::CookieList* cookies = new net::CookieList();
-    origin_cookie_list_map_.insert(
-        std::pair<GURL, net::CookieList*>(first_party_origin, cookies));
+  OriginCookieSetMap::iterator it =
+      origin_cookie_set_map_.find(first_party_origin);
+  if (it == origin_cookie_set_map_.end()) {
+    canonical_cookie::CookieHashSet* cookies =
+        new canonical_cookie::CookieHashSet;
+    origin_cookie_set_map_.insert(
+        std::pair<GURL, canonical_cookie::CookieHashSet*>(first_party_origin,
+                                                          cookies));
     return cookies;
   }
   return it->second;
@@ -229,23 +220,24 @@ net::CookieList* CannedBrowsingDataCookieHelper::GetCookiesFor(
 void CannedBrowsingDataCookieHelper::AddCookie(
     const GURL& frame_url,
     const net::CanonicalCookie& cookie) {
-  // Storing cookies in separate cookie lists per frame origin makes the
+  // Storing cookies in separate cookie sets per frame origin makes the
   // GetCookieCount method count a cookie multiple times if it is stored in
-  // multiple lists.
+  // multiple sets.
   // E.g. let "example.com" be redirected to "www.example.com". A cookie set
   // with the cookie string "A=B; Domain=.example.com" would be sent to both
-  // hosts. This means it would be stored in the separate cookie lists for both
+  // hosts. This means it would be stored in the separate cookie sets for both
   // hosts ("example.com", "www.example.com"). The method GetCookieCount would
   // count this cookie twice. To prevent this, we us a single global cookie
-  // list as a work-around to store all added cookies. Per frame URL cookie
-  // lists are currently not used. In the future they will be used for
+  // set as a work-around to store all added cookies. Per frame URL cookie
+  // sets are currently not used. In the future they will be used for
   // collecting cookies per origin in redirect chains.
   // TODO(markusheintz): A) Change the GetCookiesCount method to prevent
   // counting cookies multiple times if they are stored in multiple cookie
-  // lists.  B) Replace the GetCookieFor method call below with:
+  // sets.  B) Replace the GetCookieFor method call below with:
   // "GetCookiesFor(frame_url.GetOrigin());"
-  net::CookieList* cookie_list =
-      GetCookiesFor(GURL(kGlobalCookieListURL));
-  DeleteMatchingCookie(cookie, cookie_list);
-  cookie_list->push_back(cookie);
+  CR_DEFINE_STATIC_LOCAL(const GURL, origin_cookie_url, (kGlobalCookieSetURL));
+  canonical_cookie::CookieHashSet* cookie_set =
+      GetCookiesFor(origin_cookie_url);
+  DeleteMatchingCookie(cookie, cookie_set);
+  cookie_set->insert(cookie);
 }
