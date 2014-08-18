@@ -42,15 +42,6 @@ class ServiceWorkerRequestInterceptor
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRequestInterceptor);
 };
 
-bool IsMethodSupportedForAppCache(const std::string& method) {
-  return (method == "GET") || (method == "HEAD");
-}
-
-bool IsSchemeAndMethodSupportedForAppCache(const net::URLRequest* request) {
-  return request->url().SchemeIsHTTPOrHTTPS() &&
-         IsMethodSupportedForAppCache(request->method());
-}
-
 }  // namespace
 
 void ServiceWorkerRequestHandler::InitializeHandler(
@@ -60,9 +51,8 @@ void ServiceWorkerRequestHandler::InitializeHandler(
     int process_id,
     int provider_id,
     ResourceType resource_type) {
-  if (!IsSchemeAndMethodSupportedForAppCache(request)) {
+  if (!request->url().SchemeIsHTTPOrHTTPS())
     return;
-  }
 
   if (!context_wrapper || !context_wrapper->context() ||
       provider_id == kInvalidServiceWorkerProviderId) {
