@@ -5,6 +5,8 @@
 #include "config.h"
 #include "public/platform/WebServiceWorkerRequest.h"
 
+#include "platform/blob/BlobData.h"
+
 namespace blink {
 
 class WebServiceWorkerRequestPrivate : public RefCounted<WebServiceWorkerRequestPrivate> {
@@ -14,6 +16,7 @@ public:
     WebURL m_url;
     WebString m_method;
     HTTPHeaderMap m_headers;
+    RefPtr<BlobDataHandle> blobDataHandle;
     Referrer m_referrer;
     bool m_isReload;
 };
@@ -63,6 +66,16 @@ void WebServiceWorkerRequest::setHeader(const WebString& key, const WebString& v
 const HTTPHeaderMap& WebServiceWorkerRequest::headers() const
 {
     return m_private->m_headers;
+}
+
+void WebServiceWorkerRequest::setBlob(const WebString& uuid, long long size)
+{
+    m_private->blobDataHandle = BlobDataHandle::create(uuid, String(), size);
+}
+
+PassRefPtr<BlobDataHandle> WebServiceWorkerRequest::blobDataHandle() const
+{
+    return m_private->blobDataHandle;
 }
 
 void WebServiceWorkerRequest::setReferrer(const WebString& referrer, WebReferrerPolicy referrerPolicy)
