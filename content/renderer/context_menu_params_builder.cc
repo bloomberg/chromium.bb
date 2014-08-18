@@ -58,7 +58,7 @@ ContextMenuParams ContextMenuParamsBuilder::Build(
   if (!params.link_url.is_empty()) {
     blink::WebNode selectedNode = DomUtils::ExtractParentAnchorNode(data.node);
     blink::WebElement selectedElement = selectedNode.to<blink::WebElement>();
-    if (selectedNode.isLink() && !selectedElement.isNull()) {
+    if (!selectedElement.isNull() && selectedNode.isLink()) {
       params.link_text = selectedElement.innerText();
     } else {
       LOG(ERROR) << "Creating a ContextMenuParams for a node that has a link"
