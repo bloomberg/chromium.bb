@@ -210,7 +210,6 @@ cr.define('options', function() {
 
       var hotwordIndicator = $('hotword-search-setting-indicator');
       HotwordSearchSettingIndicator.decorate(hotwordIndicator);
-      hotwordIndicator.disabledOnErrorSection = $('hotword-search-enable');
       chrome.send('requestHotwordAvailable');
 
       if ($('set-wallpaper')) {

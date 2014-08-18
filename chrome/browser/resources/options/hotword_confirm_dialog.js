@@ -49,12 +49,12 @@ cr.define('options', function() {
         return;
 
       if (event.value.value && !this.confirmed_) {
-        if (!this.indicator.errorText) {
-          PageManager.showPageByName(this.name, false);
-        } else {
+        // If there is an error, show the indicator icon with more information.
+        if (this.indicator.errorText)
           this.indicator.updateBasedOnError();
-          this.handleCancel();
-        }
+
+        // Show confirmation dialog (regardless of whether there is an error).
+        PageManager.showPageByName(this.name, false);
       } else {
         Preferences.getInstance().commitPref(this.pref, this.metric);
       }
