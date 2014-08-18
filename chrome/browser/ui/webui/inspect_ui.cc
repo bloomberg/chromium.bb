@@ -16,12 +16,14 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -49,6 +51,8 @@ const char kPortForwardingConfigCommand[] = "set-port-forwarding-config";
 
 const char kPortForwardingDefaultPort[] = "8080";
 const char kPortForwardingDefaultLocation[] = "localhost:8080";
+
+// InspectMessageHandler --------------------------------------------
 
 class InspectMessageHandler : public WebUIMessageHandler {
  public:
@@ -195,7 +199,55 @@ void InspectMessageHandler::HandlePortForwardingConfigCommand(
     profile->GetPrefs()->Set(prefs::kDevToolsPortForwardingConfig, *dict_src);
 }
 
+// DevToolsUIBindingsEnabler ----------------------------------------
+
+class DevToolsUIBindingsEnabler
+    : public content::WebContentsObserver {
+ public:
+  DevToolsUIBindingsEnabler(WebContents* web_contents,
+                            const GURL& url);
+  virtual ~DevToolsUIBindingsEnabler() {}
+
+  DevToolsUIBindings* GetBindings();
+
+ private:
+  // contents::WebContentsObserver overrides.
+  virtual void WebContentsDestroyed() OVERRIDE;
+  virtual void AboutToNavigateRenderView(
+      content::RenderViewHost* render_view_host) OVERRIDE;
+
+  DevToolsUIBindings bindings_;
+  GURL url_;
+  DISALLOW_COPY_AND_ASSIGN(DevToolsUIBindingsEnabler);
+};
+
+DevToolsUIBindingsEnabler::DevToolsUIBindingsEnabler(
+    WebContents* web_contents,
+    const GURL& url)
+    : WebContentsObserver(web_contents),
+      bindings_(web_contents),
+      url_(url) {
+}
+
+DevToolsUIBindings* DevToolsUIBindingsEnabler::GetBindings() {
+  return &bindings_;
+}
+
+void DevToolsUIBindingsEnabler::WebContentsDestroyed() {
+  delete this;
+}
+
+void DevToolsUIBindingsEnabler::AboutToNavigateRenderView(
+    content::RenderViewHost* render_view_host) {
+   content::NavigationEntry* entry =
+       web_contents()->GetController().GetActiveEntry();
+   if (url_ != entry->GetURL())
+     delete this;
+}
+
 }  // namespace
+
+// InspectUI --------------------------------------------------------
 
 InspectUI::InspectUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
@@ -282,16 +334,16 @@ void InspectUI::InspectBrowserWithCustomFrontend(
   WebContents* inspect_ui = web_ui()->GetWebContents();
   WebContents* front_end = inspect_ui->GetDelegate()->OpenURLFromTab(
       inspect_ui,
-      content::OpenURLParams(GURL(url::kAboutBlankURL),
+      content::OpenURLParams(frontend_url,
                              content::Referrer(),
                              NEW_FOREGROUND_TAB,
                              content::PAGE_TRANSITION_AUTO_TOPLEVEL,
                              false));
 
   // Install devtools bindings.
-  DevToolsUIBindings* bindings = new DevToolsUIBindings(front_end,
-                                                        frontend_url);
-  bindings->AttachTo(agent_host.get());
+  DevToolsUIBindingsEnabler* bindings_enabler =
+      new DevToolsUIBindingsEnabler(front_end, frontend_url);
+  bindings_enabler->GetBindings()->AttachTo(agent_host.get());
 }
 
 void InspectUI::InspectDevices(Browser* browser) {

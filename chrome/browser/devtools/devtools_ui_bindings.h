@@ -38,6 +38,8 @@ class DevToolsUIBindings : public content::NotificationObserver,
                            public DevToolsAndroidBridge::DeviceCountListener,
                            public content::DevToolsAgentHostClient {
  public:
+  static DevToolsUIBindings* ForWebContents(
+      content::WebContents* web_contents);
   static GURL ApplyThemeToURL(Profile* profile, const GURL& base_url);
 
   class Delegate {
@@ -58,7 +60,7 @@ class DevToolsUIBindings : public content::NotificationObserver,
     virtual void RenderProcessGone() = 0;
   };
 
-  DevToolsUIBindings(content::WebContents* web_contents, const GURL& url);
+  explicit DevToolsUIBindings(content::WebContents* web_contents);
   virtual ~DevToolsUIBindings();
 
   content::WebContents* web_contents() { return web_contents_; }

@@ -694,9 +694,14 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
   // Set up delegate, so we get fully-functional window immediately.
   // It will not appear in UI though until |life_stage_ == kLoadCompleted|.
   main_web_contents_->SetDelegate(this);
-  bindings_ = new DevToolsUIBindings(
-      main_web_contents_,
-      DevToolsUIBindings::ApplyThemeToURL(profile, url));
+
+  main_web_contents_->GetController().LoadURL(
+      DevToolsUIBindings::ApplyThemeToURL(profile, url), content::Referrer(),
+      content::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
+
+  bindings_ = DevToolsUIBindings::ForWebContents(main_web_contents_);
+  DCHECK(bindings_);
+
   // Bindings take ownership over devtools as its delegate.
   bindings_->SetDelegate(this);
   // DevTools uses chrome_page_zoom::Zoom(), so main_web_contents_ requires a
