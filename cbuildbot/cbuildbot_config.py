@@ -2271,6 +2271,11 @@ _arm_release.add_config('peach_pi-release',
   important=True,
 )
 
+_arm_release.add_config('nyan-release',
+  boards=['nyan'],
+  useflags=_release['useflags'] + ['highdpi'],
+)
+
 _arm_release.add_config('nyan_big-release',
   boards=['nyan_big'],
   useflags=_release['useflags'] + ['highdpi'],
