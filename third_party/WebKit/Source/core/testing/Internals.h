@@ -54,6 +54,7 @@ class Element;
 class ExceptionState;
 class ExecutionContext;
 class GCObservation;
+class HTMLElement;
 class HTMLMediaElement;
 class InternalProfilers;
 class InternalRuntimeFlags;
@@ -314,6 +315,8 @@ public:
     void hideAllTransitionElements();
 
     unsigned countHitRegions(CanvasRenderingContext2D*);
+
+    void forcePluginPlaceholder(HTMLElement* plugin, const String& htmlSource, ExceptionState&);
 
 private:
     explicit Internals(Document*);

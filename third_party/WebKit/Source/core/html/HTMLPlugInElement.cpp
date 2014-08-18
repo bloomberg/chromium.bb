@@ -42,6 +42,7 @@
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "core/plugins/PluginView.h"
+#include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderWidget.h"
@@ -66,6 +67,7 @@ HTMLPlugInElement::HTMLPlugInElement(const QualifiedName& tagName, Document& doc
     // the same codepath in this class.
     , m_needsWidgetUpdate(!createdByParser)
     , m_shouldPreferPlugInsForImages(preferPlugInsForImagesOption == ShouldPreferPlugInsForImages)
+    , m_usePlaceholderContent(false)
 {
     setHasCustomStyleCallbacks();
 }
@@ -236,13 +238,16 @@ RenderObject* HTMLPlugInElement::createRenderer(RenderStyle* style)
         return image;
     }
 
+    if (usePlaceholderContent())
+        return new RenderBlockFlow(this);
+
     return new RenderEmbeddedObject(this);
 }
 
 void HTMLPlugInElement::willRecalcStyle(StyleRecalcChange)
 {
     // FIXME: Why is this necessary? Manual re-attach is almost always wrong.
-    if (!useFallbackContent() && needsWidgetUpdate() && renderer() && !isImageType())
+    if (!useFallbackContent() && !usePlaceholderContent() && needsWidgetUpdate() && renderer() && !isImageType())
         reattach();
 }
 
@@ -577,6 +582,14 @@ bool HTMLPlugInElement::hasFallbackContent() const
 bool HTMLPlugInElement::useFallbackContent() const
 {
     return hasAuthorShadowRoot();
+}
+
+void HTMLPlugInElement::setUsePlaceholderContent(bool use)
+{
+    if (use != m_usePlaceholderContent) {
+        m_usePlaceholderContent = use;
+        lazyReattachIfAttached();
+    }
 }
 
 }

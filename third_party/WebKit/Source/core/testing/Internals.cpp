@@ -77,6 +77,7 @@
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMediaElement.h"
+#include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/html/canvas/CanvasRenderingContext2D.h"
@@ -2224,6 +2225,20 @@ void Internals::hideAllTransitionElements()
     Vector<Document::TransitionElementData>::iterator iter = elementData.begin();
     for (; iter != elementData.end(); ++iter)
         frame()->document()->hideTransitionElements(AtomicString(iter->selector));
+}
+
+void Internals::forcePluginPlaceholder(HTMLElement* element, const String& htmlSource, ExceptionState& exceptionState)
+{
+    if (!element) {
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "HTMLElement"));
+        return;
+    }
+    if (!element->isPluginElement()) {
+        exceptionState.throwDOMException(InvalidNodeTypeError, "The element provided is not a plugin.");
+        return;
+    }
+    element->ensureUserAgentShadowRoot().setInnerHTML(htmlSource, exceptionState);
+    toHTMLPlugInElement(element)->setUsePlaceholderContent(true);
 }
 
 } // namespace blink

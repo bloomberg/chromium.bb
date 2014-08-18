@@ -34,6 +34,7 @@
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/rendering/RenderApplet.h"
+#include "core/rendering/RenderBlockFlow.h"
 #include "platform/Widget.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -94,6 +95,9 @@ RenderObject* HTMLAppletElement::createRenderer(RenderStyle* style)
 {
     if (!canEmbedJava() || hasAuthorShadowRoot())
         return RenderObject::createObject(this, style);
+
+    if (usePlaceholderContent())
+        return new RenderBlockFlow(this);
 
     return new RenderApplet(this);
 }

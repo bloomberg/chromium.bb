@@ -36,12 +36,12 @@
 
 namespace blink {
 
-const int cDefaultWidth = 300;
-const int cDefaultHeight = 150;
+const int RenderReplaced::defaultWidth = 300;
+const int RenderReplaced::defaultHeight = 150;
 
 RenderReplaced::RenderReplaced(Element* element)
     : RenderBox(element)
-    , m_intrinsicSize(cDefaultWidth, cDefaultHeight)
+    , m_intrinsicSize(defaultWidth, defaultHeight)
 {
     setReplaced(true);
 }
@@ -94,8 +94,8 @@ void RenderReplaced::layout()
 
 void RenderReplaced::intrinsicSizeChanged()
 {
-    int scaledWidth = static_cast<int>(cDefaultWidth * style()->effectiveZoom());
-    int scaledHeight = static_cast<int>(cDefaultHeight * style()->effectiveZoom());
+    int scaledWidth = static_cast<int>(defaultWidth * style()->effectiveZoom());
+    int scaledHeight = static_cast<int>(defaultHeight * style()->effectiveZoom());
     m_intrinsicSize = IntSize(scaledWidth, scaledHeight);
     setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
 }

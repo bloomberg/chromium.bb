@@ -63,6 +63,9 @@ public:
     void requestPluginCreationWithoutRendererIfPossible();
     void createPluginWithoutRenderer();
 
+    bool usePlaceholderContent() { return m_usePlaceholderContent; }
+    void setUsePlaceholderContent(bool);
+
 protected:
     HTMLPlugInElement(const QualifiedName& tagName, Document&, bool createdByParser, PreferPlugInsForImagesOption);
 
@@ -133,6 +136,7 @@ private:
     bool m_isCapturingMouseEvents;
     bool m_needsWidgetUpdate;
     bool m_shouldPreferPlugInsForImages;
+    bool m_usePlaceholderContent;
 
     // Normally the Widget is stored in HTMLFrameOwnerElement::m_widget.
     // However, plugins can persist even when not rendered. In order to

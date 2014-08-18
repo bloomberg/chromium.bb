@@ -42,6 +42,7 @@
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
+#include "core/rendering/RenderReplaced.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/style/GridPosition.h"
 #include "core/rendering/style/RenderStyle.h"
@@ -383,6 +384,16 @@ void StyleAdjuster::adjustStyleForTagName(RenderStyle* style, RenderStyle* paren
 
     if (isHTMLPlugInElement(element)) {
         style->setRequiresAcceleratedCompositingForExternalReasons(toHTMLPlugInElement(element).shouldAccelerate());
+
+        // Plugins should get the standard replaced width/height instead of 'auto'.
+        // Replaced renderers get this for free, and fallback content doesn't count.
+        if (toHTMLPlugInElement(element).usePlaceholderContent()) {
+            if (style->width().isAuto())
+                style->setWidth(Length(RenderReplaced::defaultWidth, Fixed));
+            if (style->height().isAuto())
+                style->setHeight(Length(RenderReplaced::defaultHeight, Fixed));
+        }
+
         return;
     }
 }

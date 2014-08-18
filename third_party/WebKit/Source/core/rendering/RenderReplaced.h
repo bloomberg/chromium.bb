@@ -40,6 +40,11 @@ public:
 
     virtual bool needsPreferredWidthsRecalculation() const OVERRIDE;
 
+    // These values are specified to be 300 and 150 pixels in the CSS 2.1 spec.
+    // http://www.w3.org/TR/CSS2/visudet.html#inline-replaced-width
+    static const int defaultWidth;
+    static const int defaultHeight;
+
 protected:
     virtual void willBeDestroyed() OVERRIDE;
 

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+
+<style>
+applet, embed, object { display: block; margin: 10px; }
+</style>
+
+<!-- These should appear as green blocks of various sizes (200x150, 300x100, 200x100). -->
+<applet code="DoesNotExist.class" width="200"></applet>
+<embed type="application/x-fake-plugin" height="100"></embed>
+<object type="application/x-fake-plugin" width="200" height="100"></object>
+
+<script>
+internals.settings.setJavaEnabled(true);
+
+var placeholderHTML =
+    '<style>:host { overflow: hidden }</style>' +
+    '<div style="margin: 0; padding: 0; width: 100%; height: 100%; background-color: green;"></div>';
+Array.prototype.forEach.call(document.querySelectorAll("applet, embed, object"), function(plugin) {
+    internals.forcePluginPlaceholder(plugin, placeholderHTML);
+});
+</script>

@@ -53,11 +53,7 @@ RenderVideo::~RenderVideo()
 
 IntSize RenderVideo::defaultSize()
 {
-    // These values are specified in the spec.
-    static const int cDefaultWidth = 300;
-    static const int cDefaultHeight = 150;
-
-    return IntSize(cDefaultWidth, cDefaultHeight);
+    return IntSize(defaultWidth, defaultHeight);
 }
 
 void RenderVideo::intrinsicSizeChanged()

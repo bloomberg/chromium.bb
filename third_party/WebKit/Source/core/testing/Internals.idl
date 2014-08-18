@@ -278,4 +278,6 @@
 
     DOMString serializeNavigationMarkup();
     void hideAllTransitionElements();
+
+    [RaisesException] void forcePluginPlaceholder(HTMLElement plugin, DOMString htmlSource);
 };
