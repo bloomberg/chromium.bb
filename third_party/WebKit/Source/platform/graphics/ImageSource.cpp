@@ -30,8 +30,6 @@
 
 #include "platform/graphics/DeferredImageDecoder.h"
 #include "platform/image-decoders/ImageDecoder.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
@@ -57,10 +55,8 @@ bool ImageSource::initialized() const
 
 void ImageSource::setData(SharedBuffer& data, bool allDataReceived)
 {
-    // Make the decoder by sniffing the bytes.
-    // This method will examine the data and instantiate an instance of the appropriate decoder plugin.
-    // If insufficient bytes are available to determine the image type, no decoder plugin will be
-    // made.
+    // Create a decoder by sniffing the encoded data. If insufficient data bytes are available to
+    // determine the encoded image type, no decoder is created.
     if (!m_decoder)
         m_decoder = DeferredImageDecoder::create(data, m_alphaOption, m_gammaAndColorProfileOption);
 
@@ -166,9 +162,7 @@ bool ImageSource::frameIsCompleteAtIndex(size_t index) const
 
 unsigned ImageSource::frameBytesAtIndex(size_t index) const
 {
-    if (!m_decoder)
-        return 0;
-    return m_decoder->frameBytesAtIndex(index);
+    return m_decoder ? m_decoder->frameBytesAtIndex(index) : 0;
 }
 
 } // namespace blink
