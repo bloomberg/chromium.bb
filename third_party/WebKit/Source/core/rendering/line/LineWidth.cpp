@@ -66,17 +66,17 @@ void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(FloatingObject* newFloat
     if (height < m_block.logicalTopForFloat(newFloat) || height >= m_block.logicalBottomForFloat(newFloat))
         return;
 
-    ShapeOutsideInfo* shapeOutsideInfo = newFloat->renderer()->shapeOutsideInfo();
-    if (shapeOutsideInfo) {
+    ShapeOutsideDeltas shapeDeltas;
+    if (ShapeOutsideInfo* shapeOutsideInfo = newFloat->renderer()->shapeOutsideInfo()) {
         LayoutUnit lineHeight = m_block.lineHeight(m_isFirstLine, m_block.isHorizontalWritingMode() ? HorizontalLine : VerticalLine, PositionOfInteriorLineBoxes);
-        shapeOutsideInfo->updateDeltasForContainingBlockLine(m_block, *newFloat, m_block.logicalHeight(), lineHeight);
+        shapeDeltas = shapeOutsideInfo->computeDeltasForContainingBlockLine(m_block, *newFloat, m_block.logicalHeight(), lineHeight);
     }
 
     if (newFloat->type() == FloatingObject::FloatLeft) {
         float newLeft = m_block.logicalRightForFloat(newFloat).toFloat();
-        if (shapeOutsideInfo) {
-            if (shapeOutsideInfo->lineOverlapsShape())
-                newLeft += shapeOutsideInfo->rightMarginBoxDelta();
+        if (shapeDeltas.isValid()) {
+            if (shapeDeltas.lineOverlapsShape())
+                newLeft += shapeDeltas.rightMarginBoxDelta();
             else // Per the CSS Shapes spec, If the line doesn't overlap the shape, then ignore this shape for this line.
                 newLeft = m_left;
         }
@@ -85,9 +85,9 @@ void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(FloatingObject* newFloat
         m_left = std::max<float>(m_left, newLeft);
     } else {
         float newRight = m_block.logicalLeftForFloat(newFloat).toFloat();
-        if (shapeOutsideInfo) {
-            if (shapeOutsideInfo->lineOverlapsShape())
-                newRight += shapeOutsideInfo->leftMarginBoxDelta();
+        if (shapeDeltas.isValid()) {
+            if (shapeDeltas.lineOverlapsShape())
+                newRight += shapeDeltas.leftMarginBoxDelta();
             else // Per the CSS Shapes spec, If the line doesn't overlap the shape, then ignore this shape for this line.
                 newRight = m_right;
         }

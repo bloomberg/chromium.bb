@@ -120,7 +120,7 @@ public:
     LayoutUnit offset() const { return m_offset; }
 
 protected:
-    virtual bool updateOffsetIfNeeded(const FloatingObject*) = 0;
+    virtual bool updateOffsetIfNeeded(const FloatingObject&) = 0;
 
     const RenderBlockFlow* m_renderer;
     int m_lineTop;
@@ -142,7 +142,7 @@ public:
     LayoutUnit heightRemaining() const;
 
 protected:
-    virtual bool updateOffsetIfNeeded(const FloatingObject*) OVERRIDE FINAL;
+    virtual bool updateOffsetIfNeeded(const FloatingObject&) OVERRIDE FINAL;
 };
 
 template <FloatingObject::Type FloatTypeValue>
@@ -156,7 +156,7 @@ public:
     virtual ~ComputeFloatOffsetForLineLayoutAdapter() { }
 
 protected:
-    virtual bool updateOffsetIfNeeded(const FloatingObject*) OVERRIDE FINAL;
+    virtual bool updateOffsetIfNeeded(const FloatingObject&) OVERRIDE FINAL;
 };
 
 
@@ -436,9 +436,9 @@ inline static bool rangesIntersect(int floatTop, int floatBottom, int objectTop,
 }
 
 template<>
-inline bool ComputeFloatOffsetForFloatLayoutAdapter<FloatingObject::FloatLeft>::updateOffsetIfNeeded(const FloatingObject* floatingObject)
+inline bool ComputeFloatOffsetForFloatLayoutAdapter<FloatingObject::FloatLeft>::updateOffsetIfNeeded(const FloatingObject& floatingObject)
 {
-    LayoutUnit logicalRight = m_renderer->logicalRightForFloat(floatingObject);
+    LayoutUnit logicalRight = m_renderer->logicalRightForFloat(&floatingObject);
     if (logicalRight > m_offset) {
         m_offset = logicalRight;
         return true;
@@ -447,9 +447,9 @@ inline bool ComputeFloatOffsetForFloatLayoutAdapter<FloatingObject::FloatLeft>::
 }
 
 template<>
-inline bool ComputeFloatOffsetForFloatLayoutAdapter<FloatingObject::FloatRight>::updateOffsetIfNeeded(const FloatingObject* floatingObject)
+inline bool ComputeFloatOffsetForFloatLayoutAdapter<FloatingObject::FloatRight>::updateOffsetIfNeeded(const FloatingObject& floatingObject)
 {
-    LayoutUnit logicalLeft = m_renderer->logicalLeftForFloat(floatingObject);
+    LayoutUnit logicalLeft = m_renderer->logicalLeftForFloat(&floatingObject);
     if (logicalLeft < m_offset) {
         m_offset = logicalLeft;
         return true;
@@ -475,31 +475,21 @@ inline void ComputeFloatOffsetAdapter<FloatTypeValue>::collectIfNeeded(const Int
     ASSERT(interval.low() == m_renderer->pixelSnappedLogicalTopForFloat(floatingObject));
     ASSERT(interval.high() == m_renderer->pixelSnappedLogicalBottomForFloat(floatingObject));
 
-    bool floatIsNewExtreme = updateOffsetIfNeeded(floatingObject);
+    bool floatIsNewExtreme = updateOffsetIfNeeded(*floatingObject);
     if (floatIsNewExtreme)
         m_outermostFloat = floatingObject;
 }
 
-static inline ShapeOutsideInfo* shapeInfoForFloat(const FloatingObject& floatingObject, const RenderBlockFlow& containingBlock, LayoutUnit lineTop, LayoutUnit lineBottom)
-{
-    if (ShapeOutsideInfo* shapeOutside = floatingObject.renderer()->shapeOutsideInfo()) {
-        shapeOutside->updateDeltasForContainingBlockLine(containingBlock, floatingObject, lineTop, lineBottom - lineTop);
-        return shapeOutside;
-    }
-
-    return 0;
-}
-
 template<>
-inline bool ComputeFloatOffsetForLineLayoutAdapter<FloatingObject::FloatLeft>::updateOffsetIfNeeded(const FloatingObject* floatingObject)
+inline bool ComputeFloatOffsetForLineLayoutAdapter<FloatingObject::FloatLeft>::updateOffsetIfNeeded(const FloatingObject& floatingObject)
 {
-    ASSERT(floatingObject);
-    LayoutUnit logicalRight = m_renderer->logicalRightForFloat(floatingObject);
-    if (ShapeOutsideInfo* shapeOutside = shapeInfoForFloat(*floatingObject, *m_renderer, m_lineTop, m_lineBottom)) {
-        if (!shapeOutside->lineOverlapsShape())
+    LayoutUnit logicalRight = m_renderer->logicalRightForFloat(&floatingObject);
+    if (ShapeOutsideInfo* shapeOutside = floatingObject.renderer()->shapeOutsideInfo()) {
+        ShapeOutsideDeltas shapeDeltas = shapeOutside->computeDeltasForContainingBlockLine(*m_renderer, floatingObject, m_lineTop, m_lineBottom - m_lineTop);
+        if (!shapeDeltas.lineOverlapsShape())
             return false;
 
-        logicalRight += shapeOutside->rightMarginBoxDelta();
+        logicalRight += shapeDeltas.rightMarginBoxDelta();
     }
     if (logicalRight > m_offset) {
         m_offset = logicalRight;
@@ -510,15 +500,15 @@ inline bool ComputeFloatOffsetForLineLayoutAdapter<FloatingObject::FloatLeft>::u
 }
 
 template<>
-inline bool ComputeFloatOffsetForLineLayoutAdapter<FloatingObject::FloatRight>::updateOffsetIfNeeded(const FloatingObject* floatingObject)
+inline bool ComputeFloatOffsetForLineLayoutAdapter<FloatingObject::FloatRight>::updateOffsetIfNeeded(const FloatingObject& floatingObject)
 {
-    ASSERT(floatingObject);
-    LayoutUnit logicalLeft = m_renderer->logicalLeftForFloat(floatingObject);
-    if (ShapeOutsideInfo* shapeOutside = shapeInfoForFloat(*floatingObject, *m_renderer, m_lineTop, m_lineBottom)) {
-        if (!shapeOutside->lineOverlapsShape())
+    LayoutUnit logicalLeft = m_renderer->logicalLeftForFloat(&floatingObject);
+    if (ShapeOutsideInfo* shapeOutside = floatingObject.renderer()->shapeOutsideInfo()) {
+        ShapeOutsideDeltas shapeDeltas = shapeOutside->computeDeltasForContainingBlockLine(*m_renderer, floatingObject, m_lineTop, m_lineBottom - m_lineTop);
+        if (!shapeDeltas.lineOverlapsShape())
             return false;
 
-        logicalLeft += shapeOutside->leftMarginBoxDelta();
+        logicalLeft += shapeDeltas.leftMarginBoxDelta();
     }
     if (logicalLeft < m_offset) {
         m_offset = logicalLeft;
