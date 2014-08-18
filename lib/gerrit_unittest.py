@@ -57,7 +57,7 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     for idx in xrange(3):
       cros_build_lib.RunCommand(
           ['git', 'checkout', head_sha1], cwd=clone_path, quiet=True)
-      self.createCommit(clone_path, fn='test-file-%d.txt' % idx)
+      self.createCommit(clone_path, filename='test-file-%d.txt' % idx)
       self.uploadChange(clone_path)
     helper = self._GetHelper()
     changes = helper.Query(owner='self', project=project)

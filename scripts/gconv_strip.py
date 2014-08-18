@@ -55,13 +55,13 @@ class GconvModules(object):
   See the comments on gconv-modules file for syntax details.
   """
 
-  def __init__(self, gconv_modules_fn):
+  def __init__(self, gconv_modules_file):
     """Initialize the class.
 
     Args:
-      gconv_modules_fn: Path to gconv/gconv-modules file.
+      gconv_modules_file: Path to gconv/gconv-modules file.
     """
-    self._filename = gconv_modules_fn
+    self._filename = gconv_modules_file
 
     # An alias map of charsets. The key (fromcharset) is the alias name and
     # the value (tocharset) is the real charset name. We also support a value
@@ -248,11 +248,11 @@ def GconvStrip(opts):
   if len(gconv_modules_files) > 1:
     cros_build_lib.Die('Found several gconv-modules files.')
 
-  gconv_modules_fn = gconv_modules_files[0]
+  gconv_modules_file = gconv_modules_files[0]
   cros_build_lib.Info('Searching for unused gconv files defined in %s',
-                      gconv_modules_fn)
+                      gconv_modules_file)
 
-  gmods = GconvModules(gconv_modules_fn)
+  gmods = GconvModules(gconv_modules_file)
   charsets = gmods.Load()
 
   # Use scanelf to search for all the binary files on the rootfs that require
@@ -290,15 +290,16 @@ def GconvStrip(opts):
         ', '.join(unknown_sticky_modules))
   global_used = [charset in STICKY_MODULES for charset in charsets]
 
-  for fn in files:
-    used_fn = MultipleStringMatch(strings, osutils.ReadFile(fn, mode='rb'))
+  for filename in files:
+    used_filename = MultipleStringMatch(strings,
+                                        osutils.ReadFile(filename, mode='rb'))
 
-    global_used = map(operator.or_, global_used, used_fn)
+    global_used = map(operator.or_, global_used, used_filename)
     # Check the debug flag to avoid running an useless loop.
-    if opts.debug and any(used_fn):
-      cros_build_lib.Debug('File %s:', fn)
-      for i in range(len(used_fn)):
-        if used_fn[i]:
+    if opts.debug and any(used_filename):
+      cros_build_lib.Debug('File %s:', filename)
+      for i in range(len(used_filename)):
+        if used_filename[i]:
           cros_build_lib.Debug(' - %s', strings[i])
 
   used_charsets = [cs for cs, used in zip(charsets, global_used) if used]

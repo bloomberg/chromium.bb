@@ -27,6 +27,7 @@ from chromite.cbuildbot import metadata_lib
 from chromite.lib import cidb
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import osutils
 from chromite.lib import parallel
 
 SERIES_0_TEST_DATA_PATH = os.path.join(
@@ -116,10 +117,9 @@ def GetTestDataSeries(test_data_path):
   """
   filenames = glob.glob(os.path.join(test_data_path, '*.json'))
   metadatas = []
-  for fn in filenames:
-    with open(fn, 'r') as f:
-      metadatas.append(
-          metadata_lib.CBuildbotMetadata.FromJSONString(f.read()))
+  for fname in filenames:
+    metadatas.append(
+        metadata_lib.CBuildbotMetadata.FromJSONString(osutils.ReadFile(fname)))
 
   # Convert start time values, which are stored in RFC 2822 string format,
   # to seconds since epoch.
