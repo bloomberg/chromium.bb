@@ -33,6 +33,13 @@ state.fontBuilder().{{property.setter}}
 state.style()->{{property.setter}}
 {%- endif %}
 {% endmacro %}
+{% macro convert_and_set_value(property) %}
+{% if property.converter %}
+{{set_value(property)}}(StyleBuilderConverter::{{property.converter}}(state, value));
+{%- else %}
+{{set_value(property)}}(static_cast<{{property.type_name}}>(*toCSSPrimitiveValue(value)));
+{%- endif %}
+{% endmacro %}
 
 namespace blink {
 
@@ -67,11 +74,7 @@ namespace blink {
 {% if not property.custom_value %}
 {{declare_value_function(property_id)}}
 {
-    {% if property.converter %}
-    {{set_value(property)}}(StyleBuilderConverter::{{property.converter}}(state, value));
-    {% else %}
-    {{set_value(property)}}(static_cast<{{property.type_name}}>(*toCSSPrimitiveValue(value)));
-    {% endif %}
+    {{convert_and_set_value(property)}}
 }
 
 {% endif %}
@@ -116,7 +119,7 @@ namespace blink {
 {{apply_animation('CSSPropertyWebkitTransitionProperty', 'Property', 'Transition')}}
 {{apply_animation('CSSPropertyWebkitTransitionTimingFunction', 'TimingFunction', 'Transition')}}
 
-{% macro apply_auto(property_id, auto_getter=none, auto_setter=none, auto_identity='CSSValueAuto', compute_length=false) %}
+{% macro apply_auto(property_id, auto_getter=none, auto_setter=none, auto_identity='CSSValueAuto') %}
 {% set property = properties[property_id] %}
 {% set auto_getter = auto_getter or 'hasAuto' + property.name_for_methods %}
 {% set auto_setter = auto_setter or 'setHasAuto' + property.name_for_methods %}
@@ -142,17 +145,13 @@ namespace blink {
     if (primitiveValue->getValueID() == {{auto_identity}})
         state.style()->{{auto_setter}}();
     else
-        {% if compute_length %}
-        {{set_value(property)}}(primitiveValue->computeLength<{{property.type_name}}>(state.cssToLengthConversionData()));
-        {% else %}
-        {{set_value(property)}}(*primitiveValue);
-        {% endif %}
+        {{convert_and_set_value(property)}}
 }
 {% endmacro %}
 {{apply_auto('CSSPropertyOrphans')}}
 {{apply_auto('CSSPropertyWebkitColumnCount')}}
-{{apply_auto('CSSPropertyWebkitColumnGap', auto_getter='hasNormalColumnGap', auto_setter='setHasNormalColumnGap', auto_identity='CSSValueNormal', compute_length=true)}}
-{{apply_auto('CSSPropertyWebkitColumnWidth', compute_length=true)}}
+{{apply_auto('CSSPropertyWebkitColumnGap', auto_getter='hasNormalColumnGap', auto_setter='setHasNormalColumnGap', auto_identity='CSSValueNormal')}}
+{{apply_auto('CSSPropertyWebkitColumnWidth')}}
 {{apply_auto('CSSPropertyWidows')}}
 {{apply_auto('CSSPropertyZIndex')}}
 

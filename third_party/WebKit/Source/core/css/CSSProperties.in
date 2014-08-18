@@ -315,12 +315,12 @@ visibility animatable, inherited
 -webkit-column-break-before type_name=EPageBreak, initial=initialPageBreak
 -webkit-column-break-inside type_name=EPageBreak, initial=initialPageBreak
 -webkit-column-count animatable, type_name=unsigned short, custom_all
--webkit-column-gap animatable, type_name=float, custom_all
+-webkit-column-gap animatable, converter=convertComputedLength<float>, custom_all
 -webkit-column-rule-color animatable, custom_all
 -webkit-column-rule-style type_name=EBorderStyle, initial=initialBorderStyle
 -webkit-column-rule-width animatable, converter=convertLineWidth<unsigned short>
 -webkit-column-span type_name=ColumnSpan
--webkit-column-width animatable, type_name=float, custom_all
+-webkit-column-width animatable, converter=convertComputedLength<float>, custom_all
 -webkit-filter animatable, custom_value
 -webkit-highlight inherited, converter=convertString<CSSValueNone>
 -webkit-hyphenate-character inherited, name_for_methods=HyphenationString, converter=convertString<CSSValueAuto>
