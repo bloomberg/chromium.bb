@@ -2,6 +2,7 @@ ben@chromium.org
 sky@chromium.org
 
 # Mac stuff
+avi@chromium.org
 thakis@chromium.org
 
 per-file *.isolate=csharp@chromium.org
