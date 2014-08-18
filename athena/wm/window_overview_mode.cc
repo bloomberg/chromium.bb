@@ -139,37 +139,47 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
   // the windows.
   void ComputeTerminalStatesForAllWindows() {
     aura::Window::Windows windows = window_list_provider_->GetWindowList();
-    size_t window_count = windows.size();
     size_t index = 0;
-    const gfx::Size container_size = container_->bounds().size();
-
-    const int kGapBetweenWindowsBottom = 10;
-    const int kGapBetweenWindowsTop = 5;
 
     for (aura::Window::Windows::const_reverse_iterator iter = windows.rbegin();
          iter != windows.rend();
          ++iter, ++index) {
       aura::Window* window = (*iter);
-
-      gfx::Transform top_transform;
-      int top = (window_count - index - 1) * kGapBetweenWindowsTop;
-      float x_translate = container_size.width() * (1 - kMinScale) / 2.;
-      top_transform.Translate(x_translate, top);
-      top_transform.Scale(kMinScale, kMinScale);
-
-      gfx::Transform bottom_transform;
-      int bottom = GetScrollableHeight() - (index * kGapBetweenWindowsBottom);
-      x_translate = container_size.width() * (1 - kMaxScale) / 2.;
-      bottom_transform.Translate(x_translate, bottom - window->bounds().y());
-      bottom_transform.Scale(kMaxScale, kMaxScale);
+      wm::SetShadowType(window, wm::SHADOW_TYPE_RECTANGULAR_ALWAYS_ACTIVE);
 
       WindowOverviewState* state = new WindowOverviewState;
-      state->top = top_transform;
-      state->bottom = bottom_transform;
-      state->progress = 0.f;
       window->SetProperty(kWindowOverviewState, state);
-      wm::SetShadowType(window, wm::SHADOW_TYPE_RECTANGULAR_ALWAYS_ACTIVE);
+      UpdateTerminalStateForWindowAtIndex(window, index, windows.size());
     }
+  }
+
+  void UpdateTerminalStateForWindowAtIndex(aura::Window* window,
+                                           size_t index,
+                                           size_t window_count) {
+    const int kGapBetweenWindowsBottom = 10;
+    const int kGapBetweenWindowsTop = 5;
+
+    const int container_width = container_->bounds().width();
+    const int window_width = window->bounds().width();
+    const int window_x = window->bounds().x();
+    gfx::Transform top_transform;
+    int top = (window_count - index - 1) * kGapBetweenWindowsTop;
+    float x_translate =
+        (container_width - (window_width * kMinScale)) / 2 - window_x;
+    top_transform.Translate(x_translate, top);
+    top_transform.Scale(kMinScale, kMinScale);
+
+    gfx::Transform bottom_transform;
+    int bottom = GetScrollableHeight() - (index * kGapBetweenWindowsBottom);
+    x_translate = (container_width - (window_width * kMaxScale)) / 2 - window_x;
+    bottom_transform.Translate(x_translate, bottom - window->bounds().y());
+    bottom_transform.Scale(kMaxScale, kMaxScale);
+
+    WindowOverviewState* state = window->GetProperty(kWindowOverviewState);
+    CHECK(state);
+    state->top = top_transform;
+    state->bottom = bottom_transform;
+    state->progress = 0.f;
   }
 
   // Sets the initial position for the windows for the overview mode.
@@ -396,12 +406,11 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
       ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
       settings.SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-      WindowOverviewState* state = window->GetProperty(kWindowOverviewState);
 
       aura::Window* next = *(iter + 1);
       WindowOverviewState* next_state = next->GetProperty(kWindowOverviewState);
-      state->top = next_state->top;
-      state->bottom = next_state->bottom;
+      UpdateTerminalStateForWindowAtIndex(window, list.end() - iter,
+                                          list.size());
       SetWindowProgress(window, next_state->progress);
     }
 
