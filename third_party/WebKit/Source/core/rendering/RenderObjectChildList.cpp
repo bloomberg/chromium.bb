@@ -73,9 +73,9 @@ RenderObject* RenderObjectChildList::removeChildNode(RenderObject* owner, Render
             oldChild->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
             // We only issue paint invalidations for |oldChild| if we have a RenderLayer as its visual overflow may not be tracked by its parent.
             if (oldChild->isBody())
-                owner->view()->paintInvalidationForWholeRenderer();
+                owner->view()->invalidatePaintForWholeRenderer();
             else
-                oldChild->paintInvalidationForWholeRenderer();
+                oldChild->invalidatePaintForWholeRenderer();
         }
     }
 

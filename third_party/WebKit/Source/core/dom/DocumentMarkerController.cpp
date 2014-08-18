@@ -228,7 +228,7 @@ void DocumentMarkerController::addMarker(Node* node, const DocumentMarker& newMa
 
     // repaint the affected node
     if (node->renderer())
-        node->renderer()->paintInvalidationForWholeRenderer();
+        node->renderer()->setShouldDoFullPaintInvalidation(true);
 }
 
 void DocumentMarkerController::mergeOverlapping(MarkerList* list, DocumentMarker& toInsert)
@@ -289,7 +289,7 @@ void DocumentMarkerController::copyMarkers(Node* srcNode, unsigned startOffset, 
 
     // repaint the affected node
     if (docDirty && dstNode->renderer())
-        dstNode->renderer()->paintInvalidationForWholeRenderer();
+        dstNode->renderer()->setShouldDoFullPaintInvalidation(true);
 }
 
 void DocumentMarkerController::removeMarkers(Node* node, unsigned startOffset, int length, DocumentMarker::MarkerTypes markerTypes, RemovePartiallyOverlappingMarkerOrNot shouldRemovePartiallyOverlappingMarker)
@@ -370,7 +370,7 @@ void DocumentMarkerController::removeMarkers(Node* node, unsigned startOffset, i
 
     // repaint the affected node
     if (docDirty && node->renderer())
-        node->renderer()->paintInvalidationForWholeRenderer();
+        node->renderer()->setShouldDoFullPaintInvalidation(true);
 }
 
 DocumentMarker* DocumentMarkerController::markerContainingPoint(const LayoutPoint& point, DocumentMarker::MarkerType markerType)
@@ -579,7 +579,7 @@ void DocumentMarkerController::removeMarkersFromList(MarkerMap::iterator iterato
 
     if (needsRepainting) {
         if (RenderObject* renderer = iterator->key->renderer())
-            renderer->paintInvalidationForWholeRenderer();
+            renderer->setShouldDoFullPaintInvalidation(true);
     }
 
     if (nodeCanBeRemoved) {
@@ -609,7 +609,7 @@ void DocumentMarkerController::repaintMarkers(DocumentMarker::MarkerTypes marker
 
             // cause the node to be redrawn
             if (RenderObject* renderer = node->renderer()) {
-                renderer->paintInvalidationForWholeRenderer();
+                renderer->setShouldDoFullPaintInvalidation(true);
                 break;
             }
         }
@@ -663,7 +663,7 @@ void DocumentMarkerController::shiftMarkers(Node* node, unsigned startOffset, in
 
     // repaint the affected node
     if (docDirty && node->renderer())
-        node->renderer()->paintInvalidationForWholeRenderer();
+        node->renderer()->setShouldDoFullPaintInvalidation(true);
 }
 
 void DocumentMarkerController::setMarkersActive(Range* range, bool active)
@@ -707,7 +707,7 @@ void DocumentMarkerController::setMarkersActive(Node* node, unsigned startOffset
 
     // repaint the affected node
     if (docDirty && node->renderer())
-        node->renderer()->paintInvalidationForWholeRenderer();
+        node->renderer()->setShouldDoFullPaintInvalidation(true);
 }
 
 bool DocumentMarkerController::hasMarkers(Range* range, DocumentMarker::MarkerTypes markerTypes)

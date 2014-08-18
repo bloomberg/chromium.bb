@@ -1357,7 +1357,7 @@ void RenderInline::imageChanged(WrappedImagePtr, const IntRect*)
         return;
 
     // FIXME: We can do better.
-    paintInvalidationForWholeRenderer();
+    setShouldDoFullPaintInvalidation(true);
 }
 
 void RenderInline::addFocusRingRects(Vector<IntRect>& rects, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer) const

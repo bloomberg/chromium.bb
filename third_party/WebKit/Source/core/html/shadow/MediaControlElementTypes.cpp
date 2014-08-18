@@ -96,7 +96,7 @@ void MediaControlElement::setDisplayType(MediaControlElementType displayType)
 
     m_displayType = displayType;
     if (RenderObject* object = m_element->renderer())
-        object->paintInvalidationForWholeRenderer();
+        object->setShouldDoFullPaintInvalidation(true);
 }
 
 void MediaControlElement::trace(Visitor* visitor)

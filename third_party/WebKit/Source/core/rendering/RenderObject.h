@@ -868,10 +868,6 @@ public:
     // FIXME: |paintInvalidationContainer| should never be 0. See crbug.com/363699.
     void invalidatePaintUsingContainer(const RenderLayerModelObject* paintInvalidationContainer, const LayoutRect&, InvalidationReason) const;
 
-    // Invalidate the paint of the entire object. Called when, e.g., the color of a border changes, or when a border
-    // style changes.
-    void paintInvalidationForWholeRenderer() const;
-
     // Invalidate the paint of a specific subrectangle within a given object. The rect |r| is in the object's coordinate space.
     void invalidatePaintRectangle(const LayoutRect&) const;
 
@@ -1030,13 +1026,7 @@ public:
     void setPreviousPositionFromPaintInvalidationContainer(const LayoutPoint& location) { m_previousPositionFromPaintInvalidationContainer = location; }
 
     bool shouldDoFullPaintInvalidation() const { return m_bitfields.shouldDoFullPaintInvalidation(); }
-    void setShouldDoFullPaintInvalidation(bool b, MarkingBehavior markBehavior = MarkContainingBlockChain)
-    {
-        m_bitfields.setShouldDoFullPaintInvalidation(b);
-
-        if (markBehavior == MarkContainingBlockChain && b)
-            markContainingBlockChainForPaintInvalidation();
-    }
+    void setShouldDoFullPaintInvalidation(bool, MarkingBehavior = MarkContainingBlockChain);
 
     bool shouldInvalidateOverflowForPaint() const { return m_bitfields.shouldInvalidateOverflowForPaint(); }
 
@@ -1160,6 +1150,10 @@ protected:
 #endif
 
 private:
+    // Invalidate the paint of the entire object. This is only used when a renderer is to be removed.
+    // For other cases, the caller should call setShouldDoFullPaintInvalidation() instead.
+    void invalidatePaintForWholeRenderer() const;
+
     const RenderLayerModelObject* enclosingCompositedContainer() const;
 
     RenderFlowThread* locateFlowThreadContainingBlock() const;

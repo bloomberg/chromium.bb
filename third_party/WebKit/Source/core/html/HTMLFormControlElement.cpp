@@ -354,7 +354,7 @@ void HTMLFormControlElement::willCallDefaultEventHandler(const Event& event)
         return;
     m_wasFocusedByMouse = false;
     if (renderer())
-        renderer()->paintInvalidationForWholeRenderer();
+        renderer()->setShouldDoFullPaintInvalidation(true);
 }
 
 

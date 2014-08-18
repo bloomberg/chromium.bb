@@ -219,7 +219,7 @@ void RenderSVGImage::imageChanged(WrappedImagePtr, const IntRect*)
 
     invalidateBufferedForeground();
 
-    paintInvalidationForWholeRenderer();
+    setShouldDoFullPaintInvalidation(true);
 }
 
 void RenderSVGImage::addFocusRingRects(Vector<IntRect>& rects, const LayoutPoint&, const RenderLayerModelObject*) const

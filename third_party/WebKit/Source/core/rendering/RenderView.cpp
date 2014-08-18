@@ -474,7 +474,7 @@ void RenderView::invalidatePaintForRectangle(const LayoutRect& paintInvalidation
 
 void RenderView::invalidatePaintForViewAndCompositedLayers()
 {
-    paintInvalidationForWholeRenderer();
+    setShouldDoFullPaintInvalidation(true);
 
     // The only way we know how to hit these ASSERTS below this point is via the Chromium OS login screen.
     DisableCompositingQueryAsserts disabler;

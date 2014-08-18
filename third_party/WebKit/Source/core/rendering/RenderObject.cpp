@@ -1539,7 +1539,7 @@ void RenderObject::invalidatePaintUsingContainer(const RenderLayerModelObject* p
     }
 }
 
-void RenderObject::paintInvalidationForWholeRenderer() const
+void RenderObject::invalidatePaintForWholeRenderer() const
 {
     if (!isRooted())
         return;
@@ -3405,6 +3405,17 @@ bool RenderObject::nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const
 bool RenderObject::isRelayoutBoundaryForInspector() const
 {
     return objectIsRelayoutBoundary(this);
+}
+
+void RenderObject::setShouldDoFullPaintInvalidation(bool b, MarkingBehavior markBehavior)
+{
+    m_bitfields.setShouldDoFullPaintInvalidation(b);
+
+    if (markBehavior == MarkContainingBlockChain && b) {
+        ASSERT(document().lifecycle().state() != DocumentLifecycle::InPaintInvalidation);
+        frame()->page()->animator().scheduleVisualUpdate(); // In case that this is called not during FrameView::updateLayoutAndStyleForPainting().
+        markContainingBlockChainForPaintInvalidation();
+    }
 }
 
 void RenderObject::clearPaintInvalidationState(const PaintInvalidationState& paintInvalidationState)

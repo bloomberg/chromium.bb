@@ -77,7 +77,7 @@ double RenderMeter::valueRatio() const
 
 void RenderMeter::updateFromElement()
 {
-    paintInvalidationForWholeRenderer();
+    setShouldDoFullPaintInvalidation(true);
 }
 
 } // namespace blink

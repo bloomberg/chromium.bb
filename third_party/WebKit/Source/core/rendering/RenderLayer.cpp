@@ -3610,12 +3610,7 @@ void RenderLayer::filterNeedsPaintInvalidation()
         toElement(renderer()->node())->scheduleSVGFilterLayerUpdateHack();
     }
 
-    if (renderer()->view()) {
-        if (renderer()->frameView()->isInPerformLayout())
-            renderer()->setShouldDoFullPaintInvalidation(true);
-        else
-            renderer()->paintInvalidationForWholeRenderer();
-    }
+    renderer()->setShouldDoFullPaintInvalidation(true);
 }
 
 void RenderLayer::addLayerHitTestRects(LayerHitTestRects& rects) const

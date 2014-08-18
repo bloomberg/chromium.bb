@@ -245,7 +245,7 @@ void RenderTableRow::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 void RenderTableRow::imageChanged(WrappedImagePtr, const IntRect*)
 {
     // FIXME: Examine cells and issue paint invalidations of only the rect the image paints in.
-    paintInvalidationForWholeRenderer();
+    setShouldDoFullPaintInvalidation(true);
 }
 
 RenderTableRow* RenderTableRow::createAnonymous(Document* document)

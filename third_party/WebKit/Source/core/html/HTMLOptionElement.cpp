@@ -309,7 +309,7 @@ void HTMLOptionElement::didRecalcStyle(StyleRecalcChange change)
     // FIXME: We ask our owner select to repaint regardless of which property changed.
     if (HTMLSelectElement* select = ownerSelectElement()) {
         if (RenderObject* renderer = select->renderer())
-            renderer->paintInvalidationForWholeRenderer();
+            renderer->setShouldDoFullPaintInvalidation(true);
     }
 }
 

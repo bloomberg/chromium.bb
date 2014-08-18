@@ -320,7 +320,7 @@ void MediaControls::updateVolume()
 {
     m_muteButton->updateDisplayType();
     if (m_muteButton->renderer())
-        m_muteButton->renderer()->paintInvalidationForWholeRenderer();
+        m_muteButton->renderer()->setShouldDoFullPaintInvalidation(true);
 
     if (mediaElement().muted())
         m_volumeSlider->setVolume(0);

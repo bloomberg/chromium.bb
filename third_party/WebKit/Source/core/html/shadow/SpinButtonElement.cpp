@@ -125,7 +125,7 @@ void SpinButtonElement::defaultEventHandler(Event* event)
             UpDownState oldUpDownState = m_upDownState;
             m_upDownState = (local.y() < box->height() / 2) ? Up : Down;
             if (m_upDownState != oldUpDownState)
-                renderer()->paintInvalidationForWholeRenderer();
+                renderer()->setShouldDoFullPaintInvalidation(true);
         } else {
             releaseCapture();
             m_upDownState = Indeterminate;
