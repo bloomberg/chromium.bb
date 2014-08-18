@@ -68,7 +68,6 @@ Gamepad status=stable
 Geofencing status=test
 GeometryInterfaces status=test
 HTMLImports status=stable
-HighResolutionTimeInWorkers status=stable
 IMEAPI status=experimental
 ImageDataConstructor status=experimental
 ImageRenderingPixelated status=stable
