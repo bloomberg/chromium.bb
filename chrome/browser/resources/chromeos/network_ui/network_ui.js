@@ -263,7 +263,11 @@ var NetworkUI = (function() {
       else
         detailCell.textContent = JSON.stringify(state, null, '\t');
     };
-    if ($('get-managed').checked)
+    var selected = $('get-network-type').selectedIndex;
+    var selectedId = $('get-network-type').options[selected].id;
+    if (selectedId == 'shill')
+      networkConfig.getShillProperties(guid, showDetail);
+    else if (selectedId == 'managed')
       networkConfig.getManagedProperties(guid, showDetail);
     else
       networkConfig.getProperties(guid, showDetail);

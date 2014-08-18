@@ -31,6 +31,14 @@
   </div>
   <div id="network-log-container">
   </div>
+  <div id="advanced-options">
+    <span>Click '+' to get network properties of type:  </span>
+    <select id="get-network-type">
+      <option id="normal" selected>ONC</option>
+      <option id="managed">Managed ONC</option>
+      <option id="shill">Shill</option>
+    </select>
+  </div>
   <h3>Visible Networks: </h3>
   <table id="network-state-table" class="state-table">
     <tr class="state-table-header">
@@ -63,10 +71,6 @@
       <td>ONC Source</td>
     </tr>
   </table>
-  <div id="advanced-options">
-    <input id="get-managed" type="checkbox">
-    <label for="get-managed">Get Managed Properties</label>
-  </div>
   <script src="chrome://resources/js/i18n_template2.js"></script>
 </body>
 </html>

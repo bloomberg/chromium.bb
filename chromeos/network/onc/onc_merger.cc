@@ -381,7 +381,10 @@ class MergeToAugmented : public MergeToEffective {
 
       if (IsIdentifierField(*signature_, key)) {
         // Don't augment the GUID but write the plain value.
-        DCHECK(effective_value);
+        if (!effective_value) {
+          LOG(ERROR) << "GUID field has no effective value";
+          return make_scoped_ptr<base::Value>(NULL);
+        }
 
         // DCHECK that all provided GUIDs are identical.
         DCHECK(AllPresentValuesEqual(values, *effective_value));
