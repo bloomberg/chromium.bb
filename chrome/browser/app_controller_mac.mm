@@ -1546,6 +1546,36 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
       WorkAreaChanged());
 }
 
+- (BOOL)application:(NSApplication*)application
+    willContinueUserActivityWithType:(NSString*)userActivityType {
+  return [userActivityType isEqualToString:NSUserActivityTypeBrowsingWeb];
+}
+
+- (BOOL)application:(NSApplication*)application
+    continueUserActivity:(NSUserActivity*)userActivity
+      restorationHandler:(void (^)(NSArray*))restorationHandler {
+  if (![userActivity.activityType
+          isEqualToString:NSUserActivityTypeBrowsingWeb]) {
+    return NO;
+  }
+
+  NSURL* url = userActivity.webPageURL;
+  if (!url)
+    return NO;
+
+  GURL gurl(base::SysNSStringToUTF8([url absoluteString]));
+  std::vector<GURL> gurlVector;
+  gurlVector.push_back(gurl);
+
+  [self openUrls:gurlVector];
+  return YES;
+}
+
+- (void)application:(NSApplication*)application
+    didFailToContinueUserActivityWithType:(NSString*)userActivityType
+                                    error:(NSError*)error {
+}
+
 @end  // @implementation AppController
 
 //---------------------------------------------------------------------------

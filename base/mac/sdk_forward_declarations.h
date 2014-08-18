@@ -254,4 +254,18 @@ typedef NSUInteger NSWindowOcclusionState;
 
 #endif  // MAC_OS_X_VERSION_10_9
 
+#if !defined(MAC_OS_X_VERSION_10_10) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_10
+
+@interface NSUserActivity : NSObject
+
+@property (readonly, copy) NSString* activityType;
+@property (copy) NSURL* webPageURL;
+
+@end
+
+BASE_EXPORT extern "C" NSString* const NSUserActivityTypeBrowsingWeb;
+
+#endif  // MAC_OS_X_VERSION_10_10
+
 #endif  // BASE_MAC_SDK_FORWARD_DECLARATIONS_H_
