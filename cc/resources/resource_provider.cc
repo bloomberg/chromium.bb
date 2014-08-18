@@ -2043,9 +2043,11 @@ void ResourceProvider::LazyCreate(Resource* resource) {
   // Create and set texture properties. Allocation is delayed until needed.
   GLC(gl, gl->BindTexture(resource->target, resource->gl_id));
   GLC(gl,
-      gl->TexParameteri(resource->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+      gl->TexParameteri(
+          resource->target, GL_TEXTURE_MIN_FILTER, resource->original_filter));
   GLC(gl,
-      gl->TexParameteri(resource->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+      gl->TexParameteri(
+          resource->target, GL_TEXTURE_MAG_FILTER, resource->original_filter));
   GLC(gl,
       gl->TexParameteri(
           resource->target, GL_TEXTURE_WRAP_S, resource->wrap_mode));
