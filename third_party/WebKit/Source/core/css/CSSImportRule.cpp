@@ -62,9 +62,9 @@ MediaList* CSSImportRule::media() const
 String CSSImportRule::cssText() const
 {
     StringBuilder result;
-    result.append("@import url(\"");
+    result.appendLiteral("@import url(\"");
     result.append(m_importRule->href());
-    result.append("\")");
+    result.appendLiteral("\")");
 
     if (m_importRule->mediaQueries()) {
         String mediaText = m_importRule->mediaQueries()->mediaText();

@@ -67,19 +67,19 @@ DOMFileSystem* DOMFileSystem::createIsolatedFileSystem(ExecutionContext* context
 
     StringBuilder filesystemName;
     filesystemName.append(createDatabaseIdentifierFromSecurityOrigin(context->securityOrigin()));
-    filesystemName.append(":Isolated_");
+    filesystemName.appendLiteral(":Isolated_");
     filesystemName.append(filesystemId);
 
     // The rootURL created here is going to be attached to each filesystem request and
     // is to be validated each time the request is being handled.
     StringBuilder rootURL;
-    rootURL.append("filesystem:");
+    rootURL.appendLiteral("filesystem:");
     rootURL.append(context->securityOrigin()->toString());
-    rootURL.append("/");
+    rootURL.append('/');
     rootURL.append(isolatedPathPrefix);
-    rootURL.append("/");
+    rootURL.append('/');
     rootURL.append(filesystemId);
-    rootURL.append("/");
+    rootURL.append('/');
 
     return DOMFileSystem::create(context, filesystemName.toString(), FileSystemTypeIsolated, KURL(ParsedURLString, rootURL.toString()));
 }

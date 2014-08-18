@@ -125,7 +125,7 @@ static bool isValidPropertyName(const String& name)
 static AtomicString convertPropertyNameToAttributeName(const String& name)
 {
     StringBuilder builder;
-    builder.append("data-");
+    builder.appendLiteral("data-");
 
     unsigned length = name.length();
     for (unsigned i = 0; i < length; ++i) {

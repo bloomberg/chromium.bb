@@ -87,9 +87,9 @@ void InspectorInspectorAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
     int injectedScriptId = m_injectedScriptManager->injectedScriptIdFor(ScriptState::forMainWorld(frame));
     StringBuilder scriptSource;
     scriptSource.append(script);
-    scriptSource.append("(");
+    scriptSource.append('(');
     scriptSource.appendNumber(injectedScriptId);
-    scriptSource.append(")");
+    scriptSource.append(')');
     frame->script().executeScriptInMainWorld(scriptSource.toString());
 }
 

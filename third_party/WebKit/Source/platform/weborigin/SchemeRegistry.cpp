@@ -265,7 +265,7 @@ String SchemeRegistry::listOfCORSEnabledURLSchemes()
     bool addSeparator = false;
     for (URLSchemesMap::const_iterator it = corsEnabledSchemes.begin(); it != corsEnabledSchemes.end(); ++it) {
         if (addSeparator)
-            builder.append(", ");
+            builder.appendLiteral(", ");
         else
             addSeparator = true;
 

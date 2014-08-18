@@ -257,7 +257,7 @@ String EmailInputType::sanitizeValue(const String& proposedValue) const
     StringBuilder strippedValue;
     for (size_t i = 0; i < addresses.size(); ++i) {
         if (i > 0)
-            strippedValue.append(",");
+            strippedValue.append(',');
         strippedValue.append(stripLeadingAndTrailingHTMLSpaces(addresses[i]));
     }
     return strippedValue.toString();
@@ -274,7 +274,7 @@ String EmailInputType::convertFromVisibleValue(const String& visibleValue) const
     builder.reserveCapacity(sanitizedValue.length());
     for (size_t i = 0; i < addresses.size(); ++i) {
         if (i > 0)
-            builder.append(",");
+            builder.append(',');
         builder.append(convertEmailAddressToASCII(addresses[i]));
     }
     return builder.toString();
@@ -292,7 +292,7 @@ String EmailInputType::visibleValue() const
     builder.reserveCapacity(value.length());
     for (size_t i = 0; i < addresses.size(); ++i) {
         if (i > 0)
-            builder.append(",");
+            builder.append(',');
         builder.append(convertEmailAddressToUnicode(addresses[i]));
     }
     return builder.toString();

@@ -747,7 +747,7 @@ String InspectorStyle::shorthandValue(const String& shorthandProperty) const
             if (individualValue == "initial")
                 continue;
             if (!builder.isEmpty())
-                builder.append(" ");
+                builder.append(' ');
             builder.append(individualValue);
         }
 

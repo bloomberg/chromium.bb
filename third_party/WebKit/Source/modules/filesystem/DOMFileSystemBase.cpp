@@ -139,9 +139,9 @@ KURL DOMFileSystemBase::createFileSystemURL(const String& fullPath) const
     if (type() == FileSystemTypeExternal) {
         // For external filesystem originString could be different from what we have in m_filesystemRootURL.
         StringBuilder result;
-        result.append("filesystem:");
+        result.appendLiteral("filesystem:");
         result.append(securityOrigin()->toString());
-        result.append("/");
+        result.append('/');
         result.append(externalPathPrefix);
         result.append(m_filesystemRootURL.path());
         // Remove the extra leading slash.

@@ -125,15 +125,15 @@ String StepsTimingFunction::toString() const
         builder.append("steps(" + String::numberToStringECMAScript(this->numberOfSteps()) + ", ");
 
         if (this->stepAtPosition() == StepsTimingFunction::StepAtStart)
-            builder.append("start");
+            builder.appendLiteral("start");
         else if (this->stepAtPosition() == StepsTimingFunction::StepAtMiddle)
-            builder.append("middle");
+            builder.appendLiteral("middle");
         else if (this->stepAtPosition() == StepsTimingFunction::StepAtEnd)
-            builder.append("end");
+            builder.appendLiteral("end");
         else
             ASSERT_NOT_REACHED();
 
-        builder.append(")");
+        builder.append(')');
         break;
     default:
         ASSERT_NOT_REACHED();

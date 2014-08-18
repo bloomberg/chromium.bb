@@ -72,15 +72,15 @@ public:
     {
         bool eq = given == bound;
         StringBuilder result;
-        result.append("The ");
+        result.appendLiteral("The ");
         result.append(name);
-        result.append(" provided (");
+        result.appendLiteral(" provided (");
         result.append(formatNumber(given));
-        result.append(") is greater than ");
+        result.appendLiteral(") is greater than ");
         result.append(eq ? "or equal to " : "");
-        result.append("the maximum bound (");
+        result.appendLiteral("the maximum bound (");
         result.append(formatNumber(bound));
-        result.append(").");
+        result.appendLiteral(").");
         return result.toString();
     }
 
@@ -89,15 +89,15 @@ public:
     {
         bool eq = given == bound;
         StringBuilder result;
-        result.append("The ");
+        result.appendLiteral("The ");
         result.append(name);
-        result.append(" provided (");
+        result.appendLiteral(" provided (");
         result.append(formatNumber(given));
-        result.append(") is less than ");
+        result.appendLiteral(") is less than ");
         result.append(eq ? "or equal to " : "");
-        result.append("the minimum bound (");
+        result.appendLiteral("the minimum bound (");
         result.append(formatNumber(bound));
-        result.append(").");
+        result.appendLiteral(").");
         return result.toString();
     }
 
@@ -105,14 +105,14 @@ public:
     static String indexOutsideRange(const char* name, NumberType given, NumberType lowerBound, BoundType lowerType, NumberType upperBound, BoundType upperType)
     {
         StringBuilder result;
-        result.append("The ");
+        result.appendLiteral("The ");
         result.append(name);
-        result.append(" provided (");
+        result.appendLiteral(" provided (");
         result.append(formatNumber(given));
-        result.append(") is outside the range ");
+        result.appendLiteral(") is outside the range ");
         result.append(lowerType == ExclusiveBound ? '(' : '[');
         result.append(formatNumber(lowerBound));
-        result.append(", ");
+        result.appendLiteral(", ");
         result.append(formatNumber(upperBound));
         result.append(upperType == ExclusiveBound ? ')' : ']');
         result.append('.');

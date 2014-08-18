@@ -181,19 +181,19 @@ PassRefPtr<TypeBuilder::ApplicationCache::ApplicationCacheResource> InspectorApp
 {
     StringBuilder builder;
     if (resourceInfo.m_isMaster)
-        builder.append("Master ");
+        builder.appendLiteral("Master ");
 
     if (resourceInfo.m_isManifest)
-        builder.append("Manifest ");
+        builder.appendLiteral("Manifest ");
 
     if (resourceInfo.m_isFallback)
-        builder.append("Fallback ");
+        builder.appendLiteral("Fallback ");
 
     if (resourceInfo.m_isForeign)
-        builder.append("Foreign ");
+        builder.appendLiteral("Foreign ");
 
     if (resourceInfo.m_isExplicit)
-        builder.append("Explicit ");
+        builder.appendLiteral("Explicit ");
 
     RefPtr<TypeBuilder::ApplicationCache::ApplicationCacheResource> value = TypeBuilder::ApplicationCache::ApplicationCacheResource::create()
         .setUrl(resourceInfo.m_resource.string())

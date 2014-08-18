@@ -112,7 +112,7 @@ void GraphicsContextAnnotator::annotate(const PaintInfo& paintInfo, const Render
             StringBuilder classBuilder;
             for (size_t i = 0; i < classes.size(); ++i) {
                 if (i > 0)
-                    classBuilder.append(" ");
+                    classBuilder.append(' ');
                 classBuilder.append(classes[i]);
             }
 

@@ -133,7 +133,7 @@ void SVGPathStringBuilder::arcTo(float r1, float r2, float angle, bool largeArcF
 
 void SVGPathStringBuilder::closePath()
 {
-    m_stringBuilder.append("Z ");
+    m_stringBuilder.appendLiteral("Z ");
 }
 
 } // namespace blink

@@ -61,10 +61,10 @@ public:
         String toString() const
         {
             StringBuilder builder;
-            builder.append("labels(");
+            builder.appendLiteral("labels(");
             for (unsigned index = 0; index < m_labels.size(); ++index) {
                 if (index)
-                    builder.append(", ");
+                    builder.appendLiteral(", ");
                 builder.append('"');
                 builder.append(m_labels[index]);
                 builder.append('"');

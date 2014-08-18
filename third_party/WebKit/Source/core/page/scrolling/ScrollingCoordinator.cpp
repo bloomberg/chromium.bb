@@ -935,11 +935,11 @@ String ScrollingCoordinator::mainThreadScrollingReasonsAsText(MainThreadScrollin
     StringBuilder stringBuilder;
 
     if (reasons & ScrollingCoordinator::HasSlowRepaintObjects)
-        stringBuilder.append("Has slow repaint objects, ");
+        stringBuilder.appendLiteral("Has slow repaint objects, ");
     if (reasons & ScrollingCoordinator::HasViewportConstrainedObjectsWithoutSupportingFixedLayers)
-        stringBuilder.append("Has viewport constrained objects without supporting fixed layers, ");
+        stringBuilder.appendLiteral("Has viewport constrained objects without supporting fixed layers, ");
     if (reasons & ScrollingCoordinator::HasNonLayerViewportConstrainedObjects)
-        stringBuilder.append("Has non-layer viewport-constrained objects, ");
+        stringBuilder.appendLiteral("Has non-layer viewport-constrained objects, ");
 
     if (stringBuilder.length())
         stringBuilder.resize(stringBuilder.length() - 2);

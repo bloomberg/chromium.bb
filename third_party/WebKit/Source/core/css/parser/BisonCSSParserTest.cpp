@@ -79,7 +79,7 @@ static void testMediaQuery(const char* expected, MediaQuerySet& querySet)
         ++i;
         if (i >= queryVectorSize)
             break;
-        output.append(", ");
+        output.appendLiteral(", ");
     }
     ASSERT_STREQ(expected, output.toString().ascii().data());
 }

@@ -93,7 +93,7 @@ String CSSPropertySourceData::toString() const
 
     StringBuilder result;
     if (disabled)
-        result.append("/* ");
+        result.appendLiteral("/* ");
     result.append(name);
     result.appendLiteral(": ");
     result.append(value);
@@ -101,7 +101,7 @@ String CSSPropertySourceData::toString() const
         result.appendLiteral(" !important");
     result.append(';');
     if (disabled)
-        result.append(" */");
+        result.appendLiteral(" */");
     return result.toString();
 }
 

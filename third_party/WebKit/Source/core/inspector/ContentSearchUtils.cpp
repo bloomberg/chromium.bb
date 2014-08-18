@@ -49,7 +49,7 @@ static String createSearchRegexSource(const String& text)
 
     for (unsigned i = 0; i < text.length(); i++) {
         if (specials.find(text[i]) != kNotFound)
-            result.append("\\");
+            result.append('\\');
         result.append(text[i]);
     }
 

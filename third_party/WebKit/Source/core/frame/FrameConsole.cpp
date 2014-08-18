@@ -89,7 +89,7 @@ String FrameConsole::formatStackTraceString(const String& originalMessage, PassR
     for (size_t i = 0; i < callStack->size(); ++i) {
         const ScriptCallFrame& frame = callStack->at(i);
         stackTrace.append("\n    at " + (frame.functionName().length() ? frame.functionName() : "(anonymous function)"));
-        stackTrace.append(" (");
+        stackTrace.appendLiteral(" (");
         stackTrace.append(frame.sourceURL());
         stackTrace.append(':');
         stackTrace.append(String::number(frame.lineNumber()));

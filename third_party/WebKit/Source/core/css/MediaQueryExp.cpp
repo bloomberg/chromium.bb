@@ -308,13 +308,13 @@ bool MediaQueryExp::operator==(const MediaQueryExp& other) const
 String MediaQueryExp::serialize() const
 {
     StringBuilder result;
-    result.append("(");
+    result.append('(');
     result.append(m_mediaFeature.lower());
     if (m_expValue.isValid()) {
-        result.append(": ");
+        result.appendLiteral(": ");
         result.append(m_expValue.cssText());
     }
-    result.append(")");
+    result.append(')');
 
     return result.toString();
 }
@@ -332,7 +332,7 @@ String MediaQueryExpValue::cssText() const
         output.append(CSSPrimitiveValue::unitTypeToString(unit));
     } else if (isRatio) {
         output.append(printNumber(numerator));
-        output.append("/");
+        output.append('/');
         output.append(printNumber(denominator));
     } else if (isID) {
         output.append(getValueName(id));

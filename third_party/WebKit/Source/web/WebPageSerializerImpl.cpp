@@ -156,7 +156,7 @@ String WebPageSerializerImpl::preActionBeforeSerializeOpenTag(
             result.append(WebPageSerializer::generateMarkOfTheWebDeclaration(param->url));
         } else if (isHTMLBaseElement(*element)) {
             // Comment the BASE tag when serializing dom.
-            result.append("<!--");
+            result.appendLiteral("<!--");
         }
     } else {
         // Write XML declaration.
@@ -168,13 +168,13 @@ String WebPageSerializerImpl::preActionBeforeSerializeOpenTag(
                 xmlEncoding = param->document->encodingName();
             if (xmlEncoding.isEmpty())
                 xmlEncoding = UTF8Encoding().name();
-            result.append("<?xml version=\"");
+            result.appendLiteral("<?xml version=\"");
             result.append(param->document->xmlVersion());
-            result.append("\" encoding=\"");
+            result.appendLiteral("\" encoding=\"");
             result.append(xmlEncoding);
             if (param->document->xmlStandalone())
-                result.append("\" standalone=\"yes");
-            result.append("\"?>\n");
+                result.appendLiteral("\" standalone=\"yes");
+            result.appendLiteral("\"?>\n");
         }
         // Add doc type declaration if original document has it.
         if (!param->haveSeenDocType) {
@@ -249,7 +249,7 @@ String WebPageSerializerImpl::postActionAfterSerializeEndTag(
         return result.toString();
     // Comment the BASE tag when serializing DOM.
     if (isHTMLBaseElement(*element)) {
-        result.append("-->");
+        result.appendLiteral("-->");
         // Append a new base tag declaration.
         result.append(WebPageSerializer::generateBaseTagDeclaration(
             param->document->baseTarget()));

@@ -41,37 +41,37 @@ String CSSFilterValue::customCSSText() const
     StringBuilder result;
     switch (m_type) {
     case ReferenceFilterOperation:
-        result.append("url(");
+        result.appendLiteral("url(");
         break;
     case GrayscaleFilterOperation:
-        result.append("grayscale(");
+        result.appendLiteral("grayscale(");
         break;
     case SepiaFilterOperation:
-        result.append("sepia(");
+        result.appendLiteral("sepia(");
         break;
     case SaturateFilterOperation:
-        result.append("saturate(");
+        result.appendLiteral("saturate(");
         break;
     case HueRotateFilterOperation:
-        result.append("hue-rotate(");
+        result.appendLiteral("hue-rotate(");
         break;
     case InvertFilterOperation:
-        result.append("invert(");
+        result.appendLiteral("invert(");
         break;
     case OpacityFilterOperation:
-        result.append("opacity(");
+        result.appendLiteral("opacity(");
         break;
     case BrightnessFilterOperation:
-        result.append("brightness(");
+        result.appendLiteral("brightness(");
         break;
     case ContrastFilterOperation:
-        result.append("contrast(");
+        result.appendLiteral("contrast(");
         break;
     case BlurFilterOperation:
-        result.append("blur(");
+        result.appendLiteral("blur(");
         break;
     case DropShadowFilterOperation:
-        result.append("drop-shadow(");
+        result.appendLiteral("drop-shadow(");
         break;
     default:
         break;

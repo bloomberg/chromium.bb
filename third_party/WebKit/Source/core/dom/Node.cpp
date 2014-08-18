@@ -1641,9 +1641,9 @@ static void appendAttributeDesc(const Node* node, StringBuilder& stringBuilder, 
         return;
 
     stringBuilder.append(attrDesc);
-    stringBuilder.append("=\"");
+    stringBuilder.appendLiteral("=\"");
     stringBuilder.append(attr);
-    stringBuilder.append("\"");
+    stringBuilder.appendLiteral("\"");
 }
 
 void Node::showNode(const char* prefix) const

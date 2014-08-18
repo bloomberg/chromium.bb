@@ -137,9 +137,9 @@ void SerializerMarkupAccumulator::appendElement(StringBuilder& out, Element& ele
         MarkupAccumulator::appendElement(out, element, namespaces);
 
     if (isHTMLHeadElement(element)) {
-        out.append("<meta charset=\"");
+        out.appendLiteral("<meta charset=\"");
         out.append(m_document.charset());
-        out.append("\">");
+        out.appendLiteral("\">");
     }
 
     // FIXME: For object (plugins) tags and video tag we could replace them by an image of their current contents.
@@ -265,7 +265,7 @@ void PageSerializer::serializeCSSStyleSheet(CSSStyleSheet& styleSheet, const KUR
         if (!itemText.isEmpty()) {
             cssText.append(itemText);
             if (i < styleSheet.length() - 1)
-                cssText.append("\n\n");
+                cssText.appendLiteral("\n\n");
         }
         ASSERT(styleSheet.ownerDocument());
         Document& document = *styleSheet.ownerDocument();

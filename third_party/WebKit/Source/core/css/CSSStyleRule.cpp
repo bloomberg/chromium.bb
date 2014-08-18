@@ -70,7 +70,7 @@ String CSSStyleRule::generateSelectorText() const
     StringBuilder builder;
     for (const CSSSelector* selector = m_styleRule->selectorList().first(); selector; selector = CSSSelectorList::next(*selector)) {
         if (selector != m_styleRule->selectorList().first())
-            builder.append(", ");
+            builder.appendLiteral(", ");
         builder.append(selector->selectorText());
     }
     return builder.toString();

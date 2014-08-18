@@ -60,7 +60,7 @@ String StyleResolverStats::report() const
     unsigned sharedStylesRejected = sharedStyleRejectedByUncommonAttributeRules + sharedStyleRejectedBySiblingRules + sharedStyleRejectedByParent;
     unsigned sharedStylesUsed = sharedStyleFound - sharedStylesRejected;
 
-    output.append("Style sharing:\n");
+    output.appendLiteral("Style sharing:\n");
     output.append(String::format("  %u elements were added to the sharing candidate list.\n", sharedStyleCandidates));
     output.append(String::format("  %u calls were made to findSharedStyle, %u found a candidate to share with (%.2f%%).\n", sharedStyleLookups, sharedStyleFound, PERCENT(sharedStyleFound, sharedStyleLookups)));
     if (printMissedCandidateCount)
@@ -74,9 +74,9 @@ String StyleResolverStats::report() const
     output.append(String::format("  %u of found styles were used for sharing (%.2f%%).\n", sharedStylesUsed, PERCENT(sharedStylesUsed, sharedStyleFound)));
     output.append(String::format("  %.2f%% of calls to findSharedStyle returned a shared style.\n", PERCENT(sharedStylesUsed, sharedStyleLookups)));
 
-    output.append("\n");
+    output.append('\n');
 
-    output.append("Matched property cache:\n");
+    output.appendLiteral("Matched property cache:\n");
     output.append(String::format("  %u calls to applyMatchedProperties, %u hit the cache (%.2f%%).\n", matchedPropertyApply, matchedPropertyCacheHit, PERCENT(matchedPropertyCacheHit, matchedPropertyApply)));
     output.append(String::format("  %u cache hits also shared the inherited style (%.2f%%).\n", matchedPropertyCacheInheritedHit, PERCENT(matchedPropertyCacheInheritedHit, matchedPropertyCacheHit)));
     output.append(String::format("  %u styles created in applyMatchedProperties were added to the cache (%.2f%%).\n", matchedPropertyCacheAdded, PERCENT(matchedPropertyCacheAdded, matchedPropertyApply)));

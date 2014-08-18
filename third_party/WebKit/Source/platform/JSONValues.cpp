@@ -46,13 +46,13 @@ const char* const falseString = "false";
 inline bool escapeChar(UChar c, StringBuilder* dst)
 {
     switch (c) {
-    case '\b': dst->append("\\b", 2); break;
-    case '\f': dst->append("\\f", 2); break;
-    case '\n': dst->append("\\n", 2); break;
-    case '\r': dst->append("\\r", 2); break;
-    case '\t': dst->append("\\t", 2); break;
-    case '\\': dst->append("\\\\", 2); break;
-    case '"': dst->append("\\\"", 2); break;
+    case '\b': dst->appendLiteral("\\b"); break;
+    case '\f': dst->appendLiteral("\\f"); break;
+    case '\n': dst->appendLiteral("\\n"); break;
+    case '\r': dst->appendLiteral("\\r"); break;
+    case '\t': dst->appendLiteral("\\t"); break;
+    case '\\': dst->appendLiteral("\\\\"); break;
+    case '"': dst->appendLiteral("\\\""); break;
     default:
         return false;
     }
@@ -83,7 +83,7 @@ inline void doubleQuoteString(const String& str, StringBuilder* dst)
 void writeIndent(int depth, StringBuilder* output)
 {
     for (int i = 0; i < depth; ++i)
-        output->append("  ");
+        output->appendLiteral("  ");
 }
 
 } // anonymous namespace
@@ -395,15 +395,15 @@ void JSONObjectBase::writeJSON(StringBuilder* output) const
 
 void JSONObjectBase::prettyWriteJSONInternal(StringBuilder* output, int depth) const
 {
-    output->append("{\n");
+    output->appendLiteral("{\n");
     for (size_t i = 0; i < m_order.size(); ++i) {
         Dictionary::const_iterator it = m_data.find(m_order[i]);
         ASSERT_WITH_SECURITY_IMPLICATION(it != m_data.end());
         if (i)
-            output->append(",\n");
+            output->appendLiteral(",\n");
         writeIndent(depth + 1, output);
         doubleQuoteString(it->key, output);
-        output->append(": ");
+        output->appendLiteral(": ");
         it->value->prettyWriteJSONInternal(output, depth + 1);
     }
     output->append('\n');

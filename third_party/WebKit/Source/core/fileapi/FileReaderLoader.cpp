@@ -382,7 +382,7 @@ void FileReaderLoader::convertToDataURL()
     m_isRawDataConverted = true;
 
     StringBuilder builder;
-    builder.append("data:");
+    builder.appendLiteral("data:");
 
     if (!m_bytesLoaded) {
         m_stringResult = builder.toString();
@@ -390,7 +390,7 @@ void FileReaderLoader::convertToDataURL()
     }
 
     builder.append(m_dataType);
-    builder.append(";base64,");
+    builder.appendLiteral(";base64,");
 
     Vector<char> out;
     base64Encode(static_cast<const char*>(m_rawData->data()), m_rawData->byteLength(), out);

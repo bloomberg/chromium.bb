@@ -1920,21 +1920,21 @@ String Internals::getCurrentCursorInfo(Document* document, ExceptionState& excep
     Cursor cursor = document->frame()->eventHandler().currentMouseCursor();
 
     StringBuilder result;
-    result.append("type=");
+    result.appendLiteral("type=");
     result.append(cursorTypeToString(cursor.type()));
-    result.append(" hotSpot=");
+    result.appendLiteral(" hotSpot=");
     result.appendNumber(cursor.hotSpot().x());
-    result.append(",");
+    result.append(',');
     result.appendNumber(cursor.hotSpot().y());
     if (cursor.image()) {
         IntSize size = cursor.image()->size();
-        result.append(" image=");
+        result.appendLiteral(" image=");
         result.appendNumber(size.width());
-        result.append("x");
+        result.append('x');
         result.appendNumber(size.height());
     }
     if (cursor.imageScaleFactor() != 1) {
-        result.append(" scale=");
+        result.appendLiteral(" scale=");
         NumberToStringBuffer buffer;
         result.append(numberToFixedPrecisionString(cursor.imageScaleFactor(), 8, buffer, true));
     }

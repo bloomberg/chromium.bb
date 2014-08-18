@@ -57,7 +57,7 @@ static String generateRandomBoundary()
     char randomValues[randomValuesLength];
     cryptographicallyRandomValues(&randomValues, randomValuesLength);
     StringBuilder stringBuilder;
-    stringBuilder.append("----=_NextPart_000_");
+    stringBuilder.appendLiteral("----=_NextPart_000_");
     for (size_t i = 0; i < randomValuesLength; ++i) {
         if (i == 2)
             stringBuilder.append('_');
@@ -132,20 +132,20 @@ PassRefPtr<SharedBuffer> MHTMLArchive::generateMHTMLData(const Vector<Serialized
     String dateString = makeRFC2822DateString(now.weekDay(), now.monthDay(), now.month(), now.fullYear(), now.hour(), now.minute(), now.second(), 0);
 
     StringBuilder stringBuilder;
-    stringBuilder.append("From: <Saved by WebKit>\r\n");
-    stringBuilder.append("Subject: ");
+    stringBuilder.appendLiteral("From: <Saved by WebKit>\r\n");
+    stringBuilder.appendLiteral("Subject: ");
     // We replace non ASCII characters with '?' characters to match IE's behavior.
     stringBuilder.append(replaceNonPrintableCharacters(title));
-    stringBuilder.append("\r\nDate: ");
+    stringBuilder.appendLiteral("\r\nDate: ");
     stringBuilder.append(dateString);
-    stringBuilder.append("\r\nMIME-Version: 1.0\r\n");
-    stringBuilder.append("Content-Type: multipart/related;\r\n");
-    stringBuilder.append("\ttype=\"");
+    stringBuilder.appendLiteral("\r\nMIME-Version: 1.0\r\n");
+    stringBuilder.appendLiteral("Content-Type: multipart/related;\r\n");
+    stringBuilder.appendLiteral("\ttype=\"");
     stringBuilder.append(mimeType);
-    stringBuilder.append("\";\r\n");
-    stringBuilder.append("\tboundary=\"");
+    stringBuilder.appendLiteral("\";\r\n");
+    stringBuilder.appendLiteral("\tboundary=\"");
     stringBuilder.append(boundary);
-    stringBuilder.append("\"\r\n\r\n");
+    stringBuilder.appendLiteral("\"\r\n\r\n");
 
     // We use utf8() below instead of ascii() as ascii() replaces CRLFs with ?? (we still only have put ASCII characters in it).
     ASSERT(stringBuilder.toString().containsOnlyASCII());
@@ -158,7 +158,7 @@ PassRefPtr<SharedBuffer> MHTMLArchive::generateMHTMLData(const Vector<Serialized
 
         stringBuilder.clear();
         stringBuilder.append(endOfResourceBoundary);
-        stringBuilder.append("Content-Type: ");
+        stringBuilder.appendLiteral("Content-Type: ");
         stringBuilder.append(resource.mimeType);
 
         const char* contentEncoding = 0;
@@ -169,11 +169,11 @@ PassRefPtr<SharedBuffer> MHTMLArchive::generateMHTMLData(const Vector<Serialized
         else
             contentEncoding = base64;
 
-        stringBuilder.append("\r\nContent-Transfer-Encoding: ");
+        stringBuilder.appendLiteral("\r\nContent-Transfer-Encoding: ");
         stringBuilder.append(contentEncoding);
-        stringBuilder.append("\r\nContent-Location: ");
+        stringBuilder.appendLiteral("\r\nContent-Location: ");
         stringBuilder.append(resource.url);
-        stringBuilder.append("\r\n\r\n");
+        stringBuilder.appendLiteral("\r\n\r\n");
 
         asciiString = stringBuilder.toString().utf8();
         mhtmlData->append(asciiString.data(), asciiString.length());

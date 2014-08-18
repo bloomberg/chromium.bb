@@ -715,12 +715,12 @@ static void appendBackgroundRepeatValue(StringBuilder& builder, const CSSValue& 
     if (repeatXValueId == repeatYValueId) {
         builder.append(repeatX.cssText());
     } else if (repeatXValueId == CSSValueNoRepeat && repeatYValueId == CSSValueRepeat) {
-        builder.append("repeat-y");
+        builder.appendLiteral("repeat-y");
     } else if (repeatXValueId == CSSValueRepeat && repeatYValueId == CSSValueNoRepeat) {
-        builder.append("repeat-x");
+        builder.appendLiteral("repeat-x");
     } else {
         builder.append(repeatX.cssText());
-        builder.append(" ");
+        builder.appendLiteral(" ");
         builder.append(repeatY.cssText());
     }
 }
@@ -762,7 +762,7 @@ String StylePropertySerializer::backgroundRepeatPropertyValue() const
     StringBuilder builder;
     for (size_t i = 0; i < shorthandLength; ++i) {
         if (i)
-            builder.append(", ");
+            builder.appendLiteral(", ");
         appendBackgroundRepeatValue(builder,
             *repeatXList->item(i % repeatXList->length()),
             *repeatYList->item(i % repeatYList->length()));

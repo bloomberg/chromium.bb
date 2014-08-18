@@ -59,7 +59,7 @@ static String buildCircleString(const String& radius, const String& centerX, con
         result.appendLiteral(separator);
         result.append(centerY);
     }
-    result.append(")");
+    result.append(')');
     if (box.length()) {
         result.appendLiteral(separator);
         result.append(box);
@@ -171,7 +171,7 @@ static String buildEllipseString(const String& radiusX, const String& radiusY, c
         result.appendLiteral(separator);
         result.append(centerY);
     }
-    result.append(")");
+    result.append(')');
     if (box.length()) {
         result.appendLiteral(separator);
         result.append(box);

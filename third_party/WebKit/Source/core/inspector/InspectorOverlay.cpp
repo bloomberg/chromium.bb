@@ -636,9 +636,9 @@ PassRefPtr<JSONObject> buildElementInfo(Element* element)
     }
     if (pseudoElement) {
         if (pseudoElement->pseudoId() == BEFORE)
-            classNames.append("::before");
+            classNames.appendLiteral("::before");
         else if (pseudoElement->pseudoId() == AFTER)
-            classNames.append("::after");
+            classNames.appendLiteral("::after");
     }
     if (!classNames.isEmpty())
         elementInfo->setString("className", classNames.toString());
