@@ -21,7 +21,6 @@ from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import stats
-from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import constants
 
 
@@ -85,6 +84,9 @@ class SDKFetcher(object):
         fetch toolchain components from.
       silent: If set, the fetcher prints less output.
     """
+    # Delay this import because it is super slow.  http://crbug.com/404575
+    from chromite.cbuildbot import cbuildbot_config
+
     self.cache_base = os.path.join(cache_dir, COMMAND_NAME)
     if clear_cache:
       logging.warning('Clearing the SDK cache.')
