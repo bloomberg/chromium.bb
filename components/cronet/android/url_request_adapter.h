@@ -62,6 +62,14 @@ class URLRequestAdapter : public net::URLRequest::Delegate {
   // Sets the request to streaming upload.
   void SetUploadChannel(JNIEnv* env, int64 content_length);
 
+  // Indicates that the request body will be streamed by calling AppendChunk()
+  // repeatedly. This must be called before Start().
+  void EnableChunkedUpload();
+
+  // Appends a chunk to the POST body.
+  // This must be called after EnableChunkedUpload() and Start().
+  void AppendChunk(const char* bytes, int bytes_len, bool is_last_chunk);
+
   // Starts the request.
   void Start();
 
@@ -116,7 +124,8 @@ class URLRequestAdapter : public net::URLRequest::Delegate {
   void OnRequestCompleted();
   void OnRequestCanceled();
   void OnBytesRead(int bytes_read);
-  void OnAppendChunk(const char* bytes, int bytes_len, bool is_last_chunk);
+  void OnAppendChunk(const scoped_ptr<char[]> bytes, int bytes_len,
+                     bool is_last_chunk);
 
   void Read();
 
@@ -136,6 +145,7 @@ class URLRequestAdapter : public net::URLRequest::Delegate {
   std::string content_type_;
   bool canceled_;
   int64 expected_size_;
+  bool chunked_upload_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestAdapter);
 };

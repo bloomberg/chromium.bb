@@ -199,6 +199,32 @@ static void SetUploadChannel(JNIEnv* env,
   request->SetUploadChannel(env, content_length);
 }
 
+static void EnableChunkedUpload(JNIEnv* env,
+                               jobject object,
+                               jlong urlRequestAdapter,
+                               jstring content_type) {
+  URLRequestAdapter* request =
+      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
+  SetPostContentType(env, request, content_type);
+
+  request->EnableChunkedUpload();
+}
+
+static void AppendChunk(JNIEnv* env,
+                        jobject object,
+                        jlong urlRequestAdapter,
+                        jobject chunk_byte_buffer,
+                        jint chunk_size,
+                        jboolean is_last_chunk) {
+  URLRequestAdapter* request =
+      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
+  DCHECK(chunk_byte_buffer != NULL);
+
+  void* chunk = env->GetDirectBufferAddress(chunk_byte_buffer);
+  request->AppendChunk(
+      reinterpret_cast<const char*>(chunk), chunk_size, is_last_chunk);
+}
+
 /* synchronized */
 static void Start(JNIEnv* env, jobject object, jlong urlRequestAdapter) {
   URLRequestAdapter* request =

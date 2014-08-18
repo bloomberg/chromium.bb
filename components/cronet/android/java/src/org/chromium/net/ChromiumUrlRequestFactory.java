@@ -39,14 +39,14 @@ public class ChromiumUrlRequestFactory extends HttpUrlRequestFactory {
     }
 
     @Override
-    public HttpUrlRequest createRequest(String url, int requestPriority,
+    public ChromiumUrlRequest createRequest(String url, int requestPriority,
             Map<String, String> headers, HttpUrlRequestListener listener) {
         return new ChromiumUrlRequest(mRequestContext, url, requestPriority,
                 headers, listener);
     }
 
     @Override
-    public HttpUrlRequest createRequest(String url, int requestPriority,
+    public ChromiumUrlRequest createRequest(String url, int requestPriority,
             Map<String, String> headers, WritableByteChannel channel,
             HttpUrlRequestListener listener) {
         return new ChromiumUrlRequest(mRequestContext, url, requestPriority,

@@ -42,7 +42,7 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
     private String mMethod;
     private byte[] mUploadData;
     private ReadableByteChannel mUploadChannel;
-    private WritableByteChannel mOutputChannel;
+    private boolean mChunkedUpload;
     private IOException mSinkException;
     private volatile boolean mStarted;
     private volatile boolean mCanceled;
@@ -217,6 +217,7 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
             mUploadContentType = contentType;
             mUploadData = data;
             mUploadChannel = null;
+            mChunkedUpload = false;
         }
     }
 
@@ -237,6 +238,57 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
             mUploadChannel = channel;
             mUploadContentLength = contentLength;
             mUploadData = null;
+            mChunkedUpload = false;
+        }
+    }
+
+    /**
+     * Sets this request up for chunked uploading. To upload data call
+     * {@link #appendChunk(ByteBuffer, boolean)} after {@link #start()}.
+     *
+     * @param contentType MIME type of the post content or null if this is not a
+     *            POST request.
+     */
+    public void setChunkedUpload(String contentType) {
+        synchronized (mLock) {
+            validateNotStarted();
+            mUploadContentType = contentType;
+            mChunkedUpload = true;
+            mUploadData = null;
+            mUploadChannel = null;
+        }
+    }
+
+    /**
+     * Uploads a new chunk. Must have called {@link #setChunkedUpload(String)}
+     * and {@link #start()}.
+     *
+     * @param chunk The data, which will not be modified. It must not be empty
+     *            and its current position must be zero.
+     * @param isLastChunk Whether this chunk is the last one.
+     */
+    public void appendChunk(ByteBuffer chunk, boolean isLastChunk)
+            throws IOException {
+        if (!chunk.hasRemaining()) {
+            throw new IllegalArgumentException(
+                    "Attempted to write empty buffer.");
+        }
+        if (chunk.position() != 0) {
+            throw new IllegalArgumentException("The position must be zero.");
+        }
+        synchronized (mLock) {
+            if (!mStarted) {
+                throw new IllegalStateException("Request not yet started.");
+            }
+            if (!mChunkedUpload) {
+                throw new IllegalStateException(
+                        "Request not set for chunked uploadind.");
+            }
+            if (mUrlRequestAdapter == 0) {
+                throw new IOException("Native peer destroyed.");
+            }
+            nativeAppendChunk(mUrlRequestAdapter, chunk, chunk.limit(),
+                    isLastChunk);
         }
     }
 
@@ -269,7 +321,7 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
             String method = mMethod;
             if (method == null &&
                     ((mUploadData != null && mUploadData.length > 0) ||
-                      mUploadChannel != null)) {
+                      mUploadChannel != null || mChunkedUpload)) {
                 // Default to POST if there is data to upload but no method was
                 // specified.
                 method = "POST";
@@ -300,6 +352,9 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
             } else if (mUploadChannel != null) {
                 nativeSetUploadChannel(mUrlRequestAdapter, mUploadContentType,
                                        mUploadContentLength);
+            } else if (mChunkedUpload) {
+                nativeEnableChunkedUpload(mUrlRequestAdapter,
+                                          mUploadContentType);
             }
 
             nativeStart(mUrlRequestAdapter);
@@ -595,6 +650,12 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
 
     private native void nativeSetUploadChannel(long urlRequestAdapter,
             String contentType, long contentLength);
+
+    private native void nativeEnableChunkedUpload(long urlRequestAdapter,
+            String contentType);
+
+    private native void nativeAppendChunk(long urlRequestAdapter,
+            ByteBuffer chunk, int chunkSize, boolean isLastChunk);
 
     private native void nativeStart(long urlRequestAdapter);
 
