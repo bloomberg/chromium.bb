@@ -38,6 +38,36 @@ Tests the script outline extraction functionality.
             line : 9
             name : "innerFunction2"
         }
+        {
+            arguments : "(name)"
+            column : 13
+            line : 14
+            name : "Cat"
+        }
+        {
+            arguments : "()"
+            column : 9
+            line : 20
+            name : "mew"
+        }
+        {
+            arguments : "()"
+            column : 8
+            line : 25
+            name : "get name"
+        }
+        {
+            arguments : "()"
+            column : 10
+            line : 30
+            name : "feed"
+        }
+        {
+            arguments : "(newName)"
+            column : 8
+            line : 35
+            name : "set name"
+        }
     ]
     index : 1
     total : 1
