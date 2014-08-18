@@ -556,27 +556,27 @@ void Fullscreen::eventQueueTimerFired(Timer<Fullscreen>*)
     }
 }
 
-void Fullscreen::elementRemoved(Element& element)
+void Fullscreen::elementRemoved(Element& oldNode)
 {
-    // If an element |element| in a fullscreen element stack is removed from a document |document|,
-    // run these steps:
+    // Whenever the removing steps run with an |oldNode| and |oldNode| is in its node document's
+    // fullscreen element stack, run these steps:
 
-    // 1. If |element| was at the top of |document|'s fullscreen element stack, act as if the
-    // exitFullscreen() method was invoked on that document.
-    if (fullscreenElement() == &element) {
+    // 1. If |oldNode| is at the top of its node document's fullscreen element stack, act as if the
+    //    exitFullscreen() method was invoked on that document.
+    if (fullscreenElement() == &oldNode) {
         exitFullscreen();
         return;
     }
 
-    // 2. Otherwise, remove |element| from |document|'s fullscreen element stack.
+    // 2. Otherwise, remove |oldNode| from its node document's fullscreen element stack.
     for (size_t i = 0; i < m_fullScreenElementStack.size(); ++i) {
-        if (m_fullScreenElementStack[i].first.get() == &element) {
+        if (m_fullScreenElementStack[i].first.get() == &oldNode) {
             m_fullScreenElementStack.remove(i);
             return;
         }
     }
 
-    // NOTE: |element| was not in the fullscreen element stack.
+    // NOTE: |oldNode| was not in the fullscreen element stack.
 }
 
 void Fullscreen::clearFullscreenElementStack()
