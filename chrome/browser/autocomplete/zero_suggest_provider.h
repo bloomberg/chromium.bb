@@ -58,15 +58,12 @@ class ZeroSuggestProvider : public BaseSearchProvider,
   // AutocompleteProvider:
   virtual void Start(const AutocompleteInput& input,
                      bool minimal_changes) OVERRIDE;
+  virtual void Stop(bool clear_cached_results) OVERRIDE;
   virtual void DeleteMatch(const AutocompleteMatch& match) OVERRIDE;
+  virtual void AddProviderInfo(ProvidersInfo* provider_info) const OVERRIDE;
 
   // Sets |field_trial_triggered_| to false.
   virtual void ResetSession() OVERRIDE;
-
- protected:
-  // BaseSearchProvider:
-  virtual void ModifyProviderInfo(
-      metrics::OmniboxEventProto_ProviderInfo* provider_info) const OVERRIDE;
 
  private:
   ZeroSuggestProvider(AutocompleteProviderListener* listener,
@@ -80,8 +77,6 @@ class ZeroSuggestProvider : public BaseSearchProvider,
   virtual const AutocompleteInput GetInput(bool is_keyword) const OVERRIDE;
   virtual bool ShouldAppendExtraParams(
       const SearchSuggestionParser::SuggestResult& result) const OVERRIDE;
-  virtual void StopSuggest() OVERRIDE;
-  virtual void ClearAllResults() OVERRIDE;
   virtual void RecordDeletionResult(bool success) OVERRIDE;
 
   // net::URLFetcherDelegate:

@@ -69,7 +69,6 @@ class BaseSearchProvider : public AutocompleteProvider {
       const SearchTermsData& search_terms_data);
 
   // AutocompleteProvider:
-  virtual void Stop(bool clear_cached_results) OVERRIDE;
   virtual void DeleteMatch(const AutocompleteMatch& match) OVERRIDE;
   virtual void AddProviderInfo(ProvidersInfo* provider_info) const OVERRIDE;
 
@@ -218,19 +217,8 @@ class BaseSearchProvider : public AutocompleteProvider {
   virtual bool ShouldAppendExtraParams(
       const SearchSuggestionParser::SuggestResult& result) const = 0;
 
-  // Stops the suggest query.
-  // NOTE: This does not update |done_|.  Callers must do so.
-  virtual void StopSuggest() = 0;
-
-  // Clears the current results.
-  virtual void ClearAllResults() = 0;
-
   // Records in UMA whether the deletion request resulted in success.
   virtual void RecordDeletionResult(bool success) = 0;
-
-  // Modify provider-specific UMA statistics.
-  virtual void ModifyProviderInfo(
-      metrics::OmniboxEventProto_ProviderInfo* provider_info) const;
 
   TemplateURLService* template_url_service_;
   Profile* profile_;

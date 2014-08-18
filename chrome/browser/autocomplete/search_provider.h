@@ -160,18 +160,24 @@ class SearchProvider : public BaseSearchProvider,
   // AutocompleteProvider:
   virtual void Start(const AutocompleteInput& input,
                      bool minimal_changes) OVERRIDE;
+  virtual void Stop(bool clear_cached_results) OVERRIDE;
 
   // BaseSearchProvider:
   virtual const TemplateURL* GetTemplateURL(bool is_keyword) const OVERRIDE;
   virtual const AutocompleteInput GetInput(bool is_keyword) const OVERRIDE;
   virtual bool ShouldAppendExtraParams(
       const SearchSuggestionParser::SuggestResult& result) const OVERRIDE;
-  virtual void StopSuggest() OVERRIDE;
-  virtual void ClearAllResults() OVERRIDE;
   virtual void RecordDeletionResult(bool success) OVERRIDE;
 
   // net::URLFetcherDelegate:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+
+  // Stops the suggest query.
+  // NOTE: This does not update |done_|.  Callers must do so.
+  void StopSuggest();
+
+  // Clears the current results.
+  void ClearAllResults();
 
   // Recalculates the match contents class of |results| to better display
   // against the current input and user's language.

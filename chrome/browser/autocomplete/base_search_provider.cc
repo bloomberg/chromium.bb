@@ -127,14 +127,6 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
       template_url, search_terms_data, 0, false);
 }
 
-void BaseSearchProvider::Stop(bool clear_cached_results) {
-  StopSuggest();
-  done_ = true;
-
-  if (clear_cached_results)
-    ClearAllResults();
-}
-
 void BaseSearchProvider::DeleteMatch(const AutocompleteMatch& match) {
   DCHECK(match.deletable);
   if (!match.GetAdditionalInfo(BaseSearchProvider::kDeletionUrlKey).empty()) {
@@ -176,7 +168,6 @@ void BaseSearchProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
           field_trial_hashes[i]);
     }
   }
-  ModifyProviderInfo(&new_entry);
 }
 
 // static
@@ -472,10 +463,6 @@ bool BaseSearchProvider::ParseSuggestResults(
   field_trial_triggered_ |= results->field_trial_triggered;
   field_trial_triggered_in_session_ |= results->field_trial_triggered;
   return true;
-}
-
-void BaseSearchProvider::ModifyProviderInfo(
-    metrics::OmniboxEventProto_ProviderInfo* provider_info) const {
 }
 
 void BaseSearchProvider::DeleteMatchFromMatches(

@@ -139,6 +139,23 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
   Run(suggest_url);
 }
 
+void ZeroSuggestProvider::Stop(bool clear_cached_results) {
+  if (fetcher_)
+    LogOmniboxZeroSuggestRequest(ZERO_SUGGEST_REQUEST_INVALIDATED);
+  fetcher_.reset();
+  done_ = true;
+
+  if (clear_cached_results) {
+    // We do not call Clear() on |results_| to retain |verbatim_relevance|
+    // value in the |results_| object. |verbatim_relevance| is used at the
+    // beginning of the next StartZeroSuggest() call to determine the current
+    // url match relevance.
+    results_.suggest_results.clear();
+    results_.navigation_results.clear();
+    current_query_.clear();
+  }
+}
+
 void ZeroSuggestProvider::DeleteMatch(const AutocompleteMatch& match) {
   if (OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial()) {
     // Remove the deleted match from the cache, so it is not shown to the user
@@ -149,17 +166,17 @@ void ZeroSuggestProvider::DeleteMatch(const AutocompleteMatch& match) {
   BaseSearchProvider::DeleteMatch(match);
 }
 
+void ZeroSuggestProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
+  BaseSearchProvider::AddProviderInfo(provider_info);
+  if (!results_.suggest_results.empty() || !results_.navigation_results.empty())
+    provider_info->back().set_times_returned_results_in_session(1);
+}
+
 void ZeroSuggestProvider::ResetSession() {
   // The user has started editing in the omnibox, so leave
   // |field_trial_triggered_in_session_| unchanged and set
   // |field_trial_triggered_| to false since zero suggest is inactive now.
   field_trial_triggered_ = false;
-}
-
-void ZeroSuggestProvider::ModifyProviderInfo(
-    metrics::OmniboxEventProto_ProviderInfo* provider_info) const {
-  if (!results_.suggest_results.empty() || !results_.navigation_results.empty())
-    provider_info->set_times_returned_results_in_session(1);
 }
 
 ZeroSuggestProvider::ZeroSuggestProvider(
@@ -193,22 +210,6 @@ bool ZeroSuggestProvider::ShouldAppendExtraParams(
       const SearchSuggestionParser::SuggestResult& result) const {
   // We always use the default provider for search, so append the params.
   return true;
-}
-
-void ZeroSuggestProvider::StopSuggest() {
-  if (fetcher_)
-    LogOmniboxZeroSuggestRequest(ZERO_SUGGEST_REQUEST_INVALIDATED);
-  fetcher_.reset();
-}
-
-void ZeroSuggestProvider::ClearAllResults() {
-  // We do not call Clear() on |results_| to retain |verbatim_relevance|
-  // value in the |results_| object. |verbatim_relevance| is used at the
-  // beginning of the next StartZeroSuggest() call to determine the current url
-  // match relevance.
-  results_.suggest_results.clear();
-  results_.navigation_results.clear();
-  current_query_.clear();
 }
 
 void ZeroSuggestProvider::RecordDeletionResult(bool success) {
