@@ -6652,8 +6652,6 @@ static void voidMethodTestEnumArgMethod(const v8::FunctionCallbackInfo<v8::Value
     TestObject* impl = V8TestObject::toNative(info.Holder());
     V8StringResource<> testEnumTypeArg;
     {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
         TOSTRING_VOID_INTERNAL(testEnumTypeArg, info[0]);
         String string = testEnumTypeArg;
         if (!(string == "" || string == "EnumValue1" || string == "EnumValue2" || string == "EnumValue3")) {

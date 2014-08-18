@@ -52,11 +52,12 @@ CUSTOM_REGISTRATION_EXTENDED_ATTRIBUTES = frozenset([
 ])
 
 
-def argument_needs_try_catch(argument, return_promise):
+def argument_needs_try_catch(method, argument):
+    return_promise = method.idl_type and method.idl_type.name == 'Promise'
     idl_type = argument.idl_type
     base_type = idl_type.base_type
 
-    return not (
+    return not(
         # These cases are handled by separate code paths in the
         # generate_argument() macro in Source/bindings/templates/methods.cpp.
         idl_type.is_callback_interface or
@@ -65,7 +66,8 @@ def argument_needs_try_catch(argument, return_promise):
         # String and enumeration arguments converted using one of the
         # TOSTRING_* macros except for _PROMISE variants in
         # Source/bindings/core/v8/V8BindingMacros.h don't use a v8::TryCatch.
-        (base_type == 'DOMString' and not argument.is_variadic and
+        ((base_type == 'DOMString' or idl_type.is_enum) and
+         not argument.is_variadic and
          not return_promise))
 
 
@@ -85,7 +87,6 @@ def method_context(interface, method):
     idl_type = method.idl_type
     is_static = method.is_static
     name = method.name
-    return_promise = idl_type.name == 'Promise'
 
     idl_type.add_includes_for_type()
     this_cpp_value = cpp_value(interface, method, len(arguments))
@@ -126,7 +127,7 @@ def method_context(interface, method):
     is_raises_exception = 'RaisesException' in extended_attributes
 
     arguments_need_try_catch = (
-        any(argument_needs_try_catch(argument, return_promise)
+        any(argument_needs_try_catch(method, argument)
             for argument in arguments))
 
     return {
