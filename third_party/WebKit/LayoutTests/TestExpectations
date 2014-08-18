@@ -193,6 +193,7 @@ crbug.com/318978 [ Linux ] plugins/ [ Skip ]
 
 crbug.com/394698 fast/repaint/repaint-across-writing-mode-boundary.html [ NeedsRebaseline ]
 crbug.com/394698 fast/repaint/japanese-rl-selection-repaint.html [ NeedsRebaseline ]
+crbug.com/394698 fast/repaint/japanese-rl-selection-clear.html [ NeedsRebaseline ]
 crbug.com/394698 compositing/squashing/selection-repaint-with-gaps.html [ NeedsRebaseline ]
 crbug.com/394698 editing/selection/repaint-rect-for-vertical-writing-mode-with-positioned-root.html [ NeedsRebaseline ]
 
