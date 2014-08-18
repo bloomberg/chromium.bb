@@ -5406,6 +5406,7 @@
                   '-Wno-unused-private-field',
                   '-Wno-unused-value',
                   '-Wno-unused-variable',
+                  '-Wno-exit-time-destructors',  # TODO: http://crbug.com/404525
                   '-ferror-limit=1',
                 ],
               },
