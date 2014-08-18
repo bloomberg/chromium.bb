@@ -43,13 +43,12 @@ class WebView;
 // direct and delegate Apis to the host.
 class WebDevToolsFrontend {
 public:
-    BLINK_EXPORT static WebDevToolsFrontend* create(WebView* view,
-                                                     WebDevToolsFrontendClient* client,
-                                                     const WebString& applicationLocale);
+    BLINK_EXPORT static WebDevToolsFrontend* create(
+        WebView*,
+        WebDevToolsFrontendClient*,
+        const WebString& applicationLocale);
 
     virtual ~WebDevToolsFrontend() {}
-
-    virtual void dispatchOnInspectorFrontend(const WebString&) = 0;
 };
 
 } // namespace blink

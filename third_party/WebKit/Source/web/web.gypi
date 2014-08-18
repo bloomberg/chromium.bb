@@ -45,8 +45,6 @@
       'IndexedDBClientImpl.h',
       'InspectorClientImpl.cpp',
       'InspectorClientImpl.h',
-      'InspectorFrontendClientImpl.cpp',
-      'InspectorFrontendClientImpl.h',
       'LinkHighlight.cpp',
       'LinkHighlight.h',
       'LocalFileSystemClient.cpp',

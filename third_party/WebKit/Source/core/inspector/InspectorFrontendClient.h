@@ -31,16 +31,13 @@
 #ifndef InspectorFrontendClient_h
 #define InspectorFrontendClient_h
 
-#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 
 namespace blink {
 
-class InspectorFrontendClient : public NoBaseWillBeGarbageCollectedFinalized<InspectorFrontendClient> {
+class InspectorFrontendClient {
 public:
     virtual ~InspectorFrontendClient() { }
-
-    virtual void trace(Visitor*) { }
 
     virtual void windowObjectCleared() = 0;
 

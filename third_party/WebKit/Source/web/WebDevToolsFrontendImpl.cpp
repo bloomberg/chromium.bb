@@ -32,135 +32,153 @@
 #include "web/WebDevToolsFrontendImpl.h"
 
 #include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/V8InspectorFrontendHost.h"
-#include "bindings/core/v8/V8MouseEvent.h"
-#include "bindings/core/v8/V8Node.h"
-#include "core/clipboard/Pasteboard.h"
-#include "core/dom/Document.h"
-#include "core/dom/Node.h"
-#include "core/events/Event.h"
-#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/Settings.h"
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorFrontendHost.h"
-#include "core/page/ContextMenuController.h"
 #include "core/page/Page.h"
-#include "platform/ContextMenuItem.h"
-#include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebString.h"
 #include "public/web/WebDevToolsFrontendClient.h"
-#include "public/web/WebScriptSource.h"
-#include "web/InspectorFrontendClientImpl.h"
-#include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/Vector.h"
 
 namespace blink {
-
-class WebDevToolsFrontendImpl::InspectorFrontendResumeObserver : public ActiveDOMObject {
-    WTF_MAKE_NONCOPYABLE(InspectorFrontendResumeObserver);
-public:
-    InspectorFrontendResumeObserver(WebDevToolsFrontendImpl* webDevToolsFrontendImpl, Document* document)
-        : ActiveDOMObject(document)
-        , m_webDevToolsFrontendImpl(webDevToolsFrontendImpl)
-    {
-        suspendIfNeeded();
-    }
-
-private:
-    virtual void resume() OVERRIDE
-    {
-        m_webDevToolsFrontendImpl->resume();
-    }
-
-    WebDevToolsFrontendImpl* m_webDevToolsFrontendImpl;
-};
 
 WebDevToolsFrontend* WebDevToolsFrontend::create(
     WebView* view,
     WebDevToolsFrontendClient* client,
     const WebString& applicationLocale)
 {
-    return new WebDevToolsFrontendImpl(toWebViewImpl(view), client, applicationLocale);
+    return new WebDevToolsFrontendImpl(toWebViewImpl(view), client);
 }
 
 WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
     WebViewImpl* webViewImpl,
-    WebDevToolsFrontendClient* client,
-    const String& applicationLocale)
+    WebDevToolsFrontendClient* client)
     : m_webViewImpl(webViewImpl)
     , m_client(client)
-    , m_applicationLocale(applicationLocale)
-    , m_inspectorFrontendDispatchTimer(this, &WebDevToolsFrontendImpl::maybeDispatch)
 {
-    m_webViewImpl->page()->inspectorController().setInspectorFrontendClient(adoptPtrWillBeNoop(new InspectorFrontendClientImpl(m_webViewImpl->page(), m_client, this)));
+    m_webViewImpl->page()->inspectorController().setInspectorFrontendClient(this);
 }
 
 WebDevToolsFrontendImpl::~WebDevToolsFrontendImpl()
 {
+    ASSERT(!m_frontendHost);
 }
 
-void WebDevToolsFrontendImpl::dispatchOnInspectorFrontend(const WebString& message)
+void WebDevToolsFrontendImpl::dispose()
 {
-    m_messages.append(message);
-    maybeDispatch(0);
-}
-
-void WebDevToolsFrontendImpl::resume()
-{
-    // We should call maybeDispatch asynchronously here because we are not allowed to update activeDOMObjects list in
-    // resume (See ExecutionContext::resumeActiveDOMObjects).
-    if (!m_inspectorFrontendDispatchTimer.isActive())
-        m_inspectorFrontendDispatchTimer.startOneShot(0, FROM_HERE);
-}
-
-void WebDevToolsFrontendImpl::maybeDispatch(Timer<WebDevToolsFrontendImpl>*)
-{
-    while (!m_messages.isEmpty()) {
-        Document* document = m_webViewImpl->page()->deprecatedLocalMainFrame()->document();
-        if (document->activeDOMObjectsAreSuspended()) {
-            m_inspectorFrontendResumeObserver = adoptPtr(new InspectorFrontendResumeObserver(this, document));
-            return;
-        }
-        m_inspectorFrontendResumeObserver.clear();
-        doDispatchOnInspectorFrontend(m_messages.takeFirst());
+    if (m_frontendHost) {
+        m_frontendHost->disconnectClient();
+        m_frontendHost = nullptr;
     }
+    m_client = 0;
 }
 
-void WebDevToolsFrontendImpl::doDispatchOnInspectorFrontend(const WebString& message)
+void WebDevToolsFrontendImpl::windowObjectCleared()
 {
-    WebLocalFrameImpl* frame = m_webViewImpl->mainFrameImpl();
-    if (!frame->frame())
-        return;
-    v8::Isolate* isolate = toIsolate(frame->frame());
-    ScriptState* scriptState = ScriptState::forMainWorld(frame->frame());
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    Page* page = m_webViewImpl->page();
+    ASSERT(page->mainFrame());
+    ScriptState* scriptState = ScriptState::forMainWorld(page->deprecatedLocalMainFrame());
     ScriptState::Scope scope(scriptState);
-    v8::Handle<v8::Value> inspectorFrontendApiValue = scriptState->context()->Global()->Get(v8::String::NewFromUtf8(isolate, "InspectorFrontendAPI"));
-    if (!inspectorFrontendApiValue->IsObject())
-        return;
-    v8::Handle<v8::Object> dispatcherObject = v8::Handle<v8::Object>::Cast(inspectorFrontendApiValue);
-    v8::Handle<v8::Value> dispatchFunction = dispatcherObject->Get(v8::String::NewFromUtf8(isolate, "dispatchMessage"));
-    // The frame might have navigated away from the front-end page (which is still weird),
-    // OR the older version of frontend might have a dispatch method in a different place.
-    // FIXME(kaznacheev): Remove when Chrome for Android M18 is retired.
-    if (!dispatchFunction->IsFunction()) {
-        v8::Handle<v8::Value> inspectorBackendApiValue = scriptState->context()->Global()->Get(v8::String::NewFromUtf8(isolate, "InspectorBackend"));
-        if (!inspectorBackendApiValue->IsObject())
-            return;
-        dispatcherObject = v8::Handle<v8::Object>::Cast(inspectorBackendApiValue);
-        dispatchFunction = dispatcherObject->Get(v8::String::NewFromUtf8(isolate, "dispatch"));
-        if (!dispatchFunction->IsFunction())
-            return;
+
+    if (m_frontendHost)
+        m_frontendHost->disconnectClient();
+    m_frontendHost = InspectorFrontendHost::create(this, page);
+    v8::Handle<v8::Object> global = scriptState->context()->Global();
+    v8::Handle<v8::Value> frontendHostObj = toV8(m_frontendHost.get(), global, scriptState->isolate());
+
+    global->Set(v8::String::NewFromUtf8(isolate, "InspectorFrontendHost"), frontendHostObj);
+    ScriptController* scriptController = page->mainFrame() ? &page->deprecatedLocalMainFrame()->script() : 0;
+    if (scriptController) {
+        String installAdditionalAPI =
+            "" // Wrap messages that go to embedder.
+            "(function(host, methodEntries) {"
+            "    host._lastCallId = 0;"
+            "    host._callbacks = [];"
+            "    host.embedderMessageAck = function(id, error)"
+            "    {"
+            "        var callback = host._callbacks[id];"
+            "        delete host._callbacks[id];"
+            "        if (callback)"
+            "            callback(error);"
+            "    };"
+            "    function dispatch(methodName, argumentCount)"
+            "    {"
+            "        var callId = ++host._lastCallId;"
+            "        var argsArray = Array.prototype.slice.call(arguments, 2);"
+            "        var callback = argsArray[argsArray.length - 1];"
+            "        if (typeof callback === \"function\") {"
+            "            argsArray.pop();"
+            "            host._callbacks[callId] = callback;"
+            "        }"
+            "        var message = { \"id\": callId, \"method\": methodName };"
+            "        argsArray = argsArray.slice(0, argumentCount);"
+            "        if (argsArray.length)"
+            "            message.params = argsArray;"
+            "        host.sendMessageToEmbedder(JSON.stringify(message));"
+            "    };"
+            "    methodEntries.forEach(function(methodEntry) { host[methodEntry[0]] = dispatch.bind(null, methodEntry[0], methodEntry[1]); });"
+            "})(InspectorFrontendHost,"
+            "    [['addFileSystem', 0],"
+            "     ['append', 2],"
+            "     ['bringToFront', 0],"
+            "     ['closeWindow', 0],"
+            "     ['indexPath', 2],"
+            "     ['inspectElementCompleted', 0],"
+            "     ['inspectedURLChanged', 1],"
+            "     ['moveWindowBy', 2],"
+            "     ['openInNewTab', 1],"
+            "     ['openUrlOnRemoteDeviceAndInspect', 2],"
+            "     ['removeFileSystem', 1],"
+            "     ['requestFileSystems', 0],"
+            "     ['resetZoom', 0],"
+            "     ['save', 3],"
+            "     ['searchInPath', 3],"
+            "     ['setDeviceCountUpdatesEnabled', 1],"
+            "     ['setDevicesUpdatesEnabled', 1],"
+            "     ['setWhitelistedShortcuts', 1],"
+            "     ['setContentsResizingStrategy', 2],"
+            "     ['setInspectedPageBounds', 1],"
+            "     ['setIsDocked', 1],"
+            "     ['stopIndexing', 1],"
+            "     ['zoomIn', 0],"
+            "     ['zoomOut', 0]]);"
+            ""
+            "" // Support for legacy front-ends (<M34). Do not add items here.
+            "InspectorFrontendHost.requestSetDockSide = function(dockSide)"
+            "{"
+            "    InspectorFrontendHost.setIsDocked(dockSide !== \"undocked\");"
+            "};"
+            "InspectorFrontendHost.supportsFileSystems = function() { return true; };"
+            ""
+            "" // Support for legacy front-ends (<M28). Do not add items here.
+            "InspectorFrontendHost.canInspectWorkers = function() { return true; };"
+            "InspectorFrontendHost.canSaveAs = function() { return true; };"
+            "InspectorFrontendHost.canSave = function() { return true; };"
+            "InspectorFrontendHost.loaded = function() {};"
+            "InspectorFrontendHost.hiddenPanels = function() { return ""; };"
+            "InspectorFrontendHost.localizedStringsURL = function() { return ""; };"
+            "InspectorFrontendHost.close = function(url) { };";
+        scriptController->executeScriptInMainWorld(installAdditionalAPI, ScriptController::ExecuteScriptWhenScriptsDisabled);
     }
-    v8::Handle<v8::Function> function = v8::Handle<v8::Function>::Cast(dispatchFunction);
-    Vector< v8::Handle<v8::Value> > args;
-    args.append(v8String(isolate, message));
-    v8::TryCatch tryCatch;
-    tryCatch.SetVerbose(true);
-    ScriptController::callFunction(frame->frame()->document(), function, dispatcherObject, args.size(), args.data(), isolate);
+}
+
+void WebDevToolsFrontendImpl::sendMessageToBackend(const String& message)
+{
+    if (m_client)
+        m_client->sendMessageToBackend(message);
+}
+
+void WebDevToolsFrontendImpl::sendMessageToEmbedder(const String& message)
+{
+    if (m_client)
+        m_client->sendMessageToEmbedder(message);
+}
+
+bool WebDevToolsFrontendImpl::isUnderTest()
+{
+    return m_client ? m_client->isUnderTest() : false;
 }
 
 } // namespace blink

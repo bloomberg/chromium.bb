@@ -87,7 +87,7 @@ public:
     void willBeDestroyed();
     void registerModuleAgent(PassOwnPtrWillBeRawPtr<InspectorAgent>);
 
-    void setInspectorFrontendClient(PassOwnPtrWillBeRawPtr<InspectorFrontendClient>);
+    void setInspectorFrontendClient(InspectorFrontendClient*);
     void didClearDocumentOfWindowObject(LocalFrame*);
     void setInjectedScriptForOrigin(const String& origin, const String& source);
     void showContextMenu(float x, float y, PassRefPtr<ContextMenuProvider>);
@@ -157,7 +157,7 @@ private:
     RawPtrWillBeMember<InspectorTracingAgent> m_tracingAgent;
 
     RefPtr<InspectorBackendDispatcher> m_inspectorBackendDispatcher;
-    OwnPtrWillBeMember<InspectorFrontendClient> m_inspectorFrontendClient;
+    InspectorFrontendClient* m_inspectorFrontendClient;
     OwnPtr<InspectorFrontend> m_inspectorFrontend;
     RawPtrWillBeMember<Page> m_page;
     InspectorClient* m_inspectorClient;

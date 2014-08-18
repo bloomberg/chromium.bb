@@ -79,6 +79,7 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
     , m_cssAgent(nullptr)
     , m_resourceAgent(nullptr)
     , m_layerTreeAgent(nullptr)
+    , m_inspectorFrontendClient(nullptr)
     , m_page(page)
     , m_inspectorClient(inspectorClient)
     , m_agents(m_instrumentingAgents.get(), m_state.get())
@@ -142,7 +143,6 @@ void InspectorController::trace(Visitor* visitor)
     visitor->trace(m_resourceAgent);
     visitor->trace(m_layerTreeAgent);
     visitor->trace(m_tracingAgent);
-    visitor->trace(m_inspectorFrontendClient);
     visitor->trace(m_page);
     visitor->trace(m_agents);
 }
@@ -219,7 +219,7 @@ void InspectorController::registerModuleAgent(PassOwnPtrWillBeRawPtr<InspectorAg
     m_agents.append(agent);
 }
 
-void InspectorController::setInspectorFrontendClient(PassOwnPtrWillBeRawPtr<InspectorFrontendClient> inspectorFrontendClient)
+void InspectorController::setInspectorFrontendClient(InspectorFrontendClient* inspectorFrontendClient)
 {
     m_inspectorFrontendClient = inspectorFrontendClient;
 }
