@@ -23,7 +23,7 @@ class DOMException;
 class ExceptionState;
 class UnderlyingSource;
 
-class ReadableStream : public GarbageCollectedFinalized<ReadableStream>, public ScriptWrappable, public ContextLifecycleObserver {
+class ReadableStream : public GarbageCollectedFinalized<ReadableStream>, public ScriptWrappable {
 public:
     enum State {
         Readable,
@@ -34,15 +34,19 @@ public:
 
     // FIXME: Define Strategy here.
     // FIXME: Add |strategy| constructor parameter.
-    ReadableStream(ScriptState*, UnderlyingSource*, ExceptionState*);
+    // After ReadableStream construction, |didSourceStart| must be called when
+    // |source| initialization succeeds and |error| must be called when
+    // |source| initialization fails.
+    ReadableStream(ExecutionContext*, UnderlyingSource* /* source */);
     virtual ~ReadableStream();
 
     bool isStarted() const { return m_isStarted; }
     bool isDraining() const { return m_isDraining; }
     bool isPulling() const { return m_isPulling; }
     State state() const { return m_state; }
+    String stateString() const;
 
-    virtual ScriptValue read(ScriptState*, ExceptionState*) = 0;
+    virtual ScriptValue read(ScriptState*, ExceptionState&) = 0;
     ScriptPromise wait(ScriptState*);
     ScriptPromise cancel(ScriptState*, ScriptValue reason);
     ScriptPromise closed(ScriptState*);
@@ -50,23 +54,23 @@ public:
     void close();
     void error(PassRefPtrWillBeRawPtr<DOMException>);
 
+    void didSourceStart();
+
     virtual void trace(Visitor*);
 
 protected:
     bool enqueuePreliminaryCheck(size_t chunkSize);
     bool enqueuePostAction(size_t totalQueueSize);
-    void readPreliminaryCheck(ExceptionState*);
+    void readPreliminaryCheck(ExceptionState&);
     void readPostAction();
 
 private:
-    class OnStarted;
     typedef ScriptPromiseProperty<Member<ReadableStream>, V8UndefinedType, RefPtrWillBeMember<DOMException> > WaitPromise;
     typedef ScriptPromiseProperty<Member<ReadableStream>, V8UndefinedType, RefPtrWillBeMember<DOMException> > ClosedPromise;
 
     virtual bool isQueueEmpty() const = 0;
     virtual void clearQueue() = 0;
 
-    void onStarted(void);
     void callOrSchedulePull();
 
     Member<UnderlyingSource> m_source;

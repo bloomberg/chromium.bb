@@ -33,7 +33,8 @@ enum XMLHttpRequestResponseType {
     "document",
     "json",
     "text",
-    "legacystream"
+    "legacystream",
+    "stream"
 };
 
 [

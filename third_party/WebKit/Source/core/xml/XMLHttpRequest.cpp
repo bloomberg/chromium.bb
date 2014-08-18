@@ -26,6 +26,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/FetchInitiatorTypeNames.h"
 #include "core/dom/ContextFeatures.h"
+#include "core/dom/DOMException.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/XMLDocument.h"
@@ -44,7 +45,10 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/ThreadableLoader.h"
+#include "core/streams/ReadableStream.h"
+#include "core/streams/ReadableStreamImpl.h"
 #include "core/streams/Stream.h"
+#include "core/streams/UnderlyingSource.h"
 #include "core/xml/XMLHttpRequestProgressEvent.h"
 #include "core/xml/XMLHttpRequestUpload.h"
 #include "platform/Logging.h"
@@ -110,6 +114,34 @@ static void logConsoleError(ExecutionContext* context, const String& message)
     // We should pass additional parameters so we can tell the console where the mistake occurred.
     context->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message));
 }
+
+namespace {
+
+class ReadableStreamSource : public GarbageCollectedFinalized<ReadableStreamSource>, public UnderlyingSource {
+    USING_GARBAGE_COLLECTED_MIXIN(ReadableStreamSource);
+public:
+    ReadableStreamSource(XMLHttpRequest* owner) : m_owner(owner) { }
+    virtual ~ReadableStreamSource() { }
+    virtual void pullSource() OVERRIDE { }
+    virtual ScriptPromise cancelSource(ScriptState* scriptState, ScriptValue reason) OVERRIDE
+    {
+        m_owner->abort();
+        return ScriptPromise::cast(scriptState, v8::Undefined(scriptState->isolate()));
+    }
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        visitor->trace(m_owner);
+        UnderlyingSource::trace(visitor);
+    }
+
+private:
+    // This is RawPtr in non-oilpan build to avoid the reference cycle. To
+    // avoid use-after free, the associated ReadableStream must be closed
+    // or errored when m_owner is gone.
+    RawPtrWillBeMember<XMLHttpRequest> m_owner;
+};
+
+} // namespace
 
 PassRefPtrWillBeRawPtr<XMLHttpRequest> XMLHttpRequest::create(ExecutionContext* context, PassRefPtr<SecurityOrigin> securityOrigin)
 {
@@ -295,14 +327,23 @@ ArrayBuffer* XMLHttpRequest::responseArrayBuffer()
     return m_responseArrayBuffer.get();
 }
 
-Stream* XMLHttpRequest::responseStream()
+Stream* XMLHttpRequest::responseLegacyStream()
 {
     ASSERT(m_responseTypeCode == ResponseTypeLegacyStream);
 
     if (m_error || (m_state != LOADING && m_state != DONE))
         return 0;
 
-    return m_responseStream.get();
+    return m_responseLegacyStream.get();
+}
+
+ReadableStream* XMLHttpRequest::responseStream()
+{
+    ASSERT(m_responseTypeCode == ResponseTypeStream);
+    if (m_error || (m_state != LOADING && m_state != DONE))
+        return 0;
+
+    return m_responseStream;
 }
 
 void XMLHttpRequest::setTimeout(unsigned long timeout, ExceptionState& exceptionState)
@@ -356,6 +397,11 @@ void XMLHttpRequest::setResponseType(const String& responseType, ExceptionState&
             m_responseTypeCode = ResponseTypeLegacyStream;
         else
             return;
+    } else if (responseType == "stream") {
+        if (RuntimeEnabledFeatures::streamEnabled())
+            m_responseTypeCode = ResponseTypeStream;
+        else
+            return;
     } else {
         ASSERT_NOT_REACHED();
     }
@@ -378,6 +424,8 @@ String XMLHttpRequest::responseType()
         return "arraybuffer";
     case ResponseTypeLegacyStream:
         return "legacystream";
+    case ResponseTypeStream:
+        return "stream";
     }
     return "";
 }
@@ -893,8 +941,15 @@ bool XMLHttpRequest::internalAbort()
 
     InspectorInstrumentation::didFailXHRLoading(executionContext(), this, this);
 
-    if (m_responseStream && m_state != DONE)
-        m_responseStream->abort();
+    if (m_responseLegacyStream && m_state != DONE)
+        m_responseLegacyStream->abort();
+
+    if (m_responseStream) {
+        // When the stream is already closed (including canceled from the
+        // user), |error| does nothing.
+        // FIXME: Create a more specific error.
+        m_responseStream->error(DOMException::create(!m_async && m_exceptionCode ? m_exceptionCode : AbortError, "XMLHttpRequest::abort"));
+    }
 
     if (!m_loader)
         return true;
@@ -936,6 +991,7 @@ void XMLHttpRequest::clearResponse()
     m_responseBlob = nullptr;
     m_downloadedBlobLength = 0;
 
+    m_responseLegacyStream = nullptr;
     m_responseStream = nullptr;
 
     // These variables may referred by the response accessors. So, we can clear
@@ -1229,8 +1285,11 @@ void XMLHttpRequest::didFinishLoading(unsigned long identifier, double)
     if (m_decoder)
         m_responseText = m_responseText.concatenateWith(m_decoder->flush());
 
+    if (m_responseLegacyStream)
+        m_responseLegacyStream->finalize();
+
     if (m_responseStream)
-        m_responseStream->finalize();
+        m_responseStream->close();
 
     clearVariablesForLoading();
 
@@ -1326,9 +1385,15 @@ void XMLHttpRequest::didReceiveData(const char* data, int len)
             m_binaryResponseBuilder = SharedBuffer::create();
         m_binaryResponseBuilder->append(data, len);
     } else if (m_responseTypeCode == ResponseTypeLegacyStream) {
-        if (!m_responseStream)
-            m_responseStream = Stream::create(executionContext(), finalResponseMIMEType());
-        m_responseStream->addData(data, len);
+        if (!m_responseLegacyStream)
+            m_responseLegacyStream = Stream::create(executionContext(), responseType());
+        m_responseLegacyStream->addData(data, len);
+    } else if (m_responseTypeCode == ResponseTypeStream) {
+        if (!m_responseStream) {
+            m_responseStream = new ReadableStreamImpl<ReadableStreamChunkTypeTraits<ArrayBuffer> >(executionContext(), new ReadableStreamSource(this));
+            m_responseStream->didSourceStart();
+        }
+        m_responseStream->enqueue(ArrayBuffer::create(data, len));
     }
 
     if (m_error)
@@ -1417,7 +1482,9 @@ ExecutionContext* XMLHttpRequest::executionContext() const
 void XMLHttpRequest::trace(Visitor* visitor)
 {
     visitor->trace(m_responseBlob);
+    visitor->trace(m_responseLegacyStream);
     visitor->trace(m_responseStream);
+    visitor->trace(m_streamSource);
     visitor->trace(m_responseDocument);
     visitor->trace(m_progressEventThrottle);
     visitor->trace(m_upload);

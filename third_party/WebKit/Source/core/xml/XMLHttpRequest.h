@@ -26,6 +26,7 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventListener.h"
 #include "core/loader/ThreadableLoaderClient.h"
+#include "core/streams/ReadableStreamImpl.h"
 #include "core/xml/XMLHttpRequestEventTarget.h"
 #include "core/xml/XMLHttpRequestProgressEventThrottle.h"
 #include "platform/heap/Handle.h"
@@ -48,6 +49,7 @@ class SharedBuffer;
 class Stream;
 class TextResourceDecoder;
 class ThreadableLoader;
+class UnderlyingSource;
 
 typedef int ExceptionCode;
 
@@ -79,7 +81,8 @@ public:
         ResponseTypeDocument,
         ResponseTypeBlob,
         ResponseTypeArrayBuffer,
-        ResponseTypeLegacyStream
+        ResponseTypeLegacyStream,
+        ResponseTypeStream,
     };
 
     virtual void contextDestroyed() OVERRIDE;
@@ -117,7 +120,8 @@ public:
     ScriptString responseJSONSource();
     Document* responseXML(ExceptionState&);
     Blob* responseBlob();
-    Stream* responseStream();
+    Stream* responseLegacyStream();
+    ReadableStream* responseStream();
     unsigned long timeout() const { return m_timeoutMilliseconds; }
     void setTimeout(unsigned long timeout, ExceptionState&);
 
@@ -230,7 +234,9 @@ private:
     AtomicString m_mimeTypeOverride;
     unsigned long m_timeoutMilliseconds;
     RefPtrWillBeMember<Blob> m_responseBlob;
-    RefPtrWillBeMember<Stream> m_responseStream;
+    RefPtrWillBeMember<Stream> m_responseLegacyStream;
+    PersistentWillBeMember<ReadableStreamImpl<ReadableStreamChunkTypeTraits<ArrayBuffer> > > m_responseStream;
+    PersistentWillBeMember<UnderlyingSource> m_streamSource;
 
     RefPtr<ThreadableLoader> m_loader;
     State m_state;

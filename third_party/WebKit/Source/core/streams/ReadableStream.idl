@@ -2,8 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+enum ReadableStreamState {
+    "readable",
+    "waiting",
+    "closed",
+    "errored"
+};
+
 [
     RuntimeEnabled=Stream,
     GarbageCollected
 ] interface ReadableStream {
+    [CallWith=ScriptState, RaisesException] any read();
+    [CallWith=ScriptState] Promise wait();
+    [ImplementedAs=stateString] readonly attribute ReadableStreamState state;
+
+    [CallWith=ScriptState] Promise cancel(any reason);
+
+    [CallWith=ScriptState] readonly attribute Promise closed;
 };

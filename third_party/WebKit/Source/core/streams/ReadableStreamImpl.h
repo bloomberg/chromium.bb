@@ -42,7 +42,7 @@ public:
     typedef RefPtr<ArrayBuffer> HoldType;
     typedef PassRefPtr<ArrayBuffer> PassType;
 
-    static size_t size(PassType value) { return value->byteLength(); }
+    static size_t size(const PassType& value) { return value->byteLength(); }
     static size_t size(const HoldType& value) { return value->byteLength(); }
     static ScriptValue toScriptValue(ScriptState* scriptState, const HoldType& value)
     {
@@ -56,13 +56,13 @@ public:
 template <typename ChunkTypeTraits>
 class ReadableStreamImpl : public ReadableStream {
 public:
-    ReadableStreamImpl(ScriptState* scriptState, UnderlyingSource* source, ExceptionState* exceptionState)
-        : ReadableStream(scriptState, source, exceptionState)
+    ReadableStreamImpl(ExecutionContext* executionContext, UnderlyingSource* source)
+        : ReadableStream(executionContext, source)
         , m_totalQueueSize(0) { }
     virtual ~ReadableStreamImpl() { }
 
     // ReadableStream methods
-    virtual ScriptValue read(ScriptState*, ExceptionState*) OVERRIDE;
+    virtual ScriptValue read(ScriptState*, ExceptionState&) OVERRIDE;
 
     bool enqueue(typename ChunkTypeTraits::PassType);
 
@@ -96,10 +96,10 @@ bool ReadableStreamImpl<ChunkTypeTraits>::enqueue(typename ChunkTypeTraits::Pass
 }
 
 template <typename ChunkTypeTraits>
-ScriptValue ReadableStreamImpl<ChunkTypeTraits>::read(ScriptState* scriptState, ExceptionState* exceptionState)
+ScriptValue ReadableStreamImpl<ChunkTypeTraits>::read(ScriptState* scriptState, ExceptionState& exceptionState)
 {
     readPreliminaryCheck(exceptionState);
-    if (exceptionState->hadException())
+    if (exceptionState.hadException())
         return ScriptValue();
     ASSERT(state() == Readable);
     ASSERT(!m_queue.isEmpty());

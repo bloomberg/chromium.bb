@@ -5,6 +5,7 @@
 #ifndef UnderlyingSource_h
 #define UnderlyingSource_h
 
+#include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "platform/heap/Heap.h"
 
@@ -13,13 +14,10 @@ namespace blink {
 class ExceptionState;
 class ScriptState;
 
-class UnderlyingSource : public GarbageCollectedFinalized<UnderlyingSource> {
+class UnderlyingSource : public GarbageCollectedMixin {
 public:
     virtual ~UnderlyingSource() { }
 
-    // When startSource fails asynchronously, it must call
-    // ReadableStream::error with a DOM exception.
-    virtual ScriptPromise startSource(ExceptionState*) = 0;
     virtual void pullSource() = 0;
     virtual ScriptPromise cancelSource(ScriptState*, ScriptValue reason) = 0;
     virtual void trace(Visitor*) { }
