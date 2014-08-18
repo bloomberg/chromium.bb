@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grit-part>
+
+  <message name="IDS_AUTOCOMPLETE_SEARCH_DESCRIPTION" desc="Description for the default search match.">
+    <ph name="ENGINE">$1<ex>Google</ex></ph> Search
+  </message>
+  <message name="IDS_KEYWORD_SEARCH" desc="The description for a chrome keyword search match in the Omnibox dropdown">
+    Search <ph name="SITE_NAME">$1<ex>www.google.com</ex></ph> for <ph name="SEARCH_TERMS">$2<ex>flowers</ex></ph>
+  </message>
+  <message name="IDS_EXTENSION_KEYWORD_COMMAND" desc="The description for an extension keyword command match in the Omnibox dropdown">
+    Run <ph name="EXTENSION_NAME">$1<ex>Google Talk</ex></ph> command: <ph name="SEARCH_TERMS">$2<ex>mpcomplete@chromium.org</ex></ph>
+  </message>
+  <message name="IDS_EMPTY_KEYWORD_VALUE" desc="Shown in the location bar drop down when the user enters a string that matches a chrome keyword, but they haven't entered any text following the chrome keyword">
+    &lt;enter query&gt;
+  </message>
+
+</grit-part>

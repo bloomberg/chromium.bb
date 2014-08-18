@@ -16,7 +16,7 @@
 #include "components/omnibox/autocomplete_provider_listener.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
-#include "grit/generated_resources.h"
+#include "grit/components_strings.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
