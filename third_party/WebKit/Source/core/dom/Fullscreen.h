@@ -25,8 +25,8 @@
  *
  */
 
-#ifndef FullscreenElementStack_h
-#define FullscreenElementStack_h
+#ifndef Fullscreen_h
+#define Fullscreen_h
 
 #include "core/dom/Document.h"
 #include "core/dom/DocumentLifecycleObserver.h"
@@ -43,16 +43,16 @@ namespace blink {
 class RenderFullScreen;
 class RenderStyle;
 
-class FullscreenElementStack FINAL
-    : public NoBaseWillBeGarbageCollectedFinalized<FullscreenElementStack>
+class Fullscreen FINAL
+    : public NoBaseWillBeGarbageCollectedFinalized<Fullscreen>
     , public DocumentSupplement
     , public DocumentLifecycleObserver {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FullscreenElementStack);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Fullscreen);
 public:
-    virtual ~FullscreenElementStack();
+    virtual ~Fullscreen();
     static const char* supplementName();
-    static FullscreenElementStack& from(Document&);
-    static FullscreenElementStack* fromIfExists(Document&);
+    static Fullscreen& from(Document&);
+    static Fullscreen* fromIfExists(Document&);
     static Element* fullscreenElementFrom(Document&);
     static Element* currentFullScreenElementFrom(Document&);
     static bool isFullScreen(Document&);
@@ -97,9 +97,9 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    static FullscreenElementStack* fromIfExistsSlow(Document&);
+    static Fullscreen* fromIfExistsSlow(Document&);
 
-    explicit FullscreenElementStack(Document&);
+    explicit Fullscreen(Document&);
 
     Document* document();
 
@@ -111,29 +111,29 @@ private:
 
     void enqueueChangeEvent(Document&, RequestType);
     void enqueueErrorEvent(Element&, RequestType);
-    void eventQueueTimerFired(Timer<FullscreenElementStack>*);
+    void eventQueueTimerFired(Timer<Fullscreen>*);
 
     bool m_areKeysEnabledInFullScreen;
     RefPtrWillBeMember<Element> m_fullScreenElement;
     WillBeHeapVector<std::pair<RefPtrWillBeMember<Element>, RequestType> > m_fullScreenElementStack;
     RawPtrWillBeMember<RenderFullScreen> m_fullScreenRenderer;
-    Timer<FullscreenElementStack> m_eventQueueTimer;
+    Timer<Fullscreen> m_eventQueueTimer;
     WillBeHeapDeque<RefPtrWillBeMember<Event> > m_eventQueue;
     LayoutRect m_savedPlaceholderFrameRect;
     RefPtr<RenderStyle> m_savedPlaceholderRenderStyle;
 };
 
-inline bool FullscreenElementStack::isActiveFullScreenElement(const Element& element)
+inline bool Fullscreen::isActiveFullScreenElement(const Element& element)
 {
-    FullscreenElementStack* fullscreen = fromIfExists(element.document());
+    Fullscreen* fullscreen = fromIfExists(element.document());
     if (!fullscreen)
         return false;
     return fullscreen->webkitCurrentFullScreenElement() == &element;
 }
 
-inline FullscreenElementStack* FullscreenElementStack::fromIfExists(Document& document)
+inline Fullscreen* Fullscreen::fromIfExists(Document& document)
 {
-    if (!document.hasFullscreenElementStack())
+    if (!document.hasFullscreenSupplement())
         return 0;
     return fromIfExistsSlow(document);
 }
@@ -143,10 +143,10 @@ inline FullscreenElementStack* FullscreenElementStack::fromIfExists(Document& do
 // Needed by the HeapVector<> element stack.
 namespace WTF {
 
-template<>struct IsPod<blink::FullscreenElementStack::RequestType> {
+template<>struct IsPod<blink::Fullscreen::RequestType> {
     static const bool value = true;
 };
 
 } // namespace WTF
 
-#endif // FullscreenElementStack_h
+#endif // Fullscreen_h

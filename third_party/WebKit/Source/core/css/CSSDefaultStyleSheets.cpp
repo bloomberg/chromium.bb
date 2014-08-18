@@ -34,7 +34,7 @@
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/RuleSet.h"
 #include "core/css/StyleSheetContents.h"
-#include "core/dom/FullscreenElementStack.h"
+#include "core/dom/Fullscreen.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/rendering/RenderTheme.h"
@@ -180,7 +180,7 @@ void CSSDefaultStyleSheets::ensureDefaultStyleSheetsForElement(Element* element,
 
     // FIXME: This only works because we Force recalc the entire document so the new sheet
     // is loaded for <html> and the correct styles apply to everyone.
-    if (!m_fullscreenStyleSheet && FullscreenElementStack::isFullScreen(element->document())) {
+    if (!m_fullscreenStyleSheet && Fullscreen::isFullScreen(element->document())) {
         String fullscreenRules = String(fullscreenCss, sizeof(fullscreenCss)) + RenderTheme::theme().extraFullScreenStyleSheet();
         m_fullscreenStyleSheet = parseUASheet(fullscreenRules);
         m_defaultStyle->addRulesFromSheet(fullscreenStyleSheet(), screenEval());

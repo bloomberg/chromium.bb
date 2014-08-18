@@ -53,7 +53,7 @@
 #include "core/dom/ElementRareData.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/FullscreenElementStack.h"
+#include "core/dom/Fullscreen.h"
 #include "core/dom/MutationObserverInterestGroup.h"
 #include "core/dom/MutationRecord.h"
 #include "core/dom/NamedNodeMap.h"
@@ -1279,7 +1279,7 @@ void Element::removedFrom(ContainerNode* insertionPoint)
     if (containsFullScreenElement())
         setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(false);
 
-    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(document()))
+    if (Fullscreen* fullscreen = Fullscreen::fromIfExists(document()))
         fullscreen->elementRemoved(*this);
 
     if (document().page())
@@ -3239,7 +3239,7 @@ bool Element::supportsStyleSharing() const
     // FIXME: Why does gaining a layer from outside the style system require disabling sharing?
     if (isHTMLFrameElementBase(*this) || isHTMLPlugInElement(*this) || isHTMLCanvasElement(*this))
         return false;
-    if (FullscreenElementStack::isActiveFullScreenElement(*this))
+    if (Fullscreen::isActiveFullScreenElement(*this))
         return false;
     return true;
 }

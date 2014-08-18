@@ -5,28 +5,28 @@
 #include "config.h"
 #include "core/dom/ElementFullscreen.h"
 
-#include "core/dom/FullscreenElementStack.h"
+#include "core/dom/Fullscreen.h"
 
 namespace blink {
 
 void ElementFullscreen::requestFullscreen(Element& element)
 {
-    FullscreenElementStack::from(element.document()).requestFullscreen(element, FullscreenElementStack::UnprefixedRequest);
+    Fullscreen::from(element.document()).requestFullscreen(element, Fullscreen::UnprefixedRequest);
 }
 
 void ElementFullscreen::webkitRequestFullscreen(Element& element)
 {
-    FullscreenElementStack::from(element.document()).requestFullscreen(element, FullscreenElementStack::PrefixedRequest);
+    Fullscreen::from(element.document()).requestFullscreen(element, Fullscreen::PrefixedRequest);
 }
 
 void ElementFullscreen::webkitRequestFullScreen(Element& element, unsigned short flags)
 {
-    FullscreenElementStack::RequestType requestType;
+    Fullscreen::RequestType requestType;
     if (flags & ALLOW_KEYBOARD_INPUT)
-        requestType = FullscreenElementStack::PrefixedMozillaAllowKeyboardInputRequest;
+        requestType = Fullscreen::PrefixedMozillaAllowKeyboardInputRequest;
     else
-        requestType = FullscreenElementStack::PrefixedMozillaRequest;
-    FullscreenElementStack::from(element.document()).requestFullscreen(element, requestType);
+        requestType = Fullscreen::PrefixedMozillaRequest;
+    Fullscreen::from(element.document()).requestFullscreen(element, requestType);
 }
 
 } // namespace blink

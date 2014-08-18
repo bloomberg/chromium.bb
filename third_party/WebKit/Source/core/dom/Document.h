@@ -911,8 +911,8 @@ public:
     void enqueueAnimationFrameEvent(PassRefPtrWillBeRawPtr<Event>);
     void enqueueMediaQueryChangeListeners(WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener> >&);
 
-    bool hasFullscreenElementStack() const { return m_hasFullscreenElementStack; }
-    void setHasFullscreenElementStack() { m_hasFullscreenElementStack = true; }
+    bool hasFullscreenSupplement() const { return m_hasFullscreenSupplement; }
+    void setHasFullscreenSupplement() { m_hasFullscreenSupplement = true; }
 
     void exitPointerLock();
     Element* pointerLockElement() const;
@@ -1304,7 +1304,7 @@ private:
 #endif
     WeakPtrWillBeWeakMember<Document> m_contextDocument;
 
-    bool m_hasFullscreenElementStack; // For early return in FullscreenElementStack::fromIfExists()
+    bool m_hasFullscreenSupplement; // For early return in Fullscreen::fromIfExists()
 
     WillBeHeapVector<RefPtrWillBeMember<Element> > m_topLayerElements;
 

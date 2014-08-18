@@ -26,44 +26,44 @@
 #include "config.h"
 #include "core/dom/DocumentFullscreen.h"
 
-#include "core/dom/FullscreenElementStack.h"
+#include "core/dom/Fullscreen.h"
 
 namespace blink {
 
 bool DocumentFullscreen::fullscreenEnabled(Document& document)
 {
-    return FullscreenElementStack::fullscreenEnabled(document);
+    return Fullscreen::fullscreenEnabled(document);
 }
 
 Element* DocumentFullscreen::fullscreenElement(Document& document)
 {
-    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(document))
+    if (Fullscreen* fullscreen = Fullscreen::fromIfExists(document))
         return fullscreen->fullscreenElement();
     return 0;
 }
 
 void DocumentFullscreen::exitFullscreen(Document& document)
 {
-    FullscreenElementStack::from(document).exitFullscreen();
+    Fullscreen::from(document).exitFullscreen();
 }
 
 bool DocumentFullscreen::webkitIsFullScreen(Document& document)
 {
-    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(document))
+    if (Fullscreen* fullscreen = Fullscreen::fromIfExists(document))
         return fullscreen->webkitIsFullScreen();
     return false;
 }
 
 bool DocumentFullscreen::webkitFullScreenKeyboardInputAllowed(Document& document)
 {
-    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(document))
+    if (Fullscreen* fullscreen = Fullscreen::fromIfExists(document))
         return fullscreen->webkitFullScreenKeyboardInputAllowed();
     return false;
 }
 
 Element* DocumentFullscreen::webkitCurrentFullScreenElement(Document& document)
 {
-    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(document))
+    if (Fullscreen* fullscreen = Fullscreen::fromIfExists(document))
         return fullscreen->webkitCurrentFullScreenElement();
     return 0;
 }

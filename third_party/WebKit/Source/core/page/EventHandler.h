@@ -57,7 +57,7 @@ template <typename EventType>
 class EventWithHitTestResults;
 class FloatPoint;
 class FloatQuad;
-class FullscreenElementStack;
+class Fullscreen;
 class HTMLFrameSetElement;
 class HitTestRequest;
 class HitTestResult;
@@ -310,7 +310,7 @@ private:
 
     bool capturesDragging() const { return m_capturesDragging; }
 
-    bool isKeyEventAllowedInFullScreen(FullscreenElementStack*, const PlatformKeyboardEvent&) const;
+    bool isKeyEventAllowedInFullScreen(Fullscreen*, const PlatformKeyboardEvent&) const;
 
     bool handleGestureShowPress();
 

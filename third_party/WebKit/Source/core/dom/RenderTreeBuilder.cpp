@@ -29,7 +29,7 @@
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
 #include "core/css/resolver/StyleResolver.h"
-#include "core/dom/FullscreenElementStack.h"
+#include "core/dom/Fullscreen.h"
 #include "core/dom/Node.h"
 #include "core/dom/Text.h"
 #include "core/rendering/RenderFullScreen.h"
@@ -132,7 +132,7 @@ void RenderTreeBuilder::createRendererForElementIfNeeded()
     element->setRenderer(newRenderer);
     newRenderer->setStyle(&style); // setStyle() can depend on renderer() already being set.
 
-    if (FullscreenElementStack::isActiveFullScreenElement(*element)) {
+    if (Fullscreen::isActiveFullScreenElement(*element)) {
         newRenderer = RenderFullScreen::wrapRenderer(newRenderer, parentRenderer, &element->document());
         if (!newRenderer)
             return;

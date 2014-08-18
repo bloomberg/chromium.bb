@@ -35,7 +35,7 @@
 #include "core/dom/Attribute.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/FullscreenElementStack.h"
+#include "core/dom/Fullscreen.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/Event.h"
 #include "core/frame/LocalFrame.h"
@@ -3490,21 +3490,21 @@ void HTMLMediaElement::contextDestroyed()
 
 bool HTMLMediaElement::isFullscreen() const
 {
-    return FullscreenElementStack::isActiveFullScreenElement(*this);
+    return Fullscreen::isActiveFullScreenElement(*this);
 }
 
 void HTMLMediaElement::enterFullscreen()
 {
     WTF_LOG(Media, "HTMLMediaElement::enterFullscreen");
 
-    FullscreenElementStack::from(document()).requestFullscreen(*this, FullscreenElementStack::PrefixedVideoRequest);
+    Fullscreen::from(document()).requestFullscreen(*this, Fullscreen::PrefixedVideoRequest);
 }
 
 void HTMLMediaElement::exitFullscreen()
 {
     WTF_LOG(Media, "HTMLMediaElement::exitFullscreen");
 
-    FullscreenElementStack::from(document()).exitFullscreen();
+    Fullscreen::from(document()).exitFullscreen();
 }
 
 void HTMLMediaElement::didBecomeFullscreenElement()

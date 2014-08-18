@@ -25,7 +25,7 @@
 #include "config.h"
 #include "core/rendering/RenderFullScreen.h"
 
-#include "core/dom/FullscreenElementStack.h"
+#include "core/dom/Fullscreen.h"
 #include "core/rendering/RenderBlockFlow.h"
 
 using namespace blink;
@@ -81,7 +81,7 @@ void RenderFullScreen::willBeDestroyed()
 
     // RenderObjects are unretained, so notify the document (which holds a pointer to a RenderFullScreen)
     // if its RenderFullScreen is destroyed.
-    FullscreenElementStack& fullscreen = FullscreenElementStack::from(document());
+    Fullscreen& fullscreen = Fullscreen::from(document());
     if (fullscreen.fullScreenRenderer() == this)
         fullscreen.fullScreenRendererDestroyed();
 
@@ -150,7 +150,7 @@ RenderObject* RenderFullScreen::wrapRenderer(RenderObject* object, RenderObject*
     }
 
     ASSERT(document);
-    FullscreenElementStack::from(*document).setFullScreenRenderer(fullscreenRenderer);
+    Fullscreen::from(*document).setFullScreenRenderer(fullscreenRenderer);
     return fullscreenRenderer;
 }
 

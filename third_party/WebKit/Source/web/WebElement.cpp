@@ -33,7 +33,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Element.h"
-#include "core/dom/FullscreenElementStack.h"
+#include "core/dom/Fullscreen.h"
 #include "core/dom/NamedNodeMap.h"
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -144,7 +144,7 @@ WebString WebElement::computeInheritedLanguage() const
 void WebElement::requestFullScreen()
 {
     Element* element = unwrap<Element>();
-    FullscreenElementStack::from(element->document()).requestFullscreen(*element, FullscreenElementStack::PrefixedMozillaAllowKeyboardInputRequest);
+    Fullscreen::from(element->document()).requestFullscreen(*element, Fullscreen::PrefixedMozillaAllowKeyboardInputRequest);
 }
 
 WebRect WebElement::boundsInViewportSpace()

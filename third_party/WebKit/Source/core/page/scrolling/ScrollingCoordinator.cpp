@@ -28,7 +28,7 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/FullscreenElementStack.h"
+#include "core/dom/Fullscreen.h"
 #include "core/dom/Node.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameView.h"
@@ -161,7 +161,7 @@ void ScrollingCoordinator::updateAfterCompositingChangeIfNeeded()
         scrollingWebLayer->setBounds(frameView->contentsSize());
         // If there is a fullscreen element, set the scroll clip layer to 0 so main frame won't scroll.
         Document* mainFrameDocument = m_page->deprecatedLocalMainFrame()->document();
-        Element* fullscreenElement = FullscreenElementStack::fullscreenElementFrom(*mainFrameDocument);
+        Element* fullscreenElement = Fullscreen::fullscreenElementFrom(*mainFrameDocument);
         if (fullscreenElement && fullscreenElement != mainFrameDocument->documentElement())
             scrollingWebLayer->setScrollClipLayer(0);
         else

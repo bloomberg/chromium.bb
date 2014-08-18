@@ -488,7 +488,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_weakFactory(this)
 #endif
     , m_contextDocument(initializer.contextDocument())
-    , m_hasFullscreenElementStack(false)
+    , m_hasFullscreenSupplement(false)
     , m_loadEventDelayCount(0)
     , m_loadEventDelayTimer(this, &Document::loadEventDelayTimerFired)
     , m_pluginLoadingTimer(this, &Document::pluginLoadingTimerFired)

@@ -40,7 +40,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/DocumentMarkerController.h"
-#include "core/dom/FullscreenElementStack.h"
+#include "core/dom/Fullscreen.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/Range.h"
 #include "core/editing/Editor.h"
@@ -5654,13 +5654,13 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable)
     Document* document = toWebLocalFrameImpl(webViewImpl->mainFrame())->frame()->document();
     blink::UserGestureIndicator gesture(blink::DefinitelyProcessingUserGesture);
     Element* divFullscreen = document->getElementById("div1");
-    FullscreenElementStack::from(*document).requestFullscreen(*divFullscreen, FullscreenElementStack::PrefixedRequest);
+    Fullscreen::from(*document).requestFullscreen(*divFullscreen, Fullscreen::PrefixedRequest);
     webViewImpl->willEnterFullScreen();
     webViewImpl->didEnterFullScreen();
     webViewImpl->layout();
 
     // Verify that the main frame is not scrollable.
-    ASSERT_TRUE(blink::FullscreenElementStack::isFullScreen(*document));
+    ASSERT_TRUE(blink::Fullscreen::isFullScreen(*document));
     WebLayer* webScrollLayer = webViewImpl->compositor()->scrollLayer()->platformLayer();
     ASSERT_FALSE(webScrollLayer->scrollable());
 
@@ -5668,7 +5668,7 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable)
     webViewImpl->willExitFullScreen();
     webViewImpl->didExitFullScreen();
     webViewImpl->layout();
-    ASSERT_FALSE(blink::FullscreenElementStack::isFullScreen(*document));
+    ASSERT_FALSE(blink::Fullscreen::isFullScreen(*document));
     webScrollLayer = webViewImpl->compositor()->scrollLayer()->platformLayer();
     ASSERT_TRUE(webScrollLayer->scrollable());
 }
@@ -5686,13 +5686,13 @@ TEST_F(WebFrameTest, FullscreenMainFrameScrollable)
 
     Document* document = toWebLocalFrameImpl(webViewImpl->mainFrame())->frame()->document();
     blink::UserGestureIndicator gesture(blink::DefinitelyProcessingUserGesture);
-    FullscreenElementStack::from(*document).requestFullscreen(*document->documentElement(), FullscreenElementStack::PrefixedRequest);
+    Fullscreen::from(*document).requestFullscreen(*document->documentElement(), Fullscreen::PrefixedRequest);
     webViewImpl->willEnterFullScreen();
     webViewImpl->didEnterFullScreen();
     webViewImpl->layout();
 
     // Verify that the main frame is still scrollable.
-    ASSERT_TRUE(blink::FullscreenElementStack::isFullScreen(*document));
+    ASSERT_TRUE(blink::Fullscreen::isFullScreen(*document));
     WebLayer* webScrollLayer = webViewImpl->compositor()->scrollLayer()->platformLayer();
     ASSERT_TRUE(webScrollLayer->scrollable());
 }

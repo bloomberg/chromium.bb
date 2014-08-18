@@ -32,7 +32,7 @@
 #include "web/FullscreenController.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/FullscreenElementStack.h"
+#include "core/dom/Fullscreen.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLMediaElement.h"
 #include "platform/LayoutTestSupport.h"
@@ -64,7 +64,7 @@ void FullscreenController::willEnterFullScreen()
     // Ensure that this element's document is still attached.
     Document& doc = m_provisionalFullScreenElement->document();
     if (doc.frame()) {
-        FullscreenElementStack::from(doc).willEnterFullScreenForElement(m_provisionalFullScreenElement.get());
+        Fullscreen::from(doc).willEnterFullScreenForElement(m_provisionalFullScreenElement.get());
         m_fullScreenFrame = doc.frame();
     }
     m_provisionalFullScreenElement.clear();
@@ -76,7 +76,7 @@ void FullscreenController::didEnterFullScreen()
         return;
 
     if (Document* doc = m_fullScreenFrame->document()) {
-        if (FullscreenElementStack::isFullScreen(*doc)) {
+        if (Fullscreen::isFullScreen(*doc)) {
             if (!m_exitFullscreenPageScaleFactor) {
                 m_exitFullscreenPageScaleFactor = m_webViewImpl->pageScaleFactor();
                 m_exitFullscreenScrollOffset = m_webViewImpl->mainFrame()->scrollOffset();
@@ -86,9 +86,9 @@ void FullscreenController::didEnterFullScreen()
                 m_webViewImpl->setPinchViewportOffset(FloatPoint());
             }
 
-            FullscreenElementStack::from(*doc).didEnterFullScreenForElement(0);
+            Fullscreen::from(*doc).didEnterFullScreenForElement(0);
             if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled()) {
-                Element* element = FullscreenElementStack::currentFullScreenElementFrom(*doc);
+                Element* element = Fullscreen::currentFullScreenElementFrom(*doc);
                 ASSERT(element);
                 if (isHTMLMediaElement(*element)) {
                     HTMLMediaElement* mediaElement = toHTMLMediaElement(element);
@@ -111,7 +111,7 @@ void FullscreenController::willExitFullScreen()
         return;
 
     if (Document* doc = m_fullScreenFrame->document()) {
-        FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(*doc);
+        Fullscreen* fullscreen = Fullscreen::fromIfExists(*doc);
         if (!fullscreen)
             return;
         if (fullscreen->isFullScreen(*doc)) {
@@ -133,7 +133,7 @@ void FullscreenController::didExitFullScreen()
         return;
 
     if (Document* doc = m_fullScreenFrame->document()) {
-        if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(*doc)) {
+        if (Fullscreen* fullscreen = Fullscreen::fromIfExists(*doc)) {
             if (fullscreen->webkitIsFullScreen()) {
                 if (m_exitFullscreenPageScaleFactor) {
                     m_webViewImpl->setPageScaleFactor(m_exitFullscreenPageScaleFactor);
