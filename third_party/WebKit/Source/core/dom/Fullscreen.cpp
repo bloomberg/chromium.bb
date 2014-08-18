@@ -185,9 +185,9 @@ bool Fullscreen::elementReady(Element& element, RequestType requestType)
     }
 
     // |element|'s node document's fullscreen element stack is either empty or its top element is an
-    // ancestor of |element|.
+    // inclusive ancestor of |element|.
     if (Element* topElement = fullscreenElementFrom(element.document())) {
-        if (!element.isDescendantOf(topElement))
+        if (!topElement->contains(&element))
             return false;
     }
 
@@ -195,6 +195,14 @@ bool Fullscreen::elementReady(Element& element, RequestType requestType)
     // namespace.
     if (Traversal<HTMLIFrameElement>::firstAncestor(element))
         return false;
+
+    // |element|'s node document's browsing context either has a browsing context container and the
+    // fullscreen element ready check returns true for |element|'s node document's browsing
+    // context's browsing context container, or it has no browsing context container.
+    if (HTMLFrameOwnerElement* container = element.document().ownerElement()) {
+        if (!elementReady(*container, requestType))
+            return false;
+    }
 
     return true;
 }
