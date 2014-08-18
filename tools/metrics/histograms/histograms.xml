@@ -10203,6 +10203,30 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="InterProcessTimeTicks.BrowserAhead" units="milliseconds">
+  <owner>ppi@chromium.org</owner>
+  <summary>
+    Estimated additive skew between processes, recorded if the browser process
+    is ahead (higher TimeTicks value) than the renderer process.
+  </summary>
+</histogram>
+
+<histogram name="InterProcessTimeTicks.BrowserBehind" units="milliseconds">
+  <owner>ppi@chromium.org</owner>
+  <summary>
+    Estimated additive skew between processes, recorded if the browser process
+    is behind (lower TimeTicks value) than the renderer process.
+  </summary>
+</histogram>
+
+<histogram name="InterProcessTimeTicks.IsSkewAdditive" enum="Boolean">
+  <owner>ppi@chromium.org</owner>
+  <summary>
+    True iff the conversion from the browser process TimeTicks to renderer
+    process TimeTicks is done by adding a constant, without scaling.
+  </summary>
+</histogram>
+
 <histogram name="interstitial.authority_invalid_time" units="milliseconds">
   <obsolete>
     Removed on 8/1/13.
@@ -52053,6 +52077,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PLT.PT_RequestToStart"/>
   <affected-histogram name="PLT.PT_StartToCommit"/>
   <affected-histogram name="PLT.PT_StartToFinish"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="InterProcessTimeTicksConversionType">
+  <owner>ppi@chromium.org</owner>
+  <suffix name="BrowserToRenderer"/>
+  <suffix name="RendererToBrowser"/>
+  <affected-histogram name="InterProcessTimeTicks.BrowserAhead"/>
+  <affected-histogram name="InterProcessTimeTicks.BrowserBehind"/>
+  <affected-histogram name="InterProcessTimeTicks.IsSkewAdditive"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="Interval" separator="_">

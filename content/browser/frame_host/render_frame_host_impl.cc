@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
+#include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/time/time.h"
 #include "content/browser/accessibility/accessibility_mode_helper.h"
@@ -753,6 +754,23 @@ void RenderFrameHostImpl::OnBeforeUnloadACK(
         converter.ToLocalTimeTicks(
             RemoteTimeTicks::FromTimeTicks(renderer_before_unload_end_time));
     before_unload_end_time = browser_before_unload_end_time.ToTimeTicks();
+
+    // Collect UMA on the inter-process skew.
+    bool is_skew_additive = false;
+    if (converter.IsSkewAdditiveForMetrics()) {
+      is_skew_additive = true;
+      base::TimeDelta skew = converter.GetSkewForMetrics();
+      if (skew >= base::TimeDelta()) {
+        UMA_HISTOGRAM_TIMES(
+            "InterProcessTimeTicks.BrowserBehind_RendererToBrowser", skew);
+      } else {
+        UMA_HISTOGRAM_TIMES(
+            "InterProcessTimeTicks.BrowserAhead_RendererToBrowser", -skew);
+      }
+    }
+    UMA_HISTOGRAM_BOOLEAN(
+        "InterProcessTimeTicks.IsSkewAdditive_RendererToBrowser",
+        is_skew_additive);
   }
   frame_tree_node_->render_manager()->OnBeforeUnloadACK(
       render_view_host_->unload_ack_is_for_cross_site_transition_, proceed,

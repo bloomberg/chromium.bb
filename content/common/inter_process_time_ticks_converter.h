@@ -61,6 +61,16 @@ class CONTENT_EXPORT InterProcessTimeTicksConverter {
   // |remote_delta|.
   LocalTimeDelta ToLocalTimeDelta(const RemoteTimeDelta& remote_delta) const;
 
+  // Returns true iff the TimeTicks are converted by adding a constant, without
+  // scaling. This is the case whenever the remote timespan is smaller than the
+  // local timespan, which should be the majority of cases due to IPC overhead.
+  bool IsSkewAdditiveForMetrics() const;
+
+  // Returns the (remote time) - (local time) difference estimated by the
+  // converter. This is the constant that is subtracted from remote TimeTicks to
+  // get local TimeTicks when no scaling is applied.
+  base::TimeDelta GetSkewForMetrics() const;
+
  private:
   int64 Convert(int64 value) const;
 

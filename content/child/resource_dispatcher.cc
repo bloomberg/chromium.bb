@@ -784,6 +784,23 @@ void ResourceDispatcher::ToResourceResponseInfo(
   RemoteToLocalTimeTicks(converter, &load_timing->send_start);
   RemoteToLocalTimeTicks(converter, &load_timing->send_end);
   RemoteToLocalTimeTicks(converter, &load_timing->receive_headers_end);
+
+  // Collect UMA on the inter-process skew.
+  bool is_skew_additive = false;
+  if (converter.IsSkewAdditiveForMetrics()) {
+    is_skew_additive = true;
+    base::TimeDelta skew = converter.GetSkewForMetrics();
+    if (skew >= base::TimeDelta()) {
+      UMA_HISTOGRAM_TIMES(
+          "InterProcessTimeTicks.BrowserAhead_BrowserToRenderer", skew);
+    } else {
+      UMA_HISTOGRAM_TIMES(
+          "InterProcessTimeTicks.BrowserBehind_BrowserToRenderer", -skew);
+    }
+  }
+  UMA_HISTOGRAM_BOOLEAN(
+      "InterProcessTimeTicks.IsSkewAdditive_BrowserToRenderer",
+      is_skew_additive);
 }
 
 base::TimeTicks ResourceDispatcher::ToRendererCompletionTime(

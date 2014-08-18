@@ -25,6 +25,8 @@ struct TestParams {
 struct TestResults {
   int64 result_time;
   int32 result_delta;
+  bool is_skew_additive;
+  int64 skew;
 };
 
 TestResults RunTest(const TestParams& params) {
@@ -50,6 +52,8 @@ TestResults RunTest(const TestParams& params) {
           test_time)).ToTimeTicks().ToInternalValue();
   results.result_delta = converter.ToLocalTimeDelta(
       RemoteTimeDelta::FromRawDelta(params.test_delta)).ToInt32();
+  results.is_skew_additive = converter.IsSkewAdditiveForMetrics();
+  results.skew = converter.GetSkewForMetrics().ToInternalValue();
   return results;
 }
 
@@ -79,6 +83,8 @@ TEST(InterProcessTimeTicksConverterTest, NoSkew) {
   TestResults results = RunTest(p);
   EXPECT_EQ(3, results.result_time);
   EXPECT_EQ(1, results.result_delta);
+  EXPECT_TRUE(results.is_skew_additive);
+  EXPECT_EQ(0, results.skew);
 }
 
 TEST(InterProcessTimeTicksConverterTest, OffsetMidpoints) {
@@ -94,6 +100,8 @@ TEST(InterProcessTimeTicksConverterTest, OffsetMidpoints) {
   TestResults results = RunTest(p);
   EXPECT_EQ(3, results.result_time);
   EXPECT_EQ(1, results.result_delta);
+  EXPECT_TRUE(results.is_skew_additive);
+  EXPECT_EQ(1, results.skew);
 }
 
 TEST(InterProcessTimeTicksConverterTest, DoubleEndedSkew) {
@@ -112,6 +120,7 @@ TEST(InterProcessTimeTicksConverterTest, DoubleEndedSkew) {
   TestResults results = RunTest(p);
   EXPECT_EQ(5, results.result_time);
   EXPECT_EQ(1, results.result_delta);
+  EXPECT_FALSE(results.is_skew_additive);
 }
 
 TEST(InterProcessTimeTicksConverterTest, FrontEndSkew) {
@@ -129,6 +138,7 @@ TEST(InterProcessTimeTicksConverterTest, FrontEndSkew) {
   TestResults results = RunTest(p);
   EXPECT_EQ(4, results.result_time);
   EXPECT_EQ(1, results.result_delta);
+  EXPECT_FALSE(results.is_skew_additive);
 }
 
 TEST(InterProcessTimeTicksConverterTest, BackEndSkew) {
@@ -144,6 +154,7 @@ TEST(InterProcessTimeTicksConverterTest, BackEndSkew) {
   TestResults results = RunTest(p);
   EXPECT_EQ(2, results.result_time);
   EXPECT_EQ(1, results.result_delta);
+  EXPECT_FALSE(results.is_skew_additive);
 }
 
 TEST(InterProcessTimeTicksConverterTest, Instantaneous) {

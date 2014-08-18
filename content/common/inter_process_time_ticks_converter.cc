@@ -72,4 +72,13 @@ int64 InterProcessTimeTicksConverter::Convert(int64 value) const {
   return numerator_ * value / denominator_;
 }
 
+bool InterProcessTimeTicksConverter::IsSkewAdditiveForMetrics() const {
+  return numerator_ == 1 && denominator_ == 1;
+}
+
+base::TimeDelta InterProcessTimeTicksConverter::GetSkewForMetrics() const {
+  return base::TimeTicks::FromInternalValue(remote_lower_bound_) -
+      base::TimeTicks::FromInternalValue(local_base_time_);
+}
+
 }  // namespace content
