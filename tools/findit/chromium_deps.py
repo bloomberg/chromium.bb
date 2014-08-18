@@ -3,13 +3,15 @@
 # found in the LICENSE file.
 
 import base64
+import json
+import os
 
 from common import utils
 
 
-DEPS_FILE_URL_SVN = 'https://src.chromium.org/chrome/trunk/src/DEPS?p=%s'
-DEPS_FILE_URL_GIT = (
-    'https://chromium.googlesource.com/chromium/src/+/%s/DEPS?format=text')
+_THIS_DIR = os.path.abspath(os.path.dirname(__file__))
+CONFIG = json.loads(open(os.path.join(_THIS_DIR,
+                                      'deps_config.json'), 'r').read())
 
 
 class _VarImpl(object):
@@ -43,19 +45,8 @@ def _ParseDEPS(content):
   return (local_scope['deps'], local_scope['deps_os'])
 
 
-def _GetComponentName(path):
+def _GetComponentName(path, host_dirs):
   """Return the component name of a path."""
-  host_dirs = [
-      'src/chrome/browser/resources/',
-      'src/chrome/test/data/layout_tests/',
-      'src/media/',
-      'src/sdch/',
-      'src/testing/',
-      'src/third_party/WebKit/',
-      'src/third_party/',
-      'src/tools/',
-      'src/',
-  ]
   components_renamed = {
       'webkit': 'blink',
   }
@@ -73,12 +64,8 @@ def _GetComponentName(path):
   return '_'.join(path.split('/'))
 
 
-def _GetContentOfDEPS(chromium_revision):
-  if utils.IsGitHash(chromium_revision):
-    url = DEPS_FILE_URL_GIT
-  else:
-    url = DEPS_FILE_URL_SVN
-  _, content = utils.GetHttpClient().Get(url % chromium_revision, timeout=60)
+def _GetContentOfDEPS(url):
+  _, content = utils.GetHttpClient().Get(url, timeout=60)
   return content
 
 
@@ -102,10 +89,19 @@ def GetChromiumComponents(chromium_revision,
   if os_platform.lower() == 'linux':
     os_platform = 'unix'
 
+  git_base_url = CONFIG['git_base_url']
+  git_deps_path = CONFIG['git_deps_path']
+  svn_base_url = CONFIG['svn_base_url']
+  svn_deps_path = CONFIG['svn_deps_path']
+  svn_src_chromium_url = CONFIG['svn_src_chromium_url']
   is_git_hash = utils.IsGitHash(chromium_revision)
+  if is_git_hash:
+    url = git_base_url + (git_deps_path % chromium_revision)
+  else:
+    url = svn_base_url + (svn_deps_path % chromium_revision)
 
   # Download the content of DEPS file in chromium.
-  deps_content = deps_file_downloader(chromium_revision)
+  deps_content = deps_file_downloader(url)
 
   # Googlesource git returns text file encoded in base64, so decode it.
   if is_git_hash:
@@ -121,13 +117,17 @@ def GetChromiumComponents(chromium_revision,
 
   # Figure out components based on the dependencies.
   components = {}
+  host_dirs = CONFIG['host_directories']
   for component_path in all_deps:
-    name = _GetComponentName(component_path)
+    name = _GetComponentName(component_path, host_dirs)
     repository, revision = all_deps[component_path].split('@')
     is_git_hash = utils.IsGitHash(revision)
     if repository.startswith('/'):
+      # In DEPS file, if a path starts with /, it is a relative path to the
+      # https://src.chromium.org/chrome. Strip /trunk at the end of the base
+      # url and add it to the base url.
       # TODO(stgao): Use git repo after chromium moves to git.
-      repository = 'https://src.chromium.org/chrome%s' % repository
+      repository = svn_src_chromium_url + repository
     if is_git_hash:
       repository_type = 'git'
     else:
@@ -144,10 +144,10 @@ def GetChromiumComponents(chromium_revision,
 
   # Add chromium as a component, depending on the repository type.
   if is_git_hash:
-    repository = 'https://chromium.googlesource.com/chromium/src/'
+    repository = git_base_url
     repository_type = 'git'
   else:
-    repository = 'https://src.chromium.org/chrome/trunk'
+    repository = svn_base_url
     repository_type = 'svn'
 
   components['src/'] = {
@@ -189,9 +189,11 @@ def GetChromiumComponentRange(old_revision,
   for path in new_components:
     new_component = new_components[path]
     old_revision = None
+
     if path in old_components:
       old_component = old_components[path]
       old_revision = old_component['revision']
+
     components[path] = {
         'path': path,
         'rolled': new_component['revision'] != old_revision,

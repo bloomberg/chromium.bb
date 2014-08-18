@@ -1,0 +1,16 @@
+{
+"svn_base_url": "https://src.chromium.org/chrome/trunk/",
+"svn_deps_path": "src/DEPS?p=%s",
+"git_base_url": "https://chromium.googlesource.com/chromium/src/",
+"git_deps_path": "+/%s/DEPS?format=text",
+"svn_src_chromium_url": "https://src.chromium.org/chrome",
+"host_directories": ["src/chrome/browser/resources/",
+                     "src/chrome/test/data/layout_tests/",
+                     "src/media/",
+                     "src/sdch/",
+                     "src/testing/",
+                     "src/third_party/WebKit/",
+                     "src/third_party/",
+                     "src/tools/",
+                     "src/"]
+}
