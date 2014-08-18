@@ -7,8 +7,6 @@
 #include <math.h>
 #include <set>
 
-#include "ash/accelerators/accelerator_commands.h"
-#include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
@@ -43,6 +41,13 @@
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_modality_controller.h"
 
+#if defined(USE_ASH)
+#include "ash/accelerators/accelerator_commands.h"
+#include "ash/shell.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/wm/window_state.h"
+#endif
+
 using base::UserMetricsAction;
 using content::OpenURLParams;
 using content::WebContents;
@@ -68,6 +73,7 @@ const int kHorizontalMoveThreshold = 16;  // Pixels.
 // close enough to trigger moving.
 const int kStackedDistance = 36;
 
+#if defined(USE_ASH)
 void SetWindowPositionManaged(gfx::NativeWindow window, bool value) {
   ash::wm::GetWindowState(window)->set_window_position_managed(value);
 }
@@ -79,6 +85,14 @@ bool IsDockedOrSnapped(const TabStrip* tab_strip) {
       ash::wm::GetWindowState(tab_strip->GetWidget()->GetNativeWindow());
   return window_state->IsDocked() || window_state->IsSnapped();
 }
+#else
+void SetWindowPositionManaged(gfx::NativeWindow window, bool value) {
+}
+
+bool IsDockedOrSnapped(const TabStrip* tab_strip) {
+  return false;
+}
+#endif
 
 // Returns true if |bounds| contains the y-coordinate |y|. The y-coordinate
 // of |bounds| is adjusted by |vertical_adjustment|.
@@ -176,6 +190,7 @@ TabDragController::TabDragController()
       active_(true),
       source_tab_index_(std::numeric_limits<size_t>::max()),
       initial_move_(true),
+      detach_behavior_(DETACHABLE),
       move_behavior_(REORDER),
       mouse_move_direction_(0),
       is_dragging_window_(false),
@@ -274,6 +289,14 @@ void TabDragController::Init(
   // the same time, so we explicitly capture.
   if (event_source == EVENT_SOURCE_TOUCH)
     source_tabstrip_->GetWidget()->SetCapture(source_tabstrip_);
+
+#if defined(USE_ASH)
+  if (ash::Shell::HasInstance() &&
+      ash::Shell::GetInstance()->maximize_mode_controller()->
+          IsMaximizeModeWindowManagerEnabled()) {
+    detach_behavior_ = NOT_DETACHABLE;
+  }
+#endif
 }
 
 // static
@@ -492,7 +515,8 @@ void TabDragController::ContinueDragging(const gfx::Point& point_in_screen) {
 
   DCHECK(attached_tabstrip_);
 
-  TabStrip* target_tabstrip = GetTargetTabStripForPoint(point_in_screen);
+  TabStrip* target_tabstrip = detach_behavior_ == DETACHABLE ?
+      GetTargetTabStripForPoint(point_in_screen) : source_tabstrip_;
   bool tab_strip_changed = (target_tabstrip != attached_tabstrip_);
 
   if (attached_tabstrip_) {
@@ -1502,12 +1526,14 @@ void TabDragController::CompleteDrag() {
 
 void TabDragController::MaximizeAttachedWindow() {
   GetAttachedBrowserWidget()->Maximize();
+#if defined(USE_ASH)
   if (was_source_fullscreen_ &&
       host_desktop_type_ == chrome::HOST_DESKTOP_TYPE_ASH) {
     // In fullscreen mode it is only possible to get here if the source
     // was in "immersive fullscreen" mode, so toggle it back on.
     ash::accelerators::ToggleFullscreen();
   }
+#endif
 }
 
 gfx::Rect TabDragController::GetViewScreenBounds(

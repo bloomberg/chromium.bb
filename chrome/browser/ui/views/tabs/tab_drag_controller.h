@@ -164,6 +164,13 @@ class TabDragController : public content::NotificationObserver,
     DETACH_ABOVE_OR_BELOW
   };
 
+  // Specifies what should happen when a drag motion exits the tab strip region
+  // in an attempt to detach a tab.
+  enum DetachBehavior {
+    DETACHABLE,
+    NOT_DETACHABLE
+  };
+
   // Indicates what should happen after invoking DragBrowserToNewTabStrip().
   enum DragBrowserResultType {
     // The caller should return immediately. This return value is used if a
@@ -532,6 +539,10 @@ class TabDragController : public content::NotificationObserver,
   // Initial x-coordinates of the tabs when the drag started. Only used for
   // touch mode.
   std::vector<int> initial_tab_positions_;
+
+  // What should occur during ConinueDragging when a tab is attempted to be
+  // detached.
+  DetachBehavior detach_behavior_;
 
   MoveBehavior move_behavior_;
 
