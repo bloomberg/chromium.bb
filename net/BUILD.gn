@@ -556,6 +556,7 @@ component("net") {
 
 grit("net_resources") {
   source = "base/net_resources.grd"
+  use_qualified_include = true
   outputs = [
     "grit/net_resources.h",
     "net_resources.pak",

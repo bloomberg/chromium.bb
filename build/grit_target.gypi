@@ -7,8 +7,9 @@
 # defined:
 #   grit_out_dir: string: the output directory path
 
-# NOTE: This file is optional, not all targets that use grit include it, some
-# do their own custom directives instead.
+# DO NOT USE THIS FILE. Instead, use qualified includes.
+# TODO: Convert everything to qualified includes, and delete this file,
+# http://crbug.com/401588
 {
   'conditions': [
     # If the target is a direct binary, it needs to be able to find the header,

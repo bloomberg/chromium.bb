@@ -1047,7 +1047,6 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
       ],
-      'includes': [ '../build/grit_target.gypi' ],
     },
     {
       'target_name': 'http_server',
