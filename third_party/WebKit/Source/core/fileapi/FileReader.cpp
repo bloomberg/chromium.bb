@@ -243,6 +243,10 @@ const AtomicString& FileReader::interfaceName() const
 
 void FileReader::stop()
 {
+    // The delayed abort task tidies up and advances to the DONE state.
+    if (m_loadingState == LoadingStateAborted)
+        return;
+
     if (hasPendingActivity())
         ThrottlingController::finishReader(executionContext(), this, ThrottlingController::removeReader(executionContext(), this));
     terminate();
