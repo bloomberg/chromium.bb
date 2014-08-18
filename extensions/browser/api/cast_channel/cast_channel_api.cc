@@ -194,7 +194,7 @@ bool CastChannelAsyncApiFunction::PrePrepare() {
 }
 
 bool CastChannelAsyncApiFunction::Respond() {
-  return error_ != cast_channel::CHANNEL_ERROR_NONE;
+  return error_ == cast_channel::CHANNEL_ERROR_NONE;
 }
 
 CastSocket* CastChannelAsyncApiFunction::GetSocketOrCompleteWithError(

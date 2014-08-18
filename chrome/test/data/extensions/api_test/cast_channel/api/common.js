@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 assertOpenChannel = function(channel) {
+  chrome.test.assertNoLastError();
   chrome.test.assertTrue(!!channel);
   chrome.test.assertTrue(channel.channelId > 0);
   chrome.test.assertTrue(channel.url == 'cast://192.168.1.1:8009');
@@ -14,6 +15,7 @@ assertOpenChannel = function(channel) {
 };
 
 assertClosedChannel = function(channel) {
+  chrome.test.assertNoLastError();
   assertClosedChannelWithError(channel, undefined);
 };
 
