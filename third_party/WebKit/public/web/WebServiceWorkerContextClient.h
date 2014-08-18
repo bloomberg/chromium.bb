@@ -71,6 +71,9 @@ public:
     // WebEmbeddedWorker.resumeAfterDownload() is invoked.
     virtual void didPauseAfterDownload() { }
 
+    // ServiceWorker has prepared everything for script loading and is now ready for inspection.
+    virtual void workerReadyForInspection() { }
+
     // A new WorkerGlobalScope is created and started to run on the
     // worker thread.
     // This also gives back a proxy to the client to talk to the

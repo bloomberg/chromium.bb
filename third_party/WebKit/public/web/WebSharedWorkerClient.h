@@ -50,6 +50,7 @@ class WebSharedWorkerClient {
 public:
     virtual void workerContextClosed() = 0;
     virtual void workerContextDestroyed() = 0;
+    virtual void workerReadyForInspection() { }
     virtual void workerScriptLoaded() = 0;
     virtual void workerScriptLoadFailed() = 0;
     virtual void selectAppCacheID(long long) = 0;
