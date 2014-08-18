@@ -19,6 +19,7 @@ of where it is running.
 """
 
 import contextlib
+import errno
 import getpass
 import json
 import logging
@@ -33,6 +34,7 @@ import sys
 import tempfile
 import time
 import urllib2
+import urlparse
 
 
 # Absolute path to src/ directory.
@@ -53,6 +55,7 @@ TEST_REPO_URL = 'https://chromium.googlesource.com/a/playground/access_test'
 # Possible chunks of git push response in case .netrc is misconfigured.
 BAD_ACL_ERRORS = (
   '(prohibited by Gerrit)',
+  'does not match your user account',
   'Invalid user name or password',
 )
 
@@ -82,11 +85,19 @@ def is_using_svn():
 
 
 def read_git_config(prop):
-  """Reads git config property of src.git repo."""
-  proc = subprocess.Popen(
-      ['git', 'config', prop], stdout=subprocess.PIPE, cwd=REPO_ROOT)
-  out, _ = proc.communicate()
-  return out.strip()
+  """Reads git config property of src.git repo.
+
+  Returns empty string in case of errors.
+  """
+  try:
+    proc = subprocess.Popen(
+        ['git', 'config', prop], stdout=subprocess.PIPE, cwd=REPO_ROOT)
+    out, _ = proc.communicate()
+    return out.strip()
+  except OSError as exc:
+    if exc.errno != errno.ENOENT:
+      logging.exception('Unexpected error when calling git')
+    return ''
 
 
 def read_netrc_user(netrc_obj, host):
@@ -104,9 +115,14 @@ def read_netrc_user(netrc_obj, host):
 
 def get_git_version():
   """Returns version of git or None if git is not available."""
-  proc = subprocess.Popen(['git', '--version'], stdout=subprocess.PIPE)
-  out, _ = proc.communicate()
-  return out.strip() if proc.returncode == 0 else ''
+  try:
+    proc = subprocess.Popen(['git', '--version'], stdout=subprocess.PIPE)
+    out, _ = proc.communicate()
+    return out.strip() if proc.returncode == 0 else ''
+  except OSError as exc:
+    if exc.errno != errno.ENOENT:
+      logging.exception('Unexpected error when calling git')
+    return ''
 
 
 def scan_configuration():
@@ -155,11 +171,11 @@ def scan_configuration():
 def last_configuration_path():
   """Path to store last checked configuration."""
   if is_using_git():
-    return os.path.join(REPO_ROOT, '.git', 'check_git_access_conf.json')
+    return os.path.join(REPO_ROOT, '.git', 'check_git_push_access_conf.json')
   elif is_using_svn():
-    return os.path.join(REPO_ROOT, '.svn', 'check_git_access_conf.json')
+    return os.path.join(REPO_ROOT, '.svn', 'check_git_push_access_conf.json')
   else:
-    return os.path.join(REPO_ROOT, '.check_git_access_conf.json')
+    return os.path.join(REPO_ROOT, '.check_git_push_access_conf.json')
 
 
 def read_last_configuration():
@@ -196,28 +212,38 @@ def temp_directory():
 class Runner(object):
   """Runs a bunch of commands in some directory, collects logs from them."""
 
-  def __init__(self, cwd):
+  def __init__(self, cwd, verbose):
     self.cwd = cwd
+    self.verbose = verbose
     self.log = []
 
   def run(self, cmd):
-    log = ['> ' + ' '.join(cmd)]
-    proc = subprocess.Popen(
-        cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        cwd=self.cwd)
-    out, _ = proc.communicate()
-    out = out.strip()
-    if out:
-      log.append(out)
-    if proc.returncode:
-      log.append('(exit code: %d)' % proc.returncode)
-    self.log.append('\n'.join(log))
-    return proc.returncode
+    self.append_to_log('> ' + ' '.join(cmd))
+    retcode = -1
+    try:
+      proc = subprocess.Popen(
+          cmd,
+          stdout=subprocess.PIPE,
+          stderr=subprocess.STDOUT,
+          cwd=self.cwd)
+      out, _ = proc.communicate()
+      out = out.strip()
+      retcode = proc.returncode
+    except OSError as exc:
+      out = str(exc)
+    if retcode:
+      out += '\n(exit code: %d)' % retcode
+    self.append_to_log(out)
+    return retcode
+
+  def append_to_log(self, text):
+    if text:
+      self.log.append(text)
+      if self.verbose:
+        logging.warning(text)
 
 
-def check_git_access(conf, report_url, interactive):
+def check_git_access(conf, report_url, verbose):
   """Attempts to push to a git repository, reports results to a server.
 
   Returns True if the check finished without incidents (push itself may
@@ -230,7 +256,7 @@ def check_git_access(conf, report_url, interactive):
     return upload_report(
         conf,
         report_url,
-        interactive,
+        verbose,
         push_works=False,
         push_log='',
         push_duration_ms=0)
@@ -244,7 +270,7 @@ def check_git_access(conf, report_url, interactive):
   try:
     with temp_directory() as tmp:
       # Prepare a simple commit on a new timeline.
-      runner = Runner(tmp)
+      runner = Runner(tmp, verbose)
       runner.run(['git', 'init', '.'])
       if conf['git_user_name']:
         runner.run(['git', 'config', 'user.name', conf['git_user_name']])
@@ -273,7 +299,7 @@ def check_git_access(conf, report_url, interactive):
   uploaded = upload_report(
       conf,
       report_url,
-      interactive,
+      verbose,
       push_works=push_works,
       push_log='\n'.join(runner.log),
       push_duration_ms=int((time.time() - started) * 1000))
@@ -281,11 +307,11 @@ def check_git_access(conf, report_url, interactive):
 
 
 def upload_report(
-    conf, report_url, interactive, push_works, push_log, push_duration_ms):
+    conf, report_url, verbose, push_works, push_log, push_duration_ms):
   """Posts report to the server, returns True if server accepted it.
 
-  If interactive is True and the script is running outside of *.corp.google.com
-  network, will ask the user to submit collected information manually.
+  Uploads the report only if script is running in Google corp network. Otherwise
+  just prints the report.
   """
   report = conf.copy()
   report.update(
@@ -295,13 +321,19 @@ def upload_report(
 
   as_bytes = json.dumps({'access_check': report}, indent=2, sort_keys=True)
 
-  if interactive:
+  if push_works:
+    logging.warning('Git push works!')
+  else:
+    logging.warning(
+        'Git push doesn\'t work, which is fine if you are not a committer.')
+
+  if verbose:
     print 'Status of git push attempt:'
     print as_bytes
 
   # Do not upload it outside of corp.
   if not is_in_google_corp():
-    if interactive:
+    if verbose:
       print (
           'You can send the above report to chrome-git-migration@google.com '
           'if you need help to set up you committer git account.')
@@ -317,12 +349,19 @@ def upload_report(
   while not success and attempt < 10:
     attempt += 1
     try:
-      logging.info('Attempting to upload the report to %s', report_url)
-      urllib2.urlopen(req, timeout=5)
+      logging.warning(
+          'Attempting to upload the report to %s...',
+          urlparse.urlparse(report_url).netloc)
+      resp = urllib2.urlopen(req, timeout=5)
+      report_id = None
+      try:
+        report_id = json.load(resp)['report_id']
+      except (ValueError, TypeError, KeyError):
+        pass
+      logging.warning('Report uploaded: %s', report_id)
       success = True
-      logging.warning('Report uploaded.')
     except (urllib2.URLError, socket.error, ssl.SSLError) as exc:
-      logging.info('Failed to upload the report: %s', exc)
+      logging.warning('Failed to upload the report: %s', exc)
   return success
 
 
