@@ -67,17 +67,29 @@ class LoggedInSpokenFeedbackTest : public InProcessBrowserTest {
             root_window, key, false, false, false, false));
   }
 
-  void SimulateTouchScreenInChromeVox() {
-    // ChromeVox looks at whether 'ontouchstart' exists to know whether
-    // or not it should respond to hover events. Fake it so that touch
-    // exploration events get spoken.
+  void RunJavaScriptInChromeVoxBackgroundPage(const std::string& script) {
     extensions::ExtensionHost* host =
         extensions::ExtensionSystem::Get(browser()->profile())->
         process_manager()->GetBackgroundHostForExtension(
             extension_misc::kChromeVoxExtensionId);
-    CHECK(content::ExecuteScript(
-        host->host_contents(),
-        "window.ontouchstart = function() {};"));
+    CHECK(content::ExecuteScript(host->host_contents(), script));
+  }
+
+  void SimulateTouchScreenInChromeVox() {
+    // ChromeVox looks at whether 'ontouchstart' exists to know whether
+    // or not it should respond to hover events. Fake it so that touch
+    // exploration events get spoken.
+    RunJavaScriptInChromeVoxBackgroundPage(
+        "window.ontouchstart = function() {};");
+  }
+
+  void DisableEarcons() {
+    // Playing earcons from within a test is not only annoying if you're
+    // running the test locally, but seems to cause crashes
+    // (http://crbug.com/396507). Work around this by just telling
+    // ChromeVox to not ever play earcons (prerecorded sound effects).
+    RunJavaScriptInChromeVoxBackgroundPage(
+        "cvox.ChromeVox.earcons.playEarcon = function() {};");
   }
 
  private:
@@ -85,14 +97,14 @@ class LoggedInSpokenFeedbackTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(LoggedInSpokenFeedbackTest);
 };
 
-// http://crbug.com/396507
-IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, DISABLED_AddBookmark) {
+IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, AddBookmark) {
   EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
 
   SpeechMonitor monitor;
   AccessibilityManager::Get()->EnableSpokenFeedback(
       true, ash::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(monitor.SkipChromeVoxEnabledMessage());
+  DisableEarcons();
 
   chrome::ExecuteCommand(browser(), IDC_SHOW_BOOKMARK_BAR);
 
@@ -186,6 +198,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, FocusToolbar) {
   AccessibilityManager::Get()->EnableSpokenFeedback(
       true, ash::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(monitor.SkipChromeVoxEnabledMessage());
+  DisableEarcons();
 
   chrome::ExecuteCommand(browser(), IDC_FOCUS_TOOLBAR);
   // Might be "Google Chrome Toolbar" or "Chromium Toolbar".
@@ -201,6 +214,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TypeInOmnibox) {
   AccessibilityManager::Get()->EnableSpokenFeedback(
       true, ash::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(monitor.SkipChromeVoxEnabledMessage());
+  DisableEarcons();
 
   // Wait for ChromeVox to finish speaking.
   chrome::ExecuteCommand(browser(), IDC_FOCUS_LOCATION);
@@ -231,6 +245,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TouchExploreStatusTray) {
   AccessibilityManager::Get()->EnableSpokenFeedback(
       true, ash::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(monitor.SkipChromeVoxEnabledMessage());
+  DisableEarcons();
 
   SimulateTouchScreenInChromeVox();
 
@@ -273,6 +288,7 @@ IN_PROC_BROWSER_TEST_F(GuestSpokenFeedbackTest, FocusToolbar) {
   AccessibilityManager::Get()->EnableSpokenFeedback(
       true, ash::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(monitor.SkipChromeVoxEnabledMessage());
+  DisableEarcons();
 
   chrome::ExecuteCommand(browser(), IDC_FOCUS_TOOLBAR);
   // Might be "Google Chrome Toolbar" or "Chromium Toolbar".
