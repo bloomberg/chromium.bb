@@ -141,7 +141,7 @@ void AudioPlayer::FinalizeOnAudioThread() {
 }
 
 int AudioPlayer::OnMoreData(media::AudioBus* dest,
-                            int /* total_bytes_delay */) {
+                            media::AudioBuffersState /* state */) {
   base::AutoLock al(state_lock_);
   // Continuously play our samples till explicitly told to stop.
   const int leftover_frames = samples_->frames() - frame_index_;

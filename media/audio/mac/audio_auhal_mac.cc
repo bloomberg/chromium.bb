@@ -228,8 +228,9 @@ void AUHALStream::ProvideInput(int frame_delay, AudioBus* dest) {
   // Supply the input data and render the output data.
   source_->OnMoreData(
       dest,
-      current_hardware_pending_bytes_ +
-      frame_delay * params_.GetBytesPerFrame());
+      AudioBuffersState(0,
+                        current_hardware_pending_bytes_ +
+                            frame_delay * params_.GetBytesPerFrame()));
   dest->Scale(volume_);
 }
 

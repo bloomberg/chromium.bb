@@ -290,7 +290,7 @@ void AudioOutputController::DoReportError() {
 }
 
 int AudioOutputController::OnMoreData(AudioBus* dest,
-                                      int total_bytes_delay) {
+                                      AudioBuffersState buffers_state) {
   TRACE_EVENT0("audio", "AudioOutputController::OnMoreData");
 
   // Indicate that we haven't wedged (at least not indefinitely, WedgeCheck()
@@ -304,7 +304,7 @@ int AudioOutputController::OnMoreData(AudioBus* dest,
 
   const int frames = dest->frames();
   sync_reader_->UpdatePendingBytes(
-      total_bytes_delay + frames * params_.GetBytesPerFrame());
+      buffers_state.total_bytes() + frames * params_.GetBytesPerFrame());
 
 #if defined(AUDIO_POWER_MONITORING)
   power_monitor_.Scan(*dest, frames);
