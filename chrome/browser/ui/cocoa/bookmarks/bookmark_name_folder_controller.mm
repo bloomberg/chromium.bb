@@ -97,6 +97,8 @@
 
 - (IBAction)ok:(id)sender {
   NSString* name = [nameField_ stringValue];
+  if ([name length] == 0)
+    name = l10n_util::GetNSStringWithFixup(IDS_BOOKMARK_EDITOR_NEW_FOLDER_NAME);
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile_);
   if (node_) {
     model->SetTitle(node_, base::SysNSStringToUTF16(name));
