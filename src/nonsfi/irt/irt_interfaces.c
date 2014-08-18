@@ -550,12 +550,25 @@ static int irt_rename(const char *oldpath, const char *newpath) {
   return check_error(rename(oldpath, newpath));
 }
 
+static int irt_symlink(const char *oldpath, const char *newpath) {
+  return check_error(symlink(oldpath, newpath));
+}
+
 static int irt_chmod(const char *pathname, mode_t mode) {
   return check_error(chmod(pathname, mode));
 }
 
 static int irt_access(const char *pathname, int mode) {
   return check_error(access(pathname, mode));
+}
+
+static int irt_readlink(const char *path, char *buf, size_t count,
+                        size_t *nread) {
+  ssize_t result = readlink(path, buf, count);
+  if (result < 0)
+    return errno;
+  *nread = result;
+  return 0;
 }
 
 static int irt_getpid(int *pid) {
@@ -631,8 +644,6 @@ const struct nacl_irt_clock nacl_irt_clock = {
 };
 #endif
 
-DEFINE_STUB(symlink)
-DEFINE_STUB(readlink)
 DEFINE_STUB(utimes)
 const struct nacl_irt_dev_filename nacl_irt_dev_filename = {
   irt_open,
@@ -646,10 +657,10 @@ const struct nacl_irt_dev_filename nacl_irt_dev_filename = {
   irt_lstat,
   irt_link,
   irt_rename,
-  USE_STUB(nacl_irt_dev_filename, symlink),
+  irt_symlink,
   irt_chmod,
   irt_access,
-  USE_STUB(nacl_irt_dev_filename, readlink),
+  irt_readlink,
   USE_STUB(nacl_irt_dev_filename, utimes),
 };
 

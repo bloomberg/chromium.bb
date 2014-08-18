@@ -1004,9 +1004,7 @@ bool testSuite(const char *test_file) {
   ret &= test_isatty(test_file);
   ret &= test_rename(test_file);
   ret &= test_link(test_file);
-  if (!NONSFI_MODE) {
-    ret &= test_symlinks(test_file);
-  }
+  ret &= test_symlinks(test_file);
   ret &= test_chmod(test_file);
   ret &= test_access(test_file);
 #endif
