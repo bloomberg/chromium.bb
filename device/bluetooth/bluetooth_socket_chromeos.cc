@@ -157,6 +157,15 @@ void BluetoothSocketChromeOS::Close() {
   if (profile_)
     UnregisterProfile();
 
+  // In the case below, where an asynchronous task gets posted on the socket
+  // thread in BluetoothSocketNet::Close, a reference will be held to this
+  // socket by the callback. This may cause the BluetoothAdapter to outlive
+  // DBusThreadManager during shutdown if that callback executes too late.
+  if (adapter_.get()) {
+    adapter_->RemoveObserver(this);
+    adapter_ = NULL;
+  }
+
   if (!device_path_.value().empty()) {
     BluetoothSocketNet::Close();
   } else {
