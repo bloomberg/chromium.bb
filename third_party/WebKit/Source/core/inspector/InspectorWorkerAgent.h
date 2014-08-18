@@ -40,7 +40,7 @@ namespace blink {
 class InstrumentingAgents;
 class JSONObject;
 class KURL;
-class WorkerGlobalScopeProxy;
+class WorkerInspectorProxy;
 
 typedef String ErrorString;
 
@@ -56,8 +56,8 @@ public:
 
     // Called from InspectorInstrumentation
     bool shouldPauseDedicatedWorkerOnStart();
-    void didStartWorkerGlobalScope(WorkerGlobalScopeProxy*, const KURL&);
-    void workerGlobalScopeTerminated(WorkerGlobalScopeProxy*);
+    void didStartWorker(WorkerInspectorProxy*, const KURL&);
+    void workerTerminated(WorkerInspectorProxy*);
 
     // Called from InspectorBackendDispatcher
     virtual void enable(ErrorString*) OVERRIDE;
@@ -73,7 +73,7 @@ public:
 private:
     InspectorWorkerAgent();
     void createWorkerFrontendChannelsForExistingWorkers();
-    void createWorkerFrontendChannel(WorkerGlobalScopeProxy*, const String& url);
+    void createWorkerFrontendChannel(WorkerInspectorProxy*, const String& url);
     void destroyWorkerFrontendChannels();
 
     InspectorFrontend::Worker* m_frontend;
@@ -81,8 +81,8 @@ private:
     class WorkerFrontendChannel;
     typedef HashMap<int, WorkerFrontendChannel*> WorkerChannels;
     WorkerChannels m_idToChannel;
-    typedef HashMap<WorkerGlobalScopeProxy*, String> DedicatedWorkers;
-    DedicatedWorkers m_dedicatedWorkers;
+    typedef HashMap<WorkerInspectorProxy*, String> WorkerIds;
+    WorkerIds m_workerIds;
     String m_tracingSessionId;
 };
 

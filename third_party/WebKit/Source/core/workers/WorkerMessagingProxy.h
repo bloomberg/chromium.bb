@@ -29,6 +29,7 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/workers/WorkerGlobalScopeProxy.h"
+#include "core/workers/WorkerInspectorProxy.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
@@ -45,7 +46,7 @@ class ExecutionContext;
 class Worker;
 class WorkerClients;
 
-class WorkerMessagingProxy FINAL : public WorkerGlobalScopeProxy, public WorkerLoaderProxy {
+class WorkerMessagingProxy FINAL : public WorkerGlobalScopeProxy, public WorkerLoaderProxy, public WorkerInspectorProxy {
     WTF_MAKE_NONCOPYABLE(WorkerMessagingProxy); WTF_MAKE_FAST_ALLOCATED;
 public:
     WorkerMessagingProxy(Worker*, PassOwnPtrWillBeRawPtr<WorkerClients>);
@@ -57,7 +58,10 @@ public:
     virtual void postMessageToWorkerGlobalScope(PassRefPtr<SerializedScriptValue>, PassOwnPtr<MessagePortChannelArray>) OVERRIDE;
     virtual bool hasPendingActivity() const OVERRIDE;
     virtual void workerObjectDestroyed() OVERRIDE;
-    virtual void connectToInspector(WorkerGlobalScopeProxy::PageInspector*) OVERRIDE;
+
+    // Implementations of WorkerInspectorProxy.
+    // (Only use these methods on the worker object thread.)
+    virtual void connectToInspector(WorkerInspectorProxy::PageInspector*) OVERRIDE;
     virtual void disconnectFromInspector() OVERRIDE;
     virtual void sendMessageToInspector(const String&) OVERRIDE;
     virtual void writeTimelineStartedEvent(const String& sessionId) OVERRIDE;
@@ -100,7 +104,7 @@ private:
     bool m_askedToTerminate;
 
     Vector<OwnPtr<ExecutionContextTask> > m_queuedEarlyTasks; // Tasks are queued here until there's a thread object created.
-    WorkerGlobalScopeProxy::PageInspector* m_pageInspector;
+    WorkerInspectorProxy::PageInspector* m_pageInspector;
 
     OwnPtrWillBePersistent<WorkerClients> m_workerClients;
 };

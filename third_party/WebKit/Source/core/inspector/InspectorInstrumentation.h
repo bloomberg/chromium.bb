@@ -63,7 +63,7 @@ class InstrumentingAgents;
 class RenderLayer;
 class ThreadableLoaderClient;
 class WorkerGlobalScope;
-class WorkerGlobalScopeProxy;
+class WorkerInspectorProxy;
 
 #define FAST_RETURN_IF_NO_FRONTENDS(value) if (!hasFrontends()) return value;
 

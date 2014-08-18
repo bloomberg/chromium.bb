@@ -1836,6 +1836,7 @@
             'workers/WorkerGlobalScopeProxy.h',
             'workers/WorkerGlobalScopeProxyProvider.cpp',
             'workers/WorkerGlobalScopeProxyProvider.h',
+            'workers/WorkerInspectorProxy.h',
             'workers/WorkerLoaderProxy.h',
             'workers/WorkerLocation.h',
             'workers/WorkerMessagingProxy.cpp',

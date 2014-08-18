@@ -36,11 +36,12 @@
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/JSONParser.h"
-#include "core/workers/WorkerGlobalScopeProxy.h"
+#include "core/workers/WorkerInspectorProxy.h"
 #include "platform/JSONValues.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -49,10 +50,10 @@ static const char workerInspectionEnabled[] = "workerInspectionEnabled";
 static const char autoconnectToWorkers[] = "autoconnectToWorkers";
 };
 
-class InspectorWorkerAgent::WorkerFrontendChannel FINAL : public WorkerGlobalScopeProxy::PageInspector {
+class InspectorWorkerAgent::WorkerFrontendChannel FINAL : public WorkerInspectorProxy::PageInspector {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    explicit WorkerFrontendChannel(InspectorFrontend::Worker* frontend, WorkerGlobalScopeProxy* proxy)
+    explicit WorkerFrontendChannel(InspectorFrontend::Worker* frontend, WorkerInspectorProxy* proxy)
         : m_frontend(frontend)
         , m_proxy(proxy)
         , m_id(s_nextId++)
@@ -61,13 +62,13 @@ public:
     }
     virtual ~WorkerFrontendChannel()
     {
-        disconnectFromWorkerGlobalScope();
+        disconnectFromWorker();
     }
 
     int id() const { return m_id; }
-    WorkerGlobalScopeProxy* proxy() const { return m_proxy; }
+    WorkerInspectorProxy* proxy() const { return m_proxy; }
 
-    void connectToWorkerGlobalScope()
+    void connectToWorker()
     {
         if (m_connected)
             return;
@@ -75,7 +76,7 @@ public:
         m_proxy->connectToInspector(this);
     }
 
-    void disconnectFromWorkerGlobalScope()
+    void disconnectFromWorker()
     {
         if (!m_connected)
             return;
@@ -84,7 +85,7 @@ public:
     }
 
 private:
-    // WorkerGlobalScopeProxy::PageInspector implementation
+    // WorkerInspectorProxy::PageInspector implementation
     virtual void dispatchMessageFromWorker(const String& message) OVERRIDE
     {
         RefPtr<JSONValue> value = parseJSON(message);
@@ -97,7 +98,7 @@ private:
     }
 
     InspectorFrontend::Worker* m_frontend;
-    WorkerGlobalScopeProxy* m_proxy;
+    WorkerInspectorProxy* m_proxy;
     int m_id;
     bool m_connected;
     static int s_nextId;
@@ -171,7 +172,7 @@ void InspectorWorkerAgent::connectToWorker(ErrorString* error, int workerId)
 {
     WorkerFrontendChannel* channel = m_idToChannel.get(workerId);
     if (channel)
-        channel->connectToWorkerGlobalScope();
+        channel->connectToWorker();
     else
         *error = "Worker is gone";
 }
@@ -180,7 +181,7 @@ void InspectorWorkerAgent::disconnectFromWorker(ErrorString* error, int workerId
 {
     WorkerFrontendChannel* channel = m_idToChannel.get(workerId);
     if (channel)
-        channel->disconnectFromWorkerGlobalScope();
+        channel->disconnectFromWorker();
     else
         *error = "Worker is gone";
 }
@@ -204,7 +205,7 @@ void InspectorWorkerAgent::setTracingSessionId(const String& sessionId)
     m_tracingSessionId = sessionId;
     if (sessionId.isEmpty())
         return;
-    for (DedicatedWorkers::iterator it = m_dedicatedWorkers.begin(); it != m_dedicatedWorkers.end(); ++it)
+    for (WorkerIds::iterator it = m_workerIds.begin(); it != m_workerIds.end(); ++it)
         it->key->writeTimelineStartedEvent(sessionId);
 }
 
@@ -213,18 +214,18 @@ bool InspectorWorkerAgent::shouldPauseDedicatedWorkerOnStart()
     return m_state->getBoolean(WorkerAgentState::autoconnectToWorkers);
 }
 
-void InspectorWorkerAgent::didStartWorkerGlobalScope(WorkerGlobalScopeProxy* workerGlobalScopeProxy, const KURL& url)
+void InspectorWorkerAgent::didStartWorker(WorkerInspectorProxy* workerInspectorProxy, const KURL& url)
 {
-    m_dedicatedWorkers.set(workerGlobalScopeProxy, url.string());
+    m_workerIds.set(workerInspectorProxy, url.string());
     if (m_frontend && m_state->getBoolean(WorkerAgentState::workerInspectionEnabled))
-        createWorkerFrontendChannel(workerGlobalScopeProxy, url.string());
+        createWorkerFrontendChannel(workerInspectorProxy, url.string());
     if (!m_tracingSessionId.isEmpty())
-        workerGlobalScopeProxy->writeTimelineStartedEvent(m_tracingSessionId);
+        workerInspectorProxy->writeTimelineStartedEvent(m_tracingSessionId);
 }
 
-void InspectorWorkerAgent::workerGlobalScopeTerminated(WorkerGlobalScopeProxy* proxy)
+void InspectorWorkerAgent::workerTerminated(WorkerInspectorProxy* proxy)
 {
-    m_dedicatedWorkers.remove(proxy);
+    m_workerIds.remove(proxy);
     for (WorkerChannels::iterator it = m_idToChannel.begin(); it != m_idToChannel.end(); ++it) {
         if (proxy == it->value->proxy()) {
             m_frontend->workerTerminated(it->key);
@@ -237,28 +238,28 @@ void InspectorWorkerAgent::workerGlobalScopeTerminated(WorkerGlobalScopeProxy* p
 
 void InspectorWorkerAgent::createWorkerFrontendChannelsForExistingWorkers()
 {
-    for (DedicatedWorkers::iterator it = m_dedicatedWorkers.begin(); it != m_dedicatedWorkers.end(); ++it)
+    for (WorkerIds::iterator it = m_workerIds.begin(); it != m_workerIds.end(); ++it)
         createWorkerFrontendChannel(it->key, it->value);
 }
 
 void InspectorWorkerAgent::destroyWorkerFrontendChannels()
 {
     for (WorkerChannels::iterator it = m_idToChannel.begin(); it != m_idToChannel.end(); ++it) {
-        it->value->disconnectFromWorkerGlobalScope();
+        it->value->disconnectFromWorker();
         delete it->value;
     }
     m_idToChannel.clear();
 }
 
-void InspectorWorkerAgent::createWorkerFrontendChannel(WorkerGlobalScopeProxy* workerGlobalScopeProxy, const String& url)
+void InspectorWorkerAgent::createWorkerFrontendChannel(WorkerInspectorProxy* workerInspectorProxy, const String& url)
 {
-    WorkerFrontendChannel* channel = new WorkerFrontendChannel(m_frontend, workerGlobalScopeProxy);
+    WorkerFrontendChannel* channel = new WorkerFrontendChannel(m_frontend, workerInspectorProxy);
     m_idToChannel.set(channel->id(), channel);
 
     ASSERT(m_frontend);
     bool autoconnectToWorkers = m_state->getBoolean(WorkerAgentState::autoconnectToWorkers);
     if (autoconnectToWorkers)
-        channel->connectToWorkerGlobalScope();
+        channel->connectToWorker();
     m_frontend->workerCreated(channel->id(), url, autoconnectToWorkers);
 }
 

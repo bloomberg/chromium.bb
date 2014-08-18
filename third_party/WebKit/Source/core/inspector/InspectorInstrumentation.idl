@@ -392,13 +392,13 @@ interface InspectorInstrumentation {
     void didDispatchDOMStorageEvent(Page* page, const String& key, const String& oldValue, const String& newValue, StorageType storageType, SecurityOrigin* securityOrigin);
 
     [Worker]
-    void didStartWorkerGlobalScope(ExecutionContext*, WorkerGlobalScopeProxy* proxy, const KURL& url);
+    void didStartWorker(ExecutionContext*, WorkerInspectorProxy* proxy, const KURL& url);
+
+    [Worker]
+    void workerTerminated(ExecutionContext*, WorkerInspectorProxy* proxy);
 
     [WorkerRuntime]
     void willEvaluateWorkerScript([Keep] WorkerGlobalScope* context, int workerThreadStartMode);
-
-    [Worker]
-    void workerGlobalScopeTerminated(ExecutionContext*, WorkerGlobalScopeProxy* proxy);
 
     [Profiler, Timeline]
     void willProcessTask(WorkerGlobalScope* context);

@@ -121,7 +121,7 @@ void WorkerMessagingProxy::startWorkerGlobalScope(const KURL& scriptURL, const S
     RefPtr<DedicatedWorkerThread> thread = DedicatedWorkerThread::create(*this, *m_workerObjectProxy.get(), originTime, startupData.release());
     thread->start();
     workerThreadCreated(thread);
-    InspectorInstrumentation::didStartWorkerGlobalScope(m_executionContext.get(), this, scriptURL);
+    InspectorInstrumentation::didStartWorker(m_executionContext.get(), this, scriptURL);
 }
 
 void WorkerMessagingProxy::postMessageToWorkerObject(PassRefPtr<SerializedScriptValue> message, PassOwnPtr<MessagePortChannelArray> channels)
@@ -231,7 +231,7 @@ static void connectToWorkerGlobalScopeInspectorTask(ExecutionContext* context, b
     toWorkerGlobalScope(context)->workerInspectorController()->connectFrontend();
 }
 
-void WorkerMessagingProxy::connectToInspector(WorkerGlobalScopeProxy::PageInspector* pageInspector)
+void WorkerMessagingProxy::connectToInspector(WorkerInspectorProxy::PageInspector* pageInspector)
 {
     if (m_askedToTerminate)
         return;
@@ -332,7 +332,7 @@ bool WorkerMessagingProxy::hasPendingActivity() const
 
 void WorkerMessagingProxy::terminateInternally()
 {
-    InspectorInstrumentation::workerGlobalScopeTerminated(m_executionContext.get(), this);
+    InspectorInstrumentation::workerTerminated(m_executionContext.get(), this);
 
     // FIXME: This need to be revisited when we support nested worker one day
     ASSERT(m_executionContext->isDocument());
