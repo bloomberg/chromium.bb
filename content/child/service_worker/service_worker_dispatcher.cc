@@ -247,17 +247,13 @@ void ServiceWorkerDispatcher::OnRegistered(
   if (!callbacks)
     return;
 
-#ifdef DISABLE_SERVICE_WORKER_REGISTRATION
-  callbacks->onSuccess(GetServiceWorker(info, true));
-  // We should adopt and destroy an unused handle ref.
-  ServiceWorkerRegistrationHandleReference::Adopt(
-      registration_handle_id, info, thread_safe_sender_);
-#else
   callbacks->onSuccess(GetServiceWorkerRegistration(
       registration_handle_id, info, true));
-  // We should adopt and destroy an unused handle ref.
+
+  // The handle ref is unused, so adopt and destroy it.
+  // TODO(nhiroki): ServiceWorkerDispatcherHost don't have to pass a handle ref.
   ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_);
-#endif
+
   pending_callbacks_.Remove(request_id);
 }
 
@@ -348,21 +344,14 @@ void ServiceWorkerDispatcher::SetInstallingServiceWorker(
       worker_to_provider_[info.handle_id] = provider->second;
   }
 
-#ifdef DISABLE_SERVICE_WORKER_REGISTRATION
-  ScriptClientMap::iterator found = script_clients_.find(provider_id);
-  if (found != script_clients_.end()) {
-    // Populate the .installing field with the new worker object.
-    found->second->setInstalling(GetServiceWorker(info, false));
-  }
-#else
   RegistrationObjectMap::iterator found =
       registrations_.find(registration_handle_id);
   if (found != registrations_.end()) {
+    // Populate the .installing field with the new worker object.
     found->second->setInstalling(GetServiceWorker(info, false));
     if (info.handle_id != kInvalidServiceWorkerHandleId)
       found->second->OnUpdateFound();
   }
-#endif
 }
 
 void ServiceWorkerDispatcher::SetWaitingServiceWorker(
@@ -385,18 +374,12 @@ void ServiceWorkerDispatcher::SetWaitingServiceWorker(
       worker_to_provider_[info.handle_id] = provider->second;
   }
 
-#ifdef DISABLE_SERVICE_WORKER_REGISTRATION
-  ScriptClientMap::iterator found = script_clients_.find(provider_id);
-  if (found != script_clients_.end()) {
+  RegistrationObjectMap::iterator found =
+      registrations_.find(registration_handle_id);
+  if (found != registrations_.end()) {
     // Populate the .waiting field with the new worker object.
     found->second->setWaiting(GetServiceWorker(info, false));
   }
-#else
-  RegistrationObjectMap::iterator found =
-      registrations_.find(registration_handle_id);
-  if (found != registrations_.end())
-    found->second->setWaiting(GetServiceWorker(info, false));
-#endif
 }
 
 void ServiceWorkerDispatcher::SetActiveServiceWorker(
@@ -419,18 +402,12 @@ void ServiceWorkerDispatcher::SetActiveServiceWorker(
       worker_to_provider_[info.handle_id] = provider->second;
   }
 
-#ifdef DISABLE_SERVICE_WORKER_REGISTRATION
-  ScriptClientMap::iterator found = script_clients_.find(provider_id);
-  if (found != script_clients_.end()) {
+  RegistrationObjectMap::iterator found =
+      registrations_.find(registration_handle_id);
+  if (found != registrations_.end()) {
     // Populate the .active field with the new worker object.
     found->second->setActive(GetServiceWorker(info, false));
   }
-#else
-  RegistrationObjectMap::iterator found =
-      registrations_.find(registration_handle_id);
-  if (found != registrations_.end())
-    found->second->setActive(GetServiceWorker(info, false));
-#endif
 }
 
 void ServiceWorkerDispatcher::OnSetControllerServiceWorker(
