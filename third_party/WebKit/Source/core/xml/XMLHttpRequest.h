@@ -113,7 +113,7 @@ public:
     void send(ArrayBufferView*, ExceptionState&);
     void abort();
     void setRequestHeader(const AtomicString& name, const AtomicString& value, ExceptionState&);
-    void overrideMimeType(const AtomicString& override);
+    void overrideMimeType(const AtomicString& override, ExceptionState&);
     String getAllResponseHeaders() const;
     const AtomicString& getResponseHeader(const AtomicString&) const;
     ScriptString responseText(ExceptionState&);
