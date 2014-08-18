@@ -81,6 +81,18 @@
       url(../images/200/cast_on.png) 2x);
 }
 
+#video-player > .header > button.cast-button:hover {
+  background-image: -webkit-image-set(
+      url(../images/100/cast_off_hover.png) 1x,
+      url(../images/200/cast_off_hover.png) 2x);
+}
+
+#video-player[casting] > .header > button.cast-button:hover {
+  background-image: -webkit-image-set(
+      url(../images/100/cast_on_hover.png) 1x,
+      url(../images/200/cast_on_hover.png) 2x);
+}
+
 #video-player > .header > button.cast-button {
   display: none;
 }
