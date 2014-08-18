@@ -148,6 +148,7 @@ namespace blink {
         {{convert_and_set_value(property)}}
 }
 {% endmacro %}
+{{apply_auto('CSSPropertyClip')}}
 {{apply_auto('CSSPropertyOrphans')}}
 {{apply_auto('CSSPropertyWebkitColumnCount')}}
 {{apply_auto('CSSPropertyWebkitColumnGap', auto_getter='hasNormalColumnGap', auto_setter='setHasNormalColumnGap', auto_identity='CSSValueNormal')}}

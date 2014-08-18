@@ -56,7 +56,6 @@
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/Counter.h"
 #include "core/css/Pair.h"
-#include "core/css/Rect.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/resolver/ElementStyleResources.h"
@@ -129,45 +128,6 @@ void StyleBuilder::applyProperty(CSSPropertyID id, StyleResolverState& state, CS
         state.parentStyle()->setHasExplicitlyInheritedProperties();
 
     StyleBuilder::applyProperty(id, state, value, isInitial, isInherit);
-}
-
-static Length clipConvertToLength(StyleResolverState& state, CSSPrimitiveValue* value)
-{
-    return value->convertToLength<FixedConversion | PercentConversion | AutoConversion>(state.cssToLengthConversionData());
-}
-
-void StyleBuilderFunctions::applyInitialCSSPropertyClip(StyleResolverState& state)
-{
-    state.style()->setClip(Length(), Length(), Length(), Length());
-    state.style()->setHasClip(false);
-}
-
-void StyleBuilderFunctions::applyInheritCSSPropertyClip(StyleResolverState& state)
-{
-    RenderStyle* parentStyle = state.parentStyle();
-    if (!parentStyle->hasClip())
-        return applyInitialCSSPropertyClip(state);
-    state.style()->setClip(parentStyle->clipTop(), parentStyle->clipRight(), parentStyle->clipBottom(), parentStyle->clipLeft());
-    state.style()->setHasClip(true);
-}
-
-void StyleBuilderFunctions::applyValueCSSPropertyClip(StyleResolverState& state, CSSValue* value)
-{
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-
-    if (primitiveValue->getValueID() == CSSValueAuto) {
-        state.style()->setClip(Length(), Length(), Length(), Length());
-        state.style()->setHasClip(false);
-        return;
-    }
-
-    Rect* rect = primitiveValue->getRectValue();
-    Length top = clipConvertToLength(state, rect->top());
-    Length right = clipConvertToLength(state, rect->right());
-    Length bottom = clipConvertToLength(state, rect->bottom());
-    Length left = clipConvertToLength(state, rect->left());
-    state.style()->setClip(top, right, bottom, left);
-    state.style()->setHasClip(true);
 }
 
 void StyleBuilderFunctions::applyInitialCSSPropertyColor(StyleResolverState& state)

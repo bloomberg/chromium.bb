@@ -323,9 +323,9 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
     case CSSPropertyWebkitBoxShadow:
         return AnimatableShadow::create(style.boxShadow());
     case CSSPropertyClip:
-        if (style.hasClip())
-            return createFromLengthBox(style.clip(), style);
-        return AnimatableUnknown::create(CSSPrimitiveValue::create(CSSValueAuto));
+        if (style.hasAutoClip())
+            return AnimatableUnknown::create(CSSPrimitiveValue::create(CSSValueAuto));
+        return createFromLengthBox(style.clip(), style);
     case CSSPropertyColor:
         return createFromColor(property, style);
     case CSSPropertyFillOpacity:

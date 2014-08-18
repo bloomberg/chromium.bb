@@ -542,7 +542,7 @@ public:
     const Length& clipTop() const { return visual->clip.top(); }
     const Length& clipBottom() const { return visual->clip.bottom(); }
     const LengthBox& clip() const { return visual->clip; }
-    bool hasClip() const { return visual->hasClip; }
+    bool hasAutoClip() const { return visual->hasAutoClip; }
 
     EUnicodeBidi unicodeBidi() const { return static_cast<EUnicodeBidi>(noninherited_flags.unicodeBidi); }
 
@@ -1099,13 +1099,8 @@ public:
     void setVerticalAlign(EVerticalAlign v) { noninherited_flags.verticalAlign = v; }
     void setVerticalAlignLength(const Length& length) { setVerticalAlign(LENGTH); SET_VAR(m_box, m_verticalAlign, length); }
 
-    void setHasClip(bool b = true) { SET_VAR(visual, hasClip, b); }
-    void setClipLeft(const Length& v) { SET_VAR(visual, clip.m_left, v); }
-    void setClipRight(const Length& v) { SET_VAR(visual, clip.m_right, v); }
-    void setClipTop(const Length& v) { SET_VAR(visual, clip.m_top, v); }
-    void setClipBottom(const Length& v) { SET_VAR(visual, clip.m_bottom, v); }
-    void setClip(const Length& top, const Length& right, const Length& bottom, const Length& left);
-    void setClip(const LengthBox& box) { SET_VAR(visual, clip, box); }
+    void setHasAutoClip() { SET_VAR(visual, hasAutoClip, true); SET_VAR(visual, clip, RenderStyle::initialClip()); }
+    void setClip(const LengthBox& box) { SET_VAR(visual, hasAutoClip, false); SET_VAR(visual, clip, box); }
 
     void setUnicodeBidi(EUnicodeBidi b) { noninherited_flags.unicodeBidi = b; }
 
@@ -1550,6 +1545,7 @@ public:
     static LengthSize initialBorderRadius() { return LengthSize(Length(0, Fixed), Length(0, Fixed)); }
     static ECaptionSide initialCaptionSide() { return CAPTOP; }
     static EClear initialClear() { return CNONE; }
+    static LengthBox initialClip() { return LengthBox(); }
     static TextDirection initialDirection() { return LTR; }
     static WritingMode initialWritingMode() { return TopToBottomWritingMode; }
     static TextCombine initialTextCombine() { return TextCombineNone; }

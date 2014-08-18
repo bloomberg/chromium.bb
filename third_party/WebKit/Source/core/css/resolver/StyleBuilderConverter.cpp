@@ -34,6 +34,7 @@
 #include "core/css/CSSReflectValue.h"
 #include "core/css/CSSShadowValue.h"
 #include "core/css/Pair.h"
+#include "core/css/Rect.h"
 #include "core/svg/SVGURIReference.h"
 
 namespace blink {
@@ -89,6 +90,16 @@ AtomicString StyleBuilderConverter::convertFragmentIdentifier(StyleResolverState
     if (primitiveValue->isURI())
         return SVGURIReference::fragmentIdentifierFromIRIString(primitiveValue->getStringValue(), state.element()->treeScope());
     return nullAtom;
+}
+
+LengthBox StyleBuilderConverter::convertClip(StyleResolverState& state, CSSValue* value)
+{
+    Rect* rect = toCSSPrimitiveValue(value)->getRectValue();
+
+    return LengthBox(convertLengthOrAuto(state, rect->top()),
+        convertLengthOrAuto(state, rect->right()),
+        convertLengthOrAuto(state, rect->bottom()),
+        convertLengthOrAuto(state, rect->left()));
 }
 
 PassRefPtr<FontFeatureSettings> StyleBuilderConverter::convertFontFeatureSettings(StyleResolverState& state, CSSValue* value)

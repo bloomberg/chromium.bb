@@ -143,7 +143,7 @@ box-sizing
 buffered-rendering svg
 caption-side inherited
 clear
-clip animatable, custom_all
+clip animatable, converter=convertClip, custom_all
 clip-path svg, name_for_methods=ClipperResource, converter=convertFragmentIdentifier
 clip-rule inherited, svg, type_name=WindRule
 color-interpolation inherited, svg

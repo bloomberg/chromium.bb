@@ -41,14 +41,14 @@ public:
     bool operator==(const StyleVisualData& o) const
     {
         return clip == o.clip
-            && hasClip == o.hasClip
+            && hasAutoClip == o.hasAutoClip
             && textDecoration == o.textDecoration
             && m_zoom == o.m_zoom;
     }
     bool operator!=(const StyleVisualData& o) const { return !(*this == o); }
 
     LengthBox clip;
-    bool hasClip : 1;
+    bool hasAutoClip : 1;
     unsigned textDecoration : TextDecorationBits; // Text decorations defined *only* by this element.
 
     float m_zoom;

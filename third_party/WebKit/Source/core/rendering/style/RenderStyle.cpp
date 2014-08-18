@@ -622,7 +622,7 @@ bool RenderStyle::diffNeedsFullLayout(const RenderStyle& other) const
 
 bool RenderStyle::diffNeedsPaintInvalidationLayer(const RenderStyle& other) const
 {
-    if (position() != StaticPosition && (visual->clip != other.visual->clip || visual->hasClip != other.visual->hasClip))
+    if (position() != StaticPosition && (visual->clip != other.visual->clip || visual->hasAutoClip != other.visual->hasAutoClip))
         return true;
 
     if (rareNonInheritedData.get() != other.rareNonInheritedData.get()) {
@@ -703,15 +703,6 @@ void RenderStyle::updatePropertySpecificDifferences(const RenderStyle& other, St
                 diff.setTextOrColorChanged();
         }
     }
-}
-
-void RenderStyle::setClip(const Length& top, const Length& right, const Length& bottom, const Length& left)
-{
-    StyleVisualData* data = visual.access();
-    data->clip.m_top = top;
-    data->clip.m_right = right;
-    data->clip.m_bottom = bottom;
-    data->clip.m_left = left;
 }
 
 void RenderStyle::addCursor(PassRefPtr<StyleImage> image, const IntPoint& hotSpot)

@@ -92,7 +92,7 @@ void RenderLayerModelObject::styleWillChange(StyleDifference diff, const RenderS
 
     if (RenderStyle* oldStyle = style()) {
         if (parent() && diff.needsPaintInvalidationLayer()) {
-            if (oldStyle->hasClip() != newStyle.hasClip()
+            if (oldStyle->hasAutoClip() != newStyle.hasAutoClip()
                 || oldStyle->clip() != newStyle.clip())
                 layer()->clipper().clearClipRectsIncludingDescendants();
         }

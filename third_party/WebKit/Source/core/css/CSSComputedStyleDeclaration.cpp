@@ -2529,7 +2529,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         case CSSPropertyBorderTopRightRadius:
             return valueForBorderRadiusCorner(style->borderTopRightRadius(), *style);
         case CSSPropertyClip: {
-            if (!style->hasClip())
+            if (style->hasAutoClip())
                 return cssValuePool().createIdentifierValue(CSSValueAuto);
             RefPtrWillBeRawPtr<Rect> rect = Rect::create();
             rect->setTop(zoomAdjustedPixelValue(style->clip().top().value(), *style));

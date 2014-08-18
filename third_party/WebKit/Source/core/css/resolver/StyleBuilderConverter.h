@@ -47,6 +47,7 @@ public:
     static AtomicString convertFragmentIdentifier(StyleResolverState&, CSSValue*);
     static Color convertColor(StyleResolverState&, CSSValue*, bool forVisitedLink = false);
     template <typename T> static T convertComputedLength(StyleResolverState&, CSSValue*);
+    static LengthBox convertClip(StyleResolverState&, CSSValue*);
     template <typename T> static T convertFlags(StyleResolverState&, CSSValue*);
     static PassRefPtr<FontFeatureSettings> convertFontFeatureSettings(StyleResolverState&, CSSValue*);
     static FontWeight convertFontWeight(StyleResolverState&, CSSValue*);
