@@ -6,8 +6,6 @@
 # They return canned responses for URLs. appengine_wrappers.py uses the fake
 # fetchers if the App Engine imports fail.
 
-import base64
-import json
 import os
 import re
 
@@ -73,37 +71,6 @@ class _FakeSubversionServer(_FakeFetcher):
         return None
     try:
       return ReadFile(path)
-    except IOError:
-      return None
-
-
-_GITILES_BASE_RE = re.escape(url_constants.GITILES_BASE)
-_GITILES_BRANCH_BASE_RE = re.escape(url_constants.GITILES_BRANCH_BASE)
-_GITILES_URL_TO_PATH_PATTERN = re.compile(
-    r'(' + _GITILES_BASE_RE + r'|' + _GITILES_BRANCH_BASE_RE + r').+?/(.*)')
-def _ExtractPathFromGitilesUrl(url):
-  return _GITILES_URL_TO_PATH_PATTERN.match(url).group(2)
-
-
-class _FakeGitilesServer(_FakeFetcher):
-  def fetch(self, url):
-    path = _ExtractPathFromGitilesUrl(url)
-    chromium_path = ChromiumPath(path)
-    if self._IsDir(chromium_path):
-      jsn = {}
-      dir_stat = self._Stat(chromium_path)
-      jsn['id'] = dir_stat
-      jsn['entries'] = []
-      for f in self._ListDir(chromium_path):
-        if f.startswith('.'):
-          continue
-        jsn['entries'].append({
-          'id': self._Stat(os.path.join(chromium_path, f)),
-          'name': f
-        })
-      return json.dumps(jsn)
-    try:
-      return base64.b64encode(ReadFile(path))
     except IOError:
       return None
 
@@ -179,6 +146,4 @@ def ConfigureFakeFetchers():
     '%s/.*/zipball' % url_constants.GITHUB_REPOS: _FakeGithubZip(),
     '%s/api/.*' % url_constants.CODEREVIEW_SERVER: _FakeRietveldAPI(),
     '%s/tarball/.*' % url_constants.CODEREVIEW_SERVER: _FakeRietveldTarball(),
-    '%s/.*' % _GITILES_BASE_RE: _FakeGitilesServer(),
-    '%s/.*' % _GITILES_BRANCH_BASE_RE: _FakeGitilesServer()
   })
