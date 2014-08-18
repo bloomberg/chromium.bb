@@ -19,7 +19,6 @@ from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import gs
 from chromite.lib import osutils
-from chromite.lib import retry_util
 
 
 def GetParser():
@@ -46,8 +45,7 @@ def main(argv):
   options = parser.parse_args(argv)
   ctx = gs.GSContext(retries=0)
   try:
-    retry_util.RetryCommand(Copy, ctx.DEFAULT_RETRIES, ctx, options.uri,
-                            options.filename, sleep=ctx.DEFAULT_SLEEP_TIME)
-  except (gs.GSContextException, cros_build_lib.RunCommandError) as ex:
+    Copy(ctx, options.uri, options.filename)
+  except gs.GSContextException as ex:
     # Hide the stack trace using Die.
     cros_build_lib.Die('%s', ex)
