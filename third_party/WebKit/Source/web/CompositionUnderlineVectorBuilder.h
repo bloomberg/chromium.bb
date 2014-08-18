@@ -39,7 +39,7 @@
 namespace blink {
 
 // This classes are used for converting from std::vector<WebCompositionUnderline>
-// to Vector<blink::CompositionUnderline>.
+// to Vector<CompositionUnderline>.
 
 class CompositionUnderlineVectorBuilder : public Vector<CompositionUnderline> {
 public:

@@ -11,20 +11,20 @@ namespace blink {
 
 class WebRemoteFrameImpl;
 
-class RemoteFrameClient : public blink::FrameClient {
+class RemoteFrameClient : public FrameClient {
 public:
     explicit RemoteFrameClient(WebRemoteFrameImpl*);
 
     // FrameClient overrides:
-    virtual blink::Frame* opener() const OVERRIDE;
-    virtual void setOpener(blink::Frame*) OVERRIDE;
+    virtual Frame* opener() const OVERRIDE;
+    virtual void setOpener(Frame*) OVERRIDE;
 
-    virtual blink::Frame* parent() const OVERRIDE;
-    virtual blink::Frame* top() const OVERRIDE;
-    virtual blink::Frame* previousSibling() const OVERRIDE;
-    virtual blink::Frame* nextSibling() const OVERRIDE;
-    virtual blink::Frame* firstChild() const OVERRIDE;
-    virtual blink::Frame* lastChild() const OVERRIDE;
+    virtual Frame* parent() const OVERRIDE;
+    virtual Frame* top() const OVERRIDE;
+    virtual Frame* previousSibling() const OVERRIDE;
+    virtual Frame* nextSibling() const OVERRIDE;
+    virtual Frame* firstChild() const OVERRIDE;
+    virtual Frame* lastChild() const OVERRIDE;
 
     WebRemoteFrameImpl* webFrame() const { return m_webFrame; }
 

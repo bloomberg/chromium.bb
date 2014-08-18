@@ -38,14 +38,14 @@ namespace blink {
 class WebViewImpl;
 struct WebContextMenuData;
 
-class ContextMenuClientImpl FINAL : public blink::ContextMenuClient {
+class ContextMenuClientImpl FINAL : public ContextMenuClient {
 public:
     explicit ContextMenuClientImpl(WebViewImpl* webView) : m_webView(webView) { }
     virtual ~ContextMenuClientImpl() {}
-    virtual void showContextMenu(const blink::ContextMenu*) OVERRIDE;
+    virtual void showContextMenu(const ContextMenu*) OVERRIDE;
     virtual void clearContextMenu() OVERRIDE;
 private:
-    void populateCustomMenuItems(const blink::ContextMenu*, WebContextMenuData*);
+    void populateCustomMenuItems(const ContextMenu*, WebContextMenuData*);
     WebViewImpl* m_webView;
 };
 

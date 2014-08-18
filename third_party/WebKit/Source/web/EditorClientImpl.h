@@ -35,23 +35,20 @@
 #include "wtf/Forward.h"
 
 namespace blink {
+
 class LocalFrame;
 class HTMLInputElement;
-}
-
-namespace blink {
 class WebViewImpl;
 
-class EditorClientImpl FINAL : public blink::EditorClient {
+class EditorClientImpl FINAL : public EditorClient {
 public:
     explicit EditorClientImpl(WebViewImpl*);
-
     virtual ~EditorClientImpl();
 
     virtual void respondToChangedContents() OVERRIDE;
-    virtual void respondToChangedSelection(blink::LocalFrame*, blink::SelectionType) OVERRIDE;
-    virtual bool canCopyCut(blink::LocalFrame*, bool defaultValue) const OVERRIDE;
-    virtual bool canPaste(blink::LocalFrame*, bool defaultValue) const OVERRIDE;
+    virtual void respondToChangedSelection(LocalFrame*, SelectionType) OVERRIDE;
+    virtual bool canCopyCut(LocalFrame*, bool defaultValue) const OVERRIDE;
+    virtual bool canPaste(LocalFrame*, bool defaultValue) const OVERRIDE;
     virtual bool handleKeyboardEvent() OVERRIDE;
 
 private:

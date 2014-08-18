@@ -33,39 +33,36 @@
 #include "wtf/text/WTFString.h"
 
 namespace blink {
+
 class FrameView;
-}
-
-namespace blink {
-
 class WebViewImpl;
 
-class ValidationMessageClientImpl FINAL : public NoBaseWillBeGarbageCollectedFinalized<ValidationMessageClientImpl>, public blink::ValidationMessageClient {
+class ValidationMessageClientImpl FINAL : public NoBaseWillBeGarbageCollectedFinalized<ValidationMessageClientImpl>, public ValidationMessageClient {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ValidationMessageClientImpl);
 public:
     static PassOwnPtrWillBeRawPtr<ValidationMessageClientImpl> create(WebViewImpl&);
     virtual ~ValidationMessageClientImpl();
 
-    virtual void trace(blink::Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     ValidationMessageClientImpl(WebViewImpl&);
-    void checkAnchorStatus(blink::Timer<ValidationMessageClientImpl>*);
-    blink::FrameView* currentView();
+    void checkAnchorStatus(Timer<ValidationMessageClientImpl>*);
+    FrameView* currentView();
 
-    virtual void showValidationMessage(const blink::Element& anchor, const String& message, TextDirection messageDir, const String& subMessage, TextDirection subMessageDir) OVERRIDE;
-    virtual void hideValidationMessage(const blink::Element& anchor) OVERRIDE;
-    virtual bool isValidationMessageVisible(const blink::Element& anchor) OVERRIDE;
-    virtual void documentDetached(const blink::Document&) OVERRIDE;
+    virtual void showValidationMessage(const Element& anchor, const String& message, TextDirection messageDir, const String& subMessage, TextDirection subMessageDir) OVERRIDE;
+    virtual void hideValidationMessage(const Element& anchor) OVERRIDE;
+    virtual bool isValidationMessageVisible(const Element& anchor) OVERRIDE;
+    virtual void documentDetached(const Document&) OVERRIDE;
     virtual void willBeDestroyed() OVERRIDE;
 
     WebViewImpl& m_webView;
-    RawPtrWillBeMember<const blink::Element> m_currentAnchor;
+    RawPtrWillBeMember<const Element> m_currentAnchor;
     String m_message;
-    blink::IntRect m_lastAnchorRectInScreen;
+    IntRect m_lastAnchorRectInScreen;
     float m_lastPageScaleFactor;
     double m_finishTime;
-    blink::Timer<ValidationMessageClientImpl> m_timer;
+    Timer<ValidationMessageClientImpl> m_timer;
 };
 
 }

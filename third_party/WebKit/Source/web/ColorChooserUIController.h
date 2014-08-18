@@ -32,23 +32,20 @@
 #include "wtf/OwnPtr.h"
 
 namespace blink {
+
 class ColorChooserClient;
 class LocalFrame;
-}
-
-namespace blink {
-
 class WebColorChooser;
 
-class ColorChooserUIController : public WebColorChooserClient, public blink::ColorChooser {
+class ColorChooserUIController : public WebColorChooserClient, public ColorChooser {
 public:
-    ColorChooserUIController(blink::LocalFrame*, blink::ColorChooserClient*);
+    ColorChooserUIController(LocalFrame*, ColorChooserClient*);
     virtual ~ColorChooserUIController();
 
     virtual void openUI();
 
     // ColorChooser functions:
-    virtual void setSelectedColor(const blink::Color&) OVERRIDE FINAL;
+    virtual void setSelectedColor(const Color&) OVERRIDE FINAL;
     virtual void endChooser() OVERRIDE;
 
     // WebColorChooserClient functions:
@@ -60,9 +57,8 @@ protected:
     OwnPtr<WebColorChooser> m_chooser;
 
 private:
-
-    blink::LocalFrame* m_frame;
-    blink::ColorChooserClient* m_client;
+    LocalFrame* m_frame;
+    ColorChooserClient* m_client;
 };
 
 }

@@ -36,13 +36,11 @@
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
+
 class Worker;
 class WorkerGlobalScopeProxy;
-}
 
-namespace blink {
-
-class WorkerGlobalScopeProxyProviderImpl FINAL : public NoBaseWillBeGarbageCollectedFinalized<WorkerGlobalScopeProxyProviderImpl>, public blink::WorkerGlobalScopeProxyProvider {
+class WorkerGlobalScopeProxyProviderImpl FINAL : public NoBaseWillBeGarbageCollectedFinalized<WorkerGlobalScopeProxyProviderImpl>, public WorkerGlobalScopeProxyProvider {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopeProxyProviderImpl);
     WTF_MAKE_NONCOPYABLE(WorkerGlobalScopeProxyProviderImpl);
 public:
@@ -52,9 +50,9 @@ public:
     }
 
     virtual ~WorkerGlobalScopeProxyProviderImpl() { }
-    virtual blink::WorkerGlobalScopeProxy* createWorkerGlobalScopeProxy(blink::Worker*) OVERRIDE;
+    virtual WorkerGlobalScopeProxy* createWorkerGlobalScopeProxy(Worker*) OVERRIDE;
 
-    virtual void trace(blink::Visitor* visitor) OVERRIDE { blink::WorkerGlobalScopeProxyProvider::trace(visitor); }
+    virtual void trace(Visitor* visitor) OVERRIDE { WorkerGlobalScopeProxyProvider::trace(visitor); }
 
 private:
     WorkerGlobalScopeProxyProviderImpl() { }

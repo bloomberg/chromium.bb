@@ -35,23 +35,20 @@
 #include "platform/heap/Handle.h"
 
 namespace blink {
+
 class MIDIAccessInitializer;
-}
-
-namespace blink {
-
 class WebMIDIClient;
 
-class MIDIClientProxy FINAL : public blink::MIDIClient {
+class MIDIClientProxy FINAL : public MIDIClient {
 public:
     static PassOwnPtr<MIDIClientProxy> create(WebMIDIClient* client)
     {
         return adoptPtr(new MIDIClientProxy(client));
     }
 
-    // blink::MIDIClient
-    virtual void requestSysexPermission(blink::MIDIAccessInitializer*) OVERRIDE;
-    virtual void cancelSysexPermissionRequest(blink::MIDIAccessInitializer*) OVERRIDE;
+    // MIDIClient
+    virtual void requestSysexPermission(MIDIAccessInitializer*) OVERRIDE;
+    virtual void cancelSysexPermissionRequest(MIDIAccessInitializer*) OVERRIDE;
 
 private:
     explicit MIDIClientProxy(WebMIDIClient*);

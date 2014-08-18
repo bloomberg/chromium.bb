@@ -35,21 +35,17 @@
 #include "wtf/Forward.h"
 
 namespace blink {
+
 class ExecutionContext;
-}
-
-namespace blink {
-
 class WebFrame;
 class WebPermissionCallbacks;
 class WebString;
 class WebWorkerPermissionClientProxy;
 
-class WorkerPermissionClient FINAL : public NoBaseWillBeGarbageCollectedFinalized<WorkerPermissionClient>, public WillBeHeapSupplement<blink::WorkerClients> {
+class WorkerPermissionClient FINAL : public NoBaseWillBeGarbageCollectedFinalized<WorkerPermissionClient>, public WillBeHeapSupplement<WorkerClients> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerPermissionClient);
 public:
     static PassOwnPtrWillBeRawPtr<WorkerPermissionClient> create(PassOwnPtr<WebWorkerPermissionClientProxy>);
-
     virtual ~WorkerPermissionClient();
 
     bool allowDatabase(const WebString& name, const WebString& displayName, unsigned long estimatedSize);
@@ -57,9 +53,9 @@ public:
     bool allowIndexedDB(const WebString& name);
 
     static const char* supplementName();
-    static WorkerPermissionClient* from(blink::ExecutionContext&);
+    static WorkerPermissionClient* from(ExecutionContext&);
 
-    virtual void trace(blink::Visitor* visitor) OVERRIDE { WillBeHeapSupplement<blink::WorkerClients>::trace(visitor); }
+    virtual void trace(Visitor* visitor) OVERRIDE { WillBeHeapSupplement<WorkerClients>::trace(visitor); }
 
 private:
     explicit WorkerPermissionClient(PassOwnPtr<WebWorkerPermissionClientProxy>);
@@ -67,7 +63,7 @@ private:
     OwnPtr<WebWorkerPermissionClientProxy> m_proxy;
 };
 
-void providePermissionClientToWorker(blink::WorkerClients*, PassOwnPtr<WebWorkerPermissionClientProxy>);
+void providePermissionClientToWorker(WorkerClients*, PassOwnPtr<WebWorkerPermissionClientProxy>);
 
 } // namespace blink
 

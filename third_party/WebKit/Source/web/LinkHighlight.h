@@ -46,7 +46,7 @@ struct WebFloatRect;
 struct WebRect;
 class WebViewImpl;
 
-class LinkHighlight FINAL : public WebContentLayerClient, public WebAnimationDelegate, blink::LinkHighlightClient {
+class LinkHighlight FINAL : public WebContentLayerClient, public WebAnimationDelegate, LinkHighlightClient {
 public:
     static PassOwnPtr<LinkHighlight> create(Node*, WebViewImpl*);
     virtual ~LinkHighlight();
@@ -61,8 +61,8 @@ public:
         WebContentLayerClient::GraphicsContextStatus = GraphicsContextEnabled) OVERRIDE;
 
     // WebAnimationDelegate implementation.
-    virtual void notifyAnimationStarted(double monotonicTime, blink::WebAnimation::TargetProperty) OVERRIDE;
-    virtual void notifyAnimationFinished(double monotonicTime, blink::WebAnimation::TargetProperty) OVERRIDE;
+    virtual void notifyAnimationStarted(double monotonicTime, WebAnimation::TargetProperty) OVERRIDE;
+    virtual void notifyAnimationFinished(double monotonicTime, WebAnimation::TargetProperty) OVERRIDE;
 
     // LinkHighlightClient inplementation.
     virtual void invalidate() OVERRIDE;

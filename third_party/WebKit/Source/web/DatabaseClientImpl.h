@@ -36,14 +36,14 @@
 
 namespace blink {
 
-class DatabaseClientImpl FINAL : public NoBaseWillBeGarbageCollectedFinalized<DatabaseClientImpl>, public blink::DatabaseClient {
+class DatabaseClientImpl FINAL : public NoBaseWillBeGarbageCollectedFinalized<DatabaseClientImpl>, public DatabaseClient {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DatabaseClientImpl);
 public:
     static PassOwnPtrWillBeRawPtr<DatabaseClientImpl> create();
 
     virtual ~DatabaseClientImpl();
 
-    virtual bool allowDatabase(blink::ExecutionContext*, const String& name, const String& displayName, unsigned long estimatedSize) OVERRIDE;
+    virtual bool allowDatabase(ExecutionContext*, const String& name, const String& displayName, unsigned long estimatedSize) OVERRIDE;
 
 private:
     DatabaseClientImpl();

@@ -30,18 +30,15 @@
 #include "platform/DateTimeChooser.h"
 
 namespace blink {
-class DateTimeChooserClient;
-}
-
-namespace blink {
 
 class ChromeClientImpl;
+class DateTimeChooserClient;
 class WebString;
 class WebViewClient;
 
-class ExternalDateTimeChooser FINAL : public blink::DateTimeChooser {
+class ExternalDateTimeChooser FINAL : public DateTimeChooser {
 public:
-    static PassRefPtrWillBeRawPtr<ExternalDateTimeChooser> create(ChromeClientImpl*, WebViewClient*, blink::DateTimeChooserClient*, const blink::DateTimeChooserParameters&);
+    static PassRefPtrWillBeRawPtr<ExternalDateTimeChooser> create(ChromeClientImpl*, WebViewClient*, DateTimeChooserClient*, const DateTimeChooserParameters&);
     virtual ~ExternalDateTimeChooser();
 
     // The following functions are for DateTimeChooserCompletion.
@@ -50,13 +47,13 @@ public:
     void didCancelChooser();
 
 private:
-    ExternalDateTimeChooser(blink::DateTimeChooserClient*);
-    bool openDateTimeChooser(ChromeClientImpl*, WebViewClient*, const blink::DateTimeChooserParameters&);
+    ExternalDateTimeChooser(DateTimeChooserClient*);
+    bool openDateTimeChooser(ChromeClientImpl*, WebViewClient*, const DateTimeChooserParameters&);
 
     // DateTimeChooser function:
     virtual void endChooser() OVERRIDE;
 
-    blink::DateTimeChooserClient* m_client;
+    DateTimeChooserClient* m_client;
 };
 
 }

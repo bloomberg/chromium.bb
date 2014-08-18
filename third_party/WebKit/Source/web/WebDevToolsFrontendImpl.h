@@ -44,8 +44,6 @@ class WebDevToolsClientDelegate;
 class WebViewImpl;
 struct WebDevToolsMessageData;
 
-using WTF::String;
-
 class WebDevToolsFrontendImpl FINAL : public WebDevToolsFrontend {
     WTF_MAKE_NONCOPYABLE(WebDevToolsFrontendImpl);
 public:

@@ -36,12 +36,9 @@
 #include "wtf/OwnPtr.h"
 
 namespace blink {
+
 class LocalFrame;
 class Page;
-}
-
-namespace blink {
-
 class PageOverlayList;
 class WebGestureEvent;
 class WebInputEvent;
@@ -52,15 +49,15 @@ class WebTouchEvent;
 
 class PageWidgetEventHandler {
 public:
-    virtual void handleMouseMove(blink::LocalFrame& mainFrame, const WebMouseEvent&);
-    virtual void handleMouseLeave(blink::LocalFrame& mainFrame, const WebMouseEvent&);
-    virtual void handleMouseDown(blink::LocalFrame& mainFrame, const WebMouseEvent&);
-    virtual void handleMouseUp(blink::LocalFrame& mainFrame, const WebMouseEvent&);
-    virtual bool handleMouseWheel(blink::LocalFrame& mainFrame, const WebMouseWheelEvent&);
+    virtual void handleMouseMove(LocalFrame& mainFrame, const WebMouseEvent&);
+    virtual void handleMouseLeave(LocalFrame& mainFrame, const WebMouseEvent&);
+    virtual void handleMouseDown(LocalFrame& mainFrame, const WebMouseEvent&);
+    virtual void handleMouseUp(LocalFrame& mainFrame, const WebMouseEvent&);
+    virtual bool handleMouseWheel(LocalFrame& mainFrame, const WebMouseWheelEvent&);
     virtual bool handleKeyEvent(const WebKeyboardEvent&) = 0;
     virtual bool handleCharEvent(const WebKeyboardEvent&) = 0;
     virtual bool handleGestureEvent(const WebGestureEvent&) = 0;
-    virtual bool handleTouchEvent(blink::LocalFrame& mainFrame, const WebTouchEvent&);
+    virtual bool handleTouchEvent(LocalFrame& mainFrame, const WebTouchEvent&);
     virtual ~PageWidgetEventHandler() { }
 };
 
@@ -72,10 +69,10 @@ public:
         Opaque,
         Translucent,
     };
-    static void animate(blink::Page*, double monotonicFrameBeginTime);
-    static void layout(blink::Page*, blink::LocalFrame* rootFrame = 0);
-    static void paint(blink::Page*, PageOverlayList*, WebCanvas*, const WebRect&, CanvasBackground);
-    static bool handleInputEvent(blink::Page*, PageWidgetEventHandler&, const WebInputEvent&);
+    static void animate(Page*, double monotonicFrameBeginTime);
+    static void layout(Page*, LocalFrame* rootFrame = 0);
+    static void paint(Page*, PageOverlayList*, WebCanvas*, const WebRect&, CanvasBackground);
+    static bool handleInputEvent(Page*, PageWidgetEventHandler&, const WebInputEvent&);
 
 private:
     PageWidgetDelegate() { }

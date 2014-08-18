@@ -37,7 +37,7 @@ namespace blink {
 class WebSpeechRecognizer;
 class WebString;
 
-class SpeechRecognitionClientProxy FINAL : public blink::SpeechRecognitionClient, public WebSpeechRecognizerClient {
+class SpeechRecognitionClientProxy FINAL : public SpeechRecognitionClient, public WebSpeechRecognizerClient {
 public:
     virtual ~SpeechRecognitionClientProxy();
 
@@ -45,10 +45,10 @@ public:
     // itself, but attempting to call start/stop/abort on it will crash.
     static PassOwnPtr<SpeechRecognitionClientProxy> create(WebSpeechRecognizer*);
 
-    // blink::SpeechRecognitionClient:
-    virtual void start(blink::SpeechRecognition*, const blink::SpeechGrammarList*, const String& lang, bool continuous, bool interimResults, unsigned long maxAlternatives) OVERRIDE;
-    virtual void stop(blink::SpeechRecognition*) OVERRIDE;
-    virtual void abort(blink::SpeechRecognition*) OVERRIDE;
+    // SpeechRecognitionClient:
+    virtual void start(SpeechRecognition*, const SpeechGrammarList*, const String& lang, bool continuous, bool interimResults, unsigned long maxAlternatives) OVERRIDE;
+    virtual void stop(SpeechRecognition*) OVERRIDE;
+    virtual void abort(SpeechRecognition*) OVERRIDE;
 
     // WebSpeechRecognizerClient:
     virtual void didStartAudio(const WebSpeechRecognitionHandle&) OVERRIDE;

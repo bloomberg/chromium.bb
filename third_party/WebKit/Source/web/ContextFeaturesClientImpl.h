@@ -35,20 +35,20 @@
 
 namespace blink {
 
-class ContextFeaturesClientImpl FINAL : public blink::ContextFeaturesClient {
+class ContextFeaturesClientImpl FINAL : public ContextFeaturesClient {
 public:
     static PassOwnPtr<ContextFeaturesClientImpl> create()
     {
         return adoptPtr(new ContextFeaturesClientImpl());
     }
 
-    virtual bool isEnabled(blink::Document*, blink::ContextFeatures::FeatureType, bool defaultValue) OVERRIDE;
-    virtual void urlDidChange(blink::Document*) OVERRIDE;
+    virtual bool isEnabled(Document*, ContextFeatures::FeatureType, bool defaultValue) OVERRIDE;
+    virtual void urlDidChange(Document*) OVERRIDE;
 
 private:
     ContextFeaturesClientImpl() { }
 
-    bool askIfIsEnabled(blink::Document*, blink::ContextFeatures::FeatureType, bool defaultValue);
+    bool askIfIsEnabled(Document*, ContextFeatures::FeatureType, bool defaultValue);
 };
 
 } // namespace blink

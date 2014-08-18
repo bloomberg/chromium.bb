@@ -37,22 +37,19 @@
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
+
 class Prerender;
-}
-
-namespace blink {
-
 class WebPrerendererClient;
 
-class PrerendererClientImpl FINAL : public NoBaseWillBeGarbageCollected<PrerendererClientImpl>, public blink::PrerendererClient {
+class PrerendererClientImpl FINAL : public NoBaseWillBeGarbageCollected<PrerendererClientImpl>, public PrerendererClient {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PrerendererClientImpl);
     WTF_MAKE_NONCOPYABLE(PrerendererClientImpl);
 public:
     explicit PrerendererClientImpl(WebPrerendererClient*);
 
-    void willAddPrerender(blink::Prerender*) OVERRIDE;
+    void willAddPrerender(Prerender*) OVERRIDE;
 
-    virtual void trace(blink::Visitor* visitor) OVERRIDE { blink::PrerendererClient::trace(visitor); }
+    virtual void trace(Visitor* visitor) OVERRIDE { PrerendererClient::trace(visitor); }
 
 private:
     WebPrerendererClient* m_client;

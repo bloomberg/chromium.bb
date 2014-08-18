@@ -35,19 +35,20 @@
 #include "core/page/DragClient.h"
 
 namespace blink {
+
 class WebViewImpl;
 
-class DragClientImpl FINAL : public blink::DragClient {
+class DragClientImpl FINAL : public DragClient {
 public:
     explicit DragClientImpl(WebViewImpl* webView) : m_webView(webView) { }
 
-    virtual blink::DragDestinationAction actionMaskForDrag(blink::DragData*) OVERRIDE;
+    virtual DragDestinationAction actionMaskForDrag(DragData*) OVERRIDE;
     virtual void startDrag(
-        blink::DragImage*,
-        const blink::IntPoint& dragImageOrigin,
-        const blink::IntPoint& eventPos,
-        blink::DataTransfer*,
-        blink::LocalFrame* frame,
+        DragImage*,
+        const IntPoint& dragImageOrigin,
+        const IntPoint& eventPos,
+        DataTransfer*,
+        LocalFrame*,
         bool isLinkDrag = false) OVERRIDE;
 
 private:

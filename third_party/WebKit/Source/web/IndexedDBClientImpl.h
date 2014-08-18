@@ -32,16 +32,14 @@
 #include "modules/indexeddb/IndexedDBClient.h"
 
 namespace blink {
+
 class ExecutionContext;
-}
 
-namespace blink {
-
-class IndexedDBClientImpl FINAL : public blink::IndexedDBClient {
+class IndexedDBClientImpl FINAL : public IndexedDBClient {
 public:
-    static blink::IndexedDBClient* create();
+    static IndexedDBClient* create();
 
-    virtual bool allowIndexedDB(blink::ExecutionContext*, const String& name) OVERRIDE;
+    virtual bool allowIndexedDB(ExecutionContext*, const String& name) OVERRIDE;
 
 private:
     IndexedDBClientImpl() { }

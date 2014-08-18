@@ -35,24 +35,21 @@
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
+
 class MediaDevicesRequest;
 class UserMediaRequest;
-}
-
-namespace blink {
-
 class WebUserMediaClient;
 class WebLocalFrameImpl;
 
-class UserMediaClientImpl FINAL : public blink::UserMediaClient {
+class UserMediaClientImpl FINAL : public UserMediaClient {
 public:
     explicit UserMediaClientImpl(WebLocalFrameImpl*);
 
-    // blink::UserMediaClient ----------------------------------------------
-    virtual void requestUserMedia(blink::UserMediaRequest*) OVERRIDE;
-    virtual void cancelUserMediaRequest(blink::UserMediaRequest*) OVERRIDE;
-    virtual void requestMediaDevices(blink::MediaDevicesRequest*) OVERRIDE;
-    virtual void cancelMediaDevicesRequest(blink::MediaDevicesRequest*) OVERRIDE;
+    // UserMediaClient ----------------------------------------------
+    virtual void requestUserMedia(UserMediaRequest*) OVERRIDE;
+    virtual void cancelUserMediaRequest(UserMediaRequest*) OVERRIDE;
+    virtual void requestMediaDevices(MediaDevicesRequest*) OVERRIDE;
+    virtual void cancelMediaDevicesRequest(MediaDevicesRequest*) OVERRIDE;
 
 private:
     UserMediaClientImpl();

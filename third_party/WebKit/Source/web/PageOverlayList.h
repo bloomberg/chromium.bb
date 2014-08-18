@@ -34,11 +34,9 @@
 #include "wtf/Vector.h"
 
 namespace blink {
+
 class GraphicsContext;
 class GraphicsLayer;
-}
-
-namespace blink {
 class PageOverlay;
 class WebPageOverlay;
 class WebViewImpl;
@@ -57,9 +55,9 @@ public:
     bool remove(WebPageOverlay*);
 
     void update();
-    void paintWebFrame(blink::GraphicsContext&);
+    void paintWebFrame(GraphicsContext&);
 
-    size_t findGraphicsLayer(blink::GraphicsLayer*);
+    size_t findGraphicsLayer(GraphicsLayer*);
 
 private:
     typedef Vector<OwnPtr<PageOverlay>, 2> PageOverlays;
