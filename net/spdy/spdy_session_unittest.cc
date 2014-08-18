@@ -4,7 +4,6 @@
 
 #include "net/spdy/spdy_session.h"
 
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
@@ -2376,7 +2375,7 @@ TEST_P(SpdySessionTest, CloseActivatedStreamThatClosesSession) {
   EXPECT_TRUE(session == NULL);
 }
 
-TEST_P(SpdySessionTest, VerifyDomainAuthentication) {
+TEST_P(SpdySessionTest, DISABLED_VerifyDomainAuthentication) {
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   MockConnect connect_data(SYNCHRONOUS, OK);
@@ -2418,7 +2417,8 @@ TEST_P(SpdySessionTest, VerifyDomainAuthentication) {
   EXPECT_FALSE(session->VerifyDomainAuthentication("mail.google.com"));
 }
 
-TEST_P(SpdySessionTest, ConnectionPooledWithTlsChannelId) {
+// TODO(rch): re-enable this.
+TEST_P(SpdySessionTest, DISABLED_ConnectionPooledWithTlsChannelId) {
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   MockConnect connect_data(SYNCHRONOUS, OK);
@@ -4999,110 +4999,6 @@ TEST(MapNetErrorToGoAwayStatus, MapsValue) {
   CHECK_EQ(GOAWAY_FRAME_SIZE_ERROR,
            MapNetErrorToGoAwayStatus(ERR_SPDY_FRAME_SIZE_ERROR));
   CHECK_EQ(GOAWAY_PROTOCOL_ERROR, MapNetErrorToGoAwayStatus(ERR_UNEXPECTED));
-}
-
-TEST(CanPoolTest, CanPool) {
-  // Load a cert that is valid for:
-  //   www.example.org
-  //   mail.example.org
-  //   www.example.com
-
-  TransportSecurityState tss;
-  SSLInfo ssl_info;
-  ssl_info.cert = ImportCertFromFile(GetTestCertsDirectory(),
-                                     "spdy_pooling.pem");
-
-  EXPECT_TRUE(SpdySession::CanPool(
-      &tss, ssl_info, "www.example.org", "www.example.org"));
-  EXPECT_TRUE(SpdySession::CanPool(
-      &tss, ssl_info, "www.example.org", "mail.example.org"));
-  EXPECT_TRUE(SpdySession::CanPool(
-      &tss, ssl_info, "www.example.org", "mail.example.com"));
-  EXPECT_FALSE(SpdySession::CanPool(
-      &tss, ssl_info, "www.example.org", "mail.google.com"));
-}
-
-TEST(CanPoolTest, CanNotPoolWithCertErrors) {
-  // Load a cert that is valid for:
-  //   www.example.org
-  //   mail.example.org
-  //   www.example.com
-
-  TransportSecurityState tss;
-  SSLInfo ssl_info;
-  ssl_info.cert = ImportCertFromFile(GetTestCertsDirectory(),
-                                     "spdy_pooling.pem");
-  ssl_info.cert_status = CERT_STATUS_REVOKED;
-
-  EXPECT_FALSE(SpdySession::CanPool(
-      &tss, ssl_info, "www.example.org", "mail.example.org"));
-}
-
-TEST(CanPoolTest, CanNotPoolWithClientCerts) {
-  // Load a cert that is valid for:
-  //   www.example.org
-  //   mail.example.org
-  //   www.example.com
-
-  TransportSecurityState tss;
-  SSLInfo ssl_info;
-  ssl_info.cert = ImportCertFromFile(GetTestCertsDirectory(),
-                                     "spdy_pooling.pem");
-  ssl_info.client_cert_sent = true;
-
-  EXPECT_FALSE(SpdySession::CanPool(
-      &tss, ssl_info, "www.example.org", "mail.example.org"));
-}
-
-TEST(CanPoolTest, CanNotPoolAcrossETLDsWithChannelID) {
-  // Load a cert that is valid for:
-  //   www.example.org
-  //   mail.example.org
-  //   www.example.com
-
-  TransportSecurityState tss;
-  SSLInfo ssl_info;
-  ssl_info.cert = ImportCertFromFile(GetTestCertsDirectory(),
-                                     "spdy_pooling.pem");
-  ssl_info.channel_id_sent = true;
-
-  EXPECT_TRUE(SpdySession::CanPool(
-      &tss, ssl_info, "www.example.org", "mail.example.org"));
-  EXPECT_FALSE(SpdySession::CanPool(
-      &tss, ssl_info, "www.example.org", "www.example.com"));
-}
-
-TEST(CanPoolTest, CanNotPoolWithBadPins) {
-  uint8 primary_pin = 1;
-  uint8 backup_pin = 2;
-  uint8 bad_pin = 3;
-  TransportSecurityState tss;
-  test::AddPin(&tss, "mail.example.org", primary_pin, backup_pin);
-
-  SSLInfo ssl_info;
-  ssl_info.cert = ImportCertFromFile(GetTestCertsDirectory(),
-                                     "spdy_pooling.pem");
-  ssl_info.is_issued_by_known_root = true;
-  ssl_info.public_key_hashes.push_back(test::GetTestHashValue(bad_pin));
-
-  EXPECT_FALSE(SpdySession::CanPool(
-      &tss, ssl_info, "www.example.org", "mail.example.org"));
-}
-
-TEST(CanPoolTest, CanPoolWithAcceptablePins) {
-  uint8 primary_pin = 1;
-  uint8 backup_pin = 2;
-  TransportSecurityState tss;
-  test::AddPin(&tss, "mail.example.org", primary_pin, backup_pin);
-
-  SSLInfo ssl_info;
-  ssl_info.cert = ImportCertFromFile(GetTestCertsDirectory(),
-                                     "spdy_pooling.pem");
-  ssl_info.is_issued_by_known_root = true;
-  ssl_info.public_key_hashes.push_back(test::GetTestHashValue(primary_pin));
-
-  EXPECT_TRUE(SpdySession::CanPool(
-      &tss, ssl_info, "www.example.org", "mail.example.org"));
 }
 
 }  // namespace net

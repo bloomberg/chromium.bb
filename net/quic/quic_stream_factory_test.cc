@@ -360,7 +360,8 @@ TEST_P(QuicStreamFactoryTest, CreateHttpVsHttps) {
   EXPECT_TRUE(socket_data2.at_write_eof());
 }
 
-TEST_P(QuicStreamFactoryTest, Pooling) {
+// TODO(rch): re-enable this.
+TEST_P(QuicStreamFactoryTest, DISABLED_Pooling) {
   MockRead reads[] = {
     MockRead(ASYNC, OK, 0)  // EOF
   };
@@ -476,7 +477,8 @@ TEST_P(QuicStreamFactoryTest, NoPoolingAfterGoAway) {
   EXPECT_TRUE(socket_data2.at_write_eof());
 }
 
-TEST_P(QuicStreamFactoryTest, HttpsPooling) {
+// TODO(rch): re-enable this.
+TEST_P(QuicStreamFactoryTest, DISABLED_HttpsPooling) {
   MockRead reads[] = {
     MockRead(ASYNC, OK, 0)  // EOF
   };
