@@ -140,7 +140,9 @@
   } else {
     // Remove the previously set capture device.
     if (!captureDeviceInput_) {
-      [self sendErrorString:[NSString
+      // Being here means stopping a device that never started OK in the first
+      // place, log it.
+      [self sendLogString:[NSString
           stringWithUTF8String:"No video capture device set, on removal."]];
       return YES;
     }
@@ -342,6 +344,14 @@
   [lock_ lock];
   if (frameReceiver_)
     frameReceiver_->ReceiveError([error UTF8String]);
+  [lock_ unlock];
+}
+
+- (void)sendLogString:(NSString*)message {
+  DVLOG(1) << [message UTF8String];
+  [lock_ lock];
+  if (frameReceiver_)
+    frameReceiver_->LogMessage([message UTF8String]);
   [lock_ unlock];
 }
 

@@ -73,11 +73,14 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
                     int aspect_numerator,
                     int aspect_denominator);
 
+  // Forwarder to VideoCaptureDevice::Client::OnError().
   void ReceiveError(const std::string& reason);
+
+  // Forwarder to VideoCaptureDevice::Client::OnLog().
+  void LogMessage(const std::string& message);
 
  private:
   void SetErrorState(const std::string& reason);
-  void LogMessage(const std::string& message);
   bool UpdateCaptureResolution();
 
   // Flag indicating the internal state.
