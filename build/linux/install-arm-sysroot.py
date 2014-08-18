@@ -25,6 +25,10 @@ Steps to rebuild the arm sysroot image:
     nativeclient-archive2/toolchain/$NACL_REV/sysroot-arm-trusted.tgz
 """
 
+# TODO(sbc): merge this script into:
+#  chrome/installer/linux/sysroot_scripts/install-debian.wheezy.sysroot.py
+
+import hashlib
 import os
 import shutil
 import subprocess
@@ -33,9 +37,23 @@ import sys
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 URL_PREFIX = 'https://storage.googleapis.com'
-URL_PATH = 'nativeclient-archive2/toolchain'
-REVISION = 13035
-TARBALL = 'sysroot-arm-trusted.tgz'
+URL_PATH = 'chrome-linux-sysroot/toolchain'
+REVISION = 285950
+TARBALL = 'debian_wheezy_arm_sysroot.tgz'
+TARBALL_SHA1SUM = 'fc2f54db168887c5190c4c6686c869bedf668b4e'
+
+
+def get_sha1(filename):
+  sha1 = hashlib.sha1()
+  with open(filename, 'rb') as f:
+    while True:
+      # Read in 1mb chunks, so it doesn't all have to be loaded into memory.
+      chunk = f.read(1024*1024)
+      if not chunk:
+        break
+      sha1.update(chunk)
+  return sha1.hexdigest()
+
 
 def main(args):
   if '--linux-only' in args:
@@ -70,6 +88,11 @@ def main(args):
   else:
     curl.append('--silent')
   subprocess.check_call(curl)
+  sha1sum = get_sha1(tarball)
+  if sha1sum != TARBALL_SHA1SUM:
+    print 'Tarball sha1sum is wrong.'
+    print 'Expected %s, actual: %s' % (TARBALL_SHA1SUM, sha1sum)
+    return 1
   subprocess.check_call(['tar', 'xf', tarball, '-C', sysroot])
   os.remove(tarball)
 

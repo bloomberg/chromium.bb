@@ -97,7 +97,7 @@ void Initialize(const pp::Var& message_data, nacl::StringBuffer* sb) {
 // Dump RNG output into a string.
 //
 void RngDump(const pp::Var& message_data, nacl::StringBuffer* sb) {
-  NaClSrpcError rpc_result;
+  NaClSrpcError rpc_result __attribute__((unused));
   int status;
   int rng;
 

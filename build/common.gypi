@@ -3708,17 +3708,37 @@
           ['target_arch=="arm"', {
             'target_conditions': [
               ['_toolset=="target"', {
-                'cflags_cc': [
-                  # The codesourcery arm-2009q3 toolchain warns at that the ABI
-                  # has changed whenever it encounters a varargs function. This
-                  # silences those warnings, as they are not helpful and
-                  # clutter legitimate warnings.
-                  '-Wno-abi',
-                ],
                 'conditions': [
+                  ['clang==0', {
+                    'cflags_cc': [
+                      # The codesourcery arm-2009q3 toolchain warns at that the ABI
+                      # has changed whenever it encounters a varargs function. This
+                      # silences those warnings, as they are not helpful and
+                      # clutter legitimate warnings.
+                      '-Wno-abi',
+                    ],
+                  }],
+                  ['clang==1 and arm_arch!=""', {
+                    'cflags': [
+                      '-target arm-linux-gnueabihf',
+                      # TODO(sbc): Remove this once the warning in libvpx is fixed:
+                      # https://code.google.com/p/webm/issues/detail?id=829
+                      '-Wno-absolute-value',
+                    ],
+                    'ldflags': [
+                      '-target arm-linux-gnueabihf',
+                    ],
+                  }],
                   ['arm_arch!=""', {
                     'cflags': [
                       '-march=<(arm_arch)',
+                    ],
+                  }],
+                  ['clang==1', {
+                    'cflags': [
+                      # We need to disable clang's builtin assember as it can't
+                      # handle a several of asm files.
+                      '-no-integrated-as',
                     ],
                   }],
                   ['arm_tune!=""', {
