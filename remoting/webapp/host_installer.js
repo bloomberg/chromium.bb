@@ -102,7 +102,7 @@ remoting.HostInstaller.prototype.download_ = function() {
   }
 
   // Start downloading the package.
-  if (remoting.isAppsV2) {
+  if (base.isAppsV2()) {
     // TODO(jamiewalch): Use chrome.downloads when it is available to
     // apps v2 (http://crbug.com/174046)
     window.open(hostPackageUrl);

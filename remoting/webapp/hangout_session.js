@@ -57,7 +57,7 @@ remoting.HangoutSession.prototype.onSessionStateChanged_ = function(state) {
   } finally {
     if (state === State.FAILED || state === State.CLOSED) {
       // close the current window
-      if (remoting.isAppsV2) {
+      if (base.isAppsV2()) {
         chrome.app.window.current().close();
       } else {
         window.close();

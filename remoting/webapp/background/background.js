@@ -7,15 +7,6 @@ var remoting = remoting || {};
 
 (function(){
 
-/** @return {boolean} */
-function isAppsV2() {
-  var manifest = chrome.runtime.getManifest();
-  if (manifest && manifest.app && manifest.app.background) {
-    return true;
-  }
-  return false;
-}
-
 /** @param {remoting.AppLauncher} appLauncher */
 function initializeAppV2(appLauncher) {
   /** @type {string} */
@@ -69,7 +60,7 @@ function initializeBackgroundService(appLauncher) {
 function main() {
   /** @type {remoting.AppLauncher} */
   var appLauncher = new remoting.V1AppLauncher();
-  if (isAppsV2()) {
+  if (base.isAppsV2()) {
     appLauncher = new remoting.V2AppLauncher();
     initializeAppV2(appLauncher);
   }

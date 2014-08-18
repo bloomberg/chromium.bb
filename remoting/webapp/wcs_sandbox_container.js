@@ -42,7 +42,7 @@ remoting.WcsSandboxContainer = function(sandbox) {
 
   window.addEventListener('message', this.onMessage_.bind(this), false);
 
-  if (remoting.isAppsV2) {
+  if (base.isAppsV2()) {
     var message = {
       'command': 'proxyXhrs'
     };

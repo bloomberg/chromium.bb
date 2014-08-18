@@ -39,12 +39,12 @@ function onLoad() {
     remoting.connector.reconnect();
   };
   var doAuthRedirect = function() {
-    if (!remoting.isAppsV2) {
+    if (!base.isAppsV2()) {
       remoting.oauth2.doAuthRedirect();
     }
   };
   var fixAuthError = function() {
-    if (remoting.isAppsV2) {
+    if (base.isAppsV2()) {
       var onRefresh = function() {
         remoting.hostList.display();
       };
@@ -122,7 +122,7 @@ function onLoad() {
   // client area is calculated differently in full-screen mode, so register
   // for both events.
   remoting.fullscreen.addListener(remoting.onResize);
-  if (!remoting.isAppsV2) {
+  if (!base.isAppsV2()) {
     window.addEventListener('beforeunload', remoting.promptClose, false);
     window.addEventListener('unload', remoting.disconnect, false);
   }

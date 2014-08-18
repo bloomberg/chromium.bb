@@ -40,7 +40,7 @@ browserTest.Bump_Scroll = function() {
 browserTest.Bump_Scroll.prototype.run = function(data) {
   browserTest.expect(typeof data.pin == 'string');
 
-  if (!remoting.isAppsV2) {
+  if (!base.isAppsV2()) {
     browserTest.fail(
         'Bump-scroll requires full-screen, which can only be activated ' +
         'programmatically in apps v2.')

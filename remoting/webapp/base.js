@@ -112,6 +112,23 @@ base.values = function(dict) {
     });
 };
 
+/**
+ * @type {boolean|undefined}
+ * @private
+ */
+base.isAppsV2_ = undefined;
+
+/**
+ * @return {boolean} True if this is a v2 app; false if it is a legacy app.
+ */
+base.isAppsV2 = function() {
+  if (base.isAppsV2_ === undefined) {
+    var manifest = chrome.runtime.getManifest();
+    base.isAppsV2_ =
+        Boolean(manifest && manifest.app && manifest.app.background);
+  }
+  return base.isAppsV2_;
+};
 
 /**
  * Joins the |url| with optional query parameters defined in |opt_params|
