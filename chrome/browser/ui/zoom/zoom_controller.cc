@@ -90,8 +90,10 @@ bool ZoomController::SetZoomLevel(double zoom_level) {
 bool ZoomController::SetZoomLevelByExtension(
     double zoom_level,
     const scoped_refptr<const extensions::Extension>& extension) {
-  // Cannot zoom in disabled mode.
-  if (zoom_mode_ == ZOOM_MODE_DISABLED)
+  // Cannot zoom in disabled mode. Also, don't allow changing zoom level on
+  // a crashed tab.
+  if (zoom_mode_ == ZOOM_MODE_DISABLED ||
+      !web_contents()->GetRenderProcessHost()->HasConnection())
     return false;
 
   // Store extension data so that |extension| can be attributed when the zoom
