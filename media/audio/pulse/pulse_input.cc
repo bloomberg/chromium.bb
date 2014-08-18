@@ -281,7 +281,10 @@ void PulseAudioInputStream::ReadData() {
     hardware_delay += fifo_.GetAvailableFrames() * params_.GetBytesPerFrame();
     callback_->OnData(this, audio_bus, hardware_delay, normalized_volume);
 
-    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(5));
+    // Sleep 5ms to wait until render consumes the data in order to avoid
+    // back to back OnData() method.
+    if (fifo_.available_blocks())
+      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(5));
   }
 
   pa_threaded_mainloop_signal(pa_mainloop_, 0);
