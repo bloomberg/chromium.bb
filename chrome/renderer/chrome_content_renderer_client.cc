@@ -119,7 +119,7 @@
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
-#include "chrome/renderer/extensions/chrome_extensions_render_frame_observer.h"
+#include "extensions/renderer/extensions_render_frame_observer.h"
 #endif
 
 #if defined(ENABLE_SPELLCHECK)
@@ -430,7 +430,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
   }
 
 #if defined(ENABLE_EXTENSIONS)
-  new extensions::ChromeExtensionsRenderFrameObserver(render_frame);
+  new extensions::ExtensionsRenderFrameObserver(render_frame);
 #endif
   new extensions::ExtensionFrameHelper(render_frame,
                                        extension_dispatcher_.get());

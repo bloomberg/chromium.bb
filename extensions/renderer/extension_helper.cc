@@ -137,6 +137,7 @@ bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ExtensionMsg_DeliverMessage, OnExtensionDeliverMessage)
     IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchOnDisconnect,
                         OnExtensionDispatchOnDisconnect)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_SetFrameName, OnSetFrameName)
     IPC_MESSAGE_HANDLER(ExtensionMsg_SetTabId, OnSetTabId)
     IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateBrowserWindowId,
                         OnUpdateBrowserWindowId)
@@ -226,6 +227,12 @@ void ExtensionHelper::OnExtensionDispatchOnDisconnect(
 
 void ExtensionHelper::OnNotifyRendererViewType(ViewType type) {
   view_type_ = type;
+}
+
+void ExtensionHelper::OnSetFrameName(const std::string& name) {
+  blink::WebView* web_view = render_view()->GetWebView();
+  if (web_view)
+    web_view->mainFrame()->setName(blink::WebString::fromUTF8(name));
 }
 
 void ExtensionHelper::OnSetTabId(int init_tab_id) {

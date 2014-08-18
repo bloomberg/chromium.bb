@@ -20,6 +20,7 @@
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/socket_permission_data.h"
 #include "extensions/common/permissions/usb_device_permission_data.h"
+#include "extensions/common/stack_frame.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
 #include "extensions/common/user_script.h"
@@ -178,6 +179,13 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(extensions::SocketPermissionData)
   IPC_STRUCT_TRAITS_MEMBER(entry())
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(extensions::StackFrame)
+  IPC_STRUCT_TRAITS_MEMBER(line_number)
+  IPC_STRUCT_TRAITS_MEMBER(column_number)
+  IPC_STRUCT_TRAITS_MEMBER(source)
+  IPC_STRUCT_TRAITS_MEMBER(function)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(extensions::UsbDevicePermissionData)
@@ -348,6 +356,10 @@ IPC_MESSAGE_ROUTED5(ExtensionMsg_MessageInvoke,
 // Tell the renderer process all known extension function names.
 IPC_MESSAGE_CONTROL1(ExtensionMsg_SetFunctionNames,
                      std::vector<std::string>)
+
+// Set the top-level frame to the provided name.
+IPC_MESSAGE_ROUTED1(ExtensionMsg_SetFrameName,
+                    std::string /* frame_name */)
 
 // Tell the renderer process the platforms system font.
 IPC_MESSAGE_CONTROL2(ExtensionMsg_SetSystemFont,
@@ -693,3 +705,16 @@ IPC_MESSAGE_ROUTED1(ExtensionHostMsg_OnWatchedPageChange,
 // Sent by the renderer when it has received a Blob handle from the browser.
 IPC_MESSAGE_CONTROL1(ExtensionHostMsg_TransferBlobsAck,
                      std::vector<std::string> /* blob_uuids */)
+
+// Informs of updated frame names.
+IPC_MESSAGE_ROUTED2(ExtensionHostMsg_FrameNameChanged,
+                    bool /* is_top_level */,
+                    std::string /* name */)
+
+// Tells listeners that a detailed message was reported to the console by
+// WebKit.
+IPC_MESSAGE_ROUTED4(ExtensionHostMsg_DetailedConsoleMessageAdded,
+                    base::string16 /* message */,
+                    base::string16 /* source */,
+                    extensions::StackTrace /* stack trace */,
+                    int32 /* severity level */)

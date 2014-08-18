@@ -127,8 +127,6 @@
       'renderer/extensions/app_window_custom_bindings.h',
       'renderer/extensions/automation_internal_custom_bindings.cc',
       'renderer/extensions/automation_internal_custom_bindings.h',
-      'renderer/extensions/chrome_extensions_render_frame_observer.cc',
-      'renderer/extensions/chrome_extensions_render_frame_observer.h',
       'renderer/extensions/chrome_v8_extension_handler.cc',
       'renderer/extensions/chrome_v8_extension_handler.h',
       'renderer/extensions/enterprise_platform_keys_natives.cc',

@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/pdf/pdf_tab_helper.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/extensions/chrome_extension_messages.h"
 #include "chrome/common/render_messages.h"
 #include "components/renderer_context_menu/context_menu_delegate.h"
 #include "content/public/browser/browser_thread.h"
@@ -49,6 +48,7 @@
 #include "extensions/browser/guest_view/guest_view_constants.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension_messages.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
@@ -417,7 +417,8 @@ void WebViewGuest::GuestDestroyed() {
 void WebViewGuest::GuestReady() {
   // The guest RenderView should always live in an isolated guest process.
   CHECK(guest_web_contents()->GetRenderProcessHost()->IsIsolatedGuest());
-  Send(new ChromeViewMsg_SetName(guest_web_contents()->GetRoutingID(), name_));
+  Send(new ExtensionMsg_SetFrameName(
+      guest_web_contents()->GetRoutingID(), name_));
 }
 
 void WebViewGuest::GuestSizeChangedDueToAutoSize(const gfx::Size& old_size,
@@ -536,8 +537,8 @@ void WebViewGuest::LoadAbort(bool is_top_level,
       new GuestViewBase::Event(webview::kEventLoadAbort, args.Pass()));
 }
 
-void WebViewGuest::OnUpdateFrameName(bool is_top_level,
-                                     const std::string& name) {
+void WebViewGuest::OnFrameNameChanged(bool is_top_level,
+                                      const std::string& name) {
   if (!is_top_level)
     return;
 
@@ -778,7 +779,7 @@ bool WebViewGuest::OnMessageReceived(const IPC::Message& message,
                                      RenderFrameHost* render_frame_host) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebViewGuest, message)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_UpdateFrameName, OnUpdateFrameName)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_FrameNameChanged, OnFrameNameChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -1087,7 +1088,7 @@ void WebViewGuest::SetName(const std::string& name) {
     return;
   name_ = name;
 
-  Send(new ChromeViewMsg_SetName(routing_id(), name_));
+  Send(new ExtensionMsg_SetFrameName(routing_id(), name_));
 }
 
 void WebViewGuest::SetZoom(double zoom_factor) {

@@ -175,7 +175,6 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewMsg_WebUIJavaScript, OnWebUIJavaScript)
 #endif
 #if defined(ENABLE_EXTENSIONS)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetName, OnSetName)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetVisuallyDeemphasized,
                         OnSetVisuallyDeemphasized)
 #endif
@@ -303,12 +302,6 @@ void ChromeRenderViewObserver::OnSetClientSidePhishingDetection(
 }
 
 #if defined(ENABLE_EXTENSIONS)
-void ChromeRenderViewObserver::OnSetName(const std::string& name) {
-  blink::WebView* web_view = render_view()->GetWebView();
-  if (web_view)
-    web_view->mainFrame()->setName(WebString::fromUTF8(name));
-}
-
 void ChromeRenderViewObserver::OnSetVisuallyDeemphasized(bool deemphasized) {
   bool already_deemphasized = !!dimmed_color_overlay_.get();
   if (already_deemphasized == deemphasized)

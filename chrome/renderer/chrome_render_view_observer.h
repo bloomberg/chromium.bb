@@ -57,7 +57,6 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
   void OnWebUIJavaScript(const base::string16& javascript);
 #endif
 #if defined(ENABLE_EXTENSIONS)
-  void OnSetName(const std::string& name);
   void OnSetVisuallyDeemphasized(bool deemphasized);
 #endif
 #if defined(OS_ANDROID)

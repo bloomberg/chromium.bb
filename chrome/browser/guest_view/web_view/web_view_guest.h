@@ -323,7 +323,7 @@ class WebViewGuest : public GuestView<WebViewGuest>,
                  const GURL& url,
                  const std::string& error_type);
 
-  void OnUpdateFrameName(bool is_top_level, const std::string& name);
+  void OnFrameNameChanged(bool is_top_level, const std::string& name);
 
   // Creates a new guest window owned by this WebViewGuest.
   void CreateNewGuestWebViewWindow(const content::OpenURLParams& params);

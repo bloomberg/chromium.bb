@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/chrome_extensions_render_frame_observer.h"
+#include "extensions/renderer/extensions_render_frame_observer.h"
 
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/extensions/chrome_extension_messages.h"
 #include "content/public/renderer/render_frame.h"
+#include "extensions/common/extension_messages.h"
 #include "extensions/common/stack_frame.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 
@@ -72,15 +72,15 @@ StackTrace GetStackTraceFromMessage(
 
 }  // namespace
 
-ChromeExtensionsRenderFrameObserver::ChromeExtensionsRenderFrameObserver(
+ExtensionsRenderFrameObserver::ExtensionsRenderFrameObserver(
     content::RenderFrame* render_frame)
     : content::RenderFrameObserver(render_frame) {
 }
 
-ChromeExtensionsRenderFrameObserver::~ChromeExtensionsRenderFrameObserver() {
+ExtensionsRenderFrameObserver::~ExtensionsRenderFrameObserver() {
 }
 
-void ChromeExtensionsRenderFrameObserver::DetailedConsoleMessageAdded(
+void ExtensionsRenderFrameObserver::DetailedConsoleMessageAdded(
     const base::string16& message,
     const base::string16& source,
     const base::string16& stack_trace_string,
@@ -92,13 +92,13 @@ void ChromeExtensionsRenderFrameObserver::DetailedConsoleMessageAdded(
       source,
       stack_trace_string,
       line_number);
-  Send(new ChromeViewHostMsg_DetailedConsoleMessageAdded(
+  Send(new ExtensionHostMsg_DetailedConsoleMessageAdded(
       routing_id(), trimmed_message, source, stack_trace, severity_level));
 }
 
-void ChromeExtensionsRenderFrameObserver::DidChangeName(
+void ExtensionsRenderFrameObserver::DidChangeName(
     const base::string16& name) {
-  Send(new ChromeViewHostMsg_UpdateFrameName(
+  Send(new ExtensionHostMsg_FrameNameChanged(
       routing_id(),
       !render_frame()->GetWebFrame()->parent(),
       base::UTF16ToUTF8(name)));

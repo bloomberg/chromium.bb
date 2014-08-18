@@ -610,6 +610,8 @@
         'renderer/event_bindings.h',
         'renderer/extension_helper.cc',
         'renderer/extension_helper.h',
+        'renderer/extensions_render_frame_observer.cc',
+        'renderer/extensions_render_frame_observer.h',
         'renderer/extensions_renderer_client.cc',
         'renderer/extensions_renderer_client.h',
         'renderer/extension_groups.h',

@@ -85,6 +85,7 @@ class ExtensionHelper
   void OnAddMessageToConsole(content::ConsoleMessageLevel level,
                              const std::string& message);
   void OnAppWindowClosed();
+  void OnSetFrameName(const std::string& name);
 
   Dispatcher* dispatcher_;
 
