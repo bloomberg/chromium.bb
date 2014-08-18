@@ -1311,7 +1311,7 @@ static int si_surface_sanity(struct radeon_surface_manager *surf_man,
         /* default value */
         surf->mtilea = 1;
         surf->bankw = 1;
-        surf->bankw = 1;
+        surf->bankh = 1;
         surf->tile_split = 64;
         surf->stencil_tile_split = 64;
     }
@@ -2138,7 +2138,7 @@ static int cik_surface_sanity(struct radeon_surface_manager *surf_man,
         /* default value */
         surf->mtilea = 1;
         surf->bankw = 1;
-        surf->bankw = 1;
+        surf->bankh = 1;
         surf->tile_split = 64;
         surf->stencil_tile_split = 64;
     }
