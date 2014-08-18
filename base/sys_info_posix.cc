@@ -30,9 +30,20 @@ namespace {
 
 #if !defined(OS_OPENBSD)
 int NumberOfProcessors() {
-  // It seems that sysconf returns the number of "logical" processors on both
-  // Mac and Linux.  So we get the number of "online logical" processors.
-  long res = sysconf(_SC_NPROCESSORS_ONLN);
+  // sysconf returns the number of "logical" (not "physical") processors on both
+  // Mac and Linux.  So we get the number of max available "logical" processors.
+  //
+  // Note that the number of "currently online" processors may be fewer than the
+  // returned value of NumberOfProcessors(). On some platforms, the kernel may
+  // make some processors offline intermittently, to save power when system
+  // loading is low.
+  //
+  // One common use case that needs to know the processor count is to create
+  // optimal number of threads for optimization. It should make plan according
+  // to the number of "max available" processors instead of "currently online"
+  // ones. The kernel should be smart enough to make all processors online when
+  // it has sufficient number of threads waiting to run.
+  long res = sysconf(_SC_NPROCESSORS_CONF);
   if (res == -1) {
     NOTREACHED();
     return 1;

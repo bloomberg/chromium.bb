@@ -22,6 +22,17 @@ bool CpuInfoProvider::QueryCpuTimePerProcessor(
     std::vector<linked_ptr<api::system_cpu::ProcessorInfo> >* infos) {
   DCHECK(infos);
 
+  // WARNING: this method may return incomplete data because some processors may
+  // be brought offline at runtime. /proc/stat does not report statistics of
+  // offline processors. CPU usages of offline processors will be filled with
+  // zeros.
+  //
+  // An example of output of /proc/stat when processor 0 and 3 are online, but
+  // processor 1 and 2 are offline:
+  //
+  //   cpu  145292 20018 83444 1485410 995 44 3578 0 0 0
+  //   cpu0 138060 19947 78350 1479514 570 44 3576 0 0 0
+  //   cpu3 2033 32 1075 1400 52 0 1 0 0 0
   std::string contents;
   if (!base::ReadFileToString(base::FilePath(kProcStat), &contents))
      return false;
@@ -32,37 +43,25 @@ bool CpuInfoProvider::QueryCpuTimePerProcessor(
   // Skip the first line because it is just an aggregated number of
   // all cpuN lines.
   std::getline(iss, line);
-  size_t i = 0;
   while (std::getline(iss, line)) {
     if (line.compare(0, 3, "cpu") != 0)
       continue;
 
-    // The number of entries in /proc/stat may mismatch the size of infos
-    // because the number of online processors may change after the value has
-    // been decided in CpuInfoProvider::QueryInfo().
-    //
-    // TODO(jchuang): fix the fail case by using the number of configured
-    // processors instead of online processors.
-    if (i == infos->size()) {
-      LOG(ERROR) << "Got more entries in /proc/stat than online CPUs";
+    uint64 user = 0, nice = 0, sys = 0, idle = 0;
+    uint32 pindex = 0;
+    int vals = sscanf(line.c_str(),
+           "cpu%" PRIu32 " %" PRIu64 " %" PRIu64 " %" PRIu64 " %" PRIu64,
+           &pindex, &user, &nice, &sys, &idle);
+    if (vals != 5 || pindex >= infos->size()) {
+      NOTREACHED();
       return false;
     }
 
-    uint64 user = 0, nice = 0, sys = 0, idle = 0;
-    int vals = sscanf(line.c_str(),
-           "%*s %" PRIu64 " %" PRIu64 " %" PRIu64 " %" PRIu64,
-           &user, &nice, &sys, &idle);
-    DCHECK_EQ(4, vals);
-
-    infos->at(i)->usage.kernel = static_cast<double>(sys);
-    infos->at(i)->usage.user = static_cast<double>(user + nice);
-    infos->at(i)->usage.idle = static_cast<double>(idle);
-    infos->at(i)->usage.total = static_cast<double>(sys + user + nice + idle);
-    ++i;
-  }
-  if (i < infos->size()) {
-    LOG(ERROR) << "Got fewer entries in /proc/stat than online CPUs";
-    return false;
+    infos->at(pindex)->usage.kernel = static_cast<double>(sys);
+    infos->at(pindex)->usage.user = static_cast<double>(user + nice);
+    infos->at(pindex)->usage.idle = static_cast<double>(idle);
+    infos->at(pindex)->usage.total = static_cast<double>(sys + user +
+                                                         nice + idle);
   }
 
   return true;
