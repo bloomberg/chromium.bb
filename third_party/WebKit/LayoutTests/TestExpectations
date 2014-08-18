@@ -191,6 +191,11 @@ crbug.com/318978 [ Linux ] http/tests/security/frameNavigation/xss-DENIED-plugin
 crbug.com/318978 [ Linux ] permissionclient/plugin-permission.html [ Skip ]
 crbug.com/318978 [ Linux ] plugins/ [ Skip ]
 
+crbug.com/394698 fast/repaint/repaint-across-writing-mode-boundary.html [ NeedsRebaseline ]
+crbug.com/394698 fast/repaint/japanese-rl-selection-repaint.html [ NeedsRebaseline ]
+crbug.com/394698 compositing/squashing/selection-repaint-with-gaps.html [ NeedsRebaseline ]
+crbug.com/394698 editing/selection/repaint-rect-for-vertical-writing-mode-with-positioned-root.html [ NeedsRebaseline ]
+
 crbug.com/380217 virtual/regionbasedmulticol/fast/multicol/newmulticol/layers-in-multicol.html [ Skip ]
 crbug.com/380217 [ Linux Win ] fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-large-radius.html [ Skip ]
 crbug.com/380217 [ Linux Win ] fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-bottom-left.html [ Skip ]

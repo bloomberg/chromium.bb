@@ -81,7 +81,7 @@ public:
 
     void invalidatePaint()
     {
-        m_object->invalidatePaintUsingContainer(m_paintInvalidationContainer, m_rect, InvalidationSelection);
+        m_object->invalidatePaintUsingContainer(m_paintInvalidationContainer, enclosingIntRect(m_rect), InvalidationSelection);
     }
 
     LayoutRect rect() const { return m_rect; }
@@ -111,7 +111,7 @@ public:
         // paintInvalidationContainer as the render object. Find out why it does that and fix.
         if (m_paintInvalidationContainer && m_paintInvalidationContainer->layer()->groupedMapping())
             RenderLayer::mapRectToPaintInvalidationBacking(m_paintInvalidationContainer, m_paintInvalidationContainer, paintInvalidationRect);
-        m_object->invalidatePaintUsingContainer(m_paintInvalidationContainer, paintInvalidationRect, InvalidationSelection);
+        m_object->invalidatePaintUsingContainer(m_paintInvalidationContainer, enclosingIntRect(paintInvalidationRect), InvalidationSelection);
     }
 
     RenderBlock* block() const { return toRenderBlock(m_object); }
