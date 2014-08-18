@@ -405,6 +405,9 @@ static bool PreferCompositingToLCDText(float device_scale_factor) {
     return false;
   if (command_line.HasSwitch(switches::kEnablePreferCompositingToLCDText))
     return true;
+  if (RenderThreadImpl::current() &&
+      !RenderThreadImpl::current()->is_lcd_text_enabled())
+    return true;
   return DeviceScaleEnsuresTextQuality(device_scale_factor);
 }
 
