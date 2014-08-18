@@ -123,14 +123,7 @@ void MediaStreamDispatcher::StopStreamDevice(
     }
     ++stream_it;
   }
-
-  if (!device_found) {
-    // TODO(perkj): Revisit this. It used to be true (but isn't anymore) that
-    // there was one MediaStreamDispatcher per RenderView, but one
-    // MediaStreamImpl per RenderFrame. Now both MediaStreamDispatcher and
-    // MediaStreamImpl are 1:1 per RenderFrame. http://crbug/368030.
-    return;
-  }
+  DCHECK(device_found);
 
   Send(new MediaStreamHostMsg_StopStreamDevice(routing_id(),
                                                device_info.device.id));
