@@ -64,6 +64,7 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
   enum BufferFormat {
     UNKNOWN,
     RGBA_8888,
+    RGBX_8888,
     RGB_888,
   };
 

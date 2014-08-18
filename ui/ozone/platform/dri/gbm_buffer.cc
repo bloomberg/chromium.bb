@@ -20,9 +20,9 @@ int GetGbmFormatFromBufferFormat(SurfaceFactoryOzone::BufferFormat fmt) {
     // as a primary plane but disallowing overlay transparency. Address this
     // to allow both use cases.
     case SurfaceFactoryOzone::RGBA_8888:
-      return GBM_FORMAT_XRGB8888;
-    case SurfaceFactoryOzone::RGB_888:
-      return GBM_FORMAT_RGB888;
+      return GBM_BO_FORMAT_ARGB8888;
+    case SurfaceFactoryOzone::RGBX_8888:
+      return GBM_BO_FORMAT_XRGB8888;
   }
   return 0;
 }
