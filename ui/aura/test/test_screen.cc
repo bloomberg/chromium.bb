@@ -16,6 +16,15 @@
 
 namespace aura {
 
+namespace {
+
+bool IsRotationPortrait(gfx::Display::Rotation rotation) {
+  return rotation == gfx::Display::ROTATE_90 ||
+         rotation == gfx::Display::ROTATE_270;
+}
+
+}  // namespace
+
 // static
 TestScreen* TestScreen::Create(const gfx::Size& size) {
   const gfx::Size kDefaultSize(800, 600);
@@ -47,8 +56,14 @@ void TestScreen::SetDeviceScaleFactor(float device_scale_factor) {
 }
 
 void TestScreen::SetDisplayRotation(gfx::Display::Rotation rotation) {
+  gfx::Rect bounds_in_pixel(display_.GetSizeInPixel());
+  gfx::Rect new_bounds(bounds_in_pixel);
+  if (IsRotationPortrait(rotation) != IsRotationPortrait(display_.rotation())) {
+    new_bounds.set_width(bounds_in_pixel.height());
+    new_bounds.set_height(bounds_in_pixel.width());
+  }
   display_.set_rotation(rotation);
-  // TODO(oshima|mukai): Update the display_ as well.
+  display_.SetScaleAndBounds(display_.device_scale_factor(), new_bounds);
   host_->SetRootTransform(GetRotationTransform() * GetUIScaleTransform());
 }
 
@@ -63,21 +78,20 @@ void TestScreen::SetUIScale(float ui_scale) {
 
 gfx::Transform TestScreen::GetRotationTransform() const {
   gfx::Transform rotate;
-  float one_pixel = 1.0f / display_.device_scale_factor();
   switch (display_.rotation()) {
     case gfx::Display::ROTATE_0:
       break;
     case gfx::Display::ROTATE_90:
-      rotate.Translate(display_.bounds().height() - one_pixel, 0);
+      rotate.Translate(display_.bounds().height(), 0);
       rotate.Rotate(90);
       break;
     case gfx::Display::ROTATE_270:
-      rotate.Translate(0, display_.bounds().width() - one_pixel);
+      rotate.Translate(0, display_.bounds().width());
       rotate.Rotate(270);
       break;
     case gfx::Display::ROTATE_180:
-      rotate.Translate(display_.bounds().width() - one_pixel,
-                       display_.bounds().height() - one_pixel);
+      rotate.Translate(display_.bounds().width(),
+                       display_.bounds().height());
       rotate.Rotate(180);
       break;
   }

@@ -5,10 +5,13 @@
 #include "athena/screen/screen_accelerator_handler.h"
 
 #include "athena/input/public/accelerator_manager.h"
+#include "athena/screen/public/screen_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/debug_utils.h"
+#include "ui/gfx/display.h"
+#include "ui/gfx/screen.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace athena {
@@ -17,6 +20,7 @@ namespace {
 enum Command {
   CMD_PRINT_LAYER_HIERARCHY,
   CMD_PRINT_WINDOW_HIERARCHY,
+  CMD_ROTATE_SCREEN,
 };
 
 const int EF_ALL_DOWN =
@@ -27,6 +31,9 @@ const AcceleratorData accelerator_data[] = {
      AF_DEBUG},
     {TRIGGER_ON_PRESS, ui::VKEY_W, EF_ALL_DOWN, CMD_PRINT_WINDOW_HIERARCHY,
      AF_DEBUG},
+    {TRIGGER_ON_PRESS, ui::VKEY_F3,
+     ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
+     CMD_ROTATE_SCREEN, AF_NONE},
 };
 
 void PrintLayerHierarchy(aura::Window* root_window) {
@@ -63,6 +70,20 @@ void HandlePrintWindowHierarchy(aura::Window* root_window) {
   LOG(ERROR) << out.str();
 }
 
+void HandleRotateScreen() {
+  ScreenManager* screen_manager = ScreenManager::Get();
+  gfx::Display::Rotation current_rotation =
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().rotation();
+  if (current_rotation == gfx::Display::ROTATE_0)
+    screen_manager->SetRotation(gfx::Display::ROTATE_90);
+  else if (current_rotation == gfx::Display::ROTATE_90)
+    screen_manager->SetRotation(gfx::Display::ROTATE_180);
+  else if (current_rotation == gfx::Display::ROTATE_180)
+    screen_manager->SetRotation(gfx::Display::ROTATE_270);
+  else if (current_rotation == gfx::Display::ROTATE_270)
+    screen_manager->SetRotation(gfx::Display::ROTATE_0);
+}
+
 }  // namespace
 
 // static
@@ -88,6 +109,9 @@ bool ScreenAcceleratorHandler::OnAcceleratorFired(
       return true;
     case CMD_PRINT_WINDOW_HIERARCHY:
       HandlePrintWindowHierarchy(root_window_);
+      return true;
+    case CMD_ROTATE_SCREEN:
+      HandleRotateScreen();
       return true;
   }
   return false;

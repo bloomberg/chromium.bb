@@ -14,11 +14,14 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/layout_manager.h"
+#include "ui/aura/test/test_screen.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/layer.h"
+#include "ui/gfx/display.h"
+#include "ui/gfx/screen.h"
 #include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/capture_controller.h"
 
@@ -200,6 +203,7 @@ class ScreenManagerImpl : public ScreenManager {
   virtual aura::Window* CreateContainer(const ContainerParams& params) OVERRIDE;
   virtual aura::Window* GetContext() OVERRIDE { return root_window_; }
   virtual void SetBackgroundImage(const gfx::ImageSkia& image) OVERRIDE;
+  virtual void SetRotation(gfx::Display::Rotation rotation) OVERRIDE;
   virtual ui::LayerAnimator* GetScreenAnimator() OVERRIDE;
 
   aura::Window* root_window_;
@@ -322,6 +326,18 @@ aura::Window* ScreenManagerImpl::CreateContainer(
 
 void ScreenManagerImpl::SetBackgroundImage(const gfx::ImageSkia& image) {
   background_controller_->SetImage(image);
+}
+
+void ScreenManagerImpl::SetRotation(gfx::Display::Rotation rotation) {
+  if (rotation ==
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().rotation()) {
+    return;
+  }
+
+  // TODO(flackr): Use display manager to update display rotation:
+  // http://crbug.com/401044.
+  static_cast<aura::TestScreen*>(gfx::Screen::GetNativeScreen())->
+      SetDisplayRotation(rotation);
 }
 
 ui::LayerAnimator* ScreenManagerImpl::GetScreenAnimator() {
