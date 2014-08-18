@@ -39,12 +39,9 @@ bool DOMTokenList::validateToken(const String& token, ExceptionState& exceptionS
         return false;
     }
 
-    unsigned length = token.length();
-    for (unsigned i = 0; i < length; ++i) {
-        if (isHTMLSpace<UChar>(token[i])) {
-            exceptionState.throwDOMException(InvalidCharacterError, "The token provided ('" + token + "') contains HTML space characters, which are not valid in tokens.");
-            return false;
-        }
+    if (token.find(isHTMLSpace) != kNotFound) {
+        exceptionState.throwDOMException(InvalidCharacterError, "The token provided ('" + token + "') contains HTML space characters, which are not valid in tokens.");
+        return false;
     }
 
     return true;
