@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "7.0",
+  "version": "7.1",
   "entries": [
     {
       "id": 1,
@@ -989,6 +989,37 @@ LONG_STRING_CONST(
       },
       "features": [
         "disable_d3d11"
+      ]
+    },
+    {
+      "id": 88,
+      "description": "Always rewrite vec/mat constructors to be consistent",
+      "cr_bugs": [398694],
+      "features": [
+        "scalarize_vec_and_mat_constructor_args"
+      ]
+    },
+    {
+      "id": 89,
+      "description": "Mac drivers handle struct scopes incorrectly",
+      "cr_bugs": [403957],
+      "os": {
+        "type": "macosx"
+      },
+      "features": [
+        "regenerate_struct_names"
+      ]
+    },
+    {
+      "id": 90,
+      "description": "Linux AMD drivers handle struct scopes incorrectly",
+      "cr_bugs": [403957],
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x1002",
+      "features": [
+        "regenerate_struct_names"
       ]
     }
   ]

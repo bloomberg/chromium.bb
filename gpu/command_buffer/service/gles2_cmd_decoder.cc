@@ -2819,6 +2819,8 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
     driver_bug_workarounds |= SH_UNROLL_FOR_LOOP_WITH_SAMPLER_ARRAY_INDEX;
   if (workarounds().scalarize_vec_and_mat_constructor_args)
     driver_bug_workarounds |= SH_SCALARIZE_VEC_AND_MAT_CONSTRUCTOR_ARGS;
+  if (workarounds().regenerate_struct_names)
+    driver_bug_workarounds |= SH_REGENERATE_STRUCT_NAMES;
 
   vertex_translator_ = shader_translator_cache()->GetTranslator(
 #if (ANGLE_SH_VERSION >= 126)

@@ -76,6 +76,8 @@
          needs_glsl_built_in_function_emulation)             \
   GPU_OP(NEEDS_OFFSCREEN_BUFFER_WORKAROUND,                  \
          needs_offscreen_buffer_workaround)                  \
+  GPU_OP(REGENERATE_STRUCT_NAMES,                            \
+         regenerate_struct_names)                            \
   GPU_OP(RELEASE_IMAGE_AFTER_USE,                            \
          release_image_after_use)                            \
   GPU_OP(RESTORE_SCISSOR_ON_FBO_CHANGE,                      \
