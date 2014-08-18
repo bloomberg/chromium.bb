@@ -42,8 +42,6 @@
 #include "public/web/WebTextRun.h"
 #include <skia/ext/platform_canvas.h>
 
-using namespace blink;
-
 namespace blink {
 
 WebFont* WebFont::create(const WebFontDescription& desc)
@@ -92,7 +90,7 @@ void WebFontImpl::drawText(WebCanvas* canvas, const WebTextRun& run, const WebFl
                            int from, int to) const
 {
     FontCachePurgePreventer fontCachePurgePreventer;
-    blink::FloatRect textClipRect(clip);
+    FloatRect textClipRect(clip);
     TextRun textRun(run);
     TextRunPaintInfo runInfo(textRun);
     runInfo.from = from;

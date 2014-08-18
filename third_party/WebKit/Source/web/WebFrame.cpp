@@ -12,7 +12,6 @@
 #include "web/WebRemoteFrameImpl.h"
 #include <algorithm>
 
-
 namespace blink {
 
 Frame* toCoreFrame(const WebFrame* frame)
@@ -31,7 +30,7 @@ void WebFrame::swap(WebFrame* frame)
 
     // All child frames must have been detached first.
     ASSERT(!m_firstChild && !m_lastChild);
-    // The frame being swapped in should not have a blink::Frame associated
+    // The frame being swapped in should not have a Frame associated
     // with it yet.
     ASSERT(!toCoreFrame(frame));
 
@@ -62,7 +61,7 @@ void WebFrame::swap(WebFrame* frame)
         frame->m_openedFrameTracker.reset(m_openedFrameTracker.release());
     }
 
-    // Finally, clone the state of the current blink::Frame into one matching
+    // Finally, clone the state of the current Frame into one matching
     // the type of the passed in WebFrame.
     // FIXME: This is a bit clunky; this results in pointless decrements and
     // increments of connected subframes.
@@ -184,7 +183,7 @@ WebFrame* WebFrame::findChildByName(const WebString& name) const
     return fromFrame(frame->tree().child(name));
 }
 
-WebFrame* WebFrame::fromFrame(blink::Frame* frame)
+WebFrame* WebFrame::fromFrame(Frame* frame)
 {
     if (!frame)
         return 0;

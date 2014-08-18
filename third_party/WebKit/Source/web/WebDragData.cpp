@@ -43,8 +43,6 @@
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 
-using namespace blink;
-
 namespace blink {
 
 void WebDragData::initialize()
@@ -62,12 +60,12 @@ void WebDragData::assign(const WebDragData& other)
     m_private = other.m_private;
 }
 
-WebDragData::WebDragData(const PassRefPtrWillBeRawPtr<blink::DataObject>& object)
+WebDragData::WebDragData(const PassRefPtrWillBeRawPtr<DataObject>& object)
 {
     m_private = object;
 }
 
-WebDragData& WebDragData::operator=(const PassRefPtrWillBeRawPtr<blink::DataObject>& object)
+WebDragData& WebDragData::operator=(const PassRefPtrWillBeRawPtr<DataObject>& object)
 {
     m_private = object;
     return *this;
@@ -98,7 +96,7 @@ WebVector<WebDragData::Item> WebDragData::items() const
                 item.storageType = Item::StorageTypeBinaryData;
                 item.binaryData = originalItem->sharedBuffer();
             } else if (originalItem->isFilename()) {
-                RefPtrWillBeRawPtr<blink::Blob> blob = originalItem->getAsFile();
+                RefPtrWillBeRawPtr<Blob> blob = originalItem->getAsFile();
                 if (blob->isFile()) {
                     File* file = toFile(blob.get());
                     if (file->hasBackingFile()) {

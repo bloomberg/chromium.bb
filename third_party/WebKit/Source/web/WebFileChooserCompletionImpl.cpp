@@ -33,7 +33,7 @@
 
 namespace blink {
 
-WebFileChooserCompletionImpl::WebFileChooserCompletionImpl(PassRefPtr<blink::FileChooser> chooser)
+WebFileChooserCompletionImpl::WebFileChooserCompletionImpl(PassRefPtr<FileChooser> chooser)
     : m_fileChooser(chooser)
 {
 }
@@ -44,9 +44,9 @@ WebFileChooserCompletionImpl::~WebFileChooserCompletionImpl()
 
 void WebFileChooserCompletionImpl::didChooseFile(const WebVector<WebString>& fileNames)
 {
-    Vector<blink::FileChooserFileInfo> fileInfo;
+    Vector<FileChooserFileInfo> fileInfo;
     for (size_t i = 0; i < fileNames.size(); ++i)
-        fileInfo.append(blink::FileChooserFileInfo(fileNames[i]));
+        fileInfo.append(FileChooserFileInfo(fileNames[i]));
     m_fileChooser->chooseFiles(fileInfo);
     // This object is no longer needed.
     delete this;
@@ -54,9 +54,9 @@ void WebFileChooserCompletionImpl::didChooseFile(const WebVector<WebString>& fil
 
 void WebFileChooserCompletionImpl::didChooseFile(const WebVector<SelectedFileInfo>& files)
 {
-    Vector<blink::FileChooserFileInfo> fileInfo;
+    Vector<FileChooserFileInfo> fileInfo;
     for (size_t i = 0; i < files.size(); ++i)
-        fileInfo.append(blink::FileChooserFileInfo(files[i].path, files[i].displayName));
+        fileInfo.append(FileChooserFileInfo(files[i].path, files[i].displayName));
     m_fileChooser->chooseFiles(fileInfo);
     // This object is no longer needed.
     delete this;

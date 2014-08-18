@@ -58,8 +58,6 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 
-using namespace blink;
-
 namespace blink {
 
 class WebDevToolsFrontendImpl::InspectorFrontendResumeObserver : public ActiveDOMObject {
@@ -119,7 +117,7 @@ void WebDevToolsFrontendImpl::resume()
         m_inspectorFrontendDispatchTimer.startOneShot(0, FROM_HERE);
 }
 
-void WebDevToolsFrontendImpl::maybeDispatch(blink::Timer<WebDevToolsFrontendImpl>*)
+void WebDevToolsFrontendImpl::maybeDispatch(Timer<WebDevToolsFrontendImpl>*)
 {
     while (!m_messages.isEmpty()) {
         Document* document = m_webViewImpl->page()->deprecatedLocalMainFrame()->document();

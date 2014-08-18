@@ -37,8 +37,6 @@
 #include "public/web/WebElement.h"
 #include "wtf/PassRefPtr.h"
 
-using namespace blink;
-
 namespace blink {
 
 void WebElementCollection::reset()

@@ -41,8 +41,6 @@
 #include "public/web/WebSerializedScriptValue.h"
 #include "web/WebLocalFrameImpl.h"
 
-using namespace blink;
-
 namespace blink {
 
 void WebDOMMessageEvent::initMessageEvent(const WebString& type, bool canBubble, bool cancelable, const WebSerializedScriptValue& messageData, const WebString& origin, const WebFrame* sourceFrame, const WebString& lastEventId, const WebMessagePortChannelArray& webChannels)

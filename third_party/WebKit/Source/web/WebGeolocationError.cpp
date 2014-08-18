@@ -29,8 +29,6 @@
 #include "modules/geolocation/GeolocationError.h"
 #include "public/platform/WebString.h"
 
-using namespace blink;
-
 namespace blink {
 
 void WebGeolocationError::assign(Error code, const WebString& message)
@@ -64,4 +62,4 @@ WebGeolocationError::operator GeolocationError*() const
     return m_private.get();
 }
 
-}
+} // namespace blink

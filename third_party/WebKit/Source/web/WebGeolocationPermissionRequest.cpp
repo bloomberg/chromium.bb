@@ -32,8 +32,6 @@
 #include "public/platform/WebURL.h"
 #include "public/web/WebSecurityOrigin.h"
 
-using namespace blink;
-
 namespace blink {
 
 WebGeolocationPermissionRequest::WebGeolocationPermissionRequest(Geolocation* geolocation)
@@ -56,4 +54,4 @@ void WebGeolocationPermissionRequest::setIsAllowed(bool allowed)
     m_private->setIsAllowed(allowed);
 }
 
-}
+} // namespace blink

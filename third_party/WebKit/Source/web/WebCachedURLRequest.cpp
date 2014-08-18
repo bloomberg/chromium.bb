@@ -35,8 +35,6 @@
 #include "platform/exported/WrappedResourceRequest.h"
 #include "public/platform/WebURLRequest.h"
 
-using namespace blink;
-
 namespace blink {
 
 void WebCachedURLRequest::reset()

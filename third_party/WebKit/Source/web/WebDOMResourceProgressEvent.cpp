@@ -34,8 +34,6 @@
 #include "core/events/ResourceProgressEvent.h"
 #include "public/platform/WebString.h"
 
-using namespace blink;
-
 namespace blink {
 
 WebDOMResourceProgressEvent::WebDOMResourceProgressEvent(const WebString& type, bool lengthIsComputable, unsigned long long loaded, unsigned long long total, const WebString& url)

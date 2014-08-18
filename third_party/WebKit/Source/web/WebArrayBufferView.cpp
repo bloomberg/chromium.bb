@@ -32,8 +32,6 @@
 #include "bindings/core/v8/custom/V8ArrayBufferViewCustom.h"
 #include "wtf/ArrayBufferView.h"
 
-using namespace WTF;
-
 namespace blink {
 
 void WebArrayBufferView::assign(const WebArrayBufferView& other)
@@ -65,7 +63,7 @@ WebArrayBufferView* WebArrayBufferView::createFromV8Value(v8::Handle<v8::Value> 
 {
     if (!value->IsArrayBufferView())
         return 0;
-    ArrayBufferView* view = blink::V8ArrayBufferView::toNative(value->ToObject());
+    ArrayBufferView* view = V8ArrayBufferView::toNative(value->ToObject());
     return new WebArrayBufferView(view);
 }
 

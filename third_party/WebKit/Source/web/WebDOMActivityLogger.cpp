@@ -38,8 +38,6 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
-using namespace blink;
-
 namespace blink {
 
 class DOMActivityLoggerContainer : public V8DOMActivityLogger {

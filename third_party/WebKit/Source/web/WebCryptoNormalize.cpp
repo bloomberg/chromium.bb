@@ -38,20 +38,17 @@
 #include "public/platform/WebString.h"
 #include <v8.h>
 
-using namespace blink;
-
 namespace blink {
-
 
 WebCryptoAlgorithm normalizeCryptoAlgorithm(v8::Handle<v8::Object> algorithmObject, WebCryptoOperation operation, int* exceptionCode, WebString* errorDetails, v8::Isolate* isolate)
 {
-    blink::Dictionary algorithmDictionary(algorithmObject, isolate);
+    Dictionary algorithmDictionary(algorithmObject, isolate);
     if (!algorithmDictionary.isUndefinedOrNull() && !algorithmDictionary.isObject())
         return WebCryptoAlgorithm();
     WebCryptoAlgorithm algorithm;
-    blink::AlgorithmError error;
+    AlgorithmError error;
     if (!normalizeAlgorithm(algorithmDictionary, operation, algorithm, &error)) {
-        *exceptionCode = blink::webCryptoErrorToExceptionCode(error.errorType);
+        *exceptionCode = webCryptoErrorToExceptionCode(error.errorType);
         *errorDetails = error.errorDetails;
         return WebCryptoAlgorithm();
     }

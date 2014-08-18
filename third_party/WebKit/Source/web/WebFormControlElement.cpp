@@ -40,8 +40,6 @@
 
 #include "wtf/PassRefPtr.h"
 
-using namespace blink;
-
 namespace blink {
 
 bool WebFormControlElement::isEnabled() const

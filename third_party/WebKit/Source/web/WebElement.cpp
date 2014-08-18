@@ -43,9 +43,6 @@
 #include "public/web/WebDocument.h"
 #include "wtf/PassRefPtr.h"
 
-
-using namespace blink;
-
 namespace blink {
 
 bool WebElement::isFormControlElement() const
@@ -157,7 +154,7 @@ WebImage WebElement::imageContents()
     if (isNull())
         return WebImage();
 
-    blink::Image* image = unwrap<Element>()->imageContents();
+    Image* image = unwrap<Element>()->imageContents();
     if (!image)
         return WebImage();
 

@@ -30,8 +30,6 @@
 #include "public/web/WebGeolocationPermissionRequest.h"
 #include "wtf/HashMap.h"
 
-using namespace blink;
-
 namespace blink {
 
 typedef PersistentHeapHashMap<Member<Geolocation>, int> GeolocationIdMap;
@@ -43,7 +41,7 @@ public:
     IdGeolocationMap m_idGeolocationMap;
 };
 
-int WebGeolocationPermissionRequestManager::add(const blink::WebGeolocationPermissionRequest& permissionRequest)
+int WebGeolocationPermissionRequestManager::add(const WebGeolocationPermissionRequest& permissionRequest)
 {
     Geolocation* geolocation = permissionRequest.geolocation();
     ASSERT(!m_private->m_geolocationIdMap.contains(geolocation));
@@ -54,7 +52,7 @@ int WebGeolocationPermissionRequestManager::add(const blink::WebGeolocationPermi
     return id;
 }
 
-bool WebGeolocationPermissionRequestManager::remove(const blink::WebGeolocationPermissionRequest& permissionRequest, int& id)
+bool WebGeolocationPermissionRequestManager::remove(const WebGeolocationPermissionRequest& permissionRequest, int& id)
 {
     Geolocation* geolocation = permissionRequest.geolocation();
     GeolocationIdMap::iterator it = m_private->m_geolocationIdMap.find(geolocation);
@@ -66,7 +64,7 @@ bool WebGeolocationPermissionRequestManager::remove(const blink::WebGeolocationP
     return true;
 }
 
-bool WebGeolocationPermissionRequestManager::remove(int id, blink::WebGeolocationPermissionRequest& permissionRequest)
+bool WebGeolocationPermissionRequestManager::remove(int id, WebGeolocationPermissionRequest& permissionRequest)
 {
     IdGeolocationMap::iterator it = m_private->m_idGeolocationMap.find(id);
     if (it == m_private->m_idGeolocationMap.end())

@@ -42,8 +42,6 @@
 #include "web/WebLocalFrameImpl.h"
 #include <v8.h>
 
-using namespace blink;
-
 namespace blink {
 
 WebDOMFileSystem WebDOMFileSystem::fromV8Value(v8::Handle<v8::Value> value)
@@ -72,7 +70,7 @@ WebDOMFileSystem WebDOMFileSystem::create(
     SerializableType serializableType)
 {
     ASSERT(frame && toWebLocalFrameImpl(frame)->frame());
-    DOMFileSystem* domFileSystem = DOMFileSystem::create(toWebLocalFrameImpl(frame)->frame()->document(), name, static_cast<blink::FileSystemType>(type), rootURL);
+    DOMFileSystem* domFileSystem = DOMFileSystem::create(toWebLocalFrameImpl(frame)->frame()->document(), name, static_cast<FileSystemType>(type), rootURL);
     if (serializableType == SerializableTypeSerializable)
         domFileSystem->makeClonable();
     return WebDOMFileSystem(domFileSystem);
@@ -144,7 +142,7 @@ WebDOMFileSystem::WebDOMFileSystem(DOMFileSystem* domFileSystem)
 {
 }
 
-WebDOMFileSystem& WebDOMFileSystem::operator=(blink::DOMFileSystem* domFileSystem)
+WebDOMFileSystem& WebDOMFileSystem::operator=(DOMFileSystem* domFileSystem)
 {
     m_private = domFileSystem;
     return *this;

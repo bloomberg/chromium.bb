@@ -35,8 +35,6 @@
 #include "wtf/ArrayBuffer.h"
 #include "wtf/PassOwnPtr.h"
 
-using namespace blink;
-
 namespace blink {
 
 v8::Handle<v8::Value> WebArrayBufferConverter::toV8Value(WebArrayBuffer* buffer, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -50,7 +48,7 @@ WebArrayBuffer* WebArrayBufferConverter::createFromV8Value(v8::Handle<v8::Value>
 {
     if (!V8ArrayBuffer::hasInstance(value, isolate))
         return 0;
-    WTF::ArrayBuffer* buffer = V8ArrayBuffer::toNative(value->ToObject());
+    ArrayBuffer* buffer = V8ArrayBuffer::toNative(value->ToObject());
     return new WebArrayBuffer(buffer);
 }
 

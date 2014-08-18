@@ -51,8 +51,6 @@
 #include "public/web/WebRange.h"
 #include "wtf/ArrayBufferView.h"
 
-using namespace blink;
-
 namespace blink {
 
 bool WebBindings::construct(NPP npp, NPObject* object, const NPVariant* args, uint32_t argCount, NPVariant* result)
@@ -185,7 +183,7 @@ void WebBindings::unregisterObject(NPObject* object)
 
 void WebBindings::dropV8WrapperForObject(NPObject* object)
 {
-    blink::forgetV8ObjectForNPObject(object);
+    forgetV8ObjectForNPObject(object);
 }
 
 NPUTF8* WebBindings::utf8FromIdentifier(NPIdentifier identifier)
@@ -386,7 +384,7 @@ void WebBindings::popExceptionHandler()
 
 void WebBindings::toNPVariant(v8::Local<v8::Value> object, NPObject* root, NPVariant* result)
 {
-    blink::convertV8ObjectToNPVariant(object, root, result, v8::Isolate::GetCurrent());
+    convertV8ObjectToNPVariant(object, root, result, v8::Isolate::GetCurrent());
 }
 
 v8::Handle<v8::Value> WebBindings::toV8Value(const NPVariant* variant)

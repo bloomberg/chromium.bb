@@ -33,8 +33,6 @@
 
 #include "core/fetch/MemoryCache.h"
 
-using blink::MemoryCache;
-
 namespace blink {
 
 // A helper method for coverting a MemoryCache::TypeStatistic to a
@@ -51,14 +49,14 @@ static void ToResourceTypeStat(const MemoryCache::TypeStatistic& from,
 void WebCache::setCapacities(
     size_t minDeadCapacity, size_t maxDeadCapacity, size_t capacity)
 {
-    MemoryCache* cache = blink::memoryCache();
+    MemoryCache* cache = memoryCache();
     if (cache)
         cache->setCapacities(static_cast<unsigned>(minDeadCapacity), static_cast<unsigned>(maxDeadCapacity), static_cast<unsigned>(capacity));
 }
 
 void WebCache::clear()
 {
-    MemoryCache* cache = blink::memoryCache();
+    MemoryCache* cache = memoryCache();
     if (cache)
         cache->evictResources();
 }
@@ -67,7 +65,7 @@ void WebCache::getUsageStats(UsageStats* result)
 {
     ASSERT(result);
 
-    MemoryCache* cache = blink::memoryCache();
+    MemoryCache* cache = memoryCache();
     if (cache) {
         result->minDeadCapacity = cache->minDeadCapacity();
         result->maxDeadCapacity = cache->maxDeadCapacity();
@@ -80,7 +78,7 @@ void WebCache::getUsageStats(UsageStats* result)
 
 void WebCache::getResourceTypeStats(ResourceTypeStats* result)
 {
-    MemoryCache* cache = blink::memoryCache();
+    MemoryCache* cache = memoryCache();
     if (cache) {
         MemoryCache::Statistics stats = cache->getStatistics();
         ToResourceTypeStat(stats.images, result->images);

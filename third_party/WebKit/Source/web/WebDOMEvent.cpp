@@ -48,17 +48,17 @@ void WebDOMEvent::assign(const WebDOMEvent& other)
     m_private = other.m_private;
 }
 
-void WebDOMEvent::assign(const PassRefPtrWillBeRawPtr<blink::Event>& event)
+void WebDOMEvent::assign(const PassRefPtrWillBeRawPtr<Event>& event)
 {
     m_private = event;
 }
 
-WebDOMEvent::WebDOMEvent(const PassRefPtrWillBeRawPtr<blink::Event>& event)
+WebDOMEvent::WebDOMEvent(const PassRefPtrWillBeRawPtr<Event>& event)
     : m_private(event)
 {
 }
 
-WebDOMEvent::operator PassRefPtrWillBeRawPtr<blink::Event>() const
+WebDOMEvent::operator PassRefPtrWillBeRawPtr<Event>() const
 {
     return m_private.get();
 }
@@ -120,19 +120,19 @@ bool WebDOMEvent::isKeyboardEvent() const
 bool WebDOMEvent::isMutationEvent() const
 {
     ASSERT(m_private.get());
-    return m_private->hasInterface(blink::EventNames::MutationEvent);
+    return m_private->hasInterface(EventNames::MutationEvent);
 }
 
 bool WebDOMEvent::isTextEvent() const
 {
     ASSERT(m_private.get());
-    return m_private->hasInterface(blink::EventNames::TextEvent);
+    return m_private->hasInterface(EventNames::TextEvent);
 }
 
 bool WebDOMEvent::isCompositionEvent() const
 {
     ASSERT(m_private.get());
-    return m_private->hasInterface(blink::EventNames::CompositionEvent);
+    return m_private->hasInterface(EventNames::CompositionEvent);
 }
 
 bool WebDOMEvent::isDragEvent() const
@@ -150,13 +150,13 @@ bool WebDOMEvent::isClipboardEvent() const
 bool WebDOMEvent::isMessageEvent() const
 {
     ASSERT(m_private.get());
-    return m_private->hasInterface(blink::EventNames::MessageEvent);
+    return m_private->hasInterface(EventNames::MessageEvent);
 }
 
 bool WebDOMEvent::isWheelEvent() const
 {
     ASSERT(m_private.get());
-    return m_private->hasInterface(blink::EventNames::WheelEvent);
+    return m_private->hasInterface(EventNames::WheelEvent);
 }
 
 bool WebDOMEvent::isBeforeTextInsertedEvent() const
@@ -168,31 +168,31 @@ bool WebDOMEvent::isBeforeTextInsertedEvent() const
 bool WebDOMEvent::isOverflowEvent() const
 {
     ASSERT(m_private.get());
-    return m_private->hasInterface(blink::EventNames::OverflowEvent);
+    return m_private->hasInterface(EventNames::OverflowEvent);
 }
 
 bool WebDOMEvent::isPageTransitionEvent() const
 {
     ASSERT(m_private.get());
-    return m_private->hasInterface(blink::EventNames::PageTransitionEvent);
+    return m_private->hasInterface(EventNames::PageTransitionEvent);
 }
 
 bool WebDOMEvent::isPopStateEvent() const
 {
     ASSERT(m_private.get());
-    return m_private->hasInterface(blink::EventNames::PopStateEvent);
+    return m_private->hasInterface(EventNames::PopStateEvent);
 }
 
 bool WebDOMEvent::isProgressEvent() const
 {
     ASSERT(m_private.get());
-    return m_private->hasInterface(blink::EventNames::ProgressEvent);
+    return m_private->hasInterface(EventNames::ProgressEvent);
 }
 
 bool WebDOMEvent::isXMLHttpRequestProgressEvent() const
 {
     ASSERT(m_private.get());
-    return m_private->hasInterface(blink::EventNames::XMLHttpRequestProgressEvent);
+    return m_private->hasInterface(EventNames::XMLHttpRequestProgressEvent);
 }
 
 } // namespace blink

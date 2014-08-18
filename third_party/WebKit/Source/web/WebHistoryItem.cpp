@@ -43,8 +43,6 @@
 #include "public/web/WebSerializedScriptValue.h"
 #include "wtf/text/StringHash.h"
 
-using namespace blink;
-
 namespace blink {
 
 void WebHistoryItem::initialize()

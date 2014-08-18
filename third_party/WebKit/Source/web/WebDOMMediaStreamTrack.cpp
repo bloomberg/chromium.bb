@@ -36,16 +36,16 @@
 
 namespace blink {
 
-WebDOMMediaStreamTrack::WebDOMMediaStreamTrack(PassRefPtrWillBeRawPtr<blink::MediaStreamTrack> track)
+WebDOMMediaStreamTrack::WebDOMMediaStreamTrack(PassRefPtrWillBeRawPtr<MediaStreamTrack> track)
     : m_private(track)
 {
 }
 
 WebDOMMediaStreamTrack WebDOMMediaStreamTrack::fromV8Value(v8::Handle<v8::Value> value)
 {
-    if (blink::V8MediaStreamTrack::hasInstance(value, v8::Isolate::GetCurrent())) {
+    if (V8MediaStreamTrack::hasInstance(value, v8::Isolate::GetCurrent())) {
         v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
-        return WebDOMMediaStreamTrack(blink::V8MediaStreamTrack::toNative(object));
+        return WebDOMMediaStreamTrack(V8MediaStreamTrack::toNative(object));
     }
     return WebDOMMediaStreamTrack(nullptr);
 }

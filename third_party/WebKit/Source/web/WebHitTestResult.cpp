@@ -37,8 +37,6 @@
 #include "public/web/WebElement.h"
 #include "public/web/WebNode.h"
 
-using namespace blink;
-
 namespace blink {
 
 class WebHitTestResultPrivate : public RefCountedWillBeGarbageCollectedFinalized<WebHitTestResultPrivate> {

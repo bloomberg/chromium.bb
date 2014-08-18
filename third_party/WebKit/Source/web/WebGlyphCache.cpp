@@ -33,8 +33,6 @@
 
 #include "platform/fonts/GlyphPageTreeNode.h"
 
-using namespace blink;
-
 namespace blink {
 
 size_t WebGlyphCache::pageCount()

@@ -34,8 +34,6 @@
 #include "core/events/ProgressEvent.h"
 #include "public/platform/WebString.h"
 
-using namespace blink;
-
 namespace blink {
 
 WebDOMProgressEvent::WebDOMProgressEvent(const WebString& type, bool lengthIsComputable, unsigned long long loaded, unsigned long long total)

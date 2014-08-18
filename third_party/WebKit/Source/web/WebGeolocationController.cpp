@@ -32,8 +32,6 @@
 #include "public/web/WebGeolocationError.h"
 #include "public/web/WebGeolocationPosition.h"
 
-using namespace blink;
-
 namespace blink {
 
 void WebGeolocationController::positionChanged(const WebGeolocationPosition& webPosition)

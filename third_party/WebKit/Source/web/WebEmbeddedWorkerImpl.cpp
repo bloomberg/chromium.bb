@@ -61,8 +61,6 @@
 #include "web/WorkerPermissionClient.h"
 #include "wtf/Functional.h"
 
-using namespace blink;
-
 namespace blink {
 
 // A thin wrapper for one-off script loading.
@@ -82,7 +80,7 @@ public:
     {
         ASSERT(loadingContext);
         m_callback = callback;
-        m_scriptLoader->setRequestContext(blink::WebURLRequest::RequestContextServiceWorker);
+        m_scriptLoader->setRequestContext(WebURLRequest::RequestContextServiceWorker);
         m_scriptLoader->loadAsynchronously(
             *loadingContext, scriptURL, DenyCrossOriginRequests, this);
     }

@@ -37,8 +37,6 @@
 #include "platform/blob/BlobData.h"
 #include "wtf/PassOwnPtr.h"
 
-using namespace blink;
-
 namespace blink {
 
 WebBlob WebBlob::createFromUUID(const WebString& uuid, const WebString& type, long long size)
@@ -90,12 +88,12 @@ v8::Handle<v8::Value> WebBlob::toV8Value(v8::Handle<v8::Object> creationContext,
     return toV8(m_private.get(), creationContext, isolate);
 }
 
-WebBlob::WebBlob(const PassRefPtrWillBeRawPtr<blink::Blob>& blob)
+WebBlob::WebBlob(const PassRefPtrWillBeRawPtr<Blob>& blob)
     : m_private(blob)
 {
 }
 
-WebBlob& WebBlob::operator=(const PassRefPtrWillBeRawPtr<blink::Blob>& blob)
+WebBlob& WebBlob::operator=(const PassRefPtrWillBeRawPtr<Blob>& blob)
 {
     m_private = blob;
     return *this;

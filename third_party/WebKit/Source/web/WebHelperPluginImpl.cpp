@@ -38,8 +38,6 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPluginContainerImpl.h"
 
-using namespace blink;
-
 namespace blink {
 
 DEFINE_TYPE_CASTS(WebHelperPluginImpl, WebHelperPlugin, plugin, true, true);

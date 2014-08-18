@@ -37,12 +37,12 @@ namespace blink {
 
 WebHeap::SafePointScope::SafePointScope()
 {
-    blink::ThreadState::current()->enterSafePointWithPointers(this);
+    ThreadState::current()->enterSafePointWithPointers(this);
 }
 
 WebHeap::SafePointScope::~SafePointScope()
 {
-    blink::ThreadState::current()->leaveSafePoint();
+    ThreadState::current()->leaveSafePoint();
 }
 
 } // namespace blink

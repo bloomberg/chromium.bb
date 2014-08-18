@@ -36,8 +36,6 @@
 #include "public/platform/WebString.h"
 #include "public/web/WebSerializedScriptValue.h"
 
-using namespace blink;
-
 namespace blink {
 
 void WebDOMCustomEvent::initCustomEvent(const WebString& type, bool canBubble, bool cancelable, const WebSerializedScriptValue& webSerializedScriptValue)

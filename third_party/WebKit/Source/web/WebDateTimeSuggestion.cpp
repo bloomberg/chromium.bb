@@ -30,14 +30,14 @@
 
 namespace blink {
 
-WebDateTimeSuggestion::WebDateTimeSuggestion(const blink::DateTimeSuggestion& suggestion)
+WebDateTimeSuggestion::WebDateTimeSuggestion(const DateTimeSuggestion& suggestion)
     : value(suggestion.value)
     , localizedValue(suggestion.localizedValue)
     , label(suggestion.label)
 {
 }
 
-WebDateTimeSuggestion& WebDateTimeSuggestion::operator=(const blink::DateTimeSuggestion& suggestion)
+WebDateTimeSuggestion& WebDateTimeSuggestion::operator=(const DateTimeSuggestion& suggestion)
 {
     value = suggestion.value;
     localizedValue = suggestion.localizedValue;

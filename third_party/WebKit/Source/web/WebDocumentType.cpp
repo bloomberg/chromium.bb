@@ -35,8 +35,6 @@
 #include "public/platform/WebString.h"
 #include "wtf/PassRefPtr.h"
 
-using namespace blink;
-
 namespace blink {
 
 WebString WebDocumentType::name() const

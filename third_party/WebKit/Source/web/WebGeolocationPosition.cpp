@@ -28,8 +28,6 @@
 
 #include "modules/geolocation/GeolocationPosition.h"
 
-using namespace blink;
-
 namespace blink {
 
 void WebGeolocationPosition::assign(double timestamp, double latitude, double longitude, double accuracy, bool providesAltitude, double altitude, bool providesAltitudeAccuracy, double altitudeAccuracy, bool providesHeading, double heading, bool providesSpeed, double speed)

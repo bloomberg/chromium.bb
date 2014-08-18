@@ -74,8 +74,6 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
 
-using namespace blink;
-
 namespace OverlayZOrders {
 // Use 99 as a big z-order number so that highlight is above other overlays.
 static const int highlight = 99;
@@ -108,7 +106,7 @@ public:
     }
 
 private:
-    ClientMessageLoopAdapter(PassOwnPtr<blink::WebDevToolsAgentClient::WebKitClientMessageLoop> messageLoop)
+    ClientMessageLoopAdapter(PassOwnPtr<WebDevToolsAgentClient::WebKitClientMessageLoop> messageLoop)
         : m_running(false)
         , m_messageLoop(messageLoop) { }
 
@@ -170,7 +168,7 @@ private:
     }
 
     bool m_running;
-    OwnPtr<blink::WebDevToolsAgentClient::WebKitClientMessageLoop> m_messageLoop;
+    OwnPtr<WebDevToolsAgentClient::WebKitClientMessageLoop> m_messageLoop;
     typedef HashSet<WebViewImpl*> FrozenViewsSet;
     FrozenViewsSet m_frozenViews;
     // FIXME: The ownership model for s_instance is somewhat complicated. Can we make this simpler?
@@ -228,7 +226,7 @@ WebDevToolsAgentImpl::~WebDevToolsAgentImpl()
 {
     ClientMessageLoopAdapter::inspectedViewClosed(m_webViewImpl);
     if (m_attached)
-        blink::Platform::current()->currentThread()->removeTaskObserver(this);
+        Platform::current()->currentThread()->removeTaskObserver(this);
 }
 
 void WebDevToolsAgentImpl::attach(const WebString& hostId)
@@ -237,7 +235,7 @@ void WebDevToolsAgentImpl::attach(const WebString& hostId)
         return;
 
     inspectorController()->connectFrontend(hostId, this);
-    blink::Platform::current()->currentThread()->addTaskObserver(this);
+    Platform::current()->currentThread()->addTaskObserver(this);
     m_attached = true;
 }
 
@@ -247,13 +245,13 @@ void WebDevToolsAgentImpl::reattach(const WebString& hostId, const WebString& sa
         return;
 
     inspectorController()->reuseFrontend(hostId, this, savedState);
-    blink::Platform::current()->currentThread()->addTaskObserver(this);
+    Platform::current()->currentThread()->addTaskObserver(this);
     m_attached = true;
 }
 
 void WebDevToolsAgentImpl::detach()
 {
-    blink::Platform::current()->currentThread()->removeTaskObserver(this);
+    Platform::current()->currentThread()->removeTaskObserver(this);
 
     // Prevent controller from sending messages to the frontend.
     InspectorController* ic = inspectorController();
@@ -295,7 +293,7 @@ void WebDevToolsAgentImpl::didComposite()
 
 void WebDevToolsAgentImpl::didCreateScriptContext(WebLocalFrameImpl* webframe, int worldId)
 {
-    if (blink::LocalFrame* frame = webframe->frame())
+    if (LocalFrame* frame = webframe->frame())
         frame->script().setWorldDebugId(worldId, m_debuggerId);
     // Skip non main world contexts.
     if (worldId)
@@ -303,7 +301,7 @@ void WebDevToolsAgentImpl::didCreateScriptContext(WebLocalFrameImpl* webframe, i
     m_webViewDidLayoutOnceAfterLoad = false;
 }
 
-bool WebDevToolsAgentImpl::handleInputEvent(blink::Page* page, const WebInputEvent& inputEvent)
+bool WebDevToolsAgentImpl::handleInputEvent(Page* page, const WebInputEvent& inputEvent)
 {
     if (!m_attached && !m_generatingEvent)
         return false;
@@ -316,13 +314,13 @@ bool WebDevToolsAgentImpl::handleInputEvent(blink::Page* page, const WebInputEve
         PlatformGestureEventBuilder gestureEvent(frameView, static_cast<const WebGestureEvent&>(inputEvent));
         float pageScaleFactor = page->pageScaleFactor();
         if (gestureEvent.type() == PlatformEvent::GesturePinchBegin) {
-            m_lastPinchAnchorCss = adoptPtr(new blink::IntPoint(frameView->scrollPosition() + gestureEvent.position()));
-            m_lastPinchAnchorDip = adoptPtr(new blink::IntPoint(gestureEvent.position()));
+            m_lastPinchAnchorCss = adoptPtr(new IntPoint(frameView->scrollPosition() + gestureEvent.position()));
+            m_lastPinchAnchorDip = adoptPtr(new IntPoint(gestureEvent.position()));
             m_lastPinchAnchorDip->scale(pageScaleFactor, pageScaleFactor);
         }
         if (gestureEvent.type() == PlatformEvent::GesturePinchUpdate && m_lastPinchAnchorCss) {
             float newPageScaleFactor = pageScaleFactor * gestureEvent.scale();
-            blink::IntPoint anchorCss(*m_lastPinchAnchorDip.get());
+            IntPoint anchorCss(*m_lastPinchAnchorDip.get());
             anchorCss.scale(1.f / newPageScaleFactor, 1.f / newPageScaleFactor);
             m_webViewImpl->setPageScaleFactor(newPageScaleFactor);
             m_webViewImpl->setMainFrameScrollOffset(*m_lastPinchAnchorCss.get() - toIntSize(anchorCss));
@@ -663,7 +661,7 @@ void WebDevToolsAgentImpl::hideHighlight()
     m_webViewImpl->removePageOverlay(this);
 }
 
-void WebDevToolsAgentImpl::sendMessageToFrontend(PassRefPtr<blink::JSONObject> message)
+void WebDevToolsAgentImpl::sendMessageToFrontend(PassRefPtr<JSONObject> message)
 {
     m_frontendMessageQueue.append(message);
 }
