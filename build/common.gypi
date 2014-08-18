@@ -2936,7 +2936,8 @@
       ['<(chromeos)==1 and >(nacl_untrusted_build)==0', {
         'defines': ['OS_CHROMEOS=1'],
       }],
-      ['enable_wexit_time_destructors==1', {
+      ['enable_wexit_time_destructors==1 and OS!="win"', {
+        # TODO: Enable on Windows too, http://crbug.com/404525
         'variables': { 'clang_warning_flags': ['-Wexit-time-destructors']},
       }],
       ['chromium_code==0', {
@@ -5406,7 +5407,6 @@
                   '-Wno-unused-private-field',
                   '-Wno-unused-value',
                   '-Wno-unused-variable',
-                  '-Wno-exit-time-destructors',  # TODO: http://crbug.com/404525
                   '-ferror-limit=1',
                 ],
               },
