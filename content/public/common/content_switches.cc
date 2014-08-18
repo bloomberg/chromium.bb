@@ -81,6 +81,15 @@ const char kDisable3DAPIs[]                 = "disable-3d-apis";
 // Disable gpu-accelerated 2d canvas.
 const char kDisableAccelerated2dCanvas[]    = "disable-accelerated-2d-canvas";
 
+// Disables accelerated compositing for backgrounds of root layers with
+// background-attachment: fixed.
+const char kDisableAcceleratedFixedRootBackground[] =
+    "disable-accelerated-fixed-root-background";
+
+// Disables accelerated compositing for overflow scroll.
+const char kDisableAcceleratedOverflowScroll[] =
+    "disable-accelerated-overflow-scroll";
+
 // Disables layer squashing.
 const char kDisableLayerSquashing[] =
     "disable-layer-squashing";
@@ -273,6 +282,16 @@ const char kEnableBleedingEdgeRenderingFastPaths[] =
 
 // Disable deferred image filters.
 const char kDisableDeferredFilters[]         = "disable-deferred-filters";
+
+// Enables accelerated compositing for backgrounds of root layers with
+// background-attachment: fixed.
+const char kEnableAcceleratedFixedRootBackground[] =
+    "enable-accelerated-fixed-root-background";
+
+// Enables accelerated compositing for overflow scroll. Promotes eligible
+// overflow:scroll elements to layers to enable accelerated scrolling for them.
+const char kEnableAcceleratedOverflowScroll[] =
+    "enable-accelerated-overflow-scroll";
 
 // Enables LCD text.
 const char kEnableLCDText[]                 = "enable-lcd-text";

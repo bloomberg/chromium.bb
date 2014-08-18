@@ -147,6 +147,14 @@ const Experiment::Choice kEnableCompositingForTransitionChoices[] = {
     switches::kDisableCompositingForTransition, ""},
 };
 
+const Experiment::Choice kEnableAcceleratedFixedRootBackgroundChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    switches::kEnableAcceleratedFixedRootBackground, ""},
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    switches::kDisableAcceleratedFixedRootBackground, ""},
+};
+
 const Experiment::Choice kTouchEventsChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_AUTOMATIC, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
@@ -542,6 +550,14 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kIgnoreGpuBlacklist)
   },
   {
+    "force-accelerated-composited-scrolling",
+     IDS_FLAGS_FORCE_ACCELERATED_OVERFLOW_SCROLL_MODE_NAME,
+     IDS_FLAGS_FORCE_ACCELERATED_OVERFLOW_SCROLL_MODE_DESCRIPTION,
+     kOsAll,
+     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableAcceleratedOverflowScroll,
+                               switches::kDisableAcceleratedOverflowScroll)
+  },
+  {
     "disable_layer_squashing",
     IDS_FLAGS_DISABLE_LAYER_SQUASHING_NAME,
     IDS_FLAGS_DISABLE_LAYER_SQUASHING_DESCRIPTION,
@@ -641,6 +657,13 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_COMPOSITING_FOR_TRANSITION_DESCRIPTION,
     kOsAll,
     MULTI_VALUE_TYPE(kEnableCompositingForTransitionChoices)
+  },
+  {
+    "enable-accelerated-fixed-root-background",
+    IDS_FLAGS_ACCELERATED_FIXED_ROOT_BACKGROUND_NAME,
+    IDS_FLAGS_ACCELERATED_FIXED_ROOT_BACKGROUND_DESCRIPTION,
+    kOsAll,
+    MULTI_VALUE_TYPE(kEnableAcceleratedFixedRootBackgroundChoices)
   },
   // Native client is compiled out when DISABLE_NACL is defined.
 #if !defined(DISABLE_NACL)

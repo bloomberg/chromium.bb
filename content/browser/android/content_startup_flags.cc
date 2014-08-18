@@ -52,6 +52,7 @@ void SetContentCommandLineFlags(bool single_process,
     parsed_command_line->AppendSwitch(switches::kSingleProcess);
   }
 
+  parsed_command_line->AppendSwitch(switches::kEnableAcceleratedOverflowScroll);
   parsed_command_line->AppendSwitch(switches::kEnableBeginFrameScheduling);
 
   parsed_command_line->AppendSwitch(switches::kEnablePinch);
