@@ -8,6 +8,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "cc/base/math_util.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/delegated_frame_data.h"
 #include "cc/quads/draw_quad.h"
@@ -217,6 +218,10 @@ void SurfaceAggregator::CopySharedQuadState(
   // transform is not identity.
   copy_shared_quad_state->content_to_target_transform.ConcatTransform(
       content_to_target_transform);
+  if (copy_shared_quad_state->is_clipped) {
+    copy_shared_quad_state->clip_rect = MathUtil::MapEnclosingClippedRect(
+        content_to_target_transform, copy_shared_quad_state->clip_rect);
+  }
 }
 
 void SurfaceAggregator::CopyQuadsToPass(

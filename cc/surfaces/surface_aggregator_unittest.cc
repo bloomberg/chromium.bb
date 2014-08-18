@@ -692,6 +692,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateMultiplePassWithTransform) {
   SharedQuadState* child_root_pass_sqs =
       child_root_pass->shared_quad_state_list[0];
   child_root_pass_sqs->content_to_target_transform.Translate(8, 0);
+  child_root_pass_sqs->is_clipped = true;
+  child_root_pass_sqs->clip_rect = gfx::Rect(0, 0, 5, 5);
 
   scoped_ptr<DelegatedFrameData> child_frame_data(new DelegatedFrameData);
   child_pass_list.swap(child_frame_data->render_pass_list);
@@ -783,6 +785,16 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateMultiplePassWithTransform) {
               quad->quadTransform().ToString())
         << i;
   }
+
+  EXPECT_EQ(true,
+            aggregated_pass_list[1]->shared_quad_state_list[1]->is_clipped);
+
+  // The second quad in the root pass is aggregated from the child, so its
+  // clip rect must be transformed by the child's translation.
+  EXPECT_EQ(
+      gfx::Rect(0, 10, 5, 5).ToString(),
+      aggregated_pass_list[1]->shared_quad_state_list[1]->clip_rect.ToString());
+
   factory_.Destroy(child_surface_id);
 }
 
