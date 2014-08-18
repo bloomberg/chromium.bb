@@ -358,8 +358,7 @@ uint32 CrasUnifiedStream::ReadWriteAudio(size_t frames,
   total_delay_bytes += GetBytesLatency(latency_ts);
 
   int frames_filled = source_callback_->OnMoreData(
-      output_bus_.get(),
-      AudioBuffersState(0, total_delay_bytes));
+      output_bus_.get(), total_delay_bytes);
 
   output_bus_->ToInterleaved(frames_filled, bytes_per_sample, output_samples);
 
@@ -376,7 +375,7 @@ uint32 CrasUnifiedStream::WriteAudio(size_t frames,
   cras_client_calc_playback_latency(sample_ts, &latency_ts);
 
   int frames_filled = source_callback_->OnMoreData(
-      output_bus_.get(), AudioBuffersState(0, GetBytesLatency(latency_ts)));
+      output_bus_.get(), GetBytesLatency(latency_ts));
 
   // Note: If this ever changes to output raw float the data must be clipped and
   // sanitized since it may come from an untrusted source such as NaCl.

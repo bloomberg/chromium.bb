@@ -48,7 +48,7 @@ class TestAudioOutputStream : public media::AudioOutputStream {
       // Call back into the player to get samples that it wants us to play.
       scoped_ptr<media::AudioBus> dest =
           media::AudioBus::Create(1, default_frame_count_);
-      frames = callback_->OnMoreData(dest.get(), media::AudioBuffersState());
+      frames = callback_->OnMoreData(dest.get(), 0);
       total_frames += frames;
       // Send the samples given to us by the player to the gather callback.
       caller_loop_->PostTask(

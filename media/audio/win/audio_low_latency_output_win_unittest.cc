@@ -52,7 +52,7 @@ MATCHER_P(HasValidDelay, value, "") {
   // It is difficult to come up with a perfect test condition for the delay
   // estimation. For now, verify that the produced output delay is always
   // larger than the selected buffer size.
-  return arg.hardware_delay_bytes >= value.hardware_delay_bytes;
+  return arg >= value;
 }
 
 // Used to terminate a loop from a different thread than the loop belongs to.
@@ -103,7 +103,7 @@ class ReadFromFileAudioSource : public AudioOutputStream::AudioSourceCallback {
 
   // AudioOutputStream::AudioSourceCallback implementation.
   virtual int OnMoreData(AudioBus* audio_bus,
-                         AudioBuffersState buffers_state) {
+                         int total_bytes_delay) {
     // Store time difference between two successive callbacks in an array.
     // These values will be written to a file in the destructor.
     const base::TimeTicks now_time = base::TimeTicks::Now();
@@ -396,14 +396,11 @@ TEST(WASAPIAudioOutputStreamTest, ValidPacketSize) {
   EXPECT_TRUE(aos->Open());
 
   // Derive the expected size in bytes of each packet.
-  uint32 bytes_per_packet = aosw.channels() * aosw.samples_per_packet() *
-                           (aosw.bits_per_sample() / 8);
-
-  // Set up expected minimum delay estimation.
-  AudioBuffersState state(0, bytes_per_packet);
+  int bytes_per_packet = aosw.channels() * aosw.samples_per_packet() *
+      (aosw.bits_per_sample() / 8);
 
   // Wait for the first callback and verify its parameters.
-  EXPECT_CALL(source, OnMoreData(NotNull(), HasValidDelay(state)))
+  EXPECT_CALL(source, OnMoreData(NotNull(), HasValidDelay(bytes_per_packet)))
       .WillOnce(DoAll(
           QuitLoop(loop.message_loop_proxy()),
           Return(aosw.samples_per_packet())));
@@ -600,14 +597,11 @@ TEST(WASAPIAudioOutputStreamTest, ExclusiveModeMinBufferSizeAt48kHz) {
   EXPECT_TRUE(aos->Open());
 
   // Derive the expected size in bytes of each packet.
-  uint32 bytes_per_packet = aosw.channels() * aosw.samples_per_packet() *
+  int bytes_per_packet = aosw.channels() * aosw.samples_per_packet() *
       (aosw.bits_per_sample() / 8);
 
-  // Set up expected minimum delay estimation.
-  AudioBuffersState state(0, bytes_per_packet);
-
  // Wait for the first callback and verify its parameters.
-  EXPECT_CALL(source, OnMoreData(NotNull(), HasValidDelay(state)))
+  EXPECT_CALL(source, OnMoreData(NotNull(), HasValidDelay(bytes_per_packet)))
       .WillOnce(DoAll(
           QuitLoop(loop.message_loop_proxy()),
           Return(aosw.samples_per_packet())))
@@ -641,14 +635,11 @@ TEST(WASAPIAudioOutputStreamTest, ExclusiveModeMinBufferSizeAt44kHz) {
   EXPECT_TRUE(aos->Open());
 
   // Derive the expected size in bytes of each packet.
-  uint32 bytes_per_packet = aosw.channels() * aosw.samples_per_packet() *
+  int bytes_per_packet = aosw.channels() * aosw.samples_per_packet() *
       (aosw.bits_per_sample() / 8);
 
-  // Set up expected minimum delay estimation.
-  AudioBuffersState state(0, bytes_per_packet);
-
   // Wait for the first callback and verify its parameters.
-  EXPECT_CALL(source, OnMoreData(NotNull(), HasValidDelay(state)))
+  EXPECT_CALL(source, OnMoreData(NotNull(), HasValidDelay(bytes_per_packet)))
     .WillOnce(DoAll(
         QuitLoop(loop.message_loop_proxy()),
         Return(aosw.samples_per_packet())))

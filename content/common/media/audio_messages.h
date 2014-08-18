@@ -11,7 +11,6 @@
 #include "content/common/content_export.h"
 #include "content/common/media/media_param_traits.h"
 #include "ipc/ipc_message_macros.h"
-#include "media/audio/audio_buffers_state.h"
 #include "media/audio/audio_input_ipc.h"
 #include "media/audio/audio_output_ipc.h"
 #include "media/audio/audio_parameters.h"

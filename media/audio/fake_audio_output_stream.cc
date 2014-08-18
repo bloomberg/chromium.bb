@@ -61,7 +61,7 @@ void FakeAudioOutputStream::GetVolume(double* volume) {
 
 void FakeAudioOutputStream::CallOnMoreData(AudioBus* audio_bus) {
   DCHECK(audio_manager_->GetWorkerTaskRunner()->BelongsToCurrentThread());
-  callback_->OnMoreData(audio_bus, AudioBuffersState());
+  callback_->OnMoreData(audio_bus, 0);
 }
 
 }  // namespace media

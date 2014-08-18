@@ -149,7 +149,7 @@ class MEDIA_EXPORT AudioOutputController
 
   // AudioSourceCallback implementation.
   virtual int OnMoreData(AudioBus* dest,
-                         AudioBuffersState buffers_state) OVERRIDE;
+                         int total_bytes_delay) OVERRIDE;
   virtual void OnError(AudioOutputStream* stream) OVERRIDE;
 
   // AudioDeviceListener implementation.  When called AudioOutputController will

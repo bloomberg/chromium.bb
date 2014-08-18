@@ -5,7 +5,6 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
-#include "media/audio/audio_buffers_state.h"
 #include "media/audio/audio_parameters.h"
 #include "media/audio/fake_audio_consumer.h"
 #include "media/audio/simple_sources.h"
@@ -30,7 +29,7 @@ class FakeAudioConsumerTest : public testing::Test {
   virtual ~FakeAudioConsumerTest() {}
 
   void ConsumeData(AudioBus* audio_bus) {
-    source_.OnMoreData(audio_bus, AudioBuffersState());
+    source_.OnMoreData(audio_bus, 0);
   }
 
   void RunOnAudioThread() {

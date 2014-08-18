@@ -644,10 +644,7 @@ TEST_F(AlsaPcmOutputStreamTest, BufferPacket_Underrun) {
       .WillOnce(Return(SND_PCM_STATE_XRUN));
   EXPECT_CALL(mock_alsa_wrapper_, PcmAvailUpdate(_))
       .WillRepeatedly(Return(0));  // Buffer is full.
-  EXPECT_CALL(mock_callback,
-              OnMoreData(_, AllOf(
-                  Field(&AudioBuffersState::pending_bytes, 0),
-                  Field(&AudioBuffersState::hardware_delay_bytes, 0))))
+  EXPECT_CALL(mock_callback, OnMoreData(_, 0))
       .WillOnce(DoAll(ClearBuffer(), Return(kTestFramesPerPacket / 2)));
 
   bool source_exhausted;

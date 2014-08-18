@@ -28,7 +28,7 @@ class MEDIA_EXPORT SineWaveAudioSource
 
   // Implementation of AudioSourceCallback.
   virtual int OnMoreData(AudioBus* audio_bus,
-                         AudioBuffersState audio_buffers) OVERRIDE;
+                         int total_bytes_delay) OVERRIDE;
   virtual void OnError(AudioOutputStream* stream) OVERRIDE;
 
   // The number of OnMoreData()+OnMoreIOData() and OnError() calls respectively.

@@ -10,7 +10,6 @@
 #include "base/memory/shared_memory.h"
 #include "base/metrics/histogram.h"
 #include "content/public/common/content_switches.h"
-#include "media/audio/audio_buffers_state.h"
 #include "media/audio/audio_parameters.h"
 
 using media::AudioBus;
