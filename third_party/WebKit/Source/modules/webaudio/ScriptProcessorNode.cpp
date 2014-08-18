@@ -40,13 +40,6 @@
 
 namespace blink {
 
-#if !ENABLE(OILPAN)
-// We need a dedicated specialization for ScriptProcessorNode because it doesn't
-// inherit from RefCounted.
-template<> struct CrossThreadCopierBase<false, false, false, PassRefPtr<ScriptProcessorNode> > : public CrossThreadCopierPassThrough<PassRefPtr<ScriptProcessorNode> > {
-};
-#endif
-
 static size_t chooseBufferSize()
 {
     // Choose a buffer size based on the audio hardware buffer size. Arbitarily make it a power of
@@ -63,7 +56,7 @@ static size_t chooseBufferSize()
     return bufferSize;
 }
 
-PassRefPtrWillBeRawPtr<ScriptProcessorNode> ScriptProcessorNode::create(AudioContext* context, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels)
+ScriptProcessorNode* ScriptProcessorNode::create(AudioContext* context, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels)
 {
     // Check for valid buffer size.
     switch (bufferSize) {
@@ -79,19 +72,19 @@ PassRefPtrWillBeRawPtr<ScriptProcessorNode> ScriptProcessorNode::create(AudioCon
     case 16384:
         break;
     default:
-        return nullptr;
+        return 0;
     }
 
     if (!numberOfInputChannels && !numberOfOutputChannels)
-        return nullptr;
+        return 0;
 
     if (numberOfInputChannels > AudioContext::maxNumberOfChannels())
-        return nullptr;
+        return 0;
 
     if (numberOfOutputChannels > AudioContext::maxNumberOfChannels())
-        return nullptr;
+        return 0;
 
-    return adoptRefWillBeNoop(new ScriptProcessorNode(context, sampleRate, bufferSize, numberOfInputChannels, numberOfOutputChannels));
+    return adoptRefCountedGarbageCollectedWillBeNoop(new ScriptProcessorNode(context, sampleRate, bufferSize, numberOfInputChannels, numberOfOutputChannels));
 }
 
 ScriptProcessorNode::ScriptProcessorNode(AudioContext* context, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels)
@@ -140,8 +133,8 @@ void ScriptProcessorNode::initialize()
     // Create double buffers on both the input and output sides.
     // These AudioBuffers will be directly accessed in the main thread by JavaScript.
     for (unsigned i = 0; i < 2; ++i) {
-        RefPtrWillBeRawPtr<AudioBuffer> inputBuffer = m_numberOfInputChannels ? AudioBuffer::create(m_numberOfInputChannels, bufferSize(), sampleRate) : nullptr;
-        RefPtrWillBeRawPtr<AudioBuffer> outputBuffer = m_numberOfOutputChannels ? AudioBuffer::create(m_numberOfOutputChannels, bufferSize(), sampleRate) : nullptr;
+        AudioBuffer* inputBuffer = m_numberOfInputChannels ? AudioBuffer::create(m_numberOfInputChannels, bufferSize(), sampleRate) : 0;
+        AudioBuffer* outputBuffer = m_numberOfOutputChannels ? AudioBuffer::create(m_numberOfOutputChannels, bufferSize(), sampleRate) : 0;
 
         m_inputBuffers.append(inputBuffer);
         m_outputBuffers.append(outputBuffer);
@@ -235,7 +228,7 @@ void ScriptProcessorNode::process(size_t framesToProcess)
         } else if (context()->executionContext()) {
             // Fire the event on the main thread, not this one (which is the realtime audio thread).
             m_doubleBufferIndexForEvent = m_doubleBufferIndex;
-            context()->executionContext()->postTask(createCrossThreadTask(&ScriptProcessorNode::fireProcessEvent, PassRefPtrWillBeRawPtr<ScriptProcessorNode>(this)));
+            context()->executionContext()->postTask(createCrossThreadTask(&ScriptProcessorNode::fireProcessEvent, this));
         }
 
         swapBuffers();

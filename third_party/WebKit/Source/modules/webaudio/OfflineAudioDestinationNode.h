@@ -38,9 +38,9 @@ class AudioContext;
 
 class OfflineAudioDestinationNode FINAL : public AudioDestinationNode {
 public:
-    static PassRefPtrWillBeRawPtr<OfflineAudioDestinationNode> create(AudioContext* context, AudioBuffer* renderTarget)
+    static OfflineAudioDestinationNode* create(AudioContext* context, AudioBuffer* renderTarget)
     {
-        return adoptRefWillBeNoop(new OfflineAudioDestinationNode(context, renderTarget));
+        return adoptRefCountedGarbageCollectedWillBeNoop(new OfflineAudioDestinationNode(context, renderTarget));
     }
 
     virtual ~OfflineAudioDestinationNode();
@@ -61,7 +61,7 @@ private:
     OfflineAudioDestinationNode(AudioContext*, AudioBuffer* renderTarget);
 
     // This AudioNode renders into this AudioBuffer.
-    RefPtrWillBeMember<AudioBuffer> m_renderTarget;
+    Member<AudioBuffer> m_renderTarget;
     // Temporary AudioBus for each render quantum.
     RefPtr<AudioBus> m_renderBus;
 

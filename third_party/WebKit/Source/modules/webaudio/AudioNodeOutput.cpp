@@ -48,18 +48,16 @@ inline AudioNodeOutput::AudioNodeOutput(AudioNode* node, unsigned numberOfChanne
     m_internalBus = AudioBus::create(numberOfChannels, AudioNode::ProcessingSizeInFrames);
 }
 
-PassOwnPtrWillBeRawPtr<AudioNodeOutput> AudioNodeOutput::create(AudioNode* node, unsigned numberOfChannels)
+AudioNodeOutput* AudioNodeOutput::create(AudioNode* node, unsigned numberOfChannels)
 {
-    return adoptPtrWillBeNoop(new AudioNodeOutput(node, numberOfChannels));
+    return new AudioNodeOutput(node, numberOfChannels);
 }
 
 void AudioNodeOutput::trace(Visitor* visitor)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_node);
     visitor->trace(m_inputs);
     visitor->trace(m_params);
-#endif
 }
 
 void AudioNodeOutput::setNumberOfChannels(unsigned numberOfChannels)

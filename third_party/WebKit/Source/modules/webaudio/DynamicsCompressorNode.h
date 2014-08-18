@@ -35,9 +35,9 @@ class DynamicsCompressor;
 
 class DynamicsCompressorNode FINAL : public AudioNode {
 public:
-    static PassRefPtrWillBeRawPtr<DynamicsCompressorNode> create(AudioContext* context, float sampleRate)
+    static DynamicsCompressorNode* create(AudioContext* context, float sampleRate)
     {
-        return adoptRefWillBeNoop(new DynamicsCompressorNode(context, sampleRate));
+        return adoptRefCountedGarbageCollectedWillBeNoop(new DynamicsCompressorNode(context, sampleRate));
     }
 
     virtual ~DynamicsCompressorNode();
@@ -67,12 +67,12 @@ private:
     DynamicsCompressorNode(AudioContext*, float sampleRate);
 
     OwnPtr<DynamicsCompressor> m_dynamicsCompressor;
-    RefPtrWillBeMember<AudioParam> m_threshold;
-    RefPtrWillBeMember<AudioParam> m_knee;
-    RefPtrWillBeMember<AudioParam> m_ratio;
-    RefPtrWillBeMember<AudioParam> m_reduction;
-    RefPtrWillBeMember<AudioParam> m_attack;
-    RefPtrWillBeMember<AudioParam> m_release;
+    Member<AudioParam> m_threshold;
+    Member<AudioParam> m_knee;
+    Member<AudioParam> m_ratio;
+    Member<AudioParam> m_reduction;
+    Member<AudioParam> m_attack;
+    Member<AudioParam> m_release;
 };
 
 } // namespace blink

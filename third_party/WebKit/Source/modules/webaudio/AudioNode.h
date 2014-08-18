@@ -49,8 +49,8 @@ class ExceptionState;
 // An AudioDestinationNode has one input and no outputs and represents the final destination to the audio hardware.
 // Most processing nodes such as filters will have one input and one output, although multiple inputs and outputs are possible.
 
-// AudioNode has its own ref-counting mechanism that use RefTypes so we cannot use RefCountedGarbageCollected.
-class AudioNode : public NoBaseWillBeGarbageCollectedFinalized<AudioNode>, public EventTargetWithInlineData {
+class AudioNode : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<AudioNode>, public EventTargetWithInlineData {
+    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<AudioNode>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AudioNode);
 public:
     enum { ProcessingSizeInFrames = 128 };
@@ -97,12 +97,6 @@ public:
     String nodeTypeName() const;
     void setNodeType(NodeType);
 
-#if !ENABLE(OILPAN)
-    // Can be called from main thread or context's audio thread.
-    void ref();
-    void deref();
-#endif
-
     // This object has been connected to another object. This might have
     // existing connections from others.
     // This function must be called after acquiring a connection reference.
@@ -113,9 +107,6 @@ public:
     void breakConnection();
 
     // Can be called from main thread or context's audio thread.  It must be called while the context's graph lock is held.
-#if !ENABLE(OILPAN)
-    void finishDeref();
-#endif
     void breakConnectionWithLock();
 
     // The AudioNodeInput(s) (if any) will already have their input data available when process() is called.
@@ -198,7 +189,7 @@ public:
 protected:
     // Inputs and outputs must be created before the AudioNode is initialized.
     void addInput();
-    void addOutput(PassOwnPtrWillBeRawPtr<AudioNodeOutput>);
+    void addOutput(AudioNodeOutput*);
 
     // Called by processIfNecessary() to cause all parts of the rendering graph connected to us to process.
     // Each rendering quantum, the audio data for each of the AudioNode's inputs will be available after this method is called.
@@ -211,18 +202,14 @@ protected:
 private:
     volatile bool m_isInitialized;
     NodeType m_nodeType;
-    RefPtrWillBeMember<AudioContext> m_context;
+    Member<AudioContext> m_context;
     float m_sampleRate;
-    WillBeHeapVector<OwnPtrWillBeMember<AudioNodeInput> > m_inputs;
-    WillBeHeapVector<OwnPtrWillBeMember<AudioNodeOutput> > m_outputs;
+    HeapVector<Member<AudioNodeInput> > m_inputs;
+    HeapVector<Member<AudioNodeOutput> > m_outputs;
 
     double m_lastProcessingTime;
     double m_lastNonSilentTime;
 
-#if !ENABLE(OILPAN)
-    // Ref-counting
-    volatile int m_normalRefCount;
-#endif
     volatile int m_connectionRefCount;
 
     bool m_isDisabled;
@@ -233,11 +220,6 @@ private:
     static int s_nodeCount[NodeTypeEnd];
 #endif
     static unsigned s_instanceCount;
-
-#if !ENABLE(OILPAN)
-    virtual void refEventTarget() OVERRIDE FINAL { ref(); }
-    virtual void derefEventTarget() OVERRIDE FINAL { deref(); }
-#endif
 
 protected:
     unsigned m_channelCount;

@@ -186,7 +186,7 @@ public:
     }
 
 private:
-    RawPtrWillBeMember<AudioSourceProviderClient> m_client;
+    Member<AudioSourceProviderClient> m_client;
 #else
     explicit AudioSourceProviderClientLockScope(HTMLMediaElement&) { }
     ~AudioSourceProviderClientLockScope() { }

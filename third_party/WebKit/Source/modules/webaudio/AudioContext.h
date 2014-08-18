@@ -36,7 +36,6 @@
 #include "wtf/MainThread.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/Threading.h"
@@ -73,12 +72,13 @@ class WaveShaperNode;
 // AudioContext is the cornerstone of the web audio API and all AudioNodes are created from it.
 // For thread safety between the audio thread and the main thread, it has a rendering graph locking mechanism.
 
-class AudioContext : public ThreadSafeRefCountedWillBeThreadSafeRefCountedGarbageCollected<AudioContext>, public ActiveDOMObject, public EventTargetWithInlineData {
-    DEFINE_EVENT_TARGET_REFCOUNTING(ThreadSafeRefCountedWillBeThreadSafeRefCountedGarbageCollected<AudioContext>);
+// FIXME: Oilpan: This should be ThreadSafeRefCountedGarbageCollectedWillBeGarbageCollectedFinalized.
+class AudioContext : public ThreadSafeRefCountedGarbageCollected<AudioContext>, public ActiveDOMObject, public EventTargetWithInlineData {
+    DEFINE_EVENT_TARGET_REFCOUNTING(ThreadSafeRefCountedGarbageCollected<AudioContext>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AudioContext);
 public:
     // Create an AudioContext for rendering to the audio hardware.
-    static PassRefPtrWillBeRawPtr<AudioContext> create(Document&, ExceptionState&);
+    static AudioContext* create(Document&, ExceptionState&);
 
     virtual ~AudioContext();
 
@@ -96,7 +96,7 @@ public:
     double currentTime() const { return m_destinationNode->currentTime(); }
     float sampleRate() const { return m_destinationNode->sampleRate(); }
 
-    PassRefPtrWillBeRawPtr<AudioBuffer> createBuffer(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState&);
+    AudioBuffer* createBuffer(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState&);
 
     // Asynchronous audio file data decoding.
     void decodeAudioData(ArrayBuffer*, PassOwnPtr<AudioBufferCallback>, PassOwnPtr<AudioBufferCallback>, ExceptionState&);
@@ -104,29 +104,29 @@ public:
     AudioListener* listener() { return m_listener.get(); }
 
     // The AudioNode create methods are called on the main thread (from JavaScript).
-    PassRefPtrWillBeRawPtr<AudioBufferSourceNode> createBufferSource();
-    PassRefPtrWillBeRawPtr<MediaElementAudioSourceNode> createMediaElementSource(HTMLMediaElement*, ExceptionState&);
-    PassRefPtrWillBeRawPtr<MediaStreamAudioSourceNode> createMediaStreamSource(MediaStream*, ExceptionState&);
-    PassRefPtrWillBeRawPtr<MediaStreamAudioDestinationNode> createMediaStreamDestination();
-    PassRefPtrWillBeRawPtr<GainNode> createGain();
-    PassRefPtrWillBeRawPtr<BiquadFilterNode> createBiquadFilter();
-    PassRefPtrWillBeRawPtr<WaveShaperNode> createWaveShaper();
-    PassRefPtrWillBeRawPtr<DelayNode> createDelay(ExceptionState&);
-    PassRefPtrWillBeRawPtr<DelayNode> createDelay(double maxDelayTime, ExceptionState&);
-    PassRefPtrWillBeRawPtr<PannerNode> createPanner();
-    PassRefPtrWillBeRawPtr<ConvolverNode> createConvolver();
-    PassRefPtrWillBeRawPtr<DynamicsCompressorNode> createDynamicsCompressor();
-    PassRefPtrWillBeRawPtr<AnalyserNode> createAnalyser();
-    PassRefPtrWillBeRawPtr<ScriptProcessorNode> createScriptProcessor(ExceptionState&);
-    PassRefPtrWillBeRawPtr<ScriptProcessorNode> createScriptProcessor(size_t bufferSize, ExceptionState&);
-    PassRefPtrWillBeRawPtr<ScriptProcessorNode> createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, ExceptionState&);
-    PassRefPtrWillBeRawPtr<ScriptProcessorNode> createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, size_t numberOfOutputChannels, ExceptionState&);
-    PassRefPtrWillBeRawPtr<ChannelSplitterNode> createChannelSplitter(ExceptionState&);
-    PassRefPtrWillBeRawPtr<ChannelSplitterNode> createChannelSplitter(size_t numberOfOutputs, ExceptionState&);
-    PassRefPtrWillBeRawPtr<ChannelMergerNode> createChannelMerger(ExceptionState&);
-    PassRefPtrWillBeRawPtr<ChannelMergerNode> createChannelMerger(size_t numberOfInputs, ExceptionState&);
-    PassRefPtrWillBeRawPtr<OscillatorNode> createOscillator();
-    PassRefPtrWillBeRawPtr<PeriodicWave> createPeriodicWave(Float32Array* real, Float32Array* imag, ExceptionState&);
+    AudioBufferSourceNode* createBufferSource();
+    MediaElementAudioSourceNode* createMediaElementSource(HTMLMediaElement*, ExceptionState&);
+    MediaStreamAudioSourceNode* createMediaStreamSource(MediaStream*, ExceptionState&);
+    MediaStreamAudioDestinationNode* createMediaStreamDestination();
+    GainNode* createGain();
+    BiquadFilterNode* createBiquadFilter();
+    WaveShaperNode* createWaveShaper();
+    DelayNode* createDelay(ExceptionState&);
+    DelayNode* createDelay(double maxDelayTime, ExceptionState&);
+    PannerNode* createPanner();
+    ConvolverNode* createConvolver();
+    DynamicsCompressorNode* createDynamicsCompressor();
+    AnalyserNode* createAnalyser();
+    ScriptProcessorNode* createScriptProcessor(ExceptionState&);
+    ScriptProcessorNode* createScriptProcessor(size_t bufferSize, ExceptionState&);
+    ScriptProcessorNode* createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, ExceptionState&);
+    ScriptProcessorNode* createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, size_t numberOfOutputChannels, ExceptionState&);
+    ChannelSplitterNode* createChannelSplitter(ExceptionState&);
+    ChannelSplitterNode* createChannelSplitter(size_t numberOfOutputs, ExceptionState&);
+    ChannelMergerNode* createChannelMerger(ExceptionState&);
+    ChannelMergerNode* createChannelMerger(size_t numberOfInputs, ExceptionState&);
+    OscillatorNode* createOscillator();
+    PeriodicWave* createPeriodicWave(Float32Array* real, Float32Array* imag, ExceptionState&);
 
     // When a source node has no more processing to do (has finished playing), then it tells the context to dereference it.
     void notifyNodeFinishedProcessing(AudioNode*);
@@ -140,14 +140,8 @@ public:
     // Called periodically at the end of each render quantum to dereference finished source nodes.
     void derefFinishedSourceNodes();
 
-#if ENABLE(OILPAN)
     void registerLiveAudioSummingJunction(AudioSummingJunction&);
     void registerLiveNode(AudioNode&);
-#else
-    // We schedule deletion of all marked nodes at the end of each realtime render quantum.
-    void markForDeletion(AudioNode*);
-    void deleteMarkedNodes();
-#endif
 
     // AudioContext can pull node(s) at the end of each render quantum even when they are not connected to any downstream nodes.
     // These two methods are called by the nodes who want to add/remove themselves into/from the automatic pull lists.
@@ -205,16 +199,13 @@ public:
                 m_context->unlock();
         }
     private:
-        RawPtrWillBeMember<AudioContext> m_context;
+        Member<AudioContext> m_context;
         bool m_mustReleaseLock;
     };
 
     // In AudioNode::breakConnection() and deref(), a tryLock() is used for
     // calling actual processing, but if it fails keep track here.
     void addDeferredBreakConnection(AudioNode&);
-#if !ENABLE(OILPAN)
-    void addDeferredFinishDeref(AudioNode*);
-#endif
 
     // In the audio thread at the start of each render cycle, we'll call this.
     void handleDeferredAudioNodeTasks();
@@ -254,11 +245,6 @@ private:
     bool m_isCleared;
     void clear();
 
-#if !ENABLE(OILPAN)
-    void scheduleNodeDeletion();
-    static void deleteMarkedNodesDispatch(void* userData);
-#endif
-
     // Set to true when the destination node has been initialized and is ready to process data.
     bool m_isInitialized;
 
@@ -273,25 +259,22 @@ private:
     // Make sure to dereference them here.
     void derefUnfinishedSourceNodes();
 
-    RefPtrWillBeMember<AudioDestinationNode> m_destinationNode;
-    RefPtrWillBeMember<AudioListener> m_listener;
+    Member<AudioDestinationNode> m_destinationNode;
+    Member<AudioListener> m_listener;
 
     // Only accessed in the audio thread.
     // Oilpan: Since items are added to the vector by the audio thread (not registered to Oilpan),
     // we cannot use a HeapVector.
+    GC_PLUGIN_IGNORE("http://crbug.com/404527")
     Vector<AudioNode*> m_finishedNodes;
 
     // List of source nodes. This is either accessed when the graph lock is
     // held, or on the main thread when the audio thread has finished.
-    // This RefPtr is connection reference. We must call AudioNode::
-    // makeConnection() after ref(), and call AudioNode::breakConnection()
-    // before deref().
     // Oilpan: This Vector holds connection references. We must call
     // AudioNode::makeConnection when we add an AudioNode to this, and must call
     // AudioNode::breakConnection() when we remove an AudioNode from this.
-    WillBeHeapVector<RefPtrWillBeMember<AudioNode> > m_referencedNodes;
+    HeapVector<Member<AudioNode> > m_referencedNodes;
 
-#if ENABLE(OILPAN)
     class AudioNodeDisposer {
     public:
         explicit AudioNodeDisposer(AudioNode& node) : m_node(node) { }
@@ -315,28 +298,15 @@ private:
     // AudioSummingJunction objects to m_liveAudioSummingJunctions to avoid
     // concurrent access to m_liveAudioSummingJunctions.
     HeapHashMap<WeakMember<AudioSummingJunction>, OwnPtr<AudioSummingJunctionDisposer> > m_liveAudioSummingJunctions;
-#else
-    // Accumulate nodes which need to be deleted here.
-    // This is copied to m_nodesToDelete at the end of a render cycle in handlePostRenderTasks(), where we're assured of a stable graph
-    // state which will have no references to any of the nodes in m_nodesToDelete once the context lock is released
-    // (when handlePostRenderTasks() has completed).
-    // Oilpan: Since items are added to the vector by the audio thread (not registered to Oilpan),
-    // we cannot use a HeapVector.
-    Vector<AudioNode*> m_nodesMarkedForDeletion;
-
-    // They will be scheduled for deletion (on the main thread) at the end of a render cycle (in realtime thread).
-    // Oilpan: Since items are added to the vector by the audio thread (not registered to Oilpan),
-    // we cannot use a HeapVector.
-    Vector<AudioNode*> m_nodesToDelete;
-    bool m_isDeletionScheduled;
-#endif
 
     // These two HashSet must be accessed only when the graph lock is held.
     // Oilpan: These HashSet should be HeapHashSet<WeakMember<AudioNodeOutput>>
     // ideally. But it's difficult to lock them correctly during GC.
     // Oilpan: Since items are added to these hash sets by the audio thread (not registered to Oilpan),
     // we cannot use HeapHashSets.
+    GC_PLUGIN_IGNORE("http://crbug.com/404527")
     HashSet<AudioSummingJunction*> m_dirtySummingJunctions;
+    GC_PLUGIN_IGNORE("http://crbug.com/404527")
     HashSet<AudioNodeOutput*> m_dirtyAudioNodeOutputs;
     void handleDirtyAudioSummingJunctions();
     void handleDirtyAudioNodeOutputs();
@@ -345,7 +315,9 @@ private:
     // It will be copied from m_automaticPullNodes by updateAutomaticPullNodes() at the very start or end of the rendering quantum.
     // Oilpan: Since items are added to the vector/hash set by the audio thread (not registered to Oilpan),
     // we cannot use a HeapVector/HeapHashSet.
+    GC_PLUGIN_IGNORE("http://crbug.com/404527")
     HashSet<AudioNode*> m_automaticPullNodes;
+    GC_PLUGIN_IGNORE("http://crbug.com/404527")
     Vector<AudioNode*> m_renderingAutomaticPullNodes;
     // m_automaticPullNodesNeedUpdating keeps track if m_automaticPullNodes is modified.
     bool m_automaticPullNodesNeedUpdating;
@@ -361,10 +333,10 @@ private:
     // Only accessed in the audio thread.
     // Oilpan: Since items are added to these vectors by the audio thread (not registered to Oilpan),
     // we cannot use HeapVectors.
+    GC_PLUGIN_IGNORE("http://crbug.com/404527")
     Vector<AudioNode*> m_deferredBreakConnectionList;
-    Vector<AudioNode*> m_deferredFinishDerefList;
 
-    RefPtrWillBeMember<AudioBuffer> m_renderTarget;
+    Member<AudioBuffer> m_renderTarget;
 
     bool m_isOfflineContext;
 

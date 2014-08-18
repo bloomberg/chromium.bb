@@ -39,7 +39,7 @@ WaveShaperNode::WaveShaperNode(AudioContext* context)
     : AudioBasicProcessorNode(context, context->sampleRate())
 {
     ScriptWrappable::init(this);
-    m_processor = adoptPtrWillBeNoop(new WaveShaperProcessor(context->sampleRate(), 1));
+    m_processor = new WaveShaperProcessor(context->sampleRate(), 1);
     setNodeType(NodeTypeWaveShaper);
 
     initialize();

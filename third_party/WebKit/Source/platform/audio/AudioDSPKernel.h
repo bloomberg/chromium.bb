@@ -67,6 +67,13 @@ public:
     virtual double latencyTime() const = 0;
 
 protected:
+    // Oilpan: This raw pointer is safe because the AudioDSPKernelProcessor
+    // object is guaranteed to be kept alive while the AudioDSPKernel object
+    // is alive. Ideally we want to move the AudioDSPKernel hierarchy to
+    // the heap and use a Member<AudioDSPKernelProcessor>. However, we cannot
+    // do that because AudioDSPKernel can be allocated in audio threads
+    // (which are not registered to Oilpan).
+    GC_PLUGIN_IGNORE("http://crbug.com/404578")
     AudioDSPKernelProcessor* m_kernelProcessor;
     float m_sampleRate;
 };

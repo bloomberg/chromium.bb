@@ -39,13 +39,6 @@
 
 namespace blink {
 
-#if !ENABLE(OILPAN)
-// We need a dedicated specialization for AudioScheduledSourceNode because it
-// doesn't inherit from RefCounted.
-template<> struct CrossThreadCopierBase<false, false, false, PassRefPtr<AudioScheduledSourceNode> > : public CrossThreadCopierPassThrough<PassRefPtr<AudioScheduledSourceNode> > {
-};
-#endif
-
 const double AudioScheduledSourceNode::UnknownTime = -1;
 
 AudioScheduledSourceNode::AudioScheduledSourceNode(AudioContext* context, float sampleRate)
@@ -188,7 +181,7 @@ void AudioScheduledSourceNode::finish()
     }
 
     if (m_hasEndedListener && context()->executionContext()) {
-        context()->executionContext()->postTask(createCrossThreadTask(&AudioScheduledSourceNode::notifyEnded, PassRefPtrWillBeRawPtr<AudioScheduledSourceNode>(this)));
+        context()->executionContext()->postTask(createCrossThreadTask(&AudioScheduledSourceNode::notifyEnded, this));
     }
 }
 

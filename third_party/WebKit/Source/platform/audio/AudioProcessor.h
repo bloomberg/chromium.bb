@@ -42,7 +42,7 @@ class AudioBus;
 // where the number of input channels equals the number of output channels.  It can be used as one part of a complex DSP algorithm,
 // or as the processor for a basic (one input - one output) AudioNode.
 
-class PLATFORM_EXPORT AudioProcessor : public NoBaseWillBeGarbageCollectedFinalized<AudioProcessor> {
+class PLATFORM_EXPORT AudioProcessor : public GarbageCollectedFinalized<AudioProcessor> {
 public:
     AudioProcessor(float sampleRate, unsigned numberOfChannels)
         : m_initialized(false)

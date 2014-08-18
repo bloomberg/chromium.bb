@@ -256,7 +256,7 @@ void WebMediaPlayerClientImpl::AudioSourceProviderImpl::setClient(AudioSourcePro
     MutexLocker locker(provideInputLock);
 
     if (client)
-        m_client = adoptPtrWillBeNoop(new WebMediaPlayerClientImpl::AudioClientImpl(client));
+        m_client = new WebMediaPlayerClientImpl::AudioClientImpl(client);
     else
         m_client.clear();
 

@@ -36,26 +36,20 @@
 #include <sys/types.h>
 #include "wtf/Float32Array.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class AudioNodeOutput;
 
-#if ENABLE(OILPAN)
-#define AUDIO_PARAM_BASE_CLASSES public AudioSummingJunction, public ScriptWrappable
-#else
-#define AUDIO_PARAM_BASE_CLASSES public RefCounted<AudioParam>, public ScriptWrappable, public AudioSummingJunction
-#endif
-class AudioParam FINAL : AUDIO_PARAM_BASE_CLASSES {
+class AudioParam FINAL : public AudioSummingJunction, public ScriptWrappable {
 public:
     static const double DefaultSmoothingConstant;
     static const double SnapThreshold;
 
-    static PassRefPtrWillBeRawPtr<AudioParam> create(AudioContext* context, double defaultValue)
+    static AudioParam* create(AudioContext* context, double defaultValue)
     {
-        return adoptRefWillBeNoop(new AudioParam(context, defaultValue));
+        return new AudioParam(context, defaultValue);
     }
 
     // AudioSummingJunction

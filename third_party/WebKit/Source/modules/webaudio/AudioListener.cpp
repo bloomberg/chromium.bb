@@ -56,9 +56,7 @@ AudioListener::~AudioListener()
 
 void AudioListener::trace(Visitor* visitor)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_panners);
-#endif
 }
 
 void AudioListener::addPanner(PannerNode* panner)

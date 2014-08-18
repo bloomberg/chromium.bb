@@ -80,10 +80,10 @@ public:
 private:
     FilterType m_type;
 
-    RefPtrWillBeMember<AudioParam> m_parameter1;
-    RefPtrWillBeMember<AudioParam> m_parameter2;
-    RefPtrWillBeMember<AudioParam> m_parameter3;
-    RefPtrWillBeMember<AudioParam> m_parameter4;
+    Member<AudioParam> m_parameter1;
+    Member<AudioParam> m_parameter2;
+    Member<AudioParam> m_parameter3;
+    Member<AudioParam> m_parameter4;
 
     // so DSP kernels know when to re-compute coefficients
     bool m_filterCoefficientsDirty;

@@ -39,9 +39,9 @@ class AudioContext;
 
 class GainNode FINAL : public AudioNode {
 public:
-    static PassRefPtrWillBeRawPtr<GainNode> create(AudioContext* context, float sampleRate)
+    static GainNode* create(AudioContext* context, float sampleRate)
     {
-        return adoptRefWillBeNoop(new GainNode(context, sampleRate));
+        return adoptRefCountedGarbageCollectedWillBeNoop(new GainNode(context, sampleRate));
     }
 
     // AudioNode
@@ -62,7 +62,7 @@ private:
     GainNode(AudioContext*, float sampleRate);
 
     float m_lastGain; // for de-zippering
-    RefPtrWillBeMember<AudioParam> m_gain;
+    Member<AudioParam> m_gain;
 
     AudioFloatArray m_sampleAccurateGainValues;
 };

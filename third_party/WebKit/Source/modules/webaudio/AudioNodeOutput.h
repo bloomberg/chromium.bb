@@ -38,11 +38,11 @@ class AudioNodeInput;
 
 // AudioNodeOutput represents a single output for an AudioNode.
 // It may be connected to one or more AudioNodeInputs.
-class AudioNodeOutput : public NoBaseWillBeGarbageCollectedFinalized<AudioNodeOutput> {
+class AudioNodeOutput : public GarbageCollectedFinalized<AudioNodeOutput> {
 public:
     // It's OK to pass 0 for numberOfChannels in which case
     // setNumberOfChannels() must be called later on.
-    static PassOwnPtrWillBeRawPtr<AudioNodeOutput> create(AudioNode*, unsigned numberOfChannels);
+    static AudioNodeOutput* create(AudioNode*, unsigned numberOfChannels);
     void trace(Visitor*);
 
     // Can be called from any thread.
@@ -84,7 +84,7 @@ public:
 private:
     AudioNodeOutput(AudioNode*, unsigned numberOfChannels);
 
-    RawPtrWillBeMember<AudioNode> m_node;
+    Member<AudioNode> m_node;
 
     friend class AudioNodeInput;
     friend class AudioParam;
@@ -133,14 +133,11 @@ private:
     // If m_isInPlace is true, use m_inPlaceBus as the valid AudioBus; If false, use the default m_internalBus.
     bool m_isInPlace;
 
-    // This RefPtr<AudioNode> is connection reference. We must call AudioNode::
-    // makeConnection() after ref(), and call AudioNode::breakConnection()
-    // before deref().
     // Oilpan: This HashMap holds connection references. We must call
     // AudioNode::makeConnection when we add an AudioNode to this, and must call
     // AudioNode::breakConnection() when we remove an AudioNode from this.
-    WillBeHeapHashMap<RawPtrWillBeMember<AudioNodeInput>, RefPtrWillBeMember<AudioNode> > m_inputs;
-    typedef WillBeHeapHashMap<RawPtrWillBeMember<AudioNodeInput>, RefPtrWillBeMember<AudioNode> >::iterator InputsIterator;
+    HeapHashMap<Member<AudioNodeInput>, Member<AudioNode> > m_inputs;
+    typedef HeapHashMap<Member<AudioNodeInput>, Member<AudioNode> >::iterator InputsIterator;
     bool m_isEnabled;
 
     // For the purposes of rendering, keeps track of the number of inputs and AudioParams we're connected to.
@@ -148,7 +145,7 @@ private:
     unsigned m_renderingFanOutCount;
     unsigned m_renderingParamFanOutCount;
 
-    WillBeHeapHashSet<RefPtrWillBeMember<AudioParam> > m_params;
+    HeapHashSet<Member<AudioParam> > m_params;
 };
 
 } // namespace blink

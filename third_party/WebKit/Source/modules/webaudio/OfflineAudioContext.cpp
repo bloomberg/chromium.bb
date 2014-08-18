@@ -36,21 +36,21 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<OfflineAudioContext> OfflineAudioContext::create(ExecutionContext* context, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState& exceptionState)
+OfflineAudioContext* OfflineAudioContext::create(ExecutionContext* context, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState& exceptionState)
 {
     // FIXME: add support for workers.
     if (!context || !context->isDocument()) {
         exceptionState.throwDOMException(
             NotSupportedError,
             "Workers are not supported.");
-        return nullptr;
+        return 0;
     }
 
     Document* document = toDocument(context);
 
     if (!numberOfFrames) {
         exceptionState.throwDOMException(SyntaxError, "number of frames cannot be zero.");
-        return nullptr;
+        return 0;
     }
 
     if (numberOfChannels > AudioContext::maxNumberOfChannels()) {
@@ -63,15 +63,15 @@ PassRefPtrWillBeRawPtr<OfflineAudioContext> OfflineAudioContext::create(Executio
                 ExceptionMessages::InclusiveBound,
                 AudioContext::maxNumberOfChannels(),
                 ExceptionMessages::InclusiveBound));
-        return nullptr;
+        return 0;
     }
 
     if (!isSampleRateRangeGood(sampleRate)) {
         exceptionState.throwDOMException(SyntaxError, "sample rate (" + String::number(sampleRate) + ") must be in the range 44100-96000 Hz.");
-        return nullptr;
+        return 0;
     }
 
-    RefPtrWillBeRawPtr<OfflineAudioContext> audioContext(adoptRefWillBeThreadSafeRefCountedGarbageCollected(new OfflineAudioContext(document, numberOfChannels, numberOfFrames, sampleRate)));
+    OfflineAudioContext* audioContext = adoptRefCountedGarbageCollected(new OfflineAudioContext(document, numberOfChannels, numberOfFrames, sampleRate));
 
     if (!audioContext->destination()) {
         exceptionState.throwDOMException(
@@ -83,7 +83,7 @@ PassRefPtrWillBeRawPtr<OfflineAudioContext> OfflineAudioContext::create(Executio
     }
 
     audioContext->suspendIfNeeded();
-    return audioContext.release();
+    return audioContext;
 }
 
 OfflineAudioContext::OfflineAudioContext(Document* document, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate)

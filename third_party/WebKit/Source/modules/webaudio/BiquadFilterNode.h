@@ -46,9 +46,9 @@ public:
         ALLPASS = 7
     };
 
-    static PassRefPtrWillBeRawPtr<BiquadFilterNode> create(AudioContext* context, float sampleRate)
+    static BiquadFilterNode* create(AudioContext* context, float sampleRate)
     {
-        return adoptRefWillBeNoop(new BiquadFilterNode(context, sampleRate));
+        return adoptRefCountedGarbageCollectedWillBeNoop(new BiquadFilterNode(context, sampleRate));
     }
 
     String type() const;

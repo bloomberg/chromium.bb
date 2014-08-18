@@ -42,9 +42,9 @@ inline AudioNodeInput::AudioNodeInput(AudioNode& node)
     m_internalSummingBus = AudioBus::create(1, AudioNode::ProcessingSizeInFrames);
 }
 
-PassOwnPtrWillBeRawPtr<AudioNodeInput> AudioNodeInput::create(AudioNode& node)
+AudioNodeInput* AudioNodeInput::create(AudioNode& node)
 {
-    return adoptPtrWillBeNoop(new AudioNodeInput(node));
+    return new AudioNodeInput(node);
 }
 
 void AudioNodeInput::trace(Visitor* visitor)

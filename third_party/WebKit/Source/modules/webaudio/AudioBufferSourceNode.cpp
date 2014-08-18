@@ -47,9 +47,9 @@ const double DefaultGrainDuration = 0.020; // 20ms
 // to minimize linear interpolation aliasing.
 const double MaxRate = 1024;
 
-PassRefPtrWillBeRawPtr<AudioBufferSourceNode> AudioBufferSourceNode::create(AudioContext* context, float sampleRate)
+AudioBufferSourceNode* AudioBufferSourceNode::create(AudioContext* context, float sampleRate)
 {
-    return adoptRefWillBeNoop(new AudioBufferSourceNode(context, sampleRate));
+    return adoptRefCountedGarbageCollectedWillBeNoop(new AudioBufferSourceNode(context, sampleRate));
 }
 
 AudioBufferSourceNode::AudioBufferSourceNode(AudioContext* context, float sampleRate)
@@ -455,7 +455,7 @@ bool AudioBufferSourceNode::propagatesSilence() const
 void AudioBufferSourceNode::setPannerNode(PannerNode* pannerNode)
 {
     if (m_pannerNode != pannerNode && !hasFinished()) {
-        RefPtrWillBeRawPtr<PannerNode> oldPannerNode(m_pannerNode.release());
+        PannerNode* oldPannerNode(m_pannerNode.release());
         m_pannerNode = pannerNode;
         if (pannerNode)
             pannerNode->makeConnection();

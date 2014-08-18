@@ -32,7 +32,6 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "wtf/Float32Array.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
@@ -41,15 +40,15 @@ namespace blink {
 class AudioBus;
 class ExceptionState;
 
-class AudioBuffer : public RefCountedWillBeGarbageCollectedFinalized<AudioBuffer>, public ScriptWrappable {
+class AudioBuffer : public GarbageCollectedFinalized<AudioBuffer>, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<AudioBuffer> create(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate);
-    static PassRefPtrWillBeRawPtr<AudioBuffer> create(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState&);
+    static AudioBuffer* create(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate);
+    static AudioBuffer* create(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState&);
 
     // Returns 0 if data is not a valid audio file.
-    static PassRefPtrWillBeRawPtr<AudioBuffer> createFromAudioFileData(const void* data, size_t dataSize, bool mixToMono, float sampleRate);
+    static AudioBuffer* createFromAudioFileData(const void* data, size_t dataSize, bool mixToMono, float sampleRate);
 
-    static PassRefPtrWillBeRawPtr<AudioBuffer> createFromAudioBus(AudioBus*);
+    static AudioBuffer* createFromAudioBus(AudioBus*);
 
     // Format
     size_t length() const { return m_length; }

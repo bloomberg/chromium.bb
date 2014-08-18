@@ -38,13 +38,6 @@
 
 namespace blink {
 
-#if !ENABLE(OILPAN)
-// We need a dedicated specialization for OfflineAudioDestinationNode because it
-// doesn't inherit from RefCounted.
-template<> struct CrossThreadCopierBase<false, false, false, PassRefPtr<OfflineAudioDestinationNode> > : public CrossThreadCopierPassThrough<PassRefPtr<OfflineAudioDestinationNode> > {
-};
-#endif
-
 const size_t renderQuantumSize = 128;
 
 OfflineAudioDestinationNode::OfflineAudioDestinationNode(AudioContext* context, AudioBuffer* renderTarget)
@@ -95,7 +88,7 @@ void OfflineAudioDestinationNode::startRendering()
     if (!m_startedRendering) {
         m_startedRendering = true;
         m_renderThread = adoptPtr(blink::Platform::current()->createThread("Offline Audio Renderer"));
-        m_renderThread->postTask(new Task(bind(&OfflineAudioDestinationNode::offlineRender, PassRefPtrWillBeRawPtr<OfflineAudioDestinationNode>(this))));
+        m_renderThread->postTask(new Task(bind(&OfflineAudioDestinationNode::offlineRender, this)));
     }
 }
 
@@ -145,7 +138,7 @@ void OfflineAudioDestinationNode::offlineRender()
 
     // Our work is done. Let the AudioContext know.
     if (context()->executionContext())
-        context()->executionContext()->postTask(createCrossThreadTask(&OfflineAudioDestinationNode::notifyComplete, PassRefPtrWillBeRawPtr<OfflineAudioDestinationNode>(this)));
+        context()->executionContext()->postTask(createCrossThreadTask(&OfflineAudioDestinationNode::notifyComplete, this));
 }
 
 void OfflineAudioDestinationNode::notifyComplete()

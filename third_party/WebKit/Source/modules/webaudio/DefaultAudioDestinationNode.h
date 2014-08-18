@@ -36,9 +36,9 @@ class ExceptionState;
 
 class DefaultAudioDestinationNode FINAL : public AudioDestinationNode {
 public:
-    static PassRefPtrWillBeRawPtr<DefaultAudioDestinationNode> create(AudioContext* context)
+    static DefaultAudioDestinationNode* create(AudioContext* context)
     {
-        return adoptRefWillBeNoop(new DefaultAudioDestinationNode(context));
+        return adoptRefCountedGarbageCollectedWillBeNoop(new DefaultAudioDestinationNode(context));
     }
 
     virtual ~DefaultAudioDestinationNode();

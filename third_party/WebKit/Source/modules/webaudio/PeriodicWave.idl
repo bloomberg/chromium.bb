@@ -24,7 +24,7 @@
 
 // PeriodicWave represents a periodic audio waveform given by its Fourier coefficients.
 [
-    WillBeGarbageCollected,
+    GarbageCollected,
     Conditional=WEB_AUDIO
 ] interface PeriodicWave {
 

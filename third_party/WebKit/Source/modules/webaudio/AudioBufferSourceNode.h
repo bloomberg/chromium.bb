@@ -44,7 +44,7 @@ class AudioContext;
 
 class AudioBufferSourceNode FINAL : public AudioScheduledSourceNode {
 public:
-    static PassRefPtrWillBeRawPtr<AudioBufferSourceNode> create(AudioContext*, float sampleRate);
+    static AudioBufferSourceNode* create(AudioContext*, float sampleRate);
 
     virtual ~AudioBufferSourceNode();
 
@@ -102,14 +102,14 @@ private:
     inline bool renderSilenceAndFinishIfNotLooping(AudioBus*, unsigned index, size_t framesToProcess);
 
     // m_buffer holds the sample data which this node outputs.
-    RefPtrWillBeMember<AudioBuffer> m_buffer;
+    Member<AudioBuffer> m_buffer;
 
     // Pointers for the buffer and destination.
     OwnPtr<const float*[]> m_sourceChannels;
     OwnPtr<float*[]> m_destinationChannels;
 
     // Used for the "playbackRate" attributes.
-    RefPtrWillBeMember<AudioParam> m_playbackRate;
+    Member<AudioParam> m_playbackRate;
 
     // If m_isLooping is false, then this node will be done playing and become inactive after it reaches the end of the sample data in the buffer.
     // If true, it will wrap around to the start of the buffer each time it reaches the end.
@@ -139,7 +139,7 @@ private:
     // Oilpan: This holds connection references. We must call
     // AudioNode::makeConnection when we add an AudioNode to this, and must call
     // AudioNode::breakConnection() when we remove an AudioNode from this.
-    RefPtrWillBeMember<PannerNode> m_pannerNode;
+    Member<PannerNode> m_pannerNode;
 
     // This synchronizes process() with setBuffer() which can cause dynamic channel count changes.
     mutable Mutex m_processLock;

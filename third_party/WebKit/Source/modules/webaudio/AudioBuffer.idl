@@ -27,7 +27,7 @@
  */
 
 [
-    WillBeGarbageCollected,
+    GarbageCollected,
     Conditional=WEB_AUDIO
 ] interface AudioBuffer {
     readonly attribute long length; // in sample-frames

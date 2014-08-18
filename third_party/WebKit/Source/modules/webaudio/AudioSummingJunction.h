@@ -37,7 +37,7 @@ class AudioNodeOutput;
 
 // An AudioSummingJunction represents a point where zero, one, or more AudioNodeOutputs connect.
 
-class AudioSummingJunction : public NoBaseWillBeGarbageCollectedFinalized<AudioSummingJunction> {
+class AudioSummingJunction : public GarbageCollectedFinalized<AudioSummingJunction> {
 public:
     virtual ~AudioSummingJunction();
     virtual void trace(Visitor*);
@@ -63,12 +63,13 @@ public:
 protected:
     explicit AudioSummingJunction(AudioContext*);
 
-    RefPtrWillBeMember<AudioContext> m_context;
+    Member<AudioContext> m_context;
 
     // m_outputs contains the AudioNodeOutputs representing current connections which are not disabled.
     // The rendering code should never use this directly, but instead uses m_renderingOutputs.
     // Oilpan: Since items are added to the hash set by the audio thread (not registered to Oilpan),
     // we cannot use a HeapHashSet.
+    GC_PLUGIN_IGNORE("http://crbug.com/404527")
     HashSet<AudioNodeOutput*> m_outputs;
 
     // m_renderingOutputs is a copy of m_outputs which will never be modified during the graph rendering on the audio thread.
@@ -77,6 +78,7 @@ protected:
     // Most of the time, m_renderingOutputs is identical to m_outputs.
     // Oilpan: Since items are added to the vector by the audio thread (not registered to Oilpan),
     // we cannot use a HeapVector.
+    GC_PLUGIN_IGNORE("http://crbug.com/404527")
     Vector<AudioNodeOutput*> m_renderingOutputs;
 
     // m_renderingStateNeedUpdating keeps track if m_outputs is modified.

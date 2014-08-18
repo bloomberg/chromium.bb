@@ -52,7 +52,7 @@ public:
         CUSTOM = 4
     };
 
-    static PassRefPtrWillBeRawPtr<OscillatorNode> create(AudioContext*, float sampleRate);
+    static OscillatorNode* create(AudioContext*, float sampleRate);
 
     virtual ~OscillatorNode();
 
@@ -85,10 +85,10 @@ private:
     unsigned short m_type;
 
     // Frequency value in Hertz.
-    RefPtrWillBeMember<AudioParam> m_frequency;
+    Member<AudioParam> m_frequency;
 
     // Detune value (deviating from the frequency) in Cents.
-    RefPtrWillBeMember<AudioParam> m_detune;
+    Member<AudioParam> m_detune;
 
     bool m_firstRender;
 
@@ -103,7 +103,7 @@ private:
     AudioFloatArray m_phaseIncrements;
     AudioFloatArray m_detuneValues;
 
-    RefPtrWillBeMember<PeriodicWave> m_periodicWave;
+    Member<PeriodicWave> m_periodicWave;
 };
 
 } // namespace blink

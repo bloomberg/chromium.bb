@@ -40,9 +40,9 @@ namespace blink {
 class AudioContext;
 
 class MediaStreamAudioSourceNode FINAL : public AudioSourceNode, public AudioSourceProviderClient {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaStreamAudioSourceNode);
+    USING_GARBAGE_COLLECTED_MIXIN(MediaStreamAudioSourceNode);
 public:
-    static PassRefPtrWillBeRawPtr<MediaStreamAudioSourceNode> create(AudioContext*, MediaStream*, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
+    static MediaStreamAudioSourceNode* create(AudioContext*, MediaStream*, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
 
     virtual ~MediaStreamAudioSourceNode();
 
@@ -65,8 +65,8 @@ private:
     // As an audio source, we will never propagate silence.
     virtual bool propagatesSilence() const OVERRIDE { return false; }
 
-    PersistentWillBeMember<MediaStream> m_mediaStream;
-    PersistentWillBeMember<MediaStreamTrack> m_audioTrack;
+    Member<MediaStream> m_mediaStream;
+    Member<MediaStreamTrack> m_audioTrack;
     OwnPtr<AudioSourceProvider> m_audioSourceProvider;
 
     Mutex m_processLock;

@@ -34,7 +34,7 @@ class AudioContext;
 
 class ChannelSplitterNode FINAL : public AudioNode {
 public:
-    static PassRefPtrWillBeRawPtr<ChannelSplitterNode> create(AudioContext*, float sampleRate, unsigned numberOfOutputs);
+    static ChannelSplitterNode* create(AudioContext*, float sampleRate, unsigned numberOfOutputs);
 
     // AudioNode
     virtual void process(size_t framesToProcess) OVERRIDE;
