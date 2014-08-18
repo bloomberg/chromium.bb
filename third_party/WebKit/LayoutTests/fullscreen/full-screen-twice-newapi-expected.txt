@@ -1,10 +1,6 @@
 EVENT(webkitfullscreenchange)
 EXPECTED (document.webkitCurrentFullScreenElement == '[object HTMLHtmlElement]') OK
-EVENT(webkitfullscreenerror)
-EXPECTED (document.webkitCurrentFullScreenElement == '[object HTMLHtmlElement]') OK
 EVENT(webkitfullscreenchange)
-EXPECTED (document.webkitCurrentFullScreenElement == '[object HTMLSpanElement]') OK
-EVENT(webkitfullscreenerror)
 EXPECTED (document.webkitCurrentFullScreenElement == '[object HTMLSpanElement]') OK
 EVENT(webkitfullscreenchange)
 EXPECTED (document.webkitCurrentFullScreenElement == '[object HTMLHtmlElement]') OK

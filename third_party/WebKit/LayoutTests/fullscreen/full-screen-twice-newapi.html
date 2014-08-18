@@ -6,23 +6,11 @@
 
     var documentEnteredFullScreen = function() {
         testExpected("document.webkitCurrentFullScreenElement", document.documentElement);
-        runWithKeyDown(function(){document.documentElement.webkitRequestFullscreen()});
-        waitForEvent(document, 'webkitfullscreenerror', documentDidNotReenterFullScreen, false, true);
-    };
-
-    var documentDidNotReenterFullScreen = function() {
-        testExpected("document.webkitCurrentFullScreenElement", document.documentElement);
         runWithKeyDown(function(){span.webkitRequestFullscreen()});
         waitForEvent(document, 'webkitfullscreenchange', spanEnteredFullScreen, false, true);
     };
 
     var spanEnteredFullScreen = function() {
-        testExpected("document.webkitCurrentFullScreenElement", span);
-        runWithKeyDown(function(){span.webkitRequestFullscreen()});
-        waitForEvent(document, 'webkitfullscreenerror', spanDidNotReenterFullScreen, false, true);
-    };
-
-    var spanDidNotReenterFullScreen = function() {
         testExpected("document.webkitCurrentFullScreenElement", span);
         waitForEvent(document, 'webkitfullscreenchange', spanExited, false, true);
         document.webkitExitFullscreen();

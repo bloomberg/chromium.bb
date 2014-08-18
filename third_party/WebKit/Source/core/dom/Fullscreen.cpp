@@ -205,6 +205,10 @@ void Fullscreen::requestFullscreen(Element& element, RequestType requestType)
     if (!document()->isActive())
         return;
 
+    // If |element| is on top of |doc|'s fullscreen element stack, terminate these substeps.
+    if (&element == fullscreenElement())
+        return;
+
     do {
         // 1. If any of the following conditions are true, terminate these steps and queue a task to fire
         // an event named fullscreenerror with its bubbles attribute set to true on the context object's
