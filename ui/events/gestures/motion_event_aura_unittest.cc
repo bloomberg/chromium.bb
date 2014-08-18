@@ -320,4 +320,15 @@ TEST(MotionEventAuraTest, Cancel) {
   EXPECT_EQ(2U, static_cast<MotionEventAura*>(cancel.get())->GetPointerCount());
 }
 
+TEST(MotionEventAuraTest, ToolType) {
+  MotionEventAura event;
+
+  // For now, all pointers have an unknown tool type.
+  // TODO(jdduke): Expand this test when ui::TouchEvent identifies the source
+  // touch type, crbug.com/404128.
+  event.OnTouch(TouchWithType(ET_TOUCH_PRESSED, 7));
+  ASSERT_EQ(1U, event.GetPointerCount());
+  EXPECT_EQ(MotionEvent::TOOL_TYPE_UNKNOWN, event.GetToolType(0));
+}
+
 }  // namespace ui

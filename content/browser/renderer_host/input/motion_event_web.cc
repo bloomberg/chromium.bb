@@ -119,7 +119,8 @@ base::TimeTicks MotionEventWeb::GetEventTime() const {
 
 ui::MotionEvent::ToolType MotionEventWeb::GetToolType(
     size_t pointer_index) const {
-  NOTIMPLEMENTED();
+  // TODO(jdduke): Plumb tool type from the platform event, crbug.com/404128.
+  DCHECK_LT(pointer_index, GetPointerCount());
   return TOOL_TYPE_UNKNOWN;
 }
 

@@ -85,49 +85,50 @@ int MotionEventAura::GetActionIndex() const {
   DCHECK(cached_action_ == ACTION_POINTER_DOWN ||
          cached_action_ == ACTION_POINTER_UP);
   DCHECK_GE(cached_action_index_, 0);
-  DCHECK_LE(cached_action_index_, static_cast<int>(pointer_count_));
+  DCHECK_LT(cached_action_index_, static_cast<int>(pointer_count_));
   return cached_action_index_;
 }
 
 size_t MotionEventAura::GetPointerCount() const { return pointer_count_; }
 
 int MotionEventAura::GetPointerId(size_t pointer_index) const {
-  DCHECK_LE(pointer_index, pointer_count_);
+  DCHECK_LT(pointer_index, pointer_count_);
   return active_touches_[pointer_index].touch_id;
 }
 
 float MotionEventAura::GetX(size_t pointer_index) const {
-  DCHECK_LE(pointer_index, pointer_count_);
+  DCHECK_LT(pointer_index, pointer_count_);
   return active_touches_[pointer_index].x;
 }
 
 float MotionEventAura::GetY(size_t pointer_index) const {
-  DCHECK_LE(pointer_index, pointer_count_);
+  DCHECK_LT(pointer_index, pointer_count_);
   return active_touches_[pointer_index].y;
 }
 
 float MotionEventAura::GetRawX(size_t pointer_index) const {
-  DCHECK_LE(pointer_index, pointer_count_);
+  DCHECK_LT(pointer_index, pointer_count_);
   return active_touches_[pointer_index].raw_x;
 }
 
 float MotionEventAura::GetRawY(size_t pointer_index) const {
-  DCHECK_LE(pointer_index, pointer_count_);
+  DCHECK_LT(pointer_index, pointer_count_);
   return active_touches_[pointer_index].raw_y;
 }
 
 float MotionEventAura::GetTouchMajor(size_t pointer_index) const {
-  DCHECK_LE(pointer_index, pointer_count_);
+  DCHECK_LT(pointer_index, pointer_count_);
   return active_touches_[pointer_index].major_radius * 2;
 }
 
 float MotionEventAura::GetPressure(size_t pointer_index) const {
-  DCHECK_LE(pointer_index, pointer_count_);
+  DCHECK_LT(pointer_index, pointer_count_);
   return active_touches_[pointer_index].pressure;
 }
 
 MotionEvent::ToolType MotionEventAura::GetToolType(size_t pointer_index) const {
-  NOTIMPLEMENTED();
+  // TODO(jdduke): Plumb tool type from the platform, crbug.com/404128.
+  DCHECK_LT(pointer_index, pointer_count_);
   return MotionEvent::TOOL_TYPE_UNKNOWN;
 }
 
@@ -175,7 +176,7 @@ MotionEventAura::PointData::PointData()
 }
 
 int MotionEventAura::GetSourceDeviceId(size_t pointer_index) const {
-  DCHECK_LE(pointer_index, pointer_count_);
+  DCHECK_LT(pointer_index, pointer_count_);
   return active_touches_[pointer_index].source_device_id;
 }
 
@@ -212,7 +213,7 @@ void MotionEventAura::UpdateCachedAction(const TouchEvent& touch) {
         cached_action_ = ACTION_POINTER_UP;
         cached_action_index_ =
             static_cast<int>(GetIndexFromId(touch.touch_id()));
-        DCHECK_LE(cached_action_index_, static_cast<int>(pointer_count_));
+        DCHECK_LT(cached_action_index_, static_cast<int>(pointer_count_));
       }
       break;
     case ET_TOUCH_CANCELLED:
