@@ -127,7 +127,7 @@
       # TODO(scottmg): http://crbug.com/143877 These should be removed if
       # Mesa is ever rolled and the warnings are fixed.
       'msvs_disabled_warnings': [
-          4005, 4018, 4065, 4090, 4099, 4273, 4291, 4345, 4267,
+          4005, 4018, 4065, 4090, 4099, 4291, 4345, 4267,
       ],
       'variables': {
         'clang_warning_flags': [
@@ -265,7 +265,7 @@
       # TODO(scottmg): http://crbug.com/143877 These should be removed if
       # Mesa is ever rolled and the warnings are fixed.
       'msvs_disabled_warnings': [
-          4005, 4018, 4090, 4099, 4146, 4273, 4291, 4305, 4334, 4748, 4267,
+          4005, 4018, 4090, 4099, 4146, 4291, 4305, 4334, 4748, 4267,
       ],
       'variables': {
         'clang_warning_flags': [
@@ -694,7 +694,7 @@
         '<(generated_src_dir)/mesa',
       ],
       'msvs_disabled_warnings': [
-          4005, 4018, 4065, 4090, 4099, 4273, 4291, 4345, 4267,
+          4005, 4018, 4065, 4090, 4099, 4291, 4345, 4267,
       ],
       'sources': [
         'src/src/mesa/drivers/common/driverfuncs.c',
