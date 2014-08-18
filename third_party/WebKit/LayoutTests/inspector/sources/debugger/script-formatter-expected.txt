@@ -12,6 +12,7 @@ function f() {
 </script><script>
 function g() {
 **var a;
+**window.return = 10;
 **if (a)
 ****return;
 }

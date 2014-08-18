@@ -88,7 +88,7 @@ var test = function()
                 next();
             };
 
-            var content = "<html><body><script>function f(){}<" + "/script><script>function g(){var a;if (a) return;}<" + "/script></body></html>";
+            var content = "<html><body><script>function f(){}<" + "/script><script>function g(){var a;window.return = 10;if (a) return;}<" + "/script></body></html>";
             worker.postMessage({ method: "format", params: { mimeType: "text/html", content: content, indentString: "**" } });
         }
     ]);
