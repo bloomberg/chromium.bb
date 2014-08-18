@@ -1342,8 +1342,7 @@ void RenderObject::addChildFocusRingRects(Vector<IntRect>& rects, const LayoutPo
 
 LayoutPoint RenderObject::positionFromPaintInvalidationContainer(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
-    // FIXME: This assert should be re-enabled when we move paint invalidation to after compositing update. crbug.com/360286
-    // ASSERT(containerForPaintInvalidation() == paintInvalidationContainer);
+    ASSERT(containerForPaintInvalidation() == paintInvalidationContainer);
 
     if (paintInvalidationContainer == this)
         return LayoutPoint();
