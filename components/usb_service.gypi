@@ -41,7 +41,7 @@
       'usb_service/usb_service_impl.cc',
     ],
     'conditions': [
-      ['OS == "linux"', {
+      ['use_udev == 1', {
         'dependencies': [
           '../build/linux/system.gyp:udev',
         ],

@@ -27,9 +27,14 @@
       'target_name': 'device_serial',
       'type': 'static_library',
       'conditions': [
-        ['OS=="linux"', {
+        ['use_udev == 1', {
           'dependencies': [
             '../../build/linux/system.gyp:udev',
+          ],
+        }, {
+          'sources!': [
+            'serial_device_enumerator_linux.cc',
+            'serial_device_enumerator_linux.h',
           ],
         }],
       ],

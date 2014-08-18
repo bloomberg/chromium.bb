@@ -83,8 +83,11 @@
           # Udev, disable these unittests.
           'dependencies!': [
             'hid/hid.gyp:device_hid',
+            'serial/serial.gyp:device_serial',
+            'serial/serial.gyp:device_serial_test_util',
           ],
           'sources/': [
+            ['exclude', '^serial/'],
             ['exclude', '^hid/'],
           ],
         }],

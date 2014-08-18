@@ -53,15 +53,36 @@
         }],
         [ 'OS == "linux" or OS == "android"', {
           'sources': [
-            'src/libusb/os/linux_udev.c',
             'src/libusb/os/linux_usbfs.c',
             'src/libusb/os/linux_usbfs.h',
           ],
           'defines': [
-            'HAVE_LIBUDEV=1',
             'OS_LINUX=1',
-            'USE_UDEV=1',
             '_GNU_SOURCE=1',
+          ],
+        }],
+        [ 'use_udev == 1 or OS == "android"', {
+          'sources': [
+            'src/libusb/os/linux_udev.c',
+          ],
+          'defines': [
+            'HAVE_LIBUDEV=1',
+            'USE_UDEV=1',
+          ],
+        }],
+        [ 'OS == "linux" and use_udev == 0', {
+          'sources': [
+            'src/libusb/os/linux_netlink.c',
+          ],
+          'defines': [
+            'HAVE_LINUX_NETLINK_H',
+          ],
+          'conditions': [
+            ['clang==1', {
+              'cflags': [
+                '-Wno-pointer-sign',
+              ]
+            }]
           ],
         }],
         [ 'OS == "mac"', {

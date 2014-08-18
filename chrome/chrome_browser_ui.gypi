@@ -2893,9 +2893,6 @@
         }],
         ['OS=="linux"', {  # Both desktop Linux and ChromeOS.
           'sources': [ '<@(chrome_browser_ui_linux_sources)' ],
-          'dependencies': [
-            '../build/linux/system.gyp:udev',
-          ],
           'conditions': [
             ['use_aura==1', {
               'dependencies': [
@@ -2910,6 +2907,11 @@
               'dependencies': [
                 '../build/linux/system.gyp:x11',
                 '../build/linux/system.gyp:gio',
+              ],
+            }],
+            ['use_udev==1', {
+              'dependencies': [
+                '../build/linux/system.gyp:udev',
               ],
             }],
           ],

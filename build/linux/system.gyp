@@ -438,6 +438,31 @@
         },
       ],
     }],
+    ['use_udev==1', {
+      'targets': [
+        {
+          'target_name': 'udev',
+          'type': 'none',
+          'conditions': [
+            ['_toolset=="target"', {
+              'direct_dependent_settings': {
+                'cflags': [
+                  '<!@(<(pkg-config) --cflags libudev)'
+                ],
+              },
+              'link_settings': {
+                'ldflags': [
+                  '<!@(<(pkg-config) --libs-only-L --libs-only-other libudev)',
+                ],
+                'libraries': [
+                  '<!@(<(pkg-config) --libs-only-l libudev)',
+                ],
+              },
+            }],
+          ],
+        },
+      ],
+    }],
   ],  # conditions
   'targets': [
     {
@@ -1029,28 +1054,6 @@
               },
             }],
           ]
-        }],
-      ],
-    },
-    {
-      'target_name': 'udev',
-      'type': 'none',
-      'conditions': [
-        # libudev is not available on *BSD
-        ['_toolset=="target" and os_bsd!=1', {
-          'direct_dependent_settings': {
-            'cflags': [
-              '<!@(<(pkg-config) --cflags libudev)'
-            ],
-          },
-          'link_settings': {
-            'ldflags': [
-              '<!@(<(pkg-config) --libs-only-L --libs-only-other libudev)',
-            ],
-            'libraries': [
-              '<!@(<(pkg-config) --libs-only-l libudev)',
-            ],
-          },
         }],
       ],
     },
