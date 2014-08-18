@@ -165,8 +165,8 @@ AudioContext::~AudioContext()
     ASSERT(!m_isInitialized);
 #if !ENABLE(OILPAN)
     ASSERT(!m_nodesToDelete.size());
-    ASSERT(!m_referencedNodes.size());
 #endif
+    ASSERT(!m_referencedNodes.size());
     ASSERT(!m_finishedNodes.size());
     ASSERT(!m_automaticPullNodes.size());
     if (m_automaticPullNodesNeedUpdating)
