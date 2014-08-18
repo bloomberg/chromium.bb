@@ -93,7 +93,7 @@ commit transaction;""" % {
       'columns': ', '.join(columns),
       'values': ', '.join(["'%s'" % value for value in values])
     }
-    output_msg = device.RunShellCommand('\'sqlite3 %s "%s"\'' % (db, cmd))
+    output_msg = device.RunShellCommand('sqlite3 %s "%s"' % (db, cmd))
     if output_msg:
       print ' '.join(output_msg)
 

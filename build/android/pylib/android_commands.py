@@ -713,7 +713,7 @@ class AndroidCommands(object):
     """
     self._LogShell(command)
     if "'" in command:
-      logging.warning(command + " contains ' quotes")
+      command = command.replace('\'', '\'\\\'\'')
     result = self._adb.SendShellCommand(
         "'%s'" % command, timeout_time).splitlines()
     # TODO(b.kelemen): we should really be able to drop the stderr of the
