@@ -41,25 +41,25 @@ InspectorTest.timelineModel = function()
 InspectorTest.startTimeline = function(callback)
 {
     var panel = WebInspector.inspectorView.panel("timeline");
-    panel.toggleTimelineButton.toggled = true;
-    panel._model._collectionEnabled = true;
-    panel._userInitiatedRecording = true;
-    panel._model._currentTarget = WebInspector.targetManager.mainTarget();
-    TimelineAgent.start(5, true, undefined, true, false, callback);
+    function onRecordingStarted()
+    {
+        panel._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStarted, onRecordingStarted, this)
+        callback();
+    }
+    panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, onRecordingStarted, this)
+    panel.toggleTimelineButton.element.click();
 };
 
 InspectorTest.stopTimeline = function(callback)
 {
-    function didStop(error)
+    var panel = WebInspector.inspectorView.panel("timeline");
+    function didStop()
     {
-        if (error)
-            testRunner.logToStderr("error: " + error);
-        var panel = WebInspector.inspectorView.panel("timeline");
-        panel.toggleTimelineButton.toggled = false;
-        panel._userInitiatedRecording = false;
+        panel._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStopped, didStop, this)
         callback();
     }
-    TimelineAgent.stop(didStop);
+    panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, didStop, this)
+    panel.toggleTimelineButton.element.click();
 };
 
 InspectorTest.evaluateWithTimeline = function(actions, doneCallback)
