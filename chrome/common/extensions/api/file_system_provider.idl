@@ -22,7 +22,6 @@ namespace fileSystemProvider {
     NOT_A_DIRECTORY,
     INVALID_OPERATION,
     SECURITY,
-    ABORT,
     NOT_A_FILE,
     NOT_EMPTY,
     INVALID_URL,
@@ -165,6 +164,13 @@ namespace fileSystemProvider {
     double offset;
     double length;
     ArrayBuffer data;
+  };
+
+  // Options for the <code>onAbortRequested()</code> event.
+  dictionary AbortRequestedOptions {
+    DOMString fileSystemId;
+    long requestId;
+    long operationRequestId;
   };
 
   // Callback to receive the result of mount() function.
@@ -326,6 +332,18 @@ namespace fileSystemProvider {
     // openRequestId</code> is requested.
     [maxListeners=1, nodoc] static void onWriteFileRequested(
         WriteFileRequestedOptions options,
+        ProviderSuccessCallback successCallback,
+        ProviderErrorCallback errorCallback);
+
+    // Raised when aborting an operation with <code>operationRequestId</code>
+    // is requested. The operation executed with <code>operationRequestId</code>
+    // should be immediately stopped and <code>successCallback</code> of this
+    // abort request executed. If aborting fails, then <code>errorCallback
+    // </code> must be called. Note, that callbacks of the aborted operation
+    // should not be called, as they will be ignored. Despite calling <code>
+    // errorCallback</code>, the request may be forcibly aborted. 
+    [maxListeners=1, nodoc] static void onAbortRequested(
+        AbortRequestedOptions options,
         ProviderSuccessCallback successCallback,
         ProviderErrorCallback errorCallback);
   };

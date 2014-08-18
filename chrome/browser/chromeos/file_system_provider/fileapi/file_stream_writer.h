@@ -22,12 +22,6 @@ class ProvidedFileSystemInterface;
 // to Write().
 class FileStreamWriter : public fileapi::FileStreamWriter {
  public:
-  typedef base::Callback<
-      void(base::WeakPtr<ProvidedFileSystemInterface> file_system,
-           const base::FilePath& file_path,
-           int file_handle,
-           base::File::Error result)> OpenFileCompletedCallback;
-
   FileStreamWriter(const fileapi::FileSystemURL& url, int64 initial_offset);
 
   virtual ~FileStreamWriter();
@@ -40,16 +34,27 @@ class FileStreamWriter : public fileapi::FileStreamWriter {
   virtual int Flush(const net::CompletionCallback& callback) OVERRIDE;
 
  private:
+  // Helper class for executing operations on the provided file system. All
+  // of its methods must be called on UI thread. Callbacks are called on IO
+  // thread.
+  class OperationRunner;
+
   // State of the file stream writer.
   enum State { NOT_INITIALIZED, INITIALIZING, INITIALIZED, FAILED };
 
+  // Called when OperationRunner::WriteOnUIThread is completed.
   void OnWriteFileCompleted(int buffer_length,
                             const net::CompletionCallback& callback,
                             base::File::Error result);
 
-  // Called when Write() operation is completed with either a success of an
+  // Called when Write() operation is completed with either a success or an
   // error.
   void OnWriteCompleted(net::CompletionCallback callback, int result);
+
+  // Called when Abort() operation is completed with either a success or an
+  // error.
+  void OnAbortCompleted(const net::CompletionCallback& callback,
+                        base::File::Error result);
 
   // Initializes the writer by opening the file. When completed with success,
   // runs the |pending_closure|. Otherwise, calls the |error_callback|.
@@ -60,9 +65,6 @@ class FileStreamWriter : public fileapi::FileStreamWriter {
   void OnOpenFileCompleted(
       const base::Closure& pending_closure,
       const net::CompletionCallback& error_callback,
-      base::WeakPtr<ProvidedFileSystemInterface> file_system,
-      const base::FilePath& file_path,
-      int file_handle,
       base::File::Error result);
 
   // Same as Write(), but called after initializing is completed.
@@ -72,12 +74,8 @@ class FileStreamWriter : public fileapi::FileStreamWriter {
 
   fileapi::FileSystemURL url_;
   int64 current_offset_;
+  scoped_refptr<OperationRunner> runner_;
   State state_;
-
-  // Set during initialization (in case of a success).
-  base::WeakPtr<ProvidedFileSystemInterface> file_system_;
-  base::FilePath file_path_;
-  int file_handle_;
 
   base::WeakPtrFactory<FileStreamWriter> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(FileStreamWriter);

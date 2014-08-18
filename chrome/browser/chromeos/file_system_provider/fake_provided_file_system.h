@@ -7,8 +7,11 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
+#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 
@@ -67,51 +70,52 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
   bool GetEntry(const base::FilePath& entry_path, FakeEntry* fake_entry) const;
 
   // ProvidedFileSystemInterface overrides.
-  virtual void RequestUnmount(
+  virtual AbortCallback RequestUnmount(
       const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
-  virtual void GetMetadata(
+  virtual AbortCallback GetMetadata(
       const base::FilePath& entry_path,
       const ProvidedFileSystemInterface::GetMetadataCallback& callback)
       OVERRIDE;
-  virtual void ReadDirectory(
+  virtual AbortCallback ReadDirectory(
       const base::FilePath& directory_path,
       const fileapi::AsyncFileUtil::ReadDirectoryCallback& callback) OVERRIDE;
-  virtual void OpenFile(const base::FilePath& file_path,
-                        OpenFileMode mode,
-                        const OpenFileCallback& callback) OVERRIDE;
-  virtual void CloseFile(
+  virtual AbortCallback OpenFile(const base::FilePath& file_path,
+                                 OpenFileMode mode,
+                                 const OpenFileCallback& callback) OVERRIDE;
+  virtual AbortCallback CloseFile(
       int file_handle,
       const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
-  virtual void ReadFile(int file_handle,
-                        net::IOBuffer* buffer,
-                        int64 offset,
-                        int length,
-                        const ReadChunkReceivedCallback& callback) OVERRIDE;
-  virtual void CreateDirectory(
+  virtual AbortCallback ReadFile(
+      int file_handle,
+      net::IOBuffer* buffer,
+      int64 offset,
+      int length,
+      const ReadChunkReceivedCallback& callback) OVERRIDE;
+  virtual AbortCallback CreateDirectory(
       const base::FilePath& directory_path,
       bool exclusive,
       bool recursive,
       const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
-  virtual void DeleteEntry(
+  virtual AbortCallback DeleteEntry(
       const base::FilePath& entry_path,
       bool recursive,
       const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
-  virtual void CreateFile(
+  virtual AbortCallback CreateFile(
       const base::FilePath& file_path,
       const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
-  virtual void CopyEntry(
+  virtual AbortCallback CopyEntry(
       const base::FilePath& source_path,
       const base::FilePath& target_path,
       const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
-  virtual void MoveEntry(
+  virtual AbortCallback MoveEntry(
       const base::FilePath& source_path,
       const base::FilePath& target_path,
       const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
-  virtual void Truncate(
+  virtual AbortCallback Truncate(
       const base::FilePath& file_path,
       int64 length,
       const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
-  virtual void WriteFile(
+  virtual AbortCallback WriteFile(
       int file_handle,
       net::IOBuffer* buffer,
       int64 offset,
@@ -131,12 +135,28 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
   typedef std::map<base::FilePath, FakeEntry> Entries;
   typedef std::map<int, base::FilePath> OpenedFilesMap;
 
+  // Utility function for posting a task which can be aborted by calling the
+  // returned callback.
+  AbortCallback PostAbortableTask(const base::Closure& callback);
+
+  // Aborts a request. |task_id| refers to a posted callback returning a
+  // response for the operation, which will be cancelled, hence not called.
+  void Abort(int task_id,
+             const fileapi::AsyncFileUtil::StatusCallback& callback);
+
+  // Aborts a request. |task_ids| refers to a vector of posted callbacks
+  // returning a response for the operation, which will be cancelled, hence not
+  // called.
+  void AbortMany(const std::vector<int>& task_ids,
+                 const fileapi::AsyncFileUtil::StatusCallback& callback);
+
   ProvidedFileSystemInfo file_system_info_;
   Entries entries_;
   OpenedFilesMap opened_files_;
   int last_file_handle_;
+  base::CancelableTaskTracker tracker_;
 
-  base::WeakPtrFactory<ProvidedFileSystemInterface> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeProvidedFileSystem> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(FakeProvidedFileSystem);
 };
 

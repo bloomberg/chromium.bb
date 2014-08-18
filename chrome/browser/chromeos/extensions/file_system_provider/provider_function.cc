@@ -62,8 +62,6 @@ base::File::Error ProviderErrorToFileError(
       return base::File::FILE_ERROR_INVALID_OPERATION;
     case api::file_system_provider::PROVIDER_ERROR_SECURITY:
       return base::File::FILE_ERROR_SECURITY;
-    case api::file_system_provider::PROVIDER_ERROR_ABORT:
-      return base::File::FILE_ERROR_ABORT;
     case api::file_system_provider::PROVIDER_ERROR_NOT_A_FILE:
       return base::File::FILE_ERROR_NOT_A_FILE;
     case api::file_system_provider::PROVIDER_ERROR_NOT_EMPTY:

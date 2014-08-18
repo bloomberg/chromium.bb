@@ -43,8 +43,10 @@ struct EntryMetadata {
 };
 
 // Interface for a provided file system. Acts as a proxy between providers
-// and clients.
-// TODO(mtomasz): Add more methods once implemented.
+// and clients. All of the request methods return an abort callback in order to
+// terminate it while running. They must be called on the same thread as the
+// request methods. The cancellation callback may be null if the operation
+// fails synchronously.
 class ProvidedFileSystemInterface {
  public:
   typedef base::Callback<void(int file_handle, base::File::Error result)>
@@ -57,6 +59,9 @@ class ProvidedFileSystemInterface {
   typedef base::Callback<void(const EntryMetadata& entry_metadata,
                               base::File::Error result)> GetMetadataCallback;
 
+  typedef base::Callback<void(
+      const fileapi::AsyncFileUtil::StatusCallback& callback)> AbortCallback;
+
   // Mode of opening a file. Used by OpenFile().
   enum OpenFileMode { OPEN_FILE_MODE_READ, OPEN_FILE_MODE_WRITE };
 
@@ -64,29 +69,29 @@ class ProvidedFileSystemInterface {
 
   // Requests unmounting of the file system. The callback is called when the
   // request is accepted or rejected, with an error code.
-  virtual void RequestUnmount(
+  virtual AbortCallback RequestUnmount(
       const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
 
   // Requests metadata of the passed |entry_path|. It can be either a file
   // or a directory.
-  virtual void GetMetadata(const base::FilePath& entry_path,
-                           const GetMetadataCallback& callback) = 0;
+  virtual AbortCallback GetMetadata(const base::FilePath& entry_path,
+                                    const GetMetadataCallback& callback) = 0;
 
   // Requests enumerating entries from the passed |directory_path|. The callback
   // can be called multiple times until |has_more| is set to false.
-  virtual void ReadDirectory(
+  virtual AbortCallback ReadDirectory(
       const base::FilePath& directory_path,
       const fileapi::AsyncFileUtil::ReadDirectoryCallback& callback) = 0;
 
   // Requests opening a file at |file_path|. If the file doesn't exist, then the
   // operation will fail.
-  virtual void OpenFile(const base::FilePath& file_path,
-                        OpenFileMode mode,
-                        const OpenFileCallback& callback) = 0;
+  virtual AbortCallback OpenFile(const base::FilePath& file_path,
+                                 OpenFileMode mode,
+                                 const OpenFileCallback& callback) = 0;
 
   // Requests closing a file, previously opened with OpenFile() as a file with
   // |file_handle|. For either succes or error |callback| must be called.
-  virtual void CloseFile(
+  virtual AbortCallback CloseFile(
       int file_handle,
       const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
 
@@ -94,16 +99,16 @@ class ProvidedFileSystemInterface {
   // can be called multiple times until |has_more| is set to false. On success
   // it should return |length| bytes starting from |offset| in total. It can
   // return less only in case EOF is encountered.
-  virtual void ReadFile(int file_handle,
-                        net::IOBuffer* buffer,
-                        int64 offset,
-                        int length,
-                        const ReadChunkReceivedCallback& callback) = 0;
+  virtual AbortCallback ReadFile(int file_handle,
+                                 net::IOBuffer* buffer,
+                                 int64 offset,
+                                 int length,
+                                 const ReadChunkReceivedCallback& callback) = 0;
 
   // Requests creating a directory. If |recursive| is passed, then all non
   // existing directories on the path will be created. If |exclusive| is true,
   // then creating the directory will fail, if it already exists.
-  virtual void CreateDirectory(
+  virtual AbortCallback CreateDirectory(
       const base::FilePath& directory_path,
       bool exclusive,
       bool recursive,
@@ -111,39 +116,39 @@ class ProvidedFileSystemInterface {
 
   // Requests creating a file. If the entry already exists, then the
   // FILE_ERROR_EXISTS error must be returned.
-  virtual void CreateFile(
+  virtual AbortCallback CreateFile(
       const base::FilePath& file_path,
       const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
 
   // Requests deleting a directory. If |recursive| is passed and the entry is
   // a directory, then all contents of it (recursively) will be deleted too.
-  virtual void DeleteEntry(
+  virtual AbortCallback DeleteEntry(
       const base::FilePath& entry_path,
       bool recursive,
       const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
 
   // Requests copying an entry (recursively in case of a directory) within the
   // same file system.
-  virtual void CopyEntry(
+  virtual AbortCallback CopyEntry(
       const base::FilePath& source_path,
       const base::FilePath& target_path,
       const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
 
   // Requests moving an entry (recursively in case of a directory) within the
   // same file system.
-  virtual void MoveEntry(
+  virtual AbortCallback MoveEntry(
       const base::FilePath& source_path,
       const base::FilePath& target_path,
       const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
 
   // Requests truncating a file to the desired length.
-  virtual void Truncate(
+  virtual AbortCallback Truncate(
       const base::FilePath& file_path,
       int64 length,
       const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
 
   // Requests writing to a file previously opened with |file_handle|.
-  virtual void WriteFile(
+  virtual AbortCallback WriteFile(
       int file_handle,
       net::IOBuffer* buffer,
       int64 offset,

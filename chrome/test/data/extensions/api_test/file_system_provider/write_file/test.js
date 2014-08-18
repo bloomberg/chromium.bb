@@ -15,20 +15,20 @@ var fileContents = {};
  * @type {string}
  * @const
  */
-var TESTING_INITIAL_TEXT = "Hello world. How are you today?";
+var TESTING_INITIAL_TEXT = 'Hello world. How are you today?';
 
 /**
  * Initial contents of testing files.
  * @type {string}
- ";
+ * @const
  */
-var TESTING_TEXT_TO_WRITE = "Vanilla ice creams are the best.";
+var TESTING_TEXT_TO_WRITE = 'Vanilla ice creams are the best.';
 
 /**
  * @type {string}
  * @const
  */
-var TESTING_NEW_FILE_NAME = "perfume.txt"
+var TESTING_NEW_FILE_NAME = 'perfume.txt';
 
 /**
  * @type {string}
@@ -41,6 +41,12 @@ var TESTING_TIRAMISU_FILE_NAME = 'tiramisu.txt';
  * @const
  */
 var TESTING_BROKEN_TIRAMISU_FILE_NAME = 'broken-tiramisu.txt';
+
+/**
+ * @type {string}
+ * @const
+ */
+var TESTING_CHOCOLATE_FILE_NAME = 'chocolate.txt';
 
 /**
  * Requests writing contents to a file, previously opened with <code>
@@ -69,6 +75,11 @@ function onWriteFileRequested(options, onSuccess, onError) {
     return;
   }
 
+  if (filePath == '/' + TESTING_CHOCOLATE_FILE_NAME) {
+    // Do not call any callback to simulate a very slow network connection.
+    return;
+  }
+
   // Writing beyond the end of the file.
   if (options.offset > metadata.size) {
     onError('INVALID_OPERATION');
@@ -84,7 +95,7 @@ function onWriteFileRequested(options, onSuccess, onError) {
     metadata.size = newContents.length;
     fileContents[filePath] = newContents;
     onSuccess();
-  }
+  };
 
   reader.readAsText(new Blob([options.data]));
 }
@@ -119,8 +130,16 @@ function setUp(callback) {
     modificationTime: new Date(2014, 1, 25, 7, 36, 12)
   };
 
+  test_util.defaultMetadata['/' + TESTING_CHOCOLATE_FILE_NAME] = {
+    isDirectory: false,
+    name: TESTING_CHOCOLATE_FILE_NAME,
+    size: TESTING_INITIAL_TEXT.length,
+    modificationTime: new Date(2014, 1, 26, 8, 37, 13)
+  };
+
   fileContents['/' + TESTING_TIRAMISU_FILE_NAME] = TESTING_INITIAL_TEXT;
   fileContents['/' + TESTING_BROKEN_TIRAMISU_FILE_NAME] = TESTING_INITIAL_TEXT;
+  fileContents['/' + TESTING_CHOCOLATE_FILE_NAME] = TESTING_INITIAL_TEXT;
 
   chrome.fileSystemProvider.onWriteFileRequested.addListener(
       onWriteFileRequested);
@@ -286,6 +305,57 @@ function runTests() {
               };
               var blob = new Blob(['A lot of flowers.'], {type: 'text/plain'});
               fileWriter.write(blob);
+            },
+            function(error) {
+              chrome.test.fail();
+            });
+          },
+          function(error) {
+            chrome.test.fail(error.name);
+          });
+    },
+
+    // Abort writing to a valid file with a registered abort handler. Should
+    // resurt in a gracefully terminated writing operation.
+    function abortWritingSuccess() {
+      var onTestSuccess = chrome.test.callbackPass();
+
+      var onAbortRequested = function(options, onSuccess, onError) {
+        chrome.fileSystemProvider.onAbortRequested.removeListener(
+            onAbortRequested);
+        onSuccess();
+        onTestSuccess();
+      };
+
+      chrome.fileSystemProvider.onAbortRequested.addListener(
+          onAbortRequested);
+
+      test_util.fileSystem.root.getFile(
+          TESTING_CHOCOLATE_FILE_NAME,
+          {create: false, exclusive: false},
+          function(fileEntry) {
+            var hadAbort = false;
+            fileEntry.createWriter(function(fileWriter) {
+              fileWriter.onwriteend = function(e) {
+                if (!hadAbort) {
+                  chrome.test.fail(
+                      'Unexpectedly finished writing, despite aborting.');
+                  return;
+                }
+              };
+              fileWriter.onerror = function(e) {
+                chrome.test.assertEq(
+                    'AbortError', fileWriter.error.name);
+              };
+              fileWriter.onabort = function(e) {
+                hadAbort = true;
+              };
+              var blob = new Blob(['A lot of cherries.'], {type: 'text/plain'});
+              fileWriter.write(blob);
+              setTimeout(function() {
+                // Abort the operation after it's started.
+                fileWriter.abort();
+              }, 0);
             },
             function(error) {
               chrome.test.fail();

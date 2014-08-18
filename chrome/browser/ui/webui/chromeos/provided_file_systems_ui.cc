@@ -294,7 +294,7 @@ void ProvidedFileSystemsWebUIHandler::UpdateFileSystems(
     item->SetString(kKeyMountPath,
                     file_system_info.mount_path().AsUTF8Unsafe());
     item->SetInteger(kKeyActiveRequests,
-                     request_manager->GetActiveRequestsForLogging());
+                     request_manager->GetActiveRequestIds().size());
 
     items.Append(item);
   }

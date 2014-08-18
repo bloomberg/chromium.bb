@@ -400,6 +400,8 @@
         'browser/chromeos/file_system_provider/notification_manager.h',
         'browser/chromeos/file_system_provider/notification_manager_interface.h',
         'browser/chromeos/file_system_provider/observer.h',
+        'browser/chromeos/file_system_provider/operations/abort.cc',
+        'browser/chromeos/file_system_provider/operations/abort.h',
         'browser/chromeos/file_system_provider/operations/close_file.cc',
         'browser/chromeos/file_system_provider/operations/close_file.h',
         'browser/chromeos/file_system_provider/operations/copy_entry.cc',

@@ -4,9 +4,12 @@
 
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system.h"
 
+#include <vector>
+
 #include "base/debug/trace_event.h"
 #include "base/files/file.h"
 #include "chrome/browser/chromeos/file_system_provider/notification_manager.h"
+#include "chrome/browser/chromeos/file_system_provider/operations/abort.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/close_file.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/copy_entry.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/create_directory.h"
@@ -31,6 +34,13 @@ class IOBuffer;
 
 namespace chromeos {
 namespace file_system_provider {
+namespace {
+
+// Dicards the result of Abort() when called from the destructor.
+void EmptyStatusCallback(base::File::Error /* result */) {
+}
+
+}  // namespace
 
 ProvidedFileSystem::ProvidedFileSystem(
     Profile* profile,
@@ -44,156 +54,203 @@ ProvidedFileSystem::ProvidedFileSystem(
       weak_ptr_factory_(this) {
 }
 
-ProvidedFileSystem::~ProvidedFileSystem() {}
+ProvidedFileSystem::~ProvidedFileSystem() {
+  const std::vector<int> request_ids = request_manager_.GetActiveRequestIds();
+  for (size_t i = 0; i < request_ids.size(); ++i) {
+    Abort(request_ids[i], base::Bind(&EmptyStatusCallback));
+  }
+}
 
-void ProvidedFileSystem::RequestUnmount(
+ProvidedFileSystem::AbortCallback ProvidedFileSystem::RequestUnmount(
     const fileapi::AsyncFileUtil::StatusCallback& callback) {
-  if (!request_manager_.CreateRequest(
-          REQUEST_UNMOUNT,
-          scoped_ptr<RequestManager::HandlerInterface>(new operations::Unmount(
-              event_router_, file_system_info_, callback)))) {
+  const int request_id = request_manager_.CreateRequest(
+      REQUEST_UNMOUNT,
+      scoped_ptr<RequestManager::HandlerInterface>(
+          new operations::Unmount(event_router_, file_system_info_, callback)));
+  if (!request_id) {
     callback.Run(base::File::FILE_ERROR_SECURITY);
+    return AbortCallback();
   }
+
+  return base::Bind(
+      &ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), request_id);
 }
 
-void ProvidedFileSystem::GetMetadata(const base::FilePath& entry_path,
-                                     const GetMetadataCallback& callback) {
-  if (!request_manager_.CreateRequest(
-          GET_METADATA,
-          scoped_ptr<RequestManager::HandlerInterface>(
-              new operations::GetMetadata(
-                  event_router_, file_system_info_, entry_path, callback)))) {
+ProvidedFileSystem::AbortCallback ProvidedFileSystem::GetMetadata(
+    const base::FilePath& entry_path,
+    const GetMetadataCallback& callback) {
+  const int request_id = request_manager_.CreateRequest(
+      GET_METADATA,
+      scoped_ptr<RequestManager::HandlerInterface>(new operations::GetMetadata(
+          event_router_, file_system_info_, entry_path, callback)));
+  if (!request_id) {
     callback.Run(EntryMetadata(), base::File::FILE_ERROR_SECURITY);
+    return AbortCallback();
   }
+
+  return base::Bind(
+      &ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), request_id);
 }
 
-void ProvidedFileSystem::ReadDirectory(
+ProvidedFileSystem::AbortCallback ProvidedFileSystem::ReadDirectory(
     const base::FilePath& directory_path,
     const fileapi::AsyncFileUtil::ReadDirectoryCallback& callback) {
-  if (!request_manager_.CreateRequest(
-          READ_DIRECTORY,
-          scoped_ptr<
-              RequestManager::HandlerInterface>(new operations::ReadDirectory(
-              event_router_, file_system_info_, directory_path, callback)))) {
+  const int request_id = request_manager_.CreateRequest(
+      READ_DIRECTORY,
+      scoped_ptr<RequestManager::HandlerInterface>(
+          new operations::ReadDirectory(
+              event_router_, file_system_info_, directory_path, callback)));
+  if (!request_id) {
     callback.Run(base::File::FILE_ERROR_SECURITY,
                  fileapi::AsyncFileUtil::EntryList(),
                  false /* has_more */);
+    return AbortCallback();
   }
+
+  return base::Bind(
+      &ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), request_id);
 }
 
-void ProvidedFileSystem::ReadFile(int file_handle,
-                                  net::IOBuffer* buffer,
-                                  int64 offset,
-                                  int length,
-                                  const ReadChunkReceivedCallback& callback) {
+ProvidedFileSystem::AbortCallback ProvidedFileSystem::ReadFile(
+    int file_handle,
+    net::IOBuffer* buffer,
+    int64 offset,
+    int length,
+    const ReadChunkReceivedCallback& callback) {
   TRACE_EVENT1(
       "file_system_provider", "ProvidedFileSystem::ReadFile", "length", length);
-  if (!request_manager_.CreateRequest(
-          READ_FILE,
-          make_scoped_ptr<RequestManager::HandlerInterface>(
-              new operations::ReadFile(event_router_,
-                                       file_system_info_,
-                                       file_handle,
-                                       buffer,
-                                       offset,
-                                       length,
-                                       callback)))) {
+  const int request_id = request_manager_.CreateRequest(
+      READ_FILE,
+      make_scoped_ptr<RequestManager::HandlerInterface>(
+          new operations::ReadFile(event_router_,
+                                   file_system_info_,
+                                   file_handle,
+                                   buffer,
+                                   offset,
+                                   length,
+                                   callback)));
+  if (!request_id) {
     callback.Run(0 /* chunk_length */,
                  false /* has_more */,
                  base::File::FILE_ERROR_SECURITY);
+    return AbortCallback();
   }
+
+  return base::Bind(
+      &ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), request_id);
 }
 
-void ProvidedFileSystem::OpenFile(const base::FilePath& file_path,
-                                  OpenFileMode mode,
-                                  const OpenFileCallback& callback) {
-  if (!request_manager_.CreateRequest(
-          OPEN_FILE,
-          scoped_ptr<RequestManager::HandlerInterface>(
-              new operations::OpenFile(event_router_,
-                                       file_system_info_,
-                                       file_path,
-                                       mode,
-                                       callback)))) {
+ProvidedFileSystem::AbortCallback ProvidedFileSystem::OpenFile(
+    const base::FilePath& file_path,
+    OpenFileMode mode,
+    const OpenFileCallback& callback) {
+  const int request_id = request_manager_.CreateRequest(
+      OPEN_FILE,
+      scoped_ptr<RequestManager::HandlerInterface>(new operations::OpenFile(
+          event_router_, file_system_info_, file_path, mode, callback)));
+  if (!request_id) {
     callback.Run(0 /* file_handle */, base::File::FILE_ERROR_SECURITY);
+    return AbortCallback();
   }
+
+  return base::Bind(
+      &ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), request_id);
 }
 
-void ProvidedFileSystem::CloseFile(
+ProvidedFileSystem::AbortCallback ProvidedFileSystem::CloseFile(
     int file_handle,
     const fileapi::AsyncFileUtil::StatusCallback& callback) {
-  if (!request_manager_.CreateRequest(
-          CLOSE_FILE,
-          scoped_ptr<RequestManager::HandlerInterface>(
-              new operations::CloseFile(
-                  event_router_, file_system_info_, file_handle, callback)))) {
+  const int request_id = request_manager_.CreateRequest(
+      CLOSE_FILE,
+      scoped_ptr<RequestManager::HandlerInterface>(new operations::CloseFile(
+          event_router_, file_system_info_, file_handle, callback)));
+  if (!request_id) {
     callback.Run(base::File::FILE_ERROR_SECURITY);
+    return AbortCallback();
   }
+
+  return base::Bind(
+      &ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), request_id);
 }
 
-void ProvidedFileSystem::CreateDirectory(
+ProvidedFileSystem::AbortCallback ProvidedFileSystem::CreateDirectory(
     const base::FilePath& directory_path,
     bool exclusive,
     bool recursive,
     const fileapi::AsyncFileUtil::StatusCallback& callback) {
-  if (!request_manager_.CreateRequest(
-          CREATE_DIRECTORY,
-          scoped_ptr<RequestManager::HandlerInterface>(
-              new operations::CreateDirectory(event_router_,
-                                              file_system_info_,
-                                              directory_path,
-                                              exclusive,
-                                              recursive,
-                                              callback)))) {
+  const int request_id = request_manager_.CreateRequest(
+      CREATE_DIRECTORY,
+      scoped_ptr<RequestManager::HandlerInterface>(
+          new operations::CreateDirectory(event_router_,
+                                          file_system_info_,
+                                          directory_path,
+                                          exclusive,
+                                          recursive,
+                                          callback)));
+  if (!request_id) {
     callback.Run(base::File::FILE_ERROR_SECURITY);
+    return AbortCallback();
   }
+
+  return base::Bind(
+      &ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), request_id);
 }
 
-void ProvidedFileSystem::DeleteEntry(
+ProvidedFileSystem::AbortCallback ProvidedFileSystem::DeleteEntry(
     const base::FilePath& entry_path,
     bool recursive,
     const fileapi::AsyncFileUtil::StatusCallback& callback) {
-  if (!request_manager_.CreateRequest(
-          DELETE_ENTRY,
-          scoped_ptr<RequestManager::HandlerInterface>(
-              new operations::DeleteEntry(event_router_,
-                                          file_system_info_,
-                                          entry_path,
-                                          recursive,
-                                          callback)))) {
+  const int request_id = request_manager_.CreateRequest(
+      DELETE_ENTRY,
+      scoped_ptr<RequestManager::HandlerInterface>(new operations::DeleteEntry(
+          event_router_, file_system_info_, entry_path, recursive, callback)));
+  if (!request_id) {
     callback.Run(base::File::FILE_ERROR_SECURITY);
+    return AbortCallback();
   }
+
+  return base::Bind(
+      &ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), request_id);
 }
 
-void ProvidedFileSystem::CreateFile(
+ProvidedFileSystem::AbortCallback ProvidedFileSystem::CreateFile(
     const base::FilePath& file_path,
     const fileapi::AsyncFileUtil::StatusCallback& callback) {
-  if (!request_manager_.CreateRequest(
-          CREATE_FILE,
-          scoped_ptr<RequestManager::HandlerInterface>(
-              new operations::CreateFile(
-                  event_router_, file_system_info_, file_path, callback)))) {
+  const int request_id = request_manager_.CreateRequest(
+      CREATE_FILE,
+      scoped_ptr<RequestManager::HandlerInterface>(new operations::CreateFile(
+          event_router_, file_system_info_, file_path, callback)));
+  if (!request_id) {
     callback.Run(base::File::FILE_ERROR_SECURITY);
+    return AbortCallback();
   }
+
+  return base::Bind(
+      &ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), request_id);
 }
 
-void ProvidedFileSystem::CopyEntry(
+ProvidedFileSystem::AbortCallback ProvidedFileSystem::CopyEntry(
     const base::FilePath& source_path,
     const base::FilePath& target_path,
     const fileapi::AsyncFileUtil::StatusCallback& callback) {
-  if (!request_manager_.CreateRequest(
-          COPY_ENTRY,
-          scoped_ptr<RequestManager::HandlerInterface>(
-              new operations::CopyEntry(event_router_,
-                                        file_system_info_,
-                                        source_path,
-                                        target_path,
-                                        callback)))) {
+  const int request_id = request_manager_.CreateRequest(
+      COPY_ENTRY,
+      scoped_ptr<RequestManager::HandlerInterface>(
+          new operations::CopyEntry(event_router_,
+                                    file_system_info_,
+                                    source_path,
+                                    target_path,
+                                    callback)));
+  if (!request_id) {
     callback.Run(base::File::FILE_ERROR_SECURITY);
+    return AbortCallback();
   }
+
+  return base::Bind(
+      &ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), request_id);
 }
 
-void ProvidedFileSystem::WriteFile(
+ProvidedFileSystem::AbortCallback ProvidedFileSystem::WriteFile(
     int file_handle,
     net::IOBuffer* buffer,
     int64 offset,
@@ -203,50 +260,61 @@ void ProvidedFileSystem::WriteFile(
                "ProvidedFileSystem::WriteFile",
                "length",
                length);
-  if (!request_manager_.CreateRequest(
-          WRITE_FILE,
-          make_scoped_ptr<RequestManager::HandlerInterface>(
-              new operations::WriteFile(event_router_,
-                                        file_system_info_,
-                                        file_handle,
-                                        make_scoped_refptr(buffer),
-                                        offset,
-                                        length,
-                                        callback)))) {
+  const int request_id = request_manager_.CreateRequest(
+      WRITE_FILE,
+      make_scoped_ptr<RequestManager::HandlerInterface>(
+          new operations::WriteFile(event_router_,
+                                    file_system_info_,
+                                    file_handle,
+                                    make_scoped_refptr(buffer),
+                                    offset,
+                                    length,
+                                    callback)));
+  if (!request_id) {
     callback.Run(base::File::FILE_ERROR_SECURITY);
+    return AbortCallback();
   }
+
+  return base::Bind(
+      &ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), request_id);
 }
 
-void ProvidedFileSystem::MoveEntry(
+ProvidedFileSystem::AbortCallback ProvidedFileSystem::MoveEntry(
     const base::FilePath& source_path,
     const base::FilePath& target_path,
     const fileapi::AsyncFileUtil::StatusCallback& callback) {
-  if (!request_manager_.CreateRequest(
-          MOVE_ENTRY,
-          scoped_ptr<RequestManager::HandlerInterface>(
-              new operations::MoveEntry(event_router_,
-                                        file_system_info_,
-                                        source_path,
-                                        target_path,
-                                        callback)))) {
+  const int request_id = request_manager_.CreateRequest(
+      MOVE_ENTRY,
+      scoped_ptr<RequestManager::HandlerInterface>(
+          new operations::MoveEntry(event_router_,
+                                    file_system_info_,
+                                    source_path,
+                                    target_path,
+                                    callback)));
+  if (!request_id) {
     callback.Run(base::File::FILE_ERROR_SECURITY);
+    return AbortCallback();
   }
+
+  return base::Bind(
+      &ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), request_id);
 }
 
-void ProvidedFileSystem::Truncate(
+ProvidedFileSystem::AbortCallback ProvidedFileSystem::Truncate(
     const base::FilePath& file_path,
     int64 length,
     const fileapi::AsyncFileUtil::StatusCallback& callback) {
-  if (!request_manager_.CreateRequest(
-          TRUNCATE,
-          scoped_ptr<RequestManager::HandlerInterface>(
-              new operations::Truncate(event_router_,
-                                       file_system_info_,
-                                       file_path,
-                                       length,
-                                       callback)))) {
+  const int request_id = request_manager_.CreateRequest(
+      TRUNCATE,
+      scoped_ptr<RequestManager::HandlerInterface>(new operations::Truncate(
+          event_router_, file_system_info_, file_path, length, callback)));
+  if (!request_id) {
     callback.Run(base::File::FILE_ERROR_SECURITY);
+    return AbortCallback();
   }
+
+  return base::Bind(
+      &ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), request_id);
 }
 
 const ProvidedFileSystemInfo& ProvidedFileSystem::GetFileSystemInfo() const {
@@ -259,6 +327,23 @@ RequestManager* ProvidedFileSystem::GetRequestManager() {
 
 base::WeakPtr<ProvidedFileSystemInterface> ProvidedFileSystem::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
+}
+
+void ProvidedFileSystem::Abort(
+    int operation_request_id,
+    const fileapi::AsyncFileUtil::StatusCallback& callback) {
+  request_manager_.RejectRequest(operation_request_id,
+                                 make_scoped_ptr(new RequestValue()),
+                                 base::File::FILE_ERROR_ABORT);
+  if (!request_manager_.CreateRequest(
+          ABORT,
+          scoped_ptr<RequestManager::HandlerInterface>(
+              new operations::Abort(event_router_,
+                                    file_system_info_,
+                                    operation_request_id,
+                                    callback)))) {
+    callback.Run(base::File::FILE_ERROR_SECURITY);
+  }
 }
 
 }  // namespace file_system_provider

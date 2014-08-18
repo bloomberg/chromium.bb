@@ -228,4 +228,8 @@ eventBindings.registerArgumentMassager(
     'fileSystemProvider.onWriteFileRequested',
     massageArgumentsDefault);
 
+eventBindings.registerArgumentMassager(
+    'fileSystemProvider.onAbortRequested',
+    massageArgumentsDefault);
+
 exports.binding = binding.generate();
