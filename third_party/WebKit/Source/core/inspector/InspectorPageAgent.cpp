@@ -407,6 +407,7 @@ InspectorPageAgent::InspectorPageAgent(Page* page, InjectedScriptManager* inject
     , m_originalTouchEnabled(false)
     , m_originalDeviceSupportsMouse(false)
     , m_originalDeviceSupportsTouch(false)
+    , m_originalMaxTouchPoints(0)
     , m_embedderTextAutosizingEnabled(m_page->settings().textAutosizingEnabled())
     , m_embedderFontScaleFactor(m_page->settings().deviceScaleAdjustment())
 {
@@ -1332,11 +1333,14 @@ void InspectorPageAgent::updateTouchEventEmulationInPage(bool enabled)
         m_originalTouchEnabled = RuntimeEnabledFeatures::touchEnabled();
         m_originalDeviceSupportsMouse = m_page->settings().deviceSupportsMouse();
         m_originalDeviceSupportsTouch = m_page->settings().deviceSupportsTouch();
+        m_originalMaxTouchPoints = m_page->settings().maxTouchPoints();
     }
     RuntimeEnabledFeatures::setTouchEnabled(enabled ? true : m_originalTouchEnabled);
     if (!m_originalDeviceSupportsTouch) {
         m_page->settings().setDeviceSupportsMouse(enabled ? false : m_originalDeviceSupportsMouse);
         m_page->settings().setDeviceSupportsTouch(enabled ? true : m_originalDeviceSupportsTouch);
+        // Currently emulation does not provide multiple touch points.
+        m_page->settings().setMaxTouchPoints(enabled ? 1 : m_originalMaxTouchPoints);
     }
     m_touchEmulationEnabled = enabled;
     m_client->setTouchEventEmulationEnabled(enabled);

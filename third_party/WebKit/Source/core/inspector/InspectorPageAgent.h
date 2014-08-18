@@ -211,6 +211,7 @@ private:
     bool m_originalTouchEnabled;
     bool m_originalDeviceSupportsMouse;
     bool m_originalDeviceSupportsTouch;
+    int m_originalMaxTouchPoints;
 
     bool m_embedderTextAutosizingEnabled;
     double m_embedderFontScaleFactor;
