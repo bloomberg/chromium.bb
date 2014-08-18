@@ -1002,7 +1002,7 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
   const GURL kExistingURL("http://foo/eh");
   controller.LoadURL(kExistingURL, content::Referrer(),
                      content::PAGE_TRANSITION_TYPED, std::string());
-  main_test_rfh()->SendNavigate(1, kExistingURL);
+  main_test_rfh()->SendNavigate(0, kExistingURL);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 
@@ -1030,7 +1030,7 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
   const GURL kRedirectURL("http://foo/see");
   main_test_rfh()->OnMessageReceived(
       FrameHostMsg_DidRedirectProvisionalLoad(0,  // routing_id
-                                              1,  // pending page_id
+                                              -1,  // pending page_id
                                               kNewURL,  // old url
                                               kRedirectURL));  // new url
 

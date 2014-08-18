@@ -188,7 +188,6 @@ RenderViewHostImpl::RenderViewHostImpl(
       instance_(static_cast<SiteInstanceImpl*>(instance)),
       waiting_for_drag_context_response_(false),
       enabled_bindings_(0),
-      page_id_(-1),
       main_frame_routing_id_(main_frame_routing_id),
       run_modal_reply_msg_(NULL),
       run_modal_opener_id_(MSG_ROUTING_NONE),
@@ -1080,7 +1079,6 @@ void RenderViewHostImpl::OnRenderProcessGone(int status, int exit_code) {
 }
 
 void RenderViewHostImpl::OnUpdateState(int32 page_id, const PageState& state) {
-  CHECK_EQ(page_id_, page_id);
   // Without this check, the renderer can trick the browser into using
   // filenames it can't access in a future session restore.
   if (!CanAccessFilesOfPageState(state)) {
@@ -1088,13 +1086,12 @@ void RenderViewHostImpl::OnUpdateState(int32 page_id, const PageState& state) {
     return;
   }
 
-  delegate_->UpdateState(this, page_id_, state);
+  delegate_->UpdateState(this, page_id, state);
 }
 
 void RenderViewHostImpl::OnUpdateTargetURL(int32 page_id, const GURL& url) {
-  CHECK_EQ(page_id_, page_id);
   if (IsRVHStateActive(rvh_state_))
-    delegate_->UpdateTargetURL(page_id_, url);
+    delegate_->UpdateTargetURL(page_id, url);
 
   // Send a notification back to the renderer that we are ready to
   // receive more target urls.
