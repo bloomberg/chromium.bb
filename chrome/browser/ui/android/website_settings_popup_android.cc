@@ -142,13 +142,6 @@ void WebsiteSettingsPopupAndroid::SetIdentityInfo(
 
     ScopedJavaLocalRef<jstring> description = ConvertUTF8ToJavaString(
         env, identity_info.identity_status_description);
-    Java_WebsiteSettingsPopup_addDescriptionSection(
-        env,
-        popup_jobject_.obj(),
-        icon_id,
-        ConvertUTF8ToJavaString(env, headline).obj(),
-        description.obj());
-
     base::string16 certificate_label =
         l10n_util::GetStringUTF16(IDS_PAGEINFO_CERT_INFO_BUTTON);
     Java_WebsiteSettingsPopup_addCertificateSection(
