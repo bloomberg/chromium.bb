@@ -121,44 +121,30 @@ void RuleFeature::trace(Visitor* visitor)
 // This method is somewhat conservative in what it accepts.
 RuleFeatureSet::InvalidationSetMode RuleFeatureSet::invalidationSetModeForSelector(const CSSSelector& selector)
 {
-    bool foundDescendantRelation = false;
+    bool foundCombinator = false;
     bool foundIdent = false;
     for (const CSSSelector* component = &selector; component; component = component->tagHistory()) {
 
         if (component->match() == CSSSelector::Class || component->match() == CSSSelector::Id
             || (component->match() == CSSSelector::Tag && component->tagQName().localName() != starAtom)
             || component->isAttributeSelector() || component->isCustomPseudoElement()) {
-            if (!foundDescendantRelation)
+            if (!foundCombinator)
                 foundIdent = true;
         } else if (component->pseudoType() == CSSSelector::PseudoHost || component->pseudoType() == CSSSelector::PseudoAny) {
             if (const CSSSelectorList* selectorList = component->selectorList()) {
                 for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(*selector)) {
                     InvalidationSetMode hostMode = invalidationSetModeForSelector(*selector);
                     if (hostMode == UseSubtreeStyleChange)
-                        return foundDescendantRelation ? UseLocalStyleChange : UseSubtreeStyleChange;
-                    if (!foundDescendantRelation && hostMode == AddFeatures)
+                        return foundCombinator ? UseLocalStyleChange : UseSubtreeStyleChange;
+                    if (!foundCombinator && hostMode == AddFeatures)
                         foundIdent = true;
                 }
             }
         } else if (!isSkippableComponentForInvalidation(*component)) {
-            return foundDescendantRelation ? UseLocalStyleChange : UseSubtreeStyleChange;
+            return foundCombinator ? UseLocalStyleChange : UseSubtreeStyleChange;
         }
-        switch (component->relation()) {
-        case CSSSelector::Descendant:
-        case CSSSelector::Child:
-        case CSSSelector::ShadowPseudo:
-        case CSSSelector::ShadowDeep:
-            foundDescendantRelation = true;
-            // Fall through!
-        case CSSSelector::SubSelector:
-        case CSSSelector::DirectAdjacent:
-        case CSSSelector::IndirectAdjacent:
-            continue;
-        default:
-            // All combinators should be handled above.
-            ASSERT_NOT_REACHED();
-            return UseLocalStyleChange;
-        }
+        if (component->relation() != CSSSelector::SubSelector)
+            foundCombinator = true;
     }
     return foundIdent ? AddFeatures : UseLocalStyleChange;
 }
@@ -201,6 +187,12 @@ DescendantInvalidationSet* RuleFeatureSet::invalidationSetForSelector(const CSSS
     }
     return 0;
 }
+
+// Given a selector, update the descendant invalidation sets for the features found
+// in the selector. The first step is to extract the features from the rightmost
+// compound selector (extractInvalidationSetFeatures). Secondly, those features will be
+// added to the invalidation sets for the features found in the other compound selectors
+// (addFeaturesToInvalidationSets).
 
 RuleFeatureSet::InvalidationSetMode RuleFeatureSet::updateInvalidationSets(const CSSSelector& selector)
 {
@@ -245,6 +237,17 @@ const CSSSelector* RuleFeatureSet::extractInvalidationSetFeatures(const CSSSelec
     }
     return 0;
 }
+
+// Add features extracted from the rightmost compound selector to descendant invalidation
+// sets for features found in other compound selectors.
+//
+// Style invalidation is currently supported for descendants only, not for sibling subtrees.
+// We use wholeSubtree invalidation for features found left of adjacent combinators as
+// SubtreeStyleChange will force sibling subtree recalc in
+// ContainerNode::checkForChildrenAdjacentRuleChanges.
+//
+// As we encounter a descendant type of combinator, the features only need to be checked
+// against descendants in the same subtree only. Hence wholeSubtree is reset to false.
 
 void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector& selector, InvalidationSetFeatures& features)
 {
