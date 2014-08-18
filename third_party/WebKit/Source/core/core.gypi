@@ -2068,7 +2068,6 @@
             'dom/NodeChildRemovalTracker.h',
             'dom/NodeFilter.cpp',
             'dom/NodeFilter.h',
-            'dom/NodeFilterCondition.cpp',
             'dom/NodeFilterCondition.h',
             'dom/NodeIterator.cpp',
             'dom/NodeIterator.h',
