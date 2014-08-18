@@ -570,12 +570,14 @@ draw_geometry(cairo_t *cr, struct weston_surface *surface,
 	cairo_set_source_rgba(cr, 0.0, 0.0, 1.0, 0.4);
 	cairo_fill(cr);
 
-	draw_polygon_closed(cr, ex, ey, n);
-	cairo_set_source_rgb(cr, 0.0, 1.0, 0.0);
-	cairo_stroke(cr);
+	if (n) {
+		draw_polygon_closed(cr, ex, ey, n);
+		cairo_set_source_rgb(cr, 0.0, 1.0, 0.0);
+		cairo_stroke(cr);
 
-	cairo_set_source_rgba(cr, 0.0, 1.0, 0.0, 0.5);
-	draw_polygon_labels(cr, ex, ey, n);
+		cairo_set_source_rgba(cr, 0.0, 1.0, 0.0, 0.5);
+		draw_polygon_labels(cr, ex, ey, n);
+	}
 }
 
 static void
