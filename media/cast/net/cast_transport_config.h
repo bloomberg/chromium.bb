@@ -135,6 +135,10 @@ class PacketSender {
   // occur will be reported through side channels, in such cases, this function
   // will return true indicating that the channel is not blocked.
   virtual bool SendPacket(PacketRef packet, const base::Closure& cb) = 0;
+
+  // Returns the number of bytes ever sent.
+  virtual int64 GetBytesSent() = 0;
+
   virtual ~PacketSender() {}
 };
 

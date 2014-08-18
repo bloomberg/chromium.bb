@@ -55,6 +55,7 @@ UdpTransport::UdpTransport(
       client_connected_(false),
       next_dscp_value_(net::DSCP_NO_CHANGE),
       status_callback_(status_callback),
+      bytes_sent_(0),
       weak_factory_(this) {
   DCHECK(!IsEmpty(local_end_point) || !IsEmpty(remote_end_point));
 }
@@ -160,6 +161,9 @@ void UdpTransport::ReceiveNextPacket(int length_or_status) {
 bool UdpTransport::SendPacket(PacketRef packet, const base::Closure& cb) {
   DCHECK(io_thread_proxy_->RunsTasksOnCurrentThread());
 
+  // Increase byte count no matter the packet was sent or dropped.
+  bytes_sent_ += packet->data.size();
+
   DCHECK(!send_pending_);
   if (send_pending_) {
     VLOG(1) << "Cannot send because of pending IO.";
@@ -212,6 +216,10 @@ bool UdpTransport::SendPacket(PacketRef packet, const base::Closure& cb) {
   }
   OnSent(buf, packet, base::Closure(), result);
   return true;
+}
+
+int64 UdpTransport::GetBytesSent() {
+  return bytes_sent_;
 }
 
 void UdpTransport::OnSent(const scoped_refptr<net::IOBuffer>& buf,

@@ -60,6 +60,7 @@ CastTransportSenderImpl::CastTransportSenderImpl(
              transport_task_runner),
       raw_events_callback_(raw_events_callback),
       raw_events_callback_interval_(raw_events_callback_interval),
+      last_byte_acked_for_audio_(0),
       weak_factory_(this) {
   DCHECK(clock_);
   if (!raw_events_callback_.is_null()) {
@@ -237,15 +238,15 @@ void CastTransportSenderImpl::ResendPackets(
     uint32 ssrc,
     const MissingFramesAndPacketsMap& missing_packets,
     bool cancel_rtx_if_not_in_list,
-    base::TimeDelta dedupe_window) {
+    const DedupInfo& dedup_info) {
   if (audio_sender_ && ssrc == audio_sender_->ssrc()) {
     audio_sender_->ResendPackets(missing_packets,
                                  cancel_rtx_if_not_in_list,
-                                 dedupe_window);
+                                 dedup_info);
   } else if (video_sender_ && ssrc == video_sender_->ssrc()) {
     video_sender_->ResendPackets(missing_packets,
                                  cancel_rtx_if_not_in_list,
-                                 dedupe_window);
+                                 dedup_info);
   } else {
     NOTREACHED() << "Invalid request for retransmission.";
   }
@@ -331,13 +332,23 @@ void CastTransportSenderImpl::OnReceivedCastMessage(
   if (!cast_message_cb.is_null())
     cast_message_cb.Run(cast_message);
 
+  DedupInfo dedup_info;
+  if (audio_sender_ && audio_sender_->ssrc() == ssrc) {
+    const int64 acked_bytes =
+        audio_sender_->GetLastByteSentForFrame(cast_message.ack_frame_id);
+    last_byte_acked_for_audio_ =
+        std::max(acked_bytes, last_byte_acked_for_audio_);
+  } else if (video_sender_ && video_sender_->ssrc() == ssrc) {
+    dedup_info.resend_interval = video_rtcp_session_->rtt();
+
+    // Only use audio stream to dedup if there is one.
+    if (audio_sender_) {
+      dedup_info.last_byte_acked_for_audio = last_byte_acked_for_audio_;
+    }
+  }
+
   if (cast_message.missing_frames_and_packets.empty())
     return;
-
-  base::TimeDelta rtt;
-  if (video_sender_ && video_sender_->ssrc() == ssrc) {
-    rtt = video_rtcp_session_->rtt();
-  }
 
   // This call does two things.
   // 1. Specifies that retransmissions for packets not listed in the set are
@@ -347,7 +358,7 @@ void CastTransportSenderImpl::OnReceivedCastMessage(
   ResendPackets(ssrc,
                 cast_message.missing_frames_and_packets,
                 true,
-                rtt);
+                dedup_info);
 }
 
 }  // namespace cast

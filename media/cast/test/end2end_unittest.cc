@@ -189,7 +189,8 @@ class LoopBackTransport : public PacketSender {
   explicit LoopBackTransport(scoped_refptr<CastEnvironment> cast_environment)
       : send_packets_(true),
         drop_packets_belonging_to_odd_frames_(false),
-        cast_environment_(cast_environment) {}
+        cast_environment_(cast_environment),
+        bytes_sent_(0) {}
 
   void SetPacketReceiver(
       const PacketReceiverCallback& packet_receiver,
@@ -211,6 +212,7 @@ class LoopBackTransport : public PacketSender {
     if (!send_packets_)
       return false;
 
+    bytes_sent_ += packet->data.size();
     if (drop_packets_belonging_to_odd_frames_) {
       uint32 frame_id = packet->data[13];
       if (frame_id % 2 == 1)
@@ -220,6 +222,10 @@ class LoopBackTransport : public PacketSender {
     scoped_ptr<Packet> packet_copy(new Packet(packet->data));
     packet_pipe_->Send(packet_copy.Pass());
     return true;
+  }
+
+  virtual int64 GetBytesSent() OVERRIDE {
+    return bytes_sent_;
   }
 
   void SetSendPackets(bool send_packets) { send_packets_ = send_packets; }
@@ -239,6 +245,7 @@ class LoopBackTransport : public PacketSender {
   bool drop_packets_belonging_to_odd_frames_;
   scoped_refptr<CastEnvironment> cast_environment_;
   scoped_ptr<test::PacketPipe> packet_pipe_;
+  int64 bytes_sent_;
 };
 
 // Class that verifies the audio frames coming out of the receiver.

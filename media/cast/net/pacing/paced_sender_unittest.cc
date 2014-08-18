@@ -30,14 +30,19 @@ static const uint32 kAudioSsrc = 0x5678;
 
 class TestPacketSender : public PacketSender {
  public:
-  TestPacketSender() {}
+  TestPacketSender() : bytes_sent_(0) {}
 
   virtual bool SendPacket(PacketRef packet, const base::Closure& cb) OVERRIDE {
     EXPECT_FALSE(expected_packet_size_.empty());
     size_t expected_packet_size = expected_packet_size_.front();
     expected_packet_size_.pop_front();
     EXPECT_EQ(expected_packet_size, packet->data.size());
+    bytes_sent_ += packet->data.size();
     return true;
+  }
+
+  virtual int64 GetBytesSent() OVERRIDE {
+    return bytes_sent_;
   }
 
   void AddExpectedSize(int expected_packet_size, int repeat_count) {
@@ -48,6 +53,7 @@ class TestPacketSender : public PacketSender {
 
  public:
   std::list<int> expected_packet_size_;
+  int64 bytes_sent_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPacketSender);
 };
@@ -132,7 +138,7 @@ TEST_F(PacedSenderTest, PassThroughRtcp) {
   SendPacketVector packets = CreateSendPacketVector(kSize1, 1, true);
 
   EXPECT_TRUE(paced_sender_->SendPackets(packets));
-  EXPECT_TRUE(paced_sender_->ResendPackets(packets, base::TimeDelta()));
+  EXPECT_TRUE(paced_sender_->ResendPackets(packets, DedupInfo()));
 
   mock_transport_.AddExpectedSize(kSize2, 1);
   Packet tmp(kSize2, kValue);
@@ -205,7 +211,7 @@ TEST_F(PacedSenderTest, PaceWithNack) {
   EXPECT_TRUE(paced_sender_->SendPackets(first_frame_packets));
 
   // Add first NACK request.
-  EXPECT_TRUE(paced_sender_->ResendPackets(nack_packets, base::TimeDelta()));
+  EXPECT_TRUE(paced_sender_->ResendPackets(nack_packets, DedupInfo()));
 
   // Check that we get the first NACK burst.
   mock_transport_.AddExpectedSize(kNackSize, 10);
@@ -214,7 +220,7 @@ TEST_F(PacedSenderTest, PaceWithNack) {
   task_runner_->RunTasks();
 
   // Add second NACK request.
-  EXPECT_TRUE(paced_sender_->ResendPackets(nack_packets, base::TimeDelta()));
+  EXPECT_TRUE(paced_sender_->ResendPackets(nack_packets, DedupInfo()));
 
   // Check that we get the next NACK burst.
   mock_transport_.AddExpectedSize(kNackSize, 10);
@@ -388,8 +394,7 @@ TEST_F(PacedSenderTest, SendPriority) {
 
   // Resend video packets. This is queued and will be sent
   // earlier than normal video packets.
-  EXPECT_TRUE(paced_sender_->ResendPackets(
-      resend_packets, base::TimeDelta()));
+  EXPECT_TRUE(paced_sender_->ResendPackets(resend_packets, DedupInfo()));
 
   // Roll the clock. Queued packets will be sent in this order:
   // 1. RTCP packet x 1.
@@ -398,6 +403,63 @@ TEST_F(PacedSenderTest, SendPriority) {
   // 4. Video packet x 10.
   task_runner_->RunTasks();
   EXPECT_TRUE(RunUntilEmpty(4));
+}
+
+TEST_F(PacedSenderTest, GetLastByteSent) {
+  mock_transport_.AddExpectedSize(kSize1, 4);
+
+  SendPacketVector packets1 = CreateSendPacketVector(kSize1, 1, true);
+  SendPacketVector packets2 = CreateSendPacketVector(kSize1, 1, false);
+
+  EXPECT_TRUE(paced_sender_->SendPackets(packets1));
+  EXPECT_EQ(static_cast<int64>(kSize1),
+            paced_sender_->GetLastByteSentForPacket(packets1[0].first));
+  EXPECT_EQ(static_cast<int64>(kSize1),
+            paced_sender_->GetLastByteSentForSsrc(kAudioSsrc));
+  EXPECT_EQ(0, paced_sender_->GetLastByteSentForSsrc(kVideoSsrc));
+
+  EXPECT_TRUE(paced_sender_->SendPackets(packets2));
+  EXPECT_EQ(static_cast<int64>(2 * kSize1),
+            paced_sender_->GetLastByteSentForPacket(packets2[0].first));
+  EXPECT_EQ(static_cast<int64>(kSize1),
+            paced_sender_->GetLastByteSentForSsrc(kAudioSsrc));
+  EXPECT_EQ(static_cast<int64>(2 * kSize1),
+            paced_sender_->GetLastByteSentForSsrc(kVideoSsrc));
+
+  EXPECT_TRUE(paced_sender_->ResendPackets(packets1, DedupInfo()));
+  EXPECT_EQ(static_cast<int64>(3 * kSize1),
+            paced_sender_->GetLastByteSentForPacket(packets1[0].first));
+  EXPECT_EQ(static_cast<int64>(3 * kSize1),
+            paced_sender_->GetLastByteSentForSsrc(kAudioSsrc));
+  EXPECT_EQ(static_cast<int64>(2 * kSize1),
+            paced_sender_->GetLastByteSentForSsrc(kVideoSsrc));
+
+  EXPECT_TRUE(paced_sender_->ResendPackets(packets2, DedupInfo()));
+  EXPECT_EQ(static_cast<int64>(4 * kSize1),
+            paced_sender_->GetLastByteSentForPacket(packets2[0].first));
+  EXPECT_EQ(static_cast<int64>(3 * kSize1),
+            paced_sender_->GetLastByteSentForSsrc(kAudioSsrc));
+  EXPECT_EQ(static_cast<int64>(4 * kSize1),
+            paced_sender_->GetLastByteSentForSsrc(kVideoSsrc));
+}
+
+TEST_F(PacedSenderTest, DedupWithResendInterval) {
+  mock_transport_.AddExpectedSize(kSize1, 2);
+
+  SendPacketVector packets = CreateSendPacketVector(kSize1, 1, true);
+  EXPECT_TRUE(paced_sender_->SendPackets(packets));
+  testing_clock_.Advance(base::TimeDelta::FromMilliseconds(10));
+
+  DedupInfo dedup_info;
+  dedup_info.resend_interval = base::TimeDelta::FromMilliseconds(20);
+
+  // This packet will not be sent.
+  EXPECT_TRUE(paced_sender_->ResendPackets(packets, dedup_info));
+  EXPECT_EQ(static_cast<int64>(kSize1), mock_transport_.GetBytesSent());
+
+  dedup_info.resend_interval = base::TimeDelta::FromMilliseconds(5);
+  EXPECT_TRUE(paced_sender_->ResendPackets(packets, dedup_info));
+  EXPECT_EQ(static_cast<int64>(2 * kSize1), mock_transport_.GetBytesSent());
 }
 
 }  // namespace cast

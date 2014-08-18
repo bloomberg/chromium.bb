@@ -41,6 +41,10 @@ class TestPacketSender : public PacketSender {
     return true;
   }
 
+  virtual int64 GetBytesSent() OVERRIDE {
+    return 0;
+  }
+
   int number_of_rtp_packets() const { return number_of_rtp_packets_; }
 
   int number_of_rtcp_packets() const { return number_of_rtcp_packets_; }

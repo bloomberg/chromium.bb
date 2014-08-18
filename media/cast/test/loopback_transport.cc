@@ -37,7 +37,8 @@ class LoopBackPacketPipe : public test::PacketPipe {
 
 LoopBackTransport::LoopBackTransport(
     scoped_refptr<CastEnvironment> cast_environment)
-    : cast_environment_(cast_environment) {
+    : cast_environment_(cast_environment),
+      bytes_sent_(0) {
 }
 
 LoopBackTransport::~LoopBackTransport() {
@@ -48,7 +49,12 @@ bool LoopBackTransport::SendPacket(PacketRef packet,
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   scoped_ptr<Packet> packet_copy(new Packet(packet->data));
   packet_pipe_->Send(packet_copy.Pass());
+  bytes_sent_ += packet->data.size();
   return true;
+}
+
+int64 LoopBackTransport::GetBytesSent() {
+  return bytes_sent_;
 }
 
 void LoopBackTransport::Initialize(

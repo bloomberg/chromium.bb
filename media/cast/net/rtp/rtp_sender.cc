@@ -58,8 +58,7 @@ void RtpSender::SendFrame(const EncodedFrame& frame) {
 
 void RtpSender::ResendPackets(
     const MissingFramesAndPacketsMap& missing_frames_and_packets,
-    bool cancel_rtx_if_not_in_list,
-    base::TimeDelta dedupe_window) {
+    bool cancel_rtx_if_not_in_list, const DedupInfo& dedup_info) {
   DCHECK(storage_);
   // Iterate over all frames in the list.
   for (MissingFramesAndPacketsMap::const_iterator it =
@@ -113,7 +112,7 @@ void RtpSender::ResendPackets(
         transport_->CancelSendingPacket(it->first);
       }
     }
-    transport_->ResendPackets(packets_to_resend, dedupe_window);
+    transport_->ResendPackets(packets_to_resend, dedup_info);
   }
 }
 
@@ -142,7 +141,9 @@ void RtpSender::ResendFrameForKickstart(uint32 frame_id,
 
   // Sending this extra packet is to kick-start the session. There is
   // no need to optimize re-transmission for this case.
-  ResendPackets(missing_frames_and_packets, false, dedupe_window);
+  DedupInfo dedup_info;
+  dedup_info.resend_interval = dedupe_window;
+  ResendPackets(missing_frames_and_packets, false, dedup_info);
 }
 
 void RtpSender::UpdateSequenceNumber(Packet* packet) {
@@ -153,6 +154,14 @@ void RtpSender::UpdateSequenceNumber(Packet* packet) {
       reinterpret_cast<char*>((&packet->front()) + kByteOffsetToSequenceNumber),
       sizeof(uint16));
   big_endian_writer.WriteU16(packetizer_->NextSequenceNumber());
+}
+
+int64 RtpSender::GetLastByteSentForFrame(uint32 frame_id) {
+  const SendPacketVector* stored_packets = storage_->GetFrame8(frame_id & 0xFF);
+  if (!stored_packets)
+    return 0;
+  PacketKey last_packet_key = stored_packets->rbegin()->first;
+  return transport_->GetLastByteSentForPacket(last_packet_key);
 }
 
 }  //  namespace cast

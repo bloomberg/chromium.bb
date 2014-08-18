@@ -72,6 +72,10 @@ class TestRtpPacketTransport : public PacketSender {
     return true;
   }
 
+  virtual int64 GetBytesSent() OVERRIDE {
+    return 0;
+  }
+
   size_t number_of_packets_received() const { return packets_sent_; }
 
   void set_expected_number_of_packets(size_t expected_number_of_packets) {

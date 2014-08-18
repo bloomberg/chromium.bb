@@ -92,15 +92,17 @@ class CastTransportSenderImpl : public CastTransportSender {
   FRIEND_TEST_ALL_PREFIXES(CastTransportSenderImplTest, NacksCancelRetransmits);
   FRIEND_TEST_ALL_PREFIXES(CastTransportSenderImplTest, CancelRetransmits);
   FRIEND_TEST_ALL_PREFIXES(CastTransportSenderImplTest, Kickstart);
+  FRIEND_TEST_ALL_PREFIXES(CastTransportSenderImplTest,
+                           DedupRetransmissionWithAudio);
 
   // Resend packets for the stream identified by |ssrc|.
   // If |cancel_rtx_if_not_in_list| is true then transmission of packets for the
   // frames but not in the list will be dropped.
-  // If packet was sent after |now - dedupe_window| then it will not be sent.
+  // See PacedSender::ResendPackets() to see how |dedup_info| works.
   void ResendPackets(uint32 ssrc,
                      const MissingFramesAndPacketsMap& missing_packets,
                      bool cancel_rtx_if_not_in_list,
-                     base::TimeDelta dedupe_window);
+                     const DedupInfo& dedup_info);
 
   // If |raw_events_callback_| is non-null, calls it with events collected
   // by |event_subscriber_| since last call.
@@ -150,6 +152,11 @@ class CastTransportSenderImpl : public CastTransportSender {
 
   BulkRawEventsCallback raw_events_callback_;
   base::TimeDelta raw_events_callback_interval_;
+
+  // Right after a frame is sent we record the number of bytes sent to the
+  // socket. We record the corresponding bytes sent for the most recent ACKed
+  // audio packet.
+  int64 last_byte_acked_for_audio_;
 
   base::WeakPtrFactory<CastTransportSenderImpl> weak_factory_;
 

@@ -98,8 +98,7 @@ class LocalRtcpTransport : public PacedPacketSender {
   }
 
   virtual bool ResendPackets(
-      const SendPacketVector& packets,
-      base::TimeDelta dedupe_window) OVERRIDE {
+      const SendPacketVector& packets, const DedupInfo& dedup_info) OVERRIDE {
     return false;
   }
 

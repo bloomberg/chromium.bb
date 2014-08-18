@@ -53,6 +53,7 @@ class UdpTransport : public PacketSender {
   // PacketSender implementations.
   virtual bool SendPacket(PacketRef packet,
                           const base::Closure& cb) OVERRIDE;
+  virtual int64 GetBytesSent() OVERRIDE;
 
  private:
   // Requests and processes packets from |udp_socket_|.  This method is called
@@ -82,6 +83,7 @@ class UdpTransport : public PacketSender {
   net::IPEndPoint recv_addr_;
   PacketReceiverCallback packet_receiver_;
   const CastTransportStatusCallback status_callback_;
+  int bytes_sent_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<UdpTransport> weak_factory_;

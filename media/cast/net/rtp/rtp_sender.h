@@ -46,7 +46,13 @@ class RtpSender {
 
   void ResendPackets(const MissingFramesAndPacketsMap& missing_packets,
                      bool cancel_rtx_if_not_in_list,
-                     base::TimeDelta dedupe_window);
+                     const DedupInfo& dedup_info);
+
+  // Returns the total number of bytes sent to the socket when the specified
+  // frame was just sent.
+  // Returns 0 if the frame cannot be found or the frame was only sent
+  // partially.
+  int64 GetLastByteSentForFrame(uint32 frame_id);
 
   void CancelSendingFrames(const std::vector<uint32>& frame_ids);
 

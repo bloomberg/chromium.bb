@@ -35,12 +35,32 @@ class LoggingImpl;
 typedef std::pair<base::TimeTicks, std::pair<uint32, uint16> > PacketKey;
 typedef std::vector<std::pair<PacketKey, PacketRef> > SendPacketVector;
 
+// Information used to deduplicate retransmission packets.
+// There are two criteria for deduplication.
+//
+// 1. Using another muxed stream.
+//    Suppose there are multiple streams muxed and sent via the same
+//    socket. When there is a retransmission request for packet X, we
+//    will reject the retransmission if there is a packet sent from
+//    another stream just before X but not acked. Typically audio stream
+//    is used for this purpose. |last_byte_acked_for_audio| provides this
+//    information.
+//
+// 2. Using a time interval.
+//    Time between sending the same packet must be greater than
+//    |resend_interval|.
+struct DedupInfo {
+  DedupInfo();
+  base::TimeDelta resend_interval;
+  int64 last_byte_acked_for_audio;
+};
+
 // We have this pure virtual class to enable mocking.
 class PacedPacketSender {
  public:
   virtual bool SendPackets(const SendPacketVector& packets) = 0;
   virtual bool ResendPackets(const SendPacketVector& packets,
-                             base::TimeDelta dedupe_window) = 0;
+                             const DedupInfo& dedup_info) = 0;
   virtual bool SendRtcpPacket(uint32 ssrc, PacketRef packet) = 0;
   virtual void CancelSendingPacket(const PacketKey& packet_key) = 0;
 
@@ -75,10 +95,19 @@ class PacedSender : public PacedPacketSender,
   // Because IsHigherPriority() is determined in linear time.
   void RegisterPrioritySsrc(uint32 ssrc);
 
+  // Returns the total number of bytes sent to the socket when the specified
+  // packet was just sent.
+  // Returns 0 if the packet cannot be found or not yet sent.
+  int64 GetLastByteSentForPacket(const PacketKey& packet_key);
+
+  // Returns the total number of bytes sent to the socket when the last payload
+  // identified by SSRC is just sent.
+  int64 GetLastByteSentForSsrc(uint32 ssrc);
+
   // PacedPacketSender implementation.
   virtual bool SendPackets(const SendPacketVector& packets) OVERRIDE;
   virtual bool ResendPackets(const SendPacketVector& packets,
-                             base::TimeDelta dedupe_window) OVERRIDE;
+                             const DedupInfo& dedup_info) OVERRIDE;
   virtual bool SendRtcpPacket(uint32 ssrc, PacketRef packet) OVERRIDE;
   virtual void CancelSendingPacket(const PacketKey& packet_key) OVERRIDE;
 
@@ -86,6 +115,14 @@ class PacedSender : public PacedPacketSender,
   // Actually sends the packets to the transport.
   void SendStoredPackets();
   void LogPacketEvent(const Packet& packet, CastLoggingEvent event);
+
+  // Returns true if retransmission for packet indexed by |packet_key| is
+  // accepted. |dedup_info| contains information to help deduplicate
+  // retransmission. |now| is the current time to save on fetching it from the
+  // clock multiple times.
+  bool ShouldResend(const PacketKey& packet_key,
+                    const DedupInfo& dedup_info,
+                    const base::TimeTicks& now);
 
   enum PacketType {
     PacketType_RTCP,
@@ -133,8 +170,20 @@ class PacedSender : public PacedPacketSender,
   typedef std::map<PacketKey, std::pair<PacketType, PacketRef> > PacketList;
   PacketList packet_list_;
   PacketList priority_packet_list_;
-  std::map<PacketKey, base::TimeTicks> sent_time_;
-  std::map<PacketKey, base::TimeTicks> sent_time_buffer_;
+
+  struct PacketSendRecord {
+    PacketSendRecord();
+    base::TimeTicks time;  // Time when the packet was sent.
+    int64 last_byte_sent;  // Number of bytes sent to network just after this
+                           // packet was sent.
+    int64 last_byte_sent_for_audio;  // Number of bytes sent to network from
+                                     // audio stream just before this packet.
+  };
+  typedef std::map<PacketKey, PacketSendRecord> PacketSendHistory;
+  PacketSendHistory send_history_;
+  PacketSendHistory send_history_buffer_;
+  // Records the last byte sent for payload with a specific SSRC.
+  std::map<uint32, int64> last_byte_sent_;
 
   // Maximum burst size for the next three bursts.
   size_t max_burst_size_;

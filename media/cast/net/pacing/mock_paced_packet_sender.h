@@ -18,7 +18,7 @@ class MockPacedPacketSender : public PacedPacketSender {
 
   MOCK_METHOD1(SendPackets, bool(const SendPacketVector& packets));
   MOCK_METHOD2(ResendPackets, bool(const SendPacketVector& packets,
-                                   base::TimeDelta dedupe_window));
+                                   const DedupInfo& dedup_info));
   MOCK_METHOD2(SendRtcpPacket, bool(unsigned int ssrc, PacketRef packet));
   MOCK_METHOD1(CancelSendingPacket, void(const PacketKey& packet_key));
 };

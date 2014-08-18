@@ -22,12 +22,13 @@ namespace cast {
 namespace {
 const int64 kStartMillisecond = INT64_C(12345678900000);
 const uint32 kVideoSsrc = 1;
+const uint32 kAudioSsrc = 2;
 }  // namespace
 
 class FakePacketSender : public PacketSender {
  public:
   FakePacketSender()
-      : paused_(false), packets_sent_(0) {}
+      : paused_(false), packets_sent_(0), bytes_sent_(0) {}
 
   virtual bool SendPacket(PacketRef packet, const base::Closure& cb) OVERRIDE {
     if (paused_) {
@@ -36,7 +37,12 @@ class FakePacketSender : public PacketSender {
       return false;
     }
     ++packets_sent_;
+    bytes_sent_ += packet->data.size();
     return true;
+  }
+
+  virtual int64 GetBytesSent() OVERRIDE {
+    return bytes_sent_;
   }
 
   void SetPaused(bool paused) {
@@ -54,6 +60,7 @@ class FakePacketSender : public PacketSender {
   base::Closure callback_;
   PacketRef stored_packet_;
   int packets_sent_;
+  int64 bytes_sent_;
 
   DISALLOW_COPY_AND_ASSIGN(FakePacketSender);
 };
@@ -105,7 +112,17 @@ class CastTransportSenderImplTest : public ::testing::Test {
     transport_sender_->InitializeVideo(rtp_config,
                                        RtcpCastMessageCallback(),
                                        RtcpRttCallback());
+  }
 
+  void InitializeAudio() {
+    CastTransportRtpConfig rtp_config;
+    rtp_config.ssrc = kAudioSsrc;
+    rtp_config.feedback_ssrc = 3;
+    rtp_config.rtp_payload_type = 4;
+    rtp_config.stored_frames = 10;
+    transport_sender_->InitializeAudio(rtp_config,
+                                       RtcpCastMessageCallback(),
+                                       RtcpRttCallback());
   }
 
   void LogRawEvents(const std::vector<PacketEvent>& packet_events,
@@ -158,9 +175,10 @@ TEST_F(CastTransportSenderImplTest, NacksCancelRetransmits) {
   missing_packets[1].insert(2);
 
   transport_.SetPaused(true);
+  DedupInfo dedup_info;
+  dedup_info.resend_interval = base::TimeDelta::FromMilliseconds(10);
   transport_sender_->ResendPackets(
-      kVideoSsrc, missing_packets, true,
-      base::TimeDelta::FromMilliseconds(10));
+      kVideoSsrc, missing_packets, true, dedup_info);
 
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(10));
 
@@ -200,9 +218,10 @@ TEST_F(CastTransportSenderImplTest, CancelRetransmits) {
   missing_packets[1].insert(kRtcpCastAllPacketsLost);
 
   transport_.SetPaused(true);
+  DedupInfo dedup_info;
+  dedup_info.resend_interval = base::TimeDelta::FromMilliseconds(10);
   transport_sender_->ResendPackets(
-      kVideoSsrc, missing_packets, true,
-      base::TimeDelta::FromMilliseconds(10));
+      kVideoSsrc, missing_packets, true, dedup_info);
 
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(10));
   std::vector<uint32> cancel_sending_frames;
@@ -241,15 +260,89 @@ TEST_F(CastTransportSenderImplTest, Kickstart) {
   missing_packets[1].insert(1);
 
   transport_.SetPaused(true);
+  DedupInfo dedup_info;
+  dedup_info.resend_interval = base::TimeDelta::FromMilliseconds(10);
   transport_sender_->ResendPackets(
-      kVideoSsrc, missing_packets, true,
-      base::TimeDelta::FromMilliseconds(10));
+      kVideoSsrc, missing_packets, true, dedup_info);
   transport_sender_->ResendFrameForKickstart(kVideoSsrc, 1);
   transport_.SetPaused(false);
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(10));
 
   // Resend one packet in the socket when unpaused.
   // Two more retransmission packets sent.
+  EXPECT_EQ(7, transport_.packets_sent());
+}
+
+TEST_F(CastTransportSenderImplTest, DedupRetransmissionWithAudio) {
+  InitWithoutLogging();
+  InitializeAudio();
+  InitializeVideo();
+  task_runner_->Sleep(base::TimeDelta::FromMilliseconds(50));
+
+  // Send two audio frames.
+  EncodedFrame fake_audio;
+  fake_audio.frame_id = 1;
+  fake_audio.reference_time = testing_clock_.NowTicks();
+  fake_audio.dependency = EncodedFrame::KEY;
+  fake_audio.data.resize(100, ' ');
+  transport_sender_->InsertCodedAudioFrame(fake_audio);
+  task_runner_->Sleep(base::TimeDelta::FromMilliseconds(2));
+  fake_audio.frame_id = 2;
+  fake_audio.reference_time = testing_clock_.NowTicks();
+  transport_sender_->InsertCodedAudioFrame(fake_audio);
+  task_runner_->Sleep(base::TimeDelta::FromMilliseconds(2));
+  EXPECT_EQ(2, transport_.packets_sent());
+
+  // Ack the first audio frame.
+  RtcpCastMessage cast_message;
+  cast_message.media_ssrc = kAudioSsrc;
+  cast_message.ack_frame_id = 1;
+  transport_sender_->OnReceivedCastMessage(kAudioSsrc,
+                                           RtcpCastMessageCallback(),
+                                           cast_message);
+  task_runner_->RunTasks();
+  EXPECT_EQ(2, transport_.packets_sent());
+
+  // Send a fake video frame that will be decomposed into 4 packets.
+  EncodedFrame fake_video;
+  fake_video.frame_id = 1;
+  fake_video.dependency = EncodedFrame::KEY;
+  fake_video.data.resize(5000, ' ');
+  transport_sender_->InsertCodedVideoFrame(fake_video);
+  task_runner_->RunTasks();
+  EXPECT_EQ(6, transport_.packets_sent());
+
+  // Retransmission is reject because audio is not acked yet.
+  cast_message.media_ssrc = kVideoSsrc;
+  cast_message.ack_frame_id = 0;
+  cast_message.missing_frames_and_packets[1].insert(3);
+  task_runner_->Sleep(base::TimeDelta::FromMilliseconds(10));
+  transport_sender_->OnReceivedCastMessage(kVideoSsrc,
+                                           RtcpCastMessageCallback(),
+                                           cast_message);
+  task_runner_->RunTasks();
+  EXPECT_EQ(6, transport_.packets_sent());
+
+  // Ack the second audio frame.
+  cast_message.media_ssrc = kAudioSsrc;
+  cast_message.ack_frame_id = 2;
+  cast_message.missing_frames_and_packets.clear();
+  task_runner_->Sleep(base::TimeDelta::FromMilliseconds(2));
+  transport_sender_->OnReceivedCastMessage(kAudioSsrc,
+                                           RtcpCastMessageCallback(),
+                                           cast_message);
+  task_runner_->RunTasks();
+  EXPECT_EQ(6, transport_.packets_sent());
+
+  // Retransmission of video packet now accepted.
+  cast_message.media_ssrc = kVideoSsrc;
+  cast_message.ack_frame_id = 1;
+  cast_message.missing_frames_and_packets[1].insert(3);
+  task_runner_->Sleep(base::TimeDelta::FromMilliseconds(2));
+  transport_sender_->OnReceivedCastMessage(kVideoSsrc,
+                                           RtcpCastMessageCallback(),
+                                           cast_message);
+  task_runner_->RunTasks();
   EXPECT_EQ(7, transport_.packets_sent());
 }
 
