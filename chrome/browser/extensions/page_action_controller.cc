@@ -26,7 +26,10 @@ base::LazyInstance<std::set<Profile*> > g_reported_for_profiles =
     LAZY_INSTANCE_INITIALIZER;
 
 PageActionController::PageActionController(content::WebContents* web_contents)
-    : web_contents_(web_contents) {
+    : web_contents_(web_contents),
+      extension_action_observer_(this) {
+  extension_action_observer_.Add(
+      ExtensionActionAPI::Get(web_contents_->GetBrowserContext()));
 }
 
 PageActionController::~PageActionController() {
@@ -87,6 +90,13 @@ void PageActionController::OnNavigated() {
   }
 
   LocationBarController::NotifyChange(web_contents_);
+}
+
+void PageActionController::OnPageActionUpdated(
+    ExtensionAction* extension_action,
+    content::WebContents* web_contents) {
+  if (web_contents == web_contents_)
+    LocationBarController::NotifyChange(web_contents_);
 }
 
 Profile* PageActionController::GetProfile() {

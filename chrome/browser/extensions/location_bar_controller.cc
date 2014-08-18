@@ -7,6 +7,9 @@
 #include "base/logging.h"
 #include "chrome/browser/extensions/active_script_controller.h"
 #include "chrome/browser/extensions/page_action_controller.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_details.h"
@@ -74,8 +77,14 @@ ExtensionAction::ShowAction LocationBarController::OnClicked(
 
 // static
 void LocationBarController::NotifyChange(content::WebContents* web_contents) {
-  web_contents->NotifyNavigationStateChanged(
-      content::INVALIDATE_TYPE_PAGE_ACTIONS);
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (!browser)
+    return;
+  LocationBar* location_bar =
+      browser->window() ? browser->window()->GetLocationBar() : NULL;
+  if (!location_bar)
+    return;
+  location_bar->UpdatePageActions();
 }
 
 void LocationBarController::DidNavigateMainFrame(

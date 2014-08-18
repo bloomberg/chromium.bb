@@ -239,7 +239,8 @@ scoped_ptr<base::DictionaryValue> DefaultsToValue(ExtensionAction* action) {
 static base::LazyInstance<BrowserContextKeyedAPIFactory<ExtensionActionAPI> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
-ExtensionActionAPI::ExtensionActionAPI(content::BrowserContext* context) {
+ExtensionActionAPI::ExtensionActionAPI(content::BrowserContext* context)
+    : browser_context_(context) {
   ExtensionFunctionRegistry* registry =
       ExtensionFunctionRegistry::GetInstance();
 
@@ -411,6 +412,47 @@ void ExtensionActionAPI::ExtensionActionExecuted(
     DispatchEventToExtension(
         context, extension_action.extension_id(), event_name, args.Pass());
   }
+}
+
+void ExtensionActionAPI::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ExtensionActionAPI::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void ExtensionActionAPI::NotifyChange(ExtensionAction* extension_action,
+                                      content::WebContents* web_contents) {
+  switch (extension_action->action_type()) {
+    case ActionInfo::TYPE_BROWSER:
+      NotifyBrowserActionChange(extension_action);
+      break;
+    case ActionInfo::TYPE_PAGE:
+      FOR_EACH_OBSERVER(Observer,
+                        observers_,
+                        OnPageActionUpdated(extension_action, web_contents));
+      break;
+    case ActionInfo::TYPE_SYSTEM_INDICATOR:
+      NotifySystemIndicatorChange(extension_action);
+      return;
+  }
+}
+
+void ExtensionActionAPI::NotifyBrowserActionChange(
+    ExtensionAction* extension_action) {
+  content::NotificationService::current()->Notify(
+      extensions::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
+      content::Source<ExtensionAction>(extension_action),
+      content::Details<Profile>(Profile::FromBrowserContext(browser_context_)));
+}
+
+void ExtensionActionAPI::NotifySystemIndicatorChange(
+    ExtensionAction* extension_action) {
+  content::NotificationService::current()->Notify(
+      extensions::NOTIFICATION_EXTENSION_SYSTEM_INDICATOR_UPDATED,
+      content::Source<Profile>(Profile::FromBrowserContext(browser_context_)),
+      content::Details<ExtensionAction>(extension_action));
 }
 
 //
@@ -608,40 +650,8 @@ bool ExtensionActionFunction::ExtractDataFromArguments() {
 }
 
 void ExtensionActionFunction::NotifyChange() {
-  switch (extension_action_->action_type()) {
-    case ActionInfo::TYPE_BROWSER:
-    case ActionInfo::TYPE_PAGE:
-      if (ExtensionActionManager::Get(GetProfile())
-              ->GetBrowserAction(*extension_.get())) {
-        NotifyBrowserActionChange();
-      } else if (ExtensionActionManager::Get(GetProfile())
-                     ->GetPageAction(*extension_.get())) {
-        NotifyLocationBarChange();
-      }
-      return;
-    case ActionInfo::TYPE_SYSTEM_INDICATOR:
-      NotifySystemIndicatorChange();
-      return;
-  }
-  NOTREACHED();
-}
-
-void ExtensionActionFunction::NotifyBrowserActionChange() {
-  content::NotificationService::current()->Notify(
-      extensions::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
-      content::Source<ExtensionAction>(extension_action_),
-      content::Details<Profile>(GetProfile()));
-}
-
-void ExtensionActionFunction::NotifyLocationBarChange() {
-  LocationBarController::NotifyChange(contents_);
-}
-
-void ExtensionActionFunction::NotifySystemIndicatorChange() {
-  content::NotificationService::current()->Notify(
-      extensions::NOTIFICATION_EXTENSION_SYSTEM_INDICATOR_UPDATED,
-      content::Source<Profile>(GetProfile()),
-      content::Details<ExtensionAction>(extension_action_));
+  ExtensionActionAPI::Get(GetProfile())->NotifyChange(extension_action_,
+                                                      contents_);
 }
 
 bool ExtensionActionFunction::SetVisible(bool visible) {

@@ -14,10 +14,9 @@ enum InvalidateTypes {
   INVALIDATE_TYPE_TAB           = 1 << 1,  // The favicon, app icon, or crashed
                                            // state changed.
   INVALIDATE_TYPE_LOAD          = 1 << 2,  // The loading state has changed.
-  INVALIDATE_TYPE_PAGE_ACTIONS  = 1 << 3,  // Page action icons have changed.
-  INVALIDATE_TYPE_TITLE         = 1 << 4,  // The title changed.
+  INVALIDATE_TYPE_TITLE         = 1 << 3,  // The title changed.
 
-  INVALIDATE_TYPE_ALL           = (1 << 5) - 1,
+  INVALIDATE_TYPE_ALL           = (1 << 4) - 1,
 };
 
 }

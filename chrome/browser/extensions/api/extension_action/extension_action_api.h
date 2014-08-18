@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/extension_action.h"
@@ -32,6 +33,15 @@ class TabHelper;
 
 class ExtensionActionAPI : public BrowserContextKeyedAPI {
  public:
+  class Observer {
+   public:
+    virtual void OnPageActionUpdated(ExtensionAction* extension_action,
+                                     content::WebContents* web_contents) = 0;
+
+   protected:
+    virtual ~Observer() {}
+  };
+
   explicit ExtensionActionAPI(content::BrowserContext* context);
   virtual ~ExtensionActionAPI();
 
@@ -60,6 +70,13 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
   static BrowserContextKeyedAPIFactory<ExtensionActionAPI>*
       GetFactoryInstance();
 
+  // Add or remove observers.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+  void NotifyChange(ExtensionAction* extension_action,
+                    content::WebContents* web_contents);
+
  private:
   friend class BrowserContextKeyedAPIFactory<ExtensionActionAPI>;
 
@@ -87,6 +104,16 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "ExtensionActionAPI"; }
+  static const bool kServiceRedirectedInIncognito = true;
+
+  // Notify of extension action changes.
+  // TODO(devlin): Migrate these over to Observer notifications.
+  void NotifyBrowserActionChange(ExtensionAction* extension_action);
+  void NotifySystemIndicatorChange(ExtensionAction* extension_action);
+
+  ObserverList<Observer> observers_;
+
+  content::BrowserContext* browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionActionAPI);
 };
@@ -142,9 +169,6 @@ class ExtensionActionFunction : public ChromeSyncExtensionFunction {
 
   bool ExtractDataFromArguments();
   void NotifyChange();
-  void NotifyBrowserActionChange();
-  void NotifyLocationBarChange();
-  void NotifySystemIndicatorChange();
   bool SetVisible(bool visible);
 
   // Extension-related information for |tab_id_|.

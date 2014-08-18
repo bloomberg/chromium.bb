@@ -2122,11 +2122,6 @@ void Browser::ProcessPendingUIUpdates() {
     if (contents == tab_strip_model_->GetActiveWebContents()) {
       // Updates that only matter when the tab is selected go here.
 
-      if (flags & content::INVALIDATE_TYPE_PAGE_ACTIONS) {
-        LocationBar* location_bar = window()->GetLocationBar();
-        if (location_bar)
-          location_bar->UpdatePageActions();
-      }
       // Updating the URL happens synchronously in ScheduleUIUpdate.
       if (flags & content::INVALIDATE_TYPE_LOAD && GetStatusBubble()) {
         GetStatusBubble()->SetStatus(CoreTabHelper::FromWebContents(
