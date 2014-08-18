@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body style="display:none">
+<script type="text/javascript">
+description("This test checks that setting display to none on the body element does not change -webkit-text.");
+
+document.body.style.color = "green";
+
+var d = document.createElement("div");
+d.style.color = "-webkit-text";
+document.documentElement.appendChild(d);
+
+shouldBe("getComputedStyle(d).getPropertyValue('color')", "'rgb(0, 128, 0)'");
+document.body.style.display = "block";
+</script>
+</body>
+</html>
