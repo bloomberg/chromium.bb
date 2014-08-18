@@ -10,9 +10,12 @@
  * @param {FileEntry} entry Image entry.
  * @param {function():Promise} fethcedMediaProvider Function to provide the
  *     fetchedMedia metadata.
+ * @param {boolean} original Whether the entry is original or edited.
+ * @param {boolean} readonly Whether the entry is located at readonly directory
+ *     or not.
  * @constructor
  */
-Gallery.Item = function(entry, metadata, metadataCache, original) {
+Gallery.Item = function(entry, metadata, metadataCache, original, readonly) {
   /**
    * @type {FileEntry}
    * @private
@@ -53,6 +56,12 @@ Gallery.Item = function(entry, metadata, metadataCache, original) {
    * @type {number}
    */
   this.lastAccessed_ = Date.now();
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  this.isReadOnly_ = readonly;
 
   /**
    * @type {boolean}
@@ -113,6 +122,13 @@ Gallery.Item.prototype.getFileName = function() {
  * @return {boolean} True if this image has not been created in this session.
  */
 Gallery.Item.prototype.isOriginal = function() { return this.original_; };
+
+/**
+ * @return {boolean} Whther the item is located at a readonly directory.
+ */
+Gallery.Item.prototype.isReadOnly = function() {
+   return this.isReadOnly_;
+};
 
 /**
  * Obtains the item is on the drive volume or not.
@@ -219,15 +235,15 @@ Gallery.Item.prototype.createCopyName_ = function(dirEntry, callback) {
 /**
  * Writes the new item content to the file.
  *
- * @param {Entry} overrideDir Directory to save to. If null, save to the same
- *   directory as the original.
+ * @param {DirectoryEntry} fallbackDir If the entry is readonly, the edited
+ *     image is saved to the directory.
  * @param {boolean} overwrite True if overwrite, false if copy.
  * @param {HTMLCanvasElement} canvas Source canvas.
  * @param {ImageEncoder.MetadataEncoder} metadataEncoder MetadataEncoder.
  * @param {function(boolean)=} opt_callback Callback accepting true for success.
  */
 Gallery.Item.prototype.saveToFile = function(
-    overrideDir, overwrite, canvas, metadataEncoder, opt_callback) {
+    fallbackDir, overwrite, canvas, metadataEncoder, opt_callback) {
   ImageUtil.metrics.startInterval(ImageUtil.getMetricName('SaveTime'));
 
   var name = this.getFileName();
@@ -236,6 +252,7 @@ Gallery.Item.prototype.saveToFile = function(
     ImageUtil.metrics.recordEnum(ImageUtil.getMetricName('SaveResult'), 1, 2);
     ImageUtil.metrics.recordInterval(ImageUtil.getMetricName('SaveTime'));
     this.entry_ = entry;
+    this.isReadOnly_ = false;
     this.metadataCache_.clear([this.entry_], 'fetchedMedia');
     if (opt_callback)
       opt_callback(true);
@@ -281,7 +298,7 @@ Gallery.Item.prototype.saveToFile = function(
   }
 
   var saveToDir = function(dir) {
-    if (overwrite) {
+    if (overwrite && !this.isReadOnly_) {
       checkExistence(dir);
     } else {
       this.createCopyName_(dir, function(copyName) {
@@ -292,8 +309,8 @@ Gallery.Item.prototype.saveToFile = function(
     }
   }.bind(this);
 
-  if (overrideDir) {
-    saveToDir(overrideDir);
+  if (this.isReadOnly_) {
+    saveToDir(fallbackDir);
   } else {
     this.entry_.getParent(saveToDir, onError);
   }
