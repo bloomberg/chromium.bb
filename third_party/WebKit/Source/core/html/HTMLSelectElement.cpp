@@ -1407,8 +1407,10 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event* event)
         GestureEvent& gestureEvent = toGestureEvent(*event);
         int listIndex = listIndexForEventTargetOption(gestureEvent);
         if (listIndex >= 0) {
-            if (!isDisabledFormControl())
+            if (!isDisabledFormControl()) {
                 updateSelectedState(listIndex, true, gestureEvent.shiftKey());
+                listBoxOnChange();
+            }
             event->setDefaultHandled();
         }
     } else if (event->type() == EventTypeNames::mousedown && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
