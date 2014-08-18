@@ -66,24 +66,20 @@ static inline bool PointIsInTriangle(const PointF& point,
                                      const PointF& r1,
                                      const PointF& r2,
                                      const PointF& r3) {
-  // Compute the barycentric coordinates (u, v, w) of |point| relative to the
-  // triangle (r1, r2, r3) by the solving the system of equations:
-  //   1) point = u * r1 + v * r2 + w * r3
-  //   2) u + v + w = 1
-  // This algorithm comes from Christer Ericson's Real-Time Collision Detection.
+  // Translate point and triangle so that point lies at origin.
+  // Then checking if the origin is contained in the translated triangle.
+  // The origin O lies inside ABC if and only if the triangles OAB, OBC,
+  // and OCA are all either clockwise or counterclockwise.
+  // This algorithm is from Real-Time Collision Detection (Chaper 5.4.2).
 
-  Vector2dF r31 = r1 - r3;
-  Vector2dF r32 = r2 - r3;
-  Vector2dF r3p = point - r3;
+  Vector2dF a = r1 - point;
+  Vector2dF b = r2 - point;
+  Vector2dF c = r3 - point;
 
-  float denom = r32.y() * r31.x() - r32.x() * r31.y();
-  float u = (r32.y() * r3p.x() - r32.x() * r3p.y()) / denom;
-  float v = (r31.x() * r3p.y() - r31.y() * r3p.x()) / denom;
-  float w = 1.f - u - v;
-
-  // Use the barycentric coordinates to test if |point| is inside the
-  // triangle (r1, r2, r2).
-  return (u >= 0) && (v >= 0) && (w >= 0);
+  double u = CrossProduct(b, c);
+  double v = CrossProduct(c, a);
+  double w = CrossProduct(a, b);
+  return ((u * v < 0) || ((u * w) < 0) || ((v * w) < 0)) ? false : true;
 }
 
 bool QuadF::Contains(const PointF& point) const {
