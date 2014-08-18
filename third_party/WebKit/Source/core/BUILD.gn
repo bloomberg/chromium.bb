@@ -129,6 +129,7 @@ source_set("core") {
     "//skia",
     "//third_party/npapi",
     "//third_party/qcms",
+    "//third_party/WebKit/Source/platform",
     "//third_party/WebKit/Source/wtf",
     "//url",
     "//v8",

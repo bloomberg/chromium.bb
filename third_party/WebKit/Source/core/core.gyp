@@ -691,6 +691,7 @@
         'webcore_svg',
         # Exported.
         'webcore_generated',
+        '../platform/blink_platform.gyp:blink_platform',
         '../wtf/wtf.gyp:wtf',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
@@ -699,8 +700,9 @@
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
       ],
       'export_dependent_settings': [
-        '../wtf/wtf.gyp:wtf',
         'webcore_generated',
+        '../platform/blink_platform.gyp:blink_platform',
+        '../wtf/wtf.gyp:wtf',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
         '<(DEPTH)/third_party/qcms/qcms.gyp:qcms',
