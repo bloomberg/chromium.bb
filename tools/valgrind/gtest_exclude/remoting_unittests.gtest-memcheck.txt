@@ -1,0 +1,3 @@
+# Uninits in vp9 code: http://crbug.com/404793
+VideoEncoderVpxTest.TestVp9VideoEncoder
+VideoEncoderVpxTest.TestVp9VideoEncoderLossyEncode
