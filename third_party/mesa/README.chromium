@@ -50,3 +50,5 @@ Modifications made:
 
 - Porting to x64 Android. Remove redefinitions of log2 and log2f.
   https://codereview.chromium.org/216773005/
+
+- Excluded src/mapi/mapi/mapi.{h,c} from the build.

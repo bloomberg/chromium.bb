@@ -283,8 +283,6 @@
         '<(generated_src_dir)/mesa/glapi_mapi_tmp_shared.h',
         'src/src/mapi/mapi/entry.c',
         'src/src/mapi/mapi/entry.h',
-        'src/src/mapi/mapi/mapi.c',
-        'src/src/mapi/mapi/mapi.h',
         'src/src/mapi/mapi/mapi_glapi.c',
         'src/src/mapi/mapi/stub.c',
         'src/src/mapi/mapi/stub.h',
