@@ -290,16 +290,16 @@ class BrowserActionsContainer
   static int IconHeight();
 
   // extensions::ExtensionToolbarModel::Observer implementation.
-  virtual void BrowserActionAdded(const extensions::Extension* extension,
-                                  int index) OVERRIDE;
-  virtual void BrowserActionRemoved(
+  virtual void ToolbarExtensionAdded(const extensions::Extension* extension,
+                                     int index) OVERRIDE;
+  virtual void ToolbarExtensionRemoved(
       const extensions::Extension* extension) OVERRIDE;
-  virtual void BrowserActionMoved(const extensions::Extension* extension,
-                                  int index) OVERRIDE;
-  virtual bool BrowserActionShowPopup(
+  virtual void ToolbarExtensionMoved(const extensions::Extension* extension,
+                                     int index) OVERRIDE;
+  virtual bool ShowExtensionActionPopup(
       const extensions::Extension* extension) OVERRIDE;
-  virtual void VisibleCountChanged() OVERRIDE;
-  virtual void HighlightModeChanged(bool is_highlighting) OVERRIDE;
+  virtual void ToolbarVisibleCountChanged() OVERRIDE;
+  virtual void ToolbarHighlightModeChanged(bool is_highlighting) OVERRIDE;
 
   void LoadImages();
 

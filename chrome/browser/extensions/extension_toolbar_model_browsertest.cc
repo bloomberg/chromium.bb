@@ -36,21 +36,28 @@ class ExtensionToolbarModelTest : public ExtensionBrowserTest,
     model_->RemoveObserver(this);
   }
 
-  virtual void BrowserActionAdded(const Extension* extension,
-                                  int index) OVERRIDE {
+  virtual void ToolbarExtensionAdded(const Extension* extension,
+                                     int index) OVERRIDE {
     inserted_count_++;
   }
 
-  virtual void BrowserActionRemoved(const Extension* extension) OVERRIDE {
+  virtual void ToolbarExtensionRemoved(const Extension* extension) OVERRIDE {
     removed_count_++;
   }
 
-  virtual void BrowserActionMoved(const Extension* extension,
-                                  int index) OVERRIDE {
+  virtual void ToolbarExtensionMoved(const Extension* extension,
+                                     int index) OVERRIDE {
     moved_count_++;
   }
 
-  virtual void HighlightModeChanged(bool is_highlighting) OVERRIDE {
+  virtual bool ShowExtensionActionPopup(const Extension* extension) OVERRIDE {
+    return false;
+  }
+
+  virtual void ToolbarVisibleCountChanged() OVERRIDE {
+  }
+
+  virtual void ToolbarHighlightModeChanged(bool is_highlighting) OVERRIDE {
     // Add one if highlighting, subtract one if not.
     highlight_mode_count_ += is_highlighting ? 1 : -1;
   }
@@ -99,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, Basic) {
                extension->name().c_str());
 
   // Should be a no-op, but still fires the events.
-  model_->MoveBrowserAction(extension, 0);
+  model_->MoveExtensionIcon(extension, 0);
   EXPECT_EQ(1, moved_count_);
   EXPECT_EQ(1u, model_->toolbar_items().size());
   const Extension* extension2 = ExtensionAt(0);
@@ -160,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, MAYBE_ReorderAndReinsert) {
                extensionC->name().c_str());
 
   // Order is now A, B, C. Let's put C first.
-  model_->MoveBrowserAction(extensionC, 0);
+  model_->MoveExtensionIcon(extensionC, 0);
   EXPECT_EQ(1, moved_count_);
   EXPECT_EQ(3u, model_->toolbar_items().size());
   EXPECT_EQ(extensionC, ExtensionAt(0));
@@ -169,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, MAYBE_ReorderAndReinsert) {
   EXPECT_EQ(NULL, ExtensionAt(3));
 
   // Order is now C, A, B. Let's put A last.
-  model_->MoveBrowserAction(extensionA, 2);
+  model_->MoveExtensionIcon(extensionA, 2);
   EXPECT_EQ(2, moved_count_);
   EXPECT_EQ(3u, model_->toolbar_items().size());
   EXPECT_EQ(extensionC, ExtensionAt(0));
@@ -205,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, MAYBE_ReorderAndReinsert) {
   EXPECT_EQ(NULL, ExtensionAt(2));
 
   // Order is now C, A. Flip it.
-  model_->MoveBrowserAction(extensionA, 0);
+  model_->MoveExtensionIcon(extensionA, 0);
   EXPECT_EQ(3, moved_count_);
   EXPECT_EQ(2u, model_->toolbar_items().size());
   EXPECT_EQ(extensionA, ExtensionAt(0));
@@ -213,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, MAYBE_ReorderAndReinsert) {
   EXPECT_EQ(NULL, ExtensionAt(2));
 
   // Move A to the location it already occupies.
-  model_->MoveBrowserAction(extensionA, 0);
+  model_->MoveExtensionIcon(extensionA, 0);
   EXPECT_EQ(4, moved_count_);
   EXPECT_EQ(2u, model_->toolbar_items().size());
   EXPECT_EQ(extensionA, ExtensionAt(0));
@@ -287,8 +294,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, UnloadAndDisableMultiple) {
   EXPECT_STREQ(idC.c_str(), extensionC->id().c_str());
 
   // Put C in the middle and A to the end.
-  model_->MoveBrowserAction(extensionC, 1);
-  model_->MoveBrowserAction(extensionA, 2);
+  model_->MoveExtensionIcon(extensionC, 1);
+  model_->MoveExtensionIcon(extensionA, 2);
 
   // Make sure we get this order (C, B, A).
   EXPECT_STREQ(idC.c_str(), ExtensionAt(0)->id().c_str());
@@ -332,7 +339,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, Uninstall) {
   EXPECT_STREQ("Popup tester", extensionB->name().c_str());
 
   // Order is now A, B. Make B first.
-  model_->MoveBrowserAction(extensionB, 0);
+  model_->MoveExtensionIcon(extensionB, 0);
 
   // Order is now B, A. Uninstall Extension B.
   UninstallExtension(idB);

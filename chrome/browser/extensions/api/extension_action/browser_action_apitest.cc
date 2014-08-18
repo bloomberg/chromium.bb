@@ -552,7 +552,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoDragging) {
   // ABC -> CAB
   ExtensionToolbarModel* toolbar_model = ExtensionToolbarModel::Get(
       browser()->profile());
-  toolbar_model->MoveBrowserAction(extension_c, 0);
+  toolbar_model->MoveExtensionIcon(extension_c, 0);
 
   EXPECT_EQ(kTooltipC, GetBrowserActionsBar().GetTooltip(0));
   EXPECT_EQ(kTooltipA, GetBrowserActionsBar().GetTooltip(1));
@@ -562,7 +562,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoDragging) {
   EXPECT_EQ(kTooltipA, incognito_bar.GetTooltip(1));
 
   // CAB -> CBA
-  toolbar_model->MoveBrowserAction(extension_b, 1);
+  toolbar_model->MoveExtensionIcon(extension_b, 1);
 
   EXPECT_EQ(kTooltipC, GetBrowserActionsBar().GetTooltip(0));
   EXPECT_EQ(kTooltipB, GetBrowserActionsBar().GetTooltip(1));

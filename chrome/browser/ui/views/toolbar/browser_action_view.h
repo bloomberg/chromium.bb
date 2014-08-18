@@ -82,8 +82,9 @@ class BrowserActionView : public views::MenuButton,
   };
 
   BrowserActionView(const extensions::Extension* extension,
-                      Browser* browser,
-                      BrowserActionView::Delegate* delegate);
+                    ExtensionAction* extension_action,
+                    Browser* browser,
+                    BrowserActionView::Delegate* delegate);
   virtual ~BrowserActionView();
 
   const extensions::Extension* extension() const {

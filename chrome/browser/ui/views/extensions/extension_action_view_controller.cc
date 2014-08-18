@@ -48,10 +48,10 @@ ExtensionActionViewController::ExtensionActionViewController(
       icon_factory_(browser->profile(), extension, extension_action, this),
       popup_(NULL),
       weak_factory_(this) {
+  DCHECK(extension_action);
   DCHECK(extension_action->action_type() == ActionInfo::TYPE_PAGE ||
          extension_action->action_type() == ActionInfo::TYPE_BROWSER);
   DCHECK(extension);
-
 }
 
 ExtensionActionViewController::~ExtensionActionViewController() {

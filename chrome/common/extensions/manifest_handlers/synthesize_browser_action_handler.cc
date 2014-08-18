@@ -28,12 +28,9 @@ bool SynthesizeBrowserActionHandler::Parse(Extension* extension,
   if (extension->manifest()->HasKey(manifest_keys::kSynthesizeBrowserAction))
     return false;  // This key is reserved, no extension should be using it.
 
-  // TODO(devlin): Make sure we don't have two icons showing for page action
-  //               extensions if we show page action icons in the browser action
-  //               toolbar.
-  if (!extension->manifest()->HasKey(manifest_keys::kBrowserAction))
+  if (!extension->manifest()->HasKey(manifest_keys::kBrowserAction) &&
+      !extension->manifest()->HasKey(manifest_keys::kPageAction))
     ActionInfo::SetBrowserActionInfo(extension, new ActionInfo());
-
   return true;
 }
 

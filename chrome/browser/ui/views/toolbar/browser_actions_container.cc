@@ -6,6 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/stl_util.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -64,6 +65,15 @@ const int kIconsPerMenuRow = 8;  // The menu on Linux is wider.
 #else
 const int kIconsPerMenuRow = 7;
 #endif
+
+// Returns the ExtensionAction for the given |extension|.
+ExtensionAction* GetExtensionAction(const Extension& extension,
+                                    Profile* profile) {
+  extensions::ExtensionActionManager* action_manager =
+      extensions::ExtensionActionManager::Get(profile);
+  ExtensionAction* action = action_manager->GetBrowserAction(extension);
+  return action ? action : action_manager->GetPageAction(extension);
+}
 
 // A version of MenuButton with almost empty insets to fit properly on the
 // toolbar.
@@ -223,7 +233,11 @@ void BrowserActionsContainer::CreateBrowserActionViews() {
     if (!ShouldDisplayBrowserAction(i->get()))
       continue;
 
-    BrowserActionView* view = new BrowserActionView(i->get(), browser_, this);
+    BrowserActionView* view =
+        new BrowserActionView(i->get(),
+                              GetExtensionAction(*i->get(), profile_),
+                              browser_,
+                              this);
     browser_action_views_.push_back(view);
     AddChildView(view);
   }
@@ -532,7 +546,7 @@ int BrowserActionsContainer::OnPerformDrop(
   if (profile_->IsOffTheRecord())
     i = model_->IncognitoIndexToOriginal(i);
 
-  model_->MoveBrowserAction(
+  model_->MoveExtensionIcon(
       browser_action_views_[data.index()]->extension(), i);
 
   OnDragExited();  // Perform clean up after dragging.
@@ -666,7 +680,7 @@ void BrowserActionsContainer::MoveBrowserAction(const std::string& extension_id,
                                                 size_t new_index) {
   const Extension* extension = extensions::ExtensionRegistry::Get(profile_)->
       enabled_extensions().GetByID(extension_id);
-  model_->MoveBrowserAction(extension, new_index);
+  model_->MoveExtensionIcon(extension, new_index);
   SchedulePaint();
 }
 
@@ -776,8 +790,8 @@ int BrowserActionsContainer::IconHeight() {
   return icon_height;
 }
 
-void BrowserActionsContainer::BrowserActionAdded(const Extension* extension,
-                                                 int index) {
+void BrowserActionsContainer::ToolbarExtensionAdded(const Extension* extension,
+                                                    int index) {
 #if defined(DEBUG)
   for (size_t i = 0; i < browser_action_views_.size(); ++i) {
     DCHECK(browser_action_views_[i]->extension() != extension) <<
@@ -795,7 +809,11 @@ void BrowserActionsContainer::BrowserActionAdded(const Extension* extension,
   // Add the new browser action to the vector and the view hierarchy.
   if (profile_->IsOffTheRecord())
     index = model_->OriginalIndexToIncognito(index);
-  BrowserActionView* view = new BrowserActionView(extension, browser_, this);
+  BrowserActionView* view =
+      new BrowserActionView(extension,
+                            GetExtensionAction(*extension, profile_),
+                            browser_,
+                            this);
   browser_action_views_.insert(browser_action_views_.begin() + index, view);
   AddChildViewAt(view, index);
 
@@ -816,7 +834,8 @@ void BrowserActionsContainer::BrowserActionAdded(const Extension* extension,
   }
 }
 
-void BrowserActionsContainer::BrowserActionRemoved(const Extension* extension) {
+void BrowserActionsContainer::ToolbarExtensionRemoved(
+    const Extension* extension) {
   CloseOverflowMenu();
 
   size_t visible_actions = VisibleBrowserActionsAfterAnimation();
@@ -851,8 +870,8 @@ void BrowserActionsContainer::BrowserActionRemoved(const Extension* extension) {
   }
 }
 
-void BrowserActionsContainer::BrowserActionMoved(const Extension* extension,
-                                                 int index) {
+void BrowserActionsContainer::ToolbarExtensionMoved(const Extension* extension,
+                                                    int index) {
   if (!ShouldDisplayBrowserAction(extension))
     return;
 
@@ -867,16 +886,17 @@ void BrowserActionsContainer::BrowserActionMoved(const Extension* extension,
   SchedulePaint();
 }
 
-bool BrowserActionsContainer::BrowserActionShowPopup(
+bool BrowserActionsContainer::ShowExtensionActionPopup(
     const Extension* extension) {
   return ShowPopupForExtension(extension, false, false);
 }
 
-void BrowserActionsContainer::VisibleCountChanged() {
+void BrowserActionsContainer::ToolbarVisibleCountChanged() {
   SetContainerWidth();
 }
 
-void BrowserActionsContainer::HighlightModeChanged(bool is_highlighting) {
+void BrowserActionsContainer::ToolbarHighlightModeChanged(
+    bool is_highlighting) {
   // The visual highlighting is done in OnPaint(). It's a bit of a pain that
   // we delete and recreate everything here, but that's how it's done in
   // BrowserActionMoved(), too. If we want to optimize it, we could move the

@@ -965,6 +965,7 @@
         'browser/extensions/extension_special_storage_policy_unittest.cc',
         'browser/extensions/extension_sync_data_unittest.cc',
         'browser/extensions/extension_test_message_listener_unittest.cc',
+        'browser/extensions/extension_toolbar_model_unittest.cc',
         'browser/extensions/extension_ui_unittest.cc',
         'browser/extensions/extension_warning_badge_service_unittest.cc',
         'browser/extensions/extension_warning_service_unittest.cc',

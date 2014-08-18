@@ -86,10 +86,9 @@ class TestExtensionSystem : public ExtensionSystem {
       GetDeclarativeUserScriptMasterByExtension(
           const ExtensionId& extension_id) OVERRIDE;
 
-  void SetReady() {
-    LOG(INFO) << "SetReady()";
-    ready_.Signal();
-  }
+  // Note that you probably want to use base::RunLoop().RunUntilIdle() right
+  // after this to run all the accumulated tasks.
+  void SetReady() { ready_.Signal(); }
 
   // Factory method for tests to use with SetTestingProfile.
   static KeyedService* Build(content::BrowserContext* profile);
