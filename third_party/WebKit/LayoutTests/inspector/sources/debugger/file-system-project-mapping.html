@@ -17,6 +17,7 @@ function test()
     MockTarget.prototype = {
         _loadedWithCapabilities: function(callback)
         {
+            this.resourceTreeModel = new WebInspector.Object();
             this.debuggerModel = new WebInspector.DebuggerModel(this);
             this.runtimeModel = WebInspector.targetManager.mainTarget().runtimeModel;
             this.consoleModel = WebInspector.targetManager.mainTarget().consoleModel;

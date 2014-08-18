@@ -34,7 +34,7 @@ InspectorTest.createMockTarget = function(id)
         {
             return id;
         },
-
+        resourceTreeModel: new WebInspector.Object(),
         addEventListener: function() { },
         removeEventListener: function() { },
         dispose: function() { },
