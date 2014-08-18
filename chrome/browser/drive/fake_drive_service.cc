@@ -120,14 +120,17 @@ void FileListCallbackAdapter(const FileListCallback& callback,
                              GDataErrorCode error,
                              scoped_ptr<ChangeList> change_list) {
   scoped_ptr<FileList> file_list;
-  if (change_list) {
-    file_list.reset(new FileList);
-    file_list->set_next_link(change_list->next_link());
-    for (size_t i = 0; i < change_list->items().size(); ++i) {
-      const ChangeResource& entry = *change_list->items()[i];
-      if (entry.file())
-        file_list->mutable_items()->push_back(new FileResource(*entry.file()));
-    }
+  if (!change_list) {
+    callback.Run(error, file_list.Pass());
+    return;
+  }
+
+  file_list.reset(new FileList);
+  file_list->set_next_link(change_list->next_link());
+  for (size_t i = 0; i < change_list->items().size(); ++i) {
+    const ChangeResource& entry = *change_list->items()[i];
+    if (entry.file())
+      file_list->mutable_items()->push_back(new FileResource(*entry.file()));
   }
   callback.Run(error, file_list.Pass());
 }
@@ -613,37 +616,37 @@ CancelCallback FakeDriveService::DeleteResource(
   }
 
   EntryInfo* entry = FindEntryByResourceId(resource_id);
-  if (entry) {
-    ChangeResource* change = &entry->change_resource;
-    const FileResource* file = change->file();
-    if (change->is_deleted()) {
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE, base::Bind(callback, HTTP_NOT_FOUND));
-      return CancelCallback();
-    }
-
-    if (!etag.empty() && etag != file->etag()) {
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE, base::Bind(callback, HTTP_PRECONDITION));
-      return CancelCallback();
-    }
-
-    if (entry->user_permission != google_apis::drive::PERMISSION_ROLE_OWNER) {
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE, base::Bind(callback, HTTP_FORBIDDEN));
-      return CancelCallback();
-    }
-
-    change->set_deleted(true);
-    AddNewChangestamp(change);
-    change->set_file(scoped_ptr<FileResource>());
+  if (!entry) {
     base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(callback, HTTP_NO_CONTENT));
+        FROM_HERE, base::Bind(callback, HTTP_NOT_FOUND));
     return CancelCallback();
   }
 
+  ChangeResource* change = &entry->change_resource;
+  const FileResource* file = change->file();
+  if (change->is_deleted()) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, HTTP_NOT_FOUND));
+    return CancelCallback();
+  }
+
+  if (!etag.empty() && etag != file->etag()) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, HTTP_PRECONDITION));
+    return CancelCallback();
+  }
+
+  if (entry->user_permission != google_apis::drive::PERMISSION_ROLE_OWNER) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, HTTP_FORBIDDEN));
+    return CancelCallback();
+  }
+
+  change->set_deleted(true);
+  AddNewChangestamp(change);
+  change->set_file(scoped_ptr<FileResource>());
   base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(callback, HTTP_NOT_FOUND));
+      FROM_HERE, base::Bind(callback, HTTP_NO_CONTENT));
   return CancelCallback();
 }
 
@@ -660,27 +663,30 @@ CancelCallback FakeDriveService::TrashResource(
   }
 
   EntryInfo* entry = FindEntryByResourceId(resource_id);
-  if (entry) {
-    ChangeResource* change = &entry->change_resource;
-    FileResource* file = change->mutable_file();
-    GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-    if (change->is_deleted() || file->labels().is_trashed()) {
-      error = HTTP_NOT_FOUND;
-    } else if (entry->user_permission !=
-               google_apis::drive::PERMISSION_ROLE_OWNER) {
-      error = HTTP_FORBIDDEN;
-    } else {
-      file->mutable_labels()->set_trashed(true);
-      AddNewChangestamp(change);
-      error = HTTP_SUCCESS;
-    }
+  if (!entry) {
     base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(callback, error));
+        FROM_HERE, base::Bind(callback, HTTP_NOT_FOUND));
     return CancelCallback();
   }
 
+  ChangeResource* change = &entry->change_resource;
+  FileResource* file = change->mutable_file();
+  if (change->is_deleted() || file->labels().is_trashed()) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, HTTP_NOT_FOUND));
+    return CancelCallback();
+  }
+
+  if (entry->user_permission != google_apis::drive::PERMISSION_ROLE_OWNER) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, HTTP_FORBIDDEN));
+    return CancelCallback();
+  }
+
+  file->mutable_labels()->set_trashed(true);
+  AddNewChangestamp(change);
   base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(callback, HTTP_NOT_FOUND));
+      FROM_HERE, base::Bind(callback, HTTP_SUCCESS));
   return CancelCallback();
 }
 
@@ -728,30 +734,31 @@ CancelCallback FakeDriveService::DownloadFile(
     }
   }
 
-  if (test_util::WriteStringToFile(local_cache_path, content_data)) {
-    if (!progress_callback.is_null()) {
-      // See also the comment in ResumeUpload(). For testing that clients
-      // can handle the case progress_callback is called multiple times,
-      // here we invoke the callback twice.
-      base::MessageLoopProxy::current()->PostTask(
-          FROM_HERE,
-          base::Bind(progress_callback, file_size / 2, file_size));
-      base::MessageLoopProxy::current()->PostTask(
-          FROM_HERE,
-          base::Bind(progress_callback, file_size, file_size));
-    }
+  if (!test_util::WriteStringToFile(local_cache_path, content_data)) {
+    // Failed to write the content.
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(download_action_callback,
-                   HTTP_SUCCESS,
-                   local_cache_path));
+                   GDATA_FILE_ERROR, base::FilePath()));
     return CancelCallback();
   }
 
-  // Failed to write the content.
+  if (!progress_callback.is_null()) {
+    // See also the comment in ResumeUpload(). For testing that clients
+    // can handle the case progress_callback is called multiple times,
+    // here we invoke the callback twice.
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(progress_callback, file_size / 2, file_size));
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(progress_callback, file_size, file_size));
+  }
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(download_action_callback, GDATA_FILE_ERROR, base::FilePath()));
+      base::Bind(download_action_callback,
+                 HTTP_SUCCESS,
+                 local_cache_path));
   return CancelCallback();
 }
 
@@ -777,49 +784,49 @@ CancelCallback FakeDriveService::CopyResource(
       GetRootResourceId() : in_parent_resource_id;
 
   EntryInfo* entry = FindEntryByResourceId(resource_id);
-  if (entry) {
-    // Make a copy and set the new resource ID and the new title.
-    scoped_ptr<EntryInfo> copied_entry(new EntryInfo);
-    copied_entry->content_data = entry->content_data;
-    copied_entry->share_url = entry->share_url;
-    copied_entry->change_resource.set_file(
-        make_scoped_ptr(new FileResource(*entry->change_resource.file())));
-
-    ChangeResource* new_change = &copied_entry->change_resource;
-    FileResource* new_file = new_change->mutable_file();
-    const std::string new_resource_id = GetNewResourceId();
-    new_change->set_file_id(new_resource_id);
-    new_file->set_file_id(new_resource_id);
-    new_file->set_title(new_title);
-
-    ParentReference parent;
-    parent.set_file_id(parent_resource_id);
-    parent.set_parent_link(GetFakeLinkUrl(parent_resource_id));
-    std::vector<ParentReference> parents;
-    parents.push_back(parent);
-    *new_file->mutable_parents() = parents;
-
-    if (!last_modified.is_null())
-      new_file->set_modified_date(last_modified);
-
-    AddNewChangestamp(new_change);
-    UpdateETag(new_file);
-
-    // Add the new entry to the map.
-    entries_[new_resource_id] = copied_entry.release();
-
+  if (!entry) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(callback,
-                   HTTP_SUCCESS,
-                   base::Passed(make_scoped_ptr(new FileResource(*new_file)))));
+        base::Bind(callback, HTTP_NOT_FOUND,
+                   base::Passed(scoped_ptr<FileResource>())));
     return CancelCallback();
   }
 
+  // Make a copy and set the new resource ID and the new title.
+  scoped_ptr<EntryInfo> copied_entry(new EntryInfo);
+  copied_entry->content_data = entry->content_data;
+  copied_entry->share_url = entry->share_url;
+  copied_entry->change_resource.set_file(
+      make_scoped_ptr(new FileResource(*entry->change_resource.file())));
+
+  ChangeResource* new_change = &copied_entry->change_resource;
+  FileResource* new_file = new_change->mutable_file();
+  const std::string new_resource_id = GetNewResourceId();
+  new_change->set_file_id(new_resource_id);
+  new_file->set_file_id(new_resource_id);
+  new_file->set_title(new_title);
+
+  ParentReference parent;
+  parent.set_file_id(parent_resource_id);
+  parent.set_parent_link(GetFakeLinkUrl(parent_resource_id));
+  std::vector<ParentReference> parents;
+  parents.push_back(parent);
+  *new_file->mutable_parents() = parents;
+
+  if (!last_modified.is_null())
+    new_file->set_modified_date(last_modified);
+
+  AddNewChangestamp(new_change);
+  UpdateETag(new_file);
+
+  // Add the new entry to the map.
+  entries_[new_resource_id] = copied_entry.release();
+
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, HTTP_NOT_FOUND,
-                 base::Passed(scoped_ptr<FileResource>())));
+      base::Bind(callback,
+                 HTTP_SUCCESS,
+                 base::Passed(make_scoped_ptr(new FileResource(*new_file)))));
   return CancelCallback();
 }
 
@@ -841,52 +848,52 @@ CancelCallback FakeDriveService::UpdateResource(
   }
 
   EntryInfo* entry = FindEntryByResourceId(resource_id);
-  if (entry) {
-    if (!UserHasWriteAccess(entry->user_permission)) {
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(callback, HTTP_FORBIDDEN,
-                     base::Passed(scoped_ptr<FileResource>())));
-      return CancelCallback();
-    }
-
-    ChangeResource* change = &entry->change_resource;
-    FileResource* file = change->mutable_file();
-
-    if (!new_title.empty())
-      file->set_title(new_title);
-
-    // Set parent if necessary.
-    if (!parent_resource_id.empty()) {
-      ParentReference parent;
-      parent.set_file_id(parent_resource_id);
-      parent.set_parent_link(GetFakeLinkUrl(parent_resource_id));
-
-      std::vector<ParentReference> parents;
-      parents.push_back(parent);
-      *file->mutable_parents() = parents;
-    }
-
-    if (!last_modified.is_null())
-      file->set_modified_date(last_modified);
-
-    if (!last_viewed_by_me.is_null())
-      file->set_last_viewed_by_me_date(last_viewed_by_me);
-
-    AddNewChangestamp(change);
-    UpdateETag(file);
-
+  if (!entry) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(callback, HTTP_SUCCESS,
-                   base::Passed(make_scoped_ptr(new FileResource(*file)))));
+        base::Bind(callback, HTTP_NOT_FOUND,
+                   base::Passed(scoped_ptr<FileResource>())));
     return CancelCallback();
   }
 
+  if (!UserHasWriteAccess(entry->user_permission)) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, HTTP_FORBIDDEN,
+                   base::Passed(scoped_ptr<FileResource>())));
+    return CancelCallback();
+  }
+
+  ChangeResource* change = &entry->change_resource;
+  FileResource* file = change->mutable_file();
+
+  if (!new_title.empty())
+    file->set_title(new_title);
+
+  // Set parent if necessary.
+  if (!parent_resource_id.empty()) {
+    ParentReference parent;
+    parent.set_file_id(parent_resource_id);
+    parent.set_parent_link(GetFakeLinkUrl(parent_resource_id));
+
+    std::vector<ParentReference> parents;
+    parents.push_back(parent);
+    *file->mutable_parents() = parents;
+  }
+
+  if (!last_modified.is_null())
+    file->set_modified_date(last_modified);
+
+  if (!last_viewed_by_me.is_null())
+    file->set_last_viewed_by_me_date(last_viewed_by_me);
+
+  AddNewChangestamp(change);
+  UpdateETag(file);
+
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, HTTP_NOT_FOUND,
-                 base::Passed(scoped_ptr<FileResource>())));
+      base::Bind(callback, HTTP_SUCCESS,
+                 base::Passed(make_scoped_ptr(new FileResource(*file)))));
   return CancelCallback();
 }
 
@@ -904,25 +911,25 @@ CancelCallback FakeDriveService::AddResourceToDirectory(
   }
 
   EntryInfo* entry = FindEntryByResourceId(resource_id);
-  if (entry) {
-    ChangeResource* change = &entry->change_resource;
-    // On the real Drive server, resources do not necessary shape a tree
-    // structure. That is, each resource can have multiple parent.
-    // We mimic the behavior here; AddResourceToDirectoy just adds
-    // one more parent, not overwriting old ones.
-    ParentReference parent;
-    parent.set_file_id(parent_resource_id);
-    parent.set_parent_link(GetFakeLinkUrl(parent_resource_id));
-    change->mutable_file()->mutable_parents()->push_back(parent);
-
-    AddNewChangestamp(change);
+  if (!entry) {
     base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(callback, HTTP_SUCCESS));
+        FROM_HERE, base::Bind(callback, HTTP_NOT_FOUND));
     return CancelCallback();
   }
 
+  ChangeResource* change = &entry->change_resource;
+  // On the real Drive server, resources do not necessary shape a tree
+  // structure. That is, each resource can have multiple parent.
+  // We mimic the behavior here; AddResourceToDirectoy just adds
+  // one more parent, not overwriting old ones.
+  ParentReference parent;
+  parent.set_file_id(parent_resource_id);
+  parent.set_parent_link(GetFakeLinkUrl(parent_resource_id));
+  change->mutable_file()->mutable_parents()->push_back(parent);
+
+  AddNewChangestamp(change);
   base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(callback, HTTP_NOT_FOUND));
+      FROM_HERE, base::Bind(callback, HTTP_SUCCESS));
   return CancelCallback();
 }
 
@@ -940,18 +947,22 @@ CancelCallback FakeDriveService::RemoveResourceFromDirectory(
   }
 
   EntryInfo* entry = FindEntryByResourceId(resource_id);
-  if (entry) {
-    ChangeResource* change = &entry->change_resource;
-    FileResource* file = change->mutable_file();
-    std::vector<ParentReference>* parents = file->mutable_parents();
-    for (size_t i = 0; i < parents->size(); ++i) {
-      if ((*parents)[i].file_id() == parent_resource_id) {
-        parents->erase(parents->begin() + i);
-        AddNewChangestamp(change);
-        base::MessageLoop::current()->PostTask(
-            FROM_HERE, base::Bind(callback, HTTP_NO_CONTENT));
-        return CancelCallback();
-      }
+  if (!entry) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, HTTP_NOT_FOUND));
+    return CancelCallback();
+  }
+
+  ChangeResource* change = &entry->change_resource;
+  FileResource* file = change->mutable_file();
+  std::vector<ParentReference>* parents = file->mutable_parents();
+  for (size_t i = 0; i < parents->size(); ++i) {
+    if ((*parents)[i].file_id() == parent_resource_id) {
+      parents->erase(parents->begin() + i);
+      AddNewChangestamp(change);
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE, base::Bind(callback, HTTP_NO_CONTENT));
+      return CancelCallback();
     }
   }
 
@@ -1208,28 +1219,39 @@ CancelCallback FakeDriveService::UninstallApp(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // Find app_id from app_info_value_ and delete.
-  google_apis::GDataErrorCode error = google_apis::HTTP_NOT_FOUND;
   if (offline_) {
-    error = google_apis::GDATA_NO_CONNECTION;
-  } else {
-    base::ListValue* items = NULL;
-    if (app_info_value_->GetList("items", &items)) {
-      for (size_t i = 0; i < items->GetSize(); ++i) {
-        base::DictionaryValue* item = NULL;
-        std::string id;
-        if (items->GetDictionary(i, &item) && item->GetString("id", &id) &&
-            id == app_id) {
-          if (items->Remove(i, NULL))
-            error = google_apis::HTTP_NO_CONTENT;
-          break;
-        }
-      }
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, google_apis::GDATA_NO_CONNECTION));
+    return CancelCallback();
+  }
+
+  // Find app_id from app_info_value_ and delete.
+  base::ListValue* items = NULL;
+  if (!app_info_value_->GetList("items", &items)) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, google_apis::HTTP_NOT_FOUND));
+    return CancelCallback();
+  }
+
+  for (size_t i = 0; i < items->GetSize(); ++i) {
+    base::DictionaryValue* item = NULL;
+    std::string id;
+    if (items->GetDictionary(i, &item) && item->GetString("id", &id) &&
+        id == app_id) {
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(callback,
+                     items->Remove(i, NULL) ? google_apis::HTTP_NO_CONTENT
+                                            : google_apis::HTTP_NOT_FOUND));
+      return CancelCallback();
     }
   }
 
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::Bind(callback, error));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, google_apis::HTTP_NOT_FOUND));
   return CancelCallback();
 }
 
