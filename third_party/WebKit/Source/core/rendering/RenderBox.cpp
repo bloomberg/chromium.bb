@@ -1761,7 +1761,9 @@ LayoutUnit RenderBox::perpendicularContainingBlockLogicalHeight() const
 
     // FIXME: For now just support fixed heights.  Eventually should support percentage heights as well.
     if (!logicalHeightLength.isFixed()) {
-        LayoutUnit fillFallbackExtent = containingBlockStyle->isHorizontalWritingMode() ? view()->frameView()->visibleHeight() : view()->frameView()->visibleWidth();
+        LayoutUnit fillFallbackExtent = containingBlockStyle->isHorizontalWritingMode()
+            ? view()->frameView()->unscaledVisibleContentSize().height()
+            : view()->frameView()->unscaledVisibleContentSize().width();
         LayoutUnit fillAvailableExtent = containingBlock()->availableLogicalHeight(ExcludeMarginBorderPadding);
         return std::min(fillAvailableExtent, fillFallbackExtent);
     }
@@ -2848,7 +2850,7 @@ LayoutUnit RenderBox::availableLogicalHeight(AvailableLogicalHeightType heightTy
 LayoutUnit RenderBox::availableLogicalHeightUsing(const Length& h, AvailableLogicalHeightType heightType) const
 {
     if (isRenderView())
-        return isHorizontalWritingMode() ? toRenderView(this)->frameView()->visibleHeight() : toRenderView(this)->frameView()->visibleWidth();
+        return isHorizontalWritingMode() ? toRenderView(this)->frameView()->unscaledVisibleContentSize().height() : toRenderView(this)->frameView()->unscaledVisibleContentSize().width();
 
     // We need to stop here, since we don't want to increase the height of the table
     // artificially.  We're going to rely on this cell getting expanded to some new
