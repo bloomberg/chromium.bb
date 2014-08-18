@@ -1240,7 +1240,6 @@ static void configueCompositingWebView(WebSettings* settings)
 {
     settings->setAcceleratedCompositingEnabled(true);
     settings->setPreferCompositingToLCDTextEnabled(true);
-    settings->setAcceleratedCompositingForOverflowScrollEnabled(true);
 }
 
 TEST_F(WebViewTest, ShowPressOnTransformedLink)

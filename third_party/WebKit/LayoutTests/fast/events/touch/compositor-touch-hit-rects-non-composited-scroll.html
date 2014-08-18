@@ -90,7 +90,7 @@ This test verifies the hit test regions given to the compositor specifically aro
 window.scrollTo(0, 13);
 
 if (window.internals) {
-  window.internals.settings.setAcceleratedCompositingForOverflowScrollEnabled(false);
+  window.internals.settings.setPreferCompositingToLCDTextEnabled(false);
 }
 </script>
 </body>

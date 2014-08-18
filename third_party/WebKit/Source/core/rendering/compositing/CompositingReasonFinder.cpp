@@ -29,13 +29,9 @@ void CompositingReasonFinder::updateTriggers()
     Settings& settings = m_renderView.document().page()->settings();
     if (settings.preferCompositingToLCDTextEnabled()) {
         m_compositingTriggers |= ScrollableInnerFrameTrigger;
+        m_compositingTriggers |= OverflowScrollTrigger;
         m_compositingTriggers |= ViewportConstrainedPositionedTrigger;
     }
-
-    // We map both these settings to universal overlow scrolling.
-    // FIXME: Replace these settings with a generic compositing setting for HighDPI.
-    if (settings.acceleratedCompositingForOverflowScrollEnabled() || settings.compositorDrivenAcceleratedScrollingEnabled())
-        m_compositingTriggers |= OverflowScrollTrigger;
 }
 
 bool CompositingReasonFinder::hasOverflowScrollTrigger() const

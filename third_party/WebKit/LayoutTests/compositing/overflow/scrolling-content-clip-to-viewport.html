@@ -29,7 +29,7 @@
     if (window.testRunner)
       testRunner.dumpAsText();
     if (window.internals)
-      window.internals.settings.setAcceleratedCompositingForOverflowScrollEnabled(true);
+      window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
 
     window.addEventListener('load', function() {
       if (window.testRunner)

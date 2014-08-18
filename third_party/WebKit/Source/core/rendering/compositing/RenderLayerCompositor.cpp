@@ -158,7 +158,7 @@ bool RenderLayerCompositor::layerSquashingEnabled() const
     return true;
 }
 
-bool RenderLayerCompositor::acceleratedCompositingForOverflowScrollEnabled() const
+bool RenderLayerCompositor::preferCompositingToLCDTextEnabled() const
 {
     return m_compositingReasonFinder.hasOverflowScrollTrigger();
 }

@@ -15,7 +15,7 @@ function runTest(description) {
             pre.innerHTML += "\nPASS";
         } else {
             pre.innerHTML += "\nUnclipped Descendants are only relevant for " +
-                "acceleratedCompositingForOverflowScroll, so this result is " +
+                "preferCompositingToLCDText, so this result is " +
                 "expected everywhere except in the virtual/gpu/ suite.";
         }
     }

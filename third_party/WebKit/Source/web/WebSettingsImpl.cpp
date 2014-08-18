@@ -442,9 +442,9 @@ void WebSettingsImpl::setMockGestureTapHighlightsEnabled(bool enabled)
     m_settings->setMockGestureTapHighlightsEnabled(enabled);
 }
 
+// TODO(danakj): Remove this method.
 void WebSettingsImpl::setAcceleratedCompositingForOverflowScrollEnabled(bool enabled)
 {
-    m_settings->setAcceleratedCompositingForOverflowScrollEnabled(enabled);
 }
 
 void WebSettingsImpl::setCompositorDrivenAcceleratedScrollingEnabled(bool enabled)

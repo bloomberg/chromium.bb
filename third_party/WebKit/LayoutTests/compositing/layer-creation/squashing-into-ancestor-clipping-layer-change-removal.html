@@ -54,7 +54,7 @@ This test passes if it doesn't crash.
 <script>
 if (window.testRunner) {
     testRunner.dumpAsText();
-    internals.settings.setAcceleratedCompositingForOverflowScrollEnabled(true);
+    internals.settings.setPreferCompositingToLCDTextEnabled(true);
     internals.settings.setLayerSquashingEnabled(true);
 } else {
     alert('This test require window.testRunner.')

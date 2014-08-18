@@ -20,7 +20,7 @@
 <script>
 if (window.testRunner) {
     testRunner.dumpAsText();
-    internals.settings.setAcceleratedCompositingForOverflowScrollEnabled(true);
+    internals.settings.setPreferCompositingToLCDTextEnabled(true);
     internals.settings.setLayerSquashingEnabled(true);
     testRunner.setCustomTextOutput(internals.layerTreeAsText(document));
 }

@@ -83,7 +83,7 @@ public:
     bool hasAcceleratedCompositing() const { return m_hasAcceleratedCompositing; }
     bool layerSquashingEnabled() const;
 
-    bool acceleratedCompositingForOverflowScrollEnabled() const;
+    bool preferCompositingToLCDTextEnabled() const;
 
     bool rootShouldAlwaysComposite() const;
 

@@ -228,7 +228,7 @@ void CompositingRequirementsUpdater::updateRecursive(RenderLayer* ancestorLayer,
     // used, we must assume we overlap if there is anything composited behind us in paint-order.
     CompositingReasons overlapCompositingReason = currentRecursionData.m_subtreeIsCompositing ? CompositingReasonAssumedOverlap : CompositingReasonNone;
 
-    if (m_renderView.compositor()->acceleratedCompositingForOverflowScrollEnabled()) {
+    if (m_renderView.compositor()->preferCompositingToLCDTextEnabled()) {
         Vector<size_t> unclippedDescendantsToRemove;
         for (size_t i = 0; i < unclippedDescendants.size(); i++) {
             RenderLayer* unclippedDescendant = unclippedDescendants.at(i);

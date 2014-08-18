@@ -369,7 +369,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
     if (m_owningLayer.needsCompositedScrolling())
         needsDescendantsClippingLayer = false;
 
-    RenderLayer* scrollParent = compositor->acceleratedCompositingForOverflowScrollEnabled() ? m_owningLayer.scrollParent() : 0;
+    RenderLayer* scrollParent = compositor->preferCompositingToLCDTextEnabled() ? m_owningLayer.scrollParent() : 0;
 
     // This is required because compositing layers are parented
     // according to the z-order hierarchy, yet clipping goes down the renderer hierarchy.
@@ -671,7 +671,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(const RenderLayer* comp
     updateRenderingContext();
     updateShouldFlattenTransform();
     updateChildrenTransform();
-    updateScrollParent(compositor()->acceleratedCompositingForOverflowScrollEnabled() ? m_owningLayer.scrollParent() : 0);
+    updateScrollParent(compositor()->preferCompositingToLCDTextEnabled() ? m_owningLayer.scrollParent() : 0);
     registerScrollingLayers();
 
     updateCompositingReasons();

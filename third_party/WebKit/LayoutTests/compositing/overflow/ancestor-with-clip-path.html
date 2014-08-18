@@ -48,7 +48,7 @@ function isUsingCompositedScrolling(layer) {
 }
 
 if (window.internals)
-    window.internals.settings.setAcceleratedCompositingForOverflowScrollEnabled(true);
+    window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
 
 if (window.testRunner) {
     window.testRunner.dumpAsText();

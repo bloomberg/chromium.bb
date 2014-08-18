@@ -169,7 +169,6 @@ protected:
     {
         settings->setAcceleratedCompositingEnabled(true);
         settings->setPreferCompositingToLCDTextEnabled(true);
-        settings->setAcceleratedCompositingForOverflowScrollEnabled(true);
     }
 
     void initializeTextSelectionWebView(const std::string& url, FrameTestHelpers::WebViewHelper* webViewHelper)

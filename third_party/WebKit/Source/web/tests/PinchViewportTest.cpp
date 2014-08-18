@@ -145,7 +145,6 @@ public:
         settings->setJavaScriptEnabled(true);
         settings->setAcceleratedCompositingEnabled(true);
         settings->setPreferCompositingToLCDTextEnabled(true);
-        settings->setAcceleratedCompositingForOverflowScrollEnabled(true);
         settings->setPinchVirtualViewportEnabled(true);
     }
 

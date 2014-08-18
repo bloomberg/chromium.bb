@@ -102,7 +102,6 @@ private:
         settings->setJavaScriptEnabled(true);
         settings->setAcceleratedCompositingEnabled(true);
         settings->setPreferCompositingToLCDTextEnabled(true);
-        settings->setAcceleratedCompositingForOverflowScrollEnabled(true);
     }
 
     FrameTestHelpers::WebViewHelper m_helper;
