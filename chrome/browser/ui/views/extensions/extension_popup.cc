@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
@@ -69,15 +68,13 @@ ExtensionPopup::ExtensionPopup(extensions::ExtensionViewHost* host,
       this,
       extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
       content::Source<content::BrowserContext>(host->browser_context()));
-  content::DevToolsManager::GetInstance()->AddAgentStateCallback(
-      devtools_callback_);
+  content::DevToolsAgentHost::AddAgentStateCallback(devtools_callback_);
 
   GetExtensionView(host)->GetBrowser()->tab_strip_model()->AddObserver(this);
 }
 
 ExtensionPopup::~ExtensionPopup() {
-  content::DevToolsManager::GetInstance()->RemoveAgentStateCallback(
-      devtools_callback_);
+  content::DevToolsAgentHost::RemoveAgentStateCallback(devtools_callback_);
 
   GetExtensionView(
       host_.get())->GetBrowser()->tab_strip_model()->RemoveObserver(this);

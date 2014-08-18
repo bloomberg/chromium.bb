@@ -16,7 +16,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -292,10 +291,7 @@ void InspectUI::InspectBrowserWithCustomFrontend(
   // Install devtools bindings.
   DevToolsUIBindings* bindings = new DevToolsUIBindings(front_end,
                                                         frontend_url);
-
-  // Engage remote debugging between front-end and agent host.
-  content::DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
-      agent_host, bindings);
+  bindings->AttachTo(agent_host.get());
 }
 
 void InspectUI::InspectDevices(Browser* browser) {

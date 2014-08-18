@@ -7,8 +7,6 @@
 #include "base/json/json_reader.h"
 #include "content/browser/devtools/devtools_protocol.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/devtools_client_host.h"
-#include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -20,12 +18,12 @@
 namespace content {
 
 class RendererOverridesHandlerTest : public ContentBrowserTest,
-                                     public DevToolsClientHost {
+                                     public DevToolsAgentHostClient {
  protected:
   void SendCommand(const std::string& method,
                    base::DictionaryValue* params) {
-    EXPECT_TRUE(DevToolsManager::GetInstance()->DispatchOnInspectorBackend(this,
-        DevToolsProtocol::CreateCommand(1, method, params)->Serialize()));
+    agent_host_->DispatchProtocolMessage(
+        DevToolsProtocol::CreateCommand(1, method, params)->Serialize());
     base::MessageLoop::current()->Run();
   }
 
@@ -55,19 +53,21 @@ class RendererOverridesHandlerTest : public ContentBrowserTest,
   }
 
   scoped_ptr<base::DictionaryValue> result_;
+  scoped_refptr<DevToolsAgentHost> agent_host_;
 
  private:
   virtual void SetUpOnMainThread() OVERRIDE {
-    DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
-        DevToolsAgentHost::GetOrCreateFor(shell()->web_contents()).get(), this);
+    agent_host_ = DevToolsAgentHost::GetOrCreateFor(shell()->web_contents());
+    agent_host_->AttachClient(this);
   }
 
   virtual void TearDownOnMainThread() OVERRIDE {
-    DevToolsManager::GetInstance()->ClientHostClosing(this);
+    agent_host_->DetachClient();
+    agent_host_ = NULL;
   }
 
-  virtual void DispatchOnInspectorFrontend(
-      const std::string& message) OVERRIDE {
+  virtual void DispatchProtocolMessage(
+      DevToolsAgentHost* agent_host, const std::string& message) OVERRIDE {
     scoped_ptr<base::DictionaryValue> root(
         static_cast<base::DictionaryValue*>(base::JSONReader::Read(message)));
     base::DictionaryValue* result;
@@ -76,11 +76,8 @@ class RendererOverridesHandlerTest : public ContentBrowserTest,
     base::MessageLoop::current()->QuitNow();
   }
 
-  virtual void InspectedContentsClosing() OVERRIDE {
-    EXPECT_TRUE(false);
-  }
-
-  virtual void ReplacedWithAnotherClient() OVERRIDE {
+  virtual void AgentHostClosed(
+      DevToolsAgentHost* agent_host, bool replaced) OVERRIDE {
     EXPECT_TRUE(false);
   }
 };

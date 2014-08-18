@@ -11,7 +11,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/devtools_http_handler.h"
-#include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -116,8 +115,7 @@ void ShellDevToolsFrontend::RenderViewCreated(
     RenderViewHost* render_view_host) {
   if (!frontend_host_) {
     frontend_host_.reset(DevToolsFrontendHost::Create(render_view_host, this));
-    DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
-        agent_host_.get(), this);
+    agent_host_->AttachClient(this);
   }
 }
 
@@ -127,7 +125,7 @@ void ShellDevToolsFrontend::DocumentOnLoadCompletedInMainFrame() {
 }
 
 void ShellDevToolsFrontend::WebContentsDestroyed() {
-  DevToolsManager::GetInstance()->ClientHostClosing(this);
+  agent_host_->DetachClient();
   delete this;
 }
 
@@ -159,8 +157,7 @@ void ShellDevToolsFrontend::HandleMessageFromDevToolsFrontend(
   }
   dict->GetInteger("id", &id);
 
-  DevToolsManager::GetInstance()->DispatchOnInspectorBackend(
-      this, browser_message);
+  agent_host_->DispatchProtocolMessage(browser_message);
 
   if (id) {
     std::string code = "InspectorFrontendAPI.embedderMessageAck(" +
@@ -172,18 +169,18 @@ void ShellDevToolsFrontend::HandleMessageFromDevToolsFrontend(
 
 void ShellDevToolsFrontend::HandleMessageFromDevToolsFrontendToBackend(
     const std::string& message) {
-  DevToolsManager::GetInstance()->DispatchOnInspectorBackend(
-      this, message);
+  agent_host_->DispatchProtocolMessage(message);
 }
 
-void ShellDevToolsFrontend::DispatchOnInspectorFrontend(
-    const std::string& message) {
+void ShellDevToolsFrontend::DispatchProtocolMessage(
+    DevToolsAgentHost* agent_host, const std::string& message) {
   std::string code = "InspectorFrontendAPI.dispatchMessage(" + message + ");";
   base::string16 javascript = base::UTF8ToUTF16(code);
   web_contents()->GetMainFrame()->ExecuteJavaScript(javascript);
 }
 
-void ShellDevToolsFrontend::InspectedContentsClosing() {
+void ShellDevToolsFrontend::AgentHostClosed(
+    DevToolsAgentHost* agent_host, bool replaced) {
   frontend_shell_->Close();
 }
 

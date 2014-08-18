@@ -52,7 +52,8 @@ EmbeddedWorkerDevToolsManager* EmbeddedWorkerDevToolsManager::GetInstance() {
   return Singleton<EmbeddedWorkerDevToolsManager>::get();
 }
 
-DevToolsAgentHost* EmbeddedWorkerDevToolsManager::GetDevToolsAgentHostForWorker(
+DevToolsAgentHostImpl*
+EmbeddedWorkerDevToolsManager::GetDevToolsAgentHostForWorker(
     int worker_process_id,
     int worker_route_id) {
   AgentHostMap::iterator it = workers_.find(

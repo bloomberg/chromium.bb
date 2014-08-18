@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/devtools_http_handler_delegate.h"
 #include "net/http/http_status_code.h"
@@ -33,7 +34,6 @@ class URLRequestContextGetter;
 namespace content {
 
 class DevToolsBrowserTarget;
-class DevToolsClientHost;
 
 class DevToolsHttpHandlerImpl
     : public DevToolsHttpHandler,
@@ -119,8 +119,8 @@ class DevToolsHttpHandlerImpl
   std::string frontend_url_;
   scoped_ptr<const net::StreamListenSocketFactory> socket_factory_;
   scoped_refptr<net::HttpServer> server_;
-  typedef std::map<int, DevToolsClientHost*> ConnectionToClientHostMap;
-  ConnectionToClientHostMap connection_to_client_host_ui_;
+  typedef std::map<int, DevToolsAgentHostClient*> ConnectionToClientMap;
+  ConnectionToClientMap connection_to_client_ui_;
   scoped_ptr<DevToolsHttpHandlerDelegate> delegate_;
   base::FilePath active_port_output_directory_;
   typedef std::map<std::string, DevToolsTarget*> TargetMap;

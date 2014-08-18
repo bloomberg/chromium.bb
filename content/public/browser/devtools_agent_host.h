@@ -9,8 +9,10 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/devtools_agent_host_client.h"
 
 namespace content {
 
@@ -49,8 +51,17 @@ class CONTENT_EXPORT DevToolsAgentHost
   // Returns a list of all existing WebContents that can be debugged.
   static std::vector<WebContents*> GetInspectableWebContents();
 
+  // Client attaches to this agent host to start debugging it.
+  virtual void AttachClient(DevToolsAgentHostClient* client) = 0;
+
+  // Already attached client detaches from this agent host to stop debugging it.
+  virtual void DetachClient() = 0;
+
   // Returns true if there is a client attached.
   virtual bool IsAttached() = 0;
+
+  // Sends a message to the agent.
+  virtual void DispatchProtocolMessage(const std::string& message) = 0;
 
   // Starts inspecting element at position (|x|, |y|) in the specified page.
   virtual void InspectElement(int x, int y) = 0;
@@ -70,6 +81,15 @@ class CONTENT_EXPORT DevToolsAgentHost
 
   // Returns true if DevToolsAgentHost is for worker.
   virtual bool IsWorker() const = 0;
+
+  // Terminates all debugging sessions and detaches all clients.
+  static void DetachAllClients();
+
+  typedef base::Callback<void(DevToolsAgentHost*, bool attached)>
+      AgentStateCallback;
+
+  static void AddAgentStateCallback(const AgentStateCallback& callback);
+  static void RemoveAgentStateCallback(const AgentStateCallback& callback);
 
  protected:
   friend class base::RefCounted<DevToolsAgentHost>;

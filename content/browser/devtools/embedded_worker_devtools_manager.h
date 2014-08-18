@@ -17,7 +17,7 @@
 
 namespace content {
 
-class DevToolsAgentHost;
+class DevToolsAgentHostImpl;
 class EmbeddedWorkerDevToolsAgentHost;
 class ServiceWorkerContextCore;
 
@@ -46,7 +46,7 @@ class CONTENT_EXPORT EmbeddedWorkerDevToolsManager {
   // Returns the EmbeddedWorkerDevToolsManager singleton.
   static EmbeddedWorkerDevToolsManager* GetInstance();
 
-  DevToolsAgentHost* GetDevToolsAgentHostForWorker(int worker_process_id,
+  DevToolsAgentHostImpl* GetDevToolsAgentHostForWorker(int worker_process_id,
                                                    int worker_route_id);
 
   // Returns true when the worker must be paused on start because a DevTool

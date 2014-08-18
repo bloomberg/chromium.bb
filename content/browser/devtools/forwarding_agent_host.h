@@ -29,7 +29,7 @@ class ForwardingAgentHost
   // DevToolsAgentHostImpl implementation.
   virtual void Attach() OVERRIDE;
   virtual void Detach() OVERRIDE;
-  virtual void DispatchOnInspectorBackend(const std::string& message) OVERRIDE;
+  virtual void DispatchProtocolMessage(const std::string& message) OVERRIDE;
 
   scoped_ptr<DevToolsExternalAgentProxyDelegate> delegate_;
 };
