@@ -169,48 +169,9 @@ class CompositingIOSurfaceMac
     SurfaceVertex verts_[4];
   };
 
-  // Keeps track of states and buffers for readback of IOSurface.
-  //
-  // TODO(miu): Major code refactoring is badly needed!  To be done in a
-  // soon-upcoming change.  For now, we blatantly violate the style guide with
-  // respect to struct vs. class usage:
-  struct CopyContext {
-    explicit CopyContext(const scoped_refptr<CompositingIOSurfaceContext>& ctx);
-    ~CopyContext();
-
-    // Delete any references to owned OpenGL objects.  This must be called
-    // within the OpenGL context just before destruction.
-    void ReleaseCachedGLObjects();
-
-    // The following two methods assume |num_outputs| has been set, and are
-    // being called within the OpenGL context.
-    void PrepareReadbackFramebuffers();
-    void PrepareForAsynchronousReadback();
-
-    const scoped_ptr<CompositingIOSurfaceTransformer> transformer;
-    GLenum output_readback_format;
-    int num_outputs;
-    GLuint output_textures[3];  // Not owned.
-    // Note: For YUV, the |output_texture_sizes| widths are in terms of 4-byte
-    // quads, not pixels.
-    gfx::Size output_texture_sizes[3];
-    GLuint frame_buffers[3];
-    GLuint pixel_buffers[3];
-    GLuint fence;  // When non-zero, doing an asynchronous copy.
-    int cycles_elapsed;
-    base::Callback<bool(const void*, int)> map_buffer_callback;
-    base::Callback<void(bool)> done_callback;
-  };
-
   CompositingIOSurfaceMac(
       const scoped_refptr<CompositingIOSurfaceContext>& context);
   ~CompositingIOSurfaceMac();
-
-  // If this IOSurface has moved to a different window, use that window's
-  // GL context (if multiple visible windows are using the same GL context
-  // then call to setView call can stall and prevent reaching 60fps).
-  void SwitchToContextOnNewWindow(NSView* view,
-                                  int window_number);
 
   // Returns true if IOSurface is ready to render. False otherwise.
   bool MapIOSurfaceToTextureWithContextCurrent(
@@ -223,53 +184,9 @@ class CompositingIOSurfaceMac
 
   void DrawQuad(const SurfaceQuad& quad);
 
-  // Copy current frame to |target| video frame. This method must be called
-  // within a CGL context. Returns a callback that should be called outside
-  // of the CGL context.
-  // If |called_within_draw| is true this method is called within a drawing
-  // operations. This allow certain optimizations.
-  base::Closure CopyToVideoFrameWithinContext(
-      const gfx::Rect& src_subrect,
-      bool called_within_draw,
-      const scoped_refptr<media::VideoFrame>& target,
-      const base::Callback<void(bool)>& callback);
-
-  // Common GPU-readback copy path.  Only one of |bitmap_output| or
-  // |video_frame_output| may be specified: Either ARGB is written to
-  // |bitmap_output| or letter-boxed YV12 is written to |video_frame_output|.
-  base::Closure CopyToSelectedOutputWithinContext(
-      const gfx::Rect& src_pixel_subrect,
-      const gfx::Rect& dst_pixel_rect,
-      bool called_within_draw,
-      const SkBitmap* bitmap_output,
-      const scoped_refptr<media::VideoFrame>& video_frame_output,
-      const base::Callback<void(bool)>& done_callback);
-
-  // TODO(hclam): These two methods should be static.
-  void AsynchronousReadbackForCopy(
-      const gfx::Rect& dst_pixel_rect,
-      bool called_within_draw,
-      CopyContext* copy_context,
-      const SkBitmap* bitmap_output,
-      const scoped_refptr<media::VideoFrame>& video_frame_output);
-  bool SynchronousReadbackForCopy(
-      const gfx::Rect& dst_pixel_rect,
-      CopyContext* copy_context,
-      const SkBitmap* bitmap_output,
-      const scoped_refptr<media::VideoFrame>& video_frame_output);
-
-  void CheckIfAllCopiesAreFinishedWithinContext(
-      bool block_until_finished,
-      std::vector<base::Closure>* done_callbacks);
-
-  void FailAllCopies();
-  void DestroyAllCopyContextsWithinContext();
-
   // Check for GL errors and store the result in error_. Only return new
   // errors
   GLenum GetAndSaveGLError();
-
-  gfx::Rect IntersectWithIOSurface(const gfx::Rect& rect) const;
 
   // Offscreen context used for all operations other than drawing to the
   // screen. This is in the same share group as the contexts used for
@@ -291,16 +208,6 @@ class CompositingIOSurfaceMac
   // need to do is ensure it is re-bound before attempting to draw
   // with it.
   GLuint texture_;
-
-  // A pool of CopyContexts with OpenGL objects ready for re-use.  Prefer to
-  // pull one from the pool before creating a new CopyContext.
-  std::vector<CopyContext*> copy_context_pool_;
-
-  // CopyContexts being used for in-flight copy operations.
-  std::deque<CopyContext*> copy_requests_;
-
-  // Timer for finishing a copy operation.
-  base::Timer finish_copy_timer_;
 
   // Error saved by GetAndSaveGLError
   GLint gl_error_;
