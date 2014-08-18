@@ -259,11 +259,7 @@ bool FileReader::hasPendingActivity() const
 
 void FileReader::readAsArrayBuffer(Blob* blob, ExceptionState& exceptionState)
 {
-    if (!blob) {
-        exceptionState.throwTypeError("The argument is not a Blob.");
-        return;
-    }
-
+    ASSERT(blob);
     WTF_LOG(FileAPI, "FileReader: reading as array buffer: %s %s\n", utf8BlobUUID(blob).data(), utf8FilePath(blob).data());
 
     readInternal(blob, FileReaderLoader::ReadAsArrayBuffer, exceptionState);
@@ -271,11 +267,7 @@ void FileReader::readAsArrayBuffer(Blob* blob, ExceptionState& exceptionState)
 
 void FileReader::readAsBinaryString(Blob* blob, ExceptionState& exceptionState)
 {
-    if (!blob) {
-        exceptionState.throwTypeError("The argument is not a Blob.");
-        return;
-    }
-
+    ASSERT(blob);
     WTF_LOG(FileAPI, "FileReader: reading as binary: %s %s\n", utf8BlobUUID(blob).data(), utf8FilePath(blob).data());
 
     readInternal(blob, FileReaderLoader::ReadAsBinaryString, exceptionState);
@@ -283,11 +275,7 @@ void FileReader::readAsBinaryString(Blob* blob, ExceptionState& exceptionState)
 
 void FileReader::readAsText(Blob* blob, const String& encoding, ExceptionState& exceptionState)
 {
-    if (!blob) {
-        exceptionState.throwTypeError("The argument is not a Blob.");
-        return;
-    }
-
+    ASSERT(blob);
     WTF_LOG(FileAPI, "FileReader: reading as text: %s %s\n", utf8BlobUUID(blob).data(), utf8FilePath(blob).data());
 
     m_encoding = encoding;
@@ -301,11 +289,7 @@ void FileReader::readAsText(Blob* blob, ExceptionState& exceptionState)
 
 void FileReader::readAsDataURL(Blob* blob, ExceptionState& exceptionState)
 {
-    if (!blob) {
-        exceptionState.throwTypeError("The argument is not a Blob.");
-        return;
-    }
-
+    ASSERT(blob);
     WTF_LOG(FileAPI, "FileReader: reading as data URL: %s %s\n", utf8BlobUUID(blob).data(), utf8FilePath(blob).data());
 
     readInternal(blob, FileReaderLoader::ReadAsDataURL, exceptionState);
