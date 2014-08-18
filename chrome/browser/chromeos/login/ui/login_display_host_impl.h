@@ -209,6 +209,13 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   // Default LoginDisplayHost.
   static LoginDisplayHost* default_host_;
 
+  // The controller driving the auto-enrollment check.
+  scoped_ptr<AutoEnrollmentController> auto_enrollment_controller_;
+
+  // Subscription for progress callbacks from |auto_enrollement_controller_|.
+  scoped_ptr<AutoEnrollmentController::ProgressCallbackList::Subscription>
+      auto_enrollment_progress_subscription_;
+
   // Sign in screen controller.
   scoped_ptr<ExistingUserController> sign_in_controller_;
 
@@ -220,13 +227,6 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 
   // Demo app launcher.
   scoped_ptr<DemoAppLauncher> demo_app_launcher_;
-
-  // The controller driving the auto-enrollment check.
-  scoped_ptr<AutoEnrollmentController> auto_enrollment_controller_;
-
-  // Subscription for progress callbacks from |auto_enrollement_controller_|.
-  scoped_ptr<AutoEnrollmentController::ProgressCallbackList::Subscription>
-      auto_enrollment_progress_subscription_;
 
   // Has ShutdownDisplayHost() already been called?  Used to avoid posting our
   // own deletion to the message loop twice if the user logs out while we're
