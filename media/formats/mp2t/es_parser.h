@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "media/base/media_export.h"
 #include "media/base/stream_parser_buffer.h"
 
 namespace media {
@@ -17,7 +18,7 @@ class StreamParserBuffer;
 
 namespace mp2t {
 
-class EsParser {
+class MEDIA_EXPORT EsParser {
  public:
   typedef base::Callback<void(scoped_refptr<StreamParserBuffer>)> EmitBufferCB;
 

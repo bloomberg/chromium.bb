@@ -32,7 +32,7 @@ namespace mp2t {
 // Mpeg2 TS spec: "2.14 Carriage of Rec. ITU-T H.264 | ISO/IEC 14496-10 video"
 // "Each AVC access unit shall contain an access unit delimiter NAL Unit;"
 //
-class MEDIA_EXPORT EsParserH264 : NON_EXPORTED_BASE(public EsParser) {
+class MEDIA_EXPORT EsParserH264 : public EsParser {
  public:
   typedef base::Callback<void(const VideoDecoderConfig&)> NewVideoConfigCB;
 
