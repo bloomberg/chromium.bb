@@ -288,6 +288,52 @@ message SystemProfileProto {
     }
     // The physical layer mode of the associated wifi access point, if any.
     optional WifiPHYLayerProtocol wifi_phy_layer_protocol = 4;
+
+    // Describe wifi access point information.
+    message WifiAccessPoint {
+      // Vendor prefix of the access point's BSSID, these are OUIs
+      // (Organizationally Unique Identifiers) registered by
+      // the IEEE and are encoded with the first byte in bits 16-23, the
+      // second byte in bits 8-15 and the third byte in bits 0-7.
+      optional uint32 vendor_prefix = 1;
+
+      // Access point seurity mode definitions.
+      enum SecurityMode {
+        SECURITY_UNKNOWN = 0;
+        SECURITY_WPA = 1;
+        SECURITY_WEP = 2;
+        SECURITY_RSN = 3;
+        SECURITY_802_1X = 4;
+        SECURITY_PSK = 5;
+        SECURITY_NONE = 6;
+      }
+      // The security mode of the access point.
+      optional SecurityMode security_mode = 2;
+
+      // Vendor specific information.
+      message VendorInformation {
+        // The model number, for example "0".
+        optional string model_number = 1;
+
+        // The model name (sometimes the same as the model_number),
+        // for example "WZR-HP-AG300H".
+        optional string model_name = 2;
+
+        // The device name (sometimes the same as the model_number),
+        // for example "Dummynet"
+        optional string device_name = 3;
+
+        // The list of vendor-specific OUIs (Organziationally Unqiue
+        // Identifiers). These are provided by the vendor through WPS
+        // (Wireless Provisioning Service) information elements, which
+        // identifies the content of the element.
+        repeated uint32 element_identifier = 4;
+      }
+      // The wireless access point vendor information.
+      optional VendorInformation vendor_info = 3;
+    }
+    // Information of the wireless AP that device is connected to.
+    optional WifiAccessPoint access_point_info = 5;
   }
   optional Network network = 13;
 

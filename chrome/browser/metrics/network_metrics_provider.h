@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/metrics/wifi_access_point_info_provider.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/proto/system_profile.pb.h"
 #include "net/base/net_util.h"
@@ -42,6 +43,12 @@ class NetworkMetricsProvider
   // net::GetWifiPHYLayerProtocol.
   void OnWifiPHYLayerProtocolResult(net::WifiPHYLayerProtocol mode);
 
+  // Writes info about the wireless access points that this system is
+  // connected to.
+  void WriteWifiAccessPointProto(
+      const WifiAccessPointInfoProvider::WifiAccessPointInfo& info,
+      metrics::SystemProfileProto::Network* network_proto);
+
   // True if |connection_type_| changed during the lifetime of the log.
   bool connection_type_is_ambiguous_;
   // The connection type according to net::NetworkChangeNotifier.
@@ -54,6 +61,9 @@ class NetworkMetricsProvider
   net::WifiPHYLayerProtocol wifi_phy_layer_protocol_;
 
   base::WeakPtrFactory<NetworkMetricsProvider> weak_ptr_factory_;
+
+  // Helper object for retrieving connected wifi access point information.
+  scoped_ptr<WifiAccessPointInfoProvider> wifi_access_point_info_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkMetricsProvider);
 };
