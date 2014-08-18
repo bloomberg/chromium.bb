@@ -491,7 +491,7 @@
         'browser/geolocation/wifi_data_provider_chromeos_unittest.cc',
         'browser/geolocation/wifi_data_provider_common_unittest.cc',
         'browser/geolocation/wifi_data_provider_linux_unittest.cc',
-        'browser/geolocation/wifi_data_provider_unittest_win.cc',
+        'browser/geolocation/wifi_data_provider_win_unittest.cc',
         'browser/gpu/gpu_data_manager_impl_private_unittest.cc',
         'browser/gpu/shader_disk_cache_unittest.cc',
         'browser/host_zoom_map_impl_unittest.cc',

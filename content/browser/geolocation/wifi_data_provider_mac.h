@@ -12,18 +12,18 @@ namespace content {
 // Implementation of the wifi data provider for Mac OSX. Uses different API
 // bindings depending on APIs detected available at runtime in order to access
 // wifi scan data: Apple80211.h on OSX 10.5, CoreWLAN framework on OSX 10.6.
-class MacWifiDataProvider : public WifiDataProviderCommon {
+class WifiDataProviderMac : public WifiDataProviderCommon {
  public:
-  MacWifiDataProvider();
+  WifiDataProviderMac();
 
  private:
-  virtual ~MacWifiDataProvider();
+  virtual ~WifiDataProviderMac();
 
   // WifiDataProviderCommon
   virtual WlanApiInterface* NewWlanApi() OVERRIDE;
   virtual WifiPollingPolicy* NewPollingPolicy() OVERRIDE;
 
-  DISALLOW_COPY_AND_ASSIGN(MacWifiDataProvider);
+  DISALLOW_COPY_AND_ASSIGN(WifiDataProviderMac);
 };
 
 // Creates and returns a new API binding for the CoreWLAN API, or NULL if the

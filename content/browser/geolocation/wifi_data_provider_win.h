@@ -10,18 +10,18 @@
 
 namespace content {
 
-class CONTENT_EXPORT Win32WifiDataProvider : public WifiDataProviderCommon {
+class CONTENT_EXPORT WifiDataProviderWin : public WifiDataProviderCommon {
  public:
-  Win32WifiDataProvider();
+  WifiDataProviderWin();
 
  private:
-  virtual ~Win32WifiDataProvider();
+  virtual ~WifiDataProviderWin();
 
   // WifiDataProviderCommon
   virtual WlanApiInterface* NewWlanApi();
   virtual WifiPollingPolicy* NewPollingPolicy();
 
-  DISALLOW_COPY_AND_ASSIGN(Win32WifiDataProvider);
+  DISALLOW_COPY_AND_ASSIGN(WifiDataProviderWin);
 };
 
 }  // namespace content

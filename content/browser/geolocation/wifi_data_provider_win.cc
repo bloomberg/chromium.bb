@@ -43,7 +43,7 @@ namespace {
 const int kInitialBufferSize = 2 << 12;  // Good for about 50 APs.
 const int kMaximumBufferSize = 2 << 20;  // 2MB
 
-// Length for generic string buffers passed to Win32 APIs.
+// Length for generic string buffers passed to Windows APIs.
 const int kStringLength = 512;
 
 // The time periods, in milliseconds, between successive polls of the wifi data.
@@ -147,7 +147,7 @@ bool GetNetworkData(const WLAN_BSS_ENTRY& bss_entry,
 bool UndefineDosDevice(const base::string16& device_name);
 bool DefineDosDeviceIfNotExists(const base::string16& device_name);
 HANDLE GetFileHandle(const base::string16& device_name);
-// Makes the OID query and returns a Win32 error code.
+// Makes the OID query and returns a Windows API error code.
 int PerformQuery(HANDLE adapter_handle,
                  BYTE* buffer,
                  DWORD buffer_size,
@@ -160,16 +160,16 @@ bool GetSystemDirectory(base::string16* path);
 }  // namespace
 
 WifiDataProviderImplBase* WifiDataProvider::DefaultFactoryFunction() {
-  return new Win32WifiDataProvider();
+  return new WifiDataProviderWin();
 }
 
-Win32WifiDataProvider::Win32WifiDataProvider() {
+WifiDataProviderWin::WifiDataProviderWin() {
 }
 
-Win32WifiDataProvider::~Win32WifiDataProvider() {
+WifiDataProviderWin::~WifiDataProviderWin() {
 }
 
-WifiDataProviderCommon::WlanApiInterface* Win32WifiDataProvider::NewWlanApi() {
+WifiDataProviderCommon::WlanApiInterface* WifiDataProviderWin::NewWlanApi() {
   // Use the WLAN interface if we're on Vista and if it's available. Otherwise,
   // use NDIS.
   WlanApiInterface* api = WindowsWlanApi::Create();
@@ -179,7 +179,7 @@ WifiDataProviderCommon::WlanApiInterface* Win32WifiDataProvider::NewWlanApi() {
   return WindowsNdisApi::Create();
 }
 
-WifiPollingPolicy* Win32WifiDataProvider::NewPollingPolicy() {
+WifiPollingPolicy* WifiDataProviderWin::NewPollingPolicy() {
   return new GenericWifiPollingPolicy<kDefaultPollingInterval,
                                       kNoChangePollingInterval,
                                       kTwoNoChangePollingInterval,

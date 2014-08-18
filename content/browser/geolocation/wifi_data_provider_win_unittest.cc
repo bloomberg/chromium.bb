@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,13 +10,13 @@
 
 namespace content {
 
-TEST(GeolocationWin32WifiDataProviderTest, CreateDestroy) {
+TEST(GeolocationWifiDataProviderWinTest, CreateDestroy) {
   // WifiDataProviderCommon requires the client to have a message loop.
   base::MessageLoop dummy_loop;
-  scoped_refptr<Win32WifiDataProvider> instance(new Win32WifiDataProvider);
+  scoped_refptr<WifiDataProviderWin> instance(new WifiDataProviderWin);
   instance = NULL;
   SUCCEED();
-  // Can't actually call start provider on the Win32WifiDataProvider without
+  // Can't actually call start provider on the WifiDataProviderWin without
   // it accessing hardware and so risking making the test flaky.
 }
 
