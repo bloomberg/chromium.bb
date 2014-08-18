@@ -1168,7 +1168,7 @@ def SplitByteNonByte(instruction):
   return [instr_byte, instr_nonbyte]
 
 
-def SplitVYZ(bitness, instruction):
+def SplitVYZ(instruction):
   """Split instruction into versions with 16/32/64-bit operand sizes.
 
   Actual operand size is determined by the following table:
@@ -1181,17 +1181,16 @@ def SplitVYZ(bitness, instruction):
   indistinguishable, we don't produce ones with redundant prefixes.
 
   Args:
-    bitness: 32 or 64.
     instruction: instruction.
 
   Returns:
     List of one to three instructions with specific operand sizes.
   """
-  assert bitness in [32, 64]
-
   instr16 = copy.deepcopy(instruction)
   instr32 = copy.deepcopy(instruction)
   instr64 = copy.deepcopy(instruction)
+  # instr64 is only valid in Amd64 mode
+  instr64.attributes.append('amd64')
 
   has_explicit_operand_size = False
 
@@ -1257,8 +1256,7 @@ def SplitVYZ(bitness, instruction):
   if z_present or v_present:
     result.append(instr16)
   result.append(instr32)
-  if (bitness == 64 and
-      (y_present or v_present) and
+  if ((y_present or v_present) and
       Attribute('norexw') not in instruction.attributes):
     result.append(instr64)
   return result
@@ -1441,11 +1439,6 @@ def main():
     for instruction in ParseDefFile(def_file):
       instruction.CollectPrefixes()
 
-      if options.bitness == 32 and Attribute('amd64') in instruction.attributes:
-        continue
-      if options.bitness == 64 and Attribute('ia32') in instruction.attributes:
-        continue
-
       if mode == VALIDATOR:
         if Attribute('nacl-forbidden') in instruction.attributes:
           continue
@@ -1468,16 +1461,23 @@ def main():
         if Attribute('CPUFeature_XOP') in instruction.attributes:
           continue
 
-      instruction_names.add((instruction.GetNameAsIdentifier(),
-                             instruction.name))
-
       instructions = [instruction]
       instructions = sum(map(SplitRM, instructions), [])
       instructions = sum(map(SplitByteNonByte, instructions), [])
-      instructions = sum([SplitVYZ(options.bitness, instr)
-                          for instr in instructions],
-                         [])
+      instructions = sum(map(SplitVYZ, instructions), [])
       instructions = sum(map(SplitL, instructions), [])
+
+      if options.bitness == 32:
+        instructions = [instruction for instruction in instructions
+                        if not Attribute('amd64') in instruction.attributes]
+      if options.bitness == 64:
+        instructions = [instruction for instruction in instructions
+                        if not Attribute('ia32') in instruction.attributes]
+      if len(instructions) == 0:
+        continue
+
+      instruction_names.add((instruction.GetNameAsIdentifier(),
+                             instruction.name))
 
       header = '##### %s #####\n' % instruction
       variants = [InstructionToString(
