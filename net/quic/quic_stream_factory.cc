@@ -466,6 +466,7 @@ QuicStreamFactory::QuicStreamFactory(
       host_resolver_(host_resolver),
       client_socket_factory_(client_socket_factory),
       http_server_properties_(http_server_properties),
+      transport_security_state_(transport_security_state),
       quic_server_info_factory_(NULL),
       quic_crypto_client_stream_factory_(quic_crypto_client_stream_factory),
       random_generator_(random_generator),
@@ -477,6 +478,7 @@ QuicStreamFactory::QuicStreamFactory(
       enable_port_selection_(enable_port_selection),
       port_seed_(random_generator_->RandUint64()),
       weak_factory_(this) {
+  DCHECK(transport_security_state_);
   crypto_config_.SetDefaults();
   crypto_config_.set_user_agent_id(user_agent_id);
   crypto_config_.AddCanonicalSuffix(".c.youtube.com");
@@ -857,8 +859,8 @@ int QuicStreamFactory::CreateSession(
 
   *session = new QuicClientSession(
       connection, socket.Pass(), writer.Pass(), this,
-      quic_crypto_client_stream_factory_, server_info.Pass(), server_id,
-      config, &crypto_config_,
+      quic_crypto_client_stream_factory_, transport_security_state_,
+      server_info.Pass(), server_id, config, &crypto_config_,
       base::MessageLoop::current()->message_loop_proxy().get(),
       net_log.net_log());
   (*session)->InitializeSession();

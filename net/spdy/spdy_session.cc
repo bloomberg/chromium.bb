@@ -29,10 +29,12 @@
 #include "net/base/net_log.h"
 #include "net/base/net_util.h"
 #include "net/cert/asn1_util.h"
+#include "net/cert/cert_verify_result.h"
 #include "net/http/http_log_util.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_util.h"
+#include "net/http/transport_security_state.h"
 #include "net/spdy/spdy_buffer_producer.h"
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_http_utils.h"
@@ -529,9 +531,47 @@ SpdySession::PushedStreamInfo::PushedStreamInfo(
 
 SpdySession::PushedStreamInfo::~PushedStreamInfo() {}
 
+// static
+bool SpdySession::CanPool(TransportSecurityState* transport_security_state,
+                          const SSLInfo& ssl_info,
+                          const std::string& old_hostname,
+                          const std::string& new_hostname) {
+  // Pooling is prohibited if the server cert is not valid for the new domain,
+  // and for connections on which client certs were sent. It is also prohibited
+  // when channel ID was sent if the hosts are from different eTLDs+1.
+  if (IsCertStatusError(ssl_info.cert_status))
+    return false;
+
+  if (ssl_info.client_cert_sent)
+    return false;
+
+  if (ssl_info.channel_id_sent &&
+      ChannelIDService::GetDomainForHost(new_hostname) !=
+      ChannelIDService::GetDomainForHost(old_hostname)) {
+    return false;
+  }
+
+  bool unused = false;
+  if (!ssl_info.cert->VerifyNameMatch(new_hostname, &unused))
+    return false;
+
+  std::string pinning_failure_log;
+  if (!transport_security_state->CheckPublicKeyPins(
+          new_hostname,
+          true, /* sni_available */
+          ssl_info.is_issued_by_known_root,
+          ssl_info.public_key_hashes,
+          &pinning_failure_log)) {
+    return false;
+  }
+
+  return true;
+}
+
 SpdySession::SpdySession(
     const SpdySessionKey& spdy_session_key,
     const base::WeakPtr<HttpServerProperties>& http_server_properties,
+    TransportSecurityState* transport_security_state,
     bool verify_domain_authentication,
     bool enable_sending_initial_data,
     bool enable_compression,
@@ -547,6 +587,7 @@ SpdySession::SpdySession(
       spdy_session_key_(spdy_session_key),
       pool_(NULL),
       http_server_properties_(http_server_properties),
+      transport_security_state_(transport_security_state),
       read_buffer_(new IOBuffer(kReadBufferSize)),
       stream_hi_water_mark_(kFirstStreamId),
       num_pushed_streams_(0u),
@@ -714,18 +755,8 @@ bool SpdySession::VerifyDomainAuthentication(const std::string& domain) {
   if (!GetSSLInfo(&ssl_info, &was_npn_negotiated, &protocol_negotiated))
     return true;   // This is not a secure session, so all domains are okay.
 
-  // Disable pooling for secure sessions.
-  // TODO(rch): re-enable this.
-  return false;
-#if 0
-  bool unused = false;
-  return
-      !ssl_info.client_cert_sent &&
-      (!ssl_info.channel_id_sent ||
-       (ChannelIDService::GetDomainForHost(domain) ==
-        ChannelIDService::GetDomainForHost(host_port_pair().host()))) &&
-      ssl_info.cert->VerifyNameMatch(domain, &unused);
-#endif
+  return CanPool(transport_security_state_, ssl_info,
+                 host_port_pair().host(), domain);
 }
 
 int SpdySession::GetPushStream(
