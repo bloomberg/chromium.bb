@@ -9,7 +9,7 @@ body {
 <script src="resources/text-based-repaint.js" type="text/javascript"></script>
 <script>
 if (window.testRunner)
-    window.internals.settings.setAcceleratedCompositingForFixedRootBackgroundEnabled(false);
+    window.internals.settings.setPreferCompositingToLCDTextEnabled(false);
 
 function repaintTest() {
     window.scrollTo(0, 1000);

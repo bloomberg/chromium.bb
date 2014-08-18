@@ -15,7 +15,7 @@
         testRunner.dumpAsTextWithPixelResults();
 
     if (window.internals) {
-        window.internals.settings.setAcceleratedCompositingForFixedRootBackgroundEnabled(true);
+        window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
     }
 
     window.onload = function() {

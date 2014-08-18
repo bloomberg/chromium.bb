@@ -452,9 +452,9 @@ void WebSettingsImpl::setCompositorDrivenAcceleratedScrollingEnabled(bool enable
     m_settings->setCompositorDrivenAcceleratedScrollingEnabled(enabled);
 }
 
-void WebSettingsImpl::setAcceleratedCompositingForFixedRootBackgroundEnabled(bool enabled)
+// TODO(danakj): Remove this method.
+void WebSettingsImpl::setAcceleratedCompositingForFixedRootBackgroundEnabled(bool)
 {
-    m_settings->setAcceleratedCompositingForFixedRootBackgroundEnabled(enabled);
 }
 
 void WebSettingsImpl::setAccelerated2dCanvasEnabled(bool enabled)

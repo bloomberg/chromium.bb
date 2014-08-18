@@ -789,10 +789,8 @@ void RenderLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, Gr
 
 bool RenderLayerCompositor::supportsFixedRootBackgroundCompositing() const
 {
-    if (Settings* settings = m_renderView.document().settings()) {
-        if (settings->acceleratedCompositingForFixedRootBackgroundEnabled())
-            return true;
-    }
+    if (Settings* settings = m_renderView.document().settings())
+        return settings->preferCompositingToLCDTextEnabled();
     return false;
 }
 
