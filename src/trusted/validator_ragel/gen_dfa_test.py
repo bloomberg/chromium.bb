@@ -586,7 +586,7 @@ class TestSplit(unittest.TestCase):
   def test_split_vyz(self):
     instr = gen_dfa.Instruction.Parse('mov =Iz !Ev, 0xc7 /0')
 
-    instr1, instr2, instr3 = gen_dfa.SplitVYZ(64, instr)
+    instr1, instr2, instr3 = gen_dfa.SplitVYZ(instr)
 
     self.assertEquals(str(instr1), 'mov =Iw !Ew, 0xc7 /0')
     assert not instr1.rex.w_set
@@ -596,7 +596,7 @@ class TestSplit(unittest.TestCase):
     assert not instr2.rex.w_set
     self.assertEquals(instr2.required_prefixes, [])
 
-    self.assertEquals(str(instr3), 'mov =Id !Eq, 0xc7 /0')
+    self.assertEquals(str(instr3), 'mov =Id !Eq, 0xc7 /0, amd64')
     assert instr3.rex.w_set
     self.assertEquals(instr3.required_prefixes, [])
 

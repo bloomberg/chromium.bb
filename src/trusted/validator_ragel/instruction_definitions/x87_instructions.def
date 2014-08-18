@@ -88,7 +88,7 @@ ficomp Msw, 0xde /3, CPUFeature_x87
 ficomp Msi, 0xda /3, CPUFeature_x87 att-show-name-suffix-l
 ######## FILD ##################################################################
 fild Msw, 0xdf /0, CPUFeature_x87
-fild Msd, 0xdb /0, CPUFeature_x87 att-show-name-suffix-l
+fild Msi, 0xdb /0, CPUFeature_x87 att-show-name-suffix-l
 fild Msq, 0xdf /5, CPUFeature_x87 att-show-name-suffix-ll
 ######## FINCSTP ###############################################################
 fincstp, 0xd9 0xf7, CPUFeature_x87

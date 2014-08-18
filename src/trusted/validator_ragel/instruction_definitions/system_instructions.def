@@ -52,7 +52,7 @@ lsl Ew Gv, 0x0f 0x03, nacl-forbidden
 ######## LTR ###################################################################
 ltr Ew, 0x0f 0x00 /3, nacl-forbidden
 ######## MONITOR ###############################################################
-monitor ar cr dr, 0x0f 0x01 0xc8, CPUFeature_MON
+monitor ar cr =dr, 0x0f 0x01 0xc8, CPUFeature_MON
 ######## MOV (CRn) #############################################################
 mov Rr Cr, 0x0f 0x22, nacl-forbidden
 mov Cr Rr, 0x0f 0x20, nacl-forbidden
@@ -65,7 +65,7 @@ mov Cr Rr, 0xf0 0x0f 0x20, CPUFeature_ALTMOVCR8 nacl-forbidden
 # mov Dr Rr, 0x0f 0x21, nacl-forbidden
 # mov Rr Dr, 0x0f 0x23, nacl-forbidden
 ######## MWAIT #################################################################
-mwait ar cr, 0x0f 0x01 0xc9, CPUFeature_MON
+mwait ar =cr, 0x0f 0x01 0xc9, CPUFeature_MON
 ######## RDMSR #################################################################
 # "rdmsr" is not marked as nacl-amd64-zero-extends because you shouldn't be
 # reading model specific registers.
