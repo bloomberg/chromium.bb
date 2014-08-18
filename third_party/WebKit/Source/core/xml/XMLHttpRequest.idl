@@ -82,5 +82,5 @@ enum XMLHttpRequestResponseType {
     readonly attribute DOMString statusText;
 
     // Extension
-    [RaisesException] void overrideMimeType(DOMString override);
+    void overrideMimeType(DOMString override);
 };
