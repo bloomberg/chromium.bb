@@ -304,6 +304,10 @@ gfx::GpuMemoryBufferHandle GpuChannelHost::ShareGpuMemoryBufferToGpuProcess(
       handle.handle = ShareToGpuProcess(source_handle.handle);
       return handle;
     }
+#if defined(USE_OZONE)
+    case gfx::OZONE_NATIVE_BUFFER:
+      return source_handle;
+#endif
 #if defined(OS_MACOSX)
     case gfx::IO_SURFACE_BUFFER:
       return source_handle;

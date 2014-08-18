@@ -6,6 +6,7 @@
 #define CONTENT_COMMON_GPU_CLIENT_GPU_MEMORY_BUFFER_FACTORY_HOST_H_
 
 #include "base/callback.h"
+#include "content/common/content_export.h"
 
 namespace gfx {
 class Size;
@@ -19,6 +20,8 @@ class CONTENT_EXPORT GpuMemoryBufferFactoryHost {
   typedef base::Callback<void(const gfx::GpuMemoryBufferHandle& handle)>
       CreateGpuMemoryBufferCallback;
 
+  static GpuMemoryBufferFactoryHost* GetInstance();
+
   virtual void CreateGpuMemoryBuffer(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
@@ -29,7 +32,8 @@ class CONTENT_EXPORT GpuMemoryBufferFactoryHost {
                                       int32 sync_point) = 0;
 
  protected:
-  virtual ~GpuMemoryBufferFactoryHost() {}
+  GpuMemoryBufferFactoryHost();
+  virtual ~GpuMemoryBufferFactoryHost();
 };
 
 }  // namespace content

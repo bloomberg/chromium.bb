@@ -27,12 +27,13 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
                                                 unsigned usage);
 
   // Allocates a GPU memory buffer with |size| and |internalformat| for |usage|
-  // by |child_process|. The |handle| returned can be used by the
-  // |child_process| to create an instance of this class.
+  // by |child_process| identified by |child_id|. The |handle| returned can be
+  // used by the |child_process| to create an instance of this class.
   static void AllocateForChildProcess(const gfx::Size& size,
                                       unsigned internalformat,
                                       unsigned usage,
                                       base::ProcessHandle child_process,
+                                      int child_id,
                                       const AllocationCallback& callback);
 
   // Notify that GPU memory buffer has been deleted by |child_process|.

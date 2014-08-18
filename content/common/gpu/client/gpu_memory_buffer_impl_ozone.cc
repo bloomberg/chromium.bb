@@ -1,10 +1,10 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 
-#include "content/common/gpu/client/gpu_memory_buffer_impl_io_surface.h"
+#include "content/common/gpu/client/gpu_memory_buffer_impl_ozone_native_buffer.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl_shared_memory.h"
 
 namespace content {
@@ -35,6 +35,12 @@ void GpuMemoryBufferImpl::AllocateForChildProcess(
     base::ProcessHandle child_process,
     int child_id,
     const AllocationCallback& callback) {
+  if (GpuMemoryBufferImplOzoneNativeBuffer::IsConfigurationSupported(
+          internalformat, usage)) {
+    GpuMemoryBufferImplOzoneNativeBuffer::AllocateOzoneNativeBufferForChildId(
+        size, internalformat, usage, child_id, callback);
+    return;
+  }
   if (GpuMemoryBufferImplSharedMemory::IsConfigurationSupported(
           size, internalformat, usage)) {
     GpuMemoryBufferImplSharedMemory::AllocateSharedMemoryForChildProcess(
@@ -66,9 +72,9 @@ scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImpl::CreateFromHandle(
 
       return buffer.PassAs<GpuMemoryBufferImpl>();
     }
-    case gfx::IO_SURFACE_BUFFER: {
-      scoped_ptr<GpuMemoryBufferImplIOSurface> buffer(
-          new GpuMemoryBufferImplIOSurface(size, internalformat));
+    case gfx::OZONE_NATIVE_BUFFER: {
+      scoped_ptr<GpuMemoryBufferImplOzoneNativeBuffer> buffer(
+          new GpuMemoryBufferImplOzoneNativeBuffer(size, internalformat));
       if (!buffer->InitializeFromHandle(handle))
         return scoped_ptr<GpuMemoryBufferImpl>();
 

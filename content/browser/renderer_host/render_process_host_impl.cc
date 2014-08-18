@@ -2334,6 +2334,7 @@ void RenderProcessHostImpl::OnAllocateGpuMemoryBuffer(uint32 width,
       internalformat,
       usage,
       GetHandle(),
+      GetID(),
       base::Bind(&RenderProcessHostImpl::GpuMemoryBufferAllocated,
                  weak_factory_.GetWeakPtr(),
                  reply));

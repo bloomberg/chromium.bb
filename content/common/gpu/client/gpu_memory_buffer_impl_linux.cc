@@ -32,6 +32,7 @@ void GpuMemoryBufferImpl::AllocateForChildProcess(
     unsigned internalformat,
     unsigned usage,
     base::ProcessHandle child_process,
+    int child_id,
     const AllocationCallback& callback) {
   if (GpuMemoryBufferImplSharedMemory::IsConfigurationSupported(
           size, internalformat, usage)) {
