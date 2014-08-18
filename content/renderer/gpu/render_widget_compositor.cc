@@ -22,6 +22,7 @@
 #include "cc/debug/micro_benchmark.h"
 #include "cc/input/layer_selection_bound.h"
 #include "cc/layers/layer.h"
+#include "cc/output/begin_frame_args.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/resources/single_release_callback.h"
@@ -55,10 +56,11 @@ namespace cc {
 class Layer;
 }
 
+using blink::WebBeginFrameArgs;
 using blink::WebFloatPoint;
+using blink::WebRect;
 using blink::WebSelectionBound;
 using blink::WebSize;
-using blink::WebRect;
 
 namespace content {
 namespace {
@@ -437,10 +439,6 @@ bool RenderWidgetCompositor::BeginMainFrameRequested() const {
   return layer_tree_host_->BeginMainFrameRequested();
 }
 
-void RenderWidgetCompositor::UpdateAnimations(base::TimeTicks time) {
-  layer_tree_host_->UpdateClientAnimations(time);
-}
-
 void RenderWidgetCompositor::SetNeedsDisplayOnAllLayers() {
   layer_tree_host_->SetNeedsDisplayOnAllLayers();
 }
@@ -758,9 +756,10 @@ void RenderWidgetCompositor::DidBeginMainFrame() {
   widget_->InstrumentDidBeginFrame();
 }
 
-void RenderWidgetCompositor::Animate(base::TimeTicks frame_begin_time) {
-  widget_->webwidget()->animate(
-      (frame_begin_time - base::TimeTicks()).InSecondsF());
+void RenderWidgetCompositor::BeginMainFrame(const cc::BeginFrameArgs& args) {
+  double frame_time = (args.frame_time - base::TimeTicks()).InSecondsF();
+  WebBeginFrameArgs web_begin_frame_args = WebBeginFrameArgs(frame_time);
+  widget_->webwidget()->beginFrame(web_begin_frame_args);
 }
 
 void RenderWidgetCompositor::Layout() {

@@ -427,9 +427,9 @@ class CC_EXPORT LayerTreeHostImpl
 
   void SetTreePriority(TreePriority priority);
 
-  void UpdateCurrentFrameTime();
-  void ResetCurrentFrameTimeForNextFrame();
-  virtual base::TimeTicks CurrentFrameTimeTicks();
+  void UpdateCurrentBeginFrameArgs(const BeginFrameArgs& args);
+  void ResetCurrentBeginFrameArgsForNextFrame();
+  virtual BeginFrameArgs CurrentBeginFrameArgs() const;
 
   // Expected time between two begin impl frame calls.
   base::TimeDelta begin_impl_frame_interval() const {
@@ -696,7 +696,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   gfx::Rect viewport_damage_rect_;
 
-  base::TimeTicks current_frame_timeticks_;
+  BeginFrameArgs current_begin_frame_args_;
 
   // Expected time between two begin impl frame calls.
   base::TimeDelta begin_impl_frame_interval_;

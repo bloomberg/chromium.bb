@@ -694,8 +694,8 @@ void ThreadProxy::ScheduledActionSendBeginMainFrame() {
   scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state(
       new BeginMainFrameAndCommitState);
   begin_main_frame_state->begin_frame_id = begin_frame_id;
-  begin_main_frame_state->monotonic_frame_begin_time =
-      impl().layer_tree_host_impl->CurrentFrameTimeTicks();
+  begin_main_frame_state->begin_frame_args =
+      impl().layer_tree_host_impl->CurrentBeginFrameArgs();
   begin_main_frame_state->scroll_info =
       impl().layer_tree_host_impl->ProcessScrollDeltas();
 
@@ -782,12 +782,11 @@ void ThreadProxy::BeginMainFrame(
 
   layer_tree_host()->WillBeginMainFrame();
 
-  layer_tree_host()->UpdateClientAnimations(
-      begin_main_frame_state->monotonic_frame_begin_time);
+  layer_tree_host()->BeginMainFrame(begin_main_frame_state->begin_frame_args);
   layer_tree_host()->AnimateLayers(
-      begin_main_frame_state->monotonic_frame_begin_time);
+      begin_main_frame_state->begin_frame_args.frame_time);
   blocked_main().last_monotonic_frame_begin_time =
-      begin_main_frame_state->monotonic_frame_begin_time;
+      begin_main_frame_state->begin_frame_args.frame_time;
 
   // Unlink any backings that the impl thread has evicted, so that we know to
   // re-paint them in UpdateLayers.
@@ -959,7 +958,7 @@ void ThreadProxy::ScheduledActionAnimate() {
 
   if (!impl().animations_frozen_until_next_draw) {
     impl().animation_time =
-        impl().layer_tree_host_impl->CurrentFrameTimeTicks();
+        impl().layer_tree_host_impl->CurrentBeginFrameArgs().frame_time;
   }
   impl().layer_tree_host_impl->Animate(impl().animation_time);
   impl().did_commit_after_animating = false;
@@ -1169,7 +1168,7 @@ base::TimeDelta ThreadProxy::CommitToActivateDurationEstimate() {
 }
 
 void ThreadProxy::DidBeginImplFrameDeadline() {
-  impl().layer_tree_host_impl->ResetCurrentFrameTimeForNextFrame();
+  impl().layer_tree_host_impl->ResetCurrentBeginFrameArgsForNextFrame();
 }
 
 void ThreadProxy::ReadyToFinalizeTextureUpdates() {

@@ -39,7 +39,7 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
                     kTimeCheckInterval),
         commit_timer_(0, base::TimeDelta(), 1),
         full_damage_each_frame_(false),
-        animation_driven_drawing_(false),
+        begin_frame_driven_drawing_(false),
         measure_commit_cost_(false) {
     fake_content_layer_client_.set_paint_all_opaque(true);
   }
@@ -53,8 +53,8 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void Animate(base::TimeTicks monotonic_time) OVERRIDE {
-    if (animation_driven_drawing_ && !TestEnded()) {
+  virtual void BeginMainFrame(const BeginFrameArgs& args) OVERRIDE {
+    if (begin_frame_driven_drawing_ && !TestEnded()) {
       layer_tree_host()->SetNeedsAnimate();
       layer_tree_host()->SetNextCommitForcesRedraw();
     }
@@ -79,7 +79,7 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
       CleanUpAndEndTest(impl);
       return;
     }
-    if (!animation_driven_drawing_)
+    if (!begin_frame_driven_drawing_)
       impl->SetNeedsRedraw();
     if (full_damage_each_frame_)
       impl->SetFullRootLayerDamage();
@@ -108,7 +108,7 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
   std::string test_name_;
   FakeContentLayerClient fake_content_layer_client_;
   bool full_damage_each_frame_;
-  bool animation_driven_drawing_;
+  bool begin_frame_driven_drawing_;
 
   bool measure_commit_cost_;
 };
@@ -324,7 +324,7 @@ TEST_F(BrowserCompositorInvalidateLayerTreePerfTest, DenseBrowserUI) {
 
 // Simulates a page with several large, transformed and animated layers.
 TEST_F(LayerTreeHostPerfTestJsonReader, HeavyPageThreadedImplSide) {
-  animation_driven_drawing_ = true;
+  begin_frame_driven_drawing_ = true;
   measure_commit_cost_ = true;
   SetTestName("heavy_page");
   ReadTestFile("heavy_layer_tree");

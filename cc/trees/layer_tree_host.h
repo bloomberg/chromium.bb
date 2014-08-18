@@ -104,7 +104,7 @@ class CC_EXPORT LayerTreeHost {
     client_->WillBeginMainFrame(source_frame_number_);
   }
   void DidBeginMainFrame();
-  void UpdateClientAnimations(base::TimeTicks monotonic_frame_begin_time);
+  void BeginMainFrame(const BeginFrameArgs& args);
   void AnimateLayers(base::TimeTicks monotonic_frame_begin_time);
   void DidStopFlinging();
   void Layout();
@@ -361,7 +361,7 @@ class CC_EXPORT LayerTreeHost {
 
   void NotifySwapPromiseMonitorsOfSetNeedsCommit();
 
-  bool animating_;
+  bool inside_begin_main_frame_;
   bool needs_full_tree_sync_;
 
   base::CancelableClosure prepaint_callback_;

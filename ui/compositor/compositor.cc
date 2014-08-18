@@ -18,6 +18,7 @@
 #include "cc/base/switches.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
+#include "cc/output/begin_frame_args.h"
 #include "cc/output/context_provider.h"
 #include "cc/trees/layer_tree_host.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -224,10 +225,13 @@ void Compositor::Draw() {
   if (!IsLocked()) {
     // TODO(nduca): Temporary while compositor calls
     // compositeImmediately() directly.
-    base::TimeTicks now = gfx::FrameTime::Now();
-    Animate(now);
+    cc::BeginFrameArgs args =
+        cc::BeginFrameArgs::Create(gfx::FrameTime::Now(),
+                                   base::TimeTicks(),
+                                   cc::BeginFrameArgs::DefaultInterval());
+    BeginMainFrame(args);
     Layout();
-    host_->Composite(now);
+    host_->Composite(args.frame_time);
   }
   if (swap_state_ == SWAP_NONE)
     NotifyEnd();
@@ -316,10 +320,10 @@ bool Compositor::HasAnimationObserver(CompositorAnimationObserver* observer) {
   return animation_observer_list_.HasObserver(observer);
 }
 
-void Compositor::Animate(base::TimeTicks frame_begin_time) {
+void Compositor::BeginMainFrame(const cc::BeginFrameArgs& args) {
   FOR_EACH_OBSERVER(CompositorAnimationObserver,
                     animation_observer_list_,
-                    OnAnimationStep(frame_begin_time));
+                    OnAnimationStep(args.frame_time));
   if (animation_observer_list_.might_have_observers())
     host_->SetNeedsAnimate();
 }

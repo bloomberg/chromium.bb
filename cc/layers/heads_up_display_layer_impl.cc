@@ -13,6 +13,7 @@
 #include "cc/debug/debug_colors.h"
 #include "cc/debug/frame_rate_counter.h"
 #include "cc/debug/paint_time_counter.h"
+#include "cc/output/begin_frame_args.h"
 #include "cc/output/renderer.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/memory_history.h"
@@ -192,7 +193,7 @@ void HeadsUpDisplayLayerImpl::UpdateHudContents() {
   const LayerTreeDebugState& debug_state = layer_tree_impl()->debug_state();
 
   // Don't update numbers every frame so text is readable.
-  base::TimeTicks now = layer_tree_impl()->CurrentFrameTimeTicks();
+  base::TimeTicks now = layer_tree_impl()->CurrentBeginFrameArgs().frame_time;
   if (base::TimeDelta(now - time_of_last_graph_update_).InSecondsF() > 0.25f) {
     time_of_last_graph_update_ = now;
 

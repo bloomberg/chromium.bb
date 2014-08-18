@@ -161,7 +161,7 @@ class LayerTreeHostImplTimeSourceAdapter : public TimeSourceClient {
     }
 
     layer_tree_host_impl_->Animate(
-        layer_tree_host_impl_->CurrentFrameTimeTicks());
+        layer_tree_host_impl_->CurrentBeginFrameArgs().frame_time);
     layer_tree_host_impl_->UpdateBackgroundAnimateTicking(true);
     bool start_ready_animations = true;
     layer_tree_host_impl_->UpdateAnimationState(start_ready_animations);
@@ -171,7 +171,7 @@ class LayerTreeHostImplTimeSourceAdapter : public TimeSourceClient {
       layer_tree_host_impl_->ManageTiles();
     }
 
-    layer_tree_host_impl_->ResetCurrentFrameTimeForNextFrame();
+    layer_tree_host_impl_->ResetCurrentBeginFrameArgsForNextFrame();
   }
 
   void SetActive(bool active) {
@@ -1677,7 +1677,7 @@ void LayerTreeHostImpl::SetNeedsBeginFrame(bool enable) {
 void LayerTreeHostImpl::WillBeginImplFrame(const BeginFrameArgs& args) {
   // Sample the frame time now. This time will be used for updating animations
   // when we draw.
-  UpdateCurrentFrameTime();
+  UpdateCurrentBeginFrameArgs(args);
   // Cache the begin impl frame interval
   begin_impl_frame_interval_ = args.interval;
 }
@@ -2396,9 +2396,9 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
     new_target.SetToMax(gfx::Vector2dF());
     new_target.SetToMin(layer_impl->MaxScrollOffset());
 
-    curve->UpdateTarget(
-        animation->TrimTimeToCurrentIteration(CurrentFrameTimeTicks()),
-        new_target);
+    curve->UpdateTarget(animation->TrimTimeToCurrentIteration(
+                            CurrentBeginFrameArgs().frame_time),
+                        new_target);
 
     return ScrollStarted;
   }
@@ -3171,22 +3171,28 @@ void LayerTreeHostImpl::SetTreePriority(TreePriority priority) {
   DidModifyTilePriorities();
 }
 
-void LayerTreeHostImpl::UpdateCurrentFrameTime() {
-  DCHECK(current_frame_timeticks_.is_null());
-  current_frame_timeticks_ = gfx::FrameTime::Now();
+void LayerTreeHostImpl::UpdateCurrentBeginFrameArgs(
+    const BeginFrameArgs& args) {
+  DCHECK(!current_begin_frame_args_.IsValid());
+  current_begin_frame_args_ = args;
+  // TODO(skyostil): Stop overriding the frame time once the usage of frame
+  // timing is unified.
+  current_begin_frame_args_.frame_time = gfx::FrameTime::Now();
 }
 
-void LayerTreeHostImpl::ResetCurrentFrameTimeForNextFrame() {
-  current_frame_timeticks_ = base::TimeTicks();
+void LayerTreeHostImpl::ResetCurrentBeginFrameArgsForNextFrame() {
+  current_begin_frame_args_ = BeginFrameArgs();
 }
 
-base::TimeTicks LayerTreeHostImpl::CurrentFrameTimeTicks() {
+BeginFrameArgs LayerTreeHostImpl::CurrentBeginFrameArgs() const {
   // Try to use the current frame time to keep animations non-jittery.  But if
   // we're not in a frame (because this is during an input event or a delayed
   // task), fall back to physical time.  This should still be monotonic.
-  if (!current_frame_timeticks_.is_null())
-    return current_frame_timeticks_;
-  return gfx::FrameTime::Now();
+  if (current_begin_frame_args_.IsValid())
+    return current_begin_frame_args_;
+  return BeginFrameArgs::Create(gfx::FrameTime::Now(),
+                                base::TimeTicks(),
+                                BeginFrameArgs::DefaultInterval());
 }
 
 scoped_refptr<base::debug::ConvertableToTraceFormat>

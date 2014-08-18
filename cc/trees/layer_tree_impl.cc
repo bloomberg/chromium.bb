@@ -744,8 +744,8 @@ bool LayerTreeImpl::PinchGestureActive() const {
   return layer_tree_host_impl_->pinch_gesture_active();
 }
 
-base::TimeTicks LayerTreeImpl::CurrentFrameTimeTicks() const {
-  return layer_tree_host_impl_->CurrentFrameTimeTicks();
+BeginFrameArgs LayerTreeImpl::CurrentBeginFrameArgs() const {
+  return layer_tree_host_impl_->CurrentBeginFrameArgs();
 }
 
 base::TimeDelta LayerTreeImpl::begin_impl_frame_interval() const {

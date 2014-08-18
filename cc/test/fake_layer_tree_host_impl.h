@@ -28,8 +28,8 @@ class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
 
   virtual void CreatePendingTree() OVERRIDE;
 
-  virtual base::TimeTicks CurrentFrameTimeTicks() OVERRIDE;
-  void SetCurrentFrameTimeTicks(base::TimeTicks current_frame_time_ticks);
+  virtual BeginFrameArgs CurrentBeginFrameArgs() const OVERRIDE;
+  void SetCurrentBeginFrameArgs(const BeginFrameArgs& args);
   void UpdateNumChildrenAndDrawPropertiesForActiveTree();
   static void UpdateNumChildrenAndDrawProperties(LayerTreeImpl* layerTree);
   static int RecursiveUpdateNumChildren(LayerImpl* layer);
@@ -38,7 +38,7 @@ class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
   using LayerTreeHostImpl::manage_tiles_needed;
 
  private:
-  base::TimeTicks current_frame_time_ticks_;
+  BeginFrameArgs current_begin_frame_args_;
   FakeLayerTreeHostImplClient client_;
   FakeRenderingStatsInstrumentation stats_instrumentation_;
 };

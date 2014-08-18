@@ -15,6 +15,7 @@ namespace cc {
 
 // Functions for quickly creating BeginFrameArgs
 BeginFrameArgs CreateBeginFrameArgsForTesting();
+BeginFrameArgs CreateBeginFrameArgsForTesting(base::TimeTicks frame_time);
 BeginFrameArgs CreateBeginFrameArgsForTesting(int64 frame_time,
                                               int64 deadline,
                                               int64 interval);

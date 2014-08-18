@@ -6,6 +6,7 @@
 #include "cc/debug/lap_timer.h"
 #include "cc/resources/tile.h"
 #include "cc/resources/tile_priority.h"
+#include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
@@ -21,6 +22,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
+
+#include "ui/gfx/frame_time.h"
 
 namespace cc {
 
@@ -390,7 +393,8 @@ class TileManagerPerfTest : public testing::Test {
         CreateLayers(layer_count, approximate_tile_count_per_layer);
     timer_.Reset();
     do {
-      host_impl_.UpdateCurrentFrameTime();
+      BeginFrameArgs args = CreateBeginFrameArgsForTesting();
+      host_impl_.UpdateCurrentBeginFrameArgs(args);
       for (unsigned i = 0; i < layers.size(); ++i)
         layers[i]->UpdateTiles(NULL);
 
@@ -398,7 +402,7 @@ class TileManagerPerfTest : public testing::Test {
       tile_manager()->ManageTiles(global_state);
       tile_manager()->UpdateVisibleTiles();
       timer_.NextLap();
-      host_impl_.ResetCurrentFrameTimeForNextFrame();
+      host_impl_.ResetCurrentBeginFrameArgsForNextFrame();
     } while (!timer_.HasTimeLimitExpired());
 
     perf_test::PrintResult(

@@ -97,7 +97,7 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client,
                              const LayerTreeSettings& settings)
     : micro_benchmark_controller_(this),
       next_ui_resource_id_(1),
-      animating_(false),
+      inside_begin_main_frame_(false),
       needs_full_tree_sync_(true),
       client_(client),
       source_frame_number_(0),
@@ -239,10 +239,10 @@ void LayerTreeHost::DidBeginMainFrame() {
   client_->DidBeginMainFrame();
 }
 
-void LayerTreeHost::UpdateClientAnimations(base::TimeTicks frame_begin_time) {
-  animating_ = true;
-  client_->Animate(frame_begin_time);
-  animating_ = false;
+void LayerTreeHost::BeginMainFrame(const BeginFrameArgs& args) {
+  inside_begin_main_frame_ = true;
+  client_->BeginMainFrame(args);
+  inside_begin_main_frame_ = false;
 }
 
 void LayerTreeHost::DidStopFlinging() {
@@ -1093,7 +1093,7 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
 }
 
 void LayerTreeHost::StartRateLimiter() {
-  if (animating_)
+  if (inside_begin_main_frame_)
     return;
 
   if (!rate_limit_timer_.IsRunning()) {

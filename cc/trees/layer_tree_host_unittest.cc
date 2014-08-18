@@ -747,7 +747,7 @@ class LayerTreeHostTestFrameTimeUpdatesAfterActivationFails
 
     if (frame_count_with_pending_tree_ == 1) {
       EXPECT_EQ(first_frame_time_.ToInternalValue(), 0);
-      first_frame_time_ = impl->CurrentFrameTimeTicks();
+      first_frame_time_ = impl->CurrentBeginFrameArgs().frame_time;
     } else if (frame_count_with_pending_tree_ == 2) {
       impl->BlockNotifyReadyToActivateForTesting(false);
     }
@@ -757,7 +757,7 @@ class LayerTreeHostTestFrameTimeUpdatesAfterActivationFails
     if (frame_count_with_pending_tree_ > 1) {
       EXPECT_NE(first_frame_time_.ToInternalValue(), 0);
       EXPECT_NE(first_frame_time_.ToInternalValue(),
-                impl->CurrentFrameTimeTicks().ToInternalValue());
+                impl->CurrentBeginFrameArgs().frame_time.ToInternalValue());
       EndTest();
       return;
     }
@@ -796,7 +796,7 @@ class LayerTreeHostTestFrameTimeUpdatesAfterDraw : public LayerTreeHostTest {
   virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     frame_++;
     if (frame_ == 1) {
-      first_frame_time_ = impl->CurrentFrameTimeTicks();
+      first_frame_time_ = impl->CurrentBeginFrameArgs().frame_time;
       impl->SetNeedsRedraw();
 
       // Since we might use a low-resolution clock on Windows, we need to
@@ -807,7 +807,7 @@ class LayerTreeHostTestFrameTimeUpdatesAfterDraw : public LayerTreeHostTest {
       return;
     }
 
-    EXPECT_NE(first_frame_time_, impl->CurrentFrameTimeTicks());
+    EXPECT_NE(first_frame_time_, impl->CurrentBeginFrameArgs().frame_time);
     EndTest();
   }
 
@@ -4987,7 +4987,7 @@ class LayerTreeHostTestContinuousPainting : public LayerTreeHostTest {
                                           milliseconds_per_frame));
   }
 
-  virtual void Animate(base::TimeTicks monotonic_time) OVERRIDE {
+  virtual void BeginMainFrame(const BeginFrameArgs& args) OVERRIDE {
     child_layer_->SetNeedsDisplay();
   }
 

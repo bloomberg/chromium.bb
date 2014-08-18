@@ -15,6 +15,7 @@
 #include "cc/debug/micro_benchmark_impl.h"
 #include "cc/debug/traced_value.h"
 #include "cc/layers/append_quads_data.h"
+#include "cc/output/begin_frame_args.h"
 #include "cc/quads/checkerboard_draw_quad.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/picture_draw_quad.h"
@@ -458,7 +459,7 @@ void PictureLayerImpl::UpdateTilePriorities(
   TRACE_EVENT0("cc", "PictureLayerImpl::UpdateTilePriorities");
 
   double current_frame_time_in_seconds =
-      (layer_tree_impl()->CurrentFrameTimeTicks() -
+      (layer_tree_impl()->CurrentBeginFrameArgs().frame_time -
        base::TimeTicks()).InSecondsF();
 
   bool tiling_needs_update = false;

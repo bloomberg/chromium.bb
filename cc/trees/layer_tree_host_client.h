@@ -17,14 +17,15 @@ namespace cc {
 class ContextProvider;
 class InputHandlerClient;
 class OutputSurface;
+struct BeginFrameArgs;
 
 class LayerTreeHostClient {
  public:
   virtual void WillBeginMainFrame(int frame_id) = 0;
   // Marks finishing compositing-related tasks on the main thread. In threaded
   // mode, this corresponds to DidCommit().
+  virtual void BeginMainFrame(const BeginFrameArgs& args) = 0;
   virtual void DidBeginMainFrame() = 0;
-  virtual void Animate(base::TimeTicks frame_begin_time) = 0;
   virtual void Layout() = 0;
   virtual void ApplyScrollAndScale(const gfx::Vector2d& scroll_delta,
                                    float page_scale) = 0;

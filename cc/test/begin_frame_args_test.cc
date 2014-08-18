@@ -11,10 +11,14 @@
 namespace cc {
 
 BeginFrameArgs CreateBeginFrameArgsForTesting() {
-  base::TimeTicks now = gfx::FrameTime::Now();
-  return BeginFrameArgs::Create(now,
-                                now + (BeginFrameArgs::DefaultInterval() / 2),
-                                BeginFrameArgs::DefaultInterval());
+  return CreateBeginFrameArgsForTesting(gfx::FrameTime::Now());
+}
+
+BeginFrameArgs CreateBeginFrameArgsForTesting(base::TimeTicks frame_time) {
+  return BeginFrameArgs::Create(
+      frame_time,
+      frame_time + (BeginFrameArgs::DefaultInterval() / 2),
+      BeginFrameArgs::DefaultInterval());
 }
 
 BeginFrameArgs CreateBeginFrameArgsForTesting(int64 frame_time,

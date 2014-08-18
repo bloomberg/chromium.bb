@@ -69,7 +69,7 @@ class CONTENT_EXPORT CompositorImpl
   // LayerTreeHostClient implementation.
   virtual void WillBeginMainFrame(int frame_id) OVERRIDE {}
   virtual void DidBeginMainFrame() OVERRIDE {}
-  virtual void Animate(base::TimeTicks frame_begin_time) OVERRIDE {}
+  virtual void BeginMainFrame(const cc::BeginFrameArgs& args) OVERRIDE {}
   virtual void Layout() OVERRIDE;
   virtual void ApplyScrollAndScale(const gfx::Vector2d& scroll_delta,
                                    float page_scale) OVERRIDE {}

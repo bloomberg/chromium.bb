@@ -60,7 +60,7 @@ class TestHooks : public AnimationDelegate {
                                  base::TimeTicks monotonic_time) {}
   virtual void ApplyScrollAndScale(const gfx::Vector2d& scroll_delta,
                                    float scale) {}
-  virtual void Animate(base::TimeTicks monotonic_time) {}
+  virtual void BeginMainFrame(const BeginFrameArgs& args) {}
   virtual void WillBeginMainFrame() {}
   virtual void DidBeginMainFrame() {}
   virtual void Layout() {}

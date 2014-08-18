@@ -38,6 +38,7 @@
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/resources/layer_tiling_data.h"
 #include "cc/test/animation_test_common.h"
+#include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
@@ -1330,8 +1331,8 @@ class LayerTreeHostImplOverridePhysicalTime : public LayerTreeHostImpl {
                           manager,
                           0) {}
 
-  virtual base::TimeTicks CurrentFrameTimeTicks() OVERRIDE {
-    return fake_current_physical_time_;
+  virtual BeginFrameArgs CurrentBeginFrameArgs() const OVERRIDE {
+    return CreateBeginFrameArgsForTesting(fake_current_physical_time_);
   }
 
   void SetCurrentPhysicalTimeTicksForTest(base::TimeTicks fake_now) {

@@ -90,7 +90,7 @@ class CC_EXPORT LayerTreeImpl {
   LayerImpl* FindRecycleTreeLayerById(int id);
   int MaxTextureSize() const;
   bool PinchGestureActive() const;
-  base::TimeTicks CurrentFrameTimeTicks() const;
+  BeginFrameArgs CurrentBeginFrameArgs() const;
   base::TimeDelta begin_impl_frame_interval() const;
   void SetNeedsCommit();
   gfx::Rect DeviceViewport() const;

@@ -276,8 +276,8 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
     test_hooks_->DidBeginMainFrame();
   }
 
-  virtual void Animate(base::TimeTicks monotonic_time) OVERRIDE {
-    test_hooks_->Animate(monotonic_time);
+  virtual void BeginMainFrame(const BeginFrameArgs& args) OVERRIDE {
+    test_hooks_->BeginMainFrame(args);
   }
 
   virtual void Layout() OVERRIDE { test_hooks_->Layout(); }
