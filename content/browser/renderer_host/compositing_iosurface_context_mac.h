@@ -19,8 +19,6 @@
 
 namespace content {
 
-class CompositingIOSurfaceShaderPrograms;
-
 class CompositingIOSurfaceContext
     : public base::RefCounted<CompositingIOSurfaceContext>,
       public content::GpuDataManagerObserver {
@@ -46,9 +44,6 @@ class CompositingIOSurfaceContext
   void PoisonContextAndSharegroup();
   bool HasBeenPoisoned() const { return poisoned_; }
 
-  CompositingIOSurfaceShaderPrograms* shader_program_cache() const {
-    return shader_program_cache_.get();
-  }
   CGLContextObj cgl_context() const { return cgl_context_; }
   int window_number() const { return window_number_; }
 
@@ -61,8 +56,7 @@ class CompositingIOSurfaceContext
   CompositingIOSurfaceContext(
       int window_number,
       base::ScopedTypeRef<CGLContextObj> clg_context_strong,
-      CGLContextObj clg_context,
-      scoped_ptr<CompositingIOSurfaceShaderPrograms> shader_program_cache);
+      CGLContextObj clg_context);
   virtual ~CompositingIOSurfaceContext();
 
   int window_number_;
@@ -70,7 +64,6 @@ class CompositingIOSurfaceContext
   // Weak, backed by |cgl_context_strong_|.
   CGLContextObj cgl_context_;
 
-  scoped_ptr<CompositingIOSurfaceShaderPrograms> shader_program_cache_;
   bool poisoned_;
 
   // The global map from window number and window ordering to
