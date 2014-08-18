@@ -3745,9 +3745,6 @@
                   ['clang==1 and arm_arch!="" and OS!="android"', {
                     'cflags': [
                       '-target arm-linux-gnueabihf',
-                      # TODO(sbc): Remove this once the warning in libvpx is fixed:
-                      # https://code.google.com/p/webm/issues/detail?id=829
-                      '-Wno-absolute-value',
                     ],
                     'ldflags': [
                       '-target arm-linux-gnueabihf',
