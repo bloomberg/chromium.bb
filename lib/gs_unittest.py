@@ -8,10 +8,12 @@
 import functools
 import datetime
 import os
+import string # pylint: disable=W0402
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))))
 
+from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
@@ -544,6 +546,16 @@ class GSRetryFilterTest(cros_test_lib.TestCase):
 
 class GSContextTest(AbstractGSContextTest):
   """Tests for GSContext()"""
+
+  def testTemporaryUrl(self):
+    """Just verify the url helper generates valid URLs."""
+    with gs.TemporaryURL('mock') as url:
+      base = url[0:len(constants.TRASH_BUCKET)]
+      self.assertEqual(base, constants.TRASH_BUCKET)
+
+      valid_chars = set(string.ascii_letters + string.digits + '/-')
+      used_chars = set(url[len(base) + 1:])
+      self.assertEqual(used_chars - valid_chars, set())
 
   def testSetAclError(self):
     """Ensure SetACL blows up if the acl isn't specified."""

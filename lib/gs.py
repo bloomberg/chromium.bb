@@ -13,7 +13,6 @@ import os
 import re
 import tempfile
 import urlparse
-import uuid
 
 from chromite.cbuildbot import constants
 from chromite.lib import cache
@@ -843,8 +842,10 @@ def TemporaryURL(prefix):
 
   At the end, the URL will be deleted.
   """
+  md5 = hashlib.md5(os.urandom(20))
+  md5.update(cros_build_lib.UserDateTimeFormat())
   url = '%s/chromite-temp/%s/%s/%s' % (constants.TRASH_BUCKET, prefix,
-                                       getpass.getuser(), uuid.uuid1())
+                                       getpass.getuser(), md5.hexdigest())
   ctx = GSContext()
   ctx.Remove(url, ignore_missing=True)
   try:

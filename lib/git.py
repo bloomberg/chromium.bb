@@ -9,8 +9,7 @@ import hashlib
 import logging
 import os
 import re
-# pylint: disable=W0402
-import string
+import string # pylint: disable=W0402
 import sys
 import time
 from xml import sax

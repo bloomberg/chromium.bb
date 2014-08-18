@@ -20,9 +20,7 @@ import json
 import logging
 import math
 import os
-# pylint: disable=W0402
-import string
-# pylint: enable=W0402
+import string # pylint: disable=W0402
 import urllib
 import urllib2
 
