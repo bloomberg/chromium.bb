@@ -97,10 +97,17 @@ describe('ct-results-panel', function() {
 
   beforeEach(function(done) {
     panel = document.createElement('ct-results-panel');
+    panel.hidden = true;
+    document.body.appendChild(panel);
+
     if (failures)
       panel.failures = failures;
 
     setTimeout(done);
+  });
+
+  afterEach(function() {
+    document.body.removeChild(panel);
   });
 
   describe('empty', function() {

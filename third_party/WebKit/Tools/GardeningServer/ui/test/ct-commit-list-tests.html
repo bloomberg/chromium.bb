@@ -30,11 +30,11 @@ describe('ct-commit-list', function() {
             expanded: false }
       ];
 
-      var CommitList = Object.create(Object);
-      CommitList.prototype.repositories = function() {
-        return repos;
+      list.commitList = {
+        repositories: function() {
+          return repos;
+        }
       };
-      list.commitList = CommitList;
 
       setTimeout(done);
     });

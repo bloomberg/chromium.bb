@@ -17,7 +17,8 @@ module.exports = function(config) {
         ui: 'bdd',
         checkLeaks: true,
         globals: ['net']
-      }
+      },
+      captureConsole: true
     },
 
     // list of files / patterns to load in the browser
