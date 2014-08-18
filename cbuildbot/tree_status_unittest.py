@@ -150,5 +150,23 @@ class TestTreeStatus(cros_test_lib.MoxTestCase):
                       period=0.1)
 
 
+class TestGettingSheriffEmails(cros_test_lib.MockTestCase):
+  """Tests functions related to retrieving the sheriff's email address."""
+
+  def testParsingSheriffEmails(self):
+    """Tests parsing the raw data to get sheriff emails."""
+    # Test parsing when there is only one sheriff.
+    raw_line = "document.write('taco')"
+    self.PatchObject(tree_status, '_OpenSheriffURL', return_value=raw_line)
+    self.assertEqual(tree_status.GetSheriffEmailAddresses('build'),
+                     ['taco@google.com'])
+
+    # Test parsing when there are multiple sheriffs.
+    raw_line = "document.write('taco, burrito')"
+    self.PatchObject(tree_status, '_OpenSheriffURL', return_value=raw_line)
+    self.assertEqual(tree_status.GetSheriffEmailAddresses('build'),
+                     ['taco@google.com', 'burrito@google.com'])
+
+
 if __name__ == '__main__':
   cros_test_lib.main()

@@ -8,6 +8,7 @@ import httplib
 import json
 import logging
 import os
+import re
 import socket
 import urllib
 import urllib2
@@ -175,3 +176,57 @@ def UpdateTreeStatus(status, message, status_url=None):
       'message': message}
 
   _UpdateTreeStatus(status_url, status_text)
+
+
+def _OpenSheriffURL(sheriff_url):
+  """Returns the content of |sheriff_url| or None if failed to open it."""
+  try:
+    response = urllib.urlopen(sheriff_url)
+    if response.getcode() == 200:
+      return response.read()
+  except IOError as e:
+    logging.error('Could not reach %s: %r', sheriff_url, e)
+
+
+def GetSheriffEmailAddresses(sheriff_type):
+  """Get the email addresses of the sheriffs or deputy.
+
+  Args:
+    sheriff_type: Type of the sheriff to look for. See the keys in
+    constants.SHERIFF_TYPE_TO_URL.
+      - 'tree': tree sheriffs
+      - 'build': build deputy
+      - 'lab' : lab sheriff
+      - 'chrome': chrome gardener
+
+  Returns:
+    A list of email addresses.
+  """
+  if sheriff_type not in constants.SHERIFF_TYPE_TO_URL:
+    raise ValueError('Unknown sheriff type: %s' % sheriff_type)
+
+  urls = constants.SHERIFF_TYPE_TO_URL.get(sheriff_type)
+  sheriffs = []
+  for url in urls:
+    # The URL displays a line: document.write('taco, burrito')
+    raw_line = _OpenSheriffURL(url)
+    if raw_line is not None:
+      match = re.search(r'\'(.*)\'', raw_line)
+      if match:
+        sheriffs.extend(x.strip() for x in match.group(1).split(','))
+
+  return ['%s%s' % (x, constants.GOOGLE_EMAIL) for x in sheriffs]
+
+
+def GetHealthAlertRecipients(builder_run):
+  """Returns a list of email addresses of the health alert recipients."""
+  recipients = []
+  for entry in builder_run.config.health_alert_recipients:
+    if '@' in entry:
+      # If the entry is an email address, add it to the list.
+      recipients.append(entry)
+    else:
+      # Perform address lookup for a non-email entry.
+      recipients.extend(GetSheriffEmailAddresses(entry))
+
+  return recipients

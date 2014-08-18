@@ -9,10 +9,11 @@ import os
 import sys
 
 from chromite.cbuildbot import commands
+from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import results_lib
-from chromite.cbuildbot import constants
+from chromite.cbuildbot import tree_status
 from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import sync_stages
@@ -177,7 +178,7 @@ class ReportStage(generic_stages.BuilderStage,
 
         if not self._run.debug:
           alerts.SendEmail('%s health alert' % builder_run.config.name,
-                           builder_run.config.health_alert_recipients,
+                           tree_status.GetHealthAlertRecipients(builder_run),
                            message=self._HealthAlertMessage(-streak_value),
                            smtp_server=constants.GOLO_SMTP_SERVER,
                            extra_fields={'X-cbuildbot-alert': 'cq-health'})

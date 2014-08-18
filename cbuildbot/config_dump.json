@@ -38350,7 +38350,9 @@
         "grouped": false,
         "gs_path": "default",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com"
+            "chromeos-build-alerts@google.com",
+            "tree",
+            "build"
         ],
         "health_threshold": 3,
         "hw_tests": [],
@@ -61022,7 +61024,9 @@
         "grouped": false,
         "gs_path": "default",
         "health_alert_recipients": [
-            "chromeos-build-alerts@google.com"
+            "chromeos-build-alerts@google.com",
+            "tree",
+            "build"
         ],
         "health_threshold": 1,
         "hw_tests": [],

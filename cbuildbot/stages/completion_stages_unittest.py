@@ -268,26 +268,6 @@ class CanaryCompletionStageTest(
     return completion_stages.CanaryCompletionStage(
         self._run, sync_stage, success=True)
 
-  def testParsingSheriffEmails(self):
-    """Tests parsing the raw data to get sheriff emails."""
-    # Test parsing when there is only one sheriff.
-    raw_line = "document.write('taco')"
-    self.PatchObject(completion_stages.CanaryCompletionStage,
-                     '_OpenSheriffURL', return_value=raw_line)
-    self.assertEqual(
-        completion_stages.CanaryCompletionStage.GetSheriffEmailAddresses(
-            sheriff_type='build'),
-        ['taco@google.com'])
-
-    # Test parsing when there are multiple sheriffs.
-    raw_line = "document.write('taco, burrito')"
-    self.PatchObject(completion_stages.CanaryCompletionStage,
-                     '_OpenSheriffURL', return_value=raw_line)
-    self.assertEqual(
-        completion_stages.CanaryCompletionStage.GetSheriffEmailAddresses(
-            sheriff_type='build'),
-        ['taco@google.com', 'burrito@google.com'])
-
 
 class CommitQueueCompletionStageTest(
     generic_stages_unittest.AbstractStageTest):

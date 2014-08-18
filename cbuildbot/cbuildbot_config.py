@@ -294,7 +294,12 @@ _settings = dict(
   health_threshold=0,
 
 # health_alert_recipients -- List of email addresses to send health alerts to
-#                            for this builder.
+#                            for this builder. It supports automatic email
+#                            adderss lookup for the following sheriff types:
+#                                'tree': tree sheriffs
+#                                'build': build deputies
+#                                'lab': lab sheriffs
+#                                'chrome': chrome gardeners
   health_alert_recipients=[],
 
 # internal -- Whether this is an internal build config.
@@ -1653,7 +1658,8 @@ internal_paladin.add_config('pre-cq-launcher',
   manifest_version=False,
   # Every Pre-CQ launch failure should send out an alert.
   health_threshold=1,
-  health_alert_recipients=['chromeos-build-alerts@google.com'],
+  health_alert_recipients=['chromeos-build-alerts@google.com',
+                           'tree', 'build'],
 )
 
 internal_paladin.add_config(constants.BRANCH_UTIL_CONFIG,
@@ -1713,7 +1719,8 @@ internal_paladin.add_config('master-paladin',
   # configuration in the board_config.py code.
   paladin_builder_name='CQ master',
   health_threshold=3,
-  health_alert_recipients=['chromeos-build-alerts@google.com'],
+  health_alert_recipients=['chromeos-build-alerts@google.com',
+                           'tree', 'build'],
   sanity_check_slaves=['link-tot-paladin'],
   trybot_list=False,
 )
