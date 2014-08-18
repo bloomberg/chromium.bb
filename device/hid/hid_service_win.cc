@@ -251,13 +251,16 @@ void HidServiceWin::PlatformAddDevice(const std::string& device_path) {
       }
       device_info.collections.push_back(collection_info);
     }
-    if (device_info.has_report_id && device_info.max_input_report_size > 0) {
+    // Whether or not the device includes report IDs in its reports the size
+    // of the report ID is included in the value provided by Windows. This
+    // appears contrary to the MSDN documentation.
+    if (device_info.max_input_report_size > 0) {
       device_info.max_input_report_size--;
     }
-    if (device_info.has_report_id && device_info.max_output_report_size > 0) {
+    if (device_info.max_output_report_size > 0) {
       device_info.max_output_report_size--;
     }
-    if (device_info.has_report_id && device_info.max_feature_report_size > 0) {
+    if (device_info.max_feature_report_size > 0) {
       device_info.max_feature_report_size--;
     }
     HidD_FreePreparsedData(preparsed_data);

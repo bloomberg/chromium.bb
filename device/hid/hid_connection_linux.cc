@@ -224,7 +224,7 @@ void HidConnectionLinux::ProcessReadQueue() {
       memcpy(read.buffer->data(), report.buffer->data(), report.buffer->size());
       pending_reports_.pop();
 
-      if (CompleteRead(report.buffer, read.callback)) {
+      if (CompleteRead(read.buffer, report.buffer->size(), read.callback)) {
         pending_reads_.pop();
       }
     }

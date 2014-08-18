@@ -157,12 +157,15 @@ void HidConnection::SendFeatureReport(
 }
 
 bool HidConnection::CompleteRead(scoped_refptr<net::IOBufferWithSize> buffer,
+                                 int bytes_read,
                                  const IOCallback& callback) {
-  if (buffer->size() == 0 || IsReportIdProtected(buffer->data()[0])) {
+  DCHECK_LE(bytes_read, buffer->size());
+
+  if (bytes_read == 0 || IsReportIdProtected(buffer->data()[0])) {
     return false;
   }
 
-  callback.Run(true, buffer->size());
+  callback.Run(true, bytes_read);
   return true;
 }
 

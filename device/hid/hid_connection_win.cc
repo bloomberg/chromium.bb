@@ -124,12 +124,10 @@ HidConnectionWin::~HidConnectionWin() {
 
 void HidConnectionWin::PlatformRead(scoped_refptr<net::IOBufferWithSize> buffer,
                                     const HidConnection::IOCallback& callback) {
-  int expected_report_size = device_info().max_input_report_size;
-  if (device_info().has_report_id) {
-    expected_report_size++;
-  }
+  // Windows will always include the report ID (including zero if report IDs
+  // are not in use) in the buffer.
   scoped_refptr<net::IOBufferWithSize> receive_buffer =
-      new net::IOBufferWithSize(expected_report_size);
+      new net::IOBufferWithSize(device_info().max_input_report_size + 1);
 
   scoped_refptr<PendingHidTransfer> transfer(
       new PendingHidTransfer(this, buffer, receive_buffer, callback));
@@ -148,8 +146,8 @@ void HidConnectionWin::PlatformWrite(
     const HidConnection::IOCallback& callback) {
   // The Windows API always wants either a report ID (if supported) or
   // zero at the front of every output report.
-  scoped_refptr<net::IOBufferWithSize> output_buffer(buffer);
-  output_buffer = new net::IOBufferWithSize(buffer->size() + 1);
+  scoped_refptr<net::IOBufferWithSize> output_buffer(
+      new net::IOBufferWithSize(buffer->size() + 1));
   output_buffer->data()[0] = report_id;
   memcpy(output_buffer->data() + 1, buffer->data(), buffer->size());
 
@@ -252,8 +250,10 @@ void HidConnectionWin::OnTransferFinished(
       }
     }
 
-    CompleteRead(transfer->target_buffer_, transfer->callback_);
+    CompleteRead(
+        transfer->target_buffer_, bytes_transferred, transfer->callback_);
   } else {
+    VPLOG(1) << "HID transfer failed";
     transfer->callback_.Run(false, 0);
   }
 }

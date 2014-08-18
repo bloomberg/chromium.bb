@@ -66,6 +66,7 @@ class HidConnection : public base::RefCountedThreadSafe<HidConnection> {
   // and this method returns false. Otherwise it runs the callback
   // and returns true.
   bool CompleteRead(scoped_refptr<net::IOBufferWithSize> buffer,
+                    int bytes_read,
                     const IOCallback& callback);
 
  private:
