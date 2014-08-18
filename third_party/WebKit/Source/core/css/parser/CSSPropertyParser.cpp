@@ -1340,8 +1340,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         parsedValue = parseColumnWidth();
         break;
     case CSSPropertyWillChange:
-        if (!RuntimeEnabledFeatures::cssWillChangeEnabled())
-            return false;
         return parseWillChange(important);
     // End of CSS3 properties
 
@@ -7281,8 +7279,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseImageSet(CSSParserValue
 
 bool CSSPropertyParser::parseWillChange(bool important)
 {
-    ASSERT(RuntimeEnabledFeatures::cssWillChangeEnabled());
-
     RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createCommaSeparated();
     if (m_valueList->current()->id == CSSValueAuto) {
         if (m_valueList->next())

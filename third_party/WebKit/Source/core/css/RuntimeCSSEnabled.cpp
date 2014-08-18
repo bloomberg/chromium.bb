@@ -102,7 +102,6 @@ static void setPropertySwitchesFromRuntimeFeatures()
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyMaskSourceType, RuntimeEnabledFeatures::cssMaskSourceTypeEnabled());
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyColumnFill, RuntimeEnabledFeatures::regionBasedColumnsEnabled());
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyScrollBehavior, RuntimeEnabledFeatures::cssomSmoothScrollEnabled());
-    RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyWillChange, RuntimeEnabledFeatures::cssWillChangeEnabled());
 }
 
 static CSSPropertySwitches& propertySwitches()
