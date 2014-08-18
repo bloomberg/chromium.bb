@@ -11,9 +11,9 @@ found in the LICENSE file.
 // A simple map of builder to latest processed revision.
 // FIXME: Stop special casing blink.
 function CTBuilderRevisions(builderData) {
-  Object.keys(builderData, function(builder, revisions) {
+  Object.keys(builderData, function(builder, builderInfo) {
     this[builder] = CTCommit.createIncomplete('http://src.chromium.org/viewvc/blink?rev={revision}',
-        parseInt(revisions['blink'], 10), 'blink');
+        parseInt(builderInfo.revisions['blink'], 10), 'blink');
   }.bind(this));
 }
 
