@@ -20,7 +20,6 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
-#include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -170,17 +169,10 @@ void PermissionsUpdater::InitializePermissions(const Extension* extension) {
   scoped_refptr<const PermissionSet> bounded_active =
       GetBoundedActivePermissions(extension, active_permissions);
 
-  // We withhold permissions iff the switch to do so is enabled, the extension
-  // shows up in chrome:extensions (so the user can grant withheld permissions),
-  // the extension is not part of chrome or corporate policy, and also not on
-  // the scripting whitelist. Additionally, we don't withhold if the extension
-  // has the preference to allow scripting on all urls.
+  // Withhold permissions only if the switch applies to this extension and the
+  // extension doesn't have the preference to allow scripting on all urls.
   bool should_withhold_permissions =
-      FeatureSwitch::scripts_require_action()->IsEnabled() &&
-      extension->ShouldDisplayInExtensionSettings() &&
-      !Manifest::IsPolicyLocation(extension->location()) &&
-      !Manifest::IsComponentLocation(extension->location()) &&
-      !PermissionsData::CanExecuteScriptEverywhere(extension) &&
+      util::ScriptsMayRequireActionForExtension(extension) &&
       !util::AllowedScriptingOnAllUrls(extension->id(), browser_context_);
 
   URLPatternSet granted_explicit_hosts;

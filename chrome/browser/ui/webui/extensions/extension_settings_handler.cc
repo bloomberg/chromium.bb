@@ -285,13 +285,12 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   extension_data->Set("dependentExtensions", dependents_list);
 
   // Extensions only want all URL access if:
-  // - The feature is enabled.
+  // - The feature is enabled for the given extension.
   // - The extension has access to enough urls that we can't just let it run
   //   on those specified in the permissions.
   bool wants_all_urls =
-      extension->permissions_data()->HasWithheldImpliedAllHosts() ||
-      util::AllowedScriptingOnAllUrls(extension->id(),
-                                      extension_service_->GetBrowserContext());
+      util::ScriptsMayRequireActionForExtension(extension) &&
+      extension->permissions_data()->HasWithheldImpliedAllHosts();
   extension_data->SetBoolean("wantsAllUrls", wants_all_urls);
   extension_data->SetBoolean(
       "allowAllUrls",
