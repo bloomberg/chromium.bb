@@ -10,8 +10,8 @@ _LOCK_SCREEN_SETTINGS_PATH = '/data/system/locksettings.db'
 PASSWORD_QUALITY_UNSPECIFIED = '0'
 
 
-def ConfigureContentSettingsDict(device, desired_settings):
-  """Configures device content setings from a dictionary.
+def ConfigureContentSettings(device, desired_settings):
+  """Configures device content setings from a list.
 
   Many settings are documented at:
     http://developer.android.com/reference/android/provider/Settings.Global.html
@@ -22,7 +22,7 @@ def ConfigureContentSettingsDict(device, desired_settings):
 
   Args:
     device: A DeviceUtils instance for the device to configure.
-    desired_settings: A dict of {table: {key: value}} for all
+    desired_settings: A list of (table, [(key: value), ...]) for all
         settings to configure.
   """
   try:
@@ -40,9 +40,9 @@ def ConfigureContentSettingsDict(device, desired_settings):
   device.old_interface.WaitForDevicePm()
 
   if device.GetProp('ro.build.type') == 'userdebug':
-    for table, key_value in sorted(desired_settings.iteritems()):
+    for table, key_value in desired_settings:
       settings = content_settings.ContentSettings(table, device)
-      for key, value in key_value.iteritems():
+      for key, value in key_value:
         settings[key] = value
       logging.info('\n%s %s', table, (80 - len(table)) * '-')
       for key, value in sorted(settings.iteritems()):
@@ -98,79 +98,85 @@ commit transaction;""" % {
       print ' '.join(output_msg)
 
 
-ENABLE_LOCATION_SETTING = {
-  'settings/secure': {
+ENABLE_LOCATION_SETTINGS = [
+  # Note that setting these in this order is required in order for all of
+  # them to take and stick through a reboot.
+  ('com.google.settings/partner', [
+    ('use_location_for_services', 1),
+  ]),
+  ('settings/secure', [
     # Ensure Geolocation is enabled and allowed for tests.
-    'location_providers_allowed': 'gps,network',
-  }
-}
+    ('location_providers_allowed', 'gps,network'),
+  ]),
+  ('com.google.settings/partner', [
+    ('network_location_opt_in', 1),
+  ])
+]
 
-DISABLE_LOCATION_SETTING = {
-  'settings/secure': {
+DISABLE_LOCATION_SETTINGS = [
+  ('com.google.settings/partner', [
+    ('use_location_for_services', 0),
+  ]),
+  ('settings/secure', [
     # Ensure Geolocation is disabled.
-    'location_providers_allowed': '',
-  }
-}
+    ('location_providers_allowed', ''),
+  ]),
+]
 
-DETERMINISTIC_DEVICE_SETTINGS = {
-  'com.google.settings/partner': {
-    'network_location_opt_in': 0,
-    'use_location_for_services': 1,
-  },
-  'settings/global': {
-    'assisted_gps_enabled': 0,
+DETERMINISTIC_DEVICE_SETTINGS = [
+  ('settings/global', [
+    ('assisted_gps_enabled', 0),
 
     # Disable "auto time" and "auto time zone" to avoid network-provided time
     # to overwrite the device's datetime and timezone synchronized from host
     # when running tests later. See b/6569849.
-    'auto_time': 0,
-    'auto_time_zone': 0,
+    ('auto_time', 0),
+    ('auto_time_zone', 0),
 
-    'development_settings_enabled': 1,
+    ('development_settings_enabled', 1),
 
     # Flag for allowing ActivityManagerService to send ACTION_APP_ERROR intents
     # on application crashes and ANRs. If this is disabled, the crash/ANR dialog
     # will never display the "Report" button.
     # Type: int ( 0 = disallow, 1 = allow )
-    'send_action_app_error': 0,
+    ('send_action_app_error', 0),
 
-    'stay_on_while_plugged_in': 3,
+    ('stay_on_while_plugged_in', 3),
 
-    'verifier_verify_adb_installs' : 0,
-  },
-  'settings/secure': {
-    'allowed_geolocation_origins':
-        'http://www.google.co.uk http://www.google.com',
+    ('verifier_verify_adb_installs', 0),
+  ]),
+  ('settings/secure', [
+    ('allowed_geolocation_origins',
+        'http://www.google.co.uk http://www.google.com'),
 
     # Ensure that we never get random dialogs like "Unfortunately the process
     # android.process.acore has stopped", which steal the focus, and make our
     # automation fail (because the dialog steals the focus then mistakenly
     # receives the injected user input events).
-    'anr_show_background': 0,
+    ('anr_show_background', 0),
 
-    'lockscreen.disabled': 1,
+    ('lockscreen.disabled', 1),
 
-    'screensaver_enabled': 0,
-  },
-  'settings/system': {
+    ('screensaver_enabled', 0),
+  ]),
+  ('settings/system', [
     # Don't want devices to accidentally rotate the screen as that could
     # affect performance measurements.
-    'accelerometer_rotation': 0,
+    ('accelerometer_rotation', 0),
 
-    'lockscreen.disabled': 1,
+    ('lockscreen.disabled', 1),
 
     # Turn down brightness and disable auto-adjust so that devices run cooler.
-    'screen_brightness': 5,
-    'screen_brightness_mode': 0,
+    ('screen_brightness', 5),
+    ('screen_brightness_mode', 0),
 
-    'user_rotation': 0,
-  },
-}
+    ('user_rotation', 0),
+  ]),
+]
 
-
-NETWORK_DISABLED_SETTINGS = {
-  'settings/global': {
-    'airplane_mode_on': 1,
-    'wifi_on': 0,
-  },
-}
+NETWORK_DISABLED_SETTINGS = [
+  ('settings/global', [
+    ('airplane_mode_on', 1),
+    ('wifi_on', 0),
+  ]),
+]

@@ -35,7 +35,7 @@ def KillHostHeartbeat():
   stdout, _ = ps.communicate()
   matches = re.findall('\\n.*host_heartbeat.*', stdout)
   for match in matches:
-    print 'An instance of host heart beart running... will kill'
+    logging.info('An instance of host heart beart running... will kill')
     pid = re.findall('(\d+)', match)[0]
     subprocess.call(['kill', str(pid)])
 
@@ -44,7 +44,7 @@ def LaunchHostHeartbeat():
   # Kill if existing host_heartbeat
   KillHostHeartbeat()
   # Launch a new host_heartbeat
-  print 'Spawning host heartbeat...'
+  logging.info('Spawning host heartbeat...')
   subprocess.Popen([os.path.join(constants.DIR_SOURCE_ROOT,
                                  'build/android/host_heartbeat.py')])
 
@@ -59,7 +59,7 @@ def PushAndLaunchAdbReboot(devices, target):
              locating the adb_reboot binary.
   """
   for device_serial in devices:
-    print 'Will push and launch adb_reboot on %s' % device_serial
+    logging.info('Will push and launch adb_reboot on %s' % device_serial)
     device = device_utils.DeviceUtils(device_serial)
     # Kill if adb_reboot is already running.
     try:
@@ -71,12 +71,12 @@ def PushAndLaunchAdbReboot(devices, target):
       # to be running.
       pass
     # Push adb_reboot
-    print '  Pushing adb_reboot ...'
+    logging.info('  Pushing adb_reboot ...')
     adb_reboot = os.path.join(constants.DIR_SOURCE_ROOT,
                               'out/%s/adb_reboot' % target)
     device.PushChangedFiles(adb_reboot, '/data/local/tmp/')
     # Launch adb_reboot
-    print '  Launching adb_reboot ...'
+    logging.info('  Launching adb_reboot ...')
     device.old_interface.GetAndroidToolStatusAndOutput(
         '/data/local/tmp/adb_reboot')
   LaunchHostHeartbeat()
@@ -160,17 +160,19 @@ def ProvisionDevice(device_serial, is_perf, disable_location):
   device = device_utils.DeviceUtils(device_serial)
   device.old_interface.EnableAdbRoot()
   _ConfigureLocalProperties(device, is_perf)
-  device_settings_map = device_settings.DETERMINISTIC_DEVICE_SETTINGS
+  device_settings.ConfigureContentSettings(
+      device, device_settings.DETERMINISTIC_DEVICE_SETTINGS)
   if disable_location:
-    device_settings_map.update(device_settings.DISABLE_LOCATION_SETTING)
+    device_settings.ConfigureContentSettings(
+        device, device_settings.DISABLE_LOCATION_SETTINGS)
   else:
-    device_settings_map.update(device_settings.ENABLE_LOCATION_SETTING)
-  device_settings.ConfigureContentSettingsDict(device, device_settings_map)
+    device_settings.ConfigureContentSettings(
+        device, device_settings.ENABLE_LOCATION_SETTINGS)
   device_settings.SetLockScreenSettings(device)
   if is_perf:
     # TODO(tonyg): We eventually want network on. However, currently radios
     # can cause perfbots to drain faster than they charge.
-    device_settings.ConfigureContentSettingsDict(
+    device_settings.ConfigureContentSettings(
       device, device_settings.NETWORK_DISABLED_SETTINGS)
     # Some perf bots run benchmarks with USB charging disabled which leads
     # to gradual draining of the battery. We must wait for a full charge
@@ -214,11 +216,17 @@ def ProvisionDevices(options):
   for device_serial in devices:
     try:
       ProvisionDevice(device_serial, is_perf, options.disable_location)
-    except errors.WaitForResponseTimedOutError:
+    except (errors.WaitForResponseTimedOutError,
+            device_errors.CommandTimeoutError):
       logging.info('Timed out waiting for device %s. Adding to blacklist.',
                    device_serial)
       bad_devices.append(device_serial)
       # Device black list is reset by bb_device_status_check.py per build.
+      device_blacklist.ExtendBlacklist([device_serial])
+    except device_errors.CommandFailedError:
+      logging.info('Failed to provision device %s. Adding to blacklist.',
+                   device_serial)
+      bad_devices.append(device_serial)
       device_blacklist.ExtendBlacklist([device_serial])
   devices = [device for device in devices if device not in bad_devices]
 
@@ -238,12 +246,18 @@ def ProvisionDevices(options):
       device.WaitUntilFullyBooted(timeout=90)
       (_, prop) = device.old_interface.GetShellCommandStatusAndOutput('getprop')
       for p in prop:
-        print p
-    except errors.WaitForResponseTimedOutError:
+        logging.info(p)
+    except (errors.WaitForResponseTimedOutError,
+            device_errors.CommandTimeoutError):
       logging.info('Timed out waiting for device %s. Adding to blacklist.',
                    device_serial)
       bad_devices.append(device_serial)
       # Device black list is reset by bb_device_status_check.py per build.
+      device_blacklist.ExtendBlacklist([device_serial])
+    except device_errors.CommandFailedError:
+      logging.info('Failed to provision device %s. Adding to blacklist.',
+                   device_serial)
+      bad_devices.append(device_serial)
       device_blacklist.ExtendBlacklist([device_serial])
   devices = [device for device in devices if device not in bad_devices]
 
