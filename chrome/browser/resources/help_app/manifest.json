@@ -6,5 +6,16 @@
   "default_locale": "en",
   "manifest_version": 2,
   "content_security_policy": "default-src 'self'; img-src 'self' data:;",
+  "background": {
+    "scripts": [
+      "js/background-bundle.js"
+    ]
+  },
+  "permissions": [
+    "storage",
+    "webRequest",
+    "webRequestBlocking",
+    "https://support.google.com/chromebook/*"
+  ],
   "incognito": "split"
 }
