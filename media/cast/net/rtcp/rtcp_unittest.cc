@@ -9,7 +9,6 @@
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/cast_transport_sender_impl.h"
 #include "media/cast/net/pacing/paced_sender.h"
-#include "media/cast/net/rtcp/mock_rtcp_receiver_feedback.h"
 #include "media/cast/net/rtcp/rtcp.h"
 #include "media/cast/net/rtcp/test_rtcp_packet_builder.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"

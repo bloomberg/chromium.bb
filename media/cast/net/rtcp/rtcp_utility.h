@@ -5,6 +5,7 @@
 #ifndef MEDIA_CAST_RTCP_RTCP_UTILITY_H_
 #define MEDIA_CAST_RTCP_RTCP_UTILITY_H_
 
+#include "base/big_endian.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/logging/logging_defines.h"
@@ -23,203 +24,85 @@ static const uint8 kReceiverLogSubtype = 2;
 static const size_t kRtcpMaxReceiverLogMessages = 256;
 static const size_t kRtcpMaxCastLossFields = 100;
 
-struct RtcpFieldReceiverReport {
-  // RFC 3550.
-  uint32 sender_ssrc;
-  uint8 number_of_report_blocks;
-};
-
-struct RtcpFieldSenderReport {
-  // RFC 3550.
-  uint32 sender_ssrc;
-  uint8 number_of_report_blocks;
-  uint32 ntp_most_significant;
-  uint32 ntp_least_significant;
-  uint32 rtp_timestamp;
-  uint32 sender_packet_count;
-  uint32 sender_octet_count;
-};
-
-struct RtcpFieldReportBlockItem {
-  // RFC 3550.
-  uint32 ssrc;
-  uint8 fraction_lost;
-  uint32 cumulative_number_of_packets_lost;
-  uint32 extended_highest_sequence_number;
-  uint32 jitter;
-  uint32 last_sender_report;
-  uint32 delay_last_sender_report;
-};
-
-struct RtcpFieldXr {
-  // RFC 3611.
-  uint32 sender_ssrc;
-};
-
-struct RtcpFieldXrRrtr {
-  // RFC 3611.
-  uint32 ntp_most_significant;
-  uint32 ntp_least_significant;
-};
-
-struct RtcpFieldXrDlrr {
-  // RFC 3611.
-  uint32 receivers_ssrc;
-  uint32 last_receiver_report;
-  uint32 delay_last_receiver_report;
-};
-
-struct RtcpFieldPayloadSpecificApplication {
-  uint32 sender_ssrc;
-  uint32 media_ssrc;
-};
-
-struct RtcpFieldPayloadSpecificCastItem {
-  uint8 last_frame_id;
-  uint8 number_of_lost_fields;
-  uint16 target_delay_ms;
-};
-
-struct RtcpFieldPayloadSpecificCastNackItem {
-  uint8 frame_id;
-  uint16 packet_id;
-  uint8 bitmask;
-};
-
-struct RtcpFieldApplicationSpecificCastReceiverLogItem {
-  uint32 sender_ssrc;
-  uint32 rtp_timestamp;
-  uint32 event_timestamp_base;
-  uint8 event;
-  union {
-    uint16 packet_id;
-    int16 delay_delta;
-  } delay_delta_or_packet_id;
-  uint16 event_timestamp_delta;
-};
-
-union RtcpField {
-  RtcpFieldReceiverReport receiver_report;
-  RtcpFieldSenderReport sender_report;
-  RtcpFieldReportBlockItem report_block_item;
-
-  RtcpFieldXr extended_report;
-  RtcpFieldXrRrtr rrtr;
-  RtcpFieldXrDlrr dlrr;
-
-  RtcpFieldPayloadSpecificApplication application_specific;
-  RtcpFieldPayloadSpecificCastItem cast_item;
-  RtcpFieldPayloadSpecificCastNackItem cast_nack_item;
-
-  RtcpFieldApplicationSpecificCastReceiverLogItem cast_receiver_log;
-};
-
-enum RtcpFieldTypes {
-  kRtcpNotValidCode,
-
-  // RFC 3550.
-  kRtcpRrCode,
-  kRtcpSrCode,
-  kRtcpReportBlockItemCode,
-
-  // RFC 3611.
-  kRtcpXrCode,
-  kRtcpXrRrtrCode,
-  kRtcpXrDlrrCode,
-  kRtcpXrUnknownItemCode,
-
-  // RFC 4585.
-  kRtcpPayloadSpecificAppCode,
-
-  // Application specific.
-  kRtcpPayloadSpecificCastCode,
-  kRtcpPayloadSpecificCastNackItemCode,
-  kRtcpApplicationSpecificCastReceiverLogCode,
-  kRtcpApplicationSpecificCastReceiverLogFrameCode,
-  kRtcpApplicationSpecificCastReceiverLogEventCode,
-};
-
 struct RtcpCommonHeader {
   uint8 V;   // Version.
   bool P;    // Padding.
   uint8 IC;  // Item count / subtype.
   uint8 PT;  // Packet Type.
-  uint16 length_in_octets;
+  size_t length_in_octets;
 };
 
 class RtcpParser {
  public:
-  RtcpParser(const uint8* rtcp_data, size_t rtcp_length);
+  RtcpParser(uint32 local_ssrc, uint32 remote_ssrc);
   ~RtcpParser();
 
-  RtcpFieldTypes FieldType() const;
-  const RtcpField& Field() const;
+  bool Parse(base::BigEndianReader* reader);
 
-  bool IsValid() const;
+  bool has_sender_report() const { return has_sender_report_; }
+  const RtcpSenderInfo& sender_report() const {
+    return sender_report_;
+  }
 
-  RtcpFieldTypes Begin();
-  RtcpFieldTypes Iterate();
+  bool has_last_report() const { return has_last_report_; }
+  uint32 last_report() const { return last_report_; }
+  uint32 delay_since_last_report() const { return delay_since_last_report_; }
 
- private:
-  enum ParseState {
-    kStateTopLevel,     // Top level packet
-    kStateReportBlock,  // Sender/Receiver report report blocks.
-    kStateApplicationSpecificCastReceiverFrameLog,
-    kStateApplicationSpecificCastReceiverEventLog,
-    kStateExtendedReportBlock,
-    kStateExtendedReportDelaySinceLastReceiverReport,
-    kStatePayloadSpecificApplication,
-    kStatePayloadSpecificCast,      // Application specific Cast.
-    kStatePayloadSpecificCastNack,  // Application specific Nack for Cast.
-  };
+  bool has_receiver_log() const { return !receiver_log_.empty(); }
+  const RtcpReceiverLogMessage& receiver_log() const { return receiver_log_; }
+  RtcpReceiverLogMessage* mutable_receiver_log() { return & receiver_log_; }
 
-  bool RtcpParseCommonHeader(const uint8* begin,
-                             const uint8* end,
-                             RtcpCommonHeader* parsed_header) const;
+  bool has_cast_message() const { return has_cast_message_; }
+  const RtcpCastMessage& cast_message() const { return cast_message_; }
+  RtcpCastMessage* mutable_cast_message() { return &cast_message_; }
 
-  void IterateTopLevel();
-  void IterateReportBlockItem();
-  void IterateCastReceiverLogFrame();
-  void IterateCastReceiverLogEvent();
-  void IterateExtendedReportItem();
-  void IterateExtendedReportDelaySinceLastReceiverReportItem();
-  void IteratePayloadSpecificAppItem();
-  void IteratePayloadSpecificCastItem();
-  void IteratePayloadSpecificCastNackItem();
-
-  void Validate();
-  void EndCurrentBlock();
-
-  bool ParseRR();
-  bool ParseSR();
-  bool ParseReportBlockItem();
-
-  bool ParseApplicationDefined(uint8 subtype);
-  bool ParseCastReceiverLogFrameItem();
-  bool ParseCastReceiverLogEventItem();
-
-  bool ParseExtendedReport();
-  bool ParseExtendedReportItem();
-  bool ParseExtendedReportReceiverReferenceTimeReport();
-  bool ParseExtendedReportDelaySinceLastReceiverReport();
-
-  bool ParseFeedBackCommon(const RtcpCommonHeader& header);
-  bool ParsePayloadSpecificAppItem();
-  bool ParsePayloadSpecificCastItem();
-  bool ParsePayloadSpecificCastNackItem();
+  bool has_receiver_reference_time_report() const {
+    return has_receiver_reference_time_report_;
+  }
+  const RtcpReceiverReferenceTimeReport&
+  receiver_reference_time_report() const {
+    return receiver_reference_time_report_;
+  }
 
  private:
-  const uint8* const rtcp_data_begin_;
-  const uint8* const rtcp_data_end_;
+  bool ParseCommonHeader(base::BigEndianReader* reader,
+                         RtcpCommonHeader* parsed_header);
+  bool ParseSR(base::BigEndianReader* reader,
+               const RtcpCommonHeader& header);
+  bool ParseRR(base::BigEndianReader* reader,
+               const RtcpCommonHeader& header);
+  bool ParseReportBlock(base::BigEndianReader* reader);
+  bool ParseApplicationDefined(base::BigEndianReader* reader,
+                               const RtcpCommonHeader& header);
+  bool ParseCastReceiverLogFrameItem(base::BigEndianReader* reader);
+  bool ParseFeedbackCommon(base::BigEndianReader* reader,
+                           const RtcpCommonHeader& header);
+  bool ParseExtendedReport(base::BigEndianReader* reader,
+                           const RtcpCommonHeader& header);
+  bool ParseExtendedReportReceiverReferenceTimeReport(
+      base::BigEndianReader* reader,
+      uint32 remote_ssrc);
+  bool ParseExtendedReportDelaySinceLastReceiverReport(
+      base::BigEndianReader* reader);
 
-  bool valid_packet_;
-  const uint8* rtcp_data_;
-  const uint8* rtcp_block_end_;
+  uint32 local_ssrc_;
+  uint32 remote_ssrc_;
 
-  ParseState state_;
-  uint8 number_of_blocks_;
-  RtcpFieldTypes field_type_;
-  RtcpField field_;
+  bool has_sender_report_;
+  RtcpSenderInfo sender_report_;
+
+  uint32 last_report_;
+  uint32 delay_since_last_report_;
+  bool has_last_report_;
+
+  // |receiver_log_| is a vector vector, no need for has_*.
+  RtcpReceiverLogMessage receiver_log_;
+
+  bool has_cast_message_;
+  RtcpCastMessage cast_message_;
+
+  bool has_receiver_reference_time_report_;
+  RtcpReceiverReferenceTimeReport receiver_reference_time_report_;
 
   DISALLOW_COPY_AND_ASSIGN(RtcpParser);
 };

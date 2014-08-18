@@ -12,7 +12,8 @@ namespace cast {
 
 TestRtcpPacketBuilder::TestRtcpPacketBuilder()
     : ptr_of_length_(NULL),
-      big_endian_writer_(reinterpret_cast<char*>(buffer_), kMaxIpPacketSize) {}
+      big_endian_writer_(reinterpret_cast<char*>(buffer_), kMaxIpPacketSize),
+      big_endian_reader_(NULL, 0) {}
 
 void TestRtcpPacketBuilder::AddSr(uint32 sender_ssrc,
                                   int number_of_report_blocks) {
@@ -67,6 +68,13 @@ void TestRtcpPacketBuilder::AddXrUnknownBlock() {
   big_endian_writer_.WriteU32(0);
   big_endian_writer_.WriteU32(0);
   big_endian_writer_.WriteU32(0);
+}
+
+void TestRtcpPacketBuilder::AddUnknownBlock() {
+  AddRtcpHeader(99, 0);
+  big_endian_writer_.WriteU32(42);
+  big_endian_writer_.WriteU32(42);
+  big_endian_writer_.WriteU32(42);
 }
 
 void TestRtcpPacketBuilder::AddXrDlrrBlock(uint32 sender_ssrc) {
@@ -182,6 +190,12 @@ scoped_ptr<media::cast::Packet> TestRtcpPacketBuilder::GetPacket() {
 const uint8* TestRtcpPacketBuilder::Data() {
   PatchLengthField();
   return buffer_;
+}
+
+base::BigEndianReader* TestRtcpPacketBuilder::Reader() {
+  big_endian_reader_ = base::BigEndianReader(
+      reinterpret_cast<const char *>(Data()), Length());
+  return &big_endian_reader_;
 }
 
 void TestRtcpPacketBuilder::PatchLengthField() {

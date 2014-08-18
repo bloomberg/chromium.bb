@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/net/rtcp/rtcp_receiver.h"
 
 namespace {
 const int kMinSchedulingDelayMs = 1;
@@ -74,7 +73,7 @@ void FrameReceiver::RequestEncodedFrame(
 bool FrameReceiver::ProcessPacket(scoped_ptr<Packet> packet) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
-  if (RtcpReceiver::IsRtcpPacket(&packet->front(), packet->size())) {
+  if (Rtcp::IsRtcpPacket(&packet->front(), packet->size())) {
     rtcp_.IncomingRtcpPacket(&packet->front(), packet->size());
   } else {
     RtpCastHeader rtp_header;

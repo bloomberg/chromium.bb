@@ -19,18 +19,18 @@ namespace cast {
 
 namespace {
 // Sender report.
-static const int kNtpHigh = 0x01020304;
-static const int kNtpLow = 0x05060708;
-static const int kRtpTimestamp = 0x10203040;
-static const int kSendPacketCount = 987;
-static const int kSendOctetCount = 87654;
+static const uint32 kNtpHigh = 0x01020304;
+static const uint32 kNtpLow = 0x05060708;
+static const uint32 kRtpTimestamp = 0x10203040;
+static const uint32 kSendPacketCount = 987;
+static const uint32 kSendOctetCount = 87654;
 
 // Report block.
 static const int kLoss = 0x01000123;
 static const int kExtendedMax = 0x15678;
 static const int kTestJitter = 0x10203;
-static const int kLastSr = 0x34561234;
-static const int kDelayLastSr = 1000;
+static const uint32 kLastSr = 0x34561234;
+static const uint32 kDelayLastSr = 1000;
 
 // DLRR block.
 static const int kLastRr = 0x34561234;
@@ -65,6 +65,7 @@ class TestRtcpPacketBuilder {
   void AddXrExtendedDlrrBlock(uint32 sender_ssrc);
   void AddXrRrtrBlock();
   void AddXrUnknownBlock();
+  void AddUnknownBlock();
 
   void AddNack(uint32 sender_ssrc, uint32 media_ssrc);
   void AddSendReportRequest(uint32 sender_ssrc, uint32 media_ssrc);
@@ -83,6 +84,7 @@ class TestRtcpPacketBuilder {
   scoped_ptr<Packet> GetPacket();
   const uint8* Data();
   int Length() { return kMaxIpPacketSize - big_endian_writer_.remaining(); }
+  base::BigEndianReader* Reader();
 
  private:
   void AddRtcpHeader(int payload, int format_or_count);
@@ -93,6 +95,7 @@ class TestRtcpPacketBuilder {
   uint8 buffer_[kMaxIpPacketSize];
   char* ptr_of_length_;
   base::BigEndianWriter big_endian_writer_;
+  base::BigEndianReader big_endian_reader_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRtcpPacketBuilder);
 };

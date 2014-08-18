@@ -107,6 +107,8 @@ class Rtcp {
 
   void OnReceivedReceiverLog(const RtcpReceiverLogMessage& receiver_log);
 
+  static bool IsRtcpPacket(const uint8* packet, size_t length);
+  static uint32 GetSsrcOfSender(const uint8* rtcp_buffer, size_t length);
   const base::TimeDelta& rtt() const { return rtt_; }
 
  protected:
@@ -116,8 +118,6 @@ class Rtcp {
                              uint32 ntp_fraction);
 
  private:
-  class RtcpMessageHandlerImpl;
-
   void OnReceivedDelaySinceLastReport(uint32 last_report,
                                       uint32 delay_since_last_report);
 
@@ -130,6 +130,10 @@ class Rtcp {
                            uint32 last_ntp_seconds,
                            uint32 last_ntp_fraction);
 
+  // Remove duplicate events in |receiver_log|.
+  // Returns true if any events remain.
+  bool DedupeReceiverLog(RtcpReceiverLogMessage* receiver_log);
+
   const RtcpCastMessageCallback cast_callback_;
   const RtcpRttCallback rtt_callback_;
   const RtcpLogMessageCallback log_callback_;
@@ -137,8 +141,6 @@ class Rtcp {
   const scoped_ptr<RtcpSender> rtcp_sender_;
   const uint32 local_ssrc_;
   const uint32 remote_ssrc_;
-  const scoped_ptr<RtcpMessageHandlerImpl> handler_;
-  const scoped_ptr<RtcpReceiver> rtcp_receiver_;
 
   RtcpSendTimeMap last_reports_sent_map_;
   RtcpSendTimeQueue last_reports_sent_queue_;
@@ -168,6 +170,14 @@ class Rtcp {
   base::TimeDelta max_rtt_;
   int number_of_rtt_in_avg_;
   base::TimeDelta avg_rtt_;
+
+  // For extending received ACK frame IDs from 8-bit to 32-bit.
+  FrameIdWrapHelper ack_frame_id_wrap_helper_;
+
+  // Maintains a history of receiver events.
+  typedef std::pair<uint64, uint64> ReceiverEventKey;
+  base::hash_set<ReceiverEventKey> receiver_event_key_set_;
+  std::queue<ReceiverEventKey> receiver_event_key_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(Rtcp);
 };

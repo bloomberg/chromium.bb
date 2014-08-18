@@ -10,7 +10,6 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "media/cast/net/rtcp/rtcp_receiver.h"
 #include "media/cast/receiver/audio_decoder.h"
 #include "media/cast/receiver/video_decoder.h"
 
@@ -52,8 +51,8 @@ void CastReceiverImpl::DispatchReceivedPacket(scoped_ptr<Packet> packet) {
   const size_t length = packet->size();
 
   uint32 ssrc_of_sender;
-  if (RtcpReceiver::IsRtcpPacket(data, length)) {
-    ssrc_of_sender = RtcpReceiver::GetSsrcOfSender(data, length);
+  if (Rtcp::IsRtcpPacket(data, length)) {
+    ssrc_of_sender = Rtcp::GetSsrcOfSender(data, length);
   } else if (!FrameReceiver::ParseSenderSsrc(data, length, &ssrc_of_sender)) {
     VLOG(1) << "Invalid RTP packet.";
     return;

@@ -192,8 +192,6 @@
         'net/rtcp/rtcp_defines.h',
         'net/rtcp/rtcp.h',
         'net/rtcp/rtcp.cc',
-        'net/rtcp/rtcp_receiver.cc',
-        'net/rtcp/rtcp_receiver.h',
         'net/rtcp/rtcp_sender.cc',
         'net/rtcp/rtcp_sender.h',
         'net/rtcp/rtcp_utility.cc',

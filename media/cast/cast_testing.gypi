@@ -86,11 +86,9 @@
         'net/pacing/mock_paced_packet_sender.cc',
         'net/pacing/mock_paced_packet_sender.h',
         'net/pacing/paced_sender_unittest.cc',
-        'net/rtcp/mock_rtcp_receiver_feedback.cc',
-        'net/rtcp/mock_rtcp_receiver_feedback.h',
-        'net/rtcp/rtcp_receiver_unittest.cc',
         'net/rtcp/rtcp_sender_unittest.cc',
         'net/rtcp/rtcp_unittest.cc',
+        'net/rtcp/rtcp_utility_unittest.cc',
         'net/rtcp/receiver_rtcp_event_subscriber_unittest.cc',
 # TODO(miu): The following two are test utility modules.  Rename/move the files.
         'net/rtcp/test_rtcp_packet_builder.cc',
