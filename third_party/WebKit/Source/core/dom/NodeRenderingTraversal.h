@@ -67,8 +67,7 @@ RenderObject* nextInTopLayer(const Element*);
 
 inline Element* parentElement(const Node* node)
 {
-    ParentDetails unusedDetails;
-    Node* found = parent(node, &unusedDetails);
+    ContainerNode* found = parent(node);
     return found && found->isElementNode() ? toElement(found) : 0;
 }
 
