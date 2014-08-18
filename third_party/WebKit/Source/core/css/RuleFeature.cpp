@@ -44,10 +44,10 @@ namespace blink {
 
 static bool isSkippableComponentForInvalidation(const CSSSelector& selector)
 {
-    if (selector.match() == CSSSelector::Tag
-        || selector.match() == CSSSelector::Id
-        || selector.isAttributeSelector())
+    if (selector.match() == CSSSelector::Tag) {
+        ASSERT(selector.tagQName().localName() == starAtom);
         return true;
+    }
     if (selector.match() == CSSSelector::PseudoElement) {
         switch (selector.pseudoType()) {
         case CSSSelector::PseudoBefore:
@@ -56,7 +56,8 @@ static bool isSkippableComponentForInvalidation(const CSSSelector& selector)
         case CSSSelector::PseudoShadow:
             return true;
         default:
-            return selector.isCustomPseudoElement();
+            ASSERT(!selector.isCustomPseudoElement());
+            return false;
         }
     }
     if (selector.match() != CSSSelector::PseudoClass)
