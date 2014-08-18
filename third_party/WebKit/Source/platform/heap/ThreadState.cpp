@@ -935,7 +935,14 @@ void ThreadState::copyStackUntilSafePointScope()
     RELEASE_ASSERT(from < to);
     RELEASE_ASSERT(to <= reinterpret_cast<Address*>(m_startOfStack));
     size_t slotCount = static_cast<size_t>(to - from);
-    ASSERT(slotCount < 1024); // Catch potential performance issues.
+    // Catch potential performance issues.
+#if defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
+    // ASan/LSan use more space on the stack and we therefore
+    // increase the allowed stack copying for those builds.
+    ASSERT(slotCount < 2048);
+#else
+    ASSERT(slotCount < 1024);
+#endif
 
     ASSERT(!m_safePointStackCopy.size());
     m_safePointStackCopy.resize(slotCount);
