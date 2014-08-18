@@ -391,7 +391,7 @@ void LoggingCanvas::didConcat(const SkMatrix& matrix)
 void LoggingCanvas::willSave()
 {
     AutoLogger logger(this);
-    RefPtr<JSONObject> params = logger.logItemWithParams("save");
+    RefPtr<JSONObject> params = logger.logItem("save");
     this->SkCanvas::willSave();
 }
 

@@ -3,8 +3,6 @@ Canvas log:
 {
     0 : {
         method : "save"
-        params : {
-        }
     }
     1 : {
         method : "drawRect"
@@ -147,8 +145,6 @@ Canvas log:
     }
     4 : {
         method : "save"
-        params : {
-        }
     }
     5 : {
         method : "clipRect"
@@ -172,8 +168,6 @@ Canvas log:
     }
     7 : {
         method : "save"
-        params : {
-        }
     }
     8 : {
         method : "clipRect"
