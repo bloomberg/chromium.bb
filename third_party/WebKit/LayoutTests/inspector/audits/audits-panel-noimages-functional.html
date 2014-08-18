@@ -22,18 +22,22 @@ JSON = {};
 var test = function()
 {
     WebInspector.inspectorView.showPanel("audits");
-    InspectorTest.reloadPage(step1);
+    InspectorTest.reloadPage();
+    InspectorTest.addSniffer(WebInspector.CSSStyleModel.prototype, "_styleSheetAdded", onStyleSheetAdded, true);
 
-    function step1()
+    var pendingStyleSheetsCount = 5;
+    function onStyleSheetAdded()
     {
+        if (--pendingStyleSheetsCount)
+            return;
         WebInspector.AuditRuleResult.resourceDomain = function() {
             return "[domain]";
         };
 
-        InspectorTest.launchAllAudits(false, step2);
+        InspectorTest.launchAllAudits(false, onAuditsFinished);
     }
 
-    function step2()
+    function onAuditsFinished()
     {
         InspectorTest.collectAuditResults();
         InspectorTest.completeTest();

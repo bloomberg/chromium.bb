@@ -52,18 +52,22 @@ JSON = {};
 var test = function()
 {
     WebInspector.inspectorView.showPanel("audits");
-    InspectorTest.reloadPage(step1);
+    InspectorTest.reloadPage();
+    var pendingStyleSheetsCount = 4;
+    InspectorTest.addSniffer(WebInspector.CSSStyleModel.prototype, "_styleSheetAdded", onStyleSheetLoaded, true);
 
-    function step1()
+    function onStyleSheetLoaded()
     {
+        if (--pendingStyleSheetsCount)
+            return;
         WebInspector.AuditRuleResult.resourceDomain = function() {
             return "[domain]";
         };
 
-        InspectorTest.launchAllAudits(false, step2);
+        InspectorTest.launchAllAudits(false, onAuditsFinished);
     }
 
-    function step2()
+    function onAuditsFinished()
     {
         InspectorTest.collectAuditResults();
         InspectorTest.completeTest();
