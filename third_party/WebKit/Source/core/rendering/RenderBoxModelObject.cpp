@@ -113,12 +113,7 @@ RenderBoxModelObject::RenderBoxModelObject(ContainerNode* node)
 
 RenderBoxModelObject::~RenderBoxModelObject()
 {
-}
-
-void RenderBoxModelObject::destroy()
-{
     ImageQualityController::remove(this);
-    RenderLayerModelObject::destroy();
 }
 
 void RenderBoxModelObject::willBeDestroyed()

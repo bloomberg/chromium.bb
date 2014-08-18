@@ -33,7 +33,6 @@ class RenderCounter FINAL : public RenderText {
 public:
     RenderCounter(Document*, const CounterContent&);
     virtual ~RenderCounter();
-    virtual void destroy() OVERRIDE;
 
     static void destroyCounterNodes(RenderObject&);
     static void destroyCounterNode(RenderObject&, const AtomicString& identifier);

@@ -57,7 +57,6 @@ class RenderBoxModelObject : public RenderLayerModelObject {
 public:
     RenderBoxModelObject(ContainerNode*);
     virtual ~RenderBoxModelObject();
-    virtual void destroy() OVERRIDE;
 
     LayoutSize relativePositionOffset() const;
     LayoutSize relativePositionLogicalOffset() const { return style()->isHorizontalWritingMode() ? relativePositionOffset() : relativePositionOffset().transposedSize(); }

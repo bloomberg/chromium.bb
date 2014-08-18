@@ -355,15 +355,10 @@ RenderCounter::RenderCounter(Document* node, const CounterContent& counter)
 
 RenderCounter::~RenderCounter()
 {
-}
-
-void RenderCounter::destroy()
-{
     if (m_counterNode) {
         m_counterNode->removeRenderer(this);
         ASSERT(!m_counterNode);
     }
-    RenderText::destroy();
 }
 
 void RenderCounter::willBeDestroyed()

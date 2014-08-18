@@ -59,7 +59,6 @@ class RenderSVGResourceFilter FINAL : public RenderSVGResourceContainer {
 public:
     explicit RenderSVGResourceFilter(SVGFilterElement*);
     virtual ~RenderSVGResourceFilter();
-    virtual void destroy() OVERRIDE;
 
     virtual bool isChildAllowed(RenderObject*, RenderStyle*) const OVERRIDE;
 
