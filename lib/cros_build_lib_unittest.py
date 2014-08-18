@@ -717,23 +717,6 @@ class TestListFiles(cros_test_lib.TempDirTestCase):
       self.assertEqual(err.errno, errno.ENOENT)
 
 
-@contextlib.contextmanager
-def SetTimeZone(tz):
-  """Temporarily set the timezone to the specified value.
-
-  This is needed because cros_test_lib.TestCase doesn't call time.tzset()
-  after resetting the environment.
-  """
-  old_environ = os.environ.copy()
-  try:
-    os.environ['TZ'] = tz
-    time.tzset()
-    yield
-  finally:
-    osutils.SetEnvironment(old_environ)
-    time.tzset()
-
-
 class HelperMethodSimpleTests(cros_test_lib.TestCase):
   """Tests for various helper methods without using mox."""
 
@@ -765,7 +748,7 @@ class HelperMethodSimpleTests(cros_test_lib.TestCase):
   def testUserDateTime(self):
     """Test with a raw time value."""
     expected = 'Mon, 16 Jun 1980 05:03:20 -0700 (PDT)'
-    with SetTimeZone('US/Pacific'):
+    with cros_test_lib.SetTimeZone('US/Pacific'):
       timeval = 330005000
       self.assertEqual(cros_build_lib.UserDateTimeFormat(timeval=timeval),
                        expected)
@@ -773,7 +756,7 @@ class HelperMethodSimpleTests(cros_test_lib.TestCase):
   def testUserDateTimeDateTime(self):
     """Test with a datetime object."""
     expected = 'Mon, 16 Jun 1980 00:00:00 -0700 (PDT)'
-    with SetTimeZone('US/Pacific'):
+    with cros_test_lib.SetTimeZone('US/Pacific'):
       timeval = datetime.datetime(1980, 6, 16)
       self.assertEqual(cros_build_lib.UserDateTimeFormat(timeval=timeval),
                        expected)
@@ -781,7 +764,7 @@ class HelperMethodSimpleTests(cros_test_lib.TestCase):
   def testUserDateTimeDateTimeInWinter(self):
     """Test that we correctly switch from PDT to PST."""
     expected = 'Wed, 16 Jan 1980 00:00:00 -0800 (PST)'
-    with SetTimeZone('US/Pacific'):
+    with cros_test_lib.SetTimeZone('US/Pacific'):
       timeval = datetime.datetime(1980, 1, 16)
       self.assertEqual(cros_build_lib.UserDateTimeFormat(timeval=timeval),
                        expected)
@@ -789,7 +772,7 @@ class HelperMethodSimpleTests(cros_test_lib.TestCase):
   def testUserDateTimeDateTimeInEST(self):
     """Test that we correctly switch from PDT to EST."""
     expected = 'Wed, 16 Jan 1980 00:00:00 -0500 (EST)'
-    with SetTimeZone('US/Eastern'):
+    with cros_test_lib.SetTimeZone('US/Eastern'):
       timeval = datetime.datetime(1980, 1, 16)
       self.assertEqual(cros_build_lib.UserDateTimeFormat(timeval=timeval),
                        expected)

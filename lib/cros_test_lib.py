@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 import collections
+import contextlib
 import cookielib
 import cStringIO
 import datetime
@@ -22,6 +23,7 @@ import re
 import socket
 import stat
 import sys
+import time
 import unittest
 import urllib
 
@@ -1409,6 +1411,23 @@ class MockOutputTestCase(MockTestCase, OutputTestCase):
 
 class MockLoggingTestCase(MockTestCase, LoggingTestCase):
   """Convenience class mixing Logging and Mock."""
+
+
+@contextlib.contextmanager
+def SetTimeZone(tz):
+  """Temporarily set the timezone to the specified value.
+
+  This is needed because cros_test_lib.TestCase doesn't call time.tzset()
+  after resetting the environment.
+  """
+  old_environ = os.environ.copy()
+  try:
+    os.environ['TZ'] = tz
+    time.tzset()
+    yield
+  finally:
+    osutils.SetEnvironment(old_environ)
+    time.tzset()
 
 
 def FindTests(directory, module_namespace=''):
