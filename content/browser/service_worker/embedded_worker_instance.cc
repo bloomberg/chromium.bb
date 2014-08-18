@@ -56,8 +56,10 @@ void NotifyWorkerDestroyed(int worker_process_id, int worker_route_id) {
 
 void RegisterToWorkerDevToolsManager(
     int process_id,
-    const ServiceWorkerContextCore* const service_worker_context,
+    const ServiceWorkerContextCore* service_worker_context,
+    base::WeakPtr<ServiceWorkerContextCore> service_worker_context_weak,
     int64 service_worker_version_id,
+    const GURL& url,
     const base::Callback<void(int worker_devtools_agent_route_id,
                               bool wait_for_debugger)>& callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
@@ -66,7 +68,9 @@ void RegisterToWorkerDevToolsManager(
                             base::Bind(RegisterToWorkerDevToolsManager,
                                        process_id,
                                        service_worker_context,
+                                       service_worker_context_weak,
                                        service_worker_version_id,
+                                       url,
                                        callback));
     return;
   }
@@ -80,7 +84,10 @@ void RegisterToWorkerDevToolsManager(
             process_id,
             worker_devtools_agent_route_id,
             EmbeddedWorkerDevToolsManager::ServiceWorkerIdentifier(
-                service_worker_context, service_worker_version_id));
+                service_worker_context,
+                service_worker_context_weak,
+                service_worker_version_id,
+                url));
   }
   BrowserThread::PostTask(
       BrowserThread::IO,
@@ -223,10 +230,13 @@ void EmbeddedWorkerInstance::ProcessAllocated(
   }
   const int64 service_worker_version_id = params->service_worker_version_id;
   process_id_ = process_id;
+  GURL script_url(params->script_url);
   RegisterToWorkerDevToolsManager(
       process_id,
       context_.get(),
+      context_,
       service_worker_version_id,
+      script_url,
       base::Bind(&EmbeddedWorkerInstance::SendStartWorker,
                  weak_factory_.GetWeakPtr(),
                  base::Passed(&params),

@@ -45,6 +45,9 @@ class EmbeddedWorkerDevToolsAgentHost : public IPCDevToolsAgentHost,
   bool Matches(const SharedWorkerInstance& other);
   bool Matches(const ServiceWorkerIdentifier& other);
 
+  virtual GURL GetURL();
+  virtual bool Close();
+
  private:
   friend class EmbeddedWorkerDevToolsManagerTest;
 
