@@ -11,6 +11,7 @@ from content_provider import ContentProvider
 import environment
 from extensions_paths import CONTENT_PROVIDERS, LOCAL_DEBUG_DIR
 from future import Future
+from gitiles_file_system import GitilesFileSystem
 from local_file_system import LocalFileSystem
 from third_party.json_schema_compiler.memoize import memoize
 
@@ -123,6 +124,13 @@ class ContentProviders(object):
         return None
       file_system = ChrootFileSystem(self._host_file_system,
                                      chromium_config['dir'])
+    elif 'gitiles' in config:
+      gitiles_config = config['gitiles']
+      if 'dir' not in gitiles_config:
+        logging.error('%s: "gitiles" must have a "dir" property' % name)
+        return None
+      file_system = ChrootFileSystem(GitilesFileSystem.Create(),
+                                     gitiles_config['dir'])
     elif 'gcs' in config:
       gcs_config = config['gcs']
       if 'bucket' not in gcs_config:
