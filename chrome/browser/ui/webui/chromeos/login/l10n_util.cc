@@ -126,10 +126,10 @@ scoped_ptr<base::ListValue> GetLanguageList(
        it != language_index.end(); ++it) {
     const std::string& language_id = it->first;
 
-    const size_t dash_pos = language_id.find_first_of('-');
+    const std::string lang = l10n_util::GetLanguage(language_id);
 
     // Ignore non-specific codes.
-    if (dash_pos == std::string::npos || dash_pos == 0)
+    if (lang.empty() || lang == language_id)
       continue;
 
     if (std::find(base_language_codes.begin(),
