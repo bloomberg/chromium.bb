@@ -30,16 +30,20 @@ function test()
         function format(record)
         {
             if (record.type() === WebInspector.TimelineModel.RecordType.ResourceSendRequest)
-                printSend(record._record);
+                printSend(record);
             else if (record.type() === WebInspector.TimelineModel.RecordType.ResourceReceiveResponse)
-                printReceive(record._record);
+                printReceive(record);
             else if (record.type() === WebInspector.TimelineModel.RecordType.ResourceFinish)
-                printFinish(record._record);
+                printFinish(record);
 
-            if (record.parent && record.parent.type() === WebInspector.TimelineModel.RecordType.Root) {
-                if (lastRecordStartTime)
-                    InspectorTest.assertGreaterOrEqual(record.startTime(), lastRecordStartTime, "Top level records order violation");
-                lastRecordStartTime = record.startTime();
+            var presentationRecord = presentationModel.toPresentationRecord(record);
+            if (presentationRecord && record.thread() === WebInspector.TimelineModel.MainThreadName) {
+                var parentIsRoot = presentationRecord.presentationParent() && !presentationRecord.presentationParent().presentationParent();
+                if (parentIsRoot) {
+                    if (lastRecordStartTime)
+                        InspectorTest.assertGreaterOrEqual(record.startTime(), lastRecordStartTime, "Top level records order violation");
+                    lastRecordStartTime = record.startTime();
+                }
             }
         }
         model.forAllRecords(format);
@@ -55,28 +59,28 @@ function test()
     function printSend(record)
     {
         printRecord(record);
-        requestId = record.data.requestId;
-        if (record.data.url === undefined) 
+        requestId = record.data().requestId;
+        if (record.data().url === undefined)
             InspectorTest.addResult("* No 'url' property in record");
-        else if (record.data.url.indexOf(scriptUrl) === -1)
+        else if (record.data().url.indexOf(scriptUrl) === -1)
             InspectorTest.addResult("* Didn't find URL: " + scriptUrl);
     }
 
     function printReceive(record)
     {
         printRecord(record);
-        if (requestId !== record.data.requestId)
+        if (requestId !== record.data().requestId)
             InspectorTest.addResult("Didn't find matching requestId: " + requestId);
-        if (record.data.statusCode !== 0)
-            InspectorTest.addResult("Response received status: " + record.data.statusCode);
+        if (record.data().statusCode !== 0)
+            InspectorTest.addResult("Response received status: " + record.data().statusCode);
     }
 
     function printFinish(record)
     {
         printRecord(record);
-        if (requestId !== record.data.requestId)
+        if (requestId !== record.data().requestId)
             InspectorTest.addResult("Didn't find matching requestId: " + requestId);
-        if (record.data.didFail)
+        if (record.data().didFail)
             InspectorTest.addResult("Request failed.");
     }
 }
