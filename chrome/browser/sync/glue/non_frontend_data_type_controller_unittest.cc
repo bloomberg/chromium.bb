@@ -315,9 +315,6 @@ TEST_F(SyncNonFrontendDataTypeControllerTest, AbortDuringAssociationInactive) {
       SignalEvent(&pause_db_thread));
   EXPECT_CALL(*model_associator_, AssociateModels(_, _)).
               WillOnce(Return(syncer::SyncError()));
-  EXPECT_CALL(start_callback_, Run(DataTypeController::ABORTED,_,_));
-  EXPECT_CALL(*dtc_mock_.get(),
-              RecordStartFailure(DataTypeController::ABORTED));
   SetStopExpectations();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_frontend_dtc_->state());
   Start();
@@ -345,9 +342,6 @@ TEST_F(SyncNonFrontendDataTypeControllerTest, AbortDuringAssociationActivated) {
           SignalEvent(&wait_for_association_starts),
           WaitOnEvent(&wait_for_dtc_stop),
           Return(syncer::SyncError())));
-  EXPECT_CALL(start_callback_, Run(DataTypeController::ABORTED,_,_));
-  EXPECT_CALL(*dtc_mock_.get(),
-              RecordStartFailure(DataTypeController::ABORTED));
   SetStopExpectations();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_frontend_dtc_->state());
   Start();

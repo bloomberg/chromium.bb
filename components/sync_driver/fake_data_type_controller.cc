@@ -93,26 +93,12 @@ void FakeDataTypeController::FinishStart(ConfigureResult result) {
 
 // * -> NOT_RUNNING
 void FakeDataTypeController::Stop() {
-  DataTypeController::State old_state = state_;
   state_ = NOT_RUNNING;
   if (!model_load_callback_.is_null()) {
     // Real data type controllers run the callback and specify "ABORTED" as an
     // error.  We should probably find a way to use the real code and mock out
     // unnecessary pieces.
     SimulateModelLoadFinishing();
-  }
-
-  // The DTM still expects |last_start_callback_| to be called back.
-  if (old_state != NOT_RUNNING && !last_start_callback_.is_null()) {
-    syncer::SyncError error(FROM_HERE,
-                            syncer::SyncError::DATATYPE_ERROR,
-                            "Fake error",
-                            type_);
-    syncer::SyncMergeResult local_merge_result(type_);
-    local_merge_result.set_error(error);
-    last_start_callback_.Run(ABORTED,
-                             local_merge_result,
-                             syncer::SyncMergeResult(type_));
   }
 }
 

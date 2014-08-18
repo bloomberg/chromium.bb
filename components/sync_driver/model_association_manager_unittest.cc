@@ -347,4 +347,40 @@ TEST_F(SyncModelAssociationManagerTest, StopAfterConfiguration) {
       ->OnSingleDataTypeUnrecoverableError(error);
 }
 
+TEST_F(SyncModelAssociationManagerTest, AbortDuringAssociation) {
+  controllers_[syncer::BOOKMARKS] =
+      new FakeDataTypeController(syncer::BOOKMARKS);
+  controllers_[syncer::APPS] =
+      new FakeDataTypeController(syncer::APPS);
+  ModelAssociationManager model_association_manager(&controllers_,
+                                                    &delegate_);
+  syncer::ModelTypeSet types;
+  types.Put(syncer::BOOKMARKS);
+  types.Put(syncer::APPS);
+
+  syncer::ModelTypeSet expected_types_unfinished;
+  expected_types_unfinished.Put(syncer::BOOKMARKS);
+  DataTypeManager::ConfigureResult expected_result_partially_done(
+      DataTypeManager::OK, types);
+
+  EXPECT_CALL(delegate_, OnModelAssociationDone(_)).
+              WillOnce(VerifyResult(expected_result_partially_done));
+
+  model_association_manager.Initialize(types);
+  model_association_manager.StartAssociationAsync(types);
+  GetController(controllers_, syncer::APPS)->FinishStart(
+      DataTypeController::OK);
+  EXPECT_EQ(GetController(controllers_, syncer::APPS)->state(),
+            DataTypeController::RUNNING);
+  EXPECT_EQ(GetController(controllers_, syncer::BOOKMARKS)->state(),
+            DataTypeController::ASSOCIATING);
+
+  EXPECT_CALL(delegate_,
+              OnSingleDataTypeWillStop(syncer::BOOKMARKS, _));
+  model_association_manager.GetTimerForTesting()->user_task().Run();
+
+  EXPECT_EQ(DataTypeController::NOT_RUNNING,
+            GetController(controllers_, syncer::BOOKMARKS)->state());
+}
+
 }  // namespace sync_driver

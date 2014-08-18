@@ -389,7 +389,6 @@ TEST_F(SyncNonUIDataTypeControllerTest, AbortDuringAssociation) {
   WaitableEvent pause_db_thread(false, false);
 
   SetStartExpectations();
-  SetStartFailExpectations(DataTypeController::ABORTED);
   EXPECT_CALL(*change_processor_.get(), Connect(_, _, _, _, _, _))
       .WillOnce(GetWeakPtrToSyncableService(&syncable_service_));
   EXPECT_CALL(*change_processor_.get(), CryptoReadyIfNecessary())
@@ -424,10 +423,6 @@ TEST_F(SyncNonUIDataTypeControllerTest, StartAfterSyncShutdown) {
   // We don't expect StopSyncing to be called because local_service_ will never
   // have been set.
   EXPECT_CALL(*change_processor_.get(), Disconnect()).WillOnce(Return(true));
-  EXPECT_CALL(*dtc_mock_.get(), StopModels());
-  EXPECT_CALL(*dtc_mock_.get(),
-              RecordStartFailure(DataTypeController::ABORTED));
-  EXPECT_CALL(start_callback_, Run(DataTypeController::ABORTED, _, _));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());
   Start();
   non_ui_dtc_->Stop();

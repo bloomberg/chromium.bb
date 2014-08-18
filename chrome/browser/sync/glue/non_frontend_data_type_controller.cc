@@ -277,14 +277,6 @@ void NonFrontendDataTypeController::Stop() {
     change_processor_ = NULL;
   }
 
-  // Call start callback if waiting for association.
-  if (state_ == ASSOCIATING) {
-    StartDone(ABORTED,
-              syncer::SyncMergeResult(type()),
-              syncer::SyncMergeResult(type()));
-
-  }
-
   state_ = NOT_RUNNING;
 }
 
