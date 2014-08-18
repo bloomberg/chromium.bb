@@ -107,8 +107,10 @@ class CONTENT_EXPORT RendererOverridesHandler
   void NotifyScreencastVisibility(bool visible);
   void SetColorPickerEnabled(bool enabled);
   void UpdateColorPickerFrame();
+  void ResetColorPickerFrame();
   void ColorPickerFrameUpdated(bool succeeded, const SkBitmap& bitmap);
   bool HandleMouseEvent(const blink::WebMouseEvent& event);
+  void UpdateColorPickerCursor();
 
   // Input domain.
   scoped_refptr<DevToolsProtocol::Response> InputEmulateTouchFromMouseEvent(
@@ -122,6 +124,8 @@ class CONTENT_EXPORT RendererOverridesHandler
   int capture_retry_count_;
   bool color_picker_enabled_;
   SkBitmap color_picker_frame_;
+  int last_cursor_x_;
+  int last_cursor_y_;
   RenderWidgetHost::MouseEventCallback mouse_event_callback_;
   base::WeakPtrFactory<RendererOverridesHandler> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(RendererOverridesHandler);

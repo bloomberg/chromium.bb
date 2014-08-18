@@ -75,6 +75,8 @@ RendererOverridesHandler::RendererOverridesHandler()
     : has_last_compositor_frame_metadata_(false),
       capture_retry_count_(0),
       color_picker_enabled_(false),
+      last_cursor_x_(-1),
+      last_cursor_y_(-1),
       weak_factory_(this) {
   RegisterCommandHandler(
       devtools::DOM::setFileInputFiles::kName,
@@ -189,7 +191,9 @@ void RendererOverridesHandler::OnVisibilityChanged(bool visible) {
 void RendererOverridesHandler::SetRenderViewHost(
     RenderViewHostImpl* host) {
   host_ = host;
-  if (screencast_command_ && host)
+  if (!host)
+    return;
+  if (screencast_command_)
     host->SetTouchEventEmulationEnabled(true, true);
   if (color_picker_enabled_)
     host->AddMouseEventCallback(mouse_event_callback_);
@@ -199,6 +203,7 @@ void RendererOverridesHandler::ClearRenderViewHost() {
   if (host_)
     host_->RemoveMouseEventCallback(mouse_event_callback_);
   host_ = NULL;
+  ResetColorPickerFrame();
 }
 
 bool RendererOverridesHandler::OnSetTouchEventEmulationEnabled() {
@@ -897,7 +902,7 @@ void RendererOverridesHandler::SetColorPickerEnabled(bool enabled) {
     UpdateColorPickerFrame();
   } else {
     host_->RemoveMouseEventCallback(mouse_event_callback_);
-    color_picker_frame_.reset();
+    ResetColorPickerFrame();
 
     WebCursor pointer_cursor;
     WebCursor::CursorInfo cursor_info;
@@ -923,22 +928,40 @@ void RendererOverridesHandler::UpdateColorPickerFrame() {
       kN32_SkColorType);
 }
 
+void RendererOverridesHandler::ResetColorPickerFrame() {
+  color_picker_frame_.reset();
+  last_cursor_x_ = -1;
+  last_cursor_y_ = -1;
+}
+
 void RendererOverridesHandler::ColorPickerFrameUpdated(
     bool succeeded,
     const SkBitmap& bitmap) {
-  if (succeeded)
+  if (!color_picker_enabled_)
+    return;
+
+  if (succeeded) {
     color_picker_frame_ = bitmap;
+    UpdateColorPickerCursor();
+  }
 }
 
 bool RendererOverridesHandler::HandleMouseEvent(
     const blink::WebMouseEvent& event) {
+  last_cursor_x_ = event.x;
+  last_cursor_y_ = event.y;
   if (color_picker_frame_.drawsNothing())
     return true;
 
   if (event.button == blink::WebMouseEvent::ButtonLeft) {
-    color_picker_frame_.lockPixels();
-    SkColor color = color_picker_frame_.getColor(event.x, event.y);
-    color_picker_frame_.unlockPixels();
+    if (last_cursor_x_ < 0 || last_cursor_x_ >= color_picker_frame_.width() ||
+        last_cursor_y_ < 0 || last_cursor_y_ >= color_picker_frame_.height()) {
+      return true;
+    }
+
+    SkAutoLockPixels lock_image(color_picker_frame_);
+    SkColor color = color_picker_frame_.getColor(last_cursor_x_,
+                                                 last_cursor_y_);
     base::DictionaryValue* color_dict = new base::DictionaryValue();
     color_dict->SetInteger("r", SkColorGetR(color));
     color_dict->SetInteger("g", SkColorGetG(color));
@@ -948,13 +971,23 @@ bool RendererOverridesHandler::HandleMouseEvent(
     response->Set(devtools::Page::colorPicked::kParamColor, color_dict);
     SendNotification(devtools::Page::colorPicked::kName, response);
   }
+  UpdateColorPickerCursor();
+  return true;
+}
 
-  if (!host_)
-    return true;
+void RendererOverridesHandler::UpdateColorPickerCursor() {
+  if (!host_ || color_picker_frame_.drawsNothing())
+    return;
+
+  if (last_cursor_x_ < 0 || last_cursor_x_ >= color_picker_frame_.width() ||
+      last_cursor_y_ < 0 || last_cursor_y_ >= color_picker_frame_.height()) {
+    return;
+  }
+
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
       host_->GetView());
   if (!view)
-    return true;
+    return;
 
   // Due to platform limitations, we are using two different cursors
   // depending on the platform. Mac and Win have large cursors with two circles
@@ -1011,8 +1044,8 @@ bool RendererOverridesHandler::HandleMouseEvent(
 
   // Project pixels.
   int pixel_count = kDiameter / kPixelSize;
-  SkRect src_rect = SkRect::MakeXYWH(event.x - pixel_count / 2,
-                                     event.y - pixel_count / 2,
+  SkRect src_rect = SkRect::MakeXYWH(last_cursor_x_ - pixel_count / 2,
+                                     last_cursor_y_ - pixel_count / 2,
                                      pixel_count, pixel_count);
   SkRect dst_rect = SkRect::MakeXYWH(padding, padding, kDiameter, kDiameter);
   canvas->drawBitmapRectToRect(color_picker_frame_, &src_rect, dst_rect);
@@ -1033,13 +1066,13 @@ bool RendererOverridesHandler::HandleMouseEvent(
                                   (kCursorSize - kPixelSize) / 2,
                                   kPixelSize, kPixelSize);
   paint.setColor(SK_ColorRED);
+  paint.setStyle(SkPaint::kStroke_Style);
   canvas->drawRect(pixel, paint);
 
   // Paint outline.
   paint.setStrokeWidth(2);
   paint.setColor(SK_ColorDKGRAY);
   paint.setAntiAlias(true);
-  paint.setStyle(SkPaint::kStroke_Style);
   canvas->drawCircle(kCursorSize / 2, kCursorSize / 2, kDiameter / 2, paint);
 
   SkBitmap result;
@@ -1062,7 +1095,6 @@ bool RendererOverridesHandler::HandleMouseEvent(
   cursor.InitFromCursorInfo(cursor_info);
   DCHECK(host_);
   host_->SetCursor(cursor);
-  return true;
 }
 
 // Input agent handlers  ------------------------------------------------------
