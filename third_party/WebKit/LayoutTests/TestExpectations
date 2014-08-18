@@ -1255,7 +1255,6 @@ crbug.com/392095 webaudio/realtimeanalyser-fft-scaling.html [ Pass Failure ]
 
 crbug.com/392706 virtual/threaded/animations/play-state-initially-paused.html [ Failure ]
 
-crbug.com/399459 http/tests/misc/link-rel-prefetch-and-subresource.html [ Pass Failure ]
 crbug.com/389594 svg/filters/feBlend-all-modes.html [ NeedsManualRebaseline ]
 
 # V8 3.28.19
