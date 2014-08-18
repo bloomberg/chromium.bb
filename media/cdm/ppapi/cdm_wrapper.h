@@ -130,8 +130,8 @@ class CdmWrapper {
   // Prior to CDM_6, |init_data_type| was a content type. This helper convererts
   // an |init_data_type| to a content type.
   // TODO(sandersd): Remove once Host_4 and Host_5 interfaces are removed.
-  virtual const char* ConvertInitDataTypeToContentType(
-      const char* init_data_type) const = 0;
+  virtual std::string ConvertInitDataTypeToContentType(
+      const std::string& init_data_type) const = 0;
 
  protected:
   CdmWrapper() {}
@@ -368,11 +368,11 @@ class CdmWrapperImpl : public CdmWrapper {
     v1->timestamp = v2.timestamp;
   }
 
-  virtual const char* ConvertInitDataTypeToContentType(
-      const char* init_data_type) const {
-    if (!strcmp(init_data_type, "cenc"))
+  virtual std::string ConvertInitDataTypeToContentType(
+      const std::string& init_data_type) const {
+    if (init_data_type == "cenc")
       return "video/mp4";
-    if (!strcmp(init_data_type, "webm"))
+    if (init_data_type == "webm")
       return "video/webm";
     return init_data_type;
   }
@@ -413,9 +413,11 @@ void CdmWrapperImpl<cdm::ContentDecryptionModule_4>::CreateSession(
     cdm::SessionType session_type) {
   uint32_t session_id = CreateSessionId();
   RegisterPromise(session_id, promise_id);
+  std::string converted_init_data_type = ConvertInitDataTypeToContentType(
+      std::string(init_data_type, init_data_type_size));
   cdm_->CreateSession(session_id,
-                      ConvertInitDataTypeToContentType(init_data_type),
-                      init_data_type_size,
+                      converted_init_data_type.data(),
+                      converted_init_data_type.length(),
                       init_data,
                       init_data_size);
 }
@@ -518,14 +520,16 @@ void CdmWrapperImpl<cdm::ContentDecryptionModule_5>::CreateSession(
     const uint8_t* init_data,
     uint32_t init_data_size,
     cdm::SessionType session_type) {
+  std::string converted_init_data_type = ConvertInitDataTypeToContentType(
+      std::string(init_data_type, init_data_type_size));
   // TODO(jrummell): Remove this code once |session_type| is passed through
   // Pepper. When removing, add the header back in for CDM4.
   PP_DCHECK(session_type == cdm::kTemporary);
   const char kPersistentSessionHeader[] = "PERSISTENT|";
   if (HasHeader(init_data, init_data_size, kPersistentSessionHeader)) {
     cdm_->CreateSession(promise_id,
-                        ConvertInitDataTypeToContentType(init_data_type),
-                        init_data_type_size,
+                        converted_init_data_type.data(),
+                        converted_init_data_type.length(),
                         init_data + strlen(kPersistentSessionHeader),
                         init_data_size - strlen(kPersistentSessionHeader),
                         cdm::kPersistent);
@@ -533,8 +537,8 @@ void CdmWrapperImpl<cdm::ContentDecryptionModule_5>::CreateSession(
   }
 
   cdm_->CreateSession(promise_id,
-                      ConvertInitDataTypeToContentType(init_data_type),
-                      init_data_type_size,
+                      converted_init_data_type.data(),
+                      converted_init_data_type.length(),
                       init_data,
                       init_data_size,
                       session_type);
