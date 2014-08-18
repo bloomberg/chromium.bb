@@ -37872,8 +37872,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </enum>
 
 <enum name="BooleanValidKeyExists" type="int">
-  <int value="0" label="Valid Cached Key Found"/>
-  <int value="1" label="No Valid Cached Key Found"/>
+  <int value="0" label="No Valid Cached Key Found"/>
+  <int value="1" label="Valid Cached Key Found"/>
 </enum>
 
 <enum name="BooleanWiped" type="int">
