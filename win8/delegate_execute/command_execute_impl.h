@@ -15,8 +15,6 @@
 #include "base/process/process_handle.h"
 #include "win8/delegate_execute/resource.h"       // main symbols
 
-using namespace ATL;
-
 EXTERN_C const GUID CLSID_CommandExecuteImpl;
 
 // CommandExecuteImpl
