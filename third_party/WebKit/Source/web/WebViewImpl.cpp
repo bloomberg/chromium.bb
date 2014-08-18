@@ -3422,14 +3422,12 @@ void WebViewImpl::spellingMarkers(WebVector<uint32_t>* markers)
 
 void WebViewImpl::removeSpellingMarkersUnderWords(const WebVector<WebString>& words)
 {
+    Vector<String> convertedWords;
+    convertedWords.append(words.data(), words.size());
+
     for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
-        if (!frame->isLocalFrame())
-            continue;
-
-        Vector<String> convertedWords;
-        convertedWords.append(words.data(), words.size());
-
-        toLocalFrame(frame)->removeSpellingMarkersUnderWords(convertedWords);
+        if (frame->isLocalFrame())
+            toLocalFrame(frame)->removeSpellingMarkersUnderWords(convertedWords);
     }
 }
 

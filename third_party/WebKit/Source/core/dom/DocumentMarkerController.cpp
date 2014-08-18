@@ -46,8 +46,8 @@ MarkerRemoverPredicate::MarkerRemoverPredicate(const Vector<String>& words)
 {
 }
 
-bool MarkerRemoverPredicate::operator()(const DocumentMarker& documentMarker,
-    const Text& textNode) const {
+bool MarkerRemoverPredicate::operator()(const DocumentMarker& documentMarker, const Text& textNode) const
+{
     unsigned start  = documentMarker.startOffset();
     unsigned length = documentMarker.endOffset() - documentMarker.startOffset();
 
