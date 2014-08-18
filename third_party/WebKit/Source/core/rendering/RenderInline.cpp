@@ -1336,16 +1336,14 @@ LayoutSize RenderInline::offsetForInFlowPositionedInline(const RenderBox& child)
         blockPosition = layer()->staticBlockPosition();
     }
 
-    if (!child.style()->hasStaticInlinePosition(style()->isHorizontalWritingMode()))
+    // Per http://www.w3.org/TR/CSS2/visudet.html#abs-non-replaced-width an absolute positioned box
+    // with a static position should locate itself as though it is a normal flow box in relation to
+    // its containing block. If this relative-positioned inline has a negative offset we need to
+    // compensate for it so that we align the positioned object with the edge of its containing block.
+    if (child.style()->hasStaticInlinePosition(style()->isHorizontalWritingMode()))
+        logicalOffset.setWidth(std::max(LayoutUnit(), -offsetForInFlowPosition().width()));
+    else
         logicalOffset.setWidth(inlinePosition);
-
-    // This is not terribly intuitive, but we have to match other browsers.  Despite being a block display type inside
-    // an inline, we still keep our x locked to the left of the relative positioned inline.  Arguably the correct
-    // behavior would be to go flush left to the block that contains the inline, but that isn't what other browsers
-    // do.
-    else if (!child.style()->isOriginalDisplayInlineType())
-        // Avoid adding in the left border/padding of the containing block twice.  Subtract it out.
-        logicalOffset.setWidth(inlinePosition - child.containingBlock()->borderAndPaddingLogicalLeft());
 
     if (!child.style()->hasStaticBlockPosition(style()->isHorizontalWritingMode()))
         logicalOffset.setHeight(blockPosition);
