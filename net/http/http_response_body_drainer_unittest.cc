@@ -16,7 +16,6 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/http_stream.h"
-#include "net/http/transport_security_state.h"
 #include "net/proxy/proxy_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -222,7 +221,6 @@ class HttpResponseBodyDrainerTest : public testing::Test {
     params.proxy_service = proxy_service_.get();
     params.ssl_config_service = ssl_config_service_.get();
     params.http_server_properties = http_server_properties_->GetWeakPtr();
-    params.transport_security_state = new TransportSecurityState();
     return new HttpNetworkSession(params);
   }
 
