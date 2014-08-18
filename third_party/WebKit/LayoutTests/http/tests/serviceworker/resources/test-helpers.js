@@ -1,23 +1,26 @@
 // Adapter for testharness.js-style tests with Service Workers
 
+// Can only be used with a worker that installs successfully, since it
+// first registers to acquire a ServiceWorkerRegistration object to
+// unregister.
+// FIXME: Use getRegistration() when implemented.
 function service_worker_unregister_and_register(test, url, scope) {
-    var options = scope ? { scope: scope } : {};
-    return navigator.serviceWorker.unregister(scope).then(
-        test.step_func(function() {
-            return navigator.serviceWorker.register(url, options);
-        }),
-        unreached_rejection(test, 'Unregister should not fail')
-    ).then(test.step_func(function(worker) {
-          return Promise.resolve(worker);
-        }),
-        unreached_rejection(test, 'Registration should not fail')
-    );
+  var options = scope ? { scope: scope } : {};
+  return navigator.serviceWorker.register(url, options)
+      .then(function(registration) {
+          return registration.unregister();
+        })
+      .then(function() {
+          return navigator.serviceWorker.register(url, options);
+        })
+      .catch(unreached_rejection(test,
+                                 'unregister and register should not fail'));
 }
 
 function service_worker_unregister_and_done(test, scope) {
     return navigator.serviceWorker.unregister(scope).then(
         test.done.bind(test),
-        unreached_rejection(test, 'Unregister should not fail'));
+        unreached_rejection(test, 'unregister should not fail'));
 }
 
 // Rejection-specific helper that provides more details
