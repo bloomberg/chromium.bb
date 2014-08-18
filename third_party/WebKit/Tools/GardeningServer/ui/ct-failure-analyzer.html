@@ -70,7 +70,7 @@ found in the LICENSE file.
         net.json('http://sheriff-o-matic.appspot.com/alerts').then(function(data) {
           annotationPromise.then(function(annotations) {
             // FIXME: Don't special-case the blink master.
-            this.builderLatestRevisions = new CTBuilderRevisions(data.latest_revisions['chromium.webkit']);
+            this.builderLatestRevisions = new CTBuilderRevisions(data.latest_builder_info['chromium.webkit']);
             this.failures = {};
             this.lastUpdateDate = new Date(data.date * 1000);
             data.range_groups.forEach(function(group) {
