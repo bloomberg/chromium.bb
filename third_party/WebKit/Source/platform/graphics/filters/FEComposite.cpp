@@ -27,7 +27,6 @@
 #include "platform/graphics/filters/FEComposite.h"
 
 #include "SkArithmeticMode.h"
-#include "SkFlattenableBuffers.h"
 #include "SkXfermodeImageFilter.h"
 
 #include "platform/graphics/GraphicsContext.h"

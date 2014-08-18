@@ -26,7 +26,6 @@
 #ifndef LazyDecodingPixelRef_h
 #define LazyDecodingPixelRef_h
 
-#include "SkFlattenableBuffers.h"
 #include "SkPixelRef.h"
 #include "SkRect.h"
 #include "SkSize.h"

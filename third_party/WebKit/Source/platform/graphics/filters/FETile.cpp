@@ -22,7 +22,6 @@
 #include "config.h"
 #include "platform/graphics/filters/FETile.h"
 
-#include "SkFlattenableBuffers.h"
 #include "SkTileImageFilter.h"
 
 #include "platform/graphics/GraphicsContext.h"

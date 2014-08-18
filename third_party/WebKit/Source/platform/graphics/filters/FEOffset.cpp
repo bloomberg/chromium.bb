@@ -25,7 +25,6 @@
 #include "config.h"
 #include "platform/graphics/filters/FEOffset.h"
 
-#include "SkFlattenableBuffers.h"
 #include "SkOffsetImageFilter.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"

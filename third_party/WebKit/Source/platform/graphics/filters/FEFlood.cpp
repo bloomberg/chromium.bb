@@ -26,7 +26,6 @@
 
 #include "SkColorFilter.h"
 #include "SkColorFilterImageFilter.h"
-#include "SkFlattenableBuffers.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"
