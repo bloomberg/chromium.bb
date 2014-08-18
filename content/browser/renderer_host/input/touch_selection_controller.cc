@@ -140,6 +140,8 @@ void TouchSelectionController::OnTapEvent() {
   activate_selection_automatically_ = false;
   DeactivateSelection();
   ShowInsertionHandleAutomatically();
+  if (selection_empty_)
+    DeactivateInsertion();
   ResetCachedValuesIfInactive();
 }
 

@@ -256,6 +256,10 @@ TEST_F(TouchSelectionControllerTest, InsertionStaysHiddenIfEmptyRegionTapped) {
   ChangeInsertion(insertion_rect, visible);
   EXPECT_EQ(INSERTION_SHOWN, GetLastEventType());
   EXPECT_EQ(insertion_rect.bottom_left(), GetLastEventAnchor());
+
+  // Single Tap on an empty edit field should clear insertion handle.
+  controller().OnTapEvent();
+  EXPECT_EQ(INSERTION_CLEARED, GetLastEventType());
 }
 
 TEST_F(TouchSelectionControllerTest, InsertionAppearsAfterTapFollowingTyping) {
