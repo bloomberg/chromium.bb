@@ -208,9 +208,10 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
 
   option_name = 'build'
   def __init__(self, builder_run, board, afdo_generate_min=False,
-               afdo_use=False, **kwargs):
+               afdo_use=False, update_metadata=False, **kwargs):
     super(BuildPackagesStage, self).__init__(builder_run, board, **kwargs)
     self._afdo_generate_min = afdo_generate_min
+    self._update_metadata = update_metadata
     assert not afdo_generate_min or not afdo_use
 
     useflags = self._portage_extra_env.get('USE', '').split()
@@ -247,13 +248,17 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
                    noworkon=noworkon,
                    extra_env=self._portage_extra_env)
 
-    # Extract firmware version information from the newly created updater.
-    board_dir = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR,
-                             'build', self._current_board)
-    main, ec = commands.GetFirmwareVersions(board_dir)
-    self._run.attrs.metadata.UpdateBoardDictWithDict(
-        self._current_board,
-        {'main-firmware-version': main, 'ec-firmware-version': ec})
+    if self._update_metadata:
+      # TODO: Consider moving this into its own stage if there are other similar
+      # things to do after build_packages.
+
+      # Extract firmware version information from the newly created updater.
+      board_dir = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR,
+                               'build', self._current_board)
+      main, ec = commands.GetFirmwareVersions(board_dir)
+      self._run.attrs.metadata.UpdateBoardDictWithDict(
+          self._current_board,
+          {'main-firmware-version': main, 'ec-firmware-version': ec})
 
 
 class BuildImageStage(BuildPackagesStage):

@@ -520,7 +520,8 @@ class SimpleBuilder(Builder):
 
     if config.build_packages_in_background:
       self._RunStage(build_stages.BuildPackagesStage, board,
-                     builder_run=builder_run, afdo_use=config.afdo_use)
+                     update_metadata=True, builder_run=builder_run,
+                     afdo_use=config.afdo_use)
 
     if builder_run.config.compilecheck or builder_run.options.compilecheck:
       self._RunStage(test_stages.UnitTestStage, board,
@@ -657,7 +658,8 @@ class SimpleBuilder(Builder):
           elif builder_run.config.afdo_use:
             kwargs['afdo_use'] = True
 
-          self._RunStage(build_stages.BuildPackagesStage, board, **kwargs)
+          self._RunStage(build_stages.BuildPackagesStage, board,
+                         update_metadata=True, **kwargs)
 
           if (builder_run.config.afdo_generate_min and
               afdo.CanGenerateAFDOData(board)):
