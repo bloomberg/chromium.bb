@@ -688,10 +688,8 @@ void WrenchMenuModel::AddGlobalErrorMenuItems() {
   // GetSignedInServiceErrors() can modify the global error list, so call it
   // before iterating through that list below.
   std::vector<GlobalError*> signin_errors;
-  if (!switches::IsNewAvatarMenu()) {
-      signin_errors = signin_ui_util::GetSignedInServiceErrors(
-          browser_->profile()->GetOriginalProfile());
-  }
+  signin_errors = signin_ui_util::GetSignedInServiceErrors(
+      browser_->profile()->GetOriginalProfile());
   const GlobalErrorService::GlobalErrorList& errors =
       GlobalErrorServiceFactory::GetForProfile(browser_->profile())->errors();
   for (GlobalErrorService::GlobalErrorList::const_iterator
