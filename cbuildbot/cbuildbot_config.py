@@ -1918,6 +1918,7 @@ internal_paladin.add_config('x86-zgb-paladin',
 
 internal_paladin.add_config('link_freon-paladin',
   boards=['link_freon'],
+  important=False,
   paladin_builder_name='link_freon paladin',
 )
 
