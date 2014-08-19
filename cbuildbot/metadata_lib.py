@@ -178,6 +178,9 @@ class CBuildbotMetadata(object):
     # store a multiprocess dict proxy inside another multiprocess dict proxy.
     # That is why we are using this flattened representation of board dicts.
     assert not ':' in board
+    # Even if board_dict is {}, ensure that an entry with this board
+    # gets written.
+    self._per_board_dict[board + ':'] = None
     for k, v in board_dict.items():
       assert not ':' in k
       self._per_board_dict['%s:%s' % (board, k)] = v
@@ -225,7 +228,8 @@ class CBuildbotMetadata(object):
     for k, v in self._per_board_dict.items():
       board, key = k.split(':')
       board_dict = per_board_dict.setdefault(board, {})
-      board_dict[key] = v
+      if key:
+        board_dict[key] = v
 
     temp['board-metadata'] = per_board_dict
     return temp

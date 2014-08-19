@@ -65,6 +65,13 @@ class MetadataTest(cros_test_lib.TestCase):
 
     self.assertEqual(expected_dict, metadata.GetDict()['my_dict'])
 
+
+  def testUpdateBoardMetadataWithEmptyDict(self):
+    metadata = metadata_lib.CBuildbotMetadata()
+    metadata.UpdateBoardDictWithDict('someboard', {})
+    self.assertEqual(metadata.GetDict()['board-metadata']['someboard'], {})
+
+
   def testUpdateBoardMetadataWithMultiprocessDict(self):
     starting_dict = {'key1': 1,
                      'key2': '2',
