@@ -367,9 +367,7 @@ public:
         m_info.src = 0;
 
 #if USE(QCMSLIB)
-        if (m_transform)
-            qcms_transform_release(m_transform);
-        m_transform = 0;
+        clearColorTransform();
 #endif
         jpeg_destroy_decompress(&m_info);
     }
@@ -594,11 +592,16 @@ public:
 #if USE(QCMSLIB)
     qcms_transform* colorTransform() const { return m_transform; }
 
-    void createColorTransform(const ColorProfile& colorProfile, bool hasAlpha)
+    void clearColorTransform()
     {
         if (m_transform)
             qcms_transform_release(m_transform);
         m_transform = 0;
+    }
+
+    void createColorTransform(const ColorProfile& colorProfile, bool hasAlpha)
+    {
+        clearColorTransform();
 
         if (colorProfile.isEmpty())
             return;

@@ -64,6 +64,7 @@ private:
 #if USE(QCMSLIB)
     qcms_transform* colorTransform() const { return m_transform; }
     void createColorTransform(const char* data, size_t);
+    void clearColorTransform();
     void readColorProfile();
 
     bool m_haveReadProfile;

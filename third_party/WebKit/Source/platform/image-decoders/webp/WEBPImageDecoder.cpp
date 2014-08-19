@@ -155,9 +155,7 @@ WEBPImageDecoder::~WEBPImageDecoder()
 void WEBPImageDecoder::clear()
 {
 #if USE(QCMSLIB)
-    if (m_transform)
-        qcms_transform_release(m_transform);
-    m_transform = 0;
+    clearColorTransform();
 #endif
     WebPDemuxDelete(m_demux);
     m_demux = 0;
@@ -410,11 +408,16 @@ void WEBPImageDecoder::clearFrameBuffer(size_t frameIndex)
 
 #if USE(QCMSLIB)
 
-void WEBPImageDecoder::createColorTransform(const char* data, size_t size)
+void WEBPImageDecoder::clearColorTransform()
 {
     if (m_transform)
         qcms_transform_release(m_transform);
     m_transform = 0;
+}
+
+void WEBPImageDecoder::createColorTransform(const char* data, size_t size)
+{
+    clearColorTransform();
 
     qcms_profile* deviceProfile = ImageDecoder::qcmsOutputDeviceProfile();
     if (!deviceProfile)
