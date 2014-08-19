@@ -70,6 +70,7 @@ BAD_ACL_ERRORS = (
   '(prohibited by Gerrit)',
   'does not match your user account',
   'Invalid user name or password',
+  'Please make sure you have the correct access rights',
 )
 
 
