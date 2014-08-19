@@ -149,6 +149,83 @@ base.urlJoin = function(url, opt_params) {
   return url + '?' + queryParameters.join('&');
 };
 
+/**
+ * Promise is a great tool for writing asynchronous code. However, the construct
+ *   var p = new promise(function init(resolve, reject) {
+ *     ... // code that fulfills the Promise.
+ *   });
+ * forces the Promise-resolving logic to reside in the |init| function
+ * of the constructor.  This is problematic when you need to resolve the
+ * Promise in a member function(which is quite common for event callbacks).
+ *
+ * base.Deferred comes to the rescue.  It encapsulates a Promise
+ * object and exposes member methods (resolve/reject) to fulfill it.
+ *
+ * Here are the recommended steps to follow when implementing an asynchronous
+ * function that returns a Promise:
+ * 1. Create a deferred object by calling
+ *      var deferred = new base.Deferred();
+ * 2. Call deferred.resolve() when the asynchronous operation finishes.
+ * 3. Call deferred.reject() when the asynchronous operation fails.
+ * 4. Return deferred.promise() to the caller so that it can subscribe
+ *    to status changes using the |then| handler.
+ *
+ * Sample Usage:
+ *  function myAsyncAPI() {
+ *    var deferred = new base.Deferred();
+ *    window.setTimeout(function() {
+ *      deferred.resolve();
+ *    }, 100);
+ *    return deferred.promise();
+ *  };
+ *
+ * @constructor
+ */
+base.Deferred = function() {
+  /**
+   * @type {?function(?=)}
+   * @private
+   */
+  this.resolve_ = null;
+
+  /**
+   * @type {?function(?)}
+   * @private
+   */
+  this.reject_ = null;
+
+  /**
+   * @type {Promise}
+   * @private
+   */
+  this.promise_ = new Promise(
+    /**
+     * @param {function(?=):void} resolve
+     * @param {function(?):void} reject
+     * @this {base.Deferred}
+     */
+    function(resolve, reject) {
+      this.resolve_ = resolve;
+      this.reject_ = reject;
+    }.bind(this)
+  );
+};
+
+/** @param {*} reason */
+base.Deferred.prototype.reject = function(reason) {
+  this.reject_(reason);
+};
+
+/** @param {*=} opt_value */
+base.Deferred.prototype.resolve = function(opt_value) {
+  this.resolve_(opt_value);
+};
+
+/** @return {Promise} */
+base.Deferred.prototype.promise = function() {
+  return this.promise_;
+};
+
 base.Promise = function() {};
 
 /**

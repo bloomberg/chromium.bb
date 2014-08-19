@@ -111,6 +111,38 @@ QUnit.asyncTest('Promise.negate should fulfill iff the promise does not.',
     });
 });
 
+module('base.Deferred');
+
+QUnit.asyncTest('resolve() should fulfill the underlying promise.', function() {
+  function async() {
+    var deferred = new base.Deferred();
+    deferred.resolve('bar');
+    return deferred.promise();
+  }
+
+  async().then(function(value){
+    QUnit.equal(value, 'bar');
+    QUnit.start();
+  }, function() {
+    QUnit.ok(false, 'The reject handler should not be invoked.');
+  });
+});
+
+QUnit.asyncTest('reject() should fail the underlying promise.', function() {
+  function async() {
+    var deferred = new base.Deferred();
+    deferred.reject('bar');
+    return deferred.promise();
+  }
+
+  async().then(function(){
+    QUnit.ok(false, 'The then handler should not be invoked.');
+  }, function(value) {
+    QUnit.equal(value, 'bar');
+    QUnit.start();
+  });
+});
+
 
 var source = null;
 var listener = null;
