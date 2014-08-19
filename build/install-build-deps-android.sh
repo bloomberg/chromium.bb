@@ -47,6 +47,11 @@ sudo apt-get -y install lighttpd python-pexpect xvfb x11-utils
 # Few binaries in the Android SDK require 32-bit libraries on the host.
 sudo apt-get -y install lib32z1 g++-multilib
 
+# On Trusty-based systems you can't compile V8's mksnapshot without this one.
+# It is compiled for the host, using the -m32 flag, so it needs some 32 bit
+# development support. It seems harmless on older Linux releases.
+sudo apt-get -y install linux-libc-dev:i386
+
 sudo apt-get -y install ant
 
 # Install openjdk and openjre 7 stuff
