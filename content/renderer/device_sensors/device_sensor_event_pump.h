@@ -7,28 +7,54 @@
 
 #include "base/memory/shared_memory.h"
 #include "base/timer/timer.h"
-#include "content/public/renderer/render_process_observer.h"
+#include "content/public/renderer/platform_event_observer.h"
 
 namespace content {
-class RenderThread;
 
-class CONTENT_EXPORT DeviceSensorEventPump : public RenderProcessObserver {
+template <typename ListenerType>
+class CONTENT_EXPORT DeviceSensorEventPump
+    : NON_EXPORTED_BASE(public PlatformEventObserver<ListenerType>) {
  public:
   // Default delay between subsequent firing of events.
-  static const int kDefaultPumpDelayMillis;
+  static const int kDefaultPumpDelayMillis = 50;
 
-  int GetDelayMillis() const;
+  // PlatformEventObserver
+  virtual void Start(blink::WebPlatformEventListener* listener) OVERRIDE {
+    DVLOG(2) << "requested start";
 
-  void Attach(RenderThread* thread);
-  virtual bool OnControlMessageReceived(const IPC::Message& message) = 0;
+    if (state_ != STOPPED)
+      return;
+
+    DCHECK(!timer_.IsRunning());
+
+    PlatformEventObserver<ListenerType>::Start(listener);
+    state_ = PENDING_START;
+  }
+
+  virtual void Stop() OVERRIDE {
+    DVLOG(2) << "stop";
+
+    if (state_ == STOPPED)
+      return;
+
+    DCHECK((state_ == PENDING_START && !timer_.IsRunning()) ||
+        (state_ == RUNNING && timer_.IsRunning()));
+
+    if (timer_.IsRunning())
+      timer_.Stop();
+    PlatformEventObserver<ListenerType>::Stop();
+    state_ = STOPPED;
+  }
 
  protected:
-  // Constructor for a pump with default delay.
-  DeviceSensorEventPump();
+  explicit DeviceSensorEventPump(RenderThread* thread)
+      : PlatformEventObserver<ListenerType>(thread),
+        pump_delay_millis_(kDefaultPumpDelayMillis),
+        state_(STOPPED) {
+  }
 
-  // Constructor for a pump with a given delay.
-  explicit DeviceSensorEventPump(int pump_delay_millis);
-  virtual ~DeviceSensorEventPump();
+  virtual ~DeviceSensorEventPump() {
+  }
 
   // The pump is a tri-state automaton with allowed transitions as follows:
   // STOPPED -> PENDING_START
@@ -41,18 +67,30 @@ class CONTENT_EXPORT DeviceSensorEventPump : public RenderProcessObserver {
       PENDING_START
   };
 
-  bool RequestStart();
-  void OnDidStart(base::SharedMemoryHandle handle);
-  bool Stop();
+  void OnDidStart(base::SharedMemoryHandle handle) {
+    DVLOG(2) << "did start sensor event pump";
+
+    if (state_ != PENDING_START)
+      return;
+
+    DCHECK(!timer_.IsRunning());
+
+    if (InitializeReader(handle)) {
+      timer_.Start(FROM_HERE,
+                   base::TimeDelta::FromMilliseconds(pump_delay_millis_),
+                   this, &DeviceSensorEventPump::FireEvent);
+      state_ = RUNNING;
+    }
+  }
 
   virtual void FireEvent() = 0;
   virtual bool InitializeReader(base::SharedMemoryHandle handle) = 0;
-  virtual bool SendStartMessage() = 0;
-  virtual bool SendStopMessage() = 0;
 
   int pump_delay_millis_;
   PumpState state_;
   base::RepeatingTimer<DeviceSensorEventPump> timer_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeviceSensorEventPump);
 };
 
 }  // namespace content

@@ -44,7 +44,7 @@ public:
     virtual void setEditCommand(const std::string& name, const std::string& value) = 0;
 
     // Sets gamepad provider to be used for tests.
-    virtual void setGamepadProvider(RendererGamepadProvider*) = 0;
+    virtual void setGamepadProvider(scoped_ptr<RendererGamepadProvider>) = 0;
 
     // Set data to return when registering via
     // Platform::setDeviceLightListener().

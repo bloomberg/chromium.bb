@@ -24,21 +24,22 @@ class GamepadController
     : public base::SupportsWeakPtr<GamepadController>,
       public RendererGamepadProvider {
  public:
-  GamepadController();
+  static base::WeakPtr<GamepadController> Create(WebTestDelegate* delegate);
   virtual ~GamepadController();
 
   void Reset();
   void Install(blink::WebFrame* frame);
-  void SetDelegate(WebTestDelegate* delegate);
 
   // RendererGamepadProvider implementation.
   virtual void SampleGamepads(
       blink::WebGamepads& gamepads) OVERRIDE;
-  virtual void SetGamepadListener(
-      blink::WebGamepadListener* listener) OVERRIDE;
+  virtual bool OnControlMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual void SendStartMessage() OVERRIDE;
+  virtual void SendStopMessage() OVERRIDE;
 
  private:
   friend class GamepadControllerBindings;
+  GamepadController();
 
   // TODO(b.kelemen): for historical reasons Connect just initializes the
   // object. The 'gamepadconnected' event will be dispatched via
@@ -57,8 +58,6 @@ class GamepadController
   void SetAxisData(int index, int axis, double data);
 
   blink::WebGamepads gamepads_;
-
-  blink::WebGamepadListener* listener_;
 
   // Mapping from gamepad index to connection state.
   std::map<int, bool> pending_changes_;

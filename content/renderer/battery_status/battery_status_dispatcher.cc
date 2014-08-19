@@ -4,7 +4,6 @@
 
 #include "battery_status_dispatcher.h"
 
-#include "base/logging.h"
 #include "content/common/battery_status_messages.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/WebKit/public/platform/WebBatteryStatusListener.h"
@@ -12,20 +11,10 @@
 namespace content {
 
 BatteryStatusDispatcher::BatteryStatusDispatcher(RenderThread* thread)
-    : listener_(0) {
-  if (thread)
-    thread->AddObserver(this);
+    : PlatformEventObserver<blink::WebBatteryStatusListener>(thread) {
 }
 
 BatteryStatusDispatcher::~BatteryStatusDispatcher() {
-  if (listener_)
-    Stop();
-}
-
-bool BatteryStatusDispatcher::SetListener(
-    blink::WebBatteryStatusListener* listener) {
-  listener_ = listener;
-  return listener ? Start() : Stop();
 }
 
 bool BatteryStatusDispatcher::OnControlMessageReceived(
@@ -38,18 +27,22 @@ bool BatteryStatusDispatcher::OnControlMessageReceived(
   return handled;
 }
 
-bool BatteryStatusDispatcher::Start() {
-  return RenderThread::Get()->Send(new BatteryStatusHostMsg_Start());
+void BatteryStatusDispatcher::SendStartMessage() {
+  RenderThread::Get()->Send(new BatteryStatusHostMsg_Start());
 }
 
-bool BatteryStatusDispatcher::Stop() {
-  return RenderThread::Get()->Send(new BatteryStatusHostMsg_Stop());
+void BatteryStatusDispatcher::SendStopMessage() {
+  RenderThread::Get()->Send(new BatteryStatusHostMsg_Stop());
 }
 
 void BatteryStatusDispatcher::OnDidChange(
     const blink::WebBatteryStatus& status) {
-  if (listener_)
-    listener_->updateBatteryStatus(status);
+  if (listener())
+    listener()->updateBatteryStatus(status);
+}
+
+void BatteryStatusDispatcher::SendFakeDataForTesting(void* fake_data) {
+  OnDidChange(*static_cast<blink::WebBatteryStatus*>(fake_data));
 }
 
 }  // namespace content

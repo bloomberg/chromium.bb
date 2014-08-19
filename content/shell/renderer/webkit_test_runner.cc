@@ -25,6 +25,7 @@
 #include "content/public/common/web_preferences.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
+#include "content/public/renderer/renderer_gamepad_provider.h"
 #include "content/public/test/layouttest_support.h"
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/shell_switches.h"
@@ -73,7 +74,6 @@ using blink::WebDeviceMotionData;
 using blink::WebDeviceOrientationData;
 using blink::WebElement;
 using blink::WebLocalFrame;
-using blink::WebGamepads;
 using blink::WebHistoryItem;
 using blink::WebLocalFrame;
 using blink::WebPoint;
@@ -203,8 +203,8 @@ void WebKitTestRunner::setEditCommand(const std::string& name,
 }
 
 void WebKitTestRunner::setGamepadProvider(
-    RendererGamepadProvider* provider) {
-  SetMockGamepadProvider(provider);
+    scoped_ptr<RendererGamepadProvider> provider) {
+  SetMockGamepadProvider(provider.Pass());
 }
 
 void WebKitTestRunner::setDeviceLightData(const double data) {

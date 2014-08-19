@@ -46,14 +46,15 @@ class MockDeviceOrientationListener
 
 class DeviceOrientationEventPumpForTesting : public DeviceOrientationEventPump {
  public:
-  DeviceOrientationEventPumpForTesting() { }
+  DeviceOrientationEventPumpForTesting()
+      : DeviceOrientationEventPump(0) { }
   virtual ~DeviceOrientationEventPumpForTesting() { }
 
   void OnDidStart(base::SharedMemoryHandle renderer_handle) {
     DeviceOrientationEventPump::OnDidStart(renderer_handle);
   }
-  virtual bool SendStartMessage() OVERRIDE { return true; }
-  virtual bool SendStopMessage() OVERRIDE { return true; }
+  virtual void SendStartMessage() OVERRIDE { }
+  virtual void SendStopMessage() OVERRIDE { }
   virtual void FireEvent() OVERRIDE {
     DeviceOrientationEventPump::FireEvent();
     Stop();
@@ -121,7 +122,7 @@ TEST_F(DeviceOrientationEventPumpTest, DidStartPolling) {
   base::MessageLoop loop;
 
   InitBuffer();
-  orientation_pump()->SetListener(listener());
+  orientation_pump()->Start(listener());
   orientation_pump()->OnDidStart(handle());
 
   base::MessageLoop::current()->Run();
@@ -141,7 +142,7 @@ TEST_F(DeviceOrientationEventPumpTest, FireAllNullEvent) {
   base::MessageLoop loop;
 
   InitBufferNoData();
-  orientation_pump()->SetListener(listener());
+  orientation_pump()->Start(listener());
   orientation_pump()->OnDidStart(handle());
 
   base::MessageLoop::current()->Run();
@@ -158,7 +159,7 @@ TEST_F(DeviceOrientationEventPumpTest, UpdateRespectsOrientationThreshold) {
   base::MessageLoop loop;
 
   InitBuffer();
-  orientation_pump()->SetListener(listener());
+  orientation_pump()->Start(listener());
   orientation_pump()->OnDidStart(handle());
 
   base::MessageLoop::current()->Run();
@@ -177,6 +178,9 @@ TEST_F(DeviceOrientationEventPumpTest, UpdateRespectsOrientationThreshold) {
       1 + DeviceOrientationEventPump::kOrientationThreshold / 2.0;
   listener()->set_did_change_device_orientation(false);
 
+  // Reset the pump's listener.
+  orientation_pump()->Start(listener());
+
   base::MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&DeviceOrientationEventPumpForTesting::FireEvent,
                  base::Unretained(orientation_pump())));
@@ -194,6 +198,9 @@ TEST_F(DeviceOrientationEventPumpTest, UpdateRespectsOrientationThreshold) {
   buffer()->data.alpha =
       1 + DeviceOrientationEventPump::kOrientationThreshold;
   listener()->set_did_change_device_orientation(false);
+
+  // Reset the pump's listener.
+  orientation_pump()->Start(listener());
 
   base::MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&DeviceOrientationEventPumpForTesting::FireEvent,

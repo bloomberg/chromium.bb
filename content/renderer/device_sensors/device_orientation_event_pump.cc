@@ -14,21 +14,11 @@ namespace content {
 
 const double DeviceOrientationEventPump::kOrientationThreshold = 0.1;
 
-DeviceOrientationEventPump::DeviceOrientationEventPump()
-    : DeviceSensorEventPump(), listener_(0) {
-}
-
-DeviceOrientationEventPump::DeviceOrientationEventPump(int pump_delay_millis)
-    : DeviceSensorEventPump(pump_delay_millis), listener_(0) {
+DeviceOrientationEventPump::DeviceOrientationEventPump(RenderThread* thread)
+    : DeviceSensorEventPump<blink::WebDeviceOrientationListener>(thread) {
 }
 
 DeviceOrientationEventPump::~DeviceOrientationEventPump() {
-}
-
-bool DeviceOrientationEventPump::SetListener(
-    blink::WebDeviceOrientationListener* listener) {
-  listener_ = listener;
-  return listener_ ? RequestStart() : Stop();
 }
 
 bool DeviceOrientationEventPump::OnControlMessageReceived(
@@ -42,11 +32,11 @@ bool DeviceOrientationEventPump::OnControlMessageReceived(
 }
 
 void DeviceOrientationEventPump::FireEvent() {
-  DCHECK(listener_);
+  DCHECK(listener());
   blink::WebDeviceOrientationData data;
   if (reader_->GetLatestData(&data) && ShouldFireEvent(data)) {
     memcpy(&data_, &data, sizeof(data));
-    listener_->didChangeDeviceOrientation(data);
+    listener()->didChangeDeviceOrientation(data);
   }
 }
 
@@ -84,12 +74,19 @@ bool DeviceOrientationEventPump::InitializeReader(
   return reader_->Initialize(handle);
 }
 
-bool DeviceOrientationEventPump::SendStartMessage() {
-  return RenderThread::Get()->Send(new DeviceOrientationHostMsg_StartPolling());
+void DeviceOrientationEventPump::SendStartMessage() {
+  RenderThread::Get()->Send(new DeviceOrientationHostMsg_StartPolling());
 }
 
-bool DeviceOrientationEventPump::SendStopMessage() {
-  return RenderThread::Get()->Send(new DeviceOrientationHostMsg_StopPolling());
+void DeviceOrientationEventPump::SendStopMessage() {
+  RenderThread::Get()->Send(new DeviceOrientationHostMsg_StopPolling());
+}
+
+void DeviceOrientationEventPump::SendFakeDataForTesting(void* fake_data) {
+  blink::WebDeviceOrientationData data =
+      *static_cast<blink::WebDeviceOrientationData*>(fake_data);
+
+  listener()->didChangeDeviceOrientation(data);
 }
 
 }  // namespace content

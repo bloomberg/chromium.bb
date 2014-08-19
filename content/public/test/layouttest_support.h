@@ -46,7 +46,7 @@ void EnableWebTestProxyCreation(
     const base::Callback<void(RenderView*, WebTestProxyBase*)>& callback);
 
 // Sets gamepad provider to be used for layout tests.
-void SetMockGamepadProvider(RendererGamepadProvider* provider);
+void SetMockGamepadProvider(scoped_ptr<RendererGamepadProvider> provider);
 
 // Sets a double that should be used when registering
 // a listener through WebKitPlatformSupport::setDeviceLightListener().

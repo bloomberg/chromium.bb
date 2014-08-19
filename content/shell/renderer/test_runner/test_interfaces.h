@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "third_party/WebKit/public/platform/WebNonCopyable.h"
 
 #if defined(OS_MACOSX)
@@ -62,7 +63,7 @@ class TestInterfaces {
  private:
   scoped_ptr<AccessibilityController> accessibility_controller_;
   scoped_ptr<EventSender> event_sender_;
-  scoped_ptr<GamepadController> gamepad_controller_;
+  base::WeakPtr<GamepadController> gamepad_controller_;
   scoped_ptr<TextInputController> text_input_controller_;
   scoped_ptr<TestRunner> test_runner_;
   WebTestDelegate* delegate_;
