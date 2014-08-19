@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/component_updater/update_checker.h"
+#include "components/component_updater/update_checker.h"
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/component_updater/component_updater_configurator.h"
-#include "chrome/browser/component_updater/component_updater_utils.h"
-#include "chrome/browser/component_updater/crx_update_item.h"
+#include "components/component_updater/component_updater_configurator.h"
+#include "components/component_updater/component_updater_utils.h"
+#include "components/component_updater/crx_update_item.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"

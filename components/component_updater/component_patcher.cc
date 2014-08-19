@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/component_updater/component_patcher.h"
+#include "components/component_updater/component_patcher.h"
 
 #include <string>
 #include <vector>
@@ -15,8 +15,8 @@
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/component_updater/component_patcher_operation.h"
-#include "chrome/browser/component_updater/component_updater_service.h"
+#include "components/component_updater/component_patcher_operation.h"
+#include "components/component_updater/component_updater_service.h"
 
 namespace component_updater {
 

@@ -6,8 +6,8 @@
 
 #include "base/run_loop.h"
 #include "base/version.h"
-#include "chrome/browser/component_updater/component_patcher_operation.h"
 #include "chrome/browser/component_updater/test/test_configurator.h"
+#include "components/component_updater/component_patcher_operation.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,9 +13,9 @@
 #include "base/values.h"
 #include "base/version.h"
 // TODO(ddorwin): Find a better place for ReadManifest.
-#include "chrome/browser/component_updater/component_unpacker.h"
-#include "chrome/browser/component_updater/component_updater_configurator.h"
-#include "chrome/browser/component_updater/default_component_installer.h"
+#include "components/component_updater/component_unpacker.h"
+#include "components/component_updater/component_updater_configurator.h"
+#include "components/component_updater/default_component_installer.h"
 
 namespace component_updater {
 

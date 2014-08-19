@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_COMPONENT_UPDATER_BACKGROUND_DOWNLOADER_WIN_H_
-#define CHROME_BROWSER_COMPONENT_UPDATER_BACKGROUND_DOWNLOADER_WIN_H_
+#ifndef COMPONENTS_COMPONENT_UPDATER_BACKGROUND_DOWNLOADER_WIN_H_
+#define COMPONENTS_COMPONENT_UPDATER_BACKGROUND_DOWNLOADER_WIN_H_
 
 #include <windows.h>
 #include <bits.h>
@@ -14,7 +14,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/win/scoped_comptr.h"
-#include "chrome/browser/component_updater/crx_downloader.h"
+#include "components/component_updater/crx_downloader.h"
 
 namespace base {
 class FilePath;
@@ -115,4 +115,4 @@ class BackgroundDownloader : public CrxDownloader {
 
 }  // namespace component_updater
 
-#endif  // CHROME_BROWSER_COMPONENT_UPDATER_BACKGROUND_DOWNLOADER_WIN_H_
+#endif  // COMPONENTS_COMPONENT_UPDATER_BACKGROUND_DOWNLOADER_WIN_H_

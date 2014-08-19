@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_COMPONENTS_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_COMPONENTS_UI_H_
 
-#include "chrome/browser/component_updater/component_updater_service.h"
-#include "chrome/browser/component_updater/crx_update_item.h"
+#include "components/component_updater/component_updater_service.h"
+#include "components/component_updater/crx_update_item.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "ui/base/layout.h"
 

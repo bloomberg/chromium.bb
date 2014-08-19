@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/component_updater/test/component_updater_service_unittest.h"
+
 #include <vector>
 
-#include "chrome/browser/component_updater/test/component_updater_service_unittest.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -13,10 +14,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/component_updater/component_updater_resource_throttle.h"
-#include "chrome/browser/component_updater/component_updater_utils.h"
 #include "chrome/browser/component_updater/test/test_configurator.h"
 #include "chrome/browser/component_updater/test/test_installer.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/component_updater/component_updater_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_request_info.h"

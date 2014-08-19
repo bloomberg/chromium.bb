@@ -1,12 +1,12 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/component_updater/url_fetcher_downloader.h"
+#include "components/component_updater/url_fetcher_downloader.h"
 
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
-#include "chrome/browser/component_updater/component_updater_utils.h"
+#include "components/component_updater/component_updater_utils.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "url/gurl.h"

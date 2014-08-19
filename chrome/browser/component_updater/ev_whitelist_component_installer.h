@@ -10,7 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/values.h"
-#include "chrome/browser/component_updater/default_component_installer.h"
+#include "components/component_updater/default_component_installer.h"
 
 namespace component_updater {
 

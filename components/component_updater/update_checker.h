@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_COMPONENT_UPDATER_UPDATE_CHECKER_H_
-#define CHROME_BROWSER_COMPONENT_UPDATER_UPDATE_CHECKER_H_
+#ifndef COMPONENTS_COMPONENT_UPDATER_UPDATE_CHECKER_H_
+#define COMPONENTS_COMPONENT_UPDATER_UPDATE_CHECKER_H_
 
 #include <string>
 #include <vector>
@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/component_updater/update_response.h"
+#include "components/component_updater/update_response.h"
 
 class GURL;
 
@@ -53,4 +53,4 @@ class UpdateChecker {
 
 }  // namespace component_updater
 
-#endif  // CHROME_BROWSER_COMPONENT_UPDATER_UPDATE_CHECKER_H_
+#endif  // COMPONENTS_COMPONENT_UPDATER_UPDATE_CHECKER_H_

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,14 +24,14 @@
 // fingerprint of the installed files, to later identify the existing files to
 // the server so that a proper differential update can be provided next cycle.
 
-#ifndef CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_PATCHER_H_
-#define CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_PATCHER_H_
+#ifndef COMPONENTS_COMPONENT_UPDATER_COMPONENT_PATCHER_H_
+#define COMPONENTS_COMPONENT_UPDATER_COMPONENT_PATCHER_H_
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/component_updater/component_unpacker.h"
+#include "components/component_updater/component_unpacker.h"
 
 namespace base {
 class FilePath;
@@ -98,4 +98,4 @@ class ComponentPatcher : public base::RefCountedThreadSafe<ComponentPatcher> {
 
 }  // namespace component_updater
 
-#endif  // CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_PATCHER_H_
+#endif  // COMPONENTS_COMPONENT_UPDATER_COMPONENT_PATCHER_H_

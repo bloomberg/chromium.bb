@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
-#include "chrome/browser/component_updater/component_patcher_operation.h"
+#include "components/component_updater/component_patcher_operation.h"
 
 namespace component_updater {
 

@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/component_updater/component_updater_configurator.h"
+#include "components/component_updater/component_updater_configurator.h"
 #include "net/url_request/url_request_test_util.h"
 
 namespace component_updater {

@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
-#include "chrome/browser/component_updater/component_updater_service.h"
+#include "components/component_updater/component_updater_service.h"
 
 namespace base {
 class DictionaryValue;
@@ -21,7 +21,7 @@ namespace component_updater {
 // increment a counter.
 class TestInstaller : public ComponentInstaller {
  public:
-  explicit TestInstaller();
+  TestInstaller();
 
   virtual void OnUpdateError(int error) OVERRIDE;
 
@@ -59,7 +59,7 @@ class ReadOnlyTestInstaller : public TestInstaller {
 // directories (e.g. somedir/25.23.89.141/<files>).
 class VersionedTestInstaller : public TestInstaller {
  public:
-  explicit VersionedTestInstaller();
+  VersionedTestInstaller();
 
   virtual ~VersionedTestInstaller();
 

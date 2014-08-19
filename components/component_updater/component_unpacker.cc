@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/component_updater/component_unpacker.h"
+#include "components/component_updater/component_unpacker.h"
 
 #include <string>
 #include <vector>
@@ -14,12 +14,13 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/component_updater/component_patcher.h"
-#include "chrome/browser/component_updater/component_patcher_operation.h"
-#include "chrome/browser/component_updater/component_updater_service.h"
+#include "components/component_updater/component_patcher.h"
+#include "components/component_updater/component_patcher_operation.h"
+#include "components/component_updater/component_updater_service.h"
 #include "components/crx_file/constants.h"
 #include "components/crx_file/crx_file.h"
 #include "crypto/secure_hash.h"
@@ -61,11 +62,12 @@ class CRXValidator {
 
     crypto::SignatureVerifier verifier;
     if (!verifier.VerifyInit(crx_file::kSignatureAlgorithm,
-                             sizeof(crx_file::kSignatureAlgorithm),
+                             base::checked_cast<int>(
+                                 sizeof(crx_file::kSignatureAlgorithm)),
                              &signature[0],
-                             signature.size(),
+                             base::checked_cast<int>(signature.size()),
                              &key[0],
-                             key.size())) {
+                             base::checked_cast<int>(key.size()))) {
       // Signature verification initialization failed. This is most likely
       // caused by a public key in the wrong format (should encode algorithm).
       return;
@@ -74,7 +76,7 @@ class CRXValidator {
     const size_t kBufSize = 8 * 1024;
     scoped_ptr<uint8[]> buf(new uint8[kBufSize]);
     while ((len = fread(buf.get(), 1, kBufSize, crx_file)) > 0)
-      verifier.VerifyUpdate(buf.get(), len);
+      verifier.VerifyUpdate(buf.get(), base::checked_cast<int>(len));
 
     if (!verifier.VerifyFinal())
       return;
@@ -254,7 +256,7 @@ void ComponentUnpacker::Install() {
       base::WriteFile(
           unpack_path_.Append(FILE_PATH_LITERAL("manifest.fingerprint")),
           fingerprint_.c_str(),
-          fingerprint_.size())) {
+          base::checked_cast<int>(fingerprint_.size()))) {
     error_ = kFingerprintWriteFailed;
     return;
   }

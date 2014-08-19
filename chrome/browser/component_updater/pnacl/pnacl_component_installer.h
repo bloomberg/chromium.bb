@@ -13,7 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/version.h"
-#include "chrome/browser/component_updater/component_updater_service.h"
+#include "components/component_updater/component_updater_service.h"
 
 namespace base {
 class DictionaryValue;

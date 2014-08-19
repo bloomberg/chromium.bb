@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_PATCHER_OPERATION_H_
-#define CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_PATCHER_OPERATION_H_
+#ifndef COMPONENTS_COMPONENT_UPDATER_COMPONENT_PATCHER_OPERATION_H_
+#define COMPONENTS_COMPONENT_UPDATER_COMPONENT_PATCHER_OPERATION_H_
 
 #include <string>
 
@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/component_updater/component_unpacker.h"
+#include "components/component_updater/component_unpacker.h"
 
 namespace base {
 class DictionaryValue;
@@ -181,4 +181,4 @@ DeltaUpdateOp* CreateDeltaUpdateOp(
 
 }  // namespace component_updater
 
-#endif  // CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_PATCHER_OPERATION_H_
+#endif  // COMPONENTS_COMPONENT_UPDATER_COMPONENT_PATCHER_OPERATION_H_

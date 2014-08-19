@@ -6,7 +6,7 @@
 
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/component_updater/component_updater_service.h"
+#include "components/component_updater/component_updater_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_throttle.h"

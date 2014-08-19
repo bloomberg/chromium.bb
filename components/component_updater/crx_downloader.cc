@@ -1,16 +1,16 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/component_updater/crx_downloader.h"
+#include "components/component_updater/crx_downloader.h"
 
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
-#include "chrome/browser/component_updater/url_fetcher_downloader.h"
+#include "components/component_updater/url_fetcher_downloader.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/component_updater/background_downloader_win.h"
+#include "components/component_updater/background_downloader_win.h"
 #endif
 
 namespace component_updater {

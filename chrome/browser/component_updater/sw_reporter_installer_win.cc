@@ -25,10 +25,10 @@
 #include "base/threading/worker_pool.h"
 #include "base/win/registry.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/component_updater/component_updater_service.h"
-#include "chrome/browser/component_updater/component_updater_utils.h"
-#include "chrome/browser/component_updater/default_component_installer.h"
 #include "components/component_updater/component_updater_paths.h"
+#include "components/component_updater/component_updater_service.h"
+#include "components/component_updater/component_updater_utils.h"
+#include "components/component_updater/default_component_installer.h"
 #include "components/component_updater/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 

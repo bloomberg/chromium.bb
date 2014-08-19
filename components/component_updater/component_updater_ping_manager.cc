@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/component_updater/component_updater_ping_manager.h"
+#include "components/component_updater/component_updater_ping_manager.h"
 
 #include <string>
 
@@ -13,9 +13,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/component_updater/component_updater_configurator.h"
-#include "chrome/browser/component_updater/component_updater_utils.h"
-#include "chrome/browser/component_updater/crx_update_item.h"
+#include "components/component_updater/component_updater_configurator.h"
+#include "components/component_updater/component_updater_utils.h"
+#include "components/component_updater/crx_update_item.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"

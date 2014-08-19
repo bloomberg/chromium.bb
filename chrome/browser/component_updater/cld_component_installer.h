@@ -10,7 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "chrome/browser/component_updater/default_component_installer.h"
+#include "components/component_updater/default_component_installer.h"
 
 namespace test {
 class ComponentCldDataHarness;

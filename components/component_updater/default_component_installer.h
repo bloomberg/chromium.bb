@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_COMPONENT_UPDATER_DEFAULT_COMPONENT_INSTALLER_H_
-#define CHROME_BROWSER_COMPONENT_UPDATER_DEFAULT_COMPONENT_INSTALLER_H_
+#ifndef COMPONENTS_COMPONENT_UPDATER_DEFAULT_COMPONENT_INSTALLER_H_
+#define COMPONENTS_COMPONENT_UPDATER_DEFAULT_COMPONENT_INSTALLER_H_
 
 #include <string>
 #include <vector>
@@ -14,7 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/browser/component_updater/component_updater_service.h"
+#include "components/component_updater/component_updater_service.h"
 
 namespace base {
 class FilePath;
@@ -120,4 +120,4 @@ class DefaultComponentInstaller : public ComponentInstaller {
 
 }  // namespace component_updater
 
-#endif  // CHROME_BROWSER_COMPONENT_UPDATER_DEFAULT_COMPONENT_INSTALLER_H_
+#endif  // COMPONENTS_COMPONENT_UPDATER_DEFAULT_COMPONENT_INSTALLER_H_

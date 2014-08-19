@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/component_updater/update_response.h"
+#include "components/component_updater/update_response.h"
 #include "libxml/globals.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

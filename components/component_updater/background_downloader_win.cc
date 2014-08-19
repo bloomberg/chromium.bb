@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/component_updater/background_downloader_win.h"
+#include "components/component_updater/background_downloader_win.h"
 
 #include <atlbase.h>
 #include <atlcom.h>
@@ -16,7 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/scoped_co_mem.h"
-#include "chrome/browser/component_updater/component_updater_utils.h"
+#include "components/component_updater/component_updater_utils.h"
 #include "ui/base/win/atl_module.h"
 #include "url/gurl.h"
 

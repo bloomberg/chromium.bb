@@ -1,2 +1,11 @@
 include_rules = [
+  "+components/crx_file",
+  "+components/omaha_query_params",
+  "+courgette",
+  "+crypto",
+  "+libxml",
+  "+net",
+  "+third_party/libxml",
+  "+third_party/zlib",
+  "+ui",
 ]

@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/component_updater/component_updater_configurator.h"
+#include "chrome/browser/component_updater/chrome_component_updater_configurator.h"
 
 #include <algorithm>
 #include <string>
@@ -16,6 +16,7 @@
 #include "chrome/browser/component_updater/component_patcher_operation_out_of_process.h"
 #include "chrome/browser/omaha_query_params/chrome_omaha_query_params_delegate.h"
 #include "chrome/common/chrome_version_info.h"
+#include "components/component_updater/component_updater_configurator.h"
 #include "components/component_updater/component_updater_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -88,8 +89,6 @@ std::string GetSwitchArgument(const std::vector<std::string>& vec,
   }
   return std::string();
 }
-
-}  // namespace
 
 class ChromeConfigurator : public Configurator {
  public:
@@ -251,6 +250,8 @@ ChromeConfigurator::GetSingleThreadTaskRunner() const {
   return content::BrowserThread::GetMessageLoopProxyForThread(
       content::BrowserThread::FILE);
 }
+
+}  // namespace
 
 Configurator* MakeChromeComponentUpdaterConfigurator(
     const base::CommandLine* cmdline,

@@ -19,8 +19,8 @@
 #include "base/process/launch.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/component_updater/component_updater_service.h"
 #include "components/component_updater/component_updater_paths.h"
+#include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 

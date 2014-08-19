@@ -1,8 +1,8 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/component_updater/component_updater_service.h"
+#include "components/component_updater/component_updater_service.h"
 
 #include <algorithm>
 #include <set>
@@ -23,15 +23,15 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/component_updater/component_patcher_operation.h"
-#include "chrome/browser/component_updater/component_unpacker.h"
-#include "chrome/browser/component_updater/component_updater_configurator.h"
-#include "chrome/browser/component_updater/component_updater_ping_manager.h"
-#include "chrome/browser/component_updater/component_updater_utils.h"
-#include "chrome/browser/component_updater/crx_downloader.h"
-#include "chrome/browser/component_updater/crx_update_item.h"
-#include "chrome/browser/component_updater/update_checker.h"
-#include "chrome/browser/component_updater/update_response.h"
+#include "components/component_updater/component_patcher_operation.h"
+#include "components/component_updater/component_unpacker.h"
+#include "components/component_updater/component_updater_configurator.h"
+#include "components/component_updater/component_updater_ping_manager.h"
+#include "components/component_updater/component_updater_utils.h"
+#include "components/component_updater/crx_downloader.h"
+#include "components/component_updater/crx_update_item.h"
+#include "components/component_updater/update_checker.h"
+#include "components/component_updater/update_response.h"
 #include "url/gurl.h"
 
 namespace component_updater {
