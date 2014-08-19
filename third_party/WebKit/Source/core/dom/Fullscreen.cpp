@@ -295,12 +295,12 @@ void Fullscreen::requestFullscreen(Element& element, RequestType requestType)
     enqueueErrorEvent(element, requestType);
 }
 
-void Fullscreen::fullyExitFullscreen()
+void Fullscreen::fullyExitFullscreen(Document& document)
 {
     // To fully exit fullscreen, run these steps:
 
     // 1. Let |doc| be the top-level browsing context's document.
-    Document& doc = document()->topDocument();
+    Document& doc = document.topDocument();
 
     // 2. If |doc|'s fullscreen element stack is empty, terminate these steps.
     if (!fullscreenElementFrom(doc))

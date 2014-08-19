@@ -118,7 +118,7 @@ void FullscreenController::willExitFullScreen()
             // When the client exits from full screen we have to call fullyExitFullscreen to notify
             // the document. While doing that, suppress notifications back to the client.
             m_isCancelingFullScreen = true;
-            fullscreen->fullyExitFullscreen();
+            Fullscreen::fullyExitFullscreen(*doc);
             m_isCancelingFullScreen = false;
             fullscreen->willExitFullScreenForElement(0);
             if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && m_webViewImpl->layerTreeView())

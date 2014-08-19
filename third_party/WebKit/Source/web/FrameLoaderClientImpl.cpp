@@ -528,7 +528,7 @@ void FrameLoaderClientImpl::loadURLExternally(const ResourceRequest& request, Na
 {
     if (m_webFrame->client()) {
         ASSERT(m_webFrame->frame()->document());
-        Fullscreen::from(*m_webFrame->frame()->document()).fullyExitFullscreen();
+        Fullscreen::fullyExitFullscreen(*m_webFrame->frame()->document());
         WrappedResourceRequest webreq(request);
         m_webFrame->client()->loadURLExternally(
             m_webFrame, webreq, static_cast<WebNavigationPolicy>(policy), suggestedName);

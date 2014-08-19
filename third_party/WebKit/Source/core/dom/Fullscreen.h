@@ -67,7 +67,7 @@ public:
     };
 
     void requestFullscreen(Element&, RequestType);
-    void fullyExitFullscreen();
+    static void fullyExitFullscreen(Document&);
     void exitFullscreen();
 
     static bool fullscreenEnabled(Document&);

@@ -222,7 +222,7 @@ Page* ChromeClientImpl::createWindow(LocalFrame* frame, const FrameLoadRequest& 
         policy = getNavigationPolicy();
 
     ASSERT(frame->document());
-    Fullscreen::from(*frame->document()).fullyExitFullscreen();
+    Fullscreen::fullyExitFullscreen(*frame->document());
 
     WebViewImpl* newView = toWebViewImpl(
         m_webView->client()->createView(WebLocalFrameImpl::fromFrame(frame), WrappedResourceRequest(r.resourceRequest()), features, r.frameName(), policy, shouldSendReferrer == NeverSendReferrer));
