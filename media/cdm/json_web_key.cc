@@ -7,6 +7,7 @@
 #include "base/base64.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
@@ -19,7 +20,11 @@ const char kKeyTypeTag[] = "kty";
 const char kSymmetricKeyValue[] = "oct";
 const char kKeyTag[] = "k";
 const char kKeyIdTag[] = "kid";
+const char kKeyIdsTag[] = "kids";
 const char kBase64Padding = '=';
+const char kTypeTag[] = "type";
+const char kPersistentType[] = "persistent";
+const char kTemporaryType[] = "temporary";
 
 // Encodes |input| into a base64 string without padding.
 static std::string EncodeBase64(const uint8* input, int input_length) {
@@ -120,7 +125,9 @@ static bool ConvertJwkToKeyPair(const base::DictionaryValue& jwk,
   return true;
 }
 
-bool ExtractKeysFromJWKSet(const std::string& jwk_set, KeyIdAndKeyPairs* keys) {
+bool ExtractKeysFromJWKSet(const std::string& jwk_set,
+                           KeyIdAndKeyPairs* keys,
+                           MediaKeys::SessionType* session_type) {
   if (!base::IsStringASCII(jwk_set))
     return false;
 
@@ -156,8 +163,100 @@ bool ExtractKeysFromJWKSet(const std::string& jwk_set, KeyIdAndKeyPairs* keys) {
     local_keys.push_back(key_pair);
   }
 
-  // Successfully processed all JWKs in the set.
+  // Successfully processed all JWKs in the set. Now check if "type" is
+  // specified.
+  base::Value* value = NULL;
+  std::string type_id;
+  if (!dictionary->Get(kTypeTag, &value)) {
+    // Not specified, so use the default type.
+    *session_type = MediaKeys::TEMPORARY_SESSION;
+  } else if (!value->GetAsString(&type_id)) {
+    DVLOG(1) << "Invalid '" << kTypeTag << "' value";
+    return false;
+  } else if (type_id == kPersistentType) {
+    *session_type = MediaKeys::PERSISTENT_SESSION;
+  } else if (type_id == kTemporaryType) {
+    *session_type = MediaKeys::TEMPORARY_SESSION;
+  } else {
+    DVLOG(1) << "Invalid '" << kTypeTag << "' value: " << type_id;
+    return false;
+  }
+
+  // All done.
   keys->swap(local_keys);
+  return true;
+}
+
+void CreateLicenseRequest(const uint8* key_id,
+                          int key_id_length,
+                          MediaKeys::SessionType session_type,
+                          std::vector<uint8>* license) {
+  // Create the license request.
+  scoped_ptr<base::DictionaryValue> request(new base::DictionaryValue());
+  scoped_ptr<base::ListValue> list(new base::ListValue());
+  list->AppendString(EncodeBase64(key_id, key_id_length));
+  request->Set(kKeyIdsTag, list.release());
+
+  switch (session_type) {
+    case MediaKeys::TEMPORARY_SESSION:
+      request->SetString(kTypeTag, kTemporaryType);
+      break;
+    case MediaKeys::PERSISTENT_SESSION:
+      request->SetString(kTypeTag, kPersistentType);
+      break;
+  }
+
+  // Serialize the license request as a string.
+  std::string json;
+  JSONStringValueSerializer serializer(&json);
+  serializer.Serialize(*request);
+
+  // Convert the serialized license request into std::vector and return it.
+  std::vector<uint8> result(json.begin(), json.end());
+  license->swap(result);
+}
+
+bool ExtractFirstKeyIdFromLicenseRequest(const std::vector<uint8>& license,
+                                         std::vector<uint8>* first_key) {
+  const std::string license_as_str(
+      reinterpret_cast<const char*>(!license.empty() ? &license[0] : NULL),
+      license.size());
+  if (!base::IsStringASCII(license_as_str))
+    return false;
+
+  scoped_ptr<base::Value> root(base::JSONReader().ReadToValue(license_as_str));
+  if (!root.get() || root->GetType() != base::Value::TYPE_DICTIONARY)
+    return false;
+
+  // Locate the set from the dictionary.
+  base::DictionaryValue* dictionary =
+      static_cast<base::DictionaryValue*>(root.get());
+  base::ListValue* list_val = NULL;
+  if (!dictionary->GetList(kKeyIdsTag, &list_val)) {
+    DVLOG(1) << "Missing '" << kKeyIdsTag << "' parameter or not a list";
+    return false;
+  }
+
+  // Get the first key.
+  if (list_val->GetSize() < 1) {
+    DVLOG(1) << "Empty '" << kKeyIdsTag << "' list";
+    return false;
+  }
+
+  std::string encoded_key;
+  if (!list_val->GetString(0, &encoded_key)) {
+    DVLOG(1) << "First entry in '" << kKeyIdsTag << "' not a string";
+    return false;
+  }
+
+  std::string decoded_string = DecodeBase64(encoded_key);
+  if (decoded_string.empty()) {
+    DVLOG(1) << "Invalid '" << kKeyIdsTag << "' value: " << encoded_key;
+    return false;
+  }
+
+  std::vector<uint8> result(decoded_string.begin(), decoded_string.end());
+  first_key->swap(result);
   return true;
 }
 

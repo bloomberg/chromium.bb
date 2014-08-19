@@ -19,8 +19,49 @@ class JSONWebKeyTest : public testing::Test {
                                size_t expected_number_of_keys) {
     DCHECK(!jwk.empty());
     KeyIdAndKeyPairs keys;
-    EXPECT_EQ(expected_result, ExtractKeysFromJWKSet(jwk, &keys));
+    MediaKeys::SessionType session_type;
+    EXPECT_EQ(expected_result,
+              ExtractKeysFromJWKSet(jwk, &keys, &session_type));
     EXPECT_EQ(expected_number_of_keys, keys.size());
+  }
+
+  void ExtractSessionTypeAndExpect(const std::string& jwk,
+                                   bool expected_result,
+                                   MediaKeys::SessionType expected_type) {
+    DCHECK(!jwk.empty());
+    KeyIdAndKeyPairs keys;
+    MediaKeys::SessionType session_type;
+    EXPECT_EQ(expected_result,
+              ExtractKeysFromJWKSet(jwk, &keys, &session_type));
+    if (expected_result) {
+      // Only check if successful.
+      EXPECT_EQ(expected_type, session_type);
+    }
+  }
+
+  void CreateLicenseAndExpect(const uint8* key_id,
+                              int key_id_length,
+                              MediaKeys::SessionType session_type,
+                              const std::string& expected_result) {
+    std::vector<uint8> result;
+    CreateLicenseRequest(key_id, key_id_length, session_type, &result);
+    std::string s(result.begin(), result.end());
+    EXPECT_EQ(expected_result, s);
+  }
+
+  void ExtractKeyFromLicenseAndExpect(const std::string& license,
+                                      bool expected_result,
+                                      const uint8* expected_key,
+                                      int expected_key_length) {
+    std::vector<uint8> license_vector(license.begin(), license.end());
+    std::vector<uint8> key;
+    EXPECT_EQ(expected_result,
+              ExtractFirstKeyIdFromLicenseRequest(license_vector, &key));
+    if (expected_result) {
+      std::vector<uint8> key_result(expected_key,
+                                    expected_key + expected_key_length);
+      EXPECT_EQ(key_result, key);
+    }
   }
 };
 
@@ -180,6 +221,100 @@ TEST_F(JSONWebKeyTest, ExtractJWKKeys) {
       "  ]"
       "}";
   ExtractJWKKeysAndExpect(kJwksDuplicateKids, true, 2);
+}
+
+TEST_F(JSONWebKeyTest, SessionType) {
+  ExtractSessionTypeAndExpect(
+      "{\"keys\":[{\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"}]}",
+      true,
+      MediaKeys::TEMPORARY_SESSION);
+  ExtractSessionTypeAndExpect(
+      "{\"keys\":[{\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"}],\"type\":"
+      "\"temporary\"}",
+      true,
+      MediaKeys::TEMPORARY_SESSION);
+  ExtractSessionTypeAndExpect(
+      "{\"keys\":[{\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"}],\"type\":"
+      "\"persistent\"}",
+      true,
+      MediaKeys::PERSISTENT_SESSION);
+  ExtractSessionTypeAndExpect(
+      "{\"keys\":[{\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"}],\"type\":"
+      "\"unknown\"}",
+      false,
+      MediaKeys::TEMPORARY_SESSION);
+  ExtractSessionTypeAndExpect(
+      "{\"keys\":[{\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"}],\"type\":3}",
+      false,
+      MediaKeys::TEMPORARY_SESSION);
+}
+
+TEST_F(JSONWebKeyTest, CreateLicense) {
+  const uint8 data1[] = { 0x01, 0x02 };
+  const uint8 data2[] = { 0x01, 0x02, 0x03, 0x04 };
+  const uint8 data3[] = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+                          0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10 };
+
+  CreateLicenseAndExpect(data1,
+                         arraysize(data1),
+                         MediaKeys::TEMPORARY_SESSION,
+                         "{\"kids\":[\"AQI\"],\"type\":\"temporary\"}");
+  CreateLicenseAndExpect(data1,
+                         arraysize(data1),
+                         MediaKeys::PERSISTENT_SESSION,
+                         "{\"kids\":[\"AQI\"],\"type\":\"persistent\"}");
+  CreateLicenseAndExpect(data2,
+                         arraysize(data2),
+                         MediaKeys::TEMPORARY_SESSION,
+                         "{\"kids\":[\"AQIDBA\"],\"type\":\"temporary\"}");
+  CreateLicenseAndExpect(
+      data3,
+      arraysize(data3),
+      MediaKeys::PERSISTENT_SESSION,
+      "{\"kids\":[\"AQIDBAUGBwgJCgsMDQ4PEA\"],\"type\":\"persistent\"}");
+}
+
+TEST_F(JSONWebKeyTest, ExtractLicense) {
+  const uint8 data1[] = { 0x01, 0x02 };
+  const uint8 data2[] = { 0x01, 0x02, 0x03, 0x04 };
+  const uint8 data3[] = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+                          0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10 };
+
+  ExtractKeyFromLicenseAndExpect(
+      "{\"kids\":[\"AQI\"],\"type\":\"temporary\"}",
+      true,
+      data1,
+      arraysize(data1));
+  ExtractKeyFromLicenseAndExpect(
+      "{\"kids\":[\"AQIDBA\"],\"type\":\"temporary\"}",
+      true,
+      data2,
+      arraysize(data2));
+  ExtractKeyFromLicenseAndExpect(
+      "{\"kids\":[\"AQIDBAUGBwgJCgsMDQ4PEA\"],\"type\":\"persistent\"}",
+      true,
+      data3,
+      arraysize(data3));
+
+  // Try some incorrect JSON.
+  ExtractKeyFromLicenseAndExpect("", false, NULL, 0);
+  ExtractKeyFromLicenseAndExpect("!@#$%^&*()", false, NULL, 0);
+
+  // Valid JSON, but not a dictionary.
+  ExtractKeyFromLicenseAndExpect("6", false, NULL, 0);
+  ExtractKeyFromLicenseAndExpect("[\"AQI\"]", false, NULL, 0);
+
+  // Dictionary, but missing expected tag.
+  ExtractKeyFromLicenseAndExpect("{\"kid\":[\"AQI\"]}", false, NULL, 0);
+
+  // Correct tag, but empty list.
+  ExtractKeyFromLicenseAndExpect("{\"kids\":[]}", false, NULL, 0);
+
+  // Correct tag, but list doesn't contain a string.
+  ExtractKeyFromLicenseAndExpect("{\"kids\":[[\"AQI\"]]}", false, NULL, 0);
+
+  // Correct tag, but invalid base64 encoding.
+  ExtractKeyFromLicenseAndExpect("{\"kids\":[\"!@#$%^&*()\"]}", false, NULL, 0);
 }
 
 }  // namespace media

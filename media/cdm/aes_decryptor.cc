@@ -245,11 +245,11 @@ void AesDecryptor::CreateSession(const std::string& init_data_type,
 
   // For now, the AesDecryptor does not care about |init_data_type| or
   // |session_type|; just resolve the promise and then fire a message event
-  // with the |init_data| as the request.
+  // using the |init_data| as the key ID in the license request.
   // TODO(jrummell): Validate |init_data_type| and |session_type|.
   std::vector<uint8> message;
   if (init_data && init_data_length)
-    message.assign(init_data, init_data + init_data_length);
+    CreateLicenseRequest(init_data, init_data_length, session_type, &message);
 
   promise->resolve(web_session_id);
 
@@ -280,7 +280,8 @@ void AesDecryptor::UpdateSession(const std::string& web_session_id,
                          response_length);
 
   KeyIdAndKeyPairs keys;
-  if (!ExtractKeysFromJWKSet(key_string, &keys)) {
+  SessionType session_type = MediaKeys::TEMPORARY_SESSION;
+  if (!ExtractKeysFromJWKSet(key_string, &keys, &session_type)) {
     promise->reject(
         INVALID_ACCESS_ERROR, 0, "response is not a valid JSON Web Key Set.");
     return;

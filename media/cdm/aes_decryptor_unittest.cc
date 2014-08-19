@@ -7,6 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/json/json_reader.h"
+#include "base/values.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
@@ -24,6 +26,11 @@ using ::testing::StrNe;
 
 MATCHER(IsEmpty, "") { return arg.empty(); }
 MATCHER(IsNotEmpty, "") { return !arg.empty(); }
+MATCHER(IsJSONDictionary, "") {
+  std::string result(arg.begin(), arg.end());
+  scoped_ptr<base::Value> root(base::JSONReader().ReadToValue(result));
+  return (root.get() && root->GetType() == base::Value::TYPE_DICTIONARY);
+}
 
 class GURL;
 
@@ -51,7 +58,8 @@ const char kKeyAsJWK[] =
     "      \"kid\": \"AAECAw\","
     "      \"k\": \"BAUGBwgJCgsMDQ4PEBESEw\""
     "    }"
-    "  ]"
+    "  ],"
+    "  \"type\": \"temporary\""
     "}";
 
 // Same kid as kKeyAsJWK, key to decrypt kEncryptedData2
@@ -287,7 +295,8 @@ class AesDecryptorTest : public testing::Test {
   std::string CreateSession(const std::vector<uint8>& key_id) {
     DCHECK(!key_id.empty());
     EXPECT_CALL(*this,
-                OnSessionMessage(IsNotEmpty(), key_id, GURL::EmptyGURL()));
+                OnSessionMessage(
+                    IsNotEmpty(), IsJSONDictionary(), GURL::EmptyGURL()));
     decryptor_.CreateSession(std::string(),
                              &key_id[0],
                              key_id.size(),

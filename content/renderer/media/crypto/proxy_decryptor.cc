@@ -247,6 +247,17 @@ void ProxyDecryptor::OnSessionMessage(const std::string& web_session_id,
                                       const std::vector<uint8>& message,
                                       const GURL& destination_url) {
   // Assumes that OnSessionCreated() has been called before this.
+
+  // For ClearKey, convert the message from JSON into just passing the key
+  // as the message. If unable to extract the key, return the message unchanged.
+  if (is_clear_key_) {
+    std::vector<uint8> key;
+    if (media::ExtractFirstKeyIdFromLicenseRequest(message, &key)) {
+      key_message_cb_.Run(web_session_id, key, destination_url);
+      return;
+    }
+  }
+
   key_message_cb_.Run(web_session_id, message, destination_url);
 }
 

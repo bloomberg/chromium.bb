@@ -20,7 +20,7 @@ ClearKeyPlayer.prototype.registerEventListeners = function() {
 ClearKeyPlayer.prototype.onMessage = function(message) {
   Utils.timeLog('MediaKeySession onMessage', message);
   var initData =
-      Utils.getInitDataFromMessage(message, this.testConfig.mediaType);
+      Utils.getInitDataFromMessage(message, this.testConfig.mediaType, true);
   var key = Utils.getDefaultKey(this.testConfig.forceInvalidResponse);
   var jwkSet = Utils.createJWKData(initData, key);
   if (PROMISES_SUPPORTED) {
