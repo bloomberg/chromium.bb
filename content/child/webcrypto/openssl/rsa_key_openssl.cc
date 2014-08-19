@@ -413,6 +413,8 @@ Status RsaHashedAlgorithm::ImportKeyJwk(
     bool extractable,
     blink::WebCryptoKeyUsageMask usage_mask,
     blink::WebCryptoKey* key) const {
+  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
+
   const char* jwk_algorithm =
       GetJwkAlgorithm(algorithm.rsaHashedImportParams()->hash().id());
 
@@ -460,6 +462,8 @@ Status RsaHashedAlgorithm::ExportKeySpki(const blink::WebCryptoKey& key,
 
 Status RsaHashedAlgorithm::ExportKeyJwk(const blink::WebCryptoKey& key,
                                         std::vector<uint8_t>* buffer) const {
+  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
+
   EVP_PKEY* public_key = AsymKeyOpenSsl::Cast(key)->key();
   crypto::ScopedRSA rsa(EVP_PKEY_get1_RSA(public_key));
   if (!rsa.get())

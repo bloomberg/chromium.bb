@@ -13,6 +13,7 @@
 #include "content/child/webcrypto/openssl/key_openssl.h"
 #include "content/child/webcrypto/status.h"
 #include "content/child/webcrypto/webcrypto_util.h"
+#include "crypto/openssl_util.h"
 #include "crypto/scoped_openssl_types.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
 
@@ -42,6 +43,8 @@ Status AesCbcEncryptDecrypt(CipherOperation cipher_operation,
                             const blink::WebCryptoKey& key,
                             const CryptoData& data,
                             std::vector<uint8_t>* buffer) {
+  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
+
   const blink::WebCryptoAesCbcParams* params = algorithm.aesCbcParams();
   const std::vector<uint8_t>& raw_key =
       SymKeyOpenSsl::Cast(key)->raw_key_data();
