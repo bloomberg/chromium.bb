@@ -279,6 +279,7 @@
     {
       'package_name': 'libpixman-1-0',
       'dependencies=': [],
+      'patch': 'patches/libpixman-1-0.diff',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
