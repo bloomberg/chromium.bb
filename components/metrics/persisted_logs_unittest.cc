@@ -19,7 +19,6 @@ namespace metrics {
 namespace {
 
 const char kTestPrefName[] = "TestPref";
-const char kTestOldPrefName[] = "TestPrefOld";
 const size_t kLogCountLimit = 3;
 const size_t kLogByteLimit = 1000;
 
@@ -49,7 +48,6 @@ class PersistedLogsTest : public testing::Test {
  public:
   PersistedLogsTest() {
     prefs_.registry()->RegisterListPref(kTestPrefName);
-    prefs_.registry()->RegisterListPref(kTestOldPrefName);
   }
 
  protected:
@@ -62,8 +60,8 @@ class PersistedLogsTest : public testing::Test {
 class TestPersistedLogs : public PersistedLogs {
  public:
   TestPersistedLogs(PrefService* service, size_t min_log_bytes)
-      : PersistedLogs(service, kTestPrefName, kTestOldPrefName, kLogCountLimit,
-                      min_log_bytes, 0) {
+      : PersistedLogs(service, kTestPrefName, kLogCountLimit, min_log_bytes,
+                      0) {
   }
 
   // Stages and removes the next log, while testing it's value.

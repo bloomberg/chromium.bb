@@ -303,8 +303,6 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
 
   registry->RegisterListPref(metrics::prefs::kMetricsInitialLogs);
   registry->RegisterListPref(metrics::prefs::kMetricsOngoingLogs);
-  registry->RegisterListPref(metrics::prefs::kMetricsInitialLogsOld);
-  registry->RegisterListPref(metrics::prefs::kMetricsOngoingLogsOld);
 
   registry->RegisterInt64Pref(metrics::prefs::kUninstallLaunchCount, 0);
   registry->RegisterInt64Pref(metrics::prefs::kUninstallMetricsUptimeSec, 0);

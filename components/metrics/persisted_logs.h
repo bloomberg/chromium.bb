@@ -38,7 +38,7 @@ class PersistedLogs {
   };
 
   // Constructs a PersistedLogs that stores data in |local_state| under the
-  // preference |pref_name| and also reads from legacy pref |old_pref_name|.
+  // preference |pref_name|.
   // Calling code is responsible for ensuring that the lifetime of |local_state|
   // is longer than the lifetime of PersistedLogs.
   //
@@ -49,7 +49,6 @@ class PersistedLogs {
   // that limit will be skipped when writing to disk.
   PersistedLogs(PrefService* local_state,
                 const char* pref_name,
-                const char* old_pref_name,
                 size_t min_log_count,
                 size_t min_log_bytes,
                 size_t max_log_size);
@@ -72,7 +71,7 @@ class PersistedLogs {
   void DiscardStagedLog();
 
   // True if a log has been staged.
-  bool has_staged_log() const { return staged_log_index_ != -1; };
+  bool has_staged_log() const { return staged_log_index_ != -1; }
 
   // Returns the element in the front of the list.
   const std::string& staged_log() const {
@@ -99,10 +98,6 @@ class PersistedLogs {
   // Reads the list from the ListValue.
   LogReadStatus ReadLogsFromPrefList(const base::ListValue& list);
 
-  // Reads the list from the old pref's ListValue.
-  // TODO(asvitkine): Remove the old pref in M39.
-  LogReadStatus ReadLogsFromOldPrefList(const base::ListValue& list);
-
   // A weak pointer to the PrefService object to read and write the preference
   // from.  Calling code should ensure this object continues to exist for the
   // lifetime of the PersistedLogs object.
@@ -110,10 +105,6 @@ class PersistedLogs {
 
   // The name of the preference to serialize logs to/from.
   const char* pref_name_;
-
-  // The name of the preference to serialize logs from.
-  // TODO(asvitkine): Remove the old pref in M39.
-  const char* old_pref_name_;
 
   // We will keep at least this |min_log_count_| logs or |min_log_bytes_| bytes
   // of logs, whichever is greater, when writing to disk.  These apply after

@@ -13,13 +13,11 @@ namespace prefs {
 extern const char kInstallDate[];
 extern const char kMetricsClientID[];
 extern const char kMetricsInitialLogs[];
-extern const char kMetricsInitialLogsOld[];
 extern const char kMetricsLowEntropySource[];
 extern const char kMetricsMachineId[];
 extern const char kMetricsOldClientID[];
 extern const char kMetricsOldLowEntropySource[];
 extern const char kMetricsOngoingLogs[];
-extern const char kMetricsOngoingLogsOld[];
 extern const char kMetricsResetIds[];
 extern const char kMetricsReportingEnabledTimestamp[];
 extern const char kMetricsSessionID[];

@@ -67,13 +67,11 @@ void PersistedLogs::LogHashPair::Init(const std::string& log_data) {
 
 PersistedLogs::PersistedLogs(PrefService* local_state,
                              const char* pref_name,
-                             const char* old_pref_name,
                              size_t min_log_count,
                              size_t min_log_bytes,
                              size_t max_log_size)
     : local_state_(local_state),
       pref_name_(pref_name),
-      old_pref_name_(old_pref_name),
       min_log_count_(min_log_count),
       min_log_bytes_(min_log_bytes),
       max_log_size_(max_log_size != 0 ? max_log_size : static_cast<size_t>(-1)),
@@ -88,21 +86,10 @@ PersistedLogs::~PersistedLogs() {}
 void PersistedLogs::SerializeLogs() const {
   ListPrefUpdate update(local_state_, pref_name_);
   WriteLogsToPrefList(update.Get());
-
-  // Clear the old pref now that we've written to the new one.
-  // TODO(asvitkine): Remove the old pref in M39.
-  local_state_->ClearPref(old_pref_name_);
 }
 
 PersistedLogs::LogReadStatus PersistedLogs::DeserializeLogs() {
-  // First, try reading from old pref. If it's empty, read from the new one.
-  // TODO(asvitkine): Remove the old pref in M39.
-  const base::ListValue* unsent_logs = local_state_->GetList(old_pref_name_);
-  if (!unsent_logs->empty())
-    return ReadLogsFromOldPrefList(*unsent_logs);
-
-  unsent_logs = local_state_->GetList(pref_name_);
-  return ReadLogsFromPrefList(*unsent_logs);
+  return ReadLogsFromPrefList(*local_state_->GetList(pref_name_));
 }
 
 void PersistedLogs::StoreLog(const std::string& log_data) {
@@ -182,75 +169,6 @@ PersistedLogs::LogReadStatus PersistedLogs::ReadLogsFromPrefList(
     }
   }
 
-  return MakeRecallStatusHistogram(RECALL_SUCCESS);
-}
-
-PersistedLogs::LogReadStatus PersistedLogs::ReadLogsFromOldPrefList(
-    const base::ListValue& list_value) {
-  // We append (2) more elements to persisted lists: the size of the list and a
-  // checksum of the elements.
-  const size_t kChecksumEntryCount = 2;
-
-  if (list_value.GetSize() == 0)
-    return MakeRecallStatusHistogram(LIST_EMPTY);
-  if (list_value.GetSize() <= kChecksumEntryCount)
-    return MakeRecallStatusHistogram(LIST_SIZE_TOO_SMALL);
-
-  // The size is stored at the beginning of the list_value.
-  int size;
-  bool valid = (*list_value.begin())->GetAsInteger(&size);
-  if (!valid)
-    return MakeRecallStatusHistogram(LIST_SIZE_MISSING);
-  // Account for checksum and size included in the list_value.
-  if (static_cast<size_t>(size) != list_value.GetSize() - kChecksumEntryCount)
-    return MakeRecallStatusHistogram(LIST_SIZE_CORRUPTION);
-
-  // Allocate strings for all of the logs we are going to read in.
-  // Do this ahead of time so that we can decode the string values directly into
-  // the elements of |list_|, and thereby avoid making copies of the
-  // serialized logs, which can be fairly large.
-  DCHECK(list_.empty());
-  list_.resize(size);
-
-  base::MD5Context ctx;
-  base::MD5Init(&ctx);
-  std::string encoded_log;
-  size_t local_index = 0;
-  for (base::ListValue::const_iterator it = list_value.begin() + 1;
-       it != list_value.end() - 1;  // Last element is the checksum.
-       ++it, ++local_index) {
-    bool valid = (*it)->GetAsString(&encoded_log);
-    if (!valid) {
-      list_.clear();
-      return MakeRecallStatusHistogram(LOG_STRING_CORRUPTION);
-    }
-
-    base::MD5Update(&ctx, encoded_log);
-
-    std::string log_text;
-    if (!base::Base64Decode(encoded_log, &log_text)) {
-      list_.clear();
-      return MakeRecallStatusHistogram(DECODE_FAIL);
-    }
-
-    DCHECK_LT(local_index, list_.size());
-    list_[local_index].Init(log_text);
-  }
-
-  // Verify checksum.
-  base::MD5Digest digest;
-  base::MD5Final(&digest, &ctx);
-  std::string recovered_md5;
-  // We store the hash at the end of the list_value.
-  valid = (*(list_value.end() - 1))->GetAsString(&recovered_md5);
-  if (!valid) {
-    list_.clear();
-    return MakeRecallStatusHistogram(CHECKSUM_STRING_CORRUPTION);
-  }
-  if (recovered_md5 != base::MD5DigestToBase16(digest)) {
-    list_.clear();
-    return MakeRecallStatusHistogram(CHECKSUM_CORRUPTION);
-  }
   return MakeRecallStatusHistogram(RECALL_SUCCESS);
 }
 

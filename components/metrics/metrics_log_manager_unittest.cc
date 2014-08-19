@@ -24,9 +24,7 @@ class TestLogPrefService : public TestingPrefServiceSimple {
  public:
   TestLogPrefService() {
     registry()->RegisterListPref(prefs::kMetricsInitialLogs);
-    registry()->RegisterListPref(prefs::kMetricsInitialLogsOld);
     registry()->RegisterListPref(prefs::kMetricsOngoingLogs);
-    registry()->RegisterListPref(prefs::kMetricsOngoingLogsOld);
   }
 
   // Returns the number of logs of the given type.
@@ -162,8 +160,8 @@ TEST(MetricsLogManagerTest, StoreAndLoad) {
     // Simulate a log having already been unsent from a previous session.
     {
       std::string log("proto");
-      PersistedLogs ongoing_logs(&pref_service, prefs::kMetricsOngoingLogs,
-                                 prefs::kMetricsOngoingLogsOld, 1, 1, 0);
+      PersistedLogs ongoing_logs(&pref_service, prefs::kMetricsOngoingLogs, 1,
+                                 1, 0);
       ongoing_logs.StoreLog(log);
       ongoing_logs.SerializeLogs();
     }

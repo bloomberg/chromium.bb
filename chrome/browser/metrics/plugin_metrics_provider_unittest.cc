@@ -41,9 +41,9 @@ content::WebPluginInfo CreateFakePluginInfo(
 class PluginMetricsProviderTest : public ::testing::Test {
  protected:
   PluginMetricsProviderTest()
-    : prefs_(new TestingPrefServiceSimple) {
-      PluginMetricsProvider::RegisterPrefs(prefs()->registry());
-    }
+      : prefs_(new TestingPrefServiceSimple) {
+    PluginMetricsProvider::RegisterPrefs(prefs()->registry());
+  }
 
   TestingPrefServiceSimple* prefs() {
     return prefs_.get();
@@ -53,7 +53,6 @@ class PluginMetricsProviderTest : public ::testing::Test {
   scoped_ptr<TestingPrefServiceSimple> prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginMetricsProviderTest);
-
 };
 
 }  // namespace
