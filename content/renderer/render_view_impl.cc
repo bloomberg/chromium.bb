@@ -762,14 +762,8 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
   webview()->setDeviceScaleFactor(device_scale_factor_);
   webview()->settings()->setPreferCompositingToLCDTextEnabled(
       PreferCompositingToLCDText(device_scale_factor_));
-  webview()->settings()->setAcceleratedCompositingForOverflowScrollEnabled(
-      PreferCompositingToLCDText(device_scale_factor_));
   webview()->settings()->setAcceleratedCompositingForTransitionEnabled(
       ShouldUseTransitionCompositing(device_scale_factor_));
-  webview()->settings()->setAcceleratedCompositingForFixedRootBackgroundEnabled(
-      PreferCompositingToLCDText(device_scale_factor_));
-  webview()->settings()->setCompositedScrollingForFramesEnabled(
-      PreferCompositingToLCDText(device_scale_factor_));
 
   ApplyWebPreferences(webkit_preferences_, webview());
 
@@ -3734,16 +3728,8 @@ void RenderViewImpl::SetDeviceScaleFactor(float device_scale_factor) {
     webview()->setDeviceScaleFactor(device_scale_factor);
     webview()->settings()->setPreferCompositingToLCDTextEnabled(
         PreferCompositingToLCDText(device_scale_factor_));
-    webview()->settings()->setAcceleratedCompositingForOverflowScrollEnabled(
-        PreferCompositingToLCDText(device_scale_factor_));
     webview()->settings()->setAcceleratedCompositingForTransitionEnabled(
         ShouldUseTransitionCompositing(device_scale_factor_));
-    webview()
-        ->settings()
-        ->setAcceleratedCompositingForFixedRootBackgroundEnabled(
-            PreferCompositingToLCDText(device_scale_factor_));
-    webview()->settings()->setCompositedScrollingForFramesEnabled(
-        PreferCompositingToLCDText(device_scale_factor_));
   }
   if (auto_resize_mode_)
     AutoResizeCompositor();
