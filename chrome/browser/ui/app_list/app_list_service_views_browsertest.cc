@@ -122,18 +122,7 @@ IN_PROC_BROWSER_TEST_F(AppListServiceViewsBrowserTest, AcceleratorClose) {
 
 // Browser Test for AppListController that ensures the App Info dialog opens
 // correctly.
-class AppListControllerAppInfoDialogBrowserTest : public ExtensionBrowserTest {
- public:
-  AppListControllerAppInfoDialogBrowserTest() {}
-  virtual ~AppListControllerAppInfoDialogBrowserTest() {}
-
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AppListControllerAppInfoDialogBrowserTest);
-};
+typedef ExtensionBrowserTest AppListControllerAppInfoDialogBrowserTest;
 
 // Test the DoShowAppInfoFlow function of the controller delegate.
 // flaky: http://crbug.com/378251
@@ -154,26 +143,26 @@ IN_PROC_BROWSER_TEST_F(AppListControllerAppInfoDialogBrowserTest,
   EXPECT_FALSE(service->GetAppListWindow());
 
   service->ShowForProfile(browser()->profile());
-  gfx::NativeWindow window = service->GetAppListWindow();
-  EXPECT_TRUE(window);
+  app_list::AppListView* app_list_view = GetAppListView(service);
+  ASSERT_TRUE(app_list_view);
+  gfx::NativeView native_view = app_list_view->GetWidget()->GetNativeView();
+  ASSERT_TRUE(native_view);
 
-  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
-  ASSERT_TRUE(widget);
-
-  test::AppListViewTestApi test_api(GetAppListView(service));
+  test::AppListViewTestApi test_api(app_list_view);
 
   // Open the app info dialog.
   views::Widget::Widgets owned_widgets;
-  widget->GetAllOwnedWidgets(window, &owned_widgets);
+  views::Widget::GetAllOwnedWidgets(native_view, &owned_widgets);
   EXPECT_EQ(0U, owned_widgets.size());
   EXPECT_FALSE(test_api.is_overlay_visible());
 
   AppListControllerDelegate* controller = service->GetControllerDelegate();
   ASSERT_TRUE(controller);
+  EXPECT_TRUE(controller->GetAppListWindow());
   controller->DoShowAppInfoFlow(browser()->profile(), extension->id());
 
   owned_widgets.clear();
-  widget->GetAllOwnedWidgets(window, &owned_widgets);
+  views::Widget::GetAllOwnedWidgets(native_view, &owned_widgets);
   EXPECT_EQ(1U, owned_widgets.size());
   EXPECT_TRUE(test_api.is_overlay_visible());
 
@@ -182,7 +171,7 @@ IN_PROC_BROWSER_TEST_F(AppListControllerAppInfoDialogBrowserTest,
   app_info_dialog->CloseNow();
 
   owned_widgets.clear();
-  widget->GetAllOwnedWidgets(window, &owned_widgets);
+  views::Widget::GetAllOwnedWidgets(native_view, &owned_widgets);
   EXPECT_EQ(0U, owned_widgets.size());
   EXPECT_FALSE(test_api.is_overlay_visible());
 }
