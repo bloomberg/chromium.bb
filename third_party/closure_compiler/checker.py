@@ -233,8 +233,9 @@ if __name__ == "__main__":
 
   checker = Checker(verbose=opts.verbose)
   for source in opts.sources:
-    if not checker.check(source, depends=opts.depends, externs=opts.externs):
-      sys.exit(1)
+    exit, _ = checker.check(source, depends=opts.depends, externs=opts.externs)
+    if exit != 0:
+      sys.exit(exit)
 
     if opts.out_file:
       out_dir = os.path.dirname(opts.out_file)
