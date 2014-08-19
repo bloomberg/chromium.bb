@@ -246,10 +246,6 @@ viewportMetaEnabled initial=false
 dnsPrefetchingEnabled initial=false, invalidate=DNSPrefetching
 
 
-# FIXME: This is a temporary flag and should be removed once
-# accelerated overflow scroll is ready (crbug.com/254111).
-compositorDrivenAcceleratedScrollingEnabled initial=false, invalidate=AcceleratedCompositing
-
 # FIXME: This is a temporary flag and should be removed
 # when squashing is ready. (crbug.com/261605)
 layerSquashingEnabled initial=false

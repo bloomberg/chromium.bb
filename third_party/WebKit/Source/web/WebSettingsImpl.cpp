@@ -441,11 +441,6 @@ void WebSettingsImpl::setAcceleratedCompositingForOverflowScrollEnabled(bool ena
 {
 }
 
-void WebSettingsImpl::setCompositorDrivenAcceleratedScrollingEnabled(bool enabled)
-{
-    m_settings->setCompositorDrivenAcceleratedScrollingEnabled(enabled);
-}
-
 // TODO(danakj): Remove this method.
 void WebSettingsImpl::setAcceleratedCompositingForFixedRootBackgroundEnabled(bool)
 {

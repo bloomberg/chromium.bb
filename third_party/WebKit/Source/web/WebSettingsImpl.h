@@ -52,7 +52,6 @@ public:
     virtual void setPreferCompositingToLCDTextEnabled(bool) OVERRIDE;
     virtual void setAcceleratedCompositingForFixedPositionEnabled(bool) OVERRIDE;
     virtual void setAcceleratedCompositingForOverflowScrollEnabled(bool) OVERRIDE;
-    virtual void setCompositorDrivenAcceleratedScrollingEnabled(bool) OVERRIDE;
     virtual void setAcceleratedCompositingForFixedRootBackgroundEnabled(bool) OVERRIDE;
     virtual void setAllowDisplayOfInsecureContent(bool) OVERRIDE;
     virtual void setAllowFileAccessFromFileURLs(bool) OVERRIDE;
