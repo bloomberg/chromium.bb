@@ -277,17 +277,12 @@ class HomeCardView : public views::WidgetDelegateView {
                HomeCardGestureManager::Delegate* gesture_delegate)
       : gesture_delegate_(gesture_delegate),
         weak_factory_(this) {
-    bottom_view_ = new AthenaStartPageView(view_delegate);
-    AddChildView(bottom_view_);
-    bottom_view_->SetPaintToLayer(true);
-    bottom_view_->layer()->SetFillsBoundsOpaquely(false);
-
-    main_view_ = new app_list::AppListMainView(
-        view_delegate, 0 /* initial_apps_page */, container);
+    // Ideally AppListMainView should be used here and have AthenaStartPageView
+    // as its child view, so that custom pages and apps grid are available in
+    // the home card.
+    // TODO(mukai): make it so after the detailed UI has been fixed.
+    main_view_ = new AthenaStartPageView(view_delegate);
     AddChildView(main_view_);
-    main_view_->set_background(
-        views::Background::CreateSolidBackground(SK_ColorWHITE));
-    main_view_->SetPaintToLayer(true);
 
     minimized_view_ = CreateMinimizedHome();
     minimized_view_->SetPaintToLayer(true);
@@ -306,7 +301,7 @@ class HomeCardView : public views::WidgetDelegateView {
     // View from minimized to bottom.
     if (from_state == HomeCard::VISIBLE_MINIMIZED &&
         to_state == HomeCard::VISIBLE_BOTTOM) {
-      bottom_view_->SetVisible(true);
+      main_view_->SetVisible(true);
       minimized_view_->SetVisible(true);
       minimized_view_->layer()->SetOpacity(1.0f - progress);
       return;
@@ -316,16 +311,15 @@ class HomeCardView : public views::WidgetDelegateView {
   }
 
   void SetState(HomeCard::State state) {
-    bottom_view_->SetVisible(state == HomeCard::VISIBLE_BOTTOM);
-    main_view_->SetVisible(state == HomeCard::VISIBLE_CENTERED);
+    main_view_->SetVisible(state == HomeCard::VISIBLE_BOTTOM ||
+                           state == HomeCard::VISIBLE_CENTERED);
     minimized_view_->SetVisible(state == HomeCard::VISIBLE_MINIMIZED);
     if (minimized_view_->visible())
       minimized_view_->layer()->SetOpacity(1.0f);
-    if (state == HomeCard::VISIBLE_CENTERED) {
-      app_list::ContentsView* contents_view = main_view_->contents_view();
-      contents_view->SetActivePage(contents_view->GetPageIndexForNamedPage(
-          app_list::ContentsView::NAMED_PAGE_START));
-    }
+    if (state == HomeCard::VISIBLE_CENTERED)
+      main_view_->RequestFocusOnSearchBox();
+    else
+      GetWidget()->GetFocusManager()->ClearFocus();
     wm::SetShadowType(GetWidget()->GetNativeView(),
                       state == HomeCard::VISIBLE_MINIMIZED ?
                       wm::SHADOW_TYPE_NONE :
@@ -339,7 +333,7 @@ class HomeCardView : public views::WidgetDelegateView {
         (from_state == HomeCard::VISIBLE_BOTTOM &&
          to_state == HomeCard::VISIBLE_MINIMIZED)) {
       minimized_view_->SetVisible(true);
-      bottom_view_->SetVisible(true);
+      main_view_->SetVisible(true);
       {
         ui::ScopedLayerAnimationSettings settings(
             minimized_view_->layer()->GetAnimator());
@@ -396,8 +390,7 @@ class HomeCardView : public views::WidgetDelegateView {
     return this;
   }
 
-  app_list::AppListMainView* main_view_;
-  views::View* bottom_view_;
+  AthenaStartPageView* main_view_;
   views::View* minimized_view_;
   scoped_ptr<HomeCardGestureManager> gesture_manager_;
   HomeCardGestureManager::Delegate* gesture_delegate_;
