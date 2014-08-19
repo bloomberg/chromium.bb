@@ -1149,11 +1149,13 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         addProperty(propId, list.release(), important);
         return true;
     }
+    case CSSPropertyWebkitPerspectiveOriginX:
     case CSSPropertyWebkitTransformOriginX:
         parsedValue = parseFillPositionX(m_valueList.get());
         if (parsedValue)
             m_valueList->next();
         break;
+    case CSSPropertyWebkitPerspectiveOriginY:
     case CSSPropertyWebkitTransformOriginY:
         parsedValue = parseFillPositionY(m_valueList.get());
         if (parsedValue)
@@ -1191,19 +1193,17 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         addProperty(propId, list.release(), important);
         return true;
     }
-    case CSSPropertyWebkitPerspectiveOrigin:
-    case CSSPropertyWebkitPerspectiveOriginX:
-    case CSSPropertyWebkitPerspectiveOriginY: {
-        RefPtrWillBeRawPtr<CSSValue> val1 = nullptr;
-        RefPtrWillBeRawPtr<CSSValue> val2 = nullptr;
-        CSSPropertyID propId1, propId2;
-        if (parseWebkitPerspectiveOrigin(propId, propId1, propId2, val1, val2)) {
-            addProperty(propId1, val1.release(), important);
-            if (val2)
-                addProperty(propId2, val2.release(), important);
-            return true;
-        }
-        return false;
+    case CSSPropertyWebkitPerspectiveOrigin: {
+        if (m_valueList->size() > 2)
+            return false;
+        RefPtrWillBeRawPtr<CSSValue> originX = nullptr;
+        RefPtrWillBeRawPtr<CSSValue> originY = nullptr;
+        parse2ValuesFillPosition(m_valueList.get(), originX, originY);
+        if (!originX)
+            return false;
+        addProperty(CSSPropertyWebkitPerspectiveOriginX, originX.release(), important);
+        addProperty(CSSPropertyWebkitPerspectiveOriginY, originY.release(), important);
+        return true;
     }
     case CSSPropertyAnimationDelay:
     case CSSPropertyAnimationDirection:
@@ -7558,41 +7558,6 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseTransformOrigin()
     if (zValue)
         list->append(zValue.release());
     return list.release();
-}
-
-bool CSSPropertyParser::parseWebkitPerspectiveOrigin(CSSPropertyID propId, CSSPropertyID& propId1, CSSPropertyID& propId2, RefPtrWillBeRawPtr<CSSValue>& value, RefPtrWillBeRawPtr<CSSValue>& value2)
-{
-    propId1 = propId;
-    propId2 = propId;
-    if (propId == CSSPropertyWebkitPerspectiveOrigin) {
-        propId1 = CSSPropertyWebkitPerspectiveOriginX;
-        propId2 = CSSPropertyWebkitPerspectiveOriginY;
-    }
-
-    switch (propId) {
-        case CSSPropertyWebkitPerspectiveOrigin:
-            if (m_valueList->size() > 2)
-                return false;
-            parse2ValuesFillPosition(m_valueList.get(), value, value2);
-            break;
-        case CSSPropertyWebkitPerspectiveOriginX: {
-            value = parseFillPositionX(m_valueList.get());
-            if (value)
-                m_valueList->next();
-            break;
-        }
-        case CSSPropertyWebkitPerspectiveOriginY: {
-            value = parseFillPositionY(m_valueList.get());
-            if (value)
-                m_valueList->next();
-            break;
-        }
-        default:
-            ASSERT_NOT_REACHED();
-            return false;
-    }
-
-    return value;
 }
 
 bool CSSPropertyParser::parseTouchAction(bool important)

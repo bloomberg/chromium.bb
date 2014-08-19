@@ -238,7 +238,6 @@ private:
     PassRefPtrWillBeRawPtr<CSSValueList> parseTransformOrigin();
     PassRefPtrWillBeRawPtr<CSSValueList> parseTransform(CSSPropertyID);
     PassRefPtrWillBeRawPtr<CSSValue> parseTransformValue(CSSPropertyID, CSSParserValue*);
-    bool parseWebkitPerspectiveOrigin(CSSPropertyID propId, CSSPropertyID& propId1, CSSPropertyID& propId2,  RefPtrWillBeRawPtr<CSSValue>&, RefPtrWillBeRawPtr<CSSValue>&);
 
     bool parseTextEmphasisStyle(bool important);
 
