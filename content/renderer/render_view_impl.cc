@@ -411,15 +411,6 @@ static bool PreferCompositingToLCDText(float device_scale_factor) {
   return DeviceScaleEnsuresTextQuality(device_scale_factor);
 }
 
-static bool ShouldUseCompositedScrollingForFrames(
-    float device_scale_factor) {
-  if (RenderThreadImpl::current() &&
-      !RenderThreadImpl::current()->is_lcd_text_enabled())
-    return true;
-
-  return DeviceScaleEnsuresTextQuality(device_scale_factor);
-}
-
 static bool ShouldUseTransitionCompositing(float device_scale_factor) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
@@ -778,7 +769,7 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
   webview()->settings()->setAcceleratedCompositingForFixedRootBackgroundEnabled(
       PreferCompositingToLCDText(device_scale_factor_));
   webview()->settings()->setCompositedScrollingForFramesEnabled(
-      ShouldUseCompositedScrollingForFrames(device_scale_factor_));
+      PreferCompositingToLCDText(device_scale_factor_));
 
   ApplyWebPreferences(webkit_preferences_, webview());
 
@@ -3752,7 +3743,7 @@ void RenderViewImpl::SetDeviceScaleFactor(float device_scale_factor) {
         ->setAcceleratedCompositingForFixedRootBackgroundEnabled(
             PreferCompositingToLCDText(device_scale_factor_));
     webview()->settings()->setCompositedScrollingForFramesEnabled(
-        ShouldUseCompositedScrollingForFrames(device_scale_factor_));
+        PreferCompositingToLCDText(device_scale_factor_));
   }
   if (auto_resize_mode_)
     AutoResizeCompositor();
