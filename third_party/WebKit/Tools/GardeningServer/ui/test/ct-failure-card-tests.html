@@ -24,11 +24,11 @@ describe('ct-failure-group', function() {
     setTimeout(done);
   });
 
-  describe('failure group UI', function(done) {
-    it('examine should dispatch event', function() {
+  describe('failure group UI', function() {
+    it('examine should dispatch event', function(done) {
       card.addEventListener('ct-examine-failures', function(event) {
         assert.deepEqual(event.detail.failures, []);
-        setTimeout(done);
+        done();
       });
 
       card.shadowRoot.getElementById('examine').dispatchEvent(new CustomEvent('tap'));
@@ -41,7 +41,7 @@ describe('ct-failure-group', function() {
         var links = card.shadowRoot.querySelectorAll('a');
         assert.lengthOf(links, 1);
         assert.match(links[0].href, /crbug.com\/123/);
-        setTimeout(done);
+        done();
       });
     });
 
@@ -62,7 +62,7 @@ describe('ct-failure-group', function() {
           assert.equal(group.bug, 'http://crbug.com/999');
           assert.equal(group.bugLabel, 'Bug 999');
           assert.equal(group._annotation.bug, 'http://crbug.com/999');
-          setTimeout(done);
+          done();
         });
       });
     });
@@ -79,7 +79,7 @@ describe('ct-failure-group', function() {
           assert.equal(group.bug, 'http://foo.com/?id=888');
           assert.equal(group.bugLabel, 'Bug 888');
           assert.equal(group._annotation.bug, 'http://foo.com/?id=888');
-          setTimeout(done);
+          done();
         });
       });
     });
@@ -94,7 +94,7 @@ describe('ct-failure-group', function() {
         setTimeout(function() {
           assert.isUndefined(group.bug);
           assert.isUndefined(group.bugLabel);
-          setTimeout(done);
+          done();
         });
       });
     });

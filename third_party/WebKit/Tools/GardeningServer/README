@@ -29,8 +29,6 @@ Then load: http://localhost:8000/GardeningServer/sheriff-o-matic.html
 
 # TESTING
 
-## Mocha (new-style) tests
-
 The tests can be run in the browser or from the command line.
 
 In the browser: http://localhost:8000/GardeningServer/test/run-unit-tests.html
@@ -50,10 +48,6 @@ Or, you can start karma manually:
     $ ./node_modules/karma/bin/karma start
 
 You can shorten this command to 'karma start' if you run 'npm install -g karma-cli'.
-
-## QUnit (old-style) tests
-
-While we still have tests using QUnit, you can run these at: http://localhost:8000/GardeningServer/run-unittests.html.
 
 # PUSHING
 
