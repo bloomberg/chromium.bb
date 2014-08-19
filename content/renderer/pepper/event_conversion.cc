@@ -731,7 +731,7 @@ PP_InputEvent_Class ClassifyInputEvent(WebInputEvent::Type type) {
       return PP_INPUTEVENT_CLASS_TOUCH;
     case WebInputEvent::Undefined:
     default:
-      NOTREACHED();
+      CHECK(WebInputEvent::isGestureEventType(type));
       return PP_InputEvent_Class(0);
   }
 }
