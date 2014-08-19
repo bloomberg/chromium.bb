@@ -44,6 +44,7 @@ RunLoop::RunLoop()
 
 RunLoop::~RunLoop() {
   assert(current() == this);
+  NotifyHandlers(MOJO_RESULT_ABORTED, IGNORE_DEADLINE);
   current_run_loop.Set(NULL);
 }
 
@@ -161,14 +162,14 @@ bool RunLoop::Wait(bool non_blocking) {
     case MOJO_RESULT_FAILED_PRECONDITION:
       return RemoveFirstInvalidHandle(wait_state);
     case MOJO_RESULT_DEADLINE_EXCEEDED:
-      return NotifyDeadlineExceeded();
+      return NotifyHandlers(MOJO_RESULT_DEADLINE_EXCEEDED, CHECK_DEADLINE);
   }
 
   assert(false);
   return false;
 }
 
-bool RunLoop::NotifyDeadlineExceeded() {
+bool RunLoop::NotifyHandlers(MojoResult error, CheckDeadline check) {
   bool notified = false;
 
   // Make a copy in case someone tries to add/remove new handlers as part of
@@ -177,16 +178,23 @@ bool RunLoop::NotifyDeadlineExceeded() {
   const MojoTimeTicks now(GetTimeTicksNow());
   for (HandleToHandlerData::const_iterator i = cloned_handlers.begin();
        i != cloned_handlers.end(); ++i) {
-    // Since we're iterating over a clone of the handlers, verify the handler is
-    // still valid before notifying.
-    if (i->second.deadline != kInvalidTimeTicks &&
-        i->second.deadline < now &&
-        handler_data_.find(i->first) != handler_data_.end() &&
-        handler_data_[i->first].id == i->second.id) {
-      handler_data_.erase(i->first);
-      i->second.handler->OnHandleError(i->first, MOJO_RESULT_DEADLINE_EXCEEDED);
-      notified = true;
+    // Only check deadline exceeded if that's what we're notifying.
+    if (check == CHECK_DEADLINE && (i->second.deadline == kInvalidTimeTicks ||
+                                    i->second.deadline > now)) {
+      continue;
     }
+
+    // Since we're iterating over a clone of the handlers, verify the handler
+    // is still valid before notifying.
+    if (handler_data_.find(i->first) == handler_data_.end() ||
+        handler_data_[i->first].id != i->second.id) {
+      continue;
+    }
+
+    RunLoopHandler* handler = i->second.handler;
+    handler_data_.erase(i->first);
+    handler->OnHandleError(i->first, error);
+    notified = true;
   }
 
   return notified;

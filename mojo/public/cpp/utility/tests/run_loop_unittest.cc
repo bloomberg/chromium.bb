@@ -181,6 +181,112 @@ TEST_F(RunLoopTest, QuitWhenDeadlineExpired) {
   EXPECT_FALSE(run_loop.HasHandler(test_pipe.handle0.get()));
 }
 
+// Test that handlers are notified of loop destruction.
+TEST_F(RunLoopTest, Destruction) {
+  TestRunLoopHandler handler;
+  MessagePipe test_pipe;
+  {
+    RunLoop run_loop;
+    run_loop.AddHandler(&handler,
+                        test_pipe.handle0.get(),
+                        MOJO_HANDLE_SIGNAL_READABLE,
+                        MOJO_DEADLINE_INDEFINITE);
+  }
+  EXPECT_EQ(1, handler.error_count());
+  EXPECT_EQ(MOJO_RESULT_ABORTED, handler.last_error_result());
+}
+
+class RemoveManyRunLoopHandler : public TestRunLoopHandler {
+ public:
+  RemoveManyRunLoopHandler() : run_loop_(NULL) {
+  }
+  virtual ~RemoveManyRunLoopHandler() {}
+
+  void set_run_loop(RunLoop* run_loop) { run_loop_ = run_loop; }
+  void add_handle(const Handle& handle) { handles_.push_back(handle); }
+
+  // RunLoopHandler:
+  virtual void OnHandleError(const Handle& handle,
+                             MojoResult result) MOJO_OVERRIDE {
+    for (size_t i = 0; i < handles_.size(); i++)
+      run_loop_->RemoveHandler(handles_[i]);
+    TestRunLoopHandler::OnHandleError(handle, result);
+  }
+
+ private:
+  std::vector<Handle> handles_;
+  RunLoop* run_loop_;
+
+  MOJO_DISALLOW_COPY_AND_ASSIGN(RemoveManyRunLoopHandler);
+};
+
+// Test that handlers are notified of loop destruction.
+TEST_F(RunLoopTest, MultipleHandleDestruction) {
+  RemoveManyRunLoopHandler odd_handler;
+  TestRunLoopHandler even_handler;
+  MessagePipe test_pipe1, test_pipe2, test_pipe3;
+  {
+    RunLoop run_loop;
+    odd_handler.set_run_loop(&run_loop);
+    odd_handler.add_handle(test_pipe1.handle0.get());
+    odd_handler.add_handle(test_pipe3.handle0.get());
+    run_loop.AddHandler(&odd_handler,
+                        test_pipe1.handle0.get(),
+                        MOJO_HANDLE_SIGNAL_READABLE,
+                        MOJO_DEADLINE_INDEFINITE);
+    run_loop.AddHandler(&even_handler,
+                        test_pipe2.handle0.get(),
+                        MOJO_HANDLE_SIGNAL_READABLE,
+                        MOJO_DEADLINE_INDEFINITE);
+    run_loop.AddHandler(&odd_handler,
+                        test_pipe3.handle0.get(),
+                        MOJO_HANDLE_SIGNAL_READABLE,
+                        MOJO_DEADLINE_INDEFINITE);
+  }
+  EXPECT_EQ(1, odd_handler.error_count());
+  EXPECT_EQ(1, even_handler.error_count());
+  EXPECT_EQ(MOJO_RESULT_ABORTED, odd_handler.last_error_result());
+  EXPECT_EQ(MOJO_RESULT_ABORTED, even_handler.last_error_result());
+}
+
+class AddHandlerOnErrorHandler : public TestRunLoopHandler {
+ public:
+  AddHandlerOnErrorHandler() : run_loop_(NULL) {
+  }
+  virtual ~AddHandlerOnErrorHandler() {}
+
+  void set_run_loop(RunLoop* run_loop) { run_loop_ = run_loop; }
+
+  // RunLoopHandler:
+  virtual void OnHandleError(const Handle& handle,
+                             MojoResult result) MOJO_OVERRIDE {
+    run_loop_->AddHandler(this, handle,
+                          MOJO_HANDLE_SIGNAL_READABLE,
+                          MOJO_DEADLINE_INDEFINITE);
+    TestRunLoopHandler::OnHandleError(handle, result);
+  }
+
+ private:
+  RunLoop* run_loop_;
+
+  MOJO_DISALLOW_COPY_AND_ASSIGN(AddHandlerOnErrorHandler);
+};
+
+TEST_F(RunLoopTest, AddHandlerOnError) {
+  AddHandlerOnErrorHandler handler;
+  MessagePipe test_pipe;
+  {
+    RunLoop run_loop;
+    handler.set_run_loop(&run_loop);
+    run_loop.AddHandler(&handler,
+                        test_pipe.handle0.get(),
+                        MOJO_HANDLE_SIGNAL_READABLE,
+                        MOJO_DEADLINE_INDEFINITE);
+  }
+  EXPECT_EQ(1, handler.error_count());
+  EXPECT_EQ(MOJO_RESULT_ABORTED, handler.last_error_result());
+}
+
 TEST_F(RunLoopTest, Current) {
   EXPECT_TRUE(RunLoop::current() == NULL);
   {

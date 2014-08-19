@@ -76,6 +76,13 @@ class RunLoop {
 
   typedef std::map<Handle, HandlerData> HandleToHandlerData;
 
+  // Used for NotifyHandlers to specify whether HandlerData's |deadline|
+  // should be checked prior to notifying.
+  enum CheckDeadline {
+    CHECK_DEADLINE,
+    IGNORE_DEADLINE
+  };
+
   // Do one unit of delayed work, if eligible.
   void DoDelayedWork();
 
@@ -85,9 +92,10 @@ class RunLoop {
   // would require blocking. Returns true if a RunLoopHandler was notified.
   bool Wait(bool non_blocking);
 
-  // Notifies any handlers whose deadline has expired. Returns true if a
-  // RunLoopHandler was notified.
-  bool NotifyDeadlineExceeded();
+  // Notifies handlers of |error|.  If |check| == CHECK_DEADLINE, this will
+  // only notify handlers whose deadline has expired and skips the rest.
+  // Returns true if a RunLoopHandler was notified.
+  bool NotifyHandlers(MojoResult error, CheckDeadline check);
 
   // Removes the first invalid handle. This is called if MojoWaitMany() finds an
   // invalid handle. Returns true if a RunLoopHandler was notified.
