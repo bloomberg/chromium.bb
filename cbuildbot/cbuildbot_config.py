@@ -1601,6 +1601,7 @@ pre_cq = internal_paladin.derive(
   build_packages_in_background=True,
   pre_cq=True,
   archive=False,
+  chrome_sdk=False,
   debug_symbols=False,
   prebuilts=False,
   cpe_export=False,
