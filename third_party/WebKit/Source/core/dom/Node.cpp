@@ -2203,6 +2203,12 @@ void Node::defaultEventHandler(Event* event)
             if (enclosingLinkEventParentOrSelf())
                 return;
 
+            // Avoid that canBeScrolledAndHasScrollableArea changes render tree
+            // structure.
+            // FIXME: We should avoid synchronous layout if possible. We can
+            // remove this synchronous layout if we avoid synchronous layout in
+            // RenderTextControlSingleLine::scrollHeight
+            document().updateLayoutIgnorePendingStylesheets();
             RenderObject* renderer = this->renderer();
             while (renderer && (!renderer->isBox() || !toRenderBox(renderer)->canBeScrolledAndHasScrollableArea()))
                 renderer = renderer->parent();
