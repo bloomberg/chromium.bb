@@ -84,6 +84,7 @@ public:
     void resetAuthorizer();
 
     virtual void closeImmediately() = 0;
+    void closeDatabase();
 
     DatabaseContext* databaseContext() const { return m_databaseContext.get(); }
     ExecutionContext* executionContext() const;
@@ -98,8 +99,6 @@ protected:
 
     DatabaseBackendBase(DatabaseContext*, const String& name, const String& expectedVersion,
         const String& displayName, unsigned long estimatedSize, DatabaseType);
-
-    void closeDatabase();
 
     virtual bool openAndVerifyVersion(bool setVersionInNewDatabase, DatabaseError&, String& errorMessage) = 0;
     virtual bool performOpenAndVerify(bool shouldSetVersionInNewDatabase, DatabaseError&, String& errorMessage);

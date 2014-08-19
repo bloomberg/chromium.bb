@@ -200,7 +200,8 @@ void DatabaseContext::didCloseDatabase(DatabaseBackendBase& database)
 #if ENABLE(OILPAN)
 DatabaseContext::DatabaseCloser::~DatabaseCloser()
 {
-    m_database.closeImmediately();
+    if (m_database.opened())
+        m_database.closeDatabase();
 }
 #endif
 
