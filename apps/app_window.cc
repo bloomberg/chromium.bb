@@ -20,7 +20,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/invalidate_type.h"
@@ -265,9 +264,6 @@ void AppWindow::Init(const GURL& url,
   app_delegate_->InitWebContents(web_contents);
 
   WebContentsModalDialogManager::CreateForWebContents(web_contents);
-  // TODO(jamescook): Delegate out this creation.
-  extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
-      web_contents);
 
   web_contents->SetDelegate(this);
   WebContentsModalDialogManager::FromWebContents(web_contents)

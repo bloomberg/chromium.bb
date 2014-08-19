@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
@@ -164,6 +165,8 @@ void ChromeAppDelegate::InitWebContents(content::WebContents* web_contents) {
   printing::PrintViewManagerBasic::CreateForWebContents(web_contents);
 #endif  // defined(ENABLE_FULL_PRINTING)
 #endif  // defined(ENABLE_PRINTING)
+  extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
+      web_contents);
 }
 
 content::WebContents* ChromeAppDelegate::OpenURLFromTab(
