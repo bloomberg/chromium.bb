@@ -36,7 +36,7 @@ def KillHostHeartbeat():
   matches = re.findall('\\n.*host_heartbeat.*', stdout)
   for match in matches:
     logging.info('An instance of host heart beart running... will kill')
-    pid = re.findall('(\d+)', match)[0]
+    pid = re.findall('(\S+)', match)[1]
     subprocess.call(['kill', str(pid)])
 
 
