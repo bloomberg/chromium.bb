@@ -20,9 +20,6 @@ class Checker(object):
 
   _COMMON_CLOSURE_ARGS = [
     "--accept_const_keyword",
-    "--language_in=ECMASCRIPT5",
-    "--summary_detail_level=3",
-    "--warning_level=VERBOSE",
     "--jscomp_error=accessControls",
     "--jscomp_error=ambiguousFunctionDecl",
     "--jscomp_error=checkStructDictInheritance",
@@ -45,6 +42,8 @@ class Checker(object):
     "--jscomp_error=visibility",
     # TODO(dbeam): happens when the same file is <include>d multiple times.
     "--jscomp_off=duplicate",
+    "--language_in=ECMASCRIPT5_STRICT",
+    "--summary_detail_level=3",
   ]
 
   _JAR_COMMAND = [
