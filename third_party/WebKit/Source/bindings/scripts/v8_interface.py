@@ -735,11 +735,10 @@ def resolution_tests_methods(effective_overloads):
     # ...
     # • a dictionary
     try:
-        # FIXME: IDL dictionary not implemented, so use Blink Dictionary
-        # http://crbug.com/321462
         idl_type, method = next((idl_type, method)
                                 for idl_type, method in idl_types_methods
                                 if (idl_type.native_array_element_type or
+                                    idl_type.is_dictionary or
                                     idl_type.name == 'Dictionary'))
         if idl_type.native_array_element_type:
             # (We test for Array instead of generic Object to type-check.)

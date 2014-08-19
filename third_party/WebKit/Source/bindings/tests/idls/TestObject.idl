@@ -433,6 +433,8 @@ interface TestObject {
     void overloadedMethodH(TestInterfaceEmpty testInterfaceEmptyArg);
     void overloadedMethodI(DOMString stringArg);
     void overloadedMethodI(double doubleArg);
+    void overloadedMethodJ(DOMString stringArg);
+    void overloadedMethodJ(TestDictionary testDictionaryArg);
 
 
     [PerWorldBindings] void overloadedPerWorldBindingsMethod();
