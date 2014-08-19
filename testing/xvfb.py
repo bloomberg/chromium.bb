@@ -49,7 +49,8 @@ def start_xvfb(xvfb_path, display):
   Args:
     xvfb_path: Path to Xvfb.
   """
-  cmd = [xvfb_path, display, '-screen', '0', '1024x768x24', '-ac']
+  cmd = [xvfb_path, display, '-screen', '0', '1024x768x24', '-ac',
+         '-nolisten', 'tcp']
   try:
     proc = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
