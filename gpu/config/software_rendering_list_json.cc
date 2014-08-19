@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "9.0",
+  "version": "9.1",
   "entries": [
     {
       "id": 1,
@@ -861,28 +861,24 @@ LONG_STRING_CONST(
     },
     {
       "id": 83,
-      "description": "Samsung Gaxlaxy NOTE II is too buggy to use for video decoding",
+      "description": "Samsung Galaxy NOTE is too buggy to use for video decoding",
       "cr_bugs": [308721],
       "os": {
-        "type": "android",
-        "version": {
-          "op": "<=",
-          "value": "4.1.2"
-        }
+        "type": "android"
       },
-      "machine_model_name": ["GT-N7100"],
+      "machine_model_name": ["GT-.*"],
       "features": [
         "accelerated_video_decode"
       ]
     },
     {
       "id": 85,
-      "description": "Samsung Gaxlaxy S4 is too buggy to use for video decoding",
+      "description": "Samsung Galaxy S4 is too buggy to use for video decoding",
       "cr_bugs": [329072],
       "os": {
         "type": "android"
       },
-      "machine_model_name": ["SCH-I545"],
+      "machine_model_name": ["SCH-.*"],
       "features": [
         "accelerated_video_decode"
       ]
