@@ -10,10 +10,6 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_io.h"
 
-#if NACL_OSX
-#include <crt_externs.h>
-#endif
-
 #if NACL_LINUX
 #include <getopt.h>
 #endif
@@ -525,26 +521,17 @@ int NaClSelLdrMain(int argc, char **argv) {
   struct SelLdrOptions          optionsImpl;
   struct SelLdrOptions          *options = &optionsImpl;
 
-  struct GioFile                gout;
   NaClErrorCode                 errcode = LOAD_INTERNAL;
   struct NaClDesc               *blob_file = NULL;
 
   int                           ret_code;
+
   struct DynArray               env_vars;
+  struct NaClEnvCleanser        env_cleanser;
+  char const *const             *envp;
 
   struct NaClPerfCounter        time_all_main;
-  const char                    **envp;
-  struct NaClEnvCleanser        env_cleanser;
 
-#if NACL_OSX
-  /* Mac dynamic libraries cannot access the environ variable directly. */
-  envp = (const char **) *_NSGetEnviron();
-#else
-  /* Overzealous code style check is overzealous. */
-  /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
-  extern char **environ;
-  envp = (const char **) environ;
-#endif
 
   ret_code = 1;
 
@@ -559,8 +546,7 @@ int NaClSelLdrMain(int argc, char **argv) {
 
   nap = NaClAppCreate();
   if (nap == NULL) {
-    fprintf(stderr, "NaClAppCreate() failed\n");
-    exit(1);
+    NaClLog(LOG_FATAL, "NaClAppCreate() failed\n");
   }
 
   NaClBootstrapChannelErrorReporterInit();
@@ -570,21 +556,28 @@ int NaClSelLdrMain(int argc, char **argv) {
 
   fflush((FILE *) NULL);
 
-  if (!GioFileRefCtor(&gout, stdout)) {
-    fprintf(stderr, "Could not create general standard output channel\n");
-    exit(1);
-  }
-
   SelLdrOptionsCtor(options);
   if (!DynArrayCtor(&env_vars, 0)) {
     NaClLog(LOG_FATAL, "Failed to allocate env var array\n");
   }
   NaClSelLdrParseArgs(argc, argv, options, &env_vars, nap);
 
+  /*
+   * Define the environment variables for untrusted code.
+   */
+  if (!DynArraySet(&env_vars, env_vars.num_entries, NULL)) {
+    NaClLog(LOG_FATAL, "Adding env_vars NULL terminator failed\n");
+  }
+  NaClEnvCleanserCtor(&env_cleanser, 0);
+  if (!NaClEnvCleanserInit(&env_cleanser, NaClGetEnviron(),
+          (char const *const *)env_vars.ptr_array)) {
+    NaClLog(LOG_FATAL, "Failed to initialise env cleanser\n");
+  }
+  envp = NaClEnvCleanserEnvironment(&env_cleanser);
+
   if (options->debug_mode_startup_signal) {
 #if NACL_WINDOWS
-    fprintf(stderr, "DEBUG startup signal not supported on Windows\n");
-    exit(1);
+    NaClLog(LOG_FATAL, "DEBUG startup signal not supported on Windows\n");
 #else
     /*
      * SIGCONT is ignored by default, so this doesn't actually do anything
@@ -598,7 +591,7 @@ int NaClSelLdrMain(int argc, char **argv) {
      * "sharedlibrary" command (if the debugger is GDB) and thereafter
      * it becomes possible to set symbolic breakpoints and so forth.
      */
-    fprintf(stderr, "DEBUG taking startup signal (SIGCONT) now\n");
+    NaClLog(LOG_ERROR, "DEBUG taking startup signal (SIGCONT) now\n");
     raise(SIGCONT);
 #endif
   }
@@ -624,7 +617,7 @@ int NaClSelLdrMain(int argc, char **argv) {
     /* NaCl's signal handler is always enabled on Linux. */
 #elif NACL_OSX
     if (!NaClInterceptMachExceptions()) {
-      fprintf(stderr, "ERROR setting up Mach exception interception.\n");
+      NaClLog(LOG_ERROR, "ERROR setting up Mach exception interception.\n");
       return -1;
     }
 #else
@@ -652,7 +645,7 @@ int NaClSelLdrMain(int argc, char **argv) {
       errcode = pq_error;
       nap->module_load_status = pq_error;
       if (!options->quiet)
-        fprintf(stderr, "Error while loading \"%s\": %s\n",
+        NaClLog(LOG_ERROR, "Error while loading \"%s\": %s\n",
                 NULL != options->nacl_file ? options->nacl_file
                                   : "(no file, to-be-supplied-via-RPC)",
                 NaClErrorString(errcode));
@@ -683,8 +676,7 @@ int NaClSelLdrMain(int argc, char **argv) {
         options->blob_library_file, NACL_ABI_O_RDONLY, 0);
     if (NULL == blob_file) {
       perror("sel_main");
-      fprintf(stderr, "Cannot open \"%s\".\n", options->blob_library_file);
-      exit(1);
+      NaClLog(LOG_FATAL, "Cannot open \"%s\".\n", options->blob_library_file);
     }
     NaClPerfCounterMark(&time_all_main, "SnapshotBlob");
     NaClPerfCounterIntervalLast(&time_all_main);
@@ -697,14 +689,13 @@ int NaClSelLdrMain(int argc, char **argv) {
       NaClLog(2, "Loading nacl file %s (non-RPC)\n", options->nacl_file);
       errcode = NaClAppLoadFileFromFilename(nap, options->nacl_file);
       if (LOAD_OK != errcode && !options->quiet) {
-        fprintf(stderr, "Error while loading \"%s\": %s\n",
+        NaClLog(LOG_ERROR, "Error while loading \"%s\": %s\n"
+                "Using the wrong type of nexe (nacl-x86-32"
+                " on an x86-64 or vice versa)\n"
+                "or a corrupt nexe file may be"
+                " responsible for this error.\n",
                 options->nacl_file,
                 NaClErrorString(errcode));
-        fprintf(stderr,
-                ("Using the wrong type of nexe (nacl-x86-32"
-                 " on an x86-64 or vice versa)\n"
-                 "or a corrupt nexe file may be"
-                 " responsible for this error.\n"));
       }
       NaClPerfCounterMark(&time_all_main, "AppLoadEnd");
       NaClPerfCounterIntervalLast(&time_all_main);
@@ -764,13 +755,6 @@ int NaClSelLdrMain(int argc, char **argv) {
     NaClPerfCounterIntervalLast(&time_all_main);
   }
 
-  if (LOAD_OK == errcode) {
-    if (options->verbosity) {
-      gprintf((struct Gio *) &gout, "printing NaClApp details\n");
-      NaClAppPrintDetails(nap, (struct Gio *) &gout);
-    }
-  }
-
   /*
    * Tell the debug stub to bind a TCP port before enabling the outer
    * sandbox.  This is only needed on Mac OS X since that is the only
@@ -803,10 +787,9 @@ int NaClSelLdrMain(int argc, char **argv) {
 
   if (NULL != options->blob_library_file) {
     if (LOAD_OK == errcode) {
-      NaClLog(2, "Loading blob file %s\n", options->blob_library_file);
       errcode = NaClMainLoadIrt(nap, blob_file, NULL);
       if (LOAD_OK != errcode) {
-        fprintf(stderr, "Error while loading \"%s\": %s\n",
+        NaClLog(LOG_ERROR, "Error while loading \"%s\": %s\n",
                 options->blob_library_file,
                 NaClErrorString(errcode));
       }
@@ -815,10 +798,6 @@ int NaClSelLdrMain(int argc, char **argv) {
     }
 
     NaClDescUnref(blob_file);
-    if (options->verbosity) {
-      gprintf((struct Gio *) &gout, "printing post-IRT NaClApp details\n");
-      NaClAppPrintDetails(nap, (struct Gio *) &gout);
-    }
   }
 
   /*
@@ -859,18 +838,7 @@ int NaClSelLdrMain(int argc, char **argv) {
     goto done;
   }
 
-  if (!DynArraySet(&env_vars, env_vars.num_entries, NULL)) {
-    NaClLog(LOG_FATAL, "Adding env_vars NULL terminator failed\n");
-  }
-
-  NaClEnvCleanserCtor(&env_cleanser, 0);
-  if (!NaClEnvCleanserInit(&env_cleanser, envp,
-          (char const *const *)env_vars.ptr_array)) {
-    NaClLog(LOG_FATAL, "Failed to initialise env cleanser\n");
-  }
-
   if (!NaClAppLaunchServiceThreads(nap)) {
-    fprintf(stderr, "Launch service threads failed\n");
     goto done;
   }
   if (options->enable_debug_stub) {
@@ -882,16 +850,18 @@ int NaClSelLdrMain(int argc, char **argv) {
   if (!NaClCreateMainThread(nap,
                             options->app_argc,
                             options->app_argv,
-                            NaClEnvCleanserEnvironment(&env_cleanser))) {
-    fprintf(stderr, "creating main thread failed\n");
-    goto done;
+                            envp)) {
+    NaClLog(LOG_FATAL, "creating main thread failed\n");
   }
 
+  /*
+   * Clean up temp storage for env vars.
+   */
   NaClEnvCleanserDtor(&env_cleanser);
+  DynArrayDtor(&env_vars);
 
   NaClPerfCounterMark(&time_all_main, "CreateMainThread");
   NaClPerfCounterIntervalLast(&time_all_main);
-  DynArrayDtor(&env_vars);
 
   ret_code = NaClWaitForMainThreadToExit(nap);
   NaClPerfCounterMark(&time_all_main, "WaitForMainThread");
@@ -911,9 +881,6 @@ int NaClSelLdrMain(int argc, char **argv) {
   fflush(stdout);
 
   if (options->verbosity) {
-    gprintf((struct Gio *) &gout, "exiting -- printing NaClApp details\n");
-    NaClAppPrintDetails(nap, (struct Gio *) &gout);
-
     printf("Dumping vmmap.\n"); fflush(stdout);
     PrintVmmap(nap);
     fflush(stdout);

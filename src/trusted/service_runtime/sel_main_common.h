@@ -19,6 +19,8 @@ struct NaClValidationMetadata;
 NaClErrorCode NaClMainLoadIrt(struct NaClApp *nap, struct NaClDesc *nd,
                               struct NaClValidationMetadata *metadata);
 
+const char ** NaClGetEnviron(void);
+
 EXTERN_C_END
 
 #endif

@@ -920,7 +920,7 @@ if env.Bit('target_x86') and env.Bit('nacl_static_link'):
 # ----------------------------------------------------------
 # Death Tests With Canned x86 Binaries
 # ----------------------------------------------------------
-ERROR_WHILE_LOADING = '"^(Error while loading).*' + '(:[^:]*)"'
+ERROR_WHILE_LOADING = r'"^(?:\[[^\]]+\]\s*)?(Error while loading).*(:[^:]*)"'
 
 # TODO: Create death test nexes for arm.
 DEATH_TESTS_X86 = [ 'old_abi',  # hello_world.nexe with an old ABI version

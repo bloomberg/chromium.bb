@@ -10,10 +10,6 @@
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_sockets.h"
 
-#if NACL_OSX
-#include <crt_externs.h>
-#endif
-
 #include <stdio.h>
 #include <string.h>
 
@@ -377,33 +373,23 @@ static void StartApp(struct NaClApp *nap) {
   int ac = 1;
   char *av[1];
   int ret_code;
-  const char **envp;
   struct NaClEnvCleanser env_cleanser;
-
-#if NACL_OSX
-  /* Mac dynamic libraries cannot access the environ variable directly. */
-  envp = (const char **) *_NSGetEnviron();
-#else
-  /* Overzealous code style check is overzealous. */
-  /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
-  extern char **environ;
-  envp = (const char **) environ;
-#endif
+  char const *const *envp;
 
   NACL_FI_FATAL("BeforeEnvCleanserCtor");
 
   NaClEnvCleanserCtor(&env_cleanser, 1);
-  if (!NaClEnvCleanserInit(&env_cleanser, envp, NULL)) {
+  if (!NaClEnvCleanserInit(&env_cleanser, NaClGetEnviron(), NULL)) {
     NaClLog(LOG_FATAL, "Failed to initialise env cleanser\n");
   }
+  envp = NaClEnvCleanserEnvironment(&env_cleanser);
 
   /* to be passed to NaClMain, eventually... */
   av[0] = "NaClMain";
 
   if (NACL_FI_ERROR_COND(
           "CreateMainThread",
-          !NaClCreateMainThread(nap, ac, av,
-                                NaClEnvCleanserEnvironment(&env_cleanser)))) {
+          !NaClCreateMainThread(nap, ac, av, envp))) {
     NaClLog(LOG_FATAL, "creating main thread failed\n");
   }
   NACL_FI_FATAL("BeforeEnvCleanserDtor");
