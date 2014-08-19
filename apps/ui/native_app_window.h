@@ -26,9 +26,6 @@ class NativeAppWindow : public ui::BaseWindow,
   // Returns whether the window is fullscreen or about to enter fullscreen.
   virtual bool IsFullscreenOrPending() const = 0;
 
-  // Returns true if the window is a panel that has been detached.
-  virtual bool IsDetached() const = 0;
-
   // Called when the icon of the window changes.
   virtual void UpdateWindowIcon() = 0;
 

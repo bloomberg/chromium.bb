@@ -309,7 +309,6 @@ scoped_ptr<windows::Window> SessionsGetDevicesFunction::CreateWindowModel(
       break;
     case ui::SHOW_STATE_DEFAULT:
     case ui::SHOW_STATE_INACTIVE:
-    case ui::SHOW_STATE_DETACHED:
     case ui::SHOW_STATE_END:
       break;
   }

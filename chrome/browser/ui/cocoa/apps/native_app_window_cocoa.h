@@ -125,7 +125,6 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow,
   // NativeAppWindow implementation.
   virtual void SetFullscreen(int fullscreen_types) OVERRIDE;
   virtual bool IsFullscreenOrPending() const OVERRIDE;
-  virtual bool IsDetached() const OVERRIDE;
   virtual void UpdateWindowIcon() OVERRIDE;
   virtual void UpdateWindowTitle() OVERRIDE;
   virtual void UpdateBadgeIcon() OVERRIDE;

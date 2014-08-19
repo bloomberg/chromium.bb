@@ -316,11 +316,6 @@ bool NativeAppWindowViews::IsFullscreenOrPending() const {
   return widget_->IsFullscreen();
 }
 
-bool NativeAppWindowViews::IsDetached() const {
-  // Stub implementation. See also ChromeNativeAppWindowViews.
-  return false;
-}
-
 void NativeAppWindowViews::UpdateWindowIcon() { widget_->UpdateWindowIcon(); }
 
 void NativeAppWindowViews::UpdateWindowTitle() { widget_->UpdateWindowTitle(); }

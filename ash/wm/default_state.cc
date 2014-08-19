@@ -543,7 +543,6 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
     case WINDOW_STATE_TYPE_MINIMIZED:
       break;
     case WINDOW_STATE_TYPE_INACTIVE:
-    case WINDOW_STATE_TYPE_DETACHED:
     case WINDOW_STATE_TYPE_END:
     case WINDOW_STATE_TYPE_AUTO_POSITIONED:
       return;

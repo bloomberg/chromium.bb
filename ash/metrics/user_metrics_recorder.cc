@@ -420,7 +420,6 @@ void UserMetricsRecorder::RecordPeriodicMetrics() {
       case wm::WINDOW_STATE_TYPE_NORMAL:
       case wm::WINDOW_STATE_TYPE_MINIMIZED:
       case wm::WINDOW_STATE_TYPE_INACTIVE:
-      case wm::WINDOW_STATE_TYPE_DETACHED:
       case wm::WINDOW_STATE_TYPE_END:
       case wm::WINDOW_STATE_TYPE_AUTO_POSITIONED:
         active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_OTHER;

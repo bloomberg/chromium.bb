@@ -11,8 +11,7 @@ namespace ui {
 
 class Event;
 
-// Window "show" state.  These values are written to disk so should not be
-// changed.
+// Window "show" state.
 enum WindowShowState {
   // A default un-set state.
   SHOW_STATE_DEFAULT    = 0,
@@ -21,8 +20,7 @@ enum WindowShowState {
   SHOW_STATE_MAXIMIZED  = 3,
   SHOW_STATE_INACTIVE   = 4,  // Views only, not persisted.
   SHOW_STATE_FULLSCREEN = 5,
-  SHOW_STATE_DETACHED   = 6,  // Views only; detached panel.
-  SHOW_STATE_END        = 7   // The end of show state enum.
+  SHOW_STATE_END        = 6   // The end of show state enum.
 };
 
 // Dialog button identifiers used to specify which buttons to show the user.

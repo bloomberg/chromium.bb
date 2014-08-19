@@ -531,10 +531,6 @@ bool NativeAppWindowCocoa::IsFullscreenOrPending() const {
   return is_fullscreen_;
 }
 
-bool NativeAppWindowCocoa::IsDetached() const {
-  return false;
-}
-
 gfx::NativeWindow NativeAppWindowCocoa::GetNativeWindow() {
   return window();
 }

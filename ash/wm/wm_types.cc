@@ -37,8 +37,6 @@ ui::WindowShowState ToWindowShowState(WindowStateType type) {
       return ui::SHOW_STATE_INACTIVE;
     case WINDOW_STATE_TYPE_FULLSCREEN:
       return ui::SHOW_STATE_FULLSCREEN;
-    case WINDOW_STATE_TYPE_DETACHED:
-      return ui::SHOW_STATE_DETACHED;
     case WINDOW_STATE_TYPE_END:
       NOTREACHED();
   }

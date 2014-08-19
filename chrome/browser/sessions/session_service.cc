@@ -137,21 +137,64 @@ struct PinnedStatePayload {
   bool pinned_state;
 };
 
+// Persisted versions of ui::WindowShowState that are written to disk and can
+// never change.
+enum PersistedWindowShowState {
+  // SHOW_STATE_DEFAULT (0) never persisted.
+  PERSISTED_SHOW_STATE_NORMAL = 1,
+  PERSISTED_SHOW_STATE_MINIMIZED = 2,
+  PERSISTED_SHOW_STATE_MAXIMIZED = 3,
+  // SHOW_STATE_INACTIVE (4) never persisted.
+  PERSISTED_SHOW_STATE_FULLSCREEN = 5,
+  PERSISTED_SHOW_STATE_DETACHED_DEPRECATED = 6,
+  PERSISTED_SHOW_STATE_END = 6
+};
+
+// Assert to ensure PersistedWindowShowState is updated if ui::WindowShowState
+// is changed.
+COMPILE_ASSERT(ui::SHOW_STATE_END ==
+                   static_cast<ui::WindowShowState>(PERSISTED_SHOW_STATE_END),
+               persisted_show_state_mismatch);
+
 // Returns the show state to store to disk based |state|.
-ui::WindowShowState AdjustShowState(ui::WindowShowState state) {
+PersistedWindowShowState ShowStateToPersistedShowState(
+    ui::WindowShowState state) {
   switch (state) {
     case ui::SHOW_STATE_NORMAL:
+      return PERSISTED_SHOW_STATE_NORMAL;
     case ui::SHOW_STATE_MINIMIZED:
+      return PERSISTED_SHOW_STATE_MINIMIZED;
     case ui::SHOW_STATE_MAXIMIZED:
+      return PERSISTED_SHOW_STATE_MAXIMIZED;
     case ui::SHOW_STATE_FULLSCREEN:
-    case ui::SHOW_STATE_DETACHED:
-      return state;
+      return PERSISTED_SHOW_STATE_FULLSCREEN;
 
     case ui::SHOW_STATE_DEFAULT:
     case ui::SHOW_STATE_INACTIVE:
+      return PERSISTED_SHOW_STATE_NORMAL;
+
     case ui::SHOW_STATE_END:
+      break;
+  }
+  NOTREACHED();
+  return PERSISTED_SHOW_STATE_NORMAL;
+}
+
+// Lints show state values when read back from persited disk.
+ui::WindowShowState PersistedShowStateToShowState(int state) {
+  switch (state) {
+    case PERSISTED_SHOW_STATE_NORMAL:
+      return ui::SHOW_STATE_NORMAL;
+    case PERSISTED_SHOW_STATE_MINIMIZED:
+      return ui::SHOW_STATE_MINIMIZED;
+    case PERSISTED_SHOW_STATE_MAXIMIZED:
+      return ui::SHOW_STATE_MAXIMIZED;
+    case PERSISTED_SHOW_STATE_FULLSCREEN:
+      return ui::SHOW_STATE_FULLSCREEN;
+    case PERSISTED_SHOW_STATE_DETACHED_DEPRECATED:
       return ui::SHOW_STATE_NORMAL;
   }
+  NOTREACHED();
   return ui::SHOW_STATE_NORMAL;
 }
 
@@ -761,7 +804,7 @@ SessionCommand* SessionService::CreateSetWindowBoundsCommand(
   payload.y = bounds.y();
   payload.w = bounds.width();
   payload.h = bounds.height();
-  payload.show_state = AdjustShowState(show_state);
+  payload.show_state = ShowStateToPersistedShowState(show_state);
   SessionCommand* command = new SessionCommand(kCommandSetWindowBounds3,
                                                sizeof(payload));
   memcpy(command->contents(), &payload, sizeof(payload));
@@ -1083,16 +1126,8 @@ bool SessionService::CreateTabsAndWindows(
                                                               payload.y,
                                                               payload.w,
                                                               payload.h);
-        // SHOW_STATE_INACTIVE is not persisted.
-        ui::WindowShowState show_state = ui::SHOW_STATE_NORMAL;
-        if (payload.show_state > ui::SHOW_STATE_DEFAULT &&
-            payload.show_state < ui::SHOW_STATE_END &&
-            payload.show_state != ui::SHOW_STATE_INACTIVE) {
-          show_state = static_cast<ui::WindowShowState>(payload.show_state);
-        } else {
-          NOTREACHED();
-        }
-        GetWindow(payload.window_id, windows)->show_state = show_state;
+        GetWindow(payload.window_id, windows)->show_state =
+            PersistedShowStateToShowState(payload.show_state);
         break;
       }
 

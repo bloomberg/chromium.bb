@@ -314,24 +314,6 @@ void ChromeNativeAppWindowViews::InitializePanelWindow(
 #endif
   widget()->Init(params);
   widget()->set_focus_on_creation(create_params.focused);
-
-#if defined(USE_ASH)
-  if (create_params.state == ui::SHOW_STATE_DETACHED) {
-    gfx::Rect window_bounds(initial_window_bounds.x(),
-                            initial_window_bounds.y(),
-                            preferred_size_.width(),
-                            preferred_size_.height());
-    aura::Window* native_window = GetNativeWindow();
-    ash::wm::GetWindowState(native_window)->set_panel_attached(false);
-    aura::client::ParentWindowWithContext(native_window,
-                                          native_window->GetRootWindow(),
-                                          native_window->GetBoundsInScreen());
-    widget()->SetBounds(window_bounds);
-  }
-#else
-  // TODO(stevenjb): NativeAppWindow panels need to be implemented for other
-  // platforms.
-#endif
 }
 
 views::NonClientFrameView*
@@ -426,7 +408,6 @@ ui::WindowShowState ChromeNativeAppWindowViews::GetRestoredState() const {
     case ui::SHOW_STATE_NORMAL:
     case ui::SHOW_STATE_MAXIMIZED:
     case ui::SHOW_STATE_FULLSCREEN:
-    case ui::SHOW_STATE_DETACHED:
       return restore_state;
 
     case ui::SHOW_STATE_DEFAULT:
@@ -625,17 +606,6 @@ void ChromeNativeAppWindowViews::SetFullscreen(int fullscreen_types) {
 
 bool ChromeNativeAppWindowViews::IsFullscreenOrPending() const {
   return is_fullscreen_;
-}
-
-bool ChromeNativeAppWindowViews::IsDetached() const {
-  if (!app_window()->window_type_is_panel())
-    return false;
-#if defined(USE_ASH)
-  return !ash::wm::GetWindowState(widget()->GetNativeWindow())
-              ->panel_attached();
-#else
-  return false;
-#endif
 }
 
 void ChromeNativeAppWindowViews::UpdateBadgeIcon() {

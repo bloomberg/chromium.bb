@@ -72,7 +72,6 @@ class ChromeNativeAppWindowViews : public apps::NativeAppWindowViews,
   // NativeAppWindow implementation.
   virtual void SetFullscreen(int fullscreen_types) OVERRIDE;
   virtual bool IsFullscreenOrPending() const OVERRIDE;
-  virtual bool IsDetached() const OVERRIDE;
   virtual void UpdateBadgeIcon() OVERRIDE;
   virtual void UpdateShape(scoped_ptr<SkRegion> region) OVERRIDE;
   virtual bool HasFrameColor() const OVERRIDE;
