@@ -369,7 +369,7 @@ done:
   return errcode;
 }
 
-static void StartApp(struct NaClApp *nap) {
+static int StartApp(struct NaClApp *nap) {
   int ac = 1;
   char *av[1];
   int ret_code;
@@ -411,18 +411,27 @@ static void StartApp(struct NaClApp *nap) {
      */
     NaClLog(LOG_INFO, "NaCl untrusted code called _exit(0x%x)\n", ret_code);
   }
-
-  /*
-   * exit_group or equiv kills any still running threads while module
-   * addr space is still valid.  otherwise we'd have to kill threads
-   * before we clean up the address space.
-   */
-  NaClExit(ret_code);
+  return ret_code;
 }
 
 void NaClChromeMainStartApp(struct NaClApp *nap,
                             struct NaClChromeMainArgs *args) {
   if (LoadApp(nap, args) != 0)
     NaClExit(1);
-  StartApp(nap);
+
+  /*
+   * exit_group or equiv kills any still running threads while module
+   * addr space is still valid.  otherwise we'd have to kill threads
+   * before we clean up the address space.
+   */
+  NaClExit(StartApp(nap));
+}
+
+int NaClChromeMainStart(struct NaClApp *nap,
+                        struct NaClChromeMainArgs *args,
+                        int *exit_status) {
+  if (LoadApp(nap, args) != 0)
+    return 0;
+  *exit_status = StartApp(nap);
+  return 1;
 }

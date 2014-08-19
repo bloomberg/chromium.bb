@@ -34,7 +34,11 @@ struct NaClValidationCache;
  *   struct NaClChromeMainArgs *args = NaClChromeMainArgsCreate();
  *   // Fill out args...
  *   NaClAppSetDesc(nap, NACL_CHROME_DESC_BASE, NaClDescMakeCustomDesc(...));
- *   NaClChromeMainStartApp(nap, args);
+ *   int exit_status;
+ *   int ok = NaClChromeMainStart(nap, args, &exit_status);
+ *   if (!ok)
+ *     NaClExit(1);
+ *   NaClExit(exit_status);
  */
 
 /*
@@ -44,7 +48,7 @@ struct NaClValidationCache;
  *
  * This number is chosen so as not to conflict with
  * NACL_SERVICE_PORT_DESCRIPTOR, NACL_SERVICE_ADDRESS_DESCRIPTOR and
- * export_addr_to inside NaClChromeMainStartApp().
+ * export_addr_to inside NaClChromeMainStart().
  */
 #define NACL_CHROME_DESC_BASE 6
 
@@ -204,9 +208,32 @@ void NaClSetFatalErrorCallback(void (*func)(const char *data, size_t bytes));
 /* Create a new args struct containing default values. */
 struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void);
 
-/* Start NaCl. This does not return. */
+/*
+ * Start NaCl. This does not return.
+ * TODO(teravest): Remove this.
+ */
 void NaClChromeMainStartApp(struct NaClApp *nap,
                             struct NaClChromeMainArgs *args);
+
+/*
+ * Start NaCl.
+ * On success, returns 1 and sets exit_status to the value that the application
+ * passed to _exit().
+ * Returns 0 if the application fails to start.
+ */
+int NaClChromeMainStart(struct NaClApp *nap,
+                        struct NaClChromeMainArgs *args,
+                        int *exit_status);
+
+/*
+ * NaClExit() is for doing a graceful exit, when no internal errors
+ * have been detected, when the caller wants to return a well-defined
+ * exit status.
+ *
+ * This is safer than exit(), which does some teardown that can cause running
+ * threads to crash.
+ */
+void NaClExit(int code);
 
 EXTERN_C_END
 
