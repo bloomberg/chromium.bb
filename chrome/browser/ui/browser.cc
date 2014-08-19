@@ -2300,9 +2300,11 @@ bool Browser::ShouldShowLocationBar() const {
 
   if (is_app()) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableStreamlinedHostedApps)) {
+            switches::kEnableStreamlinedHostedApps) &&
+        host_desktop_type() != chrome::HOST_DESKTOP_TYPE_ASH) {
       // If kEnableStreamlinedHostedApps is true, show the location bar for
-      // bookmark apps.
+      // bookmark apps, except on ash which has the toolbar merged into the
+      // frame.
       ExtensionService* service =
           extensions::ExtensionSystem::Get(profile_)->extension_service();
       const extensions::Extension* extension =

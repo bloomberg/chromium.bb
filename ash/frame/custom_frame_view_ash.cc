@@ -211,7 +211,7 @@ CustomFrameViewAsh::HeaderView::HeaderView(views::Widget* frame)
   caption_button_container_->UpdateSizeButtonVisibility();
   AddChildView(caption_button_container_);
 
-  header_painter_->Init(frame_, this, NULL, caption_button_container_);
+  header_painter_->Init(frame_, this, caption_button_container_);
   UpdateAvatarIcon();
 
   Shell::GetInstance()->AddShellObserver(this);
@@ -250,7 +250,6 @@ void CustomFrameViewAsh::HeaderView::UpdateAvatarIcon() {
       Shell::GetInstance()->session_state_delegate();
   aura::Window* window = frame_->GetNativeView();
   bool show = delegate->ShouldShowAvatar(window);
-  int icon_size = 0;
   if (!show) {
     if (!avatar_icon_)
       return;
@@ -266,9 +265,8 @@ void CustomFrameViewAsh::HeaderView::UpdateAvatarIcon() {
       AddChildView(avatar_icon_);
     }
     avatar_icon_->SetImage(image);
-    icon_size = image.width();
   }
-  header_painter_->UpdateWindowIcon(avatar_icon_, icon_size);
+  header_painter_->UpdateLeftHeaderView(avatar_icon_);
   Layout();
 }
 

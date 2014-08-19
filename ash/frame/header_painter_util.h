@@ -26,22 +26,19 @@ class ASH_EXPORT HeaderPainterUtil {
   // Returns the radius of the header's corners when the window is restored.
   static int GetTopCornerRadiusWhenRestored();
 
-  // Returns the distance between the left edge of the window and the header
-  // icon.
-  static int GetIconXOffset();
-
-  // Returns the size of the header icon.
-  static int GetDefaultIconSize();
+  // Returns the default distance between the left edge of the window and the
+  // leftmost view in the header.
+  static int GetDefaultLeftViewXInset();
 
   // Returns the amount that the frame background is inset from the left edge of
   // the window.
   static int GetThemeBackgroundXInset();
 
-  // Returns the bounds for the header's title given the header icon, the
-  // caption button container and the font used.
-  // |icon| should be NULL if the header does not use an icon.
-  static gfx::Rect GetTitleBounds(const views::View* icon,
-                                  const views::View* caption_button_container,
+  // Returns the bounds for the header's title given the views to the left and
+  // right of the title, and the font used.
+  // |left_view| should be NULL if there is no view to the left of the title.
+  static gfx::Rect GetTitleBounds(const views::View* left_view,
+                                  const views::View* right_view,
                                   const gfx::FontList& title_font_list);
 
   // Returns true if the header for |widget| can animate to new visuals when the

@@ -19,11 +19,8 @@ namespace {
 // Radius of the header's top corners when the window is restored.
 const int kTopCornerRadiusWhenRestored = 2;
 
-// Distance between left edge of the window and the header icon.
-const int kIconXOffset = 9;
-
-// Default height and width of header icon.
-const int kDefaultIconSize = 16;
+// Distance between left edge of the window and the leftmost view.
+const int kDefaultLeftViewXInset = 9;
 
 // Space between the title text and the caption buttons.
 const int kTitleCaptionButtonSpacing = 5;
@@ -52,13 +49,8 @@ int HeaderPainterUtil::GetTopCornerRadiusWhenRestored() {
 }
 
 // static
-int HeaderPainterUtil::GetIconXOffset() {
-  return kIconXOffset;
-}
-
-// static
-int HeaderPainterUtil::GetDefaultIconSize() {
-  return kDefaultIconSize;
+int HeaderPainterUtil::GetDefaultLeftViewXInset() {
+  return kDefaultLeftViewXInset;
 }
 
 // static
@@ -68,17 +60,16 @@ int HeaderPainterUtil::GetThemeBackgroundXInset() {
 
 // static
 gfx::Rect HeaderPainterUtil::GetTitleBounds(
-    const views::View* icon,
-    const views::View* caption_button_container,
+    const views::View* left_view,
+    const views::View* right_view,
     const gfx::FontList& title_font_list) {
-  int x = icon ?
-      icon->bounds().right() + kTitleIconOffsetX : kTitleNoIconOffsetX;
+  int x = left_view ? left_view->bounds().right() + kTitleIconOffsetX
+                    : kTitleNoIconOffsetX;
   int height = title_font_list.GetHeight();
   // Floor when computing the center of |caption_button_container| and when
   // computing the center of the text.
-  int y = std::max(0, (caption_button_container->height() / 2) - (height / 2));
-  int width = std::max(
-      0, caption_button_container->x() - kTitleCaptionButtonSpacing - x);
+  int y = std::max(0, (right_view->height() / 2) - (height / 2));
+  int width = std::max(0, right_view->x() - kTitleCaptionButtonSpacing - x);
   return gfx::Rect(x, y, width, height);
 }
 

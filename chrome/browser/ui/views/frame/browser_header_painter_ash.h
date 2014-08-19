@@ -49,6 +49,7 @@ class BrowserHeaderPainterAsh : public ash::HeaderPainter,
   virtual int GetHeaderHeightForPainting() const OVERRIDE;
   virtual void SetHeaderHeightForPainting(int height) OVERRIDE;
   virtual void SchedulePaintForTitle() OVERRIDE;
+  virtual void UpdateLeftViewXInset(int left_view_x_inset) OVERRIDE;
 
  private:
   // gfx::AnimationDelegate override:
@@ -102,6 +103,7 @@ class BrowserHeaderPainterAsh : public ash::HeaderPainter,
   views::View* view_;
 
   views::View* window_icon_;
+  int window_icon_x_inset_;
   ash::FrameCaptionButtonContainerView* caption_button_container_;
   int painted_height_;
 

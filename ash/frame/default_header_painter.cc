@@ -77,8 +77,8 @@ namespace ash {
 DefaultHeaderPainter::DefaultHeaderPainter()
     : frame_(NULL),
       view_(NULL),
-      window_icon_(NULL),
-      window_icon_size_(HeaderPainterUtil::GetDefaultIconSize()),
+      left_header_view_(NULL),
+      left_view_x_inset_(HeaderPainterUtil::GetDefaultLeftViewXInset()),
       caption_button_container_(NULL),
       height_(0),
       mode_(MODE_INACTIVE),
@@ -92,15 +92,12 @@ DefaultHeaderPainter::~DefaultHeaderPainter() {
 void DefaultHeaderPainter::Init(
     views::Widget* frame,
     views::View* header_view,
-    views::View* window_icon,
     FrameCaptionButtonContainerView* caption_button_container) {
   DCHECK(frame);
   DCHECK(header_view);
-  // window_icon may be NULL.
   DCHECK(caption_button_container);
   frame_ = frame;
   view_ = header_view;
-  window_icon_ = window_icon;
   caption_button_container_ = caption_button_container;
 
   caption_button_container_->SetButtonImages(
@@ -199,15 +196,7 @@ void DefaultHeaderPainter::LayoutHeader() {
       caption_button_container_size.width(),
       caption_button_container_size.height());
 
-  if (window_icon_) {
-    // Vertically center the window icon with respect to the caption button
-    // container.
-    // Floor when computing the center of |caption_button_container_|.
-    int icon_offset_y =
-        caption_button_container_->height() / 2 - window_icon_size_ / 2;
-    window_icon_->SetBounds(HeaderPainterUtil::GetIconXOffset(), icon_offset_y,
-                            window_icon_size_, window_icon_size_);
-  }
+  LayoutLeftHeaderView();
 
   // The header/content separator line overlays the caption buttons.
   SetHeaderHeightForPainting(caption_button_container_->height());
@@ -225,10 +214,15 @@ void DefaultHeaderPainter::SchedulePaintForTitle() {
   view_->SchedulePaintInRect(GetTitleBounds());
 }
 
-void DefaultHeaderPainter::UpdateWindowIcon(views::View* window_icon,
-                                            int window_icon_size) {
-  window_icon_ = window_icon;
-  window_icon_size_ = window_icon_size;
+void DefaultHeaderPainter::UpdateLeftViewXInset(int left_view_x_inset) {
+  if (left_view_x_inset_ != left_view_x_inset) {
+    left_view_x_inset_ = left_view_x_inset;
+    LayoutLeftHeaderView();
+  }
+}
+
+void DefaultHeaderPainter::UpdateLeftHeaderView(views::View* left_header_view) {
+  left_header_view_ = left_header_view;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -302,13 +296,26 @@ void DefaultHeaderPainter::PaintHeaderContentSeparator(gfx::Canvas* canvas) {
   canvas->sk_canvas()->drawLine(0, y, SkIntToScalar(view_->width()), y, paint);
 }
 
+void DefaultHeaderPainter::LayoutLeftHeaderView() {
+  if (left_header_view_) {
+    // Vertically center the left header view with respect to the caption button
+    // container.
+    // Floor when computing the center of |caption_button_container_|.
+    gfx::Size size = left_header_view_->GetPreferredSize();
+    int icon_offset_y = caption_button_container_->height() / 2 -
+                        size.height() / 2;
+    left_header_view_->SetBounds(
+        left_view_x_inset_, icon_offset_y, size.width(), size.height());
+  }
+}
+
 gfx::Rect DefaultHeaderPainter::GetLocalBounds() const {
   return gfx::Rect(view_->width(), height_);
 }
 
 gfx::Rect DefaultHeaderPainter::GetTitleBounds() const {
   return HeaderPainterUtil::GetTitleBounds(
-      window_icon_, caption_button_container_, GetTitleFontList());
+      left_header_view_, caption_button_container_, GetTitleFontList());
 }
 
 SkColor DefaultHeaderPainter::GetInactiveFrameColor() const {
