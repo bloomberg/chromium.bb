@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
+#include "base/strings/string16.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class Browser;
@@ -78,6 +79,12 @@ class LoginUIService : public KeyedService {
   // chrome://signin to ask the user to sign in to chrome.
   void ShowLoginPopup();
 
+  // Displays login results.
+  void DisplayLoginResult(Browser* browser, const base::string16& message);
+
+  // Gets the last login result set through |DisplayLoginResult|.
+  const base::string16& GetLastLoginResult();
+
  private:
   // Weak pointer to the currently active login UI, or null if none.
   LoginUI* ui_;
@@ -85,6 +92,8 @@ class LoginUIService : public KeyedService {
 
   // List of observers.
   ObserverList<Observer> observer_list_;
+
+  base::string16 last_login_result_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginUIService);
 };

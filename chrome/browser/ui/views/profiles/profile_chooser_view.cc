@@ -556,6 +556,7 @@ void ProfileChooserView::ResetView() {
   tutorial_sync_settings_link_ = NULL;
   tutorial_see_whats_new_button_ = NULL;
   tutorial_not_you_link_ = NULL;
+  tutorial_learn_more_link_ = NULL;
 }
 
 void ProfileChooserView::Init() {
@@ -807,11 +808,13 @@ void ProfileChooserView::LinkClicked(views::Link* sender, int event_flags) {
     tutorial_mode_ = profiles::TUTORIAL_MODE_NONE;
     ProfileMetrics::LogProfileNewAvatarMenuSignin(
         ProfileMetrics::PROFILE_AVATAR_MENU_SIGNIN_SETTINGS);
-  } else {
-    DCHECK(sender == tutorial_not_you_link_);
+  } else if (sender == tutorial_not_you_link_){
     ProfileMetrics::LogProfileNewAvatarMenuUpgrade(
         ProfileMetrics::PROFILE_AVATAR_MENU_UPGRADE_NOT_YOU);
     ShowView(profiles::BUBBLE_VIEW_MODE_SWITCH_USER, avatar_menu_.get());
+  } else {
+    DCHECK(sender == tutorial_learn_more_link_);
+    signin_ui_util::ShowSigninErrorLearnMorePage(browser_->profile());
   }
 }
 
@@ -879,8 +882,8 @@ views::View* ProfileChooserView::CreateProfileChooserView(
             tutorial_view = CreateSigninConfirmationView();
             break;
           case profiles::TUTORIAL_MODE_SHOW_ERROR:
-            // TODO(guohui): not implemented yet.
-            NOTREACHED();
+            tutorial_view = CreateSigninErrorView();
+            break;
         }
       } else {
         current_profile_accounts = CreateCurrentProfileAccountsView(item);
@@ -1019,9 +1022,12 @@ views::View* ProfileChooserView::CreateTutorialView(
   layout->AddView(content_label);
 
   // Adds links and buttons.
-  *button = new views::LabelButton(this, button_text);
-  (*button)->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  (*button)->SetStyle(views::Button::STYLE_BUTTON);
+  bool has_button = !button_text.empty();
+  if (has_button) {
+    *button = new views::LabelButton(this, button_text);
+    (*button)->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+    (*button)->SetStyle(views::Button::STYLE_BUTTON);
+  }
 
   bool has_link = !link_text.empty();
   if (has_link) {
@@ -1032,6 +1038,7 @@ views::View* ProfileChooserView::CreateTutorialView(
   }
 
   if (stack_button) {
+    DCHECK(has_button);
     layout->StartRowWithPadding(
         1, 0, 0, views::kUnrelatedControlVerticalSpacing);
     layout->AddView(*button);
@@ -1042,13 +1049,17 @@ views::View* ProfileChooserView::CreateTutorialView(
       layout->AddView(*link);
     }
   } else {
+    DCHECK(has_link || has_button);
     layout->StartRowWithPadding(
         1, 1, 0, views::kUnrelatedControlVerticalSpacing);
     if (has_link)
       layout->AddView(*link);
     else
       layout->SkipColumns(1);
-    layout->AddView(*button);
+    if (has_button)
+      layout->AddView(*button);
+    else
+      layout->SkipColumns(1);
   }
 
   return view;
@@ -1508,7 +1519,7 @@ views::View* ProfileChooserView::CreateWelcomeUpgradeTutorialViewIfNeeded(
       &tutorial_close_button_);
 }
 
-views::View* ProfileChooserView::CreateSigninConfirmationView(){
+views::View* ProfileChooserView::CreateSigninConfirmationView() {
   ProfileMetrics::LogProfileNewAvatarMenuSignin(
       ProfileMetrics::PROFILE_AVATAR_MENU_SIGNIN_VIEW);
 
@@ -1523,6 +1534,22 @@ views::View* ProfileChooserView::CreateSigninConfirmationView(){
       &tutorial_sync_settings_link_,
       &tutorial_sync_settings_ok_button_,
       NULL /* close_button*/);
+}
+
+views::View* ProfileChooserView::CreateSigninErrorView() {
+  LoginUIService* login_ui_service =
+      LoginUIServiceFactory::GetForProfile(browser_->profile());
+  base::string16 last_login_result(login_ui_service->GetLastLoginResult());
+  return CreateTutorialView(
+      profiles::TUTORIAL_MODE_SHOW_ERROR,
+      l10n_util::GetStringUTF16(IDS_PROFILES_ERROR_TUTORIAL_TITLE),
+      last_login_result,
+      l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_TUTORIAL_LEARN_MORE),
+      base::string16(),
+      false /* stack_button */,
+      &tutorial_learn_more_link_,
+      NULL,
+      &tutorial_close_button_);
 }
 
 views::View* ProfileChooserView::CreateSwitchUserView() {

@@ -210,6 +210,7 @@ class ProfileChooserView : public views::BubbleDelegateView,
   views::Link* tutorial_sync_settings_link_;
   views::LabelButton* tutorial_see_whats_new_button_;
   views::Link* tutorial_not_you_link_;
+  views::Link* tutorial_learn_more_link_;
   views::ImageButton* tutorial_close_button_;
 
   // Links and buttons displayed in the active profile card.

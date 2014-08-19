@@ -232,8 +232,6 @@ class OneClickSigninHelper
   static void RedirectToNtpOrAppsPageIfNecessary(
       content::WebContents* contents, signin::Source source);
 
-  static void ShowSigninErrorBubble(Browser* browser, const std::string& error);
-
   // Remove the item currently at the top of the history list if it's
   // the Gaia redirect URL. Due to limitations of the NavigationController
   // this cannot be done until a new page becomes "current".

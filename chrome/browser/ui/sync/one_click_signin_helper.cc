@@ -54,6 +54,7 @@
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/url_util.h"
 #include "chrome/common/pref_names.h"
@@ -644,12 +645,8 @@ void OneClickSigninHelper::SyncStarterWrapper::DisplayErrorBubble(
     const std::string& error_message) {
   args_.browser = OneClickSigninSyncStarter::EnsureBrowser(
       args_.browser, args_.profile, desktop_type_);
-  args_.browser->window()->ShowOneClickSigninBubble(
-      BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE,
-      base::string16(),  // No email required - this is not a SAML confirmation.
-      base::UTF8ToUTF16(error_message),
-      // Callback is ignored.
-      BrowserWindow::StartSyncCallback());
+  LoginUIServiceFactory::GetForProfile(args_.profile)->DisplayLoginResult(
+      args_.browser, base::UTF8ToUTF16(error_message));
 }
 
 void OneClickSigninHelper::SyncStarterWrapper::StartSigninOAuthHelper() {
@@ -1145,21 +1142,6 @@ void OneClickSigninHelper::RemoveSigninRedirectURLHistoryItem(
 }
 
 // static
-void OneClickSigninHelper::ShowSigninErrorBubble(Browser* browser,
-                                                 const std::string& error) {
-  DCHECK(!error.empty());
-
-  browser->window()->ShowOneClickSigninBubble(
-      BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE,
-      base::string16(), /* no SAML email */
-      base::UTF8ToUTF16(error),
-      // This callback is never invoked.
-      // TODO(rogerta): Separate out the bubble API so we don't have to pass
-      // ignored |email| and |callback| params.
-      BrowserWindow::StartSyncCallback());
-}
-
-// static
 bool OneClickSigninHelper::HandleCrossAccountError(
     Profile* profile,
     const std::string& session_index,
@@ -1372,7 +1354,8 @@ void OneClickSigninHelper::DidStopLoading(
 
     // Redirect to the landing page and display an error popup.
     RedirectToNtpOrAppsPage(web_contents(), source_);
-    ShowSigninErrorBubble(browser, error_message_);
+    LoginUIServiceFactory::GetForProfile(profile)->
+        DisplayLoginResult(browser, base::UTF8ToUTF16(error_message_));
     CleanTransientState();
     return;
   }

@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/profiles/avatar_base_controller.h"
 
+#include "base/mac/foundation_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
@@ -141,8 +142,22 @@ class ProfileInfoUpdateObserver : public ProfileInfoCacheObserver,
 - (void)showAvatarBubble:(NSView*)anchor
                 withMode:(BrowserWindow::AvatarBubbleMode)mode
          withServiceType:(signin::GAIAServiceType)serviceType {
-  if (menuController_)
+  if (menuController_) {
+    if (switches::IsNewAvatarMenu()) {
+      profiles::BubbleViewMode viewMode;
+      profiles::TutorialMode tutorialMode;
+      profiles::BubbleViewModeFromAvatarBubbleMode(
+          mode, &viewMode, &tutorialMode);
+      if (tutorialMode != profiles::TUTORIAL_MODE_NONE) {
+        ProfileChooserController* profileChooserController =
+            base::mac::ObjCCastStrict<ProfileChooserController>(
+                menuController_);
+        [profileChooserController setTutorialMode:tutorialMode];
+        [profileChooserController initMenuContentsWithView:viewMode];
+      }
+    }
     return;
+  }
 
   DCHECK(chrome::IsCommandEnabled(browser_, IDC_SHOW_AVATAR_MENU));
 

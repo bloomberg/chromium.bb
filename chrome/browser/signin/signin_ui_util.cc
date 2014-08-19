@@ -16,6 +16,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_global_error.h"
 #include "chrome/browser/sync/sync_global_error_factory.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/pref_names.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -162,6 +163,15 @@ void InitializePrefsForProfile(Profile* profile) {
     profile->GetPrefs()->SetInteger(
         prefs::kProfileAvatarTutorialShown, kUpgradeWelcomeTutorialShowMax + 1);
   }
+}
+
+void ShowSigninErrorLearnMorePage(Profile* profile) {
+  static const char kSigninErrorLearnMoreUrl[] =
+      "https://support.google.com/chrome/answer/1181420?";
+  chrome::NavigateParams params(
+      profile, GURL(kSigninErrorLearnMoreUrl), content::PAGE_TRANSITION_LINK);
+  params.disposition = NEW_FOREGROUND_TAB;
+  chrome::Navigate(&params);
 }
 
 }  // namespace signin_ui_util

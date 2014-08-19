@@ -291,11 +291,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     // update.
     profiles::BubbleViewMode viewMode = [controller_ viewMode];
     if (viewMode == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT ||
-        viewMode == profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN ||
         viewMode == profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT ||
         viewMode == profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH) {
-      if (viewMode == profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN)
-        [controller_ setTutorialMode:profiles::TUTORIAL_MODE_CONFIRM_SIGNIN];
       [controller_ initMenuContentsWithView:
           switches::IsEnableAccountConsistency() ?
               profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT :
@@ -805,6 +802,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 // configures sync through the "Settings" link.
 - (NSView*)buildSigninConfirmationView;
 
+// Builds a tutorial card to show the last signin error.
+- (NSView*)buildSigninErrorView;
+
 // Creates the main profile card for the profile |item| at the top of
 // the bubble.
 - (NSView*)createCurrentProfileView:(const AvatarMenu::Item&)item;
@@ -977,6 +977,10 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_SWITCH_USER];
   ProfileMetrics::LogProfileNewAvatarMenuUpgrade(
       ProfileMetrics::PROFILE_AVATAR_MENU_UPGRADE_NOT_YOU);
+}
+
+- (IBAction)showLearnMorePage:(id)sender {
+  signin_ui_util::ShowSigninErrorLearnMorePage(browser_->profile());
 }
 
 - (IBAction)configureSyncSettings:(id)sender {
@@ -1154,8 +1158,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
             tutorialView = [self buildSigninConfirmationView];
             break;
           case profiles::TUTORIAL_MODE_SHOW_ERROR:
-            // TODO(guohui): not implemented yet.
-            NOTREACHED();
+            tutorialView = [self buildSigninErrorView];
         }
       }
       currentProfileView = [self createCurrentProfileView:item];
@@ -1270,6 +1273,26 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                        buttonAction:@selector(syncSettingsConfirmed:)];
 }
 
+- (NSView*)buildSigninErrorView {
+  NSString* titleMessage = l10n_util::GetNSString(
+      IDS_PROFILES_ERROR_TUTORIAL_TITLE);
+  LoginUIService* loginUiService =
+      LoginUIServiceFactory::GetForProfile(browser_->profile());
+  NSString* contentMessage =
+      base::SysUTF16ToNSString(loginUiService->GetLastLoginResult());
+  NSString* linkMessage = l10n_util::GetNSString(
+      IDS_PROFILES_PROFILE_TUTORIAL_LEARN_MORE);
+  return [self tutorialViewWithMode:profiles::TUTORIAL_MODE_CONFIRM_SIGNIN
+                       titleMessage:titleMessage
+                     contentMessage:contentMessage
+                        linkMessage:linkMessage
+                      buttonMessage:nil
+                        stackButton:NO
+                     hasCloseButton:YES
+                         linkAction:@selector(showLearnMorePage:)
+                       buttonAction:nil];
+}
+
 - (NSView*)buildWelcomeUpgradeTutorialViewIfNeeded {
   Profile* profile = browser_->profile();
   const AvatarMenu::Item& avatarItem =
@@ -1334,14 +1357,16 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   CGFloat yOffset = kVerticalSpacing;
 
   // Adds links and buttons at the bottom.
-  base::scoped_nsobject<NSButton> tutorialOkButton([[HoverButton alloc]
-      initWithFrame:NSZeroRect]);
-  [tutorialOkButton setTitle:buttonMessage];
-  [tutorialOkButton setBezelStyle:NSRoundedBezelStyle];
-  [tutorialOkButton setTarget:self];
-  [tutorialOkButton setAction:buttonAction];
-  [tutorialOkButton setAlignment:NSCenterTextAlignment];
-  [tutorialOkButton sizeToFit];
+  base::scoped_nsobject<NSButton> tutorialOkButton;
+  if (buttonMessage) {
+    tutorialOkButton.reset([[HoverButton alloc] initWithFrame:NSZeroRect]);
+    [tutorialOkButton setTitle:buttonMessage];
+    [tutorialOkButton setBezelStyle:NSRoundedBezelStyle];
+    [tutorialOkButton setTarget:self];
+    [tutorialOkButton setAction:buttonAction];
+    [tutorialOkButton setAlignment:NSCenterTextAlignment];
+    [tutorialOkButton sizeToFit];
+  }
 
   NSButton* learnMoreLink = nil;
   if (linkMessage) {
@@ -1352,7 +1377,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   }
 
   if (stackButton) {
-    if (learnMoreLink) {
+    if (linkMessage) {
       [learnMoreLink setFrameOrigin:NSMakePoint(
           (kFixedMenuWidth - NSWidth([learnMoreLink frame])) / 2, yOffset)];
     }
@@ -1362,32 +1387,40 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
         kHorizontalSpacing,
         yOffset + (learnMoreLink ? NSHeight([learnMoreLink frame]) : 0))];
   } else {
-    NSSize buttonSize = [tutorialOkButton frame].size;
-    const CGFloat kTopBottomTextPadding = 6;
-    const CGFloat kLeftRightTextPadding = 15;
-    buttonSize.width += 2 * kLeftRightTextPadding;
-    buttonSize.height += 2 * kTopBottomTextPadding;
-    [tutorialOkButton setFrameSize:buttonSize];
-    CGFloat buttonXOffset = kFixedMenuWidth -
-        NSWidth([tutorialOkButton frame]) - kHorizontalSpacing;
-    [tutorialOkButton setFrameOrigin:NSMakePoint(buttonXOffset, yOffset)];
+    if (buttonMessage) {
+      NSSize buttonSize = [tutorialOkButton frame].size;
+      const CGFloat kTopBottomTextPadding = 6;
+      const CGFloat kLeftRightTextPadding = 15;
+      buttonSize.width += 2 * kLeftRightTextPadding;
+      buttonSize.height += 2 * kTopBottomTextPadding;
+      [tutorialOkButton setFrameSize:buttonSize];
+      CGFloat buttonXOffset = kFixedMenuWidth -
+          NSWidth([tutorialOkButton frame]) - kHorizontalSpacing;
+      [tutorialOkButton setFrameOrigin:NSMakePoint(buttonXOffset, yOffset)];
+    }
 
-    if (learnMoreLink) {
-      CGFloat linkYOffset = yOffset + (NSHeight([tutorialOkButton frame]) -
-                                       NSHeight([learnMoreLink frame])) / 2;
+    if (linkMessage) {
+      CGFloat linkYOffset = yOffset;
+      if (buttonMessage) {
+        linkYOffset += (NSHeight([tutorialOkButton frame]) -
+                        NSHeight([learnMoreLink frame])) / 2;
+      }
       [learnMoreLink setFrameOrigin:NSMakePoint(
           kHorizontalSpacing, linkYOffset)];
     }
   }
 
-  [container addSubview:tutorialOkButton];
-  if (learnMoreLink) {
-    [container addSubview:learnMoreLink];
-    yOffset = std::max(NSMaxY([learnMoreLink frame]),
-                       NSMaxY([tutorialOkButton frame])) + kVerticalSpacing;
-  } else {
-    yOffset = NSMaxY([tutorialOkButton frame]) + kVerticalSpacing;
+  if (buttonMessage) {
+    [container addSubview:tutorialOkButton];
+    yOffset = NSMaxY([tutorialOkButton frame]);
   }
+
+  if (linkMessage) {
+    [container addSubview:learnMoreLink];
+    yOffset = std::max(NSMaxY([learnMoreLink frame]), yOffset);
+  }
+
+  yOffset += kVerticalSpacing;
 
   // Adds body content.
   NSTextField* contentLabel = BuildLabel(

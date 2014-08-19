@@ -372,6 +372,10 @@ void BubbleViewModeFromAvatarBubbleMode(
       *bubble_view_mode = BUBBLE_VIEW_MODE_PROFILE_CHOOSER;
       *tutorial_mode = TUTORIAL_MODE_CONFIRM_SIGNIN;
       return;
+    case BrowserWindow::AVATAR_BUBBLE_MODE_SHOW_ERROR:
+      *bubble_view_mode = BUBBLE_VIEW_MODE_PROFILE_CHOOSER;
+      *tutorial_mode = TUTORIAL_MODE_SHOW_ERROR;
+      return;
     default:
       *bubble_view_mode = profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER;
   }

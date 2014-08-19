@@ -24,6 +24,8 @@
 #include "chrome/browser/ui/sync/one_click_signin_histogram.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/browser/about_signin_internals.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -381,9 +383,8 @@ void InlineLoginHandlerImpl::HandleLoginError(const std::string& error_msg) {
 
   Browser* browser = GetDesktopBrowser();
   if (browser && !error_msg.empty()) {
-    VLOG(1) << "InlineLoginHandlerImpl::HandleLoginError shows error message: "
-            << error_msg;
-    OneClickSigninHelper::ShowSigninErrorBubble(browser, error_msg);
+    LoginUIServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()))->
+        DisplayLoginResult(browser, base::UTF8ToUTF16(error_msg));
   }
 }
 

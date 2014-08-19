@@ -488,22 +488,8 @@ void OneClickSigninSyncStarter::MergeSessionComplete(
 void OneClickSigninSyncStarter::DisplayFinalConfirmationBubble(
     const base::string16& custom_message) {
   browser_ = EnsureBrowser(browser_, profile_, desktop_type_);
-  // Show the success confirmation message in the new avatar menu if it is
-  // enabled.
-  // TODO(guohui): needs to handle custom messages.
-  if (custom_message.empty() && switches::IsNewAvatarMenu()) {
-    browser_->window()->ShowAvatarBubbleFromAvatarButton(
-        BrowserWindow::AVATAR_BUBBLE_MODE_CONFIRM_SIGNIN,
-        signin::ManageAccountsParams());
-    return;
-  }
-
-  browser_->window()->ShowOneClickSigninBubble(
-      BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE,
-      base::string16(),  // No email required - this is not a SAML confirmation.
-      custom_message,
-      // Callback is ignored.
-      BrowserWindow::StartSyncCallback());
+  LoginUIServiceFactory::GetForProfile(browser_->profile())->
+      DisplayLoginResult(browser_, custom_message);
 }
 
 // static
