@@ -831,7 +831,7 @@ HistoryFocusObserver.prototype = {
   },
 
   /** @override */
-  onDeactivate: function(row, el) {
+  onDeactivate: function(row) {
     this.getActiveRowElement_(row).classList.remove('active');
   },
 
