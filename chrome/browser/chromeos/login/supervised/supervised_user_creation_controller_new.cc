@@ -14,11 +14,11 @@
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/auth/mount_manager.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_constants.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -343,10 +343,11 @@ void SupervisedUserCreationControllerNew::RegistrationCallback(
         FROM_HERE,
         base::Bind(&StoreSupervisedUserFiles,
                    creation_context_->token,
-                   MountManager::GetHomeDir(creation_context_->mount_hash)),
-        base::Bind(&SupervisedUserCreationControllerNew::
-                        OnSupervisedUserFilesStored,
-                   weak_factory_.GetWeakPtr()));
+                   ProfileHelper::GetProfilePathByUserIdHash(
+                       creation_context_->mount_hash)),
+        base::Bind(
+            &SupervisedUserCreationControllerNew::OnSupervisedUserFilesStored,
+            weak_factory_.GetWeakPtr()));
   } else {
     stage_ = STAGE_ERROR;
     LOG(ERROR) << "Supervised user creation failed. Error code "

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_ONLINE_ATTEMPT_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_ONLINE_ATTEMPT_H_
+#ifndef CHROMEOS_LOGIN_AUTH_ONLINE_ATTEMPT_H_
+#define CHROMEOS_LOGIN_AUTH_ONLINE_ATTEMPT_H_
 
 #include <string>
 
@@ -12,22 +12,22 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/chromeos_export.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 class GaiaAuthFetcher;
 
-namespace content {
-class BrowserContext;
+namespace net {
+class URLRequestContextGetter;
 }
 
 namespace chromeos {
 class AuthAttemptState;
 class AuthAttemptStateResolver;
 
-class OnlineAttempt
-    : public GaiaAuthConsumer {
+class CHROMEOS_EXPORT OnlineAttempt : public GaiaAuthConsumer {
  public:
   OnlineAttempt(AuthAttemptState* current_attempt,
                 AuthAttemptStateResolver* callback);
@@ -37,7 +37,7 @@ class OnlineAttempt
   // Status will be recorded in |current_attempt|, and resolver_->Resolve() will
   // be called on the IO thread when useful state is available.
   // Must be called on the UI thread.
-  void Initiate(content::BrowserContext* auth_context);
+  void Initiate(net::URLRequestContextGetter* request_context);
 
   // GaiaAuthConsumer overrides. Callbacks from GaiaAuthFetcher
   virtual void OnClientLoginFailure(
@@ -60,6 +60,8 @@ class OnlineAttempt
   bool HasPendingFetch();
   void CancelRequest();
 
+  scoped_refptr<base::MessageLoopProxy> message_loop_;
+
   AuthAttemptState* const attempt_;
   AuthAttemptStateResolver* const resolver_;
 
@@ -78,4 +80,4 @@ class OnlineAttempt
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_ONLINE_ATTEMPT_H_
+#endif  // CHROMEOS_LOGIN_AUTH_ONLINE_ATTEMPT_H_

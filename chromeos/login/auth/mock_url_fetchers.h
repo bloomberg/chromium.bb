@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_MOCK_URL_FETCHERS_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_MOCK_URL_FETCHERS_H_
+#ifndef CHROMEOS_LOGIN_AUTH_MOCK_URL_FETCHERS_H_
+#define CHROMEOS_LOGIN_AUTH_MOCK_URL_FETCHERS_H_
 
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "chromeos/chromeos_export.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
@@ -125,4 +126,4 @@ class HostedFetcher : public net::TestURLFetcher {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_MOCK_URL_FETCHERS_H_
+#endif  // CHROMEOS_LOGIN_AUTH_MOCK_URL_FETCHERS_H_

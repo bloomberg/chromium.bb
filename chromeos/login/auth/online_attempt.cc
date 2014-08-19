@@ -2,29 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/auth/online_attempt.h"
+#include "chromeos/login/auth/online_attempt.h"
 
 #include <string>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "chromeos/login/auth/auth_attempt_state.h"
 #include "chromeos/login/auth/auth_attempt_state_resolver.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/user_manager/user_type.h"
-#include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_status.h"
-
-using content::BrowserThread;
 
 namespace chromeos {
 
@@ -33,7 +31,8 @@ const int OnlineAttempt::kClientLoginTimeoutMs = 10000;
 
 OnlineAttempt::OnlineAttempt(AuthAttemptState* current_attempt,
                              AuthAttemptStateResolver* callback)
-    : attempt_(current_attempt),
+    : message_loop_(base::MessageLoopProxy::current()),
+      attempt_(current_attempt),
       resolver_(callback),
       weak_factory_(this),
       try_again_(true) {
@@ -46,19 +45,16 @@ OnlineAttempt::~OnlineAttempt() {
     client_fetcher_->CancelRequest();
 }
 
-void OnlineAttempt::Initiate(content::BrowserContext* auth_context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  client_fetcher_.reset(
-      new GaiaAuthFetcher(this, GaiaConstants::kChromeOSSource,
-                          auth_context->GetRequestContext()));
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+void OnlineAttempt::Initiate(net::URLRequestContextGetter* request_context) {
+  client_fetcher_.reset(new GaiaAuthFetcher(
+      this, GaiaConstants::kChromeOSSource, request_context));
+  message_loop_->PostTask(
+      FROM_HERE,
       base::Bind(&OnlineAttempt::TryClientLogin, weak_factory_.GetWeakPtr()));
 }
 
 void OnlineAttempt::OnClientLoginSuccess(
     const GaiaAuthConsumer::ClientLoginResult& unused) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   VLOG(1) << "Online login successful!";
 
   weak_factory_.InvalidateWeakPtrs();
@@ -79,10 +75,7 @@ void OnlineAttempt::OnClientLoginSuccess(
   TriggerResolve(AuthFailure::AuthFailureNone());
 }
 
-void OnlineAttempt::OnClientLoginFailure(
-    const GoogleServiceAuthError& error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
+void OnlineAttempt::OnClientLoginFailure(const GoogleServiceAuthError& error) {
   weak_factory_.InvalidateWeakPtrs();
 
   if (error.state() == GoogleServiceAuthError::REQUEST_CANCELED) {
@@ -119,10 +112,8 @@ void OnlineAttempt::OnClientLoginFailure(
 }
 
 void OnlineAttempt::TryClientLogin() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  BrowserThread::PostDelayedTask(
-      BrowserThread::UI, FROM_HERE,
+  message_loop_->PostDelayedTask(
+      FROM_HERE,
       base::Bind(&OnlineAttempt::CancelClientLogin, weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kClientLoginTimeoutMs));
 
@@ -144,7 +135,6 @@ void OnlineAttempt::CancelRequest() {
 }
 
 void OnlineAttempt::CancelClientLogin() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (HasPendingFetch()) {
     LOG(WARNING) << "Canceling ClientLogin attempt.";
     CancelRequest();

@@ -8,9 +8,9 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/chromeos/login/auth/tpm_password_fetcher.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen_actor.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
+#include "chromeos/tpm_password_fetcher.h"
 #include "url/gurl.h"
 
 namespace chromeos {

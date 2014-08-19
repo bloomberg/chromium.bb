@@ -5,19 +5,22 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "chrome/browser/chromeos/login/auth/mock_url_fetchers.h"
-#include "chrome/browser/chromeos/login/auth/online_attempt.h"
+#include "base/test/null_task_runner.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/login/auth/auth_attempt_state.h"
 #include "chromeos/login/auth/mock_auth_attempt_state_resolver.h"
+#include "chromeos/login/auth/mock_url_fetchers.h"
+#include "chromeos/login/auth/online_attempt.h"
 #include "chromeos/login/auth/test_attempt_state.h"
 #include "chromeos/login/auth/user_context.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/mock_url_fetcher_factory.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -26,7 +29,31 @@ using ::testing::AnyNumber;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::_;
-using content::BrowserThread;
+
+namespace {
+
+class TestContextURLRequestContextGetter : public net::URLRequestContextGetter {
+ public:
+  TestContextURLRequestContextGetter()
+      : null_task_runner_(new base::NullTaskRunner) {}
+
+  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE {
+    return &context_;
+  }
+
+  virtual scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
+      const OVERRIDE {
+    return null_task_runner_;
+  }
+
+ private:
+  virtual ~TestContextURLRequestContextGetter() {}
+
+  net::TestURLRequestContext context_;
+  scoped_refptr<base::SingleThreadTaskRunner> null_task_runner_;
+};
+
+}  // namespace
 
 namespace chromeos {
 
@@ -34,47 +61,46 @@ class OnlineAttemptTest : public testing::Test {
  public:
   OnlineAttemptTest()
       : state_(UserContext(), false),
-        attempt_(new OnlineAttempt(&state_, &resolver_)) {
+        attempt_(new OnlineAttempt(&state_, &resolver_)) {}
+
+  virtual void SetUp() OVERRIDE {
+    message_loop_ = base::MessageLoopProxy::current();
+    request_context_ = new TestContextURLRequestContextGetter();
   }
 
   void RunFailureTest(const GoogleServiceAuthError& error) {
-    EXPECT_CALL(resolver_, Resolve())
-        .Times(1)
-        .RetiresOnSaturation();
+    EXPECT_CALL(resolver_, Resolve()).Times(1).RetiresOnSaturation();
 
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&OnlineAttempt::OnClientLoginFailure,
-                   attempt_->weak_factory_.GetWeakPtr(),
-                   error));
+    message_loop_->PostTask(FROM_HERE,
+                            base::Bind(&OnlineAttempt::OnClientLoginFailure,
+                                       attempt_->weak_factory_.GetWeakPtr(),
+                                       error));
     // Force UI thread to finish tasks so I can verify |state_|.
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(error == state_.online_outcome().error());
   }
 
   void CancelLogin(OnlineAttempt* auth) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&OnlineAttempt::CancelClientLogin,
-                   auth->weak_factory_.GetWeakPtr()));
+    message_loop_->PostTask(FROM_HERE,
+                            base::Bind(&OnlineAttempt::CancelClientLogin,
+                                       auth->weak_factory_.GetWeakPtr()));
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
+  base::MessageLoop loop_;
   TestAttemptState state_;
   MockAuthAttemptStateResolver resolver_;
   scoped_ptr<OnlineAttempt> attempt_;
 };
 
 TEST_F(OnlineAttemptTest, LoginSuccess) {
-  EXPECT_CALL(resolver_, Resolve())
-      .Times(1)
-      .RetiresOnSaturation();
+  EXPECT_CALL(resolver_, Resolve()).Times(1).RetiresOnSaturation();
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&OnlineAttempt::OnClientLoginSuccess,
-                 attempt_->weak_factory_.GetWeakPtr(),
-                 GaiaAuthConsumer::ClientLoginResult()));
+  message_loop_->PostTask(FROM_HERE,
+                          base::Bind(&OnlineAttempt::OnClientLoginSuccess,
+                                     attempt_->weak_factory_.GetWeakPtr(),
+                                     GaiaAuthConsumer::ClientLoginResult()));
   // Force UI thread to finish tasks so I can verify |state_|.
   base::RunLoop().RunUntilIdle();
 }
@@ -93,7 +119,7 @@ TEST_F(OnlineAttemptTest, LoginCancelRetry) {
   // and then come back on the UI thread saying they've been canceled.
   MockURLFetcherFactory<GotCanceledFetcher> factory;
 
-  attempt_->Initiate(&profile);
+  attempt_->Initiate(request_context_.get());
 
   run_loop.Run();
 
@@ -115,7 +141,7 @@ TEST_F(OnlineAttemptTest, LoginTimeout) {
   // and then come back on the UI thread saying they've been canceled.
   MockURLFetcherFactory<ExpectCanceledFetcher> factory;
 
-  attempt_->Initiate(&profile);
+  attempt_->Initiate(request_context_.get());
 
   // Post a task to cancel the login attempt.
   CancelLogin(attempt_.get());
@@ -140,7 +166,7 @@ TEST_F(OnlineAttemptTest, HostedLoginRejected) {
 
   TestAttemptState local_state(UserContext(), true);
   attempt_.reset(new OnlineAttempt(&local_state, &resolver_));
-  attempt_->Initiate(&profile);
+  attempt_->Initiate(request_context_.get());
 
   run_loop.Run();
 
@@ -162,7 +188,7 @@ TEST_F(OnlineAttemptTest, FullLogin) {
 
   TestAttemptState local_state(UserContext(), true);
   attempt_.reset(new OnlineAttempt(&local_state, &resolver_));
-  attempt_->Initiate(&profile);
+  attempt_->Initiate(request_context_.get());
 
   run_loop.Run();
 
@@ -204,15 +230,12 @@ TEST_F(OnlineAttemptTest, CaptchaErrorOutputted) {
 }
 
 TEST_F(OnlineAttemptTest, TwoFactorSuccess) {
-  EXPECT_CALL(resolver_, Resolve())
-      .Times(1)
-      .RetiresOnSaturation();
+  EXPECT_CALL(resolver_, Resolve()).Times(1).RetiresOnSaturation();
   GoogleServiceAuthError error(GoogleServiceAuthError::TWO_FACTOR);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&OnlineAttempt::OnClientLoginFailure,
-                 attempt_->weak_factory_.GetWeakPtr(),
-                 error));
+  message_loop_->PostTask(FROM_HERE,
+                          base::Bind(&OnlineAttempt::OnClientLoginFailure,
+                                     attempt_->weak_factory_.GetWeakPtr(),
+                                     error));
 
   // Force UI thread to finish tasks so I can verify |state_|.
   base::RunLoop().RunUntilIdle();

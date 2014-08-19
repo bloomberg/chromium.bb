@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/auth/mock_url_fetchers.h"
+#include "chromeos/login/auth/mock_url_fetchers.h"
 
 #include <errno.h>
 
@@ -24,8 +24,7 @@ ExpectCanceledFetcher::ExpectCanceledFetcher(
     const std::string& results,
     net::URLFetcher::RequestType request_type,
     net::URLFetcherDelegate* d)
-    : net::TestURLFetcher(0, url, d),
-      weak_factory_(this) {
+    : net::TestURLFetcher(0, url, d), weak_factory_(this) {
 }
 
 ExpectCanceledFetcher::~ExpectCanceledFetcher() {
@@ -56,7 +55,8 @@ GotCanceledFetcher::GotCanceledFetcher(
   set_response_code(net::HTTP_FORBIDDEN);
 }
 
-GotCanceledFetcher::~GotCanceledFetcher() {}
+GotCanceledFetcher::~GotCanceledFetcher() {
+}
 
 void GotCanceledFetcher::Start() {
   delegate()->OnURLFetchComplete(this);
@@ -73,7 +73,8 @@ SuccessFetcher::SuccessFetcher(bool success,
   set_response_code(net::HTTP_OK);
 }
 
-SuccessFetcher::~SuccessFetcher() {}
+SuccessFetcher::~SuccessFetcher() {
+}
 
 void SuccessFetcher::Start() {
   delegate()->OnURLFetchComplete(this);
@@ -90,7 +91,8 @@ FailFetcher::FailFetcher(bool success,
   set_response_code(net::HTTP_OK);
 }
 
-FailFetcher::~FailFetcher() {}
+FailFetcher::~FailFetcher() {
+}
 
 void FailFetcher::Start() {
   delegate()->OnURLFetchComplete(this);
@@ -105,7 +107,6 @@ const char CaptchaFetcher::kCaptchaUrlFragment[] = "fragment";
 // static
 const char CaptchaFetcher::kUnlockUrl[] = "http://what.ever";
 
-
 CaptchaFetcher::CaptchaFetcher(bool success,
                                const GURL& url,
                                const std::string& results,
@@ -115,17 +116,19 @@ CaptchaFetcher::CaptchaFetcher(bool success,
   set_url(url);
   set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0));
   set_response_code(net::HTTP_FORBIDDEN);
-  SetResponseString(base::StringPrintf("Error=%s\n"
-                                       "Url=%s\n"
-                                       "CaptchaUrl=%s\n"
-                                       "CaptchaToken=%s\n",
-                                       "CaptchaRequired",
-                                       kUnlockUrl,
-                                       kCaptchaUrlFragment,
-                                       kCaptchaToken));
+  SetResponseString(base::StringPrintf(
+      "Error=%s\n"
+      "Url=%s\n"
+      "CaptchaUrl=%s\n"
+      "CaptchaToken=%s\n",
+      "CaptchaRequired",
+      kUnlockUrl,
+      kCaptchaUrlFragment,
+      kCaptchaToken));
 }
 
-CaptchaFetcher::~CaptchaFetcher() {}
+CaptchaFetcher::~CaptchaFetcher() {
+}
 
 // static
 std::string CaptchaFetcher::GetCaptchaToken() {
@@ -157,7 +160,8 @@ HostedFetcher::HostedFetcher(bool success,
   set_response_code(net::HTTP_OK);
 }
 
-HostedFetcher::~HostedFetcher() {}
+HostedFetcher::~HostedFetcher() {
+}
 
 void HostedFetcher::Start() {
   VLOG(1) << upload_data();

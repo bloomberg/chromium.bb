@@ -352,7 +352,7 @@ void LoginPerformer::StartAuthentication() {
                    user_context_));
     // Make unobtrusive online check. It helps to determine password change
     // state in the case when offline login fails.
-    online_attempt_host_.Check(profile, user_context_);
+    online_attempt_host_.Check(profile->GetRequestContext(), user_context_);
   } else {
     NOTREACHED();
   }
