@@ -81,7 +81,7 @@ void FrameConsole::addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> prpConsoleM
         messageURL = consoleMessage->url();
     }
 
-    RefPtr<ScriptCallStack> reportedCallStack;
+    RefPtrWillBeRawPtr<ScriptCallStack> reportedCallStack = nullptr;
     if (consoleMessage->source() != ConsoleAPIMessageSource) {
         if (consoleMessage->callStack() && m_frame.chromeClient().shouldReportDetailedMessageForSource(messageURL))
             reportedCallStack = consoleMessage->callStack();

@@ -231,7 +231,7 @@ void InspectorConsoleAgent::consoleTimeEnd(ExecutionContext*, const String& titl
     double elapsed = monotonicallyIncreasingTime() - startTime;
     String message = title + String::format(": %.3fms", elapsed * 1000);
 
-    RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, DebugMessageLevel, message);
+    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, DebugMessageLevel, message);
     consoleMessage->setType(LogMessageType);
     consoleMessage->setScriptState(scriptState);
     addMessageToConsole(consoleMessage.get());
@@ -273,7 +273,7 @@ void InspectorConsoleAgent::consoleCount(ScriptState* scriptState, PassRefPtrWil
     HashCountedSet<String>::AddResult result = m_counts.add(identifier);
     String message = title + ": " + String::number(result.storedValue->value);
 
-    RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, DebugMessageLevel, message);
+    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, DebugMessageLevel, message);
     consoleMessage->setType(LogMessageType);
     consoleMessage->setScriptState(scriptState);
     addMessageToConsole(consoleMessage.get());

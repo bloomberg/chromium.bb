@@ -40,8 +40,8 @@ public:
     void setCallStack(PassRefPtrWillBeRawPtr<ScriptCallStack>);
     ScriptState* scriptState() const;
     void setScriptState(ScriptState*);
-    PassRefPtr<ScriptArguments> scriptArguments() const;
-    void setScriptArguments(PassRefPtr<ScriptArguments>);
+    PassRefPtrWillBeRawPtr<ScriptArguments> scriptArguments() const;
+    void setScriptArguments(PassRefPtrWillBeRawPtr<ScriptArguments>);
     unsigned long requestIdentifier() const;
     void setRequestIdentifier(unsigned long);
     WorkerGlobalScopeProxy* workerId() { return m_workerProxy; }
@@ -66,7 +66,7 @@ private:
     unsigned m_columnNumber;
     RefPtrWillBeMember<ScriptCallStack> m_callStack;
     OwnPtr<ScriptStateProtectingContext> m_scriptState;
-    RefPtr<ScriptArguments> m_scriptArguments;
+    RefPtrWillBeMember<ScriptArguments> m_scriptArguments;
     unsigned long m_requestIdentifier;
     WorkerGlobalScopeProxy* m_workerProxy;
 };

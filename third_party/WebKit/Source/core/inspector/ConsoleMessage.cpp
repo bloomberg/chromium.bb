@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/inspector/ConsoleMessage.h"
 
-#include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "core/inspector/ScriptArguments.h"
 
 namespace blink {
@@ -87,12 +87,12 @@ void ConsoleMessage::setScriptState(ScriptState* scriptState)
         m_scriptState.clear();
 }
 
-PassRefPtr<ScriptArguments> ConsoleMessage::scriptArguments() const
+PassRefPtrWillBeRawPtr<ScriptArguments> ConsoleMessage::scriptArguments() const
 {
     return m_scriptArguments;
 }
 
-void ConsoleMessage::setScriptArguments(PassRefPtr<ScriptArguments> scriptArguments)
+void ConsoleMessage::setScriptArguments(PassRefPtrWillBeRawPtr<ScriptArguments> scriptArguments)
 {
     m_scriptArguments = scriptArguments;
 }
@@ -130,6 +130,7 @@ unsigned ConsoleMessage::columnNumber() const
 void ConsoleMessage::trace(Visitor* visitor)
 {
     visitor->trace(m_callStack);
+    visitor->trace(m_scriptArguments);
 }
 
 } // namespace blink

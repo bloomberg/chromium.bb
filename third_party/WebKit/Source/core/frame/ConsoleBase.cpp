@@ -174,7 +174,7 @@ void ConsoleBase::internalAddMessage(MessageType type, MessageLevel level, Scrip
     String message;
     bool gotStringMessage = arguments ? arguments->getFirstArgumentAsString(message) : false;
 
-    RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, level, gotStringMessage? message : String());
+    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, level, gotStringMessage? message : String());
     consoleMessage->setType(type);
     consoleMessage->setScriptState(scriptState);
     consoleMessage->setScriptArguments(arguments);
