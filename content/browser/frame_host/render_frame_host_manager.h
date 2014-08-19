@@ -18,6 +18,7 @@
 #include "content/public/common/referrer.h"
 
 struct FrameHostMsg_BeginNavigation_Params;
+struct FrameMsg_Navigate_Params;
 
 namespace content {
 class BrowserContext;
@@ -41,6 +42,7 @@ class RenderWidgetHostDelegate;
 class RenderWidgetHostView;
 class TestWebContents;
 class WebUIImpl;
+struct NavigationBeforeCommitInfo;
 
 // Manages RenderFrameHosts for a FrameTreeNode.  This class acts as a state
 // machine to make cross-process navigations in a frame possible.
@@ -55,6 +57,11 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // There is additional complexity that some of the functions we need in
   // WebContentsImpl are inherited and non-virtual. These are named with
   // "RenderManager" so that the duplicate implementation of them will be clear.
+  //
+  // Functions and parameters whose description are prefixed by PlzNavigate are
+  // part of a navigation refactoring project, currently behind the
+  // enable-browser-side-navigation flag. The idea is to move the logic behind
+  // driving navigations from the renderer to the browser.
   class CONTENT_EXPORT Delegate {
    public:
     // Initializes the given renderer if necessary and creates the view ID
@@ -250,7 +257,6 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
 
   // Helper method to create and initialize a RenderFrameHost.  If |swapped_out|
   // is true, it will be initially placed on the swapped out hosts list.
-  // Otherwise, it will be used for a pending cross-site navigation.
   // Returns the routing id of the *view* associated with the frame.
   int CreateRenderFrame(SiteInstance* instance,
                         int opener_route_id,
@@ -311,13 +317,27 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // of WebContentsImpl.
   void ResetProxyHosts();
 
-  // Used to start a navigation, part of browser-side navigation project.
-  void OnBeginNavigation(const FrameHostMsg_BeginNavigation_Params& params);
-
   // Returns the routing id for a RenderFrameHost or RenderFrameHostProxy
   // that has the given SiteInstance and is associated with this
   // RenderFrameHostManager. Returns MSG_ROUTING_NONE if none is found.
   int GetRoutingIdForSiteInstance(SiteInstance* site_instance);
+
+  // PlzNavigate: sends a RequestNavigation IPC to the renderer to ask it to
+  // navigate. If no live renderer is present, then the navigation request will
+  // be sent directly to the ResourceDispatcherHost.
+  bool RequestNavigation(const NavigationEntryImpl& entry,
+                         const FrameMsg_Navigate_Params& navigate_params);
+
+  // PlzNavigate: Used to start a navigation. OnBeginNavigation is called
+  // directly by RequestNavigation when there is no live renderer. Otherwise, it
+  // is called following a BeginNavigation IPC from the renderer (which in
+  // browser-initiated navigation also happens after RequestNavigation has been
+  // called).
+  void OnBeginNavigation(const FrameHostMsg_BeginNavigation_Params& params);
+
+  // PlzNavigate: Called when a navigation request has received a response, to
+  // select a renderer to use for the navigation.
+  void CommitNavigation(const NavigationBeforeCommitInfo& info);
 
  private:
   friend class RenderFrameHostManagerTest;
@@ -412,10 +432,19 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
       const NavigationEntry* current_entry,
       const NavigationEntryImpl* new_entry) const;
 
+  // Returns the SiteInstance to use for the navigation.
+  SiteInstance* GetSiteInstanceForNavigation(
+      const GURL& dest_url,
+      SiteInstance* dest_instance,
+      PageTransition dest_transition,
+      bool dest_is_restore,
+      bool dest_is_view_source_mode);
+
   // Returns an appropriate SiteInstance object for the given |dest_url|,
   // possibly reusing the current SiteInstance.  If --process-per-tab is used,
   // this is only called when ShouldSwapBrowsingInstancesForNavigation returns
   // true. |dest_instance| will be used if it is not null.
+  // This is a helper function for GetSiteInstanceForNavigation.
   SiteInstance* GetSiteInstanceForURL(
       const GURL& dest_url,
       SiteInstance* dest_instance,
@@ -424,6 +453,13 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
       bool dest_is_view_source_mode,
       SiteInstance* current_instance,
       bool force_browsing_instance_swap);
+
+  // Creates a new RenderFrameHostImpl for the |new_instance| while respecting
+  // the opener route if needed and stores it in pending_render_frame_host_.
+  void CreateRenderFrameHostForNewSiteInstance(
+      SiteInstance* old_instance,
+      SiteInstance* new_instance,
+      bool is_main_frame);
 
   // Creates a RenderFrameHost and corresponding RenderViewHost if necessary.
   scoped_ptr<RenderFrameHostImpl> CreateRenderFrameHost(SiteInstance* instance,
@@ -543,7 +579,8 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
 
   NotificationRegistrar registrar_;
 
-  // Owns a navigation request that originated in that frame until it commits.
+  // PlzNavigate: Owns a navigation request that originated in that frame until
+  // it commits.
   scoped_ptr<NavigationRequest> navigation_request_;
 
   base::WeakPtrFactory<RenderFrameHostManager> weak_factory_;

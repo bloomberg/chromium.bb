@@ -8,6 +8,7 @@
 #include "base/time/time.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/navigation_before_commit_info.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigator_delegate.h"
@@ -62,11 +63,31 @@ FrameMsg_Navigate_Type::Value GetNavigationType(
   return FrameMsg_Navigate_Type::NORMAL;
 }
 
-void MakeNavigateParams(const NavigationEntryImpl& entry,
-                        const NavigationControllerImpl& controller,
-                        NavigationController::ReloadType reload_type,
-                        base::TimeTicks navigation_start,
-                        FrameMsg_Navigate_Params* params) {
+RenderFrameHostManager* GetRenderManager(RenderFrameHostImpl* rfh) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess))
+    return rfh->frame_tree_node()->render_manager();
+
+  return rfh->frame_tree_node()->frame_tree()->root()->render_manager();
+}
+
+}  // namespace
+
+
+NavigatorImpl::NavigatorImpl(
+    NavigationControllerImpl* navigation_controller,
+    NavigatorDelegate* delegate)
+    : controller_(navigation_controller),
+      delegate_(delegate) {
+}
+
+// static.
+void NavigatorImpl::MakeNavigateParams(
+    const NavigationEntryImpl& entry,
+    const NavigationControllerImpl& controller,
+    NavigationController::ReloadType reload_type,
+    base::TimeTicks navigation_start,
+    FrameMsg_Navigate_Params* params) {
   params->page_id = entry.GetPageID();
   params->should_clear_history_list = entry.should_clear_history_list();
   params->should_replace_current_entry = entry.should_replace_entry();
@@ -124,24 +145,6 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
   params->can_load_local_resources = entry.GetCanLoadLocalResources();
   params->frame_to_navigate = entry.GetFrameToNavigate();
   params->browser_navigation_start = navigation_start;
-}
-
-RenderFrameHostManager* GetRenderManager(RenderFrameHostImpl* rfh) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess))
-    return rfh->frame_tree_node()->render_manager();
-
-  return rfh->frame_tree_node()->frame_tree()->root()->render_manager();
-}
-
-}  // namespace
-
-
-NavigatorImpl::NavigatorImpl(
-    NavigationControllerImpl* navigation_controller,
-    NavigatorDelegate* delegate)
-    : controller_(navigation_controller),
-      delegate_(delegate) {
 }
 
 NavigationController* NavigatorImpl::GetController() {
@@ -339,8 +342,28 @@ bool NavigatorImpl::NavigateToEntry(
   // capture the time needed for the RenderFrameHost initialization.
   base::TimeTicks navigation_start = base::TimeTicks::Now();
 
+  // WebContents uses this to fill LoadNotificationDetails when the load
+  // completes, so that PerformanceMonitor that listens to the notification can
+  // record the load time. PerformanceMonitor is no longer maintained.
+  // TODO(ppi): make this go away.
+  current_load_start_ = base::TimeTicks::Now();
+
+  // Create the navigation parameters.
+  FrameMsg_Navigate_Params navigate_params;
+  MakeNavigateParams(
+      entry, *controller_, reload_type, navigation_start, &navigate_params);
+
   RenderFrameHostManager* manager =
       render_frame_host->frame_tree_node()->render_manager();
+
+  // PlzNavigate: the RenderFrameHosts are no longer asked to navigate. Instead
+  // the RenderFrameHostManager handles the navigation requests for that frame
+  // node.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableBrowserSideNavigation)) {
+    return manager->RequestNavigation(entry, navigate_params);
+  }
+
   RenderFrameHostImpl* dest_render_frame_host = manager->Navigate(entry);
   if (!dest_render_frame_host)
     return false;  // Unable to create the desired RenderFrameHost.
@@ -350,32 +373,14 @@ bool NavigatorImpl::NavigateToEntry(
 
   // For security, we should never send non-Web-UI URLs to a Web UI renderer.
   // Double check that here.
-  int enabled_bindings =
-      dest_render_frame_host->render_view_host()->GetEnabledBindings();
-  bool is_allowed_in_web_ui_renderer =
-      WebUIControllerFactoryRegistry::GetInstance()->IsURLAcceptableForWebUI(
-          controller_->GetBrowserContext(), entry.GetURL());
-  if ((enabled_bindings & BINDINGS_POLICY_WEB_UI) &&
-      !is_allowed_in_web_ui_renderer) {
-    // Log the URL to help us diagnose any future failures of this CHECK.
-    GetContentClient()->SetActiveURL(entry.GetURL());
-    CHECK(0);
-  }
+  CheckWebUIRendererDoesNotDisplayNormalURL(
+      dest_render_frame_host, entry.GetURL());
 
   // Notify observers that we will navigate in this RenderFrame.
   if (delegate_)
     delegate_->AboutToNavigateRenderFrame(dest_render_frame_host);
 
-  // WebContents uses this to fill LoadNotificationDetails when the load
-  // completes, so that PerformanceMonitor that listens to the notification can
-  // record the load time. PerformanceMonitor is no longer maintained.
-  // TODO(ppi): make this go away.
-  current_load_start_ = base::TimeTicks::Now();
-
   // Navigate in the desired RenderFrameHost.
-  FrameMsg_Navigate_Params navigate_params;
-  MakeNavigateParams(entry, *controller_, reload_type, navigation_start,
-      &navigate_params);
   dest_render_frame_host->Navigate(navigate_params);
 
   // Make sure no code called via RFH::Navigate clears the pending entry.
@@ -641,6 +646,31 @@ void NavigatorImpl::RequestTransferURL(
 
   if (delegate_)
     delegate_->RequestOpenURL(render_frame_host, params);
+}
+
+void NavigatorImpl::CommitNavigation(
+    RenderFrameHostImpl* render_frame_host,
+    const NavigationBeforeCommitInfo& info) {
+  CheckWebUIRendererDoesNotDisplayNormalURL(
+      render_frame_host, info.navigation_url);
+  // TODO(clamy): the render_frame_host should now send a commit IPC to the
+  // renderer.
+}
+
+void NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
+    RenderFrameHostImpl* render_frame_host,
+    const GURL& url) {
+  int enabled_bindings =
+      render_frame_host->render_view_host()->GetEnabledBindings();
+  bool is_allowed_in_web_ui_renderer =
+      WebUIControllerFactoryRegistry::GetInstance()->IsURLAcceptableForWebUI(
+          controller_->GetBrowserContext(), url);
+  if ((enabled_bindings & BINDINGS_POLICY_WEB_UI) &&
+      !is_allowed_in_web_ui_renderer) {
+    // Log the URL to help us diagnose any future failures of this CHECK.
+    GetContentClient()->SetActiveURL(url);
+    CHECK(0);
+  }
 }
 
 }  // namespace content

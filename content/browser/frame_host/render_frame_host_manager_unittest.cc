@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "content/browser/frame_host/cross_site_transferring_request.h"
+#include "content/browser/frame_host/navigation_before_commit_info.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
+#include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
@@ -23,6 +27,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/url_constants.h"
@@ -374,11 +379,15 @@ class RenderFrameHostManagerTest
     return ntp_rfh->GetRenderViewHost();
   }
 
-  NavigationRequest* NavigationRequestForRenderFrameManager(
+  NavigationRequest* GetNavigationRequestForRenderFrameManager(
       RenderFrameHostManager* manager) const {
     return manager->navigation_request_for_testing();
   }
 
+  void EnableBrowserSideNavigation() {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableBrowserSideNavigation);
+  }
  private:
   RenderFrameHostManagerTestWebUIControllerFactory factory_;
   scoped_ptr<FrameLifetimeConsistencyChecker> lifetime_checker_;
@@ -1873,16 +1882,19 @@ TEST_F(RenderFrameHostManagerTest,
   }
 }
 
-// Browser-side navigation: Test that a proper NavigationRequest is created by
+// PlzNavigate: Test that a proper NavigationRequest is created by
 // BeginNavigation.
 TEST_F(RenderFrameHostManagerTest, BrowserSideNavigationBeginNavigation) {
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2("http://www.chromium.org/");
   const GURL kUrl3("http://www.gmail.com/");
 
+  // TODO(clamy): we should be enabling browser side navigations here
+  // when CommitNavigation is properly implemented.
   // Navigate to the first page.
   contents()->NavigateAndCommit(kUrl1);
 
+  EnableBrowserSideNavigation();
   // Add a subframe.
   TestRenderFrameHost* subframe_rfh = static_cast<TestRenderFrameHost*>(
       contents()->GetFrameTree()->AddFrame(
@@ -1891,25 +1903,84 @@ TEST_F(RenderFrameHostManagerTest, BrowserSideNavigationBeginNavigation) {
   // Simulate a BeginNavigation IPC on the subframe.
   subframe_rfh->SendBeginNavigationWithURL(kUrl2);
   NavigationRequest* subframe_request =
-      NavigationRequestForRenderFrameManager(
+      GetNavigationRequestForRenderFrameManager(
           subframe_rfh->frame_tree_node()->render_manager());
   ASSERT_TRUE(subframe_request);
-  EXPECT_EQ(kUrl2, subframe_request->info_for_testing().navigation_params.url);
+  EXPECT_EQ(kUrl2, subframe_request->info().navigation_params.url);
   // First party for cookies url should be that of the main frame.
   EXPECT_EQ(
-      kUrl1, subframe_request->info_for_testing().first_party_for_cookies);
-  EXPECT_FALSE(subframe_request->info_for_testing().is_main_frame);
-  EXPECT_TRUE(subframe_request->info_for_testing().parent_is_main_frame);
+      kUrl1, subframe_request->info().first_party_for_cookies);
+  EXPECT_FALSE(subframe_request->info().is_main_frame);
+  EXPECT_TRUE(subframe_request->info().parent_is_main_frame);
 
   // Simulate a BeginNavigation IPC on the main frame.
   contents()->GetMainFrame()->SendBeginNavigationWithURL(kUrl3);
-  NavigationRequest* main_request = NavigationRequestForRenderFrameManager(
+  NavigationRequest* main_request = GetNavigationRequestForRenderFrameManager(
       contents()->GetMainFrame()->frame_tree_node()->render_manager());
   ASSERT_TRUE(main_request);
-  EXPECT_EQ(kUrl3, main_request->info_for_testing().navigation_params.url);
-  EXPECT_EQ(kUrl3, main_request->info_for_testing().first_party_for_cookies);
-  EXPECT_TRUE(main_request->info_for_testing().is_main_frame);
-  EXPECT_FALSE(main_request->info_for_testing().parent_is_main_frame);
+  EXPECT_EQ(kUrl3, main_request->info().navigation_params.url);
+  EXPECT_EQ(kUrl3, main_request->info().first_party_for_cookies);
+  EXPECT_TRUE(main_request->info().is_main_frame);
+  EXPECT_FALSE(main_request->info().parent_is_main_frame);
+}
+
+// PlzNavigate: Test that RequestNavigation creates a NavigationRequest and that
+// RenderFrameHost is not modified when the navigation commits.
+TEST_F(RenderFrameHostManagerTest,
+       BrowserSideNavigationRequestNavigationNoLiveRenderer) {
+  const GURL kUrl("http://www.google.com/");
+
+  EnableBrowserSideNavigation();
+  EXPECT_FALSE(main_test_rfh()->render_view_host()->IsRenderViewLive());
+  contents()->GetController().LoadURL(
+      kUrl, Referrer(), PAGE_TRANSITION_LINK, std::string());
+  RenderFrameHostManager* render_manager =
+      main_test_rfh()->frame_tree_node()->render_manager();
+  NavigationRequest* main_request =
+      GetNavigationRequestForRenderFrameManager(render_manager);
+  // A NavigationRequest should have been generated.
+  EXPECT_TRUE(main_request != NULL);
+  RenderFrameHostImpl* rfh = main_test_rfh();
+
+  // Now commit the same url.
+  NavigationBeforeCommitInfo commit_info;
+  commit_info.navigation_url = kUrl;
+  render_manager->CommitNavigation(commit_info);
+  main_request = GetNavigationRequestForRenderFrameManager(render_manager);
+
+  // The main RFH should not have been changed.
+  EXPECT_EQ(rfh, main_test_rfh());
+}
+
+// PlzNavigate: Test that a new RenderFrameHost is created when doing a cross
+// site navigation.
+TEST_F(RenderFrameHostManagerTest,
+       BrowserSideNavigationCrossSiteNavigation) {
+  const GURL kUrl1("http://www.chromium.org/");
+  const GURL kUrl2("http://www.google.com/");
+
+  // TODO(clamy): we should be enabling browser side navigations here
+  // when CommitNavigation is properly implemented.
+  // Navigate to the first page.
+  contents()->NavigateAndCommit(kUrl1);
+  TestRenderViewHost* rvh1 = test_rvh();
+  EXPECT_EQ(RenderViewHostImpl::STATE_DEFAULT, rvh1->rvh_state());
+  RenderFrameHostImpl* rfh = main_test_rfh();
+  RenderFrameHostManager* render_manager =
+      main_test_rfh()->frame_tree_node()->render_manager();
+
+  EnableBrowserSideNavigation();
+  // Navigate to a different site.
+  main_test_rfh()->SendBeginNavigationWithURL(kUrl2);
+  NavigationRequest* main_request =
+      GetNavigationRequestForRenderFrameManager(render_manager);
+  ASSERT_TRUE(main_request);
+
+  NavigationBeforeCommitInfo commit_info;
+  commit_info.navigation_url = kUrl2;
+  render_manager->CommitNavigation(commit_info);
+  main_request = GetNavigationRequestForRenderFrameManager(render_manager);
+  EXPECT_NE(main_test_rfh(), rfh);
 }
 
 }  // namespace content

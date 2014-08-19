@@ -10,6 +10,8 @@
 #include "content/browser/frame_host/navigator.h"
 #include "content/common/content_export.h"
 
+struct FrameMsg_Navigate_Params;
+
 namespace content {
 
 class NavigationControllerImpl;
@@ -22,6 +24,13 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
  public:
   NavigatorImpl(NavigationControllerImpl* navigation_controller,
                 NavigatorDelegate* delegate);
+
+  // Fills in |params| based on the content of |entry|.
+  static void MakeNavigateParams(const NavigationEntryImpl& entry,
+                                 const NavigationControllerImpl& controller,
+                                 NavigationController::ReloadType reload_type,
+                                 base::TimeTicks navigation_start,
+                                 FrameMsg_Navigate_Params* params);
 
   // Navigator implementation.
   virtual NavigationController* GetController() OVERRIDE;
@@ -66,6 +75,9 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       const GlobalRequestID& transferred_global_request_id,
       bool should_replace_current_entry,
       bool user_gesture) OVERRIDE;
+  virtual void CommitNavigation(
+      RenderFrameHostImpl* render_frame_host,
+      const NavigationBeforeCommitInfo& info) OVERRIDE;
 
  private:
   virtual ~NavigatorImpl() {}
@@ -78,6 +90,10 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       NavigationController::ReloadType reload_type);
 
   bool ShouldAssignSiteForURL(const GURL& url);
+
+  void CheckWebUIRendererDoesNotDisplayNormalURL(
+    RenderFrameHostImpl* render_frame_host,
+    const GURL& url);
 
   // The NavigationController that will keep track of session history for all
   // RenderFrameHost objects using this NavigatorImpl.

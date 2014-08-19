@@ -11,6 +11,7 @@
 #include "ui/base/window_open_disposition.h"
 
 class GURL;
+struct FrameHostMsg_BeginNavigation_Params;
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 struct FrameHostMsg_DidFailProvisionalLoadWithError_Params;
 
@@ -24,6 +25,7 @@ class NavigationControllerImpl;
 class NavigationEntryImpl;
 class NavigatorDelegate;
 class RenderFrameHostImpl;
+struct NavigationBeforeCommitInfo;
 
 // Implementations of this interface are responsible for performing navigations
 // in a node of the FrameTree. Its lifetime is bound to all FrameTreeNode
@@ -36,7 +38,6 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
  public:
   // Returns the NavigationController associated with this Navigator.
   virtual NavigationController* GetController();
-
 
   // Notifications coming from the RenderFrameHosts ----------------------------
 
@@ -118,6 +119,12 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       const GlobalRequestID& transferred_global_request_id,
       bool should_replace_current_entry,
       bool user_gesture) {}
+
+  // PlzNavigate
+  // Signal |render_frame_host| that a navigation is ready to commit (the
+  // response to the navigation request has been received).
+  virtual void CommitNavigation(RenderFrameHostImpl* render_frame_host,
+                                const NavigationBeforeCommitInfo& info) {};
 
  protected:
   friend class base::RefCounted<Navigator>;

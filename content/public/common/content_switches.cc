@@ -296,6 +296,9 @@ const char kEnableBeginFrameScheduling[]    = "enable-begin-frame-scheduling";
 const char kEnablePreferCompositingToLCDText[] =
     "enable-prefer-compositing-to-lcd-text";
 
+// PlzNavigate: Use the experimental browser-side navigation path.
+const char kEnableBrowserSideNavigation[]   = "enable-browser-side-navigation";
+
 // Enable/Disable the creation of compositing layers for RenderLayers with a
 // transition on a property that supports accelerated animation (that is,
 // opacity, -webkit-transform, and -webkit-filter), even when no animation is

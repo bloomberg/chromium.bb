@@ -12,6 +12,7 @@
 namespace content {
 class ResourceRequestBody;
 
+// PlzNavigate
 // A UI thread object that owns a navigation request until it commits. It
 // ensures the UI thread can start a navigation request in the
 // ResourceDispatcherHost (that lives on the IO thread).
@@ -23,7 +24,7 @@ class NavigationRequest {
 
   ~NavigationRequest();
 
-  const NavigationRequestInfo& info_for_testing() const { return info_; }
+  const NavigationRequestInfo& info() const { return info_; }
   int64 frame_node_id() const { return frame_node_id_; }
 
   // Called on the UI thread by the RenderFrameHostManager which owns the
