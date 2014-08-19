@@ -452,7 +452,8 @@ INSTANTIATE_TEST_CASE_P(MSE_ClearKey_Prefixed,
                         Combine(Values(kPrefixedClearKeyKeySystem),
                                 Values(MSE),
                                 Values(PREFIXED)));
-INSTANTIATE_TEST_CASE_P(MSE_ClearKey,
+// http://crbug.com/402766
+INSTANTIATE_TEST_CASE_P(DISABLED_MSE_ClearKey,
                         EncryptedMediaTest,
                         Combine(Values(kClearKeyKeySystem),
                                 Values(MSE),
@@ -513,38 +514,31 @@ INSTANTIATE_TEST_CASE_P(MSE_Widevine,
 #endif  // !defined(WIDEVINE_CDM_IS_COMPONENT)
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
-// http://crbug.com/402766
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_Playback_AudioOnly_WebM) {
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM) {
   TestSimplePlayback("bear-a_enc-a.webm", kWebMAudioOnly);
 }
 
-// http://crbug.com/402766
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_Playback_AudioClearVideo_WebM) {
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioClearVideo_WebM) {
   TestSimplePlayback("bear-320x240-av_enc-a.webm", kWebMAudioVideo);
 }
 
-// http://crbug.com/402766
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_Playback_VideoAudio_WebM) {
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoAudio_WebM) {
   TestSimplePlayback("bear-320x240-av_enc-av.webm", kWebMAudioVideo);
 }
 
-// http://crbug.com/402766
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_Playback_VideoOnly_WebM) {
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_WebM) {
   TestSimplePlayback("bear-320x240-v_enc-v.webm", kWebMVideoOnly);
 }
 
-// http://crbug.com/402766
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_Playback_VideoClearAudio_WebM) {
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM) {
   TestSimplePlayback("bear-320x240-av_enc-v.webm", kWebMAudioVideo);
 }
 
-// http://crbug.com/402766
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_Playback_VP9Video_WebM) {
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VP9Video_WebM) {
   TestSimplePlayback("bear-320x240-v-vp9_enc-v.webm", kWebMVP9VideoOnly);
 }
 
-// http://crbug.com/402766
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_InvalidResponseKeyError) {
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, InvalidResponseKeyError) {
   RunInvalidResponseTest();
 }
 
