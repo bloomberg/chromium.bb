@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "7.1",
+  "version": "7.2",
   "entries": [
     {
       "id": 1,
@@ -905,8 +905,8 @@ LONG_STRING_CONST(
     },
     {
       "id": 77,
-      "cr_bugs": [378691, 373360, 371530],
-      "description": "Testing fences was broken on Mali-400 MP drivers",
+      "cr_bugs": [378691, 373360, 371530, 398964],
+      "description": "Testing fences was broken on Mali ES2 drivers",
       "os": {
         "type": "android",
         "version": {
@@ -915,7 +915,12 @@ LONG_STRING_CONST(
         }
       },
       "gl_vendor": "ARM.*",
-      "gl_renderer": "Mali-400 MP.*",
+      "gl_renderer": "Mali.*",
+      "gl_type": "gles",
+      "gl_version": {
+        "op": "<",
+        "value": "3.0"
+      },
       "features": [
         "disable_egl_khr_fence_sync"
       ]
