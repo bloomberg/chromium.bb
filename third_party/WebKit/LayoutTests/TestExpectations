@@ -190,11 +190,7 @@ crbug.com/318978 [ Linux ] http/tests/security/frameNavigation/xss-DENIED-plugin
 crbug.com/318978 [ Linux ] permissionclient/plugin-permission.html [ Skip ]
 crbug.com/318978 [ Linux ] plugins/ [ Skip ]
 
-crbug.com/394698 fast/repaint/repaint-across-writing-mode-boundary.html [ NeedsRebaseline ]
-crbug.com/394698 fast/repaint/japanese-rl-selection-repaint.html [ NeedsRebaseline ]
 crbug.com/394698 fast/repaint/japanese-rl-selection-clear.html [ NeedsRebaseline ]
-crbug.com/394698 compositing/squashing/selection-repaint-with-gaps.html [ NeedsRebaseline ]
-crbug.com/394698 editing/selection/repaint-rect-for-vertical-writing-mode-with-positioned-root.html [ NeedsRebaseline ]
 
 # Falied test in Win
 crbug.com/395627 [ Win ] fast/forms/input-autofilled.html [ NeedsRebaseline ]

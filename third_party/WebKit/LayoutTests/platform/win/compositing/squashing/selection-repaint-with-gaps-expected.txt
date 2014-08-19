@@ -19,7 +19,7 @@ lorem ipsumlorem ipsumlorem ipsum
               "drawsContent": true,
               "repaintRects": [
                 [37, 80, 3, 17],
-                [0, 80, 39, 35]
+                [0, 80, 40, 35]
               ]
             }
           ]
@@ -49,9 +49,9 @@ lorem ipsumlorem ipsumlorem ipsum
               "repaintRects": [
                 [37, 160, 3, 17],
                 [37, 80, 3, 35],
-                [0, 160, 39, 35],
+                [0, 160, 40, 35],
                 [0, 80, 100, 50],
-                [0, 80, 39, 35]
+                [0, 80, 40, 35]
               ]
             }
           ]
