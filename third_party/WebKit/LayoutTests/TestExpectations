@@ -354,24 +354,6 @@ crbug.com/248938 virtual/threaded/animations/change-keyframes.html [ Pass Failur
 crbug.com/248938 animations/play-state-initially-paused.html [ Pass Failure ]
 crbug.com/248938 [ Debug ] virtual/threaded/transitions/change-duration-during-transition.html [ Pass Failure Timeout ]
 
-crbug.com/385174 svg/as-object/nested-embedded-svg-size-changes-no-layout-triggers-2.html [ NeedsRebaseline ]
-crbug.com/385174 fast/repaint/make-children-non-inline.html [ NeedsRebaseline ]
-crbug.com/385174 svg/repaint/image-href-change.svg [ NeedsRebaseline ]
-crbug.com/385174 fast/repaint/mix-blend-mode-separate-stacking-context.html [ NeedsRebaseline ]
-crbug.com/385174 svg/repaint/image-with-clip-path.svg [ NeedsRebaseline ]
-crbug.com/385174 fast/repaint/overflow-scroll-body-appear.html [ NeedsRebaseline ]
-crbug.com/385174 svg/as-object/nested-embedded-svg-size-changes-no-layout-triggers-1.html [ NeedsRebaseline ]
-crbug.com/385174 fast/repaint/positioned-document-element.html [ NeedsRebaseline ]
-crbug.com/385174 svg/as-object/embedded-svg-size-changes-no-layout-triggers.html [ NeedsRebaseline ]
-crbug.com/385174 fast/repaint/static-to-positioned.html [ NeedsRebaseline ]
-crbug.com/385174 fast/repaint/window-resize-media-query.html [ NeedsRebaseline ]
-crbug.com/385174 fast/repaint/control-clip.html [ NeedsRebaseline ]
-crbug.com/385174 svg/custom/resource-client-removal.svg [ NeedsRebaseline ]
-crbug.com/385174 fast/repaint/textarea-set-disabled.html [ NeedsRebaseline ]
-crbug.com/385174 svg/custom/js-late-gradient-creation.svg [ NeedsRebaseline ]
-crbug.com/385174 svg/custom/js-late-pattern-creation.svg [ NeedsRebaseline ]
-crbug.com/385174 svg/custom/pending-resource-after-removal.xhtml [ NeedsRebaseline ]
-
 
 crbug.com/396220 [ Debug Mac ] fast/forms/select/listbox-in-multi-column.html [ Crash Pass ]
 
