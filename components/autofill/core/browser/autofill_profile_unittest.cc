@@ -20,6 +20,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
+using base::UTF8ToUTF16;
 
 namespace autofill {
 
@@ -341,6 +342,234 @@ TEST(AutofillProfileTest, AdjustInferredLabels) {
             labels[4]);
 }
 
+TEST(AutofillProfileTest, CreateInferredLabelsI18n_CH) {
+  ScopedVector<AutofillProfile> profiles;
+  profiles.push_back(
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
+  test::SetProfileInfo(profiles.back(),
+                       "H.",
+                       "R.",
+                       "Giger",
+                       "hrgiger@beispiel.com",
+                       "Beispiel Inc",
+                       "Brandschenkestrasse 110",
+                       "",
+                       "Zurich", "",
+                       "8002",
+                       "CH",
+                       "+41 44-668-1800");
+  profiles.back()->set_language_code("de_CH");
+  static const char* kExpectedLabels[] = {
+    "",
+    "H. R. Giger",
+    "H. R. Giger, Brandschenkestrasse 110",
+    "H. R. Giger, Brandschenkestrasse 110, Zurich",
+    "H. R. Giger, Brandschenkestrasse 110, CH-8002 Zurich",
+    "H. R. Giger, Brandschenkestrasse 110, CH-8002 Zurich, Switzerland",
+    "H. R. Giger, Brandschenkestrasse 110, CH-8002 Zurich, Switzerland, "
+        "hrgiger@beispiel.com",
+    "H. R. Giger, Brandschenkestrasse 110, CH-8002 Zurich, Switzerland, "
+        "hrgiger@beispiel.com, +41446681800",
+    "H. R. Giger, Brandschenkestrasse 110, CH-8002 Zurich, Switzerland, "
+        "hrgiger@beispiel.com, +41446681800, Beispiel Inc",
+  };
+
+  std::vector<base::string16> labels;
+  for (size_t i = 0; i < arraysize(kExpectedLabels); ++i) {
+    AutofillProfile::CreateInferredLabels(
+        profiles.get(), NULL, UNKNOWN_TYPE, i, "en-US", &labels);
+    ASSERT_FALSE(labels.empty());
+    EXPECT_EQ(UTF8ToUTF16(kExpectedLabels[i]), labels.back());
+  }
+}
+
+
+TEST(AutofillProfileTest, CreateInferredLabelsI18n_FR) {
+  ScopedVector<AutofillProfile> profiles;
+  profiles.push_back(
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
+  test::SetProfileInfo(profiles.back(),
+                       "Antoine",
+                       "",
+                       "de Saint-Exupéry",
+                       "antoine@exemple.com",
+                       "Exemple Inc",
+                       "8 Rue de Londres",
+                       "",
+                       "Paris", "",
+                       "75009",
+                       "FR",
+                       "+33 (0) 1 42 68 53 00");
+  profiles.back()->set_language_code("fr_FR");
+  profiles.back()->SetInfo(
+      AutofillType(ADDRESS_HOME_SORTING_CODE), UTF8ToUTF16("CEDEX"), "en-US");
+  static const char* kExpectedLabels[] = {
+      "",
+      "Antoine de Saint-Exupéry",
+      "Antoine de Saint-Exupéry, 8 Rue de Londres",
+      "Antoine de Saint-Exupéry, 8 Rue de Londres, Paris",
+      "Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris",
+      "Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris CEDEX",
+      "Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris CEDEX, France",
+      "Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris CEDEX, France, "
+          "antoine@exemple.com",
+      "Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris CEDEX, France, "
+          "antoine@exemple.com, +33142685300",
+      "Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris CEDEX, France, "
+          "antoine@exemple.com, +33142685300, Exemple Inc",
+  };
+
+  std::vector<base::string16> labels;
+  for (size_t i = 0; i < arraysize(kExpectedLabels); ++i) {
+    AutofillProfile::CreateInferredLabels(
+        profiles.get(), NULL, UNKNOWN_TYPE, i, "en-US", &labels);
+    ASSERT_FALSE(labels.empty());
+    EXPECT_EQ(UTF8ToUTF16(kExpectedLabels[i]), labels.back());
+  }
+}
+
+TEST(AutofillProfileTest, CreateInferredLabelsI18n_KR) {
+  ScopedVector<AutofillProfile> profiles;
+  profiles.push_back(
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
+  test::SetProfileInfo(profiles.back(),
+                       "Park",
+                       "",
+                       "Jae-sang",
+                       "park@yeleul.com",
+                       "Yeleul Inc",
+                       "Gangnam Finance Center",
+                       "152 Teheran-ro",
+                       "Gangnam-Gu", "Seoul",
+                       "135-984",
+                       "KR",
+                       "+82-2-531-9000");
+  profiles.back()->set_language_code("ko_Latn");
+  profiles.back()->SetInfo(AutofillType(ADDRESS_HOME_DEPENDENT_LOCALITY),
+                           UTF8ToUTF16("Yeoksam-Dong"),
+                           "en-US");
+  static const char* kExpectedLabels[] = {
+      "",
+      "Park Jae-sang",
+      "Park Jae-sang, Gangnam Finance Center",
+      "Park Jae-sang, Gangnam Finance Center, 152 Teheran-ro",
+      "Park Jae-sang, Gangnam Finance Center, 152 Teheran-ro, Yeoksam-Dong",
+      "Park Jae-sang, Gangnam Finance Center, 152 Teheran-ro, Yeoksam-Dong, "
+          "Gangnam-Gu",
+      "Park Jae-sang, Gangnam Finance Center, 152 Teheran-ro, Yeoksam-Dong, "
+          "Gangnam-Gu, Seoul",
+      "Park Jae-sang, Gangnam Finance Center, 152 Teheran-ro, Yeoksam-Dong, "
+          "Gangnam-Gu, Seoul, 135-984",
+      "Park Jae-sang, Gangnam Finance Center, 152 Teheran-ro, Yeoksam-Dong, "
+          "Gangnam-Gu, Seoul, 135-984, South Korea",
+      "Park Jae-sang, Gangnam Finance Center, 152 Teheran-ro, Yeoksam-Dong, "
+          "Gangnam-Gu, Seoul, 135-984, South Korea, park@yeleul.com",
+      "Park Jae-sang, Gangnam Finance Center, 152 Teheran-ro, Yeoksam-Dong, "
+          "Gangnam-Gu, Seoul, 135-984, South Korea, park@yeleul.com, "
+          "+8225319000",
+      "Park Jae-sang, Gangnam Finance Center, 152 Teheran-ro, Yeoksam-Dong, "
+          "Gangnam-Gu, Seoul, 135-984, South Korea, park@yeleul.com, "
+          "+8225319000, Yeleul Inc",
+  };
+
+  std::vector<base::string16> labels;
+  for (size_t i = 0; i < arraysize(kExpectedLabels); ++i) {
+    AutofillProfile::CreateInferredLabels(
+        profiles.get(), NULL, UNKNOWN_TYPE, i, "en-US", &labels);
+    ASSERT_FALSE(labels.empty());
+    EXPECT_EQ(UTF8ToUTF16(kExpectedLabels[i]), labels.back());
+  }
+}
+
+TEST(AutofillProfileTest, CreateInferredLabelsI18n_JP_Latn) {
+  ScopedVector<AutofillProfile> profiles;
+  profiles.push_back(
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
+  test::SetProfileInfo(profiles.back(),
+                       "Miku",
+                       "",
+                       "Hatsune",
+                       "miku@rei.com",
+                       "Rei Inc",
+                       "Roppongi Hills Mori Tower",
+                       "6-10-1 Roppongi",
+                       "Minato-ku", "Tokyo",
+                       "106-6126",
+                       "JP",
+                       "+81-3-6384-9000");
+  profiles.back()->set_language_code("ja_Latn");
+  static const char* kExpectedLabels[] = {
+    "",
+    "Miku Hatsune",
+    "Miku Hatsune, Roppongi Hills Mori Tower",
+    "Miku Hatsune, Roppongi Hills Mori Tower, 6-10-1 Roppongi",
+    "Miku Hatsune, Roppongi Hills Mori Tower, 6-10-1 Roppongi, Minato-ku",
+    "Miku Hatsune, Roppongi Hills Mori Tower, 6-10-1 Roppongi, Minato-ku, "
+        "Tokyo",
+    "Miku Hatsune, Roppongi Hills Mori Tower, 6-10-1 Roppongi, Minato-ku, "
+        "Tokyo, 106-6126",
+    "Miku Hatsune, Roppongi Hills Mori Tower, 6-10-1 Roppongi, Minato-ku, "
+        "Tokyo, 106-6126, Japan",
+    "Miku Hatsune, Roppongi Hills Mori Tower, 6-10-1 Roppongi, Minato-ku, "
+        "Tokyo, 106-6126, Japan, miku@rei.com",
+    "Miku Hatsune, Roppongi Hills Mori Tower, 6-10-1 Roppongi, Minato-ku, "
+        "Tokyo, 106-6126, Japan, miku@rei.com, +81363849000",
+    "Miku Hatsune, Roppongi Hills Mori Tower, 6-10-1 Roppongi, Minato-ku, "
+        "Tokyo, 106-6126, Japan, miku@rei.com, +81363849000, Rei Inc",
+  };
+
+  std::vector<base::string16> labels;
+  for (size_t i = 0; i < arraysize(kExpectedLabels); ++i) {
+    AutofillProfile::CreateInferredLabels(
+        profiles.get(), NULL, UNKNOWN_TYPE, i, "en-US", &labels);
+    ASSERT_FALSE(labels.empty());
+    EXPECT_EQ(UTF8ToUTF16(kExpectedLabels[i]), labels.back());
+  }
+}
+
+TEST(AutofillProfileTest, CreateInferredLabelsI18n_JP_ja) {
+  ScopedVector<AutofillProfile> profiles;
+  profiles.push_back(
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
+  test::SetProfileInfo(profiles.back(),
+                       "ミク",
+                       "",
+                       "初音",
+                       "miku@rei.com",
+                       "例",
+                       "六本木ヒルズ森タワー",
+                       "六本木 6-10-1",
+                       "港区", "東京都",
+                       "106-6126",
+                       "JP",
+                       "03-6384-9000");
+  profiles.back()->set_language_code("ja_JP");
+  static const char* kExpectedLabels[] = {
+    "",
+    "ミク 初音",
+    "六本木ヒルズ森タワーミク 初音",
+    "六本木ヒルズ森タワー六本木 6-10-1ミク 初音",
+    "港区六本木ヒルズ森タワー六本木 6-10-1ミク 初音",
+    "東京都港区六本木ヒルズ森タワー六本木 6-10-1ミク 初音",
+    "〒106-6126東京都港区六本木ヒルズ森タワー六本木 6-10-1ミク 初音",
+    "〒106-6126東京都港区六本木ヒルズ森タワー六本木 6-10-1ミク 初音, Japan",
+    "〒106-6126東京都港区六本木ヒルズ森タワー六本木 6-10-1ミク 初音, Japan, "
+        "miku@rei.com",
+    "〒106-6126東京都港区六本木ヒルズ森タワー六本木 6-10-1ミク 初音, Japan, "
+        "miku@rei.com, 0363849000",
+    "〒106-6126東京都港区六本木ヒルズ森タワー六本木 6-10-1ミク 初音, Japan, "
+        "miku@rei.com, 0363849000, 例",
+  };
+
+  std::vector<base::string16> labels;
+  for (size_t i = 0; i < arraysize(kExpectedLabels); ++i) {
+    AutofillProfile::CreateInferredLabels(
+        profiles.get(), NULL, UNKNOWN_TYPE, i, "en-US", &labels);
+    ASSERT_FALSE(labels.empty());
+    EXPECT_EQ(UTF8ToUTF16(kExpectedLabels[i]), labels.back());
+  }
+}
+
 TEST(AutofillProfileTest, CreateInferredLabels) {
   ScopedVector<AutofillProfile> profiles;
   profiles.push_back(
@@ -400,16 +629,16 @@ TEST(AutofillProfileTest, CreateInferredLabels) {
   // Three fields at least, from suggested fields - no filter.
   AutofillProfile::CreateInferredLabels(profiles.get(), &suggested_fields,
                                         UNKNOWN_TYPE, 3, "en-US", &labels);
-  EXPECT_EQ(ASCIIToUTF16("Elysium, CA, 91111"), labels[0]);
-  EXPECT_EQ(ASCIIToUTF16("Dis, CA, 91222"), labels[1]);
+  EXPECT_EQ(ASCIIToUTF16("Elysium, CA 91111"), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("Dis, CA 91222"), labels[1]);
 
   // Three fields at least, from suggested fields - but filter reduces available
   // fields to two.
   AutofillProfile::CreateInferredLabels(profiles.get(), &suggested_fields,
                                         ADDRESS_HOME_STATE, 3, "en-US",
                                         &labels);
-  EXPECT_EQ(ASCIIToUTF16("Elysium, 91111"), labels[0]);
-  EXPECT_EQ(ASCIIToUTF16("Dis, 91222"), labels[1]);
+  EXPECT_EQ(ASCIIToUTF16("Elysium 91111"), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("Dis 91222"), labels[1]);
 
   suggested_fields.clear();
   // In our implementation we always display NAME_FULL for all NAME* fields...

@@ -32,6 +32,7 @@
             'autofill/content/browser/wallet/wallet_service_url_unittest.cc',
             'autofill/content/browser/wallet/wallet_signin_helper_unittest.cc',
             'autofill/core/browser/address_field_unittest.cc',
+            'autofill/core/browser/address_i18n_unittest.cc',
             'autofill/core/browser/address_unittest.cc',
             'autofill/core/browser/autocomplete_history_manager_unittest.cc',
             'autofill/core/browser/autofill_country_unittest.cc',
@@ -260,6 +261,7 @@
             'components.gyp:autofill_core_test_support',
             'components_strings.gyp:components_strings',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
+            '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput_util',
 
             # Dependencies of breakpad
             'components.gyp:breakpad_test_support',
