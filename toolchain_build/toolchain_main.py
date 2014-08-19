@@ -82,7 +82,7 @@ class PackageBuilder(object):
                 source targets are unconditional, this is only useful as a
                 convenience for commands, which may refer to the inputs by their
                 key name>},
-           },
+          },
           '<package name>': {
             'type': 'build',
                 # Build packages are memoized, and will build only if their
@@ -100,6 +100,15 @@ class PackageBuilder(object):
                # output will go into the root of the output directory.
             'commands':
               [<list of command.Command objects to run>],
+          },
+          '<package name>': {
+            'type': 'work',
+              # Work packages have the same keys as build packages. However,
+              # they are intended to be intermediate targets, and are not
+              # memoized or included for package_version.py. Therefore they will
+              # always run, regardless of whether their inputs have changed or
+              # of whether source syncing is skipped via the command line.
+            <same keys as build-type packages>
           },
         }
       package_targets: A dictionary with the following format. This is a
@@ -175,10 +184,11 @@ class PackageBuilder(object):
     if 'type' not in package_info:
       raise Exception('package %s does not have a type' % package)
     type_text = package_info['type']
-    if type_text not in ('source', 'build'):
+    if type_text not in ('source', 'build', 'work'):
       raise Exception('package %s has unrecognized type: %s' %
                       (package, type_text))
     is_source_target = type_text == 'source'
+    is_build_target = type_text == 'build'
 
     if 'commands' not in package_info:
       raise Exception('package %s does not have any commands' % package)
@@ -248,11 +258,11 @@ class PackageBuilder(object):
         commands=commands,
         cmd_options=cmd_options,
         working_dir=work_dir,
-        memoize=not is_source_target,
+        memoize=is_build_target,
         signature_file=self._signature_file,
         subdir=output_subdir)
 
-    if not is_source_target and self._options.install:
+    if is_build_target and self._options.install:
       install = pynacl.platform.CygPath(self._options.install)
       logging.debug('Installing output to %s' % install)
       pynacl.file_tools.CopyTree(output, install)

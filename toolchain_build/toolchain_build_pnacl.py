@@ -93,6 +93,8 @@ def TripleIsCygWin(t):
   return fnmatch.fnmatch(t, '*-cygwin*')
 
 
+# Return a tuple (C compiler, C++ compiler) of the compilers to compile the host
+# toolchains
 def CompilersForHost(host):
   compiler = {
       # For now we only do native builds for linux and mac
@@ -106,6 +108,14 @@ def CompilersForHost(host):
       'i686-pc-cygwin': ('gcc', 'g++'),
   }
   return compiler[host]
+
+
+# Return the host of the default toolchain to build target libraries with.
+def DefaultHostForTargetLibs():
+  tools = { 'win': 'i686-w64-mingw32',
+            'mac': 'x86_64-apple-darwin',
+            'linux': 'i686-linux' }
+  return tools[pynacl.platform.GetOS()]
 
 
 def ConfigureHostArchFlags(host):
@@ -318,14 +328,16 @@ def HostLibs(host):
   return libs
 
 
+def IsHost64(host):
+  return fnmatch.fnmatch(host, 'x86_64*')
+
+def HostSubdir(host):
+  return 'host_x86_64' if IsHost64(host) else 'host_x86_32'
+
 def HostTools(host, options):
   def H(component_name):
     # Return a package name for a component name with a host triple.
     return component_name + '_' + pynacl.gsd_storage.LegalizeName(host)
-  def IsHost64(host):
-    return fnmatch.fnmatch(host, 'x86_64*')
-  def HostSubdir(host):
-    return 'host_x86_64' if IsHost64(host) else 'host_x86_32'
   def BinSubdir(host):
     return 'bin64' if host == 'x86_64-linux' else 'bin'
   # Return the file name with the appropriate suffix for an executable file.
@@ -448,6 +460,37 @@ def HostTools(host, options):
     tools[H('binutils_pnacl')]['dependencies'].append('libdl')
     tools[H('llvm')]['dependencies'].append('libdl')
   return tools
+
+
+def TargetLibCompiler(host):
+  def H(component_name):
+    return component_name + '_' + pynacl.gsd_storage.LegalizeName(host)
+  compiler = {
+      # Because target_lib_compiler is not a memoized target, its name doesn't
+      # need to have the host appended to it (it can be different on different
+      # hosts), which means that target library build rules don't have to care
+      # what host they run on; they can just depend on 'target_lib_compiler'
+      'target_lib_compiler': {
+          'type': 'work',
+          'dependencies': [ H('binutils_pnacl'), H('llvm') ],
+          'inputs': { 'driver': os.path.join(NACL_DIR, 'pnacl', 'driver')},
+          'commands': [
+              command.CopyRecursive(
+                  '%(' + H('llvm') + ')s',
+                  os.path.join('%(output)s', HostSubdir(host))),
+              command.CopyRecursive(
+                  '%(' + H('binutils_pnacl') + ')s',
+                  os.path.join('%(output)s', HostSubdir(host))),
+              command.Runnable(
+                  None, pnacl_commands.InstallDriverScripts,
+                  '%(driver)s', os.path.join('%(output)s', 'bin'),
+                  host_windows=TripleIsWindows(host) or TripleIsCygWin(host),
+                  host_64bit=IsHost64(host))
+          ]
+      },
+  }
+  return compiler
+
 
 # TODO(dschuff): The REV file should probably go here rather than in the driver
 # dir
@@ -651,6 +694,7 @@ if __name__ == '__main__':
     for host in hosts:
       packages.update(HostLibs(host))
       packages.update(HostTools(host, args))
+      packages.update(TargetLibCompiler(DefaultHostForTargetLibs()))
     # Don't build the target libs on Windows because of pathname issues.
     # Don't build the target libs on Mac because the gold plugin's rpaths
     # aren't right.
@@ -661,9 +705,9 @@ if __name__ == '__main__':
       packages.update(pnacl_targetlibs.TargetLibsSrc(
         GetGitSyncCmdsCallback(rev)))
       for bias in BITCODE_BIASES:
-        packages.update(pnacl_targetlibs.BitcodeLibs(hosts[0], bias))
+        packages.update(pnacl_targetlibs.BitcodeLibs(bias))
       for arch in ALL_ARCHES:
-        packages.update(pnacl_targetlibs.NativeLibs(hosts[0], arch))
+        packages.update(pnacl_targetlibs.NativeLibs(arch))
       packages.update(Metadata())
     if pynacl.platform.IsLinux() or pynacl.platform.IsMac():
       packages.update(pnacl_targetlibs.UnsandboxedIRT(

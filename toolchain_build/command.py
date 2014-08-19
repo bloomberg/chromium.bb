@@ -256,8 +256,33 @@ def Copy(src, dst, run_cond=None):
   return Runnable(run_cond, copy, src, dst)
 
 
+def CopyRecursive(src, dst, run_cond=None):
+  """Recursively copy items in a directory tree.
+
+     If src is a file, the semantics are like shutil.copyfile+copymode.
+     If src is a directory, the semantics are like shutil.copytree, except
+     that the destination may exist (it must be a directory) and will not be
+     clobbered. There must be no files in dst which have names/subpaths which
+     match files in src.
+  """
+  def rcopy(logger, subst, src, dst):
+    src = subst.SubstituteAbsPaths(src)
+    dst = subst.SubstituteAbsPaths(dst)
+    if os.path.isfile(src):
+      shutil.copyfile(src, dst)
+      shutil.copymode(src, dst)
+    elif os.path.isdir(src):
+      logger.debug('Copying directory: %s -> %s', src, dst)
+      pynacl.file_tools.MakeDirectoryIfAbsent(dst)
+      for item in os.listdir(src):
+        rcopy(logger, subst, os.path.join(src, item), os.path.join(dst, item))
+  return Runnable(run_cond, rcopy, src, dst)
+
 def CopyTree(src, dst, exclude=[], run_cond=None):
-  """Copy a directory tree, excluding a list of top-level entries."""
+  """Copy a directory tree, excluding a list of top-level entries.
+
+     The destination directory will be clobbered if it exists.
+  """
   def copyTree(logger, subst, src, dst, exclude):
     src = subst.SubstituteAbsPaths(src)
     dst = subst.SubstituteAbsPaths(dst)

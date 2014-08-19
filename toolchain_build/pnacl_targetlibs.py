@@ -29,8 +29,8 @@ def PnaclTool(toolname, msys=True):
     ext = '.bat'
   else:
     ext = ''
-
-  return command.path.join('%(cwd)s', 'driver', 'pnacl-' + toolname + ext)
+  return command.path.join('%(abs_target_lib_compiler)s',
+                           'bin', 'pnacl-' + toolname + ext)
 
 # PNaCl tools for newlib's environment, e.g. CC_FOR_TARGET=/path/to/pnacl-clang
 TOOL_ENV_NAMES = { 'CC': 'clang', 'CXX': 'clang++', 'AR': 'ar', 'NM': 'nm',
@@ -54,26 +54,6 @@ def MakeCommand():
 # to underscores so the names are legal for Google Storage.
 def Mangle(component_name, extra):
   return component_name + '_' + pynacl.gsd_storage.LegalizeName(extra)
-
-def TripleIsWindows(t):
-  return fnmatch.fnmatch(t, '*-mingw32*')
-
-# Copy the driver scripts to the working directory, with extra config to set
-# paths to the compiled host binaries. This could also be done by injecting -B
-# flags into all the target tool command lines, but the library builds don't
-# support that for tools other than CC (i.e. there are CFLAGS but no overridable
-# flags for binutils).
-def CopyDriverForTargetLib(host):
-  return [
-      command.RemoveDirectory('driver'),
-      command.Mkdir('driver'),
-      command.Runnable(None, pnacl_commands.InstallDriverScripts,
-                       '%(driver)s', '%(cwd)s/driver',
-                       host_windows=TripleIsWindows(host),
-                       host_64bit=fnmatch.fnmatch(host, '*x86_64*'),
-                       extra_config=['BPREFIXES=%(abs_' + Mangle('llvm', host) +
-                        ')s %(abs_' + Mangle('binutils_pnacl', host) + ')s'])
-      ]
 
 
 # Copy the compiled bitcode archives used for linking C programs into the the
@@ -262,9 +242,7 @@ def TargetLibsSrc(GitSyncCmds):
   return source
 
 
-def BitcodeLibs(host, bias_arch):
-  def H(component_name):
-    return Mangle(component_name, host)
+def BitcodeLibs(bias_arch):
   def B(component_name):
     return Mangle(component_name, bias_arch)
   def BcSubdir(subdir, bias_arch):
@@ -276,10 +254,8 @@ def BitcodeLibs(host, bias_arch):
       B('newlib'): {
           'type': 'build',
           'output_subdir': BcSubdir('usr', bias_arch),
-          'dependencies': [ 'newlib_src', H('llvm'), H('binutils_pnacl')],
-          'inputs': { 'driver': os.path.join(NACL_DIR, 'pnacl', 'driver')},
-          'commands' :
-              CopyDriverForTargetLib(host) + [
+          'dependencies': [ 'newlib_src', 'target_lib_compiler'],
+          'commands' : [
               command.SkipForIncrementalCommand(
                   ['sh', '%(newlib_src)s/configure'] +
                   TARGET_TOOLS +
@@ -324,11 +300,9 @@ def BitcodeLibs(host, bias_arch):
           'type': 'build',
           'output_subdir': BcSubdir('usr', bias_arch),
           'dependencies': ['libcxx_src', 'libcxxabi_src', 'llvm_src', 'gcc_src',
-                           H('llvm'), H('binutils_pnacl'), B('newlib'),
+                           'target_lib_compiler', B('newlib'),
                            B('libs_support_bitcode')],
-          'inputs': { 'driver': os.path.join(NACL_DIR, 'pnacl', 'driver')},
           'commands' :
-              CopyDriverForTargetLib(host) +
               CopyBitcodeCLibs(bias_arch) + [
               command.SkipForIncrementalCommand(
                   ['cmake', '-G', 'Unix Makefiles',
@@ -375,11 +349,9 @@ def BitcodeLibs(host, bias_arch):
       B('libstdcxx'): {
           'type': 'build',
           'output_subdir': BcSubdir('usr', bias_arch),
-          'dependencies': ['gcc_src', 'gcc_src', H('llvm'), H('binutils_pnacl'),
+          'dependencies': ['gcc_src', 'gcc_src', 'target_lib_compiler',
                            B('newlib')],
-          'inputs': { 'driver': os.path.join(NACL_DIR, 'pnacl', 'driver')},
-          'commands' :
-              CopyDriverForTargetLib(host) + [
+          'commands' : [
               command.SkipForIncrementalCommand([
                   'sh',
                   command.path.join('%(gcc_src)s', 'libstdc++-v3',
@@ -425,12 +397,10 @@ def BitcodeLibs(host, bias_arch):
       B('libs_support_bitcode'): {
           'type': 'build',
           'output_subdir': BcSubdir('lib', bias_arch),
-          'dependencies': [ B('newlib'), H('llvm'), H('binutils_pnacl')],
+          'dependencies': [ B('newlib'), 'target_lib_compiler'],
           'inputs': { 'src': os.path.join(NACL_DIR,
-                                          'pnacl', 'support', 'bitcode'),
-                      'driver': os.path.join(NACL_DIR, 'pnacl', 'driver')},
-          'commands':
-              CopyDriverForTargetLib(host) + [
+                                          'pnacl', 'support', 'bitcode')},
+          'commands': [
               # Two versions of crt1.x exist, for different scenarios (with and
               # without EH).  See:
               # https://code.google.com/p/nativeclient/issues/detail?id=3069
@@ -460,10 +430,7 @@ def BitcodeLibs(host, bias_arch):
   return libs
 
 
-def NativeLibs(host, arch):
-  def H(component_name):
-    return Mangle(component_name, host)
-
+def NativeLibs(arch):
   setjmp_arch = arch
   if setjmp_arch.endswith('-nonsfi'):
     setjmp_arch = setjmp_arch[:-len('-nonsfi')]
@@ -488,17 +455,15 @@ def NativeLibs(host, arch):
           'type': 'build',
           'output_subdir': 'lib-' + arch,
           'dependencies': [ 'newlib_src', 'newlib_portable',
-                            H('llvm'), H('binutils_pnacl')],
+                            'target_lib_compiler'],
           # These libs include
           # arbitrary stuff from native_client/src/{include,untrusted,trusted}
           'inputs': { 'src': os.path.join(NACL_DIR, 'pnacl', 'support'),
                       'include': os.path.join(NACL_DIR, 'src'),
                       'newlib_subset': os.path.join(
                           NACL_DIR, 'src', 'third_party',
-                          'pnacl_native_newlib_subset'),
-                      'driver': os.path.join(NACL_DIR, 'pnacl', 'driver')},
-          'commands':
-              CopyDriverForTargetLib(host) + [
+                          'pnacl_native_newlib_subset')},
+          'commands': [
               BuildTargetNativeCmd('crtbegin.c', 'crtbegin.o', arch,
                                    output_dir='%(output)s'),
               BuildTargetNativeCmd('crtbegin.c', 'crtbegin_for_eh.o', arch,
@@ -544,10 +509,8 @@ def NativeLibs(host, arch):
       Mangle('compiler_rt', arch): {
           'type': 'build',
           'output_subdir': 'lib-' + arch,
-          'dependencies': [ 'compiler_rt_src', H('llvm'), H('binutils_pnacl')],
-          'inputs': { 'driver': os.path.join(NACL_DIR, 'pnacl', 'driver')},
-          'commands':
-              CopyDriverForTargetLib(host) + [
+          'dependencies': [ 'compiler_rt_src', 'target_lib_compiler'],
+          'commands': [
               command.Command(MakeCommand() + [
                   '-f',
                   command.path.join('%(compiler_rt_src)s', 'lib',
@@ -567,13 +530,11 @@ def NativeLibs(host, arch):
       Mangle('libgcc_eh', arch): {
           'type': 'build',
           'output_subdir': 'lib-' + arch,
-          'dependencies': [ 'gcc_src', H('llvm'), H('binutils_pnacl')],
-          'inputs': { 'scripts': os.path.join(NACL_DIR, 'pnacl', 'scripts'),
-                      'driver': os.path.join(NACL_DIR, 'pnacl', 'driver') },
-          'commands':
+          'dependencies': [ 'gcc_src', 'target_lib_compiler'],
+          'inputs': { 'scripts': os.path.join(NACL_DIR, 'pnacl', 'scripts')},
+          'commands': [
               # Instead of trying to use gcc's build system to build only
               # libgcc_eh, we just build the C files and archive them manually.
-              CopyDriverForTargetLib(host) + [
               command.RemoveDirectory('include'),
               command.Mkdir('include'),
               command.Copy(os.path.join('%(gcc_src)s', 'gcc',
