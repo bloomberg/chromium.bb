@@ -415,6 +415,11 @@ void WebSharedWorkerImpl::attachDevTools()
         m_attachDevToolsOnStart = true;
 }
 
+void WebSharedWorkerImpl::attachDevTools(const WebString& hostId)
+{
+    attachDevTools();
+}
+
 static void reconnectToWorkerContextInspectorTask(ExecutionContext* context, const String& savedState)
 {
     WorkerInspectorController* ic = toWorkerGlobalScope(context)->workerInspectorController();
@@ -425,6 +430,11 @@ static void reconnectToWorkerContextInspectorTask(ExecutionContext* context, con
 void WebSharedWorkerImpl::reattachDevTools(const WebString& savedState)
 {
     workerThread()->postDebuggerTask(createCrossThreadTask(reconnectToWorkerContextInspectorTask, String(savedState)));
+}
+
+void WebSharedWorkerImpl::reattachDevTools(const WebString& hostId, const WebString& savedState)
+{
+    reattachDevTools(savedState);
 }
 
 static void disconnectFromWorkerContextInspectorTask(ExecutionContext* context, bool)
