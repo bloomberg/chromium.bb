@@ -186,10 +186,10 @@ ss_seat_handle_keymap(void *data, struct wl_keyboard *keyboard,
 			goto error;
 		}
 
-		keymap = xkb_map_new_from_string(seat->base.compositor->xkb_context,
-						 map_str,
-						 XKB_KEYMAP_FORMAT_TEXT_V1,
-						 0);
+		keymap = xkb_keymap_new_from_string(seat->base.compositor->xkb_context,
+						    map_str,
+						    XKB_KEYMAP_FORMAT_TEXT_V1,
+						    0);
 		munmap(map_str, size);
 
 		if (!keymap) {
@@ -215,7 +215,7 @@ ss_seat_handle_keymap(void *data, struct wl_keyboard *keyboard,
 		weston_seat_init_keyboard(&seat->base, keymap);
 
 	if (keymap)
-		xkb_map_unref(keymap);
+		xkb_keymap_unref(keymap);
 
 	return;
 

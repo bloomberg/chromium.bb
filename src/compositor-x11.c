@@ -154,7 +154,7 @@ x11_compositor_get_keymap(struct x11_compositor *c)
 	copy_prop_value(options);
 #undef copy_prop_value
 
-	ret = xkb_map_new_from_names(c->base.xkb_context, &names, 0);
+	ret = xkb_keymap_new_from_names(c->base.xkb_context, &names, 0);
 
 	free(reply);
 	return ret;
@@ -323,7 +323,7 @@ x11_input_create(struct x11_compositor *c, int no_input)
 	if (weston_seat_init_keyboard(&c->core_seat, keymap) < 0)
 		return -1;
 	if (keymap)
-		xkb_map_unref(keymap);
+		xkb_keymap_unref(keymap);
 
 	x11_compositor_setup_xkb(c);
 

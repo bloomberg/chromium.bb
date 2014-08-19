@@ -2749,10 +2749,10 @@ keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
 		return;
 	}
 
-	keymap = xkb_map_new_from_string(input->display->xkb_context,
-					 map_str,
-					 XKB_KEYMAP_FORMAT_TEXT_V1,
-					 0);
+	keymap = xkb_keymap_new_from_string(input->display->xkb_context,
+					    map_str,
+					    XKB_KEYMAP_FORMAT_TEXT_V1,
+					    0);
 	munmap(map_str, size);
 	close(fd);
 
@@ -2764,7 +2764,7 @@ keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
 	state = xkb_state_new(keymap);
 	if (!state) {
 		fprintf(stderr, "failed to create XKB state\n");
-		xkb_map_unref(keymap);
+		xkb_keymap_unref(keymap);
 		return;
 	}
 
@@ -2774,11 +2774,11 @@ keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
 	input->xkb.state = state;
 
 	input->xkb.control_mask =
-		1 << xkb_map_mod_get_index(input->xkb.keymap, "Control");
+		1 << xkb_keymap_mod_get_index(input->xkb.keymap, "Control");
 	input->xkb.alt_mask =
-		1 << xkb_map_mod_get_index(input->xkb.keymap, "Mod1");
+		1 << xkb_keymap_mod_get_index(input->xkb.keymap, "Mod1");
 	input->xkb.shift_mask =
-		1 << xkb_map_mod_get_index(input->xkb.keymap, "Shift");
+		1 << xkb_keymap_mod_get_index(input->xkb.keymap, "Shift");
 }
 
 static void
@@ -2834,7 +2834,7 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 	if (input->grab && input->grab_button == 0)
 		return;
 
-	num_syms = xkb_key_get_syms(input->xkb.state, code, &syms);
+	num_syms = xkb_state_key_get_syms(input->xkb.state, code, &syms);
 
 	sym = XKB_KEY_NoSymbol;
 	if (num_syms == 1)
@@ -2893,8 +2893,8 @@ keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
 	xkb_state_update_mask(input->xkb.state, mods_depressed, mods_latched,
 			      mods_locked, 0, 0, group);
 	mask = xkb_state_serialize_mods(input->xkb.state,
-					XKB_STATE_DEPRESSED |
-					XKB_STATE_LATCHED);
+					XKB_STATE_MODS_DEPRESSED |
+					XKB_STATE_MODS_LATCHED);
 	input->modifiers = 0;
 	if (mask & input->xkb.control_mask)
 		input->modifiers |= MOD_CONTROL_MASK;
@@ -4993,7 +4993,7 @@ static void
 fini_xkb(struct input *input)
 {
 	xkb_state_unref(input->xkb.state);
-	xkb_map_unref(input->xkb.keymap);
+	xkb_keymap_unref(input->xkb.keymap);
 }
 
 #define MIN(a,b) ((a) < (b) ? a : b)

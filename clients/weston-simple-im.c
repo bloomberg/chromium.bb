@@ -187,10 +187,10 @@ input_method_keyboard_keymap(void *data,
 	}
 
 	keyboard->keymap =
-		xkb_map_new_from_string(keyboard->xkb_context,
-					map_str,
-					XKB_KEYMAP_FORMAT_TEXT_V1,
-					0);
+		xkb_keymap_new_from_string(keyboard->xkb_context,
+					   map_str,
+					   XKB_KEYMAP_FORMAT_TEXT_V1,
+					   0);
 
 	munmap(map_str, size);
 	close(fd);
@@ -203,16 +203,16 @@ input_method_keyboard_keymap(void *data,
 	keyboard->state = xkb_state_new(keyboard->keymap);
 	if (!keyboard->state) {
 		fprintf(stderr, "failed to create XKB state\n");
-		xkb_map_unref(keyboard->keymap);
+		xkb_keymap_unref(keyboard->keymap);
 		return;
 	}
 
 	keyboard->control_mask =
-		1 << xkb_map_mod_get_index(keyboard->keymap, "Control");
+		1 << xkb_keymap_mod_get_index(keyboard->keymap, "Control");
 	keyboard->alt_mask =
-		1 << xkb_map_mod_get_index(keyboard->keymap, "Mod1");
+		1 << xkb_keymap_mod_get_index(keyboard->keymap, "Mod1");
 	keyboard->shift_mask =
-		1 << xkb_map_mod_get_index(keyboard->keymap, "Shift");
+		1 << xkb_keymap_mod_get_index(keyboard->keymap, "Shift");
 }
 
 static void
@@ -234,7 +234,7 @@ input_method_keyboard_key(void *data,
 		return;
 
 	code = key + 8;
-	num_syms = xkb_key_get_syms(keyboard->state, code, &syms);
+	num_syms = xkb_state_key_get_syms(keyboard->state, code, &syms);
 
 	sym = XKB_KEY_NoSymbol;
 	if (num_syms == 1)
@@ -261,8 +261,8 @@ input_method_keyboard_modifiers(void *data,
 	xkb_state_update_mask(keyboard->state, mods_depressed,
 			      mods_latched, mods_locked, 0, 0, group);
 	mask = xkb_state_serialize_mods(keyboard->state,
-					XKB_STATE_DEPRESSED |
-					XKB_STATE_LATCHED);
+					XKB_STATE_MODS_DEPRESSED |
+					XKB_STATE_MODS_LATCHED);
 
 	keyboard->modifiers = 0;
 	if (mask & keyboard->control_mask)
