@@ -1550,12 +1550,6 @@ bool Internals::isUnclippedDescendant(Element* element, ExceptionState& exceptio
         return 0;
     }
 
-    // We used to compute isUnclippedDescendant only when preferCompositingToLCDTextEnabled,
-    // but now we compute it all the time.
-    // FIXME: Remove this if statement and rebaseline the tests that make this assumption.
-    if (!layer->compositor()->preferCompositingToLCDTextEnabled())
-        return false;
-
     return layer->isUnclippedDescendant();
 }
 
