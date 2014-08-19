@@ -1274,7 +1274,6 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {14, true, "\010" "ethitter" "\003" "com", true, kNoPins, DOMAIN_NOT_PINNED },
   {13, true, "\010" "firemail" "\002" "io", true, kNoPins, DOMAIN_NOT_PINNED },
   {13, true, "\007" "gmantra" "\003" "org", true, kNoPins, DOMAIN_NOT_PINNED },
-  {16, true, "\013" "honeybadger" "\002" "io", true, kNoPins, DOMAIN_NOT_PINNED },
   {17, true, "\014" "mach-politik" "\002" "ch", true, kNoPins, DOMAIN_NOT_PINNED },
   {11, true, "\006" "malnex" "\002" "de", true, kNoPins, DOMAIN_NOT_PINNED },
   {19, true, "\014" "mutantmonkey" "\004" "sexy", true, kNoPins, DOMAIN_NOT_PINNED },
@@ -1288,6 +1287,14 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {13, true, "\010" "websenat" "\002" "de", true, kNoPins, DOMAIN_NOT_PINNED },
   {14, true, "\010" "zeropush" "\003" "com", true, kNoPins, DOMAIN_NOT_PINNED },
   {11, true, "\006" "ludwig" "\002" "im", true, kNoPins, DOMAIN_NOT_PINNED },
+  {13, false, "\007" "gparent" "\003" "org", true, kNoPins, DOMAIN_NOT_PINNED },
+  {18, false, "\004" "blog" "\007" "gparent" "\003" "org", true, kNoPins, DOMAIN_NOT_PINNED },
+  {15, false, "\001" "m" "\007" "gparent" "\003" "org", true, kNoPins, DOMAIN_NOT_PINNED },
+  {16, false, "\002" "ca" "\007" "gparent" "\003" "org", true, kNoPins, DOMAIN_NOT_PINNED },
+  {14, false, "\011" "simpletax" "\002" "ca", true, kNoPins, DOMAIN_NOT_PINNED },
+  {19, false, "\004" "help" "\011" "simpletax" "\002" "ca", true, kNoPins, DOMAIN_NOT_PINNED },
+  {18, false, "\003" "app" "\011" "simpletax" "\002" "ca", true, kNoPins, DOMAIN_NOT_PINNED },
+  {35, false, "\006" "daphne" "\012" "informatik" "\014" "uni-freiburg" "\002" "de", true, kNoPins, DOMAIN_NOT_PINNED },
 };
 static const size_t kNumPreloadedSTS = ARRAYSIZE_UNSAFE(kPreloadedSTS);
 

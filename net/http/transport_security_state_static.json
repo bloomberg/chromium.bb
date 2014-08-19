@@ -1036,7 +1036,6 @@
     { "name": "ethitter.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "firemail.io", "include_subdomains": true, "mode": "force-https" },
     { "name": "gmantra.org", "include_subdomains": true, "mode": "force-https" },
-    { "name": "honeybadger.io", "include_subdomains": true, "mode": "force-https" },
     { "name": "mach-politik.ch", "include_subdomains": true, "mode": "force-https" },
     { "name": "malnex.de", "include_subdomains": true, "mode": "force-https" },
     { "name": "mutantmonkey.sexy", "include_subdomains": true, "mode": "force-https" },
@@ -1050,6 +1049,14 @@
     { "name": "websenat.de", "include_subdomains": true, "mode": "force-https" },
     { "name": "zeropush.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "ludwig.im", "include_subdomains": true, "mode": "force-https" },
+    { "name": "gparent.org", "mode": "force-https" },
+    { "name": "blog.gparent.org", "mode": "force-https" },
+    { "name": "m.gparent.org", "mode": "force-https" },
+    { "name": "ca.gparent.org", "mode": "force-https" },
+    { "name": "simpletax.ca", "mode": "force-https" },
+    { "name": "help.simpletax.ca", "mode": "force-https" },
+    { "name": "app.simpletax.ca", "mode": "force-https" },
+    { "name": "daphne.informatik.uni-freiburg.de", "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
