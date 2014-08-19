@@ -48,8 +48,8 @@ namespace blink {
 class Dictionary;
 class ExecutionContext;
 class ServiceWorker;
-class WebServiceWorkerProvider;
 class WebServiceWorker;
+class WebServiceWorkerProvider;
 
 class ServiceWorkerContainer FINAL
     : public RefCountedWillBeGarbageCollectedFinalized<ServiceWorkerContainer>

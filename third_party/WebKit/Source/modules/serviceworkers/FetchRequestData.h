@@ -15,10 +15,6 @@
 #include "wtf/text/WTFString.h"
 
 namespace blink {
-class WebServiceWorkerRequest;
-}
-
-namespace blink {
 
 class ExecutionContext;
 class FetchHeaderList;
@@ -26,6 +22,7 @@ struct ResourceLoaderOptions;
 class ResourceRequest;
 class SecurityOrigin;
 struct ThreadableLoaderOptions;
+class WebServiceWorkerRequest;
 
 class FetchRequestData FINAL : public RefCountedWillBeGarbageCollectedFinalized<FetchRequestData> {
     WTF_MAKE_NONCOPYABLE(FetchRequestData);
@@ -35,10 +32,9 @@ public:
     enum Context { ChildContext, ConnectContext, DownloadContext, FontContext, FormContext, ImageContext, ManifestContext, MediaContext, NavigateContext, ObjectContext, PingContext, PopupContext, PrefetchContext, ScriptContext, ServiceWorkerContext, SharedWorkerContext, StyleContext, WorkerContext, NullContext };
     enum Tainting { BasicTainting, CORSTainting, OpaqueTainting };
 
-    class Referrer {
+    class Referrer FINAL {
     public:
         Referrer() : m_type(ClientReferrer) { }
-        ~Referrer() { }
         bool isNone() const { return m_type == NoneReferrer; }
         bool isClient() const { return m_type == ClientReferrer; }
         bool isURL() const { return m_type == URLReferrer; }

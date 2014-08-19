@@ -11,12 +11,11 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/AtomicString.h"
 
-namespace blink { class WebServiceWorkerResponse; }
-
 namespace blink {
 
 class BlobDataHandle;
 class FetchHeaderList;
+class WebServiceWorkerResponse;
 
 class FetchResponseData FINAL : public RefCountedWillBeGarbageCollectedFinalized<FetchResponseData> {
     WTF_MAKE_NONCOPYABLE(FetchResponseData);

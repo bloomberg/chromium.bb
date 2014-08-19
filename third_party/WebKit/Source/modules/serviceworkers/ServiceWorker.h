@@ -46,12 +46,8 @@ namespace blink {
 class ScriptState;
 class ScriptPromiseResolver;
 
-class ServiceWorker
-    : public AbstractWorker
-    , public WebServiceWorkerProxy {
+class ServiceWorker FINAL : public AbstractWorker, public WebServiceWorkerProxy {
 public:
-    virtual ~ServiceWorker() { }
-
     // For CallbackPromiseAdapter
     typedef WebServiceWorker WebType;
     static PassRefPtrWillBeRawPtr<ServiceWorker> take(ScriptPromiseResolver*, WebType* worker);

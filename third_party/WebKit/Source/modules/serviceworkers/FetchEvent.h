@@ -22,7 +22,6 @@ class FetchEvent FINAL : public Event {
 public:
     static PassRefPtrWillBeRawPtr<FetchEvent> create();
     static PassRefPtrWillBeRawPtr<FetchEvent> create(PassRefPtr<RespondWithObserver>, PassRefPtrWillBeRawPtr<Request>);
-    virtual ~FetchEvent() { }
 
     PassRefPtrWillBeRawPtr<Request> request() const;
     bool isReload() const;

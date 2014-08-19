@@ -16,7 +16,6 @@ namespace blink {
 
 class WebServiceWorkerCacheStorage;
 
-// See https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#cache-storage
 class CacheStorage FINAL : public RefCountedWillBeGarbageCollected<CacheStorage>, public ScriptWrappable {
     WTF_MAKE_NONCOPYABLE(CacheStorage);
 public:

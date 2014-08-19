@@ -35,7 +35,6 @@ public:
     };
 
     static PassRefPtrWillBeRawPtr<FetchBodyStream> create(ExecutionContext*, PassRefPtr<BlobDataHandle>);
-    ~FetchBodyStream() { }
 
     ScriptPromise asArrayBuffer(ScriptState*);
     ScriptPromise asBlob(ScriptState*);

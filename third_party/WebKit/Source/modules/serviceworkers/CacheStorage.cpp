@@ -15,7 +15,7 @@ namespace blink {
 
 namespace {
 
-const char* CacheErrorToString(WebServiceWorkerCacheError reason)
+const char* cacheErrorToString(WebServiceWorkerCacheError reason)
 {
     // FIXME: Construct correct DOM error objects rather than returning strings.
     switch (reason) {
@@ -44,7 +44,7 @@ public:
 
     virtual void onError(WebServiceWorkerCacheError* reason) OVERRIDE
     {
-        m_resolver->reject(CacheErrorToString(*reason));
+        m_resolver->reject(cacheErrorToString(*reason));
     }
 
 private:
@@ -64,7 +64,7 @@ public:
 
     virtual void onError(WebServiceWorkerCacheError* reason) OVERRIDE
     {
-        m_resolver->reject(CacheErrorToString(*reason));
+        m_resolver->reject(cacheErrorToString(*reason));
     }
 
 private:
@@ -87,7 +87,7 @@ public:
 
     virtual void onError(WebServiceWorkerCacheError* reason) OVERRIDE
     {
-        m_resolver->reject(CacheErrorToString(*reason));
+        m_resolver->reject(cacheErrorToString(*reason));
     }
 
 private:

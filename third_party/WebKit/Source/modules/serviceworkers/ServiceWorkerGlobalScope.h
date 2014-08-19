@@ -44,8 +44,8 @@ class FetchManager;
 class Request;
 class ScriptPromise;
 class ScriptState;
-class ServiceWorkerThread;
 class ServiceWorkerClients;
+class ServiceWorkerThread;
 class WorkerThreadStartupData;
 
 class ServiceWorkerGlobalScope FINAL : public WorkerGlobalScope {

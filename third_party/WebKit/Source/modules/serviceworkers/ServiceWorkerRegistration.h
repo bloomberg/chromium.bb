@@ -30,8 +30,6 @@ class ServiceWorkerRegistration FINAL
     REFCOUNTED_EVENT_TARGET(ServiceWorkerRegistration);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistration);
 public:
-    virtual ~ServiceWorkerRegistration() { }
-
     // EventTarget overrides.
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual ExecutionContext* executionContext() const OVERRIDE { return ActiveDOMObject::executionContext(); }
