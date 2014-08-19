@@ -246,7 +246,7 @@ class NET_EXPORT SdchManager : public NON_EXPORTED_BASE(base::NonThreadSafe) {
   static void SdchErrorRecovery(ProblemCodes problem);
 
   // Register a fetcher that this class can use to obtain dictionaries.
-  void set_sdch_fetcher(SdchFetcher* fetcher);
+  void set_sdch_fetcher(scoped_ptr<SdchFetcher> fetcher);
 
   // Enables or disables SDCH compression.
   static void EnableSdchSupport(bool enabled);
@@ -336,6 +336,10 @@ class NET_EXPORT SdchManager : public NON_EXPORTED_BASE(base::NonThreadSafe) {
 
   void SetAllowLatencyExperiment(const GURL& url, bool enable);
 
+  int GetFetchesCountForTesting() const {
+    return fetches_count_for_testing_;
+  }
+
  private:
   struct BlacklistInfo {
     BlacklistInfo()
@@ -375,6 +379,8 @@ class NET_EXPORT SdchManager : public NON_EXPORTED_BASE(base::NonThreadSafe) {
   // List of hostnames for which a latency experiment is allowed (because a
   // round trip test has recently passed).
   ExperimentSet allow_latency_experiment_;
+
+  int fetches_count_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(SdchManager);
 };

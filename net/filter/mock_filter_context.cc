@@ -12,11 +12,18 @@ MockFilterContext::MockFilterContext()
     : is_cached_content_(false),
       is_download_(false),
       is_sdch_response_(false),
+      ok_to_call_get_url_(true),
       response_code_(-1),
       context_(new URLRequestContext()) {
 }
 
 MockFilterContext::~MockFilterContext() {}
+
+void MockFilterContext::NukeUnstableInterfaces() {
+  context_.reset();
+  ok_to_call_get_url_ = false;
+  request_time_ = base::Time();
+}
 
 bool MockFilterContext::GetMimeType(std::string* mime_type) const {
   *mime_type = mime_type_;
@@ -26,6 +33,7 @@ bool MockFilterContext::GetMimeType(std::string* mime_type) const {
 // What URL was used to access this data?
 // Return false if gurl is not present.
 bool MockFilterContext::GetURL(GURL* gurl) const {
+  DCHECK(ok_to_call_get_url_);
   *gurl = gurl_;
   return true;
 }

@@ -29,11 +29,11 @@ class NET_EXPORT SdchDictionaryFetcher
       public SdchFetcher,
       public base::NonThreadSafe {
  public:
-  // Consumer must guarantee that the SdchManager pointer outlives
+  // The consumer must guarantee that |*manager| outlives
   // this object.  The current implementation guarantees this by
   // the SdchManager owning this object.
   SdchDictionaryFetcher(SdchManager* manager,
-                        URLRequestContextGetter* context);
+                        scoped_refptr<URLRequestContextGetter> context);
   virtual ~SdchDictionaryFetcher();
 
   // Implementation of SdchFetcher class.

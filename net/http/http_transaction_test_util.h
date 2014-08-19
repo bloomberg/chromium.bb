@@ -28,6 +28,7 @@
 namespace net {
 class HttpRequestHeaders;
 class IOBuffer;
+struct HttpRequestInfo;
 }
 
 //-----------------------------------------------------------------------------
@@ -227,6 +228,7 @@ class MockNetworkTransaction
     return websocket_handshake_stream_create_helper_;
   }
   net::RequestPriority priority() const { return priority_; }
+  const net::HttpRequestInfo* request() const { return request_; }
 
  private:
   int StartInternal(const net::HttpRequestInfo* request,

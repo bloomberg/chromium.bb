@@ -2,3 +2,9 @@ include_rules = [
   # For nss_context_chromeos_browsertest.cc.
   "+components/user_manager",
 ]
+
+specific_include_rules = {
+  ".*sdch_browsertest.cc": [
+    "+sdch/open-vcdiff",
+  ],
+}

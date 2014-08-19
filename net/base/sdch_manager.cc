@@ -220,7 +220,8 @@ bool SdchManager::Dictionary::DomainMatch(const GURL& gurl,
 }
 
 //------------------------------------------------------------------------------
-SdchManager::SdchManager() {
+SdchManager::SdchManager()
+    : fetches_count_for_testing_(0) {
   DCHECK(CalledOnValidThread());
 }
 
@@ -250,9 +251,9 @@ void SdchManager::SdchErrorRecovery(ProblemCodes problem) {
   UMA_HISTOGRAM_ENUMERATION("Sdch3.ProblemCodes_4", problem, MAX_PROBLEM_CODE);
 }
 
-void SdchManager::set_sdch_fetcher(SdchFetcher* fetcher) {
+void SdchManager::set_sdch_fetcher(scoped_ptr<SdchFetcher> fetcher) {
   DCHECK(CalledOnValidThread());
-  fetcher_.reset(fetcher);
+  fetcher_ = fetcher.Pass();
 }
 
 // static
@@ -358,8 +359,10 @@ bool SdchManager::IsInSupportedDomain(const GURL& url) {
 void SdchManager::FetchDictionary(const GURL& request_url,
                                   const GURL& dictionary_url) {
   DCHECK(CalledOnValidThread());
-  if (CanFetchDictionary(request_url, dictionary_url) && fetcher_.get())
+  if (CanFetchDictionary(request_url, dictionary_url) && fetcher_.get()) {
+    ++fetches_count_for_testing_;
     fetcher_->Schedule(dictionary_url);
+  }
 }
 
 bool SdchManager::CanFetchDictionary(const GURL& referring_url,
@@ -582,18 +585,8 @@ void SdchManager::UrlSafeBase64Encode(const std::string& input,
   // Since this is only done during a dictionary load, and hashes are only 8
   // characters, we just do the simple fixup, rather than rewriting the encoder.
   base::Base64Encode(input, output);
-  for (size_t i = 0; i < output->size(); ++i) {
-    switch (output->data()[i]) {
-      case '+':
-        (*output)[i] = '-';
-        continue;
-      case '/':
-        (*output)[i] = '_';
-        continue;
-      default:
-        continue;
-    }
-  }
+  std::replace(output->begin(), output->end(), '+', '-');
+  std::replace(output->begin(), output->end(), '/', '_');
 }
 
 }  // namespace net

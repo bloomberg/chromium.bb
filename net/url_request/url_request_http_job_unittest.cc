@@ -54,6 +54,37 @@ class URLRequestHttpJobTest : public ::testing::Test {
     context_.set_http_transaction_factory(&network_layer_);
   }
 
+  bool TransactionAcceptsSdchEncoding() {
+    base::WeakPtr<MockNetworkTransaction> transaction(
+        network_layer_.last_transaction());
+    EXPECT_TRUE(transaction);
+    if (!transaction) return false;
+
+    const HttpRequestInfo* request_info = transaction->request();
+    EXPECT_TRUE(request_info);
+    if (!request_info) return false;
+
+    std::string encoding_headers;
+    bool get_success = request_info->extra_headers.GetHeader(
+        "Accept-Encoding", &encoding_headers);
+    EXPECT_TRUE(get_success);
+    if (!get_success) return false;
+
+    // This check isn't wrapped with EXPECT* macros because different
+    // results from this function may be expected in different tests.
+    std::vector<std::string> tokens;
+    size_t num_tokens = Tokenize(encoding_headers, ",", &tokens);
+    for (size_t i = 0; i < num_tokens; i++) {
+      if (!base::strncasecmp(tokens[i].data(), "sdch", tokens[i].length()))
+        return true;
+    }
+    return false;
+  }
+
+  void EnableSdch() {
+    context_.SetSdchManager(scoped_ptr<SdchManager>(new SdchManager).Pass());
+  }
+
   MockNetworkLayer network_layer_;
   TestURLRequestContext context_;
   TestDelegate delegate_;
@@ -123,6 +154,24 @@ TEST_F(URLRequestHttpJobTest, SetSubsequentTransactionPriority) {
   job->Start();
   ASSERT_TRUE(network_layer_.last_transaction());
   EXPECT_EQ(LOW, network_layer_.last_transaction()->priority());
+}
+
+// Confirm we do advertise SDCH encoding in the case of a GET.
+TEST_F(URLRequestHttpJobTest, SdchAdvertisementGet) {
+  EnableSdch();
+  req_.set_method("GET");  // Redundant with default.
+  scoped_refptr<TestURLRequestHttpJob> job(new TestURLRequestHttpJob(&req_));
+  job->Start();
+  EXPECT_TRUE(TransactionAcceptsSdchEncoding());
+}
+
+// Confirm we don't advertise SDCH encoding in the case of a POST.
+TEST_F(URLRequestHttpJobTest, SdchAdvertisementPost) {
+  EnableSdch();
+  req_.set_method("POST");
+  scoped_refptr<TestURLRequestHttpJob> job(new TestURLRequestHttpJob(&req_));
+  job->Start();
+  EXPECT_FALSE(TransactionAcceptsSdchEncoding());
 }
 
 // This base class just serves to set up some things before the TestURLRequest

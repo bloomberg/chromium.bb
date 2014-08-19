@@ -165,6 +165,25 @@ TEST_F(SdchFilterTest, EmptyInputOk) {
   filter_context()->SetURL(GURL(url_string));
   scoped_ptr<Filter> filter(Filter::Factory(filter_types, *filter_context()));
 
+  // With no input data, try to read output.
+  int output_bytes_or_buffer_size = sizeof(output_buffer);
+  Filter::FilterStatus status = filter->ReadData(output_buffer,
+                                                 &output_bytes_or_buffer_size);
+
+  EXPECT_EQ(0, output_bytes_or_buffer_size);
+  EXPECT_EQ(Filter::FILTER_NEED_MORE_DATA, status);
+}
+
+// Make sure that the filter context has everything that might be
+// nuked from it during URLRequest teardown before the SdchFilter
+// destructor.
+TEST_F(SdchFilterTest, SparseContextOk) {
+  std::vector<Filter::FilterType> filter_types;
+  filter_types.push_back(Filter::FILTER_TYPE_SDCH);
+  char output_buffer[20];
+  std::string url_string("http://ignore.com");
+  filter_context()->SetURL(GURL(url_string));
+  scoped_ptr<Filter> filter(Filter::Factory(filter_types, *filter_context()));
 
   // With no input data, try to read output.
   int output_bytes_or_buffer_size = sizeof(output_buffer);
@@ -173,6 +192,13 @@ TEST_F(SdchFilterTest, EmptyInputOk) {
 
   EXPECT_EQ(0, output_bytes_or_buffer_size);
   EXPECT_EQ(Filter::FILTER_NEED_MORE_DATA, status);
+
+  // Partially tear down context.  Anything that goes through request()
+  // without checking it for null in the URLRequestJob::HttpFilterContext
+  // implementation is suspect.  Everything that does check it for null should
+  // return null.  This is to test for incorrectly relying on filter_context()
+  // from the SdchFilter destructor.
+  filter_context()->NukeUnstableInterfaces();
 }
 
 TEST_F(SdchFilterTest, PassThroughWhenTentative) {

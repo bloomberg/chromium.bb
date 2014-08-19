@@ -579,15 +579,16 @@ void ProfileImplIOData::InitializeInternal(
 
   // Setup the SDCHManager for this profile.
   sdch_manager_.reset(new net::SdchManager);
-  sdch_manager_->set_sdch_fetcher(
-      new net::SdchDictionaryFetcher(
-          sdch_manager_.get(),
-          // SdchDictionaryFetcher takes a reference to the Getter, and
-          // hence implicitly takes ownership.
-          new net::TrivialURLRequestContextGetter(
-              main_context,
-              content::BrowserThread::GetMessageLoopProxyForThread(
-                  content::BrowserThread::IO))));
+
+  scoped_refptr<net::URLRequestContextGetter> getter(
+      new net::TrivialURLRequestContextGetter(
+          main_context,
+          content::BrowserThread::GetMessageLoopProxyForThread(
+              content::BrowserThread::IO)));
+
+  sdch_manager_->set_sdch_fetcher(scoped_ptr<net::SdchFetcher>(
+      new net::SdchDictionaryFetcher(sdch_manager_.get(), getter)).Pass());
+
   main_context->set_sdch_manager(sdch_manager_.get());
 
   // Create a media request context based on the main context, but using a

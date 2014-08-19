@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "net/base/net_log.h"
 #include "net/base/network_delegate.h"
+#include "net/base/sdch_manager.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cookies/cookie_store.h"
 #include "net/dns/host_resolver.h"
@@ -122,6 +123,12 @@ void URLRequestContextStorage::set_http_user_agent_settings(
     HttpUserAgentSettings* http_user_agent_settings) {
   context_->set_http_user_agent_settings(http_user_agent_settings);
   http_user_agent_settings_.reset(http_user_agent_settings);
+}
+
+void URLRequestContextStorage::set_sdch_manager(
+    scoped_ptr<SdchManager> sdch_manager) {
+  context_->set_sdch_manager(sdch_manager.get());
+  sdch_manager_ = sdch_manager.Pass();
 }
 
 }  // namespace net

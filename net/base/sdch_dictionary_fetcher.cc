@@ -16,7 +16,7 @@ namespace net {
 
 SdchDictionaryFetcher::SdchDictionaryFetcher(
     SdchManager* manager,
-    URLRequestContextGetter* context)
+    scoped_refptr<URLRequestContextGetter> context)
     : manager_(manager),
       weak_factory_(this),
       task_is_pending_(false),
