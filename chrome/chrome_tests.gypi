@@ -1620,7 +1620,6 @@
         'test/data/webui/print_preview.js',
         'test/data/webui/sandboxstatus_browsertest.js',
         'test/data/webui/webui_resource_browsertest.cc',
-        'test/gpu/gpu_feature_browsertest.cc',
         'test/gpu/webgl_infobar_browsertest.cc',
         'test/ppapi/ppapi_browsertest.cc',
         'test/remoting/auth_browsertest.cc',

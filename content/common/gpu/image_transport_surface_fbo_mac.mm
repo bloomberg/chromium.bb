@@ -184,8 +184,6 @@ void ImageTransportSurfaceFBO::UnblockContextAfterPendingSwap() {
 
 void ImageTransportSurfaceFBO::OnResize(gfx::Size size,
                                         float scale_factor) {
-  // This trace event is used in gpu_feature_browsertest.cc - the test will need
-  // to be updated if this event is changed or moved.
   TRACE_EVENT2("gpu", "ImageTransportSurfaceFBO::OnResize",
                "old_width", size_.width(), "new_width", size.width());
   // Caching |context_| from OnMakeCurrent. It should still be current.
@@ -248,8 +246,6 @@ void ImageTransportSurfaceFBO::CreateFramebuffer() {
   if (has_complete_framebuffer_ && new_rounded_size == rounded_size_)
     return;
 
-  // This trace event is used in gpu_feature_browsertest.cc - the test will need
-  // to be updated if this event is changed or moved.
   TRACE_EVENT2("gpu", "ImageTransportSurfaceFBO::CreateFramebuffer",
                "width", new_rounded_size.width(),
                "height", new_rounded_size.height());
