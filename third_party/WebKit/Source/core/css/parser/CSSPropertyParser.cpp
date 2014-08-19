@@ -7369,9 +7369,6 @@ PassRefPtrWillBeRawPtr<CSSFilterValue> CSSPropertyParser::parseBuiltinFilterArgu
     case CSSFilterValue::OpacityFilterOperation:
     case CSSFilterValue::ContrastFilterOperation: {
         // One optional argument, 0-1 or 0%-100%, if missing use 100%.
-        if (args->size() > 1)
-            return nullptr;
-
         if (args->size()) {
             CSSParserValue* value = args->current();
             // FIXME (crbug.com/397061): Support calc expressions like calc(10% + 0.5)
@@ -7396,9 +7393,6 @@ PassRefPtrWillBeRawPtr<CSSFilterValue> CSSPropertyParser::parseBuiltinFilterArgu
     }
     case CSSFilterValue::BrightnessFilterOperation: {
         // One optional argument, if missing use 100%.
-        if (args->size() > 1)
-            return nullptr;
-
         if (args->size()) {
             CSSParserValue* value = args->current();
             // FIXME (crbug.com/397061): Support calc expressions like calc(10% + 0.5)
@@ -7411,9 +7405,6 @@ PassRefPtrWillBeRawPtr<CSSFilterValue> CSSPropertyParser::parseBuiltinFilterArgu
     }
     case CSSFilterValue::HueRotateFilterOperation: {
         // hue-rotate() takes one optional angle.
-        if (args->size() > 1)
-            return nullptr;
-
         if (args->size()) {
             CSSParserValue* argument = args->current();
             if (!validUnit(argument, FAngle, HTMLStandardMode))
@@ -7425,9 +7416,6 @@ PassRefPtrWillBeRawPtr<CSSFilterValue> CSSPropertyParser::parseBuiltinFilterArgu
     }
     case CSSFilterValue::BlurFilterOperation: {
         // Blur takes a single length. Zero parameters are allowed.
-        if (args->size() > 1)
-            return nullptr;
-
         if (args->size()) {
             CSSParserValue* argument = args->current();
             if (!validUnit(argument, FLength | FNonNeg, HTMLStandardMode))
@@ -7480,7 +7468,7 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseFilter()
                 return nullptr;
 
             CSSParserValueList* args = value->function->args.get();
-            if (!args)
+            if (!args || args->size() > maximumArgumentCount)
                 return nullptr;
 
             RefPtrWillBeRawPtr<CSSFilterValue> filterValue = parseBuiltinFilterArguments(args, filterType);
