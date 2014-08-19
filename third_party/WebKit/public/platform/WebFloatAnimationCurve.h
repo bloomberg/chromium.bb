@@ -25,7 +25,7 @@
 #ifndef WebFloatAnimationCurve_h
 #define WebFloatAnimationCurve_h
 
-#include "WebAnimationCurve.h"
+#include "WebCompositorAnimationCurve.h"
 
 #include "WebCommon.h"
 #include "WebFloatKeyframe.h"
@@ -33,7 +33,7 @@
 namespace blink {
 
 // A keyframed float animation curve.
-class WebFloatAnimationCurve : public WebAnimationCurve {
+class WebFloatAnimationCurve : public WebCompositorAnimationCurve {
 public:
     virtual ~WebFloatAnimationCurve() { }
 

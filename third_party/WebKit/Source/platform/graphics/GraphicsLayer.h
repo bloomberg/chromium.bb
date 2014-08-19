@@ -38,7 +38,7 @@
 #include "platform/graphics/OpaqueRectTrackingContentLayerDelegate.h"
 #include "platform/graphics/filters/FilterOperations.h"
 #include "platform/transforms/TransformationMatrix.h"
-#include "public/platform/WebAnimationDelegate.h"
+#include "public/platform/WebCompositorAnimationDelegate.h"
 #include "public/platform/WebContentLayer.h"
 #include "public/platform/WebImageLayer.h"
 #include "public/platform/WebLayerClient.h"
@@ -59,7 +59,7 @@ class Image;
 class JSONObject;
 class ScrollableArea;
 class TextStream;
-class WebAnimation;
+class WebCompositorAnimation;
 class WebLayer;
 
 // FIXME: find a better home for this declaration.
@@ -78,7 +78,7 @@ typedef Vector<GraphicsLayer*, 64> GraphicsLayerVector;
 // GraphicsLayer is an abstraction for a rendering surface with backing store,
 // which may have associated transformation and animations.
 
-class PLATFORM_EXPORT GraphicsLayer : public GraphicsContextPainter, public WebAnimationDelegate, public WebLayerScrollClient, public WebLayerClient {
+class PLATFORM_EXPORT GraphicsLayer : public GraphicsContextPainter, public WebCompositorAnimationDelegate, public WebLayerScrollClient, public WebLayerClient {
     WTF_MAKE_NONCOPYABLE(GraphicsLayer); WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<GraphicsLayer> create(GraphicsLayerFactory*, GraphicsLayerClient*);
@@ -193,7 +193,7 @@ public:
     // Return true if the animation is handled by the compositing system. If this returns
     // false, the animation will be run by AnimationController.
     // These methods handle both transitions and keyframe animations.
-    bool addAnimation(PassOwnPtr<WebAnimation>);
+    bool addAnimation(PassOwnPtr<WebCompositorAnimation>);
     void pauseAnimation(int animationId, double /*timeOffset*/);
     void removeAnimation(int animationId);
 
@@ -235,9 +235,9 @@ public:
     // GraphicsContextPainter implementation.
     virtual void paint(GraphicsContext&, const IntRect& clip) OVERRIDE;
 
-    // WebAnimationDelegate implementation.
-    virtual void notifyAnimationStarted(double monotonicTime, WebAnimation::TargetProperty) OVERRIDE;
-    virtual void notifyAnimationFinished(double monotonicTime, WebAnimation::TargetProperty) OVERRIDE;
+    // WebCompositorAnimationDelegate implementation.
+    virtual void notifyAnimationStarted(double monotonicTime, WebCompositorAnimation::TargetProperty) OVERRIDE;
+    virtual void notifyAnimationFinished(double monotonicTime, WebCompositorAnimation::TargetProperty) OVERRIDE;
 
     // WebLayerScrollClient implementation.
     virtual void didScroll() OVERRIDE;

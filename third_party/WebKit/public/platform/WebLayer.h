@@ -26,11 +26,10 @@
 #ifndef WebLayer_h
 #define WebLayer_h
 
-#include "WebAnimation.h"
 #include "WebBlendMode.h"
 #include "WebColor.h"
 #include "WebCommon.h"
-#include "WebCompositorAnimationDelegate.h"
+#include "WebCompositorAnimation.h"
 #include "WebFloatPoint3D.h"
 #include "WebPoint.h"
 #include "WebRect.h"
@@ -42,7 +41,7 @@ class SkMatrix44;
 class SkImageFilter;
 
 namespace blink {
-
+class WebCompositorAnimationDelegate;
 class WebFilterOperations;
 class WebLayerClient;
 class WebLayerScrollClient;
@@ -132,18 +131,18 @@ public:
     // stopped. The WebLayer does not take ownership of the delegate, and it is
     // the responsibility of the client to reset the layer's delegate before
     // deleting the delegate.
-    virtual void setAnimationDelegate(WebAnimationDelegate*) = 0;
+    virtual void setAnimationDelegate(WebCompositorAnimationDelegate*) = 0;
 
 
     // Returns false if the animation cannot be added.
-    // Takes ownership of the WebAnimation object.
+    // Takes ownership of the WebCompositorAnimation object.
     virtual bool addAnimation(WebCompositorAnimation*) = 0;
 
     // Removes all animations with the given id.
     virtual void removeAnimation(int animationId) = 0;
 
     // Removes all animations with the given id targeting the given property.
-    virtual void removeAnimation(int animationId, WebAnimation::TargetProperty) = 0;
+    virtual void removeAnimation(int animationId, WebCompositorAnimation::TargetProperty) = 0;
 
     // Pauses all animations with the given id.
     virtual void pauseAnimation(int animationId, double timeOffset) = 0;

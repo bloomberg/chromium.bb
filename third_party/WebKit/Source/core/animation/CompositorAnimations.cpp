@@ -43,7 +43,7 @@
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "platform/geometry/FloatBox.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebAnimation.h"
+#include "public/platform/WebCompositorAnimation.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebFilterAnimationCurve.h"
 #include "public/platform/WebFilterKeyframe.h"
@@ -257,7 +257,7 @@ bool CompositorAnimations::startAnimationOnCompositor(const Element& element, do
     RenderLayer* layer = toRenderBoxModelObject(element.renderer())->layer();
     ASSERT(layer);
 
-    Vector<OwnPtr<blink::WebAnimation> > animations;
+    Vector<OwnPtr<WebCompositorAnimation> > animations;
     CompositorAnimationsImpl::getAnimationOnCompositor(timing, startTime, keyframeEffect, animations);
     ASSERT(!animations.isEmpty());
     for (size_t i = 0; i < animations.size(); ++i) {
@@ -366,7 +366,7 @@ void addKeyframeWithTimingFunction(PlatformAnimationCurveType& curve, const Plat
 
     switch (timingFunction->type()) {
     case TimingFunction::LinearFunction:
-        curve.add(keyframe, blink::WebAnimationCurve::TimingFunctionTypeLinear);
+        curve.add(keyframe, WebCompositorAnimationCurve::TimingFunctionTypeLinear);
         return;
 
     case TimingFunction::CubicBezierFunction: {
@@ -376,19 +376,19 @@ void addKeyframeWithTimingFunction(PlatformAnimationCurveType& curve, const Plat
             curve.add(keyframe, cubic->x1(), cubic->y1(), cubic->x2(), cubic->y2());
         } else {
 
-            blink::WebAnimationCurve::TimingFunctionType easeType;
+            WebCompositorAnimationCurve::TimingFunctionType easeType;
             switch (cubic->subType()) {
             case CubicBezierTimingFunction::Ease:
-                easeType = blink::WebAnimationCurve::TimingFunctionTypeEase;
+                easeType = WebCompositorAnimationCurve::TimingFunctionTypeEase;
                 break;
             case CubicBezierTimingFunction::EaseIn:
-                easeType = blink::WebAnimationCurve::TimingFunctionTypeEaseIn;
+                easeType = WebCompositorAnimationCurve::TimingFunctionTypeEaseIn;
                 break;
             case CubicBezierTimingFunction::EaseOut:
-                easeType = blink::WebAnimationCurve::TimingFunctionTypeEaseOut;
+                easeType = WebCompositorAnimationCurve::TimingFunctionTypeEaseOut;
                 break;
             case CubicBezierTimingFunction::EaseInOut:
-                easeType = blink::WebAnimationCurve::TimingFunctionTypeEaseInOut;
+                easeType = WebCompositorAnimationCurve::TimingFunctionTypeEaseInOut;
                 break;
 
             // Custom Bezier are handled seperately.
@@ -412,7 +412,7 @@ void addKeyframeWithTimingFunction(PlatformAnimationCurveType& curve, const Plat
 
 } // namespace anoymous
 
-void CompositorAnimationsImpl::addKeyframesToCurve(blink::WebAnimationCurve& curve, const PropertySpecificKeyframeVector& keyframes, bool reverse)
+void CompositorAnimationsImpl::addKeyframesToCurve(WebCompositorAnimationCurve& curve, const PropertySpecificKeyframeVector& keyframes, bool reverse)
 {
     for (size_t i = 0; i < keyframes.size(); i++) {
         RefPtr<TimingFunction> reversedTimingFunction;
@@ -432,27 +432,27 @@ void CompositorAnimationsImpl::addKeyframesToCurve(blink::WebAnimationCurve& cur
         const AnimatableValue* value = keyframes[i]->getAnimatableValue().get();
 
         switch (curve.type()) {
-        case blink::WebAnimationCurve::AnimationCurveTypeFilter: {
-            OwnPtr<blink::WebFilterOperations> ops = adoptPtr(blink::Platform::current()->compositorSupport()->createFilterOperations());
+        case WebCompositorAnimationCurve::AnimationCurveTypeFilter: {
+            OwnPtr<WebFilterOperations> ops = adoptPtr(Platform::current()->compositorSupport()->createFilterOperations());
             toWebFilterOperations(toAnimatableFilterOperations(value)->operations(), ops.get());
 
-            blink::WebFilterKeyframe filterKeyframe(keyframes[i]->offset(), ops.release());
-            blink::WebFilterAnimationCurve* filterCurve = static_cast<blink::WebFilterAnimationCurve*>(&curve);
+            WebFilterKeyframe filterKeyframe(keyframes[i]->offset(), ops.release());
+            WebFilterAnimationCurve* filterCurve = static_cast<WebFilterAnimationCurve*>(&curve);
             addKeyframeWithTimingFunction(*filterCurve, filterKeyframe, keyframeTimingFunction);
             break;
         }
-        case blink::WebAnimationCurve::AnimationCurveTypeFloat: {
-            blink::WebFloatKeyframe floatKeyframe(keyframes[i]->offset(), toAnimatableDouble(value)->toDouble());
-            blink::WebFloatAnimationCurve* floatCurve = static_cast<blink::WebFloatAnimationCurve*>(&curve);
+        case WebCompositorAnimationCurve::AnimationCurveTypeFloat: {
+            WebFloatKeyframe floatKeyframe(keyframes[i]->offset(), toAnimatableDouble(value)->toDouble());
+            WebFloatAnimationCurve* floatCurve = static_cast<WebFloatAnimationCurve*>(&curve);
             addKeyframeWithTimingFunction(*floatCurve, floatKeyframe, keyframeTimingFunction);
             break;
         }
-        case blink::WebAnimationCurve::AnimationCurveTypeTransform: {
-            OwnPtr<blink::WebTransformOperations> ops = adoptPtr(blink::Platform::current()->compositorSupport()->createTransformOperations());
+        case WebCompositorAnimationCurve::AnimationCurveTypeTransform: {
+            OwnPtr<WebTransformOperations> ops = adoptPtr(Platform::current()->compositorSupport()->createTransformOperations());
             toWebTransformOperations(toAnimatableTransform(value)->transformOperations(), ops.get());
 
-            blink::WebTransformKeyframe transformKeyframe(keyframes[i]->offset(), ops.release());
-            blink::WebTransformAnimationCurve* transformCurve = static_cast<blink::WebTransformAnimationCurve*>(&curve);
+            WebTransformKeyframe transformKeyframe(keyframes[i]->offset(), ops.release());
+            WebTransformAnimationCurve* transformCurve = static_cast<WebTransformAnimationCurve*>(&curve);
             addKeyframeWithTimingFunction(*transformCurve, transformKeyframe, keyframeTimingFunction);
             break;
         }
@@ -462,7 +462,7 @@ void CompositorAnimationsImpl::addKeyframesToCurve(blink::WebAnimationCurve& cur
     }
 }
 
-void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, double startTime, const KeyframeEffectModelBase& effect, Vector<OwnPtr<blink::WebAnimation> >& animations)
+void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, double startTime, const KeyframeEffectModelBase& effect, Vector<OwnPtr<WebCompositorAnimation> >& animations)
 {
     ASSERT(animations.isEmpty());
     CompositorTiming compositorTiming;
@@ -476,27 +476,27 @@ void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, do
         PropertySpecificKeyframeVector values;
         getKeyframeValuesForProperty(&effect, *it, compositorTiming.scaledDuration, compositorTiming.reverse, values);
 
-        blink::WebAnimation::TargetProperty targetProperty;
-        OwnPtr<blink::WebAnimationCurve> curve;
+        WebCompositorAnimation::TargetProperty targetProperty;
+        OwnPtr<WebCompositorAnimationCurve> curve;
         switch (*it) {
         case CSSPropertyOpacity: {
-            targetProperty = blink::WebAnimation::TargetPropertyOpacity;
+            targetProperty = WebCompositorAnimation::TargetPropertyOpacity;
 
-            blink::WebFloatAnimationCurve* floatCurve = blink::Platform::current()->compositorSupport()->createFloatAnimationCurve();
+            WebFloatAnimationCurve* floatCurve = Platform::current()->compositorSupport()->createFloatAnimationCurve();
             addKeyframesToCurve(*floatCurve, values, compositorTiming.reverse);
             curve = adoptPtr(floatCurve);
             break;
         }
         case CSSPropertyWebkitFilter: {
-            targetProperty = blink::WebAnimation::TargetPropertyFilter;
-            blink::WebFilterAnimationCurve* filterCurve = blink::Platform::current()->compositorSupport()->createFilterAnimationCurve();
+            targetProperty = WebCompositorAnimation::TargetPropertyFilter;
+            WebFilterAnimationCurve* filterCurve = Platform::current()->compositorSupport()->createFilterAnimationCurve();
             addKeyframesToCurve(*filterCurve, values, compositorTiming.reverse);
             curve = adoptPtr(filterCurve);
             break;
         }
         case CSSPropertyTransform: {
-            targetProperty = blink::WebAnimation::TargetPropertyTransform;
-            blink::WebTransformAnimationCurve* transformCurve = blink::Platform::current()->compositorSupport()->createTransformAnimationCurve();
+            targetProperty = WebCompositorAnimation::TargetPropertyTransform;
+            WebTransformAnimationCurve* transformCurve = Platform::current()->compositorSupport()->createTransformAnimationCurve();
             addKeyframesToCurve(*transformCurve, values, compositorTiming.reverse);
             curve = adoptPtr(transformCurve);
             break;
@@ -507,7 +507,7 @@ void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, do
         }
         ASSERT(curve.get());
 
-        OwnPtr<blink::WebAnimation> animation = adoptPtr(blink::Platform::current()->compositorSupport()->createAnimation(*curve, targetProperty));
+        OwnPtr<WebCompositorAnimation> animation = adoptPtr(Platform::current()->compositorSupport()->createAnimation(*curve, targetProperty));
 
         if (!std::isnan(startTime))
             animation->setStartTime(startTime);
