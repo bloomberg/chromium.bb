@@ -54,60 +54,6 @@
       '<@(bindings_modules_v8_files)',
       '<@(bindings_modules_v8_generated_aggregate_files)',
     ],
-    'actions': [
-      {
-        # GN version: //third_party/WebKit/Source/modules:modules_cache_polyfill
-        'action_name': 'CachePolyfill',
-        'process_outputs_as_sources': 1,
-        'variables': {
-            'resources': [
-                 'serviceworkers/polyfills/cachePolyfill.js',
-            ],
-        },
-        'inputs': [
-            '../build/scripts/make-file-arrays.py',
-            '<@(resources)',
-        ],
-        'outputs': [
-            '<(blink_modules_output_dir)/CachePolyfill.h',
-            '<(blink_modules_output_dir)/CachePolyfill.cpp',
-        ],
-        'action': [
-            'python',
-            '../build/scripts/make-file-arrays.py',
-            '--out-h=<(blink_modules_output_dir)/CachePolyfill.h',
-            '--out-cpp=<(blink_modules_output_dir)/CachePolyfill.cpp',
-            '--namespace=blink',
-            '<@(resources)',
-        ],
-      },
-      {
-        # GN version: //third_party/WebKit/Source/modules:modules_cache_storage_polyfill
-        'action_name': 'CacheStoragePolyfill',
-        'process_outputs_as_sources': 1,
-        'variables': {
-            'resources': [
-                 'serviceworkers/polyfills/cacheStoragePolyfill.js',
-            ],
-        },
-        'inputs': [
-            '../build/scripts/make-file-arrays.py',
-            '<@(resources)',
-        ],
-        'outputs': [
-            '<(blink_modules_output_dir)/CacheStoragePolyfill.h',
-            '<(blink_modules_output_dir)/CacheStoragePolyfill.cpp',
-        ],
-        'action': [
-            'python',
-            '../build/scripts/make-file-arrays.py',
-            '--out-h=<(blink_modules_output_dir)/CacheStoragePolyfill.h',
-            '--out-cpp=<(blink_modules_output_dir)/CacheStoragePolyfill.cpp',
-            '--namespace=blink',
-            '<@(resources)',
-        ],
-      },
-    ],
     # Disable c4267 warnings until we fix size_t to int truncations.
     'msvs_disabled_warnings': [ 4267, 4334, ]
   },
