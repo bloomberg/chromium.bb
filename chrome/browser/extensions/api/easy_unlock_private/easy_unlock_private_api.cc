@@ -60,6 +60,8 @@ EasyUnlockScreenlockStateHandler::State ToScreenlockStateHandlerState(
       return EasyUnlockScreenlockStateHandler::STATE_PHONE_UNLOCKABLE;
     case easy_unlock_private::STATE_PHONE_NOT_NEARBY:
       return EasyUnlockScreenlockStateHandler::STATE_PHONE_NOT_NEARBY;
+    case easy_unlock_private::STATE_PHONE_UNSUPPORTED:
+      return EasyUnlockScreenlockStateHandler::STATE_PHONE_UNSUPPORTED;
     case easy_unlock_private::STATE_AUTHENTICATED:
       return EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED;
     default:

@@ -28,6 +28,7 @@ std::string GetIconURLForState(EasyUnlockScreenlockStateHandler::State state) {
     case EasyUnlockScreenlockStateHandler::STATE_PHONE_LOCKED:
     case EasyUnlockScreenlockStateHandler::STATE_PHONE_NOT_NEARBY:
     case EasyUnlockScreenlockStateHandler::STATE_PHONE_UNLOCKABLE:
+    case EasyUnlockScreenlockStateHandler::STATE_PHONE_UNSUPPORTED:
       return "chrome://theme/IDR_EASY_UNLOCK_LOCKED";
     case EasyUnlockScreenlockStateHandler::STATE_BLUETOOTH_CONNECTING:
       return "chrome://theme/IDR_EASY_UNLOCK_SPINNER";
@@ -42,7 +43,8 @@ bool UseOpaqueIcon(EasyUnlockScreenlockStateHandler::State state) {
   return state == EasyUnlockScreenlockStateHandler::STATE_NO_BLUETOOTH ||
          state == EasyUnlockScreenlockStateHandler::STATE_NO_PHONE ||
          state == EasyUnlockScreenlockStateHandler::STATE_PHONE_NOT_NEARBY ||
-         state == EasyUnlockScreenlockStateHandler::STATE_PHONE_UNLOCKABLE;
+         state == EasyUnlockScreenlockStateHandler::STATE_PHONE_UNLOCKABLE ||
+         state == EasyUnlockScreenlockStateHandler::STATE_PHONE_UNSUPPORTED;
 }
 
 bool HasAnimation(EasyUnlockScreenlockStateHandler::State state) {
@@ -69,9 +71,18 @@ size_t GetTooltipResourceId(EasyUnlockScreenlockStateHandler::State state) {
       return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PHONE_NOT_NEARBY;
     case EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED:
       return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_INSTRUCTIONS;
+    case EasyUnlockScreenlockStateHandler::STATE_PHONE_UNSUPPORTED:
+      return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_UNSUPPORTED_ANDROID_VERSION;
     default:
       return 0;
   }
+}
+
+bool TooltipContainsDeviceType(EasyUnlockScreenlockStateHandler::State state) {
+  return state == EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED ||
+         state == EasyUnlockScreenlockStateHandler::STATE_PHONE_UNLOCKABLE ||
+         state == EasyUnlockScreenlockStateHandler::STATE_NO_BLUETOOTH ||
+         state == EasyUnlockScreenlockStateHandler::STATE_PHONE_UNSUPPORTED;
 }
 
 }  // namespace
@@ -162,7 +173,7 @@ void EasyUnlockScreenlockStateHandler::UpdateTooltipOptions(
     resource_id = IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_TUTORIAL;
   } else {
     resource_id = GetTooltipResourceId(state_);
-    if (state_ == STATE_AUTHENTICATED || state_ == STATE_PHONE_UNLOCKABLE)
+    if (TooltipContainsDeviceType(state_))
       device_name = GetDeviceName();
   }
 

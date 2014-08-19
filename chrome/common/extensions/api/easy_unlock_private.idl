@@ -40,6 +40,9 @@
     // A phone eligible to unlock the device is detected, but it's not close
     // enough to be allowed to unlock the device.
     PHONE_NOT_NEARBY,
+    // A phone eligible to unlock the device is detected, but it is not allowed
+    // to unlock the device because it does not report its lock screen state.
+    PHONE_UNSUPPORTED,
     // The devie can be unlocked using Easy Unlock.
     AUTHENTICATED
   };
