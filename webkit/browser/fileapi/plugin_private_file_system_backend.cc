@@ -183,6 +183,11 @@ bool PluginPrivateFileSystemBackend::SupportsStreaming(
   return false;
 }
 
+bool PluginPrivateFileSystemBackend::HasInplaceCopyImplementation(
+    fileapi::FileSystemType type) const {
+  return false;
+}
+
 scoped_ptr<webkit_blob::FileStreamReader>
 PluginPrivateFileSystemBackend::CreateFileStreamReader(
     const FileSystemURL& url,

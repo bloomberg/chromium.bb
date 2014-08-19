@@ -227,6 +227,11 @@ bool TestFileSystemBackend::SupportsStreaming(
   return false;
 }
 
+bool TestFileSystemBackend::HasInplaceCopyImplementation(
+    fileapi::FileSystemType type) const {
+  return true;
+}
+
 scoped_ptr<webkit_blob::FileStreamReader>
 TestFileSystemBackend::CreateFileStreamReader(
     const FileSystemURL& url,

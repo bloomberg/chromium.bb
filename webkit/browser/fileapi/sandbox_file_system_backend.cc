@@ -123,6 +123,11 @@ bool SandboxFileSystemBackend::SupportsStreaming(
   return false;
 }
 
+bool SandboxFileSystemBackend::HasInplaceCopyImplementation(
+    fileapi::FileSystemType type) const {
+  return true;
+}
+
 scoped_ptr<webkit_blob::FileStreamReader>
 SandboxFileSystemBackend::CreateFileStreamReader(
     const FileSystemURL& url,

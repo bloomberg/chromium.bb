@@ -79,6 +79,11 @@ bool PrivetFileSystemBackend::SupportsStreaming(
   return false;
 }
 
+bool PrivetFileSystemBackend::HasInplaceCopyImplementation(
+    fileapi::FileSystemType type) const {
+  return true;
+}
+
 scoped_ptr<webkit_blob::FileStreamReader>
 PrivetFileSystemBackend::CreateFileStreamReader(
     const fileapi::FileSystemURL& url,

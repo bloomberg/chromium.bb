@@ -48,6 +48,9 @@ class PrivetFileSystemBackend : public fileapi::FileSystemBackend {
   virtual bool SupportsStreaming(
       const fileapi::FileSystemURL& url) const OVERRIDE;
 
+  virtual bool HasInplaceCopyImplementation(
+      fileapi::FileSystemType type) const OVERRIDE;
+
   virtual scoped_ptr<webkit_blob::FileStreamReader> CreateFileStreamReader(
       const fileapi::FileSystemURL& url,
       int64 offset,

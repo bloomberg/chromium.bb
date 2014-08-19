@@ -176,6 +176,11 @@ bool SyncFileSystemBackend::SupportsStreaming(
   return false;
 }
 
+bool SyncFileSystemBackend::HasInplaceCopyImplementation(
+    fileapi::FileSystemType type) const {
+  return false;
+}
+
 scoped_ptr<webkit_blob::FileStreamReader>
 SyncFileSystemBackend::CreateFileStreamReader(
     const fileapi::FileSystemURL& url,

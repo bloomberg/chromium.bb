@@ -103,6 +103,8 @@ class FileSystemBackend : public fileapi::ExternalFileSystemBackend {
       base::File::Error* error_code) const OVERRIDE;
   virtual bool SupportsStreaming(
       const fileapi::FileSystemURL& url) const OVERRIDE;
+  virtual bool HasInplaceCopyImplementation(
+      fileapi::FileSystemType type) const OVERRIDE;
   virtual scoped_ptr<webkit_blob::FileStreamReader> CreateFileStreamReader(
       const fileapi::FileSystemURL& path,
       int64 offset,

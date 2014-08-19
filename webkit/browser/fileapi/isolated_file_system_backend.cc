@@ -105,6 +105,13 @@ bool IsolatedFileSystemBackend::SupportsStreaming(
   return false;
 }
 
+bool IsolatedFileSystemBackend::HasInplaceCopyImplementation(
+    fileapi::FileSystemType type) const {
+  DCHECK(type == kFileSystemTypeNativeLocal || type == kFileSystemTypeDragged ||
+         type == kFileSystemTypeForTransientFile);
+  return false;
+}
+
 scoped_ptr<webkit_blob::FileStreamReader>
 IsolatedFileSystemBackend::CreateFileStreamReader(
     const FileSystemURL& url,

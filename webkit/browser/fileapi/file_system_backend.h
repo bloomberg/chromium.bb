@@ -92,6 +92,11 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemBackend {
   // AsyncFileUtil::CreateSnapshotFile.
   virtual bool SupportsStreaming(const FileSystemURL& url) const = 0;
 
+  // Returns true if specified |type| of filesystem can handle Copy()
+  // of the files in the same file system instead of streaming
+  // read/write implementation.
+  virtual bool HasInplaceCopyImplementation(FileSystemType type) const = 0;
+
   // Creates a new file stream reader for a given filesystem URL |url| with an
   // offset |offset|. |expected_modification_time| specifies the expected last
   // modification if the value is non-null, the reader will check the underlying

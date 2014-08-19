@@ -291,6 +291,22 @@ bool FileSystemBackend::SupportsStreaming(
          url.type() == fileapi::kFileSystemTypeDeviceMediaAsFileStorage;
 }
 
+bool FileSystemBackend::HasInplaceCopyImplementation(
+    fileapi::FileSystemType type) const {
+  switch (type) {
+    case fileapi::kFileSystemTypeDrive:
+    case fileapi::kFileSystemTypeProvided:
+    case fileapi::kFileSystemTypeDeviceMediaAsFileStorage:
+      return true;
+    case fileapi::kFileSystemTypeNativeLocal:
+    case fileapi::kFileSystemTypeRestrictedNativeLocal:
+      return false;
+    default:
+      NOTREACHED();
+  }
+  return true;
+}
+
 scoped_ptr<webkit_blob::FileStreamReader>
 FileSystemBackend::CreateFileStreamReader(
     const fileapi::FileSystemURL& url,

@@ -313,6 +313,16 @@ bool MediaFileSystemBackend::SupportsStreaming(
   return false;
 }
 
+bool MediaFileSystemBackend::HasInplaceCopyImplementation(
+    fileapi::FileSystemType type) const {
+  DCHECK(type == fileapi::kFileSystemTypeNativeMedia ||
+         type == fileapi::kFileSystemTypeDeviceMedia ||
+         type == fileapi::kFileSystemTypeItunes ||
+         type == fileapi::kFileSystemTypePicasa ||
+         type == fileapi::kFileSystemTypeIphoto);
+  return true;
+}
+
 scoped_ptr<webkit_blob::FileStreamReader>
 MediaFileSystemBackend::CreateFileStreamReader(
     const FileSystemURL& url,
