@@ -102,9 +102,6 @@ public:
         m_isAllDataReceived = allDataReceived;
     }
 
-    // Lazily-decodes enough of the image to get the size (if possible).
-    // FIXME: Right now that has to be done by each subclass; factor the
-    // decode call out and use it here.
     virtual bool isSizeAvailable()
     {
         return !m_failed && m_sizeAvailable;
