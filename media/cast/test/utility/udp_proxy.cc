@@ -186,6 +186,29 @@ scoped_ptr<PacketPipe> NewRandomUnsortedDelay(double random_delay) {
   return scoped_ptr<PacketPipe>(new RandomUnsortedDelay(random_delay)).Pass();
 }
 
+class DuplicateAndDelay : public RandomUnsortedDelay {
+ public:
+  DuplicateAndDelay(double delay_min,
+                    double random_delay) :
+      RandomUnsortedDelay(random_delay),
+      delay_min_(delay_min) {
+  }
+  virtual void Send(scoped_ptr<Packet> packet) OVERRIDE {
+    pipe_->Send(scoped_ptr<Packet>(new Packet(*packet.get())));
+    RandomUnsortedDelay::Send(packet.Pass());
+  }
+  virtual double GetDelay() OVERRIDE {
+    return RandomUnsortedDelay::GetDelay() + delay_min_;
+  }
+ private:
+  double delay_min_;
+};
+
+scoped_ptr<PacketPipe> NewDuplicateAndDelay(double delay_min,
+                                            double random_delay) {
+  return scoped_ptr<PacketPipe>(
+      new DuplicateAndDelay(delay_min, random_delay)).Pass();
+}
 
 class RandomSortedDelay : public PacketPipe {
  public:

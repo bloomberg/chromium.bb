@@ -171,6 +171,8 @@ class Rtcp {
   int number_of_rtt_in_avg_;
   base::TimeDelta avg_rtt_;
 
+  base::TimeTicks largest_seen_timestamp_;
+
   // For extending received ACK frame IDs from 8-bit to 32-bit.
   FrameIdWrapHelper ack_frame_id_wrap_helper_;
 

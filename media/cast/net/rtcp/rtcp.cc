@@ -18,6 +18,10 @@ namespace media {
 namespace cast {
 
 static const int32 kMaxRttMs = 10000;  // 10 seconds.
+// Reject packets that are older than 0.5 seconds older than
+// the newest packet we've seen so far. This protect internal
+// states from crazy routers. (Based on RRTR)
+static const int32 kOutOfOrderMaxAgeMs = 500;
 
 namespace {
 
@@ -112,16 +116,30 @@ bool Rtcp::IncomingRtcpPacket(const uint8* data, size_t length) {
   RtcpParser parser(local_ssrc_, remote_ssrc_);
   base::BigEndianReader reader(reinterpret_cast<const char*>(data), length);
   if (parser.Parse(&reader)) {
+    if (parser.has_receiver_reference_time_report()) {
+      base::TimeTicks t = ConvertNtpToTimeTicks(
+          parser.receiver_reference_time_report().ntp_seconds,
+          parser.receiver_reference_time_report().ntp_fraction);
+      if (t > largest_seen_timestamp_) {
+        largest_seen_timestamp_ = t;
+      } else if ((largest_seen_timestamp_ - t).InMilliseconds() >
+                 kOutOfOrderMaxAgeMs) {
+        // Reject packet, it is too old.
+        VLOG(1) << "Rejecting RTCP packet as it is too old ("
+                << (largest_seen_timestamp_ - t).InMilliseconds()
+                << " ms)";
+        return true;
+      }
+
+      OnReceivedNtp(parser.receiver_reference_time_report().ntp_seconds,
+                    parser.receiver_reference_time_report().ntp_fraction);
+    }
     if (parser.has_sender_report()) {
       OnReceivedNtp(parser.sender_report().ntp_seconds,
                     parser.sender_report().ntp_fraction);
       OnReceivedLipSyncInfo(parser.sender_report().rtp_timestamp,
                             parser.sender_report().ntp_seconds,
                             parser.sender_report().ntp_fraction);
-    }
-    if (parser.has_receiver_reference_time_report()) {
-      OnReceivedNtp(parser.receiver_reference_time_report().ntp_seconds,
-                    parser.receiver_reference_time_report().ntp_fraction);
     }
     if (parser.has_receiver_log()) {
       if (DedupeReceiverLog(parser.mutable_receiver_log())) {

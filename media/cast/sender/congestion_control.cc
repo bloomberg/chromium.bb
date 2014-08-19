@@ -113,9 +113,16 @@ void CongestionControl::AckFrame(uint32 frame_id, base::TimeTicks when) {
   FrameStats* frame_stats = GetFrameStats(last_acked_frame_);
   while (IsNewerFrameId(frame_id, last_acked_frame_)) {
     FrameStats* last_frame_stats = frame_stats;
-    last_acked_frame_++;
-    frame_stats = GetFrameStats(last_acked_frame_);
+    frame_stats = GetFrameStats(last_acked_frame_ + 1);
     DCHECK(frame_stats);
+    if (frame_stats->sent_time.is_null()) {
+      // Can't ack a frame that hasn't been sent yet.
+      return;
+    }
+    last_acked_frame_++;
+    if (when < frame_stats->sent_time)
+      when = frame_stats->sent_time;
+
     frame_stats->ack_time = when;
     acked_bits_in_history_ += frame_stats->frame_size;
     dead_time_in_history_ += DeadTime(*last_frame_stats, *frame_stats);

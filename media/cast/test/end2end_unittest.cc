@@ -1461,6 +1461,39 @@ TEST_F(End2EndTest, EvilNetwork) {
   EXPECT_LT((video_ticks_.back().second - test_end).InMilliseconds(), 1000);
 }
 
+TEST_F(End2EndTest, OldPacketNetwork) {
+  Configure(CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16, 32000, 1);
+  sender_to_receiver_.SetPacketPipe(test::NewRandomDrop(0.01));
+  scoped_ptr<test::PacketPipe> echo_chamber(
+      test::NewDuplicateAndDelay(1, 10 * kFrameTimerMs));
+  echo_chamber->AppendToPipe(
+      test::NewDuplicateAndDelay(1, 20 * kFrameTimerMs));
+  echo_chamber->AppendToPipe(
+      test::NewDuplicateAndDelay(1, 40 * kFrameTimerMs));
+  echo_chamber->AppendToPipe(
+      test::NewDuplicateAndDelay(1, 80 * kFrameTimerMs));
+  echo_chamber->AppendToPipe(
+      test::NewDuplicateAndDelay(1, 160 * kFrameTimerMs));
+
+  receiver_to_sender_.SetPacketPipe(echo_chamber.Pass());
+  Create();
+  StartBasicPlayer();
+
+  SetExpectedVideoPlayoutSmoothness(
+      base::TimeDelta::FromMilliseconds(kFrameTimerMs) * 90 / 100,
+      base::TimeDelta::FromMilliseconds(kFrameTimerMs) * 110 / 100,
+      base::TimeDelta::FromMilliseconds(kFrameTimerMs) / 10);
+
+  int frames_counter = 0;
+  for (; frames_counter < 10000; ++frames_counter) {
+    SendFakeVideoFrame(testing_clock_sender_->NowTicks());
+    RunTasks(kFrameTimerMs);
+  }
+  RunTasks(100 * kFrameTimerMs + 1);  // Empty the pipeline.
+
+  EXPECT_EQ(10000ul, video_ticks_.size());
+}
+
 // TODO(pwestin): Add repeatable packet loss test.
 // TODO(pwestin): Add test for misaligned send get calls.
 // TODO(pwestin): Add more tests that does not resample.

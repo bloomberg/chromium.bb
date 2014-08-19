@@ -140,6 +140,13 @@ scoped_ptr<PacketPipe> NewConstantDelay(double delay_seconds);
 // This PacketPipe can reorder packets.
 scoped_ptr<PacketPipe> NewRandomUnsortedDelay(double delay);
 
+// Duplicates every packet, one is transmitted immediately,
+// one is transmitted after a random delay between |delay_min|
+// and |delay_min + random_delay|.
+// This PacketPipe will reorder packets.
+scoped_ptr<PacketPipe> NewDuplicateAndDelay(double delay_min,
+                                            double random_delay);
+
 // This PacketPipe inserts a random delay between each packet.
 // This PacketPipe cannot re-order packets. The delay between each
 // packet is asically |min_delay| + random( |random_delay| )
