@@ -212,6 +212,7 @@
     { "name": "cloud.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "glass.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "admin.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "login.corp.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     // play.google.com doesn't have include_subdomains because of crbug.com/327834.
     { "name": "play.google.com", "mode": "force-https", "pins": "google" },
 
