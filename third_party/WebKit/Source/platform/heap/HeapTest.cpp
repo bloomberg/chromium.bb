@@ -5066,4 +5066,30 @@ TEST(HeapTest, PartObjectWithVirtualMethod)
     EXPECT_TRUE(object);
 }
 
+class AllocInSuperConstructorArgumentSuper : public GarbageCollectedFinalized<AllocInSuperConstructorArgumentSuper> {
+public:
+    AllocInSuperConstructorArgumentSuper(bool value) : m_value(value) { }
+    virtual void trace(Visitor*) { }
+    bool value() { return m_value; }
+private:
+    bool m_value;
+};
+
+class AllocInSuperConstructorArgument : public AllocInSuperConstructorArgumentSuper {
+public:
+    AllocInSuperConstructorArgument()
+        : AllocInSuperConstructorArgumentSuper(allocateAndReturnBool())
+    {
+    }
+};
+
+// Regression test for crbug.com/404511. Tests conservative marking of
+// an object with an uninitialized vtable.
+TEST(HeapTest, AllocationInSuperConstructorArgument)
+{
+    AllocInSuperConstructorArgument* object = new AllocInSuperConstructorArgument();
+    EXPECT_TRUE(object);
+    Heap::collectAllGarbage();
+}
+
 } // namespace blink
