@@ -25,6 +25,7 @@
 #include "net/quic/test_tools/quic_test_packet_maker.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/socket/socket_test_util.h"
+#include "net/spdy/spdy_test_utils.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
 #include "net/test/cert_test_util.h"
@@ -359,8 +360,7 @@ TEST_P(QuicStreamFactoryTest, CreateHttpVsHttps) {
   EXPECT_TRUE(socket_data2.at_write_eof());
 }
 
-// TODO(rch): re-enable this.
-TEST_P(QuicStreamFactoryTest, DISABLED_Pooling) {
+TEST_P(QuicStreamFactoryTest, Pooling) {
   MockRead reads[] = {
     MockRead(ASYNC, OK, 0)  // EOF
   };
@@ -476,8 +476,7 @@ TEST_P(QuicStreamFactoryTest, NoPoolingAfterGoAway) {
   EXPECT_TRUE(socket_data2.at_write_eof());
 }
 
-// TODO(rch): re-enable this.
-TEST_P(QuicStreamFactoryTest, DISABLED_HttpsPooling) {
+TEST_P(QuicStreamFactoryTest, HttpsPooling) {
   MockRead reads[] = {
     MockRead(ASYNC, OK, 0)  // EOF
   };
@@ -498,6 +497,7 @@ TEST_P(QuicStreamFactoryTest, DISABLED_HttpsPooling) {
   ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
   ProofVerifyDetailsChromium verify_details;
   verify_details.cert_verify_result.verified_cert = test_cert;
+  verify_details.cert_verify_result.is_issued_by_known_root = true;
   crypto_client_stream_factory_.set_proof_verify_details(&verify_details);
 
   host_resolver_.set_synchronous_mode(true);
@@ -562,6 +562,146 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithCertMismatch) {
   ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
   ProofVerifyDetailsChromium verify_details;
   verify_details.cert_verify_result.verified_cert = test_cert;
+  crypto_client_stream_factory_.set_proof_verify_details(&verify_details);
+
+
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule(server1.host(), "192.168.0.1", "");
+  host_resolver_.rules()->AddIPLiteralRule(server2.host(), "192.168.0.1", "");
+
+  QuicStreamRequest request(&factory_);
+  is_https_ = true;
+  EXPECT_EQ(OK,
+            request.Request(server1,
+                            is_https_,
+                            privacy_mode_,
+                            "GET",
+                            net_log_,
+                            callback_.callback()));
+  scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+  EXPECT_TRUE(stream.get());
+
+  TestCompletionCallback callback;
+  QuicStreamRequest request2(&factory_);
+  EXPECT_EQ(OK,
+            request2.Request(server2,
+                             is_https_,
+                             privacy_mode_,
+                             "GET",
+                             net_log_,
+                             callback_.callback()));
+  scoped_ptr<QuicHttpStream> stream2 = request2.ReleaseStream();
+  EXPECT_TRUE(stream2.get());
+
+  EXPECT_NE(QuicStreamFactoryPeer::GetActiveSession(
+                &factory_, server1, is_https_),
+            QuicStreamFactoryPeer::GetActiveSession(
+                &factory_, server2, is_https_));
+
+  EXPECT_TRUE(socket_data1.at_read_eof());
+  EXPECT_TRUE(socket_data1.at_write_eof());
+  EXPECT_TRUE(socket_data2.at_read_eof());
+  EXPECT_TRUE(socket_data2.at_write_eof());
+}
+
+TEST_P(QuicStreamFactoryTest, HttpsPoolingWithMatchingPins) {
+  MockRead reads[] = {
+    MockRead(ASYNC, OK, 0)  // EOF
+  };
+  DeterministicSocketData socket_data(reads, arraysize(reads), NULL, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.StopAfter(1);
+
+  HostPortPair server1("www.example.org", 443);
+  HostPortPair server2("mail.example.org", 443);
+  uint8 primary_pin = 1;
+  uint8 backup_pin = 2;
+  test::AddPin(&transport_security_state_, "mail.example.org", primary_pin,
+               backup_pin);
+
+  // Load a cert that is valid for:
+  //   www.example.org (server1)
+  //   mail.example.org (server2)
+  base::FilePath certs_dir = GetTestCertsDirectory();
+  scoped_refptr<X509Certificate> test_cert(
+      ImportCertFromFile(certs_dir, "spdy_pooling.pem"));
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
+  ProofVerifyDetailsChromium verify_details;
+  verify_details.cert_verify_result.verified_cert = test_cert;
+  verify_details.cert_verify_result.is_issued_by_known_root = true;
+  verify_details.cert_verify_result.public_key_hashes.push_back(
+      test::GetTestHashValue(primary_pin));
+  crypto_client_stream_factory_.set_proof_verify_details(&verify_details);
+
+
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule(server1.host(), "192.168.0.1", "");
+  host_resolver_.rules()->AddIPLiteralRule(server2.host(), "192.168.0.1", "");
+
+  QuicStreamRequest request(&factory_);
+  is_https_ = true;
+  EXPECT_EQ(OK,
+            request.Request(server1,
+                            is_https_,
+                            privacy_mode_,
+                            "GET",
+                            net_log_,
+                            callback_.callback()));
+  scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+  EXPECT_TRUE(stream.get());
+
+  TestCompletionCallback callback;
+  QuicStreamRequest request2(&factory_);
+  EXPECT_EQ(OK,
+            request2.Request(server2,
+                             is_https_,
+                             privacy_mode_,
+                             "GET",
+                             net_log_,
+                             callback_.callback()));
+  scoped_ptr<QuicHttpStream> stream2 = request2.ReleaseStream();
+  EXPECT_TRUE(stream2.get());
+
+  EXPECT_EQ(QuicStreamFactoryPeer::GetActiveSession(
+                &factory_, server1, is_https_),
+            QuicStreamFactoryPeer::GetActiveSession(
+                &factory_, server2, is_https_));
+
+  EXPECT_TRUE(socket_data.at_read_eof());
+  EXPECT_TRUE(socket_data.at_write_eof());
+}
+
+TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithDifferentPins) {
+  MockRead reads[] = {
+    MockRead(ASYNC, OK, 0)  // EOF
+  };
+  DeterministicSocketData socket_data1(reads, arraysize(reads), NULL, 0);
+  DeterministicSocketData socket_data2(reads, arraysize(reads), NULL, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data1);
+  socket_factory_.AddSocketDataProvider(&socket_data2);
+  socket_data1.StopAfter(1);
+  socket_data2.StopAfter(1);
+
+  HostPortPair server1("www.example.org", 443);
+  HostPortPair server2("mail.example.org", 443);
+  uint8 primary_pin = 1;
+  uint8 backup_pin = 2;
+  uint8 bad_pin = 3;
+  test::AddPin(&transport_security_state_, "mail.example.org", primary_pin,
+               backup_pin);
+
+  // Load a cert that is valid for:
+  //   www.example.org (server1)
+  //   mail.example.org (server2)
+  base::FilePath certs_dir = GetTestCertsDirectory();
+  scoped_refptr<X509Certificate> test_cert(
+      ImportCertFromFile(certs_dir, "spdy_pooling.pem"));
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
+  ProofVerifyDetailsChromium verify_details;
+  verify_details.cert_verify_result.verified_cert = test_cert;
+  verify_details.cert_verify_result.is_issued_by_known_root = true;
+  verify_details.cert_verify_result.public_key_hashes.push_back(
+      test::GetTestHashValue(bad_pin));
   crypto_client_stream_factory_.set_proof_verify_details(&verify_details);
 
 

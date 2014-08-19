@@ -22,6 +22,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_server_properties_impl.h"
+#include "net/http/transport_security_state.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool_histograms.h"
@@ -79,7 +80,8 @@ class SSLClientSocketPoolTest
       public ::testing::WithParamInterface<NextProto> {
  protected:
   SSLClientSocketPoolTest()
-      : proxy_service_(ProxyService::CreateDirect()),
+      : transport_security_state_(new TransportSecurityState),
+        proxy_service_(ProxyService::CreateDirect()),
         ssl_config_service_(new SSLConfigServiceDefaults),
         http_auth_handler_factory_(
             HttpAuthHandlerFactory::CreateDefault(&host_resolver_)),
@@ -1257,8 +1259,7 @@ TEST_P(SSLClientSocketPoolTest, NeedProxyAuth) {
   EXPECT_FALSE(tunnel_handle->socket()->IsConnected());
 }
 
-// TODO(rch): re-enable this.
-TEST_P(SSLClientSocketPoolTest, DISABLED_IPPooling) {
+TEST_P(SSLClientSocketPoolTest, IPPooling) {
   const int kTestPort = 80;
   struct TestHosts {
     std::string name;
