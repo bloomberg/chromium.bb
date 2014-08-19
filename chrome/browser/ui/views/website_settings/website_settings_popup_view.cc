@@ -387,8 +387,8 @@ void WebsiteSettingsPopupView::ButtonPressed(views::Button* button,
         presenter_->chrome_ssl_host_state_delegate();
     DCHECK(delegate);
     delegate->RevokeUserDecisionsHard(presenter_->site_url().host());
-    GetWidget()->Close();
   }
+  GetWidget()->Close();
 }
 
 void WebsiteSettingsPopupView::LinkClicked(views::Link* source,
