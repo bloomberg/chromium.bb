@@ -1,122 +1,129 @@
 <head>
-    <script src="../../resources/js-test.js"></script>
-    <script>
-    function test() {
-        if (window.testRunner) {
-            testRunner.dumpAsText();
-        }
+<script src="../../resources/js-test.js"></script>
+<script src="resources/common.js"></script>
+<script>
 
-        if (!window.internals) {
-            testFailed('This test requires the test harness to run.');
-            return;
-        }
+function backgroundOf(element) {
+    return document.defaultView.getComputedStyle(element, null).getPropertyValue('background-color');
+}
 
-        var field = document.getElementById('field');
-        var textarea = document.getElementById('textarea');
-        var select = document.getElementById('select');
+function foregroundOf(element) {
+    return document.defaultView.getComputedStyle(element, null).getPropertyValue('color');
+}
 
-        var computedStyleField = document.defaultView.getComputedStyle(field);
-        var computedStyleTextarea = document.defaultView.getComputedStyle(textarea);
-        var computedStyleSelect = document.defaultView.getComputedStyle(select);
-        var originalForeground = computedStyleField.color;
-        var originalBackground = computedStyleField.backgroundColor;
+var select2;
+var autofilledSelectForeground;
+var autofilledSelectBackground;
+var originalForeground = 'rgb(255, 255, 255)';
+var originalBackground = 'rgb(255, 255, 255)';
 
-        if (originalForeground != computedStyleTextarea.color) {
-            testFailed('Unexpected initial foreground color for <textarea> field.');
-            return;
-        }
-        if (originalForeground != computedStyleTextarea.backgroundColor) {
-            testFailed('Unexpected initial background color for <textarea> field.');
-            return;
-        }
-
-        if (window.internals) {
-            window.internals.setAutofilled(field, true);
-            window.internals.setAutofilled(textarea, true);
-            window.internals.setAutofilled(select, true);
-        }
-
-        // Both the foreground and background colors should change.
-        computedStyleField = document.defaultView.getComputedStyle(field);
-        computedStyleTextarea = document.defaultView.getComputedStyle(textarea);
-        computedStyleSelect = document.defaultView.getComputedStyle(select);
-        if (computedStyleField.color == originalForeground) {
-            testFailed('Foreground color for <input> element did not change when autofilled.');
-            return;
-        }
-        if (computedStyleField.backgroundColor == originalBackground) {
-            testFailed('Background color for <input> element did not change when autofilled.');
-            return;
-        }
-        if (computedStyleTextarea.color == originalForeground) {
-            testFailed('Foreground color for <textarea> element did not change when autofilled.');
-            return;
-        }
-        if (computedStyleTextarea.backgroundColor == originalBackground) {
-            testFailed('Background color for <textarea> element did not change when autofilled.');
-            return;
-        }
-        if (computedStyleSelect.color == originalForeground) {
-            testFailed('Foreground color for <select> element did not change when autofilled.');
-            return;
-        }
-        if (computedStyleSelect.backgroundColor == originalBackground) {
-            testFailed('Background color for <select> element did not change when autofilled.');
-            return;
-        }
-
-        if (window.internals) {
-            window.internals.setAutofilled(field, false);
-            window.internals.setAutofilled(textarea, false);
-            window.internals.setAutofilled(select, false);
-        }
-
-        // Colors should be restored.
-        computedStyleField = document.defaultView.getComputedStyle(field);
-        computedStyleTextarea = document.defaultView.getComputedStyle(textarea);
-        computedStyleSelect = document.defaultView.getComputedStyle(select);
-        if (computedStyleField.color != originalForeground) {
-            testFailed('Foreground color for <input> element did not revert when un-autofilled.');
-            return;
-        }
-        if (computedStyleField.backgroundColor != originalBackground) {
-            testFailed('Background color for <input> element did not revert when un-autofilled.');
-            return;
-        }
-        if (computedStyleTextarea.color != originalForeground) {
-            testFailed('Foreground color for <textarea> element did not revert when un-autofilled.');
-            return;
-        }
-        if (computedStyleTextarea.backgroundColor != originalBackground) {
-            testFailed('Background color for <textarea> element did not revert when un-autofilled.');
-            return;
-        }
-        if (computedStyleSelect.color != originalForeground) {
-            testFailed('Foreground color for <select> element did not revert when un-autofilled.');
-            return;
-        }
-        if (computedStyleSelect.backgroundColor != originalBackground) {
-            testFailed('Background color for <select> element did not revert when un-autofilled.');
-            return;
-        }
-
-        testPassed('');
+function test() {
+    if (!window.internals) {
+        testFailed('This test requires the test harness to run.');
+        return;
     }
-    </script>
 
-    <style>
-    #field, #textarea, #select {
-      color: #FFFFFF;
-      background-color: #FFFFFF;
-    }
-    </style>
+    var field = document.getElementById('field');
+    var search = document.getElementById('search');
+    var textarea1 = document.getElementById('textarea1');
+    var textarea2 = document.getElementById('textarea2');
+    textarea2.value = 'autofilled is true';
+    var select1 = document.getElementById('select1');
+    select2 = document.getElementById('select2');
+
+    shouldBe('foregroundOf(textarea1)', 'originalForeground');
+    shouldBe('backgroundOf(textarea1)', 'originalBackground');
+
+    window.internals.setAutofilled(field, true);
+    window.internals.setAutofilled(search, true);
+    window.internals.setAutofilled(textarea1, true);
+    window.internals.setAutofilled(textarea2, true);
+    window.internals.setAutofilled(select1, true);
+    window.internals.setAutofilled(select2, true);
+
+    shouldBeEqualToString('search.value', 'Search value');
+
+    // Both the foreground and background colors should change.
+    shouldNotBe('foregroundOf(field)', 'originalForeground');
+    shouldNotBe('backgroundOf(field)', 'originalBackground');
+    shouldNotBe('foregroundOf(search)', 'originalForeground');
+    shouldNotBe('backgroundOf(search)', 'originalBackground');
+    shouldNotBe('foregroundOf(textarea1)', 'originalForeground');
+    shouldNotBe('backgroundOf(textarea1)', 'originalBackground');
+    shouldNotBe('foregroundOf(textarea2)', 'originalForeground');
+    shouldNotBe('backgroundOf(textarea2)', 'originalBackground');
+    shouldNotBe('foregroundOf(select1)', 'originalForeground');
+    shouldNotBe('backgroundOf(select1)', 'originalBackground');
+    shouldNotBe('foregroundOf(select2)', 'originalForeground');
+    shouldNotBe('backgroundOf(select2)', 'originalBackground');
+
+    // Remove an unselected option from <select> element. This should not affect the background color for the autofilled <select> element.
+    shouldBe('select2.options.length', '3');
+    select2.removeChild(select2.childNodes[1]);
+    shouldBe('select2.options.length', '2');
+    autofilledSelectForeground = foregroundOf(select2);
+    autofilledSelectBackground = backgroundOf(select2);
+    shouldBe('foregroundOf(select2)', 'autofilledSelectForeground');
+    shouldBe('backgroundOf(select2)', 'autofilledSelectBackground');
+
+    window.internals.setAutofilled(field, false);
+    window.internals.setAutofilled(textarea1, false);
+    window.internals.setAutofilled(select1, false);
+
+    // Cancel search by pressing cancel button
+    var cancelPos = searchCancelButtonPosition(search);
+    eventSender.mouseMoveTo(cancelPos.x, cancelPos.y);
+    eventSender.mouseDown();
+    eventSender.mouseUp();
+    shouldBeEmptyString('search.value');
+
+    // Edit text in the autofilled textarea.
+    textarea2.focus();
+    document.execCommand('Delete', false, null);
+    document.execCommand('Delete', false, null);
+    document.execCommand('Delete', false, null);
+    document.execCommand('Delete', false, null);
+    document.execCommand('InsertText', false, 'false');
+
+    // Remove selected option for select2 element
+    select2.removeChild(select2[select2.selectedIndex]);
+
+    // Colors should be restored.
+    shouldBe('foregroundOf(field)', 'originalForeground');
+    shouldBe('backgroundOf(field)', 'originalBackground');
+    shouldBe('foregroundOf(search)', 'originalForeground');
+    shouldBe('backgroundOf(search)', 'originalBackground');
+    shouldBe('foregroundOf(textarea1)', 'originalForeground');
+    shouldBe('backgroundOf(textarea1)', 'originalBackground');
+    shouldBe('foregroundOf(textarea2)', 'originalForeground');
+    shouldBe('backgroundOf(textarea2)', 'originalBackground');
+    shouldBe('foregroundOf(select1)', 'originalForeground');
+    shouldBe('backgroundOf(select1)', 'originalBackground');
+    shouldBe('foregroundOf(select2)', 'originalForeground');
+    shouldBe('backgroundOf(select2)', 'originalBackground');
+}
+</script>
+
+<style>
+#field, #search, #textarea1, #textarea2, #select1, #select2 {
+    color: #FFFFFF;
+    background-color: #FFFFFF;
+}
+</style>
 </head>
 <body onload="test()">
     This tests that foreground and background colors properly change for autofilled inputs or select options.  It can only be run using the test harness.<br>
     <form name="fm">
         <input type="text" id="field" value="Field value">
-        <textarea id="textarea"></textarea>
-        <select id="select"></select>
+        <input type="search" id="search" value="Search value">
+        <textarea id="textarea1"></textarea>
+        <textarea id="textarea2"></textarea>
+        <select id="select1"></select>
+        <select id="select2">
+            <option selected>1</option>
+            <option >2</option>
+            <option>3</option>
+        </select>
     </form>
     <div id="console"></div>
 </body>
