@@ -4,8 +4,32 @@
 # SEE http://code.google.com/p/chromium/wiki/UsingGit
 # FOR HOW TO ROLL DEPS
 vars = {
+    'breakpad_rev':
+         '1338',
+    'chromium_trunk':
+         'http://src.chromium.org/svn/trunk',
+    'gyp_rev':
+         '1927',
+    'tools_rev':
+         '13077',
+    'native_client_trunk':
+         'http://src.chromium.org/native_client/trunk',
+    'lcov_rev':
+         '149720',
+    'gtest_rev':
+         '643',
+    'googlecode_url':
+         'http://%s.googlecode.com/svn',
+    'lss_rev':
+         '26',
+    'chromium_git':
+         'https://chromium.googlesource.com',
     'webkit_url':
          'https://chromium.googlesource.com/chromium/blink.git',
+    'buildtools_revision':
+         '59b93247766e1cdac6e482637ad493df38f7aeb7',
+    'chrome_rev':
+         '275800',
     'git_url':
          'https://chromium.googlesource.com'
 }
