@@ -208,7 +208,7 @@ bool IsImplSidePaintingEnabled() {
       switches::kEnableBleedingEdgeRenderingFastPaths))
     return true;
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MACOSX)
   return false;
 #else
   return true;
