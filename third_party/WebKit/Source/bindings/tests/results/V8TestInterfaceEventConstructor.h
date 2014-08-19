@@ -39,12 +39,12 @@ public:
 #endif
     static inline ScriptWrappableBase* toInternalPointer(TestInterfaceEventConstructor* impl)
     {
-        return V8Event::toInternalPointer(impl);
+        return impl->toInternalPointer();
     }
 
     static inline TestInterfaceEventConstructor* fromInternalPointer(ScriptWrappableBase* internalPointer)
     {
-        return static_cast<TestInterfaceEventConstructor*>(V8Event::fromInternalPointer(internalPointer));
+        return ScriptWrappableBase::fromInternalPointer<TestInterfaceEventConstructor>(internalPointer);
     }
     static void installConditionallyEnabledProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
     static void installConditionallyEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }

@@ -46,12 +46,12 @@ public:
 #endif
     static inline ScriptWrappableBase* toInternalPointer(TestInterfaceWillBeGarbageCollected* impl)
     {
-        return V8EventTarget::toInternalPointer(impl);
+        return impl->toInternalPointer();
     }
 
     static inline TestInterfaceWillBeGarbageCollected* fromInternalPointer(ScriptWrappableBase* internalPointer)
     {
-        return static_cast<TestInterfaceWillBeGarbageCollected*>(V8EventTarget::fromInternalPointer(internalPointer));
+        return ScriptWrappableBase::fromInternalPointer<TestInterfaceWillBeGarbageCollected>(internalPointer);
     }
     static void installConditionallyEnabledProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
     static void installConditionallyEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }

@@ -35,6 +35,7 @@
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "bindings/core/v8/V8StringResource.h"
@@ -55,7 +56,6 @@ class ExecutionContext;
 class ExceptionState;
 class LocalFrame;
 class NodeFilter;
-class ScriptWrappable;
 class XPathNSResolver;
 
 namespace TraceEvent {
@@ -882,7 +882,7 @@ inline v8::Local<v8::Function> createClosure(v8::FunctionCallback function, v8::
 // FIXME: This will be soon embedded in the generated code.
 template<class Collection> static void indexedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
-    Collection* collection = reinterpret_cast<Collection*>(info.Holder()->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
+    Collection* collection = ScriptWrappableBase::fromInternalPointer<Collection>(toInternalPointer(info.Holder()));
     int length = collection->length();
     v8::Handle<v8::Array> properties = v8::Array::New(info.GetIsolate(), length);
     for (int i = 0; i < length; ++i) {

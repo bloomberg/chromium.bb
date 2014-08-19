@@ -32,12 +32,12 @@ public:
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
     static inline ScriptWrappableBase* toInternalPointer(TestInterfaceConstructor3* impl)
     {
-        return reinterpret_cast<ScriptWrappableBase*>(static_cast<void*>(impl));
+        return impl->toInternalPointer();
     }
 
     static inline TestInterfaceConstructor3* fromInternalPointer(ScriptWrappableBase* internalPointer)
     {
-        return reinterpret_cast<TestInterfaceConstructor3*>(static_cast<void*>(internalPointer));
+        return ScriptWrappableBase::fromInternalPointer<TestInterfaceConstructor3>(internalPointer);
     }
     static void installConditionallyEnabledProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
     static void installConditionallyEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }

@@ -38,12 +38,12 @@ public:
 #endif
     static inline ScriptWrappableBase* toInternalPointer(TestInterfaceDocument* impl)
     {
-        return V8Document::toInternalPointer(impl);
+        return impl->toInternalPointer();
     }
 
     static inline TestInterfaceDocument* fromInternalPointer(ScriptWrappableBase* internalPointer)
     {
-        return static_cast<TestInterfaceDocument*>(V8Document::fromInternalPointer(internalPointer));
+        return ScriptWrappableBase::fromInternalPointer<TestInterfaceDocument>(internalPointer);
     }
     static void installConditionallyEnabledProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
     static void installConditionallyEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }

@@ -148,20 +148,12 @@ public:
     {# End custom internal fields #}
     static inline ScriptWrappableBase* toInternalPointer({{cpp_class}}* impl)
     {
-        {% if parent_interface %}
-        return V8{{parent_interface}}::toInternalPointer(impl);
-        {% else %}
-        return reinterpret_cast<ScriptWrappableBase*>(static_cast<void*>(impl));
-        {% endif %}
+        return impl->toInternalPointer();
     }
 
     static inline {{cpp_class}}* fromInternalPointer(ScriptWrappableBase* internalPointer)
     {
-        {% if parent_interface %}
-        return static_cast<{{cpp_class}}*>(V8{{parent_interface}}::fromInternalPointer(internalPointer));
-        {% else %}
-        return reinterpret_cast<{{cpp_class}}*>(static_cast<void*>(internalPointer));
-        {% endif %}
+        return ScriptWrappableBase::fromInternalPointer<{{cpp_class}}>(internalPointer);
     }
     {% if interface_name == 'Window' %}
     static bool namedSecurityCheckCustom(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8::AccessType, v8::Local<v8::Value> data);
