@@ -118,6 +118,10 @@ HardwareRenderer::~HardwareRenderer() {
 #endif  // DCHECK_IS_ON
 
   resource_collection_->SetClient(NULL);
+
+  // Reset draw constraints.
+  shared_renderer_state_->UpdateDrawConstraints(
+      ParentCompositorDrawConstraints());
 }
 
 void HardwareRenderer::DidBeginMainFrame() {

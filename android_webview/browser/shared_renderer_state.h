@@ -57,6 +57,8 @@ class SharedRendererState {
   scoped_ptr<DrawGLInput> PassDrawGLInput();
 
   bool IsInsideHardwareRelease() const;
+  void UpdateDrawConstraints(
+      const ParentCompositorDrawConstraints& parent_draw_constraints);
   void PostExternalDrawConstraintsToChildCompositor(
       const ParentCompositorDrawConstraints& parent_draw_constraints);
 

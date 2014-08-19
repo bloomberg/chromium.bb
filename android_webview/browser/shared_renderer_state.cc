@@ -146,12 +146,15 @@ scoped_ptr<DrawGLInput> SharedRendererState::PassDrawGLInput() {
   return draw_gl_input_.Pass();
 }
 
+void SharedRendererState::UpdateDrawConstraints(
+    const ParentCompositorDrawConstraints& parent_draw_constraints) {
+  base::AutoLock lock(lock_);
+  parent_draw_constraints_ = parent_draw_constraints;
+}
+
 void SharedRendererState::PostExternalDrawConstraintsToChildCompositor(
     const ParentCompositorDrawConstraints& parent_draw_constraints) {
-  {
-    base::AutoLock lock(lock_);
-    parent_draw_constraints_ = parent_draw_constraints;
-  }
+  UpdateDrawConstraints(parent_draw_constraints);
 
   // No need to hold the lock_ during the post task.
   ui_loop_->PostTask(
