@@ -31,6 +31,7 @@ class RenderProgress FINAL : public RenderBlockFlow {
 public:
     explicit RenderProgress(HTMLElement*);
     virtual ~RenderProgress();
+    virtual void destroy() OVERRIDE;
 
     double position() const { return m_position; }
     double animationProgress() const;

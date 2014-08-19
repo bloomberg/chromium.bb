@@ -44,6 +44,15 @@ RenderProgress::~RenderProgress()
 {
 }
 
+void RenderProgress::destroy()
+{
+    if (m_animating) {
+        m_animationTimer.stop();
+        m_animating = false;
+    }
+    RenderBlockFlow::destroy();
+}
+
 void RenderProgress::updateFromElement()
 {
     HTMLProgressElement* element = progressElement();
