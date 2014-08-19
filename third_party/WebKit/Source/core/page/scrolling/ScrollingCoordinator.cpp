@@ -898,6 +898,12 @@ bool ScrollingCoordinator::hasVisibleSlowRepaintViewportConstrainedObjects(Frame
         if (!layer->scrollsWithViewport())
             continue;
 
+        // If the whole subtree is invisible, there's no reason to scroll on
+        // the main thread because we don't need to generate invalidations
+        // for invisible content.
+        if (layer->subtreeIsInvisible())
+            continue;
+
         // We're only smart enough to scroll viewport-constrainted objects
         // in the compositor if they have their own backing or they paint
         // into a grouped back (which necessarily all have the same viewport
