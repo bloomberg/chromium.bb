@@ -5,15 +5,21 @@
 #ifndef WorkerInspectorProxy_h
 #define WorkerInspectorProxy_h
 
-#include "wtf/text/WTFString.h"
+#include "wtf/Forward.h"
 
 namespace blink {
 
+class ExecutionContext;
+class KURL;
+class WorkerThread;
+
 // A proxy for talking to the worker inspector on the worker thread.
 // All of these methods should be called on the main thread.
-class WorkerInspectorProxy {
+class WorkerInspectorProxy FINAL {
 public:
-    virtual ~WorkerInspectorProxy() { }
+    static PassOwnPtr<WorkerInspectorProxy> create();
+
+    ~WorkerInspectorProxy();
 
     class PageInspector {
     public:
@@ -21,10 +27,22 @@ public:
         virtual void dispatchMessageFromWorker(const String&) = 0;
     };
 
-    virtual void connectToInspector(PageInspector*) = 0;
-    virtual void disconnectFromInspector() = 0;
-    virtual void sendMessageToInspector(const String&) = 0;
-    virtual void writeTimelineStartedEvent(const String& sessionId) = 0;
+    void workerThreadCreated(ExecutionContext*, WorkerThread*, const KURL&);
+    void workerThreadTerminated();
+
+    void connectToInspector(PageInspector*);
+    void disconnectFromInspector();
+    void sendMessageToInspector(const String&);
+    void writeTimelineStartedEvent(const String& sessionId);
+
+    PageInspector* pageInspector() const { return m_pageInspector; };
+
+private:
+    WorkerInspectorProxy();
+
+    WorkerThread* m_workerThread;
+    ExecutionContext* m_executionContext;
+    WorkerInspectorProxy::PageInspector* m_pageInspector;
 };
 
 } // namespace blink

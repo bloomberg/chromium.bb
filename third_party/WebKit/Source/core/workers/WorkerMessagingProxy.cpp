@@ -38,20 +38,18 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/WorkerDebuggerAgent.h"
-#include "core/inspector/WorkerInspectorController.h"
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/workers/DedicatedWorkerGlobalScope.h"
 #include "core/workers/DedicatedWorkerThread.h"
 #include "core/workers/Worker.h"
 #include "core/workers/WorkerClients.h"
+#include "core/workers/WorkerInspectorProxy.h"
 #include "core/workers/WorkerObjectProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "platform/NotImplemented.h"
-#include "platform/TraceEvent.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Functional.h"
 #include "wtf/MainThread.h"
@@ -94,7 +92,7 @@ WorkerMessagingProxy::WorkerMessagingProxy(Worker* workerObject, PassOwnPtrWillB
     , m_unconfirmedMessageCount(0)
     , m_workerThreadHadPendingActivity(false)
     , m_askedToTerminate(false)
-    , m_pageInspector(0)
+    , m_workerInspectorProxy(WorkerInspectorProxy::create())
     , m_workerClients(workerClients)
 {
     ASSERT(m_workerObject);
@@ -125,7 +123,7 @@ void WorkerMessagingProxy::startWorkerGlobalScope(const KURL& scriptURL, const S
     RefPtr<DedicatedWorkerThread> thread = DedicatedWorkerThread::create(*this, *m_workerObjectProxy.get(), originTime, startupData.release());
     thread->start();
     workerThreadCreated(thread);
-    InspectorInstrumentation::didStartWorker(m_executionContext.get(), this, scriptURL);
+    m_workerInspectorProxy->workerThreadCreated(m_executionContext.get(), m_workerThread.get(), scriptURL);
 }
 
 void WorkerMessagingProxy::postMessageToWorkerObject(PassRefPtr<SerializedScriptValue> message, PassOwnPtr<MessagePortChannelArray> channels)
@@ -226,62 +224,6 @@ void WorkerMessagingProxy::workerObjectDestroyedInternal(ExecutionContext*, Work
         proxy->workerThreadTerminated();
 }
 
-static void connectToWorkerGlobalScopeInspectorTask(ExecutionContext* context, bool)
-{
-    toWorkerGlobalScope(context)->workerInspectorController()->connectFrontend();
-}
-
-void WorkerMessagingProxy::connectToInspector(WorkerInspectorProxy::PageInspector* pageInspector)
-{
-    if (m_askedToTerminate)
-        return;
-    ASSERT(!m_pageInspector);
-    m_pageInspector = pageInspector;
-    m_workerThread->postDebuggerTask(createCrossThreadTask(connectToWorkerGlobalScopeInspectorTask, true));
-}
-
-static void disconnectFromWorkerGlobalScopeInspectorTask(ExecutionContext* context, bool)
-{
-    toWorkerGlobalScope(context)->workerInspectorController()->disconnectFrontend();
-}
-
-void WorkerMessagingProxy::disconnectFromInspector()
-{
-    m_pageInspector = 0;
-    if (m_askedToTerminate)
-        return;
-    m_workerThread->postDebuggerTask(createCrossThreadTask(disconnectFromWorkerGlobalScopeInspectorTask, true));
-}
-
-static void dispatchOnInspectorBackendTask(ExecutionContext* context, const String& message)
-{
-    toWorkerGlobalScope(context)->workerInspectorController()->dispatchMessageFromFrontend(message);
-}
-
-void WorkerMessagingProxy::sendMessageToInspector(const String& message)
-{
-    if (m_askedToTerminate)
-        return;
-    m_workerThread->postDebuggerTask(createCrossThreadTask(dispatchOnInspectorBackendTask, String(message)));
-    m_workerThread->interruptAndDispatchInspectorCommands();
-}
-
-static void dispatchWriteTimelineStartedEvent(ExecutionContext* context, const String& sessionId)
-{
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "TracingStartedInWorker", "sessionId", sessionId.utf8());
-}
-
-void WorkerMessagingProxy::writeTimelineStartedEvent(const String& sessionId)
-{
-    if (m_askedToTerminate)
-        return;
-    OwnPtr<ExecutionContextTask> task = createCrossThreadTask(dispatchWriteTimelineStartedEvent, String(sessionId));
-    if (m_workerThread)
-        m_workerThread->postTask(task.release());
-    else
-        m_queuedEarlyTasks.append(task.release());
-}
-
 void WorkerMessagingProxy::workerThreadTerminated()
 {
     // This method is always the last to be performed, so the proxy is not needed for communication
@@ -307,8 +249,16 @@ void WorkerMessagingProxy::terminateWorkerGlobalScope()
 
 void WorkerMessagingProxy::postMessageToPageInspector(const String& message)
 {
-    if (m_pageInspector)
-        m_pageInspector->dispatchMessageFromWorker(message);
+    if (!m_workerInspectorProxy)
+        return;
+    WorkerInspectorProxy::PageInspector* pageInspector = m_workerInspectorProxy->pageInspector();
+    if (pageInspector)
+        pageInspector->dispatchMessageFromWorker(message);
+}
+
+WorkerInspectorProxy* WorkerMessagingProxy::workerInspectorProxy()
+{
+    return m_workerInspectorProxy.get();
 }
 
 void WorkerMessagingProxy::confirmMessageFromWorkerObject(bool hasPendingActivity)
@@ -332,7 +282,7 @@ bool WorkerMessagingProxy::hasPendingActivity() const
 
 void WorkerMessagingProxy::terminateInternally()
 {
-    InspectorInstrumentation::workerTerminated(m_executionContext.get(), this);
+    m_workerInspectorProxy->workerThreadTerminated();
 
     // FIXME: This need to be revisited when we support nested worker one day
     ASSERT(m_executionContext->isDocument());
