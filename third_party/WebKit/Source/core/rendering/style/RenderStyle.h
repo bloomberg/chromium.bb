@@ -1577,7 +1577,7 @@ public:
     static float initialLetterWordSpacing() { return 0.0f; }
     static Length initialSize() { return Length(); }
     static Length initialMinSize() { return Length(Fixed); }
-    static Length initialMaxSize() { return Length(Undefined); }
+    static Length initialMaxSize() { return Length(MaxSizeNone); }
     static Length initialOffset() { return Length(); }
     static Length initialMargin() { return Length(Fixed); }
     static Length initialPadding() { return Length(Fixed); }

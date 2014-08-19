@@ -42,8 +42,7 @@ namespace blink {
 class BorderImageLength {
 public:
     BorderImageLength(double number)
-        : m_length(Undefined)
-        , m_number(number)
+        : m_number(number)
         , m_type(NumberType)
     {
     }

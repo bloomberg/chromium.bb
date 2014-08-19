@@ -43,7 +43,7 @@ enum LengthType {
     MinContent, MaxContent, FillAvailable, FitContent,
     Calculated,
     ExtendToZoom, DeviceWidth, DeviceHeight,
-    Undefined
+    MaxSizeNone
 };
 
 enum ValueRange {
@@ -156,7 +156,7 @@ public:
             decrementCalculatedRef();
     }
 
-    bool operator==(const Length& o) const { return (m_type == o.m_type) && (m_quirk == o.m_quirk) && (isUndefined() || (getFloatValue() == o.getFloatValue()) || isCalculatedEqual(o)); }
+    bool operator==(const Length& o) const { return (m_type == o.m_type) && (m_quirk == o.m_quirk) && (isMaxSizeNone() || (getFloatValue() == o.getFloatValue()) || isCalculatedEqual(o)); }
     bool operator!=(const Length& o) const { return !(*this == o); }
 
     const Length& operator*=(float v)
@@ -240,7 +240,7 @@ public:
         *this = Length(value, Fixed);
     }
 
-    bool isUndefined() const { return type() == Undefined; }
+    bool isMaxSizeNone() const { return type() == MaxSizeNone; }
 
     // FIXME calc: https://bugs.webkit.org/show_bug.cgi?id=80357. A calculated Length
     // always contains a percentage, and without a maxValue passed to these functions
@@ -248,7 +248,7 @@ public:
     // are positive and non-zero for now.
     bool isZero() const
     {
-        ASSERT(!isUndefined());
+        ASSERT(!isMaxSizeNone());
         if (isCalculated())
             return false;
 
@@ -256,7 +256,7 @@ public:
     }
     bool isPositive() const
     {
-        if (isUndefined())
+        if (isMaxSizeNone())
             return false;
         if (isCalculated())
             return true;
@@ -265,7 +265,7 @@ public:
     }
     bool isNegative() const
     {
-        if (isUndefined() || isCalculated())
+        if (isMaxSizeNone() || isCalculated())
             return false;
 
         return getFloatValue() < 0;
@@ -317,7 +317,7 @@ public:
 
     float getFloatValue() const
     {
-        ASSERT(!isUndefined());
+        ASSERT(!isMaxSizeNone());
         return m_isFloat ? m_floatValue : m_intValue;
     }
     float nonNanCalculatedValue(int maxValue) const;
@@ -327,7 +327,7 @@ public:
 private:
     int getIntValue() const
     {
-        ASSERT(!isUndefined());
+        ASSERT(!isMaxSizeNone());
         return m_isFloat ? static_cast<int>(m_floatValue) : m_intValue;
     }
 

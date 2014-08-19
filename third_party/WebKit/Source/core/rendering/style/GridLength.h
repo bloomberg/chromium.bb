@@ -45,7 +45,6 @@ public:
         , m_flex(0)
         , m_type(LengthType)
     {
-        ASSERT(!length.isUndefined());
     }
 
     explicit GridLength(double flex)

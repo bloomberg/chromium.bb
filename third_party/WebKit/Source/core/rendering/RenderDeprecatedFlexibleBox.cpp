@@ -1003,7 +1003,7 @@ LayoutUnit RenderDeprecatedFlexibleBox::allowedChildFlex(RenderBox* child, bool 
             // FIXME: For now just handle fixed values.
             LayoutUnit maxWidth = LayoutUnit::max();
             LayoutUnit width = contentWidthForChild(child);
-            if (!child->style()->maxWidth().isUndefined() && child->style()->maxWidth().isFixed())
+            if (child->style()->maxWidth().isFixed())
                 maxWidth = child->style()->maxWidth().value();
             else if (child->style()->maxWidth().type() == Intrinsic)
                 maxWidth = child->maxPreferredLogicalWidth();
@@ -1016,7 +1016,7 @@ LayoutUnit RenderDeprecatedFlexibleBox::allowedChildFlex(RenderBox* child, bool 
             // FIXME: For now just handle fixed values.
             LayoutUnit maxHeight = LayoutUnit::max();
             LayoutUnit height = contentHeightForChild(child);
-            if (!child->style()->maxHeight().isUndefined() && child->style()->maxHeight().isFixed())
+            if (child->style()->maxHeight().isFixed())
                 maxHeight = child->style()->maxHeight().value();
             if (maxHeight == LayoutUnit::max())
                 return maxHeight;

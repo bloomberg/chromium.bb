@@ -365,7 +365,7 @@ Length StyleBuilderConverter::convertLengthMaxSizing(StyleResolverState& state, 
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     if (primitiveValue->getValueID() == CSSValueNone)
-        return Length(Undefined);
+        return Length(MaxSizeNone);
     return convertLengthSizing(state, value);
 }
 

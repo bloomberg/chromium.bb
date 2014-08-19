@@ -120,9 +120,9 @@ public:
         ClosestSide,
         FarthestSide
     };
-    BasicShapeRadius() : m_value(Undefined), m_type(ClosestSide) { }
+    BasicShapeRadius() : m_type(ClosestSide) { }
     explicit BasicShapeRadius(const Length& v) : m_value(v), m_type(Value) { }
-    explicit BasicShapeRadius(Type t) : m_value(Undefined), m_type(t) { }
+    explicit BasicShapeRadius(Type t) : m_type(t) { }
     BasicShapeRadius(const BasicShapeRadius& other) : m_value(other.value()), m_type(other.type()) { }
     bool operator==(const BasicShapeRadius& other) const { return m_type == other.m_type && m_value == other.m_value; }
 

@@ -2063,13 +2063,13 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
             return cssValuePool().createValue(style->userModify());
         case CSSPropertyMaxHeight: {
             const Length& maxHeight = style->maxHeight();
-            if (maxHeight.isUndefined())
+            if (maxHeight.isMaxSizeNone())
                 return cssValuePool().createIdentifierValue(CSSValueNone);
             return zoomAdjustedPixelValueForLength(maxHeight, *style);
         }
         case CSSPropertyMaxWidth: {
             const Length& maxWidth = style->maxWidth();
-            if (maxWidth.isUndefined())
+            if (maxWidth.isMaxSizeNone())
                 return cssValuePool().createIdentifierValue(CSSValueNone);
             return zoomAdjustedPixelValueForLength(maxWidth, *style);
         }

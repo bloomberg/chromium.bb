@@ -54,7 +54,7 @@ float floatValueForLength(const Length& length, float maximumValue)
     case ExtendToZoom:
     case DeviceWidth:
     case DeviceHeight:
-    case Undefined:
+    case MaxSizeNone:
         ASSERT_NOT_REACHED();
         return 0;
     }
@@ -83,7 +83,7 @@ LayoutUnit minimumValueForLength(const Length& length, LayoutUnit maximumValue)
     case ExtendToZoom:
     case DeviceWidth:
     case DeviceHeight:
-    case Undefined:
+    case MaxSizeNone:
         ASSERT_NOT_REACHED();
         return 0;
     }
@@ -116,7 +116,7 @@ LayoutUnit valueForLength(const Length& length, LayoutUnit maximumValue)
     case ExtendToZoom:
     case DeviceWidth:
     case DeviceHeight:
-    case Undefined:
+    case MaxSizeNone:
         ASSERT_NOT_REACHED();
         return 0;
     }

@@ -375,7 +375,7 @@ CSSPrimitiveValue::CSSPrimitiveValue(const Length& length, float zoom)
     }
     case DeviceWidth:
     case DeviceHeight:
-    case Undefined:
+    case MaxSizeNone:
         ASSERT_NOT_REACHED();
         break;
     }
