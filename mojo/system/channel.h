@@ -23,6 +23,11 @@
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {
+
+namespace embedder {
+class PlatformSupport;
+}
+
 namespace system {
 
 // This class is mostly thread-safe. It must be created on an I/O thread.
@@ -55,7 +60,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // The first message pipe endpoint attached will have this as its local ID.
   static const MessageInTransit::EndpointId kBootstrapEndpointId = 1;
 
-  Channel();
+  // |platform_support| (typically owned by |Core|) must remain alive until
+  // after |Shutdown()| is called.
+  explicit Channel(embedder::PlatformSupport* platform_support);
 
   // This must be called on the creation thread before any other methods are
   // called, and before references to this object are given to any other
@@ -120,6 +127,10 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // See |RawChannel::GetSerializedPlatformHandleSize()|.
   size_t GetSerializedPlatformHandleSize() const;
 
+  embedder::PlatformSupport* platform_support() const {
+    return platform_support_;
+  }
+
  private:
   struct EndpointInfo {
     enum State {
@@ -179,6 +190,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
                           MessageInTransit::EndpointId destination_id);
 
   base::ThreadChecker creation_thread_checker_;
+
+  embedder::PlatformSupport* const platform_support_;
 
   // Note: |MessagePipe|s MUST NOT be used under |lock_|. I.e., |lock_| can only
   // be acquired after |MessagePipe::lock_|, never before. Thus to call into a

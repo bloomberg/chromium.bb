@@ -36,8 +36,9 @@ Channel::EndpointInfo::EndpointInfo(scoped_refptr<MessagePipe> message_pipe,
 Channel::EndpointInfo::~EndpointInfo() {
 }
 
-Channel::Channel()
-    : is_running_(false),
+Channel::Channel(embedder::PlatformSupport* platform_support)
+    : platform_support_(platform_support),
+      is_running_(false),
       is_shutting_down_(false),
       next_local_id_(kBootstrapEndpointId) {
 }

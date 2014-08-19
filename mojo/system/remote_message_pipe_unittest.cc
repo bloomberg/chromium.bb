@@ -94,6 +94,7 @@ class RemoteMessagePipeTest : public testing::Test {
                    base::Unretained(this)));
   }
 
+  embedder::PlatformSupport* platform_support() { return &platform_support_; }
   test::TestIOThread* io_thread() { return &io_thread_; }
 
  private:
@@ -123,7 +124,7 @@ class RemoteMessagePipeTest : public testing::Test {
     CHECK(channel_index == 0 || channel_index == 1);
     CHECK(!channels_[channel_index]);
 
-    channels_[channel_index] = new Channel();
+    channels_[channel_index] = new Channel(&platform_support_);
     CHECK(channels_[channel_index]->Init(
         RawChannel::Create(platform_handles_[channel_index].Pass())));
   }
@@ -171,6 +172,7 @@ class RemoteMessagePipeTest : public testing::Test {
     SetUpOnIOThread();
   }
 
+  embedder::SimplePlatformSupport platform_support_;
   test::TestIOThread io_thread_;
   embedder::ScopedPlatformHandle platform_handles_[2];
   scoped_refptr<Channel> channels_[2];
@@ -702,11 +704,10 @@ TEST_F(RemoteMessagePipeTest, MAYBE_SharedBufferPassing) {
   ConnectMessagePipes(mp0, mp1);
 
   // We'll try to pass this dispatcher.
-  embedder::SimplePlatformSupport platform_support;
   scoped_refptr<SharedBufferDispatcher> dispatcher;
   EXPECT_EQ(MOJO_RESULT_OK,
             SharedBufferDispatcher::Create(
-                &platform_support,
+                platform_support(),
                 SharedBufferDispatcher::kDefaultCreateOptions,
                 100,
                 &dispatcher));

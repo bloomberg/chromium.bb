@@ -9,8 +9,8 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/embedder/platform_support.h"
-#include "mojo/embedder/simple_platform_shared_buffer.h"  // TODO(vtl): Remove.
 #include "mojo/public/c/system/macros.h"
+#include "mojo/system/channel.h"
 #include "mojo/system/constants.h"
 #include "mojo/system/memory.h"
 #include "mojo/system/options_validation.h"
@@ -91,6 +91,8 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
     const void* source,
     size_t size,
     embedder::PlatformHandleVector* platform_handles) {
+  DCHECK(channel);
+
   if (size != sizeof(SerializedSharedBufferDispatcher)) {
     LOG(ERROR) << "Invalid serialized shared buffer dispatcher (bad size)";
     return scoped_refptr<SharedBufferDispatcher>();
@@ -121,11 +123,8 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
 
   // Wrapping |platform_handle| in a |ScopedPlatformHandle| means that it'll be
   // closed even if creation fails.
-  // TODO(vtl): This is obviously wrong -- but we need to have a
-  // |PlatformSupport| plumbed through (probably via the |Channel|), and use its
-  // |CreateSharedBufferFromHandle()|.
   scoped_refptr<embedder::PlatformSharedBuffer> shared_buffer(
-      embedder::SimplePlatformSharedBuffer::CreateFromPlatformHandle(
+      channel->platform_support()->CreateSharedBufferFromHandle(
           num_bytes, embedder::ScopedPlatformHandle(platform_handle)));
   if (!shared_buffer) {
     LOG(ERROR)

@@ -8,6 +8,7 @@
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/embedder/platform_channel_pair.h"
+#include "mojo/embedder/simple_platform_support.h"
 #include "mojo/system/local_message_pipe_endpoint.h"
 #include "mojo/system/message_in_transit.h"
 #include "mojo/system/message_pipe.h"
@@ -42,7 +43,7 @@ class ChannelTest : public testing::Test {
 
   void CreateChannelOnIOThread() {
     CHECK_EQ(base::MessageLoop::current(), io_thread()->message_loop());
-    channel_ = new Channel();
+    channel_ = new Channel(&platform_support_);
   }
 
   void InitChannelOnIOThread() {
@@ -78,6 +79,7 @@ class ChannelTest : public testing::Test {
     other_platform_handle_ = channel_pair.PassClientHandle();
   }
 
+  embedder::SimplePlatformSupport platform_support_;
   test::TestIOThread io_thread_;
   scoped_ptr<RawChannel> raw_channel_;
   embedder::ScopedPlatformHandle other_platform_handle_;

@@ -42,7 +42,9 @@ namespace {
 
 class ChannelThread {
  public:
-  ChannelThread() : test_io_thread_(test::TestIOThread::kManualStart) {}
+  explicit ChannelThread(embedder::PlatformSupport* platform_support)
+      : platform_support_(platform_support),
+        test_io_thread_(test::TestIOThread::kManualStart) {}
   ~ChannelThread() { Stop(); }
 
   void Start(embedder::ScopedPlatformHandle platform_handle,
@@ -79,7 +81,7 @@ class ChannelThread {
     CHECK(platform_handle.is_valid());
 
     // Create and initialize |Channel|.
-    channel_ = new Channel();
+    channel_ = new Channel(platform_support_);
     CHECK(channel_->Init(RawChannel::Create(platform_handle.Pass())));
 
     // Attach the message pipe endpoint.
@@ -101,6 +103,7 @@ class ChannelThread {
     channel_ = NULL;
   }
 
+  embedder::PlatformSupport* const platform_support_;
   test::TestIOThread test_io_thread_;
   scoped_refptr<Channel> channel_;
 
@@ -109,7 +112,7 @@ class ChannelThread {
 
 class MultiprocessMessagePipeTest : public testing::Test {
  public:
-  MultiprocessMessagePipeTest() {}
+  MultiprocessMessagePipeTest() : channel_thread_(&platform_support_) {}
   virtual ~MultiprocessMessagePipeTest() {}
 
  protected:
@@ -117,9 +120,11 @@ class MultiprocessMessagePipeTest : public testing::Test {
     channel_thread_.Start(helper_.server_platform_handle.Pass(), mp);
   }
 
+  embedder::PlatformSupport* platform_support() { return &platform_support_; }
   mojo::test::MultiprocessTestHelper* helper() { return &helper_; }
 
  private:
+  embedder::SimplePlatformSupport platform_support_;
   ChannelThread channel_thread_;
   mojo::test::MultiprocessTestHelper helper_;
 
@@ -148,7 +153,8 @@ MojoResult WaitIfNecessary(scoped_refptr<MessagePipe> mp,
 // (which it doesn't reply to). It'll return the number of messages received,
 // not including any "quitquitquit" message, modulo 100.
 MOJO_MULTIPROCESS_TEST_CHILD_MAIN(EchoEcho) {
-  ChannelThread channel_thread;
+  embedder::SimplePlatformSupport platform_support;
+  ChannelThread channel_thread(&platform_support);
   embedder::ScopedPlatformHandle client_platform_handle =
       mojo::test::MultiprocessTestHelper::client_platform_handle.Pass();
   CHECK(client_platform_handle.is_valid());
@@ -317,7 +323,8 @@ TEST_F(MultiprocessMessagePipeTest, QueueMessages) {
 }
 
 MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckSharedBuffer) {
-  ChannelThread channel_thread;
+  embedder::SimplePlatformSupport platform_support;
+  ChannelThread channel_thread(&platform_support);
   embedder::ScopedPlatformHandle client_platform_handle =
       mojo::test::MultiprocessTestHelper::client_platform_handle.Pass();
   CHECK(client_platform_handle.is_valid());
@@ -428,11 +435,10 @@ TEST_F(MultiprocessMessagePipeTest, MAYBE_SharedBufferPassing) {
   Init(mp);
 
   // Make a shared buffer.
-  embedder::SimplePlatformSupport platform_support;
   scoped_refptr<SharedBufferDispatcher> dispatcher;
   EXPECT_EQ(MOJO_RESULT_OK,
             SharedBufferDispatcher::Create(
-                &platform_support,
+                platform_support(),
                 SharedBufferDispatcher::kDefaultCreateOptions,
                 100,
                 &dispatcher));
@@ -515,7 +521,8 @@ TEST_F(MultiprocessMessagePipeTest, MAYBE_SharedBufferPassing) {
 }
 
 MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckPlatformHandleFile) {
-  ChannelThread channel_thread;
+  embedder::SimplePlatformSupport platform_support;
+  ChannelThread channel_thread(&platform_support);
   embedder::ScopedPlatformHandle client_platform_handle =
       mojo::test::MultiprocessTestHelper::client_platform_handle.Pass();
   CHECK(client_platform_handle.is_valid());
