@@ -707,5 +707,17 @@ hooks = [
          '.',
     'name':
          'gyp'
+},
+    {
+    'action':
+         [
+    'python',
+    'src/tools/check_git_config.py',
+    '--running-as-hook'
+],
+    'pattern':
+         '.',
+    'name':
+         'check_git_config'
 }
 ]
