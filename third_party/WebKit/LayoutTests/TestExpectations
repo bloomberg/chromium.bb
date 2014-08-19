@@ -798,7 +798,7 @@ crbug.com/357088 [ Debug ] web-animations-api/timeline-updates-players.html [ Fa
 crbug.com/357088 [ Linux Release ] web-animations-api/timeline-updates-players.html [ Failure Pass ]
 crbug.com/357427 http/tests/workers/terminate-during-sync-operation-file.html [ Crash Pass Slow Timeout ]
 crbug.com/357427 http/tests/workers/terminate-during-sync-operation-filesystem.html [ Pass Slow Timeout ]
-crbug.com/357427 http/tests/workers/terminate-during-sync-operation-websql.html [ Crash Pass Timeout Failure ]
+crbug.com/357427 http/tests/workers/terminate-during-sync-operation-websql.html [ Pass Slow Timeout ]
 crbug.com/357437 web-animations-api/change-in-animation-frame.html [ Failure Pass ]
 crbug.com/357438 [ Mac Win ] compositing/plugins/invalidate_rect.html [ Failure Pass ]
 crbug.com/357459 [ Linux Win ] virtual/threaded/animations/3d/matrix-transform-type-animation.html [ Pass Timeout ]
