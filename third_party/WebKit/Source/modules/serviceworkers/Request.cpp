@@ -150,7 +150,6 @@ PassRefPtrWillBeRawPtr<Request> Request::create(ExecutionContext* context, const
     return createRequestWithRequestData(request.release(), RequestInit(init), FetchRequestData::CORSMode, FetchRequestData::OmitCredentials, exceptionState);
 }
 
-
 PassRefPtrWillBeRawPtr<Request> Request::create(ExecutionContext* context, Request* input, ExceptionState& exceptionState)
 {
     return create(context, input, Dictionary(), exceptionState);
