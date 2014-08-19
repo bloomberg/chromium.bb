@@ -242,7 +242,8 @@ void PepperMediaStreamAudioTrackHost::AudioSink::OnData(const int16* audio_data,
       buffer->sample_rate = static_cast<PP_AudioBuffer_SampleRate>(sample_rate);
       buffer->data_size = output_buffer_size_;
       buffer->number_of_channels = number_of_channels;
-      buffer->number_of_samples = buffer->data_size / bytes_per_frame;
+      buffer->number_of_samples = buffer->data_size * number_of_channels /
+          bytes_per_frame;
     }
     uint32_t buffer_bytes_remaining =
         buffer->data_size - active_buffer_offset_;
