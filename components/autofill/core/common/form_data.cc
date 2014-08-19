@@ -13,7 +13,7 @@ namespace autofill {
 
 namespace {
 
-const int kPickleVersion = 1;
+const int kPickleVersion = 2;
 
 bool ReadGURL(PickleIterator* iter, GURL* url) {
   std::string spec;
@@ -46,6 +46,11 @@ bool DeserializeFormFieldDataVector(PickleIterator* iter,
     fields->push_back(temp);
   }
   return true;
+}
+
+void LogDeserializationError(int version) {
+  DVLOG(1) << "Could not deserialize version " << version
+             << " FormData from pickle.";
 }
 
 }  // namespace
@@ -113,24 +118,36 @@ void SerializeFormData(const FormData& form_data, Pickle* pickle) {
 bool DeserializeFormData(PickleIterator* iter, FormData* form_data) {
   int version;
   if (!iter->ReadInt(&version)) {
-    LOG(ERROR) << "Bad pickle of FormData, no version present";
+    DVLOG(1) << "Bad pickle of FormData, no version present";
     return false;
   }
 
   switch (version) {
     case 1: {
+      base::string16 method;
+      if (!iter->ReadString16(&form_data->name) ||
+          !iter->ReadString16(&method) ||
+          !ReadGURL(iter, &form_data->origin) ||
+          !ReadGURL(iter, &form_data->action) ||
+          !iter->ReadBool(&form_data->user_submitted) ||
+          !DeserializeFormFieldDataVector(iter, &form_data->fields)) {
+        LogDeserializationError(version);
+        return false;
+      }
+      break;
+    }
+    case 2:
       if (!iter->ReadString16(&form_data->name) ||
           !ReadGURL(iter, &form_data->origin) ||
           !ReadGURL(iter, &form_data->action) ||
           !iter->ReadBool(&form_data->user_submitted) ||
           !DeserializeFormFieldDataVector(iter, &form_data->fields)) {
-        LOG(ERROR) << "Could not deserialize FormData from pickle";
+        LogDeserializationError(version);
         return false;
       }
       break;
-    }
     default: {
-      LOG(ERROR) << "Unknown FormData pickle version " << version;
+      DVLOG(1) << "Unknown FormData pickle version " << version;
       return false;
     }
   }
