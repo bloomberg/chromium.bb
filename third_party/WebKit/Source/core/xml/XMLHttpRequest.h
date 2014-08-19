@@ -270,8 +270,6 @@ private:
     ResponseTypeCode m_responseTypeCode;
     RefPtr<SecurityOrigin> m_securityOrigin;
 
-    double m_previousReadyStateChangeFireTime;
-
     bool m_async;
     bool m_includeCredentials;
     // Used to skip m_responseDocument creation if it's done previously. We need
