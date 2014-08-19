@@ -50,9 +50,6 @@ public:
     virtual void setAccelerated2dCanvasMSAASampleCount(int) OVERRIDE;
     virtual void setAcceleratedCompositingEnabled(bool) OVERRIDE;
     virtual void setPreferCompositingToLCDTextEnabled(bool) OVERRIDE;
-    virtual void setAcceleratedCompositingForFixedPositionEnabled(bool) OVERRIDE;
-    virtual void setAcceleratedCompositingForOverflowScrollEnabled(bool) OVERRIDE;
-    virtual void setAcceleratedCompositingForFixedRootBackgroundEnabled(bool) OVERRIDE;
     virtual void setAllowDisplayOfInsecureContent(bool) OVERRIDE;
     virtual void setAllowFileAccessFromFileURLs(bool) OVERRIDE;
     virtual void setAllowCustomScrollbarInMainFrame(bool) OVERRIDE;
@@ -65,7 +62,6 @@ public:
     virtual void setAutoZoomFocusedNodeToLegibleScale(bool) OVERRIDE;
     virtual void setCaretBrowsingEnabled(bool) OVERRIDE;
     virtual void setClobberUserAgentInitialScaleQuirk(bool) OVERRIDE;
-    virtual void setCompositedScrollingForFramesEnabled(bool) OVERRIDE;
     virtual void setContainerCullingEnabled(bool) OVERRIDE;
     virtual void setCookieEnabled(bool) OVERRIDE;
     virtual void setNavigateOnDragDrop(bool) OVERRIDE;

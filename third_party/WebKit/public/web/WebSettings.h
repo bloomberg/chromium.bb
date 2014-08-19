@@ -65,9 +65,6 @@ public:
     virtual void setAccelerated2dCanvasMSAASampleCount(int) = 0;
     virtual void setAcceleratedCompositingEnabled(bool) = 0;
     virtual void setPreferCompositingToLCDTextEnabled(bool) = 0;
-    virtual void setAcceleratedCompositingForFixedPositionEnabled(bool) = 0;
-    virtual void setAcceleratedCompositingForFixedRootBackgroundEnabled(bool) = 0;
-    virtual void setAcceleratedCompositingForOverflowScrollEnabled(bool) = 0;
     // Not implemented yet, see http://crbug.com/178119
     virtual void setAcceleratedCompositingForTransitionEnabled(bool) { };
     // If set to true, allows frames with an https origin to display passive
@@ -95,7 +92,6 @@ public:
     virtual void setAutoZoomFocusedNodeToLegibleScale(bool) = 0;
     virtual void setCaretBrowsingEnabled(bool) = 0;
     virtual void setClobberUserAgentInitialScaleQuirk(bool) = 0;
-    virtual void setCompositedScrollingForFramesEnabled(bool) = 0;
     virtual void setContainerCullingEnabled(bool) = 0;
     virtual void setCookieEnabled(bool) = 0;
     virtual void setNavigateOnDragDrop(bool) = 0;

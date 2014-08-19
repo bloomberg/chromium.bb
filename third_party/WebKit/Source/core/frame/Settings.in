@@ -94,8 +94,6 @@ treatIPAddressAsDomain initial=false
 
 preferCompositingToLCDTextEnabled initial=false, invalidate=AcceleratedCompositing
 
-acceleratedCompositingForFixedRootBackgroundEnabled initial=false
-
 # 3D canvas (WebGL) support.
 webGLEnabled initial=false
 
@@ -244,7 +242,6 @@ viewportEnabled initial=false, invalidate=ViewportDescription
 viewportMetaEnabled initial=false
 
 dnsPrefetchingEnabled initial=false, invalidate=DNSPrefetching
-
 
 # FIXME: This is a temporary flag and should be removed
 # when squashing is ready. (crbug.com/261605)

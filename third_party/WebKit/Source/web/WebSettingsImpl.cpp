@@ -436,16 +436,6 @@ void WebSettingsImpl::setMockGestureTapHighlightsEnabled(bool enabled)
     m_settings->setMockGestureTapHighlightsEnabled(enabled);
 }
 
-// TODO(danakj): Remove this method.
-void WebSettingsImpl::setAcceleratedCompositingForOverflowScrollEnabled(bool enabled)
-{
-}
-
-// TODO(danakj): Remove this method.
-void WebSettingsImpl::setAcceleratedCompositingForFixedRootBackgroundEnabled(bool)
-{
-}
-
 void WebSettingsImpl::setAccelerated2dCanvasEnabled(bool enabled)
 {
     m_settings->setAccelerated2dCanvasEnabled(enabled);
@@ -478,12 +468,6 @@ void WebSettingsImpl::setDeferredFiltersEnabled(bool enabled)
 }
 
 void WebSettingsImpl::setPreferCompositingToLCDTextEnabled(bool enabled)
-{
-    m_settings->setPreferCompositingToLCDTextEnabled(enabled);
-}
-
-// TODO(danakj): Remove this method.
-void WebSettingsImpl::setAcceleratedCompositingForFixedPositionEnabled(bool enabled)
 {
     m_settings->setPreferCompositingToLCDTextEnabled(enabled);
 }
@@ -636,11 +620,6 @@ void WebSettingsImpl::setNavigateOnDragDrop(bool enabled)
 void WebSettingsImpl::setAllowCustomScrollbarInMainFrame(bool enabled)
 {
     m_settings->setAllowCustomScrollbarInMainFrame(enabled);
-}
-
-// TODO(danakj): Remove this method.
-void WebSettingsImpl::setCompositedScrollingForFramesEnabled(bool enabled)
-{
 }
 
 void WebSettingsImpl::setSelectTrailingWhitespaceEnabled(bool enabled)
