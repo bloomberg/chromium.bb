@@ -189,13 +189,15 @@ def DevserverURLToLocalPath(url, static_dir, file_type):
 class USBImager(object):
   """Copy image to the target removable device."""
 
-  def __init__(self, device, board, image, debug=False, yes=False):
+  def __init__(self, device, board, image, debug=False, install=False,
+               yes=False):
     """Initalizes USBImager."""
     self.device = device
     self.board = board if board else cros_build_lib.GetDefaultBoard()
     self.image = image
     self.debug = debug
     self.debug_level = logging.DEBUG if debug else logging.INFO
+    self.install = install
     self.yes = yes
 
   def DeviceNameToPath(self, device_name):
@@ -244,6 +246,25 @@ class USBImager(object):
       [self.GetRemovableDeviceDescription(x) for x in devices])
 
     return devices[idx]
+
+  def InstallImageToDevice(self, image, device):
+    """Installs |image| to the removable |device|.
+
+    Args:
+      image: Path to the image to copy.
+      device: Device to copy to.
+    """
+    if not self.board:
+      raise Exception('Couldn\'t determine what board to use')
+    cmd = ['%s/usr/sbin/chromeos-install' %
+             cros_build_lib.GetSysroot(self.board),
+           '--yes',
+           '--skip_src_removable',
+           '--skip_dst_removable',
+           '--payload_image=%s' % image,
+           '--dst=%s' % device,
+           '--skip_postinstall']
+    cros_build_lib.SudoRunCommand(cmd)
 
   def CopyImageToDevice(self, image, device):
     """Copies |image| to the removable |device|.
@@ -376,7 +397,11 @@ class USBImager(object):
 
     image_path = self._GetImagePath()
     try:
-      self.CopyImageToDevice(image_path, self.DeviceNameToPath(target))
+      device = self.DeviceNameToPath(target)
+      if self.install:
+        self.InstallImageToDevice(image_path, device)
+      else:
+        self.CopyImageToDevice(image_path, device)
     except cros_build_lib.RunCommandError:
       logging.error('Failed copying image to device %s',
                     self.DeviceNameToPath(target))
@@ -960,6 +985,11 @@ Examples:
         '--disable-rootfs-verification', default=False, action='store_true',
         help='Disable rootfs verification after update is completed.')
 
+    usb = parser.add_argument_group('USB specific options')
+    usb.add_argument(
+        '--install', default=False, action='store_true',
+        help='Install to the USB device using the base disk layout.')
+
   def __init__(self, options):
     """Initializes cros flash."""
     cros.CrosCommand.__init__(self, options)
@@ -1006,6 +1036,15 @@ Examples:
       logging.error('Failed to create %s', DEVSERVER_STATIC_DIR)
 
     self._ParseDevice(self.options.device)
+
+    if self.options.install:
+      if self.run_mode != self.USB_MODE:
+        logging.error('--install can only be used when writing to a USB device')
+        return 1
+      if not cros_build_lib.IsInsideChroot():
+        logging.error('--install can only be used inside the chroot')
+        return 1
+
     try:
       if self.run_mode == self.SSH_MODE:
         logging.info('Preparing to update the remote device %s',
@@ -1035,6 +1074,7 @@ Examples:
                            self.options.board,
                            self.options.image,
                            debug=self.options.debug,
+                           install=self.options.install,
                            yes=self.options.yes)
         imager.Run()
       elif self.run_mode == self.FILE_MODE:
