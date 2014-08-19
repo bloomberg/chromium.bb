@@ -19,11 +19,11 @@ const char* CacheErrorToString(WebServiceWorkerCacheError reason)
 {
     // FIXME: Construct correct DOM error objects rather than returning strings.
     switch (reason) {
-    case WebServiceWorkerCacheError::WebServiceWorkerCacheErrorNotImplemented:
+    case WebServiceWorkerCacheErrorNotImplemented:
         return "not implemented";
-    case WebServiceWorkerCacheError::WebServiceWorkerCacheErrorNotFound:
+    case WebServiceWorkerCacheErrorNotFound:
         return "not found";
-    case WebServiceWorkerCacheError::WebServiceWorkerCacheErrorExists:
+    case WebServiceWorkerCacheErrorExists:
         return "entry already exists";
     default:
         ASSERT_NOT_REACHED();
