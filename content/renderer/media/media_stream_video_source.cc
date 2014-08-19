@@ -599,9 +599,8 @@ void MediaStreamVideoSource::SetReadyState(
     blink::WebMediaStreamSource::ReadyState state) {
   DVLOG(3) << "MediaStreamVideoSource::SetReadyState state " << state;
   DCHECK(CalledOnValidThread());
-  if (!owner().isNull()) {
+  if (!owner().isNull())
     owner().setReadyState(state);
-  }
   for (std::vector<MediaStreamVideoTrack*>::iterator it = tracks_.begin();
        it != tracks_.end(); ++it) {
     (*it)->OnReadyStateChanged(state);
@@ -611,6 +610,14 @@ void MediaStreamVideoSource::SetReadyState(
 void MediaStreamVideoSource::SetMutedState(bool muted_state) {
   DVLOG(3) << "MediaStreamVideoSource::SetMutedState state=" << muted_state;
   DCHECK(CalledOnValidThread());
+  if (muted_state != muted_state_) {
+    muted_state_ = muted_state;
+    if (!owner().isNull()) {
+      owner().setReadyState(muted_state_
+        ? blink::WebMediaStreamSource::ReadyStateMuted
+        : blink::WebMediaStreamSource::ReadyStateLive);
+    }
+  }
   // WebMediaStreamSource doesn't have a muted state, the tracks do.
   for (std::vector<MediaStreamVideoTrack*>::iterator it = tracks_.begin();
        it != tracks_.end(); ++it) {
