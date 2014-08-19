@@ -261,21 +261,6 @@ crbug.com/331583 [ Mavericks ] fast/text/whitespace/018.html [ Pass ImageOnlyFai
 crbug.com/331583 [ Mavericks ] ietestcenter/css3/multicolumn/column-block-formatting-context-001.htm [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] ietestcenter/css3/multicolumn/column-containing-block-003.htm [ Pass ImageOnlyFailure ]
 
-crbug.com/390587 fast/repaint/border-radius-repaint.html [ NeedsRebaseline ]
-crbug.com/390587 fast/repaint/border-radius-repaint-2.html [ NeedsRebaseline ]
-crbug.com/390587 fast/repaint/border-repaint-glitch.html [ NeedsRebaseline ]
-crbug.com/390587 fast/repaint/line-flow-with-floats-2.html [ NeedsRebaseline ]
-crbug.com/390587 fast/repaint/line-flow-with-floats-8.html [ NeedsRebaseline ]
-crbug.com/390587 fast/repaint/repaint-resized-overflow.html [ NeedsRebaseline ]
-crbug.com/390587 fast/repaint/selection-after-delete.html [ NeedsRebaseline ]
-crbug.com/390587 fast/repaint/subtree-layoutstate-transform.html [ NeedsRebaseline ]
-crbug.com/390587 fast/repaint/overflow-into-content.html [ NeedsRebaseline ]
-crbug.com/390587 compositing/repaint/resize-repaint.html [ NeedsRebaseline ]
-crbug.com/390587 fast/repaint/content-into-overflow.html [ NeedsRebaseline ]
-crbug.com/390587 fast/repaint/transform-disable-layoutstate.html [ NeedsRebaseline ]
-crbug.com/390587 fast/repaint/table-collapsed-border.html [ NeedsRebaseline ]
-crbug.com/390587 fast/repaint/table-section-repaint.html [ NeedsRebaseline ]
-
 crbug.com/225184 scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure Failure Pass ]
 
 crbug.com/365340 editing/pasteboard/paste-noscript-xhtml.xhtml [ Failure Pass ]
