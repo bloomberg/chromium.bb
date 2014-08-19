@@ -4,21 +4,19 @@
 # found in the LICENSE file.
 
 """Script that attempts to push to a special git repository to verify that git
-credentials are configured correctly. It also attempts to fix misconfigurations
-if possible.
+credentials are configured correctly. It also verifies that gclient solution is
+configured to use git checkout.
 
 It will be added as gclient hook shortly before Chromium switches to git and
 removed after the switch.
 
 When running as hook in *.corp.google.com network it will also report status
 of the push attempt to the server (on appengine), so that chrome-infra team can
-collect information about misconfigured Git accounts (to fix them).
-
-When invoked manually will do the access test and submit the report regardless
-of where it is running.
+collect information about misconfigured Git accounts.
 """
 
 import contextlib
+import datetime
 import errno
 import getpass
 import json
@@ -26,6 +24,7 @@ import logging
 import netrc
 import optparse
 import os
+import pprint
 import shutil
 import socket
 import ssl
@@ -40,9 +39,15 @@ import urlparse
 # Absolute path to src/ directory.
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+# Absolute path to a file with gclient solutions.
+GCLIENT_CONFIG = os.path.join(os.path.dirname(REPO_ROOT), '.gclient')
+
 # Incremented whenever some changes to scrip logic are made. Change in version
 # will cause the check to be rerun on next gclient runhooks invocation.
 CHECKER_VERSION = 0
+
+# Do not attempt to upload a report after this date.
+UPLOAD_DISABLE_TS = datetime.datetime(2014, 10, 1)
 
 # URL to POST json with results to.
 MOTHERSHIP_URL = (
@@ -51,6 +56,14 @@ MOTHERSHIP_URL = (
 
 # Repository to push test commits to.
 TEST_REPO_URL = 'https://chromium.googlesource.com/a/playground/access_test'
+
+# Git-compatible gclient solution.
+GOOD_GCLIENT_SOLUTION = {
+  'name': 'src',
+  'deps_file': '.DEPS.git',
+  'managed': False,
+  'url': 'https://chromium.googlesource.com/chromium/src.git',
+}
 
 # Possible chunks of git push response in case .netrc is misconfigured.
 BAD_ACL_ERRORS = (
@@ -125,6 +138,26 @@ def get_git_version():
     return ''
 
 
+def read_gclient_solution():
+  """Read information about 'src' gclient solution from .gclient file.
+
+  Returns tuple:
+    (url, deps_file, managed)
+    or
+    (None, None, None) if no such solution.
+  """
+  try:
+    env = {}
+    execfile(GCLIENT_CONFIG, env, env)
+    for sol in env['solutions']:
+      if sol['name'] == 'src':
+        return sol.get('url'), sol.get('deps_file'), sol.get('managed')
+    return None, None, None
+  except Exception:
+    logging.exception('Failed to read .gclient solution')
+    return None, None, None
+
+
 def scan_configuration():
   """Scans local environment for git related configuration values."""
   # Git checkout?
@@ -150,6 +183,9 @@ def scan_configuration():
       logging.exception('Failed to read netrc from %s', netrc_path)
       netrc_obj = None
 
+  # Read gclient 'src' solution.
+  gclient_url, gclient_deps, gclient_managed = read_gclient_solution()
+
   return {
     'checker_version': CHECKER_VERSION,
     'is_git': is_git,
@@ -165,6 +201,9 @@ def scan_configuration():
         read_netrc_user(netrc_obj, 'chromium.googlesource.com'),
     'chrome_internal_netrc_email':
         read_netrc_user(netrc_obj, 'chrome-internal.googlesource.com'),
+    'gclient_deps': gclient_deps,
+    'gclient_managed': gclient_managed,
+    'gclient_url': gclient_url,
   }
 
 
@@ -243,14 +282,12 @@ class Runner(object):
         logging.warning(text)
 
 
-def check_git_access(conf, report_url, verbose):
+def check_git_config(conf, report_url, verbose):
   """Attempts to push to a git repository, reports results to a server.
 
   Returns True if the check finished without incidents (push itself may
   have failed) and should NOT be retried on next invocation of the hook.
   """
-  logging.warning('Checking push access to the git repository...')
-
   # Don't even try to push if netrc is not configured.
   if not conf['chromium_netrc_email']:
     return upload_report(
@@ -268,6 +305,7 @@ def check_git_access(conf, report_url, verbose):
   flake = False
   started = time.time()
   try:
+    logging.warning('Checking push access to the git repository...')
     with temp_directory() as tmp:
       # Prepare a simple commit on a new timeline.
       runner = Runner(tmp, verbose)
@@ -296,6 +334,12 @@ def check_git_access(conf, report_url, verbose):
     logging.exception('Unexpected exception when pushing')
     flake = True
 
+  if push_works:
+    logging.warning('Git push works!')
+  else:
+    logging.warning(
+        'Git push doesn\'t work, which is fine if you are not a committer.')
+
   uploaded = upload_report(
       conf,
       report_url,
@@ -304,6 +348,28 @@ def check_git_access(conf, report_url, verbose):
       push_log='\n'.join(runner.log),
       push_duration_ms=int((time.time() - started) * 1000))
   return uploaded and not flake
+
+
+def check_gclient_config(conf):
+  """Shows warning if gclient solution is not properly configured for git."""
+  current = {
+    'name': 'src',
+    'deps_file': conf['gclient_deps'],
+    'managed': conf['gclient_managed'],
+    'url': conf['gclient_url'],
+  }
+  if current != GOOD_GCLIENT_SOLUTION:
+    print '-' * 80
+    print 'Your gclient solution is not set to use supported git workflow!'
+    print
+    print 'Your \'src\' solution (in %s):' % GCLIENT_CONFIG
+    print pprint.pformat(current, indent=2)
+    print
+    print 'Correct \'src\' solution to use git:'
+    print pprint.pformat(GOOD_GCLIENT_SOLUTION, indent=2)
+    print
+    print 'Please update your .gclient file ASAP.'
+    print '-' * 80
 
 
 def upload_report(
@@ -320,19 +386,12 @@ def upload_report(
       push_duration_ms=push_duration_ms)
 
   as_bytes = json.dumps({'access_check': report}, indent=2, sort_keys=True)
-
-  if push_works:
-    logging.warning('Git push works!')
-  else:
-    logging.warning(
-        'Git push doesn\'t work, which is fine if you are not a committer.')
-
   if verbose:
     print 'Status of git push attempt:'
     print as_bytes
 
-  # Do not upload it outside of corp.
-  if not is_in_google_corp():
+  # Do not upload it outside of corp or if server side is already disabled.
+  if not is_in_google_corp() or datetime.datetime.now() > UPLOAD_DISABLE_TS:
     if verbose:
       print (
           'You can send the above report to chrome-git-migration@google.com '
@@ -386,19 +445,27 @@ def main(args):
       format='%(message)s',
       level=logging.INFO if options.verbose else logging.WARN)
 
-  # When invoked not as hook, always run the check.
+  # When invoked not as a hook, always run the check.
   if not options.running_as_hook:
-    if check_git_access(scan_configuration(), options.report_url, True):
-      return 0
-    return 1
-
-  # Otherwise, do it only on google owned, non-bot machines.
-  if is_on_bot() or not is_in_google_corp():
-    logging.info('Skipping the check: bot or non corp.')
+    config = scan_configuration()
+    check_gclient_config(config)
+    check_git_config(config, options.report_url, True)
     return 0
 
-  # Skip the check if current configuration was already checked.
+  # Always do nothing on bots.
+  if is_on_bot():
+    return 0
+
+  # Read current config, verify gclient solution looks correct.
   config = scan_configuration()
+  check_gclient_config(config)
+
+  # Do not attempt to push from non-google owned machines.
+  if not is_in_google_corp():
+    logging.info('Skipping git push check: non *.corp.google.com machine.')
+    return 0
+
+  # Skip git push check if current configuration was already checked.
   if config == read_last_configuration():
     logging.info('Check already performed, skipping.')
     return 0
@@ -406,7 +473,7 @@ def main(args):
   # Run the check. Mark configuration as checked only on success. Ignore any
   # exceptions or errors. This check must not break gclient runhooks.
   try:
-    ok = check_git_access(config, options.report_url, False)
+    ok = check_git_config(config, options.report_url, False)
     if ok:
       write_last_configuration(config)
     else:
