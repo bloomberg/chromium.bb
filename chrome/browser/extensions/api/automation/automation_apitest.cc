@@ -88,12 +88,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, TestRendererAccessibilityEnabled) {
   ASSERT_TRUE(tab->IsTreeOnlyAccessibilityModeForTesting());
 }
 
-#if defined(ADDRESS_SANITIZER)
-#define Maybe_SanityCheck DISABLED_SanityCheck
-#else
-#define Maybe_SanityCheck SanityCheck
-#endif
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, Maybe_SanityCheck) {
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, SanityCheck) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "sanity_check.html"))
       << message_;
@@ -110,38 +105,19 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, GetTreeByTabId) {
       << message_;
 }
 
-#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
-// Failing on Linux ASan bot: http://crbug.com/391279
-#define MAYBE_Events DISABLED_Events
-#else
-#define MAYBE_Events Events
-#endif
-
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, MAYBE_Events) {
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, Events) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "events.html"))
       << message_;
 }
 
-#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
-// Timing out on linux ASan bot: http://crbug.com/385701
-#define MAYBE_Actions DISABLED_Actions
-#else
-#define MAYBE_Actions Actions
-#endif
-
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, MAYBE_Actions) {
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, Actions) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "actions.html"))
       << message_;
 }
 
-#if defined(ADDRESS_SANITIZER)
-#define Maybe_Location DISABLED_Location
-#else
-#define Maybe_Location Location
-#endif
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, Maybe_Location) {
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, Location) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "location.html"))
       << message_;
@@ -154,13 +130,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, TabsAutomationBooleanPermissions) {
       << message_;
 }
 
-// See crbug.com/384673
-#if defined(ADDRESS_SANITIZER) || defined(OS_CHROMEOS) || defined(OS_LINUX)
-#define Maybe_TabsAutomationBooleanActions DISABLED_TabsAutomationBooleanActions
-#else
-#define Maybe_TabsAutomationBooleanActions TabsAutomationBooleanActions
-#endif
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, Maybe_TabsAutomationBooleanActions) {
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, TabsAutomationBooleanActions) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest(
           "automation/tests/tabs_automation_boolean", "actions.html"))
