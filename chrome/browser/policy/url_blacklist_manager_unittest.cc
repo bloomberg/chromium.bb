@@ -671,4 +671,32 @@ TEST_F(URLBlacklistManagerTest, DontBlockResources) {
             blacklist_manager_->IsRequestBlocked(sync_request, &reason));
 }
 
+TEST_F(URLBlacklistManagerTest, DefaultBlacklistExceptions) {
+  URLBlacklist blacklist(GetSegmentURLCallback());
+  scoped_ptr<base::ListValue> blocked(new base::ListValue);
+
+  // Blacklist everything:
+  blocked->Append(new base::StringValue("*"));
+  blacklist.Block(blocked.get());
+
+  // Internal NTP and extension URLs are not blocked by the "*":
+  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://www.google.com")));
+  EXPECT_FALSE((blacklist.IsURLBlocked(GURL("chrome-extension://xyz"))));
+  EXPECT_FALSE((blacklist.IsURLBlocked(GURL("chrome-search://local-ntp"))));
+  EXPECT_FALSE((blacklist.IsURLBlocked(GURL("chrome-native://ntp"))));
+
+  // Unless they are explicitly blacklisted:
+  blocked->Append(new base::StringValue("chrome-extension://*"));
+  scoped_ptr<base::ListValue> allowed(new base::ListValue);
+  allowed->Append(new base::StringValue("chrome-extension://abc"));
+  blacklist.Block(blocked.get());
+  blacklist.Allow(allowed.get());
+
+  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://www.google.com")));
+  EXPECT_TRUE((blacklist.IsURLBlocked(GURL("chrome-extension://xyz"))));
+  EXPECT_FALSE((blacklist.IsURLBlocked(GURL("chrome-extension://abc"))));
+  EXPECT_FALSE((blacklist.IsURLBlocked(GURL("chrome-search://local-ntp"))));
+  EXPECT_FALSE((blacklist.IsURLBlocked(GURL("chrome-native://ntp"))));
+}
+
 }  // namespace policy
