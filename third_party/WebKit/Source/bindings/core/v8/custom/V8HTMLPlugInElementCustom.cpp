@@ -100,9 +100,6 @@ void setScriptableObjectProperty(PropertyType property, v8::Local<v8::Value> val
         callNpObjectSetter(instance, property, value, info);
         return;
     }
-
-    if (instance->Set(property, value))
-        v8SetReturnValue(info, value);
 }
 } // namespace
 
