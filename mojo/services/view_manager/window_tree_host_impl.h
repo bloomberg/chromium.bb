@@ -6,6 +6,7 @@
 #define MOJO_AURA_WINDOW_TREE_HOST_MOJO_H_
 
 #include "base/bind.h"
+#include "mojo/services/public/interfaces/gpu/gpu.mojom.h"
 #include "mojo/services/public/interfaces/native_viewport/native_viewport.mojom.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_source.h"
@@ -24,12 +25,12 @@ class WindowTreeHostImpl : public aura::WindowTreeHost,
                            public ui::EventSource,
                            public NativeViewportClient {
  public:
-  WindowTreeHostImpl(
-      NativeViewportPtr viewport,
-      const gfx::Rect& bounds,
-      const Callback<void()>& compositor_created_callback,
-      const Callback<void()>& native_viewport_closed_callback,
-      const Callback<void(EventPtr)>& event_received_callback);
+  WindowTreeHostImpl(NativeViewportPtr viewport,
+                     GpuPtr gpu_service,
+                     const gfx::Rect& bounds,
+                     const Callback<void()>& compositor_created_callback,
+                     const Callback<void()>& native_viewport_closed_callback,
+                     const Callback<void(EventPtr)>& event_received_callback);
   virtual ~WindowTreeHostImpl();
 
   gfx::Rect bounds() const { return bounds_; }
@@ -54,8 +55,8 @@ class WindowTreeHostImpl : public aura::WindowTreeHost,
   virtual ui::EventProcessor* GetEventProcessor() OVERRIDE;
 
   // Overridden from NativeViewportClient:
-  virtual void OnCreated() OVERRIDE;
-  virtual void OnDestroyed(const mojo::Callback<void()>& callback) OVERRIDE;
+  virtual void OnCreated(uint64_t native_viewport_id) OVERRIDE;
+  virtual void OnDestroyed() OVERRIDE;
   virtual void OnBoundsChanged(RectPtr bounds) OVERRIDE;
   virtual void OnEvent(EventPtr event,
                        const mojo::Callback<void()>& callback) OVERRIDE;
@@ -63,6 +64,8 @@ class WindowTreeHostImpl : public aura::WindowTreeHost,
   static ContextFactoryImpl* context_factory_;
 
   NativeViewportPtr native_viewport_;
+  GpuPtr gpu_service_;
+  gfx::AcceleratedWidget widget_;
   Callback<void()> compositor_created_callback_;
   Callback<void()> native_viewport_closed_callback_;
   Callback<void(EventPtr)> event_received_callback_;

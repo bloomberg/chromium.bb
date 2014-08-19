@@ -6,7 +6,6 @@
 #define MOJO_SERVICES_NATIVE_VIEWPORT_IMPL_H_
 
 #include "base/memory/weak_ptr.h"
-#include "mojo/services/gles2/command_buffer_impl.h"
 #include "mojo/services/native_viewport/platform_viewport.h"
 #include "mojo/services/public/interfaces/native_viewport/native_viewport.mojom.h"
 
@@ -28,8 +27,6 @@ class NativeViewportImpl : public InterfaceImpl<NativeViewport>,
   virtual void Hide() OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void SetBounds(RectPtr bounds) OVERRIDE;
-  virtual void CreateGLES2Context(
-      InterfaceRequest<CommandBuffer> command_buffer_request) OVERRIDE;
 
   // PlatformViewport::Delegate implementation.
   virtual void OnBoundsChanged(const gfx::Rect& bounds) OVERRIDE;
@@ -39,15 +36,11 @@ class NativeViewportImpl : public InterfaceImpl<NativeViewport>,
   virtual void OnDestroyed() OVERRIDE;
 
   void AckEvent();
-  void CreateCommandBufferIfNeeded();
 
  private:
-  void AckDestroyed();
 
   gfx::AcceleratedWidget widget_;
   scoped_ptr<PlatformViewport> platform_viewport_;
-  InterfaceRequest<CommandBuffer> command_buffer_request_;
-  scoped_ptr<CommandBufferImpl> command_buffer_;
   bool waiting_for_event_ack_;
   base::WeakPtrFactory<NativeViewportImpl> weak_factory_;
 };

@@ -15,13 +15,12 @@ interface NativeViewport {
   Hide();
   Close();
   SetBounds(Rect bounds);
-  CreateGLES2Context(CommandBuffer& gles2_client);
 };
 
 interface NativeViewportClient {
-  OnCreated();
+  OnCreated(uint64 native_viewport_id);
   OnBoundsChanged(Rect bounds);
-  OnDestroyed() => ();
+  OnDestroyed();
   OnEvent(Event event) => ();
 };
 
