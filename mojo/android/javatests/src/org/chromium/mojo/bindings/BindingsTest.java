@@ -20,6 +20,7 @@ import org.chromium.mojo.bindings.test.mojom.sample.Enum;
 import org.chromium.mojo.bindings.test.mojom.sample.Foo;
 import org.chromium.mojo.bindings.test.mojom.sample.InterfaceConstants;
 import org.chromium.mojo.bindings.test.mojom.sample.SampleServiceConstants;
+import org.chromium.mojo.bindings.test.mojom.test_structs.EmptyStruct;
 import org.chromium.mojo.system.DataPipe.ConsumerHandle;
 import org.chromium.mojo.system.DataPipe.ProducerHandle;
 import org.chromium.mojo.system.MessagePipeHandle;
@@ -235,6 +236,17 @@ public class BindingsTest extends TestCase {
         Message serializedFoo = typicalFoo.serialize(null);
         Foo deserializedFoo = Foo.deserialize(serializedFoo);
         assertFooEquals(typicalFoo, deserializedFoo);
+    }
+
+    /**
+     * Testing serialization of the EmptyStruct class.
+     */
+    @SmallTest
+    public void testEmptyStructSerialization() {
+        // Checking serialization and deserialization of a EmptyStruct object.
+        Message serializedStruct = new EmptyStruct().serialize(null);
+        EmptyStruct emptyStruct = EmptyStruct.deserialize(serializedStruct);
+        assertNotNull(emptyStruct);
     }
 
 }

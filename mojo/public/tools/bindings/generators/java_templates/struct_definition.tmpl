@@ -78,7 +78,11 @@ if (decoder{{level+1}} == null) {
             return null;
         }
         {{struct|name}} result = new {{struct|name}}();
+{% if not struct.bytes %}
+        decoder0.readDataHeader();
+{% else %}
         DataHeader mainDataHeader = decoder0.readDataHeader();
+{% endif %}
 {% for byte in struct.bytes %}
 {%   for packed_field in byte.packed_fields %}
         if (mainDataHeader.numFields > {{packed_field.ordinal}}) {
@@ -91,7 +95,11 @@ if (decoder{{level+1}} == null) {
 
     @Override
     protected final void encode(org.chromium.mojo.bindings.Encoder encoder) {
+{% if not struct.bytes %}
+        encoder.getEncoderAtDataOffset(DEFAULT_STRUCT_INFO);
+{% else %}
         org.chromium.mojo.bindings.Encoder encoder0 = encoder.getEncoderAtDataOffset(DEFAULT_STRUCT_INFO);
+{% endif %}
 {% for byte in struct.bytes %}
 {%   for packed_field in byte.packed_fields %}
         {{encode(packed_field.field|name, packed_field.field.kind, 8+packed_field.offset, packed_field.bit)|indent(8)}}
