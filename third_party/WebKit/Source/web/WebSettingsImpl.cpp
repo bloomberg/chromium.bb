@@ -51,7 +51,6 @@ WebSettingsImpl::WebSettingsImpl(Settings* settings, InspectorController* inspec
     , m_doubleTapToZoomEnabled(false)
     , m_supportDeprecatedTargetDensityDPI(false)
     , m_shrinksViewportContentToFit(false)
-    , m_useExpandedHeuristicsForGpuRasterization(false)
     , m_viewportMetaLayoutSizeQuirk(false)
     , m_viewportMetaNonUserScalableQuirk(false)
     , m_clobberUserAgentInitialScaleQuirk(false)
@@ -290,11 +289,6 @@ void WebSettingsImpl::setJavaEnabled(bool enabled)
 void WebSettingsImpl::setAllowScriptsToCloseWindows(bool allow)
 {
     m_settings->setAllowScriptsToCloseWindows(allow);
-}
-
-void WebSettingsImpl::setUseExpandedHeuristicsForGpuRasterization(bool useExpandedHeuristics)
-{
-    m_useExpandedHeuristicsForGpuRasterization = useExpandedHeuristics;
 }
 
 void WebSettingsImpl::setUseLegacyBackgroundSizeShorthandBehavior(bool useLegacyBackgroundSizeShorthandBehavior)

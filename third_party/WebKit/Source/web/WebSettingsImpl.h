@@ -150,7 +150,6 @@ public:
     virtual void setUnifiedTextCheckerEnabled(bool) OVERRIDE;
     virtual void setUnsafePluginPastingEnabled(bool) OVERRIDE;
     virtual void setUsesEncodingDetector(bool) OVERRIDE;
-    virtual void setUseExpandedHeuristicsForGpuRasterization(bool) OVERRIDE;
     virtual void setUseLegacyBackgroundSizeShorthandBehavior(bool) OVERRIDE;
     virtual void setUseSolidColorScrollbars(bool) OVERRIDE;
     virtual void setUseWideViewport(bool) OVERRIDE;
@@ -175,7 +174,6 @@ public:
     bool doubleTapToZoomEnabled() const { return m_doubleTapToZoomEnabled; }
     bool perTilePaintingEnabled() const { return m_perTilePaintingEnabled; }
     bool supportDeprecatedTargetDensityDPI() const { return m_supportDeprecatedTargetDensityDPI; }
-    bool useExpandedHeuristicsForGpuRasterization() const { return m_useExpandedHeuristicsForGpuRasterization; }
     bool viewportMetaLayoutSizeQuirk() const { return m_viewportMetaLayoutSizeQuirk; }
     bool viewportMetaNonUserScalableQuirk() const { return m_viewportMetaNonUserScalableQuirk; }
     bool clobberUserAgentInitialScaleQuirk() const { return m_clobberUserAgentInitialScaleQuirk; }
@@ -195,7 +193,6 @@ private:
     bool m_perTilePaintingEnabled;
     bool m_supportDeprecatedTargetDensityDPI;
     bool m_shrinksViewportContentToFit;
-    bool m_useExpandedHeuristicsForGpuRasterization;
     // This quirk is to maintain compatibility with Android apps built on
     // the Android SDK prior to and including version 18. Presumably, this
     // can be removed any time after 2015. See http://crbug.com/277369.
