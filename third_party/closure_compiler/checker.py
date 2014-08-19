@@ -50,7 +50,7 @@ class Checker(object):
     "java",
     "-jar",
     "-Xms1024m",
-    "-server",
+    "-client",
     "-XX:+TieredCompilation"
   ]
 
