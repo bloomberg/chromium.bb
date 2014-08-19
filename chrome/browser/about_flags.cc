@@ -1610,7 +1610,7 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_APPS_SHOW_ON_FIRST_PAINT_NAME,
     IDS_FLAGS_ENABLE_APPS_SHOW_ON_FIRST_PAINT_DESCRIPTION,
     kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kEnableAppsShowOnFirstPaint)
+    SINGLE_VALUE_TYPE(extensions::switches::kEnableAppsShowOnFirstPaint)
   },
   {
     "enhanced-bookmarks-experiment",

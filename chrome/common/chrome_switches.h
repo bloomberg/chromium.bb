@@ -121,7 +121,6 @@ extern const char kEnableAppList[];
 extern const char kEnableAppView[];
 extern const char kEnableAppWindowControls[];
 extern const char kEnableAppsFileAssociations[];
-extern const char kEnableAppsShowOnFirstPaint[];
 extern const char kEnableAsyncDns[];
 extern const char kEnableAuthNegotiatePort[];
 extern const char kEnableBenchmarking[];

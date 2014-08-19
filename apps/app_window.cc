@@ -23,7 +23,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/suggest_permission_util.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/invalidate_type.h"
@@ -47,6 +46,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/common/switches.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -259,7 +259,7 @@ void AppWindow::Init(const GURL& url,
   app_window_contents_->Initialize(browser_context(), url);
   WebContents* web_contents = app_window_contents_->GetWebContents();
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableAppsShowOnFirstPaint)) {
+          extensions::switches::kEnableAppsShowOnFirstPaint)) {
     content::WebContentsObserver::Observe(web_contents);
   }
   app_delegate_->InitWebContents(web_contents);
@@ -345,7 +345,7 @@ void AppWindow::Init(const GURL& url,
   app_window_contents_->LoadContents(new_params.creator_process_id);
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableAppsShowOnFirstPaint)) {
+          extensions::switches::kEnableAppsShowOnFirstPaint)) {
     // We want to show the window only when the content has been painted. For
     // that to happen, we need to define a size for the content, otherwise the
     // layout will happen in a 0x0 area.
@@ -667,7 +667,7 @@ void AppWindow::Show(ShowType show_type) {
   is_hidden_ = false;
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableAppsShowOnFirstPaint)) {
+          extensions::switches::kEnableAppsShowOnFirstPaint)) {
     show_on_first_paint_ = true;
 
     if (!first_paint_complete_) {
