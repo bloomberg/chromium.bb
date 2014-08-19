@@ -880,8 +880,23 @@ void BrowserActionsContainer::ToolbarExtensionMoved(const Extension* extension,
 
   DCHECK(index >= 0 && index < static_cast<int>(browser_action_views_.size()));
 
-  DeleteBrowserActionViews();
-  CreateBrowserActionViews();
+  BrowserActionViews::iterator iter = browser_action_views_.begin();
+  int old_index = 0;
+  while (iter != browser_action_views_.end() &&
+         (*iter)->extension() != extension) {
+    ++iter;
+    ++old_index;
+  }
+
+  DCHECK(iter != browser_action_views_.end());
+  if (old_index == index)
+    return;  // Already in place.
+
+  BrowserActionView* moved_view = *iter;
+  browser_action_views_.erase(iter);
+  browser_action_views_.insert(
+      browser_action_views_.begin() + index, moved_view);
+
   Layout();
   SchedulePaint();
 }
@@ -898,9 +913,9 @@ void BrowserActionsContainer::ToolbarVisibleCountChanged() {
 void BrowserActionsContainer::ToolbarHighlightModeChanged(
     bool is_highlighting) {
   // The visual highlighting is done in OnPaint(). It's a bit of a pain that
-  // we delete and recreate everything here, but that's how it's done in
-  // BrowserActionMoved(), too. If we want to optimize it, we could move the
-  // existing icons, instead of deleting it all.
+  // we delete and recreate everything here, but given everything else going on
+  // (the lack of highlight, n more extensions appearing, etc), it's not worth
+  // the extra complexity to create and insert only the new extensions.
   DeleteBrowserActionViews();
   CreateBrowserActionViews();
   SaveDesiredSizeAndAnimate(gfx::Tween::LINEAR, browser_action_views_.size());

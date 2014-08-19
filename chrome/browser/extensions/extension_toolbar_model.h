@@ -46,7 +46,9 @@ class ExtensionToolbarModel : public content::NotificationObserver,
     // The given |extension| should be removed from the toolbar.
     virtual void ToolbarExtensionRemoved(const Extension* extension) = 0;
 
-    // The given |extension| has been moved to |index|.
+    // The given |extension| has been moved to |index|. |index| is the desired
+    // *final* index of the extension (that is, in the adjusted order, extension
+    // should be at |index|).
     virtual void ToolbarExtensionMoved(const Extension* extension,
                                        int index) = 0;
 
