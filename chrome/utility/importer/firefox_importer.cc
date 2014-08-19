@@ -480,6 +480,18 @@ void FirefoxImporter::GetSearchEnginesXMLData(
 
 void FirefoxImporter::GetSearchEnginesXMLDataFromJSON(
     std::vector<std::string>* search_engine_data) {
+  // search-metadata.json contains keywords for search engines. This
+  // file exists only if the user has set keywords for search engines.
+  base::FilePath search_metadata_json_file =
+      source_path_.AppendASCII("search-metadata.json");
+  JSONFileValueSerializer metadata_serializer(search_metadata_json_file);
+  scoped_ptr<base::Value> metadata_root(
+      metadata_serializer.Deserialize(NULL, NULL));
+  const base::DictionaryValue* search_metadata_root = NULL;
+  if (metadata_root)
+    metadata_root->GetAsDictionary(&search_metadata_root);
+
+  // search.json contains information about search engines to import.
   base::FilePath search_json_file = source_path_.AppendASCII("search.json");
   if (!base::PathExists(search_json_file))
     return;
@@ -556,6 +568,22 @@ void FirefoxImporter::GetSearchEnginesXMLDataFromJSON(
 
         std::string file_data;
         base::ReadFileToString(xml_file, &file_data);
+
+        // If a keyword is mentioned for this search engine, then add
+        // it to the XML string as an <Alias> element and use this updated
+        // string.
+        const base::DictionaryValue* search_xml_path = NULL;
+        if (search_metadata_root && search_metadata_root->HasKey(file_path) &&
+            search_metadata_root->GetDictionaryWithoutPathExpansion(
+                file_path, &search_xml_path)) {
+          std::string alias;
+          search_xml_path->GetString("alias", &alias);
+
+          // Add <Alias> element as the last child element.
+          size_t end_of_parent = file_data.find("</SearchPlugin>");
+          if (end_of_parent != std::string::npos && !alias.empty())
+            file_data.insert(end_of_parent, "<Alias>" + alias + "</Alias> \n");
+        }
         search_engine_data->push_back(file_data);
       }
     }

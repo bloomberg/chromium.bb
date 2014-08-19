@@ -46,7 +46,8 @@ struct PasswordInfo {
 };
 
 struct KeywordInfo {
-  const wchar_t* keyword;
+  const wchar_t* keyword_in_sqlite;
+  const wchar_t* keyword_in_json;
   const char* url;
 };
 
@@ -67,42 +68,42 @@ const PasswordInfo kFirefoxPasswords[] = {
 };
 
 const KeywordInfo kFirefoxKeywords[] = {
-  { L"amazon.com",
-    "http://www.amazon.com/exec/obidos/external-search/?field-keywords="
-    "{searchTerms}&mode=blended" },
-  { L"answers.com",
-    "http://www.answers.com/main/ntquery?s={searchTerms}&gwp=13" },
-  { L"search.creativecommons.org",
-    "http://search.creativecommons.org/?q={searchTerms}" },
-  { L"search.ebay.com",
-    "http://search.ebay.com/search/search.dll?query={searchTerms}&"
-    "MfcISAPICommand=GetResult&ht=1&ebaytag1=ebayreg&srchdesc=n&"
-    "maxRecordsReturned=300&maxRecordsPerPage=50&SortProperty=MetaEndSort" },
-  { L"google.com",
-    "http://www.google.com/search?q={searchTerms}&ie=utf-8&oe=utf-8&aq=t" },
-  { L"en.wikipedia.org",
-    "http://en.wikipedia.org/wiki/Special:Search?search={searchTerms}" },
-  { L"search.yahoo.com",
-    "http://search.yahoo.com/search?p={searchTerms}&ei=UTF-8" },
-  { L"flickr.com",
-    "http://www.flickr.com/photos/tags/?q={searchTerms}" },
-  { L"imdb.com",
-    "http://www.imdb.com/find?q={searchTerms}" },
-  { L"webster.com",
-    "http://www.webster.com/cgi-bin/dictionary?va={searchTerms}" },
-  // Search keywords.
-  { L"\x4E2D\x6587", "http://www.google.com/" },
+    {L"amazon.com", L"amazon.com",
+     "http://www.amazon.com/exec/obidos/external-search/?field-keywords="
+     "{searchTerms}&mode=blended"},
+    {L"answers.com", L"answers.com",
+     "http://www.answers.com/main/ntquery?s={searchTerms}&gwp=13"},
+    {L"search.creativecommons.org", L"search.creativecommons.org",
+     "http://search.creativecommons.org/?q={searchTerms}"},
+    {L"search.ebay.com", L"search.ebay.com",
+     "http://search.ebay.com/search/search.dll?query={searchTerms}&"
+     "MfcISAPICommand=GetResult&ht=1&ebaytag1=ebayreg&srchdesc=n&"
+     "maxRecordsReturned=300&maxRecordsPerPage=50&SortProperty=MetaEndSort"},
+    {L"google.com", L"google.com",
+     "http://www.google.com/search?q={searchTerms}&ie=utf-8&oe=utf-8&aq=t"},
+    {L"en.wikipedia.org", L"wiki",
+     "http://en.wikipedia.org/wiki/Special:Search?search={searchTerms}"},
+    {L"search.yahoo.com", L"search.yahoo.com",
+     "http://search.yahoo.com/search?p={searchTerms}&ei=UTF-8"},
+    {L"flickr.com", L"flickr.com",
+     "http://www.flickr.com/photos/tags/?q={searchTerms}"},
+    {L"imdb.com", L"imdb.com", "http://www.imdb.com/find?q={searchTerms}"},
+    {L"webster.com", L"webster.com",
+     "http://www.webster.com/cgi-bin/dictionary?va={searchTerms}"},
+    // Search keywords.
+    {L"\x4E2D\x6587", L"\x4E2D\x6587", "http://www.google.com/"},
 };
 
 class FirefoxObserver : public ProfileWriter,
                         public importer::ImporterProgressObserver {
  public:
-  FirefoxObserver()
+  explicit FirefoxObserver(bool use_keyword_in_json)
       : ProfileWriter(NULL),
         bookmark_count_(0),
         history_count_(0),
         password_count_(0),
-        keyword_count_(0) {}
+        keyword_count_(0),
+        use_keyword_in_json_(use_keyword_in_json) {}
 
   // importer::ImporterProgressObserver:
   virtual void ImportStarted() OVERRIDE {}
@@ -172,9 +173,13 @@ class FirefoxObserver : public ProfileWriter,
       // The order might not be deterministic, look in the expected list for
       // that template URL.
       bool found = false;
-      const base::string16& keyword = template_urls[i]->keyword();
+      const base::string16& imported_keyword = template_urls[i]->keyword();
       for (size_t j = 0; j < arraysize(kFirefoxKeywords); ++j) {
-        if (keyword == base::WideToUTF16(kFirefoxKeywords[j].keyword)) {
+        const base::string16 expected_keyword = base::WideToUTF16(
+            use_keyword_in_json_ ?
+            kFirefoxKeywords[j].keyword_in_json :
+            kFirefoxKeywords[j].keyword_in_sqlite);
+        if (imported_keyword == expected_keyword) {
           EXPECT_EQ(kFirefoxKeywords[j].url, template_urls[i]->url());
           found = true;
           break;
@@ -196,6 +201,12 @@ class FirefoxObserver : public ProfileWriter,
   size_t history_count_;
   size_t password_count_;
   size_t keyword_count_;
+
+  // Newer versions of Firefox can store custom keyword names in json, which
+  // override the sqlite values. To be able to test both older and newer
+  // versions, tests set this variable to indicate whether to expect the
+  // |keyword_in_sqlite| or |keyword_in_json| values from the reference data.
+  bool use_keyword_in_json_;
 };
 
 }  // namespace
@@ -277,20 +288,20 @@ class FirefoxProfileImporterBrowserTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(FirefoxProfileImporterBrowserTest,
                        MAYBE_IMPORTER(Firefox30Importer)) {
-  scoped_refptr<FirefoxObserver> observer(new FirefoxObserver());
+  scoped_refptr<FirefoxObserver> observer(new FirefoxObserver(false));
   FirefoxImporterBrowserTest(
       "firefox3_profile", observer.get(), observer.get());
 }
 
 IN_PROC_BROWSER_TEST_F(FirefoxProfileImporterBrowserTest,
                        MAYBE_IMPORTER(Firefox35Importer)) {
-  scoped_refptr<FirefoxObserver> observer(new FirefoxObserver());
+  scoped_refptr<FirefoxObserver> observer(new FirefoxObserver(false));
   FirefoxImporterBrowserTest(
       "firefox35_profile", observer.get(), observer.get());
 }
 
 IN_PROC_BROWSER_TEST_F(FirefoxProfileImporterBrowserTest,
                        MAYBE_IMPORTER(FirefoxImporter)) {
-  scoped_refptr<FirefoxObserver> observer(new FirefoxObserver());
+  scoped_refptr<FirefoxObserver> observer(new FirefoxObserver(true));
   FirefoxImporterBrowserTest("firefox_profile", observer.get(), observer.get());
 }

@@ -34,6 +34,7 @@ const char kImageElement[] = "Image";
 const char kOpenSearchDescriptionElement[] = "OpenSearchDescription";
 const char kFirefoxSearchDescriptionElement[] = "SearchPlugin";
 const char kInputEncodingElement[] = "InputEncoding";
+const char kAliasElement[] = "Alias";
 
 // Various XML attributes used.
 const char kURLTypeAttribute[] = "type";
@@ -115,6 +116,7 @@ class TemplateURLParsingContext {
     SHORT_NAME,
     IMAGE,
     INPUT_ENCODING,
+    ALIAS,
   };
 
   enum Method {
@@ -180,6 +182,10 @@ class TemplateURLParsingContext {
   // search.  Note that we don't need a stack as URL nodes cannot be nested.
   bool is_suggest_url_;
 
+  // If true, the user has set a keyword and we should use it. Otherwise,
+  // we generate a keyword based on the URL.
+  bool has_custom_keyword_;
+
   // Whether we should derive the image from the URL (when images are data
   // URLs).
   bool derive_image_from_url_;
@@ -198,6 +204,7 @@ TemplateURLParsingContext::TemplateURLParsingContext(
       method_(GET),
       suggestion_method_(GET),
       is_suggest_url_(false),
+      has_custom_keyword_(false),
       derive_image_from_url_(false) {
   if (kElementNameToElementTypeMap == NULL)
     InitMapping();
@@ -240,6 +247,9 @@ void TemplateURLParsingContext::EndElementImpl(void* ctx, const xmlChar* name) {
   TemplateURLParsingContext* context =
       reinterpret_cast<TemplateURLParsingContext*>(ctx);
   switch (context->GetKnownType()) {
+    case TemplateURLParsingContext::URL:
+      context->ProcessURLParams();
+      break;
     case TemplateURLParsingContext::SHORT_NAME:
       context->data_.short_name = context->string_;
       break;
@@ -264,9 +274,11 @@ void TemplateURLParsingContext::EndElementImpl(void* ctx, const xmlChar* name) {
         context->data_.input_encodings.push_back(input_encoding);
       break;
     }
-    case TemplateURLParsingContext::URL:
-      context->ProcessURLParams();
+    case TemplateURLParsingContext::ALIAS: {
+      context->data_.SetKeyword(context->string_);
+      context->has_custom_keyword_ = true;
       break;
+    }
     default:
       break;
   }
@@ -298,7 +310,11 @@ TemplateURL* TemplateURLParsingContext::GetTemplateURL(
   if (derive_image_from_url_ && data_.favicon_url.is_empty())
     data_.favicon_url = TemplateURL::GenerateFaviconURL(search_url);
 
-  data_.SetKeyword(TemplateURL::GenerateKeyword(search_url));
+  // Generate a keyword for this search engine if a custom one was not present
+  // in the imported data.
+  if (!has_custom_keyword_)
+    data_.SetKeyword(TemplateURL::GenerateKeyword(search_url));
+
   data_.show_in_default_list = show_in_default_list;
 
   // Bail if the search URL is empty or if either TemplateURLRef is invalid.
@@ -325,6 +341,7 @@ void TemplateURLParsingContext::InitMapping() {
   (*kElementNameToElementTypeMap)[kFirefoxSearchDescriptionElement] =
       OPEN_SEARCH_DESCRIPTION;
   (*kElementNameToElementTypeMap)[kInputEncodingElement] = INPUT_ENCODING;
+  (*kElementNameToElementTypeMap)[kAliasElement] = ALIAS;
 }
 
 void TemplateURLParsingContext::ParseURL(const xmlChar** atts) {
