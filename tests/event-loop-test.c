@@ -240,6 +240,8 @@ TEST(event_loop_timer)
 	wl_event_loop_destroy(loop);
 }
 
+#define MSEC_TO_USEC(msec) ((msec) * 1000)
+
 struct timer_update_context {
 	struct wl_event_source *source1, *source2;
 	int count;
@@ -290,6 +292,18 @@ TEST(event_loop_timer_updates)
 	assert(wl_event_source_timer_update(context.source2, 10) == 0);
 
 	context.count = 0;
+
+	/* Since calling the functions between source2's update and
+	 * wl_event_loop_dispatch() takes some time, it may happen
+	 * that only one timer expires until we call epoll_wait.
+	 * This naturally means that only one source is dispatched
+	 * and the test fails. To fix that, sleep 15 ms before
+	 * calling wl_event_loop_dispatch(). That should be enough
+	 * for the second timer to expire.
+	 *
+	 * https://bugs.freedesktop.org/show_bug.cgi?id=80594
+	 */
+	usleep(MSEC_TO_USEC(15));
 
 	gettimeofday(&start_time, NULL);
 	wl_event_loop_dispatch(loop, 20);
