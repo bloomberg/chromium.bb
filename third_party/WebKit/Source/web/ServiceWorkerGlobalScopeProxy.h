@@ -41,7 +41,7 @@
 namespace blink {
 
 class ConsoleMessage;
-class ExecutionContext;
+class Document;
 class WebEmbeddedWorkerImpl;
 class WebServiceWorkerContextClient;
 class WebServiceWorkerRequest;
@@ -63,7 +63,7 @@ class ServiceWorkerGlobalScopeProxy FINAL
     , public WorkerReportingProxy {
     WTF_MAKE_NONCOPYABLE(ServiceWorkerGlobalScopeProxy);
 public:
-    static PassOwnPtr<ServiceWorkerGlobalScopeProxy> create(WebEmbeddedWorkerImpl&, ExecutionContext&, WebServiceWorkerContextClient&);
+    static PassOwnPtr<ServiceWorkerGlobalScopeProxy> create(WebEmbeddedWorkerImpl&, Document&, WebServiceWorkerContextClient&);
     virtual ~ServiceWorkerGlobalScopeProxy();
 
     // WebServiceWorkerContextProxy overrides:
@@ -85,10 +85,10 @@ public:
     virtual void workerThreadTerminated() OVERRIDE;
 
 private:
-    ServiceWorkerGlobalScopeProxy(WebEmbeddedWorkerImpl&, ExecutionContext&, WebServiceWorkerContextClient&);
+    ServiceWorkerGlobalScopeProxy(WebEmbeddedWorkerImpl&, Document&, WebServiceWorkerContextClient&);
 
     WebEmbeddedWorkerImpl& m_embeddedWorker;
-    ExecutionContext& m_executionContext;
+    Document& m_document;
 
     WebServiceWorkerContextClient& m_client;
 

@@ -58,6 +58,7 @@ class WebURL;
 class WebView;
 class WebWorker;
 class WebSharedWorkerClient;
+class WorkerInspectorProxy;
 
 // This class is used by the worker process code to talk to the SharedWorker implementation.
 // It can't use it directly since it uses WebKit types, so this class converts the data types.
@@ -131,11 +132,15 @@ private:
     void workerGlobalScopeClosedOnMainThread();
     void workerThreadTerminatedOnMainThread();
 
+    void postMessageToPageInspectorOnMainThread(const String& message);
+
     // 'shadow page' - created to proxy loading requests from the worker.
     RefPtrWillBePersistent<ExecutionContext> m_loadingDocument;
     WebView* m_webView;
     WebFrame* m_mainFrame;
     bool m_askedToTerminate;
+
+    OwnPtr<WorkerInspectorProxy> m_workerInspectorProxy;
 
     RefPtr<WorkerThread> m_workerThread;
 

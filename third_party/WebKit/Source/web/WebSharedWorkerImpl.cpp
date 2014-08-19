@@ -46,6 +46,7 @@
 #include "core/workers/SharedWorkerThread.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "core/workers/WorkerInspectorProxy.h"
 #include "core/workers/WorkerScriptLoader.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/webdatabase/DatabaseTask.h"
@@ -154,6 +155,7 @@ WebSharedWorkerImpl::WebSharedWorkerImpl(WebSharedWorkerClient* client)
     : m_webView(0)
     , m_mainFrame(0)
     , m_askedToTerminate(false)
+    , m_workerInspectorProxy(WorkerInspectorProxy::create())
     , m_client(WeakReference<WebSharedWorkerClient>::create(client))
     , m_clientWeakPtr(WeakPtr<WebSharedWorkerClient>(m_client))
     , m_pauseWorkerContextOnStart(false)
@@ -187,6 +189,7 @@ void WebSharedWorkerImpl::stopWorkerThread()
     }
     if (m_workerThread)
         m_workerThread->stop();
+    m_workerInspectorProxy->workerThreadTerminated();
 }
 
 void WebSharedWorkerImpl::initializeLoader(const WebURL& url)
@@ -254,6 +257,16 @@ void WebSharedWorkerImpl::postMessageToPageInspector(const String& message)
     // before the copy in the closure is used on the main thread.
     const Closure& boundFunction = bind(&WebSharedWorkerClient::dispatchDevToolsMessage, m_clientWeakPtr, message.isolatedCopy());
     callOnMainThread(boundFunction);
+    toWebLocalFrameImpl(m_mainFrame)->frame()->document()->postInspectorTask(createCrossThreadTask(&WebSharedWorkerImpl::postMessageToPageInspectorOnMainThread, this, message));
+}
+
+void WebSharedWorkerImpl::postMessageToPageInspectorOnMainThread(const String& message)
+{
+    WorkerInspectorProxy::PageInspector* pageInspector = m_workerInspectorProxy->pageInspector();
+    if (!pageInspector)
+        return;
+    pageInspector->dispatchMessageFromWorker(message);
+
 }
 
 void WebSharedWorkerImpl::updateInspectorStateCookie(const String& cookie)
@@ -376,6 +389,7 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
         workerThread()->postDebuggerTask(createCrossThreadTask(connectToWorkerContextInspectorTask, true));
 
     workerThread()->start();
+    m_workerInspectorProxy->workerThreadCreated(m_loadingDocument.get(), workerThread(), m_url);
     if (client())
         client()->workerScriptLoaded();
 }

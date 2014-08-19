@@ -33,6 +33,7 @@
 
 #include "bindings/core/v8/WorkerScriptController.h"
 #include "core/dom/CrossThreadTask.h"
+#include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/MessagePort.h"
 #include "core/events/MessageEvent.h"
@@ -53,9 +54,9 @@
 
 namespace blink {
 
-PassOwnPtr<ServiceWorkerGlobalScopeProxy> ServiceWorkerGlobalScopeProxy::create(WebEmbeddedWorkerImpl& embeddedWorker, ExecutionContext& executionContext, WebServiceWorkerContextClient& client)
+PassOwnPtr<ServiceWorkerGlobalScopeProxy> ServiceWorkerGlobalScopeProxy::create(WebEmbeddedWorkerImpl& embeddedWorker, Document& document, WebServiceWorkerContextClient& client)
 {
-    return adoptPtr(new ServiceWorkerGlobalScopeProxy(embeddedWorker, executionContext, client));
+    return adoptPtr(new ServiceWorkerGlobalScopeProxy(embeddedWorker, document, client));
 }
 
 ServiceWorkerGlobalScopeProxy::~ServiceWorkerGlobalScopeProxy()
@@ -126,6 +127,7 @@ void ServiceWorkerGlobalScopeProxy::reportConsoleMessage(PassRefPtrWillBeRawPtr<
 void ServiceWorkerGlobalScopeProxy::postMessageToPageInspector(const String& message)
 {
     m_client.dispatchDevToolsMessage(message);
+    m_document.postInspectorTask(createCrossThreadTask(&WebEmbeddedWorkerImpl::postMessageToPageInspector, &m_embeddedWorker, message));
 }
 
 void ServiceWorkerGlobalScopeProxy::updateInspectorStateCookie(const String& message)
@@ -142,7 +144,7 @@ void ServiceWorkerGlobalScopeProxy::workerGlobalScopeStarted(WorkerGlobalScope* 
 
 void ServiceWorkerGlobalScopeProxy::workerGlobalScopeClosed()
 {
-    m_executionContext.postTask(createCrossThreadTask(&WebEmbeddedWorkerImpl::terminateWorkerContext, &m_embeddedWorker));
+    m_document.postTask(createCrossThreadTask(&WebEmbeddedWorkerImpl::terminateWorkerContext, &m_embeddedWorker));
 }
 
 void ServiceWorkerGlobalScopeProxy::willDestroyWorkerGlobalScope()
@@ -156,9 +158,9 @@ void ServiceWorkerGlobalScopeProxy::workerThreadTerminated()
     m_client.workerContextDestroyed();
 }
 
-ServiceWorkerGlobalScopeProxy::ServiceWorkerGlobalScopeProxy(WebEmbeddedWorkerImpl& embeddedWorker, ExecutionContext& executionContext, WebServiceWorkerContextClient& client)
+ServiceWorkerGlobalScopeProxy::ServiceWorkerGlobalScopeProxy(WebEmbeddedWorkerImpl& embeddedWorker, Document& document, WebServiceWorkerContextClient& client)
     : m_embeddedWorker(embeddedWorker)
-    , m_executionContext(executionContext)
+    , m_document(document)
     , m_client(client)
     , m_workerGlobalScope(0)
 {
