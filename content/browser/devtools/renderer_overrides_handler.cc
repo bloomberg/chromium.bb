@@ -1022,8 +1022,6 @@ void RendererOverridesHandler::UpdateColorPickerCursor() {
   const float kPixelSize = 10;
 #endif
 
-  const float kSqrt2 = 1.41f;
-
   blink::WebScreenInfo screen_info;
   view->GetScreenInfo(&screen_info);
   double device_scale_factor = screen_info.deviceScaleFactor;
@@ -1035,17 +1033,29 @@ void RendererOverridesHandler::UpdateColorPickerCursor() {
 
   SkPaint paint;
 
-  // Paint original spot.
+  // Paint original spot with cross.
   if (kHotspotRadius) {
-    paint.setStrokeWidth(2);
+    paint.setStrokeWidth(1);
+    paint.setAntiAlias(false);
     paint.setColor(SK_ColorDKGRAY);
     paint.setStyle(SkPaint::kStroke_Style);
+
+    canvas->drawLine(kHotspotOffset, kHotspotOffset - 2 * kHotspotRadius,
+                     kHotspotOffset, kHotspotOffset - kHotspotRadius,
+                     paint);
+    canvas->drawLine(kHotspotOffset, kHotspotOffset + kHotspotRadius,
+                     kHotspotOffset, kHotspotOffset + 2 * kHotspotRadius,
+                     paint);
+    canvas->drawLine(kHotspotOffset - 2 * kHotspotRadius, kHotspotOffset,
+                     kHotspotOffset - kHotspotRadius, kHotspotOffset,
+                     paint);
+    canvas->drawLine(kHotspotOffset + kHotspotRadius, kHotspotOffset,
+                     kHotspotOffset + 2 * kHotspotRadius, kHotspotOffset,
+                     paint);
+
+    paint.setStrokeWidth(2);
     paint.setAntiAlias(true);
     canvas->drawCircle(kHotspotOffset, kHotspotOffset, kHotspotRadius, paint);
-    canvas->drawLine(kHotspotOffset + kHotspotRadius / kSqrt2,
-                     kHotspotOffset + kHotspotRadius / kSqrt2,
-                     kCursorSize / 2, kCursorSize / 2,
-                     paint);
   }
 
   // Clip circle for magnified projection.
