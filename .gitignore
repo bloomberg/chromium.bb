@@ -108,6 +108,7 @@ v8.log
 /chrome/sync_integration_tests_run.xml
 /chrome/test/chromeos/autotest/files/client/deps/chrome_test/test_src/
 /chrome/test/chromeos/autotest/files/client/deps/page_cycler_dep/test_src/
+/chrome/test/chromeos/autotest/files/client/deps/perf_data_dep/test_src/
 /chrome/test/chromeos/autotest/files/client/deps/pyauto_dep/test_src/
 /chrome/test/chromeos/autotest/files/client/deps/telemetry_dep/test_src/
 /chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin
