@@ -297,18 +297,22 @@ void Fullscreen::requestFullscreen(Element& element, RequestType requestType)
 
 void Fullscreen::fullyExitFullscreen()
 {
-    // "To fully exit fullscreen act as if the exitFullscreen() method was invoked on the top-level browsing
-    // context's document and subsequently empty that document's fullscreen element stack."
-    if (!fullscreenElementFrom(document()->topDocument()))
+    // To fully exit fullscreen, run these steps:
+
+    // 1. Let |doc| be the top-level browsing context's document.
+    Document& doc = document()->topDocument();
+
+    // 2. If |doc|'s fullscreen element stack is empty, terminate these steps.
+    if (!fullscreenElementFrom(doc))
         return;
 
-    // To achieve that aim, remove all the elements from the top document's stack except for the first before
-    // calling exitFullscreen():
-    WillBeHeapVector<std::pair<RefPtrWillBeMember<Element>, RequestType> > replacementFullscreenElementStack;
-    Fullscreen& topFullscreen = from(document()->topDocument());
-    replacementFullscreenElementStack.append(topFullscreen.m_fullScreenElementStack.last());
-    topFullscreen.m_fullScreenElementStack.swap(replacementFullscreenElementStack);
-    topFullscreen.exitFullscreen();
+    // 3. Remove elements from |doc|'s fullscreen element stack until only the top element is left.
+    size_t stackSize = from(doc).m_fullScreenElementStack.size();
+    from(doc).m_fullScreenElementStack.remove(0, stackSize - 1);
+    ASSERT(from(doc).m_fullScreenElementStack.size() == 1);
+
+    // 4. Act as if the exitFullscreen() method was invoked on |doc|.
+    from(doc).exitFullscreen();
 }
 
 void Fullscreen::exitFullscreen()
