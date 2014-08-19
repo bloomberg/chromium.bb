@@ -207,7 +207,7 @@ void EnrollmentHandlerChromeOS::OnStoreError(CloudPolicyStore* store) {
 }
 
 void EnrollmentHandlerChromeOS::CheckStateKeys(
-    const std::vector<std::string>& state_keys) {
+    const std::vector<std::string>& state_keys, bool /* first_boot */) {
   CHECK_EQ(STEP_STATE_KEYS, enrollment_step_);
 
   // Make sure state keys are available if forced re-enrollment is on.

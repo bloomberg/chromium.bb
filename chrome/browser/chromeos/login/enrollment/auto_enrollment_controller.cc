@@ -164,7 +164,7 @@ void AutoEnrollmentController::OnOwnershipStatusCheckDone(
 }
 
 void AutoEnrollmentController::StartClient(
-    const std::vector<std::string>& state_keys) {
+    const std::vector<std::string>& state_keys, bool first_boot) {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   policy::DeviceManagementService* service =
@@ -185,7 +185,8 @@ void AutoEnrollmentController::StartClient(
   std::string device_id;
   if (GetMode() == MODE_FORCED_RE_ENROLLMENT) {
     retrieve_device_state = true;
-    device_id = state_keys.empty() ? std::string() : state_keys.front();
+    if (!state_keys.empty() && !first_boot)
+      device_id = state_keys.front();
   } else {
     device_id = policy::DeviceCloudPolicyManagerChromeOS::GetMachineID();
   }

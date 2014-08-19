@@ -168,13 +168,16 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   virtual void SetFlagsForUser(const std::string& username,
                                const std::vector<std::string>& flags) = 0;
 
-  typedef base::Callback<void(const std::vector<std::string>& state_keys)>
-      StateKeysCallback;
+  typedef base::Callback<void(const std::vector<std::string>& state_keys,
+                              bool first_boot)> StateKeysCallback;
 
   // Get the currently valid server-backed state keys for the device.
   // Server-backed state keys are opaque, device-unique, time-dependent,
   // client-determined identifiers that are used for keying state in the cloud
-  // for the device to retrieve after a device factory reset.
+  // for the device to retrieve after a device factory reset. The |first_boot|
+  // parameter indicates if this is the very first boot of the device after
+  // being assembled (even a "factory reset" will not trigger this again) in
+  // which case doing the enrollment check makes no sense.
   //
   // The state keys are returned asynchronously via |callback|. The callback
   // will be invoked with an empty state key vector in case of errors.

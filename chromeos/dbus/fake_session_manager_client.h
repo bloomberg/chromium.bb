@@ -85,6 +85,8 @@ class FakeSessionManagerClient : public SessionManagerClient {
     server_backed_state_keys_ = state_keys;
   }
 
+  void set_first_boot(bool first_boot) { first_boot_ = first_boot; }
+
   int start_device_wipe_call_count() const {
     return start_device_wipe_call_count_;
   }
@@ -106,6 +108,7 @@ class FakeSessionManagerClient : public SessionManagerClient {
   ObserverList<Observer> observers_;
   SessionManagerClient::ActiveSessionsMap user_sessions_;
   std::vector<std::string> server_backed_state_keys_;
+  bool first_boot_;
 
   int start_device_wipe_call_count_;
   int notify_lock_screen_shown_call_count_;

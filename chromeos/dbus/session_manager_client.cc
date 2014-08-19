@@ -525,6 +525,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
   void OnGetServerBackedStateKeys(const StateKeysCallback& callback,
                                   dbus::Response* response) {
     std::vector<std::string> state_keys;
+    bool first_run = false;
     if (!response) {
       LOG(ERROR) << "Failed to call "
                  << login_manager::kSessionManagerStartSession;
@@ -547,10 +548,14 @@ class SessionManagerClientImpl : public SessionManagerClient {
               std::string(reinterpret_cast<const char*>(data), size));
         }
       }
+      if (!reader.PopBool(&first_run)) {
+        // TODO(tnagel): After 2014-11-19 turn this warning into an error.
+        LOG(WARNING) << "Chrome OS is too old. Defaulting to first_run=false.";
+      }
     }
 
     if (!callback.is_null())
-      callback.Run(state_keys);
+      callback.Run(state_keys, first_run);
   }
 
 
@@ -713,7 +718,7 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
       state_keys.push_back(crypto::SHA256HashString(base::IntToString(i)));
 
     if (!callback.is_null())
-      callback.Run(state_keys);
+      callback.Run(state_keys, false);
   }
 
  private:
