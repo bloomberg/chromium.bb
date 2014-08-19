@@ -40,6 +40,7 @@
 
     [CustomElementCallbacks, RaisesException=Setter] attribute DOMString contentEditable;
     readonly attribute boolean isContentEditable;
+    [RuntimeEnabled=ContextMenu] attribute HTMLMenuElement? contextMenu;
 
              attribute boolean spellcheck;
 

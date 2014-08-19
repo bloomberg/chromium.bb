@@ -1,0 +1,54 @@
+Tests the contextmenu attribute.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Test with valid contextmenu attribute
+PASS document.getElementById('container1').contextMenu.id is "menu1"
+PASS document.getElementById('container1').contextMenu.type is "popup"
+PASS document.getElementById('container1').contextMenu.label is "menu 1"
+Test with invalid contextmenu attribute
+PASS document.getElementById('container2').contextMenu is null
+Test setting contextmenu attribute to non-popup type menu element
+PASS container11.contextMenu.id is "menu11"
+PASS container11.contextMenu.type is "toolbar"
+PASS container11.contextMenu.label is "menu 11"
+Test setting contextmenu attribute to non-menu element
+PASS container12.contextMenu is null
+Test setting contextmenu attribute to an ID which multiple elements have
+PASS container13.contextMenu is null
+PASS container14.contextMenu.id is "menu14"
+PASS container14.contextMenu.type is "popup"
+PASS container14.contextMenu.label is "menu 14"
+Test setting contextmenu attribute
+PASS container3.contextMenu.id is "menu3"
+PASS container3.contextMenu.type is "popup"
+PASS container3.contextMenu.label is "menu 3"
+Test setting contextmenu attribute with menu element without id
+PASS container4.contextMenu is null
+PASS container4.hasAttribute('contextmenu') is true
+PASS container4.getAttribute('contextmenu') is ""
+Test setting contextmenu attribute with multiple menu element with same id
+PASS container5.contextMenu is null
+PASS container5.contextMenu is menu2
+Test setting contextmenu attribute to null
+PASS container6.contextMenu is null
+PASS container6.hasAttribute('contextmenu') is true
+PASS container6.getAttribute('contextmenu') is ""
+Test setting contextmenu attribute to some text
+PASS container7.contextMenu is null
+Test setting contextmenu attribute to comment
+PASS container8.contextMenu is null
+Test setting contextmenu attribute to menu without type
+PASS container9.contextMenu.id is "menu_without_type"
+PASS container9.contextMenu.type is ""
+PASS container9.contextMenu.label is "menu without type"
+Test setting contextmenu attribute to menu element which is in shadow dom
+PASS container10.contextMenu is null
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
+
+
+

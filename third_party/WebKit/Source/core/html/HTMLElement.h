@@ -30,6 +30,7 @@ namespace blink {
 class DocumentFragment;
 class HTMLCollection;
 class HTMLFormElement;
+class HTMLMenuElement;
 class ExceptionState;
 
 enum TranslateAttributeMode {
@@ -94,6 +95,9 @@ public:
     virtual bool matchesReadWritePseudoClass() const OVERRIDE;
 
     static const AtomicString& eventParameterName();
+
+    HTMLMenuElement* contextMenu() const;
+    void setContextMenu(HTMLMenuElement*);
 
 protected:
     HTMLElement(const QualifiedName& tagName, Document&, ConstructionType);

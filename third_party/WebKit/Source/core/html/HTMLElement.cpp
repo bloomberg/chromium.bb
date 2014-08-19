@@ -48,6 +48,7 @@
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
+#include "core/html/HTMLMenuElement.h"
 #include "core/html/HTMLTemplateElement.h"
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
@@ -899,6 +900,40 @@ void HTMLElement::addHTMLColorToStyle(MutableStylePropertySet* style, CSSPropert
 bool HTMLElement::isInteractiveContent() const
 {
     return false;
+}
+
+
+HTMLMenuElement* HTMLElement::contextMenu() const
+{
+    const AtomicString& contextMenuId(fastGetAttribute(contextmenuAttr));
+    if (contextMenuId.isNull())
+        return nullptr;
+
+    Element* element = treeScope().getElementById(contextMenuId);
+    // Not checking if the menu element is of type "popup".
+    // Ignoring menu element type attribute is intentional according to the standard.
+    return isHTMLMenuElement(element) ? toHTMLMenuElement(element) : nullptr;
+}
+
+void HTMLElement::setContextMenu(HTMLMenuElement* contextMenu)
+{
+    if (!contextMenu) {
+        setAttribute(contextmenuAttr, "");
+        return;
+    }
+
+    // http://www.whatwg.org/specs/web-apps/current-work/multipage/infrastructure.html#reflecting-content-attributes-in-idl-attributes
+    // On setting, if the given element has an id attribute, and has the same home
+    // subtree as the element of the attribute being set, and the given element is the
+    // first element in that home subtree whose ID is the value of that id attribute,
+    // then the content attribute must be set to the value of that id attribute.
+    // Otherwise, the content attribute must be set to the empty string.
+    const AtomicString& contextMenuId(contextMenu->fastGetAttribute(idAttr));
+
+    if (!contextMenuId.isNull() && contextMenu == treeScope().getElementById(contextMenuId))
+        setAttribute(contextmenuAttr, contextMenuId);
+    else
+        setAttribute(contextmenuAttr, "");
 }
 
 void HTMLElement::defaultEventHandler(Event* event)
