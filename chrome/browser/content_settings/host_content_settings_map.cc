@@ -506,16 +506,6 @@ void HostContentSettingsMap::OnContentSettingChanged(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     std::string resource_identifier) {
-  const ContentSettingsDetails details(primary_pattern,
-                                       secondary_pattern,
-                                       content_type,
-                                       resource_identifier);
-  // TODO(dhnishi): Remove usage of this notification.
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
-      content::Source<HostContentSettingsMap>(this),
-      content::Details<const ContentSettingsDetails>(&details));
-
   FOR_EACH_OBSERVER(content_settings::Observer,
                     observers_,
                     OnContentSettingChanged(primary_pattern,

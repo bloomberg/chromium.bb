@@ -5,22 +5,23 @@
 #ifndef CHROME_BROWSER_CONTENT_SETTINGS_MOCK_SETTINGS_OBSERVER_H_
 #define CHROME_BROWSER_CONTENT_SETTINGS_MOCK_SETTINGS_OBSERVER_H_
 
+#include "base/scoped_observer.h"
+#include "chrome/browser/content_settings/content_settings_observer.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class ContentSettingsPattern;
 class HostContentSettingsMap;
 
-class MockSettingsObserver : public content::NotificationObserver {
+class MockSettingsObserver : public content_settings::Observer {
  public:
-  MockSettingsObserver();
+  explicit MockSettingsObserver(HostContentSettingsMap* map);
   virtual ~MockSettingsObserver();
 
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+  void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
+                               const ContentSettingsPattern& secondary_pattern,
+                               ContentSettingsType content_type,
+                               std::string resource_identifier) OVERRIDE;
 
   MOCK_METHOD6(OnContentSettingsChanged,
                void(HostContentSettingsMap*,
@@ -31,7 +32,11 @@ class MockSettingsObserver : public content::NotificationObserver {
                     bool));
 
  private:
-  content::NotificationRegistrar registrar_;
+  // The map that this Observer is watching.
+  HostContentSettingsMap* map_;
+
+  // Observer to watch for content settings changes.
+  ScopedObserver<HostContentSettingsMap, content_settings::Observer> observer_;
 };
 
 #endif  // CHROME_BROWSER_CONTENT_SETTINGS_MOCK_SETTINGS_OBSERVER_H_

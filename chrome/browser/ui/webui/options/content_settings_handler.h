@@ -9,6 +9,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
+#include "base/scoped_observer.h"
+#include "chrome/browser/content_settings/content_settings_observer.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/browser/ui/webui/options/pepper_flash_content_settings_utils.h"
@@ -24,6 +26,7 @@ class ProtocolHandlerRegistry;
 namespace options {
 
 class ContentSettingsHandler : public OptionsPageUIHandler,
+                               public content_settings::Observer,
                                public content::NotificationObserver,
                                public PepperFlashSettingsManager::Client {
  public:
@@ -36,6 +39,13 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   virtual void InitializeHandler() OVERRIDE;
   virtual void InitializePage() OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
+
+  // content_settings::Observer implementation.
+  virtual void OnContentSettingChanged(
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern,
+      ContentSettingsType content_type,
+      std::string resource_identifier) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -221,6 +231,7 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   scoped_ptr<PepperFlashSettingsManager> flash_settings_manager_;
   MediaSettingsInfo media_settings_;
   scoped_ptr<content::HostZoomMap::Subscription> host_zoom_map_subscription_;
+  ScopedObserver<HostContentSettingsMap, content_settings::Observer> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsHandler);
 };

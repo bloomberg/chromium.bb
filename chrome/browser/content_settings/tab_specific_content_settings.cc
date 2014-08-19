@@ -28,6 +28,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -69,13 +70,12 @@ TabSpecificContentSettings::TabSpecificContentSettings(WebContents* tab)
       pending_protocol_handler_(ProtocolHandler::EmptyProtocolHandler()),
       previous_protocol_handler_(ProtocolHandler::EmptyProtocolHandler()),
       pending_protocol_handler_setting_(CONTENT_SETTING_DEFAULT),
-      load_plugins_link_enabled_(true) {
+      load_plugins_link_enabled_(true),
+      observer_(this) {
   ClearBlockedContentSettingsExceptForCookies();
   ClearCookieSpecificContentSettings();
 
-  registrar_.Add(this, chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
-                 content::Source<HostContentSettingsMap>(
-                     profile_->GetHostContentSettingsMap()));
+  observer_.Add(profile_->GetHostContentSettingsMap());
 }
 
 TabSpecificContentSettings::~TabSpecificContentSettings() {
@@ -689,22 +689,22 @@ void TabSpecificContentSettings::AppCacheAccessed(const GURL& manifest_url,
   }
 }
 
-void TabSpecificContentSettings::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED);
-
-  content::Details<const ContentSettingsDetails> settings_details(details);
+void TabSpecificContentSettings::OnContentSettingChanged(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsType content_type,
+    std::string resource_identifier) {
+  const ContentSettingsDetails details(
+      primary_pattern, secondary_pattern, content_type, resource_identifier);
   const NavigationController& controller = web_contents()->GetController();
   NavigationEntry* entry = controller.GetVisibleEntry();
   GURL entry_url;
   if (entry)
     entry_url = entry->GetURL();
-  if (settings_details.ptr()->update_all() ||
+  if (details.update_all() ||
       // The visible NavigationEntry is the URL in the URL field of a tab.
       // Currently this should be matched by the |primary_pattern|.
-      settings_details.ptr()->primary_pattern().Matches(entry_url)) {
+      details.primary_pattern().Matches(entry_url)) {
     Profile* profile =
         Profile::FromBrowserContext(web_contents()->GetBrowserContext());
     RendererContentSettingRules rules;

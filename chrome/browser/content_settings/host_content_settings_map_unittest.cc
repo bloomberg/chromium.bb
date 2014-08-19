@@ -272,7 +272,7 @@ TEST_F(HostContentSettingsMapTest, Observer) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
       profile.GetHostContentSettingsMap();
-  MockSettingsObserver observer;
+  MockSettingsObserver observer(host_content_settings_map);
 
   ContentSettingsPattern primary_pattern =
       ContentSettingsPattern::FromString("[*.]example.com");

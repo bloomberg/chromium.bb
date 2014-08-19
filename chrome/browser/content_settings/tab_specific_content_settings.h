@@ -11,20 +11,21 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/scoped_observer.h"
+#include "chrome/browser/content_settings/content_settings_observer.h"
 #include "chrome/browser/content_settings/content_settings_usages_state.h"
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/browser/media/media_stream_devices_controller.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/media_stream_request.h"
 #include "net/cookies/canonical_cookie.h"
 
 class CookiesTreeModel;
+class HostContentSettingsMap;
 class Profile;
 
 namespace content {
@@ -41,7 +42,7 @@ class CookieOptions;
 // which types of content were accessed and blocked.
 class TabSpecificContentSettings
     : public content::WebContentsObserver,
-      public content::NotificationObserver,
+      public content_settings::Observer,
       public content::WebContentsUserData<TabSpecificContentSettings> {
  public:
   enum MicrophoneCameraState {
@@ -354,10 +355,12 @@ class TabSpecificContentSettings
   explicit TabSpecificContentSettings(content::WebContents* tab);
   friend class content::WebContentsUserData<TabSpecificContentSettings>;
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // content_settings::Observer implementation.
+  virtual void OnContentSettingChanged(
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern,
+      ContentSettingsType content_type,
+      std::string resource_identifier) OVERRIDE;
 
   // Notifies all registered |SiteDataObserver|s.
   void NotifySiteDataObservers();
@@ -405,8 +408,6 @@ class TabSpecificContentSettings
   // Stores whether the user can load blocked plugins on this page.
   bool load_plugins_link_enabled_;
 
-  content::NotificationRegistrar registrar_;
-
   // The origin of the media stream request. Note that we only support handling
   // settings for one request per tab. The latest request's origin will be
   // stored here. http://crbug.com/259794
@@ -416,6 +417,9 @@ class TabSpecificContentSettings
   // request is requesting certain specific devices.
   std::string media_stream_requested_audio_device_;
   std::string media_stream_requested_video_device_;
+
+  // Observer to watch for content settings changed.
+  ScopedObserver<HostContentSettingsMap, content_settings::Observer> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TabSpecificContentSettings);
 };

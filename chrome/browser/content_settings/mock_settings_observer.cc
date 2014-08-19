@@ -7,33 +7,31 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "url/gurl.h"
 
-MockSettingsObserver::MockSettingsObserver() {
-  registrar_.Add(this, chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
-                 content::NotificationService::AllSources());
+MockSettingsObserver::MockSettingsObserver(HostContentSettingsMap* map)
+    : map_(map), observer_(this) {
+  observer_.Add(map_);
 }
 
 MockSettingsObserver::~MockSettingsObserver() {}
 
-void MockSettingsObserver::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  HostContentSettingsMap* map =
-      content::Source<HostContentSettingsMap>(source).ptr();
-  ContentSettingsDetails* settings_details =
-      content::Details<ContentSettingsDetails>(details).ptr();
-  OnContentSettingsChanged(map,
-                           settings_details->type(),
-                           settings_details->update_all_types(),
-                           settings_details->primary_pattern(),
-                           settings_details->secondary_pattern(),
-                           settings_details->update_all());
+void MockSettingsObserver::OnContentSettingChanged(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsType content_type,
+    std::string resource_identifier) {
+  const ContentSettingsDetails details(
+      primary_pattern, secondary_pattern, content_type, resource_identifier);
+  OnContentSettingsChanged(map_,
+                           details.type(),
+                           details.update_all_types(),
+                           details.primary_pattern(),
+                           details.secondary_pattern(),
+                           details.update_all());
   // This checks that calling a Get function from an observer doesn't
   // deadlock.
   GURL url("http://random-hostname.com/");
-  map->GetContentSetting(url, url, CONTENT_SETTINGS_TYPE_IMAGES, std::string());
+  map_->GetContentSetting(
+      url, url, CONTENT_SETTINGS_TYPE_IMAGES, std::string());
 }

@@ -393,10 +393,6 @@ enum NotificationType {
 
   // Content Settings --------------------------------------------------------
 
-  // Sent when content settings change. The source is a HostContentSettings
-  // object, the details are ContentSettingsNotificationsDetails.
-  NOTIFICATION_CONTENT_SETTINGS_CHANGED,
-
   // Sent when the collect cookies dialog is shown. The source is a
   // TabSpecificContentSettings object, there are no details.
   NOTIFICATION_COLLECTED_COOKIES_SHOWN,
