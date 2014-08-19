@@ -128,16 +128,44 @@ RuleFeatureSet::InvalidationSetMode RuleFeatureSet::invalidationSetModeForSelect
         if (component->match() == CSSSelector::Class || component->match() == CSSSelector::Id
             || (component->match() == CSSSelector::Tag && component->tagQName().localName() != starAtom)
             || component->isAttributeSelector() || component->isCustomPseudoElement()) {
-            if (!foundCombinator)
+            if (!foundCombinator) {
+                // We have found an invalidation set feature in the rightmost compound selector.
                 foundIdent = true;
+            }
         } else if (component->pseudoType() == CSSSelector::PseudoHost || component->pseudoType() == CSSSelector::PseudoAny) {
             if (const CSSSelectorList* selectorList = component->selectorList()) {
+                bool foundUniversal = false;
                 for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(*selector)) {
-                    InvalidationSetMode hostMode = invalidationSetModeForSelector(*selector);
-                    if (hostMode == UseSubtreeStyleChange)
+                    // Find the invalidation set mode for each of the selectors in the selector list
+                    // of a :not(), :host(), etc. For instance, ".x :-webkit-any(.a, .b)" yields an
+                    // AddFeatures mode for both ".a" and ".b". ":-webkit-any(.a, *)" yields AddFeatures
+                    // for ".a", but UseSubtreeStyleChange for "*". One sub-selector without invalidation
+                    // set features is sufficient to cause the selector to be a universal selector as far
+                    // the invalidation set is concerned.
+                    InvalidationSetMode subSelectorMode = invalidationSetModeForSelector(*selector);
+
+                    // The sub-selector contained something unskippable, fall back to whole subtree
+                    // recalcs in collectFeaturesFromSelector. subSelectorMode will return
+                    // UseSubtreeStyleChange since there are no combinators inside the selector list,
+                    // so translate it to UseLocalStyleChange if a combinator has been seen in the
+                    // outer context.
+                    //
+                    // FIXME: Is UseSubtreeStyleChange ever needed as input to collectFeaturesFromSelector?
+                    // That is, are there any selectors for which we need to use SubtreeStyleChange for
+                    // changing features when present in the rightmost compound selector?
+                    if (subSelectorMode == UseSubtreeStyleChange)
                         return foundCombinator ? UseLocalStyleChange : UseSubtreeStyleChange;
-                    if (!foundCombinator && hostMode == AddFeatures)
-                        foundIdent = true;
+
+                    // We found no features in the sub-selector, only skippable ones (foundIdent was
+                    // false at the end of this method). That is a universal selector as far as the
+                    // invalidation set is concerned.
+                    if (subSelectorMode == UseLocalStyleChange)
+                        foundUniversal = true;
+                }
+                if (!foundUniversal && !foundCombinator) {
+                    // All sub-selectors contained invalidation set features and
+                    // we are in the rightmost compound selector.
+                    foundIdent = true;
                 }
             }
         } else if (!isSkippableComponentForInvalidation(*component)) {
