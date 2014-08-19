@@ -1770,7 +1770,7 @@ LayoutRect RenderObject::clippedOverflowRectForPaintInvalidation(const RenderLay
     return LayoutRect();
 }
 
-void RenderObject::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, bool fixed, const PaintInvalidationState* paintInvalidationState) const
+void RenderObject::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, ViewportConstrainedPosition, const PaintInvalidationState* paintInvalidationState) const
 {
     if (paintInvalidationContainer == this)
         return;
@@ -1789,11 +1789,12 @@ void RenderObject::mapRectToPaintInvalidationBacking(const RenderLayerModelObjec
                 return;
         }
 
-        o->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, fixed, paintInvalidationState);
+        // RenderBox must override this method and pass correct ViewportConstrainedPosition for fixed-position.
+        o->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, IsNotFixedPosition, paintInvalidationState);
     }
 }
 
-void RenderObject::computeFloatRectForPaintInvalidation(const RenderLayerModelObject*, FloatRect&, bool, const PaintInvalidationState*) const
+void RenderObject::computeFloatRectForPaintInvalidation(const RenderLayerModelObject*, FloatRect&, const PaintInvalidationState*) const
 {
     ASSERT_NOT_REACHED();
 }

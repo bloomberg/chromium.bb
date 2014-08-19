@@ -1049,7 +1049,10 @@ LayoutRect RenderInline::clippedOverflowRectForPaintInvalidation(const RenderLay
     if (cb->hasOverflowClip())
         cb->applyCachedClipAndScrollOffsetForPaintInvalidation(paintInvalidationRect);
 
-    cb->mapRectToPaintInvalidationBacking(paintInvalidationContainer, paintInvalidationRect, paintInvalidationState);
+    // FIXME: Passing paintInvalidationState directly to mapRectToPaintInvalidationBacking causes incorrect invalidations.
+    // Should avoid slowRectMapping by properly adjusting paintInvalidationState. crbug.com/402994.
+    ForceHorriblySlowRectMapping slowRectMapping(paintInvalidationState);
+    cb->mapRectToPaintInvalidationBacking(paintInvalidationContainer, paintInvalidationRect, IsNotFixedPosition, paintInvalidationState);
 
     if (outlineSize) {
         for (RenderObject* curr = firstChild(); curr; curr = curr->nextSibling()) {
@@ -1074,7 +1077,7 @@ LayoutRect RenderInline::rectWithOutlineForPaintInvalidation(const RenderLayerMo
     return r;
 }
 
-void RenderInline::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, bool fixed, const PaintInvalidationState* paintInvalidationState) const
+void RenderInline::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, ViewportConstrainedPosition, const PaintInvalidationState* paintInvalidationState) const
 {
     if (paintInvalidationState && paintInvalidationState->canMapToContainer(paintInvalidationContainer)) {
         if (style()->hasInFlowPosition() && layer())
@@ -1130,7 +1133,7 @@ void RenderInline::mapRectToPaintInvalidationBacking(const RenderLayerModelObjec
         return;
     }
 
-    o->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, fixed, paintInvalidationState);
+    o->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, IsNotFixedPosition, paintInvalidationState);
 }
 
 LayoutSize RenderInline::offsetFromContainer(const RenderObject* container, const LayoutPoint& point, bool* offsetDependsOnPoint) const

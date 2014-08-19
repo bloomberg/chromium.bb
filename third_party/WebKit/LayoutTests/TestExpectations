@@ -86,6 +86,7 @@ crbug.com/231721 [ Win ] svg/custom/invisible-text-after-scrolling.xhtml [ Pass 
 crbug.com/398306 [ Debug ] fast/events/before-unload-return-bad-value.html [ Crash Timeout Pass ]
 crbug.com/398306 [ Release ] fast/events/before-unload-return-bad-value.html [ Timeout Pass ]
 
+crbug.com/402362 fast/repaint/inline-style-change-in-scrolled-view.html [ NeedsRebaseline ]
 
 crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-touch-editing-combined.html [ Failure Pass ]
 

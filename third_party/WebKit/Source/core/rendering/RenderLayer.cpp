@@ -565,8 +565,13 @@ void RenderLayer::mapRectToPaintBackingCoordinates(const RenderLayerModelObject*
 
 void RenderLayer::mapRectToPaintInvalidationBacking(const RenderObject* renderObject, const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState)
 {
+    // FIXME: Passing paintInvalidationState directly to mapRectToPaintInvalidationBacking causes incorrect invalidations.
+    // Should avoid slowRectMapping by correctly adjusting paintInvalidationState. crbug.com/402983.
+    ForceHorriblySlowRectMapping slowRectMapping(paintInvalidationState);
+    ViewportConstrainedPosition viewportConstraint = renderObject->isRenderView() ? IsNotFixedPosition : ViewportConstraintDoesNotMatter;
+
     if (!paintInvalidationContainer->layer()->groupedMapping()) {
-        renderObject->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
+        renderObject->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, viewportConstraint, paintInvalidationState);
         return;
     }
 
@@ -574,7 +579,7 @@ void RenderLayer::mapRectToPaintInvalidationBacking(const RenderObject* renderOb
     // layer. This is because all layers that squash together need to issue paint invalidations w.r.t. a single container that is
     // an ancestor of all of them, in order to properly take into account any local transforms etc.
     // FIXME: remove this special-case code that works around the paint invalidation code structure.
-    renderObject->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
+    renderObject->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, viewportConstraint, paintInvalidationState);
 
     RenderLayer::mapRectToPaintBackingCoordinates(paintInvalidationContainer, rect);
 }

@@ -376,11 +376,11 @@ LayoutRect RenderSVGRoot::clippedOverflowRectForPaintInvalidation(const RenderLa
 
     // Compute the paint invalidation rect in the parent coordinate space.
     LayoutRect rect = enclosingIntRect(paintInvalidationRect);
-    RenderReplaced::mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
+    RenderReplaced::mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, ViewportConstraintDoesNotMatter, paintInvalidationState);
     return rect;
 }
 
-void RenderSVGRoot::computeFloatRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, FloatRect& paintInvalidationRect, bool fixed, const PaintInvalidationState* paintInvalidationState) const
+void RenderSVGRoot::computeFloatRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, FloatRect& paintInvalidationRect, const PaintInvalidationState* paintInvalidationState) const
 {
     // Apply our local transforms (except for x/y translation), then our shadow,
     // and then call RenderBox's method to handle all the normal CSS Box model bits
@@ -391,7 +391,7 @@ void RenderSVGRoot::computeFloatRectForPaintInvalidation(const RenderLayerModelO
         paintInvalidationRect.intersect(pixelSnappedBorderBoxRect());
 
     LayoutRect rect = enclosingIntRect(paintInvalidationRect);
-    RenderReplaced::mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, fixed, paintInvalidationState);
+    RenderReplaced::mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, ViewportConstraintDoesNotMatter, paintInvalidationState);
     paintInvalidationRect = rect;
 }
 

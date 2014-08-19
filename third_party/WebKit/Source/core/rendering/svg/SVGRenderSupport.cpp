@@ -56,13 +56,13 @@ LayoutRect SVGRenderSupport::clippedOverflowRectForPaintInvalidation(const Rende
     return enclosingLayoutRect(paintInvalidationRect);
 }
 
-void SVGRenderSupport::computeFloatRectForPaintInvalidation(const RenderObject* object, const RenderLayerModelObject* paintInvalidationContainer, FloatRect& paintInvalidationRect, bool fixed, const PaintInvalidationState* paintInvalidationState)
+void SVGRenderSupport::computeFloatRectForPaintInvalidation(const RenderObject* object, const RenderLayerModelObject* paintInvalidationContainer, FloatRect& paintInvalidationRect, const PaintInvalidationState* paintInvalidationState)
 {
     paintInvalidationRect.inflate(object->style()->outlineWidth());
 
     // Translate to coords in our parent renderer, and then call computeFloatRectForPaintInvalidation() on our parent.
     paintInvalidationRect = object->localToParentTransform().mapRect(paintInvalidationRect);
-    object->parent()->computeFloatRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationRect, fixed, paintInvalidationState);
+    object->parent()->computeFloatRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationRect, paintInvalidationState);
 }
 
 void SVGRenderSupport::mapLocalToContainer(const RenderObject* object, const RenderLayerModelObject* paintInvalidationContainer, TransformState& transformState, bool* wasFixed, const PaintInvalidationState* paintInvalidationState)

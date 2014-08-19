@@ -1623,9 +1623,9 @@ LayoutRect RenderText::selectionRectForPaintInvalidation(const RenderLayerModelO
         rect.unite(ellipsisRectForBox(box, startPos, endPos));
     }
 
-    if (clipToVisibleContent)
-        mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect);
-    else {
+    if (clipToVisibleContent) {
+        mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, IsNotFixedPosition, 0);
+    } else {
         if (cb->hasColumns())
             cb->adjustRectForColumns(rect);
 

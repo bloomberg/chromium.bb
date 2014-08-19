@@ -72,7 +72,7 @@ public:
 
     // Important functions used by nearly all SVG renderers centralizing coordinate transformations / paint invalidation rect calculations
     static LayoutRect clippedOverflowRectForPaintInvalidation(const RenderObject*, const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState*);
-    static void computeFloatRectForPaintInvalidation(const RenderObject*, const RenderLayerModelObject* paintInvalidationContainer, FloatRect&, bool fixed, const PaintInvalidationState*);
+    static void computeFloatRectForPaintInvalidation(const RenderObject*, const RenderLayerModelObject* paintInvalidationContainer, FloatRect&, const PaintInvalidationState*);
     static void mapLocalToContainer(const RenderObject*, const RenderLayerModelObject* paintInvalidationContainer, TransformState&, bool* wasFixed = 0, const PaintInvalidationState* = 0);
     static const RenderObject* pushMappingToContainer(const RenderObject*, const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap&);
 

@@ -501,7 +501,7 @@ LayoutRect RenderReplaced::selectionRectForPaintInvalidation(const RenderLayerMo
 
     LayoutRect rect = localSelectionRect();
     if (clipToVisibleContent)
-        mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect);
+        mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, ViewportConstraintDoesNotMatter, 0);
     else
         rect = localToContainerQuad(FloatRect(rect), paintInvalidationContainer).enclosingBoundingBox();
 
@@ -571,7 +571,7 @@ LayoutRect RenderReplaced::clippedOverflowRectForPaintInvalidation(const RenderL
     // The selectionRect can project outside of the overflowRect, so take their union
     // for paint invalidation to avoid selection painting glitches.
     LayoutRect r = isSelected() ? localSelectionRect() : visualOverflowRect();
-    mapRectToPaintInvalidationBacking(paintInvalidationContainer, r, false /* fixed */, paintInvalidationState);
+    mapRectToPaintInvalidationBacking(paintInvalidationContainer, r, ViewportConstraintDoesNotMatter, paintInvalidationState);
     return r;
 }
 

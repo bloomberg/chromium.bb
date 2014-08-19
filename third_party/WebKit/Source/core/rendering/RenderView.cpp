@@ -483,7 +483,7 @@ void RenderView::invalidatePaintForViewAndCompositedLayers()
         compositor()->fullyInvalidatePaint();
 }
 
-void RenderView::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, bool fixed, const PaintInvalidationState* paintInvalidationState) const
+void RenderView::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, ViewportConstrainedPosition viewportConstraint, const PaintInvalidationState*) const
 {
     // If a container was specified, and was not 0 or the RenderView,
     // then we should have found it by now.
@@ -501,7 +501,8 @@ void RenderView::mapRectToPaintInvalidationBacking(const RenderLayerModelObject*
             rect.setX(viewWidth() - rect.maxX());
     }
 
-    if (fixed && m_frameView) {
+    ASSERT(viewportConstraint != ViewportConstraintDoesNotMatter);
+    if (viewportConstraint == IsFixedPosition && m_frameView) {
         rect.move(m_frameView->scrollOffsetForFixedPosition());
         // If we have a pending scroll, invalidate the previous scroll position.
         if (!m_frameView->pendingScrollDelta().isZero()) {

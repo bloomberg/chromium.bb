@@ -1842,7 +1842,7 @@ LayoutRect RenderListMarker::selectionRectForPaintInvalidation(const RenderLayer
     LayoutRect rect(0, root.selectionTop() - y(), width(), root.selectionHeight());
 
     if (clipToVisibleContent)
-        mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect);
+        mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, ViewportConstraintDoesNotMatter, 0);
     else
         rect = localToContainerQuad(FloatRect(rect), paintInvalidationContainer).enclosingBoundingBox();
 

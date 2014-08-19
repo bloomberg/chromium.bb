@@ -357,18 +357,18 @@ LayoutRect RenderTableCell::clippedOverflowRectForPaintInvalidation(const Render
     LayoutPoint location(std::max<LayoutUnit>(left, -visualOverflowRect().x()), std::max<LayoutUnit>(top, -visualOverflowRect().y()));
     LayoutRect r(-location.x(), -location.y(), location.x() + std::max(width() + right, visualOverflowRect().maxX()), location.y() + std::max(height() + bottom, visualOverflowRect().maxY()));
 
-    mapRectToPaintInvalidationBacking(paintInvalidationContainer, r, false /* fixed */, paintInvalidationState);
+    mapRectToPaintInvalidationBacking(paintInvalidationContainer, r, ViewportConstraintDoesNotMatter, paintInvalidationState);
     return r;
 }
 
-void RenderTableCell::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& r, bool fixed, const PaintInvalidationState* paintInvalidationState) const
+void RenderTableCell::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& r, ViewportConstrainedPosition, const PaintInvalidationState* paintInvalidationState) const
 {
     if (paintInvalidationContainer == this)
         return;
     r.setY(r.y());
     if ((!paintInvalidationState || !paintInvalidationState->canMapToContainer(paintInvalidationContainer)) && parent())
         r.moveBy(-parentBox()->location()); // Rows are in the same coordinate space, so don't add their offset in.
-    RenderBlockFlow::mapRectToPaintInvalidationBacking(paintInvalidationContainer, r, fixed, paintInvalidationState);
+    RenderBlockFlow::mapRectToPaintInvalidationBacking(paintInvalidationContainer, r, ViewportConstraintDoesNotMatter, paintInvalidationState);
 }
 
 LayoutUnit RenderTableCell::cellBaselinePosition() const

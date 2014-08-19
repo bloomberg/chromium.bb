@@ -80,7 +80,7 @@ public:
 
     FrameView* frameView() const { return m_frameView; }
 
-    virtual void mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&, bool fixed = false, const PaintInvalidationState* = 0) const OVERRIDE;
+    virtual void mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&, ViewportConstrainedPosition, const PaintInvalidationState*) const OVERRIDE;
     void invalidatePaintForRectangle(const LayoutRect&) const;
 
     void invalidatePaintForViewAndCompositedLayers();
