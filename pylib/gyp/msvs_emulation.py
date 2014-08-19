@@ -370,7 +370,7 @@ class MsvsSettings(object):
     output_file = self._Setting(('VCLinkerTool', 'ProgramDatabaseFile'), config)
     generate_debug_info = self._Setting(
         ('VCLinkerTool', 'GenerateDebugInformation'), config)
-    if generate_debug_info:
+    if generate_debug_info == 'true':
       if output_file:
         return expand_special(self.ConvertVSMacros(output_file, config=config))
       else:
