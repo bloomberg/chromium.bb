@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
@@ -32,6 +33,7 @@
 
 class ChromeHttpUserAgentSettings;
 class ChromeNetworkDelegate;
+class ChromeURLRequestContextGetter;
 class CookieSettings;
 class DevToolsNetworkController;
 class HostContentSettingsMap;
@@ -76,6 +78,9 @@ class PrerenderTracker;
 // possibly in unit tests where there is no IO thread).
 class ProfileIOData {
  public:
+  typedef std::vector<scoped_refptr<ChromeURLRequestContextGetter>>
+      ChromeURLRequestContextGetterVector;
+
   virtual ~ProfileIOData();
 
   static ProfileIOData* FromResourceContext(content::ResourceContext* rc);
@@ -355,7 +360,8 @@ class ProfileIOData {
       net::FtpTransactionFactory* ftp_transaction_factory) const;
 
   // Called when the profile is destroyed.
-  void ShutdownOnUIThread();
+  void ShutdownOnUIThread(
+      scoped_ptr<ChromeURLRequestContextGetterVector> context_getters);
 
   // A ChannelIDService object is created by a derived class of
   // ProfileIOData, and the derived class calls this method to set the

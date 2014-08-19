@@ -194,6 +194,12 @@ ChromeURLRequestContextGetter::GetURLRequestContext() {
   return url_request_context_;
 }
 
+void ChromeURLRequestContextGetter::Invalidate() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  factory_.reset();
+  url_request_context_ = NULL;
+}
+
 scoped_refptr<base::SingleThreadTaskRunner>
 ChromeURLRequestContextGetter::GetNetworkTaskRunner() const {
   return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);

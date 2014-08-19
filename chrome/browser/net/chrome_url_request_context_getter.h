@@ -79,7 +79,9 @@ class ChromeURLRequestContextGetter : public net::URLRequestContextGetter {
       const ProfileIOData* profile_io_data,
       const StoragePartitionDescriptor& partition_descriptor);
 
-  void Invalidate() { url_request_context_ = NULL; }
+  // Discard reference to URLRequestContext.
+  // Access only from the IO thread.
+  void Invalidate();
 
  private:
   virtual ~ChromeURLRequestContextGetter();

@@ -133,12 +133,13 @@ class ProfileImplIOData : public ProfileIOData {
     // on the UI thread from being unnecessarily initialized.
     void LazyInitialize() const;
 
-    // Ordering is important here. Do not reorder unless you know what you're
-    // doing. We need to release |io_data_| *before* the getters, because we
-    // want to make sure that the last reference for |io_data_| is on the IO
-    // thread. The getters will be deleted on the IO thread, so they will
-    // release their refs to their contexts, which will release the last refs to
-    // the ProfileIOData on the IO thread.
+    // Collect references to context getters in reverse order, i.e. last item
+    // will be main request getter. This list is passed to |io_data_|
+    // for invalidation on IO thread.
+    scoped_ptr<ChromeURLRequestContextGetterVector> GetAllContextGetters();
+
+    // The getters will be invalidated on the IO thread before
+    // ProfileIOData instance is deleted.
     mutable scoped_refptr<ChromeURLRequestContextGetter>
         main_request_context_getter_;
     mutable scoped_refptr<ChromeURLRequestContextGetter>

@@ -51,19 +51,7 @@ OffTheRecordProfileIOData::Handle::Handle(Profile* profile)
 
 OffTheRecordProfileIOData::Handle::~Handle() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  ChromeURLRequestContextGetterMap::iterator iter =
-      app_request_context_getter_map_.begin();
-  for (; iter != app_request_context_getter_map_.end(); ++iter)
-    iter->second->Invalidate();
-
-  if (extensions_request_context_getter_)
-    extensions_request_context_getter_->Invalidate();
-
-  if (main_request_context_getter_)
-    main_request_context_getter_->Invalidate();
-
-  io_data_->ShutdownOnUIThread();
+  io_data_->ShutdownOnUIThread(GetAllContextGetters().Pass());
 }
 
 content::ResourceContext*
@@ -183,6 +171,24 @@ void OffTheRecordProfileIOData::Handle::LazyInitialize() const {
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 #endif
   io_data_->InitializeOnUIThread(profile_);
+}
+
+scoped_ptr<ProfileIOData::ChromeURLRequestContextGetterVector>
+OffTheRecordProfileIOData::Handle::GetAllContextGetters() {
+  scoped_ptr<ChromeURLRequestContextGetterVector> context_getters(
+      new ChromeURLRequestContextGetterVector());
+  ChromeURLRequestContextGetterMap::iterator iter =
+      app_request_context_getter_map_.begin();
+  for (; iter != app_request_context_getter_map_.end(); ++iter)
+    context_getters->push_back(iter->second);
+
+  if (extensions_request_context_getter_)
+    context_getters->push_back(extensions_request_context_getter_);
+
+  if (main_request_context_getter_)
+    context_getters->push_back(main_request_context_getter_);
+
+  return context_getters.Pass();
 }
 
 OffTheRecordProfileIOData::OffTheRecordProfileIOData(

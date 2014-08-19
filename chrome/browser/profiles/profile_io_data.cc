@@ -39,6 +39,7 @@
 #include "chrome/browser/net/chrome_http_user_agent_settings.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
+#include "chrome/browser/net/chrome_url_request_context_getter.h"
 #include "chrome/browser/net/cookie_store_util.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -324,6 +325,14 @@ void StartNSSInitOnIOThread(const std::string& username,
   }
 }
 #endif  // defined(OS_CHROMEOS)
+
+void InvalidateContextGettersOnIO(
+    scoped_ptr<ProfileIOData::ChromeURLRequestContextGetterVector> getters) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  ProfileIOData::ChromeURLRequestContextGetterVector::iterator iter;
+  for (iter = getters->begin(); iter != getters->end(); ++iter)
+    (*iter)->Invalidate();
+}
 
 }  // namespace
 
@@ -1180,7 +1189,8 @@ scoped_ptr<net::URLRequestJobFactory> ProfileIOData::SetUpJobFactoryDefaults(
   }
 }
 
-void ProfileIOData::ShutdownOnUIThread() {
+void ProfileIOData::ShutdownOnUIThread(
+    scoped_ptr<ChromeURLRequestContextGetterVector> context_getters) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (signin_names_)
@@ -1218,6 +1228,16 @@ void ProfileIOData::ShutdownOnUIThread() {
   if (chrome_http_user_agent_settings_)
     chrome_http_user_agent_settings_->CleanupOnUIThread();
   incognito_availibility_pref_.Destroy();
+
+  if (!context_getters->empty()) {
+    if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::Bind(&InvalidateContextGettersOnIO,
+              base::Passed(&context_getters)));
+    }
+  }
+
   bool posted = BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, this);
   if (!posted)
     delete this;
