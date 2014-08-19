@@ -620,7 +620,7 @@ GL_FUNCTIONS = [
   'names': ['glTexParameteriv'],
   'arguments': 'GLenum target, GLenum pname, const GLint* params', },
 { 'return_type': 'void',
-  'names': ['glTexStorage2DEXT'],
+  'names': ['glTexStorage2DEXT', 'glTexStorage2D'],
   'arguments': 'GLenum target, GLsizei levels, GLenum internalformat, '
                'GLsizei width, GLsizei height', },
 { 'return_type': 'void',
