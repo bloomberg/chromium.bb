@@ -341,10 +341,14 @@ enum ReservedVariationID {
   WEBRTC_FIELD_TRIAL_RANGE_ID_MIN = 3312378,
   WEBRTC_FIELD_TRIAL_RANGE_ID_MAX = 3312477,
 
+  // SDCH compression field trial.
+  SDCH_ENABLED_ALL = 3312478,
+  SDCH_ENABLED_HTTP_ONLY = 3312479,
+
   // NEXT ID: When adding new IDs, please add them above this section, starting
   // with the value of NEXT_ID, and updating NEXT_ID to (end of your reserved
   // range) + 1.
-  NEXT_ID = 3312478,
+  NEXT_ID = 3312480,
 
   // USABLE IDs END HERE.
   //
