@@ -40,7 +40,6 @@
 #include "core/workers/WorkerThread.h"
 #include "modules/websockets/MainThreadWebSocketChannel.h"
 #include "modules/websockets/NewWebSocketChannelImpl.h"
-#include "modules/websockets/ThreadableWebSocketChannelClientWrapper.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "modules/websockets/WorkerThreadableWebSocketChannel.h"
 #include "platform/RuntimeEnabledFeatures.h"

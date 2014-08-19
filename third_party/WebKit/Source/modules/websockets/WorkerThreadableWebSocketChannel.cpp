@@ -36,14 +36,15 @@
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/ExecutionContextTask.h"
 #include "core/fileapi/Blob.h"
 #include "core/inspector/ScriptCallFrame.h"
 #include "core/inspector/ScriptCallStack.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "modules/websockets/MainThreadWebSocketChannel.h"
 #include "modules/websockets/NewWebSocketChannelImpl.h"
-#include "modules/websockets/ThreadableWebSocketChannelClientWrapper.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebWaitableEvent.h"
@@ -51,6 +52,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/Functional.h"
 #include "wtf/MainThread.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -108,12 +110,10 @@ private:
 };
 
 WorkerThreadableWebSocketChannel::WorkerThreadableWebSocketChannel(WorkerGlobalScope& workerGlobalScope, WebSocketChannelClient* client, const String& sourceURL, unsigned lineNumber)
-    : m_workerClientWrapper(ThreadableWebSocketChannelClientWrapper::create(client))
-    , m_bridge(Bridge::create(m_workerClientWrapper, workerGlobalScope))
+    : m_bridge(new Bridge(client, workerGlobalScope))
     , m_sourceURLAtConnection(sourceURL)
     , m_lineNumberAtConnection(lineNumber)
 {
-    ASSERT(m_workerClientWrapper.get());
     m_bridge->initialize(sourceURL, lineNumber);
 }
 
@@ -182,12 +182,11 @@ void WorkerThreadableWebSocketChannel::disconnect()
 void WorkerThreadableWebSocketChannel::trace(Visitor* visitor)
 {
     visitor->trace(m_bridge);
-    visitor->trace(m_workerClientWrapper);
     WebSocketChannel::trace(visitor);
 }
 
-Peer::Peer(ThreadableWebSocketChannelClientWrapper* clientWrapper, WorkerLoaderProxy& loaderProxy, ThreadableWebSocketChannelSyncHelper* syncHelper)
-    : m_workerClientWrapper(clientWrapper)
+Peer::Peer(Bridge* bridge, WorkerLoaderProxy& loaderProxy, ThreadableWebSocketChannelSyncHelper* syncHelper)
+    : m_bridge(bridge)
     , m_loaderProxy(loaderProxy)
     , m_mainWebSocketChannel(nullptr)
     , m_syncHelper(syncHelper)
@@ -198,11 +197,6 @@ Peer::Peer(ThreadableWebSocketChannelClientWrapper* clientWrapper, WorkerLoaderP
 Peer::~Peer()
 {
     ASSERT(!isMainThread());
-}
-
-Peer* Peer::create(ThreadableWebSocketChannelClientWrapper* clientWrapper, WorkerLoaderProxy& loaderProxy, ThreadableWebSocketChannelSyncHelper* syncHelper)
-{
-    return new Peer(clientWrapper, loaderProxy, syncHelper);
 }
 
 void Peer::initializeInternal(ExecutionContext* context, const String& sourceURL, unsigned lineNumber)
@@ -280,85 +274,76 @@ void Peer::disconnect()
     m_syncHelper->signalWorkerThread();
 }
 
-static void workerGlobalScopeDidConnect(ExecutionContext* context, ThreadableWebSocketChannelClientWrapper* workerClientWrapper, const String& subprotocol, const String& extensions)
+static void workerGlobalScopeDidConnect(ExecutionContext* context, Bridge* bridge, const String& subprotocol, const String& extensions)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
-    workerClientWrapper->didConnect(subprotocol, extensions);
+    if (bridge->client())
+        bridge->client()->didConnect(subprotocol, extensions);
 }
 
 void Peer::didConnect(const String& subprotocol, const String& extensions)
 {
     ASSERT(isMainThread());
-    // It is important to seprate task creation from posting
-    // the task. See the above comment.
-    OwnPtr<ExecutionContextTask> task = createCrossThreadTask(&workerGlobalScopeDidConnect, m_workerClientWrapper, subprotocol, extensions);
-    m_loaderProxy.postTaskToWorkerGlobalScope(task.release());
+    m_loaderProxy.postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidConnect, m_bridge, subprotocol, extensions));
 }
 
-static void workerGlobalScopeDidReceiveMessage(ExecutionContext* context, ThreadableWebSocketChannelClientWrapper* workerClientWrapper, const String& message)
+static void workerGlobalScopeDidReceiveMessage(ExecutionContext* context, Bridge* bridge, const String& message)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
-    workerClientWrapper->didReceiveMessage(message);
+    if (bridge->client())
+        bridge->client()->didReceiveMessage(message);
 }
 
 void Peer::didReceiveMessage(const String& message)
 {
     ASSERT(isMainThread());
-    // It is important to seprate task creation from posting
-    // the task. See the above comment.
-    OwnPtr<ExecutionContextTask> task = createCrossThreadTask(&workerGlobalScopeDidReceiveMessage, m_workerClientWrapper, message);
-    m_loaderProxy.postTaskToWorkerGlobalScope(task.release());
+    m_loaderProxy.postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidReceiveMessage, m_bridge, message));
 }
 
-static void workerGlobalScopeDidReceiveBinaryData(ExecutionContext* context, ThreadableWebSocketChannelClientWrapper* workerClientWrapper, PassOwnPtr<Vector<char> > binaryData)
+static void workerGlobalScopeDidReceiveBinaryData(ExecutionContext* context, Bridge* bridge, PassOwnPtr<Vector<char> > binaryData)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
-    workerClientWrapper->didReceiveBinaryData(binaryData);
+    if (bridge->client())
+        bridge->client()->didReceiveBinaryData(binaryData);
 }
 
 void Peer::didReceiveBinaryData(PassOwnPtr<Vector<char> > binaryData)
 {
     ASSERT(isMainThread());
-    // It is important to seprate task creation from posting
-    // the task. See the above comment.
-    OwnPtr<ExecutionContextTask> task = createCrossThreadTask(&workerGlobalScopeDidReceiveBinaryData, m_workerClientWrapper, binaryData);
-    m_loaderProxy.postTaskToWorkerGlobalScope(task.release());
+    m_loaderProxy.postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidReceiveBinaryData, m_bridge, binaryData));
 }
 
-static void workerGlobalScopeDidConsumeBufferedAmount(ExecutionContext* context, ThreadableWebSocketChannelClientWrapper* workerClientWrapper, unsigned long consumed)
+static void workerGlobalScopeDidConsumeBufferedAmount(ExecutionContext* context, Bridge* bridge, unsigned long consumed)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
-    workerClientWrapper->didConsumeBufferedAmount(consumed);
+    if (bridge->client())
+        bridge->client()->didConsumeBufferedAmount(consumed);
 }
 
 void Peer::didConsumeBufferedAmount(unsigned long consumed)
 {
     ASSERT(isMainThread());
-    // It is important to seprate task creation from posting
-    // the task. See the above comment.
-    OwnPtr<ExecutionContextTask> task = createCrossThreadTask(&workerGlobalScopeDidConsumeBufferedAmount, m_workerClientWrapper, consumed);
-    m_loaderProxy.postTaskToWorkerGlobalScope(task.release());
+    m_loaderProxy.postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidConsumeBufferedAmount, m_bridge, consumed));
 }
 
-static void workerGlobalScopeDidStartClosingHandshake(ExecutionContext* context, ThreadableWebSocketChannelClientWrapper* workerClientWrapper)
+static void workerGlobalScopeDidStartClosingHandshake(ExecutionContext* context, Bridge* bridge)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
-    workerClientWrapper->didStartClosingHandshake();
+    if (bridge->client())
+        bridge->client()->didStartClosingHandshake();
 }
 
 void Peer::didStartClosingHandshake()
 {
     ASSERT(isMainThread());
-    // It is important to seprate task creation from posting
-    // the task. See the above comment.
-    OwnPtr<ExecutionContextTask> task = createCrossThreadTask(&workerGlobalScopeDidStartClosingHandshake, m_workerClientWrapper);
-    m_loaderProxy.postTaskToWorkerGlobalScope(task.release());
+    m_loaderProxy.postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidStartClosingHandshake, m_bridge));
 }
 
-static void workerGlobalScopeDidClose(ExecutionContext* context, ThreadableWebSocketChannelClientWrapper* workerClientWrapper, WebSocketChannelClient::ClosingHandshakeCompletionStatus closingHandshakeCompletion, unsigned short code, const String& reason)
+static void workerGlobalScopeDidClose(ExecutionContext* context, Bridge* bridge, WebSocketChannelClient::ClosingHandshakeCompletionStatus closingHandshakeCompletion, unsigned short code, const String& reason)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
-    workerClientWrapper->didClose(closingHandshakeCompletion, code, reason);
+    if (bridge->client())
+        bridge->client()->didClose(closingHandshakeCompletion, code, reason);
 }
 
 void Peer::didClose(ClosingHandshakeCompletionStatus closingHandshakeCompletion, unsigned short code, const String& reason)
@@ -368,43 +353,37 @@ void Peer::didClose(ClosingHandshakeCompletionStatus closingHandshakeCompletion,
         m_mainWebSocketChannel->disconnect();
         m_mainWebSocketChannel = nullptr;
     }
-    // It is important to seprate task creation from posting
-    // the task. See the above comment.
-    OwnPtr<ExecutionContextTask> task = createCrossThreadTask(&workerGlobalScopeDidClose, m_workerClientWrapper, closingHandshakeCompletion, code, reason);
-    m_loaderProxy.postTaskToWorkerGlobalScope(task.release());
+    m_loaderProxy.postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidClose, m_bridge, closingHandshakeCompletion, code, reason));
 }
 
-static void workerGlobalScopeDidReceiveMessageError(ExecutionContext* context, ThreadableWebSocketChannelClientWrapper* workerClientWrapper)
+static void workerGlobalScopeDidReceiveMessageError(ExecutionContext* context, Bridge* bridge)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
-    workerClientWrapper->didReceiveMessageError();
+    if (bridge->client())
+        bridge->client()->didReceiveMessageError();
 }
 
 void Peer::didReceiveMessageError()
 {
     ASSERT(isMainThread());
-    // It is important to seprate task creation from posting
-    // the task. See the above comment.
-    OwnPtr<ExecutionContextTask> task = createCrossThreadTask(&workerGlobalScopeDidReceiveMessageError, m_workerClientWrapper);
-    m_loaderProxy.postTaskToWorkerGlobalScope(task.release());
+    m_loaderProxy.postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidReceiveMessageError, m_bridge));
 }
 
 void Peer::trace(Visitor* visitor)
 {
-    visitor->trace(m_workerClientWrapper);
+    visitor->trace(m_bridge);
     visitor->trace(m_mainWebSocketChannel);
     visitor->trace(m_syncHelper);
     WebSocketChannelClient::trace(visitor);
 }
 
-Bridge::Bridge(ThreadableWebSocketChannelClientWrapper* workerClientWrapper, WorkerGlobalScope& workerGlobalScope)
-    : m_workerClientWrapper(workerClientWrapper)
+Bridge::Bridge(WebSocketChannelClient* client, WorkerGlobalScope& workerGlobalScope)
+    : m_client(client)
     , m_workerGlobalScope(workerGlobalScope)
     , m_loaderProxy(m_workerGlobalScope->thread()->workerLoaderProxy())
     , m_syncHelper(ThreadableWebSocketChannelSyncHelper::create(adoptPtr(Platform::current()->createWaitableEvent())))
-    , m_peer(Peer::create(m_workerClientWrapper, m_loaderProxy, m_syncHelper))
+    , m_peer(new Peer(this, m_loaderProxy, m_syncHelper))
 {
-    ASSERT(m_workerClientWrapper.get());
 }
 
 Bridge::~Bridge()
@@ -414,12 +393,7 @@ Bridge::~Bridge()
 
 void Bridge::initialize(const String& sourceURL, unsigned lineNumber)
 {
-    // In order to assure all temporary objects to be destroyed before
-    // posting the task, we separate task creation and posting.
-    // In other words, it is dangerous to have a complicated expression
-    // as a waitForMethodCompletion argument.
-    OwnPtr<ExecutionContextTask> task = createCrossThreadTask(&Peer::initialize, AllowCrossThreadAccess(m_peer.get()), sourceURL, lineNumber);
-    if (!waitForMethodCompletion(task.release())) {
+    if (!waitForMethodCompletion(createCrossThreadTask(&Peer::initialize, AllowCrossThreadAccess(m_peer.get()), sourceURL, lineNumber))) {
         // The worker thread has been signalled to shutdown before method completion.
         disconnect();
     }
@@ -476,10 +450,10 @@ void Bridge::disconnect()
     if (!m_peer)
         return;
 
-    m_workerClientWrapper->clearClient();
     waitForMethodCompletion(createCrossThreadTask(&Peer::disconnect, m_peer.get()));
     // Here |m_peer| is detached from the main thread and we can delete it.
 
+    m_client = nullptr;
     m_peer = nullptr;
     m_syncHelper = nullptr;
     // We won't use this any more.
@@ -505,7 +479,7 @@ bool Bridge::waitForMethodCompletion(PassOwnPtr<ExecutionContextTask> task)
 
 void Bridge::trace(Visitor* visitor)
 {
-    visitor->trace(m_workerClientWrapper);
+    visitor->trace(m_client);
     visitor->trace(m_workerGlobalScope);
     visitor->trace(m_syncHelper);
     visitor->trace(m_peer);

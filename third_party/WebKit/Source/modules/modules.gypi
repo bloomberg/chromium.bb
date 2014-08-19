@@ -966,8 +966,6 @@
       'websockets/MainThreadWebSocketChannel.h',
       'websockets/NewWebSocketChannelImpl.cpp',
       'websockets/NewWebSocketChannelImpl.h',
-      'websockets/ThreadableWebSocketChannelClientWrapper.cpp',
-      'websockets/ThreadableWebSocketChannelClientWrapper.h',
       'websockets/WebSocketChannel.cpp',
       'websockets/WebSocketChannel.h',
       'websockets/WebSocketChannelClient.h',
