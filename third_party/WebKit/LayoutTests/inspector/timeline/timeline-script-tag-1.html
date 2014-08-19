@@ -32,15 +32,6 @@ function test()
             if (record.type() === WebInspector.TimelineModel.RecordType.EvaluateScript)
                 InspectorTest.printTimelineRecordProperties(record);
             else if (record.type() === WebInspector.TimelineModel.RecordType.ParseHTML) {
-                var children = [];
-                var skipCategories = { rendering: true, painting: true };
-                var uiUtils = WebInspector.panels.timeline._uiUtils;
-                for (var i = 0; i < record.children().length; ++i) {
-                    var child = record.children()[i];
-                    if (!skipCategories[uiUtils.categoryForRecord(child).name])
-                        children.push(child);
-                }
-                record._children = children;
                 InspectorTest.dumpTimelineRecord(record, undefined, undefined, [
                     "ParseHTML",
                     "EvaluateScript",
