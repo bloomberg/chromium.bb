@@ -29,8 +29,6 @@
       'sources': [
         'public/cursor_factory_ozone.cc',
         'public/cursor_factory_ozone.h',
-        'public/event_factory_ozone.cc',
-        'public/event_factory_ozone.h',
         'public/gpu_platform_support.cc',
         'public/gpu_platform_support.h',
         'public/gpu_platform_support_host.cc',

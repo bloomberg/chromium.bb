@@ -4,7 +4,7 @@
 
 #include "ui/ozone/platform/caca/ozone_platform_caca.h"
 
-#include "ui/ozone/platform/caca/caca_event_factory.h"
+#include "ui/ozone/platform/caca/caca_event_source.h"
 #include "ui/ozone/platform/caca/caca_window.h"
 #include "ui/ozone/platform/caca/caca_window_manager.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
@@ -28,9 +28,6 @@ class OzonePlatformCaca : public OzonePlatform {
   virtual ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() OVERRIDE {
     return window_manager_.get();
   }
-  virtual EventFactoryOzone* GetEventFactoryOzone() OVERRIDE {
-    return event_factory_ozone_.get();
-  }
   virtual CursorFactoryOzone* GetCursorFactoryOzone() OVERRIDE {
     return cursor_factory_ozone_.get();
   }
@@ -44,7 +41,7 @@ class OzonePlatformCaca : public OzonePlatform {
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) OVERRIDE {
     scoped_ptr<CacaWindow> caca_window(new CacaWindow(
-        delegate, window_manager_.get(), event_factory_ozone_.get(), bounds));
+        delegate, window_manager_.get(), event_source_.get(), bounds));
     if (!caca_window->Initialize())
       return scoped_ptr<PlatformWindow>();
     return caca_window.PassAs<PlatformWindow>();
@@ -64,7 +61,7 @@ class OzonePlatformCaca : public OzonePlatform {
 
   virtual void InitializeUI() OVERRIDE {
     window_manager_.reset(new CacaWindowManager);
-    event_factory_ozone_.reset(new CacaEventFactory());
+    event_source_.reset(new CacaEventSource());
     cursor_factory_ozone_.reset(new CursorFactoryOzone());
   }
 
@@ -72,7 +69,7 @@ class OzonePlatformCaca : public OzonePlatform {
 
  private:
   scoped_ptr<CacaWindowManager> window_manager_;
-  scoped_ptr<CacaEventFactory> event_factory_ozone_;
+  scoped_ptr<CacaEventSource> event_source_;
   scoped_ptr<CursorFactoryOzone> cursor_factory_ozone_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformCaca);

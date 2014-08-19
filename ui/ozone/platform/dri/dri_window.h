@@ -13,13 +13,15 @@
 namespace ui {
 
 class DriSurfaceFactory;
+class EventFactoryEvdev;
 
 class DriWindow : public PlatformWindow,
                   public PlatformEventDispatcher {
  public:
   DriWindow(PlatformWindowDelegate* delegate,
             const gfx::Rect& bounds,
-            DriSurfaceFactory* surface_factory);
+            DriSurfaceFactory* surface_factory,
+            EventFactoryEvdev* event_factory);
   virtual ~DriWindow();
 
   // PlatformWindow:
@@ -45,6 +47,7 @@ class DriWindow : public PlatformWindow,
   PlatformWindowDelegate* delegate_;
   gfx::Rect bounds_;
   gfx::AcceleratedWidget widget_;
+  EventFactoryEvdev* event_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DriWindow);
 };

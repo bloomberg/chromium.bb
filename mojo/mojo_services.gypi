@@ -288,6 +288,11 @@
             '../ui/events/platform/x11/x11_events_platform.gyp:x11_events_platform',
           ],
         }],
+        ['use_ozone==1', {
+          'dependencies': [
+            '../ui/ozone/ozone.gyp:ozone',
+          ],
+        }],
       ],
     },
     {

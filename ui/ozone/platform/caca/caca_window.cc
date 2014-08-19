@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/events/platform/platform_event_source.h"
-#include "ui/ozone/platform/caca/caca_event_factory.h"
+#include "ui/ozone/platform/caca/caca_event_source.h"
 #include "ui/ozone/platform/caca/caca_window_manager.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
@@ -27,11 +27,11 @@ const int kDefaultCanvasHeight = 48;
 // |physical_size_| and font size.
 CacaWindow::CacaWindow(PlatformWindowDelegate* delegate,
                        CacaWindowManager* manager,
-                       CacaEventFactory* event_factory,
+                       CacaEventSource* event_source,
                        const gfx::Rect& bounds)
     : delegate_(delegate),
       manager_(manager),
-      event_factory_(event_factory),
+      event_source_(event_source),
       weak_ptr_factory_(this) {
   widget_ = manager_->AddWindow(this);
   ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
@@ -70,7 +70,7 @@ bool CacaWindow::Initialize() {
 }
 
 void CacaWindow::TryProcessingEvent() {
-  event_factory_->TryProcessingEvent(this);
+  event_source_->TryProcessingEvent(this);
 
   // Caca uses a poll based event retrieval. Since we don't want to block we'd
   // either need to spin up a new thread or just poll. For simplicity just poll

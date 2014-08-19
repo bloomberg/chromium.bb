@@ -50,9 +50,6 @@ class OzonePlatformDri : public OzonePlatform {
   virtual ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() OVERRIDE {
     return surface_factory_ozone_.get();
   }
-  virtual EventFactoryOzone* GetEventFactoryOzone() OVERRIDE {
-    return event_factory_ozone_.get();
-  }
   virtual CursorFactoryOzone* GetCursorFactoryOzone() OVERRIDE {
     return cursor_factory_ozone_.get();
   }
@@ -66,7 +63,10 @@ class OzonePlatformDri : public OzonePlatform {
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) OVERRIDE {
     return scoped_ptr<PlatformWindow>(
-        new DriWindow(delegate, bounds, surface_factory_ozone_.get()));
+        new DriWindow(delegate,
+                      bounds,
+                      surface_factory_ozone_.get(),
+                      event_factory_ozone_.get()));
   }
 #if defined(OS_CHROMEOS)
   virtual scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()

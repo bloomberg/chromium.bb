@@ -8,7 +8,6 @@
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
-#include "ui/ozone/public/event_factory_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 #include "ui/platform_window/platform_window.h"

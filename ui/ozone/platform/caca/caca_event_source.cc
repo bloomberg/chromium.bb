@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/caca/caca_event_factory.h"
+#include "ui/ozone/platform/caca/caca_event_source.h"
 
 #include <caca.h>
 
@@ -135,18 +135,13 @@ ui::EventType GetEventTypeFromNative(const caca_event_t& event) {
 
 }  // namespace
 
-CacaEventFactory::CacaEventFactory() : modifier_flags_(0) {
+CacaEventSource::CacaEventSource() : modifier_flags_(0) {
 }
 
-CacaEventFactory::~CacaEventFactory() {
+CacaEventSource::~CacaEventSource() {
 }
 
-void CacaEventFactory::WarpCursorTo(gfx::AcceleratedWidget widget,
-                                    const gfx::PointF& location) {
-  NOTIMPLEMENTED();
-}
-
-void CacaEventFactory::TryProcessingEvent(CacaWindow* window) {
+void CacaEventSource::TryProcessingEvent(CacaWindow* window) {
   if (!window->display())
     return;
 
@@ -178,7 +173,7 @@ void CacaEventFactory::TryProcessingEvent(CacaWindow* window) {
   }
 }
 
-void CacaEventFactory::OnInputEvent(caca_event_t* event, CacaWindow* window) {
+void CacaEventSource::OnInputEvent(caca_event_t* event, CacaWindow* window) {
   ui::EventType type = GetEventTypeFromNative(*event);
   bool pressed = type == ui::ET_KEY_PRESSED || type == ui::ET_MOUSE_PRESSED;
 

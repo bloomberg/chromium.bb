@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/dri/dri_window.h"
 
 #include "ui/events/event.h"
+#include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/ozone/platform/dri/dri_surface_factory.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
@@ -15,8 +16,9 @@ namespace ui {
 
 DriWindow::DriWindow(PlatformWindowDelegate* delegate,
                      const gfx::Rect& bounds,
-                     DriSurfaceFactory* surface_factory)
-    : delegate_(delegate), bounds_(bounds) {
+                     DriSurfaceFactory* surface_factory,
+                     EventFactoryEvdev* event_factory)
+    : delegate_(delegate), bounds_(bounds), event_factory_(event_factory) {
   widget_ = surface_factory->GetAcceleratedWidget();
   delegate_->OnAcceleratedWidgetAvailable(widget_);
   PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
@@ -53,9 +55,13 @@ void DriWindow::Minimize() {}
 
 void DriWindow::Restore() {}
 
-void DriWindow::SetCursor(PlatformCursor cursor) {}
+void DriWindow::SetCursor(PlatformCursor cursor) {
+  ui::CursorFactoryOzone::GetInstance()->SetCursor(widget_, cursor);
+}
 
-void DriWindow::MoveCursorTo(const gfx::Point& location) {}
+void DriWindow::MoveCursorTo(const gfx::Point& location) {
+  event_factory_->WarpCursorTo(widget_, location);
+}
 
 bool DriWindow::CanDispatchEvent(const PlatformEvent& ne) {
   DCHECK(ne);

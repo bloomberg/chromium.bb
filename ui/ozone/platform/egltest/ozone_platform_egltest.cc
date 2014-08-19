@@ -51,6 +51,7 @@ class EgltestWindow : public PlatformWindow, public PlatformEventDispatcher {
  public:
   EgltestWindow(PlatformWindowDelegate* delegate,
                 LibeglplatformShimLoader* eglplatform_shim,
+                EventFactoryEvdev* event_factory,
                 const gfx::Rect& bounds);
   virtual ~EgltestWindow();
 
@@ -76,6 +77,7 @@ class EgltestWindow : public PlatformWindow, public PlatformEventDispatcher {
  private:
   PlatformWindowDelegate* delegate_;
   LibeglplatformShimLoader* eglplatform_shim_;
+  EventFactoryEvdev* event_factory_;
   gfx::Rect bounds_;
   ShimNativeWindowId window_id_;
 
@@ -84,9 +86,11 @@ class EgltestWindow : public PlatformWindow, public PlatformEventDispatcher {
 
 EgltestWindow::EgltestWindow(PlatformWindowDelegate* delegate,
                              LibeglplatformShimLoader* eglplatform_shim,
+                             EventFactoryEvdev* event_factory,
                              const gfx::Rect& bounds)
     : delegate_(delegate),
       eglplatform_shim_(eglplatform_shim),
+      event_factory_(event_factory),
       bounds_(bounds),
       window_id_(SHIM_NO_WINDOW_ID) {
   window_id_ = eglplatform_shim_->ShimCreateWindow();
@@ -137,9 +141,11 @@ void EgltestWindow::Restore() {
 }
 
 void EgltestWindow::SetCursor(PlatformCursor cursor) {
+  CursorFactoryOzone::GetInstance()->SetCursor(window_id_, cursor);
 }
 
 void EgltestWindow::MoveCursorTo(const gfx::Point& location) {
+  event_factory_->WarpCursorTo(window_id_, location);
 }
 
 bool EgltestWindow::CanDispatchEvent(const ui::PlatformEvent& ne) {
@@ -314,9 +320,6 @@ class OzonePlatformEgltest : public OzonePlatform {
   virtual ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() OVERRIDE {
     return surface_factory_ozone_.get();
   }
-  virtual EventFactoryOzone* GetEventFactoryOzone() OVERRIDE {
-    return event_factory_ozone_.get();
-  }
   virtual CursorFactoryOzone* GetCursorFactoryOzone() OVERRIDE {
     return cursor_factory_ozone_.get();
   }
@@ -330,7 +333,10 @@ class OzonePlatformEgltest : public OzonePlatform {
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) OVERRIDE {
     return make_scoped_ptr<PlatformWindow>(
-        new EgltestWindow(delegate, &eglplatform_shim_, bounds));
+        new EgltestWindow(delegate,
+                          &eglplatform_shim_,
+                          event_factory_ozone_.get(),
+                          bounds));
   }
 
 #if defined(OS_CHROMEOS)

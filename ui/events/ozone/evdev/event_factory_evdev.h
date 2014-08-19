@@ -15,7 +15,11 @@
 #include "ui/events/ozone/evdev/event_modifiers_evdev.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/events/platform/platform_event_source.h"
-#include "ui/ozone/public/event_factory_ozone.h"
+#include "ui/gfx/native_widget_types.h"
+
+namespace gfx {
+class PointF;
+}  // namespace gfx
 
 namespace ui {
 
@@ -23,8 +27,7 @@ class CursorDelegateEvdev;
 class DeviceManager;
 
 // Ozone events implementation for the Linux input subsystem ("evdev").
-class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public EventFactoryOzone,
-                                                    public DeviceEventObserver,
+class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
                                                     public PlatformEventSource {
  public:
   EventFactoryEvdev(CursorDelegateEvdev* cursor,
@@ -33,9 +36,8 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public EventFactoryOzone,
 
   void DispatchUiEvent(Event* event);
 
-  // EventFactoryOzone:
-  virtual void WarpCursorTo(gfx::AcceleratedWidget widget,
-                            const gfx::PointF& location) OVERRIDE;
+  void WarpCursorTo(gfx::AcceleratedWidget widget,
+                    const gfx::PointF& location);
 
  private:
   // Open device at path & starting processing events (on UI thread).

@@ -18,7 +18,7 @@
 
 namespace ui {
 
-class CacaEventFactory;
+class CacaEventSource;
 class CacaWindowManager;
 class PlatformWindowDelegate;
 
@@ -30,7 +30,7 @@ class CacaWindow : public PlatformWindow, public PlatformEventDispatcher {
  public:
   CacaWindow(PlatformWindowDelegate* delegate,
              CacaWindowManager* manager,
-             CacaEventFactory* event_factory,
+             CacaEventSource* event_source,
              const gfx::Rect& bounds);
   virtual ~CacaWindow();
 
@@ -74,7 +74,7 @@ class CacaWindow : public PlatformWindow, public PlatformEventDispatcher {
 
   PlatformWindowDelegate* delegate_;
   CacaWindowManager* manager_;
-  CacaEventFactory* event_factory_;
+  CacaEventSource* event_source_;
   gfx::AcceleratedWidget widget_;
 
   ScopedCacaCanvas canvas_;

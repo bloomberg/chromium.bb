@@ -15,7 +15,6 @@ class Rect;
 namespace ui {
 
 class CursorFactoryOzone;
-class EventFactoryOzone;
 class NativeDisplayDelegate;
 class SurfaceFactoryOzone;
 class TouchscreenDeviceManager;
@@ -56,7 +55,6 @@ class OZONE_EXPORT OzonePlatform {
   // injected into the appropriate layer at startup. Subclasses should not
   // inject these objects themselves. Ownership is retained by OzonePlatform.
   virtual ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() = 0;
-  virtual ui::EventFactoryOzone* GetEventFactoryOzone() = 0;
   virtual ui::CursorFactoryOzone* GetCursorFactoryOzone() = 0;
   virtual ui::GpuPlatformSupport* GetGpuPlatformSupport() = 0;
   virtual ui::GpuPlatformSupportHost* GetGpuPlatformSupportHost() = 0;

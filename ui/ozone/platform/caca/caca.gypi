@@ -31,8 +31,8 @@
         ],
       },
       'sources': [
-        'caca_event_factory.cc',
-        'caca_event_factory.h',
+        'caca_event_source.cc',
+        'caca_event_source.h',
         'caca_window.cc',
         'caca_window.h',
         'caca_window_manager.cc',
