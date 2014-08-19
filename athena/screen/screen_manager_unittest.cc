@@ -26,9 +26,9 @@ aura::Window* Create(const std::string& name, int z_order_priority) {
   return ScreenManager::Get()->CreateContainer(params);
 }
 
-aura::Window* CreateTestWindow(aura::Window* container,
-                               aura::WindowDelegate* delegate,
-                               const gfx::Rect& bounds) {
+aura::Window* CreateWindow(aura::Window* container,
+                           aura::WindowDelegate* delegate,
+                           const gfx::Rect& bounds) {
   aura::Window* window = new aura::Window(delegate);
   window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
   window->Init(aura::WINDOW_LAYER_TEXTURED);
@@ -103,8 +103,8 @@ TEST_F(ScreenManagerTest, NonActivatableContainer) {
   aura::Window* activatable_container =
       ScreenManager::Get()->CreateContainer(activatable);
 
-  scoped_ptr<aura::Window> window(CreateTestWindow(
-      no_activatable_container, NULL, gfx::Rect(0, 0, 100, 100)));
+  scoped_ptr<aura::Window> window(
+      CreateWindow(no_activatable_container, NULL, gfx::Rect(0, 0, 100, 100)));
   EXPECT_FALSE(wm::CanActivateWindow(window.get()));
 
   activatable_container->AddChild(window.get());
@@ -119,7 +119,7 @@ TEST_F(ScreenManagerTest, GrabInputContainer) {
       ScreenManager::Get()->CreateContainer(normal_params);
 
   aura::test::EventCountDelegate normal_delegate;
-  scoped_ptr<aura::Window> normal_window(CreateTestWindow(
+  scoped_ptr<aura::Window> normal_window(CreateWindow(
       normal_container, &normal_delegate, gfx::Rect(0, 0, 100, 100)));
 
   EXPECT_TRUE(wm::CanActivateWindow(normal_window.get()));
@@ -142,7 +142,7 @@ TEST_F(ScreenManagerTest, GrabInputContainer) {
   EXPECT_FALSE(wm::CanActivateWindow(normal_window.get()));
 
   aura::test::EventCountDelegate grab_delegate;
-  scoped_ptr<aura::Window> grab_window(CreateTestWindow(
+  scoped_ptr<aura::Window> grab_window(CreateWindow(
       grab_container, &grab_delegate, gfx::Rect(10, 10, 100, 100)));
   EXPECT_TRUE(wm::CanActivateWindow(grab_window.get()));
 
@@ -173,8 +173,8 @@ TEST_F(ScreenManagerTest, GrabShouldNotBlockVirtualKeyboard) {
       ScreenManager::Get()->CreateContainer(grab_params);
 
   aura::test::EventCountDelegate grab_delegate;
-  scoped_ptr<aura::Window> grab_window(CreateTestWindow(
-      grab_container, &grab_delegate, gfx::Rect(0, 0, 100, 100)));
+  scoped_ptr<aura::Window> grab_window(
+      CreateWindow(grab_container, &grab_delegate, gfx::Rect(0, 0, 100, 100)));
   EXPECT_TRUE(wm::CanActivateWindow(grab_window.get()));
 
   // Create a normal container appearing over the |grab_container|. This is
@@ -185,8 +185,8 @@ TEST_F(ScreenManagerTest, GrabShouldNotBlockVirtualKeyboard) {
   aura::Window* vk_container = ScreenManager::Get()->CreateContainer(vk_params);
 
   aura::test::EventCountDelegate vk_delegate;
-  scoped_ptr<aura::Window> vk_window(CreateTestWindow(
-      vk_container, &vk_delegate, gfx::Rect(0, 20, 100, 80)));
+  scoped_ptr<aura::Window> vk_window(
+      CreateWindow(vk_container, &vk_delegate, gfx::Rect(0, 20, 100, 80)));
   EXPECT_TRUE(wm::CanActivateWindow(vk_window.get()));
 
   ui::test::EventGenerator event_generator(root_window());
@@ -204,7 +204,7 @@ TEST_F(ScreenManagerTest, GrabAndMouseCapture) {
       ScreenManager::Get()->CreateContainer(normal_params);
 
   aura::test::EventCountDelegate normal_delegate;
-  scoped_ptr<aura::Window> normal_window(CreateTestWindow(
+  scoped_ptr<aura::Window> normal_window(CreateWindow(
       normal_container, &normal_delegate, gfx::Rect(0, 0, 100, 100)));
 
   ui::test::EventGenerator event_generator(root_window());
@@ -220,7 +220,7 @@ TEST_F(ScreenManagerTest, GrabAndMouseCapture) {
       ScreenManager::Get()->CreateContainer(grab_params);
 
   aura::test::EventCountDelegate grab_delegate;
-  scoped_ptr<aura::Window> grab_window(CreateTestWindow(
+  scoped_ptr<aura::Window> grab_window(CreateWindow(
       grab_container, &grab_delegate, gfx::Rect(10, 10, 100, 100)));
 
   // Release event should be sent to |normal_window| because it captures the

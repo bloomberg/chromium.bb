@@ -192,6 +192,8 @@ void WindowManagerImpl::InstallAccelerators() {
   const AcceleratorData accelerator_data[] = {
       {TRIGGER_ON_PRESS, ui::VKEY_F6, ui::EF_NONE, CMD_TOGGLE_OVERVIEW,
        AF_NONE},
+      {TRIGGER_ON_PRESS, ui::VKEY_F6, ui::EF_CONTROL_DOWN,
+       CMD_TOGGLE_SPLIT_VIEW, AF_NONE},
   };
   AcceleratorManager::Get()->RegisterAccelerators(
       accelerator_data, arraysize(accelerator_data), this);
@@ -217,6 +219,8 @@ void WindowManagerImpl::OnSplitViewMode(aura::Window* left,
 }
 
 void WindowManagerImpl::OnWindowAdded(aura::Window* new_window) {
+  // TODO(oshima): Creating a new window should updates the ovewview mode
+  // instead of exitting.
   if (new_window->type() == ui::wm::WINDOW_TYPE_NORMAL)
     SetInOverview(false);
 }
@@ -236,8 +240,25 @@ bool WindowManagerImpl::OnAcceleratorFired(int command_id,
     case CMD_TOGGLE_OVERVIEW:
       ToggleOverview();
       break;
+    case CMD_TOGGLE_SPLIT_VIEW:
+      ToggleSplitview();
+      break;
   }
   return true;
+}
+
+void WindowManagerImpl::ToggleSplitview() {
+  // TODO(oshima): Figure out what to do.
+  if (IsOverviewModeActive())
+    return;
+
+  if (split_view_controller_->IsSplitViewModeActive()) {
+    split_view_controller_->DeactivateSplitMode();
+    // Relayout so that windows are maximzied.
+    container_->layout_manager()->OnWindowResized();
+  } else if (window_list_provider_->GetWindowList().size() > 1) {
+    split_view_controller_->ActivateSplitMode(NULL, NULL);
+  }
 }
 
 aura::Window* WindowManagerImpl::GetWindowBehind(aura::Window* window) {

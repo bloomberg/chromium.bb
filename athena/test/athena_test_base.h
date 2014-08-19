@@ -12,6 +12,7 @@
 
 namespace aura {
 class Window;
+class WindowDelegate;
 }
 
 namespace athena {
@@ -29,6 +30,9 @@ class AthenaTestBase : public testing::Test {
 
  protected:
   void RunAllPendingInMessageLoop();
+
+  scoped_ptr<aura::Window> CreateTestWindow(aura::WindowDelegate* delegate,
+                                            const gfx::Rect& bounds);
 
   aura::Window* root_window() { return helper_->root_window(); }
   aura::WindowTreeHost* host() { return helper_->host(); }

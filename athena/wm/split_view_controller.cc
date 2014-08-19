@@ -163,6 +163,9 @@ void SplitViewController::SetWindowTransform(aura::Window* window,
 }
 
 void SplitViewController::OnAnimationCompleted(aura::Window* window) {
+  // Animation can be cancelled when deactivated.
+  if (left_window_ == NULL)
+    return;
   DCHECK(window == left_window_ || window == right_window_);
   if (state_ == ACTIVE) {
     gfx::Rect window_bounds = gfx::Rect(container_->bounds().size());

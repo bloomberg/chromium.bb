@@ -44,10 +44,13 @@ class WindowManagerImpl : public WindowManager,
 
   enum Command {
     CMD_TOGGLE_OVERVIEW,
+    CMD_TOGGLE_SPLIT_VIEW,
   };
 
   // Sets whether overview mode is active.
   void SetInOverview(bool active);
+
+  void ToggleSplitview();
 
   void InstallAccelerators();
 

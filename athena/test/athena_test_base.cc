@@ -4,8 +4,11 @@
 
 #include "athena/test/athena_test_base.h"
 
+#include "athena/screen/public/screen_manager.h"
 #include "athena/test/athena_test_helper.h"
+#include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/test/event_generator_delegate_aura.h"
+#include "ui/aura/window.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 
 #if defined(USE_X11)
@@ -57,6 +60,17 @@ void AthenaTestBase::TearDown() {
 
 void AthenaTestBase::RunAllPendingInMessageLoop() {
   helper_->RunAllPendingInMessageLoop();
+}
+
+scoped_ptr<aura::Window> AthenaTestBase::CreateTestWindow(
+    aura::WindowDelegate* delegate,
+    const gfx::Rect& bounds) {
+  scoped_ptr<aura::Window> window(new aura::Window(delegate));
+  window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
+  window->Init(aura::WINDOW_LAYER_SOLID_COLOR);
+  aura::client::ParentWindowWithContext(
+      window.get(), ScreenManager::Get()->GetContext(), bounds);
+  return window.Pass();
 }
 
 }  // namespace test
