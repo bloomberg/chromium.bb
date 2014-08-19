@@ -83,6 +83,21 @@ describe('ct-failure-group', function() {
         });
       });
     });
+
+    it('remove bug link should work', function(done) {
+      group.setBug(123);
+      card.shadowRoot.getElementById('link-bug').dispatchEvent(new CustomEvent('tap'));
+      setTimeout(function() {
+        var dialog = card.shadowRoot.getElementById('bugDialog');
+        assert.isTrue(dialog.opened);
+        card.shadowRoot.getElementById('dialogRemoveBug').dispatchEvent(new CustomEvent('tap'));
+        setTimeout(function() {
+          assert.isUndefined(group.bug);
+          assert.isUndefined(group.bugLabel);
+          setTimeout(done);
+        });
+      });
+    });
   });
 
 });

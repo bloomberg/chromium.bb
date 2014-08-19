@@ -38,6 +38,12 @@ CTFailureGroup.prototype.setBug = function(bug) {
   });
 };
 
+CTFailureGroup.prototype.clearBug = function(bug) {
+  return this._annotate({
+    bug: undefined,
+  });
+};
+
 CTFailureGroup.prototype._computeProperties = function() {
   this.isSnoozed = Date.now() < this._annotation.snoozeTime;
   if (this.isSnoozed) {

@@ -73,6 +73,20 @@ describe('ct-failure-group', function() {
     });
   });
 
+  describe('clearBug', function() {
+    it('should work', function(done) {
+      var group = new CTFailureGroup('key', []);
+      group.setBug('123').then(function() {
+        group.clearBug().then(function() {
+          assert.isUndefined(group.bug);
+          assert.isUndefined(group.bugLabel);
+          assert.notProperty(group._annotation, 'bug');
+          done();
+        });
+      });
+    });
+  });
+
   describe('annotations', function() {
     it('should have sensible defaults', function() {
       var group = new CTFailureGroup('key', []);
