@@ -12,7 +12,7 @@ var test = function()
             {
                 InspectorTest.addResult("    key1 : " + map.get(key1));
                 InspectorTest.addResult("    key2 : " + map.get(key2));
-                InspectorTest.addResult("    size : " + map.size());
+                InspectorTest.addResult("    size : " + map.size);
             }
 
             function dumpMaps(map1, map2, key1, key2)
@@ -34,22 +34,22 @@ var test = function()
 
             dumpMaps(map1, map2, key1, key2);
 
-            map1.put(key1, value2);
+            map1.set(key1, value2);
             dumpMaps(map1, map2, key1, key2);
 
-            map1.put(key1, value1);
+            map1.set(key1, value1);
             dumpMaps(map1, map2, key1, key2);
 
-            map2.put(key1, value1);
+            map2.set(key1, value1);
             dumpMaps(map1, map2, key1, key2);
 
-            map2.put(key1, value2);
+            map2.set(key1, value2);
             dumpMaps(map1, map2, key1, key2);
 
-            map1.put(key2, value2);
+            map1.set(key2, value2);
             dumpMaps(map1, map2, key1, key2);
 
-            map2.put(key2, value1);
+            map2.set(key2, value1);
             dumpMaps(map1, map2, key1, key2);
 
             map1.remove(key2);
@@ -145,7 +145,7 @@ var test = function()
                     values.splice(indexOf, 1);
                     InspectorTest.addResult("    " + key + " => " + value);
                 }
-                InspectorTest.addResult("    size: " + map.size());
+                InspectorTest.addResult("    size: " + map.size);
                 InspectorTest.assertTrue(!values.length, "values is not empty after deleting value for each key: [" + values + "]");
             }
 
@@ -157,12 +157,12 @@ var test = function()
             dumpStringMap(map);
 
             for (var i = 0; i < keys.length; ++i) {
-                map.put(keys[i], i+1);
+                map.set(keys[i], i+1);
                 dumpStringMap(map);
             }
 
             for (var i = 0; i < keys.length; ++i) {
-                map.put(keys[i], 42);
+                map.set(keys[i], 42);
                 dumpStringMap(map);
             }
 
