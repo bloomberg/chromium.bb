@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "content/browser/geolocation/wifi_data_provider_common.h"
+#include "content/browser/geolocation/wifi_data_provider_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -67,13 +68,13 @@ class MessageLoopQuitter {
     CHECK(message_loop_to_quit_ != NULL);
   }
 
-  void OnWifiDataUpdate(WifiDataProvider* provider) {
+  void OnWifiDataUpdate(WifiDataProviderManager* manager) {
     // Provider should call back on client's thread.
     EXPECT_EQ(base::MessageLoop::current(), message_loop_to_quit_);
     message_loop_to_quit_->QuitNow();
   }
   base::MessageLoop* message_loop_to_quit_;
-  WifiDataProvider::WifiDataUpdateCallback callback_;
+  WifiDataProviderManager::WifiDataUpdateCallback callback_;
 };
 
 class WifiDataProviderCommonWithMock : public WifiDataProviderCommon {
@@ -101,7 +102,7 @@ class WifiDataProviderCommonWithMock : public WifiDataProviderCommon {
   DISALLOW_COPY_AND_ASSIGN(WifiDataProviderCommonWithMock);
 };
 
-WifiDataProviderImplBase* CreateWifiDataProviderCommonWithMock() {
+WifiDataProvider* CreateWifiDataProviderCommonWithMock() {
   return new WifiDataProviderCommonWithMock;
 }
 
@@ -218,11 +219,11 @@ TEST_F(GeolocationWifiDataProviderCommonTest, DoScanWithResults) {
 
 TEST_F(GeolocationWifiDataProviderCommonTest, RegisterUnregister) {
   MessageLoopQuitter loop_quitter(&main_message_loop_);
-  WifiDataProvider::SetFactory(CreateWifiDataProviderCommonWithMock);
-  WifiDataProvider::Register(&loop_quitter.callback_);
+  WifiDataProviderManager::SetFactory(CreateWifiDataProviderCommonWithMock);
+  WifiDataProviderManager::Register(&loop_quitter.callback_);
   main_message_loop_.Run();
-  WifiDataProvider::Unregister(&loop_quitter.callback_);
-  WifiDataProvider::ResetFactory();
+  WifiDataProviderManager::Unregister(&loop_quitter.callback_);
+  WifiDataProviderManager::ResetFactory();
 }
 
 }  // namespace content

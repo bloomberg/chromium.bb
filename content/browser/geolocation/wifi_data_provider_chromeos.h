@@ -11,12 +11,11 @@
 
 namespace content {
 
-class CONTENT_EXPORT WifiDataProviderChromeOs
-    : public WifiDataProviderImplBase {
+class CONTENT_EXPORT WifiDataProviderChromeOs : public WifiDataProvider {
  public:
   WifiDataProviderChromeOs();
 
-  // WifiDataProviderImplBase
+  // WifiDataProvider
   virtual void StartDataProvider() OVERRIDE;
   virtual void StopDataProvider() OVERRIDE;
   virtual bool GetData(WifiData* data) OVERRIDE;

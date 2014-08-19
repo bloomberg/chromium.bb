@@ -4,6 +4,8 @@
 
 #include "content/browser/geolocation/empty_wifi_data_provider.h"
 
+#include "content/browser/geolocation/wifi_data_provider_manager.h"
+
 namespace content {
 
 EmptyWifiDataProvider::EmptyWifiDataProvider() {
@@ -19,7 +21,7 @@ bool EmptyWifiDataProvider::GetData(WifiData* data) {
 }
 
 // static
-WifiDataProviderImplBase* WifiDataProvider::DefaultFactoryFunction() {
+WifiDataProvider* WifiDataProviderManager::DefaultFactoryFunction() {
   return new EmptyWifiDataProvider();
 }
 

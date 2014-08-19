@@ -32,6 +32,7 @@
 #include "base/win/windows_version.h"
 #include "content/browser/geolocation/wifi_data_provider_common.h"
 #include "content/browser/geolocation/wifi_data_provider_common_win.h"
+#include "content/browser/geolocation/wifi_data_provider_manager.h"
 
 // Taken from ndis.h for WinCE.
 #define NDIS_STATUS_INVALID_LENGTH   ((NDIS_STATUS)0xC0010014L)
@@ -159,7 +160,7 @@ bool ResizeBuffer(int requested_size,
 bool GetSystemDirectory(base::string16* path);
 }  // namespace
 
-WifiDataProviderImplBase* WifiDataProvider::DefaultFactoryFunction() {
+WifiDataProvider* WifiDataProviderManager::DefaultFactoryFunction() {
   return new WifiDataProviderWin();
 }
 

@@ -13,6 +13,7 @@
 #include "content/browser/geolocation/fake_access_token_store.h"
 #include "content/browser/geolocation/location_arbitrator_impl.h"
 #include "content/browser/geolocation/network_location_provider.h"
+#include "content/browser/geolocation/wifi_data_provider.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -46,29 +47,25 @@ class MessageLoopQuitListener {
   const LocationProvider* updated_provider_;
 };
 
-// A mock implementation of WifiDataProviderImplBase for testing. Adapted from
+// A mock implementation of WifiDataProvider for testing. Adapted from
 // http://gears.googlecode.com/svn/trunk/gears/geolocation/geolocation_test.cc
-class MockWifiDataProviderImpl : public WifiDataProviderImplBase {
+class MockWifiDataProvider : public WifiDataProvider {
  public:
   // Factory method for use with WifiDataProvider::SetFactory.
-  static WifiDataProviderImplBase* GetInstance() {
+  static WifiDataProvider* GetInstance() {
     CHECK(instance_);
     return instance_;
   }
 
-  static MockWifiDataProviderImpl* CreateInstance() {
+  static MockWifiDataProvider* CreateInstance() {
     CHECK(!instance_);
-    instance_ = new MockWifiDataProviderImpl;
+    instance_ = new MockWifiDataProvider;
     return instance_;
   }
 
-  MockWifiDataProviderImpl()
-      : start_calls_(0),
-        stop_calls_(0),
-        got_data_(true) {
-  }
+  MockWifiDataProvider() : start_calls_(0), stop_calls_(0), got_data_(true) {}
 
-  // WifiDataProviderImplBase implementation.
+  // WifiDataProvider implementation.
   virtual void StartDataProvider() OVERRIDE {
     ++start_calls_;
   }
@@ -96,20 +93,20 @@ class MockWifiDataProviderImpl : public WifiDataProviderImplBase {
   int stop_calls_;
 
  private:
-  virtual ~MockWifiDataProviderImpl() {
+  virtual ~MockWifiDataProvider() {
     CHECK(this == instance_);
     instance_ = NULL;
   }
 
-  static MockWifiDataProviderImpl* instance_;
+  static MockWifiDataProvider* instance_;
 
   WifiData data_;
   bool got_data_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockWifiDataProviderImpl);
+  DISALLOW_COPY_AND_ASSIGN(MockWifiDataProvider);
 };
 
-MockWifiDataProviderImpl* MockWifiDataProviderImpl::instance_ = NULL;
+MockWifiDataProvider* MockWifiDataProvider::instance_ = NULL;
 
 // Main test fixture
 class GeolocationNetworkProviderTest : public testing::Test {
@@ -117,13 +114,10 @@ class GeolocationNetworkProviderTest : public testing::Test {
   virtual void SetUp() {
     test_server_url_ = GURL(kTestServerUrl);
     access_token_store_ = new FakeAccessTokenStore;
-    wifi_data_provider_ =
-        MockWifiDataProviderImpl::CreateInstance();
+    wifi_data_provider_ = MockWifiDataProvider::CreateInstance();
   }
 
-  virtual void TearDown() {
-    WifiDataProvider::ResetFactory();
-  }
+  virtual void TearDown() { WifiDataProviderManager::ResetFactory(); }
 
   LocationProvider* CreateProvider(bool set_permission_granted) {
     LocationProvider* provider = NewNetworkLocationProvider(
@@ -140,7 +134,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
   GeolocationNetworkProviderTest() {
     // TODO(joth): Really these should be in SetUp, not here, but they take no
     // effect on Mac OS Release builds if done there. I kid not. Figure out why.
-    WifiDataProvider::SetFactory(MockWifiDataProviderImpl::GetInstance);
+    WifiDataProviderManager::SetFactory(MockWifiDataProvider::GetInstance);
   }
 
   // Returns the current url fetcher (if any) and advances the id ready for the
@@ -321,7 +315,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
   base::MessageLoop main_message_loop_;
   scoped_refptr<FakeAccessTokenStore> access_token_store_;
   net::TestURLFetcherFactory url_fetcher_factory_;
-  scoped_refptr<MockWifiDataProviderImpl> wifi_data_provider_;
+  scoped_refptr<MockWifiDataProvider> wifi_data_provider_;
 };
 
 TEST_F(GeolocationNetworkProviderTest, CreateDestroy) {

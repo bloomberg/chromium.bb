@@ -108,7 +108,7 @@ NetworkLocationProvider::NetworkLocationProvider(
     const GURL& url,
     const base::string16& access_token)
     : access_token_store_(access_token_store),
-      wifi_data_provider_(NULL),
+      wifi_data_provider_manager_(NULL),
       wifi_data_update_callback_(
           base::Bind(&NetworkLocationProvider::OnWifiDataUpdate,
                      base::Unretained(this))),
@@ -154,9 +154,10 @@ void NetworkLocationProvider::OnPermissionGranted() {
   }
 }
 
-void NetworkLocationProvider::OnWifiDataUpdate(WifiDataProvider* provider) {
-  DCHECK(provider == wifi_data_provider_);
-  is_wifi_data_complete_ = wifi_data_provider_->GetData(&wifi_data_);
+void NetworkLocationProvider::OnWifiDataUpdate(
+    WifiDataProviderManager* manager) {
+  DCHECK(manager == wifi_data_provider_manager_);
+  is_wifi_data_complete_ = wifi_data_provider_manager_->GetData(&wifi_data_);
   OnWifiDataUpdated();
 }
 
@@ -186,7 +187,7 @@ bool NetworkLocationProvider::StartProvider(bool high_accuracy) {
   DCHECK(CalledOnValidThread());
   if (IsStarted())
     return true;
-  DCHECK(wifi_data_provider_ == NULL);
+  DCHECK(wifi_data_provider_manager_ == NULL);
   if (!request_->url().is_valid()) {
     LOG(WARNING) << "StartProvider() : Failed, Bad URL: "
                  << request_->url().possibly_invalid_spec();
@@ -196,7 +197,8 @@ bool NetworkLocationProvider::StartProvider(bool high_accuracy) {
   // Registers a callback with the data provider. The first call to Register
   // will create a singleton data provider and it will be deleted when the last
   // callback is removed with Unregister.
-  wifi_data_provider_ = WifiDataProvider::Register(&wifi_data_update_callback_);
+  wifi_data_provider_manager_ =
+      WifiDataProviderManager::Register(&wifi_data_update_callback_);
 
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
@@ -204,7 +206,7 @@ bool NetworkLocationProvider::StartProvider(bool high_accuracy) {
                  weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(kDataCompleteWaitSeconds));
   // Get the wifi data.
-  is_wifi_data_complete_ = wifi_data_provider_->GetData(&wifi_data_);
+  is_wifi_data_complete_ = wifi_data_provider_manager_->GetData(&wifi_data_);
   if (is_wifi_data_complete_)
     OnWifiDataUpdated();
   return true;
@@ -221,9 +223,9 @@ void NetworkLocationProvider::OnWifiDataUpdated() {
 void NetworkLocationProvider::StopProvider() {
   DCHECK(CalledOnValidThread());
   if (IsStarted()) {
-    wifi_data_provider_->Unregister(&wifi_data_update_callback_);
+    wifi_data_provider_manager_->Unregister(&wifi_data_update_callback_);
   }
-  wifi_data_provider_ = NULL;
+  wifi_data_provider_manager_ = NULL;
   weak_factory_.InvalidateWeakPtrs();
 }
 
@@ -269,7 +271,7 @@ void NetworkLocationProvider::RequestPosition() {
 }
 
 bool NetworkLocationProvider::IsStarted() const {
-  return wifi_data_provider_ != NULL;
+  return wifi_data_provider_manager_ != NULL;
 }
 
 }  // namespace content

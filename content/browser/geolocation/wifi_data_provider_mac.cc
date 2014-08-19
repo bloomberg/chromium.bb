@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/geolocation/osx_wifi.h"
 #include "content/browser/geolocation/wifi_data_provider_common.h"
+#include "content/browser/geolocation/wifi_data_provider_manager.h"
 
 namespace content {
 namespace {
@@ -159,7 +160,7 @@ bool Apple80211Api::GetAccessPointData(WifiData::AccessPointDataSet* data) {
 }  // namespace
 
 // static
-WifiDataProviderImplBase* WifiDataProvider::DefaultFactoryFunction() {
+WifiDataProvider* WifiDataProviderManager::DefaultFactoryFunction() {
   return new WifiDataProviderMac();
 }
 

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/network/geolocation_handler.h"
+#include "content/browser/geolocation/wifi_data_provider_manager.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
@@ -166,7 +167,7 @@ bool WifiDataProviderChromeOs::GetAccessPointData(
 }
 
 // static
-WifiDataProviderImplBase* WifiDataProvider::DefaultFactoryFunction() {
+WifiDataProvider* WifiDataProviderManager::DefaultFactoryFunction() {
   return new WifiDataProviderChromeOs();
 }
 

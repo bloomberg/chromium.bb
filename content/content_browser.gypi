@@ -683,6 +683,8 @@
       'browser/geolocation/wifi_data_provider_linux.h',
       'browser/geolocation/wifi_data_provider_mac.cc',
       'browser/geolocation/wifi_data_provider_mac.h',
+      'browser/geolocation/wifi_data_provider_manager.cc',
+      'browser/geolocation/wifi_data_provider_manager.h',
       'browser/geolocation/wifi_data_provider_win.cc',
       'browser/geolocation/wifi_data_provider_win.h',
       'browser/geolocation/wifi_polling_policy.h',
