@@ -48,13 +48,6 @@
 
 namespace chrome_pdf {
 
-// URL reference parameters.
-// For more possible parameters, see RFC 3778 and the "PDF Open Parameters"
-// document from Adobe.
-const char kDelimiters[] = "#&";
-const char kNamedDest[] = "nameddest";
-const char kPage[] = "page";
-
 const char kChromePrint[] = "chrome://print/";
 const char kChromeExtension[] =
     "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai";
@@ -1073,11 +1066,7 @@ void OutOfProcessInstance::DocumentLoadComplete(int page_count) {
 
   // Note: If we are in print preview mode the scroll location is retained
   // across document loads so we don't want to scroll again and override it.
-  if (!IsPrintPreview()) {
-    int initial_page = GetInitialPage(url_);
-    if (initial_page >= 0)
-      ScrollToPage(initial_page);
-  } else {
+  if (IsPrintPreview()) {
     AppendBlankPrintPreviewPages();
     OnGeometryChanged(0, 0);
   }
@@ -1302,49 +1291,6 @@ pp::URLLoader OutOfProcessInstance::CreateURLLoaderInternal() {
   if (trusted_interface)
     trusted_interface->GrantUniversalAccess(loader.pp_resource());
   return loader;
-}
-
-int OutOfProcessInstance::GetInitialPage(const std::string& url) {
-  size_t found_idx = url.find('#');
-  if (found_idx == std::string::npos)
-    return -1;
-
-  const std::string& ref = url.substr(found_idx + 1);
-  std::vector<std::string> fragments;
-  Tokenize(ref, kDelimiters, &fragments);
-
-  // Page number to return, zero-based.
-  int page = -1;
-
-  // Handle the case of http://foo.com/bar#NAMEDDEST. This is not explicitly
-  // mentioned except by example in the Adobe "PDF Open Parameters" document.
-  if ((fragments.size() == 1) && (fragments[0].find('=') == std::string::npos))
-    return engine_->GetNamedDestinationPage(fragments[0]);
-
-  for (size_t i = 0; i < fragments.size(); ++i) {
-    std::vector<std::string> key_value;
-    base::SplitString(fragments[i], '=', &key_value);
-    if (key_value.size() != 2)
-      continue;
-    const std::string& key = key_value[0];
-    const std::string& value = key_value[1];
-
-    if (base::strcasecmp(kPage, key.c_str()) == 0) {
-      // |page_value| is 1-based.
-      int page_value = -1;
-      if (base::StringToInt(value, &page_value) && page_value > 0)
-        page = page_value - 1;
-      continue;
-    }
-    if (base::strcasecmp(kNamedDest, key.c_str()) == 0) {
-      // |page_value| is 0-based.
-      int page_value = engine_->GetNamedDestinationPage(value);
-      if (page_value >= 0)
-        page = page_value;
-      continue;
-    }
-  }
-  return page;
 }
 
 void OutOfProcessInstance::SetZoom(double scale) {
