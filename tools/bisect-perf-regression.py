@@ -1851,7 +1851,7 @@ class BisectPerformanceMetrics(object):
       True if successful.
     """
     if self.opts.target_platform == 'android':
-      if not bisect_utils.SetupAndroidBuildEnvironment(self.opts,
+      if not builder.SetupAndroidBuildEnvironment(self.opts,
           path_to_src=self.src_cwd):
         return False
 
