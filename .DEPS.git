@@ -15,7 +15,7 @@ vars = {
     'openssl_revision':
          '284247',
     'webkit_rev':
-         '@51acb8481e4d12dbca0ae7f77b9ece7ea4198922',
+         '@74c7f7df889d06bdd7006922d6152a67a7be378c',
     'skia_git':
          'https://skia.googlesource.com',
     'libphonenumber_revision':
@@ -27,7 +27,7 @@ vars = {
     'googlecode_url':
          'http://%s.googlecode.com/svn',
     'webkit_revision':
-         '180549',
+         '180600',
     'libvpx_revision':
          '290056',
     'openmax_dl_revision':
