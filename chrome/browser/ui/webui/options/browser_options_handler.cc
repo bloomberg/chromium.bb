@@ -169,9 +169,7 @@ BrowserOptionsHandler::BrowserOptionsHandler()
       cloud_print_mdns_ui_enabled_(false),
       signin_observer_(this),
       weak_ptr_factory_(this) {
-#if !defined(OS_MACOSX)
   default_browser_worker_ = new ShellIntegration::DefaultBrowserWorker(this);
-#endif
 
 #if defined(ENABLE_SERVICE_DISCOVERY)
   cloud_print_mdns_ui_enabled_ = true;
@@ -1035,21 +1033,7 @@ bool BrowserOptionsHandler::ShouldAllowAdvancedSettings() {
 }
 
 void BrowserOptionsHandler::UpdateDefaultBrowserState() {
-#if defined(OS_MACOSX)
-  ShellIntegration::DefaultWebClientState state =
-      ShellIntegration::GetDefaultBrowser();
-  int status_string_id;
-  if (state == ShellIntegration::IS_DEFAULT)
-    status_string_id = IDS_OPTIONS_DEFAULTBROWSER_DEFAULT;
-  else if (state == ShellIntegration::NOT_DEFAULT)
-    status_string_id = IDS_OPTIONS_DEFAULTBROWSER_NOTDEFAULT;
-  else
-    status_string_id = IDS_OPTIONS_DEFAULTBROWSER_UNKNOWN;
-
-  SetDefaultBrowserUIString(status_string_id);
-#else
   default_browser_worker_->StartCheckIsDefault();
-#endif
 }
 
 void BrowserOptionsHandler::BecomeDefaultBrowser(const base::ListValue* args) {
@@ -1059,13 +1043,8 @@ void BrowserOptionsHandler::BecomeDefaultBrowser(const base::ListValue* args) {
     return;
 
   content::RecordAction(UserMetricsAction("Options_SetAsDefaultBrowser"));
-#if defined(OS_MACOSX)
-  if (ShellIntegration::SetAsDefaultBrowser())
-    UpdateDefaultBrowserState();
-#else
   default_browser_worker_->StartSetAsDefault();
   // Callback takes care of updating UI.
-#endif
 
   // If the user attempted to make Chrome the default browser, then he/she
   // arguably wants to be notified when that changes.
