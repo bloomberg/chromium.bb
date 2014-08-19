@@ -873,7 +873,7 @@ void HTMLDocumentParser::finish()
     // However, FrameLoader::stop calls DocumentParser::finish unconditionally.
 
     // flush may ending up executing arbitrary script, and possibly detach the parser.
-    RefPtr<HTMLDocumentParser> protect(this);
+    RefPtrWillBeRawPtr<HTMLDocumentParser> protect(this);
     flush();
     if (isDetached())
         return;
