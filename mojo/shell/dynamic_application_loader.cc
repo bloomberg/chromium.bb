@@ -149,8 +149,11 @@ void DynamicApplicationLoader::RunLibrary(
   // app, then shell will never shut down, because no runners are ever
   // destroyed.
   scoped_ptr<DynamicServiceRunner> runner(runner_factory_->Create(context_));
-  if (!path_exists)
+  if (!path_exists) {
+    DVLOG(1) << "Library not started because library path '"
+             << path.value() << "' does not exist.";
     return;
+  }
 
   ScopedMessagePipeHandle shell_handle = callbacks->RegisterApplication();
   if (!shell_handle.is_valid())
