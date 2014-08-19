@@ -34,11 +34,11 @@ function test()
             else if (record.type() === WebInspector.TimelineModel.RecordType.ParseHTML) {
                 var children = [];
                 var skipCategories = { rendering: true, painting: true };
+                var uiUtils = WebInspector.panels.timeline._uiUtils;
                 for (var i = 0; i < record.children().length; ++i) {
-                    var modelRecord = new WebInspector.TimelineModel.RecordImpl(WebInspector.panels.timeline._model, record.children()[i], null);
-                    var uiUtils = WebInspector.panels.timeline._uiUtils;
-                    if (!skipCategories[uiUtils.categoryForRecord(modelRecord).name])
-                        children.push(record.children()[i]);
+                    var child = record.children()[i];
+                    if (!skipCategories[uiUtils.categoryForRecord(child).name])
+                        children.push(child);
                 }
                 record._children = children;
                 InspectorTest.dumpTimelineRecord(record, undefined, undefined, [
