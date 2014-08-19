@@ -1778,6 +1778,8 @@ def CMDsync(parser, args):
                     help='Clone git "branch_heads" refspecs in addition to '
                          'the default refspecs. This adds about 1/2GB to a '
                          'full checkout. (git only)')
+  parser.add_option('--with_tags', action='store_true',
+                    help='Clone git tags in addition to the default refspecs.')
   parser.add_option('-t', '--transitive', action='store_true',
                     help='When a revision is specified (in the DEPS file or '
                           'with the command-line flag), transitively update '

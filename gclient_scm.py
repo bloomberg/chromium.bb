@@ -785,6 +785,8 @@ class GitWrapper(SCMWrapper):
     #  mirror_kwargs['refs'].extend(['refs/tags/lkgr', 'refs/tags/lkcr'])
     if hasattr(options, 'with_branch_heads') and options.with_branch_heads:
       mirror_kwargs['refs'].append('refs/branch-heads/*')
+    if hasattr(options, 'with_tags') and options.with_tags:
+      mirror_kwargs['refs'].append('refs/tags/*')
     return git_cache.Mirror(url, **mirror_kwargs)
 
   @staticmethod
@@ -1075,14 +1077,23 @@ class GitWrapper(SCMWrapper):
     return self._Capture(['rev-parse', '--verify', 'FETCH_HEAD'])
 
   def _UpdateBranchHeads(self, options, fetch=False):
-    """Adds, and optionally fetches, "branch-heads" refspecs if requested."""
+    """Adds, and optionally fetches, "branch-heads" and "tags" refspecs
+    if requested."""
+    need_fetch = fetch
     if hasattr(options, 'with_branch_heads') and options.with_branch_heads:
       config_cmd = ['config', 'remote.%s.fetch' % self.remote,
                     '+refs/branch-heads/*:refs/remotes/branch-heads/*',
                     '^\\+refs/branch-heads/\\*:.*$']
       self._Run(config_cmd, options)
-      if fetch:
-        self._Fetch(options)
+      need_fetch = True
+    if hasattr(options, 'with_tags') and options.with_tags:
+      config_cmd = ['config', 'remote.%s.fetch' % self.remote,
+                    '+refs/tags/*:refs/tags/*',
+                    '^\\+refs/tags/\\*:.*$']
+      self._Run(config_cmd, options)
+      need_fetch = True
+    if fetch and need_fetch:
+      self._Fetch(options)
 
   def _Run(self, args, options, show_header=True, **kwargs):
     # Disable 'unused options' warning | pylint: disable=W0613
