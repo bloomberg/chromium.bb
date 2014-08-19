@@ -278,8 +278,7 @@ void LabelButton::Layout() {
   // avoids wasted space within the label that would look like awkward padding.
   // Labels can paint over the full button height, including the border height.
   gfx::Size label_size(child_area.width(), height());
-  const bool image_and_label = !image_size.IsEmpty() && !label_size.IsEmpty();
-  if (image_and_label) {
+  if (!image_size.IsEmpty() && !label_size.IsEmpty()) {
     label_size.set_width(std::max(child_area.width() -
         image_size.width() - image_label_spacing_, 0));
     if (adjusted_alignment == gfx::ALIGN_CENTER) {
@@ -292,8 +291,10 @@ void LabelButton::Layout() {
   gfx::Point image_origin(child_area.origin());
   image_origin.Offset(0, (child_area.height() - image_size.height()) / 2);
   if (adjusted_alignment == gfx::ALIGN_CENTER) {
+    const int spacing = (image_size.width() > 0 && label_size.width() > 0) ?
+        image_label_spacing_ : 0;
     const int total_width = image_size.width() + label_size.width() +
-        (image_and_label ? image_label_spacing_ : 0);
+        spacing;
     image_origin.Offset((child_area.width() - total_width) / 2, 0);
   } else if (adjusted_alignment == gfx::ALIGN_RIGHT) {
     image_origin.Offset(child_area.width() - image_size.width(), 0);
