@@ -62,7 +62,7 @@ Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 
 import abc
 
-from idl_types import IdlType, IdlUnionType, IdlArrayType, IdlSequenceType
+from idl_types import IdlType, IdlUnionType, IdlArrayType, IdlSequenceType, IdlNullableType
 
 SPECIAL_KEYWORD_LIST = ['GETTER', 'SETTER', 'DELETER']
 STANDARD_TYPEDEFS = {
@@ -755,23 +755,25 @@ def type_node_to_type(node):
     if len(children) < 1 or len(children) > 2:
         raise ValueError('Type node expects 1 or 2 children (type + optional array []), got %s (multi-dimensional arrays are not supported).' % len(children))
 
-    is_nullable = node.GetProperty('NULLABLE') or False  # syntax: T?
-    type_node_child = children[0]
-    base_type = type_node_inner_to_type(type_node_child, is_nullable=is_nullable)
+    base_type = type_node_inner_to_type(children[0])
+
+    if node.GetProperty('NULLABLE'):
+        base_type = IdlNullableType(base_type)
 
     if len(children) == 2:
         array_node = children[1]
         array_node_class = array_node.GetClass()
         if array_node_class != 'Array':
             raise ValueError('Expected Array node as TypeSuffix, got %s node.' % array_node_class)
-        array_is_nullable = array_node.GetProperty('NULLABLE') or False
-        return IdlArrayType(base_type, is_nullable=array_is_nullable)
+        array_type = IdlArrayType(base_type)
+        if array_node.GetProperty('NULLABLE'):
+            return IdlNullableType(array_type)
+        return array_type
 
     return base_type
 
 
-def type_node_inner_to_type(node, is_nullable=False):
-    # FIXME: remove is_nullable once have IdlNullableType
+def type_node_inner_to_type(node):
     node_class = node.GetClass()
     # Note Type*r*ef, not Typedef, meaning the type is an identifier, thus
     # either a typedef shorthand (but not a Typedef declaration itself) or an
@@ -779,18 +781,17 @@ def type_node_inner_to_type(node, is_nullable=False):
     if node_class in ['PrimitiveType', 'Typeref']:
         # unrestricted syntax: unrestricted double | unrestricted float
         is_unrestricted = node.GetProperty('UNRESTRICTED') or False
-        return IdlType(node.GetName(), is_nullable=is_nullable, is_unrestricted=is_unrestricted)
+        return IdlType(node.GetName(), is_unrestricted=is_unrestricted)
     elif node_class == 'Any':
-        return IdlType('any', is_nullable=is_nullable)
+        return IdlType('any')
     elif node_class == 'Sequence':
-        sequence_is_nullable = node.GetProperty('NULLABLE') or False
-        return sequence_node_to_type(node, is_nullable=sequence_is_nullable)
+        return sequence_node_to_type(node)
     elif node_class == 'UnionType':
-        return union_type_node_to_idl_union_type(node, is_nullable=is_nullable)
+        return union_type_node_to_idl_union_type(node)
     raise ValueError('Unrecognized node class: %s' % node_class)
 
 
-def sequence_node_to_type(node, is_nullable=False):
+def sequence_node_to_type(node):
     children = node.GetChildren()
     if len(children) != 1:
         raise ValueError('Sequence node expects exactly 1 child, got %s' % len(children))
@@ -799,7 +800,10 @@ def sequence_node_to_type(node, is_nullable=False):
     if sequence_child_class != 'Type':
         raise ValueError('Unrecognized node class: %s' % sequence_child_class)
     element_type = type_node_to_type(sequence_child)
-    return IdlSequenceType(element_type, is_nullable=is_nullable)
+    sequence_type = IdlSequenceType(element_type)
+    if node.GetProperty('NULLABLE'):
+        return IdlNullableType(sequence_type)
+    return sequence_type
 
 
 def typedef_node_to_type(node):
@@ -813,7 +817,7 @@ def typedef_node_to_type(node):
     return type_node_to_type(child)
 
 
-def union_type_node_to_idl_union_type(node, is_nullable=False):
+def union_type_node_to_idl_union_type(node):
     member_types = [type_node_to_type(member_type_node)
                     for member_type_node in node.GetChildren()]
-    return IdlUnionType(member_types, is_nullable=is_nullable)
+    return IdlUnionType(member_types)

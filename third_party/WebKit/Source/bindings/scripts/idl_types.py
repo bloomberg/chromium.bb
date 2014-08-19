@@ -10,6 +10,7 @@ IdlTypeBase
  IdlArrayOrSequenceType
   IdlArrayType
   IdlSequenceType
+ IdlNullableType
 """
 
 from collections import defaultdict
@@ -99,86 +100,17 @@ def set_ancestors(new_ancestors):
 
 
 class IdlTypeBase(object):
-    """Base class for IdlType, IdlUnionType and IdlArrayOrSequenceType."""
-
-    def __init__(self, is_nullable):
-        self.base_type = None
-        self.is_nullable = is_nullable
+    """Base class for IdlType, IdlUnionType, IdlArrayOrSequenceType and IdlNullableType."""
 
     def __str__(self):
-        inner_string = self.inner_string
-        if self.is_nullable:
-            # FIXME: Dictionary::ConversionContext::setConversionType can't
-            # handle the '?' in nullable types (passes nullability separately).
-            # Update that function to handle nullability from the type name,
-            # simplifying its signature.
-            # return inner_string + '?'
-            return inner_string
-        return inner_string
-
-    @property
-    def inner_string(self):
         raise NotImplementedError(
-            'inner_string property should be defined in subclasses')
+            '__str__() should be defined in subclasses')
 
-    @property
-    def is_basic_type(self):
-        return False
-
-    @property
-    def is_callback_function(self):
-        return False
-
-    @property
-    def is_callback_interface(self):
-        return False
-
-    @property
-    def is_dictionary(self):
-        return False
-
-    @property
-    def is_enum(self):
-        return False
-
-    @property
-    def is_integer_type(self):
-        return False
-
-    @property
-    def is_numeric_type(self):
-        return False
-
-    @property
-    def is_primitive_type(self):
-        return False
-
-    @property
-    def is_interface_type(self):
-        return False
-
-    @property
-    def is_string_type(self):
-        return False
-
-    @property
-    def is_union_type(self):
-        return False
-
-    @property
-    def may_raise_exception_on_conversion(self):
-        return False
-
-    @property
-    def name(self):
-        if self.is_nullable:
-            return self.inner_name + 'OrNull'
-        return self.inner_name
-
-    @property
-    def inner_name(self):
-        raise NotImplementedError(
-            'inner_name property should be defined in subclasses')
+    def __getattr__(self, name):
+        # Default undefined attributes to None (analogous to Jinja variables).
+        # This allows us to not define default properties in the base class, and
+        # allows us to relay __getattr__ in IdlNullableType to the inner type.
+        return None
 
     def resolve_typedefs(self, typedefs):
         raise NotImplementedError(
@@ -198,15 +130,14 @@ class IdlType(IdlTypeBase):
     dictionaries = set()
     enums = {}  # name -> values
 
-    def __init__(self, base_type, is_nullable=False, is_unrestricted=False):
-        super(IdlType, self).__init__(is_nullable)
+    def __init__(self, base_type, is_unrestricted=False):
+        super(IdlType, self).__init__()
         if is_unrestricted:
             self.base_type = 'unrestricted %s' % base_type
         else:
             self.base_type = base_type
 
-    @property
-    def inner_string(self):
+    def __str__(self):
         return self.base_type
 
     @property
@@ -263,7 +194,7 @@ class IdlType(IdlTypeBase):
 
     @property
     def is_string_type(self):
-        return self.inner_name in STRING_TYPES
+        return self.name in STRING_TYPES
 
     @property
     def may_raise_exception_on_conversion(self):
@@ -275,8 +206,8 @@ class IdlType(IdlTypeBase):
         return isinstance(self, IdlUnionType)
 
     @property
-    def inner_name(self):
-        """Return type name (or inner type name if nullable)
+    def name(self):
+        """Return type name
 
         http://heycam.github.io/webidl/#dfn-type-name
         """
@@ -300,19 +231,9 @@ class IdlType(IdlTypeBase):
         cls.enums.update(new_enums)
 
     def resolve_typedefs(self, typedefs):
-        # This function either returns |self|, possibly mutated, or leaves this
-        # object unmodified and returns a different object.
-        # FIXME: Change to never mutate |self|, and rename typedefs_resolved().
-        if self.base_type not in typedefs:
-            return self
-        new_type = typedefs[self.base_type]
-        if type(new_type) != type(self):
-            # If type changes, need to return a different object,
-            # since can't change type(self)
-            return new_type
-        # If type doesn't change, just mutate self to avoid a new object
-        self.__init__(new_type.base_type, self.is_nullable or new_type.is_nullable)
-        return self
+        # This function either returns |self| or a different object.
+        # FIXME: Rename typedefs_resolved().
+        return typedefs.get(self.base_type, self)
 
 
 ################################################################################
@@ -321,8 +242,8 @@ class IdlType(IdlTypeBase):
 
 class IdlUnionType(IdlTypeBase):
     # http://heycam.github.io/webidl/#idl-union
-    def __init__(self, member_types, is_nullable=False):
-        super(IdlUnionType, self).__init__(is_nullable=is_nullable)
+    def __init__(self, member_types):
+        super(IdlUnionType, self).__init__()
         self.member_types = member_types
 
     @property
@@ -330,7 +251,7 @@ class IdlUnionType(IdlTypeBase):
         return True
 
     @property
-    def inner_name(self):
+    def name(self):
         """Return type name (or inner type name if nullable)
 
         http://heycam.github.io/webidl/#dfn-type-name
@@ -351,8 +272,8 @@ class IdlUnionType(IdlTypeBase):
 class IdlArrayOrSequenceType(IdlTypeBase):
     """Base class for IdlArrayType and IdlSequenceType."""
 
-    def __init__(self, element_type, is_nullable=False):
-        super(IdlArrayOrSequenceType, self).__init__(is_nullable)
+    def __init__(self, element_type):
+        super(IdlArrayOrSequenceType, self).__init__()
         self.element_type = element_type
 
     def resolve_typedefs(self, typedefs):
@@ -361,26 +282,57 @@ class IdlArrayOrSequenceType(IdlTypeBase):
 
 
 class IdlArrayType(IdlArrayOrSequenceType):
-    def __init__(self, element_type, is_nullable=False):
-        super(IdlArrayType, self).__init__(element_type, is_nullable)
+    def __init__(self, element_type):
+        super(IdlArrayType, self).__init__(element_type)
 
-    @property
-    def inner_string(self):
+    def __str__(self):
         return '%s[]' % self.element_type
 
     @property
-    def inner_name(self):
+    def name(self):
         return self.element_type.name + 'Array'
 
 
 class IdlSequenceType(IdlArrayOrSequenceType):
-    def __init__(self, element_type, is_nullable=False):
-        super(IdlSequenceType, self).__init__(element_type, is_nullable)
+    def __init__(self, element_type):
+        super(IdlSequenceType, self).__init__(element_type)
 
-    @property
-    def inner_string(self):
+    def __str__(self):
         return 'sequence<%s>' % self.element_type
 
     @property
-    def inner_name(self):
+    def name(self):
         return self.element_type.name + 'Sequence'
+
+
+################################################################################
+# IdlNullableType
+################################################################################
+
+class IdlNullableType(IdlTypeBase):
+    def __init__(self, inner_type):
+        super(IdlNullableType, self).__init__()
+        self.inner_type = inner_type
+
+    def __str__(self):
+        # FIXME: Dictionary::ConversionContext::setConversionType can't
+        # handle the '?' in nullable types (passes nullability separately).
+        # Update that function to handle nullability from the type name,
+        # simplifying its signature.
+        # return str(self.inner_type) + '?'
+        return str(self.inner_type)
+
+    def __getattr__(self, name):
+        return getattr(self.inner_type, name)
+
+    @property
+    def is_nullable(self):
+        return True
+
+    @property
+    def name(self):
+        return self.inner_type.name + 'OrNull'
+
+    def resolve_typedefs(self, typedefs):
+        self.inner_type = self.inner_type.resolve_typedefs(typedefs)
+        return self

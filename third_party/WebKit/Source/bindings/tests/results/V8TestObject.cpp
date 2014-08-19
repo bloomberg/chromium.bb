@@ -7407,13 +7407,14 @@ static void voidMethodDefaultFalseBooleanArgMethodCallback(const v8::FunctionCal
 
 static void voidMethodDefaultNullableByteStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDefaultNullableByteStringArg", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
     V8StringResource<TreatNullAsNullString> defaultStringArg;
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
         if (!info[0]->IsUndefined()) {
-            TONATIVE_VOID_INTERNAL(defaultStringArg, toByteString(info[0]));
+            TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(defaultStringArg, toByteString(info[0], exceptionState), exceptionState);
         } else {
             defaultStringArg = nullptr;
         }

@@ -6,7 +6,6 @@
 implementation classes that are used by blink's core/modules.
 """
 
-import copy
 import operator
 from v8_globals import includes
 import v8_types
@@ -52,12 +51,9 @@ def member_context(member):
     idl_type.add_includes_for_type()
 
     def idl_type_for_default_value():
-        copied_type = copy.copy(idl_type)
-        # IdlType for default values shouldn't be nullable. Otherwise,
-        # it will generate meaningless expression like
-        # 'String("default value").isNull() ? ...'.
-        copied_type.is_nullable = False
-        return copied_type
+        if idl_type.is_nullable:
+            return idl_type.inner_type
+        return idl_type
 
     def default_values():
         if not member.default_value:
