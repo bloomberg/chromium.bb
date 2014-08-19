@@ -136,7 +136,8 @@ void TtsPlatformImplAndroid::SendFinalTtsEvent(
 
 // static
 TtsPlatformImplAndroid* TtsPlatformImplAndroid::GetInstance() {
-  return Singleton<TtsPlatformImplAndroid>::get();
+  return Singleton<TtsPlatformImplAndroid,
+                   LeakySingletonTraits<TtsPlatformImplAndroid> >::get();
 }
 
 // static
