@@ -275,19 +275,27 @@ void ServiceWorkerRegistration::OnDeleteFinished(
 void ServiceWorkerRegistration::Clear() {
   context_->storage()->NotifyDoneUninstallingRegistration(this);
 
-  if (installing_version()) {
-    installing_version()->Doom();
-    UnsetVersion(installing_version());
+  ChangedVersionAttributesMask mask;
+  if (installing_version_) {
+    installing_version_->Doom();
+    installing_version_ = NULL;
+    mask.add(ChangedVersionAttributesMask::INSTALLING_VERSION);
   }
-
-  if (waiting_version()) {
-    waiting_version()->Doom();
-    UnsetVersion(waiting_version());
+  if (waiting_version_) {
+    waiting_version_->Doom();
+    waiting_version_ = NULL;
+    mask.add(ChangedVersionAttributesMask::WAITING_VERSION);
   }
-
-  if (active_version()) {
-    active_version()->Doom();
-    UnsetVersion(active_version());
+  if (active_version_) {
+    active_version_->Doom();
+    active_version_->RemoveListener(this);
+    active_version_ = NULL;
+    mask.add(ChangedVersionAttributesMask::ACTIVE_VERSION);
+  }
+  if (mask.changed()) {
+    ServiceWorkerRegistrationInfo info = GetInfo();
+    FOR_EACH_OBSERVER(Listener, listeners_,
+                      OnVersionAttributesChanged(this, mask, info));
   }
 }
 
