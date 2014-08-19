@@ -33,6 +33,8 @@ class RemoveUserDelegate;
 // Base implementation of the UserManager interface.
 class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
  public:
+  // Creates UserManagerBase with |task_runner| for UI thread and
+  // |blocking_task_runner| for SequencedWorkerPool.
   UserManagerBase(scoped_refptr<base::TaskRunner> task_runner,
                   scoped_refptr<base::TaskRunner> blocking_task_runner);
   virtual ~UserManagerBase();
@@ -110,8 +112,6 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
                             std::set<std::string>* users_set);
 
  protected:
-  UserManagerBase();
-
   // Adds |user| to users list, and adds it to front of LRU list. It is assumed
   // that there is no user with same id.
   virtual void AddUserRecord(User* user);
@@ -311,15 +311,9 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   virtual void UpdateUserAccountLocale(const std::string& user_id,
                                        const std::string& locale);
 
-  // Runs on SequencedWorkerPool thread. Passes resolved locale to
-  // |on_resolve_callback| on UI thread.
-  void ResolveLocale(
-      const std::string& raw_locale,
-      base::Callback<void(const std::string&)> on_resolve_callback);
-
   // Updates user account after locale was resolved.
   void DoUpdateAccountLocale(const std::string& user_id,
-                             const std::string& resolved_locale);
+                             scoped_ptr<std::string> resolved_locale);
 
   // Indicates stage of loading user from prefs.
   UserLoadStage user_loading_stage_;
@@ -374,7 +368,10 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // as soon as user's profile is loaded.
   std::string pending_user_switch_;
 
+  // TaskRunner for UI thread.
   scoped_refptr<base::TaskRunner> task_runner_;
+
+  // TaskRunner for SequencedWorkerPool.
   scoped_refptr<base::TaskRunner> blocking_task_runner_;
 
   base::WeakPtrFactory<UserManagerBase> weak_factory_;

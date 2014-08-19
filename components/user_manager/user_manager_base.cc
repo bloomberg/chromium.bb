@@ -77,6 +77,12 @@ void OnRemoveUserComplete(const std::string& user_email,
   }
 }
 
+// Runs on SequencedWorkerPool thread. Passes resolved locale to UI thread.
+void ResolveLocale(const std::string& raw_locale,
+                   std::string* resolved_locale) {
+  ignore_result(l10n_util::CheckAndResolveLocale(raw_locale, resolved_locale));
+}
+
 }  // namespace
 
 // static
@@ -984,36 +990,31 @@ void UserManagerBase::SendRegularUserLoginMetrics(const std::string& user_id) {
 
 void UserManagerBase::UpdateUserAccountLocale(const std::string& user_id,
                                               const std::string& locale) {
+  scoped_ptr<std::string> resolved_locale(new std::string());
   if (!locale.empty() && locale != GetApplicationLocale()) {
-    base::Callback<void(const std::string&)> on_resolve_callback =
+    // base::Pased will NULL out |resolved_locale|, so cache the underlying ptr.
+    std::string* raw_resolved_locale = resolved_locale.get();
+    blocking_task_runner_->PostTaskAndReply(
+        FROM_HERE,
+        base::Bind(ResolveLocale,
+                   locale,
+                   base::Unretained(raw_resolved_locale)),
         base::Bind(&UserManagerBase::DoUpdateAccountLocale,
                    weak_factory_.GetWeakPtr(),
-                   user_id);
-    blocking_task_runner_->PostTask(FROM_HERE,
-                                    base::Bind(&UserManagerBase::ResolveLocale,
-                                               weak_factory_.GetWeakPtr(),
-                                               locale,
-                                               on_resolve_callback));
+                   user_id,
+                   base::Passed(&resolved_locale)));
   } else {
-    DoUpdateAccountLocale(user_id, locale);
+    resolved_locale.reset(new std::string(locale));
+    DoUpdateAccountLocale(user_id, resolved_locale.Pass());
   }
-}
-
-void UserManagerBase::ResolveLocale(
-    const std::string& raw_locale,
-    base::Callback<void(const std::string&)> on_resolve_callback) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  std::string resolved_locale;
-  ignore_result(l10n_util::CheckAndResolveLocale(raw_locale, &resolved_locale));
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(on_resolve_callback, resolved_locale));
 }
 
 void UserManagerBase::DoUpdateAccountLocale(
     const std::string& user_id,
-    const std::string& resolved_locale) {
-  if (User* user = FindUserAndModify(user_id))
-    user->SetAccountLocale(resolved_locale);
+    scoped_ptr<std::string> resolved_locale) {
+  User* user = FindUserAndModify(user_id);
+  if (user && resolved_locale)
+    user->SetAccountLocale(*resolved_locale);
 }
 
 void UserManagerBase::DeleteUser(User* user) {
