@@ -14,7 +14,6 @@
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/services/public/interfaces/gpu/gpu.mojom.h"
 #include "mojo/services/public/interfaces/native_viewport/native_viewport.mojom.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/shared_impl/proxy_lock.h"
@@ -36,9 +35,6 @@ class PepperContainerApp: public ApplicationDelegate,
     app->ConnectToService("mojo:mojo_native_viewport_service", &viewport_);
     viewport_.set_client(this);
 
-    // TODO(jamesr): Should be mojo:mojo_gpu_service
-    app->ConnectToService("mojo:mojo_native_viewport_service", &gpu_service_);
-
     RectPtr rect(Rect::New());
     rect->x = 10;
     rect->y = 10;
@@ -49,8 +45,7 @@ class PepperContainerApp: public ApplicationDelegate,
   }
 
   // NativeViewportClient implementation.
-  virtual void OnCreated(uint64_t native_viewport_id) OVERRIDE {
-    native_viewport_id_ = native_viewport_id;
+  virtual void OnCreated() OVERRIDE {
     ppapi::ProxyAutoLock lock;
 
     plugin_instance_ = plugin_module_->CreateInstance().Pass();
@@ -58,7 +53,7 @@ class PepperContainerApp: public ApplicationDelegate,
       plugin_instance_.reset();
   }
 
-  virtual void OnDestroyed() OVERRIDE {
+  virtual void OnDestroyed(const mojo::Callback<void()>& callback) OVERRIDE {
     ppapi::ProxyAutoLock lock;
 
     if (plugin_instance_) {
@@ -67,6 +62,7 @@ class PepperContainerApp: public ApplicationDelegate,
     }
 
     base::MessageLoop::current()->Quit();
+    callback.Run();
   }
 
   virtual void OnBoundsChanged(RectPtr bounds) OVERRIDE {
@@ -89,20 +85,14 @@ class PepperContainerApp: public ApplicationDelegate,
   // MojoPpapiGlobals::Delegate implementation.
   virtual ScopedMessagePipeHandle CreateGLES2Context() OVERRIDE {
     CommandBufferPtr command_buffer;
-    SizePtr size = Size::New();
-    size->width = 800;
-    size->width = 600;
-    gpu_service_->CreateOnscreenGLES2Context(
-        native_viewport_id_, size.Pass(), Get(&command_buffer));
+    viewport_->CreateGLES2Context(Get(&command_buffer));
     return command_buffer.PassMessagePipe();
   }
 
  private:
   MojoPpapiGlobals ppapi_globals_;
 
-  uint64_t native_viewport_id_;
   NativeViewportPtr viewport_;
-  GpuPtr gpu_service_;
   scoped_refptr<PluginModule> plugin_module_;
   scoped_ptr<PluginInstance> plugin_instance_;
 

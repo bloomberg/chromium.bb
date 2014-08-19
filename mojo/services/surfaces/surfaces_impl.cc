@@ -44,9 +44,7 @@ void SurfacesImpl::SubmitFrame(SurfaceIdPtr id, FramePtr frame_ptr) {
   cc::SurfaceId cc_id = id.To<cc::SurfaceId>();
   if (cc::SurfaceIdAllocator::NamespaceForId(cc_id) != id_namespace_) {
     // Bad message, do something bad to the caller?
-    LOG(FATAL) << "Received frame for id " << cc_id.id << " namespace "
-               << cc::SurfaceIdAllocator::NamespaceForId(cc_id)
-               << " should be namespace " << id_namespace_;
+    NOTREACHED();
     return;
   }
   factory_.SubmitFrame(id.To<cc::SurfaceId>(), mojo::ConvertTo(frame_ptr));
@@ -71,9 +69,7 @@ void SurfacesImpl::CreateGLES2BoundSurface(CommandBufferPtr gles2_client,
   cc::SurfaceId cc_id = id.To<cc::SurfaceId>();
   if (cc::SurfaceIdAllocator::NamespaceForId(cc_id) != id_namespace_) {
     // Bad message, do something bad to the caller?
-    LOG(FATAL) << "Received request for id " << cc_id.id << " namespace "
-               << cc::SurfaceIdAllocator::NamespaceForId(cc_id)
-               << " should be namespace " << id_namespace_;
+    NOTREACHED();
     return;
   }
   if (!display_) {
