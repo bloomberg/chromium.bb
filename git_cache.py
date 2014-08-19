@@ -243,14 +243,18 @@ class Mirror(object):
 
     self.RunGit(['config', 'remote.origin.url', self.url], cwd=cwd)
     self.RunGit(['config', '--replace-all', 'remote.origin.fetch',
-                 '+refs/heads/*:refs/heads/*'], cwd=cwd)
+                 '+refs/heads/*:refs/heads/*', r'\+refs/heads/\*:.*'], cwd=cwd)
     for ref in self.refs:
       ref = ref.lstrip('+').rstrip('/')
       if ref.startswith('refs/'):
         refspec = '+%s:%s' % (ref, ref)
+        regex = r'\+%s:.*' % ref.replace('*', r'\*')
       else:
         refspec = '+refs/%s/*:refs/%s/*' % (ref, ref)
-      self.RunGit(['config', '--add', 'remote.origin.fetch', refspec], cwd=cwd)
+        regex = r'\+refs/heads/%s:.*' % ref.replace('*', r'\*')
+      self.RunGit(
+          ['config', '--replace-all', 'remote.origin.fetch', refspec, regex],
+          cwd=cwd)
 
   def bootstrap_repo(self, directory):
     """Bootstrap the repo from Google Stroage if possible.
