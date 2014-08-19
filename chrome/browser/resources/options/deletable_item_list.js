@@ -54,6 +54,7 @@ cr.define('options', function() {
                                                 this.handleMouseDownUpOnClose_);
       this.closeButtonElement_.addEventListener('focus',
                                                 this.handleFocus_.bind(this));
+      this.closeButtonElement_.tabIndex = -1;
       this.closeButtonElement_.title =
           loadTimeData.getString('deletableItemDeleteButtonTitle');
       this.appendChild(this.closeButtonElement_);
