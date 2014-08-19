@@ -79,7 +79,7 @@ class HttpPostTest : public testing::Test {
   const std::string GetTracingTokenSent() {
     std::string tracing_token_sent;
     net::GetValueForKeyInQuery(GetFetcher()->GetOriginalURL(),
-                               HttpPost::kTracingTokenField,
+                               HttpPost::kTracingField,
                                &tracing_token_sent);
     return tracing_token_sent;
   }

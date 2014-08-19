@@ -55,7 +55,7 @@ class HttpPost : public net::URLFetcherDelegate {
  private:
   static const int kUrlFetcherId = 1;
   static const char kApiKeyField[];
-  static const char kTracingTokenField[];
+  static const char kTracingField[];
 
   friend class HttpPostTest;
 

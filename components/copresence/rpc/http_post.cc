@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
@@ -19,7 +20,7 @@
 namespace copresence {
 
 const char HttpPost::kApiKeyField[] = "key";
-const char HttpPost::kTracingTokenField[] = "trace";
+const char HttpPost::kTracingField[] = "trace";
 
 HttpPost::HttpPost(net::URLRequestContextGetter* url_context_getter,
                    const std::string& server_host,
@@ -33,7 +34,7 @@ HttpPost::HttpPost(net::URLRequestContextGetter* url_context_getter,
   // Add the tracing token, if specified.
   if (!tracing_token.empty()) {
     url = net::AppendQueryParameter(
-        url, kTracingTokenField, "token:" + tracing_token);
+        url, kTracingField, "token:" + tracing_token);
   }
 
   // If no API key is specified, use the Chrome API key.
@@ -68,6 +69,8 @@ HttpPost::~HttpPost() {}
 
 void HttpPost::Start(const ResponseCallback& response_callback) {
   response_callback_ = response_callback;
+  DVLOG(3) << "Sending Copresence request to "
+           << url_fetcher_->GetOriginalURL().spec();
   url_fetcher_->Start();
 }
 
@@ -81,8 +84,12 @@ void HttpPost::OnURLFetchComplete(const net::URLFetcher* source) {
 
   // Log any errors.
   if (response_code < 0) {
+    net::URLRequestStatus status = source->GetStatus();
     LOG(WARNING) << "Couldn't contact the Copresence server at "
-                 << source->GetURL();
+                 << source->GetURL() << ". Status code " << status.status();
+    LOG_IF(WARNING, status.error())
+        << "Network error: " << net::ErrorToString(status.error());
+    LOG_IF(WARNING, !response.empty()) << "HTTP response: " << response;
   } else if (response_code != net::HTTP_OK) {
     LOG(WARNING) << "Copresence request got HTTP response code "
                  << response_code << ". Response:\n" << response;
