@@ -52,21 +52,49 @@ namespace blink {
  * and its conversions from / to the DOM instances.
  *
  * Note that this class must not have vtbl (any virtual function) or any member
- * variable which increase the size of instances.  Some of the classes sensitive
- * to the size inherit from this class.  So this class must be zero size.
+ * variable which increase the size of instances. Some of the classes sensitive
+ * to the size inherit from this class. So this class must be zero size.
  */
+#if COMPILER(MSVC)
+// VC++ 2013 doesn't support EBCO (Empty Base Class Optimization). It causes
+// that not always pointers to an empty base class are aligned to 4 byte
+// alignment. For example,
+//
+//   class EmptyBase1 {};
+//   class EmptyBase2 {};
+//   class Derived : public EmptyBase1, public EmptyBase2 {};
+//   Derived d;
+//   // &d                           == 0x1000
+//   // static_cast<EmptyBase1*>(&d) == 0x1000
+//   // static_cast<EmptyBase2*>(&d) == 0x1001  // Not 4 byte alignment!
+//
+// This doesn't happen with other compilers which support EBCO. All the
+// addresses in the above example will be 0x1000 with EBCO supported.
+//
+// Since v8::Object::SetAlignedPointerInInternalField requires the pointers to
+// be aligned, we need a hack to specify at least 4 byte alignment to MSVC.
+__declspec(align(4))
+#endif
 class ScriptWrappableBase {
 public:
-    template <class T> static T* fromInternalPointer(ScriptWrappableBase* internalPointer)
+    template<typename T>
+    static T* fromInternalPointer(ScriptWrappableBase* internalPointer)
     {
         // Check if T* is castable to ScriptWrappableBase*, which means T
         // doesn't have two or more ScriptWrappableBase as superclasses.
         // If T has two ScriptWrappableBase as superclasses, conversions
         // from T* to ScriptWrappableBase* are ambiguous.
         ASSERT(static_cast<ScriptWrappableBase*>(static_cast<T*>(internalPointer)));
+        // The internal pointers must be aligned to at least 4 byte alignment.
+        ASSERT((reinterpret_cast<intptr_t>(internalPointer) & 0x3) == 0);
         return static_cast<T*>(internalPointer);
     }
-    ScriptWrappableBase* toInternalPointer() { return this; }
+    ScriptWrappableBase* toInternalPointer()
+    {
+        // The internal pointers must be aligned to at least 4 byte alignment.
+        ASSERT((reinterpret_cast<intptr_t>(this) & 0x3) == 0);
+        return this;
+    }
 };
 
 /**
