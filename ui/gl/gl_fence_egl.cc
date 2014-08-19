@@ -22,7 +22,11 @@ GLFenceEGL::GLFenceEGL(bool flush) {
 
 bool GLFenceEGL::HasCompleted() {
   EGLint value = 0;
-  eglGetSyncAttribKHR(display_, sync_, EGL_SYNC_STATUS_KHR, &value);
+  if (eglGetSyncAttribKHR(display_, sync_, EGL_SYNC_STATUS_KHR, &value) !=
+      EGL_TRUE) {
+    return true;
+  }
+
   DCHECK(value == EGL_SIGNALED_KHR || value == EGL_UNSIGNALED_KHR);
   return !value || value == EGL_SIGNALED_KHR;
 }
