@@ -61,7 +61,10 @@ void AppListShower::DismissAppList() {
   if (HasView()) {
     Hide();
     delegate_->OnViewDismissed();
-    keep_alive_.reset();
+    // This can be reached by pressing the dismiss accelerator. To prevent
+    // events from being processed with a destroyed dispatcher, delay the reset
+    // of the keep alive.
+    ResetKeepAliveSoon();
   }
 }
 
@@ -78,13 +81,7 @@ void AppListShower::HandleViewBeingDestroyed() {
   // correctly been destroyed before ending the keep alive so that
   // CloseAllSecondaryWidgets() won't attempt to delete the AppList's Widget
   // again.
-  if (base::MessageLoop::current()) {  // NULL in tests.
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&AppListShower::ResetKeepAlive, base::Unretained(this)));
-    return;
-  }
-  keep_alive_.reset();
+  ResetKeepAliveSoon();
 }
 
 bool AppListShower::IsAppListVisible() const {
@@ -131,6 +128,16 @@ void AppListShower::Show() {
 
 void AppListShower::Hide() {
   app_list_->GetWidget()->Hide();
+}
+
+void AppListShower::ResetKeepAliveSoon() {
+  if (base::MessageLoop::current()) {  // NULL in tests.
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&AppListShower::ResetKeepAlive, base::Unretained(this)));
+    return;
+  }
+  ResetKeepAlive();
 }
 
 void AppListShower::ResetKeepAlive() {

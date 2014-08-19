@@ -52,6 +52,7 @@ class AppListShower {
  private:
   friend class ::AppListShowerUnitTest;
 
+  void ResetKeepAliveSoon();
   void ResetKeepAlive();
 
   AppListShowerDelegate* delegate_;  // Weak. Owns this.
