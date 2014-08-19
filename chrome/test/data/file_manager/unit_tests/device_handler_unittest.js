@@ -69,7 +69,10 @@ function setUp() {
       }
     },
     runtime: {
-      getURL: function(path) { return path; }
+      getURL: function(path) { return path; },
+      onStartup: {
+        addListener: function() {}
+      }
     }
   };
 

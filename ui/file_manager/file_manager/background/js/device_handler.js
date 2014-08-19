@@ -27,12 +27,22 @@ function DeviceHandler() {
    */
   this.navigationVolumes_ = {};
 
+  /**
+   * Whether the device is just after starting up or not.
+   *
+   * @type {boolean}
+   * @private
+   */
+  this.isStartup_ = false;
+
   chrome.fileBrowserPrivate.onDeviceChanged.addListener(
       this.onDeviceChanged_.bind(this));
   chrome.fileBrowserPrivate.onMountCompleted.addListener(
       this.onMountCompleted_.bind(this));
   chrome.notifications.onButtonClicked.addListener(
       this.onNotificationButtonClicked_.bind(this));
+  chrome.runtime.onStartup.addListener(
+      this.onStartup_.bind(this));
 }
 
 DeviceHandler.prototype = {
@@ -247,7 +257,8 @@ DeviceHandler.Notification.prototype.clearTimeout_ = function() {
 DeviceHandler.prototype.onDeviceChanged_ = function(event) {
   switch (event.type) {
     case 'added':
-      DeviceHandler.Notification.DEVICE.showLater(event.devicePath);
+      if (!this.isStartup_)
+        DeviceHandler.Notification.DEVICE.showLater(event.devicePath);
       this.mountStatus_[event.devicePath] = DeviceHandler.MountStatus.NO_RESULT;
       break;
     case 'disabled':
@@ -265,8 +276,10 @@ DeviceHandler.prototype.onDeviceChanged_ = function(event) {
       delete this.mountStatus_[event.devicePath];
       break;
     case 'hard_unplugged':
-      DeviceHandler.Notification.DEVICE_HARD_UNPLUGGED.show(
-          event.devicePath);
+      if (!this.isStartup_) {
+        DeviceHandler.Notification.DEVICE_HARD_UNPLUGGED.show(
+            event.devicePath);
+      }
       break;
     case 'format_start':
       DeviceHandler.Notification.FORMAT_START.show(event.devicePath);
@@ -329,10 +342,12 @@ DeviceHandler.prototype.onMountCompleted_ = function(event) {
             event.volumeMetadata.volumeId;
       }
     } else {
-      this.navigationVolumes_[event.volumeMetadata.devicePath] =
-          event.volumeMetadata.volumeId;
-      DeviceHandler.Notification.DEVICE_NAVIGATION.show(
-          event.volumeMetadata.devicePath);
+      if (!this.isStartup_) {
+        this.navigationVolumes_[event.volumeMetadata.devicePath] =
+            event.volumeMetadata.volumeId;
+        DeviceHandler.Notification.DEVICE_NAVIGATION.show(
+            event.volumeMetadata.devicePath);
+      }
     }
   }
 
@@ -432,4 +447,11 @@ DeviceHandler.prototype.onNotificationButtonClicked_ = function(id) {
     event.volumeId = this.navigationVolumes_[match[1]];
     this.dispatchEvent(event);
   }
+};
+
+DeviceHandler.prototype.onStartup_ = function() {
+  this.isStartup_ = true;
+  setTimeout(function() {
+    this.isStartup_ = false;
+  }.bind(this), 5000);
 };
