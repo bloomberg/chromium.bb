@@ -37,6 +37,7 @@ const char* kSubstitutionNames[SUBSTITUTION_NUM_TYPES] = {
   "{{include_dirs}}",  // SUBSTITUTION_INCLUDE_DIRS
 
   "{{inputs}}",  // SUBSTITUTION_LINKER_INPUTS
+  "{{inputs_newline}}",  // SUBSTITUTION_LINKER_INPUTS_NEWLINE
   "{{ldflags}}",  // SUBSTITUTION_LDFLAGS
   "{{libs}}",  // SUBSTITUTION_LIBS
   "{{output_extension}}",  // SUBSTITUTION_OUTPUT_EXTENSION
@@ -75,6 +76,7 @@ const char* kSubstitutionNinjaNames[SUBSTITUTION_NUM_TYPES] = {
   // are used in different contexts and are named differently to keep things
   // clear, but they both expand to the "set of input files" for a build rule.
   "in",  // SUBSTITUTION_LINKER_INPUTS
+  "in_newline",  // SUBSTITUTION_LINKER_INPUTS_NEWLINE
   "ldflags",  // SUBSTITUTION_LDFLAGS
   "libs",  // SUBSTITUTION_LIBS
   "output_extension",  // SUBSTITUTION_OUTPUT_EXTENSION
@@ -149,6 +151,7 @@ bool IsValidCompilerOutputsSubstitution(SubstitutionType type) {
 bool IsValidLinkerSubstitution(SubstitutionType type) {
   return IsValidToolSubstutition(type) ||
          type == SUBSTITUTION_LINKER_INPUTS ||
+         type == SUBSTITUTION_LINKER_INPUTS_NEWLINE ||
          type == SUBSTITUTION_LDFLAGS ||
          type == SUBSTITUTION_LIBS ||
          type == SUBSTITUTION_OUTPUT_EXTENSION ||

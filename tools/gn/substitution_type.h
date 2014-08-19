@@ -51,6 +51,7 @@ enum SubstitutionType {
 
   // Valid for linker tools.
   SUBSTITUTION_LINKER_INPUTS,  // {{inputs}}
+  SUBSTITUTION_LINKER_INPUTS_NEWLINE,  // {{inputs_newline}}
   SUBSTITUTION_LDFLAGS,  // {{ldflags}}
   SUBSTITUTION_LIBS,  // {{libs}}
   SUBSTITUTION_OUTPUT_EXTENSION,  // {{output_extension}}
