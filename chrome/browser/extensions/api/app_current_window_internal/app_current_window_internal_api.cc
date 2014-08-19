@@ -6,13 +6,13 @@
 
 #include "apps/app_window.h"
 #include "apps/app_window_registry.h"
-#include "apps/size_constraints.h"
 #include "apps/ui/native_app_window.h"
 #include "base/command_line.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/app_current_window_internal.h"
 #include "chrome/common/extensions/api/app_window.h"
 #include "chrome/common/extensions/features/feature_channel.h"
+#include "extensions/browser/app_window/size_constraints.h"
 #include "extensions/common/features/simple_feature.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
@@ -54,7 +54,7 @@ const char kAlwaysOnTopPermission[] =
 
 const char kInvalidParameters[] = "Invalid parameters.";
 
-const int kUnboundedSize = apps::SizeConstraints::kUnboundedSize;
+const int kUnboundedSize = SizeConstraints::kUnboundedSize;
 
 void GetBoundsFields(const Bounds& bounds_spec, gfx::Rect* bounds) {
   if (bounds_spec.left)
@@ -240,10 +240,10 @@ bool AppCurrentWindowInternalSetBoundsFunction::RunWithWindow(
 
   if (original_window_bounds != window_bounds) {
     if (original_window_bounds.size() != window_bounds.size()) {
-      apps::SizeConstraints constraints(
-          apps::SizeConstraints::AddFrameToConstraints(
+      SizeConstraints constraints(
+          SizeConstraints::AddFrameToConstraints(
               window->GetBaseWindow()->GetContentMinimumSize(), frame_insets),
-          apps::SizeConstraints::AddFrameToConstraints(
+          SizeConstraints::AddFrameToConstraints(
               window->GetBaseWindow()->GetContentMaximumSize(), frame_insets));
 
       window_bounds.set_size(constraints.ClampSize(window_bounds.size()));
@@ -275,7 +275,8 @@ bool AppCurrentWindowInternalSetSizeConstraintsFunction::RunWithWindow(
       window->GetBaseWindow()->GetContentMaximumSize();
   gfx::Size min_size = original_min_size;
   gfx::Size max_size = original_max_size;
-  const SizeConstraints& constraints = params->constraints;
+  const api::app_current_window_internal::SizeConstraints& constraints =
+      params->constraints;
 
   // Use the frame insets to convert window size constraints to content size
   // constraints.

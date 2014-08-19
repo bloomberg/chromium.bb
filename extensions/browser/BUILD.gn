@@ -125,6 +125,8 @@ source_set("browser") {
       "api/usb/usb_device_resource.h",
       "api_activity_monitor.h",
       "app_sorting.h",
+      "app_window/size_constraints.cc",
+      "app_window/size_constraints.h",
       "blacklist_state.h",
       "blob_holder.cc",
       "blob_holder.h",

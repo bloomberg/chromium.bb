@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_SIZE_CONSTRAINTS_H_
-#define APPS_SIZE_CONSTRAINTS_H_
+#ifndef EXTENSIONS_BROWSER_APP_WINDOW_SIZE_CONSTRAINTS_H_
+#define EXTENSIONS_BROWSER_APP_WINDOW_SIZE_CONSTRAINTS_H_
 
 #include "ui/gfx/geometry/size.h"
 
@@ -11,7 +11,7 @@ namespace gfx {
 class Insets;
 }
 
-namespace apps {
+namespace extensions {
 
 class SizeConstraints {
  public:
@@ -52,6 +52,6 @@ class SizeConstraints {
   gfx::Size maximum_size_;
 };
 
-}  // namespace apps
+}  // namespace extensions
 
-#endif  // APPS_SIZE_CONSTRAINTS_H_
+#endif  // EXTENSIONS_BROWSER_APP_WINDOW_SIZE_CONSTRAINTS_H_

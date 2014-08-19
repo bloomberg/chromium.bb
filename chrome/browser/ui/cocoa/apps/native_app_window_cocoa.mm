@@ -939,7 +939,7 @@ void NativeAppWindowCocoa::SetContentSizeConstraints(
                                          minimum_size.height())];
 
   gfx::Size maximum_size = size_constraints_.GetMaximumSize();
-  const int kUnboundedSize = apps::SizeConstraints::kUnboundedSize;
+  const int kUnboundedSize = extensions::SizeConstraints::kUnboundedSize;
   CGFloat max_width = maximum_size.width() == kUnboundedSize ?
       CGFLOAT_MAX : maximum_size.width();
   CGFloat max_height = maximum_size.height() == kUnboundedSize ?

@@ -8,12 +8,12 @@
 #import <Cocoa/Cocoa.h>
 #include <vector>
 
-#include "apps/size_constraints.h"
 #include "apps/ui/native_app_window.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "extensions/browser/app_window/size_constraints.h"
 #include "extensions/common/draggable_region.h"
 #include "ui/base/accelerators/accelerator_manager.h"
 #include "ui/gfx/rect.h"
@@ -203,7 +203,7 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow,
   bool shows_resize_controls_;
   bool shows_fullscreen_controls_;
 
-  apps::SizeConstraints size_constraints_;
+  extensions::SizeConstraints size_constraints_;
 
   bool has_frame_color_;
   SkColor active_frame_color_;

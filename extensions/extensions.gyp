@@ -375,6 +375,8 @@
         'browser/api/usb_private/usb_private_api.h',
         'browser/api_activity_monitor.h',
         'browser/app_sorting.h',
+        'browser/app_window/size_constraints.cc',
+        'browser/app_window/size_constraints.h',
         'browser/blacklist_state.h',
         'browser/blob_holder.cc',
         'browser/blob_holder.h',

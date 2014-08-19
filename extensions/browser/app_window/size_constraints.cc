@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/size_constraints.h"
+#include "extensions/browser/app_window/size_constraints.h"
 
 #include <algorithm>
 
 #include "ui/gfx/insets.h"
 
-namespace apps {
+namespace extensions {
 
 SizeConstraints::SizeConstraints()
     : maximum_size_(kUnboundedSize, kUnboundedSize) {}
@@ -80,4 +80,4 @@ void SizeConstraints::set_maximum_size(const gfx::Size& max_size) {
   maximum_size_ = max_size;
 }
 
-}  // namespace apps
+}  // namespace extensions

@@ -12,7 +12,6 @@
 #include "apps/app_web_contents_helper.h"
 #include "apps/app_window_geometry_cache.h"
 #include "apps/app_window_registry.h"
-#include "apps/size_constraints.h"
 #include "apps/ui/apps_client.h"
 #include "apps/ui/native_app_window.h"
 #include "apps/ui/web_contents_sizer.h"
@@ -36,6 +35,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/media_stream_request.h"
+#include "extensions/browser/app_window/size_constraints.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -74,7 +74,7 @@ const int kDefaultHeight = 384;
 void SetConstraintProperty(const std::string& name,
                            int value,
                            base::DictionaryValue* bounds_properties) {
-  if (value != SizeConstraints::kUnboundedSize)
+  if (value != extensions::SizeConstraints::kUnboundedSize)
     bounds_properties->SetInteger(name, value);
   else
     bounds_properties->Set(name, base::Value::CreateNullValue());
@@ -189,7 +189,7 @@ gfx::Rect AppWindow::CreateParams::GetInitialWindowBounds(
   }
 
   // Constrain the bounds.
-  SizeConstraints constraints(
+  extensions::SizeConstraints constraints(
       GetCombinedWindowConstraints(
           window_spec.minimum_size, content_spec.minimum_size, frame_insets),
       GetCombinedWindowConstraints(
@@ -649,7 +649,7 @@ void AppWindow::ForcedFullscreen() {
 
 void AppWindow::SetContentSizeConstraints(const gfx::Size& min_size,
                                           const gfx::Size& max_size) {
-  SizeConstraints constraints(min_size, max_size);
+  extensions::SizeConstraints constraints(min_size, max_size);
   native_app_window_->SetContentSizeConstraints(constraints.GetMinimumSize(),
                                                 constraints.GetMaximumSize());
 
@@ -758,10 +758,10 @@ void AppWindow::GetSerializedState(base::DictionaryValue* properties) const {
 
   gfx::Insets frame_insets = native_app_window_->GetFrameInsets();
   gfx::Rect frame_bounds = native_app_window_->GetBounds();
-  gfx::Size frame_min_size =
-      SizeConstraints::AddFrameToConstraints(content_min_size, frame_insets);
-  gfx::Size frame_max_size =
-      SizeConstraints::AddFrameToConstraints(content_max_size, frame_insets);
+  gfx::Size frame_min_size = extensions::SizeConstraints::AddFrameToConstraints(
+      content_min_size, frame_insets);
+  gfx::Size frame_max_size = extensions::SizeConstraints::AddFrameToConstraints(
+      content_max_size, frame_insets);
   SetBoundsProperties(frame_bounds,
                       frame_min_size,
                       frame_max_size,
@@ -1072,8 +1072,9 @@ AppWindow::CreateParams AppWindow::LoadDefaults(CreateParams params)
       gfx::Screen* screen = gfx::Screen::GetNativeScreen();
       gfx::Display display = screen->GetDisplayMatching(cached_bounds);
       gfx::Rect current_screen_bounds = display.work_area();
-      SizeConstraints constraints(params.GetWindowMinimumSize(gfx::Insets()),
-                                  params.GetWindowMaximumSize(gfx::Insets()));
+      extensions::SizeConstraints constraints(
+          params.GetWindowMinimumSize(gfx::Insets()),
+          params.GetWindowMaximumSize(gfx::Insets()));
       AdjustBoundsToBeVisibleOnScreen(cached_bounds,
                                       cached_screen_bounds,
                                       current_screen_bounds,

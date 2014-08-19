@@ -5,10 +5,10 @@
 #ifndef APPS_UI_VIEWS_NATIVE_APP_WINDOW_VIEWS_H_
 #define APPS_UI_VIEWS_NATIVE_APP_WINDOW_VIEWS_H_
 
-#include "apps/size_constraints.h"
 #include "apps/ui/native_app_window.h"
 #include "base/observer_list.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "extensions/browser/app_window/size_constraints.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
 #include "ui/views/widget/widget.h"
@@ -182,7 +182,7 @@ class NativeAppWindowViews : public NativeAppWindow,
 
   bool frameless_;
   bool resizable_;
-  apps::SizeConstraints size_constraints_;
+  extensions::SizeConstraints size_constraints_;
 
   views::UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
 
