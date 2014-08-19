@@ -321,12 +321,13 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       statuses: A builder-name->status dictionary, which will provide
                 the dashboard_url values for any links.
     """
-    builders_to_link = failing or inflight or []
+    builders_to_link = set.union(failing, inflight)
     for builder in builders_to_link:
       if statuses[builder].dashboard_url:
-        text = builder
         if statuses[builder].message:
           text = '%s: %s' % (builder, statuses[builder].message.reason)
+        else:
+          text = '%s: timed out' % builder
 
         cros_build_lib.PrintBuildbotLink(text, statuses[builder].dashboard_url)
 
