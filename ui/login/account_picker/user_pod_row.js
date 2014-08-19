@@ -2630,17 +2630,6 @@ cr.define('login', function() {
     },
 
     /**
-     * Focuses a given user pod by index or clear focus when given null.
-     * @param {int=} podToFocus index of User pod to focus.
-     * @param {boolean=} opt_force If true, forces focus update even when
-     *     podToFocus is already focused.
-     */
-    focusPodByIndex: function(podToFocus, opt_force) {
-      if (podToFocus < this.pods.length)
-        this.focusPod(this.pods[podToFocus], opt_force);
-    },
-
-    /**
      * Resets wallpaper to the last active user's wallpaper, if any.
      */
     loadLastWallpaper: function() {
@@ -2683,11 +2672,20 @@ cr.define('login', function() {
      * @type {?UserPod}
      */
     get preselectedPod() {
-      // On desktop, don't pre-select a pod if it's the only one.
       var isDesktopUserManager = Oobe.getInstance().displayType ==
           DISPLAY_TYPE.DESKTOP_USER_MANAGER;
-      if (isDesktopUserManager && this.pods.length == 1)
-        return null;
+      if (isDesktopUserManager) {
+        // On desktop, don't pre-select a pod if it's the only one.
+        if (this.pods.length == 1)
+          return null;
+
+        // The desktop User Manager can send the index of a pod that should be
+        // initially focused in url hash.
+        var podIndex = parseInt(window.location.hash.substr(1));
+        if (isNaN(podIndex) || podIndex >= this.pods.length)
+          return null;
+        return this.pods[podIndex];
+      }
 
       var lockedPod = this.lockedPod;
       if (lockedPod)
