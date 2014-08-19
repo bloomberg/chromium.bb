@@ -1,0 +1,62 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../ct-tree-select.html">
+
+<link rel="import" href="../../model/ct-tree-list.html">
+
+<script>
+(function () {
+
+var assert = chai.assert;
+
+describe('ct-tree-select', function() {
+  var select;
+
+  beforeEach(function(done) {
+    select = document.createElement('ct-tree-select');
+    setTimeout(done);
+  });
+
+  describe('tree select UI', function() {
+    beforeEach(function(done) {
+      var treeList = new CTTreeList();
+      treeList.trees = [new CTTree("tree1", "Tree 1"), new CTTree("tree2", "Tree 2")];
+
+      // This represents initialization that should be normally be done on this component.
+      select.treeList = treeList;
+      select.tree = treeList.defaultValue();
+
+      setTimeout(done);
+    });
+
+    it('should show two elements', function() {
+      var options = select.shadowRoot.querySelectorAll('option');
+      assert.lengthOf(options, 2);
+      assert(options[0].selected);
+      assert(!options[1].selected);
+      assert.equal(select.treeList.trees[0].name, select.tree);
+    });
+
+    describe('expanded test', function() {
+      beforeEach(function(done) {
+        var selectElement = select.shadowRoot.querySelectorAll('select')[0];
+        selectElement.selectedIndex = 1;
+
+        var event = new CustomEvent('change');
+        selectElement.dispatchEvent(event);
+        setTimeout(done);
+      });
+
+      it('should have the second value as its "tree"', function() {
+        assert.equal(select.treeList.trees[1].name, select.tree);
+      });
+    });
+  });
+});
+
+})()
+</script>
