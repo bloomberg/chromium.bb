@@ -239,6 +239,10 @@ enum {
 
 @end
 
+@interface NSScreen (MavericksSDK)
++ (BOOL)screensHaveSeparateSpaces;
+@end
+
 @interface NSView (MavericksSDK)
 - (void)setCanDrawSubviewsIntoLayer:(BOOL)flag;
 @end

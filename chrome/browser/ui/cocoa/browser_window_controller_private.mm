@@ -724,6 +724,21 @@ willPositionSheet:(NSWindow*)sheet
     [self setPresentationModeInternal:YES forceDropdown:NO];
   }
 
+  // AppKit is helpful and prevents NSWindows from having the same height as
+  // the screen while the menu bar is showing. This only applies to windows on
+  // a secondary screen, in a separate space. Calling [NSWindow
+  // setFrame:display:] with the screen's height will always reduce the
+  // height by the height of the MenuBar. Calling the method with any other
+  // height works fine. The relevant method in the 10.10 AppKit SDK is called:
+  // _canAdjustSizeForScreensHaveSeparateSpacesIfFillingSecondaryScreen
+  //
+  // TODO(erikchen): Refactor the logic to allow the window to be shown after
+  // the menubar has been hidden. This would remove the need for this hack.
+  // http://crbug.com/403203
+  NSRect frame = [[[self window] screen] frame];
+  if (!NSEqualRects(frame, [fullscreenWindow_ frame]))
+    [fullscreenWindow_ setFrame:[[[self window] screen] frame] display:YES];
+
   [self layoutSubviews];
 
   [self windowDidEnterFullScreen:nil];

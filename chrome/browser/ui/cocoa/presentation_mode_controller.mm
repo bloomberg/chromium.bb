@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/command_line.h"
+#include "base/mac/sdk_forward_declarations.h"
 #import "base/mac/mac_util.h"
 #include "chrome/browser/fullscreen.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -97,13 +98,15 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 
 @interface PresentationModeController (PrivateMethods)
 
+// Updates the visibility of the menu bar and the dock.
+- (void)updateMenuBarAndDockVisibility;
+
+// Whether the current screen is expected to have a menu bar, regardless of
+// current visibility of the menu bar.
+- (BOOL)doesScreenHaveMenuBar;
+
 // Returns YES if the window is on the primary screen.
 - (BOOL)isWindowOnPrimaryScreen;
-
-// Returns YES if it is ok to show and hide the menu bar in response to the
-// overlay opening and closing.  Will return NO if the window is not main or not
-// on the primary monitor.
-- (BOOL)shouldToggleMenuBar;
 
 // Returns |kFullScreenModeHideAll| when the overlay is hidden and
 // |kFullScreenModeHideDock| when the overlay is shown.
@@ -356,8 +359,7 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 - (void)changeFloatingBarShownFraction:(CGFloat)fraction {
   [browserController_ setFloatingBarShownFraction:fraction];
 
-  if ([self shouldToggleMenuBar])
-    [self setSystemFullscreenModeTo:[self desiredSystemFullscreenMode]];
+  [self updateMenuBarAndDockVisibility];
 }
 
 // Used to activate the floating bar in presentation mode.
@@ -429,16 +431,35 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 
 @implementation PresentationModeController (PrivateMethods)
 
+- (void)updateMenuBarAndDockVisibility {
+  if (![[browserController_ window] isMainWindow] ||
+      ![browserController_ isInImmersiveFullscreen]) {
+    [self setSystemFullscreenModeTo:base::mac::kFullScreenModeNormal];
+    return;
+  }
+
+  // The screen does not have a menu bar, so there's no need to hide it.
+  if (![self doesScreenHaveMenuBar]) {
+    [self setSystemFullscreenModeTo:base::mac::kFullScreenModeHideDock];
+    return;
+  }
+
+  [self setSystemFullscreenModeTo:[self desiredSystemFullscreenMode]];
+}
+
+- (BOOL)doesScreenHaveMenuBar {
+  if (![[NSScreen class]
+          respondsToSelector:@selector(screensHaveSeparateSpaces)])
+    return [self isWindowOnPrimaryScreen];
+
+  BOOL eachScreenShouldHaveMenuBar = [NSScreen screensHaveSeparateSpaces];
+  return eachScreenShouldHaveMenuBar ?: [self isWindowOnPrimaryScreen];
+}
+
 - (BOOL)isWindowOnPrimaryScreen {
   NSScreen* screen = [[browserController_ window] screen];
   NSScreen* primaryScreen = [[NSScreen screens] objectAtIndex:0];
   return (screen == primaryScreen);
-}
-
-- (BOOL)shouldToggleMenuBar {
-  return [browserController_ isInImmersiveFullscreen] &&
-         [self isWindowOnPrimaryScreen] &&
-         [[browserController_ window] isMainWindow];
 }
 
 - (base::mac::FullScreenMode)desiredSystemFullscreenMode {
@@ -637,26 +658,20 @@ const CGFloat kFloatingBarVerticalOffset = 22;
   // Call the main status resignation code to perform the associated cleanup,
   // since we will no longer be receiving actual status resignation
   // notifications.
-  [self hideActiveWindowUI];
+  [self setSystemFullscreenModeTo:base::mac::kFullScreenModeNormal];
 
   // No more calls back up to the BWC.
   browserController_ = nil;
 }
 
 - (void)showActiveWindowUI {
-  DCHECK_EQ(systemFullscreenMode_, base::mac::kFullScreenModeNormal);
-  if (systemFullscreenMode_ != base::mac::kFullScreenModeNormal)
-    return;
-
-  if ([self shouldToggleMenuBar])
-    [self setSystemFullscreenModeTo:[self desiredSystemFullscreenMode]];
+  [self updateMenuBarAndDockVisibility];
 
   // TODO(rohitrao): Insert the Exit Fullscreen button.  http://crbug.com/35956
 }
 
 - (void)hideActiveWindowUI {
-  if ([self shouldToggleMenuBar])
-    [self setSystemFullscreenModeTo:base::mac::kFullScreenModeNormal];
+  [self updateMenuBarAndDockVisibility];
 
   // TODO(rohitrao): Remove the Exit Fullscreen button.  http://crbug.com/35956
 }
