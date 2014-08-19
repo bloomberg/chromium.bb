@@ -151,10 +151,6 @@
         'resources/athena_resources.gyp:athena_resources',
       ],
       'sources': [
-        'main/athena_launcher.cc',
-        'main/athena_launcher.h',
-        'main/placeholder.cc',
-        'main/placeholder.h',
         'test/athena_test_base.cc',
         'test/athena_test_base.h',
         'test/athena_test_helper.cc',
@@ -171,10 +167,11 @@
       'target_name': 'athena_unittests',
       'type': 'executable',
       'dependencies': [
-        '../testing/gtest.gyp:gtest',
         '../skia/skia.gyp:skia',
+        '../testing/gtest.gyp:gtest',
         'athena_lib',
         'athena_test_support',
+        'main/athena_main.gyp:athena_main_lib',
         'resources/athena_resources.gyp:athena_pak',
       ],
       'sources': [

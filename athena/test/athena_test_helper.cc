@@ -87,9 +87,9 @@ void AthenaTestHelper::SetUp(ui::ContextFactory* context_factory) {
   // Ensure width != height so tests won't confuse them.
   host()->SetBounds(gfx::Rect(host_size));
 
-  athena::StartAthena(root_window(),
-                      new SampleActivityFactory(),
-                      new TestAppModelBuilder());
+  athena::StartAthenaEnv(root_window());
+  athena::StartAthenaSession(new SampleActivityFactory(),
+                             new TestAppModelBuilder());
 }
 
 void AthenaTestHelper::TearDown() {

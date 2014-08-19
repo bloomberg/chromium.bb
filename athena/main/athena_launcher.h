@@ -9,14 +9,23 @@ namespace aura {
 class Window;
 }
 
+namespace content {
+class BrowserContext;
+}
+
 namespace athena {
 class ActivityFactory;
 class AppModelBuilder;
 
 // Starts/shuts down the athena shell environment.
-void StartAthena(aura::Window* root_window,
-                 ActivityFactory* activity_factory,
-                 AppModelBuilder* app_model_builder);
+void StartAthenaEnv(aura::Window* root_window);
+
+void StartAthenaSessionWithContext(content::BrowserContext* context);
+
+// Starts/shuts down the athena shell environment.
+void StartAthenaSession(ActivityFactory* activity_factory,
+                        AppModelBuilder* app_model_builder);
+
 void ShutdownAthena();
 
 }  // namespace athena
