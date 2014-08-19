@@ -6081,4 +6081,69 @@ TEST_F(WebFrameTest, LoaderOriginAccess)
     EXPECT_FALSE(client.failed());
 }
 
+class NavigationTransitionCallbackWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
+public:
+    NavigationTransitionCallbackWebFrameClient()
+        : m_navigationalDataReceivedCount(0)
+        , m_provisionalLoadCount(0)
+        , m_wasLastProvisionalLoadATransition(false) { }
+
+    virtual void addNavigationTransitionData(const WebString& allowedDestinationOrigin, const WebString& selector, const WebString& markup) OVERRIDE
+    {
+        m_navigationalDataReceivedCount++;
+    }
+
+    virtual void didStartProvisionalLoad(WebLocalFrame* localFrame, bool isTransitionNavigation) OVERRIDE
+    {
+        m_provisionalLoadCount++;
+        m_wasLastProvisionalLoadATransition = isTransitionNavigation;
+    }
+
+    unsigned navigationalDataReceivedCount() const { return m_navigationalDataReceivedCount; }
+    unsigned provisionalLoadCount() const { return m_provisionalLoadCount; }
+    bool wasLastProvisionalLoadATransition() const { return m_wasLastProvisionalLoadATransition; }
+
+private:
+    unsigned m_navigationalDataReceivedCount;
+    unsigned m_provisionalLoadCount;
+    bool m_wasLastProvisionalLoadATransition;
+};
+
+TEST_F(WebFrameTest, NavigationTransitionCallbacks)
+{
+    blink::RuntimeEnabledFeatures::setNavigationTransitionsEnabled(true);
+    FrameTestHelpers::WebViewHelper viewHelper;
+    NavigationTransitionCallbackWebFrameClient frameClient;
+    WebLocalFrame* localFrame = viewHelper.initialize(true, &frameClient)->mainFrame()->toWebLocalFrame();
+
+    const char* transitionHTMLString =
+        "<!DOCTYPE html>"
+        "<meta name='transition-elements' content='#foo;*'>"
+        "<div id='foo'>";
+
+    // Initial document load should not be a transition.
+    FrameTestHelpers::loadHTMLString(localFrame, transitionHTMLString, toKURL("http://www.test.com"));
+    EXPECT_EQ(1u, frameClient.provisionalLoadCount());
+    EXPECT_FALSE(frameClient.wasLastProvisionalLoadATransition());
+    EXPECT_EQ(0u, frameClient.navigationalDataReceivedCount());
+
+    // Going from www.test.com containing transition elements to about:blank, should be a transition.
+    FrameTestHelpers::loadHTMLString(localFrame, transitionHTMLString, toKURL("about:blank"));
+    EXPECT_EQ(2u, frameClient.provisionalLoadCount());
+    EXPECT_TRUE(frameClient.wasLastProvisionalLoadATransition());
+    EXPECT_EQ(1u, frameClient.navigationalDataReceivedCount());
+
+    // Navigating to the URL of the current page shouldn't be a transition.
+    FrameTestHelpers::loadHTMLString(localFrame, transitionHTMLString, toKURL("about:blank"));
+    EXPECT_EQ(3u, frameClient.provisionalLoadCount());
+    EXPECT_FALSE(frameClient.wasLastProvisionalLoadATransition());
+    EXPECT_EQ(1u, frameClient.navigationalDataReceivedCount());
+
+    // Neither should a page reload.
+    localFrame->reload();
+    EXPECT_EQ(4u, frameClient.provisionalLoadCount());
+    EXPECT_FALSE(frameClient.wasLastProvisionalLoadATransition());
+    EXPECT_EQ(1u, frameClient.navigationalDataReceivedCount());
+}
+
 } // namespace

@@ -1310,7 +1310,7 @@ void FrameLoader::loadWithNavigationAction(const NavigationAction& action, Frame
 
 
     bool isTransitionNavigation = false;
-    if (RuntimeEnabledFeatures::navigationTransitionsEnabled())
+    if (RuntimeEnabledFeatures::navigationTransitionsEnabled() && type != FrameLoadTypeReload && type != FrameLoadTypeReloadFromOrigin && type != FrameLoadTypeSame)
         isTransitionNavigation = dispatchNavigationTransitionData();
 
     // stopAllLoaders can detach the LocalFrame, so protect it.
