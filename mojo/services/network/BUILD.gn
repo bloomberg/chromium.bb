@@ -2,7 +2,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("network") {
+import("//mojo/system.gni")
+
+# GYP version: mojo/mojo_services.gypi:mojo_network_service
+shared_library("network") {
+  output_name = "mojo_network_service"
+
+  deps = [
+    ":lib",
+    "//mojo/services/public/interfaces/network",
+  ]
+  deps += mojo_system_for_shared_library
+
+  sources = [ "main.cc" ]
+}
+
+# GYP version: mojo/mojo_services.gypi:mojo_network_service_lib
+source_set("lib") {
   deps = [
     "//base",
     "//mojo/common",

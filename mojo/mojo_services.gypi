@@ -147,6 +147,7 @@
       ],
     },
     {
+      # GN version: //mojo/services/public/cpp/geometry
       'target_name': 'mojo_surfaces_lib',
       'type': '<(component)',
       'defines': [
@@ -389,6 +390,7 @@
       ],
     },
     {
+      # GN version: //mojo/services/surfaces
       'target_name': 'mojo_surfaces_service',
       'type': 'loadable_module',
       'dependencies': [

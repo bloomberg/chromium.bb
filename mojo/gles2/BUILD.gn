@@ -10,7 +10,7 @@ config("mojo_use_gles2") {
 }
 
 config("gles2_use_mojo") {
-  defines = [ "USE_MOJO_GLES2" ]
+  defines = [ "GLES2_USE_MOJO" ]
 }
 
 # GYP version: mojo/mojo_base.gyp:mojo_gles2_impl
@@ -23,7 +23,6 @@ component("gles2") {
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/common",
     "//gpu/command_buffer/client:gles2_implementation",
-    "//mojo/public/gles2",
     "//mojo/services/gles2:bindings",
     "//mojo/services/gles2:interfaces",
     "//mojo/environment:chromium",
@@ -31,6 +30,7 @@ component("gles2") {
   deps += mojo_system_for_component
 
   defines = [
+    "GL_GLEXT_PROTOTYPES",
     "MOJO_GLES2_IMPL_IMPLEMENTATION",
     "MOJO_GLES2_IMPLEMENTATION",
   ]

@@ -1,0 +1,36 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/system.gni")
+
+# GYP version: mojo/mojo_services.gypi:mojo_surfaces_lib
+component("surfaces") {
+  output_name = "mojo_surfaces_lib"
+
+  deps = [
+    "//base",
+    "//cc",
+    "//cc/surfaces",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//mojo/environment:chromium",
+    "//mojo/services/public/interfaces/surfaces",
+    "//mojo/services/public/cpp/geometry",
+  ] + mojo_system_for_component
+
+  forward_dependent_configs_from = [
+    "//mojo/services/public/cpp/geometry",
+    "//ui/gfx",
+  ]
+
+  defines = [
+    "MOJO_SURFACES_IMPLEMENTATION",
+  ]
+
+  sources = [
+    "lib/surfaces_type_converters.cc",
+    "surfaces_type_converters.h",
+    "mojo_surfaces_export.h",
+  ]
+}

@@ -18,7 +18,11 @@
 if (is_component_build) {
   mojo_system_for_component = [ "//mojo/system" ]
   mojo_system_for_shared_library = [ "//mojo/system" ]
+  mojo_gles2_for_component = [ "//mojo/gles2" ]
+  mojo_gles2_for_shared_library = [ "//mojo/gles2" ]
 } else {
   mojo_system_for_component = [] # nothing to link against here
   mojo_system_for_shared_library = [ "//mojo/public/c/system" ]
+  mojo_gles2_for_component = []
+  mojo_gles2_for_shared_library = [ "//mojo/public/gles2" ]
 }

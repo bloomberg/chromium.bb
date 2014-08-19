@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP version: mojo/mojo.gyp:mojo_common_lib
+import("//mojo/system.gni")
+
+# GYP version: mojo/mojo_base.gyp:mojo_common_lib
 component("common") {
   output_name = "mojo_common_lib"
 
@@ -25,6 +27,5 @@ component("common") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//mojo/system",
-  ]
+  ] + mojo_system_for_component
 }

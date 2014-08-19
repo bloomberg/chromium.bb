@@ -6,9 +6,8 @@ config("gles2_config") {
   defines = [ "GLES2_USE_MOJO" ]
 }
 
-shared_library("gles2") {
-  output_name = "mojo_gles2"
-
+# GYP version: mojo/mojo_public.gypi:mojo_gles2
+static_library("gles2") {
   defines = [
     "MOJO_GLES2_IMPLEMENTATION",
   ]
@@ -17,13 +16,22 @@ shared_library("gles2") {
     ":gles2_config",
     "//third_party/khronos:khronos_headers",
   ]
-  direct_dependent_configs = [ ":gles2_config" ]
+  direct_dependent_configs = [
+    ":gles2_config",
+    "//third_party/khronos:khronos_headers",
+  ]
 
   sources = [
     "../c/gles2/gles2.h",
     "../c/gles2/gles2_export.h",
     "../platform/native/gles2_thunks.cc",
     "../platform/native/gles2_thunks.h",
+    "../platform/native/gles2_impl_thunks.cc",
+    "../platform/native/gles2_impl_thunks.h",
+    "../platform/native/gles2_impl_chromium_texture_mailbox_thunks.cc",
+    "../platform/native/gles2_impl_chromium_texture_mailbox_thunks.h",
+    "../platform/native/gles2_impl_chromium_sync_point_thunks.cc",
+    "../platform/native/gles2_impl_chromium_sync_point_thunks.h",
     "gles2_interface.h",
   ]
 

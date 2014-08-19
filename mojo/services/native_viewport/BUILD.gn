@@ -11,6 +11,7 @@ static_library("native_viewport") {
   deps = [
     "//base",
     "//ui/events",
+    "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//mojo/public/cpp/application:chromium",
@@ -50,7 +51,10 @@ static_library("native_viewport") {
 
   if (use_x11) {
     sources += [ "platform_viewport_x11.cc" ]
-    deps += [ "//ui/platform_window/x11" ]
+    deps += [
+      "//ui/events/platform/x11",
+      "//ui/platform_window/x11",
+    ]
   }
 
   if (use_ozone) {

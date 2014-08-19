@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //mojo/examples/echo:client
       'target_name': 'mojo_echo_client',
       'type': 'loadable_module',
       'dependencies': [
@@ -28,6 +29,7 @@
       'includes': [ 'build/package_app.gypi' ],
     },
     {
+      # GN version: //mojo/examples/echo:bindings
       'target_name': 'mojo_echo_service_bindings',
       'type': 'static_library',
       'sources': [
@@ -42,6 +44,7 @@
       ],
     },
     {
+      # GN version: //mojo/examples/echo:service
       'target_name': 'mojo_echo_service',
       'type': 'loadable_module',
       'dependencies': [
@@ -65,12 +68,10 @@
       'includes': [ 'build/package_app.gypi' ],
     },
     {
+      # GN version: //mojo/examples/sample_app
       'target_name': 'mojo_sample_app',
       'type': 'loadable_module',
       'dependencies': [
-        # TODO(darin): we should not be linking against these libraries!
-        '../ui/events/events.gyp:events',
-        '../ui/gfx/gfx.gyp:gfx_geometry',
         'mojo_base.gyp:mojo_application_standalone',
         'mojo_base.gyp:mojo_cpp_bindings',
         'mojo_base.gyp:mojo_environment_standalone',
@@ -189,6 +190,7 @@
       'includes': [ 'build/package_app.gypi' ],
     },
     {
+      # GN version: //mojo/examples/wget
       'target_name': 'mojo_wget',
       'type': 'loadable_module',
       'dependencies': [

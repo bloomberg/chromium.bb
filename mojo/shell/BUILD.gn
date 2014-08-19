@@ -26,6 +26,8 @@ executable("mojo_shell") {
     "desktop/mojo_main.cc"
   ]
 }
+
+# GYP version: mojo/mojo.gyp:mojo_shell_lib
 source_set("lib") {
   deps = [
     ":app_child_process_bindings",
@@ -37,7 +39,6 @@ source_set("lib") {
     "//mojo/common",
     "//mojo/gles2",
     "//mojo/public/cpp/application:chromium",
-    "//mojo/public/gles2",
     "//mojo/public/interfaces/application",
     "//mojo/services/native_viewport",
     "//mojo/services/public/interfaces/native_viewport",
@@ -92,7 +93,7 @@ source_set("lib") {
     ]
   } else if (is_android) {
     deps += [
-      "//mojo/services/network",
+      "//mojo/services/network:lib",
     ]
     sources += [
       "network_application_loader.cc",

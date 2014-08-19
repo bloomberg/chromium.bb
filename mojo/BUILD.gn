@@ -5,6 +5,7 @@
 group("mojo") {
   deps = [
     "//mojo/common",
+    "//mojo/examples",
     "//mojo/public",
     "//mojo/services",
     "//mojo/shell:mojo_shell",

@@ -1,0 +1,96 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/public/tools/bindings/mojom.gni")
+import("//mojo/system.gni")
+
+group("surfaces_app") {
+  deps = [
+    ":child_app",
+    ":parent_app",
+  ]
+}
+
+# GYP version: mojo/mojo_examples.gypi:mojo_surfaces_app
+shared_library("parent_app") {
+  output_name = "mojo_surfaces_app"
+
+  deps = [
+    ":bindings",
+    ":util",
+    "//base",
+    "//cc",
+    "//cc/surfaces",
+    "//skia",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//mojo/common",
+    "//mojo/public/cpp/application:chromium",
+    "//mojo/public/cpp/application:main_chromium",
+    "//mojo/environment:chromium",
+    "//mojo/services/public/interfaces/geometry",
+    "//mojo/services/public/cpp/geometry",
+    "//mojo/services/public/interfaces/surfaces",
+    "//mojo/services/public/cpp/surfaces",
+  ] + mojo_system_for_shared_library
+
+  sources = [
+    "embedder.cc",
+    "embedder.h",
+    "surfaces_app.cc",
+  ]
+}
+
+
+# GYP version: mojo/mojo_examples.gypi:mojo_surfaces_child_app
+shared_library("child_app") {
+  output_name = "mojo_surfaces_child_app"
+
+  deps = [
+    ":bindings",
+    ":util",
+    "//base",
+    "//cc",
+    "//cc/surfaces",
+    "//skia",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//mojo/common",
+    "//mojo/public/cpp/application:chromium",
+    "//mojo/public/cpp/application:main_chromium",
+    "//mojo/environment:chromium",
+    "//mojo/services/public/interfaces/geometry",
+    "//mojo/services/public/cpp/geometry",
+    "//mojo/services/public/interfaces/surfaces",
+    "//mojo/services/public/cpp/surfaces",
+  ] + mojo_system_for_shared_library
+
+  sources = [
+    "child_app.cc",
+    "child_impl.cc",
+    "child_impl.h",
+  ]
+}
+
+source_set("util") {
+  deps = [
+    "//cc",
+    "//skia",
+  ]
+
+  sources = [
+    "surfaces_util.cc",
+    "surfaces_util.h",
+  ]
+}
+
+# GYP version: mojo/mojo_examples.gypi:mojo_surfaces_app_bindings
+mojom("bindings") {
+  deps = [
+    "//mojo/services/public/interfaces/geometry",
+    "//mojo/services/public/interfaces/surfaces",
+  ]
+
+  sources = [ "child.mojom" ]
+}
