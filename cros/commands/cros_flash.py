@@ -298,10 +298,19 @@ class USBImager(object):
     return DevserverURLToLocalPath(url, DEVSERVER_STATIC_DIR,
                                    path.rsplit(os.path.sep)[-1])
 
+  def IsFilePathGPTDiskImage(self, file_path):
+    """Determines if the file is a valid GPT disk."""
+    if os.path.isfile(file_path):
+      with cros_build_lib.Open(file_path) as image_file:
+        image_file.seek(0x1fe)
+        if image_file.read(10) == '\x55\xaaEFI PART':
+          return True
+    return False
+
   def ChooseImageFromDirectory(self, dir_path):
     """Lists all image files in |dir_path| and ask user to select one."""
     images = [x for x in os.listdir(dir_path) if
-              os.path.isfile(os.path.join(dir_path, x)) and x.endswith(".bin")]
+              self.IsFilePathGPTDiskImage(os.path.join(dir_path, x))]
     idx = 0
     if len(images) == 0:
       raise ValueError('No image found in %s.' % dir_path)
@@ -316,6 +325,14 @@ class USBImager(object):
     """Returns the image path to use."""
     image_path = translated_path = None
     if os.path.isfile(self.image):
+      if not self.yes and not self.IsFilePathGPTDiskImage(self.image):
+        # TODO(wnwen): Open the tarball and if there is just one file in it,
+        #     use that instead. Existing code in upload_symbols.py.
+        if cros_build_lib.BooleanPrompt(
+            prolog='The given image file is not a valid disk image. Perhaps '
+                   'you forgot to untar it.',
+            prompt='Terminate the current flash process?'):
+          cros_build_lib.Die('Cros Flash terminated by user.')
       image_path = self.image
     elif os.path.isdir(self.image):
       # Ask user which image (*.bin) in the folder to use.

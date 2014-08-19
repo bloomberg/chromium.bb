@@ -150,7 +150,7 @@ class UpdateRunThroughTest(cros_test_lib.MockTempDirTestCase,
   def testUpdateAll(self):
     """Tests that update methods are called correctly."""
     self.SetupCommandMock([self.DEVICE, self.IMAGE])
-    with mock.patch('os.path.exists', return_value=True) as _m:
+    with mock.patch('os.path.exists', return_value=True):
       self.cmd_mock.inst.Run()
       self.assertTrue(self.updater_mock.patched['UpdateStateful'].called)
       self.assertTrue(self.updater_mock.patched['UpdateRootfs'].called)
@@ -158,7 +158,7 @@ class UpdateRunThroughTest(cros_test_lib.MockTempDirTestCase,
   def testUpdateStateful(self):
     """Tests that update methods are called correctly."""
     self.SetupCommandMock(['--no-rootfs-update', self.DEVICE, self.IMAGE])
-    with mock.patch('os.path.exists', return_value=True) as _m:
+    with mock.patch('os.path.exists', return_value=True):
       self.cmd_mock.inst.Run()
       self.assertTrue(self.updater_mock.patched['UpdateStateful'].called)
       self.assertFalse(self.updater_mock.patched['UpdateRootfs'].called)
@@ -166,7 +166,7 @@ class UpdateRunThroughTest(cros_test_lib.MockTempDirTestCase,
   def testUpdateRootfs(self):
     """Tests that update methods are called correctly."""
     self.SetupCommandMock(['--no-stateful-update', self.DEVICE, self.IMAGE])
-    with mock.patch('os.path.exists', return_value=True) as _m:
+    with mock.patch('os.path.exists', return_value=True):
       self.cmd_mock.inst.Run()
       self.assertFalse(self.updater_mock.patched['UpdateStateful'].called)
       self.assertTrue(self.updater_mock.patched['UpdateRootfs'].called)
@@ -174,7 +174,7 @@ class UpdateRunThroughTest(cros_test_lib.MockTempDirTestCase,
   def testMissingPayloads(self):
     """Tests we exit when payloads are missing."""
     self.SetupCommandMock([self.DEVICE, self.IMAGE])
-    with mock.patch('os.path.exists', return_value=False) as _m1:
+    with mock.patch('os.path.exists', return_value=False):
       self.assertRaises(cros_build_lib.DieSystemExit, self.cmd_mock.inst.Run)
 
 
@@ -183,7 +183,8 @@ class USBImagerMock(partial_mock.PartialCmdMock):
   TARGET = 'chromite.cros.commands.cros_flash.USBImager'
   ATTRS = ('GetImagePathFromDevserver', 'CopyImageToDevice',
            'ChooseRemovableDevice', 'ListAllRemovableDevices',
-           'GetRemovableDeviceDescription')
+           'GetRemovableDeviceDescription', 'IsFilePathGPTDiskImage')
+  VALID_IMAGE = True
 
   def __init__(self):
     partial_mock.PartialCmdMock.__init__(self)
@@ -204,6 +205,10 @@ class USBImagerMock(partial_mock.PartialCmdMock):
   def GetRemovableDeviceDescription(self, _inst, *_args, **_kwargs):
     """Mock out GetRemovableDeviceDescription."""
 
+  def IsFilePathGPTDiskImage(self, _inst, *_args, **_kwargs):
+    """Mock out IsFilePathGPTDiskImage."""
+    return self.VALID_IMAGE
+
 
 class ImagingRunThroughTest(cros_test_lib.MockTempDirTestCase,
                             cros_test_lib.LoggingTestCase):
@@ -219,7 +224,8 @@ class ImagingRunThroughTest(cros_test_lib.MockTempDirTestCase,
   def setUp(self):
     """Patches objects."""
     self.cmd_mock = None
-    self.imager_mock = self.StartPatcher(USBImagerMock())
+    self.usb_mock = USBImagerMock()
+    self.imager_mock = self.StartPatcher(self.usb_mock)
     self.PatchObject(cros_flash, 'GenerateXbuddyRequest',
                      return_value='xbuddy/local/latest')
     self.PatchObject(dev_server_wrapper, 'DevServerWrapper')
@@ -230,15 +236,25 @@ class ImagingRunThroughTest(cros_test_lib.MockTempDirTestCase,
   def testLocalImagePath(self):
     """Tests that imaging methods are called correctly."""
     self.SetupCommandMock(['usb:///dev/foo', self.IMAGE])
-    with mock.patch('os.path.isfile', return_value=True) as _m:
+    with mock.patch('os.path.isfile', return_value=True):
       self.cmd_mock.inst.Run()
       self.assertTrue(self.imager_mock.patched['CopyImageToDevice'].called)
+
+  def testLocalBadImagePath(self):
+    """Tests that using an image not having the magic bytes has prompt."""
+    self.usb_mock.VALID_IMAGE = False
+    self.SetupCommandMock(['usb:///dev/foo', self.IMAGE])
+    with mock.patch('os.path.isfile', return_value=True):
+      with mock.patch.object(cros_build_lib, 'BooleanPrompt') as mock_prompt:
+        mock_prompt.return_value = False
+        self.cmd_mock.inst.Run()
+        self.assertTrue(mock_prompt.called)
 
   def testNonLocalImgePath(self):
     """Tests that we try to get the image path from devserver."""
     self.SetupCommandMock(['usb:///dev/foo', self.IMAGE])
-    with mock.patch('os.path.isfile', return_value=False) as _m1:
-      with mock.patch('os.path.isdir', return_value=False) as _m2:
+    with mock.patch('os.path.isfile', return_value=False):
+      with mock.patch('os.path.isdir', return_value=False):
         self.cmd_mock.inst.Run()
         self.assertTrue(
             self.imager_mock.patched['GetImagePathFromDevserver'].called)
