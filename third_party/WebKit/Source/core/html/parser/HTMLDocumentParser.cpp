@@ -872,6 +872,12 @@ void HTMLDocumentParser::finish()
     // makes sense to call any methods on DocumentParser once it's been stopped.
     // However, FrameLoader::stop calls DocumentParser::finish unconditionally.
 
+    // flush may ending up executing arbitrary script, and possibly detach the parser.
+    RefPtr<HTMLDocumentParser> protect(this);
+    flush();
+    if (isDetached())
+        return;
+
     // Empty documents never got an append() call, and thus have never started
     // a background parser. In those cases, we ignore shouldUseThreading()
     // and fall through to the non-threading case.

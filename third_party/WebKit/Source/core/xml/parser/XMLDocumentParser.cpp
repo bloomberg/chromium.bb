@@ -441,6 +441,12 @@ void XMLDocumentParser::finish()
     // makes sense to call any methods on DocumentParser once it's been stopped.
     // However, FrameLoader::stop calls DocumentParser::finish unconditionally.
 
+    // flush may ending up executing arbitrary script, and possibly detach the parser.
+    RefPtr<XMLDocumentParser> protect(this);
+    flush();
+    if (isDetached())
+        return;
+
     if (m_parserPaused)
         m_finishCalled = true;
     else

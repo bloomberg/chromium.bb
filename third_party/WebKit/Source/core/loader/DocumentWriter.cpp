@@ -115,13 +115,9 @@ void DocumentWriter::end()
         OwnPtr<TextResourceDecoder> decoder = m_decoderBuilder.buildFor(m_document);
         m_parser->setDecoder(decoder.release());
     }
-    // flush() can result replacing DocumentLoader::m_writer.
+
+    // finish() can result replacing DocumentLoader::m_writer.
     RefPtrWillBeRawPtr<DocumentWriter> protectingThis(this);
-    m_parser->flush();
-
-    if (!m_parser)
-        return;
-
     m_parser->finish();
     m_parser = nullptr;
     m_document = nullptr;
