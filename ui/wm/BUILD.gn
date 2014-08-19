@@ -7,7 +7,6 @@ component("wm") {
     "core/accelerator_delegate.h",
     "core/accelerator_filter.cc",
     "core/accelerator_filter.h",
-    "core/base_focus_rules.h",
     "core/base_focus_rules.cc",
     "core/base_focus_rules.h",
     "core/capture_controller.cc",

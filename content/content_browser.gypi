@@ -1055,7 +1055,6 @@
       'browser/renderer_host/render_process_host_impl.h',
       'browser/renderer_host/render_sandbox_host_linux.cc',
       'browser/renderer_host/render_sandbox_host_linux.h',
-      'browser/renderer_host/render_process_host_impl.h',
       'browser/renderer_host/render_view_host_delegate.cc',
       'browser/renderer_host/render_view_host_delegate.h',
       'browser/renderer_host/render_view_host_delegate_view.h',

@@ -17,7 +17,6 @@ source_set("common") {
     "debug_marker_manager.h",
     "gles2_cmd_format.cc",
     "gles2_cmd_format.h",
-    "gles2_cmd_format.h",
     "gles2_cmd_format_autogen.h",
     "gles2_cmd_ids.h",
     "gles2_cmd_ids_autogen.h",

@@ -125,12 +125,12 @@ component("printing") {
   }
 
   if (use_cups) {
-    cups_version = exec_script("cups_config_helper.py", [ "--api-version" ],
-                               "trim string")
-
     configs += [ ":cups" ]
 
     if (is_linux) {
+      cups_version = exec_script("cups_config_helper.py", [ "--api-version" ],
+                                 "trim string")
+
       if (cups_version == "1.6" || cups_version == "1.7") {
         cflags += [
           # CUPS 1.6 deprecated the PPD APIs, but we will stay with this

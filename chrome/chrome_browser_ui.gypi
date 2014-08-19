@@ -353,7 +353,6 @@
       'browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h',
       'browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.mm',
       'browser/ui/cocoa/constrained_window/constrained_window_custom_window.h',
-      'browser/ui/cocoa/constrained_window/constrained_window_custom_window.h',
       'browser/ui/cocoa/constrained_window/constrained_window_custom_window.mm',
       'browser/ui/cocoa/constrained_window/constrained_window_mac.h',
       'browser/ui/cocoa/constrained_window/constrained_window_mac.mm',

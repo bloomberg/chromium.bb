@@ -920,11 +920,9 @@
     'chrome_browser_extensions_networking_private_sources': [
       'browser/extensions/api/networking_private/crypto_verify_impl.cc',
       'browser/extensions/api/networking_private/crypto_verify_impl.h',
-      'browser/extensions/api/networking_private/networking_private_api.h',
       'browser/extensions/api/networking_private/networking_private_credentials_getter.h',
       'browser/extensions/api/networking_private/networking_private_credentials_getter_mac.cc',
       'browser/extensions/api/networking_private/networking_private_credentials_getter_win.cc',
-      'browser/extensions/api/networking_private/networking_private_event_router.h',
       'browser/extensions/api/networking_private/networking_private_event_router_nonchromeos.cc',
       'browser/extensions/api/networking_private/networking_private_service_client.cc',
       'browser/extensions/api/networking_private/networking_private_service_client.h',

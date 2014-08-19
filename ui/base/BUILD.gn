@@ -217,7 +217,6 @@ component("base") {
     "ui_base_switches_util.h",
     "ui_base_types.cc",
     "ui_base_types.h",
-    "ui_base_export.h",
     "view_prop.cc",
     "view_prop.h",
     "webui/jstemplate_builder.cc",

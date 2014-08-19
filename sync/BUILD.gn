@@ -170,7 +170,6 @@ source_set("sync_core") {
     "internal_api/public/base/cancelation_signal.cc",
     "internal_api/public/base/cancelation_signal.h",
     "internal_api/public/base/enum_set.h",
-    "internal_api/public/base/enum_set.h",
     "internal_api/public/base/invalidation_interface.cc",
     "internal_api/public/base/invalidation_interface.h",
     "internal_api/public/base/model_type.h",
