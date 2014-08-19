@@ -127,11 +127,11 @@ function main() {
 
   req.onload = handleResponse;
   req.onerror = handleError;
+  req.open("GET", feedUrl, !synchronousRequest);
   // Not everyone sets the mime type correctly, which causes handleResponse
   // to fail to XML parse the response text from the server. By forcing
   // it to text/xml we avoid this.
   req.overrideMimeType('text/xml');
-  req.open("GET", feedUrl, !synchronousRequest);
   req.send(null);
 
   document.getElementById('feedUrl').href = 'view-source:' + feedUrl;
