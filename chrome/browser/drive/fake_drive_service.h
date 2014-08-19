@@ -28,6 +28,12 @@ namespace drive {
 // 3) Update the in-memory resource list by requests like DeleteResource().
 class FakeDriveService : public DriveServiceInterface {
  public:
+  class ChangeObserver {
+   public:
+    virtual ~ChangeObserver() {}
+    virtual void OnNewChangeAvailable() = 0;
+  };
+
   FakeDriveService();
   virtual ~FakeDriveService();
 
@@ -289,6 +295,9 @@ class FakeDriveService : public DriveServiceInterface {
       const std::string& resource_id,
       google_apis::drive::PermissionRole user_permission);
 
+  void AddChangeObserver(ChangeObserver* observer);
+  void RemoveChangeObserver(ChangeObserver* observer);
+
  private:
   struct EntryInfo;
   struct UploadSession;
@@ -335,6 +344,8 @@ class FakeDriveService : public DriveServiceInterface {
   // Returns new upload session URL.
   GURL GetNewUploadSessionUrl();
 
+  void NotifyObservers();
+
   typedef std::map<std::string, EntryInfo*> EntryInfoMap;
   EntryInfoMap entries_;
   scoped_ptr<google_apis::AboutResource> about_resource_;
@@ -356,6 +367,10 @@ class FakeDriveService : public DriveServiceInterface {
   GURL share_url_base_;
   std::string app_json_template_;
   std::string open_url_format_;
+
+  ObserverList<ChangeObserver> change_observers_;
+
+  base::WeakPtrFactory<FakeDriveService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDriveService);
 };

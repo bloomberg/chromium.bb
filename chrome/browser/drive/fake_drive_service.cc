@@ -206,7 +206,8 @@ FakeDriveService::FakeDriveService()
       blocked_file_list_load_count_(0),
       offline_(false),
       never_return_all_file_list_(false),
-      share_url_base_("https://share_url/") {
+      share_url_base_("https://share_url/"),
+      weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   about_resource_->set_largest_change_id(654321);
@@ -647,6 +648,10 @@ CancelCallback FakeDriveService::DeleteResource(
   change->set_file(scoped_ptr<FileResource>());
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(callback, HTTP_NO_CONTENT));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&FakeDriveService::NotifyObservers,
+                 weak_ptr_factory_.GetWeakPtr()));
   return CancelCallback();
 }
 
@@ -687,6 +692,10 @@ CancelCallback FakeDriveService::TrashResource(
   AddNewChangestamp(change);
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(callback, HTTP_SUCCESS));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&FakeDriveService::NotifyObservers,
+                 weak_ptr_factory_.GetWeakPtr()));
   return CancelCallback();
 }
 
@@ -827,6 +836,10 @@ CancelCallback FakeDriveService::CopyResource(
       base::Bind(callback,
                  HTTP_SUCCESS,
                  base::Passed(make_scoped_ptr(new FileResource(*new_file)))));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&FakeDriveService::NotifyObservers,
+                 weak_ptr_factory_.GetWeakPtr()));
   return CancelCallback();
 }
 
@@ -894,6 +907,10 @@ CancelCallback FakeDriveService::UpdateResource(
       FROM_HERE,
       base::Bind(callback, HTTP_SUCCESS,
                  base::Passed(make_scoped_ptr(new FileResource(*file)))));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&FakeDriveService::NotifyObservers,
+                 weak_ptr_factory_.GetWeakPtr()));
   return CancelCallback();
 }
 
@@ -930,6 +947,10 @@ CancelCallback FakeDriveService::AddResourceToDirectory(
   AddNewChangestamp(change);
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(callback, HTTP_SUCCESS));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&FakeDriveService::NotifyObservers,
+                 weak_ptr_factory_.GetWeakPtr()));
   return CancelCallback();
 }
 
@@ -962,6 +983,10 @@ CancelCallback FakeDriveService::RemoveResourceFromDirectory(
       AddNewChangestamp(change);
       base::MessageLoop::current()->PostTask(
           FROM_HERE, base::Bind(callback, HTTP_NO_CONTENT));
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&FakeDriveService::NotifyObservers,
+                     weak_ptr_factory_.GetWeakPtr()));
       return CancelCallback();
     }
   }
@@ -1167,6 +1192,10 @@ CancelCallback FakeDriveService::ResumeUpload(
 
     completion_callback.Run(HTTP_CREATED, make_scoped_ptr(
         new FileResource(*new_entry->change_resource.file())));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&FakeDriveService::NotifyObservers,
+                   weak_ptr_factory_.GetWeakPtr()));
     return CancelCallback();
   }
 
@@ -1191,6 +1220,10 @@ CancelCallback FakeDriveService::ResumeUpload(
 
   completion_callback.Run(HTTP_SUCCESS, make_scoped_ptr(
       new FileResource(*file)));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&FakeDriveService::NotifyObservers,
+                 weak_ptr_factory_.GetWeakPtr()));
   return CancelCallback();
 }
 
@@ -1304,6 +1337,10 @@ void FakeDriveService::AddNewFileWithResourceId(
       base::Bind(callback, HTTP_CREATED,
                  base::Passed(make_scoped_ptr(
                      new FileResource(*new_entry->change_resource.file())))));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&FakeDriveService::NotifyObservers,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 CancelCallback FakeDriveService::AddNewDirectoryWithResourceId(
@@ -1343,6 +1380,10 @@ CancelCallback FakeDriveService::AddNewDirectoryWithResourceId(
       base::Bind(callback, HTTP_CREATED,
                  base::Passed(make_scoped_ptr(
                      new FileResource(*new_entry->change_resource.file())))));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&FakeDriveService::NotifyObservers,
+                 weak_ptr_factory_.GetWeakPtr()));
   return CancelCallback();
 }
 
@@ -1392,6 +1433,14 @@ google_apis::GDataErrorCode FakeDriveService::SetUserPermission(
 
   entry->user_permission = user_permission;
   return HTTP_SUCCESS;
+}
+
+void FakeDriveService::AddChangeObserver(ChangeObserver* change_observer) {
+  change_observers_.AddObserver(change_observer);
+}
+
+void FakeDriveService::RemoveChangeObserver(ChangeObserver* change_observer) {
+  change_observers_.RemoveObserver(change_observer);
 }
 
 FakeDriveService::EntryInfo* FakeDriveService::FindEntryByResourceId(
@@ -1639,6 +1688,10 @@ google_apis::CancelCallback FakeDriveService::AddPermission(
 
   NOTREACHED();
   return CancelCallback();
+}
+
+void FakeDriveService::NotifyObservers() {
+  FOR_EACH_OBSERVER(ChangeObserver, change_observers_, OnNewChangeAvailable());
 }
 
 }  // namespace drive
