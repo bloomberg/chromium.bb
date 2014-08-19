@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "url/gurl.h"
@@ -56,8 +55,6 @@ class SupervisedUserInterstitial : public content::InterstitialPageDelegate {
 
   PrefChangeRegistrar pref_change_registrar_;
 
-  // The UI language. Used for formatting the URL for display.
-  std::string languages_;
   GURL url_;
 
   base::Callback<void(bool)> callback_;

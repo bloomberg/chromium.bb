@@ -4,7 +4,6 @@
 
 #include "chrome/browser/supervised_user/supervised_user_interstitial.h"
 
-#include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -26,7 +25,6 @@
 #include "content/public/browser/web_ui.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
-#include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
@@ -130,7 +128,6 @@ bool SupervisedUserInterstitial::Init() {
       base::Bind(&SupervisedUserInterstitial::OnFilteringPrefsChanged,
                  base::Unretained(this)));
 
-  languages_ = prefs->GetString(prefs::kAcceptLanguages);
   interstitial_page_ =
       content::InterstitialPage::Create(web_contents_, true, url_, this);
   interstitial_page_->Show();
