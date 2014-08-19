@@ -114,6 +114,7 @@ AutomationNodeImpl.prototype = {
   },
 
   dispatchEvent: function(eventType) {
+    logging.LOG('dispatching ' + eventType + ' on ' + this.id);
     var path = [];
     var parent = this.parent();
     while (parent) {
@@ -282,6 +283,8 @@ var ATTRIBUTE_BLACKLIST = {'activedescendantId': true,
  */
 function AutomationRootNodeImpl(processID, routingID) {
   AutomationNodeImpl.call(this, this);
+  logging.LOG('AutomationRootNodeImpl constructor: processID=' + processID +
+              '; routingID=' + routingID + '; this.id=' + this.id);
   this.processID = processID;
   this.routingID = routingID;
   this.axNodeDataCache_ = {};
@@ -301,7 +304,6 @@ AutomationRootNodeImpl.prototype = {
 
   unserialize: function(update) {
     var updateState = { pendingNodes: {}, newNodes: {} };
-    var oldRootId = this.id;
 
     if (update.nodeIdToClear < 0) {
         logging.WARNING('Bad nodeIdToClear: ' + update.nodeIdToClear);
@@ -492,10 +494,15 @@ AutomationRootNodeImpl.prototype = {
   setData_: function(node, nodeData) {
     var nodeImpl = privates(node).impl;
     for (var key in AutomationAttributeDefaults) {
-      if (key in nodeData)
+      if (key in nodeData) {
+        if (key == 'id' && nodeImpl[key] != nodeData[key]) {
+          logging.LOG('Changing ID of node from ' + nodeImpl[key] + ' to ' +
+                      nodeData[key]);
+        }
         nodeImpl[key] = nodeData[key];
-      else
+      } else {
         nodeImpl[key] = AutomationAttributeDefaults[key];
+      }
     }
     for (var i = 0; i < AutomationAttributeTypes.length; i++) {
       var attributeType = AutomationAttributeTypes[i];

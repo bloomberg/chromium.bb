@@ -13,6 +13,7 @@ var Event = eventBindings.Event;
 var forEach = require('utils').forEach;
 var lastError = require('lastError');
 var schema = requireNative('automationInternal').GetSchemaAdditions();
+var logging = requireNative('logging');
 
 // TODO(aboxhall): Look into using WeakMap
 var idToAutomationRootNode = {};
@@ -33,7 +34,6 @@ var DESKTOP_TREE_ID = createAutomationRootNodeID(0, 0);
 automation.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
-  // TODO(aboxhall, dtseng): Make this return the speced AutomationRootNode obj.
   apiFunctions.setHandleRequest('getTree', function getTree(tabId, callback) {
     // enableTab() ensures the renderer for the active or specified tab has
     // accessibility enabled, and fetches its process and routing ids to use as
@@ -92,6 +92,8 @@ automation.registerCustomHook(function(bindingsAPI) {
 automationInternal.onAccessibilityEvent.addListener(function(data) {
   var pid = data.processID;
   var rid = data.routingID;
+  logging.LOG('onAccessibilityEvent { processID: ' + pid + ', routingID: ' +
+              rid + ', eventType: ' + data.eventType + ' }');
   var id = createAutomationRootNodeID(pid, rid);
   var targetTree = idToAutomationRootNode[id];
   if (!targetTree) {
@@ -101,6 +103,7 @@ automationInternal.onAccessibilityEvent.addListener(function(data) {
     targetTree = new AutomationRootNode(pid, rid);
     idToAutomationRootNode[id] = targetTree;
   }
+
   if (!privates(targetTree).impl.onAccessibilityEvent(data))
     return;
 
@@ -121,7 +124,7 @@ automationInternal.onAccessibilityEvent.addListener(function(data) {
   // have been cached in idToCallback, so call and delete it now that we
   // have the complete tree.
   for (var i = 0; i < idToCallback[id].length; i++) {
-    console.log('calling getTree() callback');
+    logging.LOG('calling getTree() callback');
     var callback = idToCallback[id][i];
     callback(targetTree);
   }

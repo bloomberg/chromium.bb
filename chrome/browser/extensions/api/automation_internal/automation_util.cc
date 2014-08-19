@@ -133,7 +133,6 @@ void DispatchAccessibilityEventsToAutomation(
       details.begin();
   for (; iter != details.end(); ++iter) {
     const content::AXEventNotificationDetails& event = *iter;
-
     AXEventParams ax_event_params;
     ax_event_params.process_id = event.process_id;
     ax_event_params.routing_id = event.routing_id;
@@ -148,6 +147,12 @@ void DispatchAccessibilityEventsToAutomation(
       PopulateNodeData(event.nodes[i], out_node);
       ax_tree_update.nodes.push_back(out_node);
     }
+
+    DLOG(INFO) << "AccessibilityEventReceived { "
+               << "process_id: " << event.process_id
+               << ", routing_id:" << event.routing_id
+               << ", event_type:" << ui::ToString(event.event_type)
+               << "}; dispatching to JS";
 
     // TODO(dtseng/aboxhall): Why are we sending only one update at a time? We
     // should match the behavior from renderer -> browser and send a
