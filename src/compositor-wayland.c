@@ -1464,8 +1464,7 @@ input_handle_keymap(void *data, struct wl_keyboard *keyboard, uint32_t format,
 	else
 		weston_seat_init_keyboard(&input->base, keymap);
 
-	if (keymap)
-		xkb_keymap_unref(keymap);
+	xkb_keymap_unref(keymap);
 
 	return;
 

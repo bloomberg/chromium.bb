@@ -214,8 +214,7 @@ ss_seat_handle_keymap(void *data, struct wl_keyboard *keyboard,
 	else
 		weston_seat_init_keyboard(&seat->base, keymap);
 
-	if (keymap)
-		xkb_keymap_unref(keymap);
+	xkb_keymap_unref(keymap);
 
 	return;
 

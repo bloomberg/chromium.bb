@@ -544,12 +544,10 @@ weston_keyboard_destroy(struct weston_keyboard *keyboard)
 
 #ifdef ENABLE_XKBCOMMON
 	if (keyboard->seat->compositor->use_xkbcommon) {
-		if (keyboard->xkb_state.state != NULL)
-			xkb_state_unref(keyboard->xkb_state.state);
+		xkb_state_unref(keyboard->xkb_state.state);
 		if (keyboard->xkb_info)
 			weston_xkb_info_destroy(keyboard->xkb_info);
-		if (keyboard->pending_keymap)
-			xkb_keymap_unref(keyboard->pending_keymap);
+		xkb_keymap_unref(keyboard->pending_keymap);
 	}
 #endif
 
@@ -1869,8 +1867,7 @@ weston_xkb_info_destroy(struct weston_xkb_info *xkb_info)
 	if (--xkb_info->ref_count > 0)
 		return;
 
-	if (xkb_info->keymap)
-		xkb_keymap_unref(xkb_info->keymap);
+	xkb_keymap_unref(xkb_info->keymap);
 
 	if (xkb_info->keymap_area)
 		munmap(xkb_info->keymap_area, xkb_info->keymap_size);
