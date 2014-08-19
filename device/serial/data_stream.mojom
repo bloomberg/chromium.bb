@@ -21,4 +21,26 @@ interface DataSourceClient {
   OnError(uint32 error_location, int32 error);
 };
 
+[Client=DataSinkClient]
+interface DataSink {
+  // Initializes this DataSink with a data pipe handle to use for data
+  // transmission.
+  Init(handle<data_pipe_consumer> consumer_handle);
+
+  // Requests the cancellation of any data that has been written to the pipe,
+  // but has not yet been sent to the sink.
+  Cancel(int32 error);
+};
+
+interface DataSinkClient {
+  // Reports that the sink has successfully received |bytes_sent| bytes of data.
+  ReportBytesSent(uint32 bytes_sent);
+
+  // Reports that the sink has received |bytes_sent| bytes of data (possibly 0)
+  // and encountered an error: |error|. The client should respond with
+  // |bytes_to_flush|, the number of bytes enqueued in the data pipe but not yet
+  // acked so the correct number of bytes can be flushed from the pipe.
+  ReportBytesSentAndError(uint32 bytes_sent, int32 error) => (uint32 bytes_to_flush);
+};
+
 }
