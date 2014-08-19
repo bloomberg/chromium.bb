@@ -31,6 +31,10 @@ class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
  private:
   Profile* GetProfile(content::DevToolsAgentHost* agent_host);
 
+  scoped_ptr<DevToolsProtocol::Response> CanEmulateNetworkConditions(
+      content::DevToolsAgentHost* agent_host,
+      DevToolsProtocol::Command* command);
+
   scoped_ptr<DevToolsProtocol::Response> EmulateNetworkConditions(
       content::DevToolsAgentHost* agent_host,
       DevToolsProtocol::Command* command);

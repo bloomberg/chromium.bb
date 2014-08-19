@@ -57,6 +57,8 @@ class CONTENT_EXPORT RendererOverridesHandler
           scoped_refptr<DevToolsProtocol::Command> command);
 
   // Network domain.
+  scoped_refptr<DevToolsProtocol::Response> CanEmulateNetworkConditions(
+      scoped_refptr<DevToolsProtocol::Command> command);
   scoped_refptr<DevToolsProtocol::Response> ClearBrowserCache(
       scoped_refptr<DevToolsProtocol::Command> command);
   scoped_refptr<DevToolsProtocol::Response> ClearBrowserCookies(

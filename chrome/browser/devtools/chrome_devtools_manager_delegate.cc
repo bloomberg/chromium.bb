@@ -45,11 +45,15 @@ base::DictionaryValue* ChromeDevToolsManagerDelegate::HandleCommand(
   if (!command)
     return NULL;
 
+  namespace network = ::chrome::devtools::Network;
   const std::string method = command->method();
   scoped_ptr<DevToolsProtocol::Response> response;
 
-  if (method == chrome::devtools::Network::emulateNetworkConditions::kName)
+  if (method == network::emulateNetworkConditions::kName) {
     response = EmulateNetworkConditions(agent_host, command.get());
+  } else if (method == network::canEmulateNetworkConditions::kName) {
+    response = CanEmulateNetworkConditions(agent_host, command.get());
+  }
 
   if (response)
     return response->Serialize();
@@ -62,6 +66,15 @@ Profile* ChromeDevToolsManagerDelegate::GetProfile(
   if (!web_contents)
     return NULL;
   return Profile::FromBrowserContext(web_contents->GetBrowserContext());
+}
+
+scoped_ptr<DevToolsProtocol::Response>
+ChromeDevToolsManagerDelegate::CanEmulateNetworkConditions(
+    content::DevToolsAgentHost* agent_host,
+    DevToolsProtocol::Command* command) {
+  base::DictionaryValue* result = new base::DictionaryValue();
+  result->SetBoolean(chrome::devtools::kResult, true);
+  return command->SuccessResponse(result);
 }
 
 scoped_ptr<DevToolsProtocol::Response>

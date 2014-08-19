@@ -84,6 +84,11 @@ RendererOverridesHandler::RendererOverridesHandler()
           &RendererOverridesHandler::GrantPermissionsForSetFileInputFiles,
           base::Unretained(this)));
   RegisterCommandHandler(
+      devtools::Network::canEmulateNetworkConditions::kName,
+      base::Bind(
+          &RendererOverridesHandler::CanEmulateNetworkConditions,
+          base::Unretained(this)));
+  RegisterCommandHandler(
       devtools::Network::clearBrowserCache::kName,
       base::Bind(
           &RendererOverridesHandler::ClearBrowserCache,
@@ -312,6 +317,14 @@ RendererOverridesHandler::GrantPermissionsForSetFileInputFiles(
 
 
 // Network agent handlers  ----------------------------------------------------
+
+scoped_refptr<DevToolsProtocol::Response>
+RendererOverridesHandler::CanEmulateNetworkConditions(
+    scoped_refptr<DevToolsProtocol::Command> command) {
+  base::DictionaryValue* result = new base::DictionaryValue();
+  result->SetBoolean(devtools::kResult, false);
+  return command->SuccessResponse(result);
+}
 
 scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::ClearBrowserCache(
