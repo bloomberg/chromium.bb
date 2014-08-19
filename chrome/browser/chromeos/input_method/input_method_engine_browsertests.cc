@@ -5,6 +5,7 @@
 #include "ash/ime/input_method_menu_item.h"
 #include "ash/ime/input_method_menu_manager.h"
 #include "base/bind_helpers.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
@@ -371,6 +372,53 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
                            ui::VKEY_A,
                            "KeyA",
                            ui::EF_SHIFT_DOWN | ui::EF_CAPS_LOCK_DOWN);
+    engine_handler->ProcessKeyEvent(key_event,
+                                    base::Bind(&KeyEventDoneCallback::Run,
+                                               base::Unretained(&callback)));
+    ASSERT_TRUE(keyevent_listener.WaitUntilSatisfied());
+    EXPECT_TRUE(keyevent_listener.was_satisfied());
+    callback.WaitUntilCalled();
+  }
+  // Media keys cases.
+  const struct {
+    ui::KeyboardCode keycode;
+    const char* code;
+    const char* key;
+  } kMediaKeyCases[] = {
+    { ui::VKEY_BROWSER_BACK, "BrowserBack", "HistoryBack" },
+    { ui::VKEY_BROWSER_FORWARD, "BrowserForward", "HistoryForward" },
+    { ui::VKEY_BROWSER_REFRESH, "BrowserRefresh", "BrowserRefresh" },
+    { ui::VKEY_MEDIA_LAUNCH_APP2, "ChromeOSFullscreen", "ChromeOSFullscreen" },
+    { ui::VKEY_MEDIA_LAUNCH_APP1,
+      "ChromeOSSwitchWindow", "ChromeOSSwitchWindow" },
+    { ui::VKEY_BRIGHTNESS_DOWN, "BrightnessDown", "BrightnessDown" },
+    { ui::VKEY_BRIGHTNESS_UP, "BrightnessUp", "BrightnessUp" },
+    { ui::VKEY_VOLUME_MUTE, "VolumeMute", "AudioVolumeMute" },
+    { ui::VKEY_VOLUME_DOWN, "VolumeDown", "AudioVolumeDown" },
+    { ui::VKEY_VOLUME_UP, "VolumeUp", "AudioVolumeUp" },
+    { ui::VKEY_F1, "F1", "HistoryBack" },
+    { ui::VKEY_F2, "F2", "HistoryForward" },
+    { ui::VKEY_F3, "F3", "BrowserRefresh" },
+    { ui::VKEY_F4, "F4", "ChromeOSFullscreen" },
+    { ui::VKEY_F5, "F5", "ChromeOSSwitchWindow" },
+    { ui::VKEY_F6, "F6", "BrightnessDown" },
+    { ui::VKEY_F7, "F7", "BrightnessUp" },
+    { ui::VKEY_F8, "F8", "AudioVolumeMute" },
+    { ui::VKEY_F9, "F9", "AudioVolumeDown" },
+    { ui::VKEY_F10, "F10", "AudioVolumeUp" },
+  };
+  for (size_t i = 0; i < arraysize(kMediaKeyCases); ++i) {
+    SCOPED_TRACE(std::string("KeyDown, ") + kMediaKeyCases[i].code);
+    KeyEventDoneCallback callback(false);
+    const std::string expected_value =
+        base::StringPrintf("onKeyEvent::keydown:%s:%s:false:false:false:false",
+                           kMediaKeyCases[i].key, kMediaKeyCases[i].code);
+    ExtensionTestMessageListener keyevent_listener(expected_value, false);
+
+    ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
+                           kMediaKeyCases[i].keycode,
+                           kMediaKeyCases[i].code,
+                           ui::EF_NONE);
     engine_handler->ProcessKeyEvent(key_event,
                                     base::Bind(&KeyEventDoneCallback::Run,
                                                base::Unretained(&callback)));

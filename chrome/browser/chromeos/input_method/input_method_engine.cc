@@ -77,8 +77,44 @@ std::string GetKeyFromEvent(const ui::KeyEvent& event) {
   if (code == "Escape")
     return "Esc";
   if (code == "Backspace" || code == "Tab" ||
-      code == "Enter" || code == "CapsLock")
+      code == "Enter" || code == "CapsLock" ||
+      code == "Power")
     return code;
+  // Cases for media keys.
+  switch (event.key_code()) {
+    case ui::VKEY_BROWSER_BACK:
+    case ui::VKEY_F1:
+      return "HistoryBack";
+    case ui::VKEY_BROWSER_FORWARD:
+    case ui::VKEY_F2:
+      return "HistoryForward";
+    case ui::VKEY_BROWSER_REFRESH:
+    case ui::VKEY_F3:
+      return "BrowserRefresh";
+    case ui::VKEY_MEDIA_LAUNCH_APP2:
+    case ui::VKEY_F4:
+      return "ChromeOSFullscreen";
+    case ui::VKEY_MEDIA_LAUNCH_APP1:
+    case ui::VKEY_F5:
+      return "ChromeOSSwitchWindow";
+    case ui::VKEY_BRIGHTNESS_DOWN:
+    case ui::VKEY_F6:
+      return "BrightnessDown";
+    case ui::VKEY_BRIGHTNESS_UP:
+    case ui::VKEY_F7:
+      return "BrightnessUp";
+    case ui::VKEY_VOLUME_MUTE:
+    case ui::VKEY_F8:
+      return "AudioVolumeMute";
+    case ui::VKEY_VOLUME_DOWN:
+    case ui::VKEY_F9:
+      return "AudioVolumeDown";
+    case ui::VKEY_VOLUME_UP:
+    case ui::VKEY_F10:
+      return "AudioVolumeUp";
+    default:
+      break;
+  }
   uint16 ch = 0;
   // Ctrl+? cases, gets key value for Ctrl is not down.
   if (event.flags() & ui::EF_CONTROL_DOWN) {
