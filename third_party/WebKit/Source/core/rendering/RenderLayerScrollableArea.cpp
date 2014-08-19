@@ -46,6 +46,7 @@
 
 #include "core/accessibility/AXObjectCache.h"
 #include "core/css/PseudoStyleRequest.h"
+#include "core/dom/Node.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
 #include "core/frame/FrameView.h"
@@ -694,10 +695,19 @@ static bool overflowDefinesAutomaticScrollbar(EOverflow overflow)
     return overflow == OAUTO || overflow == OOVERLAY;
 }
 
+// This function returns true if the given box requires overflow scrollbars (as
+// opposed to the 'viewport' scrollbars managed by the RenderLayerCompositor).
+// FIXME: we should use the same scrolling machinery for both the viewport and
+// overflow. Currently, we need to avoid producing scrollbars here if they'll be
+// handled externally in the RLC.
+static bool canHaveOverflowScrollbars(const RenderBox& box)
+{
+    return !box.isRenderView() && box.document().viewportDefiningElement() != box.node();
+}
+
 void RenderLayerScrollableArea::updateAfterStyleChange(const RenderStyle* oldStyle)
 {
-    // RenderView shouldn't provide scrollbars on its own.
-    if (box().isRenderView())
+    if (!canHaveOverflowScrollbars(box()))
         return;
 
     if (!m_scrollDimensionsDirty)
