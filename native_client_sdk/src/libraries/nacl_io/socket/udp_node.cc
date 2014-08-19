@@ -134,6 +134,7 @@ class UdpRecvWork : public UdpWork {
     if (length_error > 0) {
       Packet* packet = new Packet(filesystem()->ppapi());
       packet->Copy(data_, length_error, addr_);
+      filesystem()->ppapi()->ReleaseResource(addr_);
       emitter_->WriteRXPacket_Locked(packet);
       stream->ClearStreamFlags(SSF_RECVING);
       stream->QueueInput();
