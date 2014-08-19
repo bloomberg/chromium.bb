@@ -1089,12 +1089,14 @@ void XMLHttpRequest::handleRequestError(ExceptionCode exceptionCode, const Atomi
     dispatchProgressEvent(EventTypeNames::loadend, receivedLength, expectedLength);
 }
 
-void XMLHttpRequest::overrideMimeType(const AtomicString& override)
+void XMLHttpRequest::overrideMimeType(const AtomicString& mimeType, ExceptionState& exceptionState)
 {
-    // FIXME: This method must throw an InvalidStateError exception when the
-    // XHR is in the LOADING or DONE state. http://crbug.com/402375
+    if (m_state == LOADING || m_state == DONE) {
+        exceptionState.throwDOMException(InvalidStateError, "MimeType cannot be overridden when the state is LOADING or DONE.");
+        return;
+    }
 
-    m_mimeTypeOverride = override;
+    m_mimeTypeOverride = mimeType;
 }
 
 void XMLHttpRequest::setRequestHeader(const AtomicString& name, const AtomicString& value, ExceptionState& exceptionState)
