@@ -40,8 +40,6 @@
 
 namespace {
 
-const int kMatchBiggerTreshold = 32;
-
 extensions::ExtensionResource GetExtensionIconResource(
     const extensions::Extension* extension,
     const ExtensionIconSet& icons,
@@ -169,11 +167,10 @@ gfx::ImageSkiaRep IconImage::LoadImageForScaleFactor(
   extensions::ExtensionResource resource;
 
   // Find extension resource for non bundled component extensions.
-  // We try loading bigger image only if resource size is >= 32.
-  if (resource_size_in_pixel >= kMatchBiggerTreshold) {
-    resource = GetExtensionIconResource(extension_, icon_set_,
-        resource_size_in_pixel, ExtensionIconSet::MATCH_BIGGER);
-  }
+  resource = GetExtensionIconResource(extension_,
+                                      icon_set_,
+                                      resource_size_in_pixel,
+                                      ExtensionIconSet::MATCH_BIGGER);
 
   // If resource is not found by now, try matching smaller one.
   if (resource.empty()) {

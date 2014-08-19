@@ -318,9 +318,8 @@ TEST_F(ExtensionIconImageTest, FallbackToSmallerWhenNoBigger) {
 }
 
 // There is no resource with exact size, but there is a smaller and a bigger
-// one. Requested size is smaller than 32 though, so the smaller resource should
-// be loaded.
-TEST_F(ExtensionIconImageTest, FallbackToSmaller) {
+// one. The bigger resource should be loaded.
+TEST_F(ExtensionIconImageTest, FallbackToBigger) {
   scoped_ptr<content::BrowserContext> profile(new TestingProfile());
   scoped_refptr<Extension> extension(CreateExtension(
       "extension_icon_image", Manifest::INVALID_LOCATION));
@@ -330,8 +329,8 @@ TEST_F(ExtensionIconImageTest, FallbackToSmaller) {
 
   // Load images we expect to find as representations in icon_image, so we
   // can later use them to validate icon_image.
-  SkBitmap bitmap_16 = GetTestBitmap(extension.get(), "16.png", 16);
-  ASSERT_FALSE(bitmap_16.empty());
+  SkBitmap bitmap_24 = GetTestBitmap(extension.get(), "24.png", 24);
+  ASSERT_FALSE(bitmap_24.empty());
 
   IconImage image(profile.get(),
                   extension.get(),
@@ -348,11 +347,11 @@ TEST_F(ExtensionIconImageTest, FallbackToSmaller) {
 
   representation = image.image_skia().GetRepresentation(1.0f);
 
-  // We should have loaded smaller (resized) resource.
+  // We should have loaded the smallest bigger (resized) resource.
   EXPECT_EQ(1.0f, representation.scale());
   EXPECT_EQ(17, representation.pixel_width());
   EXPECT_TRUE(gfx::BitmapsAreEqual(representation.sk_bitmap(),
-                                   EnsureBitmapSize(bitmap_16, 17)));
+                                   EnsureBitmapSize(bitmap_24, 17)));
 }
 
 // If resource set is empty, |GetRepresentation| should synchronously return
