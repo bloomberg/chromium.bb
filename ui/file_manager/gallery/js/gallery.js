@@ -509,7 +509,7 @@ Gallery.prototype.load = function(entries, selectedEntries) {
         var index = self.dataModel_.indexOf(items[i]);
         if (index < 0)
           continue;
-        self.selectionModel_.setIndexSelected(index);
+        self.selectionModel_.setIndexSelected(index, true);
         selectionUpdated = true;
       }
       if (selectionUpdated)
@@ -849,29 +849,35 @@ Gallery.prototype.updateSelectionAndState_ = function() {
 
     // Update the title and the display name.
     if (numSelectedItems === 1) {
-      window.top.document.title = this.selectedEntry_.name;
+      document.title = this.selectedEntry_.name;
       this.filenameEdit_.disabled = selectedItem.isReadOnly();
       this.filenameEdit_.value =
           ImageUtil.getDisplayNameFromName(this.selectedEntry_.name);
-    } else if (this.context_.curDirEntry) {
-      // If the Gallery was opened on search results the search query will not
-      // be recorded in the app state and the relaunch will just open the
-      // gallery in the curDirEntry directory.
-      window.top.document.title = this.context_.curDirEntry.name;
+      this.shareButton_.hidden = !selectedItem.isOnDrive();
+    } else {
+      if (this.context_.curDirEntry) {
+        // If the Gallery was opened on search results the search query will not
+        // be recorded in the app state and the relaunch will just open the
+        // gallery in the curDirEntry directory.
+        document.title = this.context_.curDirEntry.name;
+      } else {
+        document.title = '';
+      }
       this.filenameEdit_.disabled = true;
       this.filenameEdit_.value =
           strf('GALLERY_ITEMS_SELECTED', numSelectedItems);
+      this.shareButton_.hidden = true;
     }
+  } else {
+    document.title = '';
+    this.filenameEdit_.value = '';
+    this.shareButton_.hidden = true;
   }
 
-  window.top.util.updateAppState(
+  util.updateAppState(
       null,  // Keep the current directory.
       selectedEntryURL,  // Update the selection.
       {gallery: (this.currentMode_ === this.mosaicMode_ ? 'mosaic' : 'slide')});
-
-  // Update the share button.
-  var item = this.getSingleSelectedItem();
-  this.shareButton_.hidden = !item || !item.isOnDrive();
 };
 
 /**
