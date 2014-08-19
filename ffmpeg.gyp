@@ -184,6 +184,9 @@
               '-Wno-pointer-sign',
               # ffmpeg doesn't believe in exhaustive switch statements.
               '-Wno-switch',
+              # matroskadec.c has a "failed:" label that's only used if some
+              # CONFIG_ flags we don't set are set.
+              '-Wno-unused-label',
             ],
           },
           'cflags': [
@@ -361,7 +364,15 @@
                 4116, 4307, 4273, 4005, 4056, 4756,
               ],
               'conditions': [
-                ['clang == 1 or (OS == "win" and (MSVS_VERSION == "2013" or MSVS_VERSION == "2013e"))', {
+                ['clang == 1', {
+                  'msvs_settings': {
+                    'VCCLCompilerTool': {
+                      # This corresponds to msvs_disabled_warnings 4273 above.
+                      'AdditionalOptions': [ '-Wno-inconsistent-dllimport' ],
+                    },
+                  },
+                }],
+                ['clang == 1 or (MSVS_VERSION == "2013" or MSVS_VERSION == "2013e")', {
                   'defines': [
                     'inline=__inline',
                     'strtoll=_strtoi64',
