@@ -1005,6 +1005,16 @@ function getUserMediaOkCallback_(stream) {
       error_(global.localStream + ' getUserMedia successful but ' +
              'MediaStreamTrack.onended event fired, no frames from camera.');
     };
+
+    // Print information on track going to mute or back from it.
+    // TODO(mcasas): add a warning_() function and move the following print_()
+    // notifications to error_() and warning_(), respectively.
+    stream.getVideoTracks()[0].onmute = function() {
+      print_(global.localStream + ' track onmute event has fired');
+    };
+    stream.getVideoTracks()[0].onunmute = function() {
+      print_(global.localStream + ' track onunmute event has fired');
+    };
   }
 }
 
