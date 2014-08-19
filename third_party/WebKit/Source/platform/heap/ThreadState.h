@@ -512,24 +512,24 @@ public:
     struct SnapshotInfo {
         ThreadState* state;
 
-        size_t liveSize;
-        size_t deadSize;
         size_t freeSize;
         size_t pageCount;
 
         // Map from base-classes to a snapshot class-ids (used as index below).
         HashMap<const GCInfo*, size_t> classTags;
 
-        // Map from class-id (index) to count.
+        // Map from class-id (index) to count/size.
         Vector<int> liveCount;
         Vector<int> deadCount;
+        Vector<size_t> liveSize;
+        Vector<size_t> deadSize;
 
         // Map from class-id (index) to a vector of generation counts.
         // For i < 7, the count is the number of objects that died after surviving |i| GCs.
         // For i == 7, the count is the number of objects that survived at least 7 GCs.
         Vector<Vector<int, 8> > generations;
 
-        explicit SnapshotInfo(ThreadState* state) : state(state), liveSize(0), deadSize(0), freeSize(0), pageCount(0) { }
+        explicit SnapshotInfo(ThreadState* state) : state(state), freeSize(0), pageCount(0) { }
 
         size_t getClassTag(const GCInfo*);
     };

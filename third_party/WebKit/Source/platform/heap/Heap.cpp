@@ -1428,14 +1428,14 @@ void HeapPage<Header>::snapshot(TracedValue* json, ThreadState::SnapshotInfo* in
             json->pushInteger(tag);
         if (header->isMarked()) {
             info->liveCount[tag] += 1;
-            info->liveSize += header->size();
+            info->liveSize[tag] += header->size();
             // Count objects that are live when promoted to the final generation.
             if (age == maxHeapObjectAge - 1)
                 info->generations[tag][maxHeapObjectAge] += 1;
             header->incAge();
         } else {
             info->deadCount[tag] += 1;
-            info->deadSize += header->size();
+            info->deadSize[tag] += header->size();
             // Count objects that are dead before the final generation.
             if (age < maxHeapObjectAge)
                 info->generations[tag][age] += 1;
@@ -1514,14 +1514,14 @@ void LargeHeapObject<Header>::snapshot(TracedValue* json, ThreadState::SnapshotI
     size_t age = header->age();
     if (isMarked()) {
         info->liveCount[tag] += 1;
-        info->liveSize += header->size();
+        info->liveSize[tag] += header->size();
         // Count objects that are live when promoted to the final generation.
         if (age == maxHeapObjectAge - 1)
             info->generations[tag][maxHeapObjectAge] += 1;
         header->incAge();
     } else {
         info->deadCount[tag] += 1;
-        info->deadSize += header->size();
+        info->deadSize[tag] += header->size();
         // Count objects that are dead before the final generation.
         if (age < maxHeapObjectAge)
             info->generations[tag][age] += 1;

@@ -589,6 +589,8 @@ size_t ThreadState::SnapshotInfo::getClassTag(const GCInfo* gcinfo)
     if (result.isNewEntry) {
         liveCount.append(0);
         deadCount.append(0);
+        liveSize.append(0);
+        deadSize.append(0);
         generations.append(Vector<int, 8>());
         generations.last().fill(0, 8);
     }
@@ -615,21 +617,26 @@ void ThreadState::snapshot()
 
     json->setInteger("allocatedSpace", m_stats.totalAllocatedSpace());
     json->setInteger("objectSpace", m_stats.totalObjectSpace());
-    json->setInteger("liveSize", info.liveSize);
-    json->setInteger("deadSize", info.deadSize);
-    json->setInteger("freeSize", info.freeSize);
     json->setInteger("pageCount", info.freeSize);
+    json->setInteger("freeSize", info.freeSize);
 
     Vector<String> classNameVector(info.classTags.size());
     for (HashMap<const GCInfo*, size_t>::iterator it = info.classTags.begin(); it != info.classTags.end(); ++it)
         classNameVector[it->value] = it->key->m_className;
 
+    size_t liveSize = 0;
+    size_t deadSize = 0;
     json->beginArray("classes");
     for (size_t i = 0; i < classNameVector.size(); ++i) {
         json->beginDictionary();
         json->setString("name", classNameVector[i]);
         json->setInteger("liveCount", info.liveCount[i]);
         json->setInteger("deadCount", info.deadCount[i]);
+        json->setInteger("liveSize", info.liveSize[i]);
+        json->setInteger("deadSize", info.deadSize[i]);
+        liveSize += info.liveSize[i];
+        deadSize += info.deadSize[i];
+
         json->beginArray("generations");
         for (size_t j = 0; j < heapObjectGenerations; ++j)
             json->pushInteger(info.generations[i][j]);
@@ -637,8 +644,10 @@ void ThreadState::snapshot()
         json->endDictionary();
     }
     json->endArray();
+    json->setInteger("liveSize", liveSize);
+    json->setInteger("deadSize", deadSize);
 
-    TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID("blink_gc", "ThreadState", this, json);
+    TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID("blink_gc", "ThreadState", this, json.release());
 }
 #endif
 
