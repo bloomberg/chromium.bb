@@ -39,7 +39,6 @@ protected:
     SVGPolyElement(const QualifiedName&, Document&);
 
 private:
-    bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE FINAL;
     virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE FINAL;
 

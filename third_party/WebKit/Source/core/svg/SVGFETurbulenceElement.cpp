@@ -81,27 +81,7 @@ bool SVGFETurbulenceElement::isSupportedAttribute(const QualifiedName& attrName)
 
 void SVGFETurbulenceElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    if (!isSupportedAttribute(name)) {
-        SVGFilterPrimitiveStandardAttributes::parseAttribute(name, value);
-        return;
-    }
-
-    SVGParsingError parseError = NoError;
-
-    if (name == SVGNames::baseFrequencyAttr)
-        m_baseFrequency->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::numOctavesAttr)
-        m_numOctaves->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::seedAttr)
-        m_seed->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::stitchTilesAttr)
-        m_stitchTiles->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::typeAttr)
-        m_type->setBaseValueAsString(value, parseError);
-    else
-        ASSERT_NOT_REACHED();
-
-    reportAttributeParsingError(parseError, name, value);
+    parseAttributeNew(name, value);
 }
 
 bool SVGFETurbulenceElement::setFilterEffectAttribute(FilterEffect* effect, const QualifiedName& attrName)

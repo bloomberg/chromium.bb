@@ -58,22 +58,7 @@ bool SVGLineElement::isSupportedAttribute(const QualifiedName& attrName)
 
 void SVGLineElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    SVGParsingError parseError = NoError;
-
-    if (!isSupportedAttribute(name))
-        SVGGeometryElement::parseAttribute(name, value);
-    else if (name == SVGNames::x1Attr)
-        m_x1->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::y1Attr)
-        m_y1->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::x2Attr)
-        m_x2->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::y2Attr)
-        m_y2->setBaseValueAsString(value, parseError);
-    else
-        ASSERT_NOT_REACHED();
-
-    reportAttributeParsingError(parseError, name, value);
+    parseAttributeNew(name, value);
 }
 
 void SVGLineElement::svgAttributeChanged(const QualifiedName& attrName)

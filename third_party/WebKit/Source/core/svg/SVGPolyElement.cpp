@@ -35,35 +35,14 @@ SVGPolyElement::SVGPolyElement(const QualifiedName& tagName, Document& document)
     addToPropertyMap(m_points);
 }
 
-bool SVGPolyElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        supportedAttributes.add(SVGNames::pointsAttr);
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 void SVGPolyElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    if (!isSupportedAttribute(name)) {
-        SVGGeometryElement::parseAttribute(name, value);
-        return;
-    }
-
-    if (name == SVGNames::pointsAttr) {
-        SVGParsingError parseError = NoError;
-        m_points->setBaseValueAsString(value, parseError);
-        reportAttributeParsingError(parseError, name, value);
-        return;
-    }
-
-    ASSERT_NOT_REACHED();
+    parseAttributeNew(name, value);
 }
 
 void SVGPolyElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
+    if (attrName != SVGNames::pointsAttr) {
         SVGGeometryElement::svgAttributeChanged(attrName);
         return;
     }
@@ -74,13 +53,8 @@ void SVGPolyElement::svgAttributeChanged(const QualifiedName& attrName)
     if (!renderer)
         return;
 
-    if (attrName == SVGNames::pointsAttr) {
-        renderer->setNeedsShapeUpdate();
-        RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
-        return;
-    }
-
-    ASSERT_NOT_REACHED();
+    renderer->setNeedsShapeUpdate();
+    RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
 }
 
 }
