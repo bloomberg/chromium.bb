@@ -1,0 +1,8 @@
+{
+    "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
+    "archives": {
+        "garbage_collection_cases_000.wpr": [
+            "http://v8.googlecode.com/svn/branches/bleeding_edge/benchmarks/spinning-balls/index.html"
+        ]
+    }
+}
