@@ -4,14 +4,14 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
-<link rel="import" href="ct-failure.html">
+<link rel="import" href="../ct-failure.html">
 
 <script>
 (function () {
 
-module("ct-failure");
+var assert = chai.assert;
 
-test("basic", 3, function() {
+describe('ct-failure model', function() {
   var tests = [
     {
       failure: new CTFailure('browser_tests', 'FooTest.Bar', {}, 123, 123),
@@ -26,9 +26,11 @@ test("basic", 3, function() {
       expectedGroupName: undefined
     }
   ];
-  tests.forEach(function(test) {
-    equal(test.failure.reasonGroupName(), test.expectedGroupName);
-  }.bind(this));
+  it('group name', function() {
+    tests.forEach(function(test) {
+      assert.equal(test.failure.reasonGroupName(), test.expectedGroupName);
+    });
+  });
 });
 
 })();

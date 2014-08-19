@@ -1,0 +1,78 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../tree-status.html">
+
+<link rel="import" href="../../lib/network-simulator.html">
+
+<script>
+(function () {
+
+var assert = chai.assert;
+
+describe('tree status', function(done) {
+  var openTreeJson = {
+    'username': 'erg@chromium.org',
+    'date': '2013-10-14 20:22:00.887390',
+    'message': 'Tree is open',
+    'can_commit_freely': true,
+    'general_state': 'open'
+  };
+
+  var throttledTreeJson = {
+    'username': 'username@test.org',
+    'date': '2013-10-14 20:22:00.887390',
+    'message': 'Tree is throttled just for fun',
+    'can_commit_freely': false
+  };
+
+  var closedTreeJson = {
+    'username': 'ojan@chromium.org',
+    'date': '2013-10-14 20:32:09.642350',
+    'message': 'Tree is closed',
+    'can_commit_freely': false,
+    'general_state': 'closed'
+  };
+
+  var simulator = new NetworkSimulator(assert, done);
+  simulator.json = function(url) {
+    if (url.indexOf('closed') != -1)
+      return Promise.resolve(closedTreeJson);
+    else if (url.indexOf('throttled') != -1)
+      return Promise.resolve(throttledTreeJson);
+    else
+      return Promise.resolve(openTreeJson);
+  };
+
+  var opentree = new TreeStatus("open-tree-project");
+  var throttledtree = new TreeStatus("throttled-tree-project");
+  var closedtree = new TreeStatus("closed-tree-project");
+
+  it('tree status', function() {
+    simulator.runTest(function() {
+      Promise.all([
+        opentree.update().then(function() {
+          assert.equal(opentree.status, 'open');
+        }),
+        throttledtree.update().then(function() {
+          assert.equal(throttledtree.message,
+                       "Tree is throttled just for fun by username@test.org");
+          assert.equal(throttledtree.status, "throttled");
+        }),
+        closedtree.update().then(function() {
+          assert.equal(closedtree.message,
+                       "Tree is closed by ojan@chromium.org");
+          assert.equal(closedtree.status, "closed");
+        })
+      ]).then(function() {
+        done();
+      });
+    });
+  });
+});
+
+})();
+</script>
