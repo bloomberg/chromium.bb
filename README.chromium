@@ -62,6 +62,11 @@ Note: You'll need a Gerrit account, see:
 
   http://www.chromium.org/chromium-os/developer-guide/gerrit-guide
 
+You also need to add an ssh key at
+https://gerrit.chromium.org/gerrit/#/settings/ssh-keys . Generate a key
+following the GitHub guide linked from there, then copy the contents of your
+~/.ssh/id_rsa.pub file to that gerrit page.
+
 If your change adds new files to the repository, you'll need to regenerate the
 GYP defines by following the directions in chromium/scripts/generate_gyp.py.
 
