@@ -33,7 +33,7 @@ describe('ct-tree-select', function() {
       setTimeout(done);
     });
 
-    it('should show two elements', function() {
+    it('should show two elements, first one selected', function() {
       var options = select.shadowRoot.querySelectorAll('option');
       assert.lengthOf(options, 2);
       assert(options[0].selected);
@@ -54,6 +54,31 @@ describe('ct-tree-select', function() {
       it('should have the second value as its "tree"', function() {
         assert.equal(select.treeList.trees[1].name, select.tree);
       });
+    });
+  });
+
+  describe('storage', function() {
+    beforeEach(function(done) {
+      var treeList = new CTTreeList();
+      treeList.trees = [new CTTree("tree1", "Tree 1"), new CTTree("tree2", "Tree 2")];
+
+      // This represents initialization that should be normally be done on this component.
+      select.treeList = treeList;
+      select.tree = treeList.defaultValue();
+      assert.equal('tree1', select.tree);
+
+      setTimeout(done);
+    });
+
+    it('a change in storage should change select.tree', function() {
+      var storage = select.shadowRoot.querySelector('core-localstorage');
+      var newTree = 'tree2';
+      window.localStorage.setItem(storage.name, newTree);
+      storage.load();
+
+      assert.equal(newTree, select.tree);
+      assert.equal(storage.value, newTree);
+      assert.equal(window.localStorage.getItem(storage.name), newTree);
     });
   });
 });

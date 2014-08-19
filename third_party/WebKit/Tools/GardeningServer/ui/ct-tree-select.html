@@ -3,11 +3,14 @@ Copyright 2014 The Chromium Authors. All rights reserved.
 Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
+<link rel="import" href="../bower_components/core-localstorage/core-localstorage.html">
+
 <polymer-element name="ct-tree-select" attributes="tree treeList">
   <template>
+    <core-localstorage name="ct-tree-select-storage" value="{{ tree }}"></core-localstorage>
     <select on-change="{{ _updateTree }}">
       <template repeat="{{ s in treeList.trees }}">
-        <option value="{{ s.name }}">{{ s.displayName }}</option>
+        <option value="{{ s.name }}" selected?="{{ s.name == tree }}">{{ s.displayName }}</option>
       </template>
     </select>
   </template>
