@@ -46,10 +46,6 @@ class TestOwner : public printing::PrintJobWorkerOwner {
     settings_ = worker->printing_context()->settings();
     return worker;
   }
-  virtual base::MessageLoop* message_loop() OVERRIDE {
-    EXPECT_FALSE(true);
-    return NULL;
-  }
   virtual const printing::PrintSettings& settings() const OVERRIDE {
     return settings_;
   }
@@ -101,7 +97,7 @@ TEST_F(PrintJobTest, SimplePrint) {
                  content::NotificationService::AllSources());
   volatile bool check = false;
   scoped_refptr<printing::PrintJob> job(new TestPrintJob(&check));
-  EXPECT_EQ(base::MessageLoop::current(), job->message_loop());
+  EXPECT_TRUE(job->RunsTasksOnCurrentThread());
   scoped_refptr<TestOwner> owner(new TestOwner);
   TestSource source;
   job->Initialize(owner.get(), &source, 1);

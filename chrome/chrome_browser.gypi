@@ -1871,6 +1871,7 @@
       'browser/printing/print_job_manager.h',
       'browser/printing/print_job_worker.cc',
       'browser/printing/print_job_worker.h',
+      'browser/printing/print_job_worker_owner.cc',
       'browser/printing/print_job_worker_owner.h',
       'browser/printing/print_view_manager_base.cc',
       'browser/printing/print_view_manager_base.h',

@@ -32,7 +32,7 @@ class PrintJobWorkerOwner;
 // NOTIFY_PRINT_JOB_EVENT notifications, but they are generated through a
 // NotificationTask task to be executed from the right thread, the UI thread.
 // PrintJob always outlives its worker instance.
-class PrintJobWorker : public base::Thread {
+class PrintJobWorker {
  public:
   explicit PrintJobWorker(PrintJobWorkerOwner* owner);
   virtual ~PrintJobWorker();
@@ -40,7 +40,7 @@ class PrintJobWorker : public base::Thread {
   void SetNewOwner(PrintJobWorkerOwner* new_owner);
 
   // Set a destination for print.
-  // This supercedes the document's rendering destination.
+  // This supersedes the document's rendering destination.
   void SetPrintDestination(PrintDestinationInterface* destination);
 
   // Initializes the print settings. If |ask_user_for_settings| is true, a
@@ -70,6 +70,22 @@ class PrintJobWorker : public base::Thread {
 
   // This is the only function that can be called in a thread.
   void Cancel();
+
+  // Returns true if the thread has been started, and not yet stopped.
+  bool IsRunning() const;
+
+  // Posts the given task to be run.
+  bool PostTask(const tracked_objects::Location& from_here,
+                const base::Closure& task);
+
+  // Signals the thread to exit in the near future.
+  void StopSoon();
+
+  // Signals the thread to exit and returns once the thread has exited.
+  void Stop();
+
+  // Starts the thread.
+  bool Start();
 
  protected:
   // Retrieves the context for testing only.
@@ -133,6 +149,12 @@ class PrintJobWorker : public base::Thread {
 
   // Current page number to print.
   PageNumber page_number_;
+
+  // Thread to run worker tasks.
+  base::Thread thread_;
+
+  // Tread-safe pointer to task runner of the |thread_|.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Used to generate a WeakPtr for callbacks.
   base::WeakPtrFactory<PrintJobWorker> weak_factory_;

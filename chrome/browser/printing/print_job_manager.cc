@@ -68,8 +68,7 @@ void PrintQueriesQueue::Shutdown() {
   // by PrintJobManager::StopJobs and should be stopped explicitly.
   for (PrinterQueries::iterator itr = queries_to_stop.begin();
        itr != queries_to_stop.end(); ++itr) {
-    (*itr)->message_loop()->PostTask(
-        FROM_HERE, base::Bind(&PrinterQuery::StopWorker, *itr));
+    (*itr)->PostTask(FROM_HERE, base::Bind(&PrinterQuery::StopWorker, *itr));
   }
 }
 

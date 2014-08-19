@@ -15,7 +15,6 @@ class PrintingUIWebContentsObserver;
 
 namespace base {
 class DictionaryValue;
-class MessageLoop;
 }
 
 namespace printing {
@@ -38,7 +37,6 @@ class PrinterQuery : public PrintJobWorkerOwner {
   virtual void GetSettingsDone(const PrintSettings& new_settings,
                                PrintingContext::Result result) OVERRIDE;
   virtual PrintJobWorker* DetachWorker(PrintJobWorkerOwner* new_owner) OVERRIDE;
-  virtual base::MessageLoop* message_loop() OVERRIDE;
   virtual const PrintSettings& settings() const OVERRIDE;
   virtual int cookie() const OVERRIDE;
 
@@ -77,10 +75,6 @@ class PrinterQuery : public PrintJobWorkerOwner {
 
   // Lazy create the worker thread. There is one worker thread per print job.
   void StartWorker(const base::Closure& callback);
-
-  // Main message loop reference. Used to send notifications in the right
-  // thread.
-  base::MessageLoop* const io_message_loop_;
 
   // All the UI is done in a worker thread because many Win32 print functions
   // are blocking and enters a message loop without your consent. There is one

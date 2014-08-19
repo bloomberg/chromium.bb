@@ -15,8 +15,7 @@
 namespace printing {
 
 PrinterQuery::PrinterQuery()
-    : io_message_loop_(base::MessageLoop::current()),
-      worker_(new PrintJobWorker(this)),
+    : worker_(new PrintJobWorker(this)),
       is_print_dialog_box_shown_(false),
       cookie_(PrintSettings::NewCookie()),
       last_status_(PrintingContext::FAILED) {
@@ -57,10 +56,6 @@ PrintJobWorker* PrinterQuery::DetachWorker(PrintJobWorkerOwner* new_owner) {
   return worker_.release();
 }
 
-base::MessageLoop* PrinterQuery::message_loop() {
-  return io_message_loop_;
-}
-
 const PrintSettings& PrinterQuery::settings() const {
   return settings_;
 }
@@ -76,33 +71,31 @@ void PrinterQuery::GetSettings(
     bool has_selection,
     MarginType margin_type,
     const base::Closure& callback) {
-  DCHECK_EQ(io_message_loop_, base::MessageLoop::current());
+  DCHECK(RunsTasksOnCurrentThread());
   DCHECK(!is_print_dialog_box_shown_);
 
   StartWorker(callback);
 
   // Real work is done in PrintJobWorker::GetSettings().
   is_print_dialog_box_shown_ = ask_user_for_settings == ASK_USER;
-  worker_->message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&PrintJobWorker::GetSettings,
-                 base::Unretained(worker_.get()),
-                 is_print_dialog_box_shown_,
-                 base::Passed(&web_contents_observer),
-                 expected_page_count,
-                 has_selection,
-                 margin_type));
+  worker_->PostTask(FROM_HERE,
+                    base::Bind(&PrintJobWorker::GetSettings,
+                               base::Unretained(worker_.get()),
+                               is_print_dialog_box_shown_,
+                               base::Passed(&web_contents_observer),
+                               expected_page_count,
+                               has_selection,
+                               margin_type));
 }
 
 void PrinterQuery::SetSettings(const base::DictionaryValue& new_settings,
                                const base::Closure& callback) {
   StartWorker(callback);
 
-  worker_->message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&PrintJobWorker::SetSettings,
-                 base::Unretained(worker_.get()),
-                 new_settings.DeepCopy()));
+  worker_->PostTask(FROM_HERE,
+                    base::Bind(&PrintJobWorker::SetSettings,
+                               base::Unretained(worker_.get()),
+                               new_settings.DeepCopy()));
 }
 
 void PrinterQuery::SetWorkerDestination(
@@ -115,7 +108,7 @@ void PrinterQuery::StartWorker(const base::Closure& callback) {
   DCHECK(worker_.get());
 
   // Lazily create the worker thread. There is one worker thread per print job.
-  if (!worker_->message_loop())
+  if (!worker_->IsRunning())
     worker_->Start();
 
   callback_ = callback;
