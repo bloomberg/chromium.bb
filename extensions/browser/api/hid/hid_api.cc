@@ -310,6 +310,7 @@ void HidSendFeatureReportFunction::AsyncWorkStart() {
   }
   scoped_refptr<net::IOBufferWithSize> buffer(
       new net::IOBufferWithSize(parameters_->data.size()));
+  memcpy(buffer->data(), parameters_->data.c_str(), parameters_->data.size());
   resource->connection()->SendFeatureReport(
       static_cast<uint8_t>(parameters_->report_id),
       buffer,
