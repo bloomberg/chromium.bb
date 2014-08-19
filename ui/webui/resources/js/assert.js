@@ -7,11 +7,13 @@
  */
 
 /**
- * Simple common assertion API
- * @param {*} condition The condition to test.  Note that this may be used to
- *     test whether a value is defined or not, and we don't want to force a
- *     cast to Boolean.
- * @param {string=} opt_message A message to use in any error.
+ * Verify |condition| is truthy and return |condition| if so.
+ * @template T
+ * @param {T} condition A condition to check for truthiness.  Note that this
+ *     may be used to test whether a value is defined or not, and we don't want
+ *     to force a cast to Boolean.
+ * @param {string=} opt_message A message to show on failure.
+ * @return {T} A non-null |condition|.
  */
 function assert(condition, opt_message) {
   'use strict';
@@ -21,6 +23,7 @@ function assert(condition, opt_message) {
       msg = msg + ': ' + opt_message;
     throw new Error(msg);
   }
+  return condition;
 }
 
 /**
@@ -45,5 +48,17 @@ function assert(condition, opt_message) {
  * @param {string=} opt_message A message to show when this is hit.
  */
 function assertNotReached(opt_message) {
-  throw new Error(opt_message || "Unreachable code hit");
+  throw new Error(opt_message || 'Unreachable code hit');
+}
+
+/**
+ * @param {*} value The value to check.
+ * @param {function(new: T, ...)} type A user-defined constructor.
+ * @return {T}
+ * @template T
+ */
+function assertInstanceof(value, type) {
+  if (!(value instanceof type))
+    throw new Error(value + ' is not a[n] ' + (type.name || typeof type));
+  return value;
 }

@@ -4,17 +4,17 @@
 
 package org.chromium.closure.compiler;
 
-import com.google.javascript.jscomp.CodingConvention;
-import com.google.javascript.jscomp.CodingConventions;
-import com.google.javascript.jscomp.DiagnosticType;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import com.google.javascript.jscomp.ClosureCodingConvention.AssertInstanceofSpec;
+import com.google.javascript.jscomp.CodingConvention;
+import com.google.javascript.jscomp.CodingConventions;
 import com.google.javascript.rhino.Node;
 import com.google.javascript.rhino.jstype.FunctionType;
 import com.google.javascript.rhino.jstype.ObjectType;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 public class ChromeCodingConvention extends CodingConventions.Proxy {
@@ -37,7 +37,7 @@ public class ChromeCodingConvention extends CodingConventions.Proxy {
   public String getSingletonGetterClassName(Node callNode) {
     Node callArg = callNode.getFirstChild();
 
-    if (!(callArg.matchesQualifiedName("cr.addSingletonGetter")) ||
+    if (!callArg.matchesQualifiedName("cr.addSingletonGetter") ||
         callNode.getChildCount() != 2) {
       return super.getSingletonGetterClassName(callNode);
     }
@@ -60,4 +60,11 @@ public class ChromeCodingConvention extends CodingConventions.Proxy {
     return indirectlyDeclaredProperties;
   }
 
+  @Override
+  public Collection<AssertionFunctionSpec> getAssertionFunctions() {
+    return ImmutableList.of(
+      new AssertionFunctionSpec("assert"),
+      new AssertInstanceofSpec("cr.ui.decorate")
+    );
+  }
 }

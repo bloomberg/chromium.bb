@@ -10,7 +10,11 @@ from checker import Checker
 from processor import FileCache, Processor
 
 
+ASSERT_FILE = os.path.join("..", "..", "ui", "webui", "resources", "js",
+    "assert.js")
 CR_FILE = os.path.join("..", "..", "ui", "webui", "resources", "js", "cr.js")
+UI_FILE = os.path.join("..", "..", "ui", "webui", "resources", "js", "cr",
+    "ui.js")
 
 
 def rel_to_abs(rel_path):
@@ -19,7 +23,9 @@ def rel_to_abs(rel_path):
 
 
 class CompilerCustomizationTest(unittest.TestCase):
+  _ASSERT_DEFINITION = Processor(rel_to_abs(ASSERT_FILE)).contents
   _CR_DEFINE_DEFINITION = Processor(rel_to_abs(CR_FILE)).contents
+  _CR_UI_DECORATE_DEFINITION = Processor(rel_to_abs(UI_FILE)).contents
 
   def setUp(self):
     self._checker = Checker()
@@ -192,6 +198,43 @@ needsNumber(new Class().booleanProp);
 cr.define('cr', function() {
   return {};
 });
+""")
+
+  def testAssertWorks(self):
+    self._runCheckerTestExpectSuccess(self._ASSERT_DEFINITION + """
+/** @return {?string} */
+function f() {
+  return "string";
+}
+
+/** @type {!string} */
+var a = assert(f());
+""")
+
+  def testAssertInstanceofWorks(self):
+    self._runCheckerTestExpectSuccess(self._ASSERT_DEFINITION + """
+/** @constructor */
+function Class() {}
+
+/** @return {Class} */
+function f() {
+  var a = document.createElement('div');
+  return assertInstanceof(a, Class);
+}
+""")
+
+  def testCrUiDecorateWorks(self):
+    self._runCheckerTestExpectSuccess(self._CR_DEFINE_DEFINITION +
+        self._CR_UI_DECORATE_DEFINITION + """
+/** @constructor */
+function Class() {}
+
+/** @return {Class} */
+function f() {
+  var a = document.createElement('div');
+  cr.ui.decorate(a, Class);
+  return a;
+}
 """)
 
 

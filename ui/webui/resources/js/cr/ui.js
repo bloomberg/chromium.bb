@@ -103,10 +103,11 @@ cr.define('cr.ui', function() {
    * Input elements do not grow and shrink with their content. This is a simple
    * (and not very efficient) way of handling shrinking to content with support
    * for min width and limited by the width of the parent element.
-   * @param {HTMLElement} el The element to limit the width for.
-   * @param {number} parentEl The parent element that should limit the size.
+   * @param {!HTMLElement} el The element to limit the width for.
+   * @param {!HTMLElement} parentEl The parent element that should limit the
+   *     size.
    * @param {number} min The minimum width.
-   * @param {number} opt_scale Optional scale factor to apply to the width.
+   * @param {number=} opt_scale Optional scale factor to apply to the width.
    */
   function limitInputWidth(el, parentEl, min, opt_scale) {
     // Needs a size larger than borders

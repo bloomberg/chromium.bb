@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// <include src="../../assert.js">
+
 cr.define('cr.ui', function() {
   /** @const */
   var Menu = cr.ui.Menu;
@@ -63,7 +65,7 @@ cr.define('cr.ui', function() {
     },
     set menu(menu) {
       if (typeof menu == 'string' && menu[0] == '#') {
-        menu = this.ownerDocument.getElementById(menu.slice(1));
+        menu = assert(this.ownerDocument.getElementById(menu.slice(1)));
         cr.ui.decorate(menu, Menu);
       }
 
