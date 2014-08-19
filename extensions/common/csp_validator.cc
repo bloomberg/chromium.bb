@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 namespace extensions {
 
@@ -38,29 +39,67 @@ struct DirectiveStatus {
   bool is_secure;
 };
 
+// Returns whether |url| starts with |scheme_and_separator| and does not have a
+// too permissive wildcard host name. If |should_check_rcd| is true, then the
+// Public suffix list is used to exclude wildcard TLDs such as "https://*.org".
+bool isNonWildcardTLD(const std::string& url,
+                      const std::string& scheme_and_separator,
+                      bool should_check_rcd) {
+  if (!StartsWithASCII(url, scheme_and_separator, true))
+    return false;
+
+  size_t start_of_host = scheme_and_separator.length();
+
+  size_t end_of_host = url.find("/", start_of_host);
+  if (end_of_host == std::string::npos)
+    end_of_host = url.size();
+
+  // Note: It is sufficient to only compare the first character against '*'
+  // because the CSP only allows wildcards at the start of a directive, see
+  // host-source and host-part at http://www.w3.org/TR/CSP2/#source-list-syntax
+  bool is_wildcard_subdomain = end_of_host > start_of_host + 2 &&
+      url[start_of_host] == '*' && url[start_of_host + 1] == '.';
+  if (is_wildcard_subdomain)
+    start_of_host += 2;
+
+  size_t start_of_port = url.rfind(":", end_of_host);
+  // The ":" check at the end of the following condition is used to avoid
+  // treating the last part of an IPv6 address as a port.
+  if (start_of_port > start_of_host && url[start_of_port - 1] != ':') {
+    bool is_valid_port = false;
+    // Do a quick sanity check. The following check could mistakenly flag
+    // ":123456" or ":****" as valid, but that does not matter because the
+    // relaxing CSP directive will just be ignored by Blink.
+    for (size_t i = start_of_port + 1; i < end_of_host; ++i) {
+      is_valid_port = IsAsciiDigit(url[i]) || url[i] == '*';
+      if (!is_valid_port)
+        break;
+    }
+    if (is_valid_port)
+      end_of_host = start_of_port;
+  }
+
+  std::string host(url, start_of_host, end_of_host - start_of_host);
+  // Global wildcards are not allowed.
+  if (host.empty() || host.find("*") != std::string::npos)
+    return false;
+
+  if (!is_wildcard_subdomain || !should_check_rcd)
+    return true;
+
+  // Wildcards on subdomains of a TLD are not allowed.
+  size_t registry_length = net::registry_controlled_domains::GetRegistryLength(
+      host,
+      net::registry_controlled_domains::INCLUDE_UNKNOWN_REGISTRIES,
+      net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  return registry_length != 0;
+}
+
 bool HasOnlySecureTokens(base::StringTokenizer& tokenizer,
                          Manifest::Type type) {
   while (tokenizer.GetNext()) {
     std::string source = tokenizer.token();
     base::StringToLowerASCII(&source);
-
-    // Don't alow whitelisting of all hosts. This boils down to:
-    //   1. Maximum of 2 '*' characters.
-    //   2. Each '*' is either followed by a '.' or preceded by a ':'
-    int wildcards = 0;
-    size_t length = source.length();
-    for (size_t i = 0; i < length; ++i) {
-      if (source[i] == L'*') {
-        wildcards++;
-        if (wildcards > 2)
-          return false;
-
-        bool isWildcardPort = i > 0 && source[i - 1] == L':';
-        bool isWildcardSubdomain = i + 1 < length && source[i + 1] == L'.';
-        if (!isWildcardPort && !isWildcardSubdomain)
-          return false;
-      }
-    }
 
     // We might need to relax this whitelist over time.
     if (source == "'self'" ||
@@ -69,14 +108,14 @@ bool HasOnlySecureTokens(base::StringTokenizer& tokenizer,
         LowerCaseEqualsASCII(source, "blob:") ||
         LowerCaseEqualsASCII(source, "filesystem:") ||
         LowerCaseEqualsASCII(source, "http://localhost") ||
-        StartsWithASCII(source, "http://127.0.0.1:", false) ||
-        StartsWithASCII(source, "http://localhost:", false) ||
-        StartsWithASCII(source, "https://", true) ||
-        StartsWithASCII(source, "chrome://", true) ||
-        StartsWithASCII(source,
-                        std::string(extensions::kExtensionScheme) +
-                            url::kStandardSchemeSeparator,
-                        true) ||
+        StartsWithASCII(source, "http://127.0.0.1:", true) ||
+        StartsWithASCII(source, "http://localhost:", true) ||
+        isNonWildcardTLD(source, "https://", true) ||
+        isNonWildcardTLD(source, "chrome://", false) ||
+        isNonWildcardTLD(source,
+                         std::string(extensions::kExtensionScheme) +
+                         url::kStandardSchemeSeparator,
+                         false) ||
         StartsWithASCII(source, "chrome-extension-resource:", true)) {
       continue;
     }

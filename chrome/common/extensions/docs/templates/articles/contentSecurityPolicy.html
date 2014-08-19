@@ -273,9 +273,18 @@ function main() {
   network attacker. As <a
   href="http://en.wikipedia.org/wiki/Man-in-the-middle_attack">man-in-the-middle
   attacks</a> are both trivial and undetectable over HTTP, those origins will
-  not be accepted. Currently, we allow whitelisting origins with the following
-  schemes: <code>HTTPS</code>, <code>chrome-extension</code>, and
-  <code>chrome-extension-resource</code>.
+  not be accepted.
+</p>
+
+<p>
+  Currently, we allow whitelisting origins with the following schemes:
+  <code>blob</code>, <code>filesystem</code>, <code>https</code>,
+  <code>chrome-extension</code>, and <code>chrome-extension-resource</code>.
+  The host part of the origin must explicitly be specified for the
+  <code>https</code> and <code>chrome-extension</code> schemes.
+  Generic wildcards such as <code>https:</code>, <code>https://*</code> and
+  <code>https://*.com</code> are not allowed; subdomain wildcards such as
+  <code>https://*.example.com</code> are allowed.
 </p>
 
 <p>

@@ -99,11 +99,30 @@ TEST(ExtensionCSPValidator, IsSecure) {
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
       "default-src 'self' *:*/path", Manifest::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' https://", Manifest::TYPE_EXTENSION));
+  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
       "default-src 'self' https://*:*", Manifest::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
       "default-src 'self' https://*:*/", Manifest::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
       "default-src 'self' https://*:*/path", Manifest::TYPE_EXTENSION));
+  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' https://*.com", Manifest::TYPE_EXTENSION));
+  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' https://*.*.google.com/", Manifest::TYPE_EXTENSION));
+  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' https://*.*.google.com:*/",
+      Manifest::TYPE_EXTENSION));
+  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' https://www.*.google.com/",
+      Manifest::TYPE_EXTENSION));
+  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' https://www.*.google.com:*/",
+      Manifest::TYPE_EXTENSION));
+  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' chrome://*", Manifest::TYPE_EXTENSION));
+  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' chrome-extension://*", Manifest::TYPE_EXTENSION));
 
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
       "default-src 'self' https://*.google.com", Manifest::TYPE_EXTENSION));
