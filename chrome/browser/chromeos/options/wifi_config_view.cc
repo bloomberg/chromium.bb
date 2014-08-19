@@ -883,7 +883,9 @@ void WifiConfigView::SetEapProperties(base::DictionaryValue* properties) {
       shill::kEapPasswordProperty, GetPassphrase());
 
   base::ListValue* pem_list = new base::ListValue;
-  pem_list->AppendString(GetEapServerCaCertPEM());
+  std::string ca_cert_pem = GetEapServerCaCertPEM();
+  if (!ca_cert_pem.empty())
+    pem_list->AppendString(ca_cert_pem);
   properties->SetWithoutPathExpansion(
       shill::kEapCaCertPemProperty, pem_list);
 }
