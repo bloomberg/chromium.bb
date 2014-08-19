@@ -594,7 +594,7 @@ $L$sub4x::
 	mov	QWORD PTR[16+r14*8+rdi],rbx
 
 	sbb	rax,0
-	movq	xmm0,rax
+DB 66h, 48h, 0fh, 6eh, 0c0h
 	punpcklqdq	xmm0,xmm0
 	mov	QWORD PTR[24+r14*8+rdi],rbp
 	xor	r14,r14

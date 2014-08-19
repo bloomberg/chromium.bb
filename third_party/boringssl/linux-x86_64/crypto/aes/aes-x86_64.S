@@ -329,6 +329,7 @@ _x86_64_AES_encrypt_compact:
 .align	16
 .globl	asm_AES_encrypt
 .hidden asm_AES_encrypt
+.type	asm_AES_encrypt,@function
 .hidden	asm_AES_encrypt
 asm_AES_encrypt:
 	pushq	%rbx
@@ -774,6 +775,7 @@ _x86_64_AES_decrypt_compact:
 .align	16
 .globl	asm_AES_decrypt
 .hidden asm_AES_decrypt
+.type	asm_AES_decrypt,@function
 .hidden	asm_AES_decrypt
 asm_AES_decrypt:
 	pushq	%rbx
@@ -841,6 +843,7 @@ asm_AES_decrypt:
 .align	16
 .globl	asm_AES_set_encrypt_key
 .hidden asm_AES_set_encrypt_key
+.type	asm_AES_set_encrypt_key,@function
 asm_AES_set_encrypt_key:
 	pushq	%rbx
 	pushq	%rbp
@@ -1102,6 +1105,7 @@ _x86_64_AES_set_encrypt_key:
 .align	16
 .globl	asm_AES_set_decrypt_key
 .hidden asm_AES_set_decrypt_key
+.type	asm_AES_set_decrypt_key,@function
 asm_AES_set_decrypt_key:
 	pushq	%rbx
 	pushq	%rbp
@@ -1287,9 +1291,10 @@ asm_AES_set_decrypt_key:
 	.byte	0xf3,0xc3
 .size	asm_AES_set_decrypt_key,.-asm_AES_set_decrypt_key
 .align	16
-
 .globl	asm_AES_cbc_encrypt
 .hidden asm_AES_cbc_encrypt
+.type	asm_AES_cbc_encrypt,@function
+
 .hidden	asm_AES_cbc_encrypt
 asm_AES_cbc_encrypt:
 	cmpq	$0,%rdx

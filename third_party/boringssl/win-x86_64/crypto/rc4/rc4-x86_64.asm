@@ -753,21 +753,21 @@ key_se_handler	ENDP
 .text$	ENDS
 .pdata	SEGMENT READONLY ALIGN(4)
 ALIGN	4
-	DD	imagerel $L$SEH_begin_RC4
-	DD	imagerel $L$SEH_end_RC4
-	DD	imagerel $L$SEH_info_RC4
+	DD	imagerel $L$SEH_begin_asm_RC4
+	DD	imagerel $L$SEH_end_asm_RC4
+	DD	imagerel $L$SEH_info_asm_RC4
 
-	DD	imagerel $L$SEH_begin_RC4_set_key
-	DD	imagerel $L$SEH_end_RC4_set_key
-	DD	imagerel $L$SEH_info_RC4_set_key
+	DD	imagerel $L$SEH_begin_asm_RC4_set_key
+	DD	imagerel $L$SEH_end_asm_RC4_set_key
+	DD	imagerel $L$SEH_info_asm_RC4_set_key
 
 .pdata	ENDS
 .xdata	SEGMENT READONLY ALIGN(8)
 ALIGN	8
-$L$SEH_info_RC4::
+$L$SEH_info_asm_RC4::
 DB	9,0,0,0
 	DD	imagerel stream_se_handler
-$L$SEH_info_RC4_set_key::
+$L$SEH_info_asm_RC4_set_key::
 DB	9,0,0,0
 	DD	imagerel key_se_handler
 

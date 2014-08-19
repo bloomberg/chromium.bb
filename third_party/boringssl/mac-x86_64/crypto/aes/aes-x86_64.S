@@ -329,6 +329,7 @@ L$enc_compact_done:
 .p2align	4
 .globl	_asm_AES_encrypt
 .private_extern _asm_AES_encrypt
+
 .private_extern	_asm_AES_encrypt
 _asm_AES_encrypt:
 	pushq	%rbx
@@ -774,6 +775,7 @@ L$dec_compact_done:
 .p2align	4
 .globl	_asm_AES_decrypt
 .private_extern _asm_AES_decrypt
+
 .private_extern	_asm_AES_decrypt
 _asm_AES_decrypt:
 	pushq	%rbx
@@ -841,6 +843,7 @@ L$dec_epilogue:
 .p2align	4
 .globl	_asm_AES_set_encrypt_key
 .private_extern _asm_AES_set_encrypt_key
+
 _asm_AES_set_encrypt_key:
 	pushq	%rbx
 	pushq	%rbp
@@ -1102,6 +1105,7 @@ L$exit:
 .p2align	4
 .globl	_asm_AES_set_decrypt_key
 .private_extern _asm_AES_set_decrypt_key
+
 _asm_AES_set_decrypt_key:
 	pushq	%rbx
 	pushq	%rbp
@@ -1287,9 +1291,10 @@ L$dec_key_epilogue:
 	.byte	0xf3,0xc3
 
 .p2align	4
-
 .globl	_asm_AES_cbc_encrypt
 .private_extern _asm_AES_cbc_encrypt
+
+
 .private_extern	_asm_AES_cbc_encrypt
 _asm_AES_cbc_encrypt:
 	cmpq	$0,%rdx
