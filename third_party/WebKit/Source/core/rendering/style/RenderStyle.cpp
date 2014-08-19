@@ -29,6 +29,7 @@
 #include "core/rendering/TextAutosizer.h"
 #include "core/rendering/style/AppliedTextDecoration.h"
 #include "core/rendering/style/ContentData.h"
+#include "core/rendering/style/DataEquivalency.h"
 #include "core/rendering/style/QuotesData.h"
 #include "core/rendering/style/ShadowList.h"
 #include "core/rendering/style/StyleImage.h"
@@ -660,8 +661,8 @@ bool RenderStyle::diffNeedsPaintInvalidationObject(const RenderStyle& other) con
             || rareNonInheritedData->m_borderFit != other.rareNonInheritedData->m_borderFit
             || rareNonInheritedData->m_objectFit != other.rareNonInheritedData->m_objectFit
             || rareNonInheritedData->m_objectPosition != other.rareNonInheritedData->m_objectPosition
-            || rareNonInheritedData->m_shapeOutside != other.rareNonInheritedData->m_shapeOutside
-            || rareNonInheritedData->m_clipPath != other.rareNonInheritedData->m_clipPath)
+            || !dataEquivalent(rareNonInheritedData->m_shapeOutside, other.rareNonInheritedData->m_shapeOutside)
+            || !dataEquivalent(rareNonInheritedData->m_clipPath, other.rareNonInheritedData->m_clipPath))
             return true;
     }
 

@@ -1,0 +1,26 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [800, 300],
+          "drawsContent": true,
+          "backfaceVisibility": "hidden",
+          "backgroundColor": "#FF0000E6",
+          "transform": [
+            [1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 1, 0],
+            [0, 100, 0, 1]
+          ]
+        }
+      ]
+    }
+  ]
+}
+
