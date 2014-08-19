@@ -2277,12 +2277,12 @@ Node* Element::insertAdjacent(const String& where, Node* newChild, ExceptionStat
 static Element* contextElementForInsertion(const String& where, Element* element, ExceptionState& exceptionState)
 {
     if (equalIgnoringCase(where, "beforeBegin") || equalIgnoringCase(where, "afterEnd")) {
-        ContainerNode* parent = element->parentNode();
-        if (!parent || !parent->isElementNode()) {
+        Element* parent = element->parentElement();
+        if (!parent) {
             exceptionState.throwDOMException(NoModificationAllowedError, "The element has no parent.");
             return 0;
         }
-        return toElement(parent);
+        return parent;
     }
     if (equalIgnoringCase(where, "afterBegin") || equalIgnoringCase(where, "beforeEnd"))
         return element;

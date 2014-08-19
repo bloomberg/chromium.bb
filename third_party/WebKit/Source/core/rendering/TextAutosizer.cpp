@@ -121,10 +121,9 @@ static const RenderObject* parentElementRenderer(const RenderObject* renderer)
     if (!node)
         return 0;
 
-    for (node = node->parentNode(); node; node = node->parentNode()) {
-        if (node->isElementNode())
-            return node->renderer();
-    }
+    // FIXME: This should be using NodeRenderingTraversal::parent().
+    if (Element* parent = node->parentElement())
+        return parent->renderer();
     return 0;
 }
 

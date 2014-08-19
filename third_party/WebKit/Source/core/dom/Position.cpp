@@ -278,10 +278,10 @@ Position::AnchorType Position::anchorTypeForLegacyEditingPosition(Node* anchorNo
 // FIXME: This method is confusing (does it return anchorNode() or containerNode()?) and should be renamed or removed
 Element* Position::element() const
 {
-    Node* n = anchorNode();
-    while (n && !n->isElementNode())
-        n = n->parentNode();
-    return toElement(n);
+    Node* node = anchorNode();
+    if (!node || node->isElementNode())
+        return toElement(node);
+    return node->parentElement();
 }
 
 PassRefPtrWillBeRawPtr<CSSComputedStyleDeclaration> Position::computedStyle() const

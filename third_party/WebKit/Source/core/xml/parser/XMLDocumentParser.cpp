@@ -801,10 +801,10 @@ XMLDocumentParser::XMLDocumentParser(DocumentFragment* fragment, Element* parent
     while (parentElement) {
         elemStack.append(parentElement);
 
-        ContainerNode* n = parentElement->parentNode();
-        if (!n || !n->isElementNode())
+        Element* grandParentElement = parentElement->parentElement();
+        if (!grandParentElement)
             break;
-        parentElement = toElement(n);
+        parentElement = grandParentElement;
     }
 
     if (elemStack.isEmpty())

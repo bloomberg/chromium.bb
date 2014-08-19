@@ -397,8 +397,8 @@ Element* AXNodeObject::mouseButtonListener() const
         return 0;
 
     // check if our parent is a mouse button listener
-    while (node && !node->isElementNode())
-        node = node->parentNode();
+    if (!node->isElementNode())
+        node = node->parentElement();
 
     if (!node)
         return 0;

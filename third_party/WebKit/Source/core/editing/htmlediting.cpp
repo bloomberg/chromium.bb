@@ -575,7 +575,8 @@ Element* enclosingElementWithTag(const Position& p, const QualifiedName& tagName
         return 0;
 
     ContainerNode* root = highestEditableRoot(p);
-    for (Element* ancestor = ElementTraversal::firstAncestorOrSelf(*p.deprecatedNode()); ancestor; ancestor = ElementTraversal::firstAncestor(*ancestor)) {
+    Element* ancestor = p.deprecatedNode()->isElementNode() ? toElement(p.deprecatedNode()) : p.deprecatedNode()->parentElement();
+    for (; ancestor; ancestor = ancestor->parentElement()) {
         if (root && !ancestor->hasEditableStyle())
             continue;
         if (ancestor->hasTagName(tagName))
