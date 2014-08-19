@@ -84,7 +84,7 @@ void FormAssociatedElement::didMoveToNewDocument(Document& oldDocument)
 
 void FormAssociatedElement::insertedInto(ContainerNode* insertionPoint)
 {
-    if (!m_formWasSetByParser || NodeTraversal::highestAncestorOrSelf(*insertionPoint) != NodeTraversal::highestAncestorOrSelf(*m_form.get()))
+    if (!m_formWasSetByParser || !m_form || NodeTraversal::highestAncestorOrSelf(*insertionPoint) != NodeTraversal::highestAncestorOrSelf(*m_form.get()))
         resetFormOwner();
 
     if (!insertionPoint->inDocument())
