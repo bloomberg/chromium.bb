@@ -718,8 +718,14 @@ void RenderWidgetHostViewAndroid::SelectionChanged(const base::string16& text,
   if (selection_controller_)
     selection_controller_->OnSelectionEmpty(text.empty());
 
-  if (text.empty() || range.is_empty() || !content_view_core_)
+  if (!content_view_core_)
     return;
+  if (range.is_empty()) {
+    content_view_core_->OnSelectionChanged("");
+    return;
+  }
+
+  DCHECK(!text.empty());
   size_t pos = range.GetMin() - offset;
   size_t n = range.length();
 
