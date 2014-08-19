@@ -79,7 +79,7 @@ test("resultType", 12, function() {
     equals(results.resultType("http://example.com/foo.xyz"), "text");
 });
 
-asyncTest("fetchResultsURLs", 5, function() {
+asyncTest("fetchResultsURLs", 6, function() {
     var simulator = new NetworkSimulator(ok, start);
 
     var probedURLs = [];
@@ -125,6 +125,15 @@ asyncTest("fetchResultsURLs", 5, function() {
                 MockResultsBaseURL + "/userscripts/taco-diff.txt",
             ]);
         });
+        results.fetchResultsURLs({
+            'builderName': "Mock Builder",
+            'testName': "userscripts/another-test.html",
+            'failureTypeList': ['LEAK'],
+        }).then(function(resultURLs) {
+            deepEqual(resultURLs, [
+                MockResultsBaseURL + "/userscripts/another-test-leak-log.txt"
+            ]);
+        });
     }).then(function() {
         deepEqual(probedURLs, [
             MockResultsBaseURL + "/userscripts/another-test-expected.png",
@@ -137,6 +146,7 @@ asyncTest("fetchResultsURLs", 5, function() {
             MockResultsBaseURL + "/userscripts/taco-actual.txt",
             MockResultsBaseURL + "/userscripts/taco-expected.txt",
             MockResultsBaseURL + "/userscripts/taco-diff.txt",
+            MockResultsBaseURL + "/userscripts/another-test-leak-log.txt",
         ]);
         start();
     });

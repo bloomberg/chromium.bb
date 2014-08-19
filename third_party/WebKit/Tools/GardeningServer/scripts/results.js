@@ -31,6 +31,7 @@ var PASS = 'PASS';
 var TIMEOUT = 'TIMEOUT';
 var TEXT = 'TEXT';
 var CRASH = 'CRASH';
+var LEAK = 'LEAK';
 var IMAGE = 'IMAGE';
 var IMAGE_TEXT = 'IMAGE+TEXT';
 var AUDIO = 'AUDIO';
@@ -47,6 +48,7 @@ var kExpectedTextSuffix = '-expected.txt';
 var kActualTextSuffix = '-actual.txt';
 var kDiffTextSuffix = '-diff.txt';
 var kCrashLogSuffix = '-crash-log.txt';
+var kLeakLogSuffix = '-leak-log.txt';
 
 var kPreferredSuffixOrder = [
     kExpectedImageSuffix,
@@ -58,6 +60,7 @@ var kPreferredSuffixOrder = [
     kCrashLogSuffix,
     kExpectedAudioSuffix,
     kActualAudioSuffix,
+    kLeakLogSuffix,
 ];
 
 // Kinds of results.
@@ -112,6 +115,9 @@ function possibleSuffixListFor(failureTypeList)
             break;
         case CRASH:
             suffixList.push(kCrashLogSuffix);
+            break;
+        case LEAK:
+            suffixList.push(kLeakLogSuffix);
             break;
         case MISSING:
             pushImageSuffixes();
