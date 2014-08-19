@@ -324,7 +324,8 @@ class Method:
         if len(self.agents) == 0:
             return
 
-        body_lines = map(self.generate_agent_call, self.agents)
+        body_lines = map(self.generate_ref_ptr, self.params)
+        body_lines += map(self.generate_agent_call, self.agents)
 
         if self.returns_cookie:
             if "Timeline" in self.agents:
@@ -371,6 +372,11 @@ class Method:
             maybe_return=maybe_return,
             params_agent=", ".join(map(Parameter.to_str_value, self.params_impl)[1:]))
 
+    def generate_ref_ptr(self, param):
+        if param.is_prp:
+            return "\n    RefPtr<%s> %s = %s;" % (param.inner_type, param.value, param.name)
+        else:
+            return ""
 
 class Parameter:
     def __init__(self, source):
@@ -401,8 +407,12 @@ class Parameter:
             self.name = generate_param_name(self.type)
 
         if re.match("PassRefPtr<", param_decl):
-            self.value = "%s.get()" % self.name
+            self.is_prp = True
+            self.value = self.name
+            self.name = "prpP" + self.name[1:]
+            self.inner_type = re.match("PassRefPtr<(.+)>", param_decl).group(1)
         else:
+            self.is_prp = False
             self.value = self.name
 
 

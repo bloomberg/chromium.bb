@@ -795,7 +795,7 @@ void InspectorDebuggerAgent::didHandleEvent()
     cancelPauseOnNextStatement();
 }
 
-void InspectorDebuggerAgent::willLoadXHR(XMLHttpRequest* xhr, ThreadableLoaderClient*, const AtomicString&, const KURL&, bool async, FormData*, const HTTPHeaderMap&, bool)
+void InspectorDebuggerAgent::willLoadXHR(XMLHttpRequest* xhr, ThreadableLoaderClient*, const AtomicString&, const KURL&, bool async, PassRefPtr<FormData>, const HTTPHeaderMap&, bool)
 {
     if (asyncCallStackTracker().isEnabled() && async)
         asyncCallStackTracker().willLoadXHR(xhr, scriptDebugServer().currentCallFramesForAsyncStack());
