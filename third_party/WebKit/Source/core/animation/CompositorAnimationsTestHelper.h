@@ -76,8 +76,8 @@ public:
 
     MOCK_METHOD0(id, int());
 
-    MOCK_CONST_METHOD0(iterations, int());
-    MOCK_METHOD1(setIterations, void(int));
+    MOCK_CONST_METHOD0(iterations, double());
+    MOCK_METHOD1(setIterations, void(double));
 
     MOCK_CONST_METHOD0(startTime, double());
     MOCK_METHOD1(setStartTime, void(double));

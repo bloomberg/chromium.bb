@@ -5,6 +5,8 @@
 #ifndef WebCompositorAnimation_h
 #define WebCompositorAnimation_h
 
+#define WEB_ANIMATION_SUPPORTS_FRACTIONAL_ITERATIONS 1
+
 namespace blink {
 
 // A compositor driven animation.
@@ -27,8 +29,8 @@ public:
     // This is the number of times that the animation will play. If this
     // value is zero the animation will not play. If it is negative, then
     // the animation will loop indefinitely.
-    virtual int iterations() const = 0;
-    virtual void setIterations(int) = 0;
+    virtual double iterations() const = 0;
+    virtual void setIterations(double) = 0;
 
     virtual double startTime() const = 0;
     virtual void setStartTime(double monotonicTime) = 0;

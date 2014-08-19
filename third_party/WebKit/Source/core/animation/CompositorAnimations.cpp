@@ -315,9 +315,7 @@ bool CompositorAnimationsImpl::convertTimingForCompositor(const Timing& timing, 
     if (timing.iterationStart)
         return false;
 
-    // FIXME: Compositor only supports positive, integer iteration counts.
-    // Zero iterations could be converted, but silly.
-    if ((std::floor(timing.iterationCount) != timing.iterationCount) || timing.iterationCount <= 0)
+    if (timing.iterationCount <= 0)
         return false;
 
     if (std::isnan(timing.iterationDuration) || !timing.iterationDuration)
@@ -345,7 +343,7 @@ bool CompositorAnimationsImpl::convertTimingForCompositor(const Timing& timing, 
     if (!std::isfinite(timing.iterationCount)) {
         out.adjustedIterationCount = -1;
     } else {
-        out.adjustedIterationCount = std::floor(timing.iterationCount);
+        out.adjustedIterationCount = timing.iterationCount;
         ASSERT(out.adjustedIterationCount > 0);
     }
 

@@ -338,7 +338,8 @@ TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorIterationCou
     EXPECT_EQ(5, m_compositorTiming.adjustedIterationCount);
 
     m_timing.iterationCount = 5.5;
-    EXPECT_FALSE(convertTimingForCompositor(m_timing, m_compositorTiming));
+    EXPECT_TRUE(convertTimingForCompositor(m_timing, m_compositorTiming));
+    EXPECT_EQ(5.5, m_compositorTiming.adjustedIterationCount);
 
     // EXPECT_DEATH tests are flaky on Android.
 #if ENABLE(ASSERT) && !OS(ANDROID)

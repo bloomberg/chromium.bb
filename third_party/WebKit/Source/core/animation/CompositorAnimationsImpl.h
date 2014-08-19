@@ -45,7 +45,7 @@ private:
         bool alternate;
         double scaledDuration;
         double scaledTimeOffset;
-        int adjustedIterationCount;
+        double adjustedIterationCount;
     };
 
     static bool convertTimingForCompositor(const Timing&, CompositorTiming& out);
