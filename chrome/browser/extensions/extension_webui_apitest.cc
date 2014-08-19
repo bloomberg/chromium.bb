@@ -70,17 +70,33 @@ class ExtensionWebUITest : public ExtensionApiTest {
                : (testing::AssertionFailure() << "Check console output");
   }
 
-  testing::AssertionResult RunTestOnExtensions(const char* name) {
-    // In the current design the URL of the chrome://extensions page it's
-    // actually chrome://extensions-frame/ -- and it's important we find it,
-    // because the top-level frame doesn't execute any code, so a script
-    // context is never created, so the bindings are never set up, and
-    // apparently the call to ExecuteScriptAndExtractString doesn't adequately
-    // set them up either.
+  testing::AssertionResult RunTestOnExtensionsFrame(const char* name) {
+    // In the current extension WebUI design, the content is actually hosted in
+    // an iframe at chrome://extensions-frame.
     return RunTest(name,
                    GURL("chrome://extensions"),
                    GURL("chrome://extensions-frame"),
-                   true);  // tests on chrome://extensions should succeed
+                   true);  // tests on chrome://extensions-frame should succeed
+  }
+
+  testing::AssertionResult RunTestOnChromeExtensionsFrame(const char* name) {
+    // Like RunTestOnExtensionsFrame, but chrome://extensions is an alias for
+    // chrome://chrome/extensions so test it explicitly.
+    return RunTest(name,
+                   GURL("chrome://chrome/extensions"),
+                   GURL("chrome://extensions-frame"),
+                   true);  // tests on chrome://extensions-frame should succeed
+  }
+
+  testing::AssertionResult RunTestOnChromeExtensions(const char* name) {
+    // Despite the extensions page being hosted in an iframe, also test the
+    // top-level chrome://extensions page (which actually loads
+    // chrome://chrome/extensions). In the past there was a bug where top-level
+    // extension WebUI bindings weren't correctly set up.
+    return RunTest(name,
+                   GURL("chrome://chrome/extensions"),
+                   GURL("chrome://chrome/extensions"),
+                   true);  // tests on chrome://chrome/extensions should succeed
   }
 
   testing::AssertionResult RunTestOnAbout(const char* name) {
@@ -124,8 +140,17 @@ class ExtensionWebUITest : public ExtensionApiTest {
   scoped_ptr<FeatureSwitch::ScopedOverride> enable_options_;
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebUITest, SanityCheckAvailableAPIs) {
-  ASSERT_TRUE(RunTestOnExtensions("sanity_check_available_apis.js"));
+IN_PROC_BROWSER_TEST_F(ExtensionWebUITest, SanityCheckAvailableAPIsInFrame) {
+  ASSERT_TRUE(RunTestOnExtensionsFrame("sanity_check_available_apis.js"));
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionWebUITest,
+                       SanityCheckAvailableAPIsInChromeFrame) {
+  ASSERT_TRUE(RunTestOnChromeExtensionsFrame("sanity_check_available_apis.js"));
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionWebUITest, SanityCheckAvailableAPIsInToplevel) {
+  ASSERT_TRUE(RunTestOnChromeExtensions("sanity_check_available_apis.js"));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebUITest, SanityCheckUnavailableAPIs) {
@@ -138,7 +163,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebUITest, SendMessage) {
   scoped_ptr<ExtensionTestMessageListener> listener(
       new ExtensionTestMessageListener("ping", true));
 
-  ASSERT_TRUE(RunTestOnExtensions("send_message.js"));
+  ASSERT_TRUE(RunTestOnExtensionsFrame("send_message.js"));
 
   ASSERT_TRUE(listener->WaitUntilSatisfied());
   listener->Reply("pong");
@@ -151,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebUITest, SendMessage) {
 // Tests chrome.runtime.onMessage, which exercises WebUI registering and
 // receiving an event.
 IN_PROC_BROWSER_TEST_F(ExtensionWebUITest, OnMessage) {
-  ASSERT_TRUE(RunTestOnExtensions("on_message.js"));
+  ASSERT_TRUE(RunTestOnExtensionsFrame("on_message.js"));
 
   OnMessage::Info info;
   info.data = "hi";
@@ -171,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebUITest, RuntimeLastError) {
   scoped_ptr<ExtensionTestMessageListener> listener(
       new ExtensionTestMessageListener("ping", true));
 
-  ASSERT_TRUE(RunTestOnExtensions("runtime_last_error.js"));
+  ASSERT_TRUE(RunTestOnExtensionsFrame("runtime_last_error.js"));
 
   ASSERT_TRUE(listener->WaitUntilSatisfied());
   listener->ReplyWithError("unknown host");
@@ -190,7 +215,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebUITest, CanEmbedExtensionOptions) {
       1);
   ASSERT_TRUE(extension);
 
-  ASSERT_TRUE(RunTestOnExtensions("can_embed_extension_options.js"));
+  ASSERT_TRUE(RunTestOnExtensionsFrame("can_embed_extension_options.js"));
 
   ASSERT_TRUE(listener->WaitUntilSatisfied());
   listener->Reply(extension->id());

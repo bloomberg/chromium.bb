@@ -123,7 +123,6 @@
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
   },
   "test": [{
-    "internal": true,
     "channel": "stable",
     "extension_types": "all",
     // Everything except web pages and WebUI. WebUI is declared in a separate
@@ -135,11 +134,12 @@
       "unblessed_extension"
     ]
   }, {
-    "internal": true,
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
-      "chrome://extensions-frame/*"
+      "chrome://extensions/*",
+      "chrome://extensions-frame/*",
+      "chrome://chrome/extensions/*"
     ]
   }],
   "types": {

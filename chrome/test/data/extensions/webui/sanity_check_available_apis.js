@@ -29,7 +29,8 @@ for (var i = 0; i < expected.length && isEqual; i++) {
 }
 
 if (!isEqual) {
-  console.error('Expected: ' + JSON.stringify(expected) + ', ' +
+  console.error(window.location.href + ': ' +
+                'Expected: ' + JSON.stringify(expected) + ', ' +
                 'Actual: ' + JSON.stringify(actual));
 }
 domAutomationController.send(isEqual);

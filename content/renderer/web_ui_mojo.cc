@@ -49,7 +49,6 @@ WebUIMojo::WebUIMojo(RenderView* render_view)
     : RenderViewObserver(render_view),
       RenderViewObserverTracker<WebUIMojo>(render_view),
       main_frame_observer_(this) {
-  CreateContextState();
 }
 
 WebUIMojo::~WebUIMojo() {
@@ -95,6 +94,10 @@ WebUIMojoContextState* WebUIMojo::GetContextState() {
   return context_state ? context_state->state.get() : NULL;
 }
 
+void WebUIMojo::DidCreateDocumentElement(blink::WebLocalFrame* frame) {
+  CreateContextState();
+}
+
 void WebUIMojo::DidClearWindowObject(blink::WebLocalFrame* frame) {
   if (frame != render_view()->GetWebView()->mainFrame())
     return;
@@ -112,7 +115,6 @@ void WebUIMojo::DidClearWindowObject(blink::WebLocalFrame* frame) {
 
   v8::HandleScope handle_scope(blink::mainThreadIsolate());
   DestroyContextState(frame->mainWorldScriptContext());
-  CreateContextState();
 }
 
 }  // namespace content

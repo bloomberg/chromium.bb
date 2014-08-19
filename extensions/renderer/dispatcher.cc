@@ -1055,11 +1055,15 @@ void Dispatcher::UpdateBindingsForContext(ScriptContext* context) {
         if (api_feature_provider->GetParent(feature) != NULL)
           continue;
 
+        // Skip chrome.test if this isn't a test.
+        if (api_name == "test" &&
+            !CommandLine::ForCurrentProcess()->HasSwitch(
+                ::switches::kTestType)) {
+          continue;
+        }
+
         if (context->IsAnyFeatureAvailableToContext(*feature))
           RegisterBinding(api_name, context);
-      }
-      if (CommandLine::ForCurrentProcess()->HasSwitch(::switches::kTestType)) {
-        RegisterBinding("test", context);
       }
       break;
     }
