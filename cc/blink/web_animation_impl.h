@@ -46,6 +46,8 @@ class WebCompositorAnimationImpl : public blink::WebCompositorAnimation {
   virtual bool alternatesDirection() const;
   virtual void setAlternatesDirection(bool alternates);
 #endif
+  virtual double playbackRate() const;
+  virtual void setPlaybackRate(double playback_rate);
 
   scoped_ptr<cc::Animation> PassAnimation();
 

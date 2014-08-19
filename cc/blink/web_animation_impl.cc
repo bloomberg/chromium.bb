@@ -161,6 +161,14 @@ void WebCompositorAnimationImpl::setAlternatesDirection(bool alternates) {
 }
 #endif
 
+double WebCompositorAnimationImpl::playbackRate() const {
+  return animation_->playback_rate();
+}
+
+void WebCompositorAnimationImpl::setPlaybackRate(double playback_rate) {
+  animation_->set_playback_rate(playback_rate);
+}
+
 scoped_ptr<cc::Animation> WebCompositorAnimationImpl::PassAnimation() {
   animation_->set_needs_synchronized_start_time(true);
   return animation_.Pass();

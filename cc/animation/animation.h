@@ -89,6 +89,11 @@ class CC_EXPORT Animation {
   Direction direction() { return direction_; }
   void set_direction(Direction direction) { direction_ = direction; }
 
+  double playback_rate() { return playback_rate_; }
+  void set_playback_rate(double playback_rate) {
+    playback_rate_ = playback_rate;
+  }
+
   bool IsFinishedAt(base::TimeTicks monotonic_time) const;
   bool is_finished() const {
     return run_state_ == Finished ||
@@ -164,6 +169,7 @@ class CC_EXPORT Animation {
   double iterations_;
   base::TimeTicks start_time_;
   Direction direction_;
+  double playback_rate_;
 
   // The time offset effectively pushes the start of the animation back in time.
   // This is used for resuming paused animations -- an animation is added with a

@@ -65,6 +65,7 @@ Animation::Animation(scoped_ptr<AnimationCurve> curve,
       run_state_(WaitingForTargetAvailability),
       iterations_(1),
       direction_(Normal),
+      playback_rate_(1),
       needs_synchronized_start_time_(false),
       received_finished_event_(false),
       suspended_(false),
@@ -148,8 +149,11 @@ bool Animation::IsFinishedAt(base::TimeTicks monotonic_time) const {
   if (needs_synchronized_start_time_)
     return false;
 
+  if (playback_rate_ == 0)
+    return false;
+
   return run_state_ == Running && iterations_ >= 0 &&
-         iterations_ * curve_->Duration() <=
+         iterations_ * curve_->Duration() / std::abs(playback_rate_) <=
              (monotonic_time + time_offset_ - start_time_ - total_paused_time_)
                  .InSecondsF();
 }
@@ -157,6 +161,9 @@ bool Animation::IsFinishedAt(base::TimeTicks monotonic_time) const {
 double Animation::TrimTimeToCurrentIteration(
     base::TimeTicks monotonic_time) const {
   base::TimeTicks trimmed = monotonic_time + time_offset_;
+
+  // Zero playback rate not supported
+  DCHECK(playback_rate_);
 
   // If we're paused, time is 'stuck' at the pause time.
   if (run_state_ == Paused)
@@ -186,6 +193,9 @@ double Animation::TrimTimeToCurrentIteration(
   if (curve_->Duration() <= 0)
     return 0;
 
+  // Calculate the active time
+  trimmed_in_seconds *= std::abs(playback_rate_);
+
   // check if we are past active interval
   bool is_past_total_duration =
       (iterations_ > 0 &&
@@ -213,6 +223,11 @@ double Animation::TrimTimeToCurrentIteration(
                  (direction_ == Alternate && iteration % 2 == 1) ||
                  (direction_ == AlternateReverse && iteration % 2 == 0);
 
+  // check if playback rate is negative and if the playback rate is negative and
+  // the animation is in reverse direction, run the animation normally
+  if (playback_rate_ < 0)
+    reverse = !reverse;
+
   // if we are running the animation in reverse direction, reverse the result
   if (reverse)
     return curve_->Duration() - trimmed_in_seconds;
@@ -231,6 +246,7 @@ scoped_ptr<Animation> Animation::CloneAndInitialize(
   to_return->total_paused_time_ = total_paused_time_;
   to_return->time_offset_ = time_offset_;
   to_return->direction_ = direction_;
+  to_return->playback_rate_ = playback_rate_;
   DCHECK(!to_return->is_controlling_instance_);
   to_return->is_controlling_instance_ = true;
   return to_return.Pass();
