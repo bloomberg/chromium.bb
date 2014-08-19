@@ -25,6 +25,8 @@ WifiAccessPointInfoProviderChromeos::WifiAccessPointInfoProviderChromeos() {
 }
 
 WifiAccessPointInfoProviderChromeos::~WifiAccessPointInfoProviderChromeos() {
+  NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
+                                                                 FROM_HERE);
 }
 
 bool WifiAccessPointInfoProviderChromeos::GetInfo(WifiAccessPointInfo* info) {
