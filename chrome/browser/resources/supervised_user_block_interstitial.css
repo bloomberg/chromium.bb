@@ -28,11 +28,7 @@ h1 {
   color: rgb(102, 102, 102);
   font-size: 1.3em;
   font-weight: normal;
-  margin: 10px 0 30px 0;
-}
-
-#request-sent-message {
-  margin-top: 40px;
+  margin: 5px 0 30px 0;
 }
 
 a {
@@ -47,8 +43,21 @@ a {
   content: -webkit-image-set(
       url('../../app/theme/default_100_percent/common/error_managed_mode_blocked_page.png') 1x,
       url('../../app/theme/default_200_percent/common/error_managed_mode_blocked_page.png') 2x);
-  margin-bottom: 10px;
+  margin-bottom: 15px;
   margin-top: 10px;
+}
+
+.avatar-container {
+  position: relative;
+}
+
+.avatar-img {
+  -webkit-user-select: none;
+  border: 3px solid rgb(251, 251, 251);
+  border-radius: 50%;
+  margin-bottom: 5px;
+  margin-top: 10px;
+  position: relative;
 }
 
 #content-top {
