@@ -1,6 +1,7 @@
 include_rules = [
   "+cc",
-  "+ui/gfx",
+  "-cc/blink",
   "+gpu/command_buffer/client",
   "+third_party/skia/include",
+  "+ui/gfx",
 ]

@@ -1,5 +1,6 @@
 include_rules = [
   "+cc",
+  "-cc/blink",
   "+gpu/command_buffer/client/gles2_interface.h",
   "+third_party/skia",
   "+ui/gfx",

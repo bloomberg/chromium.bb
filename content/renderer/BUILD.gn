@@ -24,6 +24,7 @@ source_set("renderer") {
     "//crypto:platform",
 
     "//base/allocator",
+    "//cc/blink",
     "//content:resources",
     "//content/common:mojo_bindings",
     "//gin",

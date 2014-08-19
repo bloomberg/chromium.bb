@@ -10,9 +10,9 @@
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "cc/blink/web_layer_impl.h"
 #include "cc/layers/video_layer.h"
 #include "content/public/renderer/render_view.h"
-#include "content/renderer/compositor_bindings/web_layer_impl.h"
 #include "content/renderer/media/media_stream_audio_renderer.h"
 #include "content/renderer/media/media_stream_renderer_factory.h"
 #include "content/renderer/media/video_frame_provider.h"
@@ -418,7 +418,7 @@ void WebMediaPlayerMS::OnFrameAvailable(
     GetClient()->sizeChanged();
 
     if (video_frame_provider_) {
-      video_weblayer_.reset(new WebLayerImpl(
+      video_weblayer_.reset(new cc_blink::WebLayerImpl(
           cc::VideoLayer::Create(this, media::VIDEO_ROTATION_0)));
       video_weblayer_->setOpaque(true);
       GetClient()->setWebLayer(video_weblayer_.get());

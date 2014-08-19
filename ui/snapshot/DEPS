@@ -1,5 +1,6 @@
 include_rules = [
   "+cc",
+  "-cc/blink",
   "-cc/surfaces",
   "+skia/ext",
   "+third_party/skia",

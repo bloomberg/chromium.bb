@@ -21,10 +21,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "cc/blink/web_layer_impl.h"
 #include "cc/layers/video_layer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/renderer/compositor_bindings/web_layer_impl.h"
 #include "content/renderer/media/buffered_data_source.h"
 #include "content/renderer/media/crypto/key_systems.h"
 #include "content/renderer/media/render_media_log.h"
@@ -1017,7 +1017,7 @@ void WebMediaPlayerImpl::OnPipelineMetadata(
       pipeline_metadata_.natural_size = gfx::Size(size.height(), size.width());
     }
 
-    video_weblayer_.reset(new WebLayerImpl(layer));
+    video_weblayer_.reset(new cc_blink::WebLayerImpl(layer));
     video_weblayer_->setOpaque(opaque_);
     client_->setWebLayer(video_weblayer_.get());
   }

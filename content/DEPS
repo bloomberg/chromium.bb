@@ -18,6 +18,7 @@ include_rules = [
   "+blink",
 
   "+cc",
+  "-cc/blink",
   # If you want to use any of these files, move them to src/base first.
   "-cc/base/scoped_ptr_algorithm.h",
   "-cc/base/scoped_ptr_deque.h",

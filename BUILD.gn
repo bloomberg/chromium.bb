@@ -20,6 +20,7 @@ group("root") {
     #"//base(//build/toolchain/nacl:x86_newlib)",
     "//ash",
     "//cc",
+    "//cc/blink",
     "//chrome/browser",
     "//chrome/browser/devtools",
     "//chrome/browser/ui",
@@ -162,6 +163,7 @@ group("root") {
     ]
 
     deps -= [
+      "//cc/blink", # Blocked on blink
       "//chrome/browser",  # Blocked on content.
       "//chrome/browser/devtools",  # Blocked on content.
       "//chrome/browser/ui",  # Blocked on content.

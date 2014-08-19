@@ -43,6 +43,7 @@
         '../base/base.gyp:base',
         '../base/base.gyp:base_static',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '../cc/blink/cc_blink.gyp:cc_blink',
         '../cc/cc.gyp:cc',
         '../components/components.gyp:breakpad_component',
         '../gin/gin.gyp:gin',

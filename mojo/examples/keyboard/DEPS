@@ -1,5 +1,6 @@
 include_rules = [
   "+cc",
+  "-cc/blink",
   "+skia/ext",
   "+ui/aura",
   "+ui/base/hit_test.h",

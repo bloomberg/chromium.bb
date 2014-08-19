@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "cc/base/latency_info_swap_promise.h"
+#include "cc/blink/web_layer_impl.h"
 #include "cc/layers/texture_layer.h"
 #include "cc/trees/layer_tree_host.h"
 #include "content/common/content_constants_internal.h"
@@ -24,7 +25,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "content/renderer/compositor_bindings/web_layer_impl.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/pepper/content_decryptor_delegate.h"
 #include "content/renderer/pepper/event_conversion.h"
@@ -2083,10 +2083,10 @@ void PepperPluginInstanceImpl::UpdateLayer(bool device_changed) {
     // wmode=transparent was specified.
     opaque = opaque || fullscreen_container_;
     texture_layer_->SetContentsOpaque(opaque);
-    web_layer_.reset(new WebLayerImpl(texture_layer_));
+    web_layer_.reset(new cc_blink::WebLayerImpl(texture_layer_));
   } else if (want_compositor_layer) {
     compositor_layer_ = bound_compositor_->layer();
-    web_layer_.reset(new WebLayerImpl(compositor_layer_));
+    web_layer_.reset(new cc_blink::WebLayerImpl(compositor_layer_));
   }
 
   if (web_layer_) {

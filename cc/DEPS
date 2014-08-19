@@ -15,4 +15,5 @@ include_rules = [
   "+ui/events/latency_info.h",
   "+ui/gfx",
   "+ui/gl",
+  "-cc/blink",
 ]

@@ -29,6 +29,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "cc/base/switches.h"
+#include "cc/blink/web_external_bitmap_impl.h"
+#include "cc/blink/web_layer_impl.h"
 #include "cc/resources/raster_worker_pool.h"
 #include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/appcache/appcache_frontend_impl.h"
@@ -66,8 +68,6 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "content/public/renderer/render_view_visitor.h"
-#include "content/renderer/compositor_bindings/web_external_bitmap_impl.h"
-#include "content/renderer/compositor_bindings/web_layer_impl.h"
 #include "content/renderer/devtools/devtools_agent_filter.h"
 #include "content/renderer/dom_storage/dom_storage_dispatcher.h"
 #include "content/renderer/dom_storage/webstoragearea_impl.h"
@@ -482,7 +482,8 @@ void RenderThreadImpl::Init() {
 
   is_impl_side_painting_enabled_ =
       command_line.HasSwitch(switches::kEnableImplSidePainting);
-  WebLayerImpl::SetImplSidePaintingEnabled(is_impl_side_painting_enabled_);
+  cc_blink::WebLayerImpl::SetImplSidePaintingEnabled(
+      is_impl_side_painting_enabled_);
 
   is_zero_copy_enabled_ = command_line.HasSwitch(switches::kEnableZeroCopy) &&
                           !command_line.HasSwitch(switches::kDisableZeroCopy);
@@ -922,7 +923,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   if (GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
     ScheduleIdleHandler(kLongIdleHandlerDelayMs);
 
-  SetSharedMemoryAllocationFunction(AllocateSharedMemoryFunction);
+  cc_blink::SetSharedMemoryAllocationFunction(AllocateSharedMemoryFunction);
 
   // Limit use of the scaled image cache to when deferred image decoding is
   // enabled.

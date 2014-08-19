@@ -45,6 +45,10 @@ class WebFrame;
 class WebURL;
 }
 
+namespace cc_blink {
+class WebLayerImpl;
+}
+
 namespace gpu {
 struct MailboxHolder;
 }
@@ -57,7 +61,6 @@ namespace content {
 class RendererCdmManager;
 class RendererMediaPlayerManager;
 class WebContentDecryptionModuleImpl;
-class WebLayerImpl;
 class WebMediaPlayerDelegate;
 
 // This class implements blink::WebMediaPlayer by keeping the android
@@ -414,7 +417,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   // not NULL while the compositor is actively using this webmediaplayer.
   cc::VideoFrameProvider::Client* video_frame_provider_client_;
 
-  scoped_ptr<WebLayerImpl> video_weblayer_;
+  scoped_ptr<cc_blink::WebLayerImpl> video_weblayer_;
 
 #if defined(VIDEO_HOLE)
   // A rectangle represents the geometry of video frame, when computed last

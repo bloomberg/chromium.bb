@@ -8,12 +8,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "cc/base/switches.h"
+#include "cc/blink/web_layer_impl.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
 #include "cc/output/output_surface.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/trees/layer_tree_host.h"
-#include "content/renderer/compositor_bindings/web_layer_impl.h"
 #include "content/test/test_webkit_platform_support.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
@@ -54,7 +54,7 @@ void WebLayerTreeViewImplForTesting::setSurfaceReady() {
 void WebLayerTreeViewImplForTesting::setRootLayer(
     const blink::WebLayer& root) {
   layer_tree_host_->SetRootLayer(
-      static_cast<const WebLayerImpl*>(&root)->layer());
+      static_cast<const cc_blink::WebLayerImpl*>(&root)->layer());
 }
 
 void WebLayerTreeViewImplForTesting::clearRootLayer() {
@@ -152,13 +152,14 @@ void WebLayerTreeViewImplForTesting::registerViewportLayers(
     const blink::WebLayer* innerViewportScrollLayer,
     const blink::WebLayer* outerViewportScrollLayer) {
   layer_tree_host_->RegisterViewportLayers(
-      static_cast<const WebLayerImpl*>(pageScaleLayer)->layer(),
-      static_cast<const WebLayerImpl*>(innerViewportScrollLayer)->layer(),
+      static_cast<const cc_blink::WebLayerImpl*>(pageScaleLayer)->layer(),
+      static_cast<const cc_blink::WebLayerImpl*>(innerViewportScrollLayer)
+          ->layer(),
       // The outer viewport layer will only exist when using pinch virtual
       // viewports.
-      outerViewportScrollLayer
-          ? static_cast<const WebLayerImpl*>(outerViewportScrollLayer)->layer()
-          : NULL);
+      outerViewportScrollLayer ? static_cast<const cc_blink::WebLayerImpl*>(
+                                     outerViewportScrollLayer)->layer()
+                               : NULL);
 }
 
 void WebLayerTreeViewImplForTesting::clearViewportLayers() {

@@ -4,6 +4,7 @@
 
 #include "content/renderer/child_frame_compositing_helper.h"
 
+#include "cc/blink/web_layer_impl.h"
 #include "cc/layers/delegated_frame_provider.h"
 #include "cc/layers/delegated_frame_resource_collection.h"
 #include "cc/layers/delegated_renderer_layer.h"
@@ -18,7 +19,6 @@
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
-#include "content/renderer/compositor_bindings/web_layer_impl.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_thread_impl.h"
@@ -187,7 +187,7 @@ void ChildFrameCompositingHelper::EnableCompositing(bool enable) {
     background_layer_->SetMasksToBounds(true);
     background_layer_->SetBackgroundColor(
         SkColorSetARGBInline(255, 255, 255, 255));
-    web_layer_.reset(new WebLayerImpl(background_layer_));
+    web_layer_.reset(new cc_blink::WebLayerImpl(background_layer_));
   }
 
   if (GetContainer()) {

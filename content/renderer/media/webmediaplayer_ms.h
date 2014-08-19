@@ -25,12 +25,14 @@ namespace media {
 class MediaLog;
 }
 
+namespace cc_blink {
+class WebLayerImpl;
+}
 
 namespace content {
 class MediaStreamAudioRenderer;
 class MediaStreamRendererFactory;
 class VideoFrameProvider;
-class WebLayerImpl;
 class WebMediaPlayerDelegate;
 
 // WebMediaPlayerMS delegates calls from WebCore::MediaPlayerPrivate to
@@ -168,7 +170,7 @@ class WebMediaPlayerMS
   base::Lock current_frame_lock_;
   bool pending_repaint_;
 
-  scoped_ptr<WebLayerImpl> video_weblayer_;
+  scoped_ptr<cc_blink::WebLayerImpl> video_weblayer_;
 
   // A pointer back to the compositor to inform it about state changes. This is
   // not NULL while the compositor is actively using this webmediaplayer.

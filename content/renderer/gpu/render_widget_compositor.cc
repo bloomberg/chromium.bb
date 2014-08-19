@@ -18,6 +18,7 @@
 #include "cc/base/latency_info_swap_promise_monitor.h"
 #include "cc/base/swap_promise.h"
 #include "cc/base/switches.h"
+#include "cc/blink/web_layer_impl.h"
 #include "cc/debug/layer_tree_debug_state.h"
 #include "cc/debug/micro_benchmark.h"
 #include "cc/input/layer_selection_bound.h"
@@ -31,7 +32,6 @@
 #include "content/common/content_switches_internal.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/public/common/content_switches.h"
-#include "content/renderer/compositor_bindings/web_layer_impl.h"
 #include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -552,7 +552,7 @@ void RenderWidgetCompositor::setSurfaceReady() {
 
 void RenderWidgetCompositor::setRootLayer(const blink::WebLayer& layer) {
   layer_tree_host_->SetRootLayer(
-      static_cast<const WebLayerImpl*>(&layer)->layer());
+      static_cast<const cc_blink::WebLayerImpl*>(&layer)->layer());
 }
 
 void RenderWidgetCompositor::clearRootLayer() {
@@ -645,7 +645,7 @@ void RenderWidgetCompositor::didStopFlinging() {
 }
 
 void RenderWidgetCompositor::registerForAnimations(blink::WebLayer* layer) {
-  cc::Layer* cc_layer = static_cast<WebLayerImpl*>(layer)->layer();
+  cc::Layer* cc_layer = static_cast<cc_blink::WebLayerImpl*>(layer)->layer();
   cc_layer->layer_animation_controller()->SetAnimationRegistrar(
       layer_tree_host_->animation_registrar());
 }
@@ -655,13 +655,14 @@ void RenderWidgetCompositor::registerViewportLayers(
     const blink::WebLayer* innerViewportScrollLayer,
     const blink::WebLayer* outerViewportScrollLayer) {
   layer_tree_host_->RegisterViewportLayers(
-      static_cast<const WebLayerImpl*>(pageScaleLayer)->layer(),
-      static_cast<const WebLayerImpl*>(innerViewportScrollLayer)->layer(),
+      static_cast<const cc_blink::WebLayerImpl*>(pageScaleLayer)->layer(),
+      static_cast<const cc_blink::WebLayerImpl*>(innerViewportScrollLayer)
+          ->layer(),
       // The outer viewport layer will only exist when using pinch virtual
       // viewports.
-      outerViewportScrollLayer
-          ? static_cast<const WebLayerImpl*>(outerViewportScrollLayer)->layer()
-          : NULL);
+      outerViewportScrollLayer ? static_cast<const cc_blink::WebLayerImpl*>(
+                                     outerViewportScrollLayer)->layer()
+                               : NULL);
 }
 
 void RenderWidgetCompositor::clearViewportLayers() {
