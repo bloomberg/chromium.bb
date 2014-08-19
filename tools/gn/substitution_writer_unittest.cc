@@ -7,9 +7,31 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/err.h"
 #include "tools/gn/escape.h"
+#include "tools/gn/substitution_list.h"
 #include "tools/gn/substitution_pattern.h"
 #include "tools/gn/substitution_writer.h"
+#include "tools/gn/target.h"
 #include "tools/gn/test_with_scope.h"
+
+TEST(SubstitutionWriter, GetListAs) {
+  TestWithScope setup;
+
+  SubstitutionList list = SubstitutionList::MakeForTest(
+      "//foo/bar/a.cc",
+      "//foo/bar/b.cc");
+
+  std::vector<SourceFile> sources;
+  SubstitutionWriter::GetListAsSourceFiles(list, &sources);
+  ASSERT_EQ(2u, sources.size());
+  EXPECT_EQ("//foo/bar/a.cc", sources[0].value());
+  EXPECT_EQ("//foo/bar/b.cc", sources[1].value());
+
+  std::vector<OutputFile> outputs;
+  SubstitutionWriter::GetListAsOutputFiles(setup.settings(), list, &outputs);
+  ASSERT_EQ(2u, outputs.size());
+  EXPECT_EQ("../../foo/bar/a.cc", outputs[0].value());
+  EXPECT_EQ("../../foo/bar/b.cc", outputs[1].value());
+}
 
 TEST(SubstitutionWriter, ApplyPatternToSource) {
   TestWithScope setup;
@@ -79,9 +101,7 @@ TEST(SubstitutionWriter, WriteWithNinjaVariables) {
       out.str());
 }
 
-// Tests in isolation different types of substitutions and that the right
-// things are generated.
-TEST(SubstutitionWriter, Substitutions) {
+TEST(SubstutitionWriter, SourceSubstitutions) {
   TestWithScope setup;
 
   // Call to get substitutions relative to the build dir.
@@ -149,4 +169,89 @@ TEST(SubstutitionWriter, Substitutions) {
 
   #undef GetAbsSubst
   #undef GetRelSubst
+}
+
+TEST(SubstitutionWriter, TargetSubstitutions) {
+  TestWithScope setup;
+
+  Target target(setup.settings(), Label(SourceDir("//foo/bar/"), "baz"));
+  target.set_output_type(Target::STATIC_LIBRARY);
+  target.SetToolchain(setup.toolchain());
+  target.OnResolved();
+
+  std::string result;
+  EXPECT_TRUE(SubstitutionWriter::GetTargetSubstitution(
+      &target, SUBSTITUTION_LABEL, &result));
+  EXPECT_EQ("//foo/bar:baz", result);
+
+  EXPECT_TRUE(SubstitutionWriter::GetTargetSubstitution(
+      &target, SUBSTITUTION_ROOT_GEN_DIR, &result));
+  EXPECT_EQ("gen", result);
+
+  EXPECT_TRUE(SubstitutionWriter::GetTargetSubstitution(
+      &target, SUBSTITUTION_ROOT_OUT_DIR, &result));
+  EXPECT_EQ("", result);
+
+  EXPECT_TRUE(SubstitutionWriter::GetTargetSubstitution(
+      &target, SUBSTITUTION_TARGET_GEN_DIR, &result));
+  EXPECT_EQ("gen/foo/bar", result);
+
+  EXPECT_TRUE(SubstitutionWriter::GetTargetSubstitution(
+      &target, SUBSTITUTION_TARGET_OUT_DIR, &result));
+  EXPECT_EQ("obj/foo/bar", result);
+
+  EXPECT_TRUE(SubstitutionWriter::GetTargetSubstitution(
+      &target, SUBSTITUTION_TARGET_OUTPUT_NAME, &result));
+  EXPECT_EQ("libbaz", result);
+}
+
+TEST(SubstitutionWriter, CompilerSubstitutions) {
+  TestWithScope setup;
+
+  Target target(setup.settings(), Label(SourceDir("//foo/bar/"), "baz"));
+  target.set_output_type(Target::STATIC_LIBRARY);
+  target.SetToolchain(setup.toolchain());
+  target.OnResolved();
+
+  // The compiler substitution is just source + target combined. So test one
+  // of each of those classes of things to make sure this is hooked up.
+  EXPECT_EQ("file",
+            SubstitutionWriter::GetCompilerSubstitution(
+                &target, SourceFile("//foo/bar/file.txt"),
+                SUBSTITUTION_SOURCE_NAME_PART));
+  EXPECT_EQ("gen/foo/bar",
+            SubstitutionWriter::GetCompilerSubstitution(
+                &target, SourceFile("//foo/bar/file.txt"),
+                SUBSTITUTION_TARGET_GEN_DIR));
+}
+
+TEST(SubstitutionWriter, LinkerSubstitutions) {
+  TestWithScope setup;
+
+  Target target(setup.settings(), Label(SourceDir("//foo/bar/"), "baz"));
+  target.set_output_type(Target::SHARED_LIBRARY);
+  target.SetToolchain(setup.toolchain());
+  target.OnResolved();
+
+  const Tool* tool = setup.toolchain()->GetToolForTargetFinalOutput(&target);
+
+  // The compiler substitution is just target + OUTPUT_EXTENSION combined. So
+  // test one target one plus the output extension.
+  EXPECT_EQ(".so",
+            SubstitutionWriter::GetLinkerSubstitution(
+                &target, tool, SUBSTITUTION_OUTPUT_EXTENSION));
+  EXPECT_EQ("gen/foo/bar",
+            SubstitutionWriter::GetLinkerSubstitution(
+                &target, tool, SUBSTITUTION_TARGET_GEN_DIR));
+
+  // Test that we handle paths that end up in the root build dir properly
+  // (no leading "./" or "/").
+  Err err;
+  SubstitutionPattern pattern;
+  ASSERT_TRUE(
+      pattern.Parse("{{root_out_dir}}/{{target_output_name}}.so", NULL, &err));
+
+  OutputFile output = SubstitutionWriter::ApplyPatternToLinkerAsOutputFile(
+      &target, tool, pattern);
+  EXPECT_EQ("libbaz.so", output.value());
 }

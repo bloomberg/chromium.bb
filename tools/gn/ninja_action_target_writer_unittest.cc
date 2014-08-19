@@ -8,18 +8,24 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/ninja_action_target_writer.h"
 #include "tools/gn/substitution_list.h"
+#include "tools/gn/target.h"
 #include "tools/gn/test_with_scope.h"
 
 TEST(NinjaActionTargetWriter, WriteOutputFilesForBuildLine) {
   TestWithScope setup;
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
+
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
+  target.set_output_type(Target::ACTION_FOREACH);
   target.action_values().outputs() = SubstitutionList::MakeForTest(
       "//out/Debug/gen/a b{{source_name_part}}.h",
       "//out/Debug/gen/{{source_name_part}}.cc");
 
+  target.SetToolchain(setup.toolchain());
+  target.OnResolved();
+
   std::ostringstream out;
-  NinjaActionTargetWriter writer(&target, setup.toolchain(), out);
+  NinjaActionTargetWriter writer(&target, out);
 
   SourceFile source("//foo/bar.in");
   std::vector<OutputFile> output_files;
@@ -41,12 +47,15 @@ TEST(NinjaActionTargetWriter, ActionNoSources) {
   target.action_values().outputs() =
       SubstitutionList::MakeForTest("//out/Debug/foo.out");
 
+  target.SetToolchain(setup.toolchain());
+  target.OnResolved();
+
   setup.settings()->set_target_os(Settings::LINUX);
   setup.build_settings()->set_python_path(base::FilePath(FILE_PATH_LITERAL(
       "/usr/bin/python")));
 
   std::ostringstream out;
-  NinjaActionTargetWriter writer(&target, setup.toolchain(), out);
+  NinjaActionTargetWriter writer(&target, out);
   writer.Run();
 
   const char expected[] =
@@ -79,6 +88,9 @@ TEST(NinjaActionTargetWriter, ActionWithSources) {
   target.action_values().outputs() =
       SubstitutionList::MakeForTest("//out/Debug/foo.out");
 
+  target.SetToolchain(setup.toolchain());
+  target.OnResolved();
+
   // Posix.
   {
     setup.settings()->set_target_os(Settings::LINUX);
@@ -86,7 +98,7 @@ TEST(NinjaActionTargetWriter, ActionWithSources) {
         "/usr/bin/python")));
 
     std::ostringstream out;
-    NinjaActionTargetWriter writer(&target, setup.toolchain(), out);
+    NinjaActionTargetWriter writer(&target, out);
     writer.Run();
 
     const char expected_linux[] =
@@ -112,7 +124,7 @@ TEST(NinjaActionTargetWriter, ActionWithSources) {
     setup.settings()->set_target_os(Settings::WIN);
 
     std::ostringstream out;
-    NinjaActionTargetWriter writer(&target, setup.toolchain(), out);
+    NinjaActionTargetWriter writer(&target, out);
     writer.Run();
 
     const char expected_win[] =
@@ -142,8 +154,13 @@ TEST(NinjaActionTargetWriter, ForEach) {
   // binaries).
   Target dep(setup.settings(), Label(SourceDir("//foo/"), "dep"));
   dep.set_output_type(Target::ACTION);
+  dep.SetToolchain(setup.toolchain());
+  dep.OnResolved();
+
   Target datadep(setup.settings(), Label(SourceDir("//foo/"), "datadep"));
   datadep.set_output_type(Target::ACTION);
+  datadep.SetToolchain(setup.toolchain());
+  datadep.OnResolved();
 
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
   target.set_output_type(Target::ACTION_FOREACH);
@@ -164,6 +181,9 @@ TEST(NinjaActionTargetWriter, ForEach) {
 
   target.inputs().push_back(SourceFile("//foo/included.txt"));
 
+  target.SetToolchain(setup.toolchain());
+  target.OnResolved();
+
   // Posix.
   {
     setup.settings()->set_target_os(Settings::LINUX);
@@ -171,7 +191,7 @@ TEST(NinjaActionTargetWriter, ForEach) {
         "/usr/bin/python")));
 
     std::ostringstream out;
-    NinjaActionTargetWriter writer(&target, setup.toolchain(), out);
+    NinjaActionTargetWriter writer(&target, out);
     writer.Run();
 
     const char expected_linux[] =
@@ -196,7 +216,7 @@ TEST(NinjaActionTargetWriter, ForEach) {
         "  source_name_part = input2\n"
         "\n"
         "build obj/foo/bar.stamp: "
-            "stamp input1.out input2.out obj/foo/datadep.stamp\n";
+            "stamp input1.out input2.out || obj/foo/datadep.stamp\n";
 
     std::string out_str = out.str();
 #if defined(OS_WIN)
@@ -212,7 +232,7 @@ TEST(NinjaActionTargetWriter, ForEach) {
     setup.settings()->set_target_os(Settings::WIN);
 
     std::ostringstream out;
-    NinjaActionTargetWriter writer(&target, setup.toolchain(), out);
+    NinjaActionTargetWriter writer(&target, out);
     writer.Run();
 
     const char expected_win[] =
@@ -241,7 +261,7 @@ TEST(NinjaActionTargetWriter, ForEach) {
         "  source_name_part = input2\n"
         "\n"
         "build obj/foo/bar.stamp: "
-            "stamp input1.out input2.out obj/foo/datadep.stamp\n";
+            "stamp input1.out input2.out || obj/foo/datadep.stamp\n";
     EXPECT_EQ(expected_win, out.str());
   }
 }
@@ -256,6 +276,9 @@ TEST(NinjaActionTargetWriter, ForEachWithDepfile) {
   target.sources().push_back(SourceFile("//foo/input2.txt"));
 
   target.action_values().set_script(SourceFile("//foo/script.py"));
+
+  target.SetToolchain(setup.toolchain());
+  target.OnResolved();
 
   SubstitutionPattern depfile;
   Err err;
@@ -279,7 +302,7 @@ TEST(NinjaActionTargetWriter, ForEachWithDepfile) {
         "/usr/bin/python")));
 
     std::ostringstream out;
-    NinjaActionTargetWriter writer(&target, setup.toolchain(), out);
+    NinjaActionTargetWriter writer(&target, out);
     writer.Run();
 
     const char expected_linux[] =
@@ -315,7 +338,7 @@ TEST(NinjaActionTargetWriter, ForEachWithDepfile) {
     setup.settings()->set_target_os(Settings::WIN);
 
     std::ostringstream out;
-    NinjaActionTargetWriter writer(&target, setup.toolchain(), out);
+    NinjaActionTargetWriter writer(&target, out);
     writer.Run();
 
     const char expected_win[] =

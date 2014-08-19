@@ -6,10 +6,15 @@
 #define TOOLS_GN_TOOLCHAIN_H_
 
 #include "base/compiler_specific.h"
+#include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "tools/gn/item.h"
 #include "tools/gn/label_ptr.h"
 #include "tools/gn/scope.h"
+#include "tools/gn/source_file_type.h"
+#include "tools/gn/substitution_type.h"
+#include "tools/gn/tool.h"
 #include "tools/gn/value.h"
 
 // Holds information on a specific toolchain. This data is filled in when we
@@ -21,7 +26,7 @@
 // before generating the build for that target.
 //
 // Note on threadsafety: The label of the toolchain never changes so can
-// safetly be accessed from any thread at any time (we do this when asking for
+// safely be accessed from any thread at any time (we do this when asking for
 // the toolchain name). But the values in the toolchain do, so these can't
 // be accessed until this Item is resolved.
 class Toolchain : public Item {
@@ -55,22 +60,6 @@ class Toolchain : public Item {
   static const char* kToolStamp;
   static const char* kToolCopy;
 
-  struct Tool {
-    Tool();
-    ~Tool();
-
-    std::string command;
-    std::string depfile;
-    std::string depsformat;
-    std::string description;
-    std::string lib_dir_prefix;
-    std::string lib_prefix;
-    std::string pool;
-    std::string restat;
-    std::string rspfile;
-    std::string rspfile_content;
-  };
-
   Toolchain(const Settings* settings, const Label& label);
   virtual ~Toolchain();
 
@@ -82,8 +71,15 @@ class Toolchain : public Item {
   static ToolType ToolNameToType(const base::StringPiece& str);
   static std::string ToolTypeToName(ToolType type);
 
-  const Tool& GetTool(ToolType type) const;
-  void SetTool(ToolType type, const Tool& t);
+  // Returns null if the tool hasn't been defined.
+  const Tool* GetTool(ToolType type) const;
+
+  // Set a tool. When all tools are configured, you should call
+  // ToolchainSetupComplete().
+  void SetTool(ToolType type, scoped_ptr<Tool> t);
+
+  // Does final setup on the toolchain once all tools are known.
+  void ToolchainSetupComplete();
 
   // Targets that must be resolved before compiling any targets.
   const LabelTargetVector& deps() const { return deps_; }
@@ -96,8 +92,29 @@ class Toolchain : public Item {
   Scope::KeyValueMap& args() { return args_; }
   const Scope::KeyValueMap& args() const { return args_; }
 
+  // Returns the tool for compiling the given source file type.
+  static ToolType GetToolTypeForSourceType(SourceFileType type);
+  const Tool* GetToolForSourceType(SourceFileType type);
+
+  // Returns the tool that produces the final output for the given target type.
+  // This isn't necessarily the tool you would expect. For copy target, this
+  // will return the stamp tool ionstead since the final output of a copy
+  // target is to stamp the set of copies done so there is one output.
+  static ToolType GetToolTypeForTargetFinalOutput(const Target* target);
+  const Tool* GetToolForTargetFinalOutput(const Target* target) const;
+
+  const SubstitutionBits& substitution_bits() const {
+    DCHECK(setup_complete_);
+    return substitution_bits_;
+  }
+
  private:
-  Tool tools_[TYPE_NUMTYPES];
+  scoped_ptr<Tool> tools_[TYPE_NUMTYPES];
+
+  bool setup_complete_;
+
+  // Substitutions used by the tools in this toolchain.
+  SubstitutionBits substitution_bits_;
 
   LabelTargetVector deps_;
   Scope::KeyValueMap args_;

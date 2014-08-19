@@ -19,7 +19,11 @@ enum SubstitutionType {
   // until NUM_TYPES.
   SUBSTITUTION_FIRST_PATTERN,
 
+  // These map to Ninja's {in} and {out} variables.
   SUBSTITUTION_SOURCE = SUBSTITUTION_FIRST_PATTERN,  // {{source}}
+  SUBSTITUTION_OUTPUT,  // {{output}}
+
+  // Valid for all compiler tools.
   SUBSTITUTION_SOURCE_NAME_PART,  // {{source_name_part}}
   SUBSTITUTION_SOURCE_FILE_PART,  // {{source_file_part}}
   SUBSTITUTION_SOURCE_DIR,  // {{source_dir}}
@@ -27,8 +31,9 @@ enum SubstitutionType {
   SUBSTITUTION_SOURCE_GEN_DIR,  // {{source_gen_dir}}
   SUBSTITUTION_SOURCE_OUT_DIR,  // {{source_out_dir}}
 
-  // Valid for all compiler and linker tools (depends on target).
-  SUBSTITUTION_OUTPUT,  // {{output}}
+  // Valid for all compiler and linker tools. These depend on the target and
+  // no not vary on a per-file basis.
+  SUBSTITUTION_LABEL,  // {{label}}
   SUBSTITUTION_ROOT_GEN_DIR,  // {{root_gen_dir}}
   SUBSTITUTION_ROOT_OUT_DIR,  // {{root_out_dir}}
   SUBSTITUTION_TARGET_GEN_DIR,  // {{target_gen_dir}}
@@ -63,6 +68,23 @@ extern const char* kSubstitutionNames[SUBSTITUTION_NUM_TYPES];
 // the dollar sign.
 extern const char* kSubstitutionNinjaNames[SUBSTITUTION_NUM_TYPES];
 
+// A wrapper around an array if flags indicating whether a give substitution
+// type is required in some context. By convention, the LITERAL type bit is
+// not set.
+struct SubstitutionBits {
+  SubstitutionBits();
+
+  // Merges any bits set in the given "other" to this one. This object will
+  // then be the union of all bits in the two lists.
+  void MergeFrom(const SubstitutionBits& other);
+
+  // Converts the substitution type bitfield (with a true set for each required
+  // item) to a vector of the types listed. Does not include LITERAL.
+  void FillVector(std::vector<SubstitutionType>* vect) const;
+
+  bool used[SUBSTITUTION_NUM_TYPES];
+};
+
 // Returns true if the given substitution pattern references the output
 // directory. This is used to check strings that begin with a substitution to
 // verify that the produce a file in the output directory.
@@ -76,6 +98,7 @@ bool IsValidCompilerSubstitution(SubstitutionType type);
 bool IsValidCompilerOutputsSubstitution(SubstitutionType type);
 bool IsValidLinkerSubstitution(SubstitutionType type);
 bool IsValidLinkerOutputsSubstitution(SubstitutionType type);
+bool IsValidCopySubstitution(SubstitutionType type);
 
 // Like the "IsValid..." version above but checks a list of types and sets a
 // an error blaming the given source if the test fails.

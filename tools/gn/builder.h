@@ -118,6 +118,7 @@ class Builder : public base::RefCountedThreadSafe<Builder> {
   bool ResolveDeps(LabelTargetVector* deps, Err* err);
   bool ResolveConfigs(UniqueVector<LabelConfigPair>* configs, Err* err);
   bool ResolveForwardDependentConfigs(Target* target, Err* err);
+  bool ResolveToolchain(Target* target, Err* err);
 
   // Given a list of unresolved records, tries to find any circular
   // dependencies and returns the string describing the problem. If no circular

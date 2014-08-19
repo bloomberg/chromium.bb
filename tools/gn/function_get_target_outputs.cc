@@ -4,7 +4,6 @@
 
 #include "tools/gn/build_settings.h"
 #include "tools/gn/functions.h"
-#include "tools/gn/ninja_helper.h"
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/settings.h"
 #include "tools/gn/substitution_writer.h"
@@ -12,56 +11,6 @@
 #include "tools/gn/value.h"
 
 namespace functions {
-
-namespace {
-
-void GetOutputsForTarget(const Settings* settings,
-                         const Target* target,
-                         std::vector<SourceFile>* ret) {
-  switch (target->output_type()) {
-    case Target::ACTION: {
-      // Actions just use the output list with no substitution.
-      std::vector<SourceFile> sources;
-      sources.push_back(SourceFile());
-      SubstitutionWriter::GetListAsSourceFiles(
-          settings, target->action_values().outputs(), ret);
-      break;
-    }
-
-    case Target::COPY_FILES:
-    case Target::ACTION_FOREACH:
-      SubstitutionWriter::ApplyListToSources(
-          settings, target->action_values().outputs(), target->sources(), ret);
-      break;
-
-    case Target::EXECUTABLE:
-    case Target::SHARED_LIBRARY:
-    case Target::STATIC_LIBRARY:
-      // Return the resulting binary file. Currently, fall through to the
-      // Ninja helper below which will compute the main output name.
-      //
-      // TODO(brettw) some targets have secondary files which should go into
-      // the list after the main (like shared libraries on Windows have an
-      // import library).
-    case Target::GROUP:
-    case Target::SOURCE_SET: {
-      // These return the stamp file, which is computed by the NinjaHelper.
-      NinjaHelper helper(settings->build_settings());
-      OutputFile output_file = helper.GetTargetOutputFile(target);
-
-      // The output file is relative to the build dir.
-      ret->push_back(SourceFile(
-          settings->build_settings()->build_dir().value() +
-          output_file.value()));
-      break;
-    }
-
-    default:
-      NOTREACHED();
-  }
-}
-
-}  // namespace
 
 const char kGetTargetOutputs[] = "get_target_outputs";
 const char kGetTargetOutputs_HelpShort[] =
@@ -76,6 +25,11 @@ const char kGetTargetOutputs_Help[] =
     "  function is called (it can't reference targets in other files because\n"
     "  there isn't a defined execution order, and it obviously can't\n"
     "  reference targets that are defined after the function call).\n"
+    "\n"
+    "  Only copy and action targets are supported. The outputs from binary\n"
+    "  targets will depend on the toolchain definition which won't\n"
+    "  necessarily have been loaded by the time a given line of code has run,\n"
+    "  and source sets and groups have no useful output file.\n"
     "\n"
     "Return value\n"
     "\n"
@@ -162,9 +116,26 @@ Value RunGetTargetOutputs(Scope* scope,
     return Value();
   }
 
+  // Compute the output list.
   std::vector<SourceFile> files;
-  GetOutputsForTarget(scope->settings(), target, &files);
+  if (target->output_type() == Target::ACTION) {
+    // Actions just use the output list with no substitution.
+    SubstitutionWriter::GetListAsSourceFiles(
+        target->action_values().outputs(), &files);
+  } else if (target->output_type() == Target::COPY_FILES ||
+             target->output_type() == Target::ACTION_FOREACH) {
+    // Copy and foreach appllies the outputs to the sources.
+    SubstitutionWriter::ApplyListToSources(
+        target->settings(), target->action_values().outputs(),
+        target->sources(), &files);
+  } else {
+    // Other types of targets are not supported.
+    *err = Err(args[0], "Target is not an action, action_foreach, or copy.",
+               "Only these target types are supported by get_target_outputs.");
+    return Value();
+  }
 
+  // Convert to Values.
   Value ret(function, Value::LIST);
   ret.list_value().reserve(files.size());
   for (size_t i = 0; i < files.size(); i++)

@@ -6,14 +6,14 @@
 
 #include "base/strings/string_util.h"
 #include "tools/gn/err.h"
+#include "tools/gn/settings.h"
 #include "tools/gn/string_utils.h"
 #include "tools/gn/substitution_writer.h"
 #include "tools/gn/target.h"
 
 NinjaActionTargetWriter::NinjaActionTargetWriter(const Target* target,
-                                                 const Toolchain* toolchain,
                                                  std::ostream& out)
-    : NinjaTargetWriter(target, toolchain, out),
+    : NinjaTargetWriter(target, out),
       path_output_no_escaping_(
           target->settings()->build_settings()->build_dir(),
           ESCAPE_NONE) {
@@ -57,10 +57,7 @@ void NinjaActionTargetWriter::Run() {
     out_ << "build";
     SubstitutionWriter::GetListAsOutputFiles(
         settings_, target_->action_values().outputs(), &output_files);
-    for (size_t i = 0; i < output_files.size(); i++) {
-      out_ << " ";
-      path_output_.WriteFile(out_, output_files[i]);
-    }
+    path_output_.WriteFiles(out_, output_files);
 
     out_ << ": " << custom_rule_name << implicit_deps << std::endl;
     if (target_->action_values().has_depfile()) {
@@ -71,7 +68,13 @@ void NinjaActionTargetWriter::Run() {
   }
   out_ << std::endl;
 
-  WriteStamp(output_files);
+  // Write the stamp, which also depends on all datadeps. These are needed at
+  // runtime and should be compiled when the action is, but don't need to be
+  // done before we run the action.
+  std::vector<OutputFile> data_outs;
+  for (size_t i = 0; i < target_->datadeps().size(); i++)
+    data_outs.push_back(target_->datadeps()[i].ptr->dependency_output_file());
+  WriteStampForTarget(output_files, data_outs);
 }
 
 std::string NinjaActionTargetWriter::WriteRuleDefinition() {
@@ -92,7 +95,7 @@ std::string NinjaActionTargetWriter::WriteRuleDefinition() {
   if (settings_->IsWin()) {
     // Send through gyp-win-tool and use a response file.
     std::string rspfile = custom_rule_name;
-    if (has_sources())
+    if (!target_->sources().empty())
       rspfile += ".$unique_name";
     rspfile += ".rsp";
 
@@ -175,32 +178,6 @@ void NinjaActionTargetWriter::WriteSourceRules(
       out_ << std::endl;
     }
   }
-}
-
-void NinjaActionTargetWriter::WriteStamp(
-    const std::vector<OutputFile>& output_files) {
-  out_ << "build ";
-  path_output_.WriteFile(out_, helper_.GetTargetOutputFile(target_));
-  out_ << ": "
-       << helper_.GetRulePrefix(target_->settings())
-       << "stamp";
-
-  // The action stamp depends on all output files from running the action.
-  for (size_t i = 0; i < output_files.size(); i++) {
-    out_ << " ";
-    path_output_.WriteFile(out_, output_files[i]);
-  }
-
-  // It also depends on all datadeps. These are needed at runtime and should
-  // be compiled when the action is, but don't need to be done before we run
-  // the action.
-  for (size_t i = 0; i < target_->datadeps().size(); i++) {
-    out_ << " ";
-    path_output_.WriteFile(out_,
-        helper_.GetTargetOutputFile(target_->datadeps()[i].ptr));
-  }
-
-  out_ << std::endl;
 }
 
 void NinjaActionTargetWriter::WriteOutputFilesForBuildLine(

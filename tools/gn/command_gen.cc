@@ -14,6 +14,7 @@
 #include "tools/gn/scheduler.h"
 #include "tools/gn/setup.h"
 #include "tools/gn/standard_out.h"
+#include "tools/gn/target.h"
 
 namespace commands {
 
@@ -25,7 +26,6 @@ const char kSwitchQuiet[] = "q";
 const char kSwitchCheck[] = "check";
 
 void BackgroundDoWrite(const Target* target,
-                       const Toolchain* toolchain,
                        const std::vector<const Item*>& deps_for_visibility) {
   // Validate visibility.
   Err err;
@@ -38,7 +38,7 @@ void BackgroundDoWrite(const Target* target,
   }
 
   if (!err.has_error())
-    NinjaTargetWriter::RunAndWriteFile(target, toolchain);
+    NinjaTargetWriter::RunAndWriteFile(target);
   g_scheduler->DecrementWorkCount();
 }
 
@@ -51,10 +51,6 @@ void ItemResolvedCallback(base::subtle::Atomic32* write_counter,
   const Item* item = record->item();
   const Target* target = item->AsTarget();
   if (target) {
-    const Toolchain* toolchain =
-        builder->GetToolchain(target->settings()->toolchain_label());
-    DCHECK(toolchain);
-
     // Collect all dependencies.
     std::vector<const Item*> deps;
     for (BuilderRecord::BuilderRecordSet::const_iterator iter =
@@ -64,8 +60,7 @@ void ItemResolvedCallback(base::subtle::Atomic32* write_counter,
       deps.push_back((*iter)->item());
 
     g_scheduler->IncrementWorkCount();
-    g_scheduler->ScheduleWork(
-        base::Bind(&BackgroundDoWrite, target, toolchain, deps));
+    g_scheduler->ScheduleWork(base::Bind(&BackgroundDoWrite, target, deps));
   }
 }
 

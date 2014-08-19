@@ -9,10 +9,19 @@
 #include "base/file_util.h"
 #include "base/strings/stringize_macros.h"
 #include "tools/gn/build_settings.h"
+#include "tools/gn/filesystem_utils.h"
+#include "tools/gn/ninja_utils.h"
 #include "tools/gn/settings.h"
+#include "tools/gn/substitution_writer.h"
 #include "tools/gn/target.h"
 #include "tools/gn/toolchain.h"
 #include "tools/gn/trace.h"
+
+namespace {
+
+const char kIndent[] = "  ";
+
+}  // namespace
 
 NinjaToolchainWriter::NinjaToolchainWriter(
     const Settings* settings,
@@ -23,8 +32,7 @@ NinjaToolchainWriter::NinjaToolchainWriter(
       toolchain_(toolchain),
       targets_(targets),
       out_(out),
-      path_output_(settings_->build_settings()->build_dir(), ESCAPE_NINJA),
-      helper_(settings->build_settings()) {
+      path_output_(settings_->build_settings()->build_dir(), ESCAPE_NINJA) {
 }
 
 NinjaToolchainWriter::~NinjaToolchainWriter() {
@@ -40,10 +48,8 @@ bool NinjaToolchainWriter::RunAndWriteFile(
     const Settings* settings,
     const Toolchain* toolchain,
     const std::vector<const Target*>& targets) {
-  NinjaHelper helper(settings->build_settings());
   base::FilePath ninja_file(settings->build_settings()->GetFullPath(
-      helper.GetNinjaFileForToolchain(settings).GetSourceFile(
-          settings->build_settings())));
+      GetNinjaFileForToolchain(settings)));
   ScopedTrace trace(TraceItem::TRACE_FILE_WRITE, FilePathToUTF8(ninja_file));
 
   base::CreateDirectory(ninja_file.DirName());
@@ -60,43 +66,66 @@ bool NinjaToolchainWriter::RunAndWriteFile(
 }
 
 void NinjaToolchainWriter::WriteRules() {
-  std::string indent("  ");
-
-  NinjaHelper helper(settings_->build_settings());
-  std::string rule_prefix = helper.GetRulePrefix(settings_);
+  std::string rule_prefix = GetNinjaRulePrefixForToolchain(settings_);
 
   for (int i = Toolchain::TYPE_NONE + 1; i < Toolchain::TYPE_NUMTYPES; i++) {
     Toolchain::ToolType tool_type = static_cast<Toolchain::ToolType>(i);
-    const Toolchain::Tool& tool = toolchain_->GetTool(tool_type);
-    if (tool.command.empty())
-      continue;
-
-    out_ << "rule " << rule_prefix << Toolchain::ToolTypeToName(tool_type)
-         << std::endl;
-
-    #define WRITE_ARG(name) \
-      if (!tool.name.empty()) \
-        out_ << indent << "  " STRINGIZE(name) " = " << tool.name << std::endl;
-    WRITE_ARG(command);
-    WRITE_ARG(depfile);
-    WRITE_ARG(description);
-    WRITE_ARG(pool);
-    WRITE_ARG(restat);
-    WRITE_ARG(rspfile);
-    WRITE_ARG(rspfile_content);
-    #undef WRITE_ARG
-
-    // Deps is called "depsformat" in GN to avoid confusion with dependencies.
-    if (!tool.depsformat.empty()) \
-      out_ << indent << "  deps = " << tool.depsformat << std::endl;
+    const Tool* tool = toolchain_->GetTool(tool_type);
+    if (tool)
+      WriteToolRule(tool_type, tool, rule_prefix);
   }
+  out_ << std::endl;
+}
+
+void NinjaToolchainWriter::WriteToolRule(const Toolchain::ToolType type,
+                                         const Tool* tool,
+                                         const std::string& rule_prefix) {
+  out_ << "rule " << rule_prefix << Toolchain::ToolTypeToName(type)
+       << std::endl;
+
+  // Rules explicitly include shell commands, so don't try to escape.
+  EscapeOptions options;
+  options.mode = ESCAPE_NINJA_PREFORMATTED_COMMAND;
+
+  CHECK(!tool->command().empty()) << "Command should not be empty";
+  WriteRulePattern("command", tool->command(), options);
+
+  WriteRulePattern("description", tool->description(), options);
+  WriteRulePattern("rspfile", tool->rspfile(), options);
+  WriteRulePattern("rspfile_content", tool->rspfile_content(), options);
+
+  if (tool->depsformat() == Tool::DEPS_GCC) {
+    // GCC-style deps require a depfile.
+    if (!tool->depfile().empty()) {
+      WriteRulePattern("depfile", tool->depfile(), options);
+      out_ << kIndent << "deps = gcc" << std::endl;
+    }
+  } else if (tool->depsformat() == Tool::DEPS_MSVC) {
+    // MSVC deps don't have a depfile.
+    out_ << kIndent << "deps = msvc" << std::endl;
+  }
+
+  if (!tool->pool().empty())
+    out_ << kIndent << "pool = " << tool->pool() << std::endl;
+  if (tool->restat())
+    out_ << kIndent << "restat = 1" << std::endl;
+}
+
+void NinjaToolchainWriter::WriteRulePattern(const char* name,
+                                            const SubstitutionPattern& pattern,
+                                            const EscapeOptions& options) {
+  if (pattern.empty())
+    return;
+  out_ << kIndent << name << " = ";
+  SubstitutionWriter::WriteWithNinjaVariables(pattern, options, out_);
   out_ << std::endl;
 }
 
 void NinjaToolchainWriter::WriteSubninjas() {
   // Write subninja commands for each generated target.
   for (size_t i = 0; i < targets_.size(); i++) {
-    OutputFile ninja_file = helper_.GetNinjaFileForTarget(targets_[i]);
+    OutputFile ninja_file(targets_[i]->settings()->build_settings(),
+                          GetNinjaFileForTarget(targets_[i]));
     out_ << "subninja ";
     path_output_.WriteFile(out_, ninja_file);
     out_ << std::endl;

@@ -71,6 +71,7 @@ class BuilderTest : public testing::Test {
 
   Toolchain* DefineToolchain() {
     Toolchain* tc = new Toolchain(&settings_, settings_.toolchain_label());
+    TestWithScope::SetupToolchain(tc);
     builder_->ItemDefined(scoped_ptr<Item>(tc));
     return tc;
   }
@@ -184,6 +185,7 @@ TEST_F(BuilderTest, ShouldGenerate) {
   Label toolchain_label2(SourceDir("//tc/"), "secondary");
   settings2.set_toolchain_label(toolchain_label2);
   Toolchain* tc2 = new Toolchain(&settings2, toolchain_label2);
+  TestWithScope::SetupToolchain(tc2);
   builder_->ItemDefined(scoped_ptr<Item>(tc2));
 
   // Construct a dependency chain: A -> B. A is in the default toolchain, B

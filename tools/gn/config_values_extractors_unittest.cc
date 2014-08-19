@@ -45,6 +45,7 @@ TEST(ConfigValuesExtractors, IncludeOrdering) {
 
   Target dep2(setup.settings(), Label(SourceDir("//dep2/"), "dep2"));
   dep2.set_output_type(Target::SOURCE_SET);
+  dep2.SetToolchain(setup.toolchain());
   dep2.all_dependent_configs().push_back(LabelConfigPair(&dep2_all));
   dep2.direct_dependent_configs().push_back(LabelConfigPair(&dep2_direct));
 
@@ -60,6 +61,7 @@ TEST(ConfigValuesExtractors, IncludeOrdering) {
 
   Target dep1(setup.settings(), Label(SourceDir("//dep1/"), "dep1"));
   dep1.set_output_type(Target::SOURCE_SET);
+  dep1.SetToolchain(setup.toolchain());
   dep1.all_dependent_configs().push_back(LabelConfigPair(&dep1_all));
   dep1.direct_dependent_configs().push_back(LabelConfigPair(&dep1_direct));
   dep1.deps().push_back(LabelTargetPair(&dep2));
@@ -85,6 +87,7 @@ TEST(ConfigValuesExtractors, IncludeOrdering) {
 
   Target target(setup.settings(), Label(SourceDir("//target/"), "target"));
   target.set_output_type(Target::SOURCE_SET);
+  target.SetToolchain(setup.toolchain());
   target.all_dependent_configs().push_back(LabelConfigPair(&target_all));
   target.direct_dependent_configs().push_back(LabelConfigPair(&target_direct));
   target.configs().push_back(LabelConfigPair(&target_config));

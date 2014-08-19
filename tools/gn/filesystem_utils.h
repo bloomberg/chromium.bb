@@ -16,21 +16,6 @@ class Err;
 class Location;
 class Value;
 
-enum SourceFileType {
-  SOURCE_UNKNOWN,
-  SOURCE_ASM,
-  SOURCE_C,
-  SOURCE_CC,
-  SOURCE_H,
-  SOURCE_M,
-  SOURCE_MM,
-  SOURCE_S,
-  SOURCE_RC,
-  SOURCE_O,  // Object files can be inputs, too. Also counts .obj.
-};
-
-SourceFileType GetSourceFileType(const SourceFile& file);
-
 // Returns the extension, not including the dot, for the given file type on the
 // given system.
 //
@@ -102,13 +87,13 @@ base::StringPiece FindLastDirComponent(const SourceDir& dir);
 // it is designed for a sanity check to keep people from writing output files
 // to the source directory accidentally.
 //
-// The originating value will be blamed in the error.
+// The origin will be blamed in the error.
 //
 // If the file isn't in the dir, returns false and sets the error. Otherwise
 // returns true and leaves the error untouched.
 bool EnsureStringIsInOutputDir(const SourceDir& dir,
                                const std::string& str,
-                               const Value& originating,
+                               const ParseNode* origin,
                                Err* err);
 
 // ----------------------------------------------------------------------------
@@ -178,15 +163,28 @@ std::string GetOutputSubdirName(const Label& toolchain_label, bool is_default);
 SourceDir GetToolchainOutputDir(const Settings* settings);
 SourceDir GetToolchainOutputDir(const BuildSettings* build_settings,
                                 const Label& label, bool is_default);
+
 SourceDir GetToolchainGenDir(const Settings* settings);
+OutputFile GetToolchainGenDirAsOutputFile(const Settings* settings);
 SourceDir GetToolchainGenDir(const BuildSettings* build_settings,
-                             const Label& toolchain_label, bool is_default);
+                             const Label& toolchain_label,
+                             bool is_default);
+
 SourceDir GetOutputDirForSourceDir(const Settings* settings,
                                    const SourceDir& source_dir);
+OutputFile GetOutputDirForSourceDirAsOutputFile(const Settings* settings,
+                                                const SourceDir& source_dir);
+
 SourceDir GetGenDirForSourceDir(const Settings* settings,
-                                const SourceDir& source_dir);
+                                 const SourceDir& source_dir);
+OutputFile GetGenDirForSourceDirAsOutputFile(const Settings* settings,
+                                             const SourceDir& source_dir);
+
 SourceDir GetTargetOutputDir(const Target* target);
+OutputFile GetTargetOutputDirAsOutputFile(const Target* target);
 SourceDir GetTargetGenDir(const Target* target);
+OutputFile GetTargetGenDirAsOutputFile(const Target* target);
+
 SourceDir GetCurrentOutputDir(const Scope* scope);
 SourceDir GetCurrentGenDir(const Scope* scope);
 

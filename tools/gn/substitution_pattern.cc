@@ -5,7 +5,9 @@
 #include "tools/gn/substitution_pattern.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "tools/gn/build_settings.h"
 #include "tools/gn/err.h"
+#include "tools/gn/filesystem_utils.h"
 #include "tools/gn/value.h"
 
 SubstitutionPattern::Subrange::Subrange()
@@ -21,7 +23,7 @@ SubstitutionPattern::Subrange::Subrange(SubstitutionType t,
 SubstitutionPattern::Subrange::~Subrange() {
 }
 
-SubstitutionPattern::SubstitutionPattern() {
+SubstitutionPattern::SubstitutionPattern() : origin_(NULL) {
 }
 
 SubstitutionPattern::~SubstitutionPattern() {
@@ -80,14 +82,12 @@ bool SubstitutionPattern::Parse(const std::string& str,
     }
   }
 
-  // Fill required types vector.
-  bool required_type_bits[SUBSTITUTION_NUM_TYPES] = {0};
-  FillRequiredTypes(required_type_bits);
+  origin_ = origin;
 
-  for (size_t i = SUBSTITUTION_FIRST_PATTERN; i < SUBSTITUTION_NUM_TYPES; i++) {
-    if (required_type_bits[i])
-      required_types_.push_back(static_cast<SubstitutionType>(i));
-  }
+  // Fill required types vector.
+  SubstitutionBits bits;
+  FillRequiredTypes(&bits);
+  bits.FillVector(&required_types_);
   return true;
 }
 
@@ -102,10 +102,38 @@ std::string SubstitutionPattern::AsString() const {
   return result;
 }
 
-void SubstitutionPattern::FillRequiredTypes(
-    bool required_types[SUBSTITUTION_NUM_TYPES]) const {
+void SubstitutionPattern::FillRequiredTypes(SubstitutionBits* bits) const {
   for (size_t i = 0; i < ranges_.size(); i++) {
     if (ranges_[i].type != SUBSTITUTION_LITERAL)
-      required_types[static_cast<size_t>(ranges_[i].type)] = true;
+      bits->used[static_cast<size_t>(ranges_[i].type)] = true;
   }
+}
+
+bool SubstitutionPattern::IsInOutputDir(const BuildSettings* build_settings,
+                                        Err* err) const {
+  if (ranges_.empty()) {
+    *err = Err(origin_, "This is empty but I was expecting an output file.");
+    return false;
+  }
+
+  if (ranges_[0].type == SUBSTITUTION_LITERAL) {
+    // If the first thing is a literal, it must start with the output dir.
+    if (!EnsureStringIsInOutputDir(
+            build_settings->build_dir(),
+            ranges_[0].literal, origin_, err))
+      return false;
+  } else {
+    // Otherwise, the first subrange must be a pattern that expands to
+    // something in the output directory.
+    if (!SubstitutionIsInOutputDir(ranges_[0].type)) {
+      *err = Err(origin_,
+          "File is not inside output directory.",
+          "The given file should be in the output directory. Normally you\n"
+          "would specify\n\"$target_out_dir/foo\" or "
+          "\"{{source_gen_dir}}/foo\".");
+      return false;
+    }
+  }
+
+  return true;
 }

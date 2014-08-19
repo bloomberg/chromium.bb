@@ -1,0 +1,26 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# All binary targets will get this list of configs by default.
+_shared_binary_target_configs = [
+  "//build:compiler_defaults",
+]
+
+# Apply that default list to the binary target types.
+set_defaults("executable") {
+  configs = _shared_binary_target_configs
+  # Executables get this additional configuration.
+  configs += [ "//build:executable_ldconfig" ]
+}
+set_defaults("static_library") {
+  configs = _shared_binary_target_configs
+}
+set_defaults("shared_library") {
+  configs = _shared_binary_target_configs
+}
+set_defaults("source_set") {
+  configs = _shared_binary_target_configs
+}
+
+set_default_toolchain("//build/toolchain:gcc")

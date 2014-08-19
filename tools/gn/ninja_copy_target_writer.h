@@ -8,17 +8,21 @@
 #include "base/compiler_specific.h"
 #include "tools/gn/ninja_target_writer.h"
 
+class Tool;
+
 // Writes a .ninja file for a copy target type.
 class NinjaCopyTargetWriter : public NinjaTargetWriter {
  public:
-  NinjaCopyTargetWriter(const Target* target,
-                        const Toolchain* toolchain,
-                        std::ostream& out);
+  NinjaCopyTargetWriter(const Target* target, std::ostream& out);
   virtual ~NinjaCopyTargetWriter();
 
   virtual void Run() OVERRIDE;
 
  private:
+  // Writes the rules top copy the file(s), putting the computed output file
+  // name(s) into the given vector.
+  void WriteCopyRules(std::vector<OutputFile>* output_files);
+
   DISALLOW_COPY_AND_ASSIGN(NinjaCopyTargetWriter);
 };
 

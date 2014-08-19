@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+
 #include "tools/gn/err.h"
 #include "tools/gn/functions.h"
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/scheduler.h"
 #include "tools/gn/scope.h"
 #include "tools/gn/settings.h"
+#include "tools/gn/tool.h"
 #include "tools/gn/toolchain.h"
 #include "tools/gn/value_extractors.h"
 #include "tools/gn/variables.h"
@@ -20,17 +23,169 @@ namespace {
 // the toolchain property on a scope.
 const int kToolchainPropertyKey = 0;
 
-// Reads the given string from the scope (if present) and puts the result into
-// dest. If the value is not a string, sets the error and returns false.
-bool ReadString(Scope& scope, const char* var, std::string* dest, Err* err) {
-  const Value* v = scope.GetValue(var, true);
+bool ReadBool(Scope* scope,
+              const char* var,
+              Tool* tool,
+              void (Tool::*set)(bool),
+              Err* err) {
+  const Value* v = scope->GetValue(var, true);
   if (!v)
     return true;  // Not present is fine.
+  if (!v->VerifyTypeIs(Value::BOOLEAN, err))
+    return false;
 
+  (tool->*set)(v->boolean_value());
+  return true;
+}
+
+// Reads the given string from the scope (if present) and puts the result into
+// dest. If the value is not a string, sets the error and returns false.
+bool ReadString(Scope* scope,
+                const char* var,
+                Tool* tool,
+                void (Tool::*set)(const std::string&),
+                Err* err) {
+  const Value* v = scope->GetValue(var, true);
+  if (!v)
+    return true;  // Not present is fine.
   if (!v->VerifyTypeIs(Value::STRING, err))
     return false;
-  *dest = v->string_value();
+
+  (tool->*set)(v->string_value());
   return true;
+}
+
+// Calls the given validate function on each type in the list. On failure,
+// sets the error, blame the value, and return false.
+bool ValidateSubstitutionList(const std::vector<SubstitutionType>& list,
+                              bool (*validate)(SubstitutionType),
+                              const Value* origin,
+                              Err* err) {
+  for (size_t i = 0; i < list.size(); i++) {
+    SubstitutionType cur_type = list[i];
+    if (!validate(cur_type)) {
+      *err = Err(*origin, "Pattern not valid here.",
+          "You used the pattern " + std::string(kSubstitutionNames[cur_type]) +
+          " which is not valid\nfor this variable.");
+      return false;
+    }
+  }
+  return true;
+}
+
+bool ReadPattern(Scope* scope,
+                 const char* name,
+                 bool (*validate)(SubstitutionType),
+                 Tool* tool,
+                 void (Tool::*set)(const SubstitutionPattern&),
+                 Err* err) {
+  const Value* value = scope->GetValue(name, true);
+  if (!value)
+    return true;  // Not present is fine.
+  if (!value->VerifyTypeIs(Value::STRING, err))
+    return false;
+
+  SubstitutionPattern pattern;
+  if (!pattern.Parse(*value, err))
+    return false;
+  if (!ValidateSubstitutionList(pattern.required_types(), validate, value, err))
+    return false;
+
+  (tool->*set)(pattern);
+  return true;
+}
+
+bool ReadOutputExtension(Scope* scope, Tool* tool, Err* err) {
+  const Value* value = scope->GetValue("default_output_extension", true);
+  if (!value)
+    return true;  // Not present is fine.
+  if (!value->VerifyTypeIs(Value::STRING, err))
+    return false;
+
+  if (value->string_value().empty())
+    return true;  // Accept empty string.
+
+  if (value->string_value()[0] != '.') {
+    *err = Err(*value, "default_output_extension must begin with a '.'");
+    return false;
+  }
+
+  tool->set_default_output_extension(value->string_value());
+  return true;
+}
+
+bool ReadDepsFormat(Scope* scope, Tool* tool, Err* err) {
+  const Value* value = scope->GetValue("depsformat", true);
+  if (!value)
+    return true;  // Not present is fine.
+  if (!value->VerifyTypeIs(Value::STRING, err))
+    return false;
+
+  if (value->string_value() == "gcc") {
+    tool->set_depsformat(Tool::DEPS_GCC);
+  } else if (value->string_value() == "msvc") {
+    tool->set_depsformat(Tool::DEPS_MSVC);
+  } else {
+    *err = Err(*value, "Deps format must be \"gcc\" or \"msvc\".");
+    return false;
+  }
+  return true;
+}
+
+bool ReadOutputs(Scope* scope,
+                 const FunctionCallNode* tool_function,
+                 bool (*validate)(SubstitutionType),
+                 Tool* tool,
+                 Err* err) {
+  const Value* value = scope->GetValue("outputs", true);
+  if (!value) {
+    *err = Err(tool_function, "\"outputs\" must be specified for this tool.");
+    return false;
+  }
+
+  SubstitutionList list;
+  if (!list.Parse(*value, err))
+    return false;
+
+  // Validate the right kinds of patterns are used.
+  if (!ValidateSubstitutionList(list.required_types(), validate, value, err))
+    return false;
+
+  // There should always be at least one output.
+  if (list.list().empty()) {
+    *err = Err(*value, "Outputs list is empty.", "I need some outputs.");
+    return false;
+  }
+
+  tool->set_outputs(list);
+  return true;
+}
+
+bool IsCompilerTool(Toolchain::ToolType type) {
+  return type == Toolchain::TYPE_CC ||
+         type == Toolchain::TYPE_CXX ||
+         type == Toolchain::TYPE_OBJC ||
+         type == Toolchain::TYPE_OBJCXX ||
+         type == Toolchain::TYPE_RC ||
+         type == Toolchain::TYPE_ASM;
+}
+
+bool IsLinkerTool(Toolchain::ToolType type) {
+  return type == Toolchain::TYPE_ALINK ||
+         type == Toolchain::TYPE_SOLINK ||
+         type == Toolchain::TYPE_LINK;
+}
+
+bool IsPatternInOutputList(const SubstitutionList& output_list,
+                           const SubstitutionPattern& pattern) {
+  for (size_t output_i = 0; output_i < output_list.list().size(); output_i++) {
+    const SubstitutionPattern& cur = output_list.list()[output_i];
+    if (pattern.ranges().size() == cur.ranges().size() &&
+        std::equal(pattern.ranges().begin(), pattern.ranges().end(),
+                   cur.ranges().begin()))
+      return true;
+  }
+  return false;
 }
 
 }  // namespace
@@ -132,11 +287,11 @@ Value RunToolchain(Scope* scope,
       return Value();
   }
 
-
   if (!block_scope.CheckForUnusedVars(err))
     return Value();
 
   // Save this toolchain.
+  toolchain->ToolchainSetupComplete();
   Scope::ItemVector* collector = scope->GetItemCollector();
   if (!collector) {
     *err = Err(function, "Can't define a toolchain in this context.");
@@ -154,81 +309,342 @@ const char kTool_HelpShort[] =
 const char kTool_Help[] =
     "tool: Specify arguments to a toolchain tool.\n"
     "\n"
-    "  tool(<command type>) { <command flags> }\n"
+    "Usage:\n"
     "\n"
-    "  Used inside a toolchain definition to define a command to run for a\n"
-    "  given file type. See also \"gn help toolchain\".\n"
+    "  tool(<tool type>) {\n"
+    "    <tool variables...>\n"
+    "  }\n"
     "\n"
-    "Command types\n"
+    "Tool types\n"
     "\n"
-    "  The following values may be passed to the tool() function for the type\n"
-    "  of the command:\n"
+    "    Compiler tools:\n"
+    "      \"cc\": C compiler\n"
+    "      \"cxx\": C++ compiler\n"
+    "      \"objc\": Objective C compiler\n"
+    "      \"objcxx\": Objective C++ compiler\n"
+    "      \"rc\": Resource compiler (Windows .rc files)\n"
+    "      \"asm\": Assembler\n"
     "\n"
-    "  \"cc\", \"cxx\", \"objc\", \"objcxx\", \"asm\", \"alink\", \"solink\",\n"
-    "  \"link\", \"stamp\", \"copy\"\n"
+    "    Linker tools:\n"
+    "      \"alink\": Linker for static libraries (archives)\n"
+    "      \"solink\": Linker for shared libraries\n"
+    "      \"link\": Linker for executables\n"
     "\n"
-    "Tool-specific notes\n"
+    "    Other tools:\n"
+    "      \"stamp\": Tool for creating stamp files\n"
+    "      \"copy\": Tool to copy files.\n"
     "\n"
-    "  copy\n"
-    "    The copy command should be a native OS command since it does not\n"
-    "    implement toolchain dependencies (which would enable a copy tool to\n"
-    "    be compiled by a previous step).\n"
+    "Tool variables\n"
     "\n"
-    "    It is legal for the copy to not update the timestamp of the output\n"
-    "    file (as long as it's greater than or equal to the input file). This\n"
-    "    allows the copy command to be implemented as a hard link which can\n"
-    "    be more efficient.\n"
+    "    command  [string with substitutions]\n"
+    "        Valid for: all tools (required)\n"
     "\n"
-    "Command flags\n"
+    "        The command to run.\n"
     "\n"
-    "  These variables may be specified in the { } block after the tool call.\n"
-    "  They are passed directly to Ninja. See the ninja documentation for how\n"
-    "  they work. Don't forget to backslash-escape $ required by Ninja to\n"
-    "  prevent GN from doing variable expansion.\n"
+    "    default_output_extension  [string]\n"
+    "        Valid for: linker tools\n"
     "\n"
-    "    command, depfile, depsformat, description, pool, restat, rspfile,\n"
-    "    rspfile_content\n"
+    "        Extension for the main output of a linkable tool. It includes\n"
+    "        the leading dot. This will be the default value for the\n"
+    "        {{output_extension}} expansion (discussed below) but will be\n"
+    "        overridden by by the \"output extension\" variable in a target,\n"
+    "        if one is specified. Empty string means no extension.\n"
     "\n"
-    "  (Note that GN uses \"depsformat\" for Ninja's \"deps\" variable to\n"
-    "  avoid confusion with dependency lists.)\n"
+    "        GN doesn't actually do anything with this extension other than\n"
+    "        pass it along, potentially with target-specific overrides. One\n"
+    "        would typically use the {{output_extension}} value in the\n"
+    "        \"outputs\" to read this value.\n"
     "\n"
-    "  Additionally, lib_prefix and lib_dir_prefix may be used for the link\n"
-    "  tools. These strings will be prepended to the libraries and library\n"
-    "  search directories, respectively, because linkers differ on how to\n"
-    "  specify them.\n"
+    "        Example: default_output_extension = \".exe\"\n"
     "\n"
-    "  Note: On Mac libraries with names ending in \".framework\" will be\n"
-    "  added to the link like with a \"-framework\" switch and the lib prefix\n"
-    "  will be ignored.\n"
+    "    depfile  [string]\n"
+    "        Valid for: compiler tools (optional)\n"
     "\n"
-    "Ninja variables available to tool invocations\n"
+    "        If the tool can write \".d\" files, this specifies the name of\n"
+    "        the resulting file. These files are used to list header file\n"
+    "        dependencies (or other implicit input dependencies) that are\n"
+    "        discovered at build time. See also \"depsformat\".\n"
     "\n"
-    "  When writing tool commands, you use the various built-in Ninja\n"
-    "  variables like \"$in\" and \"$out\" (note that the $ must be escaped\n"
-    "  for it to be passed to Ninja, so write \"\\$in\" in the command\n"
-    "  string).\n"
+    "        Example: depfile = \"{{output}}.d\"\n"
     "\n"
-    "  GN defines the following variables for binary targets to access the\n"
-    "  various computed information needed for compiling:\n"
+    "    depsformat  [string]\n"
+    "        Valid for: compiler tools (when depfile is specified)\n"
     "\n"
-    "    - Compiler flags: \"cflags\", \"cflags_c\", \"cflags_cc\",\n"
-    "          \"cflags_objc\", \"cflags_objcc\"\n"
+    "        Format for the deps outputs. This is either \"gcc\" or \"msvc\".\n"
+    "        See the ninja documentation for \"deps\" for more information.\n"
     "\n"
-    "    - Linker flags: \"ldflags\", \"libs\"\n"
+    "        Example: depsformat = \"gcc\"\n"
     "\n"
-    "  GN sets these other variables with target information that can be\n"
-    "  used for computing names for supplimetary files:\n"
+    "    description  [string with substitutions, optional]\n"
+    "        Valid for: all tools\n"
     "\n"
-    "    - \"target_name\": The name of the current target with no\n"
-    "      path information. For example \"mylib\".\n"
+    "        What to print when the command is run.\n"
     "\n"
-    "    - \"target_out_dir\": The value of \"target_out_dir\" from the BUILD\n"
-    "      file for this target (see \"gn help target_out_dir\"), relative\n"
-    "      to the root build directory with no trailing slash.\n"
+    "        Example: description = \"Compiling {{source}}\"\n"
     "\n"
-    "    - \"root_out_dir\": The value of \"root_out_dir\" from the BUILD\n"
-    "      file for this target (see \"gn help root_out_dir\"), relative\n"
-    "      to the root build directory with no trailing slash.\n"
+    "    lib_switch  [string, optional, link tools only]\n"
+    "    lib_dir_switch  [string, optional, link tools only]\n"
+    "        Valid for: Linker tools except \"alink\"\n"
+    "\n"
+    "        These strings will be prepended to the libraries and library\n"
+    "        search directories, respectively, because linkers differ on how\n"
+    "        specify them. If you specified:\n"
+    "          lib_switch = \"-l\"\n"
+    "          lib_dir_switch = \"-L\"\n"
+    "        then the \"{{libs}}\" expansion for [ \"freetype\", \"expat\"]\n"
+    "        would be \"-lfreetype -lexpat\".\n"
+    "\n"
+    "    outputs  [list of strings with substitutions]\n"
+    "        Valid for: Linker and compiler tools (required)\n"
+    "\n"
+    "        An array of names for the output files the tool produces. These\n"
+    "        are relative to the build output directory. There must always be\n"
+    "        at least one output file. There can be more than one output (a\n"
+    "        linker might produce a library and an import library, for\n"
+    "        example).\n"
+    "\n"
+    "        This array just declares to GN what files the tool will\n"
+    "        produce. It is your responsibility to specify the tool command\n"
+    "        that actually produces these files.\n"
+    "\n"
+    "        If you specify more than one output for shared library links,\n"
+    "        you should consider setting link_output and depend_output.\n"
+    "        Otherwise, the first entry in the outputs list should always be\n"
+    "        the main output which will be linked to.\n"
+    "\n"
+    "        Example for a compiler tool that produces .obj files:\n"
+    "          outputs = [\n"
+    "            \"{{source_out_dir}}/{{source_name_part}}.obj\"\n"
+    "          ]\n"
+    "\n"
+    "        Example for a linker tool that produces a .dll and a .lib. The\n"
+    "        use of {{output_extension}} rather than hardcoding \".dll\"\n"
+    "        allows the extension of the library to be overridden on a\n"
+    "        target-by-target basis, but in this example, it always\n"
+    "        produces a \".lib\" import library:\n"
+    "          outputs = [\n"
+    "            \"{{root_out_dir}}/{{target_output_name}}"
+                     "{{output_extension}}\",\n"
+    "            \"{{root_out_dir}}/{{target_output_name}}.lib\",\n"
+    "          ]\n"
+    "\n"
+    "    link_output  [string with substitutions]\n"
+    "    depend_output  [string with substitutions]\n"
+    "        Valid for: \"solink\" only (optional)\n"
+    "\n"
+    "        These two files specify whch of the outputs from the solink\n"
+    "        tool should be used for linking and dependency tracking. These\n"
+    "        should match entries in the \"outputs\". If unspecified, the\n"
+    "        first item in the \"outputs\" array will be used for both. See\n"
+    "        \"Separate linking and dependencies for shared libraries\"\n"
+    "        below for more.\n"
+    "\n"
+    "        On Windows, where the tools produce a .dll shared library and\n"
+    "        a .lib import library, you will want both of these to be the\n"
+    "        import library. On Linux, if you're not doing the separate\n"
+    "        linking/dependency optimization, both of these should be the\n"
+    "        .so output.\n"
+    "\n"
+    "    output_prefix  [string]\n"
+    "        Valid for: Linker tools (optional)\n"
+    "\n"
+    "        Prefix to use for the output name. Defaults to empty. This\n"
+    "        prefix will be prepended to the name of the target (or the\n"
+    "        output_name if one is manually specified for it) if the prefix\n"
+    "        is not already there. The result will show up in the\n"
+    "        {{output_name}} substitution pattern.\n"
+    "\n"
+    "        This is typically used to prepend \"lib\" to libraries on\n"
+    "        Posix systems:\n"
+    "          output_prefix = \"lib\"\n"
+    "\n"
+    // TODO(brettw) document "pool" when it works.
+    //"    pool  [string, optional]\n"
+    //"\n"
+    "    restat  [boolean]\n"
+    "        Valid for: all tools (optional, defaults to false)\n"
+    "\n"
+    "        Requests that Ninja check the file timestamp after this tool has\n"
+    "        run to determine if anything changed. Set this if your tool has\n"
+    "        the ability to skip writing output if the output file has not\n"
+    "        changed.\n"
+    "\n"
+    "        Normally, Ninja will assume that when a tool runs the output\n"
+    "        be new and downstream dependents must be rebuild. When this is\n"
+    "        set to trye, Ninja can skip rebuilding downstream dependents for\n"
+    "        input changes that don't actually affect the output.\n"
+    "\n"
+    "        Example:\n"
+    "          restat = true\n"
+    "\n"
+    "    rspfile  [string with substitutions]\n"
+    "        Valid for: all tools (optional)\n"
+    "\n"
+    "        Name of the response file. If empty, no response file will be\n"
+    "        used. See \"rspfile_content\".\n"
+    "\n"
+    "    rspfile_content  [string with substitutions]\n"
+    "        Valid for: all tools (required when \"rspfile\" is specified)\n"
+    "\n"
+    "        The contents to be written to the response file. This may\n"
+    "        include all or part of the command to send to the tool which\n"
+    "        allows you to get around OS command-line length limits.\n"
+    "\n"
+    "        This example adds the inputs and libraries to a response file,\n"
+    "        but passes the linker flags directly on the command line:\n"
+    "          tool(\"link\") {\n"
+    "            command = \"link -o {{output}} {{ldflags}} @{{output}}.rsp\"\n"
+    "            rspfile = \"{{output}}.rsp\"\n"
+    "            rspfile_content = \"{{inputs}} {{solibs}} {{libs}}\"\n"
+    "          }\n"
+    "\n"
+    "Expansions for tool variables"
+    "\n"
+    "  All paths are relative to the root build directory, which is the\n"
+    "  current directory for running all tools. These expansions are\n"
+    "  available to all tools:\n"
+    "\n"
+    "    {{label}}\n"
+    "        The label of the current target. This is typically used in the\n"
+    "        \"description\" field for link tools. The toolchain will be\n"
+    "        omitted from the label for targets in the default toolchain, and\n"
+    "        will be included for targets in other toolchains.\n"
+    "\n"
+    "    {{output}}\n"
+    "        The relative path and name of the output)((s) of the current\n"
+    "        build step. If there is more than one output, this will expand\n"
+    "        to a list of all of them.\n"
+    "        Example: \"out/base/my_file.o\"\n"
+    "\n"
+    "    {{target_gen_dir}}\n"
+    "    {{target_out_dir}}\n"
+    "        The directory of the generated file and output directories,\n"
+    "        respectively, for the current target. There is no trailing\n"
+    "        slash.\n"
+    "        Example: \"out/base/test\"\n"
+    "\n"
+    "    {{target_output_name}}\n"
+    "        The short name of the current target with no path information,\n"
+    "        or the value of the \"output_name\" variable if one is specified\n"
+    "        in the target. This will include the \"output_prefix\" if any.\n"
+    "        Example: \"libfoo\" for the target named \"foo\" and an\n"
+    "        output prefix for the linker tool of \"lib\".\n"
+    "\n"
+    "  Compiler tools have the notion of a single input and a single output,\n"
+    "  along with a set of compiler-specific flags. The following expansions\n"
+    "  are available:\n"
+    "\n"
+    "    {{cflags}}\n"
+    "    {{cflags_c}}\n"
+    "    {{cflags_cc}}\n"
+    "    {{cflags_objc}}\n"
+    "    {{cflags_objcc}}\n"
+    "    {{defines}}\n"
+    "    {{include_dirs}}\n"
+    "        Strings correspond that to the processed flags/defines/include\n"
+    "        directories specified for the target.\n"
+    "        Example: \"--enable-foo --enable-bar\"\n"
+    "\n"
+    "        Defines will be prefixed by \"-D\" and include directories will\n"
+    "        be prefixed by \"-I\" (these work with Posix tools as well as\n"
+    "        Microsoft ones).\n"
+    "\n"
+    "    {{source}}\n"
+    "        The relative path and name of the current input file.\n"
+    "        Example: \"../../base/my_file.cc\"\n"
+    "\n"
+    "    {{source_file_part}}\n"
+    "        The file part of the source including the extension (with no\n"
+    "        directory information).\n"
+    "        Example: \"foo.cc\"\n"
+    "\n"
+    "    {{source_name_part}}\n"
+    "        The filename part of the source file with no directory or\n"
+    "        extension.\n"
+    "        Example: \"foo\"\n"
+    "\n"
+    "    {{source_gen_dir}}\n"
+    "    {{source_out_dir}}\n"
+    "        The directory in the generated file and output directories,\n"
+    "        respectively, for the current input file. If the source file\n"
+    "        is in the same directory as the target is declared in, they will\n"
+    "        will be the same as the \"target\" versions above.\n"
+    "        Example: \"gen/base/test\"\n"
+    "\n"
+    "  Linker tools have multiple inputs and (potentially) multiple outputs\n"
+    "  The following expansions are available:\n"
+    "\n"
+    "    {{inputs}}\n"
+    "        Expands to the inputs to the link step. This will be a list of\n"
+    "        object files and static libraries.\n"
+    "        Example: \"obj/foo.o obj/bar.o obj/somelibrary.a\"\n"
+    "\n"
+    "    {{ldflags}}\n"
+    "        Expands to the processed set of ldflags and library search paths\n"
+    "        specified for the target.\n"
+    "        Example: \"-m64, -fPIC -pthread -L/usr/local/mylib\"\n"
+    "\n"
+    "    {{libs}}\n"
+    "        Expands to the list of system libraries to link to. Each will\n"
+    "        be prefixed by the \"lib_prefix\".\n"
+    "\n"
+    "        As a special case to support Mac, libraries with names ending in\n"
+    "        \".framework\" will be added to the {{libs}} with \"-framework\"\n"
+    "        preceeding it, and the lib prefix will be ignored.\n"
+    "\n"
+    "        Example: \"-lfoo -lbar\"\n"
+    "\n"
+    "    {{output_extension}}\n"
+    "        The value of the \"output_extension\" variable in the target,\n"
+    "        or the value of the \"default_output_extension\" value in the\n"
+    "        tool if the target does not specify an output extension.\n"
+    "        Example: \".so\"\n"
+    "\n"
+    "    {{solibs}}\n"
+    "        Extra libraries from shared library dependencide not specified\n"
+    "        in the {{inputs}}. This is the list of link_output files from\n"
+    "        shared libraries (if the solink tool specifies a \"link_output\"\n"
+    "        variable separate from the \"depend_output\").\n"
+    "\n"
+    "        These should generally be treated the same as libs by your tool.\n"
+    "        Example: \"libfoo.so libbar.so\"\n"
+    "\n"
+    "  The copy tool allows the common compiler/linker substitutions, plus\n"
+    "  {{source}} which is the source of the copy. The stamp tool allows\n"
+    "  only the common tool substitutions.\n"
+    "\n"
+    "Separate linking and dependencies for shared libraries\n"
+    "\n"
+    "  Shared libraries are special in that not all changes to them require\n"
+    "  that dependent targets be re-linked. If the shared library is changed\n"
+    "  but no imports or exports are different, dependent code needn't be\n"
+    "  relinked, which can speed up the build.\n"
+    "\n"
+    "  If your link step can output a list of exports from a shared library\n"
+    "  and writes the file only if the new one is different, the timestamp of\n"
+    "  this file can be used for triggering re-links, while the actual shared\n"
+    "  library would be used for linking.\n"
+    "\n"
+    "  You will need to specify\n"
+    "    restat = true\n"
+    "  in the linker tool to make this work, so Ninja will detect if the\n"
+    "  timestamp of the dependency file has changed after linking (otherwise\n"
+    "  it will always assume that running a command updates the output):\n"
+    "\n"
+    "    tool(\"solink\") {\n"
+    "      command = \"...\"\n"
+    "      outputs = [\n"
+    "        \"{{root_out_dir}}/{{target_output_name}}{{output_extension}}\",\n"
+    "        \"{{root_out_dir}}/{{target_output_name}}"
+                 "{{output_extension}}.TOC\",\n"
+    "      ]\n"
+    "      link_output =\n"
+    "        \"{{root_out_dir}}/{{target_output_name}}{{output_extension}}\",\n"
+    "      depend_output =\n"
+    "        \"{{root_out_dir}}/{{target_output_name}}"
+                 "{{output_extension}}.TOC\",\n"
+    "      restat = true\n"
+    "    }\n"
     "\n"
     "Example\n"
     "\n"
@@ -239,10 +655,12 @@ const char kTool_Help[] =
     "\n"
     "    tool(\"cc\") {\n"
     "      command = \"gcc \\$in -o \\$out\"\n"
+    "      outputs = [ \"{{source_out_dir}}/{{source_name_part}}.o\"\n"
     "      description = \"GCC \\$in\"\n"
     "    }\n"
     "    tool(\"cxx\") {\n"
     "      command = \"g++ \\$in -o \\$out\"\n"
+    "      outputs = [ \"{{source_out_dir}}/{{source_name_part}}.o\"\n"
     "      description = \"G++ \\$in\"\n"
     "    }\n"
     "  }\n";
@@ -278,29 +696,100 @@ Value RunTool(Scope* scope,
   if (err->has_error())
     return Value();
 
-  // Extract the stuff we need.
-  Toolchain::Tool t;
-  if (!ReadString(block_scope, "command", &t.command, err) ||
-      !ReadString(block_scope, "depfile", &t.depfile, err) ||
-      // TODO(brettw) delete this once we rename "deps" -> "depsformat" in
-      // the toolchain definitions. This will avoid colliding with the
-      // toolchain's "deps" list. For now, accept either.
-      !ReadString(block_scope, "deps", &t.depsformat, err) ||
-      !ReadString(block_scope, "depsformat", &t.depsformat, err) ||
-      !ReadString(block_scope, "description", &t.description, err) ||
-      !ReadString(block_scope, "lib_dir_prefix", &t.lib_dir_prefix, err) ||
-      !ReadString(block_scope, "lib_prefix", &t.lib_prefix, err) ||
-      !ReadString(block_scope, "pool", &t.pool, err) ||
-      !ReadString(block_scope, "restat", &t.restat, err) ||
-      !ReadString(block_scope, "rspfile", &t.rspfile, err) ||
-      !ReadString(block_scope, "rspfile_content", &t.rspfile_content, err))
+  // Figure out which validator to use for the substitution pattern for this
+  // tool type. There are different validators for the "outputs" than for the
+  // rest of the strings.
+  bool (*subst_validator)(SubstitutionType) = NULL;
+  bool (*subst_output_validator)(SubstitutionType) = NULL;
+  if (IsCompilerTool(tool_type)) {
+    subst_validator = &IsValidCompilerSubstitution;
+    subst_output_validator = &IsValidCompilerOutputsSubstitution;
+  } else if (IsLinkerTool(tool_type)) {
+    subst_validator = &IsValidLinkerSubstitution;
+    subst_output_validator = &IsValidLinkerOutputsSubstitution;
+  } else if (tool_type == Toolchain::TYPE_COPY) {
+    subst_validator = &IsValidCopySubstitution;
+    subst_output_validator = &IsValidCopySubstitution;
+  } else {
+    subst_validator = &IsValidToolSubstutition;
+    subst_output_validator = &IsValidToolSubstutition;
+  }
+
+  scoped_ptr<Tool> tool(new Tool);
+
+  if (!ReadPattern(&block_scope, "command", subst_validator, tool.get(),
+                   &Tool::set_command, err) ||
+      !ReadOutputExtension(&block_scope, tool.get(), err) ||
+      !ReadPattern(&block_scope, "depfile", subst_validator, tool.get(),
+                   &Tool::set_depfile, err) ||
+      !ReadDepsFormat(&block_scope, tool.get(), err) ||
+      !ReadPattern(&block_scope, "description", subst_validator, tool.get(),
+                   &Tool::set_description, err) ||
+      !ReadString(&block_scope, "lib_switch", tool.get(),
+                  &Tool::set_lib_switch, err) ||
+      !ReadString(&block_scope, "lib_dir_switch", tool.get(),
+                  &Tool::set_lib_dir_switch, err) ||
+      !ReadPattern(&block_scope, "link_output", subst_validator, tool.get(),
+                   &Tool::set_link_output, err) ||
+      !ReadPattern(&block_scope, "depend_output", subst_validator, tool.get(),
+                   &Tool::set_depend_output, err) ||
+      !ReadString(&block_scope, "output_prefix", tool.get(),
+                  &Tool::set_output_prefix, err) ||
+      !ReadString(&block_scope, "pool", tool.get(), &Tool::set_pool, err) ||
+      !ReadBool(&block_scope, "restat", tool.get(), &Tool::set_restat, err) ||
+      !ReadPattern(&block_scope, "rspfile", subst_validator, tool.get(),
+                   &Tool::set_rspfile, err) ||
+      !ReadPattern(&block_scope, "rspfile_content", subst_validator, tool.get(),
+                   &Tool::set_rspfile_content, err)) {
     return Value();
+  }
+
+  if (tool_type != Toolchain::TYPE_COPY && tool_type != Toolchain::TYPE_STAMP) {
+    // All tools except the copy and stamp tools should have outputs. The copy
+    // and stamp tool's outputs are generated internally.
+    if (!ReadOutputs(&block_scope, function, subst_output_validator,
+                     tool.get(), err))
+      return Value();
+  }
+
+  // Validate that the link_output and depend_output refer to items in the
+  // outputs and aren't defined for irrelevant tool types.
+  if (!tool->link_output().empty()) {
+    if (tool_type != Toolchain::TYPE_SOLINK) {
+      *err = Err(function, "This tool specifies a link_output.",
+          "This is only valid for solink tools.");
+      return Value();
+    }
+    if (!IsPatternInOutputList(tool->outputs(), tool->link_output())) {
+      *err = Err(function, "This tool's link_output is bad.",
+                 "It must match one of the outputs.");
+      return Value();
+    }
+  }
+  if (!tool->depend_output().empty()) {
+    if (tool_type != Toolchain::TYPE_SOLINK) {
+      *err = Err(function, "This tool specifies a depend_output.",
+          "This is only valid for solink tools.");
+      return Value();
+    }
+    if (!IsPatternInOutputList(tool->outputs(), tool->depend_output())) {
+      *err = Err(function, "This tool's depend_output is bad.",
+                 "It must match one of the outputs.");
+      return Value();
+    }
+  }
+  if ((!tool->link_output().empty() && tool->depend_output().empty()) ||
+      (tool->link_output().empty() && !tool->depend_output().empty())) {
+    *err = Err(function, "Both link_output and depend_output should either "
+        "be specified or they should both be empty.");
+    return Value();
+  }
 
   // Make sure there weren't any vars set in this tool that were unused.
   if (!block_scope.CheckForUnusedVars(err))
     return Value();
 
-  toolchain->SetTool(tool_type, t);
+  toolchain->SetTool(tool_type, tool.Pass());
   return Value();
 }
 

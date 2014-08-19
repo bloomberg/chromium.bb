@@ -18,6 +18,7 @@
 #include "tools/gn/escape.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/input_file_manager.h"
+#include "tools/gn/ninja_utils.h"
 #include "tools/gn/scheduler.h"
 #include "tools/gn/target.h"
 #include "tools/gn/trace.h"
@@ -82,8 +83,7 @@ NinjaBuildWriter::NinjaBuildWriter(
       default_toolchain_targets_(default_toolchain_targets),
       out_(out),
       dep_out_(dep_out),
-      path_output_(build_settings->build_dir(), ESCAPE_NINJA),
-      helper_(build_settings) {
+      path_output_(build_settings->build_dir(), ESCAPE_NINJA) {
 }
 
 NinjaBuildWriter::~NinjaBuildWriter() {
@@ -155,8 +155,7 @@ void NinjaBuildWriter::WriteNinjaRules() {
 void NinjaBuildWriter::WriteSubninjas() {
   for (size_t i = 0; i < all_settings_.size(); i++) {
     out_ << "subninja ";
-    path_output_.WriteFile(out_,
-                           helper_.GetNinjaFileForToolchain(all_settings_[i]));
+    path_output_.WriteFile(out_, GetNinjaFileForToolchain(all_settings_[i]));
     out_ << std::endl;
   }
   out_ << std::endl;
@@ -192,7 +191,7 @@ void NinjaBuildWriter::WritePhonyAndAllRules() {
   for (size_t i = 0; i < default_toolchain_targets_.size(); i++) {
     const Target* target = default_toolchain_targets_[i];
     const Label& label = target->label();
-    OutputFile target_file = helper_.GetTargetOutputFile(target);
+    const OutputFile& target_file = target->dependency_output_file();
 
     // Write the long name "foo/bar:baz" for the target "//foo/bar:baz".
     std::string long_name = label.GetUserVisibleName(false);
@@ -224,7 +223,7 @@ void NinjaBuildWriter::WritePhonyAndAllRules() {
   for (size_t i = 0; i < toplevel_targets.size(); i++) {
     if (small_name_count[toplevel_targets[i]->label().name()] > 1) {
       const Target* target = toplevel_targets[i];
-      WritePhonyRule(target, helper_.GetTargetOutputFile(target),
+      WritePhonyRule(target, target->dependency_output_file(),
                      target->label().name());
     }
   }

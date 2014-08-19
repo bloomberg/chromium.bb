@@ -408,7 +408,8 @@ bool Builder::ResolveItem(BuilderRecord* record, Err* err) {
         !ResolveConfigs(&target->configs(), err) ||
         !ResolveConfigs(&target->all_dependent_configs(), err) ||
         !ResolveConfigs(&target->direct_dependent_configs(), err) ||
-        !ResolveForwardDependentConfigs(target, err))
+        !ResolveForwardDependentConfigs(target, err) ||
+        !ResolveToolchain(target, err))
       return false;
   } else if (record->type() == BuilderRecord::ITEM_TOOLCHAIN) {
     Toolchain* toolchain = record->item()->AsToolchain();
@@ -496,6 +497,24 @@ bool Builder::ResolveForwardDependentConfigs(Target* target, Err* err) {
       return false;
     }
   }
+  return true;
+}
+
+bool Builder::ResolveToolchain(Target* target, Err* err) {
+  BuilderRecord* record = GetResolvedRecordOfType(
+      target->settings()->toolchain_label(), target->defined_from(),
+      BuilderRecord::ITEM_TOOLCHAIN, err);
+  if (!record) {
+    *err = Err(target->defined_from(),
+        "Toolchain for target not defined.",
+        "I was hoping to find a toolchain " +
+        target->settings()->toolchain_label().GetUserVisibleName(false));
+    return false;
+  }
+
+  if (!target->SetToolchain(record->item()->AsToolchain(), err))
+    return false;
+
   return true;
 }
 

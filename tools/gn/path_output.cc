@@ -75,6 +75,14 @@ void PathOutput::WriteFile(std::ostream& out, const OutputFile& file) const {
   EscapeStringToStream(out, file.value(), options_);
 }
 
+void PathOutput::WriteFiles(std::ostream& out,
+                            const std::vector<OutputFile>& files) const {
+  for (size_t i = 0; i < files.size(); i++) {
+    out << " ";
+    WriteFile(out, files[i]);
+  }
+}
+
 void PathOutput::WriteDir(std::ostream& out,
                           const OutputFile& file,
                           DirSlashEnding slash_ending) const {

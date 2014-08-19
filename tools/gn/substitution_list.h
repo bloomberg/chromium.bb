@@ -35,9 +35,9 @@ class SubstitutionList {
     return required_types_;
   }
 
- private:
-  void FillRequiredTypes();
+  void FillRequiredTypes(SubstitutionBits* bits) const;
 
+ private:
   std::vector<SubstitutionPattern> list_;
 
   std::vector<SubstitutionType> required_types_;

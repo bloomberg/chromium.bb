@@ -7,11 +7,13 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/ninja_copy_target_writer.h"
+#include "tools/gn/target.h"
 #include "tools/gn/test_with_scope.h"
 
 // Tests mutliple files with an output pattern and no toolchain dependency.
 TEST(NinjaCopyTargetWriter, Run) {
   TestWithScope setup;
+
   setup.settings()->set_target_os(Settings::LINUX);
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
@@ -23,8 +25,11 @@ TEST(NinjaCopyTargetWriter, Run) {
   target.action_values().outputs() =
       SubstitutionList::MakeForTest("//out/Debug/{{source_name_part}}.out");
 
+  target.SetToolchain(setup.toolchain());
+  target.OnResolved();
+
   std::ostringstream out;
-  NinjaCopyTargetWriter writer(&target, setup.toolchain(), out);
+  NinjaCopyTargetWriter writer(&target, out);
   writer.Run();
 
   const char expected_linux[] =
@@ -39,6 +44,7 @@ TEST(NinjaCopyTargetWriter, Run) {
 // Tests a single file with no output pattern.
 TEST(NinjaCopyTargetWriter, ToolchainDeps) {
   TestWithScope setup;
+
   setup.settings()->set_target_os(Settings::LINUX);
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
@@ -49,8 +55,11 @@ TEST(NinjaCopyTargetWriter, ToolchainDeps) {
   target.action_values().outputs() =
       SubstitutionList::MakeForTest("//out/Debug/output.out");
 
+  target.SetToolchain(setup.toolchain());
+  target.OnResolved();
+
   std::ostringstream out;
-  NinjaCopyTargetWriter writer(&target, setup.toolchain(), out);
+  NinjaCopyTargetWriter writer(&target, out);
   writer.Run();
 
   const char expected_linux[] =

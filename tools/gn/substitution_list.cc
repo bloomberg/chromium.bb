@@ -25,7 +25,9 @@ bool SubstitutionList::Parse(const Value& value, Err* err) {
       return false;
   }
 
-  FillRequiredTypes();
+  SubstitutionBits bits;
+  FillRequiredTypes(&bits);
+  bits.FillVector(&required_types_);
   return true;
 }
 
@@ -38,7 +40,9 @@ bool SubstitutionList::Parse(const std::vector<std::string>& values,
       return false;
   }
 
-  FillRequiredTypes();
+  SubstitutionBits bits;
+  FillRequiredTypes(&bits);
+  bits.FillVector(&required_types_);
   return true;
 }
 
@@ -59,14 +63,7 @@ SubstitutionList SubstitutionList::MakeForTest(
   return result;
 }
 
-void SubstitutionList::FillRequiredTypes() {
-  bool required_type_bits[SUBSTITUTION_NUM_TYPES];
-  memset(&required_type_bits, 0, SUBSTITUTION_NUM_TYPES);
+void SubstitutionList::FillRequiredTypes(SubstitutionBits* bits) const {
   for (size_t i = 0; i < list_.size(); i++)
-    list_[i].FillRequiredTypes(required_type_bits);
-
-  for (size_t i = SUBSTITUTION_FIRST_PATTERN; i < SUBSTITUTION_NUM_TYPES; i++) {
-    if (required_type_bits[i])
-      required_types_.push_back(static_cast<SubstitutionType>(i));
-  }
+    list_[i].FillRequiredTypes(bits);
 }

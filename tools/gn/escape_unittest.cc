@@ -50,3 +50,11 @@ TEST(Escape, PosixCommand) {
   // Some more generic shell chars.
   EXPECT_EQ("a_\\;\\<\\*b", EscapeString("a_;<*b", opts, NULL));
 }
+
+TEST(Escape, NinjaPreformatted) {
+  EscapeOptions opts;
+  opts.mode = ESCAPE_NINJA_PREFORMATTED_COMMAND;
+
+  // Only $ is escaped.
+  EXPECT_EQ("a: \"$$\\b<;", EscapeString("a: \"$\\b<;", opts, NULL));
+}

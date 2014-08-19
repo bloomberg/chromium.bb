@@ -164,28 +164,6 @@ bool FilesystemStringsEqual(const base::FilePath::StringType& a,
 
 }  // namespace
 
-SourceFileType GetSourceFileType(const SourceFile& file) {
-  base::StringPiece extension = FindExtension(&file.value());
-  if (extension == "cc" || extension == "cpp" || extension == "cxx")
-    return SOURCE_CC;
-  if (extension == "h")
-    return SOURCE_H;
-  if (extension == "c")
-    return SOURCE_C;
-  if (extension == "m")
-    return SOURCE_M;
-  if (extension == "mm")
-    return SOURCE_MM;
-  if (extension == "rc")
-    return SOURCE_RC;
-  if (extension == "S" || extension == "s")
-    return SOURCE_S;
-  if (extension == "o" || extension == "obj")
-    return SOURCE_O;
-
-  return SOURCE_UNKNOWN;
-}
-
 const char* GetExtensionForOutputType(Target::OutputType type,
                                       Settings::TargetOS os) {
   switch (os) {
@@ -333,7 +311,7 @@ base::StringPiece FindLastDirComponent(const SourceDir& dir) {
 
 bool EnsureStringIsInOutputDir(const SourceDir& dir,
                                const std::string& str,
-                               const Value& originating,
+                               const ParseNode* origin,
                                Err* err) {
   // This check will be wrong for all proper prefixes "e.g. "/output" will
   // match "/out" but we don't really care since this is just a sanity check.
@@ -341,7 +319,7 @@ bool EnsureStringIsInOutputDir(const SourceDir& dir,
   if (str.compare(0, dir_str.length(), dir_str) == 0)
     return true;  // Output directory is hardcoded.
 
-  *err = Err(originating, "File is not inside output directory.",
+  *err = Err(origin, "File is not inside output directory.",
       "The given file should be in the output directory. Normally you would "
       "specify\n\"$target_out_dir/foo\" or "
       "\"$target_gen_dir/foo\". I interpreted this as\n\""
@@ -673,13 +651,8 @@ std::string GetOutputSubdirName(const Label& toolchain_label, bool is_default) {
 }
 
 SourceDir GetToolchainOutputDir(const Settings* settings) {
-  const OutputFile& toolchain_subdir = settings->toolchain_output_subdir();
-
-  std::string result = settings->build_settings()->build_dir().value();
-  if (!toolchain_subdir.value().empty())
-    result.append(toolchain_subdir.value());
-
-  return SourceDir(SourceDir::SWAP_IN, &result);
+  return settings->toolchain_output_subdir().AsSourceDir(
+      settings->build_settings());
 }
 
 SourceDir GetToolchainOutputDir(const BuildSettings* build_settings,
@@ -690,14 +663,14 @@ SourceDir GetToolchainOutputDir(const BuildSettings* build_settings,
 }
 
 SourceDir GetToolchainGenDir(const Settings* settings) {
-  const OutputFile& toolchain_subdir = settings->toolchain_output_subdir();
+  return GetToolchainGenDirAsOutputFile(settings).AsSourceDir(
+      settings->build_settings());
+}
 
-  std::string result = settings->build_settings()->build_dir().value();
-  if (!toolchain_subdir.value().empty())
-    result.append(toolchain_subdir.value());
-
-  result.append("gen/");
-  return SourceDir(SourceDir::SWAP_IN, &result);
+OutputFile GetToolchainGenDirAsOutputFile(const Settings* settings) {
+  OutputFile result(settings->toolchain_output_subdir());
+  result.value().append("gen/");
+  return result;
 }
 
 SourceDir GetToolchainGenDir(const BuildSettings* build_settings,
@@ -710,50 +683,69 @@ SourceDir GetToolchainGenDir(const BuildSettings* build_settings,
 
 SourceDir GetOutputDirForSourceDir(const Settings* settings,
                                    const SourceDir& source_dir) {
-  SourceDir toolchain = GetToolchainOutputDir(settings);
+  return GetOutputDirForSourceDirAsOutputFile(settings, source_dir).AsSourceDir(
+      settings->build_settings());
+}
 
-  std::string ret;
-  toolchain.SwapValue(&ret);
-  ret.append("obj/");
+OutputFile GetOutputDirForSourceDirAsOutputFile(const Settings* settings,
+                                                const SourceDir& source_dir) {
+  OutputFile result = settings->toolchain_output_subdir();
+  result.value().append("obj/");
 
   if (source_dir.is_source_absolute()) {
     // The source dir is source-absolute, so we trim off the two leading
     // slashes to append to the toolchain object directory.
-    ret.append(&source_dir.value()[2], source_dir.value().size() - 2);
+    result.value().append(&source_dir.value()[2],
+                          source_dir.value().size() - 2);
   }
-  // (Put system-absolute stuff in the root obj directory.)
-
-  return SourceDir(SourceDir::SWAP_IN, &ret);
+  return result;
 }
 
 SourceDir GetGenDirForSourceDir(const Settings* settings,
                                 const SourceDir& source_dir) {
-  SourceDir toolchain = GetToolchainGenDir(settings);
+  return GetGenDirForSourceDirAsOutputFile(settings, source_dir).AsSourceDir(
+      settings->build_settings());
+}
 
-  std::string ret;
-  toolchain.SwapValue(&ret);
+OutputFile GetGenDirForSourceDirAsOutputFile(const Settings* settings,
+                                             const SourceDir& source_dir) {
+  OutputFile result = GetToolchainGenDirAsOutputFile(settings);
 
   if (source_dir.is_source_absolute()) {
     // The source dir should be source-absolute, so we trim off the two leading
     // slashes to append to the toolchain object directory.
     DCHECK(source_dir.is_source_absolute());
-    ret.append(&source_dir.value()[2], source_dir.value().size() - 2);
+    result.value().append(&source_dir.value()[2],
+                          source_dir.value().size() - 2);
   }
-  // (Put system-absolute stuff in the root gen directory.)
-
-  return SourceDir(SourceDir::SWAP_IN, &ret);
+  return result;
 }
 
 SourceDir GetTargetOutputDir(const Target* target) {
-  return GetOutputDirForSourceDir(target->settings(), target->label().dir());
+  return GetOutputDirForSourceDirAsOutputFile(
+      target->settings(), target->label().dir()).AsSourceDir(
+          target->settings()->build_settings());
+}
+
+OutputFile GetTargetOutputDirAsOutputFile(const Target* target) {
+  return GetOutputDirForSourceDirAsOutputFile(
+      target->settings(), target->label().dir());
 }
 
 SourceDir GetTargetGenDir(const Target* target) {
-  return GetGenDirForSourceDir(target->settings(), target->label().dir());
+  return GetTargetGenDirAsOutputFile(target).AsSourceDir(
+      target->settings()->build_settings());
+}
+
+OutputFile GetTargetGenDirAsOutputFile(const Target* target) {
+  return GetGenDirForSourceDirAsOutputFile(
+      target->settings(), target->label().dir());
 }
 
 SourceDir GetCurrentOutputDir(const Scope* scope) {
-  return GetOutputDirForSourceDir(scope->settings(), scope->GetSourceDir());
+  return GetOutputDirForSourceDirAsOutputFile(
+      scope->settings(), scope->GetSourceDir()).AsSourceDir(
+          scope->settings()->build_settings());
 }
 
 SourceDir GetCurrentGenDir(const Scope* scope) {

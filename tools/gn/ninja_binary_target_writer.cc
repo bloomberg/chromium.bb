@@ -10,7 +10,11 @@
 #include "tools/gn/config_values_extractors.h"
 #include "tools/gn/err.h"
 #include "tools/gn/escape.h"
+#include "tools/gn/ninja_utils.h"
+#include "tools/gn/settings.h"
 #include "tools/gn/string_utils.h"
+#include "tools/gn/substitution_writer.h"
+#include "tools/gn/target.h"
 
 namespace {
 
@@ -41,9 +45,7 @@ struct DefineWriter {
 };
 
 struct IncludeWriter {
-  IncludeWriter(PathOutput& path_output, const NinjaHelper& h)
-      : helper(h),
-        path_output_(path_output) {
+  IncludeWriter(PathOutput& path_output) : path_output_(path_output) {
   }
   ~IncludeWriter() {
   }
@@ -53,30 +55,15 @@ struct IncludeWriter {
     path_output_.WriteDir(out, d, PathOutput::DIR_NO_LAST_SLASH);
   }
 
-  const NinjaHelper& helper;
   PathOutput& path_output_;
 };
-
-Toolchain::ToolType GetToolTypeForTarget(const Target* target) {
-  switch (target->output_type()) {
-    case Target::STATIC_LIBRARY:
-      return Toolchain::TYPE_ALINK;
-    case Target::SHARED_LIBRARY:
-      return Toolchain::TYPE_SOLINK;
-    case Target::EXECUTABLE:
-      return Toolchain::TYPE_LINK;
-    default:
-      return Toolchain::TYPE_NONE;
-  }
-}
 
 }  // namespace
 
 NinjaBinaryTargetWriter::NinjaBinaryTargetWriter(const Target* target,
-                                                 const Toolchain* toolchain,
                                                  std::ostream& out)
-    : NinjaTargetWriter(target, toolchain, out),
-      tool_type_(GetToolTypeForTarget(target)){
+    : NinjaTargetWriter(target, out),
+      tool_(target->toolchain()->GetToolForTargetFinalOutput(target)) {
 }
 
 NinjaBinaryTargetWriter::~NinjaBinaryTargetWriter() {
@@ -95,46 +82,44 @@ void NinjaBinaryTargetWriter::Run() {
 }
 
 void NinjaBinaryTargetWriter::WriteCompilerVars() {
+  const SubstitutionBits& subst = target_->toolchain()->substitution_bits();
+
   // Defines.
-  out_ << "defines =";
-  RecursiveTargetConfigToStream<std::string>(target_, &ConfigValues::defines,
-                                             DefineWriter(), out_);
-  out_ << std::endl;
+  if (subst.used[SUBSTITUTION_DEFINES]) {
+    out_ << kSubstitutionNinjaNames[SUBSTITUTION_DEFINES] << " =";
+    RecursiveTargetConfigToStream<std::string>(
+        target_, &ConfigValues::defines, DefineWriter(), out_);
+    out_ << std::endl;
+  }
 
   // Include directories.
-  out_ << "includes =";
-  RecursiveTargetConfigToStream<SourceDir>(target_, &ConfigValues::include_dirs,
-                                           IncludeWriter(path_output_, helper_),
-                                           out_);
-
-  out_ << std::endl;
+  if (subst.used[SUBSTITUTION_INCLUDE_DIRS]) {
+    out_ << kSubstitutionNinjaNames[SUBSTITUTION_INCLUDE_DIRS] << " =";
+    RecursiveTargetConfigToStream<SourceDir>(
+        target_, &ConfigValues::include_dirs,
+        IncludeWriter(path_output_), out_);
+    out_ << std::endl;
+  }
 
   // C flags and friends.
   EscapeOptions flag_escape_options = GetFlagOptions();
-#define WRITE_FLAGS(name) \
-    out_ << #name " ="; \
-    RecursiveTargetConfigStringsToStream(target_, &ConfigValues::name, \
-                                         flag_escape_options, out_); \
-    out_ << std::endl;
+#define WRITE_FLAGS(name, subst_enum) \
+    if (subst.used[subst_enum]) { \
+      out_ << kSubstitutionNinjaNames[subst_enum] << " ="; \
+      RecursiveTargetConfigStringsToStream(target_, &ConfigValues::name, \
+                                           flag_escape_options, out_); \
+      out_ << std::endl; \
+    }
 
-  WRITE_FLAGS(cflags)
-  WRITE_FLAGS(cflags_c)
-  WRITE_FLAGS(cflags_cc)
-  WRITE_FLAGS(cflags_objc)
-  WRITE_FLAGS(cflags_objcc)
+  WRITE_FLAGS(cflags, SUBSTITUTION_CFLAGS)
+  WRITE_FLAGS(cflags_c, SUBSTITUTION_CFLAGS_C)
+  WRITE_FLAGS(cflags_cc, SUBSTITUTION_CFLAGS_CC)
+  WRITE_FLAGS(cflags_objc, SUBSTITUTION_CFLAGS_OBJC)
+  WRITE_FLAGS(cflags_objcc, SUBSTITUTION_CFLAGS_OBJCC)
 
 #undef WRITE_FLAGS
 
-  // Write some variables about the target for the toolchain definition to use.
-  out_ << "target_name = " << target_->label().name() << std::endl;
-  out_ << "target_out_dir = ";
-  path_output_.WriteDir(out_, helper_.GetTargetOutputDir(target_),
-                        PathOutput::DIR_NO_LAST_SLASH);
-  out_ << std::endl;
-  out_ << "root_out_dir = ";
-  path_output_.WriteDir(out_, target_->settings()->toolchain_output_subdir(),
-                        PathOutput::DIR_NO_LAST_SLASH);
-  out_ << std::endl << std::endl;
+  WriteSharedVars(subst);
 }
 
 void NinjaBinaryTargetWriter::WriteSources(
@@ -145,180 +130,44 @@ void NinjaBinaryTargetWriter::WriteSources(
   std::string implicit_deps =
       WriteInputDepsStampAndGetDep(std::vector<const Target*>());
 
+  std::string rule_prefix = GetNinjaRulePrefixForToolchain(settings_);
+
+  std::vector<OutputFile> tool_outputs;  // Prevent reallocation in loop.
   for (size_t i = 0; i < sources.size(); i++) {
-    const SourceFile& input_file = sources[i];
+    Toolchain::ToolType tool_type = Toolchain::TYPE_NONE;
+    if (!GetOutputFilesForSource(target_, sources[i],
+                                 &tool_type, &tool_outputs))
+      continue;  // No output for this source.
 
-    SourceFileType input_file_type = GetSourceFileType(input_file);
-    if (input_file_type == SOURCE_UNKNOWN)
-      continue;  // Skip unknown file types.
-    if (input_file_type == SOURCE_O) {
-      // Object files just get passed to the output and not compiled.
-      object_files->push_back(helper_.GetOutputFileForSource(
-          target_, input_file, input_file_type));
-      continue;
+    if (tool_type != Toolchain::TYPE_NONE) {
+      out_ << "build";
+      path_output_.WriteFiles(out_, tool_outputs);
+      out_ << ": " << rule_prefix << Toolchain::ToolTypeToName(tool_type);
+      out_ << " ";
+      path_output_.WriteFile(out_, sources[i]);
+      out_ << implicit_deps << std::endl;
     }
-    std::string command =
-        helper_.GetRuleForSourceType(settings_, input_file_type);
-    if (command.empty())
-      continue;  // Skip files not needing compilation.
 
-    OutputFile output_file = helper_.GetOutputFileForSource(
-        target_, input_file, input_file_type);
-    object_files->push_back(output_file);
-
-    out_ << "build ";
-    path_output_.WriteFile(out_, output_file);
-    out_ << ": " << command << " ";
-    path_output_.WriteFile(out_, input_file);
-    out_ << implicit_deps << std::endl;
+    // It's theoretically possible for a compiler to produce more than one
+    // output, but we'll only link to the first output.
+    object_files->push_back(tool_outputs[0]);
   }
   out_ << std::endl;
 }
 
 void NinjaBinaryTargetWriter::WriteLinkerStuff(
     const std::vector<OutputFile>& object_files) {
-  // Manifest file on Windows.
-  // TODO(brettw) this seems not to be necessary for static libs, skip in
-  // that case?
-  OutputFile windows_manifest;
-  if (settings_->IsWin()) {
-    windows_manifest = helper_.GetTargetOutputDir(target_);
-    windows_manifest.value().append(target_->label().name());
-    windows_manifest.value().append(".intermediate.manifest");
-    out_ << "manifests = ";
-    path_output_.WriteFile(out_, windows_manifest);
-    out_ << std::endl;
-  }
+  std::vector<OutputFile> output_files;
+  SubstitutionWriter::ApplyListToLinkerAsOutputFile(
+      target_, tool_, tool_->outputs(), &output_files);
 
-  const Toolchain::Tool& tool = toolchain_->GetTool(tool_type_);
-  WriteLinkerFlags(tool, windows_manifest);
-  WriteLibs(tool);
+  out_ << "build";
+  path_output_.WriteFiles(out_, output_files);
 
-  // The external output file is the one that other libs depend on.
-  OutputFile external_output_file = helper_.GetTargetOutputFile(target_);
-
-  // The internal output file is the "main thing" we think we're making. In
-  // the case of shared libraries, this is the shared library and the external
-  // output file is the import library. In other cases, the internal one and
-  // the external one are the same.
-  OutputFile internal_output_file;
-  if (target_->output_type() == Target::SHARED_LIBRARY) {
-    if (settings_->IsWin()) {
-      internal_output_file.value() =
-          target_->settings()->toolchain_output_subdir().value();
-      internal_output_file.value().append(target_->label().name());
-      internal_output_file.value().append(".dll");
-    } else {
-      internal_output_file = external_output_file;
-    }
-  } else {
-    internal_output_file = external_output_file;
-  }
-
-  // In Python see "self.ninja.build(output, command, input,"
-  WriteLinkCommand(external_output_file, internal_output_file, object_files);
-
-  if (target_->output_type() == Target::SHARED_LIBRARY) {
-    // The shared object name doesn't include a path.
-    out_ << "  soname = ";
-    out_ << FindFilename(&internal_output_file.value());
-    out_ << std::endl;
-
-    out_ << "  lib = ";
-    path_output_.WriteFile(out_, internal_output_file);
-    out_ << std::endl;
-
-    if (settings_->IsWin()) {
-      out_ << "  dll = ";
-      path_output_.WriteFile(out_, internal_output_file);
-      out_ << std::endl;
-    }
-
-    if (settings_->IsWin()) {
-      out_ << "  implibflag = /IMPLIB:";
-      path_output_.WriteFile(out_, external_output_file);
-      out_ << std::endl;
-    }
-
-    // TODO(brettw) postbuild steps.
-    if (settings_->IsMac())
-      out_ << "  postbuilds = $ && (export BUILT_PRODUCTS_DIR=/Users/brettw/prj/src/out/gn; export CONFIGURATION=Debug; export DYLIB_INSTALL_NAME_BASE=@rpath; export EXECUTABLE_NAME=libbase.dylib; export EXECUTABLE_PATH=libbase.dylib; export FULL_PRODUCT_NAME=libbase.dylib; export LD_DYLIB_INSTALL_NAME=@rpath/libbase.dylib; export MACH_O_TYPE=mh_dylib; export PRODUCT_NAME=base; export PRODUCT_TYPE=com.apple.product-type.library.dynamic; export SDKROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk; export SRCROOT=/Users/brettw/prj/src/out/gn/../../base; export SOURCE_ROOT=\"$${SRCROOT}\"; export TARGET_BUILD_DIR=/Users/brettw/prj/src/out/gn; export TEMP_DIR=\"$${TMPDIR}\"; (cd ../../base && ../build/mac/strip_from_xcode); G=$$?; ((exit $$G) || rm -rf libbase.dylib) && exit $$G)";
-  }
-
-  out_ << std::endl;
-}
-
-void NinjaBinaryTargetWriter::WriteLinkerFlags(
-    const Toolchain::Tool& tool,
-    const OutputFile& windows_manifest) {
-  out_ << "ldflags =";
-
-  // First the ldflags from the target and its config.
-  EscapeOptions flag_options = GetFlagOptions();
-  RecursiveTargetConfigStringsToStream(target_, &ConfigValues::ldflags,
-                                       flag_options, out_);
-
-  // Followed by library search paths that have been recursively pushed
-  // through the dependency tree.
-  const OrderedSet<SourceDir> all_lib_dirs = target_->all_lib_dirs();
-  if (!all_lib_dirs.empty()) {
-    // Since we're passing these on the command line to the linker and not
-    // to Ninja, we need to do shell escaping.
-    PathOutput lib_path_output(path_output_.current_dir(),
-                               ESCAPE_NINJA_COMMAND);
-    for (size_t i = 0; i < all_lib_dirs.size(); i++) {
-      out_ << " " << tool.lib_dir_prefix;
-      lib_path_output.WriteDir(out_, all_lib_dirs[i],
-                               PathOutput::DIR_NO_LAST_SLASH);
-    }
-  }
-
-  // Append manifest flag on Windows to reference our file.
-  // HACK ERASEME BRETTW FIXME
-  if (settings_->IsWin()) {
-    out_ << " /MANIFEST /ManifestFile:";
-    path_output_.WriteFile(out_, windows_manifest);
-  }
-  out_ << std::endl;
-}
-
-void NinjaBinaryTargetWriter::WriteLibs(const Toolchain::Tool& tool) {
-  out_ << "libs =";
-
-  // Libraries that have been recursively pushed through the dependency tree.
-  EscapeOptions lib_escape_opts;
-  lib_escape_opts.mode = ESCAPE_NINJA_COMMAND;
-  const OrderedSet<std::string> all_libs = target_->all_libs();
-  const std::string framework_ending(".framework");
-  for (size_t i = 0; i < all_libs.size(); i++) {
-    if (settings_->IsMac() && EndsWith(all_libs[i], framework_ending, false)) {
-      // Special-case libraries ending in ".framework" on Mac. Add the
-      // -framework switch and don't add the extension to the output.
-      out_ << " -framework ";
-      EscapeStringToStream(out_,
-          all_libs[i].substr(0, all_libs[i].size() - framework_ending.size()),
-          lib_escape_opts);
-    } else {
-      out_ << " " << tool.lib_prefix;
-      EscapeStringToStream(out_, all_libs[i], lib_escape_opts);
-    }
-  }
-  out_ << std::endl;
-}
-
-void NinjaBinaryTargetWriter::WriteLinkCommand(
-    const OutputFile& external_output_file,
-    const OutputFile& internal_output_file,
-    const std::vector<OutputFile>& object_files) {
-  out_ << "build ";
-  path_output_.WriteFile(out_, internal_output_file);
-  if (external_output_file != internal_output_file) {
-    out_ << " ";
-    path_output_.WriteFile(out_, external_output_file);
-  }
   out_ << ": "
-       << helper_.GetRulePrefix(target_->settings())
-       << Toolchain::ToolTypeToName(tool_type_);
+       << GetNinjaRulePrefixForToolchain(settings_)
+       << Toolchain::ToolTypeToName(
+              target_->toolchain()->GetToolTypeForTargetFinalOutput(target_));
 
   UniqueVector<OutputFile> extra_object_files;
   UniqueVector<const Target*> linkable_deps;
@@ -335,15 +184,118 @@ void NinjaBinaryTargetWriter::WriteLinkCommand(
     path_output_.WriteFile(out_, extra_object_files[i]);
   }
 
-  // Libs.
+  std::vector<OutputFile> implicit_deps;
+  std::vector<OutputFile> solibs;
+
   for (size_t i = 0; i < linkable_deps.size(); i++) {
-    out_ << " ";
-    path_output_.WriteFile(out_, helper_.GetTargetOutputFile(linkable_deps[i]));
+    const Target* cur = linkable_deps[i];
+
+    // All linkable deps should have a link output file.
+    DCHECK(!cur->link_output_file().value().empty())
+        << "No link output file for "
+        << target_->label().GetUserVisibleName(false);
+
+    if (cur->dependency_output_file().value() !=
+        cur->link_output_file().value()) {
+      // This is a shared library with separate link and deps files. Save for
+      // later.
+      implicit_deps.push_back(cur->dependency_output_file());
+      solibs.push_back(cur->link_output_file());
+    } else {
+      // Normal case, just link to this target.
+      out_ << " ";
+      path_output_.WriteFile(out_, cur->link_output_file());
+    }
   }
 
-  // Append data dependencies as implicit dependencies.
-  WriteImplicitDependencies(non_linkable_deps);
+  // Append implicit dependencies collected above.
+  if (!implicit_deps.empty()) {
+    out_ << " |";
+    path_output_.WriteFiles(out_, implicit_deps);
+  }
 
+  // Append data dependencies as order-only dependencies.
+  WriteOrderOnlyDependencies(non_linkable_deps);
+
+  // End of the link "build" line.
+  out_ << std::endl;
+
+  // These go in the inner scope of the link line.
+  WriteLinkerFlags();
+  WriteLibs();
+  WriteOutputExtension();
+  WriteSolibs(solibs);
+}
+
+void NinjaBinaryTargetWriter::WriteLinkerFlags() {
+  out_ << "  ldflags =";
+
+  // First the ldflags from the target and its config.
+  EscapeOptions flag_options = GetFlagOptions();
+  RecursiveTargetConfigStringsToStream(target_, &ConfigValues::ldflags,
+                                       flag_options, out_);
+
+  // Followed by library search paths that have been recursively pushed
+  // through the dependency tree.
+  const OrderedSet<SourceDir> all_lib_dirs = target_->all_lib_dirs();
+  if (!all_lib_dirs.empty()) {
+    // Since we're passing these on the command line to the linker and not
+    // to Ninja, we need to do shell escaping.
+    PathOutput lib_path_output(path_output_.current_dir(),
+                               ESCAPE_NINJA_COMMAND);
+    for (size_t i = 0; i < all_lib_dirs.size(); i++) {
+      out_ << " " << tool_->lib_dir_switch();
+      lib_path_output.WriteDir(out_, all_lib_dirs[i],
+                               PathOutput::DIR_NO_LAST_SLASH);
+    }
+  }
+  out_ << std::endl;
+}
+
+void NinjaBinaryTargetWriter::WriteLibs() {
+  out_ << "  libs =";
+
+  // Libraries that have been recursively pushed through the dependency tree.
+  EscapeOptions lib_escape_opts;
+  lib_escape_opts.mode = ESCAPE_NINJA_COMMAND;
+  const OrderedSet<std::string> all_libs = target_->all_libs();
+  const std::string framework_ending(".framework");
+  for (size_t i = 0; i < all_libs.size(); i++) {
+    if (settings_->IsMac() && EndsWith(all_libs[i], framework_ending, false)) {
+      // Special-case libraries ending in ".framework" on Mac. Add the
+      // -framework switch and don't add the extension to the output.
+      out_ << " -framework ";
+      EscapeStringToStream(out_,
+          all_libs[i].substr(0, all_libs[i].size() - framework_ending.size()),
+          lib_escape_opts);
+    } else {
+      out_ << " " << tool_->lib_switch();
+      EscapeStringToStream(out_, all_libs[i], lib_escape_opts);
+    }
+  }
+  out_ << std::endl;
+}
+
+void NinjaBinaryTargetWriter::WriteOutputExtension() {
+  out_ << "  output_extension = ";
+  if (target_->output_extension().empty()) {
+    // Use the default from the tool.
+    out_ << tool_->default_output_extension();
+  } else {
+    // Use the one specified in the target. Note that the one in the target
+    // does not include the leading dot, so add that.
+    out_ << "." << target_->output_extension();
+  }
+  out_ << std::endl;
+}
+
+void NinjaBinaryTargetWriter::WriteSolibs(
+    const std::vector<OutputFile>& solibs) {
+  if (solibs.empty())
+    return;
+
+  out_ << "  solibs =";
+  path_output_.WriteFiles(out_, solibs);
   out_ << std::endl;
 }
 
@@ -353,12 +305,6 @@ void NinjaBinaryTargetWriter::WriteSourceSetStamp(
   // depend on this will reference the object files directly. However, writing
   // this rule allows the user to type the name of the target and get a build
   // which can be convenient for development.
-  out_ << "build ";
-  path_output_.WriteFile(out_, helper_.GetTargetOutputFile(target_));
-  out_ << ": "
-       << helper_.GetRulePrefix(target_->settings())
-       << "stamp";
-
   UniqueVector<OutputFile> extra_object_files;
   UniqueVector<const Target*> linkable_deps;
   UniqueVector<const Target*> non_linkable_deps;
@@ -369,15 +315,11 @@ void NinjaBinaryTargetWriter::WriteSourceSetStamp(
   // deps instead.
   DCHECK(extra_object_files.empty());
 
-  for (size_t i = 0; i < object_files.size(); i++) {
-    out_ << " ";
-    path_output_.WriteFile(out_, object_files[i]);
-  }
+  std::vector<OutputFile> order_only_deps;
+  for (size_t i = 0; i < non_linkable_deps.size(); i++)
+    order_only_deps.push_back(non_linkable_deps[i]->dependency_output_file());
 
-  // Append data dependencies as implicit dependencies.
-  WriteImplicitDependencies(non_linkable_deps);
-
-  out_ << std::endl;
+  WriteStampForTarget(object_files, order_only_deps);
 }
 
 void NinjaBinaryTargetWriter::GetDeps(
@@ -432,14 +374,13 @@ void NinjaBinaryTargetWriter::ClassifyDependency(
         target_->output_type() != Target::STATIC_LIBRARY) {
       // Linking in a source set to an executable or shared library, copy its
       // object files.
+      std::vector<OutputFile> tool_outputs;  // Prevent allocation in loop.
       for (size_t i = 0; i < dep->sources().size(); i++) {
-        SourceFileType input_file_type = GetSourceFileType(dep->sources()[i]);
-        if (input_file_type != SOURCE_UNKNOWN &&
-            input_file_type != SOURCE_H) {
-          // Note we need to specify the target as the source_set target
-          // itself, since this is used to prefix the object file name.
-          extra_object_files->push_back(helper_.GetOutputFileForSource(
-              dep, dep->sources()[i], input_file_type));
+        Toolchain::ToolType tool_type = Toolchain::TYPE_NONE;
+        if (GetOutputFilesForSource(dep, dep->sources()[i], &tool_type,
+                                    &tool_outputs)) {
+          // Only link the first output if there are more than one.
+          extra_object_files->push_back(tool_outputs[0]);
         }
       }
     }
@@ -450,7 +391,7 @@ void NinjaBinaryTargetWriter::ClassifyDependency(
   }
 }
 
-void NinjaBinaryTargetWriter::WriteImplicitDependencies(
+void NinjaBinaryTargetWriter::WriteOrderOnlyDependencies(
     const UniqueVector<const Target*>& non_linkable_deps) {
   const std::vector<SourceFile>& data = target_->data();
   if (!non_linkable_deps.empty() || !data.empty()) {
@@ -459,15 +400,39 @@ void NinjaBinaryTargetWriter::WriteImplicitDependencies(
     // Non-linkable targets.
     for (size_t i = 0; i < non_linkable_deps.size(); i++) {
       out_ << " ";
-      path_output_.WriteFile(out_,
-                             helper_.GetTargetOutputFile(non_linkable_deps[i]));
-    }
-
-    // Data files.
-    const std::vector<SourceFile>& data = target_->data();
-    for (size_t i = 0; i < data.size(); i++) {
-      out_ << " ";
-      path_output_.WriteFile(out_, data[i]);
+      path_output_.WriteFile(
+          out_, non_linkable_deps[i]->dependency_output_file());
     }
   }
+}
+
+bool NinjaBinaryTargetWriter::GetOutputFilesForSource(
+    const Target* target,
+    const SourceFile& source,
+    Toolchain::ToolType* computed_tool_type,
+    std::vector<OutputFile>* outputs) const {
+  outputs->clear();
+  *computed_tool_type = Toolchain::TYPE_NONE;
+
+  SourceFileType file_type = GetSourceFileType(source);
+  if (file_type == SOURCE_UNKNOWN)
+    return false;
+  if (file_type == SOURCE_O) {
+    // Object files just get passed to the output and not compiled.
+    outputs->push_back(OutputFile(settings_->build_settings(), source));
+    return true;
+  }
+
+  *computed_tool_type =
+      target->toolchain()->GetToolTypeForSourceType(file_type);
+  if (*computed_tool_type == Toolchain::TYPE_NONE)
+    return false;  // No tool for this file (it's a header file or something).
+  const Tool* tool = target->toolchain()->GetTool(*computed_tool_type);
+  if (!tool)
+    return false;  // Tool does not apply for this toolchain.file.
+
+  // Figure out what output(s) this compiler produces.
+  SubstitutionWriter::ApplyListToCompilerAsOutputFile(
+      target, source, tool->outputs(), outputs);
+  return !outputs->empty();
 }

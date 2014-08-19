@@ -10,13 +10,15 @@
 #include <string>
 #include <vector>
 
-#include "tools/gn/ninja_helper.h"
+#include "base/gtest_prod_util.h"
 #include "tools/gn/path_output.h"
+#include "tools/gn/toolchain.h"
 
 class BuildSettings;
+struct EscapeOptions;
 class Settings;
 class Target;
-class Toolchain;
+class Tool;
 
 class NinjaToolchainWriter {
  public:
@@ -27,6 +29,8 @@ class NinjaToolchainWriter {
                               const std::vector<const Target*>& targets);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(NinjaToolchainWriter, WriteToolRule);
+
   NinjaToolchainWriter(const Settings* settings,
                        const Toolchain* toolchain,
                        const std::vector<const Target*>& targets,
@@ -36,6 +40,12 @@ class NinjaToolchainWriter {
   void Run();
 
   void WriteRules();
+  void WriteToolRule(Toolchain::ToolType type,
+                     const Tool* tool,
+                     const std::string& rule_prefix);
+  void WriteRulePattern(const char* name,
+                        const SubstitutionPattern& pattern,
+                        const EscapeOptions& options);
   void WriteSubninjas();
 
   const Settings* settings_;
@@ -43,8 +53,6 @@ class NinjaToolchainWriter {
   std::vector<const Target*> targets_;
   std::ostream& out_;
   PathOutput path_output_;
-
-  NinjaHelper helper_;
 
   DISALLOW_COPY_AND_ASSIGN(NinjaToolchainWriter);
 };

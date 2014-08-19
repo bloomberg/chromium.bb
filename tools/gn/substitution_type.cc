@@ -9,9 +9,11 @@
 #include "tools/gn/err.h"
 
 const char* kSubstitutionNames[SUBSTITUTION_NUM_TYPES] = {
-  NULL,  // SUBSTITUTION_LITERAL
+  "<<literal>>",  // SUBSTITUTION_LITERAL
 
   "{{source}}",  // SUBSTITUTION_SOURCE
+  "{{output}}",  // SUBSTITUTION_OUTPUT
+
   "{{source_name_part}}",  // SUBSTITUTION_NAME_PART
   "{{source_file_part}}",  // SUBSTITUTION_FILE_PART
   "{{source_dir}}",  // SUBSTITUTION_SOURCE_DIR
@@ -19,7 +21,7 @@ const char* kSubstitutionNames[SUBSTITUTION_NUM_TYPES] = {
   "{{source_gen_dir}}",  // SUBSTITUTION_SOURCE_GEN_DIR
   "{{source_out_dir}}",  // SUBSTITUTION_SOURCE_OUT_DIR
 
-  "{{output}}",  // SUBSTITUTION_OUTPUT
+  "{{label}}",  // SUBSTITUTION_LABEL
   "{{root_gen_dir}}",  // SUBSTITUTION_ROOT_GEN_DIR
   "{{root_out_dir}}",  // SUBSTITUTION_ROOT_OUT_DIR
   "{{target_gen_dir}}",  // SUBSTITUTION_TARGET_GEN_DIR
@@ -44,9 +46,9 @@ const char* kSubstitutionNames[SUBSTITUTION_NUM_TYPES] = {
 const char* kSubstitutionNinjaNames[SUBSTITUTION_NUM_TYPES] = {
   NULL,  // SUBSTITUTION_LITERAL
 
-  // This isn't written by GN, the name here is referring to the Ninja variable
-  // since when we would use this would be for writing source rules.
   "in",  // SUBSTITUTION_SOURCE
+  "out",  // SUBSTITUTION_OUTPUT
+
   "source_name_part",  // SUBSTITUTION_NAME_PART
   "source_file_part",  // SUBSTITUTION_FILE_PART
   "source_dir",  // SUBSTITUTION_SOURCE_DIR
@@ -54,7 +56,7 @@ const char* kSubstitutionNinjaNames[SUBSTITUTION_NUM_TYPES] = {
   "source_gen_dir",  // SUBSTITUTION_SOURCE_GEN_DIR
   "source_out_dir",  // SUBSTITUTION_SOURCE_OUT_DIR
 
-  "output",  // SUBSTITUTION_OUTPUT
+  "label",  // SUBSTITUTION_LABEL
   "root_gen_dir",  // SUBSTITUTION_ROOT_GEN_DIR
   "root_out_dir",  // SUBSTITUTION_ROOT_OUT_DIR
   "target_gen_dir",  // SUBSTITUTION_TARGET_GEN_DIR
@@ -69,20 +71,43 @@ const char* kSubstitutionNinjaNames[SUBSTITUTION_NUM_TYPES] = {
   "defines",  // SUBSTITUTION_DEFINES
   "include_dirs",  // SUBSTITUTION_INCLUDE_DIRS
 
-  "inputs",  // SUBSTITUTION_LINKER_INPUTS
+  // LINKER_INPUTS expands to the same Ninja var as SUBSTITUTION_SOURCE. These
+  // are used in different contexts and are named differently to keep things
+  // clear, but they both expand to the "set of input files" for a build rule.
+  "in",  // SUBSTITUTION_LINKER_INPUTS
   "ldflags",  // SUBSTITUTION_LDFLAGS
   "libs",  // SUBSTITUTION_LIBS
   "output_extension",  // SUBSTITUTION_OUTPUT_EXTENSION
   "solibs",  // SUBSTITUTION_SOLIBS
 };
 
+SubstitutionBits::SubstitutionBits() : used() {
+}
+
+void SubstitutionBits::MergeFrom(const SubstitutionBits& other) {
+  for (size_t i = 0; i < SUBSTITUTION_NUM_TYPES; i++)
+    used[i] |= other.used[i];
+}
+
+void SubstitutionBits::FillVector(std::vector<SubstitutionType>* vect) const {
+  for (size_t i = SUBSTITUTION_FIRST_PATTERN; i < SUBSTITUTION_NUM_TYPES; i++) {
+    if (used[i])
+      vect->push_back(static_cast<SubstitutionType>(i));
+  }
+}
+
 bool SubstitutionIsInOutputDir(SubstitutionType type) {
   return type == SUBSTITUTION_SOURCE_GEN_DIR ||
-         type == SUBSTITUTION_SOURCE_OUT_DIR;
+         type == SUBSTITUTION_SOURCE_OUT_DIR ||
+         type == SUBSTITUTION_ROOT_GEN_DIR ||
+         type == SUBSTITUTION_ROOT_OUT_DIR ||
+         type == SUBSTITUTION_TARGET_GEN_DIR ||
+         type == SUBSTITUTION_TARGET_OUT_DIR;
 }
 
 bool IsValidSourceSubstitution(SubstitutionType type) {
-  return type == SUBSTITUTION_SOURCE ||
+  return type == SUBSTITUTION_LITERAL ||
+         type == SUBSTITUTION_SOURCE ||
          type == SUBSTITUTION_SOURCE_NAME_PART ||
          type == SUBSTITUTION_SOURCE_FILE_PART ||
          type == SUBSTITUTION_SOURCE_DIR ||
@@ -92,7 +117,9 @@ bool IsValidSourceSubstitution(SubstitutionType type) {
 }
 
 bool IsValidToolSubstutition(SubstitutionType type) {
-  return type == SUBSTITUTION_OUTPUT ||
+  return type == SUBSTITUTION_LITERAL ||
+         type == SUBSTITUTION_OUTPUT ||
+         type == SUBSTITUTION_LABEL ||
          type == SUBSTITUTION_ROOT_GEN_DIR ||
          type == SUBSTITUTION_ROOT_OUT_DIR ||
          type == SUBSTITUTION_TARGET_GEN_DIR ||
@@ -102,6 +129,8 @@ bool IsValidToolSubstutition(SubstitutionType type) {
 
 bool IsValidCompilerSubstitution(SubstitutionType type) {
   return IsValidToolSubstutition(type) ||
+         IsValidSourceSubstitution(type) ||
+         type == SUBSTITUTION_SOURCE ||
          type == SUBSTITUTION_CFLAGS ||
          type == SUBSTITUTION_CFLAGS_C ||
          type == SUBSTITUTION_CFLAGS_CC ||
@@ -113,8 +142,8 @@ bool IsValidCompilerSubstitution(SubstitutionType type) {
 
 bool IsValidCompilerOutputsSubstitution(SubstitutionType type) {
   // All tool types except "output" (which would be infinitely recursive).
-  return IsValidToolSubstutition(type) &&
-         type != SUBSTITUTION_OUTPUT;
+  return (IsValidToolSubstutition(type) && type != SUBSTITUTION_OUTPUT) ||
+         IsValidSourceSubstitution(type);
 }
 
 bool IsValidLinkerSubstitution(SubstitutionType type) {
@@ -130,6 +159,11 @@ bool IsValidLinkerOutputsSubstitution(SubstitutionType type) {
   // All valid compiler outputs plus the output extension.
   return IsValidCompilerOutputsSubstitution(type) ||
          type == SUBSTITUTION_OUTPUT_EXTENSION;
+}
+
+bool IsValidCopySubstitution(SubstitutionType type) {
+  return IsValidToolSubstutition(type) ||
+         type == SUBSTITUTION_SOURCE;
 }
 
 bool EnsureValidSourcesSubstitutions(

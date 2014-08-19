@@ -8,7 +8,6 @@
 #include <iosfwd>
 #include <vector>
 
-#include "tools/gn/ninja_helper.h"
 #include "tools/gn/path_output.h"
 
 class BuildSettings;
@@ -48,8 +47,6 @@ class NinjaBuildWriter {
   std::ostream& out_;
   std::ostream& dep_out_;
   PathOutput path_output_;
-
-  NinjaHelper helper_;
 
   DISALLOW_COPY_AND_ASSIGN(NinjaBuildWriter);
 };

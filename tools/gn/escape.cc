@@ -48,6 +48,17 @@ void EscapeStringToString_Ninja(const base::StringPiece& str,
     NinjaEscapeChar(str[i], dest);
 }
 
+template<typename DestString>
+void EscapeStringToString_NinjaPreformatted(const base::StringPiece& str,
+                                            DestString* dest) {
+  // Only Ninja-escape $.
+  for (size_t i = 0; i < str.size(); i++) {
+    if (str[i] == '$')
+      dest->push_back('$');
+    dest->push_back(str[i]);
+  }
+}
+
 // Escape for CommandLineToArgvW and additionally escape Ninja characters.
 //
 // The basic algorithm is if the string doesn't contain any parse-affecting
@@ -165,6 +176,9 @@ void EscapeStringToString(const base::StringPiece& str,
         default:
           NOTREACHED();
       }
+      break;
+    case ESCAPE_NINJA_PREFORMATTED_COMMAND:
+      EscapeStringToString_NinjaPreformatted(str, dest);
       break;
     default:
       NOTREACHED();

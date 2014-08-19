@@ -5,8 +5,12 @@
 #include "tools/gn/target.h"
 
 #include "base/bind.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "tools/gn/config_values_extractors.h"
+#include "tools/gn/filesystem_utils.h"
 #include "tools/gn/scheduler.h"
+#include "tools/gn/substitution_writer.h"
 
 namespace {
 
@@ -41,7 +45,8 @@ Target::Target(const Settings* settings, const Label& label)
     : Item(settings, label),
       output_type_(UNKNOWN),
       all_headers_public_(true),
-      hard_dep_(false) {
+      hard_dep_(false),
+      toolchain_(NULL) {
 }
 
 Target::~Target() {
@@ -83,6 +88,7 @@ const Target* Target::AsTarget() const {
 
 void Target::OnResolved() {
   DCHECK(output_type_ != UNKNOWN);
+  DCHECK(toolchain_) << "Toolchain should have been set before resolving.";
 
   // Convert any groups we depend on to just direct dependencies on that
   // group's deps. We insert the new deps immediately after the group so that
@@ -91,6 +97,7 @@ void Target::OnResolved() {
   for (size_t i = 0; i < deps_.size(); i++) {
     const Target* dep = deps_[i].ptr;
     if (dep->output_type_ == GROUP) {
+      // TODO(brettw) bug 403488 this should also handle datadeps.
       deps_.insert(deps_.begin() + i + 1, dep->deps_.begin(), dep->deps_.end());
       i += dep->deps_.size();
     }
@@ -120,10 +127,59 @@ void Target::OnResolved() {
   }
   PullForwardedDependentConfigs();
   PullRecursiveHardDeps();
+
+  FillOutputFiles();
 }
 
 bool Target::IsLinkable() const {
   return output_type_ == STATIC_LIBRARY || output_type_ == SHARED_LIBRARY;
+}
+
+std::string Target::GetComputedOutputName(bool include_prefix) const {
+  DCHECK(toolchain_)
+      << "Toolchain must be specified before getting the computed output name.";
+
+  const std::string& name = output_name_.empty() ? label().name()
+                                                 : output_name_;
+
+  std::string result;
+  if (include_prefix) {
+    const Tool* tool = toolchain_->GetToolForTargetFinalOutput(this);
+    const std::string& prefix = tool->output_prefix();
+    // Only add the prefix if the name doesn't already have it.
+    if (!StartsWithASCII(name, prefix, true))
+      result = prefix;
+  }
+
+  result.append(name);
+  return result;
+}
+
+bool Target::SetToolchain(const Toolchain* toolchain, Err* err) {
+  DCHECK(!toolchain_);
+  DCHECK_NE(UNKNOWN, output_type_);
+  toolchain_ = toolchain;
+
+  const Tool* tool = toolchain->GetToolForTargetFinalOutput(this);
+  if (tool)
+    return true;
+
+  // Tool not specified for this target type.
+  if (err) {
+    *err = Err(defined_from(), "This target uses an undefined tool.",
+        base::StringPrintf(
+            "The target %s\n"
+            "of type \"%s\"\n"
+            "uses toolchain %s\n"
+            "which doesn't have the tool \"%s\" defined.\n\n"
+            "Alas, I can not continue.",
+            label().GetUserVisibleName(false).c_str(),
+            GetStringForOutputType(output_type_),
+            label().GetToolchainLabel().GetUserVisibleName(false).c_str(),
+            Toolchain::ToolTypeToName(
+                toolchain->GetToolTypeForTargetFinalOutput(this)).c_str()));
+  }
+  return false;
 }
 
 void Target::PullDependentTargetInfo() {
@@ -188,5 +244,64 @@ void Target::PullRecursiveHardDeps() {
              dep->recursive_hard_deps().begin();
          cur != dep->recursive_hard_deps().end(); ++cur)
       recursive_hard_deps_.insert(*cur);
+  }
+}
+
+void Target::FillOutputFiles() {
+  const Tool* tool = toolchain_->GetToolForTargetFinalOutput(this);
+  switch (output_type_) {
+    case GROUP:
+    case SOURCE_SET:
+    case COPY_FILES:
+    case ACTION:
+    case ACTION_FOREACH: {
+      // These don't get linked to and use stamps which should be the first
+      // entry in the outputs. These stamps are named
+      // "<target_out_dir>/<targetname>.stamp".
+      dependency_output_file_ = GetTargetOutputDirAsOutputFile(this);
+      dependency_output_file_.value().append(GetComputedOutputName(true));
+      dependency_output_file_.value().append(".stamp");
+      break;
+    }
+    case EXECUTABLE:
+      // Executables don't get linked to, but the first output is used for
+      // dependency management.
+      CHECK_GE(tool->outputs().list().size(), 1u);
+      dependency_output_file_ =
+          SubstitutionWriter::ApplyPatternToLinkerAsOutputFile(
+              this, tool, tool->outputs().list()[0]);
+      break;
+    case STATIC_LIBRARY:
+      // Static libraries both have dependencies and linking going off of the
+      // first output.
+      CHECK(tool->outputs().list().size() >= 1);
+      link_output_file_ = dependency_output_file_ =
+          SubstitutionWriter::ApplyPatternToLinkerAsOutputFile(
+              this, tool, tool->outputs().list()[0]);
+      break;
+    case SHARED_LIBRARY:
+      CHECK(tool->outputs().list().size() >= 1);
+      if (tool->link_output().empty() && tool->depend_output().empty()) {
+        // Default behavior, use the first output file for both.
+        link_output_file_ = dependency_output_file_ =
+            SubstitutionWriter::ApplyPatternToLinkerAsOutputFile(
+                this, tool, tool->outputs().list()[0]);
+      } else {
+        // Use the tool-specified ones.
+        if (!tool->link_output().empty()) {
+          link_output_file_ =
+              SubstitutionWriter::ApplyPatternToLinkerAsOutputFile(
+                  this, tool, tool->link_output());
+        }
+        if (!tool->depend_output().empty()) {
+          dependency_output_file_ =
+              SubstitutionWriter::ApplyPatternToLinkerAsOutputFile(
+                  this, tool, tool->link_output());
+        }
+      }
+      break;
+    case UNKNOWN:
+    default:
+      NOTREACHED();
   }
 }

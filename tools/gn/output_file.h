@@ -9,24 +9,27 @@
 
 #include "base/containers/hash_tables.h"
 #include "tools/gn/build_settings.h"
-#include "tools/gn/source_file.h"
+
+class SourceFile;
 
 // A simple wrapper around a string that indicates the string is a path
 // relative to the output directory.
 class OutputFile {
  public:
-  OutputFile() : value_() {}
-  explicit OutputFile(const base::StringPiece& str)
-      : value_(str.data(), str.size()) {
-  }
+  OutputFile();
+  explicit OutputFile(const base::StringPiece& str);
+  OutputFile(const BuildSettings* build_settings,
+             const SourceFile& source_file);
+  ~OutputFile();
 
   std::string& value() { return value_; }
   const std::string& value() const { return value_; }
 
   // Converts to a SourceFile by prepending the build directory to the file.
-  SourceFile GetSourceFile(const BuildSettings* build_settings) const {
-    return SourceFile(build_settings->build_dir().value() + value_);
-  }
+  // The *Dir version requires that the current OutputFile ends in a slash, and
+  // the *File version is the opposite.
+  SourceFile AsSourceFile(const BuildSettings* build_settings) const;
+  SourceDir AsSourceDir(const BuildSettings* build_settings) const;
 
   bool operator==(const OutputFile& other) const {
     return value_ == other.value_;

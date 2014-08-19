@@ -7,51 +7,43 @@
 #include "tools/gn/config.h"
 #include "tools/gn/settings.h"
 #include "tools/gn/target.h"
+#include "tools/gn/test_with_scope.h"
 #include "tools/gn/toolchain.h"
-
-namespace {
-
-class TargetTest : public testing::Test {
- public:
-  TargetTest()
-      : build_settings_(),
-        settings_(&build_settings_, std::string()),
-        toolchain_(&settings_, Label(SourceDir("//tc/"), "tc")) {
-    settings_.set_toolchain_label(toolchain_.label());
-  }
-  virtual ~TargetTest() {
-  }
-
- protected:
-  BuildSettings build_settings_;
-  Settings settings_;
-  Toolchain toolchain_;
-};
-
-}  // namespace
 
 // Tests that depending on a group is like depending directly on the group's
 // deps.
-TEST_F(TargetTest, GroupDeps) {
+TEST(Target, GroupDeps) {
+  TestWithScope setup;
+
   // Two low-level targets.
-  Target x(&settings_, Label(SourceDir("//component/"), "x"));
-  Target y(&settings_, Label(SourceDir("//component/"), "y"));
+  Target x(setup.settings(), Label(SourceDir("//component/"), "x"));
+  x.set_output_type(Target::STATIC_LIBRARY);
+  x.SetToolchain(setup.toolchain());
+  x.OnResolved();
+  Target y(setup.settings(), Label(SourceDir("//component/"), "y"));
+  y.set_output_type(Target::STATIC_LIBRARY);
+  y.SetToolchain(setup.toolchain());
+  y.OnResolved();
 
   // Make a group for both x and y.
-  Target g(&settings_, Label(SourceDir("//group/"), "g"));
+  Target g(setup.settings(), Label(SourceDir("//group/"), "g"));
   g.set_output_type(Target::GROUP);
   g.deps().push_back(LabelTargetPair(&x));
   g.deps().push_back(LabelTargetPair(&y));
 
   // Random placeholder target so we can see the group's deps get inserted at
   // the right place.
-  Target b(&settings_, Label(SourceDir("//app/"), "b"));
+  Target b(setup.settings(), Label(SourceDir("//app/"), "b"));
+  b.set_output_type(Target::STATIC_LIBRARY);
+  b.SetToolchain(setup.toolchain());
+  b.OnResolved();
 
   // Make a target depending on the group and "b". OnResolved will expand.
-  Target a(&settings_, Label(SourceDir("//app/"), "a"));
+  Target a(setup.settings(), Label(SourceDir("//app/"), "a"));
   a.set_output_type(Target::EXECUTABLE);
   a.deps().push_back(LabelTargetPair(&g));
   a.deps().push_back(LabelTargetPair(&b));
+  a.SetToolchain(setup.toolchain());
   a.OnResolved();
 
   // The group's deps should be inserted after the group itself in the deps
@@ -65,15 +57,18 @@ TEST_F(TargetTest, GroupDeps) {
 
 // Tests that lib[_dir]s are inherited across deps boundaries for static
 // libraries but not executables.
-TEST_F(TargetTest, LibInheritance) {
+TEST(Target, LibInheritance) {
+  TestWithScope setup;
+
   const std::string lib("foo");
   const SourceDir libdir("/foo_dir/");
 
   // Leaf target with ldflags set.
-  Target z(&settings_, Label(SourceDir("//foo/"), "z"));
+  Target z(setup.settings(), Label(SourceDir("//foo/"), "z"));
   z.set_output_type(Target::STATIC_LIBRARY);
   z.config_values().libs().push_back(lib);
   z.config_values().lib_dirs().push_back(libdir);
+  z.SetToolchain(setup.toolchain());
   z.OnResolved();
 
   // All lib[_dir]s should be set when target is resolved.
@@ -86,11 +81,12 @@ TEST_F(TargetTest, LibInheritance) {
   // and its own. Its own flag should be before the inherited one.
   const std::string second_lib("bar");
   const SourceDir second_libdir("/bar_dir/");
-  Target shared(&settings_, Label(SourceDir("//foo/"), "shared"));
+  Target shared(setup.settings(), Label(SourceDir("//foo/"), "shared"));
   shared.set_output_type(Target::SHARED_LIBRARY);
   shared.config_values().libs().push_back(second_lib);
   shared.config_values().lib_dirs().push_back(second_libdir);
   shared.deps().push_back(LabelTargetPair(&z));
+  shared.SetToolchain(setup.toolchain());
   shared.OnResolved();
 
   ASSERT_EQ(2u, shared.all_libs().size());
@@ -101,9 +97,10 @@ TEST_F(TargetTest, LibInheritance) {
   EXPECT_EQ(libdir, shared.all_lib_dirs()[1]);
 
   // Executable target shouldn't get either by depending on shared.
-  Target exec(&settings_, Label(SourceDir("//foo/"), "exec"));
+  Target exec(setup.settings(), Label(SourceDir("//foo/"), "exec"));
   exec.set_output_type(Target::EXECUTABLE);
   exec.deps().push_back(LabelTargetPair(&shared));
+  exec.SetToolchain(setup.toolchain());
   exec.OnResolved();
   EXPECT_EQ(0u, exec.all_libs().size());
   EXPECT_EQ(0u, exec.all_lib_dirs().size());
@@ -111,27 +108,32 @@ TEST_F(TargetTest, LibInheritance) {
 
 // Test all/direct_dependent_configs inheritance, and
 // forward_dependent_configs_from
-TEST_F(TargetTest, DependentConfigs) {
+TEST(Target, DependentConfigs) {
+  TestWithScope setup;
+
   // Set up a dependency chain of a -> b -> c
-  Target a(&settings_, Label(SourceDir("//foo/"), "a"));
+  Target a(setup.settings(), Label(SourceDir("//foo/"), "a"));
   a.set_output_type(Target::EXECUTABLE);
-  Target b(&settings_, Label(SourceDir("//foo/"), "b"));
+  a.SetToolchain(setup.toolchain());
+  Target b(setup.settings(), Label(SourceDir("//foo/"), "b"));
   b.set_output_type(Target::STATIC_LIBRARY);
-  Target c(&settings_, Label(SourceDir("//foo/"), "c"));
+  b.SetToolchain(setup.toolchain());
+  Target c(setup.settings(), Label(SourceDir("//foo/"), "c"));
   c.set_output_type(Target::STATIC_LIBRARY);
+  c.SetToolchain(setup.toolchain());
   a.deps().push_back(LabelTargetPair(&b));
   b.deps().push_back(LabelTargetPair(&c));
 
   // Normal non-inherited config.
-  Config config(&settings_, Label(SourceDir("//foo/"), "config"));
+  Config config(setup.settings(), Label(SourceDir("//foo/"), "config"));
   c.configs().push_back(LabelConfigPair(&config));
 
   // All dependent config.
-  Config all(&settings_, Label(SourceDir("//foo/"), "all"));
+  Config all(setup.settings(), Label(SourceDir("//foo/"), "all"));
   c.all_dependent_configs().push_back(LabelConfigPair(&all));
 
   // Direct dependent config.
-  Config direct(&settings_, Label(SourceDir("//foo/"), "direct"));
+  Config direct(setup.settings(), Label(SourceDir("//foo/"), "direct"));
   c.direct_dependent_configs().push_back(LabelConfigPair(&direct));
 
   c.OnResolved();
@@ -151,10 +153,12 @@ TEST_F(TargetTest, DependentConfigs) {
   EXPECT_EQ(&all, a.all_dependent_configs()[0].ptr);
 
   // Making an an alternate A and B with B forwarding the direct dependents.
-  Target a_fwd(&settings_, Label(SourceDir("//foo/"), "a_fwd"));
+  Target a_fwd(setup.settings(), Label(SourceDir("//foo/"), "a_fwd"));
   a_fwd.set_output_type(Target::EXECUTABLE);
-  Target b_fwd(&settings_, Label(SourceDir("//foo/"), "b_fwd"));
+  a_fwd.SetToolchain(setup.toolchain());
+  Target b_fwd(setup.settings(), Label(SourceDir("//foo/"), "b_fwd"));
   b_fwd.set_output_type(Target::STATIC_LIBRARY);
+  b_fwd.SetToolchain(setup.toolchain());
   a_fwd.deps().push_back(LabelTargetPair(&b_fwd));
   b_fwd.deps().push_back(LabelTargetPair(&c));
   b_fwd.forward_dependent_configs().push_back(LabelTargetPair(&c));
@@ -172,18 +176,23 @@ TEST_F(TargetTest, DependentConfigs) {
 
 // Tests that forward_dependent_configs_from works for groups, forwarding the
 // group's deps' dependent configs.
-TEST_F(TargetTest, ForwardDependentConfigsFromGroups) {
-  Target a(&settings_, Label(SourceDir("//foo/"), "a"));
+TEST(Target, ForwardDependentConfigsFromGroups) {
+  TestWithScope setup;
+
+  Target a(setup.settings(), Label(SourceDir("//foo/"), "a"));
   a.set_output_type(Target::EXECUTABLE);
-  Target b(&settings_, Label(SourceDir("//foo/"), "b"));
+  a.SetToolchain(setup.toolchain());
+  Target b(setup.settings(), Label(SourceDir("//foo/"), "b"));
   b.set_output_type(Target::GROUP);
-  Target c(&settings_, Label(SourceDir("//foo/"), "c"));
+  b.SetToolchain(setup.toolchain());
+  Target c(setup.settings(), Label(SourceDir("//foo/"), "c"));
   c.set_output_type(Target::STATIC_LIBRARY);
+  c.SetToolchain(setup.toolchain());
   a.deps().push_back(LabelTargetPair(&b));
   b.deps().push_back(LabelTargetPair(&c));
 
   // Direct dependent config on C.
-  Config direct(&settings_, Label(SourceDir("//foo/"), "direct"));
+  Config direct(setup.settings(), Label(SourceDir("//foo/"), "direct"));
   c.direct_dependent_configs().push_back(LabelConfigPair(&direct));
 
   // A forwards the dependent configs from B.
@@ -200,17 +209,23 @@ TEST_F(TargetTest, ForwardDependentConfigsFromGroups) {
   ASSERT_EQ(&direct, a.direct_dependent_configs()[0].ptr);
 }
 
-TEST_F(TargetTest, InheritLibs) {
+TEST(Target, InheritLibs) {
+  TestWithScope setup;
+
   // Create a dependency chain:
   //   A (executable) -> B (shared lib) -> C (static lib) -> D (source set)
-  Target a(&settings_, Label(SourceDir("//foo/"), "a"));
+  Target a(setup.settings(), Label(SourceDir("//foo/"), "a"));
   a.set_output_type(Target::EXECUTABLE);
-  Target b(&settings_, Label(SourceDir("//foo/"), "b"));
+  a.SetToolchain(setup.toolchain());
+  Target b(setup.settings(), Label(SourceDir("//foo/"), "b"));
   b.set_output_type(Target::SHARED_LIBRARY);
-  Target c(&settings_, Label(SourceDir("//foo/"), "c"));
+  b.SetToolchain(setup.toolchain());
+  Target c(setup.settings(), Label(SourceDir("//foo/"), "c"));
   c.set_output_type(Target::STATIC_LIBRARY);
-  Target d(&settings_, Label(SourceDir("//foo/"), "d"));
+  c.SetToolchain(setup.toolchain());
+  Target d(setup.settings(), Label(SourceDir("//foo/"), "d"));
   d.set_output_type(Target::SOURCE_SET);
+  d.SetToolchain(setup.toolchain());
   a.deps().push_back(LabelTargetPair(&b));
   b.deps().push_back(LabelTargetPair(&c));
   c.deps().push_back(LabelTargetPair(&d));
@@ -236,4 +251,45 @@ TEST_F(TargetTest, InheritLibs) {
   const UniqueVector<const Target*>& a_inherited = a.inherited_libraries();
   EXPECT_EQ(1u, a_inherited.size());
   EXPECT_TRUE(a_inherited.IndexOf(&b) != static_cast<size_t>(-1));
+}
+
+TEST(Target, GetComputedOutputName) {
+  TestWithScope setup;
+
+  // Basic target with no prefix (executable type tool in the TestWithScope has
+  // no prefix) or output name.
+  Target basic(setup.settings(), Label(SourceDir("//foo/"), "bar"));
+  basic.set_output_type(Target::EXECUTABLE);
+  basic.SetToolchain(setup.toolchain());
+  basic.OnResolved();
+  EXPECT_EQ("bar", basic.GetComputedOutputName(false));
+  EXPECT_EQ("bar", basic.GetComputedOutputName(true));
+
+  // Target with no prefix but an output name.
+  Target with_name(setup.settings(), Label(SourceDir("//foo/"), "bar"));
+  with_name.set_output_type(Target::EXECUTABLE);
+  with_name.set_output_name("myoutput");
+  with_name.SetToolchain(setup.toolchain());
+  with_name.OnResolved();
+  EXPECT_EQ("myoutput", with_name.GetComputedOutputName(false));
+  EXPECT_EQ("myoutput", with_name.GetComputedOutputName(true));
+
+  // Target with a "lib" prefix (the static library tool in the TestWithScope
+  // should specify a "lib" output prefix).
+  Target with_prefix(setup.settings(), Label(SourceDir("//foo/"), "bar"));
+  with_prefix.set_output_type(Target::STATIC_LIBRARY);
+  with_prefix.SetToolchain(setup.toolchain());
+  with_prefix.OnResolved();
+  EXPECT_EQ("bar", with_prefix.GetComputedOutputName(false));
+  EXPECT_EQ("libbar", with_prefix.GetComputedOutputName(true));
+
+  // Target with a "lib" prefix that already has it applied. The prefix should
+  // not duplicate something already in the target name.
+  Target dup_prefix(setup.settings(), Label(SourceDir("//foo/"), "bar"));
+  dup_prefix.set_output_type(Target::STATIC_LIBRARY);
+  dup_prefix.set_output_name("libbar");
+  dup_prefix.SetToolchain(setup.toolchain());
+  dup_prefix.OnResolved();
+  EXPECT_EQ("libbar", dup_prefix.GetComputedOutputName(false));
+  EXPECT_EQ("libbar", dup_prefix.GetComputedOutputName(true));
 }

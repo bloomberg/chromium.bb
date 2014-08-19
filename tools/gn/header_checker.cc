@@ -17,6 +17,7 @@
 #include "tools/gn/err.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/scheduler.h"
+#include "tools/gn/source_file_type.h"
 #include "tools/gn/target.h"
 #include "tools/gn/trace.h"
 

@@ -168,3 +168,10 @@ std::string RemovePrefix(const std::string& str, const std::string& prefix) {
         str.compare(0, prefix.size(), prefix) == 0);
   return str.substr(prefix.size());
 }
+
+void TrimTrailingSlash(std::string* str) {
+  if (!str->empty()) {
+    DCHECK((*str)[str->size() - 1] == '/');
+    str->resize(str->size() - 1);
+  }
+}

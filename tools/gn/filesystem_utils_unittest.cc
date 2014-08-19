@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/filesystem_utils.h"
+#include "tools/gn/target.h"
 
 TEST(FilesystemUtils, FileExtensionOffset) {
   EXPECT_EQ(std::string::npos, FindExtensionOffset(""));
@@ -95,25 +96,25 @@ TEST(FilesystemUtils, EnsureStringIsInOutputDir) {
 
   // Some outside.
   Err err;
-  EXPECT_FALSE(EnsureStringIsInOutputDir(output_dir, "//foo", Value(), &err));
+  EXPECT_FALSE(EnsureStringIsInOutputDir(output_dir, "//foo", NULL, &err));
   EXPECT_TRUE(err.has_error());
   err = Err();
-  EXPECT_FALSE(EnsureStringIsInOutputDir(output_dir, "//out/Debugit", Value(),
+  EXPECT_FALSE(EnsureStringIsInOutputDir(output_dir, "//out/Debugit", NULL,
                                          &err));
   EXPECT_TRUE(err.has_error());
 
   // Some inside.
   err = Err();
-  EXPECT_TRUE(EnsureStringIsInOutputDir(output_dir, "//out/Debug/", Value(),
+  EXPECT_TRUE(EnsureStringIsInOutputDir(output_dir, "//out/Debug/", NULL,
                                         &err));
   EXPECT_FALSE(err.has_error());
-  EXPECT_TRUE(EnsureStringIsInOutputDir(output_dir, "//out/Debug/foo", Value(),
+  EXPECT_TRUE(EnsureStringIsInOutputDir(output_dir, "//out/Debug/foo", NULL,
                                         &err));
   EXPECT_FALSE(err.has_error());
 
   // Pattern but no template expansions are allowed.
   EXPECT_FALSE(EnsureStringIsInOutputDir(output_dir, "{{source_gen_dir}}",
-                                         Value(), &err));
+                                         NULL, &err));
   EXPECT_TRUE(err.has_error());
 }
 
@@ -357,17 +358,49 @@ TEST(FilesystemUtils, GetToolchainDirs) {
   BuildSettings build_settings;
   build_settings.SetBuildDir(SourceDir("//out/Debug/"));
 
+  // The default toolchain.
   Settings default_settings(&build_settings, "");
+  Label default_toolchain_label(SourceDir("//toolchain/"), "default");
+  default_settings.set_toolchain_label(default_toolchain_label);
+  default_settings.set_default_toolchain_label(default_toolchain_label);
+
+  // Default toolchain out dir.
   EXPECT_EQ("//out/Debug/",
             GetToolchainOutputDir(&default_settings).value());
+  EXPECT_EQ("//out/Debug/",
+            GetToolchainOutputDir(&build_settings, default_toolchain_label,
+                                  true).value());
+
+  // Default toolchain gen dir.
   EXPECT_EQ("//out/Debug/gen/",
             GetToolchainGenDir(&default_settings).value());
+  EXPECT_EQ("gen/",
+            GetToolchainGenDirAsOutputFile(&default_settings).value());
+  EXPECT_EQ("//out/Debug/gen/",
+            GetToolchainGenDir(&build_settings, default_toolchain_label,
+                               true).value());
 
+  // Check a secondary toolchain.
   Settings other_settings(&build_settings, "two/");
+  Label other_toolchain_label(SourceDir("//toolchain/"), "two");
+  default_settings.set_toolchain_label(other_toolchain_label);
+  default_settings.set_default_toolchain_label(default_toolchain_label);
+
+  // Secondary toolchain out dir.
   EXPECT_EQ("//out/Debug/two/",
             GetToolchainOutputDir(&other_settings).value());
+  EXPECT_EQ("//out/Debug/two/",
+            GetToolchainOutputDir(&build_settings, other_toolchain_label,
+                                  false).value());
+
+  // Secondary toolchain gen dir.
   EXPECT_EQ("//out/Debug/two/gen/",
             GetToolchainGenDir(&other_settings).value());
+  EXPECT_EQ("two/gen/",
+            GetToolchainGenDirAsOutputFile(&other_settings).value());
+  EXPECT_EQ("//out/Debug/two/gen/",
+            GetToolchainGenDir(&build_settings, other_toolchain_label,
+                               false).value());
 }
 
 TEST(FilesystemUtils, GetOutDirForSourceDir) {
@@ -377,19 +410,34 @@ TEST(FilesystemUtils, GetOutDirForSourceDir) {
   // Test the default toolchain.
   Settings default_settings(&build_settings, "");
   EXPECT_EQ("//out/Debug/obj/",
-            GetOutputDirForSourceDir(&default_settings,
-                                     SourceDir("//")).value());
+            GetOutputDirForSourceDir(
+                &default_settings, SourceDir("//")).value());
+  EXPECT_EQ("obj/",
+            GetOutputDirForSourceDirAsOutputFile(
+                &default_settings, SourceDir("//")).value());
+
   EXPECT_EQ("//out/Debug/obj/foo/bar/",
-            GetOutputDirForSourceDir(&default_settings,
-                                     SourceDir("//foo/bar/")).value());
+            GetOutputDirForSourceDir(
+                &default_settings, SourceDir("//foo/bar/")).value());
+  EXPECT_EQ("obj/foo/bar/",
+            GetOutputDirForSourceDirAsOutputFile(
+                &default_settings, SourceDir("//foo/bar/")).value());
 
   // Secondary toolchain.
   Settings other_settings(&build_settings, "two/");
   EXPECT_EQ("//out/Debug/two/obj/",
-            GetOutputDirForSourceDir(&other_settings, SourceDir("//")).value());
+            GetOutputDirForSourceDir(
+                &other_settings, SourceDir("//")).value());
+  EXPECT_EQ("two/obj/",
+            GetOutputDirForSourceDirAsOutputFile(
+                &other_settings, SourceDir("//")).value());
+
   EXPECT_EQ("//out/Debug/two/obj/foo/bar/",
             GetOutputDirForSourceDir(&other_settings,
                                      SourceDir("//foo/bar/")).value());
+  EXPECT_EQ("two/obj/foo/bar/",
+            GetOutputDirForSourceDirAsOutputFile(
+                &other_settings, SourceDir("//foo/bar/")).value());
 }
 
 TEST(FilesystemUtils, GetGenDirForSourceDir) {
@@ -399,18 +447,46 @@ TEST(FilesystemUtils, GetGenDirForSourceDir) {
   // Test the default toolchain.
   Settings default_settings(&build_settings, "");
   EXPECT_EQ("//out/Debug/gen/",
-            GetGenDirForSourceDir(&default_settings, SourceDir("//")).value());
+            GetGenDirForSourceDir(
+                &default_settings, SourceDir("//")).value());
+  EXPECT_EQ("gen/",
+            GetGenDirForSourceDirAsOutputFile(
+                &default_settings, SourceDir("//")).value());
+
   EXPECT_EQ("//out/Debug/gen/foo/bar/",
-            GetGenDirForSourceDir(&default_settings,
-                                  SourceDir("//foo/bar/")).value());
+            GetGenDirForSourceDir(
+                &default_settings, SourceDir("//foo/bar/")).value());
+  EXPECT_EQ("gen/foo/bar/",
+            GetGenDirForSourceDirAsOutputFile(
+                &default_settings, SourceDir("//foo/bar/")).value());
 
   // Secondary toolchain.
   Settings other_settings(&build_settings, "two/");
   EXPECT_EQ("//out/Debug/two/gen/",
-            GetGenDirForSourceDir(&other_settings, SourceDir("//")).value());
+            GetGenDirForSourceDir(
+                &other_settings, SourceDir("//")).value());
+  EXPECT_EQ("two/gen/",
+            GetGenDirForSourceDirAsOutputFile(
+                &other_settings, SourceDir("//")).value());
+
   EXPECT_EQ("//out/Debug/two/gen/foo/bar/",
-            GetGenDirForSourceDir(&other_settings,
-                                  SourceDir("//foo/bar/")).value());
+            GetGenDirForSourceDir(
+                &other_settings, SourceDir("//foo/bar/")).value());
+  EXPECT_EQ("two/gen/foo/bar/",
+            GetGenDirForSourceDirAsOutputFile(
+                &other_settings, SourceDir("//foo/bar/")).value());
+}
+
+TEST(FilesystemUtils, GetTargetDirs) {
+  BuildSettings build_settings;
+  build_settings.SetBuildDir(SourceDir("//out/Debug/"));
+  Settings settings(&build_settings, "");
+
+  Target a(&settings, Label(SourceDir("//foo/bar/"), "baz"));
+  EXPECT_EQ("//out/Debug/obj/foo/bar/", GetTargetOutputDir(&a).value());
+  EXPECT_EQ("obj/foo/bar/", GetTargetOutputDirAsOutputFile(&a).value());
+  EXPECT_EQ("//out/Debug/gen/foo/bar/", GetTargetGenDir(&a).value());
+  EXPECT_EQ("gen/foo/bar/", GetTargetGenDirAsOutputFile(&a).value());
 }
 
 // Tests handling of output dirs when build dir is the same as the root.
@@ -421,8 +497,13 @@ TEST(FilesystemUtils, GetDirForEmptyBuildDir) {
 
   EXPECT_EQ("//", GetToolchainOutputDir(&settings).value());
   EXPECT_EQ("//gen/", GetToolchainGenDir(&settings).value());
+  EXPECT_EQ("gen/", GetToolchainGenDirAsOutputFile(&settings).value());
   EXPECT_EQ("//obj/",
             GetOutputDirForSourceDir(&settings, SourceDir("//")).value());
-  EXPECT_EQ("//gen/",
-            GetGenDirForSourceDir(&settings, SourceDir("//")).value());
+  EXPECT_EQ("obj/",
+            GetOutputDirForSourceDirAsOutputFile(
+                &settings, SourceDir("//")).value());
+  EXPECT_EQ("gen/",
+            GetGenDirForSourceDirAsOutputFile(
+                &settings, SourceDir("//")).value());
 }

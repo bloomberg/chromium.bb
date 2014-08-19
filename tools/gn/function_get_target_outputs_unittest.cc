@@ -58,30 +58,6 @@ class GetTargetOutputsTest : public testing::Test {
 
 }  // namespace
 
-TEST_F(GetTargetOutputsTest, Executable) {
-  Target* exe = new Target(setup_.settings(), GetLabel("//foo/", "bar"));
-  exe->set_output_type(Target::EXECUTABLE);
-  items_.push_back(new scoped_ptr<Item>(exe));
-
-  Err err;
-  Value result = GetTargetOutputs("//foo:bar", &err);
-  ASSERT_FALSE(err.has_error());
-  // The TestWithScope declares that the build is Linux, so we'll have no
-  // extension for the binaries.
-  AssertSingleStringEquals(result, "//out/Debug/bar");
-}
-
-TEST_F(GetTargetOutputsTest, SourceSet) {
-  Target* source_set = new Target(setup_.settings(), GetLabel("//foo/", "bar"));
-  source_set->set_output_type(Target::SOURCE_SET);
-  items_.push_back(new scoped_ptr<Item>(source_set));
-
-  Err err;
-  Value result = GetTargetOutputs("//foo:bar", &err);
-  ASSERT_FALSE(err.has_error());
-  AssertSingleStringEquals(result, "//out/Debug/obj/foo/bar.stamp");
-}
-
 TEST_F(GetTargetOutputsTest, Copy) {
   Target* action = new Target(setup_.settings(), GetLabel("//foo/", "bar"));
   action->set_output_type(Target::COPY_FILES);

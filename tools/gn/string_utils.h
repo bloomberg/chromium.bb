@@ -48,4 +48,9 @@ inline void AppendStringPiece(std::string* dest,
   dest->append(piece.data(), piece.size());
 }
 
+// Removes the trailing slash from the given string. This asserts that either
+// the string is empty or it ends with a slash (normally used to process
+// directories).
+void TrimTrailingSlash(std::string* str);
+
 #endif  // TOOLS_GN_STRING_UTILS_H_

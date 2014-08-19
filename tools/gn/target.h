@@ -19,12 +19,14 @@
 #include "tools/gn/item.h"
 #include "tools/gn/label_ptr.h"
 #include "tools/gn/ordered_set.h"
+#include "tools/gn/output_file.h"
 #include "tools/gn/source_file.h"
 #include "tools/gn/unique_vector.h"
 
 class InputFile;
 class Settings;
 class Token;
+class Toolchain;
 
 class Target : public Item {
  public:
@@ -59,8 +61,17 @@ class Target : public Item {
   bool IsLinkable() const;
 
   // Will be the empty string to use the target label as the output name.
+  // See GetComputedOutputName().
   const std::string& output_name() const { return output_name_; }
   void set_output_name(const std::string& name) { output_name_ = name; }
+
+  // Returns the output name for this target, which is the output_name if
+  // specified, or the target label if not. If the flag is set, it will also
+  // include any output prefix specified on the tool (often "lib" on Linux).
+  //
+  // Because this depends on the tool for this target, the toolchain must
+  // have been set before calling.
+  std::string GetComputedOutputName(bool include_prefix) const;
 
   const std::string& output_extension() const { return output_extension_; }
   void set_output_extension(const std::string& extension) {
@@ -155,6 +166,37 @@ class Target : public Item {
     return recursive_hard_deps_;
   }
 
+  // The toolchain is only known once this target is resolved (all if its
+  // dependencies are known). They will be null until then. Generally, this can
+  // only be used during target writing.
+  const Toolchain* toolchain() const { return toolchain_; }
+
+  // Sets the toolchain. The toolchain must include a tool for this target
+  // or the error will be set and the function will return false. Unusually,
+  // this function's "err" output is optional since this is commonly used
+  // frequently by unit tests which become needlessly verbose.
+  bool SetToolchain(const Toolchain* toolchain, Err* err = NULL);
+
+  // Returns outputs from this target. The link output file is the one that
+  // other targets link to when they depend on this target. This will only be
+  // valid for libraries and will be empty for all other target types.
+  //
+  // The dependency output file is the file that should be used to express
+  // a dependency on this one. It could be the same as the link output file
+  // (this will be the case for static libraries). For shared libraries it
+  // could be the same or different than the link output file, depending on the
+  // system. For actions this will be the stamp file.
+  //
+  // These are only known once the target is resolved and will be empty before
+  // that. This is a cache of the files to prevent every target that depends on
+  // a given library from recomputing the same pattern.
+  const OutputFile& link_output_file() const {
+    return link_output_file_;
+  }
+  const OutputFile& dependency_output_file() const {
+    return dependency_output_file_;
+  }
+
  private:
   // Pulls necessary information from dependencies to this one when all
   // dependencies have been resolved.
@@ -164,6 +206,9 @@ class Target : public Item {
   // deps have been resolved.
   void PullForwardedDependentConfigs();
   void PullRecursiveHardDeps();
+
+  // Fills the link and dependency output files when a target is resolved.
+  void FillOutputFiles();
 
   OutputType output_type_;
   std::string output_name_;
@@ -216,6 +261,13 @@ class Target : public Item {
 
   ConfigValues config_values_;  // Used for all binary targets.
   ActionValues action_values_;  // Used for action[_foreach] targets.
+
+  // Toolchain used by this target. Null until target is resolved.
+  const Toolchain* toolchain_;
+
+  // Output files. Null until the target is resolved.
+  OutputFile link_output_file_;
+  OutputFile dependency_output_file_;
 
   DISALLOW_COPY_AND_ASSIGN(Target);
 };

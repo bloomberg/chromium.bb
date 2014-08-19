@@ -35,6 +35,12 @@ class TestWithScope {
   // threadsafe so don't write tests that call print from multiple threads.
   std::string& print_output() { return print_output_; }
 
+  // Fills in the tools for the given toolchain with reasonable default values.
+  // The toolchain in this object will be automatically set up with this
+  // function, it is exposed to allow tests to get the same functionality for
+  // other toolchains they make
+  static void SetupToolchain(Toolchain* toolchain);
+
  private:
   void AppendPrintOutput(const std::string& str);
 
