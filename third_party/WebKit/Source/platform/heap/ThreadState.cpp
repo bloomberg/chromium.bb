@@ -780,26 +780,28 @@ bool ThreadState::forcePreciseGCForTesting()
     return m_forcePreciseGCForTesting;
 }
 
-bool ThreadState::isConsistentForGC()
+void ThreadState::makeConsistentForSweeping()
+{
+    for (int i = 0; i < NumberOfHeaps; i++)
+        m_heaps[i]->makeConsistentForSweeping();
+}
+
+#if ENABLE(ASSERT)
+bool ThreadState::isConsistentForSweeping()
 {
     for (int i = 0; i < NumberOfHeaps; i++) {
-        if (!m_heaps[i]->isConsistentForGC())
+        if (!m_heaps[i]->isConsistentForSweeping())
             return false;
     }
     return true;
 }
-
-void ThreadState::makeConsistentForGC()
-{
-    for (int i = 0; i < NumberOfHeaps; i++)
-        m_heaps[i]->makeConsistentForGC();
-}
+#endif
 
 void ThreadState::prepareForGC()
 {
     for (int i = 0; i < NumberOfHeaps; i++) {
         BaseHeap* heap = m_heaps[i];
-        heap->makeConsistentForGC();
+        heap->makeConsistentForSweeping();
         // If a new GC is requested before this thread got around to sweep, ie. due to the
         // thread doing a long running operation, we clear the mark bits and mark any of
         // the dead objects as dead. The latter is used to ensure the next GC marking does
@@ -849,7 +851,7 @@ void ThreadState::getStats(HeapStats& stats)
 {
     stats = m_stats;
 #if ENABLE(ASSERT)
-    if (isConsistentForGC()) {
+    if (isConsistentForSweeping()) {
         HeapStats scannedStats;
         scannedStats.clear();
         for (int i = 0; i < NumberOfHeaps; i++)
@@ -995,6 +997,8 @@ void ThreadState::performPendingSweep()
     m_stats.clear(); // Sweeping will recalculate the stats
     for (int i = 0; i < NumberOfHeaps; i++)
         m_heaps[i]->sweep();
+    for (int i = 0; i < NumberOfHeaps; i++)
+        m_heaps[i]->postSweepProcessing();
     getStats(m_statsAfterLastGC);
     m_sweepInProgress = false;
     clearGCRequested();

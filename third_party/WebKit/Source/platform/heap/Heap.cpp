@@ -586,6 +586,8 @@ ThreadHeap<Header>::ThreadHeap(ThreadState* state, int index)
     , m_remainingAllocationSize(0)
     , m_firstPage(0)
     , m_firstLargeHeapObject(0)
+    , m_firstPageAllocatedDuringSweeping(0)
+    , m_lastPageAllocatedDuringSweeping(0)
     , m_biggestFreeListIndex(0)
     , m_threadState(state)
     , m_index(index)
@@ -671,6 +673,10 @@ template<typename Header>
 BaseHeapPage* ThreadHeap<Header>::heapPageFromAddress(Address address)
 {
     for (HeapPage<Header>* page = m_firstPage; page; page = page->next()) {
+        if (page->contains(address))
+            return page;
+    }
+    for (HeapPage<Header>* page = m_firstPageAllocatedDuringSweeping; page; page = page->next()) {
         if (page->contains(address))
             return page;
     }
@@ -1054,20 +1060,44 @@ void ThreadHeap<Header>::allocatePage(const GCInfo* gcInfo)
         pageMemory = Heap::freePagePool()->takeFreePage(m_index);
     }
     HeapPage<Header>* page = new (pageMemory->writableStart()) HeapPage<Header>(pageMemory, this, gcInfo);
-    // FIXME: Oilpan: Linking new pages into the front of the list is
-    // crucial when performing allocations during finalization because
-    // it ensures that those pages are not swept in the current GC
-    // round. We should create a separate page list for that to
-    // separate out the pages allocated during finalization clearly
-    // from the pages currently being swept.
-    page->link(&m_firstPage);
+    // Use separate list for pages allocated during sweeping to make
+    // sure that we do not accidentally sweep objects that have been
+    // allocated since marking.
+    if (m_threadState->isSweepInProgress()) {
+        if (!m_lastPageAllocatedDuringSweeping)
+            m_lastPageAllocatedDuringSweeping = page;
+        page->link(&m_firstPageAllocatedDuringSweeping);
+    } else {
+        page->link(&m_firstPage);
+    }
     addToFreeList(page->payload(), HeapPage<Header>::payloadSize());
 }
 
 #if ENABLE(ASSERT)
 template<typename Header>
+bool ThreadHeap<Header>::pagesToBeSweptContains(Address address)
+{
+    for (HeapPage<Header>* page = m_firstPage; page; page = page->next()) {
+        if (page->contains(address))
+            return true;
+    }
+    return false;
+}
+
+template<typename Header>
+bool ThreadHeap<Header>::pagesAllocatedDuringSweepingContains(Address address)
+{
+    for (HeapPage<Header>* page = m_firstPageAllocatedDuringSweeping; page; page = page->next()) {
+        if (page->contains(address))
+            return true;
+    }
+    return false;
+}
+
+template<typename Header>
 void ThreadHeap<Header>::getScannedStats(HeapStats& scannedStats)
 {
+    ASSERT(!m_firstPageAllocatedDuringSweeping);
     for (HeapPage<Header>* page = m_firstPage; page; page = page->next())
         page->getStats(scannedStats);
     for (LargeHeapObject<Header>* current = m_firstLargeHeapObject; current; current = current->next())
@@ -1085,7 +1115,7 @@ void ThreadHeap<Header>::getScannedStats(HeapStats& scannedStats)
 template<typename Header>
 void ThreadHeap<Header>::sweep()
 {
-    ASSERT(isConsistentForGC());
+    ASSERT(isConsistentForSweeping());
 #if defined(ADDRESS_SANITIZER) && STRICT_ASAN_FINALIZATION_CHECKING
     // When using ASan do a pre-sweep where all unmarked objects are poisoned before
     // calling their finalizer methods. This can catch the cases where one objects
@@ -1124,17 +1154,44 @@ void ThreadHeap<Header>::sweep()
 }
 
 template<typename Header>
-bool ThreadHeap<Header>::isConsistentForGC()
+void ThreadHeap<Header>::postSweepProcessing()
 {
-    for (size_t i = 0; i < blinkPageSizeLog2; i++) {
-        if (m_freeLists[i])
-            return false;
+    // If pages have been allocated during sweeping, link them into
+    // the list of pages.
+    if (m_firstPageAllocatedDuringSweeping) {
+        m_lastPageAllocatedDuringSweeping->m_next = m_firstPage;
+        m_firstPage = m_firstPageAllocatedDuringSweeping;
+        m_lastPageAllocatedDuringSweeping = 0;
+        m_firstPageAllocatedDuringSweeping = 0;
     }
-    return !ownsNonEmptyAllocationArea();
 }
 
+#if ENABLE(ASSERT)
 template<typename Header>
-void ThreadHeap<Header>::makeConsistentForGC()
+bool ThreadHeap<Header>::isConsistentForSweeping()
+{
+    // A thread heap is consistent for sweeping if non of the pages to
+    // be swept contain a freelist block or the current allocation
+    // point.
+    for (size_t i = 0; i < blinkPageSizeLog2; i++) {
+        for (FreeListEntry* freeListEntry = m_freeLists[i]; freeListEntry; freeListEntry = freeListEntry->next()) {
+            if (pagesToBeSweptContains(freeListEntry->address())) {
+                return false;
+            }
+            ASSERT(pagesAllocatedDuringSweepingContains(freeListEntry->address()));
+        }
+    }
+    if (ownsNonEmptyAllocationArea()) {
+        ASSERT(pagesToBeSweptContains(currentAllocationPoint())
+            || pagesAllocatedDuringSweepingContains(currentAllocationPoint()));
+        return !pagesToBeSweptContains(currentAllocationPoint());
+    }
+    return true;
+}
+#endif
+
+template<typename Header>
+void ThreadHeap<Header>::makeConsistentForSweeping()
 {
     if (ownsNonEmptyAllocationArea())
         addToFreeList(currentAllocationPoint(), remainingAllocationSize());
@@ -1145,7 +1202,7 @@ void ThreadHeap<Header>::makeConsistentForGC()
 template<typename Header>
 void ThreadHeap<Header>::clearLiveAndMarkDead()
 {
-    ASSERT(isConsistentForGC());
+    ASSERT(isConsistentForSweeping());
     for (HeapPage<Header>* page = m_firstPage; page; page = page->next())
         page->clearLiveAndMarkDead();
     for (LargeHeapObject<Header>* current = m_firstLargeHeapObject; current; current = current->next()) {
@@ -2345,23 +2402,25 @@ void Heap::getStats(HeapStats* stats)
     }
 }
 
-bool Heap::isConsistentForGC()
+#if ENABLE(ASSERT)
+bool Heap::isConsistentForSweeping()
 {
     ASSERT(ThreadState::isAnyThreadInGC());
     ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
     for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it) {
-        if (!(*it)->isConsistentForGC())
+        if (!(*it)->isConsistentForSweeping())
             return false;
     }
     return true;
 }
+#endif
 
-void Heap::makeConsistentForGC()
+void Heap::makeConsistentForSweeping()
 {
     ASSERT(ThreadState::isAnyThreadInGC());
     ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
     for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it)
-        (*it)->makeConsistentForGC();
+        (*it)->makeConsistentForSweeping();
 }
 
 // Force template instantiations for the types that we need.

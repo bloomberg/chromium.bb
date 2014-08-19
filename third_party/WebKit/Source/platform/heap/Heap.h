@@ -435,6 +435,9 @@ public:
         *prevNext = this;
     }
 
+    NO_SANITIZE_ADDRESS
+    FreeListEntry* next() const { return m_next; }
+
 #if defined(ADDRESS_SANITIZER)
     NO_SANITIZE_ADDRESS
     bool shouldAddToFreeList()
@@ -852,15 +855,18 @@ public:
     // Sweep this part of the Blink heap. This finalizes dead objects
     // and builds freelists for all the unused memory.
     virtual void sweep() = 0;
+    virtual void postSweepProcessing() = 0;
 
     virtual void clearFreeLists() = 0;
     virtual void clearLiveAndMarkDead() = 0;
+
+    virtual void makeConsistentForSweeping() = 0;
+
 #if ENABLE(ASSERT)
+    virtual bool isConsistentForSweeping() = 0;
+
     virtual void getScannedStats(HeapStats&) = 0;
 #endif
-
-    virtual void makeConsistentForGC() = 0;
-    virtual bool isConsistentForGC() = 0;
 
     virtual void prepareHeapForTermination() = 0;
 
@@ -895,14 +901,18 @@ public:
     virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*);
 #endif
     virtual void sweep();
+    virtual void postSweepProcessing();
+
     virtual void clearFreeLists();
     virtual void clearLiveAndMarkDead();
+
+    virtual void makeConsistentForSweeping();
+
 #if ENABLE(ASSERT)
+    virtual bool isConsistentForSweeping();
+
     virtual void getScannedStats(HeapStats&);
 #endif
-
-    virtual void makeConsistentForGC();
-    virtual bool isConsistentForGC();
 
     ThreadState* threadState() { return m_threadState; }
     HeapStats& stats() { return m_threadState->stats(); }
@@ -942,11 +952,19 @@ private:
     void freeLargeObject(LargeHeapObject<Header>*, LargeHeapObject<Header>**);
     void allocatePage(const GCInfo*);
 
+#if ENABLE(ASSERT)
+    bool pagesToBeSweptContains(Address);
+    bool pagesAllocatedDuringSweepingContains(Address);
+#endif
+
     Address m_currentAllocationPoint;
     size_t m_remainingAllocationSize;
 
     HeapPage<Header>* m_firstPage;
     LargeHeapObject<Header>* m_firstLargeHeapObject;
+
+    HeapPage<Header>* m_firstPageAllocatedDuringSweeping;
+    HeapPage<Header>* m_lastPageAllocatedDuringSweeping;
 
     int m_biggestFreeListIndex;
     ThreadState* m_threadState;
@@ -1040,8 +1058,11 @@ public:
 
     static void getHeapSpaceSize(uint64_t*, uint64_t*);
 
-    static bool isConsistentForGC();
-    static void makeConsistentForGC();
+    static void makeConsistentForSweeping();
+
+#if ENABLE(ASSERT)
+    static bool isConsistentForSweeping();
+#endif
 
     static void flushHeapDoesNotContainCache();
     static bool heapDoesNotContainCacheIsEmpty() { return s_heapDoesNotContainCache->isEmpty(); }

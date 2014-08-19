@@ -628,15 +628,18 @@ int SimpleFinalizedObject::s_destructorCalls = 0;
 
 class Node : public GarbageCollected<Node> {
 public:
-    static Node* create()
+    static Node* create(int i)
     {
-        return new Node();
+        return new Node(i);
     }
 
     void trace(Visitor*) { }
 
+    int value() { return m_value; }
+
 private:
-    Node() { }
+    Node(int i) : m_value(i) { }
+    int m_value;
 };
 
 class Bar : public GarbageCollectedFinalized<Bar> {
@@ -1686,7 +1689,7 @@ TEST(HeapTest, TypedHeapSanity)
 {
     // We use TraceCounter for allocating an object on the general heap.
     Persistent<TraceCounter> generalHeapObject = TraceCounter::create();
-    Persistent<Node> typedHeapObject = Node::create();
+    Persistent<Node> typedHeapObject = Node::create(0);
     EXPECT_NE(pageHeaderFromObject(generalHeapObject.get()),
         pageHeaderFromObject(typedHeapObject.get()));
 }
@@ -3307,14 +3310,14 @@ TEST(HeapTest, CheckAndMarkPointer)
     // This is a low-level test where we call checkAndMarkPointer. This method
     // causes the object start bitmap to be computed which requires the heap
     // to be in a consistent state (e.g. the free allocation area must be put
-    // into a free list header). However when we call makeConsistentForGC it
+    // into a free list header). However when we call makeConsistentForSweeping it
     // also clears out the freelists so we have to rebuild those before trying
     // to allocate anything again. We do this by forcing a GC after doing the
     // checkAndMarkPointer tests.
     {
         TestGCScope scope(ThreadState::HeapPointersOnStack);
         EXPECT_TRUE(scope.allThreadsParked()); // Fail the test if we could not park all threads.
-        Heap::makeConsistentForGC();
+        Heap::makeConsistentForSweeping();
         for (size_t i = 0; i < objectAddresses.size(); i++) {
             EXPECT_TRUE(Heap::checkAndMarkPointer(&visitor, objectAddresses[i]));
             EXPECT_TRUE(Heap::checkAndMarkPointer(&visitor, endAddresses[i]));
@@ -3333,7 +3336,7 @@ TEST(HeapTest, CheckAndMarkPointer)
     {
         TestGCScope scope(ThreadState::HeapPointersOnStack);
         EXPECT_TRUE(scope.allThreadsParked());
-        Heap::makeConsistentForGC();
+        Heap::makeConsistentForSweeping();
         for (size_t i = 0; i < objectAddresses.size(); i++) {
             // We would like to assert that checkAndMarkPointer returned false
             // here because the pointers no longer point into a valid object
@@ -5090,6 +5093,29 @@ TEST(HeapTest, AllocationInSuperConstructorArgument)
     AllocInSuperConstructorArgument* object = new AllocInSuperConstructorArgument();
     EXPECT_TRUE(object);
     Heap::collectAllGarbage();
+}
+
+class NonNodeAllocatingNodeInDestructor : public GarbageCollectedFinalized<NonNodeAllocatingNodeInDestructor> {
+public:
+    ~NonNodeAllocatingNodeInDestructor()
+    {
+        s_node = new Persistent<Node>(Node::create(10));
+    }
+
+    void trace(Visitor*) { }
+
+    static Persistent<Node>* s_node;
+};
+
+Persistent<Node>* NonNodeAllocatingNodeInDestructor::s_node = 0;
+
+TEST(HeapTest, NonNodeAllocatingNodeInDestructor)
+{
+    new NonNodeAllocatingNodeInDestructor();
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(10, (*NonNodeAllocatingNodeInDestructor::s_node)->value());
+    delete NonNodeAllocatingNodeInDestructor::s_node;
+    NonNodeAllocatingNodeInDestructor::s_node = 0;
 }
 
 } // namespace blink
