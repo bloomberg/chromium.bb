@@ -80,7 +80,6 @@ public:
     virtual void clearFrontend() OVERRIDE FINAL;
     virtual void restore() OVERRIDE FINAL;
 
-    void addConsoleAPIMessageToConsole(MessageType, MessageLevel, const String& message, ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>, unsigned long requestIdentifier = 0);
     void addMessageToConsole(ConsoleMessage*);
     void adoptWorkerConsoleMessages(WorkerGlobalScopeProxy*);
     Vector<unsigned> consoleMessageArgumentCounts();

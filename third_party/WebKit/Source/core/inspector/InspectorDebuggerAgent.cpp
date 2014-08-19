@@ -37,6 +37,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/fetch/Resource.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ContentSearchUtils.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorPageAgent.h"
@@ -276,9 +277,9 @@ bool InspectorDebuggerAgent::runningNestedMessageLoop()
     return scriptDebugServer().runningNestedMessageLoop();
 }
 
-void InspectorDebuggerAgent::addConsoleAPIMessageToConsole(MessageType type, MessageLevel, const String&, ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>, unsigned long)
+void InspectorDebuggerAgent::addMessageToConsole(ConsoleMessage* consoleMessage)
 {
-    if (type == AssertMessageType && scriptDebugServer().pauseOnExceptionsState() != ScriptDebugServer::DontPauseOnExceptions)
+    if (consoleMessage->type() == AssertMessageType && scriptDebugServer().pauseOnExceptionsState() != ScriptDebugServer::DontPauseOnExceptions)
         breakProgram(InspectorFrontend::Debugger::Reason::Assert, nullptr);
 }
 

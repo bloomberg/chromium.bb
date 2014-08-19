@@ -480,12 +480,8 @@ interface InspectorConsoleInstrumentation {
 
 class ConsoleMessage;
 
-    // Use the same implementation as above as a similar method dispatched on Page.
-    [Console]
-    void addMessageToConsole(ExecutionContext* context, ConsoleMessage* consoleMessage);
-
     [Console, Debugger]
-    void addConsoleAPIMessageToConsole(ExecutionContext* context, MessageType type, MessageLevel level, const String& message, ScriptState* state, PassRefPtrWillBeRawPtr<ScriptArguments> arguments, unsigned long requestIdentifier = 0);
+    void addMessageToConsole(ExecutionContext* context, ConsoleMessage* consoleMessage);
 
     [Console]
     void consoleCount(ExecutionContext* context, ScriptState* state, PassRefPtrWillBeRawPtr<ScriptArguments> arguments);

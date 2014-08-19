@@ -94,7 +94,7 @@ InspectorConsoleMessage::InspectorConsoleMessage(MessageSource source, MessageTy
     autogenerateMetadata(false);
 }
 
-InspectorConsoleMessage::InspectorConsoleMessage(MessageSource source, MessageType type, MessageLevel level, const String& message, PassRefPtrWillBeRawPtr<ScriptArguments> arguments, ScriptState* scriptState, unsigned long requestIdentifier)
+InspectorConsoleMessage::InspectorConsoleMessage(MessageSource source, MessageType type, MessageLevel level, const String& message, PassRefPtrWillBeRawPtr<ScriptArguments> arguments, ScriptState* scriptState)
     : m_source(source)
     , m_type(type)
     , m_level(level)
@@ -104,7 +104,7 @@ InspectorConsoleMessage::InspectorConsoleMessage(MessageSource source, MessageTy
     , m_url()
     , m_line(0)
     , m_column(0)
-    , m_requestId(IdentifiersFactory::requestId(requestIdentifier))
+    , m_requestId(IdentifiersFactory::requestId(0))
     , m_timestamp(WTF::currentTime())
     , m_workerProxy(nullptr)
 {

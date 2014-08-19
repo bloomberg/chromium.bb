@@ -50,10 +50,12 @@ WorkerConsole::~WorkerConsole()
 {
 }
 
-void WorkerConsole::reportMessageToClient(MessageLevel level, const String& message, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
+void WorkerConsole::reportMessageToConsole(PassRefPtrWillBeRawPtr<ConsoleMessage> consoleMessage)
 {
-    const ScriptCallFrame& lastCaller = callStack->at(0);
-    m_scope->thread()->workerReportingProxy().reportConsoleMessage(ConsoleMessage::create(ConsoleAPIMessageSource, level, message, lastCaller.sourceURL(), lastCaller.lineNumber()));
+    const ScriptCallFrame& lastCaller = consoleMessage->callStack()->at(0);
+    consoleMessage->setURL(lastCaller.sourceURL());
+    consoleMessage->setLineNumber(lastCaller.lineNumber());
+    m_scope->addMessage(consoleMessage);
 }
 
 ExecutionContext* WorkerConsole::context()

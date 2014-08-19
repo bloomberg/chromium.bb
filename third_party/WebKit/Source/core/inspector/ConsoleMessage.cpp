@@ -6,17 +6,9 @@
 #include "core/inspector/ConsoleMessage.h"
 
 #include "bindings/core/v8/ScriptState.h"
+#include "core/inspector/ScriptArguments.h"
 
 namespace blink {
-
-ConsoleMessage::ConsoleMessage()
-    : m_lineNumber(0)
-    , m_columnNumber(0)
-    , m_scriptState(nullptr)
-    , m_requestIdentifier(0)
-    , m_workerProxy(nullptr)
-{
-}
 
 ConsoleMessage::ConsoleMessage(MessageSource source,
     MessageLevel level,
@@ -26,11 +18,11 @@ ConsoleMessage::ConsoleMessage(MessageSource source,
     unsigned columnNumber)
     : m_source(source)
     , m_level(level)
+    , m_type(LogMessageType)
     , m_message(message)
     , m_url(url)
     , m_lineNumber(lineNumber)
     , m_columnNumber(columnNumber)
-    , m_scriptState(nullptr)
     , m_requestIdentifier(0)
     , m_workerProxy(nullptr)
 {
@@ -40,34 +32,14 @@ ConsoleMessage::~ConsoleMessage()
 {
 }
 
-PassRefPtrWillBeRawPtr<ScriptCallStack> ConsoleMessage::callStack() const
+MessageType ConsoleMessage::type() const
 {
-    return m_callStack;
+    return m_type;
 }
 
-void ConsoleMessage::setCallStack(PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
+void ConsoleMessage::setType(MessageType type)
 {
-    m_callStack = callStack;
-}
-
-ScriptState* ConsoleMessage::scriptState() const
-{
-    return m_scriptState;
-}
-
-void ConsoleMessage::setScriptState(ScriptState* scriptState)
-{
-    m_scriptState = scriptState;
-}
-
-unsigned long ConsoleMessage::requestIdentifier() const
-{
-    return m_requestIdentifier;
-}
-
-void ConsoleMessage::setRequestIdentifier(unsigned long requestIdentifier)
-{
-    m_requestIdentifier = requestIdentifier;
+    m_type = type;
 }
 
 const String& ConsoleMessage::url() const
@@ -88,6 +60,51 @@ unsigned ConsoleMessage::lineNumber() const
 void ConsoleMessage::setLineNumber(unsigned lineNumber)
 {
     m_lineNumber = lineNumber;
+}
+
+PassRefPtrWillBeRawPtr<ScriptCallStack> ConsoleMessage::callStack() const
+{
+    return m_callStack;
+}
+
+void ConsoleMessage::setCallStack(PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
+{
+    m_callStack = callStack;
+}
+
+ScriptState* ConsoleMessage::scriptState() const
+{
+    if (m_scriptState)
+        return m_scriptState->get();
+    return nullptr;
+}
+
+void ConsoleMessage::setScriptState(ScriptState* scriptState)
+{
+    if (scriptState)
+        m_scriptState = adoptPtr(new ScriptStateProtectingContext(scriptState));
+    else
+        m_scriptState.clear();
+}
+
+PassRefPtr<ScriptArguments> ConsoleMessage::scriptArguments() const
+{
+    return m_scriptArguments;
+}
+
+void ConsoleMessage::setScriptArguments(PassRefPtr<ScriptArguments> scriptArguments)
+{
+    m_scriptArguments = scriptArguments;
+}
+
+unsigned long ConsoleMessage::requestIdentifier() const
+{
+    return m_requestIdentifier;
+}
+
+void ConsoleMessage::setRequestIdentifier(unsigned long requestIdentifier)
+{
+    m_requestIdentifier = requestIdentifier;
 }
 
 MessageSource ConsoleMessage::source() const

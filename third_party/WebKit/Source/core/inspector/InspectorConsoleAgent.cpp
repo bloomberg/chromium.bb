@@ -170,8 +170,15 @@ void InspectorConsoleAgent::clearFrontend()
 
 void InspectorConsoleAgent::addMessageToConsole(ConsoleMessage* consoleMessage)
 {
+    if (consoleMessage->type() == ClearMessageType) {
+        ErrorString error;
+        clearMessages(&error);
+    }
+
     InspectorConsoleMessage* message;
-    if (consoleMessage->callStack()) {
+    if (consoleMessage->source() == ConsoleAPIMessageSource) {
+        message = new InspectorConsoleMessage(consoleMessage->source(), consoleMessage->type(), consoleMessage->level(), consoleMessage->message(), consoleMessage->scriptArguments(), consoleMessage->scriptState());
+    } else if (consoleMessage->callStack()) {
         message = new InspectorConsoleMessage(consoleMessage->source(), LogMessageType, consoleMessage->level(), consoleMessage->message(), consoleMessage->callStack(), consoleMessage->requestIdentifier());
     } else {
         bool shouldGenerateCallStack = m_frontend;
@@ -187,16 +194,6 @@ void InspectorConsoleAgent::adoptWorkerConsoleMessages(WorkerGlobalScopeProxy* p
         if (m_consoleMessages[i]->workerGlobalScopeProxy() == proxy)
             m_consoleMessages[i]->setWorkerGlobalScopeProxy(nullptr);
     }
-}
-
-void InspectorConsoleAgent::addConsoleAPIMessageToConsole(MessageType type, MessageLevel level, const String& message, ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments, unsigned long requestIdentifier)
-{
-    if (type == ClearMessageType) {
-        ErrorString error;
-        clearMessages(&error);
-    }
-
-    addConsoleMessage(adoptPtr(new InspectorConsoleMessage(ConsoleAPIMessageSource, type, level, message, arguments, scriptState, requestIdentifier)));
 }
 
 Vector<unsigned> InspectorConsoleAgent::consoleMessageArgumentCounts()
@@ -233,7 +230,11 @@ void InspectorConsoleAgent::consoleTimeEnd(ExecutionContext*, const String& titl
 
     double elapsed = monotonicallyIncreasingTime() - startTime;
     String message = title + String::format(": %.3fms", elapsed * 1000);
-    addConsoleAPIMessageToConsole(LogMessageType, DebugMessageLevel, message, scriptState, nullptr);
+
+    RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, DebugMessageLevel, message);
+    consoleMessage->setType(LogMessageType);
+    consoleMessage->setScriptState(scriptState);
+    addMessageToConsole(consoleMessage.get());
 }
 
 void InspectorConsoleAgent::setTracingBasedTimeline(ErrorString*, bool enabled)
@@ -271,7 +272,11 @@ void InspectorConsoleAgent::consoleCount(ScriptState* scriptState, PassRefPtrWil
 
     HashCountedSet<String>::AddResult result = m_counts.add(identifier);
     String message = title + ": " + String::number(result.storedValue->value);
-    addConsoleAPIMessageToConsole(LogMessageType, DebugMessageLevel, message, scriptState, nullptr);
+
+    RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, DebugMessageLevel, message);
+    consoleMessage->setType(LogMessageType);
+    consoleMessage->setScriptState(scriptState);
+    addMessageToConsole(consoleMessage.get());
 }
 
 void InspectorConsoleAgent::frameWindowDiscarded(LocalDOMWindow* window)

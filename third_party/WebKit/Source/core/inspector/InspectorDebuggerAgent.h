@@ -47,6 +47,7 @@
 
 namespace blink {
 
+class ConsoleMessage;
 class Document;
 class Event;
 class EventListener;
@@ -97,7 +98,7 @@ public:
 
     bool isPaused();
     bool runningNestedMessageLoop();
-    void addConsoleAPIMessageToConsole(MessageType, MessageLevel, const String&, ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>, unsigned long);
+    void addMessageToConsole(ConsoleMessage*);
 
     String preprocessEventListener(LocalFrame*, const String& source, const String& url, const String& functionName);
     PassOwnPtr<ScriptSourceCode> preprocess(LocalFrame*, const ScriptSourceCode&);

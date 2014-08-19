@@ -85,7 +85,7 @@ void ConsoleBase::table(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptA
 
 void ConsoleBase::clear(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments)
 {
-    InspectorInstrumentation::addConsoleAPIMessageToConsole(context(), ClearMessageType, LogMessageLevel, String(), scriptState, arguments);
+    internalAddMessage(ClearMessageType, LogMessageLevel, scriptState, arguments, true);
 }
 
 void ConsoleBase::trace(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments)
@@ -152,36 +152,38 @@ void ConsoleBase::timelineEnd(ScriptState* scriptState, const String& title)
 
 void ConsoleBase::group(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments)
 {
-    InspectorInstrumentation::addConsoleAPIMessageToConsole(context(), StartGroupMessageType, LogMessageLevel, String(), scriptState, arguments);
+    internalAddMessage(StartGroupMessageType, LogMessageLevel, scriptState, arguments, true);
 }
 
 void ConsoleBase::groupCollapsed(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments)
 {
-    InspectorInstrumentation::addConsoleAPIMessageToConsole(context(), StartGroupCollapsedMessageType, LogMessageLevel, String(), scriptState, arguments);
+    internalAddMessage(StartGroupCollapsedMessageType, LogMessageLevel, scriptState, arguments, true);
 }
 
 void ConsoleBase::groupEnd()
 {
-    InspectorInstrumentation::addConsoleAPIMessageToConsole(context(), EndGroupMessageType, LogMessageLevel, String(), nullptr, nullptr);
+    internalAddMessage(EndGroupMessageType, LogMessageLevel, nullptr, nullptr, true);
 }
 
 void ConsoleBase::internalAddMessage(MessageType type, MessageLevel level, ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> scriptArguments, bool acceptNoArguments, bool printTrace)
 {
-    if (!context())
+    RefPtrWillBeRawPtr<ScriptArguments> arguments = scriptArguments;
+    if (!acceptNoArguments && (!arguments || !arguments->argumentCount()))
         return;
 
-    RefPtrWillBeRawPtr<ScriptArguments> arguments = scriptArguments;
-    if (!acceptNoArguments && !arguments->argumentCount())
-        return;
+    String message;
+    bool gotStringMessage = arguments ? arguments->getFirstArgumentAsString(message) : false;
+
+    RefPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, level, gotStringMessage? message : String());
+    consoleMessage->setType(type);
+    consoleMessage->setScriptState(scriptState);
+    consoleMessage->setScriptArguments(arguments);
 
     size_t stackSize = printTrace ? ScriptCallStack::maxCallStackSizeToCapture : 1;
     RefPtrWillBeRawPtr<ScriptCallStack> callStack(createScriptCallStackForConsole(stackSize));
+    consoleMessage->setCallStack(callStack);
 
-    String message;
-    bool gotStringMessage = arguments->getFirstArgumentAsString(message);
-    InspectorInstrumentation::addConsoleAPIMessageToConsole(context(), type, level, message, scriptState, arguments);
-    if (gotStringMessage)
-        reportMessageToClient(level, message, callStack);
+    reportMessageToConsole(consoleMessage.release());
 }
 
 } // namespace blink

@@ -137,6 +137,8 @@ namespace blink {
         using SecurityContext::securityOrigin;
         using SecurityContext::contentSecurityPolicy;
 
+        virtual void addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) OVERRIDE FINAL;
+
         virtual void trace(Visitor*) OVERRIDE;
 
     protected:
@@ -156,7 +158,6 @@ namespace blink {
         virtual KURL virtualCompleteURL(const String&) const OVERRIDE FINAL;
 
         virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) OVERRIDE FINAL;
-        virtual void addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) OVERRIDE FINAL;
 
         virtual EventTarget* errorEventTarget() OVERRIDE FINAL;
         virtual void didUpdateSecurityOrigin() OVERRIDE FINAL { }

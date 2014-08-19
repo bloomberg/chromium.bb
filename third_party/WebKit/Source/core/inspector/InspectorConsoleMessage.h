@@ -54,7 +54,7 @@ public:
     InspectorConsoleMessage(MessageSource, MessageType, MessageLevel, const String& message);
     InspectorConsoleMessage(bool shouldGenerateCallStack, MessageSource, MessageType, MessageLevel, const String& message, const String& url, unsigned line, unsigned column, ScriptState*, unsigned long requestIdentifier);
     InspectorConsoleMessage(MessageSource, MessageType, MessageLevel, const String& message, PassRefPtrWillBeRawPtr<ScriptCallStack>, unsigned long requestIdentifier);
-    InspectorConsoleMessage(MessageSource, MessageType, MessageLevel, const String& message, PassRefPtrWillBeRawPtr<ScriptArguments>, ScriptState*, unsigned long requestIdentifier);
+    InspectorConsoleMessage(MessageSource, MessageType, MessageLevel, const String& message, PassRefPtrWillBeRawPtr<ScriptArguments>, ScriptState*);
     ~InspectorConsoleMessage();
 
     void addToFrontend(InspectorFrontend::Console*, InjectedScriptManager*, bool generatePreview);

@@ -29,6 +29,7 @@
 #include "config.h"
 #include "core/frame/FrameConsole.h"
 
+#include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "core/frame/FrameHost.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -55,7 +56,8 @@ FrameConsole::FrameConsole(LocalFrame& frame)
 
 void FrameConsole::addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> prpConsoleMessage)
 {
-    if (muteCount)
+    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = prpConsoleMessage;
+    if (muteCount && consoleMessage->source() != ConsoleAPIMessageSource)
         return;
 
     // FIXME: This should not need to reach for the main-frame.
@@ -64,23 +66,41 @@ void FrameConsole::addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> prpConsoleM
     if (!context)
         return;
 
-    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = prpConsoleMessage;
     InspectorInstrumentation::addMessageToConsole(context, consoleMessage.get());
-
-    String messageURL;
-    if (consoleMessage->callStack())
-        messageURL = consoleMessage->callStack()->at(0).sourceURL();
-    else
-        messageURL = consoleMessage->url();
 
     if (consoleMessage->source() == CSSMessageSource)
         return;
 
-    String stackTrace;
-    if (consoleMessage->callStack() && m_frame.chromeClient().shouldReportDetailedMessageForSource(consoleMessage->url()))
-        stackTrace = FrameConsole::formatStackTraceString(consoleMessage->message(), consoleMessage->callStack());
+    String messageURL;
+    unsigned lineNumber = 0;
+    if (consoleMessage->callStack()) {
+        lineNumber = consoleMessage->callStack()->at(0).lineNumber();
+        messageURL = consoleMessage->callStack()->at(0).sourceURL();
+    } else {
+        lineNumber = consoleMessage->lineNumber();
+        messageURL = consoleMessage->url();
+    }
 
-    m_frame.chromeClient().addMessageToConsole(&m_frame, consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), consoleMessage->lineNumber(), messageURL, stackTrace);
+    RefPtr<ScriptCallStack> reportedCallStack;
+    if (consoleMessage->source() != ConsoleAPIMessageSource) {
+        if (consoleMessage->callStack() && m_frame.chromeClient().shouldReportDetailedMessageForSource(messageURL))
+            reportedCallStack = consoleMessage->callStack();
+    } else {
+        if (!m_frame.host() || (consoleMessage->scriptArguments() && consoleMessage->scriptArguments()->argumentCount() == 0))
+            return;
+
+        MessageType type = consoleMessage->type();
+        if (type == StartGroupMessageType || type == EndGroupMessageType || type == StartGroupCollapsedMessageType)
+            return;
+
+        if (m_frame.chromeClient().shouldReportDetailedMessageForSource(messageURL))
+            reportedCallStack = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture);
+    }
+
+    String stackTrace;
+    if (reportedCallStack)
+        stackTrace = FrameConsole::formatStackTraceString(consoleMessage->message(), reportedCallStack);
+    m_frame.chromeClient().addMessageToConsole(&m_frame, consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), lineNumber, messageURL, stackTrace);
 }
 
 String FrameConsole::formatStackTraceString(const String& originalMessage, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)

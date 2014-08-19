@@ -1,5 +1,5 @@
 CONSOLE ERROR: line 24: Uncaught Error: foo
-CONSOLE ERROR: Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('http://www.example.com') does not match the recipient window's origin ('').
+CONSOLE ERROR: line 37: Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('http://www.example.com') does not match the recipient window's origin ('').
 Tests asynchronous call stacks printed in console.
 
 

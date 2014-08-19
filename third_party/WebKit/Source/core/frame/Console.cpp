@@ -63,17 +63,12 @@ ExecutionContext* Console::context()
     return m_frame->document();
 }
 
-void Console::reportMessageToClient(MessageLevel level, const String& message, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
+void Console::reportMessageToConsole(PassRefPtrWillBeRawPtr<ConsoleMessage> consoleMessage)
 {
-    if (!m_frame || !m_frame->host() || !callStack.get())
+    if (!m_frame)
         return;
 
-    String stackTrace;
-    if (m_frame->chromeClient().shouldReportDetailedMessageForSource(callStack->at(0).sourceURL())) {
-        RefPtrWillBeRawPtr<ScriptCallStack> fullStack = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture);
-        stackTrace = FrameConsole::formatStackTraceString(message, fullStack);
-    }
-    m_frame->chromeClient().addMessageToConsole(m_frame, ConsoleAPIMessageSource, level, message, callStack->at(0).lineNumber(), callStack->at(0).sourceURL(), stackTrace);
+    m_frame->console().addMessage(consoleMessage);
 }
 
 PassRefPtrWillBeRawPtr<MemoryInfo> Console::memory() const
