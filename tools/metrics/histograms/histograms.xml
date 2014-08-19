@@ -10783,27 +10783,28 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Media.AudioBitsPerChannel">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dalecurtis@chromium.org</owner>
   <summary>Bits per channel of HTML5 audio sample data.</summary>
 </histogram>
 
 <histogram name="Media.AudioChannelLayout" enum="ChannelLayout">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dalecurtis@chromium.org</owner>
   <summary>Audio channel layout in HTML5 media.</summary>
 </histogram>
 
 <histogram name="Media.AudioCodec" enum="AudioCodec">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dalecurtis@chromium.org</owner>
   <summary>Audio codec used in HTML5 media.</summary>
 </histogram>
 
 <histogram name="Media.AudioInputController" units="ms">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dalecurtis@chromium.org</owner>
   <summary>Measures the time taken for AudioInputController::</summary>
 </histogram>
 
 <histogram name="Media.AudioInputControllerCaptureStartupSuccess"
     enum="CaptureStartupResult">
+  <owner>dalecurtis@chromium.org</owner>
   <summary>
     Whether capture started successfully after an input stream startup was
     requested.
@@ -10817,17 +10818,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Media.AudioInputDeviceManager" units="ms">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dalecurtis@chromium.org</owner>
   <summary>Measures the time taken for AudioInputDeviceManager::</summary>
 </histogram>
 
 <histogram name="Media.AudioOutputController" units="ms">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dalecurtis@chromium.org</owner>
   <summary>Measures the time taken for AudioOutputController::</summary>
 </histogram>
 
 <histogram name="Media.AudioOutputControllerDataNotReady" units="ms">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dalecurtis@chromium.org</owner>
   <summary>
     Time spent waiting in AudioOutputController::WaitTillDataReady() if the data
     was not initially available.
@@ -10836,19 +10837,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Media.AudioOutputControllerPlaybackStartupSuccess"
     enum="BooleanSuccess">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dalecurtis@chromium.org</owner>
   <summary>
     Whether playback started successfully after stream startup was requested.
   </summary>
 </histogram>
 
 <histogram name="Media.AudioRendererEvents" enum="AudioRendererEvents">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>scherkus@chromium.org</owner>
   <summary>Captures statistics for various AudioRendererImpl events.</summary>
 </histogram>
 
 <histogram name="Media.AudioRendererMissedDeadline" units="%">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dalecurtis@chromium.org</owner>
   <summary>
     Percentage of AudioSyncReader::Read() calls where the renderer missed its
     realtime deadline.
@@ -10856,19 +10857,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Media.AudioSampleFormat" enum="AudioSampleFormat">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dalecurtis@chromium.org</owner>
   <summary>
     Audio sample format in HTML5 media. Logged when Audio Decoder initializes.
   </summary>
 </histogram>
 
 <histogram name="Media.AudioSamplesPerSecond" enum="AudioSampleRate">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dalecurtis@chromium.org</owner>
   <summary>Audio samples per second in HTML5 media.</summary>
 </histogram>
 
 <histogram name="Media.AudioSamplesPerSecondUnexpected" units="Hz">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dalecurtis@chromium.org</owner>
   <summary>
     Audio samples per second in HTML5 media (atypical values, in Hz).
   </summary>
@@ -11092,7 +11093,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Media.FallbackHardwareAudioBitsPerChannel">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dalecurtis@chromium.org</owner>
   <summary>
     Bits per channel of the hardware audio device which failed to open in low
     latency mode and required high latency fallback.
@@ -11100,7 +11101,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Media.FallbackHardwareAudioChannelCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dalecurtis@chromium.org</owner>
   <summary>
     Channel count of the hardware audio device which failed to open in low
     latency mode and required high latency fallback.
@@ -11108,7 +11109,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Media.FallbackHardwareAudioChannelLayout" enum="ChannelLayout">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dalecurtis@chromium.org</owner>
   <summary>
     Channel layout of the hardware audio device which failed to open in low
     latency mode and required high latency fallback.
@@ -11117,7 +11118,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Media.FallbackHardwareAudioSamplesPerSecond"
     enum="AudioSampleRate">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dalecurtis@chromium.org</owner>
   <summary>
     Samples per second of the hardware audio device which failed to open in low
     latency mode and required high latency fallback.
@@ -11126,7 +11127,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Media.FallbackHardwareAudioSamplesPerSecondUnexpected"
     units="Hz">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dalecurtis@chromium.org</owner>
   <summary>
     Samples per second of the hardware audio device (atypical values, in Hz)
     which failed to open in low latency mode and required high latency fallback.
@@ -11134,7 +11135,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Media.FallbackToHighLatencyAudioPath" enum="BooleanSuccess">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dalecurtis@chromium.org</owner>
   <summary>
     Whether Chrome had to fallback to the high latency audio path or not.
   </summary>
@@ -11184,34 +11185,34 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Media.HardwareAudioBitsPerChannel">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dalecurtis@chromium.org</owner>
   <summary>Bits per channel of the hardware audio device.</summary>
 </histogram>
 
 <histogram name="Media.HardwareAudioChannelCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dalecurtis@chromium.org</owner>
   <summary>Channel count of the hardware audio device.</summary>
 </histogram>
 
 <histogram name="Media.HardwareAudioChannelLayout" enum="ChannelLayout">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dalecurtis@chromium.org</owner>
   <summary>Channel layout of the hardware audio device.</summary>
 </histogram>
 
 <histogram name="Media.HardwareAudioSamplesPerSecond" enum="AudioSampleRate">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dalecurtis@chromium.org</owner>
   <summary>Samples per second of the hardware audio device.</summary>
 </histogram>
 
 <histogram name="Media.HardwareAudioSamplesPerSecondUnexpected" units="Hz">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dalecurtis@chromium.org</owner>
   <summary>
     Samples per second of the hardware audio device (atypical values, in Hz).
   </summary>
 </histogram>
 
 <histogram name="Media.InfoLoadDelay" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>qinmin@chromium.org</owner>
   <summary>
     The time it takes to perform redirect tracking and a CORS access check while
     preparing to play a media file.
@@ -11219,7 +11220,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Media.LinuxAudioIO" enum="LinuxAudioIO">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dalecurtis@chromium.org</owner>
   <summary>
     Audio IO layer used by the Linux OS, sampled once at startup of the browser.
   </summary>
@@ -11437,7 +11438,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Media.VideoCapture.AspectRatio">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mcasas@chromium.org</owner>
   <summary>
     Video Capture Device captured aspect ratio, as a rounded integer multiplied
     by 100. The collection is made in the VideoCaptureController upon reception
@@ -11446,7 +11447,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Media.VideoCapture.FrameRate" units="fps">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mcasas@chromium.org</owner>
   <summary>
     Video Capture Device frame rate requested by VideoCaptureManager on
     AllocateAndStart(). The collection is made in the VideoCaptureController
@@ -11455,7 +11456,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Media.VideoCapture.Height" units="pixels">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mcasas@chromium.org</owner>
   <summary>
     Video Capture Device captured frame height in pixels. The collection is made
     in the VideoCaptureController upon reception of the first frame.
@@ -11463,7 +11464,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Media.VideoCapture.PixelFormat" enum="CapturePixelFormat">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mcasas@chromium.org</owner>
   <summary>
     Pixel format provided by a Video Capture Device. The collection is made in
     the VideoCaptureController upon reception of the first frame.
@@ -11471,7 +11472,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Media.VideoCapture.Width" units="pixels">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mcasas@chromium.org</owner>
   <summary>
     Video Capture Device captured frame width in pixels. The collection is made
     in the VideoCaptureController upon reception of the first frame.
@@ -11479,7 +11480,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Media.VideoCaptureManager" units="ms">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mcasas@chromium.org</owner>
   <summary>Measures the time taken for VideoCaptureManager::</summary>
 </histogram>
 
