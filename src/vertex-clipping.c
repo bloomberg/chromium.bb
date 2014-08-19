@@ -206,6 +206,9 @@ clip_polygon_left(struct clip_context *ctx, const struct polygon8 *src,
 	enum path_transition trans;
 	int i;
 
+	if (src->n < 2)
+		return 0;
+
 	clip_context_prepare(ctx, src, dst_x, dst_y);
 	for (i = 0; i < src->n; i++) {
 		trans = path_transition_left_edge(ctx, src->x[i], src->y[i]);
@@ -221,6 +224,9 @@ clip_polygon_right(struct clip_context *ctx, const struct polygon8 *src,
 {
 	enum path_transition trans;
 	int i;
+
+	if (src->n < 2)
+		return 0;
 
 	clip_context_prepare(ctx, src, dst_x, dst_y);
 	for (i = 0; i < src->n; i++) {
@@ -238,6 +244,9 @@ clip_polygon_top(struct clip_context *ctx, const struct polygon8 *src,
 	enum path_transition trans;
 	int i;
 
+	if (src->n < 2)
+		return 0;
+
 	clip_context_prepare(ctx, src, dst_x, dst_y);
 	for (i = 0; i < src->n; i++) {
 		trans = path_transition_top_edge(ctx, src->x[i], src->y[i]);
@@ -253,6 +262,9 @@ clip_polygon_bottom(struct clip_context *ctx, const struct polygon8 *src,
 {
 	enum path_transition trans;
 	int i;
+
+	if (src->n < 2)
+		return 0;
 
 	clip_context_prepare(ctx, src, dst_x, dst_y);
 	for (i = 0; i < src->n; i++) {
