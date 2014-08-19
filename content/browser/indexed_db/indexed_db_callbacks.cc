@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/guid.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -91,6 +92,13 @@ void IndexedDBCallbacks::OnError(const IndexedDBDatabaseError& error) {
   dispatcher_host_->Send(new IndexedDBMsg_CallbacksError(
       ipc_thread_id_, ipc_callbacks_id_, error.code(), error.message()));
   dispatcher_host_ = NULL;
+
+  if (!connection_open_start_time_.is_null()) {
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "WebCore.IndexedDB.OpenTime.Error",
+        base::TimeTicks::Now() - connection_open_start_time_);
+    connection_open_start_time_ = base::TimeTicks();
+  }
 }
 
 void IndexedDBCallbacks::OnSuccess(const std::vector<base::string16>& value) {
@@ -126,6 +134,13 @@ void IndexedDBCallbacks::OnBlocked(int64 existing_version) {
   sent_blocked_ = true;
   dispatcher_host_->Send(new IndexedDBMsg_CallbacksIntBlocked(
       ipc_thread_id_, ipc_callbacks_id_, existing_version));
+
+  if (!connection_open_start_time_.is_null()) {
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "WebCore.IndexedDB.OpenTime.Blocked",
+        base::TimeTicks::Now() - connection_open_start_time_);
+    connection_open_start_time_ = base::TimeTicks();
+  }
 }
 
 void IndexedDBCallbacks::OnDataLoss(blink::WebIDBDataLoss data_loss,
@@ -162,6 +177,13 @@ void IndexedDBCallbacks::OnUpgradeNeeded(
   params.data_loss = data_loss_;
   params.data_loss_message = data_loss_message_;
   dispatcher_host_->Send(new IndexedDBMsg_CallbacksUpgradeNeeded(params));
+
+  if (!connection_open_start_time_.is_null()) {
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "WebCore.IndexedDB.OpenTime.UpgradeNeeded",
+        base::TimeTicks::Now() - connection_open_start_time_);
+    connection_open_start_time_ = base::TimeTicks();
+  }
 }
 
 void IndexedDBCallbacks::OnSuccess(scoped_ptr<IndexedDBConnection> connection,
@@ -189,6 +211,13 @@ void IndexedDBCallbacks::OnSuccess(scoped_ptr<IndexedDBConnection> connection,
       ipc_object_id,
       IndexedDBDispatcherHost::ConvertMetadata(metadata)));
   dispatcher_host_ = NULL;
+
+  if (!connection_open_start_time_.is_null()) {
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "WebCore.IndexedDB.OpenTime.Success",
+        base::TimeTicks::Now() - connection_open_start_time_);
+    connection_open_start_time_ = base::TimeTicks();
+  }
 }
 
 static std::string CreateBlobData(
@@ -577,6 +606,11 @@ void IndexedDBCallbacks::OnSuccess() {
   dispatcher_host_->Send(new IndexedDBMsg_CallbacksSuccessUndefined(
       ipc_thread_id_, ipc_callbacks_id_));
   dispatcher_host_ = NULL;
+}
+
+void IndexedDBCallbacks::SetConnectionOpenStartTime(
+    const base::TimeTicks& start_time) {
+  connection_open_start_time_ = start_time;
 }
 
 }  // namespace content

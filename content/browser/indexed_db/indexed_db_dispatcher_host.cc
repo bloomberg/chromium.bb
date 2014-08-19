@@ -291,6 +291,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
 void IndexedDBDispatcherHost::OnIDBFactoryOpen(
     const IndexedDBHostMsg_FactoryOpen_Params& params) {
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
+  base::TimeTicks begin_time = base::TimeTicks::Now();
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
 
   GURL origin_url =
@@ -307,6 +308,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
                              params.ipc_database_callbacks_id,
                              host_transaction_id,
                              origin_url);
+  callbacks->SetConnectionOpenStartTime(begin_time);
   scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks =
       new IndexedDBDatabaseCallbacks(
           this, params.ipc_thread_id, params.ipc_database_callbacks_id);

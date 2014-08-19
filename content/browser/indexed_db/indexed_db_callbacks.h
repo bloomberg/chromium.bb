@@ -106,6 +106,8 @@ class CONTENT_EXPORT IndexedDBCallbacks
 
   blink::WebIDBDataLoss data_loss() const { return data_loss_; }
 
+  void SetConnectionOpenStartTime(const base::TimeTicks& start_time);
+
  protected:
   virtual ~IndexedDBCallbacks();
 
@@ -135,6 +137,7 @@ class CONTENT_EXPORT IndexedDBCallbacks
 
   // The "blocked" event should be sent at most once per request.
   bool sent_blocked_;
+  base::TimeTicks connection_open_start_time_;
   DISALLOW_COPY_AND_ASSIGN(IndexedDBCallbacks);
 };
 

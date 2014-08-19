@@ -36119,6 +36119,38 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="WebCore.IndexedDB.OpenTime.Blocked" units="milliseconds">
+  <owner>cmumford@chromium.org</owner>
+  <summary>
+    The delay between the receipt of the request to open an IndexedDB database
+    and the firing of the blocked event.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.OpenTime.Error" units="milliseconds">
+  <owner>cmumford@chromium.org</owner>
+  <summary>
+    The delay between the receipt of the request to open an IndexedDB database
+    and the firing of the error event.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.OpenTime.Success" units="milliseconds">
+  <owner>cmumford@chromium.org</owner>
+  <summary>
+    The delay between the receipt of the request to open an IndexedDB database
+    and the firing of the success event.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.OpenTime.UpgradeNeeded" units="milliseconds">
+  <owner>cmumford@chromium.org</owner>
+  <summary>
+    The delay between the receipt of the request to open an IndexedDB database
+    and the firing of the upgradeneeded event.
+  </summary>
+</histogram>
+
 <histogram name="WebCore.PreloadDelayMs" units="milliseconds">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
