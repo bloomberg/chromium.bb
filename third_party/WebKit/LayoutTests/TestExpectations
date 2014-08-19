@@ -363,8 +363,6 @@ crbug.com/320477 [ Debug ] inspector/sources/debugger/debugger-pause-in-internal
 
 crbug.com/403819 compositing/ancestor-painted-layer-should-appear.html [ ImageOnlyFailure ]
 
-crbug.com/404892 fast/css/bidi-override-in-anonymous-block.html [ NeedsRebaseline ]
-
 # Printing Layout broken in these tests.
 crbug.com/377696 printing/setPrinting.html [ Skip ]
 crbug.com/377696 printing/width-overflow.html [ Skip ]
