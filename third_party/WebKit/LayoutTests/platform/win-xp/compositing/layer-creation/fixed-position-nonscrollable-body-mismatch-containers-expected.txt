@@ -1,0 +1,64 @@
+Even though the fixed-position element's container is nonscrollable, it should still be composited because one of its ancestors is scrolling.
+
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 72],
+          "bounds": [302, 302],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [1, 1],
+              "bounds": [285, 285],
+              "children": [
+                {
+                  "bounds": [285, 800],
+                  "shouldFlattenTransform": false,
+                  "drawsContent": true,
+                  "children": [
+                    {
+                      "shouldFlattenTransform": false
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "children": [
+                {
+                  "position": [1, 286],
+                  "bounds": [285, 15],
+                  "drawsContent": true
+                },
+                {
+                  "position": [286, 1],
+                  "bounds": [15, 285],
+                  "drawsContent": true
+                },
+                {
+                  "position": [286, 286],
+                  "bounds": [15, 15],
+                  "drawsContent": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "position": [10, 100],
+          "bounds": [100, 100],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#00FF00"
+        }
+      ]
+    }
+  ]
+}
+

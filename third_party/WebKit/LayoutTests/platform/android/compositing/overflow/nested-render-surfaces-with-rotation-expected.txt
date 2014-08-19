@@ -1,0 +1,3 @@
+
+'fixed' is not an unclipped descendant.
+Unclipped Descendants are only relevant for preferCompositingToLCDText, so this result is expected everywhere except in the virtual/gpu/ suite.

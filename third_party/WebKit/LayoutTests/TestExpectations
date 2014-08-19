@@ -1209,13 +1209,6 @@ crbug.com/399430 [ Mac ] fast/transforms/transformed-focused-text-input.html [ P
 
 crbug.com/400978 [ SnowLeopard Debug ] fast/transforms/shadows.html [ Pass ImageOnlyFailure ]
 
-crbug.com/365851 compositing/overflow/nested-render-surfaces-with-intervening-clip.html [ NeedsRebaseline ]
-crbug.com/365851 compositing/overflow/nested-render-surfaces-with-rotation.html [ NeedsRebaseline ]
-crbug.com/365851 compositing/overflow/nested-render-surfaces.html [ NeedsRebaseline ]
-crbug.com/365851 compositing/layer-creation/fixed-position-nonscrollable-body-mismatch-containers.html [ NeedsRebaseline ]
-crbug.com/365851 compositing/overflow/universal-accelerated-overflow-scroll.html [ NeedsRebaseline ]
-crbug.com/365851 virtual/gpu/compositedscrolling/overflow/universal-accelerated-overflow-scroll.html [ NeedsRebaseline ]
-
 crbug.com/404728 virtual/gpu/compositedscrolling/scrollbars/custom-scrollbars-paint-outside-iframe.html [ ImageOnlyFailure ]
 
 crbug.com/390204 [ Release ] inspector/console/console-viewport-selection.html [ Pass Failure ]
