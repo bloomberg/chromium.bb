@@ -193,9 +193,14 @@ cr.define('options', function() {
       if (extension.enabled && extension.optionsUrl) {
         var options = node.querySelector('.options-link');
         options.addEventListener('click', function(e) {
-          chrome.send('extensionSettingsOptions', [extension.id]);
+          if (this.data_.enableEmbeddedExtensionOptions) {
+            extensions.ExtensionOptionsOverlay.getInstance().
+                setExtensionAndShowOverlay([extension.id], extension.name);
+          } else {
+            chrome.send('extensionSettingsOptions', [extension.id]);
+          }
           e.preventDefault();
-        });
+        }.bind(this));
         options.hidden = false;
       }
 

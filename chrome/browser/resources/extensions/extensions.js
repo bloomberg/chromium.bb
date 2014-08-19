@@ -10,6 +10,7 @@
 <include src="pack_extension_overlay.js">
 <include src="extension_error_overlay.js">
 <include src="extension_loader.js">
+<include src="extension_options_overlay.js">
 
 <if expr="chromeos">
 <include src="chromeos/kiosk_apps.js">
@@ -151,6 +152,9 @@ cr.define('extensions', function() {
       extensions.ExtensionCommandsOverlay.getInstance().initializePage();
 
       extensions.ExtensionErrorOverlay.getInstance().initializePage(
+          extensions.ExtensionSettings.showOverlay);
+
+      extensions.ExtensionOptionsOverlay.getInstance().initializePage(
           extensions.ExtensionSettings.showOverlay);
 
       // Initialize the kiosk overlay.

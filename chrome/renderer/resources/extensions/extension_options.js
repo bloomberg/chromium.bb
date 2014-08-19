@@ -13,10 +13,10 @@ var utils = require('utils');
 // Mapping of the autosize attribute names to default values
 var AUTO_SIZE_ATTRIBUTES = {
   'autosize': 'on',
-  'maxheight': 600,
-  'maxwidth': 800,
+  'maxheight': window.innerHeight,
+  'maxwidth': window.innerWidth,
   'minheight': 32,
-  'minwidth': 80
+  'minwidth': 32
 };
 
 function ExtensionOptionsInternal(extensionoptionsNode) {

@@ -91,6 +91,7 @@
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/common/switches.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -881,6 +882,10 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
   bool load_unpacked_disabled =
       ExtensionPrefs::Get(profile)->ExtensionsBlacklistedByDefault();
   results.SetBoolean("loadUnpackedDisabled", load_unpacked_disabled);
+
+  results.SetBoolean(
+      "enableEmbeddedExtensionOptions",
+      extensions::FeatureSwitch::embedded_extension_options()->IsEnabled());
 
   web_ui()->CallJavascriptFunction(
       "extensions.ExtensionSettings.returnExtensionsData", results);
