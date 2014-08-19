@@ -70,6 +70,7 @@ The section headers are:
 .RS 4
 .nf
 .BR "core           " "The core modules"
+.BR "libinput       " "Input device configuration"
 .BR "shell          " "Desktop customization"
 .BR "launcher       " "Add launcher to the panel"
 .BR "screensaver    " "Screensaver selection"
@@ -141,6 +142,19 @@ sets the GBM format used for the framebuffer for the GBM backend. Can be
 .B xrgb2101010,
 .B rgb565.
 By default, xrgb8888 is used.
+.RS
+.PP
+
+.SH "LIBINPUT SECTION"
+The
+.B libinput
+section is used to configure input devices when using the libinput input device
+backend.
+.PP
+Available configuration are:
+.TP 7
+.BI "enable_tap=" true
+enables tap to click on touchpad devices
 .RS
 .PP
 
