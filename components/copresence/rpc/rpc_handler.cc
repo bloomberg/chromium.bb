@@ -272,6 +272,25 @@ void RpcHandler::SendReportRequest(scoped_ptr<ReportRequest> request,
 
   AddPlayingTokens(request.get());
 
+  // TODO(ckehoe): Currently the server supports only BROADCAST_AND_SCAN.
+  // Remove this once b/16715253 is fixed.
+  if (request->has_manage_messages_request()) {
+    RepeatedPtrField<PublishedMessage>* messages = request
+        ->mutable_manage_messages_request()->mutable_message_to_publish();
+    for (int i = 0; i < messages->size(); ++i) {
+      messages->Mutable(i)->mutable_token_exchange_strategy()
+          ->set_broadcast_scan_configuration(BROADCAST_AND_SCAN);
+    }
+  }
+  if (request->has_manage_subscriptions_request()) {
+    RepeatedPtrField<Subscription>* subscriptions =
+        request->mutable_manage_subscriptions_request()->mutable_subscription();
+    for (int i = 0; i < subscriptions->size(); ++i) {
+      subscriptions->Mutable(i)->mutable_token_exchange_strategy()
+          ->set_broadcast_scan_configuration(BROADCAST_AND_SCAN);
+    }
+  }
+
   SendServerRequest(kReportRequestRpcName,
                     app_id,
                     request.Pass(),
