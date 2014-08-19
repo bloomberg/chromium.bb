@@ -48,9 +48,8 @@ class BackupRollbackController {
  private:
   sync_driver::SyncPrefs* sync_prefs_;
 
-  // Use SupervisedUserSigninManagerWrapper instead of SigninManagerBase because
-  // SigninManagerBase could return non-empty user name for supervised user,
-  // which would cause backup to trumpet normal sync for supervised user.
+  // Use SupervisedUserSigninManagerWrapper instead of SigninManagerBase so that
+  // supervised users are treated like regular signed-in users.
   const SupervisedUserSigninManagerWrapper* signin_;
 
   base::Closure start_backup_;
