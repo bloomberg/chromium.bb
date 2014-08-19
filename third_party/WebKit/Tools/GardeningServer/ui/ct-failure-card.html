@@ -88,9 +88,9 @@ found in the LICENSE file.
     </div>
 
     <paper-dialog heading="Enter bug number" transition="paper-transition-center" id="bugDialog">
-      <paper-input label="Bug# or URL" floatingLabel id="bug"></paper-input>
+      <paper-input label="Bug# or URL" floatingLabel autofocus id="bug"></paper-input>
       <paper-button label="Remove bug link" on-tap="{{ removeBug }}" dismissive id="dialogRemoveBug"></paper-button>
-      <paper-button label="OK" on-tap="{{ saveBug }}" affirmative autofocus id="dialogOk"></paper-button>
+      <paper-button label="OK" on-tap="{{ saveBug }}" affirmative id="dialogOk"></paper-button>
     </paper-dialog>
   </template>
   <script>
