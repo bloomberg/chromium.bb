@@ -29,7 +29,8 @@ function test()
 
     function clickValueLink(record, row)
     {
-        var helper = WebInspector.TimelineUIUtilsImpl.generateDetailsContent(record, record._model, new WebInspector.Linkifier(), onDetailsContentReady);
+        var panel = WebInspector.inspectorView.panel("timeline");
+        var helper = panel._uiUtils.generateDetailsContent(record, panel._model, new WebInspector.Linkifier(), onDetailsContentReady);
 
         function onDetailsContentReady(element)
         {
