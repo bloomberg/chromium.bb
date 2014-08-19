@@ -406,22 +406,12 @@ class Page20(KeySilkCasesPage):
     interaction.End()
 
 
-class Page21(KeySilkCasesPage):
+class GwsExpansionPage(KeySilkCasesPage):
+  """Abstract base class for pages that expand Google knowledge panels."""
 
-  def __init__(self, page_set):
-    super(Page21, self).__init__(
-      url='http://www.google.com/#q=google',
-      page_set=page_set)
-
-  def ScrollKnowledgeCardToTop(self, action_runner):
-    # scroll until the knowledge card is at the top
-    action_runner.ScrollPage(
-      distance_expr='''
-          (function() {
-            var el = document.getElementById('kno-result');
-            var bound = el.getBoundingClientRect();
-            return bound.top - document.body.scrollTop;
-          })()''')
+  def NavigateWait(self, action_runner):
+    action_runner.NavigateToPage(self)
+    action_runner.Wait(3)
 
   def ExpandKnowledgeCard(self, action_runner):
     # expand card
@@ -432,14 +422,41 @@ class Page21(KeySilkCasesPage):
     action_runner.Wait(2)
     interaction.End()
 
-
-  def RunNavigateSteps(self, action_runner):
-    action_runner.NavigateToPage(self)
-    action_runner.Wait(3)
-    self.ScrollKnowledgeCardToTop(action_runner)
+  def ScrollKnowledgeCardToTop(self, action_runner, card_id):
+    # scroll until the knowledge card is at the top
+    action_runner.ExecuteJavaScript(
+        "document.getElementById('%s').scrollIntoView()" % card_id)
 
   def RunSmoothness(self, action_runner):
     self.ExpandKnowledgeCard(action_runner)
+
+
+class GwsGoogleExpansion(GwsExpansionPage):
+
+  """ Why: Animating height of a complex content card is common. """
+
+  def __init__(self, page_set):
+    super(GwsGoogleExpansion, self).__init__(
+      url='http://www.google.com/#q=google',
+      page_set=page_set)
+
+  def RunNavigateSteps(self, action_runner):
+    self.NavigateWait(action_runner)
+    self.ScrollKnowledgeCardToTop(action_runner, 'kno-result')
+
+
+class GwsBoogieExpansion(GwsExpansionPage):
+
+  """ Why: Same case as Google expansion but text-heavy rather than image. """
+
+  def __init__(self, page_set):
+    super(GwsBoogieExpansion, self).__init__(
+      url='https://www.google.com/search?hl=en&q=define%3Aboogie',
+      page_set=page_set)
+
+  def RunNavigateSteps(self, action_runner):
+    self.NavigateWait(action_runner)
+    self.ScrollKnowledgeCardToTop(action_runner, 'rso')
 
 
 class Page22(KeySilkCasesPage):
@@ -647,7 +664,8 @@ class KeySilkCasesPageSet(page_set_module.PageSet):
     self.AddPage(Page18(self))
     self.AddPage(Page19(self))
     self.AddPage(Page20(self))
-    self.AddPage(Page21(self))
+    self.AddPage(GwsGoogleExpansion(self))
+    self.AddPage(GwsBoogieExpansion(self))
     self.AddPage(Page22(self))
     self.AddPage(Page23(self))
     self.AddPage(Page24(self))
