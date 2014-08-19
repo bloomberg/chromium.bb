@@ -48,14 +48,15 @@ var EventTracker = (function() {
      * @param {!Node} node The DOM node to add a listener to.
      * @param {string} eventType The type of event to subscribe to.
      * @param {Function} listener The listener to add.
-     * @param {boolean} capture Whether to invoke during the capture phase.
+     * @param {boolean=} opt_capture Whether to invoke during the capture phase.
      */
-    add: function(node, eventType, listener, capture) {
+    add: function(node, eventType, listener, opt_capture) {
+      var capture = !!opt_capture;
       var h = {
         node: node,
         eventType: eventType,
         listener: listener,
-        capture: capture
+        capture: capture,
       };
       this.listeners_.push(h);
       node.addEventListener(eventType, listener, capture);
