@@ -1819,7 +1819,7 @@ void HTMLMediaElement::setReadyState(ReadyState state)
         m_duration = duration();
         scheduleEvent(EventTypeNames::durationchange);
 
-        if (isHTMLVideoElement(*this))
+        if (isHTMLVideoElement())
             scheduleEvent(EventTypeNames::resize);
         scheduleEvent(EventTypeNames::loadedmetadata);
         if (hasMediaControls())
@@ -3210,7 +3210,7 @@ void HTMLMediaElement::mediaPlayerSizeChanged()
     WTF_LOG(Media, "HTMLMediaElement::mediaPlayerSizeChanged");
 
     ASSERT(hasVideo()); // "resize" makes no sense absent video.
-    if (m_readyState > HAVE_NOTHING && isHTMLVideoElement(*this))
+    if (m_readyState > HAVE_NOTHING && isHTMLVideoElement())
         scheduleEvent(EventTypeNames::resize);
 
     if (renderer())
@@ -3511,7 +3511,7 @@ void HTMLMediaElement::didBecomeFullscreenElement()
 {
     if (hasMediaControls())
         mediaControls()->enteredFullscreen();
-    if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && isHTMLVideoElement(*this))
+    if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && isHTMLVideoElement())
         document().renderView()->compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
 }
 
@@ -3519,7 +3519,7 @@ void HTMLMediaElement::willStopBeingFullscreenElement()
 {
     if (hasMediaControls())
         mediaControls()->exitedFullscreen();
-    if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && isHTMLVideoElement(*this))
+    if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && isHTMLVideoElement())
         document().renderView()->compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
 }
 

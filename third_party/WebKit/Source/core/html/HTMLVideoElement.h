@@ -85,6 +85,8 @@ public:
     virtual FloatSize sourceSize() const OVERRIDE;
     virtual const KURL& sourceURL() const OVERRIDE { return currentSrc(); }
 
+    virtual bool isHTMLVideoElement() const OVERRIDE { return true; }
+
 private:
     HTMLVideoElement(Document&);
 

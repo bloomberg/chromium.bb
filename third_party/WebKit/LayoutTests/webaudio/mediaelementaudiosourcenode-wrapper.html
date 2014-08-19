@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+<script src="resources/compatibility.js"></script>
+<script src="resources/audio-testing.js"></script>
+</head>
+<body>
+<script>
+description("Verifies that for .mediaElement getters, a wrapper that corresponds to the actual element is created.");
+
+var source;
+function testMediaWrapper(kind) {
+    var element = document.createElement(kind);
+    var context = new webkitOfflineAudioContext(1, 1000, 44100);
+
+    source = context.createMediaElementSource(element);
+    element = context = null;
+    gc();
+    shouldBeUndefined('source.mediaElement.nonExistentProperty');
+    source = null;
+}
+
+testMediaWrapper('audio');
+testMediaWrapper('video');
+</script>
+</body>
+</html>

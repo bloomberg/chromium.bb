@@ -303,6 +303,10 @@ public:
     void setCloseMediaSourceWhenFinalizing();
 #endif
 
+    // Predicates also used when dispatching wrapper creation (cf. [SpecialWrapFor] IDL attribute usage.)
+    virtual bool isHTMLAudioElement() const { return false; }
+    virtual bool isHTMLVideoElement() const { return false; }
+
 protected:
     HTMLMediaElement(const QualifiedName&, Document&);
     virtual ~HTMLMediaElement();
