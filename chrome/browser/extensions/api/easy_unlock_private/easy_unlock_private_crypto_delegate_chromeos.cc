@@ -93,7 +93,7 @@ class EasyUnlockPrivateCryptoDelegateChromeOS
   }
 
  private:
-  scoped_ptr<chromeos::EasyUnlockClient> dbus_client_;
+  chromeos::EasyUnlockClient* dbus_client_;
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateCryptoDelegateChromeOS);
 };
