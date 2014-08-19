@@ -1,22 +1,16 @@
 {
     "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
     "archives": {
-        "polymer_002.wpr": [
-            "http://localhost:8000/components/paper-calculator/demo.html", 
-            "http://localhost:8000/components/paper-shadow/demo.html"
-        ], 
-        "polymer_004.wpr": [
+        "polymer_000.wpr": [
+            "http://www.polymer-project.org/components/paper-button/demo.html", 
+            "http://www.polymer-project.org/components/core-scroll-header-panel/demo.html", 
             "http://www.polymer-project.org/components/paper-calculator/demo.html", 
+            "http://www.polymer-project.org/components/paper-checkbox/demo.html", 
+            "http://www.polymer-project.org/components/paper-toggle-button/demo.html", 
+            "http://www.polymer-project.org/components/paper-fab/demo.html", 
             "http://www.polymer-project.org/components/paper-shadow/demo.html", 
-            "http://www.polymer-project.org/components/paper-elements/demo.html#paper-toggle-button", 
-            "http://www.polymer-project.org/components/paper-elements/demo.html#paper-button", 
-            "http://www.polymer-project.org/components/paper-elements/demo.html#paper-checkbox", 
-            "http://www.polymer-project.org/components/paper-elements/demo.html#paper-icon-button", 
-            "http://www.polymer-project.org/components/paper-elements/demo.html#paper-radio-button", 
-            "http://www.polymer-project.org/components/paper-elements/demo.html#paper-tabs", 
-            "http://www.polymer-project.org/components/paper-elements/demo.html#paper-fab", 
-            "http://www.polymer-project.org/components/paper-elements/demo.html#paper-shadow", 
-            "http://www.polymer-project.org/components/paper-elements/demo.html#core-scroll-header-panel"
+            "http://www.polymer-project.org/components/paper-icon-button/demo.html", 
+            "http://www.polymer-project.org/components/paper-tabs/demo.html"
         ]
     }
 }
