@@ -612,7 +612,8 @@ int HttpCache::DoomEntry(const std::string& key, Transaction* trans) {
   entry->disk_entry->Doom();
   entry->doomed = true;
 
-  DCHECK(entry->writer || !entry->readers.empty());
+  DCHECK(entry->writer || !entry->readers.empty() ||
+         entry->will_process_pending_queue);
   return OK;
 }
 
