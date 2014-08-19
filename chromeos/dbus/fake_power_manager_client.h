@@ -66,6 +66,7 @@ class FakePowerManagerClient : public PowerManagerClient {
   // completing a suspend attempt.
   void SendSuspendImminent();
   void SendSuspendDone();
+  void SendDarkSuspendImminent();
 
  private:
   ObserverList<Observer> observers_;

@@ -98,4 +98,8 @@ void FakePowerManagerClient::SendSuspendDone() {
   FOR_EACH_OBSERVER(Observer, observers_, SuspendDone(base::TimeDelta()));
 }
 
+void FakePowerManagerClient::SendDarkSuspendImminent() {
+  FOR_EACH_OBSERVER(Observer, observers_, DarkSuspendImminent());
+}
+
 } // namespace chromeos

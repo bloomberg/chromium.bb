@@ -71,6 +71,14 @@ class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
     // suspended (if e.g. the user canceled the suspend attempt).
     virtual void SuspendDone(const base::TimeDelta& sleep_duration) {}
 
+    // Called when the system is about to resuspend from a dark resume.  Like
+    // SuspendImminent(), the suspend will be deferred until all observers have
+    // finished running and those observers that wish to asynchronously delay
+    // the suspend should call PowerManagerClient::GetSuspendReadinessCallback()
+    // from within this method.  The returned callback should be run once the
+    // observer is ready for suspend.
+    virtual void DarkSuspendImminent() {}
+
     // Called when the power button is pressed or released.
     virtual void PowerButtonEventReceived(bool down,
                                           const base::TimeTicks& timestamp) {}
