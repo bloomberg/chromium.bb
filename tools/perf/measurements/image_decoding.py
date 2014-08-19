@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 from metrics import power
+
+from telemetry.core.platform import tracing_category_filter
+from telemetry.core.platform import tracing_options
 from telemetry.page import page_test
 from telemetry.timeline import model
 from telemetry.value import scalar
@@ -29,13 +32,24 @@ class ImageDecoding(page_test.PageTest):
         }
     """)
     self._power_metric.Start(page, tab)
+
+    options = tracing_options.TracingOptions()
+    options.enable_chrome_trace = True
     # FIXME: bare 'devtools' is for compatibility with older reference versions
     # only and may eventually be removed.
+    category_filter = tracing_category_filter.TracingCategoryFilter(
+        'disabled-by-default-devtools.timeline*')
+
     # FIXME: Remove webkit.console when blink.console lands in chromium and
     # the ref builds are updated. crbug.com/386847
-    tab.browser.StartTracing(
-        'disabled-by-default-devtools.timeline*,' +
-            'devtools,webkit.console,blink.console')
+    categories = [
+        'devtools',
+        'webkit.console',
+        'blink.console'
+    ]
+    for c in categories:
+      category_filter.AddIncludedCategory(c)
+    tab.browser.platform.tracing_controller.Start(options, category_filter)
 
   def StopBrowserAfterPage(self, browser, page):
     return not browser.tabs[0].ExecuteJavaScript("""
@@ -45,7 +59,7 @@ class ImageDecoding(page_test.PageTest):
     """)
 
   def ValidateAndMeasurePage(self, page, tab, results):
-    timeline_data = tab.browser.StopTracing()
+    timeline_data = tab.browser.platform.tracing_controller.Stop()
     timeline_model = model.TimelineModel(timeline_data)
     self._power_metric.Stop(page, tab)
     self._power_metric.AddResults(tab, results)
@@ -78,5 +92,6 @@ class ImageDecoding(page_test.PageTest):
         tab.EvaluateJavaScript('averageLoadingTimeMs()')))
 
   def CleanUpAfterPage(self, page, tab):
-    if tab.browser.is_tracing_running:
-      tab.browser.StopTracing()
+    tracing_controller = tab.browser.platform.tracing_controller
+    if tracing_controller.is_tracing_running:
+      tracing_controller.Stop()
