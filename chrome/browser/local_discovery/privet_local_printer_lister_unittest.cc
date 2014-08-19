@@ -12,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::StrictMock;
+using testing::AtLeast;
 using testing::_;
 
 namespace local_discovery {
@@ -140,8 +141,7 @@ class PrivetLocalPrinterListerTest : public testing::Test {
   }
 
   void ExpectAnyPacket() {
-    EXPECT_CALL(*test_service_discovery_client_, OnSendTo(_))
-        .Times(2);
+    EXPECT_CALL(*test_service_discovery_client_, OnSendTo(_)).Times(AtLeast(2));
   }
 
  protected:
