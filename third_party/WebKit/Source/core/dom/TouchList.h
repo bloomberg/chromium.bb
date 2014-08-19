@@ -41,7 +41,7 @@ public:
         return adoptRefWillBeNoop(new TouchList);
     }
 
-    static PassRefPtrWillBeRawPtr<TouchList> create(WillBeHeapVector<RefPtrWillBeMember<Touch> >& touches)
+    static PassRefPtrWillBeRawPtr<TouchList> adopt(WillBeHeapVector<RefPtrWillBeMember<Touch> >& touches)
     {
         return adoptRefWillBeNoop(new TouchList(touches));
     }
