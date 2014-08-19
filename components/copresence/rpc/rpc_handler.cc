@@ -206,40 +206,6 @@ void AddTokenToRequest(ReportRequest* request, const AudioToken& token) {
   signals->set_observed_time_millis(base::Time::Now().ToJsTime());
 }
 
-OptInStateFilter* CreateOptedInOrOutFilter() {
-  OptInStateFilter* filter = new OptInStateFilter;
-  filter->add_allowed_opt_in_state(copresence::OPTED_IN);
-  filter->add_allowed_opt_in_state(copresence::OPTED_OUT);
-  return filter;
-}
-
-void AllowOptedOutMessages(ReportRequest* request) {
-  // TODO(ckehoe): Collapse this pattern into ProcessPublish()
-  // and ProcessSubscribe() methods.
-
-  if (request->has_manage_messages_request()) {
-    RepeatedPtrField<PublishedMessage>* messages = request
-        ->mutable_manage_messages_request()->mutable_message_to_publish();
-    for (int i = 0; i < messages->size(); ++i) {
-      PublishedMessage* message = messages->Mutable(i);
-      if (!message->has_opt_in_state_filter())
-        message->set_allocated_opt_in_state_filter(CreateOptedInOrOutFilter());
-    }
-  }
-
-  if (request->has_manage_subscriptions_request()) {
-    RepeatedPtrField<Subscription>* subscriptions =
-        request->mutable_manage_subscriptions_request()->mutable_subscription();
-    for (int i = 0; i < subscriptions->size(); ++i) {
-      Subscription* subscription = subscriptions->Mutable(i);
-      if (!subscription->has_opt_in_state_filter()) {
-        subscription->set_allocated_opt_in_state_filter(
-            CreateOptedInOrOutFilter());
-      }
-    }
-  }
-}
-
 }  // namespace
 
 // Public methods
@@ -306,7 +272,6 @@ void RpcHandler::SendReportRequest(scoped_ptr<ReportRequest> request,
 
   AddPlayingTokens(request.get());
 
-  AllowOptedOutMessages(request.get());
   SendServerRequest(kReportRequestRpcName,
                     app_id,
                     request.Pass(),

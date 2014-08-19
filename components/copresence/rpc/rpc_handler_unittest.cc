@@ -256,39 +256,6 @@ TEST_F(RpcHandlerTest, GetDeviceCapabilities) {
 }
 #endif
 
-TEST_F(RpcHandlerTest, AllowOptedOutMessages) {
-  // Request with no filter specified.
-  scoped_ptr<ReportRequest> report(new ReportRequest);
-  report->mutable_manage_messages_request()->add_message_to_publish()
-      ->set_id("message");
-  report->mutable_manage_subscriptions_request()->add_subscription()
-      ->set_id("subscription");
-  rpc_handler_.SendReportRequest(report.Pass());
-  const OptInStateFilter& filter =
-      GetMessagesPublished().Get(0).opt_in_state_filter();
-  ASSERT_EQ(2, filter.allowed_opt_in_state_size());
-  EXPECT_EQ(OPTED_IN, filter.allowed_opt_in_state(0));
-  EXPECT_EQ(OPTED_OUT, filter.allowed_opt_in_state(1));
-  EXPECT_EQ(2, GetSubscriptionsSent().Get(0).opt_in_state_filter()
-      .allowed_opt_in_state_size());
-
-  // Request with filters already specified.
-  report.reset(new ReportRequest);
-  report->mutable_manage_messages_request()->add_message_to_publish()
-      ->mutable_opt_in_state_filter()->add_allowed_opt_in_state(OPTED_IN);
-  report->mutable_manage_subscriptions_request()->add_subscription()
-      ->mutable_opt_in_state_filter()->add_allowed_opt_in_state(OPTED_OUT);
-  rpc_handler_.SendReportRequest(report.Pass());
-  const OptInStateFilter& publish_filter =
-      GetMessagesPublished().Get(0).opt_in_state_filter();
-  ASSERT_EQ(1, publish_filter.allowed_opt_in_state_size());
-  EXPECT_EQ(OPTED_IN, publish_filter.allowed_opt_in_state(0));
-  const OptInStateFilter& subscription_filter =
-      GetSubscriptionsSent().Get(0).opt_in_state_filter();
-  ASSERT_EQ(1, subscription_filter.allowed_opt_in_state_size());
-  EXPECT_EQ(OPTED_OUT, subscription_filter.allowed_opt_in_state(0));
-}
-
 TEST_F(RpcHandlerTest, CreateRequestHeader) {
   SetDeviceId("CreateRequestHeader Device ID");
   rpc_handler_.SendReportRequest(make_scoped_ptr(new ReportRequest),
