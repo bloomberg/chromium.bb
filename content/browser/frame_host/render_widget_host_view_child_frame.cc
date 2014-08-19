@@ -195,9 +195,6 @@ void RenderWidgetHostViewChildFrame::UnlockCompositingSurface() {
 }
 #endif
 
-void RenderWidgetHostViewChildFrame::ScrollOffsetChanged() {
-}
-
 void RenderWidgetHostViewChildFrame::AcceleratedSurfaceInitialized(int host_id,
                                                               int route_id) {
 }

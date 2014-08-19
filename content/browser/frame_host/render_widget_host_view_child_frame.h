@@ -84,7 +84,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
                                 const gfx::Range& range) OVERRIDE;
   virtual void SelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params) OVERRIDE;
-  virtual void ScrollOffsetChanged() OVERRIDE;
   virtual void CopyFromCompositingSurface(
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,

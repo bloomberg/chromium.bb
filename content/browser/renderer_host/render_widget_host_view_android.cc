@@ -772,9 +772,6 @@ void RenderWidgetHostViewAndroid::SelectionBoundsChanged(
                                                   true);
 }
 
-void RenderWidgetHostViewAndroid::ScrollOffsetChanged() {
-}
-
 void RenderWidgetHostViewAndroid::SetBackgroundOpaque(bool opaque) {
   RenderWidgetHostViewBase::SetBackgroundOpaque(opaque);
   host_->SetBackgroundOpaque(opaque);

@@ -1289,12 +1289,6 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_RouteMessageEvent,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_DidContentsPreferredSizeChange,
                     gfx::Size /* pref_size */)
 
-// Notifies that the scroll offset changed.
-// This is different from ViewHostMsg_UpdateRect in that ViewHostMsg_UpdateRect
-// is not sent at all when threaded compositing is enabled while
-// ViewHostMsg_DidChangeScrollOffset works properly in this case.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_DidChangeScrollOffset)
-
 // Notifies whether there are JavaScript touch event handlers or not.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_HasTouchEventHandlers,
                     bool /* has_handlers */)

@@ -1072,9 +1072,6 @@ void RenderWidgetHostViewMac::SelectionBoundsChanged(
     caret_rect_ = params.anchor_rect;
 }
 
-void RenderWidgetHostViewMac::ScrollOffsetChanged() {
-}
-
 void RenderWidgetHostViewMac::SetShowingContextMenu(bool showing) {
   RenderWidgetHostViewBase::SetShowingContextMenu(showing);
 

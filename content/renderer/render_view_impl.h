@@ -354,7 +354,6 @@ class CONTENT_EXPORT RenderViewImpl
   // blink::WebWidgetClient implementation ------------------------------------
 
   // Most methods are handled by RenderWidget.
-  virtual void didCommitAndDrawCompositorFrame();
   virtual void didFocus();
   virtual void didBlur();
   virtual void show(blink::WebNavigationPolicy policy);
@@ -1015,8 +1014,6 @@ class CONTENT_EXPORT RenderViewImpl
   // scrolled and focused editable node.
   bool has_scrolled_focused_editable_node_into_rect_;
   gfx::Rect rect_for_scrolled_focused_editable_node_;
-
-  bool has_scrolled_main_frame_;
 
   // Helper objects ------------------------------------------------------------
 

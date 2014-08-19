@@ -435,7 +435,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnDocumentAvailableInMainFrame(bool uses_temporary_zoom_level);
   void OnToggleFullscreen(bool enter_fullscreen);
   void OnDidContentsPreferredSizeChange(const gfx::Size& new_size);
-  void OnDidChangeScrollOffset();
   void OnPasteFromSelectionClipboard();
   void OnRouteCloseEvent();
   void OnRouteMessageEvent(const ViewMsg_PostMessage_Params& params);

@@ -682,7 +682,6 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       top_controls_constraints_(cc::BOTH),
 #endif
       has_scrolled_focused_editable_node_into_rect_(false),
-      has_scrolled_main_frame_(false),
       speech_recognition_dispatcher_(NULL),
       browser_plugin_manager_(NULL),
       devtools_agent_(NULL),
@@ -2479,19 +2478,8 @@ BrowserPluginManager* RenderViewImpl::GetBrowserPluginManager() {
   return browser_plugin_manager_.get();
 }
 
-void RenderViewImpl::didCommitAndDrawCompositorFrame() {
-  RenderWidget::didCommitAndDrawCompositorFrame();
-  if (has_scrolled_main_frame_) {
-    has_scrolled_main_frame_ = false;
-    Send(new ViewHostMsg_DidChangeScrollOffset(routing_id_));
-  }
-}
-
 void RenderViewImpl::didChangeScrollOffset(WebLocalFrame* frame) {
   StartNavStateSyncTimerIfNecessary();
-
-  if (webview()->mainFrame() == frame)
-    has_scrolled_main_frame_ = true;
 
   FOR_EACH_OBSERVER(
       RenderViewObserver, observers_, DidChangeScrollOffset(frame));
@@ -3319,7 +3307,6 @@ void RenderViewImpl::OnResize(const ViewMsg_Resize_Params& params) {
           ShouldDisplayScrollbars(params.new_size.width(),
                                   params.new_size.height()));
     }
-    has_scrolled_main_frame_ = true;
   }
 
   gfx::Size old_visible_viewport_size = visible_viewport_size_;

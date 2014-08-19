@@ -240,9 +240,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual void SelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params) = 0;
 
-  // Notifies the view that the scroll offset has changed.
-  virtual void ScrollOffsetChanged() = 0;
-
   // Copies the contents of the compositing surface, providing a new SkBitmap
   // result via an asynchronously-run |callback|. |src_subrect| is specified in
   // layer space coordinates for the current platform (e.g., DIP for Aura/Mac,
