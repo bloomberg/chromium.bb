@@ -15,6 +15,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/update_engine_client.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
@@ -159,6 +160,46 @@ class NetworkStatus : public chromeos::NetworkStateHandlerObserver {
   base::Closure closure_;
 };
 
+void StartUpdateCallback(
+    chromeos::UpdateEngineClient::UpdateCheckResult result) {
+  VLOG(1) << "Callback from RequestUpdateCheck, result " << result;
+}
+
+class UpdateStatus : public chromeos::UpdateEngineClient::Observer {
+ public:
+  UpdateStatus(views::ImageView* icon, const base::Closure& closure)
+      : icon_(icon), closure_(closure) {
+    chromeos::DBusThreadManager::Get()->GetUpdateEngineClient()->AddObserver(
+        this);
+    chromeos::DBusThreadManager::Get()->GetUpdateEngineClient()->
+        RequestUpdateCheck(base::Bind(StartUpdateCallback));
+  }
+
+  virtual ~UpdateStatus() {
+    chromeos::DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(
+        this);
+  }
+
+  // chromeos::UpdateEngineClient::Observer:
+  virtual void UpdateStatusChanged(
+      const chromeos::UpdateEngineClient::Status& status) OVERRIDE {
+    if (status.status !=
+        chromeos::UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
+      return;
+    }
+    icon_->SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+        IDR_AURA_UBER_TRAY_UPDATE));
+    if (!closure_.is_null())
+      closure_.Run();
+  }
+
+ private:
+  views::ImageView* icon_;
+  base::Closure closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(UpdateStatus);
+};
+
 // Processes user input to show the detailed network-list.
 class DetailViewHandler : public ui::EventHandler {
  public:
@@ -193,6 +234,7 @@ class DebugWidget {
     CreateWidget();
 
     CreateBatteryView();
+    CreateUpdateView();
     CreateNetworkView();
 
     UpdateSize();
@@ -264,6 +306,16 @@ class DebugWidget {
         label, base::Bind(&DebugWidget::UpdateSize, base::Unretained(this))));
   }
 
+  void CreateUpdateView() {
+    views::View* container = widget_->GetContentsView();
+    views::ImageView* icon = new views::ImageView();
+    container->AddChildView(icon);
+    container->Layout();
+
+    update_status_.reset(new UpdateStatus(
+        icon, base::Bind(&DebugWidget::UpdateSize, base::Unretained(this))));
+  }
+
   const gfx::Rect GetPositionForSize(const gfx::Size& size) {
     int right = container_->bounds().right();
     int x = right - size.width();
@@ -281,6 +333,7 @@ class DebugWidget {
   views::Widget* widget_;
   scoped_ptr<PowerStatus> power_status_;
   scoped_ptr<NetworkStatus> network_status_;
+  scoped_ptr<UpdateStatus> update_status_;
   scoped_ptr<ui::EventHandler> event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(DebugWidget);
