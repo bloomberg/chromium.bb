@@ -22,6 +22,18 @@ base::LazyInstance<base::Lock>::Leaky g_posix_client_id_lock =
 // File name used in the user data dir to indicate consent.
 const char kConsentToSendStats[] = "Consent To Send Stats";
 
+void SetConsentFilePermissionIfNeeded(const base::FilePath& consent_file) {
+#if defined(OS_CHROMEOS)
+  // The consent file needs to be world readable. See http://crbug.com/383003
+  int permissions;
+  if (base::GetPosixFilePermissions(consent_file, &permissions) &&
+      (permissions & base::FILE_PERMISSION_READ_BY_OTHERS) == 0) {
+    permissions |= base::FILE_PERMISSION_READ_BY_OTHERS;
+    base::SetPosixFilePermissions(consent_file, permissions);
+  }
+#endif
+}
+
 }  // namespace
 
 // static
@@ -36,6 +48,8 @@ bool GoogleUpdateSettings::GetCollectStatsConsent() {
   std::string tmp_guid;
   bool consented = base::ReadFileToString(consent_file, &tmp_guid);
   if (consented) {
+    SetConsentFilePermissionIfNeeded(consent_file);
+
     base::AutoLock lock(g_posix_client_id_lock.Get());
     g_posix_client_id.Get().assign(tmp_guid);
   }
@@ -52,18 +66,21 @@ bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
   base::AutoLock lock(g_posix_client_id_lock.Get());
 
   base::FilePath consent_file = consent_dir.AppendASCII(kConsentToSendStats);
-  if (consented) {
-    if ((!base::PathExists(consent_file)) ||
-        (base::PathExists(consent_file) && !g_posix_client_id.Get().empty())) {
-      const char* c_str = g_posix_client_id.Get().c_str();
-      int size = g_posix_client_id.Get().size();
-      return base::WriteFile(consent_file, c_str, size) == size;
-    }
-  } else {
+  if (!consented) {
     g_posix_client_id.Get().clear();
     return base::DeleteFile(consent_file, false);
   }
-  return true;
+
+  const std::string& client_id = g_posix_client_id.Get();
+  if (base::PathExists(consent_file) && client_id.empty())
+    return true;
+
+  int size = client_id.size();
+  bool write_success =
+      base::WriteFile(consent_file, client_id.c_str(), size) == size;
+  if (write_success)
+    SetConsentFilePermissionIfNeeded(consent_file);
+  return write_success;
 }
 
 // static

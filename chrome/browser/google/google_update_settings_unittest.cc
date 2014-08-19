@@ -4,6 +4,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/test/scoped_path_override.h"
 #include "chrome/browser/google/google_brand.h"
@@ -62,3 +63,21 @@ TEST_F(GoogleUpdateTest, IsOrganicFirstRunBrandCodes) {
   EXPECT_TRUE(google_brand::IsOrganicFirstRun(""));
 #endif
 }
+
+#if defined(OS_CHROMEOS)
+// Test for http://crbug.com/383003
+TEST_F(GoogleUpdateTest, ConsentFileIsWorldReadable) {
+  // Turn on stats reporting.
+  EXPECT_TRUE(GoogleUpdateSettings::SetCollectStatsConsent(true));
+
+  base::FilePath consent_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &consent_dir));
+  ASSERT_TRUE(base::DirectoryExists(consent_dir));
+
+  base::FilePath consent_file = consent_dir.Append("Consent To Send Stats");
+  ASSERT_TRUE(base::PathExists(consent_file));
+  int permissions;
+  ASSERT_TRUE(base::GetPosixFilePermissions(consent_file, &permissions));
+  EXPECT_TRUE(permissions & base::FILE_PERMISSION_READ_BY_OTHERS);
+}
+#endif
