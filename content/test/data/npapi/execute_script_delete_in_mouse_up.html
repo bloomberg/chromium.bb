@@ -35,6 +35,9 @@ of a synchronous mouse event.
 </DIV>
 <script> 
     var height = document.body.offsetHeight;
+    // Force plugin to be loaded so that we can click on it.
+    var embed = document.getElementById('1');
+    embed.dummy = true;
 </script>
 
 </body>
