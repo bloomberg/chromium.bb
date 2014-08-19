@@ -91,6 +91,7 @@
 
 #if defined(OS_LINUX)
 #include <gtk/gtk.h>
+#include <X11/Xlib.h>
 #include "remoting/host/audio_capturer_linux.h"
 #endif  // defined(OS_LINUX)
 
@@ -1417,6 +1418,9 @@ void HostProcess::OnCrash(const std::string& function_name,
 
 int HostProcessMain() {
 #if defined(OS_LINUX)
+  // Required in order for us to run multiple X11 threads.
+  XInitThreads();
+
   // Required for any calls into GTK functions, such as the Disconnect and
   // Continue windows, though these should not be used for the Me2Me case
   // (crbug.com/104377).

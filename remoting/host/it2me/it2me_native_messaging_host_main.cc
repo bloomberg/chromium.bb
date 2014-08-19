@@ -20,6 +20,7 @@
 
 #if defined(OS_LINUX)
 #include <gtk/gtk.h>
+#include <X11/Xlib.h>
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_MACOSX)
@@ -64,6 +65,9 @@ int StartIt2MeNativeMessagingHost() {
 
   // Cannot use TOOLKIT_GTK because it is not defined when aura is enabled.
 #if defined(OS_LINUX)
+  // Required in order for us to run multiple X11 threads.
+  XInitThreads();
+
   // Required for any calls into GTK functions, such as the Disconnect and
   // Continue windows. Calling with NULL arguments because we don't have
   // any command line arguments for gtk to consume.
