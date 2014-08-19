@@ -280,14 +280,14 @@ TEST(event_loop_timer_updates)
 	 */
 
 	context.source1 = wl_event_loop_add_timer(loop, timer_update_callback_1,
-											  &context);
+						  &context);
 	assert(context.source1);
-	wl_event_source_timer_update(context.source1, 10);
+	assert(wl_event_source_timer_update(context.source1, 10) == 0);
 
 	context.source2 = wl_event_loop_add_timer(loop, timer_update_callback_2,
-											  &context);
+						  &context);
 	assert(context.source2);
-	wl_event_source_timer_update(context.source2, 10);
+	assert(wl_event_source_timer_update(context.source2, 10) == 0);
 
 	context.count = 0;
 
