@@ -67,10 +67,7 @@ SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
             base::TimeFormatFriendlyDate(base::Time::Now()));
         short_description =
             l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXPIRED_DESCRIPTION);
-      } else {
-        // Then it must be not yet valid.  We don't check that it is not yet
-        // valid as there is still a very unlikely chance that the cert might
-        // have become valid since the error occurred.
+      } else if (base::Time::Now() < cert->valid_start()) {
         details = l10n_util::GetStringFUTF16(
             IDS_CERT_ERROR_NOT_YET_VALID_DETAILS,
             UTF8ToUTF16(request_url.host()),
@@ -78,6 +75,16 @@ SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
                 (cert->valid_start() - base::Time::Now()).InDays()));
         short_description =
             l10n_util::GetStringUTF16(IDS_CERT_ERROR_NOT_YET_VALID_DESCRIPTION);
+      } else {
+        // Two possibilities: (1) an intermediate or root certificate has
+        // expired, or (2) the certificate has become valid since the error
+        // occurred. Since (1) is more likely, assume that's the case.
+        details = l10n_util::GetStringFUTF16(
+            IDS_CERT_ERROR_CHAIN_EXPIRED_DETAILS,
+            UTF8ToUTF16(request_url.host()),
+            base::TimeFormatFriendlyDate(base::Time::Now()));
+        short_description =
+            l10n_util::GetStringUTF16(IDS_CERT_ERROR_CHAIN_EXPIRED_DESCRIPTION);
       }
       break;
     case CERT_AUTHORITY_INVALID:
