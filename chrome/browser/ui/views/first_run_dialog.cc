@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/first_run_dialog.h"
 
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/shell_integration.h"
@@ -25,7 +27,6 @@
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
-#include "ui/wm/public/dispatcher_client.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
 #include "base/prefs/pref_service.h"
@@ -57,16 +58,9 @@ bool FirstRunDialog::Show(Profile* profile) {
     FirstRunDialog* dialog = new FirstRunDialog(profile);
     views::DialogDelegate::CreateDialogWidget(dialog, NULL, NULL)->Show();
 
-    // Use the widget's window itself so that the message loop
-    // exists when the dialog is closed by some other means than
-    // |Accept|.
-    //
-    // This is the same trick used in simple_message_box_views.cc, minus the
-    // refcounting.
-    aura::Window* anchor = dialog->GetWidget()->GetNativeWindow();
-    aura::client::DispatcherClient* client =
-        aura::client::GetDispatcherClient(anchor->GetRootWindow());
-    aura::client::DispatcherRunLoop run_loop(client, NULL);
+    base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
+    base::MessageLoopForUI::ScopedNestableTaskAllower allow_nested(loop);
+    base::RunLoop run_loop;
     dialog->quit_runloop_ = run_loop.QuitClosure();
     run_loop.Run();
     dialog_shown = true;
