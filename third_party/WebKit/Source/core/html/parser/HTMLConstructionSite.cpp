@@ -73,8 +73,10 @@ static bool hasImpliedEndTag(const HTMLStackItem* item)
         || item->hasTagName(optionTag)
         || item->hasTagName(optgroupTag)
         || item->hasTagName(pTag)
+        || item->hasTagName(rbTag)
         || item->hasTagName(rpTag)
-        || item->hasTagName(rtTag);
+        || item->hasTagName(rtTag)
+        || item->hasTagName(rtcTag);
 }
 
 static bool shouldUseLengthLimit(const ContainerNode& node)

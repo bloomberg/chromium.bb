@@ -5,7 +5,7 @@
 11
 12
 
-Test 8 of 104 in ../resources/tests19.dat failed. Input:
+Test 8 of 108 in ../resources/tests19.dat failed. Input:
 <!doctype html><form><isindex>
 Got:
 | <!DOCTYPE html>
@@ -21,7 +21,7 @@ Expected:
 |   <body>
 |     <form>
 
-Test 9 of 104 in ../resources/tests19.dat failed. Input:
+Test 9 of 108 in ../resources/tests19.dat failed. Input:
 <!doctype html><isindex action="POST">
 Got:
 | <!DOCTYPE html>
@@ -44,7 +44,7 @@ Expected:
 |           name="isindex"
 |       <hr>
 
-Test 10 of 104 in ../resources/tests19.dat failed. Input:
+Test 10 of 108 in ../resources/tests19.dat failed. Input:
 <!doctype html><isindex prompt="this is isindex">
 Got:
 | <!DOCTYPE html>
@@ -66,7 +66,7 @@ Expected:
 |           name="isindex"
 |       <hr>
 
-Test 11 of 104 in ../resources/tests19.dat failed. Input:
+Test 11 of 108 in ../resources/tests19.dat failed. Input:
 <!doctype html><isindex type="hidden">
 Got:
 | <!DOCTYPE html>
@@ -89,7 +89,7 @@ Expected:
 |           type="hidden"
 |       <hr>
 
-Test 12 of 104 in ../resources/tests19.dat failed. Input:
+Test 12 of 108 in ../resources/tests19.dat failed. Input:
 <!doctype html><isindex name="foo">
 Got:
 | <!DOCTYPE html>
