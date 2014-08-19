@@ -24,8 +24,8 @@
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/suggest_permission_util.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/suggest_permission_util.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension.h"
 

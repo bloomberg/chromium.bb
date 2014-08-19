@@ -2,13 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/suggest_permission_util.h"
+#include "extensions/browser/suggest_permission_util.h"
 
-#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/console_message_level.h"
-#include "extensions/browser/extension_system.h"
-#include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -17,12 +14,14 @@
 using content::CONSOLE_MESSAGE_LEVEL_WARNING;
 using content::RenderViewHost;
 
+namespace extensions {
+
+namespace {
+
 const char kPermissionsHelpURLForExtensions[] =
     "http://developer.chrome.com/extensions/manifest.html#permissions";
 const char kPermissionsHelpURLForApps[] =
     "http://developer.chrome.com/apps/declare_permissions.html";
-
-namespace extensions {
 
 void SuggestAPIPermissionInDevToolsConsole(APIPermission::ID permission,
                                            const Extension* extension,
@@ -46,6 +45,8 @@ void SuggestAPIPermissionInDevToolsConsole(APIPermission::ID permission,
       host->GetRoutingID(), CONSOLE_MESSAGE_LEVEL_WARNING, message));
 }
 
+}  // namespace
+
 bool IsExtensionWithPermissionOrSuggestInConsole(
     APIPermission::ID permission,
     const Extension* extension,
@@ -59,4 +60,4 @@ bool IsExtensionWithPermissionOrSuggestInConsole(
   return false;
 }
 
-} // namespace extensions
+}  // namespace extensions

@@ -504,6 +504,8 @@
         'browser/script_executor.h',
         'browser/state_store.cc',
         'browser/state_store.h',
+        'browser/suggest_permission_util.cc',
+        'browser/suggest_permission_util.h',
         'browser/uninstall_reason.h',
         'browser/update_observer.h',
         'browser/value_store/leveldb_value_store.cc',

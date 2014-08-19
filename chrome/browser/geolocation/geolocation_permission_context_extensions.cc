@@ -8,11 +8,11 @@
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/content_settings/permission_request_id.h"
-#include "chrome/browser/extensions/suggest_permission_util.h"
 #include "chrome/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_map.h"
+#include "extensions/browser/suggest_permission_util.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension.h"
 

@@ -243,6 +243,8 @@ source_set("browser") {
       "script_executor.h",
       "state_store.cc",
       "state_store.h",
+      "suggest_permission_util.cc",
+      "suggest_permission_util.h",
       "uninstall_reason.h",
       "update_observer.h",
       "value_store/leveldb_value_store.cc",

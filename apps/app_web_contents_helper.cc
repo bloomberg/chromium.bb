@@ -6,12 +6,12 @@
 
 #include "apps/app_delegate.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/extensions/suggest_permission_util.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/suggest_permission_util.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/permissions/api_permission.h"
 

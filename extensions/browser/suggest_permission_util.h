@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_SUGGEST_PERMISSION_UTIL_H_
-#define CHROME_BROWSER_EXTENSIONS_SUGGEST_PERMISSION_UTIL_H_
+#ifndef EXTENSIONS_BROWSER_SUGGEST_PERMISSION_UTIL_H_
+#define EXTENSIONS_BROWSER_SUGGEST_PERMISSION_UTIL_H_
 
 #include "extensions/common/permissions/api_permission.h"
-
-class Profile;
 
 namespace content {
 class RenderViewHost;
@@ -17,8 +15,8 @@ namespace extensions {
 
 class Extension;
 
-// Checks that |extension| is not NULL and that it has |permission|. If not
-// and extension, just returns false. If an extension without |permission|
+// Checks that |extension| is not NULL and that it has |permission|. If
+// |extension| is NULL, just returns false. If an extension without |permission|
 // returns false and suggests |permision| in the developer tools console.
 bool IsExtensionWithPermissionOrSuggestInConsole(
     APIPermission::ID permission,
@@ -27,4 +25,4 @@ bool IsExtensionWithPermissionOrSuggestInConsole(
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_SUGGEST_PERMISSION_UTIL_H_
+#endif  // EXTENSIONS_BROWSER_SUGGEST_PERMISSION_UTIL_H_

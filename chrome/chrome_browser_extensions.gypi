@@ -852,8 +852,6 @@
       'browser/extensions/startup_helper.h',
       'browser/extensions/state_store_notification_observer.cc',
       'browser/extensions/state_store_notification_observer.h',
-      'browser/extensions/suggest_permission_util.cc',
-      'browser/extensions/suggest_permission_util.h',
       'browser/extensions/suspicious_extension_bubble_controller.cc',
       'browser/extensions/suspicious_extension_bubble_controller.h',
       'browser/extensions/sync_bundle.h',
