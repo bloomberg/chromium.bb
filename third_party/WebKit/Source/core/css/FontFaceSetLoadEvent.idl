@@ -31,7 +31,6 @@
 // FIXME: Make this constructable from Javascript
 [
     NoInterfaceObject,
-    RuntimeEnabled=FontLoadEvents,
 ] interface FontFaceSetLoadEvent : Event {
     readonly attribute FontFace[] fontfaces;
 };

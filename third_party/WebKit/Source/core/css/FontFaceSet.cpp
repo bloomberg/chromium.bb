@@ -41,7 +41,6 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/rendering/style/StyleInheritedData.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
@@ -194,8 +193,6 @@ void FontFaceSet::didLayout()
 {
     if (document()->frame()->isMainFrame() && m_loadingFonts.isEmpty())
         m_histogram.record();
-    if (!RuntimeEnabledFeatures::fontLoadEventsEnabled())
-        return;
     if (!m_loadingFonts.isEmpty() || (!hasLoadedFonts() && m_readyResolvers.isEmpty()))
         return;
     handlePendingEventsAndPromisesSoon();
@@ -239,22 +236,20 @@ void FontFaceSet::beginFontLoading(FontFace* fontFace)
 void FontFaceSet::fontLoaded(FontFace* fontFace)
 {
     m_histogram.updateStatus(fontFace);
-    if (RuntimeEnabledFeatures::fontLoadEventsEnabled())
-        m_loadedFonts.append(fontFace);
+    m_loadedFonts.append(fontFace);
     removeFromLoadingFonts(fontFace);
 }
 
 void FontFaceSet::loadError(FontFace* fontFace)
 {
     m_histogram.updateStatus(fontFace);
-    if (RuntimeEnabledFeatures::fontLoadEventsEnabled())
-        m_failedFonts.append(fontFace);
+    m_failedFonts.append(fontFace);
     removeFromLoadingFonts(fontFace);
 }
 
 void FontFaceSet::addToLoadingFonts(PassRefPtrWillBeRawPtr<FontFace> fontFace)
 {
-    if (RuntimeEnabledFeatures::fontLoadEventsEnabled() && m_loadingFonts.isEmpty() && !hasLoadedFonts()) {
+    if (m_loadingFonts.isEmpty() && !hasLoadedFonts()) {
         m_shouldFireLoadingEvent = true;
         handlePendingEventsAndPromisesSoon();
     }
@@ -264,7 +259,7 @@ void FontFaceSet::addToLoadingFonts(PassRefPtrWillBeRawPtr<FontFace> fontFace)
 void FontFaceSet::removeFromLoadingFonts(PassRefPtrWillBeRawPtr<FontFace> fontFace)
 {
     m_loadingFonts.remove(fontFace);
-    if (RuntimeEnabledFeatures::fontLoadEventsEnabled() && m_loadingFonts.isEmpty())
+    if (m_loadingFonts.isEmpty())
         handlePendingEventsAndPromisesSoon();
 }
 

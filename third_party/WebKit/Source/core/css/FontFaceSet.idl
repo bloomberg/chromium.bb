@@ -34,7 +34,6 @@ enum FontFaceSetLoadStatus { "loading", "loaded" };
     ActiveDOMObject,
     SetWrapperReferenceFrom=document,
     NoInterfaceObject,
-    RuntimeEnabled=FontLoadEvents,
 ] interface FontFaceSet : EventTarget {
 
     attribute EventHandler onloading;
