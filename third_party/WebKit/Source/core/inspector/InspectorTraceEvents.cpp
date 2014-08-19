@@ -35,7 +35,7 @@ class JSCallStack : public TraceEvent::ConvertableToTraceFormat  {
 public:
     explicit JSCallStack(PassRefPtrWillBeRawPtr<ScriptCallStack> callstack)
     {
-        m_serialized = callstack ? callstack->buildInspectorArray()->toJSONString() : "null";
+        m_serialized = callstack ? callstack->buildInspectorArray()->toJSONString() : "[]";
         ASSERT(m_serialized.isSafeToSendToAnotherThread());
     }
     virtual String asTraceFormat() const
