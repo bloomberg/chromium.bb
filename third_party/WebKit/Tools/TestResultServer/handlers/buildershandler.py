@@ -62,7 +62,6 @@ TEST_STEPS_THAT_DO_NOT_UPLOAD_YET = [
     'test_report',
     'test CronetSample',
     'test_mini_installer',
-    'telemetry_unittests',
     'webkit_python_tests',
     'webkit_unit_tests',
 ]
