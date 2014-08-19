@@ -206,7 +206,7 @@ void SyncTaskManager::NotifyTaskDoneBody(scoped_ptr<SyncTaskToken> token,
 
   DVLOG(3) << "NotifyTaskDone: " << "finished with status=" << status
            << " (" << SyncStatusCodeToString(status) << ")"
-           << " " << token_->location().ToString();
+           << " " << token->location().ToString();
 
   if (token->blocking_factor()) {
     dependency_manager_.Erase(token->blocking_factor());
