@@ -13,9 +13,6 @@
       'include_dirs': [
         '..',
       ],
-      'defines': [
-        'CRX_FILE_IMPLEMENTATION',
-      ],
       'sources': [
         'crx_file/constants.h',
         'crx_file/crx_file.cc',
