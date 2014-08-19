@@ -270,13 +270,13 @@ void BitmapImage::draw(GraphicsContext* ctxt, const FloatRect& dstRect, const Fl
     // causing flicker and wasting CPU.
     startAnimation();
 
-    RefPtr<NativeImageSkia> bm = nativeImageForCurrentFrame();
-    if (!bm)
+    RefPtr<NativeImageSkia> image = nativeImageForCurrentFrame();
+    if (!image)
         return; // It's too early and we don't have an image yet.
 
     FloatRect normDstRect = adjustForNegativeSize(dstRect);
     FloatRect normSrcRect = adjustForNegativeSize(srcRect);
-    normSrcRect.intersect(FloatRect(0, 0, bm->bitmap().width(), bm->bitmap().height()));
+    normSrcRect.intersect(FloatRect(0, 0, image->bitmap().width(), image->bitmap().height()));
 
     if (normSrcRect.isEmpty() || normDstRect.isEmpty())
         return; // Nothing to draw.
@@ -302,7 +302,7 @@ void BitmapImage::draw(GraphicsContext* ctxt, const FloatRect& dstRect, const Fl
         }
     }
 
-    bm->draw(ctxt, normSrcRect, normDstRect, compositeOp, blendMode);
+    image->draw(ctxt, normSrcRect, normDstRect, compositeOp, blendMode);
 
     if (ImageObserver* observer = imageObserver())
         observer->didDraw(this);
