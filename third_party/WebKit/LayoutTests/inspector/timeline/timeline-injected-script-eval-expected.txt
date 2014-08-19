@@ -2,7 +2,6 @@ Tests the Timeline API function call record for InjectedScript.eval call feature
 
 FunctionCall Properties:
 {
-    children : <object>
     data : {
         scriptId : <string>
         scriptLine : <number>
@@ -11,11 +10,11 @@ FunctionCall Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
+    thread : <string>
     type : "FunctionCall"
 }
 FunctionCall Properties:
 {
-    children : <object>
     data : {
         scriptId : <string>
         scriptLine : <number>
@@ -24,6 +23,7 @@ FunctionCall Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
+    thread : <string>
     type : "FunctionCall"
 }
 

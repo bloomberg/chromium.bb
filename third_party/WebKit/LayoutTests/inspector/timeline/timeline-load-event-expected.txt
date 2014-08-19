@@ -7,8 +7,10 @@ MarkDOMContent Properties:
     data : {
         isMainFrame : true
     }
+    endTime : <number>
     frameId : <string>
     startTime : <number>
+    thread : <string>
     type : "MarkDOMContent"
 }
 MarkLoad Properties:
@@ -16,8 +18,10 @@ MarkLoad Properties:
     data : {
         isMainFrame : true
     }
+    endTime : <number>
     frameId : <string>
     startTime : <number>
+    thread : <string>
     type : "MarkLoad"
 }
 Timestamp records:
@@ -26,8 +30,10 @@ MarkDOMContent Properties:
     data : {
         isMainFrame : true
     }
+    endTime : <number>
     frameId : <string>
     startTime : <number>
+    thread : <string>
     type : "MarkDOMContent"
 }
 MarkLoad Properties:
@@ -35,8 +41,10 @@ MarkLoad Properties:
     data : {
         isMainFrame : true
     }
+    endTime : <number>
     frameId : <string>
     startTime : <number>
+    thread : <string>
     type : "MarkLoad"
 }
 

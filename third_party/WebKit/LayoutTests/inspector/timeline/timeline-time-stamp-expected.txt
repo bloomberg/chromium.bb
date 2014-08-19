@@ -5,9 +5,11 @@ TimeStamp Properties:
     data : {
         message : "TIME STAMP"
     }
+    endTime : <number>
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
+    thread : <string>
     type : "TimeStamp"
 }
 Timestamp records: 
@@ -16,9 +18,11 @@ TimeStamp Properties:
     data : {
         message : "TIME STAMP"
     }
+    endTime : <number>
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
+    thread : <string>
     type : "TimeStamp"
 }
 

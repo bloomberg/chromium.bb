@@ -7,9 +7,11 @@ WebSocketCreate Properties:
         identifier : <number>
         url : ws://127.0.0.1:8880/simple
     }
+    endTime : <number>
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
+    thread : <string>
     type : "WebSocketCreate"
 }
 WebSocketSendHandshakeRequest Properties:
@@ -17,8 +19,10 @@ WebSocketSendHandshakeRequest Properties:
     data : {
         identifier : <number>
     }
+    endTime : <number>
     frameId : <string>
     startTime : <number>
+    thread : <string>
     type : "WebSocketSendHandshakeRequest"
 }
 WebSocketReceiveHandshakeResponse Properties:
@@ -26,8 +30,10 @@ WebSocketReceiveHandshakeResponse Properties:
     data : {
         identifier : <number>
     }
+    endTime : <number>
     frameId : <string>
     startTime : <number>
+    thread : <string>
     type : "WebSocketReceiveHandshakeResponse"
 }
 WebSocketDestroy Properties:
@@ -35,8 +41,10 @@ WebSocketDestroy Properties:
     data : {
         identifier : <number>
     }
+    endTime : <number>
     frameId : <string>
     startTime : <number>
+    thread : <string>
     type : "WebSocketDestroy"
 }
 

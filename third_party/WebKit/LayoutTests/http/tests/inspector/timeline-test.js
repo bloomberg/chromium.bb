@@ -134,7 +134,7 @@ InspectorTest.innerPrintTimelineRecords = function(records, typeName, formatter)
 
 InspectorTest._printTimlineRecord = function(typeName, formatter, record)
 {
-    if (typeName && record.type() === WebInspector.TimelineModel.RecordType[typeName])
+    if (typeName && record.type() === typeName)
         InspectorTest.printTimelineRecordProperties(record);
     if (formatter)
         formatter(record);
@@ -144,7 +144,7 @@ InspectorTest._printTimlineRecord = function(typeName, formatter, record)
 InspectorTest.innerPrintTimelinePresentationRecords = function(records, typeName, formatter)
 {
     for (var i = 0; i < records.length; ++i) {
-        if (typeName && records[i].type() === WebInspector.TimelineModel.RecordType[typeName])
+        if (typeName && records[i].type() === typeName)
             InspectorTest.printTimelineRecordProperties(records[i]);
         if (formatter)
             formatter(records[i]);
@@ -236,10 +236,17 @@ InspectorTest.dumpTimelineRecords = function(timelineRecords)
 InspectorTest.printTimelineRecordProperties = function(record)
 {
     InspectorTest.addResult(record.type() + " Properties:");
-    // Use this recursive routine to print the properties
-    if (record instanceof WebInspector.TimelineModel.RecordImpl)
-        record = record._record;
-    InspectorTest.addObject(record, InspectorTest.timelinePropertyFormatters);
+    var object = {};
+    var names = ["data", "endTime", "frameId", "stackTrace", "startTime", "thread", "type"];
+    for (var i = 0; i < names.length; i++) {
+        var name = names[i];
+        var value = record[name].call(record)
+        if (value)
+            object[name] = value;
+    }
+    if (record.children().length)
+        object["children"] = [];
+    InspectorTest.addObject(object, InspectorTest.timelinePropertyFormatters);
 };
 
 InspectorTest.findFirstTimelineRecord = function(type)

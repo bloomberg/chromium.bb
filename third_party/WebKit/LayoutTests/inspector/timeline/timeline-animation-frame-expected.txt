@@ -5,9 +5,11 @@ RequestAnimationFrame Properties:
     data : {
         id : <number>
     }
+    endTime : <number>
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
+    thread : <string>
     type : "RequestAnimationFrame"
 }
 FireAnimationFrame Properties:
@@ -19,6 +21,7 @@ FireAnimationFrame Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
+    thread : <string>
     type : "FireAnimationFrame"
 }
 CancelAnimationFrame Properties:
@@ -26,9 +29,11 @@ CancelAnimationFrame Properties:
     data : {
         id : <number>
     }
+    endTime : <number>
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
+    thread : <string>
     type : "CancelAnimationFrame"
 }
 

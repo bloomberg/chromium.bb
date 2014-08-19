@@ -25,7 +25,6 @@ DecodeImage Properties:
 }
 DecodeImage Properties:
 {
-    children : <object>
     data : {
         backendNodeId : <number>
         imageType : "ICO"
@@ -33,6 +32,7 @@ DecodeImage Properties:
     }
     endTime : <number>
     startTime : <number>
+    thread : <string>
     type : "DecodeImage"
 }
 DecodeImage Properties:

@@ -13,6 +13,7 @@ Paint Properties:
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
+    thread : <string>
     type : "Paint"
 }
 

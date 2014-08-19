@@ -7,9 +7,11 @@ TimerInstall Properties:
         timeout : 10
         timerId : <number>
     }
+    endTime : <number>
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
+    thread : <string>
     type : "TimerInstall"
 }
 TimerInstall Properties:
@@ -19,9 +21,11 @@ TimerInstall Properties:
         timeout : 20
         timerId : <number>
     }
+    endTime : <number>
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
+    thread : <string>
     type : "TimerInstall"
 }
 TimerFire Properties:
@@ -33,6 +37,7 @@ TimerFire Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
+    thread : <string>
     type : "TimerFire"
 }
 TimerFire Properties:
@@ -44,6 +49,7 @@ TimerFire Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
+    thread : <string>
     type : "TimerFire"
 }
 TimerFire Properties:
@@ -55,6 +61,7 @@ TimerFire Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
+    thread : <string>
     type : "TimerFire"
 }
 TimerRemove Properties:
@@ -62,14 +69,15 @@ TimerRemove Properties:
     data : {
         timerId : <number>
     }
+    endTime : <number>
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
+    thread : <string>
     type : "TimerRemove"
 }
 FunctionCall Properties:
 {
-    children : <object>
     data : {
         scriptId : <string>
         scriptLine : <number>
@@ -78,6 +86,7 @@ FunctionCall Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
+    thread : <string>
     type : "FunctionCall"
 }
 FunctionCall Properties:
@@ -91,6 +100,20 @@ FunctionCall Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
+    thread : <string>
+    type : "FunctionCall"
+}
+FunctionCall Properties:
+{
+    data : {
+        scriptId : <string>
+        scriptLine : <number>
+        scriptName : <string>
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    thread : <string>
     type : "FunctionCall"
 }
 FunctionCall Properties:
@@ -104,24 +127,11 @@ FunctionCall Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
-    type : "FunctionCall"
-}
-FunctionCall Properties:
-{
-    children : <object>
-    data : {
-        scriptId : <string>
-        scriptLine : <number>
-        scriptName : <string>
-    }
-    endTime : <number>
-    frameId : <string>
-    startTime : <number>
+    thread : <string>
     type : "FunctionCall"
 }
 EvaluateScript Properties:
 {
-    children : <object>
     data : {
         lineNumber : <number>
         url : 
@@ -129,6 +139,7 @@ EvaluateScript Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
+    thread : <string>
     type : "EvaluateScript"
 }
 

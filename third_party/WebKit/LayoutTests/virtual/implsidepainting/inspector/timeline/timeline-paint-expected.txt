@@ -12,6 +12,7 @@ Paint Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
+    thread : <string>
     type : "Paint"
 }
 

@@ -10,6 +10,7 @@ XHRReadyStateChange Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
+    thread : <string>
     type : "XHRReadyStateChange"
 }
 XHRReadyStateChange Properties:
@@ -22,6 +23,7 @@ XHRReadyStateChange Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
+    thread : <string>
     type : "XHRReadyStateChange"
 }
 XHRReadyStateChange Properties:
@@ -34,6 +36,7 @@ XHRReadyStateChange Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
+    thread : <string>
     type : "XHRReadyStateChange"
 }
 XHRLoad Properties:
@@ -45,6 +48,7 @@ XHRLoad Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
+    thread : <string>
     type : "XHRLoad"
 }
 

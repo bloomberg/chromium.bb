@@ -16,6 +16,7 @@ EvaluateScript Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
+    thread : <string>
     type : "EvaluateScript"
 }
 ParseHTML

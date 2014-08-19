@@ -7,7 +7,6 @@ text
 text
 Layout Properties:
 {
-    children : <object>
     data : {
         backendNodeId : <number>
         dirtyObjects : 3
@@ -19,11 +18,11 @@ Layout Properties:
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
+    thread : <string>
     type : "Layout"
 }
 Layout Properties:
 {
-    children : <object>
     data : {
         backendNodeId : <number>
         dirtyObjects : 2
@@ -35,6 +34,7 @@ Layout Properties:
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
+    thread : <string>
     type : "Layout"
 }
 

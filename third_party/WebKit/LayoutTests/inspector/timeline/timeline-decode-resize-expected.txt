@@ -3,7 +3,6 @@ Tests the Timeline API instrumentation of a DecodeImage and ResizeImage events
 
 DecodeImage Properties:
 {
-    children : <object>
     data : {
         backendNodeId : <number>
         imageType : "BMP"
@@ -11,11 +10,11 @@ DecodeImage Properties:
     }
     endTime : <number>
     startTime : <number>
+    thread : <string>
     type : "DecodeImage"
 }
 DecodeImage Properties:
 {
-    children : <object>
     data : {
         backendNodeId : <number>
         imageType : "GIF"
@@ -23,11 +22,11 @@ DecodeImage Properties:
     }
     endTime : <number>
     startTime : <number>
+    thread : <string>
     type : "DecodeImage"
 }
 DecodeImage Properties:
 {
-    children : <object>
     data : {
         backendNodeId : <number>
         imageType : "ICO"
@@ -35,11 +34,11 @@ DecodeImage Properties:
     }
     endTime : <number>
     startTime : <number>
+    thread : <string>
     type : "DecodeImage"
 }
 DecodeImage Properties:
 {
-    children : <object>
     data : {
         backendNodeId : <number>
         imageType : "JPEG"
@@ -47,11 +46,11 @@ DecodeImage Properties:
     }
     endTime : <number>
     startTime : <number>
+    thread : <string>
     type : "DecodeImage"
 }
 DecodeImage Properties:
 {
-    children : <object>
     data : {
         backendNodeId : <number>
         imageType : "PNG"
@@ -59,11 +58,11 @@ DecodeImage Properties:
     }
     endTime : <number>
     startTime : <number>
+    thread : <string>
     type : "DecodeImage"
 }
 DecodeImage Properties:
 {
-    children : <object>
     data : {
         backendNodeId : <number>
         imageType : "WEBP"
@@ -71,11 +70,11 @@ DecodeImage Properties:
     }
     endTime : <number>
     startTime : <number>
+    thread : <string>
     type : "DecodeImage"
 }
 DecodeImage Properties:
 {
-    children : <object>
     data : {
         backendNodeId : <number>
         imageType : "PNG"
@@ -83,6 +82,7 @@ DecodeImage Properties:
     }
     endTime : <number>
     startTime : <number>
+    thread : <string>
     type : "DecodeImage"
 }
 

@@ -9,9 +9,11 @@ ResourceSendRequest Properties:
         requestMethod : "GET"
         url : .../inspector/timeline/timeline-network-resource.js
     }
+    endTime : <number>
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
+    thread : <string>
     type : "ResourceSendRequest"
 }
 
@@ -22,7 +24,9 @@ ResourceReceiveResponse Properties:
         requestId : <string>
         statusCode : 0
     }
+    endTime : <number>
     startTime : <number>
+    thread : <string>
     type : "ResourceReceiveResponse"
 }
 
@@ -33,7 +37,9 @@ ResourceFinish Properties:
         networkTime : <number>
         requestId : <string>
     }
+    endTime : <number>
     startTime : <number>
+    thread : <string>
     type : "ResourceFinish"
 }
 

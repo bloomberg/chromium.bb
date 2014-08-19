@@ -6,9 +6,11 @@ TimeStamp Properties:
     data : {
         message : "MARK TIMELINE"
     }
+    endTime : <number>
     frameId : <string>
     stackTrace : <object>
     startTime : <number>
+    thread : <string>
     type : "TimeStamp"
 }
 

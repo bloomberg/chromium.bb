@@ -10,6 +10,7 @@ EventDispatch Properties:
     endTime : <number>
     frameId : <string>
     startTime : <number>
+    thread : <string>
     type : "EventDispatch"
 }
 
