@@ -43,11 +43,11 @@
 #include "core/frame/LocalFrame.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderView.h"
+#include "core/testing/URLTestHelpers.h"
 #include "public/web/WebFrame.h"
 #include "public/web/WebSettings.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
-#include "web/tests/URLTestHelpers.h"
 #include <gtest/gtest.h>
 
 using namespace blink;

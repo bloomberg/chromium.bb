@@ -31,6 +31,7 @@
 #include "core/rendering/RenderWidget.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
+#include "core/testing/URLTestHelpers.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebLayer.h"
@@ -42,7 +43,6 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
-#include "web/tests/URLTestHelpers.h"
 #include <gtest/gtest.h>
 
 using namespace blink;

@@ -29,6 +29,7 @@
  */
 #include "config.h"
 
+#include "core/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebThread.h"
@@ -44,7 +45,6 @@
 #include "public/web/WebSettings.h"
 #include "public/web/WebView.h"
 #include "web/tests/FrameTestHelpers.h"
-#include "web/tests/URLTestHelpers.h"
 #include <gtest/gtest.h>
 
 using namespace blink;

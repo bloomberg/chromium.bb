@@ -8,12 +8,12 @@
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/html/HTMLElement.h"
+#include "core/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
 #include "public/web/WebDocument.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
-#include "web/tests/URLTestHelpers.h"
 
 #include <gtest/gtest.h>
 

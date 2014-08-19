@@ -36,6 +36,7 @@
 #include "core/page/InjectedStyleSheets.h"
 #include "core/page/Page.h"
 #include "core/page/PageScaleConstraints.h"
+#include "core/testing/URLTestHelpers.h"
 #include "platform/Length.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
@@ -49,7 +50,6 @@
 #include "public/web/WebSettings.h"
 #include "public/web/WebViewClient.h"
 #include "web/tests/FrameTestHelpers.h"
-#include "web/tests/URLTestHelpers.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 

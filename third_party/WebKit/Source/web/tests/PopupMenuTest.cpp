@@ -36,6 +36,7 @@
 #include "core/html/HTMLSelectElement.h"
 #include "core/page/EventHandler.h"
 #include "core/rendering/RenderMenuList.h"
+#include "core/testing/URLTestHelpers.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/PopupMenu.h"
@@ -66,7 +67,6 @@
 #include "web/WebPopupMenuImpl.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
-#include "web/tests/URLTestHelpers.h"
 #include <gtest/gtest.h>
 
 using namespace blink;

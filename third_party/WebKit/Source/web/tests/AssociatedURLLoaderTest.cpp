@@ -30,6 +30,7 @@
 
 #include "config.h"
 
+#include "core/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebThread.h"
@@ -43,7 +44,6 @@
 #include "public/web/WebURLLoaderOptions.h"
 #include "public/web/WebView.h"
 #include "web/tests/FrameTestHelpers.h"
-#include "web/tests/URLTestHelpers.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 

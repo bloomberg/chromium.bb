@@ -3370,6 +3370,8 @@
             'testing/RefCountedScriptWrappable.cpp',
             'testing/RefCountedScriptWrappable.h',
             'testing/TypeConversions.h',
+            'testing/URLTestHelpers.cpp',
+            'testing/URLTestHelpers.h',
             'testing/v8/WebCoreTestSupport.cpp',
             'testing/v8/WebCoreTestSupport.h',
         ],

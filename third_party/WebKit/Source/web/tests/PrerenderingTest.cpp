@@ -30,6 +30,7 @@
 
 #include "config.h"
 
+#include "core/testing/URLTestHelpers.h"
 #include "public/web/WebCache.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebElement.h"
@@ -41,7 +42,6 @@
 #include "public/web/WebView.h"
 #include "public/web/WebViewClient.h"
 #include "web/tests/FrameTestHelpers.h"
-#include "web/tests/URLTestHelpers.h"
 
 #include "public/platform/Platform.h"
 #include "public/platform/WebPrerender.h"

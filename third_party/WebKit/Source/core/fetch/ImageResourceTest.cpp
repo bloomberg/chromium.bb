@@ -39,6 +39,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/UniqueIdentifier.h"
 #include "core/testing/DummyPageHolder.h"
+#include "core/testing/URLTestHelpers.h"
 #include "core/testing/UnitTestHelpers.h"
 #include "platform/SharedBuffer.h"
 #include "public/platform/Platform.h"
@@ -97,12 +98,7 @@ TEST(ImageResourceTest, MultipartImage)
 TEST(ImageResourceTest, CancelOnDetach)
 {
     KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
-
-    blink::WebURLResponse response;
-    response.initialize();
-    response.setMIMEType("text/html");
-    WTF::String localPath = String(blink::Platform::current()->unitTestSupport()->webKitRootDir()) + "/Source/web/tests/data/cancelTest.html";
-    blink::Platform::current()->unitTestSupport()->registerMockedURL(testURL, response, localPath);
+    URLTestHelpers::registerMockedURLLoad(testURL, "cancelTest.html", "text/html");
 
     // Create enough of a mocked world to get a functioning ResourceLoader.
     OwnPtr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create();

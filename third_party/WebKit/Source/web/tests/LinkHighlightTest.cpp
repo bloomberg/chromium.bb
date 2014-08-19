@@ -30,6 +30,7 @@
 #include "core/dom/Node.h"
 #include "core/frame/FrameView.h"
 #include "core/page/TouchDisambiguation.h"
+#include "core/testing/URLTestHelpers.h"
 #include "platform/geometry/IntRect.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebContentLayer.h"
@@ -44,7 +45,6 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
-#include "web/tests/URLTestHelpers.h"
 #include "wtf/PassOwnPtr.h"
 #include <gtest/gtest.h>
 

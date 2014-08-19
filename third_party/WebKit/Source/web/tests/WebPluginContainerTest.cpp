@@ -32,6 +32,7 @@
 #include "public/web/WebPluginContainer.h"
 
 #include "core/dom/Element.h"
+#include "core/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebClipboard.h"
 #include "public/platform/WebThread.h"
@@ -48,7 +49,6 @@
 #include "web/WebViewImpl.h"
 #include "web/tests/FakeWebPlugin.h"
 #include "web/tests/FrameTestHelpers.h"
-#include "web/tests/URLTestHelpers.h"
 #include <gtest/gtest.h>
 
 using namespace blink;

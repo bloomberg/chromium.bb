@@ -290,8 +290,6 @@
       'tests/SpinLockTest.cpp',
       'tests/TextFinderTest.cpp',
       'tests/TouchActionTest.cpp',
-      'tests/URLTestHelpers.cpp',
-      'tests/URLTestHelpers.h',
       'tests/ViewportTest.cpp',
       'tests/WebDocumentTest.cpp',
       'tests/WebFrameTest.cpp',

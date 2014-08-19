@@ -47,6 +47,7 @@
 #include "core/page/Page.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
+#include "core/testing/URLTestHelpers.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/Color.h"
@@ -78,7 +79,6 @@
 #include "web/WebSettingsImpl.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
-#include "web/tests/URLTestHelpers.h"
 #include <gtest/gtest.h>
 
 using namespace blink;

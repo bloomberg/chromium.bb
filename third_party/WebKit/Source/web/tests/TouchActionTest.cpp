@@ -41,6 +41,7 @@
 #include "core/page/EventHandler.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderTreeAsText.h"
+#include "core/testing/URLTestHelpers.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
@@ -54,7 +55,6 @@
 #include "public/web/WebWidgetClient.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
-#include "web/tests/URLTestHelpers.h"
 
 #include <gtest/gtest.h>
 

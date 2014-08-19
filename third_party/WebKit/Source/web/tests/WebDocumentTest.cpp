@@ -13,9 +13,9 @@
 #include "core/html/HTMLElement.h"
 #include "core/page/Page.h"
 #include "core/rendering/style/RenderStyle.h"
+#include "core/testing/URLTestHelpers.h"
 #include "platform/graphics/Color.h"
 #include "web/tests/FrameTestHelpers.h"
-#include "web/tests/URLTestHelpers.h"
 
 #include <gtest/gtest.h>
 
