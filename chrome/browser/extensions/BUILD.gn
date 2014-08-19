@@ -36,7 +36,6 @@ static_library("extensions") {
     "//chrome/app/resources:platform_locale_settings",
     "//chrome/app/theme:theme_resources",
     "//chrome/browser/history:in_memory_url_index_cache_proto",
-    "//chrome/browser/sync_file_system:sync_file_system_proto",
     "//chrome/common",
     "//chrome/common/extensions/api",
     "//chrome/common/net",

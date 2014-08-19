@@ -975,7 +975,6 @@
         'in_memory_url_index_cache_proto',
         'installer_util',
         'safe_browsing_proto',
-        'sync_file_system_proto',
         '../components/components.gyp:copresence',
         '../components/components.gyp:omaha_query_params',
         '../components/components.gyp:onc_component',

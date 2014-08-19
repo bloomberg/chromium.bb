@@ -77,26 +77,8 @@ bool SerializeSyncableFileSystemURL(
 bool DeserializeSyncableFileSystemURL(
     const std::string& serialized_url, fileapi::FileSystemURL* url);
 
-// Returns true if V2 is enabled.
-bool IsV2Enabled();
-
-// Returns true if the given |origin| is supposed to run in V2 mode.
-bool IsV2EnabledForOrigin(const GURL& origin);
-
 // Returns SyncFileSystem sub-directory path.
 base::FilePath GetSyncFileSystemDir(const base::FilePath& profile_base_dir);
-
-// Disables V2 backend for syncable filesystems temporarily for testing.
-class ScopedDisableSyncFSV2 {
- public:
-  ScopedDisableSyncFSV2();
-  ~ScopedDisableSyncFSV2();
-
- private:
-  bool was_enabled_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedDisableSyncFSV2);
-};
 
 // Posts |callback| to the current thread.
 void RunSoon(const tracked_objects::Location& from_here,

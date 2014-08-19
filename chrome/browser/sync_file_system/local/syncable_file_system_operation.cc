@@ -104,10 +104,6 @@ void SyncableFileSystemOperation::CreateDirectory(
     callback.Run(base::File::FILE_ERROR_NOT_FOUND);
     return;
   }
-  if (!is_directory_operation_enabled_) {
-    callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
-    return;
-  }
   DCHECK(operation_runner_.get());
   target_paths_.push_back(url);
   completion_callback_ = callback;
@@ -370,7 +366,6 @@ SyncableFileSystemOperation::SyncableFileSystemOperation(
   impl_.reset(fileapi::FileSystemOperation::Create(
       url_, file_system_context, operation_context.Pass()));
   operation_runner_ = backend->sync_context()->operation_runner();
-  is_directory_operation_enabled_ = IsV2EnabledForOrigin(url.origin());
 }
 
 void SyncableFileSystemOperation::DidFinish(base::File::Error status) {

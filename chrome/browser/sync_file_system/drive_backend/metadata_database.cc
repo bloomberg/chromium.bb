@@ -250,24 +250,11 @@ SyncStatusCode MigrateDatabaseIfNeeded(LevelDBWrapper* db) {
 
   switch (version) {
     case 0:
-      drive_backend::MigrateDatabaseFromV0ToV1(db->GetLevelDB());
-      // fall-through
     case 1:
-      drive_backend::MigrateDatabaseFromV1ToV2(db->GetLevelDB());
-      // fall-through
     case 2:
-      // TODO(tzik): Migrate database from version 2 to 3.
-      //   * Add sync-root folder as active, dirty and needs_folder_listing
-      //     folder.
-      //   * Add app-root folders for each origins.  Each app-root folder for
-      //     an enabled origin should be a active, dirty and
-      //     needs_folder_listing folder.  And Each app-root folder for a
-      //     disabled origin should be an inactive, dirty and
-      //     non-needs_folder_listing folder.
-      //   * Add a file metadata for each file in previous version.
-      NOTIMPLEMENTED();
+      // Drop all data in old database and refetch them from the remote service.
+      NOTREACHED();
       return SYNC_DATABASE_ERROR_FAILED;
-      // fall-through
     case 3:
       DCHECK_EQ(3, kCurrentDatabaseVersion);
       // If MetadataDatabaseOnDisk is enabled, migration will be done in

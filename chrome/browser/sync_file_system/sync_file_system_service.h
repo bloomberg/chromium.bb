@@ -112,17 +112,10 @@ class SyncFileSystemService
 
   void DidDumpDatabase(const DumpFilesCallback& callback,
                        scoped_ptr<base::ListValue> list);
-  void DidDumpV2Database(const DumpFilesCallback& callback,
-                         scoped_ptr<base::ListValue> v1list,
-                         scoped_ptr<base::ListValue> v2list);
 
   void DidGetExtensionStatusMap(
       const ExtensionStatusMapCallback& callback,
       scoped_ptr<RemoteFileSyncService::OriginStatusMap> status_map);
-  void DidGetV2ExtensionStatusMap(
-      const ExtensionStatusMapCallback& callback,
-      scoped_ptr<RemoteFileSyncService::OriginStatusMap> status_map_v1,
-      scoped_ptr<RemoteFileSyncService::OriginStatusMap> status_map_v2);
 
   // Overrides sync_enabled_ setting. This should be called only by tests.
   void SetSyncEnabledForTesting(bool enabled);
@@ -178,11 +171,6 @@ class SyncFileSystemService
 
   scoped_ptr<LocalFileSyncService> local_service_;
   scoped_ptr<RemoteFileSyncService> remote_service_;
-
-  // Holds v2 RemoteFileSyncService, gets created lazily
-  // in case we need to run multiple remote services depending on origin/app.
-  // (crbug.com/324215)
-  scoped_ptr<RemoteFileSyncService> v2_remote_service_;
 
   // Holds all SyncProcessRunners.
   ScopedVector<SyncProcessRunner> local_sync_runners_;

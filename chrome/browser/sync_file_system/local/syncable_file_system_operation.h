@@ -123,8 +123,6 @@ class SyncableFileSystemOperation
 
   StatusCallback completion_callback_;
 
-  bool is_directory_operation_enabled_;
-
   base::WeakPtrFactory<SyncableFileSystemOperation> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncableFileSystemOperation);

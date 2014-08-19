@@ -50,7 +50,6 @@ namespace {
 
 const char kLocalSyncName[] = "Local sync";
 const char kRemoteSyncName[] = "Remote sync";
-const char kRemoteSyncNameV2[] = "Remote sync (v2)";
 
 SyncServiceState RemoteStateToSyncServiceState(
     RemoteServiceState state) {
@@ -260,7 +259,6 @@ void SyncFileSystemService::Shutdown() {
   local_service_.reset();
 
   remote_service_.reset();
-  v2_remote_service_.reset();
 
   ProfileSyncServiceBase* profile_sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
@@ -372,8 +370,6 @@ void SyncFileSystemService::OnSyncIdle() {
     local_changes += (*iter)->pending_changes();
   if (local_changes == 0) {
     remote_service_->PromoteDemotedChanges(NoopClosure());
-    if (v2_remote_service_)
-      v2_remote_service_->PromoteDemotedChanges(NoopClosure());
   }
 }
 
@@ -534,38 +530,11 @@ void SyncFileSystemService::DidDumpFiles(
   }
 }
 
-void SyncFileSystemService::DidDumpDatabase(
-    const DumpFilesCallback& callback, scoped_ptr<base::ListValue> list) {
+void SyncFileSystemService::DidDumpDatabase(const DumpFilesCallback& callback,
+                                            scoped_ptr<base::ListValue> list) {
   if (!list)
     list = make_scoped_ptr(new base::ListValue);
-
-  if (!v2_remote_service_) {
-    callback.Run(*list);
-    return;
-  }
-
-  v2_remote_service_->DumpDatabase(
-      base::Bind(&SyncFileSystemService::DidDumpV2Database,
-                 AsWeakPtr(), callback, base::Passed(&list)));
-}
-
-void SyncFileSystemService::DidDumpV2Database(
-    const DumpFilesCallback& callback,
-    scoped_ptr<base::ListValue> v1list,
-    scoped_ptr<base::ListValue> v2list) {
-  if (!v1list)
-    v1list = make_scoped_ptr(new base::ListValue);
-
-  if (v2list) {
-    for (base::ListValue::iterator itr = v2list->begin();
-         itr != v2list->end();) {
-      scoped_ptr<base::Value> item;
-      itr = v2list->Erase(itr, &item);
-      v1list->Append(item.release());
-    }
-  }
-
-  callback.Run(*v1list);
+  callback.Run(*list);
 }
 
 void SyncFileSystemService::DidGetExtensionStatusMap(
@@ -573,36 +542,12 @@ void SyncFileSystemService::DidGetExtensionStatusMap(
     scoped_ptr<RemoteFileSyncService::OriginStatusMap> status_map) {
   if (!status_map)
     status_map = make_scoped_ptr(new RemoteFileSyncService::OriginStatusMap);
-  if (!v2_remote_service_) {
-    callback.Run(*status_map);
-    return;
-  }
-
-  v2_remote_service_->GetOriginStatusMap(
-      base::Bind(&SyncFileSystemService::DidGetV2ExtensionStatusMap,
-                 AsWeakPtr(),
-                 callback,
-                 base::Passed(&status_map)));
-}
-
-void SyncFileSystemService::DidGetV2ExtensionStatusMap(
-    const ExtensionStatusMapCallback& callback,
-    scoped_ptr<RemoteFileSyncService::OriginStatusMap> status_map_v1,
-    scoped_ptr<RemoteFileSyncService::OriginStatusMap> status_map_v2) {
-  // Merge |status_map_v2| into |status_map_v1|.
-  if (!status_map_v1)
-    status_map_v1 = make_scoped_ptr(new RemoteFileSyncService::OriginStatusMap);
-  if (status_map_v2)
-    status_map_v1->insert(status_map_v2->begin(), status_map_v2->end());
-
-  callback.Run(*status_map_v1);
+  callback.Run(*status_map);
 }
 
 void SyncFileSystemService::SetSyncEnabledForTesting(bool enabled) {
   sync_enabled_ = enabled;
   remote_service_->SetSyncEnabled(sync_enabled_);
-  if (v2_remote_service_)
-    v2_remote_service_->SetSyncEnabled(sync_enabled_);
 }
 
 void SyncFileSystemService::DidGetLocalChangeStatus(
@@ -730,8 +675,6 @@ void SyncFileSystemService::UpdateSyncEnabledStatus(
   sync_enabled_ = profile_sync_service->GetActiveDataTypes().Has(
       syncer::APPS);
   remote_service_->SetSyncEnabled(sync_enabled_);
-  if (v2_remote_service_)
-    v2_remote_service_->SetSyncEnabled(sync_enabled_);
   if (!old_sync_enabled && sync_enabled_)
     RunForEachSyncRunners(&SyncProcessRunner::Schedule);
 }
@@ -750,24 +693,7 @@ void SyncFileSystemService::RunForEachSyncRunners(
 
 RemoteFileSyncService* SyncFileSystemService::GetRemoteService(
     const GURL& origin) {
-  if (IsV2Enabled())
-    return remote_service_.get();
-  if (!IsV2EnabledForOrigin(origin))
-    return remote_service_.get();
-
-  if (!v2_remote_service_) {
-    v2_remote_service_ = RemoteFileSyncService::CreateForBrowserContext(
-        RemoteFileSyncService::V2, profile_, &task_logger_);
-    scoped_ptr<RemoteSyncRunner> v2_remote_syncer(
-        new RemoteSyncRunner(kRemoteSyncNameV2, this,
-                             v2_remote_service_.get()));
-    v2_remote_service_->AddServiceObserver(v2_remote_syncer.get());
-    v2_remote_service_->AddFileStatusObserver(this);
-    v2_remote_service_->SetRemoteChangeProcessor(local_service_.get());
-    v2_remote_service_->SetSyncEnabled(sync_enabled_);
-    remote_sync_runners_.push_back(v2_remote_syncer.release());
-  }
-  return v2_remote_service_.get();
+  return remote_service_.get();
 }
 
 }  // namespace sync_file_system

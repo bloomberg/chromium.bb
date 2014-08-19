@@ -1529,8 +1529,6 @@
       'browser/speech/extension_api/tts_extension_api.cc',
       'browser/speech/extension_api/tts_extension_api.h',
       'browser/sync_file_system/conflict_resolution_policy.h',
-      'browser/sync_file_system/conflict_resolution_resolver.cc',
-      'browser/sync_file_system/conflict_resolution_resolver.h',
       'browser/sync_file_system/drive_backend/callback_helper.h',
       'browser/sync_file_system/drive_backend/callback_tracker.cc',
       'browser/sync_file_system/drive_backend/callback_tracker.h',
@@ -1596,27 +1594,6 @@
       'browser/sync_file_system/drive_backend/tracker_id_set.h',
       'browser/sync_file_system/drive_backend/uninstall_app_task.cc',
       'browser/sync_file_system/drive_backend/uninstall_app_task.h',
-      'browser/sync_file_system/drive_backend_v1/api_util.cc',
-      'browser/sync_file_system/drive_backend_v1/api_util.h',
-      'browser/sync_file_system/drive_backend_v1/api_util_interface.h',
-      'browser/sync_file_system/drive_backend_v1/drive_file_sync_service.cc',
-      'browser/sync_file_system/drive_backend_v1/drive_file_sync_service.h',
-      'browser/sync_file_system/drive_backend_v1/drive_file_sync_util.cc',
-      'browser/sync_file_system/drive_backend_v1/drive_file_sync_util.h',
-      'browser/sync_file_system/drive_backend_v1/drive_metadata_store.cc',
-      'browser/sync_file_system/drive_backend_v1/drive_metadata_store.h',
-      'browser/sync_file_system/drive_backend_v1/local_sync_delegate.cc',
-      'browser/sync_file_system/drive_backend_v1/local_sync_delegate.h',
-      'browser/sync_file_system/drive_backend_v1/local_sync_operation_resolver.cc',
-      'browser/sync_file_system/drive_backend_v1/local_sync_operation_resolver.h',
-      'browser/sync_file_system/drive_backend_v1/origin_operation_queue.cc',
-      'browser/sync_file_system/drive_backend_v1/origin_operation_queue.h',
-      'browser/sync_file_system/drive_backend_v1/remote_change_handler.cc',
-      'browser/sync_file_system/drive_backend_v1/remote_change_handler.h',
-      'browser/sync_file_system/drive_backend_v1/remote_sync_delegate.cc',
-      'browser/sync_file_system/drive_backend_v1/remote_sync_delegate.h',
-      'browser/sync_file_system/drive_backend_v1/remote_sync_operation_resolver.cc',
-      'browser/sync_file_system/drive_backend_v1/remote_sync_operation_resolver.h',
       'browser/sync_file_system/file_change.cc',
       'browser/sync_file_system/file_change.h',
       'browser/sync_file_system/file_status_observer.h',
@@ -3052,7 +3029,6 @@
           'dependencies': [
             'browser_extensions',
             'sync_file_system_drive_proto',
-            'sync_file_system_proto',
           ],
           'sources': [ '<@(chrome_browser_extensions_sources)' ],
         }],
@@ -3592,20 +3568,6 @@
     },],
     ['enable_extensions==1', {
       'targets': [
-        {
-          # Protobuf compiler / generator for Sync FileSystem protocol buffer.
-          # GN version: //chrome/browser/sync_file_system:sync_file_system_proto
-          'target_name': 'sync_file_system_proto',
-          'type': 'static_library',
-          'sources': [
-            'browser/sync_file_system/sync_file_system.proto',
-          ],
-          'variables': {
-            'proto_in_dir': 'browser/sync_file_system',
-            'proto_out_dir': 'chrome/browser/sync_file_system',
-          },
-          'includes': [ '../build/protoc.gypi' ]
-        },
         {
           # Protobuf compiler / generator for Sync FileSystem protocol buffer.
           # GN version: //chrome/browser/sync_file_system/drive_backend:sync_file_system_drive_proto

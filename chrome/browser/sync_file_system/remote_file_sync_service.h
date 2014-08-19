@@ -82,11 +82,6 @@ enum RemoteServiceState {
 // Owned by SyncFileSystemService.
 class RemoteFileSyncService {
  public:
-  enum BackendVersion {
-    V1,
-    V2,
-  };
-
   class Observer {
    public:
     Observer() {}
@@ -137,14 +132,12 @@ class RemoteFileSyncService {
   // Creates an initialized RemoteFileSyncService for backend |version|
   // for |context|.
   static scoped_ptr<RemoteFileSyncService> CreateForBrowserContext(
-      BackendVersion version,
       content::BrowserContext* context,
       TaskLogger* task_logger);
 
   // Returns BrowserContextKeyedServiceFactory's an instance of
   // RemoteFileSyncService for backend |version| depends on.
   static void AppendDependsOnFactories(
-      BackendVersion version,
       std::set<BrowserContextKeyedServiceFactory*>* factories);
 
   RemoteFileSyncService() {}

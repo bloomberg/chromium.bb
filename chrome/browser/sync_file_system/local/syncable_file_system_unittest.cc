@@ -248,39 +248,4 @@ TEST_F(SyncableFileSystemTest, ChangeTrackerSimple) {
                                   sync_file_system::SYNC_FILE_TYPE_FILE));
 }
 
-// Make sure directory operation is disabled (when it's configured so).
-TEST_F(SyncableFileSystemTest, DisableDirectoryOperations) {
-  ScopedDisableSyncFSV2 scoped_disable_v2;
-
-  EXPECT_EQ(base::File::FILE_OK,
-            file_system_.OpenFileSystem());
-
-  // Try some directory operations (which should fail).
-  EXPECT_EQ(base::File::FILE_ERROR_INVALID_OPERATION,
-            file_system_.CreateDirectory(URL("dir")));
-
-  // Set up another (non-syncable) local file system.
-  SandboxFileSystemTestHelper other_file_system_(
-      GURL("http://foo.com/"), fileapi::kFileSystemTypeTemporary);
-  other_file_system_.SetUp(file_system_.file_system_context());
-
-  // Create directory '/a' and file '/a/b' in the other file system.
-  const FileSystemURL kSrcDir = other_file_system_.CreateURLFromUTF8("/a");
-  const FileSystemURL kSrcChild = other_file_system_.CreateURLFromUTF8("/a/b");
-
-  EXPECT_EQ(base::File::FILE_OK,
-            content::AsyncFileTestHelper::CreateDirectory(
-                other_file_system_.file_system_context(), kSrcDir));
-  EXPECT_EQ(base::File::FILE_OK,
-            content::AsyncFileTestHelper::CreateFile(
-                other_file_system_.file_system_context(), kSrcChild));
-
-  // Now try copying the directory into the syncable file system, which should
-  // fail if directory operation is disabled. (http://crbug.com/161442)
-  EXPECT_NE(base::File::FILE_OK,
-            file_system_.Copy(kSrcDir, URL("dest")));
-
-  other_file_system_.TearDown();
-}
-
 }  // namespace sync_file_system

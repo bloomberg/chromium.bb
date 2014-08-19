@@ -22,21 +22,11 @@ namespace sync_file_system {
 
 namespace {
 
-// A command switch to enable V2 Sync FileSystem.
-const char kEnableSyncFileSystemV2[] = "enable-syncfs-v2";
-
-// A command switch to specify comma-separated app IDs to enable V2 Sync
-// FileSystem.
-const char kSyncFileSystemV2Whitelist[] = "syncfs-v2-whitelist";
-
 const char kSyncableMountName[] = "syncfs";
 const char kSyncableMountNameForInternalSync[] = "syncfs-internal";
 
 const base::FilePath::CharType kSyncFileSystemDir[] =
     FILE_PATH_LITERAL("Sync FileSystem");
-
-// Flags to enable features for testing.
-bool g_is_syncfs_v2_enabled = true;
 
 void Noop() {}
 
@@ -113,53 +103,8 @@ bool DeserializeSyncableFileSystemURL(
   return true;
 }
 
-bool IsV2Enabled() {
-  return g_is_syncfs_v2_enabled ||
-        CommandLine::ForCurrentProcess()->HasSwitch(kEnableSyncFileSystemV2);
-}
-
-bool IsV2EnabledForOrigin(const GURL& origin) {
-  if (IsV2Enabled())
-    return true;
-
-  // Spark release channel.
-  if (origin.host() == "kcjgcakhgelcejampmijgkjkadfcncjl")
-    return true;
-  // Spark dev channel.
-  if (origin.host() == "pnoffddplpippgcfjdhbmhkofpnaalpg")
-    return true;
-
-  CommandLine command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(kSyncFileSystemV2Whitelist)) {
-    std::string app_ids_string =
-        command_line.GetSwitchValueASCII(kSyncFileSystemV2Whitelist);
-    if (app_ids_string.find(origin.host()) == std::string::npos)
-      return false;
-    std::vector<std::string> app_ids;
-    Tokenize(app_ids_string, ",", &app_ids);
-    for (size_t i = 0; i < app_ids.size(); ++i) {
-      if (origin.host() == app_ids[i])
-        return true;
-    }
-  }
-
-  return false;
-}
-
 base::FilePath GetSyncFileSystemDir(const base::FilePath& profile_base_dir) {
-  if (IsV2Enabled())
-    return profile_base_dir.Append(kSyncFileSystemDir);
   return profile_base_dir.Append(kSyncFileSystemDir);
-}
-
-ScopedDisableSyncFSV2::ScopedDisableSyncFSV2() {
-  was_enabled_ = IsV2Enabled();
-  g_is_syncfs_v2_enabled = false;
-}
-
-ScopedDisableSyncFSV2::~ScopedDisableSyncFSV2() {
-  DCHECK(!IsV2Enabled());
-  g_is_syncfs_v2_enabled = was_enabled_;
 }
 
 void RunSoon(const tracked_objects::Location& from_here,
