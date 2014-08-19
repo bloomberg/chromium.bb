@@ -194,7 +194,8 @@ void CommandBufferProxyImpl::Flush(int32 put_offset) {
 
 void CommandBufferProxyImpl::SetLatencyInfo(
     const std::vector<ui::LatencyInfo>& latency_info) {
-  if (last_state_.error != gpu::error::kNoError)
+  if (last_state_.error != gpu::error::kNoError ||
+      latency_info.empty())
     return;
   Send(new GpuCommandBufferMsg_SetLatencyInfo(route_id_, latency_info));
 }
