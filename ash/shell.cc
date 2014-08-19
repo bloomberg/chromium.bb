@@ -308,7 +308,7 @@ void Shell::DismissAppList() {
 }
 
 void Shell::ToggleAppList(aura::Window* window) {
-  if (GetAppListTargetVisibility()) {
+  if (app_list_controller_ && app_list_controller_->IsVisible()) {
     DismissAppList();
     return;
   }
