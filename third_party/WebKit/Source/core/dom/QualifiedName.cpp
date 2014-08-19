@@ -22,6 +22,7 @@
 #include "core/dom/QualifiedName.h"
 
 #include "core/HTMLNames.h"
+#include "core/MathMLNames.h"
 #include "core/SVGNames.h"
 #include "core/XLinkNames.h"
 #include "core/XMLNSNames.h"
@@ -34,6 +35,7 @@
 namespace blink {
 
 static const int staticQualifiedNamesCount = HTMLNames::HTMLTagsCount + HTMLNames::HTMLAttrsCount
+    + MathMLNames::MathMLTagsCount + MathMLNames::MathMLAttrsCount
     + SVGNames::SVGTagsCount + SVGNames::SVGAttrsCount
     + XLinkNames::XLinkAttrsCount
     + XMLNSNames::XMLNSAttrsCount
