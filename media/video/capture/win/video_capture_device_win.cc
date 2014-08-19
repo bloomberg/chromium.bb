@@ -312,9 +312,14 @@ void VideoCaptureDeviceWin::AllocateAndStart(
   ScopedMediaType media_type;
 
   // Get the windows capability from the capture device.
+  // GetStreamCaps can return S_FALSE which we consider an error. Therefore the
+  // FAILED macro can't be used.
   hr = stream_config->GetStreamCaps(
       found_capability.stream_index, media_type.Receive(), caps.get());
-  if (SUCCEEDED(hr)) {
+  if (hr != S_OK) {
+    SetErrorState("Failed to get capture device capabilities");
+    return;
+  } else {
     if (media_type->formattype == FORMAT_VideoInfo) {
       VIDEOINFOHEADER* h =
           reinterpret_cast<VIDEOINFOHEADER*>(media_type->pbFormat);
@@ -325,10 +330,12 @@ void VideoCaptureDeviceWin::AllocateAndStart(
     sink_filter_->SetRequestedMediaFormat(format);
     // Order the capture device to use this format.
     hr = stream_config->SetFormat(media_type.get());
+    if (FAILED(hr)) {
+      // TODO(grunell): Log the error. http://crbug.com/405016.
+      SetErrorState("Failed to set capture device output format");
+      return;
+    }
   }
-
-  if (FAILED(hr))
-    SetErrorState("Failed to set capture device output format");
 
   if (format.pixel_format == PIXEL_FORMAT_MJPEG && !mjpg_filter_.get()) {
     // Create MJPG filter if we need it.
