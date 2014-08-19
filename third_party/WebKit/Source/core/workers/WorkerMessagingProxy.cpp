@@ -113,6 +113,10 @@ void WorkerMessagingProxy::startWorkerGlobalScope(const KURL& scriptURL, const S
 {
     // FIXME: This need to be revisited when we support nested worker one day
     ASSERT(m_executionContext->isDocument());
+    if (m_askedToTerminate) {
+        // Worker.terminate() could be called from JS before the thread was created.
+        return;
+    }
     Document* document = toDocument(m_executionContext.get());
 
     OwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(scriptURL, userAgent, sourceCode, startMode, document->contentSecurityPolicy()->deprecatedHeader(), document->contentSecurityPolicy()->deprecatedHeaderType(), m_workerClients.release());
@@ -194,21 +198,17 @@ void WorkerMessagingProxy::reportConsoleMessage(MessageSource source, MessageLev
 
 void WorkerMessagingProxy::workerThreadCreated(PassRefPtr<DedicatedWorkerThread> workerThread)
 {
+    ASSERT(!m_askedToTerminate);
     m_workerThread = workerThread;
 
-    if (m_askedToTerminate) {
-        // Worker.terminate() could be called from JS before the thread was created.
-        m_workerThread->stop();
-    } else {
-        unsigned taskCount = m_queuedEarlyTasks.size();
-        ASSERT(!m_unconfirmedMessageCount);
-        m_unconfirmedMessageCount = taskCount;
-        m_workerThreadHadPendingActivity = true; // Worker initialization means a pending activity.
+    unsigned taskCount = m_queuedEarlyTasks.size();
+    ASSERT(!m_unconfirmedMessageCount);
+    m_unconfirmedMessageCount = taskCount;
+    m_workerThreadHadPendingActivity = true; // Worker initialization means a pending activity.
 
-        for (unsigned i = 0; i < taskCount; ++i)
-            m_workerThread->postTask(m_queuedEarlyTasks[i].release());
-        m_queuedEarlyTasks.clear();
-    }
+    for (unsigned i = 0; i < taskCount; ++i)
+        m_workerThread->postTask(m_queuedEarlyTasks[i].release());
+    m_queuedEarlyTasks.clear();
 }
 
 void WorkerMessagingProxy::workerObjectDestroyed()
