@@ -33,7 +33,6 @@
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -262,11 +261,6 @@ void UserSessionManager::StartSession(
 void UserSessionManager::PerformPostUserLoggedInActions() {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (user_manager->GetLoggedInUsers().size() == 1) {
-    // Owner must be first user in session. DeviceSettingsService can't deal
-    // with multiple user and will mix up ownership, crbug.com/230018.
-    OwnerSettingsServiceFactory::GetInstance()->
-        SetUsername(user_manager->GetActiveUser()->email());
-
     if (NetworkPortalDetector::IsInitialized()) {
       NetworkPortalDetector::Get()->SetStrategy(
           PortalDetectorStrategy::STRATEGY_ID_SESSION);

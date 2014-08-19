@@ -25,15 +25,6 @@ class OwnerSettingsServiceFactory : public BrowserContextKeyedServiceFactory {
 
   static OwnerSettingsServiceFactory* GetInstance();
 
-  // Sets name of the user supposed to be an owner. If profile
-  // for |username| is ready, request to reload owner key will be
-  // sent. Otherwise, owner key will be reloaded as soon as profile will
-  // be ready.
-  void SetUsername(const std::string& username);
-
-  // Returns the name of the user supposed to be an owner.
-  std::string GetUsername() const;
-
  private:
   friend struct DefaultSingletonTraits<OwnerSettingsServiceFactory>;
 
@@ -48,9 +39,6 @@ class OwnerSettingsServiceFactory : public BrowserContextKeyedServiceFactory {
   // BrowserContextKeyedServiceFactory implementation:
   virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* browser_context) const OVERRIDE;
-
-  // Name of the user supposed to be an owner.
-  std::string username_;
 
   DISALLOW_COPY_AND_ASSIGN(OwnerSettingsServiceFactory);
 };

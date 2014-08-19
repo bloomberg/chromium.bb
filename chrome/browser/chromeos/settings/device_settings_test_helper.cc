@@ -265,7 +265,6 @@ void DeviceSettingsTestBase::InitOwner(const std::string& user_id,
   CHECK(service);
   if (tpm_is_ready)
     service->OnTPMTokenReady();
-  OwnerSettingsServiceFactory::GetInstance()->SetUsername(user_id);
 }
 
 }  // namespace chromeos

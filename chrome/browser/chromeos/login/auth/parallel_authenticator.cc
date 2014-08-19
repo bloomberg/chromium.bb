@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/login/auth/authentication_notification_details.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service_factory.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
@@ -509,7 +508,6 @@ bool ParallelAuthenticator::VerifyOwner() {
   }
 
   const std::string& user_id = current_state_->user_context.GetUserID();
-  OwnerSettingsServiceFactory::GetInstance()->SetUsername(user_id);
 
   // |IsOwnerForSafeModeAsync| expects logged in state to be
   // LOGGED_IN_SAFE_MODE.
