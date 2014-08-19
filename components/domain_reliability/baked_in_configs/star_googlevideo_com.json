@@ -1,0 +1,34 @@
+{
+  "config_version": "star-googlevideo-com-v1",
+  "config_valid_until": 1413331200.0,
+  "monitored_domain": "*.googlevideo.com",
+  "collectors": [
+    {
+      "upload_url": "https://clients2.google.com/domainreliability/upload"
+    }
+  ],
+  "monitored_resources": [
+    {
+      "resource_name": "star-googlevideo-com-redirector",
+      "url_patterns": ["http*://redirector.googlevideo.com/*"],
+      "success_sample_rate": 0.05,
+      "failure_sample_rate": 1.00
+    }
+  ],
+  "monitored_resources": [
+    {
+      "resource_name": "star-googlevideo-com-rname",
+      "url_patterns": ["http*://r*.googlevideo.com/*"],
+      "success_sample_rate": 0.05,
+      "failure_sample_rate": 1.00
+    }
+  ],
+  "monitored_resources": [
+    {
+      "resource_name": "star-googlevideo-com-other",
+      "url_patterns": ["http*://*.googlevideo.com/*"],
+      "success_sample_rate": 0.05,
+      "failure_sample_rate": 1.00
+    }
+  ]
+}
