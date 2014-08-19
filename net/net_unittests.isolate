@@ -32,6 +32,13 @@
         'read_only': 1,
       },
     }],
+    ['OS=="win"', {
+      'variables': {
+        'isolate_dependency_untracked': [
+          '<(PRODUCT_DIR)/net_unittests.exe.pdb',
+        ],
+      },
+    }],
   ],
   'includes': [
     '../base/base.isolate',

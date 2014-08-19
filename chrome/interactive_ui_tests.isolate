@@ -82,6 +82,7 @@
           '<(PRODUCT_DIR)/osmesa.dll',
         ],
         'isolate_dependency_untracked': [
+          '<(PRODUCT_DIR)/interactive_ui_tests.exe.pdb',
           '<(PRODUCT_DIR)/plugins/npapi_test_plugin.dll',
         ],
       },

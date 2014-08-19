@@ -70,6 +70,9 @@
           '<(PRODUCT_DIR)/chrome_elf.dll',
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
         ],
+        'isolate_dependency_untracked': [
+          '<(PRODUCT_DIR)/sync_integration_tests.exe.pdb',
+        ],
       },
     }],
     ['chromeos==1', {

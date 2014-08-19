@@ -85,6 +85,9 @@
           '<(PRODUCT_DIR)/plugins/npapi_test_plugin.dll',
           '<(PRODUCT_DIR)/ppapi_tests.dll',
         ],
+        'isolate_dependency_untracked': [
+          '<(PRODUCT_DIR)/content_browsertests.exe.pdb',
+        ],
       },
     }],
   ],

@@ -125,6 +125,7 @@
           'tools/build/repack_locales.py',
         ],
         'isolate_dependency_untracked': [
+          '<(PRODUCT_DIR)/browser_tests.exe.pdb',
           '<(PRODUCT_DIR)/plugins/',
         ],
       },

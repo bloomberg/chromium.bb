@@ -48,6 +48,9 @@
       'variables': {
         'isolate_dependency_tracked': [
         ],
+        'isolate_dependency_untracked': [
+          '<(PRODUCT_DIR)/base_unittests.exe.pdb',
+        ],
       },
     }],
   ],

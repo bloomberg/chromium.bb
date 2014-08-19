@@ -115,6 +115,7 @@
           '../ppapi/lib/gl/include/KHR/',
           '../skia/ext/data/',
           '../ui/base/glib/',
+          '<(PRODUCT_DIR)/unit_tests.exe.pdb',
         ],
       },
     }],
