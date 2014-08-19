@@ -20,6 +20,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/url_pattern.h"
+#include "extensions/shell/common/version.h"  // Generated file.
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "url/gurl.h"
 
@@ -109,10 +110,9 @@ bool ShellNaClBrowserDelegate::GetUserDirectory(base::FilePath* user_dir) {
 }
 
 std::string ShellNaClBrowserDelegate::GetVersionString() const {
-  // Used to trigger update of the validation caches.
-  // TODO(jamescook): Generate a real version number and use it both here and
-  // in our user agent. http://crbug.com/402612
-  return "1.2.3.4";
+  // A version change triggers an update of the NaCl validation caches.
+  // Example version: "39.0.2129.0 (290550)".
+  return PRODUCT_VERSION " (" LAST_CHANGE ")";
 }
 
 ppapi::host::HostFactory* ShellNaClBrowserDelegate::CreatePpapiHostFactory(
