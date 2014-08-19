@@ -10,6 +10,7 @@
 #include "crazy_linker_elf_symbols.h"
 #include "crazy_linker_elf_view.h"
 #include "crazy_linker_error.h"
+#include "crazy_linker_leb128.h"
 #include "crazy_linker_system.h"
 #include "crazy_linker_util.h"
 #include "linker_phdr.h"
@@ -42,6 +43,8 @@
 #define R_ARM_COPY 20
 #define R_ARM_RELATIVE 23
 
+#define RELATIVE_RELOCATION_CODE R_ARM_RELATIVE
+
 #endif  // __arm__
 
 #ifdef __aarch64__
@@ -52,6 +55,8 @@
 #define R_AARCH64_GLOB_DAT 1025
 #define R_AARCH64_JUMP_SLOT 1026
 #define R_AARCH64_RELATIVE 1027
+
+#define RELATIVE_RELOCATION_CODE R_AARCH64_RELATIVE
 
 #endif  // __aarch64__
 
@@ -335,8 +340,8 @@ bool ElfRelocations::ApplyAll(const ElfSymbols* symbols,
       return false;
   }
 
-#ifdef __arm__
-  if (!ApplyArmPackedRelocs(error))
+#if defined(__arm__) || defined(__aarch64__)
+  if (!ApplyPackedRelocations(error))
     return false;
 #endif
 
@@ -356,58 +361,24 @@ bool ElfRelocations::ApplyAll(const ElfSymbols* symbols,
   return true;
 }
 
-#ifdef __arm__
+#if defined(__arm__) || defined(__aarch64__)
 
-void ElfRelocations::RegisterArmPackedRelocs(uint8_t* arm_packed_relocs) {
-  arm_packed_relocs_ = arm_packed_relocs;
+void ElfRelocations::RegisterPackedRelocations(uint8_t* packed_relocations) {
+  packed_relocations_ = packed_relocations;
 }
 
-// Helper class for decoding packed ARM relocation data.
-// http://en.wikipedia.org/wiki/LEB128
-class Leb128Decoder {
- public:
-  explicit Leb128Decoder(const uint8_t* encoding)
-      : encoding_(encoding), cursor_(0) { }
-
-  uint32_t Dequeue() {
-    uint32_t value = 0;
-
-    size_t shift = 0;
-    uint8_t byte;
-
-    do {
-      byte = encoding_[cursor_++];
-      value |= static_cast<uint32_t>(byte & 127) << shift;
-      shift += 7;
-    } while (byte & 128);
-
-    return value;
-  }
-
- private:
-  const uint8_t* encoding_;
-  size_t cursor_;
-};
-
-bool ElfRelocations::ApplyArmPackedRelocs(Error* error) {
-  if (!arm_packed_relocs_)
-    return true;
-
-  Leb128Decoder decoder(arm_packed_relocs_);
-
-  // Check for the initial APR1 header.
-  if (decoder.Dequeue() != 'A' || decoder.Dequeue() != 'P' ||
-      decoder.Dequeue() != 'R' || decoder.Dequeue() != '1') {
-    error->Format("Bad packed relocations ident, expected APR1");
-    return false;
-  }
+bool ElfRelocations::ApplyPackedRel(const uint8_t* packed_relocations,
+                                    Error* error) {
+  Leb128Decoder decoder(packed_relocations);
 
   // Find the count of pairs and the start address.
   size_t pairs = decoder.Dequeue();
-  const Elf32_Addr start_address = decoder.Dequeue();
+  const ELF::Addr start_address = decoder.Dequeue();
 
-  // Emit initial R_ARM_RELATIVE relocation.
-  Elf32_Rel relocation = {start_address, R_ARM_RELATIVE};
+  // Emit initial relative relocation.
+  ELF::Rel relocation;
+  relocation.r_offset = start_address;
+  relocation.r_info = ELF_R_INFO(0, RELATIVE_RELOCATION_CODE);
   const ELF::Addr sym_addr = 0;
   const bool resolved = false;
   if (!ApplyRelReloc(&relocation, sym_addr, resolved, error))
@@ -420,7 +391,7 @@ bool ElfRelocations::ApplyArmPackedRelocs(Error* error) {
     size_t count = decoder.Dequeue();
     const size_t delta = decoder.Dequeue();
 
-    // Emit count R_ARM_RELATIVE relocations with delta offset.
+    // Emit count relative relocations with delta offset.
     while (count) {
       relocation.r_offset += delta;
       if (!ApplyRelReloc(&relocation, sym_addr, resolved, error))
@@ -434,7 +405,65 @@ bool ElfRelocations::ApplyArmPackedRelocs(Error* error) {
   RLOG("%s: unpacked_count=%d\n", __FUNCTION__, unpacked_count);
   return true;
 }
-#endif  // __arm__
+
+bool ElfRelocations::ApplyPackedRela(const uint8_t* packed_relocations,
+                                     Error* error) {
+  Sleb128Decoder decoder(packed_relocations);
+
+  // Find the count of pairs.
+  size_t pairs = decoder.Dequeue();
+
+  ELF::Addr offset = 0;
+  ELF::Sxword addend = 0;
+
+  const ELF::Addr sym_addr = 0;
+  const bool resolved = false;
+
+  size_t unpacked_count = 0;
+
+  // Emit relocations for each deltas pair.
+  while (pairs) {
+    offset += decoder.Dequeue();
+    addend += decoder.Dequeue();
+
+    ELF::Rela relocation;
+    relocation.r_offset = offset;
+    relocation.r_info = ELF_R_INFO(0, RELATIVE_RELOCATION_CODE);
+    relocation.r_addend = addend;
+    if (!ApplyRelaReloc(&relocation, sym_addr, resolved, error))
+      return false;
+    unpacked_count++;
+    pairs--;
+  }
+
+  RLOG("%s: unpacked_count=%d\n", __FUNCTION__, unpacked_count);
+  return true;
+}
+
+bool ElfRelocations::ApplyPackedRelocations(Error* error) {
+  if (!packed_relocations_)
+    return true;
+
+  // Check for an initial APR1 header, packed relocations.
+  if (packed_relocations_[0] == 'A' &&
+      packed_relocations_[1] == 'P' &&
+      packed_relocations_[2] == 'R' &&
+      packed_relocations_[3] == '1') {
+    return ApplyPackedRel(packed_relocations_ + 4, error);
+  }
+
+  // Check for an initial APA1 header, packed relocations with addend.
+  if (packed_relocations_[0] == 'A' &&
+      packed_relocations_[1] == 'P' &&
+      packed_relocations_[2] == 'A' &&
+      packed_relocations_[3] == '1') {
+    return ApplyPackedRela(packed_relocations_ + 4, error);
+  }
+
+  error->Format("Bad packed relocations ident, expected APR1 or APA1");
+  return false;
+}
+#endif  // __arm__ || __aarch64__
 
 bool ElfRelocations::ApplyRelaReloc(const ELF::Rela* rela,
                                     ELF::Addr sym_addr,

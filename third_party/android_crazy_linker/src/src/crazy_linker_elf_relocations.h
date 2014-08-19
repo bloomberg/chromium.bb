@@ -44,10 +44,10 @@ class ElfRelocations {
                 SymbolResolver* resolver,
                 Error* error);
 
-#ifdef __arm__
-  // Register ARM packed relocations to apply.
-  // |arm_packed_relocs| is a pointer to packed relocations data.
-  void RegisterArmPackedRelocs(uint8_t* arm_packed_relocs);
+#if defined(__arm__) || defined(__aarch64__)
+  // Register packed relocations to apply.
+  // |packed_relocs| is a pointer to packed relocations data.
+  void RegisterPackedRelocations(uint8_t* packed_relocations);
 #endif
 
   // This function is used to adjust relocated addresses in a copy of an
@@ -101,11 +101,15 @@ class ElfRelocations {
                    size_t map_addr,
                    size_t size);
 
-#ifdef __arm__
-  // Apply ARM packed relocations.
+#if defined(__arm__) || defined(__aarch64__)
+  // Apply packed rel or rela relocations.  On error, return false.
+  bool ApplyPackedRel(const uint8_t* packed_relocations, Error* error);
+  bool ApplyPackedRela(const uint8_t* packed_relocations, Error* error);
+
+  // Apply packed relocations.
   // On error, return false and set |error| message.  No-op if no packed
   // relocations were registered.
-  bool ApplyArmPackedRelocs(Error* error);
+  bool ApplyPackedRelocations(Error* error);
 #endif
 
 #if defined(__mips__)
@@ -133,8 +137,8 @@ class ElfRelocations {
   ELF::Word mips_gotsym_;
 #endif
 
-#if defined(__arm__)
-  uint8_t* arm_packed_relocs_;
+#if defined(__arm__) || defined(__aarch64__)
+  uint8_t* packed_relocations_;
 #endif
 
   bool has_text_relocations_;

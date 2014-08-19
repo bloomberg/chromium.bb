@@ -17,6 +17,8 @@ struct ELF {
   typedef Elf32_Phdr Phdr;
   typedef Elf32_Word Word;
   typedef Elf32_Sword Sword;
+  // TODO(simonb): Elf32_Sxword missing from the NDK.
+  typedef int64_t Sxword;
   typedef Elf32_Addr Addr;
   typedef Elf32_Dyn Dyn;
   typedef Elf32_Sym Sym;
@@ -27,13 +29,17 @@ struct ELF {
   enum { kElfClass = ELFCLASS32 };
   enum { kElfBits = 32 };
 
-#ifndef ELF_R_TYPE
-#define ELF_R_TYPE ELF32_R_TYPE
-#endif
+# ifndef ELF_R_TYPE
+# define ELF_R_TYPE ELF32_R_TYPE
+# endif
 
-#ifndef ELF_R_SYM
-#define ELF_R_SYM ELF32_R_SYM
-#endif
+# ifndef ELF_R_SYM
+# define ELF_R_SYM ELF32_R_SYM
+# endif
+
+# ifndef ELF_R_INFO
+# define ELF_R_INFO ELF32_R_INFO
+# endif
 };
 #elif __SIZEOF_POINTER__ == 8
 struct ELF {
@@ -41,6 +47,7 @@ struct ELF {
   typedef Elf64_Phdr Phdr;
   typedef Elf64_Word Word;
   typedef Elf64_Sword Sword;
+  typedef Elf64_Sxword Sxword;
   typedef Elf64_Addr Addr;
   typedef Elf64_Dyn Dyn;
   typedef Elf64_Sym Sym;
@@ -51,13 +58,22 @@ struct ELF {
   enum { kElfClass = ELFCLASS64 };
   enum { kElfBits = 64 };
 
-#ifndef ELF_R_TYPE
-#define ELF_R_TYPE ELF64_R_TYPE
-#endif
+# ifndef ELF_R_TYPE
+# define ELF_R_TYPE ELF64_R_TYPE
+# endif
 
-#ifndef ELF_R_SYM
-#define ELF_R_SYM ELF64_R_SYM
-#endif
+# ifndef ELF_R_SYM
+# define ELF_R_SYM ELF64_R_SYM
+# endif
+
+// TODO(simonb): ELF64_R_INFO missing from the NDK.
+# ifndef ELF64_R_INFO
+# define ELF64_R_INFO(sym,type) ((((Elf64_Xword) (sym)) << 32) + (type))
+# endif
+
+# ifndef ELF_R_INFO
+# define ELF_R_INFO ELF64_R_INFO
+# endif
 };
 #else
 #error "Unsupported target CPU bitness"

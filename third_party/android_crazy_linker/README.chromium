@@ -39,3 +39,5 @@ Local Modifications:
 - Speculative fix for crbug/397634.
 
 - Implement LEB128 decoding more efficiently.
+
+- Add support for unpacking relative relocations with addends, for arm64.
