@@ -1280,8 +1280,6 @@ crbug.com/399507 inspector/timeline/tracing/update-layer-tree.html [ Failure Pas
 crbug.com/399507 virtual/deferred/inspector/timeline/tracing/update-layer-tree.html [ Failure Pass ]
 crbug.com/399507 virtual/implsidepainting/inspector/timeline/tracing/update-layer-tree.html [ Failure Pass ]
 
-crbug.com/405031 [ Win ] virtual/threaded/compositing/visibility/visibility-image-layers.html [ NeedsRebaseline ]
-
 crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-cross-in-cross-none-block.html [ Failure Pass Timeout ]
 crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-cross-in-cross-self-block.html [ Failure Pass Timeout ]
 crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-cross-in-cross-star-allow.html [ Failure Pass Timeout ]
