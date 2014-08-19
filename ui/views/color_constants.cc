@@ -6,7 +6,6 @@
 
 namespace views {
 
-const SkColor kClientEdgeColor = SkColorSetRGB(210, 225, 246);
 const SkColor kWarningColor = SkColorSetRGB(0xde, 0x49, 0x32);
 
 }  // namespace views

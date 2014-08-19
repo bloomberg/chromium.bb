@@ -401,7 +401,10 @@ void CustomFrameView::PaintTitleBar(gfx::Canvas* canvas) {
 
 void CustomFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   gfx::Rect client_area_bounds = frame_->client_view()->bounds();
-  int client_area_top = client_area_bounds.y();
+  // The shadows have a 1 pixel gap on the inside, so draw them 1 pixel inwards.
+  gfx::Rect shadowed_area_bounds = client_area_bounds;
+  shadowed_area_bounds.Inset(gfx::Insets(1, 1, 1, 1));
+  int shadowed_area_top = shadowed_area_bounds.y();
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
@@ -409,27 +412,27 @@ void CustomFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   const gfx::ImageSkia* top_left = rb.GetImageSkiaNamed(IDR_APP_TOP_LEFT);
   const gfx::ImageSkia* top_center = rb.GetImageSkiaNamed(IDR_APP_TOP_CENTER);
   const gfx::ImageSkia* top_right = rb.GetImageSkiaNamed(IDR_APP_TOP_RIGHT);
-  int top_edge_y = client_area_top - top_center->height();
+  int top_edge_y = shadowed_area_top - top_center->height();
   canvas->DrawImageInt(*top_left,
-                       client_area_bounds.x() - top_left->width(),
+                       shadowed_area_bounds.x() - top_left->width(),
                        top_edge_y);
   canvas->TileImageInt(*top_center,
-                       client_area_bounds.x(),
+                       shadowed_area_bounds.x(),
                        top_edge_y,
-                       client_area_bounds.width(),
+                       shadowed_area_bounds.width(),
                        top_center->height());
-  canvas->DrawImageInt(*top_right, client_area_bounds.right(), top_edge_y);
+  canvas->DrawImageInt(*top_right, shadowed_area_bounds.right(), top_edge_y);
 
   // Right side.
   const gfx::ImageSkia* right = rb.GetImageSkiaNamed(IDR_CONTENT_RIGHT_SIDE);
-  int client_area_bottom =
-      std::max(client_area_top, client_area_bounds.bottom());
-  int client_area_height = client_area_bottom - client_area_top;
+  int shadowed_area_bottom =
+      std::max(shadowed_area_top, shadowed_area_bounds.bottom());
+  int shadowed_area_height = shadowed_area_bottom - shadowed_area_top;
   canvas->TileImageInt(*right,
-                       client_area_bounds.right(),
-                       client_area_top,
+                       shadowed_area_bounds.right(),
+                       shadowed_area_top,
                        right->width(),
-                       client_area_height);
+                       shadowed_area_height);
 
   // Bottom: left, center, right sides.
   const gfx::ImageSkia* bottom_left =
@@ -440,32 +443,25 @@ void CustomFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
       rb.GetImageSkiaNamed(IDR_CONTENT_BOTTOM_RIGHT_CORNER);
 
   canvas->DrawImageInt(*bottom_left,
-                       client_area_bounds.x() - bottom_left->width(),
-                       client_area_bottom);
+                       shadowed_area_bounds.x() - bottom_left->width(),
+                       shadowed_area_bottom);
 
   canvas->TileImageInt(*bottom_center,
-                       client_area_bounds.x(),
-                       client_area_bottom,
-                       client_area_bounds.width(),
+                       shadowed_area_bounds.x(),
+                       shadowed_area_bottom,
+                       shadowed_area_bounds.width(),
                        bottom_right->height());
 
   canvas->DrawImageInt(*bottom_right,
-                       client_area_bounds.right(),
-                       client_area_bottom);
+                       shadowed_area_bounds.right(),
+                       shadowed_area_bottom);
   // Left side.
   const gfx::ImageSkia* left = rb.GetImageSkiaNamed(IDR_CONTENT_LEFT_SIDE);
   canvas->TileImageInt(*left,
-                       client_area_bounds.x() - left->width(),
-                       client_area_top,
+                       shadowed_area_bounds.x() - left->width(),
+                       shadowed_area_top,
                        left->width(),
-                       client_area_height);
-
-  // Draw the color to fill in the edges.
-  canvas->FillRect(gfx::Rect(client_area_bounds.x() - 1,
-                             client_area_top - 1,
-                             client_area_bounds.width() + 1,
-                             client_area_bottom - client_area_top + 1),
-                   kClientEdgeColor);
+                       shadowed_area_height);
 }
 
 SkColor CustomFrameView::GetFrameColor() const {
