@@ -11,6 +11,7 @@ import email.utils
 import errno
 import functools
 import logging
+import operator
 import os
 import re
 import signal
@@ -1789,30 +1790,9 @@ PartitionInfo = collections.namedtuple(
 )
 
 
-def GetImageDiskPartitionInfo(image_path, unit='MB', key_selector='name'):
-  """Returns the disk partition table of an image.
-
-  Args:
-    image_path: Path to the image file.
-    unit: The unit to display (e.g., 'B', 'KiB', 'KB', 'MB').
-      See `parted` documentation for more info.
-    key_selector: The value of the partition that will be used as the key for
-      that partition in this function's returned dictionary.
-
-  Returns:
-    A dictionary of ParitionInfo items keyed by |key_selector|.
-  """
-
-  # Inside chroot, parted is in /usr/sbin. Outside, it is in /sbin.
-  parted_path = 'parted'
-  if IsInsideChroot():
-    # Inside chroot, parted is in /usr/sbin, but is not included in $PATH.
-    parted_path = '/usr/sbin/parted'
-
-  lines = RunCommand(
-      [parted_path, '-m', image_path, 'unit', unit, 'print'],
-      capture_output=True).output.splitlines()
-
+def _ParseParted(lines, unit='MB'):
+  """Returns partition information from `parted print` output."""
+  ret = []
   # Sample output (partition #, start, end, size, file system, name, flags):
   #   /foo/chromiumos_qemu_image.bin:3360MB:file:512:512:gpt:;
   #   11:0.03MB:8.42MB:8.39MB::RWFW:;
@@ -1827,9 +1807,9 @@ def GetImageDiskPartitionInfo(image_path, unit='MB', key_selector='name'):
   #   5:145MB:2292MB:2147MB::ROOT-B:;
   #   3:2292MB:4440MB:2147MB:ext2:ROOT-A:;
   #   1:4440MB:7661MB:3221MB:ext4:STATE:;
-  table = {}
+  pattern = re.compile(r'(([^:]*:){6}[^:]*);')
   for line in lines:
-    match = re.match(r'(.*:.*:.*:.*:.*:.*:.*);', line)
+    match = pattern.match(line)
     if match:
       # pylint: disable=W0212
       d = dict(zip(PartitionInfo._fields, match.group(1).split(':')))
@@ -1839,7 +1819,79 @@ def GetImageDiskPartitionInfo(image_path, unit='MB', key_selector='name'):
         d['number'] = int(d['number'])
         for key in ['start', 'end', 'size']:
           d[key] = float(d[key][:-len(unit)])
+        ret.append(PartitionInfo(**d))
+  return ret
 
-        table[d[key_selector]] = PartitionInfo(**d)
 
-  return table
+def _ParseCgpt(lines, unit='MB'):
+  """Returns partition information from `cgpt show` output."""
+  #   start        size    part  contents
+  # 1921024     2097152       1  Label: "STATE"
+  #                              Type: Linux data
+  #                              UUID: EEBD83BE-397E-BD44-878B-0DDDD5A5C510
+  #   20480       32768       2  Label: "KERN-A"
+  #                              Type: ChromeOS kernel
+  #                              UUID: 7007C2F3-08E5-AB40-A4BC-FF5B01F5460D
+  #                              Attr: priority=15 tries=15 successful=1
+  start_pattern = re.compile(r'''\s+(\d+)\s+(\d+)\s+(\d+)\s+Label: "(.+)"''')
+  ret = []
+  line_no = 0
+  while line_no < len(lines):
+    line = lines[line_no]
+    line_no += 1
+    m = start_pattern.match(line)
+    if not m:
+      continue
+
+    start, size, number, label = m.groups()
+    number = int(number)
+    start = int(start) * 512
+    size = int(size) * 512
+    end = start + size
+    # Parted uses 1000, not 1024.
+    divisors = {
+        'B': 1.0,
+        'KB': 1000.0,
+        'MB': 1000000.0,
+        'GB': 1000000000.0,
+    }
+    divisor = divisors[unit]
+    start = start / divisor
+    end = end / divisor
+    size = size / divisor
+
+    ret.append(PartitionInfo(number=number, start=start, end=end, size=size,
+                             name=label, file_system='', flags=''))
+
+  return ret
+
+
+def GetImageDiskPartitionInfo(image_path, unit='MB', key_selector='name'):
+  """Returns the disk partition table of an image.
+
+  Args:
+    image_path: Path to the image file.
+    unit: The unit to display (e.g., 'B', 'KB', 'MB', 'GB').
+      See `parted` documentation for more info.
+    key_selector: The value of the partition that will be used as the key for
+      that partition in this function's returned dictionary.
+
+  Returns:
+    A dictionary of ParitionInfo items keyed by |key_selector|.
+  """
+
+  if IsInsideChroot():
+    # Inside chroot, use `cgpt`.
+    cmd = ['cgpt', 'show', image_path]
+    func = _ParseCgpt
+  else:
+    # Outside chroot, use `parted`.
+    cmd = ['parted', '-m', image_path, 'unit', unit, 'print']
+    func = _ParseParted
+
+  lines = RunCommand(cmd,
+      extra_env={'PATH': '/sbin:%s' % os.environ['PATH'], 'LC_ALL': 'C'},
+      capture_output=True).output.splitlines()
+  infos = func(lines, unit)
+  selector = operator.attrgetter(key_selector)
+  return dict((selector(x), x) for x in infos)

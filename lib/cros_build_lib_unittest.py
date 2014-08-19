@@ -1367,7 +1367,7 @@ class CollectionTest(cros_test_lib.TestCase):
 class GetImageDiskPartitionInfoTests(RunCommandTestCase):
   """Tests the GetImageDiskPartitionInfo function."""
 
-  SAMPLE_OUTPUT = """/foo/chromiumos_qemu_image.bin:3360MB:file:512:512:gpt:;
+  SAMPLE_PARTED = """/foo/chromiumos_qemu_image.bin:3360MB:file:512:512:gpt:;
 11:0.03MB:8.42MB:8.39MB::RWFW:;
 6:8.42MB:8.42MB:0.00MB::KERN-C:;
 7:8.42MB:8.42MB:0.00MB::ROOT-C:;
@@ -1382,10 +1382,74 @@ class GetImageDiskPartitionInfoTests(RunCommandTestCase):
 1:4440MB:7661MB:3221MB:ext4:STATE:;
 """
 
-  def setUp(self):
-    self.rc.AddCmdResult(partial_mock.Ignore(), output=self.SAMPLE_OUTPUT)
+  SAMPLE_CGPT = """
+       start        size    part  contents
+           0           1          PMBR (Boot GUID: 88FB7EB8-2B3F-B943-B933-\
+EEC571FFB6E1)
+           1           1          Pri GPT header
+           2          32          Pri GPT table
+     1921024     2097152       1  Label: "STATE"
+                                  Type: Linux data
+                                  UUID: EEBD83BE-397E-BD44-878B-0DDDD5A5C510
+       20480       32768       2  Label: "KERN-A"
+                                  Type: ChromeOS kernel
+                                  UUID: 7007C2F3-08E5-AB40-A4BC-FF5B01F5460D
+                                  Attr: priority=15 tries=15 successful=1
+     1101824      819200       3  Label: "ROOT-A"
+                                  Type: ChromeOS rootfs
+                                  UUID: F4C5C3AD-027F-894B-80CD-3DEC57932948
+       53248       32768       4  Label: "KERN-B"
+                                  Type: ChromeOS kernel
+                                  UUID: C85FB478-404C-8741-ADB8-11312A35880D
+                                  Attr: priority=0 tries=0 successful=0
+      282624      819200       5  Label: "ROOT-B"
+                                  Type: ChromeOS rootfs
+                                  UUID: A99F4231-1EC3-C542-AC0C-DF3729F5DB07
+       16448           1       6  Label: "KERN-C"
+                                  Type: ChromeOS kernel
+                                  UUID: 81F0E336-FAC9-174D-A08C-864FE627B637
+                                  Attr: priority=0 tries=0 successful=0
+       16449           1       7  Label: "ROOT-C"
+                                  Type: ChromeOS rootfs
+                                  UUID: 9E127FCA-30C1-044E-A5F2-DF74E6932692
+       86016       32768       8  Label: "OEM"
+                                  Type: Linux data
+                                  UUID: 72986347-A37C-684F-9A19-4DBAF41C55A9
+       16450           1       9  Label: "reserved"
+                                  Type: ChromeOS reserved
+                                  UUID: BA85A0A7-1850-964D-8EF8-6707AC106C3A
+       16451           1      10  Label: "reserved"
+                                  Type: ChromeOS reserved
+                                  UUID: 16C9EC9B-50FA-DD46-98DC-F781360817B4
+          64       16384      11  Label: "RWFW"
+                                  Type: ChromeOS firmware
+                                  UUID: BE8AECB9-4F78-7C44-8F23-5A9273B7EC8F
+      249856       32768      12  Label: "EFI-SYSTEM"
+                                  Type: EFI System Partition
+                                  UUID: 88FB7EB8-2B3F-B943-B933-EEC571FFB6E1
+     4050847          32          Sec GPT table
+     4050879           1          Sec GPT header
+"""
+
+  def testCgpt(self):
+    """Tests that we can list all partitions with `cgpt` correctly."""
+    self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=True)
+    self.rc.AddCmdResult(partial_mock.Ignore(), output=self.SAMPLE_CGPT)
+    partitions = cros_build_lib.GetImageDiskPartitionInfo('...', unit='B')
+    self.assertEqual(partitions['STATE'].start, 983564288)
+    self.assertEqual(partitions['STATE'].size, 1073741824)
+    self.assertEqual(partitions['STATE'].number, 1)
+    self.assertEqual(partitions['STATE'].name, 'STATE')
+    self.assertEqual(partitions['EFI-SYSTEM'].start, 249856 * 512)
+    self.assertEqual(partitions['EFI-SYSTEM'].size, 32768 * 512)
+    self.assertEqual(partitions['EFI-SYSTEM'].number, 12)
+    self.assertEqual(partitions['EFI-SYSTEM'].name, 'EFI-SYSTEM')
+    # Because "reserved" is duplicated, we only have 11 key-value pairs.
+    self.assertEqual(11, len(partitions))
 
   def testNormalPath(self):
+    self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=False)
+    self.rc.AddCmdResult(partial_mock.Ignore(), output=self.SAMPLE_PARTED)
     partitions = cros_build_lib.GetImageDiskPartitionInfo('_ignored')
     # Because "reserved" is duplicated, we only have 11 key-value pairs.
     self.assertEqual(11, len(partitions))
@@ -1393,6 +1457,8 @@ class GetImageDiskPartitionInfoTests(RunCommandTestCase):
     self.assertEqual(2147, partitions['ROOT-A'].size)
 
   def testKeyedByNumber(self):
+    self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=False)
+    self.rc.AddCmdResult(partial_mock.Ignore(), output=self.SAMPLE_PARTED)
     partitions = cros_build_lib.GetImageDiskPartitionInfo(
         '_ignored', key_selector='number'
     )
@@ -1402,7 +1468,7 @@ class GetImageDiskPartitionInfoTests(RunCommandTestCase):
     self.assertEqual('reserved', partitions[9].name)
     self.assertEqual('reserved', partitions[10].name)
 
-  def testChangeUnit(self):
+  def testChangeUnitOutsideChroot(self):
 
     def changeUnit(unit):
       cros_build_lib.GetImageDiskPartitionInfo('_ignored', unit)
@@ -1410,9 +1476,27 @@ class GetImageDiskPartitionInfoTests(RunCommandTestCase):
           ['-m', '_ignored', 'unit', unit, 'print'],
       )
 
+    self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=False)
+    self.rc.AddCmdResult(partial_mock.Ignore(), output=self.SAMPLE_PARTED)
     # We must use 2-char units here because the mocked output is in 'MB'.
     changeUnit('MB')
     changeUnit('KB')
+
+  def testChangeUnitInsideChroot(self):
+    self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=True)
+    self.rc.AddCmdResult(partial_mock.Ignore(), output=self.SAMPLE_CGPT)
+    partitions = cros_build_lib.GetImageDiskPartitionInfo('_ignored', 'B')
+    self.assertEqual(partitions['STATE'].start, 983564288)
+    self.assertEqual(partitions['STATE'].size, 1073741824)
+    partitions = cros_build_lib.GetImageDiskPartitionInfo('_ignored', 'KB')
+    self.assertEqual(partitions['STATE'].start, 983564288 / 1000.0)
+    self.assertEqual(partitions['STATE'].size, 1073741824 / 1000.0)
+    partitions = cros_build_lib.GetImageDiskPartitionInfo('_ignored', 'MB')
+    self.assertEqual(partitions['STATE'].start, 983564288 / 10.0**6)
+    self.assertEqual(partitions['STATE'].size, 1073741824 / 10.0**6)
+
+    self.assertRaises(KeyError, cros_build_lib.GetImageDiskPartitionInfo,
+                      '_ignored', 'PB')
 
 
 if __name__ == '__main__':
