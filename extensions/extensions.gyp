@@ -891,6 +891,7 @@
         'common/permissions/manifest_permission_set_unittest.cc',
         'common/user_script_unittest.cc',
         'renderer/activity_log_converter_strategy_unittest.cc',
+        'renderer/api/serial/data_receiver_unittest.cc',
         'renderer/api/serial/serial_api_unittest.cc',
         'renderer/api_test_base.cc',
         'renderer/api_test_base.h',
