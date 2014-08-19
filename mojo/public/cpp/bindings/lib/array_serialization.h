@@ -9,17 +9,25 @@
 
 #include <vector>
 
+#include "mojo/public/c/system/macros.h"
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/lib/string_serialization.h"
+#include "mojo/public/cpp/bindings/lib/template_util.h"
+#include "mojo/public/cpp/bindings/lib/validation_errors.h"
 
 namespace mojo {
 
 template <typename E>
 inline size_t GetSerializedSize_(const Array<E>& input);
 
-template <typename E, typename F>
-inline void Serialize_(Array<E> input, internal::Buffer* buf,
-                       internal::Array_Data<F>** output);
+// Because ValidateParams requires explicit argument specification, the
+// argument-dependent loopup technique used to omit namespace when calling
+// Serialize_() doesn't seem to work. Therefore, this function is named
+// differently from those Serialize_() overloads.
+template <typename ValidateParams, typename E, typename F>
+inline void SerializeArray_(Array<E> input, internal::Buffer* buf,
+                            internal::Array_Data<F>** output);
+
 template <typename E, typename F>
 inline void Deserialize_(internal::Array_Data<F>* data, Array<E>* output);
 
@@ -33,8 +41,15 @@ template <typename E, typename F> struct ArraySerializer<E, F, false> {
   static size_t GetSerializedSize(const Array<E>& input) {
     return sizeof(Array_Data<F>) + Align(input.size() * sizeof(E));
   }
+  template <bool element_is_nullable, typename ElementValidateParams>
   static void SerializeElements(
       Array<E> input, Buffer* buf, Array_Data<F>* output) {
+    MOJO_COMPILE_ASSERT(!element_is_nullable,
+                        Primitive_type_should_be_non_nullable);
+    MOJO_COMPILE_ASSERT(
+        (IsSame<ElementValidateParams, NoValidateParams>::value),
+        Primitive_type_should_not_have_array_validate_params);
+
     memcpy(output->storage(), &input.storage()[0], input.size() * sizeof(E));
   }
   static void DeserializeElements(
@@ -49,8 +64,15 @@ template <> struct ArraySerializer<bool, bool, false> {
   static size_t GetSerializedSize(const Array<bool>& input) {
     return sizeof(Array_Data<bool>) + Align((input.size() + 7) / 8);
   }
+  template <bool element_is_nullable, typename ElementValidateParams>
   static void SerializeElements(
       Array<bool> input, Buffer* buf, Array_Data<bool>* output) {
+    MOJO_COMPILE_ASSERT(!element_is_nullable,
+                        Primitive_type_should_be_non_nullable);
+    MOJO_COMPILE_ASSERT(
+        (IsSame<ElementValidateParams, NoValidateParams>::value),
+        Primitive_type_should_not_have_array_validate_params);
+
     // TODO(darin): Can this be a memcpy somehow instead of a bit-by-bit copy?
     for (size_t i = 0; i < input.size(); ++i)
       output->at(i) = input[i];
@@ -69,12 +91,21 @@ template <typename H> struct ArraySerializer<ScopedHandleBase<H>, H, true> {
   static size_t GetSerializedSize(const Array<ScopedHandleBase<H> >& input) {
     return sizeof(Array_Data<H>) + Align(input.size() * sizeof(H));
   }
-  static void SerializeElements(
-      Array<ScopedHandleBase<H> > input,
-      Buffer* buf,
-      Array_Data<H>* output) {
-    for (size_t i = 0; i < input.size(); ++i)
+  template <bool element_is_nullable, typename ElementValidateParams>
+  static void SerializeElements(Array<ScopedHandleBase<H> > input,
+                                Buffer* buf,
+                                Array_Data<H>* output) {
+    MOJO_COMPILE_ASSERT(
+        (IsSame<ElementValidateParams, NoValidateParams>::value),
+        Handle_type_should_not_have_array_validate_params);
+
+    for (size_t i = 0; i < input.size(); ++i) {
       output->at(i) = input[i].release();  // Transfer ownership of the handle.
+      MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
+          IsNonNullableValidationEnabled() && !element_is_nullable &&
+              !output->at(i).is_valid(),
+          VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE);
+    }
   }
   static void DeserializeElements(
       Array_Data<H>* input, Array<ScopedHandleBase<H> >* output) {
@@ -93,14 +124,18 @@ template <typename S> struct ArraySerializer<S, typename S::Data_*, true> {
       size += GetSerializedSize_(input[i]);
     return size;
   }
-  static void SerializeElements(
-      Array<S> input,
-      Buffer* buf,
-      Array_Data<typename S::Data_*>* output) {
+  template <bool element_is_nullable, typename ElementValidateParams>
+  static void SerializeElements(Array<S> input,
+                                Buffer* buf,
+                                Array_Data<typename S::Data_*>* output) {
     for (size_t i = 0; i < input.size(); ++i) {
       typename S::Data_* element;
-      Serialize_(input[i].Pass(), buf, &element);
+      SerializeCaller<S, ElementValidateParams>::Run(
+          input[i].Pass(), buf, &element);
       output->at(i) = element;
+      MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
+          IsNonNullableValidationEnabled() && !element_is_nullable && !element,
+          VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
     }
   }
   static void DeserializeElements(
@@ -113,6 +148,26 @@ template <typename S> struct ArraySerializer<S, typename S::Data_*, true> {
     }
     output->Swap(&result);
   }
+
+ private:
+  template <typename T, typename Params>
+  struct SerializeCaller {
+    static void Run(T input, Buffer* buf, typename T::Data_** output) {
+      MOJO_COMPILE_ASSERT((IsSame<Params, NoValidateParams>::value),
+                          Struct_type_should_not_have_array_validate_params);
+
+      Serialize_(input.Pass(), buf, output);
+    }
+  };
+
+  template <typename T, typename Params>
+  struct SerializeCaller<Array<T>, Params> {
+    static void Run(Array<T> input,
+                    Buffer* buf,
+                    typename Array<T>::Data_** output) {
+      SerializeArray_<Params>(input.Pass(), buf, output);
+    }
+  };
 };
 
 template <> struct ArraySerializer<String, String_Data*, false> {
@@ -123,14 +178,23 @@ template <> struct ArraySerializer<String, String_Data*, false> {
       size += GetSerializedSize_(input[i]);
     return size;
   }
+  template <bool element_is_nullable, typename ElementValidateParams>
   static void SerializeElements(
       Array<String> input,
       Buffer* buf,
       Array_Data<String_Data*>* output) {
+    MOJO_COMPILE_ASSERT(
+        (IsSame<ElementValidateParams,
+                ArrayValidateParams<0, false, NoValidateParams> >::value),
+        String_type_has_unexpected_array_validate_params);
+
     for (size_t i = 0; i < input.size(); ++i) {
       String_Data* element;
       Serialize_(input[i], buf, &element);
       output->at(i) = element;
+      MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
+          IsNonNullableValidationEnabled() && !element_is_nullable && !element,
+          VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
     }
   }
   static void DeserializeElements(
@@ -152,14 +216,21 @@ inline size_t GetSerializedSize_(const Array<E>& input) {
   return internal::ArraySerializer<E, F>::GetSerializedSize(input);
 }
 
-template <typename E, typename F>
-inline void Serialize_(Array<E> input, internal::Buffer* buf,
-                       internal::Array_Data<F>** output) {
+template <typename ValidateParams, typename E, typename F>
+inline void SerializeArray_(Array<E> input, internal::Buffer* buf,
+                            internal::Array_Data<F>** output) {
   if (input) {
+    MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
+        ValidateParams::expected_num_elements != 0 &&
+            input.size() != ValidateParams::expected_num_elements,
+        internal::VALIDATION_ERROR_UNEXPECTED_ARRAY_HEADER);
+
     internal::Array_Data<F>* result =
         internal::Array_Data<F>::New(input.size(), buf);
-    internal::ArraySerializer<E, F>::SerializeElements(
-        internal::Forward(input), buf, result);
+    internal::ArraySerializer<E, F>::template SerializeElements<
+        ValidateParams::element_is_nullable,
+        typename ValidateParams::ElementValidateParams>(
+            internal::Forward(input), buf, result);
     *output = result;
   } else {
     *output = NULL;
@@ -167,8 +238,7 @@ inline void Serialize_(Array<E> input, internal::Buffer* buf,
 }
 
 template <typename E, typename F>
-inline void Deserialize_(internal::Array_Data<F>* input,
-                         Array<E>* output) {
+inline void Deserialize_(internal::Array_Data<F>* input, Array<E>* output) {
   if (input) {
     internal::ArraySerializer<E, F>::DeserializeElements(input, output);
   } else {

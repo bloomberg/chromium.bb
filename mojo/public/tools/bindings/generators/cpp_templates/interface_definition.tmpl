@@ -45,24 +45,39 @@ params->{{param.name}}
 {%- endmacro %}
 
 {%- macro build_message(params_name, parameters) -%}
+  {# TODO(yzshen): Consider refactoring to share code with
+     struct_serialization_definition.tmpl #}
   {{params_name}}* params =
       {{params_name}}::New(builder.buffer());
 {#--- Sets #}
 {%   for param in parameters %}
 {%-     if param.kind|is_object_kind %}
+{%-       if param.kind|is_any_array_kind %}
+  mojo::SerializeArray_<{{param.kind|get_array_validate_params|indent(24)}}>(
+      mojo::internal::Forward(in_{{param.name}}), builder.buffer(), &params->{{param.name}}.ptr);
+{%-       else %}
   Serialize_(mojo::internal::Forward(in_{{param.name}}), builder.buffer(), &params->{{param.name}}.ptr);
-{%-     elif param.kind|is_interface_kind %}
-  if (!in_{{param.name}}.get()) {
-    params->{{param.name}} = mojo::MessagePipeHandle();
-  } else {
-    // Delegate handle.
-    params->{{param.name}} = in_{{param.name}}.PassMessagePipe().release();
-  }
-{%-     elif param.kind|is_interface_request_kind %}
+{%-       endif %}
+{%-       if not param.kind|is_nullable_kind %}
+  MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
+      mojo::internal::IsNonNullableValidationEnabled() &&
+          !params->{{param.name}}.ptr,
+      mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
+{%-       endif %}
+{%-     elif param.kind|is_any_handle_kind %}
+{%-       if param.kind|is_interface_kind or
+             param.kind|is_interface_request_kind %}
   // Delegate handle.
   params->{{param.name}} = in_{{param.name}}.PassMessagePipe().release();
-{%-     elif param.kind|is_any_handle_kind %}
+{%-       else %}
   params->{{param.name}} = in_{{param.name}}.release();
+{%-       endif %}
+{%-       if not param.kind|is_nullable_kind %}
+  MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
+      mojo::internal::IsNonNullableValidationEnabled() &&
+          !params->{{param.name}}.is_valid(),
+      mojo::internal::VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE);
+{%-       endif %}
 {%-     else %}
   params->{{param.name}} = in_{{param.name}};
 {%-     endif %}

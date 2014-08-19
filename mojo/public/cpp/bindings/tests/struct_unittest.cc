@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "mojo/public/cpp/bindings/lib/fixed_buffer.h"
+#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/interfaces/bindings/tests/test_structs.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,9 +27,17 @@ void CheckRect(const Rect& rect, int32_t factor = 1) {
   EXPECT_EQ(20 * factor, rect.height);
 }
 
+class StructTest : public testing::Test {
+ public:
+  virtual ~StructTest() {}
+
+ private:
+  Environment env_;
+};
+
 }  // namespace
 
-TEST(StructTest, Rect) {
+TEST_F(StructTest, Rect) {
   RectPtr rect;
   EXPECT_TRUE(rect.is_null());
   EXPECT_TRUE(!rect);
@@ -43,7 +52,7 @@ TEST(StructTest, Rect) {
 }
 
 // Serialization test of a struct with no pointer or handle members.
-TEST(StructTest, Serialization_Basic) {
+TEST_F(StructTest, Serialization_Basic) {
   RectPtr rect(MakeRect());
 
   size_t size = GetSerializedSize_(rect);
@@ -60,7 +69,7 @@ TEST(StructTest, Serialization_Basic) {
 }
 
 // Serialization test of a struct with struct pointers.
-TEST(StructTest, Serialization_StructPointers) {
+TEST_F(StructTest, Serialization_StructPointers) {
   RectPairPtr pair(RectPair::New());
   pair->first = MakeRect();
   pair->second = MakeRect();
@@ -80,7 +89,7 @@ TEST(StructTest, Serialization_StructPointers) {
 }
 
 // Serialization test of a struct with an array member.
-TEST(StructTest, Serialization_ArrayPointers) {
+TEST_F(StructTest, Serialization_ArrayPointers) {
   NamedRegionPtr region(NamedRegion::New());
   region->name = "region";
   region->rects = Array<RectPtr>::New(4);
@@ -114,7 +123,7 @@ TEST(StructTest, Serialization_ArrayPointers) {
 }
 
 // Serialization test of a struct with null array pointers.
-TEST(StructTest, Serialization_NullArrayPointers) {
+TEST_F(StructTest, Serialization_NullArrayPointers) {
   NamedRegionPtr region(NamedRegion::New());
   EXPECT_TRUE(region->name.is_null());
   EXPECT_TRUE(region->rects.is_null());

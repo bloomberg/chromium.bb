@@ -114,7 +114,7 @@ struct ArrayDataTraits<bool> {
 
 // Array type information needed for valdiation.
 template <uint32_t in_expected_num_elements,
-          bool in_element_nullable,
+          bool in_element_is_nullable,
           typename InElementValidateParams>
 class ArrayValidateParams {
  public:
@@ -126,7 +126,7 @@ class ArrayValidateParams {
   // that number of elements.
   static const uint32_t expected_num_elements = in_expected_num_elements;
   // Whether the elements are nullable.
-  static const bool element_nullable = in_element_nullable;
+  static const bool element_is_nullable = in_element_is_nullable;
 };
 
 // NoValidateParams is used to indicate the end of an ArrayValidateParams chain.
@@ -153,11 +153,11 @@ struct ArraySerializationHelper<T, false> {
                                        std::vector<Handle>* handles) {
   }
 
-  template <bool element_nullable, typename ElementValidateParams>
+  template <bool element_is_nullable, typename ElementValidateParams>
   static bool ValidateElements(const ArrayHeader* header,
                                const ElementType* elements,
                                BoundsChecker* bounds_checker) {
-    MOJO_COMPILE_ASSERT(!element_nullable,
+    MOJO_COMPILE_ASSERT(!element_is_nullable,
                         Primitive_type_should_be_non_nullable);
     MOJO_COMPILE_ASSERT(
         (IsSame<ElementValidateParams, NoValidateParams>::value),
@@ -178,7 +178,7 @@ struct ArraySerializationHelper<Handle, true> {
                                        ElementType* elements,
                                        std::vector<Handle>* handles);
 
-  template <bool element_nullable, typename ElementValidateParams>
+  template <bool element_is_nullable, typename ElementValidateParams>
   static bool ValidateElements(const ArrayHeader* header,
                                const ElementType* elements,
                                BoundsChecker* bounds_checker) {
@@ -187,7 +187,7 @@ struct ArraySerializationHelper<Handle, true> {
         Handle_type_should_not_have_array_validate_params);
 
     for (uint32_t i = 0; i < header->num_elements; ++i) {
-      if (IsNonNullableValidationEnabled() && !element_nullable &&
+      if (IsNonNullableValidationEnabled() && !element_is_nullable &&
           elements[i].value() == kEncodedInvalidHandleValue) {
         ReportValidationError(VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE);
         return false;
@@ -219,12 +219,12 @@ struct ArraySerializationHelper<H, true> {
         header, elements, handles);
   }
 
-  template <bool element_nullable, typename ElementValidateParams>
+  template <bool element_is_nullable, typename ElementValidateParams>
   static bool ValidateElements(const ArrayHeader* header,
                                const ElementType* elements,
                                BoundsChecker* bounds_checker) {
     return ArraySerializationHelper<Handle, true>::
-        ValidateElements<element_nullable, ElementValidateParams>(
+        ValidateElements<element_is_nullable, ElementValidateParams>(
             header, elements, bounds_checker);
   }
 };
@@ -247,12 +247,12 @@ struct ArraySerializationHelper<P*, false> {
       Decode(&elements[i], handles);
   }
 
-  template <bool element_nullable, typename ElementValidateParams>
+  template <bool element_is_nullable, typename ElementValidateParams>
   static bool ValidateElements(const ArrayHeader* header,
                                const ElementType* elements,
                                BoundsChecker* bounds_checker) {
     for (uint32_t i = 0; i < header->num_elements; ++i) {
-      if (IsNonNullableValidationEnabled() && !element_nullable &&
+      if (IsNonNullableValidationEnabled() && !element_is_nullable &&
           !elements[i].offset) {
         ReportValidationError(VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
         return false;
@@ -335,7 +335,7 @@ class Array_Data {
 
     const Array_Data<T>* object = static_cast<const Array_Data<T>*>(data);
     return Helper::template ValidateElements<
-        Params::element_nullable, typename Params::ElementValidateParams>(
+        Params::element_is_nullable, typename Params::ElementValidateParams>(
             &object->header_, object->storage(), bounds_checker);
   }
 

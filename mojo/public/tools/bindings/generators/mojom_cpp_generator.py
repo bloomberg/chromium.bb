@@ -243,16 +243,16 @@ def GetArrayValidateParams(kind):
 
   if mojom.IsStringKind(kind):
     expected_num_elements = 0
-    element_nullable = False
+    element_is_nullable = False
     element_validate_params = "mojo::internal::NoValidateParams"
   else:
     expected_num_elements = generator.ExpectedArraySize(kind)
-    element_nullable = mojom.IsNullableKind(kind.kind)
+    element_is_nullable = mojom.IsNullableKind(kind.kind)
     element_validate_params = GetArrayValidateParams(kind.kind)
 
   return "mojo::internal::ArrayValidateParams<%d, %s,\n%s> " % (
       expected_num_elements,
-      'true' if element_nullable else 'false',
+      'true' if element_is_nullable else 'false',
       element_validate_params)
 
 _HEADER_SIZE = 8

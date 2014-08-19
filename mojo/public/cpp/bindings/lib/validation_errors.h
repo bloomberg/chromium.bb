@@ -66,9 +66,29 @@ class ValidationErrorObserverForTesting {
   MOJO_DISALLOW_COPY_AND_ASSIGN(ValidationErrorObserverForTesting);
 };
 
-// Currently it only returns true when there is a
-// ValidationErrorObserverForTesting object alive. In other words, non-nullable
-// validation is only turned on during validation tests.
+// Used only by MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING. Don't use it directly.
+//
+// The function returns true if the error is recorded (by a
+// SerializationWarningObserverForTesting object), false otherwise.
+bool ReportSerializationWarning(ValidationError error);
+
+// Only used by serialization tests and when there is only one thread doing
+// message serialization.
+class SerializationWarningObserverForTesting {
+ public:
+  SerializationWarningObserverForTesting();
+  ~SerializationWarningObserverForTesting();
+
+  ValidationError last_warning() const { return last_warning_; }
+  void set_last_warning(ValidationError error) { last_warning_ = error; }
+
+ private:
+  ValidationError last_warning_;
+
+  MOJO_DISALLOW_COPY_AND_ASSIGN(SerializationWarningObserverForTesting);
+};
+
+// Currently it only returns true during validation and serialization tests.
 //
 // TODO(yzshen): Remove this function and enable non-nullable validation by
 // default.
@@ -76,5 +96,19 @@ bool IsNonNullableValidationEnabled();
 
 }  // namespace internal
 }  // namespace mojo
+
+// In debug build, logs a serialization warning if |condition| evaluates to
+// true:
+//   - if there is a SerializationWarningObserverForTesting object alive,
+//     records |error| in it;
+//   - otherwise, logs a fatal-level message.
+// |error| is the validation error that will be triggered by the receiver
+// of the serialzation result.
+//
+// In non-debug build, does nothing (not even compiling |condition|).
+#define MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(condition, error) \
+    MOJO_DLOG_IF(FATAL, (condition) && !ReportSerializationWarning(error)) \
+        << "The outgoing message will trigger " \
+        << ValidationErrorToString(error) << " at the receiving side.";
 
 #endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_VALIDATION_ERRORS_H_

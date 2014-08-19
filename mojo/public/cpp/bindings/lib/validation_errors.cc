@@ -11,6 +11,7 @@ namespace internal {
 namespace {
 
 ValidationErrorObserverForTesting* g_validation_error_observer = NULL;
+SerializationWarningObserverForTesting* g_serialization_warning_observer = NULL;
 
 }  // namespace
 
@@ -63,8 +64,29 @@ ValidationErrorObserverForTesting::~ValidationErrorObserverForTesting() {
   g_validation_error_observer = NULL;
 }
 
+bool ReportSerializationWarning(ValidationError error) {
+  if (g_serialization_warning_observer) {
+    g_serialization_warning_observer->set_last_warning(error);
+    return true;
+  }
+
+  return false;
+}
+
+SerializationWarningObserverForTesting::SerializationWarningObserverForTesting()
+    : last_warning_(VALIDATION_ERROR_NONE) {
+  MOJO_DCHECK(!g_serialization_warning_observer);
+  g_serialization_warning_observer = this;
+}
+
+SerializationWarningObserverForTesting::
+~SerializationWarningObserverForTesting() {
+  MOJO_DCHECK(g_serialization_warning_observer == this);
+  g_serialization_warning_observer = NULL;
+}
+
 bool IsNonNullableValidationEnabled() {
-  return !!g_validation_error_observer;
+  return g_validation_error_observer || g_serialization_warning_observer;
 }
 
 }  // namespace internal

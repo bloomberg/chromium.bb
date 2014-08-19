@@ -10,6 +10,7 @@ import org.chromium.mojo.system.Handle;
 import org.chromium.mojo.system.InvalidHandle;
 import org.chromium.mojo.system.MessagePipeHandle;
 import org.chromium.mojo.system.SharedBufferHandle;
+import org.chromium.mojo.system.UntypedHandle;
 
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
@@ -305,6 +306,13 @@ public class Decoder {
         }
         mValidator.claimHandle(index);
         return mMessage.handles.get(index);
+    }
+
+    /**
+     * Deserializes an |UntypedHandle| at the given offset.
+     */
+    public UntypedHandle readUntypedHandle(int offset) {
+        return readHandle(offset).toUntypedHandle();
     }
 
     /**

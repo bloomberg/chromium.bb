@@ -13,13 +13,13 @@ struct Rect {
 };
 
 struct NamedRegion {
-  string name;
-  Rect[] rects;
+  string? name;
+  Rect[]? rects;
 };
 
 struct RectPair {
-  Rect first;
-  Rect second;
+  Rect? first;
+  Rect? second;
 };
 
 }

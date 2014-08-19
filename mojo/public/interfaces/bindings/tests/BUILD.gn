@@ -12,6 +12,7 @@ mojom("test_interfaces") {
     "sample_import2.mojom",
     "sample_interfaces.mojom",
     "sample_service.mojom",
+    "serialization_test_structs.mojom",
     "test_structs.mojom",
     "validation_test_interfaces.mojom",
   ]
