@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+PASS XMLHttpRequest: Recover from error by calling open() on the same XHR inside an error handler 
+Harness: the test ran to completion.
+
