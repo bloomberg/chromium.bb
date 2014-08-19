@@ -1668,7 +1668,7 @@ InvalidationReason RenderObject::invalidatePaintIfNeeded(const RenderLayerModelO
         return invalidationReason;
 
     if (invalidationReason == InvalidationIncremental) {
-        incrementallyInvalidatePaint(paintInvalidationContainer, oldBounds, newBounds);
+        incrementallyInvalidatePaint(paintInvalidationContainer, oldBounds, newBounds, newLocation);
         return invalidationReason;
     }
 
@@ -1717,7 +1717,7 @@ InvalidationReason RenderObject::getPaintInvalidationReason(const RenderLayerMod
     return InvalidationIncremental;
 }
 
-void RenderObject::incrementallyInvalidatePaint(const RenderLayerModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds)
+void RenderObject::incrementallyInvalidatePaint(const RenderLayerModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds, const LayoutPoint& positionFromPaintInvalidationContainer)
 {
     ASSERT(oldBounds.location() == newBounds.location());
 

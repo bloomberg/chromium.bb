@@ -1146,7 +1146,7 @@ protected:
     virtual InvalidationReason getPaintInvalidationReason(const RenderLayerModelObject& paintInvalidationContainer,
         const LayoutRect& oldBounds, const LayoutPoint& oldPositionFromPaintInvalidationContainer,
         const LayoutRect& newBounds, const LayoutPoint& newPositionFromPaintInvalidationContainer);
-    void incrementallyInvalidatePaint(const RenderLayerModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds);
+    virtual void incrementallyInvalidatePaint(const RenderLayerModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds, const LayoutPoint& positionFromPaintInvalidationContainer);
     void fullyInvalidatePaint(const RenderLayerModelObject& paintInvalidationContainer, InvalidationReason, const LayoutRect& oldBounds, const LayoutRect& newBounds);
 
 #if ENABLE(ASSERT)

@@ -679,6 +679,7 @@ protected:
     virtual InvalidationReason getPaintInvalidationReason(const RenderLayerModelObject& paintInvalidationContainer,
         const LayoutRect& oldBounds, const LayoutPoint& oldPositionFromPaintInvalidationContainer,
         const LayoutRect& newBounds, const LayoutPoint& newPositionFromPaintInvalidationContainer) OVERRIDE;
+    virtual void incrementallyInvalidatePaint(const RenderLayerModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds, const LayoutPoint& positionFromPaintInvalidationContainer) OVERRIDE;
 
     virtual void clearPaintInvalidationState(const PaintInvalidationState&) OVERRIDE;
 #if ENABLE(ASSERT)
@@ -731,6 +732,8 @@ private:
     }
 
     void savePreviousBorderBoxSizeIfNeeded();
+    LayoutSize computePreviousBorderBoxSize(const LayoutSize& previousBoundsSize) const;
+
     bool logicalHeightComputesAsNone(SizeType) const;
 
     virtual InvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const RenderLayerModelObject& newPaintInvalidationContainer) OVERRIDE FINAL;
