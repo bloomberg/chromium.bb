@@ -68,7 +68,8 @@ void FolderBackgroundView::UpdateFolderContainerBubble(ShowState state) {
 }
 
 int FolderBackgroundView::GetFolderContainerBubbleRadius() const {
-  return GetContentsBounds().height() / 2;
+  return std::max(GetContentsBounds().width(), GetContentsBounds().height()) /
+         2;
 }
 
 void FolderBackgroundView::OnPaint(gfx::Canvas* canvas) {
