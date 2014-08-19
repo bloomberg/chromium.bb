@@ -891,6 +891,8 @@ function testPluginLoadPermission() {
     pluginIdentifier = 'libppapi_tests.so';
   else if (navigator.platform.match(/win32/i))
     pluginIdentifier = 'ppapi_tests.dll';
+  else if (navigator.platform.match(/win64/i))
+    pluginIdentifier = 'ppapi_tests.dll';
   else if (navigator.platform.match(/mac/i))
     pluginIdentifier = 'ppapi_tests.plugin';
 

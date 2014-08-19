@@ -569,7 +569,8 @@ remoting.platformIsMac = function() {
  * @return {boolean} True if the platform is Windows.
  */
 remoting.platformIsWindows = function() {
-  return navigator.platform.indexOf('Win32') != -1;
+  return (navigator.platform.indexOf('Win32') != -1) ||
+         (navigator.platform.indexOf('Win64') != -1);
 }
 
 /**

@@ -88,6 +88,8 @@ remoting.HostInstaller.prototype.download_ = function() {
   var hostDownloadUrls = {
     'Win32' : 'http://dl.google.com/dl/edgedl/chrome-remote-desktop/' +
         'chromeremotedesktophost.msi',
+    'Win64' : 'http://dl.google.com/dl/edgedl/chrome-remote-desktop/' +
+        'chromeremotedesktophost.msi',
     'MacIntel' : 'https://dl.google.com/chrome-remote-desktop/' +
         'chromeremotedesktop.dmg',
     'Linux x86_64' : 'https://dl.google.com/linux/direct/' +
