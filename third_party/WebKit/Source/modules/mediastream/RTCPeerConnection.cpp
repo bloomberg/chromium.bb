@@ -606,12 +606,7 @@ void RTCPeerConnection::close(ExceptionState& exceptionState)
     if (throwExceptionIfSignalingStateClosed(m_signalingState, exceptionState))
         return;
 
-    m_peerHandler->stop();
-    m_closed = true;
-
-    changeIceConnectionState(ICEConnectionStateClosed);
-    changeIceGatheringState(ICEGatheringStateComplete);
-    changeSignalingState(SignalingStateClosed);
+    closeInternal();
 }
 
 void RTCPeerConnection::negotiationNeeded()
@@ -707,6 +702,12 @@ void RTCPeerConnection::releasePeerConnectionHandler()
     stop();
 }
 
+void RTCPeerConnection::closePeerConnection()
+{
+    ASSERT(m_signalingState != RTCPeerConnection::SignalingStateClosed);
+    closeInternal();
+}
+
 const AtomicString& RTCPeerConnection::interfaceName() const
 {
     return EventTargetNames::RTCPeerConnection;
@@ -765,6 +766,17 @@ void RTCPeerConnection::changeIceConnectionState(ICEConnectionState iceConnectio
         m_iceConnectionState = iceConnectionState;
         scheduleDispatchEvent(Event::create(EventTypeNames::iceconnectionstatechange));
     }
+}
+
+void RTCPeerConnection::closeInternal()
+{
+    ASSERT(m_signalingState != RTCPeerConnection::SignalingStateClosed);
+    m_peerHandler->stop();
+    m_closed = true;
+
+    changeIceConnectionState(ICEConnectionStateClosed);
+    changeIceGatheringState(ICEGatheringStateComplete);
+    changeSignalingState(SignalingStateClosed);
 }
 
 void RTCPeerConnection::scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event> event)

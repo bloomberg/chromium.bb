@@ -129,6 +129,7 @@ public:
     virtual void didRemoveRemoteStream(const WebMediaStream&) OVERRIDE;
     virtual void didAddRemoteDataChannel(WebRTCDataChannelHandler*) OVERRIDE;
     virtual void releasePeerConnectionHandler() OVERRIDE;
+    virtual void closePeerConnection() OVERRIDE;
 
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE;
@@ -159,6 +160,8 @@ private:
     void changeSignalingState(WebRTCPeerConnectionHandlerClient::SignalingState);
     void changeIceGatheringState(WebRTCPeerConnectionHandlerClient::ICEGatheringState);
     void changeIceConnectionState(WebRTCPeerConnectionHandlerClient::ICEConnectionState);
+
+    void closeInternal();
 
     SignalingState m_signalingState;
     ICEGatheringState m_iceGatheringState;
