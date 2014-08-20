@@ -25,10 +25,10 @@
     'conditions': [
       ['OS!="ios"', {
         'chromium_browser_dependencies': [
+          'debugger',
           '../ppapi/ppapi_internal.gyp:ppapi_host',
         ],
         'chromium_child_dependencies': [
-          'debugger',
           'plugin',
           'renderer',
           'utility',
